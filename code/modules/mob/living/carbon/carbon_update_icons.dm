@@ -158,6 +158,8 @@
 
 	var/mutable_appearance/bandage_overlay
 	for(var/obj/item/bodypart/bodypart as anything in bodyparts)
+		if(istype(bodypart, /obj/item/bodypart/l_leg/naga_tail))
+			continue
 		var/obj/item/stack/medical/gauze/our_gauze = bodypart.current_gauze
 		if(!our_gauze)
 			continue
@@ -248,6 +250,12 @@
 		apply_overlay(HANDCUFF_LAYER)
 
 /mob/living/carbon/update_inv_legcuffed()
+	if(legcuffed && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && !legcuffed.can_apply_to_legs(src))
+		dropItemToGround(legcuffed, TRUE)
+	if(!istype(legcuffed, /obj/item/restraints/legcuffs/bola))
+		remove_status_effect(/datum/status_effect/bola_snared)
+	if(!istype(legcuffed, /obj/item/restraints/legcuffs/beartrap))
+		remove_status_effect(/datum/status_effect/beartrap_ensnared)
 	remove_overlay(LEGCUFF_LAYER)
 	clear_alert("legcuffed")
 	if(legcuffed)

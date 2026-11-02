@@ -102,7 +102,7 @@
 	if(iscarbon(parent))
 		RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(jostleCheck))
 		RegisterSignal(parent, COMSIG_CARBON_EMBED_RIP, PROC_REF(ripOutCarbon))
-		RegisterSignal(parent, COMSIG_CARBON_EMBED_REMOVAL, PROC_REF(safeRemoveCarbon))
+		RegisterSignal(parent, COMSIG_CARBON_EMBED_REMOVAL, PROC_REF(removeCarbon))
 	else if(isclosedturf(parent))
 		RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(examineTurf))
 		RegisterSignal(parent, COMSIG_PARENT_QDELETING, PROC_REF(itemMoved))
@@ -164,13 +164,12 @@
 
 	fall_chance *= 0.2 // BLUEMOON ADD - застрявшие предметы выпадают намного реже
 
-/// Ссылки на извлечение застрявших предметов теперь строятся прямо в examine() моба
-/// (см. carbon/human examine.dm), чтобы их гарантированно видели все осматривающие.
+// Осмотр показывает ссылку и самому пациенту; для самоизвлечения не требуется стоять.
 /datum/component/embedded/proc/can_be_ripped_by(mob/user)
 	var/mob/living/carbon/victim = parent
-	if(user == victim || !isliving(user) || !user.Adjacent(victim))
+	if(!isliving(user) || !user.Adjacent(victim))
 		return FALSE
-	return !!user.canUseTopic(victim, BE_CLOSE)
+	return !!user.canUseTopic(victim, BE_CLOSE, NO_DEXTERY, check_resting = user != victim, silent = TRUE)
 
 /// Возвращает компонент застревания, отвечающий за конкретный предмет в конкретной конечности.
 /proc/get_embedded_component(mob/living/carbon/victim, obj/item/stuck, obj/item/bodypart/part)
@@ -286,8 +285,13 @@
 		safeRemoveCarbon(TRUE)
 
 
-/// This proc handles the final step and actual removal of an embedded/stuck item from a carbon, whether or not it was actually removed safely.
-/// Pass TRUE for to_hands if we want it to go to the victim's hands when they pull it out
+// Сигнал удаления относится к одному предмету, а не ко всем компонентам пациента.
+/datum/component/embedded/proc/removeCarbon(datum/source, obj/item/item)
+	SIGNAL_HANDLER
+	if(item == weapon)
+		safeRemoveCarbon()
+
+// Завершает извлечение; to_hands передаёт предмет в руки пациента или извлекающего.
 /datum/component/embedded/proc/safeRemoveCarbon(to_hands)
 	var/mob/living/carbon/victim = parent
 	var/mob/living/carbon/receiver = victim

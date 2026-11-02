@@ -1115,11 +1115,14 @@
 	if(armed && isturf(src.loc))
 		if(isliving(AM))
 			var/mob/living/L = AM
+			// Проверяем отрыв от пола до захвата: перемещение ловушки на моба уже меняет её состояние.
+			if((L.movement_type & (FLYING | FLOATING)) || HAS_TRAIT(L, TRAIT_JUMPING))
+				return ..()
 			var/snap = FALSE
 			if(iscarbon(L))
 				var/mob/living/carbon/C = L
 				if(!C.lying)
-					if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+					if(!C.legcuffed && can_apply_to_legs(C) && (C.get_num_legs(FALSE) >= 2 || HAS_TRAIT(C, TRAIT_NAGA_ANATOMY)))
 						snap = TRUE
 						C.legcuffed = src
 						forceMove(C)
@@ -1130,17 +1133,15 @@
 				var/mob/living/simple_animal/SA = L
 				if(SA.mob_size > MOB_SIZE_TINY)
 					snap = TRUE
-			if(L.movement_type & (FLYING | FLOATING))
-				snap = FALSE
 			if(snap)
 				if(iscarbon(AM))
 					L.visible_message("<span class='warning'>As [AM] steps on the plate, spiked crystalline wires entangle and shred their limbs!</span>", \
 										"<span class='cultlarge'>As you step on the plate, spiked crystalline wires entangle and shred your limbs!</span>")
 					var/mob/living/carbon/carbon_target = AM
-					var/obj/item/bodypart/bodypart = pick(carbon_target.bodyparts)
+					var/obj/item/bodypart/bodypart = HAS_TRAIT(carbon_target, TRAIT_NAGA_ANATOMY) ? carbon_target.get_bodypart(BODY_ZONE_L_LEG) : pick(carbon_target.bodyparts)
 					var/datum/wound/slash/severe/crit_wound = new
 					crit_wound.apply_wound(bodypart)
-					L.apply_damage(trap_damage, BRUTE)
+					L.apply_damage(trap_damage, BRUTE, HAS_TRAIT(carbon_target, TRAIT_NAGA_ANATOMY) ? BODY_ZONE_L_LEG : null)
 	..()
 
 /datum/design/cultingot

@@ -62,7 +62,7 @@
 	WRITE_FILE(.["metadollar_pending_items"], metadollar_pending_items)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown)
+/datum/preferences/load_preferences_data(savefile/S)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE

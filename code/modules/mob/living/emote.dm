@@ -477,7 +477,10 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.get_num_arms() == 0)
-			if(H.get_num_legs() != 0)
+			var/obj/item/bodypart/tail = HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) ? H.get_bodypart(BODY_ZONE_L_LEG) : null
+			if(tail && !tail.disabled)
+				message_param = "указывает хвостом на %t."
+			else if(H.get_num_legs() != 0)
 				message_param = "tries to point at %t with a leg, <span class='userdanger'>falling down</span> in the process!"
 				H.DefaultCombatKnockdown(20)
 			else

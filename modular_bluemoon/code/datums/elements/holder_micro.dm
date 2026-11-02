@@ -51,8 +51,8 @@
 	user.add_movespeed_modifier(/datum/movespeed_modifier/stomp, TRUE)
 	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, remove_movespeed_modifier), "STEPPY", TRUE), 3) //0.3 second
 	if(iscarbon(user))
-		if(istype(user) && (user.dna.features["taur"] == "Naga" || user.dna.features["taur"] == "Tentacle"))
-			target.visible_message("<span class='danger'>[user] mows down [target] under their tail!</span>", "<span class='userdanger'>[user] plows their tail over you mercilessly!</span>")
+		if(HAS_TRAIT(user, TRAIT_NAGA_ANATOMY) || (istype(user) && (user.dna.features["taur"] == "Naga" || user.dna.features["taur"] == "Tentacle")))
+			target.visible_message(span_danger("[user] придавливает [target] хвостом!"), span_userdanger("[user] безжалостно придавливает вас хвостом!"))
 		else
 			target.visible_message("<span class='danger'>[user] slams their foot down on [target], crushing them!</span>", "<span class='userdanger'>[user] crushes you under their foot!</span>")
 		return TRUE
@@ -78,6 +78,9 @@
 	if(!CHECK_MOBILITY(user, MOBILITY_MOVE))
 		to_chat(user, span_warning("Я не могу двигаться!"))
 		return FALSE
+	if(!user.get_num_supporting_limbs())
+		to_chat(user, span_warning("Для этого нужна действующая нога или опорный хвост."))
+		return FALSE
 
 	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
 		return FALSE
@@ -85,6 +88,8 @@
 	user.DelayNextAction(CLICK_CD_MELEE)
 
 	if(!do_mob(user, target, STOMP_DELAY))
+		return FALSE
+	if(!user.get_num_supporting_limbs())
 		return FALSE
 
 	if(!(COMPARE_SIZES(user, target) >= 1.6))
