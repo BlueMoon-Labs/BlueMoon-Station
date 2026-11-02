@@ -289,7 +289,7 @@
 /datum/component/embedded/proc/removeCarbon(datum/source, obj/item/item)
 	SIGNAL_HANDLER
 	if(item == weapon)
-		safeRemoveCarbon()
+		INVOKE_ASYNC(src, PROC_REF(safeRemoveCarbon))
 
 // Завершает извлечение; to_hands передаёт предмет в руки пациента или извлекающего.
 /datum/component/embedded/proc/safeRemoveCarbon(to_hands)
