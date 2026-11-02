@@ -88,7 +88,7 @@
 	subcategory = CAT_WEAPON
 
 /datum/crafting_recipe/Mea_culpa
-	name = "\improper Mea_culpa revolver conversion"
+	name = "\improper Mea Culpa revolver conversion"
 	result = /obj/item/gun/ballistic/revolver/Mea_culpa
 	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
 				/obj/item/weaponcrafting/gunkit/Mea_culpa = 1)
@@ -129,19 +129,19 @@
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
 
-/datum/crafting_recipe/snub
-	name = "\improper Apostle Snub"
-	result = /obj/item/gun/ballistic/revolver/Apostle/snub
+/datum/crafting_recipe/drilling_sawed
+	name = "\improper Drilling sawed"
+	result = /obj/item/gun/ballistic/revolver/drilling/sawed
 	reqs = list(/obj/item/gun/ballistic/revolver/drilling = 1)
 	tools = list(TOOL_SAW)
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
 
-/datum/crafting_recipe/drilling_sawed
-	name = "\improper Drilling sawed"
-	result = /obj/item/gun/ballistic/revolver/drilling/sawed
-	reqs = list(/obj/item/gun/ballistic/revolver/drilling = 1,
+/datum/crafting_recipe/drilling_sawed_hatchet
+	name = "\improper Drilling sawed hatchet"
+	result = /obj/item/gun/ballistic/revolver/drilling/sawed/hatchet
+	reqs = list(/obj/item/gun/ballistic/revolver/drilling/sawed = 1,
 				/obj/item/hatchet = 1,
 				/obj/item/stack/sticky_tape = 5)
 	tools = list(TOOL_SAW)
