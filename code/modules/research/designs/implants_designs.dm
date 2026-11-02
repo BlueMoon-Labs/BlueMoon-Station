@@ -339,6 +339,39 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_monostring
+	name = "Monomolecular String Implant"
+	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
+	id = "ci-monostring"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 2000, /datum/material/diamond = 500)
+	build_path = /obj/item/organ/cyberimp/arm/monostring
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_gorilla_arms
+	name = "Gorilla Arms Implant"
+	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
+	id = "ci-gorilla-arms"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/gorilla
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_handcannon
+	name = "Integrated Hand Cannon Implant"
+	desc = "A compact, arm-integrated explosive launcher. The barrel deploys from the forearm and retracts when not in use."
+	id = "ci-handcannon"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/handgun
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/cyberimp_kiroshi
 	name = "Kiroshi Optics"
 	desc = "A high-precision optical implant that grants a sniper scope-like zoom for long-range targeting."
