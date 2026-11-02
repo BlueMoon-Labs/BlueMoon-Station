@@ -1,12 +1,6 @@
 // ============================================================================
 // TIER 1 - Basic Weapons (Lowest Power)
 // ============================================================================
-// ПРИМЕЧАНИЕ: Данный файл содержит mesa guns с поддержкой динамической системы звуков.
-// Система описана в: modular_bluemoon/code/modules/awaymissions/blackmesa/weapons/dynamic_gun_sounds.dm
-//
-// Для внедрения системы в другое оружие укажите dynamic_sound_dry и
-// dynamic_sound_tail. Остальные параметры громкости можно переопределить
-// при необходимости; датум создаётся автоматически в общем Initialize().
 
 /obj/item/gun/ballistic/automatic/pistol/hl9mm
 	name = "9mm pistol"
@@ -14,7 +8,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "hl9mmpistol"
 	w_class = WEIGHT_CLASS_SMALL
-	mag_type = /obj/item/ammo_box/magazine/pistolm9mm/mesa
+	mag_type = /obj/item/ammo_box/magazine/pistolm9mm
 	can_suppress = FALSE
 	burst_size = 1
 	spread = 7
@@ -135,32 +129,42 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "mp5"
 	item_state = "mp5"
-	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mp5.ogg'
 	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/mp5
-	load_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magin.ogg'
+	load_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/loadin.ogg'
 	load_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
 	eject_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
 	eject_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
+	var/last_shot_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/lastshot.ogg'
 	can_suppress = FALSE
 	weapon_weight = WEAPON_LIGHT
-	w_class = WEIGHT_CLASS_BULKY
+	w_class = WEIGHT_CLASS_NORMAL
 	spread = 9
 	burst_size = 3
 	burst_shot_delay = 2
 	fire_delay = 0.5 ///Это пиздец!
 	can_bayonet = FALSE
 	automatic_burst_overlay = FALSE
-	dynamic_sound_dry = 'modular_bluemoon/sound/weapons/mesa/mp5/dry1.ogg'
-	dynamic_sound_tail = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
-	dynamic_sound_volume = 50
-	dynamic_sound_suppressed_volume = 10
 	var/progressive_spread_enabled = TRUE
 	var/progressive_spread_step = 1.5
 	var/progressive_spread_max = 36
 	var/progressive_spread_reset_delay = 3
 	var/progressive_spread_current = 0
 	var/progressive_spread_last_shot = 0
+
+/obj/item/gun/ballistic/automatic/mp5/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	var/last_round = get_ammo() == 1
+	var/original_fire_sound = fire_sound
+	if(last_round)
+		fire_sound = last_shot_sound
+	. = ..()
+	fire_sound = original_fire_sound
+
+/obj/item/gun/ballistic/automatic/mp5/shoot_with_empty_chamber(mob/living/user)
+	to_chat(user, "<span class='danger'>*щёлк*</span>")
+	playsound(src, last_shot_sound, 30, 1)
+	balloon_alert(user, "Щёлк!")
 
 /obj/item/gun/ballistic/automatic/mp5/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(!progressive_spread_enabled || on_cooldown() || !can_shoot())
@@ -197,6 +201,32 @@
 		icon_state = "[initial(icon_state)]"
 
 // TIER 1
+/obj/item/gun/ballistic/shotgun
+	var/mesa_pointblank_damage_boost_active = FALSE
+	var/mesa_pointblank_original_damage_multiplier
+
+/obj/item/gun/ballistic/shotgun/before_firing(atom/target, mob/user)
+	. = ..()
+	if(!mesa_shotgun_bonus || !user || !target || get_dist(user, target) > 1)
+		return
+	mesa_pointblank_original_damage_multiplier = projectile_damage_multiplier
+	projectile_damage_multiplier *= 2
+	mesa_pointblank_damage_boost_active = TRUE
+
+/obj/item/gun/ballistic/shotgun/proc/reset_mesa_pointblank_damage()
+	if(!mesa_pointblank_damage_boost_active)
+		return
+	projectile_damage_multiplier = mesa_pointblank_original_damage_multiplier
+	mesa_pointblank_damage_boost_active = FALSE
+
+/obj/item/gun/ballistic/shotgun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	reset_mesa_pointblank_damage()
+
+/obj/item/gun/ballistic/shotgun/shoot_with_empty_chamber(mob/living/user as mob|obj)
+	reset_mesa_pointblank_damage()
+	return ..()
+
 /obj/item/gun/ballistic/shotgun/m870
 	name = "m870 shotgun"
 	desc = "Remington 870 - это классический помповый дробовик, который был представлен компанией Remington Arms в 1950 году и до сих пор остается одним из самых популярных и продаваемых ружей в США."
@@ -241,7 +271,7 @@
 	if(recentpump > world.time)
 		return
 	if(IS_STAMCRIT(user))
-		to_chat(user, "<span class='warning'>You're too exhausted for that.</span>")
+		to_chat(user, "<span class='warning'>Вы слишком устали для этого.</span>")
 		return
 	pump(user, TRUE)
 	var/actual_delay = HAS_TRAIT(user, TRAIT_FAST_PUMP) ? round(pump_delay * 0.5) : pump_delay
@@ -258,7 +288,7 @@
 		if(!magazine)
 			return
 		if(magazine.ammo_count() >= magazine.max_ammo)
-			to_chat(user, "<span class='warning'>[src] is full!</span>")
+			to_chat(user, "<span class='warning'>В [src] больше нельзя зарядить патроны.</span>")
 			return
 		var/ammo_before = magazine.ammo_count()
 		var/num_loaded = magazine.attackby(A, user, params, 1)
@@ -266,7 +296,7 @@
 			recentload = world.time + load_delay
 			if(user)
 				user.DelayNextAction(load_delay)
-			to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+			to_chat(user, "<span class='notice'>Вы заряжаете [num_loaded] патронов в [src].</span>")
 			var/sound_to_play
 			var/ammo_after = magazine.ammo_count()
 			if(ammo_before == 0 && load_sound_start)
@@ -337,7 +367,7 @@
 	if(recentpump > world.time)
 		return
 	if(IS_STAMCRIT(user))
-		to_chat(user, "<span class='warning'>You're too exhausted for that.</span>")
+		to_chat(user, "<span class='warning'>Вы слишком устали для этого.</span>")
 		return
 	pump(user, TRUE)
 	var/actual_delay = HAS_TRAIT(user, TRAIT_FAST_PUMP) ? round(pump_delay * 0.5) : pump_delay
@@ -354,7 +384,7 @@
 		if(!magazine)
 			return
 		if(magazine.ammo_count() >= magazine.max_ammo)
-			to_chat(user, "<span class='warning'>[src] is full!</span>")
+			to_chat(user, "<span class='warning'>В [src] больше нельзя зарядить патроны.</span>")
 			return
 		var/ammo_before = magazine.ammo_count()
 		var/num_loaded = magazine.attackby(A, user, params, 1)
@@ -362,7 +392,7 @@
 			recentload = world.time + load_delay
 			if(user)
 				user.DelayNextAction(load_delay)
-			to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+			to_chat(user, "<span class='notice'>Вы заряжаете [num_loaded] патронов в [src].</span>")
 			var/sound_to_play
 			var/ammo_after = magazine.ammo_count()
 			if(ammo_before == 0 && load_sound_start)
@@ -432,7 +462,7 @@
 	if(recentpump > world.time)
 		return
 	if(IS_STAMCRIT(user))
-		to_chat(user, "<span class='warning'>You're too exhausted for that.</span>")
+		to_chat(user, "<span class='warning'>Вы слишком устали для этого.</span>")
 		return
 	pump(user, TRUE)
 	var/actual_delay = HAS_TRAIT(user, TRAIT_FAST_PUMP) ? round(pump_delay * 0.5) : pump_delay
@@ -449,7 +479,7 @@
 		if(!magazine)
 			return
 		if(magazine.ammo_count() >= magazine.max_ammo)
-			to_chat(user, "<span class='warning'>[src] is full!</span>")
+			to_chat(user, "<span class='warning'>В [src] больше нельзя зарядить патроны.</span>")
 			return
 		var/ammo_before = magazine.ammo_count()
 		var/num_loaded = magazine.attackby(A, user, params, 1)
@@ -457,7 +487,7 @@
 			recentload = world.time + load_delay
 			if(user)
 				user.DelayNextAction(load_delay)
-			to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+			to_chat(user, "<span class='notice'>Вы заряжаете [num_loaded] патронов в [src].</span>")
 			var/sound_to_play
 			var/ammo_after = magazine.ammo_count()
 			if(ammo_before == 0 && load_sound_start)
@@ -520,14 +550,14 @@
 		if(0)
 			select = 1
 			burst_size = initial(burst_size)
-			to_chat(user, "<span class='notice'>You switch to [burst_size]-rnd burst.</span>")
+			to_chat(user, "<span class='notice'>Вы переключились на очередь из [burst_size] выстрелов.</span>")
 		if(1)
 			select = 2
-			to_chat(user, "<span class='notice'>You switch to grenades.</span>")
+			to_chat(user, "<span class='notice'>Вы переключились на подствольный гранатомёт.</span>")
 		if(2)
 			select = 0
 			burst_size = 1
-			to_chat(user, "<span class='notice'>You switch to semi-auto.</span>")
+			to_chat(user, "<span class='notice'>Вы переключились на одиночный режим.</span>")
 	playsound(user, 'sound/weapons/empty.ogg', 100, 1)
 	update_icon()
 	return
@@ -622,7 +652,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "mp7"
 	item_state = "mp7"
-	fire_delay = 1 //ATATATATATATATATA!!!
+	fire_delay = 0.8
 	spread = 8
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp7.ogg'
 	mesa_muzzle_flash = TRUE
@@ -646,7 +676,7 @@
 	icon_state = "mp7"
 	ammo_type = /obj/item/ammo_casing/mm46
 	caliber = "4.6mm"
-	max_ammo = 30
+	max_ammo = 40
 
 /obj/item/ammo_box/magazine/mp7/update_icon()
 	. = ..()
@@ -678,7 +708,7 @@
 		var/mob/living/simple_animal/SA = target
 		if(!SA)
 			return
-		SA.apply_damage(10, BRUTE)
+		SA.apply_damage(12, BRUTE)
 // конец пулек
 
 // TIER 3
@@ -1191,7 +1221,7 @@
 /obj/item/gun/ballistic/automatic/m249/examine(mob/user)
 	. = ..()
 	if(cover_open && magazine)
-		. += "<span class='notice'>It seems like you could use an <b>empty hand</b> to remove the magazine.</span>"
+		. += "<span class='notice'>Чтобы извлечь магазин, освободите руку.</span>"
 	if(bipod_deployed)
 		. += "<span class='notice'>Сошки разложены. Разброс минимален, стамина не тратится.</span>"
 	else
@@ -1203,7 +1233,7 @@
 
 /obj/item/gun/ballistic/automatic/m249/attack_self(mob/user)
 	cover_open = !cover_open
-	to_chat(user, "<span class='notice'>You [cover_open ? "open" : "close"] [src]'s cover.</span>")
+	to_chat(user, "<span class='notice'>Вы [cover_open ? "открываете" : "закрываете"] крышку [src].</span>")
 	if(cover_open)
 		playsound(user, 'sound/weapons/sawopen.ogg', 60, 1)
 	else
@@ -1246,15 +1276,14 @@
 	update_icon()
 
 /obj/item/gun/ballistic/automatic/m249/proc/collapse_bipod(mob/living/user)
-	if(!user)
-		return
 	bipod_deployed = FALSE
 	spread = no_bipod_spread
 	last_bipod_turf = null
-	if(user)
-		to_chat(user, "<span class='notice'>Вы сложили сошки [src].</span>")
-	playsound(user, 'sound/weapons/sawclose.ogg', 50, 1)
 	update_icon()
+	if(!user)
+		return
+	to_chat(user, "<span class='notice'>Вы сложили сошки [src].</span>")
+	playsound(user, 'sound/weapons/sawclose.ogg', 50, 1)
 
 /obj/item/gun/ballistic/automatic/m249/proc/check_bipod_stability()
 	if(!bipod_deployed)
@@ -1285,7 +1314,7 @@
 
 /obj/item/gun/ballistic/automatic/m249/afterattack(atom/target as mob|obj|turf, mob/living/user as mob|obj, flag, params)
 	if(cover_open)
-		to_chat(user, "<span class='warning'>[src]'s cover is open! Close it before firing!</span>")
+		to_chat(user, "<span class='warning'>Крышка [src] открыта! Закройте её перед стрельбой.</span>")
 		return
 	if(overheated)
 		to_chat(user, "<span class='warning'>[src] перегрет! Подождите пока остынет.</span>")
@@ -1306,12 +1335,12 @@
 		user.put_in_hands(magazine)
 		magazine = null
 		update_icon()
-		to_chat(user, "<span class='notice'>You remove the magazine from [src].</span>")
+		to_chat(user, "<span class='notice'>Вы извлекаете магазин из [src].</span>")
 		playsound(user, 'sound/weapons/magout.ogg', 60, 1)
 
 /obj/item/gun/ballistic/automatic/m249/attackby(obj/item/A, mob/user, params)
 	if(!cover_open && istype(A, mag_type))
-		to_chat(user, "<span class='warning'>[src]'s cover is closed! You can't insert a new mag.</span>")
+		to_chat(user, "<span class='warning'>Крышка [src] закрыта! Откройте её, чтобы вставить магазин.</span>")
 		return
 	..()
 	update_icon()

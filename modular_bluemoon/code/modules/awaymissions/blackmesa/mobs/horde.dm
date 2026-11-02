@@ -606,6 +606,7 @@
 	sharpness = SHARP_NONE
 	// Hunter-specific variables
 	var/is_stealthed = FALSE
+	var/mutable_appearance/eyes_overlay
 	var/mob/living/dragging_target = null
 	var/mob/living/ignored_target = null
 	var/stealth_alpha = 30
@@ -697,15 +698,17 @@
 			is_stealthed = TRUE
 			animate(src, alpha = stealth_alpha, time = 10)
 			ADD_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
-			var/mutable_appearance/eyes = mutable_appearance(icon, "hunter_eyes")
-			eyes.layer = ABOVE_MOB_LAYER
-			add_overlay(eyes)
+			if(!eyes_overlay)
+				eyes_overlay = mutable_appearance(icon, "hunter_eyes")
+				eyes_overlay.layer = ABOVE_MOB_LAYER
+			add_overlay(eyes_overlay)
 	else
 		if(is_stealthed)
 			is_stealthed = FALSE
 			animate(src, alpha = 255, time = 5)
 			REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
-			cut_overlay("hunter_eyes")
+			cut_overlay(eyes_overlay)
+			eyes_overlay = null
 			// Materialization effect when exposed to light
 			visible_message("<span class='danger'>[src] materializes from the shadows!</span>")
 			playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 80, FALSE)

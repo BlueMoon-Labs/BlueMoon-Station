@@ -3,7 +3,7 @@
 	description = "A unique healing solution developed by Black Mesa scientists. It is designed to accelerate the healing process of burns, wounds, and toxins."
 	color = "#44944a"
 	taste_description = "strange metallic"
-	metabolization_rate = 2 * REAGENTS_METABOLISM
+	metabolization_rate = 10 * REAGENTS_METABOLISM
 	overdose_threshold = 30
 	can_synth = FALSE
 	value = REAGENT_VALUE_RARE
@@ -13,11 +13,11 @@
 		return
 
 	if(M.getFireLoss_nonProsthetic() > 0)
-		M.heal_bodypart_damage(0, 3)
+		M.heal_bodypart_damage(0, 10)
 
 	if(M.getBruteLoss_nonProsthetic() > 0)
-		M.heal_bodypart_damage(3, 0)
-	M.adjustToxLoss(-3, 0, TRUE)
+		M.heal_bodypart_damage(10, 0)
+	M.adjustToxLoss(-10, 0, TRUE)
 
 	..()
 
@@ -133,7 +133,7 @@
 
 	if(healed_something)
 		user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
-		// Don't set used = TRUE - tactical medkit stays usable
+		// The empty state is visual only; the tactical medkit remains usable.
 		used = TRUE
 		update_icon()
 
@@ -209,7 +209,7 @@
 		icon_state = initial(icon_state)
 		item_state = "syringe_0"
 	else
-		icon_state = "[initial(icon_state)]-"
+		icon_state = "basicsyringe-empty"
 		item_state = "syringe_empty"
 
 /obj/item/stock_parts/cell/mesa_battery

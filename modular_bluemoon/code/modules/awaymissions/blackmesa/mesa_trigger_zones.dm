@@ -348,9 +348,10 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	var/obj/structure/closet/supplypod/centcompod/pod = new(null, STYLE_MISSILE)
 	pod.name = "tactical bombardment pod"
 	pod.desc = "A high-explosive tactical bombardment pod."
-	pod.explosionSize = list(0, 2, 2, 4) // Moderate explosion (non-lethal but visual)
+	pod.delays = list(POD_TRANSIT = 20, POD_FALLING = 4, POD_OPENING = 30, POD_LEAVING = 30)
+	pod.explosionSize = list(0, 3, 3, 5)
 	pod.effectMissile = TRUE
-	pod.damage = 50
+	pod.damage = 75
 	pod.effectGib = FALSE
 	new /obj/effect/pod_landingzone(drop_turf, pod)
 

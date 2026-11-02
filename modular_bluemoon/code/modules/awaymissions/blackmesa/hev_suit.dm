@@ -126,6 +126,7 @@
 	if(neural_interface)
 		neural_interface.RemoveSource(HEV_INTERFACE_SOURCE)
 		neural_interface = null
+	scan_monitor = null
 	STOP_PROCESSING(SSobj, src)
 
 	// Удаляем щит при снятии костюма

@@ -56,10 +56,6 @@
 /obj/machinery/porta_turret/hecu/Destroy()
 	if(beep_timer)
 		deltimer(beep_timer)
-	// Remove from all linked remotes
-	for(var/obj/item/hecusentry_remote/remote in world)
-		if(remote && remote.linked_sentries)
-			remote.linked_sentries -= src
 	return ..()
 
 /obj/machinery/porta_turret/hecu/proc/beep()
@@ -139,14 +135,22 @@
 	if(istype(target, /obj/machinery/porta_turret/hecu))
 		var/obj/machinery/porta_turret/hecu/T = target
 		if(T in linked_sentries)
+			UnregisterSignal(T, COMSIG_PARENT_QDELETING)
 			linked_sentries -= T
 			to_chat(user, "<span class='notice'>Sentry unlinked.</span>")
 		else
 			linked_sentries += T
+			RegisterSignal(T, COMSIG_PARENT_QDELETING, PROC_REF(on_sentry_qdeleting))
 			to_chat(user, "<span class='notice'>Sentry linked.</span>")
 		return
 	..()
 
+/obj/item/hecusentry_remote/proc/on_sentry_qdeleting(datum/source, forced)
+	SIGNAL_HANDLER
+	linked_sentries -= source
+
 /obj/item/hecusentry_remote/Destroy()
+	for(var/obj/machinery/porta_turret/hecu/T as anything in linked_sentries)
+		UnregisterSignal(T, COMSIG_PARENT_QDELETING)
 	linked_sentries.Cut()
 	return ..()
