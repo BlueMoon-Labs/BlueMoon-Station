@@ -13749,8 +13749,8 @@
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
 "ibN" = (
-/obj/structure/closet/cabinet{
-	pixel_x = -6
+/obj/structure/closet/secure_closet/personal/cabinet{
+	anchored = 1
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
@@ -17095,12 +17095,15 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jZC" = (
-/obj/structure/mineral_door/paperframe,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
+	},
+/obj/machinery/door/airlock/wood{
+	name = "Sauna";
+	id_tag = "sauna_arch"
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
@@ -26564,10 +26567,6 @@
 /obj/structure/stone_tile/center,
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
-"pbO" = (
-/obj/structure/closet/cabinet,
-/turf/open/floor/plasteel/showroomfloor,
-/area/mine/xenoarch_area_b)
 "pbQ" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/shovel/spade/bone,
@@ -35075,6 +35074,13 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
+	},
+/obj/machinery/button/door{
+	id = "sauna_arch";
+	name = "Door Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	pixel_y = 25
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
@@ -88950,7 +88956,7 @@ eQh
 eQh
 umF
 eay
-pbO
+ibN
 tuF
 eQh
 gdj
