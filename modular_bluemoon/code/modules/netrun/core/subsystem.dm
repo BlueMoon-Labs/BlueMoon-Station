@@ -95,6 +95,8 @@ SUBSYSTEM_DEF(netrun)
 	if(profile_armed)
 		msg += " Cam ms total/max F:[round(camera_feed_scan_ms, 0.1)]/[round(camera_feed_scan_max_ms, 0.1)] R:[round(camera_route_check_ms, 0.1)]/[round(camera_route_check_max_ms, 0.1)]"
 	msg += " Pub:[node_publication_batches]/[node_publication_entries]/[network_publication_entries]"
+	if(external_mode == "external" || external_mode == "shadow")
+		msg += " Core:[external_mode]/[external_core?.state || "unavailable"] Ready:[external_core?.ready || FALSE] Ack:[external_core?.last_applied_sequence || "0"] Err:[external_core?.last_error || external_error || "none"]"
 	return ..()
 
 /// Repeated changes to one address are one UI event, without an extra node/state task.
@@ -380,7 +382,7 @@ SUBSYSTEM_DEF(netrun)
 		retain_route_interest(packet.interest_route, world.time + NETRUN_NODE_INTEREST_LEASE)
 	populate_node_tasks()
 	scheduler.enqueue("housekeeping", null, NETRUN_TASK_BACKGROUND)
-	if(get_topology().dirty)
+	if(!netrun_external_projection_mode() && get_topology().dirty)
 		scheduler.enqueue("apc_prebuild", get_topology(), NETRUN_TASK_BACKGROUND)
 
 /datum/controller/subsystem/netrun/proc/execute_task(datum/netrun_task/task)
@@ -405,6 +407,11 @@ SUBSYSTEM_DEF(netrun)
 	next_fire = min(next_fire, world.time)
 
 /datum/controller/subsystem/netrun/proc/refresh_delivery_interval()
+	// Пока идет resync или есть внешняя машинная работа, queued IPC получает bounded проход каждый native tick.
+	var/datum/netrun_external_effects/machines/executor = external_core?.effects
+	if(external_core && external_core.state != "closed" && external_core.state != "resync_required" && (!external_core.ready || length(external_core.journal) >= external_core.journal_head || istype(executor) && (length(executor.pending) || executor.queued_commands())))
+		wait = world.tick_lag
+		return
 	if(task_scheduler?.pending() || length(node_publications) || length(network_publications))
 		wait = world.tick_lag
 		return
@@ -425,6 +432,9 @@ SUBSYSTEM_DEF(netrun)
 /datum/controller/subsystem/netrun/fire(resumed = FALSE)
 	var/slice_start_usage = TICK_USAGE
 	var/slice_started_at = world.time
+	if(!resumed)
+		ensure_external_core()
+		external_core?.tick(64)
 	flush_node_publications()
 	if(!resumed && initialized)
 		get_machine_transport().prepare_network()
@@ -510,11 +520,14 @@ SUBSYSTEM_DEF(netrun)
 /datum/controller/subsystem/netrun/proc/get_topology()
 	RETURN_TYPE(/datum/netrun_topology)
 	if(!topology)
-		topology = new
+		// Режим выбирается до node.Initialize без IPC; внешний путь не создаёт native builder.
+		topology = netrun_external_projection_mode() ? new /datum/netrun_topology/external : new /datum/netrun_topology
 	return topology
 
 /datum/controller/subsystem/netrun/proc/ensure_topology()
 	var/datum/netrun_topology/result = get_topology()
+	if(netrun_external_projection_mode())
+		return result
 	if(result.deferred_bindings && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR)
 		result.invalidate()
 	if(result.dirty && !result.rebuilding)

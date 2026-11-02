@@ -31,9 +31,11 @@
 			// NTNet is disabled. Enabling can be done without user prompt
 			if(SSnetworks.station_network.setting_disabled)
 				SSnetworks.station_network.setting_disabled = FALSE
+				SSnetrun.external_backbone_changed()
 				return TRUE
 
 			SSnetworks.station_network.setting_disabled = TRUE
+			SSnetrun.external_backbone_changed()
 			return TRUE
 		if("purgelogs")
 			if(SSnetworks.station_network)

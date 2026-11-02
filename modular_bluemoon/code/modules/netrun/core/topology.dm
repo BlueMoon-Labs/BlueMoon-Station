@@ -226,6 +226,8 @@
 	indexed_revision = infrastructure_revision
 
 /datum/netrun_topology/proc/nearest_apc(turf/position)
+	if(netrun_external_projection_mode())
+		return null
 	if(!position)
 		return null
 	index_infrastructure()
@@ -261,6 +263,8 @@
 /// Re-evaluate only a changed binding context, a lost APC, or a formerly empty sector.
 /// Existing valid bindings survive added nearer APCs and ordinary movement within their root area.
 /datum/netrun_topology/proc/refresh_node(datum/component/netrun_node/node)
+	if(netrun_external_projection_mode())
+		return
 	moved_nodes -= node
 	if(QDELETED(node) || QDELETED(node.parent))
 		return
@@ -437,6 +441,8 @@
 /// Each APC selects its two nearest peers. Prim adds only the shortest
 /// bridges between remaining components; no artificial hub or relay is involved.
 /datum/netrun_topology/proc/connect_apcs(list/addresses)
+	if(netrun_external_projection_mode())
+		return
 	if(length(addresses) < 2)
 		return
 	// Exact indexed search: nearby cells first, prune only provably farther cells.
@@ -495,6 +501,8 @@
 
 /// Prepare expensive APC work without changing published nodes, edges or adjacency.
 /datum/netrun_topology/proc/advance_apc_prebuild(max_operations = NETRUN_DEFAULT_APC_PREBUILD_OPERATIONS)
+	if(netrun_external_projection_mode())
+		return TRUE
 	if(!dirty || rebuilding)
 		QDEL_NULL(apc_prebuild)
 		return TRUE
@@ -515,6 +523,8 @@
 	return !dirty
 
 /datum/netrun_topology/proc/rebuild()
+	if(netrun_external_projection_mode())
+		return
 	if(rebuilding)
 		return
 	rebuilding = TRUE

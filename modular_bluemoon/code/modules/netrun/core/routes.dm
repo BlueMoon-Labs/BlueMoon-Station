@@ -58,6 +58,9 @@
 	availability_revision = graph?.availability_revision || 0
 	transit_availability_revision = graph?.transit_availability_revision || 0
 	source_online = !QDELETED(start) && start.is_online()
+	// Direct new(graph,start) также не вправе открыть скрытый DM Dijkstra в production external.
+	if(netrun_external_projection_mode() && graph)
+		return
 	if(QDELETED(start) || !graph.nodes[start.address])
 		return
 	var/list/settled = list()
@@ -538,6 +541,10 @@
 	var/datum/component/netrun_node/source = owner.refresh_route_node(netrun_find_node(owner.host))
 	if(source)
 		return source
+	if(netrun_external_projection_mode())
+		// Point query возвращает null до ответа; native nearest search не является fallback.
+		var/datum/netrun_external_effects/machines/queries/executor = netrun_external_projection_executor()
+		return executor?.projection_anchor(SSnetrun.external_core, owner)
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	return graph.nearest_apc(owner.physical_turf())
 
@@ -578,6 +585,11 @@
 	if(!fresh && owner.ui_routes)
 		return owner.ui_routes
 	var/datum/component/netrun_node/start = owner.physical_route_source()
+	if(netrun_external_projection_mode())
+		var/datum/netrun_external_effects/machines/queries/executor = netrun_external_projection_executor()
+		executor?.projection_watch(SSnetrun.external_core, start, owner)
+		var/datum/netrun_path_tree/external/external_tree = SSnetrun.get_topology().route_snapshot(start, TRUE)
+		return wireless_zone_restricted() && istype(external_tree) ? external_tree.external_local_copy() : external_tree
 	if(wireless_zone_restricted())
 		return local_path_tree(start)
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
@@ -612,6 +624,13 @@
 
 /datum/netrun_connection/proc/make_path_tree(use_stored_routes = TRUE)
 	var/datum/component/netrun_node/start = owner.physical_route_source()
+	if(netrun_external_projection_mode())
+		var/datum/netrun_external_effects/machines/queries/executor = netrun_external_projection_executor()
+		executor?.projection_watch(SSnetrun.external_core, start, owner)
+		var/datum/netrun_path_tree/external/external_tree = SSnetrun.get_topology().route_snapshot(start, TRUE)
+		if(!istype(external_tree))
+			return external_tree
+		return wireless_zone_restricted() ? external_tree.external_local_copy() : external_tree.copy()
 	if(wireless_zone_restricted())
 		return local_path_tree(start)
 	// A source can move its nested node while being resolved.

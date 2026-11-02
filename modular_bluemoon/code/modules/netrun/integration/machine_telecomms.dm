@@ -48,6 +48,9 @@
 /// Its local segments borrow the existing bounded APC routing cache. The ordinary
 /// graph remains untouched, so runners, research and atmosphere cannot use it.
 /datum/netrun_machine_transport/proc/communication_path(datum/netrun_machine_service/source, datum/netrun_machine_service/recipient, frequency)
+	// Communications overlay вычисляется Host; native checks ниже нужны только legacy test mode.
+	if(SSnetrun.ensure_external_mode() == "external")
+		return null
 	var/datum/component/netrun_node/start = source?.resolve_node()
 	var/datum/component/netrun_node/finish = recipient?.resolve_node()
 	if(QDELETED(start) || QDELETED(finish) || !start.is_online() || !finish.is_online())

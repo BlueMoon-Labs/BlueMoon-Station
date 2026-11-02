@@ -1123,6 +1123,10 @@
 /// One serialization seam makes incremental work measurable without constructing fake topology.
 /datum/netrun_map_view/proc/project_entry(datum/component/netrun_node/node, neighbor_count)
 	var/list/entry = node.ui_entry(owner)
+	// Cost-only imported edge changes обновляют existing incremental equality без station-wide rebuild.
+	var/datum/netrun_topology/external/external_graph = SSnetrun.topology
+	if(istype(external_graph))
+		entry["link_revision"] = external_graph.external_weight_versions[node.address] || "0"
 	entry["network"] = node.last_known_network
 	entry["sector"] = node.last_known_sector
 	entry["neighbor_count"] = neighbor_count

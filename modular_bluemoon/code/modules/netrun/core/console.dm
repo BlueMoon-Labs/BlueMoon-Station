@@ -246,6 +246,11 @@
 	if(SSnetworks.station_network.setting_disabled)
 		return FALSE
 	var/datum/netrun_path_tree/tree = read_path_tree()
+	if(netrun_external_projection_mode())
+		var/datum/netrun_path_tree/external/external_tree = tree
+		if(!istype(external_tree) || !external_tree.external_current())
+			owner.release_path_tree(tree)
+			return FALSE
 	var/datum/netrun_topology/graph = SSnetrun.topology
 	if(!graph || graph.dirty)
 		graph = SSnetrun.ensure_topology()
@@ -270,6 +275,12 @@
 	var/owns_tree = !tree
 	if(owns_tree)
 		tree = read_path_tree()
+	if(netrun_external_projection_mode())
+		var/datum/netrun_path_tree/external/external_tree = tree
+		. = istype(external_tree) && external_tree.network_available(SSnetrun.get_topology(), network)
+		if(owns_tree)
+			owner.release_path_tree(tree)
+		return
 	. = FALSE
 	if(!tree.graph_ref)
 		// Restricted wireless trees contain only loopback; no station solve is needed.
@@ -571,6 +582,12 @@
 	var/owns_tree = !tree
 	if(owns_tree)
 		tree = read_path_tree()
+	if(netrun_external_projection_mode())
+		var/datum/netrun_path_tree/external/external_tree = tree
+		. = istype(external_tree) && external_tree.path_available(SSnetrun.get_topology(), node.address)
+		if(owns_tree)
+			owner.release_path_tree(tree)
+		return
 	. = !!tree.reached[node.address]
 	if(. && (!owner.ui_serializing || tree != owner.ui_routes))
 		var/datum/netrun_topology/graph = SSnetrun.topology

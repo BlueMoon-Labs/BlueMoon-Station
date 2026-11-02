@@ -20,6 +20,8 @@ permissions:
   contents: read
 
 env:
+  # Station compile/unit jobs don't package the separately reviewed Core context.
+  NETRUN_CORE_BUILD: '0'
   # Hermetic tests: worlds per runner. The number of runners is the matrix below.
   HERMETIC_WORLDS_PER_JOB: 2
   # Full-map tests: station maps per runner, all started at once.

@@ -14,10 +14,11 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { spawn } from 'child_process';
-import { DreamDaemon, DreamMaker, getDmPath, getDreamDaemonPath } from './lib/byond.js';
+import { DreamMaker, getDmPath, getDreamDaemonPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
 import { NanomapsTarget, isLowMemoryBuild } from './lib/nanomaps.js';
 import Juke from './juke/index.js';
+import { buildCore, runManaged } from '../netrun/core-lifecycle.mjs';
 
 export { NanomapsTarget };
 
@@ -304,6 +305,15 @@ export const DmTestBuildTarget = new Juke.Target({
   },
 });
 
+/** Dedicated managed live runner получает реальное имя compile artifact без дублирования private define hash. */
+export const DmTestArtifactTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter, WarningsAsErrorsParameter],
+  dependsOn: [DmTestBuildTarget],
+  executes: async ({ get }) => {
+    console.log(`NETRUN_TEST_ARTIFACT:${JSON.stringify({ dmb: path.resolve(`${getUnitTestArtifactBase(get)}.dmb`), daemon: await getDreamDaemonPath() })}`);
+  },
+});
+
 const UNIT_TEST_DURATIONS = 'data/unit_test_durations.json';
 /** A world that printed "Shutdown complete" and is still alive after this long is hung. */
 const SHARD_HANG_GRACE_MS = 30000;
@@ -416,6 +426,8 @@ const runTestWorld = (ddPath, dmbFile, params, outputFile, timeoutMs) => new Pro
   const sink = fs.createWriteStream(outputFile);
   const child = spawn(ddPath, [dmbFile, '-close', '-trusted', '-verbose', '-params', params], {
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, NETRUN_CORE_MODE: 'dm' },
+    windowsHide: true,
   });
   let tail = '';
   let hangTimer;
@@ -634,11 +646,10 @@ export const DmTestRunTarget = new Juke.Target({
       console.log('Success!');
       return;
     }
-    await DreamDaemon(
-      `${artifactBase}.dmb`,
-      '-close', '-trusted', '-verbose',
-      '-params', runWorldParams(logDirectory, [testListParam(get)])
-    );
+    await Juke.exec(await getDreamDaemonPath(), [
+      `${artifactBase}.dmb`, '-close', '-trusted', '-verbose',
+      '-params', runWorldParams(logDirectory, [testListParam(get)]),
+    ], { env: { ...process.env, NETRUN_CORE_MODE: 'dm' }, windowsHide: true });
     recordUnitTestDurations([logDirectory]);
     try {
       const cleanRun = fs.readFileSync(`data/logs/${logDirectory}/clean_run.lk`, 'utf-8');
@@ -764,15 +775,21 @@ export const LintTarget = new Juke.Target({
   dependsOn: [TguiLintTarget],
 });
 
+/** Обычная local сборка включает внешний Host и native bridge; Docker собирает их отдельными stages. */
+export const NetrunCoreTarget = new Juke.Target({
+  executes: () => buildCore(),
+});
+
 export const BuildTarget = new Juke.Target({
-  dependsOn: [TguiTarget, TgFontTarget, DmTarget],
+  dependsOn: [TguiTarget, TgFontTarget, DmTarget, NetrunCoreTarget],
 });
 
 export const ServerTarget = new Juke.Target({
   dependsOn: [BuildTarget],
   executes: async ({ get }) => {
     const port = get(PortParameter) || '1337';
-    await DreamDaemon(`${DME_NAME}.dmb`, port, '-trusted');
+    const code = await runManaged({ daemon: await getDreamDaemonPath(), dmb: path.resolve(`${DME_NAME}.dmb`), port, noBuild: true });
+    if (code) throw new Juke.ExitCode(code);
   },
 });
 

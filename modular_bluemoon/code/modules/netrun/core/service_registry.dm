@@ -143,6 +143,9 @@
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	if(!transport.is_ready())
 		return list()
+	if(SSnetrun.ensure_external_mode() == "external")
+		var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+		return istype(executor) ? executor.discovery_lookup(src, destination_id, recipient_tag) : list()
 	return select_targets(destination_id, transport.lookup(src, destination_id, recipient_tag, netrun_communication_policy(src, destination_id)))
 
 /// Domain adapters may narrow enumeration using native indexes. Candidates remain
@@ -161,7 +164,10 @@
 		return query
 	if(length(resolutions) >= 64)
 		return null
-	query = new(src, destination_id, recipient_tag)
+	if(SSnetrun.ensure_external_mode() == "external")
+		query = new /datum/netrun_machine_resolution/external(src, destination_id, recipient_tag)
+	else
+		query = new(src, destination_id, recipient_tag)
 	resolutions[query_key] = query
 	return query
 
@@ -241,11 +247,21 @@
 	prepare_network()
 
 /datum/netrun_machine_transport/proc/is_ready()
+	if(SSnetrun.ensure_external_mode() == "external")
+		return bootstrap_complete && SSnetrun.external_core?.ready && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR
 	return bootstrap_complete && !preparing && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR
 
 /// Master starts subsystem fire only after its whole initialization loop. The atom
 /// post-init signal alone is too early: power, research and native links can change.
 /datum/netrun_machine_transport/proc/prepare_network()
+	// Внешний движок публикует свой graph readiness; DM не прогревает параллельный машинный path cache.
+	if(SSnetrun.ensure_external_mode() == "external")
+		if(!bootstrap_complete && !preparing && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR && !Master.initializing_subsystem && Master.current_runlevel)
+			SSnetrun.get_task_scheduler().enqueue("network_bootstrap", src, NETRUN_TASK_BACKGROUND)
+		if(is_ready())
+			wake_resolutions()
+			wake_ready_services()
+		return
 	if(preparing || !SSnetrun.initialized || SSatoms.initialized != INITIALIZATION_INNEW_REGULAR || Master.initializing_subsystem || !Master.current_runlevel)
 		return
 	// Map/shuttle loading can temporarily close readiness after the first bootstrap.
@@ -269,6 +285,30 @@
 		// state here without leaving a runnable continuation polling map loading.
 		return TRUE
 	preparing = TRUE
+	// Native post-initialize hooks сохраняются; graph/path prewarm выполняет только Host.
+	if(SSnetrun.ensure_external_mode() == "external")
+		if(!bootstrap_complete)
+			SSnetrun.spawn_roundstart_servers()
+			if(!bootstrap_services)
+				bootstrap_services = services.Copy()
+				bootstrap_cursor = 1
+			var/stop = min(length(bootstrap_services), bootstrap_cursor + 31)
+			while(bootstrap_cursor <= stop)
+				var/key = bootstrap_services[bootstrap_cursor++]
+				var/datum/netrun_machine_service/service = services[key]
+				if(!QDELETED(service))
+					service.host_initialized()
+			if(bootstrap_cursor <= length(bootstrap_services))
+				preparing = FALSE
+				return FALSE
+			bootstrap_services = null
+			bootstrap_complete = TRUE
+			bootstrap_at = world.time
+		preparing = FALSE
+		if(is_ready())
+			wake_resolutions()
+			wake_ready_services()
+		return TRUE
 	if(!bootstrap_complete)
 		SSnetrun.spawn_roundstart_servers()
 	var/datum/netrun_topology/graph = SSnetrun.get_topology()
@@ -502,6 +542,8 @@
 		wake_resolutions()
 
 /datum/netrun_machine_transport/proc/index_service(datum/netrun_machine_service/service)
+	// Owner/component replacement и native state важны даже когда recipient tag не поменялся.
+	SSnetrun.external_core?.observe_service(service)
 	var/tag = service.service_tag()
 	if(service.indexed_tag == tag)
 		return
@@ -522,6 +564,8 @@
 	service_revisions[service.service_id] = (service_revisions[service.service_id] || 0) + 1
 
 /datum/netrun_machine_transport/proc/unregister(datum/netrun_machine_service/service)
+	// Экспорт tombstone выполняется до удаления из native registry и потери исходной identity.
+	SSnetrun.external_core?.forget_service(service)
 	var/key = service.service_key()
 	if(ready_services[key] == service)
 		ready_services -= key

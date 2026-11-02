@@ -80,7 +80,8 @@ export class NetrunTestSuite {
     const directory = path.join(this.root, 'code/modules/unit_tests');
     const manifest = maskDmSource(fs.readFileSync(path.join(directory, '_unit_tests.dm'), 'utf8'));
     const files = [...manifest.matchAll(/^\s*#include\s+"(netrun[^"/\\]*\.dm)"/gm)]
-      .map((match) => match[1]);
+      .map((match) => match[1])
+      .filter((name) => name !== 'netrun_core_live.dm');
     const selected = new Set();
     for (const file of new Set(files)) {
       const source = maskDmSource(fs.readFileSync(path.join(directory, file), 'utf8'), true);
@@ -163,7 +164,7 @@ export class NetrunTestSuite {
         `--unit-test-profile=${profile}`,
         '--test-list=tmp/netrun-tests.txt',
         ...(map ? [`--define=FORCE_MAP ${JSON.stringify(map)}`] : []),
-      ], this.root);
+      ], this.root, { ...process.env, NETRUN_CORE_MODE: 'dm' });
       if (!fs.existsSync(resultsFile)) {
         throw new Error(`The test world did not write a fresh ${path.relative(this.root, resultsFile)}.`);
       }

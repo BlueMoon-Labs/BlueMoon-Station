@@ -100,6 +100,7 @@
 			toggled = !toggled
 			temp = "-% [src.name] has been [toggled ? "activated" : "deactivated"]. %-"
 			update_power()
+			netrun_external_ports_changed()
 			return
 		if("machine")
 			if("id" in params)
@@ -122,6 +123,7 @@
 					return
 				network = newnet
 				links = list()
+				netrun_external_ports_changed()
 				temp = "-% New network tag assigned: \"[network]\" %-"
 				return
 		if("multitool")
@@ -143,6 +145,8 @@
 
 				if(!(T in links))
 					LAZYADD(links, T)
+				netrun_external_ports_changed()
+				T.netrun_external_ports_changed()
 				temp = "-% Successfully linked with [REF(T)] [T.name] %-"
 
 			if("Flush" in params)
@@ -177,6 +181,8 @@
 			if(T.links) //lazyrem makes blank list null, which is good but some might cause runtime ee's
 				T.links.Remove(src)
 			links.Remove(T)
+			netrun_external_ports_changed()
+			T.netrun_external_ports_changed()
 		if("freq")
 			if("add" in params)
 				var/newfreq = input("Specify a new frequency to filter (GHz). Decimals assigned automatically.", src.name, null) as null|num
@@ -195,6 +201,7 @@
 					return
 
 				LAZYADD(freq_listening, newfreq)
+				netrun_external_ports_changed()
 				temp = "-% New frequency filter assigned: \"[newfreq] GHz\" %-"
 
 			if("remove" in params)
@@ -203,6 +210,7 @@
 				var/x = text2num(params["remove"])
 				temp = "-% Removed frequency filter [x] %-"
 				freq_listening.Remove(x)
+				netrun_external_ports_changed()
 
 /obj/machinery/telecomms/relay/ui_act(action, params)
 	..()
@@ -212,12 +220,14 @@
 				if(!canAccess(usr))
 					return
 				broadcasting = !broadcasting
+				netrun_external_ports_changed()
 				temp = "-% Broadcasting mode changed. %-"
 				return
 			if("receiving" in params)
 				if(!canAccess(usr))
 					return
 				receiving = !receiving
+				netrun_external_ports_changed()
 				temp = "-% Receiving mode changed. %-"
 
 /obj/machinery/telecomms/bus/ui_act(action, params)

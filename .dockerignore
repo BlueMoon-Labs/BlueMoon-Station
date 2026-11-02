@@ -15,6 +15,7 @@ TGS3.json
 .vs*
 cfg
 data
+tmp
 SQL
 node_modules
 tgstation.dmb

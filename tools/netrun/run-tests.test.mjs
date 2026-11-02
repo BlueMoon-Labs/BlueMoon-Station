@@ -28,6 +28,7 @@ test('discover only included, executable Run definitions and deduplicate names',
   write('code/modules/unit_tests/_unit_tests.dm', `
 // #include "netrun_missing.dm"
 #include "netrun_alpha.dm"
+#include "netrun_core_live.dm"
 #include "netrun_alpha.dm"
 #include "unrelated.dm"
 `);
@@ -43,6 +44,7 @@ var/text = {"
 /datum/unit_test/netrun_beta/child/Run()
 `);
   write('code/modules/unit_tests/netrun_orphan.dm', '/datum/unit_test/netrun_orphan/Run()');
+  write('code/modules/unit_tests/netrun_core_live.dm', '#ifdef NETRUN_CORE_LIVE_TEST\n/datum/unit_test/netrun_core_live/Run()\n#endif');
   const suite = new NetrunTestSuite(root);
   assert.deepEqual(suite.discoverDm(), [
     '/datum/unit_test/netrun_alpha', '/datum/unit_test/netrun_beta/child',

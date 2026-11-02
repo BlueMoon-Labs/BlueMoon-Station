@@ -81,6 +81,9 @@
 
 /// Transport borrows the graph's physical cache and retains only its solve diagnostic.
 /datum/netrun_machine_transport/proc/path_tree(datum/netrun_topology/graph, datum/component/netrun_node/root, availability_reconciled = FALSE)
+	if(SSnetrun.ensure_external_mode() == "external")
+		var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+		return istype(executor) ? executor.projection_tree(SSnetrun.external_core, root, "machine") : null
 	var/builds_before = graph.infrastructure_tree_builds
 	var/datum/netrun_path_tree/tree = graph.borrow_infrastructure_tree(root, availability_reconciled)
 	tree_builds += graph.infrastructure_tree_builds - builds_before
@@ -88,6 +91,18 @@
 
 /// Return a mutable request-owned route; boolean checks borrow cached paths directly.
 /datum/netrun_machine_transport/proc/route(datum/netrun_machine_service/source, datum/netrun_machine_service/recipient, communications, frequency)
+	if(SSnetrun.ensure_external_mode() == "external")
+		var/datum/component/netrun_node/start = source?.resolve_node()
+		var/datum/component/netrun_node/finish = recipient?.resolve_node()
+		if(QDELETED(start) || QDELETED(finish) || !start.is_online() || !finish.is_online())
+			return null
+		var/datum/netrun_path_tree/tree = path_tree(SSnetrun.get_topology(), start)
+		if(!tree?.path_available(SSnetrun.get_topology(), finish.address))
+			return null
+		var/datum/netrun_route/result = new
+		result.hops = tree.addresses_to(finish.address)
+		result.latency = tree.cost_to(finish.address)
+		return result
 	var/datum/netrun_machine_path/path = borrowed_path(source, recipient)
 	if(isnull(communications))
 		communications = netrun_communication_policy(source, recipient?.service_id)
@@ -103,6 +118,9 @@
 /// Only infrastructure participates in shortest-path solving. Endpoint attachment and
 /// cable costs are checked separately, so unrelated leaf movement/power cannot flush it.
 /datum/netrun_machine_transport/proc/borrowed_path(datum/netrun_machine_service/source, datum/netrun_machine_service/recipient)
+	// Legacy pair routing не имеет права запускать второй engine после выбора C#.
+	if(SSnetrun.ensure_external_mode() == "external")
+		return null
 	if(QDELETED(source) || QDELETED(recipient) || QDELETED(source.host) || QDELETED(recipient.host))
 		return null
 	var/datum/component/netrun_node/start = source.resolve_node()
@@ -225,6 +243,13 @@
 
 
 /datum/netrun_machine_transport/proc/reachable(datum/netrun_machine_service/source, datum/netrun_machine_service/recipient, communications)
+	if(SSnetrun.ensure_external_mode() == "external")
+		var/datum/component/netrun_node/start = source?.resolve_node()
+		var/datum/component/netrun_node/finish = recipient?.resolve_node()
+		if(!SSnetrun.external_core?.ready || QDELETED(source) || QDELETED(recipient) || QDELETED(start) || QDELETED(finish) || !start.is_online() || !finish.is_online())
+			return FALSE
+		var/datum/netrun_path_tree/tree = path_tree(SSnetrun.get_topology(), start)
+		return tree?.path_available(SSnetrun.get_topology(), finish.address) || FALSE
 	if(isnull(communications))
 		communications = netrun_communication_policy(source, recipient?.service_id)
 	return !!(borrowed_path(source, recipient) || (communications && communication_path(source, recipient)))

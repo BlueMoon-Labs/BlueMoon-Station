@@ -120,7 +120,9 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 /obj/machinery/telecomms/Destroy()
 	GLOB.telecomms_list -= src
 	for(var/obj/machinery/telecomms/comm in GLOB.telecomms_list)
-		comm.links -= src
+		if(src in comm.links)
+			comm.links -= src
+			comm.netrun_external_ports_changed()
 	links = list()
 	forget_in_consoles()
 	return ..()
@@ -150,6 +152,8 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 				if(x in T.autolinkers)
 					links |= T
 					T.links |= src
+					netrun_external_ports_changed()
+					T.netrun_external_ports_changed()
 
 /obj/machinery/telecomms/update_icon_state()
 	if(on)
@@ -164,6 +168,7 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 			icon_state = "[initial(icon_state)]_off"
 
 /obj/machinery/telecomms/proc/update_power()
+	var/was_on = on
 	if(toggled)
 		// if powered, on. if not powered, off. if too damaged, off
 		if(machine_stat &(BROKEN | NOPOWER | EMPED))
@@ -172,6 +177,8 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 			on = TRUE
 	else
 		on = FALSE
+	if(was_on != on)
+		netrun_external_ports_changed()
 
 /obj/machinery/telecomms/process()
 	update_power()

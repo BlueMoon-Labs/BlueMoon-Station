@@ -329,6 +329,8 @@ GLOBAL_LIST(topic_status_cache)
 	else
 		to_chat(world, "<span class='boldannounce'>Rebooting world...</span>")
 		Master.Shutdown()	//run SS shutdowns
+	// Fast reboot пропускает Master.Shutdown; IPC всё равно закрывается до замены мира.
+	SSnetrun?.shutdown_external_core()
 	// Ребут по чужой воле (BYOND "Out of resources!") - это краш, а не завершение раунда:
 	// ни пометки в GracefulEnding.json, ни метки в чёрном ящике, иначе улику некому будет
 	// предъявить. Админский Hardest Restart и клиентский дебаг-рестарт сюда не попадают:
@@ -382,6 +384,8 @@ GLOBAL_LIST(topic_status_cache)
 	..()
 
 /world/Del()
+	// Direct world deletion также обходит subsystem shutdown; callbacks ещё могут писать в log.
+	SSnetrun?.shutdown_external_core()
 	if(Master)
 		Master.state_snapshot_frozen = TRUE
 	mc_state_mark_clean("world.Del")

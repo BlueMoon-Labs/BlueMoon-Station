@@ -1,0 +1,50 @@
+# Запускается docker-lifecycle.mjs; source digest и token file задаются явно, секрет не попадает в image.
+services:
+  byond:
+    image: ${NETRUN_STATION_IMAGE:?Build the reviewed station image first}
+    platform: linux/amd64
+    ports:
+      - "${NETRUN_GAME_PORT:-1337}:1337"
+    environment:
+      NETRUN_CORE_MODE: external
+      NETRUN_CORE_PORT: "18462"
+      NETRUN_CORE_LIBRARY: /tgstation/libnetrun_bridge.so
+      NETRUN_CORE_TOKEN_FILE: /run/secrets/netrun_session_token
+    volumes:
+      - type: bind
+        source: ${NETRUN_CONFIG_DIRECTORY:?Set an existing reviewed station config directory}
+        target: /tgstation/config
+        read_only: true
+      - netrun-station-data:/tgstation/data
+    secrets:
+      - netrun_session_token
+
+  netrun-host:
+    image: ${NETRUN_HOST_IMAGE:?Build the matching reviewed Host image first}
+    platform: linux/amd64
+    network_mode: service:byond
+    depends_on:
+      byond:
+        condition: service_started
+    # Совпадает с владельцем/группой generated secret; effective UID всегда non-root.
+    user: "${NETRUN_HOST_UID:-1654}:${NETRUN_HOST_GID:-1654}"
+    environment:
+      NETRUN_SESSION_TOKEN_FILE: /run/secrets/netrun_session_token
+      NETRUN_PORT: "18462"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 10s
+    secrets:
+      - netrun_session_token
+
+secrets:
+  netrun_session_token:
+    file: ${NETRUN_CORE_TOKEN_FILE:?Set the external or ignored token file path}
+
+volumes:
+  netrun-station-data:

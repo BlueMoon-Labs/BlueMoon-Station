@@ -188,6 +188,9 @@
 	return ..()
 
 /datum/component/netrun_node/proc/join_network()
+	if(netrun_external_projection_mode())
+		// Anchor/LAN приходят целой C# projection; чтение не запускает native nearest или rebuild.
+		return
 	var/datum/netrun_topology/topology = SSnetrun.get_topology()
 	var/datum/component/netrun_node/previous_apc = bound_apc
 	topology.refresh_node(src)
@@ -306,6 +309,7 @@
 
 /datum/component/netrun_node/proc/on_state_changed(datum/source)
 	SIGNAL_HANDLER
+	export_forwarder_state()
 	pending_state_notification = TRUE
 	// Native forwarding state (for example APC failure_timer) can use provider
 	// icon/UI signals instead of machine_stat. Leaves cannot change other routes.
@@ -316,9 +320,19 @@
 
 /datum/component/netrun_node/proc/on_availability_changed(datum/source)
 	SIGNAL_HANDLER
+	export_forwarder_state()
 	pending_state_notification = TRUE
 	SSnetrun.queue_availability(src)
 	SSnetrun.queue_node(src, TRUE)
+
+/// Transit outage попадает в raw journal ДО следующего poll/native invocation, не ожидая фонового node task.
+/// Exporter сравнивает полную signature, поэтому последующий worker pass не создаёт дубликат факта.
+/datum/component/netrun_node/proc/export_forwarder_state()
+	var/datum/netrun_external_core/client = SSnetrun.external_core
+	// Communication ports forwarding принадлежат отдельному overlay; ordinary endpoint proof не меняется.
+	var/communication_port = istype(parent, /obj/machinery/telecomms/hub) || istype(parent, /obj/machinery/telecomms/relay)
+	if(netrun_external_projection_mode() && client && (client.node_is_forwarder(src) || communication_port))
+		client.on_node_changed(src, src, NETRUN_CHANGED_STATE)
 
 /datum/component/netrun_node/proc/on_storage_changed(datum/source)
 	SIGNAL_HANDLER

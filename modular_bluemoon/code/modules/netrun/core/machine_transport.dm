@@ -66,6 +66,14 @@
 /datum/netrun_machine_transport/proc/dispatch(datum/netrun_machine_service/source, datum/netrun_machine_service/target, datum/netrun_machine_message/message)
 	if(QDELETED(message))
 		return FALSE
+	// Единственный владелец эффектов выбирается при startup; неизвестный внешний outcome не запускает DM retry.
+	if(SSnetrun.ensure_external_mode() == "external")
+		var/datum/netrun_external_effects/machines/executor = SSnetrun.external_core?.effects
+		if(!SSnetrun.external_core?.ready || !istype(executor))
+			message.failed("внешнее сетевое ядро недоступно")
+			qdel(message)
+			return FALSE
+		return executor.dispatch(source, target, message)
 	var/contract_key = message.coalescing_key()
 	var/key
 	if(!isnull(contract_key) && !QDELETED(source) && !QDELETED(target))
