@@ -668,7 +668,7 @@
 	projectile_type = /obj/item/projectile/bullet/implanthandgun
 	select_name = "explosive"
 	e_cost = 1000
-	fire_sound = 'sound/weapons/rocket.ogg'
+	fire_sound = 'sound/weapons/rocket_launch.ogg'
 	delay = 30
 
 /obj/item/ammo_casing/energy/implanthandgun/burst

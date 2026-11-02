@@ -413,16 +413,19 @@
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
 	var/last_reset_time = 0
+	/// ID таймера периодического сброса перегруза, пока имплант установлен
+	var/overload_reset_timer
 
 /obj/item/organ/cyberimp/brain/sandevistan/military/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
 	if(. && owner)
 		last_reset_time = world.time
-		addtimer(CALLBACK(src, PROC_REF(reset_overload)), 2 MINUTES, TIMER_LOOP|TIMER_STOPPABLE)
+		overload_reset_timer = addtimer(CALLBACK(src, PROC_REF(reset_overload)), 2 MINUTES, TIMER_LOOP|TIMER_STOPPABLE)
 
 /obj/item/organ/cyberimp/brain/sandevistan/military/Remove(special = FALSE)
-	if(owner)
-		// удаляем таймер если есть
+	if(overload_reset_timer)
+		deltimer(overload_reset_timer)
+		overload_reset_timer = null
 	return ..()
 
 /obj/item/organ/cyberimp/brain/sandevistan/military/proc/reset_overload()
