@@ -597,7 +597,7 @@
 		return
 	ready_to_fire = FALSE
 	user.visible_message("<span class='warning'>[user] begins charging [src]!</span>", "<span class='notice'>You start charging [src].</span>")
-	playsound(user, 'sound/machines/chargers/charger.ogg', 50, 1)
+	playsound(user, 'sound/machines/defib_charge.ogg', 50, 1)
 	if(do_after(user, charge_time, target = user))
 		if(ready_to_fire)
 			return

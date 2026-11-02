@@ -309,12 +309,10 @@
 	if(owner.client)
 		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = "#00FFFF", "alpha" = 80, "size" = 1))
 	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
-		var/obj/item/organ/cyberimp/brain/sandevistan/military/mil = src
-		if(overload_count > 2 && overload_count > (4 - 2)) // первые 2 активации без дебафов
+		if(overload_count > 2)
 			apply_overload_effects()
-	else
-		if(overload_count >= 2)
-			apply_overload_effects()
+	else if(overload_count >= 2)
+		apply_overload_effects()
 	addtimer(CALLBACK(src, PROC_REF(deactivate_sandevistan)), duration)
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/apply_overload_effects()
