@@ -43,7 +43,7 @@
 	var/list/mutant_labels_cache
 	var/tmp/heavy_static_pending = FALSE
 	var/character_revision = 0
-	var/loadout_selected = FALSE
+	var/loadout_selected = TRUE
 	var/list/viewer_screens
 	var/preview_mode = PREVIEW_PREF_JOB
 	var/preview_auto_fit = TRUE
