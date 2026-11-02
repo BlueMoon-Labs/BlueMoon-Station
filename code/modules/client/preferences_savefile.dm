@@ -558,6 +558,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
+// Модульные загрузчики дополняют этот прок: все настройки нужны до записи обновлённого сейвфайла.
+/datum/preferences/proc/load_preferences_data(savefile/S)
+	return S
+
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
@@ -762,6 +766,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(ispath(path)) //whatever typepath fails this check probably doesn't exist anymore
 			parsed_favs += path
 	favorite_outfits = uniqueList(parsed_favs)
+
+	// Загрузка через переопределения load_preferences после ..() выполнялась уже после миграции
+	// и её save_preferences: непрочитанные избранное и множители перезаписывались значениями по умолчанию.
+	load_preferences_data(S)
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
