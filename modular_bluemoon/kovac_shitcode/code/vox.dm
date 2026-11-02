@@ -117,7 +117,7 @@
 //Но и лапками дерёт морды в кровь
 	punchdamagelow = 5
 	punchdamagehigh = 10
-	punchstunthreshold = 4
+	punchstunthreshold = 10
 	punchwoundbonus = 3
 
 	attack_verb = "claw"
@@ -126,6 +126,7 @@
 
 	//languagewhitelist = list("Vox-Pidgin")
 	no_equip = list(ITEM_SLOT_GLOVES) // Запрещаем носить перчатки - ручища не позволяют
+	siemens_coeff = 0.6 // Изолирующие перчатки не надеть: ток бьёт слабее, но оглушает как обычно
 	species_language_holder = /datum/language_holder/vox // Воксы изначально знают свой язык
 
 	species_traits = list(HAS_BONE,HAS_FLESH,EYECOLOR,LIPS,HAIR,NOAROUSAL)
@@ -154,15 +155,20 @@
 	var/datum/component/tackler/T = C.LoadComponent(/datum/component/tackler)
 	T.stamina_cost = 25
 	T.base_knockdown = 2.5 SECONDS
-	T.range = 5
+	T.range = 4
 	T.speed = 0.9
-	T.skill_mod = 4
+	T.skill_mod = 1 // как у перчаток-хватателей: воксам их не надеть
+	T.max_roll = 4 // без мгновенного агрессивного захвата даже с бронёй и против пьяных
 	T.min_distance = 2
+	C.physiology.siemens_coeff *= siemens_coeff
 	return ..()
 
 /datum/species/mammal/vox/on_species_loss(mob/living/carbon/C)
 
 	qdel(C.GetComponent(/datum/component/tackler))
+	if(ishuman(C))
+		var/mob/living/carbon/human/H = C
+		H.physiology?.siemens_coeff /= siemens_coeff // при удалении моба physiology уже снята
 	return ..()
 
 /datum/species/mammal/vox/random_name(gender,unique,lastname)

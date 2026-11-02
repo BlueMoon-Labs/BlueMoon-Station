@@ -62,13 +62,41 @@
 	if(active_hotspot)
 		QDEL_NULL(active_hotspot)
 	for(var/turf/open/T as anything in atmos_adjacent_turfs)
-		if(SSair)
-			// Газ соседа не менялся: один цикл на пересравнение, без свежего бюджета простоя.
-			ATMOS_BENCH_WAKE(T, "turf_destroy")
-			SSair.add_to_active(T, FALSE, reset_stall = FALSE)
+		// Газ соседа не менялся, с новым турфом его сведёт пересчёт смежности замены.
+		if(SSair && istype(T))
+			SSair.wake_if_gradient(T, "turf_destroy")
 	update_air_ref(-1)
 	air = null
 	return ..()
+
+/// Есть ли турфу работа в process_cell: перепад с соседом, сток в космос, дрейф неба от шаблона, огонь или жар для теплопроводности.
+/turf/open/proc/has_atmos_gradient()
+	var/datum/gas_mixture/our_air = air
+	if(blocks_air || !our_air || isspaceturf(src))
+		return FALSE
+	if(active_hotspot)
+		return TRUE
+	if(SSair?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+		return TRUE
+	for(var/turf/open/neighbor as anything in atmos_adjacent_turfs)
+		if(!istype(neighbor) || neighbor.blocks_air)
+			continue
+		var/datum/gas_mixture/neighbor_air = neighbor.air
+		if(!neighbor_air)
+			continue
+		if(neighbor_air.gc_share)
+			if(!planetary_atmos && (our_air.total_moles() > MINIMUM_MOLES_DELTA_TO_MOVE || abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER))
+				return TRUE
+			continue
+		if(planetary_atmos && neighbor.planetary_atmos && neighbor.initial_gas_mix != initial_gas_mix)
+			continue
+		if(our_air.compare(neighbor_air))
+			return TRUE
+	if(planetary_atmos && SSair)
+		var/datum/gas_mixture/template = SSair.get_planetary_template(src)
+		if(template && our_air.compare(template))
+			return TRUE
+	return FALSE
 
 /////////////////GAS MIXTURE PROCS///////////////////
 
@@ -421,7 +449,11 @@
 	var/last_share = our_air.last_share; \
 	ATMOS_TPROF_WAKE_RATIO(last_share, our_move_threshold) \
 	if(last_share > our_suspend_threshold){ \
-		our_excited_group.reset_cooldowns(); \
+		if(our_excited_group.breakdown_stage){ \
+			our_excited_group.cancel_breakdown(); \
+		} \
+		our_excited_group.breakdown_cooldown = 0; \
+		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
@@ -856,7 +888,7 @@
 	var/planet_atmos = planetary_atmos
 
 	// Пороги в молях откалиброваны на стандартную клетку, на баллонных тайлах они масштабируются по содержимому (1%, чтобы не гасить реальный поток).
-	var/our_cycle_moles = our_air.total_moles()
+	var/our_cycle_moles = our_air.total_moles_rev == our_air.mutation_rev ? our_air.total_moles_cache : our_air.total_moles()
 	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
 	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 	var/turf/open/space_neighbor
@@ -1057,7 +1089,12 @@
 	ATMOS_TPROF_MARK
 	ATMOS_TPROF_COUNT_IF(atmos_visual_rev == our_air.mutation_rev, "vis_memo")
 	if(atmos_visual_rev != our_air.mutation_rev)
-		update_visuals()
+		// Чистый воздух без старого оверлея - тот же ранний выход, что в update_visuals(), без вызова прока.
+		var/list/visual_gases = our_air.gases
+		if(!atmos_overlay_types && length(visual_gases) == 2 && visual_gases[GAS_O2] && visual_gases[GAS_N2])
+			atmos_visual_rev = our_air.mutation_rev
+		else
+			update_visuals()
 	ATMOS_TPROF_ADD("visuals")
 
 	ATMOS_TPROF_MARK
@@ -1067,7 +1104,7 @@
 	ATMOS_TPROF_ADD("expose")
 
 	ATMOS_TPROF_MARK
-	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION && !air_controller.active_super_conductivity[src])
 		ATMOS_TPROF_COUNT("superconduct_starts")
 		consider_superconductivity(starting = TRUE)
 	ATMOS_TPROF_ADD("superconduct")

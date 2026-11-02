@@ -84,7 +84,9 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "CheckboxInput")
-		ui.open()
+		if(!ui.open())
+			qdel(ui)
+			ui_close(user)
 
 /datum/tgui_checkbox_input/ui_close(mob/user)
 	. = ..()

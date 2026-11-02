@@ -422,8 +422,8 @@ What are the archived variables for?
 	var/old_self_heat_capacity = 0
 	var/old_sharer_heat_capacity = 0
 	if(consider_heat)
-		old_self_heat_capacity = heat_capacity()
-		old_sharer_heat_capacity = sharer.heat_capacity()
+		old_self_heat_capacity = heat_capacity_rev == mutation_rev ? heat_capacity_cache : heat_capacity()
+		old_sharer_heat_capacity = sharer.heat_capacity_rev == sharer.mutation_rev ? sharer.heat_capacity_cache : sharer.heat_capacity()
 
 	var/heat_capacity_self_to_sharer = 0
 	var/heat_capacity_sharer_to_self = 0
@@ -432,67 +432,135 @@ What are the archived variables for?
 	var/abs_moved_moles = 0
 	var/list/zero_ours
 	var/list/zero_theirs
+	var/our_moles
+	var/their_moles
 
-	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	// This runs for every sharing turf pair every cycle: iterate the two key sets
-	// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
-	// final mole recount into the same pass, and collect emptied ids instead of
-	// sweeping full .Copy() snapshots afterwards.
-	for(var/id, ours in cached_gases)
-		var/theirs = sharer_gases[id]
-		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
-		if(delta)
-			if(delta > 0)
-				delta *= our_coeff
+	var/list/cached_gasheats = consider_heat ? GLOB.gas_data.specific_heats : null
+	// Тот же станционный воздух с перепадом температур. Сумм по два слагаемых, поэтому порядок ключей не влияет на результат и общий путь ниже повторяется бит в бит.
+	var/station_air = FALSE
+	var/our_o2
+	var/our_n2
+	var/their_o2
+	var/their_n2
+	var/archived_o2
+	var/archived_n2
+	var/sharer_archived_o2
+	var/sharer_archived_n2
+	if(consider_heat && length(cached_gases) == 2 && length(sharer_gases) == 2 && length(self_archive) == 2 && length(sharer_archive) == 2)
+		our_o2 = cached_gases[GAS_O2]
+		our_n2 = cached_gases[GAS_N2]
+		their_o2 = sharer_gases[GAS_O2]
+		their_n2 = sharer_gases[GAS_N2]
+		archived_o2 = self_archive[GAS_O2]
+		archived_n2 = self_archive[GAS_N2]
+		sharer_archived_o2 = sharer_archive[GAS_O2]
+		sharer_archived_n2 = sharer_archive[GAS_N2]
+		station_air = our_o2 && our_n2 && their_o2 && their_n2 && archived_o2 && archived_n2 && sharer_archived_o2 && sharer_archived_n2
+	if(station_air)
+		var/o2_delta = QUANTIZE(archived_o2 - sharer_archived_o2)
+		if(o2_delta)
+			if(o2_delta > 0)
+				o2_delta *= our_coeff
 			else
-				delta *= sharer_coeff
-			if(consider_heat)
-				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
-				if(delta > 0)
-					heat_capacity_self_to_sharer += gas_heat_capacity
-				else
-					heat_capacity_sharer_to_self -= gas_heat_capacity
-			ours -= delta
-			theirs = (theirs || 0) + delta
-			cached_gases[id] = ours
-			sharer_gases[id] = theirs
-			moved_moles += delta
-			abs_moved_moles += abs(delta)
-		if(QUANTIZE(ours) <= 0)
-			LAZYADD(zero_ours, id)
-		if(!isnull(theirs) && QUANTIZE(theirs) <= 0)
-			LAZYADD(zero_theirs, id)
+				o2_delta *= sharer_coeff
+			var/o2_heat_capacity = o2_delta * (cached_gasheats[GAS_O2] || 0)
+			if(o2_delta > 0)
+				heat_capacity_self_to_sharer += o2_heat_capacity
+			else
+				heat_capacity_sharer_to_self -= o2_heat_capacity
+			our_o2 -= o2_delta
+			their_o2 += o2_delta
+			cached_gases[GAS_O2] = our_o2
+			sharer_gases[GAS_O2] = their_o2
 
-	for(var/id, theirs in sharer_gases)
-		// Key-presence test, not a value test: a gas present at exactly zero must
-		// still count as already handled by the loop above. isnull() distinguishes
-		// "missing key" from "key holding 0", which `in` also does - but as an
-		// O(1) lookup instead of a linear scan per sharer gas, in the hottest
-		// loop of the most expensive SSair phase.
-		if(!isnull(cached_gases[id]))
-			continue
-		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
-		if(delta)
-			if(delta > 0)
-				delta *= our_coeff
+		var/n2_delta = QUANTIZE(archived_n2 - sharer_archived_n2)
+		if(n2_delta)
+			if(n2_delta > 0)
+				n2_delta *= our_coeff
 			else
-				delta *= sharer_coeff
-			if(consider_heat)
-				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				n2_delta *= sharer_coeff
+			var/n2_heat_capacity = n2_delta * (cached_gasheats[GAS_N2] || 0)
+			if(n2_delta > 0)
+				heat_capacity_self_to_sharer += n2_heat_capacity
+			else
+				heat_capacity_sharer_to_self -= n2_heat_capacity
+			our_n2 -= n2_delta
+			their_n2 += n2_delta
+			cached_gases[GAS_N2] = our_n2
+			sharer_gases[GAS_N2] = their_n2
+
+		moved_moles = o2_delta + n2_delta
+		abs_moved_moles = abs(o2_delta) + abs(n2_delta)
+		our_moles = our_o2 + our_n2
+		their_moles = their_o2 + their_n2
+		if(QUANTIZE(our_o2) <= 0)
+			zero_ours = list(GAS_O2)
+		if(QUANTIZE(our_n2) <= 0)
+			LAZYADD(zero_ours, GAS_N2)
+		if(QUANTIZE(their_o2) <= 0)
+			zero_theirs = list(GAS_O2)
+		if(QUANTIZE(their_n2) <= 0)
+			LAZYADD(zero_theirs, GAS_N2)
+	else
+		// This runs for every sharing turf pair every cycle: iterate the two key sets
+		// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
+		// final mole recount into the same pass, and collect emptied ids instead of
+		// sweeping full .Copy() snapshots afterwards.
+		for(var/id, ours in cached_gases)
+			var/theirs = sharer_gases[id]
+			var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
+			if(delta)
 				if(delta > 0)
-					heat_capacity_self_to_sharer += gas_heat_capacity
+					delta *= our_coeff
 				else
-					heat_capacity_sharer_to_self -= gas_heat_capacity
-			var/ours = -delta
-			theirs += delta
-			cached_gases[id] = ours
-			sharer_gases[id] = theirs
-			moved_moles += delta
-			abs_moved_moles += abs(delta)
+					delta *= sharer_coeff
+				if(consider_heat)
+					var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+					if(delta > 0)
+						heat_capacity_self_to_sharer += gas_heat_capacity
+					else
+						heat_capacity_sharer_to_self -= gas_heat_capacity
+				ours -= delta
+				theirs = (theirs || 0) + delta
+				cached_gases[id] = ours
+				sharer_gases[id] = theirs
+				moved_moles += delta
+				abs_moved_moles += abs(delta)
 			if(QUANTIZE(ours) <= 0)
 				LAZYADD(zero_ours, id)
-		if(QUANTIZE(theirs) <= 0)
-			LAZYADD(zero_theirs, id)
+			if(!isnull(theirs) && QUANTIZE(theirs) <= 0)
+				LAZYADD(zero_theirs, id)
+
+		for(var/id, theirs in sharer_gases)
+			// Key-presence test, not a value test: a gas present at exactly zero must
+			// still count as already handled by the loop above. isnull() distinguishes
+			// "missing key" from "key holding 0", which `in` also does - but as an
+			// O(1) lookup instead of a linear scan per sharer gas, in the hottest
+			// loop of the most expensive SSair phase.
+			if(!isnull(cached_gases[id]))
+				continue
+			var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
+			if(delta)
+				if(delta > 0)
+					delta *= our_coeff
+				else
+					delta *= sharer_coeff
+				if(consider_heat)
+					var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+					if(delta > 0)
+						heat_capacity_self_to_sharer += gas_heat_capacity
+					else
+						heat_capacity_sharer_to_self -= gas_heat_capacity
+				var/ours = -delta
+				theirs += delta
+				cached_gases[id] = ours
+				sharer_gases[id] = theirs
+				moved_moles += delta
+				abs_moved_moles += abs(delta)
+				if(QUANTIZE(ours) <= 0)
+					LAZYADD(zero_ours, id)
+			if(QUANTIZE(theirs) <= 0)
+				LAZYADD(zero_theirs, id)
 
 	last_share = abs_moved_moles
 	if(abs_moved_moles)
@@ -512,21 +580,32 @@ What are the archived variables for?
 			sharer.mutation_rev++
 			if(abs(old_sharer_heat_capacity) > MINIMUM_HEAT_CAPACITY)
 				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
-					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
+					// Тело temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT): обе смеси изменяемые, перепад архивов уже больше порога.
+					var/self_archived_capacity = (gas_archive && archived_heat_capacity_gen == archive_gen) ? archived_heat_capacity_cache : archived_heat_capacity()
+					var/sharer_archived_capacity = (sharer.gas_archive && sharer.archived_heat_capacity_gen == sharer.archive_gen) ? sharer.archived_heat_capacity_cache : sharer.archived_heat_capacity()
+					if(self_archived_capacity > MINIMUM_HEAT_CAPACITY && sharer_archived_capacity > MINIMUM_HEAT_CAPACITY)
+						var/conduction_coefficient = OPEN_HEAT_TRANSFER_COEFFICIENT
+						var/heat = conduction_coefficient * temperature_delta * (self_archived_capacity * sharer_archived_capacity / (self_archived_capacity + sharer_archived_capacity))
+						temperature = max(temperature - heat / self_archived_capacity, TCMB)
+						mutation_rev++
+						sharer.temperature = max(sharer.temperature_archived + heat / sharer_archived_capacity, TCMB)
+						sharer.mutation_rev++
 
 	// Суммы молей обеих сторон нужны ровно для возвращаемого перепада давления, и
 	// только когда он кому-то нужен. Раньше они копились прямо в цикле по газам -
 	// два сложения и лишняя ветка на КАЖДЫЙ ключ, включая те, по которым ничего не
 	// двигалось, - хотя чаще всего результат тут же выбрасывался. Нативная свёртка
 	// снимает ту же сумму за 0.09 us против 0.64 у DM-цикла, поэтому дешевле
-	// спросить её один раз в конце, чем накапливать по дороге.
+	// спросить её один раз в конце, чем накапливать по дороге. Путь станционного
+	// воздуха уже знает обе суммы: из двух слагаемых она равна свёртке бит в бит.
 	//
 	// Считается ДО чистки нулевых ключей: удаляются значения с QUANTIZE(x) <= 0,
 	// и снять сумму после Remove значило бы вернуть чуть другое число.
 	. = 0
 	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
-		var/our_moles = values_sum(cached_gases)
-		var/their_moles = values_sum(sharer_gases)
+		if(isnull(our_moles))
+			our_moles = values_sum(cached_gases)
+			their_moles = values_sum(sharer_gases)
 		. = (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
 
 	// Ревизию бампает сама чистка, а не гейт по abs_moved_moles выше: проход, на

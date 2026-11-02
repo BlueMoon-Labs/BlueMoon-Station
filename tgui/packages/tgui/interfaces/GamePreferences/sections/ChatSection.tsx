@@ -16,6 +16,7 @@ type ChatData = {
   chat_pullr: boolean;
   chat_bankcard: boolean;
   chat_ghosthuds: boolean;
+  chat_ping_hint: boolean;
   windowflashing: boolean;
   windownoise: boolean;
   ghost_form: string;
@@ -144,6 +145,7 @@ const CHAT_TOGGLES: { key: string; label: string; flag: string; tooltip?: string
   { key: 'chat_radio', label: 'Радио чат', flag: 'chat_radio' },
   { key: 'chat_pullr', label: 'Уведомления о пулл-реквестах', flag: 'chat_pullr', tooltip: 'Показывать уведомления о новых пулл-реквестах на GitHub репозитория' },
   { key: 'chat_bankcard', label: 'Уведомления о доходах', flag: 'chat_bankcard', tooltip: 'Показывать уведомления о получении или списании денег с банковской карты' },
+  { key: 'chat_ping_hint', label: 'Подсказки о плохой связи', flag: 'chat_ping_hint', tooltip: 'Раз за раунд подсказать в чате, если пинг портится на вашей стороне' },
   { key: 'windowflashing', label: 'Мигание окна при событиях', flag: 'windowflashing', tooltip: 'Мигать окном BYOND при поступлении новых сообщений в чат' },
   { key: 'windownoise', label: 'Звук окна при событиях', flag: 'windownoise', tooltip: 'Воспроизводить звуковой сигнал при поступлении новых сообщений в чат' },
 ];

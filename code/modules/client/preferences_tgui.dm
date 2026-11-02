@@ -108,6 +108,7 @@
 	.["chat_pullr"] = !!(chat_toggles & CHAT_PULLR)
 	.["chat_bankcard"] = !!(chat_toggles & CHAT_BANKCARD)
 	.["chat_ghosthuds"] = !!(chat_toggles & CHAT_GHOSTHUDS)
+	.["chat_ping_hint"] = !(chat_toggles & CHAT_NO_PING_HINT)
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
@@ -449,6 +450,8 @@
 					var/mob/dead/observer/ghost = parent?.mob
 					if(istype(ghost))
 						ghost.sync_data_huds()
+				if("chat_ping_hint")
+					chat_toggles ^= CHAT_NO_PING_HINT
 				if("windowflashing")
 					windowflashing = !windowflashing
 					dirty_var = "windowflashing"

@@ -1525,6 +1525,131 @@ describe('ChatRenderer', () => {
   });
 });
 
+describe('ChatRenderer clear and limit', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const fill = (renderer, count) => {
+    const batch = [];
+    for (let i = 0; i < count; i++) {
+      batch.push({ type: 'localchat', html: `msg ${i}` });
+    }
+    renderer.processBatch(batch);
+  };
+
+  test('clearChat empties the screen and the message list', () => {
+    const renderer = createReadyRenderer();
+    fill(renderer, 5);
+    const version = renderer.messagesVersion;
+    renderer.clearChat();
+    expect(renderer.messages).toEqual([]);
+    expect(renderer.visibleMessages).toEqual([]);
+    expect(renderer.rootNode.querySelectorAll('.ChatMessage')).toHaveLength(0);
+    expect(renderer.messagesVersion).toBeGreaterThan(version);
+    fill(renderer, 1);
+    expect(renderer.visibleMessages).toHaveLength(1);
+  });
+
+  test('clearChat keeps the animated background', () => {
+    const renderer = createReadyRenderer();
+    renderer.setBgAnimation('snow', 0.5);
+    fill(renderer, 3);
+    renderer.clearChat();
+    expect(renderer.rootNode.firstChild).toBe(renderer.bgNode);
+  });
+
+  test('a lower message limit prunes the screen down to it', () => {
+    const renderer = createReadyRenderer();
+    fill(renderer, 40);
+    renderer.setVisibleLimit(10);
+    expect(renderer.visibleMessages).toHaveLength(10);
+    expect(renderer.visibleMessages[0].html).toBe('msg 30');
+    expect(renderer.rootNode.querySelectorAll('.ChatMessage')).toHaveLength(10);
+  });
+
+  test('history restored before the chat is ready is cut to the limit after the scroll down', async () => {
+    const renderer = createReadyRenderer();
+    renderer.loaded = false;
+    renderer.setVisibleLimit(10);
+    fill(renderer, 40);
+    const order = [];
+    const scroll = renderer.scrollToBottom.bind(renderer);
+    renderer.scrollToBottom = (...args) => {
+      order.push(`scroll ${renderer.visibleMessages.length}`);
+      return scroll(...args);
+    };
+    renderer.onStateLoaded();
+    expect(renderer.visibleMessages).toHaveLength(40);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(order[0]).toBe('scroll 40');
+    expect(renderer.visibleMessages).toHaveLength(10);
+    expect(renderer.visibleMessages.at(-1).html).toBe('msg 39');
+  });
+
+  test('overflow piled up while reading is cut once the chat is back at the bottom', async () => {
+    const renderer = createReadyRenderer();
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      scrollHeight: 5000, clientHeight: 400, scrollTop: 0,
+    });
+    renderer.scrollTracking = false;
+    renderer.setVisibleLimit(10);
+    fill(renderer, 40);
+    expect(renderer.visibleMessages).toHaveLength(40);
+    metrics.scrollTop = 4600;
+    renderer.updateScrollTracking();
+    await Promise.resolve();
+    expect(renderer.visibleMessages).toHaveLength(10);
+  });
+
+  describe('content changing under a chat pinned to the bottom', () => {
+    const pinned = () => {
+      const renderer = createReadyRenderer();
+      const metrics = setupScrollMetrics(renderer.scrollNode, {
+        scrollHeight: 5000, clientHeight: 400, scrollTop: 4600,
+      });
+      renderer.handleScroll();
+      return { renderer, metrics };
+    };
+
+    test('a late image or font growing the chat keeps it pinned', () => {
+      const { renderer, metrics } = pinned();
+      metrics.scrollHeight = 6077;
+      renderer.handleScroll();
+      expect(metrics.scrollTop).toBe(6077);
+      expect(renderer.scrollTracking).toBe(true);
+    });
+
+    test('the player scrolling up while messages arrive is left alone', () => {
+      const { renderer, metrics } = pinned();
+      renderer.handleUserScrollIntent();
+      metrics.scrollHeight = 5200;
+      metrics.scrollTop = 3000;
+      renderer.handleScroll();
+      expect(metrics.scrollTop).toBe(3000);
+      expect(renderer.scrollTracking).toBe(false);
+    });
+
+    test('scrolling up with unchanged content unpins as before', () => {
+      const { renderer, metrics } = pinned();
+      metrics.scrollTop = 3000;
+      renderer.handleScroll();
+      expect(renderer.scrollTracking).toBe(false);
+    });
+  });
+
+  test('a bad limit falls back to the default', () => {
+    const renderer = createReadyRenderer();
+    renderer.setVisibleLimit('junk');
+    expect(renderer.visibleLimit).toBe(MAX_VISIBLE_MESSAGES);
+  });
+});
+
 describe('ChatRenderer early history', () => {
   beforeEach(() => {
     jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
