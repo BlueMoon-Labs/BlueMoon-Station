@@ -221,6 +221,8 @@
 	var/command_limit = 2048
 	var/invocation_limit = 4096
 	var/list/pending = list()
+	/// Old disconnected callbacks retain ownership but never drive the new Host clock.
+	var/pending_current_count = 0
 	var/list/request_commands = list()
 	var/list/control_commands = list()
 	var/list/inflight_commands = list()
@@ -310,6 +312,7 @@
 	message.recipient = destination
 	message.correlation_id ||= context.request_id
 	pending[context.request_id] = context
+	pending_current_count++
 	var/datum/netrun_external_command/command = new
 	command.kind = "request_submit"
 	command.fact_barrier = client.capture_fact_barrier()
@@ -334,6 +337,9 @@
 /datum/netrun_external_effects/machines/proc/queued_commands()
 	return length(request_commands) + length(control_commands) + length(inflight_commands)
 
+/datum/netrun_external_effects/machines/has_pending_work()
+	return pending_current_count || queued_commands()
+
 /// Сервисная ссылка содержит ID и поколение, а не сетевой адрес или proc name.
 /datum/netrun_external_effects/machines/proc/service_json(list/key)
 	return netrun_external_json_object(list("service_id" = json_encode(key["id"]), "generation" = json_encode(key["generation"])))
@@ -345,7 +351,7 @@
 	var/list/queue = length(control_commands) ? control_commands : request_commands
 	if(!length(queue))
 		// Игровые due/deadline не зависят от физического heartbeat; clock идёт только от BYOND.
-		if(length(pending) && client.journal_head > length(client.journal) && max(0, round(world.time)) > client.last_simulation_time)
+		if(pending_current_count && client.journal_head > length(client.journal) && max(0, round(world.time)) > client.last_simulation_time)
 			return client.enqueue("\[\]", 0)
 		return FALSE
 	var/datum/netrun_external_command/command = queue[1]
@@ -603,6 +609,8 @@
 		context.terminal_reason = reason
 		return
 	context.callback_done = TRUE
+	if(!context.disconnected)
+		pending_current_count--
 	pending -= context.request_id
 	context.operation?.finish(success ? "completed" : "cancelled", success ? null : netrun_external_delivery_failure_text(reason))
 	var/datum/netrun_external_invocation/invocation = context.invocation
@@ -670,6 +678,7 @@
 
 /// Потеря binding не порождает retry. Executing callback сохраняет context/message до своего возврата.
 /datum/netrun_external_effects/machines/disconnected(datum/netrun_external_core/client, reason)
+	pending_current_count = 0
 	for(var/datum/netrun_external_command/command as anything in request_commands)
 		qdel(command)
 	for(var/datum/netrun_external_command/command as anything in control_commands)

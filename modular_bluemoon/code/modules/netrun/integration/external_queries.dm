@@ -111,10 +111,11 @@
 	query_consumers[request_id] = command.consumer
 	if(kind == "graph_sync_start")
 		query_persistent[request_id] = TRUE
-	if(continuation)
-		query_commands.Insert(1, command)
-	else
-		query_commands += command
+	// A persistent stream generates another Continue after every page. Keeping
+	// those ahead of earlier lookups starves discovery/anchors for the whole
+	// snapshot, and indefinitely under churn. FIFO bounds both kinds of progress;
+	// cancellation retains its separate priority path in forget_query().
+	query_commands += command
 	owner?.wake_ready_delivery()
 	return TRUE
 

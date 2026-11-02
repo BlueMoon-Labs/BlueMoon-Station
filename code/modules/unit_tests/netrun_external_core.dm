@@ -245,10 +245,16 @@
 	fixture.executor.disconnected(fixture.client, "test_disconnect")
 	fixture.client.binding_epoch = "new-binding"
 	TEST_ASSERT(!QDELETED(message), "Executing native callback retains its message")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 1, "Disconnected execution retains its ownership context")
+	TEST_ASSERT_EQUAL(fixture.executor.pending_current_count, 0, "Old callback does not count as transport work in a fresh binding")
+	TEST_ASSERT(!fixture.executor.has_pending_work(), "Retained old execution does not keep the new IPC session busy")
+	fixture.client.last_simulation_time = max(0, round(world.time) - 1)
+	TEST_ASSERT(!fixture.executor.prepare_input(fixture.client), "Disconnected execution never emits a clock input into the new Host")
 	var/deadline = world.time + 5 SECONDS
 	while(length(fixture.executor.pending) && world.time < deadline)
 		sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Callback cleanup completes after its return")
+	TEST_ASSERT_EQUAL(fixture.executor.pending_current_count, 0, "Old callback cleanup cannot decrement the fresh binding counter")
 	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 0, "Old result is never sent in the new binding")
 	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "Connection loss returns a single unknown outcome")
 	TEST_ASSERT(!outcomes["delivered"], "Lost binding does not claim delivery")
@@ -436,3 +442,4 @@
 	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Invocation replay cannot repeat the state effect")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Coalescing preserves exactly once native execution")
 	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Both retained and superseded slots drain")
+	TEST_ASSERT_EQUAL(fixture.executor.pending_current_count, 0, "Coalesced and original completion release their current binding slots once")

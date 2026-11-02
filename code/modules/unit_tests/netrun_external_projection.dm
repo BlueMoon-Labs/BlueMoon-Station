@@ -454,7 +454,8 @@
 	TEST_ASSERT(tree?.external_current(), "Tree authority is tied to infrastructure and its unchanged source")
 	TEST_ASSERT(tree.path_available(fixture.graph, target.address), "Unaffected row keeps working without a fresh all-pairs solve")
 	TEST_ASSERT(!tree.path_available(fixture.graph, moving.address), "Captured stale target revision cannot authorize its moved endpoint")
-	TEST_ASSERT(fixture.executor.projection_demands[cache_key], "One coalesced refresh will eventually replace stale target rows")
+	TEST_ASSERT(tree.external_refresh_needed, "The next read will request fresh target rows")
+	TEST_ASSERT_NULL(fixture.executor.projection_demands[cache_key], "Completion alone does not subscribe a passive cache to continuous refresh")
 	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(stream, "2", list(fixture.node_operation(moving), fixture.edge_operation(source, moving, "b", 2)), TRUE, "delta", "1", "2", "8")), "Movement/cost delta updates only the existing endpoint and cable")
 	fixture.executor.prepare_projection(fixture.client)
 	TEST_ASSERT_EQUAL(moving.access_key_epoch, key_epoch, "Stable LAN/anchor movement must not revoke node access keys")
@@ -472,6 +473,75 @@
 	TEST_ASSERT_EQUAL(fixture.graph.revision, presentation_revision, "Online-only updates preserve the structural presentation generation")
 	fixture.executor.disconnect_projection(fixture.client, "waiter_cleanup")
 	TEST_ASSERT_EQUAL(length(fixture.executor.projection_waiters), 0, "Disconnect never retains old-generation UI waiters")
+
+/// Retained tables do not subscribe closed windows to every moving endpoint on the station.
+/datum/unit_test/netrun_external_projection_stream_demand_refresh/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_projection_fixture/fixture = allocate(/datum/netrun_external_projection_fixture)
+	var/datum/component/netrun_node/source = scene.source.resolve_node()
+	var/datum/component/netrun_node/target = scene.target.resolve_node()
+	var/turf/original_position = target.physical_turf()
+	var/datum/netrun_external_graph_cursor/stream = fixture.start_stream()
+	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(stream, "1", list(fixture.node_operation(source), fixture.node_operation(target), fixture.edge_operation(source, target)))), "Baseline is published")
+	fixture.ack_stream()
+	var/datum/netrun_external_projection_cursor/routes = fixture.routes(source)
+	var/cache_key = routes.cache_key
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "1", list(fixture.route_row(source, null, 0), fixture.route_row(target, source, 1)), TRUE)), "A passive source table is cached")
+	var/datum/netrun_path_tree/external/tree = fixture.executor.projection_trees[cache_key]
+	TEST_ASSERT(!tree.external_refresh_needed, "The just-completed table is current")
+	var/queries = length(fixture.executor.projection_pending)
+	scene.receiver.forceMove(scene.source_spot)
+	fixture.client.export_node(target)
+	fixture.executor.invalidate_projection("movement", TRUE, target)
+	var/generation = fixture.executor.projection_refresh_generation
+	TEST_ASSERT(tree.external_refresh_needed, "Movement records that fresh rows will be needed")
+	TEST_ASSERT(!fixture.executor.projection_demands[cache_key], "A passive LRU entry does not request a full source table")
+	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(stream, "2", list(fixture.node_operation(target), fixture.edge_operation(source, target, "a", 2)), TRUE, "delta", "1", "2", "8")), "Core catches up with the same movement")
+	TEST_ASSERT_EQUAL(fixture.executor.projection_refresh_generation, generation, "Dirty mark and its graph upsert are one refresh generation")
+	fixture.ack_stream()
+	fixture.executor.prepare_projection(fixture.client)
+	TEST_ASSERT_EQUAL(length(fixture.executor.projection_pending), queries, "Background preparation does not refresh an unused cache")
+	var/datum/netrun_console/projection_fixture/console = allocate(/datum/netrun_console/projection_fixture, scene.sender)
+	console.ui_dirty = FALSE
+	fixture.executor.projection_watch(fixture.client, source, console)
+	TEST_ASSERT_EQUAL(fixture.executor.projection_tree(fixture.client, source), tree, "A reader can retain the unaffected source proof during refresh")
+	TEST_ASSERT(fixture.executor.projection_demands[cache_key], "A real read requests one coalesced refresh")
+	TEST_ASSERT(fixture.executor.projection_waiters[cache_key], "The active reader waits for completion")
+	fixture.executor.prepare_projection(fixture.client)
+	for(var/id in fixture.executor.projection_pending)
+		var/datum/netrun_external_projection_cursor/current = fixture.executor.projection_pending[id]
+		if(current.cache_key == cache_key)
+			routes = current
+	TEST_ASSERT(routes, "The requested refresh is admitted")
+	fixture.executor.projection_tree(fixture.client, source)
+	fixture.executor.projection_tree(fixture.client, source)
+	TEST_ASSERT_NULL(fixture.executor.projection_demands[cache_key], "Repeated reads share the in-flight query instead of queuing a second one")
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "1", list(fixture.route_row(source, null, 0), fixture.route_row(target, source, 2)), TRUE)), "Fresh rows complete")
+	tree = fixture.executor.projection_trees[cache_key]
+	TEST_ASSERT(!tree.external_refresh_needed, "Current completion clears the refresh flag")
+	TEST_ASSERT_NULL(fixture.executor.projection_demands[cache_key], "Completion does not request the same table again")
+	TEST_ASSERT(console.ui_dirty, "Only the active reader is woken for the new rows")
+	scene.receiver.forceMove(original_position)
+	fixture.client.export_node(target)
+	fixture.executor.invalidate_projection("movement", TRUE, target)
+	fixture.executor.projection_tree(fixture.client, source)
+	fixture.executor.prepare_projection(fixture.client)
+	for(var/id in fixture.executor.projection_pending)
+		var/datum/netrun_external_projection_cursor/current = fixture.executor.projection_pending[id]
+		if(current.cache_key == cache_key)
+			routes = current
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "1", list(fixture.route_row(source, null, 0), fixture.route_row(target, source, 1)), FALSE)), "A frozen query has already received the target row")
+	generation = fixture.executor.projection_refresh_generation
+	scene.receiver.forceMove(scene.source_spot)
+	fixture.client.export_node(target)
+	fixture.executor.invalidate_projection("movement", TRUE, target)
+	TEST_ASSERT(fixture.executor.projection_refresh_generation != generation, "A second change before the first graph ACK still invalidates captured rows")
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "2", list(), TRUE)), "Completion retains the captured table without silently treating it as fresh")
+	tree = fixture.executor.projection_trees[cache_key]
+	TEST_ASSERT(tree.external_refresh_needed, "A change after receiving a row is retained for the next actual reader")
+	TEST_ASSERT_NULL(fixture.executor.projection_demands[cache_key], "Even an outdated completion does not start another query without a reader")
+	fixture.executor.prepare_projection(fixture.client)
+	TEST_ASSERT_EQUAL(length(fixture.executor.projection_pending), queries, "Closing the observer leaves no self-sustaining refresh loop")
 
 /// Путь Core содержит cumulative doubles; DM float не вправе отвергать его после вычитания округлённых costs.
 /datum/unit_test/netrun_external_projection_stream_fractional_route/Run()

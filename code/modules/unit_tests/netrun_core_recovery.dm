@@ -82,6 +82,59 @@
 	native_calls++
 	return list("state" = "closed", "code" = "closed", "frames" = list())
 
+/// Poll cadence exercises the real tick/enqueue path without socket I/O or wall-clock sleeps.
+/datum/netrun_external_core/recovery_fixture/polling
+	var/list/responses = list()
+
+/datum/netrun_external_core/recovery_fixture/polling/native_call(export_name, list/arguments)
+	native_calls++
+	var/list/frames = list()
+	if(export_name == "netrun_poll")
+		frames = responses
+		responses = list()
+	return list("state" = "connected", "code" = export_name == "netrun_try_enqueue" ? "accepted" : "ok", "frames" = frames)
+
+/datum/unit_test/netrun_core_recovery_idle_poll/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/polling/client = allocate(/datum/netrun_external_core/recovery_fixture/polling, worker)
+	client.world_epoch = "poll-world"
+	client.engine_epoch = "poll-engine"
+	client.binding_epoch = "poll-binding"
+	client.state = "ready"
+	client.ready = TRUE
+	client.tick()
+	TEST_ASSERT(client.poll_outstanding, "First idle heartbeat is admitted")
+	TEST_ASSERT_EQUAL(client.sent_frames, 1, "One native enqueue is counted")
+	TEST_ASSERT(client.needs_fast_tick(), "A heartbeat response is consumed at tick cadence")
+	TEST_ASSERT(client.ack_pending(), "An empty Host response completes the idle poll")
+	client.tick()
+	TEST_ASSERT_EQUAL(client.sent_frames, 1, "Prompt consumption does not generate a new heartbeat every tick")
+	TEST_ASSERT(!client.needs_fast_tick(), "A drained idle connection rests")
+	client.last_poll_at = world.timeofday - NETRUN_DEFAULT_FIRE_INTERVAL
+	if(client.last_poll_at < 0)
+		client.last_poll_at += 864000
+	client.tick()
+	TEST_ASSERT_EQUAL(client.sent_frames, 2, "The next physical maintenance deadline admits one heartbeat")
+	client.last_poll_at = world.timeofday - 101
+	if(client.last_poll_at < 0)
+		client.last_poll_at += 864000
+	client.responses += netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(client.world_epoch), "engine_epoch" = json_encode(client.engine_epoch), "binding_epoch" = json_encode(client.binding_epoch), "output_sequence" = json_encode("2"), "applied_sequence" = json_encode("0"), "results" = "\[\]"))
+	client.tick()
+	TEST_ASSERT_EQUAL(client.state, "ready", "An already received reply is consumed before an overdue physical watchdog")
+	TEST_ASSERT_EQUAL(client.ack_output_sequence, "2", "A delayed MC pass retains the queued Host output")
+	client.close("fixture_cleanup")
+	TEST_ASSERT_NULL(client.last_poll_at, "A new binding does not inherit the previous heartbeat deadline")
+
+/datum/unit_test/netrun_core_recovery_host_error/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	TEST_ASSERT(!client.process_frame(json_encode(list("kind" = "error", "code" = "authentication_failed"))), "Host refusal closes the binding")
+	TEST_ASSERT_EQUAL(client.last_error, "authentication_failed", "The actual safe refusal code survives diagnosis")
+	worker.now += worker.external_retry_wait
+	client = worker.journal_client()
+	TEST_ASSERT(!client.process_frame(json_encode(list("kind" = "error", "code" = "untrusted payload text"))), "Malformed diagnostics are still rejected")
+	TEST_ASSERT_EQUAL(client.last_error, "host_rejected", "Arbitrary text is never copied into diagnostics")
+
 /// Геометрия задаётся как raw native connected levels, без глобального mapping или graph solver.
 /datum/netrun_external_core/recovery_fixture/sector_levels(z)
 	return levels
@@ -98,6 +151,56 @@
 /datum/netrun_external_core/recovery_fixture/proc/ack_pending()
 	var/body = netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "output_sequence" = json_encode(netrun_external_decimal_next(ack_output_sequence)), "applied_sequence" = json_encode(input_sequence), "results" = "\[\]"))
 	return process_frame(body)
+
+/// The last frame must not fall back to the two-second maintenance interval.
+/datum/unit_test/netrun_core_recovery_pending_cadence/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	worker.next_node_deadline = INFINITY
+	worker.refresh_delivery_interval()
+	TEST_ASSERT_EQUAL(worker.wait, NETRUN_DEFAULT_FIRE_INTERVAL, "A ready idle connection uses maintenance cadence")
+	TEST_ASSERT(client.enqueue("\[\]", 0), "An empty clock input can be the last pending frame")
+	worker.refresh_delivery_interval()
+	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "A pending application ACK keeps the worker at tick cadence")
+	TEST_ASSERT(client.ack_pending(), "Host acknowledges the last input")
+	client.poll_outstanding = TRUE
+	worker.refresh_delivery_interval()
+	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "The final idle poll response also receives prompt processing")
+	client.poll_outstanding = FALSE
+	worker.refresh_delivery_interval()
+	TEST_ASSERT_EQUAL(worker.wait, NETRUN_DEFAULT_FIRE_INTERVAL, "Draining the response restores the quiet interval")
+
+/// Startup registration stays in the live snapshot until visited; later revisions remain journaled.
+/datum/unit_test/netrun_core_recovery_snapshot_registration/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.ensure_external_core()
+	var/datum/component/netrun_node/node = scene.source.resolve_node()
+	var/turf/position = node.physical_turf()
+	client.levels = list(position.z)
+	client.on_node_registered(worker, node)
+	client.observe_service(scene.source)
+	TEST_ASSERT_EQUAL(length(client.journal), 0, "Connecting state does not duplicate registration into a pre-snapshot journal")
+	TEST_ASSERT_EQUAL(length(client.node_metadata), 0, "Connecting state does not allocate identities for unvisited records")
+	client.engine_epoch = "snapshot-engine"
+	client.state = "snapshotting"
+	client.snapshot_phase = "nodes"
+	client.on_node_changed(worker, node)
+	client.observe_service(scene.source)
+	TEST_ASSERT_EQUAL(length(client.journal), 0, "Unvisited live node and service will be sampled by their snapshot cursors")
+	client.scanned_nodes[node] = TRUE
+	client.export_node(node, TRUE)
+	node.offline_until = world.time + 10 SECONDS
+	client.on_node_changed(worker, node)
+	TEST_ASSERT(length(client.journal), "A change after the snapshot visit is retained for catch-up")
+	client.snapshot_phase = "services"
+	client.scanned_services[scene.source] = TRUE
+	client.observe_service(scene.source)
+	TEST_ASSERT(client.service_metadata[scene.source], "A visited service receives a catch-up fact")
+	var/tail = client.fact_tail
+	client.on_node_changed(worker, node)
+	client.observe_service(scene.source)
+	TEST_ASSERT_EQUAL(client.fact_tail, tail, "Unchanged repeated signals do not append more facts")
 
 /// Shutdown отзывает admission один раз и запрещает reconnect даже из позднего callback.
 /datum/unit_test/netrun_core_recovery_shutdown/Run()

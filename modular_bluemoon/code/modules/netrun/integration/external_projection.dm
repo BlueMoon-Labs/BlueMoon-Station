@@ -13,6 +13,8 @@
 	/// Локальные generations закрывают окно между native signal и C# ACK фактов.
 	var/generation
 	var/state_generation
+	/// Captured demand generation detects changes while a frozen source tree is in flight.
+	var/refresh_generation
 	/// Все страницы одного query обязаны объявлять одинаковые structural metadata.
 	var/graph_version
 	var/input_sequence
@@ -87,6 +89,8 @@
 	/// Local signals немедленно отзывают authority до доставки raw fact journal.
 	var/projection_generation = "1"
 	var/projection_state_generation = "1"
+	/// Retained LRU tables are caches, not permanent network subscriptions.
+	var/projection_refresh_generation = "0"
 	/// Metadata последнего целиком импортированного graph, отдельные от последних Host hints.
 	var/projection_published_generation
 	var/projection_published_graph
@@ -203,7 +207,7 @@
 			if(cursor.cache_key == cache_key)
 				pending = TRUE
 				break
-	if(!pending && tree?.external_current())
+	if(!pending && tree?.external_current() && !tree.external_refresh_needed)
 		return
 	var/list/waiters = projection_waiters[cache_key]
 	if(!waiters)
@@ -239,13 +243,24 @@
 		return new /datum/netrun_path_tree
 	var/cache_key = projection_key(key, mode)
 	var/datum/netrun_path_tree/external/tree = projection_trees[cache_key]
-	if(tree?.external_current())
+	var/current = tree?.external_current()
+	if(current && !tree.external_refresh_needed)
 		projection_tree_order -= cache_key
 		projection_tree_order += cache_key
 		return tree
-	if(length(projection_demands) < 16 || projection_demands[cache_key])
+	var/pending = FALSE
+	for(var/id in projection_pending)
+		var/datum/netrun_external_projection_cursor/cursor = projection_pending[id]
+		if(cursor.cache_key == cache_key)
+			pending = TRUE
+			break
+	if(!pending && (length(projection_demands) < 16 || projection_demands[cache_key]))
 		projection_demands[cache_key] = list("key" = key.Copy(), "mode" = mode)
 		owner.wake_ready_delivery()
+	// Existing per-node revision and edge checks keep unaffected paths usable
+	// while this reader requests a current table; stale destinations stay fenced.
+	if(current)
+		return tree
 	return new /datum/netrun_path_tree
 
 /// Одна immutable logical команда после source journal; would_block повторяет её dispatcher с прежним ID.
@@ -265,6 +280,7 @@
 	cursor.cache_key = cache_key
 	cursor.generation = projection_generation
 	cursor.state_generation = projection_state_generation
+	cursor.refresh_generation = projection_refresh_generation
 	var/source_json = key ? netrun_external_json_object(list("node_id" = json_encode(key["id"]), "generation" = json_encode(key["generation"]))) : "null"
 	var/body = netrun_external_json_object(list("kind" = json_encode("projection_query"), "request_id" = json_encode(id), "projection_kind" = json_encode(kind), "source" = source_json, "mode" = json_encode(mode)))
 	if(!enqueue_query("projection_query", body, cursor))
@@ -442,14 +458,16 @@
 	tree.external_infra_stamp = cursor.infra_stamp
 	tree.external_av_infra_stamp = cursor.av_infra_stamp
 	tree.external_cache_key = cursor.cache_key
+	tree.external_refresh_needed = cursor.stale_rows || cursor.refresh_generation != projection_refresh_generation
 	tree.graph_ref = WEAKREF(owner.get_topology())
 	qdel(projection_trees[cursor.cache_key])
 	projection_trees[cursor.cache_key] = tree
 	projection_tree_order -= cursor.cache_key
 	projection_tree_order += cursor.cache_key
 	cursor.tree = null
-	if(cursor.stale_rows)
-		projection_demands[cursor.cache_key] = list("key" = cursor.source_key.Copy(), "mode" = cursor.mode)
+	// Completion wakes actual observers. A stale table alone must not turn a
+	// closed window into a permanent source-query loop under station churn.
+	projection_demands -= cursor.cache_key
 	while(length(projection_tree_order) > 16)
 		var/oldest = projection_tree_order[1]
 		qdel(projection_trees[oldest])
@@ -640,6 +658,7 @@
 	projection_trees.Cut()
 	projection_tree_order.Cut()
 	projection_demands.Cut()
+	projection_refresh_generation = "0"
 	projection_waiters.Cut()
 	for(var/key in projection_anchor_order.Copy())
 		projection_forget_anchor(key)
@@ -840,6 +859,8 @@
 	/// Source/row proof pins raw fact revisions at solve, не при emit следующей страницы.
 	var/list/external_source_key
 	var/external_source_revision
+	/// A leaf change requests fresh rows on the next read without revoking unrelated paths.
+	var/external_refresh_needed = FALSE
 	var/list/external_node_revisions = list()
 	var/external_infra_stamp
 	var/external_av_infra_stamp
@@ -933,6 +954,7 @@
 	local.external_infra_stamp = external_infra_stamp
 	local.external_av_infra_stamp = external_av_infra_stamp
 	local.external_cache_key = external_cache_key
+	local.external_refresh_needed = external_refresh_needed
 	local.revision = revision
 	local.geometry_revision = geometry_revision
 	local.availability_revision = availability_revision
@@ -1069,6 +1091,8 @@
 			return
 		for(var/cache_key in projection_anchor_order.Copy())
 			projection_forget_anchor(cache_key)
+	// Every native change matters, including another movement before the first
+	// graph delta is acknowledged. Its matching upsert is deduplicated below.
 	projection_refresh_sources()
 	projection_update_dirty(client)
 	owner?.wake_ready_delivery()
@@ -1079,12 +1103,18 @@
 		projection_dirty_infra--
 	projection_dirty_nodes -= token
 
-/// O(active source caches), максимум16: листовые изменения не заставляют read query сканировать всю станцию.
+/// O(retained sources), maximum16. Only an actual reader starts a new source query.
 /datum/netrun_external_effects/machines/queries/proc/projection_refresh_sources()
+	if(!length(projection_trees) && !length(projection_pending))
+		return
+	projection_refresh_generation = netrun_external_decimal_next(projection_refresh_generation)
+	if(!projection_refresh_generation)
+		owner?.external_core?.abort_session("projection_generation_exhausted")
+		return
 	for(var/cache_key in projection_trees)
 		var/datum/netrun_path_tree/external/tree = projection_trees[cache_key]
 		if(tree.external_source_key)
-			projection_demands[cache_key] = list("key" = tree.external_source_key.Copy(), "mode" = tree.external_mode)
+			tree.external_refresh_needed = TRUE
 
 /// Native adjacency закрывается только для неготовой инфраструктуры, а не при каждом ordinary leaf move.
 /datum/netrun_external_effects/machines/queries/proc/projection_update_dirty(datum/netrun_external_core/client)
@@ -1210,6 +1240,7 @@
 		if(!token)
 			return FALSE
 		var/list/previous = data.records[token]
+		var/was_dirty = !!projection_dirty_nodes[token]
 		if(previous && data.address_keys[previous["address"]] == token)
 			var/address = previous["address"]
 			data.address_keys -= address
@@ -1223,7 +1254,8 @@
 			data.structure_changed = TRUE
 		data.records -= token
 		projection_clear_dirty(token)
-		projection_refresh_sources()
+		if(!was_dirty)
+			projection_refresh_sources()
 		return TRUE
 	if(kind == "node_upsert")
 		var/token = projection_token(operation["node"])
@@ -1232,6 +1264,7 @@
 		if(!data.records[token] && length(data.records) >= 10000)
 			return FALSE
 		var/list/previous = data.records[token]
+		var/was_dirty = !!projection_dirty_nodes[token]
 		var/address = operation["address"]
 		if(!previous || previous["address"] != address || projection_token(previous["anchor"]) != projection_token(operation["anchor"]) || previous["lan_id"] != operation["lan_id"] || previous["is_relay"] != operation["is_relay"] || previous["is_endpoint"] != operation["is_endpoint"])
 			data.structure_changed = TRUE
@@ -1272,7 +1305,7 @@
 		else
 			// Исторический baseline не обязан иметь живой native weakref; следующая delta удалит identity.
 			data.nodes -= address
-		if(!previous || previous["node_revision"] != operation["node_revision"])
+		if(!was_dirty && (!previous || previous["node_revision"] != operation["node_revision"]))
 			projection_refresh_sources()
 		return TRUE
 	if(kind == "edge_upsert")

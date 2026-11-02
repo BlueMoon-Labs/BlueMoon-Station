@@ -92,6 +92,8 @@ SUBSYSTEM_DEF(netrun)
 	msg += " Pub:[node_publication_batches]/[node_publication_entries]/[network_publication_entries]"
 	if(external_mode == "external")
 		msg += " Core:[external_mode]/[external_core?.state || "unavailable"] Ready:[external_core?.ready || FALSE] Ack:[external_core?.last_applied_sequence || "0"] Err:[external_core?.last_error || external_error || "none"]"
+		if(external_core)
+			msg += " IPC KiB Tx/Rx:[round(external_core.sent_bytes / 1024, 0.1)]/[round(external_core.received_bytes / 1024, 0.1)] ACK ms last/max:[external_core.last_ack_ms]/[external_core.max_ack_ms] Facts:[max(0, length(external_core.journal) - external_core.journal_head + 1)]"
 	return ..()
 
 /// Repeated changes to one address are one UI event, without an extra node/state task.
@@ -398,8 +400,7 @@ SUBSYSTEM_DEF(netrun)
 
 /datum/controller/subsystem/netrun/proc/refresh_delivery_interval()
 	// Пока идет resync или есть внешняя машинная работа, queued IPC получает bounded проход каждый native tick.
-	var/datum/netrun_external_effects/machines/executor = external_core?.effects
-	if(external_core && external_core.state != "closed" && external_core.state != "resync_required" && (!external_core.ready || length(external_core.journal) >= external_core.journal_head || istype(executor) && (length(executor.pending) || executor.queued_commands())))
+	if(external_core?.needs_fast_tick())
 		wait = world.tick_lag
 		return
 	if(task_scheduler?.pending() || length(node_publications) || length(network_publications))

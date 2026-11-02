@@ -249,6 +249,32 @@
 			"command": "${command:dreammaker.reparse}",
 			"group": "build",
 			"label": "dm: reparse"
+		},
+		{
+			"label": "NETRUN: wait for Host",
+			"type": "process",
+			"command": "node",
+			"args": [
+				"${workspaceFolder}/tools/netrun/debug-host.mjs",
+				"wait-ready"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "NETRUN: stop Host",
+			"type": "process",
+			"command": "node",
+			"args": [
+				"${workspaceFolder}/tools/netrun/debug-host.mjs",
+				"stop"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
 		}
 	]
 }

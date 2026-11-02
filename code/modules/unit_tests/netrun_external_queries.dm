@@ -71,6 +71,33 @@
 	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "A newer unrelated fact cannot starve an older causal command")
 	TEST_ASSERT(fixture.client.journal_head <= length(fixture.client.journal), "Newer facts remain queued behind the command")
 
+/// A persistent graph page cannot overtake older discovery, anchor, and route lookups.
+/datum/unit_test/netrun_external_queries_stream_fairness/Run()
+	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	var/datum/stream_consumer = allocate(/datum)
+	var/datum/lookup_consumer = allocate(/datum)
+	var/stream_id = fixture.executor.new_query_id("projection")
+	var/body = netrun_external_json_object(list("kind" = json_encode("graph_sync_start"), "request_id" = json_encode(stream_id)))
+	TEST_ASSERT(fixture.executor.enqueue_query("graph_sync_start", body, stream_consumer), "A persistent stream is registered")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "The stream starts before its first page")
+	fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted")))
+	fixture.client.pending_frame = null
+	for(var/kind in list("service_discover", "anchor_query", "projection_query"))
+		var/producer = kind == "service_discover" ? "discovery" : kind == "anchor_query" ? "anchor" : "projection"
+		var/id = fixture.executor.new_query_id(producer)
+		body = netrun_external_json_object(list("kind" = json_encode(kind), "request_id" = json_encode(id)))
+		TEST_ASSERT(fixture.executor.enqueue_query(kind, body, lookup_consumer), "An independent lookup is queued while the stream page arrives")
+	body = netrun_external_json_object(list("kind" = json_encode("graph_sync_continue"), "request_id" = json_encode(stream_id), "page_index" = json_encode("1")))
+	TEST_ASSERT(fixture.executor.enqueue_query("graph_sync_continue", body, stream_consumer), "The applied page queues its explicit continuation")
+	for(var/kind in list("service_discover", "anchor_query", "projection_query", "graph_sync_continue"))
+		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Every ready query makes bounded progress")
+		var/list/entries = json_decode(fixture.client.sent_entries[length(fixture.client.sent_entries)])
+		TEST_ASSERT_EQUAL(entries[1]["kind"], kind, "A new stream continuation cannot overtake older lookups")
+		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted"), "action" = list("accepted" = TRUE)))
+		fixture.client.pending_frame = null
+	TEST_ASSERT_EQUAL(length(fixture.executor.query_commands), 0, "Both lookups and the stream continuation drain without starvation")
+	TEST_ASSERT_EQUAL(length(fixture.executor.query_persistent), 1, "Fair scheduling preserves the persistent stream subscription")
+
 /// Cancel до admission убирает локальную работу; после handoff нужен отдельный Host cancel.
 /datum/unit_test/netrun_external_queries_cancel_and_late_page/Run()
 	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)

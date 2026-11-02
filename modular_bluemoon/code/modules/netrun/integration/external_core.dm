@@ -79,6 +79,10 @@
 /datum/netrun_external_effects/proc/prepare_input(datum/netrun_external_core/client)
 	return FALSE
 
+/// Persistent idle subscriptions do not require a busy heartbeat; admitted requests do.
+/datum/netrun_external_effects/proc/has_pending_work()
+	return FALSE
+
 /// Admission/action является результатом команды, отдельным от transport completion и output ACK.
 /datum/netrun_external_effects/proc/observe_result(datum/netrun_external_core/client, list/result)
 	return
@@ -120,6 +124,14 @@
 	var/pending_sequence
 	var/pending_sent = FALSE
 	var/poll_outstanding = FALSE
+	var/last_poll_at
+	/// Cumulative IPC accounting excludes BYOND client assets and never stores payloads.
+	var/sent_frames = 0
+	var/sent_bytes = 0
+	var/received_frames = 0
+	var/received_bytes = 0
+	var/last_ack_ms = 0
+	var/max_ack_ms = 0
 	/// Физические watchdog deadlines не зависят от продвижения игрового времени Host.
 	var/opened_at = 0
 	var/pending_started_at = 0
@@ -231,15 +243,24 @@
 	opened_at = world.timeofday
 	return TRUE
 
+/// Continue at tick cadence until the last socket response has actually been consumed.
+/datum/netrun_external_core/proc/needs_fast_tick()
+	return state != "closed" && state != "resync_required" && (!ready || pending_frame || poll_outstanding || journal_head <= length(journal) || effects?.has_pending_work())
+
 /// Ограниченный проход. Не вызывает ensure_topology, route, service discovery или игровые effects вне output handler.
 /datum/netrun_external_core/proc/tick(max_records = 32)
+	if(state == "closed" || state == "resync_required")
+		return
+	// A debugger pause or a delayed MC pass must not discard a reply which the
+	// worker already received within the deadline. Drain ready frames first.
+	poll(64)
 	if(state == "closed" || state == "resync_required")
 		return
 	if((state == "connecting" || state == "handshaking") && netrun_external_elapsed_since(opened_at) > 100)
 		abort_session("handshake_timeout")
 		return
-	poll(64)
-	if(state == "closed" || state == "resync_required")
+	if(poll_outstanding && !isnull(last_poll_at) && netrun_external_elapsed_since(last_poll_at) > 100)
+		abort_session("host_poll_timeout")
 		return
 	if(state == "connecting")
 		var/list/status = native_call("netrun_status", list())
@@ -247,6 +268,8 @@
 			var/hello = netrun_external_json_object(list("kind" = json_encode("hello"), "protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "binding_epoch" = json_encode(binding_epoch), "token" = json_encode(session_token)))
 			var/list/sent = native_call("netrun_try_enqueue", list(hello))
 			if(sent?["code"] == "accepted")
+				sent_frames++
+				sent_bytes += length(hello)
 				state = "handshaking"
 		else if(status?["state"] == "disconnected" || status?["state"] == "closed")
 			abort_session("bridge_unavailable")
@@ -273,9 +296,16 @@
 		flush_pending()
 		return
 	if(!poll_outstanding)
+		// Consume idle replies promptly without immediately starting another poll.
+		if(ready && !effects?.has_pending_work() && !isnull(last_poll_at) && netrun_external_elapsed_since(last_poll_at) < NETRUN_DEFAULT_FIRE_INTERVAL)
+			return
 		var/body = netrun_external_json_object(list("kind" = json_encode("poll"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "ack_output_sequence" = json_encode(ack_output_sequence), "max_events" = "64"))
 		var/list/result = native_call("netrun_try_enqueue", list(body))
 		poll_outstanding = result?["code"] == "accepted"
+		if(poll_outstanding)
+			last_poll_at = world.timeofday
+			sent_frames++
+			sent_bytes += length(body)
 
 /// Забирает ограниченное количество готовых тел; native poll сам ограничивает serialized response.
 /datum/netrun_external_core/proc/poll(max_frames = 64)
@@ -284,6 +314,8 @@
 		return abort_session("bridge_poll_failed")
 	var/list/frames = result?["frames"]
 	for(var/body in frames)
+		received_frames++
+		received_bytes += length(body)
 		if(!process_frame(body))
 			return FALSE
 	if(result?["state"] == "disconnected" || result?["state"] == "closed")
@@ -300,6 +332,8 @@
 		return abort_session("invalid_output")
 	if(!islist(frame))
 		return abort_session("invalid_output")
+	if(frame["kind"] == "error")
+		return abort_session(netrun_external_safe_code(frame["code"]))
 	if(frame["kind"] == "hello_ack")
 		if(state != "handshaking" || frame["protocol_major"] != 1 || frame["protocol_minor"] != 3 || frame["world_epoch"] != world_epoch || frame["binding_epoch"] != binding_epoch || !istext(frame["engine_epoch"]) || frame["snapshot_checksum_version"] != 3)
 			return abort_session("handshake_mismatch")
@@ -346,6 +380,9 @@
 		output_hashes -= output_order[1]
 		output_order.Cut(1, 2)
 	if(pending_sequence && netrun_external_decimal_compare(applied, pending_sequence) >= 0)
+		if(pending_sent)
+			last_ack_ms = netrun_external_elapsed_since(pending_started_at) * 100
+			max_ack_ms = max(max_ack_ms, last_ack_ms)
 		pending_frame = null
 		pending_sequence = null
 		pending_sent = FALSE
@@ -400,6 +437,8 @@
 	if(result?["code"] == "accepted")
 		pending_sent = TRUE
 		pending_started_at = world.timeofday
+		sent_frames++
+		sent_bytes += length(pending_frame)
 	else if(result?["code"] != "would_block")
 		abort_session("bridge_enqueue_failed")
 
@@ -829,6 +868,10 @@
 
 /// Typed upsert keys берутся из собственных metadata; prefix только различает два вида own exporter records.
 /datum/netrun_external_core/proc/queue_node_records(datum/component/netrun_node/node)
+	// Commands are not admitted before snapshot completion. Unvisited registry
+	// entries will be exported at their latest revision by the snapshot cursor.
+	if(!engine_epoch || ((snapshot_phase == "begin" || snapshot_phase == "nodes") && !scanned_nodes[node]))
+		return TRUE
 	var/list/records = export_node(node)
 	if(state == "closed" || state == "resync_required")
 		return FALSE
@@ -846,6 +889,8 @@
 
 /// Полный service upsert заменяет только unsent состояние того же opaque ID и текущей causal epoch.
 /datum/netrun_external_core/proc/queue_service_record(datum/netrun_machine_service/service)
+	if(!engine_epoch || ((snapshot_phase == "begin" || snapshot_phase == "nodes" || snapshot_phase == "services") && !scanned_services[service]))
+		return TRUE
 	var/record = export_service(service)
 	if(state == "closed" || state == "resync_required")
 		return FALSE
@@ -898,7 +943,7 @@
 	nodes_by_id -= metadata["id"]
 	node_metadata -= node
 
-/// Source registration уже находится в registry; факт попадает в журнал даже до своего snapshot cursor.
+/// Source registration is already indexed; an unvisited snapshot entry needs no duplicate journal fact.
 /datum/netrun_external_core/proc/on_node_registered(datum/source, datum/component/netrun_node/node)
 	SIGNAL_HANDLER
 	on_node_changed(source, node)
@@ -987,6 +1032,7 @@
 	pending_sequence = null
 	pending_sent = FALSE
 	poll_outstanding = FALSE
+	last_poll_at = null
 	snapshot_phase = null
 	session_token = null
 	state = "closed"
