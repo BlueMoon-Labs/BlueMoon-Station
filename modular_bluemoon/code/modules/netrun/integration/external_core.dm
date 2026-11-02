@@ -793,7 +793,7 @@
 		return null
 	var/list/frequencies = list()
 	for(var/frequency in machine.freq_listening)
-		if(!isnum(frequency) || frequency <= 0 || frequency >= 2147483648 || round(frequency) != frequency)
+		if(!isnum(frequency) || frequency <= 0 || frequency >= 2.147483648e9 || round(frequency) != frequency)
 			return null
 		if(!(frequency in frequencies))
 			frequencies += frequency

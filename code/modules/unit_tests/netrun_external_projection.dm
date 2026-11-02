@@ -7,7 +7,6 @@
 	RegisterSignal(SSnetrun, COMSIG_NETRUN_NODE_MOVED, PROC_REF(on_node_moved))
 
 /datum/netrun_topology/external/projection_fixture/on_node_moved(datum/source, datum/component/netrun_node/node, turf/old_turf, turf/new_turf)
-	SIGNAL_HANDLER
 	if(nodes[node.address] == node && old_turf != new_turf)
 		var/datum/netrun_external_effects/machines/queries/executor = fixture_executor?.resolve()
 		if(executor?.projection_stream_mode)

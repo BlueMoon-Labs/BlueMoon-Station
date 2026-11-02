@@ -281,7 +281,7 @@
 	var/communications = netrun_communication_policy(source, destination.service_id) && (istype(message, /datum/netrun_machine_message/telecomms) || istype(message, /datum/netrun_machine_message/communications))
 	var/datum/netrun_machine_message/telecomms/telecomms = message
 	var/frequency = communications && istype(telecomms) ? telecomms.signal?.frequency : null
-	if(!isnull(frequency) && (!isnum(frequency) || frequency <= 0 || frequency >= 2147483648 || round(frequency) != frequency))
+	if(!isnull(frequency) && (!isnum(frequency) || frequency <= 0 || frequency >= 2.147483648e9 || round(frequency) != frequency))
 		return reject_message(message, "частота внешнего транспорта недопустима")
 	request_serial = next_serial
 	var/datum/netrun_external_request_context/context = new

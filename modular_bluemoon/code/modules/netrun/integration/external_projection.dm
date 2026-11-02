@@ -470,6 +470,7 @@
 
 /// Максимум 32 строки обрабатываются непосредственно в output handler; topology geometry здесь не вычисляется.
 /datum/netrun_external_effects/machines/queries/proc/projection_row(datum/netrun_external_core/client, datum/netrun_external_projection_cursor/cursor, list/row)
+	var/list/node_key = row["node"]
 	if(row["kind"] == "node" && cursor.kind == "graph")
 		if(cursor.seen_edges || length(cursor.nodes) >= 10000)
 			return FALSE
@@ -482,7 +483,7 @@
 		cursor.nodes[node.address] = node
 		if(node.node_type == NETRUN_NODE_APC)
 			cursor.apcs[node.address] = node
-		cursor.keys[node.address] = row["node"].Copy()
+		cursor.keys[node.address] = node_key.Copy()
 		cursor.adjacency[node.address] = list()
 		cursor.lans[node.address] = row["lan_id"]
 		if(row["anchor"])
@@ -539,7 +540,7 @@
 		cursor.tree.previous[node.address] = previous?.address
 		cursor.tree.costs[node.address] = row["latency_ds"]
 		cursor.tree.remote[node.address] = !!row["quantum"]
-		cursor.tree.external_keys[node.address] = row["node"].Copy()
+		cursor.tree.external_keys[node.address] = node_key.Copy()
 		if(projection_stream_mode)
 			cursor.tree.external_node_revisions[node.address] = row["node_revision"]
 			if(row["node_revision"] != projection_raw_revision(client, row["node"]))
@@ -724,11 +725,12 @@
 		return
 	forget_query(cursor.request_id)
 	if(answer["code"] == "found")
-		var/datum/component/netrun_node/node = projection_resolve(client, answer["node"])
+		var/list/node_key = answer["node"]
+		var/datum/component/netrun_node/node = projection_resolve(client, node_key)
 		if(!node || node.node_type != NETRUN_NODE_APC)
 			projection_forget_anchor(cache_key)
 			return
-		cursor.node_key = answer["node"].Copy()
+		cursor.node_key = node_key.Copy()
 	else if(!(answer["code"] in list("not_found", "sector_unknown", "sector_position")))
 		projection_forget_anchor(cache_key)
 		return
@@ -751,7 +753,6 @@
 	return external_executor?.resolve() || netrun_external_projection_executor()
 
 /datum/netrun_topology/external/on_node_registered(datum/source, datum/component/netrun_node/node)
-	SIGNAL_HANDLER
 	var/datum/netrun_external_effects/machines/queries/executor = projection_owner()
 	if(executor?.projection_stream_mode)
 		executor.invalidate_projection("registered", TRUE, node)
@@ -759,7 +760,6 @@
 		invalidate()
 
 /datum/netrun_topology/external/on_node_unregistered(datum/source, datum/component/netrun_node/node)
-	SIGNAL_HANDLER
 	if(!node)
 		return
 	var/datum/netrun_external_effects/machines/queries/executor = projection_owner()
@@ -773,7 +773,6 @@
 		invalidate()
 
 /datum/netrun_topology/external/on_node_moved(datum/source, datum/component/netrun_node/node, turf/old_turf, turf/new_turf)
-	SIGNAL_HANDLER
 	if(old_turf != new_turf)
 		var/datum/netrun_external_effects/machines/queries/executor = projection_owner()
 		if(executor?.projection_stream_mode)
@@ -1249,7 +1248,8 @@
 			data.weight_versions -= previous["address"]
 		data.records[token] = operation.Copy()
 		data.address_keys[address] = token
-		data.keys[address] = operation["node"].Copy()
+		var/list/node_key = operation["node"]
+		data.keys[address] = node_key.Copy()
 		if(!data.adjacency[address])
 			data.adjacency[address] = list()
 		var/datum/component/netrun_node/node = projection_resolve(client, operation["node"])

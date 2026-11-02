@@ -120,6 +120,7 @@
 
 /// Никогда не возвращает strong reference на уже удалённого native consumer.
 /datum/netrun_external_effects/machines/queries/proc/get_query_consumer(request_id)
+	RETURN_TYPE(/datum)
 	var/datum/weakref/reference = query_consumers[request_id]
 	return reference?.resolve()
 
