@@ -340,11 +340,11 @@
 		plague.faction = king.faction.Copy()
 		if(horde.register_minion(plague))
 			converted++
-	if(converted < 3)
+	if(converted < RAT_KING_RIOT_MIN)
 		var/turf/spawn_turf = get_turf(king)
 		var/cap_left = cap - LAZYLEN(SSmobs.cheeserats)
 		var/horde_left = horde.max_minions - length(horde.minions)
-		var/to_spawn = min(3 - converted, cap_left, horde_left)
+		var/to_spawn = min(RAT_KING_RIOT_MIN - converted, cap_left, horde_left)
 		if(!spawn_turf || to_spawn <= 0)
 			if(!converted)
 				to_chat(king, span_warning("На станции и так слишком много грызунов. Найдите их сами!"))
@@ -379,9 +379,9 @@
 	speak_emote = list("пищит")
 	emote_hear = list("шипит.")
 	emote_see = list("бегает по кругу.", "встаёт на задние лапы.")
-	melee_damage_lower = 3
-	melee_damage_upper = 5
-	obj_damage = 5
+	melee_damage_lower = 5
+	melee_damage_upper = 8
+	obj_damage = 8
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
@@ -659,6 +659,11 @@
 				new /obj/effect/decal/cleanable/oil/slippery(mess_turf)
 			else
 				new /obj/effect/decal/cleanable/dirt(mess_turf)
+	var/mob/living/simple_animal/hostile/regalrat/king = owner
+	if(istype(king))
+		var/datum/antagonist/rat_king/antag = king.mind?.has_antag_datum(/datum/antagonist/rat_king)
+		if(antag && antag.nest_area && get_area(owner) == antag.nest_area)
+			antag.domain_time += RAT_KING_DOMAIN_INTERVAL / (1 SECONDS)
 	mess_timer = addtimer(CALLBACK(src, PROC_REF(spread_domain)), RAT_KING_DOMAIN_INTERVAL, TIMER_STOPPABLE)
 
 /datum/action/cooldown/rat_order
@@ -853,7 +858,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 
 /datum/action/cooldown/rat_fashion
 	name = "Королевский облик"
-	desc = "Сменить облик крысиного короля."
+	desc = "Сменить облик крысиного короля или королевы."
 	icon_icon = 'icons/mob/actions/actions_spells.dmi'
 	button_icon_state = "exit_possession"
 	background_icon_state = "bg_clock"
@@ -982,8 +987,17 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 	. = ..()
 	var/datum/action/cooldown/rat_pheromones/pheromones = new
 	pheromones.Grant(src)
+	fashion_select = new /datum/action/cooldown/rat_fashion
+	fashion_select.Grant(src)
 	var/static/list/skins = list("ratqueen", "ratqueen_fat", "ringmaster", "buffking")
+	var/static/list/skin_looks = list(
+		"ratqueen" = "Крысиная королева",
+		"ratqueen_fat" = "Толстая королева",
+		"ringmaster" = "Цирковой мастер",
+		"buffking" = "Крыса-качок",
+	)
 	var/skin = pick(skins)
+	current_look = skin_looks[skin]
 	icon_state = skin
 	icon_living = skin
 	icon_dead = (skin == "buffking") ? "buffking_dead" : "ratqueen_dead"
@@ -1020,6 +1034,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 			has_balls = FALSE
 			has_vagina = TRUE
 			has_breasts = TRUE
+			current_look = "Крысиная королева"
 			icon_state = "ratqueen"
 			icon_living = "ratqueen"
 			icon_dead = "ratqueen_dead"
@@ -1029,6 +1044,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 			has_balls = TRUE
 			has_vagina = FALSE
 			has_breasts = FALSE
+			current_look = "Крыса-качок"
 			icon_state = "buffking"
 			icon_living = "buffking"
 			icon_dead = "buffking_dead"
@@ -1038,6 +1054,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 			has_balls = FALSE
 			has_vagina = TRUE
 			has_breasts = TRUE
+			current_look = "Толстая королева"
 			icon_state = "ratqueen_fat"
 			icon_living = "ratqueen_fat"
 			icon_dead = "ratqueen_dead"
@@ -1047,6 +1064,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 			has_balls = TRUE
 			has_vagina = TRUE
 			has_breasts = TRUE
+			current_look = "Цирковой мастер"
 			icon_state = "ringmaster"
 			icon_living = "ringmaster"
 			icon_dead = "ratqueen_dead"

@@ -12,6 +12,8 @@
 	var/infected = 0
 	/// Уже обращённые, чтобы не считать одного и того же дважды.
 	var/list/infected_minds = list()
+	var/domain_time = 0
+	var/area/nest_area
 
 /datum/antagonist/rat_king/greet()
 	to_chat(owner, span_boldannounce("Вы - крысиный король. Под вашими лапами техтоннели, а в зубах - жажда власти."))
@@ -30,15 +32,46 @@
 	var/datum/objective/rat_king/horde/horde_objective = new
 	horde_objective.king = src
 	objectives += horde_objective
+
+	var/datum/objective/rat_king/lick_target/lick_objective = new
+	lick_objective.owner = owner
+	lick_objective.king = src
+	lick_objective.find_target()
+	if(lick_objective.target)
+		objectives += lick_objective
+	else
+		qdel(lick_objective)
+
+	var/list/extras = list()
 	var/datum/objective/rat_king/infect/infect_objective = new
 	infect_objective.king = src
-	objectives += infect_objective
+	extras += infect_objective
 	var/datum/objective/rat_king/coffers/coffers_objective = new
 	coffers_objective.king = src
-	objectives += coffers_objective
+	extras += coffers_objective
 	var/datum/objective/rat_king/chew/chew_objective = new
 	chew_objective.king = src
-	objectives += chew_objective
+	extras += chew_objective
+
+	var/datum/objective/rat_king/nest/nest_objective = new
+	nest_objective.king = src
+	nest_objective.pick_area()
+	if(nest_objective.target_area)
+		extras += nest_objective
+	else
+		qdel(nest_objective)
+
+	var/list/chosen = list()
+	for(var/i in 1 to min(2, length(extras)))
+		chosen += pick_n_take(extras)
+	for(var/datum/objective/objective as anything in extras)
+		qdel(objective)
+	objectives += chosen
+	for(var/datum/objective/objective as anything in chosen)
+		if(istype(objective, /datum/objective/rat_king/nest))
+			var/datum/objective/rat_king/nest/nest = objective
+			nest_area = nest.target_area
+
 	var/datum/objective/rat_king/survive/survive_objective = new
 	survive_objective.owner = owner
 	objectives += survive_objective
@@ -112,6 +145,64 @@
 		return FALSE
 	var/mob/living/simple_animal/hostile/regalrat/rat_king = king.owner.current
 	return istype(rat_king) && rat_king.cables_chewed >= target_amount
+
+/datum/objective/rat_king/lick_target
+	var/datum/antagonist/rat_king/king
+
+/datum/objective/rat_king/lick_target/New()
+	explanation_text = "Оближите выбранную цель и сделайте её своим другом."
+	. = ..()
+
+/datum/objective/rat_king/lick_target/update_explanation_text()
+	if(target?.current)
+		explanation_text = "Оближите [target.current.real_name] и сделайте [target.current.p_them()] своим другом."
+	else
+		explanation_text = "Оближите выбранную цель и сделайте её своим другом."
+
+/datum/objective/rat_king/lick_target/check_completion()
+	if(!king || !target)
+		return FALSE
+	if(!(target in king.infected_minds))
+		return FALSE
+	var/mob/living/victim = target.current
+	if(!istype(victim) || QDELETED(victim))
+		return FALSE
+	return victim.has_status_effect(/datum/status_effect/rat_friend)
+
+/datum/objective/rat_king/nest
+	var/datum/antagonist/rat_king/king
+	var/area/target_area
+
+/datum/objective/rat_king/nest/New()
+	target_amount = rand(30, 60)
+	explanation_text = "Обоснуйтесь как следует, удержите одну из точек на станции."
+	. = ..()
+
+/datum/objective/rat_king/nest/proc/pick_area()
+	var/static/list/nest_area_types = list(
+		/area/service/kitchen,
+		/area/service/bar,
+		/area/cargo/storage,
+		/area/medical/medbay/central,
+		/area/engineering/main,
+		/area/science/research,
+		/area/security/brig,
+		/area/command/bridge,
+	)
+	var/list/valid_areas = list()
+	for(var/area_type in nest_area_types)
+		var/area/A = locate(area_type)
+		if(A)
+			valid_areas += A
+	if(!length(valid_areas))
+		return
+	target_area = pick(valid_areas)
+	explanation_text = "Устройте гнездо в [target_area.name]: проведите [target_amount] секунд и загрязине там все хорошенько."
+
+/datum/objective/rat_king/nest/check_completion()
+	if(!king || !king.owner || !king.owner.current)
+		return FALSE
+	return king.domain_time >= target_amount
 
 /datum/objective/rat_king/survive
 	explanation_text = "Доживите до конца раунда."
