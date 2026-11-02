@@ -1058,9 +1058,9 @@
 	
 	projectile_damage_multiplier = 1.1
 	dual_wield_spread = 25
-	fire_delay = 1
+	fire_delay = 5
 	w_class = WEIGHT_CLASS_BULKY
-	recoil = 0.5
+	recoil = 10
 
 /obj/item/gun/ballistic/revolver/drilling/Initialize(mapload)
 	. = ..()
@@ -1080,6 +1080,8 @@
 
 /obj/item/gun/ballistic/revolver/drilling/sawed
 	name = "\improper Заочный приговор"
+	fire_delay = 10
+	recoil = 20
 	desc = "Модификация Трибунала для тех, у кого нет времени на долгие разбирательства. Отпиленные стволы заставляют винтовочные пули .308 свистеть с непредсказуемой траекторией, а 12-й калибр превратился в огненное дыхание преисподней. Оружие ближнего боя, где каждый выстрел это автоматическое признание вины"
 	icon_state = "drilling sawed"
 	w_class = WEIGHT_CLASS_NORMAL
