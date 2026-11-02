@@ -51,6 +51,11 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/skin = "standard"
 	var/visual_skin
 	var/ui_theme = "ntos"
+	var/activation_sound
+	var/deactivation_sound
+	var/modkit_name
+	var/modkit_desc
+	var/datum/armolex_hud/armolex_hud
 	var/have_emp_special = FALSE
 	var/seconds_electrified = MACHINE_NOT_ELECTRIFIED
 	var/interface_break = FALSE
@@ -118,6 +123,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/Destroy()
 	UnregisterSignal(src, COMSIG_ATOM_EXITED)
+	QDEL_NULL(armolex_hud)
 	remove_pai()
 	QDEL_NULL(mod_link)
 	if(is_active())
@@ -161,6 +167,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		malfunctioning_charge_drain = rand(1,20)
 	subtract_charge((cell_drain + malfunctioning_charge_drain) * delta_time)
 	update_cell_alert()
+	armolex_hud?.update()
 	for(var/obj/item/mod/module/module as anything in modules)
 		if(is_malfunctioning() && module.active && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time))
 			module.on_deactivation()
@@ -421,6 +428,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/proc/set_wearer(mob/user)
 	wearer = user
+	armolex_hud?.bind_wearer()
 	RegisterSignal(wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	RegisterSignal(wearer, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(on_borg_charge))
 	RegisterSignal(wearer, COMSIG_PARENT_QDELETING, PROC_REF(on_wearer_deleted), override = TRUE)
@@ -451,6 +459,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, COMSIG_PARENT_QDELETING))
 	wearer.clear_alert("mod_charge")
 	wearer = null
+	armolex_hud?.bind_wearer()
 
 /obj/item/mod/control/proc/remove_module_actions(mob/user, obj/item/mod/module/removed_module)
 	for(var/datum/action/cooldown/module_action/action in user?.actions?.Copy())
