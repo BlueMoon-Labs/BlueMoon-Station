@@ -490,6 +490,7 @@ export const ColorPickerPanel = (props: {
         if (event.key !== KEY_ENTER || event.nativeEvent.isComposing) return;
         event.stopPropagation();
         if (event.defaultPrevented || event.repeat) return;
+        if (event.target instanceof HTMLElement && event.target.closest('button')) return;
         event.preventDefault();
         apply();
       }}
@@ -599,7 +600,10 @@ export const ColorPickerPanel = (props: {
                             )
                       }
                       onChange={(event, next) => {
-                        if (!Number.isFinite(next)) return;
+                        if (!Number.isFinite(next)) {
+                          event.preventDefault();
+                          return;
+                        }
                         if (colorModel === 'HSL') {
                           const nextHsl: [number, number, number] = [...hsl];
                           nextHsl[index] =

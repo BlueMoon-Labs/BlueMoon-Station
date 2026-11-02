@@ -2364,7 +2364,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Существующий слот, в том числе намеренно пустой, сохраняет свои независимые изменения.
 	if(restore_preset_loadout && active_character_preset)
 		var/list/active_preset = character_presets[active_character_preset]
-		loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = deepCopyList(active_preset["loadout"])
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
