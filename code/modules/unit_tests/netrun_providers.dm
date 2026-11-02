@@ -72,6 +72,7 @@
 
 /// Queue a packet, change its provider's condition, then deliver without timer sleeps.
 /datum/unit_test/netrun_provider_delivery_revalidation/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/netrun_provider_test/conditional/target = allocate(/obj/item/netrun_provider_test/conditional)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 1, list(ACCESS_RD))
@@ -96,6 +97,7 @@
 
 /// Native callbacks that recheck UI state retain the original action's access level.
 /datum/unit_test/netrun_provider_ui_state_access/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/netrun_provider_test/conditional/target = allocate(/obj/item/netrun_provider_test/conditional)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 1, list(ACCESS_RD))
@@ -115,6 +117,7 @@
 
 /// Network pump controls use native setters, units, hard limits, and atmos wakeups.
 /datum/unit_test/netrun_provider_atmos_pumps/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/machinery/atmospherics/components/binary/pump/pump = allocate(/obj/machinery/atmospherics/components/binary/pump)
 	pump.set_machine_stat(0)
@@ -157,6 +160,7 @@
 
 /// Air-alarm modes remain native, with explicit ROOT bypass and hard physical isolation.
 /datum/unit_test/netrun_provider_airalarm/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/machinery/airalarm/alarm = allocate(/obj/machinery/airalarm)
 	alarm.set_machine_stat(0)

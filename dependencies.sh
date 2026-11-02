@@ -6,6 +6,8 @@
 # byond version
 export BYOND_MAJOR=516
 export BYOND_MINOR=1688
+# HTTPS mirror archive for the exact pinned Linux release; verified before unpacking.
+export BYOND_LINUX_SHA256=16278f318cdeb4b77c57868dd7135032fde717ea6226269d22b2a1a50968e7f9
 
 #rust_g git tag
 export RUST_G_VERSION=6.2.0

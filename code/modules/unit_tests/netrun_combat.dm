@@ -1,5 +1,6 @@
 /// Automatic breaches reuse real target validation and never award access early.
 /datum/unit_test/netrun_autobreach_lifecycle/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)
@@ -22,6 +23,7 @@
 	TEST_ASSERT(!console.start_breach("firmware", node.address, TRUE), "Automatic cracking must not bypass the separate firmware challenge")
 
 /datum/unit_test/netrun_autobreach_program_revocation/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)
@@ -127,14 +129,12 @@
 	TEST_ASSERT(netrun_test_yield_to(second), "The first guard and remote console explicitly yield to the second guard")
 	TEST_ASSERT(second.begin_program(trace, console), "A second sentry obtains its own independent contact on its turn")
 	var/before_combat_paths = SSnetrun.combat_ui_tree_builds
-	var/before_combat_copies = SSnetrun.get_topology().route_snapshot_copies
 	var/list/warnings_only = console.combat_context.status_payload()
 	TEST_ASSERT_EQUAL(length(warnings_only["incoming"]), 1, "The compact warning identifies the current telegraph while prior contacts remain")
 	TEST_ASSERT(!("targets" in warnings_only) && !("programs" in warnings_only), "A warning must not build hidden combat cards or program inventory")
 	TEST_ASSERT_EQUAL(SSnetrun.combat_ui_tree_builds, before_combat_paths, "The compact HUD must never build a routing tree")
 	var/list/payload = console.breach_combat_payload()
 	TEST_ASSERT_EQUAL(SSnetrun.combat_ui_tree_builds, before_combat_paths + 1, "One combat payload with several targets must acquire only one routing tree")
-	TEST_ASSERT_EQUAL(SSnetrun.get_topology().route_snapshot_copies, before_combat_copies, "Combat cards must borrow current physical routes without copying every network endpoint")
 	TEST_ASSERT_EQUAL(length(payload["targets"]), 2, "The puzzle must expose both actual attackers and no unrelated ICE")
 	TEST_ASSERT_EQUAL(length(payload["incoming"]), 1, "Only the current guard's prepared attack is pending")
 	TEST_ASSERT_EQUAL(length(payload["programs"]), 4, "Installed counterattacks remain available and player trace stays hidden")

@@ -134,18 +134,27 @@
 		to_chat(diver, span_warning(reason))
 		return FALSE
 	console.diving = TRUE
+	console.dive_return_ready(node)
 	to_chat(diver, span_notice("Вы закрываете глаза и проваливаетесь в сеть..."))
 	var/ready = do_after(diver, 3 SECONDS, target = diver)
 	if(QDELETED(src) || QDELETED(console))
 		return FALSE
+	var/deadline = world.time + 5 SECONDS
+	while(ready && owner == diver && console.available_to(diver) && console.is_local_entry(node, diver) && !console.is_locked() && !console.dive_return_ready(node) && world.time < deadline)
+		sleep(world.tick_lag)
+		if(QDELETED(src) || QDELETED(console))
+			return FALSE
 	console.diving = FALSE
 	if(!ready || owner != diver || console.dive_denial(node, diver))
+		return FALSE
+	if(!console.dive_return_ready(node))
+		console.log_line("Маршрут погружения ещё подготавливается. Повторите после синхронизации карты.", "average")
 		return FALSE
 	return complete_dive(node, diver)
 
 /// Keep the final admission and mind transfer atomic after the interruptible preparation.
 /obj/item/organ/cyberimp/brain/netlink/proc/complete_dive(datum/component/netrun_node/node, mob/living/carbon/diver)
-	if(owner != diver || !console || console.dive_denial(node, diver))
+	if(owner != diver || !console || console.dive_denial(node, diver) || !console.dive_return_ready(node))
 		return FALSE
 	var/mob/camera/netrun_entity/entity = netrun_start_dive(diver, node)
 	if(entity)

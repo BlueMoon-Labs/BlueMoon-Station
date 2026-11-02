@@ -426,7 +426,7 @@ const runTestWorld = (ddPath, dmbFile, params, outputFile, timeoutMs) => new Pro
   const sink = fs.createWriteStream(outputFile);
   const child = spawn(ddPath, [dmbFile, '-close', '-trusted', '-verbose', '-params', params], {
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, NETRUN_CORE_MODE: 'dm' },
+    env: { ...process.env, NETRUN_CORE_MODE: 'external' },
     windowsHide: true,
   });
   let tail = '';
@@ -649,7 +649,7 @@ export const DmTestRunTarget = new Juke.Target({
     await Juke.exec(await getDreamDaemonPath(), [
       `${artifactBase}.dmb`, '-close', '-trusted', '-verbose',
       '-params', runWorldParams(logDirectory, [testListParam(get)]),
-    ], { env: { ...process.env, NETRUN_CORE_MODE: 'dm' }, windowsHide: true });
+    ], { env: { ...process.env, NETRUN_CORE_MODE: 'external' }, windowsHide: true });
     recordUnitTestDurations([logDirectory]);
     try {
       const cleanRun = fs.readFileSync(`data/logs/${logDirectory}/clean_run.lk`, 'utf-8');

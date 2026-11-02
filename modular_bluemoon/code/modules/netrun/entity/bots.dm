@@ -683,7 +683,6 @@
 /datum/netrun_request/agent_control/execute()
 	if(!console.owns_agent(agent) || agent.host_node != node || sender != console.operator || console.is_locked())
 		return reject("Агент, владелец или место назначения изменились.")
-	node.join_network()
 	var/datum/netrun_path_tree/tree = console.make_path_tree()
 	var/valid = node.network == sent_network && node.is_online() && console.can_route(node, tree)
 	if(valid)

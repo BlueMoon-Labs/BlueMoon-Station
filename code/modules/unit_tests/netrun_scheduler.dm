@@ -239,35 +239,30 @@
 	host.forceMove(get_step(get_turf(host), EAST))
 	TEST_ASSERT(node.pending_physical_update, "Native movement must still enqueue physical reconciliation without a fallback poll")
 
-/datum/component/netrun_node/netrun_scheduler_probe
-	var/join_calls = 0
-
-/datum/component/netrun_node/netrun_scheduler_probe/join_network()
-	join_calls++
-	return ..()
-
-/// A presentation/status poll must not rejoin a dynamic endpoint that has not moved.
+/// Native polling never chooses an APC; only an imported publication clears physical binding work.
 /datum/unit_test/netrun_scheduler_dynamic_binding_reuse/Run()
-	var/obj/item/host = allocate(/obj/item)
-	var/datum/component/netrun_node/netrun_scheduler_probe/node = host.AddComponent(/datum/component/netrun_node/netrun_scheduler_probe, NETRUN_NODE_TERMINAL)
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/obj/item/host = allocate(/obj/item, scene.source_spot)
+	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	var/datum/controller/subsystem/netrun/netrun_execution_test/worker = allocate(/datum/controller/subsystem/netrun/netrun_execution_test)
-	node.pending_physical_update = FALSE
-	node.binding_checked = TRUE
-	node.binding_infra_revision = worker.get_topology().infrastructure_revision
+	var/datum/component/netrun_node/anchor = node.bound_apc
+	var/datum/netrun_network/network = node.network
 	worker.node_interest_until[node] = world.time + NETRUN_NODE_INTEREST_LEASE
-	var/joins = node.join_calls
 	var/datum/netrun_task_scheduler/scheduler = worker.get_task_scheduler()
 	scheduler.enqueue("node", node)
 	var/datum/netrun_task/task = scheduler.take()
 	task.execute(worker)
 	qdel(task)
-	TEST_ASSERT_EQUAL(node.join_calls, joins, "Unmoved dynamic nodes must reuse their current APC/LAN binding")
-	node.pending_physical_update = TRUE
+	TEST_ASSERT(node.bound_apc == anchor && node.network == network, "Presentation polling preserves the imported APC and LAN")
+	host.forceMove(scene.target_spot)
 	scheduler.enqueue("node", node)
 	task = scheduler.take()
 	task.execute(worker)
 	qdel(task)
-	TEST_ASSERT_EQUAL(node.join_calls, joins + 1, "A queued physical change must still reconcile the actual binding")
+	TEST_ASSERT(node.pending_physical_update, "Native worker cannot claim that Core published a moved endpoint")
+	TEST_ASSERT(node.bound_apc == anchor && node.network == network, "Native worker cannot select a replacement binding")
+	scene.import_star()
+	TEST_ASSERT(!node.pending_physical_update, "A new explicit imported binding acknowledges physical reconciliation")
 
 /// Idle patrols generate no traffic in empty LANs and resume for local gameplay only.
 /datum/unit_test/netrun_scheduler_patrol_interest_lifecycle/Run()
@@ -282,6 +277,7 @@
 	var/datum/component/netrun_node/local_node = local_apc.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/target_node = local_terminal.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/remote_node = remote_apc.GetComponent(/datum/component/netrun_node)
+	scene.fixture_graph.import_binding(remote_node, remote_node, SSnetrun.get_apc_network(remote_node))
 	var/datum/netrun_ice/local_patrol = allocate(/datum/netrun_ice, local_node, NETRUN_ICE_HUNTER)
 	var/datum/netrun_ice/remote_patrol = allocate(/datum/netrun_ice, remote_node, NETRUN_ICE_HUNTER)
 	local_patrol.persistent = TRUE
@@ -326,13 +322,12 @@
 	stale.reached.Cut()
 	stale.reached_networks.Cut()
 	console.ui_routes = stale
-	var/copies = graph.route_snapshot_copies
+	var/datum/netrun_path_tree/retained = graph.route_snapshot(node, TRUE)
 	TEST_ASSERT(entity.can_enter(next_node), "Movement admission must use the current physical path even while an old UI tree says it is unreachable")
 	console.access_session.node_access -= node.address
 	var/datum/netrun_ice/ice = allocate(/datum/netrun_ice, node)
 	TEST_ASSERT(ice.valid_program_target(SSnetrun.get_program("strike"), entity, TRUE), "A fresh combat check must still identify an unauthorized resident")
-	TEST_ASSERT_EQUAL(graph.route_snapshot_copies, copies, "Synchronous movement and ICE authority checks must not deep-copy whole route trees")
-	var/datum/netrun_path_tree/retained = graph.route_tables[node.address]
+	TEST_ASSERT_EQUAL(graph.route_snapshot(node, TRUE), retained, "Authority reads preserve the imported table identity")
 	TEST_ASSERT(retained && !QDELETED(retained), "Releasing a borrowed authority tree must preserve the topology's retained route table")
 	console.ui_routes = null
 	qdel(stale)

@@ -70,6 +70,7 @@
 
 /// Native covers are valid only for the exact endpoint and host captured by this request.
 /datum/unit_test/netrun_provider_native_host_binding/Run()
+	netrun_connected_test_area()
 	var/obj/item/source = allocate(/obj/item)
 	var/obj/machinery/netrun_native_status_test/target = allocate(/obj/machinery/netrun_native_status_test)
 	target.set_machine_stat(0)

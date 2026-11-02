@@ -53,7 +53,8 @@ async function compileLive(root, environment, log) {
       let tail = '';
       child = spawn(process.execPath, [path.join(root, 'tools/build/build.js'), 'dm-test-artifact', '--unit-test-profile=hermetic',
         '--define=NETRUN_CORE_LIVE_TEST', '--warnings-as-errors'], { cwd: root, env: environment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-      deadline = setTimeout(stopAtExit, 300000);
+      // Полная DM-компиляция на Windows при параллельной Docker-сборке занимает более пяти минут.
+      deadline = setTimeout(stopAtExit, 600000);
       const read = (chunk) => { log.write(chunk); tail = (tail + chunk.toString()).slice(-16384); };
       child.stdout.on('data', read);
       child.stderr.on('data', read);
@@ -111,7 +112,7 @@ export async function runLiveCore({ root = stationRoot, noBuild = false, timeout
     hostLog = boundedLog(path.join(directory, 'host.log'));
     console.log('Starting the published Host and real station DreamDaemon...');
     const code = await supervisePair({ cwd: root, env: environment,
-      hostCommand: [dotnetPath(), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', corePort],
+      hostCommand: [await dotnetPath({ root }), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', corePort],
       worldCommand: [artifact.daemon, dmb, '-close', '-trusted', '-invisible', '-verbose', '-params',
         `log-directory=${logDirectory}&unit-test-instance=${runId}&unit-test-list=tmp/netrun-core-live.txt`],
       worldOutput: (chunk) => worldLog.write(chunk), hostOutput: (chunk) => hostLog.write(chunk),
@@ -122,7 +123,7 @@ export async function runLiveCore({ root = stationRoot, noBuild = false, timeout
     const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
     if (report[liveTestName]?.status !== 0) throw new Error(`live_assertion_failed: ${`${report[liveTestName]?.message || 'missing result'}`.slice(0, 4096)}; logs=${directory}`);
     const output = fs.readFileSync(path.join(directory, 'world.log'), 'utf8');
-    if (!output.includes('NETRUN_CORE_LIVE_PASS discovery native_once projection source_tree movement native_builders_unchanged')) throw new Error('live_pass_marker_missing');
+    if (!output.includes('NETRUN_CORE_LIVE_PASS discovery native_once projection source_tree movement state external_only')) throw new Error('live_pass_marker_missing');
     console.log(`PASS: real station Core smoke; source=${built.source_digest}; logs=${directory}`);
     return { digest: built.source_digest, directory };
   } finally {

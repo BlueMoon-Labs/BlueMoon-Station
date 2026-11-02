@@ -77,6 +77,7 @@
 
 /// Firmware requires the same existing ROOT, executable and supported native operation.
 /datum/unit_test/netrun_npc_breach_firmware/Run()
+	netrun_connected_test_area()
 	var/obj/item/clothing/glasses/hud/health/night/glasses = allocate(/obj/item/clothing/glasses/hud/health/night, run_loc_floor_bottom_left)
 	var/datum/component/netrun_node/node = glasses.GetComponent(/datum/component/netrun_node)
 	var/mob/camera/netrun_entity/bot/bot = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, node, NETRUN_BOT_SENTINEL)

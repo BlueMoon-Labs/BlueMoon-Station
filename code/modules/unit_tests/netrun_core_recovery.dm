@@ -113,16 +113,16 @@
 	TEST_ASSERT(worker.shutdown_external_core(), "Repeated shutdown remains safe")
 	TEST_ASSERT_EQUAL(executor.disconnect_count, 1, "Repeated shutdown does not repeat callbacks")
 
-/// Diagnostic dm не читает token и не создаёт client; ошибочная конфигурация повторяется только после physical deadline.
+/// Removed modes fail closed; configuration retries only after the physical backoff deadline.
 /datum/unit_test/netrun_core_recovery_configuration/Run()
 	TEST_ASSERT_EQUAL(netrun_external_safe_code("node_capacity"), "node_capacity", "Safe Host code remains available for recovery diagnosis")
 	TEST_ASSERT_EQUAL(netrun_external_safe_code("payload text with spaces"), "host_rejected", "Diagnostics never copy arbitrary input text")
 	TEST_ASSERT_EQUAL(netrun_external_safe_code("код"), "host_rejected", "Only explicit ASCII code alphabet is accepted")
 	var/datum/controller/subsystem/netrun/recovery_fixture/disabled = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
 	disabled.settings["NETRUN_CORE_MODE"] = "dm"
-	TEST_ASSERT_NULL(disabled.ensure_external_core(), "Explicit diagnostic dm does not open IPC")
-	TEST_ASSERT_EQUAL(disabled.token_reads, 0, "Disabled mode never reads a secret")
-	TEST_ASSERT_EQUAL(disabled.clients_created, 0, "Disabled mode never creates a native client")
+	TEST_ASSERT_NULL(disabled.ensure_external_core(), "Removed native mode cannot open IPC")
+	TEST_ASSERT_EQUAL(disabled.token_reads, 0, "Invalid mode never reads a secret")
+	TEST_ASSERT_EQUAL(disabled.clients_created, 0, "Invalid mode never creates a native client")
 	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
 	worker.settings["NETRUN_CORE_PORT"] = "invalid"
 	TEST_ASSERT_NULL(worker.ensure_external_core(), "Bad port fails closed")

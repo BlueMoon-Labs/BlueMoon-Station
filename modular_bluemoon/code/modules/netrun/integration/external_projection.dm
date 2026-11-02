@@ -123,15 +123,12 @@
 	var/list/projection_notifications = list()
 	/// Совместимость одноразовой диагностической Graph projection не включается в production prepare path.
 	var/projection_stream_mode = FALSE
+	/// Один startup marker на binding подтверждает готовность native read-model, отдельно от Host graph.
+	var/projection_announced_binding
 
-/// Внешний режим выбирается без IPC до регистрации первого node; local diagnostic mode сохраняет прежний путь.
-/proc/netrun_external_projection_mode()
-	return SSnetrun?.ensure_external_mode() == "external"
-
-/// Возвращает только доверенный query coordinator текущего binding; отсутствие связи не включает DM fallback.
 /proc/netrun_external_projection_executor()
 	var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
-	return istype(executor) ? executor : null
+	return istype(executor) && !QDELETED(executor) && !QDELETED(executor.owner) ? executor : null
 
 /// Structural authority существует только для целиком импортированного текущего C# graph.
 /datum/netrun_external_effects/machines/queries/proc/projection_ready(datum/netrun_external_core/client)
@@ -605,7 +602,6 @@
 	var/datum/netrun_topology/external/graph = owner.get_topology()
 	graph.nodes = cursor.nodes
 	graph.adjacency = cursor.adjacency
-	graph.forwarding_adjacency = cursor.adjacency
 	graph.edges = cursor.edges
 	graph.edge_lookup = cursor.edge_lookup
 	graph.relay_addresses = cursor.relays
@@ -795,34 +791,24 @@
 	if(!executor?.projection_stream_mode)
 		invalidate()
 
-/datum/netrun_topology/external/refresh_node(datum/component/netrun_node/node)
-	return
 
-/datum/netrun_topology/external/nearest_apc(turf/position)
-	// Point query пока не объявлен: произвольный fallback создал бы неподтверждённую authority.
-	return null
 
-/datum/netrun_topology/external/rebuild()
-	return
 
-/datum/netrun_topology/external/advance_apc_prebuild(max_operations)
-	return TRUE
 
-/datum/netrun_topology/external/reconcile_movement()
-	return
+
+
+
+
+
 
 /datum/netrun_topology/external/reconcile_availability()
 	SSnetrun.reconcile_dirty_availability()
 
-/datum/netrun_topology/external/refresh_route_tables(refresh_interval, expiry_interval)
-	return
 
-/datum/netrun_topology/external/borrow_infrastructure_tree(datum/component/netrun_node/root, availability_reconciled = FALSE)
-	var/datum/netrun_external_effects/machines/queries/executor = netrun_external_projection_executor()
-	return executor ? executor.projection_tree(SSnetrun.external_core, root, "machine") : new /datum/netrun_path_tree
 
-/datum/netrun_topology/external/store_route_table(datum/component/netrun_node/start)
-	return route_snapshot(start, TRUE)
+
+
+
 
 /datum/netrun_topology/external/route_snapshot(datum/component/netrun_node/start, borrow = FALSE)
 	var/datum/netrun_external_effects/machines/queries/executor = netrun_external_projection_executor()
@@ -891,6 +877,8 @@
 		var/datum/component/netrun_node/node = client.resolve_node(key?["node_id"], key?["generation"])
 		if(QDELETED(node) || graph.nodes[address] != node || (external_mode == "machine" && !node.is_online()))
 			return FALSE
+		if(executor.projection_stream_mode && (executor.projection_dirty_nodes[executor.projection_token(key)] || external_node_revisions[address] != executor.projection_raw_revision(client, key)))
+			return FALSE
 		var/parent_address = previous[address]
 		if(!parent_address)
 			return node == source
@@ -901,7 +889,9 @@
 		var/list/edge = graph.edge_lookup["[parent_address]>[address]"]
 		if(executor.projection_stream_mode && edge && (external_graph.external_data.address_keys[edge["from"]] != edge["from_token"] || external_graph.external_data.address_keys[edge["to"]] != edge["to_token"]))
 			edge = null
-		if(!edge || edge["latency"] != costs[address] - costs[parent_address])
+		// Stream proof связывает путь с exact node revisions и infrastructure stamps.
+		// Вычитание cumulative C# doubles в DM float теряет точность даже для 0.3-0.1.
+		if(!edge || (!executor.projection_stream_mode && edge["latency"] != costs[address] - costs[parent_address]))
 			if(!netrun_quantum_link(parent_node, node) || SSnetworks.station_network.setting_disabled)
 				return FALSE
 			var/obj/machinery/ntnet_relay/first = parent_node.parent
@@ -1097,6 +1087,9 @@
 /datum/netrun_external_effects/machines/queries/proc/projection_update_dirty(datum/netrun_external_core/client)
 	if(owner?.topology)
 		owner.topology.dirty = !projection_stream_ready(client)
+		if(!owner.topology.dirty && projection_announced_binding != client.binding_epoch)
+			projection_announced_binding = client.binding_epoch
+			log_world("NETRUN_PROJECTION_READY native_graph")
 
 /// Прошедшие source infra facts и опубликованные stamps являются authority barrier для импортированной геометрии.
 /datum/netrun_external_effects/machines/queries/proc/projection_stream_ready(datum/netrun_external_core/client)
@@ -1379,7 +1372,6 @@
 	var/datum/netrun_external_graph_data/data = cursor.data
 	graph.nodes = data.nodes
 	graph.adjacency = data.adjacency
-	graph.forwarding_adjacency = data.adjacency
 	graph.edges = data.edges
 	graph.edge_lookup = data.edge_lookup
 	graph.edge_positions = data.edge_positions

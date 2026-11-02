@@ -12,7 +12,3 @@
 /datum/netrun_task/request_delivery
 	parent_type = /datum/netrun_task/delivery
 	kind = "request_delivery"
-
-/datum/netrun_task/machine_delivery
-	parent_type = /datum/netrun_task/delivery
-	kind = "machine_delivery"

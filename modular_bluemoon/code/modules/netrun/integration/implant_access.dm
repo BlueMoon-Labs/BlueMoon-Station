@@ -8,6 +8,7 @@
 /datum/netrun_console/implant/New(atom/host, origin)
 	. = ..()
 	state_override = GLOB.conscious_state
+	workspace_view = "map"
 
 /datum/netrun_console/implant/proc/available_to(mob/user = operator)
 	var/obj/item/organ/cyberimp/brain/netlink/implant = host
@@ -31,10 +32,12 @@
 /datum/netrun_console/implant/ui_data(mob/user, datum/ui_source)
 	if(!available_to(user || operator))
 		return list()
-	netrun_ui_source = ui_source || src
-	if(user)
-		operator = user
-	note_ui_activity()
+	// Общая сериализация регистрирует async route waiter и wire-session карты.
+	// Первый пустой read Core больше не оставляет нейролинк без обновлений.
+	return ..()
+
+/// Карта и локальная память доступны до погружения; команды машин остаются у резидента.
+/datum/netrun_console/implant/build_ui_data(mob/user, datum/ui_source, list/session)
 	var/datum/component/netrun_node/node = selected_node()
 	var/list/entry
 	if(node && is_local_entry(node))
@@ -46,6 +49,7 @@
 		"ui_theme" = theme_id(user),
 		"input_ack" = input_ack,
 		"host_actions" = host_actions(),
+		"map" = map_payload(user, ui_source, session),
 		"log" = log,
 		"selected" = entry,
 		"storage" = storage_payload(),
@@ -62,7 +66,7 @@
 		return FALSE
 	if(action == "node_interact" && params["id"] != "dive")
 		return FALSE
-	if(!(action in list("choose_entry", "choose_connection", "unjack", "insert_shard", "eject_shard", "node_interact", "file_select", "file_new", "file_edit", "file_rename", "file_copy", "file_move", "file_import", "agent_create", "delete_local", "read")))
+	if(!(action in list("choose_entry", "choose_connection", "unjack", "insert_shard", "eject_shard", "node_interact", "file_select", "file_new", "file_edit", "file_rename", "file_copy", "file_move", "file_import", "agent_create", "delete_local", "read", "map_resync", "map_sync_ack", "map_sector", "select", "focus_host", "search", "select_network", "set_waypoint", "clear_waypoint")))
 		return FALSE
 	return ..()
 
@@ -173,17 +177,35 @@
 		return "Сознание не готово к погружению."
 	return null
 
+/// Возврат резидента читает дерево от точки входа; оно должно быть готово до переноса разума.
+/datum/netrun_console/implant/proc/dive_return_ready(datum/component/netrun_node/node)
+	if(QDELETED(node) || !node.is_online())
+		return FALSE
+	var/datum/netrun_topology/graph = SSnetrun.get_topology()
+	var/datum/netrun_path_tree/tree = graph.route_snapshot(node, TRUE)
+	var/ready = tree.path_available(graph, node.address)
+	if(connection.jack)
+		ready = ready && jack_valid()
+	else
+		var/datum/component/netrun_node/client_node = host.GetComponent(/datum/component/netrun_node)
+		ready = ready && connection.wireless && client_node && tree.path_available(graph, client_node.address)
+	if(!tree.retained)
+		qdel(tree)
+	return ready
+
 /// Node selection is useful even when the map shows a different sector or workspace.
-/datum/netrun_console/implant/proc/entry_choices()
+/datum/netrun_console/implant/proc/entry_choices(datum/netrun_path_tree/tree)
 	. = list()
 	if(!available_to())
 		return
-	var/datum/netrun_path_tree/tree = make_path_tree()
+	var/owned_tree = !tree
+	tree ||= make_path_tree()
 	for(var/address in tree.reached)
 		var/datum/component/netrun_node/node = SSnetrun.find_node(address)
 		if(is_local_entry(node) && node.is_online() && can_route(node, tree) && node_level(node, tree) >= NETRUN_ACCESS_USER)
 			.["[node.get_name()] — [node.address]"] = node
-	qdel(tree)
+	if(owned_tree)
+		qdel(tree)
 
 /datum/netrun_console/implant/proc/select_entry(datum/component/netrun_node/node, mob/user)
 	if(!available_to(user) || !is_local_entry(node, user) || !node.is_online() || !can_route(node) || node_level(node) < NETRUN_ACCESS_USER)
@@ -198,7 +220,23 @@
 	return TRUE
 
 /datum/netrun_console/implant/proc/choose_entry(mob/user)
-	var/list/choices = entry_choices()
+	var/deadline = world.time + 5 SECONDS
+	var/datum/netrun_path_tree/tree
+	while(available_to(user))
+		tree = make_path_tree()
+		var/datum/netrun_path_tree/external/external_tree = tree
+		if(tree.source && (!istype(external_tree) || external_tree.external_current()))
+			break
+		QDEL_NULL(tree)
+		if(world.time >= deadline)
+			log_line("Сетевая карта ещё синхронизируется. Повторите выбор после загрузки карты.", "average")
+			return
+		sleep(world.tick_lag)
+	if(!available_to(user))
+		QDEL_NULL(tree)
+		return
+	var/list/choices = entry_choices(tree)
+	qdel(tree)
 	if(!length(choices))
 		log_line("В вашем отсеке нет доступных узлов погружения.", "average")
 		return

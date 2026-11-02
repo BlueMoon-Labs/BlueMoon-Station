@@ -448,6 +448,7 @@
 #include "netrun_credential_sessions.dm"
 #include "netrun_refresh.dm"
 #include "netrun_routes.dm"
+#include "netrun_fixture_bus.dm"
 #include "netrun_transport.dm"
 #include "netrun_research_authority.dm"
 #include "netrun_availability_queue.dm"

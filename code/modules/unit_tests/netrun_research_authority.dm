@@ -243,13 +243,13 @@
 	var/datum/netrun_machine_service/research_client/client = console.get_netrun_machine_service("research.client")
 	var/datum/netrun_machine_service/research_server/first_service = first.get_netrun_machine_service("research.server")
 	var/datum/netrun_machine_service/research_server/second_service = second.get_netrun_machine_service("research.server")
-	TEST_ASSERT_EQUAL(client.discovery_target_limit("research.server"), 1, "Only one eligible physical owner may receive a research operation")
-	TEST_ASSERT_EQUAL(client.discovery_target_limit("research.client"), 0, "Research unicast must not silently limit unrelated discovery")
-	var/list/targets = client.resolve("research.server", REF(first.stored_research))
-	TEST_ASSERT_EQUAL(length(targets), 1, "Synchronous research discovery must preserve unicast")
+	var/list/unrelated = client.select_targets("research.client", list(first_service, second_service))
+	TEST_ASSERT_EQUAL(length(unrelated), 2, "Research unicast must not silently limit unrelated discovery")
+	var/list/targets = netrun_wait_catalog(client, "research.server", REF(first.stored_research))
+	TEST_ASSERT_EQUAL(length(targets), 1, "Asynchronous research discovery must preserve unicast")
 	TEST_ASSERT_EQUAL(targets[1], first_service, "Discovery must retain the existing registry selection order")
 	first.set_machine_stat(BROKEN)
-	targets = client.resolve("research.server", REF(second.stored_research))
+	targets = netrun_wait_catalog(client, "research.server", REF(second.stored_research))
 	TEST_ASSERT_EQUAL(length(targets), 1, "An unavailable earlier owner must not prevent discovery of a live peer")
 	TEST_ASSERT_EQUAL(targets[1], second_service, "Research discovery must fail over to the next eligible physical owner")
 	var/list/selected = client.select_targets("research.server", list(first_service, second_service))
@@ -294,6 +294,20 @@
 	TEST_ASSERT_EQUAL(first.stored_research, second.stored_research, "Reopening readiness must resume parked clustering and retain native power recovery")
 	TEST_ASSERT_EQUAL(length(first.stored_research.research_owner_refs), 2, "Resumed startup must preserve both physical research owners")
 
+/// Publish exact cross-sector rows supplied by this relay recovery scenario.
+/datum/unit_test/proc/netrun_research_import_relay_paths(datum/netrun_transport_scene/scene, list/local_servers, list/remote_servers, obj/machinery/ntnet_relay/local_relay, obj/machinery/ntnet_relay/remote_relay)
+	var/datum/netrun_topology/import_fixture/graph = scene.fixture_graph
+	for(var/obj/machinery/rnd/server/server as anything in local_servers + remote_servers)
+		graph.route_snapshot(server.GetComponent(/datum/component/netrun_node), TRUE)
+	for(var/obj/machinery/rnd/server/local as anything in local_servers)
+		for(var/obj/machinery/rnd/server/remote as anything in remote_servers)
+			var/datum/component/netrun_node/source = local.GetComponent(/datum/component/netrun_node)
+			var/datum/component/netrun_node/target = remote.GetComponent(/datum/component/netrun_node)
+			var/list/path = list(source, source.bound_apc, local_relay.GetComponent(/datum/component/netrun_node), remote_relay.GetComponent(/datum/component/netrun_node), target.bound_apc, target)
+			graph.import_path(path, list(0, 1, 2, 5, 6, 7))
+			reverseRange(path)
+			graph.import_path(path, list(0, 1, 2, 5, 6, 7))
+
 /// Already formed startup clusters must unite after a real relay recovers.
 /datum/unit_test/netrun_research_startup_partition_recovery/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
@@ -332,6 +346,7 @@
 	TEST_ASSERT_EQUAL(first_remote.stored_research, second_remote.stored_research, "The remote partition must first form its real two-owner startup cluster")
 	TEST_ASSERT_NOTEQUAL(first_local.stored_research, first_remote.stored_research, "A broken inter-sector relay must isolate the two configured clusters")
 	TEST_ASSERT(local_relay.is_operational(), "The source relay must remain operational while the remote relay is unavailable")
+	netrun_research_import_relay_paths(scene, local_servers, remote_servers, local_relay, remote_relay)
 	remote_relay.set_machine_stat(0)
 	deadline = world.time + 5 SECONDS
 	while(first_local.stored_research != first_remote.stored_research && world.time < deadline)
@@ -359,8 +374,8 @@
 	var/area/remote_room = scene.room(/area/netrun_route_test)
 	var/turf/remote_spot = scene.take(locate(80, 80, levels[1]), remote_room, TRUE)
 	scene.machine(/obj/machinery/power/apc, scene.take(locate(81, 80, levels[1]), remote_room, TRUE))
-	scene.machine(/obj/machinery/ntnet_relay, scene.source_spot)
-	scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(82, 80, levels[1]), remote_room, TRUE))
+	var/obj/machinery/ntnet_relay/local_relay = scene.machine(/obj/machinery/ntnet_relay, scene.source_spot)
+	var/obj/machinery/ntnet_relay/remote_relay = scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(82, 80, levels[1]), remote_room, TRUE))
 	var/obj/machinery/rnd/server/first = scene.machine(/obj/machinery/rnd/server, scene.source_spot)
 	var/obj/machinery/rnd/server/second = scene.machine(/obj/machinery/rnd/server, remote_spot)
 	first.netrun_mapped_server = TRUE
@@ -378,6 +393,7 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT(!first_service.cluster_queued && !second_service.cluster_queued, "A disabled backbone must let the failed finite startup waves drain")
 	TEST_ASSERT_NOTEQUAL(first.stored_research, second.stored_research, "Disabled NTnet must keep the two real sectors' mapped servers apart")
+	netrun_research_import_relay_paths(scene, list(first), list(second), local_relay, remote_relay)
 	SSnetworks.station_network.setting_disabled = FALSE
 	// Use the native processing seam, without manually announcing topology or
 	// re-running readiness. The hook only queues the domain continuation.
@@ -744,11 +760,11 @@
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, scene.source_spot)
 	var/datum/tgui/ui = allocate(/datum/tgui/netrun_research_headless, user, console, "Techweb")
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	var/packets = length(transport.packets)
+	var/packets = length(scene.pending_contexts())
 	var/queued = transport.queued_messages
 	for(var/index in 1 to 20)
 		console.ui_interact(user, ui)
-	TEST_ASSERT_EQUAL(length(transport.packets), packets, "Refreshing an existing research UI must not create any new machine packets")
+	TEST_ASSERT_EQUAL(length(scene.pending_contexts()), packets, "Refreshing an existing research UI must not create any new machine packets")
 	TEST_ASSERT_EQUAL(transport.queued_messages, queued, "Refreshing an existing research UI must not queue new discovery work")
 
 /datum/unit_test/netrun_research_ui_refresh_drain_mechfab/Run()
@@ -765,11 +781,11 @@
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, scene.source_spot)
 	var/datum/tgui/ui = allocate(/datum/tgui/netrun_research_headless, user, fabricator, "ExosuitFabricator")
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	var/packets = length(transport.packets)
+	var/packets = length(scene.pending_contexts())
 	var/queued = transport.queued_messages
 	for(var/index in 1 to 20)
 		fabricator.ui_interact(user, ui)
-	TEST_ASSERT_EQUAL(length(transport.packets), packets, "Refreshing an existing mechfab UI must not create any new machine packets")
+	TEST_ASSERT_EQUAL(length(scene.pending_contexts()), packets, "Refreshing an existing mechfab UI must not create any new machine packets")
 	TEST_ASSERT_EQUAL(transport.queued_messages, queued, "A mechfab refresh must not queue discovery work")
 
 /// A telemetry-only credit source must not receive a full research database or subscribe to pushes.
@@ -907,9 +923,8 @@
 	TEST_ASSERT(!service.publish_batch(SSnetrun), "One worker slice cannot finish a 64-reader publication")
 	TEST_ASSERT_EQUAL(service.publish_cursor, 2, "One publication slice must visit at most one reader")
 	var/pending = 0
-	for(var/datum/netrun_machine_packet/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source == service)
-			pending++
+	for(var/datum/netrun_external_request_context/context as anything in scene.pending_contexts(service))
+		pending++
 	TEST_ASSERT(pending <= 1, "The first slice must admit at most one research packet")
 	deadline = world.time + 10 SECONDS
 	while(world.time < deadline)
@@ -918,9 +933,8 @@
 			if(client.snapshot_revision == revision)
 				ready++
 		pending = 0
-		for(var/datum/netrun_machine_packet/packet as anything in SSnetrun.get_machine_transport().packets)
-			if(packet.source == service)
-				pending++
+		for(var/datum/netrun_external_request_context/context as anything in scene.pending_contexts(service))
+			pending++
 		if(ready == length(clients) && !pending && !service.publish_addresses)
 			break
 		sleep(world.tick_lag)
@@ -969,14 +983,13 @@
 	service.publish()
 	while(service.publish_addresses)
 		service.publish_batch(SSnetrun)
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	var/delivered = 0
-	for(var/datum/netrun_machine_packet/data/packet as anything in transport.packets.Copy())
-		if(packet.source != service || !(packet.recipient in clients))
+	for(var/datum/netrun_external_request_context/context as anything in scene.pending_contexts(service))
+		if(!(context.destination_ref?.resolve() in clients))
 			continue
-		TEST_ASSERT_EQUAL(packet.message.payload["operation"], "state", "Income fanout must use compact balance packets")
-		TEST_ASSERT(!("researched_designs" in packet.message.payload) && !("researched_nodes" in packet.message.payload), "Balance packets must carry no recipe or node sets")
-		packet.deliver()
+		TEST_ASSERT_EQUAL(context.message.payload["operation"], "state", "Income fanout must use compact balance packets")
+		TEST_ASSERT(!("researched_designs" in context.message.payload) && !("researched_nodes" in context.message.payload), "Balance packets must carry no recipe or node sets")
+		scene.deliver_context(context)
 		delivered++
 	TEST_ASSERT_EQUAL(delivered, 3, "Every subscription must receive the new balance")
 	for(var/datum/netrun_machine_service/research_client/client as anything in clients)
@@ -999,11 +1012,11 @@
 	while(service.publish_addresses)
 		service.publish_batch(SSnetrun)
 	delivered = 0
-	for(var/datum/netrun_machine_packet/data/packet as anything in transport.packets.Copy())
-		if(packet.source != service || !(packet.recipient in clients))
+	for(var/datum/netrun_external_request_context/context as anything in scene.pending_contexts(service))
+		if(!(context.destination_ref?.resolve() in clients))
 			continue
-		TEST_ASSERT_EQUAL(packet.message.payload["operation"], "snapshot", "Structural changes must still carry the full catalogue")
-		packet.deliver()
+		TEST_ASSERT_EQUAL(context.message.payload["operation"], "snapshot", "Structural changes must still carry the full catalogue")
+		scene.deliver_context(context)
 		delivered++
 	TEST_ASSERT_EQUAL(delivered, 3, "Every subscriber must receive changed recipes")
 	TEST_ASSERT(console.netrun_research_cache.researched_designs["mmi"], "Full delivery must apply the new design")
@@ -1040,26 +1053,6 @@
 		TEST_ASSERT_EQUAL(length(query.queued), 3, "Version ordering must not coalesce or discard explicit action outcomes")
 		qdel(query)
 		TEST_ASSERT_EQUAL(transport.queued_messages, queued_before, "Resolution teardown must release all still-owned telemetry and action slots")
-		data["revision"] = 12
-		newer = new(data)
-		TEST_ASSERT(scene.source.send_to(scene.target, newer), "The current wire revision must acquire a real route")
-		var/datum/netrun_machine_packet/data/retained
-		for(var/datum/netrun_machine_packet/data/packet as anything in transport.packets)
-			if(packet.message == newer)
-				retained = packet
-		TEST_ASSERT_NOTNULL(retained, "The replacement test needs a live admitted data packet")
-		data["revision"] = 11
-		older = new(data)
-		TEST_ASSERT(scene.source.send_to(scene.target, older), "Superseded wire state must not report a delivery failure")
-		TEST_ASSERT(QDELETED(older) && retained.message == newer, "An older wire revision must not replace newer in-flight telemetry")
-		data["revision"] = 13
-		latest = new(data)
-		scene.source.send_to(scene.target, latest)
-		TEST_ASSERT(QDELETED(newer) && retained.message == latest, "A newer wire revision must reuse the same admitted packet")
-		equal_revision = new(data)
-		scene.source.send_to(scene.target, equal_revision)
-		TEST_ASSERT(QDELETED(latest) && retained.message == equal_revision, "Equal wire revisions must retain the existing replaceable-state behavior")
-		qdel(retained)
 
 /// A partial update must not supersede a missing full catalogue or roll state back.
 /datum/unit_test/netrun_research_compact_catalogue_recovery/Run()
@@ -1085,21 +1078,19 @@
 	var/list/state = service.snapshot_state(service.snapshot())
 	state["generation"] = client.binding_generation
 	TEST_ASSERT(service.send_to(client, new /datum/netrun_machine_message/research(state)), "Admit the following balance update")
-	var/datum/netrun_machine_packet/data/catalogue_packet
-	var/datum/netrun_machine_packet/data/state_packet
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source != service || packet.recipient != client)
-			continue
-		if(packet.message.payload["operation"] == "snapshot")
-			catalogue_packet = packet
-		else if(packet.message.payload["operation"] == "state")
-			state_packet = packet
+	var/datum/netrun_external_request_context/catalogue_packet
+	var/datum/netrun_external_request_context/state_packet
+	for(var/datum/netrun_external_request_context/context as anything in scene.pending_contexts(service, client))
+		if(context.message.payload["operation"] == "snapshot")
+			catalogue_packet = context
+		else if(context.message.payload["operation"] == "state")
+			state_packet = context
 	TEST_ASSERT(catalogue_packet && state_packet, "Compact coalescing must retain a full catalogue still in flight")
-	state_packet.deliver()
+	scene.deliver_context(state_packet)
 	TEST_ASSERT_EQUAL(client.snapshot_revision, accepted_revision, "An unknown catalogue revision cannot advance accepted state")
 	TEST_ASSERT(length(client.resolutions), "The rejected partial update must request an ordinary full repair")
 	// Simulate loss of the full packet; the newly requested copy must repair it.
-	qdel(catalogue_packet)
+	scene.bus.executor.process_result(scene.bus.client, scene.bus.completion(catalogue_packet.request_id, "failed", "cancelled"))
 	deadline = world.time + 5 SECONDS
 	while(client.snapshot_revision < server.stored_research.netrun_research_revision && world.time < deadline)
 		sleep(world.tick_lag)

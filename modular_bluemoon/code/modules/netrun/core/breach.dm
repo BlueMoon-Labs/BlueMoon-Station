@@ -90,7 +90,6 @@
 	var/datum/component/netrun_node/node = SSnetrun.find_node(target_id)
 	if(!node)
 		return FALSE
-	node.join_network()
 	return node.network == target_network && console.can_route(node) && node.is_online(node != console.connection.jack) && console.node_level(node) >= NETRUN_ACCESS_GUEST
 
 /datum/netrun_breach/proc/cell(row, col)

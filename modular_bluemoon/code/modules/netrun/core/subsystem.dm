@@ -20,7 +20,6 @@ SUBSYSTEM_DEF(netrun)
 	var/next_node_deadline = INFINITY
 	var/ice_clock_active = FALSE
 	var/task_populations = 0
-	var/apc_prebuild_steps = 0
 	/// HUD profiling: a single response may have many targets but at most one route snapshot.
 	var/combat_full_payloads = 0
 	var/combat_summary_payloads = 0
@@ -58,10 +57,6 @@ SUBSYSTEM_DEF(netrun)
 	var/task_slice_budget_ms
 	var/task_slice_start_usage
 	var/task_slice_started_at
-	/// Topology rebuild instrumentation; timing only while adaptive profiling is armed.
-	var/topology_rebuilds = 0
-	var/topology_rebuild_ms = 0
-	var/topology_rebuild_peak_ms = 0
 	/// Counters in the subsystem status panel (since world startup).
 	var/camera_feed_scans = 0
 	var/camera_feed_cache_hits = 0
@@ -84,18 +79,18 @@ SUBSYSTEM_DEF(netrun)
 	var/datum/netrun_topology/topology
 
 /datum/controller/subsystem/netrun/stat_entry(msg)
-	msg = "N:[length(nodes_by_address)] P:[length(poll_nodes)] Q:[length(dirty_nodes)] C:[length(active_consoles)]/[length(consoles)] E:[length(entities)] Last N:[last_processed_nodes] C:[last_processed_consoles] T:[topology_rebuilds] F:[camera_feed_scans]/[camera_feed_cache_hits] R:[camera_route_borrows] W:[wire_session_sweeps] I:[topology?.indexed_infrastructure_visits || 0]"
+	msg = "N:[length(nodes_by_address)] P:[length(poll_nodes)] Q:[length(dirty_nodes)] C:[length(active_consoles)]/[length(consoles)] E:[length(entities)] Last N:[last_processed_nodes] C:[last_processed_consoles] F:[camera_feed_scans]/[camera_feed_cache_hits] R:[camera_route_borrows] W:[wire_session_sweeps]"
 	if(task_scheduler)
 		var/datum/netrun_task_scheduler/scheduler = task_scheduler
 		msg += " Tasks:[scheduler.pending()] Run:[length(scheduler.running_by_key)] Q:[scheduler.counts[1]]/[scheduler.counts[2]]/[scheduler.counts[3]] Qpeak:[scheduler.peak_pending] Done:[scheduler.completed] Merge:[scheduler.merged] Pr:[scheduler.promoted] Budget:[round(scheduler.last_execution_ms, 0.1)]/[round(scheduler.last_budget_ms, 0.1)]ms"
-		msg += " APWork:[apc_prebuild_steps] APCmp:[topology?.apc_prebuild?.comparisons || 0] Combat UI:[combat_full_payloads]/[combat_summary_payloads] Paths:[combat_ui_tree_builds]"
+		msg += " Combat UI:[combat_full_payloads]/[combat_summary_payloads] Paths:[combat_ui_tree_builds]"
 		if(profile_armed)
 			msg += " Combat ms total/max:[round(combat_full_payload_ms, 0.1)]/[round(combat_full_payload_peak_ms, 0.1)]"
 		msg += " Exec:[scheduler.executed_by_priority[1]]/[scheduler.executed_by_priority[2]]/[scheduler.executed_by_priority[3]] WaitMax:[round(scheduler.max_wait_by_priority[1] / (1 SECONDS), 0.1)]/[round(scheduler.max_wait_by_priority[2] / (1 SECONDS), 0.1)]/[round(scheduler.max_wait_by_priority[3] / (1 SECONDS), 0.1)]s Late:[scheduler.overdue_by_priority[1]]/[scheduler.overdue_by_priority[2]]/[scheduler.overdue_by_priority[3]] Ovr:[scheduler.budget_overruns]/[scheduler.task_overruns]"
 	if(profile_armed)
 		msg += " Cam ms total/max F:[round(camera_feed_scan_ms, 0.1)]/[round(camera_feed_scan_max_ms, 0.1)] R:[round(camera_route_check_ms, 0.1)]/[round(camera_route_check_max_ms, 0.1)]"
 	msg += " Pub:[node_publication_batches]/[node_publication_entries]/[network_publication_entries]"
-	if(external_mode == "external" || external_mode == "shadow")
+	if(external_mode == "external")
 		msg += " Core:[external_mode]/[external_core?.state || "unavailable"] Ready:[external_core?.ready || FALSE] Ack:[external_core?.last_applied_sequence || "0"] Err:[external_core?.last_error || external_error || "none"]"
 	return ..()
 
@@ -279,11 +274,13 @@ SUBSYSTEM_DEF(netrun)
 		targets |= console.map_view.waypoint_address
 	if(console.intrusion.breach && console.intrusion.breach.target_kind != "network")
 		targets |= console.intrusion.breach.target_id
-	var/datum/netrun_path_tree/table = (source && topology) ? topology.route_tables[source.address] : null
+	var/datum/netrun_path_tree/table = source ? get_topology().route_snapshot(source, TRUE) : null
 	for(var/address as anything in targets)
 		retain_node_interest(nodes_by_address[address], until)
 		if(table && address)
 			retain_route_interest(table.addresses_to(address), until)
+	if(table && !table.retained)
+		qdel(table)
 	if(entity)
 		retain_route_interest(entity.navigation?.queue, until)
 		retain_route_interest(entity.dive_link?.route_chain, until)
@@ -339,12 +336,9 @@ SUBSYSTEM_DEF(netrun)
 	RETURN_TYPE(/datum/netrun_task_scheduler)
 	if(!task_scheduler)
 		task_scheduler = new(get_execution_limits(), src)
-		RegisterSignal(src, COMSIG_NETRUN_TOPOLOGY_DIRTY, PROC_REF(on_topology_dirty))
 	return task_scheduler
 
-/datum/controller/subsystem/netrun/proc/on_topology_dirty(datum/source, datum/netrun_topology/graph, generation)
-	SIGNAL_HANDLER
-	task_scheduler?.enqueue("apc_prebuild", graph, NETRUN_TASK_BACKGROUND)
+
 
 /datum/controller/subsystem/netrun/proc/populate_tasks()
 	task_populations++
@@ -378,12 +372,8 @@ SUBSYSTEM_DEF(netrun)
 			pending_requests -= request
 		else
 			collect_request_node_interest(request)
-	for(var/datum/netrun_machine_packet/packet as anything in machine_transport?.interactive_packets)
-		retain_route_interest(packet.interest_route, world.time + NETRUN_NODE_INTEREST_LEASE)
 	populate_node_tasks()
 	scheduler.enqueue("housekeeping", null, NETRUN_TASK_BACKGROUND)
-	if(!netrun_external_projection_mode() && get_topology().dirty)
-		scheduler.enqueue("apc_prebuild", get_topology(), NETRUN_TASK_BACKGROUND)
 
 /datum/controller/subsystem/netrun/proc/execute_task(datum/netrun_task/task)
 	return task.execute(src, get_execution_limits())
@@ -520,29 +510,12 @@ SUBSYSTEM_DEF(netrun)
 /datum/controller/subsystem/netrun/proc/get_topology()
 	RETURN_TYPE(/datum/netrun_topology)
 	if(!topology)
-		// Режим выбирается до node.Initialize без IPC; внешний путь не создаёт native builder.
-		topology = netrun_external_projection_mode() ? new /datum/netrun_topology/external : new /datum/netrun_topology
+		topology = new /datum/netrun_topology/external
 	return topology
 
 /datum/controller/subsystem/netrun/proc/ensure_topology()
-	var/datum/netrun_topology/result = get_topology()
-	if(netrun_external_projection_mode())
-		return result
-	if(result.deferred_bindings && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR)
-		result.invalidate()
-	if(result.dirty && !result.rebuilding)
-		var/rebuild_started = profile_armed ? TICK_USAGE : 0
-		result.rebuild()
-		topology_rebuilds++
-		if(profile_armed)
-			var/rebuild_ms = max(0, TICK_DELTA_TO_MS(TICK_USAGE - rebuild_started))
-			topology_rebuild_ms += rebuild_ms
-			topology_rebuild_peak_ms = max(topology_rebuild_peak_ms, rebuild_ms)
-			profile_note("topology/rebuild", rebuild_ms, result)
-	return result
+	return get_topology()
 
-/// ЛВС кластеризуется по отделу внутри физического сектора: все APC одного отдела делят
-/// одну сеть, ключ и защиту (= максимум среди узлов). Один ключ открывает весь отдел.
 /datum/controller/subsystem/netrun/proc/get_apc_network(datum/component/netrun_node/apc_node)
 	if(QDELETED(apc_node) || apc_node.node_type != NETRUN_NODE_APC)
 		return null

@@ -6,6 +6,7 @@
 
 /// The node card and its open window must expose the same live commands and permissions.
 /datum/unit_test/netrun_context_commands/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
@@ -108,6 +109,7 @@
 
 /// Delivery runs after the environment changes, just as a queued callback does, without timer sleeps.
 /datum/unit_test/netrun_delivery_revalidates/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
@@ -153,6 +155,7 @@
 
 /// A command in flight must use its chosen UID even when the operator selects a different file.
 /datum/unit_test/netrun_delivery_keeps_file_selection/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
@@ -197,6 +200,7 @@
 
 /// An authorized network operator can use published controls but cannot forge a native action ID.
 /datum/unit_test/netrun_api_rejects_unpublished_action/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret)
 	turret.set_machine_stat(0)
@@ -223,12 +227,14 @@
 
 /// The service wire cannot keep its direct route after the client moves away or changes Z.
 /datum/unit_test/netrun_cable_route/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left, FALSE, FALSE)
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list())
 	var/datum/netrun_console/console = allocate(/datum/netrun_console, host)
 	console.connection.wireless = TRUE
 	console.set_jack(node)
+	scene.fixture_graph.import_path(list(node), list(0))
 	TEST_ASSERT(console.jack_valid(), "A cable to the same turf must be valid")
 	TEST_ASSERT_EQUAL(console.latency_to(node), 0, "A direct cable must avoid relay latency")
 	host.forceMove(run_loc_floor_top_right)
@@ -240,6 +246,7 @@
 
 /// A gateway protects a whole LAN and must require a harder puzzle than its strongest node.
 /datum/unit_test/netrun_gateway_protocol/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_SERVER, list(), 5, list())

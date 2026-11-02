@@ -1,4 +1,8 @@
 /// Hermetic proxy слушает только движения уже импортированных fixture nodes, не всю станцию.
+/datum/component/netrun_node
+	/// Explicit projection tests temporarily own the imported binding, independently of the surrounding scene.
+	var/datum/weakref/netrun_projection_fixture_owner
+
 /datum/netrun_topology/external/projection_fixture
 	/// Weak executor отделяет fixture от глобального SSnetrun.
 	var/datum/weakref/fixture_executor
@@ -69,6 +73,7 @@
 		if(QDELETED(node))
 			continue
 		var/list/previous = originals[node]
+		node.netrun_projection_fixture_owner = previous["projection_owner"]
 		if(node.network != previous["network"])
 			node.leave_network(FALSE)
 			node.network = previous["network"]
@@ -94,7 +99,8 @@
 /datum/netrun_external_projection_fixture/proc/wire_key(datum/component/netrun_node/node)
 	if(!originals[node])
 		originals[node] = list("network" = node.network, "anchor" = node.bound_apc, "area" = node.binding_area,
-			"sector" = node.binding_sector, "checked" = node.binding_checked, "revision" = node.binding_infra_revision)
+			"sector" = node.binding_sector, "checked" = node.binding_checked, "revision" = node.binding_infra_revision, "projection_owner" = node.netrun_projection_fixture_owner)
+		node.netrun_projection_fixture_owner = WEAKREF(src)
 	var/list/key = client.node_key(node)
 	return list("node_id" = key["id"], "generation" = key["generation"])
 
@@ -362,8 +368,8 @@
 	fixture.ack_stream()
 	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(cursor, "3", list(fixture.node_operation(second)), TRUE, "delta", "1", "2", "8")), "Newest coalesced delta catches up the changed leaf")
 	TEST_ASSERT_EQUAL(second.network.id, "pub:projection-fixture", "Only the matching raw revision applies current derived data")
-	TEST_ASSERT_EQUAL(fixture.worker.topology_rebuilds, 0, "Native never invokes topology construction")
-	TEST_ASSERT_EQUAL(fixture.graph.infrastructure_tree_builds, 0, "Native never invokes Dijkstra during graph apply")
+	TEST_ASSERT(!hascall(fixture.graph, "rebuild"), "The imported read-model exposes no native topology builder")
+	TEST_ASSERT(!hascall(fixture.graph, "borrow_infrastructure_tree"), "Graph apply cannot invoke a native Dijkstra cache")
 
 /// Исчезнувший weak generation и exact tombstone не отменяют целый historical snapshot.
 /datum/unit_test/netrun_external_projection_stream_missing_generation/Run()
@@ -466,6 +472,27 @@
 	TEST_ASSERT_EQUAL(fixture.graph.revision, presentation_revision, "Online-only updates preserve the structural presentation generation")
 	fixture.executor.disconnect_projection(fixture.client, "waiter_cleanup")
 	TEST_ASSERT_EQUAL(length(fixture.executor.projection_waiters), 0, "Disconnect never retains old-generation UI waiters")
+
+/// Путь Core содержит cumulative doubles; DM float не вправе отвергать его после вычитания округлённых costs.
+/datum/unit_test/netrun_external_projection_stream_fractional_route/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_projection_fixture/fixture = allocate(/datum/netrun_external_projection_fixture)
+	var/datum/component/netrun_node/source = scene.source.resolve_node()
+	var/datum/component/netrun_node/apc = scene.apc.GetComponent(/datum/component/netrun_node)
+	var/datum/component/netrun_node/target = scene.target.resolve_node()
+	var/datum/netrun_external_graph_cursor/stream = fixture.start_stream()
+	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(stream, "1", list(fixture.node_operation(source), fixture.node_operation(apc), fixture.node_operation(target), fixture.edge_operation(source, apc, "a", 0.1), fixture.edge_operation(apc, target, "b", 0.2)))), "Fractional C# edge baseline is imported")
+	fixture.ack_stream()
+	fixture.executor.prepare_projection(fixture.client)
+	var/datum/netrun_external_projection_cursor/routes = fixture.routes(source)
+	var/cache_key = routes.cache_key
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "1", list(fixture.route_row(source, null, 0), fixture.route_row(apc, source, 0.1), fixture.route_row(target, apc, 0.3)), TRUE)), "Frozen cumulative C# costs are imported")
+	var/datum/netrun_path_tree/external/tree = fixture.executor.projection_trees[cache_key]
+	TEST_ASSERT(tree.path_available(fixture.graph, target.address), "Current C# path must survive DM cumulative float rounding")
+	target.offline_until = world.time + 10 SECONDS
+	fixture.client.export_node(target)
+	fixture.executor.invalidate_projection("availability", FALSE, target)
+	TEST_ASSERT(!tree.path_available(fixture.graph, target.address), "A changed native revision still revokes the captured path")
 
 /// Forwarder dirty немедленно закрывает всю route authority, хотя ordinary leaf changes такого global эффекта не имеют.
 /datum/unit_test/netrun_external_projection_stream_infrastructure_dirty/Run()

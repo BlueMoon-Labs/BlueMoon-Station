@@ -39,7 +39,7 @@
 	if(!external_request_id)
 		return FALSE
 	external_binding = client.binding_epoch
-	communications = netrun_communication_policy(source, destination_id)
+	var/communications = netrun_communication_policy(source, destination_id)
 	var/body = netrun_external_json_object(list("kind" = json_encode("service_discover"), "request_id" = json_encode(external_request_id), "source" = executor.service_json(source_key), "destination_family" = json_encode(destination_id), "recipient_tag" = json_encode(recipient_tag), "communications" = netrun_external_json_bool(communications), "frequency" = "null", "max_results" = "4096"))
 	if(!executor.enqueue_query("service_discover", body, src))
 		external_request_id = null
@@ -113,7 +113,7 @@
 			catalog_availability = executor.discovery_transit_availability
 			SStgui.update_uis(source.host)
 			return TRUE
-	// Базовый fanout получает уже отобранные native targets; candidates=null исключает DM discoverable/route solve.
+	// Базовый fanout получает только уже отобранные native targets.
 	return ..()
 
 /// Directory pages и read-only camera caches делят bounded dispatcher с projection queries.

@@ -76,6 +76,9 @@ const ImplantWorkspace = () => {
             onClick={() => act(action.id)} />
         ))}
       </div>
+      <div role="region" aria-label="Карта сети" style={{ height: '360px', minHeight: '260px', marginTop: '8px', display: 'flex', flexDirection: 'column' }}>
+        <StationMap />
+      </div>
       <Box mt={1} mb={1} p={1} style={{ background: THEME.bg, border: `1px solid ${THEME.line}` }}>
         {selected ? (
           <>

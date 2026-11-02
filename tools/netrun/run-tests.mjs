@@ -164,7 +164,7 @@ export class NetrunTestSuite {
         `--unit-test-profile=${profile}`,
         '--test-list=tmp/netrun-tests.txt',
         ...(map ? [`--define=FORCE_MAP ${JSON.stringify(map)}`] : []),
-      ], this.root, { ...process.env, NETRUN_CORE_MODE: 'dm' });
+      ], this.root, { ...process.env, NETRUN_CORE_MODE: 'external' });
       if (!fs.existsSync(resultsFile)) {
         throw new Error(`The test world did not write a fresh ${path.relative(this.root, resultsFile)}.`);
       }

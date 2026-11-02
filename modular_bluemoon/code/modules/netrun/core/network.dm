@@ -165,15 +165,8 @@
 		return SSnetrun.get_network("ext[T.z]")
 	return SSnetrun.get_network("pub:[netrun_sector_for(T)]")
 
-/// Compatibility for clients without their own endpoint. Bound nodes keep their own cached APC.
-/proc/netrun_network_for(turf/T)
-	if(!T)
-		return null
-	var/datum/netrun_topology/topology = SSnetrun.get_topology()
-	var/datum/component/netrun_node/apc = topology.nearest_apc(T)
-	return apc ? SSnetrun.get_apc_network(apc) : netrun_fallback_network_for(T)
 
-/// Доступы, которые несёт моб (ID в руке, на поясе/шее; у силиконов - всё)
+
 /proc/netrun_mob_access(mob/user)
 	RETURN_TYPE(/list)
 	. = list()

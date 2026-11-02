@@ -1,5 +1,6 @@
 /// A real inserted ID is copied independently; machine requirements and empty slots are not credentials.
 /datum/unit_test/netrun_credentials_native_slot_snapshot/Run()
+	netrun_connected_test_area()
 	var/obj/item/modular_computer/laptop/computer = allocate(/obj/item/modular_computer/laptop)
 	computer.enabled = TRUE
 	var/obj/item/computer_hardware/card_slot/slot = computer.get_modular_computer_part(MC_CARD)

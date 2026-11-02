@@ -70,7 +70,6 @@
 		targets += node
 	SSnetrun.ensure_topology()
 	for(var/datum/component/netrun_node/node as anything in fixtures)
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
 	var/datum/netrun_console/console = source.console
@@ -126,7 +125,6 @@
 		fixtures += device.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	SSnetrun.ensure_topology()
 	for(var/datum/component/netrun_node/node as anything in fixtures)
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
 	var/datum/netrun_console/console = source.console
@@ -282,7 +280,6 @@
 	console.workspace_view = "map"
 	SSnetrun.ensure_topology()
 	for(var/datum/component/netrun_node/node as anything in fixture_nodes)
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
 	var/list/map = console.ui_data(null)["map"]
@@ -362,7 +359,6 @@
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	var/settled = 0
 	for(var/datum/component/netrun_node/node as anything in fixtures)
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
 		if(!((++settled) % 100))
@@ -386,7 +382,6 @@
 	for(var/step in 1 to 4)
 		var/turf/destination = step % 2 ? second : first
 		source.forceMove(destination)
-		source_node.join_network()
 		source_node.publish_changes()
 		map = console.ui_data(null)["map"]
 		var/list/delta = view.encode_wire(map, session)
@@ -515,7 +510,6 @@
 	TEST_ASSERT(!netrun_map_has_node(list("map" = map), peer_node.address), "The remote protected LAN starts hidden")
 	var/builds = view.rebuilds
 	carrier.forceMove(second)
-	source_node.join_network()
 	source_node.publish_changes()
 	map = console.ui_data(null)["map"]
 	TEST_ASSERT(!netrun_map_has_node(list("map" = map), peer_node.address), "Walking into that LAN must not grant a wireless deck access")
@@ -546,7 +540,7 @@
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	var/graph_revision = graph.revision
 	var/datum/component/netrun_node/source = deck.GetComponent(/datum/component/netrun_node)
-	var/datum/netrun_path_tree/table = graph.route_tables[source.address]
+	var/datum/netrun_path_tree/table = graph.route_snapshot(source, TRUE)
 	var/started = TICK_USAGE
 	for(var/i in 1 to 20)
 		carrier.forceMove(locate(origin.x + i % 2, origin.y, origin.z))
@@ -556,7 +550,7 @@
 	TEST_ASSERT(view.serialized_nodes <= entries + 20, "Movement must project only the moving endpoint, independent of the other hundred nodes")
 	TEST_ASSERT_EQUAL(view.static_revision, paint, "Carried endpoint movement must retain the stationary Pixi canvas")
 	TEST_ASSERT_EQUAL(graph.revision, graph_revision, "A moving leaf must retain the structural topology")
-	TEST_ASSERT_EQUAL(graph.route_tables[source.address], table, "Movement must reuse the retained source tree")
+	TEST_ASSERT_EQUAL(graph.route_snapshot(source, TRUE), table, "Movement must reuse the retained source tree")
 
 /// Many simultaneous moving viewers must keep stationary projection work out of the hot path.
 /datum/unit_test/netrun_map_station_motion_load/Run()
@@ -598,7 +592,6 @@
 	var/settle_ms = 0
 	for(var/datum/component/netrun_node/node as anything in fixture_nodes)
 		var/started = TICK_USAGE
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
 		settle_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - started))
@@ -669,9 +662,8 @@
 	var/obj/item/endpoint = allocate(/obj/item, origin)
 	var/datum/component/netrun_node/node = endpoint.AddComponent(/datum/component/netrun_node, NETRUN_NODE_DECK)
 	SSnetrun.ensure_topology()
-	var/turf/previous = node.topology_turf
 	endpoint.forceMove(destination)
-	TEST_ASSERT_EQUAL(node.topology_turf, previous, "Movement must defer binding/weight work until the queued task or explicit route consumer")
+	TEST_ASSERT(node.pending_physical_update, "Movement retains a raw fact update independently of imported read-model rows")
 	TEST_ASSERT(SSnetrun.get_task_scheduler().by_key["node:[REF(node)]"], "Movement must queue one bounded node update")
 	var/datum/netrun_task/node/task = allocate(/datum/netrun_task/node, "node", "motion-test", NETRUN_TASK_NORMAL, node)
 	task.execute(SSnetrun)
@@ -748,7 +740,6 @@
 	TEST_ASSERT_NULL(graph.edge_between(node.address, first_node.address), "Co-location must not create a machine-intermediary edge")
 	carrier.forceMove(peer_spot)
 	// The subsystem's fallback calls join_network even when the child receives no MOVED.
-	node.join_network()
 	SSnetrun.ensure_topology()
 	TEST_ASSERT_EQUAL(node.bound_apc, apc, "Movement within one root area must retain the existing APC binding")
 	TEST_ASSERT_EQUAL(node.uplink_node(), apc, "Same-area movement must preserve the direct APC attachment")
@@ -758,6 +749,7 @@
 
 /// A firewall notification revokes acquired rights before an immediate request can use them.
 /datum/unit_test/netrun_firewall_signal_revocation/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)
@@ -968,7 +960,6 @@
 	var/datum/component/netrun_node/second_node = second.GetComponent(/datum/component/netrun_node)
 	TEST_ASSERT(netrun_map_has_node(list("map" = map), node.address), "The target must be present before moving")
 	target.forceMove(destination)
-	node.join_network()
 	TEST_ASSERT_EQUAL(node.bound_apc, second_node, "The leaf must change its APC")
 	map = console.ui_data(null)["map"]
 	TEST_ASSERT_EQUAL(view.rebuilds, builds, "An APC-to-APC move within one LAN must avoid rebuilding the entire viewer map")

@@ -146,10 +146,7 @@
 /datum/netrun_machine_service/atmos/controller/matches(datum/netrun_machine_service/source_service, recipient_tag)
 	return ..() && istype(source_service, /datum/netrun_machine_service/atmos/device) && same_channel(source_service) && get_base_area(host) == get_base_area(source_service.host)
 
-/datum/netrun_machine_service/atmos/controller/discovery_candidates(destination_id, recipient_tag)
-	if(destination_id == "atmos.device" && isnull(recipient_tag))
-		return SSnetrun.get_machine_transport().atmos_devices_by_area[REF(get_base_area(host))]
-	return ..()
+
 
 /datum/netrun_machine_service/atmos/controller/accepts(datum/netrun_machine_message/message)
 	return ..() && istype(message, /datum/netrun_machine_message/atmos) && message.payload["sigtype"] == "status" && message.payload["tag"] == message.source.service_tag() && matches(message.source, null)
@@ -345,15 +342,8 @@
 		return service_tag() == controller.airpump_tag
 	return FALSE
 
-/datum/netrun_machine_service/atmos/device/discovery_candidates(destination_id, recipient_tag)
-	if(destination_id == "atmos.controller" && isnull(recipient_tag))
-		return SSnetrun.get_machine_transport().atmos_controllers_by_area[REF(get_base_area(host))]
-	return ..()
 
-/// Alarms are already indexed by physical area. Once startup is complete,
-/// send status to those known recipients directly instead of creating a new
-/// discovery task for every vent retry. Delivery remains asynchronous and
-/// still validates the route and recipient before changing an alarm.
+
 /datum/netrun_machine_service/atmos/device/send(destination_id, datum/netrun_machine_message/message, recipient_tag)
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	if(destination_id != "atmos.controller" || !isnull(recipient_tag) || QDELETED(message) || message.payload["sigtype"] != "status")

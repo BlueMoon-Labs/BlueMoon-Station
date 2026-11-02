@@ -13,9 +13,6 @@
 	var/task_initial_cost_ms = NETRUN_DEFAULT_TASK_INITIAL_COST_MS
 	var/task_cost_smoothing = NETRUN_DEFAULT_TASK_COST_SMOOTHING
 	var/task_population_interval = NETRUN_DEFAULT_TASK_POPULATION_INTERVAL
-	var/apc_prebuild_operations = NETRUN_DEFAULT_APC_PREBUILD_OPERATIONS
-	var/route_refresh_interval = NETRUN_DEFAULT_ROUTE_REFRESH_INTERVAL
-	var/route_expiry_interval = NETRUN_DEFAULT_ROUTE_EXPIRY_INTERVAL
 	var/ui_refresh_interval = NETRUN_DEFAULT_UI_REFRESH_INTERVAL
 	var/ui_activity_lease = NETRUN_DEFAULT_UI_ACTIVITY_LEASE
 	var/node_activity_duration = NETRUN_DEFAULT_NODE_ACTIVITY_DURATION
@@ -49,7 +46,7 @@
 		"task_adaptive_budget", "task_budget_ms", "task_min_budget_ms", "task_pressure_tick_usage",
 		"task_min_per_pass", "task_max_per_pass", "task_interactive_burst", "task_interactive_priority",
 		"ui_interactive_flush", "task_cost_floor_ms", "task_initial_cost_ms", "task_cost_smoothing",
-		"task_population_interval", "apc_prebuild_operations", "route_refresh_interval", "route_expiry_interval",
+		"task_population_interval",
 		"ui_refresh_interval", "ui_activity_lease", "node_activity_duration", "node_poll_interval",
 		"node_idle_poll_interval", "node_update_interval", "task_critical_late_after",
 		"task_normal_late_after", "task_background_late_after")
@@ -66,9 +63,6 @@
 	var/initial_cost_ms = NETRUN_DEFAULT_TASK_INITIAL_COST_MS
 	var/cost_smoothing = NETRUN_DEFAULT_TASK_COST_SMOOTHING
 	var/population_interval = NETRUN_DEFAULT_TASK_POPULATION_INTERVAL
-	var/apc_operations = NETRUN_DEFAULT_APC_PREBUILD_OPERATIONS
-	var/route_refresh_interval = NETRUN_DEFAULT_ROUTE_REFRESH_INTERVAL
-	var/route_expiry_interval = NETRUN_DEFAULT_ROUTE_EXPIRY_INTERVAL
 	var/ui_refresh_interval = NETRUN_DEFAULT_UI_REFRESH_INTERVAL
 	var/ui_activity_lease = NETRUN_DEFAULT_UI_ACTIVITY_LEASE
 	var/node_activity_duration = NETRUN_DEFAULT_NODE_ACTIVITY_DURATION
@@ -118,9 +112,6 @@
 	initial_cost_ms = bounded(worker.task_initial_cost_ms, NETRUN_DEFAULT_TASK_INITIAL_COST_MS, cost_floor_ms, NETRUN_EXECUTION_MAX_BUDGET_MS)
 	cost_smoothing = bounded(worker.task_cost_smoothing, NETRUN_DEFAULT_TASK_COST_SMOOTHING, 0, 1)
 	population_interval = interval(worker.task_population_interval, NETRUN_DEFAULT_TASK_POPULATION_INTERVAL)
-	apc_operations = bounded(worker.apc_prebuild_operations, NETRUN_DEFAULT_APC_PREBUILD_OPERATIONS, 1, NETRUN_EXECUTION_MAX_PREBUILD_OPERATIONS, TRUE)
-	route_refresh_interval = interval(worker.route_refresh_interval, NETRUN_DEFAULT_ROUTE_REFRESH_INTERVAL)
-	route_expiry_interval = interval(worker.route_expiry_interval, NETRUN_DEFAULT_ROUTE_EXPIRY_INTERVAL)
 	ui_refresh_interval = interval(worker.ui_refresh_interval, NETRUN_DEFAULT_UI_REFRESH_INTERVAL)
 	ui_activity_lease = max(ui_refresh_interval, interval(worker.ui_activity_lease, NETRUN_DEFAULT_UI_ACTIVITY_LEASE))
 	node_activity_duration = interval(worker.node_activity_duration, NETRUN_DEFAULT_NODE_ACTIVITY_DURATION)

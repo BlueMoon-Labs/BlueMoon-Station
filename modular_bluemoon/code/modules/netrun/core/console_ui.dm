@@ -959,7 +959,6 @@
 	if(QDELETED(node))
 		operation?.finish("cancelled", "Узел удалён.")
 		return FALSE
-	node.join_network()
 	var/datum/netrun_path_tree/tree = make_path_tree()
 	var/required = remote_file_access(action, node, uid)
 	var/reachable = can_route(node, tree)

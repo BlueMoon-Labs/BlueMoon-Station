@@ -19,6 +19,7 @@
 
 /// USER prevents unsolicited combat, but attacking a guard remains a provocation.
 /datum/unit_test/netrun_ice_target_authority/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)
@@ -157,6 +158,7 @@
 
 /// Delivery owns its access snapshot even when another UI request is suspended.
 /datum/unit_test/netrun_ice_delivery_access_snapshot/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)
@@ -187,6 +189,7 @@
 
 /// Cancelling one attempt severs its trace, even when the same target is breached again.
 /datum/unit_test/netrun_ice_trace_breach_identity/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 2, list(ACCESS_RD))
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)

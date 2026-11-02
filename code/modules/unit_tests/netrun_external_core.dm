@@ -1,7 +1,7 @@
 /// Hermetic subsystem не регистрируется в MC и никогда не читает реальные ENV/secret настройки.
 /datum/controller/subsystem/netrun/external_fixture
 	flags = SS_NO_INIT | SS_NO_FIRE
-	var/list/settings = list("NETRUN_CORE_MODE" = "dm")
+	var/list/settings = list("NETRUN_CORE_MODE" = "external")
 	var/list/settings_read = list()
 /datum/controller/subsystem/netrun/external_fixture/New()
 	return
@@ -93,7 +93,7 @@
 		"source_node_revision" = client.node_revision(context.source_node), "destination_node_revision" = client.node_revision(context.destination_node),
 		"infra_stamp" = executor.latest_infra_stamp, "av_infra_stamp" = executor.latest_av_infra_stamp,
 		"communication_revision" = context.communications ? executor.latest_communication_revision : null,
-		"operation_id" = "message", "payload" = json_decode(context.payload_json), "deadline_ds" = null,
+		"operation_id" = context.operation_id, "payload" = json_decode(context.payload_json), "deadline_ds" = null,
 		"authorization_context" = context.context_id, "native_context" = context.context_id)
 /datum/netrun_external_fixture/proc/wire_key(list/key, id_name)
 	var/list/result = list("generation" = key["generation"])
@@ -106,12 +106,13 @@
 /datum/netrun_external_fixture/proc/first_context()
 	return length(executor.pending) ? executor.pending[executor.pending[1]] : null
 
-/// Явный diagnostic dm не открывает bridge и не читает token file; decimal helper сохраняет 64-bit identity.
-/datum/unit_test/netrun_external_core_explicit_dm_and_decimal/Run()
+/// Removed engine modes fail closed without opening IPC; decimal identities retain 64-bit precision.
+/datum/unit_test/netrun_external_core_removed_modes_and_decimal/Run()
 	var/datum/controller/subsystem/netrun/external_fixture/worker = allocate(/datum/controller/subsystem/netrun/external_fixture)
-	TEST_ASSERT_NULL(worker.ensure_external_core(), "Explicit diagnostic dm must not create an IPC client")
-	TEST_ASSERT_EQUAL(worker.external_mode, "dm", "Explicit diagnostic mode keeps the legacy transport")
-	TEST_ASSERT_EQUAL(length(worker.settings_read), 1, "Disabled transport reads only the mode, not token or library")
+	worker.settings["NETRUN_CORE_MODE"] = "dm"
+	TEST_ASSERT_NULL(worker.ensure_external_core(), "Removed native engine mode cannot create an IPC client")
+	TEST_ASSERT_EQUAL(worker.external_error, "invalid_mode", "Removed native engine mode is an explicit configuration error")
+	TEST_ASSERT_EQUAL(length(worker.settings_read), 1, "Rejected mode cannot read a token or native library")
 	TEST_ASSERT_EQUAL(netrun_external_decimal_next("16777216"), "16777217", "Wire sequence does not round at DM float precision")
 	TEST_ASSERT_EQUAL(netrun_external_decimal_next("9999999999999999999"), "10000000000000000000", "Carry propagates through decimal text")
 	TEST_ASSERT_NULL(netrun_external_decimal_next("18446744073709551615"), "Counter overflow does not wrap")
@@ -296,22 +297,6 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "A stale binding cannot execute after accepts returns")
 
-/// Shadow принимает diagnostics/result flow, но никогда не выполняет физические receive.
-/datum/unit_test/netrun_external_core_shadow_no_effect/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
-	var/datum/netrun_external_effects/machines/shadow/shadow = allocate(/datum/netrun_external_effects/machines/shadow, fixture.worker)
-	fixture.worker.external_mode = "shadow"
-	var/list/event = list("kind" = "service_invocation", "binding_epoch" = fixture.client.binding_epoch, "request_id" = "dm:99", "invocation_id" = "shadow-call")
-	TEST_ASSERT(shadow.process_result(fixture.client, event), "Shadow turns invocation into a known shadow-only failure")
-	TEST_ASSERT(shadow.process_result(fixture.client, event), "Repeated shadow event reuses the result")
-	TEST_ASSERT_EQUAL(length(shadow.control_commands), 1, "Shadow dedup also bounds queued results")
-	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Shadow never invokes native receive")
-	var/datum/netrun_external_command/result = shadow.control_commands[1]
-	var/list/decoded = json_decode(result.raw_json)
-	TEST_ASSERT_EQUAL(decoded["code"], "shadow_only", "Shadow result cannot masquerade as real execution")
-
-/// Принятые packets продолжают логическое время при отсутствии новых фактов; heartbeat сам clock не двигает.
 /datum/unit_test/netrun_external_core_pending_clock_tick/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
 	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
@@ -398,3 +383,35 @@
 	var/list/request = json_decode(command.raw_json)
 	TEST_ASSERT_EQUAL(request["traffic_class"], "communications", "Native communications can request the isolated overlay")
 	TEST_ASSERT_NULL(request["frequency"], "Non-radio native messages carry an unrestricted control frequency")
+
+/// Real admission responses retain the first request while transferring only newest native state.
+/datum/unit_test/netrun_external_core_state_coalescing/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
+	var/datum/netrun_machine_message/research/original = new(list("operation" = "snapshot", "binding" = "fixture", "generation" = 1, "revision" = 12))
+	var/datum/netrun_external_request_context/retained = fixture.admit_pair(fixture.source, fixture.destination, original)
+	retained.stage = "accepted"
+	var/retained_id = retained.request_id
+	for(var/revision in list(13, 11, 13))
+		var/datum/netrun_machine_message/research/replacement = new(list("operation" = "snapshot", "binding" = "fixture", "generation" = 1, "revision" = revision))
+		var/datum/netrun_external_request_context/incoming = fixture.admit_pair(fixture.source, fixture.destination, replacement)
+		var/incoming_id = incoming.request_id
+		var/datum/netrun_external_command/command = fixture.executor.request_commands[length(fixture.executor.request_commands)]
+		var/list/wire = json_decode(command.raw_json)
+		TEST_ASSERT_EQUAL(wire["operation_id"], "state", "Replaceable state has a distinct idempotent contract")
+		TEST_ASSERT_EQUAL(wire["state_revision"], num2text(revision + 1, 20), "Native revision zero is representable by the positive wire contract")
+		fixture.executor.request_commands -= command
+		fixture.executor.inflight_commands["1"] = command
+		fixture.executor.observe_result(fixture.client, list("input_sequence" = "1", "admission" = list("status" = "coalesced", "coalesced_into" = retained_id)))
+		TEST_ASSERT_EQUAL(retained.request_id, retained_id, "Coalescing preserves the original wire request identity")
+		TEST_ASSERT_EQUAL(retained.message.payload["revision"], 13, "A stale revision cannot replace the newest native payload")
+		TEST_ASSERT_NULL(incoming.message, "Superseded request no longer owns the retained message")
+		TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(incoming_id, "superseded", "coalesced")), "Superseded terminal releases its own native slot")
+	TEST_ASSERT(QDELETED(original), "Replaced state releases its original native message")
+	var/list/invocation = fixture.invocation(retained)
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Original wire ID executes the newest exact payload and context")
+	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Only the final state executes")
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(retained_id)), "Original terminal completes the retained state")
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Invocation replay cannot repeat the state effect")
+	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Coalescing preserves exactly once native execution")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Both retained and superseded slots drain")

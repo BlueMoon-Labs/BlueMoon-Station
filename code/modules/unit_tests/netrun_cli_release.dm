@@ -40,7 +40,7 @@
 		TEST_ASSERT(source.network.code in networks, "The same projection must provide its network completion code")
 		TEST_ASSERT_EQUAL(console.network_checks[source.network.id], 1, "Shared verb pools must reuse the same per-viewer projection")
 		TEST_ASSERT_NULL(console.ui_routes, "A standalone completion query must release its transient route reference")
-		TEST_ASSERT(!QDELETED(graph.route_tables[source.address]), "Completion teardown must preserve the shared routing table for subsequent viewers")
+		TEST_ASSERT(!QDELETED(graph.route_snapshot(source, TRUE)), "Completion teardown must preserve the shared routing table for subsequent viewers")
 
 /datum/unit_test/netrun_cli_renamed_daemon/Run()
 	var/obj/item/host = allocate(/obj/item)

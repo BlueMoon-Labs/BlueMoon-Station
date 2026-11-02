@@ -1,8 +1,8 @@
-/// Выбор движка фиксируется при startup; explicit diagnostic dm не читает secret и не открывает IPC.
+/// C# Core is the only network engine; native effects retain gameplay authority.
 /datum/controller/subsystem/netrun
 	/// Последовательный владелец экспортируемых фактов и native bridge.
 	var/datum/netrun_external_core/external_core
-	/// dm/shadow/external; переключение живого раунда этой настройкой не реализовано.
+	/// Единственный поддерживаемый режим; устаревшие значения конфигурации отклоняются.
 	var/external_mode = "external"
 	/// Mode выбирается до node initialization; IPC и token читаются позднее в обычном fire.
 	var/external_mode_checked = FALSE
@@ -52,7 +52,7 @@
 	external_mode_checked = TRUE
 	var/mode = external_setting("NETRUN_CORE_MODE")
 	mode = istext(mode) && length(mode) ? lowertext(mode) : "external"
-	if(!(mode in list("dm", "shadow", "external")))
+	if(mode != "external")
 		external_error = "invalid_mode"
 		return external_mode
 	external_mode = mode
@@ -64,9 +64,10 @@
 
 /// Повторный close не создаёт новую попытку и не сбрасывает экспоненциальную задержку.
 /datum/controller/subsystem/netrun/proc/schedule_external_retry(reason)
-	if(external_shutting_down || external_retry_scheduled || external_mode == "dm")
+	if(external_shutting_down || external_retry_scheduled)
 		return
 	external_error = reason
+	log_world("NETRUN_CORE_RETRY [netrun_external_safe_code(reason)]")
 	external_retry_started = external_now()
 	external_retry_wait = external_retry_delay
 	external_retry_delay = min(300, external_retry_delay * 2)
@@ -87,7 +88,7 @@
 /// Новый client создаётся один раз; recovery сохраняет effects и старые executing contexts до их возврата.
 /datum/controller/subsystem/netrun/proc/create_external_client()
 	var/datum/netrun_external_core/client = new(src)
-	client.effects = external_mode == "shadow" ? new /datum/netrun_external_effects/machines/shadow(src) : new /datum/netrun_external_effects/machines/queries(src)
+	client.effects = new /datum/netrun_external_effects/machines/queries(src)
 	return client
 
 /// Вызывается каждым SS.fire: active connection не читает config, recovery сохраняет world epoch и меняет binding.
@@ -95,9 +96,7 @@
 	if(external_shutting_down)
 		return null
 	external_configuration_checked = TRUE
-	var/mode = ensure_external_mode()
-	if(mode == "dm")
-		return null
+	ensure_external_mode()
 	if(!QDELETED(external_core) && external_core.state != "closed" && external_core.state != "resync_required")
 		if(external_core.ready)
 			external_retry_delay = 10
@@ -154,6 +153,10 @@
 	/// Immutable JSON и checksum payload не меняются при semantic admission retry.
 	var/payload_json
 	var/payload_hash
+	/// Frozen operation contract проверяется вместе с payload при native handoff.
+	var/operation_id = "message"
+	/// Native журнал и ROOT capture представляют запрос; маршрут и задержку они не вычисляют.
+	var/datum/netrun_packet_context/operation
 	/// Native radio policy имеет отдельную ревизию, обычные машинные запросы её не используют.
 	var/communications = FALSE
 	/// Локальные стадии отличаются от статуса очереди Host; native callback может yield.
@@ -172,6 +175,7 @@
 /// Не освобождает message из-под yield native callback: владельцы вызывают Destroy только после его возврата.
 /datum/netrun_external_request_context/Destroy()
 	QDEL_NULL(message)
+	QDEL_NULL(operation)
 	source_ref = null
 	destination_ref = null
 	user_ref = null
@@ -300,6 +304,7 @@
 	context.captured_tag = destination.service_tag()
 	context.payload_json = raw_payload
 	context.payload_hash = rustg_hash_string(RUSTG_HASH_SHA256, raw_payload)
+	context.operation_id = message.transport_operation()
 	context.communications = communications
 	message.source = source
 	message.recipient = destination
@@ -312,8 +317,11 @@
 		qdel(command)
 		return FALSE
 	command.context = context
-	command.raw_json = netrun_external_json_object(list("kind" = json_encode("request_submit"), "request_id" = json_encode(context.request_id), "source" = service_json(source_key), "destination" = service_json(destination_key), "operation_id" = json_encode("message"), "payload" = raw_payload, "deadline_ds" = "null", "coalescing_key" = "null", "state_revision" = "null", "authorization_context" = json_encode(context.context_id), "native_context" = json_encode(context.context_id), "traffic_class" = json_encode(communications ? "communications" : "ordinary"), "frequency" = json_encode(frequency)))
+	command.raw_json = netrun_external_json_object(list("kind" = json_encode("request_submit"), "request_id" = json_encode(context.request_id), "source" = service_json(source_key), "destination" = service_json(destination_key), "operation_id" = json_encode(context.operation_id), "payload" = raw_payload, "deadline_ds" = "null", "coalescing_key" = json_encode(message.coalescing_key()), "state_revision" = json_encode(message.transport_revision()), "authorization_context" = json_encode(context.context_id), "native_context" = json_encode(context.context_id), "traffic_class" = json_encode(communications ? "communications" : "ordinary"), "frequency" = json_encode(frequency)))
 	request_commands += command
+	context.operation = new("machine", "Обмен между машинами", source.resolve_node()?.address, destination.resolve_node()?.address, destination.service_id, operation_id = message.correlation_id)
+	context.operation.capture(message.payload)
+	context.operation.queued(list(), 0, FALSE)
 	return TRUE
 
 /// Явный отказ сохраняет старый ownership-контракт packet.send: callback один раз, затем qdel message.
@@ -384,7 +392,10 @@
 			context.stage = "queued"
 			request_commands.Insert(1, command)
 			return
-		if(admission?["status"] == "accepted" || admission?["status"] == "duplicate")
+		if(admission?["status"] == "coalesced" || (admission?["status"] == "duplicate" && admission?["coalesced_into"]))
+			if(!accept_coalesced(context, admission["coalesced_into"]))
+				client.abort_session("invalid_coalesced_context")
+		else if(admission?["status"] == "accepted" || admission?["status"] == "duplicate")
 			context.stage = "accepted"
 		else
 			finish_context(context, FALSE, admission?["code"] || "request_rejected")
@@ -397,6 +408,28 @@
 		invocation.result_queued = FALSE
 		try_retire_invocation(invocation)
 	qdel(command)
+
+/// C# сохраняет первый request ID и срок доставки, заменяя только ещё не исполняемое состояние.
+/// Новый запрос ждёт своего superseded terminal без message; старый владеет ровно одним актуальным message.
+/datum/netrun_external_effects/machines/proc/accept_coalesced(datum/netrun_external_request_context/context, retained_id)
+	var/datum/netrun_external_request_context/retained = pending[retained_id]
+	if(!context || context == retained || !retained || retained.stage != "accepted" || retained.executing || retained.binding_epoch != context.binding_epoch || retained.operation_id != "state" || context.operation_id != "state" || retained.source_ref?.resolve() != context.source_ref?.resolve() || retained.destination_ref?.resolve() != context.destination_ref?.resolve() || retained.captured_tag != context.captured_tag || QDELETED(retained.message) || QDELETED(context.message) || isnull(context.message.coalescing_key()) || retained.message.coalescing_key() != context.message.coalescing_key())
+		return FALSE
+	if(context.message.can_replace(retained.message))
+		QDEL_NULL(retained.message)
+		retained.message = context.message
+		context.message = null
+		retained.context_id = context.context_id
+		retained.user_ref = context.user_ref
+		retained.payload_json = context.payload_json
+		retained.payload_hash = context.payload_hash
+		if(retained.operation)
+			retained.message.correlation_id = retained.operation.operation_id
+			retained.operation.capture(retained.message.payload)
+	else
+		QDEL_NULL(context.message)
+	context.stage = "accepted"
+	return TRUE
 
 /// Один explicit cancel не отменяет уже начатый native effect и не вызывает повтор receive.
 /datum/netrun_external_effects/machines/proc/cancel(request_id)
@@ -440,7 +473,7 @@
 			return FALSE
 		return previous.stage == "executing" || queue_invocation_result(client, previous)
 	var/datum/netrun_external_request_context/context = pending[result["request_id"]]
-	if(!context || context.stage != "accepted" || context.binding_epoch != client.binding_epoch || context.disconnected || result["native_context"] != context.context_id || result["authorization_context"] != context.context_id || result["operation_id"] != "message" || id != "[context.binding_epoch]/[context.request_id]" || length(invocations) >= invocation_limit)
+	if(!context || context.stage != "accepted" || context.binding_epoch != client.binding_epoch || context.disconnected || result["native_context"] != context.context_id || result["authorization_context"] != context.context_id || result["operation_id"] != context.operation_id || id != "[context.binding_epoch]/[context.request_id]" || length(invocations) >= invocation_limit)
 		return FALSE
 	if(!same_key(result["source_service"], context.source_service, "service_id") || !same_key(result["destination_service"], context.destination_service, "service_id") || !same_key(result["source_node"], context.source_node, "node_id") || !same_key(result["destination_node"], context.destination_node, "node_id") || result["captured_tag"] != context.captured_tag)
 		return FALSE
@@ -499,6 +532,8 @@
 						code = "native_deadline"
 					else
 						context.native_started = TRUE
+						context.operation?.running()
+						context.operation?.receive(list())
 						success = destination.receive(message)
 						code = success ? "native_completed" : "native_rejected"
 	catch
@@ -567,6 +602,7 @@
 		return
 	context.callback_done = TRUE
 	pending -= context.request_id
+	context.operation?.finish(success ? "completed" : "cancelled", success ? null : netrun_external_delivery_failure_text(reason))
 	var/datum/netrun_external_invocation/invocation = context.invocation
 	context.invocation = null
 	try_retire_invocation(invocation)
@@ -655,33 +691,6 @@
 			finish_context(context, FALSE, context.native_started ? "outcome_unknown" : "connection_lost")
 	retire_if_idle()
 
-/// Shadow никогда не вызывает native handlers, даже если Host ошибочно выдаёт service_invocation.
-/datum/netrun_external_effects/machines/shadow/process_result(datum/netrun_external_core/client, list/result)
-	if(result["binding_epoch"] != client.binding_epoch)
-		return FALSE
-	if(result["kind"] == "request_completed")
-		return TRUE
-	if(result["kind"] != "service_invocation" || !istext(result["invocation_id"]))
-		return FALSE
-	var/id = result["invocation_id"]
-	var/fingerprint = rustg_hash_string(RUSTG_HASH_SHA256, json_encode(result))
-	var/list/terminal = terminal_invocations[id]
-	if(terminal)
-		return terminal["binding"] == client.binding_epoch && terminal["fingerprint"] == fingerprint
-	var/datum/netrun_external_invocation/invocation = invocations[id]
-	if(invocation)
-		return invocation.fingerprint == fingerprint && queue_invocation_result(client, invocation)
-	if(length(invocations) >= invocation_limit)
-		return FALSE
-	invocation = new
-	invocation.invocation_id = id
-	invocation.request_id = result["request_id"]
-	invocation.binding_epoch = client.binding_epoch
-	invocation.fingerprint = fingerprint
-	invocation.stage = "finished"
-	invocation.result_json = netrun_external_json_object(list("kind" = json_encode("invocation_result"), "binding_epoch" = json_encode(client.binding_epoch), "invocation_id" = json_encode(id), "success" = "false", "payload" = "null", "code" = json_encode("shadow_only")))
-	invocations[id] = invocation
-	return queue_invocation_result(client, invocation)
 
-/// Production dispatcher дополняется отдельными query/projection adapters; isolated harness использует inherited lifecycle.
+
 /datum/netrun_external_effects/machines/queries

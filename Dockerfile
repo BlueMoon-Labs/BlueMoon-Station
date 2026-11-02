@@ -35,6 +35,12 @@ RUN dpkg --add-architecture i386 \
         ca-certificates
 
 # byond = base + byond installed globally
+FROM node:24.16.0-bookworm AS byond-download
+WORKDIR /download
+COPY dependencies.sh ./
+COPY tools/netrun/download-byond.mjs ./
+RUN . ./dependencies.sh && node download-byond.mjs "${BYOND_MAJOR}.${BYOND_MINOR}" "${BYOND_LINUX_SHA256}" /byond.zip
+
 FROM base AS byond
 WORKDIR /byond
 
@@ -46,9 +52,9 @@ RUN apt-get install -y --no-install-recommends \
         libcurl3:i386
 
 COPY dependencies.sh .
+COPY --from=byond-download /byond.zip ./byond.zip
 
 RUN . ./dependencies.sh \
-    && curl "http://www.byond.com/download/build/${BYOND_MAJOR}/${BYOND_MAJOR}.${BYOND_MINOR}_byond_linux.zip" -o byond.zip \
     && unzip byond.zip \
     && cd byond \
     && sed -i 's|install:|&\n\tmkdir -p $(MAN_DIR)/man6|' Makefile \
@@ -57,6 +63,13 @@ RUN . ./dependencies.sh \
     && apt-get purge -y --auto-remove curl unzip make \
     && cd .. \
     && rm -rf byond byond.zip
+
+# rust = base + rustc and i686 target
+FROM base AS rust
+RUN apt-get install -y --no-install-recommends \
+        curl && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal \
+    && ~/.cargo/bin/rustup target add i686-unknown-linux-gnu
 
 # Официальный Node24 требует glibc>=2.28: TGUI/Juke нельзя запускать в Xenial runtime.
 # Установленный BYOND содержит cfg/web/bin/man в /usr/local/byond; shared libraries лежат в bin.
@@ -72,23 +85,21 @@ RUN dpkg --add-architecture i386 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=byond /usr/local/byond/ /usr/local/byond/
+# Закреплённый NanoMap умеет собираться из исходников при несовместимом release binary.
+COPY --from=rust /root/.cargo/bin/ /root/.cargo/bin/
+COPY --from=rust /root/.rustup/ /root/.rustup/
 ENV BYOND_SYSTEM=/usr/local/byond \
-    PATH="/usr/local/byond/bin:${PATH}" \
+    PATH="/root/.cargo/bin:/usr/local/byond/bin:${PATH}" \
     LD_LIBRARY_PATH=/usr/local/byond/bin
 
 COPY . .
 
 # Прямой entry point использует pinned Node и не зависит от CRLF/shebang Windows checkout.
 # Core строится отдельным stage; deploy сохраняет штатный набор runtime assets.
-RUN env NETRUN_CORE_BUILD=0 node tools/build/build.js \
+RUN --mount=type=cache,target=/var/cache/tg-bootstrap \
+    --mount=type=cache,target=/root/.yarn \
+    env TG_BOOTSTRAP_CACHE=/var/cache/tg-bootstrap NETRUN_CORE_BUILD=0 node tools/build/build.js \
     && /bin/bash tools/deploy.sh /deploy
-
-# rust = base + rustc and i686 target
-FROM base AS rust
-RUN apt-get install -y --no-install-recommends \
-        curl && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal \
-    && ~/.cargo/bin/rustup target add i686-unknown-linux-gnu
 
 # rust_g = base + rust_g compiled to /rust_g
 FROM rust AS rust_g
@@ -104,22 +115,35 @@ RUN apt-get install -y --no-install-recommends \
 
 COPY dependencies.sh .
 
-RUN . ./dependencies.sh \
+RUN --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
+    --mount=type=cache,target=/rust_g/target \
+    . ./dependencies.sh \
     && git fetch --depth 1 origin "${RUST_G_VERSION}" \
     && git checkout FETCH_HEAD \
-    && env PKG_CONFIG_ALLOW_CROSS=1 ~/.cargo/bin/cargo build --release --target i686-unknown-linux-gnu
+    && env PKG_CONFIG_ALLOW_CROSS=1 CARGO_BUILD_JOBS=2 ~/.cargo/bin/cargo build --release --target i686-unknown-linux-gnu \
+    && cp target/i686-unknown-linux-gnu/release/librust_g.so /rust_g/librust_g.so
 
-# final = byond + runtime deps + rust_g + build
-FROM byond AS netrun-station
+# Node helper используется и работающим миром; современная glibc нужна также в runtime image.
+FROM node:24.16.0-bookworm AS netrun-station
 ARG NETRUN_CORE_DIGEST
 WORKDIR /tgstation
 
-RUN apt-get install -y --no-install-recommends \
-        libssl1.0.0:i386 \
-        zlib1g:i386
+RUN dpkg --add-architecture i386 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        libc6:i386 libstdc++6:i386 libcurl4:i386 zlib1g:i386 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=byond /usr/local/byond/ /usr/local/byond/
+# rust-g собран со старым OpenSSL; эти x86 libraries не меняют зависимости 64-bit Node.
+COPY --from=rust_g /lib/i386-linux-gnu/libssl.so.1.0.0 /usr/local/byond/bin/
+COPY --from=rust_g /lib/i386-linux-gnu/libcrypto.so.1.0.0 /usr/local/byond/bin/
+ENV BYOND_SYSTEM=/usr/local/byond \
+    PATH="/usr/local/byond/bin:${PATH}" \
+    LD_LIBRARY_PATH=/usr/local/byond/bin
 
 COPY --from=build /deploy ./
-COPY --from=rust_g /rust_g/target/i686-unknown-linux-gnu/release/librust_g.so ./librust_g.so
+COPY --from=rust_g /rust_g/librust_g.so ./librust_g.so
 COPY --from=netrun-build /netrun-output/libnetrun_bridge.so ./libnetrun_bridge.so
 COPY --from=netrun-build /netrun-output/source-manifest.json ./netrun-core-source.json
 COPY tools/netrun/docker-station-entrypoint.sh ./tools/netrun/docker-station-entrypoint.sh
@@ -128,7 +152,7 @@ ENV NETRUN_CORE_MODE=external NETRUN_CORE_PORT=18462 \
     NETRUN_CORE_LIBRARY=/tgstation/libnetrun_bridge.so \
     NETRUN_CORE_TOKEN_FILE=/run/secrets/netrun_session_token
 
-VOLUME [ "/tgstation/config", "/tgstation/data" ]
+VOLUME [ "/tgstation/data" ]
 ENTRYPOINT [ "/bin/bash", "/tgstation/tools/netrun/docker-station-entrypoint.sh" ]
 CMD [ "tgstation.dmb", "-port", "1337", "-trusted", "-close", "-verbose" ]
 EXPOSE 1337

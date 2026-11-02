@@ -1,6 +1,4 @@
-/// One bounded, coalesced local registry lookup per source/service/tag. Discovery
-/// never creates wire packets or per-client directory replicas. APC topology is
-/// authoritative, while the ordinary data packet revalidates the path at delivery.
+/// Native burst ownership and domain-policy fanout for identities discovered by C#.
 /datum/netrun_machine_resolution
 	parent_type = /datum/netrun_delivery
 	delivery_kind = "service_discovery"
@@ -12,11 +10,6 @@
 	var/completed = FALSE
 	var/failure_reason = "Обнаружение службы отменено"
 	var/operation_id
-	/// An owned registry snapshot keeps removals between slices from skipping peers.
-	var/list/candidates
-	var/candidate_cursor = 1
-	var/target_limit = 0
-	var/communications = FALSE
 	var/list/resolved_targets
 	var/target_cursor = 1
 	var/message_attempted = FALSE
@@ -50,7 +43,6 @@
 			message.failed(failure_reason)
 		qdel(message)
 		already_dispatched = FALSE
-	candidates = null
 	resolved_targets = null
 	if(source)
 		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
@@ -110,42 +102,10 @@
 		failure_reason = "Источник службы удалён"
 		qdel(src)
 		return FALSE
-	if(!completed)
-		completed = TRUE
-		// Snapshot once for the whole admitted burst. Remove this generation before
-		// callbacks, so newly submitted commands own a separate lookup.
-		if(source.resolutions[query_key] == src)
-			source.resolutions -= query_key
-		var/list/bucket = source.discovery_candidates(destination_id, recipient_tag)
-		candidates = bucket ? bucket.Copy() : list()
-		resolved_targets = list()
-		communications = netrun_communication_policy(source, destination_id)
-		target_limit = source.discovery_target_limit(destination_id)
-	if(candidates)
-		var/work = 0
-		while(candidate_cursor <= length(candidates) && work++ < 8)
-			var/datum/netrun_machine_service/candidate = candidates[candidate_cursor++]
-			var/eligible = transport.discoverable(source, candidate, recipient_tag, communications)
-			// Live binding/availability callbacks may delete this producer mid-lookup.
-			if(QDELETED(src))
-				return FALSE
-			if(eligible)
-				resolved_targets += candidate
-				if(target_limit > 0 && length(resolved_targets) >= target_limit)
-					candidate_cursor = length(candidates) + 1
-					break
-			if(world.time != slice_time || TICK_DELTA_TO_MS(TICK_USAGE - slice_started) >= budget_ms)
-				break
-		if(candidate_cursor <= length(candidates))
-			queue_delivery()
-			return FALSE
-		candidates = null
-		resolved_targets = source.select_targets(destination_id, resolved_targets)
-		if(QDELETED(src))
-			return FALSE
-		if(world.time != slice_time || TICK_DELTA_TO_MS(TICK_USAGE - slice_started) >= budget_ms)
-			queue_delivery()
-			return FALSE
+	if(!completed || !islist(resolved_targets))
+		failure_reason = "Поиск служб не завершён внешним ядром"
+		qdel(src)
+		return FALSE
 	// Bound both command bursts and broadcast fanout. Originals remain owned and
 	// counted until consumed; one packet admission is an indivisible routing step.
 	// Cheap local fanout may share a slice, but never outlive lookup's remaining

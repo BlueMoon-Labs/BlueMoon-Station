@@ -124,7 +124,6 @@
 	var/list/entry = provider?.actions[action]
 	if(!entry || SSnetrun.get_provider(node.parent) != provider || provider.action_unavailable_reason(node.parent, action, console, node))
 		return UI_CLOSE
-	node.join_network()
 	if(node.network != network_ref?.resolve())
 		return UI_CLOSE
 	var/datum/netrun_path_tree/tree = console.make_path_tree()

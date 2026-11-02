@@ -123,9 +123,6 @@
 		return FALSE
 	worker.dirty_nodes -= node
 	node.processing_update = TRUE
-	var/datum/netrun_topology/graph = worker.get_topology()
-	if(!netrun_external_projection_mode() && (node.pending_physical_update || !node.binding_checked || node.binding_infra_revision != graph.infrastructure_revision))
-		node.join_network()
 	node.reconcile_state()
 	node.processing_update = FALSE
 	node.urgent_update = FALSE
@@ -192,9 +189,6 @@
 	if(!limits)
 		limits = worker.get_execution_limits()
 	var/datum/netrun_topology/graph = worker.get_topology()
-	if(!netrun_external_projection_mode() && graph.dirty)
-		worker.get_task_scheduler().enqueue("apc_prebuild", graph, NETRUN_TASK_BACKGROUND)
-	graph.refresh_route_tables(limits.route_refresh_interval, limits.route_expiry_interval)
 	if(!graph.dirty && graph.revision != worker.patrol_topology_revision && length(worker.networks))
 		worker.initialize_patrol()
 	if(!graph.dirty && graph.revision != worker.fortress_topology_revision && length(worker.networks))
@@ -205,21 +199,10 @@
 		worker.maintain_bots()
 	return TRUE
 
-/// Bounded upstream topology preparation stays behind its own task implementation.
-/datum/netrun_task/apc_prebuild
-	parent_type = /datum/netrun_task/continuation
-	kind = "apc_prebuild"
 
-/datum/netrun_task/apc_prebuild/advance(datum/controller/subsystem/netrun/worker, datum/netrun_execution_limits/limits)
-	if(netrun_external_projection_mode())
-		return TRUE
-	var/datum/netrun_topology/graph = target()
-	if(!graph.dirty)
-		return TRUE
-	worker.apc_prebuild_steps++
-	return graph.advance_apc_prebuild(limits.apc_operations) || !graph.dirty
 
-/// Aggregate statistics without keeping references to processed objects.
+
+
 /datum/netrun_task_profile
 	var/requests = 0
 	var/created = 0

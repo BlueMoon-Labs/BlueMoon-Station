@@ -120,7 +120,6 @@
 	if(QDELETED(console) || QDELETED(node))
 		return FALSE
 	var/datum/recipient = recipient_ref?.resolve()
-	node.join_network()
 	var/datum/netrun_path_tree/tree = console.make_path_tree()
 	var/reason = console.entity_contact_denial(node, recipient, tree)
 	if(!reason && (sender != console.operator || node.network != sent_network))

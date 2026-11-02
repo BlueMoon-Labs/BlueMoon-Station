@@ -5,7 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { snapshotCoreSource, prepareCoreContext, verifyCoreBuild, ensureTokenFile, supervisePair } from './core-lifecycle.mjs';
+import { snapshotCoreSource, prepareCoreContext, verifyCoreBuild, ensureTokenFile, supervisePair, runManaged } from './core-lifecycle.mjs';
 
 /** Каждый fixture имеет собственный temp root; ни станция, ни настоящий Host в этих тестах не запускаются. */
 function fixture(t) {
@@ -17,12 +17,17 @@ function fixture(t) {
   for (const [relative, content] of [
     ['src/Netrun.Host/Netrun.Host.csproj', '<Project />'], ['src/Netrun.Host/Program.cs', 'class Program {}'],
     ['global.json', '{}'], ['native/netrun_bridge.cpp', 'bridge'], ['native/netrun_bridge.def', 'EXPORTS'],
+    ['scripts/ensure-toolchains.ps1', 'bootstrap'], ['scripts/toolchain-functions.ps1', 'functions'],
   ]) {
     fs.mkdirSync(path.dirname(path.join(source, relative)), { recursive: true });
     fs.writeFileSync(path.join(source, relative), content);
   }
   return { temporary, root, source };
 }
+
+test('retired DM and shadow engines cannot launch an alternate server', async () => {
+  for (const mode of ['dm', 'shadow', 'unknown']) await assert.rejects(runManaged({ mode }), /only external is supported/);
+});
 
 test('context pins exact dirty source bytes and excludes artifacts/user configuration', (t) => {
   const options = fixture(t);
@@ -38,6 +43,14 @@ test('context pins exact dirty source bytes and excludes artifacts/user configur
   fs.writeFileSync(path.join(options.source, 'src/Netrun.Host/Program.cs'), 'class Modified {}');
   assert.notEqual(snapshotCoreSource(options.source).digest, staged.digest);
   assert.equal(fs.readFileSync(path.join(staged.directory, 'src/Netrun.Host/Program.cs'), 'utf8'), 'class Program {}');
+});
+
+test('toolchain bootstrap changes participate in the source digest and staged build', (t) => {
+  const options = fixture(t);
+  const staged = prepareCoreContext(options);
+  assert.equal(fs.readFileSync(path.join(staged.directory, 'scripts/toolchain-functions.ps1'), 'utf8'), 'functions');
+  fs.writeFileSync(path.join(options.source, 'scripts/toolchain-functions.ps1'), 'new verified archive pin');
+  assert.notEqual(snapshotCoreSource(options.source).digest, staged.digest);
 });
 
 test('launch rejects stale source and corrupted published binaries', (t) => {

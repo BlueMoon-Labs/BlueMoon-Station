@@ -2,18 +2,15 @@
 /** Сборка и парный lifecycle внешнего ядра; секреты не передаются через argv или build context. */
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { ensureCoreSource, resolveCoreSource } from './core-source.mjs';
+export { ensureCoreSource, resolveCoreSource } from './core-source.mjs';
 
 export const stationRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 const stateRoot = (root) => path.join(root, 'data/netrun-core');
-
-/** Берёт явный local checkout; удалённый latest, clone и автоматический pull здесь отсутствуют. */
-export const resolveCoreSource = (root = stationRoot, source = process.env.NETRUN_CORE_SOURCE) =>
-  path.resolve(source || path.join(root, '..', 'netrun-core'));
 
 /** Перечисляет только build inputs; bin/obj, symlinks, user settings и secrets не копируются. */
 function sourceFiles(source) {
@@ -29,7 +26,8 @@ function sourceFiles(source) {
   };
   walk('src');
   for (const relative of ['global.json', 'Directory.Build.props', 'Directory.Build.targets', '.editorconfig',
-    'native/netrun_bridge.cpp', 'native/netrun_bridge.def', 'native/netrun_bridge.map', 'scripts/build-native.ps1']) {
+    'native/netrun_bridge.cpp', 'native/netrun_bridge.def', 'native/netrun_bridge.map', 'scripts/build-native.ps1',
+    'scripts/ensure-toolchains.ps1', 'scripts/toolchain-functions.ps1']) {
     if (fs.existsSync(path.join(source, relative))) result.push(relative);
   }
   if (!result.includes('src/Netrun.Host/Netrun.Host.csproj') || !result.includes('native/netrun_bridge.cpp')) throw new Error('core_source_invalid');
@@ -80,11 +78,50 @@ export function runCommand(command, args, options = {}) {
   });
 }
 
-/** Предпочитает явно выбранный SDK, затем уже установленный user-local SDK; ничего не устанавливает. */
-export function dotnetPath() {
-  if (process.env.NETRUN_DOTNET) return process.env.NETRUN_DOTNET;
-  const cached = path.join(os.homedir(), '.codex/cache/netrun-dotnet/sdk', process.platform === 'win32' ? 'dotnet.exe' : 'dotnet');
-  return fs.existsSync(cached) ? cached : 'dotnet';
+/** Общий bootstrap ядра проверяет installed tools или получает portable archive с checksum. */
+export async function ensureToolchains({ root = stationRoot, source = resolveCoreSource(root), tool = 'all' } = {}) {
+  if (process.platform !== 'win32') throw new Error('local_toolchain_requires_windows; use Docker on Linux');
+  await ensureCoreSource({ root, source });
+  const script = path.join(source, 'scripts/ensure-toolchains.ps1');
+  if (!fs.existsSync(script)) throw new Error('core_checkout_update_required: scripts/ensure-toolchains.ps1 is missing');
+  // PowerShell 7 передаёт свой PSModulePath через Node; Windows PowerShell должен выбрать собственные modules.
+  const bootstrapEnvironment = { ...process.env };
+  delete bootstrapEnvironment.PSModulePath;
+  return new Promise((resolve, reject) => {
+    const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, '-Tool', tool, '-Json'],
+      { cwd: source, env: bootstrapEnvironment, windowsHide: true, stdio: ['ignore', 'pipe', 'inherit'] });
+    let output = '';
+    let pendingLine = '';
+    const stopAtExit = () => { if (child.pid && child.exitCode === null) child.kill('SIGTERM'); };
+    process.once('exit', stopAtExit);
+    child.stdout.on('data', (chunk) => {
+      output += chunk.toString();
+      if (output.length > 1024 * 1024) child.kill('SIGTERM');
+      pendingLine += chunk.toString();
+      const lines = pendingLine.split(/\r?\n/);
+      pendingLine = lines.pop();
+      for (const line of lines) if (line && !line.startsWith('NETRUN_TOOLCHAINS:')) console.log(line);
+    });
+    child.once('error', () => reject(new Error('toolchain_bootstrap_start_failed')));
+    child.once('close', (code) => {
+      process.removeListener('exit', stopAtExit);
+      if (code !== 0) { reject(new Error('toolchain_bootstrap_failed')); return; }
+      const marker = output.match(/^NETRUN_TOOLCHAINS:(\{[^\r\n]+\})\s*$/m);
+      try {
+        if (!marker) throw new Error('missing marker');
+        const tools = JSON.parse(marker[1]);
+        for (const name of tool === 'all' ? ['dotnet', 'zig'] : [tool]) {
+          if (typeof tools[name] !== 'string' || !fs.statSync(tools[name]).isFile()) throw new Error('invalid path');
+        }
+        resolve(tools);
+      } catch { reject(new Error('toolchain_bootstrap_output_invalid')); }
+    });
+  });
+}
+
+/** Возвращает проверенный SDK и для --no-build запуска; Codex-specific paths не используются. */
+export async function dotnetPath(options = {}) {
+  return (await ensureToolchains({ ...options, tool: 'dotnet' })).dotnet;
 }
 
 /** Хэширует уже собранные bounded outputs; manifest launcher проверяет до открытия listener. */
@@ -101,19 +138,24 @@ function outputFiles(directory, prefix = '') {
 
 /** Local default build публикует Host и x86 DLL в ignored generation, затем атомарно публикует manifest. */
 export async function buildCore({ root = stationRoot, source = resolveCoreSource(root) } = {}) {
-  if (process.env.NETRUN_CORE_MODE === 'dm' || process.env.NETRUN_CORE_BUILD === '0') return null;
+  if (process.env.NETRUN_CORE_BUILD === '0') return null;
+  if (process.env.NETRUN_CORE_MODE && process.env.NETRUN_CORE_MODE !== 'external') throw new Error('invalid_mode: only external is supported');
   if (process.platform !== 'win32') throw new Error('local_core_build_requires_windows; use the Docker build on Linux');
+  await ensureCoreSource({ root, source });
+  const toolchains = await ensureToolchains({ root, source });
   const snapshot = prepareCoreContext({ root, source });
   const stagedSource = snapshot.directory;
   const parent = path.join(stateRoot(root), 'builds');
   fs.mkdirSync(parent, { recursive: true });
   const directory = fs.mkdtempSync(path.join(parent, `${snapshot.digest.slice(0, 12)}-`));
-  await runCommand(dotnetPath(), ['restore', path.join(stagedSource, 'src/Netrun.Host/Netrun.Host.csproj'), '--locked-mode'], { cwd: stagedSource });
-  await runCommand(dotnetPath(), ['publish', path.join(stagedSource, 'src/Netrun.Host/Netrun.Host.csproj'), '--configuration', 'Release',
+  await runCommand(toolchains.dotnet, ['restore', path.join(stagedSource, 'src/Netrun.Host/Netrun.Host.csproj'), '--locked-mode'], { cwd: stagedSource });
+  await runCommand(toolchains.dotnet, ['publish', path.join(stagedSource, 'src/Netrun.Host/Netrun.Host.csproj'), '--configuration', 'Release',
     '--no-restore', '--output', path.join(directory, 'host'), '/p:UseAppHost=false'], { cwd: stagedSource });
   const nativeArguments = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(stagedSource, 'scripts/build-native.ps1'), '-Target', 'windows-x86'];
-  if (process.env.NETRUN_ZIG) nativeArguments.push('-ZigPath', process.env.NETRUN_ZIG);
-  await runCommand('powershell.exe', nativeArguments, { cwd: stagedSource });
+  nativeArguments.push('-ZigPath', toolchains.zig);
+  const nativeEnvironment = { ...process.env };
+  delete nativeEnvironment.PSModulePath;
+  await runCommand('powershell.exe', nativeArguments, { cwd: stagedSource, env: nativeEnvironment });
   fs.copyFileSync(path.join(stagedSource, 'native/bin/netrun_bridge.dll'), path.join(directory, 'netrun_bridge.dll'));
   if (snapshotCoreSource(source).digest !== snapshot.digest) throw new Error('core_source_changed_during_build');
   const manifest = { directory, source, source_digest: snapshot.digest, revision: snapshot.revision, files: outputFiles(directory) };
@@ -226,12 +268,12 @@ export async function supervisePair({ hostCommand, worldCommand, cwd, env, onWor
   }
 }
 
-/** Default local launch явно external; diagnostic dm запускается без Host и без token. */
+/** Единственный сетевой движок — C# Host; launcher управляет всей парой процессов. */
 export async function runManaged({ root = stationRoot, source = resolveCoreSource(root), daemon = 'dd.exe',
   dmb = path.join(root, 'tgstation.dmb'), port = '1337', noBuild = false, mode = process.env.NETRUN_CORE_MODE || 'external' } = {}) {
-  if (!['external', 'shadow', 'dm'].includes(mode)) throw new Error('invalid_mode');
+  if (mode !== 'external') throw new Error('invalid_mode: only external is supported');
   if (!/^\d+$/.test(`${port}`) || Number(port) < 1 || Number(port) > 65535) throw new Error('invalid_game_port');
-  if (mode === 'dm') { await runCommand(daemon, [dmb, '-port', `${port}`, '-trusted'], { cwd: root, env: { ...process.env, NETRUN_CORE_MODE: 'dm' } }); return 0; }
+  await ensureCoreSource({ root, source });
   if (!noBuild) await buildCore({ root, source });
   const built = verifyCoreBuild({ root, source });
   const token = ensureTokenFile({ root });
@@ -240,7 +282,7 @@ export async function runManaged({ root = stationRoot, source = resolveCoreSourc
   const env = { ...process.env, NETRUN_CORE_MODE: mode, NETRUN_CORE_PORT: corePort,
     NETRUN_CORE_LIBRARY: path.join(built.directory, 'netrun_bridge.dll'), NETRUN_CORE_TOKEN_FILE: token, NETRUN_SESSION_TOKEN_FILE: token };
   delete env.NETRUN_SESSION_TOKEN;
-  return supervisePair({ cwd: root, env, hostCommand: [dotnetPath(), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', corePort],
+  return supervisePair({ cwd: root, env, hostCommand: [await dotnetPath({ root, source }), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', corePort],
     worldCommand: [daemon, dmb, '-port', `${port}`, '-trusted', '-close', '-invisible'] });
 }
 
@@ -249,7 +291,7 @@ async function main(args) {
   const [command, ...rest] = args;
   if (rest.some((arg) => command !== 'run' || arg !== '--no-build')) throw new Error('invalid_lifecycle_arguments');
   if (command === 'build') { await buildCore(); return; }
-  if (command === 'prepare-context') { console.log(JSON.stringify(prepareCoreContext())); return; }
+  if (command === 'prepare-context') { await ensureCoreSource(); console.log(JSON.stringify(prepareCoreContext())); return; }
   if (command === 'run') {
     const { getDreamDaemonPath } = await import('../build/lib/byond.js');
     const code = await runManaged({ daemon: await getDreamDaemonPath(), noBuild: rest.includes('--no-build') });

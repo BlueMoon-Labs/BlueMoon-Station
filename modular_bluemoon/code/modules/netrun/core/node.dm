@@ -93,7 +93,6 @@
 	// Publish registry event: topology listens and indexes APC/relay membership.
 	SSnetrun.get_topology()
 	SEND_SIGNAL(SSnetrun, COMSIG_NETRUN_NODE_REGISTERED, src)
-	join_network()
 	observe_location(TRUE)
 	notify_changed(NETRUN_CHANGED_BINDING)
 
@@ -187,34 +186,7 @@
 	QDEL_LIST(salvage)
 	return ..()
 
-/datum/component/netrun_node/proc/join_network()
-	if(netrun_external_projection_mode())
-		// Anchor/LAN приходят целой C# projection; чтение не запускает native nearest или rebuild.
-		return
-	var/datum/netrun_topology/topology = SSnetrun.get_topology()
-	var/datum/component/netrun_node/previous_apc = bound_apc
-	topology.refresh_node(src)
-	pending_physical_update = FALSE
-	var/datum/netrun_network/new_net
-	if(node_type == NETRUN_NODE_APC)
-		new_net = SSnetrun.get_apc_network(src)
-	else if(bound_apc)
-		// The APC already resolved its own LAN; reuse it instead of recomputing the lookup per endpoint.
-		new_net = bound_apc.network || SSnetrun.get_apc_network(bound_apc)
-	else
-		new_net = netrun_fallback_network_for(physical_turf())
-	if(network == new_net)
-		if(previous_apc != bound_apc)
-			notify_changed(NETRUN_CHANGED_BINDING)
-		return
-	// Publish the completed transition once; observers must not rebuild against
-	// the old LAN or a temporary null network while this node is being rebound.
-	leave_network(FALSE)
-	if(new_net)
-		network = new_net
-		network.nodes += src
-		add_log("Подключение к [network.code].")
-	notify_changed(NETRUN_CHANGED_BINDING)
+
 
 /datum/component/netrun_node/proc/leave_network(announce = TRUE)
 	if(!network)
@@ -301,8 +273,7 @@
 	SEND_SIGNAL(src, COMSIG_NETRUN_NODE_MOVED, src, topology_turf, position)
 	SEND_SIGNAL(SSnetrun, COMSIG_NETRUN_NODE_MOVED, src, topology_turf, position)
 	// Never scan bindings or repair every retained route inside the character's move.
-	// The existing node task coalesces several moves, and explicit route consumers
-	// call join_network() themselves before authorizing a packet or serializing UI.
+	// Core receives the raw movement and publishes a replacement graph before route readers proceed.
 	pending_physical_update = TRUE
 	pending_changed_flags |= NETRUN_CHANGED_STATE
 	SSnetrun.queue_node(src, TRUE)
@@ -331,7 +302,7 @@
 	var/datum/netrun_external_core/client = SSnetrun.external_core
 	// Communication ports forwarding принадлежат отдельному overlay; ordinary endpoint proof не меняется.
 	var/communication_port = istype(parent, /obj/machinery/telecomms/hub) || istype(parent, /obj/machinery/telecomms/relay)
-	if(netrun_external_projection_mode() && client && (client.node_is_forwarder(src) || communication_port))
+	if(client && (client.node_is_forwarder(src) || communication_port))
 		client.on_node_changed(src, src, NETRUN_CHANGED_STATE)
 
 /datum/component/netrun_node/proc/on_storage_changed(datum/source)
@@ -534,7 +505,6 @@
 /datum/component/netrun_node/proc/uplink_node()
 	if(node_type == NETRUN_NODE_APC)
 		return null
-	join_network()
 	return bound_apc
 
 /datum/component/netrun_node/proc/ui_entry(datum/netrun_console/console)

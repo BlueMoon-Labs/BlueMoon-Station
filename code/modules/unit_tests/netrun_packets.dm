@@ -164,20 +164,3 @@
 	TEST_ASSERT(length(SSnetrun.events) <= NETRUN_MAX_MAP_EVENTS, "Map events must keep a strict global bound")
 
 /// Machine traffic is drawn at dispatch through a shared limiter and never reports routine success.
-/datum/unit_test/netrun_machine_flight_limiter/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	transport.flow_window = 0
-	transport.last_flow.Cut()
-	var/datum/netrun_packet_context/first = allocate(/datum/netrun_packet_context, "machine", "Fixture", scene.source.resolve_node().address, scene.target.resolve_node().address, "fixture")
-	first.queued(list(first.from_address, first.to_address), 1, FALSE)
-	TEST_ASSERT(!first.map_announced, "Machine packets defer publication to the limiter")
-	TEST_ASSERT(transport.record_flow(scene.source, scene.target, first), "The first flight of a pair is drawn")
-	TEST_ASSERT(first.map_announced && first.quiet_success, "A drawn machine flight hides routine success")
-	var/datum/netrun_packet_context/second = allocate(/datum/netrun_packet_context, "machine", "Fixture", first.from_address, first.to_address, "fixture")
-	second.queued(list(first.from_address, first.to_address), 1, FALSE)
-	TEST_ASSERT(!transport.record_flow(scene.source, scene.target, second), "The same pair is drawn at most once per window")
-	first.finish("completed")
-	TEST_ASSERT_NULL(netrun_packet_event_phase(first.id, "done"), "Routine machine success adds no outcome event")
-	second.finish("rejected", "fixture")
-	TEST_ASSERT_NULL(netrun_packet_event_phase(second.id, "fail"), "An undrawn packet draws no outcome either")

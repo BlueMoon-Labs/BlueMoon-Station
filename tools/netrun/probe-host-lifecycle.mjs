@@ -14,7 +14,7 @@ const environment = { ...process.env, NETRUN_SESSION_TOKEN_FILE: tokenFile, NETR
 delete environment.NETRUN_SESSION_TOKEN;
 const probe = `const c=require('node:net').connect({host:'127.0.0.1',port:Number(process.env.NETRUN_PROBE_PORT)});c.once('error',()=>process.exit(2));c.once('connect',()=>{c.destroy();process.exit(0)});setTimeout(()=>process.exit(3),5000).unref()`;
 const code = await supervisePair({ cwd: stationRoot, env: environment,
-  hostCommand: [dotnetPath(), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', `${port}`],
+  hostCommand: [await dotnetPath(), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', `${port}`],
   worldCommand: [process.execPath, '-e', probe] });
 if (code) throw new Error('managed_host_probe_failed');
 await new Promise((resolve, reject) => {

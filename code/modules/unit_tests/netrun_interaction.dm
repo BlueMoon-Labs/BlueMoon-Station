@@ -90,6 +90,7 @@
 
 /// A new breach is immediately visible to reactive sentries, without charging pre-breach time.
 /datum/unit_test/netrun_breach_reactive_trace_clock/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/node = host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity)

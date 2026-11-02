@@ -31,6 +31,8 @@
 
 /// Bare items are stationary and anchored enough for the fortress slot rule.
 /datum/unit_test/proc/netrun_fortress_node(node_type = NETRUN_NODE_SERVER)
+	if(!istype(SSnetrun.topology, /datum/netrun_topology/import_fixture))
+		netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	host.anchored = TRUE
 	return host.AddComponent(/datum/component/netrun_node, node_type, list(), 1, list(), 4)
@@ -60,6 +62,7 @@
 	TEST_ASSERT("fort_dismantle@wall" in node.all_command_ids(), "Built kinds can be dismantled")
 
 /datum/unit_test/netrun_fortress_walls_block_breach/Run()
+	netrun_connected_test_area()
 	var/datum/component/netrun_node/node = netrun_fortress_node()
 	var/obj/item/owner_host = allocate(/obj/item)
 	var/datum/netrun_console/owner = allocate(/datum/netrun_console, owner_host)

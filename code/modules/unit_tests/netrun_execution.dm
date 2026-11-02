@@ -35,7 +35,7 @@
 	worker.probe_calls++
 	return TRUE
 
-/// The shared continuation, used by bootstrap/prebuild/publication, owns repeat dispatch.
+/// Shared native readiness continuations retain bounded repeat dispatch; graph work belongs to Core.
 /datum/netrun_task/continuation_probe
 	parent_type = /datum/netrun_task/continuation
 	kind = "continuation_probe"
@@ -89,6 +89,7 @@
 
 /// A readiness timer must never synchronously retry an entire station's service-discovery backlog.
 /datum/unit_test/netrun_execution_discovery_wake_slices/Run()
+	allocate(/datum/netrun_ready_fixture)
 	var/datum/netrun_machine_transport/transport = allocate(/datum/netrun_machine_transport)
 	transport.bootstrap_complete = TRUE
 	var/list/samples = list("begun" = 0)
@@ -171,7 +172,7 @@
 	TEST_ASSERT_EQUAL(scheduler.pending(), 0, "A finite burst must leave no pending task after its bounded worker passes")
 	TEST_ASSERT_EQUAL(scheduler.counts[NETRUN_TASK_NORMAL], 0, "Draining must reconcile the per-priority counters")
 
-/// Every kind of admitted backlog needs fast follow-up, including prewarm and node work.
+/// Every admitted native backlog needs fast follow-up, including readiness and node work.
 /datum/unit_test/netrun_execution_backlog_cadence/Run()
 	var/datum/controller/subsystem/netrun/netrun_execution_test/worker = allocate(/datum/controller/subsystem/netrun/netrun_execution_test)
 	TEST_ASSERT_EQUAL(NETRUN_DEFAULT_FIRE_INTERVAL, 20, "Idle/background maintenance must use the requested twenty-decisecond cadence")
@@ -270,7 +271,6 @@
 	worker.task_min_budget_ms = INFINITY
 	worker.task_max_per_pass = -3
 	worker.task_min_per_pass = 100000
-	worker.apc_prebuild_operations = 100000
 	worker.task_population_interval = -1
 	worker.task_interactive_burst = 0
 	worker.task_priority_rotation = list(NETRUN_TASK_CRITICAL, NETRUN_TASK_CRITICAL, "bad", 1.5)
@@ -279,7 +279,6 @@
 	TEST_ASSERT(limits.min_budget_ms > 0 && limits.min_budget_ms <= limits.budget_ms, "Minimum CPU budget must remain bounded")
 	TEST_ASSERT_EQUAL(limits.max_per_pass, 1, "Negative task counts must retain progress through one bounded task")
 	TEST_ASSERT_EQUAL(limits.min_per_pass, 1, "An inverted minimum cannot bypass the maximum")
-	TEST_ASSERT_EQUAL(limits.apc_operations, NETRUN_EXECUTION_MAX_PREBUILD_OPERATIONS, "A topology slice must have a finite upper bound")
 	TEST_ASSERT_EQUAL(limits.population_interval, NETRUN_EXECUTION_MIN_INTERVAL, "A negative interval cannot spin without advancing time")
 	var/datum/netrun_task_scheduler/scheduler = allocate(/datum/netrun_task_scheduler, limits)
 	for(var/priority in NETRUN_TASK_CRITICAL to NETRUN_TASK_BACKGROUND)

@@ -1,4 +1,55 @@
-/// Real machine components and timers exercise discovery and delivery together.
+/// Fixture импортирует только явные Host events; поиск пути и transport simulation в DM отсутствуют.
+/datum/netrun_external_fixture/proc/admit_pair(datum/netrun_machine_service/source_service, datum/netrun_machine_service/target_service, datum/netrun_machine_message/message)
+	if(!executor.dispatch(source_service, target_service, message))
+		return null
+	for(var/id in executor.pending)
+		var/datum/netrun_external_request_context/context = executor.pending[id]
+		if(context.message == message)
+			return context
+	return null
+
+/// Подаёт supplied invocation и terminal отдельно; native receive и callbacks остаются production реализацией.
+/datum/netrun_external_fixture/proc/deliver_context(datum/netrun_external_request_context/context)
+	if(QDELETED(context))
+		return FALSE
+	var/request_id = context.request_id
+	if(!executor.process_result(client, invocation(context)) || context.executing || !context.invocation?.result_json)
+		return FALSE
+	var/list/result = json_decode(context.invocation.result_json)
+	var/success = result["success"]
+	executor.process_result(client, completion(request_id, success ? "completed" : "failed", result["code"]))
+	return success
+
+/// Live-map diagnostics читают bounded native context registry, не удалённые локальные packets.
+/datum/unit_test/proc/netrun_pending_machine_contexts()
+	var/datum/netrun_external_effects/machines/executor = SSnetrun.external_core?.effects
+	return length(executor?.pending)
+
+/// Короткий no-yield scope для native readiness; не открывает Host и восстанавливает глобальные зависимости.
+/datum/netrun_ready_fixture
+	/// Настоящий hermetic query executor с fake IPC.
+	var/datum/netrun_external_query_fixture/external
+	/// Исходный binding восстанавливается после освобождения continuations тестового dispatcher.
+	var/datum/netrun_external_core/previous_client
+	/// Общая readiness-фаза также принадлежит исходному миру.
+	var/previous_bootstrap
+
+/datum/netrun_ready_fixture/New()
+	previous_client = SSnetrun.external_core
+	previous_bootstrap = SSnetrun.get_machine_transport().bootstrap_complete
+	external = new
+	SSnetrun.external_core = external.client
+	SSnetrun.get_machine_transport().bootstrap_complete = TRUE
+
+/datum/netrun_ready_fixture/Destroy()
+	// Удаляемые query обязаны видеть свой dispatcher, а не восстановленный игровой binding.
+	QDEL_NULL(external)
+	SSnetrun.external_core = QDELETED(previous_client) ? null : previous_client
+	SSnetrun.get_machine_transport().bootstrap_complete = previous_bootstrap
+	previous_client = null
+	return ..()
+
+/// Нативные startup adapters остаются асинхронными, независимо от сетевого решателя.
 /datum/netrun_machine_service/readiness_fixture
 	service_id = "transport.readiness"
 	start_when_ready = TRUE
@@ -111,41 +162,34 @@
 /// A failed update after registration invalidates only that recipient's ACK and retries.
 /datum/unit_test/netrun_transport_atmos_status_failure_retries/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
 	var/obj/machinery/airalarm/first = scene.machine(/obj/machinery/airalarm, scene.source_spot)
 	var/obj/machinery/airalarm/second = scene.machine(/obj/machinery/airalarm, scene.source_spot)
 	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = scene.machine(/obj/machinery/atmospherics/components/unary/vent_pump, scene.target_spot)
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	var/datum/netrun_machine_service/atmos/device/device = vent.get_netrun_machine_service("atmos.device")
 	var/datum/netrun_machine_service/atmos/controller/first_controller = first.get_netrun_machine_service("atmos.controller")
 	var/datum/netrun_machine_service/atmos/controller/second_controller = second.get_netrun_machine_service("atmos.controller")
-	var/deadline = world.time + 5 SECONDS
-	while(!transport.is_ready() && world.time < deadline)
-		sleep(world.tick_lag)
-	TEST_ASSERT(transport.is_ready(), "The failure fixture needs the normal ready network")
-	vent.broadcast_status()
-	deadline = world.time + 5 SECONDS
-	while(!device.registration_complete() && world.time < deadline)
-		sleep(world.tick_lag)
-	TEST_ASSERT(device.acknowledged_controllers[REF(first_controller)] && device.acknowledged_controllers[REF(second_controller)], "Both controllers must initially acknowledge the real vent")
+	for(var/datum/netrun_machine_service/atmos/controller/controller as anything in list(first_controller, second_controller))
+		var/datum/netrun_machine_message/atmos/message = new(list("sigtype" = "status", "device" = "VP", "tag" = vent.id_tag, "power" = vent.on))
+		message.registration_ref = WEAKREF(device)
+		var/datum/netrun_external_request_context/context = fixture.admit_pair(device, controller, message)
+		TEST_ASSERT(fixture.deliver_context(context), "The explicit Core invocation delivers native registration")
+	TEST_ASSERT(device.acknowledged_controllers[REF(first_controller)] && device.acknowledged_controllers[REF(second_controller)], "Both native terminal deliveries acknowledge their actual controllers")
 	vent.on = !vent.on
-	vent.broadcast_status()
-	var/datum/netrun_machine_packet/data/failed_packet
-	for(var/datum/netrun_machine_packet/data/packet as anything in transport.packets)
-		if(packet.source == device && packet.recipient == second_controller && packet.message.payload["sigtype"] == "status")
-			failed_packet = packet
-			break
-	TEST_ASSERT_NOTNULL(failed_packet, "The changed status must first be admitted to the second controller")
-	failed_packet.fail("test route failure after admission")
-	TEST_ASSERT(device.acknowledged_controllers[REF(first_controller)], "A different controller's valid acknowledgement must survive")
-	TEST_ASSERT_NULL(device.acknowledged_controllers[REF(second_controller)], "A failed admitted packet must revoke its recipient's old acknowledgement")
-	TEST_ASSERT(device.registration_timer, "A failed packet must schedule a fresh status retry")
-	deadline = world.time + 12 SECONDS
-	var/list/status = second.netrun_vent_info[vent.id_tag]
-	while((!status || status["power"] != vent.on || !device.registration_complete()) && world.time < deadline)
-		sleep(world.tick_lag)
-		status = second.netrun_vent_info[vent.id_tag]
-	TEST_ASSERT(status && status["power"] == vent.on, "Retry must deliver the current status, not retain the old acknowledged value")
-	TEST_ASSERT(device.registration_complete(), "Both controllers must eventually acknowledge the current registration")
+	var/datum/netrun_machine_message/atmos/update = new(list("sigtype" = "status", "device" = "VP", "tag" = vent.id_tag, "power" = vent.on))
+	update.registration_ref = WEAKREF(device)
+	var/datum/netrun_external_request_context/context = fixture.admit_pair(device, second_controller, update)
+	TEST_ASSERT_NOTNULL(context, "The changed status is owned before the Core route failure")
+	fixture.executor.process_result(fixture.client, fixture.completion(context.request_id, "failed", "route_unavailable"))
+	TEST_ASSERT(device.acknowledged_controllers[REF(first_controller)], "A different controller's acknowledgement survives")
+	TEST_ASSERT_NULL(device.acknowledged_controllers[REF(second_controller)], "A failed native terminal revokes only its recipient's acknowledgement")
+	TEST_ASSERT(device.registration_timer, "A failed admitted update schedules native retry")
+	update = new(list("sigtype" = "status", "device" = "VP", "tag" = vent.id_tag, "power" = vent.on))
+	update.registration_ref = WEAKREF(device)
+	context = fixture.admit_pair(device, second_controller, update)
+	TEST_ASSERT(fixture.deliver_context(context), "A fresh Core invocation can deliver the current state")
+	TEST_ASSERT_EQUAL(second.netrun_vent_info[vent.id_tag]["power"], vent.on, "Recovery uses fresh telemetry rather than the old acknowledged state")
+	TEST_ASSERT(device.acknowledged_controllers[REF(second_controller)], "The fresh successful terminal restores the recipient acknowledgement")
 
 /obj/machinery/netrun_server/transport_fixture/netrun_machine_service_types()
 	return ..() + list(/datum/netrun_machine_service/transport_fixture)
@@ -257,42 +301,23 @@
 	result.levels = list(radio.z)
 	return result
 
-/datum/unit_test/netrun_transport_native_relay_policy/Run()
-	var/datum/netrun_communication_scene/scene = allocate(/datum/netrun_communication_scene, run_loc_floor_bottom_left)
-	var/datum/signal/subspace/signal = scene.signal()
-	allocated += signal
-	TEST_ASSERT(scene.radio_port.send("telecomms.receiver", new /datum/netrun_machine_message/telecomms(signal), scene.receiver_service.service_tag()), "Communication discovery must be admitted across a native relay")
-	var/deadline = world.time + 4 SECONDS
-	while(!scene.receiver_port.received_packets && world.time < deadline)
-		sleep(world.tick_lag)
-	TEST_ASSERT_EQUAL(scene.receiver_port.received_packets, 1, "APC service discovery and communication must cross telecomms without an NTnet relay")
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	TEST_ASSERT(!transport.reachable(scene.source, scene.target), "A communication path must not enter the ordinary machine route cache")
-	var/datum/component/netrun_node/start = scene.source.resolve_node()
-	var/datum/netrun_path_tree/tree = new(SSnetrun.ensure_topology(), start)
-	allocated += tree
-	TEST_ASSERT(!tree.reached[scene.target.resolve_node().address], "Telecommunications must not widen runner, research or atmosphere topology")
-	scene.relay.receiving = FALSE
-	TEST_ASSERT(!transport.reachable(scene.radio_port, scene.receiver_service), "A disabled native receive direction must revoke a cached communication route")
-	scene.relay.receiving = TRUE
-	scene.relay.set_machine_stat(BROKEN)
-	TEST_ASSERT(!transport.reachable(scene.radio_port, scene.receiver_service), "Broken native relays must revoke cached communication routes")
+
 
 /datum/unit_test/netrun_transport_native_relay_delivery_revalidation/Run()
 	var/datum/netrun_communication_scene/scene = allocate(/datum/netrun_communication_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
 	var/datum/signal/subspace/signal = scene.signal()
 	allocated += signal
-	var/datum/netrun_machine_packet/data/packet = new(scene.radio_port, scene.receiver_service, new /datum/netrun_machine_message/telecomms(signal))
-	TEST_ASSERT(packet.send(), "A live native relay must admit the communication packet")
-	scene.relay.freq_listening = list(FREQ_SCIENCE)
-	packet.deliver()
-	TEST_ASSERT_EQUAL(scene.receiver_port.received_packets, 0, "A frequency change in flight must reject the packet at delivery")
-	scene.relay.freq_listening = list()
-	packet = new(scene.radio_port, scene.receiver_service, new /datum/netrun_machine_message/telecomms(signal))
-	TEST_ASSERT(packet.send(), "Restoring a relay filter must restore communication admission")
-	scene.hub.freq_listening = list(FREQ_SCIENCE)
-	packet.deliver()
-	TEST_ASSERT_EQUAL(scene.receiver_port.received_packets, 0, "An in-flight hub frequency change must revoke the native bridge as well")
+	var/datum/netrun_external_request_context/context = fixture.admit_pair(scene.radio_port, scene.receiver_service, new /datum/netrun_machine_message/telecomms(signal))
+	TEST_ASSERT_NOTNULL(context, "Communication retains a typed native request while Core owns the path")
+	TEST_ASSERT(context.communications, "The native radio family explicitly opts into communication authority")
+	var/list/event = fixture.invocation(context)
+	fixture.executor.latest_communication_revision = "2"
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "An obsolete Core proof produces a typed native refusal")
+	TEST_ASSERT_EQUAL(scene.receiver_port.received_packets, 0, "Revoked communication authority cannot enter the native receiver")
+	var/list/result = json_decode(context.invocation.result_json)
+	TEST_ASSERT_EQUAL(result["code"], "native_topology_pending", "A stale communication revision is not a successful native effect")
+	fixture.executor.process_result(fixture.client, fixture.completion(context.request_id, "failed", "native_topology_pending"))
 
 /datum/unit_test/netrun_transport_atmos_late_controller_registration/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
@@ -343,7 +368,7 @@
 	device.retry_registration()
 	TEST_ASSERT(device.registration_timer && device.registration_at >= world.time + 30 SECONDS, "An exhausted fast retry window must retain a bounded slow retry, rather than abandon a live controller")
 	var/deadline = world.time + 4 SECONDS
-	while(!alarm.netrun_vent_info[vent.id_tag] && world.time < deadline)
+	while((!alarm.netrun_vent_info[vent.id_tag] || !device.registration_complete() || device.registration_timer) && world.time < deadline)
 		sleep(world.tick_lag)
 	TEST_ASSERT(alarm.netrun_vent_info[vent.id_tag], "A device at its old retry limit must still deliver registration after routing recovers")
 	TEST_ASSERT_NULL(device.registration_timer, "Successful registration must cancel the slow retry")
@@ -446,7 +471,7 @@
 			if(world.time >= deadline)
 				break
 			sleep(1 SECONDS)
-	log_world("NETRUN MAP startup: map=[SSmapping.config.map_name] apcs_online=[online_apcs] ready=[transport.is_ready()] bootstrap=[transport.bootstrap_complete] controllers=[length(transport.by_id["atmos.controller"])] devices=[length(transport.by_id["atmos.device"])] rnd_devices=[length(research_devices)] rnd_missing=[missing] packets=[length(transport.packets)] queued=[transport.queued_messages]")
+	log_world("NETRUN MAP startup: map=[SSmapping.config.map_name] apcs_online=[online_apcs] ready=[transport.is_ready()] bootstrap=[transport.bootstrap_complete] controllers=[length(transport.by_id["atmos.controller"])] devices=[length(transport.by_id["atmos.device"])] rnd_devices=[length(research_devices)] rnd_missing=[missing] packets=[netrun_pending_machine_contexts()] queued=[transport.queued_messages]")
 	var/demanding_clients = 0
 	var/list/client_types = list()
 	for(var/datum/netrun_machine_service/research_client/client as anything in transport.by_id["research.client"])
@@ -456,19 +481,13 @@
 	var/subscribers = 0
 	for(var/datum/netrun_machine_service/research_server/server as anything in transport.by_id["research.server"])
 		subscribers += length(server.subscribers)
-	var/list/packet_kinds = list()
-	for(var/datum/netrun_machine_packet/data/packet as anything in transport.packets)
-		var/key = "[packet.source.service_id]>[packet.recipient.service_id]:[packet.message.payload["operation"] || packet.message.payload["sigtype"]]"
-		packet_kinds[key] = (packet_kinds[key] || 0) + 1
 	var/datum/netrun_task_scheduler/scheduler = SSnetrun.get_task_scheduler()
 	var/list/pending_kinds = list()
 	for(var/key in scheduler.by_key)
 		var/datum/netrun_task/task = scheduler.by_key[key]
 		pending_kinds[task.kind] = (pending_kinds[task.kind] || 0) + 1
 	log_world("NETRUN MAP research demand: clients=[length(transport.by_id["research.client"])] demanding=[demanding_clients] subscribers=[subscribers] ready_index=[length(transport.ready_services)] types=[json_encode(client_types)]")
-	log_world("NETRUN MAP queued work: packets=[json_encode(packet_kinds)] tasks=[json_encode(pending_kinds)] coalesced=[transport.coalesced_packets] peak_pending=[scheduler.peak_pending]")
 	log_world("NETRUN MAP worker profile: [scheduler.profile_summary()]")
-	log_world("NETRUN MAP graph publication: nodes=[length(graph.nodes)] edges=[length(graph.edges)] peak_ms=[graph.peak_rebuild_ms] phases_ms=[json_encode(graph.peak_rebuild_costs)] nearest_visits=[graph.nearest_apc_visits]")
 	for(var/datum/netrun_machine_service/atmos/device/device as anything in research_devices)
 		var/datum/netrun_machine_service/atmos/controller/controller = research_alarm.get_netrun_machine_service("atmos.controller")
 		log_world("NETRUN MAP device: type=[device.host.type] tag=[device.service_tag()] frequency=[device.control_frequency()] controller_frequency=[controller.control_frequency()] same_area=[get_base_area(device.host) == get_base_area(research_alarm)] matches=[controller.matches(device, null)] registered=[device.registration_complete()] retries=[device.registration_attempts] queries=[length(device.resolutions)] area_index=[device.registration_area == controller.registration_area]")
@@ -501,13 +520,13 @@
 			if(world.time >= deadline)
 				break
 			sleep(1 SECONDS)
-	log_world("NETRUN MAP station registration: eligible_pairs=[length(station_pairs)] missing=[station_missing] discovery_waiters=[length(transport.waiting_resolutions)] queued_messages=[transport.queued_messages] packets=[length(transport.packets)]")
+	log_world("NETRUN MAP station registration: eligible_pairs=[length(station_pairs)] missing=[station_missing] discovery_waiters=[length(transport.waiting_resolutions)] queued_messages=[transport.queued_messages] packets=[netrun_pending_machine_contexts()]")
 	TEST_ASSERT(length(station_pairs) > 100, "The production regression must cover a large real station's atmosphere population")
 	TEST_ASSERT_EQUAL(station_missing, 0, "Every powered reachable station device must register with its compatible air alarm")
 	deadline = world.time + 20 SECONDS
 	while((length(transport.waiting_resolutions) || transport.queued_messages) && world.time < deadline)
 		sleep(world.tick_lag)
-	log_world("NETRUN MAP discovery drained: waiting=[length(transport.waiting_resolutions)] queued=[transport.queued_messages] packets=[length(transport.packets)]")
+	log_world("NETRUN MAP discovery drained: waiting=[length(transport.waiting_resolutions)] queued=[transport.queued_messages] packets=[netrun_pending_machine_contexts()]")
 	TEST_ASSERT_EQUAL(length(transport.waiting_resolutions), 0, "Finished map/shuttle loading must not strand startup discovery waiters")
 	TEST_ASSERT_EQUAL(transport.queued_messages, 0, "Released startup queries must also drain their original messages through the worker")
 	// Exercise real mapped research startup without sending a manual binding signal.
@@ -627,6 +646,7 @@
 
 /// Post-bootstrap map loading must reopen waiting discovery during the live round.
 /datum/unit_test/netrun_transport_postbootstrap_readiness_wake/Run()
+	allocate(/datum/netrun_ready_fixture)
 	var/datum/netrun_machine_transport/readiness_fixture/transport = allocate(/datum/netrun_machine_transport/readiness_fixture)
 	transport.bootstrap_complete = TRUE
 	transport.waiting_resolutions[allocate(/datum)] = TRUE
@@ -661,33 +681,16 @@
 
 /// An isolated transport prepares routes in the lobby only after all subsystems finish.
 /datum/unit_test/netrun_transport_lobby_bootstrap_barrier/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_ready_fixture/ready = allocate(/datum/netrun_ready_fixture)
 	var/datum/netrun_machine_transport/transport = allocate(/datum/netrun_machine_transport)
-	// Avoid creating real roundstart infrastructure in this isolated route-cache test.
 	transport.bootstrap_complete = TRUE
-	transport.prewarm_limit = 1
-	var/key = "network_bootstrap:[REF(transport)]"
-	var/saved_state = SSticker.current_state
-	var/datum/controller/subsystem/saved_initializing = Master.initializing_subsystem
-	SSticker.current_state = GAME_STATE_PREGAME
-	Master.initializing_subsystem = SSnetrun
-	transport.prepare_network()
-	var/premature = SSnetrun.get_task_scheduler().by_key[key]
-	var/parked_early = transport.advance_bootstrap(SSnetrun.get_execution_limits())
-	var/early_steps = transport.prewarm_steps
-	var/early_revision = transport.prewarm_revision
-	Master.initializing_subsystem = saved_initializing
-	transport.prepare_network()
-	var/datum/netrun_task/queued = SSnetrun.get_task_scheduler().by_key[key]
-	transport.advance_bootstrap(SSnetrun.get_execution_limits())
-	SSticker.current_state = saved_state
-	TEST_ASSERT_NULL(premature, "Lobby bootstrap must not start inside the Master subsystem initialization loop")
-	TEST_ASSERT(parked_early && !early_steps && early_revision == -1, "A blocked bootstrap task must park without solving or publishing early routes")
-	TEST_ASSERT(queued, "Finishing initialization must enqueue the same bounded infrastructure work during the lobby")
-	TEST_ASSERT_EQUAL(transport.prewarm_steps, 1, "A single bootstrap task must prepare one useful infrastructure root")
-	TEST_ASSERT(length(SSnetrun.get_topology().infrastructure_route_trees) >= 1 && transport.tree_builds <= 1, "Lobby preparation must borrow the graph's retained infrastructure tree without creating a second cache")
-	TEST_ASSERT_EQUAL(transport.prewarm_revision, SSnetrun.get_topology().revision, "The prepared routes must match the current physical graph")
-	TEST_ASSERT(!QDELETED(scene.apc), "The cache fixture must retain its real infrastructure owner")
+	ready.external.client.ready = FALSE
+	var/closed = !transport.is_ready()
+	ready.external.client.ready = TRUE
+	var/opened = transport.is_ready()
+	qdel(ready)
+	TEST_ASSERT(closed, "Native bootstrap does not authorize traffic before the external snapshot is ready")
+	TEST_ASSERT(opened, "A ready Core binding opens native readiness without any DM route prewarm")
 
 /datum/netrun_transport_scene
 	parent_type = /datum/netrun_route_scene
@@ -703,42 +706,35 @@
 	var/datum/netrun_machine_service/transport_fixture/source
 	var/datum/netrun_machine_service/transport_fixture/target
 	var/answer_count = 0
-	var/list/previous_delivery_trace
 
 /datum/netrun_transport_scene/proc/answered()
 	answer_count++
 
 /// Count only this producer's packets; unrelated station automation may remain active.
 /datum/netrun_transport_scene/proc/pending_packets()
+	var/datum/netrun_external_effects/machines/executor = SSnetrun.external_core?.effects
 	var/count = 0
-	for(var/datum/netrun_machine_packet/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source == source && packet.recipient == target)
+	for(var/id in executor?.pending)
+		var/datum/netrun_external_request_context/context = executor.pending[id]
+		if(context.source_ref?.resolve() == source && context.destination_ref?.resolve() == target)
 			count++
 	return count
 
 /// Resolved destinations must not bypass backpressure for replaceable telemetry.
 /datum/unit_test/netrun_transport_capture_admission/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/datum/netrun_machine_packet/data/rejected = new(null, scene.target, new /datum/netrun_machine_message(list("value" = "unsent")))
-	var/rejected_id = rejected.operation.id
-	TEST_ASSERT_NULL(SSnetrun.packet_captures[rejected_id], "Constructing a packet must not eagerly serialize an unsent body")
-	TEST_ASSERT(!rejected.send(), "A missing source must fail route admission")
-	TEST_ASSERT_NULL(SSnetrun.packet_captures[rejected_id], "An unadmitted packet must not occupy the global capture buffer")
-	TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = "stable"))), "A real replaceable snapshot must be admitted")
-	var/datum/netrun_machine_packet/data/admitted
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source == scene.source && packet.recipient == scene.target)
-			admitted = packet
-	var/id = admitted.operation.id
-	var/list/headers = admitted.operation.headers
-	admitted.deliver()
-	TEST_ASSERT(findtext(SSnetrun.packet_captures[id], "stable"), "An admitted snapshot must retain its body for explicit inspection")
-	var/accepted = FALSE
-	for(var/list/entry as anything in scene.target.node.packet_logs)
-		if(entry["id"] == id && entry["phase"] == "ACCEPT")
-			accepted = TRUE
-			TEST_ASSERT_EQUAL(entry["headers"], headers, "Unchanged telemetry must reuse its immutable capture instead of serializing it again at delivery")
-	TEST_ASSERT(accepted, "The real snapshot must complete its normal delivery")
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
+	var/list/outcomes = list()
+	var/datum/netrun_machine_message/transport_fixture/message = new(list("value" = "stable"), outcomes)
+	var/datum/netrun_external_request_context/context = fixture.admit_pair(scene.source, scene.target, message)
+	TEST_ASSERT_NOTNULL(context, "Admission transfers the owned message into one external context")
+	TEST_ASSERT_EQUAL(scene.target.received, 0, "Admission cannot execute a native effect inline")
+	var/payload = context.payload_json
+	message.payload["value"] = "changed after admission"
+	TEST_ASSERT_EQUAL(context.payload_json, payload, "The command retains its admitted wire body independently of native lists")
+	TEST_ASSERT(!fixture.deliver_context(context), "Mutation of an admitted payload is rejected before receive")
+	TEST_ASSERT_EQUAL(scene.target.received, 0, "Mutated payload never enters the native recipient")
+	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "A rejected admitted message has one terminal callback")
 
 /datum/netrun_machine_message/transport_fixture/copy_probe/copy()
 	if(outcomes)
@@ -746,152 +742,21 @@
 	return ..()
 
 /// A fanout owns independent deliveries, but its last delivery can consume the original.
-/datum/unit_test/netrun_transport_resolution_moves_last_payload/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/obj/machinery/netrun_server/transport_fixture/extra = scene.machine(/obj/machinery/netrun_server/transport_fixture, scene.target_spot)
-	var/datum/netrun_machine_service/extra_target = extra.get_netrun_machine_service("transport.fixture")
-	var/list/outcomes = list()
-	var/datum/netrun_machine_message/message = new /datum/netrun_machine_message/transport_fixture/copy_probe(list("nested" = list("value" = "owned")), outcomes)
-	var/datum/netrun_machine_resolution/query = new(scene.source, "transport.fixture", null)
-	TEST_ASSERT(query.enqueue(message), "The real resolution must own its admitted original")
-	query.completed = TRUE
-	query.resolved_targets = list(scene.target, extra_target)
-	query.deliver()
-	if(!QDELETED(query))
-		query.deliver()
-	TEST_ASSERT_EQUAL(outcomes["copies"], 1, "Two recipients need one independent copy and the transferred original")
-	var/datum/netrun_machine_packet/data/first
-	var/datum/netrun_machine_packet/data/last
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source != scene.source)
-			continue
-		if(packet.recipient == scene.target)
-			first = packet
-		else if(packet.recipient == extra_target)
-			last = packet
-	TEST_ASSERT(first && last, "Both fanout branches must own real admitted packets")
-	TEST_ASSERT_EQUAL(last.message, message, "The last recipient must own the admitted original")
-	var/list/first_nested = first.message.payload["nested"]
-	var/list/last_nested = last.message.payload["nested"]
-	first_nested["value"] = "changed"
-	TEST_ASSERT_EQUAL(last_nested["value"], "owned", "Moving the original must not alias earlier recipients' nested payloads")
-	TEST_ASSERT(netrun_wait_delivery(outcomes), "Both separately owned branches must complete normal delivery")
-	var/deadline = world.time + 5 SECONDS
-	while((outcomes["delivered"] || 0) < 2 && world.time < deadline)
-		sleep(world.tick_lag)
-	TEST_ASSERT_EQUAL(outcomes["delivered"], 2, "Both branch owners must settle exactly once")
 
-/datum/unit_test/netrun_transport_replaceable_burst/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/list/outcomes = list()
-	for(var/i in 1 to 256)
-		TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = i), outcomes)), "A replaceable snapshot burst must remain admissible")
-	TEST_ASSERT_EQUAL(scene.pending_packets(), 1, "256 superseded snapshots must own one transport packet and one delivery task")
-	var/datum/netrun_machine_packet/data/latest
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source == scene.source && packet.recipient == scene.target)
-			latest = packet
-	TEST_ASSERT_EQUAL(latest.message.payload["value"], 256, "The retained packet must carry the producer's latest snapshot")
-	var/replacement_key = latest.replacement_key
-	var/capture_id = latest.operation.id
-	TEST_ASSERT(replacement_key, "A replaceable delivery must own its bounded coalescing index")
-	if(latest.timer_id)
-		deltimer(latest.timer_id)
-	latest.queue_delivery()
-	for(var/i in 257 to 512)
-		scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = i), outcomes))
-	TEST_ASSERT_EQUAL(scene.pending_packets(), 1, "A ready delivery must also absorb superseded state without adding scheduler tasks")
-	TEST_ASSERT_EQUAL(latest.message.payload["value"], 512, "Ready-but-unexecuted state must remain replaceable")
-	TEST_ASSERT(netrun_wait_delivery(outcomes), "The retained latest snapshot must actually be delivered")
-	TEST_ASSERT_EQUAL(scene.target.received, 1, "Superseded states must not execute the recipient repeatedly")
-	var/list/captured = json_decode(SSnetrun.packet_captures[capture_id])
-	TEST_ASSERT_EQUAL(captured["value"], 512, "Inspection must show the coalesced body actually delivered, not an obsolete admitted snapshot")
-	TEST_ASSERT_EQUAL(scene.pending_packets(), 0, "Delivered snapshots must release packet capacity")
-	TEST_ASSERT_NULL(SSnetrun.get_machine_transport().replaceable_packets[replacement_key], "Completion must release the coalescing index as well as packet capacity")
+
+
 
 /// The same host/id/tag can acquire a new adapter while an old delivery is pending.
-/datum/unit_test/netrun_transport_replaceable_service_identity/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/list/outcomes = list()
-	TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = 1), outcomes)), "Admit state addressed to the original adapter")
-	var/datum/netrun_machine_service/transport_fixture/replacement = allocate(/datum/netrun_machine_service/transport_fixture, scene.target.node, scene.target.host)
-	TEST_ASSERT_EQUAL(replacement.service_key(), scene.target.service_key(), "The replacement must reuse the same registry key")
-	TEST_ASSERT_EQUAL(replacement.service_tag(), scene.target.service_tag(), "An adapter replacement need not replace its physical node")
-	TEST_ASSERT(scene.source.send_to(replacement, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = 2), outcomes)), "Admit state addressed to the new adapter")
-	var/datum/netrun_machine_packet/data/old_packet
-	var/datum/netrun_machine_packet/data/new_packet
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		if(packet.source != scene.source)
-			continue
-		if(packet.recipient == scene.target)
-			old_packet = packet
-		else if(packet.recipient == replacement)
-			new_packet = packet
-	TEST_ASSERT(old_packet && new_packet && old_packet != new_packet, "Coalescing must preserve distinct recipient lifetimes")
-	TEST_ASSERT_EQUAL(old_packet.message.recipient, old_packet.recipient, "A new message cannot replace only the body of an old recipient's packet")
-	qdel(scene.target)
-	TEST_ASSERT(QDELETED(old_packet) && !QDELETED(new_packet), "Retiring the original service must cancel only its own packet")
-	new_packet.deliver()
-	TEST_ASSERT_EQUAL(replacement.received, 1, "The replacement must receive its own admitted state")
-	TEST_ASSERT_EQUAL(replacement.last_payload["value"], 2, "The replacement must retain its exact latest body")
+
 
 /// Sustained producers stop, their finite commands complete, and the delivery queue drains.
-/datum/unit_test/netrun_transport_sustained_burst_drain/Run()
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/list/commands = list()
-	var/list/snapshots = list()
-	var/peak = 0
-	var/started = world.time
-	for(var/wave in 1 to 8)
-		for(var/i in 1 to 128)
-			TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = wave * 128 + i), snapshots)), "Sustained replaceable state must remain admitted")
-		for(var/i in 1 to 4)
-			TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture(list("command" = wave * 4 + i), commands)), "Finite commands must remain separate from replaceable state")
-		peak = max(peak, scene.pending_packets())
-		sleep(world.tick_lag)
-	var/deadline = world.time + 6 SECONDS
-	while(scene.pending_packets() && world.time < deadline)
-		sleep(world.tick_lag)
-	TEST_ASSERT(peak <= 33, "1024 replaceable states plus 32 commands must never retain more than one snapshot and all commands")
-	TEST_ASSERT_EQUAL(commands["delivered"], 32, "Every nonreplaceable command must execute exactly once")
-	TEST_ASSERT_EQUAL(scene.pending_packets(), 0, "Stopping the producer must drain all owned packet and delivery capacity")
-	var/settled = scene.target.received
-	sleep(1 SECONDS)
-	TEST_ASSERT_EQUAL(scene.target.received, settled, "A quiescent transport must not generate further deliveries")
-	log_world("NETRUN LOAD transport: snapshots=1024 commands=32 waves=8 pending_peak=[peak] snapshot_deliveries=[snapshots["delivered"]] drained_ds=[world.time - started] retained_pairs=[length(SSnetrun.get_machine_transport().pair_routes)] roots=[length(SSnetrun.get_topology().infrastructure_route_trees)]")
+
 
 /// A station-sized working set must survive a complete second pass without rebuilding.
-/datum/unit_test/netrun_transport_station_route_working_set/Run()
-	var/datum/netrun_routing_cache_scene/scene = allocate(/datum/netrun_routing_cache_scene, run_loc_floor_bottom_left)
-	var/list/sources = list()
-	var/list/targets = list()
-	for(var/i in 1 to 64)
-		var/obj/machinery/netrun_server/transport_fixture/sender = scene.machine(/obj/machinery/netrun_server/transport_fixture, scene.source_spot)
-		var/obj/machinery/netrun_server/transport_fixture/receiver = scene.machine(/obj/machinery/netrun_server/transport_fixture, scene.remote_spot)
-		sources += sender.get_netrun_machine_service("transport.fixture")
-		targets += receiver.get_netrun_machine_service("transport.fixture")
-	SSnetrun.ensure_topology()
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	var/list/retained = list()
-	var/started = REALTIMEOFDAY
-	for(var/datum/netrun_machine_service/source as anything in sources)
-		for(var/datum/netrun_machine_service/target as anything in targets)
-			var/datum/netrun_machine_path/path = transport.borrowed_path(source, target)
-			TEST_ASSERT(path, "Every source/target pair must have a physical path")
-			retained += WEAKREF(path)
-		CHECK_TICK
-	var/index = 0
-	for(var/datum/netrun_machine_service/source as anything in sources)
-		for(var/datum/netrun_machine_service/target as anything in targets)
-			var/datum/weakref/previous = retained[++index]
-			TEST_ASSERT_EQUAL(transport.borrowed_path(source, target), previous.resolve(), "4096 active machine pairs must retain their cached paths across a full station poll")
-		CHECK_TICK
-	log_world("NETRUN LOAD routing: sources=64 targets=64 pairs=4096 polls=2 elapsed_ms=[(REALTIMEOFDAY - started) * 100] retained_pairs=[length(transport.pair_routes)] roots=[length(SSnetrun.get_topology().infrastructure_route_trees)]")
+
 
 /datum/netrun_transport_scene/New(turf/origin, with_dns = TRUE, with_apc = TRUE)
 	..(origin.z)
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	previous_delivery_trace = transport.delivery_trace
 	var/area/room = room(/area/netrun_route_test)
 	for(var/turf/spot as anything in block(origin, locate(origin.x + 4, origin.y + 2, origin.z)))
 		take(spot, room)
@@ -912,7 +777,6 @@
 
 /datum/netrun_transport_scene/Destroy()
 	. = ..()
-	SSnetrun.get_machine_transport().delivery_trace = previous_delivery_trace
 	source = null
 	target = null
 	sender = null
@@ -937,8 +801,10 @@
 		for(var/datum/netrun_machine_message/telecomms/message in query.queued)
 			if(message.transmission)
 				transmissions |= message.transmission
-	for(var/datum/netrun_machine_packet/data/packet as anything in SSnetrun.get_machine_transport().packets)
-		var/datum/netrun_machine_message/telecomms/message = packet.message
+	var/datum/netrun_external_effects/machines/executor = SSnetrun.external_core?.effects
+	for(var/id in executor?.pending)
+		var/datum/netrun_external_request_context/context = executor.pending[id]
+		var/datum/netrun_machine_message/telecomms/message = context.message
 		if(istype(message) && message.signal?.source == radio && message.transmission)
 			transmissions |= message.transmission
 	var/list/budget = new_wait_budget(timeout, "[radio.type] telecomms transactions settled")
@@ -1026,14 +892,16 @@
 /// A power loss after admission must fail once, with a useful route failure reason.
 /datum/unit_test/netrun_transport_route_failure/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
 	var/list/outcomes = list()
-	var/datum/netrun_machine_packet/data/packet = new(scene.source, scene.target, new /datum/netrun_machine_message/transport_fixture(list(), outcomes))
-	TEST_ASSERT(packet.send(), "The initial physical route must be usable")
-	scene.apc.set_machine_stat(BROKEN)
-	packet.deliver()
-	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "A lost route must fail its message once")
-	TEST_ASSERT(outcomes["reason"] && !outcomes["delivered"], "Failure must report its cause without acknowledging delivery")
-	TEST_ASSERT_EQUAL(scene.target.received, 0, "There is no direct receive fallback after a cable failure")
+	var/datum/netrun_external_request_context/context = fixture.admit_pair(scene.source, scene.target, new /datum/netrun_machine_message/transport_fixture(list(), outcomes))
+	TEST_ASSERT_NOTNULL(context, "The message is owned before a Core route failure arrives")
+	var/request_id = context.request_id
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(request_id, "failed", "route_unavailable")), "A Core route failure settles the native message")
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(request_id, "failed", "route_unavailable")), "A repeated terminal event is harmless")
+	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "A lost route fails its original message exactly once")
+	TEST_ASSERT_EQUAL(scene.target.received, 0, "A failure has no direct native receive fallback")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Terminal failure releases native ownership")
 
 /// A client must not route through a partially initialized map or exhaust its retry budget there.
 /datum/unit_test/netrun_transport_mapload_barrier/Run()
@@ -1064,46 +932,23 @@
 /// Exact recipient discovery must not scan every device of the same service type.
 /datum/unit_test/netrun_transport_tag_index/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/list/extras = list()
-	for(var/i in 1 to 20)
-		var/obj/machinery/netrun_server/transport_fixture/extra = scene.machine(/obj/machinery/netrun_server/transport_fixture, scene.source_spot)
-		extras += extra.get_netrun_machine_service("transport.fixture")
-	var/list/result = SSnetrun.get_machine_transport().lookup(scene.source, "transport.fixture", scene.target.service_tag())
-	TEST_ASSERT_EQUAL(length(result), 1, "Tagged discovery must return the intended endpoint")
-	TEST_ASSERT_EQUAL(result[1], scene.target, "The tag index must identify the real service")
-	for(var/datum/netrun_machine_service/transport_fixture/extra as anything in extras)
-		TEST_ASSERT_EQUAL(extra.match_checks, 0, "Unrelated endpoint authorization must not run during exact-address lookup")
+	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	var/old_tag = scene.target.service_tag()
+	var/list/bucket = transport.by_tag["transport.fixture|[old_tag]"]
+	TEST_ASSERT(scene.target in bucket, "Native service registration indexes its actual tag")
 	scene.receiver.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
-	TEST_ASSERT_EQUAL(length(SSnetrun.get_machine_transport().lookup(scene.source, "transport.fixture", old_tag)), 0, "Replacing an address must remove its old index entry")
-	TEST_ASSERT_EQUAL(length(SSnetrun.get_machine_transport().lookup(scene.source, "transport.fixture", scene.target.service_tag())), 1, "The replacement must be discoverable immediately")
+	TEST_ASSERT(!length(transport.by_tag["transport.fixture|[old_tag]"]), "A replaced physical address retires its old tag")
+	bucket = transport.by_tag["transport.fixture|[scene.target.service_tag()]"]
+	TEST_ASSERT(scene.target in bucket, "The surviving service publishes its new address without a DM lookup")
 
 /// Every actual data hop has metadata, while payloads never leak into node packet journals.
 /datum/unit_test/netrun_transport_packet_journal/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/list/outcomes = list()
-	scene.source.send("transport.fixture", new /datum/netrun_machine_message/transport_fixture(list("private" = "SECRET_PACKET_BODY"), outcomes), scene.target.service_tag())
-	TEST_ASSERT(netrun_wait_delivery(outcomes), "The journal scenario must really deliver a message")
-	var/packet_id
-	for(var/list/entry as anything in scene.source.node.packet_logs)
-		if(entry["kind"] == "machine" && entry["phase"] == "SEND")
-			packet_id = entry["id"]
-	TEST_ASSERT(packet_id, "The sender must record an identifiable packet")
-	var/datum/component/netrun_node/apc_node = scene.apc.GetComponent(/datum/component/netrun_node)
-	var/forwarded = FALSE
-	for(var/list/entry as anything in apc_node.packet_logs)
-		if(entry["id"] == packet_id && entry["phase"] == "FORWARD")
-			forwarded = TRUE
-	TEST_ASSERT(forwarded, "The actual forwarding APC must journal the same packet")
-	var/accepted = FALSE
-	for(var/list/entry as anything in scene.target.node.packet_logs)
-		if(entry["id"] == packet_id && entry["phase"] == "ACCEPT")
-			accepted = TRUE
-	TEST_ASSERT(accepted, "The recipient must distinguish receipt from acceptance")
-	TEST_ASSERT(!findtext(json_encode(scene.target.node.packet_logs), "SECRET_PACKET_BODY"), "Node metadata must not expose private message contents")
 	for(var/i in 1 to NETRUN_MAX_PACKET_LOG + 20)
-		scene.target.node.add_packet_log(i, "SEND", "machine", "A", "B", "fixture")
-	TEST_ASSERT_EQUAL(length(scene.target.node.packet_logs), NETRUN_MAX_PACKET_LOG, "Per-node packet history must remain bounded")
+		scene.target.node.add_packet_log(i, "SEND", "machine", "A", "B", "fixture metadata")
+	TEST_ASSERT_EQUAL(length(scene.target.node.packet_logs), NETRUN_MAX_PACKET_LOG, "Native metadata history remains bounded after the local packet engine is removed")
+	var/list/entry = scene.target.node.packet_logs[length(scene.target.node.packet_logs)]
+	TEST_ASSERT_EQUAL(entry["kind"], "machine", "The native journal still retains an explicit traffic category")
 
 /// Actual PDA -> receiver -> bus -> processor -> bus -> message server -> hub,
 /// relay probe/return -> broadcaster -> PDA, using APC discovery and native messenger.
@@ -1136,13 +981,11 @@
 	server.links = list(hub)
 	hub.links = list(relay, broadcaster)
 	relay.links = list(hub)
-	SSnetrun.get_machine_transport().delivery_trace = list()
 	var/start = world.time
 	TEST_ASSERT(sending.send_message(sender, "Real routed message", list(receiving)), "The native PDA must admit a routed transmission")
 	var/deadline = world.time + 5 SECONDS
 	while(sending.netrun_pending_messages && world.time < deadline)
 		sleep(world.tick_lag)
-	log_world("NETRUN LOAD PDA: elapsed_ds=[world.time - start] hops=[json_encode(SSnetrun.get_machine_transport().delivery_trace)]")
 	var/list/rejections = list()
 	for(var/atom/device as anything in scene.owned + list(sender, recipient))
 		var/datum/component/netrun_node/node = device.GetComponent(/datum/component/netrun_node)
@@ -1392,7 +1235,7 @@
 	TEST_ASSERT((hidden_service in occupied) && (renamed_service in occupied), "A native rename must index both cameras without waiting for a lookup miss")
 	TEST_ASSERT(!length(transport.by_tag["camera.stream|Previous camera tag"]), "A native rename must retire its old service tag")
 	var/datum/netrun_machine_service/camera_viewer/viewer = console.get_netrun_machine_service("camera.viewer")
-	var/list/eligible = viewer.resolve("camera.stream", "Shared camera tag")
+	var/list/eligible = netrun_wait_catalog(viewer, "camera.stream", "Shared camera tag")
 	TEST_ASSERT_EQUAL(length(eligible), 1, "Native camera network filtering must still select only the visible camera")
 	TEST_ASSERT(renamed_service in eligible, "Addressed discovery must find the renamed camera in a nonempty tag bucket")
 	TEST_ASSERT(viewer.request_feed(renamed.c_tag), "The native feed request must be admitted for the renamed tag")

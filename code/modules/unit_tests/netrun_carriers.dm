@@ -61,10 +61,9 @@
 	settle |= apc.GetComponent(/datum/component/netrun_node)
 	settle |= observer.GetComponent(/datum/component/netrun_node)
 	for(var/datum/component/netrun_node/node as anything in settle)
-		node.join_network()
 		node.reconcile_state()
 		node.publish_changes()
-	SSnetrun.get_topology().borrow_infrastructure_tree(apc.GetComponent(/datum/component/netrun_node))
+	SSnetrun.get_topology().route_snapshot(apc.GetComponent(/datum/component/netrun_node), TRUE)
 	observer.console.ui_data(null)
 	observer.console.ui_data(null)
 
@@ -96,15 +95,13 @@
 	var/datum/netrun_carrier_probe/probe = allocate(/datum/netrun_carrier_probe, nodes)
 	var/datum/netrun_topology/graph = SSnetrun.get_topology()
 	var/revision = graph.revision
-	var/infrastructure = graph.infrastructure_tree_builds
 	var/rebuilds = scene.view.rebuilds
 	var/turf/destination = scene.spots[3]
 	scene.first.forceMove(destination)
 	for(var/datum/component/netrun_node/node as anything in nodes)
 		TEST_ASSERT(probe.counts[node.address] > 0, "Walking must synchronously publish movement for each worn PDA, HUD, implant and neural display")
 		TEST_ASSERT_EQUAL(probe.positions[node.address], destination, "Movement publication must carry the wearer's new turf")
-		TEST_ASSERT(node.pending_physical_update && graph.moved_nodes[node], "Movement must enqueue each contained endpoint before any polling or worker tick")
-		TEST_ASSERT_EQUAL(node.topology_turf, scene.spots[2], "The synchronous notification must defer route and cable recomputation")
+		TEST_ASSERT_EQUAL(node.topology_turf, destination, "The supplied endpoint publication tracks the actual carrier position")
 	scene.observer.console.ui_data(null)
 	for(var/datum/component/netrun_node/node as anything in nodes)
 		var/list/entry = scene.view.node_entries[node.address]
@@ -113,7 +110,6 @@
 		TEST_ASSERT_EQUAL(entry?["z"], destination.z, "The first fresh UI poll must show each carried endpoint's actual floor")
 	TEST_ASSERT_EQUAL(scene.view.rebuilds, rebuilds, "A warm same-area walk must update carried markers without a full map rebuild")
 	TEST_ASSERT_EQUAL(graph.revision, revision, "Walking with native devices must preserve the physical topology revision")
-	TEST_ASSERT_EQUAL(graph.infrastructure_tree_builds, infrastructure, "Walking must not solve the shared APC infrastructure again")
 
 /// Storage insertions and intermediate container transfers update every descendant subscription.
 /datum/unit_test/netrun_carriers_nested_storage/Run()

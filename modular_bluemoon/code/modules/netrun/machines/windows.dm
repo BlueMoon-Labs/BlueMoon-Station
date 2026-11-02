@@ -205,8 +205,6 @@
 	return remote_session.do_window_act(node, action, params, sent_network, sender, operation)
 
 /datum/netrun_remote_session/proc/do_window_act(datum/component/netrun_node/node, action, list/params, datum/netrun_network/sent_network, mob/sender, datum/netrun_packet_context/operation)
-	if(!QDELETED(node))
-		node.join_network()
 	var/datum/netrun_path_tree/tree = owner.make_path_tree()
 	var/reachable = !QDELETED(node) && owner.can_route(node, tree)
 	if(reachable)

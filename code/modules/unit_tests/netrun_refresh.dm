@@ -80,6 +80,7 @@
 
 /// Files and pinned tabs must receive external changes while their expensive map is asleep.
 /datum/unit_test/netrun_refresh_hidden_map_observer/Run()
+	netrun_connected_test_area()
 	var/obj/item/host = allocate(/obj/item)
 	var/obj/item/target = allocate(/obj/item)
 	var/datum/component/netrun_node/node = target.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL, list(), 1, null, 8)
@@ -303,7 +304,6 @@
 	console.operator = first
 	console.workspace_view = "map"
 	SSnetrun.ensure_topology()
-	node.join_network()
 	node.reconcile_state()
 	node.publish_changes()
 	var/list/map = console.ui_data(null)["map"]
@@ -441,17 +441,11 @@
 
 /datum/component/netrun_node/netrun_publication_probe
 	var/online_calls = 0
-	var/join_calls = 0
 
 /datum/component/netrun_node/netrun_publication_probe/is_online(remote = TRUE)
 	online_calls++
 	return ..()
 
-/datum/component/netrun_node/netrun_publication_probe/join_network()
-	join_calls++
-	return ..()
-
-/// Observational bursts merge before UI fanout and never schedule native state work.
 /datum/unit_test/netrun_refresh_cold_node_coalescing/Run()
 	var/obj/item/host = allocate(/obj/item)
 	var/datum/component/netrun_node/netrun_publication_probe/node = host.AddComponent(/datum/component/netrun_node/netrun_publication_probe, NETRUN_NODE_TERMINAL)
@@ -467,7 +461,6 @@
 	node.last_processed_at = world.time
 	var/processed_at = node.last_processed_at
 	var/online_calls = node.online_calls
-	var/join_calls = node.join_calls
 	for(var/i in 1 to 40)
 		node.add_log("Observer burst [i].")
 		node.add_packet_log("packet-[i]", "FORWARD", "machine", "source", "target", "test")
@@ -476,7 +469,6 @@
 	TEST_ASSERT_NULL(SSnetrun.dirty_nodes[node], "Logs and occupancy publications must not require a whole native node update")
 	TEST_ASSERT_EQUAL(node.last_processed_at, processed_at, "An incoming signal must not pretend processing finished")
 	TEST_ASSERT_EQUAL(node.online_calls, online_calls, "A journal/occupancy burst must not poll native power")
-	TEST_ASSERT_EQUAL(node.join_calls, join_calls, "A journal/occupancy burst must not rejoin network bindings")
 	TEST_ASSERT_EQUAL(probe.count, 0, "Repeated observations must wait for the single batched publication")
 	TEST_ASSERT_EQUAL(probe.native_count, 0, "Observational changes must not wake native service listeners")
 	TEST_ASSERT_NULL(SSnetrun.get_task_scheduler().by_key["node:[REF(node)]"], "Observational bursts must not enter the native scheduler")

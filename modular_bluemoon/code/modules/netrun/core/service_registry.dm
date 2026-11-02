@@ -130,11 +130,6 @@
 /datum/netrun_machine_service/proc/select_targets(destination_id, list/targets)
 	return targets
 
-/// Zero preserves broadcast enumeration. An adapter may stop after this many
-/// eligible peers only when later candidates cannot change its selection policy.
-/datum/netrun_machine_service/proc/discovery_target_limit(destination_id)
-	return 0
-
 /datum/netrun_machine_service/proc/send_to(datum/netrun_machine_service/target, datum/netrun_machine_message/message)
 	return SSnetrun.get_machine_transport().dispatch(src, target, message)
 
@@ -143,15 +138,10 @@
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	if(!transport.is_ready())
 		return list()
-	if(SSnetrun.ensure_external_mode() == "external")
-		var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
-		return istype(executor) ? executor.discovery_lookup(src, destination_id, recipient_tag) : list()
-	return select_targets(destination_id, transport.lookup(src, destination_id, recipient_tag, netrun_communication_policy(src, destination_id)))
+	var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+	return istype(executor) ? executor.discovery_lookup(src, destination_id, recipient_tag) : list()
 
-/// Domain adapters may narrow enumeration using native indexes. Candidates remain
-/// borrowed registry entries; live matching and physical routing still authorize them.
-/datum/netrun_machine_service/proc/discovery_candidates(destination_id, recipient_tag)
-	return SSnetrun.get_machine_transport().discovery_candidates(destination_id, recipient_tag)
+
 
 /datum/netrun_machine_service/proc/get_resolution(destination_id, recipient_tag)
 	if(QDELETED(src) || QDELETED(host) || QDELETED(resolve_node()))
@@ -164,10 +154,7 @@
 		return query
 	if(length(resolutions) >= 64)
 		return null
-	if(SSnetrun.ensure_external_mode() == "external")
-		query = new /datum/netrun_machine_resolution/external(src, destination_id, recipient_tag)
-	else
-		query = new(src, destination_id, recipient_tag)
+	query = new /datum/netrun_machine_resolution/external(src, destination_id, recipient_tag)
 	resolutions[query_key] = query
 	return query
 
@@ -198,45 +185,11 @@
 	var/ready_service_cursor = 1
 	var/packet_serial = 0
 	var/list/service_revisions = list()
-	var/list/packets = list()
-	var/list/interactive_packets = list()
 	var/queued_messages = 0
-	var/list/last_flow = list()
-	var/flow_window = 0
-	var/flow_count = 0
 	var/revision = 0
-	var/list/pair_routes = list()
-	var/list/pair_used = list()
-	var/list/pair_previous = list()
-	var/list/pair_next = list()
-	var/pair_oldest
-	var/pair_newest
-	var/route_cache_limit = 8192
-	var/pair_serial = 0
-	var/path_builds = 0
-	var/path_cache_hits = 0
-	var/tree_builds = 0
-	var/list/prewarm_roots = list()
-	var/prewarm_revision = -1
-	var/prewarm_infrastructure = -1
-	var/prewarm_steps = 0
-	var/prewarm_limit = 512
 	var/bootstrap_at
-	/// Source/recipient/contract key -> one replaceable, not-yet-executing packet.
-	var/list/replaceable_packets = list()
-	var/coalesced_packets = 0
-	/// Opt-in diagnostics: value snapshots only, bounded independently of packet lifetime.
-	var/list/delivery_trace
 
-/datum/netrun_machine_transport/proc/trace_delivery(datum/netrun_machine_packet/packet)
-	if(!islist(delivery_trace))
-		return
-	delivery_trace += list(list("id" = packet.packet_id, "kind" = packet.kind,
-		"source" = "[packet.source?.host?.type]", "destination" = "[packet.recipient?.host?.type]",
-		"sent" = packet.sent_at, "due" = packet.due_at, "ready" = packet.ready_at, "run" = world.time,
-		"timer_late" = max(0, packet.ready_at - packet.due_at), "queue_wait" = max(0, world.time - packet.ready_at)))
-	if(length(delivery_trace) > 256)
-		delivery_trace.Cut(1, length(delivery_trace) - 255)
+
 
 /datum/netrun_machine_transport/New()
 	RegisterSignal(SSatoms, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(atoms_initialized))
@@ -247,76 +200,21 @@
 	prepare_network()
 
 /datum/netrun_machine_transport/proc/is_ready()
-	if(SSnetrun.ensure_external_mode() == "external")
-		return bootstrap_complete && SSnetrun.external_core?.ready && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR
-	return bootstrap_complete && !preparing && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR
+	return bootstrap_complete && SSnetrun.external_core?.ready && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR
 
-/// Master starts subsystem fire only after its whole initialization loop. The atom
-/// post-init signal alone is too early: power, research and native links can change.
 /datum/netrun_machine_transport/proc/prepare_network()
-	// Внешний движок публикует свой graph readiness; DM не прогревает параллельный машинный path cache.
-	if(SSnetrun.ensure_external_mode() == "external")
-		if(!bootstrap_complete && !preparing && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR && !Master.initializing_subsystem && Master.current_runlevel)
-			SSnetrun.get_task_scheduler().enqueue("network_bootstrap", src, NETRUN_TASK_BACKGROUND)
-		if(is_ready())
-			wake_resolutions()
-			wake_ready_services()
-		return
-	if(preparing || !SSnetrun.initialized || SSatoms.initialized != INITIALIZATION_INNEW_REGULAR || Master.initializing_subsystem || !Master.current_runlevel)
-		return
-	// Map/shuttle loading can temporarily close readiness after the first bootstrap.
-	// Its completion emits no topology signal: the ordinary worker observes the
-	// reopened barrier and coalesces one bounded wake, including during a live round.
-	if(bootstrap_complete && length(waiting_resolutions))
-		wake_resolutions()
-	if(bootstrap_complete)
-		wake_ready_services()
-	var/pregame = SSticker.current_state < GAME_STATE_PLAYING
-	if(bootstrap_complete && !pregame)
-		return
-	var/datum/netrun_topology/graph = SSnetrun.get_topology()
-	if(!bootstrap_complete || graph.dirty || prewarm_revision != graph.revision || length(prewarm_roots))
+	if(!bootstrap_complete && !preparing && SSnetrun.initialized && SSatoms.initialized == INITIALIZATION_INNEW_REGULAR && !Master.initializing_subsystem && Master.current_runlevel)
 		SSnetrun.get_task_scheduler().enqueue("network_bootstrap", src, NETRUN_TASK_BACKGROUND)
+	if(is_ready())
+		wake_resolutions()
+		wake_ready_services()
 
-/// One topology preparation slice or one retained infrastructure tree per task.
 /datum/netrun_machine_transport/proc/advance_bootstrap(datum/netrun_execution_limits/limits)
 	if(preparing || Master.initializing_subsystem || SSatoms.initialized != INITIALIZATION_INNEW_REGULAR)
-		// prepare_network() observes the reopened barrier. Retain partial startup
-		// state here without leaving a runnable continuation polling map loading.
 		return TRUE
 	preparing = TRUE
-	// Native post-initialize hooks сохраняются; graph/path prewarm выполняет только Host.
-	if(SSnetrun.ensure_external_mode() == "external")
-		if(!bootstrap_complete)
-			SSnetrun.spawn_roundstart_servers()
-			if(!bootstrap_services)
-				bootstrap_services = services.Copy()
-				bootstrap_cursor = 1
-			var/stop = min(length(bootstrap_services), bootstrap_cursor + 31)
-			while(bootstrap_cursor <= stop)
-				var/key = bootstrap_services[bootstrap_cursor++]
-				var/datum/netrun_machine_service/service = services[key]
-				if(!QDELETED(service))
-					service.host_initialized()
-			if(bootstrap_cursor <= length(bootstrap_services))
-				preparing = FALSE
-				return FALSE
-			bootstrap_services = null
-			bootstrap_complete = TRUE
-			bootstrap_at = world.time
-		preparing = FALSE
-		if(is_ready())
-			wake_resolutions()
-			wake_ready_services()
-		return TRUE
 	if(!bootstrap_complete)
 		SSnetrun.spawn_roundstart_servers()
-	var/datum/netrun_topology/graph = SSnetrun.get_topology()
-	if(graph.dirty)
-		if(!graph.advance_apc_prebuild(limits.apc_operations))
-			preparing = FALSE
-			return FALSE
-	if(!bootstrap_complete)
 		if(!bootstrap_services)
 			bootstrap_services = services.Copy()
 			bootstrap_cursor = 1
@@ -325,8 +223,6 @@
 			var/key = bootstrap_services[bootstrap_cursor++]
 			var/datum/netrun_machine_service/service = services[key]
 			if(!QDELETED(service))
-				// Native area/organ/program initialization is now complete. Reuse
-				// the common lifecycle hook instead of keeping stale early bindings.
 				service.host_initialized()
 		if(bootstrap_cursor <= length(bootstrap_services))
 			preparing = FALSE
@@ -334,36 +230,12 @@
 		bootstrap_services = null
 		bootstrap_complete = TRUE
 		bootstrap_at = world.time
-		wake_resolutions()
-	if(prewarm_revision != graph.revision || prewarm_infrastructure != graph.infrastructure_revision)
-		prewarm_roots.Cut()
-		prewarm_revision = graph.revision
-		prewarm_infrastructure = graph.infrastructure_revision
-		// Discovery and native communications are useful first. Store APC anchors,
-		// never a whole station-sized routing table per vent, radio or PDA.
-		for(var/id in list("research.server", "telecomms.relay", "research.client"))
-			for(var/datum/netrun_machine_service/service as anything in by_id[id])
-				var/datum/component/netrun_node/node = service.resolve_node()
-				var/datum/component/netrun_node/root = graph.is_infrastructure(node) ? node : node?.bound_apc
-				if(root && length(prewarm_roots) < prewarm_limit)
-					prewarm_roots |= root.address
-		for(var/address in graph.registered_apcs)
-			if(length(prewarm_roots) >= prewarm_limit)
-				break
-			prewarm_roots |= address
-	if(length(prewarm_roots))
-		var/address = prewarm_roots[1]
-		prewarm_roots.Cut(1, 2)
-		var/datum/component/netrun_node/root = graph.nodes[address]
-		if(!QDELETED(root) && root.is_online())
-			path_tree(graph, root)
-			prewarm_steps++
 	preparing = FALSE
-	wake_ready_services()
-	return !length(prewarm_roots)
+	if(is_ready())
+		wake_resolutions()
+		wake_ready_services()
+	return TRUE
 
-/// Registration and temporarily suspended domain work reuse the same bounded
-/// startup wave. Weak entries cannot retain a removed host while the barrier rests.
 /datum/netrun_machine_transport/proc/defer_ready_service(datum/netrun_machine_service/service)
 	if(QDELETED(service))
 		return
@@ -480,7 +352,10 @@
 		wake_again = FALSE
 	var/stop = min(length(wake_queries), wake_cursor + 7)
 	while(wake_cursor <= stop)
-		var/datum/netrun_machine_resolution/query = wake_queries[wake_cursor++]
+		var/datum/netrun_machine_resolution/query = wake_queries[wake_cursor]
+		// Начатый lookup может завершиться раньше остальной волны. Не удерживаем
+		// его ключ в snapshot до окончания чужих worker slices и следующего GC.
+		wake_queries[wake_cursor++] = null
 		if(!QDELETED(query) && (query in waiting_resolutions))
 			query.begin()
 	if(wake_cursor <= length(wake_queries))
@@ -517,9 +392,6 @@
 	pending_ready_services.Cut()
 	ready_queued = FALSE
 	ready_services.Cut()
-	QDEL_LIST(packets)
-	replaceable_packets.Cut()
-	clear_pair_routes()
 	return ..()
 
 /datum/netrun_machine_transport/proc/register(datum/netrun_machine_service/service)
@@ -586,37 +458,3 @@
 		by_tag -= tag_key
 	revision++
 	service_revisions[service.service_id] = (service_revisions[service.service_id] || 0) + 1
-	for(var/datum/netrun_machine_packet/packet as anything in packets.Copy())
-		if(packet.source == service || packet.recipient == service)
-			packet.fail("машина отключена")
-
-/datum/netrun_machine_transport/proc/discovery_candidates(destination_id, recipient_tag)
-	var/list/bucket = isnull(recipient_tag) ? by_id[destination_id] : by_tag["[destination_id]|[recipient_tag]"]
-	// Legacy tag setters can bypass the index. Return their candidate bucket
-	// without scanning it here: asynchronous discovery must budget that work too.
-	if(!isnull(recipient_tag) && !length(bucket))
-		return by_id[destination_id]
-	return bucket
-
-/// Synchronous readers and worker continuations use the same live discovery policy.
-/datum/netrun_machine_transport/proc/discoverable(datum/netrun_machine_service/source, datum/netrun_machine_service/target, recipient_tag, communications)
-	if(QDELETED(source) || QDELETED(target) || !target.matches(source, recipient_tag))
-		return FALSE
-	if(QDELETED(source) || QDELETED(target))
-		return FALSE
-	if(!isnull(recipient_tag) && target.indexed_tag != recipient_tag)
-		index_service(target)
-	return reachable(source, target, communications)
-
-/datum/netrun_machine_transport/proc/lookup(datum/netrun_machine_service/source, destination_id, recipient_tag, communications)
-	. = list()
-	if(QDELETED(source))
-		return
-	var/list/bucket = source.discovery_candidates(destination_id, recipient_tag)
-	var/target_limit = source.discovery_target_limit(destination_id)
-	for(var/datum/netrun_machine_service/target as anything in bucket)
-		if(discoverable(source, target, recipient_tag, communications))
-			. += target
-			if(target_limit > 0 && length(.) >= target_limit)
-				break
-

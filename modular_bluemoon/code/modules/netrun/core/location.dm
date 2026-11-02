@@ -10,8 +10,6 @@
 /datum/component/netrun_node/proc/observe_location(force = FALSE)
 	if(!force && last_known_turf && !is_online())
 		return last_known_turf
-	if(force && pending_physical_update)
-		join_network()
 	var/turf/current = physical_turf()
 	if(force || current != last_known_turf || binding_sector != last_known_sector || network?.id != last_known_network || bound_apc?.address != last_known_apc)
 		last_seen_at = world.time

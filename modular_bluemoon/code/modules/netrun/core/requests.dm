@@ -161,7 +161,6 @@
 	return ..()
 
 /datum/netrun_request/remote/execute()
-	node.join_network()
 	var/list/entry = api?.actions[action]
 	var/datum/netrun_path_tree/tree = console.make_path_tree()
 	var/reachable = console.can_route(node, tree)

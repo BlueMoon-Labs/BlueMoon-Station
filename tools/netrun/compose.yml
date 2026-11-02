@@ -2,9 +2,11 @@
 services:
   byond:
     image: ${NETRUN_STATION_IMAGE:?Build the reviewed station image first}
+    pull_policy: never
     platform: linux/amd64
+    restart: unless-stopped
     ports:
-      - "${NETRUN_GAME_PORT:-1337}:1337"
+      - "${NETRUN_GAME_ADDRESS:-127.0.0.1}:${NETRUN_GAME_PORT:-1337}:1337"
     environment:
       NETRUN_CORE_MODE: external
       NETRUN_CORE_PORT: "18462"
@@ -13,15 +15,25 @@ services:
     volumes:
       - type: bind
         source: ${NETRUN_CONFIG_DIRECTORY:?Set an existing reviewed station config directory}
-        target: /tgstation/config
+        # BYOND x86 не читает Windows bind mounts с 64-bit inode: entrypoint создаёт native copy.
+        target: /run/netrun/config-source
         read_only: true
       - netrun-station-data:/tgstation/data
     secrets:
       - netrun_session_token
+    healthcheck:
+      # Пассивная проверка game listener без пустых клиентских подключений к DreamDaemon.
+      test: ["CMD", "/bin/bash", "-c", "grep -q ':0539 .* 0A ' /proc/net/tcp"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
+      start_period: 180s
 
   netrun-host:
     image: ${NETRUN_HOST_IMAGE:?Build the matching reviewed Host image first}
+    pull_policy: never
     platform: linux/amd64
+    restart: unless-stopped
     network_mode: service:byond
     depends_on:
       byond:
@@ -41,6 +53,13 @@ services:
     stop_grace_period: 10s
     secrets:
       - netrun_session_token
+    healthcheck:
+      # Host обслуживает один мир последовательно: TCP probe заполнил бы backlog активной сессии.
+      test: ["CMD", "/bin/bash", "-c", "grep -q '0100007F:481E .* 0A ' /proc/net/tcp"]
+      interval: 5s
+      timeout: 2s
+      retries: 6
+      start_period: 10s
 
 secrets:
   netrun_session_token:

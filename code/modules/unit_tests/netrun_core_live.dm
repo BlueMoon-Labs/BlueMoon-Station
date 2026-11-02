@@ -1,19 +1,21 @@
 #ifdef NETRUN_CORE_LIVE_TEST
+/datum/netrun_transport_scene/core_live
+	use_imported_fixture = FALSE
+
+/datum/netrun_client_scene/core_live
+	use_imported_fixture = FALSE
+
 /// Отдельный opt-in smoke запускает настоящий station runtime с опубликованными Host/bridge, без IPC stubs.
 /datum/unit_test/netrun_core_live/Run()
 	TEST_ASSERT_EQUAL(world.GetConfig("env", "NETRUN_CORE_LIVE_TEST"), "1", "Live test must be selected by its dedicated managed runner")
 	TEST_ASSERT_EQUAL(SSnetrun.ensure_external_mode(), "external", "Live smoke requires production external mode")
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	var/native_rebuilds = SSnetrun.topology_rebuilds
-	var/native_prebuilds = SSnetrun.apc_prebuild_steps
-	var/native_trees = transport.tree_builds
 	log_world("NETRUN_CORE_LIVE_STAGE awaiting_ready")
 	TEST_ASSERT(wait_core_ready(90 SECONDS), "Real Host must complete snapshot/catchup and publish its graph")
 	var/datum/netrun_external_core/client = SSnetrun.external_core
 	var/datum/netrun_external_effects/machines/queries/executor = client.effects
 	TEST_ASSERT(istype(executor), "Production client must compose the real query/effect dispatcher")
 	TEST_ASSERT(istype(SSnetrun.get_topology(), /datum/netrun_topology/external), "Native topology must be the imported read-only C# view")
-	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene/core_live, run_loc_floor_bottom_left)
 	TEST_ASSERT(scene.source && scene.target, "Live fixture must register real native machine services")
 	var/list/outcomes = list()
 	log_world("NETRUN_CORE_LIVE_STAGE discovery_message")
@@ -47,10 +49,46 @@
 	TEST_ASSERT_EQUAL(after_movement["delivered"], 1, "Second message receives one terminal callback")
 	TEST_ASSERT(!after_movement["failed"], "Recovered transport has no failure callback")
 	TEST_ASSERT_EQUAL(scene.target.received, before_received + 2, "Each logical message executes one native effect")
-	TEST_ASSERT_EQUAL(SSnetrun.topology_rebuilds, native_rebuilds, "Live flow never calls the native topology builder")
-	TEST_ASSERT_EQUAL(SSnetrun.apc_prebuild_steps, native_prebuilds, "Live flow never runs native APC prebuild work")
-	TEST_ASSERT_EQUAL(transport.tree_builds, native_trees, "Live flow never solves a native route tree")
-	log_world("NETRUN_CORE_LIVE_PASS discovery native_once projection source_tree movement native_builders_unchanged")
+	var/list/state_outcomes = list()
+	log_world("NETRUN_CORE_LIVE_STAGE replaceable_state")
+	TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture/queue_snapshot(list("value" = "state"), state_outcomes)), "Replaceable telemetry uses the separate declared state contract")
+	TEST_ASSERT(wait_outcome(state_outcomes, 90 SECONDS), "The real Host admits and invokes idempotent state")
+	TEST_ASSERT_EQUAL(state_outcomes["delivered"], 1, "State has one native terminal callback")
+	TEST_ASSERT_EQUAL(scene.target.received, before_received + 3, "State executes exactly one native receive")
+	log_world("NETRUN_CORE_LIVE_STAGE implant_map_entry")
+	var/turf/entrance_spot = locate(run_loc_floor_bottom_left.x + 6, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/datum/netrun_client_scene/entrance = allocate(/datum/netrun_client_scene/core_live, entrance_spot)
+	var/datum/netrun_console/implant/implant_console = entrance.implant.console
+	implant_console.access_session.node_access[entrance.target_node.address] = NETRUN_ACCESS_USER
+	var/list/entrance_data
+	var/entrance_deadline = world.time + 90 SECONDS
+	while(world.time < entrance_deadline)
+		entrance_data = implant_console.ui_data(entrance.user)
+		if(netrun_map_has_node(entrance_data, entrance.target_node.address))
+			break
+		sleep(world.tick_lag)
+	TEST_ASSERT(netrun_map_has_node(entrance_data, entrance.target_node.address), "A cold real Core read must eventually populate the implant entrance map")
+	var/entrance_label = "[entrance.target_node.get_name()] — [entrance.target_node.address]"
+	TEST_ASSERT_EQUAL(implant_console.entry_choices()[entrance_label], entrance.target_node, "The real Core route must expose the authorized local entrance")
+	TEST_ASSERT_EQUAL(implant_console.local_connection_choices(entrance.user)[entrance_label], entrance.target_node, "The physical chooser must expose the adjacent native service port")
+	for(var/wired in list(FALSE, TRUE))
+		if(wired)
+			TEST_ASSERT(implant_console.connection.connect_node(entrance.target_node, entrance.user), "The real implant must attach to the selected native port")
+		entrance_deadline = world.time + 90 SECONDS
+		while(world.time < entrance_deadline && !implant_console.dive_return_ready(entrance.target_node))
+			implant_console.ui_data(entrance.user)
+			sleep(world.tick_lag)
+		TEST_ASSERT(implant_console.select_entry(entrance.target_node, entrance.user), "A synchronized real Core entrance must remain selectable")
+		TEST_ASSERT_NULL(implant_console.dive_denial(entrance.target_node, entrance.user), "The conscious wearer must pass final admission")
+		TEST_ASSERT(implant_console.dive_return_ready(entrance.target_node), "Both return paths must be ready before creating the resident")
+		TEST_ASSERT(entrance.implant.complete_dive(entrance.target_node, entrance.user), "The real Core admission must transfer the mind with wireless or wired return path")
+		var/mob/camera/netrun_entity/diver = implant_console.dive_ref?.resolve()
+		TEST_ASSERT(diver && diver.mind, "A successful real dive must retain its resident")
+		diver.console.workspace_view = "map"
+		var/list/resident_data = diver.console.ui_data(diver)
+		TEST_ASSERT(netrun_map_has_node(resident_data, entrance.target_node.address), "A real resident must see its imported network map")
+		diver.return_to_body()
+	log_world("NETRUN_CORE_LIVE_PASS discovery native_once projection source_tree movement state external_only")
 
 /// Готовность проверяется через настоящий subsystem fire; тест не вызывает client.tick вручную.
 /datum/unit_test/netrun_core_live/proc/wait_core_ready(timeout)

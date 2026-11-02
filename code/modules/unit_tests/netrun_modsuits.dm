@@ -150,11 +150,10 @@
 	var/turf/apc_spot = scene.take(get_step(scene.far_spot, NORTH), destination)
 	var/obj/machinery/power/apc/remote_apc = scene.machine(/obj/machinery/power/apc, apc_spot)
 	SSnetrun.ensure_topology()
-	var/datum/component/netrun_node/previous_apc = scene.node.bound_apc
 	scene.user.forceMove(scene.far_spot)
 	TEST_ASSERT_EQUAL(scene.node.physical_turf(), scene.far_spot, "The real worn MOD must follow its wearer")
-	TEST_ASSERT_EQUAL(scene.node.bound_apc, previous_apc, "Wearer movement must defer binding work to the existing worker or route consumer")
+	TEST_ASSERT(scene.node.pending_physical_update, "Wearer movement queues a raw fact update independently of the supplied publication")
 	TEST_ASSERT(SSnetrun.get_task_scheduler().by_key["node:[REF(scene.node)]"], "The worn MOD must queue one endpoint update")
 	TEST_ASSERT(scene.console.can_route(scene.node), "A real route query must still reach the wearer after crossing APC areas")
-	TEST_ASSERT_EQUAL(scene.node.bound_apc, remote_apc.GetComponent(/datum/component/netrun_node), "The route query must refresh the worn MOD's new APC before authorization")
+	TEST_ASSERT_EQUAL(scene.node.bound_apc, remote_apc.GetComponent(/datum/component/netrun_node), "The route query must consume the supplied attachment at the wearer's physical position")
 	TEST_ASSERT_EQUAL(scene.console.node_level(scene.node), NETRUN_ACCESS_ROOT, "A rebind must preserve the actual wearer's own controller rights")

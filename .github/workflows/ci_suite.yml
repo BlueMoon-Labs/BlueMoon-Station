@@ -59,6 +59,9 @@ jobs:
       - name: Check ticked file directories
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: bash tools/ci/check_filedirs.sh tgstation.dme
+      - name: Test NETRUN build and deployment tools
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: node --test tools/netrun/*.test.mjs
       - name: Check .dme include order
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: python3 tools/ci/check_dme_order.py tgstation.dme

@@ -115,6 +115,9 @@
 	var/datum/component/netrun_node/remote_node = remote_relay.GetComponent(/datum/component/netrun_node)
 	SSnetworks.station_network.setting_disabled = FALSE
 	SSnetrun.ensure_topology()
+	// Exact C# path rows supplied for this cross-sector projection scenario.
+	var/datum/component/netrun_node/source_node = source.GetComponent(/datum/component/netrun_node)
+	scene.fixture_graph.import_path(list(source_node, source_node.bound_apc, local_node, remote_node, remote_node.bound_apc), list(0, 1, 2, 5, 6))
 	source.console.workspace_view = "map"
 	source.console.map_view.selected_address = local_node.address
 	var/list/data = source.console.ui_data(null)
@@ -184,7 +187,6 @@
 	var/builds = view.rebuilds
 	var/address = source_node.address
 	source.forceMove(destination)
-	source_node.join_network()
 	source_node.publish_changes()
 	TEST_ASSERT(source_node.network != old_network, "The physical move must actually change the source LAN")
 	TEST_ASSERT_EQUAL(source_node.address, address, "The context change must retain the source's address")
@@ -214,17 +216,20 @@
 	var/area/remote_room = scene.room(/area/netrun_route_test)
 	scene.take(origin, local_room)
 	scene.machine(/obj/machinery/power/apc, scene.take(get_step(origin, NORTH), local_room))
-	scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(origin.x, origin.y + 2, origin.z), local_room))
+	var/obj/machinery/ntnet_relay/local_relay = scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(origin.x, origin.y + 2, origin.z), local_room))
 	var/turf/remote_spot = scene.take(locate(80, 80, levels[1]), remote_room, TRUE)
 	var/turf/destination = scene.take(locate(80, 80, levels[2]), remote_room, TRUE)
 	scene.machine(/obj/machinery/power/apc, scene.take(locate(81, 80, levels[1]), remote_room, TRUE))
-	scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(82, 80, levels[1]), remote_room, TRUE))
+	var/obj/machinery/ntnet_relay/remote_relay = scene.machine(/obj/machinery/ntnet_relay, scene.take(locate(82, 80, levels[1]), remote_room, TRUE))
 	var/obj/machinery/computer/netrun_terminal/source = scene.machine(/obj/machinery/computer/netrun_terminal, origin)
 	var/obj/item/mobile = new(remote_spot)
 	scene.owned += mobile
 	var/datum/component/netrun_node/leaf = mobile.AddComponent(/datum/component/netrun_node, NETRUN_NODE_TERMINAL)
 	SSnetworks.station_network.setting_disabled = FALSE
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
+	// Exact C# rows disclose the remote endpoint before its floor-only movement.
+	var/datum/component/netrun_node/source_node = source.GetComponent(/datum/component/netrun_node)
+	scene.fixture_graph.import_path(list(source_node, source_node.bound_apc, local_relay.GetComponent(/datum/component/netrun_node), remote_relay.GetComponent(/datum/component/netrun_node), leaf.bound_apc, leaf), list(0, 1, 2, 5, 6, 7))
 	var/datum/netrun_console/console = source.console
 	qdel(console.map_view)
 	var/datum/netrun_map_view/netrun_performance_test/view = new(console)
@@ -242,7 +247,6 @@
 	var/datum/component/netrun_node/original_apc = leaf.bound_apc
 	var/datum/netrun_network/original_network = leaf.network
 	mobile.forceMove(destination)
-	leaf.join_network()
 	leaf.publish_changes()
 	TEST_ASSERT_EQUAL(leaf.bound_apc, original_apc, "The mobile endpoint must retain its APC within the same linked area")
 	TEST_ASSERT_EQUAL(leaf.network, original_network, "A floor change must keep the original authorization domain")

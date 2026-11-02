@@ -102,6 +102,8 @@
 	/// Внешний статус: ready дополнительно требует опубликованный graph, не только mirror.
 	var/state = "closed"
 	var/ready = FALSE
+	/// Один безопасный startup marker на binding подтверждает настоящий handshake и опубликованный C# graph.
+	var/announced_ready_binding
 	var/last_error
 	/// Исполнитель effects поставляется владельцем; exporter сам не вызывает машинные обработчики.
 	var/datum/netrun_external_effects/effects
@@ -362,6 +364,9 @@
 		ready = result["sync_state"] == "ready" && !result["topology_pending"] && result["graph_version"] != "0" && istext(result["graph_version"])
 		if(ready)
 			state = "ready"
+			if(announced_ready_binding != binding_epoch)
+				announced_ready_binding = binding_epoch
+				log_world("NETRUN_CORE_READY external graph_published")
 		return TRUE
 	if(result["kind"] == "pressure" || result["kind"] == "diagnostics")
 		return TRUE
@@ -763,14 +768,14 @@
 		records += metadata["raw"]
 	return records
 
-/// Объявляет только безопасный generic message contract; finer native operations добавляет отдельный adapter.
+/// Команды и opt-in заменяемое состояние имеют раздельные контракты; native авторизация обязательна для обоих.
 /datum/netrun_external_core/proc/export_service(datum/netrun_machine_service/service, snapshot = FALSE)
 	var/list/key = service_key(service)
 	if(!key)
 		return null
 	var/list/metadata = service_metadata[service]
 	var/owner_json = netrun_external_json_object(list("node_id" = json_encode(metadata["owner"]), "generation" = json_encode("1")))
-	var/operations = "\[{\"operation_id\":\"message\",\"safety\":\"mutating\",\"delivery\":\"delivery_only\",\"ordered\":true}\]"
+	var/operations = "\[{\"operation_id\":\"message\",\"safety\":\"mutating\",\"delivery\":\"delivery_only\",\"ordered\":true},{\"operation_id\":\"state\",\"safety\":\"idempotent\",\"delivery\":\"delivery_only\",\"ordered\":true}\]"
 	var/list/fields = list("owner" = owner_json, "family" = json_encode(service.service_id), "tag" = json_encode(service.service_tag()), "online" = netrun_external_json_bool(!QDELETED(service.host) && service.resolve_node()?.is_online()), "operations" = operations)
 	var/communication = export_communication(service)
 	if(communication)

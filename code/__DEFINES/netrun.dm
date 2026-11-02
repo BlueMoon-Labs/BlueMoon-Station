@@ -61,12 +61,9 @@
 #define NETRUN_DEFAULT_TASK_INITIAL_COST_MS 0.1
 #define NETRUN_DEFAULT_TASK_COST_SMOOTHING 0.15
 #define NETRUN_DEFAULT_TASK_POPULATION_INTERVAL (1 SECONDS)
-#define NETRUN_DEFAULT_APC_PREBUILD_OPERATIONS 96
 /// Fast registration attempts before slow backoff while a compatible controller is online.
 /// Controller/device signals (power, move, config) restart the fast retry window.
 #define NETRUN_ATMOS_REGISTRATION_MAX_ATTEMPTS 10
-#define NETRUN_DEFAULT_ROUTE_REFRESH_INTERVAL (1 SECONDS)
-#define NETRUN_DEFAULT_ROUTE_EXPIRY_INTERVAL (30 SECONDS)
 #define NETRUN_DEFAULT_UI_REFRESH_INTERVAL (1 SECONDS)
 #define NETRUN_DEFAULT_UI_ACTIVITY_LEASE (3 SECONDS)
 #define NETRUN_DEFAULT_NODE_ACTIVITY_DURATION (5 SECONDS)
@@ -84,7 +81,6 @@
 #define NETRUN_EXECUTION_MAX_BUDGET_MS 50
 #define NETRUN_EXECUTION_MAX_PRESSURE_TICK_USAGE 1000
 #define NETRUN_EXECUTION_MAX_TASKS_PER_PASS 1024
-#define NETRUN_EXECUTION_MAX_PREBUILD_OPERATIONS 4096
 #define NETRUN_EXECUTION_MAX_PRIORITY_ROTATION 64
 #define NETRUN_EXECUTION_MIN_INTERVAL 1
 #define NETRUN_EXECUTION_MAX_INTERVAL (10 MINUTES)
@@ -99,12 +95,7 @@
 #define NETRUN_LAN_SECURITY "sec"
 #define NETRUN_LAN_COMMAND "cmd"
 
-/// Geographic physical links: each started block of tiles adds one decisecond.
-#define NETRUN_LINK_TILES_PER_DS 15
 #define NETRUN_RELAY_LATENCY 3
-/// Machine I/O uses network time; runner actions retain their gameplay latency.
-#define NETRUN_MACHINE_LATENCY_SCALE 0.02
-#define NETRUN_MACHINE_MAX_LATENCY (0.25 SECONDS)
 #define NETRUN_MAX_PACKET_LOG 100
 /// Shared map event ring: arrivals, alerts and packet flights (send/done/fail).
 #define NETRUN_MAX_MAP_EVENTS 96
@@ -113,10 +104,6 @@
 /// Arrival ring shown after a flight reaches its destination.
 #define NETRUN_MAP_EVENT_TAIL (2 SECONDS)
 #define NETRUN_MAX_PENDING_REQUESTS 2048
-#define NETRUN_MAX_MACHINE_PACKETS 2048
-/// Machine flights drawn on maps per second; one station pair is drawn at most every two seconds.
-#define NETRUN_MAX_MACHINE_FLIGHTS 8
-#define NETRUN_APC_NEIGHBORS 3
 
 // Типы файлов
 #define NETRUN_FILE_TEXT "text"

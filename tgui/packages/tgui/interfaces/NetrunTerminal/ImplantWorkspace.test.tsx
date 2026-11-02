@@ -5,7 +5,9 @@ import { backendReducer, backendUpdate } from '../../backend';
 import { debugReducer } from '../../debug';
 import { NetrunContent } from './Content';
 
-test('neural implant prepares a local entrance without showing network controls', () => {
+jest.mock('./NetworkMap', () => ({ StationMap: () => 'Карта сети' }));
+
+test('neural implant shows its entrance map without exposing machine controls', () => {
   const topic = jest.fn();
   (global as any).Byond = { winset: () => {}, topic };
   const store = createStore(combineReducers({ backend: backendReducer, debug: debugReducer }));
@@ -19,6 +21,7 @@ test('neural implant prepares a local entrance without showing network controls'
   expect(panel.getByText(/Выберите узел в своей зоне/)).toBeTruthy();
   expect(panel.getByText('Узел погружения не выбран.')).toBeTruthy();
   expect(panel.getByText(/^Локальные файлы/)).toBeTruthy();
+  expect(panel.getByRole('region', { name: 'Карта сети' })).toBeTruthy();
   expect(panel.queryByRole('tab', { name: 'Карта' })).toBeNull();
   expect(panel.queryByText('#noosphere')).toBeNull();
   fireEvent.click(panel.getByText('Выбрать узел погружения'));

@@ -332,16 +332,15 @@
 	var/turf/remote_apc_spot = scene.take(get_step(scene.far_spot, NORTH), destination)
 	var/obj/machinery/power/apc/remote_apc = scene.machine(/obj/machinery/power/apc, remote_apc_spot)
 	SSnetrun.ensure_topology()
-	var/datum/component/netrun_node/previous_apc = node.bound_apc
 	scene.user.forceMove(scene.far_spot)
 	TEST_ASSERT_EQUAL(node.physical_turf(), scene.far_spot, "The implant must follow its wearer without moving the native organ")
-	TEST_ASSERT_EQUAL(node.bound_apc, previous_apc, "The wearer's movement signal must defer expensive binding work")
+	TEST_ASSERT(node.pending_physical_update, "Wearer movement queues a raw fact update independently of the supplied publication")
 	TEST_ASSERT(SSnetrun.get_task_scheduler().by_key["node:[REF(node)]"], "Wearer movement must queue its endpoint update")
 	var/datum/netrun_console/implant/console = scene.implant.console
 	console.workspace_view = "map"
 	console.map_view.selected_address = node.address
 	var/list/data = console.ui_data(scene.user)
-	TEST_ASSERT_EQUAL(node.bound_apc, remote_apc.GetComponent(/datum/component/netrun_node), "The UI route consumer must reconcile the wearer's new APC before publishing access")
+	TEST_ASSERT_EQUAL(node.bound_apc, remote_apc.GetComponent(/datum/component/netrun_node), "The UI must consume the supplied attachment at the wearer's physical position")
 	var/list/selected = data["selected"]
 	TEST_ASSERT_EQUAL(selected?["x"], scene.far_spot.x, "The selected card must publish actual wearer coordinates")
 	TEST_ASSERT_EQUAL(selected?["y"], scene.far_spot.y, "The reactive map must not place internal organs at coordinate zero")
@@ -385,7 +384,7 @@
 	ui.status = UI_INTERACTIVE
 	scene.authorize()
 	TEST_ASSERT(console.select_entry(scene.target_node, scene.user), "A local authorized entry must remain selectable")
-	for(var/action in list("command", "cli", "remote_act", "window_open", "window_act", "program_use", "breach", "upload", "download", "delete_remote", "chat_send", "entity_signal", "entity_message", "workspace_view", "select"))
+	for(var/action in list("command", "cli", "remote_act", "window_open", "window_act", "program_use", "breach", "upload", "download", "delete_remote", "chat_send", "entity_signal", "entity_message", "workspace_view"))
 		TEST_ASSERT(!console.handle_ui_action(action, list("address" = scene.target_node.address, "text" = "scan", "page" = "map"), ui), "Pre-dive network action [action] must be refused on the server")
 	TEST_ASSERT(!console.node_interact(scene.target_node, "manage", scene.user), "Direct device shortcuts must not bypass the pre-dive restriction")
 	TEST_ASSERT(!console.run_command(scene.target_node, "scan"), "Direct packet commands must require a resident")
@@ -399,7 +398,8 @@
 	TEST_ASSERT(console.handle_ui_action("file_new", list("name" = "note.txt", "content" = "local"), ui), "Local memory must remain usable before diving")
 	TEST_ASSERT_EQUAL(length(console.inventory.local_store.files), 1, "Creating a local file must not access the network")
 	var/list/data = console.ui_data(scene.user)
-	TEST_ASSERT_NULL(data["map"], "The body UI must not publish the full network map")
+	TEST_ASSERT(islist(data["map"]), "The conscious wearer must receive a read-only entrance map")
+	TEST_ASSERT(console.handle_ui_action("select", list("address" = scene.target_node.address), ui), "Inspecting a disclosed map node must work before diving")
 	TEST_ASSERT_NULL(data["window"], "The body UI must not publish remote windows")
 	var/list/selected = data["selected"]
 	var/list/interactions = selected["interactions"]

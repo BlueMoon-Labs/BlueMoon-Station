@@ -282,9 +282,6 @@
 			client_node = implant.GetComponent(/datum/component/netrun_node)
 			if(QDELETED(client_node))
 				return FALSE
-			// A sleeping body's implant remains a physical endpoint; console admission
-			// correctly rejects unconscious operators and cannot be used for this check.
-			client_node.join_network()
 	if(!entry_address)
 		return TRUE
 	var/datum/component/netrun_node/entry = SSnetrun.find_node(entry_address)
@@ -292,11 +289,7 @@
 		return FALSE
 	if(QDELETED(owner.host_node) || !owner.host_node.is_online())
 		return FALSE
-	// Movement signals enqueue topology work; this route consumer reconciles its
-	// two actual endpoints before trusting a retained physical path.
-	entry.join_network()
-	if(owner.host_node != entry)
-		owner.host_node.join_network()
+	// Imported route proofs fail closed until Core acknowledges endpoint movement.
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	var/datum/netrun_path_tree/tree = graph.route_snapshot(entry, TRUE)
 	if(!tree || !tree.path_available(graph, owner.host_node.address) || (client_node && !tree.path_available(graph, client_node.address)))

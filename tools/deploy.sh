@@ -24,6 +24,30 @@ cp -r _maps/* $1/_maps/
 cp -r icons/runtime/* $1/icons/runtime/
 cp -r strings/* $1/strings/
 
+# TGUI bundles и шрифты читаются через file("...") во время работы мира.
+# Одних dmb/rsc недостаточно: HTML откроется, но frontend не загрузится.
+for ui_asset in \
+    tgui/public/tgui.bundle.js \
+    tgui/public/tgui.bundle.css \
+    tgui/public/tgui-panel.bundle.js \
+    tgui/public/tgui-panel.bundle.css \
+    tgui/packages/tgfont/dist/tgfont.css \
+    tgui/packages/tgfont/dist/tgfont.eot \
+    tgui/packages/tgfont/dist/tgfont.woff2 \
+    modular_bluemoon/code/modules/lobby/lobby_html.txt
+do
+    if [ ! -s "$ui_asset" ]; then
+        echo "Missing UI runtime asset: $ui_asset" >&2
+        exit 1
+    fi
+done
+mkdir -p "$1/tgui/public" "$1/tgui/packages/tgfont/dist"
+cp -R tgui/public/. "$1/tgui/public/" || exit 1
+cp -R tgui/packages/tgfont/dist/. "$1/tgui/packages/tgfont/dist/" || exit 1
+# Преамбула лобби содержит его CSS и читается file2text(), отдельно от TGUI.
+mkdir -p "$1/modular_bluemoon/code/modules/lobby"
+cp modular_bluemoon/code/modules/lobby/lobby_html.txt "$1/modular_bluemoon/code/modules/lobby/" || exit 1
+
 #Мир шифрует ckey в лодауте через Node-хелпер, путь к node пишет сборка.
 mkdir -p "$1/tools/loadout_crypto"
 cp tools/loadout_crypto/crypto.cjs "$1/tools/loadout_crypto/"

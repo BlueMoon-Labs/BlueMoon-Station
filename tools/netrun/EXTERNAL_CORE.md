@@ -1,156 +1,248 @@
-# Сборка и запуск внешнего NETRUN Core
+# Развёртывание станции с NETRUN Core
 
-Production default — `external`, в том числе при прямом запуске DreamDaemon.
-Недоступность Host завершает внешние запросы отказом и не включает DM routing.
-`NETRUN_CORE_MODE=dm` оставлен явным diagnostic/test режимом.
+NETRUN Core — публичный отдельный [C# репозиторий](https://github.com/Dominig12/netrun-core).
+Он вычисляет топологию, APC bindings, маршруты, поиск сервисов и транспорт.
+DM передаёт факты мира, импортирует готовые таблицы, проверяет игровые права и
+выполняет действия машин. Для работы сети нужен запущенный Host.
 
-## Windows: обычные процессы
+## Требования
 
-Рядом со станцией нужен checkout `netrun-core`. Другой путь задаётся явно:
+| Вариант | Установить один раз |
+|---|---|
+| Windows, обычные процессы | Git, BYOND из `dependencies.sh`, Node.js из сборочных инструментов станции |
+| Docker на Windows | Git, Node.js, Docker Desktop с активным **Linux Engine**, Buildx и Compose |
+| Docker на Linux amd64 | Git, Node.js, Docker Engine с Buildx и Compose plugin; право запускать Docker |
+
+При первой сборке нужен интернет. Docker получает Linux SDK, Zig, BYOND и
+остальные build dependencies внутри images. Для обычной Windows-сборки SDK и
+Zig скачиваются автоматически как portable tools. Глобальная установка .NET/Zig
+и изменение системного PATH не нужны. NuGet restore использует lock files.
+
+Если `netrun-core` ещё нет рядом со станцией, launcher сам клонирует его.
+Публичный URL и полный commit SHA закреплены в `tools/netrun/core-source.json`.
+GitHub token и ручной clone не требуются. Существующий checkout используется
+как есть: launcher не делает pull/reset и не перезаписывает локальную работу.
+Другой путь задаётся `NETRUN_CORE_SOURCE`. Если существующий старый checkout не
+содержит bootstrap scripts, обновите его обычным Git workflow либо выберите новый
+отсутствующий путь для автоматического clone.
+
+## Быстрый запуск Windows
+
+Из корня станции:
 
 ```powershell
-$env:NETRUN_CORE_SOURCE = 'C:/work/netrun-core'
 ./Build.bat
 ./RUN_SERVER.bat
 ```
 
-Обычный Juke `BuildTarget` собирает TGUI/DM, публикует .NET Host и собирает x86
-bridge. Нужны уже установленные SDK из `netrun-core/global.json` и portable Zig.
-Скрипты ничего не устанавливают. SDK ищется в PATH или существующем user cache
-`.codex/cache/netrun-dotnet/sdk`; `NETRUN_DOTNET` и `NETRUN_ZIG` задают точные пути.
-Native compiler также использует существующий `.codex/cache/netrun-zig`.
-`scripts/build-native.ps1` совместим со штатным Windows PowerShell 5.1.
+Juke targets собирают ресурсы/DM, публикуют Host и Windows x86 bridge.
+Перед запуском проверяются package hashes. Launcher запускает Host, ждёт listener,
+затем запускает DreamDaemon. Выход любого процесса закрывает принадлежащую ему
+пару. Ctrl+C также закрывает её; существующие чужие процессы не затрагиваются.
 
-Host и DLL строятся из одной сохранённой копии source inputs. Manifest содержит
-Git revision, SHA-256 каждого input и общий content digest, поэтому учитывает
-также незакоммиченные изменения. Секреты, `bin/obj` и user settings в эту копию
-не входят. Результаты находятся в ignored `data/netrun-core/builds`; pointer
-`data/netrun-core/build.json` публикуется только после успешной сборки обоих
-компонентов. Перед запуском проверяются source digest и все artifact hashes.
-
-`RUN_SERVER.bat` использует managed Juke `ServerTarget`: запускает hidden Host,
-ждёт его listener и затем запускает hidden DreamDaemon. Завершение любого
-процесса закрывает пару. Ctrl+C также завершает принадлежащие launcher процессы.
-Процессный launcher не делает автоматический restart. Внутри живой пары protocol
-resync открывает fresh binding/full snapshot с physical backoff 1..30 s, сохраняя
-client/effects и world epoch. Mutating requests автоматически не replay-ятся. Существующий
-`tgstation-server/Start Server.bat` watchdog этим механизмом не изменяется.
-
-Отдельные команды после уже выполненной сборки:
+Отдельная сборка NETRUN и запуск уже собранного пакета:
 
 ```powershell
 node tools/netrun/core-lifecycle.mjs build
 node tools/netrun/core-lifecycle.mjs run --no-build
-node tools/netrun/probe-host-lifecycle.mjs
 ```
 
-Последняя команда запускает настоящий опубликованный Host и tiny TCP child;
-station world она не запускает. Проверяет порядок готовности и закрытие
-listener/processes после завершения child.
+`--no-build` требует текущий проверенный пакет. Изменённые исходники или
+повреждённые artifacts требуют пересборки. `NETRUN_CORE_BUILD=0` пропускает Core
+при компиляции ресурсов/DM, например в CI; запуск сети всё равно требует Host.
 
-`NETRUN_CORE_PORT` задаёт loopback port Host (по умолчанию 18462).
-Token автоматически создаётся в ignored `data/netrun-core/session-token.txt`.
-`NETRUN_CORE_TOKEN_FILE` позволяет указать внешний или ignored файл. Сам token
-не попадает в argv, `world.params`, manifest, build context или stdout.
-Тот же file path передаётся Host через `NETRUN_SESSION_TOKEN_FILE`.
+## Автоматические SDK и Zig
 
-`NETRUN_CORE_BUILD=0` явно выбирает только сборку ресурсов/DM, например в
-station compile CI либо Docker stage. Runtime fallback эта настройка не даёт:
-managed external launch всё равно требует проверенный пакет Host/DLL.
-DM unit runners явно задают дочерним test worlds `NETRUN_CORE_MODE=dm`.
+`netrun-core/scripts/ensure-toolchains.ps1` проверяет явные
+`NETRUN_DOTNET`/`NETRUN_ZIG`, подходящие инструменты в PATH и portable cache.
+Несовместимый явный путь считается ошибкой. При отсутствии нужной версии
+скачивается закреплённый официальный archive, проверяется SHA-512 для SDK или
+SHA-256 для Zig, затем публикуется готовый каталог. Незавершённая загрузка не
+становится рабочим инструментом.
 
-## Linux: Docker
+Cache по умолчанию: `%LOCALAPPDATA%/NETRUN/toolchains`.
+`NETRUN_TOOLCHAIN_CACHE` меняет его. Пути `.codex/cache` больше не используются.
+Первая сборка требует времени и места для ZIP и распаковки; последующие используют
+готовые tools. Версии: .NET SDK из `global.json` (10.0.403 с совместимыми patch
+updates той же feature band), Zig 0.17.0.
 
-Dockerfile содержит targets `netrun-station` и `netrun-host`. Старый BYOND runtime
-Ubuntu Xenial сохранён: .NET 10 работает в отдельном поддерживаемом runtime image.
-Сборка TGUI/DM выполняется в отдельном `node:24.16.0-bookworm` с BYOND compiler;
-Node 24 не запускается внутри Xenial, поскольку требует более новую glibc.
-Источник: [Node 24.16.0 toolchains](https://github.com/nodejs/node/blob/v24.16.0/BUILDING.md#official-binary-platforms-and-toolchains).
-BYOND stage также содержит 32-bit libcurl (`libcurl3:i386` в Xenial), необходимую
-начиная с [BYOND 516.1664](https://www.byond.com/docs/notes/516.html).
-Оба image получают один и тот же Core digest. Native bridge собирается portable
-Zig 0.17.0 для x86/glibc 2.17; официальный archive проверяется SHA-256
-`1cbe9df9f27e6b78d14ccbca43b6703a404ef79ef1c463de901d7f088d4e2026`.
-Источник pin: [официальный Zig manifest](https://ziglang.org/download/index.json).
+Подготовить tools отдельно:
 
-Из корня станции на Docker Engine с Linux amd64 и Buildx:
+```powershell
+../netrun-core/scripts/ensure-toolchains.ps1 -Tool all
+../netrun-core/scripts/build-native.ps1 -Target all
+```
+
+Для offline-сборки заранее подготовьте checkout, portable и NuGet caches либо
+укажите установленные совместимые tools. Ошибка загрузки оставляет существующий
+checkout и готовые сборки.
+
+## Docker: одна команда развёртывания
+
+Запустите Docker Desktop и дождитесь Linux Engine. Из корня станции:
 
 ```sh
-export NETRUN_CORE_SOURCE=/reviewed/checkouts/netrun-core
-export NETRUN_CONFIG_DIRECTORY=/reviewed/station/config
+node tools/netrun/docker-lifecycle.mjs deploy
+```
+
+Команда проверяет Docker/Compose/Buildx, получает отсутствующий Core, собирает
+согласованные station/Host images, создаёт file secret и запускает пару в фоне.
+На Windows Docker CLI находится и при per-user установке без обновлённого PATH.
+`NETRUN_DOCKER` задаёт точный путь к CLI. Сам Docker launcher не устанавливает.
+
+Station image использует Node 24/bookworm: Node нужен и игровому loadout crypto
+helper. BYOND остаётся x86; его архив проверяется по закреплённому SHA-256.
+При обрывах полной загрузки downloader получает проверяемые диапазоны с mirror,
+собирает архив и повторно проверяет весь hash. Cargo/Juke caches сохраняются между
+сборками; несовместимый release NanoMap собирается из закреплённых исходников.
+Host работает отдельно от root с read-only filesystem в loopback namespace BYOND.
+
+По умолчанию используются checkout `config`, project `molot-netrun` и игровой
+адрес `127.0.0.1:1337`. Проверяйте локально по `byond://127.0.0.1:1337`.
+Для доступа с других машин задайте publish address и config **перед deploy**:
+
+```sh
+# Linux shell
+export NETRUN_GAME_ADDRESS=0.0.0.0
+export NETRUN_GAME_PORT=1337
+export NETRUN_CONFIG_DIRECTORY=/srv/molot/config
+node tools/netrun/docker-lifecycle.mjs deploy
+```
+
+```powershell
+# PowerShell
+$env:NETRUN_GAME_ADDRESS = '0.0.0.0'
+$env:NETRUN_GAME_PORT = '1337'
+$env:NETRUN_CONFIG_DIRECTORY = 'C:/servers/molot/config'
+node tools/netrun/docker-lifecycle.mjs deploy
+```
+
+Config directory должен существовать; source mount read-only. Entry point копирует
+его в `/tgstation/config`, а secret — в приватный native filesystem file: 32-битный
+BYOND не читает Windows bind mounts с inode больше 32 бит. Host читает исходный
+secret. Настройки станции редактируются в исходном config до запуска; paired
+`restart` получает свежую копию. Для unattended smoke без игроков включите
+`RESUME_AFTER_INITIALIZATIONS`: по умолчанию мир засыпает после инициализации,
+до первого клиента. Внешняя доступность игрового порта зависит также
+от firewall и маршрутизации хоста.
+
+Управление deployment:
+
+```sh
+node tools/netrun/docker-lifecycle.mjs status
+node tools/netrun/docker-lifecycle.mjs logs
+node tools/netrun/docker-lifecycle.mjs config
+node tools/netrun/docker-lifecycle.mjs restart
+node tools/netrun/docker-lifecycle.mjs stop
+node tools/netrun/docker-lifecycle.mjs down
+```
+
+`status` показывает контейнеры и health; `logs` — bounded tail.
+`config` проверяет Compose без вывода секретов. `restart` пересоздаёт оба
+контейнера вместе, поскольку Host использует network namespace станции.
+`stop` останавливает их; `down` также удаляет контейнеры и project network.
+Named volume с игровыми данными сохраняется.
+
+`data/netrun-core/docker-deployment.json` фиксирует config/token paths, images,
+project и параметры порта. Управляющие команды используют этот state; им не
+нужны Core checkout, новая сборка или новый token.
+
+Для работы с логами в текущем терминале:
+
+```sh
 node tools/netrun/docker-lifecycle.mjs build
 node tools/netrun/docker-lifecycle.mjs up --no-build
 ```
 
-Launcher создаёт минимальный named context `netrun_core` с точными bytes и
-`source-files.sha256`; Docker проверяет общий digest, каждый файл и отсутствие
-лишних inputs. Git clone/pull/latest здесь не используется. Named context явно
-подменяет пустой stage: обычный `docker build .` без контекста завершается
-отказом. Это штатный
-[Buildx named context](https://docs.docker.com/reference/cli/docker/buildx/build/#build-context).
+Attached `up` останавливает пару после выхода любого контейнера; Ctrl+C делает
+`down` без удаления data volume. Для фонового запуска используйте `deploy`.
+Restart policy контейнеров не заменяет paired `restart` после ручной замены
+images или namespace станции.
 
-Compose объединяет network namespace двух контейнеров. Контейнер станции
-сначала создаёт namespace и ждёт Host; DreamDaemon стартует после listener.
-Host слушает только общий `127.0.0.1`, наружу опубликован игровой port 1337
-(`NETRUN_GAME_PORT` меняет host port). `up --abort-on-container-exit` завершает
-всю пару при остановке любого участника; launcher выполняет `down` в cleanup.
-Named game-data volume при `down` сохраняется. Config mount read-only.
+## Обновление, возврат версии и данные
 
-Session token передаётся двум участникам через file secret. Generated file имеет
-mode 0640; non-root Host UID/GID выбираются из текущего пользователя, а при запуске
-launcher от root используется UID 1654 и группа владельца файла. Для заранее
-подготовленного секрета задайте подходящие `NETRUN_HOST_UID`/`NETRUN_HOST_GID`,
-чтобы Host мог читать файл. Содержимое секрета не копируется в images.
+Сохраните config и необходимые игровые данные. Обновите станцию и выбранный Core
+checkout обычным Git workflow, затем повторите `deploy`. Обе части получают
+одинаковый Core source digest. Незакоммиченные изменения учитываются по bytes.
+Launcher не обновляет существующий репозиторий автоматически.
 
-Проверка конфигурации и явная остановка принадлежащего project:
+Для возврата выберите нужные согласованные commits в обоих checkout и повторите
+`deploy`. Код не откатывает содержимое data volume: backup нужен отдельно.
+Удаление volumes и `docker image prune` в launcher не входят.
+
+Не удаляйте `data/netrun-core` между командами управления: там state и generated
+token. Игровые данные Docker находятся в volume
+`<project>_netrun-station-data`. При переносе сервера подготовьте config, этот
+volume и token с подходящими правами. Token не добавляется в Git.
+
+## Настройки
+
+| Переменная | Назначение |
+|---|---|
+| `NETRUN_CORE_SOURCE` | Другой существующий либо автоматически клонируемый путь Core |
+| `NETRUN_TOOLCHAIN_CACHE` | Portable .NET/Zig cache Windows |
+| `NETRUN_DOTNET`, `NETRUN_ZIG` | Явные пути к совместимым executable |
+| `NETRUN_DOCKER` | Docker CLI executable |
+| `NETRUN_CORE_PORT` | Windows loopback port Host, default 18462 |
+| `NETRUN_CORE_TOKEN_FILE` | External/ignored token file, default `data/netrun-core/session-token.txt` |
+| `NETRUN_CONFIG_DIRECTORY` | Docker config, default checkout `config` |
+| `NETRUN_COMPOSE_PROJECT` | Имя собственного project, default `molot-netrun` |
+| `NETRUN_GAME_ADDRESS`, `NETRUN_GAME_PORT` | Docker address/port, default `127.0.0.1:1337` |
+| `NETRUN_HOST_UID`, `NETRUN_HOST_GID` | Non-root Host identity для доступа к file secret |
+
+Token не передаётся через argv, build args, world.params или manifest.
+Host получает путь через `NETRUN_SESSION_TOKEN_FILE`. Для собственного файла
+на Linux обеспечьте чтение UID/GID Host. Generated token имеет mode 0640;
+launcher выбирает текущего пользователя либо UID 1654 при root.
+
+BYOND x86 runtime остаётся в Xenial; TGUI/DM собираются в Node 24 Bookworm stage,
+Host запускается в поддерживаемом .NET runtime image. Bridge строится Zig для
+x86/glibc 2.17. Контейнеры делят loopback namespace; Host не публикует внешний
+порт. DreamDaemon ждёт listener. Host работает non-root с read-only filesystem.
+Build context Core ограничен исходниками и SHA manifest, без secrets/user settings.
+
+Разрыв IPC отзывает старую authority и запускает fresh binding/full snapshot
+с backoff 1..30 секунд. Mutating requests не replay-ятся автоматически.
+Ошибка Host не включает второй сетевой движок в DM.
+
+## Диагностика и проверки
+
+При Docker preflight error проверьте `docker version`, Linux Engine и доступ к
+daemon. После установки Docker Desktop может понадобиться перезагрузка.
+При download error проверьте Git/интернет/закреплённый commit и повторите команду:
+незавершённый staging не публикуется как готовый checkout. При несовместимом tool
+проверьте явные `NETRUN_*` overrides.
 
 ```sh
-node tools/netrun/docker-lifecycle.mjs config
-node tools/netrun/docker-lifecycle.mjs down
-```
-
-`NETRUN_COMPOSE_PROJECT` меняет имя project (по умолчанию `molot-netrun`).
-Новые скрипты не применялись к существующему серверу. Здесь локально проверены
-Windows build/process lifecycle, Node tests и shell syntax. Docker CLI отсутствует,
-поэтому Docker build, `compose config/up` и Linux BYOND runtime ещё не выполнялись.
-
-## Проверки
-
-```sh
-node --test tools/netrun/core-lifecycle.test.mjs tools/netrun/docker-lifecycle.test.mjs tools/netrun/run-tests.test.mjs tools/netrun/run-live-core-test.test.mjs
-```
-
-Сохранённый полный BYOND/bridge/Host tiny-world E2E находится в соседнем Core repo:
-
-```sh
-python tests/native/test_external_dm.py
-```
-
-Он компилирует production DM client/effects в отдельном temp world, проверяет
-snapshot/catchup с заменой source component, graph-ready, native message lifecycle
-и отказ от ACK неизвестного эффекта. Station test runner и production world
-этот тест не запускает.
-
-Отдельный live smoke использует полный station code и настоящий subsystem/runtime
-на hermetic test map:
-
-```sh
+node --test tools/netrun/*.test.mjs
+node tools/netrun/probe-host-lifecycle.mjs
 node tools/netrun/run-live-core-test.mjs
-# Использовать уже проверенный текущий published bundle:
-node tools/netrun/run-live-core-test.mjs --no-build
 ```
 
-Он добавляет compile define `NETRUN_CORE_LIVE_TEST` и выбирает ровно
-`/datum/unit_test/netrun_core_live`. Обычная test selection этот opt-in файл
-исключает. Smoke проверяет live snapshot readiness, асинхронный C# service
-discovery, однократный native receive/terminal callback, импорт graph/source tree,
-немедленный отзыв старого tree при movement и восстановление новой проекции.
-Native topology rebuild, APC prebuild и machine tree-build counters не должны
-увеличиваться.
+Host probe проверяет настоящий published Host и закрытие listener после TCP child.
+Live smoke компилирует полный station code на hermetic карте и запускает настоящие
+Host/DreamDaemon: discovery, native delivery, GraphSync, source tree и отзыв
+маршрута при movement, отдельный контракт доставки `state`, карту нейролинка,
+локальный сервисный порт и перенос сознания в резидента с его картой.
+`NETRUN_CORE_READY external graph_published` появляется после snapshot/catch-up
+и публикации графа Core. `NETRUN_PROJECTION_READY native_graph` подтверждает импорт
+графа в DM. Source trees для открытых карт запрашиваются асинхронно после этого;
+первый pending ответ ещё не означает отсутствие доступных узлов.
+`NETRUN_CORE_RETRY <code>` указывает на восстановление IPC с новой binding epoch.
+Открытый game port сам по себе не доказывает готовность Core или карты.
+Bounded логи: `data/netrun-core/live-tests`.
+Общий `tmp/netrun-tests.lock` предотвращает второй station test world.
+Это не нагрузочный тест production раунда с игроками.
 
-Launcher использует общий `tmp/netrun-tests.lock`, поэтому не запускает второй
-station test world поверх текущего. Compile ограничен пятью минутами, runtime —
-десятью. Полный вывод сохраняется в bounded ignored
-`data/netrun-core/live-tests/...`; stdout содержит только фиксированные stages и
-итог. Host и DreamDaemon запускаются hidden и принадлежат одной managed паре.
-Production map или существующий сервер этим smoke не запускаются.
+`tools/deploy.sh` переносит `tgui/public`, `tgui/packages/tgfont/dist` и
+`modular_bluemoon/code/modules/lobby/lobby_html.txt` вместе с
+игровыми файлами и отклоняет сборку без обязательных bundles/fonts. Они нужны
+во время работы мира: наличие только DMB/RSC не обеспечивает загрузку TGUI.
+После исправления состава runtime image пересоберите и заново разверните пару.
+
+Текущий checkpoint: 682 hermetic DM tests, 327 frontend tests и 41 Node test
+прошли. Real Core smoke подтверждает discovery/delivery, topology/tree import,
+movement, state и карту нейролинка. Перенос сознания пока падает при регистрации
+нового endpoint резидента. В полном Docker-мире также исследуются пустая карта
+сущности и восстановление после `native_result_pressure`; считать интеграцию
+завершённой до этих исправлений нельзя.

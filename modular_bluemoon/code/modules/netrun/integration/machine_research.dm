@@ -178,6 +178,11 @@
 		return revision >= previous_revision
 	return ..()
 
+/// Wire revision сдвинута на один: native revision 0 допустима, protocol state_revision начинается с 1.
+/datum/netrun_machine_message/research/transport_revision()
+	var/revision = payload["revision"]
+	return isnum(revision) && revision >= 0 && round(revision) == revision ? netrun_external_decimal_next(num2text(revision, 20)) : null
+
 /datum/netrun_machine_service/research_server
 	service_id = "research.server"
 	start_when_ready = TRUE
@@ -630,9 +635,6 @@
 	return null
 
 /// A shared authority is unicast: broadcasting mutations would credit/debit it twice.
-/datum/netrun_machine_service/research_client/discovery_target_limit(destination_id)
-	return destination_id == "research.server" ? 1 : ..()
-
 /datum/netrun_machine_service/research_client/select_targets(destination_id, list/targets)
 	return destination_id == "research.server" && length(targets) ? list(targets[1]) : targets
 
