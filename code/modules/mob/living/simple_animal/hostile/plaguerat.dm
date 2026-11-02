@@ -48,7 +48,7 @@ GLOBAL_LIST_EMPTY(plague_rats)
 /mob/living/simple_animal/hostile/plaguerat/Initialize(mapload)
 	. = ..()
 	GLOB.plague_rats += src
-	AddComponent(/datum/component/swarming)
+	AddComponent(/datum/component/swarming, 4, 4)
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(rat_friend_attack_hand))
 	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(rat_friend_attackby))

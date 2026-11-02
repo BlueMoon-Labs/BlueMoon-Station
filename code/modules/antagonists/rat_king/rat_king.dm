@@ -16,6 +16,7 @@
 /datum/antagonist/rat_king/greet()
 	to_chat(owner, span_boldannounce("Вы - крысиный король. Под вашими лапами техтоннели, а в зубах - жажда власти."))
 	to_chat(owner, span_notice("Собирайте орду, распространяйте крысиную слюну и не дайте себя убить."))
+	to_chat(owner, span_notice("Укажите цель, ваши милые подданые атакуют её."))
 	owner.announce_objectives()
 	SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
 
@@ -128,6 +129,7 @@
 /datum/antagonist/rat_king/lust/greet()
 	to_chat(owner, span_purple("Вы - крысиная королева. Ваша власть - не когти, а очарование и мягкая лапа, ведущая мышей."))
 	to_chat(owner, span_notice("Вы не обязаны никого убивать. Собирайте свиту, вейте гнездо и наслаждайтесь."))
+	to_chat(owner, span_notice("Взмах вашей лапки заставит мышек полюбить ближнего своего."))
 	SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
 
 /datum/antagonist/rat_king/lust/forge_objectives()
@@ -202,9 +204,12 @@
 	call_action = new
 	call_action.horde = horde
 	call_action.Grant(quirk_holder)
+	RegisterSignal(quirk_holder, COMSIG_MOB_POINTED, PROC_REF(on_pointed))
 
 /datum/quirk/rat_whisperer/remove()
 	. = ..()
+	if(quirk_holder)
+		UnregisterSignal(quirk_holder, COMSIG_MOB_POINTED)
 	if(order_action)
 		order_action.Remove(quirk_holder)
 		qdel(order_action)
@@ -222,10 +227,22 @@
 		horde = new(quirk_holder, RAT_HORDE_SOFT)
 	return horde
 
+/datum/quirk/rat_whisperer/proc/on_pointed(datum/source, atom/target)
+	SIGNAL_HANDLER
+	if(!target || QDELETED(target) || target == quirk_holder || !isliving(target))
+		return
+	var/datum/rat_horde/rat_horde = get_horde()
+	if(rat_horde)
+		rat_horde.issue_order(RAT_ORDER_PLAY, target, get_turf(target))
+
 /datum/quirk/rat_whisperer/transfer_mob(mob/living/to_mob)
+	var/mob/living/old_holder = quirk_holder
 	. = ..()
 	if(!quirk_holder || QDELETED(src))
 		return
+	if(old_holder && old_holder != quirk_holder)
+		UnregisterSignal(old_holder, COMSIG_MOB_POINTED)
+	RegisterSignal(quirk_holder, COMSIG_MOB_POINTED, PROC_REF(on_pointed))
 	if(order_action)
 		order_action.Grant(quirk_holder)
 	if(call_action)

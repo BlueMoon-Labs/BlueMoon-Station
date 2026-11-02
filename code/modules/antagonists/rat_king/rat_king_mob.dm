@@ -69,6 +69,7 @@
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 	AddComponent(/datum/component/waddling)
 	RegisterSignal(src, COMSIG_MOB_LOGIN, PROC_REF(on_login))
+	RegisterSignal(src, COMSIG_MOB_POINTED, PROC_REF(on_pointed))
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(rat_friend_attack_hand))
 	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(rat_friend_attackby))
 	if(poll_ghosts)
@@ -99,6 +100,22 @@
 	SIGNAL_HANDLER
 	if(!special_moniker)
 		grant_titles()
+
+/mob/living/simple_animal/hostile/regalrat/proc/on_pointed(datum/source, atom/target)
+	SIGNAL_HANDLER
+	if(!target || QDELETED(target) || target == src)
+		return
+	var/datum/rat_horde/horde = get_rat_horde()
+	if(!horde)
+		return
+	if(soft_horde)
+		if(!isliving(target))
+			return
+		horde.issue_order(RAT_ORDER_PLAY, target, get_turf(target))
+	else
+		if(!isliving(target) || !allowed_to_attack(target))
+			return
+		horde.issue_order(RAT_ORDER_ATTACK, target, get_turf(target))
 
 /mob/living/simple_animal/hostile/regalrat/proc/grant_titles()
 	var/static/list/titles = list("Боярин", "Император", "Король", "Господин", "Владыка", "Повелитель", "Принц", "Сёгун", "Царь")
@@ -383,7 +400,7 @@
 /mob/living/simple_animal/hostile/rat/Initialize(mapload)
 	. = ..()
 	SSmobs.cheeserats += src
-	AddComponent(/datum/component/swarming)
+	AddComponent(/datum/component/swarming, 4, 4)
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(rat_friend_attack_hand))
 	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(rat_friend_attackby))
@@ -646,7 +663,7 @@
 
 /datum/action/cooldown/rat_order
 	name = "Приказ орде"
-	desc = "Отдайте приказ крысам: следовать, собраться, атаковать, охранять, держать позицию или разбежаться."
+	desc = "Приказы строя: следовать, собраться, атаковать, охранять, держать позицию, разбежаться или играть. Цель также можно указать через Point To."
 	icon_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "command"
 	background_icon_state = "bg_clock"
@@ -661,28 +678,31 @@
 	owner.click_intercept = null
 	INVOKE_ASYNC(src, PROC_REF(open_menu))
 
+/datum/action/cooldown/rat_order/proc/find_order_target(datum/rat_horde/horde)
+	if(!owner || !horde)
+		return null
+	if(horde.mode == RAT_HORDE_SOFT)
+		for(var/mob/living/carbon/human/human in oview(3, owner))
+			if(human != owner)
+				return human
+		return null
+	if(istype(owner, /mob/living/simple_animal/hostile))
+		var/mob/living/simple_animal/hostile/hostile_owner = owner
+		if(isliving(hostile_owner.target) && hostile_owner.CanAttack(hostile_owner.target))
+			return hostile_owner.target
+		for(var/mob/living/candidate in oview(RAT_HORDE_ORDER_RANGE, owner))
+			if(candidate == owner || !hostile_owner.CanAttack(candidate))
+				continue
+			return candidate
+	return null
+
 /datum/action/cooldown/rat_order/proc/open_menu()
 	if(!owner || QDELETED(owner))
 		return
 	var/datum/rat_horde/horde = get_horde()
 	if(!horde)
 		return
-	var/mob/living/action_owner = owner
-	var/mob/living/order_target
-	if(istype(action_owner, /mob/living/simple_animal/hostile))
-		var/mob/living/simple_animal/hostile/hostile_owner = action_owner
-		if(isliving(hostile_owner.target))
-			order_target = hostile_owner.target
-		if(!order_target)
-			for(var/mob/living/candidate in oview(RAT_HORDE_ORDER_RANGE, owner))
-				if(candidate == owner || !hostile_owner.CanAttack(candidate))
-					continue
-				order_target = candidate
-				break
-	if(!order_target && horde.mode == RAT_HORDE_SOFT)
-		for(var/mob/living/carbon/human/human in oview(3, owner))
-			order_target = human
-			break
+	var/mob/living/order_target = find_order_target(horde)
 	var/list/choices = list()
 	var/list/order_by_choice = list()
 	var/list/order_info = list(
@@ -713,12 +733,10 @@
 	var/order = order_by_choice[choice]
 	if(isnull(order))
 		return
-	var/turf/order_turf = get_turf(order_target || owner)
-	switch(order)
-		if(RAT_ORDER_ATTACK, RAT_ORDER_GUARD, RAT_ORDER_PLAY)
-			horde.issue_order(order, order_target, order_turf)
-		else
-			horde.issue_order(order, null, get_turf(owner))
+	if(order == RAT_ORDER_ATTACK || order == RAT_ORDER_PLAY)
+		horde.issue_order(order, order_target, get_turf(order_target))
+	else
+		horde.issue_order(order, null, get_turf(owner))
 	StartCooldown()
 
 /datum/action/cooldown/rat_order/proc/get_horde()

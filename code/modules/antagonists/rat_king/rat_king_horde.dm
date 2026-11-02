@@ -173,36 +173,40 @@
 	var/next_step = 0
 	var/follow_offset_x = 0
 	var/follow_offset_y = 0
+	var/play_style = "circle"
+	var/play_clockwise = TRUE
 
 /datum/component/rat_minion/Initialize(datum/rat_horde/new_horde)
 	var/mob/living/simple_animal/minion = parent
 	if(!istype(minion) || QDELETED(new_horde))
 		return COMPONENT_INCOMPATIBLE
 	horde = new_horde
-	follow_offset_x = rand(-2, 2)
-	follow_offset_y = rand(-2, 2)
+	follow_offset_x = rand(-1, 1)
+	follow_offset_y = rand(-1, 1)
+	play_style = pick("circle", "jump")
+	play_clockwise = prob(50)
 	old_stop_automated_movement = minion.stop_automated_movement
 	if(istype(minion, /mob/living/simple_animal/mouse))
 		var/mob/living/simple_animal/mouse/mouse = minion
 		if(!mouse.GetComponent(/datum/component/swarming))
-			mouse.AddComponent(/datum/component/swarming)
+			mouse.AddComponent(/datum/component/swarming, 4, 4)
 		old_chew_probability = mouse.chew_probability
 		mouse.chew_probability = 0
 		mouse.stop_automated_movement = TRUE
 		if(horde.has_active_order())
-			START_PROCESSING(SSprocessing, src)
+			START_PROCESSING(SSfastprocess, src)
 	RegisterSignal(parent, COMSIG_PARENT_QDELETING, PROC_REF(on_deleted))
 
 /datum/component/rat_minion/proc/start_processing()
 	if(istype(parent, /mob/living/simple_animal/mouse))
 		next_step = 0
-		START_PROCESSING(SSprocessing, src)
+		START_PROCESSING(SSfastprocess, src)
 
 /datum/component/rat_minion/proc/stop_processing()
-	STOP_PROCESSING(SSprocessing, src)
+	STOP_PROCESSING(SSfastprocess, src)
 
 /datum/component/rat_minion/Destroy()
-	STOP_PROCESSING(SSprocessing, src)
+	STOP_PROCESSING(SSfastprocess, src)
 	var/mob/living/simple_animal/minion = parent
 	if(minion)
 		UnregisterSignal(minion, COMSIG_PARENT_QDELETING)
@@ -234,7 +238,7 @@
 		return PROCESS_KILL
 	if(world.time < next_step)
 		return
-	next_step = world.time + 1 SECONDS
+	next_step = world.time + 0.2 SECONDS
 	switch(horde.order)
 		if(RAT_ORDER_FOLLOW)
 			var/turf/follow_turf = horde.get_follow_turf(mouse)
@@ -260,10 +264,19 @@
 				return
 			if(get_dist(mouse, play_target) > 2)
 				step_towards(mouse, play_target)
-			else if(world.time > last_play + 2 SECONDS)
+			else if(world.time > last_play + 0.5 SECONDS)
 				last_play = world.time
-				if(prob(30))
+				if(play_style == "circle")
+					var/dir_to_target = get_dir(mouse, play_target)
+					if(dir_to_target)
+						step(mouse, play_clockwise ? turn(dir_to_target, 90) : turn(dir_to_target, -90))
+					else
+						step_away(mouse, play_target, 2)
+				else
+					mouse.play_jump()
+				if(prob(25))
 					new /obj/effect/temp_visual/heart(get_turf(mouse))
+				if(prob(5))
 					mouse.visible_message(span_notice("[mouse] ластится к [play_target]!"))
 
 /// останавливаем обработку для инактивных миньонов
