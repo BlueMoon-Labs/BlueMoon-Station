@@ -171,6 +171,27 @@
 	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "An exact terminal invocation reuses its known result without another effect")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Watermark retirement never revives an old effect")
 
+/// ACK native effect имеет отдельную bounded capacity и не сбрасывает карту при заполненном admission.
+/datum/unit_test/netrun_external_core_result_pressure/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
+	fixture.executor.command_limit = 1
+	var/list/outcomes = list()
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("value" = 9), outcomes)), "The request fills the admission budget")
+	var/datum/netrun_external_request_context/context = fixture.first_context()
+	var/list/invocation = fixture.invocation(context)
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Native output is processed while request capacity is full")
+	TEST_ASSERT(fixture.client.ready, "A finished native result must not force binding recovery under admission pressure")
+	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 1, "Control result has bounded capacity independent from new requests")
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Repeated invocation reuses the queued result")
+	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Pressure cannot repeat the native effect")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "The result is sent ahead of the saturated request queue")
+	var/list/sent = json_decode(fixture.client.pending_frame)
+	var/list/result = sent[1]
+	TEST_ASSERT_EQUAL(result["kind"], "invocation_result", "Capacity is released by the control path first")
+	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(context.request_id)), "The final transport outcome still arrives once")
+	TEST_ASSERT_EQUAL(outcomes["delivered"], 1, "The original sender receives one completion")
+
 /// Поколение нельзя подменить адресом, а сменившийся native tag отзывает ранее допустимое обращение.
 /datum/unit_test/netrun_external_core_native_identity_and_tag/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)

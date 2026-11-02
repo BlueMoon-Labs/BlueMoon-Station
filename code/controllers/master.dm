@@ -362,12 +362,11 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(tgs_prime)
 		world.TgsInitializationComplete()
 
+	// Apply the resume flag before yielding: an empty sleeping world cannot reach
+	// the code after sleep() until a client connects.
 	if(sleep_offline_after_initializations)
-		world.sleep_offline = TRUE
+		world.sleep_offline = !CONFIG_GET(flag/resume_after_initializations)
 	sleep(1)
-
-	if(sleep_offline_after_initializations && CONFIG_GET(flag/resume_after_initializations))
-		world.sleep_offline = FALSE
 	initializations_finished_with_no_players_logged_in = initialized_tod < REALTIMEOFDAY - 10
 	// Loop.
 	Master.StartProcessing(0)

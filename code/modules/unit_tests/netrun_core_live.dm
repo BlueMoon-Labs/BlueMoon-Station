@@ -55,6 +55,23 @@
 	TEST_ASSERT(wait_outcome(state_outcomes, 90 SECONDS), "The real Host admits and invokes idempotent state")
 	TEST_ASSERT_EQUAL(state_outcomes["delivered"], 1, "State has one native terminal callback")
 	TEST_ASSERT_EQUAL(scene.target.received, before_received + 3, "State executes exactly one native receive")
+	log_world("NETRUN_CORE_LIVE_STAGE relay_guest_map")
+	var/obj/machinery/ntnet_relay/guest_relay = scene.machine(/obj/machinery/ntnet_relay, get_step(scene.source_spot, SOUTH))
+	var/datum/component/netrun_node/relay_node = guest_relay.GetComponent(/datum/component/netrun_node)
+	TEST_ASSERT(wait_tree(relay_node, relay_node, 90 SECONDS), "The real relay must receive its C# source proof")
+	var/mob/camera/netrun_entity/visitor/guest = guest_relay.netrun_visitor_spawner.create(null)
+	TEST_ASSERT(guest && guest.host_node == relay_node, "The real ghost-role spawner must bind its resident to the relay")
+	allocated += guest
+	guest.console.workspace_view = "map"
+	var/list/guest_data
+	var/guest_deadline = world.time + 90 SECONDS
+	while(world.time < guest_deadline)
+		guest_data = guest.console.ui_data(guest)
+		if(netrun_map_has_node(guest_data, relay_node.address))
+			break
+		sleep(world.tick_lag)
+	TEST_ASSERT(netrun_map_has_node(guest_data, relay_node.address), "The NTnet relay guest must receive its actual topology through public ui_data")
+	rustg_file_write(json_encode(list("address" = relay_node.address, "payload" = guest_data)), "data/netrun-core/live-relay-ui.json")
 	log_world("NETRUN_CORE_LIVE_STAGE implant_map_entry")
 	var/turf/entrance_spot = locate(run_loc_floor_bottom_left.x + 6, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	var/datum/netrun_client_scene/entrance = allocate(/datum/netrun_client_scene/core_live, entrance_spot)

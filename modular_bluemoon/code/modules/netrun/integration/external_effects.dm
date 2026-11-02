@@ -555,7 +555,9 @@
 /datum/netrun_external_effects/machines/proc/queue_invocation_result(datum/netrun_external_core/client, datum/netrun_external_invocation/invocation)
 	if(invocation.result_queued)
 		return TRUE
-	if(!invocation.result_json || invocation.binding_epoch != client.binding_epoch || queued_commands() >= command_limit)
+	// Результат уже выполненного native effect должен освобождать transport capacity,
+	// даже когда request admission заполнен. Его отдельный бюджет ограничен ledger.
+	if(!invocation.result_json || invocation.binding_epoch != client.binding_epoch || length(control_commands) + length(inflight_commands) >= invocation_limit)
 		return FALSE
 	var/datum/netrun_external_command/command = new
 	command.kind = "invocation_result"

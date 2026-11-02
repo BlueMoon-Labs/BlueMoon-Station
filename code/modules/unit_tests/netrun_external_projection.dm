@@ -516,6 +516,28 @@
 	TEST_ASSERT_EQUAL(length(fixture.executor.projection_dirty_nodes), 0, "Repeated shutdown clears owned state without reading null owner")
 	fixture.executor.owner = fixture.worker
 
+/// Новый leaf ещё не получил C# proof, но не меняет уже опубликованные транзитные пути.
+/datum/unit_test/netrun_external_projection_stream_new_endpoint/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_projection_fixture/fixture = allocate(/datum/netrun_external_projection_fixture)
+	var/datum/component/netrun_node/source = scene.source.resolve_node()
+	var/datum/component/netrun_node/target = scene.target.resolve_node()
+	var/datum/netrun_external_graph_cursor/stream = fixture.start_stream()
+	TEST_ASSERT(fixture.executor.process_graph_sync(fixture.client, fixture.sync_page(stream, "1", list(fixture.node_operation(source), fixture.node_operation(target), fixture.edge_operation(source, target)))), "The existing physical route is published")
+	fixture.ack_stream()
+	fixture.executor.prepare_projection(fixture.client)
+	var/datum/netrun_external_projection_cursor/routes = fixture.routes(source)
+	var/cache_key = routes.cache_key
+	TEST_ASSERT(fixture.executor.process_projection(fixture.client, fixture.stamped_route_page(routes, "1", list(fixture.route_row(source, null, 0), fixture.route_row(target, source, 1)), TRUE)), "The source tree has current proofs")
+	var/obj/item/new_host = allocate(/obj/item, scene.source_spot)
+	var/datum/component/netrun_node/new_node = new_host.AddComponent(/datum/component/netrun_node, NETRUN_NODE_NEURAL)
+	fixture.client.export_node(new_node)
+	fixture.executor.invalidate_projection("registered", TRUE, new_node)
+	var/datum/netrun_path_tree/external/tree = fixture.executor.projection_trees[cache_key]
+	TEST_ASSERT(fixture.executor.projection_ready(fixture.client), "An unpublished ordinary endpoint must not close the infrastructure gate")
+	TEST_ASSERT(tree.path_available(fixture.graph, target.address), "Existing return paths survive unrelated endpoint registration")
+	TEST_ASSERT(!tree.path_available(fixture.graph, new_node.address), "No route authority is granted to the unacknowledged endpoint")
+
 /// Point selection cache зависит от APC structure и собственного context, а не от движения любого чужого leaf или power availability.
 /datum/unit_test/netrun_external_projection_stream_anchor_infra_cache/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)

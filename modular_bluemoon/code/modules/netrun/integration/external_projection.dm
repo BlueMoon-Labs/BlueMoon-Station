@@ -1055,7 +1055,10 @@
 	if(removed && !record)
 		projection_clear_dirty(token)
 		return
-	var/infra = !record || !record["is_endpoint"] || client.node_is_forwarder(node)
+	// Raw forwarding роли совпадают с GraphAuthorityTracker: APC и настоящий relay.
+	// Новый обычный endpoint отзывает только себя до C# upsert. Глобальный gate
+	// здесь закрывал все карты и возвратную связь при создании neural endpoint.
+	var/infra = client.node_is_forwarder(node) || (record && !record["is_endpoint"])
 	if(infra && projection_dirty_nodes[token] != "infra")
 		projection_dirty_infra++
 	projection_dirty_nodes[token] = infra ? "infra" : "endpoint"

@@ -209,6 +209,12 @@ Build context Core ограничен исходниками и SHA manifest, б
 
 При Docker preflight error проверьте `docker version`, Linux Engine и доступ к
 daemon. После установки Docker Desktop может понадобиться перезагрузка.
+Если сборка падает с `metadata_v2.db: read-only file system`, запись отвергает
+внутреннее хранилище Docker. Проверьте свободное место на диске Docker и выполните
+Restart Docker Desktop в [Troubleshoot](https://docs.docker.com/desktop/troubleshoot-and-support/troubleshoot/),
+затем повторите ту же команду. Этот вывод сам по себе не определяет причину
+перехода файловой системы в read-only; при повторении нужны диагностика Docker
+и `docker system df`.
 При download error проверьте Git/интернет/закреплённый commit и повторите команду:
 незавершённый staging не публикуется как готовый checkout. При несовместимом tool
 проверьте явные `NETRUN_*` overrides.
@@ -240,9 +246,19 @@ Bounded логи: `data/netrun-core/live-tests`.
 во время работы мира: наличие только DMB/RSC не обеспечивает загрузку TGUI.
 После исправления состава runtime image пересоберите и заново разверните пару.
 
-Текущий checkpoint: 682 hermetic DM tests, 327 frontend tests и 41 Node test
-прошли. Real Core smoke подтверждает discovery/delivery, topology/tree import,
-movement, state и карту нейролинка. Перенос сознания пока падает при регистрации
-нового endpoint резидента. В полном Docker-мире также исследуются пустая карта
-сущности и восстановление после `native_result_pressure`; считать интеграцию
-завершённой до этих исправлений нельзя.
+Live smoke также сохраняет фактический `ui_data` гостя из NTnet-реле в ignored
+`data/netrun-core/live-relay-ui.json`. После успешного запуска можно проверить
+этот ответ в настоящем TGUI reducer, map stream и контроллере сцены (GPU заменён
+test surface):
+
+```powershell
+$env:NETRUN_LIVE_UI_PAYLOAD = (Resolve-Path data/netrun-core/live-relay-ui.json).Path
+Push-Location tgui
+node .yarn/releases/yarn-4.18.1.cjs jest --runInBand --runTestsByPath packages/tgui/interfaces/NetrunTerminal/LiveCoreMap.test.tsx
+Pop-Location
+Remove-Item Env:NETRUN_LIVE_UI_PAYLOAD
+```
+
+Без этого явного artifact test пропускается. Проверка подтверждает цепочку
+Host → native bridge → DM projection → public UI payload → frontend graph;
+она не подменяет визуальную проверку WebGL в DreamSeeker.
