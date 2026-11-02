@@ -40,7 +40,7 @@
 	header_entry = new /datum/context_menu_entry/mode_choice(header)
 	// в браузере список прокручивается, страниц нет; закреплённое - в конце
 	var/list/pinned = pinned_entries()
-	html_rows = (entries - pinned) + pinned
+	html_rows = arrange_rows(entries - pinned, pinned)
 	page_entry = null
 	var/list/rows = list()
 	var/rows_have_icons = FALSE

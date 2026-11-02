@@ -3,6 +3,8 @@
  *
  * Пишется в [GLOB.log_directory]/context_menu.json, файл перезаписывается целиком не чаще раза в CONTEXT_MENU_STATS_EXPORT_DELAY.
  * players: ckey -> раскладка ПКМ, набор, вид (только то, что не по умолчанию), зум карты, открытия, выборы, брошенные меню и почему их закрыли.
+ * По чему открывали и бросали (mob, item, structure, turf, tile - список клетки), через сколько секунд бросили
+ * и сколько закрывающих кликов пришлось по тому же, по чему открыто меню, - по причинам.
  * changes: кто, когда и что поменял в раскладке и виде - видно, от каких дефолтов уходят.
  * entries: сколько раз выбран каждый пункт меню по всем игрокам.
  */
@@ -32,6 +34,10 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 			"abandoned" = 0,
 			"choice_kinds" = list(),
 			"abandon_reasons" = list(),
+			"open_kinds" = list(),
+			"abandon_kinds" = list(),
+			"abandon_after" = list(),
+			"on_target" = list(),
 		)
 		players[ckey] = record
 	// настройки - на момент последнего действия: игрок мог их сменить по ходу раунда
@@ -44,16 +50,21 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	record["zoom"] = zoom
 	return record
 
-/datum/context_menu_stats/proc/record_open(mob/user, list/modifiers)
+/datum/context_menu_stats/proc/record_open(mob/user, list/modifiers, kind)
 	var/list/record = player_record(user?.client)
 	if(!record)
 		return
-	record["opens"]++
-	if(modifiers["shift"])
-		record["opens_shift"]++
+	record_open_in(record, modifiers, kind)
 	if(user.right_click_needs_clicks())
 		record["opens_combat"]++
 	queue_export()
+
+/datum/context_menu_stats/proc/record_open_in(list/record, list/modifiers, kind)
+	record["opens"]++
+	var/list/kinds = record["open_kinds"]
+	kinds[kind || "other"]++
+	if(modifiers["shift"])
+		record["opens_shift"]++
 
 /// Выбор пункта: kind - тип пункта (click, verb_call, pick, page...), name - текст пункта
 /datum/context_menu_stats/proc/record_choice(mob/user, kind, name)
@@ -73,15 +84,27 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	if(entries[name] || length(entries) < CONTEXT_MENU_STATS_MAX_ENTRIES)
 		entries[name]++
 
-/// Меню закрыто без выбора; reason - чем: click (клик мимо), reopen (новое меню), escape, moved, auto_close, settings, lost, target
-/datum/context_menu_stats/proc/record_abandon(mob/user, reason)
+/// Меню закрыто без выбора; reason - чем: click (клик мимо), reopen (новое меню), escape, moved, auto_close, settings, lost, target.
+/// kind - по чему было открыто, seconds - сколько было открыто, on_target - закрыто кликом по тому же
+/datum/context_menu_stats/proc/record_abandon(mob/user, reason, kind, seconds, on_target)
 	var/list/record = player_record(user?.client)
 	if(!record)
 		return
+	record_abandon_in(record, reason, kind, seconds, on_target)
+	queue_export()
+
+/datum/context_menu_stats/proc/record_abandon_in(list/record, reason, kind, seconds, on_target)
 	record["abandoned"]++
 	var/list/reasons = record["abandon_reasons"]
 	reasons[reason]++
-	queue_export()
+	var/list/kinds = record["abandon_kinds"]
+	kinds[kind || "other"]++
+	if(!isnull(seconds))
+		var/list/after = record["abandon_after"]
+		after[context_menu_time_bucket(seconds)]++
+	if(on_target)
+		var/list/on_target_reasons = record["on_target"]
+		on_target_reasons[reason]++
 
 /// Смена раскладки или вида: setting - что, value - на что
 /datum/context_menu_stats/proc/record_change(client/player, setting, value)
@@ -114,13 +137,17 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 
 /// Всё собранное плюс сводка: сколько игроков на каждой раскладке, наборе и значении каждой настройки
 /datum/context_menu_stats/proc/snapshot()
-	var/list/summary = list("right_click" = list(), "shift_right_click" = list(), "preset" = list(), "style" = list(), "abandon_reasons" = list())
+	var/list/counters = list("abandon_reasons", "open_kinds", "abandon_kinds", "abandon_after", "on_target")
+	var/list/summary = list("right_click" = list(), "shift_right_click" = list(), "preset" = list(), "style" = list())
+	for(var/counter in counters)
+		summary[counter] = list()
 	for(var/ckey in players)
 		var/list/record = players[ckey]
-		var/list/reason_counts = summary["abandon_reasons"]
-		var/list/player_reasons = record["abandon_reasons"]
-		for(var/reason in player_reasons)
-			reason_counts[reason] += player_reasons[reason]
+		for(var/counter in counters)
+			var/list/total = summary[counter]
+			var/list/own = record[counter]
+			for(var/key in own)
+				total[key] += own[key]
 		for(var/key in list("right_click", "shift_right_click", "preset"))
 			var/list/counts = summary[key]
 			counts["[record[key]]"]++
@@ -138,6 +165,28 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 		"changes" = changes,
 		"entries" = entries,
 	)
+
+/// Корзина времени, которое меню было открыто, в секундах
+/proc/context_menu_time_bucket(seconds)
+	if(seconds < 1)
+		return "0-1"
+	if(seconds < 3)
+		return "1-3"
+	if(seconds < 10)
+		return "3-10"
+	return "10+"
+
+/// По чему открыто меню: mob, item, structure, turf; список клетки - tile
+/proc/context_menu_target_kind(atom/thing)
+	if(ismob(thing))
+		return "mob"
+	if(isitem(thing))
+		return "item"
+	if(isobj(thing))
+		return "structure"
+	if(isturf(thing))
+		return "turf"
+	return "other"
 
 /// Вид пункта для статистики: последняя часть типа
 /proc/context_menu_entry_kind(datum/context_menu_entry/entry)

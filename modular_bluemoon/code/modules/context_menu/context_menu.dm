@@ -4,6 +4,8 @@
 	var/datum/context_menu/active_context_menu
 	/// ПКМ сейчас зажат как модификатор: ЛКМ при нём - второе действие, а его отпускание не открывает меню
 	var/right_button_chorded = FALSE
+	/// Столько меню действий подряд закрыто без выбора
+	var/context_menu_abandon_streak = 0
 
 /mob/living
 	right_click_actions = TRUE
@@ -19,6 +21,8 @@
 	var/context_menu_hint_shown = FALSE
 	/// Подсказка про ЛКМ и ПКМ по строкам списка клетки уже была в этой сессии
 	var/context_menu_pile_hint_shown = FALSE
+	/// Сообщение про строку смены режима в меню уже было в этой сессии
+	var/context_menu_offer_shown = FALSE
 	/// Макросы клавиши Shift, переключающие right-click карты: клавиша -> команда. null - не нужны.
 	var/list/right_click_macros
 
@@ -304,18 +308,34 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(params2list(params)["catcher"])
 		return
 	active_context_menu = new /datum/context_menu(src, target, params)
-	GLOB.context_menu_stats.record_open(src, params2list(params))
+	GLOB.context_menu_stats.record_open(src, params2list(params), active_context_menu.open_kind)
 	// кто выбрал меню сам, знает, как его сменить
 	if(client && !client.context_menu_hint_shown && right_click_menu_preferred() && isnull(client.prefs?.right_click_choice))
 		client.context_menu_hint_shown = TRUE
 		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал или открывал меню BYOND, как раньше, щёлкните по заголовку меню, вербу «Режим ПКМ» во вкладке OOC или выберите в настройках игры. Там же шрифт, размер и прозрачность меню."))
+	else if(client && active_context_menu.mode_offer && !client.context_menu_offer_shown)
+		client.context_menu_offer_shown = TRUE
+		to_chat(src, span_notice("Меню действий [context_menu_abandon_streak] раз подряд закрыто без выбора. Если оно мешает, первая строка меню меняет, что делает ПКМ: сразу действие или меню BYOND, как раньше. Строка пропадёт, как только что-нибудь выберете в меню."))
 	return active_context_menu
 
-/// reason - почему закрыли, для статистики брошенных меню
-/mob/proc/close_context_menu(reason)
+/// reason - почему закрыли, для статистики брошенных меню; clicked_atom - по чему был клик, закрывший меню
+/mob/proc/close_context_menu(reason, atom/clicked_atom)
 	if(active_context_menu)
 		active_context_menu.close_reason ||= reason
+		if(clicked_atom)
+			active_context_menu.closed_on_target = active_context_menu.is_own_atom(clicked_atom)
 		qdel(active_context_menu)
+
+/// Брошенное меню: клик мимо, новое меню, Escape, автозакрытие. Отход, смерть и смена настроек не считаются.
+/mob/proc/note_context_menu_abandon(reason)
+	if(reason in list("click", "reopen", "escape", "auto_close"))
+		context_menu_abandon_streak++
+
+/mob/proc/right_click_mode_chosen()
+	return !isnull(client?.prefs?.right_click_choice)
+
+/mob/proc/context_menu_offers_mode_change()
+	return context_menu_abandon_streak >= CONTEXT_MENU_OFFER_STREAK && !right_click_mode_chosen()
 
 /**
  * Меню действий у курсора.
@@ -398,6 +418,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/chosen = FALSE
 	/// Почему меню закрыли без выбора, для статистики: click, reopen, escape, moved, auto_close...
 	var/close_reason
+	/// По чему открыто (context_menu_target_kind или tile), когда, и закрыто ли кликом по тому же
+	var/open_kind
+	var/opened_at
+	var/closed_on_target = FALSE
+	/// Строка «сменить режим ПКМ» первой на каждой странице: меню раз за разом бросают
+	var/datum/context_menu_entry/mode_choice/mode_offer
 	/// Анимация открытия уже была; листание её не повторяет
 	var/opened = FALSE
 	/// Объекты экрана по строкам, шапка первой: строка появляется целиком
@@ -409,6 +435,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /datum/context_menu/New(mob/user, atom/target, params)
 	src.user = user
 	clicked = target
+	opened_at = world.time
+	open_kind = context_menu_target_kind(target)
+	if(user.context_menu_offers_mode_change())
+		mode_offer = new /datum/context_menu_entry/mode_choice("ПКМ мешает? Сменить режим", "или клик по шапке", CONTEXT_ENTRY_SERVICE)
 	var/list/modifiers = params2list(params)
 	click_position = list()
 	for(var/key in list("icon-x", "icon-y", "screen-loc"))
@@ -432,6 +462,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		// по полу и по предмету в большой куче нужен именно список: вещь ищут в нём, а не в действиях верхней
 		if(tile_first || (isturf(target) && length(candidates)) || (isitem(target) && length(candidates) >= CONTEXT_MENU_PILE_MIN))
 			tile = target_turf
+			open_kind = "tile"
 			show_tile()
 			return
 		if(!isturf(target) && length(candidates) > 1)
@@ -440,7 +471,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /datum/context_menu/Destroy()
 	if(user && !chosen)
-		GLOB.context_menu_stats.record_abandon(user, close_reason || "other")
+		GLOB.context_menu_stats.record_abandon(user, close_reason || "other", open_kind, (world.time - opened_at) / 10, closed_on_target)
+		user.note_context_menu_abandon(close_reason)
 	if(user)
 		if(user.active_context_menu == src)
 			user.active_context_menu = null
@@ -457,6 +489,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	intent_entries = null
 	header_entry = null
 	confirm_entry = null
+	mode_offer = null
 	row_groups = null
 	html_rows = null
 	theme = null
@@ -542,9 +575,9 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_deleted))
 
 /datum/context_menu/proc/choose(datum/context_menu_entry/entry)
-	if(!(entry in entries) && entry != page_entry && entry != header_entry)
+	if(!(entry in entries) && entry != page_entry && entry != header_entry && entry != mode_offer)
 		return
-	GLOB.context_menu_stats.record_choice(user, context_menu_entry_kind(entry), entry.name)
+	note_choice(entry == mode_offer ? "mode_offer" : context_menu_entry_kind(entry), entry.name)
 	if(istype(entry, /datum/context_menu_entry/mode_choice))
 		var/client/chooser_client = user.client
 		chosen = TRUE
@@ -593,6 +626,14 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		return
 	entry.execute(chooser, chosen_target)
 
+/datum/context_menu/proc/note_choice(kind, name)
+	GLOB.context_menu_stats.record_choice(user, kind, name)
+	user.context_menu_abandon_streak = 0
+
+/// Закрывающий клик пришёлся по тому, по чему открыто меню, или по вещи из его списка клетки
+/datum/context_menu/proc/is_own_atom(atom/thing)
+	return thing == clicked || thing == target || (tile && (thing == tile || thing.loc == tile))
+
 /// Ctrl, Shift или Alt по строке объекта из списка - тот же клик по самому объекту, без захода в его действия.
 /// Осмотр оставляет список открытым: в куче осматривают подряд.
 /datum/context_menu/proc/click_picked(datum/context_menu_entry/pick/entry, list/modifiers)
@@ -602,7 +643,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(!picked || (picked != tile && picked.loc != tile))
 		return FALSE
 	var/mob/chooser = user
-	GLOB.context_menu_stats.record_choice(user, "pick_[modifiers["ctrl"] ? "ctrl" : (modifiers["alt"] ? "alt" : "shift")]", null)
+	note_choice("pick_[modifiers["ctrl"] ? "ctrl" : (modifiers["alt"] ? "alt" : "shift")]", null)
 	if(modifiers["shift"] && !modifiers["ctrl"] && !modifiers["alt"] && !modifiers["middle"] && !modifiers["right"])
 		chooser.ShiftClickOn(picked)
 		return TRUE
@@ -644,7 +685,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/obj/item/item = takeable_from_row(entry)
 	if(!item)
 		return FALSE
-	GLOB.context_menu_stats.record_choice(user, "pick_take", "Взять")
+	note_choice("pick_take", "Взять")
 	play_menu_sound()
 	var/mob/chooser = user
 	chosen = TRUE
@@ -698,6 +739,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Пункты, которые есть на каждой странице: «Админ…» не должен уезжать на вторую страницу за действиями
 /datum/context_menu/proc/pinned_entries()
 	. = list()
+	if(mode_offer)
+		. += mode_offer
 	// «Админ…» вверху и так на первой странице
 	if(context_menu_style_option(user?.context_menu_prefs()?.context_menu_style, "admin_pos") == "top")
 		return
@@ -705,9 +748,9 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		. += admin_entry
 
 /datum/context_menu/proc/page_count()
-	var/pinned = length(pinned_entries())
-	var/paged = length(entries) - pinned
-	var/per_page = rows_per_page() - pinned
+	var/list/pinned = pinned_entries()
+	var/paged = length(entries - pinned)
+	var/per_page = rows_per_page() - length(pinned)
 	if(paged <= per_page)
 		return 1
 	return CEILING(paged / (per_page - 1), 1)
@@ -718,13 +761,18 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/list/paged = entries - pinned
 	if(page_count() == 1)
 		page_entry = null
-		return paged + pinned
+		return arrange_rows(paged, pinned)
 	var/per_page = rows_per_page() - length(pinned) - 1
 	var/first = (page - 1) * per_page + 1
-	. = paged.Copy(first, min(first + per_page, length(paged) + 1))
-	. += pinned
+	. = arrange_rows(paged.Copy(first, min(first + per_page, length(paged) + 1)), pinned)
 	page_entry = new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", "или колесо мыши", CONTEXT_ENTRY_SERVICE)
 	. += page_entry
+
+/// Закреплённые пункты - в конце, кроме предложения сменить режим: оно первым
+/datum/context_menu/proc/arrange_rows(list/paged, list/pinned)
+	if(mode_offer in pinned)
+		return list(mode_offer) + paged + (pinned - mode_offer)
+	return paged + pinned
 
 /// На ходу меню остаётся, пока его объект рядом и на том же уровне
 /datum/context_menu/proc/on_user_moved(datum/source)

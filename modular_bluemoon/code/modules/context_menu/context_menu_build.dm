@@ -250,6 +250,10 @@ GLOBAL_LIST_INIT(context_menu_verb_names, list(
 	"Rename paper" = "Переименовать лист",
 	"Shift Item Pixel Position" = "Сдвинуть предмет",
 	"Move To Top" = "Положить наверх",
+	"Interact With" = "Взаимодействовать",
+	"Set Drink Amount" = "Объём глотка",
+	"Spin" = "Крутануть",
+	"Rename photo" = "Подписать фото",
 ))
 
 /// Вербы предмета в руках/на себе или структуры рядом. Вербы мобов - в add_mob_entries, у турфов вербы почти все про себя.

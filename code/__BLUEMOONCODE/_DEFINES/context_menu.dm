@@ -54,6 +54,8 @@
 #define CONTEXT_MENU_STATS_EXPORT_DELAY (1 MINUTES)
 #define CONTEXT_MENU_STATS_MAX_ENTRIES 300
 #define CONTEXT_MENU_STATS_MAX_CHANGES 2000
+/// Столько меню подряд закрыто без выбора - меню первой строкой предлагает сменить режим ПКМ тому, кто его не выбирал
+#define CONTEXT_MENU_OFFER_STREAK 10
 
 /// Элемент скина браузерного меню действий и сколько ждать загрузки его страницы перед первым показом
 #define CONTEXT_MENU_HTML_CONTROL "mainwindow.context_menu"

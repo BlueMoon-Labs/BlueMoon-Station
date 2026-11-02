@@ -13,12 +13,16 @@
 	var/click_mode = RIGHT_CLICK_MODE_MENU
 	/// null - Shift+ПКМ по умолчанию для click_mode
 	var/shift_click_mode
+	var/mode_chosen = FALSE
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/right_click_mode()
 	return click_mode
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/shift_right_click_mode()
 	return isnull(shift_click_mode) ? ..() : shift_click_mode
+
+/mob/living/carbon/human/dummy/consistent/context_menu_probe/right_click_mode_chosen()
+	return mode_chosen
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/RightClickOn(atom/A, params)
 	right_clicked = TRUE
@@ -484,6 +488,12 @@
 	var/datum/context_menu/menu = user.open_context_menu(jumpsuit, "right=1;shift=1")
 	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Датчики костюма"), "Верб датчиков костюма без русской подписи")
 	TEST_ASSERT_NULL(find_context_entry(menu, "Adjust Suit Sensors"), "В меню осталось английское имя верба")
+	user.close_context_menu()
+	var/obj/item/photo/photo = allocate(/obj/item/photo)
+	user.dropItemToGround(jumpsuit)
+	user.put_in_active_hand(photo)
+	menu = user.open_context_menu(photo, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Подписать фото"), "Верб фото без русской подписи")
 	user.close_context_menu()
 
 /// Подсказки скринтипа превращаются в пункты с хоткеем
@@ -1251,6 +1261,11 @@
 	stats.count_entry("mode_choice", "Hedge")
 	stats.count_entry("pick_take", "Взять")
 	first["abandon_reasons"] = list("click" = 2, "reopen" = 1)
+	var/list/second = stats.record_for("stats_two", custom_prefs, 1.5)
+	stats.record_open_in(second, list(), "item")
+	stats.record_open_in(second, list("shift" = 1), "tile")
+	stats.record_abandon_in(second, "click", "item", 0.4, TRUE)
+	stats.record_abandon_in(second, "click", "tile", 12, FALSE)
 	var/list/snapshot = json_decode(json_encode(stats.snapshot()))
 	var/list/summary = snapshot["summary"]
 	TEST_ASSERT_EQUAL(summary["preset"]["default"], 1, "Игрок на стандартном виде не посчитан")
@@ -1265,7 +1280,13 @@
 	TEST_ASSERT_EQUAL(snapshot["entries"]["Осмотреть"], 4, "Счёт пунктов потерялся")
 	TEST_ASSERT_NULL(snapshot["entries"]["Hedge"], "Клик по шапке посчитан пунктом с именем цели")
 	TEST_ASSERT_EQUAL(snapshot["entries"]["Взять"], 1, "«Взять» из списка клетки не посчитан")
-	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_reasons"]["click"], 2, "Причины закрытия не сведены")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_reasons"]["click"], 4, "Причины закрытия не сведены")
+	TEST_ASSERT_EQUAL(snapshot["players"]["stats_two"]["opens_shift"], 1, "Shift+ПКМ не посчитан")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["open_kinds"]["tile"], 1, "Открытие списка клетки не посчитано")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_kinds"]["item"], 1, "Брошенное меню предмета не посчитано")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_after"]["0-1"], 1, "Быстро брошенное меню не в своей корзине")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_after"]["10+"], 1, "Долго открытое меню не в своей корзине")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["on_target"]["click"], 1, "Клик по той же цели не посчитан")
 	TEST_ASSERT(snapshot["players"]["stats_two"]["right_click_chosen"], "Свой выбор ПКМ не отмечен")
 	TEST_ASSERT(!snapshot["players"]["stats_one"]["right_click_chosen"], "Невыбравший отмечен как выбравший")
 	qdel(stats)
@@ -1449,8 +1470,18 @@
 	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_EQUAL(menu.open_kind, "mob", "Меню по мобу не помечено")
 	user.CommonClickOn(target, "left=1")
 	TEST_ASSERT_EQUAL(menu.close_reason, "click", "Клик мимо меню не помечен")
+	TEST_ASSERT(menu.closed_on_target, "Клик по цели меню не помечен")
+	menu = user.open_context_menu(target, "right=1")
+	user.CommonClickOn(get_step(user, WEST), "left=1")
+	TEST_ASSERT(!menu.closed_on_target, "Клик в сторону помечен как клик по цели")
+	var/turf/pile_turf = get_step(user, NORTH)
+	allocate(/obj/item/pen, pile_turf)
+	menu = user.open_context_menu(pile_turf, "right=1")
+	TEST_ASSERT_EQUAL(menu.open_kind, "tile", "Список клетки не помечен")
+	user.close_context_menu()
 	menu = user.open_context_menu(target, "right=1")
 	user.CommonClickOn(target, "right=1")
 	TEST_ASSERT_EQUAL(menu.close_reason, "reopen", "Новое меню поверх старого не помечено")
@@ -1635,3 +1666,33 @@
 	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "dark", "Набор не сбросил тему прошлого набора")
 	prefs.set_context_menu_style("pile_click", "take")
 	TEST_ASSERT_NULL(prefs.current_context_menu_preset(), "Поведение, заданное набором, поменяли, а набор всё ещё узнан")
+
+/// Меню бросают раз за разом, а режим ПКМ не выбран: первой строкой меню предлагает его сменить, любой выбор убирает строку
+/datum/unit_test/context_menu_mode_offer
+
+/datum/unit_test/context_menu_mode_offer/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(user, EAST))
+	user.context_menu_abandon_streak = CONTEXT_MENU_OFFER_STREAK - 1
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_NULL(menu.mode_offer, "Строка смены режима раньше порога")
+	user.forceMove(get_step(user, NORTH))
+	user.close_context_menu("moved")
+	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, CONTEXT_MENU_OFFER_STREAK - 1, "Отход посчитан брошенным меню")
+	menu = user.open_context_menu(target, "right=1")
+	user.CommonClickOn(target, "left=1")
+	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, CONTEXT_MENU_OFFER_STREAK, "Клик мимо не посчитан брошенным меню")
+	menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_NOTNULL(menu.mode_offer, "Нет строки смены режима после порога")
+	TEST_ASSERT_EQUAL(menu.visible_entries()[1], menu.mode_offer, "Строка смены режима не первая")
+	menu.html_rows = menu.arrange_rows(menu.entries - menu.pinned_entries(), menu.pinned_entries())
+	TEST_ASSERT_EQUAL(menu.html_rows[1], menu.mode_offer, "В браузерном меню строка смены режима не первая")
+	TEST_ASSERT_EQUAL(length(menu.html_rows), length(menu.entries) + 1, "Строки браузерного меню потерялись")
+	menu.choose(menu.mode_offer)
+	TEST_ASSERT(QDELETED(menu), "Выбор режима не закрыл меню")
+	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, 0, "Выбор не сбросил счёт брошенных меню")
+	user.context_menu_abandon_streak = CONTEXT_MENU_OFFER_STREAK
+	user.mode_chosen = TRUE
+	menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_NULL(menu.mode_offer, "Строка смены режима у того, кто режим уже выбирал")
+	user.close_context_menu()
