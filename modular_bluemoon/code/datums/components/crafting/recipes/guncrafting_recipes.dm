@@ -128,3 +128,25 @@
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/snub
+	name = "\improper Apostle Snub"
+	result = /obj/item/gun/ballistic/revolver/Apostle/snub
+	reqs = list(/obj/item/gun/ballistic/revolver/drilling = 1)
+	tools = list(TOOL_SAW)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/drilling_sawed
+	name = "\improper Drilling sawed"
+	result = /obj/item/gun/ballistic/revolver/drilling/sawed
+	reqs = list(/obj/item/gun/ballistic/revolver/drilling = 1,
+				/obj/item/hatchet = 1,
+				/obj/item/stack/sticky_tape = 5)
+	tools = list(TOOL_SAW)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+

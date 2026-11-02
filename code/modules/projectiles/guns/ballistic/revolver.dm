@@ -605,11 +605,9 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
-	fire_delay = 1
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 
 /obj/item/gun/ballistic/revolver/Salvation
 	name = "\improper Salvation"
@@ -622,11 +620,9 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
-	fire_delay = 1
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 
 /obj/item/gun/ballistic/revolver/proc/try_dual_buscadero_reload(mob/living/user)
 	// 1. Проверка пояса buscadero на талии
@@ -925,6 +921,7 @@
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
 	fire_delay = 3
+	projectile_damage_multiplier = 0.8
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	item_state = "apostle"
@@ -1045,3 +1042,50 @@
 	weapon_weight = WEAPON_HEAVY
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/drilling
+	name = "\improper Священный Трибунал"
+	desc = "Суд на месте, не требующий присяжных. Две высокоточные карающие доктрины калибра .308 выносят приговор на дистанции, а тяжелый патрон 12-го калибра приводит его в исполнение в упор. Когда говорят все три ствола, дело считается закрытым навсегда."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "drilling"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/drilling
+	
+	var/obj/item/gun/ballistic/underbarrel
+	
+	projectile_damage_multiplier = 1.1
+	dual_wield_spread = 25
+	fire_delay = 1
+	w_class = WEIGHT_CLASS_BULKY
+	recoil = 0.5
+
+/obj/item/gun/ballistic/revolver/drilling/Initialize(mapload)
+	. = ..()
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+
+/obj/item/gun/ballistic/revolver/drilling/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
+/obj/item/gun/ballistic/revolver/drilling/attackby(obj/item/A, mob/user, params)
+	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
+		return underbarrel.attackby(A, user, params)
+		
+	return ..()
+
+/obj/item/gun/ballistic/revolver/drilling/sawed
+	name = "\improper Заочный приговор"
+	desc = "Модификация Трибунала для тех, у кого нет времени на долгие разбирательства. Отпиленные стволы заставляют винтовочные пули .308 свистеть с непредсказуемой траекторией, а 12-й калибр превратился в огненное дыхание преисподней. Оружие ближнего боя, где каждый выстрел это автоматическое признание вины"
+	icon_state = "drilling sawed"
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/gun/ballistic/revolver/drilling/sawed/hatchet
+	name = "\improper Палач Трибунала"
+	desc = "Финальная, кровавая стадия правосудия. Под укороченные стволы намертво вварено тяжелое стальное лезвие. Два патрона .308 калибра ломают кости врага на подходе, 12-й калибр разрывает его плоть, а топор ставит жирную, неоспоримую точку. В этом оружии больше нет святости только чистая, механическая неизбежность наказания"
+	icon_state = "drilling sawed hatchet"
+	force = 10
