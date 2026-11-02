@@ -13748,12 +13748,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
-"ibN" = (
-/obj/structure/closet/cabinet{
-	pixel_x = -6
-	},
-/turf/open/floor/plasteel/showroomfloor,
-/area/mine/xenoarch_area_b)
 "icc" = (
 /obj/machinery/button/door{
 	id = "AbandonedCabinDorm";
@@ -15677,6 +15671,7 @@
 /obj/effect/turf_decal/siding/wood/thin{
 	dir = 9
 	},
+/obj/machinery/firealarm/directional/west,
 /turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "jkU" = (
@@ -17095,13 +17090,17 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jZC" = (
-/obj/structure/mineral_door/paperframe,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/machinery/door/airlock/wood{
+	name = "Sauna";
+	id_tag = "sauna_arch"
+	},
+/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "jZD" = (
@@ -26565,7 +26564,10 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
 "pbO" = (
-/obj/structure/closet/cabinet,
+/obj/structure/closet/secure_closet/personal/cabinet{
+	anchored = 1;
+	should_populate_contents = 0
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "pbQ" = (
@@ -35075,6 +35077,13 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
+	},
+/obj/machinery/button/door{
+	id = "sauna_arch";
+	name = "Door Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	pixel_y = 25
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
@@ -88178,9 +88187,9 @@ eQh
 eQh
 eQh
 ucR
-ibN
-ibN
-ibN
+pbO
+pbO
+pbO
 eQh
 vgt
 xNj

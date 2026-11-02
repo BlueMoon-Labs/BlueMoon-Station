@@ -558,6 +558,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
+// Модульные загрузчики дополняют этот прок: все настройки нужны до записи обновлённого сейвфайла.
+/datum/preferences/proc/load_preferences_data(savefile/S)
+	return S
+
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
@@ -762,6 +766,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(ispath(path)) //whatever typepath fails this check probably doesn't exist anymore
 			parsed_favs += path
 	favorite_outfits = uniqueList(parsed_favs)
+
+	// Загрузка через переопределения load_preferences после ..() выполнялась уже после миграции
+	// и её save_preferences: непрочитанные избранное и множители перезаписывались значениями по умолчанию.
+	load_preferences_data(S)
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -1934,12 +1942,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			belly_prefs = json_from_file["belly_prefs"]
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
+	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
+	var/saved_loadout = S["loadout"]
+	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
+	if(!islist(loadout_data))
+		loadout_data = list()
+	var/restore_preset_loadout = !islist(loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"])
 	//gear loadout
-	if(istext(S["loadout"]))
-		loadout_data = safe_json_decode(S["loadout"])
-		if(!islist(loadout_data))
-			loadout_data = list()
-
+	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
@@ -2350,6 +2360,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
+	// Восстанавливаем отсутствующий рабочий слот только после загрузки и проверки активного пресета.
+	// Существующий слот, в том числе намеренно пустой, сохраняет свои независимые изменения.
+	if(restore_preset_loadout && active_character_preset)
+		var/list/active_preset = character_presets[active_character_preset]
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)

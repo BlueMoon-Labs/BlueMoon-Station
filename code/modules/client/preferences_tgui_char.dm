@@ -43,7 +43,7 @@
 	var/list/mutant_labels_cache
 	var/tmp/heavy_static_pending = FALSE
 	var/character_revision = 0
-	var/loadout_selected = FALSE
+	var/loadout_selected = TRUE
 	var/list/viewer_screens
 	var/preview_mode = PREVIEW_PREF_JOB
 	var/preview_auto_fit = TRUE
@@ -186,6 +186,28 @@
 		return "Для комплекта пресета не хватает очков экипировки."
 	return null
 
+// Одна проверка комплекта для ручного применения пресета и восстановления рабочего слота при входе.
+/datum/preferences/proc/clean_character_preset_loadout(list/preset, mob/user)
+	var/list/removed = list()
+	var/list/clean_loadout = list()
+	var/list/seen_gear = list()
+	var/points = available_gear_points(user)
+	var/account_key = user?.key || parent?.key
+	for(var/raw_entry in preset["loadout"])
+		var/list/entry = islist(raw_entry) ? raw_entry : null
+		var/datum/gear/gear = entry && istext(entry[LOADOUT_ITEM]) ? find_loadout_gear(entry[LOADOUT_ITEM]) : null
+		if(!gear)
+			removed += "предмет [entry ? entry[LOADOUT_ITEM] : "без идентификатора"]"
+			continue
+		if((gear.type in seen_gear) || (gear.donoritem && !gear.donator_ckey_check(account_key)) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)) || gear.cost > points)
+			removed += gear.name
+			continue
+		points -= gear.cost
+		seen_gear += gear.type
+		clean_loadout += list(entry)
+	preset["loadout"] = clean_loadout
+	return removed
+
 // Убираем устаревшие и недоступные записи, сохраняя остальную часть пресета.
 /datum/character_setup/proc/clean_character_preset(list/preset, mob/user)
 	var/list/removed = list()
@@ -200,22 +222,7 @@
 		if(initial(quirk_datum.value) > 0 && ++positive_count > MAX_QUIRKS)
 			quirks -= quirk_name
 			removed += quirk_name
-	var/list/clean_loadout = list()
-	var/list/seen_gear = list()
-	var/points = available_gear_points(user)
-	for(var/raw_entry in preset["loadout"])
-		var/list/entry = islist(raw_entry) ? raw_entry : null
-		var/datum/gear/gear = entry && istext(entry[LOADOUT_ITEM]) ? find_loadout_gear(entry[LOADOUT_ITEM]) : null
-		if(!gear)
-			removed += "предмет [entry ? entry[LOADOUT_ITEM] : "без идентификатора"]"
-			continue
-		if((gear.type in seen_gear) || (gear.donoritem && !gear.donator_ckey_check(user?.key)) || (istype(gear, /datum/gear/unlockable) && !prefs.can_use_unlockable(gear)) || gear.cost > points)
-			removed += gear.name
-			continue
-		points -= gear.cost
-		seen_gear += gear.type
-		clean_loadout += list(entry)
-	preset["loadout"] = clean_loadout
+	removed += prefs.clean_character_preset_loadout(preset, user)
 	var/list/jobs = preset["job_preferences"]
 	for(var/job_title in jobs.Copy())
 		if(!istext(job_title) || !SSjob.GetJob(job_title))
@@ -1798,10 +1805,14 @@
 	return data
 
 /datum/character_setup/proc/available_gear_points(mob/user)
+	return prefs.available_gear_points(user)
+
+/datum/preferences/proc/available_gear_points(mob/user)
+	var/account_ckey = user?.ckey || parent?.ckey
 	. = CONFIG_GET(number/initial_gear_points)
-	if(IS_CKEY_DONATOR_GROUP(user?.ckey, DONATOR_GROUP_TIER_1))
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_1))
 		. += CONFIG_GET(number/subscriber_extra_gear_points)
-	if(IS_CKEY_DONATOR_GROUP(user?.ckey, DONATOR_GROUP_TIER_2))
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_2))
 		. += CONFIG_GET(number/sponsor_extra_gear_points)
 
 /datum/character_setup/proc/calc_gear_points(mob/user)
@@ -1917,13 +1928,16 @@
 	return row
 
 /datum/character_setup/proc/find_loadout_gear(name)
+	return prefs.find_loadout_gear(name)
+
+/datum/preferences/proc/find_loadout_gear(name)
 	// В обзоре выбранного вещи относятся к разным категориям; идентификатор проверяем по каталогу.
 	var/gear_path = text2path(name)
 	if(ispath(gear_path, /datum/gear))
 		var/datum/gear/gear_type = gear_path
 		var/datum/gear/gear = GLOB.loadout_items[initial(gear_type.category)]?[initial(gear_type.subcategory)]?[initial(gear_type.name)]
 		return gear?.type == gear_path ? gear : null
-	var/list/subcategory_items = GLOB.loadout_items[prefs.gear_category]?[prefs.gear_subcategory]
+	var/list/subcategory_items = GLOB.loadout_items[gear_category]?[gear_subcategory]
 	return subcategory_items?[name]
 
 /datum/character_setup/proc/build_invalid_loadout_rows()
