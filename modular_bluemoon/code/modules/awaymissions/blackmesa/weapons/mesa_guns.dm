@@ -76,17 +76,19 @@
 /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1
 	name = "m40a1 sniper rifle"
 	desc = "Довольно старая, но верная и мощная снайперская винтовка прямиком из далёкого прошлого"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "m4oa1"
 	item_state = "m4oa1"
-	fire_sound = 'modular_bluemoon/sound/weapons/mesa/sniper_fire.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m16.ogg'
 	mesa_muzzle_flash = TRUE
 	recoil = 1
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/sniper_rounds/m4oa1
-	fire_delay = 25
+	fire_delay = 3
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
+	projectile_simple_mob_damage_multiplier = 2
 	burst_size = 1
 	can_unsuppress = TRUE
 	can_suppress = TRUE
@@ -109,9 +111,23 @@
 	name = "m4oa1 magazine"
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "m4oa1"
-	ammo_type = /obj/item/ammo_casing/p50
+	ammo_type = /obj/item/ammo_casing/p50/m4oa1
 	max_ammo = 8
 	caliber = ".50"
+
+/obj/item/ammo_casing/p50/m4oa1
+	projectile_type = /obj/item/projectile/bullet/p50/m4oa1
+
+/obj/item/projectile/bullet/p50/m4oa1
+	damage = 50
+	dismemberment = 30
+
+/obj/item/projectile/bullet/p50/m4oa1/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
+	var/original_damage = damage
+	if(iscarbon(target) && def_zone == BODY_ZONE_HEAD)
+		damage = round(damage * 1.5)
+	. = ..()
+	damage = original_damage
 
 /obj/item/ammo_box/magazine/sniper_rounds/m4oa1/update_icon()
 	. = ..()
