@@ -351,10 +351,11 @@
 
 #define TYPING_INDICATOR_TIMEOUT 20 MINUTES
 
-/// Обычный пулл не сдвигает тащимого: со сдвигом спрайт тела налезал на тянущего
-#define GRAB_PIXEL_SHIFT_PASSIVE	0
+#define GRAB_PIXEL_SHIFT_PASSIVE	6
 #define GRAB_PIXEL_SHIFT_AGGRESSIVE	12
 #define GRAB_PIXEL_SHIFT_NECK		16
+/// Насколько тащимый выше или ниже тянущего: южный рисуется поверх северного
+#define PULL_LAYER_STEP			0.001
 
 #define SLEEP_CHECK_DEATH(X) sleep(X); if(QDELETED(src) || stat == DEAD) return;
 #define INTERACTING_WITH(X, Y) (Y in X.do_afters)

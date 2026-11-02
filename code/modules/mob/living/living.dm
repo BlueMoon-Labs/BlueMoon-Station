@@ -495,6 +495,7 @@
 	var/dir_filter = get_dir(M, src)
 	if(dir_filter)
 		M.setDir(dir_filter)
+	update_pull_layer(M, dir_filter)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
 	// От исходного смещения спрайта: у крупных мобов оно ненулевое
@@ -520,7 +521,31 @@
 	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
+/// Сдвинутый к тянущему спрайт перекрывает его: тот, кто южнее, рисуется поверх. Сбоку и на одной клетке тащимый под тянущим.
+/mob/living/proc/update_pull_layer(mob/living/M, toward = get_dir(M, src))
+	var/base = M.get_unshifted_layer()
+	var/target = base
+	// Лежачий и так под стоящими, ручной сдвиг слоя тоже не трогаем
+	if(base == get_unshifted_layer())
+		target = layer + ((toward & NORTH) ? PULL_LAYER_STEP : -PULL_LAYER_STEP)
+	if(M.layer == target)
+		return
+	M.pull_layer_base = base
+	M.pull_layer_applied = target
+	M.layer = target
+
+/mob/living/proc/get_unshifted_layer()
+	return (!isnull(pull_layer_applied) && layer == pull_layer_applied) ? pull_layer_base : layer
+
+/mob/living/proc/reset_pull_layer()
+	if(!isnull(pull_layer_applied) && layer == pull_layer_applied)
+		layer = pull_layer_base
+	pull_layer_base = null
+	pull_layer_applied = null
+
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
+	if(isliving(M))
+		M.reset_pull_layer()
 	if(!override && M.buckled)
 		return
 	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)

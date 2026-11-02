@@ -428,6 +428,7 @@
 #include "process_memory.dm"
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"
+#include "pull_layer_ordering.dm"
 #include "qareen_chalk.dm"
 #include "radio_job_classes.dm"
 #include "weather.dm"
