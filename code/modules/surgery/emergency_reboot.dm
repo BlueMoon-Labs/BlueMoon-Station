@@ -4,7 +4,7 @@
 	name = "Emergency Reboot"
 	desc = "A surgery forcing the posibrain of a robot to begin it's reboot procedure, if their body can sustain its operation."
 	possible_locs = list(BODY_ZONE_HEAD)
-	requires_bodypart_type = BODYPART_ROBOTIC	//If you are a Synth with a organic head (somehow), this won't work.
+	requires_bodypart_type = 0 // Hacked synthetics may have an organic head; dead IPC reboot validates this below.
 	steps = list(/datum/surgery_step/mechanic_open, /datum/surgery_step/open_hatch, /datum/surgery_step/mechanic_unwrench, /datum/surgery_step/force_reboot, /datum/surgery_step/mechanic_wrench, /datum/surgery_step/mechanic_close)
 	icon = 'modular_bluemoon/phenyamomota/icon/obj/tools.dmi'
 	icon_state = "multitool_wiring"
@@ -13,11 +13,18 @@
 /datum/surgery/emergency_reboot/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	if(!..())
 		return FALSE
+	var/datum/status_effect/malf_protocol_breach/protocol_breach = target.has_status_effect(/datum/status_effect/malf_protocol_breach)
+	if(protocol_breach && target.stat != DEAD)
+		return HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) && (target.stat == UNCONSCIOUS || target.restrained())
+
 	if(target.stat != DEAD)
 		return FALSE
 	if(target.suiciding || HAS_TRAIT(target, TRAIT_NOCLONE) || target.hellbound)
 		return FALSE
 	if(!HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+		return FALSE
+	var/obj/item/bodypart/head = target.get_bodypart(BODY_ZONE_HEAD)
+	if(!head || !head.is_robotic_limb())
 		return FALSE
 	var/obj/item/organ/brain/B = target.getorganslot(ORGAN_SLOT_BRAIN)
 	if(!B || !istype(B, /obj/item/organ/brain/ipc))
@@ -33,17 +40,27 @@
 	display_results(user, target, "<span class='notice'>You prepare to begin rebooting [target]'s posibrain.</span>",
 		"[user] prepares to reboot [target]'s posibrain with [tool].",
 		"[user] prepares to reboot [target]'s posibrain with [tool].")
+	if(target.has_status_effect(/datum/status_effect/malf_protocol_breach) && target.stat != DEAD)
+		return
 	target.notify_ghost_cloning("Someone is trying to reboot you! Re-enter your corpse if you want to be revived!", source = target)
 
 /datum/surgery_step/force_reboot/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	display_results(user, target, "<span class='notice'>You successfully initiate a reboot in [target]'s posibrain...</span>",
 		"[user] initiates a reboot in [target]'s posibrain...",
 		"[user] initiates a reboot in [target]'s posibrain...")
+	var/datum/status_effect/malf_protocol_breach/protocol_breach = target.has_status_effect(/datum/status_effect/malf_protocol_breach)
+	if(protocol_breach && target.stat != DEAD)
+		protocol_breach.clear_hack(user)
+		target.visible_message("[user] successfully restores [target]'s systems.")
+		return TRUE
+
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
 	if(target.revive())
 		target.visible_message("...[target]'s posibrain flickers to life once again!")
 		target.emote("ping")
+		if(protocol_breach)
+			protocol_breach.clear_hack(user)
 		// BLUEMOON EDIT START - изменение памяти после смерти
 		target.mind?.revival_handle_memory("force reboot")
 		// BLUEMOON EDIT END
