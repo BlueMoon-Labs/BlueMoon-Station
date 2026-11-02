@@ -646,7 +646,8 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		for(var/headshot_link in dna.headshot_links)
 			if(!headshot_link)
 				continue
-			headshot_html += headshot_preview_html(headshot_link, 128, 128)
+			headshot_html = headshot_preview_html(headshot_link, 128, 128)
+			break
 		if(headshot_html)
 			. += span_boldnotice("Хедшот персонажа:")
 			. += headshot_html

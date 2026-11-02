@@ -810,6 +810,8 @@
 	cure_nearsighted()
 	cure_blind()
 	cure_husk()
+	if(admin_revive)
+		cure_fakedeath(/datum/reagent/toxin/zombiepowder)
 	hallucination = 0
 	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()

@@ -470,9 +470,11 @@
 
 	var/list/body_size_field = num_ff("body_size", "Размер тела, %", CONFIG_GET(number/body_size_min) * 100, CONFIG_GET(number/body_size_max) * 100)
 	body_size_field["scale"] = 100
+	body_size_field["step"] = 0.5
 	fields += list(body_size_field)
 	var/list/norm_field = num_ff("normalized_size", "Нормализованный размер, %", max(CONFIG_GET(number/body_size_min), 0.81) * 100, min(CONFIG_GET(number/body_size_max), 1.2) * 100)
 	norm_field["scale"] = 100
+	norm_field["step"] = 0.5
 	fields += list(norm_field)
 	fields += list(ff("fuzzy", "Размытые пиксели", FEATURE_BOOL, FEATURE_SCOPE_PREF))
 
@@ -2812,15 +2814,8 @@
 	var/old_bonus = 0
 	var/list/current_entry = prefs.modified_limbs[zone]
 	if(islist(current_entry) && length(current_entry))
-		if(current_entry[1] == LOADOUT_LIMB_PROSTHETIC)
-			old_bonus = 1
-		else if(current_entry[1] == LOADOUT_LIMB_AMPUTATED)
-			old_bonus = 2
-	var/new_bonus = 0
-	if(kind == LOADOUT_LIMB_PROSTHETIC)
-		new_bonus = 1
-	else if(kind == LOADOUT_LIMB_AMPUTATED)
-		new_bonus = 2
+		old_bonus = prefs.limb_modification_bonus(current_entry[1])
+	var/new_bonus = prefs.limb_modification_bonus(kind)
 	if(new_bonus < old_bonus && quirk_balance() - old_bonus + new_bonus < 0)
 		to_chat(usr, span_warning("Изменение этой конечности увёло бы баланс в минус!"))
 		return
@@ -2864,12 +2859,14 @@
 		old_cost = old_option["cost"]
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
+		preview_dirty = TRUE
 		return
 	var/balance = quirk_balance()
 	if(balance + old_cost - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
 		return
 	prefs.organ_mods[slot] = option["id"]
+	preview_dirty = TRUE
 
 /datum/character_setup/proc/toggle_body_implant(list/params)
 	var/mob/user = prefs.parent?.mob
@@ -2885,11 +2882,13 @@
 			to_chat(user, span_warning("Возврат этого импланта увёл бы баланс в минус!"))
 			return
 		prefs.implant_mods -= implant_id
+		preview_dirty = TRUE
 		return
 	if(balance - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
 	prefs.implant_mods[implant_id] = TRUE
+	preview_dirty = TRUE
 
 /datum/character_setup/proc/build_options_static()
 	if(options_cache)
@@ -3200,6 +3199,7 @@
 	var/list/limbs = list()
 	var/prosthetic_count = 0
 	var/amputation_count = 0
+	var/limb_bonus = 0
 	for(var/zone in LOADOUT_ALLOWED_LIMB_TARGETS)
 		var/list/entry = prefs.modified_limbs[zone]
 		var/list/row = list("zone" = zone, "kind" = LOADOUT_LIMB_NORMAL)
@@ -3211,14 +3211,19 @@
 			prosthetic_count++
 		else if(row["kind"] == LOADOUT_LIMB_AMPUTATED)
 			amputation_count++
+		limb_bonus += prefs.limb_modification_bonus(row["kind"])
 		limbs += list(row)
 	data["limbs"] = limbs
 	data["limbKinds"] = LOADOUT_LIMBS
 	data["limbBrands"] = list("prosthetic") + GLOB.prosthetic_limb_types
 	data["prostheticCount"] = prosthetic_count
 	data["amputationCount"] = amputation_count
-	data["limbBonus"] = prosthetic_count + amputation_count * 2
+	data["limbBonus"] = limb_bonus
 	data["maxProsthetics"] = MAXIMUM_LOADOUT_PROSTHETICS
+	data["prostheticBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_PROSTHETIC)
+	data["amputationBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_AMPUTATED)
+	data["limbMaxDamage"] = /obj/item/bodypart/l_arm::max_damage
+	data["prostheticMaxDamage"] = /obj/item/bodypart/l_arm/robot/surplus::max_damage
 
 	var/list/groups = list()
 	for(var/list/group in GLOB.body_mod_organ_groups)

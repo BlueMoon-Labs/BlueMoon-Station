@@ -1293,9 +1293,17 @@
   - map: 'Космические руины без планетарного воздуха: тёплые комнаты в Atmo Asteroid
       и Anomaly Research, безвоздушный камень снаружи.'
     pr: 4296
+  - code_imp: Подгонка вьюпорта не дублируется на входе в игру и не дёргается на каждый
+      поворот с прицелом
+    pr: 4299
   FelixRuin:
   - image: спрайты животов у людей переделаны для адекватной работы с цветами кожи
     pr: 4293
+  Pingvas:
+  - pr: 4300
+    rscadd: Разрешаем дробные значения роста, такие как 92.5
+  - pr: 4300
+    rscadd: Фикшу отображение во вкладках.
   RG-TRK:
   - map: modified DS-2 dorm room. Removed upper one and replaced it with nice and
       cozy bathing room connected to fitness room. Also returned DS-2 cargo scanners

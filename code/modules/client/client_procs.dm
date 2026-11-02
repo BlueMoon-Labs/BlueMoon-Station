@@ -518,10 +518,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /// ответа клиента, и на плохом канале это секунды - результат нужен только ради текста
 /// предупреждения, так что на пути входа в игру ему делать нечего.
 #define ASSET_CACHE_BROWSER_CHECK_DELAY (10 SECONDS)
-/// Через сколько после логина подгонять вьюпорт. fit_viewport - это winget на размеры
-/// плюс до трёх round-trip'ов коррекции подряд; путь change_view откладывает его ровно
-/// по той же причине.
-#define LOGIN_FIT_VIEWPORT_DELAY (1 SECONDS)
 
 /client/New(TopicData)
 	last_activity = world.time
@@ -858,7 +854,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	normalize_ui_layout()
 	// Подгонка вьюпорта - самая тяжёлая пачка round-trip'ов на логине: winget на размеры
 	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
-	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
+	queue_fit_viewport()
 	Master.UpdateTickRate()
 	connect_probe.mark("хвост")
 	connect_probe.finish(round_login_index)
@@ -872,7 +868,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
 
 #undef ASSET_CACHE_BROWSER_CHECK_DELAY
-#undef LOGIN_FIT_VIEWPORT_DELAY
 
 //////////////
 //DISCONNECT//
@@ -1167,6 +1162,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 /client/Destroy()
 	QDEL_NULL(fractional_movement)
+	QDEL_NULL(viewport_fit_queue)
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)] | [connection_forensics()]")
@@ -1886,8 +1882,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/list/old_view = getviewsize(view)
 	view = new_size
 	var/list/actualview = getviewsize(view)
+	var/size_changed = old_view[1] != actualview[1] || old_view[2] != actualview[2]
 	update_clickcatcher()
-	if(old_view[1] != actualview[1] || old_view[2] != actualview[2])
+	if(size_changed)
 		parallax_holder?.Reset()
 	mob?.hud_used?.screentip_text?.update_view()
 	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
@@ -1902,10 +1899,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if (isliving(mob))
 		var/mob/living/M = mob
 		M.update_damage_hud()
-	if (prefs.auto_fit_viewport)
-		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
-		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
-		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
+	// Подгонка зависит только от пропорций вида. Без смены размера звать её незачем, а
+	// зовут часто: прицел и бинокль пересчитывают вид на каждый поворот, логин в моба -
+	// на каждую смену тела.
+	if (size_changed && prefs.auto_fit_viewport)
+		queue_fit_viewport()
 	if(mob)
 		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
