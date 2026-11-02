@@ -68,6 +68,8 @@
 	. = list()
 	var/organ_spilled = 0
 	var/turf/T = get_turf(C)
+	var/mob/attacker = get_mob_by_ckey(C.lastattackerckey)
+	var/fly_dir = attacker ? get_dir(attacker, C) : null
 	C.bleed(50)
 	playsound(get_turf(C), 'sound/misc/splort.ogg', 80, 1)
 	for(var/X in C.internal_organs)
@@ -76,6 +78,7 @@
 			continue
 		O.Remove()
 		O.forceMove(T)
+		O.fly_away(fly_dir)
 		organ_spilled = 1
 		. += X
 	if(cavity_item)
@@ -452,3 +455,11 @@
 		if(dna?.species && (ROBOTIC_LIMBS in dna.species.species_traits)) //Snowflake trait moment, but needed.
 			L.change_bodypart_status(BODYPART_HYBRID, FALSE, TRUE) //Haha what if IPC-lings actually regenerated the right limbs instead of organic ones? That'd be pretty cool, right?
 		return TRUE
+
+//органы смешно отлетают от стороны атакующего
+/obj/item/organ/proc/fly_away(from_dir = null)
+	if(QDELETED(src) || !isturf(loc))
+		return
+	var/angle = from_dir ? 90 - dir2angle(from_dir) + rand(-60, 60) : rand(0, 360)
+	var/dist = rand(6, 20)
+	animate(src, pixel_x = pixel_x + cos(angle) * dist, pixel_y = pixel_y + sin(angle) * dist, time = 3, easing = ELASTIC_EASING | EASE_OUT)
