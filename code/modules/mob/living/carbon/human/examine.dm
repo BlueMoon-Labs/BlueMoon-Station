@@ -249,6 +249,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		. += "<span style='color:["#FFFFFF"]';>[t_on] измазан[t_a] свежими половыми выделениями...</span>\n" //"Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
 
 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+	var/naga_anatomy = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)
+	if(naga_anatomy)
+		missing -= BODY_ZONE_R_LEG
+		if(get_bodypart(BODY_ZONE_L_LEG))
+			msg += span_info("У [t_nego] вместо ног опорный хвост.\n")
 	var/list/disabled = list()
 //	var/list/writing = list() - BLUEMOON REMOVAL (не используется, заменено на show_written_on_bodypart_text)
 
@@ -320,6 +325,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	var/l_limbs_missing = 0
 	var/r_limbs_missing = 0
 	for(var/t in missing)
+		if(naga_anatomy && t == BODY_ZONE_L_LEG)
+			msg += span_boldwarning("[ru_ego(TRUE)] опорный хвост оторван!") + "\n"
+			continue
 		if(t==BODY_ZONE_HEAD)
 			msg += "<span class='deadsay'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 			continue
@@ -330,9 +338,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 		msg += "<span class='warning'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 
-	if(l_limbs_missing >= 2 && r_limbs_missing == 0)
+	if(!naga_anatomy && l_limbs_missing >= 2 && r_limbs_missing == 0)
 		msg += "[t_on] стоит на правой ножке.\n"
-	else if(l_limbs_missing == 0 && r_limbs_missing >= 2)
+	else if(!naga_anatomy && l_limbs_missing == 0 && r_limbs_missing >= 2)
 		msg += "[t_on] стоит на левой ножке.\n"
 	else if(l_limbs_missing >= 2 && r_limbs_missing >= 2)
 		msg += "[t_on] выглядит как котлетка.\n"

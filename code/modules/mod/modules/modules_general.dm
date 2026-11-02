@@ -463,8 +463,8 @@
 ///Longfall
 /obj/item/mod/module/longfall
 	name = "MOD longfall module"
-	desc = "Гироскопы и демпферы в ботинках костюма гасят удар при падении с высоты, переводя его в заряд батареи. \
-		Пригодится в шахте, на мостках над пустотой и при прыжке с этажа на этаж."
+	desc = "Гироскопы и демпферы MOD-костюма распределяют нагрузку по всему телу и гасят удар при падении с высоты. \
+		Система работает с ногами и опорным хвостом, не требует ботинок и расходует заряд батареи при срабатывании."
 	icon_state = "longfall"
 	complexity = 1
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
@@ -484,7 +484,7 @@
 	new /obj/effect/temp_visual/mook_dust(fell_on)
 	if(levels >= 2)
 		mod.wearer.Knockdown(levels SECONDS)
-		mod.wearer.visible_message(span_notice("[mod.wearer] приземляется на [fell_on] и едва удерживается на ногах."), span_notice("[src] гасит удар!"))
+		mod.wearer.visible_message(span_notice("[mod.wearer] приземляется на [fell_on] и едва сохраняет равновесие."), span_notice("[src] гасит удар!"))
 	else
 		mod.wearer.visible_message(span_notice("[mod.wearer] мягко приземляется на [fell_on]."), span_notice("[src] гасит удар!"))
 	return ZIMPACT_CANCEL_DAMAGE | ZIMPACT_NO_MESSAGE | ZIMPACT_NO_SPIN

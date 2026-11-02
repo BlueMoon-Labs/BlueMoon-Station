@@ -79,7 +79,7 @@
 	var/conscious = !IsUnconscious() && stat_conscious && !HAS_TRAIT(src, TRAIT_DEATHCOMA)
 
 	var/has_arms = get_num_arms()
-	var/has_legs = get_num_legs()
+	var/has_legs = get_num_supporting_limbs()
 	var/ignore_legs = get_leg_ignore()
 	var/stun = IsStun()
 	var/paralyze = IsParalyzed()

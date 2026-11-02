@@ -30,6 +30,30 @@
 	var/alt_taur_mode = NONE //Same as above.
 	var/hide_legs = USE_QUADRUPED_CLIP_MASK
 	mutant_part_string = "taur"
+	// Состояния культи хранятся в основном icon; предмет отсечённого хвоста имеет отдельные ресурсы.
+	var/severed_body_state
+	var/severed_item_icon = 'icons/obj/surgery.dmi'
+	var/severed_item_state = "severedtail"
+	var/severed_body_extra_state
+	var/severed_body_extra2_state
+	var/severed_item_extra_state
+	var/severed_item_extra2_state
+	// null сохраняет прежний источник, NONE оставляет исходные цвета спрайта.
+	var/severed_body_extra_color_src
+	var/severed_body_extra2_color_src
+	var/severed_item_extra_color_src
+	var/severed_item_extra2_color_src
+	var/severed_body_extra_matrix_state
+	var/severed_item_extra_matrix_state
+	var/severed_body_extra_slime_state
+	var/severed_item_extra_slime_state
+
+// Слаймовый срез не содержит кости; синтетический сохраняет центральную деталь оболочки.
+/datum/sprite_accessory/taur/proc/get_matrixed_severed_state(mob/living/carbon/human/human, for_item = FALSE)
+	if(isjellyperson(human))
+		return for_item ? severed_item_extra_slime_state : severed_body_extra_slime_state
+	if(isrobotic(human))
+		return for_item ? severed_item_extra_matrix_state : severed_body_extra_matrix_state
 
 /datum/sprite_accessory/taur/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
 	return (!tauric || (H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)))
@@ -125,6 +149,17 @@
 	taur_mode = STYLE_SNEK_TAURIC
 	hide_legs = USE_SNEK_CLIP_MASK
 	matrixed_sections = MATRIX_RED_GREEN
+	severed_body_state = "naga-severed"
+	severed_body_extra_state = "naga-severed"
+	severed_body_extra_color_src = NONE
+	severed_item_icon = 'icons/obj/naga_tail_item.dmi'
+	severed_item_state = "naga_tail"
+	severed_item_extra_state = "naga_tail_cut"
+	severed_item_extra_color_src = NONE
+	severed_body_extra_matrix_state = "naga-severed-matrix"
+	severed_item_extra_matrix_state = "naga_tail_cut_matrix"
+	severed_body_extra_slime_state = "naga-severed-slime"
+	severed_item_extra_slime_state = "naga_tail_cut_slime"
 
 /datum/sprite_accessory/taur/naga/coiled
 	name = "Naga (coiled)"
