@@ -13748,12 +13748,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
-"ibN" = (
-/obj/structure/closet/secure_closet/personal/cabinet{
-	anchored = 1
-	},
-/turf/open/floor/plasteel/showroomfloor,
-/area/mine/xenoarch_area_b)
 "icc" = (
 /obj/machinery/button/door{
 	id = "AbandonedCabinDorm";
@@ -26569,6 +26563,13 @@
 /obj/structure/stone_tile/center,
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
+"pbO" = (
+/obj/structure/closet/secure_closet/personal/cabinet{
+	anchored = 1;
+	should_populate_contents = 0
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "pbQ" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/shovel/spade/bone,
@@ -88186,9 +88187,9 @@ eQh
 eQh
 eQh
 ucR
-ibN
-ibN
-ibN
+pbO
+pbO
+pbO
 eQh
 vgt
 xNj
@@ -88958,7 +88959,7 @@ eQh
 eQh
 umF
 eay
-ibN
+pbO
 tuF
 eQh
 gdj
