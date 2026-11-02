@@ -10,6 +10,10 @@
 
 	tooltips = TRUE
 
+	/// Слой до сдвига тащения и слой после него: чужая смена слоя делает пару устаревшей
+	var/pull_layer_base
+	var/pull_layer_applied
+
 	var/last_click_move = 0 // Stores the previous next_move value.
 
 	var/resize = 1 //Badminnery resize

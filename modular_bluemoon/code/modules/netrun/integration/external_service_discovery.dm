@@ -61,7 +61,7 @@
 		qdel(src)
 		return TRUE
 	if(!SSnetrun.get_machine_transport().is_ready())
-		SSnetrun.get_machine_transport().waiting_resolutions[src] = TRUE
+		SSnetrun.get_machine_transport().waiting_resolutions[WEAKREF(src)] = TRUE
 		return FALSE
 	if(external_phase == "idle")
 		if(!submit_external())

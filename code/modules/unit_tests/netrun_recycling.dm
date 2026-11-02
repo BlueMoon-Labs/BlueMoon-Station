@@ -151,7 +151,8 @@
 	TEST_ASSERT(istype(wait), "An empty network gives maintenance a sleeping goal")
 	TEST_ASSERT_EQUAL(wait.post_ref?.resolve(), scene.node_b, "Waiting belongs to the current node, not the original spawn")
 	bot.brain.schedule_next()
-	TEST_ASSERT_EQUAL(timeleft(bot.brain.timer_id), wait.expires_at - world.time, "A wait away from home sleeps until expiry instead of think_busy polling")
+	// Timer buckets round to a tick; the two clock reads may also straddle one.
+	TEST_ASSERT(abs(timeleft(bot.brain.timer_id) - (wait.expires_at - world.time)) <= world.tick_lag, "A wait away from home sleeps until expiry within one timer tick instead of think_busy polling")
 	wait.expires_at = world.time - 1
 	bot.brain.think()
 	wait = bot.brain.current_goal()

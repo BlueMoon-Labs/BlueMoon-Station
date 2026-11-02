@@ -2814,15 +2814,8 @@
 	var/old_bonus = 0
 	var/list/current_entry = prefs.modified_limbs[zone]
 	if(islist(current_entry) && length(current_entry))
-		if(current_entry[1] == LOADOUT_LIMB_PROSTHETIC)
-			old_bonus = 1
-		else if(current_entry[1] == LOADOUT_LIMB_AMPUTATED)
-			old_bonus = 2
-	var/new_bonus = 0
-	if(kind == LOADOUT_LIMB_PROSTHETIC)
-		new_bonus = 1
-	else if(kind == LOADOUT_LIMB_AMPUTATED)
-		new_bonus = 2
+		old_bonus = prefs.limb_modification_bonus(current_entry[1])
+	var/new_bonus = prefs.limb_modification_bonus(kind)
 	if(new_bonus < old_bonus && quirk_balance() - old_bonus + new_bonus < 0)
 		to_chat(usr, span_warning("Изменение этой конечности увёло бы баланс в минус!"))
 		return
@@ -3206,6 +3199,7 @@
 	var/list/limbs = list()
 	var/prosthetic_count = 0
 	var/amputation_count = 0
+	var/limb_bonus = 0
 	for(var/zone in LOADOUT_ALLOWED_LIMB_TARGETS)
 		var/list/entry = prefs.modified_limbs[zone]
 		var/list/row = list("zone" = zone, "kind" = LOADOUT_LIMB_NORMAL)
@@ -3217,14 +3211,19 @@
 			prosthetic_count++
 		else if(row["kind"] == LOADOUT_LIMB_AMPUTATED)
 			amputation_count++
+		limb_bonus += prefs.limb_modification_bonus(row["kind"])
 		limbs += list(row)
 	data["limbs"] = limbs
 	data["limbKinds"] = LOADOUT_LIMBS
 	data["limbBrands"] = list("prosthetic") + GLOB.prosthetic_limb_types
 	data["prostheticCount"] = prosthetic_count
 	data["amputationCount"] = amputation_count
-	data["limbBonus"] = prosthetic_count + amputation_count * 2
+	data["limbBonus"] = limb_bonus
 	data["maxProsthetics"] = MAXIMUM_LOADOUT_PROSTHETICS
+	data["prostheticBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_PROSTHETIC)
+	data["amputationBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_AMPUTATED)
+	data["limbMaxDamage"] = /obj/item/bodypart/l_arm::max_damage
+	data["prostheticMaxDamage"] = /obj/item/bodypart/l_arm/robot/surplus::max_damage
 
 	var/list/groups = list()
 	for(var/list/group in GLOB.body_mod_organ_groups)

@@ -421,7 +421,7 @@ SUBSYSTEM_DEF(research)
 			continue
 		if(selector && server.research_network_id() != selector)
 			continue
-		if(!selector && server.z != spot.z)
+		if(!selector && netrun_sector_for(get_turf(server)) != netrun_sector_for(spot))
 			continue
 		if(netrun_research_route_available(target, server))
 			return server.stored_research

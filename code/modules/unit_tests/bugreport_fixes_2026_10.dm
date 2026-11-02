@@ -139,7 +139,7 @@
 	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, start)
 	body.set_resting(TRUE, TRUE)
 	dragger.start_pulling(body)
-	TEST_ASSERT_EQUAL(body.pixel_y, 0, "обычный пулл сдвинул тело на тянущего")
+	TEST_ASSERT_EQUAL(body.pixel_y, GRAB_PIXEL_SHIFT_PASSIVE, "обычный пулл не сдвинул тело к тянущему")
 	dragger.setGrabState(GRAB_AGGRESSIVE)
 	dragger.set_pull_offsets(body, GRAB_AGGRESSIVE)
 	TEST_ASSERT_EQUAL(body.pixel_y, GRAB_PIXEL_SHIFT_AGGRESSIVE, "тело в захвате не сдвинулось к тянущему")

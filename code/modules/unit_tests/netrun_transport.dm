@@ -649,7 +649,7 @@
 	allocate(/datum/netrun_ready_fixture)
 	var/datum/netrun_machine_transport/readiness_fixture/transport = allocate(/datum/netrun_machine_transport/readiness_fixture)
 	transport.bootstrap_complete = TRUE
-	transport.waiting_resolutions[allocate(/datum)] = TRUE
+	transport.waiting_resolutions[WEAKREF(allocate(/datum))] = TRUE
 	SSatoms.map_loader_begin()
 	transport.prepare_network()
 	var/wakes_while_loading = transport.wake_requests

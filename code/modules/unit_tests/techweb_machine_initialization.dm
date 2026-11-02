@@ -1,5 +1,8 @@
 /// Проверяет создание исследовательских машин в раунде и смену их сети.
 /datum/unit_test/techweb_machine_initialization/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/obj/machinery/rnd/server/first = scene.machine(/obj/machinery/rnd/server, scene.target_spot)
+	var/obj/machinery/rnd/server/second = scene.machine(/obj/machinery/rnd/server, scene.target_spot)
 	var/list/machine_types = list(
 		/obj/machinery/computer/operating = "linked_techweb",
 		/obj/machinery/computer/scan_consolenew = "stored_research",
@@ -11,10 +14,10 @@
 		/obj/machinery/computer/rdconsole/production = "stored_research",
 		/obj/machinery/research_table = "linked_techweb",
 	)
-	var/datum/techweb/research = new
-	allocated += research
+	var/datum/techweb/research = second.stored_research
 	for(var/machine_type in machine_types)
-		var/obj/machinery/machine = allocate(machine_type, run_loc_floor_bottom_left)
+		var/obj/machinery/machine = scene.machine(machine_type, scene.source_spot)
+		SEND_SIGNAL(machine, COMSIG_ATOM_SET_TECHWEB, first.stored_research)
 		if(istype(machine, /obj/machinery/rnd/production))
 			TEST_ASSERT(wait_for_var(machine, "designs_cache_built", TRUE), "[machine_type] не загрузила начальные рецепты")
 		var/datum/component/techweb_holder/holder = machine.GetComponent(/datum/component/techweb_holder)
@@ -25,3 +28,66 @@
 		if(istype(machine, /obj/machinery/rnd/production))
 			TEST_ASSERT(wait_for_var(machine, "designs_cache_built", TRUE), "[machine_type] не загрузила рецепты новой сети")
 		qdel(machine)
+
+/// Клиенты выбирают достижимый физический сервер, построенные серверы объединяются явно.
+/datum/unit_test/techweb_off_station_auto_network/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/space_level/level = SSmapping.z_list[run_loc_floor_bottom_left.z]
+	level.traits -= ZTRAIT_STATION
+	TEST_ASSERT(!is_station_level(run_loc_floor_bottom_left.z), "Площадка теста должна быть вне станции")
+	var/turf/server_spot = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/turf/console_spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/turf/lathe_spot = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	// Дальше трёх клеток от протолата, чтобы консоль не забрала его себе в SyncRDevices()
+	var/turf/syndicate_spot = run_loc_floor_top_right
+
+	var/obj/machinery/rnd/server/tarkoff/base_server = scene.machine(/obj/machinery/rnd/server/tarkoff, run_loc_floor_bottom_left)
+	var/datum/techweb/base_web = base_server.stored_research
+	TEST_ASSERT_EQUAL(base_web, SSresearch.get_rnd_network(RND_NETWORK_TARKON), "Сервер Таркова не в своей сети")
+
+	var/obj/machinery/rnd/server/rebuilt_server = scene.machine(/obj/machinery/rnd/server, server_spot)
+	TEST_ASSERT_NOTEQUAL(rebuilt_server.stored_research, base_web, "Построенный сервер не должен присваивать чужую базу до явного объединения")
+	TEST_ASSERT(rebuilt_server.link_research_cluster(base_web), "Явное объединение должно пройти через подтверждённый маршрут Core")
+	var/obj/machinery/computer/rdconsole/console = scene.machine(/obj/machinery/computer/rdconsole, console_spot)
+	TEST_ASSERT_EQUAL(console.stored_research, base_web, "Консоль, собранная рядом с сервером базы, осталась без сети")
+	TEST_ASSERT(base_web.consoles_accessing[console], "Консоль не записана в сеть базы")
+	var/obj/machinery/rnd/production/protolathe/lathe = scene.machine(/obj/machinery/rnd/production/protolathe, lathe_spot)
+	TEST_ASSERT(wait_for_var(lathe, "designs_cache_built", TRUE), "Протолат не загрузил рецепты")
+	TEST_ASSERT_EQUAL(lathe.host_research, base_web, "Протолат, собранный рядом с сервером базы, завёл отдельную сеть")
+
+	var/obj/machinery/computer/rdconsole/syndicate/syndicate_console = scene.machine(/obj/machinery/computer/rdconsole/syndicate, syndicate_spot)
+	TEST_ASSERT_EQUAL(syndicate_console.stored_research, SSresearch.get_rnd_network(RND_NETWORK_SYNDICATE), "Фракционная консоль ушла в чужую сеть")
+
+	qdel(base_server)
+	qdel(rebuilt_server)
+	var/obj/machinery/rnd/server/lone_server = scene.machine(/obj/machinery/rnd/server, server_spot)
+	TEST_ASSERT_NOTNULL(lone_server.stored_research, "Одиночный сервер вне станции остался без сети")
+	TEST_ASSERT(lone_server.stored_research != base_web, "Одиночный сервер подхватил сеть удалённого сервера")
+	qdel(lone_server)
+	var/obj/machinery/computer/rdconsole/lone_console = scene.machine(/obj/machinery/computer/rdconsole, console_spot)
+	TEST_ASSERT_NULL(lone_console.stored_research, "Консоль без сервера рядом получила сеть")
+
+/// Отложен только research LateInitialize; остальные native Initialize/registration работают штатно.
+/obj/machinery/rnd/server/techweb_early_init_test
+	var/finish_late_init = FALSE
+
+/obj/machinery/rnd/server/techweb_early_init_test/LateInitialize()
+	if(finish_late_init)
+		return ..()
+
+/// Ранняя собственная память не меняется при LateInitialize и не создаёт бесхозный techweb.
+/datum/unit_test/techweb_auto_server_network_before_late_init
+
+/datum/unit_test/techweb_auto_server_network_before_late_init/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/turf/console_spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/obj/machinery/rnd/server/techweb_early_init_test/server = scene.machine(/obj/machinery/rnd/server/techweb_early_init_test, run_loc_floor_bottom_left)
+	var/datum/techweb/early_web = server.get_rnd_network()
+	TEST_ASSERT_NOTNULL(early_web, "AUTO-сервер до LateInitialize не отдаёт сеть")
+	TEST_ASSERT_EQUAL(server.get_rnd_network(), early_web, "AUTO-сервер на каждый запрос заводит новую сеть")
+	TEST_ASSERT(early_web.has_research_owner(server), "У ранней базы должен быть физический владелец")
+	server.finish_late_init = TRUE
+	server.LateInitialize()
+	TEST_ASSERT_EQUAL(server.stored_research, early_web, "LateInitialize не должен заменять уже выданную память")
+	var/obj/machinery/computer/rdconsole/console = scene.machine(/obj/machinery/computer/rdconsole, console_spot)
+	TEST_ASSERT_EQUAL(console.stored_research, early_web, "Консоль рядом с AUTO-сервером до его LateInitialize осталась без его сети")

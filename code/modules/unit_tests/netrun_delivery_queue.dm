@@ -168,12 +168,12 @@
 	var/datum/netrun_machine_transport/owner_transport
 
 /datum/netrun_machine_resolution/netrun_wake_gc_probe/begin()
-	owner_transport.waiting_resolutions -= src
+	owner_transport.waiting_resolutions -= WEAKREF(src)
 	qdel(src)
 
 /datum/netrun_machine_resolution/netrun_wake_gc_probe/Destroy()
 	if(owner_transport)
-		owner_transport.waiting_resolutions -= src
+		owner_transport.waiting_resolutions -= WEAKREF(src)
 	owner_transport = null
 	return ..()
 
@@ -182,11 +182,15 @@
 	var/datum/netrun_machine_transport/transport = allocate(/datum/netrun_machine_transport)
 	transport.bootstrap_complete = TRUE
 	var/list/probes = list()
-	for(var/index in 1 to 9)
+	for(var/index in 1 to 8)
 		var/datum/netrun_machine_resolution/netrun_wake_gc_probe/query = new(scene.source, "transport.fixture", "probe-[index]")
 		query.owner_transport = transport
 		probes += query
-		transport.waiting_resolutions[query] = TRUE
+		transport.waiting_resolutions[WEAKREF(query)] = TRUE
+	var/datum/netrun_machine_resolution/netrun_wake_gc_probe/unvisited = new(scene.source, "transport.fixture", "unvisited")
+	unvisited.owner_transport = transport
+	probes += unvisited
+	transport.waiting_resolutions[WEAKREF(unvisited)] = TRUE
 	var/datum/netrun_machine_resolution/first = probes[1]
 	TEST_ASSERT(!transport.advance_resolutions(), "Nine lookups must leave a bounded wake continuation")
 	TEST_ASSERT(QDELETED(first), "The consumed lookup retires while another one is still pending")
@@ -194,6 +198,9 @@
 	if(refcount(first) > 2)
 		first.find_references(refcount(first) - 1, skip_alert = TRUE)
 	TEST_ASSERT_EQUAL(refcount(first), 2, "Only the test local and its probe list may retain the consumed lookup")
+	qdel(unvisited)
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(refcount(unvisited), 2, "A lookup completed before its wake slot must not be retained by the unvisited snapshot tail")
 	QDEL_LIST(probes)
 
 /datum/netrun_machine_message/transport_fixture/queue_snapshot/coalescing_key()
@@ -362,7 +369,7 @@
 	var/paused_cursor = query.external_cursor
 	SSatoms.map_loader_begin()
 	query.deliver()
-	var/paused = query.external_cursor == paused_cursor && (query in SSnetrun.get_machine_transport().waiting_resolutions) && !query.delivery_queued
+	var/paused = query.external_cursor == paused_cursor && (WEAKREF(query) in SSnetrun.get_machine_transport().waiting_resolutions) && !query.delivery_queued
 	SSatoms.map_loader_stop()
 	TEST_ASSERT(paused, "Map loading parks the same native continuation")
 	query.begin()

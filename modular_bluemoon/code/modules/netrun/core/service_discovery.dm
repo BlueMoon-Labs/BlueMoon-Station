@@ -30,7 +30,7 @@
 /datum/netrun_machine_resolution/Destroy()
 	cancel_delivery()
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	transport.waiting_resolutions -= src
+	transport.waiting_resolutions -= WEAKREF(src)
 	if(source?.resolutions[query_key] == src)
 		source.resolutions -= query_key
 	transport.queued_messages -= length(queued)
@@ -77,9 +77,9 @@
 		return
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	if(!transport.is_ready())
-		transport.waiting_resolutions[src] = TRUE
+		transport.waiting_resolutions[WEAKREF(src)] = TRUE
 		return
-	transport.waiting_resolutions -= src
+	transport.waiting_resolutions -= WEAKREF(src)
 	queue_delivery()
 
 /datum/netrun_machine_resolution/delivery_priority()
@@ -96,7 +96,7 @@
 	cancel_delivery()
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
 	if(!transport.is_ready())
-		transport.waiting_resolutions[src] = TRUE
+		transport.waiting_resolutions[WEAKREF(src)] = TRUE
 		return FALSE
 	if(QDELETED(source) || QDELETED(source.host))
 		failure_reason = "Источник службы удалён"

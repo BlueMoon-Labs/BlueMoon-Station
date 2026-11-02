@@ -170,6 +170,7 @@
 	var/ready_queued = FALSE
 	var/list/by_id = list()
 	var/list/by_tag = list()
+	/// Weak keys: lookup может завершиться до своего места в уже скопированной wake-волне.
 	var/list/waiting_resolutions = list()
 	var/wake_timer
 	/// Readiness notifications share one bounded common-worker continuation.
@@ -352,12 +353,15 @@
 		wake_again = FALSE
 	var/stop = min(length(wake_queries), wake_cursor + 7)
 	while(wake_cursor <= stop)
-		var/datum/netrun_machine_resolution/query = wake_queries[wake_cursor]
+		var/datum/weakref/reference = wake_queries[wake_cursor]
 		// Начатый lookup может завершиться раньше остальной волны. Не удерживаем
 		// его ключ в snapshot до окончания чужих worker slices и следующего GC.
 		wake_queries[wake_cursor++] = null
-		if(!QDELETED(query) && (query in waiting_resolutions))
+		var/datum/netrun_machine_resolution/query = reference?.resolve()
+		if(istype(query) && (reference in waiting_resolutions))
 			query.begin()
+		else if(reference)
+			waiting_resolutions -= reference
 	if(wake_cursor <= length(wake_queries))
 		return FALSE
 	wake_queries = null

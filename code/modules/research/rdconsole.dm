@@ -25,7 +25,7 @@ Nothing else in the console has ID requirements.
 	circuit = /obj/item/circuitboard/computer/rdconsole
 	var/datum/techweb/stored_research					//Reference to the research database.
 	//BLUEMOON ADD: сеть исследований консоли
-	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иная — стартует без сети (подключается мультитулом к серверам)
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — сеть сервера рядом, без него стартует без сети (подключается мультитулом)
 	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети (фракционные подтипы)
 	var/obj/item/disk/tech_disk/t_disk	//Stores the technology disk.
 	var/obj/item/disk/design_disk/d_disk	//Stores the design disk.
@@ -112,6 +112,13 @@ Nothing else in the console has ID requirements.
 	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
 	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
 
+/obj/machinery/computer/rdconsole/examine(mob/user)
+	. = ..()
+	if(stored_research)
+		. += span_notice("Подключена к исследовательской сети <b>[stored_research.organization]</b>.")
+	else
+		. += span_warning("Не подключена к исследовательской сети. Скопируйте сеть с РнД-сервера мультитулом с пустым буфером и кликните им по консоли.")
+
 /obj/machinery/computer/rdconsole/Destroy()
 	QDEL_NULL(netrun_research_cache)
 	if(stored_research)
@@ -170,7 +177,7 @@ Nothing else in the console has ID requirements.
 /// Executed by the research server after the request has crossed the network.
 /obj/machinery/computer/rdconsole/proc/perform_research_node(id, mob/user, datum/techweb/authority)
 	if(!authority || authority != stored_research || !netrun_research_authorizes(src, authority))
-		say("База данных исследований не подключена!")
+		say("База данных исследований не подключена! Подключите консоль мультитулом от РнД-сервера.")
 		return FALSE
 	if(!stored_research.available_nodes[id] || stored_research.researched_nodes[id])
 		say("Node unlock failed: Either already researched or not available!")
@@ -445,7 +452,7 @@ Nothing else in the console has ID requirements.
 
 	//BLUEMOON ADD: действия, требующие подключённой базы исследований
 	if(!stored_research && (action in list("researchNode", "uploadDesignSlot", "uploadDisk", "loadTech")))
-		say("База данных исследований не подключена!")
+		say("База данных исследований не подключена! Подключите консоль мультитулом от РнД-сервера.")
 		return TRUE
 
 	switch (action)

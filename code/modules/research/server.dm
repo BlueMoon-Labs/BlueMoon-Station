@@ -49,10 +49,7 @@
 
 /obj/machinery/rnd/server/LateInitialize()
 	. = ..()
-	if(!stored_research)
-		var/memory_type = (network_id == RND_NETWORK_AUTO && is_station_level(z)) || network_id == RND_NETWORK_STATION ? /datum/techweb/science : techweb_type
-		stored_research = new memory_type
-		stored_research.add_research_owner(src)
+	get_rnd_network()
 	AddComponent(/datum/component/techweb_holder)
 	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
 	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, stored_research)
@@ -91,6 +88,8 @@
 		. += "\nThe server's status light is off."
 	else
 		. += "\nThe server's status light is blinking [span_green("green")]."
+	if(stored_research)
+		. += span_notice("Исследовательская сеть: <b>[stored_research.organization]</b>. Мультитул с пустым буфером копирует её с сервера, после чего клик по консоли или машине РнД подключает их к этой сети.")
 
 /obj/machinery/rnd/server/Destroy()
 	SSresearch.servers -= src
@@ -117,11 +116,20 @@
 	stored_research = new_web
 	refresh_research_service()
 
-/// BLUEMOON ADD: сеть ближайшего РНД-сервера на том же Z-уровне, что и источник, либо null.
-/proc/find_nearest_rnd_techweb(atom/source)
+/// Ранняя память принадлежит самому серверу и сохраняется при его LateInitialize.
+/// Поиск соседа не создаёт владельцу вторую, оторванную от физических машин базу.
+/obj/machinery/rnd/server/proc/get_rnd_network()
+	if(QDELETED(stored_research))
+		var/memory_type = (network_id == RND_NETWORK_AUTO && is_station_level(z)) || network_id == RND_NETWORK_STATION ? /datum/techweb/science : techweb_type
+		stored_research = new memory_type
+		stored_research.add_research_owner(src)
+	return stored_research
+
+/// Совместимая точка входа выбирает только достижимого владельца через C# route proof.
+/proc/find_nearest_rnd_techweb(atom/source, max_range = INFINITY)
 	return SSresearch.get_rnd_network_for(source, RND_NETWORK_AUTO)
 
-/// BLUEMOON ADD: авто-подключение устройства к сети: сервер на том же Z-уровне,
+/// Авто-подключение устройства к сети: ближайший сервер на этажах связки,
 /// иначе на станции — глобальная научная сеть (как раньше), вне станции — null (подключается вручную).
 /proc/find_rnd_network_for_object(atom/source)
 	return SSresearch.get_rnd_network_for(source, RND_NETWORK_AUTO)

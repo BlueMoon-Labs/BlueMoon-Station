@@ -78,11 +78,11 @@
 /datum/netrun_machine_resolution/netrun_wake_probe/begin()
 	observations["begun"]++
 	observations["[probe_id]"]++
-	wake_transport.waiting_resolutions -= src
+	wake_transport.waiting_resolutions -= WEAKREF(src)
 
 /datum/netrun_machine_resolution/netrun_wake_probe/Destroy()
 	if(!QDELETED(wake_transport))
-		wake_transport.waiting_resolutions -= src
+		wake_transport.waiting_resolutions -= WEAKREF(src)
 	wake_transport = null
 	observations = null
 	return ..()
@@ -94,7 +94,7 @@
 	transport.bootstrap_complete = TRUE
 	var/list/samples = list("begun" = 0)
 	for(var/id in 1 to 17)
-		transport.waiting_resolutions += allocate(/datum/netrun_machine_resolution/netrun_wake_probe, transport, samples, id)
+		transport.waiting_resolutions += WEAKREF(allocate(/datum/netrun_machine_resolution/netrun_wake_probe, transport, samples, id))
 	transport.resume_resolutions()
 	TEST_ASSERT_EQUAL(samples["begun"], 0, "The readiness timer callback must only admit work, never call query.begin inline")
 	var/key = "discovery_wake:[REF(transport)]"
@@ -116,7 +116,7 @@
 	worker.run_pass()
 	TEST_ASSERT_EQUAL(samples["begun"], 8, "The first readiness worker slice must begin at most eight queries")
 	TEST_ASSERT_EQUAL(scheduler.pending(), 1, "An incomplete discovery wake must retain one continuation")
-	transport.waiting_resolutions += allocate(/datum/netrun_machine_resolution/netrun_wake_probe, transport, samples, 18)
+	transport.waiting_resolutions += WEAKREF(allocate(/datum/netrun_machine_resolution/netrun_wake_probe, transport, samples, 18))
 	for(var/notification in 1 to 32)
 		transport.wake_resolutions()
 	worker.run_pass()
@@ -136,7 +136,7 @@
 /datum/unit_test/netrun_execution_discovery_wake_cleanup/Run()
 	var/list/samples = list("begun" = 0)
 	var/datum/netrun_machine_transport/delayed = allocate(/datum/netrun_machine_transport)
-	delayed.waiting_resolutions += allocate(/datum/netrun_machine_resolution/netrun_wake_probe, delayed, samples, 1)
+	delayed.waiting_resolutions += WEAKREF(allocate(/datum/netrun_machine_resolution/netrun_wake_probe, delayed, samples, 1))
 	delayed.wake_resolutions()
 	TEST_ASSERT_NULL(delayed.wake_timer, "Discovery must remain suspended until network bootstrap completes")
 	delayed.bootstrap_complete = TRUE
@@ -146,7 +146,7 @@
 	qdel(delayed)
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timer], "Destroying the transport must cancel its readiness timer")
 	var/datum/netrun_machine_transport/ready = allocate(/datum/netrun_machine_transport)
-	ready.waiting_resolutions += allocate(/datum/netrun_machine_resolution/netrun_wake_probe, ready, samples, 2)
+	ready.waiting_resolutions += WEAKREF(allocate(/datum/netrun_machine_resolution/netrun_wake_probe, ready, samples, 2))
 	ready.resume_resolutions()
 	var/key = "discovery_wake:[REF(ready)]"
 	TEST_ASSERT(SSnetrun.get_task_scheduler().by_key[key], "The cleanup test needs a real admitted readiness continuation")
