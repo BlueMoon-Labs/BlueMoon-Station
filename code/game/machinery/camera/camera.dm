@@ -125,9 +125,7 @@
 	if(!(. & EMP_PROTECT_SELF))
 		if(prob(severity/0.7))
 			update_icon()
-			var/list/previous_network = network
-			network = list()
-			GLOB.cameranet.invalidate_camera_cache()
+			// Камера остаётся в списке своей сети; изображение блокирует флаг EMPED.
 			GLOB.cameranet.removeCamera(src)
 			set_machine_stat(machine_stat | EMPED)
 			set_light(0)
@@ -138,8 +136,6 @@
 				if(loc) //qdel limbo
 					triggerCameraAlarm() //camera alarm triggers even if multiple EMPs are in effect.
 					if(emped == thisemp) //Only fix it if the camera hasn't been EMP'd again
-						network = previous_network
-						GLOB.cameranet.invalidate_camera_cache()
 						set_machine_stat(machine_stat & ~EMPED)
 						update_icon()
 						if(can_use())

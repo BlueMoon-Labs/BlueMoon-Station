@@ -15,6 +15,7 @@ type ChatData = {
   chat_radio: boolean;
   chat_pullr: boolean;
   chat_bankcard: boolean;
+  chat_ghosthuds: boolean;
   windowflashing: boolean;
   windownoise: boolean;
   ghost_form: string;
@@ -132,6 +133,7 @@ const GHOST_TOGGLES: { key: string; label: string; flag: string; tooltip?: strin
   { key: 'chat_ghostwhisper', label: 'Шёпот в режиме призрака', flag: 'chat_ghostwhisper', tooltip: 'Слышать шёпот игроков находясь в режиме призрака' },
   { key: 'chat_ghostpda', label: 'PDA в режиме призрака', flag: 'chat_ghostpda', tooltip: 'Видеть сообщения PDA находясь в режиме призрака' },
   { key: 'chat_ghostradio', label: 'Радио в режиме призрака', flag: 'chat_ghostradio', tooltip: 'Слышать радиообмен находясь в режиме призрака' },
+  { key: 'chat_ghosthuds', label: 'Худы в режиме призрака', flag: 'chat_ghosthuds', tooltip: 'Показывать медицинский, охранный и диагностический худы находясь в режиме призрака. Выключено по умолчанию: заметно нагружает сервер' },
 ];
 
 const CHAT_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [

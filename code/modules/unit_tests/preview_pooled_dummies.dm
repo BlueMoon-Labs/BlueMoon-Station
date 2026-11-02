@@ -153,3 +153,19 @@
 		if(has_overlay_state(part, state))
 			return TRUE
 	return FALSE
+
+/// Видимый имплант меняет ключ кэша конечностей человека: иначе тело с трубкой и без неё
+/// делили одну запись, а update_body_parts() выходил раньше при неизменном ключе.
+/datum/unit_test/human_augment_changes_limb_render_key
+
+/datum/unit_test/human_augment_changes_limb_render_key/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	patient.regenerate_icons()
+	var/key_without = patient.generate_icon_render_key()
+	var/obj/item/organ/cyberimp/mouth/breathing_tube/tube = new
+	tube.Insert(patient)
+	TEST_ASSERT(patient.generate_icon_render_key() != key_without, "трубка не попала в ключ кэша конечностей")
+	var/datum/unit_test/preferences_preview_body_mods_reset/checker = new
+	var/mutable_appearance/shown = new(patient)
+	TEST_ASSERT(checker.has_overlay_state(shown, "breathing_tube"), "трубка не нарисовалась на теле")
+	qdel(checker)

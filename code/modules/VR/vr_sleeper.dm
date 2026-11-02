@@ -254,7 +254,18 @@
 		qdel(C)
 	for (var/A in corpse_party)
 		var/mob/M = A
-		if(!QDELETED(M) && (M in contents) && M.stat == DEAD)
+		forget_corpse(M)
+		if((M in contents) && M.stat == DEAD)
 			qdel(M)
-		corpse_party -= M
-	addtimer(CALLBACK(src, PROC_REF(clean_up)), 3 MINUTES)
+
+/// Труп ждёт прохода уборщика, но удалённый раньше другим путём из списка уходит сразу.
+/obj/effect/vr_clean_master/proc/add_corpse(mob/corpse)
+	if(QDELETED(corpse) || (corpse in corpse_party))
+		return
+	LAZYADD(corpse_party, corpse)
+	RegisterSignal(corpse, COMSIG_PARENT_QDELETING, PROC_REF(forget_corpse))
+
+/obj/effect/vr_clean_master/proc/forget_corpse(mob/corpse)
+	SIGNAL_HANDLER
+	UnregisterSignal(corpse, COMSIG_PARENT_QDELETING)
+	LAZYREMOVE(corpse_party, corpse)
