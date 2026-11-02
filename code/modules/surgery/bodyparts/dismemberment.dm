@@ -462,4 +462,4 @@
 		return
 	var/angle = from_dir ? 90 - dir2angle(from_dir) + rand(-60, 60) : rand(0, 360)
 	var/dist = rand(6, 20)
-	animate(src, pixel_x = pixel_x + cos(angle) * dist, pixel_y = pixel_y + sin(angle) * dist, time = 3, easing = ELASTIC_EASING | EASE_OUT)
+	animate(src, pixel_x=cos(angle)*dist, pixel_y=sin(angle)*dist, time = 3, easing = ELASTIC_EASING | EASE_OUT)
