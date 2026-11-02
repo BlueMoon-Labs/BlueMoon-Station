@@ -1086,6 +1086,11 @@
 	icon_state = "drilling sawed"
 	w_class = WEIGHT_CLASS_NORMAL
 
+/obj/item/gun/ballistic/revolver/drilling/sawed/Initialize(mapload)
+	. = ..()
+	underbarrel.recoil = recoil
+	underbarrel.fire_delay = fire_delay
+
 /obj/item/gun/ballistic/revolver/drilling/sawed/hatchet
 	name = "\improper Палач Трибунала"
 	desc = "Финальная, кровавая стадия правосудия. Под укороченные стволы намертво вварено тяжелое стальное лезвие. Два патрона .308 калибра ломают кости врага на подходе, 12-й калибр разрывает его плоть, а топор ставит жирную, неоспоримую точку. В этом оружии больше нет святости только чистая, механическая неизбежность наказания"
