@@ -45,42 +45,53 @@
 ///Magnetic Stability - Gives the user a slowdown but makes them negate gravity and be immune to slips.
 /obj/item/mod/module/magboot
 	name = "MOD magnetic stability module"
-	desc = "Мощные электромагниты, встроенные в ботинки костюма, позволяющие пользователям иметь \
-		отличное сцепление в любых условиях внутри помещений и по сути держаться на внешней поверхности корпуса. \
-		Однако эти базовые модели не имеют компьютеризированных систем для автоматического включения и выключения, \
-		поэтому многие пользователи жалуются на некоторую липкость шагов."
+	desc = "Электромагнитная система развёрнутого корпуса MOD-костюма удерживает носителя на металлических поверхностях \
+		и защищает от скольжения. Сцепление передаётся через покрытие ног или опорного хвоста и не требует ботинок. \
+		Базовая модель замедляет передвижение при включённых магнитах."
 	icon_state = "magnet"
 	module_type = MODULE_TOGGLE
 	complexity = 2
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/magboot)
 	cooldown_time = 0.5 SECONDS
-	required_modpart_index = MOD_PART_FEET
-	/// Slowdown added onto the suit.
-	var/slowdown_active = 2
+	required_modpart_index = MOD_PART_CHEST
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	// Замедление от включённого магнитного сцепления.
+	var/slowdown_active = 2
 
 /obj/item/mod/module/magboot/on_activation()
+	if(active)
+		return FALSE
 	. = ..()
 	if(!.)
 		return
-	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
-	boots.clothing_flags |= NOSLIP
-	ADD_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
+	ADD_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, REF(src))
+	ADD_TRAIT(mod.wearer, TRAIT_NEGATES_GRAVITY, REF(src))
 	mod.slowdown += slowdown_active
 	mod.wearer.refresh_gravity()
 	mod.wearer.update_equipment_speed_mods()
 
 /obj/item/mod/module/magboot/on_deactivation(display_message = TRUE, deleting = FALSE)
+	if(!active)
+		return FALSE
 	. = ..()
 	if(!.)
 		return
-	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
-	boots.clothing_flags &= ~NOSLIP
-	REMOVE_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
+	REMOVE_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, REF(src))
+	REMOVE_TRAIT(mod.wearer, TRAIT_NEGATES_GRAVITY, REF(src))
 	mod.slowdown -= slowdown_active
 	mod.wearer.refresh_gravity()
 	mod.wearer.update_equipment_speed_mods()
+
+/obj/item/mod/module/magboot/on_suit_deactivation()
+	if(active)
+		on_deactivation()
+	return ..()
+
+/obj/item/mod/module/magboot/on_unequip()
+	if(active)
+		on_deactivation()
+	return ..()
 
 /obj/item/mod/module/magboot/advanced
 	name = "MOD advanced magnetic stability module"
