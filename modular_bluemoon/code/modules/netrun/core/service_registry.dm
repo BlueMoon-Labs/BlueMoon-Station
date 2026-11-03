@@ -418,7 +418,7 @@
 	service_event_timer = null
 	service_events.Cut()
 	service_event_dedupe.Cut()
-	for(var/family in service_subscribers)
+	for(var/family in service_subscribers.Copy())
 		var/list/watchers = service_subscribers[family]
 		for(var/datum/netrun_service_subscription/watch as anything in watchers.Copy())
 			qdel(watch)
@@ -451,6 +451,8 @@
 	var/tag = service.service_tag()
 	if(service.indexed_tag == tag)
 		return
+	if(!isnull(service.indexed_tag))
+		announce_service(service, "removed", service.indexed_tag, TRUE)
 	var/previous_key = "[service.service_id]|[service.indexed_tag]"
 	var/list/previous = by_tag[previous_key]
 	if(previous)
@@ -550,17 +552,18 @@
 	return watch
 
 /// One short event per interested subscriber; no station-wide scan at each mutation.
-/datum/netrun_machine_transport/proc/announce_service(datum/netrun_machine_service/service, event = "updated")
+/datum/netrun_machine_transport/proc/announce_service(datum/netrun_machine_service/service, event = "updated", prior_tag = null, use_prior_tag = FALSE)
 	if(QDELETED(src) || !service || !(event in list("added", "updated", "removed")))
 		return
 	var/list/watchers = service_subscribers[service.service_id]
 	if(!length(watchers))
 		return
 	for(var/datum/netrun_service_subscription/watch as anything in watchers.Copy())
-		enqueue_service_event(watch, service, event)
+		enqueue_service_event(watch, service, event, prior_tag, use_prior_tag)
 
-/datum/netrun_machine_transport/proc/enqueue_service_event(datum/netrun_service_subscription/watch, datum/netrun_machine_service/service, event)
-	if(QDELETED(watch) || !service || !isnull(watch.tag) && watch.tag != service.service_tag())
+/datum/netrun_machine_transport/proc/enqueue_service_event(datum/netrun_service_subscription/watch, datum/netrun_machine_service/service, event, prior_tag = null, use_prior_tag = FALSE)
+	var/advertised_tag = use_prior_tag ? prior_tag : service?.service_tag()
+	if(QDELETED(watch) || !service || !isnull(watch.tag) && watch.tag != advertised_tag)
 		return
 	var/datum/subscriber = watch.subscriber_ref?.resolve()
 	if(QDELETED(subscriber))
@@ -569,7 +572,7 @@
 	if(service_event_dedupe[key])
 		return
 	service_event_dedupe[key] = TRUE
-	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = service.service_tag(), "identity" = service.service_key(), "dedupe" = key))
+	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = advertised_tag, "identity" = service.service_key(), "dedupe" = key))
 	if(!service_delivery_active && !service_event_timer)
 		service_event_timer = addtimer(CALLBACK(src, PROC_REF(deliver_service_events)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
 

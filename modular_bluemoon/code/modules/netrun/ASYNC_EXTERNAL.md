@@ -77,3 +77,49 @@ Host: свежий application output тоже подтверждает, что 
 
 Длительные Windows/Docker прогоны новой архитектуры отложены по запросу пользователя.
 Результаты прежнего batch-only runtime не являются проверкой этой версии.
+
+
+## Event-driven subscriptions for local NETRUN machine services
+
+Machine adapters can subscribe to one service family without scanning the entire
+registry or polling the Host. `subscribe_service(owner, family, tag, replay)`
+returns a `/datum/netrun_service_subscription` handle. The optional tag limits
+notifications to a specific service tag; `replay=TRUE` announces existing
+matching services once, using the same deferred delivery path as future events.
+
+```dm
+/datum/my_adapter
+    var/datum/netrun_service_subscription/watch
+
+/datum/my_adapter/New()
+    ..()
+    watch = SSnetrun.get_machine_transport().subscribe_service(src, "atmos.controller")
+
+/datum/my_adapter/netrun_service_changed(event, family, tag, identity, datum/netrun_machine_service/service)
+    if(event == "removed")
+        // identity identifies the withdrawn service; service is null
+        return
+    // "added" or "updated": service is currently registered.
+    // Recheck actual route, online state, and authorization before sending.
+
+/datum/my_adapter/Destroy()
+    QDEL_NULL(watch)
+    return ..()
+```
+
+`register()`, `unregister()` and service state notifications publish events
+automatically. A provider can explicitly announce a state change with
+`SSnetrun.get_machine_transport().announce_service(service, "updated")`.
+A tag change emits a tombstone for the old tag before the new observation.
+
+Notifications carry weak identities, are deduplicated until delivery, and run
+after the registration signal stack. Unsubscribing or deleting the owner drops
+pending notifications. A notification is **not** a C# discovery or route proof;
+the existing C# Core remains authoritative for network reachability and
+all native gameplay authorization.
+
+Under backpressure, DM coalesces only never-sent opt-in `state` operations;
+real `message` commands keep their own request IDs. Completed or retrying
+network submissions are never rewritten. Atmospheric device registration also
+keeps at most one uncompleted status per controller and schedules one latest-state
+refresh when a suppressed update needs resending.
