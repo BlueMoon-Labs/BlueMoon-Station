@@ -268,6 +268,49 @@
 	TEST_ASSERT_NULL(fixture.executor.get_query_consumer(query.external_request_id), "Terminal result releases the continuation slot")
 
 
+/// Stub observes event fanout only. The production path still performs a
+/// routed request and never treats a Core advertisement as research authority.
+/datum/netrun_machine_service/research_client/core_watch_test
+	var/core_notifications = 0
+
+/datum/netrun_machine_service/research_client/core_watch_test/on_core_research_catalog_changed()
+	core_notifications++
+
+/// One Core watcher fans out only to clients interested in the matching
+/// techweb, and rebinding drops obsolete weak observer indexes.
+/datum/unit_test/netrun_external_queries_research_watch_fanout/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_research_core_observer/observer = allocate(/datum/netrun_research_core_observer)
+	var/datum/netrun_machine_service/research_client/core_watch_test/first = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.source.node)
+	var/datum/netrun_machine_service/research_client/core_watch_test/second = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.target.node)
+	first.wants_snapshots = TRUE
+	second.wants_snapshots = TRUE
+	observer.track_client(first, "web-a")
+	observer.track_client(second, "web-b")
+	observer.netrun_core_service_changed("added", "research.server", "web-a", null, null)
+	TEST_ASSERT_EQUAL(first.core_notifications, 0, "Events are not delivered before snapshot_end")
+	observer.netrun_core_service_changed("snapshot_end", "research.server", null, null, null)
+	observer.advance_refresh()
+	TEST_ASSERT_EQUAL(first.core_notifications, 1, "Initial snapshot wakes the first research consumer")
+	TEST_ASSERT_EQUAL(second.core_notifications, 1, "Initial snapshot wakes all subscribed authorities")
+	observer.netrun_core_service_changed("updated", "research.server", "web-a", null, null)
+	observer.advance_refresh()
+	TEST_ASSERT_EQUAL(first.core_notifications, 2, "Only matching research authority receives updates")
+	TEST_ASSERT_EQUAL(second.core_notifications, 1, "Other research authorities do not receive redundant refreshes")
+	observer.track_client(first, "web-b")
+	observer.netrun_core_service_changed("removed", "research.server", "web-a", null, null)
+	observer.advance_refresh()
+	TEST_ASSERT_EQUAL(first.core_notifications, 2, "Old authority no longer wakes rebound consumers")
+	observer.netrun_core_service_changed("added", "research.server", "web-b", null, null)
+	observer.advance_refresh()
+	TEST_ASSERT_EQUAL(first.core_notifications, 3, "Rebound consumer follows the new authority")
+	TEST_ASSERT_EQUAL(second.core_notifications, 2, "Existing consumer still sees its authority")
+	observer.untrack_client(first)
+	observer.netrun_core_service_changed("updated", "research.server", "web-b", null, null)
+	observer.advance_refresh()
+	TEST_ASSERT_EQUAL(first.core_notifications, 3, "Unsubscribed consumer receives no event")
+	TEST_ASSERT_EQUAL(second.core_notifications, 3, "Other consumers retain their watcher")
+
 /// One persistent Core watch owns a query slot and one exact producer ID.
 /// Cancellation uses the same causal input lane as regular discovery commands.
 /datum/unit_test/netrun_external_queries_core_service_watch/Run()

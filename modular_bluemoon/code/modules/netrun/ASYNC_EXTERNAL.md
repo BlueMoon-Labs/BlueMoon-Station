@@ -207,3 +207,20 @@ The watch does **not** grant camera access or expose its unfiltered catalog.
 Every console still uses source-specific Core routing, native
 `allows_camera` and routed request/reply for the actual live feed. If the
 watch cannot start, the original one-second discovery TTL remains in effect.
+
+### Core research authority observation
+
+One station-scoped `research.server` watch observes service lifecycle changes.
+Only clients that requested replicated snapshots are indexed by their current
+native techweb binding. Initial `snapshot_end` and later matching
+`added/updated/removed` events schedule bounded (eight clients per tick)
+revision checks, never direct cache mutation or authority assignment. Rebinding
+removes stale weak subscribers; losing the watch source or the Host binding
+retires its subscription and retries with a live research client.
+
+The actual `research.server` watch request remains ordinary Core-routed
+service discovery with native `research_peer`, `accepts`, and `live_authority`
+validation. Periodic 30-second revision probes remain for active snapshot
+subscribers to repair missed data pushes even without a directory change.
+Non-snapshot point producers no longer allocate an idle timer each; fabricators
+retain their native binding-repair timer.
