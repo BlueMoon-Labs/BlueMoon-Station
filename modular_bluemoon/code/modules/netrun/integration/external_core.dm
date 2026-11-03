@@ -599,6 +599,9 @@
 			if(announced_ready_binding != binding_epoch)
 				announced_ready_binding = binding_epoch
 				log_world("NETRUN_CORE_READY external graph_published")
+				// Resume a single Core-owned service watch after every binding change.
+				// Schedule outside the IPC decoder; no gameplay callback runs here.
+				owner.get_machine_transport().schedule_atmos_core_watch()
 		return TRUE
 	if(result["kind"] == "pressure" || result["kind"] == "diagnostics")
 		return TRUE

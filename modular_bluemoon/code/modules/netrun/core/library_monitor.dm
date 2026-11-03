@@ -35,6 +35,7 @@
 	var/monitor_connections = 0
 	var/monitor_disconnects = 0
 	var/monitor_last_failure
+	var/monitor_invalid_samples = 0
 
 /// Отдельная clock seam позволяет проверить stale/rates без sleep или настоящей библиотеки.
 /datum/netrun_external_core/proc/monitor_now()
@@ -57,7 +58,9 @@
 		return TRUE
 	var/list/metrics = frame["host_metrics"]
 	if(!islist(metrics) || !istext(metrics["sync_state"]) || !netrun_external_valid_decimal(metrics["applied_sequence"], TRUE) || !isnum(metrics["uptime_ms"]) || !update_host_metrics(metrics))
-		return abort_session("invalid_monitor_metrics")
+		// Monitoring is optional; malformed scalars must not reset a healthy transport binding.
+		monitor_invalid_samples++
+		return TRUE
 	monitor_sample_sequence = sequence
 	last_host_monitor_at = monitor_now()
 	last_host_response_at = last_host_monitor_at
@@ -67,7 +70,7 @@
 /datum/netrun_external_core/proc/update_host_metrics(list/metrics)
 	if(!islist(metrics))
 		return FALSE
-	var/static/list/numeric_keys = list("apply_us", "pump_us", "max_apply_us", "max_pump_us", "processing_us", "max_processing_us", "received_messages", "push_outputs", "coalesced_fact_frames", "input_unacked", "output_unacked", "node_count", "service_count", "sector_count", "active_requests", "active_discovery", "active_projections", "pending_events", "output_journal_frames", "output_journal_bytes", "input_queue_frames", "input_queue_bytes", "output_queue_frames", "output_queue_bytes", "managed_bytes", "working_set_bytes", "process_cpu_ms", "uptime_ms", "gc_gen0", "gc_gen1", "gc_gen2", "simulation_time_ds")
+	var/static/list/numeric_keys = list("apply_us", "pump_us", "max_apply_us", "max_pump_us", "processing_us", "max_processing_us", "received_messages", "push_outputs", "coalesced_fact_frames", "input_unacked", "output_unacked", "node_count", "service_count", "sector_count", "active_requests", "active_discovery", "active_projections", "active_service_watches", "pending_events", "output_journal_frames", "output_journal_bytes", "input_queue_frames", "input_queue_bytes", "output_queue_frames", "output_queue_bytes", "managed_bytes", "working_set_bytes", "process_cpu_ms", "uptime_ms", "gc_gen0", "gc_gen1", "gc_gen2", "simulation_time_ds")
 	var/static/list/counter_keys = list("applied_sequence", "graph_version", "graph_input_sequence")
 	var/static/list/code_keys = list("sync_state", "topology_error", "communication_error")
 	var/list/accepted = list()
@@ -196,6 +199,7 @@
 		list("label" = "Nodes / services / sectors", "value" = "[netrun_library_monitor_format(metrics["node_count"])] / [netrun_library_monitor_format(metrics["service_count"])] / [netrun_library_monitor_format(metrics["sector_count"])]"),
 		list("label" = "Graph version / input", "value" = "[metrics["graph_version"] || "—"] / [metrics["graph_input_sequence"] || "—"]"),
 		list("label" = "Requests / discovery / projections", "value" = "[netrun_library_monitor_format(metrics["active_requests"])] / [netrun_library_monitor_format(metrics["active_discovery"])] / [netrun_library_monitor_format(metrics["active_projections"])]"),
+		list("label" = "Core service subscriptions", "value" = metrics["active_service_watches"]),
 		list("label" = "События к отправке", "value" = metrics["pending_events"]),
 		list("label" = "Ingress очередь", "value" = metrics["input_queue_frames"], "unit" = "кадров"),
 		list("label" = "Egress очередь", "value" = metrics["output_queue_frames"], "unit" = "кадров"),
@@ -217,6 +221,9 @@
 		sections += list(list("title" = "DM — применение результатов", "rows" = list(
 			list("label" = "Facts в журнале", "value" = max(0, length(core.journal) - core.journal_head + 1)),
 			list("label" = "Machine contexts", "value" = executor.pending_current_count),
+			list("label" = "Locally merged state updates", "value" = executor.local_states_coalesced),
+			list("label" = "Ignored invalid Host monitor samples", "value" = core.monitor_invalid_samples),
+			list("label" = "Service notifications waiting", "value" = max(0, length(SSnetrun.machine_transport?.service_events) - SSnetrun.machine_transport?.service_event_cursor + 1)),
 			list("label" = "Request / control / inflight команды", "value" = "[length(executor.request_commands)] / [length(executor.control_commands)] / [length(executor.inflight_commands)]"),
 			list("label" = "Invocations удерживается", "value" = length(executor.invocations)),
 			list("label" = "Native очередь IDs", "value" = max(0, length(executor.native_invocation_queue) - executor.native_invocation_cursor + 1)),

@@ -82,7 +82,9 @@
 
 /datum/netrun_machine_service/proc/host_initialized()
 	SIGNAL_HANDLER
-	SSnetrun.get_machine_transport().index_service(src)
+	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
+	transport.index_service(src)
+	transport.announce_service(src, "updated")
 
 /// Domain startup which needs usable routes runs after the common readiness barrier.
 /datum/netrun_machine_service/proc/network_ready()
@@ -106,6 +108,11 @@
 
 /datum/netrun_machine_service/proc/receive(datum/netrun_machine_message/message)
 	return FALSE
+
+/// Read-only Core discovery completion hook, always deferred outside IPC decode.
+/// Domain adapters may schedule work; this is not an authorization grant.
+/datum/netrun_machine_service/proc/on_catalog_lookup_completed(family, succeeded)
+	return
 
 /datum/netrun_machine_service/proc/rejection_reason(datum/netrun_machine_message/message)
 	return "получатель отклонил пакет"
@@ -166,6 +173,14 @@
 /datum/netrun_machine_transport
 	var/list/services = list()
 	var/list/ready_services = list()
+	/// Weak-owner subscriptions keyed by family; events delivered on a deferred worker.
+	var/list/service_subscribers = list()
+	var/list/service_events = list()
+	/// Coalesce repeated updates before the deferred subscriber worker sees them.
+	var/list/service_event_dedupe = list()
+	var/service_event_cursor = 1
+	var/service_event_timer
+	var/service_delivery_active = FALSE
 	/// Closed readiness barriers park services without runnable polling tasks.
 	var/list/pending_ready_services = list()
 	var/ready_queued = FALSE
@@ -388,6 +403,12 @@
 	return transport.advance_resolutions()
 
 /datum/netrun_machine_transport/Destroy()
+	QDEL_NULL(research_core_observer)
+	QDEL_NULL(camera_core_observer)
+	if(atmos_core_watch_timer)
+		deltimer(atmos_core_watch_timer)
+	atmos_core_watch_timer = null
+	QDEL_NULL(atmos_core_observer)
 	SSnetrun.task_scheduler?.cancel("network_bootstrap", src)
 	SSnetrun.task_scheduler?.cancel("service_ready", src)
 	SSnetrun.task_scheduler?.cancel("discovery_wake", src)
@@ -403,6 +424,16 @@
 	pending_ready_services.Cut()
 	ready_queued = FALSE
 	ready_services.Cut()
+	if(service_event_timer)
+		deltimer(service_event_timer)
+	service_event_timer = null
+	service_events.Cut()
+	service_event_dedupe.Cut()
+	for(var/family in service_subscribers.Copy())
+		var/list/watchers = service_subscribers[family]
+		for(var/datum/netrun_service_subscription/watch as anything in watchers.Copy())
+			qdel(watch)
+	service_subscribers.Cut()
 	return ..()
 
 /datum/netrun_machine_transport/proc/register(datum/netrun_machine_service/service)
@@ -421,6 +452,7 @@
 	revision++
 	service_revisions[service.service_id] = (service_revisions[service.service_id] || 0) + 1
 	index_service(service)
+	announce_service(service, "added")
 	if(service.node?.node_type == NETRUN_NODE_APC || istype(service.host, /obj/machinery/ntnet_relay))
 		wake_resolutions()
 
@@ -430,6 +462,8 @@
 	var/tag = service.service_tag()
 	if(service.indexed_tag == tag)
 		return
+	if(!isnull(service.indexed_tag))
+		announce_service(service, "removed", service.indexed_tag, TRUE)
 	var/previous_key = "[service.service_id]|[service.indexed_tag]"
 	var/list/previous = by_tag[previous_key]
 	if(previous)
@@ -445,9 +479,11 @@
 			by_tag[key] = bucket
 		bucket |= service
 	service_revisions[service.service_id] = (service_revisions[service.service_id] || 0) + 1
+	announce_service(service, "updated")
 
 /datum/netrun_machine_transport/proc/unregister(datum/netrun_machine_service/service)
-	// Экспорт tombstone выполняется до удаления из native registry и потери исходной identity.
+	// Export and notify before service loses its stable identity; listener receives a tombstone.
+	announce_service(service, "removed")
 	SSnetrun.external_core?.forget_service(service)
 	var/key = service.service_key()
 	if(ready_services[key] == service)
@@ -469,3 +505,114 @@
 		by_tag -= tag_key
 	revision++
 	service_revisions[service.service_id] = (service_revisions[service.service_id] || 0) + 1
+
+
+/// Subscription callbacks are local observation, not proof of network reachability.
+/// Never use them as authorization for machine receive or remote route access.
+/datum/proc/netrun_service_changed(event, family, tag, identity, datum/netrun_machine_service/service)
+	return
+
+/// Explicit subscription handle. Owner and service events are weak; qdel(handle) unsubscribes.
+/datum/netrun_service_subscription
+	var/datum/netrun_machine_transport/registry
+	var/datum/weakref/subscriber_ref
+	var/family
+	/// Filter, distinct from BYOND's built-in datum.tag.
+	var/watched_tag
+
+/datum/netrun_service_subscription/New(datum/netrun_machine_transport/registry, datum/subscriber, family, tag)
+	..()
+	src.registry = registry
+	subscriber_ref = WEAKREF(subscriber)
+	src.family = family
+	watched_tag = tag
+	RegisterSignal(subscriber, COMSIG_PARENT_QDELETING, PROC_REF(on_subscriber_deleted))
+
+/datum/netrun_service_subscription/proc/on_subscriber_deleted()
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/netrun_service_subscription/Destroy()
+	var/datum/subscriber = subscriber_ref?.resolve()
+	if(subscriber)
+		UnregisterSignal(subscriber, COMSIG_PARENT_QDELETING)
+	var/list/watchers = registry?.service_subscribers[family]
+	if(watchers)
+		watchers -= src
+		if(!length(watchers))
+			registry.service_subscribers -= family
+	registry = null
+	subscriber_ref = null
+	return ..()
+
+/// Subscribe to one family (and optional tag); replay existing matching services once.
+/// Events: added, updated, removed. Removed events carry identity but a null live service.
+/datum/netrun_machine_transport/proc/subscribe_service(datum/subscriber, family, tag = null, replay = TRUE)
+	if(QDELETED(subscriber) || !istext(family) || !length(family) || !isnull(tag) && !istext(tag))
+		return null
+	var/datum/netrun_service_subscription/watch = new(src, subscriber, family, tag)
+	var/list/watchers = service_subscribers[family]
+	if(!watchers)
+		watchers = list()
+		service_subscribers[family] = watchers
+	watchers += watch
+	if(replay)
+		var/list/existing = by_id[family]
+		for(var/datum/netrun_machine_service/service as anything in existing)
+			if(!QDELETED(service) && services[service.service_key()] == service)
+				enqueue_service_event(watch, service, "added")
+	return watch
+
+/// One short event per interested subscriber; no station-wide scan at each mutation.
+/datum/netrun_machine_transport/proc/announce_service(datum/netrun_machine_service/service, event = "updated", prior_tag = null, use_prior_tag = FALSE)
+	if(QDELETED(src) || !service || !(event in list("added", "updated", "removed")))
+		return
+	var/list/watchers = service_subscribers[service.service_id]
+	if(!length(watchers))
+		return
+	for(var/datum/netrun_service_subscription/watch as anything in watchers.Copy())
+		enqueue_service_event(watch, service, event, prior_tag, use_prior_tag)
+
+/datum/netrun_machine_transport/proc/enqueue_service_event(datum/netrun_service_subscription/watch, datum/netrun_machine_service/service, event, prior_tag = null, use_prior_tag = FALSE)
+	var/advertised_tag = use_prior_tag ? prior_tag : service?.service_tag()
+	if(QDELETED(watch) || !service || !isnull(watch.watched_tag) && watch.watched_tag != advertised_tag)
+		return
+	var/datum/subscriber = watch.subscriber_ref?.resolve()
+	if(QDELETED(subscriber))
+		return
+	var/key = json_encode(list(REF(watch), service.service_key(), event))
+	if(service_event_dedupe[key])
+		return
+	service_event_dedupe[key] = TRUE
+	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = advertised_tag, "identity" = service.service_key(), "dedupe" = key))
+	if(!service_delivery_active && !service_event_timer)
+		service_event_timer = addtimer(CALLBACK(src, PROC_REF(deliver_service_events)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// Deferred delivery means service Destroy/signals never run arbitrary subscriber callbacks inline.
+/datum/netrun_machine_transport/proc/deliver_service_events()
+	set waitfor = FALSE
+	if(service_delivery_active)
+		return
+	service_event_timer = null
+	service_delivery_active = TRUE
+	while(service_event_cursor <= length(service_events))
+		CHECK_TICK
+		var/list/notice = service_events[service_event_cursor]
+		service_events[service_event_cursor++] = null
+		service_event_dedupe -= notice["dedupe"]
+		var/datum/weakref/watch_ref = notice["watch"]
+		var/datum/netrun_service_subscription/watch = watch_ref?.resolve()
+		var/datum/subscriber = watch?.subscriber_ref?.resolve()
+		if(!QDELETED(watch) && !QDELETED(subscriber) && watch.registry == src)
+			var/datum/weakref/service_ref = notice["service"]
+			var/datum/netrun_machine_service/service = service_ref?.resolve()
+			if(notice["event"] == "removed")
+				service = null
+			else if(QDELETED(service) || services[notice["identity"]] != service || service.service_tag() != notice["tag"])
+				continue
+			subscriber.netrun_service_changed(notice["event"], notice["family"], notice["tag"], notice["identity"], service)
+		if(TICK_CHECK)
+			sleep(0)
+	service_events.Cut()
+	service_event_cursor = 1
+	service_delivery_active = FALSE

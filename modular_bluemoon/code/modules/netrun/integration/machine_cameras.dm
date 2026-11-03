@@ -1,4 +1,123 @@
 /** A feed is acquired by a routed request/reply, then checked while it is viewed. */
+/// One station-wide Core watch invalidates camera catalogs without allocating a
+/// subscription or retaining a snapshot for every camera console.
+/// Advertisements are observations only; routing and native access remain mandatory.
+/datum/netrun_machine_transport
+	var/datum/netrun_camera_core_observer/camera_core_observer
+
+/datum/netrun_machine_transport/proc/ensure_camera_core_watch(datum/netrun_machine_service/camera_viewer/preferred)
+	if(QDELETED(camera_core_observer))
+		camera_core_observer = new(src)
+	return camera_core_observer.ensure_watch(preferred)
+
+/datum/netrun_camera_core_observer
+	var/datum/netrun_machine_transport/transport
+	var/datum/netrun_core_service_watch/watch
+	var/datum/weakref/source_ref
+	var/retry_timer
+	var/invalidation_timer
+	var/next_attempt = 0
+	var/snapshot_finished = FALSE
+
+/datum/netrun_camera_core_observer/New(datum/netrun_machine_transport/transport)
+	..()
+	src.transport = transport
+
+/datum/netrun_camera_core_observer/Destroy()
+	if(retry_timer)
+		deltimer(retry_timer)
+	if(invalidation_timer)
+		deltimer(invalidation_timer)
+	retry_timer = null
+	invalidation_timer = null
+	forget_watch()
+	transport = null
+	return ..()
+
+/datum/netrun_camera_core_observer/proc/forget_watch()
+	var/datum/netrun_machine_service/source = source_ref?.resolve()
+	if(source)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	source_ref = null
+	QDEL_NULL(watch)
+	snapshot_finished = FALSE
+
+/datum/netrun_camera_core_observer/proc/source_deleted()
+	SIGNAL_HANDLER
+	forget_watch()
+	next_attempt = world.time
+	schedule_invalidation()
+	schedule_retry()
+
+/datum/netrun_camera_core_observer/proc/schedule_retry()
+	if(retry_timer || QDELETED(src))
+		return
+	next_attempt = world.time + 15 SECONDS
+	retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_watch)), 15 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_camera_core_observer/proc/retry_watch()
+	retry_timer = null
+	ensure_watch()
+
+/datum/netrun_camera_core_observer/proc/pick_source()
+	var/list/viewers = transport?.by_id["camera.viewer"]
+	for(var/datum/netrun_machine_service/camera_viewer/viewer as anything in viewers)
+		if(!QDELETED(viewer) && !QDELETED(viewer.host) && viewer.resolve_node()?.is_online())
+			return viewer
+	return null
+
+/datum/netrun_camera_core_observer/proc/ensure_watch(datum/netrun_machine_service/camera_viewer/preferred)
+	var/datum/netrun_external_core/client = SSnetrun.external_core
+	if(QDELETED(transport) || !client?.ready)
+		return FALSE
+	if(!QDELETED(watch) && watch.binding == client.binding_epoch && (watch.phase in list("subscribing", "active")))
+		return TRUE
+	if(world.time < next_attempt)
+		return FALSE
+	if(!QDELETED(watch))
+		forget_watch()
+	if(QDELETED(preferred) || QDELETED(preferred.host) || !preferred.resolve_node()?.is_online())
+		preferred = pick_source()
+	if(QDELETED(preferred))
+		schedule_retry()
+		return FALSE
+	watch = SSnetrun.watch_core_service(src, preferred, "camera.stream")
+	if(QDELETED(watch))
+		schedule_retry()
+		return FALSE
+	source_ref = WEAKREF(preferred)
+	RegisterSignal(preferred, COMSIG_PARENT_QDELETING, PROC_REF(source_deleted))
+	snapshot_finished = FALSE
+	return TRUE
+
+/// A short timer collapses many initial/catalog events into one cache
+/// invalidation. No TGUI rerender or native packet dispatch runs here.
+/datum/netrun_camera_core_observer/proc/schedule_invalidation()
+	if(invalidation_timer || QDELETED(src))
+		return
+	invalidation_timer = addtimer(CALLBACK(src, PROC_REF(invalidate_catalogs)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_camera_core_observer/proc/invalidate_catalogs()
+	invalidation_timer = null
+	var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+	if(istype(executor))
+		executor.invalidate_discovery_family("camera.stream")
+
+/datum/netrun_camera_core_observer/netrun_core_service_changed(change, family, advertised_tag, identity, datum/netrun_machine_service/service)
+	if(family != "camera.stream")
+		return
+	if(change == "snapshot_end")
+		snapshot_finished = TRUE
+		schedule_invalidation()
+		return
+	if(change == "source_unavailable" || change == "resync_required")
+		forget_watch()
+		schedule_invalidation()
+		schedule_retry()
+		return
+	if(snapshot_finished && (change in list("added", "updated", "removed")))
+		schedule_invalidation()
+
 /datum/netrun_machine_message/camera_request
 
 /datum/netrun_machine_message/camera_feed
@@ -69,6 +188,8 @@
 	return camera.can_use()
 
 /datum/netrun_machine_service/camera_viewer/proc/camera_catalog(replace = FALSE)
+	// One shared Core watch; per-viewer routed discovery remains authoritative.
+	SSnetrun.get_machine_transport().ensure_camera_core_watch(src)
 	return resolve("camera.stream")
 
 /datum/netrun_machine_service/camera_viewer/accepts(datum/netrun_machine_message/message)
