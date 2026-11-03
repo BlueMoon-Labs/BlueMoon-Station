@@ -130,14 +130,14 @@
 	if(istype(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		if(initial(above_suit))
 			above_suit = !above_suit
-			to_chat(user, "[src] will be worn [above_suit ? "above" : "below"] your suit.")
+			to_chat(user, "[src] будет носиться [above_suit ? "над" : "под"] вашим костюмом.")
 			return TRUE
 
 /obj/item/clothing/accessory/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>\The [src] can be attached to [istype(src, /obj/item/clothing/accessory/ring) ? "gloves" : "a uniform"]. Alt-click to remove it once attached.</span>"
+	. += span_notice("Можно прикрепить к [istype(src, /obj/item/clothing/accessory/ring) ? "перчаткам" : "униформе"].")
 	if(initial(above_suit))
-		. += "<span class='notice'>\The [src] can be worn above or below your suit. Ctrl-click to toggle.</span>"
+		. += span_notice("\The [src] можно [span_tooltip_warning("Ctrl-клик для переключения", "носить")] над или под костюмом.")
 
 //////////////
 //Waistcoats//

@@ -167,7 +167,7 @@
 	// Проверка на общее количество
 	if(length(accessories_attached) >= max_accessories)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] уже имеет [length(accessories_attached)] аксессуаров.</span>")
+			to_chat(user, span_warning("[src] уже имеет [length(accessories_attached)] аксессуаров."))
 		return
 	// Проверка на количество особых / боевых
 	if(accessory.restricted_accessory && length(accessories_attached))
@@ -177,7 +177,7 @@
 				restricted_accesories_count++
 		if(restricted_accesories_count >= max_restricted_accessories)
 			if(user && !silent)
-				to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
+				to_chat(user, span_warning("На [src] некуда прикреплять очередной боевой аксессуар, на униформе их уже [restricted_accesories_count]"))
 			return
 	// Проверка на максимальное количество аксессуаров одного вида
 	if(accessory.max_stack != -1 && length(accessories_attached))
@@ -195,13 +195,13 @@
 				similar_accessory_count++
 		if(similar_accessory_count >= accessory.max_stack)
 			if(user && !silent)
-				to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [accessory] аксессуаров!</span>")
+				to_chat(user, span_warning("На \the [src] уже слишком много похожих на \the [accessory] аксессуаров!"))
 			return
 	// BLUEMOON EDIT END
 
 	if(dummy_thick)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+			to_chat(user, span_warning("Громоздкость [src] не позволит прикрепить аксессуары!"))
 		return
 	else
 		if(user && !user.dropItemToGround(accessory, silent = silent))
@@ -211,7 +211,7 @@
 			return
 
 		if(user && !silent)
-			to_chat(user, "<span class='notice'>Вы прикрепили [accessory] к [src].</span>")
+			to_chat(user, span_notice("Вы прикрепили \the [accessory] к \the [src]."))
 
 		if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 			return TRUE
@@ -249,31 +249,52 @@
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
 	if(can_adjust)
-		if(adjusted == ALT_STYLE)
-			. += "Alt-click для нормального стиля ношения."
-		else
-			. += "Alt-click для повседневного стиля ношения."
+		. += "Alt-клик для [adjusted == ALT_STYLE ? "нормального" : "повседневного"] стиля ношения."
 	switch(has_sensor)
 		if(BROKEN_SENSORS)
-			. += "<span class='warning'>Сенсоры полностью вышли из строя. Их можно починить кабелем.</span>"
+			. += span_notice("Сенсоры [span_danger("полностью вышли из строя")]. \
+			[!is_blind(user) ? "От <b>проводки</b> идёт дым." : ""]")
 		if(DAMAGED_SENSORS_LIVING)
-			. += "<span class='warning'>Сенсоры и маячок слежения повреждены, и не передают информацию. Это можно исправить кабелем.</span>"
+			. += span_notice("Сенсоры и маячок слежения [span_warning("повреждены")] и не передают информацию. \
+			[!HAS_TRAIT(user, TRAIT_DEAF) ? "Слышно потрескивание их <b>проводки</b>." : ""]")
 		if(DAMAGED_SENSORS_VITALS)
-			. += "<span class='warning'>Маячок слежения повреждён, невозможно отслеживать локацию владельца. Это можно исправить кабелем</span>"
+			. += span_notice("Маячок слежения [span_warning("повреждён")], невозможно отслеживать локацию владельца.\
+			[!HAS_TRAIT(user, TRAIT_ANOSMIA) ? " Чувствуется запах гари от его <b>проводки</b>." : ""]")
 	if(has_sensor > NO_SENSORS)
 		switch(sensor_mode)
 			if(SENSOR_OFF)
-				. += "Сенсоры одежды выключены."
+				. += span_notice("Сенсоры выключены.")
 			if(SENSOR_LIVING)
-				. += "Бинарные сенсоры статуса смерти включены."
+				. += span_notice("Бинарные сенсоры включены.")
 			if(SENSOR_VITALS)
-				. += "Сенсоры жизненных показателей выключены."
+				. += span_notice("Сенсоры жизненных показателей включены.")
 			if(SENSOR_COORDS)
-				. += "Сенсоры жизненных показателей и маячок местонахождения включены."
+				. += span_notice("Сенсоры и маячок местонахождения включены.")
 	if(length(accessories_attached))
+		var/list/accessory_icons = list()
 		for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
-			. += "\A [attached_accessory] находится на униформе."
+			accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(attached_accessory)]' data-secondary-href='?src=[REF(src)];remove_accessory=[REF(attached_accessory)]'>[span_tooltip(html_encode(attached_accessory.name), icon2html(attached_accessory, user), "", "", "")]</a>"
+		. += span_notice("Вы видите [span_tooltip_warning("ЛКМ по иконке – осмотреть, ПКМ – снять", "<u>аксессуары</u>")]: [accessory_icons.Join(" ")]")
 	//SKYRAT EDIT END
+
+/obj/item/clothing/under/Topic(href, href_list)
+	. = ..()
+	if(.)
+		return
+	if(href_list["examine_accessory"] || href_list["remove_accessory"])
+		var/mob/living/user = usr
+		if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) || !can_use(user))
+			return
+		var/accessory_ref = href_list["examine_accessory"] || href_list["remove_accessory"]
+		var/obj/item/clothing/accessory/accessory = locate(accessory_ref) in accessories_attached
+		if(!istype(accessory))
+			to_chat(user, span_warning("Этот аксессуар уже не прикреплён."))
+			return
+		if(href_list["examine_accessory"])
+			user.examinate(accessory)
+		else
+			remove_accessory(accessory, user)
+		return
 
 /obj/item/clothing/under/verb/toggle()
 	set name = "Adjust Suit Sensors"
@@ -378,10 +399,7 @@
 	. = ..()
 	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
-	if(length(accessories_attached)) //SKYRAT EDIT
-		remove_accessory(user = user)
-	else
-		rolldown()
+	rolldown()
 
 /obj/item/clothing/under/verb/jumpsuit_adjust()
 	set name = "Adjust Jumpsuit Style"
@@ -428,11 +446,9 @@
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to highest sensor")
-	if(length(accessories_attached))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Remove [accessories_attached[length(accessories_attached)]]")
-	else
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Adjust [src]")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Максимальный режим сенсоров")
+	if(can_adjust)
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[adjusted == ALT_STYLE ? "Нормальный" : "Повседневный"] стиль ношения")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/clothing/under/rank
