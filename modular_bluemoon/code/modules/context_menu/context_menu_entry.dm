@@ -3,6 +3,8 @@
 	/// Горячая клавиша этого действия, показывается справа
 	var/hint
 	var/style = CONTEXT_ENTRY_NORMAL
+	/// Пункт есть у всего («Осмотреть», «Указать»): меню из одних таких не открывается
+	var/filler = FALSE
 
 /datum/context_menu_entry/New(name, hint, style)
 	src.name = name

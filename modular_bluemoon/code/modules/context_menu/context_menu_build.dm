@@ -138,11 +138,14 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		params = "[params];[list2params(click_position)]"
 	if(!style)
 		style = (intent && intent != INTENT_HELP) ? CONTEXT_ENTRY_DANGER : CONTEXT_ENTRY_NORMAL
-	result += new /datum/context_menu_entry/click(name, hint, style, params, intent)
+	. = new /datum/context_menu_entry/click(name, hint, style, params, intent)
+	result += .
 
 /datum/context_menu/proc/add_basic_entries(atom/A, list/result, list/shown_clicks, list/style)
+	var/datum/context_menu_entry/filler_entry
 	if(context_menu_style_option(style, "show_examine"))
-		add_click(result, shown_clicks, A, "Осмотреть", "Shift-ЛКМ", "shift=1;left=1")
+		filler_entry = add_click(result, shown_clicks, A, "Осмотреть", "Shift-ЛКМ", "shift=1;left=1")
+		filler_entry?.filler = TRUE
 	if(isitem(A) && context_menu_can_take(user, A))
 		if(user.get_active_held_item())
 			result += new /datum/context_menu_entry/take("Взять", "второй рукой", CONTEXT_ENTRY_NORMAL)
@@ -155,7 +158,8 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		else if(!movable.anchored && user.Adjacent(movable))
 			add_click(result, shown_clicks, A, "Потянуть", "Ctrl-ЛКМ", "ctrl=1;left=1")
 	if(A != user && context_menu_style_option(style, "show_point"))
-		add_click(result, shown_clicks, A, "Указать", "Shift-СКМ", "shift=1;middle=1")
+		filler_entry = add_click(result, shown_clicks, A, "Указать", "Shift-СКМ", "shift=1;middle=1")
+		filler_entry?.filler = TRUE
 
 /// Разовые действия каждым интентом: текущий - в меню, остальные - в подменю «Интенты…». С предметом в руке - только «использовать» и удар им.
 /datum/context_menu/proc/add_intent_entries(atom/A, list/result, list/shown_clicks, list/other_intents)

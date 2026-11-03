@@ -29,11 +29,13 @@
 		return
 	if(swallow_right_button_release(params))
 		return
-	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое
+	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое; ЛКМ по цели меню - см. click_passes()
 	if(active_context_menu)
-		var/reopen = right_click_opens_menu(params2list(params), A)
+		var/list/modifiers = params2list(params)
+		var/reopen = right_click_opens_menu(modifiers, A)
+		var/passes = reopen || active_context_menu.click_passes(A, modifiers)
 		close_context_menu(reopen ? "reopen" : "click", A)
-		if(!reopen)
+		if(!passes)
 			return
 	if(SEND_SIGNAL(src, COMSIG_MOB_CLICKON, A, params) & COMSIG_MOB_CANCEL_CLICKON)
 		return

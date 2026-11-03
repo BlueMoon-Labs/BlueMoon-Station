@@ -1680,7 +1680,7 @@
 	user.close_context_menu("moved")
 	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, CONTEXT_MENU_OFFER_STREAK - 1, "Отход посчитан брошенным меню")
 	menu = user.open_context_menu(target, "right=1")
-	user.CommonClickOn(target, "left=1")
+	user.CommonClickOn(get_step(user, WEST), "left=1")
 	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, CONTEXT_MENU_OFFER_STREAK, "Клик мимо не посчитан брошенным меню")
 	menu = user.open_context_menu(target, "right=1")
 	TEST_ASSERT_NOTNULL(menu.mode_offer, "Нет строки смены режима после порога")
@@ -1696,3 +1696,45 @@
 	menu = user.open_context_menu(target, "right=1")
 	TEST_ASSERT_NULL(menu.mode_offer, "Строка смены режима у того, кто режим уже выбирал")
 	user.close_context_menu()
+
+/// ПКМ по голому полу: кроме «Осмотреть» и «Указать» выбрать нечего, такие меню почти всегда бросают - не открывается и брошенным не считается
+/datum/unit_test/context_menu_skip_empty
+
+/datum/unit_test/context_menu_skip_empty/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/turf/bare_turf = get_step(user, EAST)
+	TEST_ASSERT_NULL(user.open_context_menu(bare_turf, "right=1"), "Открылось меню голого пола")
+	TEST_ASSERT_NULL(user.active_context_menu, "Меню голого пола осталось открытым")
+	TEST_ASSERT_EQUAL(user.context_menu_abandon_streak, 0, "Неоткрытое меню посчитано брошенным")
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	user.put_in_active_hand(pen)
+	TEST_ASSERT_NOTNULL(user.open_context_menu(bare_turf, "right=1"), "С предметом в руке меню пола не открылось")
+	user.close_context_menu()
+
+/// ЛКМ по тому, по чему открыто меню, на интенте помощи закрывает меню и проходит; по мобу, в сторону и на других интентах - только закрывает
+/datum/unit_test/context_menu_click_own_target
+
+/datum/unit_test/context_menu_click_own_target/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, get_step(user, EAST))
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, WEST))
+	user.record_clicks = TRUE
+	user.a_intent = INTENT_HELP
+	var/datum/context_menu/menu = user.open_context_menu(pen, "right=1")
+	user.CommonClickOn(pen, "left=1")
+	TEST_ASSERT(QDELETED(menu), "ЛКМ по цели не закрыл меню")
+	TEST_ASSERT_EQUAL(user.seen_intent, INTENT_HELP, "Меню съело ЛКМ по своей цели")
+	TEST_ASSERT_EQUAL(menu.close_reason, "click", "Закрытие кликом по цели не помечено")
+
+	user.seen_intent = null
+	user.open_context_menu(pen, "right=1")
+	user.CommonClickOn(get_step(user, NORTH), "left=1")
+	TEST_ASSERT_NULL(user.seen_intent, "Клик в сторону от меню прошёл")
+	user.open_context_menu(other, "right=1")
+	user.CommonClickOn(other, "left=1")
+	TEST_ASSERT_NULL(user.seen_intent, "Клик по мобу из меню прошёл")
+	user.a_intent = INTENT_HARM
+	user.open_context_menu(pen, "right=1")
+	user.CommonClickOn(pen, "left=1")
+	TEST_ASSERT_NULL(user.seen_intent, "Клик по цели не на помощи прошёл")
+	TEST_ASSERT_NULL(user.active_context_menu, "Меню не закрылось")

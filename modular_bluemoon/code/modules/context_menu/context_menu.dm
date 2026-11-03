@@ -308,6 +308,9 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(params2list(params)["catcher"])
 		return
 	active_context_menu = new /datum/context_menu(src, target, params)
+	if(active_context_menu.empty)
+		QDEL_NULL(active_context_menu)
+		return
 	GLOB.context_menu_stats.record_open(src, params2list(params), active_context_menu.open_kind)
 	// кто выбрал меню сам, знает, как его сменить
 	if(client && !client.context_menu_hint_shown && right_click_menu_preferred() && isnull(client.prefs?.right_click_choice))
@@ -422,6 +425,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/open_kind
 	var/opened_at
 	var/closed_on_target = FALSE
+	/// Выбрать нечего, кроме «Осмотреть» и «Указать»: меню не показывается и в статистику не идёт
+	var/empty = FALSE
 	/// Строка «сменить режим ПКМ» первой на каждой странице: меню раз за разом бросают
 	var/datum/context_menu_entry/mode_choice/mode_offer
 	/// Анимация открытия уже была; листание её не повторяет
@@ -467,10 +472,23 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 			return
 		if(!isturf(target) && length(candidates) > 1)
 			tile = target_turf
-	show_target(target)
+	set_target(target)
+	entries = build_entries(target)
+	// голый пол и стену почти всегда бросали (10669: 45 из 47), ПКМ по ним ничего не открывает
+	if(!has_actions())
+		empty = TRUE
+		return
+	render()
+
+/// Есть что выбрать, кроме «Осмотреть» и «Указать», которые есть у всего
+/datum/context_menu/proc/has_actions()
+	for(var/datum/context_menu_entry/entry as anything in entries)
+		if(!entry.filler)
+			return TRUE
+	return FALSE
 
 /datum/context_menu/Destroy()
-	if(user && !chosen)
+	if(user && !chosen && !empty)
 		GLOB.context_menu_stats.record_abandon(user, close_reason || "other", open_kind, (world.time - opened_at) / 10, closed_on_target)
 		user.note_context_menu_abandon(close_reason)
 	if(user)
@@ -633,6 +651,11 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Закрывающий клик пришёлся по тому, по чему открыто меню, или по вещи из его списка клетки
 /datum/context_menu/proc/is_own_atom(atom/thing)
 	return thing == clicked || thing == target || (tile && (thing == tile || thing.loc == tile))
+
+/// ЛКМ на помощи по тому, по чему открыто меню, закрывает его и проходит: игрок хотел просто кликнуть.
+/// По мобу и на других интентах клик рядом с меню может быть промахом по строке - он только закрывает меню.
+/datum/context_menu/proc/click_passes(atom/thing, list/modifiers)
+	return modifiers["left"] && !modifiers["right"] && !ismob(thing) && user.a_intent == INTENT_HELP && is_own_atom(thing)
 
 /// Ctrl, Shift или Alt по строке объекта из списка - тот же клик по самому объекту, без захода в его действия.
 /// Осмотр оставляет список открытым: в куче осматривают подряд.
