@@ -157,16 +157,6 @@
 		. = max(., node.get_security())
 	return clamp(., 1, 5)
 
-/// Unbound endpoints retain an authorization domain but gain no synthetic graph edges.
-/proc/netrun_fallback_network_for(turf/T)
-	if(!T)
-		return null
-	if(!is_station_level(T.z) && !is_mining_level(T.z))
-		return SSnetrun.get_network("ext[T.z]")
-	return SSnetrun.get_network("pub:[netrun_sector_for(T)]")
-
-
-
 /proc/netrun_mob_access(mob/user)
 	RETURN_TYPE(/list)
 	. = list()
@@ -184,7 +174,3 @@
 		var/obj/item/held = L.get_active_held_item()
 		if(held)
 			. |= held.GetAccess()
-
-// Кэш идентификатора ЛВС отсека, чтобы одна зона всегда давала одну сеть.
-/area
-	var/netrun_lan_id

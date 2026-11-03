@@ -310,6 +310,7 @@
 		return FALSE
 	state = "connecting"
 	monitor_connections++
+	log_core_event("bridge_connecting")
 	opened_at = world.timeofday
 	return TRUE
 
@@ -568,7 +569,7 @@
 
 /// Диагностика редкого protocol fault не добавляет обходов в обычный decode hot path.
 /datum/netrun_external_core/proc/record_rejected_output(list/result, sequence, applied)
-	var/list/report = list("kind" = netrun_external_safe_code(result["kind"], "unknown"), "output_sequence" = sequence, "applied_sequence" = applied, "binding_epoch" = binding_epoch)
+	var/list/report = list("kind" = netrun_external_safe_code(result["kind"], "unknown"), "output_sequence" = sequence, "applied_sequence" = applied, "world_epoch" = world_epoch, "engine_epoch" = engine_epoch, "binding_epoch" = binding_epoch)
 	for(var/key in list("code", "state", "phase"))
 		report[key] = netrun_external_safe_code(result[key], "none")
 	for(var/key in list("page_index", "from_graph_version", "graph_version", "graph_input_sequence", "infra_stamp", "av_infra_stamp"))
@@ -592,6 +593,7 @@
 			return FALSE
 		if(result["status"] == "rejected" || result["status"] == "resync_required" || result["error_code"])
 			last_error = netrun_external_safe_code(result["error_code"] || result["code"])
+			log_core_event("runtime_rejected", last_error)
 			return FALSE
 		ready = result["sync_state"] == "ready" && !result["topology_pending"] && result["graph_version"] != "0" && istext(result["graph_version"])
 		if(ready)
@@ -599,6 +601,7 @@
 			if(announced_ready_binding != binding_epoch)
 				announced_ready_binding = binding_epoch
 				log_world("NETRUN_CORE_READY external graph_published")
+				log_core_event("graph_ready")
 				// Resume a single Core-owned service watch after every binding change.
 				// Schedule outside the IPC decoder; no gameplay callback runs here.
 				owner.get_machine_transport().schedule_atmos_core_watch()
@@ -1233,6 +1236,7 @@
 /// Закрывает native worker неблокирующе и освобождает все borrowed source subscriptions и JSON-журналы.
 /datum/netrun_external_core/proc/close(reason = "closed")
 	if(state != "closed" && state != "resync_required")
+		log_core_event("bridge_disconnected", netrun_external_safe_code(reason))
 		monitor_disconnects++
 		if(reason != "closed" && reason != "world_shutdown" && reason != "destroyed")
 			monitor_last_failure = netrun_external_safe_code(reason)
@@ -1290,3 +1294,12 @@
 	state = "closed"
 	if(!QDELETED(owner) && owner.external_core == src)
 		owner.schedule_external_retry(reason)
+
+/// Общие с Host world/engine/binding и causal counters связывают диагностику без payload и токенов.
+/datum/netrun_external_core/proc/log_core_event(event, code = null)
+	var/list/entry = list("component" = "dm", "event" = netrun_external_safe_code(event), "simulation_time_ds" = max(0, round(world.time)),
+		"world_epoch" = world_epoch, "engine_epoch" = engine_epoch, "binding_epoch" = binding_epoch,
+		"input_sequence" = input_sequence, "applied_sequence" = last_applied_sequence, "output_sequence" = ack_output_sequence)
+	if(code)
+		entry["code"] = netrun_external_safe_code(code)
+	log_world("NETRUN_EVENT [json_encode(entry)]")

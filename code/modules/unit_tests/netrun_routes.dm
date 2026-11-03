@@ -177,7 +177,7 @@
 		return
 	clear_tables()
 	var/datum/component/netrun_node/anchor = declared_anchor(node)
-	import_binding(node, anchor, anchor ? SSnetrun.get_apc_network(anchor) : null)
+	import_binding(node, anchor, declared_network(anchor))
 	if(anchor)
 		import_edge(anchor, node, 1)
 	revision++
@@ -213,6 +213,19 @@
 	var/datum/component/netrun_node/declared = scene.fixture_anchors[REF(get_base_area(node.physical_turf()))]
 	return !QDELETED(declared) ? declared : (QDELETED(scene.fixture_anchor) ? null : scene.fixture_anchor)
 
+/// Только fixture задаёт LAN своих якорей; production получает идентификаторы и биндинги исключительно от C#.
+/datum/netrun_topology/import_fixture/proc/declared_network(datum/component/netrun_node/anchor)
+	if(QDELETED(anchor))
+		return null
+	var/area/room = apc_area(anchor)
+	var/sector = netrun_sector_for(anchor.physical_turf())
+	var/id = "dept_[sector || "none"]:[netrun_department_key(room)]"
+	var/datum/netrun_network/network = SSnetrun.networks[id]
+	if(!network)
+		network = new(id, room)
+		SSnetrun.networks[id] = network
+	return network
+
 /datum/netrun_topology/import_fixture/on_node_moved(datum/source, datum/component/netrun_node/node, turf/old_turf, turf/new_turf)
 	if(nodes[node.address] != node || node.netrun_projection_fixture_owner?.resolve())
 		return
@@ -232,7 +245,7 @@
 		var/list/node_neighbors = adjacency[node.address]
 		if(node_neighbors)
 			node_neighbors -= previous_anchor.address
-	import_binding(node, anchor, anchor ? SSnetrun.get_apc_network(anchor) : null)
+	import_binding(node, anchor, declared_network(anchor))
 	if(anchor && node != anchor)
 		import_edge(anchor, node, 1)
 	if(previous_anchor != anchor)
@@ -366,13 +379,13 @@
 	fixture_graph.revision++
 	if(QDELETED(fixture_anchor))
 		return
-	fixture_graph.import_binding(fixture_anchor, fixture_anchor, SSnetrun.get_apc_network(fixture_anchor))
+	fixture_graph.import_binding(fixture_anchor, fixture_anchor, fixture_graph.declared_network(fixture_anchor))
 	for(var/datum/component/netrun_node/node as anything in fixture_endpoints.Copy())
 		if(QDELETED(node))
 			fixture_endpoints -= node
 			continue
 		var/datum/component/netrun_node/anchor = fixture_graph.declared_anchor(node)
-		fixture_graph.import_binding(node, anchor, anchor ? SSnetrun.get_apc_network(anchor) : null)
+		fixture_graph.import_binding(node, anchor, fixture_graph.declared_network(anchor))
 		if(node.node_type == NETRUN_NODE_APC)
 			if(node.binding_sector == fixture_anchor.binding_sector)
 				fixture_graph.import_edge(fixture_anchor, node, 1)

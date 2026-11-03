@@ -98,6 +98,11 @@
 	var/list/edge = edge_lookup["[first]>[second]"]
 	if(edge)
 		return edge
+	return projected_relay_edge(first, second)
+
+/// Представление виртуального ребра из импортированного relay-bucket; физические связи здесь не рассчитываются.
+/datum/netrun_topology/proc/projected_relay_edge(first, second)
+	RETURN_TYPE(/list)
 	if(first != second && (first in relay_addresses) && (second in relay_addresses) && nodes[first] && nodes[second])
 		var/list/pair = sort_list(list(first, second))
 		return list("id" = "relay:[pair[1]]>[pair[2]]", "from" = pair[1], "to" = pair[2], "kind" = "relay", "latency" = NETRUN_RELAY_LATENCY)

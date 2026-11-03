@@ -70,8 +70,8 @@
 /datum/netrun_external_core/proc/update_host_metrics(list/metrics)
 	if(!islist(metrics))
 		return FALSE
-	var/static/list/numeric_keys = list("apply_us", "pump_us", "max_apply_us", "max_pump_us", "processing_us", "max_processing_us", "received_messages", "push_outputs", "coalesced_fact_frames", "input_unacked", "output_unacked", "node_count", "service_count", "sector_count", "active_requests", "active_discovery", "active_projections", "active_service_watches", "pending_events", "output_journal_frames", "output_journal_bytes", "input_queue_frames", "input_queue_bytes", "output_queue_frames", "output_queue_bytes", "managed_bytes", "working_set_bytes", "process_cpu_ms", "uptime_ms", "gc_gen0", "gc_gen1", "gc_gen2", "simulation_time_ds")
-	var/static/list/counter_keys = list("applied_sequence", "graph_version", "graph_input_sequence")
+	var/static/list/numeric_keys = list("apply_us", "pump_us", "max_apply_us", "max_pump_us", "processing_us", "max_processing_us", "received_messages", "push_outputs", "coalesced_fact_frames", "input_unacked", "output_unacked", "node_count", "service_count", "sector_count", "active_requests", "active_discovery", "active_projections", "active_service_watches", "entity_count", "active_entity_navigation", "pending_core_tasks", "storage_count", "file_count", "module_count", "pending_events", "output_journal_frames", "output_journal_bytes", "input_queue_frames", "input_queue_bytes", "output_queue_frames", "output_queue_bytes", "managed_bytes", "working_set_bytes", "process_cpu_ms", "uptime_ms", "gc_gen0", "gc_gen1", "gc_gen2", "simulation_time_ds")
+	var/static/list/counter_keys = list("applied_sequence", "graph_version", "graph_input_sequence", "enqueued_task_sequence", "completed_task_sequence")
 	var/static/list/code_keys = list("sync_state", "topology_error", "communication_error")
 	var/list/accepted = list()
 	for(var/key in numeric_keys)

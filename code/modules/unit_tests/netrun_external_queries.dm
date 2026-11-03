@@ -280,7 +280,7 @@
 /// techweb, and rebinding drops obsolete weak observer indexes.
 /datum/unit_test/netrun_external_queries_research_watch_fanout/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
-	var/datum/netrun_research_core_observer/observer = allocate(/datum/netrun_research_core_observer)
+	var/datum/netrun_research_core_observer/observer = allocate(/datum/netrun_research_core_observer, SSnetrun.get_machine_transport())
 	var/datum/netrun_machine_service/research_client/core_watch_test/first = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.source.node)
 	var/datum/netrun_machine_service/research_client/core_watch_test/second = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.target.node)
 	TEST_ASSERT_NULL(first.resync_timer, "A non-snapshot research client starts without a polling timer")
@@ -289,6 +289,9 @@
 	second.wants_snapshots = TRUE
 	observer.track_client(first, "web-a")
 	observer.track_client(second, "web-b")
+	var/datum/netrun_core_service_watch/original_watch = observer.watch
+	TEST_ASSERT_NOTNULL(original_watch, "Research clients share a real source-scoped Core directory watch")
+	TEST_ASSERT_EQUAL(observer.source_ref?.resolve(), first, "The first interested client supplies the physical directory source")
 	observer.netrun_core_service_changed("added", "research.server", "web-a", null, null)
 	TEST_ASSERT_EQUAL(first.core_notifications, 0, "Events are not delivered before snapshot_end")
 	observer.netrun_core_service_changed("snapshot_end", "research.server", null, null, null)
@@ -299,7 +302,11 @@
 	observer.advance_refresh()
 	TEST_ASSERT_EQUAL(first.core_notifications, 2, "Only matching research authority receives updates")
 	TEST_ASSERT_EQUAL(second.core_notifications, 1, "Other research authorities do not receive redundant refreshes")
+	observer.netrun_core_service_changed("updated", "research.server", "web-a", null, null)
 	observer.track_client(first, "web-b")
+	TEST_ASSERT(observer.snapshot_finished, "Rebinding the directory source preserves the existing watch snapshot")
+	TEST_ASSERT_EQUAL(observer.watch, original_watch, "Techweb rebinding cannot restart an otherwise valid physical directory watch")
+	TEST_ASSERT_NULL(observer.subscribers_by_binding["web-a"], "Rebinding removes the obsolete weak observer bucket")
 	observer.netrun_core_service_changed("removed", "research.server", "web-a", null, null)
 	observer.advance_refresh()
 	TEST_ASSERT_EQUAL(first.core_notifications, 2, "Old authority no longer wakes rebound consumers")
@@ -308,10 +315,16 @@
 	TEST_ASSERT_EQUAL(first.core_notifications, 3, "Rebound consumer follows the new authority")
 	TEST_ASSERT_EQUAL(second.core_notifications, 2, "Existing consumer still sees its authority")
 	observer.untrack_client(first)
+	TEST_ASSERT(observer.snapshot_finished, "Unsubscribing the live source keeps the shared directory snapshot valid")
+	TEST_ASSERT_EQUAL(observer.watch, original_watch, "Other consumers keep the same live source watch")
+	TEST_ASSERT_NULL(observer.retry_timer, "A live source does not need a replacement watch or retry delay")
 	observer.netrun_core_service_changed("updated", "research.server", "web-b", null, null)
 	observer.advance_refresh()
 	TEST_ASSERT_EQUAL(first.core_notifications, 3, "Unsubscribed consumer receives no event")
 	TEST_ASSERT_EQUAL(second.core_notifications, 3, "Other consumers retain their watcher")
+	observer.untrack_client(second)
+	TEST_ASSERT_NULL(observer.watch, "The final unsubscribe releases the shared Core watch")
+	TEST_ASSERT_NULL(observer.source_ref, "The final unsubscribe releases its physical source identity")
 
 /// Asynchronous Core catalog lookup must notify native adapters only after
 /// a complete result reaches the common delivery worker, including failures.

@@ -280,6 +280,7 @@ export async function runManaged({ root = stationRoot, source = resolveCoreSourc
   const corePort = process.env.NETRUN_CORE_PORT || '18462';
   if (!/^[1-9]\d{0,4}$/.test(corePort) || Number(corePort) > 65535) throw new Error('invalid_core_port');
   const env = { ...process.env, NETRUN_CORE_MODE: mode, NETRUN_CORE_PORT: corePort,
+    NETRUN_LOG_FILE: process.env.NETRUN_LOG_FILE || path.join(root, 'data/netrun-core/logs/host.jsonl'),
     NETRUN_CORE_LIBRARY: path.join(built.directory, 'netrun_bridge.dll'), NETRUN_CORE_TOKEN_FILE: token, NETRUN_SESSION_TOKEN_FILE: token };
   delete env.NETRUN_SESSION_TOKEN;
   return supervisePair({ cwd: root, env, hostCommand: [await dotnetPath({ root, source }), path.join(built.directory, 'host/Netrun.Host.dll'), 'serve', corePort],

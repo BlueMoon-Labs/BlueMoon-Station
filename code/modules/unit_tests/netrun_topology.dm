@@ -48,7 +48,7 @@
 	SSnetrun.ensure_topology()
 	var/datum/component/netrun_node/target_node = target.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/apc_node = medical_apc.GetComponent(/datum/component/netrun_node)
-	var/datum/netrun_network/medical_network = SSnetrun.get_apc_network(apc_node)
+	var/datum/netrun_network/medical_network = scene.fixture_graph.declared_network(apc_node)
 	scene.fixture_graph.import_binding(apc_node, apc_node, medical_network)
 	scene.fixture_graph.import_binding(target_node, apc_node, medical_network)
 	scene.fixture_graph.clear_tables()

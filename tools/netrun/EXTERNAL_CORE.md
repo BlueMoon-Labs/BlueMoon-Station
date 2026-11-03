@@ -210,6 +210,28 @@ volume и token с подходящими правами. Token не добав�
 
 ## Настройки
 
+Windows launcher сохраняет структурированный журнал Host в
+`data/netrun-core/logs/host.jsonl`. JSONL содержит world/engine/binding,
+request/input/output identifiers, безопасные event/code и постоянные telemetry
+samples. DM пишет соответствующие `NETRUN_EVENT` и `NETRUN_CORE_REJECT` в
+штатный игровой журнал; `binding_epoch` связывает записи обеих сторон.
+Payload, содержимое файлов и session token в эти события не попадают.
+
+Host использует неблокирующий bounded log sink и ротацию: 16 MiB активный файл
+и четыре архива по умолчанию. Пределы и уровень задаются `NETRUN_LOG_CAPACITY`,
+`NETRUN_LOG_MAX_FILE_BYTES`, `NETRUN_LOG_RETAINED_FILES`, `NETRUN_LOG_LEVEL`.
+`NETRUN_LOG_FILE` меняет путь; `NETRUN_LOG_TELEMETRY_INTERVAL_MS=0` отключает
+постоянные снимки, сохраняя lifecycle/error events. При явном файле default
+интервал — 2000 ms. Счётчики dropped/sink failures позволяют обнаружить потери
+диагностики при переполнении без остановки игрового обмена.
+
+Compose сохраняет JSONL через stdout/stderr и Docker `json-file` logging с
+пределом 16 MiB × 5 файлов на каждый контейнер; telemetry также включена каждые
+две секунды. `docker compose logs` позволяет экспортировать сохранённые записи.
+Явная загрузка доверенных локальных модов Host задаётся `NETRUN_PLUGIN_PATHS`
+(`;` между DLL в Windows, `:` в Linux); пути должны существовать внутри процесса
+Host. Автоматического поиска/скачивания исполняемых расширений нет.
+
 | Переменная | Назначение |
 |---|---|
 | `NETRUN_CORE_SOURCE` | Другой существующий либо автоматически клонируемый путь Core |

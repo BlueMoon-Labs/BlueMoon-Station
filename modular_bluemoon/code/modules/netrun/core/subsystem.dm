@@ -517,45 +517,6 @@ SUBSYSTEM_DEF(netrun)
 /datum/controller/subsystem/netrun/proc/ensure_topology()
 	return get_topology()
 
-/datum/controller/subsystem/netrun/proc/get_apc_network(datum/component/netrun_node/apc_node)
-	if(QDELETED(apc_node) || apc_node.node_type != NETRUN_NODE_APC)
-		return null
-	var/turf/here = apc_node.physical_turf()
-	// The department lookup (sector + area type + string id) only changes when the APC moves,
-	// so cache the resolved LAN per turf instead of recomputing it for every tick.
-	if(apc_node.network && apc_node.apc_network_turf == here && networks[apc_node.network.id] == apc_node.network)
-		return apc_node.network
-	var/area/source_area
-	if(istype(apc_node.parent, /obj/machinery/power/apc))
-		var/obj/machinery/power/apc/apc = apc_node.parent
-		source_area = apc.area
-	if(!source_area)
-		source_area = get_area(apc_node.parent)
-	source_area = source_area?.base_area || source_area
-	var/sector = netrun_sector_for(here)
-	var/id = "dept_[sector || "none"]:[netrun_department_key(source_area)]"
-	var/datum/netrun_network/network = networks[id]
-	if(!network)
-		network = new(id, source_area)
-		networks[id] = network
-	apc_node.apc_network_turf = here
-	return network
-
-/// ЛВС отсека: по одной на APC-зону, свойства берутся из типа отсека.
-/datum/controller/subsystem/netrun/proc/get_area_network(area/root_area)
-	if(!root_area)
-		return
-	var/datum/component/netrun_node/apc_node = root_area.power_apc?.GetComponent(/datum/component/netrun_node)
-	if(apc_node)
-		return get_apc_network(apc_node)
-	if(!root_area.netrun_lan_id)
-		root_area.netrun_lan_id = "lan_[REF(root_area)]"
-	var/datum/netrun_network/network = networks[root_area.netrun_lan_id]
-	if(!network)
-		network = new(root_area.netrun_lan_id, root_area)
-		networks[network.id] = network
-	return network
-
 /// Зарегистрировать событие сети: его отрисуют карты всех активных раннеров.
 /// `packet` describes a flight: list("id", "packet", "phase", "duration", "label", "owner").
 /datum/controller/subsystem/netrun/proc/post_event(kind, from_ref, to_ref, list/route, list/packet)

@@ -61,7 +61,13 @@
 	if(QDELETED(client) || !istext(tag) || !length(tag))
 		return
 	if(client.research_core_tag && client.research_core_tag != tag)
-		untrack_client(client)
+		// Смена techweb не удаляет сам source service общего watch. Переносим
+		// weak observer атомарно, сохраняя уже завершённый directory snapshot.
+		var/list/previous = subscribers_by_binding[client.research_core_tag]
+		if(previous)
+			previous -= REF(client)
+			if(!length(previous))
+				subscribers_by_binding -= client.research_core_tag
 	var/list/bucket = subscribers_by_binding[tag]
 	if(!bucket)
 		bucket = list()
@@ -86,9 +92,9 @@
 			deltimer(retry_timer)
 		retry_timer = null
 		next_attempt = 0
-	else if(source_ref?.resolve() == client)
-		forget_watch()
-		schedule_retry()
+	// Источник общего directory-watch остаётся живым сервисом после отписки
+	// от techweb. Его удаление/недоступность обрабатываются отдельно; остальные
+	// подписчики не должны терять готовый snapshot из-за смены интереса source.
 
 /datum/netrun_research_core_observer/proc/pick_source()
 	for(var/tag in subscribers_by_binding)
@@ -857,7 +863,12 @@
 
 /datum/netrun_machine_service/research_client/proc/binding_changed(datum/source, datum/techweb/new_web)
 	SIGNAL_HANDLER
-	SSnetrun.machine_transport?.research_core_observer?.untrack_client(src)
+	var/datum/netrun_research_core_observer/observer = SSnetrun.machine_transport?.research_core_observer
+	if(observer)
+		if(wants_snapshots && !QDELETED(new_web))
+			observer.track_client(src, REF(new_web))
+		else
+			observer.untrack_client(src)
 	core_research_check_after = 0
 	binding_generation++
 	for(var/token in pending_designs.Copy())

@@ -142,6 +142,22 @@
 		diver.console.workspace_view = "map"
 		var/list/resident_data = diver.console.ui_data(diver)
 		TEST_ASSERT(netrun_map_has_node(resident_data, entrance.target_node.address), "A real resident must see its imported network map")
+		log_world("NETRUN_CORE_LIVE_STAGE entity_core_proxy")
+		var/datum/netrun_external_entity_proxy/proxy = client.entity_proxy(diver, TRUE)
+		TEST_ASSERT(proxy?.register(), "Resident definition must enqueue directly to the real Core FIFO")
+		var/entity_deadline = world.time + 30 SECONDS
+		while(world.time < entity_deadline && !proxy.registered && client.ready)
+			sleep(world.tick_lag)
+		TEST_ASSERT(proxy.registered, "Core actor creation must return a native read model")
+		var/before_integrity = diver.integrity
+		TEST_ASSERT(proxy.submit_action("damage", netrun_external_json_object(list("amount" = "7"))), "Damage intent must enqueue without changing the DM projection")
+		TEST_ASSERT_EQUAL(diver.integrity, before_integrity, "DM does not compute damage while enqueueing the actor task")
+		entity_deadline = world.time + 30 SECONDS
+		while(world.time < entity_deadline && diver.integrity == before_integrity && client.ready)
+			sleep(world.tick_lag)
+		TEST_ASSERT_EQUAL(diver.integrity, before_integrity - 7, "The real Core actor owner must publish the damage outcome")
+		TEST_ASSERT(netrun_external_decimal_compare(proxy.revision, "1") > 0, "Core actor projection must carry a monotonic state revision")
+		TEST_ASSERT(client.ready, "Actor FIFO traffic must not invalidate the network bridge")
 		diver.return_to_body()
 	var/observe_seconds = text2num(world.GetConfig("env", "NETRUN_CORE_LIVE_OBSERVE_SECONDS"))
 	if(isnum(observe_seconds) && observe_seconds > 0)

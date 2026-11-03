@@ -86,14 +86,7 @@
 #define NETRUN_EXECUTION_MAX_INTERVAL (10 MINUTES)
 
 // Сети
-#define NETRUN_GLOBAL_ID "ntnet"
 #define NETRUN_LAN_PUBLIC "pub"
-#define NETRUN_LAN_ENGINEERING "eng"
-#define NETRUN_LAN_MEDICAL "med"
-#define NETRUN_LAN_SCIENCE "sci"
-#define NETRUN_LAN_CARGO "cargo"
-#define NETRUN_LAN_SECURITY "sec"
-#define NETRUN_LAN_COMMAND "cmd"
 
 #define NETRUN_RELAY_LATENCY 3
 #define NETRUN_MAX_PACKET_LOG 100

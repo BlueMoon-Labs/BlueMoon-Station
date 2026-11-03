@@ -5,6 +5,11 @@ services:
     pull_policy: never
     platform: linux/amd64
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "16m"
+        max-file: "5"
     ports:
       - "${NETRUN_GAME_ADDRESS:-127.0.0.1}:${NETRUN_GAME_PORT:-1337}:1337"
     environment:
@@ -34,6 +39,11 @@ services:
     pull_policy: never
     platform: linux/amd64
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "16m"
+        max-file: "5"
     network_mode: service:byond
     depends_on:
       byond:
@@ -43,6 +53,8 @@ services:
     environment:
       NETRUN_SESSION_TOKEN_FILE: /run/secrets/netrun_session_token
       NETRUN_PORT: "18462"
+      NETRUN_LOG_LEVEL: ${NETRUN_LOG_LEVEL:-info}
+      NETRUN_LOG_TELEMETRY_INTERVAL_MS: ${NETRUN_LOG_TELEMETRY_INTERVAL_MS:-2000}
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m

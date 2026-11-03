@@ -867,9 +867,7 @@
 	var/list/edge = edge_lookup["[first]>[second]"]
 	if(edge && external_data.address_keys[edge["from"]] == edge["from_token"] && external_data.address_keys[edge["to"]] == edge["to_token"])
 		return edge
-	if(first != second && (first in relay_addresses) && (second in relay_addresses) && nodes[first] && nodes[second])
-		var/list/pair = sort_list(list(first, second))
-		return list("id" = "relay:[pair[1]]>[pair[2]]", "from" = pair[1], "to" = pair[2], "kind" = "relay", "latency" = NETRUN_RELAY_LATENCY)
+	return projected_relay_edge(first, second)
 
 /// Источник UI не может превратить импортированную таблицу в native Dijkstra через copy/self-healing.
 /datum/netrun_path_tree/external

@@ -57,6 +57,7 @@
 	var/datum/netrun_external_effects/machines/executor
 	var/datum/netrun_machine_service/source
 	var/datum/netrun_machine_service/external_fixture/destination
+	var/last_native_code
 /datum/netrun_external_fixture/New(datum/netrun_transport_scene/scene)
 	worker = new
 	worker.external_configuration_checked = TRUE
@@ -73,6 +74,11 @@
 	client.effects = executor
 	source = scene.source
 	destination = new(scene.target.resolve_node(), scene.receiver)
+	// Ready Host уже видел initial snapshot. Прогреваем настоящие raw endpoint
+	// revisions/sector metadata до supplied invocation, а не подписываем revision 0.
+	client.export_node(source.resolve_node(), TRUE)
+	client.export_node(destination.resolve_node(), TRUE)
+	client.fact_acknowledged = client.fact_tail
 /datum/netrun_external_fixture/Destroy()
 	client?.close("fixture_cleanup")
 	QDEL_NULL(client)
@@ -83,8 +89,23 @@
 	source = null
 	return ..()
 
-/// Эмулирует prior admission и создаёт wire event без REF/address aliases или произвольного proc name.
-/datum/netrun_external_fixture/proc/invocation(datum/netrun_external_request_context/context)
+/// Эмулирует Host ACK текущего causal prefix через настоящий journal drain, без реального IPC.
+/// Native callbacks/изменения после initial snapshot могут добавить новые infrastructure facts.
+/datum/netrun_external_fixture/proc/acknowledge_fact_prefix()
+	// Supplied Host event означает, что предыдущий fixture input уже принят и обработан.
+	client.pending_frame = null
+	while(client.journal_head <= length(client.journal))
+		if(!client.send_journal(128, FALSE))
+			return FALSE
+		client.pending_frame = null
+	client.fact_acknowledged = client.fact_consumed
+	return client.fact_acknowledged == client.fact_tail
+
+/// Эмулирует prior admission/ACK и создаёт wire event без REF/address aliases или произвольного proc name.
+/// Negative authority tests явно оставляют prefix неподтверждённым.
+/datum/netrun_external_fixture/proc/invocation(datum/netrun_external_request_context/context, acknowledge_facts = TRUE)
+	if(acknowledge_facts)
+		acknowledge_fact_prefix()
 	if(context.stage == "queued" || context.stage == "submitting")
 		context.stage = "accepted"
 	return list("kind" = "service_invocation", "binding_epoch" = context.binding_epoch, "request_id" = context.request_id,
@@ -112,6 +133,13 @@
 	. = executor.process_result(client, result)
 	if(.)
 		pump_native(result["invocation_id"])
+		var/datum/netrun_external_invocation/invocation = executor.invocations[result["invocation_id"]]
+		if(invocation?.result_json)
+			var/list/native_result = json_decode(invocation.result_json)
+			last_native_code = native_result["code"]
+			if(last_native_code == "native_topology_pending")
+				var/datum/netrun_external_request_context/context = executor.pending[result["request_id"]]
+				last_native_code += " (facts [client.fact_acknowledged]/[client.infrastructure_barrier], source [client.node_revision(context?.source_node)]/[result["source_node_revision"]], target [client.node_revision(context?.destination_node)]/[result["destination_node_revision"]])"
 
 /// Только fixture ждёт старта отдельной cooperative фазы, не превращая production decode в синхронный handler.
 /datum/netrun_external_fixture/proc/pump_native(invocation_id)
@@ -211,7 +239,7 @@
 	var/list/invocation = fixture.invocation(context)
 	TEST_ASSERT(fixture.receive_result(invocation), "Native invocation passes exact identity checks")
 	TEST_ASSERT(fixture.receive_result(invocation), "Duplicate reuses the journal result")
-	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Receive executes exactly once within this binding")
+	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Receive executes exactly once within this binding; native result [fixture.last_native_code]")
 	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 1, "A queued result is not duplicated")
 	TEST_ASSERT(!outcomes["delivered"] && !outcomes["failed"], "Native receive is distinct from transport completion")
 	var/list/completed = fixture.completion(request_id)
@@ -272,7 +300,7 @@
 	var/request_id = context.request_id
 	var/list/event = fixture.invocation(context)
 	TEST_ASSERT(fixture.receive_result(event), "The invocation is journaled before entering handler")
-	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Synthetic effect started once")
+	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Synthetic effect started once; native result [fixture.last_native_code]")
 	var/datum/netrun_external_command/result = fixture.executor.control_commands[1]
 	var/list/decoded = json_decode(result.raw_json)
 	TEST_ASSERT_EQUAL(decoded["code"], "outcome_unknown", "Partial native effect is not called a known rejection")
@@ -291,7 +319,7 @@
 	fixture.executor.dispatch(fixture.source, fixture.destination, message)
 	var/datum/netrun_external_request_context/context = fixture.first_context()
 	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "Async native execution is accepted without blocking output processing")
-	TEST_ASSERT(context.executing, "Executing ledger is visible before handler returns")
+	TEST_ASSERT(context.executing, "Executing ledger is visible before handler returns; native result [fixture.last_native_code]")
 	fixture.executor.disconnected(fixture.client, "test_disconnect")
 	fixture.client.binding_epoch = "new-binding"
 	TEST_ASSERT(!QDELETED(message), "Executing native callback retains its message")
@@ -323,7 +351,7 @@
 		var/request_id = newer.request_id
 		var/list/event = fixture.invocation(newer)
 		TEST_ASSERT(fixture.receive_result(event), "New native operation executes once")
-		TEST_ASSERT(fixture.receive_result(fixture.completion(request_id)), "Later completion is accepted")
+		TEST_ASSERT(fixture.receive_result(fixture.completion(request_id)), "Later completion is accepted; native result [fixture.last_native_code]")
 		TEST_ASSERT_EQUAL(length(fixture.executor.invocations), 1, "An unacknowledged result still pins its exact record")
 		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Native result crosses logical input handoff")
 		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "action" = list("accepted" = TRUE)))
@@ -343,7 +371,7 @@
 	fixture.client.queue_fact("{}", TRUE)
 	fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list(), list()))
 	var/datum/netrun_external_request_context/context = fixture.first_context()
-	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "A valid invocation gets one known native result")
+	TEST_ASSERT(fixture.receive_result(fixture.invocation(context, FALSE)), "A valid invocation gets one known native result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Unacknowledged transit change cannot execute native effects")
 	var/datum/netrun_external_command/command = fixture.executor.control_commands[1]
 	var/list/body = json_decode(command.raw_json)
@@ -391,7 +419,10 @@
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
 	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
 	var/list/outcomes = list()
-	var/list/large = list("text" = repeat_string(131073, "A"))
+	var/large_text = "A"
+	for(var/index in 1 to 18)
+		large_text += large_text
+	var/list/large = list("text" = copytext(large_text, 1, 131074))
 	TEST_ASSERT(!fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(large, outcomes)), "Wire size refuses only this message")
 	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Local size refusal has no native context")
 	TEST_ASSERT_EQUAL(fixture.executor.request_serial, "0", "Local size refusal consumes no producer identity")
@@ -409,7 +440,7 @@
 	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("small" = TRUE), list())), "A following valid message uses the same binding")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Rejected payload never reaches native receive")
 
-/// Один runtime_result может сопровождать 64 events; только целый frame передвигает output ACK.
+/// Entry count не является performance-квотой; ограничивается размер wire frame, ACK остаётся атомарным.
 /datum/unit_test/netrun_external_core_output_65/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
 	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
@@ -422,8 +453,19 @@
 	results += "{\"kind\":\"diagnostics\"}"
 	frame["output_sequence"] = json_encode("2")
 	frame["results"] = netrun_external_json_array(results)
-	TEST_ASSERT(!fixture.client.process_frame(netrun_external_json_object(frame)), "Larger output is rejected before dispatch")
-	TEST_ASSERT_EQUAL(fixture.client.ack_output_sequence, "1", "Rejected oversized frame receives no ACK")
+	TEST_ASSERT(fixture.client.process_frame(netrun_external_json_object(frame)), "A 66th small event does not exceed the wire byte limit")
+	TEST_ASSERT_EQUAL(fixture.client.ack_output_sequence, "2", "The complete second frame advances exactly one ACK")
+	var/datum/netrun_external_core/recovery_fixture/sized = allocate(/datum/netrun_external_core/recovery_fixture, fixture.worker)
+	sized.state = "ready"
+	sized.ready = TRUE
+	sized.binding_epoch = "size-binding"
+	sized.world_epoch = "size-world"
+	sized.engine_epoch = "size-engine"
+	var/oversized = "A"
+	for(var/index in 1 to 19)
+		oversized += oversized
+	TEST_ASSERT(!sized.enqueue(oversized), "Wire reservation over 1 MiB is rejected before native enqueue")
+	TEST_ASSERT_EQUAL(sized.last_error, "source_frame_size", "Byte capacity retains a precise diagnostic")
 
 /// Native metadata сохраняет directed links и фильтры, а unsupported/oversized port снимает только capability.
 /datum/unit_test/netrun_external_core_communication_facts/Run()
