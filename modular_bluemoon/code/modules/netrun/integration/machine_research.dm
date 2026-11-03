@@ -165,6 +165,9 @@
 			pending_bindings -= refresh_binding
 			var/list/bucket = subscribers_by_binding[refresh_binding]
 			if(!length(bucket))
+				// A client may have unregistered after the event was queued.
+				// Empty buckets must still spend a slice, not spin in one tick.
+				processed++
 				continue
 			refresh_clients = bucket.Copy()
 			refresh_cursor = 1
@@ -179,9 +182,10 @@
 			client.on_core_research_catalog_changed()
 		else
 			var/list/current = subscribers_by_binding[refresh_binding]
-			current -= key
-			if(!length(current))
-				subscribers_by_binding -= refresh_binding
+			if(current)
+				current -= key
+				if(!length(current))
+					subscribers_by_binding -= refresh_binding
 		processed++
 	if(refresh_clients || length(pending_bindings))
 		schedule_refresh()
@@ -919,7 +923,12 @@
 	message.requester_ref = WEAKREF(src)
 	if(user)
 		message.user_ref = WEAKREF(user)
-	return send("research.server", message, REF(binding))
+	var/queued = send("research.server", message, REF(binding))
+	if(queued && (operation in list("snapshot", "watch")))
+		// Avoid re-requesting the same initial snapshot when the just-created
+		// Core watch immediately emits its initial directory snapshot.
+		core_research_check_after = max(core_research_check_after, world.time + 5 SECONDS)
+	return queued
 
 /datum/netrun_machine_service/research_client/accepts(datum/netrun_machine_message/message)
 	var/datum/techweb/binding = netrun_atom_techweb(host)

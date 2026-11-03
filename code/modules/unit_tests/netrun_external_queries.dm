@@ -283,6 +283,8 @@
 	var/datum/netrun_research_core_observer/observer = allocate(/datum/netrun_research_core_observer)
 	var/datum/netrun_machine_service/research_client/core_watch_test/first = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.source.node)
 	var/datum/netrun_machine_service/research_client/core_watch_test/second = allocate(/datum/netrun_machine_service/research_client/core_watch_test, scene.target.node)
+	TEST_ASSERT_NULL(first.resync_timer, "A non-snapshot research client starts without a polling timer")
+	TEST_ASSERT_NULL(second.resync_timer, "Other ordinary research clients also remain idle")
 	first.wants_snapshots = TRUE
 	second.wants_snapshots = TRUE
 	observer.track_client(first, "web-a")
