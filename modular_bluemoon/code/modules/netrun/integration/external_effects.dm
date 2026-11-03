@@ -300,6 +300,8 @@
 	if(active_binding != client.binding_epoch)
 		retire_if_idle()
 		active_binding = client.binding_epoch
+	if(QDELETED(source) || QDELETED(destination))
+		return reject_message(message, "источник или получатель удалён")
 	var/state_key = message.transport_operation() == "state" ? state_command_key(source, destination, message) : null
 	if(state_key)
 		var/replaced = replace_unsent_state(state_key, message)
@@ -362,7 +364,8 @@
 	command.fact_barrier = client.capture_fact_barrier()
 	if(isnull(command.fact_barrier))
 		qdel(command)
-		return FALSE
+		finish_context(context, FALSE, "source_fact_barrier")
+		return TRUE
 	command.context = context
 	command.raw_json = submission_json(context, message, raw_payload, frequency)
 	command.state_key = state_key

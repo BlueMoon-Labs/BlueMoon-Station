@@ -596,7 +596,7 @@
 			var/datum/netrun_machine_service/service = service_ref?.resolve()
 			if(notice["event"] == "removed")
 				service = null
-			else if(QDELETED(service) || services[notice["identity"]] != service)
+			else if(QDELETED(service) || services[notice["identity"]] != service || service.service_tag() != notice["tag"])
 				continue
 			subscriber.netrun_service_changed(notice["event"], notice["family"], notice["tag"], notice["identity"], service)
 		if(TICK_CHECK)
