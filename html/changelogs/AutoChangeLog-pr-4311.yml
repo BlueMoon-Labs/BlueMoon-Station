@@ -1,6 +1,0 @@
-author: FelixRuin
-delete-after: true
-changes:
-  - qol: ввод нового имени для belly и глагола к нему в воре меню переведено на tgui
-  - spellcheck: переведён текст сопротивления во время нахождения vore belly
-  - spellcheck: пофикшен текст цели с квирком "Эстральный Цикл"
