@@ -218,6 +218,7 @@
 /// still preparing APC routes. Each device gets one bounded readiness callback.
 /datum/netrun_machine_service/atmos/device/network_ready()
 	if(registration_required())
+		SSnetrun.get_machine_transport().ensure_atmos_core_watch(src)
 		arm_registration(world.tick_lag)
 
 /datum/netrun_machine_service/atmos/device/proc/registration_required()
@@ -291,6 +292,8 @@
 
 /datum/netrun_machine_service/atmos/device/proc/retry_registration()
 	refresh_registration()
+	if(registration_required())
+		SSnetrun.get_machine_transport().ensure_atmos_core_watch(src)
 	if(registration_complete())
 		registration_attempts = 0
 		return
@@ -306,6 +309,11 @@
 		// reliably re-arm us once we can, so there is no point spinning in the meantime.
 		return
 	if(!online_missing)
+		// Core observes controller creation, removal and native state facts once for
+		// the entire atmosphere family; do not schedule thousands of blind polls
+		// when the initial subscription snapshot has completed successfully.
+		if(SSnetrun.get_machine_transport().atmos_core_observer?.watch_ready())
+			return
 		// No reachable compatible alarm is indexed for our area yet. This is routinely transient:
 		// during a late reactor/shuttle load the alarm (or its own area index) can settle after our
 		// first probe, and the rearm/power signals that would otherwise wake us can race that
@@ -676,3 +684,156 @@
 	if(device_tag)
 		return netrun_atmos_send("atmos.monitor", "atmos.device", list("sigtype" = "command", "tag" = device_tag, "status" = TRUE), null, device_tag)
 	return FALSE
+
+
+/// A single Core subscription for the whole atmosphere family; per-device watches
+/// would multiply initial snapshots and notifications by thousands of machines.
+/datum/netrun_machine_transport
+	var/datum/netrun_atmos_core_observer/atmos_core_observer
+	var/atmos_core_watch_timer
+
+/datum/netrun_machine_transport/proc/schedule_atmos_core_watch()
+	if(atmos_core_watch_timer || QDELETED(src))
+		return
+	atmos_core_watch_timer = addtimer(CALLBACK(src, PROC_REF(activate_atmos_core_watch)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_machine_transport/proc/activate_atmos_core_watch()
+	atmos_core_watch_timer = null
+	ensure_atmos_core_watch()
+
+/datum/netrun_machine_transport/proc/ensure_atmos_core_watch(datum/netrun_machine_service/atmos/device/preferred)
+	if(QDELETED(src))
+		return FALSE
+	if(!atmos_core_observer)
+		atmos_core_observer = new(src)
+	return atmos_core_observer.ensure_watch(preferred)
+
+/// The Core watcher observes catalog facts. It never directly mutates the
+/// network, routes a packet, or treats an advertisement as permission.
+/datum/netrun_atmos_core_observer
+	var/datum/netrun_machine_transport/transport
+	var/datum/netrun_core_service_watch/watch
+	var/datum/weakref/source_ref
+	var/list/areas_by_identity = list()
+	var/retry_timer
+	var/next_attempt = 0
+	var/snapshot_finished = FALSE
+
+/datum/netrun_atmos_core_observer/New(datum/netrun_machine_transport/transport)
+	..()
+	src.transport = transport
+
+/datum/netrun_atmos_core_observer/Destroy()
+	if(retry_timer)
+		deltimer(retry_timer)
+	retry_timer = null
+	forget_watch()
+	areas_by_identity.Cut()
+	transport = null
+	return ..()
+
+/datum/netrun_atmos_core_observer/proc/forget_watch()
+	var/datum/netrun_machine_service/source = source_ref?.resolve()
+	if(source)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	source_ref = null
+	QDEL_NULL(watch)
+	snapshot_finished = FALSE
+	areas_by_identity.Cut()
+
+/datum/netrun_atmos_core_observer/proc/source_deleted()
+	SIGNAL_HANDLER
+	forget_watch()
+	schedule_retry()
+
+/datum/netrun_atmos_core_observer/proc/watch_ready()
+	return !QDELETED(watch) && watch.phase == "active" && snapshot_finished && watch.binding == SSnetrun.external_core?.binding_epoch
+
+/datum/netrun_atmos_core_observer/proc/schedule_retry()
+	if(retry_timer || QDELETED(src))
+		return
+	next_attempt = world.time + 30 SECONDS
+	retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_watch)), 30 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_atmos_core_observer/proc/retry_watch()
+	retry_timer = null
+	ensure_watch()
+
+/datum/netrun_atmos_core_observer/proc/pick_source()
+	for(var/area_key in transport.atmos_devices_by_area)
+		var/list/devices = transport.atmos_devices_by_area[area_key]
+		for(var/datum/netrun_machine_service/atmos/device/device as anything in devices)
+			if(!QDELETED(device) && !QDELETED(device.host) && device.registration_required() && device.control_frequency() && device.resolve_node()?.is_online())
+				return device
+	return null
+
+/datum/netrun_atmos_core_observer/proc/ensure_watch(datum/netrun_machine_service/atmos/device/preferred)
+	var/datum/netrun_external_core/client = SSnetrun.external_core
+	if(!client?.ready || QDELETED(transport))
+		return FALSE
+	if(!QDELETED(watch) && watch.binding == client.binding_epoch && (watch.phase in list("subscribing", "active")))
+		return TRUE
+	if(world.time < next_attempt)
+		return FALSE
+	if(!QDELETED(watch))
+		forget_watch()
+	if(QDELETED(preferred) || !preferred.registration_required() || !preferred.resolve_node()?.is_online())
+		preferred = pick_source()
+	if(QDELETED(preferred))
+		schedule_retry()
+		return FALSE
+	watch = SSnetrun.watch_core_service(src, preferred, "atmos.controller")
+	if(QDELETED(watch))
+		schedule_retry()
+		return FALSE
+	source_ref = WEAKREF(preferred)
+	RegisterSignal(preferred, COMSIG_PARENT_QDELETING, PROC_REF(source_deleted))
+	snapshot_finished = FALSE
+	return TRUE
+
+/datum/netrun_atmos_core_observer/proc/rearm_area(area/location, datum/netrun_machine_service/atmos/controller/controller)
+	if(QDELETED(transport) || !location)
+		return
+	var/list/devices = transport.atmos_devices_by_area[REF(location)]
+	if(!length(devices))
+		return
+	for(var/datum/netrun_machine_service/atmos/device/device as anything in devices.Copy())
+		if(QDELETED(device) || !device.registration_required() || (controller && !controller.matches(device, null)))
+			continue
+		if(controller)
+			device.acknowledged_controllers -= REF(controller)
+		else
+			device.acknowledged_controllers.Cut()
+		device.registration_attempts = 0
+		device.arm_registration(world.tick_lag)
+
+/// Change notifications come from C# index after the authoritative fact commit.
+/datum/netrun_atmos_core_observer/netrun_core_service_changed(change, family, advertised_tag, identity, datum/netrun_machine_service/service)
+	if(family != "atmos.controller")
+		return
+	if(change == "snapshot_end")
+		snapshot_finished = TRUE
+		return
+	if(change == "source_unavailable" || change == "resync_required")
+		// The native callback owns no network state; a new source can take over
+		// after the Core has retired the old subscription generation.
+		snapshot_finished = FALSE
+		next_attempt = world.time
+		schedule_retry()
+		return
+	if(!(change in list("added", "updated", "removed")) || !istext(identity))
+		return
+	var/datum/weakref/previous_ref = areas_by_identity[identity]
+	var/area/previous = previous_ref?.resolve()
+	var/datum/netrun_machine_service/atmos/controller/controller = service
+	var/area/current
+	if(istype(controller) && !QDELETED(controller.host))
+		current = get_base_area(controller.host)
+	if(previous && previous != current)
+		rearm_area(previous, null)
+	if(change == "removed")
+		areas_by_identity -= identity
+		return
+	if(current)
+		areas_by_identity[identity] = WEAKREF(current)
+		rearm_area(current, controller)

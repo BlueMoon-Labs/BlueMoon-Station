@@ -123,3 +123,125 @@ real `message` commands keep their own request IDs. Completed or retrying
 network submissions are never rewritten. Atmospheric device registration also
 keeps at most one uncompleted status per controller and schedules one latest-state
 refresh when a suppressed update needs resending.
+
+
+## Core-owned service lifecycle subscriptions
+
+Services still publish authoritative `service_upsert/service_remove` facts through the
+native exporter. Persistent family/tag watches are registered in **C# Core**;
+DM does not calculate routes or poll discovery to maintain these subscriptions.
+
+```dm
+/datum/my_adapter
+    var/datum/netrun_core_service_watch/watch
+
+/datum/my_adapter/proc/start_watch(datum/netrun_machine_service/my_service)
+    watch = SSnetrun.watch_core_service(src, my_service, "atmos.controller")
+
+/datum/my_adapter/netrun_core_service_changed(change, family, advertised_tag, identity, datum/netrun_machine_service/service)
+    if(change == "added" || change == "updated")
+        // Service advertisement only. Real action must use send/request_submit,
+        // which checks network reachability and native permission on execution.
+        return
+    if(change == "removed")
+        // identity identifies a tombstoned service generation; service is null.
+        return
+    if(change == "resync_required" || change == "source_unavailable")
+        // Register a new watch once the source/connection is ready.
+        return
+
+/datum/my_adapter/Destroy()
+    QDEL_NULL(watch)
+    return ..()
+```
+
+The watch is bound to one exact source generation and live Core binding. Initial
+`added` notifications are followed by `snapshot_end`. Further notifications
+(`added`, `updated`, `removed`) arrive asynchronously through the existing
+output journal; DM schedules callbacks outside JSON decoding. A missing/deleted
+subscriber or explicit handle deletion invokes `service_unwatch`.
+
+A service can request that its changed advertisement be exported by invoking
+`SSnetrun.get_machine_transport().index_service(service)`. Identical full facts
+do not produce new Core events. Existing local `subscribe_service` callbacks
+remain available for native lifecycle events before the Core is ready.
+
+This phase migrates **service discovery observation**. Actual network effects,
+authentication, routing, and permission checks still use the established
+`DM -> Core request -> service_invocation -> DM provider -> invocation_result`
+contract. Route/visibility-aware subscriptions will follow separately.
+
+
+### Первая реальная миграция потребителя: атмосфера
+
+`atmos.controller` теперь отслеживается **одной** Core-подпиской на всю
+атмосферную сеть станции, а не отдельной подпиской на каждую вентиляцию.
+`netrun_atmos_core_observer` размещается в локальном transport и выбирает
+одну живую `atmos.device` как источник. На события `added/updated/removed`
+от Core он будит устройства только соответствующей native area, используя
+существующие индексы; доставку `status` и всё сетевое принятие выполняет Core.
+
+После `snapshot_end` при отсутствии совместимого alarm контроллера
+индивидуальные устройства больше не создают бесконечные регистрации каждые
+30 секунд. Когда Core объявляет новый контроллер, watcher автоматически
+перезапускает регистрацию в затронутой области. Если Core/watch недоступны,
+остаётся исходный редкий 30-секундный fallback. Если совместимый контроллер
+есть, но сетевой маршрут недоступен, сохраняются попытки доставки и revalidation.
+
+Observer пересоздаёт подписку после смены binding, потери узла-источника и
+терминального уведомления `resync_required` с единственным отложенным retry.
+Отписка из старого binding не может отменить команду другого, нового binding.
+Native callbacks по-прежнему не исполняются в IPC decoder.
+
+### Core camera catalog watcher
+
+Camera consoles reuse **one station-scoped `camera.stream` Core watch**. The
+first catalog consumer starts it lazily; source deletion and binding replacement
+release the old handle and permit rebinding. Initial advertisements are ignored
+until `snapshot_end`; deferred coalesced invalidation retires only
+`camera.stream` read-only discovery continuations (at most 64 global cache
+entries). Actual messages, graph streams, other discovery families, and
+ordinary in-flight `service_discover` requests remain unaffected.
+
+The watch does **not** grant camera access or expose its unfiltered catalog.
+Every console still uses source-specific Core routing, native
+`allows_camera` and routed request/reply for the actual live feed. If the
+watch cannot start, the original one-second discovery TTL remains in effect.
+
+### Core research authority observation
+
+One station-scoped `research.server` watch observes service lifecycle changes.
+Only clients that requested replicated snapshots are indexed by their current
+native techweb binding. Initial `snapshot_end` and later matching
+`added/updated/removed` events schedule bounded (eight clients per tick)
+revision checks, never direct cache mutation or authority assignment. Rebinding
+removes stale weak subscribers; losing the watch source or the Host binding
+retires its subscription and retries with a live research client.
+
+The actual `research.server` watch request remains ordinary Core-routed
+service discovery with native `research_peer`, `accepts`, and `live_authority`
+validation. Periodic 30-second revision probes remain for active snapshot
+subscribers to repair missed data pushes even without a directory change.
+Non-snapshot point producers no longer allocate an idle timer each; fabricators
+retain their native binding-repair timer.
+
+### Research cluster topology discovery migration
+
+Mapped research servers no longer copy or iterate `SSresearch.servers` to
+find their peers. On startup, topology changes or power restoration they
+submit one asynchronous, source-scoped `service_discover` request for
+`research.server` through the existing C# Core directory and APC routing
+provider. The native continuation parks while Core computes candidates and
+resumes only after the read-only catalog completes; failed admission retries
+after 15 seconds instead of spinning the worker.
+
+The source/target `research.server` match is enabled for peer discovery only:
+native configured research-network identity, physical online state and
+`netrun_mapped_server` are checked. The merger still revalidates the actual
+Core-backed route before modifying the shared Techweb. Normal research
+messages are accepted **only** from authorized `research.client` sources,
+and snapshots/credits remain delivered through the existing packet contract.
+No extra IPC protocol commands or C# Core changes are required for this step.
+
+The discovery continuation runs under the common worker budget, never does
+network path solving in DM, and retains one peer comparison per slice.

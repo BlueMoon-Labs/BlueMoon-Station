@@ -109,6 +109,11 @@
 /datum/netrun_machine_service/proc/receive(datum/netrun_machine_message/message)
 	return FALSE
 
+/// Read-only Core discovery completion hook, always deferred outside IPC decode.
+/// Domain adapters may schedule work; this is not an authorization grant.
+/datum/netrun_machine_service/proc/on_catalog_lookup_completed(family, succeeded)
+	return
+
 /datum/netrun_machine_service/proc/rejection_reason(datum/netrun_machine_message/message)
 	return "получатель отклонил пакет"
 
@@ -398,6 +403,12 @@
 	return transport.advance_resolutions()
 
 /datum/netrun_machine_transport/Destroy()
+	QDEL_NULL(research_core_observer)
+	QDEL_NULL(camera_core_observer)
+	if(atmos_core_watch_timer)
+		deltimer(atmos_core_watch_timer)
+	atmos_core_watch_timer = null
+	QDEL_NULL(atmos_core_observer)
 	SSnetrun.task_scheduler?.cancel("network_bootstrap", src)
 	SSnetrun.task_scheduler?.cancel("service_ready", src)
 	SSnetrun.task_scheduler?.cancel("discovery_wake", src)
