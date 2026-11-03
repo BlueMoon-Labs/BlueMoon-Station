@@ -314,7 +314,7 @@
 	slot = INTERNAL_ORGAN_CHEM_IMPLANT
 	w_class = WEIGHT_CLASS_TINY
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "chem_implant"
+	icon_state = "blood_pump_sec"
 	actions_types = list()
 	var/charge_capacity = 2
 	var/charge = 2
@@ -370,12 +370,13 @@
 
 /obj/item/organ/cyberimp/chest/blood_pump/sec_level
 	name = "Corporate Blood pump implant"
-	icon_state = "chem_implant_corpo"
+	icon_state = "blood_pump_sec"
 	active_security_level = CHEM_SEQ_SEC_LEVEL
 
 /obj/item/organ/cyberimp/chest/blood_pump/antag
-	name = "Combat Blood pump implant"
+	name = "Millitech Blood pump implant"
 	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
+	icon_state = "blood_pump"
 	charge_capacity = 3
 	charge = 3
 	charge_recharge_time = 3000

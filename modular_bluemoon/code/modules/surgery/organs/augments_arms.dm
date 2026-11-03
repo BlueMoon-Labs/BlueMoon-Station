@@ -3,18 +3,18 @@
 	desc = "An integrated blade implant designed to be installed into a persons arm. Stylish and deadly; Although, being caught with this without proper permits is sure to draw unwanted attention."
 	contents = newlist(/obj/item/melee/implantarmblade)
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "mantis"
+	icon_state = "mantis_dual"
 	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	name = "Corporate Mantis blade implant"
-	icon_state = "mantis_corpo"
+	icon_state = "mantis_corpo_dual"
 	contents = newlist(/obj/item/melee/implantarmblade/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /obj/item/organ/cyberimp/arm/mantis_blade/syndie
 	name = "Gorlex Mantis blade implant"
-	icon_state = "mantis_syndie"
+	icon_state = "mantis_syndie_dual"
 	contents = newlist(/obj/item/melee/implantarmblade/syndie)
 
 ///////////////
@@ -26,18 +26,17 @@
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	contents = newlist(/obj/item/melee/implantmonostring)
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "mantis"
+	icon_state = "implant_mono_wire_sec"
 	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/monostring/sec_level
 	name = "Corporate Monomolecular string implant"
-	icon_state = "mantis_corpo"
 	contents = newlist(/obj/item/melee/implantmonostring/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /obj/item/organ/cyberimp/arm/monostring/syndie
 	name = "Agent Monomolecular string implant"
-	icon_state = "mantis_syndie"
+	icon_state = "implant_mono_wire"
 	contents = newlist(/obj/item/melee/implantmonostring/syndie)
 
 ///////////////
@@ -48,7 +47,7 @@
 	name = "Gorilla arms implant"
 	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "mantis"
+	icon_state = "implant_gorilla_arms_sec"
 	occupies_both_arms = TRUE
 	actions_types = list() // пассивный имплант, выдвигать нечего
 	/// Бонус к урону кулаков.
@@ -156,12 +155,11 @@
 
 /obj/item/organ/cyberimp/arm/gorilla/sec_level
 	name = "Corporate Gorilla arms implant"
-	icon_state = "mantis_corpo"
 	active_security_level = SEC_LEVEL_BLUE
 
 /obj/item/organ/cyberimp/arm/gorilla/syndie
 	name = "Agent Gorilla arms implant"
-	icon_state = "mantis_syndie"
+	icon_state = "implant_gorilla_arms"
 	punch_bonus = 12
 	punch_wound_bonus = 12
 	door_force_time = 3 SECONDS
@@ -247,7 +245,7 @@
 	desc = "A compact, arm-integrated explosive launcher. The barrel deploys from the forearm and retracts when not in use."
 	contents = newlist(/obj/item/gun/energy/implanthandgun)
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "mantis"
+	icon_state = "implant_projectile_launcher_sec"
 	occupies_both_arms = FALSE
 
 /obj/item/organ/cyberimp/arm/handgun/l
@@ -255,7 +253,6 @@
 
 /obj/item/organ/cyberimp/arm/handgun/sec_level
 	name = "Corporate Integrated hand cannon implant"
-	icon_state = "mantis_corpo"
 	contents = newlist(/obj/item/gun/energy/implanthandgun/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
@@ -263,8 +260,8 @@
 	zone = BODY_ZONE_L_ARM
 
 /obj/item/organ/cyberimp/arm/handgun/syndie
-	name = "Agent Integrated hand cannon implant"
-	icon_state = "mantis_syndie"
+	name = "Militech Integrated hand cannon implant"
+	icon_state = "implant_projectile_launcher"
 	contents = newlist(/obj/item/gun/energy/implanthandgun/syndie)
 
 /obj/item/organ/cyberimp/arm/handgun/syndie/l
@@ -273,7 +270,7 @@
 /obj/item/organ/cyberimp/arm/ballistic_processor
 	name = "Ballistic processor implant"
 	desc = "A neural-linked ballistic processor that allows bullets to ricochet off of surfaces and home towards nearby targets."
-	icon_state = "muscle"
+	icon_state = "ballistic_coprocessor"
 	actions_types = list()
 	zone = BODY_ZONE_R_ARM
 	/// Шанс рикошета
@@ -303,7 +300,7 @@
 	name = "Berserker implant"
 	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Occupies the same slot as the Sandevistan, replacing it."
 	slot = ORGAN_SLOT_BRAIN_SANDEVISTAN
-	icon_state = "muscle"
+	icon_state = "moore_berserker"
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	/// Время действия берсерка
 	var/berserk_time = 25 SECONDS
@@ -324,11 +321,12 @@
 	berserk_time = 25 SECONDS
 
 /obj/item/organ/cyberimp/brain/berserker/syndie
-	name = "Agent Berserker implant"
+	name = "Militech Berserker implant"
 	armor_mult = 0.2 // 80% сопротивление
 	attack_speed_mult = 0.5 // будет удваивать скорость в логике
 	berserk_time = 35 SECONDS
 	cooldown_time = 45 SECONDS
+	icon_state = "militech_berserker"
 
 /obj/item/organ/cyberimp/brain/berserker/ui_action_click()
 	if(active)
@@ -451,7 +449,7 @@
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
-	icon_state = "mantis"
+	icon_state = "implant_mono_wire_sec"
 	force = 13
 	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
@@ -486,12 +484,11 @@
 
 /obj/item/melee/implantmonostring/corpo
 	name = "Corporate Monomolecular string"
-	icon_state = "mantis_corpo"
 
 /obj/item/melee/implantmonostring/syndie
 	name = "Agent Monomolecular string"
-	icon_state = "mantis_syndie"
-	force = 23
+	icon_state = "implant_mono_wire"
+	force = 20
 	armour_penetration = MELEE_AP_ANTAGONIST
 	reach = 3 // +2 тайла
 	/// Шанс разряда тока по цели при ударе.
@@ -515,10 +512,10 @@
 	name = "Integrated hand cannon"
 	desc = "A compact arm-integrated explosive launcher. No visible barrel until deployed."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "mantis"
-	item_state = "gun"
-	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	icon_state = "implant_projectile_launcher_sec"
+	item_state = "projectile_launcher"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/implanthandgun)
 	cell_type = /obj/item/stock_parts/cell/emproof
 	can_charge = FALSE
@@ -624,13 +621,12 @@
 
 /obj/item/gun/energy/implanthandgun/corpo
 	name = "Corporate Integrated hand cannon"
-	icon_state = "mantis_corpo"
 	dual_wield_spread = 12
 	inaccuracy_modifier = 0.7
 
 /obj/item/gun/energy/implanthandgun/syndie
-	name = "Agent Integrated hand cannon"
-	icon_state = "mantis_syndie"
+	name = "Militech Integrated hand cannon"
+	icon_state = "implant_projectile_launcher
 	ammo_type = list(/obj/item/ammo_casing/energy/implanthandgun/burst)
 	reload_time = 10 SECONDS
 	dual_wield_spread = 12
@@ -639,7 +635,6 @@
 /obj/item/ammo_casing/energy/implanthandgun
 	projectile_type = /obj/item/projectile/bullet/implanthandgun
 	select_name = "explosive"
-	// emproof-батарея имеет maxcharge = 500: выстрел должен стоить не больше.
 	e_cost = 500
 	fire_sound = 'sound/weapons/rocket_launch.ogg'
 	delay = 30

@@ -251,7 +251,7 @@
 /obj/item/organ/cyberimp/brain/sandevistan
 	name = "Sandevistan"
 	desc = "A neural cybernetic implant that temporarily overclocks the user's nervous system, granting a massive burst of speed and reaction time."
-	icon_state = "brain_implant"
+	icon_state = "qian-ti_sandevistan"
 	implant_overlay = "brain_implant_overlay"
 	zone = BODY_ZONE_HEAD
 	w_class = WEIGHT_CLASS_TINY
@@ -444,9 +444,9 @@
 	animate(src, alpha = 0, time = duration)
 
 /obj/item/organ/cyberimp/brain/sandevistan/military
-	name = "Military Sandevistan"
+	name = "Militech Sandevistan"
 	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with a longer duration at the cost of increased strain."
-	icon_state = "brain_implant"
+	icon_state = "militech_sandevistan"
 	implant_overlay = "brain_implant_overlay"
 	implant_color = "#FF3333"
 	syndicate_implant = TRUE

@@ -109,6 +109,7 @@
 	var/zoomed = FALSE
 	var/zoom_amt = 4
 	var/zoom_out_amt = 0
+	icon_state = "eye_kiroshi"
 
 /obj/item/organ/cyberimp/eyes/optical/kiroshi/ui_action_click(mob/user, actiontype)
 	// actiontype - экземпляр действия, а не тип: сравнение с типом всегда ложно, зум не работал.
@@ -146,6 +147,7 @@
 	var/zoomed = FALSE
 	var/zoom_amt = 4
 	var/zoom_out_amt = 0
+	icon_state = "eye_militech"
 
 /obj/item/organ/cyberimp/eyes/optical/militech/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
