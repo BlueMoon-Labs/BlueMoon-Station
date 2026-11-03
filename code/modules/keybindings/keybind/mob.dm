@@ -90,7 +90,7 @@
 	hotkey_keys = list()
 	classic_keys = list()
 	name = "examine_immediate"
-	full_name = "Examine (Immediate)"
+	full_name = "Осмотреть (Мгновенно)"
 	description = "Мгновенно осмотреть то, на что наведён курсор."
 
 /datum/keybinding/mob/examine_immediate/down(client/user)

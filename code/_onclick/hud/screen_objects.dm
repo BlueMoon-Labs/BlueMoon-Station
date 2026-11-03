@@ -459,7 +459,7 @@
 			S.toggle_throw_mode()
 
 /atom/movable/screen/zone_sel
-	name = "Выбор конечности"
+	name = "Выбор зоны повреждения"
 	icon_state = "zone_sel"
 	screen_loc = ui_zonesel
 	mouse_over_pointer = MOUSE_HAND_POINTER
