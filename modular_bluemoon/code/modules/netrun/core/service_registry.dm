@@ -171,6 +171,8 @@
 	/// Weak-owner subscriptions keyed by family; events delivered on a deferred worker.
 	var/list/service_subscribers = list()
 	var/list/service_events = list()
+	/// Coalesce repeated updates before the deferred subscriber worker sees them.
+	var/list/service_event_dedupe = list()
 	var/service_event_cursor = 1
 	var/service_event_timer
 	var/service_delivery_active = FALSE
@@ -415,6 +417,7 @@
 		deltimer(service_event_timer)
 	service_event_timer = null
 	service_events.Cut()
+	service_event_dedupe.Cut()
 	for(var/family in service_subscribers)
 		var/list/watchers = service_subscribers[family]
 		for(var/datum/netrun_service_subscription/watch as anything in watchers.Copy())
@@ -562,7 +565,11 @@
 	var/datum/subscriber = watch.subscriber_ref?.resolve()
 	if(QDELETED(subscriber))
 		return
-	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = service.service_tag(), "identity" = service.service_key()))
+	var/key = json_encode(list(REF(watch), service.service_key(), event))
+	if(service_event_dedupe[key])
+		return
+	service_event_dedupe[key] = TRUE
+	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = service.service_tag(), "identity" = service.service_key(), "dedupe" = key))
 	if(!service_delivery_active && !service_event_timer)
 		service_event_timer = addtimer(CALLBACK(src, PROC_REF(deliver_service_events)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
@@ -577,6 +584,7 @@
 		CHECK_TICK
 		var/list/notice = service_events[service_event_cursor]
 		service_events[service_event_cursor++] = null
+		service_event_dedupe -= notice["dedupe"]
 		var/datum/weakref/watch_ref = notice["watch"]
 		var/datum/netrun_service_subscription/watch = watch_ref?.resolve()
 		var/datum/subscriber = watch?.subscriber_ref?.resolve()

@@ -301,8 +301,10 @@
 		retire_if_idle()
 		active_binding = client.binding_epoch
 	var/state_key = message.transport_operation() == "state" ? state_command_key(source, destination, message) : null
-	if(state_key && replace_unsent_state(state_key, message))
-		return TRUE
+	if(state_key)
+		var/replaced = replace_unsent_state(state_key, message)
+		if(replaced)
+			return replaced == "accepted"
 	if((context_limit > 0 && length(pending) >= context_limit) || (invocation_limit > 0 && length(invocations) >= invocation_limit) || (command_limit > 0 && queued_commands() >= command_limit))
 		return reject_message(message, "очередь внешнего транспорта переполнена")
 	if(QDELETED(source) || QDELETED(destination))
@@ -398,16 +400,16 @@
 	var/datum/netrun_machine_message/previous = context.message
 	if(!message.can_replace(previous))
 		qdel(message)
-		return TRUE
+		return "accepted"
 	var/raw_payload
 	try
 		raw_payload = json_encode(message.payload)
 	catch
 		reject_message(message, "payload не может быть передан")
-		return TRUE
+		return "rejected"
 	if(!istext(raw_payload) || !length(raw_payload) || length(raw_payload) > 131072)
 		reject_message(message, "payload превышает предел внешнего транспорта")
-		return TRUE
+		return "rejected"
 	message.source = previous.source
 	message.recipient = previous.recipient
 	message.correlation_id = previous.correlation_id
@@ -421,7 +423,7 @@
 	context.operation?.capture(message.payload)
 	qdel(previous)
 	local_states_coalesced++
-	return TRUE
+	return "accepted"
 
 /datum/netrun_external_effects/machines/proc/reject_message(datum/netrun_machine_message/message, reason)
 	message.failed(reason)
