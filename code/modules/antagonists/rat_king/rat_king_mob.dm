@@ -7,8 +7,8 @@
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 5
-	maxHealth = 70
-	health = 70
+	maxHealth = 90
+	health = 90
 	see_in_dark = 5
 	obj_damage = 10
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES | ENVIRONMENT_SMASH_WALLS
@@ -76,6 +76,8 @@
 		INVOKE_ASYNC(src, PROC_REF(poll_for_player))
 
 /mob/living/simple_animal/hostile/regalrat/proc/poll_for_player()
+	if(mind)
+		return
 	var/list/mob/dead/observer/candidates = pollGhostCandidates("Хотите сыграть за крысиного короля, да будет сырен его венец?", ROLE_RAT_KING, null, ROLE_RAT_KING, 30 SECONDS)
 	if(LAZYLEN(candidates) && !mind)
 		var/mob/dead/observer/chosen = pick(candidates)
@@ -178,10 +180,47 @@
 		var/datum/obstacle_policy/policy = GET_OBSTACLE_POLICY(/datum/obstacle_policy/forceful)
 		if(policy && policy.try_airlock(src, airlock_target))
 			return FALSE
+	if(is_cheese(target))
+		return eat_cheese(target)
 	if(!isliving(target) && (istype(target, /obj/item/reagent_containers/food) || istype(target, /obj/item/reagent_containers)))
 		if(poison_target(target))
 			return FALSE
 	return ..()
+
+/mob/living/simple_animal/hostile/regalrat/proc/is_cheese(atom/target)
+	if(istype(target, /obj/item/reagent_containers/food/snacks/cheesewedge))
+		return TRUE
+	if(istype(target, /obj/item/reagent_containers/food/snacks/store/cheesewheel))
+		return TRUE
+	if(istype(target, /obj/item/reagent_containers/food/snacks/royalcheese))
+		return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/regalrat/proc/eat_cheese(obj/item/cheese)
+	if(!cheese || QDELETED(cheese))
+		return TRUE
+	if(!Adjacent(cheese))
+		balloon_alert(src, "слишком далеко!")
+		return TRUE
+	var/heal_amount = 12
+	if(istype(cheese, /obj/item/reagent_containers/food/snacks/store/cheesewheel))
+		heal_amount = 30
+	else if(istype(cheese, /obj/item/reagent_containers/food/snacks/royalcheese))
+		heal_amount = 45
+	visible_message(
+		span_notice("[src] с хрустом поедает [cheese]!"),
+		span_notice("Вы с наслаждением поедаете [cheese]."),
+		span_warning("Вы слышите довольное чавканье."),
+	)
+	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
+	if(!do_after(src, 1 SECONDS, cheese))
+		return TRUE
+	if(QDELETED(cheese))
+		return TRUE
+	heal_bodypart_damage(heal_amount)
+	balloon_alert(src, "+[heal_amount] HP")
+	qdel(cheese)
+	return TRUE
 
 /mob/living/simple_animal/hostile/regalrat/proc/poison_target(atom/target)
 	if(!target || QDELETED(target) || isnull(target.reagents))
@@ -382,7 +421,7 @@
 	melee_damage_lower = 5
 	melee_damage_upper = 8
 	obj_damage = 8
-	speak_chance = 1
+	speak_chance = 0.1
 	turns_per_move = 5
 	see_in_dark = 6
 	maxHealth = 15
@@ -855,6 +894,22 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 	icon_dead = style[3]
 	icon_state = (stat == DEAD) ? icon_dead : icon_living
 	update_appearance(UPDATE_ICON)
+
+/mob/living/simple_animal/hostile/regalrat/proc/reapply_fashion()
+	if(!current_look)
+		return
+	var/list/style = GLOB.rat_king_fashions[current_look]
+	if(style)
+		apply_fashion(style)
+
+// simple_animal/revive() сбрасывает icon в initial(icon), но оставляет icon_living
+// от выбранного облика. Из-за этого после лазера-оживителя король становился
+// прозрачным: спрайт искался в старом .dmi. Возвращаем облик после оживления.
+/mob/living/simple_animal/hostile/regalrat/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+	. = ..()
+	if(.)
+		reapply_fashion()
+	return .
 
 /datum/action/cooldown/rat_fashion
 	name = "Королевский облик"

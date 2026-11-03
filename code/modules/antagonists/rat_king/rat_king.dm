@@ -7,7 +7,7 @@
 	job_rank = ROLE_RAT_KING
 	show_in_antagpanel = TRUE
 	show_name_in_check_antagonists = TRUE
-	threat = 3
+	threat = 2
 	blacklisted_quirks = list(/datum/quirk/nonviolent, /datum/quirk/mute, /datum/quirk/rat_whisperer)
 	var/infected = 0
 	/// Уже обращённые, чтобы не считать одного и того же дважды.
@@ -29,6 +29,10 @@
 /datum/antagonist/rat_king/proc/forge_objectives()
 	if(length(objectives))
 		return
+	var/datum/objective/rat_king/claim/claim_objective = new
+	claim_objective.king = src
+	objectives += claim_objective
+
 	var/datum/objective/rat_king/horde/horde_objective = new
 	horde_objective.king = src
 	objectives += horde_objective
@@ -89,6 +93,18 @@
 		parts += all_complete ? span_greentext("Крысиный король добился своего.") : span_redtext("Крысиный король пал или не достиг целей.")
 	return "<div class='panel redborder'>[parts.Join("<br>")]</div>"
 
+/datum/objective/rat_king/claim
+	var/datum/antagonist/rat_king/king
+	explanation_text = "Вы — король крыс. Ваша задача найти подданных и захватить как можно больше территории. Дипломатия или сила — решать вам."
+
+/datum/objective/rat_king/claim/check_completion()
+	if(!king || !king.owner || !king.owner.current)
+		return FALSE
+	var/mob/living/simple_animal/hostile/regalrat/rat_king = king.owner.current
+	if(!istype(rat_king) || !rat_king.horde || QDELETED(rat_king.horde))
+		return FALSE
+	return length(rat_king.horde.minions) > 0
+
 /datum/objective/rat_king/horde
 	var/datum/antagonist/rat_king/king
 
@@ -110,7 +126,7 @@
 
 /datum/objective/rat_king/infect/New()
 	target_amount = rand(3, 5)
-	explanation_text = "Сделайте [target_amount] членов экипажа своими друзьями."
+	explanation_text = "Превратите [target_amount] членов экипажа в крысиных друзей - слюной или едой."
 	. = ..()
 
 /datum/objective/rat_king/infect/check_completion()
@@ -123,7 +139,7 @@
 
 /datum/objective/rat_king/coffers/New()
 	target_amount = rand(3, 6)
-	explanation_text = "Наполните королевскую казну [target_amount] раз."
+	explanation_text = "Наполните королевскую казну [target_amount] раз способностью 'Наполнить казну'."
 	. = ..()
 
 /datum/objective/rat_king/coffers/check_completion()
@@ -137,7 +153,7 @@
 
 /datum/objective/rat_king/chew/New()
 	target_amount = rand(4, 8)
-	explanation_text = "Пусть ваши крысы перегрызут [target_amount] кабелей."
+	explanation_text = "Пусть ваши крысы перегрызут [target_amount] кабелей и обесточат станцию."
 	. = ..()
 
 /datum/objective/rat_king/chew/check_completion()
@@ -150,14 +166,14 @@
 	var/datum/antagonist/rat_king/king
 
 /datum/objective/rat_king/lick_target/New()
-	explanation_text = "Оближите выбранную цель и сделайте её своим другом."
+	explanation_text = "Оближите выбранную цель и сделайте её крысиным другом."
 	. = ..()
 
 /datum/objective/rat_king/lick_target/update_explanation_text()
 	if(target?.current)
-		explanation_text = "Оближите [target.current.real_name] и сделайте [target.current.p_them()] своим другом."
+		explanation_text = "Оближите [target.current.real_name] и сделайте [target.current.p_them()] крысиным другом."
 	else
-		explanation_text = "Оближите выбранную цель и сделайте её своим другом."
+		explanation_text = "Оближите выбранную цель и сделайте её крысиным другом."
 
 /datum/objective/rat_king/lick_target/check_completion()
 	if(!king || !target)
@@ -197,7 +213,7 @@
 	if(!length(valid_areas))
 		return
 	target_area = pick(valid_areas)
-	explanation_text = "Устройте гнездо в [target_area.name]: проведите [target_amount] секунд и загрязине там все хорошенько."
+	explanation_text = "Захватите [target_area.name]: проведите там [target_amount] секунд с активными 'Владениями' и превратите место в гнездо."
 
 /datum/objective/rat_king/nest/check_completion()
 	if(!king || !king.owner || !king.owner.current)
@@ -205,7 +221,7 @@
 	return king.domain_time >= target_amount
 
 /datum/objective/rat_king/survive
-	explanation_text = "Доживите до конца раунда."
+	explanation_text = "Переживите охоту на крыс: доживите до конца раунда, не потеряв корону."
 
 /datum/objective/rat_king/survive/check_completion()
 	return owner && owner.current && owner.current.stat != DEAD
@@ -240,22 +256,18 @@
 	earliest_start = 15 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST
-	cost = 8
-	intensity = 12
+	cost = 6
+	intensity = 8
 	director_ghost_jobban = ROLE_RAT_KING
 	director_ghost_preference = ROLE_RAT_KING
 	family = "vermin"
-	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Спавн короля крыс."
 
 /datum/round_event/ghost_role/rat_king
 	role_name = "Rat king"
 
 /datum/round_event/ghost_role/rat_king/spawn_role()
-	var/list/candidates = get_candidates(ROLE_RAT_KING, null, ROLE_RAT_KING)
-	if(!length(candidates))
-		return NOT_ENOUGH_PLAYERS
-	var/mob/dead/observer/selected = pick_n_take(candidates)
 	var/list/spawn_locs = find_exposed_wires()
 	if(!length(spawn_locs))
 		for(var/obj/effect/landmark/carpspawn/carp_spawn in GLOB.landmarks_list)
@@ -263,11 +275,10 @@
 				spawn_locs += carp_spawn.loc
 	if(!length(spawn_locs))
 		return MAP_ERROR
-	var/mob/living/simple_animal/hostile/regalrat/king = new(pick(spawn_locs))
-	selected.transfer_ckey(king, FALSE)
+	var/mob/living/simple_animal/hostile/regalrat/king = new /mob/living/simple_animal/hostile/regalrat/controlled(pick(spawn_locs))
 	SSminor_mapping.trigger_migration(rand(8, 14))
-	message_admins("[ADMIN_LOOKUPFLW(king)] превращен в короля крыс ивентом.")
-	log_game("[key_name(king)] превращен в короля крыс ивентом.")
+	message_admins("[ADMIN_LOOKUPFLW(king)] создан как король крыс. Гост-роль предложена призракам.")
+	log_game("[key_name(king)] создан как король крыс; гост-роль предложена призракам.")
 	spawned_mobs += king
 	return SUCCESSFUL_SPAWN
 

@@ -95,6 +95,11 @@
 	order_timer = addtimer(CALLBACK(src, PROC_REF(clear_order)), duration, TIMER_STOPPABLE)
 	wake_minions()
 	to_chat(leader, span_notice("Орда получила приказ: [get_order_label()]."))
+	if(new_order == RAT_ORDER_PLAY && isliving(new_target))
+		var/mob/living/living_target = new_target
+		if(living_target.client)
+			to_chat(living_target, span_purple("Мыши начинают окружать вас и явно приглашают поиграть!"))
+		new /obj/effect/temp_visual/heart(get_turf(living_target))
 	return TRUE
 
 /datum/rat_horde/proc/has_active_order()
@@ -144,6 +149,23 @@
 		return leader_turf
 	return destination
 
+/datum/rat_horde/proc/get_play_turf(mob/living/minion)
+	var/turf/target_turf = get_turf(order_target)
+	if(!target_turf || !minion)
+		return null
+	var/index = minions.Find(minion)
+	if(index <= 0)
+		index = 1
+	var/static/list/play_dirs = list(NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST)
+	var/play_dir = play_dirs[(index - 1) % length(play_dirs) + 1]
+	var/turf/ring_turf = get_step(target_turf, play_dir)
+	if(ring_turf && !ring_turf.is_blocked_turf(exclude_mobs = TRUE, source_atom = minion))
+		return ring_turf
+	var/turf/outer_turf = get_step(get_step(target_turf, play_dir), play_dir)
+	if(outer_turf && !outer_turf.is_blocked_turf(exclude_mobs = TRUE, source_atom = minion))
+		return outer_turf
+	return target_turf
+
 /datum/rat_horde/proc/get_order_label()
 	switch(order)
 		if(RAT_ORDER_FOLLOW)
@@ -175,6 +197,10 @@
 	var/follow_offset_y = 0
 	var/play_style = "circle"
 	var/play_clockwise = TRUE
+	var/next_play_message = 0
+	var/old_mouse_speak_chance = -1
+	var/old_squeak_delay = -1
+	var/old_squeak_chance = -1
 
 /datum/component/rat_minion/Initialize(datum/rat_horde/new_horde)
 	var/mob/living/simple_animal/minion = parent
@@ -192,6 +218,14 @@
 			mouse.AddComponent(/datum/component/swarming, 4, 4)
 		old_chew_probability = mouse.chew_probability
 		mouse.chew_probability = 0
+		old_mouse_speak_chance = mouse.speak_chance
+		mouse.speak_chance = 0
+		var/datum/component/squeak/mouse_squeak = mouse.GetComponent(/datum/component/squeak)
+		if(mouse_squeak)
+			old_squeak_delay = mouse_squeak.squeak_delay
+			old_squeak_chance = mouse_squeak.squeak_chance
+			mouse_squeak.squeak_delay = 60
+			mouse_squeak.squeak_chance = 25
 		mouse.stop_automated_movement = TRUE
 		if(horde.has_active_order())
 			START_PROCESSING(SSfastprocess, src)
@@ -215,6 +249,12 @@
 		if(istype(minion, /mob/living/simple_animal/mouse) && old_chew_probability >= 0)
 			var/mob/living/simple_animal/mouse/mouse = minion
 			mouse.chew_probability = old_chew_probability
+			if(old_mouse_speak_chance >= 0)
+				mouse.speak_chance = old_mouse_speak_chance
+			var/datum/component/squeak/mouse_squeak = mouse.GetComponent(/datum/component/squeak)
+			if(mouse_squeak && old_squeak_delay >= 0)
+				mouse_squeak.squeak_delay = old_squeak_delay
+				mouse_squeak.squeak_chance = old_squeak_chance
 	if(horde && !QDELETED(horde))
 		if(minion)
 			horde.minions -= minion
@@ -262,22 +302,28 @@
 			var/atom/play_target = horde.order_target
 			if(QDELETED(play_target))
 				return
-			if(get_dist(mouse, play_target) > 2)
-				step_towards(mouse, play_target)
-			else if(world.time > last_play + 0.5 SECONDS)
+			var/turf/play_turf = horde.get_play_turf(mouse)
+			if(!play_turf)
+				return
+			if(get_dist(mouse, play_turf) > 0)
+				step_towards(mouse, play_turf)
+			else if(world.time > last_play + 0.4 SECONDS)
 				last_play = world.time
+				var/dir_to_target = get_dir(mouse, play_target)
+				if(dir_to_target)
+					mouse.dir = dir_to_target
 				if(play_style == "circle")
-					var/dir_to_target = get_dir(mouse, play_target)
-					if(dir_to_target)
-						step(mouse, play_clockwise ? turn(dir_to_target, 90) : turn(dir_to_target, -90))
-					else
-						step_away(mouse, play_target, 2)
+					mouse.dir = turn(mouse.dir, play_clockwise ? 45 : -45)
+					if(prob(35))
+						mouse.play_jump()
 				else
 					mouse.play_jump()
-				if(prob(25))
+				if(prob(15))
 					new /obj/effect/temp_visual/heart(get_turf(mouse))
-				if(prob(5))
-					mouse.visible_message(span_notice("[mouse] ластится к [play_target]!"))
+				if(world.time > next_play_message)
+					next_play_message = world.time + rand(7, 13) SECONDS
+					var/play_verb = play_style == "circle" ? "радостно кружит вокруг" : "подпрыгивает рядом с"
+					mouse.visible_message(span_notice("[mouse] [play_verb] [play_target], явно приглашая поиграть!"))
 
 /// останавливаем обработку для инактивных миньонов
 /datum/rat_horde/proc/wake_minions()
