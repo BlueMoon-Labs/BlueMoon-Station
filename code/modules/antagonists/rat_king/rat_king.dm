@@ -16,18 +16,21 @@
 	var/area/nest_area
 
 /datum/antagonist/rat_king/greet()
+	if(!owner)
+		return
 	to_chat(owner, span_boldannounce("Вы - крысиный король. Под вашими лапами техтоннели, а в зубах - жажда власти."))
 	to_chat(owner, span_notice("Собирайте орду, распространяйте крысиную слюну и не дайте себя убить."))
 	to_chat(owner, span_notice("Укажите цель, ваши милые подданые атакуют её."))
 	owner.announce_objectives()
-	SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
+	if(owner.current)
+		SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
 
 /datum/antagonist/rat_king/on_gain()
 	forge_objectives()
 	. = ..()
 
 /datum/antagonist/rat_king/proc/forge_objectives()
-	if(length(objectives))
+	if(length(objectives) || !owner)
 		return
 	var/datum/objective/rat_king/claim/claim_objective = new
 	claim_objective.king = src
@@ -81,6 +84,8 @@
 	objectives += survive_objective
 
 /datum/antagonist/rat_king/roundend_report()
+	if(!owner)
+		return
 	var/list/parts = list()
 	parts += printplayer(owner)
 	if(length(objectives))
@@ -234,10 +239,13 @@
 	threat = 0
 
 /datum/antagonist/rat_king/lust/greet()
+	if(!owner)
+		return
 	to_chat(owner, span_purple("Вы - крысиная королева. Ваша власть - не когти, а очарование и мягкая лапа, ведущая мышей."))
 	to_chat(owner, span_notice("Вы не обязаны никого убивать. Собирайте свиту, вейте гнездо и наслаждайтесь."))
 	to_chat(owner, span_notice("Взмах вашей лапки заставит мышек полюбить ближнего своего."))
-	SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
+	if(owner.current)
+		SEND_SOUND(owner.current, sound('sound/effects/mousesqueek.ogg'))
 
 /datum/antagonist/rat_king/lust/forge_objectives()
 	return
@@ -296,7 +304,7 @@
 	var/datum/action/cooldown/rat_order/call_mice/call_action
 
 /datum/quirk/rat_whisperer/add()
-	if(!quirk_holder || QDELETED(src))
+	if(!quirk_holder || QDELETED(src) || QDELETED(quirk_holder))
 		return
 	. = ..()
 	horde = new(quirk_holder, RAT_HORDE_SOFT)
@@ -310,14 +318,16 @@
 
 /datum/quirk/rat_whisperer/remove()
 	. = ..()
-	if(quirk_holder)
+	if(quirk_holder && !QDELETED(quirk_holder))
 		UnregisterSignal(quirk_holder, COMSIG_MOB_POINTED)
+		if(order_action)
+			order_action.Remove(quirk_holder)
+		if(call_action)
+			call_action.Remove(quirk_holder)
 	if(order_action)
-		order_action.Remove(quirk_holder)
 		qdel(order_action)
 		order_action = null
 	if(call_action)
-		call_action.Remove(quirk_holder)
 		qdel(call_action)
 		call_action = null
 	if(horde)
@@ -325,6 +335,8 @@
 		horde = null
 
 /datum/quirk/rat_whisperer/proc/get_horde()
+	if(!quirk_holder)
+		return null
 	if(!horde || QDELETED(horde))
 		horde = new(quirk_holder, RAT_HORDE_SOFT)
 	return horde
@@ -340,9 +352,9 @@
 /datum/quirk/rat_whisperer/transfer_mob(mob/living/to_mob)
 	var/mob/living/old_holder = quirk_holder
 	. = ..()
-	if(!quirk_holder || QDELETED(src))
+	if(!quirk_holder || QDELETED(src) || QDELETED(quirk_holder))
 		return
-	if(old_holder && old_holder != quirk_holder)
+	if(old_holder && old_holder != quirk_holder && !QDELETED(old_holder))
 		UnregisterSignal(old_holder, COMSIG_MOB_POINTED)
 	RegisterSignal(quirk_holder, COMSIG_MOB_POINTED, PROC_REF(on_pointed))
 	if(order_action)
@@ -423,7 +435,7 @@
 
 /// Перехватываем друга, если он пидорас
 /proc/rat_friend_harm_intercept(mob/living/user, atom/target)
-	if(!user)
+	if(!user || QDELETED(user))
 		return FALSE
 	var/datum/status_effect/rat_friend/friend = user.has_status_effect(/datum/status_effect/rat_friend)
 	if(!friend)

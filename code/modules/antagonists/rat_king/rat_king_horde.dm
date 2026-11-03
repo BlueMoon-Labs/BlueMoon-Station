@@ -25,7 +25,7 @@
 	deltimer(order_timer)
 	order_timer = null
 	release_all()
-	if(leader)
+	if(leader && !QDELETED(leader))
 		UnregisterSignal(leader, COMSIG_PARENT_QDELETING)
 	leader = null
 	return ..()
@@ -36,9 +36,9 @@
 
 /// Переносит орду на новое тело по требованию кролика.
 /datum/rat_horde/proc/set_leader(mob/living/new_leader)
-	if(QDELETED(src) || !isliving(new_leader) || new_leader == leader)
+	if(QDELETED(src) || !isliving(new_leader) || QDELETED(new_leader) || new_leader == leader)
 		return FALSE
-	if(leader)
+	if(leader && !QDELETED(leader))
 		UnregisterSignal(leader, COMSIG_PARENT_QDELETING)
 	leader = new_leader
 	RegisterSignal(leader, COMSIG_PARENT_QDELETING, PROC_REF(on_leader_deleted))
@@ -54,7 +54,7 @@
 	if(mode == RAT_HORDE_SOFT)
 		if(!istype(minion, /mob/living/simple_animal/mouse))
 			return FALSE
-	else if(!istype(minion, /mob/living/simple_animal/hostile) || !("rat" in minion.faction))
+	else if(!istype(minion, /mob/living/simple_animal/hostile) || !minion.faction || !("rat" in minion.faction))
 		return FALSE
 	var/datum/component/rat_minion/existing = minion.GetComponent(/datum/component/rat_minion)
 	if(existing)
@@ -69,7 +69,7 @@
 	return TRUE
 
 /datum/rat_horde/proc/unregister_minion(mob/living/minion)
-	if(!minion)
+	if(!minion || QDELETED(minion))
 		return FALSE
 	minions -= minion
 	UnregisterSignal(minion, COMSIG_PARENT_QDELETING)
@@ -87,6 +87,8 @@
 		return FALSE
 	if(!is_order_allowed(new_order))
 		return FALSE
+	if(new_target && QDELETED(new_target))
+		new_target = null
 	clear_order()
 	order = new_order
 	order_target = new_target
@@ -99,7 +101,9 @@
 		var/mob/living/living_target = new_target
 		if(living_target.client)
 			to_chat(living_target, span_purple("Мыши начинают окружать вас и явно приглашают поиграть!"))
-		new /obj/effect/temp_visual/heart(get_turf(living_target))
+		var/turf/target_turf = get_turf(living_target)
+		if(target_turf)
+			new /obj/effect/temp_visual/heart(target_turf)
 	return TRUE
 
 /datum/rat_horde/proc/has_active_order()
@@ -125,7 +129,7 @@
 	sleep_minions()
 
 /datum/rat_horde/proc/alert_betrayal(mob/living/traitor)
-	if(!traitor)
+	if(!traitor || QDELETED(traitor))
 		return
 	if(mode == RAT_HORDE_HARD)
 		issue_order(RAT_ORDER_ATTACK, traitor, get_turf(traitor), RAT_HORDE_ORDER_DURATION)
@@ -152,8 +156,10 @@
 	return destination
 
 /datum/rat_horde/proc/get_play_turf(mob/living/minion)
+	if(!minion || QDELETED(minion))
+		return null
 	var/turf/target_turf = get_turf(order_target)
-	if(!target_turf || !minion)
+	if(!target_turf)
 		return null
 	var/index = minions.Find(minion)
 	if(index <= 0)
@@ -244,7 +250,7 @@
 /datum/component/rat_minion/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
 	var/mob/living/simple_animal/minion = parent
-	if(minion)
+	if(minion && !QDELETED(minion))
 		UnregisterSignal(minion, COMSIG_PARENT_QDELETING)
 		if(!minion.has_buckled_mobs())
 			minion.stop_automated_movement = old_stop_automated_movement
@@ -321,7 +327,9 @@
 				else
 					mouse.play_jump()
 				if(prob(15))
-					new /obj/effect/temp_visual/heart(get_turf(mouse))
+					var/turf/mouse_turf = get_turf(mouse)
+					if(mouse_turf)
+						new /obj/effect/temp_visual/heart(mouse_turf)
 				if(world.time > next_play_message)
 					next_play_message = world.time + rand(7, 13) SECONDS
 					var/play_verb = play_style == "circle" ? "радостно кружит вокруг" : "подпрыгивает рядом с"
@@ -330,12 +338,16 @@
 /// останавливаем обработку для инактивных миньонов
 /datum/rat_horde/proc/wake_minions()
 	for(var/mob/living/minion as anything in minions)
+		if(QDELETED(minion))
+			continue
 		var/datum/component/rat_minion/component = minion.GetComponent(/datum/component/rat_minion)
 		if(component)
 			component.start_processing()
 
 /datum/rat_horde/proc/sleep_minions()
 	for(var/mob/living/minion as anything in minions)
+		if(QDELETED(minion))
+			continue
 		var/datum/component/rat_minion/component = minion.GetComponent(/datum/component/rat_minion)
 		if(component)
 			component.stop_processing()

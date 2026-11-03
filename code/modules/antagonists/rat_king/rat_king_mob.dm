@@ -37,8 +37,6 @@
 	var/datum/rat_horde/horde
 	var/soft_horde = FALSE
 	var/datum/action/cooldown/rat_domain/domain
-	var/datum/action/cooldown/rat_order/order_action
-	var/datum/action/cooldown/rat_lick/lick_action
 	/// Название текущего королевского облика.
 	var/current_look
 	/// Сколько раз король пополнил казну.
@@ -47,8 +45,6 @@
 	var/cables_chewed = 0
 	/// Экшен смены облика.
 	var/datum/action/cooldown/rat_fashion/fashion_select
-	var/datum/action/cooldown/rat_devour/devour_action
-	var/datum/action/cooldown/rat_throne/throne_action
 	var/obj/structure/rat_king_throne/plague_throne
 	var/next_regen = 0
 
@@ -61,17 +57,17 @@
 		riot.Grant(src)
 		domain = new /datum/action/cooldown/rat_domain
 		domain.Grant(src)
-		lick_action = new /datum/action/cooldown/rat_lick
-		lick_action.Grant(src)
+		var/datum/action/cooldown/rat_lick/lick = new
+		lick.Grant(src)
 		fashion_select = new /datum/action/cooldown/rat_fashion
 		fashion_select.Grant(src)
-		devour_action = new /datum/action/cooldown/rat_devour
-		devour_action.Grant(src)
-		throne_action = new /datum/action/cooldown/rat_throne
-		throne_action.Grant(src)
+		var/datum/action/cooldown/rat_devour/devour = new
+		devour.Grant(src)
+		var/datum/action/cooldown/rat_throne/throne = new
+		throne.Grant(src)
 		pick_random_look()
-	order_action = new /datum/action/cooldown/rat_order
-	order_action.Grant(src)
+	var/datum/action/cooldown/rat_order/order = new
+	order.Grant(src)
 	if(soft_horde)
 		var/datum/action/cooldown/rat_order/call_mice/call_action = new
 		call_action.Grant(src)
@@ -88,8 +84,12 @@
 	if(mind)
 		return
 	var/list/mob/dead/observer/candidates = pollGhostCandidates("Хотите сыграть за крысиного короля, да будет сырен его венец?", ROLE_RAT_KING, null, ROLE_RAT_KING, 30 SECONDS)
+	if(QDELETED(src))
+		return
 	if(LAZYLEN(candidates) && !mind)
 		var/mob/dead/observer/chosen = pick(candidates)
+		if(!chosen || QDELETED(chosen))
+			return
 		key = chosen.key
 		notify_ghosts("Восстаньте: [name] взошёл на трон в \the [get_area(src)].", source = src, action = NOTIFY_ORBIT, flashwindow = FALSE)
 
@@ -163,15 +163,18 @@
 
 /mob/living/simple_animal/hostile/regalrat/proc/find_lick_target()
 	var/mob/living/best
+	var/best_distance = INFINITY
 	for(var/mob/living/carbon/human/human in oview(1, src))
 		if(human == src || QDELETED(human))
 			continue
-		if(!best || get_dist(src, human) < get_dist(src, best))
+		var/distance = get_dist(src, human)
+		if(distance < best_distance)
+			best_distance = distance
 			best = human
 	return best
 
 /mob/living/simple_animal/hostile/regalrat/proc/allowed_to_attack(atom/the_target)
-	if(QDELETED(the_target))
+	if(!the_target || QDELETED(the_target))
 		return FALSE
 	if(!isliving(the_target))
 		return TRUE
@@ -285,6 +288,9 @@
 /mob/living/simple_animal/hostile/regalrat/proc/devour_prey(mob/living/prey)
 	if(!prey || QDELETED(prey))
 		return TRUE
+	if(prey.has_buckled_mobs())
+		balloon_alert(src, "на ней кто-то едет!")
+		return TRUE
 	if(!Adjacent(prey))
 		balloon_alert(src, "слишком далеко!")
 		return TRUE
@@ -334,6 +340,8 @@
 	return .
 
 /mob/living/simple_animal/hostile/regalrat/CanAttack(atom/the_target)
+	if(!the_target)
+		return FALSE
 	if(istype(the_target,/mob/living/simple_animal))
 		var/mob/living/A = the_target
 		if(istype(the_target, /mob/living/simple_animal/hostile/regalrat) && A.stat == CONSCIOUS)
@@ -385,6 +393,8 @@
 
 /datum/action/cooldown/coffer/Activate()
 	var/turf/T = get_turf(owner)
+	if(!T)
+		return
 	var/loot = rand(1,100)
 	switch(loot)
 		if(1 to 5)
@@ -443,13 +453,15 @@
 			qdel(M)
 		if(!new_rat)
 			continue
-		new_rat.faction = king.faction.Copy()
+		if(king.faction)
+			new_rat.faction = king.faction.Copy()
 		if(horde.register_minion(new_rat))
 			converted++
 	for(var/mob/living/simple_animal/hostile/plaguerat/plague in oview(king, RAT_KING_RIOT_RANGE))
 		if(length(horde.minions) >= horde.max_minions)
 			break
-		plague.faction = king.faction.Copy()
+		if(king.faction)
+			plague.faction = king.faction.Copy()
 		if(horde.register_minion(plague))
 			converted++
 	if(converted < RAT_KING_RIOT_MIN)
@@ -463,21 +475,18 @@
 				return
 		else
 			for(var/i in 1 to to_spawn)
-				var/mob/living/simple_animal/mouse/new_mouse = new(spawn_turf)
-				var/mob/living/simple_animal/hostile/rat/new_rat = new_mouse.change_mob_type(/mob/living/simple_animal/hostile/rat, spawn_turf, null, TRUE)
-				if(!new_rat)
-					new_rat = new /mob/living/simple_animal/hostile/rat(spawn_turf)
-					qdel(new_mouse)
-				if(!new_rat)
-					continue
-				new_rat.faction = king.faction.Copy()
+				var/mob/living/simple_animal/hostile/rat/new_rat = new(spawn_turf)
+				if(king.faction)
+					new_rat.faction = king.faction.Copy()
 				if(horde.register_minion(new_rat))
 					converted++
 	if(converted)
 		king.visible_message(span_warning("[king] поднимает армию! [converted] грызунов встают под его знамёна."))
 		horde.issue_order(RAT_ORDER_FOLLOW, null, get_turf(king))
 	else
-		new /mob/living/simple_animal/mouse(get_turf(king))
+		var/turf/king_turf = get_turf(king)
+		if(king_turf)
+			new /mob/living/simple_animal/mouse(king_turf)
 		king.visible_message(span_warning("[king] зовёт мышь к себе!"))
 	StartCooldown()
 
@@ -538,6 +547,8 @@
 	. += span_notice("Можно оседлать.")
 
 /mob/living/simple_animal/hostile/rat/CanAttack(atom/the_target)
+	if(!the_target)
+		return FALSE
 	if(istype(the_target,/mob/living/simple_animal))
 		var/mob/living/A = the_target
 		if(istype(the_target, /mob/living/simple_animal/hostile/regalrat) && A.stat == CONSCIOUS)
@@ -759,7 +770,8 @@
 		return
 	var/turf/our_turf = get_turf(owner)
 	if(our_turf)
-		our_turf.atmos_spawn_air("miasma=[RAT_KING_DOMAIN_MIASMA_MOLES];TEMP=293.15")
+		if(isopenturf(our_turf))
+			our_turf.atmos_spawn_air("miasma=[RAT_KING_DOMAIN_MIASMA_MOLES];TEMP=293.15")
 		var/list/spots = list(our_turf) + get_adjacent_open_turfs(owner)
 		var/turf/mess_turf = pick(spots)
 		switch(rand(1, 10))
@@ -789,7 +801,7 @@
 
 /datum/action/cooldown/rat_devour/Activate(atom/target)
 	var/mob/living/simple_animal/hostile/regalrat/king = owner
-	if(!istype(king))
+	if(!istype(king) || QDELETED(king))
 		return
 	if(king.health >= king.maxHealth)
 		king.balloon_alert(king, "вы не голодны")
@@ -833,7 +845,7 @@
 
 /datum/action/cooldown/rat_throne/Activate(atom/target)
 	var/mob/living/simple_animal/hostile/regalrat/king = owner
-	if(!istype(king))
+	if(!istype(king) || QDELETED(king))
 		return
 	if(king.plague_throne && !QDELETED(king.plague_throne))
 		to_chat(king, span_warning("Ваш чумной трон уже стоит."))
@@ -911,7 +923,8 @@
 		return
 	var/mob/living/simple_animal/hostile/rat/new_rat = new(spawn_turf)
 	if(king && !QDELETED(king))
-		new_rat.faction = king.faction.Copy()
+		if(king.faction)
+			new_rat.faction = king.faction.Copy()
 		var/datum/rat_horde/horde = king.get_rat_horde()
 		if(horde && length(horde.minions) < horde.max_minions)
 			horde.register_minion(new_rat)
@@ -954,10 +967,10 @@
 		return null
 	if(istype(owner, /mob/living/simple_animal/hostile))
 		var/mob/living/simple_animal/hostile/hostile_owner = owner
-		if(isliving(hostile_owner.target) && hostile_owner.CanAttack(hostile_owner.target))
+		if(isliving(hostile_owner.target) && !QDELETED(hostile_owner.target) && hostile_owner.CanAttack(hostile_owner.target))
 			return hostile_owner.target
 		for(var/mob/living/candidate in oview(RAT_HORDE_ORDER_RANGE, owner))
-			if(candidate == owner || !hostile_owner.CanAttack(candidate))
+			if(candidate == owner || QDELETED(candidate) || !hostile_owner.CanAttack(candidate))
 				continue
 			return candidate
 	return null
@@ -1000,6 +1013,8 @@
 	if(isnull(order))
 		return
 	if(order == RAT_ORDER_ATTACK || order == RAT_ORDER_PLAY)
+		if(!order_target || QDELETED(order_target))
+			return
 		horde.issue_order(order, order_target, get_turf(order_target))
 	else
 		horde.issue_order(order, null, get_turf(owner))
@@ -1036,6 +1051,8 @@
 		return
 	var/called = 0
 	for(var/mob/living/simple_animal/mouse/mouse in oview(owner, RAT_HORDE_CALL_RANGE))
+		if(length(horde.minions) >= horde.max_minions)
+			break
 		if(horde.register_minion(mouse))
 			called++
 	if(called < horde.max_minions)
@@ -1086,7 +1103,7 @@
 	if(!owner)
 		return
 	var/mob/living/simple_animal/hostile/regalrat/king = owner
-	if(!istype(king))
+	if(!istype(king) || QDELETED(king))
 		return
 	var/atom/lick_target = target
 	if(!lick_target || lick_target == king)
@@ -1241,7 +1258,9 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 		if(!(prefs.toggles & VERB_CONSENT))
 			continue
 		human.adjust_arousal(1, "феромоны крысиной королевы", aphro = TRUE)
-		new /obj/effect/temp_visual/heart(get_turf(human))
+		var/turf/human_turf = get_turf(human)
+		if(human_turf)
+			new /obj/effect/temp_visual/heart(human_turf)
 	pulse_timer = addtimer(CALLBACK(src, PROC_REF(pulse)), 5 SECONDS, TIMER_STOPPABLE)
 
 /mob/living/simple_animal/hostile/regalrat/lust
