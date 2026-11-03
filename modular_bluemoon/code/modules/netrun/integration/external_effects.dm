@@ -378,7 +378,9 @@
 	var/key = message.coalescing_key()
 	if(isnull(key))
 		return null
-	return json_encode(list(REF(source), REF(destination), message.transport_operation(), key))
+	var/datum/netrun_machine_message/telecomms/telecomms = message
+	var/frequency = istype(telecomms) ? telecomms.signal?.frequency : null
+	return json_encode(list(REF(source), REF(destination), message.transport_operation(), key, frequency))
 
 /// Build a fresh immutable command only while it has never entered the native worker.
 /datum/netrun_external_effects/machines/proc/submission_json(datum/netrun_external_request_context/context, datum/netrun_machine_message/message, raw_payload, frequency)
@@ -401,9 +403,11 @@
 	try
 		raw_payload = json_encode(message.payload)
 	catch
-		return reject_message(message, "payload не может быть передан")
+		reject_message(message, "payload не может быть передан")
+		return TRUE
 	if(!istext(raw_payload) || !length(raw_payload) || length(raw_payload) > 131072)
-		return reject_message(message, "payload превышает предел внешнего транспорта")
+		reject_message(message, "payload превышает предел внешнего транспорта")
+		return TRUE
 	message.source = previous.source
 	message.recipient = previous.recipient
 	message.correlation_id = previous.correlation_id

@@ -557,7 +557,10 @@
 		enqueue_service_event(watch, service, event)
 
 /datum/netrun_machine_transport/proc/enqueue_service_event(datum/netrun_service_subscription/watch, datum/netrun_machine_service/service, event)
-	if(QDELETED(watch) || QDELETED(watch.subscriber_ref?.resolve()) || !service || !isnull(watch.tag) && watch.tag != service.service_tag())
+	if(QDELETED(watch) || !service || !isnull(watch.tag) && watch.tag != service.service_tag())
+		return
+	var/datum/subscriber = watch.subscriber_ref?.resolve()
+	if(QDELETED(subscriber))
 		return
 	service_events += list(list("watch" = WEAKREF(watch), "service" = WEAKREF(service), "event" = event, "family" = service.service_id, "tag" = service.service_tag(), "identity" = service.service_key()))
 	if(!service_delivery_active && !service_event_timer)
@@ -574,10 +577,12 @@
 		CHECK_TICK
 		var/list/notice = service_events[service_event_cursor]
 		service_events[service_event_cursor++] = null
-		var/datum/netrun_service_subscription/watch = notice["watch"]?.resolve()
+		var/datum/weakref/watch_ref = notice["watch"]
+		var/datum/netrun_service_subscription/watch = watch_ref?.resolve()
 		var/datum/subscriber = watch?.subscriber_ref?.resolve()
 		if(!QDELETED(watch) && !QDELETED(subscriber) && watch.registry == src)
-			var/datum/netrun_machine_service/service = notice["service"]?.resolve()
+			var/datum/weakref/service_ref = notice["service"]
+			var/datum/netrun_machine_service/service = service_ref?.resolve()
 			if(notice["event"] == "removed")
 				service = null
 			else if(QDELETED(service) || services[notice["identity"]] != service)
