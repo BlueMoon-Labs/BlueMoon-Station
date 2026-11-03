@@ -5457,6 +5457,7 @@
 #include "modular_bluemoon\code\modules\netrun\core\fortress_presets.dm"
 #include "modular_bluemoon\code\modules\netrun\core\incidents.dm"
 #include "modular_bluemoon\code\modules\netrun\core\interaction.dm"
+#include "modular_bluemoon\code\modules\netrun\core\library_monitor.dm"
 #include "modular_bluemoon\code\modules\netrun\core\location.dm"
 #include "modular_bluemoon\code\modules\netrun\core\machine_routes.dm"
 #include "modular_bluemoon\code\modules\netrun\core\machine_transport.dm"

@@ -281,6 +281,12 @@
 	draining_disconnect = FALSE
 	ack_drain_grace_started = null
 	last_native_metrics_at = null
+	monitoring_negotiated = FALSE
+	monitor_sample_sequence = "0"
+	last_host_monitor_at = null
+	last_host_response_at = null
+	host_metrics.Cut()
+	monitor_last_sample_at = null
 	facts_turn = FALSE
 	infrastructure_barrier = "0"
 	id_serial = "0"
@@ -297,6 +303,7 @@
 		last_error = "bridge_open_failed"
 		return FALSE
 	state = "connecting"
+	monitor_connections++
 	opened_at = world.timeofday
 	return TRUE
 
@@ -320,7 +327,7 @@
 	if(state == "connecting")
 		var/list/status = native_call("netrun_status", list())
 		if(status?["state"] == "connected")
-			var/hello = netrun_external_json_object(list("kind" = json_encode("hello"), "protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "binding_epoch" = json_encode(binding_epoch), "token" = json_encode(session_token), "duplex" = "true"))
+			var/hello = netrun_external_json_object(list("kind" = json_encode("hello"), "protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "binding_epoch" = json_encode(binding_epoch), "token" = json_encode(session_token), "duplex" = "true", "monitoring" = "true"))
 			var/list/sent = native_call("netrun_try_enqueue", list(hello))
 			if(sent?["code"] == "accepted")
 				sent_frames++
@@ -420,6 +427,7 @@
 		native_inbound_bytes = status["inbound_bytes"]
 	if(isnum(status?["outbound_bytes"]))
 		native_outbound_bytes = status["outbound_bytes"]
+	sample_library_monitor()
 
 /// Reader независим от отправителя и native callbacks. Уже полученные terminal outcomes дренируются даже при EOF.
 /datum/netrun_external_core/proc/poll(max_frames = 128)
@@ -482,6 +490,7 @@
 		if(frame["duplex"] != TRUE || !isnum(frame_limit) || frame_limit < 0 || frame_limit != round(frame_limit))
 			return abort_session("duplex_required")
 		max_inflight_frames = frame_limit
+		monitoring_negotiated = frame["monitoring"] == TRUE
 		var/page_limit = frame["max_graph_pages"]
 		max_graph_pages = isnum(page_limit) && page_limit >= 0 && page_limit == round(page_limit) ? page_limit : 1
 		max_input_commands = 1
@@ -495,6 +504,8 @@
 		snapshot_phase = "begin"
 		state = "snapshotting"
 		return TRUE
+	if(frame["kind"] == "monitor")
+		return process_monitor_frame(frame)
 	if(frame["kind"] != "output" || frame["world_epoch"] != world_epoch || frame["engine_epoch"] != engine_epoch || frame["binding_epoch"] != binding_epoch)
 		return abort_session("output_epoch_mismatch")
 	var/sequence = frame["output_sequence"]
@@ -512,14 +523,7 @@
 		return abort_session("applied_sequence_regression")
 	var/list/metrics = frame["host_metrics"]
 	if(islist(metrics))
-		if(isnum(metrics["apply_us"]))
-			host_apply_ms = max(0, metrics["apply_us"]) / 1000
-		if(isnum(metrics["pump_us"]))
-			host_pump_ms = max(0, metrics["pump_us"]) / 1000
-		if(isnum(metrics["input_unacked"]))
-			host_input_unacked = max(0, metrics["input_unacked"])
-		if(isnum(metrics["output_unacked"]))
-			host_output_unacked = max(0, metrics["output_unacked"])
+		update_host_metrics(metrics)
 	var/list/results = frame["results"]
 	// Wire byte framing ограничивает размер JSON; число entries не квотирует готовые события.
 	if(!islist(results))
@@ -547,6 +551,7 @@
 			return FALSE
 	ack_output_sequence = sequence
 	last_applied_sequence = applied
+	last_host_response_at = monitor_now()
 	output_hashes[sequence] = hash
 	output_order += sequence
 	if(length(output_order) > 64)
@@ -1199,6 +1204,10 @@
 
 /// Закрывает native worker неблокирующе и освобождает все borrowed source subscriptions и JSON-журналы.
 /datum/netrun_external_core/proc/close(reason = "closed")
+	if(state != "closed" && state != "resync_required")
+		monitor_disconnects++
+		if(reason != "closed" && reason != "world_shutdown" && reason != "destroyed")
+			monitor_last_failure = netrun_external_safe_code(reason)
 	ready = FALSE
 	last_error = reason
 	state = "closed"

@@ -461,6 +461,7 @@
 #include "netrun_routing_cache.dm"
 #include "netrun_scheduler.dm"
 #include "netrun_scheduler_reuse.dm"
+#include "netrun_library_monitor.dm"
 #include "netrun_task_statistics.dm"
 #include "netrun_execution.dm"
 #include "netrun_interaction.dm"
