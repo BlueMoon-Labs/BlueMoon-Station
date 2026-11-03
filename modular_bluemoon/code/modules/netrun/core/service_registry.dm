@@ -45,6 +45,7 @@
 	return machine_transport
 
 /datum/netrun_machine_service
+	var/resolution_limit = 0
 	var/service_id
 	/// Only adapters with startup work enter the readiness wave.
 	var/start_when_ready = FALSE
@@ -152,7 +153,7 @@
 	var/datum/netrun_machine_resolution/query = resolutions[query_key]
 	if(query)
 		return query
-	if(length(resolutions) >= 64)
+	if(resolution_limit > 0 && length(resolutions) >= resolution_limit)
 		return null
 	query = new /datum/netrun_machine_resolution/external(src, destination_id, recipient_tag)
 	resolutions[query_key] = query
@@ -217,14 +218,19 @@
 	if(!bootstrap_complete)
 		SSnetrun.spawn_roundstart_servers()
 		if(!bootstrap_services)
-			bootstrap_services = services.Copy()
+			// Snapshot хранит только ID: удалённые services не удерживаются внешними references.
+			bootstrap_services = list()
+			for(var/key in services)
+				bootstrap_services += key
 			bootstrap_cursor = 1
-		var/stop = min(length(bootstrap_services), bootstrap_cursor + 31)
+		var/stop = length(bootstrap_services)
 		while(bootstrap_cursor <= stop)
 			var/key = bootstrap_services[bootstrap_cursor++]
 			var/datum/netrun_machine_service/service = services[key]
 			if(!QDELETED(service))
 				service.host_initialized()
+			if(TICK_CHECK)
+				break
 		if(bootstrap_cursor <= length(bootstrap_services))
 			preparing = FALSE
 			return FALSE
@@ -274,8 +280,7 @@
 		transport.ready_service_keys = transport.pending_ready_services
 		transport.pending_ready_services = list()
 		transport.ready_service_cursor = 1
-	var/stop = min(length(transport.ready_service_keys), transport.ready_service_cursor + 31)
-	var/started = TICK_USAGE_REAL
+	var/stop = length(transport.ready_service_keys)
 	while(transport.ready_service_cursor <= stop)
 		var/key = transport.ready_service_keys[transport.ready_service_cursor++]
 		var/datum/weakref/reference = transport.ready_service_keys[key]
@@ -285,7 +290,7 @@
 		if(!transport.is_ready())
 			transport.ready_queued = FALSE
 			return TRUE
-		if(TICK_DELTA_TO_MS(TICK_USAGE_REAL - started) >= 2 || TICK_USAGE > Master.current_ticklimit)
+		if(TICK_CHECK)
 			break
 	if(transport.ready_service_cursor <= length(transport.ready_service_keys))
 		return FALSE
@@ -351,7 +356,7 @@
 		wake_queries = waiting_resolutions.Copy()
 		wake_cursor = 1
 		wake_again = FALSE
-	var/stop = min(length(wake_queries), wake_cursor + 7)
+	var/stop = length(wake_queries)
 	while(wake_cursor <= stop)
 		var/datum/weakref/reference = wake_queries[wake_cursor]
 		// Начатый lookup может завершиться раньше остальной волны. Не удерживаем
@@ -362,6 +367,8 @@
 			query.begin()
 		else if(reference)
 			waiting_resolutions -= reference
+		if(TICK_CHECK)
+			break
 	if(wake_cursor <= length(wake_queries))
 		return FALSE
 	wake_queries = null

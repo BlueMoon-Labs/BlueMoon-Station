@@ -1,0 +1,57 @@
+# Асинхронная внешняя обработка NETRUN
+
+DM передаёт facts и команды без глобального ожидания ACK. Native bridge имеет
+независимые socket read/write очереди. Host разделяет reader, одного владельца
+runtime и writer: игровые объекты не создают отдельные threads/tasks.
+
+Соседние world-fact кадры применяются группой перед одним пересчётом топологии.
+Перед зависимой командой новая топология публикуется. Готовые результаты и
+страницы графа Host отправляет сам; новый запрос для получения ответа не нужен.
+ACK-only кадр не вызывает ответный пустой output.
+
+У каждой операции сохраняются request ID, binding и собственный terminal outcome.
+Ожидание native result одного устройства не блокирует другие устройства.
+Повторы сохраняют исходный first-attempt порядок; непринятый producer head не
+может быть пропущен более новым запросом. Отмена освобождает и admission fence.
+
+DM receiver валидирует и резервирует invocation, но не запускает игровой handler
+в JSON decoder. Отдельный native execution pump вызывает handler после проверки
+актуальных поколений, revisions и causal proof. Receive/send/native pumps
+кооперативно уступают CPU планировщику BYOND. Queued work содержит IDs и scalar
+proof; после disconnect внешние ссылки снимаются перед удалением объектов.
+Уже исполняемый callback удерживает message до возврата и не выполняется повторно.
+
+## Настройки по умолчанию
+
+Искусственные work/count/queue quotas отключены. Для DM и bridge `0` означает
+отсутствие квоты; положительные значения позволяют позже измерять backpressure.
+В Core используются ленивые collections с машинным maximum вместо прежних
+ограничений active requests, queries, events, candidates и topology counts.
+
+Это относится также к journal, native contexts, asynchronous query consumers,
+readiness/wake waves, discovery filtering/fanout и worker CPU/item budgets.
+Внутренние deadlines отключены по умолчанию. Ошибка/закрытие socket обрабатывается
+независимо от deadline, после дренирования уже полученных полных outcomes.
+
+Размеры wire frame, страницы и encoding-группы задают сегментацию протокола,
+а не скорость обмена. Exact sequences, hash, поколения и application ACK
+сохраняют целостность. Cache/history eviction управляет lifetime/replay;
+кэш может вытеснить таблицу, но не запрещает новое вычисление.
+
+## Диагностика в VV
+
+- `inflight_frames`, `inflight_frame_bytes`, `peak_inflight_frames`: принятые
+  bridge кадры до Host ACK; ledger не удерживает их JSON или native объекты.
+- `native_inbound_frames/bytes`, `native_outbound_frames/bytes`: очереди bridge.
+- `host_apply_ms`, `host_pump_ms`, `host_input_unacked`, `host_output_unacked`:
+  Core CPU и очереди отдельно от socket wait.
+- `last_ack_ms`, `max_ack_ms`: наблюдавшееся ожидание обработки input.
+- `native_invocation_queue`, `native_started_count`, `native_max_queue_wait_ms`:
+  применение игровых эффектов отдельно от получения результата.
+
+После обновления нужны согласованные Host и DLL из новой версии `netrun-core`.
+Обновите оба репозитория и пересоберите Core перед запуском `NETRUN + DreamDaemon`.
+Новый DM требует подтверждённый duplex и не включает stop-and-wait fallback.
+
+Длительные Windows/Docker прогоны новой архитектуры отложены по запросу пользователя.
+Результаты прежнего batch-only runtime не являются проверкой этой версии.

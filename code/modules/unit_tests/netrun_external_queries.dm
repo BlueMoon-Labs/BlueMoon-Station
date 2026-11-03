@@ -207,6 +207,7 @@
 /// Query producers и continuation capacity не определяются произвольным wire input.
 /datum/unit_test/netrun_external_queries_identity_and_bounds/Run()
 	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	fixture.executor.query_limit = 256
 	var/datum/consumer = allocate(/datum)
 	TEST_ASSERT_NULL(fixture.executor.new_query_id("unbounded-native-owner"), "Only fixed producers create watermarks")
 	TEST_ASSERT(!fixture.executor.enqueue_query("projection_query", "{\"kind\":\"projection_query\",\"request_id\":\"projection:1\"}", consumer), "A caller cannot forge an unallocated ID")

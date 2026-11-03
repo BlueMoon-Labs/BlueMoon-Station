@@ -93,7 +93,10 @@
 	if(!row)
 		row = invocation(context)
 		invocation_rows[request_id] = row
-	if(!executor.process_result(client, row) || context.executing || !context.invocation?.result_json)
+	if(!executor.process_result(client, row))
+		return FALSE
+	pump_native(row["invocation_id"])
+	if(context.executing || !context.invocation?.result_json)
 		return FALSE
 	var/list/result = json_decode(context.invocation.result_json)
 	var/success = result["success"]

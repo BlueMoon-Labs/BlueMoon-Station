@@ -16,7 +16,9 @@
 /datum/netrun_external_effects/machines/queries
 	/// Три фиксированных producer не создают неограниченного количества watermarks в C#.
 	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0")
-	/// До 256 weak continuations и 512 immutable команд за binding.
+	/// Нулевые application quotas не ограничивают обработку; continuations всегда weak.
+	var/query_limit = 0
+	var/query_command_limit = 0
 	var/list/query_consumers = list()
 	var/list/query_commands = list()
 	var/list/query_inflight = list()
@@ -45,7 +47,7 @@
 	var/enabled = SSnetworks.station_network && !SSnetworks.station_network.setting_disabled
 	if(!isnull(backbone_applied) && backbone_applied == enabled)
 		return FALSE
-	if(queued_commands() >= command_limit)
+	if(command_limit > 0 && queued_commands() >= command_limit)
 		return client.abort_session("backbone_command_pressure")
 	var/datum/netrun_external_backbone_command/command = new
 	command.kind = "backbone_configure"
@@ -88,7 +90,7 @@
 
 /// Регистрация consumer и команды атомарна: admission pressure не оставляет пустой slot.
 /datum/netrun_external_effects/machines/queries/proc/enqueue_query(kind, raw_json, datum/consumer)
-	if(closed || query_disconnecting || QDELETED(consumer) || length(query_commands) + length(query_inflight) >= 512 || !(kind in list("service_discover", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue")))
+	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue")))
 		return FALSE
 	var/list/body
 	try
@@ -97,7 +99,7 @@
 		return FALSE
 	var/request_id = body?["request_id"]
 	var/continuation = kind == "graph_sync_continue"
-	if(body?["kind"] != kind || !known_query_id(request_id) || (continuation ? get_query_consumer(request_id) != consumer : !!query_consumers[request_id]) || (!continuation && length(query_consumers) >= 256))
+	if(body?["kind"] != kind || !known_query_id(request_id) || (continuation ? get_query_consumer(request_id) != consumer : !!query_consumers[request_id]) || (!continuation && query_limit > 0 && length(query_consumers) >= query_limit))
 		return FALSE
 	var/datum/netrun_external_query_command/command = new
 	command.kind = kind
@@ -134,15 +136,15 @@
 		return
 	query_consumers -= request_id
 	query_persistent -= request_id
-	var/not_sent = FALSE
+	var/never_sent = FALSE
 	for(var/datum/netrun_external_query_command/command as anything in query_commands.Copy())
 		if(command.request_id == request_id && !command.control)
 			query_commands -= command
+			never_sent = !command.first_attempt_sequence
 			qdel(command)
-			not_sent = TRUE
-	if(not_sent || !cancel_kind || closed || query_disconnecting)
+	if(never_sent || !cancel_kind || closed || query_disconnecting)
 		return
-	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel")) || length(query_commands) + length(query_inflight) >= 512)
+	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel")) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit))
 		owner?.external_core?.abort_session("query_cancel_pressure")
 		return
 	var/datum/netrun_external_query_command/cancel = new
@@ -161,7 +163,7 @@
 /datum/netrun_external_effects/machines/queries/queued_commands()
 	return ..() + length(query_commands) + length(query_inflight) + length(query_consumers) - length(query_persistent)
 
-/// Source journal всегда отправляется первым; два вида трафика делят один stop-and-wait канал.
+/// Ready causal prefixes занимают свободные slots общего bounded duplex window.
 /datum/netrun_external_effects/machines/queries/prepare_input(datum/netrun_external_core/client)
 	if(closed || query_disconnecting || !client.ready || client.pending_frame || client.snapshot_phase)
 		return FALSE
@@ -244,7 +246,7 @@
 
 /// Cancelled stream сохраняет один Core slot до page ACK; удалённый consumer не должен удерживать его навсегда.
 /datum/netrun_external_effects/machines/queries/proc/acknowledge_retired_graph_page(datum/netrun_external_core/client, list/result)
-	if(!netrun_external_valid_decimal(result["page_index"]) || closed || query_disconnecting || queued_commands() >= command_limit)
+	if(!netrun_external_valid_decimal(result["page_index"]) || closed || query_disconnecting || (command_limit > 0 && queued_commands() >= command_limit))
 		return FALSE
 	var/datum/netrun_external_command/command = new
 	command.kind = "graph_sync_continue"

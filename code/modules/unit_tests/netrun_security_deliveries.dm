@@ -253,6 +253,7 @@
 	TEST_ASSERT(!length(monitor.acknowledged_publishers), "Local admission cannot acknowledge an unexecuted subscription")
 	var/list/invocation = fixture.invocation(context)
 	fixture.executor.process_result(fixture.client, invocation)
+	fixture.pump_native(invocation["invocation_id"])
 	TEST_ASSERT(publisher.subscribers[monitor.service_key()], "Native receive establishes the actual subscription")
 	TEST_ASSERT(!length(monitor.acknowledged_publishers), "Receive does not substitute for the Core terminal event")
 	fixture.executor.process_result(fixture.client, fixture.completion(context.request_id))

@@ -79,6 +79,10 @@
 /datum/netrun_external_effects/proc/prepare_input(datum/netrun_external_core/client)
 	return FALSE
 
+/// Запуск native effects отделён от декодирования входящих данных.
+/datum/netrun_external_effects/proc/advance_native_invocations(datum/netrun_external_core/client)
+	return
+
 /// Persistent idle subscriptions do not require a busy heartbeat; admitted requests do.
 /datum/netrun_external_effects/proc/has_pending_work()
 	return FALSE
@@ -99,6 +103,41 @@
 	var/sent_input_batches = 0
 	var/sent_batched_commands = 0
 	var/pending_batch_count = 0
+	/// Только одна неподтверждённая bridge-постановка; принятые кадры продолжают обмен независимо.
+	var/max_inflight_frames = 0
+	var/max_inflight_bytes = 0
+	var/max_graph_pages = 1
+	var/list/inflight_frames = list()
+	/// Консервативная UTF-8 reservation: четыре bytes на DM-символ, общий предел 4 MiB.
+	var/inflight_frame_bytes = 0
+	var/peak_inflight_frames = 0
+	var/pending_frame_bytes = 0
+	var/pending_output_ack = "0"
+	var/sent_output_ack = "0"
+	var/sent_input_sequence = "0"
+	var/last_input_progress_at = 0
+	var/facts_turn = FALSE
+	/// Ноль отключает искусственный deadline; потеря socket всё равно завершает binding.
+	var/ack_timeout = 0
+	var/handshake_timeout = 0
+	var/backpressure_timeout = 0
+	var/ack_drain_grace_started
+	/// По одному cooperative pump на направление; старый binding не продолжает новый после yield.
+	var/input_pump_binding
+	var/output_pump_binding
+	var/list/receive_frames = list()
+	var/receive_cursor = 1
+	var/draining_disconnect = FALSE
+	var/native_inbound_frames = 0
+	var/native_outbound_frames = 0
+	var/native_inbound_bytes = 0
+	var/native_outbound_bytes = 0
+	var/last_native_metrics_at
+	/// Host CPU отделяется от native очереди и round-trip задержки; wire payload не сохраняется.
+	var/host_apply_ms = 0
+	var/host_pump_ms = 0
+	var/host_input_unacked = 0
+	var/host_output_unacked = 0
 	/// Владелец исходных реестров; сетевой граф и маршруты для экспорта не запрашиваются.
 	var/datum/controller/subsystem/netrun/owner
 	/// Настроенная локальная библиотека и port; token поступает только из доверенного аргумента open.
@@ -125,11 +164,10 @@
 	var/ack_output_sequence = "0"
 	var/last_applied_sequence = "0"
 	var/journal_sequence = "0"
-	/// Одно неизменяемое input-тело удерживается до application ACK, а не только bridge accepted.
+	/// Неизменяемое тело удерживается только до bridge accepted; application ACK ведётся отдельным compact ledger.
 	var/pending_frame
 	var/pending_sequence
 	var/pending_sent = FALSE
-	var/poll_outstanding = FALSE
 	var/last_poll_at
 	/// Cumulative IPC accounting excludes BYOND client assets and never stores payloads.
 	var/sent_frames = 0
@@ -174,7 +212,8 @@
 	var/coalescing_epoch = "0"
 	var/journal_head = 1
 	var/journal_characters = 0
-	var/journal_limit = 4096
+	var/journal_limit = 0
+	var/journal_byte_limit = 0
 	/// Causal prefix не требует глобально пустого журнала: новые unrelated facts не вытесняют команды.
 	var/fact_tail = "0"
 	var/fact_consumed = "0"
@@ -231,6 +270,18 @@
 	fact_consumed = "0"
 	fact_acknowledged = "0"
 	pending_fact_through = null
+	inflight_frames.Cut()
+	inflight_frame_bytes = 0
+	sent_output_ack = "0"
+	sent_input_sequence = "0"
+	pending_output_ack = "0"
+	max_inflight_frames = 0
+	max_inflight_bytes = 0
+	max_graph_pages = 1
+	draining_disconnect = FALSE
+	ack_drain_grace_started = null
+	last_native_metrics_at = null
+	facts_turn = FALSE
 	infrastructure_barrier = "0"
 	id_serial = "0"
 	node_cursor = 1
@@ -241,7 +292,7 @@
 	last_simulation_time = max(0, round(world.time))
 	last_error = null
 	ready = FALSE
-	var/list/result = native_call("netrun_open", list("127.0.0.1", endpoint_port, "64", "4194304", "1048576"))
+	var/list/result = native_call("netrun_open", list("127.0.0.1", endpoint_port, "0", "0", "1048576"))
 	if(result?["code"] != "accepted")
 		last_error = "bridge_open_failed"
 		return FALSE
@@ -249,29 +300,27 @@
 	opened_at = world.timeofday
 	return TRUE
 
-/// Continue at tick cadence until the last socket response has actually been consumed.
+/// Один неблокирующий receive pump на tick принимает и unsolicited push без отдельных pollers на объекты.
 /datum/netrun_external_core/proc/needs_fast_tick()
-	return state != "closed" && state != "resync_required" && (!ready || pending_frame || poll_outstanding || journal_head <= length(journal) || effects?.has_pending_work())
+	return state != "closed" && state != "resync_required"
 
 /// Ограниченный проход. Не вызывает ensure_topology, route, service discovery или игровые effects вне output handler.
 /datum/netrun_external_core/proc/tick(max_records = 32)
 	if(state == "closed" || state == "resync_required")
 		return
-	// A debugger pause or a delayed MC pass must not discard a reply which the
-	// worker already received within the deadline. Drain ready frames first.
-	poll(64)
+	poll(128)
 	if(state == "closed" || state == "resync_required")
 		return
-	if((state == "connecting" || state == "handshaking") && netrun_external_elapsed_since(opened_at) > 100)
-		abort_session("handshake_timeout")
+	if(draining_disconnect)
 		return
-	if(poll_outstanding && !isnull(last_poll_at) && netrun_external_elapsed_since(last_poll_at) > 100)
-		abort_session("host_poll_timeout")
+	sample_native_metrics()
+	if(handshake_timeout > 0 && (state == "connecting" || state == "handshaking") && netrun_external_elapsed_since(opened_at) > handshake_timeout)
+		abort_session("handshake_timeout")
 		return
 	if(state == "connecting")
 		var/list/status = native_call("netrun_status", list())
 		if(status?["state"] == "connected")
-			var/hello = netrun_external_json_object(list("kind" = json_encode("hello"), "protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "binding_epoch" = json_encode(binding_epoch), "token" = json_encode(session_token)))
+			var/hello = netrun_external_json_object(list("kind" = json_encode("hello"), "protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "binding_epoch" = json_encode(binding_epoch), "token" = json_encode(session_token), "duplex" = "true"))
 			var/list/sent = native_call("netrun_try_enqueue", list(hello))
 			if(sent?["code"] == "accepted")
 				sent_frames++
@@ -282,52 +331,137 @@
 		return
 	if(state == "handshaking")
 		return
-	if(pending_frame)
-		if(pending_sent && netrun_external_elapsed_since(pending_started_at) > 100)
+	if(ack_timeout > 0 && length(inflight_frames) && netrun_external_elapsed_since(last_input_progress_at) > ack_timeout)
+		if(!isnull(output_pump_binding) && isnull(ack_drain_grace_started))
+			ack_drain_grace_started = world.timeofday
+		if(isnull(ack_drain_grace_started) || netrun_external_elapsed_since(ack_drain_grace_started) >= 10)
 			abort_session("host_ack_timeout")
 			return
-		flush_pending()
+	if(backpressure_timeout > 0 && pending_frame && netrun_external_elapsed_since(pending_started_at) > backpressure_timeout)
+		abort_session("bridge_backpressure_timeout")
 		return
-	if(snapshot_phase)
-		advance_snapshot(clamp(max_records, 1, 32), clamp(max_records, 1, 128))
-		flush_pending()
-		return
-	if(ready && effects?.prepare_input(src))
-		flush_pending()
-		return
-	if(state == "closed" || state == "resync_required")
-		return
-	if(journal_head <= length(journal))
-		send_journal(clamp(max_records, 1, 128), FALSE)
-		flush_pending()
-		return
-	if(!poll_outstanding)
-		// Consume idle replies promptly without immediately starting another poll.
-		if(ready && !effects?.has_pending_work() && !isnull(last_poll_at) && netrun_external_elapsed_since(last_poll_at) < NETRUN_DEFAULT_FIRE_INTERVAL)
-			return
-		var/body = netrun_external_json_object(list("kind" = json_encode("poll"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "ack_output_sequence" = json_encode(ack_output_sequence), "max_events" = "64"))
-		var/list/result = native_call("netrun_try_enqueue", list(body))
-		poll_outstanding = result?["code"] == "accepted"
-		if(poll_outstanding)
-			last_poll_at = world.timeofday
-			sent_frames++
-			sent_bytes += length(body)
+	// ACK имеет собственный путь: credit освобождается и при полном input window.
+	flush_output_ack()
+	effects?.advance_native_invocations(src)
+	pump_inputs(max_records)
 
-/// Забирает ограниченное количество готовых тел; native poll сам ограничивает serialized response.
-/datum/netrun_external_core/proc/poll(max_frames = 64)
-	var/list/result = native_call("netrun_poll", list("[clamp(max_frames, 1, 64)]", "4194304"))
-	if(!islist(result))
-		return abort_session("bridge_poll_failed")
-	var/list/frames = result?["frames"]
-	for(var/body in frames)
+/// Очередь выгружается без квоты frames/tick и без ожидания ACK; yield передаёт CPU игровому планировщику.
+/datum/netrun_external_core/proc/pump_inputs(max_records)
+	set waitfor = FALSE
+	if(input_pump_binding == binding_epoch || !binding_epoch)
+		return
+	var/pump_binding = binding_epoch
+	input_pump_binding = pump_binding
+	while(binding_epoch == pump_binding && state != "closed" && state != "resync_required" && !draining_disconnect)
+		if(pending_frame)
+			flush_pending()
+			if(pending_frame)
+				break
+		if(!can_enqueue())
+			break
+		if(snapshot_phase)
+			advance_snapshot(clamp(max_records, 1, 32), clamp(max_records, 1, 128))
+			if(!pending_frame && snapshot_phase && state != "closed" && state != "resync_required")
+				CHECK_TICK
+				continue
+		else if(facts_turn && journal_head <= length(journal))
+			send_journal(clamp(max_records, 1, 128), FALSE)
+			facts_turn = FALSE
+		else if(ready && effects?.prepare_input(src))
+			facts_turn = TRUE
+		else if(journal_head <= length(journal))
+			send_journal(clamp(max_records, 1, 128), FALSE)
+			facts_turn = FALSE
+		if(state == "closed" || state == "resync_required" || !pending_frame)
+			break
+		flush_pending()
+		CHECK_TICK
+		// Cooperative yield не ждёт ACK и даёт reader/native pumps работать в том же tick.
+		sleep(0)
+	if(input_pump_binding == pump_binding)
+		input_pump_binding = null
+	if(binding_epoch == pump_binding)
+		flush_output_ack()
+
+/// Полное окно ограничивает только отправителя; приём и ACK продолжаются каждый tick.
+/datum/netrun_external_core/proc/can_enqueue()
+	return state != "closed" && state != "resync_required" && !draining_disconnect && !pending_frame && (!max_inflight_frames || length(inflight_frames) < max_inflight_frames) && (!max_inflight_bytes || inflight_frame_bytes + 1048576 <= max_inflight_bytes)
+
+/// ACK-only heartbeat не получает ответ и не создаёт бесконечную цепочку пустых output/ACK.
+/datum/netrun_external_core/proc/flush_output_ack()
+	if(!engine_epoch || state == "closed" || state == "resync_required" || draining_disconnect)
+		return FALSE
+	if(ack_output_sequence == sent_output_ack && !isnull(last_poll_at) && netrun_external_elapsed_since(last_poll_at) < NETRUN_DEFAULT_FIRE_INTERVAL)
+		return FALSE
+	var/body = netrun_external_json_object(list("kind" = json_encode("poll"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "ack_output_sequence" = json_encode(ack_output_sequence), "max_events" = "0"))
+	var/list/result = native_call("netrun_try_enqueue", list(body))
+	if(result?["code"] != "accepted")
+		if(result?["code"] != "would_block")
+			draining_disconnect = TRUE
+			poll(128)
+		return FALSE
+	sent_output_ack = ack_output_sequence
+	last_poll_at = world.timeofday
+	sent_frames++
+	sent_bytes += length(body)
+	return TRUE
+
+/// Диагностический try-lock snapshot не ждёт socket/worker и не сканирует игровые объекты.
+/datum/netrun_external_core/proc/sample_native_metrics()
+	if(!isnull(last_native_metrics_at) && netrun_external_elapsed_since(last_native_metrics_at) < NETRUN_DEFAULT_FIRE_INTERVAL)
+		return
+	last_native_metrics_at = world.timeofday
+	var/list/status = native_call("netrun_status", list())
+	if(isnum(status?["inbound_frames"]))
+		native_inbound_frames = status["inbound_frames"]
+	if(isnum(status?["outbound_frames"]))
+		native_outbound_frames = status["outbound_frames"]
+	if(isnum(status?["inbound_bytes"]))
+		native_inbound_bytes = status["inbound_bytes"]
+	if(isnum(status?["outbound_bytes"]))
+		native_outbound_bytes = status["outbound_bytes"]
+
+/// Reader независим от отправителя и native callbacks. Уже полученные terminal outcomes дренируются даже при EOF.
+/datum/netrun_external_core/proc/poll(max_frames = 128)
+	set waitfor = FALSE
+	if(output_pump_binding == binding_epoch || !binding_epoch)
+		return FALSE
+	var/pump_binding = binding_epoch
+	output_pump_binding = pump_binding
+	while(binding_epoch == pump_binding && state != "closed" && state != "resync_required")
+		if(receive_cursor > length(receive_frames))
+			receive_frames.Cut()
+			receive_cursor = 1
+			var/list/result = native_call("netrun_poll", list("[clamp(max_frames, 1, 128)]", "8388608"))
+			if(!islist(result))
+				abort_session("bridge_poll_failed")
+				break
+			if(isnum(result["inbound_frames"]))
+				native_inbound_frames = result["inbound_frames"]
+			if(isnum(result["outbound_frames"]))
+				native_outbound_frames = result["outbound_frames"]
+			var/list/frames = result["frames"]
+			if(!islist(frames))
+				abort_session("bridge_poll_failed")
+				break
+			receive_frames = frames
+			if(result["state"] == "disconnected" || result["state"] == "closed")
+				draining_disconnect = TRUE
+			if(!length(receive_frames))
+				if(draining_disconnect && result["code"] != "would_block")
+					abort_session("bridge_disconnected")
+				break
+		var/body = receive_frames[receive_cursor]
+		receive_frames[receive_cursor++] = null
 		received_frames++
 		received_bytes += length(body)
 		if(!process_frame(body))
-			return FALSE
-	if(result?["state"] == "disconnected" || result?["state"] == "closed")
-		abort_session("bridge_disconnected")
-		return FALSE
-	return TRUE
+			break
+		CHECK_TICK
+		sleep(0)
+	if(output_pump_binding == pump_binding)
+		output_pump_binding = null
+	return state != "closed" && state != "resync_required"
 
 /// Полный output подтверждается только после всех results; неизвестный effect не получает ACK.
 /datum/netrun_external_core/proc/process_frame(body)
@@ -344,6 +478,12 @@
 		if(state != "handshaking" || frame["protocol_major"] != 1 || frame["protocol_minor"] != 3 || frame["world_epoch"] != world_epoch || frame["binding_epoch"] != binding_epoch || !istext(frame["engine_epoch"]) || frame["snapshot_checksum_version"] != 3)
 			return abort_session("handshake_mismatch")
 		engine_epoch = frame["engine_epoch"]
+		var/frame_limit = frame["max_inflight_frames"]
+		if(frame["duplex"] != TRUE || !isnum(frame_limit) || frame_limit < 0 || frame_limit != round(frame_limit))
+			return abort_session("duplex_required")
+		max_inflight_frames = frame_limit
+		var/page_limit = frame["max_graph_pages"]
+		max_graph_pages = isnum(page_limit) && page_limit >= 0 && page_limit == round(page_limit) ? page_limit : 1
 		max_input_commands = 1
 		var/batch_limit = frame["max_input_commands"]
 		if(!isnull(batch_limit))
@@ -359,7 +499,7 @@
 		return abort_session("output_epoch_mismatch")
 	var/sequence = frame["output_sequence"]
 	var/applied = frame["applied_sequence"]
-	if(!netrun_external_valid_decimal(sequence) || !netrun_external_valid_decimal(applied, TRUE) || netrun_external_decimal_compare(applied, input_sequence) > 0)
+	if(!netrun_external_valid_decimal(sequence) || !netrun_external_valid_decimal(applied, TRUE) || netrun_external_decimal_compare(applied, sent_input_sequence) > 0)
 		return abort_session("invalid_output_sequence")
 	var/hash = rustg_hash_string(RUSTG_HASH_SHA256, body)
 	if(netrun_external_decimal_compare(sequence, ack_output_sequence) <= 0)
@@ -370,13 +510,34 @@
 		return abort_session("output_sequence_gap")
 	if(netrun_external_decimal_compare(applied, last_applied_sequence) < 0)
 		return abort_session("applied_sequence_regression")
+	var/list/metrics = frame["host_metrics"]
+	if(islist(metrics))
+		if(isnum(metrics["apply_us"]))
+			host_apply_ms = max(0, metrics["apply_us"]) / 1000
+		if(isnum(metrics["pump_us"]))
+			host_pump_ms = max(0, metrics["pump_us"]) / 1000
+		if(isnum(metrics["input_unacked"]))
+			host_input_unacked = max(0, metrics["input_unacked"])
+		if(isnum(metrics["output_unacked"]))
+			host_output_unacked = max(0, metrics["output_unacked"])
 	var/list/results = frame["results"]
-	// Legacy: один result + 64 events; negotiated batch: до 16 results + 8 events.
-	if(!islist(results) || length(results) > 65)
+	// Wire byte framing ограничивает размер JSON; число entries не квотирует готовые события.
+	if(!islist(results))
 		return abort_session("invalid_output")
-	if(pending_sequence && pending_fact_through && netrun_external_decimal_compare(applied, pending_sequence) >= 0)
-		fact_acknowledged = pending_fact_through
-		pending_fact_through = null
+	// Все подтверждённые fact prefixes применяются ДО native effects этого же output.
+	while(length(inflight_frames))
+		var/end_sequence = inflight_frames[1]
+		if(netrun_external_decimal_compare(applied, end_sequence) < 0)
+			break
+		var/list/acknowledged = inflight_frames[end_sequence]
+		if(acknowledged["fact_through"])
+			fact_acknowledged = acknowledged["fact_through"]
+		last_ack_ms = netrun_external_elapsed_since(acknowledged["started_at"]) * 100
+		max_ack_ms = max(max_ack_ms, last_ack_ms)
+		inflight_frame_bytes -= acknowledged["bytes"]
+		inflight_frames -= end_sequence
+		last_input_progress_at = world.timeofday
+		ack_drain_grace_started = null
 	for(var/result in results)
 		if(!islist(result))
 			return abort_session("invalid_output")
@@ -391,14 +552,6 @@
 	if(length(output_order) > 64)
 		output_hashes -= output_order[1]
 		output_order.Cut(1, 2)
-	if(pending_sequence && netrun_external_decimal_compare(applied, pending_sequence) >= 0)
-		if(pending_sent)
-			last_ack_ms = netrun_external_elapsed_since(pending_started_at) * 100
-			max_ack_ms = max(max_ack_ms, last_ack_ms)
-		pending_frame = null
-		pending_sequence = null
-		pending_sent = FALSE
-	poll_outstanding = FALSE
 	return TRUE
 
 /// Runtime diagnostics не исполняют effects; ready требует barrier mirror и опубликованный graph.
@@ -426,7 +579,7 @@
 
 /// Фиксирует immutable frame до первого try_enqueue; повтор не пересериализует ACK или payload.
 /datum/netrun_external_core/proc/enqueue(entries_json, record_count = 1, command_count = 1)
-	if(state == "closed" || state == "resync_required" || pending_frame || !engine_epoch || record_count < 0 || record_count > 128 || command_count < 1 || command_count > max_input_commands || command_count != round(command_count))
+	if(!can_enqueue() || !engine_epoch || record_count < 0 || record_count > 128 || command_count < 1 || command_count > max_input_commands || command_count != round(command_count))
 		return FALSE
 	var/next_sequence = input_sequence
 	for(var/index in 1 to command_count)
@@ -436,13 +589,20 @@
 	var/time_ds = max(0, round(world.time))
 	if(!next_sequence || time_ds < last_simulation_time || time_ds > 2147483647)
 		return abort_session("clock_or_sequence_limit")
+	var/list/envelope = list("protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "sequence" = json_encode(next_sequence), "ack_output_sequence" = json_encode(ack_output_sequence), "simulation_time_ds" = json_encode(time_ds), "entries" = entries_json)
+	if(command_count > 1)
+		envelope["kind"] = json_encode("input_batch")
+	var/body = netrun_external_json_object(envelope)
+	var/reservation = length(body) * 4
+	if(reservation > 1048576)
+		return abort_session("source_frame_size")
 	input_sequence = next_sequence
 	pending_fact_through = null
 	last_simulation_time = time_ds
-	var/list/envelope = list("protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "sequence" = json_encode(input_sequence), "ack_output_sequence" = json_encode(ack_output_sequence), "simulation_time_ds" = json_encode(time_ds), "entries" = entries_json)
-	if(command_count > 1)
-		envelope["kind"] = json_encode("input_batch")
-	pending_frame = netrun_external_json_object(envelope)
+	pending_frame = body
+	pending_frame_bytes = reservation
+	pending_output_ack = ack_output_sequence
+	pending_started_at = world.timeofday
 	pending_sequence = input_sequence
 	pending_batch_count = command_count > 1 ? command_count : 0
 	pending_sent = FALSE
@@ -454,15 +614,36 @@
 		return
 	var/list/result = native_call("netrun_try_enqueue", list(pending_frame))
 	if(result?["code"] == "accepted")
-		pending_sent = TRUE
-		pending_started_at = world.timeofday
 		sent_frames++
 		sent_bytes += length(pending_frame)
 		if(pending_batch_count)
 			sent_input_batches++
 			sent_batched_commands += pending_batch_count
+		mark_pending_accepted()
+		return TRUE
 	else if(result?["code"] != "would_block")
-		abort_session("bridge_enqueue_failed")
+		draining_disconnect = TRUE
+		poll(128)
+	return FALSE
+
+/// Compact ledger не удерживает JSON, команды, компоненты или callback objects после передачи worker.
+/datum/netrun_external_core/proc/mark_pending_accepted()
+	if(!pending_frame || !pending_sequence)
+		return FALSE
+	if(!length(inflight_frames))
+		last_input_progress_at = world.timeofday
+	inflight_frames[pending_sequence] = list("started_at" = world.timeofday, "fact_through" = pending_fact_through, "bytes" = pending_frame_bytes)
+	sent_input_sequence = pending_sequence
+	inflight_frame_bytes += pending_frame_bytes
+	peak_inflight_frames = max(peak_inflight_frames, length(inflight_frames))
+	if(netrun_external_decimal_compare(pending_output_ack, sent_output_ack) > 0)
+		sent_output_ack = pending_output_ack
+	pending_frame = null
+	pending_sequence = null
+	pending_fact_through = null
+	pending_frame_bytes = 0
+	pending_sent = FALSE
+	return TRUE
 
 /// Одна фаза/один bounded chunk за проход; живые registry cursors не копируют всю станцию.
 /datum/netrun_external_core/proc/advance_snapshot(max_records, max_journal_records = 128)
@@ -527,7 +708,7 @@
 
 /// Передаёт последовательный кусок журнала; consumed slots освобождаются, список периодически компактируется.
 /datum/netrun_external_core/proc/send_journal(max_records, catch_up)
-	if(pending_frame || journal_head > length(journal))
+	if(!can_enqueue() || journal_head > length(journal))
 		return FALSE
 	max_records = clamp(max_records, 1, 128)
 	var/list/records = list()
@@ -603,14 +784,14 @@
 	if(upsert && upsert["epoch"] == coalescing_epoch && upsert["slot"] >= journal_head && upsert["slot"] <= length(journal))
 		var/slot = upsert["slot"]
 		var/characters = journal_characters - length(journal[slot]) + length(record)
-		if(characters > 1048576)
+		if(journal_byte_limit > 0 && characters > journal_byte_limit)
 			return abort_session("source_journal_overflow")
 		journal[slot] = record
 		journal_characters = characters
 		if(is_infrastructure && netrun_external_decimal_compare(upsert["serial"], infrastructure_barrier) > 0)
 			infrastructure_barrier = upsert["serial"]
 		return TRUE
-	if(length(journal) - journal_head + 1 >= journal_limit || journal_characters + length(record) > 1048576)
+	if((journal_limit > 0 && length(journal) - journal_head + 1 >= journal_limit) || (journal_byte_limit > 0 && journal_characters + length(record) > journal_byte_limit))
 		return abort_session("source_journal_overflow")
 	var/next = netrun_external_decimal_next(fact_tail)
 	if(!next)
@@ -630,7 +811,7 @@
 		owner?.wake_ready_delivery()
 	return TRUE
 
-/// pending_frame гарантирует application ACK отправленного prefix до следующей команды.
+/// Bridge accepted гарантирует FIFO prefix на том же TCP/binding; application ACK отдельно закрывает native authority gate.
 /// Сравнение строковых serial — O(1) по числу facts/commands, без обхода живого журнала.
 /datum/netrun_external_core/proc/command_facts_ready(barrier)
 	if(!netrun_external_valid_decimal(barrier, TRUE))
@@ -1053,7 +1234,19 @@
 	pending_frame = null
 	pending_sequence = null
 	pending_sent = FALSE
-	poll_outstanding = FALSE
+	inflight_frames.Cut()
+	inflight_frame_bytes = 0
+	receive_frames.Cut()
+	receive_cursor = 1
+	input_pump_binding = null
+	output_pump_binding = null
+	draining_disconnect = FALSE
+	ack_drain_grace_started = null
+	pending_frame_bytes = 0
+	pending_fact_through = null
+	pending_output_ack = "0"
+	sent_output_ack = "0"
+	sent_input_sequence = "0"
 	last_poll_at = null
 	snapshot_phase = null
 	session_token = null

@@ -107,6 +107,21 @@
 /datum/netrun_external_fixture/proc/first_context()
 	return length(executor.pending) ? executor.pending[executor.pending[1]] : null
 
+/// Тест явно выполняет две фазы: decode/ownership и отдельный bounded native execution slice.
+/datum/netrun_external_fixture/proc/receive_result(list/result)
+	. = executor.process_result(client, result)
+	if(.)
+		pump_native(result["invocation_id"])
+
+/// Только fixture ждёт старта отдельной cooperative фазы, не превращая production decode в синхронный handler.
+/datum/netrun_external_fixture/proc/pump_native(invocation_id)
+	executor.advance_native_invocations(client)
+	var/deadline = world.time + 2 SECONDS
+	var/datum/netrun_external_invocation/invocation = executor.invocations[invocation_id]
+	while(!QDELETED(invocation) && invocation.stage == "queued" && world.time < deadline)
+		sleep(world.tick_lag)
+		executor.advance_native_invocations(client)
+
 /// Bounded IPC burst сохраняет logical ACK, FIFO retries и captured fact prefix.
 /datum/unit_test/netrun_external_core_bounded_batch_retry/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
@@ -194,16 +209,16 @@
 	var/datum/netrun_external_request_context/context = fixture.first_context()
 	var/request_id = context.request_id
 	var/list/invocation = fixture.invocation(context)
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Native invocation passes exact identity checks")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Duplicate reuses the journal result")
+	TEST_ASSERT(fixture.receive_result(invocation), "Native invocation passes exact identity checks")
+	TEST_ASSERT(fixture.receive_result(invocation), "Duplicate reuses the journal result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Receive executes exactly once within this binding")
 	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 1, "A queued result is not duplicated")
 	TEST_ASSERT(!outcomes["delivered"] && !outcomes["failed"], "Native receive is distinct from transport completion")
 	var/list/completed = fixture.completion(request_id)
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, completed), "Transport terminal completes the original message")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, completed), "Duplicate terminal is harmless")
+	TEST_ASSERT(fixture.receive_result(completed), "Transport terminal completes the original message")
+	TEST_ASSERT(fixture.receive_result(completed), "Duplicate terminal is harmless")
 	TEST_ASSERT_EQUAL(outcomes["delivered"], 1, "Delivered callback fires once")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "An exact terminal invocation reuses its known result without another effect")
+	TEST_ASSERT(fixture.receive_result(invocation), "An exact terminal invocation reuses its known result without another effect")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Watermark retirement never revives an old effect")
 
 /// ACK native effect имеет отдельную bounded capacity и не сбрасывает карту при заполненном admission.
@@ -215,16 +230,16 @@
 	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("value" = 9), outcomes)), "The request fills the admission budget")
 	var/datum/netrun_external_request_context/context = fixture.first_context()
 	var/list/invocation = fixture.invocation(context)
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Native output is processed while request capacity is full")
+	TEST_ASSERT(fixture.receive_result(invocation), "Native output is processed while request capacity is full")
 	TEST_ASSERT(fixture.client.ready, "A finished native result must not force binding recovery under admission pressure")
 	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 1, "Control result has bounded capacity independent from new requests")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Repeated invocation reuses the queued result")
+	TEST_ASSERT(fixture.receive_result(invocation), "Repeated invocation reuses the queued result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Pressure cannot repeat the native effect")
 	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "The result is sent ahead of the saturated request queue")
 	var/list/sent = json_decode(fixture.client.pending_frame)
 	var/list/result = sent[1]
 	TEST_ASSERT_EQUAL(result["kind"], "invocation_result", "Capacity is released by the control path first")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(context.request_id)), "The final transport outcome still arrives once")
+	TEST_ASSERT(fixture.receive_result(fixture.completion(context.request_id)), "The final transport outcome still arrives once")
 	TEST_ASSERT_EQUAL(outcomes["delivered"], 1, "The original sender receives one completion")
 
 /// Поколение нельзя подменить адресом, а сменившийся native tag отзывает ранее допустимое обращение.
@@ -237,10 +252,10 @@
 	var/list/invalid = fixture.invocation(context)
 	var/list/destination = invalid["destination_service"]
 	destination["generation"] = "2"
-	TEST_ASSERT(!fixture.executor.process_result(fixture.client, invalid), "Wrong service generation gets no ACK or native call")
+	TEST_ASSERT(!fixture.receive_result(invalid), "Wrong service generation gets no ACK or native call")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Invalid identity has no effect")
 	fixture.destination.native_tag = "changed-tag"
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.invocation(context)), "Known stale native target yields a typed failure result")
+	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "Known stale native target yields a typed failure result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Native tag is rechecked before receive")
 	var/datum/netrun_external_command/result = fixture.executor.control_commands[1]
 	var/list/decoded = json_decode(result.raw_json)
@@ -256,13 +271,13 @@
 	var/datum/netrun_external_request_context/context = fixture.first_context()
 	var/request_id = context.request_id
 	var/list/event = fixture.invocation(context)
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "The invocation is journaled before entering handler")
+	TEST_ASSERT(fixture.receive_result(event), "The invocation is journaled before entering handler")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Synthetic effect started once")
 	var/datum/netrun_external_command/result = fixture.executor.control_commands[1]
 	var/list/decoded = json_decode(result.raw_json)
 	TEST_ASSERT_EQUAL(decoded["code"], "outcome_unknown", "Partial native effect is not called a known rejection")
 	TEST_ASSERT(!decoded["success"], "An exception cannot claim native success")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(request_id, "outcome_unknown", "outcome_unknown")), "Unknown terminal reaches native sender")
+	TEST_ASSERT(fixture.receive_result(fixture.completion(request_id, "outcome_unknown", "outcome_unknown")), "Unknown terminal reaches native sender")
 	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "Original message gets one terminal callback")
 	TEST_ASSERT(!outcomes["delivered"], "Unknown is never successful delivery")
 
@@ -275,7 +290,7 @@
 	fixture.destination.native_delay = 2 SECONDS
 	fixture.executor.dispatch(fixture.source, fixture.destination, message)
 	var/datum/netrun_external_request_context/context = fixture.first_context()
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.invocation(context)), "Async native execution is accepted without blocking output processing")
+	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "Async native execution is accepted without blocking output processing")
 	TEST_ASSERT(context.executing, "Executing ledger is visible before handler returns")
 	fixture.executor.disconnected(fixture.client, "test_disconnect")
 	fixture.client.binding_epoch = "new-binding"
@@ -299,6 +314,7 @@
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
 	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
 	fixture.executor.invocation_limit = 1
+	fixture.executor.terminal_invocation_limit = 1
 	fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("value" = 1), list()))
 	var/datum/netrun_external_request_context/old = fixture.first_context()
 	for(var/index in 1 to 16)
@@ -306,17 +322,17 @@
 		var/datum/netrun_external_request_context/newer = fixture.executor.pending[fixture.executor.pending[2]]
 		var/request_id = newer.request_id
 		var/list/event = fixture.invocation(newer)
-		TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "New native operation executes once")
-		TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(request_id)), "Later completion is accepted")
+		TEST_ASSERT(fixture.receive_result(event), "New native operation executes once")
+		TEST_ASSERT(fixture.receive_result(fixture.completion(request_id)), "Later completion is accepted")
 		TEST_ASSERT_EQUAL(length(fixture.executor.invocations), 1, "An unacknowledged result still pins its exact record")
 		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Native result crosses logical input handoff")
 		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "action" = list("accepted" = TRUE)))
 		fixture.client.pending_frame = null
 		TEST_ASSERT_EQUAL(length(fixture.executor.invocations), 0, "Terminal plus result ACK frees its active slot")
-		TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "A late exact terminal invocation is acknowledged without executing it again")
+		TEST_ASSERT(fixture.receive_result(event), "A late exact terminal invocation is acknowledged without executing it again")
 		TEST_ASSERT_EQUAL(fixture.destination.native_calls, index, "Replay cannot repeat native effects")
 		TEST_ASSERT_EQUAL(length(fixture.executor.terminal_invocations), 1, "Retired fingerprints remain bounded")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(old.request_id, "cancelled", "cancelled")), "Last old context closes the conservative watermark")
+	TEST_ASSERT(fixture.receive_result(fixture.completion(old.request_id, "cancelled", "cancelled")), "Last old context closes the conservative watermark")
 	TEST_ASSERT_EQUAL(length(fixture.executor.invocations), 0, "No ACKed active invocation survives idle")
 	TEST_ASSERT_EQUAL(fixture.executor.retired_sequence, "17", "Watermark never skips a still pending older request")
 
@@ -327,7 +343,7 @@
 	fixture.client.queue_fact("{}", TRUE)
 	fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list(), list()))
 	var/datum/netrun_external_request_context/context = fixture.first_context()
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.invocation(context)), "A valid invocation gets one known native result")
+	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "A valid invocation gets one known native result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Unacknowledged transit change cannot execute native effects")
 	var/datum/netrun_external_command/command = fixture.executor.control_commands[1]
 	var/list/body = json_decode(command.raw_json)
@@ -341,7 +357,7 @@
 	var/datum/netrun_external_request_context/context = fixture.first_context()
 	var/list/event = fixture.invocation(context)
 	fixture.executor.latest_infra_stamp = "1"
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "Stale serialized proof returns a known native refusal")
+	TEST_ASSERT(fixture.receive_result(event), "Stale serialized proof returns a known native refusal")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 0, "Endpoint equality does not replace an old transit proof")
 
 /// Yield в native accepts не переносит authority старого binding за границу actual receive.
@@ -351,7 +367,7 @@
 	fixture.destination.accepts_delay = world.tick_lag * 2
 	fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list(), list()))
 	var/datum/netrun_external_request_context/context = fixture.first_context()
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.invocation(context)), "Native acceptance is asynchronous")
+	TEST_ASSERT(fixture.receive_result(fixture.invocation(context)), "Native acceptance is asynchronous")
 	TEST_ASSERT(context.executing, "Acceptance is suspended before the effect")
 	fixture.client.binding_epoch = "replacement-binding"
 	var/deadline = world.time + 2 SECONDS
@@ -468,13 +484,13 @@
 		TEST_ASSERT_EQUAL(retained.request_id, retained_id, "Coalescing preserves the original wire request identity")
 		TEST_ASSERT_EQUAL(retained.message.payload["revision"], 13, "A stale revision cannot replace the newest native payload")
 		TEST_ASSERT_NULL(incoming.message, "Superseded request no longer owns the retained message")
-		TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(incoming_id, "superseded", "coalesced")), "Superseded terminal releases its own native slot")
+		TEST_ASSERT(fixture.receive_result(fixture.completion(incoming_id, "superseded", "coalesced")), "Superseded terminal releases its own native slot")
 	TEST_ASSERT(QDELETED(original), "Replaced state releases its original native message")
 	var/list/invocation = fixture.invocation(retained)
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Original wire ID executes the newest exact payload and context")
+	TEST_ASSERT(fixture.receive_result(invocation), "Original wire ID executes the newest exact payload and context")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Only the final state executes")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, fixture.completion(retained_id)), "Original terminal completes the retained state")
-	TEST_ASSERT(fixture.executor.process_result(fixture.client, invocation), "Invocation replay cannot repeat the state effect")
+	TEST_ASSERT(fixture.receive_result(fixture.completion(retained_id)), "Original terminal completes the retained state")
+	TEST_ASSERT(fixture.receive_result(invocation), "Invocation replay cannot repeat the state effect")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Coalescing preserves exactly once native execution")
 	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Both retained and superseded slots drain")
 	TEST_ASSERT_EQUAL(fixture.executor.pending_current_count, 0, "Coalesced and original completion release their current binding slots once")

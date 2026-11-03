@@ -425,7 +425,7 @@ SUBSYSTEM_DEF(netrun)
 	var/slice_started_at = world.time
 	if(!resumed)
 		ensure_external_core()
-		external_core?.tick(64)
+	external_core?.tick(128)
 	flush_node_publications()
 	if(!resumed && initialized)
 		get_machine_transport().prepare_network()

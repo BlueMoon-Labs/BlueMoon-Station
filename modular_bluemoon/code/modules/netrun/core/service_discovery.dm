@@ -13,6 +13,11 @@
 	var/list/resolved_targets
 	var/target_cursor = 1
 	var/message_attempted = FALSE
+	var/queue_limit = 0
+	var/fanout_running = FALSE
+
+/datum/netrun_machine_transport
+	var/discovery_queue_limit = 0
 
 /datum/netrun_machine_resolution/New(datum/netrun_machine_service/source, destination_id, recipient_tag)
 	src.source = source
@@ -64,7 +69,7 @@
 				qdel(previous)
 				return TRUE
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	if(completed || length(queued) >= 64 || transport.queued_messages >= 4096)
+	if(completed || (queue_limit > 0 && length(queued) >= queue_limit) || (transport.discovery_queue_limit > 0 && transport.queued_messages >= transport.discovery_queue_limit))
 		message.failed("Очередь обнаружения служб заполнена")
 		qdel(message)
 		return FALSE
@@ -90,6 +95,8 @@
 
 /datum/netrun_machine_resolution/deliver()
 	set waitfor = FALSE
+	if(fanout_running)
+		return FALSE
 	var/slice_started = TICK_USAGE
 	var/slice_time = world.time
 	var/budget_ms = SSnetrun.remaining_task_budget_ms(SSnetrun.get_execution_limits().min_budget_ms)
@@ -106,12 +113,11 @@
 		failure_reason = "Поиск служб не завершён внешним ядром"
 		qdel(src)
 		return FALSE
-	// Bound both command bursts and broadcast fanout. Originals remain owned and
-	// counted until consumed; one packet admission is an indivisible routing step.
-	// Cheap local fanout may share a slice, but never outlive lookup's remaining
-	// CPU allowance or a native callback yielding into another world tick.
-	var/work = 0
-	while(length(queued) && work++ < 8)
+	fanout_running = TRUE
+	while(length(queued))
+		CHECK_TICK
+		if(QDELETED(src))
+			return FALSE
 		if(QDELETED(source))
 			failure_reason = "Источник службы удалён"
 			qdel(src)
@@ -146,8 +152,9 @@
 			message_attempted = FALSE
 		if(QDELETED(src))
 			return FALSE
-		if(world.time != slice_time || TICK_DELTA_TO_MS(TICK_USAGE - slice_started) >= budget_ms)
+		if(budget_ms != INFINITY && (world.time != slice_time || TICK_DELTA_TO_MS(TICK_USAGE - slice_started) >= budget_ms))
 			break
+	fanout_running = FALSE
 	if(length(queued))
 		queue_delivery()
 		return FALSE

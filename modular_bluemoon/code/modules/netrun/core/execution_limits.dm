@@ -1,11 +1,13 @@
 /// Public subsystem tuning. Changes are normalized at the start of the next fire().
 /datum/controller/subsystem/netrun
 	var/task_adaptive_budget = TRUE
-	var/task_budget_ms = NETRUN_DEFAULT_TASK_BUDGET_MS
-	var/task_min_budget_ms = NETRUN_DEFAULT_TASK_MIN_BUDGET_MS
+	/// Ноль снимает application quota; кооперативный tick budget MC продолжает переключать задачи.
+	var/task_budget_ms = 0
+	var/task_min_budget_ms = 0
 	var/task_pressure_tick_usage = NETRUN_DEFAULT_TASK_PRESSURE_TICK_USAGE
 	var/task_min_per_pass = NETRUN_DEFAULT_TASK_MIN_PER_PASS
-	var/task_max_per_pass = NETRUN_DEFAULT_TASK_MAX_PER_PASS
+	var/task_max_per_pass = 0
+	var/pending_request_limit = 0
 	var/task_interactive_burst = NETRUN_DEFAULT_INTERACTIVE_BURST
 	var/task_interactive_priority = NETRUN_DEFAULT_INTERACTIVE_PRIORITY
 	var/ui_interactive_flush = NETRUN_DEFAULT_INTERACTIVE_FLUSH
@@ -100,10 +102,10 @@
 
 /datum/netrun_execution_limits/proc/configure(datum/controller/subsystem/netrun/worker)
 	adaptive_budget = !!worker.task_adaptive_budget
-	budget_ms = bounded(worker.task_budget_ms, NETRUN_DEFAULT_TASK_BUDGET_MS, NETRUN_EXECUTION_MIN_BUDGET_MS, NETRUN_EXECUTION_MAX_BUDGET_MS)
-	min_budget_ms = bounded(worker.task_min_budget_ms, NETRUN_DEFAULT_TASK_MIN_BUDGET_MS, NETRUN_EXECUTION_MIN_BUDGET_MS, budget_ms)
+	budget_ms = worker.task_budget_ms == 0 ? INFINITY : bounded(worker.task_budget_ms, NETRUN_DEFAULT_TASK_BUDGET_MS, NETRUN_EXECUTION_MIN_BUDGET_MS, NETRUN_EXECUTION_MAX_BUDGET_MS)
+	min_budget_ms = worker.task_min_budget_ms == 0 ? budget_ms : bounded(worker.task_min_budget_ms, NETRUN_DEFAULT_TASK_MIN_BUDGET_MS, NETRUN_EXECUTION_MIN_BUDGET_MS, budget_ms)
 	pressure_tick_usage = bounded(worker.task_pressure_tick_usage, NETRUN_DEFAULT_TASK_PRESSURE_TICK_USAGE, 1, NETRUN_EXECUTION_MAX_PRESSURE_TICK_USAGE)
-	max_per_pass = bounded(worker.task_max_per_pass, NETRUN_DEFAULT_TASK_MAX_PER_PASS, 1, NETRUN_EXECUTION_MAX_TASKS_PER_PASS, TRUE)
+	max_per_pass = worker.task_max_per_pass == 0 ? INFINITY : bounded(worker.task_max_per_pass, NETRUN_DEFAULT_TASK_MAX_PER_PASS, 1, NETRUN_EXECUTION_MAX_TASKS_PER_PASS, TRUE)
 	min_per_pass = bounded(worker.task_min_per_pass, NETRUN_DEFAULT_TASK_MIN_PER_PASS, 1, max_per_pass, TRUE)
 	interactive_burst = bounded(worker.task_interactive_burst, NETRUN_DEFAULT_INTERACTIVE_BURST, 1, NETRUN_EXECUTION_MAX_TASKS_PER_PASS, TRUE)
 	interactive_priority = bounded(worker.task_interactive_priority, NETRUN_DEFAULT_INTERACTIVE_PRIORITY, NETRUN_TASK_CRITICAL, NETRUN_TASK_BACKGROUND, TRUE)
@@ -141,6 +143,8 @@
 	configuration_revision++
 
 /datum/netrun_execution_limits/proc/budget_for(tick_usage)
+	if(budget_ms == INFINITY)
+		return INFINITY
 	var/pressure = adaptive_budget ? clamp(tick_usage / pressure_tick_usage, 0, 1) : 0
 	return clamp(budget_ms * (1 - pressure), min_budget_ms, budget_ms)
 

@@ -1,5 +1,9 @@
 # Разбор нагрузки Netrun
 
+Текущая архитектура и измеряемые очереди описаны в [ASYNC_EXTERNAL.md](ASYNC_EXTERNAL.md).
+Рабочий обмен уже не использует stop-and-wait; artificial work/queue quotas по
+умолчанию отключены. Ниже сохранена история диагностики прежнего ограничения.
+
 ## IPC: накопление pending и холодная карта
 
 `pending` — native contexts до terminal outcome, а `request_commands` — ещё не

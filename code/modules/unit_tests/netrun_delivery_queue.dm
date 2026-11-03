@@ -461,17 +461,23 @@
 	var/datum/netrun_request/delivery/netrun_queue_probe/request = allocate(/datum/netrun_request/delivery/netrun_queue_probe, console, scene.source.node, scene.source.node.network)
 	var/id = request.operation.id
 	var/list/previous_requests = SSnetrun.pending_requests
+	var/previous_request_limit = SSnetrun.pending_request_limit
+	SSnetrun.pending_request_limit = NETRUN_MAX_PENDING_REQUESTS
 	SSnetrun.pending_requests = new /list(NETRUN_MAX_PENDING_REQUESTS)
 	var/admitted = request.send()
 	SSnetrun.pending_requests = previous_requests
+	SSnetrun.pending_request_limit = previous_request_limit
 	TEST_ASSERT(!admitted && QDELETED(request), "A full request queue must refuse admission and release the rejected packet")
 	var/list/result = netrun_operation_result(console, id)
 	TEST_ASSERT_EQUAL(result?["phase"], "rejected", "Capacity refusal must be a final rejected outcome")
 	TEST_ASSERT(findtext(result["reason"], "переполнена"), "Request capacity must have an actionable reason")
 	var/list/outcomes = list()
 	var/saved_limit = scene.bus.executor.context_limit
-	scene.bus.executor.context_limit = 0
+	scene.bus.executor.context_limit = 1
+	var/datum/netrun_external_request_context/occupied = allocate(/datum/netrun_external_request_context)
+	scene.bus.executor.pending["capacity-fixture"] = occupied
 	admitted = scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture(list(), outcomes))
+	scene.bus.executor.pending -= "capacity-fixture"
 	scene.bus.executor.context_limit = saved_limit
 	TEST_ASSERT(!admitted, "Full external context capacity refuses admission")
 	TEST_ASSERT_EQUAL(outcomes["failed"], 1, "Capacity refusal has one native callback")

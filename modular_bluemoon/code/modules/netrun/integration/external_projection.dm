@@ -84,6 +84,12 @@
 /datum/netrun_external_effects/machines/queries
 	/// Authoritative C# hints; structural graph не зависит от availability-only churn.
 	var/projection_graph_version = "0"
+	/// Опциональные application quotas; default не ограничивает demand/consumer/topology counts.
+	var/projection_query_limit = 0
+	var/projection_waiter_limit = 0
+	var/projection_node_limit = 0
+	var/projection_edge_limit = 0
+	var/projection_notifying_binding
 	var/projection_input_sequence = "0"
 	var/projection_availability = "0"
 	/// Local signals немедленно отзывают authority до доставки raw fact journal.
@@ -211,7 +217,7 @@
 		return
 	var/list/waiters = projection_waiters[cache_key]
 	if(!waiters)
-		if(length(projection_waiters) >= 16)
+		if(projection_waiter_limit > 0 && length(projection_waiters) >= projection_waiter_limit)
 			return
 		waiters = list()
 		projection_waiters[cache_key] = waiters
@@ -220,7 +226,7 @@
 		if(!waiter.resolve())
 			waiters -= reference
 	var/console_reference = REF(console)
-	if(length(waiters) < 16 || waiters[console_reference])
+	if(!projection_waiter_limit || length(waiters) < projection_waiter_limit || waiters[console_reference])
 		waiters[console_reference] = WEAKREF(console)
 
 /// Completion не сканирует station consoles и не выполняет сериализацию внутри callback.
@@ -254,7 +260,7 @@
 		if(cursor.cache_key == cache_key)
 			pending = TRUE
 			break
-	if(!pending && (length(projection_demands) < 16 || projection_demands[cache_key]))
+	if(!pending && (!projection_query_limit || length(projection_demands) < projection_query_limit || projection_demands[cache_key]))
 		projection_demands[cache_key] = list("key" = key.Copy(), "mode" = mode)
 		owner.wake_ready_delivery()
 	// Existing per-node revision and edge checks keep unaffected paths usable
@@ -267,7 +273,7 @@
 /datum/netrun_external_effects/machines/queries/proc/projection_submit(datum/netrun_external_core/client, kind, list/key = null, mode = "discovery", cache_key = null)
 	if(kind == "graph" && projection_stream_mode)
 		return FALSE
-	if(length(projection_pending) >= 16)
+	if(projection_query_limit > 0 && length(projection_pending) >= projection_query_limit)
 		return FALSE
 	var/id = new_query_id("projection")
 	if(!id)
@@ -340,13 +346,29 @@
 				client.abort_session("graph_sync_rejected")
 				return
 			if(command.kind == "graph_sync_continue")
+				var/list/ack_body = json_decode(command.raw_json)
+				var/ack_page = ack_body?["page_index"]
+				if(!cursor.ack_pending || ack_page != cursor.ack_page)
+					client.abort_session("graph_sync_ack_mismatch")
+					return
 				cursor.ack_pending = FALSE
-				if(cursor.terminal)
+				cursor.acknowledged_page = ack_page
+				while(length(cursor.unacknowledged_pages) && netrun_external_decimal_compare(cursor.unacknowledged_pages[1], ack_page) <= 0)
+					cursor.unacknowledged_pages.Cut(1, 2)
+				if(!cursor.page_window && ack_page == cursor.batch_complete_page)
+					// Unlimited window хранит hashes только текущего batch, затем оставляет один replay tail.
+					cursor.page_hashes.Cut()
+					cursor.page_order.Cut()
+					cursor.page_hashes[cursor.last_page] = cursor.last_hash
+					cursor.page_order += cursor.last_page
+				if(cursor.terminal && ack_page == cursor.last_page)
 					forget_query(cursor.request_id)
 					projection_sync = null
 					projection_data = null
 					qdel(cursor)
 					projection_update_dirty(client)
+				else if(cursor.last_page != ack_page)
+					projection_continue_stream(cursor)
 			return
 		if(command.kind == "anchor_query")
 			projection_observe_anchor(client, result, command)
@@ -487,7 +509,7 @@
 /datum/netrun_external_effects/machines/queries/proc/projection_row(datum/netrun_external_core/client, datum/netrun_external_projection_cursor/cursor, list/row)
 	var/list/node_key = row["node"]
 	if(row["kind"] == "node" && cursor.kind == "graph")
-		if(cursor.seen_edges || length(cursor.nodes) >= 10000)
+		if(cursor.seen_edges || (projection_node_limit > 0 && length(cursor.nodes) >= projection_node_limit))
 			return FALSE
 		var/datum/component/netrun_node/node = projection_resolve(client, row["node"])
 		if(QDELETED(node))
@@ -515,7 +537,7 @@
 		return TRUE
 	if(row["kind"] == "edge" && cursor.kind == "graph")
 		cursor.seen_edges = TRUE
-		if(length(cursor.edges) >= 100000 || !(row["link_kind"] in list("endpoint", "apc")) || !isnum(row["distance"]) || row["distance"] < 0 || !isnum(row["latency_ds"]) || row["latency_ds"] <= 0 || row["latency_ds"] >= INFINITY)
+		if((projection_edge_limit > 0 && length(cursor.edges) >= projection_edge_limit) || !(row["link_kind"] in list("endpoint", "apc")) || !isnum(row["distance"]) || row["distance"] < 0 || !isnum(row["latency_ds"]) || row["latency_ds"] <= 0 || row["latency_ds"] >= INFINITY)
 			return FALSE
 		var/datum/component/netrun_node/from_node = projection_resolve(client, row["from"])
 		var/datum/component/netrun_node/to_node = projection_resolve(client, row["to"])
@@ -537,7 +559,7 @@
 		if(!cursor.tree)
 			cursor.tree = new /datum/netrun_path_tree/external
 			cursor.tree.source = client.resolve_node(cursor.source_key["id"], cursor.source_key["generation"])
-		if(length(cursor.tree.reached) >= 10000 || !isnum(row["latency_ds"]) || row["latency_ds"] < 0 || row["latency_ds"] >= INFINITY)
+		if((projection_node_limit > 0 && length(cursor.tree.reached) >= projection_node_limit) || !isnum(row["latency_ds"]) || row["latency_ds"] < 0 || row["latency_ds"] >= INFINITY)
 			return FALSE
 		var/datum/component/netrun_node/node = projection_resolve(client, row["node"])
 		var/datum/component/netrun_node/previous = row["previous"] ? projection_resolve(client, row["previous"]) : null
@@ -1030,11 +1052,19 @@
 	/// Корреляция persistent producer request и его binding.
 	var/request_id
 	var/binding
-	/// Exact positive page sequence; одна apply страница ожидает один explicit Continue ACK.
+	/// Exact page sequence; duplex принимает до четырёх страниц поверх ещё не подтверждённого ACK.
 	var/next_page = "1"
 	var/last_page
 	var/last_hash
 	var/ack_pending = FALSE
+	var/ack_page = "0"
+	var/acknowledged_page = "0"
+	var/batch_complete_page = "0"
+	var/page_window = 1
+	/// Replay fingerprints и native apply credits ограничены negotiated page window.
+	var/list/page_hashes = list()
+	var/list/page_order = list()
+	var/list/unacknowledged_pages = list()
 	/// Frozen batch metadata не меняются до batch_complete.
 	var/in_batch = FALSE
 	var/phase
@@ -1048,6 +1078,14 @@
 	var/has_baseline = FALSE
 	var/terminal = FALSE
 	var/datum/netrun_external_graph_data/data
+
+/// Cursor не сохраняет общую read-model таблицу или replay metadata после снятия weak consumer.
+/datum/netrun_external_graph_cursor/Destroy()
+	data = null
+	page_hashes.Cut()
+	page_order.Cut()
+	unacknowledged_pages.Cut()
+	return ..()
 
 /// Exact wire token не зависит от native address, float или weakref identity.
 /datum/netrun_external_effects/machines/queries/proc/projection_token(list/key)
@@ -1135,6 +1173,7 @@
 	var/datum/netrun_external_graph_cursor/cursor = new
 	cursor.request_id = new_query_id("projection")
 	cursor.binding = client.binding_epoch
+	cursor.page_window = max(0, client.max_graph_pages)
 	if(!cursor.request_id)
 		qdel(cursor)
 		return FALSE
@@ -1146,13 +1185,16 @@
 	projection_sync = cursor
 	return TRUE
 
-/// Explicit Continue отправляется лишь после завершения всех ≤32 native apply операций этой страницы.
+/// Один immutable ACK в полёте; следующий cumulative Continue покрывает все уже применённые страницы окна.
 /datum/netrun_external_effects/machines/queries/proc/projection_continue_stream(datum/netrun_external_graph_cursor/cursor)
+	if(cursor.ack_pending)
+		return TRUE
 	var/body = netrun_external_json_object(list("kind" = json_encode("graph_sync_continue"), "request_id" = json_encode(cursor.request_id), "page_index" = json_encode(cursor.last_page)))
 	if(!enqueue_query("graph_sync_continue", body, cursor))
 		owner?.external_core?.abort_session("graph_sync_ack_pressure")
 		return FALSE
 	cursor.ack_pending = TRUE
+	cursor.ack_page = cursor.last_page
 	return TRUE
 
 /// Persistent page проверяется и применяется ровно один раз; output socket ACK не заменяет native apply ACK.
@@ -1161,10 +1203,12 @@
 	if(!istype(cursor) || cursor != projection_sync || cursor.binding != client.binding_epoch)
 		return FALSE
 	var/index = result["page_index"]
+	if(!netrun_external_valid_decimal(index))
+		return FALSE
 	var/hash = rustg_hash_string(RUSTG_HASH_SHA256, json_encode(result))
-	if(index == cursor.last_page)
-		return hash == cursor.last_hash
-	if(cursor.ack_pending)
+	if(cursor.page_hashes[index])
+		return hash == cursor.page_hashes[index]
+	if(cursor.terminal || (cursor.page_window == 1 && cursor.ack_pending))
 		return FALSE
 	var/list/operations = result["operations"]
 	var/code = result["code"]
@@ -1179,8 +1223,14 @@
 		if(length(operations))
 			return FALSE
 		cursor.terminal = TRUE
+		// Core terminal/cancel отзывает все прежние page credits, даже если они ещё ждут ACK.
+		cursor.unacknowledged_pages.Cut()
 	else
+		if(cursor.page_window && length(cursor.unacknowledged_pages) >= cursor.page_window)
+			return FALSE
 		if(!cursor.in_batch)
+			if(netrun_external_decimal_compare(cursor.acknowledged_page, cursor.batch_complete_page) < 0)
+				return FALSE
 			if((!cursor.has_baseline && (result["phase"] != "snapshot" || result["from_graph_version"] != "0")) || (cursor.has_baseline && (result["phase"] != "delta" || result["from_graph_version"] != cursor.baseline_version)))
 				return FALSE
 			cursor.in_batch = TRUE
@@ -1207,12 +1257,19 @@
 			cursor.in_batch = FALSE
 			cursor.has_baseline = TRUE
 			cursor.baseline_version = cursor.target_version
+			cursor.batch_complete_page = index
 			projection_data = cursor.data
 			projection_publish_stream(client, cursor)
 		else if(code != "page")
 			return FALSE
 	cursor.last_page = index
 	cursor.last_hash = hash
+	cursor.page_hashes[index] = hash
+	cursor.page_order += index
+	if(cursor.page_window && length(cursor.page_order) > cursor.page_window)
+		cursor.page_hashes -= cursor.page_order[1]
+		cursor.page_order.Cut(1, 2)
+	cursor.unacknowledged_pages += index
 	cursor.next_page = netrun_external_decimal_next(index)
 	if(!cursor.next_page)
 		return FALSE
@@ -1261,7 +1318,7 @@
 		var/token = projection_token(operation["node"])
 		if(!token || !netrun_external_valid_decimal(operation["node_revision"]) || !istext(operation["address"]) || !length(operation["address"]) || length(operation["address"]) > 256 || (!isnull(operation["lan_id"]) && (!istext(operation["lan_id"]) || length(operation["lan_id"]) > 512)) || (operation["anchor"] && !projection_token(operation["anchor"])))
 			return FALSE
-		if(!data.records[token] && length(data.records) >= 10000)
+		if(!data.records[token] && projection_node_limit > 0 && length(data.records) >= projection_node_limit)
 			return FALSE
 		var/list/previous = data.records[token]
 		var/was_dirty = !!projection_dirty_nodes[token]
@@ -1316,7 +1373,7 @@
 		var/list/to_record = data.records[to_token]
 		if(!projection_edge_id(id) || !from_token || !to_token || from_token == to_token || !from_record || !to_record || !(operation["link_kind"] in list("apc", "endpoint")) || !isnum(operation["distance"]) || operation["distance"] < 0 || !isnum(operation["latency_ds"]) || operation["latency_ds"] <= 0 || operation["latency_ds"] >= INFINITY)
 			return FALSE
-		if(!data.edges_by_id[id] && length(data.edges) >= 100000)
+		if(!data.edges_by_id[id] && projection_edge_limit > 0 && length(data.edges) >= projection_edge_limit)
 			return FALSE
 		var/list/old_edge = data.edges_by_id[id]
 		var/first = from_record["address"]
@@ -1437,10 +1494,17 @@
 
 /// Отложенные derived notifications имеют тот же32-node budget и не скрывают реальный reentrant movement.
 /datum/netrun_external_effects/machines/queries/proc/projection_notify_stream(datum/netrun_external_core/client)
-	if(!projection_data || projection_sync?.in_batch || !owner || closed)
+	set waitfor = FALSE
+	if(!projection_data || projection_sync?.in_batch || !owner || closed || projection_notifying_binding == client.binding_epoch)
 		return
+	var/binding = client.binding_epoch
+	projection_notifying_binding = binding
 	var/work = 0
-	while(length(projection_notifications) && work++ < 32)
+	var/wave = length(projection_notifications)
+	while(length(projection_notifications) && work++ < wave)
+		CHECK_TICK
+		if(closed || client.binding_epoch != binding || projection_sync?.in_batch)
+			break
 		var/token = projection_notifications[1]
 		var/list/notification = projection_notifications[token]
 		var/list/key = notification["key"]
@@ -1449,3 +1513,5 @@
 		var/list/record = projection_data?.records[token]
 		if(node && record && record["node_revision"] == projection_raw_revision(client, key))
 			node.notify_changed(notification["flags"])
+	if(projection_notifying_binding == binding)
+		projection_notifying_binding = null

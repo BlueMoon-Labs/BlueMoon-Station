@@ -13,7 +13,10 @@
 	if(QDELETED(context))
 		return FALSE
 	var/request_id = context.request_id
-	if(!executor.process_result(client, invocation(context)) || context.executing || !context.invocation?.result_json)
+	if(!executor.process_result(client, invocation(context)))
+		return FALSE
+	pump_native(context.invocation?.invocation_id)
+	if(context.executing || !context.invocation?.result_json)
 		return FALSE
 	var/list/result = json_decode(context.invocation.result_json)
 	var/success = result["success"]
@@ -314,6 +317,7 @@
 	var/list/event = fixture.invocation(context)
 	fixture.executor.latest_communication_revision = "2"
 	TEST_ASSERT(fixture.executor.process_result(fixture.client, event), "An obsolete Core proof produces a typed native refusal")
+	fixture.pump_native(event["invocation_id"])
 	TEST_ASSERT_EQUAL(scene.receiver_port.received_packets, 0, "Revoked communication authority cannot enter the native receiver")
 	var/list/result = json_decode(context.invocation.result_json)
 	TEST_ASSERT_EQUAL(result["code"], "native_topology_pending", "A stale communication revision is not a successful native effect")
@@ -1139,6 +1143,8 @@
 	var/datum/netrun_task_scheduler/scheduler = SSnetrun.get_task_scheduler()
 	var/list/outcomes = list()
 	var/saved_queued = transport.queued_messages
+	var/saved_queue_limit = transport.discovery_queue_limit
+	transport.discovery_queue_limit = 4096
 	SSatoms.map_loader_begin()
 	var/waiting_before = length(transport.waiting_resolutions)
 	var/tasks_before = length(scheduler.by_key)
@@ -1152,6 +1158,7 @@
 	var/counted_messages = transport.queued_messages
 	// Restore shared subsystem state before assertions, including a failed assertion.
 	transport.queued_messages = saved_queued
+	transport.discovery_queue_limit = saved_queue_limit
 	SSatoms.map_loader_stop()
 	transport.prepare_network()
 	TEST_ASSERT_EQUAL(admitted, 0, "A full payload queue must reject every new discovery burst")

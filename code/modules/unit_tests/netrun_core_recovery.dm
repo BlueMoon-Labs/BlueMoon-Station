@@ -48,10 +48,20 @@
 /// Считает disconnect callbacks настоящего machines executor, не заменяя его ownership cleanup.
 /datum/netrun_external_effects/machines/recovery_fixture
 	var/disconnect_count = 0
+	var/list/observed_fact_prefixes = list()
+	var/list/observed_infrastructure = list()
 
 /// Close/abort одной сессии не должен повторять native callbacks.
 /datum/netrun_external_effects/machines/recovery_fixture/disconnected(datum/netrun_external_core/client, reason)
 	disconnect_count++
+	return ..()
+
+/// Только fixture-kind проверяет порядок fact ACK и effect dispatch настоящего output decoder.
+/datum/netrun_external_effects/machines/recovery_fixture/process_result(datum/netrun_external_core/client, list/result)
+	if(result["kind"] == "fixture_effect")
+		observed_fact_prefixes += client.fact_acknowledged
+		observed_infrastructure += client.infrastructure_facts_ready()
+		return TRUE
 	return ..()
 
 /// Fake open меняет только session metadata; snapshots и sector bookkeeping остаются production кодом.
@@ -71,6 +81,15 @@
 	binding_epoch = "recovery-[open_count]"
 	engine_epoch = null
 	id_serial = "0"
+	input_sequence = "0"
+	sent_input_sequence = "0"
+	ack_output_sequence = "0"
+	last_applied_sequence = "0"
+	journal_sequence = "0"
+	fact_tail = "0"
+	fact_consumed = "0"
+	fact_acknowledged = "0"
+	infrastructure_barrier = "0"
 	effects_disconnected = FALSE
 	library_path = bridge_library
 	state = "connecting"
@@ -85,45 +104,66 @@
 /// Poll cadence exercises the real tick/enqueue path without socket I/O or wall-clock sleeps.
 /datum/netrun_external_core/recovery_fixture/polling
 	var/list/responses = list()
+	var/list/accepted_bodies = list()
+	var/list/attempted_bodies = list()
+	var/list/poll_frame_limits = list()
+	var/reject_enqueues = FALSE
 
 /datum/netrun_external_core/recovery_fixture/polling/native_call(export_name, list/arguments)
 	native_calls++
 	var/list/frames = list()
 	if(export_name == "netrun_poll")
-		frames = responses
-		responses = list()
+		var/limit = text2num(arguments[1])
+		poll_frame_limits += limit
+		var/count = min(length(responses), limit)
+		frames = responses.Copy(1, count + 1)
+		responses.Cut(1, count + 1)
+	if(export_name == "netrun_try_enqueue")
+		attempted_bodies += arguments[1]
+		if(reject_enqueues)
+			return list("state" = "connected", "code" = "would_block", "frames" = frames)
+		accepted_bodies += arguments[1]
 	return list("state" = "connected", "code" = export_name == "netrun_try_enqueue" ? "accepted" : "ok", "frames" = frames)
 
-/datum/unit_test/netrun_core_recovery_idle_poll/Run()
-	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
-	var/datum/netrun_external_core/recovery_fixture/polling/client = allocate(/datum/netrun_external_core/recovery_fixture/polling, worker)
+/// Один owned fake peer с настоящими enqueue/ledger/decoder, без DLL или отдельного Host.
+/datum/controller/subsystem/netrun/recovery_fixture/proc/polling_client()
+	var/datum/netrun_external_core/recovery_fixture/polling/client = new(src)
+	external_core = client
+	client.effects = new /datum/netrun_external_effects/machines/recovery_fixture(src)
 	client.world_epoch = "poll-world"
 	client.engine_epoch = "poll-engine"
 	client.binding_epoch = "poll-binding"
 	client.state = "ready"
 	client.ready = TRUE
+	return client
+
+/datum/unit_test/netrun_core_recovery_idle_poll/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/polling/client = worker.polling_client()
 	client.tick()
-	TEST_ASSERT(client.poll_outstanding, "First idle heartbeat is admitted")
-	TEST_ASSERT_EQUAL(client.sent_frames, 1, "One native enqueue is counted")
-	TEST_ASSERT(client.needs_fast_tick(), "A heartbeat response is consumed at tick cadence")
-	TEST_ASSERT(client.ack_pending(), "An empty Host response completes the idle poll")
+	TEST_ASSERT_EQUAL(client.sent_frames, 1, "One ACK-only heartbeat is admitted without a logical input")
+	var/list/heartbeat = json_decode(client.accepted_bodies[1])
+	TEST_ASSERT_EQUAL(heartbeat["kind"], "poll", "The heartbeat carries the cumulative output ACK")
+	TEST_ASSERT_EQUAL(heartbeat["max_events"], 0, "ACK-only does not ask Host for an empty response")
+	TEST_ASSERT_EQUAL(client.input_sequence, "0", "A heartbeat never advances the causal input clock")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 0, "ACK-only consumes no input-window credit")
+	TEST_ASSERT(client.needs_fast_tick(), "The active duplex receiver consumes unsolicited output at tick cadence")
 	client.tick()
-	TEST_ASSERT_EQUAL(client.sent_frames, 1, "Prompt consumption does not generate a new heartbeat every tick")
-	TEST_ASSERT(!client.needs_fast_tick(), "A drained idle connection rests")
+	TEST_ASSERT_EQUAL(client.sent_frames, 1, "No Host reply means no empty output/ACK ping-pong")
+	client.responses += client.output_body("0")
+	client.tick()
+	TEST_ASSERT_EQUAL(client.ack_output_sequence, "1", "Unsolicited output is processed without an outstanding poll request")
+	TEST_ASSERT_EQUAL(client.sent_frames, 2, "The processed output releases Host credit with one independent ACK")
+	client.tick()
+	TEST_ASSERT_EQUAL(client.sent_frames, 2, "The ACK does not require another response")
 	client.last_poll_at = world.timeofday - NETRUN_DEFAULT_FIRE_INTERVAL
 	if(client.last_poll_at < 0)
 		client.last_poll_at += 864000
 	client.tick()
-	TEST_ASSERT_EQUAL(client.sent_frames, 2, "The next physical maintenance deadline admits one heartbeat")
-	client.last_poll_at = world.timeofday - 101
-	if(client.last_poll_at < 0)
-		client.last_poll_at += 864000
-	client.responses += netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(client.world_epoch), "engine_epoch" = json_encode(client.engine_epoch), "binding_epoch" = json_encode(client.binding_epoch), "output_sequence" = json_encode("2"), "applied_sequence" = json_encode("0"), "results" = "\[\]"))
-	client.tick()
-	TEST_ASSERT_EQUAL(client.state, "ready", "An already received reply is consumed before an overdue physical watchdog")
-	TEST_ASSERT_EQUAL(client.ack_output_sequence, "2", "A delayed MC pass retains the queued Host output")
+	TEST_ASSERT_EQUAL(client.sent_frames, 3, "The physical maintenance deadline admits another response-free heartbeat")
 	client.close("fixture_cleanup")
 	TEST_ASSERT_NULL(client.last_poll_at, "A new binding does not inherit the previous heartbeat deadline")
+	TEST_ASSERT(!client.needs_fast_tick(), "A closed connection stops its receiver cadence")
 
 /datum/unit_test/netrun_core_recovery_host_error/Run()
 	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
@@ -147,28 +187,173 @@
 	client.engine_epoch = "journal-engine"
 	return client
 
-/// Настоящий output decoder подтверждает application prefix без native poll или Host процесса.
-/datum/netrun_external_core/recovery_fixture/proc/ack_pending()
-	var/body = netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "output_sequence" = json_encode(netrun_external_decimal_next(ack_output_sequence)), "applied_sequence" = json_encode(input_sequence), "results" = "\[\]"))
-	return process_frame(body)
+/// Формирует output для конкретного принятого prefix; не подменяет настоящий decoder.
+/datum/netrun_external_core/recovery_fixture/proc/output_body(through = null, raw_results = "\[\]", output_counter = null)
+	return netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "output_sequence" = json_encode(output_counter || netrun_external_decimal_next(ack_output_sequence)), "applied_sequence" = json_encode(isnull(through) ? sent_input_sequence : through), "results" = raw_results))
 
-/// The last frame must not fall back to the two-second maintenance interval.
+/// Bridge accepted и Host applied являются разными шагами, даже когда fixture делает оба подряд.
+/datum/netrun_external_core/recovery_fixture/proc/ack_pending(through = null, raw_results = "\[\]")
+	if(pending_frame && !mark_pending_accepted())
+		return FALSE
+	return process_frame(output_body(through, raw_results))
+
+/// Duplex receive не зависит от наличия ожидаемого request/reply и прекращается только при close.
 /datum/unit_test/netrun_core_recovery_pending_cadence/Run()
 	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
 	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
 	worker.next_node_deadline = INFINITY
 	worker.refresh_delivery_interval()
-	TEST_ASSERT_EQUAL(worker.wait, NETRUN_DEFAULT_FIRE_INTERVAL, "A ready idle connection uses maintenance cadence")
+	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "A ready idle connection still receives asynchronous Host events")
 	TEST_ASSERT(client.enqueue("\[\]", 0), "An empty clock input can be the last pending frame")
 	worker.refresh_delivery_interval()
 	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "A pending application ACK keeps the worker at tick cadence")
 	TEST_ASSERT(client.ack_pending(), "Host acknowledges the last input")
-	client.poll_outstanding = TRUE
 	worker.refresh_delivery_interval()
-	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "The final idle poll response also receives prompt processing")
-	client.poll_outstanding = FALSE
+	TEST_ASSERT_EQUAL(worker.wait, world.tick_lag, "Draining input credit preserves permanent push reception")
+	client.close("fixture_cleanup")
 	worker.refresh_delivery_interval()
-	TEST_ASSERT_EQUAL(worker.wait, NETRUN_DEFAULT_FIRE_INTERVAL, "Draining the response restores the quiet interval")
+	TEST_ASSERT_EQUAL(worker.wait, NETRUN_DEFAULT_FIRE_INTERVAL, "Closing duplex restores the quiet subsystem interval")
+
+/// Несколько independently sequenced кадров принимаются до первого ACK; credit возвращается по целому prefix.
+/datum/unit_test/netrun_core_recovery_pipeline_window/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	client.max_inflight_frames = 8
+	for(var/index in 1 to 8)
+		TEST_ASSERT(client.enqueue("\[\]", 0), "Another frame can stage without waiting for earlier application ACK")
+		TEST_ASSERT(client.mark_pending_accepted(), "Bridge accepts each independently sequenced frame")
+		TEST_ASSERT_NULL(client.pending_frame, "Accepted ledger never retains the serialized JSON body")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 8, "The configured sliding window bounds outstanding frames")
+	TEST_ASSERT_EQUAL(client.sent_input_sequence, "8", "Only bridge-accepted frames extend the ACK upper bound")
+	TEST_ASSERT(!client.can_enqueue(), "A full sender window stops only further enqueue")
+	TEST_ASSERT(!client.enqueue("\[\]", 0), "No hidden ninth frame is staged beyond credit")
+	TEST_ASSERT_EQUAL(client.input_sequence, "8", "Refused enqueue consumes no sequence")
+	var/partial = client.output_body("3")
+	TEST_ASSERT(client.process_frame(partial), "A cumulative ACK releases its complete prefix")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 5, "Only the first three frame credits return")
+	TEST_ASSERT_EQUAL(client.inflight_frames[1], "4", "Unacknowledged tail remains in FIFO order")
+	TEST_ASSERT(client.process_frame(partial), "Exact output replay remains idempotent")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 5, "Duplicate output does not release credit twice")
+	TEST_ASSERT(client.can_enqueue(), "Processing ACK permits more work without draining every request")
+	TEST_ASSERT(client.enqueue("\[\]", 0), "The sender refills released credit")
+	TEST_ASSERT(client.mark_pending_accepted(), "The later frame follows the retained tail")
+	TEST_ASSERT_EQUAL(client.sent_input_sequence, "9", "Refill preserves monotonically increasing sequence")
+	TEST_ASSERT(client.ack_pending(), "One cumulative output can acknowledge the remaining mixed-age tail")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 0, "All acknowledged ledger entries are released")
+	TEST_ASSERT_EQUAL(client.inflight_frame_bytes, 0, "Byte credit returns exactly once")
+
+/// Fact-prefix ACK обновляет authority до dispatch любого native result в том же выходном кадре.
+/datum/unit_test/netrun_core_recovery_pipeline_fact_ack_order/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	var/datum/netrun_external_effects/machines/recovery_fixture/executor = client.effects
+	for(var/index in 1 to 3)
+		TEST_ASSERT(client.queue_fact("{}", index != 2), "Each raw fact occupies its own causal prefix")
+		TEST_ASSERT(client.send_journal(1, FALSE), "A later journal frame can follow an unacknowledged one")
+		TEST_ASSERT(client.mark_pending_accepted(), "The fact frame enters the ordered bridge stream")
+	TEST_ASSERT_EQUAL(client.fact_consumed, "3", "All facts have been handed to the ordered stream")
+	TEST_ASSERT_EQUAL(client.fact_acknowledged, "0", "Bridge acceptance alone never grants native authority")
+	var/effect = netrun_external_json_array(list("{\"kind\":\"fixture_effect\"}"))
+	TEST_ASSERT(client.ack_pending("1", effect), "A partial cumulative ACK dispatches its correlated result")
+	TEST_ASSERT_EQUAL(executor.observed_fact_prefixes[1], "1", "Effect dispatch sees the prefix applied by this output")
+	TEST_ASSERT_EQUAL(executor.observed_infrastructure[1], FALSE, "A later known infrastructure change remains fenced")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 2, "Unapplied fact frames retain their own metadata")
+	TEST_ASSERT(client.ack_pending("3", effect), "A later output acknowledges multiple fact frames together")
+	TEST_ASSERT_EQUAL(executor.observed_fact_prefixes[2], "3", "All cumulatively applied fact prefixes precede effect dispatch")
+	TEST_ASSERT_EQUAL(executor.observed_infrastructure[2], TRUE, "The current infrastructure proof opens only after its actual ACK")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 0, "Fact metadata is removed after cumulative application")
+
+/// Native backpressure сохраняет только один immutable staged body; повтор не меняет порядок или accounting.
+/datum/unit_test/netrun_core_recovery_pipeline_bridge_backpressure/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/polling/client = worker.polling_client()
+	TEST_ASSERT(client.enqueue("\[\]", 0), "The first logical frame stages independently")
+	var/first_body = client.pending_frame
+	var/first_bytes = client.pending_frame_bytes
+	client.reject_enqueues = TRUE
+	TEST_ASSERT(!client.flush_pending(), "Bridge pressure defers submission without blocking")
+	TEST_ASSERT(!client.flush_pending(), "The same immutable frame can retry native enqueue")
+	TEST_ASSERT_EQUAL(client.pending_frame, first_body, "Backpressure never reserializes the frame")
+	TEST_ASSERT_EQUAL(client.input_sequence, "1", "Repeated bridge attempts consume no new logical sequence")
+	TEST_ASSERT_EQUAL(client.sent_input_sequence, "0", "An unsent frame cannot be acknowledged by Host")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 0, "Unaccepted staging consumes no accepted-frame credit")
+	TEST_ASSERT(!client.enqueue("\[\]", 0), "A later frame cannot overtake unaccepted staging")
+	client.reject_enqueues = FALSE
+	TEST_ASSERT(client.flush_pending(), "Native acceptance transfers staging into compact metadata")
+	TEST_ASSERT_EQUAL(client.accepted_bodies[1], first_body, "The exact earlier body is sent first")
+	TEST_ASSERT_NULL(client.pending_frame, "The bridge owns the accepted JSON body")
+	TEST_ASSERT(client.enqueue("\[\]", 0), "A second frame stages before the first application ACK")
+	var/second_body = client.pending_frame
+	var/second_bytes = client.pending_frame_bytes
+	TEST_ASSERT(client.flush_pending(), "The next independently sequenced body enters the bridge")
+	TEST_ASSERT_EQUAL(client.accepted_bodies[2], second_body, "Native acceptance preserves FIFO across retries")
+	TEST_ASSERT_EQUAL(client.inflight_frame_bytes, first_bytes + second_bytes, "Only accepted reservations contribute to window bytes")
+	client.close("fixture_cleanup")
+	TEST_ASSERT_EQUAL(length(client.inflight_frames), 0, "Close releases every accepted frame entry")
+	TEST_ASSERT_EQUAL(client.inflight_frame_bytes, 0, "Close releases accepted byte reservations")
+	TEST_ASSERT_EQUAL(client.pending_frame_bytes, 0, "Close releases staging bytes")
+	TEST_ASSERT_EQUAL(client.sent_input_sequence, "0", "A fresh binding cannot inherit the old accepted sequence")
+
+/// Большие кадры ограничены byte credit раньше frame count; ledger не удерживает их raw bodies.
+/datum/unit_test/netrun_core_recovery_pipeline_byte_window/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	client.max_inflight_frames = 8
+	client.max_inflight_bytes = 4194304
+	var/text = "x"
+	for(var/index in 1 to 17)
+		text += text
+	var/entries = netrun_external_json_array(list("{\"opaque\":[json_encode(text)]}"))
+	while(client.can_enqueue())
+		TEST_ASSERT(client.enqueue(entries), "A serialized test entry fits the per-frame reservation")
+		TEST_ASSERT(client.mark_pending_accepted(), "Accepted bytes enter the bounded window")
+	TEST_ASSERT(length(client.inflight_frames) < client.max_inflight_frames, "Byte capacity can stop a burst before the frame-count limit")
+	TEST_ASSERT(client.inflight_frame_bytes <= 4194304, "Accepted reservations never exceed four MiB")
+	TEST_ASSERT(client.ack_pending(), "Cumulative application releases the byte-limited window")
+	TEST_ASSERT_EQUAL(client.inflight_frame_bytes, 0, "No serialized payload remains in accepted-frame metadata")
+
+/// Watchdog учитывает input ACK, а не произвольную активность Host; queued ACK обрабатывается до deadline check.
+/datum/unit_test/netrun_core_recovery_pipeline_ack_watchdog/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/polling/client = worker.polling_client()
+	client.ack_timeout = 100
+	TEST_ASSERT(client.enqueue("\[\]", 0), "One logical input is staged")
+	TEST_ASSERT(client.flush_pending(), "The input starts its application watchdog")
+	client.last_input_progress_at = world.timeofday - 101
+	if(client.last_input_progress_at < 0)
+		client.last_input_progress_at += 864000
+	var/stalled_at = client.last_input_progress_at
+	TEST_ASSERT(client.process_frame(client.output_body("0")), "Unsolicited push can arrive while the input is still pending")
+	TEST_ASSERT_EQUAL(client.last_input_progress_at, stalled_at, "Unrelated push never refreshes input progress")
+	client.responses += client.output_body("1")
+	client.tick()
+	while(client.output_pump_binding)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(client.state, "ready", "A queued valid ACK survives a delayed MC pass")
+	TEST_ASSERT_EQUAL(client.last_applied_sequence, "1", "The pending input is acknowledged before watchdog evaluation")
+	TEST_ASSERT_EQUAL(client.poll_frame_limits[length(client.poll_frame_limits)], 128, "The ABI read batch does not throttle permanent receive processing")
+	TEST_ASSERT(client.enqueue("\[\]", 0), "Another input can use the released credit")
+	TEST_ASSERT(client.flush_pending(), "The later input starts an independent progress deadline")
+	client.last_input_progress_at = world.timeofday - 101
+	if(client.last_input_progress_at < 0)
+		client.last_input_progress_at += 864000
+	client.responses += client.output_body("1")
+	client.tick()
+	var/timeout_deadline = world.time + 2 SECONDS
+	while(client.state == "ready" && world.time < timeout_deadline)
+		sleep(world.tick_lag)
+		client.tick()
+	TEST_ASSERT_EQUAL(client.last_error, "host_ack_timeout", "A stream of push without input progress cannot hide a stalled request")
+	TEST_ASSERT_EQUAL(client.state, "resync_required", "Expired input ownership closes the old binding safely")
+
+/// Host не может подтвердить staged sequence, который native bridge ещё не принял.
+/datum/unit_test/netrun_core_recovery_pipeline_reject_unsent_ack/Run()
+	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
+	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	TEST_ASSERT(client.enqueue("\[\]", 0), "The first frame receives an allocated sequence")
+	TEST_ASSERT(!client.process_frame(client.output_body(client.input_sequence)), "An unsent input is outside the cumulative ACK bound")
+	TEST_ASSERT_EQUAL(client.last_error, "invalid_output_sequence", "The protocol violation has a safe diagnostic")
+	TEST_ASSERT_NULL(client.pending_frame, "Resync drops unaccepted staging ownership")
 
 /// Startup registration stays in the live snapshot until visited; later revisions remain journaled.
 /datum/unit_test/netrun_core_recovery_snapshot_registration/Run()
@@ -394,9 +579,12 @@
 	TEST_ASSERT(client.send_journal(1, FALSE), "First prefix enters one immutable pending frame")
 	var/frame = client.pending_frame
 	client.queue_fact("{\"revision\":4}", FALSE, "node:n1")
-	TEST_ASSERT_EQUAL(client.pending_frame, frame, "In-flight body never changes while waiting for application ACK")
+	TEST_ASSERT_EQUAL(client.pending_frame, frame, "Unaccepted staging never changes under later native state updates")
 	TEST_ASSERT_EQUAL(client.fact_tail, "2", "Only the newer unsent slot coalesces while an older frame is pending")
-	TEST_ASSERT(!client.command_facts_ready(barrier), "Bridge enqueue alone is not an application ACK")
+	TEST_ASSERT(!client.command_facts_ready(barrier), "A command cannot overtake a fact frame not yet accepted by the bridge")
+	TEST_ASSERT(client.mark_pending_accepted(), "Bridge acceptance fixes the fact prefix before the following command")
+	TEST_ASSERT(client.command_facts_ready(barrier), "Ordered duplex permits the command without waiting for application ACK")
+	TEST_ASSERT_EQUAL(client.fact_acknowledged, "0", "Native authority still waits for actual Host application")
 	TEST_ASSERT(client.ack_pending(), "Output ACK applies the preceding facts")
 	TEST_ASSERT(client.command_facts_ready(barrier), "The captured command is released without waiting for unrelated newer state")
 
@@ -468,6 +656,7 @@
 /datum/unit_test/netrun_core_recovery_fact_replacement_bytes/Run()
 	var/datum/controller/subsystem/netrun/recovery_fixture/worker = allocate(/datum/controller/subsystem/netrun/recovery_fixture)
 	var/datum/netrun_external_core/recovery_fixture/client = worker.journal_client()
+	client.journal_byte_limit = 1048576
 	var/raw = repeat_string(70000, "x")
 	for(var/index in 1 to 14)
 		TEST_ASSERT(client.queue_fact(raw, FALSE, "node:n[index]"), "Retained raw records stay within one MiB")

@@ -59,7 +59,7 @@
 	if(cancelled || QDELETED(console) || QDELETED(node))
 		qdel(src)
 		return FALSE
-	if(length(SSnetrun.pending_requests) >= NETRUN_MAX_PENDING_REQUESTS)
+	if(SSnetrun.pending_request_limit > 0 && length(SSnetrun.pending_requests) >= SSnetrun.pending_request_limit)
 		operation.finish("rejected", "Очередь доставки запросов переполнена.")
 		qdel(src)
 		return FALSE

@@ -15,6 +15,7 @@
 	var/list/catalog_refs = list()
 	var/catalog_graph
 	var/catalog_availability
+	var/filtering_running = FALSE
 
 /// Отмена continuation не отменяет уже переданные transport messages.
 /datum/netrun_machine_resolution/external/Destroy()
@@ -40,7 +41,7 @@
 		return FALSE
 	external_binding = client.binding_epoch
 	var/communications = netrun_communication_policy(source, destination_id)
-	var/body = netrun_external_json_object(list("kind" = json_encode("service_discover"), "request_id" = json_encode(external_request_id), "source" = executor.service_json(source_key), "destination_family" = json_encode(destination_id), "recipient_tag" = json_encode(recipient_tag), "communications" = netrun_external_json_bool(communications), "frequency" = "null", "max_results" = "4096"))
+	var/body = netrun_external_json_object(list("kind" = json_encode("service_discover"), "request_id" = json_encode(external_request_id), "source" = executor.service_json(source_key), "destination_family" = json_encode(destination_id), "recipient_tag" = json_encode(recipient_tag), "communications" = netrun_external_json_bool(communications), "frequency" = "null", "max_results" = "2147483647"))
 	if(!executor.enqueue_query("service_discover", body, src))
 		external_request_id = null
 		return FALSE
@@ -70,25 +71,35 @@
 	if(external_phase == "pending" || external_phase == "cached")
 		return FALSE
 	if(external_phase == "filtering")
+		if(filtering_running)
+			return FALSE
 		var/datum/netrun_external_core/client = SSnetrun.external_core
 		if(client?.binding_epoch != external_binding || QDELETED(source))
 			external_failed("Подключение к сети изменилось")
 			return FALSE
 		if(!resolved_targets)
 			resolved_targets = list()
+		filtering_running = TRUE
 		var/started = TICK_USAGE
 		var/started_at = world.time
 		var/budget = SSnetrun.remaining_task_budget_ms(SSnetrun.get_execution_limits().min_budget_ms)
-		var/work = 0
-		while(external_cursor <= length(external_keys) && work++ < 8)
+		while(external_cursor <= length(external_keys))
+			CHECK_TICK
+			if(QDELETED(src))
+				return FALSE
+			if(client.binding_epoch != external_binding || QDELETED(source))
+				filtering_running = FALSE
+				external_failed("Подключение к сети изменилось")
+				return FALSE
 			var/list/key = external_keys[external_cursor++]
 			var/datum/netrun_machine_service/target = client.resolve_service(key["service_id"], key["generation"])
 			if(!QDELETED(target) && target.service_id == destination_id && target.matches(source, recipient_tag) && target.resolve_node()?.is_online())
 				resolved_targets += target
 			if(QDELETED(src))
 				return FALSE
-			if(world.time != started_at || TICK_DELTA_TO_MS(TICK_USAGE - started) >= budget)
+			if(budget != INFINITY && (world.time != started_at || TICK_DELTA_TO_MS(TICK_USAGE - started) >= budget))
 				break
+		filtering_running = FALSE
 		if(external_cursor <= length(external_keys))
 			queue_delivery()
 			return FALSE
@@ -144,7 +155,7 @@
 	var/list/keys = result["candidates"]
 	if(!istype(query) || query.external_binding != client.binding_epoch || query.external_phase != "pending" || length(result) != 6 || !islist(keys) || length(keys) > 64 || !(result["complete"] == TRUE || result["complete"] == FALSE) || !(result["code"] in list("page", "completed", "truncated", "cancelled", "source_unavailable", "routing_unavailable")))
 		return FALSE
-	if((!result["complete"] && result["code"] != "page") || (result["complete"] && result["code"] == "page") || length(query.external_keys) + length(keys) > 4096)
+	if((!result["complete"] && result["code"] != "page") || (result["complete"] && result["code"] == "page"))
 		return FALSE
 	for(var/list/key as anything in keys)
 		if(!islist(key) || length(key) != 2 || !istext(key["service_id"]) || length(key["service_id"]) > 128 || !netrun_external_valid_decimal(key["generation"]))
