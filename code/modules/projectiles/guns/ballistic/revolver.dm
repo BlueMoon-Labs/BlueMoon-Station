@@ -1078,6 +1078,10 @@
 		
 	return ..()
 
+/obj/item/gun/ballistic/revolver/drilling/Destroy()
+	QDEL_NULL(underbarrel)
+	return ..()
+
 /obj/item/gun/ballistic/revolver/drilling/sawed
 	name = "\improper Заочный приговор"
 	fire_delay = 10
