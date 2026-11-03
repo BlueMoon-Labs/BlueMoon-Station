@@ -506,14 +506,15 @@
 	var/datum/netrun_machine_transport/registry
 	var/datum/weakref/subscriber_ref
 	var/family
-	var/tag
+	/// Filter, distinct from BYOND's built-in datum.tag.
+	var/watched_tag
 
 /datum/netrun_service_subscription/New(datum/netrun_machine_transport/registry, datum/subscriber, family, tag)
 	..()
 	src.registry = registry
 	subscriber_ref = WEAKREF(subscriber)
 	src.family = family
-	src.tag = tag
+	watched_tag = tag
 	RegisterSignal(subscriber, COMSIG_PARENT_QDELETING, PROC_REF(on_subscriber_deleted))
 
 /datum/netrun_service_subscription/proc/on_subscriber_deleted()
@@ -563,7 +564,7 @@
 
 /datum/netrun_machine_transport/proc/enqueue_service_event(datum/netrun_service_subscription/watch, datum/netrun_machine_service/service, event, prior_tag = null, use_prior_tag = FALSE)
 	var/advertised_tag = use_prior_tag ? prior_tag : service?.service_tag()
-	if(QDELETED(watch) || !service || !isnull(watch.tag) && watch.tag != advertised_tag)
+	if(QDELETED(watch) || !service || !isnull(watch.watched_tag) && watch.watched_tag != advertised_tag)
 		return
 	var/datum/subscriber = watch.subscriber_ref?.resolve()
 	if(QDELETED(subscriber))
