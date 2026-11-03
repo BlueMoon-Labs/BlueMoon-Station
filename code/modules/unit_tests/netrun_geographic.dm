@@ -14,7 +14,7 @@
 	var/obj/machinery/ntnet_relay/second = scene.machine(/obj/machinery/ntnet_relay, second_spot)
 	var/datum/component/netrun_node/first_node = first.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/second_node = second.GetComponent(/datum/component/netrun_node)
-	var/datum/netrun_network/remote_network = SSnetrun.get_area_network(get_base_area(second_node.physical_turf()))
+	var/datum/netrun_network/remote_network = scene.fixture_graph.declared_network(scene.fixture_graph.declared_anchor(second_node))
 	scene.fixture_graph.import_binding(second_node, second_node.bound_apc, remote_network)
 	scene.fixture_graph.clear_tables()
 	SSnetrun.ensure_topology()

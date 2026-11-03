@@ -49,9 +49,9 @@
 |---|---|
 | `core/subsystem.dm` | Очереди обновлений и публикаций, бюджет исполнения; будущий координатор обмена |
 | `core/task_scheduler.dm`, `core/execution_limits.dm` | Планирование DM-задач; оставить только работу, которой нужен BYOND |
-| `core/topology.dm` | Реестр инфраструктуры и реакция на события; разделить сбор фактов и вычисление графа |
-| `core/apc_prebuild.dm`, `core/apc_spatial_index.dm`, `core/apc_bridges.dm` | Исследовать и перенести правила построения инфраструктуры |
-| `core/routes.dm`, `core/machine_routes.dm` | Маршруты и кэши; перенести вычисления, сохранить публичную семантику |
+| `core/topology.dm` | Read-only проекция графа из C# и реакция на события; построение инфраструктуры и биндинги APC уже перенесены в ядро |
+| `integration/external_projection.dm` | Импорт графа и биндингов из ядра; прежние `core/apc_prebuild.dm`, `core/apc_spatial_index.dm`, `core/apc_bridges.dm` удалены |
+| `core/routes.dm`, `core/machine_routes.dm` | Read-only таблицы маршрутов из ядра и проверка живого состояния native-машин |
 | `core/machine_transport.dm` | Сообщения, payload, coalescing и транспорт; отделить от исполнения DM-сервисов |
 | `core/service_registry.dm`, `core/service_discovery.dm` | Объявления сервисов и адаптеры; физические обработчики оставить в DM |
 | `core/requests.dm`, `core/delivery.dm`, `core/delivery_tasks.dm` | Жизненный цикл доставки и отмена; проверить всех потребителей перед заменой |

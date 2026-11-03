@@ -15,7 +15,7 @@
 /// Общий bounded dispatcher read-only запросов; все вычисления остаются у Host.
 /datum/netrun_external_effects/machines/queries
 	/// Три фиксированных producer не создают неограниченного количества watermarks в C#.
-	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0")
+	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0", "watch" = "0", "entity" = "0")
 	/// Нулевые application quotas не ограничивают обработку; continuations всегда weak.
 	var/query_limit = 0
 	var/query_command_limit = 0
@@ -90,7 +90,7 @@
 
 /// Регистрация consumer и команды атомарна: admission pressure не оставляет пустой slot.
 /datum/netrun_external_effects/machines/queries/proc/enqueue_query(kind, raw_json, datum/consumer)
-	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue")))
+	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "service_watch", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue", "entity_operation", "entity_effect_result")))
 		return FALSE
 	var/list/body
 	try
@@ -111,7 +111,7 @@
 	command.request_id = request_id
 	command.consumer = WEAKREF(consumer)
 	query_consumers[request_id] = command.consumer
-	if(kind == "graph_sync_start")
+	if(kind == "graph_sync_start" || kind == "service_watch")
 		query_persistent[request_id] = TRUE
 	// Одна persistent Continue на query burst, после bounded prefix старых lookups.
 	// Полный FIFO за сотнями discovery задерживает каждую страницу snapshot;
@@ -144,7 +144,7 @@
 			qdel(command)
 	if(never_sent || !cancel_kind || closed || query_disconnecting)
 		return
-	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel")) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit))
+	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel", "service_unwatch")) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit))
 		owner?.external_core?.abort_session("query_cancel_pressure")
 		return
 	var/datum/netrun_external_query_command/cancel = new
@@ -161,7 +161,7 @@
 
 /// Учитывает read-only работу в общем heartbeat без отдельного busy loop.
 /datum/netrun_external_effects/machines/queries/queued_commands()
-	return ..() + length(query_commands) + length(query_inflight) + length(query_consumers) - length(query_persistent)
+	return ..() + length(query_commands) + length(query_inflight) + length(query_consumers) - length(query_persistent) + length(entity_native_pending) + !!entity_native_active
 
 /// Ready causal prefixes занимают свободные slots общего bounded duplex window.
 /datum/netrun_external_effects/machines/queries/prepare_input(datum/netrun_external_core/client)
@@ -176,7 +176,12 @@
 		query_turn = FALSE
 		return TRUE
 	query_turn = TRUE
-	return ..()
+	. = ..()
+	// Живые registered proxies продвигают сроки Core даже после task completion.
+	// Пустой clock frame не обгоняет queued commands и не создаёт busy loop в одном игровом времени.
+	if(!. && entity_clock_demand > 0 && !length(query_commands) && !length(control_commands) && !length(request_commands) && client.journal_head > length(client.journal) && max(0, round(world.time)) > client.last_simulation_time)
+		return client.enqueue("\[\]", 0)
+	return .
 
 /// Query consumers остаются weak и не продлевают жизнь native UI/graph cursors.
 /datum/netrun_external_effects/machines/queries/input_command_current(datum/netrun_external_command/command)
@@ -223,6 +228,10 @@
 			return
 	if(command.kind == "service_discover")
 		observe_discovery(client, result, command)
+	else if(command.kind == "service_watch")
+		observe_service_watch(client, result, command)
+	else if(command.kind == "entity_operation" || command.kind == "entity_effect_result")
+		observe_entity(client, result, command)
 	else if(command.kind == "projection_query" || command.kind == "anchor_query" || command.kind == "graph_sync_start" || command.kind == "graph_sync_continue")
 		observe_projection(client, result, command)
 	qdel(command)
@@ -231,6 +240,14 @@
 /datum/netrun_external_effects/machines/queries/process_result(datum/netrun_external_core/client, list/result)
 	if(result["binding_epoch"] != client.binding_epoch)
 		return FALSE
+	if(result["kind"] == "entity_changed")
+		return process_entity_changed(client, result)
+	if(result["kind"] == "entity_native_effect")
+		return process_entity_native_effect(client, result)
+	if(result["kind"] == "core_task_completed")
+		return process_entity_task_completed(client, result)
+	if(result["kind"] == "service_watch_event")
+		return known_query_id(result["request_id"]) && process_service_watch(client, result)
 	if(result["kind"] == "discovery_page" || result["kind"] == "projection_page" || result["kind"] == "graph_sync_page")
 		var/id = result["request_id"]
 		if(!known_query_id(id))
@@ -317,6 +334,8 @@
 	query_disconnecting = TRUE
 	disconnect_projection(client, reason)
 	disconnect_discovery(client, reason)
+	disconnect_service_watches()
+	disconnect_entities()
 	for(var/datum/netrun_external_query_command/command as anything in query_commands)
 		qdel(command)
 	for(var/sequence in query_inflight)

@@ -51,8 +51,6 @@
 	var/binding_infra_revision = -1
 	/// Infrastructure geometry changes invalidate the shared graph even inside one area.
 	var/turf/topology_turf
-	/// APC only: turf its resolved LAN was cached for, so the department lookup runs once per move.
-	var/turf/apc_network_turf
 	/// Last reconciled status fields; compared as scalars to avoid per-tick list allocation.
 	var/last_online
 	var/last_security

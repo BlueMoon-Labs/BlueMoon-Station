@@ -186,7 +186,8 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT_EQUAL(temperature_peer.stored_research, first.stored_research, "Temperature recovery must join the existing mapped authority without waiting for a node poll")
 
-/// Late service initialization and repeated notifications share one resumable scan.
+/// Late services must ask Core for routed research peers rather than copy
+/// SSresearch.servers, and repeated readiness signals must not spawn lookups.
 /datum/unit_test/netrun_research_startup_scan_bound/Run()
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
 	var/obj/machinery/rnd/server/server = scene.machine(/obj/machinery/rnd/server, scene.source_spot)
@@ -197,39 +198,65 @@
 		other.netrun_mapped_server = TRUE
 		other.network_id = "startup-other-[i]"
 	var/datum/netrun_machine_service/research_server/service = server.get_netrun_machine_service("research.server")
-	// The common startup snapshot has already completed. A native lifecycle hook
-	// must still admit this late mapped service without a new global bootstrap.
 	service.host_initialized()
 	var/datum/netrun_task_scheduler/scheduler = SSnetrun.get_task_scheduler()
 	var/key = "research.cluster:[REF(service)]"
 	var/datum/netrun_task/original = scheduler.by_key[key]
-	TEST_ASSERT_NOTNULL(original, "A late mapped service must enqueue startup through its native initialization hook")
+	TEST_ASSERT_NOTNULL(original, "Late mapped services schedule research through the shared worker")
 	for(var/i in 1 to 32)
 		service.network_ready()
-	TEST_ASSERT_EQUAL(scheduler.by_key[key], original, "Readiness storms must retain one common-worker task")
-	TEST_ASSERT(!service.advance_cluster(), "One slice cannot scan all thirteen mapped candidates")
-	TEST_ASSERT_EQUAL(service.cluster_cursor, 2, "The first slice must compare exactly one candidate")
-	var/list/wave = service.cluster_candidates
-	// Tasks are disposable. Only the service may own continuation progress.
-	scheduler.cancel("research.cluster", service)
-	var/datum/netrun_task/research_cluster/task = allocate(/datum/netrun_task/research_cluster, "research.cluster", "scan-fixture", NETRUN_TASK_BACKGROUND, service)
-	task.execute(SSnetrun)
-	TEST_ASSERT_EQUAL(service.cluster_candidates, wave, "A recreated continuation must reuse its service-owned candidate wave")
-	TEST_ASSERT_EQUAL(service.cluster_cursor, 3, "A recreated continuation must advance by only one candidate")
+	TEST_ASSERT_EQUAL(scheduler.by_key[key], original, "Readiness storms coalesce into one worker task")
+	var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+	TEST_ASSERT(istype(executor), "Production Core discovery executor must be available")
+	service.advance_cluster()
+	TEST_ASSERT_NULL(service.cluster_candidates, "Cluster worker does not copy the global research server list")
+	var/catalog_key = json_encode(list(service.service_key(), "research.server", null))
+	var/datum/netrun_machine_resolution/external/query = executor.discovery_catalogs[catalog_key]
+	TEST_ASSERT(istype(query), "First cluster pass submits a source-scoped Core discovery")
+	TEST_ASSERT(query.catalog_only, "Cluster lookup is read-only, not a gameplay delivery")
+	var/deadline = world.time + 5 SECONDS
+	while(!QDELETED(query) && query.external_phase != "cached" && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(istype(query) && query.external_phase == "cached", "Core must complete the station research service lookup")
+	var/list/peers = service.resolve("research.server")
+	for(var/datum/netrun_machine_service/research_server/peer_service as anything in peers)
+		TEST_ASSERT(peer_service != service, "Self is never a cluster candidate")
+		var/obj/machinery/rnd/server/peer = peer_service.host
+		TEST_ASSERT_EQUAL(peer.research_network_id(), server.research_network_id(), "Native policy excludes different research networks")
 	var/steps = 0
-	while(service.cluster_queued && steps++ < 1000)
+	while(service.cluster_queued && steps++ < 100)
 		var/before = service.cluster_cursor
-		if(service.advance_cluster())
-			break
-		TEST_ASSERT(service.cluster_cursor <= before + 1, "Every continuation slice must perform at most one peer comparison")
-	TEST_ASSERT(!service.cluster_queued, "A finite unmatched wave must drain its task and scan state")
-	TEST_ASSERT_NULL(service.cluster_candidates, "Completed startup must release its candidate references")
-	TEST_ASSERT_EQUAL(length(server.stored_research.research_owner_refs), 1, "Different configured networks must remain isolated throughout startup")
+		service.advance_cluster()
+		TEST_ASSERT(service.cluster_cursor <= before + 1, "Each worker continuation processes at most one routed peer")
+	TEST_ASSERT(!service.cluster_queued, "A finite routed discovery drains the startup task")
+	TEST_ASSERT_NULL(service.cluster_candidates, "Finished startup releases its transient peer list")
+	TEST_ASSERT_EQUAL(length(server.stored_research.research_owner_refs), 1, "Different research networks remain isolated")
 	service.network_ready()
 	qdel(server)
-	TEST_ASSERT_NULL(scheduler.by_key[key], "Physical server deletion must cancel its queued startup continuation")
-	TEST_ASSERT_NULL(service.cluster_candidates, "Server deletion must release an unfinished candidate wave")
-	TEST_ASSERT(!service.cluster_listening, "Server deletion must release its power and global topology listeners")
+	TEST_ASSERT_NULL(scheduler.by_key[key], "Deleting the physical source cancels its cluster worker")
+	TEST_ASSERT_NULL(service.cluster_candidates, "Deletion releases an unfinished catalog wave")
+	TEST_ASSERT(!service.cluster_listening, "Deletion releases research topology observers")
+
+/// Physical research.server services can discover peers, but cannot receive
+/// operations intended for research.client: discovery never grants privileges.
+/datum/unit_test/netrun_research_cluster_discovery_policy/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/obj/machinery/rnd/server/first = scene.machine(/obj/machinery/rnd/server, scene.source_spot)
+	var/obj/machinery/rnd/server/second = scene.machine(/obj/machinery/rnd/server, scene.target_spot)
+	first.netrun_mapped_server = TRUE
+	second.netrun_mapped_server = TRUE
+	first.network_id = "cluster-core-policy"
+	second.network_id = first.network_id
+	var/datum/netrun_machine_service/research_server/source_service = first.get_netrun_machine_service("research.server")
+	var/datum/netrun_machine_service/research_server/destination_service = second.get_netrun_machine_service("research.server")
+	TEST_ASSERT(destination_service.matches(source_service, null), "Same-network server is eligible for read-only peer discovery")
+	TEST_ASSERT(!destination_service.matches(destination_service, null), "A server cannot discover itself as a peer")
+	second.network_id = "cluster-other-network"
+	TEST_ASSERT(!destination_service.matches(source_service, null), "Native research network isolation is preserved")
+	second.network_id = first.network_id
+	var/datum/netrun_machine_message/research/packet = allocate(/datum/netrun_machine_message/research, list("operation" = "watch"))
+	packet.source = source_service
+	TEST_ASSERT(!destination_service.accepts(packet), "Server-to-server packet cannot bypass research.client authorization")
 
 /// Research resolves the first eligible physical owner without changing the
 /// unicast policy or requiring every cluster member to remain available.

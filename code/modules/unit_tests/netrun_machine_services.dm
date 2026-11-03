@@ -101,3 +101,33 @@
 	var/datum/netrun_command/diagnostic = SSnetrun.get_command("microwave_status")
 	TEST_ASSERT(diagnostic.read_only && diagnostic.access == NETRUN_ACCESS_GUEST, "Appliance diagnostics are read-only")
 	TEST_ASSERT(findtext(diagnostic.execute(node, console), "Цикл"), "The useful command reports the actual running cycle")
+
+
+/// Local registry subscriptions do not perform C# discovery or require network access.
+/datum/netrun_service_subscription_fixture
+	var/list/seen = list()
+	var/list/identities = list()
+	var/removed_live_service = FALSE
+/datum/netrun_service_subscription_fixture/netrun_service_changed(event, family, tag, identity, datum/netrun_machine_service/service)
+	seen += event
+	identities += identity
+	if(event == "removed" && !service)
+		removed_live_service = TRUE
+
+/datum/unit_test/netrun_service_subscription_lifecycle/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
+	var/datum/netrun_service_subscription_fixture/subscriber = allocate(/datum/netrun_service_subscription_fixture)
+	var/datum/netrun_service_subscription/watch = transport.subscribe_service(subscriber, "transport.external_fixture", "fixture-tag", FALSE)
+	TEST_ASSERT_NOTNULL(watch, "Subscription handle created")
+	var/datum/netrun_machine_service/external_fixture/service = new(scene.target.resolve_node(), scene.receiver)
+	sleep(2)
+	TEST_ASSERT("added" in subscriber.seen, "Subscribers observe service appearance")
+	transport.announce_service(service, "updated")
+	sleep(2)
+	TEST_ASSERT("updated" in subscriber.seen, "Explicit service announcement is delivered")
+	qdel(service)
+	sleep(2)
+	TEST_ASSERT("removed" in subscriber.seen && subscriber.removed_live_service, "Removal uses tombstone identity, not a deleted service")
+	qdel(watch)
+	TEST_ASSERT(!length(transport.service_subscribers["transport.external_fixture"]), "Unsubscribe releases family index")

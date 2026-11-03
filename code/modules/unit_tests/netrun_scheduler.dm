@@ -277,7 +277,7 @@
 	var/datum/component/netrun_node/local_node = local_apc.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/target_node = local_terminal.GetComponent(/datum/component/netrun_node)
 	var/datum/component/netrun_node/remote_node = remote_apc.GetComponent(/datum/component/netrun_node)
-	scene.fixture_graph.import_binding(remote_node, remote_node, SSnetrun.get_apc_network(remote_node))
+	scene.fixture_graph.import_binding(remote_node, remote_node, scene.fixture_graph.declared_network(remote_node))
 	var/datum/netrun_ice/local_patrol = allocate(/datum/netrun_ice, local_node, NETRUN_ICE_HUNTER)
 	var/datum/netrun_ice/remote_patrol = allocate(/datum/netrun_ice, remote_node, NETRUN_ICE_HUNTER)
 	local_patrol.persistent = TRUE

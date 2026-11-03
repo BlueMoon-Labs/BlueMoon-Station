@@ -1,3 +1,215 @@
+/// One Core-owned service watch for every research client on the station.
+/// This is only a directory-change trigger; the actual technology authority,
+/// reachability and native delivery remain checked by request("watch").
+/datum/netrun_machine_transport
+	var/datum/netrun_research_core_observer/research_core_observer
+
+/datum/netrun_machine_transport/proc/get_research_core_observer()
+	if(QDELETED(research_core_observer))
+		research_core_observer = new(src)
+	return research_core_observer
+
+/datum/netrun_research_core_observer
+	var/datum/netrun_machine_transport/transport
+	var/datum/netrun_core_service_watch/watch
+	var/datum/weakref/source_ref
+	/// Only clients that have actually requested a replicated research snapshot.
+	/// Buckets contain weakrefs keyed by native client identity.
+	var/list/subscribers_by_binding = list()
+	var/list/pending_bindings = list()
+	var/list/refresh_clients
+	var/refresh_binding
+	var/refresh_cursor = 1
+	var/refresh_all = FALSE
+	var/refresh_timer
+	var/retry_timer
+	var/next_attempt = 0
+	var/snapshot_finished = FALSE
+
+/datum/netrun_research_core_observer/New(datum/netrun_machine_transport/transport)
+	..()
+	src.transport = transport
+
+/datum/netrun_research_core_observer/Destroy()
+	if(refresh_timer)
+		deltimer(refresh_timer)
+	if(retry_timer)
+		deltimer(retry_timer)
+	refresh_timer = null
+	retry_timer = null
+	forget_watch()
+	subscribers_by_binding.Cut()
+	pending_bindings.Cut()
+	refresh_clients = null
+	transport = null
+	return ..()
+
+/datum/netrun_research_core_observer/proc/forget_watch()
+	var/datum/netrun_machine_service/source = source_ref?.resolve()
+	if(source)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	source_ref = null
+	QDEL_NULL(watch)
+	snapshot_finished = FALSE
+
+/datum/netrun_research_core_observer/proc/source_deleted()
+	SIGNAL_HANDLER
+	forget_watch()
+	schedule_retry()
+
+/datum/netrun_research_core_observer/proc/track_client(datum/netrun_machine_service/research_client/client, tag)
+	if(QDELETED(client) || !istext(tag) || !length(tag))
+		return
+	if(client.research_core_tag && client.research_core_tag != tag)
+		// Смена techweb не удаляет сам source service общего watch. Переносим
+		// weak observer атомарно, сохраняя уже завершённый directory snapshot.
+		var/list/previous = subscribers_by_binding[client.research_core_tag]
+		if(previous)
+			previous -= REF(client)
+			if(!length(previous))
+				subscribers_by_binding -= client.research_core_tag
+	var/list/bucket = subscribers_by_binding[tag]
+	if(!bucket)
+		bucket = list()
+		subscribers_by_binding[tag] = bucket
+	bucket[REF(client)] = WEAKREF(client)
+	client.research_core_tag = tag
+	ensure_watch(client)
+
+/datum/netrun_research_core_observer/proc/untrack_client(datum/netrun_machine_service/research_client/client)
+	var/tag = client.research_core_tag
+	if(!tag)
+		return
+	var/list/bucket = subscribers_by_binding[tag]
+	if(bucket)
+		bucket -= REF(client)
+		if(!length(bucket))
+			subscribers_by_binding -= tag
+	client.research_core_tag = null
+	if(!length(subscribers_by_binding))
+		forget_watch()
+		if(retry_timer)
+			deltimer(retry_timer)
+		retry_timer = null
+		next_attempt = 0
+	// Источник общего directory-watch остаётся живым сервисом после отписки
+	// от techweb. Его удаление/недоступность обрабатываются отдельно; остальные
+	// подписчики не должны терять готовый snapshot из-за смены интереса source.
+
+/datum/netrun_research_core_observer/proc/pick_source()
+	for(var/tag in subscribers_by_binding)
+		var/list/bucket = subscribers_by_binding[tag]
+		for(var/key in bucket)
+			var/datum/weakref/reference = bucket[key]
+			var/datum/netrun_machine_service/research_client/client = reference?.resolve()
+			if(!QDELETED(client) && !QDELETED(client.host) && client.resolve_node()?.is_online())
+				return client
+	return null
+
+/datum/netrun_research_core_observer/proc/schedule_retry()
+	if(retry_timer || QDELETED(src) || !length(subscribers_by_binding))
+		return
+	next_attempt = world.time + 15 SECONDS
+	retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_watch)), 15 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_research_core_observer/proc/retry_watch()
+	retry_timer = null
+	ensure_watch()
+
+/datum/netrun_research_core_observer/proc/ensure_watch(datum/netrun_machine_service/research_client/preferred)
+	var/datum/netrun_external_core/client = SSnetrun.external_core
+	if(QDELETED(transport) || !client?.ready || !length(subscribers_by_binding))
+		return FALSE
+	if(!QDELETED(watch) && watch.binding == client.binding_epoch && (watch.phase in list("subscribing", "active")))
+		return TRUE
+	if(world.time < next_attempt)
+		return FALSE
+	if(!QDELETED(watch))
+		forget_watch()
+	if(QDELETED(preferred) || QDELETED(preferred.host) || !preferred.resolve_node()?.is_online() || !preferred.wants_snapshots)
+		preferred = pick_source()
+	if(QDELETED(preferred))
+		schedule_retry()
+		return FALSE
+	watch = SSnetrun.watch_core_service(src, preferred, "research.server")
+	if(QDELETED(watch))
+		schedule_retry()
+		return FALSE
+	source_ref = WEAKREF(preferred)
+	RegisterSignal(preferred, COMSIG_PARENT_QDELETING, PROC_REF(source_deleted))
+	snapshot_finished = FALSE
+	return TRUE
+
+/// Notifications are coalesced by techweb identity. A Core advertisement must
+/// never be treated as a successful research subscription or a permission grant.
+/datum/netrun_research_core_observer/proc/schedule_refresh(tag = null, all = FALSE)
+	if(all)
+		refresh_all = TRUE
+	else if(istext(tag) && length(subscribers_by_binding[tag]))
+		pending_bindings[tag] = TRUE
+	if(!snapshot_finished || refresh_timer || QDELETED(src))
+		return
+	refresh_timer = addtimer(CALLBACK(src, PROC_REF(advance_refresh)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// At most eight clients per tick; large map additions never create a single
+/// unbounded native request burst. Deleted/rebound clients are skipped.
+/datum/netrun_research_core_observer/proc/advance_refresh()
+	if(refresh_timer)
+		deltimer(refresh_timer)
+	refresh_timer = null
+	if(!snapshot_finished)
+		return
+	if(refresh_all)
+		refresh_all = FALSE
+		pending_bindings = subscribers_by_binding.Copy()
+	var/processed = 0
+	while(processed < 8)
+		if(!refresh_clients)
+			if(!length(pending_bindings))
+				break
+			refresh_binding = pending_bindings[1]
+			pending_bindings -= refresh_binding
+			var/list/bucket = subscribers_by_binding[refresh_binding]
+			if(!length(bucket))
+				// A client may have unregistered after the event was queued.
+				// Empty buckets must still spend a slice, not spin in one tick.
+				processed++
+				continue
+			refresh_clients = bucket.Copy()
+			refresh_cursor = 1
+		if(refresh_cursor > length(refresh_clients))
+			refresh_clients = null
+			refresh_binding = null
+			continue
+		var/key = refresh_clients[refresh_cursor++]
+		var/datum/weakref/reference = refresh_clients[key]
+		var/datum/netrun_machine_service/research_client/client = reference?.resolve()
+		if(!QDELETED(client) && client.wants_snapshots && client.research_core_tag == refresh_binding)
+			client.on_core_research_catalog_changed()
+		else
+			var/list/current = subscribers_by_binding[refresh_binding]
+			if(current)
+				current -= key
+				if(!length(current))
+					subscribers_by_binding -= refresh_binding
+		processed++
+	if(refresh_clients || length(pending_bindings))
+		schedule_refresh()
+
+/datum/netrun_research_core_observer/netrun_core_service_changed(change, family, advertised_tag, identity, datum/netrun_machine_service/service)
+	if(family != "research.server")
+		return
+	if(change == "snapshot_end")
+		snapshot_finished = TRUE
+		schedule_refresh(all = TRUE)
+		return
+	if(change == "source_unavailable" || change == "resync_required")
+		forget_watch()
+		schedule_retry()
+		return
+	if(change in list("added", "updated", "removed"))
+		schedule_refresh(advertised_tag)
+
 /// Research information is copied only by delivered machine packets. A holder's
 /// logical techweb selects its server; it never replaces physical APC routing.
 
@@ -204,6 +416,8 @@
 	var/cluster_transit = -1
 	var/cluster_backbone = -1
 	var/cluster_online
+	/// A failed Core discovery retries once after a backoff, not every MC tick.
+	var/cluster_retry_timer
 
 /datum/netrun_machine_service/research_server/New(datum/component/netrun_node/node, atom/host_override)
 	..(node, host_override)
@@ -239,6 +453,29 @@
 
 /datum/netrun_machine_service/research_server/proc/cluster_state_changed()
 	SIGNAL_HANDLER
+	queue_cluster()
+
+/// The Core worker has finished (or failed) a source-scoped service discovery.
+/// Never merge from this callback: the existing continuation revalidates
+/// native research network policy and reachability before modifying Techweb.
+/datum/netrun_machine_service/research_server/on_catalog_lookup_completed(family, succeeded)
+	if(family != "research.server" || QDELETED(host))
+		return
+	if(succeeded)
+		if(cluster_retry_timer)
+			deltimer(cluster_retry_timer)
+		cluster_retry_timer = null
+		queue_cluster()
+	else
+		schedule_cluster_retry()
+
+/datum/netrun_machine_service/research_server/proc/schedule_cluster_retry()
+	if(cluster_retry_timer || QDELETED(src))
+		return
+	cluster_retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_cluster_lookup)), 15 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_machine_service/research_server/proc/retry_cluster_lookup()
+	cluster_retry_timer = null
 	queue_cluster()
 
 /datum/netrun_machine_service/research_server/proc/cluster_topology_changed()
@@ -281,12 +518,22 @@
 		SSnetrun.get_machine_transport().defer_ready_service(src)
 		return TRUE
 	if(!cluster_candidates)
-		cluster_candidates = SSresearch.servers.Copy()
+		// Core owns the candidate capture and physical route search. The first
+		// read can be pending: finish this worker task and wait for its callback.
+		var/list/discovered = resolve("research.server")
+		var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+		var/key = json_encode(list(service_key(), "research.server", null))
+		var/datum/netrun_machine_resolution/external/query = executor?.discovery_catalogs[key]
+		if(!istype(query) || query.external_phase != "cached")
+			finish_cluster()
+			return TRUE
+		cluster_candidates = discovered
 		cluster_cursor = 1
 		cluster_again = FALSE
 	if(cluster_cursor <= length(cluster_candidates))
-		var/obj/machinery/rnd/server/peer = cluster_candidates[cluster_cursor++]
-		if(peer != server && !QDELETED(peer) && peer.netrun_mapped_server && peer.stored_research != server.stored_research && peer.research_network_id() == server.research_network_id() && server.link_research_cluster(peer.stored_research))
+		var/datum/netrun_machine_service/research_server/peer_service = cluster_candidates[cluster_cursor++]
+		var/obj/machinery/rnd/server/peer = peer_service?.host
+		if(peer_service != src && !QDELETED(peer_service) && !QDELETED(peer) && peer.netrun_mapped_server && peer.stored_research != server.stored_research && peer.research_network_id() == server.research_network_id() && server.link_research_cluster(peer.stored_research))
 			finish_cluster()
 			return TRUE
 	if(cluster_cursor <= length(cluster_candidates))
@@ -307,6 +554,9 @@
 	return service.advance_cluster()
 
 /datum/netrun_machine_service/research_server/Destroy()
+	if(cluster_retry_timer)
+		deltimer(cluster_retry_timer)
+	cluster_retry_timer = null
 	finish_cluster()
 	if(cluster_listening)
 		UnregisterSignal(host, list(COMSIG_MACHINERY_POWER_LOST, COMSIG_MACHINERY_POWER_RESTORED, COMSIG_MACHINERY_STAT_CHANGED, COMSIG_MOVABLE_MOVED))
@@ -329,8 +579,16 @@
 	return server.stored_research ? REF(server.stored_research) : null
 
 /// Explicitly linked physical servers may answer for the same authority.
+/// A server source is accepted only for read-only cluster discovery; actual
+/// packet receipt still requires a research.client and native research_peer.
 /datum/netrun_machine_service/research_server/matches(datum/netrun_machine_service/source_service, recipient_tag)
-	return ..() && research_peer(source_service)
+	if(!..())
+		return FALSE
+	if(istype(source_service, /datum/netrun_machine_service/research_server))
+		var/obj/machinery/rnd/server/origin = source_service.host
+		var/obj/machinery/rnd/server/destination = host
+		return source_service != src && !QDELETED(origin) && !QDELETED(destination) && origin.netrun_mapped_server && destination.netrun_mapped_server && origin.netrun_online() && destination.netrun_online() && origin.research_network_id() == destination.research_network_id()
+	return research_peer(source_service)
 
 /datum/netrun_machine_service/research_server/proc/bind_research()
 	var/obj/machinery/rnd/server/server = host
@@ -575,13 +833,19 @@
 	var/snapshot_catalog_revision = -1
 	var/datum/weakref/subscription_ref
 	var/resync_timer
+	var/research_core_tag
+	var/core_research_check_after = 0
 
 /datum/netrun_machine_service/research_client/New(datum/component/netrun_node/node, atom/host_override)
 	..(node, host_override)
 	RegisterSignal(host, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(binding_changed))
-	resync_timer = addtimer(CALLBACK(src, PROC_REF(check_subscription)), 30 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	// Snapshot consumers opt in on first request; producers are not polled.
+	// Fabricators still need their standalone native binding-repair fallback.
+	if(istype(host, /obj/machinery/mecha_part_fabricator))
+		arm_resync()
 
 /datum/netrun_machine_service/research_client/Destroy()
+	SSnetrun.machine_transport?.research_core_observer?.untrack_client(src)
 	if(resync_timer)
 		deltimer(resync_timer)
 	if(host)
@@ -599,6 +863,13 @@
 
 /datum/netrun_machine_service/research_client/proc/binding_changed(datum/source, datum/techweb/new_web)
 	SIGNAL_HANDLER
+	var/datum/netrun_research_core_observer/observer = SSnetrun.machine_transport?.research_core_observer
+	if(observer)
+		if(wants_snapshots && !QDELETED(new_web))
+			observer.track_client(src, REF(new_web))
+		else
+			observer.untrack_client(src)
+	core_research_check_after = 0
 	binding_generation++
 	for(var/token in pending_designs.Copy())
 		finish_design(token, null)
@@ -664,6 +935,20 @@
 
 /// A small revision watch repairs missed pushes, including outages between checks.
 /// Full snapshots are returned only when the local revision differs.
+/datum/netrun_machine_service/research_client/proc/arm_resync()
+	if(!resync_timer && !QDELETED(src))
+		resync_timer = addtimer(CALLBACK(src, PROC_REF(check_subscription)), 30 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// A Core event triggers a routed revision request, never a local authority
+/// assignment. Throttle repeated lifecycle changes to avoid a message storm.
+/datum/netrun_machine_service/research_client/proc/on_core_research_catalog_changed()
+	if(!wants_snapshots || QDELETED(host) || world.time < core_research_check_after)
+		return
+	core_research_check_after = world.time + 5 SECONDS
+	var/datum/techweb/binding = resolve_binding()
+	if(binding)
+		request("watch", extra = list("revision" = snapshot_binding == REF(binding) ? snapshot_revision : -1))
+
 /datum/netrun_machine_service/research_client/proc/check_subscription()
 	resync_timer = null
 	var/datum/techweb/binding = resolve_binding()
@@ -672,16 +957,21 @@
 		fabricator.sync(TRUE, TRUE)
 	if(binding && wants_snapshots)
 		request("watch", extra = list("revision" = snapshot_binding == REF(binding) ? snapshot_revision : -1))
-	resync_timer = addtimer(CALLBACK(src, PROC_REF(check_subscription)), 30 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	if(wants_snapshots || istype(host, /obj/machinery/mecha_part_fabricator))
+		arm_resync()
 
 /datum/netrun_machine_service/research_client/proc/request(operation = "snapshot", mob/user, list/extra)
 	if(QDELETED(host))
 		return FALSE
 	if(operation in list("snapshot", "watch"))
 		wants_snapshots = TRUE
+	if(wants_snapshots)
+		arm_resync()
 	var/datum/techweb/binding = resolve_binding()
 	if(!binding)
 		return FALSE
+	if(wants_snapshots)
+		SSnetrun.get_machine_transport().get_research_core_observer().track_client(src, REF(binding))
 	var/list/data = extra ? extra.Copy() : list()
 	data["operation"] = operation
 	data["binding"] = REF(binding)
@@ -690,7 +980,12 @@
 	message.requester_ref = WEAKREF(src)
 	if(user)
 		message.user_ref = WEAKREF(user)
-	return send("research.server", message, REF(binding))
+	var/queued = send("research.server", message, REF(binding))
+	if(queued && (operation in list("snapshot", "watch")))
+		// Avoid re-requesting the same initial snapshot when the just-created
+		// Core watch immediately emits its initial directory snapshot.
+		core_research_check_after = max(core_research_check_after, world.time + 5 SECONDS)
+	return queued
 
 /datum/netrun_machine_service/research_client/accepts(datum/netrun_machine_message/message)
 	var/datum/techweb/binding = netrun_atom_techweb(host)

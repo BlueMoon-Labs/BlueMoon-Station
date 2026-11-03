@@ -98,10 +98,15 @@
 	var/list/frame = netrun_monitor_frame(core)
 	var/list/metrics = frame["host_metrics"]
 	metrics["managed_bytes"] = -1
-	TEST_ASSERT(!core.process_frame(json_encode(frame)), "Negative memory measurement must reject telemetry")
-	TEST_ASSERT_EQUAL(core.last_error, "invalid_monitor_metrics", "Malformed telemetry must have a safe error code")
+	TEST_ASSERT(core.process_frame(json_encode(frame)), "Malformed optional telemetry does not close a healthy transport")
+	TEST_ASSERT_NULL(core.last_error, "Optional diagnostic errors are counted without a transport failure")
+	TEST_ASSERT_EQUAL(core.monitor_invalid_samples, 1, "Malformed scalar sample is counted")
+	TEST_ASSERT(core.ready, "A bad diagnostic sample does not revoke transport readiness")
 	TEST_ASSERT_EQUAL(core.monitor_sample_sequence, "0", "Invalid metric must not advance sample sequence")
 	TEST_ASSERT_EQUAL(length(core.host_metrics), 0, "Partial validation must not publish a partial sample")
+	TEST_ASSERT(core.process_frame(json_encode(netrun_monitor_frame(core, "2"))), "A later valid sample recovers without a new binding")
+	TEST_ASSERT_EQUAL(core.monitor_sample_sequence, "2", "Only the valid complete sample is published")
+	TEST_ASSERT_EQUAL(core.host_metrics["managed_bytes"], 1048576, "Invalid negative memory cannot leak into a recovered sample")
 	core = netrun_monitor_fixture()
 	frame = netrun_monitor_frame(core)
 	frame["binding_epoch"] = "previous-binding"
