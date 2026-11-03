@@ -148,18 +148,6 @@
 		mode() // Activate held item
 
 /mob/living/carbon/attackby(obj/item/I, mob/user, params)
-	var/datum/status_effect/malf_protocol_breach/protocol_breach = has_status_effect(/datum/status_effect/malf_protocol_breach)
-	if(protocol_breach && I.tool_behaviour == TOOL_MULTITOOL && user == src)
-		to_chat(user, span_warning("Вы не можете восстановить собственные системы."))
-		return STOP_ATTACK_PROC_CHAIN
-
-	if(protocol_breach && I.tool_behaviour == TOOL_MULTITOOL && stat != DEAD && (stat == UNCONSCIOUS || restrained()))
-		to_chat(user, span_notice("Вы начинаете восстанавливать системы [src] мультитулом. Это займёт около 30 секунд."))
-		if(!do_after(user, 30 SECONDS, target = src, extra_checks = CALLBACK(src, TYPE_PROC_REF(/mob/living/carbon, can_repair_malf_protocol_breach), user, I, protocol_breach)))
-			to_chat(user, span_warning("Ремонт систем [src] прерван."))
-			return STOP_ATTACK_PROC_CHAIN
-		protocol_breach.clear_hack(user)
-		return STOP_ATTACK_PROC_CHAIN
 	if(lying && surgeries.len)
 		// Вправление вывиха остаётся лечением травмы даже при начатой операции
 		// на той же конечности. Иначе хирургический инструмент перехватит клик.
@@ -181,12 +169,6 @@
 			return STOP_ATTACK_PROC_CHAIN
 
 	return ..()
-
-/mob/living/carbon/proc/can_repair_malf_protocol_breach(mob/user, obj/item/tool, datum/status_effect/malf_protocol_breach/protocol_breach)
-	return !QDELETED(src) && !QDELETED(user) && !QDELETED(tool) && !QDELETED(protocol_breach) \
-		&& has_status_effect(/datum/status_effect/malf_protocol_breach) == protocol_breach \
-		&& stat != DEAD && (stat == UNCONSCIOUS || restrained()) \
-		&& user.Adjacent(src) && user.get_active_held_item() == tool && tool.tool_behaviour == TOOL_MULTITOOL
 
 /mob/living/carbon/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	. = ..()

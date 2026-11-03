@@ -335,7 +335,9 @@
 		to_chat(ranged_ability_user, span_warning("Повторный взлом этой цели невозможен ещё [cooldown_left] мин. Выберите другого синтетика."))
 		return
 
-	var/hack_time = HAS_TRAIT(victim, TRAIT_MINDSHIELD) ? 1 MINUTES : 2 SECONDS
+	var/hack_time = HAS_TRAIT(victim, TRAIT_MINDSHIELD) ? 2 MINUTES : 2 SECONDS
+	if(HAS_TRAIT(victim, TRAIT_MINDSHIELD))
+		to_chat(victim, span_warning("Обнаружена попытка перехвата ваших систем. Для завершения протокола требуется [hack_time / 10] секунд."))
 	to_chat(ranged_ability_user, span_notice("Начинается перехват систем [victim]. Для завершения протокола требуется [hack_time / 10] секунд."))
 	if(!do_after(ranged_ability_user, hack_time, target = victim, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(can_hack_target), victim)))
 		to_chat(ranged_ability_user, span_warning("Перехват систем прерван."))
@@ -394,6 +396,7 @@
 	. = ..()
 	if(!.)
 		return
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(handle_attackby))
 	var/mob/living/carbon/human/victim = owner
 	if(victim.dna?.species?.id == SPECIES_IPC)
 		examine_text = "<span class='warning'><b>Монитор горит ярко-красным светом, придавая [owner.ru_ego(FALSE)] зловещий вид.</b></span>"
@@ -439,8 +442,39 @@
 	to_chat(owner, span_notice("Вы не понимаете, где находитесь, и не помните, что происходило, пока вы находились под подчинением ИИ."))
 	qdel(src)
 
+/datum/status_effect/malf_protocol_breach/proc/handle_attackby(datum/source, obj/item/tool, mob/living/user, params)
+	if(!tool || !user || tool.tool_behaviour != TOOL_MULTITOOL)
+		return
+	if(user == owner)
+		to_chat(user, span_warning("Вы не можете восстановить собственные системы."))
+		return COMPONENT_NO_AFTERATTACK
+
+	var/mob/living/carbon/target = owner
+	if(target.lying && target.surgeries.len && (user.a_intent == INTENT_HELP || user.a_intent == INTENT_DISARM))
+		for(var/datum/surgery/emergency_reboot/reboot in target.surgeries)
+			if(reboot.steps[reboot.status] == /datum/surgery_step/force_reboot && reboot.next_step(user, user.a_intent))
+				return COMPONENT_NO_AFTERATTACK
+
+	if(target.stat == DEAD || !(target.stat == UNCONSCIOUS || target.restrained()))
+		return
+
+	to_chat(user, span_notice("Вы начинаете восстанавливать системы [target] мультитулом. Это займёт около 30 секунд."))
+	if(!tool.use_tool(target, user, 30 SECONDS, extra_checks = CALLBACK(src, PROC_REF(can_repair), user, tool)))
+		to_chat(user, span_warning("Ремонт систем [target] прерван."))
+		return COMPONENT_NO_AFTERATTACK
+
+	clear_hack(user)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/malf_protocol_breach/proc/can_repair(mob/living/user, obj/item/tool)
+	return owner && !QDELETED(owner) && !QDELETED(user) && !QDELETED(tool) && !QDELETED(src) \
+		&& owner.has_status_effect(/datum/status_effect/malf_protocol_breach) == src \
+		&& owner.stat != DEAD && (owner.stat == UNCONSCIOUS || owner.restrained()) \
+		&& user.Adjacent(owner) && user.get_active_held_item() == tool && tool.tool_behaviour == TOOL_MULTITOOL
+
 /datum/status_effect/malf_protocol_breach/on_remove()
 	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_ATTACKBY)
 		owner.clear_fullscreen(fullscreen_category, 0)
 		if(mindshielded && !repaired)
 			to_chat(owner, span_nicegreen("<b>Имплант защиты разума восстановил контроль над системами.</b> Взлом прекращён."))
@@ -450,6 +484,12 @@
 		if(master_ai && !QDELETED(master_ai))
 			to_chat(master_ai, span_warning("<b>СВЯЗЬ ПРЕРВАНА:</b> соединение с подчинённым [owner] потеряно."))
 	return ..()
+
+/datum/status_effect/malf_protocol_breach/Destroy()
+	. = ..()
+	master_ai = null
+	repairer = null
+	return .
 
 /atom/movable/screen/fullscreen/tiled/malf_protocol_breach
 	icon = 'icons/mob/screen_gen.dmi'

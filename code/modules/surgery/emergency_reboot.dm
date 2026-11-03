@@ -51,7 +51,7 @@
 	var/datum/status_effect/malf_protocol_breach/protocol_breach = target.has_status_effect(/datum/status_effect/malf_protocol_breach)
 	if(protocol_breach && target.stat != DEAD)
 		protocol_breach.clear_hack(user)
-		target.visible_message("[user] successfully restores [target]'s systems.")
+		target.visible_message("[user] успешно восстанавливает системы [target].")
 		return TRUE
 
 	target.adjustOxyLoss(-50, 0)
