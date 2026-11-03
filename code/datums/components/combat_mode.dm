@@ -186,7 +186,7 @@
 
 /// The screen button.
 /atom/movable/screen/combattoggle
-	name = "toggle combat mode"
+	name = "Переключить боевой режим"
 	icon = 'modular_citadel/icons/ui/screen_midnight.dmi'
 	icon_state = "combat_off"
 	mouse_over_pointer = MOUSE_HAND_POINTER
