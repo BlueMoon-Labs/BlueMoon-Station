@@ -123,3 +123,50 @@ real `message` commands keep their own request IDs. Completed or retrying
 network submissions are never rewritten. Atmospheric device registration also
 keeps at most one uncompleted status per controller and schedules one latest-state
 refresh when a suppressed update needs resending.
+
+
+## Core-owned service lifecycle subscriptions
+
+Services still publish authoritative `service_upsert/service_remove` facts through the
+native exporter. Persistent family/tag watches are registered in **C# Core**;
+DM does not calculate routes or poll discovery to maintain these subscriptions.
+
+```dm
+/datum/my_adapter
+    var/datum/netrun_core_service_watch/watch
+
+/datum/my_adapter/proc/start_watch(datum/netrun_machine_service/my_service)
+    watch = SSnetrun.watch_core_service(src, my_service, "atmos.controller")
+
+/datum/my_adapter/netrun_core_service_changed(change, family, advertised_tag, identity, datum/netrun_machine_service/service)
+    if(change == "added" || change == "updated")
+        // Service advertisement only. Real action must use send/request_submit,
+        // which checks network reachability and native permission on execution.
+        return
+    if(change == "removed")
+        // identity identifies a tombstoned service generation; service is null.
+        return
+    if(change == "resync_required" || change == "source_unavailable")
+        // Register a new watch once the source/connection is ready.
+        return
+
+/datum/my_adapter/Destroy()
+    QDEL_NULL(watch)
+    return ..()
+```
+
+The watch is bound to one exact source generation and live Core binding. Initial
+`added` notifications are followed by `snapshot_end`. Further notifications
+(`added`, `updated`, `removed`) arrive asynchronously through the existing
+output journal; DM schedules callbacks outside JSON decoding. A missing/deleted
+subscriber or explicit handle deletion invokes `service_unwatch`.
+
+A service can request that its changed advertisement be exported by invoking
+`SSnetrun.get_machine_transport().index_service(service)`. Identical full facts
+do not produce new Core events. Existing local `subscribe_service` callbacks
+remain available for native lifecycle events before the Core is ready.
+
+This phase migrates **service discovery observation**. Actual network effects,
+authentication, routing, and permission checks still use the established
+`DM -> Core request -> service_invocation -> DM provider -> invocation_result`
+contract. Route/visibility-aware subscriptions will follow separately.
