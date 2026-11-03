@@ -1738,3 +1738,28 @@
 	user.CommonClickOn(pen, "left=1")
 	TEST_ASSERT_NULL(user.seen_intent, "Клик по цели не на помощи прошёл")
 	TEST_ASSERT_NULL(user.active_context_menu, "Меню не закрылось")
+
+/// Ctrl + зажатый ПКМ + ЛКМ кладёт вещь под курсор и поворачивает лежащую. Params - как их прислал живой клиент в режиме меню:
+/// ЛКМ при зажатом ПКМ идёт с drag=right, и /client/Click его выбрасывал, вещь клалась только отпусканием ПКМ
+/datum/unit_test/context_menu_ctrl_chord
+
+/datum/unit_test/context_menu_ctrl_chord/Run()
+	TEST_ASSERT(!click_is_drag_leftover(list("left" = "1", "right" = "1", "ctrl" = "1", "button" = "left", "drag" = "right")), "ЛКМ при зажатом ПКМ выброшен как перетаскивание")
+	TEST_ASSERT(click_is_drag_leftover(list("right" = "1", "button" = "right", "drag" = "left")), "Клик посреди перетаскивания ЛКМ не выброшен")
+	TEST_ASSERT(!click_is_drag_leftover(list("left" = "1", "button" = "left")), "Обычный клик выброшен")
+
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/turf/east = get_step(user, EAST)
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	user.put_in_active_hand(pen)
+	user.CommonClickOn(east, "icon-x=24;icon-y=23;left=1;right=1;ctrl=1;button=left;drag=right")
+	TEST_ASSERT_EQUAL(pen.loc, east, "Ctrl+ПКМ+ЛКМ не положил вещь")
+	TEST_ASSERT(pen.pixel_x == 8 && pen.pixel_y == 7, "Вещь легла не под курсор: [pen.pixel_x],[pen.pixel_y]")
+	user.CommonClickOn(east, "icon-x=24;icon-y=23;right=1;ctrl=1;button=right")
+	TEST_ASSERT_NULL(user.active_context_menu, "Отпускание ПКМ после комбинации открыло меню")
+
+	var/matrix/before = matrix(pen.transform)
+	user.CommonClickOn(pen, "icon-x=16;icon-y=16;left=1;right=1;ctrl=1;button=left;drag=right")
+	TEST_ASSERT(pen.transform.b != before.b, "Ctrl+ПКМ+ЛКМ пустой рукой не повернул вещь")
+	user.CommonClickOn(pen, "icon-x=16;icon-y=16;right=1;ctrl=1;button=right")
+	TEST_ASSERT_NULL(user.active_context_menu, "Отпускание ПКМ после поворота открыло меню")

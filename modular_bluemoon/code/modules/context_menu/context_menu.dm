@@ -126,6 +126,11 @@
 /mob/proc/shift_click_examines(list/modifiers)
 	return modifiers["shift"] && (!modifiers["right"] || right_click_gesture(TRUE) == RIGHT_CLICK_MODE_NATIVE)
 
+/// Клик посреди перетаскивания не считается, кроме ЛКМ при зажатом ПКМ: когда ПКМ карты приходит кликом,
+/// клиент шлёт его с drag=right, а это второе действие и Ctrl+ПКМ+ЛКМ (положить вещь под курсор, повернуть)
+/proc/click_is_drag_leftover(list/modifiers)
+	return modifiers[DRAG] && !(modifiers[DRAG] == "right" && modifiers["button"] == "left")
+
 /// ЛКМ при зажатом ПКМ запоминается; следующий клик самим ПКМ - его отпускание, оно ничего не делает
 /mob/proc/swallow_right_button_release(params)
 	if(!findtext(params, "right=1"))
