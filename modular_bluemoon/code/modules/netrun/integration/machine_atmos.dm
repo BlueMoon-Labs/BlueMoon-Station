@@ -10,6 +10,7 @@
 /datum/netrun_machine_message/atmos/delivered(datum/netrun_machine_service/recipient_service)
 	var/datum/netrun_machine_service/atmos/device/device = registration_ref?.resolve()
 	if(istype(recipient_service, /datum/netrun_machine_service/atmos/controller))
+		device?.complete_registration_delivery(recipient_service)
 		device?.acknowledge_controller(recipient_service)
 
 /datum/netrun_machine_message/atmos/failed(reason)
@@ -21,6 +22,7 @@
 		return
 	device.refresh_registration()
 	if(istype(recipient, /datum/netrun_machine_service/atmos/controller))
+		device.complete_registration_delivery(recipient)
 		var/datum/netrun_machine_service/atmos/controller/controller = recipient
 		if(!QDELETED(controller) && controller.matches(device, null))
 			device.acknowledged_controllers -= REF(controller)
@@ -180,6 +182,10 @@
 	var/registration_timer
 	var/registration_at = INFINITY
 	var/registration_attempts = 0
+	/// At most one not-yet-terminal status per device/controller pair.
+	var/list/registration_inflight = list()
+	var/list/registration_dirty = list()
+	var/registration_flush_timer
 
 /datum/netrun_machine_service/atmos/device/New(datum/component/netrun_node/node, atom/host_override)
 	..(node, host_override)
@@ -192,6 +198,10 @@
 	SSnetrun.task_scheduler?.cancel("atmos_registration", src)
 	if(registration_timer)
 		deltimer(registration_timer)
+	if(registration_flush_timer)
+		deltimer(registration_flush_timer)
+	registration_inflight.Cut()
+	registration_dirty.Cut()
 	if(host)
 		UnregisterSignal(host, list(COMSIG_MACHINERY_POWER_LOST, COMSIG_MACHINERY_POWER_RESTORED, COMSIG_MACHINERY_STAT_CHANGED, COMSIG_MOVABLE_MOVED))
 	unindex_registration(SSnetrun.get_machine_transport().atmos_devices_by_area)
@@ -343,6 +353,41 @@
 	return FALSE
 
 
+
+/// A retransmitted registration refreshes the desired status instead of adding another pending context.
+/datum/netrun_machine_service/atmos/device/send_to(datum/netrun_machine_service/target, datum/netrun_machine_message/message)
+	if(QDELETED(message) || !istype(target, /datum/netrun_machine_service/atmos/controller) || message.payload["sigtype"] != "status")
+		return ..()
+	var/key = REF(target)
+	if(registration_inflight[key])
+		registration_dirty[key] = TRUE
+		qdel(message)
+		return TRUE
+	registration_inflight[key] = TRUE
+	var/admitted = ..()
+	if(!admitted)
+		registration_inflight -= key
+	return admitted
+
+/datum/netrun_machine_service/atmos/device/proc/complete_registration_delivery(datum/netrun_machine_service/atmos/controller/controller)
+	var/key = REF(controller)
+	registration_inflight -= key
+	if(registration_dirty[key])
+		registration_dirty -= key
+		if(!registration_flush_timer && !QDELETED(host))
+			registration_flush_timer = addtimer(CALLBACK(src, PROC_REF(flush_latest_registration)), world.tick_lag, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_machine_service/atmos/device/proc/flush_latest_registration()
+	registration_flush_timer = null
+	if(!registration_required() || QDELETED(host) || !resolve_node()?.is_online())
+		return
+	var/obj/machinery/atmospherics/components/unary/device = host
+	if(istype(device, /obj/machinery/atmospherics/components/unary/vent_pump))
+		var/obj/machinery/atmospherics/components/unary/vent_pump/vent = device
+		vent.broadcast_status()
+	else if(istype(device, /obj/machinery/atmospherics/components/unary/vent_scrubber))
+		var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = device
+		scrubber.broadcast_status()
 
 /datum/netrun_machine_service/atmos/device/send(destination_id, datum/netrun_machine_message/message, recipient_tag)
 	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()

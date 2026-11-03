@@ -35,6 +35,7 @@
 	var/monitor_connections = 0
 	var/monitor_disconnects = 0
 	var/monitor_last_failure
+	var/monitor_invalid_samples = 0
 
 /// Отдельная clock seam позволяет проверить stale/rates без sleep или настоящей библиотеки.
 /datum/netrun_external_core/proc/monitor_now()
@@ -57,7 +58,9 @@
 		return TRUE
 	var/list/metrics = frame["host_metrics"]
 	if(!islist(metrics) || !istext(metrics["sync_state"]) || !netrun_external_valid_decimal(metrics["applied_sequence"], TRUE) || !isnum(metrics["uptime_ms"]) || !update_host_metrics(metrics))
-		return abort_session("invalid_monitor_metrics")
+		// Monitoring is optional; malformed scalars must not reset a healthy transport binding.
+		monitor_invalid_samples++
+		return TRUE
 	monitor_sample_sequence = sequence
 	last_host_monitor_at = monitor_now()
 	last_host_response_at = last_host_monitor_at
@@ -218,6 +221,7 @@
 			list("label" = "Facts в журнале", "value" = max(0, length(core.journal) - core.journal_head + 1)),
 			list("label" = "Machine contexts", "value" = executor.pending_current_count),
 			list("label" = "Locally merged state updates", "value" = executor.local_states_coalesced),
+			list("label" = "Ignored invalid Host monitor samples", "value" = core.monitor_invalid_samples),
 			list("label" = "Service notifications waiting", "value" = max(0, length(SSnetrun.machine_transport?.service_events) - SSnetrun.machine_transport?.service_event_cursor + 1)),
 			list("label" = "Request / control / inflight команды", "value" = "[length(executor.request_commands)] / [length(executor.control_commands)] / [length(executor.inflight_commands)]"),
 			list("label" = "Invocations удерживается", "value" = length(executor.invocations)),
