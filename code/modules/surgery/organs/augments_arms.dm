@@ -157,7 +157,7 @@
 /obj/item/organ/cyberimp/arm/examine(mob/user)
 	. = ..()
 	if(is_dual_arm_implant())
-		. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration, but takes over both arms once implanted. You can use a screwdriver to reassemble it.</span>"
+		. += "<span class='info'>[src] is installed as a single unit into both arms at once, filling both slots. The side shown only affects the sprite; you can use a screwdriver to mirror it.</span>"
 	else
 		. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration. You can use a screwdriver to reassemble it.</span>"
 
@@ -167,7 +167,7 @@
 		return TRUE
 	I.play_tool_sound(src)
 	set_arm_zone(zone == BODY_ZONE_R_ARM ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM)
-	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
+	to_chat(user, "<span class='notice'>You mirror [src]'s sprite to the [zone == BODY_ZONE_R_ARM ? "right" : "left"] side.</span>")
 
 /obj/item/organ/cyberimp/arm/deactivate(removing)
 	. = ..()

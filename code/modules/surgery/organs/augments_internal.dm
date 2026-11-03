@@ -260,7 +260,7 @@
 	actions_types = list(/datum/action/item_action/organ_action/use/sandevistan)
 	var/active = FALSE
 	var/duration = 4 SECONDS
-	var/cooldown = 180 SECONDS
+	var/cooldown = 15 SECONDS
 	var/movespeed_mod = /datum/movespeed_modifier/sandevistan
 	var/next_use = 0
 	/// Счётчик активаций для перегруза
@@ -277,15 +277,6 @@
 	if(!istype(S))
 		return
 	S.activate_sandevistan()
-
-/obj/item/organ/cyberimp/brain/sandevistan/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/cyberimp/brain/berserker/ber = H.getorgan(/obj/item/organ/cyberimp/brain/berserker)
-		if(ber)
-			to_chat(H, span_warning("[ber] prevents [src] from being installed!"))
-			return FALSE
-	return ..()
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/activate_sandevistan()
 	if(!owner)
@@ -402,13 +393,13 @@
 
 /obj/item/organ/cyberimp/brain/sandevistan/military
 	name = "Military Sandevistan"
-	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with reduced cooldown at the cost of increased strain."
+	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with a longer duration at the cost of increased strain."
 	icon_state = "brain_implant"
 	implant_overlay = "brain_implant_overlay"
 	implant_color = "#FF3333"
 	syndicate_implant = TRUE
 	duration = 6 SECONDS
-	cooldown = 90 SECONDS
+	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
@@ -444,7 +435,7 @@
 	implant_color = "#ab6509"
 	active_security_level = CNS_REBOOTER_SEC_LEVEL
 	duration = 4 SECONDS
-	cooldown = 120 SECONDS
+	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan
 
 //[[[[MOUTH]]]]

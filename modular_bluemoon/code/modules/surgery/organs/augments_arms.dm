@@ -6,25 +6,16 @@
 	icon_state = "mantis"
 	occupies_both_arms = TRUE
 
-/obj/item/organ/cyberimp/arm/mantis_blade/l
-	zone = BODY_ZONE_L_ARM
-
 /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	name = "Corporate Mantis blade implant"
 	icon_state = "mantis_corpo"
 	contents = newlist(/obj/item/melee/implantarmblade/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
-/obj/item/organ/cyberimp/arm/mantis_blade/sec_level/l
-	zone = BODY_ZONE_L_ARM
-
 /obj/item/organ/cyberimp/arm/mantis_blade/syndie
 	name = "Gorlex Mantis blade implant"
 	icon_state = "mantis_syndie"
 	contents = newlist(/obj/item/melee/implantarmblade/syndie)
-
-/obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
-	zone = BODY_ZONE_L_ARM
 
 ///////////////
 //Monostring//
@@ -38,25 +29,16 @@
 	icon_state = "mantis"
 	occupies_both_arms = TRUE
 
-/obj/item/organ/cyberimp/arm/monostring/l
-	zone = BODY_ZONE_L_ARM
-
 /obj/item/organ/cyberimp/arm/monostring/sec_level
 	name = "Corporate Monomolecular string implant"
 	icon_state = "mantis_corpo"
 	contents = newlist(/obj/item/melee/implantmonostring/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
-/obj/item/organ/cyberimp/arm/monostring/sec_level/l
-	zone = BODY_ZONE_L_ARM
-
 /obj/item/organ/cyberimp/arm/monostring/syndie
 	name = "Agent Monomolecular string implant"
 	icon_state = "mantis_syndie"
 	contents = newlist(/obj/item/melee/implantmonostring/syndie)
-
-/obj/item/organ/cyberimp/arm/monostring/syndie/l
-	zone = BODY_ZONE_L_ARM
 
 ///////////////
 //Gorilla Arms//
@@ -83,7 +65,7 @@
 /obj/item/organ/cyberimp/arm/gorilla/activate_allowed(datum/action/action, mob/user, silent = FALSE)
 	if(crit_fail || (organ_flags & ORGAN_FAILING))
 		return FALSE
-	return call(/obj/item/organ/proc/activate_allowed)(action, user, silent)
+	return ..()
 
 /obj/item/organ/cyberimp/arm/gorilla/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
@@ -172,16 +154,10 @@
 		A.open(2) // без питания моторы не сопротивляются
 	A.prying_so_hard = FALSE
 
-/obj/item/organ/cyberimp/arm/gorilla/l
-	zone = BODY_ZONE_L_ARM
-
 /obj/item/organ/cyberimp/arm/gorilla/sec_level
 	name = "Corporate Gorilla arms implant"
 	icon_state = "mantis_corpo"
 	active_security_level = SEC_LEVEL_BLUE
-
-/obj/item/organ/cyberimp/arm/gorilla/sec_level/l
-	zone = BODY_ZONE_L_ARM
 
 /obj/item/organ/cyberimp/arm/gorilla/syndie
 	name = "Agent Gorilla arms implant"
@@ -262,9 +238,6 @@
 	combo_speed_mult = max(min_combo_speed_mult, combo_speed_mult * combo_decay)
 	source.action_cooldown_mod = source.action_cooldown_mod / old_mult * combo_speed_mult
 
-/obj/item/organ/cyberimp/arm/gorilla/syndie/l
-	zone = BODY_ZONE_L_ARM
-
 ///////////////
 //Hand Cannon//
 ///////////////
@@ -328,8 +301,8 @@
 
 /obj/item/organ/cyberimp/brain/berserker
 	name = "Berserker implant"
-	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Mutually exclusive with the sandvistan."
-	slot = ORGAN_SLOT_BRAIN_ANTISTUN
+	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Occupies the same slot as the Sandevistan, replacing it."
+	slot = ORGAN_SLOT_BRAIN_SANDEVISTAN
 	icon_state = "muscle"
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	/// Время действия берсерка
@@ -356,15 +329,6 @@
 	attack_speed_mult = 0.5 // будет удваивать скорость в логике
 	berserk_time = 20 SECONDS
 	cooldown_time = 5 MINUTES
-
-/obj/item/organ/cyberimp/brain/berserker/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/cyberimp/brain/sandevistan/sand = H.getorgan(/obj/item/organ/cyberimp/brain/sandevistan)
-		if(sand)
-			to_chat(H, "<span class='warning'>[sand] prevents [src] from being installed!</span>")
-			return FALSE
-	return ..()
 
 /obj/item/organ/cyberimp/brain/berserker/ui_action_click()
 	if(active)

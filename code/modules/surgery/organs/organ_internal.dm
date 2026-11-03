@@ -218,7 +218,11 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 
-	. += span_notice("Можно вставить в [ru_parse_zone(zone)].")
+	var/list/insert_slots = get_organ_slots()
+	if(length(insert_slots) > 1)
+		. += span_notice("Можно вставить в любую подходящую зону — имплант займёт несколько слотов.")
+	else
+		. += span_notice("Можно вставить в [ru_parse_zone(zone)].")
 
 	if(organ_flags & ORGAN_FAILING)
 		if(status == ORGAN_ROBOTIC)

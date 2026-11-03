@@ -146,14 +146,8 @@
 /obj/item/autosurgeon/syndicate/mantis_blade
 	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
 
-/obj/item/autosurgeon/syndicate/mantis_blade/l
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
-
 /obj/item/autosurgeon/syndicate/inteq/mantis_blade
 	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
-
-/obj/item/autosurgeon/syndicate/inteq/mantis_blade/l
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
 
 
 //BOX O' IMPLANTS
