@@ -241,3 +241,28 @@
 	TEST_ASSERT(fixture.executor.process_result(fixture.client, page), "Explicit truncation is a known domain outcome")
 	TEST_ASSERT_EQUAL(query.external_phase, "failed", "Truncation cannot dispatch an arbitrary partial broadcast")
 	TEST_ASSERT_NULL(fixture.executor.get_query_consumer(query.external_request_id), "Terminal result releases the continuation slot")
+
+
+/// One persistent Core watch owns a query slot and one exact producer ID.
+/// Cancellation uses the same causal input lane as regular discovery commands.
+/datum/unit_test/netrun_external_queries_core_service_watch/Run()
+	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	var/datum/consumer = allocate(/datum)
+	var/id = fixture.executor.new_query_id("watch")
+	TEST_ASSERT_EQUAL(id, "watch:1", "Persistent watchers use their own stable producer")
+	var/body = netrun_external_json_object(list("kind" = json_encode("service_watch"), "request_id" = json_encode(id), "source" = netrun_external_json_object(list("service_id" = json_encode("source"), "generation" = json_encode("1"))), "destination_family" = json_encode("atmos.controller"), "recipient_tag" = "null"))
+	TEST_ASSERT(fixture.executor.enqueue_query("service_watch", body, consumer), "Watch command enters the bounded read-only lane")
+	TEST_ASSERT(fixture.executor.query_persistent[id], "Watch retains its consumer until explicit unwatch")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Watch advances without waiting for synchronous routing")
+	var/list/entries = json_decode(fixture.client.pending_frame)
+	TEST_ASSERT_EQUAL(entries[1]["kind"], "service_watch", "Host receives typed watch command")
+	fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted")))
+	fixture.client.pending_frame = null
+	TEST_ASSERT_EQUAL(length(fixture.executor.query_inflight), 0, "Accepted watch frees the transient command slot")
+	TEST_ASSERT(fixture.executor.query_persistent[id], "Accepted watch remains registered")
+	fixture.executor.forget_query(id, "service_unwatch")
+	TEST_ASSERT(!fixture.executor.query_persistent[id] && !fixture.executor.query_consumers[id], "Native owner releases its persistent reference")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Unwatch is transmitted as a causal control command")
+	entries = json_decode(fixture.client.pending_frame)
+	TEST_ASSERT_EQUAL(entries[1]["kind"], "service_unwatch", "Remote watch release uses the original request ID")
+	TEST_ASSERT_EQUAL(entries[1]["request_id"], id, "Cancellation cannot remove an unrelated generation")

@@ -255,8 +255,11 @@
 		UnregisterSignal(subscriber, COMSIG_PARENT_QDELETING)
 	if(delivery_timer)
 		deltimer(delivery_timer)
-	var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
-	if(istype(executor) && request_id)
+	var/datum/netrun_external_core/client = SSnetrun.external_core
+	var/datum/netrun_external_effects/machines/queries/executor = client?.effects
+	// An old binding may have reused the same wire request_id after reconnect.
+	// Never revoke work belonging to the replacement binding.
+	if(istype(executor) && request_id && binding == client.binding_epoch)
 		executor.forget_query(request_id, phase == "active" || phase == "subscribing" ? "service_unwatch" : null)
 	notifications.Cut()
 	subscriber_ref = null

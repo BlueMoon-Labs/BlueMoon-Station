@@ -170,3 +170,25 @@ This phase migrates **service discovery observation**. Actual network effects,
 authentication, routing, and permission checks still use the established
 `DM -> Core request -> service_invocation -> DM provider -> invocation_result`
 contract. Route/visibility-aware subscriptions will follow separately.
+
+
+### Первая реальная миграция потребителя: атмосфера
+
+`atmos.controller` теперь отслеживается **одной** Core-подпиской на всю
+атмосферную сеть станции, а не отдельной подпиской на каждую вентиляцию.
+`netrun_atmos_core_observer` размещается в локальном transport и выбирает
+одну живую `atmos.device` как источник. На события `added/updated/removed`
+от Core он будит устройства только соответствующей native area, используя
+существующие индексы; доставку `status` и всё сетевое принятие выполняет Core.
+
+После `snapshot_end` при отсутствии совместимого alarm контроллера
+индивидуальные устройства больше не создают бесконечные регистрации каждые
+30 секунд. Когда Core объявляет новый контроллер, watcher автоматически
+перезапускает регистрацию в затронутой области. Если Core/watch недоступны,
+остаётся исходный редкий 30-секундный fallback. Если совместимый контроллер
+есть, но сетевой маршрут недоступен, сохраняются попытки доставки и revalidation.
+
+Observer пересоздаёт подписку после смены binding, потери узла-источника и
+терминального уведомления `resync_required` с единственным отложенным retry.
+Отписка из старого binding не может отменить команду другого, нового binding.
+Native callbacks по-прежнему не исполняются в IPC decoder.
