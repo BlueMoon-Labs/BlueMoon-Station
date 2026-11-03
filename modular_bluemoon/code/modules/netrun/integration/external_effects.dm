@@ -559,6 +559,63 @@
 			return receive_completion(client, result)
 	return FALSE
 
+/// Снимок только при protocol rejection: scalar сравнения объясняют отказ без payload, proof или native references.
+/datum/netrun_external_effects/machines/rejected_output_details(datum/netrun_external_core/client, list/result)
+	var/request_id = result["request_id"]
+	var/invocation_id = result["invocation_id"]
+	var/datum/netrun_external_request_context/context = istext(request_id) ? pending[request_id] : null
+	var/datum/netrun_external_invocation/invocation = istext(invocation_id) ? invocations[invocation_id] : null
+	var/list/terminal = istext(invocation_id) ? terminal_invocations[invocation_id] : null
+	var/terminal_completion = istext(request_id) ? terminal_hashes[request_id] : null
+	var/list/details = list(
+		"machine_context_known" = !QDELETED(context),
+		"invocation_known" = !QDELETED(invocation),
+		"terminal_invocation_known" = islist(terminal),
+		"terminal_completion_known" = !!terminal_completion,
+		"machine_pending" = pending_current_count,
+		"machine_inflight_commands" = length(inflight_commands)
+	)
+	if(context)
+		details["context_stage"] = netrun_external_safe_code(context.stage, "unknown")
+		details["context_binding_matches"] = context.binding_epoch == client.binding_epoch
+		details["context_disconnected"] = !!context.disconnected
+		details["context_cancel_requested"] = !!context.cancel_requested
+		details["context_executing"] = !!context.executing
+		details["context_native_started"] = !!context.native_started
+		details["context_native_success"] = !!context.native_success
+		details["context_terminal_received"] = !!context.terminal_received
+		details["context_callback_done"] = !!context.callback_done
+		details["context_message_deleted"] = QDELETED(context.message)
+		details["context_invocation_matches"] = invocation && context.invocation == invocation
+		details["native_context_matches"] = result["native_context"] == context.context_id
+		details["authorization_context_matches"] = result["authorization_context"] == context.context_id
+		details["operation_matches"] = result["operation_id"] == context.operation_id
+		details["invocation_id_matches"] = invocation_id == "[context.binding_epoch]/[context.request_id]"
+		details["captured_tag_matches"] = result["captured_tag"] == context.captured_tag
+		details["source_service_matches"] = same_key(result["source_service"], context.source_service, "service_id")
+		details["destination_service_matches"] = same_key(result["destination_service"], context.destination_service, "service_id")
+		details["source_node_matches"] = same_key(result["source_node"], context.source_node, "node_id")
+		details["destination_node_matches"] = same_key(result["destination_node"], context.destination_node, "node_id")
+	if(invocation)
+		details["invocation_stage"] = netrun_external_safe_code(invocation.stage, "unknown")
+		details["invocation_binding_matches"] = invocation.binding_epoch == client.binding_epoch
+		details["invocation_result_queued"] = !!invocation.result_queued
+	try
+		if(context && result["kind"] == "service_invocation")
+			details["payload_matches"] = rustg_hash_string(RUSTG_HASH_SHA256, json_encode(result["payload"])) == context.payload_hash
+		if(invocation || terminal || terminal_completion)
+			var/fingerprint = rustg_hash_string(RUSTG_HASH_SHA256, json_encode(result))
+			if(invocation)
+				details["invocation_fingerprint_matches"] = fingerprint == invocation.fingerprint
+			if(terminal)
+				details["terminal_invocation_binding_matches"] = terminal["binding"] == client.binding_epoch
+				details["terminal_invocation_fingerprint_matches"] = fingerprint == terminal["fingerprint"]
+			if(terminal_completion)
+				details["terminal_completion_fingerprint_matches"] = fingerprint == terminal_completion
+	catch
+		details["fingerprint_unavailable"] = TRUE
+	return details
+
 /// Dedup проверяется до native identity/permission callbacks, executing публикуется до возможного yield.
 /datum/netrun_external_effects/machines/proc/receive_invocation(datum/netrun_external_core/client, list/result)
 	var/id = result["invocation_id"]

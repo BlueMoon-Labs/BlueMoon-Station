@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Opt-in настоящий station-code smoke: Juke hermetic compile, затем owned published Host + DreamDaemon. */
+/** Opt-in настоящий station-code smoke: Juke compile, затем owned published Host + DreamDaemon. */
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -35,7 +35,7 @@ export function boundedLog(filename, limit = 8 * 1024 * 1024, reportStages = fal
 }
 
 /** Собирает фактический Juke artifact и читает только его отдельный bounded metadata marker. */
-async function compileLive(root, environment, log) {
+export async function compileLive(root, environment, log, { map, spawnProcess = spawn } = {}) {
   let child;
   let deadline;
   // На Windows TerminateProcess не вызывает JS trap дочернего Juke; вместе с ним закрываем только его compiler tree.
@@ -51,8 +51,10 @@ async function compileLive(root, environment, log) {
   try {
     return await new Promise((resolve, reject) => {
       let tail = '';
-      child = spawn(process.execPath, [path.join(root, 'tools/build/build.js'), 'dm-test-artifact', '--unit-test-profile=hermetic',
-        '--define=NETRUN_CORE_LIVE_TEST', '--warnings-as-errors'], { cwd: root, env: environment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+      child = spawnProcess(process.execPath, [path.join(root, 'tools/build/build.js'), 'dm-test-artifact',
+        `--unit-test-profile=${map ? 'full-map' : 'hermetic'}`, '--define=NETRUN_CORE_LIVE_TEST',
+        ...(map ? [`--define=FORCE_MAP ${JSON.stringify(map)}`] : []), '--warnings-as-errors'],
+      { cwd: root, env: environment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
       // Полная DM-компиляция на Windows при параллельной Docker-сборке занимает более пяти минут.
       deadline = setTimeout(stopAtExit, 600000);
       const read = (chunk) => { log.write(chunk); tail = (tail + chunk.toString()).slice(-16384); };
@@ -75,7 +77,7 @@ async function compileLive(root, environment, log) {
 }
 
 /** Shared unit-world lock сохраняет RSC/assets/test arena exclusivity с обычным station test runner. */
-export async function runLiveCore({ root = stationRoot, noBuild = false, timeoutSeconds = 600 } = {}) {
+export async function runLiveCore({ root = stationRoot, noBuild = false, timeoutSeconds = 600, map } = {}) {
   const manifestFile = path.join(root, 'code/modules/unit_tests/_unit_tests.dm');
   if (!/^\s*#include\s+"netrun_core_live\.dm"/m.test(fs.readFileSync(manifestFile, 'utf8'))) throw new Error('live_test_include_required');
   const lockPath = path.join(root, 'tmp/netrun-tests.lock');
@@ -100,7 +102,7 @@ export async function runLiveCore({ root = stationRoot, noBuild = false, timeout
     delete environment.NETRUN_SESSION_TOKEN;
     compileLog = boundedLog(path.join(directory, 'compile.log'));
     console.log('Compiling the opt-in live station profile...');
-    const artifact = await compileLive(root, environment, compileLog);
+    const artifact = await compileLive(root, environment, compileLog, { map });
     const dmb = path.resolve(artifact.dmb);
     if (!dmb.startsWith(path.resolve(root) + path.sep) || !fs.existsSync(dmb)) throw new Error('live_artifact_outside_checkout');
     if (typeof artifact.daemon !== 'string' || !artifact.daemon.length) throw new Error('live_daemon_path_missing');
@@ -135,8 +137,18 @@ export async function runLiveCore({ root = stationRoot, noBuild = false, timeout
   }
 }
 
+/** Разбор CLI отделён от запуска, чтобы проверка опций не создавала station world. */
+export function parseLiveCoreOptions(args) {
+  if (args.some((arg) => arg !== '--no-build' && arg !== '--peace-map')) {
+    throw new Error('Usage: run-live-core-test.mjs [--no-build] [--peace-map]');
+  }
+  return { noBuild: args.includes('--no-build'),
+    ...(args.includes('--peace-map') ? { map: '_maps/peacesyndicatestation.json' } : {}) };
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  const args = process.argv.slice(2);
-  if (args.some((arg) => arg !== '--no-build')) { console.error('Usage: run-live-core-test.mjs [--no-build]'); process.exitCode = 2; }
-  else runLiveCore({ noBuild: args.includes('--no-build') }).catch((error) => { console.error(`NETRUN live: ${error.message}`); process.exitCode = 1; });
+  let options;
+  try { options = parseLiveCoreOptions(process.argv.slice(2)); }
+  catch (error) { console.error(error.message); process.exitCode = 2; }
+  if (options) runLiveCore(options).catch((error) => { console.error(`NETRUN live: ${error.message}`); process.exitCode = 1; });
 }

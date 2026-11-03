@@ -5,6 +5,11 @@
 /datum/netrun_client_scene/core_live
 	use_imported_fixture = FALSE
 
+#ifdef UNIT_TEST_PROFILE_FULL_MAP
+/datum/unit_test/netrun_core_live
+	requires_full_map = TRUE
+#endif
+
 /// Отдельный opt-in smoke запускает настоящий station runtime с опубликованными Host/bridge, без IPC stubs.
 /datum/unit_test/netrun_core_live/Run()
 	TEST_ASSERT_EQUAL(world.GetConfig("env", "NETRUN_CORE_LIVE_TEST"), "1", "Live test must be selected by its dedicated managed runner")
@@ -15,6 +20,18 @@
 	var/datum/netrun_external_effects/machines/queries/executor = client.effects
 	TEST_ASSERT(istype(executor), "Production client must compose the real query/effect dispatcher")
 	TEST_ASSERT(istype(SSnetrun.get_topology(), /datum/netrun_topology/external), "Native topology must be the imported read-only C# view")
+	log_world("NETRUN_CORE_LIVE_STAGE library_monitor")
+	TEST_ASSERT(client.monitoring_negotiated, "Published Host must negotiate independent monitoring with the real DM client")
+	var/monitor_deadline = world.time + 20 SECONDS
+	while(world.time < monitor_deadline && (isnull(client.last_host_monitor_at) || client.host_metrics["sync_state"] != "ready" || !(client.host_metrics["node_count"] > 0 && client.host_metrics["service_count"] > 0)))
+		sleep(world.tick_lag)
+	TEST_ASSERT(!isnull(client.last_host_monitor_at), "Unsolicited Host telemetry must traverse the real x86 native bridge")
+	TEST_ASSERT_EQUAL(client.host_metrics["sync_state"], "ready", "The monitor must observe the actual synchronized C# mirror")
+	TEST_ASSERT(client.host_metrics["node_count"] > 0 && client.host_metrics["service_count"] > 0, "Real Host telemetry must expose station object and service counts")
+	var/list/monitor_data = SSnetrun.library_monitor_snapshot()
+	TEST_ASSERT(netrun_statistics_values_only(monitor_data), "The live monitor payload must contain no native object references")
+	TEST_ASSERT(!findtext(json_encode(monitor_data), "session_token"), "The public monitor payload cannot expose a token field")
+	rustg_file_write(json_encode(monitor_data), "data/netrun-core/live-monitor-ui.json")
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene/core_live, run_loc_floor_bottom_left)
 	TEST_ASSERT(scene.source && scene.target, "Live fixture must register real native machine services")
 	var/list/outcomes = list()
@@ -126,6 +143,23 @@
 		var/list/resident_data = diver.console.ui_data(diver)
 		TEST_ASSERT(netrun_map_has_node(resident_data, entrance.target_node.address), "A real resident must see its imported network map")
 		diver.return_to_body()
+	var/observe_seconds = text2num(world.GetConfig("env", "NETRUN_CORE_LIVE_OBSERVE_SECONDS"))
+	if(isnum(observe_seconds) && observe_seconds > 0)
+		log_world("NETRUN_CORE_LIVE_STAGE observing_health")
+		var/observed_binding = client.binding_epoch
+		var/first_sample = client.monitor_sample_sequence
+		var/observe_started = world.time
+		var/observe_until = observe_started + clamp(observe_seconds, 1, 300) SECONDS
+		var/list/samples = list()
+		while(world.time < observe_until)
+			TEST_ASSERT(client.ready && client.binding_epoch == observed_binding, "Real Windows station must remain on the same ready Core binding during observation")
+			var/list/metrics = client.host_metrics
+			var/list/sample = list("elapsed_s" = (world.time - observe_started) / (1 SECONDS), "pending" = executor.pending_current_count, "request_commands" = length(executor.request_commands), "query_commands" = length(executor.query_commands), "query_inflight" = length(executor.query_inflight), "input_inflight" = length(client.inflight_frames), "bridge_in" = client.native_inbound_frames, "bridge_out" = client.native_outbound_frames, "host_input_queue" = metrics["input_queue_frames"], "host_output_queue" = metrics["output_queue_frames"], "host_journal_frames" = metrics["output_journal_frames"], "host_journal_bytes" = metrics["output_journal_bytes"], "host_managed_bytes" = metrics["managed_bytes"], "host_working_set_bytes" = metrics["working_set_bytes"], "host_cpu_percent" = metrics["process_cpu_percent"], "gc_gen2" = metrics["gc_gen2"], "monitor_age_s" = client.monitor_age(client.last_host_monitor_at), "sample_sequence" = client.monitor_sample_sequence, "applied_sequence" = client.last_applied_sequence, "graph_version" = executor.projection_graph_version)
+			samples += list(sample)
+			rustg_file_write(json_encode(samples), "data/netrun-core/live-monitor-steady.json")
+			log_world("NETRUN_CORE_LIVE_HEALTH elapsed_s=[sample["elapsed_s"]] pending=[sample["pending"]] requests=[sample["request_commands"]] queries=[sample["query_commands"]] input=[sample["input_inflight"]] monitor_age_s=[sample["monitor_age_s"]]")
+			sleep(5 SECONDS)
+		TEST_ASSERT(netrun_external_decimal_compare(client.monitor_sample_sequence, first_sample) > 0, "Unsolicited telemetry must continue throughout the live observation")
 	log_world("NETRUN_CORE_LIVE_PASS discovery native_once projection source_tree movement state external_only")
 
 /// Готовность проверяется через настоящий subsystem fire; тест не вызывает client.tick вручную.

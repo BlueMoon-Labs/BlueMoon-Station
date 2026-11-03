@@ -26,6 +26,24 @@ BYOND задайте `DM_EXE`: штатный build runner ищет DreamDaemon 
 регистрации. Отчёт: `data/logs/ci-full-map/unit_tests.json`. Команда использует
 тот же замок запуска и отвергает старый, отсутствующий или пропущенный результат.
 
+Настоящая связка Windows station DM → x86 bridge → published Host проверяется
+отдельным live runner:
+
+```powershell
+node tools/netrun/run-live-core-test.mjs
+node tools/netrun/run-live-core-test.mjs --peace-map
+```
+
+Default использует hermetic карту; `--peace-map` запускает тот же live сценарий
+на полной станции. Проверяются реальные telemetry, discovery/native delivery,
+GraphSync, movement, burst из 64 сообщений, карта гостя NTnet-реле и погружение
+через имплант/порт. `--no-build` разрешён только с проверенным свежим Core package.
+`NETRUN_CORE_LIVE_OBSERVE_SECONDS=120` дополнительно наблюдает готовый binding
+две минуты после сценария; тестовый максимум наблюдения — 300 секунд.
+Скалярные samples сохраняются в `data/netrun-core/live-monitor-steady.json`,
+логи каждой пары — в отдельном `data/netrun-core/live-tests/core-live-*`.
+Runner завершает свои Host/DreamDaemon после проверки.
+
 `execution` проверяет изменяемые лимиты подсистемы, CPU-бюджет и справедливость
 очередей; `interaction` — немедленный ответ, токен receipt, допуск TGUI и отличие
 опроса от ввода. `ice_reactive` проверяет событийный запуск защиты с сохранением

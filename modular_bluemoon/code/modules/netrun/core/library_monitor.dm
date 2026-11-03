@@ -144,7 +144,8 @@
 		list("label" = "Последняя ошибка", "value" = status["last_error"]),
 		list("label" = "Повторное подключение через", "value" = retry_remaining, "unit" = "с"),
 		list("label" = "Подключений / отключений", "value" = "[core?.monitor_connections || 0] / [core?.monitor_disconnects || 0]"),
-		list("label" = "Последний отказ", "value" = core?.monitor_last_failure)
+		list("label" = "Последний отказ", "value" = core?.monitor_last_failure),
+		list("label" = "Отвергнутый ответ", "value" = length(core?.last_rejected_output) ? json_encode(core.last_rejected_output) : null)
 	)))
 	if(QDELETED(core))
 		return list("status" = status, "sections" = sections, "history" = history)

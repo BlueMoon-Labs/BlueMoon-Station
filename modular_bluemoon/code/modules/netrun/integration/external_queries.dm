@@ -244,6 +244,59 @@
 		return result["kind"] == "discovery_page" ? process_discovery(client, result) : process_projection(client, result)
 	return ..()
 
+/// Диагностика запускается один раз при отказе decoder; continuations и keys не покидают текущий stack.
+/datum/netrun_external_effects/machines/queries/rejected_output_details(datum/netrun_external_core/client, list/result)
+	var/list/details = ..()
+	var/request_id = result["request_id"]
+	var/datum/consumer = istext(request_id) ? get_query_consumer(request_id) : null
+	details["query_id_known"] = known_query_id(request_id)
+	details["query_consumer_known"] = !QDELETED(consumer)
+	details["query_consumer_type"] = consumer ? "[consumer.type]" : null
+	details["query_persistent"] = istext(request_id) && !!query_persistent[request_id]
+	var/datum/netrun_machine_resolution/external/discovery = consumer
+	if(istype(discovery))
+		details["discovery_phase"] = netrun_external_safe_code(discovery.external_phase, "unknown")
+		details["discovery_binding_matches"] = discovery.external_binding == client.binding_epoch
+		details["discovery_candidates"] = length(discovery.external_keys)
+		details["discovery_seen"] = length(discovery.external_seen)
+	var/datum/netrun_external_projection_cursor/projection = consumer
+	if(istype(projection))
+		details["projection_phase"] = netrun_external_safe_code(projection.phase, "unknown")
+		details["projection_kind"] = netrun_external_safe_code(projection.kind, "unknown")
+		details["projection_pending_matches"] = projection_pending[request_id] == projection
+		details["projection_invalid"] = !!projection.invalid
+		details["projection_source_matches"] = same_key(result["source"], projection.source_key, "node_id")
+		if(netrun_external_valid_decimal(projection.next_page))
+			details["projection_next_page"] = projection.next_page
+	var/datum/netrun_external_graph_cursor/sync = projection_sync
+	details["graph_sync_known"] = !QDELETED(sync)
+	if(sync)
+		details["graph_consumer_matches"] = consumer == sync
+		details["graph_binding_matches"] = sync.binding == client.binding_epoch
+		details["graph_phase"] = netrun_external_safe_code(sync.phase, "unknown")
+		details["graph_ack_pending"] = !!sync.ack_pending
+		details["graph_in_batch"] = !!sync.in_batch
+		details["graph_has_baseline"] = !!sync.has_baseline
+		details["graph_terminal"] = !!sync.terminal
+		details["graph_page_window"] = sync.page_window
+		details["graph_unacknowledged_pages"] = length(sync.unacknowledged_pages)
+		var/list/counters = list("graph_next_page" = sync.next_page, "graph_last_page" = sync.last_page,
+			"graph_ack_page" = sync.ack_page, "graph_acknowledged_page" = sync.acknowledged_page,
+			"graph_batch_complete_page" = sync.batch_complete_page, "graph_baseline_version" = sync.baseline_version,
+			"graph_from_version" = sync.from_version, "graph_target_version" = sync.target_version, "graph_target_input" = sync.target_input)
+		for(var/key in counters)
+			if(netrun_external_valid_decimal(counters[key], TRUE))
+				details[key] = counters[key]
+		var/page = result["page_index"]
+		var/known_page = istext(page) ? sync.page_hashes[page] : null
+		details["graph_page_hash_known"] = !!known_page
+		if(known_page)
+			try
+				details["graph_page_hash_matches"] = known_page == rustg_hash_string(RUSTG_HASH_SHA256, json_encode(result))
+			catch
+				details["graph_page_hash_unavailable"] = TRUE
+	return details
+
 /// Cancelled stream сохраняет один Core slot до page ACK; удалённый consumer не должен удерживать его навсегда.
 /datum/netrun_external_effects/machines/queries/proc/acknowledge_retired_graph_page(datum/netrun_external_core/client, list/result)
 	if(!netrun_external_valid_decimal(result["page_index"]) || closed || query_disconnecting || (command_limit > 0 && queued_commands() >= command_limit))

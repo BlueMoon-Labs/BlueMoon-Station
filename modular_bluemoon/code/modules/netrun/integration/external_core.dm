@@ -95,6 +95,10 @@
 /datum/netrun_external_effects/proc/disconnected(datum/netrun_external_core/client, reason)
 	return
 
+/// Только скалярная диагностика отказа; не запускает callbacks и не сохраняет payload.
+/datum/netrun_external_effects/proc/rejected_output_details(datum/netrun_external_core/client, list/result)
+	return list()
+
 /// Последовательный DM client: raw facts → bounded snapshot/journal → native bridge → локальный Host.
 /datum/netrun_external_core
 	/// Старый Host без capability сохраняет одиночную отправку; negotiated burst не превышает 16 команд.
@@ -154,6 +158,8 @@
 	/// Один безопасный startup marker на binding подтверждает настоящий handshake и опубликованный C# graph.
 	var/announced_ready_binding
 	var/last_error
+	/// Последний отказ сохраняется после recovery, без payload, secrets и native references.
+	var/list/last_rejected_output = list()
 	/// Исполнитель effects поставляется владельцем; exporter сам не вызывает машинные обработчики.
 	var/datum/netrun_external_effects/effects
 	/// Close/Destroy уведомляют исполнитель один раз за binding, включая reentrant cleanup.
@@ -546,6 +552,7 @@
 		if(!islist(result))
 			return abort_session("invalid_output")
 		if(!handle_result(result))
+			record_rejected_output(result, sequence, applied)
 			return abort_session(last_error || "unsupported_output")
 		if(state == "closed" || state == "resync_required")
 			return FALSE
@@ -558,6 +565,24 @@
 		output_hashes -= output_order[1]
 		output_order.Cut(1, 2)
 	return TRUE
+
+/// Диагностика редкого protocol fault не добавляет обходов в обычный decode hot path.
+/datum/netrun_external_core/proc/record_rejected_output(list/result, sequence, applied)
+	var/list/report = list("kind" = netrun_external_safe_code(result["kind"], "unknown"), "output_sequence" = sequence, "applied_sequence" = applied, "binding_epoch" = binding_epoch)
+	for(var/key in list("code", "state", "phase"))
+		report[key] = netrun_external_safe_code(result[key], "none")
+	for(var/key in list("page_index", "from_graph_version", "graph_version", "graph_input_sequence", "infra_stamp", "av_infra_stamp"))
+		if(netrun_external_valid_decimal(result[key], TRUE))
+			report[key] = result[key]
+	var/list/details = effects?.rejected_output_details(src, result)
+	var/list/safe_details = list()
+	for(var/key in details)
+		var/value = details[key]
+		if(istext(key) && length(key) <= 64 && (isnull(value) || (istext(value) && length(value) <= 128) || (isnum(value) && IS_FINITE(value))))
+			safe_details[key] = value
+	report["details"] = safe_details
+	last_rejected_output = report
+	log_world("NETRUN_CORE_REJECT [json_encode(report)]")
 
 /// Runtime diagnostics не исполняют effects; ready требует barrier mirror и опубликованный graph.
 /datum/netrun_external_core/proc/handle_result(list/result)
