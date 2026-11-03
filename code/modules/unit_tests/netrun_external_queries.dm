@@ -313,6 +313,42 @@
 	TEST_ASSERT_EQUAL(first.core_notifications, 3, "Unsubscribed consumer receives no event")
 	TEST_ASSERT_EQUAL(second.core_notifications, 3, "Other consumers retain their watcher")
 
+/// Asynchronous Core catalog lookup must notify native adapters only after
+/// a complete result reaches the common delivery worker, including failures.
+/datum/netrun_machine_service/catalog_callback_fixture
+	service_id = "fixture.catalog-callback"
+	var/succeeded = 0
+	var/failed = 0
+
+/datum/netrun_machine_service/catalog_callback_fixture/on_catalog_lookup_completed(family, was_successful)
+	if(family != "research.server")
+		return
+	if(was_successful)
+		succeeded++
+	else
+		failed++
+
+/datum/unit_test/netrun_external_queries_catalog_completion_callback/Run()
+	allocate(/datum/netrun_ready_fixture)
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_machine_service/catalog_callback_fixture/source = allocate(/datum/netrun_machine_service/catalog_callback_fixture, scene.source.node)
+	var/datum/netrun_machine_resolution/external/success = allocate(/datum/netrun_machine_resolution/external, source, "research.server", null)
+	success.catalog_only = TRUE
+	success.external_binding = SSnetrun.external_core.binding_epoch
+	success.external_phase = "filtering"
+	TEST_ASSERT_EQUAL(source.succeeded, 0, "A queued catalog cannot emit its callback before worker delivery")
+	success.deliver()
+	TEST_ASSERT_EQUAL(success.external_phase, "cached", "Completed Core discovery becomes a read-only catalog")
+	TEST_ASSERT_EQUAL(source.succeeded, 1, "Exactly one native completion follows the full catalog")
+	TEST_ASSERT_EQUAL(length(source.resolutions), 0, "Read-only discovery never creates a gameplay message resolution")
+	var/datum/netrun_machine_resolution/external/failure = allocate(/datum/netrun_machine_resolution/external, source, "research.server", null)
+	failure.catalog_only = TRUE
+	failure.external_phase = "failed"
+	TEST_ASSERT_EQUAL(source.failed, 0, "Decoder/admission rejection alone cannot run the native callback")
+	failure.deliver()
+	TEST_ASSERT_EQUAL(source.failed, 1, "Failed catalog notifies the adapter from the worker path")
+	TEST_ASSERT_EQUAL(source.succeeded, 1, "A failure must never masquerade as an empty successful snapshot")
+
 /// One persistent Core watch owns a query slot and one exact producer ID.
 /// Cancellation uses the same causal input lane as regular discovery commands.
 /datum/unit_test/netrun_external_queries_core_service_watch/Run()
