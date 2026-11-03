@@ -125,6 +125,8 @@
 /mob/living/carbon/adjustStaminaLoss(amount, updating_health = TRUE, forced = FALSE)
 	if(!forced && (status_flags & GODMODE))
 		return FALSE
+	if(amount > 0 && HAS_TRAIT(src, TRAIT_NO_STAMINA_DAMAGE))
+		return FALSE
 	if(amount > 0)
 		take_overall_damage(0, 0, amount, updating_health)
 	else

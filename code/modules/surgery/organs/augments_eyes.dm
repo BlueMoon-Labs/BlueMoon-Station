@@ -1,3 +1,8 @@
+/obj/item/organ/cyberimp/eyes
+	// Глазные импланты (optical) занимают слот глаз и подменяют орган глаз:
+	// get_eye_protection() в carbon_defense.dm читает эту переменную у органа в слоте.
+	var/flash_protect = 0
+
 /obj/item/organ/cyberimp/eyes/hud
 	name = "HUD implant"
 	desc = "These cybernetic eyes will display a HUD over everything you see. Maybe."

@@ -208,3 +208,10 @@
 	multiplicative_slowdown = -1.8
 	flags = IGNORE_NOSLOW
 	blacklisted_movetypes = FLOATING
+
+// All Sandevistan activations use this speed (25% weaker than the original full-speed design).
+/datum/movespeed_modifier/sandevistan/weak
+	multiplicative_slowdown = -0.9375
+
+/datum/movespeed_modifier/sandevistan/military/weak
+	multiplicative_slowdown = -1.35

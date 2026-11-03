@@ -262,9 +262,16 @@
 	var/duration = 4 SECONDS
 	var/cooldown = 15 SECONDS
 	var/movespeed_mod = /datum/movespeed_modifier/sandevistan
+	var/movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/weak
+	/// The movespeed modifier that is currently applied.
+	var/active_movespeed_mod
 	var/next_use = 0
 	/// Счётчик активаций для перегруза
 	var/overload_count = 0
+	/// Timer id for the afterimage trail.
+	var/afterimage_timer
+	/// Last turf an afterimage was spawned on.
+	var/turf/last_afterimage_turf
 
 /datum/action/item_action/organ_action/use/sandevistan
 	name = "Activate Sandevistan"
@@ -291,12 +298,16 @@
 	if(owner.stat == DEAD)
 		return
 
+	var/first_use = (overload_count == 0)
 	overload_count++
 	active = TRUE
 	next_use = world.time + cooldown
 	to_chat(owner, span_notice("Your vision sharpens as time seems to slow around you."))
 	owner.playsound_local(owner, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
-	owner.add_movespeed_modifier(movespeed_mod)
+	// Все активации дают сниженную скорость (как раньше первая); различается только длительность.
+	active_movespeed_mod = movespeed_mod_weak
+	owner.add_movespeed_modifier(movespeed_mod_weak)
+	ADD_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
 	if(owner.client)
 		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = "#00FFFF", "alpha" = 80, "size" = 1))
 	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
@@ -304,7 +315,15 @@
 			apply_overload_effects()
 	else if(overload_count >= 2)
 		apply_overload_effects()
-	addtimer(CALLBACK(src, PROC_REF(deactivate_sandevistan)), duration)
+	last_afterimage_turf = null
+	afterimage_timer = addtimer(CALLBACK(src, PROC_REF(spawn_afterimage)), 1, TIMER_LOOP|TIMER_STOPPABLE)
+	// Первая активация короче на 0.25 с, вторая — длиннее на 0.25 с.
+	var/use_duration = duration
+	if(first_use)
+		use_duration -= 0.25 SECONDS
+	else if(overload_count == 2)
+		use_duration += 0.25 SECONDS
+	addtimer(CALLBACK(src, PROC_REF(deactivate_sandevistan)), use_duration)
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/apply_overload_effects()
 	if(!ishuman(owner))
@@ -347,13 +366,28 @@
 		H.reagents.add_reagent(/datum/reagent/toxin/cyanide, 15)
 		H.reagents.add_reagent(/datum/reagent/toxin/leadacetate, 10)
 
+/obj/item/organ/cyberimp/brain/sandevistan/proc/spawn_afterimage()
+	if(!active || !owner)
+		return
+	var/turf/current_turf = get_turf(owner)
+	if(!current_turf || current_turf == last_afterimage_turf)
+		return
+	last_afterimage_turf = current_turf
+	new /obj/effect/temp_visual/sandevistan_afterimage(current_turf, owner)
+
 /obj/item/organ/cyberimp/brain/sandevistan/proc/deactivate_sandevistan()
 	if(!owner || !active)
 		return
 	active = FALSE
 	to_chat(owner, span_warning("The world snaps back into focus as your Sandevistan powers down."))
 	owner.playsound_local(owner, 'sound/machines/terminal_prompt_deny.ogg', 30, FALSE)
-	owner.remove_movespeed_modifier(movespeed_mod)
+	owner.remove_movespeed_modifier(active_movespeed_mod || movespeed_mod)
+	active_movespeed_mod = null
+	REMOVE_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
+	if(afterimage_timer)
+		deltimer(afterimage_timer)
+		afterimage_timer = null
+	last_afterimage_turf = null
 	if(owner.client)
 		owner.remove_filter("sandevistan")
 	var/deadly = FALSE
@@ -391,6 +425,24 @@
 	if(active)
 		deactivate_sandevistan()
 
+/obj/effect/temp_visual/sandevistan_afterimage
+	name = ""
+	duration = 3
+	alpha = 160
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = MOB_LAYER - 0.02
+
+/obj/effect/temp_visual/sandevistan_afterimage/Initialize(mapload, mob/living/source)
+	. = ..()
+	if(!source)
+		return
+	appearance = source.appearance
+	dir = source.dir
+	plane = source.plane
+	layer = source.layer - 0.02
+	alpha = 160
+	animate(src, alpha = 0, time = duration)
+
 /obj/item/organ/cyberimp/brain/sandevistan/military
 	name = "Military Sandevistan"
 	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with a longer duration at the cost of increased strain."
@@ -401,6 +453,7 @@
 	duration = 6 SECONDS
 	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
+	movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/military/weak
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
 	var/last_reset_time = 0

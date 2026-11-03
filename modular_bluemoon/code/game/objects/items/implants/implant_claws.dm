@@ -451,9 +451,6 @@
 		log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
 		playsound(get_turf(user), 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 
-/obj/item/organ/cyberimp/arm/razor_claws/left
-	zone = BODY_ZONE_L_ARM
-
 // ============================================================================
 // КВИРК
 // ============================================================================
@@ -513,6 +510,3 @@
 // Тихий органический звук вместо механического
 /obj/item/organ/cyberimp/arm/claws/RetractPLaySound()
 	playsound(get_turf(owner), 'sound/items/sheath.ogg', 5, TRUE)
-
-/obj/item/organ/cyberimp/arm/claws/left
-	zone = BODY_ZONE_L_ARM

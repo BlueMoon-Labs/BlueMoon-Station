@@ -318,7 +318,7 @@
 	actions_types = list()
 	var/charge_capacity = 2
 	var/charge = 2
-	var/charge_recharge_time = 150
+	var/charge_recharge_time = 1500
 	var/last_use_time = 0
 	var/last_charge_time = 0
 	var/health_threshold = 60
@@ -357,6 +357,11 @@
 	for(var/reagent_type in chem_list)
 		var/amount = chem_list[reagent_type]
 		owner.reagents.add_reagent(reagent_type, amount)
+		if(ispath(reagent_type, /datum/reagent/medicine/synthflesh))
+			// Synthflesh heals only on touch, so mirror its effect here instead of
+			// relying on the reagent to metabolize out of the bloodstream.
+			owner.adjustBruteLoss(-amount)
+			owner.adjustFireLoss(-amount)
 	charge--
 	last_use_time = world.time
 	last_charge_time = world.time
@@ -372,9 +377,9 @@
 	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
 	charge_capacity = 3
 	charge = 3
-	charge_recharge_time = 300
+	charge_recharge_time = 3000
 	health_threshold = 40
-	chem_list = list(/datum/reagent/medicine/synthflesh = 50, /datum/reagent/medicine/stimulants = 2)
+	chem_list = list(/datum/reagent/medicine/synthflesh/neo = 50, /datum/reagent/medicine/stimulants = 2)
 	between_use_cooldown = 300
 
 /datum/chem_implant

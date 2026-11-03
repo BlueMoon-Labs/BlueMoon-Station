@@ -65,7 +65,7 @@
 /obj/item/organ/cyberimp/arm/gorilla/activate_allowed(datum/action/action, mob/user, silent = FALSE)
 	if(crit_fail || (organ_flags & ORGAN_FAILING))
 		return FALSE
-	return ..()
+	return call(src, /obj/item/organ/proc/activate_allowed)(action, user, silent)
 
 /obj/item/organ/cyberimp/arm/gorilla/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
@@ -335,7 +335,8 @@
 		to_chat(owner, "<span class='warning'>Berserker mode is already active!</span>")
 		return
 	if(world.time < cooldown_end)
-		to_chat(owner, "<span class='warning'>[src] is still recharging!</span>")
+		var/seconds_left = max(1, round((cooldown_end - world.time) / 10))
+		to_chat(owner, "<span class='warning'>[src] is still recharging! [seconds_left] seconds left.</span>")
 		return
 	activate_berserk()
 
@@ -566,6 +567,7 @@
 		if(ready_to_fire)
 			return
 		if(!can_shoot() || !user.is_holding(src))
+			to_chat(user, "<span class='warning'>[src] lacks the charge to fire!</span>")
 			ready_to_fire = TRUE
 			return
 		var/dual = has_dual_wield(user)
@@ -604,6 +606,9 @@
 /obj/item/gun/energy/implanthandgun/proc/finish_reload(mob/user)
 	reload_timer = null
 	ready_to_fire = TRUE
+	// Перезарядка восстанавливает батарею: один выстрел тратит весь заряд ячейки.
+	if(cell)
+		cell.charge = cell.maxcharge
 	if(user && user.is_holding(src))
 		to_chat(user, "<span class='notice'>[src] is ready to fire again.</span>")
 		playsound(user, 'sound/machines/ping.ogg', 30, 1)
@@ -631,14 +636,15 @@
 /obj/item/ammo_casing/energy/implanthandgun
 	projectile_type = /obj/item/projectile/bullet/implanthandgun
 	select_name = "explosive"
-	e_cost = 1000
+	// emproof-батарея имеет maxcharge = 500: выстрел должен стоить не больше.
+	e_cost = 500
 	fire_sound = 'sound/weapons/rocket_launch.ogg'
 	delay = 30
 
 /obj/item/ammo_casing/energy/implanthandgun/burst
 	projectile_type = /obj/item/projectile/bullet/implanthandgun/burst
 	select_name = "burst"
-	e_cost = 1000
+	e_cost = 500
 	pellets = 3
 	variance = 4
 	fire_sound = 'sound/weapons/laser.ogg'

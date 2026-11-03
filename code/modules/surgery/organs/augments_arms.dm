@@ -12,6 +12,8 @@
 	// I would use contents, but they shuffle on every activation/deactivation leading to interface inconsistencies.
 
 	var/obj/item/holder = null
+	/// Secondary deployed item for dual-arm augments (one copy in each hand).
+	var/obj/item/holder_offhand = null
 	// You can use this var for item path, it would be converted into an item on New()
 	var/retracting = FALSE
 	/// While implanted, this augment binds both arm slots and can be deployed/extracted from either arm.
@@ -31,6 +33,7 @@
 /obj/item/organ/cyberimp/arm/Destroy()
 	QDEL_LIST(items_list)
 	QDEL_NULL(holder)
+	QDEL_NULL(holder_offhand)
 	return ..()
 
 /obj/item/organ/cyberimp/arm/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
@@ -183,6 +186,9 @@
 		Retract()
 
 /obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
+	if(holder_offhand)
+		UnregisterSignal(holder_offhand, COMSIG_ITEM_DROPPED)
+		QDEL_NULL(holder_offhand)
 	if(!holder || (holder in src) || retracting)
 		return
 
@@ -236,8 +242,47 @@
 	// Activate the hand that now holds our item.
 	owner.swap_hand(result)//... or the 1st hand if the index gets lost somehow
 
+	// Dual-arm augments deploy one copy in each hand at the same time.
+	if(is_dual_arm_implant())
+		deploy_offhand(item)
+
 	ExtendPlaySound(item)
 	return TRUE
+
+/obj/item/organ/cyberimp/arm/proc/deploy_offhand(obj/item/item)
+	if(holder_offhand || !owner)
+		return
+	var/primary_index = owner.get_held_index_of_item(holder)
+	var/other_index
+	for(var/i in 1 to owner.held_items.len)
+		if(i == primary_index)
+			continue
+		if(!owner.get_item_for_held_index(i))
+			other_index = i
+			break
+	if(!other_index)
+		return
+	var/obj/item/other_item = owner.get_item_for_held_index(other_index)
+	if(other_item && !owner.dropItemToGround(other_item))
+		return
+	var/obj/item/offhand = new item.type(src)
+	offhand.resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	offhand.slot_flags = null
+	offhand.set_custom_materials(null)
+	offhand.item_flags |= ABSTRACT
+	ADD_TRAIT(offhand, TRAIT_NODROP, IMPLANT_NODROP)
+	if(!owner.put_in_hand(offhand, other_index))
+		qdel(offhand)
+		return
+	holder_offhand = offhand
+	RegisterSignal(offhand, COMSIG_ITEM_DROPPED, PROC_REF(on_offhand_dropped))
+
+/obj/item/organ/cyberimp/arm/proc/on_offhand_dropped(datum/source, mob/user)
+	SIGNAL_HANDLER
+	if(source != holder_offhand)
+		return
+	UnregisterSignal(holder_offhand, COMSIG_ITEM_DROPPED)
+	QDEL_NULL(holder_offhand)
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/ExtendPlaySound(obj/item/I)
