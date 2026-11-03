@@ -1,6 +1,6 @@
 /obj/structure/fulton_beacon
 	name = "Vanguard fulton beacon"
-	desc = "Приёмник фултон-системы авангарда. Сюда доставляются тела участников экспедиции, погибших на миссии."
+	desc = "Приёмник фултон-системы авангарда. Сюда доставляются тела участников экспедиции, погибших на миссии, а также их отрубленные головы и извлечённые мозги."
 	icon = 'icons/obj/fulton.dmi'
 	icon_state = "extraction_point"
 	anchored = TRUE

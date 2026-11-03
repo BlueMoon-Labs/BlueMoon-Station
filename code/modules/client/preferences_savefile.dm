@@ -558,6 +558,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
+// Модульные загрузчики дополняют этот прок: все настройки нужны до записи обновлённого сейвфайла.
+/datum/preferences/proc/load_preferences_data(savefile/S)
+	return S
+
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
@@ -762,6 +766,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(ispath(path)) //whatever typepath fails this check probably doesn't exist anymore
 			parsed_favs += path
 	favorite_outfits = uniqueList(parsed_favs)
+
+	// Загрузка через переопределения load_preferences после ..() выполнялась уже после миграции
+	// и её save_preferences: непрочитанные избранное и множители перезаписывались значениями по умолчанию.
+	load_preferences_data(S)
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -1783,6 +1791,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	S["all_quirks"] >> all_quirks
+	S["innate_features"] >> innate_features
+	sanitize_innate_features()
 
 	S["language"] >> language
 
@@ -1934,12 +1944,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			belly_prefs = json_from_file["belly_prefs"]
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
-	//gear loadout
-	if(istext(S["loadout"]))
-		loadout_data = safe_json_decode(S["loadout"])
-		if(!islist(loadout_data))
-			loadout_data = list()
-
+	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
+	var/saved_loadout = S["loadout"]
+	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
+	if(!islist(loadout_data))
+		loadout_data = list()
+	var/preset_slot_key = "SAVE_[LOADOUT_PRESET_SLOT]"
+	var/list/working_preset_loadout = loadout_data[preset_slot_key]
+	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
+	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
+	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
@@ -2324,7 +2338,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2350,6 +2363,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, active_character_preset ? LOADOUT_PRESET_SLOT : initial(loadout_slot), TRUE)
+	if(restore_preset_loadout && active_character_preset)
+		var/list/active_preset = character_presets[active_character_preset]
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data[preset_slot_key] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2713,6 +2732,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	WRITE_FILE(S["all_quirks"]			, all_quirks)
+	WRITE_FILE(S["innate_features"], innate_features)
 	//SKYRAT ADDITION - additional language
 	WRITE_FILE(S["language"]			, language)
 	//
@@ -2763,6 +2783,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["preset_loadout_initialized"], islist(loadout_data?["SAVE_[LOADOUT_PRESET_SLOT]"]))
 	WRITE_FILE(S["character_presets"], character_presets)
 	WRITE_FILE(S["active_character_preset"], active_character_preset)
 	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD

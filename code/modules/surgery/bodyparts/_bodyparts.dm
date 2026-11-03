@@ -10,6 +10,8 @@
 	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE | TILE_BOUND
 	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
 	var/as_mob_layer = BODYPARTS_LAYER
+	/// Слой задней половины (_behind) на мобе; без него - чуть ниже as_mob_layer
+	var/behind_mob_layer
 	var/mob/living/carbon/owner = null
 	var/datum/weakref/original_owner = null
 	var/status = BODYPART_ORGANIC
@@ -162,6 +164,9 @@
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
 		if(HAS_TRAIT(C, TRAIT_LIMBATTACHMENT))
+			if((body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && (HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) != istype(src, /obj/item/bodypart/l_leg/naga_tail)))
+				to_chat(user, span_warning("Эта конечность не подходит анатомии [H]."))
+				return
 			if(!H.get_bodypart(body_zone) && !animal_origin)
 				if(H == user)
 					H.visible_message("<span class='warning'>[H] jams [src] into [H.ru_ego()] empty socket!</span>",\
@@ -216,6 +221,10 @@
 		var/obj/item/organ/organ_check = i
 		if(check_zone(organ_check.zone) == body_zone)
 			. += organ_check
+
+// Зона одежды может отличаться от анатомической зоны конечности.
+/obj/item/bodypart/proc/get_clothing_zone()
+	return body_zone
 
 /obj/item/bodypart/proc/consider_processing()
 	if(stamina_dam > DAMAGE_PRECISION)
@@ -502,14 +511,15 @@
 	if(owner && ishuman(owner))
 		var/mob/living/carbon/human/H = owner
 		var/list/clothing = H.clothingonpart(src)
+		var/clothing_zone = get_clothing_zone()
 		for(var/obj/item/clothing/C as anything in clothing)
 			// unlike normal armor checks, we tabluate these piece-by-piece manually so we can also pass on appropriate damage the clothing's limbs if necessary
 			if(C.armor)
 				armor_ablation += C.armor.getRating(WOUND)
 			if(wounding_type == WOUND_SLASH)
-				C.take_damage_zone(body_zone, damage, BRUTE, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BRUTE, armour_penetration)
 			else if(wounding_type == WOUND_BURN && damage >= 10) // lazy way to block freezing from shredding clothes without adding another var onto apply_damage()
-				C.take_damage_zone(body_zone, damage, BURN, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BURN, armour_penetration)
 
 		if(!armor_ablation)
 			injury_mod += bare_wound_bonus
@@ -594,6 +604,10 @@
 		var/datum/wound/W = i
 		if(W.disabling)
 			return BODYPART_DISABLED_WOUND
+	return is_disabled_by_damage(silent)
+
+// Общая проверка порога и восстановления используется также хвостом, который иначе обрабатывает переломы.
+/obj/item/bodypart/proc/is_disabled_by_damage(silent = FALSE)
 	var/disable_threshold = get_disable_threshold()
 	if(can_dismember() && !HAS_TRAIT(owner, TRAIT_NODISMEMBER))
 		. = disabled //inertia, to avoid limbs healing 0.1 damage and being re-enabled
@@ -972,7 +986,7 @@
 			limb.icon_state = "[render_species_id]_[body_zone]"
 
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
+			second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
 			second_limb.icon = limb.icon
 			. += second_limb
 
@@ -1050,7 +1064,7 @@
 			if(prosthetic_digi_limbs_cache[cache_id])
 				limb.icon_state = "digi_[body_zone]"
 				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-					second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir)
+					second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir)
 					second_limb.icon = limb.icon
 					var/original_state = limb.icon_state
 					limb.icon_state = "[original_state]_front"

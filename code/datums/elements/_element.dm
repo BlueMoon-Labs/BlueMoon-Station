@@ -16,6 +16,11 @@
 	  */
 	var/id_arg_index = INFINITY
 
+/// Подписки элемента лежат по ключу-цели, а целей у одного элемента бывают десятки тысяч: обычный список с атомами-ключами на таком размере тормозит каждую новую цель, alist - нет.
+/datum/element/New()
+	. = ..()
+	signal_procs = alist()
+
 /// Activates the functionality defined by the element on the given target datum
 /datum/element/proc/Attach(datum/target)
 	SHOULD_CALL_PARENT(TRUE)

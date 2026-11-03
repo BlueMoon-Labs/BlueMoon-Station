@@ -294,7 +294,8 @@
 
 /obj/vehicle/sealed/mecha/crowbar_act(mob/living/user, obj/item/I)
 	..()
-	if(user.a_intent == INTENT_HARM)
+	// Оборудование меха устанавливается через attackby, даже если оно работает как лом.
+	if(user.a_intent == INTENT_HARM || istype(I, /obj/item/mecha_parts))
 		return
 	. = TRUE
 	if(construction_state != MECHA_LOOSE_BOLTS && construction_state != MECHA_OPEN_HATCH)

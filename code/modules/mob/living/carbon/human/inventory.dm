@@ -113,6 +113,8 @@
 
 //This is an UNSAFE proc. Use mob_can_equip() before calling this one! Or rather use equip_to_slot_if_possible() or advanced_equip_to_slot_if_possible()
 /mob/living/carbon/human/equip_to_slot(obj/item/I, slot)
+	if((slot == ITEM_SLOT_FEET || slot == ITEM_SLOT_SOCKS) && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		return FALSE
 	. = ..()
 	if(!.) //a check failed or the item has already found its slot
 		return

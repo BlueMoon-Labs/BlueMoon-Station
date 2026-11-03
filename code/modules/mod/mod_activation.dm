@@ -4,7 +4,7 @@
 /obj/item/mod/control/proc/choose_deploy(mob/user)
 	var/list/display_names = list()
 	var/list/items = list()
-	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/piece as anything in get_deployable_parts())
 		display_names[piece.name] = piece
 		var/image/piece_image = image(
 			icon = piece.icon,
@@ -18,7 +18,7 @@
 
 	if(!istype(part) || user.incapacitated())
 		return
-	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
+	var/list/parts_to_check = get_deployable_parts() - part
 	if(part.loc != user)
 		deploy(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
@@ -40,6 +40,8 @@
 	var/obj/item/target_item = wearer.s_store
 
 	if(!check_welded_or_locked() || !check_can_conseal_to_overslot(piece))
+		return FALSE
+	if(piece.slot_flags == ITEM_SLOT_FEET && HAS_TRAIT(wearer, TRAIT_NAGA_ANATOMY))
 		return FALSE
 
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
@@ -114,7 +116,7 @@
 		to_chat(ai, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
 
 	if(force_deactivate)
-		for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
+		for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_deployable_parts())
 			MOD_PART.seal_part(seal = FALSE)
 			conceal(user, MOD_PART)
 		finish_activation(on = FALSE)
@@ -124,7 +126,7 @@
 			send_modsuit_message(ai, "ОТКЛЮЧЕНИЕ", "<b>СИСТЕМЫ ДЕАКТИВИРОВАНЫ. ПРОЩАЙТЕ: \"[ai]\"</b>")
 		playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 		return TRUE
-	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_deployable_parts())
 		if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 			to_chat(wearer, span_notice("[MOD_PART.name] [is_active() ? pick(MOD_PART.unseal_message) : pick(MOD_PART.seal_message)]."))
 			playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
@@ -147,7 +149,7 @@
 	return TRUE
 
 /obj/item/mod/control/proc/toggle_activate_fail()
-	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_deployable_parts())
 		MOD_PART.seal_part(TRUE)
 	to_chat(wearer, span_warning("[is_active() ? "Shut down" : "Start up"] cancelled."))
 	finish_activation(on = is_active())
@@ -188,11 +190,11 @@
 
 /obj/item/mod/control/proc/quick_activation()
 	var/seal = TRUE
-	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/part as anything in get_deployable_parts())
 		if(!deploy(null, part))
 			seal = FALSE
 	if(!seal)
 		return
-	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part as anything in get_deployable_parts())
 		part.seal_part(TRUE)
 	finish_activation(on = TRUE)

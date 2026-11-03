@@ -1045,11 +1045,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	for(var/quirk_name in quirks)
 		budget -= quirk_values[quirk_name]
 	for(var/modification in modified_limbs)
-		var/limb_kind = modified_limbs[modification][1]
-		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
-			budget += 1
-		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
-			budget += 2
+		budget += limb_modification_bonus(modified_limbs[modification][1])
 	budget -= mob_size_name_to_quirk_cost(body_weight)
 	budget -= body_mods_cost(selected_organs, selected_implants)
 	if(("tube" in migrated) && !selected_implants["breathing_tube"] && budget >= 1)
@@ -1119,14 +1115,20 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(T)
 			bal -= initial(T.value)
 	for(var/modification in modified_limbs)
-		var/limb_kind = modified_limbs[modification][1]
-		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
-			bal += 1
-		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
-			bal += 2
+		bal += limb_modification_bonus(modified_limbs[modification][1])
 	bal -= mob_size_name_to_quirk_cost(body_weight)
 	bal -= body_mods_cost()
+	bal -= innate_features_cost()
 	return bal
+
+/// Родные конечности синтетиков уже роботизированы, протез для них только внешний вид и очков не даёт.
+/datum/preferences/proc/limb_modification_bonus(limb_kind)
+	switch(limb_kind)
+		if(LOADOUT_LIMB_PROSTHETIC)
+			return (pref_species && (ROBOTIC_LIMBS in pref_species.species_traits)) ? 0 : 1
+		if(LOADOUT_LIMB_AMPUTATED)
+			return 2
+	return 0
 
 /datum/preferences/proc/GetQuirkBalance(mob/user)
 	var/bal = quirk_balance()
@@ -1253,6 +1255,8 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		save_character()
 
 	character.dna.features = features.Copy()
+	// Смена вида не должна увидеть временно пустой выбор и пересоздать повреждённую анатомию.
+	character.dna.features["innate_features"] = valid_innate_features()
 
 	character.set_species(chosen_species, icon_update = FALSE, pref_load = TRUE)
 	character.dna.species.eye_type = eye_type
@@ -1325,6 +1329,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	if(initial_spawn)
 		apply_prefs_modified_limbs(character)
 		apply_prefs_body_mods(character)
+	apply_innate_features(character)
 
 	if(DIGITIGRADE in pref_species.species_traits)
 		character.Digitigrade_Leg_Swap(FALSE)
@@ -1350,6 +1355,8 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			qdel(part)
 	character.regenerate_limbs() //regenerate limbs so now you only have normal limbs
 	for(var/modified_limb in modified_limbs)
+		if(HAS_TRAIT(character, TRAIT_NAGA_ANATOMY) && (modified_limb == BODY_ZONE_L_LEG || modified_limb == BODY_ZONE_R_LEG))
+			continue
 		var/modification = modified_limbs[modified_limb][1]
 		var/obj/item/bodypart/old_part = character.get_bodypart(modified_limb)
 		if(modification == LOADOUT_LIMB_PROSTHETIC)

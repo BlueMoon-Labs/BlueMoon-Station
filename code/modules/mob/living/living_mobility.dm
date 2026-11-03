@@ -79,7 +79,7 @@
 	var/conscious = !IsUnconscious() && stat_conscious && !HAS_TRAIT(src, TRAIT_DEATHCOMA)
 
 	var/has_arms = get_num_arms()
-	var/has_legs = get_num_legs()
+	var/has_legs = get_num_supporting_limbs()
 	var/ignore_legs = get_leg_ignore()
 	var/stun = IsStun()
 	var/paralyze = IsParalyzed()
@@ -181,13 +181,20 @@
 
 	//Handle lying down, voluntary or involuntary
 	update_density()
+	var/old_layer = layer
 	if(lying)
 		set_resting(TRUE, TRUE, FALSE)
-		if(layer == initial(layer)) //to avoid special cases like hiding larvas.
+		if(get_unshifted_layer() == initial(layer)) //to avoid special cases like hiding larvas.
 			layer = LYING_MOB_LAYER //so mob lying always appear behind standing mobs
 	else
-		if(layer == LYING_MOB_LAYER)
+		if(get_unshifted_layer() == LYING_MOB_LAYER)
 			layer = initial(layer)
+	if(layer != old_layer)
+		if(isliving(pulledby))
+			var/mob/living/puller = pulledby
+			puller.update_pull_layer(src)
+		if(isliving(pulling))
+			update_pull_layer(pulling)
 	update_transform()
 	lying_prev = lying
 

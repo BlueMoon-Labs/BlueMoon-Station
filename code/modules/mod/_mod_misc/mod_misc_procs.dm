@@ -81,6 +81,13 @@
 		parts += part
 	return parts
 
+// Ботинки остаются свёрнутыми у персонажей без обувного слота.
+/obj/item/mod/control/proc/get_deployable_parts()
+	var/list/parts = get_mod_parts(include_cell = FALSE)
+	if(wearer && HAS_TRAIT(wearer, TRAIT_NAGA_ANATOMY))
+		parts -= get_boots()
+	return parts
+
 //Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
 /obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
 	var/obj/item/clothing/mod_part/part = get_mod_part_by_index(mod_index)
@@ -89,7 +96,7 @@
 /obj/item/mod/control/proc/all_parts_deployed()
 	if(!wearer)
 		return FALSE
-	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_deployable_parts())
 		if(part.loc != wearer)
 			return FALSE
 	return TRUE
@@ -97,7 +104,7 @@
 /obj/item/mod/control/proc/one_of_parts_deployed()
 	if(!wearer)
 		return FALSE
-	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_deployable_parts())
 		if(part.loc == wearer)
 			return TRUE
 	return FALSE
