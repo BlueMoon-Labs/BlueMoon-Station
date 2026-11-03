@@ -356,12 +356,13 @@
 		return
 	for(var/reagent_type in chem_list)
 		var/amount = chem_list[reagent_type]
-		owner.reagents.add_reagent(reagent_type, amount)
-		if(ispath(reagent_type, /datum/reagent/medicine/synthflesh))
-			// Synthflesh heals only on touch, so mirror its effect here instead of
-			// relying on the reagent to metabolize out of the bloodstream.
-			owner.adjustBruteLoss(-amount)
-			owner.adjustFireLoss(-amount)
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+		if(istype(reagent, /datum/reagent/medicine/synthflesh))
+			// Синтплоть лечит только при контакте с кожей: применяем её эффект напрямую,
+			// в кровь она не попадает (там она бездействует и вредна в ранах).
+			reagent.reaction_mob(owner, TOUCH, amount)
+		else
+			owner.reagents.add_reagent(reagent_type, amount)
 	charge--
 	last_use_time = world.time
 	last_charge_time = world.time

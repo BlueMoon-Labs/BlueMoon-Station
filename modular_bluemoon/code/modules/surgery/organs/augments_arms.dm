@@ -306,9 +306,9 @@
 	icon_state = "muscle"
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	/// Время действия берсерка
-	var/berserk_time = 12 SECONDS
+	var/berserk_time = 25 SECONDS
 	/// КД берсерка
-	var/cooldown_time = 5 MINUTES
+	var/cooldown_time = 60 SECONDS
 	/// Резист урона
 	var/armor_mult = 0.4 // 60% сопротивление
 	/// Модификатор скорости удара
@@ -320,15 +320,15 @@
 	name = "Corporate Berserker implant"
 	armor_mult = 0.4
 	attack_speed_mult = 0.5
-	cooldown_time = 5 MINUTES
-	berserk_time = 12 SECONDS
+	cooldown_time = 60 SECONDS
+	berserk_time = 25 SECONDS
 
 /obj/item/organ/cyberimp/brain/berserker/syndie
 	name = "Agent Berserker implant"
 	armor_mult = 0.2 // 80% сопротивление
 	attack_speed_mult = 0.5 // будет удваивать скорость в логике
-	berserk_time = 20 SECONDS
-	cooldown_time = 5 MINUTES
+	berserk_time = 35 SECONDS
+	cooldown_time = 45 SECONDS
 
 /obj/item/organ/cyberimp/brain/berserker/ui_action_click()
 	if(active)
@@ -350,6 +350,8 @@
 		H.physiology.armor.melee += (1 - armor_mult) * 100
 		H.physiology.armor.bullet += (1 - armor_mult) * 100
 		H.physiology.armor.laser += (1 - armor_mult) * 100
+		// Красное свечение по контуру на время действия берсерка.
+		H.add_filter("berserker", 2, list("type" = "outline", "color" = "#FF2222", "alpha" = 90, "size" = 1))
 		// Запрещаем стрельбу из дальнобойного оружия
 		ADD_TRAIT(H, TRAIT_NOGUNS, "berserker")
 		// Ускорение удара
@@ -392,6 +394,7 @@
 	active = FALSE
 	var/mob/living/carbon/human/H = owner
 	if(ishuman(H))
+		H.remove_filter("berserker")
 		REMOVE_TRAIT(H, TRAIT_NOGUNS, "berserker")
 		H.physiology.armor.melee -= (1 - armor_mult) * 100
 		H.physiology.armor.bullet -= (1 - armor_mult) * 100
@@ -449,13 +452,13 @@
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	icon_state = "mantis"
-	force = 18
+	force = 13
 	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
 	sharpness = SHARP_POINTY
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
-	reach = 3
+	reach = 2 // +1 тайл, как у копья
 	attack_verb = list("sliced", "severed")
 	item_flags = NEEDS_PERMIT
 	hitsound = 'sound/weapons/bladeslice.ogg'
@@ -488,17 +491,17 @@
 /obj/item/melee/implantmonostring/syndie
 	name = "Agent Monomolecular string"
 	icon_state = "mantis_syndie"
-	force = 28
+	force = 23
 	armour_penetration = MELEE_AP_ANTAGONIST
-	reach = 5
+	reach = 3 // +2 тайла
 	/// Шанс разряда тока по цели при ударе.
-	var/shock_chance = 10
+	var/shock_chance = 100
 
 /obj/item/melee/implantmonostring/syndie/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	. = ..()
 	if(QDELETED(M) || !isliving(M) || !prob(shock_chance))
 		return
-	M.Paralyze(3 SECONDS)
+	M.Paralyze(1 SECONDS) // станящий шок: секунда без действий
 	M.Jitter(20)
 	SEND_SIGNAL(M, COMSIG_LIVING_MINOR_SHOCK)
 	do_sparks(3, FALSE, M)
@@ -563,7 +566,7 @@
 	ready_to_fire = FALSE
 	user.visible_message("<span class='warning'>[user] begins charging [src]!</span>", "<span class='notice'>You start charging [src].</span>")
 	playsound(user, 'sound/machines/defib_charge.ogg', 50, 1)
-	if(do_after(user, charge_time, target = user))
+	if(do_after(user, charge_time, target = user, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE))
 		if(ready_to_fire)
 			return
 		if(!can_shoot() || !user.is_holding(src))

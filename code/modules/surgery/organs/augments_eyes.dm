@@ -111,8 +111,8 @@
 	var/zoom_out_amt = 0
 
 /obj/item/organ/cyberimp/eyes/optical/kiroshi/ui_action_click(mob/user, actiontype)
-	if(actiontype == /datum/action/item_action/organ_action/toggle_zoom)
-		toggle_zoom(user)
+	// actiontype - экземпляр действия, а не тип: сравнение с типом всегда ложно, зум не работал.
+	toggle_zoom(user)
 
 /obj/item/organ/cyberimp/eyes/optical/kiroshi/proc/toggle_zoom(mob/living/carbon/user)
 	if(!user || user != owner)
@@ -170,8 +170,8 @@
 	return ..()
 
 /obj/item/organ/cyberimp/eyes/optical/militech/ui_action_click(mob/user, actiontype)
-	if(actiontype == /datum/action/item_action/organ_action/toggle_zoom)
-		toggle_zoom(user)
+	// actiontype - экземпляр действия, а не тип: сравнение с типом всегда ложно, зум не работал.
+	toggle_zoom(user)
 
 /obj/item/organ/cyberimp/eyes/optical/militech/proc/toggle_zoom(mob/living/carbon/user)
 	if(!user || user != owner)
