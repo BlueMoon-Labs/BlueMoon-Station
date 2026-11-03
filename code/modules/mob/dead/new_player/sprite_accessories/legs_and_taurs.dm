@@ -56,6 +56,9 @@
 		return for_item ? severed_item_extra_matrix_state : severed_body_extra_matrix_state
 
 /datum/sprite_accessory/taur/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
+	// Костюм может скрывать целый хвост, но культя должна оставаться видимой.
+	if(tauric && severed_body_state && HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !H.get_bodypart(BODY_ZONE_L_LEG))
+		return FALSE
 	return (!tauric || (H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)))
 
 /datum/sprite_accessory/taur/New()

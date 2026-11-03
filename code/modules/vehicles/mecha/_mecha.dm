@@ -711,7 +711,16 @@
 	if(inertia_moving)
 		return
 	if(stepsound)
-		playsound(src, stepsound, 40, TRUE)
+		play_step_audio(stepsound, 40)
+
+/obj/vehicle/sealed/mecha/proc/play_step_audio(step_sound, volume)
+	var/turf/source = get_turf(src)
+	if(!source)
+		return
+	var/sound_file = get_sfx(step_sound)
+	playsound(src, sound_file, volume, TRUE, excluded_listeners = occupants)
+	for(var/mob/occupant as anything in occupants)
+		occupant.playsound_local(source, sound_file, volume * 0.3, TRUE, max_distance = SOUND_RANGE)
 
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
