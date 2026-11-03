@@ -206,6 +206,7 @@
 /datum/netrun_external_command
 	var/kind
 	var/raw_json
+	var/state_key
 	var/datum/netrun_external_request_context/context
 	var/datum/netrun_external_invocation/invocation
 	/// Последний native fact, причинно предшествующий этой immutable команде.
@@ -238,8 +239,12 @@
 	/// Новая engine/binding сессия имеет собственный stamp namespace, независимо от ещё завершающегося old callback.
 	var/latest_stamp_binding
 	/// Ноль отключает performance-квоту работы; wire size и retention history имеют отдельные ограничения.
-	var/context_limit = 0
-	var/command_limit = 0
+	/// Bound DM ownership independently of Host admission; do not allocate unlimited message datums.
+	var/context_limit = 4096
+	var/command_limit = 4096
+	/// Only never-submitted replaceable state may be updated in place.
+	var/list/queued_state_commands = list()
+	var/local_states_coalesced = 0
 	var/invocation_limit = 0
 	var/terminal_invocation_limit = 4096
 	var/list/pending = list()
@@ -295,6 +300,9 @@
 	if(active_binding != client.binding_epoch)
 		retire_if_idle()
 		active_binding = client.binding_epoch
+	var/state_key = message.transport_operation() == "state" ? state_command_key(source, destination, message) : null
+	if(state_key && replace_unsent_state(state_key, message))
+		return TRUE
 	if((context_limit > 0 && length(pending) >= context_limit) || (invocation_limit > 0 && length(invocations) >= invocation_limit) || (command_limit > 0 && queued_commands() >= command_limit))
 		return reject_message(message, "очередь внешнего транспорта переполнена")
 	if(QDELETED(source) || QDELETED(destination))
@@ -354,7 +362,10 @@
 		qdel(command)
 		return FALSE
 	command.context = context
-	command.raw_json = netrun_external_json_object(list("kind" = json_encode("request_submit"), "request_id" = json_encode(context.request_id), "source" = service_json(source_key), "destination" = service_json(destination_key), "operation_id" = json_encode(context.operation_id), "payload" = raw_payload, "deadline_ds" = "null", "coalescing_key" = json_encode(message.coalescing_key()), "state_revision" = json_encode(message.transport_revision()), "authorization_context" = json_encode(context.context_id), "native_context" = json_encode(context.context_id), "traffic_class" = json_encode(communications ? "communications" : "ordinary"), "frequency" = json_encode(frequency)))
+	command.raw_json = submission_json(context, message, raw_payload, frequency)
+	command.state_key = state_key
+	if(state_key)
+		queued_state_commands[state_key] = command
 	request_commands += command
 	context.operation = new("machine", "Обмен между машинами", source.resolve_node()?.address, destination.resolve_node()?.address, destination.service_id, operation_id = message.correlation_id)
 	context.operation.capture(message.payload)
@@ -362,6 +373,52 @@
 	return TRUE
 
 /// Явный отказ сохраняет старый ownership-контракт packet.send: callback один раз, затем qdel message.
+/// State identity includes exact service instances and channel, never just a shared status tag.
+/datum/netrun_external_effects/machines/proc/state_command_key(datum/netrun_machine_service/source, datum/netrun_machine_service/destination, datum/netrun_machine_message/message)
+	var/key = message.coalescing_key()
+	if(isnull(key))
+		return null
+	return json_encode(list(REF(source), REF(destination), message.transport_operation(), key))
+
+/// Build a fresh immutable command only while it has never entered the native worker.
+/datum/netrun_external_effects/machines/proc/submission_json(datum/netrun_external_request_context/context, datum/netrun_machine_message/message, raw_payload, frequency)
+	return netrun_external_json_object(list("kind" = json_encode("request_submit"), "request_id" = json_encode(context.request_id), "source" = service_json(context.source_service), "destination" = service_json(context.destination_service), "operation_id" = json_encode(context.operation_id), "payload" = raw_payload, "deadline_ds" = "null", "coalescing_key" = json_encode(message.coalescing_key()), "state_revision" = json_encode(message.transport_revision()), "authorization_context" = json_encode(context.context_id), "native_context" = json_encode(context.context_id), "traffic_class" = json_encode(context.communications ? "communications" : "ordinary"), "frequency" = json_encode(frequency)))
+
+/// Same accepted request ID retains ownership; superseded unsent snapshots have no gameplay effect.
+/datum/netrun_external_effects/machines/proc/replace_unsent_state(key, datum/netrun_machine_message/message)
+	var/datum/netrun_external_command/command = queued_state_commands[key]
+	if(!command)
+		return FALSE
+	var/datum/netrun_external_request_context/context = command.context
+	if(QDELETED(context) || pending[context.request_id] != context || command.first_attempt_sequence || context.stage != "queued" || context.cancel_requested)
+		queued_state_commands -= key
+		return FALSE
+	var/datum/netrun_machine_message/previous = context.message
+	if(!message.can_replace(previous))
+		qdel(message)
+		return TRUE
+	var/raw_payload
+	try
+		raw_payload = json_encode(message.payload)
+	catch
+		return reject_message(message, "payload не может быть передан")
+	if(!istext(raw_payload) || !length(raw_payload) || length(raw_payload) > 131072)
+		return reject_message(message, "payload превышает предел внешнего транспорта")
+	message.source = previous.source
+	message.recipient = previous.recipient
+	message.correlation_id = previous.correlation_id
+	context.message = message
+	context.user_ref = message.user_ref
+	context.payload_json = raw_payload
+	context.payload_hash = rustg_hash_string(RUSTG_HASH_SHA256, raw_payload)
+	var/datum/netrun_machine_message/telecomms/telecomms = message
+	var/frequency = context.communications && istype(telecomms) ? telecomms.signal?.frequency : null
+	command.raw_json = submission_json(context, message, raw_payload, frequency)
+	context.operation?.capture(message.payload)
+	qdel(previous)
+	local_states_coalesced++
+	return TRUE
+
 /datum/netrun_external_effects/machines/proc/reject_message(datum/netrun_machine_message/message, reason)
 	message.failed(reason)
 	qdel(message)
@@ -424,6 +481,8 @@
 		command.sent_frame_end = client.pending_sequence
 		command.first_attempt_sequence ||= sequence
 		command.retry_queued = FALSE
+		if(command.state_key && queued_state_commands[command.state_key] == command)
+			queued_state_commands -= command.state_key
 		track_input_command(command, sequence)
 	return TRUE
 
@@ -432,6 +491,8 @@
 	return !command.context || (pending[command.context.request_id] == command.context && (command.kind != "request_submit" || !command.context.cancel_requested))
 
 /datum/netrun_external_effects/machines/proc/discard_input_command(datum/netrun_external_command/command)
+	if(command.state_key && queued_state_commands[command.state_key] == command)
+		queued_state_commands -= command.state_key
 	qdel(command)
 
 /datum/netrun_external_effects/machines/proc/track_input_command(datum/netrun_external_command/command, sequence)
@@ -948,6 +1009,7 @@
 			command.invocation = null
 		qdel(command)
 	request_commands.Cut()
+	queued_state_commands.Cut()
 	control_commands.Cut()
 	inflight_commands.Cut()
 	for(var/id in pending.Copy())
