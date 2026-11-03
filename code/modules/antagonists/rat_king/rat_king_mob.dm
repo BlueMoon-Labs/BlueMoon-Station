@@ -7,8 +7,9 @@
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 5
-	maxHealth = 90
-	health = 90
+	maxHealth = 150
+	health = 150
+	damage_coeff = list(BRUTE = 0.9, BURN = 0.9, TOX = 1, CLONE = 1, STAMINA = 0, OXY = 1) // а нужно ли тут чето еще расписывать или не.
 	see_in_dark = 5
 	obj_damage = 10
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES | ENVIRONMENT_SMASH_WALLS
@@ -46,6 +47,10 @@
 	var/cables_chewed = 0
 	/// Экшен смены облика.
 	var/datum/action/cooldown/rat_fashion/fashion_select
+	var/datum/action/cooldown/rat_devour/devour_action
+	var/datum/action/cooldown/rat_throne/throne_action
+	var/obj/structure/rat_king_throne/plague_throne
+	var/next_regen = 0
 
 /mob/living/simple_animal/hostile/regalrat/Initialize(mapload)
 	. = ..()
@@ -60,6 +65,10 @@
 		lick_action.Grant(src)
 		fashion_select = new /datum/action/cooldown/rat_fashion
 		fashion_select.Grant(src)
+		devour_action = new /datum/action/cooldown/rat_devour
+		devour_action.Grant(src)
+		throne_action = new /datum/action/cooldown/rat_throne
+		throne_action.Grant(src)
 		pick_random_look()
 	order_action = new /datum/action/cooldown/rat_order
 	order_action.Grant(src)
@@ -142,12 +151,24 @@
 
 /mob/living/simple_animal/hostile/regalrat/Destroy()
 	QDEL_NULL(fashion_select)
+	if(plague_throne && !QDELETED(plague_throne))
+		plague_throne.king = null
+	plague_throne = null
 	return ..()
 
 /mob/living/simple_animal/hostile/regalrat/proc/get_rat_horde()
 	if(!horde || QDELETED(horde))
 		horde = new(src, soft_horde ? RAT_HORDE_SOFT : RAT_HORDE_HARD)
 	return horde
+
+/mob/living/simple_animal/hostile/regalrat/proc/find_lick_target()
+	var/mob/living/best
+	for(var/mob/living/carbon/human/human in oview(1, src))
+		if(human == src || QDELETED(human))
+			continue
+		if(!best || get_dist(src, human) < get_dist(src, best))
+			best = human
+	return best
 
 /mob/living/simple_animal/hostile/regalrat/proc/allowed_to_attack(atom/the_target)
 	if(QDELETED(the_target))
@@ -173,6 +194,8 @@
 /mob/living/simple_animal/hostile/regalrat/AttackingTarget()
 	if(!target || QDELETED(target))
 		return
+	if(is_edible_prey(target))
+		return devour_prey(target)
 	if(!allowed_to_attack(target))
 		return FALSE
 	if(istype(target, /obj/machinery/door/airlock))
@@ -227,17 +250,56 @@
 		return FALSE
 	if(!target.is_injectable(TRUE) && !istype(target, /obj/item/reagent_containers/food) && !istype(target, /obj/item/reagent_containers) && !isliving(target))
 		return FALSE
+	if(!Adjacent(target))
+		to_chat(src, span_warning("Слишком далеко — подойдите ближе."))
+		return -1
 	visible_message(
 		span_warning("[src] начинает страстно облизывать [target]!"),
 		span_notice("Вы начинаете облизывать [target]..."),
 		span_warning("Вы слышите отвратительное чавканье..."),
 	)
-	if(!do_after(src, 2 SECONDS, target))
-		return TRUE
+	if(!do_after(src, 2 SECONDS, target, extra_checks = CALLBACK(src, PROC_REF(lick_still_in_range), target)))
+		visible_message(
+			span_warning("[src] прекращает облизывать [target]."),
+			span_warning("Вы прекращаете облизывать [target]."),
+		)
+		return -1
 	if(QDELETED(target) || isnull(target.reagents))
-		return TRUE
+		return -1
 	target.reagents.add_reagent(/datum/reagent/rat_spit, rand(1, 3), list("source" = src), no_react = TRUE)
 	balloon_alert(src, "облизано")
+	return TRUE
+
+/mob/living/simple_animal/hostile/regalrat/proc/lick_still_in_range(atom/target)
+	if(QDELETED(target) || !Adjacent(target))
+		return FALSE
+	return TRUE
+
+/mob/living/simple_animal/hostile/regalrat/proc/is_edible_prey(atom/target)
+	if(istype(target, /mob/living/simple_animal/mouse))
+		return TRUE
+	if(istype(target, /mob/living/simple_animal/hostile/rat))
+		return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/regalrat/proc/devour_prey(mob/living/prey)
+	if(!prey || QDELETED(prey))
+		return TRUE
+	if(!Adjacent(prey))
+		balloon_alert(src, "слишком далеко!")
+		return TRUE
+	var/datum/component/rat_minion/minion = prey.GetComponent(/datum/component/rat_minion)
+	if(minion?.horde)
+		minion.horde.unregister_minion(prey)
+	visible_message(
+		span_warning("[src] хватает [prey] и проглатывает одним движением!"),
+		span_notice("Вы поедаете [prey], восстанавливая силы."),
+		span_warning("Вы слышите хруст на своих зубах и довольно чавкаете."),
+	)
+	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
+	heal_bodypart_damage(RAT_KING_PREY_HEAL, RAT_KING_PREY_HEAL)
+	balloon_alert(src, "+[RAT_KING_PREY_HEAL] HP")
+	qdel(prey)
 	return TRUE
 
 /mob/living/simple_animal/hostile/regalrat/death(gibbed)
@@ -259,6 +321,17 @@
 		return
 	if((miasma / total) >= 0.25)
 		heal_bodypart_damage(1)
+
+/mob/living/simple_animal/hostile/regalrat/BiologicalLife(delta_time, times_fired)
+	. = ..()
+	if(!. || stat == DEAD)
+		return .
+	if(world.time < next_regen)
+		return .
+	next_regen = world.time + RAT_KING_REGEN_INTERVAL
+	if(health < maxHealth)
+		heal_bodypart_damage(RAT_KING_REGEN_AMOUNT, RAT_KING_REGEN_AMOUNT)
+	return .
 
 /mob/living/simple_animal/hostile/regalrat/CanAttack(atom/the_target)
 	if(istype(the_target,/mob/living/simple_animal))
@@ -705,6 +778,155 @@
 			antag.domain_time += RAT_KING_DOMAIN_INTERVAL / (1 SECONDS)
 	mess_timer = addtimer(CALLBACK(src, PROC_REF(spread_domain)), RAT_KING_DOMAIN_INTERVAL, TIMER_STOPPABLE)
 
+/datum/action/cooldown/rat_devour
+	name = "Пожирать"
+	desc = "Съесть мелкие предметы рядом, восстановив немного здоровья. Доступно только боевой орде."
+	icon_icon = 'icons/mob/actions/actions_animal.dmi'
+	button_icon_state = "coffer"
+	background_icon_state = "bg_clock"
+	check_flags = AB_CHECK_CONSCIOUS
+	cooldown_time = 20 SECONDS
+
+/datum/action/cooldown/rat_devour/Activate(atom/target)
+	var/mob/living/simple_animal/hostile/regalrat/king = owner
+	if(!istype(king))
+		return
+	if(king.health >= king.maxHealth)
+		king.balloon_alert(king, "вы не голодны")
+		return
+	var/list/eatable = list()
+	for(var/obj/item/item in range(1, king))
+		if(QDELETED(item) || item.anchored || (item.item_flags & ABSTRACT))
+			continue
+		if(item.w_class > WEIGHT_CLASS_NORMAL)
+			continue
+		eatable += item
+	if(!length(eatable))
+		to_chat(king, span_warning("Рядом нет ничего, что можно съесть."))
+		return
+	var/eaten = 0
+	for(var/i in 1 to min(length(eatable), RAT_KING_DEVOUR_MAX_ITEMS))
+		var/obj/item/item = pick_n_take(eatable)
+		if(!item || QDELETED(item))
+			continue
+		king.visible_message(
+			span_warning("[king] с хрустом пожирает [item]!"),
+			span_notice("Вы съедаете [item]."),
+		)
+		qdel(item)
+		eaten++
+	if(!eaten)
+		return
+	king.heal_bodypart_damage(eaten * RAT_KING_DEVOUR_HEAL, eaten * RAT_KING_DEVOUR_HEAL)
+	playsound(king, 'sound/items/eatfood.ogg', 50, TRUE)
+	king.balloon_alert(king, "+[eaten * RAT_KING_DEVOUR_HEAL] HP")
+	StartCooldown()
+
+/datum/action/cooldown/rat_throne
+	name = "Чумной трон"
+	desc = "Поставить чумной трон, он плодит крыс и распространяет миазмы. Трон можно разрушить."
+	icon_icon = 'icons/mob/actions/actions_animal.dmi'
+	button_icon_state = "expand"
+	background_icon_state = "bg_clock"
+	check_flags = AB_CHECK_CONSCIOUS
+	cooldown_time = 120 SECONDS
+
+/datum/action/cooldown/rat_throne/Activate(atom/target)
+	var/mob/living/simple_animal/hostile/regalrat/king = owner
+	if(!istype(king))
+		return
+	if(king.plague_throne && !QDELETED(king.plague_throne))
+		to_chat(king, span_warning("Ваш чумной трон уже стоит."))
+		return
+	var/turf/throne_turf = get_turf(king)
+	if(!throne_turf)
+		return
+	var/obj/structure/rat_king_throne/throne = new /obj/structure/rat_king_throne(throne_turf)
+	throne.king = king
+	king.plague_throne = throne
+	king.visible_message(
+		span_warning("[king] сгребает мусор, кости и шерсть в кучу — чумной трон готов!"),
+		span_notice("Вы возводите чумной трон. Он будет плодить крыс и травить воздух."),
+	)
+	playsound(king, 'sound/effects/mousesqueek.ogg', 100, TRUE)
+	StartCooldown()
+
+/obj/structure/rat_king_throne
+	name = "Чумной трон"
+	desc = "Груда костей, проводов и мокрой шерсти. Из неё сочится миазма, а в глубине шевелятся крысы."
+	icon = 'icons/mob/nest.dmi'
+	icon_state = "ash_walker_nest" // Заглушка, может нарисую чего крутого.
+	anchored = TRUE
+	density = FALSE
+	max_integrity = 250
+	var/mob/living/simple_animal/hostile/regalrat/king
+	var/next_spawn = 0
+	var/next_miasma = 0
+
+/obj/structure/rat_king_throne/Initialize(mapload)
+	. = ..()
+	next_spawn = world.time + RAT_KING_THRONE_INTERVAL
+	next_miasma = world.time
+	START_PROCESSING(SSobj, src)
+
+/obj/structure/rat_king_throne/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	if(king && !QDELETED(king) && king.plague_throne == src)
+		king.plague_throne = null
+	king = null
+	return ..()
+
+/obj/structure/rat_king_throne/process()
+	if(QDELETED(src))
+		return
+	if(world.time >= next_miasma)
+		next_miasma = world.time + 4 SECONDS
+		spread_miasma()
+	if(world.time >= next_spawn)
+		next_spawn = world.time + RAT_KING_THRONE_INTERVAL
+		spawn_rat()
+
+/obj/structure/rat_king_throne/proc/spread_miasma()
+	var/turf/our_turf = get_turf(src)
+	if(!isopenturf(our_turf))
+		return
+	our_turf.atmos_spawn_air("miasma=[RAT_KING_THRONE_MIASMA_MOLES];TEMP=293.15")
+	var/list/spots = get_adjacent_open_turfs(src)
+	if(length(spots))
+		var/turf/mess_turf = pick(spots)
+		mess_turf.atmos_spawn_air("miasma=[round(RAT_KING_THRONE_MIASMA_MOLES / 2)];TEMP=293.15")
+		if(prob(20))
+			new /obj/effect/decal/cleanable/dirt(mess_turf)
+
+/obj/structure/rat_king_throne/proc/spawn_rat()
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return
+	var/cap = CONFIG_GET(number/ratcap)
+	if(LAZYLEN(SSmobs.cheeserats) >= cap)
+		return
+	var/list/spots = list(our_turf) + get_adjacent_open_turfs(src)
+	var/turf/spawn_turf = pick(spots)
+	if(!spawn_turf)
+		return
+	var/mob/living/simple_animal/hostile/rat/new_rat = new(spawn_turf)
+	if(king && !QDELETED(king))
+		new_rat.faction = king.faction.Copy()
+		var/datum/rat_horde/horde = king.get_rat_horde()
+		if(horde && length(horde.minions) < horde.max_minions)
+			horde.register_minion(new_rat)
+	visible_message(span_warning("[src] шевелится, и из гнезда выбирается новая крыса!"))
+
+/obj/structure/rat_king_throne/obj_destruction(damage_flag)
+	visible_message(span_warning("[src] разваливается, выпуская густое облако миазм!"))
+	var/turf/our_turf = get_turf(src)
+	if(isopenturf(our_turf))
+		our_turf.atmos_spawn_air("miasma=[RAT_KING_THRONE_MIASMA_MOLES * 4];TEMP=293.15")
+		for(var/turf/adjacent in get_adjacent_open_turfs(src))
+			adjacent.atmos_spawn_air("miasma=[RAT_KING_THRONE_MIASMA_MOLES * 2];TEMP=293.15")
+	playsound(src, 'sound/effects/tendril_destroyed.ogg', 100, TRUE) // Заглушка
+	qdel(src)
+
 /datum/action/cooldown/rat_order
 	name = "Приказ орде"
 	desc = "Приказы строя: следовать, собраться, атаковать, охранять, держать позицию, разбежаться или играть. Цель также можно указать через Point To."
@@ -857,6 +1079,7 @@
 	button_icon_state = "coffer"
 	background_icon_state = "bg_clock"
 	check_flags = AB_CHECK_CONSCIOUS
+	click_to_activate = TRUE
 	cooldown_time = 2 SECONDS
 
 /datum/action/cooldown/rat_lick/Activate(atom/target)
@@ -865,11 +1088,19 @@
 	var/mob/living/simple_animal/hostile/regalrat/king = owner
 	if(!istype(king))
 		return
-	var/atom/lick_target = king.target
+	var/atom/lick_target = target
+	if(!lick_target || lick_target == king)
+		lick_target = king.target
+	if(!lick_target || lick_target == king)
+		lick_target = king.find_lick_target()
 	if(!lick_target || QDELETED(lick_target))
-		to_chat(king, span_warning("Нет цели для облизывания."))
+		to_chat(king, span_warning("Укажите цель для облизывания."))
 		return
-	if(!king.poison_target(lick_target))
+	var/result = king.poison_target(lick_target)
+	if(result == -1)
+		king.balloon_alert(king, "прервано!")
+		return
+	if(!result)
 		to_chat(king, span_warning("Это не получится облизать."))
 		return
 	StartCooldown()
@@ -1022,6 +1253,9 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 	icon_dead = "ratqueen_dead"
 	gender = FEMALE
 	soft_horde = TRUE
+	maxHealth = 90
+	health = 90
+	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, CLONE = 1, STAMINA = 0, OXY = 1)
 	melee_damage_lower = 0
 	melee_damage_upper = 0
 	obj_damage = 0

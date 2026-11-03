@@ -141,6 +141,8 @@
 	var/turf/leader_turf = get_turf(leader)
 	if(!leader_turf || QDELETED(minion))
 		return null
+	if(get_dist(minion, leader_turf) > 2)
+		return leader_turf
 	var/datum/component/rat_minion/component = minion.GetComponent(/datum/component/rat_minion)
 	if(!component)
 		return leader_turf
@@ -207,8 +209,8 @@
 	if(!istype(minion) || QDELETED(new_horde))
 		return COMPONENT_INCOMPATIBLE
 	horde = new_horde
-	follow_offset_x = rand(-1, 1)
-	follow_offset_y = rand(-1, 1)
+	follow_offset_x = pick(-1, 0, 0, 0, 1)
+	follow_offset_y = pick(-1, 0, 0, 0, 1)
 	play_style = pick("circle", "jump")
 	play_clockwise = prob(50)
 	old_stop_automated_movement = minion.stop_automated_movement
