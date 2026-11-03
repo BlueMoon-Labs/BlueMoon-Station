@@ -1949,8 +1949,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
 	if(!islist(loadout_data))
 		loadout_data = list()
-	var/restore_preset_loadout = !islist(loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"])
-	//gear loadout
+	var/preset_slot_key = "SAVE_[LOADOUT_PRESET_SLOT]"
+	var/list/working_preset_loadout = loadout_data[preset_slot_key]
+	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
+	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
 	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
@@ -2336,7 +2338,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2362,13 +2363,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
-	// Восстанавливаем отсутствующий рабочий слот только после загрузки и проверки активного пресета.
-	// Существующий слот, в том числе намеренно пустой, сохраняет свои независимые изменения.
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, active_character_preset ? LOADOUT_PRESET_SLOT : initial(loadout_slot), TRUE)
 	if(restore_preset_loadout && active_character_preset)
 		var/list/active_preset = character_presets[active_character_preset]
 		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
 		clean_character_preset_loadout(restored_preset)
-		loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = restored_preset["loadout"]
+		loadout_data[preset_slot_key] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2783,6 +2783,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["preset_loadout_initialized"], islist(loadout_data?["SAVE_[LOADOUT_PRESET_SLOT]"]))
 	WRITE_FILE(S["character_presets"], character_presets)
 	WRITE_FILE(S["active_character_preset"], active_character_preset)
 	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
