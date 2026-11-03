@@ -16,11 +16,11 @@
 		return ..()
 
 /obj/item/clothing/gloves/AltClick(mob/user)
-	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
-		return
-	if(length(accessories_attached))
-		remove_accessory(user = user)
+	if(user?.client?.use_legacy_chat && length(accessories_attached))
+		if(isliving(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) && can_use(user))
+			remove_accessory(user = user)
+		return TRUE
+	return ..()
 
 /obj/item/clothing/gloves/equipped(mob/user, slot)
 	..()
@@ -87,5 +87,11 @@
 
 /obj/item/clothing/gloves/examine(mob/user)
 	. = ..()
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
-		. += "На одном из пальцев видно \A [attached_accessory]."
+	var/accessory_list = accessories_examine(user)
+	if(accessory_list)
+		. += accessory_list
+
+/obj/item/clothing/gloves/Topic(href, href_list)
+	. = ..()
+	if(!.)
+		return accessories_topic(usr, href_list)

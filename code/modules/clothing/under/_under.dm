@@ -211,7 +211,7 @@
 			return
 
 		if(user && !silent)
-			to_chat(user, span_notice("Вы прикрепили \the [accessory] к \the [src]."))
+			to_chat(user, span_notice("Вы прикрепили [accessory.name] к \the [src.name]."))
 
 		if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 			return TRUE
@@ -270,31 +270,15 @@
 				. += span_notice("Сенсоры жизненных показателей включены.")
 			if(SENSOR_COORDS)
 				. += span_notice("Сенсоры и маячок местонахождения включены.")
-	if(length(accessories_attached))
-		var/list/accessory_icons = list()
-		for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
-			accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(attached_accessory)]' data-secondary-href='?src=[REF(src)];remove_accessory=[REF(attached_accessory)]'>[span_tooltip(html_encode(attached_accessory.name), icon2html(attached_accessory, user), "", "", "")]</a>"
-		. += span_notice("Вы видите [span_tooltip_warning("ЛКМ по иконке – осмотреть, ПКМ – снять", "<u>аксессуары</u>")]: [accessory_icons.Join(" ")]")
+	var/accessory_list = accessories_examine(user)
+	if(accessory_list)
+		. += accessory_list
 	//SKYRAT EDIT END
 
 /obj/item/clothing/under/Topic(href, href_list)
 	. = ..()
-	if(.)
-		return
-	if(href_list["examine_accessory"] || href_list["remove_accessory"])
-		var/mob/living/user = usr
-		if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) || !can_use(user))
-			return
-		var/accessory_ref = href_list["examine_accessory"] || href_list["remove_accessory"]
-		var/obj/item/clothing/accessory/accessory = locate(accessory_ref) in accessories_attached
-		if(!istype(accessory))
-			to_chat(user, span_warning("Этот аксессуар уже не прикреплён."))
-			return
-		if(href_list["examine_accessory"])
-			user.examinate(accessory)
-		else
-			remove_accessory(accessory, user)
-		return
+	if(!.)
+		return accessories_topic(usr, href_list)
 
 /obj/item/clothing/under/verb/toggle()
 	set name = "Adjust Suit Sensors"
@@ -396,6 +380,11 @@
 	set_to_maximum_sensor(user)
 
 /obj/item/clothing/under/AltClick(mob/user)
+	// Legacy chat cannot send right-click actions from accessory links.
+	if(user?.client?.use_legacy_chat && length(accessories_attached))
+		if(isliving(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) && can_use(user))
+			remove_accessory(user = user)
+		return TRUE
 	. = ..()
 	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
@@ -447,7 +436,9 @@
 		return
 
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Максимальный режим сенсоров")
-	if(can_adjust)
+	if(user.client?.use_legacy_chat && length(accessories_attached))
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Снять аксессуар")
+	else if(can_adjust)
 		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[adjusted == ALT_STYLE ? "Нормальный" : "Повседневный"] стиль ношения")
 	return CONTEXTUAL_SCREENTIP_SET
 

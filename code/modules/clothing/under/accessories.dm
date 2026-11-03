@@ -1,3 +1,38 @@
+// Раньше оно было проками проверки и топиками отдельно для униформы, отдельно для перчаток,
+// отдельно для возможных будущих айтемов других слотов, что могли бы держать аксессуры. Сейчас унифицировано.
+/obj/item/clothing/proc/accessories_examine(mob/user)
+	if(!length(accessories_attached))
+		return ""
+	var/legacy_chat = user?.client?.use_legacy_chat
+	var/list/accessory_icons = list()
+	for(var/obj/item/clothing/accessory/accessory in accessories_attached)
+		var/secondary_link = legacy_chat ? "" : " data-secondary-href='?src=[REF(src)];remove_accessory=[REF(accessory)]'"
+		accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(accessory)]'[secondary_link]>[span_tooltip(html_encode(accessory.name), icon2html(accessory, user), "", "", "")]</a>"
+	var/hint = legacy_chat ? "ЛКМ по иконке — осмотреть, Alt-клик по одежде — снять аксессуар" : "ЛКМ по иконке — осмотреть, ПКМ — снять"
+	return span_notice("Вы видите [span_tooltip_warning(hint, "<u>аксессуары</u>")]: [accessory_icons.Join(" ")]")
+
+/obj/item/clothing/proc/accessories_topic(mob/user, list/href_list)
+	if(!href_list["examine_accessory"] && !href_list["remove_accessory"])
+		return FALSE
+	if(!user?.client)
+		return TRUE
+	if(href_list["examine_accessory"])
+		// Looking needs sight, not the ability to reach or manipulate the clothing.
+		if(!isobserver(user) && (user.stat != CONSCIOUS || user.is_blind() || !(src in view(user.client.view, user))))
+			return TRUE
+	else if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) || !can_use(user))
+		return TRUE
+	var/accessory_ref = href_list["examine_accessory"] || href_list["remove_accessory"]
+	var/obj/item/clothing/accessory/accessory = locate(accessory_ref) in accessories_attached
+	if(!istype(accessory))
+		to_chat(user, span_warning("Этот аксессуар уже не прикреплён."))
+		return TRUE
+	if(href_list["examine_accessory"])
+		user.examinate(accessory)
+	else
+		remove_accessory(accessory, user)
+	return TRUE
+
 /obj/item/clothing/accessory //Ties moved to neck slot items, but as there are still things like medals and armbands, this accessory system is being kept as-is
 	name = "Accessory"
 	desc = "Something has gone wrong!"
