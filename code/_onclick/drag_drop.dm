@@ -28,10 +28,13 @@
 	if(QDELETED(object)) //Yep, you can click on qdeleted things before they have time to nullspace. Fun.
 		return
 	SEND_SIGNAL(src, COMSIG_CLIENT_MOUSEDOWN, object, location, control, params)
-	if(mob && findtext(params, "button=right"))
+	var/right_button = mouse_event_is_right_button(params)
+	if(mob && right_button)
 		mob.right_button_chorded = FALSE
 	if(mouse_down_icon)
 		mouse_pointer_icon = mouse_down_icon
+	if(right_button)
+		return
 	var/delay = mob.CanMobAutoclick(object, location, params)
 	if(delay)
 		selected_target[1] = object
@@ -50,6 +53,8 @@
 		click_intercept_time = world.time
 	if(mouse_up_icon)
 		mouse_pointer_icon = mouse_up_icon
+	if(mouse_event_is_right_button(params))
+		return
 	selected_target[1] = null
 	if(active_mousedown_item)
 		active_mousedown_item.onMouseUp(object, location, params, mob)

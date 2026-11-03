@@ -1747,6 +1747,8 @@
 	TEST_ASSERT(!click_is_drag_leftover(list("left" = "1", "right" = "1", "ctrl" = "1", "button" = "left", "drag" = "right")), "ЛКМ при зажатом ПКМ выброшен как перетаскивание")
 	TEST_ASSERT(click_is_drag_leftover(list("right" = "1", "button" = "right", "drag" = "left")), "Клик посреди перетаскивания ЛКМ не выброшен")
 	TEST_ASSERT(!click_is_drag_leftover(list("left" = "1", "button" = "left")), "Обычный клик выброшен")
+	TEST_ASSERT(mouse_event_is_right_button("right=1;button=right"), "Нажатие ПКМ не узнано: оно запустит автоклик и лучевую винтовку")
+	TEST_ASSERT(!mouse_event_is_right_button("left=1;right=1;button=left;drag=right"), "ЛКМ при зажатом ПКМ принят за ПКМ")
 
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/east = get_step(user, EAST)

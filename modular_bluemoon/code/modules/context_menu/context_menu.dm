@@ -131,6 +131,11 @@
 /proc/click_is_drag_leftover(list/modifiers)
 	return modifiers[DRAG] && !(modifiers[DRAG] == "right" && modifiers["button"] == "left")
 
+/// Нажатие и отпускание ПКМ. Автоклик и предметы на зажатие (лучевая винтовка) - только для ЛКМ:
+/// ПКМ теперь доходит до сервера и вне боя, нажатие ПКМ, чтобы открыть меню, не должно целиться и стрелять
+/proc/mouse_event_is_right_button(params)
+	return findtext(params, "button=right") != 0
+
 /// ЛКМ при зажатом ПКМ запоминается; следующий клик самим ПКМ - его отпускание, оно ничего не делает
 /mob/proc/swallow_right_button_release(params)
 	if(!findtext(params, "right=1"))
