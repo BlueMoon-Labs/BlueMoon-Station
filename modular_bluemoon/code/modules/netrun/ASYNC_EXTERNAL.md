@@ -224,3 +224,24 @@ validation. Periodic 30-second revision probes remain for active snapshot
 subscribers to repair missed data pushes even without a directory change.
 Non-snapshot point producers no longer allocate an idle timer each; fabricators
 retain their native binding-repair timer.
+
+### Research cluster topology discovery migration
+
+Mapped research servers no longer copy or iterate `SSresearch.servers` to
+find their peers. On startup, topology changes or power restoration they
+submit one asynchronous, source-scoped `service_discover` request for
+`research.server` through the existing C# Core directory and APC routing
+provider. The native continuation parks while Core computes candidates and
+resumes only after the read-only catalog completes; failed admission retries
+after 15 seconds instead of spinning the worker.
+
+The source/target `research.server` match is enabled for peer discovery only:
+native configured research-network identity, physical online state and
+`netrun_mapped_server` are checked. The merger still revalidates the actual
+Core-backed route before modifying the shared Techweb. Normal research
+messages are accepted **only** from authorized `research.client` sources,
+and snapshots/credits remain delivered through the existing packet contract.
+No extra IPC protocol commands or C# Core changes are required for this step.
+
+The discovery continuation runs under the common worker budget, never does
+network path solving in DM, and retains one peer comparison per slice.

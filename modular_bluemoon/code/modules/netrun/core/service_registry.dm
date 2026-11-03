@@ -109,6 +109,11 @@
 /datum/netrun_machine_service/proc/receive(datum/netrun_machine_message/message)
 	return FALSE
 
+/// Read-only Core discovery completion hook, always deferred outside IPC decode.
+/// Domain adapters may schedule work; this is not an authorization grant.
+/datum/netrun_machine_service/proc/on_catalog_lookup_completed(family, succeeded)
+	return
+
 /datum/netrun_machine_service/proc/rejection_reason(datum/netrun_machine_message/message)
 	return "получатель отклонил пакет"
 

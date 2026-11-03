@@ -410,6 +410,8 @@
 	var/cluster_transit = -1
 	var/cluster_backbone = -1
 	var/cluster_online
+	/// A failed Core discovery retries once after a backoff, not every MC tick.
+	var/cluster_retry_timer
 
 /datum/netrun_machine_service/research_server/New(datum/component/netrun_node/node, atom/host_override)
 	..(node, host_override)
@@ -445,6 +447,29 @@
 
 /datum/netrun_machine_service/research_server/proc/cluster_state_changed()
 	SIGNAL_HANDLER
+	queue_cluster()
+
+/// The Core worker has finished (or failed) a source-scoped service discovery.
+/// Never merge from this callback: the existing continuation revalidates
+/// native research network policy and reachability before modifying Techweb.
+/datum/netrun_machine_service/research_server/on_catalog_lookup_completed(family, succeeded)
+	if(family != "research.server" || QDELETED(host))
+		return
+	if(succeeded)
+		if(cluster_retry_timer)
+			deltimer(cluster_retry_timer)
+		cluster_retry_timer = null
+		queue_cluster()
+	else
+		schedule_cluster_retry()
+
+/datum/netrun_machine_service/research_server/proc/schedule_cluster_retry()
+	if(cluster_retry_timer || QDELETED(src))
+		return
+	cluster_retry_timer = addtimer(CALLBACK(src, PROC_REF(retry_cluster_lookup)), 15 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/datum/netrun_machine_service/research_server/proc/retry_cluster_lookup()
+	cluster_retry_timer = null
 	queue_cluster()
 
 /datum/netrun_machine_service/research_server/proc/cluster_topology_changed()
@@ -487,12 +512,22 @@
 		SSnetrun.get_machine_transport().defer_ready_service(src)
 		return TRUE
 	if(!cluster_candidates)
-		cluster_candidates = SSresearch.servers.Copy()
+		// Core owns the candidate capture and physical route search. The first
+		// read can be pending: finish this worker task and wait for its callback.
+		var/list/discovered = resolve("research.server")
+		var/datum/netrun_external_effects/machines/queries/executor = SSnetrun.external_core?.effects
+		var/key = json_encode(list(service_key(), "research.server", null))
+		var/datum/netrun_machine_resolution/external/query = executor?.discovery_catalogs[key]
+		if(!istype(query) || query.external_phase != "cached")
+			finish_cluster()
+			return TRUE
+		cluster_candidates = discovered
 		cluster_cursor = 1
 		cluster_again = FALSE
 	if(cluster_cursor <= length(cluster_candidates))
-		var/obj/machinery/rnd/server/peer = cluster_candidates[cluster_cursor++]
-		if(peer != server && !QDELETED(peer) && peer.netrun_mapped_server && peer.stored_research != server.stored_research && peer.research_network_id() == server.research_network_id() && server.link_research_cluster(peer.stored_research))
+		var/datum/netrun_machine_service/research_server/peer_service = cluster_candidates[cluster_cursor++]
+		var/obj/machinery/rnd/server/peer = peer_service?.host
+		if(peer_service != src && !QDELETED(peer_service) && !QDELETED(peer) && peer.netrun_mapped_server && peer.stored_research != server.stored_research && peer.research_network_id() == server.research_network_id() && server.link_research_cluster(peer.stored_research))
 			finish_cluster()
 			return TRUE
 	if(cluster_cursor <= length(cluster_candidates))
@@ -513,6 +548,9 @@
 	return service.advance_cluster()
 
 /datum/netrun_machine_service/research_server/Destroy()
+	if(cluster_retry_timer)
+		deltimer(cluster_retry_timer)
+	cluster_retry_timer = null
 	finish_cluster()
 	if(cluster_listening)
 		UnregisterSignal(host, list(COMSIG_MACHINERY_POWER_LOST, COMSIG_MACHINERY_POWER_RESTORED, COMSIG_MACHINERY_STAT_CHANGED, COMSIG_MOVABLE_MOVED))
@@ -535,8 +573,16 @@
 	return server.stored_research ? REF(server.stored_research) : null
 
 /// Explicitly linked physical servers may answer for the same authority.
+/// A server source is accepted only for read-only cluster discovery; actual
+/// packet receipt still requires a research.client and native research_peer.
 /datum/netrun_machine_service/research_server/matches(datum/netrun_machine_service/source_service, recipient_tag)
-	return ..() && research_peer(source_service)
+	if(!..())
+		return FALSE
+	if(istype(source_service, /datum/netrun_machine_service/research_server))
+		var/obj/machinery/rnd/server/origin = source_service.host
+		var/obj/machinery/rnd/server/destination = host
+		return source_service != src && !QDELETED(origin) && !QDELETED(destination) && origin.netrun_mapped_server && destination.netrun_mapped_server && origin.netrun_online() && destination.netrun_online() && origin.research_network_id() == destination.research_network_id()
+	return research_peer(source_service)
 
 /datum/netrun_machine_service/research_server/proc/bind_research()
 	var/obj/machinery/rnd/server/server = host

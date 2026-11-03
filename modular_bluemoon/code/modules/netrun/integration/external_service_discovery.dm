@@ -59,6 +59,9 @@
 	set waitfor = FALSE
 	cancel_delivery()
 	if(external_phase == "failed")
+		// Failure is delivered on the normal worker, never in the IPC decoder.
+		if(catalog_only && !QDELETED(source))
+			source.on_catalog_lookup_completed(destination_id, FALSE)
 		qdel(src)
 		return TRUE
 	if(!SSnetrun.get_machine_transport().is_ready())
@@ -122,7 +125,12 @@
 			var/datum/netrun_external_effects/machines/queries/executor = client.effects
 			catalog_graph = executor.discovery_infrastructure
 			catalog_availability = executor.discovery_transit_availability
-			SStgui.update_uis(source.host)
+			if(destination_id == "research.server")
+				// Research clustering is driven by a completed Core result, not by
+				// retrying a global registry scan on every worker slice.
+				source.on_catalog_lookup_completed(destination_id, TRUE)
+			else
+				SStgui.update_uis(source.host)
 			return TRUE
 	// Базовый fanout получает только уже отобранные native targets.
 	return ..()
