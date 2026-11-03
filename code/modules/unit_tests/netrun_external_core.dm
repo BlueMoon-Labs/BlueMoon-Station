@@ -132,11 +132,22 @@
 /datum/netrun_external_fixture/proc/first_context()
 	return length(executor.pending) ? executor.pending[executor.pending[1]] : null
 
+/// Cooperative fixture work belongs only to its captured live client/executor and binding.
+/datum/netrun_external_fixture/proc/transport_current(datum/netrun_external_core/expected_client, datum/netrun_external_effects/machines/expected_executor, expected_binding)
+	return !QDELETED(src) && !QDELETED(expected_client) && !QDELETED(expected_executor) && client == expected_client && executor == expected_executor && expected_client.binding_epoch == expected_binding
+
 /// Тест явно выполняет две фазы: decode/ownership и отдельный bounded native execution slice.
 /datum/netrun_external_fixture/proc/receive_result(list/result)
+	var/datum/netrun_external_core/active_client = client
+	var/datum/netrun_external_effects/machines/active_executor = executor
+	var/binding = active_client?.binding_epoch
+	if(!transport_current(active_client, active_executor, binding))
+		return FALSE
 	. = executor.process_result(client, result)
-	if(.)
+	if(. && transport_current(active_client, active_executor, binding))
 		pump_native(result["invocation_id"])
+		if(!transport_current(active_client, active_executor, binding))
+			return .
 		var/datum/netrun_external_invocation/invocation = executor.invocations[result["invocation_id"]]
 		if(invocation?.result_json)
 			var/list/native_result = json_decode(invocation.result_json)
@@ -147,12 +158,22 @@
 
 /// Только fixture ждёт старта отдельной cooperative фазы, не превращая production decode в синхронный handler.
 /datum/netrun_external_fixture/proc/pump_native(invocation_id)
-	executor.advance_native_invocations(client)
+	var/datum/netrun_external_core/active_client = client
+	var/datum/netrun_external_effects/machines/active_executor = executor
+	var/binding = active_client?.binding_epoch
+	if(!transport_current(active_client, active_executor, binding))
+		return FALSE
+	active_executor.advance_native_invocations(active_client)
+	if(!transport_current(active_client, active_executor, binding))
+		return FALSE
 	var/deadline = world.time + 2 SECONDS
-	var/datum/netrun_external_invocation/invocation = executor.invocations[invocation_id]
-	while(!QDELETED(invocation) && invocation.stage == "queued" && world.time < deadline)
+	var/datum/netrun_external_invocation/invocation = active_executor.invocations[invocation_id]
+	while(transport_current(active_client, active_executor, binding) && !QDELETED(invocation) && invocation.stage == "queued" && world.time < deadline)
 		sleep(world.tick_lag)
-		executor.advance_native_invocations(client)
+		if(!transport_current(active_client, active_executor, binding))
+			return FALSE
+		active_executor.advance_native_invocations(active_client)
+	return transport_current(active_client, active_executor, binding)
 
 /// Bounded IPC burst сохраняет logical ACK, FIFO retries и captured fact prefix.
 /datum/unit_test/netrun_external_core_bounded_batch_retry/Run()

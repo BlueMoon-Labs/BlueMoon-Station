@@ -492,6 +492,7 @@
 #include "netrun_invasions.dm"
 #include "netrun_external_core.dm"
 #include "netrun_external_entities.dm"
+#include "netrun_external_navigation.dm"
 #include "netrun_external_queries.dm"
 #include "netrun_external_projection.dm"
 #include "netrun_core_live.dm"

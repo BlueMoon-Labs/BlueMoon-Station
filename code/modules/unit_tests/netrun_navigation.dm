@@ -12,12 +12,15 @@
 	TEST_ASSERT(entity.console.store_file(new /datum/netrun_file("route.key", NETRUN_FILE_KEY, source_node.network.passcode, 1, source_node.network.id)), "Traversal key must fit")
 	entity.next_hop = world.time + 5 SECONDS
 	TEST_ASSERT(entity.travel_to(target_node), "Starting a route during cooldown should succeed")
+	TEST_ASSERT_EQUAL(entity.host_node, source_node, "Admission cannot move before the Core path arrives")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(source_node.bound_apc, target_node)), "The remote path is imported asynchronously")
 	var/datum/netrun_entity_navigation/navigation = entity.navigation
 	TEST_ASSERT(navigation.is_active() && navigation.timer, "The route must wait on a cancellable timer")
 	TEST_ASSERT_EQUAL(entity.host_node, source_node, "Cooldown must still prevent movement")
 	var/old_generation = navigation.generation
 	var/old_timer = navigation.timer
 	TEST_ASSERT(entity.travel_to(target_node), "Replacing a waiting route should succeed")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(source_node.bound_apc, target_node)), "The replacement path has its own continuation")
 	TEST_ASSERT_NOTEQUAL(navigation.timer, old_timer, "The old route timer must be replaced")
 	var/current_timer = navigation.timer
 	navigation.advance_route(old_generation)
@@ -30,25 +33,30 @@
 /// Each step revalidates the live link; a deleted or offline next hop cancels the route.
 /datum/unit_test/netrun_navigation_revalidates_next_hop/Run()
 	var/turf/origin = run_loc_floor_bottom_left
-	var/datum/netrun_route_scene/scene = netrun_connected_test_area()
-	var/obj/machinery/computer/netrun_terminal/source = scene.machine(/obj/machinery/computer/netrun_terminal, origin)
-	var/obj/machinery/computer/netrun_terminal/target = scene.machine(/obj/machinery/computer/netrun_terminal, get_step(origin, EAST))
-	var/datum/component/netrun_node/source_node = source.GetComponent(/datum/component/netrun_node)
-	var/datum/component/netrun_node/target_node = target.GetComponent(/datum/component/netrun_node)
-	var/mob/camera/netrun_entity/entity = new(origin, source_node)
+	// Stable physical endpoints isolate next-hop invalidation from unrelated machine power ticks.
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, origin)
+	var/mob/camera/netrun_entity/entity = new(origin, scene.node_a)
 	scene.owned.Insert(1, entity)
 	entity.console.operator = entity
-	TEST_ASSERT(entity.console.store_file(new /datum/netrun_file("route.key", NETRUN_FILE_KEY, source_node.network.passcode, 1, source_node.network.id)), "Traversal key must fit")
-	TEST_ASSERT(entity.travel_to(target_node), "A valid route must start")
+	TEST_ASSERT(entity.console.store_file(scene.key_file()), "Traversal key must fit")
+	entity.next_hop = world.time + 10 SECONDS
+	TEST_ASSERT(entity.travel_to(scene.node_b), "A valid route must start")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(scene.apc_node, scene.node_b)), "Core supplies both physical edges")
 	var/datum/netrun_entity_navigation/navigation = entity.navigation
+	TEST_ASSERT_EQUAL(length(navigation.queue), 2, "Both Core steps are committed before the first native callback")
+	// Trigger only the first due native hop; an unrelated MC slice cannot advance the second before inspection.
+	entity.next_hop = world.time
+	deltimer(navigation.timer)
+	navigation.advance_route(navigation.generation)
+	TEST_ASSERT_EQUAL(entity.host_node, scene.apc_node, "The first native callback enters the actual intermediate APC")
 	TEST_ASSERT(navigation.is_active() && navigation.timer, "The second hop must wait for cooldown")
 	var/datum/component/netrun_node/current = entity.host_node
-	target.set_machine_stat(BROKEN)
+	qdel(scene.node_b.parent)
 	entity.next_hop = world.time
 	// Simulate the actual scheduled callback without leaving another timer behind.
 	deltimer(navigation.timer)
 	navigation.advance_route(navigation.generation)
-	TEST_ASSERT_EQUAL(entity.host_node, current, "An offline destination must not be entered")
+	TEST_ASSERT_EQUAL(entity.host_node, current, "A deleted destination must not be entered")
 	TEST_ASSERT(!navigation.is_active() && !navigation.timer, "A failed route must release its timer and queue")
 	TEST_ASSERT_NULL(navigation.ui_payload(), "Finished/cancelled navigation must clear the HUD")
 
@@ -187,7 +195,9 @@
 	TEST_ASSERT(entity.console.store_file(new /datum/netrun_file("route.key", NETRUN_FILE_KEY, source_node.network.passcode, 1, source_node.network.id)), "Traversal key must fit")
 	allocate(/datum/netrun_navigation_redirect, entity, replacement_node)
 	TEST_ASSERT(entity.travel_to(target_node), "The first route must start")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(source_node.bound_apc, target_node)), "The first imported hop emits the real arrival signal")
 	TEST_ASSERT_EQUAL(entity.navigation.destination, replacement_node.address, "An arrival extension may replace the current route")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(replacement_node)), "The arrival replacement waits for its independent Core result")
 	TEST_ASSERT_EQUAL(length(entity.navigation.queue), 1, "The old callback must not consume the new route's next hop")
 	TEST_ASSERT(entity.navigation.timer, "The replacement route must retain its own cooldown timer")
 /datum/unit_test/netrun_implant_entry_local_area/Run()
@@ -274,6 +284,7 @@
 	var/datum/netrun_file/acquired_key/copy = key.copy()
 	TEST_ASSERT(entity.console.store_file(copy), "The recipient owns its actual source file")
 	TEST_ASSERT(entity.navigation.move_to(scene.node_b), "A network-only acquired key admits ordinary autopilot")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(scene.apc_node, scene.node_b)), "Core supplies the gateway route before native execution")
 	TEST_ASSERT_EQUAL(entity.host_node, scene.apc_node, "Admission performs one real edge, never a teleport")
 	TEST_ASSERT(entity.navigation.timer, "The next edge waits on the normal cooldown")
 	entity.console.delete_local_file(copy)
@@ -286,6 +297,7 @@
 	TEST_ASSERT(entity.console.store_file(copy), "An independent still-valid copy may be mounted")
 	entity.next_hop = world.time + 5 SECONDS
 	TEST_ASSERT(entity.navigation.move_to(scene.node_b), "A neighbouring destination can wait through cooldown")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(scene.node_b)), "The fresh key is captured by the admitted route")
 	var/previous_passcode = scene.node_b.network.passcode
 	scene.node_b.network.passcode = "navigation-rotated-passcode"
 	entity.next_hop = world.time
@@ -298,6 +310,7 @@
 	entity.console.access_session.grant_network(scene.node_b.network, NETRUN_ACCESS_GUEST, NETRUN_ACCESS_GUEST)
 	entity.next_hop = world.time + 5 SECONDS
 	TEST_ASSERT(entity.navigation.move_to(scene.node_b), "A directly reacquired gateway grant also permits traversal")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(scene.node_b)), "The direct grant is captured before later revocation")
 	entity.console.access_session.revoke_all()
 	entity.next_hop = world.time
 	deltimer(entity.navigation.timer)
@@ -331,6 +344,7 @@
 	TEST_ASSERT(admission["allowed"] && admission["action"] == "travel", "A remote USER destination admits travel rather than falsely claiming direct adjacency")
 	entity.console.release_path_tree(tree)
 	TEST_ASSERT(entity.dispatch_module_action("move", list("address" = scene.node_b.address), entity), "The shared navigation module handles the real action")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(), "unreachable"), "Core rejects the closed intermediate node asynchronously")
 	TEST_ASSERT_EQUAL(entity.host_node, scene.node_a, "A closed intermediate APC cannot be crossed just because the target has USER")
 	TEST_ASSERT(!entity.navigation.is_active(), "Failed complete-path validation leaves no autopilot work")
 	entity.console.ui_node_levels = list()
@@ -339,6 +353,7 @@
 	admission = entity.navigation.movement_payload(scene.apc_node)
 	TEST_ASSERT(admission["allowed"] && admission["action"] == "hop", "Fresh adjacent USER overrides a previously cached GUEST result immediately")
 	TEST_ASSERT(entity.dispatch_module_action("move", list("address" = scene.node_b.address), entity), "The same module action can now start the complete authorized route")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(scene.apc_node, scene.node_b)), "The authorized result enters the actual native route consumer")
 	TEST_ASSERT_EQUAL(entity.host_node, scene.apc_node, "The dispatch chooses an actual first hop through the APC")
 	TEST_ASSERT(entity.navigation.timer, "The second edge retains the ordinary cooldown")
 	entity.next_hop = world.time

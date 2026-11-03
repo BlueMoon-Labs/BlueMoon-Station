@@ -650,6 +650,10 @@
 			if(origin == NETRUN_ORIGIN_ENTITY && istype(host, /mob/camera/netrun_entity))
 				var/mob/camera/netrun_entity/entity = host
 				var/datum/component/netrun_node/target = SSnetrun.find_node(params["address"])
+				if(entity.navigation?.uses_external_pathfinding())
+					if(!entity.navigation.request_direct_hop(target, TRUE))
+						log_line("Не удалось отправить запрос перехода через реле.", "bad")
+					return TRUE
 				if(SSnetrun.get_topology().is_relay(entity.host_node) && SSnetrun.get_topology().is_relay(target))
 					entity.relay_hop(target)
 			return TRUE

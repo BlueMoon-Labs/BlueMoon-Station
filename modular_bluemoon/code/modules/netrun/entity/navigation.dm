@@ -7,6 +7,16 @@
 	var/expected_source
 	var/timer
 	var/generation = 0
+	/// Read-only Core path request; independent of the opt-in EntityWorld/HP bridge.
+	var/datum/netrun_external_navigation_request/external_request
+	var/external_revision = "1"
+	/// A ready adjacent manual click may enter hostile ICE; autopilot still stops before it.
+	var/manual_hop = FALSE
+	/// Retain exact Core node generations until each deferred native hop, including across cooldowns.
+	var/list/external_route_keys = list()
+	var/datum/weakref/external_route_client_ref
+	var/external_route_binding
+	var/external_route_relay_only = FALSE
 	/// A combat lock observes one live process; it never retains that process.
 	var/datum/weakref/pursuit_target_ref
 	var/pursuit_name
@@ -23,10 +33,26 @@
 	return ..()
 
 /datum/netrun_entity_navigation/proc/is_active()
-	return !!length(queue)
+	return !!length(queue) || !!external_request
+
+/// Only policies represented by raw Core authority participate; special station/visitor policies stay explicit.
+/datum/netrun_entity_navigation/proc/uses_external_pathfinding()
+	if(istype(owner, /mob/camera/netrun_entity/visitor))
+		return FALSE
+	if(istype(owner, /mob/camera/netrun_entity/bot))
+		var/mob/camera/netrun_entity/bot/bot = owner
+		return !bot.is_network_visitor() && bot.console?.type == /datum/netrun_console/entity/bot
+	return TRUE
 
 /datum/netrun_entity_navigation/proc/cancel(clear_pursuit = TRUE)
 	generation++
+	external_revision = netrun_external_decimal_next(external_revision)
+	QDEL_NULL(external_request)
+	manual_hop = FALSE
+	external_route_keys.Cut()
+	external_route_client_ref = null
+	external_route_binding = null
+	external_route_relay_only = FALSE
 	if(timer)
 		deltimer(timer)
 		timer = null
@@ -73,6 +99,13 @@
 
 /datum/netrun_entity_navigation/proc/on_pursuit_moved(datum/source)
 	SIGNAL_HANDLER
+	if(uses_external_pathfinding() && pursuit_target_ref)
+		// Native movement is a new fact, not permission to retain a path to the former residence.
+		if(external_request || length(queue))
+			cancel(FALSE)
+		if(!timer)
+			timer = addtimer(CALLBACK(src, PROC_REF(advance_route), generation), 1, TIMER_STOPPABLE)
+		return
 	// Leaving and entering are two signals in one hop. One owned callback sees
 	// the settled destination and coalesces further movement during our cooldown.
 	if(!timer && pursuit_target_ref)
@@ -102,6 +135,20 @@
 		pursuit_node = node.address
 		pursuit_status = "Цель в вашем узле: можно атаковать."
 		return FALSE
+	if(uses_external_pathfinding())
+		pursuit_node = node.address
+		if(external_request && destination == node.address)
+			pursuit_status = "Построение маршрута к цели."
+			return FALSE
+		if(destination != node.address || !length(queue))
+			if(!request_external_route(node, preserve_pursuit = TRUE))
+				cancel()
+				owner.console.log_line("Преследование остановлено: Core недоступен для построения маршрута.", "average")
+				return FALSE
+			pursuit_status = "Построение маршрута к цели."
+			return FALSE
+		pursuit_status = "Преследование по маршруту Core."
+		return TRUE
 	var/datum/component/netrun_node/next = length(queue) ? SSnetrun.find_node(queue[1]) : null
 	if(destination != node.address || !is_active() || !owner.can_enter(next))
 		var/list/path = path_to(node)
@@ -209,6 +256,8 @@
 /datum/netrun_entity_navigation/proc/move_to(datum/component/netrun_node/node)
 	if(QDELETED(owner) || QDELETED(owner.console))
 		return FALSE
+	if(uses_external_pathfinding())
+		return start(node, world.time >= owner.next_hop)
 	var/datum/netrun_path_tree/tree = owner.console.connection.read_path_tree(TRUE)
 	var/list/admission = movement_payload(node, tree)
 	owner.console.release_path_tree(tree)
@@ -225,9 +274,11 @@
 	owner.console.log_line("Автопроход невозможен: промежуточные узлы отключены, закрыты вратами или требуют отдельного доступа.", "bad")
 	return FALSE
 
-/datum/netrun_entity_navigation/proc/start(datum/component/netrun_node/target)
+/datum/netrun_entity_navigation/proc/start(datum/component/netrun_node/target, manual_move = FALSE)
 	if(QDELETED(owner) || target == owner.host_node || owner.is_stunned())
 		return FALSE
+	if(uses_external_pathfinding())
+		return request_external_route(target, manual_move)
 	var/list/path = path_to(target)
 	if(!length(path))
 		return FALSE
@@ -236,6 +287,47 @@
 	destination = target.address
 	expected_source = owner.host_node.address
 	advance_route(generation)
+	return TRUE
+
+/// User/brain intent and native target facts share the same asynchronous Core path owner.
+/datum/netrun_entity_navigation/proc/request_external_route(datum/component/netrun_node/target, manual_move = FALSE, preserve_pursuit = FALSE, direct_only = FALSE, relay_only = FALSE)
+	if(QDELETED(owner) || QDELETED(owner.console) || QDELETED(target) || QDELETED(owner.host_node))
+		return FALSE
+	cancel(!preserve_pursuit)
+	destination = target.address
+	expected_source = owner.host_node.address
+	if(!SSnetrun.external_core?.request_entity_navigation(src, target, manual_move, direct_only, relay_only))
+		cancel(!preserve_pursuit)
+		owner.console.log_line("Автопроход недоступен: Core не готов принять запрос маршрута.", "bad")
+		return FALSE
+	owner.console.invalidate_ui()
+	return TRUE
+
+/// An explicit UI hop requests a one-edge Core plan; a longer route cannot silently turn it into travel.
+/datum/netrun_entity_navigation/proc/request_direct_hop(datum/component/netrun_node/target, relay = FALSE)
+	if(!uses_external_pathfinding() || QDELETED(owner) || QDELETED(target) || target == owner.host_node || owner.is_stunned() || world.time < owner.next_hop)
+		return FALSE
+	return request_external_route(target, manual_move = TRUE, direct_only = TRUE, relay_only = relay)
+
+/// Specialized native consumers may consume a terminal result once; cancellation itself is not a failure.
+/datum/netrun_entity_navigation/proc/on_external_navigation_failed(datum/netrun_external_navigation_request/request, code)
+	return
+
+/// Only a complete current Core result becomes a native route. First hop stays off the decoder stack.
+/datum/netrun_entity_navigation/proc/apply_external_route(datum/netrun_external_navigation_request/request, list/path)
+	if(external_request != request || !request.current() || !length(path))
+		return FALSE
+	external_request = null
+	queue = path
+	manual_hop = request.manual_move && length(path) == 1
+	external_route_client_ref = request.client_ref
+	external_route_binding = request.binding
+	external_route_relay_only = request.relay_only
+	// Private staging has a single owner; transfer it without another unbounded DM traversal.
+	external_route_keys = request.nodes
+	request.nodes = list()
+	schedule_step()
+	owner.console.invalidate_ui()
 	return TRUE
 
 /datum/netrun_entity_navigation/proc/schedule_step()
@@ -264,6 +356,8 @@
 /datum/netrun_entity_navigation/proc/advance_route(expected_generation)
 	if(expected_generation != generation || QDELETED(owner) || (!is_active() && !pursuit_target_ref))
 		return
+	if(external_request)
+		return
 	timer = null
 	if(pursuit_target_ref)
 		if(!refresh_pursuit())
@@ -277,7 +371,18 @@
 		schedule_step()
 		return
 	var/datum/component/netrun_node/next = SSnetrun.find_node(queue[1])
-	var/datum/netrun_ice/threat = threat_at(next)
+	if(external_route_binding)
+		var/datum/netrun_external_core/client = external_route_client_ref?.resolve()
+		var/list/key = length(external_route_keys) ? external_route_keys[1] : null
+		if(!client?.ready || client.binding_epoch != external_route_binding || !key || QDELETED(next) || client.resolve_node(key["node_id"], key["generation"]) != next)
+			cancel()
+			owner.console.log_line("Автопроход остановлен: binding или поколение узла Core изменились.", "bad")
+			return
+	if(external_route_relay_only && !netrun_quantum_link(owner.host_node, next))
+		cancel()
+		owner.console.log_line("Переход через реле отменён: физические relay/backbone facts изменились.", "bad")
+		return
+	var/datum/netrun_ice/threat = manual_hop ? null : threat_at(next)
 	if(threat)
 		var/message = "Автопроход остановлен перед [next.get_name()] ([next.address]): [threat.name] враждебен вашему процессу. Изучите узел; для боя войдите вручную."
 		cancel()
@@ -295,6 +400,8 @@
 	if(QDELETED(src) || QDELETED(owner) || expected_generation != generation || !owner.host_node)
 		return
 	queue.Cut(1, 2)
+	if(length(external_route_keys))
+		external_route_keys.Cut(1, 2)
 	expected_source = owner.host_node.address
 	if(is_active())
 		schedule_step()

@@ -14,8 +14,8 @@
 
 /// Общий bounded dispatcher read-only запросов; все вычисления остаются у Host.
 /datum/netrun_external_effects/machines/queries
-	/// Три фиксированных producer не создают неограниченного количества watermarks в C#.
-	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0", "watch" = "0", "entity" = "0")
+	/// Фиксированные producer не создают watermark на каждую сущность или UI запрос.
+	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0", "watch" = "0", "entity" = "0", "navigation" = "0")
 	/// Нулевые application quotas не ограничивают обработку; continuations всегда weak.
 	var/query_limit = 0
 	var/query_command_limit = 0
@@ -90,7 +90,7 @@
 
 /// Регистрация consumer и команды атомарна: admission pressure не оставляет пустой slot.
 /datum/netrun_external_effects/machines/queries/proc/enqueue_query(kind, raw_json, datum/consumer)
-	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "service_watch", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue", "entity_operation", "entity_effect_result")))
+	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "service_watch", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue", "entity_operation", "entity_effect_result", "entity_navigation_query")))
 		return FALSE
 	var/list/body
 	try
@@ -144,7 +144,7 @@
 			qdel(command)
 	if(never_sent || !cancel_kind || closed || query_disconnecting)
 		return
-	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel", "service_unwatch")) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit))
+	if(!(cancel_kind in list("service_discovery_cancel", "projection_cancel", "graph_sync_cancel", "service_unwatch", "entity_navigation_cancel")) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit))
 		owner?.external_core?.abort_session("query_cancel_pressure")
 		return
 	var/datum/netrun_external_query_command/cancel = new
@@ -232,6 +232,8 @@
 		observe_service_watch(client, result, command)
 	else if(command.kind == "entity_operation" || command.kind == "entity_effect_result")
 		observe_entity(client, result, command)
+	else if(command.kind == "entity_navigation_query")
+		observe_entity_navigation(client, result, command)
 	else if(command.kind == "projection_query" || command.kind == "anchor_query" || command.kind == "graph_sync_start" || command.kind == "graph_sync_continue")
 		observe_projection(client, result, command)
 	qdel(command)
@@ -244,6 +246,8 @@
 		return process_entity_changed(client, result)
 	if(result["kind"] == "entity_native_effect")
 		return process_entity_native_effect(client, result)
+	if(result["kind"] == "entity_navigation_page")
+		return process_entity_navigation(client, result)
 	if(result["kind"] == "core_task_completed")
 		return process_entity_task_completed(client, result)
 	if(result["kind"] == "service_watch_event")
@@ -336,6 +340,7 @@
 	disconnect_discovery(client, reason)
 	disconnect_service_watches()
 	disconnect_entities()
+	disconnect_entity_navigation()
 	for(var/datum/netrun_external_query_command/command as anything in query_commands)
 		qdel(command)
 	for(var/sequence in query_inflight)

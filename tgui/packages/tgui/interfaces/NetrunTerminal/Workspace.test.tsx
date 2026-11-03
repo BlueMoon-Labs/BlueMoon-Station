@@ -332,6 +332,16 @@ describe('Netrun workspace pages', () => {
     expect(editor.value).toBe('Не терять фокус');
   });
 
+  test('a pending Core route shows preparation and can be cancelled from another workspace', () => {
+    const { panel, topic } = setup({ workspace_view: 'files',
+      entity: { name: 'Runner', integrity: 100, max_integrity: 100, host: node.address,
+        host_name: node.name, diving: true, travel: { target: 'TARGET', remaining: 0 } } });
+    expect(panel.getByText('Построение маршрута к TARGET')).toBeTruthy();
+    expect(panel.queryByText(/осталось переходов: 0/)).toBeNull();
+    fireEvent.click(panel.getByLabelText('Остановить автопроход'));
+    expect(actions(topic, 'travel_cancel')).toEqual([{}]);
+  });
+
   test('the active automatic route can be cancelled from any workspace', () => {
     const { panel, topic, update } = setup({ workspace_view: 'files',
       entity: { name: 'Runner', integrity: 100, max_integrity: 100, host: node.address,

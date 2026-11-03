@@ -83,3 +83,46 @@ production consumers DM scheduler и удалить сам scheduler. DM дол�
 `entity-migration.md`, `entity-bots.md`, `combat-core.md`, `storage.md`, `plugins.md`.
 Локальные незакоммиченные изменения следующей интеграции ботов не входят в
 закреплённый SHA и должны сохраняться отдельной работой.
+
+## Следующий локальный участок: production поиск пути
+
+Поверх этой контрольной пары подключён production поиск пути для resident/diver
+`navigation.start()`, UI `move`/`hop`/`relay_hop`, преследование и переходы обычных owned agents:
+raw access facts → существующий Core bounded
+navigation broker → paged result → отложенный native route timer. Частичные
+страницы, изменённые raw права/поколения/source и старый binding отбрасываются;
+отмена освобождает также cooperative exporter. Потеря Core не включает DM BFS.
+EntityWorld proxy ради навигации не создаётся, поэтому HP/status ownership не
+смешивается. Core pin остаётся прежним.
+
+При движении преследуемого native актора старый Core запрос/маршрут отменяется,
+после coalesced сигнала отправляется новое намерение к его актуальному узлу.
+У owned agents убран соседний `can_enter → hop` обход Core planner; pending не
+создаёт дубликаты, terminal отказ однократно возвращается в `move_toward` с
+проверкой destination/binding/operation. Possession не запускает автономный AI.
+Специальные station/visitor console policies пока исключены из этого handoff.
+Явный hop не превращается в автопроход: применяется только одношаговый Core
+read model. Relay intent дополнительно сохраняет native physical validation.
+Login/Logout отменяют прежнюю navigation generation, отделяя AI/player intents.
+
+BotRuntime в соседнем `netrun-core/netrun-bot-integration` сохранён без изменений.
+Аудит выявил, что пока нельзя включать его production wire: он принимает готовый
+`BotContext` из DM, выдаёт navigation/combat решения как native, не обновляет
+brain из Core owners и неполно fingerprint-ит context. Автоматический brain lane
+также требует согласования с общей FIFO. Успешные unit tests сами по себе не
+доказывают безопасный handoff.
+
+Остаются DM BFS выбора целей ботов и специальных station/visitor profiles,
+UI access/admission, hop/AP/cooldown/threat rules,
+ICE/бой, файлы и прочие владельцы из раздела выше. Полная миграция не завершена.
+Контракт этого участка: [ASYNC_EXTERNAL.md](../../modular_bluemoon/code/modules/netrun/ASYNC_EXTERNAL.md).
+
+Асинхронные проверки также выявили прежнюю ошибку Atmos observer при reconnect:
+удалённый service watch оставлял signal на живом source. Замена watch теперь
+сначала освобождает прежнюю подписку, без подавления duplicate-signal проверки.
+
+По просьбе пользователя длительные прогоны остановлены для продолжения переноса
+механики. Последующие production изменения pursuit/owned agents пока не прогонялись.
+Ранее full-map smoke остановился до этапа новой навигации на native handoff
+`native_topology_pending`; success fixture дополнена ожиданием текущего Core tree
+и application ACK инфраструктуры. Полный игровой раунд, Docker и нагрузка не доказаны.
