@@ -105,7 +105,14 @@
 
 /// Player possession suspends the autonomous clock. Returning control is a fact
 /// that resumes behavior and releases presentation-only resources immediately.
+/mob/camera/netrun_entity/bot/Login()
+	// A former AI intent must not become a player-controlled native movement timer.
+	navigation?.cancel()
+	return ..()
+
 /mob/camera/netrun_entity/bot/Logout()
+	// Fence both pending Core queries and already-dispatched native timer generations.
+	navigation?.cancel()
 	. = ..()
 	remove_module("neural_feedback")
 	brain?.wake_now()

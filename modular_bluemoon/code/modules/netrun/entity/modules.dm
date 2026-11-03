@@ -185,6 +185,10 @@
 			return TRUE
 		if("hop", "relay_hop")
 			var/datum/component/netrun_node/target = SSnetrun.find_node(params["address"])
+			if(navigation.uses_external_pathfinding())
+				if(!navigation.request_direct_hop(target, action == "relay_hop"))
+					owner.console.log_line("Не удалось отправить запрос перехода.", "bad")
+				return TRUE
 			var/success = action == "hop" ? owner.hop(target) : owner.relay_hop(target)
 			if(!success)
 				owner.console.log_line(owner.hop_denial(target), "bad")

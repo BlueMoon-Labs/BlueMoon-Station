@@ -34,6 +34,8 @@
 	rustg_file_write(json_encode(monitor_data), "data/netrun-core/live-monitor-ui.json")
 	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene/core_live, run_loc_floor_bottom_left)
 	TEST_ASSERT(scene.source && scene.target, "Live fixture must register real native machine services")
+	log_world("NETRUN_CORE_LIVE_STAGE fixture_ready")
+	TEST_ASSERT(wait_tree(scene.source.resolve_node(), scene.target.resolve_node(), 90 SECONDS), "The newly created physical fixture needs a current Core route and acknowledged infrastructure before its success-case native effect")
 	var/list/outcomes = list()
 	log_world("NETRUN_CORE_LIVE_STAGE discovery_message")
 	var/before_received = scene.target.received
@@ -142,6 +144,25 @@
 		diver.console.workspace_view = "map"
 		var/list/resident_data = diver.console.ui_data(diver)
 		TEST_ASSERT(netrun_map_has_node(resident_data, entrance.target_node.address), "A real resident must see its imported network map")
+		log_world("NETRUN_CORE_LIVE_STAGE entity_navigation")
+		var/datum/component/netrun_node/navigation_start = diver.host_node
+		var/datum/component/netrun_node/navigation_target = entrance.apc.GetComponent(/datum/component/netrun_node)
+		// Raw acquired GUEST is an input fact; the route and traversal decision belong to Core.
+		diver.console.access_session.network_access[navigation_target.network.id] = NETRUN_ACCESS_GUEST
+		var/navigation_integrity = diver.integrity
+		TEST_ASSERT(diver.navigation.move_to(navigation_target), "Production manual movement must enqueue a Core route request")
+		TEST_ASSERT_EQUAL(diver.host_node, navigation_start, "Enqueue never searches or moves synchronously in DM")
+		TEST_ASSERT_NULL(diver.external_entity_proxy, "Path planning must not opt a resident into a second HP/status owner")
+		var/navigation_deadline = world.time + 30 SECONDS
+		while(world.time < navigation_deadline && diver.host_node != navigation_target && client.ready && diver.navigation.is_active())
+			sleep(world.tick_lag)
+		TEST_ASSERT_EQUAL(diver.host_node, navigation_target, "Real Core path pages must drive the later native hop")
+		TEST_ASSERT_EQUAL(diver.integrity, navigation_integrity, "Navigation must preserve the resident's current integrity")
+		TEST_ASSERT(diver.travel_to(navigation_start), "The return route uses the same production Core planner")
+		navigation_deadline = world.time + 30 SECONDS
+		while(world.time < navigation_deadline && diver.host_node != navigation_start && client.ready && diver.navigation.is_active())
+			sleep(world.tick_lag)
+		TEST_ASSERT_EQUAL(diver.host_node, navigation_start, "The Core planner supports a second distinct navigation intent")
 		log_world("NETRUN_CORE_LIVE_STAGE entity_core_proxy")
 		var/datum/netrun_external_entity_proxy/proxy = client.entity_proxy(diver, TRUE)
 		TEST_ASSERT(proxy?.register(), "Resident definition must enqueue directly to the real Core FIFO")
@@ -207,7 +228,7 @@
 		if(!istype(executor) || client.state == "resync_required")
 			return null
 		var/datum/netrun_path_tree/tree = executor.projection_tree(client, source, "machine")
-		if(istype(tree, /datum/netrun_path_tree/external) && tree.retained && tree.path_available(SSnetrun.get_topology(), destination.address))
+		if(client.infrastructure_facts_ready() && istype(tree, /datum/netrun_path_tree/external) && tree.retained && tree.path_available(SSnetrun.get_topology(), destination.address))
 			return tree
 		if(!tree.retained)
 			qdel(tree)

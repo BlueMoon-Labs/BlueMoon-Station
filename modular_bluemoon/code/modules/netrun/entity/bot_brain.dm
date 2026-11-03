@@ -344,9 +344,14 @@
 		remember_visit(target.address)
 		return NETRUN_BOT_MOVE_ARRIVED
 	var/datum/netrun_entity_navigation/navigation = owner.navigation
+	if(navigation.uses_external_pathfinding())
+		var/datum/netrun_entity_navigation/bot/bot_navigation = navigation
+		if(istype(bot_navigation) && bot_navigation.consume_external_failure(target))
+			state = "маршрут недоступен"
+			return NETRUN_BOT_MOVE_BLOCKED
 	if(navigation.is_active())
 		if(navigation.destination == target.address)
-			state = "в пути"
+			state = navigation.external_request ? "построение маршрута" : "в пути"
 			if(world.time >= owner.next_hop)
 				navigation.advance_route(navigation.generation)
 			if(owner.host_node == target)
@@ -355,6 +360,12 @@
 			return NETRUN_BOT_MOVE_PROGRESS
 		navigation.cancel()
 	if(world.time < owner.next_hop)
+		return NETRUN_BOT_MOVE_PROGRESS
+	// Supported agents submit every destination, including an adjacent node, to the same Core planner.
+	if(navigation.uses_external_pathfinding())
+		if(!navigation.start(target))
+			return NETRUN_BOT_MOVE_BLOCKED
+		state = "построение маршрута"
 		return NETRUN_BOT_MOVE_PROGRESS
 	// A neighbour is entered directly, including one guarded by ICE the bot wants to fight.
 	if(owner.can_enter(target))
@@ -768,8 +779,47 @@
 		brain.schedule_next()
 	return TRUE
 
+/datum/netrun_entity_navigation/bot
+	var/datum/weakref/external_failure_target
+	var/external_failure_binding
+	var/external_failure_revision
+	var/external_failure_code
+
+/// Explicit cancellation/new intents do not inherit a previous asynchronous failure.
+/datum/netrun_entity_navigation/bot/cancel(clear_pursuit = TRUE)
+	clear_external_failure()
+	return ..(clear_pursuit)
+
+/datum/netrun_entity_navigation/bot/proc/clear_external_failure()
+	external_failure_target = null
+	external_failure_binding = null
+	external_failure_revision = null
+	external_failure_code = null
+
+/// The request owner has already cancelled this operation; only its exact post-cancel revision may wake the brain.
+/datum/netrun_entity_navigation/bot/on_external_navigation_failed(datum/netrun_external_navigation_request/request, code)
+	if(!uses_external_pathfinding() || QDELETED(request) || request.navigation_ref?.resolve() != src || external_revision != netrun_external_decimal_next(request.actor_revision))
+		return
+	var/datum/component/netrun_node/target = request.destination_ref?.resolve()
+	if(!QDELETED(target) && request.binding == SSnetrun.external_core?.binding_epoch)
+		external_failure_target = WEAKREF(target)
+		external_failure_binding = request.binding
+		external_failure_revision = external_revision
+		external_failure_code = netrun_external_safe_code(code, "navigation_failed")
+	wake_brain()
+
+/// Consume a terminal route failure once, without applying an old target/binding outcome to a new goal.
+/datum/netrun_entity_navigation/bot/proc/consume_external_failure(datum/component/netrun_node/target)
+	var/code
+	if(external_failure_target?.resolve() == target && external_failure_revision == external_revision && external_failure_binding == SSnetrun.external_core?.binding_epoch)
+		code = external_failure_code
+	clear_external_failure()
+	return code
+
 /// Bot movement shares the brain's common-worker budget. Timers only admit a step.
 /datum/netrun_entity_navigation/bot/schedule_step()
+	if(owner?.client)
+		return ..()
 	if(timer)
 		deltimer(timer)
 	timer = addtimer(CALLBACK(src, PROC_REF(wake_brain)), max(1, owner.next_hop - world.time), TIMER_STOPPABLE)
@@ -777,6 +827,11 @@
 /datum/netrun_entity_navigation/bot/proc/wake_brain()
 	timer = null
 	var/mob/camera/netrun_entity/bot/bot = owner
+	if(bot?.client)
+		// Control may change after an autonomous timer was armed.
+		if(length(queue))
+			schedule_step()
+		return
 	bot?.brain?.wake_now()
 
 /// These bots deliberately engage ICE; each hop still revalidates the entity's actual authority.

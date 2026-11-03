@@ -11,6 +11,7 @@
 	entity.console.operator = entity
 	TEST_ASSERT(entity.console.store_file(new /datum/netrun_file("route.key", NETRUN_FILE_KEY, source_node.network.passcode, 1, source_node.network.id)), "Traversal key must fit")
 	TEST_ASSERT(entity.travel_to(target_node), "The route must start through the empty APC")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(source_node.bound_apc, target_node)), "Core supplies the path before native threat checks")
 	var/datum/netrun_entity_navigation/navigation = entity.navigation
 	var/datum/component/netrun_node/safe_node = entity.host_node
 	TEST_ASSERT(navigation.is_active() && navigation.timer, "The route must wait before its second hop")
@@ -44,6 +45,7 @@
 	entity.console.access_session.node_access[destination.address] = NETRUN_ACCESS_USER
 	TEST_ASSERT_NULL(entity.navigation.threat_at(destination), "ICE must allow a lawful visitor")
 	TEST_ASSERT(entity.travel_to(destination), "USER access must allow automatic passage past a sentry")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(destination)), "The completed Core path reaches the normal ICE safety gate")
 	TEST_ASSERT_EQUAL(entity.host_node, destination, "A lawful visitor must arrive normally")
 	entity.enter_node(source_node)
 	entity.next_hop = world.time
@@ -55,6 +57,7 @@
 	TEST_ASSERT_EQUAL(entity.navigation.threat_at(destination), ice, "Expired grace must restore danger")
 	qdel(ice)
 	TEST_ASSERT(entity.travel_to(destination), "Removing the threat must make the same route usable again")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(destination)), "The fresh Core path is applied asynchronously")
 	TEST_ASSERT_EQUAL(entity.host_node, destination, "A cleared route must arrive normally")
 
 /// Revoked travel permission must not turn the safety warning into a resident scanner.
@@ -71,6 +74,7 @@
 	var/datum/netrun_file/key = new("route.key", NETRUN_FILE_KEY, source_node.network.passcode, 1, source_node.network.id)
 	TEST_ASSERT(entity.console.store_file(key), "Traversal key must fit")
 	TEST_ASSERT(entity.travel_to(target_node), "The route must start before credentials are revoked")
+	TEST_ASSERT(netrun_supply_navigation(entity, list(source_node.bound_apc, target_node)), "The first hop follows a supplied Core path")
 	var/datum/component/netrun_node/current = entity.host_node
 	entity.console.delete_local_file(key)
 	allocate(/datum/netrun_ice, target_node, NETRUN_ICE_HUNTER)

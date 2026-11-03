@@ -775,8 +775,8 @@
 		return TRUE
 	if(world.time < next_attempt)
 		return FALSE
-	if(!QDELETED(watch))
-		forget_watch()
+	// Binding teardown may already delete the watch while its live source signal remains registered.
+	forget_watch()
 	if(QDELETED(preferred) || !preferred.registration_required() || !preferred.resolve_node()?.is_online())
 		preferred = pick_source()
 	if(QDELETED(preferred))

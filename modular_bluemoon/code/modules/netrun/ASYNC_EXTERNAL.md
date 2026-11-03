@@ -21,6 +21,52 @@ DM receiver валидирует и резервирует invocation, но не
 proof; после disconnect внешние ссылки снимаются перед удалением объектов.
 Уже исполняемый callback удерживает message до возврата и не выполняется повторно.
 
+## Поиск пути сущностей и owned agents
+
+Для обычного resident/diver `navigation.start()`, UI `move`/`hop`/`relay_hop`
+и преследование отправляют
+`entity_navigation_query` в существующий Core `EntityNavigationBroker`. Запрос
+содержит opaque actor identity, revision операции, точные source/destination
+поколения и исходный `EntityAccessSnapshot`. DM не строит для этого запроса BFS
+и не отправляет список разрешённых узлов. Регистрация в `EntityWorld` не нужна:
+поиск пути не меняет владельца HP, персоны или боевых статусов.
+
+`external_navigation.dm` собирает raw facts cooperative, с отменяемым cursor.
+Decoder принимает до 64 шагов страницы в private staging. Только terminal
+`completed` разрешает отложенный callback: он повторно проверяет binding,
+operation revision, source, поколения узлов, graph/input/availability и новый
+снимок raw access. Частичные и устаревшие ответы не становятся маршрутом.
+Terminal failure может пропустить page index при отзыве ещё не выданной страницы.
+Отмена отправляет `entity_navigation_cancel`; после reconnect старый запрос не
+перезапускается. Отсутствие ответа не блокирует UI или transport pumps.
+
+После завершения поиска обычный native timer выполняет прежние отдельные hops.
+Binding и точные node keys сохраняются до каждого шага, включая ожидание cooldown;
+замена узла или binding отменяет уже импортированный маршрут.
+Прямой ручной клик по соседу сохраняет возможность войти в hostile ICE;
+явный `hop` принимает только одношаговый Core путь, а `relay_hop` также сохраняет
+native проверку физических relay/backbone facts перед исполнением.
+автопроход останавливается перед угрозой. При смене узла преследуемой цели старый
+запрос/путь отменяется, native сигналы коалесцируются, Core получает новое намерение.
+Неполученный ответ не запускает локальный BFS и не держит игровой worker.
+
+Обычные owned agents с точным типом консоли `/datum/netrun_console/entity/bot`
+также отправляют `move_toward()` в Core, включая соседний узел. Pending означает
+`PROGRESS`; terminal отказ привязан к точным destination/binding/operation и
+однократно становится `BLOCKED`. Commit/отказ будят существующую bot FIFO, а
+possessed bot продолжает движение через native timer без запуска AI.
+Login/Logout отменяют прежнюю операцию и меняют generation, поэтому намерения
+и уже поставленные callbacks не пересекают границу смены контроля.
+
+Это пока перенос **построения маршрутов**. `path_to()` в выборе целей bot planners,
+специальные station bots/visitors и их pursuit,
+допуск/UI availability, threat policy, AP/cooldown и native hop всё ещё требуют
+отдельного handoff в Core. Локального fallback для нового запроса нет.
+Visitors пока сохраняют прежний USER-only traversal: этот отдельный policy ещё
+не представлен текущим raw contract и не заменяется общим LAN GUEST/key policy.
+Custodian/police/recycler и неизвестные console subtypes также не переключаются:
+их специальные USER/jurisdiction-политики должны получить собственные Core facts.
+
 ## Настройки по умолчанию
 
 Искусственные work/count/queue quotas отключены. Для DM и bridge `0` означает

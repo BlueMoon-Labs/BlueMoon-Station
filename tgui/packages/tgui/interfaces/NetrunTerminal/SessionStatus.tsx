@@ -40,7 +40,9 @@ const SessionStatusView = (props: { onCombat: () => void; onBreach: () => void; 
                 : operation && (feedback || operationActive(operation)) ? `${operationState?.label}: ${operation.label}${operation.reason ? ` · ${operation.reason}` : ''}`
                   : feedback ? `${feedback.phase === 'received' ? 'Сервер ответил' : feedback.phase === 'delayed' ? 'Ответ задерживается' : 'Отправлен запрос'}: ${feedback.label}`
                   : data.breach ? `${data.breach.target} · взлом продолжается · ${data.breach.time_left} с`
-                  : travel ? `Автопроход к ${travel.target} · осталось переходов: ${travel.remaining}`
+                  : travel ? (travel.remaining === 0
+                    ? `Построение маршрута к ${travel.target}`
+                    : `Автопроход к ${travel.target} · осталось переходов: ${travel.remaining}`)
                     : operation ? `${operationState?.label}: ${operation.label}${operation.reason ? ` · ${operation.reason}` : ''}`
                     : 'Выберите узел на карте и откройте управление. В терминале доступна команда help.'}
             </Box>

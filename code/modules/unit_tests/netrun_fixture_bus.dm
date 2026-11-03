@@ -73,6 +73,9 @@
 	if(!client.pending_frame)
 		return TRUE
 	var/body = netrun_external_json_object(list("kind" = json_encode("output"), "world_epoch" = json_encode(client.world_epoch), "engine_epoch" = json_encode(client.engine_epoch), "binding_epoch" = json_encode(client.binding_epoch), "output_sequence" = json_encode(netrun_external_decimal_next(client.ack_output_sequence)), "applied_sequence" = json_encode(client.input_sequence), "results" = "\[\]"))
+	// A supplied Host ACK follows physical bridge acceptance, just like the duplex production ledger.
+	if(!client.mark_pending_accepted())
+		return FALSE
 	return client.process_frame(body)
 
 /// Exact admitted native contexts remain inspectable without recreating machine_packet.
@@ -86,7 +89,10 @@
 
 /// Supply a frozen invocation and its terminal event through the actual native dispatcher.
 /datum/netrun_external_fixture/scene_bus/deliver_context(datum/netrun_external_request_context/context)
-	if(QDELETED(context) || !ack_facts())
+	var/datum/netrun_external_core/active_client = client
+	var/datum/netrun_external_effects/machines/active_executor = executor
+	var/binding = active_client?.binding_epoch
+	if(!transport_current(active_client, active_executor, binding) || QDELETED(context) || !ack_facts())
 		return FALSE
 	var/request_id = context.request_id
 	var/list/row = invocation_rows[request_id]
@@ -96,12 +102,13 @@
 	if(!executor.process_result(client, row))
 		return FALSE
 	pump_native(row["invocation_id"])
-	if(context.executing || !context.invocation?.result_json)
+	if(!transport_current(active_client, active_executor, binding) || QDELETED(context) || context.executing || !context.invocation?.result_json)
 		return FALSE
 	var/list/result = json_decode(context.invocation.result_json)
 	var/success = result["success"]
 	executor.process_result(client, completion(request_id, success ? "completed" : "failed", result["code"]))
-	invocation_rows -= request_id
+	if(transport_current(active_client, active_executor, binding))
+		invocation_rows -= request_id
 	return success
 
 /// The declared service directory supplies candidate identities; production domain filtering follows.
@@ -134,10 +141,17 @@
 
 /// One native worker tick supplies a bounded batch, keeping startup and replies asynchronous.
 /datum/netrun_external_fixture/scene_bus/proc/pump()
-	if(pumping || QDELETED(client) || !client.ready)
+	var/datum/netrun_external_core/active_client = client
+	var/datum/netrun_external_effects/machines/active_executor = executor
+	var/binding = active_client?.binding_epoch
+	if(pumping || !transport_current(active_client, active_executor, binding) || !active_client.ready)
 		return
 	pumping = TRUE
 	ack_facts()
+	if(!transport_current(active_client, active_executor, binding) || !active_client.ready)
+		if(!QDELETED(src))
+			pumping = FALSE
+		return
 	var/datum/netrun_external_effects/machines/queries/queries = executor
 	queries.backbone_pending = FALSE
 	queries.backbone_applied = !SSnetworks.station_network.setting_disabled
@@ -147,6 +161,10 @@
 			break
 		if(command.kind == "service_discover")
 			deliver_discovery(command)
+		if(!transport_current(active_client, active_executor, binding) || !active_client.ready)
+			if(!QDELETED(src))
+				pumping = FALSE
+			return
 		if(command in queries.query_commands)
 			queries.query_commands -= command
 			qdel(command)
@@ -161,6 +179,10 @@
 		if(work++ >= 16)
 			break
 		deliver_context(context)
+		if(!transport_current(active_client, active_executor, binding) || !active_client.ready)
+			if(!QDELETED(src))
+				pumping = FALSE
+			return
 	// The fake remote acknowledges native results after their real terminal callback.
 	for(var/datum/netrun_external_command/command as anything in executor.control_commands.Copy())
 		executor.control_commands -= command
@@ -175,6 +197,29 @@
 /// Only IPC is replaced. Source registries, codecs, raw revisions and native effects stay real.
 /datum/netrun_external_core/fixture/scene_bus
 	var/datum/weakref/bus_ref
+
+/// Global native registration hooks can reach the active client during a yielding scene test.
+/// Admit only exact imported nodes or their already-declared registration turfs, with no geometry search.
+/datum/netrun_external_core/fixture/scene_bus/proc/scene_node_allowed(datum/component/netrun_node/node)
+	var/datum/netrun_external_fixture/scene_bus/bus = bus_ref?.resolve()
+	var/datum/netrun_route_scene/scene = bus?.scene_ref?.resolve()
+	if(QDELETED(node) || QDELETED(scene) || QDELETED(scene.fixture_graph))
+		return FALSE
+	var/datum/component/netrun_node/imported = scene.fixture_graph.nodes[node.address]
+	if(imported)
+		return imported == node
+	// Services may register before the fixture's node-registration signal has imported their identity.
+	return node.physical_turf() in scene.original_areas
+
+/datum/netrun_external_core/fixture/scene_bus/node_key(datum/component/netrun_node/node)
+	if(!scene_node_allowed(node))
+		return null
+	return ..(node)
+
+/datum/netrun_external_core/fixture/scene_bus/observe_service(datum/netrun_machine_service/service)
+	if(QDELETED(service) || !scene_node_allowed(service.resolve_node()))
+		return
+	return ..(service)
 
 /datum/netrun_external_core/fixture/scene_bus/tick(max_records = 32)
 	var/datum/netrun_external_fixture/scene_bus/bus = bus_ref?.resolve()

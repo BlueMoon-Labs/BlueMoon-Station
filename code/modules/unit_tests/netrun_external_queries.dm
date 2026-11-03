@@ -276,6 +276,33 @@
 /datum/netrun_machine_service/research_client/core_watch_test/on_core_research_catalog_changed()
 	core_notifications++
 
+/// Replacing a disconnected watch releases the old live-source subscription before registering again.
+/datum/unit_test/netrun_external_queries_atmos_watch_rebind/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	scene.bus.auto_pump = FALSE
+	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = scene.machine(/obj/machinery/atmospherics/components/unary/vent_pump, scene.target_spot)
+	var/datum/netrun_machine_service/atmos/device/device = vent.get_netrun_machine_service("atmos.device")
+	TEST_ASSERT_NOTNULL(device, "The regression uses a real live atmosphere device source")
+	var/datum/netrun_atmos_core_observer/observer = allocate(/datum/netrun_atmos_core_observer, SSnetrun.get_machine_transport())
+	TEST_ASSERT(observer.ensure_watch(device), "The live source starts an ordinary Core directory watch")
+	var/datum/netrun_core_service_watch/previous = observer.watch
+	observer.snapshot_finished = TRUE
+	observer.areas_by_identity["previous-binding"] = get_base_area(vent)
+	var/datum/netrun_external_core/client = scene.bus.client
+	var/datum/netrun_external_effects/machines/queries/executor = client.effects
+	executor.disconnect_service_watches()
+	TEST_ASSERT(QDELETED(previous), "Disconnect retires the old binding's watch")
+	TEST_ASSERT_EQUAL(observer.source_ref?.resolve(), device, "The native source remains alive while its Core watch is retired")
+	client.binding_epoch = "atmos-watch-rebound"
+	TEST_ASSERT(observer.ensure_watch(device), "The same live source can register its replacement without overriding a signal handler")
+	TEST_ASSERT(observer.watch != previous && !QDELETED(observer.watch), "Rebind creates a distinct live watch")
+	TEST_ASSERT_EQUAL(observer.watch.binding, client.binding_epoch, "The replacement belongs to the current binding")
+	TEST_ASSERT(!observer.snapshot_finished, "A replacement cannot inherit the former directory snapshot")
+	TEST_ASSERT_EQUAL(length(observer.areas_by_identity), 0, "Old-binding directory identities are cleared")
+	var/datum/netrun_core_service_watch/replacement = observer.watch
+	TEST_ASSERT(observer.ensure_watch(device), "Repeated readiness is idempotent for the replacement")
+	TEST_ASSERT_EQUAL(observer.watch, replacement, "A valid watch is retained without duplicate source subscriptions")
+
 /// One Core watcher fans out only to clients interested in the matching
 /// techweb, and rebinding drops obsolete weak observer indexes.
 /datum/unit_test/netrun_external_queries_research_watch_fanout/Run()
