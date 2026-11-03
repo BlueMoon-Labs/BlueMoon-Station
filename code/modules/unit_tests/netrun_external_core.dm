@@ -494,3 +494,38 @@
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Coalescing preserves exactly once native execution")
 	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 0, "Both retained and superseded slots drain")
 	TEST_ASSERT_EQUAL(fixture.executor.pending_current_count, 0, "Coalesced and original completion release their current binding slots once")
+
+
+/// Repeated unsent state uses one immutable request identity and one owned message.
+/datum/netrun_machine_message/external_state_fixture
+/datum/netrun_machine_message/external_state_fixture/coalescing_key()
+	return "state-test"
+/datum/netrun_machine_message/external_state_fixture/transport_revision()
+	return payload["revision"]
+/datum/netrun_machine_message/external_state_fixture/can_replace(datum/netrun_machine_message/previous)
+	return payload["revision"] >= previous.payload["revision"]
+
+/datum/unit_test/netrun_external_coalesce_unsent_state/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
+	var/datum/netrun_machine_message/external_state_fixture/first = new(list("revision" = 1))
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, first), "Initial state is queued")
+	var/datum/netrun_external_request_context/context = fixture.first_context()
+	var/request_id = context.request_id
+	var/datum/netrun_machine_message/external_state_fixture/latest = new(list("revision" = 3))
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, latest), "Newer unsent state replaces old payload")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 1, "Only one request context is retained")
+	TEST_ASSERT_EQUAL(length(fixture.executor.request_commands), 1, "Only one command is retained")
+	TEST_ASSERT_EQUAL(context.message, latest, "New state owns context")
+	TEST_ASSERT_EQUAL(context.request_id, request_id, "Request identity is stable")
+	TEST_ASSERT_EQUAL(fixture.executor.local_states_coalesced, 1, "Coalescing is observable")
+	TEST_ASSERT(findtext(fixture.executor.request_commands[1].raw_json, "\"revision\":3"), "Latest state is serialized")
+	TEST_ASSERT(QDELETED(first), "Previous unsent state is released")
+	var/datum/netrun_machine_message/external_state_fixture/stale = new(list("revision" = 2))
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, stale), "Stale replacement is handled without a new request")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 1, "Old revision cannot inflate contexts")
+	TEST_ASSERT_EQUAL(context.message, latest, "Latest revision remains")
+	TEST_ASSERT(fixture.executor.send_input_queue(fixture.client, fixture.executor.request_commands), "State is handed to immutable outbound frame")
+	TEST_ASSERT_EQUAL(length(fixture.executor.queued_state_commands), 0, "Sent state no longer permits mutation")
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/external_state_fixture(list("revision" = 4))), "Later state gets a new request after send")
+	TEST_ASSERT_EQUAL(length(fixture.executor.pending), 2, "Sent context is not overwritten")

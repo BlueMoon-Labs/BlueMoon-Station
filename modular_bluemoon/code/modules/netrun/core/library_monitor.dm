@@ -217,6 +217,8 @@
 		sections += list(list("title" = "DM — применение результатов", "rows" = list(
 			list("label" = "Facts в журнале", "value" = max(0, length(core.journal) - core.journal_head + 1)),
 			list("label" = "Machine contexts", "value" = executor.pending_current_count),
+			list("label" = "Locally merged state updates", "value" = executor.local_states_coalesced),
+			list("label" = "Service notifications waiting", "value" = max(0, length(SSnetrun.machine_transport?.service_events) - SSnetrun.machine_transport?.service_event_cursor + 1)),
 			list("label" = "Request / control / inflight команды", "value" = "[length(executor.request_commands)] / [length(executor.control_commands)] / [length(executor.inflight_commands)]"),
 			list("label" = "Invocations удерживается", "value" = length(executor.invocations)),
 			list("label" = "Native очередь IDs", "value" = max(0, length(executor.native_invocation_queue) - executor.native_invocation_cursor + 1)),
