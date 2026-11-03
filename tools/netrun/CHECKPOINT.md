@@ -1,6 +1,6 @@
 # Контрольная версия NETRUN для ручной проверки
 
-Дата: 3 ноября 2026 года.
+Дата: 4 ноября 2026 года.
 
 Станция: ветка `net-feature`. Core: `netrun-core/main`, закреплённый commit
 `9bfafbe4ab0546a72f4920d647beb8f034712c04` в `core-source.json`.
@@ -36,6 +36,20 @@ $env:NETRUN_CORE_SOURCE = Join-Path (Split-Path (Get-Location) -Parent) 'netrun-
 Администратор: `Debug.1) Logs → NETRUN Library Monitor`.
 Структурированные журналы Windows: `data/netrun-core/logs/host.jsonl` и его архивы.
 Настройки и Docker: [EXTERNAL_CORE.md](EXTERNAL_CORE.md).
+
+## Проверка контрольной точки
+
+- Release Core: 751/751 тест, сборка без предупреждений.
+- Launcher/source/deployment tools: 32/32 теста.
+- DM bridge/query/monitor/entity proxy: 40/40 hermetic тестов, BYOND 516.1688.
+- Host и Windows x86 native bridge собраны из отдельного чистого checkout
+  закреплённого Core, без незакоммиченной работы следующего этапа.
+- Live Host + native bridge + DreamDaemon: PASS discovery, native_once,
+  projection/source tree, movement/recovery, replaceable state и burst 64.
+  Оба сценария настоящего diver также проверяют Core proxy
+  register → FIFO damage → новая DM-проекция без синхронного изменения при enqueue.
+
+Полный раунд и нагрузку на целевой станции нужно проверить при ручном запуске.
 
 ## Что входит в эту контрольную точку
 
