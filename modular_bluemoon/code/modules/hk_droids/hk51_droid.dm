@@ -73,12 +73,12 @@
 	general.fields["name"] = droid.real_name
 	general.fields["rank"] = rank
 	general.fields["real_rank"] = rank
-	general.fields["gender"] = "Male"
+	general.fields["gender"] = GLOB.gender_to_string[MALE]
 	general.fields["age"] = "Unknown"
 	general.fields["species"] = "HK"
 	general.fields["fingerprint"] = "Нет: дроид"
-	general.fields["p_stat"] = "Active"
-	general.fields["m_stat"] = "Stable"
+	general.fields["p_stat"] = MED_RECORD_STATUS_PH_HEALTHY
+	general.fields["m_stat"] = MED_RECORD_STATUS_M_STABLE
 	general.photo_source = new /datum/record_photo_source(droid, null, null)
 	GLOB.data_core.general += general
 	GLOB.data_core.register_record(general, "general")
