@@ -76,6 +76,10 @@
 	destination = new(scene.target.resolve_node(), scene.receiver)
 	// Ready Host уже видел initial snapshot. Прогреваем настоящие raw endpoint
 	// revisions/sector metadata до supplied invocation, а не подписываем revision 0.
+	// Bootstrap anchor также входит в snapshot: один node_key(APC) оставляет его
+	// state пустым, и первый MC reconcile ошибочно выглядит новым transit fact.
+	if(scene.apc)
+		client.export_node(scene.apc.GetComponent(/datum/component/netrun_node), TRUE)
 	client.export_node(source.resolve_node(), TRUE)
 	client.export_node(destination.resolve_node(), TRUE)
 	client.fact_acknowledged = client.fact_tail
@@ -263,6 +267,7 @@
 	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 1, "Control result has bounded capacity independent from new requests")
 	TEST_ASSERT(fixture.receive_result(invocation), "Repeated invocation reuses the queued result")
 	TEST_ASSERT_EQUAL(fixture.destination.native_calls, 1, "Pressure cannot repeat the native effect")
+	TEST_ASSERT(fixture.acknowledge_fact_prefix(), "Native result waits for the facts accumulated during its cooperative slice")
 	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "The result is sent ahead of the saturated request queue")
 	var/list/sent = json_decode(fixture.client.pending_frame)
 	var/list/result = sent[1]
@@ -353,6 +358,7 @@
 		TEST_ASSERT(fixture.receive_result(event), "New native operation executes once")
 		TEST_ASSERT(fixture.receive_result(fixture.completion(request_id)), "Later completion is accepted; native result [fixture.last_native_code]")
 		TEST_ASSERT_EQUAL(length(fixture.executor.invocations), 1, "An unacknowledged result still pins its exact record")
+		TEST_ASSERT(fixture.acknowledge_fact_prefix(), "Cooperative native execution exports its causal facts before the control result")
 		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Native result crosses logical input handoff")
 		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "action" = list("accepted" = TRUE)))
 		fixture.client.pending_frame = null
