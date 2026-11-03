@@ -192,3 +192,18 @@ Observer пересоздаёт подписку после смены binding, 
 терминального уведомления `resync_required` с единственным отложенным retry.
 Отписка из старого binding не может отменить команду другого, нового binding.
 Native callbacks по-прежнему не исполняются в IPC decoder.
+
+### Core camera catalog watcher
+
+Camera consoles reuse **one station-scoped `camera.stream` Core watch**. The
+first catalog consumer starts it lazily; source deletion and binding replacement
+release the old handle and permit rebinding. Initial advertisements are ignored
+until `snapshot_end`; deferred coalesced invalidation retires only
+`camera.stream` read-only discovery continuations (at most 64 global cache
+entries). Actual messages, graph streams, other discovery families, and
+ordinary in-flight `service_discover` requests remain unaffected.
+
+The watch does **not** grant camera access or expose its unfiltered catalog.
+Every console still uses source-specific Core routing, native
+`allows_camera` and routed request/reply for the actual live feed. If the
+watch cannot start, the original one-second discovery TTL remains in effect.

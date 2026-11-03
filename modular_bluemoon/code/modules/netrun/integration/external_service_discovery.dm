@@ -206,6 +206,17 @@
 				targets += target
 	return targets
 
+/// Core lifecycle events retire only matching read-only catalogs, never
+/// unrelated discoveries, active message deliveries, or graph sync.
+/datum/netrun_external_effects/machines/queries/proc/invalidate_discovery_family(family)
+	for(var/key in discovery_catalogs.Copy())
+		var/datum/netrun_machine_resolution/external/query = discovery_catalogs[key]
+		if(!QDELETED(query) && query.destination_id != family)
+			continue
+		discovery_catalogs -= key
+		if(!QDELETED(query))
+			qdel(query)
+
 /// Все ожидающие bursts получают известный отказ; кеши не переживают binding.
 /datum/netrun_external_effects/machines/queries/proc/disconnect_discovery(datum/netrun_external_core/client, reason)
 	for(var/id in query_consumers.Copy())

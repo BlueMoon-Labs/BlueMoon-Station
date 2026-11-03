@@ -398,6 +398,7 @@
 	return transport.advance_resolutions()
 
 /datum/netrun_machine_transport/Destroy()
+	QDEL_NULL(camera_core_observer)
 	if(atmos_core_watch_timer)
 		deltimer(atmos_core_watch_timer)
 	atmos_core_watch_timer = null

@@ -204,6 +204,31 @@
 	TEST_ASSERT_EQUAL(targets[1], scene.target, "Live native matching still filters cached weak identities")
 	TEST_ASSERT_EQUAL(length(fixture.executor.query_commands), 0, "A still-current observation does not allocate another query")
 
+/// Camera notices invalidate only camera observations, preserving all other
+/// cached families and their independent Core discovery lifecycle.
+/datum/unit_test/netrun_external_queries_camera_catalog_invalidation/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	var/datum/netrun_machine_resolution/external/camera_query = new(scene.source, "camera.stream", null)
+	var/datum/netrun_machine_resolution/external/other_query = new(scene.source, "transport.fixture", null)
+	camera_query.catalog_only = TRUE
+	other_query.catalog_only = TRUE
+	camera_query.external_phase = "cached"
+	other_query.external_phase = "cached"
+	camera_query.external_binding = fixture.client.binding_epoch
+	other_query.external_binding = fixture.client.binding_epoch
+	var/camera_key = json_encode(list(scene.source.service_key(), "camera.stream", null))
+	var/other_key = json_encode(list(scene.source.service_key(), "transport.fixture", null))
+	fixture.executor.discovery_catalogs[camera_key] = camera_query
+	fixture.executor.discovery_catalogs[other_key] = other_query
+	fixture.executor.invalidate_discovery_family("camera.stream")
+	TEST_ASSERT_NULL(fixture.executor.discovery_catalogs[camera_key], "Camera watch invalidates its family's read-only cache")
+	TEST_ASSERT(QDELETED(camera_query), "Retired camera query no longer owns an observation")
+	TEST_ASSERT_EQUAL(fixture.executor.discovery_catalogs[other_key], other_query, "Other families retain their discovery caches")
+	TEST_ASSERT(!QDELETED(other_query), "An unrelated lookup is not cancelled")
+	fixture.executor.invalidate_discovery_family("camera.stream")
+	TEST_ASSERT_EQUAL(fixture.executor.discovery_catalogs[other_key], other_query, "Repeated notices are idempotent")
+
 /// Query producers и continuation capacity не определяются произвольным wire input.
 /datum/unit_test/netrun_external_queries_identity_and_bounds/Run()
 	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
