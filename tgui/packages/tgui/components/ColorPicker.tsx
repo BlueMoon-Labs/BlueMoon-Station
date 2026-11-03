@@ -477,6 +477,12 @@ export const ColorPickerPanel = (props: {
         aria-pressed={hex.toLowerCase() === color.toLowerCase()}
         onClick={() => select(color)}
         onDoubleClick={() => commit(color)}
+        onKeyDown={(event) => {
+          if (event.key !== KEY_ENTER || event.nativeEvent.isComposing) return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (!event.repeat) commit(color);
+        }}
       />
     ));
 
@@ -633,10 +639,18 @@ export const ColorPickerPanel = (props: {
                     autoFocus
                     value={draft}
                     placeholder="#RRGGBB"
+                    maxLength={7}
                     onInput={(event, next) => {
                       updateDraft(uppercaseHexInput(event, next));
                       const normalized = normalizeHex(next);
                       if (normalized) setHsv(hexToHsv(normalized));
+                    }}
+                    onEnter={(event, next) => {
+                      event.stopPropagation();
+                      if (event.defaultPrevented || event.repeat || event.nativeEvent.isComposing) return;
+                      event.preventDefault();
+                      const color = normalizeHex(next);
+                      if (color) commit(color);
                     }}
                   />
                 </div>
