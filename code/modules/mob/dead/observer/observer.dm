@@ -74,7 +74,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	ghostimage_simple.override = TRUE
 	GLOB.ghost_images_simple |= ghostimage_simple
 
-	updateallghostimages()
+	show_ghost_image_to_observers()
 
 	if(body)
 		gender = body.gender
@@ -219,8 +219,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	GLOB.ghost_images_simple -= ghostimage_simple
 	QDEL_NULL(ghostimage_simple)
-
-	updateallghostimages()
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
@@ -752,12 +750,21 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	updateghostimages()
 	..()
 
-/proc/updateallghostimages()
-	listclearnulls(GLOB.ghost_images_default)
-	listclearnulls(GLOB.ghost_images_simple)
-
-	for (var/mob/dead/observer/O in GLOB.player_list)
-		O.updateghostimages()
+/// Новый гост добавляет свою картинку тем, кто уже смотрит на гостов, вместо пересборки картинок у всех: та стоила O(гостов * картинок клиента) на каждое появление.
+/mob/dead/observer/proc/show_ghost_image_to_observers()
+	for(var/mob/dead/observer/O in GLOB.player_list)
+		if(O == src || !O.client)
+			continue
+		if(isnull(O.lastsetting))
+			O.updateghostimages()
+			continue
+		if(!O.ghostvision)
+			continue
+		switch(O.lastsetting)
+			if(GHOST_OTHERS_DEFAULT_SPRITE)
+				O.client.images |= ghostimage_default
+			if(GHOST_OTHERS_SIMPLE)
+				O.client.images |= ghostimage_simple
 
 /mob/dead/observer/proc/updateghostimages()
 	if (!client)
