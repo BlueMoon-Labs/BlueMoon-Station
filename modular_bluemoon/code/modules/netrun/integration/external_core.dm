@@ -231,6 +231,8 @@
 	/// Bounded fingerprint окно завершённых output frames защищает native effects от replay.
 	var/list/output_hashes = list()
 	var/list/output_order = list()
+	/// DIAG (temp): отметка последнего census роста реестра по типу, чтобы не спамить лог.
+	var/list/capacity_marks = list()
 
 /// Подписки не запускают IPC и не изменяют мир; initial scan начнётся только после hello_ack.
 /datum/netrun_external_core/New(datum/controller/subsystem/netrun/source_owner = SSnetrun)
@@ -868,13 +870,68 @@
 	var/list/metadata = node_metadata[node]
 	return metadata?["revision"]
 
+/// DIAG (temp): компактный census — пары key:count; число ключей ограничено доменом netrun.
+/proc/netrun_census_pairs(list/counts)
+	var/list/parts = list()
+	for(var/key in counts)
+		parts += "[key]:[counts[key]]"
+	return jointext(parts, ",")
+
+/// DIAG (temp): вместо немедленного abort поднимаем предел и периодически логируем census,
+/// чтобы увидеть, ЧТО именно накапливается в реестре (причина source_*_capacity). sector сохраняет
+/// жёсткий инвариант 4096 Z. Возвращает TRUE только на аварийном потолке.
+/datum/netrun_external_core/proc/capacity_watch(kind, count)
+	var/mark = capacity_marks[kind] || 0
+	if(count >= 50 && (mark == 0 || count >= mark + 500))
+		capacity_marks[kind] = count
+		log_capacity_census(kind, count)
+	var/ceiling = kind == "sector" ? 4096 : 500000
+	return count >= ceiling
+
+/// DIAG (temp): разбивка растущего реестра. Мёртвые host/node и группировка по типу выявляют утечку.
+/datum/netrun_external_core/proc/log_capacity_census(kind, count)
+	switch(kind)
+		if("service")
+			var/dead_service = 0
+			var/dead_host = 0
+			var/dead_node = 0
+			var/null_node = 0
+			var/list/by_id = list()
+			for(var/datum/netrun_machine_service/service as anything in service_metadata)
+				if(QDELETED(service))
+					dead_service++
+					continue
+				if(QDELETED(service.host))
+					dead_host++
+				var/list/meta = service_metadata[service]
+				var/datum/component/netrun_node/node = meta?["node"]
+				if(isnull(node))
+					null_node++
+				else if(QDELETED(node))
+					dead_node++
+				var/sid = service.service_id || "<none>"
+				by_id[sid] = (by_id[sid] || 0) + 1
+			log_world("NETRUN_CAPACITY_CENSUS service total=[count] dead_service=[dead_service] dead_host=[dead_host] dead_node=[dead_node] null_node=[null_node] by_id=[netrun_census_pairs(by_id)]")
+		if("node")
+			var/dead_node = 0
+			var/list/by_type = list()
+			for(var/datum/component/netrun_node/node as anything in node_metadata)
+				if(QDELETED(node))
+					dead_node++
+					continue
+				var/key = "[node.node_type]"
+				by_type[key] = (by_type[key] || 0) + 1
+			log_world("NETRUN_CAPACITY_CENSUS node total=[count] dead_node=[dead_node] by_type=[netrun_census_pairs(by_type)]")
+		else
+			log_world("NETRUN_CAPACITY_CENSUS [kind] total=[count]")
+
 /// Выделяет ID один раз на инкарнацию компонента; REF и DM paths не являются protocol IDs.
 /datum/netrun_external_core/proc/node_key(datum/component/netrun_node/node)
 	if(state == "closed" || state == "resync_required" || QDELETED(node))
 		return null
 	var/list/metadata = node_metadata[node]
 	if(!metadata)
-		if(length(node_metadata) >= 10000)
+		if(capacity_watch("node", length(node_metadata)))
 			abort_session("source_node_capacity")
 			return null
 		id_serial = netrun_external_decimal_next(id_serial)
@@ -899,7 +956,7 @@
 			return null
 		metadata = null
 	if(!metadata)
-		if(length(service_metadata) >= 10000)
+		if(capacity_watch("service", length(service_metadata)))
 			abort_session("source_service_capacity")
 			return null
 		id_serial = netrun_external_decimal_next(id_serial)
@@ -935,7 +992,7 @@
 	if(state == "closed" || state == "resync_required" || !room)
 		return null
 	if(!area_ids[room])
-		if(length(area_ids) >= 10000)
+		if(capacity_watch("area", length(area_ids)))
 			abort_session("source_area_capacity")
 			return null
 		id_serial = netrun_external_decimal_next(id_serial)
@@ -987,7 +1044,7 @@
 			return null
 	var/changed = !metadata
 	if(!metadata)
-		if(length(sector_metadata) >= 4096)
+		if(capacity_watch("sector", length(sector_metadata)))
 			abort_session("source_sector_capacity")
 			return null
 		metadata = list("revision" = "0")
