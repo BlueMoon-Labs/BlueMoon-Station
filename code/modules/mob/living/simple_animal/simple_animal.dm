@@ -16,6 +16,10 @@
 	var/icon_dead = ""
 	///We only try to show a gibbing animation if this exists.
 	var/icon_gib = null
+	/// Профиль персонажа для ЕРП-антагонистов.
+	var/datum/description_profile/profile
+	/// Показывать ли ссылку на профиль в examine.
+	var/show_erp_profile = FALSE
 
 	var/list/speak = list()
 	///Emotes while speaking IE: Ian [emote], [text] -- Ian barks, "WOOF!". Spoken text is generated from the speak variable.
@@ -235,6 +239,15 @@
 			if(islist(idle_z_list))
 				idle_z_list -= src
 
+	QDEL_NULL(profile)
+	return ..()
+
+/mob/living/simple_animal/Topic(href, href_list)
+	if(href_list["character_profile"] && show_erp_profile)
+		if(!profile)
+			profile = new(src)
+		profile.ui_interact(usr)
+		return
 	return ..()
 
 /mob/living/simple_animal/updatehealth()
@@ -1010,6 +1023,8 @@
 
 /mob/living/simple_animal/examine(mob/user)
 	var/list/dat = ..()
+	if(show_erp_profile && client?.prefs)
+		dat += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
 	if(stat == DEAD)
 		dat += "<span class='deadsay'>[p_they_ru(TRUE)] не подаёт признаков жизни.</span>"
 	else if(getBruteLoss() && !isbot(src))

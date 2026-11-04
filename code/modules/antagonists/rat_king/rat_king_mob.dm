@@ -10,7 +10,8 @@
 	maxHealth = 150
 	health = 150
 	damage_coeff = list(BRUTE = 0.9, BURN = 0.9, TOX = 1, CLONE = 1, STAMINA = 0, OXY = 1) // а нужно ли тут чето еще расписывать или не.
-	see_in_dark = 5
+	see_in_dark = 8
+	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	obj_damage = 10
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES | ENVIRONMENT_SMASH_WALLS
 	butcher_results = list(/obj/item/clothing/head/crown = 1,)
@@ -28,6 +29,8 @@
 	unique_name = TRUE
 	faction = list("rat")
 	uses_custom_environment_handling = TRUE
+	vocal_bark_id = "squeak"
+	vocal_pitch = 0.8
 	var/datum/action/cooldown/coffer
 	var/datum/action/cooldown/riot
 	var/poll_ghosts = FALSE
@@ -151,6 +154,7 @@
 
 /mob/living/simple_animal/hostile/regalrat/Destroy()
 	QDEL_NULL(fashion_select)
+	QDEL_NULL(access_card)
 	if(plague_throne && !QDELETED(plague_throne))
 		plague_throne.king = null
 	plague_throne = null
@@ -1257,11 +1261,38 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 			continue
 		if(!(prefs.toggles & VERB_CONSENT))
 			continue
-		human.adjust_arousal(1, "феромоны крысиной королевы", aphro = TRUE)
+		if(prefs.nonconpref == "Yes")
+			human.adjust_arousal(2, "Дурманящий запах крысиной королевы", aphro = TRUE)
+			human.apply_status_effect(/datum/status_effect/rat_queen_scent)
+		else
+			human.adjust_arousal(1, "Феромоны крысиной королевы", aphro = TRUE)
 		var/turf/human_turf = get_turf(human)
 		if(human_turf)
 			new /obj/effect/temp_visual/heart(human_turf)
 	pulse_timer = addtimer(CALLBACK(src, PROC_REF(pulse)), 5 SECONDS, TIMER_STOPPABLE)
+
+/datum/status_effect/rat_queen_scent
+	id = "rat_queen_scent"
+	duration = 12 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+
+/datum/status_effect/rat_queen_scent/on_apply()
+	. = ..()
+	if(!owner)
+		return FALSE
+	to_chat(owner, span_purple("<i>Сладкий, тягучий запах крысиной королевы окутывает вас. Он пахнет сыром, тёплой шерстью и обещанием чего-то очень приятного. Мысли плывут, а щёки теплеют сами собой.</i>"))
+	SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "rat_queen_scent", /datum/mood_event/rat_queen_scent)
+	return TRUE
+
+/datum/status_effect/rat_queen_scent/on_remove()
+	. = ..()
+	if(owner)
+		SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "rat_queen_scent")
+
+/datum/mood_event/rat_queen_scent
+	description = "<span class='nicegreen'>Запах крысиной королевы всё ещё щекочет нос и путает мысли.</span>\n"
+	mood_change = 4
+	timeout = 30 SECONDS
 
 /mob/living/simple_animal/hostile/regalrat/lust
 	name = "Крысиная королева"
@@ -1275,6 +1306,8 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 	maxHealth = 90
 	health = 90
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, CLONE = 1, STAMINA = 0, OXY = 1)
+	vocal_pitch = 1.5
+	show_erp_profile = TRUE
 	melee_damage_lower = 0
 	melee_damage_upper = 0
 	obj_damage = 0
@@ -1293,6 +1326,9 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 
 /mob/living/simple_animal/hostile/regalrat/lust/Initialize(mapload)
 	. = ..()
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT)
+	access_card = new /obj/item/card/id(src)
+	access_card.access += ACCESS_MAINT_TUNNELS
 	var/datum/action/cooldown/rat_pheromones/pheromones = new
 	pheromones.Grant(src)
 	fashion_select = new /datum/action/cooldown/rat_fashion
@@ -1322,7 +1358,20 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 	return FALSE
 
 /mob/living/simple_animal/hostile/regalrat/lust/AttackingTarget()
+	if(target && !QDELETED(target) && is_cheese(target))
+		return eat_cheese(target)
 	return FALSE
+
+/mob/living/simple_animal/hostile/regalrat/lust/verb/relinquish_form()
+	set name = "Покинуть тело"
+	set desc = "Раствориться и освободить слот королевы."
+	set category = "Крысиная королева"
+	if(tgui_alert(usr, "Покинуть тело? Это удалит королеву и освободит слот спавнера.", "Покинуть тело", list("Да", "Нет")) != "Да")
+		return
+	var/obj/effect/mob_spawn/rat_queen/spawner = locate(/obj/effect/mob_spawn/rat_queen) in world
+	if(spawner)
+		spawner.uses += 1
+	qdel(src)
 
 /mob/living/simple_animal/hostile/regalrat/lust/verb/switch_gender()
 	set name = "Сменить облик"
