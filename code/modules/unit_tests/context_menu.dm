@@ -1765,3 +1765,8 @@
 	TEST_ASSERT(pen.transform.b != before.b, "Ctrl+ПКМ+ЛКМ пустой рукой не повернул вещь")
 	user.CommonClickOn(pen, "icon-x=16;icon-y=16;right=1;ctrl=1;button=right")
 	TEST_ASSERT_NULL(user.active_context_menu, "Отпускание ПКМ после поворота открыло меню")
+	// просто Ctrl+ПКМ пустой рукой тоже поворачивает и меню не открывает
+	before = matrix(pen.transform)
+	user.CommonClickOn(pen, "icon-x=16;icon-y=16;right=1;ctrl=1;button=right")
+	TEST_ASSERT(pen.transform.b != before.b, "Ctrl+ПКМ пустой рукой не повернул вещь")
+	TEST_ASSERT_NULL(user.active_context_menu, "Ctrl+ПКМ открыл меню")
