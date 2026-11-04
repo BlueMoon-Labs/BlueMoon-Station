@@ -183,3 +183,44 @@
 	usr = user
 	setup.ui_act("set_limb", list("zone" = zone, "value" = kind), ui)
 	usr = null
+
+/datum/unit_test/body_mod_synthetic_glow_eyes
+
+/datum/unit_test/body_mod_synthetic_glow_eyes/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/ipc
+	TEST_ASSERT(!P.body_mod_organ_locked(ORGAN_SLOT_EYES), "Synthetic eyes should be replaceable")
+	TEST_ASSERT_NOTNULL(P.body_mod_organ_option(ORGAN_SLOT_EYES, "glow"), "Glow eyes should be available to synthetics")
+	TEST_ASSERT_NULL(P.body_mod_organ_option(ORGAN_SLOT_EYES, "organic"), "Organic eyes should stay unavailable to synthetics")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.set_species(/datum/species/ipc)
+
+	var/datum/character_setup/S = new(P)
+	var/list/mods = S.build_modifications_data()
+	var/list/eye_options = list()
+	var/eyes_locked = TRUE
+	for(var/list/group in mods["organs"])
+		if(group["slot"] != ORGAN_SLOT_EYES)
+			continue
+		eyes_locked = group["locked"]
+		for(var/list/option in group["options"])
+			eye_options += option["id"]
+		break
+	TEST_ASSERT(!eyes_locked, "Eyes group should be unlocked in the UI for synthetics")
+	TEST_ASSERT("glow" in eye_options, "Glow option should be shown to synthetics")
+	TEST_ASSERT(!("organic" in eye_options), "Organic option should be hidden from synthetics")
+
+	P.organ_mods = list(ORGAN_SLOT_EYES = "glow")
+	P.apply_prefs_body_mods(H)
+
+	var/obj/item/organ/eyes/eyes = H.getorganslot(ORGAN_SLOT_EYES)
+	TEST_ASSERT(istype(eyes, /obj/item/organ/eyes/robotic/toggled/glow), "Synthetic should receive glow eyes from preferences")
+
+	var/datum/preferences/lizard_prefs = new
+	lizard_prefs.pref_species = new /datum/species/lizard
+	TEST_ASSERT(lizard_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed organics should keep the eye group locked")
+
+	qdel(S)
+	qdel(lizard_prefs)
+	qdel(P)
