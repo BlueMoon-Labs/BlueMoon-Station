@@ -231,9 +231,9 @@ const PLACEHOLDER: Partial<Record<BlockType, string>> = {
 
 const STYLES: { type: BlockType; label: string; tooltip: string }[] = [
   { type: 'p', label: 'Обычный', tooltip: 'Обычный абзац' },
-  { type: 'h1', label: 'З1', tooltip: 'Заголовок 1' },
-  { type: 'h2', label: 'З2', tooltip: 'Заголовок 2' },
-  { type: 'h3', label: 'З3', tooltip: 'Заголовок 3' },
+  { type: 'h1', label: 'H1', tooltip: 'Заголовок 1' },
+  { type: 'h2', label: 'H2', tooltip: 'Заголовок 2' },
+  { type: 'h3', label: 'H3', tooltip: 'Заголовок 3' },
   { type: 'list', label: '• Список', tooltip: 'Список: каждый пункт с новой строки' },
 ];
 
@@ -398,6 +398,7 @@ export const NtosPapirus = () => {
   const { act, data } = useBackend<Data>();
   const [tab, setTab] = useState<'doc' | 'templates' | 'code'>('doc');
   const [doc, setDocState] = useState<Doc>(() => fromServer(data.doc));
+  const [templateName, setTemplateName] = useState(data.doc.title || '');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [epoch, setEpoch] = useState(0);
   const [format, setFormat] = useState({ bold: false, italic: false, underline: false });
@@ -974,18 +975,30 @@ export const NtosPapirus = () => {
           Открытый шаблон заменяет текущий документ. Передумали — Ctrl+Z на листе.
         </Box>
       </Section>
-      <Section
-        title="Мои шаблоны"
-        buttons={
-          <Button.Input
-            icon="save"
-            content="Сохранить текущий"
-            currentValue={doc.title}
-            maxLength={40}
-            onCommit={(e, value) => actWithDoc('save_template', { name: value })}
-          />
-        }
-      >
+      <Section title="Мои шаблоны">
+        <Stack mb={1} align="center">
+          <Stack.Item grow>
+            <Input
+              fluid
+              value={templateName}
+              placeholder="Название шаблона"
+              maxLength={40}
+              onInput={(e, value) => setTemplateName(value)}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              icon="save"
+              disabled={!templateName.trim()}
+              tooltip="Сохранить текущий документ как шаблон (с тем же названием - перезаписать)"
+              onClick={() =>
+                actWithDoc('save_template', { name: templateName.trim() })
+              }
+            >
+              Сохранить текущий
+            </Button>
+          </Stack.Item>
+        </Stack>
         {data.user_templates.length === 0 ? (
           <Box color="label">
             Пока пусто. Шаблоны хранятся на диске этого устройства и

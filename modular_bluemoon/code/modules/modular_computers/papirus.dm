@@ -8,8 +8,6 @@
 #define PAPIRUS_MAX_TEMPLATES 15
 /// Задержка между печатью листов.
 #define PAPIRUS_PRINT_COOLDOWN (2 SECONDS)
-/// Как печатается пустое поле для ручки.
-#define PAPIRUS_FIELD "\[____________\]"
 
 /datum/computer_file/program/papirus
 	filename = "papirus"
@@ -155,6 +153,8 @@
 /datum/computer_file/program/papirus/proc/generate(list/fills)
 	var/static/regex/token_regex = new(@"\[_+\]|\{(поле|подпись|должность|дата|время)\}", "g")
 	var/static/list/token_fills = list("подпись" = "sign", "должность" = "job", "дата" = "date", "время" = "time")
+	// Ширина поля на бумаге = число подчёркиваний: под имя, должность и дату нужно место, иначе текст обрезается.
+	var/static/list/token_widths = list("поле" = 20, "подпись" = 26, "должность" = 26, "дата" = 18, "время" = 10)
 	var/field_index = 0
 	var/list/parts = list()
 	for(var/list/block in blocks)
@@ -175,7 +175,7 @@
 			var/token = token_regex.group[1]
 			if(token && token_fills[token] && fills)
 				fills["[field_index]"] = token_fills[token]
-			out += token ? PAPIRUS_FIELD : token_regex.match
+			out += token ? "\[[repeat_string(token_widths[token], "_")]\]" : token_regex.match
 			field_index++
 			last = token_regex.next
 		out += copytext(text, last)
@@ -350,4 +350,3 @@
 #undef PAPIRUS_MAX_BLOCK_TEXT
 #undef PAPIRUS_MAX_TEMPLATES
 #undef PAPIRUS_PRINT_COOLDOWN
-#undef PAPIRUS_FIELD
