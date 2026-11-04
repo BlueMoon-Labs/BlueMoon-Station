@@ -656,7 +656,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		naked_headshots = examine_naked_headshots(user, identity_hidden)
 
 	var/profile_link = "<a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>"
-	var/card_html = examine_card(name_html, race_html, height_cm, profile_link, headshots, naked_headshots, !identity_hidden ? examine_flavor_preview() : "")
+	var/card_html = examine_card(name_html, race_html, height_cm, profile_link, headshots, naked_headshots, !identity_hidden ? dna?.flavor_text : "")
 
 	var/list/flavor_lines = list()
 	if(tempflavor) // BLUEMOON ADD - темпфлавор теперь захардкожен, увы

@@ -56,6 +56,10 @@
   font-size: 1.1em;
 }
 
+.examine_card_no_headshots .examine_name {
+  text-align: center;
+}
+
 .examine_thumbs {
   margin-top: 3px;
   white-space: nowrap;
@@ -159,6 +163,11 @@
 .examine_block img.examine_thumb {
   width: 40px;
   height: 40px;
+
+  // The fourth thumbnail sits near the right edge of the chat.
+  &:nth-child(4) {
+    transform-origin: top right;
+  }
 
   &:hover {
     transform: scale(3.2);
