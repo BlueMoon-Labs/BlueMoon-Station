@@ -222,11 +222,15 @@
 		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
 		if(chosen.client?.prefs)
 			chosen.client.prefs.copy_to(H)
+			chosen.client.prefs.apply_prefs_modified_limbs(H)
 		equip_mopp_outfit(H)
 		if(!assign_ghost_to_mob(chosen, H))
 			qdel(H)
 			qdel(pod)
 			continue
+		if(H.client?.prefs)
+			H.client.prefs.apply_prefs_body_mods(H)
+			H.update_body()
 		post_player_assigned(H)
 		H.anchored = FALSE
 		new /obj/effect/pod_landingzone(spawn_point, pod)
@@ -359,11 +363,15 @@
 		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
 		if(chosen.client?.prefs)
 			chosen.client.prefs.copy_to(H)
+			chosen.client.prefs.apply_prefs_modified_limbs(H)
 		equip_rev_outfit(H)
 		if(!assign_ghost_to_mob(chosen, H))
 			qdel(H)
 			qdel(pod)
 			continue
+		if(H.client?.prefs)
+			H.client.prefs.apply_prefs_body_mods(H)
+			H.update_body()
 		post_player_assigned(H)
 		H.anchored = FALSE
 		new /obj/effect/pod_landingzone(spawn_point, pod)
