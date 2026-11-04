@@ -158,8 +158,10 @@
 			lad.client.view_size.zoomOut(zoom_out_amt, zoom_amt, new_dir)
 
 /obj/item/organ/cyberimp/eyes/optical/kiroshi/Remove(special = FALSE)
-	if(zoomed && owner && owner.client)
-		owner.client.view_size.zoomIn()
+	if(zoomed && owner)
+		// Состояние зума и сигнал снимаем даже без клиента; zoomIn() требует клиента.
+		if(owner.client)
+			owner.client.view_size.zoomIn()
 		zoomed = FALSE
 		UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
 	return ..()
@@ -183,8 +185,10 @@
 			E.flash_protect = max(E.flash_protect, 3)
 
 /obj/item/organ/cyberimp/eyes/optical/militech/Remove(special = FALSE)
-	if(zoomed && owner && owner.client)
-		owner.client.view_size.zoomIn()
+	if(zoomed && owner)
+		// Состояние зума и сигнал снимаем даже без клиента; zoomIn() требует клиента.
+		if(owner.client)
+			owner.client.view_size.zoomIn()
 		zoomed = FALSE
 		UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
 	if(owner && ishuman(owner))
