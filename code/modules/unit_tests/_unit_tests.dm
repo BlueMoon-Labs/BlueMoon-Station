@@ -224,6 +224,7 @@
 // #include "crayons.dm"
 #include "create_and_destroy.dm"
 #include "crew_manifest_heads.dm"
+#include "cryo_objective_reselect.dm"
 #include "custom_emote_panel.dm"
 #include "custom_portal_station.dm"
 // #include "designs.dm"

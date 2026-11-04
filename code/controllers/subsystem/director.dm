@@ -363,7 +363,7 @@ SUBSYSTEM_DEF(director)
 /// Целевая антаг-нагрузка раунда: масштабируется от живого экипажа, а не от фиксированного
 /// потолка intensity. 3 стелс-антага - норма на 20 экипажа и голод на 60 телах.
 /datum/controller/subsystem/director/proc/antag_target(crew)
-	return crew * profile.antag_intensity_per_crew
+	return profile ? crew * profile.antag_intensity_per_crew : 0
 
 /// Актуализация копилок антаг-пулов: у пула без цели (или с протухшей - can_fire отвалился,
 /// например кончились кандидаты-призраки, либо живой вес затух до нуля) роллится новая.
