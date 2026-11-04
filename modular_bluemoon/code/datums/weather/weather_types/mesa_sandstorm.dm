@@ -27,6 +27,7 @@
 	var/storm_stage = 0 // 0 = dust_low, 1 = dust_med, 2 = dust_high
 	var/stage_timer = 0
 	var/stage_duration = 600 // 1 minute per stage (600 deciseconds)
+	var/list/mesa_affected_mobs = list()
 
 /datum/weather/ash_storm/mesa_sandstorm/start()
 	. = ..()
@@ -35,20 +36,21 @@
 	stage_timer = 0
 
 /datum/weather/ash_storm/mesa_sandstorm/wind_down()
-	for(var/mob/living/L in GLOB.mob_living_list)
+	for(var/mob/living/L in mesa_affected_mobs.Copy())
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm)
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_med)
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_high)
 		L.clear_fullscreen("mesa_storm")
+	mesa_affected_mobs.Cut()
 	return ..()
 
 /datum/weather/ash_storm/mesa_sandstorm/weather_act(mob/living/L)
 	if(is_ash_immune(L))
-		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm)
-		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_med)
-		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_high)
-		L.clear_fullscreen("mesa_storm")
+		clear_storm_effect(L)
+		mesa_affected_mobs -= L
 		return
+
+	mesa_affected_mobs |= L
 
 	// Apply effects based on current stage
 	switch(storm_stage)
@@ -89,20 +91,26 @@
 		var/turf/mob_turf = get_turf(L)
 		var/area/mob_area = get_area(L)
 		if(!mob_turf || !(mob_turf.z in impacted_z_levels) || !mob_area || !(mob_area in impacted_areas))
-			L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm)
-			L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_med)
-			L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_high)
-			L.clear_fullscreen("mesa_storm")
+			if(L in mesa_affected_mobs)
+				clear_storm_effect(L)
+				mesa_affected_mobs -= L
 		else if(can_weather_act(L))
 			weather_act(L)
 
 /datum/weather/ash_storm/mesa_sandstorm/end()
-	for(var/mob/living/L in GLOB.mob_living_list)
+	for(var/mob/living/L in mesa_affected_mobs.Copy())
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm)
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_med)
 		L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_high)
 		L.clear_fullscreen("mesa_storm")
+	mesa_affected_mobs.Cut()
 	return ..()
+
+/datum/weather/ash_storm/mesa_sandstorm/proc/clear_storm_effect(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_med)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/mesa_storm_high)
+	L.clear_fullscreen("mesa_storm")
 
 // Dust effects
 /atom/movable/screen/fullscreen/tiled/dust_low

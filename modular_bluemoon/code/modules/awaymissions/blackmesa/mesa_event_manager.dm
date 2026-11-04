@@ -116,7 +116,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(!GLOB.machines)
 		return
 	for(var/obj/machinery/power/floodlight/urbanismlight/mesaoutside/L in GLOB.machines)
-		if(!L)
+		if(!L || !istype(get_area(L), /area/awaymission/ihategordon))
 			continue
 		L.light_color = color
 		L.set_light(L.light_range, light_power, color)
@@ -156,7 +156,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 		var/area/A = get_area(M)
 		if(!A)
 			continue
-		if(istype(A, /area/awaymission/ihategordon) || istype(A, /area/command/gateway))
+		if(istype(A, /area/awaymission/ihategordon))
 			to_chat(M, announcement)
 			players_notified++
 			if(s && M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
@@ -167,4 +167,3 @@ SUBSYSTEM_DEF(blackmesa_events)
 /datum/controller/subsystem/blackmesa_events/proc/initialize_zombie_director()
 	if(!GLOB.zombie_director)
 		GLOB.zombie_director = new /datum/ai_director/zombie_mission()
-

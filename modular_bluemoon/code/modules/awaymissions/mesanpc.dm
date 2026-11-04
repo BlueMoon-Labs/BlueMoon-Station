@@ -288,13 +288,13 @@
 		"ЭЙ. Или ВЫ отвечаете или джет УЛЕТАЕТ обратно на базу"
 	)
 	var/list/bombardment_dialogue_lines = list(
-		"Приём. Говорит Пеликан-1. Запрашиваю координаты для тактического удара",
-		"Мы покидаем воздушное пространство черной мезы на дозаправку.",
-		"...Сворачивайте удочки тоже, ситуация вышла из под контроля",
+		"Приём. Говорит Пеликан-1. Меня слышно?",
+		"Скоро мы покидаем воздушное пространство черной мезы на дозаправку.",
+		"...Советую сворачивать удочки тоже, ситуация вышла из под контроля",
 		"...Если вам всё ещё нужна помощь",
 		"Я могу подсобить вам 500 килограмовым подарком для инопланетных ублюдков",
 		"...Отметьте по очереди цели для последующей бомбардировки",
-		"Имейте ввиду - топливо у меня НЕ бесконечное. Сея мероприятие займет время",
+		"Имейте ввиду - топливо у меня НЕ бесконечное.",
 		"...Да спасёт нас демократия"
 	)
 	var/bombardment_active = FALSE
@@ -333,23 +333,12 @@
 	if(linked_console)
 		linked_console.balloon_alert_to_viewers("Начало бомбардировки", null)
 
-	say("Вижу цель. ОТОЙДИТЕ ОТ ВЗРЫВА!")
+	say("Вижу цель. ОТОЙДИТЕ ОТ ЗОНЫ БОМБАРДИРОВКИ!!!")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
-
-	addtimer(CALLBACK(src, PROC_REF(say_bombardment_start)), 3 SECONDS)
 
 	addtimer(CALLBACK(src, PROC_REF(drop_bombs), target_turf), 6 SECONDS)
-
-/obj/machinery/negotiations_radio/bombardment/proc/say_bombardment_start()
-	if(!src)
-		return
-
-	say("Прикройте головы, начинаю бомбардировку")
-	icon_state = "radiohecu_talking"
-	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 /obj/machinery/negotiations_radio/bombardment/proc/drop_bombs(turf/target_turf)
 	if(!src || !target_turf)

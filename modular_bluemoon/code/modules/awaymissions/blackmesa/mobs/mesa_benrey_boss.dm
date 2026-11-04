@@ -120,7 +120,8 @@
 
 /obj/effect/temp_visual/benrey_death/Destroy()
 	for(var/mob/M in range(7,src))
-		shake_camera(M, 7, 1)
+		if(istype(get_area(M), /area/awaymission/ihategordon))
+			shake_camera(M, 7, 1)
 	var/turf/T = get_turf(src)
 	playsound(T,'sound/magic/summon_magic.ogg', 50, 1, 1)
 	new /obj/effect/temp_visual/benrey_scatter(T)

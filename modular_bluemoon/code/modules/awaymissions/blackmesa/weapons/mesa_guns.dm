@@ -120,7 +120,7 @@
 
 /obj/item/projectile/bullet/p50/m4oa1
 	damage = 50
-	dismemberment = 30
+	dismemberment = 20
 
 /obj/item/projectile/bullet/p50/m4oa1/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
 	var/original_damage = damage
@@ -795,7 +795,7 @@
 	item_state = "p90"
 	fire_delay = 1.5 //FUUUUUUUUCK!!!!!
 	spread = 17
-	fire_sound = 'sound/weapons/gunshot_smg_alt.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/p90.ogg'
 	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
@@ -835,7 +835,7 @@
 /obj/item/projectile/bullet/mm57
 	name = "5.7mm bullet"
 	damage = 20
-	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 4 → BR1 (5.7мм аналог FN57)
+	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 4 → BR1 (5.7мм аналог FN57)
 	wound_bonus = -4
 	bare_wound_bonus = 2
 

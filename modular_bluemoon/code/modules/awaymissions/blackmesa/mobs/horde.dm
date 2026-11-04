@@ -154,8 +154,8 @@
 	mob_biotypes = list(MOB_ORGANIC, MOB_HUMANOID)
 	faction = list(FACTION_XEN)
 	turns_per_move = 0 // Instant reaction time
-	maxHealth = 100
-	health = 100
+	maxHealth = 85
+	health = 85
 	speed = 0 // Instant movement
 	melee_damage_lower = 10
 	melee_damage_upper = 15
@@ -260,8 +260,8 @@
 	icon = 'modular_bluemoon/icons/mob/mesa_mobs.dmi'
 	icon_state = "hecu_zombie"
 	icon_living = "hecu_zombie"
-	maxHealth = 60
-	health = 60
+	maxHealth = 51
+	health = 51
 	speed = 0
 	melee_damage_lower = 8
 	melee_damage_upper = 12
@@ -280,8 +280,8 @@
 	icon_state = "former_gonome"
 	icon_living = "former_gonome"
 	icon_dead = "former_dead"
-	maxHealth = 100
-	health = 100
+	maxHealth = 85
+	health = 85
 	speed = 2 // Slightly faster
 	turns_per_move = 0 // Faster reaction
 	melee_damage_lower = 15

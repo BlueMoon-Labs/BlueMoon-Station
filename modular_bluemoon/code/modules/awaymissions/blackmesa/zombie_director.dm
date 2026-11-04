@@ -465,6 +465,9 @@
 	if(!threat_level || threat_level <= 0)
 		return
 
+	if(difficulty_level >= 3)
+		threat_level = max(1, round(threat_level * 0.75))
+
 	spawn_zombie_wave(threat_level, alive_players)
 	current_wave_number++
 

@@ -25,6 +25,8 @@
 	. = ..()
 	if(!src)
 		return
+	if(!istype(get_area(src), /area/awaymission/ihategordon))
+		return
 	if(triggered)
 		return
 	if(!AM)
@@ -99,7 +101,7 @@
 		return
 	// Find and delete all triggers with the same trigger_id in single loop
 	for(var/obj/effect/awaymission/blackmesa/difficulty_trigger/T in world)
-		if(T && T.trigger_id == trigger_level)
+		if(T && istype(get_area(T), /area/awaymission/ihategordon) && T.trigger_id == trigger_level)
 			qdel(T)
 
 // Define 8 trigger zones
@@ -163,6 +165,8 @@
 
 /obj/effect/awaymission/blackmesa/shake_trigger/Crossed(atom/movable/AM)
 	. = ..()
+	if(!istype(get_area(src), /area/awaymission/ihategordon))
+		return
 	if(triggered)
 		return
 	if(!AM)
@@ -196,7 +200,7 @@
 	// Get all living mobs in 5x5 range around the trigger
 	var/list/affected_mobs = list()
 	for(var/mob/living/L in range(5, src))
-		if(L.client && L.stat != DEAD)
+		if(L.client && L.stat != DEAD && istype(get_area(L), /area/awaymission/ihategordon))
 			affected_mobs += L
 
 	// Apply screen shake to all affected mobs
@@ -222,7 +226,7 @@
 		return
 	// Find and delete all triggers with the same trigger_id
 	for(var/obj/effect/awaymission/blackmesa/shake_trigger/T in world)
-		if(T && T.trigger_id == trigger_level)
+		if(T && istype(get_area(T), /area/awaymission/ihategordon) && T.trigger_id == trigger_level)
 			qdel(T)
 
 // =============================================================================
@@ -254,6 +258,8 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 
 /obj/effect/awaymission/blackmesa/bombardment_initiator/Crossed(atom/movable/AM)
 	. = ..()
+	if(!istype(get_area(src), /area/awaymission/ihategordon))
+		return
 	if(triggered)
 		return
 	if(!AM)
@@ -272,7 +278,7 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 		GLOB.active_bombardment_modes = list()
 	GLOB.active_bombardment_modes["[trigger_id]"] = TRUE
 	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/strike in world)
-		if(strike.trigger_id == trigger_id)
+		if(istype(get_area(strike), /area/awaymission/ihategordon) && strike.trigger_id == trigger_id)
 			strike.trigger_bombardment()
 	remove_all_strikes_of_level(trigger_id)
 	// Delete ALL initiators with this trigger_id
@@ -282,14 +288,14 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	if(!trigger_level)
 		return
 	for(var/obj/effect/awaymission/blackmesa/bombardment_initiator/T in world)
-		if(T && T.trigger_id == trigger_level)
+		if(T && istype(get_area(T), /area/awaymission/ihategordon) && T.trigger_id == trigger_level)
 			qdel(T)
 
 /obj/effect/awaymission/blackmesa/bombardment_initiator/proc/remove_all_strikes_of_level(trigger_level)
 	if(!trigger_level)
 		return
 	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/T in world)
-		if(T && T.trigger_id == trigger_level)
+		if(T && istype(get_area(T), /area/awaymission/ihategordon) && T.trigger_id == trigger_level)
 			qdel(T)
 
 // Strike trigger - when crossed, drops missile on its location if mode is active
@@ -311,6 +317,8 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 
 /obj/effect/awaymission/blackmesa/bombardment_strike/Crossed(atom/movable/AM)
 	. = ..()
+	if(!istype(get_area(src), /area/awaymission/ihategordon))
+		return
 	if(triggered)
 		return
 	if(!AM)
@@ -334,11 +342,13 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 /obj/effect/awaymission/blackmesa/bombardment_strike/proc/trigger_bombardment()
 	if(triggered)
 		return
+	if(!istype(get_area(src), /area/awaymission/ihategordon))
+		return
 	triggered = TRUE
 	drop_missile_pod(get_turf(src))
 
 /obj/effect/awaymission/blackmesa/bombardment_strike/proc/drop_missile_pod(turf/drop_turf)
-	if(!drop_turf)
+	if(!drop_turf || !istype(get_area(drop_turf), /area/awaymission/ihategordon))
 		return
 
 	// Play incoming sound
@@ -359,5 +369,5 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	if(!trigger_level)
 		return
 	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/T in world)
-		if(T && T.trigger_id == trigger_level)
+		if(T && istype(get_area(T), /area/awaymission/ihategordon) && T.trigger_id == trigger_level)
 			qdel(T)

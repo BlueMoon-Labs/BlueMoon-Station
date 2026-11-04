@@ -954,6 +954,13 @@
 	max_mobs_per_wave = 3
 	damage_threshold = 600
 
+/obj/structure/urbanism_generator/button/get_spawn_count_for_difficulty()
+	var/spawn_count = ..()
+	var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+	if(director && director.difficulty_level >= 3)
+		return max(1, round(spawn_count * 0.75))
+	return spawn_count
+
 /obj/structure/urbanism_generator/button/alt
 	name = "secondary door generator"
 	blastdoor_id = "urbanism_door_2"
