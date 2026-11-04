@@ -240,8 +240,8 @@
 	var/latest_stamp_binding
 	/// Ноль отключает performance-квоту работы; wire size и retention history имеют отдельные ограничения.
 	/// Bound DM ownership independently of Host admission; do not allocate unlimited message datums.
-	var/context_limit = 4096
-	var/command_limit = 4096
+	var/context_limit = 0 // DIAG: было 4096 — снят admission-потолок native транспорта (как остальные квоты async-дизайна); очередь мониторится в NETRUN Library Monitor
+	var/command_limit = 0 // DIAG: было 4096
 	/// Only never-submitted replaceable state may be updated in place.
 	var/list/queued_state_commands = list()
 	var/local_states_coalesced = 0
@@ -265,6 +265,8 @@
 	var/native_last_slice_ms = 0
 	var/native_started_count = 0
 	var/native_max_queue_wait_ms = 0
+	/// DIAG (temp): отметка последнего census накопления native-контекстов, чтобы не спамить лог.
+	var/native_census_mark = 0
 	/// Terminal fingerprints нужны только для идемпотентного ACK, не разрешают повтор effect.
 	var/list/terminal_hashes = list()
 	var/list/terminal_order = list()
@@ -359,6 +361,10 @@
 	message.correlation_id ||= context.request_id
 	pending[context.request_id] = context
 	pending_current_count++
+	var/native_census_trigger = native_census_mark ? native_census_mark + 250 : 25 // DIAG (temp)
+	if(length(pending) >= native_census_trigger)
+		native_census_mark = length(pending)
+		log_native_census("dispatch")
 	var/datum/netrun_external_command/command = new
 	command.kind = "request_submit"
 	command.fact_barrier = client.capture_fact_barrier()
@@ -727,6 +733,22 @@
 	owner?.wake_ready_delivery()
 	return TRUE
 
+/// DIAG (temp): разбивка накопления native-контекстов по операции и семейству сервиса-источника —
+/// показывает, ЧТО именно копится в очереди native-инвокаций (причина роста до прежнего предела 4096).
+/datum/netrun_external_effects/machines/proc/log_native_census(reason)
+	var/list/by_op = list()
+	var/list/by_family = list()
+	for(var/rid in pending)
+		var/datum/netrun_external_request_context/context = pending[rid]
+		if(QDELETED(context))
+			continue
+		var/op = context.operation_id || "<none>"
+		by_op[op] = (by_op[op] || 0) + 1
+		var/datum/netrun_machine_service/source = context.source_ref?.resolve()
+		var/fam = source?.service_id || "<none>"
+		by_family[fam] = (by_family[fam] || 0) + 1
+	log_world("NETRUN_NATIVE_CENSUS [reason] pending=[length(pending)] queue=[max(0, length(native_invocation_queue) - native_invocation_cursor + 1)] invocations=[length(invocations)] started=[native_started_count] max_wait_ms=[native_max_queue_wait_ms] by_op=[netrun_census_pairs(by_op)] by_family=[netrun_census_pairs(by_family)]")
+
 /// Ingress только резервирует ownership; игровой CPU начинается отдельно после применения и ACK выходных кадров.
 /datum/netrun_external_effects/machines/advance_native_invocations(datum/netrun_external_core/client)
 	set waitfor = FALSE
@@ -782,6 +804,8 @@
 	if(native_invocation_cursor > length(native_invocation_queue))
 		native_invocation_queue.Cut()
 		native_invocation_cursor = 1
+		if(!length(pending)) // DIAG (temp): полностью разобрали — следующий всплеск снова залогируется
+			native_census_mark = 0
 	else if(native_invocation_cursor > 64 && native_invocation_cursor > length(native_invocation_queue) / 2)
 		native_invocation_queue = native_invocation_queue.Copy(native_invocation_cursor)
 		native_invocation_cursor = 1

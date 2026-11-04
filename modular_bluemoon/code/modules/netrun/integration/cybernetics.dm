@@ -271,14 +271,10 @@
 	var/advertisement_generation = 0
 
 /datum/netrun_machine_service/security_events/network_ready()
-	var/datum/netrun_machine_transport/transport = SSnetrun.get_machine_transport()
-	if(!transport.is_ready())
-		// Cybernetics call this directly on reconnect, including during map loads;
-		// unlike machinery they may receive no later native power-restored signal.
-		transport.defer_ready_service(src)
-		return
-	advertisement_generation++
-	send("security.monitor", new /datum/netrun_machine_message/security_advertisement(advertisement_generation))
+	// MIGRATION: security moved off the eager advertise/subscribe mesh (O(publishers×subscribers)
+	// bootstrap flood of `state` contexts). Incidents are delivered on-demand and Core-routed in
+	// queue_event(); no readiness-time advertisement to the whole monitor family is needed.
+	return
 
 /datum/netrun_machine_service/security_events/host_initialized()
 	. = ..()
@@ -352,12 +348,11 @@
 			remove_subscriber(key)
 
 /datum/netrun_machine_service/security_events/proc/queue_event(list/event)
-	if(!length(subscribers))
-		return
-	pending_events[event["id"]] = event.Copy()
-	if(length(pending_events) > 8)
-		pending_events.Cut(1, length(pending_events) - 7)
-	SSnetrun.get_task_scheduler().enqueue("security.publish", src, NETRUN_TASK_NORMAL)
+	// MIGRATION: deliver on-demand to the whole security.monitor family via one Core-routed
+	// broadcast. The resolution enforces network reachability and the monitor enforces opt-out
+	// (`enabled`) in receive(), replacing the eagerly-maintained per-subscriber mesh. Incidents
+	// are rare, so this carries no idle cost and no O(N×M) bootstrap burst.
+	send("security.monitor", new /datum/netrun_machine_message(list("operation" = "event", "event" = event.Copy())))
 
 /datum/netrun_machine_service/security_events/proc/publish_slice()
 	if(!publishing)
@@ -460,10 +455,10 @@
 	return istype(bot) && bot.bot_kind == NETRUN_BOT_POLICE && !QDELETED(bot.console)
 
 /datum/netrun_machine_service/security_monitor/network_ready()
-	if(enabled && authorized())
-		subscription_generation++
-		acknowledged_publishers.Cut()
-		send("security.events", new /datum/netrun_machine_message/security_subscription(TRUE, subscription_generation))
+	// MIGRATION: no eager subscription to the security.events family (the other half of the O(N×M)
+	// bootstrap flood). Monitors receive incidents from the publisher's on-demand broadcast; the
+	// local opt-out is enforced in receive() via `enabled`.
+	return
 
 /datum/netrun_machine_service/security_monitor/proc/acknowledge_subscription(datum/netrun_machine_service/security_events/publisher, generation, subscribed)
 	if(QDELETED(publisher) || generation != subscription_generation || subscribed != enabled)
@@ -498,10 +493,9 @@
 	value = !!value
 	if(enabled == value)
 		return TRUE
+	// MIGRATION: toggle local opt-out only; delivery no longer uses a subscription handshake.
 	enabled = value
-	subscription_generation++
-	acknowledged_publishers.Cut()
-	return send("security.events", new /datum/netrun_machine_message/security_subscription(enabled, subscription_generation))
+	return TRUE
 
 /datum/netrun_machine_service/security_monitor/receive(datum/netrun_machine_message/message)
 	if(!enabled || !authorized() || !istype(message.source, /datum/netrun_machine_service/security_events))
