@@ -436,6 +436,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	update_hardlight()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_equip()
+	update_speed()
 
 /obj/item/mod/control/proc/on_wearer_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -652,7 +653,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 			wearer.throw_alert("mod_charge", /atom/movable/screen/alert/emptycell)
 
 /obj/item/mod/control/proc/update_speed()
-	var/list/parts = get_mod_parts(include_cell = FALSE)
+	var/list/parts = get_deployable_parts()
 	if(!length(parts))
 		return
 	var/slowdown = is_active() ? slowdown_active : slowdown_inactive
@@ -698,7 +699,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/retract = all_parts_deployed()
 	var/mob/living/carbon/human/current_wearer = wearer
 	ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
-	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part as anything in get_deployable_parts())
 		var/deployed = wearer.get_item_by_slot(part.slot_flags) == part
 		if(deployed != retract)
 			continue

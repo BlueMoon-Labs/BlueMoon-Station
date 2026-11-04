@@ -81,7 +81,7 @@
 		return FALSE
 	if(!target.equip_to_slot_if_possible(mod, mod.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return FALSE
-	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part as anything in mod.get_deployable_parts())
 		if(part.loc != target)
 			mod.deploy(target, part)
 	drain_power(use_power_cost)

@@ -204,9 +204,9 @@
 	set_pin_data(IC_OUTPUT, MOD_CIRCUIT_OUTPUT_ACTIVE, bound_mod?.is_active() || FALSE)
 	set_pin_data(IC_OUTPUT, MOD_CIRCUIT_OUTPUT_SELECTED, bound_mod?.selected_module?.name)
 	var/list/deployed_parts = list()
-	if(bound_mod)
-		for(var/obj/item/part in bound_mod.get_mod_parts(include_cell = FALSE))
-			if(part.loc != bound_mod)
+	if(bound_mod?.wearer)
+		for(var/obj/item/clothing/mod_part/part as anything in bound_mod.get_deployable_parts())
+			if(bound_mod.wearer.get_item_by_slot(part.slot_flags) == part)
 				deployed_parts += part.name
 	set_pin_data(IC_OUTPUT, MOD_CIRCUIT_OUTPUT_PARTS, deployed_parts)
 	push_data()
