@@ -369,7 +369,7 @@
 		machine_wake() // flush handle / pump state changed; process() owns the follow-through
 
 /obj/machinery/disposal/bin/alt_attack_hand(mob/user)
-	if(can_interact(usr))
+	if(can_interact(user))
 		flush = !flush
 		machine_wake()
 		update_icon()

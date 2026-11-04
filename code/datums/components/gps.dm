@@ -77,7 +77,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 )
 	SIGNAL_HANDLER
 
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, tracking ? "Turn off" : "Turn on")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, tracking ? "Выключить" : "Включить")
 	return CONTEXTUAL_SCREENTIP_SET
 
 ///Called on COMSIG_ATOM_EMP_ACT

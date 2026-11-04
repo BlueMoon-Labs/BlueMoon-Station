@@ -72,6 +72,7 @@
 	mode_flags |= COMBAT_MODE_ACTIVE
 	mode_flags &= ~COMBAT_MODE_INACTIVE
 	SEND_SIGNAL(source, COMSIG_LIVING_COMBAT_ENABLED, forced)
+	source.client?.refresh_popup_menus()
 	if(!silent)
 		var/self_message = forced? "<span class='warning'>Your muscles reflexively tighten!</span>" : "<span class='warning'>You drop into a combative stance!</span>"
 		if(visible && (forced || world.time >= combatmessagecooldown))
@@ -110,6 +111,7 @@
 	mode_flags &= ~COMBAT_MODE_ACTIVE
 	mode_flags |= COMBAT_MODE_INACTIVE
 	SEND_SIGNAL(source, COMSIG_LIVING_COMBAT_DISABLED, forced)
+	source.client?.refresh_popup_menus()
 	if(!silent)
 		var/self_message = forced? "<span class='warning'>Your muscles are forcibly relaxed!</span>" : "<span class='warning'>You relax your stance.</span>"
 		if(visible)
@@ -136,7 +138,7 @@
 
 ///Changes the user direction to (try) match the pointer.
 /datum/component/combat_mode/proc/onMouseMove(mob/source, object, location, control, params)
-	if(source.client.show_popup_menus)
+	if(!(mode_flags & COMBAT_MODE_TOGGLED))
 		return
 	source.face_atom(object, TRUE)
 	lastmousedir = source.dir
@@ -154,8 +156,6 @@
 		return TRUE
 	mode_flags |= COMBAT_MODE_TOGGLED
 	enable_combat_mode(source, silent, FALSE, visible, HAS_TRAIT(source, TRAIT_COMBAT_MODE_LOCKED), TRUE)
-	if(source.client)
-		source.client.show_popup_menus = FALSE
 	if(iscarbon(source)) //I dislike this typecheck. It probably should be removed once that spoiled apple is componentized too.
 		var/mob/living/carbon/C = source
 		if(C.voremode)
@@ -168,8 +168,6 @@
 		return TRUE
 	mode_flags &= ~COMBAT_MODE_TOGGLED
 	disable_combat_mode(source, silent, FALSE, visible, !(mode_flags & COMBAT_MODE_ACTIVE), TRUE)
-	if(source.client)
-		source.client.show_popup_menus = TRUE
 	return TRUE
 
 /// Returns a field of flags that are contained in both the second arg and our bitfield variable.

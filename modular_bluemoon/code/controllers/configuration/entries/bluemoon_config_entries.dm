@@ -35,3 +35,10 @@
 	default = 100
 	integer = TRUE
 	min_val = 0
+
+/// Режим ПКМ (RIGHT_CLICK_MODE_*) у игроков, которые сами его не выбирали
+/datum/config_entry/number/right_click_mode_default
+	default = RIGHT_CLICK_MODE_MENU
+	integer = TRUE
+	min_val = RIGHT_CLICK_MODE_ACTION
+	max_val = RIGHT_CLICK_MODE_NATIVE

@@ -35,7 +35,7 @@
 
 /obj/item/melee/baton/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Right click attack while in combat mode to knockdown, but only once per [cooldown_duration / 10] seconds.</span>"
+	. += "<span class='notice'>ПКМ - сбить с ног, не чаще раза в [cooldown_duration / 10] с.</span>"
 	. += "<span class='notice'>This knockdown will also put them off balance for  [status_duration / 20] seconds, allowing you to shove a weapon out of their hand with a right click in Disarm intent.</span>"
 
 /obj/item/melee/baton/get_cell()
@@ -166,24 +166,24 @@
 		return NONE
 
 	if (isobj(target))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Attack")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Ударить")
 	else
 		if (turned_on)
-			LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Knockdown")
+			LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Сбить с ног")
 
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Stun")
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Harmful stun")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Оглушить")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Оглушить с уроном")
 		else
-			LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Knockdown") // DON'T TELL EM, PRANKED.
+			LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Сбить с ног") // DON'T TELL EM, PRANKED.
 
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Stun") // STILL DO NOT DARE TELLING THEM
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Attack") // It's fine i guess...?
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Оглушить") // STILL DO NOT DARE TELLING THEM
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Ударить") // It's fine i guess...?
 
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/melee/baton/alt_pre_attack(atom/A, mob/living/user, params)
 	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
-		return
+		return TRUE
 	. = common_baton_melee(A, user, TRUE)		//return true (attackchain interrupt) if this also returns true. no harm-shoving.
 
 //return TRUE to interrupt attack chain.
@@ -297,8 +297,7 @@
 /obj/item/melee/baton/can_give()
 	if(turned_on)
 		return FALSE
-	else
-		..()
+	return ..()
 
 /obj/item/melee/baton/stunsword
 	name = "stunsword"

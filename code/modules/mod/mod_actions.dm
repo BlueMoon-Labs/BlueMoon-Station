@@ -46,7 +46,6 @@
 	name = "Deploy MODsuit"
 	desc = "Развернуть/Скрыть часть MOD-костюма. На правую кнопку мыши будут развернуты/свернуты все части костюма."
 	button_icon_state = "deploy"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/deploy/Trigger(trigger_flags)
 	if(!IsAvailable())
@@ -63,7 +62,6 @@
 	name = "Activate MODsuit"
 	desc = "Активировать/Деактивировать MOD-костюм. На правую кнопку мыши будут развернуты/свернуты все части костюма."
 	button_icon_state = "activate"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/activate/Trigger(trigger_flags)
 	if(!IsAvailable())
@@ -80,7 +78,6 @@
 	name = "Toggle Module"
 	desc = "Переключить модуль MOD-костюма."
 	button_icon_state = "module"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/module/Trigger(trigger_flags)
 	if(!IsAvailable())
@@ -109,7 +106,6 @@
 
 /datum/action/cooldown/module_action
 	name = "Generic MODsuit Module Action"
-	button_block_right_click_context_menu = TRUE
 	icon_icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	button_icon = 'icons/mob/actions/backgrounds.dmi'
 	background_icon_state = "bg_tech_blue"
