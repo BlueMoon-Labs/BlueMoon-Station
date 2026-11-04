@@ -1,6 +1,7 @@
 
 #define DUALWIELD_PENALTY_EXTRA_MULTIPLIER 1.4
 #define FIRING_PIN_REMOVAL_DELAY 50
+#define AKIMBO_PENALTY_SCALING 1.5
 
 /obj/item/gun
 	name = "gun"
@@ -448,15 +449,15 @@
 		bonus_spread = getinaccuracy(user, bonus_spread, stamloss) //CIT CHANGE - adds bonus spread while not aiming
 	if(ishuman(user) && user.a_intent == INTENT_HARM && weapon_weight <= WEAPON_LIGHT)
 		var/mob/living/carbon/human/H = user
+		bonus_spread += src.dual_wield_spread // BLUEMOON EDIT: своя пушка тоже платит штраф дуэли, как на ТГ
 		for(var/obj/item/gun/G in H.held_items)
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
 			else if(G.can_trigger_gun(user))
-				bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
 				loop_counter++
+				bonus_spread += G.dual_wield_spread * (1 + AKIMBO_PENALTY_SCALING * (loop_counter + 1)) // BLUEMOON EDIT: скалирование штрафа, как на ТГ
 				var/stam_cost = G.getstamcost(user)
 				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, user, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
-
 	var/stam_cost = getstamcost(user)
 	process_fire(target, user, TRUE, params, null, bonus_spread, stam_cost)
 
