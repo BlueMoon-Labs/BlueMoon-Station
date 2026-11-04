@@ -14,8 +14,16 @@
 	if(IsGuestKey(user.key))
 		return FALSE
 
-	var/savefile/F = new /savefile(src.savefile_path(user))
-
+	var/datum/player_save_json/storage = new /datum/player_save_json/account(savefile_path(user))
+	var/savefile/F = storage.open()
+	if(!F)
+		to_chat(user, span_warning("Не удалось прочитать сохранение pAI. Исходные данные сохранены."))
+		return FALSE
+	var/version
+	F["version"] >> version
+	if(storage.exists() && version != 1)
+		to_chat(user, span_warning("Версия сохранения pAI не поддерживается. Исходные данные сохранены."))
+		return FALSE
 
 	WRITE_FILE(F["name"], name)
 	WRITE_FILE(F["description"], description)
@@ -23,6 +31,9 @@
 
 	WRITE_FILE(F["version"], 1)
 
+	if(!storage.commit(F))
+		to_chat(user, span_warning("Не удалось записать сохранение pAI."))
+		return FALSE
 	return TRUE
 
 // loads the savefile corresponding to the mob's ckey
@@ -36,10 +47,11 @@
 
 	var/path = savefile_path(user)
 
-	if (!fexists(path))
+	var/datum/player_save_json/storage = new /datum/player_save_json/account(path)
+	if (!storage.exists())
 		return FALSE
 
-	var/savefile/F = new /savefile(path)
+	var/savefile/F = storage.open()
 
 	if(!F)
 		return //Not everyone has a pai savefile.
@@ -48,9 +60,8 @@
 	F["version"] >> version
 
 	if (isnull(version) || version != 1)
-		fdel(path)
 		if (!silent)
-			alert(user, "Your savefile was incompatible with this version and was deleted.")
+			alert(user, "Версия сохранения pAI не поддерживается. Исходный файл сохранён.")
 		return FALSE
 
 	F["name"] >> src.name

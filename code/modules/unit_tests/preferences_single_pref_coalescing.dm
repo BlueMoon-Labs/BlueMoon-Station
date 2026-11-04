@@ -157,13 +157,15 @@
 	var/leftover_keys = length(prefs.pending_single_prefs)
 	var/leftover_timer = prefs.single_pref_queue
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/written_theme
 	var/written_state
 	READ_FILE(readback["tgui_panel_theme"], written_theme)
 	READ_FILE(readback["tgui_panel_state"], written_state)
 	readback = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -196,7 +198,7 @@
 	var/buffered_keys = length(prefs.pending_single_prefs)
 	prefs.flush_single_prefs()
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/buffered_fancy
 	var/buffered_length
@@ -212,7 +214,7 @@
 
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 
-	var/savefile/after_full = new /savefile(prefs.path)
+	var/savefile/after_full = prefs.open_player_save()
 	after_full.cd = "/"
 	var/full_fancy
 	var/full_length
@@ -227,6 +229,8 @@
 	after_full = null
 
 	var/leftover_keys = length(prefs.pending_single_prefs)
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -254,7 +258,7 @@
 	prefs.load_path("unit_test_single_pref_stale")
 	var/savefile/seed = new /savefile(prefs.path)
 	seed.cd = "/"
-	WRITE_FILE(seed["version"], 0)
+	WRITE_FILE(seed["version"], 79)
 	seed = null
 
 	prefs.clientfps = 77
@@ -262,7 +266,7 @@
 	prefs.save_pref_var("max_chat_length")
 	prefs.flush_single_prefs()
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/version_after
 	var/unbuffered_after
@@ -271,10 +275,12 @@
 	READ_FILE(readback["clientfps"], unbuffered_after)
 	READ_FILE(readback["max_chat_length"], buffered_after)
 	readback = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
-	TEST_ASSERT(version_after > 0, "сброс буфера в файл нулевой версии обязан уходить полной записью и поднимать версию")
+	TEST_ASSERT(version_after > 0, "сброс буфера в файл поддерживаемой старой версии обязан уходить полной записью и поднимать версию")
 	TEST_ASSERT_EQUAL(unbuffered_after, 77, "полная запись из сброса обязана положить и небуферизованные ключи")
 	TEST_ASSERT_EQUAL(buffered_after, 321, "буферизованный ключ обязан дойти до файла и через полную запись")
 
@@ -326,7 +332,7 @@
 		"sound_volume_jukeboxes", "sound_volume_personal_jukeboxes", "sound_volume_emote", "sound_volume_heretic_dance", "sound_volume_heretic_sky",
 		"sound_volume_mentorhelp", "sound_volume_fax",
 		"modern_button_shape", "modern_ui_language", "ui_decoration_level", "collapse_empty_character_slots",
-		"enable_tips", "tip_delay", "lastchangelog", "lastchangelog_date",
+		"enable_tips", "tip_delay", "lastchangelog", "lastchangelog_date", "menuoptions", "inquisitive_ghost",
 		"chem_dispenser_classic_view", "chem_dispenser_use_reagent_color", "chem_dispenser_show_icons",
 		"chem_dispenser_alphabetical_sort",
 		"tgui_panel_state", "tgui_panel_theme",
@@ -339,10 +345,12 @@
 	prefs.load_path("unit_test_single_pref_keys")
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 
-	var/savefile/written = new /savefile(prefs.path)
+	var/savefile/written = prefs.open_player_save()
 	written.cd = "/"
 	var/list/root_keys = written.dir.Copy()
 	written = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -391,10 +399,19 @@
 			for(var/slot in 1 to 2)
 				writer.default_slot = slot
 				writer.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+			// Новые сейвы пишутся в JSON; старый .sav для миграции собираем из того же дерева.
+			var/savefile/written = writer.open_player_save()
+			TEST_ASSERT(written, "Не прочитан записанный JSON")
+			var/legacy_text = written.ExportText("/")
+			written = null
+			writer.path = null
 			qdel(writer)
 			writer = null
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+				fdel("[test_path][suffix]")
 
 			var/savefile/seed = new /savefile(test_path)
+			seed.ImportText("/", legacy_text)
 			seed.cd = "/"
 			var/current_version
 			seed["version"] >> current_version
@@ -409,9 +426,9 @@
 				var/datum/preferences/reader = new
 				reader.path = test_path
 				var/loaded = reader.load_preferences(bypass_cooldown = TRUE)
-				if(!istype(loaded, /savefile))
+				if(!loaded)
 					TEST_FAIL("Не загрузились преференсы версии [old_version], вход [login].")
-				var/savefile/readback = new /savefile(test_path)
+				var/savefile/readback = reader.open_player_save()
 				readback.cd = "/"
 				for(var/key in expected)
 					var/expected_json = json_encode(expected[key])
@@ -427,7 +444,8 @@
 					TEST_FAIL("Версия [old_version] не обновилась до [current_version].")
 				readback = null
 				loaded = null
+				reader.path = null
 				qdel(reader)
 				reader = null
-			fdel(test_path)
-			fdel("[test_path].updatebac")
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/", ".updatebac"))
+				fdel("[test_path][suffix]")

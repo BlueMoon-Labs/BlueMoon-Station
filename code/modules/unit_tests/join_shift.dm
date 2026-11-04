@@ -47,15 +47,19 @@
 
 /datum/unit_test/shift_invites_pref_round_trip/Destroy()
 	if(prefs?.path)
-		fdel(prefs.path)
+		for(var/suffix in list("", ".json", ".json.recovery"))
+			fdel("[prefs.path][suffix]")
+		fdel("[prefs.path].json.d/")
 	QDEL_NULL(prefs)
 	return ..()
 
 /datum/unit_test/shift_invites_pref_round_trip/Run()
 	prefs = new
 	prefs.load_path("unit_test_shift_invites")
-	if(fexists(prefs.path))
-		fdel(prefs.path)
+	if(prefs.path)
+		for(var/suffix in list("", ".json", ".json.recovery"))
+			fdel("[prefs.path][suffix]")
+		fdel("[prefs.path].json.d/")
 	prefs.shift_invites = FALSE
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	sleep(1)
@@ -66,10 +70,10 @@
 	TEST_ASSERT(reloaded.load_preferences(bypass_cooldown = TRUE), "Префы не прочитались")
 	TEST_ASSERT(!reloaded.shift_invites, "Выключенные приглашения должны пережить перезаход")
 
-	var/savefile/written = new /savefile(prefs.path)
-	written.cd = "/"
-	written.dir -= "shift_invites"
-	written = null
+	var/datum/player_save_document/written = prefs.open_player_document()
+	TEST_ASSERT_NOTNULL(written, "Корень сохранения не открылся")
+	written.remove("shift_invites")
+	TEST_ASSERT(written.commit(), "Корень без ключа не записался")
 	sleep(1)
 	TEST_ASSERT(reloaded.load_preferences(bypass_cooldown = TRUE), "Префы без ключа не прочитались")
 	TEST_ASSERT(reloaded.shift_invites, "Старый сейв без ключа должен получать приглашения")

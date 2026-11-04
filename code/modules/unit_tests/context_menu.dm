@@ -740,7 +740,8 @@
 
 /datum/unit_test/context_menu_mode_saving/Destroy()
 	if(prefs)
-		fdel(prefs.path)
+		for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+			fdel("[prefs.path][suffix]")
 		qdel(prefs)
 		prefs = null
 	return ..()
@@ -748,14 +749,16 @@
 /datum/unit_test/context_menu_mode_saving/Run()
 	prefs = new
 	prefs.load_path("unit_test_right_click_mode")
-	fdel(prefs.path)
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+		fdel("[prefs.path][suffix]")
 	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек не записан")
 	sleep(1)
 	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки не прочитаны")
 	// sanitize_integer(null, ..., null) отдавал 0: всем невыбравшим доставалось «сразу действие» (10602)
 	TEST_ASSERT_NULL(prefs.right_click_choice, "Невыбравший после загрузки получил режим ПКМ")
-	var/savefile/old_save = new(prefs.path)
+	var/savefile/old_save = prefs.open_player_save()
 	WRITE_FILE(old_save["right_click_menu"], RIGHT_CLICK_MODE_ACTION)
+	TEST_ASSERT(prefs.commit_player_save(old_save), "Старый ключ не записан")
 	old_save = null
 	sleep(1)
 	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки со старым ключом не прочитаны")
@@ -764,7 +767,7 @@
 	TEST_ASSERT(prefs.set_right_click_choice(RIGHT_CLICK_MODE_MENU), "Выбор режима не принят")
 	prefs.flush_single_prefs()
 	sleep(1)
-	var/savefile/readback = new(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	var/written
 	READ_FILE(readback["right_click_mode"], written)
 	readback = null
@@ -971,7 +974,8 @@
 
 /datum/unit_test/context_menu_style_saving/Destroy()
 	if(prefs)
-		fdel(prefs.path)
+		for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+			fdel("[prefs.path][suffix]")
 		qdel(prefs)
 		prefs = null
 	return ..()
@@ -979,7 +983,8 @@
 /datum/unit_test/context_menu_style_saving/Run()
 	prefs = new
 	prefs.load_path("unit_test_context_menu_style")
-	fdel(prefs.path)
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+		fdel("[prefs.path][suffix]")
 	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек не записан")
 	sleep(1)
 	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки не прочитаны")
@@ -1016,9 +1021,10 @@
 	TEST_ASSERT_EQUAL(prefs.context_menu_option("icons"), FALSE, "Значки не пережили сохранение")
 	TEST_ASSERT_EQUAL(prefs.context_menu_option("border"), TRUE, "Рамка не пережила сохранение")
 
-	var/savefile/broken = new(prefs.path)
+	var/savefile/broken = prefs.open_player_save()
 	WRITE_FILE(broken["context_menu_style"], list("font" = "comic sans", "scale" = 333, "theme" = "light", "junk" = 1))
 	WRITE_FILE(broken["shift_right_click_mode"], 9)
+	TEST_ASSERT(prefs.commit_player_save(broken), "Мусор не записан")
 	broken = null
 	sleep(1)
 	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки с мусором не прочитаны")

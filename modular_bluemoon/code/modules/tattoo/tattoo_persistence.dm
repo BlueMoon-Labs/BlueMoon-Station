@@ -24,13 +24,13 @@
 
 // Загрузка настроек татуировок
 // tattoopref загружается/сохраняется в modular_citadel/code/modules/client/preferences_savefile.dm
-/datum/preferences/proc/load_tattoo_prefs(savefile/S)
+/datum/preferences/proc/load_tattoo_prefs(savefile/S, datum/player_save_document/document)
 	var/temp_persistent
 	var/temp_tattoos
 	var/list/temp_pending_removals
-	S["persistent_tattoos"] >> temp_persistent
-	S["tattoos_string"] >> temp_tattoos
-	S["pending_tattoo_removals"] >> temp_pending_removals
+	READ_PLAYER_SAVE(S, document, "persistent_tattoos", temp_persistent)
+	READ_PLAYER_SAVE(S, document, "tattoos_string", temp_tattoos)
+	READ_PLAYER_SAVE(S, document, "pending_tattoo_removals", temp_pending_removals)
 
 	persistent_tattoos = sanitize_integer(temp_persistent, 0, 1, TRUE)
 	// Strip control chars from saved tattoo text: the ^/~ field/record separators are

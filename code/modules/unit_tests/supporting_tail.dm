@@ -19,7 +19,8 @@
 		prefs.path = null
 	. = ..()
 	for(var/file_path in save_paths)
-		fdel(file_path)
+		for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+			fdel("[file_path][suffix]")
 	save_paths = null
 
 /datum/unit_test/supporting_tail/proc/patient(style = "Naga")
@@ -803,6 +804,7 @@
 	save_paths += file_path
 	prefs.path = file_path
 	prefs.innate_features = list(INNATE_NAGA_TAIL)
+	TEST_ASSERT(prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE), "Корень аккаунта создаётся до слота.")
 	TEST_ASSERT(prefs.save_character(bypass_cooldown = TRUE, silent = TRUE), "Настройки сохраняются в отдельный файл теста.")
 	prefs.innate_features = list()
 	TEST_ASSERT(prefs.load_character(bypass_cooldown = TRUE), "Сохранённый слот загружается.")
