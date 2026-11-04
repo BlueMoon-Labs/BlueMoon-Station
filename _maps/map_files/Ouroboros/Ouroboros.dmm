@@ -14709,6 +14709,13 @@
 /obj/effect/turf_decal/bot/white,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/service/bar)
+"dsx" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plating,
+/area/engineering/main)
 "dsH" = (
 /obj/effect/turf_decal/tile/dark_red/opposingcorners,
 /obj/machinery/vending/wardrobe/robo_wardrobe,
@@ -23365,6 +23372,9 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/structure/disposalpipe/segment,
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
 /turf/open/floor/plasteel/kitchen,
 /area/service/kitchen)
 "fwn" = (
@@ -27918,6 +27928,16 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/plasteel,
 /area/engineering/atmos/upper)
+"gxx" = (
+/obj/structure/table/wood,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/cash_register/bar{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/service/bar)
 "gxV" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 10
@@ -31471,6 +31491,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/engine,
 /area/science/explab)
 "hqM" = (
@@ -37174,6 +37195,7 @@
 	id = "commissary";
 	name = "Vacant Commissary Shutters"
 	},
+/obj/machinery/cash_register,
 /turf/open/floor/plating,
 /area/commons/vacant_room/commissary)
 "iEB" = (
@@ -39044,6 +39066,9 @@
 /area/security/prison)
 "jau" = (
 /obj/effect/turf_decal/box,
+/obj/machinery/computer/department_budget/service{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/heads_quarters/hop)
 "jaz" = (
@@ -46378,6 +46403,9 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/cargo/office)
 "kQD" = (
@@ -49924,6 +49952,7 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "lKA" = (
@@ -56222,6 +56251,9 @@
 /obj/effect/turf_decal/trimline/blue/filled/warning{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/treatment_center)
 "nhW" = (
@@ -60476,6 +60508,15 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/solars/port/aft)
+"ohv" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "ohz" = (
 /obj/structure/dresser,
 /obj/effect/turf_decal/siding/wood{
@@ -62053,6 +62094,16 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/chemistry)
+"oAa" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/engine,
+/area/engineering/main)
 "oAl" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -73074,6 +73125,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "qZa" = (
@@ -79958,6 +80012,7 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central/aft)
 "sGN" = (
@@ -79986,6 +80041,9 @@
 /obj/machinery/light_switch/directional/south,
 /obj/machinery/light/cold/directional/south,
 /obj/effect/landmark/secequipment,
+/obj/machinery/computer/department_budget/security{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},
@@ -90908,6 +90966,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 8
 	},
@@ -98835,6 +98894,7 @@
 	c_tag = "Upper Central Primary Hallway - Service Hydroponics";
 	dir = 4
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central/aft)
 "xhc" = (
@@ -102304,6 +102364,9 @@
 	dir = 4
 	},
 /obj/machinery/light/directional/east,
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central/fore)
 "xYK" = (
@@ -102416,6 +102479,9 @@
 	},
 /obj/item/pen{
 	pixel_y = 5
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/medical/medbay/lobby)
@@ -130983,7 +131049,7 @@ dsq
 wwa
 hhU
 xMd
-jTM
+gxx
 lbG
 saU
 ovZ
@@ -200833,7 +200899,7 @@ kXA
 jfK
 lMf
 lCt
-uAi
+oAa
 wGp
 jkK
 gaR
@@ -201642,7 +201708,7 @@ jvm
 pqz
 pqz
 pqz
-eXY
+ohv
 jVt
 wHF
 jcK

@@ -1002,6 +1002,7 @@
 /area/command/heads_quarters/captain)
 "acE" = (
 /obj/machinery/airalarm/directional/north,
+/obj/machinery/computer/department_budget,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "acF" = (
@@ -3025,6 +3026,9 @@
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/hop/private)
@@ -8176,6 +8180,7 @@
 	},
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/machinery/evidence_locker,
 /turf/open/floor/wood,
 /area/security/warden)
 "atG" = (
@@ -28152,6 +28157,14 @@
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/neck/scarf/pink,
+/obj/item/clothing/neck/scarf/pink,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
 /turf/open/floor/carpet/purple,
 /area/edina/crew_quarters/store/clothes)
 "brT" = (
@@ -28794,14 +28807,9 @@
 /area/edina/crew_quarters/store/pet)
 "btz" = (
 /obj/structure/table/glass,
-/obj/item/clothing/neck/scarf/pink,
-/obj/item/clothing/neck/scarf/pink,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
+/obj/machinery/cash_register{
+	dir = 8
+	},
 /turf/open/floor/carpet/purple,
 /area/edina/crew_quarters/store/clothes)
 "btA" = (
@@ -31297,6 +31305,9 @@
 "bzX" = (
 /obj/structure/table/reinforced,
 /obj/effect/decal/festive/holly,
+/obj/machinery/cash_register/clinic{
+	dir = 8
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/lobby)
 "bzY" = (
@@ -37961,6 +37972,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/brown,
+/obj/machinery/computer/stock_terminal{
+	dir = 1
+	},
 /turf/open/indestructible,
 /area/cargo/office)
 "bNm" = (
@@ -54538,6 +54552,16 @@
 	},
 /turf/open/floor/wood,
 /area/security/warden)
+"dnG" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/medical,
+/turf/open/floor/wood,
+/area/command/heads_quarters/cmo)
 "dnQ" = (
 /mob/living/simple_animal/pet/penguin/emperor/shamebrero,
 /turf/open/floor/holofloor/ice,
@@ -56880,6 +56904,12 @@
 	},
 /turf/open/floor/wood,
 /area/command/meeting_room/council)
+"iWv" = (
+/obj/machinery/computer/department_budget/security{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/command/heads_quarters/hos)
 "iaA" = (
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/wood,
@@ -57658,6 +57688,10 @@
 	icon_state = "darkfull"
 	},
 /area/medical/morgue)
+"jyc" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/grass/snow/edina,
+/area/edina/street/primary/progress)
 "jzC" = (
 /obj/machinery/meter,
 /obj/machinery/atmospherics/pipe/simple/yellow/visible{
@@ -57879,6 +57913,12 @@
 	},
 /turf/open/floor/wood,
 /area/commons/dorms)
+"kOq" = (
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
+	},
+/turf/open/floor/wood,
+/area/service/bar/atrium)
 "kaF" = (
 /obj/effect/decal/festive/christmas_ivy_string,
 /obj/structure/chair/pew,
@@ -61853,6 +61893,12 @@
 	},
 /turf/open/floor/festive/alleyway,
 /area/edina/street/secondary/command)
+"saD" = (
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/command/heads_quarters/ce)
 "saI" = (
 /obj/structure/table/wood,
 /obj/machinery/fax{
@@ -62104,6 +62150,9 @@
 "szr" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 1
 	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
@@ -62492,6 +62541,12 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/festive/cobblestone,
 /area/edina/street/primary/progress)
+"tmK" = (
+/obj/machinery/computer/department_budget/cargo{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/cargo/qm)
 "tng" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/wood/glass{
@@ -62885,6 +62940,13 @@
 	},
 /turf/open/floor/wood,
 /area/commons/cryopod)
+"uWN" = (
+/obj/structure/table/wood,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/service/bar)
 "ucp" = (
 /obj/effect/festive/trainrails/north{
 	icon_state = "trainrails_west"
@@ -63748,6 +63810,16 @@
 /obj/effect/landmark/start/assistant,
 /turf/open/floor/holofloor/wood,
 /area/commons/arcade)
+"waX" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "wad" = (
 /obj/structure/sign/departments/security,
 /turf/closed/wall/mineral/iron,
@@ -64625,6 +64697,15 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/wood,
 /area/command/corporate_showroom)
+"xyM" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen,
+/turf/open/floor/wood,
+/area/service/kitchen)
 "xyb" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/closed/festive/whitebrick{
@@ -75185,7 +75266,7 @@ aal
 aal
 amu
 aMH
-rGH
+saD
 rGH
 rGH
 fGL
@@ -79301,7 +79382,7 @@ cBc
 aoy
 anz
 anz
-anz
+waX
 arn
 arW
 asA
@@ -98135,7 +98216,7 @@ bml
 bnt
 boH
 bpZ
-brx
+dnG
 btk
 buC
 bvS
@@ -104322,7 +104403,7 @@ aou
 boV
 cqz
 bqt
-bqt
+tmK
 bqt
 cqM
 dII
@@ -107633,7 +107714,7 @@ bHi
 bIR
 ooy
 aqp
-aqp
+kOq
 bFS
 bQi
 bRZ
@@ -107896,7 +107977,7 @@ bQj
 bSa
 bSM
 nRX
-bSM
+uWN
 bUj
 buB
 bQj
@@ -109441,7 +109522,7 @@ bQo
 btD
 bQo
 bQo
-bYC
+xyM
 bXm
 ein
 bXk
@@ -109929,7 +110010,7 @@ aoe
 aOz
 aPs
 aBQ
-bzs
+jyc
 bzs
 bBU
 cvo
@@ -110186,7 +110267,7 @@ aoe
 aOB
 aPs
 aBQ
-bzs
+jyc
 bzs
 bBU
 cvo
@@ -112966,7 +113047,7 @@ amX
 ano
 aof
 apc
-apb
+iWv
 aqC
 ano
 pli

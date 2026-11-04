@@ -2108,6 +2108,9 @@
 	pixel_x = 5;
 	pixel_y = 5
 	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "aLu" = (
@@ -7810,6 +7813,18 @@
 	},
 /turf/open/floor/carpet/royalblack,
 /area/commons/dorms)
+"cJk" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/bar,
+/obj/effect/turf_decal/tile/bar{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/service/bar)
 "cJn" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -11440,6 +11455,9 @@
 	},
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/science)
@@ -25818,6 +25836,9 @@
 	dir = 4;
 	pixel_x = -24
 	},
+/obj/machinery/computer/department_budget{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "iPV" = (
@@ -28217,6 +28238,13 @@
 	dir = 1
 	},
 /area/science/mixing)
+"jKX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "jLx" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable,
@@ -35578,6 +35606,9 @@
 	c_tag = "Engineering - Fore";
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "mnJ" = (
@@ -36701,6 +36732,14 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/theater)
+"mIg" = (
+/obj/machinery/camera{
+	c_tag = "Arrivals Hallway";
+	dir = 8
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "mIk" = (
 /obj/machinery/door/poddoor/shutters/radiation/preopen{
 	id = "engsm";
@@ -39086,6 +39125,9 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
 	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
 "nuv" = (
@@ -39655,6 +39697,9 @@
 	},
 /area/cargo/office)
 "nEU" = (
+/obj/machinery/computer/department_budget/security{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
 "nEX" = (
@@ -40219,6 +40264,9 @@
 "nPd" = (
 /obj/structure/sign/poster/contraband/random{
 	pixel_x = -32
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
@@ -41041,6 +41089,7 @@
 	dir = 8
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "ofQ" = (
@@ -49317,6 +49366,7 @@
 	c_tag = "Club - Port";
 	dir = 4
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
 "rdX" = (
@@ -52262,6 +52312,7 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/cash_register/kitchen,
 /turf/open/floor/plasteel/vaporwave,
 /area/service/kitchen)
 "sfT" = (
@@ -58806,6 +58857,7 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_x = 27
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "unc" = (
@@ -61282,6 +61334,10 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/engine,
 /area/engineering/main)
 "vgi" = (
@@ -62956,6 +63012,9 @@
 	pixel_y = -28
 	},
 /obj/effect/landmark/navigate_destination/hop,
+/obj/machinery/cash_register{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hop)
 "vFh" = (
@@ -65682,6 +65741,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "wyz" = (
@@ -89065,7 +89125,7 @@ qWb
 wKX
 tUP
 gvI
-teL
+jKX
 sJH
 vWS
 wuL
@@ -104532,7 +104592,7 @@ vpL
 vpL
 umQ
 vpL
-cwn
+mIg
 vpL
 vpL
 vpL
@@ -119377,7 +119437,7 @@ vze
 rNN
 oXZ
 tuS
-tuS
+cJk
 ovI
 tuS
 dOz

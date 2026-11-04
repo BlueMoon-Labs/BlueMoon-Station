@@ -7951,11 +7951,15 @@
 /area/maintenance/starboard/fore)
 "aAs" = (
 /obj/structure/cable/white{
-	icon_state = "4-8"
+	icon_state = "0-4"
+	},
+/obj/structure/cable/white{
+	icon_state = "0-8"
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "aAA" = (
@@ -13555,6 +13559,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "bds" = (
@@ -32282,6 +32287,9 @@
 "cuK" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/effect/turf_decal/tile/blue,
+/obj/machinery/computer/department_budget/science{
+	dir = 8
+	},
 /turf/open/floor/plasteel/white,
 /area/science/research)
 "cuS" = (
@@ -34379,6 +34387,9 @@
 	},
 /obj/machinery/door/window/eastleft{
 	req_access_txt = "5"
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
@@ -56755,6 +56766,7 @@
 /obj/effect/turf_decal/tile/red/opposingcorners{
 	dir = 1
 	},
+/obj/machinery/cash_register/kitchen,
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "hLH" = (
@@ -62157,6 +62169,13 @@
 	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain/private)
+"kmq" = (
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/service/bar)
 "kmr" = (
 /obj/effect/landmark/start/botanist,
 /obj/machinery/holopad,
@@ -65863,6 +65882,9 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/cargo/office)
 "lUX" = (
@@ -66813,6 +66835,9 @@
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
+	},
+/obj/machinery/computer/department_budget{
+	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
@@ -67895,6 +67920,7 @@
 	id = "magaz_counter";
 	name = "Shop Counter Shutters"
 	},
+/obj/machinery/cash_register,
 /turf/open/floor/wood,
 /area/service/shop)
 "mNr" = (
@@ -67997,6 +68023,7 @@
 "mPv" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/cash_register/bar,
 /turf/open/floor/plasteel,
 /area/service/bar)
 "mPQ" = (
@@ -70502,6 +70529,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/computer/department_budget/engineering,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "oaj" = (
@@ -74486,6 +74514,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/security{
+	dir = 1
 	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
@@ -81197,6 +81228,9 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/cmo)
 "sHf" = (
@@ -84390,6 +84424,16 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port)
+"udY" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "uew" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
@@ -84639,6 +84683,10 @@
 	luminosity = 2
 	},
 /area/maintenance/aft)
+"uiE" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/service/bar)
 "uiF" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -89683,6 +89731,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "wDJ" = (
@@ -93820,6 +93869,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
+"lpb" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/maintenance/starboard/fore)
 
 (1,1,1) = {"
 oRp
@@ -117607,7 +117660,7 @@ dIY
 rKe
 bTI
 aYX
-bWj
+udY
 bXL
 bXL
 cae
@@ -118121,7 +118174,7 @@ lVH
 sqh
 bTJ
 aYX
-bWj
+udY
 bXL
 nVB
 cag
@@ -128132,7 +128185,7 @@ oBB
 sZJ
 pIJ
 seD
-iuF
+kmq
 kPZ
 bJT
 wep
@@ -129660,7 +129713,7 @@ dnh
 dnh
 dni
 dnh
-dnh
+lpb
 bhK
 bju
 bkZ

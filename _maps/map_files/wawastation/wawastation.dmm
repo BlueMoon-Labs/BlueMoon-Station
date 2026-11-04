@@ -8047,6 +8047,7 @@
 /obj/item/radio/intercom{
 	pixel_x = -27
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "cdC" = (
@@ -8344,6 +8345,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/security{
+	dir = 1
 	},
 /turf/open/floor/plasteel,
 /area/security)
@@ -15346,6 +15350,9 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/effect/spawner/lootdrop/costume,
+/obj/machinery/cash_register{
+	dir = 8
+	},
 /turf/open/floor/wood/wood_large,
 /area/service/shop)
 "dWj" = (
@@ -16122,6 +16129,7 @@
 /obj/item/radio/intercom/command{
 	pixel_x = -27
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/hallway/secondary/entry/ferry_dock)
 "ehN" = (
@@ -22946,6 +22954,9 @@
 	dir = 8
 	},
 /obj/machinery/airalarm/directional/west,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/cargo/qm)
 "fUH" = (
@@ -31957,6 +31968,9 @@
 	name = "Kitchen Counter Shutters"
 	},
 /obj/machinery/door/firedoor,
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
 /turf/open/floor/plasteel/kitchen,
 /area/service/kitchen)
 "isb" = (
@@ -33312,6 +33326,9 @@
 /obj/machinery/button/door/directional/east{
 	id = "rdoffice";
 	name = "Privacy Control"
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 8
 	},
 /turf/open/floor/glass/reinforced,
 /area/command/heads_quarters/rd)
@@ -35053,6 +35070,9 @@
 /area/hallway/primary/central)
 "jmg" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/computer/department_budget/engineering{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "jmi" = (
@@ -41771,6 +41791,20 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"kTH" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/dark_red/opposingcorners,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "bar_shutters";
+	name = "Bar Shutters"
+	},
+/obj/machinery/cash_register/bar{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/service/bar)
 "kTK" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -48436,6 +48470,7 @@
 	dir = 4
 	},
 /obj/machinery/firealarm/directional/east,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "mEu" = (
@@ -51159,6 +51194,10 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel/dark/textured,
 /area/engineering/atmos/mix)
+"noZ" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/hallway/secondary/entry/ferry_dock)
 "npd" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -51346,6 +51385,9 @@
 	},
 /obj/machinery/camera/autoname{
 	network = list("ss13","medbay");
+	dir = 1
+	},
+/obj/machinery/computer/department_budget/medical{
 	dir = 1
 	},
 /turf/open/floor/plasteel/white,
@@ -56800,6 +56842,9 @@
 "oLW" = (
 /obj/effect/turf_decal/tile/dark_blue/half/contrasted,
 /obj/machinery/firealarm/directional/south,
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/command/bridge)
 "oMa" = (
@@ -57615,6 +57660,15 @@
 	icon_state = "panelscorched"
 	},
 /area/maintenance/central/greater)
+"paN" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "paP" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -65337,6 +65391,9 @@
 	pixel_y = -3
 	},
 /obj/machinery/door/firedoor,
+/obj/machinery/cash_register/clinic{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/pharmacy)
 "rlp" = (
@@ -66486,6 +66543,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "rCX" = (
@@ -86375,6 +86433,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"wLG" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/service/bar)
 "wLP" = (
 /obj/effect/turf_decal/tile/neutral,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -115332,7 +115397,7 @@ nAz
 oth
 wpA
 xIp
-bYU
+paN
 fVG
 wmB
 fQk
@@ -116636,7 +116701,7 @@ hsu
 svO
 rIg
 eWO
-xjG
+kTH
 xjG
 kbT
 qGg
@@ -181659,7 +181724,7 @@ hhL
 emB
 kxp
 kcb
-iKC
+wLG
 flY
 vnq
 jFZ
@@ -184704,7 +184769,7 @@ tql
 fjF
 liR
 nMv
-wBM
+noZ
 wBM
 ehz
 wBM

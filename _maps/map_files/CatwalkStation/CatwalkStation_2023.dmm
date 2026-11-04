@@ -351,6 +351,9 @@
 /obj/machinery/keycard_auth{
 	pixel_x = 26
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/command/heads_quarters/ce)
 "adW" = (
@@ -4608,6 +4611,12 @@
 	dir = 1
 	},
 /obj/structure/table/reinforced/rglass,
+/obj/item/folder/white,
+/obj/item/folder/blue{
+	pixel_y = 3;
+	pixel_x = -4
+	},
+/obj/item/pen,
 /turf/open/floor/plasteel/white,
 /area/medical/office)
 "aWU" = (
@@ -6494,6 +6503,9 @@
 	},
 /obj/effect/turf_decal/siding/wood/end{
 	dir = 4
+	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 8
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/cmo)
@@ -16076,6 +16088,9 @@
 /obj/effect/turf_decal/tile/dark_green{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
 /turf/open/floor/plasteel/checker,
 /area/service/bar/backroom)
 "dsP" = (
@@ -17772,6 +17787,7 @@
 	pixel_y = 27
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/computer/department_budget/security,
 /turf/open/floor/wood,
 /area/command/heads_quarters/hos)
 "dMX" = (
@@ -18934,6 +18950,12 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
+"eWp" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 1
+	},
+/area/hallway/primary/central)
 "eai" = (
 /obj/structure/closet/firecloset,
 /turf/open/floor/plasteel,
@@ -39640,6 +39662,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 5
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/commons/lounge)
 "iBs" = (
@@ -41631,6 +41654,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark,
 /area/security/evidence)
 "iWm" = (
@@ -49077,6 +49101,14 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/plasteel/grimy,
 /area/security/interrogation)
+"kwQ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/cash_register/bar{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/service/bar)
 "kwc" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -66139,12 +66171,7 @@
 	req_access_txt = "5";
 	dir = 1
 	},
-/obj/item/folder/white,
-/obj/item/folder/blue{
-	pixel_y = 3;
-	pixel_x = -4
-	},
-/obj/item/pen,
+/obj/machinery/cash_register/clinic,
 /turf/open/floor/plasteel/white/textured/large,
 /area/medical/office)
 "nYc" = (
@@ -70435,6 +70462,9 @@
 	},
 /obj/effect/turf_decal/siding/wood,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/computer/department_budget/cargo{
 	dir = 1
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -76413,6 +76443,9 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark/end,
 /obj/machinery/camera/autoname{
 	dir = 1
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/commons/lounge)
@@ -85056,6 +85089,18 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos/upper)
+"sZz" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen_counter";
+	name = "Kitchen Counter Shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/service/kitchen)
 "sad" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing/corner/end{
@@ -93648,6 +93693,9 @@
 /obj/structure/sign/poster/official/random{
 	pixel_x = 32
 	},
+/obj/machinery/computer/department_budget{
+	dir = 8
+	},
 /turf/open/floor/glass/reinforced,
 /area/command/bridge)
 "tUo" = (
@@ -94893,6 +94941,32 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/captain/private)
+"uiA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor/shutters{
+	id = "actualcommissaryshutter";
+	name = "Vacant Commissary Shutter"
+	},
+/obj/machinery/cash_register{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/commons/vacant_room/commissary)
+"uib" = (
+/obj/structure/sign/warning/radiation/rad_area{
+	pixel_x = 32
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/engineering/main)
 "uie" = (
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 5
@@ -97917,6 +97991,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
 "uTR" = (
@@ -112208,6 +112283,7 @@
 /obj/item/radio/intercom{
 	pixel_y = 27
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 1
 	},
@@ -140316,7 +140392,7 @@ rVh
 xTT
 sql
 sjI
-rVh
+kwQ
 aQF
 fSz
 fmY
@@ -142365,7 +142441,7 @@ odd
 vXi
 smR
 gKv
-mVb
+sZz
 gXy
 rvg
 cyE
@@ -144167,7 +144243,7 @@ mlv
 mlv
 mlv
 mlv
-sTH
+eWp
 imi
 sKB
 xmC
@@ -144937,7 +145013,7 @@ fyX
 ryi
 ppv
 dGG
-uKb
+uiA
 iVK
 plG
 sKB
@@ -157010,7 +157086,7 @@ qOJ
 gCn
 lkq
 lhi
-kGy
+uib
 aRM
 hjL
 qHF

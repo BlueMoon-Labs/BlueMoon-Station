@@ -1065,6 +1065,9 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 10
 	},
@@ -2564,6 +2567,9 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "afb" = (
@@ -3699,6 +3705,9 @@
 	name = "HoP Blast door"
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/cash_register{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/hop)
 "ahj" = (
@@ -4823,6 +4832,7 @@
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 4
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "ajv" = (
@@ -6083,6 +6093,9 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/security{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/security/brig)
 "alM" = (
@@ -6899,6 +6912,9 @@
 	pixel_y = 7;
 	req_access_txt = "10"
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/ce)
 "anw" = (
@@ -6990,6 +7006,7 @@
 "anD" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/landmark/event_spawn,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "anE" = (
@@ -11100,6 +11117,9 @@
 "avk" = (
 /obj/structure/table/reinforced,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/cash_register/bar{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark/side{
@@ -16042,6 +16062,9 @@
 /obj/item/storage/bag/tray,
 /obj/item/kitchen/fork,
 /obj/effect/turf_decal/delivery,
+/obj/machinery/cash_register/kitchen{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/service/kitchen)
 "aEZ" = (
@@ -18642,6 +18665,10 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
+/obj/structure/cable/white{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/engine,
 /area/engineering/main)
 "aJA" = (
@@ -27308,6 +27335,9 @@
 	name = "Station Intercom (Medbay)";
 	pixel_y = -30
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "baz" = (
@@ -28204,6 +28234,7 @@
 	pixel_x = 6
 	},
 /obj/item/reagent_containers/syringe,
+/obj/machinery/cash_register/clinic,
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone3)
 "bck" = (
@@ -29899,6 +29930,9 @@
 "beZ" = (
 /obj/machinery/light_switch{
 	pixel_x = -24
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/science/mixing)
@@ -34424,6 +34458,7 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 1
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "dZL" = (
@@ -34985,6 +35020,9 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "fNN" = (
@@ -35482,6 +35520,12 @@
 	},
 /turf/closed/wall/r_wall,
 /area/medical/virology)
+"hxX" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel{
+	heat_capacity = 1e+006
+	},
+/area/hallway/primary/fore)
 "hyX" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 5
@@ -35974,6 +36018,20 @@
 /obj/structure/window/spawner/north,
 /turf/open/floor/plasteel/freezer,
 /area/commons/toilet/restrooms)
+"iRr" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/machinery/computer/stock_terminal,
+/turf/open/floor/plasteel,
+/area/service/bar/atrium)
 "iSq" = (
 /turf/open/floor/plating/asteroid/airless,
 /area/maintenance/starboard/aft)
@@ -36486,6 +36544,25 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
+"kgw" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/service/bar/atrium)
 "kit" = (
 /obj/machinery/portable_atmospherics/canister/toxins,
 /obj/machinery/light/small{
@@ -38322,6 +38399,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/bar/atrium)
+"qLp" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "qMr" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -83745,7 +83826,7 @@ avi
 awn
 aAN
 aBY
-avi
+kgw
 aAR
 asg
 aFN
@@ -85541,7 +85622,7 @@ awp
 awX
 axR
 ayN
-asg
+iRr
 blj
 aCb
 aCe

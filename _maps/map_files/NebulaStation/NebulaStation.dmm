@@ -5022,6 +5022,7 @@
 	pixel_y = 30
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/security/office)
 "aHI" = (
@@ -23921,6 +23922,9 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/structure/table/reinforced,
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/kitchen)
 "cZI" = (
@@ -28112,6 +28116,9 @@
 	},
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "medbay"
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/office)
@@ -41670,6 +41677,9 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
 	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/wood/wood_large,
 /area/service/kitchen/diner)
 "fmh" = (
@@ -42621,6 +42631,7 @@
 /obj/effect/turf_decal/trimline/brown/filled/corner{
 	dir = 4
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "fsy" = (
@@ -42830,6 +42841,12 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/lower)
+"ftK" = (
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/cargo/qm)
 "ftR" = (
 /obj/machinery/telecomms/server/presets/medical,
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted{
@@ -56468,6 +56485,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/light{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/service,
 /turf/open/floor/plasteel/white/side{
 	dir = 8
 	},
@@ -60180,6 +60198,9 @@
 	name = "Vacant Commissary Shutter"
 	},
 /obj/machinery/door/firedoor,
+/obj/machinery/cash_register{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark,
 /area/commons/vacant_room/commissary)
 "hzd" = (
@@ -68824,6 +68845,13 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port)
+"iBg" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/machinery/computer/department_budget,
+/turf/open/floor/wood/wood_large,
+/area/command/heads_quarters/captain)
 "iBj" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -69918,6 +69946,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/white,
 /area/science/lower)
 "iIy" = (
@@ -92143,6 +92172,9 @@
 /obj/machinery/firealarm/directional/east,
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/ce)
@@ -121335,6 +121367,7 @@
 	name = "Bar Counter Shutters"
 	},
 /obj/machinery/door/firedoor,
+/obj/machinery/cash_register/bar,
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
 "pfE" = (
@@ -131082,6 +131115,9 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget/security{
+	dir = 8
+	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/hos)
 "qqN" = (
@@ -132228,6 +132264,22 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/maintenance/central)
+"qzJ" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel/dark,
+/area/engineering/main)
 "qzT" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
 	dir = 1
@@ -175561,6 +175613,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/computer/department_budget/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "vRk" = (
@@ -223590,7 +223643,7 @@ twc
 qpx
 evt
 tmb
-vYZ
+qzJ
 vOy
 hfy
 qiC
@@ -227864,7 +227917,7 @@ hbX
 bQA
 wzk
 bqS
-dgo
+ftK
 huj
 gZC
 iWW
@@ -241040,7 +241093,7 @@ gec
 csg
 ctC
 sAo
-bob
+iBg
 hHk
 bob
 ckr

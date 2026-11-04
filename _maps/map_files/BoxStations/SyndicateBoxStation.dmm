@@ -3229,6 +3229,7 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 10
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "akP" = (
@@ -14415,6 +14416,9 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "aXo" = (
@@ -17974,6 +17978,9 @@
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/captain)
 "bin" = (
@@ -21445,6 +21452,9 @@
 /obj/effect/turf_decal/tile/purple/half,
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/science)
@@ -33006,6 +33016,9 @@
 /obj/structure/noticeboard{
 	dir = 1;
 	pixel_y = -27
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/break_room)
@@ -46193,6 +46206,9 @@
 	pixel_x = -27;
 	pixel_y = 1
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/cmo)
 "eSJ" = (
@@ -50245,6 +50261,9 @@
 	id = "hopflash";
 	pixel_y = 28
 	},
+/obj/machinery/cash_register{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/hop)
 "gXD" = (
@@ -50748,6 +50767,9 @@
 	},
 /obj/machinery/light{
 	dir = 8
+	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/cargo/office)
@@ -63542,6 +63564,9 @@
 /obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/starboard)
 "nIN" = (
@@ -67770,6 +67795,22 @@
 /obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"pUb" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/half,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
+/obj/machinery/vending/custom,
+/turf/open/floor/mineral/plastitanium,
+/area/hallway/secondary/entry)
 "pUm" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/security/detectives_office)
@@ -72946,6 +72987,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 24
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/office)
 "sCA" = (
@@ -74623,6 +74665,7 @@
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
 	},
+/obj/machinery/cash_register/clinic,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "tCs" = (
@@ -77240,6 +77283,10 @@
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
+"uRz" = (
+/obj/machinery/computer/department_budget,
+/turf/open/floor/grass,
+/area/command/bridge)
 "uRP" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -77487,6 +77534,18 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
+"uWG" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/main)
 "uWW" = (
 /obj/structure/table/wood/poker,
 /obj/structure/sign/poster/official/random{
@@ -77900,6 +77959,7 @@
 	},
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
+/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "vhs" = (
@@ -79878,6 +79938,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
+"wiF" = (
+/obj/structure/table/reinforced/plastitanium,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/kitchen)
 "wiR" = (
 /obj/effect/landmark/event_spawn,
 /obj/structure/loot_pile/maint,
@@ -79969,6 +80040,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
+"wmL" = (
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/cash_register/bar{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/bar)
 "wmM" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/cafeteria,
@@ -81063,6 +81145,9 @@
 	},
 /obj/machinery/light{
 	dir = 4
+	},
+/obj/machinery/computer/department_budget/security{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
@@ -97691,7 +97776,7 @@ aRM
 aRM
 aPx
 aQJ
-nNO
+pUb
 jTU
 sba
 jiQ
@@ -108807,7 +108892,7 @@ cfe
 cfD
 cgv
 chE
-ciN
+uWG
 ciN
 cji
 cDZ
@@ -119793,7 +119878,7 @@ aJC
 qDn
 sFd
 oaq
-dYs
+wmL
 dsg
 aXk
 oud
@@ -122620,7 +122705,7 @@ aRC
 aMF
 aRF
 fvv
-aSO
+wiF
 aVD
 xpN
 jVm

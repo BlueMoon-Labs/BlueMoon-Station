@@ -1112,6 +1112,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)
+"ajB" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "aje" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
@@ -17377,6 +17381,9 @@
 "cCd" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 8
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/cargo/qm)
 "cCe" = (
@@ -29716,6 +29723,9 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "eyW" = (
@@ -30911,6 +30921,9 @@
 /area/maintenance/starboard/fore)
 "eIg" = (
 /obj/structure/table/reinforced,
+/obj/machinery/cash_register{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/shop)
 "eIl" = (
@@ -44496,6 +44509,10 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/commons/dorms)
+"gMn" = (
+/obj/machinery/computer/department_budget/security,
+/turf/open/floor/carpet/red,
+/area/command/heads_quarters/hos)
 "gMp" = (
 /obj/structure/table,
 /obj/machinery/reagentgrinder{
@@ -45762,11 +45779,11 @@
 /turf/open/floor/plasteel/dark,
 /area/security/execution/transfer)
 "gVU" = (
-/obj/item/kirbyplants/random,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/effect/turf_decal/tile/red/half/contrasted{
 	dir = 4
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark,
 /area/security/interrogation)
 "gWb" = (
@@ -53882,6 +53899,8 @@
 	pixel_x = 8;
 	pixel_y = 3
 	},
+/obj/item/folder/white,
+/obj/item/reagent_containers/hypospray/medipen,
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
 "iiv" = (
@@ -67802,6 +67821,9 @@
 /obj/structure/desk_bell{
 	pixel_x = 7
 	},
+/obj/machinery/cash_register/bar{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
 "ktk" = (
@@ -79861,6 +79883,9 @@
 /area/maintenance/starboard/fore)
 "mla" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/cmo)
 "mle" = (
@@ -81785,6 +81810,9 @@
 	pixel_y = -9;
 	specialfunctions = 4;
 	req_access_txt = "30"
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
@@ -98318,6 +98346,18 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/bridge)
+"pdc" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchencounter";
+	name = "Kitchen Counter Shutters"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/service/kitchen)
 "pdf" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/command/glass{
@@ -109415,8 +109455,9 @@
 "qPE" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/firedoor,
-/obj/item/folder/white,
-/obj/item/reagent_containers/hypospray/medipen,
+/obj/machinery/cash_register/clinic{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
 "qPH" = (
@@ -117850,6 +117891,7 @@
 /obj/machinery/camera/autoname{
 	dir = 2
 	},
+/obj/machinery/computer/department_budget/engineering,
 /turf/open/floor/plasteel/white/corner{
 	dir = 8
 	},
@@ -133247,6 +133289,17 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/security/brig)
+"uyl" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/stairs/right{
+	dir = 4
+	},
+/area/hallway/primary/starboard)
 "uyn" = (
 /obj/structure/railing{
 	dir = 1
@@ -140717,6 +140770,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/computer/stock_terminal{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "vFI" = (
@@ -141115,6 +141171,7 @@
 "vIC" = (
 /obj/machinery/light/directional/north,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/computer/department_budget/service,
 /turf/open/floor/plasteel,
 /area/service/bar/backroom)
 "vII" = (
@@ -143790,6 +143847,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "waV" = (
@@ -189115,7 +189176,7 @@ cyB
 mHs
 cfm
 dej
-vtz
+gMn
 vtz
 qSY
 sdY
@@ -193810,7 +193871,7 @@ txU
 vOE
 jPz
 xFa
-vBF
+pdc
 kYy
 xhT
 mHu
@@ -196935,7 +196996,7 @@ nyY
 rKP
 nky
 rYo
-rIX
+uyl
 lxj
 wqj
 tiR
@@ -202338,7 +202399,7 @@ irb
 iML
 mni
 eVj
-gRB
+ajB
 daJ
 fPV
 jyV
@@ -202346,7 +202407,7 @@ fFE
 qaj
 iPG
 enn
-gRB
+ajB
 jrR
 tCj
 lYm

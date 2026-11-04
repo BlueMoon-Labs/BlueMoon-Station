@@ -19094,6 +19094,13 @@
 /obj/machinery/duct,
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/main)
+"eug" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/rivets/edge,
+/area/hallway/secondary/entry)
 "euk" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -19798,6 +19805,10 @@
 /obj/machinery/vending/wallmed/directional/south,
 /turf/open/floor/plasteel/rivets,
 /area/engineering/atmos)
+"eCz" = (
+/obj/machinery/computer/stock_terminal,
+/turf/open/floor/plasteel/rivets/edge,
+/area/hallway/secondary/entry)
 "eCE" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
@@ -23002,6 +23013,20 @@
 	dir = 4
 	},
 /area/security/checkpoint/customs)
+"fld" = (
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/rivets/large,
+/area/hallway/secondary/entry/ferry_dock)
 "fln" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
@@ -23450,6 +23475,9 @@
 	name = "Kitchen Counter Shutters"
 	},
 /obj/structure/table,
+/obj/machinery/cash_register/kitchen{
+	dir = 4
+	},
 /turf/open/floor/plasteel/kitchen,
 /area/service/kitchen)
 "fqo" = (
@@ -33861,6 +33889,9 @@
 /obj/item/reagent_containers/food/drinks/drinkingglass{
 	pixel_x = -3
 	},
+/obj/machinery/cash_register/bar{
+	dir = 8
+	},
 /turf/open/floor/plasteel/smooth/large,
 /area/service/bar)
 "hGf" = (
@@ -36492,6 +36523,9 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 6
+	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 4
@@ -40116,6 +40150,7 @@
 /obj/structure/reagent_dispensers/peppertank{
 	pixel_y = 30
 	},
+/obj/machinery/computer/department_budget/security,
 /turf/open/floor/plasteel/dark/smooth/edge,
 /area/security/office)
 "iZi" = (
@@ -43547,6 +43582,9 @@
 	dir = 4
 	},
 /obj/machinery/light/cold/directional/south,
+/obj/machinery/computer/department_budget/medical{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/medical/medbay/central)
 "jOs" = (
@@ -52390,6 +52428,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"lQy" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel/rivets/large,
+/area/engineering/engine_smes)
 "lQI" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -58783,6 +58831,9 @@
 	pixel_x = -32;
 	pixel_y = 27
 	},
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/bridge)
 "nnN" = (
@@ -58890,6 +58941,9 @@
 "noQ" = (
 /obj/machinery/status_display/evac{
 	pixel_x = -32
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
 	},
 /turf/open/floor/plasteel/grimy,
 /area/commons/lounge)
@@ -73506,6 +73560,9 @@
 /area/commons/dorms)
 "qDa" = (
 /obj/effect/turf_decal/trimline/white/mid_joiner,
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel/rivets/edge,
 /area/hallway/secondary/entry)
 "qDd" = (
@@ -76241,6 +76298,9 @@
 	dir = 4
 	},
 /obj/machinery/light/cold/directional/south,
+/obj/machinery/computer/department_budget/science{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/science/research)
 "rin" = (
@@ -79972,6 +80032,7 @@
 	dir = 1
 	},
 /obj/machinery/light/cold/directional/south,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 1
 	},
@@ -99214,6 +99275,9 @@
 /obj/item/stack/medical/bruise_pack{
 	pixel_y = 15
 	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
+	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/medical/medbay/lobby)
 "wtn" = (
@@ -99566,6 +99630,18 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/engine/atmos)
+"wxL" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/poddoor/shutters{
+	id = "commissaryshutters2";
+	name = "Vacant Commissary Shutters"
+	},
+/obj/machinery/cash_register{
+	dir = 1
+	},
+/turf/open/floor/plasteel/smooth/large,
+/area/commons/vacant_room/commissary)
 "wxO" = (
 /obj/structure/easel,
 /obj/item/canvas/twentythreeXtwentythree,
@@ -103418,6 +103494,9 @@
 	},
 /obj/machinery/light_switch/directional/east{
 	pixel_x = 23
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/heads_quarters/ce)
@@ -129599,7 +129678,7 @@ lvt
 nkw
 nkw
 nkw
-apK
+eCz
 kLX
 gSP
 nkw
@@ -130884,7 +130963,7 @@ gIw
 qER
 fqz
 ltH
-gNW
+eug
 pZk
 ojg
 vCE
@@ -131398,7 +131477,7 @@ brt
 sQD
 dfO
 ltH
-gNW
+eug
 acx
 xbx
 rYI
@@ -144558,7 +144637,7 @@ jOZ
 pNe
 bGy
 uRE
-jjB
+wxL
 hwb
 rmz
 hcw
@@ -144585,7 +144664,7 @@ vkM
 kTo
 gHR
 gHR
-dGT
+lQy
 gHR
 jtu
 lge

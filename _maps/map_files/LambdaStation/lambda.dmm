@@ -24477,6 +24477,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "aTA" = (
@@ -31422,6 +31423,9 @@
 	dir = 8;
 	pixel_x = 24
 	},
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "bim" = (
@@ -32225,6 +32229,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/machinery/computer/department_budget/medical,
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "bjX" = (
@@ -32699,6 +32704,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/machinery/cash_register/clinic{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -39325,6 +39333,9 @@
 	},
 /obj/structure/cable{
 	icon_state = "0-4"
+	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
 	},
 /turf/open/floor/carpet/orange,
 /area/cargo/qm/private)
@@ -59518,6 +59529,7 @@
 /obj/machinery/camera{
 	c_tag = "Security - Head of Security's Office"
 	},
+/obj/machinery/computer/department_budget/security,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "cJs" = (
@@ -60059,6 +60071,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "cLo" = (
@@ -65579,6 +65592,20 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating,
 /area/maintenance/central)
+"esw" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/evidence_locker,
+/turf/open/floor/plasteel/dark,
+/area/security/brig)
 "etb" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -76090,6 +76117,23 @@
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)
+"lqU" = (
+/obj/structure/disposalpipe/segment,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/heads_quarters/ce)
 "lqd" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 8
@@ -79351,6 +79395,9 @@
 	dir = 1
 	},
 /obj/structure/table/reinforced,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/service/bar)
 "nvL" = (
@@ -80512,6 +80559,10 @@
 	},
 /turf/open/floor/carpet,
 /area/command/blueshieldoffice)
+"olb" = (
+/obj/machinery/computer/department_budget/science,
+/turf/open/floor/plasteel/cafeteria,
+/area/command/heads_quarters/rd)
 "olw" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
@@ -80767,10 +80818,7 @@
 /turf/open/floor/plasteel,
 /area/commons/storage/tools)
 "oum" = (
-/obj/machinery/computer/slot_machine{
-	balance = 15;
-	money = 500
-	},
+/obj/machinery/computer/slot_machine,
 /obj/item/coin/iron,
 /obj/item/coin/diamond,
 /obj/item/coin/diamond,
@@ -81786,6 +81834,10 @@
 /obj/structure/cable{
 	icon_state = "2-4"
 	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel/dark,
 /area/engineering/engine_smes)
 "pcA" = (
@@ -83096,6 +83148,7 @@
 /obj/item/reagent_containers/food/condiment/peppermill{
 	pixel_x = 3
 	},
+/obj/item/kitchen/fork,
 /turf/open/floor/plasteel,
 /area/service/kitchen)
 "pSA" = (
@@ -86085,7 +86138,9 @@
 	id = "cafeteria";
 	name = "kitchen shutters"
 	},
-/obj/item/kitchen/fork,
+/obj/machinery/cash_register/kitchen{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/service/kitchen)
 "siE" = (
@@ -88829,6 +88884,10 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
+"uiB" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/grimy,
+/area/hallway/secondary/entry)
 "uil" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 5
@@ -89750,6 +89809,9 @@
 /obj/machinery/door/poddoor/shutters{
 	id = "commissaryshutter";
 	name = "Vacant Commissary Shutter"
+	},
+/obj/machinery/cash_register{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/commons/vacant_room/commissary)
@@ -91718,6 +91780,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"wFg" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/trimline/neutral/filled/line{
+	dir = 1
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "waa" = (
 /obj/item/electronics/airalarm,
 /obj/item/electronics/apc,
@@ -91887,6 +91959,7 @@
 /obj/structure/sign/barsign{
 	pixel_y = 32
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/service/bar)
 "wgU" = (
@@ -126126,7 +126199,7 @@ duB
 awz
 dWs
 axN
-ayN
+olb
 aPV
 aAQ
 aBQ
@@ -132369,7 +132442,7 @@ nLA
 eSx
 cQI
 wPh
-mzz
+uiB
 mzz
 mzz
 czz
@@ -136147,7 +136220,7 @@ aup
 avk
 awh
 awY
-axB
+esw
 aqG
 aEq
 aAk
@@ -141888,7 +141961,7 @@ cWl
 cYi
 cwF
 fYI
-cep
+lqU
 cep
 kkS
 bSN
@@ -202224,7 +202297,7 @@ chy
 aRZ
 dle
 pHK
-mLc
+wFg
 wQm
 bhA
 vyh
