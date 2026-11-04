@@ -29,7 +29,7 @@
 /obj/item/dnainjector/add_item_context(obj/item/source, list/context, mob/living/target, mob/living/user)
 	. = ..()
 	if(isliving(target) && target.has_dna() && !used)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Inject")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Ввести")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/dnainjector/attack_paw(mob/user)
@@ -561,7 +561,7 @@
 /obj/item/dnainjector/activator/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(istype(target, /obj/machinery/computer/scan_consolenew) && used)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Recycle")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Переработать")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/dnainjector/activator/inject(mob/living/carbon/M, mob/user)

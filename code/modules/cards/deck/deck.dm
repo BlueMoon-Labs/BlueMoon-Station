@@ -41,27 +41,27 @@
 /obj/item/toy/cards/deck/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(isnull(held_item))
-		context[SCREENTIP_CONTEXT_LMB] = "Draw card"
+		context[SCREENTIP_CONTEXT_LMB] = "Взять карту"
 		. = CONTEXTUAL_SCREENTIP_SET
 	if(src == held_item)
-		context[SCREENTIP_CONTEXT_LMB] = HAS_TRAIT(src, TRAIT_WIELDED) ? "Recycle mode" : "Dealer mode"
+		context[SCREENTIP_CONTEXT_LMB] = HAS_TRAIT(src, TRAIT_WIELDED) ? "Режим сбора" : "Режим раздачи"
 		. = CONTEXTUAL_SCREENTIP_SET
 	if(user.is_holding(src))
-		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Shuffle"
+		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Перетасовать"
 		. = CONTEXTUAL_SCREENTIP_SET
 	if(!isnull(card_types) && length(card_types)>1)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove unwanted cards"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Убрать лишние карты"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/toy/cards/deck/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(HAS_TRAIT(src, TRAIT_WIELDED))
-		context[SCREENTIP_CONTEXT_LMB] = "Deal/Throw card"
+		context[SCREENTIP_CONTEXT_LMB] = "Сдать/бросить карту"
 		// context[SCREENTIP_CONTEXT_RMB] = "Deal card faceup"
 		. = CONTEXTUAL_SCREENTIP_SET
 	else
 		if(istype(target, /obj/item/toy/cards) && !istype(target, /obj/item/toy/cards/deck))
-			context[SCREENTIP_CONTEXT_LMB] = "Recycle cards"
+			context[SCREENTIP_CONTEXT_LMB] = "Собрать карты"
 			. = CONTEXTUAL_SCREENTIP_SET
 
 

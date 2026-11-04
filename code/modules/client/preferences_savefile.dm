@@ -558,6 +558,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
+// Модульные загрузчики дополняют этот прок: все настройки нужны до записи обновлённого сейвфайла.
+/datum/preferences/proc/load_preferences_data(savefile/S)
+	return S
+
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
@@ -697,6 +701,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
 	S["long_strip_menu"] >> long_strip_menu
+	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
+	S["right_click_mode"] >> right_click_choice
+	S["right_click_notice_seen"] >> right_click_notice_seen
+	S["shift_right_click_mode"] >> shift_right_click_choice
+	S["context_menu_style"] >> context_menu_style
 	S["pixel_size"]	    	>> pixel_size
 	S["scaling_method"]	    >> scaling_method
 	S["hud_toggle_flash"] >> hud_toggle_flash
@@ -762,6 +771,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(ispath(path)) //whatever typepath fails this check probably doesn't exist anymore
 			parsed_favs += path
 	favorite_outfits = uniqueList(parsed_favs)
+
+	// Загрузка через переопределения load_preferences после ..() выполнялась уже после миграции
+	// и её save_preferences: непрочитанные избранное и множители перезаписывались значениями по умолчанию.
+	load_preferences_data(S)
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -873,6 +886,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
+	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
+	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		right_click_choice = null
+	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
+	if(!(shift_right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		shift_right_click_choice = null
+	context_menu_style = sanitize_context_menu_style(context_menu_style)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1388,6 +1408,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
+	WRITE_FILE(S["right_click_mode"], right_click_choice)
+	WRITE_FILE(S["right_click_notice_seen"], right_click_notice_seen)
+	WRITE_FILE(S["shift_right_click_mode"], shift_right_click_choice)
+	WRITE_FILE(S["context_menu_style"], context_menu_style)
 	WRITE_FILE(S["autostand"], autostand)
 	WRITE_FILE(S["cit_toggles"], cit_toggles)
 	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)
@@ -1783,6 +1807,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	S["all_quirks"] >> all_quirks
+	S["innate_features"] >> innate_features
+	sanitize_innate_features()
 
 	S["language"] >> language
 
@@ -1934,12 +1960,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			belly_prefs = json_from_file["belly_prefs"]
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
-	//gear loadout
-	if(istext(S["loadout"]))
-		loadout_data = safe_json_decode(S["loadout"])
-		if(!islist(loadout_data))
-			loadout_data = list()
-
+	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
+	var/saved_loadout = S["loadout"]
+	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
+	if(!islist(loadout_data))
+		loadout_data = list()
+	var/preset_slot_key = "SAVE_[LOADOUT_PRESET_SLOT]"
+	var/list/working_preset_loadout = loadout_data[preset_slot_key]
+	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
+	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
+	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
@@ -2324,7 +2354,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2350,6 +2379,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, active_character_preset ? LOADOUT_PRESET_SLOT : initial(loadout_slot), TRUE)
+	if(restore_preset_loadout && active_character_preset)
+		var/list/active_preset = character_presets[active_character_preset]
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data[preset_slot_key] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2713,6 +2748,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	WRITE_FILE(S["all_quirks"]			, all_quirks)
+	WRITE_FILE(S["innate_features"], innate_features)
 	//SKYRAT ADDITION - additional language
 	WRITE_FILE(S["language"]			, language)
 	//
@@ -2763,6 +2799,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["preset_loadout_initialized"], islist(loadout_data?["SAVE_[LOADOUT_PRESET_SLOT]"]))
 	WRITE_FILE(S["character_presets"], character_presets)
 	WRITE_FILE(S["active_character_preset"], active_character_preset)
 	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD

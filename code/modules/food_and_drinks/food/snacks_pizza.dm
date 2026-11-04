@@ -12,7 +12,7 @@
 
 /obj/item/reagent_containers/food/snacks/pizzaslice/make_processable()
 	..()
-	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/stack/sheet/pizza, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
+	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/stack/sheet/pizza, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Раскатать", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/pizzaslice
 	icon = 'icons/obj/food/pizzaspaghetti.dmi'

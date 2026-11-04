@@ -9,9 +9,16 @@
 	for(var/datum/map_template/ruin/space/ruin_type as anything in subtypesof(/datum/map_template/ruin/space))
 		var/suffix = initial(ruin_type.suffix)
 		if(suffix)
-			mappaths["[initial(ruin_type.prefix)][suffix]"] = TRUE
+			mappaths["[initial(ruin_type.prefix)][suffix]"] = list(initial(ruin_type.prefix), suffix)
 	var/checked = 0
+	var/list/dir_listings = list()
 	for(var/mappath in mappaths)
+		var/list/prefix_suffix = mappaths[mappath]
+		var/prefix = prefix_suffix[1]
+		if(!dir_listings[prefix])
+			dir_listings[prefix] = flist(prefix)
+		// Windows находит файл при любом регистре, а Linux прода и CI - нет
+		TEST_ASSERT(prefix_suffix[2] in dir_listings[prefix], "[mappath]: файла с таким регистром имени нет")
 		var/text = file2text(mappath)
 		TEST_ASSERT(length(text), "[mappath]: карта руины не читается")
 		checked++

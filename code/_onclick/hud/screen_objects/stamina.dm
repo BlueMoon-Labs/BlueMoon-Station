@@ -4,7 +4,7 @@
 
 /atom/movable/screen/staminas
 	icon = 'modular_citadel/icons/ui/screen_gen.dmi'
-	name = "stamina"
+	name = "Выносливость"
 	icon_state = "stamina0"
 	screen_loc = ui_stamina
 	mouse_over_pointer = MOUSE_HAND_POINTER

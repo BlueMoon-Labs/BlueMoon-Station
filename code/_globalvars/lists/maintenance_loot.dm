@@ -25,6 +25,14 @@
 //port:					5  items,  5 spots 0 extra (08/08/2014)
 
 GLOBAL_LIST_INIT(maintenance_loot, list(
+	/obj/item/mod/module/hat_stabilizer = 5,
+	/obj/item/mod/module/quick_cuff = 1,
+	/obj/effect/spawner/lootdrop/mod_bite = 1,
+	/obj/item/mod/module/pathfinder = 5,
+	/obj/item/mod/module/atrocinator = 5,
+	/obj/item/mod/module/visor/rave = 5,
+	/obj/item/mod/module/sphere_transform = 5,
+	/obj/item/mod/module/dispenser/mirage = 0.1,
 	/obj/item/bodybag = 1,
 	/obj/item/clothing/glasses/meson = 2,
 	/obj/item/clothing/glasses/sunglasses = 1,

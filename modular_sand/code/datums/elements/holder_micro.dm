@@ -45,7 +45,7 @@
 	mob/living/user,
 )
 
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_GRAB, "Pick up")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_GRAB, "Взять на руки")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /datum/element/mob_holder/micro/proc/mob_pickup_micro(mob/living/source, mob/user)

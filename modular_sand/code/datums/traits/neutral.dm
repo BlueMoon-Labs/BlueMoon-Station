@@ -150,7 +150,7 @@
 
 	// Check for synthetic
 	if(isrobotic(quirk_holder))
-		heat_phrases += "множество ошибок в гормональной программе"
+		heat_phrases += "имеет множество ошибок в гормональной программе"
 
 	// Build English list
 	heat_type = english_list(heat_phrases, nothing_text = "пахнет переизбытком феромонных гормонов")
@@ -191,13 +191,13 @@
 	var/mob/living/L = quirk_holder
 
 	// Если уже беременна — не дублируем сообщение
-	if(HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременность")
+	if(HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременн[L.ru_aya()]") // да, не учитываем edge case в виде смены гендера во вермя родов (ужасно)
 		return
 
 	to_chat(L, span_love("Вы ощущаете, как внутри вас зарождается новая жизнь... ваш эстральный цикл стихает."))
 	current_stage = 0
 	time_bonus = 0
-	heat_type = "беременность"
+	heat_type = "беременн[L.ru_aya()]"
 
 
 /datum/quirk/estrous_active/proc/on_pregnancy_ended(datum/source)
@@ -209,7 +209,7 @@
 	var/mob/living/L = quirk_holder
 
 	// Проверяем, что действительно была беременна
-	if(!HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременность")
+	if(!HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременн[L.ru_aya()]") // да, не учитываем edge case в виде смены гендера во вермя родов (ужасно)
 		to_chat(L, span_love("Ваш организм приходит в себя после родов, и вы чувствуете, как гормоны вновь начинают бурлить..."))
 		update_heat_type()
 		current_stage = 0

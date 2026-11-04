@@ -51,6 +51,10 @@
 		return
 	if(!istype(I))
 		return
+	if(slot == ITEM_SLOT_LEGCUFFED && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		var/obj/item/restraints/restraint = I
+		if(!istype(restraint) || !restraint.can_apply_to_legs(src))
+			return FALSE
 
 	var/index = get_held_index_of_item(I)
 	if(index)

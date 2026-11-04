@@ -125,7 +125,7 @@
 
 	switch(source.reskin_binding)
 		if(COMSIG_CLICK_CTRL_SHIFT)
-			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, "Reskin PDA")
+			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, "Сменить вид КПК")
 		else
-			LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Reskin [source]")
+			LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить вид: [source]")
 	return CONTEXTUAL_SCREENTIP_SET
