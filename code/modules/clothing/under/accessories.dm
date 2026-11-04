@@ -18,8 +18,12 @@
 		return TRUE
 	if(href_list["examine_accessory"])
 		// Looking needs sight, not the ability to reach or manipulate the clothing.
-		if(!isobserver(user) && (user.stat != CONSCIOUS || user.is_blind() || !(src in view(user.client.view, user))))
-			return TRUE
+		if(!isobserver(user))
+			if(user.stat != CONSCIOUS || user.is_blind())
+				return TRUE
+			var/list/visible_atoms = view(user.client.view, user)
+			if(!(src in visible_atoms) && !(loc in visible_atoms))
+				return TRUE
 	else if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) || !can_use(user))
 		return TRUE
 	var/accessory_ref = href_list["examine_accessory"] || href_list["remove_accessory"]
