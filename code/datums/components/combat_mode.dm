@@ -74,14 +74,15 @@
 	SEND_SIGNAL(source, COMSIG_LIVING_COMBAT_ENABLED, forced)
 	source.client?.refresh_popup_menus()
 	if(!silent)
-		var/self_message = forced? "<span class='warning'>Your muscles reflexively tighten!</span>" : "<span class='warning'>You drop into a combative stance!</span>"
+		var/self_message = forced? span_warning("Ваши мышцы рефлекторно напрягаются!") : span_warning("Вы приняли боевую стойку!")
 		if(visible && (forced || world.time >= combatmessagecooldown))
 			combatmessagecooldown = world.time + 10 SECONDS
 			if(!forced)
 				if(source.a_intent != INTENT_HELP)
-					source.visible_message("<span class='warning'>[source] [source.resting ? "tenses up" : "drops into a combative stance"].</span>", self_message)
+					source.visible_message(span_warning("[source] [source.resting ? "внезапно напрягается" : "принимает боевую стойку"]."), self_message)
 				else
-					source.visible_message("<span class='notice'>[source] [pick("looks","seems","goes")] [pick("alert","attentive","vigilant")].</span>")
+					source.visible_message(span_notice("[source] [pick("выглядит","кажется","становится")] \
+					[pick("встревоженн[source.ru_iy_oy()]","бдительн[source.ru_iy_oy()]","внимательн[source.ru_iy_oy()]")]."))
 			else
 				source.visible_message("<span class='warning'>[source] drops into a combative stance!</span>", self_message)
 		else
@@ -113,9 +114,9 @@
 	SEND_SIGNAL(source, COMSIG_LIVING_COMBAT_DISABLED, forced)
 	source.client?.refresh_popup_menus()
 	if(!silent)
-		var/self_message = forced? "<span class='warning'>Your muscles are forcibly relaxed!</span>" : "<span class='warning'>You relax your stance.</span>"
+		var/self_message = forced? span_warning("Ваши мышцы вынужденно расслабляются!") : span_warning("Вы расслабляете своё тело.")
 		if(visible)
-			source.visible_message("<span class='warning'>[source] relaxes [source.ru_ego()] stance.</span>", self_message)
+			source.visible_message(span_warning("[source] расслабляет своё тело."), self_message)
 		else
 			to_chat(source, self_message)
 		if(playsound)
@@ -184,7 +185,7 @@
 
 /// The screen button.
 /atom/movable/screen/combattoggle
-	name = "toggle combat mode"
+	name = "Переключить боевой режим"
 	icon = 'modular_citadel/icons/ui/screen_midnight.dmi'
 	icon_state = "combat_off"
 	mouse_over_pointer = MOUSE_HAND_POINTER

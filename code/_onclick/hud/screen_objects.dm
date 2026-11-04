@@ -123,7 +123,7 @@
 
 /atom/movable/screen/swap_hand
 	plane = HUD_PLANE
-	name = "swap hand"
+	name = "Сменить руку"
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/swap_hand/Click()
@@ -138,7 +138,7 @@
 	return TRUE
 
 // /atom/movable/screen/skills
-// 	name = "skills"
+// 	name = "Навыки"
 // 	icon = 'icons/mob/screen_midnight.dmi'
 // 	icon_state = "skills"
 // 	screen_loc = ui_skill_menu
@@ -149,14 +149,14 @@
 // 		H.mind.print_levels(H)
 
 /atom/movable/screen/craft
-	name = "crafting menu"
+	name = "Крафт-меню"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "craft"
 	screen_loc = ui_crafting
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/area_creator
-	name = "create new area"
+	name = "Создать новую зону"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "area_edit"
 	screen_loc = ui_building
@@ -172,7 +172,7 @@
 	create_area(usr)
 
 /atom/movable/screen/language_menu
-	name = "language menu"
+	name = "Языковое меню"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "talk_wheel"
 	screen_loc = ui_language_menu
@@ -301,7 +301,7 @@
 	return TRUE
 
 // /atom/movable/screen/close
-// 	name = "close"
+// 	name = "Закрыть"
 // 	plane = ABOVE_HUD_PLANE
 // 	icon_state = "backpack_close"
 
@@ -315,7 +315,7 @@
 // 	return TRUE
 
 /atom/movable/screen/drop
-	name = "drop"
+	name = "Уронить"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "act_drop"
 	plane = HUD_PLANE
@@ -326,7 +326,7 @@
 		usr.dropItemToGround(usr.get_active_held_item())
 
 /atom/movable/screen/act_intent
-	name = "intent"
+	name = "Намерение"
 	icon_state = "help"
 	screen_loc = ui_acti
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -372,7 +372,7 @@
 	screen_loc = ui_borg_intents
 
 /atom/movable/screen/mov_intent
-	name = "run/walk toggle"
+	name = "Бег/шаг"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "running"
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -401,7 +401,7 @@
 	user.toggle_move_intent(user)
 
 /atom/movable/screen/pull
-	name = "stop pulling"
+	name = "Прекратить тащить"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "pull"
 	base_icon_state = "pull"
@@ -417,7 +417,7 @@
 	return ..()
 
 /atom/movable/screen/resist
-	name = "resist"
+	name = "Сопротивляться"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "act_resist"
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -428,7 +428,7 @@
 		L.resist()
 
 /atom/movable/screen/rest
-	name = "rest"
+	name = "Лечь"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "act_rest"
 	base_icon_state = "act_rest"
@@ -447,7 +447,7 @@
 	return ..()
 
 /atom/movable/screen/throw_catch
-	name = "throw/catch"
+	name = "Кинуть/поймать"
 	icon = 'icons/mob/screen_midnight.dmi'
 	icon_state = "act_throw_off"
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -462,7 +462,7 @@
 			S.toggle_throw_mode()
 
 /atom/movable/screen/zone_sel
-	name = "damage zone"
+	name = "Выбор зоны повреждения"
 	icon_state = "zone_sel"
 	screen_loc = ui_zonesel
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -626,7 +626,7 @@
 	plane = FULLSCREEN_PLANE
 
 /atom/movable/screen/healths
-	name = "health"
+	name = "Здоровье"
 	icon_state = "health0"
 	screen_loc = ui_health
 
@@ -639,23 +639,23 @@
 	screen_loc = ui_borg_health
 
 /atom/movable/screen/healths/blob
-	name = "blob health"
+	name = "Здоровье (Блоб)"
 	icon_state = "block"
 	screen_loc = ui_internal
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /atom/movable/screen/healths/blob/naut
-	name = "health"
+	name = "Здоровье"
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "nauthealth"
 
 /atom/movable/screen/healths/blob/naut/core
-	name = "overmind health"
+	name = "Здоровье (Сверхразум)"
 	screen_loc = ui_health
 	icon_state = "corehealth"
 
 /atom/movable/screen/healths/guardian
-	name = "summoner health"
+	name = "Здоровье (Призыватель)"
 	icon = 'icons/mob/guardian.dmi'
 	icon_state = "base"
 	screen_loc = ui_health
@@ -673,7 +673,7 @@
 	screen_loc = ui_internal
 
 /atom/movable/screen/healths/revenant
-	name = "essence"
+	name = "Эссенция"
 	icon = 'icons/mob/actions.dmi'
 	icon_state = "bg_revenant"
 	screen_loc = ui_health
@@ -694,7 +694,7 @@
 ///////////////////////////////////////////////////
 
 /atom/movable/screen/healthdoll
-	name = "health doll"
+	name = "Кукла здоровья"
 	screen_loc = ui_healthdoll
 	mouse_over_pointer = MOUSE_HAND_POINTER
 	/// Last state the overlays were drawn for, see /mob/living/carbon/human/proc/get_healthdoll_cache_key.
@@ -746,7 +746,7 @@
 ///////////////////////////////////////////////////
 
 /atom/movable/screen/mood
-	name = "mood"
+	name = "Настроение"
 	icon_state = "mood5"
 	screen_loc = ui_mood
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -756,7 +756,7 @@
 
 // Mousedrop won't work, behavior is usually defined on the thing that MouseDrag started on
 /atom/movable/screen/sanity
-	name = "sanity"
+	name = "Рассудок"
 	icon = 'modular_sand/icons/mob/sanity.dmi'
 	icon_state = "sanity3"
 	screen_loc = ui_mood
@@ -886,20 +886,20 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	ghost.forceMove(target)
 
 /atom/movable/screen/hunger
-	name = "hunger"
+	name = "Голод"
 	icon = 'modular_sand/icons/hud/screen_gen.dmi'
 	icon_state = "nutrition0"
 	screen_loc = ui_hunger_thirst
 
 /atom/movable/screen/thirst
-	name = "thirst"
+	name = "Жажда"
 	icon = 'modular_sand/icons/hud/screen_gen.dmi'
 	icon_state = "hydration0"
 	screen_loc = ui_hunger_thirst
 
 /// "Голод" для синтетов
 /atom/movable/screen/hunger/robotic
-	name = "charge"
+	name = "Заряд"
 	icon_state = "charge0"
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
@@ -930,7 +930,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 
 /atom/movable/screen/devil/soul_counter
 	icon = 'icons/mob/screen_gen.dmi'
-	name = "souls owned"
+	name = "Душ во владении"
 	icon_state = "Devil-6"
 	screen_loc = ui_devilsouldisplay
 
@@ -955,7 +955,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	invisibility = INVISIBILITY_ABSTRACT
 
 /atom/movable/screen/ling/sting
-	name = "current sting"
+	name = "Текущее жало"
 	screen_loc = ui_lingstingdisplay
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
@@ -966,7 +966,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	U.unset_sting()
 
 /atom/movable/screen/ling/chems
-	name = "chemical storage"
+	name = "Запас химикатов"
 	icon_state = "power_display"
 	screen_loc = ui_lingchemdisplay
 
@@ -980,7 +980,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 
 /atom/movable/screen/synth/coolant_counter
 	icon = 'icons/mob/screen_synth.dmi'
-	name = "hydraulic fluid system" // BLUEMOON EDIT - написал "гидравлическая жидкость"
+	name = "Система гидравлической жидкости" // BLUEMOON EDIT - написал "гидравлическая жидкость"
 	icon_state = "coolant-3-1"
 	screen_loc = ui_coolant_display
 	mouse_over_pointer = MOUSE_HAND_POINTER
