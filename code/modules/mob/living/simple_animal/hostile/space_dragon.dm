@@ -47,7 +47,7 @@
 	icon_living = "spacedragon"
 	icon_dead = "spacedragon_dead"
 	obj_damage = 50
-	environment_smash = ENVIRONMENT_SMASH_NONE
+	environment_smash = 1.5
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	melee_damage_upper = 35
 	melee_damage_lower = 35
