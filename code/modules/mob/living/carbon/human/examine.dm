@@ -613,12 +613,12 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 						. += cyberimp_detect
 					if(R)
 						var/health_r = R.fields["p_stat"]
-						. += "<a href='?src=[REF(src)];hud=m;p_stat=1'>\[[health_r]\]</a>"
+						. += "<a href='?src=[REF(src)];medical=1'>\[[health_r]\]</a>"
 						health_r = R.fields["m_stat"]
-						. += "<a href='?src=[REF(src)];hud=m;m_stat=1'>\[[health_r]\]</a>"
+						. += "<a href='?src=[REF(src)];medical_mental=1'>\[[health_r]\]</a>"
 					R = antag_training_station_record(GLOB.data_core.medical_by_name, perpname, src)
 					if(R)
-						. += "<a href='?src=[REF(src)];hud=m;evaluation=1'>\[Medical evaluation\]</a>"
+						. += "<a href='?src=[REF(src)];medrecord=1'>\[Medical evaluation\]</a>"
 					traitstring = get_trait_string(FALSE, TRUE)
 					if(traitstring)
 						. += "<span class='info'>Обнаружены Особенности:\n[traitstring]</span>"
@@ -700,6 +700,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(program.active && program.hud_type)
 				have_hudtypes += program.hud_type
 
+		if((DATA_HUD_MEDICAL_ADVANCED in have_hudtypes) && !(DATA_HUD_MEDICAL_BASIC in have_hudtypes))
+			have_hudtypes += DATA_HUD_MEDICAL_BASIC
+
 		return (hudtype in have_hudtypes)
 
 	else if(iscyborg(M) || isAI(M)) //Stand-in/Stopgap to prevent pAIs from freely altering records, pending a more advanced Records system
@@ -711,3 +714,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			return (hudtype in list(DATA_HUD_SECURITY_BASIC, DATA_HUD_SECURITY_ADVANCED))
 
 	return FALSE
+
+/proc/has_medical_examine_hud(mob/user)
+	if(!ishuman(user))
+		return FALSE
+	var/mob/living/carbon/human/H = user
+	if(istype(H.glasses, /obj/item/clothing/glasses/hud/health))
+		return TRUE
+	return !isnull(H.getorgan(/obj/item/organ/cyberimp/eyes/hud/medical))
