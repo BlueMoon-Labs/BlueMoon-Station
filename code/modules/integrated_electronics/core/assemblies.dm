@@ -707,6 +707,9 @@
 /obj/item/electronic_assembly/proc/get_object()
 	return src
 
+/obj/item/electronic_assembly/proc/get_printed_item()
+	return src
+
 // Returns the location to be used for dropping items.
 // Same as the regular drop_location(), but with checks being run on acting_object if necessary.
 /obj/item/integrated_circuit/drop_location()

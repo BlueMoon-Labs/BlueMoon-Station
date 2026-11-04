@@ -40,13 +40,14 @@
 		В комплекте предустановлены магнитные ботинки с продвинутой системой автоматического включения и выключения при ходьбе."
 	default_skin = "advanced"
 	armor_type = /datum/armor/advanced
-	complexity_max = COMMAND_MAX_COMPLEXITY
+	complexity_max = DEFAULT_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
 		"advanced" = MOD_PRESET_DEFAULT,
 		)
 
 /datum/mod_theme/cargo_default/mining
+	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	name = "mining"
 	desc = "Высокомощный шахтёрский костюм Nanotrasen, поддерживающий больше модулей при большем расходе энергии."
 	extended_desc = "Высокомощный костюм, разработанный Nanotrasen на основе работ Nakamura Engineering. \
@@ -58,6 +59,7 @@
 		заставляя его требовать больше энергии взамен."
 	default_skin = "mining"
 	armor_type = /datum/armor/modsuit_mining
+	inbuilt_modules = list(/obj/item/mod/module/ash_accretion, /obj/item/mod/module/sphere_transform)
 	skins = list(
 		"mining" = MOD_PRESET_DEFAULT,
 		"asteroid" = MOD_PRESET_DEFAULT,
@@ -96,6 +98,7 @@
 	)
 
 /datum/mod_theme/research
+	complexity_max = COMMAND_MAX_COMPLEXITY
 	name = "research"
 	desc = "Частный военный сапёрный костюм от Aussec Armory, предназначенный для исследования взрывчатки. Громоздкий, но ёмкий."
 	extended_desc = "Частный военный сапёрный костюм от Aussec Armory, созданный на основе работ Nakamura Engineering. \
@@ -117,6 +120,7 @@
 	)
 
 /datum/mod_theme/station_combat/security
+	inbuilt_modules = list(/obj/item/mod/module/pepper_shoulders/security, /obj/item/mod/module/quick_cuff)
 	name = "security"
 	desc = "Костюм безопасности от Apadyne Technologies, обеспечивающий защиту от ударов и большую скорость за счёт грузоподъёмности."
 	extended_desc = "Классика от Apadyne Technologies, эта модель костюма MOD была разработана для быстрого реагирования на \
@@ -143,6 +147,7 @@
 	)
 
 /datum/mod_theme/station_combat/security/blueshied
+	complexity_max = DEFAULT_MAX_COMPLEXITY
 	name = "Blueshied"
 	desc = "Прототип костюма класса Magnate, выданный для использования станционными синими щитами"
 	extended_desc = "Прототип костюма класса Magnate, выданный для использования станционными синими щитами, \
@@ -179,12 +184,13 @@
 	default_skin = "safeguard"
 	armor_type = /datum/armor/modsuit_ert_and_hos
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
+	complexity_max = DEFAULT_MAX_COMPLEXITY
 	skins = list(
 		"safeguard" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/centcom/magnate
+	complexity_max = COMMAND_MAX_COMPLEXITY
 	name = "magnate"
 	desc = "Шикарный, высокозащитный костюм для капитанов Nanotrasen. Ударо-, огне- и кислотостойкий, при этом имеющий большую ёмкость и высокую скорость."
 	extended_desc = "Говорят, стоимость работы этого костюма MOD составляет четыреста тысяч кредитов... на двенадцать секунд. \
@@ -217,6 +223,7 @@
 	)
 
 /datum/mod_theme/antagonist/syndicate
+	inbuilt_modules = list(/obj/item/mod/module/welding/syndicate, /obj/item/mod/module/night, /obj/item/mod/module/hearing_protection)
 	name = "syndicate"
 	desc = "Костюм, разработанный Gorlex Marauders, с бронёй, запрещённой в большей части Spinward Stellar."
 	extended_desc = "Продвинутый боевой костюм в зловещей багрово-красной цветовой гамме, произведённый и изготовленный \
@@ -238,6 +245,9 @@
 	)
 
 /datum/mod_theme/antagonist/elite
+	brc_mitigation_bonus = 20
+	complexity_max = ELITE_MAX_COMPLEXITY
+	inbuilt_modules = list(/obj/item/mod/module/welding/syndicate, /obj/item/mod/module/night, /obj/item/mod/module/hearing_protection)
 	name = "elite"
 	desc = "Элитный костюм, модернизированный Cybersun Industries, с улучшенными показателями брони."
 	extended_desc = "Эволюция синдикатного костюма, отличающийся более массивной конструкцией и матовой чёрной цветовой гаммой, \
@@ -260,6 +270,7 @@
 	)
 
 /datum/mod_theme/cargo_default/prototype
+	complexity_max = COMMAND_MAX_COMPLEXITY
 	name = "prototype"
 	desc = "Прототип модульного костюма с приводом от локомотивов. Хоть он и комфортен и имеет большую ёмкость, он остаётся очень громоздким и энерго-неэффективным."
 	extended_desc = "Это прототип силового экзоскелета, дизайн, который не видели сотни лет, первый \
@@ -294,7 +305,27 @@
 		"marine"      = MOD_PRESET_DEFAULT,
 	)
 
+/datum/mod_theme/centcom/responsory/marine
+	complexity_max = CENTCOM_COMBAT_MAX_COMPLEXITY
+	name = "marine"
+	default_skin = "marine"
+
+/datum/mod_theme/centcom/responsory/traitor
+	brc_mitigation_bonus = 20
+	name = "dark paladin"
+	desc = "Захваченный Синдикатом скоростной костюм Nanotrasen, приспособленный для саботажа и штурма."
+	default_skin = "inquisitory"
+	armor_type = /datum/armor/syndicate_elite_and_inteq
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	complexity_max = ANTAG_MAX_COMPLEXITY
+	ui_theme = "syndicate"
+	hardlight_color = MOD_SYNDICATE_COLOR
+	allow_hot_swap = TRUE
+	inbuilt_modules = list(/obj/item/mod/module/welding/syndicate)
+
 /datum/mod_theme/centcom/apocryphal
+	brc_mitigation_bonus = 25
+	complexity_max = CENTCOM_COMBAT_MAX_COMPLEXITY
 	name = "apocryphal"
 	desc = "Высокотехнологичный, лишь формально легальный бронированный костюм, созданный совместными усилиями Nanotrasen и Apadyne Technologies."
 	extended_desc = "Громоздкий и лишь формально легальный костюм, этот зловещий чёрно-красный MOD-костюм носят только \
@@ -310,6 +341,7 @@
 	)
 
 /datum/mod_theme/corporate
+	brc_mitigation_bonus = 25
 	name = "corporate"
 	desc = "Шикарный высокотехнологичный костюм для высокопоставленных офицеров Nanotrasen."
 	extended_desc = "Ещё более дорогая версия модели Magnate, корпоративный костюм — это термоизолированный, \
@@ -329,6 +361,7 @@
 	)
 
 /datum/mod_theme/debug
+	brc_mitigation_bonus = 25
 	name = "debug"
 	desc = "Странно ностальгический."
 	extended_desc = "Продвинутый костюм с двумя ионными двигателями, достаточно мощными, чтобы дать гуманоиду полёт. \
@@ -345,6 +378,7 @@
 	)
 
 /datum/mod_theme/debug/administrative
+	complexity_max = ADMINISTRATIVE_MAX_COMPLEXITY
 	name = "administrative"
 	desc = "Костюм из админиума. Кто придумывает эти тупые названия минералов?"
 	extended_desc = "Да, ладно, думаю, это можно назвать ивентом. Но то, что я считаю ивентом, — это что-то на самом деле \
@@ -360,6 +394,7 @@
 	)
 
 /datum/mod_theme/antagonist/inteq_nuclear
+	brc_mitigation_bonus = 20
 	name = "InteQ"
 	desc = "Высокотехнологичный боевой костюм, выполненный в зловещих тёмно-синих тонах и изготовленный специально для наёмников, участвующих в специальных операциях. "
 	extended_desc = "Высокотехнологичный боевой костюм, выполненный в зловещих тёмно-синих тонах и изготовленный специально для наёмников, участвующих в специальных операциях. Конструкция представляет собой обтекаемую многослойную систему из формованного пласталя и композитной керамики, а нижний слой выполнен из лёгкого кевлара и гибридной ткани «дуратри». На костюме висит небольшая бирка с надписью: «Изготовлено в сотрудничестве компаний Fox и Ghost. Все права защищены. Несанкционированное изменение конструкции костюма приведёт к его немедленному уничтожению»."
@@ -385,6 +420,8 @@
 	)
 
 /datum/mod_theme/antagonist/infiltrator
+	complexity_max = DEFAULT_MAX_COMPLEXITY
+	inbuilt_modules = list(/obj/item/mod/module/hearing_protection, /obj/item/mod/module/demoralizer, /obj/item/mod/module/scorpion_hook/infiltrator, /obj/item/mod/module/storage/extended/syndicate/infiltrator)
 	name = "Infiltrator"
 	desc = "Высокотехнологичный боевой костюм, изготовленный специально для наёмников, участвующих в специальных операциях. "
 	extended_desc = "Высокотехнологичный боевой костюм, изготовленный специально для наёмников, участвующих в специальных операциях. Конструкция представляет собой обтекаемую многослойную систему из формованного пласталя и композитной керамики, а нижний слой выполнен из лёгкого кевлара и гибридной ткани «дуратри». На костюме висит небольшая бирка с надписью: «Изготовлено в сотрудничестве компаний Fox и Ghost. Все права защищены. Несанкционированное изменение конструкции костюма приведёт к его немедленному уничтожению»."
@@ -411,6 +448,7 @@
 	)
 
 /datum/mod_theme/antagonist/spider_clan
+	complexity_max = DEFAULT_MAX_COMPLEXITY
 	name = "Ninja"
 	desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука."
 	extended_desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука"
@@ -419,11 +457,20 @@
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	ui_theme = "ninja"
 	hardlight_color = MOD_NINJA_COLOR
+	inbuilt_modules = list(
+		/obj/item/mod/module/welding/camera_vision,
+		/obj/item/mod/module/hacker,
+		/obj/item/mod/module/weapon_recall,
+		/obj/item/mod/module/adrenaline_boost,
+		/obj/item/mod/module/energy_net,
+		/obj/item/mod/module/hearing_protection,
+	)
 	skins = list(
 		"ninja" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/antagonist/mage
+	complexity_max = DEFAULT_MAX_COMPLEXITY
 	name = "Enchanted"
 	desc = "Странный, инкрустированный самоцветами модулярный костюм, излучающий магическую энергию."
 	extended_desc = "Экспериментальный модулярный костюм, созданный Федерацией магов.\
@@ -451,8 +498,56 @@
 		костюм оснащён гидравлическими усилителями конечностей и усиленной рамой, \
 		способной выдерживать экстремальные нагрузки при перемещении ящиков, паллет и оборудования."
 	default_skin = "loader"
-	complexity_max = COMMAND_MAX_COMPLEXITY
+	complexity_max = LOADER_MAX_COMPLEXITY
 	skins = list(
 		//НЕ защищает от космоса. Он НЕ герметичный. Это просто рама для тягания тяжестей.
 		"loader" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT_NO_JUMSUIT_HIDE,
 	)
+
+/datum/mod_theme/chrono
+	brc_mitigation_bonus = 15
+	name = "Chrono"
+	desc = "Костюм для перемещения между временными линиями и исправления их хода."
+	extended_desc = "Технология вне времени, защищающая носителя при работе с временными парадоксами."
+	default_skin = "chrono"
+	armor_type = /datum/armor/mod_chrono
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
+	complexity_max = 5
+	inbuilt_modules = list(/obj/item/mod/module/hearing_protection)
+	allowed = list(/obj/item/restraints/handcuffs)
+	skins = list("chrono" = MOD_PRESET_DEFAULT)
+
+/datum/armor/mod_chrono
+	melee = 60
+	bullet = 60
+	laser = 60
+	energy = 60
+	bomb = 30
+	bio = 100
+	fire = 100
+	acid = 100
+	wound = 15
+
+/datum/mod_theme/holographic
+	name = "Holographic MOD"
+	desc = "Герметичный голографический MOD без защиты от холода."
+	extended_desc = "Проекторы создают герметичную оболочку по форме тела носителя. Во включённом состоянии голограммы нельзя скрыть. Для дыхания нужен отдельный источник кислорода."
+	default_skin = "standard"
+	armor_type = /datum/armor/none
+	complexity_max = 4
+	min_cold_protection_temperature = null
+	max_heat_protection_temperature = null
+	hide_worn_sprites = TRUE
+	body_hardlight = TRUE
+	locked_hardlight = TRUE
+	hardlight_color = COLOR_CYAN
+	inbuilt_modules = list(/obj/item/mod/module/holographic)
+	skins = list("standard" = MOD_PRESET_DEFAULT)
+
+/datum/mod_theme/holographic/New()
+	. = ..()
+	var/list/preset = skins[default_skin]
+	preset[HELMET_FLAGS][UNSEALED_INVISIBILITY] = NONE
+	preset[HELMET_FLAGS][SEALED_INVISIBILITY] = NONE
+	preset[CHESTPLATE_FLAGS][SEALED_INVISIBILITY] = NONE

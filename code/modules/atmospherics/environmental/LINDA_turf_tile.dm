@@ -460,7 +460,7 @@
 			ATMOS_BENCH_WAKE(enemy_tile, "pair_share") \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
-	} else if(last_share > our_move_threshold) { \
+	} else if(last_share > our_wake_threshold) { \
 		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
@@ -477,7 +477,7 @@
 	if(planet_last_share > our_suspend_threshold){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
-	} else if(planet_last_share > our_move_threshold) { \
+	} else if(planet_last_share > our_wake_threshold) { \
 		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 	}
@@ -891,6 +891,8 @@
 	var/our_cycle_moles = our_air.total_moles_rev == our_air.mutation_rev ? our_air.total_moles_cache : our_air.total_moles()
 	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
 	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
+	// Порог, по которому шер держит пару бодрой (сброс тишины, пробуждение соседа). Ветер и перепады давления считаются от our_move_threshold.
+	var/our_wake_threshold = air_controller ? our_move_threshold * air_controller.wake_threshold_scale : our_move_threshold
 	var/turf/open/space_neighbor
 
 	ATMOS_TPROF_MARK
@@ -1394,7 +1396,7 @@
 			return self_breakdown(poke_resting = TRUE, slice_budget = length(turf_list) >= EXCITED_GROUP_RESUMABLE_THRESHOLD ? EXCITED_GROUP_BREAKDOWN_SLICE : 0)
 		else if(breakdown_cooldown >= EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING)
 			evict_settled_members()
-	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES && !(turf_reactions & (REACTING | STOP_REACTIONS)))
+	else if(dismantle_cooldown >= (SSair ? SSair.dismantle_cycles : EXCITED_GROUP_DISMANTLE_CYCLES) && !(turf_reactions & (REACTING | STOP_REACTIONS)))
 		dismantle()
 	turf_reactions = NO_REACTION
 	return TRUE

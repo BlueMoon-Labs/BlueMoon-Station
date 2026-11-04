@@ -435,9 +435,9 @@
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Максимальный режим сенсоров")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Датчики на максимум")
 	if(user.client?.use_legacy_chat && length(accessories_attached))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Снять аксессуар")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Снять [accessories_attached[length(accessories_attached)]]")
 	else if(can_adjust)
 		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[adjusted == ALT_STYLE ? "Нормальный" : "Повседневный"] стиль ношения")
 	return CONTEXTUAL_SCREENTIP_SET

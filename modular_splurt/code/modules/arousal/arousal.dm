@@ -214,7 +214,7 @@
 //arousal hud display
 
 /atom/movable/screen/arousal
-	name = "arousal"
+	name = "Возбуждение"
 	icon_state = "arousal0"
 	icon = 'icons/obj/genitals/hud.dmi'
 	screen_loc = ui_arousal
