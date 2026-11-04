@@ -73,6 +73,8 @@
 	. = list()
 	var/organ_spilled = 0
 	var/turf/T = get_turf(C)
+	var/mob/attacker = get_mob_by_ckey(C.lastattackerckey)
+	var/fly_dir = attacker ? get_dir(attacker, C) : null
 	C.bleed(50)
 	playsound(get_turf(C), 'sound/misc/splort.ogg', 80, 1)
 	for(var/X in C.internal_organs)
@@ -81,6 +83,7 @@
 			continue
 		O.Remove()
 		O.forceMove(T)
+		O.fly_away(fly_dir)
 		organ_spilled = 1
 		. += X
 	if(cavity_item)
@@ -325,6 +328,8 @@
 /obj/item/bodypart/proc/replace_limb(mob/living/carbon/C, special)
 	if(!istype(C))
 		return
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	var/obj/item/bodypart/O = C.get_bodypart(body_zone)
 	if(O)
 		O.drop_limb(1)
@@ -342,6 +347,8 @@
 	attach_limb(C, special)
 
 /obj/item/bodypart/proc/attach_limb(mob/living/carbon/C, special)
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	moveToNullspace()
 	owner = C
 	C.bodyparts += src
@@ -434,6 +441,10 @@
 /mob/living/carbon/regenerate_limbs(noheal = FALSE, list/excluded_limbs = list())
 	. = ..()
 	var/list/limb_list = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		limb_list -= BODY_ZONE_R_LEG
+		if(BODY_ZONE_R_LEG in excluded_limbs)
+			limb_list -= BODY_ZONE_L_LEG
 	if(excluded_limbs.len)
 		limb_list -= excluded_limbs
 	for(var/Z in limb_list)
@@ -460,3 +471,11 @@
 		if(dna?.species && (ROBOTIC_LIMBS in dna.species.species_traits)) //Snowflake trait moment, but needed.
 			L.change_bodypart_status(BODYPART_HYBRID, FALSE, TRUE) //Haha what if IPC-lings actually regenerated the right limbs instead of organic ones? That'd be pretty cool, right?
 		return TRUE
+
+//органы смешно отлетают от стороны атакующего
+/obj/item/organ/proc/fly_away(from_dir = null)
+	if(QDELETED(src) || !isturf(loc))
+		return
+	var/angle = from_dir ? 90 - dir2angle(from_dir) + rand(-60, 60) : rand(0, 360)
+	var/dist = rand(6, 20)
+	animate(src, pixel_x=cos(angle)*dist, pixel_y=sin(angle)*dist, time = 3, easing = ELASTIC_EASING | EASE_OUT)

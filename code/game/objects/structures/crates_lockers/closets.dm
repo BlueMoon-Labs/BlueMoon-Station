@@ -462,11 +462,16 @@
 	else if(W.tool_behaviour == TOOL_WRENCH && anchorable)
 		if(isinspace() && !anchored)
 			return
+		var/was_anchored = anchored
+		to_chat(user, span_notice("Вы начинаете [anchored ? "откручивать" : "прикручивать"] [src]..."))
+		if(!W.use_tool(src, user, 2 SECONDS, volume = 75))
+			return
+		if(opened || !anchorable || anchored != was_anchored || (isinspace() && !anchored))
+			return
 		set_anchored(!anchored)
-		W.play_tool_sound(src, 75)
-		user.visible_message(span_notice("[user] [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
-						span_notice("You [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
-						span_hear("You hear a ratchet."))
+		user.visible_message(span_notice("[user] [anchored ? "прикручивает [src] к полу" : "откручивает [src] от пола"]."), \
+						span_notice("Вы [anchored ? "прикрутили [src] к полу" : "открутили [src] от пола"]."), \
+						span_hear("Вы слышите треск гаечного ключа."))
 	// cit addons
 	else if(istype(W, /obj/item/electronics/airlock))
 		handle_lock_addition(user, W)
