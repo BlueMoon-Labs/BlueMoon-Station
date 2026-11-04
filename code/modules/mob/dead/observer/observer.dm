@@ -755,7 +755,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	for(var/mob/dead/observer/O in GLOB.player_list)
 		if(O == src || !O.client)
 			continue
-		if(isnull(O.lastsetting))
+		// Режим сменили мимо update_sight() - полная пересборка у этого госта, наша картинка уже в глобальных списках.
+		if(isnull(O.lastsetting) || O.lastsetting != O.client.prefs.ghost_others)
 			O.updateghostimages()
 			continue
 		if(!O.ghostvision)

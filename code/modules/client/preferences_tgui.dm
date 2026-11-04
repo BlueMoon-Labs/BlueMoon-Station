@@ -690,6 +690,9 @@
 					ghost_others = value
 					dirty_var = "ghost_others"
 			save_pref_var(dirty_var)
+			if(dirty_var == "ghost_others" && isobserver(parent?.mob))
+				var/mob/dead/observer/ghost = parent.mob
+				ghost.update_sight()
 
 		if("set_ooc_pref")
 			var/flag = params["flag"]
