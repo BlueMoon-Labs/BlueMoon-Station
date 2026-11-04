@@ -287,36 +287,36 @@
 
 // BLUEMOON ADD START - описание для синтетических конечностей (проводка + наногель)
 /datum/wound/burn/proc/get_examine_description_synthetic(mob/user, anonymous = FALSE)
-    if(strikes_to_lose_limb <= 0)
+	if(strikes_to_lose_limb <= 0)
 		return "<span class='deadsay'><B>Системы управления [anonymous ? "его" : victim.ru_ego()] [limb.ru_name_v] полностью отключены.</B></span>"
 
-    var/list/condition = list("[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
+	var/list/condition = list("[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
 
-    if(limb.current_gauze)
-        condition += " (временно заизолирована [limb.current_gauze.name])"
+	if(limb.current_gauze)
+		condition += " (временно заизолирована [limb.current_gauze.name])"
 
-    // Визуальные признаки по уровню риска КЗ
-    switch(short_circuit_risk)
-        if(0 to WOUND_INFECTION_MODERATE)
-            condition += ", <span class='notice'>с тусклыми следами нагара на контактах</span>"
-        if(WOUND_INFECTION_MODERATE to WOUND_INFECTION_SEVERE)
-            condition += ", <span class='warning'>с лёгким искрением оголённых контактов</span>"
-        if(WOUND_INFECTION_SEVERE to WOUND_INFECTION_CRITICAL)
-            condition += ", <span class='danger'>с видимыми повреждёнными проводами и нестабильным сигналом</span>"
-        if(WOUND_INFECTION_CRITICAL to INFINITY)
-            return "<span class='deadsay'><B>[limb.ru_name] представляет собой клубок обгоревших проводов с постоянными короткими замыканиями. Требуется замена проводки!</B></span>"
+	// Визуальные признаки по уровню риска КЗ
+	switch(short_circuit_risk)
+		if(0 to WOUND_INFECTION_MODERATE)
+			condition += ", <span class='notice'>с тусклыми следами нагара на контактах</span>"
+		if(WOUND_INFECTION_MODERATE to WOUND_INFECTION_SEVERE)
+			condition += ", <span class='warning'>с лёгким искрением оголённых контактов</span>"
+		if(WOUND_INFECTION_SEVERE to WOUND_INFECTION_CRITICAL)
+			condition += ", <span class='danger'>с видимыми повреждёнными проводами и нестабильным сигналом</span>"
+		if(WOUND_INFECTION_CRITICAL to INFINITY)
+			return "<span class='deadsay'><B>[limb.ru_name] представляет собой клубок обгоревших проводов с постоянными короткими замыканиями. Требуется замена проводки!</B></span>"
 
-    // Визуальные признаки активности наногеля
-    if(nanogel_active)
-        if(nanogel_potency > 8)
-            condition += ", <span class='notice'>покрыта светящимся гелем с активными нанитами</span>"
-        else if(nanogel_potency > 4)
-            condition += ", <span class='notice'>покрыта гелем, который постепенно тускнеет</span>"
-        else
-            condition += ", <span class='notice'>покрыта почти высохшим гелем</span>"
+	// Визуальные признаки активности наногеля
+	if(nanogel_active)
+		if(nanogel_potency > 8)
+			condition += ", <span class='notice'>покрыта светящимся гелем с активными нанитами</span>"
+		else if(nanogel_potency > 4)
+			condition += ", <span class='notice'>покрыта гелем, который постепенно тускнеет</span>"
+		else
+			condition += ", <span class='notice'>покрыта почти высохшим гелем</span>"
 
-    condition += "!"
-    return "<B>[condition.Join()]</B>"
+	condition += "!"
+	return "<B>[condition.Join()]</B>"
 // BLUEMOON ADD END
 
 /datum/wound/burn/get_scanner_description(mob/user)
