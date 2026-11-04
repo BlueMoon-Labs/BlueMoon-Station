@@ -1135,7 +1135,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(LOADOUT_LIMB_PROSTHETIC)
 			return (pref_species && (ROBOTIC_LIMBS in pref_species.species_traits)) ? 0 : 1
 		if(LOADOUT_LIMB_AMPUTATED)
-			return 2
+			return (pref_species && istype(pref_species, /datum/species/jelly)) ? 0 : 2
 	return 0
 
 /datum/preferences/proc/GetQuirkBalance(mob/user)

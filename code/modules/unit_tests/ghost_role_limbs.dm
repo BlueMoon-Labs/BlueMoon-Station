@@ -155,12 +155,22 @@
 	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance(), 2, "Amputation should still give points to a synthetic")
 	TEST_ASSERT_EQUAL(synth_setup.build_modifications_data()["limbBonus"], 2, "Modifications tab should show the same limb bonus as the balance")
 
+	// СЛАЙМОЛЮДЫ НЫЫЫА ЧЕРТИ ЕБАННЫЕ НЫЫЫААА
+	var/datum/preferences/jelly_prefs = new
+	jelly_prefs.pref_species = new /datum/species/jelly
+	var/datum/character_setup/jelly_setup = new(jelly_prefs)
+	limb_act(jelly_setup, BODY_ZONE_R_ARM, LOADOUT_LIMB_AMPUTATED)
+	TEST_ASSERT_EQUAL(jelly_prefs.quirk_balance(), 0, "Amputation should give no points to a species that regrows limbs")
+	TEST_ASSERT_EQUAL(jelly_setup.build_modifications_data()["limbBonus"], 0, "Modifications tab should show no amputation bonus for a regrowing species")
+
 	var/datum/preferences/human_prefs = new
 	human_prefs.pref_species = new /datum/species/human
 	var/datum/character_setup/human_setup = new(human_prefs)
 	limb_act(human_setup, BODY_ZONE_L_ARM, LOADOUT_LIMB_PROSTHETIC)
 	TEST_ASSERT_EQUAL(human_prefs.quirk_balance(), 1, "Prosthetic on an organic species should give a quirk point")
 
+	qdel(jelly_setup)
+	qdel(jelly_prefs)
 	qdel(synth_setup)
 	qdel(synth_prefs)
 	qdel(human_setup)
