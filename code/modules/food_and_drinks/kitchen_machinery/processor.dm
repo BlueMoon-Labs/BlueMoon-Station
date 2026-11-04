@@ -163,6 +163,18 @@
 	icon_state = "processor_slime"
 	circuit = /obj/item/circuitboard/machine/processor/slime
 
+/obj/machinery/processor/slime/examine(mob/user)
+	. = ..()
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	if(!science?.pays_extracts_at(src))
+		return
+	var/price = SSeconomy.settings.work_prices[WORK_SCI_SLIME_DISCOVERY]
+	var/list/values = list()
+	for(var/colour in GLOB.econ_slime_extract_value)
+		values += GLOB.econ_slime_extract_value[colour]
+	if(price && length(values))
+		. += span_notice("Первый за смену экстракт каждого цвета Nanotrasen оплачивает бюджету науки: от [min(values) * price] до [max(values) * price] кр. в зависимости от цвета.")
+
 /obj/machinery/processor/slime/adjust_item_drop_location(atom/movable/AM)
 	var/static/list/slimecores = subtypesof(/obj/item/slime_extract)
 	var/i = 0
@@ -205,8 +217,12 @@
 			S.forceMove(drop_location())
 			S.visible_message(span_notice("[S] выбирается из [src]!"))
 			return
-		for(var/i in 1 to (C+rating_amount-1))
+		var/extract_count = C + rating_amount - 1
+		for(var/i in 1 to extract_count)
 			var/atom/movable/item = new S.coretype(drop_location())
 			adjust_item_drop_location(item)
 			SSblackbox.record_feedback("tally", "slime_core_harvested", 1, S.colour)
+		if(extract_count > 0)
+			var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+			science?.note_extract(S.colour, src)
 	..()

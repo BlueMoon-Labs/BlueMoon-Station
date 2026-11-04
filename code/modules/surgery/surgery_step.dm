@@ -66,6 +66,7 @@
 	surgery.step_in_progress = TRUE
 	var/speed_mod = 1
 	var/advance = FALSE
+	var/succeeded = FALSE
 	if(preop(user, target, target_zone, tool, surgery) == -1)
 		surgery.step_in_progress = FALSE
 		return FALSE
@@ -126,6 +127,7 @@
 					multi *= 0.5 //Spammable surgeries award less experience.
 				user.mind?.auto_gain_experience(/datum/skill/numerical/surgery, SKILL_GAIN_SURGERY_PER_STEP * multi)
 				advance = TRUE
+				succeeded = TRUE
 		else
 			// BLUEMOON ADD START - небольшое количество урон за провал этапа для избежания лёгкого брутфорса низкого шанса операций
 			if(tool)
@@ -138,7 +140,7 @@
 		if(advance && !repeatable)
 			surgery.status++
 			if(surgery.status > surgery.steps.len)
-				surgery.complete()
+				surgery.complete(succeeded ? user : null)
 		surgery.step_in_progress = FALSE
 		return advance
 

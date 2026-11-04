@@ -152,7 +152,7 @@
 		new_access = job.get_access()
 		//финансовая вставка
 		if(target_id_card?.registered_account)
-			target_id_card.registered_account.account_job = job
+			target_id_card.registered_account.set_job(job)
 		//конец финансов
 	target_id_card.access -= get_all_centcom_access() + get_all_accesses()
 	target_id_card.access |= new_access
@@ -259,7 +259,7 @@
 			target_id_card.assignment = "Terminated"
 			//финансовая вставка
 			if(target_id_card?.registered_account)
-				target_id_card.registered_account.account_job = null
+				target_id_card.registered_account.set_job(null)
 			//конец финансов
 			target_id_card.update_label()
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)

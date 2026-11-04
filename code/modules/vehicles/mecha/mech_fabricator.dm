@@ -449,6 +449,7 @@
 	var/obj/item/I = new D.build_path(src)
 	// I.material_flags |= MATERIAL_NO_EFFECTS //Find a better way to do this.
 	I.set_custom_materials(build_materials)
+	econ_mark_station_made(I, D.materials)
 
 	being_built = null
 

@@ -46,6 +46,15 @@
 /// Общий ключ кулдауна выписок любой тяжести
 #define WORK_GROUP_MED_DISCHARGE "med_discharge"
 
+#define ECON_INJURY_NONE 0
+#define ECON_INJURY_LIGHT 1
+#define ECON_INJURY_HEAVY 2
+#define ECON_INJURY_CRIT 3
+#define ECON_INJURY_LIGHT_HEALTH_RATIO 0.8
+#define ECON_INJURY_HEAVY_HEALTH_RATIO 0.5
+/// Сколько после травмы пациента можно выписать
+#define ECON_INJURY_WINDOW (30 MINUTES)
+#define ECON_DISCHARGE_HEALTH_RATIO 0.9
 #define WORK_ENG_POWER_EXPORT "eng_power_export"
 #define WORK_ENG_INTEGRITY "eng_integrity"
 /// Доход экспорта энергии уходит инженерии не чаще этого интервала...
@@ -347,6 +356,12 @@
 #define COMSIG_MARKET_STOCKS_TICKED "market_stocks_ticked"
 ///from SSmarket.station_event(), когда событие станции сдвинуло акции: (key)
 #define COMSIG_MARKET_STATION_EVENT "market_station_event"
+
+#define MARKET_SOUND_TICK "tick"
+#define MARKET_SOUND_BELL "bell"
+#define MARKET_SOUND_CRASH "crash"
+/// Звонок и тревога биржи у одного табло или терминала не чаще этого
+#define MARKET_ALARM_COOLDOWN (30 SECONDS)
 
 #define COMMODITY_METALS "metals"
 #define COMMODITY_PRECIOUS "precious_metals"

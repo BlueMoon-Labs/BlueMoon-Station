@@ -165,6 +165,8 @@
 /datum/unit_test/antag_training_space_dragon/proc/news_messages()
 	. = list()
 	for(var/datum/news/feed_channel/channel as anything in GLOB.news_network.network_channels)
+		if(channel.channel_name == MARKET_NEWS_CHANNEL)
+			continue
 		. += channel.messages
 
 /datum/unit_test/antag_training_space_dragon/proc/arena_carps(datum/antag_training_arena/arena)

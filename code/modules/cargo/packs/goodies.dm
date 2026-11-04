@@ -111,5 +111,5 @@
 /datum/supply_pack/goody/russianroulete
 	name = "Russian roulete revolver Single-Pack"
 	desc = "Для тех кому совсем нечего делать в долгую смену"
-	cost = 300
+	cost = 350
 	contains = list(/obj/item/gun/ballistic/revolver/russian)

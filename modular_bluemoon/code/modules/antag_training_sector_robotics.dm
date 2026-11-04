@@ -119,9 +119,6 @@
 		say("Учебный экзофабрикатор не связан с R&D: все учебные чертежи уже загружены.")
 	return FALSE
 
-/datum/techweb/specialized/autounlocking/exofab/training
-	pays_research_bounty = FALSE
-
 /datum/techweb/specialized/autounlocking/exofab/training/add_design(datum/design/design, custom = FALSE)
 	if(ispath(design?.build_path, /obj/item/mecha_parts/mecha_tracking) || ispath(design?.build_path, /obj/item/borg/upgrade/ai) || design?.build_path == /obj/item/robot_suit)
 		return FALSE

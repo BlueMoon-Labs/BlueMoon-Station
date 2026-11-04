@@ -11,7 +11,7 @@
 
 /datum/supply_pack/costumes_toys/randomised/fill(obj/structure/closet/crate/C)
 	var/list/L = contains.Copy()
-	for(var/i in 1 to num_contained)
+	for(var/i in 1 to min(num_contained, length(L)))
 		var/item = pick_n_take(L)
 		new item(C)
 
@@ -79,7 +79,7 @@
 /datum/supply_pack/costumes_toys/foamforce
 	name = "Foam Force Crate"
 	desc = "Похвастайся большой пушкой с помощью восьми дробовиков Foam Force!"
-	cost = 1000
+	cost = 1850
 	contains = list(/obj/item/gun/ballistic/shotgun/toy,
 					/obj/item/gun/ballistic/shotgun/toy,
 					/obj/item/gun/ballistic/shotgun/toy,

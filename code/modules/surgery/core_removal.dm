@@ -32,6 +32,8 @@
 			"[user] successfully extracts a core from [target]!")
 
 		new slime.coretype(slime.loc)
+		var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+		science?.note_extract(slime.colour, slime, user)
 
 		if(slime.cores <= 0)
 			slime.icon_state = "[slime.colour] baby slime dead-nocore"

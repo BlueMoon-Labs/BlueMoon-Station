@@ -14,7 +14,7 @@
 	var/datum/bounty/B
 	for(var/attempts = 0; attempts < 50; ++attempts)
 		B = random_bounty()
-		if(!B)
+		if(!B || istype(B, /datum/bounty/lewd))
 			continue
 		B.mark_high_priority(3)
 		if(try_add_bounty(B))

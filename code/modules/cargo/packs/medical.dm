@@ -27,7 +27,7 @@
 /datum/supply_pack/medical/bloodpacks
 	name = "Blood Pack Variety Crate"
 	desc = "Содержит девять различных наборов крови для  введения пациентам, а также два универсальных набора синтетической крови."
-	cost = 3000
+	cost = 3800
 	contains = list(/obj/item/reagent_containers/blood/synthetics,
 					/obj/item/reagent_containers/blood/synthetics,
 					/obj/item/reagent_containers/blood/random,

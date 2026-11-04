@@ -45,7 +45,7 @@
 	crate_type = /obj/structure/closet/secure_closet/cargo
 	name = "20 Plasteel Sheets"
 	desc = "Укрепите целостность станции двадцатью листами пластали!"
-	cost = 4000
+	cost = 5600
 	contains = list(/obj/item/stack/sheet/plasteel/twenty)
 
 /datum/supply_pack/materials/plastic20
@@ -83,7 +83,7 @@
 /datum/supply_pack/materials/bz
 	name = "BZ Canister Crate"
 	desc = "Содержит канистру BZ. Требуется доступ к токсинам, чтобы открыть."
-	cost = 7500 // Costs 3 credits more than what you can get for selling it.
+	cost = 14000
 	access = ACCESS_TOX_STORAGE
 	contains = list(/obj/machinery/portable_atmospherics/canister/bz)
 	crate_name = "BZ canister crate"
@@ -153,7 +153,7 @@
 /datum/supply_pack/materials/watertank
 	name = "Water Tank Crate"
 	desc = "Содержит резервуар с монооксидом дигидрогена... звучит опасно."
-	cost = 600
+	cost = 700
 	contains = list(/obj/structure/reagent_dispensers/watertank)
 	crate_name = "water tank crate"
 	crate_type = /obj/structure/closet/crate/large

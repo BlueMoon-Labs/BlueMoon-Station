@@ -140,8 +140,11 @@
 	else
 		return null
 
-/datum/surgery/proc/complete()
+/// user - хирург, если последний шаг удался; лечебная операция платит медицине.
+/datum/surgery/proc/complete(mob/user)
 	SSblackbox.record_feedback("tally", "surgeries_completed", 1, type)
+	if(user)
+		econ_pay_surgeon(user)
 	qdel(src)
 
 // Use silent = TRUE to avoid affecting the target
