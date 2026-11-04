@@ -16,11 +16,11 @@
 		return ..()
 
 /obj/item/clothing/gloves/AltClick(mob/user)
-	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
-		return
-	if(length(accessories_attached))
-		remove_accessory(user = user)
+	if(user?.client?.use_legacy_chat && length(accessories_attached))
+		if(isliving(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) && can_use(user))
+			remove_accessory(user = user)
+		return TRUE
+	return ..()
 
 /obj/item/clothing/gloves/equipped(mob/user, slot)
 	..()
@@ -40,11 +40,11 @@
 		return
 	if(length(accessories_attached) >= max_accessories)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] already has [length(accessories_attached)] accessories.</span>")
+			to_chat(user, span_warning("На [src] уже нацеплено [length(accessories_attached)] [ru_plural(length(accessories_attached), "аксессуар", "аксессуара", "аксессуаров")]."))
 		return
 	if(dummy_thick)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] is too bulky and cannot have accessories attached to it!</span>")
+			to_chat(user, span_warning("Громоздкость [src] не позволит прикрепить аксессуары!"))
 		return
 	if(user && !user.dropItemToGround(accessory, silent = silent))
 		return
@@ -52,7 +52,7 @@
 		return
 
 	if(user && !silent)
-		to_chat(user, "<span class='notice'>You attach [accessory] to [src].</span>")
+		to_chat(user, span_notice("Вы прикрепили \the [accessory] к \the [src]."))
 
 	if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 		return TRUE
@@ -87,5 +87,11 @@
 
 /obj/item/clothing/gloves/examine(mob/user)
 	. = ..()
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
-		. += "\A [attached_accessory] is attached to one of its fingers."
+	var/accessory_list = accessories_examine(user)
+	if(accessory_list)
+		. += accessory_list
+
+/obj/item/clothing/gloves/Topic(href, href_list)
+	. = ..()
+	if(!.)
+		return accessories_topic(usr, href_list)
