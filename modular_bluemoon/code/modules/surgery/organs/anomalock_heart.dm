@@ -37,8 +37,8 @@
 /obj/item/organ/heart/cybernetic/anomalock/Remove(special)
 	var/mob/living/carbon/former_owner = owner
 	. = ..()
-	if(!core)
-		return
+	// Защиту снимаем всегда, даже если ядро уже вынули: иначе сигнал, элемент
+	// и трейт остаются на владельце после извлечения импланта.
 	if(former_owner && !QDELETED(former_owner))
 		UnregisterSignal(former_owner, COMSIG_ATOM_EMP_ACT)
 		former_owner.RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS)
@@ -46,9 +46,10 @@
 		if(lightning_overlay)
 			former_owner.cut_overlay(lightning_overlay)
 			lightning_overlay = null
+	if(!core)
+		return
+	if(former_owner && !QDELETED(former_owner))
 		tesla_zap(former_owner, 20, 2.5e5)
-	if(!QDELETED(src))
-		qdel(src)
 
 /obj/item/organ/heart/cybernetic/anomalock/attack(mob/living/target_mob, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(target_mob != user || !iscarbon(target_mob) || !core)

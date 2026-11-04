@@ -268,6 +268,10 @@
 	var/next_use = 0
 	/// Счётчик активаций для перегруза
 	var/overload_count = 0
+	/// Через сколько накопленный перегруз сбрасывается, пока имплант установлен.
+	var/overload_reset_interval = 2 MINUTES
+	/// ID таймера периодического сброса перегруза.
+	var/overload_reset_timer
 	/// Timer id for the afterimage trail.
 	var/afterimage_timer
 	/// Last turf an afterimage was spawned on.
@@ -330,6 +334,26 @@
 	else if(overload_count == 2)
 		use_duration += 0.25 SECONDS
 	addtimer(CALLBACK(src, PROC_REF(deactivate_sandevistan)), use_duration)
+
+/obj/item/organ/cyberimp/brain/sandevistan/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!. || !owner)
+		return
+	overload_reset_timer = addtimer(CALLBACK(src, PROC_REF(reset_overload)), overload_reset_interval, TIMER_LOOP|TIMER_STOPPABLE)
+
+/obj/item/organ/cyberimp/brain/sandevistan/Remove(special = FALSE)
+	if(overload_reset_timer)
+		deltimer(overload_reset_timer)
+		overload_reset_timer = null
+	return ..()
+
+/// Сбрасывает накопленный перегруз, чтобы он не копился всю смену у базовой и корпоративной версий.
+/obj/item/organ/cyberimp/brain/sandevistan/proc/reset_overload()
+	if(!owner)
+		return
+	overload_count = 0
+	if(ishuman(owner))
+		to_chat(owner, span_notice("[src] has cooled down."))
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/apply_overload_effects()
 	if(!ishuman(owner))
@@ -468,29 +492,6 @@
 	afterimage_interval = 0.2
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
-	var/last_reset_time = 0
-	/// ID таймера периодического сброса перегруза, пока имплант установлен
-	var/overload_reset_timer
-
-/obj/item/organ/cyberimp/brain/sandevistan/military/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
-	. = ..()
-	if(. && owner)
-		last_reset_time = world.time
-		overload_reset_timer = addtimer(CALLBACK(src, PROC_REF(reset_overload)), 2 MINUTES, TIMER_LOOP|TIMER_STOPPABLE)
-
-/obj/item/organ/cyberimp/brain/sandevistan/military/Remove(special = FALSE)
-	if(overload_reset_timer)
-		deltimer(overload_reset_timer)
-		overload_reset_timer = null
-	return ..()
-
-/obj/item/organ/cyberimp/brain/sandevistan/military/proc/reset_overload()
-	if(!owner)
-		return
-	overload_count = 0
-	last_reset_time = world.time
-	if(ishuman(owner))
-		to_chat(owner, span_notice("Your military Sandevistan has cooled down."))
 
 /obj/item/organ/cyberimp/brain/sandevistan/sec_level
 	name = "Corporate Sandevistan"

@@ -197,19 +197,12 @@
 /obj/item/organ/cyberimp/arm/gorilla/syndie/Remove(special = FALSE)
 	if(owner)
 		UnregisterSignal(owner, list(COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_PARENT_QDELETING))
-		if(ishuman(owner))
-			var/mob/living/carbon/human/H = owner
-			if(combo_speed_mult != 1)
-				H.action_cooldown_mod /= combo_speed_mult
+	// Модификатор скорости восстанавливает reset_combo(), чтобы не делить его дважды.
 	reset_combo()
 	return ..()
 
 /obj/item/organ/cyberimp/arm/gorilla/syndie/proc/on_owner_deleted(datum/source)
 	SIGNAL_HANDLER
-	if(owner && ishuman(owner))
-		var/mob/living/carbon/human/H = owner
-		if(combo_speed_mult != 1)
-			H.action_cooldown_mod /= combo_speed_mult
 	reset_combo()
 
 /obj/item/organ/cyberimp/arm/gorilla/syndie/proc/reset_combo()
@@ -321,6 +314,8 @@
 	var/attack_speed_mult = 0.5 // 50% ускорение
 	var/active = FALSE
 	var/cooldown_end = 0
+	/// Исходный action_cooldown_mod, если при активации его пришлось поднять до attack_speed_mult.
+	var/clamped_action_cooldown_mod
 
 /obj/item/organ/cyberimp/brain/berserker/sec_level
 	name = "Corporate Berserker implant"
@@ -368,6 +363,8 @@
 			if(H.action_cooldown_mod > attack_speed_mult)
 				H.action_cooldown_mod *= attack_speed_mult
 			else
+				// Запоминаем исходное значение, чтобы вернуть его, а не 1.0 после деления.
+				clamped_action_cooldown_mod = H.action_cooldown_mod
 				H.action_cooldown_mod = attack_speed_mult
 		to_chat(H, "<span class='notice'>You enter berserker mode! You feel unstoppable!</span>")
 		addtimer(CALLBACK(src, PROC_REF(deactivate_berserk)), berserk_time)
@@ -397,6 +394,7 @@
 /obj/item/organ/cyberimp/brain/berserker/proc/deactivate_berserk()
 	if(!active || !owner)
 		active = FALSE
+		clamped_action_cooldown_mod = null
 		return
 	active = FALSE
 	var/mob/living/carbon/human/H = owner
@@ -409,6 +407,9 @@
 		// Восстанавливаем скорость удара
 		if(istype(src, /obj/item/organ/cyberimp/brain/berserker/syndie))
 			H.action_cooldown_mod *= 2
+		else if(!isnull(clamped_action_cooldown_mod))
+			H.action_cooldown_mod = clamped_action_cooldown_mod
+			clamped_action_cooldown_mod = null
 		else
 			H.action_cooldown_mod /= attack_speed_mult
 		to_chat(H, "<span class='warning'>Berserker mode subsides...</span>")

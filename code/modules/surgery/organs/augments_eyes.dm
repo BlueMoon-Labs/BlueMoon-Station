@@ -102,6 +102,29 @@
 	slot = ORGAN_SLOT_EYES
 	w_class = WEIGHT_CLASS_TINY
 	actions_types = list(/datum/action/item_action/organ_action/toggle_zoom)
+	// Имплант занимает ORGAN_SLOT_EYES, поэтому повторяет контракт обычного глаза:
+	// update_sight() и get_total_tint() читают эти поля у органа в слоте глаз.
+	var/sight_flags = 0
+	var/see_in_dark = 2
+	var/tint = 0
+	var/see_invisible = SEE_INVISIBLE_LIVING
+	var/lighting_alpha
+	var/lighting_cutoff = null
+	var/list/color_cutoffs = null
+
+/obj/item/organ/cyberimp/eyes/optical/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.update_tint()
+	M.update_sight()
+
+/obj/item/organ/cyberimp/eyes/optical/Remove(special = FALSE)
+	. = ..()
+	if(.)
+		var/mob/living/carbon/C = .
+		C.update_tint()
+		C.update_sight()
 
 /obj/item/organ/cyberimp/eyes/optical/kiroshi
 	name = "\improper Kiroshi optics"
