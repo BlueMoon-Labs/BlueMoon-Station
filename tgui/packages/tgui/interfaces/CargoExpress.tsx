@@ -1,14 +1,17 @@
 import { BooleanLike } from 'common/react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, LabeledList, Section } from '../components';
+import { AnimatedNumber, Box, Button, LabeledList, NoticeBox, Section } from '../components';
 import { Window } from '../layouts';
 import { CargoCatalog } from './Cargo';
+import { formatCredits } from './common/Economy';
 import { InterfaceLockNoticeBox } from './common/InterfaceLockNoticeBox';
 
 type Data = {
   locked: BooleanLike;
   points: number;
+  budget_name?: string;
+  self_paid?: BooleanLike;
   usingBeacon: BooleanLike;
   beaconzone: string;
   beaconName: string;
@@ -18,6 +21,7 @@ type Data = {
   message: string;
   access_hint: string;
   beacon_only: BooleanLike;
+  market_help?: string;
 };
 
 export const CargoExpress = (props) => {
@@ -54,16 +58,20 @@ const CargoExpressContent = (props) => {
     canBuyBeacon,
     printMsg,
     beacon_only,
+    market_help,
+    budget_name,
+    self_paid,
   } = data;
 
   return (
     <>
+      {!!market_help && <NoticeBox info>{market_help}</NoticeBox>}
       <Section
         title="Cargo Express"
         buttons={
           <Box inline bold>
-            <AnimatedNumber value={Math.round(points)} />
-            {' credits'}
+            {budget_name ? `${budget_name}: ` : ''}
+            <AnimatedNumber value={Math.round(points)} format={(value) => formatCredits(value)} />
           </Box>
         }>
         <LabeledList>
@@ -86,6 +94,9 @@ const CargoExpressContent = (props) => {
               disabled={!canBuyBeacon}
               onClick={() => act('printBeacon')}
             />
+          </LabeledList.Item>
+          <LabeledList.Item label="Оплата">
+            {self_paid ? 'личный счёт карты' : budget_name}, сразу при заказе, по цене пака у партнёра
           </LabeledList.Item>
           <LabeledList.Item label="Notice">{message}</LabeledList.Item>
         </LabeledList>

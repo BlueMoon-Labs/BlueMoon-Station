@@ -1,0 +1,693 @@
+import { BooleanLike } from 'common/react';
+import { useEffect, useState } from 'react';
+
+import { useBackend } from '../backend';
+import { Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Section, Stack, Table, Tabs } from '../components';
+import { NtosWindow, Window } from '../layouts';
+import { ContractTable } from './common/ContractTable';
+import { ContractEntry, Credits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
+
+type DepartmentInfo = {
+  id: string;
+  name: string;
+  balance: number;
+  owed: number;
+  staff_on_shift: number;
+  grant: number;
+  grant_has_base?: BooleanLike;
+  threshold?: number;
+  return_due?: number;
+  shielded?: number;
+  goal_cooldown?: number;
+  goal?: { id: string; name: string; amount: number; minutes_left: number } | null;
+};
+
+type StaffEntry = {
+  number: number;
+  holder: string;
+  wage: number;
+  bonus: number;
+  owed: number;
+  frozen: BooleanLike;
+  away: BooleanLike;
+};
+
+type CatalogEntry = {
+  type: string;
+  name: string;
+  desc: string;
+};
+
+type PriceEntry = {
+  price: number;
+  available: BooleanLike;
+};
+
+type WorkLogEntry = {
+  time: string;
+  type: string;
+  amount: number;
+  performer: string;
+};
+
+type WorkPrice = {
+  name: string;
+  price: number;
+  unit: string;
+};
+
+export type BudgetData = {
+  departments: { id: string; name: string }[];
+  catalog: CatalogEntry[];
+  work_prices: WorkPrice[];
+  reason_max: number;
+  grant_base: number;
+  grant_payroll_share: number;
+  cap_paydays?: number;
+  cap_share?: number;
+  grace_minutes?: number;
+  goal_minutes?: number;
+  goal_cooldown_minutes?: number;
+  economy_minutes: number;
+  wage_minutes: number;
+  owed_cap: number;
+  wage_floor: number;
+  dormant_minutes: number;
+  max_wage_bonus: number;
+  treasury_max: number;
+  treasury_pending_max: number;
+  auto_approve_limit: number;
+  auto_approve_cooldown: number;
+  pending_per_requester: number;
+  handling_fee: number;
+  work_share: number;
+  work_cap: number;
+  performer_share: number;
+  contracts_help: string;
+  audit_rights: string;
+  grant_price: number;
+  grant_cap: number;
+  message: string;
+  can_switch: BooleanLike;
+  has_department: BooleanLike;
+  my_account: number | null;
+  manifest_department: string | null;
+  can_manage?: BooleanLike;
+  is_staff?: BooleanLike;
+  department?: DepartmentInfo;
+  prices?: Record<string, PriceEntry>;
+  requests?: RequestEntry[];
+  treasury_requests?: TreasuryRequestEntry[];
+  contracts?: ContractEntry[];
+  work_log?: WorkLogEntry[];
+  register_share?: number;
+  staff?: StaffEntry[];
+  owed_wages?: number;
+  is_science?: BooleanLike;
+  grant_left?: number;
+  grant_resets_in?: number;
+};
+
+type Tab = 'overview' | 'catalog' | 'requests' | 'contracts' | 'work' | 'register' | 'grant';
+
+const STATUS_NAMES: Record<RequestStatus, string> = {
+  pending: 'ждёт решения',
+  approved: 'одобрена',
+  denied: 'отклонена',
+};
+
+const STATUS_COLORS: Record<RequestStatus, string> = {
+  pending: 'average',
+  approved: 'good',
+  denied: 'bad',
+};
+
+export const NtosDepartmentBudget = () => (
+  <NtosWindow width={680} height={640}>
+    <NtosWindow.Content scrollable>
+      <NtosDepartmentBudgetContent />
+    </NtosWindow.Content>
+  </NtosWindow>
+);
+
+export const DepartmentConsole = () => (
+  <Window width={680} height={640}>
+    <Window.Content scrollable>
+      <NtosDepartmentBudgetContent />
+    </Window.Content>
+  </Window>
+);
+
+export const NtosDepartmentBudgetContent = () => {
+  const { data } = useBackend<BudgetData>();
+  const [tab, setTab] = useState<Tab>('overview');
+  const tabs: [Tab, string, string][] = [
+    ['overview', 'Обзор', 'wallet'],
+    ['catalog', 'Каталог', 'boxes'],
+    ['requests', 'Заявки', 'clipboard-list'],
+    ['contracts', 'Контракты', 'file-contract'],
+    ['work', 'Работа', 'briefcase'],
+    ['register', 'Касса', 'cash-register'],
+  ];
+  if (data.is_science) {
+    tabs.push(['grant', 'Грант', 'flask']);
+  }
+  return (
+    <>
+      <DepartmentSwitch />
+      {!!data.message && <NoticeBox info>{data.message}</NoticeBox>}
+      {data.has_department ? (
+        <>
+          <Tabs>
+            {tabs.map(([id, label, icon]) => (
+              <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
+                {label}
+              </Tabs.Tab>
+            ))}
+          </Tabs>
+          {tab === 'overview' && <OverviewTab />}
+          {tab === 'catalog' && <CatalogTab />}
+          {tab === 'requests' && <RequestsTab />}
+          {tab === 'contracts' && <ContractsTab />}
+          {tab === 'work' && <WorkTab />}
+          {tab === 'register' && <RegisterTab />}
+          {tab === 'grant' && !!data.is_science && <GrantTab />}
+        </>
+      ) : (
+        <NoticeBox>
+          {data.can_switch
+            ? 'Выберите отдел выше. Казна станции - в окне казны.'
+            : 'Отдел не определён: окно показывает отдел по вашему счёту сотрудника. Казна станции - в окне казны.'}
+        </NoticeBox>
+      )}
+    </>
+  );
+};
+
+const DepartmentSwitch = () => {
+  const { act, data } = useBackend<BudgetData>();
+  if (!data.can_switch) {
+    return null;
+  }
+  return (
+    <Section title="Отдел">
+      <Box color="label" mb={1}>
+        ГП и капитан открывают бюджет любого отдела и управляют им, как глава.
+      </Box>
+      {data.departments.map((department) => (
+        <Button
+          key={department.id}
+          selected={data.department?.id === department.id}
+          onClick={() => act('select_department', { id: department.id })}>
+          {department.name}
+        </Button>
+      ))}
+    </Section>
+  );
+};
+
+const OverviewTab = () => {
+  const { data } = useBackend<BudgetData>();
+  const department = data.department as DepartmentInfo;
+  return (
+    <>
+      <Section title={`Бюджет: ${department.name}`}>
+        <LabeledList>
+          <LabeledList.Item label="Баланс">
+            <Credits amount={department.balance} />
+          </LabeledList.Item>
+          <LabeledList.Item label="На смене">{department.staff_on_shift} чел.</LabeledList.Item>
+          <LabeledList.Item label="Грант NT">
+            <Credits amount={department.grant} /> раз в {data.economy_minutes} мин.: {data.grant_payroll_share}% окладов
+            сотрудников на смене
+            {department.grant_has_base ? (
+              <>
+                {' '}и <Credits amount={data.grant_base} /> на закупки из каталога.
+              </>
+            ) : (
+              '.'
+            )}
+          </LabeledList.Item>
+          <LabeledList.Item label="Порог бюджета">
+            <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не ниже
+            стартового бюджета. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
+            Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов
+            первые {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в
+            каталоге; после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).
+          </LabeledList.Item>
+          {!!department.shielded && (
+            <LabeledList.Item label="Защищено">
+              <Credits amount={department.shielded} /> недавних поступлений пока не считаются излишком.
+            </LabeledList.Item>
+          )}
+          {!!department.goal_cooldown && (
+            <LabeledList.Item label="Цель накопления">
+              Новую цель можно поставить через {department.goal_cooldown} мин.
+            </LabeledList.Item>
+          )}
+          {!!department.goal && (
+            <LabeledList.Item label="Цель накопления">
+              «{department.goal.name}», <Credits amount={department.goal.amount} />, ещё {department.goal.minutes_left} мин.
+              Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.
+            </LabeledList.Item>
+          )}
+          {!!department.return_due && (
+            <LabeledList.Item label="Возврат NT" color="average">
+              Бюджет выше порога: через несколько минут NT заберёт <Credits amount={department.return_due} /> Потратьте
+              излишек на закупки или назначьте цель накопления в каталоге.
+            </LabeledList.Item>
+          )}
+          <LabeledList.Item label="Долг по зарплате">
+            <Credits amount={data.owed_wages} />
+          </LabeledList.Item>
+          {department.owed > 0 && (
+            <LabeledList.Item label="Долг перед NT">
+              <Credits amount={department.owed} /> - штрафы, гасятся из бюджета раз в {data.economy_minutes} мин.
+            </LabeledList.Item>
+          )}
+        </LabeledList>
+        <Box color="label" mt={1}>
+          Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел
+          платит сколько может, а остаток становится долгом перед сотрудником (не больше {data.owed_cap} базовых
+          окладов); долг гасится частями с каждой следующей зарплатой. Если сотрудник получил меньше{' '}
+          <Credits amount={data.wage_floor} />, NT доплачивает до этого минимума. Кто не в игре дольше{' '}
+          {data.dormant_minutes} мин., зарплату не получает, и долг ему не копится.
+        </Box>
+        {!!data.manifest_department && <ManifestButton />}
+      </Section>
+      {!!data.can_manage && <StaffSection />}
+      {!!data.can_manage && <TreasurySection />}
+      {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
+    </>
+  );
+};
+
+const ManifestButton = () => {
+  const { act, data } = useBackend<BudgetData>();
+  return (
+    <Box mt={1}>
+      <Button icon="print" onClick={() => act('print_manifest')}>
+        Накладная: {data.manifest_department}
+      </Button>
+      <Box color="label" mt={0.5}>
+        Положите накладную в ящик перед отгрузкой шаттлом снабжения: выручка за ящик уйдёт вашему отделу за вычетом
+        сбора снабжения {data.handling_fee}%.
+      </Box>
+    </Box>
+  );
+};
+
+const departmentBalance = (data: BudgetData) => Math.max(data.department?.balance || 0, 0);
+
+const StaffRow = (props: { member: StaffEntry }) => {
+  const { act, data } = useBackend<BudgetData>();
+  const { member } = props;
+  const [amount, setAmount] = useState(0);
+  const [percent, setPercent] = useState(member.bonus);
+  useEffect(() => setPercent(member.bonus), [member.bonus]);
+  const isSelf = member.number === data.my_account;
+  return (
+    <Table.Row className="candystripe">
+      <Table.Cell>
+        {member.holder}
+        {isSelf ? ' (вы)' : ''}
+        {member.frozen ? <Box color="bad">Счёт заморожен аудитом</Box> : null}
+        {member.away ? <Box color="label">Не на смене</Box> : null}
+      </Table.Cell>
+      <Table.Cell>
+        <Credits amount={member.wage} />
+      </Table.Cell>
+      <Table.Cell>
+        <Credits amount={member.owed} />
+      </Table.Cell>
+      <Table.Cell>
+        <RestrictedInput
+          width="4em"
+          value={percent}
+          minValue={0}
+          maxValue={data.max_wage_bonus}
+          onChange={(_, value) => setPercent(value)}
+        />
+        %{' '}
+        <Button
+          disabled={isSelf}
+          tooltip={isSelf ? 'Свою надбавку менять нельзя' : undefined}
+          onClick={() => act('wage_bonus', { number: member.number, percent })}>
+          Надбавка
+        </Button>
+      </Table.Cell>
+      <Table.Cell>
+        <RestrictedInput
+          width="5em"
+          value={amount}
+          minValue={0}
+          maxValue={departmentBalance(data)}
+          onChange={(_, value) => setAmount(value)}
+        />{' '}
+        <Button
+          disabled={amount < 1 || !!member.frozen}
+          color={isSelf ? 'average' : undefined}
+          tooltip={isSelf ? 'Премия себе открывает дело финансового аудита' : undefined}
+          onClick={() => act('bonus', { number: member.number, amount })}>
+          Премия
+        </Button>
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const StaffSection = () => {
+  const { data } = useBackend<BudgetData>();
+  const staff = data.staff || [];
+  return (
+    <Section title="Сотрудники">
+      <Box color="label" mb={1}>
+        Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до{' '}
+        {data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт
+        премии не идут.
+      </Box>
+      <NoticeBox>
+        Премия самому себе и крупные или частые выплаты из бюджета одному человеку открывают дело финансового аудита.
+        Аудит ведут: {data.audit_rights}.
+      </NoticeBox>
+      {staff.length ? (
+        <Table>
+          <Table.Row header>
+            <Table.Cell>Сотрудник</Table.Cell>
+            <Table.Cell>Оклад</Table.Cell>
+            <Table.Cell>Долг отдела</Table.Cell>
+            <Table.Cell>Надбавка</Table.Cell>
+            <Table.Cell>Премия</Table.Cell>
+          </Table.Row>
+          {staff.map((member) => (
+            <StaffRow key={member.number} member={member} />
+          ))}
+        </Table>
+      ) : (
+        <Box color="label">В отделе нет сотрудников со счетами.</Box>
+      )}
+    </Section>
+  );
+};
+
+const TreasurySection = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const [amount, setAmount] = useState(0);
+  const [reason, setReason] = useState('');
+  const requests = data.treasury_requests || [];
+  return (
+    <Section title="Запрос в казну">
+      <Box color="label" mb={1}>
+        Деньги из казны станции переводят капитан или ГП в окне казны. До <Credits amount={data.treasury_max} /> за
+        запрос, решения ждут не больше {data.treasury_pending_max} запросов отдела.
+      </Box>
+      {!!data.can_manage && (
+        <Stack mb={1}>
+          <Stack.Item>
+            <RestrictedInput
+              width="6em"
+              value={amount}
+              minValue={0}
+              maxValue={data.treasury_max}
+              onChange={(_, value) => setAmount(value)}
+            />{' '}
+            кр.
+          </Stack.Item>
+          <Stack.Item grow>
+            <Input
+              fluid
+              value={reason}
+              maxLength={data.reason_max}
+              placeholder="На что нужны деньги"
+              onInput={(_, value) => setReason(value)}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              icon="hand-holding-usd"
+              disabled={amount < 1}
+              onClick={() => act('treasury_request', { amount, reason })}>
+              Запросить
+            </Button>
+          </Stack.Item>
+        </Stack>
+      )}
+      {requests.map((request) => (
+        <Box key={request.uid}>
+          №{request.uid}: <Credits amount={request.amount} /> - {request.reason || 'без причины'} (
+          <Box inline color={STATUS_COLORS[request.status]}>
+            {STATUS_NAMES[request.status]}
+          </Box>
+          )
+        </Box>
+      ))}
+    </Section>
+  );
+};
+
+const CatalogTab = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const [reason, setReason] = useState('');
+  const prices = data.prices || {};
+  const canOrder = !!data.can_manage;
+  const canRequest = canOrder || !!data.is_staff;
+  return (
+    <Section title="Каталог отдела">
+      <Box color="label" mb={1}>
+        {canOrder
+          ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным.'
+          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника. Решения могут ждать до ${data.pending_per_requester} ваших заявок.`}{' '}
+        Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.
+      </Box>
+      {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}
+      {canRequest && !canOrder && (
+        <Input
+          fluid
+          mb={1}
+          value={reason}
+          maxLength={data.reason_max}
+          placeholder="Причина заявки"
+          onInput={(_, value) => setReason(value)}
+        />
+      )}
+      {data.catalog.length ? (
+        <Table>
+          {data.catalog.map((pack) => {
+            const price = prices[pack.type];
+            const available = !!price?.available;
+            return (
+              <Table.Row key={pack.type} className="candystripe">
+                <Table.Cell>
+                  <Box bold>{pack.name}</Box>
+                  <Box italic color="label">
+                    {pack.desc}
+                  </Box>
+                </Table.Cell>
+                <Table.Cell collapsing>
+                  {available ? <Credits amount={price.price} /> : <Box color="bad">нет в наличии</Box>}
+                </Table.Cell>
+                <Table.Cell collapsing>
+                  {canOrder && (
+                    <Button disabled={!available} onClick={() => act('order', { pack: pack.type })}>
+                      Заказать
+                    </Button>
+                  )}
+                  {canOrder &&
+                    (data.department?.goal?.id === pack.type ? (
+                      <Button selected onClick={() => act('clear_goal')}>
+                        Цель
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled={!available || !!data.department?.goal_cooldown || !!data.department?.goal}
+                        tooltip={
+                          data.department?.goal
+                            ? 'Цель уже выбрана: снимите её, чтобы выбрать другую'
+                            : 'Цена этого пака не будет считаться излишком бюджета'
+                        }
+                        onClick={() => act('set_goal', { pack: pack.type })}>
+                        Копить
+                      </Button>
+                    ))}
+                  {canRequest && !canOrder && (
+                    <Button disabled={!available} onClick={() => act('request', { pack: pack.type, reason })}>
+                      Заявка
+                    </Button>
+                  )}
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table>
+      ) : (
+        <Box color="label">У отдела нет своего каталога.</Box>
+      )}
+    </Section>
+  );
+};
+
+const RequestsTab = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const requests = [...(data.requests || [])].reverse();
+  return (
+    <Section title="Заявки">
+      {requests.length ? (
+        <Table>
+          <Table.Row header>
+            <Table.Cell>№</Table.Cell>
+            <Table.Cell>Пак</Table.Cell>
+            <Table.Cell>Цена</Table.Cell>
+            <Table.Cell>Кто и зачем</Table.Cell>
+            <Table.Cell>Статус</Table.Cell>
+          </Table.Row>
+          {requests.map((request) => (
+            <Table.Row key={request.uid} className="candystripe">
+              <Table.Cell>{request.uid}</Table.Cell>
+              <Table.Cell>{request.pack}</Table.Cell>
+              <Table.Cell>
+                <Credits amount={request.price} />
+              </Table.Cell>
+              <Table.Cell>
+                {request.requester}
+                <Box italic color="label">
+                  {request.reason || 'без причины'}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                {request.status === 'pending' && !!data.can_manage ? (
+                  <>
+                    <Button color="good" onClick={() => act('approve', { uid: request.uid })}>
+                      Одобрить
+                    </Button>
+                    <Button color="bad" onClick={() => act('deny', { uid: request.uid })}>
+                      Отклонить
+                    </Button>
+                  </>
+                ) : (
+                  <Box color={STATUS_COLORS[request.status]}>{STATUS_NAMES[request.status]}</Box>
+                )}
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
+      ) : (
+        <Box color="label">Заявок нет.</Box>
+      )}
+    </Section>
+  );
+};
+
+const ContractsTab = () => {
+  const { data } = useBackend<BudgetData>();
+  return (
+    <Section title="Контракты отдела">
+      <Box color="label" mb={1}>
+        {data.contracts_help}
+      </Box>
+      <ContractTable showShare={false} />
+    </Section>
+  );
+};
+
+const WorkTab = () => {
+  const { data } = useBackend<BudgetData>();
+  const log = [...(data.work_log || [])].reverse();
+  return (
+    <>
+      <Section title="Оплата работы">
+        <Box color="label" mb={1}>
+          NT платит отделу за сделанную работу, а исполнитель получает ещё {data.work_share}% сверху личной премией (до{' '}
+          <Credits amount={data.work_cap} /> в час).
+        </Box>
+        {data.work_prices.length ? (
+          <Table>
+            {data.work_prices.map((work) => (
+              <Table.Row key={work.name}>
+                <Table.Cell>{work.name}</Table.Cell>
+                <Table.Cell collapsing>
+                  <Credits amount={work.price} />
+                </Table.Cell>
+                <Table.Cell color="label">{work.unit}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table>
+        ) : (
+          <Box color="label">Отделу не платят за отдельные виды работы - только грант и контракты.</Box>
+        )}
+      </Section>
+      <Section title="Журнал работы">
+        {log.length ? (
+          <Table>
+            {log.map((entry, index) => (
+              <Table.Row key={index} className="candystripe">
+                <Table.Cell collapsing color="label">
+                  {entry.time}
+                </Table.Cell>
+                <Table.Cell>{entry.type}</Table.Cell>
+                <Table.Cell>{entry.performer || '-'}</Table.Cell>
+                <Table.Cell collapsing>
+                  <Credits amount={entry.amount} signed />
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table>
+        ) : (
+          <Box color="label">Оплаченной работы пока нет.</Box>
+        )}
+      </Section>
+    </>
+  );
+};
+
+const RegisterTab = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const [share, setShare] = useState(data.register_share || 0);
+  useEffect(() => setShare(data.register_share || 0), [data.register_share]);
+  return (
+    <Section title="Кассы отдела">
+      <Box color="label" mb={1}>
+        Оплата на кассе, за которой стоит сотрудник отдела, делится: доля кассира идёт ему лично, остальное - в бюджет
+        отдела. Налога с продаж нет, чаевые целиком достаются кассиру.
+      </Box>
+      <LabeledList>
+        <LabeledList.Item label="Доля кассира">{data.register_share}%</LabeledList.Item>
+      </LabeledList>
+      {!!data.can_manage && (
+        <Box mt={1}>
+          <RestrictedInput width="4em" value={share} minValue={0} maxValue={100} onChange={(_, value) => setShare(value)} />
+          %{' '}
+          <Button onClick={() => act('register_share', { percent: share })}>Сохранить</Button>
+        </Box>
+      )}
+    </Section>
+  );
+};
+
+const GrantTab = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const [points, setPoints] = useState(0);
+  const left = data.grant_left || 0;
+  return (
+    <Section title="Грант на исследования">
+      <Box color="label" mb={1}>
+        Наука покупает очки исследований за деньги бюджета: {data.grant_price} кр. за очко, не больше {data.grant_cap}{' '}
+        очков в час. Очки начисляются сразу.
+      </Box>
+      <LabeledList>
+        <LabeledList.Item label="Осталось в этом часе">
+          {left} очков
+          {data.grant_resets_in ? `, лимит обновится через ${data.grant_resets_in} мин.` : ''}
+        </LabeledList.Item>
+      </LabeledList>
+      {!!data.can_manage && (
+        <Box mt={1}>
+          <RestrictedInput width="6em" value={points} minValue={0} maxValue={left} onChange={(_, value) => setPoints(value)} />{' '}
+          очков за <Credits amount={Math.ceil(points * data.grant_price)} />{' '}
+          <Button disabled={points < 1} onClick={() => act('research_grant', { points })}>
+            Купить
+          </Button>
+        </Box>
+      )}
+    </Section>
+  );
+};
