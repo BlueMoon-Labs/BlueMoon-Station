@@ -34,8 +34,8 @@
 /mob/living/simple_animal/hostile/space_dragon
 	name = "Space Dragon"
 	desc = "A vile, leviathan-esque creature that flies in the most unnatural way.  Looks slightly similar to a space carp."
-	maxHealth = 777
-	health = 777
+	maxHealth = 700
+	health = 700
 	a_intent = INTENT_HARM
 	speed = 0
 	attack_verb_continuous = "chomps"
@@ -51,6 +51,7 @@
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	melee_damage_upper = 35
 	melee_damage_lower = 35
+	armour_penetration = 30
 	mob_size = MOB_SIZE_LARGE
 	armour_penetration = 30
 	pixel_x = -16
@@ -345,7 +346,7 @@
 		if(M in hit_list)
 			continue
 		hit_list += M
-		M.take_damage(50, BRUTE, MELEE, 1)
+		M.take_damage(50, BURN, MELEE, 1)
 
 /**
   * Handles consuming and storing consumed things inside Space Dragon
@@ -476,6 +477,7 @@
 			var/throwtarget = get_edge_target_turf(L, dir_to_target)
 			L.safe_throw_at(throwtarget, 10, 1, src)
 			L.drop_all_held_items()
+			L.Paralyze(5 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(reset_status)), (4 + ((tiredness * tiredness_mult) / 10)) / speed_mult)
 	tiredness = tiredness + (gust_tiredness * tiredness_mult)
 
@@ -632,8 +634,8 @@
 	START_PROCESSING(SSobj, src)
 	AddComponent( \
 		/datum/component/aura_healing, \
-		range = 3, \
-		simple_heal = 4, \
+		range = 1, \
+		simple_heal = 6, \
 		limit_to_trait = TRAIT_HEALS_FROM_CARP_RIFTS, \
 		healing_color = COLOR_BLUE, \
 	)

@@ -21,6 +21,7 @@
 	can_ventcrawl = TRUE
 	var/obj/effect/proc_holder/alien/regurgitate/regurg
 	var/obj/effect/proc_holder/alien/set_genital/set_genital //BLUEMOON ADD
+	rotate_on_lying = FALSE
 
 GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 	/datum/strippable_item/hand/left,

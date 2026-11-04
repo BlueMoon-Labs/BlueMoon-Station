@@ -6,11 +6,15 @@
 	icon = 'icons/Xeno/castes/praetorian.dmi'
 	icon_state = "Praetorian Walking"
 
+/datum/movespeed_modifier/alien_praetorian_speed
+	multiplicative_slowdown = 0.5
+
 /mob/living/carbon/alien/humanoid/royal/praetorian/Initialize(mapload)
 	real_name = name
 	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse/xeno(src))
 	AddAbility(new /obj/effect/proc_holder/alien/royal/praetorian/evolve())
 	. = ..()
+	add_movespeed_modifier(/datum/movespeed_modifier/alien_praetorian_speed)
 
 /mob/living/carbon/alien/humanoid/royal/praetorian/create_internal_organs()
 	internal_organs += new /obj/item/organ/alien/plasmavessel/large
