@@ -164,6 +164,7 @@
 #include "code\__DEFINES\maths.dm"
 #include "code\__DEFINES\MC.dm"
 #include "code\__DEFINES\mecha.dm"
+#include "code\__DEFINES\medical_status.dm"
 #include "code\__DEFINES\melee.dm"
 #include "code\__DEFINES\menu.dm"
 #include "code\__DEFINES\misc.dm"
