@@ -1,11 +1,11 @@
 // Modular-friendly way of adding new quirk-based inspect text
 // Hijacks the function used for abductor examine
-/mob/common_trait_examine()
+/mob/common_trait_examine(anonymous = FALSE)
 	// The ever-important funny BYOND dots
 	. = ..()
 	// Pronoun stuff
-	var/t_He = ru_who(FALSE)
-	var/t_his = ru_ego()
+	var/t_He = anonymous ? "он" : ru_who(FALSE)
+	var/t_his = anonymous ? "его" : ru_ego()
 	//var/t_is = p_are()
 
 	// BLUEMOON ADDITION AHEAD
@@ -20,7 +20,7 @@
 
 	// BLUEMOON ADD START
 	if(HAS_TRAIT_FROM(src, TRAIT_MUTE, ORGAN_TRAIT))
-		. += span_warning("[ru_ego(TRUE)] рот варварски зашит! Выглядит жутко...")
+		. += span_warning("[capitalize(t_his)] рот варварски зашит! Выглядит жутко...")
 	// BLUEMOON ADD END
 
 	// Empathy abilities escape clause
@@ -30,7 +30,7 @@
 
 	// Check for Distant (no touch head!)
 	if(HAS_TRAIT(src, TRAIT_DISTANT))
-		. += "<span class='warning'>Вы понимаете, что [t_his] может беспокоить физическая близость и вам лучше соблюдать дистанцию.</span>\n"
+		. += span_warning("Вы понимаете, что [t_his] может беспокоить физическая близость и вам лучше соблюдать дистанцию.\n")
 	// Check for Heatpat Slut (pls touch head!)
 	if(HAS_TRAIT(src, TRAIT_HEADPAT_SLUT))
 		. += span_info("Вы понимаете, что [t_He] ценит физическую привязанность больше, чем обычно.")

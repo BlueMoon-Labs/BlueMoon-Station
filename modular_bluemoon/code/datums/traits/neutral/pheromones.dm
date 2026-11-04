@@ -18,7 +18,7 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 	UnregisterSignal(quirk_holder, COMSIG_MOB_EMOTE)
 
-/datum/quirk/ur_pheromones/proc/on_examine_holder(atom/source, mob/user, list/examine_list)
+/datum/quirk/ur_pheromones/proc/on_examine_holder(atom/source, mob/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	if(!ishuman(user))
@@ -27,7 +27,7 @@
 	if(!sub.has_quirk(/datum/quirk/sensitive_to_pheramones) || (sub == quirk_holder))
 		return
 
-	examine_list += span_lewd("\nВы испытываете сильное возбуждение при взгляде на [quirk_holder.ru_na()] и краснеете!")
+	examine_list += span_lewd("\nВы испытываете сильное возбуждение при взгляде на [anonymous ? "него" : quirk_holder.ru_na()] и краснеете!")
 	if(!TIMER_COOLDOWN_CHECK(user, COOLDOWN_PHEROMON_AURA))
 		to_chat(quirk_holder, span_notice("[user] смотрит на вас и сильно краснеет, издавая тихий стон..."))
 		TIMER_COOLDOWN_START(user, COOLDOWN_PHEROMON_AURA, 10 SECONDS)
@@ -60,14 +60,14 @@
 	. = ..()
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
-/datum/quirk/sensitive_to_pheramones/proc/on_examine_holder(atom/source, mob/living/user, list/examine_list)
+/datum/quirk/sensitive_to_pheramones/proc/on_examine_holder(atom/source, mob/living/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	if(!istype(user))
 		return
 	if(!user.has_quirk(/datum/quirk/ur_pheromones))
 		return
-	examine_list += span_lewd("Вы чувствуете сладкий непонятный запах от [quirk_holder.ru_nego()], ваш разум заполняет желание секса.")
+	examine_list += span_lewd("Вы чувствуете сладкий непонятный запах от [anonymous ? "него" : quirk_holder.ru_nego()], ваш разум заполняет желание секса.")
 
 
 	//Check for possible doms with the dominant_aura quirk, and for the closest one if there is

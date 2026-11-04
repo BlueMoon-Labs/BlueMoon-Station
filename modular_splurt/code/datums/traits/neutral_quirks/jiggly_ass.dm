@@ -16,5 +16,5 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
 // Quirk examine text
-/datum/quirk/jiggly_ass/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += span_lewd("[quirk_holder.ru_ego(TRUE)] заднице не помешает крепкий шлепок.")
+/datum/quirk/jiggly_ass/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += span_lewd("[anonymous ? "Его" : quirk_holder.ru_ego(TRUE)] заднице не помешает крепкий шлепок.")

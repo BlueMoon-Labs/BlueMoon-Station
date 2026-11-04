@@ -70,7 +70,7 @@
 		// Set nude status
 		is_nude = FALSE
 
-/datum/quirk/nudist/proc/quirk_examine_nudist(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+/datum/quirk/nudist/proc/quirk_examine_nudist(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	// Define default status term
@@ -88,4 +88,4 @@
 		span_class = "warning"
 
 	// Add examine text
-	examine_list += "<span class='[span_class]'>[quirk_holder.p_they_ru(TRUE)] [mood_term] одежды.</span>"
+	examine_list += "<span class='[span_class]'>[anonymous ? "Он" : quirk_holder.p_they_ru(TRUE)] [mood_term] одежды.</span>"

@@ -17,7 +17,7 @@
 
 		. += is_description ? display_text : "\"[display_text]\""
 
-/mob/living/carbon/human/proc/get_tattoo_examine_text()
+/mob/living/carbon/human/proc/get_tattoo_examine_text(anonymous = FALSE)
 	var/tattoo_text_output = ""
 	var/list/items_on_self = get_equipped_items()
 
@@ -27,7 +27,7 @@
 			// Для обычных частей тела используем BODY_ZONE как зону
 			if(!is_tattoo_zone_covered(BP.body_zone, items_on_self, src))
 				for(var/tattoo in parse_tattoos_for_display(BP.tattoo_text))
-					tattoo_text_output += span_notice("На [ru_ego()] [BP.ru_name_v] набита татуировка: [tattoo].\n")
+					tattoo_text_output += span_notice("На [anonymous ? "его" : ru_ego()] [BP.ru_name_v] набита татуировка: [tattoo].\n")
 
 		// Интимные татуировки (хранятся на груди)
 		if(BP.body_zone != BODY_ZONE_CHEST)
@@ -77,6 +77,6 @@
 				continue
 
 			for(var/tattoo in parse_tattoos_for_display(text))
-				tattoo_text_output += span_notice("На [ru_ego()] [data[TATTOO_DATA_NAME_PREP]] набита татуировка: [tattoo].\n")
+				tattoo_text_output += span_notice("На [anonymous ? "его" : ru_ego()] [data[TATTOO_DATA_NAME_PREP]] набита татуировка: [tattoo].\n")
 
 	return tattoo_text_output

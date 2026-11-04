@@ -51,7 +51,7 @@
 	// Unregister examine text
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
-/datum/quirk/bloodfledge_lite/proc/quirk_examine_bloodfledge_lite(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+/datum/quirk/bloodfledge_lite/proc/quirk_examine_bloodfledge_lite(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	// Check if human examiner exists
@@ -78,11 +78,11 @@
 	switch(quirk_mob.nutrition)
 		// Hungry
 		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-			examine_hunger = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] blood starved!"
+			examine_hunger = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] blood starved!"
 
 		// Starving
 		if(0 to NUTRITION_LEVEL_STARVING)
-			examine_hunger = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] in dire need of blood!"
+			examine_hunger = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] in dire need of blood!"
 
 		// Invalid hunger
 		else
@@ -90,7 +90,7 @@
 			return
 
 	// Add detection text
-	examine_list += span_info("[quirk_holder.p_their(TRUE)] hunger allows you to identify [quirk_holder.p_them()] as a lesser Bloodsucker Fledgling!")
+	examine_list += span_info("[anonymous ? "His" : quirk_holder.p_their(TRUE)] hunger allows you to identify [anonymous ? "him" : quirk_holder.p_them()] as a lesser Bloodsucker Fledgling!")
 
 	// Add hunger text
 	examine_list += span_warning(examine_hunger)

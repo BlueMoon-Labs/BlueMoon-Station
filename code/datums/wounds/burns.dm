@@ -248,16 +248,16 @@
 				strikes_to_lose_limb--
 // BLUEMOON ADD END
 
-/datum/wound/burn/get_examine_description(mob/user)
+/datum/wound/burn/get_examine_description(mob/user, anonymous = FALSE)
 	// BLUEMOON ADD START
 	if(synthetic_mode)
-		return get_examine_description_synthetic(user)
+		return get_examine_description_synthetic(user, anonymous)
 	// BLUEMOON ADD END
 
 	if(strikes_to_lose_limb <= 0)
-		return "<span class='deadsay'><B>[victim.ru_ego(TRUE)] [limb.ru_name] отмерла целиком.</B></span>"
+		return "<span class='deadsay'><B>[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] отмерла целиком.</B></span>"
 
-	var/list/condition = list("[victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
+	var/list/condition = list("[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
 	if(limb.current_gauze)
 		var/bandage_condition
 		switch(limb.current_gauze.absorption_capacity)
@@ -280,17 +280,17 @@
 			if(WOUND_INFECTION_CRITICAL to WOUND_INFECTION_SEPTIC)
 				condition += ", <span class='deadsay'>с с гниющими пульсирующими прожилками!</span>"
 			if(WOUND_INFECTION_SEPTIC to INFINITY)
-				return "<span class='deadsay'><B>[victim.ru_ego(TRUE)] [limb.ru_name] представляет собой месиво из перегноя и костей, с которых сползает заражённая кожа!</B></span>"
+				return "<span class='deadsay'><B>[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] представляет собой месиво из перегноя и костей, с которых сползает заражённая кожа!</B></span>"
 			else
 				condition += "!"
 	return "<B>[condition.Join()]</B>"
 
 // BLUEMOON ADD START - описание для синтетических конечностей (проводка + наногель)
-/datum/wound/burn/proc/get_examine_description_synthetic(mob/user)
+/datum/wound/burn/proc/get_examine_description_synthetic(mob/user, anonymous = FALSE)
     if(strikes_to_lose_limb <= 0)
-        return "<span class='deadsay'><B>Системы управления [limb.ru_name_v] персонажа [victim] полностью отключены.</B></span>"
+		return "<span class='deadsay'><B>Системы управления [anonymous ? "его" : victim.ru_ego()] [limb.ru_name_v] полностью отключены.</B></span>"
 
-    var/list/condition = list("[victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
+    var/list/condition = list("[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]")
 
     if(limb.current_gauze)
         condition += " (временно заизолирована [limb.current_gauze.name])"

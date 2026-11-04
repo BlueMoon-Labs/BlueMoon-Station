@@ -1,9 +1,12 @@
 /mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
-	var/t_on 	= ru_who(TRUE)
-	var/t_ego 	= ru_ego()
-	var/t_nego	= ru_nego()
-	var/t_a 	= ru_a()
+	var/shown_name = examine_shown_name(user)
+	var/anonymous = shown_name == "Неизвестный" || is_gender_obscured()
+	var/t_on = anonymous ? "Он" : ru_who(TRUE)
+	var/t_ego = anonymous ? "его" : ru_ego()
+	var/t_nego = anonymous ? "него" : ru_nego()
+	var/t_emu = anonymous ? "Ему" : ru_emu(TRUE)
+	var/t_a = anonymous ? "" : ru_a()
 
 	var/obscure_name
 	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
@@ -29,13 +32,14 @@
 		var/obj/item/card/id/callsign/callsign_id = wear_id?.GetID()
 		if(callsign_id.callsign)
 			id_card_callsign_name = " \[[callsign_id.callsign]\]"
-	. = list("<span class='info'>Это - <EM>[!obscure_name ? name : "Неизвестный"][collar_tagname][id_card_callsign_name]</EM>!")
-	if(skipface || get_visible_name() == "Unknown")
+	. = list("<span class='info'>Это - <EM>[shown_name][collar_tagname][id_card_callsign_name]</EM>!")
+	if(skipface || (get_visible_name() in list("Unknown", "Неизвестный")))
 		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
 	else
-		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
+		. += "[capitalize(t_ego)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
-		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
+		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
+		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 
 	//Underwear
@@ -120,7 +124,7 @@
 	else if(length(blood_DNA))
 		var/hand_number = get_num_arms(FALSE)
 		if(hand_number)
-			. += "<span class='warning'>[ru_ego(TRUE)] рук[hand_number > 1 ? "и" : "а"] в крови!</span>"
+			. += "<span class='warning'>[capitalize(t_ego)] рук[hand_number > 1 ? "и" : "а"] в крови!</span>"
 
 	//handcuffed?
 	if(handcuffed)
@@ -149,13 +153,13 @@
 		if(glasses)
 			. += "[t_on] носит [glasses.get_examine_string(user)]."
 		else if(HAS_TRAIT(src, TRAIT_UNNATURAL_RED_GLOWY_EYES))
-			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза горят неестественным красным свечением!</B></span>"
+			. += "<span class='warning'><B>[capitalize(t_ego)] глаза горят неестественным красным свечением!</B></span>"
 		else if((left_eye_color == BLOODCULT_EYE || right_eye_color == BLOODCULT_EYE) && iscultist(src) && HAS_TRAIT(src, TRAIT_CULT_EYES))
-			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза ярко-красные и они горят!</B></span>"
+			. += "<span class='warning'><B>[capitalize(t_ego)] глаза ярко-красные и они горят!</B></span>"
 		else if(HAS_TRAIT(src, TRAIT_HIJACKER))
 			var/obj/item/implant/hijack/H = user.getImplant(/obj/item/implant/hijack)
 			if (H && !H.stealthmode && H.toggled)
-				. += "<b><font color=orange>[ru_ego(TRUE)] глаза ярко-жёлтые и они горят!!</font></b>"
+				. += "<b><font color=orange>[capitalize(t_ego)] глаза ярко-жёлтые и они горят!!</font></b>"
 
 	//ears
 	if(ears && !(ITEM_SLOT_EARS_LEFT in obscured))
@@ -171,7 +175,7 @@
 		. += "[t_on] носит [wear_id.get_examine_string(user)] на своей шее."
 	. += "<hr>"
 	//Status effects
-	var/list/status_examines = status_effect_examines()
+	var/list/status_examines = status_effect_examines(t_on)
 	if (length(status_examines))
 		. += status_examines
 	//Approximate character height based on current sprite scale
@@ -222,12 +226,12 @@
 			if(suiciding)
 				. += "<span class='warning'>[t_on] выглядит как суицидник... [t_ego] уже невозможно спасти.</span>\n"
 			if(hellbound)
-				. += span_warning("[ru_ego(TRUE)] душа выглядит вырванной из [t_ego] тела. Воскрешение невозможно.")
+				. += span_warning("[capitalize(t_ego)] душа выглядит вырванной из [t_ego] тела. Воскрешение невозможно.")
 			else
 				. += "<span class='deadsay'>[t_on] ни на что не реагирует; нет никаких признаков жизни...</span>"
 
 	if(get_bodypart(BODY_ZONE_HEAD) && !getorgan(/obj/item/organ/brain))
-		. += "<span class='deadsay'>Похоже, что у н[t_ego] нет мозга...</span>\n"
+		. += "<span class='deadsay'>Похоже, что у [t_nego] нет мозга...</span>\n"
 
 	var/list/msg = list()
 
@@ -295,14 +299,14 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(I.isEmbedHarmless())
 				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>"
 			else
-				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
+				msg += "<B>У [t_nego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
 			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
 			if(embed?.can_be_ripped_by(user))
 				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
 			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/iter_wound = i
-			msg += "[iter_wound.get_examine_description(user)]\n"
+			msg += "[iter_wound.get_examine_description(user, anonymous)]\n"
 
 	for(var/X in disabled)
 		var/obj/item/bodypart/body_part = X
@@ -313,13 +317,13 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			damage_text = "[body_part.is_robotic_limb() ? "висит и болтается" : "обвисла и побледнела"]" // BLUEMOON EDIT - добавлена проверка на роботизированные конечности
 		else
 			damage_text = (body_part.brute_dam >= body_part.burn_dam) ? body_part.heavy_brute_msg : body_part.heavy_burn_msg
-		msg += "<B>[ru_ego(TRUE)] [body_part.ru_name] [damage_text]!</B>\n"
+		msg += "<B>[capitalize(t_ego)] [body_part.ru_name] [damage_text]!</B>\n"
 
 	var/obj/item/organ/vocal_cords/Vc = user.getorganslot(ORGAN_SLOT_VOICE)
 	if(Vc)
 		if(istype(Vc, /obj/item/organ/vocal_cords/velvet))
 			if(client?.prefs.cit_toggles & HYPNO)
-				msg += "<span class='velvet'><i>Вы чувствуете, как резонируют ваши голосовые связки при взгляде на н[t_ego].</i></span>\n"
+				msg += "<span class='velvet'><i>Вы чувствуете, как резонируют ваши голосовые связки при взгляде на [t_nego].</i></span>\n"
 
 	//stores missing limbs
 	var/l_limbs_missing = 0
@@ -329,14 +333,14 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			msg += span_boldwarning("[ru_ego(TRUE)] опорный хвост оторван!") + "\n"
 			continue
 		if(t==BODY_ZONE_HEAD)
-			msg += "<span class='deadsay'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
+			msg += "<span class='deadsay'><B>[capitalize(t_ego)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 			continue
 		if(t == BODY_ZONE_L_ARM || t == BODY_ZONE_L_LEG)
 			l_limbs_missing++
 		else if(t == BODY_ZONE_R_ARM || t == BODY_ZONE_R_LEG)
 			r_limbs_missing++
 
-		msg += "<span class='warning'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
+		msg += "<span class='warning'><B>[capitalize(t_ego)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 
 	if(!naga_anatomy && l_limbs_missing >= 2 && r_limbs_missing == 0)
 		msg += "[t_on] стоит на правой ножке.\n"
@@ -401,11 +405,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				msg += "[t_on] выглядит довольно плотно.\n"
 	switch(disgust)
 		if(DISGUST_LEVEL_GROSS to DISGUST_LEVEL_VERYGROSS)	//Не он отвратительный, а ему отвратительно.
-			msg += "[ru_emu(TRUE)] слегка неприятно.\n"	//a bit grossed out
+			msg += "[t_emu] слегка неприятно.\n"	//a bit grossed out
 		if(DISGUST_LEVEL_VERYGROSS to DISGUST_LEVEL_DISGUSTED)
-			msg += "[ru_emu(TRUE)] заметно тошно.\n"	//really grossed out
+			msg += "[t_emu] заметно тошно.\n"	//really grossed out
 		if(DISGUST_LEVEL_DISGUSTED to INFINITY)
-			msg += "[ru_ego(TRUE)] физиономия демонстрирует абсолютное отвращение.\n"	//extremely disgusted
+			msg += "[capitalize(t_ego)] физиономия демонстрирует абсолютное отвращение.\n"	//extremely disgusted
 
 	if(!HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
 		var/apparent_blood_volume = blood_volume
@@ -413,7 +417,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			apparent_blood_volume -= 150 // enough to knock you down one tier
 		switch(apparent_blood_volume)
 			if(BLOOD_VOLUME_OKAY to BLOOD_VOLUME_SAFE)
-				msg += "[ru_ego(TRUE)] кожа бледная.\n"
+				msg += "[capitalize(t_ego)] кожа бледная.\n"
 			if(BLOOD_VOLUME_BAD to BLOOD_VOLUME_OKAY)
 				msg += "<b>Выглядит ужасно бледно.</b>\n"
 			if(-INFINITY to BLOOD_VOLUME_BAD)
@@ -432,9 +436,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 		var/list/bleed_text
 		if(appears_dead)
-			bleed_text = list("<span class='deadsay'><B>Кровь брызгает струйками из [ru_ego(FALSE)] конечности -")
+			bleed_text = list("<span class='deadsay'><B>Кровь брызгает струйками из [t_ego] конечности -")
 		else
-			bleed_text = list("<B>У н[ru_ego(FALSE)] кровотечение в области")
+			bleed_text = list("<B>У [t_nego] кровотечение в области")
 
 		switch(num_bleeds)
 			if(1 to 2)
@@ -473,7 +477,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	// BLUEMOON ADD START - телесные метки (татуировки, надписи) видны, пока персонаж действительно не умер,
 	// даже если он выглядит мёртвым (TRAIT_FAKEDEATH: квирк "Не-мёртвый", вампиры и т.п.).
 	if(!appears_dead || stat != DEAD)
-		var/tattoo_examine_text = get_tattoo_examine_text()
+		var/tattoo_examine_text = get_tattoo_examine_text(anonymous)
 		if(tattoo_examine_text)
 			msg += tattoo_examine_text
 		// Отображение надписей на теле, если они видимы и есть
@@ -495,9 +499,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					if(21.01 to 41) //.01s are used in case drunkenness ends up to be a small decimal
 						msg += "[t_on] пьян[t_a].\n"
 					if(41.01 to 51)
-						msg += "[t_on] довольно пьян[t_a] и от н[t_ego] чувствуется запах алкоголя.\n"
+						msg += "[t_on] довольно пьян[t_a] и от [t_nego] чувствуется запах алкоголя.\n"
 					if(51.01 to 61)
-						msg += "Очень пьян[t_a] и от н[t_ego] несёт перегаром.\n"
+						msg += "Очень пьян[t_a] и от [t_nego] несёт перегаром.\n"
 					if(61.01 to 91)
 						msg += "[t_on] в стельку.\n"
 					if(91.01 to INFINITY)
@@ -509,7 +513,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					if(21.01 to 41)
 						msg += "[t_on] изредка вздрагивает под воздействием употреблённых жидкостей.\n"
 					if(41.01 to 61)
-						msg += "От н[t_ego] очень сильно пахнет машинным маслом, а [t_ego] движения кажутся \"пьяными\".\n"
+						msg += "От [t_nego] очень сильно пахнет машинным маслом, а [t_ego] движения кажутся \"пьяными\".\n"
 					if(61.01 to 91)
 						msg += "[t_on] выдаёт множественные ошибки, постоянно зависая.\n"
 					if(91.01 to INFINITY)
@@ -563,11 +567,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(ai_controller?.ai_status == AI_STATUS_ON)
 				msg += "<span class='deadsay'>[t_on] выглядит не очень разумно.</span>\n"
 			if(!key)
-				msg += "<span class='warning'>[t_on] кататоник. Стресс от жизни в глубоком космосе сильно повлиял на н[t_ego]. Восстановление маловероятно.</span>\n"
+				msg += "<span class='warning'>[t_on] кататоник. Стресс от жизни в глубоком космосе сильно повлиял на [t_nego]. Восстановление маловероятно.</span>\n"
 			else if(!client)
-				msg += "<span class='warning'><B>Не стоит [ru_ego()] трогать.</B> [t_on] имеет пустой, рассеянный взгляд и кажется совершенно не реагирующим ни на что. В этом состоянии [t_on] находится [round(((world.time - lastclienttime) / (1 MINUTES)), 1)] минут. [t_on] может выйти из этого состояни в ближайшее время.</span>\n"
+				msg += "<span class='warning'><B>Не стоит [t_ego] трогать.</B> [t_on] имеет пустой, рассеянный взгляд и кажется совершенно не реагирующим ни на что. В этом состоянии [t_on] находится [round(((world.time - lastclienttime) / (1 MINUTES)), 1)] минут. [t_on] может выйти из этого состояни в ближайшее время.</span>\n"
 
-	var/trait_exam = common_trait_examine()
+	var/trait_exam = common_trait_examine(anonymous)
 	if (!isnull(trait_exam))
 		msg += trait_exam
 
@@ -649,7 +653,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	. += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
 
-	if(!skipface && !obscure_name && dna?.headshot_links && length(dna.headshot_links))
+	if(!skipface && !obscure_name && shown_name != "Неизвестный" && dna?.headshot_links && length(dna.headshot_links))
 		var/headshot_html = ""
 		for(var/headshot_link in dna.headshot_links)
 			if(!headshot_link)
@@ -664,7 +668,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		. += span_nicegreen("<b>Деятельность:</b> [activity]")
 
 	// send signal last so everything else prioritizes above
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .) //This also handles flavor texts now
+	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, ., anonymous) //This also handles flavor texts now
 
 	if(tempflavor) // BLUEMOON ADD - темпфлавор теперь захардкожен, увы
 		. += span_notice(tempflavor)

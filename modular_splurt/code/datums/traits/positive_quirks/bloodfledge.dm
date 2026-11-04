@@ -151,7 +151,7 @@
 /datum/quirk/bloodfledge/on_spawn()
 	give_item(/obj/item/card_sticker/vampire/loadout, quirk_holder)
 
-/datum/quirk/bloodfledge/proc/quirk_examine_bloodfledge(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+/datum/quirk/bloodfledge/proc/quirk_examine_bloodfledge(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	// Check if human examiner exists
@@ -174,13 +174,13 @@
 	switch(quirk_mob.nutrition)
 		// Hungry
 		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-			examine_hunger_secret = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] blood starved!"
-			examine_hunger_public = "[quirk_holder.p_they(TRUE)] seem[quirk_holder.p_s()] on edge from something."
+			examine_hunger_secret = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] blood starved!"
+			examine_hunger_public = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] seem[anonymous ? "s" : quirk_holder.p_s()] on edge from something."
 
 		// Starving
 		if(0 to NUTRITION_LEVEL_STARVING)
-			examine_hunger_secret = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] in dire need of blood!"
-			examine_hunger_public = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] radiating an aura of frenzied hunger!"
+			examine_hunger_secret = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] in dire need of blood!"
+			examine_hunger_public = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] radiating an aura of frenzied hunger!"
 
 		// Invalid hunger
 		else
@@ -190,7 +190,7 @@
 	// Check if examiner shares the quirk
 	if(isbloodfledge(examiner))
 		// Add detection text
-		examine_list += span_info("[quirk_holder.p_their(TRUE)] hunger makes it easy to identify [quirk_holder.p_them()] as a fellow Bloodsucker Fledgling!")
+		examine_list += span_info("[anonymous ? "His" : quirk_holder.p_their(TRUE)] hunger makes it easy to identify [anonymous ? "him" : quirk_holder.p_them()] as a fellow Bloodsucker Fledgling!")
 
 		// Add hunger text
 		examine_list += span_warning(examine_hunger_secret)

@@ -16,7 +16,7 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 	UnregisterSignal(quirk_holder, COMSIG_MOB_EMOTE)
 
-/datum/quirk/dominant_aura/proc/on_examine_holder(atom/source, mob/user, list/examine_list)
+/datum/quirk/dominant_aura/proc/on_examine_holder(atom/source, mob/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	if(!ishuman(user))
@@ -25,7 +25,7 @@
 	if(!sub.has_quirk(/datum/quirk/well_trained) || (sub == quirk_holder))
 		return
 
-	examine_list += span_lewd("\nВы испытываете сильный стыд от взгляда на [quirk_holder.ru_na()] и отводите свой взгляд!")
+	examine_list += span_lewd("\nВы испытываете сильный стыд от взгляда на [anonymous ? "него" : quirk_holder.ru_na()] и отводите свой взгляд!")
 	if(!TIMER_COOLDOWN_CHECK(user, COOLDOWN_DOMINANT_EXAMINE))
 		to_chat(quirk_holder, span_notice("[user] пытается посмотреть на вас, но тут же отворачивается с красным лицом..."))
 		TIMER_COOLDOWN_START(user, COOLDOWN_DOMINANT_EXAMINE, 10 SECONDS)

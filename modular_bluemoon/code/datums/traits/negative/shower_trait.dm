@@ -110,7 +110,7 @@
 				to_chat(quirk_holder, span_phobia("Мне ОЧЕНЬ нужно сходить в душ!"))
 				warning_level = 3
 
-/datum/quirk/bluemoon_shower_need/proc/examine(atom/examine_target, mob/examiner, list/examine_list)
+/datum/quirk/bluemoon_shower_need/proc/examine(atom/examine_target, mob/examiner, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	if(hide_visual_effect) // игрок скрывает статус персонажа
@@ -129,9 +129,9 @@
 
 	if(cleanse_level >= DIRTY) // если персонаж достаточно грязный, об этом пишется в экзейм
 		if(cannot_smell)
-			examine_list += span_notice("[quirk_holder.ru_who(TRUE)] давно не мы[quirk_holder.ru_sya()].") // т.к. облачко в таком исходе всё ещё существует, на глаз можно определить, что персонаж давно не мылся
+			examine_list += span_notice("[anonymous ? "Он" : quirk_holder.ru_who(TRUE)] давно не мы[anonymous ? "лся" : quirk_holder.ru_sya()].") // т.к. облачко в таком исходе всё ещё существует, на глаз можно определить, что персонаж давно не мылся
 		else
-			examine_list += span_redtext("[quirk_holder.ru_who(TRUE)] плохо пахнет.")
+			examine_list += span_redtext("[anonymous ? "Он" : quirk_holder.ru_who(TRUE)] плохо пахнет.")
 
 
 /datum/quirk/bluemoon_shower_need/proc/chance_visual_effect()
