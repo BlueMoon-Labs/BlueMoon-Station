@@ -567,7 +567,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 		objective_data += list(list(
 			"count" = objective_count,
 			"name" = objective.name,
-			"explanation" = objective.explanation_text,
+			"explanation" = objective.current_explanation(),
 			"complete" = objective.completed,
 		))
 		objective_count++

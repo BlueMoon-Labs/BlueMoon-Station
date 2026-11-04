@@ -96,6 +96,7 @@
 #define AUDIT_BUCKET_COUNT 3
 /// Ключ audit_watch для всех счетов без владельца одного источника
 #define AUDIT_WATCH_UNOWNED "unowned"
+#define ECON_SKIMMER_DO_AFTER (3 SECONDS)
 /// Суммы экономических целей предателя округляются до этого шага
 #define ECON_OBJECTIVE_STEP 100
 /// Растрата: доля стартового бюджета отдела, проценты
@@ -134,7 +135,12 @@
 #define ECON_REQUESTS_KEPT 20
 /// Наибольшая длина причины заявки или запроса в казну из окна бюджета отдела
 #define ECON_REQUEST_REASON_MAX 200
+#define REGISTER_MENU_MAX 20
 #define REGISTER_PRICE_MAX 5000
+/// Кассир дальше этого или на другом уровне считается ушедшим, его кассу может занять другой
+#define REGISTER_CASHIER_RANGE 7
+/// Свайп клиента сразу после смены позиции не платит: сумму нужно успеть увидеть
+#define REGISTER_SELECT_GRACE (2 SECONDS)
 #define ECON_TRANSFER_MEMO_MAX 64
 /// Наибольшая сумма одной админской корректировки счёта
 #define ECON_ADMIN_ADJUST_MAX 100000

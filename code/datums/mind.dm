@@ -575,7 +575,7 @@
 		output += "<B>Текущие цели:</B>"
 		var/obj_count = 1
 		for(var/datum/objective/objective in all_objectives)
-			output += "<br><B>Цель #[obj_count++]</B>: [objective.explanation_text]"
+			output += "<br><B>Цель #[obj_count++]</B>: [objective.current_explanation()]"
 			var/list/datum/mind/other_owners = objective.get_owners() - src
 			if(other_owners.len)
 				output += "<ul>"

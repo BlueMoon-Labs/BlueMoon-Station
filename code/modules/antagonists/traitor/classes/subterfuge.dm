@@ -17,7 +17,7 @@
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-	if(try_forge_assassinate_objective(T, mode))
+	if(try_forge_assassinate_objective(T, mode) || try_forge_economy_objective(T))
 		return TRUE
 	else
 		var/list/weights = list()
