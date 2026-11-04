@@ -360,6 +360,12 @@ If you're feeling frisky, examine yourself and click the underlined item to pull
 	var/mob/living/carbon/M = usr
 	return M.help_shake_act(M)
 
+/atom/movable/screen/alert/negative
+	name = "Обратная гравитация"
+	desc = "Вас тянет вверх. Вместо пола вы можете упасть на потолок или улететь в открытое небо."
+	icon_state = "template"
+	overlay_state = "weightless"
+
 /atom/movable/screen/alert/weightless
 	name = "Weightless"
 	desc = "Gravity has ceased affecting you, and you're floating around aimlessly. You'll need something large and heavy, like a \

@@ -221,6 +221,9 @@
 		return TRUE
 	if(welded || locked)
 		return FALSE
+	if(user && pulledby && user != pulledby && HAS_TRAIT(src, TRAIT_STRONGPULL))
+		to_chat(user, span_warning("[pulledby] крепко удерживает [src], мешая открыть его."))
+		return FALSE
 	var/turf/T = get_turf(src)
 	for(var/mob/living/L in T)
 		if(L.anchored || L.move_resist >= MOVE_FORCE_VERY_STRONG || (horizontal && L.mob_size > MOB_SIZE_TINY && L.density))

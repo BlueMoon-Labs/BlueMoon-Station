@@ -12,6 +12,7 @@
 			add_overlay(overlays_emissive_blockers[cache_index])
 		add_overlay(.)
 	update_small_sprite()
+	SEND_SIGNAL(src, COMSIG_MODLINK_APPEARANCE_CHANGED)
 
 /mob/living/carbon/proc/remove_overlay(cache_index)
 	var/I = overlays_standing[cache_index]
@@ -20,6 +21,7 @@
 		overlays_standing[cache_index] = null
 	remove_emissive_blockers(cache_index)
 	update_small_sprite()
+	SEND_SIGNAL(src, COMSIG_MODLINK_APPEARANCE_CHANGED)
 
 /// Пересобирает блокеры для слоя. На эмиссивном плане блокер стоит на своём слое (например,
 /// волосы на [HAIR_LAYER]), а свечение глаз глубже ([BODY_LAYER]) — поэтому волосы гасят

@@ -210,6 +210,7 @@
 
 /obj/item/melee/baton/proc/baton_stun(mob/living/L, mob/living/user, shoving = FALSE)
 	if(HAS_TRAIT(L, TRAIT_BATON_RESISTANCE))
+		SEND_SIGNAL(L, COMSIG_MOD_BATON_RESISTED)
 		L.visible_message(span_warning("[L] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
 		return FALSE

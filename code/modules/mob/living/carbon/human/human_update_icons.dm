@@ -57,6 +57,7 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_hair()
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna?.species?.handle_hair(src)
+		update_body_hardlight()
 
 ///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
 ///update_mutant_bodyparts() только помечает заявку. Полная перерисовка

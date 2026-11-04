@@ -27,9 +27,11 @@
 		позволяя готовить еду на расстоянии с наибольшей лёгкостью. Не рекомендуется использовать против винограда."
 	icon_state = "microwave_beam"
 	module_type = MODULE_ACTIVE
-	complexity = 2
+	complexity = 1
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
 	incompatible_modules = list(/obj/item/mod/module/microwave_beam)
+	have_shortcut_activation = TRUE
+	required_modpart_index = MOD_PART_GLOVES
 	cooldown_time = 10 SECONDS
 	var/obj/machinery/microwave/microwave
 
@@ -68,17 +70,20 @@
 //Waddle
 
 /obj/item/mod/module/waddle
+	complexity = 1
+	mod_module_flags = MOD_MODULE_GENERAL
 	name = "MOD waddle module"
-	desc = "Гравитонные приводы в корпусе MOD-костюма заставляют носителя забавно покачиваться и подпрыгивать под писк. \
+	desc = "Гравитонные приводы в корпусе MOD-костюма заставляют носителя покачиваться и подпрыгивать под писк. \
 		Работают при ходьбе ногами и движении опорным хвостом, не требуют ботинок."
 	icon_state = "waddle"
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
+	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	module_type = MODULE_TOGGLE
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/waddle)
 	required_modpart_index = MOD_PART_CHEST
 	startup_with_suit = TRUE
-	var/datum/component/squeak/squeak_component
+	var/mob/living/carbon/human/waddle_user
+	var/datum/component/squeak/mod_waddle/squeak_component
 
 /obj/item/mod/module/waddle/on_activation()
 	if(active || !mod?.wearer)
@@ -88,26 +93,18 @@
 		return FALSE
 	. = ..()
 	if(!.)
-		return FALSE
-	squeak_component = required_modpart.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
-	RegisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED, PROC_REF(on_waddle_move))
-	ADD_TRAIT(mod.wearer, TRAIT_WADDLING, REF(src))
-	mod.wearer.LoadComponent(/datum/component/waddling)
-	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
-		SEND_SIGNAL(mod.wearer, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
+		return
+	waddle_user = mod.wearer
+	ADD_TRAIT(waddle_user, TRAIT_WADDLING, REF(src))
+	waddle_user.LoadComponent(/datum/component/waddling)
+	squeak_component = required_modpart.AddComponent(/datum/component/squeak/mod_waddle, list('sound/effects/clownstep1.ogg' = 1, 'sound/effects/clownstep2.ogg' = 1), MOD_WADDLE_VOLUME)
+	RegisterSignal(waddle_user, COMSIG_MOVABLE_MOVED, PROC_REF(on_waddle_move))
+	if(waddle_user.mind && HAS_TRAIT(waddle_user.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(waddle_user, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
 /obj/item/mod/module/waddle/on_deactivation()
-	if(!active)
-		return FALSE
-	. = ..()
-	UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
-	QDEL_NULL(squeak_component)
-	REMOVE_TRAIT(mod.wearer, TRAIT_WADDLING, REF(src))
-	if(!HAS_TRAIT(mod.wearer, TRAIT_WADDLING))
-		var/datum/component/waddling/waddle_component = mod.wearer.GetComponent(/datum/component/waddling)
-		waddle_component?.RemoveComponent()
-	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
-		SEND_SIGNAL(mod.wearer, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
+	clear_waddle()
+	return ..()
 
 /obj/item/mod/module/waddle/on_suit_deactivation()
 	if(active)
@@ -115,12 +112,33 @@
 	return ..()
 
 /obj/item/mod/module/waddle/on_unequip()
-	if(active)
-		on_deactivation()
+	clear_waddle()
 	return ..()
+
+/obj/item/mod/module/waddle/on_uninstall(deleting = FALSE, user)
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/Destroy()
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/proc/clear_waddle()
+	QDEL_NULL(squeak_component)
+	if(!waddle_user)
+		return
+	UnregisterSignal(waddle_user, COMSIG_MOVABLE_MOVED)
+	REMOVE_TRAIT(waddle_user, TRAIT_WADDLING, REF(src))
+	if(!HAS_TRAIT(waddle_user, TRAIT_WADDLING))
+		qdel(waddle_user.GetComponent(/datum/component/waddling))
+	if(waddle_user.mind && HAS_TRAIT(waddle_user.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(waddle_user, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
+	waddle_user = null
 
 /obj/item/mod/module/waddle/proc/on_waddle_move(mob/living/source)
 	SIGNAL_HANDLER
 	if(source.lying || !source.get_num_supporting_limbs() || !source.has_gravity())
 		return
 	squeak_component?.step_squeak()
+
+/datum/component/squeak/mod_waddle
