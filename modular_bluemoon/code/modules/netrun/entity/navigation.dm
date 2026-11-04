@@ -177,6 +177,7 @@
 	if(QDELETED(target) || QDELETED(owner) || !owner.host_node || owner.console.is_locked())
 		return list()
 	var/datum/netrun_path_tree/tree = owner.console.connection.read_path_tree(TRUE)
+	owner.console.begin_authority_scan(tree)
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	var/start = owner.host_node.address
 	var/list/visited = list()
@@ -209,6 +210,7 @@
 			visited[neighbor] = TRUE
 			previous[neighbor] = address
 			frontier += neighbor
+	owner.console.end_authority_scan()
 	owner.console.release_path_tree(tree)
 	return result
 

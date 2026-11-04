@@ -390,6 +390,7 @@
 	var/datum/netrun_topology/graph = SSnetrun.ensure_topology()
 	var/datum/netrun_console/console = owner.console
 	var/datum/netrun_path_tree/tree = console.connection.read_path_tree(TRUE)
+	console.begin_authority_scan(tree)
 	var/list/queue = list(start.address)
 	var/list/seen = list()
 	seen[start.address] = TRUE
@@ -412,6 +413,7 @@
 			if(!can_plan_visit(next, tree))
 				continue
 			queue += address
+	console.end_authority_scan()
 	console.release_path_tree(tree)
 
 /datum/netrun_bot_brain/proc/node_has_salvage(datum/component/netrun_node/node)
@@ -467,6 +469,7 @@
 		return best
 	var/datum/netrun_console/console = owner.console
 	var/datum/netrun_path_tree/tree = console.connection.read_path_tree(TRUE)
+	console.begin_authority_scan(tree)
 	for(var/index in 1 to min(24, length(candidates)))
 		if(salvage_cursor > length(candidates))
 			salvage_cursor = 1
@@ -484,6 +487,7 @@
 			best = node
 			best_value = value
 			best_cost = cost
+	console.end_authority_scan()
 	console.release_path_tree(tree)
 	return best
 
@@ -506,6 +510,7 @@
 /datum/netrun_bot_brain/proc/patrol_destination(list/scope, police = FALSE)
 	var/datum/netrun_console/console = owner.console
 	var/datum/netrun_path_tree/tree = console.connection.read_path_tree(TRUE)
+	console.begin_authority_scan(tree)
 	if(!length(patrol_candidates) || patrol_cursor > length(patrol_candidates))
 		patrol_candidates = tree.reached.Copy()
 		patrol_cursor = 1
@@ -541,6 +546,7 @@
 		patrol_candidates[patrol_cursor++] = address
 	else
 		patrol_cursor = end + 1
+	console.end_authority_scan()
 	console.release_path_tree(tree)
 
 // MARK: Бой

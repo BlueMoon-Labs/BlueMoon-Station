@@ -65,6 +65,10 @@
 	var/ui_rendered_at = -INFINITY
 	/// TRUE only inside one ui_data serialization pass; enables per-pass projection reuse.
 	var/ui_serializing = FALSE
+	/// Non-null during one synchronous bot/navigation scan over a single borrowed tree.
+	/// The scan never sleeps, so node/network authority is constant for its duration and
+	/// the same per-pass level caches used by ui_data may be reused, keyed to this tree.
+	var/datum/netrun_path_tree/authority_scan_tree
 	/// Projection-context snapshot shared by catalog/CLI validity checks within one pass.
 	var/list/ui_projection_cache
 	/// TRUE when ui_routes is a borrowed shared table that must not be qdel()ed on teardown.
@@ -325,7 +329,7 @@
 		process_events()
 	if(!network)
 		return NETRUN_ACCESS_NONE
-	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes)
+	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes) || (owner.authority_scan_tree && tree == owner.authority_scan_tree)
 	if(ui_read && owner.network_level_cache && !isnull(owner.network_level_cache[network.id]))
 		return owner.network_level_cache[network.id]
 	if(!owner.can_reach(network, tree) || owner.is_locked())
@@ -341,7 +345,7 @@
 	return access_session.legit_node_level(node, tree)
 
 /datum/netrun_access_session/proc/legit_node_level(datum/component/netrun_node/node, datum/netrun_path_tree/tree)
-	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes)
+	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes) || (owner.authority_scan_tree && tree == owner.authority_scan_tree)
 	if(ui_read && owner.ui_legit_levels && !isnull(owner.ui_legit_levels[node.address]))
 		return owner.ui_legit_levels[node.address]
 	. = owner.compute_legit_node_level(node, !ui_read)
@@ -384,7 +388,7 @@
 		process_events()
 	if(!node?.network || owner.is_locked())
 		return NETRUN_ACCESS_NONE
-	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes)
+	var/ui_read = !tree || (owner.ui_serializing && tree == owner.ui_routes) || (owner.authority_scan_tree && tree == owner.authority_scan_tree)
 	if(ui_read && owner.ui_node_levels && !isnull(owner.ui_node_levels[node.address]))
 		return owner.ui_node_levels[node.address]
 	. = owner.compute_node_level(node, tree)
@@ -413,6 +417,29 @@
 			. = max(., NETRUN_ACCESS_GUEST)
 	if(owns_tree)
 		owner.release_path_tree(tree)
+
+/// Bot/navigation scans borrow one tree and never sleep, so authority is stable for the
+/// whole pass. Mirror the ui_data level caches for it; the real hop check (can_enter)
+/// still takes its own fresh tree, so just-acquired access is never masked by this cache.
+/// No-op (and uncached) if a ui_data pass is active or a scan is already open.
+/datum/netrun_console/proc/begin_authority_scan(datum/netrun_path_tree/tree)
+	if(ui_serializing || authority_scan_tree || QDELETED(tree))
+		return FALSE
+	authority_scan_tree = tree
+	access_cache = user_access()
+	network_level_cache = list()
+	ui_node_levels = list()
+	ui_legit_levels = list()
+	return TRUE
+
+/datum/netrun_console/proc/end_authority_scan()
+	if(!authority_scan_tree)
+		return
+	authority_scan_tree = null
+	access_cache = null
+	network_level_cache = null
+	ui_node_levels = null
+	ui_legit_levels = null
 
 // MARK: Действия
 
