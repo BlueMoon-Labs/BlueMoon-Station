@@ -157,17 +157,8 @@
 /obj/item/modsuit_modkit/armolex_so/get_module_types()
 	return list(
 		/obj/item/mod/module/holster,
-		/obj/item/mod/module/armor/prebuild/melee,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
-		/obj/item/mod/module/armor/prebuild/energy,
-		/obj/item/mod/module/armor/prebuild/bomb,
-		/obj/item/mod/module/armor/prebuild/bio,
-		/obj/item/mod/module/armor/prebuild/rad,
-		/obj/item/mod/module/armor/prebuild/fire,
-		/obj/item/mod/module/armor/prebuild/acid,
-		/obj/item/mod/module/armor/prebuild/magic,
-		/obj/item/mod/module/armor/prebuild/wound,
 	)
 
 /datum/mod_theme/armolex/so
@@ -182,6 +173,7 @@
 /datum/armolex_hud
 	var/obj/item/mod/control/mod
 	var/mob/living/carbon/human/viewer
+	var/enabled = TRUE
 	var/list/screens = list()
 	var/frame_type = /atom/movable/screen/fullscreen/scaled/armolex
 	var/charge_type = /atom/movable/screen/fullscreen/armolex_text/charge
@@ -235,7 +227,7 @@
 	hide()
 
 /datum/armolex_hud/proc/update()
-	if(QDELETED(mod) || !viewer || !mod.is_active() || viewer.head != mod.get_helmet() || viewer.stat == DEAD)
+	if(!enabled || QDELETED(mod) || !viewer || !mod.is_active() || viewer.head != mod.get_helmet() || viewer.stat == DEAD)
 		hide()
 		return
 	screens[ARMOLEX_HUD_FRAME] = viewer.overlay_fullscreen(ARMOLEX_HUD_FRAME, frame_type)

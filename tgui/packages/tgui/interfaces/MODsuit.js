@@ -475,6 +475,8 @@ const ParametersSection = (props) => {
   const { act, data } = useBackend();
   const {
     active,
+    armolex_hud_enabled,
+    can_toggle_armolex_hud,
     malfunctioning,
     open,
     selected_module,
@@ -505,6 +507,15 @@ const ParametersSection = (props) => {
           }>
           {status}
         </LabeledList.Item>
+        {!!can_toggle_armolex_hud && (
+          <LabeledList.Item label="HUD Armolex">
+            <Button.Checkbox
+              checked={armolex_hud_enabled}
+              onClick={() => act('toggle_armolex_hud')}>
+              Показывать
+            </Button.Checkbox>
+          </LabeledList.Item>
+        )}
         <LabeledList.Item
           label="MODlink"
           buttons={

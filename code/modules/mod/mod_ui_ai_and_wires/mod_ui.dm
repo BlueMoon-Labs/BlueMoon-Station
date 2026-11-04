@@ -11,6 +11,8 @@
 	data["malfunctioning"] = is_malfunctioning()
 	data["open"] = is_open()
 	data["active"] = is_active()
+	data["can_toggle_armolex_hud"] = !!armolex_hud && user == wearer
+	data["armolex_hud_enabled"] = armolex_hud?.enabled
 	data["link_id"] = mod_link.id
 	data["link_name"] = mod_link.get_display_name()
 	data["link_freq"] = mod_link.frequency
@@ -68,6 +70,12 @@
 	return handle_ui_action(action, params, usr)
 
 /obj/item/mod/control/proc/handle_ui_action(action, list/params, mob/user)
+	if(action == "toggle_armolex_hud")
+		if(!user || user != wearer || !armolex_hud)
+			return FALSE
+		armolex_hud.enabled = !armolex_hud.enabled
+		armolex_hud.update()
+		return TRUE
 	if(is_malfunctioning() && prob(MOD_BUTTON_MALFUNCTION_CHANCE))
 		balloon_alert(user, "button malfunctions!")
 		return
