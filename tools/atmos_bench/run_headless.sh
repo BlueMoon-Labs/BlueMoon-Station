@@ -4,7 +4,7 @@
 # cycles and collects data/atmos_headless_bench_*.jsonl. The server shuts itself
 # down when done (see atmos_benchmark.dm, ATMOS_HEADLESS_BENCH section).
 #
-# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale]
+# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale] [dismantle-cycles]
 #   tag        label for the result file (e.g. baseline, fix1)
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
@@ -36,6 +36,8 @@
 #              turfs rather than the cost of one.
 #   wake-scale multiple of the gas-move threshold a pair share needs to keep a
 #              turf awake (SSair default ATMOS_WAKE_THRESHOLD_SCALE)
+#   dismantle-cycles quiet cycles before an excited group dismantles
+#              (SSair default EXCITED_GROUP_DISMANTLE_CYCLES)
 #   reaction-floor pass "0" to drop the react() candidate floor index, i.e. run
 #              the pre-gate behaviour on the SAME build. Use it for an A/B of the
 #              gate without comparing two dmb files against each other.
@@ -45,7 +47,7 @@
 set -u
 cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
 
-TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale] - see header for what each does}"
+TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale] [dismantle-cycles] - see header for what each does}"
 MAP="${2:-icemoonstation}"
 SKIP_BUILD="${3:-}"
 CYCLES="${4:-}"
@@ -60,6 +62,7 @@ EDGE_QUIET="${12:-}"
 REST_CYCLES="${13:-}"
 REACTION_FLOOR="${14:-}"
 WAKE_SCALE="${15:-}"
+DISMANTLE_CYCLES="${16:-}"
 DD_EXE="${BYOND_DD:-/d/Program Files (x86)/BYOND/bin/dd.exe}"
 TIMEOUT_SECONDS=2700
 NEXT_MAP_BACKUP=""
@@ -167,6 +170,9 @@ if [ -n "$EDGE_QUIET" ]; then
 fi
 if [ -n "$REST_CYCLES" ]; then
     append_param "atmos-bench-rest-cycles=$REST_CYCLES"
+fi
+if [ -n "$DISMANTLE_CYCLES" ]; then
+    append_param "atmos-bench-dismantle-cycles=$DISMANTLE_CYCLES"
 fi
 if [ -n "$WAKE_SCALE" ]; then
     append_param "atmos-bench-wake-scale=$WAKE_SCALE"

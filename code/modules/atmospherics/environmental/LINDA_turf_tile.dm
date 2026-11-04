@@ -1396,7 +1396,7 @@
 			return self_breakdown(poke_resting = TRUE, slice_budget = length(turf_list) >= EXCITED_GROUP_RESUMABLE_THRESHOLD ? EXCITED_GROUP_BREAKDOWN_SLICE : 0)
 		else if(breakdown_cooldown >= EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING)
 			evict_settled_members()
-	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES && !(turf_reactions & (REACTING | STOP_REACTIONS)))
+	else if(dismantle_cooldown >= (SSair ? SSair.dismantle_cycles : EXCITED_GROUP_DISMANTLE_CYCLES) && !(turf_reactions & (REACTING | STOP_REACTIONS)))
 		dismantle()
 	turf_reactions = NO_REACTION
 	return TRUE
