@@ -1969,6 +1969,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/list/working_preset_loadout = loadout_data[preset_slot_key]
 	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
 	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
+	// Старый deepCopyList записывал массив предметов как JSON-объект с ключом "/list".
+	if(islist(working_preset_loadout) && length(working_preset_loadout) == 1 && working_preset_loadout[1] == "/list")
+		restore_preset_loadout = TRUE
 	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
