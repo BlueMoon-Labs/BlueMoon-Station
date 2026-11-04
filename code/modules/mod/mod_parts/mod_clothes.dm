@@ -69,7 +69,7 @@
 	visor_flags_inv = HIDEJUMPSUIT
 	item_flags = IMMUTABLE_SLOW
 	can_be_reinforced = FALSE
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/device/cooler)
+	allowed = MOD_BASE_ALLOWED
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE
 	theme_category = CHESTPLATE_FLAGS
@@ -78,6 +78,46 @@
 																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),)
 	var/fire_resist = T0C+100
 	var/blood_overlay_type = "armor"
+	var/brc_mitigation_bonus = 0
+	var/brc_applied = 0
+	var/mob/living/brc_wearer
+
+/obj/item/clothing/mod_part/suit/equipped(mob/user, slot)
+	. = ..()
+	update_brc()
+
+/obj/item/clothing/mod_part/suit/dropped(mob/user)
+	clear_brc()
+	return ..()
+
+/obj/item/clothing/mod_part/suit/Destroy()
+	clear_brc()
+	return ..()
+
+/obj/item/clothing/mod_part/suit/proc/set_brc_bonus(bonus)
+	brc_mitigation_bonus = bonus
+	update_brc()
+
+/obj/item/clothing/mod_part/suit/proc/update_brc()
+	clear_brc()
+	var/mob/living/carbon/human/user = loc
+	if(!istype(user) || user.wear_suit != src || brc_mitigation_bonus <= 0)
+		return
+	brc_wearer = user
+	brc_applied = brc_mitigation_bonus
+	brc_wearer.brc_mitigation += brc_applied
+	RegisterSignal(brc_wearer, COMSIG_PARENT_QDELETING, PROC_REF(on_brc_wearer_deleted))
+
+/obj/item/clothing/mod_part/suit/proc/clear_brc()
+	if(brc_wearer)
+		UnregisterSignal(brc_wearer, COMSIG_PARENT_QDELETING)
+		brc_wearer.brc_mitigation = max(0, brc_wearer.brc_mitigation - brc_applied)
+	brc_wearer = null
+	brc_applied = 0
+
+/obj/item/clothing/mod_part/suit/proc/on_brc_wearer_deleted()
+	SIGNAL_HANDLER
+	clear_brc()
 
 /obj/item/clothing/mod_part/suit/seal_part(seal)
 	. = ..()

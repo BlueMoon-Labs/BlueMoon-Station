@@ -9,6 +9,9 @@
 /// Used in show_hud(); Please ensure this is the same as the maximum index.
 #define HUD_VERSIONS 3
 
+// Основа куклы здоровья наги и состояния хвоста хранятся в общем атласе.
+#define NAGA_DOLL_ICON 'icons/mob/naga_healthdoll.dmi'
+
 // Consider these images/atoms as part of the UI/HUD (apart of the appearance_flags)
 /// Used for progress bars and chat messages
 #define APPEARANCE_UI_IGNORE_ALPHA (RESET_COLOR|RESET_TRANSFORM|NO_CLIENT_COLOR|RESET_ALPHA|PIXEL_SCALE)

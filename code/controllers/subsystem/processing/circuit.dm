@@ -70,6 +70,7 @@ PROCESSING_SUBSYSTEM_DEF(circuit)
 		/obj/item/electronic_assembly/large/arm,
 		/obj/item/electronic_assembly/large/tall,
 		/obj/item/electronic_assembly/large/industrial,
+		/obj/item/electronic_assembly/large/mod_circuit,
 		/obj/item/electronic_assembly/drone/default,
 		/obj/item/electronic_assembly/drone/arms,
 		/obj/item/electronic_assembly/drone/secbot,

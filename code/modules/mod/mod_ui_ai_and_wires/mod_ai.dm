@@ -78,89 +78,98 @@
  */
 
 /obj/item/mod/control/proc/insert_pai(mob/user, obj/item/paicard/card)
-	if(ai)
-		balloon_alert(user, "AI already installed!")
-		return
-	if(!card.pai || !card.pai.mind)
-		balloon_alert(user, "pAI unresponsive!")
-		return
+	if(!can_insert_pai(card, user))
+		return FALSE
 	balloon_alert(user, "transferring to suit...")
 	if(!do_after(user, 5 SECONDS, target = src))
-		balloon_alert(user, "interrupted!")
 		return FALSE
-	if(!card.pai.forceMove(src))
-		return
+	if(!can_insert_pai(card, user) || !user.transferItemToLoc(card, src))
+		return FALSE
+	return connect_pai(card)
 
-	card.pai.canholo = FALSE
-	ai = card.pai
-	ai.remote_control = src
-	var/mob/living/silicon/pai/pai = ai
-	balloon_alert(user, "pAI transferred to suit")
-	balloon_alert(ai, "transferred to a suit")
-	for(var/datum/action/action as anything in actions)
-		action.Grant(pai)
+/obj/item/mod/control/proc/can_insert_pai(obj/item/paicard/card, mob/user)
+	if(ai || !can_install_pai || QDELETED(card) || !user.Adjacent(src))
+		return FALSE
+	if(!card.pai?.mind || card.pai.holoform || card.pai.loc != card)
+		balloon_alert(user, "pAI must be folded and responsive!")
+		return FALSE
+	return user.is_holding(card)
+
+/obj/item/mod/control/proc/connect_pai(obj/item/paicard/card)
+	if(ai || !can_install_pai || QDELETED(card?.pai) || card.loc != src)
+		return FALSE
+	var/mob/living/silicon/pai/pai = card.pai
 	card.moveToNullspace()
+	ai = pai
+	pai.canholo = FALSE
+	pai.remote_control = src
+	RegisterSignal(pai, COMSIG_PARENT_QDELETING, PROC_REF(on_pai_deleted))
+	RegisterSignal(pai, COMSIG_MOB_ALTCLICKON, PROC_REF(on_ai_click))
+	pai.forceMove(src)
+	pai.reset_perspective()
+	for(var/datum/action/item_action/mod/action in actions)
+		action.Grant(pai)
+	balloon_alert(pai, "transferred to a suit")
 	return TRUE
 
-/**
- * Simple proc to extract the pAI from the MODsuit. It's the proc to call if you want to take it out,
- * remove_pai() is there so atom_destruction() doesn't have any risk of sleeping.
- *
- * user - The person trying to take out the pAI from the MODsuit.
- * forced - Whether or not we skip the checks and just eject the pAI. Defaults to FALSE.
- * feedback - Whether to give feedback via balloon alerts or not. Defaults to TRUE.
- */
 /obj/item/mod/control/proc/extract_pai(mob/user, forced = FALSE, feedback = TRUE)
-	if(!ai)
-		if(user && feedback)
-			balloon_alert(user, "no pAI to remove!")
-		return
 	if(!ispAI(ai))
-		if(user && feedback)
-			balloon_alert(user, "onboard AI cannot fit in this card!")
-		return
+		return FALSE
+	var/mob/living/silicon/pai/current_pai = ai
 	if(!forced)
-		if(!is_open())
+		if(!user || !user.Adjacent(src) || !is_open())
 			if(user && feedback)
 				balloon_alert(user, "open the suit panel!")
 			return FALSE
 		if(!do_after(user, 5 SECONDS, target = src))
-			if(user && feedback)
-				balloon_alert(user, "interrupted!")
 			return FALSE
-
+		if(ai != current_pai || !is_open() || !user.Adjacent(src))
+			return FALSE
 	remove_pai(feedback)
-
 	if(feedback && user)
 		balloon_alert(user, "pAI removed from the suit")
+	return TRUE
 
-/**
- * Simple proc that handles the safe removal of the pAI from a MOD control unit.
- *
- * Arguments:
- * * feedback - Whether or not we want to give balloon alert feedback to the ai. Defaults to FALSE.
- */
 /obj/item/mod/control/proc/remove_pai(feedback = FALSE)
 	if(!ispAI(ai))
-		return
+		return FALSE
 	var/mob/living/silicon/pai/pai = ai
-	var/turf/drop_off = get_turf(src)
-	if(drop_off) // In case there's no drop_off, the pAI will simply get deleted.
-		var/obj/item/paicard/card = pai.card
-		card.forceMove(drop_off)
+	disconnect_pai(pai)
+	var/obj/item/paicard/card = pai.card
+	if(!QDELETED(card))
+		card.forceMove(drop_location())
 		pai.forceMove(card)
-		pai.client.set_eye(card)
-
-	for(var/datum/action/action as anything in actions)
-		if(action.owner == pai)
-			action.Remove(pai)
-
+	pai.reset_perspective()
 	if(feedback)
 		balloon_alert(pai, "removed from a suit")
+	return TRUE
+
+/obj/item/mod/control/proc/disconnect_pai(mob/living/silicon/pai/pai)
+	UnregisterSignal(pai, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_ALTCLICKON))
+	for(var/datum/action/item_action/mod/action in actions)
+		if(action.owner == pai)
+			action.Remove(pai)
+	remove_module_actions(pai)
+	SStgui.close_user_uis(pai, src)
 	pai.remote_control = null
 	pai.canholo = TRUE
-	pai = null
 	ai = null
+
+/obj/item/mod/control/proc/on_pai_deleted(mob/living/silicon/pai/source)
+	SIGNAL_HANDLER
+	disconnect_pai(source)
+
+/obj/item/mod/control/proc/on_ai_click(mob/source, atom/target)
+	SIGNAL_HANDLER
+	if(source != ai || source.incapacitated() || !selected_module?.active || !selected_module.have_shortcut_activation)
+		return
+	INVOKE_ASYNC(src, PROC_REF(use_ai_module), source, target)
+	return COMSIG_MOB_CANCEL_CLICKON
+
+/obj/item/mod/control/proc/use_ai_module(mob/user, atom/target)
+	if(user != ai || user.incapacitated() || !selected_module?.active || !selected_module.have_shortcut_activation)
+		return FALSE
+	return selected_module.on_select_use(target)
 
 #define MOVE_DELAY 2
 #define WEARER_DELAY 1
@@ -169,8 +178,7 @@
 #define AI_FALL_TIME (1 SECONDS)
 
 /obj/item/mod/control/relaymove(mob/user, direction)
-	var/obj/item/stock_parts/cell/cell = get_cell()
-	if((!is_active() && wearer) || !cell || cell.charge < CELL_PER_STEP  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
+	if((!is_active() && wearer) || !check_charge(CELL_PER_STEP)  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
 		return FALSE
 	var/timemodifier = MOVE_DELAY * (ISDIAGONALDIR(direction) ? SQRT_2 : 1) * (wearer ? WEARER_DELAY : LONE_DELAY)
 	if(wearer && !wearer.Process_Spacemove(direction))
@@ -178,7 +186,7 @@
 	else if(!wearer && (!has_gravity() || !isturf(loc)))
 		return FALSE
 	COOLDOWN_START(src, cooldown_mod_move, movedelay * timemodifier + slowdown)
-	cell.charge = max(0, cell.charge - CELL_PER_STEP)
+	subtract_charge(CELL_PER_STEP)
 	playsound(src, 'sound/mecha/mechmove01.ogg', 25, TRUE)
 	if(ismovable(wearer?.loc))
 		return wearer.loc.relaymove(wearer, direction)

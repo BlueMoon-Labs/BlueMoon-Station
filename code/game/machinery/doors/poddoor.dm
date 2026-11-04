@@ -41,31 +41,31 @@
 	if(isnull(held_item))
 		return NONE
 	if(deconstruction == BLASTDOOR_NEEDS_WIRES && istype(held_item, /obj/item/stack/cable_coil))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Wire assembly")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Проложить провода")
 		return CONTEXTUAL_SCREENTIP_SET
 	if(deconstruction == BLASTDOOR_NEEDS_ELECTRONICS && istype(held_item, /obj/item/electronics/airlock))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Add electronics")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить электронику")
 		return CONTEXTUAL_SCREENTIP_SET
 	if(deconstruction == BLASTDOOR_FINISHED && istype(held_item, /obj/item/assembly/control))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Calibrate ID")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Настроить ID")
 		return CONTEXTUAL_SCREENTIP_SET
 	//we do not check for special effects like if they can actually perform the action because they will be told they can't do it when they try,
 	//with feedback on what they have to do in order to do so.
 	switch(held_item.tool_behaviour)
 		if(TOOL_SCREWDRIVER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Open panel")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, panel_open ? "Закрыть панель" : "Открыть панель")
 			return CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_MULTITOOL)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Calibrate ID")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Настроить ID")
 			return CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_CROWBAR)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove electronics")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Извлечь электронику")
 			return CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_WIRECUTTER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove wires")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Снять провода")
 			return CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_WELDER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Disassemble")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Разобрать")
 			return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/door/poddoor/attackby(obj/item/I, mob/user, params)

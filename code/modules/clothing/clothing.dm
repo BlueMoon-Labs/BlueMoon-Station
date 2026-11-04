@@ -200,8 +200,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 /obj/item/clothing/proc/take_damage_zone(def_zone, damage_amount, damage_type, armour_penetration)
 	if(!def_zone || !limb_integrity || (initial(body_parts_covered) in GLOB.bitflags)) // the second check sees if we only cover one bodypart anyway and don't need to bother with this
 		return
-	var/list/covered_limbs = body_parts_covered2organ_names(body_parts_covered) // what do we actually cover?
-	if(!(def_zone in covered_limbs))
+	if(def_zone == BODY_ZONE_PRECISE_GROIN ? !(body_parts_covered & GROIN) : !(def_zone in body_parts_covered2organ_names(body_parts_covered)))
 		return
 
 	var/damage_dealt = take_damage(damage_amount * 0.1, damage_type, armour_penetration, FALSE) * 10 // only deal 10% of the damage to the general integrity damage, then multiply it by 10 so we know how much to deal to limb
@@ -222,8 +221,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
   * * damage_type: Only really relevant for the verb for describing the breaking, and maybe obj_destruction()
   */
 /obj/item/clothing/proc/disable_zone(def_zone, damage_type)
-	var/list/covered_limbs = body_parts_covered2organ_names(body_parts_covered)
-	if(!(def_zone in covered_limbs))
+	if(def_zone == BODY_ZONE_PRECISE_GROIN ? !(body_parts_covered & GROIN) : !(def_zone in body_parts_covered2organ_names(body_parts_covered)))
 		return
 
 	var/zone_name = parse_zone(def_zone)

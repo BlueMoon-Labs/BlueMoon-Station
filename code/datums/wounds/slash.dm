@@ -185,7 +185,7 @@
 		suture(I, user)
 
 /datum/wound/slash/try_handling(mob/living/carbon/human/user)
-	if(user.pulling != victim || user.zone_selected != limb.body_zone || user.a_intent == INTENT_GRAB)
+	if(user.pulling != victim || victim.get_bodypart(user.zone_selected) != limb || user.a_intent == INTENT_GRAB)
 		return FALSE
 
 	if(!iscatperson(user))
