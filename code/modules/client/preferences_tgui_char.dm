@@ -3248,15 +3248,22 @@
 		var/locked = prefs.body_mod_organ_locked(slot)
 		var/selected = null
 		var/stored = prefs.organ_mods[slot]
-		if(stored)
+		if(stored && prefs.body_mod_organ_option(slot, stored))
 			selected = stored
 		else
 			for(var/list/default_option in group["options"])
-				if(isnull(default_option["path"]))
+				if(prefs.body_mod_organ_option_available(slot, default_option) && isnull(default_option["path"]))
 					selected = default_option["id"]
 					break
+			if(isnull(selected))
+				for(var/list/fallback_option in group["options"])
+					if(prefs.body_mod_organ_option_available(slot, fallback_option))
+						selected = fallback_option["id"]
+						break
 		var/list/options = list()
 		for(var/list/option in group["options"])
+			if(!prefs.body_mod_organ_option_available(slot, option))
+				continue
 			options += list(list("id" = option["id"], "label" = option["label"], "cost" = option["cost"]))
 		var/list/group_row = list(
 			"slot" = slot,

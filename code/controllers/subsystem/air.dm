@@ -194,6 +194,10 @@ SUBSYSTEM_DEF(air)
 	/// стоимость фазы есть произведение их числа на цену одного, и правая
 	/// половина произведения к микрооптимизации оказалась невосприимчива.
 	var/individual_rest_cycles = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+	/// Во сколько раз шер должен превысить порог движения газа, чтобы держать пару бодрой. Рычаг на число активных турфов: струйки ниже него доводит усреднение группы.
+	var/wake_threshold_scale = ATMOS_WAKE_THRESHOLD_SCALE
+	/// Тихих циклов до расформирования группы, см. EXCITED_GROUP_DISMANTLE_CYCLES.
+	var/dismantle_cycles = EXCITED_GROUP_DISMANTLE_CYCLES
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
 	// go through set_heat_enabled() so the pass list cannot outlive the flag.
