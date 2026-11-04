@@ -630,6 +630,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["windowflash"] 			>> windowflashing
 	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
+	S["examine_headshots"]		>> examine_headshots
 	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
@@ -848,6 +849,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -1447,6 +1449,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
+	WRITE_FILE(S["examine_headshots"], examine_headshots)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)

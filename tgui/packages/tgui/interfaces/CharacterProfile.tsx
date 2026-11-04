@@ -107,7 +107,7 @@ export const CharacterProfile = (props) => {
               </Collapsible>
             ) : (<Box />)}
 
-            <Collapsible title={`Раса - ${data.species_name}`} open>
+            <Collapsible title={`Вид – ${data.species_name}`} open>
               <Section>
                 <Box dangerouslySetInnerHTML={{ __html: data.custom_species_lore || "———" }} />
               </Section>

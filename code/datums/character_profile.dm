@@ -189,23 +189,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			var/can_see_naked = TRUE
-			if(!H.force_naked_flavor)
-				var/list/obj/item/clothings = list(
-					H.wear_suit,
-					H.w_uniform,
-					H.belt,
-					H.w_underwear,
-					H.w_socks,
-					H.w_shirt,
-					H.wrists,
-					H.wear_neck
-				)
-				removeNullsFromList(clothings)
-				for (var/obj/item/clothing/clothpiece in clothings)
-					if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
-						can_see_naked = FALSE
-						break
+			var/can_see_naked = H.can_show_naked_flavor()
 			data["flavortext_naked"] = can_see_naked ? format_text("flavortext_naked", C.dna?.naked_flavor_text) : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END

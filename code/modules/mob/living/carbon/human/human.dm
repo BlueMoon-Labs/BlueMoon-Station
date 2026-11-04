@@ -405,6 +405,16 @@
 		else
 			to_chat(usr, span_warning("Вам нужно подойти ближе, чтобы осмотреть!"))
 
+	if(href_list["examine_traits"])
+		examine_traits_topic(usr, href_list["examine_traits"])
+		return
+	if(href_list["examine_accessories"])
+		examine_accessories_topic(usr)
+		return
+	if(href_list["examine_accessory"])
+		examine_accessories_topic(usr, href_list["examine_accessory"])
+		return
+
 /mob/living/carbon/human/proc/canUseHUD()
 	return CHECK_MOBILITY(src, MOBILITY_UI)
 
