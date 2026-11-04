@@ -81,6 +81,13 @@
 	if(!keep_ids)
 		revision++
 
+/// Название от клиента: без HTML (оно уходит в имя бумаги, чат и лог) и не длиннее MAX_NAME_LEN символов.
+/datum/computer_file/program/papirus/proc/clean_name(raw)
+	if(!istext(raw))
+		return ""
+	// Сначала вычищаем теги по всей строке, потом режем по символам: strip_html_simple режет байтами.
+	return trim(copytext_char(strip_html_simple(raw, length(raw) + 1), 1, MAX_NAME_LEN))
+
 /// Принимает документ из интерфейса (JSON: title, blocks).
 /datum/computer_file/program/papirus/proc/sync_from_ui(raw)
 	if(!istext(raw) || length(raw) > 200000)
@@ -89,7 +96,7 @@
 	if(!islist(doc))
 		return FALSE
 	if(istext(doc["title"]))
-		doc_title = trim(copytext_char(doc["title"], 1, MAX_NAME_LEN))
+		doc_title = clean_name(doc["title"])
 	if(islist(doc["blocks"]))
 		load_blocks(doc["blocks"], keep_ids = TRUE)
 	return TRUE
@@ -315,7 +322,7 @@
 			load_blocks(template["blocks"])
 			return TRUE
 		if("save_template")
-			var/name = trim(copytext_char(params["name"], 1, MAX_NAME_LEN))
+			var/name = clean_name(params["name"])
 			if(!length(name))
 				return
 			var/list/template = list("name" = name, "title" = doc_title, "blocks" = deepCopyList(blocks))
