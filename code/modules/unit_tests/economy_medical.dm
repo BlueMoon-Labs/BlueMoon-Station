@@ -45,7 +45,7 @@
 		continue
 	TEST_ASSERT(patient.stat != DEAD, "Пациент ожил")
 
-/// Тяжёлая травма отмечается, кнопка выписки в окне анализатора платит медицине и закрывает травму.
+/// Тяжёлая травма отмечается, сканирование вылеченного пациента само выписывает его, платит медицине и закрывает травму.
 /datum/unit_test/economy_work/discharge/Run()
 	setup_station_pair()
 	var/obj/item/healthanalyzer/analyzer = allocate(/obj/item/healthanalyzer)
@@ -53,23 +53,17 @@
 	patient.forceMove(get_step(performer, EAST))
 	patient.adjustBruteLoss(70)
 	TEST_ASSERT_EQUAL(patient.econ_injury_severity, ECON_INJURY_HEAVY, "Тяжёлая травма отмечена")
+	var/before = budget.account_balance
 	analyzer.attack(patient, performer)
-	var/list/window = analyzer.ui_data(performer)
-	TEST_ASSERT(!window["canDischarge"], "Не вылечен - кнопки выписки нет")
+	TEST_ASSERT_EQUAL(budget.account_balance, before, "Невылеченного пациента скан не выписывает")
+	TEST_ASSERT_EQUAL(patient.econ_injury_severity, ECON_INJURY_HEAVY, "Травма открыта до лечения")
 	patient.fully_heal()
 	analyzer.attack(patient, performer)
-	window = analyzer.ui_data(performer)
-	TEST_ASSERT(window["canDischarge"], "Вылеченному пациенту окно предлагает выписку")
-	var/before = budget.account_balance
-	var/datum/tgui/analyzer_ui = allocate(/datum/tgui, performer, analyzer, "Healthanalyzer")
-	analyzer_ui.status = UI_INTERACTIVE
-	usr = performer
-	analyzer.ui_act("econ_discharge", list(), analyzer_ui)
-	usr = null
-	window = analyzer.ui_data(performer)
-	TEST_ASSERT(!window["canDischarge"], "После выписки кнопка пропадает")
-	TEST_ASSERT_EQUAL(budget.account_balance - before, SSeconomy.settings.work_prices[WORK_MED_DISCHARGE_HEAVY], "Оплата выписки")
+	TEST_ASSERT_EQUAL(budget.account_balance - before, SSeconomy.settings.work_prices[WORK_MED_DISCHARGE_HEAVY], "Оплата выписки при скане")
 	TEST_ASSERT_EQUAL(patient.econ_injury_severity, ECON_INJURY_NONE, "Травма закрыта выпиской")
+	var/after = budget.account_balance
+	analyzer.attack(patient, performer)
+	TEST_ASSERT_EQUAL(budget.account_balance, after, "Повторный скан не платит второй раз")
 
 /// Выписывать может только сотрудник медицины и не самого себя.
 /datum/unit_test/economy_work/discharge_needs_medic/Run()

@@ -30,6 +30,7 @@ const base: BudgetData = {
   treasury_pending_max: 2,
   auto_approve_limit: 1000,
   auto_approve_cooldown: 10,
+  auto_approve_wait: 10,
   pending_per_requester: 3,
   handling_fee: 12,
   work_share: 10,
@@ -225,6 +226,7 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(getByText('Каталог'));
     expect(queryByText('Заказать')).toBeNull();
     expect(text(container)).toContain('заявка до 1000 кр. одобряется сама');
+    expect(text(container)).toContain('Если ответа нет 10 мин., такая заявка одобряется сама и при начальстве на смене.');
     fireEvent.input(getByPlaceholderText('Причина заявки'), { target: { value: 'бинты' } });
     fireEvent.click(getByText('Заявка'));
     expect(sent(topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'бинты' }]);

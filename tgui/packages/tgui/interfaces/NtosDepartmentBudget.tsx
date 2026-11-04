@@ -78,6 +78,7 @@ export type BudgetData = {
   treasury_pending_max: number;
   auto_approve_limit: number;
   auto_approve_cooldown: number;
+  auto_approve_wait: number;
   pending_per_requester: number;
   handling_fee: number;
   work_share: number;
@@ -456,7 +457,7 @@ const CatalogTab = () => {
       <Box color="label" mb={1}>
         {canOrder
           ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным.'
-          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника. Решения могут ждать до ${data.pending_per_requester} ваших заявок.`}{' '}
+          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.${data.auto_approve_wait > 0 ? ` Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.` : ''} Решения могут ждать до ${data.pending_per_requester} ваших заявок.`}{' '}
         Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.
       </Box>
       {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}

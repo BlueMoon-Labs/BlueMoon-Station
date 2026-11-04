@@ -41,7 +41,7 @@ type Scan = {
   addictions?: string[];
   blood?: { percent: number; volume: number; incoming: number; type: string; low: BooleanLike; critical: BooleanLike };
 };
-type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; scanNumber: number; scan: Scan | null; live?: BooleanLike; canPrint?: BooleanLike; canClear?: BooleanLike; deviceLabel?: string; canDischarge?: BooleanLike };
+type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; scanNumber: number; scan: Scan | null; live?: BooleanLike; canPrint?: BooleanLike; canClear?: BooleanLike; deviceLabel?: string };
 
 const damageTypes = [
   { key: 'brute', label: 'Травмы', color: 'red' },
@@ -53,7 +53,7 @@ const damageTypes = [
 export const Healthanalyzer = () => {
   const { act, data, suspended, suspending } = useBackend<HealthanalyzerData>();
   const dispatch = useDispatch();
-  const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel, canDischarge = false } = data;
+  const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   useEffect(() => {
     if (suspended || suspending) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -70,11 +70,6 @@ export const Healthanalyzer = () => {
         <Section title="Медицинский отчёт" buttons={(
           <>
             <Button icon="comment-medical" disabled={!scan} onClick={() => act('chat')}>Текстом</Button>
-            {!!canDischarge && (
-              <Button icon="user-check" color="good" disabled={!scan} onClick={() => act('econ_discharge')}>
-                Выписать пациента
-              </Button>
-            )}
             {!!canPrint && (
               <Button icon="print" disabled={!scan || !!printing} onClick={() => act('print')}>
                 {printing ? 'Печать…' : 'Печать'}

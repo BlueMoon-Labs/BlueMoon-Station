@@ -75,6 +75,7 @@ SUBSYSTEM_DEF(economy)
 	for(var/id in departments)
 		var/datum/economy_department/department = departments[id]
 		department.grant(staff_stats)
+		department.approve_stale_requests()
 		department.on_economy_tick()
 		department.settle_owed()
 	if(contracts_started)

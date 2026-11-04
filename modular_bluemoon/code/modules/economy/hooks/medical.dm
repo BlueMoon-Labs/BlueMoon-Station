@@ -74,7 +74,7 @@
 	return SSeconomy.record_work(ACCOUNT_MED, WORK_MED_SURGERY, 1, user, patient, "Операция: [name]")
 
 /obj/item/healthanalyzer
-	/// Показывает кнопку выписки в результатах сканирования
+	/// Выписывает вылеченного пациента при сканировании
 	var/offers_discharge = TRUE
 
 /obj/item/healthanalyzer/proc/econ_discharge_ready(mob/user, mob/living/carbon/human/patient)
@@ -85,12 +85,12 @@
 
 /obj/item/healthanalyzer/proc/econ_discharge_examine()
 	var/list/prices = SSeconomy.settings.work_prices
-	return span_notice("Медик может выписать пациента, вылеченного до [ECON_DISCHARGE_HEALTH_RATIO * 100]% здоровья в течение [ECON_INJURY_WINDOW / (1 MINUTES)] минут после травмы: в результатах сканирования появится кнопка «Выписать пациента». Медицина получит [prices[WORK_MED_DISCHARGE_LIGHT]], [prices[WORK_MED_DISCHARGE_HEAVY]] или [prices[WORK_MED_DISCHARGE_CRIT]] кр. за лёгкую, тяжёлую или критическую травму. Травму, нанесённую самим медиком, выписка не оплачивает. Выписка, операции и реанимация оплачиваются только на станции.")
+	return span_notice("Если медик просканирует пациента, вылеченного до [ECON_DISCHARGE_HEALTH_RATIO * 100]% здоровья в течение [ECON_INJURY_WINDOW / (1 MINUTES)] минут после травмы, пациент выписывается сам. Медицина получит [prices[WORK_MED_DISCHARGE_LIGHT]], [prices[WORK_MED_DISCHARGE_HEAVY]] или [prices[WORK_MED_DISCHARGE_CRIT]] кр. за лёгкую, тяжёлую или критическую травму. Травму, нанесённую самим медиком, выписка не оплачивает. Выписка, операции и реанимация оплачиваются только на станции.")
 
 /// Выписывает вылеченного пациента и платит медицине по тяжести травмы. Возвращает выплату отделу.
 /obj/item/healthanalyzer/proc/try_discharge(mob/user, mob/living/carbon/human/patient)
 	if(!econ_discharge_ready(user, patient))
-		to_chat(user, span_warning("Выписка недоступна: медик выписывает только вылеченного пациента из последнего сканирования, стоя рядом с ним на станции."))
+		to_chat(user, span_warning("Выписка недоступна: пациент должен быть вылечен и стоять рядом с медиком на станции."))
 		return 0
 	var/static/list/work_by_severity = list(WORK_MED_DISCHARGE_LIGHT, WORK_MED_DISCHARGE_HEAVY, WORK_MED_DISCHARGE_CRIT)
 	. = SSeconomy.record_work(ACCOUNT_MED, work_by_severity[patient.econ_injury_severity], 1, user, patient, "Выписка: [econ_public_name(patient)]")
@@ -101,11 +101,7 @@
 	to_chat(user, span_notice("Пациент [econ_public_name(patient)] выписан. Медицина получила [.] кр."))
 	playsound(src, 'sound/machines/ping.ogg', 30, TRUE)
 
-/obj/item/healthanalyzer/Topic(href, list/href_list)
-	. = ..()
-	if(!href_list["econ_discharge"] || !usr.canUseTopic(src, BE_CLOSE))
-		return
-	if(text2num(href_list["econ_discharge"]) != scan_number)
-		to_chat(usr, span_warning("Данные этого сканирования были затёрты последующими."))
-		return
-	try_discharge(usr, scanned_patient?.resolve())
+/obj/item/healthanalyzer/proc/econ_auto_discharge(mob/user, mob/living/carbon/human/patient)
+	if(econ_discharge_ready(user, patient))
+		return try_discharge(user, patient)
+	return 0

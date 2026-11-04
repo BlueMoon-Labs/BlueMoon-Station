@@ -136,6 +136,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"treasury_pending_max" = settings.treasury_requests_pending_per_department,
 		"auto_approve_limit" = settings.auto_approve_limit,
 		"auto_approve_cooldown" = settings.auto_approve_cooldown_minutes,
+		"auto_approve_wait" = settings.auto_approve_wait_minutes,
 		"pending_per_requester" = settings.request_pending_per_requester,
 		"handling_fee" = settings.cargo_handling_fee,
 		"work_share" = settings.work_personal_share,

@@ -171,6 +171,15 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 			auto_approve_after["[account_id]"] = world.time + SSeconomy.settings.auto_approve_cooldown_minutes MINUTES
 	return request
 
+/// Одобряет недорогие заявки, которые ждут ответа дольше auto_approve_wait_minutes. Без денег заявка ждёт следующего тика.
+/datum/economy_department/proc/approve_stale_requests()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	if(settings.auto_approve_wait_minutes <= 0)
+		return
+	for(var/datum/econ_request/request as anything in requests.Copy())
+		if(request.status == ECON_REQUEST_PENDING && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && econ_pack_price(request.pack) <= settings.auto_approve_limit)
+			approve(request, null, TRUE)
+
 /// Оставляет в списке заявок все ожидающие и ECON_REQUESTS_KEPT последних решённых.
 /proc/econ_trim_resolved(list/requests)
 	var/resolved = 0

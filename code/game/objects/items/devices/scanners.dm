@@ -89,7 +89,6 @@ GENETICS SCANNER
 	var/last_scan_time = ""
 	// Снимок показателей; открытие окна не сканирует пациента повторно.
 	var/list/scan_data
-	var/datum/weakref/scanned_patient
 	var/printing = FALSE
 	var/scan_number = 0
 	var/last_death_report = ""
@@ -143,8 +142,6 @@ GENETICS SCANNER
 		var/report = get_report(user)
 		if(advanced)
 			report += "<hr><a href='?src=[REF(src)];print_scan=1;scan=[scan_number]'>Распечатать</a>"
-		if(econ_discharge_ready(user, scanned_patient?.resolve()))
-			report += "<hr><a href='?src=[REF(src)];econ_discharge=[scan_number]'>Выписать пациента</a>"
 		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
 	else
 		ui_interact(user)
@@ -170,7 +167,6 @@ GENETICS SCANNER
 	if(!user.can_read_medical_display())
 		return list()
 	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number)
-	data["canDischarge"] = econ_discharge_ready(user, scanned_patient?.resolve())
 	return data
 
 /obj/item/healthanalyzer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -180,7 +176,6 @@ GENETICS SCANNER
 	switch(action)
 		if("clear")
 			scan_data = null
-			scanned_patient = null
 			last_msg = ""
 			last_death_report = ""
 			last_recipient_name = ""
@@ -192,9 +187,6 @@ GENETICS SCANNER
 		if("chat")
 			if(last_msg)
 				to_chat(usr, examine_block(get_report(usr)), type = MESSAGE_TYPE_INFO)
-			return TRUE
-		if("econ_discharge")
-			try_discharge(usr, scanned_patient?.resolve())
 			return TRUE
 
 /obj/item/healthanalyzer/proc/get_report(mob/user, for_printing = FALSE)
@@ -208,7 +200,6 @@ GENETICS SCANNER
 
 /obj/item/healthanalyzer/proc/store_scan(mob/user, list/data, mob/living/patient)
 	scan_number++
-	scanned_patient = WEAKREF(patient)
 	last_msg = data["report"]
 	last_death_report = data["deathReport"] || ""
 	last_recipient_name = data["patientRealName"] || "Неизвестный"
@@ -219,6 +210,7 @@ GENETICS SCANNER
 	last_scan_time = data["scanTime"]
 	SStgui.update_uis(src)
 	show_results(user)
+	econ_auto_discharge(user, patient)
 
 /obj/item/healthanalyzer/attack(mob/living/M, mob/living/carbon/human/user)
 	if(user.incapacitated())

@@ -15,7 +15,7 @@
 	var/department_start_budget = 5000
 	var/treasury_start_budget = 20000
 	/// Базовая часть гранта: только отделам, которым есть что заказать в каталоге
-	var/grant_base = 0
+	var/grant_base = 150
 	/// Грант за тик в процентах окладов сотрудников на смене (без надбавок) за то же время
 	var/grant_payroll_share = 100
 	var/tax_default = 10
@@ -54,7 +54,9 @@
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
-	var/auto_approve_limit = 1000
+	var/auto_approve_limit = 2000
+	/// Через сколько минут без ответа заявка до auto_approve_limit одобряется сама, даже если одобрить есть кому; 0 - не одобрять
+	var/auto_approve_wait_minutes = 10
 	/// Перерыв между автоодобренными заявками одного сотрудника
 	var/auto_approve_cooldown_minutes = 10
 	/// Сколько заявок одного сотрудника может ждать решения одновременно

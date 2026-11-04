@@ -151,6 +151,35 @@
 	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_PENDING, "Второе автоодобрение ждёт перерыва")
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второго заказа нет")
 
+/// Недорогая заявка без ответа дольше auto_approve_wait_minutes одобряется на тике экономики, дорогая ждёт решения.
+/datum/unit_test/economy_catalog/request_stale_auto_approve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap
+	var/datum/supply_pack/expensive
+	for(var/datum/supply_pack/pack as anything in medical.catalog())
+		var/price = econ_pack_price(pack)
+		if(!cheap && price <= SSeconomy.settings.auto_approve_limit)
+			cheap = pack
+		if(!expensive && price > SSeconomy.settings.auto_approve_limit)
+			expensive = pack
+	TEST_ASSERT_NOTNULL(cheap, "Есть пак дешевле лимита")
+	TEST_ASSERT_NOTNULL(expensive, "Есть пак дороже лимита")
+	medical.account.credit(econ_pack_price(cheap) + econ_pack_price(expensive), ECON_ADMIN)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	medical.auto_approve_after["[doctor_account.account_id]"] = world.time + 1 HOURS
+	var/datum/econ_request/waiting = medical.submit_request(cheap, doctor, "тест")
+	var/datum/econ_request/big = medical.submit_request(expensive, doctor, "тест")
+	TEST_ASSERT_EQUAL(waiting.status, ECON_REQUEST_PENDING, "Сразу заявка ждёт")
+	medical.approve_stale_requests()
+	TEST_ASSERT_EQUAL(waiting.status, ECON_REQUEST_PENDING, "До срока ожидания заявка ждёт")
+	waiting.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	big.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	medical.approve_stale_requests()
+	TEST_ASSERT_EQUAL(waiting.status, ECON_REQUEST_APPROVED, "Недорогая заявка без ответа одобрена")
+	TEST_ASSERT_EQUAL(big.status, ECON_REQUEST_PENDING, "Дорогая заявка ждёт решения начальства")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "В очереди только недорогой заказ")
+
 /// Общая консоль снабжения не показывает и не заказывает эксклюзивы отделов; отмена предоплаченного заказа возвращает деньги отделу.
 /datum/unit_test/economy_catalog/cargo_console/Run()
 	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)

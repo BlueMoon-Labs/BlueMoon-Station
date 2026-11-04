@@ -32,7 +32,7 @@
 		"<li>Контракт любого отдела может взять кто угодно, взявшему - [settings.contract_performer_share]% награды.</li>",
 		"<li>Бюджет выше [settings.budget_cap_paydays] окладов отдела (не ниже стартового; у казны - стартовая и по запросу на отдел): раз в [economy_minutes] мин. [settings.budget_cap_return_share]% излишка уходит NT. Не излишек: долги и зарплата сотрудникам, переводы из казны, события и доля контрактов [settings.budget_cap_grace_ticks * economy_minutes] мин. (переводы между отделами не защищены), цель накопления главы [settings.saving_goal_minutes] мин. (новая - через [settings.saving_goal_cooldown_minutes] мин.)</li></ul>",
 		"<h3>Заявки</h3><ul>",
-		"<li>Заявку на пак из каталога отдела одобряет глава, без главы - ГП или капитан. Если нет никого, заявка до [settings.auto_approve_limit] кр. одобряется сама.</li>",
+		"<li>Заявку на пак из каталога отдела одобряет глава, без главы - ГП или капитан. Если нет никого, заявка до [settings.auto_approve_limit] кр. одобряется сама[settings.auto_approve_wait_minutes > 0 ? "; если есть, но за [settings.auto_approve_wait_minutes] мин. никто не ответил - тоже" : ""].</li>",
 		"<li>Глава может попросить из казны до [settings.treasury_request_max] кр. за раз.</li></ul>",
 		"<h3>Снабжение</h3><ul>",
 		"<li>Накладная отдела в любом ящике, даже снабжения, отдаёт выручку ящика отделу, снабжению - сбор [settings.cargo_handling_fee]%.</li>",
