@@ -66,7 +66,7 @@ test('обновление скана удаляет открытую подск
   expect(screen.queryByText('Врожденное:')).toBeNull();
 });
 
-test.each([[], undefined])('строка врождённых особенностей скрыта при пустом списке %j', (innateFeatures) => {
+test.each([{ innateFeatures: [] }, { innateFeatures: undefined }])('строка врождённых особенностей скрыта при пустом списке %j', ({ innateFeatures }) => {
   setup({ ...sample, innateFeatures });
   expect(screen.queryByText('Врожденное:')).toBeNull();
 });
