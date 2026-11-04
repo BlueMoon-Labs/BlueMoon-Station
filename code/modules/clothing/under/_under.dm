@@ -248,7 +248,7 @@
 
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
-	if(can_adjust)
+	if(can_adjust && !(user?.client?.use_legacy_chat && length(accessories_attached)))
 		. += "Alt-клик для [adjusted == ALT_STYLE ? "нормального" : "повседневного"] стиля ношения."
 	switch(has_sensor)
 		if(BROKEN_SENSORS)
