@@ -57,6 +57,7 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_hair()
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna?.species?.handle_hair(src)
+		update_body_hardlight()
 
 ///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
 ///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
@@ -147,8 +148,15 @@ There are several things that need to be remembered:
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
 
+/mob/living/carbon/human/remove_overlay(cache_index)
+	. = ..()
+	if(cache_index != LATEX_CLOTHING_LAYER)
+		latex_coating?.update_clothing(cache_index)
+
 /mob/living/carbon/human/apply_overlay(cache_index)
 	. = ..()
+	if(cache_index != LATEX_CLOTHING_LAYER)
+		latex_coating?.update_clothing(cache_index)
 	// ReapplyDisguise() calls update_inv_hands() -> apply_overlay(HANDS_LAYER); skip here to avoid infinite recursion
 	if(cache_index == HANDS_LAYER)
 		return
