@@ -437,9 +437,10 @@
 /datum/netrun_external_effects/machines/queries/advance_native_invocations(datum/netrun_external_core/client)
 	..()
 	advance_entity_native_effects(client)
+	advance_bot_native_effects(client)
 
 /datum/netrun_external_effects/machines/queries/has_pending_work()
-	return entity_clock_demand > 0 || ..()
+	return entity_clock_demand > 0 || bot_clock_demand > 0 || ..()
 
 /datum/netrun_external_effects/machines/queries/proc/disconnect_entities()
 	for(var/id in entity_proxies)

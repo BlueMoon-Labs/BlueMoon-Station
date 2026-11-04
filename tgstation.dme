@@ -5533,6 +5533,8 @@
 #include "modular_bluemoon\code\modules\netrun\integration\external_entity_access.dm"
 #include "modular_bluemoon\code\modules\netrun\integration\external_entities.dm"
 #include "modular_bluemoon\code\modules\netrun\integration\external_navigation.dm"
+#include "modular_bluemoon\code\modules\netrun\integration\external_bots.dm"
+#include "modular_bluemoon\code\modules\netrun\integration\external_console.dm"
 #include "modular_bluemoon\code\modules\netrun\integration\implant_access.dm"
 #include "modular_bluemoon\code\modules\netrun\integration\implant_shards.dm"
 #include "modular_bluemoon\code\modules\netrun\integration\machine_api.dm"

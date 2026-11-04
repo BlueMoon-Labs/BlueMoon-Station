@@ -15,7 +15,7 @@
 /// Общий bounded dispatcher read-only запросов; все вычисления остаются у Host.
 /datum/netrun_external_effects/machines/queries
 	/// Фиксированные producer не создают watermark на каждую сущность или UI запрос.
-	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0", "watch" = "0", "entity" = "0", "navigation" = "0")
+	var/list/query_serials = list("discovery" = "0", "projection" = "0", "anchor" = "0", "watch" = "0", "entity" = "0", "navigation" = "0", "bot" = "0", "console" = "0")
 	/// Нулевые application quotas не ограничивают обработку; continuations всегда weak.
 	var/query_limit = 0
 	var/query_command_limit = 0
@@ -90,7 +90,7 @@
 
 /// Регистрация consumer и команды атомарна: admission pressure не оставляет пустой slot.
 /datum/netrun_external_effects/machines/queries/proc/enqueue_query(kind, raw_json, datum/consumer)
-	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "service_watch", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue", "entity_operation", "entity_effect_result", "entity_navigation_query")))
+	if(closed || query_disconnecting || QDELETED(consumer) || (query_command_limit > 0 && length(query_commands) + length(query_inflight) >= query_command_limit) || !(kind in list("service_discover", "service_watch", "projection_query", "anchor_query", "graph_sync_start", "graph_sync_continue", "entity_operation", "entity_effect_result", "entity_navigation_query", "bot_configure", "bot_remove", "bot_wake", "bot_effect_result", "console_configure", "console_remove", "console_query", "console_set_workspace")))
 		return FALSE
 	var/list/body
 	try
@@ -161,7 +161,7 @@
 
 /// Учитывает read-only работу в общем heartbeat без отдельного busy loop.
 /datum/netrun_external_effects/machines/queries/queued_commands()
-	return ..() + length(query_commands) + length(query_inflight) + length(query_consumers) - length(query_persistent) + length(entity_native_pending) + !!entity_native_active
+	return ..() + length(query_commands) + length(query_inflight) + length(query_consumers) - length(query_persistent) + length(entity_native_pending) + !!entity_native_active + length(bot_native_pending) + !!bot_native_active
 
 /// Ready causal prefixes занимают свободные slots общего bounded duplex window.
 /datum/netrun_external_effects/machines/queries/prepare_input(datum/netrun_external_core/client)
@@ -234,6 +234,10 @@
 		observe_entity(client, result, command)
 	else if(command.kind == "entity_navigation_query")
 		observe_entity_navigation(client, result, command)
+	else if(command.kind == "bot_configure" || command.kind == "bot_remove" || command.kind == "bot_wake" || command.kind == "bot_effect_result")
+		observe_bot(client, result, command)
+	else if(command.kind == "console_configure" || command.kind == "console_remove" || command.kind == "console_query" || command.kind == "console_set_workspace")
+		observe_console(client, result, command)
 	else if(command.kind == "projection_query" || command.kind == "anchor_query" || command.kind == "graph_sync_start" || command.kind == "graph_sync_continue")
 		observe_projection(client, result, command)
 	qdel(command)
@@ -250,6 +254,12 @@
 		return process_entity_navigation(client, result)
 	if(result["kind"] == "core_task_completed")
 		return process_entity_task_completed(client, result)
+	if(result["kind"] == "bot_completed")
+		return process_bot_completed(client, result)
+	if(result["kind"] == "bot_native_decision")
+		return process_bot_native_decision(client, result)
+	if(result["kind"] == "console_completed")
+		return process_console_completed(client, result)
 	if(result["kind"] == "service_watch_event")
 		return known_query_id(result["request_id"]) && process_service_watch(client, result)
 	if(result["kind"] == "discovery_page" || result["kind"] == "projection_page" || result["kind"] == "graph_sync_page")
@@ -341,6 +351,8 @@
 	disconnect_service_watches()
 	disconnect_entities()
 	disconnect_entity_navigation()
+	disconnect_bots()
+	disconnect_console_sessions()
 	for(var/datum/netrun_external_query_command/command as anything in query_commands)
 		qdel(command)
 	for(var/sequence in query_inflight)

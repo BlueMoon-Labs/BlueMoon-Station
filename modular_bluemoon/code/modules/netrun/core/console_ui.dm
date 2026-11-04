@@ -241,6 +241,12 @@
 		ui_source = ui_source || src
 		session = map_view.wire_session(user, ui_source, SStgui.get_open_ui(user, ui_source))
 	. = build_ui_data(user, ui_source, session)
+	// Аддитивный shadow-срез переноса консоли в CORE: проекция сессии из Core мёржится как core_session,
+	// ничего локального не заменяя. Core — владелец состояния; DM-консоль пока считает ui_data сама.
+	var/datum/netrun_external_console_session/core_session_proxy = SSnetrun.external_core?.console_session(src, TRUE)
+	if(core_session_proxy)
+		core_session_proxy.refresh()
+		.["core_session"] = core_session_proxy.view
 	access_cache = null
 	network_level_cache = null
 	ui_node_levels = null
