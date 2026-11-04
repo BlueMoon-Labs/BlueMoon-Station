@@ -175,6 +175,16 @@
 	category = list("initial","Misc","Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
+/datum/design/shawarma_spit_implant
+	name = "Shawarma Spit Implant"
+	desc = "A built-in shawarma spit. Stack meat on it, let it roast, and carve off ready kebab meat with a knife."
+	id = "shawarma_spit_implant"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 2000)
+	build_path = /obj/item/organ/cyberimp/chest/shawarma_spit
+	category = list("initial","Misc","Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
 /datum/design/recorder
 	name = "Universal Recorder"
 	id = "recorder"

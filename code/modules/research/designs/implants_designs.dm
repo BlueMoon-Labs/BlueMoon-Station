@@ -340,7 +340,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_monostring
-	name = "Monomolecular String Implant"
+	name = "Monowire Implant"
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	id = "ci-monostring"
 	build_type = PROTOLATHE | MECHFAB

@@ -50,6 +50,8 @@
 	icon_state = "implant_gorilla_arms_sec"
 	occupies_both_arms = TRUE
 	actions_types = list() // пассивный имплант, выдвигать нечего
+	// Постоянный оверлей на теле: спрайты лежат в inhand-файлах (левая/правая рука - свой файл).
+	aug_overlay = "gorilla_arms"
 	/// Бонус к урону кулаков.
 	var/punch_bonus = 5
 	/// Бонус к ранам от кулаков.
@@ -58,6 +60,13 @@
 	var/door_force_time = 4 SECONDS
 	/// Боевой бонус сейчас применён к виду владельца (для корпоративной версии, зависящей от кода тревоги).
 	var/punch_bonus_applied = FALSE
+
+/// Оверлей рисуется не из bodypart_overlay_augmentations.dmi, а из inhand-файлов:
+/// левой руке - melee_lefthand.dmi, правой - melee_righthand.dmi, стейт gorilla_arms.
+/obj/item/organ/cyberimp/arm/gorilla/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = list()
+	var/icon_file = (limb?.body_zone == BODY_ZONE_L_ARM) ? 'icons/mob/inhands/weapons/melee_lefthand.dmi' : 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	. += image(icon = icon_file, icon_state = "gorilla_arms", layer = image_layer)
 
 /// Пассивному импланту нечего выдвигать, поэтому проверка ручного импланта на содержимое пропускается;
 /// остаются только общие органные проверки (код тревоги у корпоративной версии) и исправность.
@@ -428,6 +437,7 @@
 	tool_behaviour = TOOL_CROWBAR
 	can_force_powered = TRUE
 	usesound = 'sound/items/jaws_pry.ogg'
+	block_chance = 25
 
 /obj/item/melee/implantarmblade/ComponentInitialize()
 	. = ..()
@@ -442,6 +452,7 @@
 	icon_state = "mantis_syndie"
 	force = 30
 	armour_penetration = MELEE_AP_ANTAGONIST
+	block_chance = 10 //больше атаки - меньше защиты
 
 /obj/item/melee/implantmonostring
 	name = "Monomolecular string"
@@ -450,6 +461,7 @@
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	icon_state = "implant_mono_wire_sec"
+	item_state = "mono_wire"
 	force = 13
 	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
@@ -461,8 +473,6 @@
 	item_flags = NEEDS_PERMIT
 	hitsound = 'sound/weapons/bladeslice.ogg'
 
-/// Удар со спины (цель смотрит в ту же сторону) или по лежачей цели обвивает шею жертвы
-/// струной: агрессивный захват, мгновенно переводимый в удушение (GRAB_KILL сам наносит окси-урон через life()).
 /obj/item/melee/implantmonostring/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(iscarbon(M) && istype(user) && M != user && !user.pulling && (M.lying || M.dir == user.dir))
 		var/mob/living/carbon/C = M
@@ -626,11 +636,21 @@
 
 /obj/item/gun/energy/implanthandgun/syndie
 	name = "Militech Integrated hand cannon"
-	icon_state = "implant_projectile_launcher
+	icon_state = "implant_projectile_launcher"
 	ammo_type = list(/obj/item/ammo_casing/energy/implanthandgun/burst)
 	reload_time = 10 SECONDS
 	dual_wield_spread = 12
 	inaccuracy_modifier = 0.7
+	// Агентская версия стреляет не веером, а очередью: 3 выстрела с паузой 0.5 с.
+	burst_size = 3
+	burst_shot_delay = 0.5 SECONDS
+	fire_select = SELECT_BURST_SHOT
+	fire_select_index = 2
+
+// Initialize оружия сбрасывает burst_size в 1 (очередь - выбираемый режим); здесь очередь по умолчанию.
+/obj/item/gun/energy/implanthandgun/syndie/Initialize()
+	. = ..()
+	burst_size = initial(burst_size)
 
 /obj/item/ammo_casing/energy/implanthandgun
 	projectile_type = /obj/item/projectile/bullet/implanthandgun
@@ -642,9 +662,8 @@
 /obj/item/ammo_casing/energy/implanthandgun/burst
 	projectile_type = /obj/item/projectile/bullet/implanthandgun/burst
 	select_name = "burst"
-	e_cost = 500
-	pellets = 3
-	variance = 4
+	// Одиночный снаряд: очередь реализована burst_size пушки. 166*3 = 498 <= 500 заряда батареи.
+	e_cost = 166
 	fire_sound = 'sound/weapons/laser.ogg'
 
 /obj/item/projectile/bullet/implanthandgun
@@ -662,7 +681,8 @@
 
 /obj/item/projectile/bullet/implanthandgun/on_hit(atom/target, blocked = FALSE, pierce_hit)
 	. = ..()
-	explosion(target, 0, 1, 2, 0, 0, 0, 0)
+	// Без heavy-зоны: взрыв не выбивает пол под точкой попадания.
+	explosion(target, 0, 0, 2, 0, 0, 0, 0)
 	return BULLET_ACT_HIT
 
 /obj/item/projectile/bullet/implanthandgun/burst/on_hit(atom/target, blocked = FALSE, pierce_hit)

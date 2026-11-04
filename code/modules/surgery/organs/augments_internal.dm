@@ -272,6 +272,12 @@
 	var/afterimage_timer
 	/// Last turf an afterimage was spawned on.
 	var/turf/last_afterimage_turf
+	/// Цвет контура персонажа во время действия.
+	var/outline_color = "#00FFFF"
+	/// Цвет следа в воздухе; null - след повторяет внешность персонажа без окраски.
+	var/trail_color
+	/// Интервал спавна следа в децисекундах (меньше = плотнее след).
+	var/afterimage_interval = 1
 
 /datum/action/item_action/organ_action/use/sandevistan
 	name = "Activate Sandevistan"
@@ -309,14 +315,14 @@
 	owner.add_movespeed_modifier(movespeed_mod_weak)
 	ADD_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
 	if(owner.client)
-		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = "#00FFFF", "alpha" = 80, "size" = 1))
+		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = outline_color, "alpha" = 80, "size" = 1))
 	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
 		if(overload_count > 2)
 			apply_overload_effects()
 	else if(overload_count >= 2)
 		apply_overload_effects()
 	last_afterimage_turf = null
-	afterimage_timer = addtimer(CALLBACK(src, PROC_REF(spawn_afterimage)), 1, TIMER_LOOP|TIMER_STOPPABLE)
+	afterimage_timer = addtimer(CALLBACK(src, PROC_REF(spawn_afterimage)), afterimage_interval, TIMER_LOOP|TIMER_STOPPABLE)
 	// Первая активация короче на 0.25 с, вторая — длиннее на 0.25 с.
 	var/use_duration = duration
 	if(first_use)
@@ -373,7 +379,7 @@
 	if(!current_turf || current_turf == last_afterimage_turf)
 		return
 	last_afterimage_turf = current_turf
-	new /obj/effect/temp_visual/sandevistan_afterimage(current_turf, owner)
+	new /obj/effect/temp_visual/sandevistan_afterimage(current_turf, owner, trail_color)
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/deactivate_sandevistan()
 	if(!owner || !active)
@@ -432,7 +438,7 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = MOB_LAYER - 0.02
 
-/obj/effect/temp_visual/sandevistan_afterimage/Initialize(mapload, mob/living/source)
+/obj/effect/temp_visual/sandevistan_afterimage/Initialize(mapload, mob/living/source, trail_color)
 	. = ..()
 	if(!source)
 		return
@@ -441,6 +447,8 @@
 	plane = source.plane
 	layer = source.layer - 0.02
 	alpha = 160
+	if(trail_color)
+		color = trail_color
 	animate(src, alpha = 0, time = duration)
 
 /obj/item/organ/cyberimp/brain/sandevistan/military
@@ -454,6 +462,10 @@
 	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
 	movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/military/weak
+	// Предательская версия: тёмно-розовый контур и след, след спавнится в пять раз чаще.
+	outline_color = "#C2185B"
+	trail_color = "#C2185B"
+	afterimage_interval = 0.2
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
 	var/last_reset_time = 0
