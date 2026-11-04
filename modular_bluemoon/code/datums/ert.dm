@@ -122,6 +122,10 @@
 		chosen_candidate.transfer_ckey(operative)
 		if(enforce_human || operative.dna.species.dangerous_existence)
 			operative.set_species(/datum/species/human)
+		if(operative.client?.prefs)
+			operative.client.prefs.apply_prefs_modified_limbs(operative)
+			operative.client.prefs.apply_prefs_body_mods(operative)
+			operative.update_body()
 		var/role_type = (agents_left == 1) ? leader_role : roles[WRAP(agents_left, 1, length(roles) + 1)]
 		var/datum/antagonist/ert/ert_antag = new role_type
 		operative.mind.add_antag_datum(ert_antag, ert_team)

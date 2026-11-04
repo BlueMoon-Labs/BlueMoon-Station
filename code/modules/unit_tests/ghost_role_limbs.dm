@@ -224,3 +224,21 @@
 	qdel(S)
 	qdel(lizard_prefs)
 	qdel(P)
+
+/datum/unit_test/copy_to_initial_spawn_applies_body_mods
+
+/datum/unit_test/copy_to_initial_spawn_applies_body_mods/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("hide_backpack" = TRUE)
+	P.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_PROSTHETIC, "prosthetic"))
+	P.organ_mods = list(ORGAN_SLOT_EYES = "glow")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	P.copy_to(H, icon_updates = FALSE, roundstart_checks = FALSE, initial_spawn = TRUE)
+
+	TEST_ASSERT(locate(/obj/item/implant/hide_backpack) in H.implants, "Implant from preferences should be applied")
+	TEST_ASSERT(istype(H.get_bodypart(BODY_ZONE_R_ARM), /obj/item/bodypart/r_arm/robot/surplus), "Prosthetic from preferences should be applied")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/eyes/robotic/toggled/glow), "Organ modification from preferences should be applied")
+
+	qdel(P)
