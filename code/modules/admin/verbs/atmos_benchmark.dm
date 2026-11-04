@@ -584,6 +584,12 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	var/rest_param = text2num(world.params["atmos-bench-rest-cycles"])
 	if(!isnull(rest_param))
 		individual_rest_cycles = max(0, rest_param)
+	var/wake_param = text2num(world.params["atmos-bench-wake-scale"])
+	if(!isnull(wake_param))
+		wake_threshold_scale = clamp(wake_param, 1, 10)
+	var/dismantle_param = text2num(world.params["atmos-bench-dismantle-cycles"])
+	if(!isnull(dismantle_param))
+		dismantle_cycles = max(1, dismantle_param)
 	// Гейт кандидатов по порогу требований снимается обнулением индекса полов -
 	// ровно то, что делает A/B в микробенче, только на весь прогон. Даёт честную
 	// пару "одна сборка, один сид, одна арена": без этого сравнивать пришлось бы

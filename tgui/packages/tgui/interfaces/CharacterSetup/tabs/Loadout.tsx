@@ -167,9 +167,20 @@ const GearRow = (props: { row: LoadoutRow }) => {
           )}
         </Stack.Item>
         <Stack.Item grow>
-          <Box bold title={row.name}>
-            {row.customName || row.name}
-          </Box>
+          <Stack align="center">
+            <Stack.Item>
+              <Box bold title={row.name}>
+                {row.customName || row.name}
+              </Box>
+            </Stack.Item>
+            {!!row.conflicts?.length && (
+              <Stack.Item>
+                <Box color="average" fontSize="0.9em" nowrap>
+                  Общий слот с: {row.conflicts.join(', ')}.
+                </Box>
+              </Stack.Item>
+            )}
+          </Stack>
           <Box color="label" fontSize="0.9em">
             {row.category}
           </Box>
@@ -226,11 +237,6 @@ const GearRow = (props: { row: LoadoutRow }) => {
       )}
       {!!row.availabilityReason && (
         <Box color="average" mt={0.5}>{row.availabilityReason}</Box>
-      )}
-      {!!row.conflicts?.length && (
-        <Box color="average" mt={0.5}>
-          Общий слот с: {row.conflicts.join(', ')}.{' '}
-        </Box>
       )}
       {!!row.description && (
         <Box color="label" fontSize="0.9em">
