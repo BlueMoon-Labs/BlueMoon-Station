@@ -6,6 +6,8 @@
 		appearance_flags &= ~PIXEL_SCALE
 //BLUEMOON ADD END - FUZZY
 	var/matrix/ntransform = matrix(transform) //aka transform.Copy()
+	if(gravity_inverted)
+		ntransform.Scale(1, -1)
 	var/final_pixel_y = pixel_y
 	var/changed = 0
 	if(lying != lying_prev && rotate_on_lying)
@@ -29,6 +31,8 @@
 			ntransform.Translate(0, 16*(resize-1)) //Makes sure you stand on the tile no matter the size - sand
 		resize = RESIZE_DEFAULT_SIZE
 
+	if(gravity_inverted)
+		ntransform.Scale(1, -1)
 	if(changed)
 		if(do_animate)
 			animate(src, transform = ntransform, time = 2, pixel_y = final_pixel_y, easing = EASE_IN|EASE_OUT, flags = ANIMATION_PARALLEL)
@@ -36,6 +40,19 @@
 			transform = ntransform
 			pixel_y = final_pixel_y
 
+	update_small_sprite()
+
+/mob/living/proc/update_gravity_inversion(gravity)
+	var/inverted = gravity <= NEGATIVE_GRAVITY
+	if(gravity_inverted == inverted)
+		return
+	gravity_inverted = inverted
+	var/matrix/flipped = matrix(transform)
+	if(is_tilted)
+		flipped.Turn(-is_tilted)
+		is_tilted = 0
+	flipped.Scale(1, -1)
+	animate(src, transform = flipped, time = GRAVITY_INVERSION_TIME, easing = SINE_EASING|EASE_OUT, flags = ANIMATION_PARALLEL)
 	update_small_sprite()
 
 /mob/living

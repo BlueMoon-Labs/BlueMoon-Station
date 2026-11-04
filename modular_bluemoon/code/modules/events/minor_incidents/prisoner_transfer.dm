@@ -167,9 +167,9 @@
 	general.fields["age"] = prisoner.age
 	general.fields["species"] = prisoner.dna.species.name
 	general.fields["fingerprint"] = md5(prisoner.dna.uni_identity)
-	general.fields["gender"] = prisoner.gender == MALE ? "Male" : (prisoner.gender == FEMALE ? "Female" : "Other")
-	general.fields["p_stat"] = "Active"
-	general.fields["m_stat"] = "Stable"
+	general.fields["gender"] = GLOB.gender_to_string["[prisoner.gender]"] || "Другой"
+	general.fields["p_stat"] = MED_RECORD_STATUS_PH_HEALTHY
+	general.fields["m_stat"] = MED_RECORD_STATUS_M_STABLE
 	general.photo_source = new /datum/record_photo_source(prisoner)
 	GLOB.data_core.general += general
 	GLOB.data_core.register_record(general, "general")
@@ -179,15 +179,16 @@
 	medical.fields["name"] = prisoner.real_name
 	medical.fields["blood_type"] = prisoner.dna.blood_type
 	medical.fields["b_dna"] = prisoner.dna.unique_enzymes
-	medical.fields["mi_dis"] = "None"
-	medical.fields["mi_dis_d"] = "No minor disabilities have been declared."
-	medical.fields["ma_dis"] = "None"
-	medical.fields["ma_dis_d"] = "No major disabilities have been diagnosed."
-	medical.fields["alg"] = "None"
-	medical.fields["alg_d"] = "No allergies have been detected in this patient."
-	medical.fields["cdi"] = "None"
-	medical.fields["cdi_d"] = "No diseases have been diagnosed at the moment."
-	medical.fields["notes"] = "No notes."
+
+	medical.fields["mi_dis"] = "Отсутствуют."
+	medical.fields["mi_dis_d"] = "Незначительных ограничений не вменялось."
+	medical.fields["ma_dis"] = "Отсутствуют."
+	medical.fields["ma_dis_d"] = "Значительных ограничений не диагностировалось."
+	medical.fields["alg"] = "Отсутствуют."
+	medical.fields["alg_d"] = "Аллергии не были обнаружены на момент записи."
+	medical.fields["cdi"] = "Отсутствуют."
+	medical.fields["cdi_d"] = "Болезни не диагностировались на момент записи."
+	medical.fields["notes"] = "Записи не обнаружены."
 	GLOB.data_core.medical += medical
 	GLOB.data_core.register_record(medical, "medical")
 

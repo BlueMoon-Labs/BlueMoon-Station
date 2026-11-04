@@ -360,3 +360,92 @@
 		if(!(key in root_keys))
 			orphans += key
 	TEST_ASSERT(!length(orphans), "ключи одиночной записи, которых полный путь не пишет (настройка потеряется при переподключении): [jointext(orphans, ", ")]")
+
+// Проверяем настоящий переход версии, включая повторный вход и перезапись слотов персонажей.
+/datum/unit_test/preferences_version_migration_preserves_modular_settings/Run()
+	var/test_path = "[GLOB.log_directory]/preferences_version_migration.sav"
+	var/list/populated = list(
+		"favorite_tracks" = list("Проверочный трек", "Второй трек"),
+		"favorite_paintings_md5" = list("0123456789abcdef0123456789abcdef"),
+		"favorite_interactions" = list("/datum/interaction/handshake", "custom:проверка"),
+		"playlists" = list("Проверка" = list("Проверочный трек")),
+		"use_arousal_multiplier" = TRUE,
+		"arousal_multiplier" = 237,
+		"use_moaning_multiplier" = TRUE,
+		"moaning_multiplier" = 17,
+		"bm_lobby_show_nsfw" = TRUE,
+		"bm_lobby_show_admin_bg" = FALSE,
+		"bm_disclaimer_accepted" = TRUE,
+		"shift_invites" = FALSE,
+		"antag_objective_style" = ANTAG_OBJECTIVE_STYLE_QUIET,
+	)
+	var/list/empty = list(
+		"favorite_tracks" = list(),
+		"favorite_paintings_md5" = list(),
+		"favorite_interactions" = list(),
+		"playlists" = list(),
+		"use_arousal_multiplier" = TRUE,
+		"arousal_multiplier" = 0,
+		"use_moaning_multiplier" = TRUE,
+		"moaning_multiplier" = 0,
+	)
+	for(var/list/expected as anything in list(populated, empty))
+		for(var/version_delta in list(0, 1, 13))
+			var/datum/preferences/writer = new
+			writer.path = test_path
+			for(var/key in expected)
+				writer.vars[key] = deepCopyList(expected[key])
+			writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+			for(var/slot in 1 to 2)
+				writer.default_slot = slot
+				writer.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+			// Новые сейвы пишутся в JSON; старый .sav для миграции собираем из того же дерева.
+			var/savefile/written = writer.open_player_save()
+			TEST_ASSERT(written, "Не прочитан записанный JSON")
+			var/legacy_text = written.ExportText("/")
+			written = null
+			writer.path = null
+			qdel(writer)
+			writer = null
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+				fdel("[test_path][suffix]")
+
+			var/savefile/seed = new /savefile(test_path)
+			seed.ImportText("/", legacy_text)
+			seed.cd = "/"
+			var/current_version
+			seed["version"] >> current_version
+			var/old_version = current_version - version_delta
+			WRITE_FILE(seed["version"], old_version)
+			for(var/slot in 1 to 2)
+				seed.cd = "/character[slot]"
+				WRITE_FILE(seed["version"], old_version)
+			seed = null
+
+			for(var/login in 1 to 2)
+				var/datum/preferences/reader = new
+				reader.path = test_path
+				var/loaded = reader.load_preferences(bypass_cooldown = TRUE)
+				if(!loaded)
+					TEST_FAIL("Не загрузились преференсы версии [old_version], вход [login].")
+				var/savefile/readback = reader.open_player_save()
+				readback.cd = "/"
+				for(var/key in expected)
+					var/expected_json = json_encode(expected[key])
+					if(json_encode(reader.vars[key]) != expected_json)
+						TEST_FAIL("Версия [old_version], вход [login]: настройка [key] изменилась в памяти.")
+					var/on_disk
+					READ_FILE(readback[key], on_disk)
+					if(json_encode(on_disk) != expected_json)
+						TEST_FAIL("Версия [old_version], вход [login]: настройка [key] перезаписана на диске.")
+				var/version_after
+				READ_FILE(readback["version"], version_after)
+				if(version_after != current_version)
+					TEST_FAIL("Версия [old_version] не обновилась до [current_version].")
+				readback = null
+				loaded = null
+				reader.path = null
+				qdel(reader)
+				reader = null
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/", ".updatebac"))
+				fdel("[test_path][suffix]")

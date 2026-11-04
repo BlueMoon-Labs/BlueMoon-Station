@@ -8,6 +8,8 @@
 	light_mask = "sec-light-mask"
 	req_access = list(ACCESS_SECURITY)
 	products = list(
+		/obj/item/mod/module/pepper_shoulders = 3,
+		/obj/item/mod/module/shove_blocker = 3,
 		/obj/item/restraints/handcuffs = 6,
 		/obj/item/restraints/handcuffs/kinky = 6,
 		/obj/item/restraints/handcuffs/cable/zipties = 6,

@@ -679,6 +679,11 @@
 	READ_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
 	READ_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
+	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
+	READ_PLAYER_SAVE(S, document, "right_click_mode", right_click_choice)
+	READ_PLAYER_SAVE(S, document, "right_click_notice_seen", right_click_notice_seen)
+	READ_PLAYER_SAVE(S, document, "shift_right_click_mode", shift_right_click_choice)
+	READ_PLAYER_SAVE(S, document, "context_menu_style", context_menu_style)
 	READ_PLAYER_SAVE(S, document, "pixel_size", pixel_size)
 	READ_PLAYER_SAVE(S, document, "scaling_method", scaling_method)
 	READ_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
@@ -849,6 +854,13 @@
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
+	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
+	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		right_click_choice = null
+	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
+	if(!(shift_right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		shift_right_click_choice = null
+	context_menu_style = sanitize_context_menu_style(context_menu_style)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1334,6 +1346,10 @@
 	WRITE_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	WRITE_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
 	WRITE_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
+	WRITE_PLAYER_SAVE(S, document, "right_click_mode", right_click_choice)
+	WRITE_PLAYER_SAVE(S, document, "right_click_notice_seen", right_click_notice_seen)
+	WRITE_PLAYER_SAVE(S, document, "shift_right_click_mode", shift_right_click_choice)
+	WRITE_PLAYER_SAVE(S, document, "context_menu_style", context_menu_style)
 	WRITE_PLAYER_SAVE(S, document, "autostand", autostand)
 	WRITE_PLAYER_SAVE(S, document, "cit_toggles", cit_toggles)
 	WRITE_PLAYER_SAVE(S, document, "preferred_chaos_level", preferred_chaos_level)
@@ -1598,6 +1614,7 @@
 	READ_PLAYER_SAVE(S, document, "gender", gender)
 	READ_PLAYER_SAVE(S, document, "body_model", features["body_model"])
 	READ_PLAYER_SAVE(S, document, "body_size", features["body_size"])
+	READ_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
 	READ_PLAYER_SAVE(S, document, "feature_fuzzy", features["fuzzy"])
 	READ_PLAYER_SAVE(S, document, "age", age)
 	READ_PLAYER_SAVE(S, document, "hair_color", hair_color)
@@ -1736,6 +1753,8 @@
 
 	//Quirks
 	READ_PLAYER_SAVE(S, document, "all_quirks", all_quirks)
+	READ_PLAYER_SAVE(S, document, "innate_features", innate_features)
+	sanitize_innate_features()
 
 	READ_PLAYER_SAVE(S, document, "language", language)
 
@@ -1900,12 +1919,16 @@
 				return FALSE
 
 	READ_PLAYER_SAVE(S, document, "alt_titles_preferences", alt_titles_preferences)
-	//gear loadout
-	if(istext(PLAYER_SAVE_VALUE(S, document, "loadout")))
-		loadout_data = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "loadout"))
-		if(!islist(loadout_data))
-			loadout_data = list()
-
+	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
+	var/saved_loadout = PLAYER_SAVE_VALUE(S, document, "loadout")
+	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
+	if(!islist(loadout_data))
+		loadout_data = list()
+	var/preset_slot_key = "SAVE_[LOADOUT_PRESET_SLOT]"
+	var/list/working_preset_loadout = loadout_data[preset_slot_key]
+	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
+	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !PLAYER_SAVE_VALUE(S, document, "preset_loadout_initialized"))
+	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
@@ -2096,7 +2119,8 @@
 	var/static/size_max
 	if(!size_max)
 		size_max = CONFIG_GET(number/body_size_max)
-	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.01)
+	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.0001)
+	features["normalized_size"] = sanitize_num_clamp(features["normalized_size"], max(size_min, 0.81), min(size_max, 1.2), RESIZE_NORMAL, 0.0001)
 
 	var/static/list/B_sizes
 	if(!B_sizes)
@@ -2289,7 +2313,6 @@
 	READ_PLAYER_SAVE(S, document, "pregnancy_breast_growth", pregnancy_breast_growth)
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2316,6 +2339,12 @@
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, active_character_preset ? LOADOUT_PRESET_SLOT : initial(loadout_slot), TRUE)
+	if(restore_preset_loadout && active_character_preset)
+		var/list/active_preset = character_presets[active_character_preset]
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data[preset_slot_key] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S, document) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2498,6 +2527,7 @@
 	WRITE_PLAYER_SAVE(S, document, "gender", gender)
 	WRITE_PLAYER_SAVE(S, document, "body_model", features["body_model"])
 	WRITE_PLAYER_SAVE(S, document, "body_size", features["body_size"])
+	WRITE_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
 	WRITE_PLAYER_SAVE(S, document, "feature_fuzzy", features["fuzzy"])
 	WRITE_PLAYER_SAVE(S, document, "age", age)
 	WRITE_PLAYER_SAVE(S, document, "hair_color", hair_color)
@@ -2707,6 +2737,7 @@
 
 	//Quirks
 	WRITE_PLAYER_SAVE(S, document, "all_quirks"			, all_quirks)
+	WRITE_PLAYER_SAVE(S, document, "innate_features", innate_features)
 	//SKYRAT ADDITION - additional language
 	WRITE_PLAYER_SAVE(S, document, "language"			, language)
 	//
@@ -2753,6 +2784,7 @@
 	else
 		WRITE_PLAYER_SAVE(S, document, "loadout", safe_json_encode(list()))
 	WRITE_PLAYER_SAVE(S, document, "loadout_slot", loadout_slot)
+	WRITE_PLAYER_SAVE(S, document, "preset_loadout_initialized", islist(loadout_data?["SAVE_[LOADOUT_PRESET_SLOT]"]))
 	WRITE_PLAYER_SAVE(S, document, "character_presets", character_presets)
 	WRITE_PLAYER_SAVE(S, document, "active_character_preset", active_character_preset)
 	WRITE_PLAYER_SAVE(S, document, "loadout_enabled", loadout_enabled) // BLUEMOON ADD

@@ -256,7 +256,6 @@
 
 /datum/ping_diagnostics/proc/recompute(now, server_base, warn_build)
 	var/list/rtts = list()
-	var/list/times = list()
 	var/stall_total = 0
 	var/shared_total = 0
 	var/personal_total = 0
@@ -267,23 +266,41 @@
 	var/recent_since = now - PING_DIAG_FLOOD_WINDOW_DS
 	var/list/recent_rtts = list()
 	var/list/recent_personal = list()
-	for(var/slot in window_slots(now))
+	var/window_start = now - PING_DIAG_WINDOW_DS
+	var/first_time
+	var/last_time
+	var/list/ring_time = sample_time
+	var/list/ring_rtt = sample_rtt
+	var/list/ring_stall = sample_stall
+	var/list/ring_personal = sample_personal
+	// Тот же обход, что window_slots(), без промежуточных списков слотов.
+	var/start = sample_count < capacity ? 1 : next_slot
+	for(var/i in 0 to sample_count - 1)
+		var/slot = (start + i - 1) % capacity + 1
+		var/time = ring_time[slot]
+		if(time < window_start)
+			continue
+		var/rtt = ring_rtt[slot]
+		var/stall = ring_stall[slot]
+		var/personal = ring_personal[slot]
 		var/shared = 0
 		if(!isnull(sample_shared[slot]))
-			shared = sample_excess[slot] - sample_personal[slot]
+			shared = sample_excess[slot] - personal
 			shared_known++
-		rtts += sample_rtt[slot]
-		times += sample_time[slot]
-		stall_total += sample_stall[slot]
+		rtts += rtt
+		if(isnull(first_time))
+			first_time = time
+		last_time = time
+		stall_total += stall
 		shared_total += shared
-		personal_total += sample_personal[slot]
-		network_min = min(network_min, sample_rtt[slot] - sample_stall[slot])
+		personal_total += personal
+		network_min = min(network_min, rtt - stall)
 		if(!sample_flood[slot])
-			net_personal += sample_personal[slot]
-			net_times += sample_time[slot]
-		if(sample_time[slot] >= recent_since)
-			recent_rtts += sample_rtt[slot]
-			recent_personal += sample_personal[slot]
+			net_personal += personal
+			net_times += time
+		if(time >= recent_since)
+			recent_rtts += rtt
+			recent_personal += personal
 	while(length(freeze_times) && freeze_times[1] < now - PING_DIAG_WINDOW_DS)
 		freeze_times.Cut(1, 2)
 	var/count = length(rtts)
@@ -292,7 +309,11 @@
 		verdicts = list(PING_VERDICT_COLLECTING)
 		update_yours_since(now)
 		return verdicts
-	var/list/spikes = ping_diag_find_spikes(net_personal)
+	var/rtt_now = rtts[count]
+	// Каждый список проходит выбор один раз, все его ранги берутся оттуда же.
+	var/list/rtt_ranks = ping_diag_percentiles(rtts, list(50, 95))
+	var/personal_median = ping_diag_percentiles(net_personal.Copy(), list(50))[1]
+	var/list/spikes = ping_diag_find_spikes(net_personal, personal_median)
 	var/list/spike_times = list()
 	for(var/index in spikes)
 		spike_times += net_times[index]
@@ -301,14 +322,14 @@
 		if(freeze_time >= recent_since)
 			recent_freezes++
 	var/list/episodes = ping_diag_collapse_bursts(spike_times, PING_DIAG_BURST_GAP_DS)
-	var/window_minutes = max((times[count] - times[1]) / (1 MINUTES), 1)
+	var/window_minutes = max((last_time - first_time) / (1 MINUTES), 1)
 	var/extra_total = stall_total + shared_total + personal_total
 	summary = list(
 		"samples" = count,
-		"rtt_now" = rtts[count],
-		"rtt_median" = ping_diag_median(rtts),
+		"rtt_now" = rtt_now,
+		"rtt_median" = rtt_ranks[1],
 		"rtt_min" = min(rtts),
-		"rtt_p95" = ping_diag_percentile(rtts, 95),
+		"rtt_p95" = rtt_ranks[2],
 		"base" = max(network_min, 0),
 		"stall_mean" = stall_total / count,
 		"shared_mean" = shared_total / count,
@@ -316,9 +337,9 @@
 		"extra_mean" = extra_total / count,
 		"ours_fraction" = extra_total ? (stall_total + shared_total) / extra_total : 0,
 		"shared_known" = shared_known / count,
-		"personal_median" = ping_diag_median(net_personal),
-		"recent_personal_median" = ping_diag_median(recent_personal),
-		"recent_rtt_p95" = ping_diag_percentile(recent_rtts, 95),
+		"personal_median" = personal_median,
+		"recent_personal_median" = ping_diag_percentiles(recent_personal, list(50))[1],
+		"recent_rtt_p95" = ping_diag_percentiles(recent_rtts, list(95))[1],
 		"recent_freezes" = recent_freezes,
 		"spikes_per_min" = length(episodes) / window_minutes,
 		"loss_per_min" = ping_diag_count_loss_like(net_personal, spikes) / window_minutes,

@@ -99,9 +99,9 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 							var/obj/item/clothing/bl_cover = get_bodypart_protecting_clothing_by_coverage(H_bl, bl_limb)
 							if(bl_cover && (bl_cover.clothing_flags & THICKMATERIAL))
 								if(istype(bl_cover, /obj/item/clothing/suit/space))
-									blocked_suit_bl += ru_parse_zone(bl_limb.body_zone)
+									blocked_suit_bl += get_heal_zone_name(patient, bl_limb.body_zone)
 								else
-									blocked_armor_bl += ru_parse_zone(bl_limb.body_zone)
+									blocked_armor_bl += get_heal_zone_name(patient, bl_limb.body_zone)
 						if(length(blocked_suit_bl))
 							patient.balloon_alert(user, "[blocked_suit_bl.Join(", ")] закрыт[length(blocked_suit_bl) > 1 ? "ы" : "а"] скафандром!")
 						else if(length(blocked_armor_bl))
@@ -112,9 +112,9 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 
 			heal_zone = damaged_limbs[1]
 			if(was_armored)
-				patient.balloon_alert(user, "[ru_parse_zone(original_zone)] в [armor_is_spacesuit ? "скафандре" : "броне"], лечим [ru_parse_zone(heal_zone)]...")
+				patient.balloon_alert(user, "[get_heal_zone_name(patient, original_zone)] в [armor_is_spacesuit ? "скафандре" : "броне"], лечим [get_heal_zone_name(patient, heal_zone)]...")
 			else
-				patient.balloon_alert(user, "лечим [ru_parse_zone(heal_zone)]...")
+				patient.balloon_alert(user, "лечим [get_heal_zone_name(patient, heal_zone)]...")
 		else
 			// В ручном режиме или для не-карбонов просто выходим
 			return FALSE
@@ -180,7 +180,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 	var/preferred_target = check_zone(user.zone_selected)
 	if(try_heal_checks(patient, user, preferred_target, silent = TRUE))
 		if(preferred_target != healed_zone)
-			patient.balloon_alert(user, "переключаем на [ru_parse_zone(preferred_target)]...")
+			patient.balloon_alert(user, "переключаем на [get_heal_zone_name(patient, preferred_target)]...")
 		try_heal(patient, user, preferred_target, TRUE, auto_change_zone, TRUE)
 		return
 
@@ -214,9 +214,9 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 					var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, limb)
 					if(covering && (covering.clothing_flags & THICKMATERIAL))
 						if(istype(covering, /obj/item/clothing/suit/space))
-							blocked_spacesuit += ru_parse_zone(limb.body_zone)
+							blocked_spacesuit += get_heal_zone_name(patient, limb.body_zone)
 						else
-							blocked_armor += ru_parse_zone(limb.body_zone)
+							blocked_armor += get_heal_zone_name(patient, limb.body_zone)
 				if(length(blocked_spacesuit))
 					patient.balloon_alert(user, "[blocked_spacesuit.Join(", ")] [length(blocked_spacesuit) > 1 ? "закрыты" : "закрыта"] скафандром!")
 				else if(length(blocked_armor))
@@ -227,8 +227,14 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 
 	var/next_picked = (preferred_target in other_affected_limbs) ? preferred_target : other_affected_limbs[1]
 	if(next_picked != last_zone)
-		patient.balloon_alert(user, "переключаем на [ru_parse_zone(next_picked)]...")
+		patient.balloon_alert(user, "переключаем на [get_heal_zone_name(patient, next_picked)]...")
 	try_heal(patient, user, next_picked, silent = TRUE, auto_change_zone = TRUE, continuous = TRUE)
+
+// Обе зоны ног обозначают опорный хвост, в том числе при сообщении о его отсутствии.
+/obj/item/stack/medical/proc/get_heal_zone_name(mob/living/patient, zone)
+	if(HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+		return "опорный хвост"
+	return ru_parse_zone(zone)
 
 /obj/item/stack/medical/proc/try_heal_manual_target(mob/living/carbon/patient, mob/living/user)
 	patient.balloon_alert(user, "оцениваем состояние...")
@@ -237,7 +243,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 	var/new_zone = check_zone(user.zone_selected)
 	if(!try_heal_checks(patient, user, new_zone))
 		return
-	patient.balloon_alert(user, "лечим [ru_parse_zone(new_zone)]...")
+	patient.balloon_alert(user, "лечим [get_heal_zone_name(patient, new_zone)]...")
 	try_heal(patient, user, new_zone, silent = TRUE, auto_change_zone = FALSE, continuous = TRUE)
 
 
@@ -249,7 +255,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 			var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
 			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && !istype(covering, /obj/item/clothing/suit/space/space_ninja) && !is_medical_armor_as_regular(covering))
 				if(!silent)
-					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
+					patient.balloon_alert(user, "[get_heal_zone_name(patient, healed_zone)]: мешает скафандр!")
 				return FALSE
 		return patient.can_inject(user, !silent, healed_zone, penetrate_thick = TRUE, bypass_immunity = TRUE)
 	return patient.can_inject(user, !silent, healed_zone, bypass_immunity = TRUE)
@@ -317,7 +323,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 		var/obj/item/bodypart/affecting = carbon_patient.get_bodypart(healed_zone)
 		if(!affecting)
 			if(!silent)
-				to_chat(user, "<span class='warning'>У [patient] отсутствует \a [ru_parse_zone(healed_zone)]!</span>")
+				to_chat(user, span_warning("У [patient] отсутствует [get_heal_zone_name(patient, healed_zone)]!"))
 			return FALSE
 		if(!affecting.is_organic_limb(FALSE))
 			if(!silent)
@@ -502,7 +508,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 	var/obj/item/bodypart/affecting = carbon_patient.get_bodypart(healed_zone)
 	if(!affecting)
 		if(!silent)
-			to_chat(user, "<span class='warning'>У [patient] отсутствует \a [ru_parse_zone(healed_zone)]!</span>")
+			to_chat(user, span_warning("У [patient] отсутствует [get_heal_zone_name(patient, healed_zone)]!"))
 		return FALSE
 	if(heal_brute && affecting.brute_dam > 0)
 		return TRUE
@@ -908,7 +914,7 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 		return FALSE
 	var/obj/item/bodypart/affecting = C.get_bodypart(healed_zone)
 	if(!affecting) // Отсутствует конечность?
-		to_chat(user, "<span class='warning'>[C] не имеет \a [ru_parse_zone(healed_zone)]!</span>")
+		to_chat(user, span_warning("У [C] отсутствует [get_heal_zone_name(C, healed_zone)]!"))
 		return FALSE
 	if(!affecting.is_robotic_limb())
 		to_chat(user, "<span class='warning'>Это не поможет нероботическим конечностям!</span>")

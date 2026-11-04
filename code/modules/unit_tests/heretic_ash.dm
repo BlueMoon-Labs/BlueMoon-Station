@@ -603,7 +603,7 @@
 /mob/living/heretic_sound_listener
 	var/list/heard = list()
 
-/mob/living/heretic_sound_listener/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo)
+/mob/living/heretic_sound_listener/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo, list/excluded_listeners)
 	heard += "[soundin]"
 
 /datum/unit_test/proc/allocate_sound_listener(turf/location)

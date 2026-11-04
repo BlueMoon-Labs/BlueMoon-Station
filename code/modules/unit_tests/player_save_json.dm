@@ -301,27 +301,51 @@
 	var/datum/preferences/prefs = new_preferences()
 	prefs.multiz_performance = 1
 	prefs.multiz_parallax = FALSE
+	prefs.right_click_choice = RIGHT_CLICK_MODE_MENU
+	prefs.shift_right_click_choice = RIGHT_CLICK_MODE_NATIVE
+	prefs.right_click_notice_seen = TRUE
+	prefs.context_menu_style = list("theme" = "terminal")
 	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записаны настройки")
 	prefs.custom_speech_verb_ru = TRUE
 	prefs.features["ass_photo"] = "photo"
 	prefs.features["balls_cum_rate"] = 5
 	prefs.features["balls_cum_max"] = 50
+	prefs.features["normalized_size"] = 1.1
+	prefs.innate_features = list(INNATE_NAGA_TAIL)
+	prefs.loadout_data = list("SAVE_[LOADOUT_PRESET_SLOT]" = list())
 	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан персонаж")
 	prefs.player_save_storage = null
 	prefs.multiz_performance = MULTIZ_PERFORMANCE_DISABLE
 	prefs.multiz_parallax = TRUE
+	prefs.right_click_choice = null
+	prefs.shift_right_click_choice = null
+	prefs.right_click_notice_seen = FALSE
+	prefs.context_menu_style = null
 	prefs.custom_speech_verb_ru = FALSE
 	prefs.features["ass_photo"] = ""
 	prefs.features["balls_cum_rate"] = CUM_RATE
 	prefs.features["balls_cum_max"] = 0
+	prefs.features["normalized_size"] = RESIZE_NORMAL
+	prefs.innate_features = list()
 	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
 	TEST_ASSERT_EQUAL(prefs.multiz_performance, 1, "JSON потерял multiz_performance")
 	TEST_ASSERT_EQUAL(prefs.multiz_parallax, FALSE, "JSON потерял multiz_parallax")
+	TEST_ASSERT_EQUAL(prefs.right_click_choice, RIGHT_CLICK_MODE_MENU, "JSON потерял right_click_mode")
+	TEST_ASSERT_EQUAL(prefs.shift_right_click_choice, RIGHT_CLICK_MODE_NATIVE, "JSON потерял shift_right_click_mode")
+	TEST_ASSERT(prefs.right_click_notice_seen, "JSON потерял right_click_notice_seen")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "terminal", "JSON потерял context_menu_style")
 	TEST_ASSERT(prefs.load_character(1, TRUE), "не прочитан персонаж JSON")
 	TEST_ASSERT_EQUAL(prefs.custom_speech_verb_ru, TRUE, "JSON потерял custom_speech_verb_ru")
 	TEST_ASSERT_EQUAL(prefs.features["ass_photo"], "photo", "JSON потерял ass_photo")
 	TEST_ASSERT_EQUAL(prefs.features["balls_cum_rate"], 5, "JSON потерял balls_cum_rate")
 	TEST_ASSERT_EQUAL(prefs.features["balls_cum_max"], 50, "JSON потерял balls_cum_max")
+	TEST_ASSERT_EQUAL(prefs.features["normalized_size"], 1.1, "JSON потерял normalized_size")
+	TEST_ASSERT(INNATE_NAGA_TAIL in prefs.innate_features, "JSON потерял innate_features")
+	var/savefile/readback = prefs.open_player_save()
+	readback.cd = "/character1"
+	var/preset_initialized
+	readback["preset_loadout_initialized"] >> preset_initialized
+	TEST_ASSERT(preset_initialized, "JSON потерял preset_loadout_initialized")
 
 /datum/unit_test/player_save_json/preferences_modules_and_delete/Run()
 	prepare()

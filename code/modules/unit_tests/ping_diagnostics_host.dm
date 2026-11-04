@@ -43,10 +43,67 @@
 	var/list/sources = SSping_diag.round_summary()["event_sources"]
 	TEST_ASSERT_EQUAL(sources["МК: Air"], 1, "итог раунда считает источники")
 	TEST_ASSERT_EQUAL(length(sources), 1, "прочерк в источники не идёт")
-	SSping_diag.write_host_row("12:00:00", 0)
+	SSping_diag.minute_fires = 3
+	SSping_diag.minute_fire_us = 12345
+	SSping_diag.minute_fire_max_us = 6000
+	SSping_diag.minute_proc_us = 260
+	SSping_diag.minute_log_us = 80
+	SSping_diag.minute_rows_us = 11000
+	var/list/cells = splittext(SSping_diag.write_host_row("12:00:00", 0), ",")
+	var/list/header = splittext(PING_DIAG_HOST_CSV_HEADER, ",")
+	TEST_ASSERT_EQUAL(length(cells), length(header), "строка ping-host совпадает с заголовком по числу колонок")
+	TEST_ASSERT_EQUAL(header.Find("ours_fraction"), 9, "старые колонки на месте, новые только в конце")
+	TEST_ASSERT_EQUAL(cells[header.Find("shared_events")], "2", "события минуты")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_fires")], "3", "фаеры за минуту")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_fire_ms")], "12.3", "время фаеров в мс")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_fire_max_ms")], "6", "самый долгий фаер")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_proc_read_ms")], "0.3", "чтение /proc")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_log_write_ms")], "0.1", "запись логов")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_rows_ms")], "11", "расчёт минутных строк")
 	TEST_ASSERT_EQUAL(SSping_diag.minute_events, 0, "строка ping-host обнулила минуту")
+	TEST_ASSERT_EQUAL(SSping_diag.minute_fires + SSping_diag.minute_fire_us + SSping_diag.minute_fire_max_us + SSping_diag.minute_rows_us, 0, "и цену подсистемы")
 	ping_diag_restore_state(saved)
 	qdel(net)
+
+/// Минутная запись идёт из фаера: строка ping-host с ценой подсистемы, сам фаер и запись строки - в следующую минуту.
+/datum/unit_test/ping_diag_host_self_cost/Run()
+	var/list/saved = ping_diag_save_state()
+	var/datum/ping_host_net/net = new
+	net.available = FALSE
+	SSping_diag.host_net = net
+	SSping_diag.watched = list()
+	SSping_diag.clients_log = "[GLOB.log_directory]/ping-test-clients.csv"
+	SSping_diag.samples_log = "[GLOB.log_directory]/ping-test-samples.log"
+	SSping_diag.host_log = "[GLOB.log_directory]/ping-test-host.csv"
+	SSping_diag.verdict_started_at = world.time
+	for(var/name in list("minute_fires", "minute_fire_us", "minute_fire_max_us", "minute_proc_us", "minute_log_us", "minute_rows_us"))
+		SSping_diag.vars[name] = 0
+	var/list/header = splittext(PING_DIAG_HOST_CSV_HEADER, ",")
+	var/lines_before = ping_diag_test_lines(SSping_diag.host_log)
+	SSping_diag.next_csv_at = 0
+	SSping_diag.fire(FALSE)
+	TEST_ASSERT_EQUAL(SSping_diag.minute_fires, 1, "фаер посчитан в новой минуте")
+	TEST_ASSERT(SSping_diag.minute_fire_us > 0, "время фаера замерено")
+	TEST_ASSERT_EQUAL(SSping_diag.minute_fire_max_us, SSping_diag.minute_fire_us, "один фаер - он же самый долгий")
+	TEST_ASSERT(SSping_diag.minute_log_us > 0, "запись строки ping-host ушла в цену следующей минуты")
+	SSping_diag.next_csv_at = 0
+	SSping_diag.fire(FALSE)
+	var/list/lines = splittext(trim(file2text(SSping_diag.host_log)), "\n")
+	TEST_ASSERT_EQUAL(length(lines), lines_before + 2, "две минутные строки")
+	var/list/cells = splittext(lines[length(lines)], ",")
+	TEST_ASSERT_EQUAL(length(cells), length(header), "строка из фаера совпадает с заголовком")
+	TEST_ASSERT_EQUAL(cells[header.Find("ss_fires")], "1", "прошлый фаер во второй строке")
+	TEST_ASSERT(text2num(cells[header.Find("ss_log_write_ms")]) >= 0, "запись логов числом: [cells[header.Find("ss_log_write_ms")]]")
+	var/list/paths = list(SSping_diag.clients_log, SSping_diag.samples_log, SSping_diag.host_log)
+	ping_diag_restore_state(saved)
+	qdel(net)
+	for(var/path in paths)
+		fdel(path)
+
+/proc/ping_diag_test_lines(path)
+	var/text = file2text(path)
+	text = text ? trim(text) : null
+	return length(text) ? length(splittext(text, "\n")) : 0
 
 /datum/unit_test/ping_diag_raw_samples/Run()
 	var/datum/ping_diagnostics/diag = new("tester")

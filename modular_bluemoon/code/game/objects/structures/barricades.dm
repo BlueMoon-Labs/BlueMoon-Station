@@ -336,13 +336,13 @@
 	setDir(turn(dir, 270))
 
 
-/obj/structure/deployable_barricade/altattackby(mob/user, list/modifiers)
-	. = ..()
+/obj/structure/deployable_barricade/altattackby(obj/item/W, mob/user, params)
 	if(anchored)
-		to_chat(usr, span_warning("It is secured to the floor, you can't turn it!"))
-		return FALSE
+		to_chat(user, span_warning("It is secured to the floor, you can't turn it!"))
+		return TRUE
 
 	setDir(turn(dir, 270))
+	return TRUE
 
 
 /*----------------------*/

@@ -145,6 +145,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	apply_aperture_turret_skin(src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED) && (isnull(set_to) || set_to))
+		return
 	var/current = on
 	if (!isnull(set_to))
 		on = set_to
@@ -1034,8 +1036,8 @@ DEFINE_BITFIELD(turret_flags, list(
 /obj/machinery/turretid/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(issilicon(user) && !(machine_stat & BROKEN))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Disable" : "Enable")
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Set to stun" : "Set to kill")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Выключить" : "Включить")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Режим оглушения" : "Режим поражения")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/turretid/Destroy()

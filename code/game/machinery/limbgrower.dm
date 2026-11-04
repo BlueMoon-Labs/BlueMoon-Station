@@ -274,6 +274,13 @@
 	var/obj/item/bodypart/limb
 	var/datum/species/selected = GLOB.species_datums[selected_category]
 	limb = new built_typepath(loc)
+	// У опорного хвоста собственный спрайт; заменять его настройками обычной ноги не нужно.
+	if(istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+		var/obj/item/bodypart/l_leg/naga_tail/tail = limb
+		// Без донора оба цветовых канала стандартной наги окрашиваются в белый.
+		tail.tail_item_color = rgb_construct_color_matrix(1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0)
+		limb.update_icon_dropped()
+		return
 	limb.base_bp_icon = selected.icon_limbs || DEFAULT_BODYPART_ICON_ORGANIC
 	limb.species_id = selected.limbs_id
 	limb.color_src = (MUTCOLORS in selected.species_traits ? MUTCOLORS : (selected.use_skintones ? SKINTONE : FALSE))

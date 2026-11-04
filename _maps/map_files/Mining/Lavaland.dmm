@@ -533,6 +533,9 @@
 /area/ruin/lavaland/unpowered)
 "aqI" = (
 /obj/machinery/light/small,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "aqM" = (
@@ -862,11 +865,12 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "aBy" = (
-/obj/machinery/door/poddoor/shutters{
-	id = "ds1armory";
-	name = "Armory Shutters"
-	},
 /obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/security{
+	hackProof = 1;
+	name = "Armory";
+	req_access_txt = "151"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
 "aBC" = (
@@ -1213,6 +1217,9 @@
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "aLk" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 6
+	},
 /turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "aLv" = (
@@ -1326,7 +1333,7 @@
 	icon_state = "cabinet"
 	},
 /obj/item/clothing/neck/stethoscope,
-/obj/item/clothing/gloves/color/latex/nitrile,
+/obj/item/lighter/contractor,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "aOw" = (
@@ -1456,10 +1463,14 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/xenoarch_area_c)
 "aTy" = (
-/obj/effect/turf_decal/tile/green/anticorner/contrasted{
-	dir = 8
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 10
 	},
-/turf/open/floor/plasteel/dark/textured/corner{
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark/corner{
 	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
@@ -1675,7 +1686,6 @@
 /turf/open/floor/plasteel,
 /area/mine/storage)
 "bbf" = (
-/obj/structure/table/reinforced,
 /obj/machinery/syndicatebomb/training,
 /obj/item/assembly/flash/handheld{
 	pixel_x = -9;
@@ -1693,6 +1703,7 @@
 	pixel_x = 11;
 	pixel_y = 13
 	},
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "bbm" = (
@@ -1752,8 +1763,8 @@
 	},
 /area/mine/xenoarch_area_c)
 "bbU" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered)
@@ -1768,6 +1779,17 @@
 	},
 /turf/open/floor/circuit/red,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"bcm" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
+"bcp" = (
+/obj/effect/turf_decal/stripes/red,
+/obj/structure/table/reinforced/plastitanium,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "bcG" = (
 /obj/structure/closet/crate{
 	opened = 1
@@ -1955,9 +1977,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
 /obj/effect/turf_decal/delivery/white{
 	color = "#00ff00";
 	name = "green"
@@ -1976,6 +1995,8 @@
 	dir = 4;
 	name = "Acid-Proof disposal pipe"
 	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "bik" = (
@@ -2561,13 +2582,6 @@
 /turf/open/floor/grass/grass3,
 /area/ruin/lavaland/unpowered)
 "byC" = (
-/obj/machinery/button/door{
-	desc = "To keep your valuable gear away from prying eyes.";
-	id = "ds1armory";
-	name = "Armory Access";
-	pixel_y = 32;
-	req_access_txt = "151"
-	},
 /obj/effect/turf_decal/stripes/red{
 	dir = 1
 	},
@@ -2753,8 +2767,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "bFW" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
@@ -3142,12 +3156,13 @@
 	},
 /area/mine/xenoarch)
 "bQj" = (
-/obj/effect/turf_decal/tile/green/half/contrasted{
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark/textured/edge{
+/obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
+/turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "bQO" = (
 /obj/structure/stone_tile/block{
@@ -3240,13 +3255,12 @@
 /turf/open/floor/engine,
 /area/mine/xenoarch_area_a)
 "bUy" = (
-/obj/structure/curtain,
-/obj/machinery/shower{
-	pixel_x = -1;
-	pixel_y = 19
+/obj/structure/railing{
+	dir = 8
 	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered)
 "bUK" = (
 /obj/machinery/airalarm{
 	pixel_y = 23
@@ -3507,6 +3521,9 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -3918,6 +3935,13 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/laborcamp/security)
+"ckW" = (
+/obj/machinery/light/small,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "clu" = (
 /obj/structure/railing{
 	dir = 4
@@ -3965,6 +3989,12 @@
 	},
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
+"cmG" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "cmU" = (
 /obj/structure/railing/corner{
 	dir = 1;
@@ -4886,6 +4916,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "cQj" = (
@@ -4896,6 +4929,11 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment{
+	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
+	dir = 10;
+	name = "Acid-Proof disposal pipe"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "cQr" = (
@@ -4943,8 +4981,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/closet/secure_closet/personal/cabinet,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "cSU" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -5050,6 +5089,10 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"cVZ" = (
+/obj/structure/flora/rock/jungle,
+/turf/open/floor/grass/grass2,
+/area/ruin/lavaland/unpowered)
 "cWb" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -5067,6 +5110,20 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"cWu" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/warning{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/structure/disposalpipe/junction/flip{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "cWG" = (
 /obj/structure/table,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -5155,6 +5212,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "cYx" = (
@@ -5647,12 +5705,14 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "doQ" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "doZ" = (
-/obj/structure/lattice/catwalk,
 /obj/structure/disposalpipe/segment,
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/lavaland/unpowered)
 "dpj" = (
 /obj/machinery/door/airlock/maintenance{
@@ -5736,11 +5796,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/biolab)
 "dqZ" = (
-/obj/structure/lattice/catwalk,
 /obj/structure/railing/corner{
 	dir = 4;
 	layer = 4.8
 	},
+/obj/structure/lattice/catwalk,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered)
 "dro" = (
@@ -5768,6 +5828,13 @@
 	},
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
+"drt" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "drD" = (
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
@@ -6946,6 +7013,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/firedoor,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ecN" = (
@@ -7467,13 +7535,12 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "ewh" = (
-/obj/machinery/door/airlock/multi_tile/metal{
-	dir = 1;
-	req_access_txt = "151"
+/obj/structure/flora/tree/jungle{
+	pixel_x = -24;
+	pixel_y = -46
 	},
-/obj/structure/fans/tiny,
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/lavaland/unpowered/deepspaceone/security)
+/turf/open/floor/grass/grass1,
+/area/ruin/lavaland/unpowered)
 "ewQ" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -7921,6 +7988,8 @@
 	icon_state = "1-2"
 	},
 /obj/structure/extinguisher_cabinet/directional/east,
+/obj/structure/disposalpipe/segment,
+/obj/effect/turf_decal/siding/dark/corner,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "eKE" = (
@@ -8253,6 +8322,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "eUL" = (
@@ -8297,6 +8369,9 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "eWI" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "eWK" = (
@@ -8349,13 +8424,20 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "eYt" = (
-/obj/effect/turf_decal/tile/green/anticorner/contrasted{
-	dir = 1
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 9
 	},
-/turf/open/floor/plasteel/dark/textured/corner,
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark/corner,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "eYA" = (
 /obj/effect/turf_decal/siding/dark{
@@ -8685,6 +8767,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"fhV" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "fid" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
@@ -8841,6 +8932,10 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"fma" = (
+/obj/structure/flora/tree/spookylog,
+/turf/open/floor/grass/grass1,
+/area/ruin/lavaland/unpowered)
 "fmJ" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -8939,6 +9034,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "foU" = (
@@ -9031,6 +9129,9 @@
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "frL" = (
@@ -9411,16 +9512,8 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "fDE" = (
-/obj/item/storage/box/stockparts/deluxe,
-/obj/structure/closet/crate,
-/obj/item/storage/bag/trash,
-/obj/item/mop,
 /obj/machinery/light{
 	dir = 4
-	},
-/obj/machinery/airalarm/directional/north{
-	req_access_txt = "150";
-	req_access = list(150)
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
@@ -9928,6 +10021,13 @@
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"fRB" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered)
 "fRU" = (
 /turf/closed/wall,
 /area/mine/production)
@@ -10583,6 +10683,9 @@
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/structure/disposalpipe/segment{
+	dir = 5
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "gkU" = (
@@ -10591,6 +10694,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "gkY" = (
@@ -10663,6 +10767,10 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/mine/eva)
+"goz" = (
+/obj/structure/flora/biolumi/mine,
+/turf/open/floor/grass/grass1,
+/area/ruin/lavaland/unpowered)
 "goM" = (
 /obj/structure/table/wood/fancy/red,
 /obj/item/paper_bin,
@@ -10818,6 +10926,9 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer5,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"gtv" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/ruin/lavaland/unpowered)
 "gtA" = (
 /obj/structure/bookcase/random,
 /turf/open/floor/wood/wood_large,
@@ -11530,6 +11641,12 @@
 	},
 /turf/open/floor/grass/grass0,
 /area/ruin/lavaland/unpowered)
+"gMZ" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 10
+	},
+/turf/open/pool,
+/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "gNp" = (
 /obj/structure/stone_tile{
 	dir = 1
@@ -12134,6 +12251,14 @@
 /obj/item/seeds/tower,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"hgI" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "hgY" = (
 /obj/item/stack/sheet/hairlesshide{
 	pixel_x = 3;
@@ -12298,6 +12423,17 @@
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"hoI" = (
+/obj/item/storage/box/stockparts/deluxe,
+/obj/structure/closet/crate,
+/obj/item/storage/bag/trash,
+/obj/item/mop,
+/obj/machinery/airalarm/directional/north{
+	req_access_txt = "150";
+	req_access = list(150)
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "hoY" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/ausbushes/grassybush,
@@ -12660,7 +12796,6 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "hyW" = (
-/obj/machinery/rnd/server/syndicate,
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1;
 	external_pressure_bound = 140;
@@ -12736,7 +12871,6 @@
 /turf/open/floor/carpet/royalblue,
 /area/mine/storage)
 "hAu" = (
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg1"
 	},
@@ -13223,6 +13357,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/disposalpipe/segment{
+	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
+	dir = 10;
+	name = "Acid-Proof disposal pipe"
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "hMV" = (
@@ -13381,7 +13520,6 @@
 	},
 /area/mine/xenoarch)
 "hQX" = (
-/obj/structure/table/reinforced,
 /obj/machinery/recharger{
 	pixel_x = 6;
 	pixel_y = -2
@@ -13390,6 +13528,7 @@
 	pixel_x = -7;
 	pixel_y = -2
 	},
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "hRj" = (
@@ -13744,12 +13883,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
-"ibN" = (
-/obj/structure/closet/cabinet{
-	pixel_x = -6
-	},
-/turf/open/floor/plasteel/showroomfloor,
-/area/mine/xenoarch_area_b)
 "icc" = (
 /obj/machinery/button/door{
 	id = "AbandonedCabinDorm";
@@ -13903,6 +14036,9 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ihs" = (
@@ -14069,6 +14205,12 @@
 /obj/item/gun/energy/plasmacutter,
 /obj/item/gun/energy/plasmacutter,
 /obj/structure/closet/crate,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/clothing/glasses/meson/night,
+/obj/item/clothing/glasses/meson/night,
+/obj/item/clothing/glasses/meson/night,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ill" = (
@@ -14083,6 +14225,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ime" = (
@@ -14354,10 +14497,10 @@
 /turf/open/floor/plasteel/smooth/half,
 /area/mine/xenoarch_area_c)
 "iug" = (
-/obj/structure/sign/poster/official/no_erp{
-	pixel_y = 32
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 9
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "ium" = (
 /obj/structure/stone_tile/cracked{
@@ -14762,6 +14905,13 @@
 /obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"iIg" = (
+/obj/structure/flora/tree/jungle{
+	pixel_x = -24;
+	pixel_y = -46
+	},
+/turf/open/floor/grass/grass0,
+/area/ruin/lavaland/unpowered)
 "iIt" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
@@ -14789,6 +14939,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment{
+	dir = 6
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "iJm" = (
@@ -14815,6 +14968,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "iJX" = (
@@ -15321,6 +15475,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "jbV" = (
@@ -15666,6 +15823,7 @@
 /obj/effect/turf_decal/siding/wood/thin{
 	dir = 9
 	},
+/obj/machinery/firealarm/directional/west,
 /turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "jkU" = (
@@ -15729,8 +15887,14 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
-/obj/effect/turf_decal/tile/green/anticorner/contrasted,
-/turf/open/floor/plasteel/dark/textured/corner{
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark/corner{
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
@@ -15842,14 +16006,13 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
 "jpt" = (
-/obj/machinery/door/airlock/security/glass{
-	name = "Security";
-	req_access_txt = "151"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/security{
+	req_access_txt = "151"
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "jpI" = (
@@ -15978,6 +16141,9 @@
 	dir = 8
 	},
 /obj/machinery/door/firedoor,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "jsN" = (
@@ -16033,6 +16199,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 8
@@ -16407,6 +16576,11 @@
 	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"jFv" = (
+/obj/structure/flora/tree/spookybranch,
+/obj/structure/flora/ausbushes,
+/turf/open/floor/grass/grass3,
+/area/ruin/lavaland/unpowered)
 "jFL" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
@@ -16855,6 +17029,10 @@
 	},
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"jQN" = (
+/obj/structure/flora/tree/spookybranch,
+/turf/open/floor/grass/grass1,
+/area/ruin/lavaland/unpowered)
 "jRc" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
@@ -17085,13 +17263,17 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jZC" = (
-/obj/structure/mineral_door/paperframe,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/machinery/door/airlock/wood{
+	name = "Sauna";
+	id_tag = "sauna_arch"
+	},
+/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "jZD" = (
@@ -17271,6 +17453,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -17740,6 +17925,7 @@
 	icon_state = "terminal";
 	pixel_y = 31
 	},
+/obj/structure/disposalpipe/junction/yjunction,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ksF" = (
@@ -17912,7 +18098,10 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/machinery/recharge_station,
+/obj/item/xenoarch/help/cargo/ds,
+/obj/item/xenoarch/help/cargo/ds,
+/obj/item/xenoarch/help/cargo/ds,
+/obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "kyx" = (
@@ -18125,11 +18314,11 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/biolab)
 "kHA" = (
-/obj/structure/table/wood/fancy/monochrome,
-/obj/structure/bedsheetbin/towel,
-/obj/item/soap/syndie,
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "kHZ" = (
 /obj/machinery/camera/xray/directional/west{
 	c_tag = "DS-1 cargostorage";
@@ -18204,6 +18393,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -18746,6 +18938,10 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_b)
+"kYu" = (
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "kYK" = (
 /obj/effect/turf_decal/delivery,
 /obj/structure/closet/crate,
@@ -18947,6 +19143,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -19257,6 +19456,11 @@
 	initial_gas_mix = "o2=14;n2=23;TEMP=300"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers)
+"llQ" = (
+/obj/structure/flora/tree/spookylog,
+/obj/structure/flora/biolumi/mine,
+/turf/open/floor/grass/grass2,
+/area/ruin/lavaland/unpowered)
 "llS" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
@@ -19981,6 +20185,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 9
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "lHk" = (
@@ -20039,6 +20246,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
@@ -20114,6 +20324,9 @@
 	pixel_x = null;
 	dir = 8;
 	pixel_y = -5
+	},
+/obj/structure/disposalpipe/trunk{
+	dir = 8
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
@@ -20237,6 +20450,10 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"lOt" = (
+/obj/structure/mirror/directional/east,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "lOO" = (
 /obj/item/spear/bonespear/Khasal,
 /obj/effect/mob_spawn/human/corpse/damaged,
@@ -20335,6 +20552,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"lSX" = (
+/obj/structure/marker_beacon/bronze,
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "lTh" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -20556,6 +20778,7 @@
 /obj/machinery/light,
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/misc/recharge,
+/obj/structure/mecha_wreckage/mauler,
 /turf/open/floor/plasteel/smooth/half,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "lZS" = (
@@ -20645,6 +20868,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
+/obj/structure/disposalpipe/junction{
+	dir = 8
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "men" = (
@@ -20716,9 +20942,6 @@
 	gpstag = "INTRDYN0"
 	},
 /obj/effect/turf_decal/box/white,
-/obj/item/pickaxe/drill,
-/obj/item/pickaxe/drill,
-/obj/item/pickaxe/drill,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "meK" = (
@@ -20781,6 +21004,18 @@
 	},
 /turf/open/water/safe/cooling_luiquid,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"mfz" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "mfE" = (
 /obj/structure/stone_tile/surrounding_tile/cracked{
 	dir = 1
@@ -20979,14 +21214,9 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "mma" = (
-/obj/structure/sink{
-	pixel_y = 24
-	},
-/obj/structure/mirror{
-	pixel_y = 32
-	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/mineral_door/paperframe,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "mme" = (
 /obj/structure/stone_tile,
 /obj/structure/stone_tile{
@@ -21184,6 +21414,11 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"mqB" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "mqF" = (
 /obj/item/fuel_rod{
 	pixel_x = 6
@@ -21231,9 +21466,6 @@
 /obj/machinery/door/airlock/virology{
 	name = "Inderdyne virology lab";
 	req_access_txt = "150"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -21284,6 +21516,7 @@
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_c)
 "mtp" = (
+/obj/effect/turf_decal/siding/dark,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "mtt" = (
@@ -21435,14 +21668,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "mxe" = (
-/obj/effect/turf_decal/tile/green/anticorner/contrasted{
-	dir = 4
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 5
 	},
-/obj/structure/table,
-/obj/item/kirbyplants/random{
-	pixel_y = 6
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
 	},
-/turf/open/floor/plasteel/dark/textured/corner{
+/turf/open/floor/plasteel/dark/corner{
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
@@ -21869,14 +22102,14 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
 "mGP" = (
-/obj/effect/turf_decal/tile/green/half/contrasted{
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
 	dir = 4
 	},
-/obj/structure/chair/sofa/bench/right{
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
 	dir = 8
-	},
-/turf/open/floor/plasteel/dark/textured/edge{
-	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "mHf" = (
@@ -22140,11 +22373,10 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "mNg" = (
-/obj/machinery/door/airlock/multi_tile/metal{
-	dir = 4;
+/obj/machinery/door/airlock/security{
 	req_access_txt = "151"
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "mNm" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -22312,9 +22544,20 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "mRa" = (
-/obj/effect/turf_decal/tile/green/full,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/ruin/lavaland/unpowered/deepspaceone/virology)
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "mRq" = (
 /obj/item/pickaxe,
 /obj/structure/table/wood/shadow,
@@ -22820,6 +23063,9 @@
 /area/mine/xenoarch_area_c)
 "ndA" = (
 /obj/machinery/disposal/bin,
+/obj/structure/disposalpipe/trunk{
+	dir = 8
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ndP" = (
@@ -23051,14 +23297,18 @@
 /turf/open/pool/water,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "nkK" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/disposalpipe/segment,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
+/obj/machinery/disposal/bin,
+/obj/structure/disposalpipe/trunk{
+	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/lavaland/unpowered/deepspaceone/virology)
+/obj/effect/turf_decal/stripes/red{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "nkX" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 8
@@ -23088,10 +23338,10 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "nma" = (
-/obj/machinery/light{
-	dir = 1
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 5
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "nmj" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -23296,6 +23546,12 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "npX" = (
@@ -23362,6 +23618,15 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/catwalk_floor/iron,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"nrX" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "nrY" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
@@ -23687,29 +23952,19 @@
 /turf/open/floor/circuit/green,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "nzc" = (
-/obj/effect/turf_decal/tile/green/half/contrasted{
-	dir = 4
+/obj/structure/flora/tree/jungle{
+	pixel_x = -24;
+	pixel_y = -46
 	},
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/structure/chair/sofa/bench/left{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark/textured/edge{
-	dir = 4
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/virology)
+/turf/open/floor/grass/grass3,
+/area/ruin/lavaland/unpowered)
 "nzT" = (
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "nAh" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 4
-	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "nAH" = (
 /obj/structure/chair/comfy{
 	color = "#800000";
@@ -23728,7 +23983,7 @@
 /turf/open/floor/carpet/royalblue,
 /area/mine/storage)
 "nBc" = (
-/obj/structure/urbanismmachines/server,
+/obj/machinery/rnd/server/syndicate,
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "nBi" = (
@@ -24369,9 +24624,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
 /obj/machinery/door/airlock/virology{
 	autoclose = 0;
 	frequency = 1449;
@@ -24449,10 +24701,10 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
+/obj/structure/disposalpipe/junction/flip,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "nTS" = (
@@ -24889,8 +25141,9 @@
 	req_access_txt = "150"
 	},
 /obj/structure/cable/yellow,
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/table/wood,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "ogk" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
@@ -25521,6 +25774,12 @@
 "ozK" = (
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"ozY" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ozZ" = (
 /turf/open/floor/plasteel/dark{
 	initial_gas_mix = "LAVALAND_ATMOS"
@@ -25980,6 +26239,9 @@
 	pixel_x = null;
 	dir = 5
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "oJJ" = (
@@ -26059,6 +26321,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 4
@@ -26194,6 +26459,11 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/xenoarch_area_c)
+"oPd" = (
+/obj/structure/flora/rock/jungle,
+/obj/structure/flora/ausbushes,
+/turf/open/floor/grass/grass3,
+/area/ruin/lavaland/unpowered)
 "oPk" = (
 /obj/machinery/portable_atmospherics/canister/air,
 /turf/open/floor/plating,
@@ -26266,7 +26536,6 @@
 /turf/open/floor/carpet/black,
 /area/mine/storage)
 "oSV" = (
-/obj/structure/table/reinforced,
 /obj/item/bodybag/containment/prisoner/syndicate{
 	pixel_x = -7;
 	pixel_y = 14
@@ -26279,6 +26548,7 @@
 	pixel_x = 0;
 	pixel_y = 7
 	},
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "oTq" = (
@@ -26557,7 +26827,10 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
 "pbO" = (
-/obj/structure/closet/cabinet,
+/obj/structure/closet/secure_closet/personal/cabinet{
+	anchored = 1;
+	should_populate_contents = 0
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "pbQ" = (
@@ -27177,6 +27450,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "pzv" = (
@@ -27494,6 +27768,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
 	},
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "pIO" = (
@@ -27701,6 +27976,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
+	dir = 4;
+	name = "Acid-Proof disposal pipe"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "pOw" = (
@@ -27860,7 +28140,8 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 9
 	},
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/engine,
 /area/mine/xenoarch_area_b)
 "pSY" = (
 /obj/structure/stone_tile/slab,
@@ -28002,10 +28283,13 @@
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "pXB" = (
 /obj/effect/turf_decal/stripes/red,
-/obj/machinery/vending/snack/max_vulpix,
+/obj/machinery/vending/donksofttoyvendor,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "pXD" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 8
+	},
 /obj/structure/pool/ladder,
 /turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
@@ -28145,10 +28429,13 @@
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "qbW" = (
-/obj/structure/toilet/secret/high_loot{
-	dir = 8
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 4
 	},
-/turf/open/indestructible/hoteltile,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "qcd" = (
 /obj/structure/stone_tile/surrounding_tile/cracked,
@@ -28294,7 +28581,7 @@
 /area/lavaland/necropolis)
 "qgL" = (
 /obj/effect/turf_decal/delivery,
-/obj/vehicle/sealed/mecha/working/ripley/loaded,
+/obj/vehicle/sealed/mecha/working/ripley/mining,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "qgP" = (
@@ -28763,10 +29050,9 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp/security)
 "qvq" = (
-/obj/machinery/light,
-/obj/effect/turf_decal/tile/green/full,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/ruin/lavaland/unpowered/deepspaceone/virology)
+/obj/structure/flora/biolumi/lamp,
+/turf/open/floor/grass/grass3,
+/area/ruin/lavaland/unpowered)
 "qvv" = (
 /obj/structure/closet/crate/internals{
 	anchored = 1
@@ -28953,6 +29239,10 @@
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"qAZ" = (
+/obj/structure/flora/tree/jungle/small,
+/turf/open/floor/grass/grass1,
+/area/ruin/lavaland/unpowered)
 "qBb" = (
 /obj/structure/table/wood,
 /obj/item/instrument/guitar,
@@ -29649,6 +29939,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
+/obj/effect/turf_decal/siding/dark/corner,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "qVO" = (
@@ -29745,11 +30036,11 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "qXu" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 1
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
 	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "qXx" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
@@ -29929,7 +30220,10 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/mineral/plastitanium,
+/obj/machinery/door/airlock/security{
+	req_access_txt = "151"
+	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "rbh" = (
 /obj/structure/cable/yellow{
@@ -30560,6 +30854,10 @@
 /obj/machinery/light/floor,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
+"ruk" = (
+/obj/structure/flora/biolumi,
+/turf/open/floor/grass/grass2,
+/area/ruin/lavaland/unpowered)
 "ruN" = (
 /obj/machinery/camera{
 	c_tag = "Xenoarchaeology Security Checkpoint";
@@ -31116,6 +31414,9 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "rLC" = (
@@ -31177,6 +31478,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -31310,15 +31614,10 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "rPJ" = (
-/obj/effect/turf_decal/stripes/red,
-/obj/structure/urbanismmounted{
-	icon_state = "terminal";
-	pixel_y = 31
+/obj/machinery/disposal/bin,
+/obj/structure/disposalpipe/trunk{
+	dir = 4
 	},
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/machinery/vending/donksofttoyvendor,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "rQg" = (
@@ -31564,12 +31863,6 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
-"rYA" = (
-/obj/machinery/porta_turret/syndicate{
-	dir = 10
-	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "rYG" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
@@ -31702,6 +31995,14 @@
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"sfz" = (
+/obj/structure/disposalpipe/segment{
+	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
+	dir = 4;
+	name = "Acid-Proof disposal pipe"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "sfL" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/rivets/half{
@@ -31963,8 +32264,10 @@
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "slN" = (
-/obj/structure/fans/tiny,
-/turf/open/floor/mineral/plastitanium/red,
+/obj/machinery/door/airlock/security{
+	req_access_txt = "151"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "smh" = (
 /obj/effect/turf_decal/trimline/dark/line{
@@ -32057,6 +32360,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -32768,7 +33074,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "sKA" = (
 /turf/open/floor/engine/n2,
@@ -32832,6 +33138,13 @@
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"sLV" = (
+/obj/machinery/light/small,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "sMa" = (
 /obj/structure/closet/crate{
 	opened = 1
@@ -32944,6 +33257,8 @@
 /obj/structure/sign/poster/official/mothepinephrine{
 	pixel_y = 32
 	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/item/wrench/medical,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "sRJ" = (
@@ -33485,15 +33800,14 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "teP" = (
-/obj/effect/turf_decal/tile/green/half/contrasted{
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
 	dir = 8
 	},
-/obj/machinery/light{
-	dir = 8;
-	light_color = "#e8eaff"
-	},
-/turf/open/floor/plasteel/dark/textured/edge{
+/obj/effect/turf_decal/siding/dark{
 	dir = 8
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "teQ" = (
@@ -33899,6 +34213,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 8
 	},
@@ -33915,12 +34232,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "tsC" = (
 /obj/structure/flora/junglebush/c,
-/obj/machinery/porta_turret/syndicate{
-	dir = 5;
-	pixel_x = -32
-	},
+/obj/structure/marker_beacon/burgundy,
 /turf/open/floor/grass/grass0,
-/area/ruin/lavaland/unpowered)
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "tsW" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -34141,6 +34455,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"tAy" = (
+/obj/structure/flora/biolumi,
+/turf/open/floor/grass/grass3,
+/area/ruin/lavaland/unpowered)
 "tAA" = (
 /obj/structure/chair/stool/bar/directional/west,
 /turf/open/floor/holofloor/carpet,
@@ -34441,6 +34759,9 @@
 /obj/machinery/atmospherics/pipe/simple/general/hidden/layer4,
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
+"tJi" = (
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "tJm" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -34578,6 +34899,12 @@
 	dir = 8
 	},
 /area/mine/xenoarch_area_c)
+"tMJ" = (
+/obj/machinery/conveyor{
+	id = "interdynedisp"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "tNe" = (
 /obj/structure/flora/junglebush/b,
 /turf/open/floor/plating/dirt/dark/jungle,
@@ -34999,6 +35326,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "uaT" = (
@@ -35064,6 +35394,13 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/machinery/button/door{
+	id = "sauna_arch";
+	name = "Door Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	pixel_y = 25
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "udb" = (
@@ -35120,6 +35457,13 @@
 	},
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"ueB" = (
+/obj/structure/cable/yellow,
+/obj/machinery/power/port_gen/pacman/super,
+/obj/item/stack/sheet/mineral/uranium/five,
+/obj/item/stack/sheet/mineral/uranium/five,
+/turf/open/floor/catwalk_floor,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "ueH" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/vending/cigarette/syndicate,
@@ -35307,6 +35651,11 @@
 "uiT" = (
 /turf/open/floor/plasteel,
 /area/mine/storage)
+"ujc" = (
+/obj/structure/disposalpipe/segment,
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "ujh" = (
 /obj/item/radio/intercom{
 	dir = 8;
@@ -35348,6 +35697,9 @@
 	dir = 5;
 	pixel_y = -30
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ukh" = (
@@ -35358,6 +35710,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "uko" = (
@@ -35446,10 +35799,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "umc" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /obj/effect/turf_decal/siding/dark{
-	dir = 5;
-	pixel_x = 0;
-	pixel_y = 0
+	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
@@ -35579,7 +35933,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/catwalk_floor/iron_dark,
+/turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "upm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -36153,7 +36507,7 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/effect/mapping_helpers/airlock/locked,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "uGK" = (
@@ -36167,6 +36521,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
+/obj/effect/turf_decal/siding/dark/corner,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "uIq" = (
@@ -36179,6 +36534,9 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/structure/disposalpipe/segment{
+	dir = 6
+	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "uJl" = (
@@ -36245,8 +36603,11 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "uKW" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on{
+	external_pressure_bound = 120;
+	name = "server vent"
+	},
 /obj/machinery/rnd/server/syndicate,
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on,
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "uLa" = (
@@ -37133,7 +37494,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/effect/mapping_helpers/airlock/locked,
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "viY" = (
@@ -37983,6 +38344,9 @@
 /area/mine/eva)
 "vLd" = (
 /obj/machinery/light/small,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "vLo" = (
@@ -38004,6 +38368,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "vLJ" = (
 /obj/structure/disposalpipe/segment,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "vLL" = (
@@ -38917,6 +39284,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "wxf" = (
@@ -39338,11 +39708,12 @@
 	},
 /obj/item/storage/box/syndie_kit/chameleon,
 /obj/item/dualsaber,
-/obj/item/storage/backpack/duffelbag/syndie/ammo/shotgun,
-/obj/item/gun/ballistic/automatic/shotgun/bulldog,
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/item/gun/ballistic/automatic/sniper_rifle,
+/obj/item/ammo_box/magazine/sniper_rounds,
+/obj/item/ammo_box/magazine/sniper_rounds,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "wJs" = (
@@ -39367,6 +39738,18 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
+"wJM" = (
+/obj/effect/turf_decal/stripes/red,
+/obj/structure/urbanismmounted{
+	icon_state = "terminal";
+	pixel_y = 31
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/vending/snack/random,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "wKt" = (
 /obj/machinery/door/airlock/external{
 	name = "Science Outpost Airlock"
@@ -39660,11 +40043,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "wRm" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/syndie/surgery,
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 8
 	},
@@ -39675,6 +40060,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/warning{
 	dir = 8
 	},
+/obj/item/storage/backpack/duffelbag/syndie/surgery_adv,
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "wRu" = (
@@ -40283,6 +40669,17 @@
 	},
 /turf/open/floor/grass/grass2,
 /area/ruin/lavaland/unpowered)
+"xgc" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5;
+	pixel_x = 0;
+	pixel_y = 0
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "xgg" = (
 /obj/machinery/air_sensor/atmos/oxygen_tank,
 /turf/open/floor/engine/o2,
@@ -40541,6 +40938,7 @@
 /obj/item/gun_voucher/syndicate,
 /obj/item/gun_voucher/syndicate,
 /obj/item/card/id/departmental_budget/ds,
+/obj/item/clothing/accessory/medal/gold,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "xqz" = (
@@ -41266,8 +41664,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "xJo" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -41558,6 +41956,13 @@
 	dir = 4
 	},
 /area/mine/xenoarch_area_c)
+"xRo" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/ruin/lavaland/unpowered/deepspaceone/virology)
 "xRp" = (
 /obj/effect/turf_decal/stripes/red{
 	dir = 1
@@ -41588,8 +41993,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "xRV" = (
 /obj/structure/reagent_dispensers/foamtank,
 /turf/open/floor/plating,
@@ -42049,8 +42454,11 @@
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "ygF" = (
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/main_shower)
+/obj/structure/table/wood,
+/obj/item/soap/syndie,
+/obj/structure/bedsheetbin/towel,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "ygJ" = (
 /obj/structure/closet/crate/bin,
 /turf/open/floor/holofloor{
@@ -42204,24 +42612,24 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -42462,23 +42870,23 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -42719,22 +43127,22 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -42976,21 +43384,21 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -43233,21 +43641,21 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -43490,20 +43898,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -43511,10 +43905,24 @@ llq
 llq
 llq
 llq
-tfw
-tfw
-eia
-eia
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+bUy
+bUy
+bUy
+bUy
+fmM
 eia
 tfw
 tfw
@@ -43747,19 +44155,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -43767,11 +44162,24 @@ llq
 llq
 llq
 llq
-ghB
-ghB
-ghB
-ghB
-fmM
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+lIT
+bZG
+kYu
+lIT
+bNx
 eia
 tfw
 tfw
@@ -44005,17 +44413,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -44024,7 +44421,18 @@ llq
 llq
 llq
 llq
-piD
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+bZG
 bZG
 bZG
 bZG
@@ -44262,17 +44670,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -44281,9 +44678,20 @@ llq
 llq
 llq
 llq
-piD
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 bZG
-lIT
+bZG
+bZG
 bZG
 wnY
 tfw
@@ -44519,16 +44927,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -44538,10 +44936,20 @@ llq
 llq
 llq
 llq
-piD
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+lSX
 bZG
 bZG
-bZG
+lSX
 wnY
 eia
 eia
@@ -44776,15 +45184,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
 llq
 llq
@@ -44795,7 +45194,16 @@ llq
 llq
 llq
 llq
-ukP
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+fRB
 dqZ
 bZG
 npe
@@ -45033,14 +45441,14 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -45290,13 +45698,13 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -45547,13 +45955,13 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -45804,12 +46212,12 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -46061,11 +46469,11 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -46105,7 +46513,7 @@ tfw
 tfw
 tfw
 eia
-eia
+llq
 llq
 llq
 llq
@@ -46318,10 +46726,10 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
+llq
 llq
 llq
 llq
@@ -46362,7 +46770,7 @@ tfw
 tfw
 eia
 eia
-eia
+llq
 llq
 llq
 llq
@@ -46575,9 +46983,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
-hbZ
+llq
+llq
+llq
 llq
 llq
 llq
@@ -46619,7 +47027,7 @@ tfw
 tfw
 tfw
 eia
-eia
+llq
 llq
 llq
 llq
@@ -46832,8 +47240,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
+llq
+llq
 llq
 llq
 llq
@@ -46874,9 +47282,9 @@ iKq
 ylT
 tfw
 tfw
-tfw
 eia
 eia
+llq
 llq
 llq
 llq
@@ -47088,8 +47496,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
-hbZ
+llq
+llq
 llq
 llq
 llq
@@ -47131,9 +47539,9 @@ ylT
 ylT
 tfw
 tfw
-tfw
 eia
 eia
+llq
 llq
 llq
 llq
@@ -47345,7 +47753,7 @@ hbZ
 hbZ
 hbZ
 hbZ
-hbZ
+llq
 llq
 llq
 llq
@@ -47388,7 +47796,7 @@ ylT
 eia
 tfw
 tfw
-tfw
+eia
 eia
 eia
 llq
@@ -47645,11 +48053,11 @@ eia
 tfw
 tfw
 tfw
-tfw
 eia
 eia
-llq
-llq
+eia
+ygf
+ygf
 llq
 llq
 llq
@@ -47904,12 +48312,12 @@ tfw
 tfw
 eia
 eia
-llq
-llq
-llq
-llq
-llq
-llq
+vdk
+ygf
+goz
+vdk
+cVZ
+vdk
 llq
 llq
 llq
@@ -48114,7 +48522,7 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
 llq
 llq
 llq
@@ -48161,13 +48569,13 @@ tfw
 tfw
 eia
 eia
-llq
-llq
-llq
-llq
-llq
-llq
-llq
+vdk
+ygf
+qAZ
+fma
+tAy
+asY
+vdk
 llq
 llq
 llq
@@ -48417,14 +48825,14 @@ eia
 tfw
 tfw
 eia
-eia
-eia
-llq
-llq
-llq
-llq
-llq
-llq
+bym
+ygf
+ruk
+bym
+jQN
+bym
+iIg
+cVZ
 llq
 llq
 llq
@@ -48674,14 +49082,14 @@ tfw
 tfw
 tfw
 eia
-eia
-eia
-llq
-llq
-llq
-llq
-llq
-llq
+bym
+qAZ
+vdk
+oPd
+bym
+bym
+tSD
+vdk
 llq
 llq
 llq
@@ -48931,14 +49339,14 @@ tfw
 tfw
 tfw
 eia
-eia
-eia
-llq
-llq
-llq
-llq
-llq
-llq
+bym
+nzc
+jFv
+qvq
+bym
+ygf
+tSD
+vdk
 llq
 llq
 llq
@@ -49188,13 +49596,13 @@ tfw
 tfw
 eia
 eia
-eia
-eia
-llq
-llq
-llq
-llq
-llq
+bym
+vdk
+bym
+ygf
+ewh
+vlR
+vdk
 llq
 llq
 llq
@@ -49445,12 +49853,12 @@ tfw
 eia
 eia
 eia
-llq
-llq
-llq
-llq
-llq
-llq
+vdk
+vdk
+bym
+tSD
+tSD
+vdk
 llq
 llq
 llq
@@ -49701,13 +50109,13 @@ tfw
 tfw
 eia
 eia
-llq
-llq
-llq
-llq
-llq
-llq
-llq
+eia
+vdk
+llQ
+tSD
+tSD
+vdk
+vdk
 llq
 llq
 llq
@@ -49960,10 +50368,10 @@ tfw
 eia
 eia
 eia
-llq
-llq
-llq
-llq
+vdk
+cVZ
+asY
+vdk
 eia
 eia
 tfw
@@ -53726,7 +54134,7 @@ gdj
 gdj
 "}
 (46,1,1) = {"
-llq
+hbZ
 hbZ
 llq
 llq
@@ -53983,7 +54391,7 @@ gdj
 gdj
 "}
 (47,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -54240,7 +54648,7 @@ gdj
 gdj
 "}
 (48,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -54497,7 +54905,7 @@ gdj
 gdj
 "}
 (49,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -54754,7 +55162,7 @@ gdj
 gdj
 "}
 (50,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -55011,7 +55419,7 @@ gdj
 gdj
 "}
 (51,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -55268,7 +55676,7 @@ gdj
 gdj
 "}
 (52,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -55525,7 +55933,7 @@ gdj
 gdj
 "}
 (53,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -55782,7 +56190,7 @@ gdj
 gdj
 "}
 (54,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -56039,7 +56447,7 @@ gdj
 gdj
 "}
 (55,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -56296,7 +56704,7 @@ gdj
 gdj
 "}
 (56,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -56553,7 +56961,7 @@ gdj
 gdj
 "}
 (57,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -56810,7 +57218,7 @@ gdj
 gdj
 "}
 (58,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -57067,7 +57475,7 @@ gdj
 gdj
 "}
 (59,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -57324,7 +57732,7 @@ gdj
 gdj
 "}
 (60,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -57581,7 +57989,7 @@ gdj
 gdj
 "}
 (61,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -57838,7 +58246,7 @@ gdj
 gdj
 "}
 (62,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -58095,7 +58503,7 @@ gdj
 gdj
 "}
 (63,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -58352,7 +58760,7 @@ gdj
 gdj
 "}
 (64,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -58408,9 +58816,9 @@ vBl
 cpd
 bnw
 uHw
-feF
+bcm
 oIS
-feF
+bcm
 aqI
 bnw
 rkJ
@@ -58609,7 +59017,7 @@ gdj
 gdj
 "}
 (65,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -58664,7 +59072,7 @@ oBe
 xEG
 kKy
 nda
-eWI
+mqB
 gzQ
 ccv
 vik
@@ -58866,7 +59274,7 @@ gdj
 gdj
 "}
 (66,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -58921,7 +59329,7 @@ ngq
 rGD
 aww
 whC
-vLJ
+ujc
 eja
 bZh
 dWt
@@ -59123,7 +59531,7 @@ gdj
 gdj
 "}
 (67,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -59178,7 +59586,7 @@ xnr
 nJy
 fDL
 sCZ
-eYr
+hgI
 iXL
 nGs
 shy
@@ -59380,7 +59788,7 @@ gdj
 gdj
 "}
 (68,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -59435,11 +59843,11 @@ nyj
 cxq
 ssG
 bnw
-uHw
-feF
-feF
-feF
-aqI
+fhV
+qXu
+qXu
+qXu
+sLV
 bnw
 aNj
 qkJ
@@ -59637,7 +60045,7 @@ gdj
 gdj
 "}
 (69,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -59894,7 +60302,7 @@ gdj
 gdj
 "}
 (70,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -59932,9 +60340,9 @@ nUY
 nUY
 qVe
 jbS
-mtp
-mtp
-vLd
+cmG
+cmG
+ckW
 nUY
 mmn
 kwj
@@ -60151,7 +60559,7 @@ gdj
 gdj
 "}
 (71,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -60408,7 +60816,7 @@ gdj
 gdj
 "}
 (72,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -60448,7 +60856,7 @@ mtp
 kLF
 ljT
 rmX
-mtp
+ozY
 nUY
 kwj
 kwj
@@ -60665,7 +61073,7 @@ gdj
 gdj
 "}
 (73,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -60922,7 +61330,7 @@ gdj
 gdj
 "}
 (74,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -60958,7 +61366,7 @@ eia
 gHO
 nUY
 nUY
-qVe
+nrX
 wRl
 cPP
 wwN
@@ -60978,7 +61386,7 @@ xDQ
 noK
 jys
 vqj
-ndA
+rPJ
 qQk
 rIS
 kcK
@@ -61179,7 +61587,7 @@ gdj
 gdj
 "}
 (75,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -61235,7 +61643,7 @@ nbO
 owA
 pTp
 pTp
-pTp
+sfz
 qQk
 xFo
 kcK
@@ -61436,7 +61844,7 @@ gdj
 gdj
 "}
 (76,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -61693,7 +62101,7 @@ gdj
 gdj
 "}
 (77,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -61950,7 +62358,6 @@ gdj
 gdj
 "}
 (78,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -61967,10 +62374,11 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 llq
@@ -62008,7 +62416,7 @@ cCq
 tvx
 iJk
 viO
-gkH
+cWu
 pTp
 qQk
 oFj
@@ -62207,7 +62615,6 @@ gdj
 gdj
 "}
 (79,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -62227,11 +62634,12 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -62263,7 +62671,7 @@ nbO
 owA
 pTp
 pTp
-pTp
+sfz
 qQk
 ksC
 ilO
@@ -62464,7 +62872,6 @@ gdj
 gdj
 "}
 (80,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -62488,7 +62895,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -62721,7 +63129,6 @@ gdj
 gdj
 "}
 (81,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -62745,8 +63152,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -62773,7 +63181,7 @@ tke
 iwU
 eBl
 dIK
-rYA
+dIK
 dIK
 dIK
 dIK
@@ -62784,7 +63192,7 @@ sBJ
 qQk
 hJY
 sUB
-pWB
+mfz
 biw
 bCt
 wih
@@ -62828,10 +63236,10 @@ pHm
 wQZ
 pHm
 nUw
-tfw
-tfw
-tfw
-tfw
+eia
+eia
+eia
+eia
 tfw
 tfw
 tfw
@@ -62978,7 +63386,6 @@ gdj
 gdj
 "}
 (82,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -63002,9 +63409,10 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -63041,7 +63449,7 @@ kcK
 qQk
 uDr
 sUB
-pWB
+mfz
 qQk
 qQk
 qQk
@@ -63088,8 +63496,8 @@ llX
 aUd
 aDo
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -63235,7 +63643,6 @@ gdj
 gdj
 "}
 (83,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -63260,8 +63667,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -63298,7 +63706,7 @@ kcK
 qQk
 hJY
 sUB
-pWB
+mfz
 bCt
 bCt
 bCt
@@ -63334,7 +63742,7 @@ iVB
 wwd
 oIr
 qOp
-wQZ
+vuo
 wQZ
 wQZ
 wQZ
@@ -63346,7 +63754,7 @@ teB
 teB
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -63492,7 +63900,6 @@ gdj
 gdj
 "}
 (84,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -63517,8 +63924,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -63556,7 +63964,7 @@ qQk
 gOk
 ryB
 hMM
-npW
+drt
 eKD
 npW
 qUq
@@ -63603,8 +64011,8 @@ sDX
 teB
 teB
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -63749,7 +64157,6 @@ gdj
 gdj
 "}
 (85,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -63775,8 +64182,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -63815,7 +64223,7 @@ qQk
 raY
 mNg
 qQk
-qQk
+nkK
 mUS
 qdd
 rcM
@@ -63846,7 +64254,7 @@ oxx
 bFW
 wHU
 kXg
-mQf
+ueB
 qOp
 gmH
 wQZ
@@ -63861,7 +64269,7 @@ aBh
 aBh
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -64006,7 +64414,6 @@ gdj
 gdj
 "}
 (86,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -64033,7 +64440,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -64064,12 +64472,12 @@ qXK
 kZq
 dIK
 jAp
-rIS
+mRa
 xPi
 iUV
 qQk
 pXB
-pWB
+umc
 bCt
 qQk
 qQk
@@ -64118,7 +64526,7 @@ teB
 aBh
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -64263,7 +64671,6 @@ gdj
 gdj
 "}
 (87,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -64290,7 +64697,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -64325,14 +64733,14 @@ lFT
 xPi
 inq
 qQk
-rPJ
-eHO
+sRV
+pWB
 bCt
-ewh
+qQk
 eYt
-qmG
 teP
-qmG
+teP
+teP
 aTy
 tKN
 tKN
@@ -64372,10 +64780,10 @@ gMJ
 gMJ
 sDX
 teB
-teB
+llX
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -64520,15 +64928,6 @@ gdj
 gdj
 "}
 (88,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -64548,7 +64947,16 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -64582,15 +64990,15 @@ pTp
 xPi
 cYj
 qQk
-sRV
-umc
-agp
+wJM
+eHO
+bCt
 slN
 bQj
-nkK
-nkK
-nkK
-cys
+ozK
+ozK
+ozK
+xRo
 sDq
 sKK
 pXU
@@ -64632,7 +65040,7 @@ teB
 teB
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -64777,15 +65185,6 @@ gdj
 gdj
 "}
 (89,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -64805,7 +65204,16 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -64839,14 +65247,14 @@ bbf
 hQX
 qQk
 qQk
-qQk
-qQk
-qQk
+bcp
+xgc
+agp
 qQk
 mxe
 mGP
-nzc
-aFo
+mGP
+mGP
 jlM
 vil
 vSI
@@ -64889,7 +65297,7 @@ teB
 eqw
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -65034,15 +65442,6 @@ gdj
 gdj
 "}
 (90,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -65062,7 +65461,16 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -65091,13 +65499,13 @@ cER
 sJz
 dIK
 dIK
-qQk
-qQk
-qQk
 sDq
-mRa
-mRa
-qvq
+sDq
+sDq
+sDq
+sDq
+sDq
+sDq
 sDq
 sDq
 sDq
@@ -65146,7 +65554,7 @@ teB
 teB
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -65291,16 +65699,6 @@ gdj
 gdj
 "}
 (91,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -65319,7 +65717,17 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -65340,10 +65748,10 @@ tfw
 tfw
 tfw
 eia
-tSD
-dHx
 dIK
-bUy
+vgt
+xNj
+dIK
 cSp
 xIJ
 ygF
@@ -65403,7 +65811,7 @@ teB
 teB
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -65548,16 +65956,16 @@ gdj
 gdj
 "}
 (92,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 hbZ
 hbZ
 hbZ
@@ -65597,9 +66005,9 @@ tfw
 tfw
 tfw
 eia
-eia
-tSD
 dIK
+osy
+lOt
 mma
 nAh
 xRP
@@ -65660,7 +66068,7 @@ teB
 teB
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -65805,37 +66213,37 @@ gdj
 gdj
 "}
 (93,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
 tfw
 tfw
 tfw
@@ -65854,12 +66262,12 @@ tfw
 tfw
 tfw
 tfw
-eia
-tSD
 dIK
-qbW
-qXu
-ygF
+dIK
+dIK
+dIK
+kHA
+tJi
 kHA
 dIK
 sDq
@@ -65898,7 +66306,7 @@ tfw
 tfw
 sLv
 qPn
-cMu
+gtv
 qHp
 qHp
 qHp
@@ -65917,7 +66325,7 @@ aBh
 aBh
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -66062,7 +66470,7 @@ gdj
 gdj
 "}
 (94,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -66117,7 +66525,7 @@ gBQ
 dIK
 iug
 pXD
-aLk
+gMZ
 dIK
 ule
 ugN
@@ -66156,11 +66564,11 @@ tfw
 nel
 xCZ
 doZ
-sGy
 wYB
+tMJ
 fVY
 bVZ
-pVG
+tMJ
 qHp
 wQZ
 wQZ
@@ -66170,11 +66578,11 @@ teB
 teB
 teB
 teB
-aBh
+tsC
 teB
 teB
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -66319,7 +66727,6 @@ gdj
 gdj
 "}
 (95,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -66349,7 +66756,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -66373,7 +66781,7 @@ eia
 eia
 xMq
 nma
-aLk
+qbW
 aLk
 dIK
 eqT
@@ -66413,7 +66821,7 @@ qHp
 qHp
 fFh
 qHp
-qHp
+hoI
 fDE
 pVG
 oAV
@@ -66431,7 +66839,7 @@ teB
 teB
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -66576,7 +66984,6 @@ gdj
 gdj
 "}
 (96,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -66590,8 +66997,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
 hbZ
 hbZ
 hbZ
@@ -66680,15 +67088,15 @@ wQZ
 kSZ
 aBh
 teB
-teB
+llX
 teB
 teB
 teB
 teB
 teB
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -66833,40 +67241,39 @@ gdj
 gdj
 "}
 (97,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
-llq
-hbZ
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-tfw
 tfw
 tfw
 tfw
@@ -66886,8 +67293,9 @@ tfw
 tfw
 tfw
 eia
+eia
 tSD
-tsC
+tSD
 tSD
 sDq
 sDq
@@ -66943,8 +67351,8 @@ aBh
 cfC
 cfC
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -67090,41 +67498,40 @@ gdj
 gdj
 "}
 (98,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
 llq
-llq
-llq
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-tfw
 tfw
 tfw
 tfw
@@ -67144,6 +67551,7 @@ tfw
 tfw
 tfw
 eia
+tSD
 tSD
 dHx
 sDq
@@ -67199,8 +67607,8 @@ teB
 cfC
 cfC
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -67347,39 +67755,39 @@ gdj
 gdj
 "}
 (99,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
 llq
 tfw
 tfw
@@ -67399,7 +67807,7 @@ tfw
 tfw
 tfw
 tfw
-tfw
+eia
 eia
 tSD
 dHx
@@ -67456,8 +67864,8 @@ aDo
 cfC
 cfC
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -67604,39 +68012,39 @@ gdj
 gdj
 "}
 (100,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
 llq
 tfw
 tfw
@@ -67657,7 +68065,7 @@ tfw
 tfw
 tfw
 tfw
-tfw
+eia
 eia
 tSD
 sDq
@@ -67712,8 +68120,8 @@ clY
 jIH
 aCI
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -67861,7 +68269,6 @@ gdj
 gdj
 "}
 (101,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -67871,9 +68278,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -67881,11 +68285,15 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 hbZ
 hbZ
 hbZ
@@ -67969,8 +68377,8 @@ clY
 cfC
 hGi
 cfC
-tfw
-tfw
+eia
+eia
 tfw
 tfw
 tfw
@@ -68118,7 +68526,7 @@ gdj
 gdj
 "}
 (102,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -68227,7 +68635,7 @@ hEP
 bxD
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -68375,7 +68783,7 @@ gdj
 gdj
 "}
 (103,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -68484,7 +68892,7 @@ qWR
 pao
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -68632,7 +69040,7 @@ gdj
 gdj
 "}
 (104,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -68741,7 +69149,7 @@ qWR
 xXb
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -68889,7 +69297,7 @@ gdj
 gdj
 "}
 (105,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -68998,7 +69406,7 @@ oGP
 saR
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -69146,7 +69554,6 @@ gdj
 gdj
 "}
 (106,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -69161,10 +69568,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -69176,7 +69579,12 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -69255,7 +69663,7 @@ clY
 clY
 cfC
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -69403,7 +69811,6 @@ gdj
 gdj
 "}
 (107,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -69417,12 +69824,13 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 hbZ
 hbZ
 hbZ
@@ -69512,7 +69920,7 @@ mgI
 teB
 rqF
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -69660,7 +70068,6 @@ gdj
 gdj
 "}
 (108,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -69674,12 +70081,13 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 hbZ
 hbZ
 hbZ
@@ -69769,7 +70177,7 @@ qHp
 qHp
 qHp
 cfC
-tfw
+eia
 tfw
 tfw
 tfw
@@ -69917,7 +70325,6 @@ gdj
 gdj
 "}
 (109,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -69933,10 +70340,6 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -69946,7 +70349,12 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -70026,7 +70434,7 @@ gPK
 gPK
 qHp
 wQZ
-tfw
+eia
 tfw
 tfw
 tfw
@@ -70174,7 +70582,6 @@ gdj
 gdj
 "}
 (110,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -70203,7 +70610,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -70283,7 +70691,7 @@ gqM
 euT
 qHp
 wQZ
-tfw
+eia
 tfw
 tfw
 tfw
@@ -70431,7 +70839,6 @@ gdj
 gdj
 "}
 (111,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -70460,7 +70867,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -70688,7 +71096,6 @@ gdj
 gdj
 "}
 (112,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -70717,7 +71124,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -70793,7 +71201,7 @@ bmW
 qHp
 qHp
 qHp
-eyh
+qHp
 qHp
 qHp
 tfw
@@ -70945,37 +71353,37 @@ gdj
 gdj
 "}
 (113,1,1) = {"
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-hbZ
-llq
-llq
 tfw
 tfw
 tfw
@@ -71050,7 +71458,7 @@ tfw
 tfw
 tfw
 tfw
-jBg
+aDo
 tfw
 tfw
 tfw
@@ -71202,10 +71610,6 @@ gdj
 gdj
 "}
 (114,1,1) = {"
-llq
-hbZ
-hbZ
-llq
 hbZ
 hbZ
 hbZ
@@ -71230,7 +71634,11 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -71459,15 +71867,6 @@ gdj
 gdj
 "}
 (115,1,1) = {"
-llq
-hbZ
-hbZ
-llq
-hbZ
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -71486,8 +71885,17 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -71716,14 +72124,6 @@ gdj
 gdj
 "}
 (116,1,1) = {"
-llq
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -71743,7 +72143,15 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -71973,14 +72381,6 @@ gdj
 gdj
 "}
 (117,1,1) = {"
-llq
-hbZ
-hbZ
-llq
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -71999,7 +72399,15 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 llq
@@ -72230,14 +72638,6 @@ gdj
 gdj
 "}
 (118,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-llq
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -72255,7 +72655,15 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 llq
@@ -72487,12 +72895,6 @@ gdj
 gdj
 "}
 (119,1,1) = {"
-llq
-hbZ
-hbZ
-hbZ
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -72511,7 +72913,13 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -72744,7 +73152,6 @@ gdj
 gdj
 "}
 (120,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -72768,7 +73175,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -73001,7 +73409,7 @@ gdj
 gdj
 "}
 (121,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -73258,7 +73666,7 @@ gdj
 gdj
 "}
 (122,1,1) = {"
-llq
+hbZ
 hbZ
 hbZ
 hbZ
@@ -73515,7 +73923,6 @@ gdj
 gdj
 "}
 (123,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -73538,7 +73945,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -73772,7 +74180,6 @@ gdj
 gdj
 "}
 (124,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -73795,7 +74202,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -74029,7 +74437,6 @@ gdj
 gdj
 "}
 (125,1,1) = {"
-llq
 hbZ
 hbZ
 hbZ
@@ -74052,7 +74459,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 tfw
 tfw
@@ -74286,8 +74694,6 @@ gdj
 gdj
 "}
 (126,1,1) = {"
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -74308,7 +74714,9 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -74543,9 +74951,6 @@ gdj
 gdj
 "}
 (127,1,1) = {"
-llq
-llq
-llq
 hbZ
 hbZ
 hbZ
@@ -74564,7 +74969,10 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -74803,7 +75211,6 @@ gdj
 llq
 llq
 llq
-llq
 hbZ
 hbZ
 hbZ
@@ -74820,7 +75227,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -75076,7 +75484,7 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
 llq
 llq
 tfw
@@ -75330,8 +75738,8 @@ hbZ
 hbZ
 hbZ
 hbZ
-llq
-llq
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -75579,14 +75987,14 @@ tfw
 tfw
 llq
 llq
-llq
-llq
 hbZ
 hbZ
 hbZ
 hbZ
 hbZ
-llq
+hbZ
+hbZ
+hbZ
 llq
 llq
 tfw
@@ -88154,9 +88562,9 @@ eQh
 eQh
 eQh
 ucR
-ibN
-ibN
-ibN
+pbO
+pbO
+pbO
 eQh
 vgt
 xNj
