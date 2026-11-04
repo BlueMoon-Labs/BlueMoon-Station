@@ -14,13 +14,13 @@
 
 /obj/item/toy/cards/cardhand/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	context[SCREENTIP_CONTEXT_ALT_LMB] = "Flip"
+	context[SCREENTIP_CONTEXT_ALT_LMB] = "Перевернуть"
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/toy/cards/cardhand/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(istype(target, /obj/item/toy/cards) && !istype(target, /obj/item/toy/cards/deck))
-		context[SCREENTIP_CONTEXT_LMB] = "Merge cards"
+		context[SCREENTIP_CONTEXT_LMB] = "Сложить карты"
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/toy/cards/cardhand/examine()
@@ -98,6 +98,9 @@
 	// The parent insert qdels card_item. Its Destroy() clears parentdeck, so do not
 	// let apply_card_vars() turn the deleted card itself into this hand's deck.
 	parentdeck = original_parentdeck
+	var/datum/component/nif_construct/construct = original_parentdeck?.GetComponent(/datum/component/nif_construct)
+	if(construct)
+		construct.track_child(src)
 
 /obj/item/toy/cards/cardhand/apply_card_vars(obj/item/toy/cards/sourceobj)
 	. = ..()

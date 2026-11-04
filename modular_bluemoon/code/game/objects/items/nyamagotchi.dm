@@ -137,8 +137,8 @@
 			. += span_notice("<b>Alt-click</b> для временного отключения уведомлений.")
 
 /obj/item/toy/nyamagotchi/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
-	context[SCREENTIP_CONTEXT_LMB] = "Interact"
-	context[SCREENTIP_CONTEXT_ALT_LMB] = "Toggle mute"
+	context[SCREENTIP_CONTEXT_LMB] = "Взаимодействовать"
+	context[SCREENTIP_CONTEXT_ALT_LMB] = "Звук вкл/выкл"
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/toy/nyamagotchi/proc/readout()

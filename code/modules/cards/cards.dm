@@ -36,6 +36,10 @@
 	card_throw_speed = sourceobj.card_throw_speed
 	card_throw_range = sourceobj.card_throw_range
 	card_attack_verb = sourceobj.card_attack_verb
+	var/obj/item/toy/cards/deck/root_deck = parentdeck
+	var/datum/component/nif_construct/construct = root_deck?.GetComponent(/datum/component/nif_construct)
+	if(construct)
+		construct.track_child(src)
 
 /obj/item/toy/cards/Adjacent(atom/neighbor, recurse = 1)
 	if(isturf(src.loc) && locate(/obj/structure/table) in src.loc)

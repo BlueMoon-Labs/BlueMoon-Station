@@ -42,15 +42,15 @@
 	. = ..()
 
 	var/static/list/barehanded_interactions = list(
-		INTENT_ANY = "Slap",
-		INTENT_HARM = "Slam"
+		INTENT_ANY = "Постучать",
+		INTENT_HARM = "Грохнуть ладонью"
 	)
 
-	AddElement(/datum/element/contextual_screentip_bare_hands, rmb_text_combat_mode = barehanded_interactions)
+	AddElement(/datum/element/contextual_screentip_bare_hands, rmb_text = barehanded_interactions)
 
 	var/static/list/hovering_item_typechecks = list(
 		/obj/item/wallframe = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_GRAB = "Install frame on the table"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_GRAB = "Поставить раму на стол"),
 		),
 	)
 	AddElement(/datum/element/contextual_screentip_item_typechecks, hovering_item_typechecks)
@@ -590,11 +590,11 @@
 	if (!(flags_1 & NODECONSTRUCT_1))
 		var/static/list/tool_behaviors = list(
 			TOOL_SCREWDRIVER = list(
-				SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Disassemble"),
+				SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Разобрать"),
 			),
 
 			TOOL_WRENCH = list(
-				SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Deconstruct"),
+				SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Разобрать"),
 			),
 		)
 
@@ -819,9 +819,9 @@
 
 
 /obj/structure/table/optable/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
-	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Unbuckle patient")
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Set internals")
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Remove tank and mask")
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Отстегнуть пациента")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Подключить баллон")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Снять баллон и маску")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/table/optable/examine(mob/user)

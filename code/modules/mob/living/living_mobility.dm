@@ -113,6 +113,9 @@
 		if(buckled.buckle_lying != -1)
 			should_be_lying = buckled.buckle_lying
 
+	if(HAS_TRAIT(src, TRAIT_FORCED_STANDING))
+		should_be_lying = FALSE
+
 	if(should_be_lying)
 		set_body_position(LYING_DOWN)
 		mobility_flags &= ~MOBILITY_STAND
@@ -150,7 +153,7 @@
 	else
 		mobility_flags |= MOBILITY_UI|MOBILITY_PULL
 
-	var/canitem_general = !paralyze && !stun && conscious && !(stat_softcrit) && !chokehold && !restrained && has_arms && !(combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
+	var/canitem_general = !paralyze && !stun && conscious && !(stat_softcrit) && !chokehold && !restrained && has_arms && !HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) && !(combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
 	if(canitem_general)
 		mobility_flags |= (MOBILITY_USE | MOBILITY_PICKUP | MOBILITY_STORAGE | MOBILITY_HOLD)
 	else

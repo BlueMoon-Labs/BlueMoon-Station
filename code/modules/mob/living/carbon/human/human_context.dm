@@ -13,24 +13,24 @@
 	var/target_aiming_for_groin = zone_selected == "groin"
 
 	if(aim_for_mouth && (target_on_help || target_restrained || target_aiming_for_mouth))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Slap face")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Дать пощёчину")
 
 	else if(aim_for_groin && (src == user || lying || same_dir) && (target_on_help || target_restrained || target_aiming_for_groin))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Slap ass")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Шлёпнуть")
 
 	// Humans can actually be upgrade grabbed using ctrl-click
 	if(src != user)
 		if (pulledby == user)
 			switch (user.grab_state)
 				if (GRAB_PASSIVE)
-					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Grip")
+					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Схватить крепче")
 				if (GRAB_AGGRESSIVE)
-					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Choke")
+					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Взять за шею")
 				if (GRAB_NECK)
-					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Strangle")
+					LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Душить")
 				else
 					return .
 		else
-			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Pull")
+			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Потянуть")
 
 	return CONTEXTUAL_SCREENTIP_SET

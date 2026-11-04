@@ -81,6 +81,7 @@
 		var/datum/action/A = X
 		A.Grant(M)
 	STOP_PROCESSING(SSobj, src)
+	SEND_SIGNAL(M, COMSIG_PROTEAN_ORGAN_INSERTED, src, special)
 
 	return TRUE
 

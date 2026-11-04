@@ -3,6 +3,9 @@
 #define ILLEGAL_LOOT_DELAY_ROUND 30 SECONDS // Для округления рандомно выбранного числа из значений выше. Округляет до цельной половины минуты
 #define ILLEGAL_LOOT_DELAY_CHANCE 25 // С каким шансом лут будет доступен раундстарт
 
+/obj/effect/spawner/lootdrop/mod_bite
+	loot = list(/obj/item/mod/module/springlock/bite_of_87 = 1, "" = 9)
+
 /obj/effect/spawner/lootdrop
 	icon = 'icons/effects/landmarks_static.dmi'
 	icon_state = "random_loot"
