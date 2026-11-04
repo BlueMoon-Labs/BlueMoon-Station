@@ -43,7 +43,7 @@
 	var/list/mutant_labels_cache
 	var/tmp/heavy_static_pending = FALSE
 	var/character_revision = 0
-	var/loadout_selected = FALSE
+	var/loadout_selected = TRUE
 	var/list/viewer_screens
 	var/preview_mode = PREVIEW_PREF_JOB
 	var/preview_auto_fit = TRUE
@@ -84,7 +84,7 @@
 		"modified_limbs", "organ_mods", "implant_mods", "chosen_limb_id", "body_weight", "scars_list", "bgstate",
 		"custom_speech_verb", "custom_speech_verb_ru", "custom_tongue", "custom_laugh", "language",
 		"bark_id", "bark_speed", "bark_pitch", "bark_variance", "enable_personal_chat_color", "personal_chat_color",
-		"loadout_slot", "loadout_enabled", "loadout_data", "all_quirks", "antag_opt_in_level",
+		"loadout_slot", "loadout_enabled", "loadout_data", "all_quirks", "innate_features", "antag_opt_in_level",
 		"phobia_type", "shriek_type", "onelife_death_type", "summon_nickname", "distant_start_enabled", "vore_taste", "vore_smell",
 		"security_records", "medical_records", "underwear", "undershirt", "socks", "undie_color", "shirt_color", "socks_color",
 		"job_preferences", "joblessrole", "alt_titles_preferences", "persistent_tattoos", "tattoos_string", "pending_tattoo_removals",
@@ -186,6 +186,28 @@
 		return "Для комплекта пресета не хватает очков экипировки."
 	return null
 
+// Одна проверка комплекта для ручного применения пресета и восстановления рабочего слота при входе.
+/datum/preferences/proc/clean_character_preset_loadout(list/preset, mob/user)
+	var/list/removed = list()
+	var/list/clean_loadout = list()
+	var/list/seen_gear = list()
+	var/points = available_gear_points(user)
+	var/account_key = user?.key || parent?.key
+	for(var/raw_entry in preset["loadout"])
+		var/list/entry = islist(raw_entry) ? raw_entry : null
+		var/datum/gear/gear = entry && istext(entry[LOADOUT_ITEM]) ? find_loadout_gear(entry[LOADOUT_ITEM]) : null
+		if(!gear)
+			removed += "предмет [entry ? entry[LOADOUT_ITEM] : "без идентификатора"]"
+			continue
+		if((gear.type in seen_gear) || (gear.donoritem && !gear.donator_ckey_check(account_key)) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)) || gear.cost > points)
+			removed += gear.name
+			continue
+		points -= gear.cost
+		seen_gear += gear.type
+		clean_loadout += list(entry)
+	preset["loadout"] = clean_loadout
+	return removed
+
 // Убираем устаревшие и недоступные записи, сохраняя остальную часть пресета.
 /datum/character_setup/proc/clean_character_preset(list/preset, mob/user)
 	var/list/removed = list()
@@ -200,22 +222,7 @@
 		if(initial(quirk_datum.value) > 0 && ++positive_count > MAX_QUIRKS)
 			quirks -= quirk_name
 			removed += quirk_name
-	var/list/clean_loadout = list()
-	var/list/seen_gear = list()
-	var/points = available_gear_points(user)
-	for(var/raw_entry in preset["loadout"])
-		var/list/entry = islist(raw_entry) ? raw_entry : null
-		var/datum/gear/gear = entry && istext(entry[LOADOUT_ITEM]) ? find_loadout_gear(entry[LOADOUT_ITEM]) : null
-		if(!gear)
-			removed += "предмет [entry ? entry[LOADOUT_ITEM] : "без идентификатора"]"
-			continue
-		if((gear.type in seen_gear) || (gear.donoritem && !gear.donator_ckey_check(user?.key)) || (istype(gear, /datum/gear/unlockable) && !prefs.can_use_unlockable(gear)) || gear.cost > points)
-			removed += gear.name
-			continue
-		points -= gear.cost
-		seen_gear += gear.type
-		clean_loadout += list(entry)
-	preset["loadout"] = clean_loadout
+	removed += prefs.clean_character_preset_loadout(preset, user)
 	var/list/jobs = preset["job_preferences"]
 	for(var/job_title in jobs.Copy())
 		if(!istext(job_title) || !SSjob.GetJob(job_title))
@@ -1798,10 +1805,14 @@
 	return data
 
 /datum/character_setup/proc/available_gear_points(mob/user)
+	return prefs.available_gear_points(user)
+
+/datum/preferences/proc/available_gear_points(mob/user)
+	var/account_ckey = user?.ckey || parent?.ckey
 	. = CONFIG_GET(number/initial_gear_points)
-	if(IS_CKEY_DONATOR_GROUP(user?.ckey, DONATOR_GROUP_TIER_1))
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_1))
 		. += CONFIG_GET(number/subscriber_extra_gear_points)
-	if(IS_CKEY_DONATOR_GROUP(user?.ckey, DONATOR_GROUP_TIER_2))
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_2))
 		. += CONFIG_GET(number/sponsor_extra_gear_points)
 
 /datum/character_setup/proc/calc_gear_points(mob/user)
@@ -1917,13 +1928,16 @@
 	return row
 
 /datum/character_setup/proc/find_loadout_gear(name)
+	return prefs.find_loadout_gear(name)
+
+/datum/preferences/proc/find_loadout_gear(name)
 	// В обзоре выбранного вещи относятся к разным категориям; идентификатор проверяем по каталогу.
 	var/gear_path = text2path(name)
 	if(ispath(gear_path, /datum/gear))
 		var/datum/gear/gear_type = gear_path
 		var/datum/gear/gear = GLOB.loadout_items[initial(gear_type.category)]?[initial(gear_type.subcategory)]?[initial(gear_type.name)]
 		return gear?.type == gear_path ? gear : null
-	var/list/subcategory_items = GLOB.loadout_items[prefs.gear_category]?[prefs.gear_subcategory]
+	var/list/subcategory_items = GLOB.loadout_items[gear_category]?[gear_subcategory]
 	return subcategory_items?[name]
 
 /datum/character_setup/proc/build_invalid_loadout_rows()
@@ -2814,15 +2828,8 @@
 	var/old_bonus = 0
 	var/list/current_entry = prefs.modified_limbs[zone]
 	if(islist(current_entry) && length(current_entry))
-		if(current_entry[1] == LOADOUT_LIMB_PROSTHETIC)
-			old_bonus = 1
-		else if(current_entry[1] == LOADOUT_LIMB_AMPUTATED)
-			old_bonus = 2
-	var/new_bonus = 0
-	if(kind == LOADOUT_LIMB_PROSTHETIC)
-		new_bonus = 1
-	else if(kind == LOADOUT_LIMB_AMPUTATED)
-		new_bonus = 2
+		old_bonus = prefs.limb_modification_bonus(current_entry[1])
+	var/new_bonus = prefs.limb_modification_bonus(kind)
 	if(new_bonus < old_bonus && quirk_balance() - old_bonus + new_bonus < 0)
 		to_chat(usr, span_warning("Изменение этой конечности увёло бы баланс в минус!"))
 		return
@@ -2983,6 +2990,8 @@
 			data["quirksTab"] = build_quirks_data()
 		if(MODIFICATIONS_CHAR_TAB)
 			data["modsTab"] = build_modifications_data()
+		if(INNATE_CHAR_TAB)
+			data["innateTab"] = build_innate_data()
 
 	if(prefs.character_settings_tab == GENERAL_CHAR_TAB || prefs.character_settings_tab == APPEARANCE_CHAR_TAB)
 		data["appearance"] = build_appearance_data(user, prefs.character_settings_tab == APPEARANCE_CHAR_TAB)
@@ -3020,6 +3029,7 @@
 		list("id" = MODIFICATIONS_CHAR_TAB, "label" = "Модификации", "icon" = "robot"),
 		list("id" = SPEECH_CHAR_TAB, "label" = "Речь", "icon" = "comment"),
 		list("id" = QUIRKS_CHAR_TAB, "label" = "Особенности", "icon" = "brain"),
+		list("id" = INNATE_CHAR_TAB, "label" = "Врожденное", "icon" = "dna"),
 		list("id" = LOADOUT_CHAR_TAB, "label" = "Экипировка", "icon" = "tshirt"),
 	)
 
@@ -3206,6 +3216,7 @@
 	var/list/limbs = list()
 	var/prosthetic_count = 0
 	var/amputation_count = 0
+	var/limb_bonus = 0
 	for(var/zone in LOADOUT_ALLOWED_LIMB_TARGETS)
 		var/list/entry = prefs.modified_limbs[zone]
 		var/list/row = list("zone" = zone, "kind" = LOADOUT_LIMB_NORMAL)
@@ -3217,14 +3228,19 @@
 			prosthetic_count++
 		else if(row["kind"] == LOADOUT_LIMB_AMPUTATED)
 			amputation_count++
+		limb_bonus += prefs.limb_modification_bonus(row["kind"])
 		limbs += list(row)
 	data["limbs"] = limbs
 	data["limbKinds"] = LOADOUT_LIMBS
 	data["limbBrands"] = list("prosthetic") + GLOB.prosthetic_limb_types
 	data["prostheticCount"] = prosthetic_count
 	data["amputationCount"] = amputation_count
-	data["limbBonus"] = prosthetic_count + amputation_count * 2
+	data["limbBonus"] = limb_bonus
 	data["maxProsthetics"] = MAXIMUM_LOADOUT_PROSTHETICS
+	data["prostheticBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_PROSTHETIC)
+	data["amputationBonus"] = prefs.limb_modification_bonus(LOADOUT_LIMB_AMPUTATED)
+	data["limbMaxDamage"] = /obj/item/bodypart/l_arm::max_damage
+	data["prostheticMaxDamage"] = /obj/item/bodypart/l_arm/robot/surplus::max_damage
 
 	var/list/groups = list()
 	for(var/list/group in GLOB.body_mod_organ_groups)
@@ -3232,15 +3248,22 @@
 		var/locked = prefs.body_mod_organ_locked(slot)
 		var/selected = null
 		var/stored = prefs.organ_mods[slot]
-		if(stored)
+		if(stored && prefs.body_mod_organ_option(slot, stored))
 			selected = stored
 		else
 			for(var/list/default_option in group["options"])
-				if(isnull(default_option["path"]))
+				if(prefs.body_mod_organ_option_available(slot, default_option) && isnull(default_option["path"]))
 					selected = default_option["id"]
 					break
+			if(isnull(selected))
+				for(var/list/fallback_option in group["options"])
+					if(prefs.body_mod_organ_option_available(slot, fallback_option))
+						selected = fallback_option["id"]
+						break
 		var/list/options = list()
 		for(var/list/option in group["options"])
+			if(!prefs.body_mod_organ_option_available(slot, option))
+				continue
 			options += list(list("id" = option["id"], "label" = option["label"], "cost" = option["cost"]))
 		var/list/group_row = list(
 			"slot" = slot,
@@ -3680,7 +3703,7 @@
 
 		if("set_tab")
 			var/new_tab = num_param(params["tab"])
-			if(isnull(new_tab) || new_tab < GENERAL_CHAR_TAB || new_tab > MODIFICATIONS_CHAR_TAB)
+			if(isnull(new_tab) || new_tab < GENERAL_CHAR_TAB || new_tab > INNATE_CHAR_TAB)
 				return
 			prefs.character_settings_tab = new_tab
 			return TRUE
@@ -4235,6 +4258,9 @@
 
 		if("quirk_toggle")
 			quirk_toggle(params)
+			return TRUE
+		if("innate_toggle")
+			toggle_innate_feature(params["id"])
 			return TRUE
 
 		if("quirk_reset")

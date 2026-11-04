@@ -476,6 +476,8 @@
  * It is seperated from ui_act() to be overwritten as needed.
 */
 /obj/item/modular_computer/proc/toggle_flashlight()
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		return FALSE
 	if(!has_light)
 		return FALSE
 	set_light_range_power_color(comp_light_luminosity, 1, comp_light_color)

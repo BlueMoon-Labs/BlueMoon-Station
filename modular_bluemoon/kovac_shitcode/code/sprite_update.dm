@@ -686,8 +686,8 @@
 	AddElement(/datum/element/wuv, "mothin'!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "buzzes!", EMOTE_AUDIBLE)
 	AddElement(/datum/element/mob_holder, held_icon, inv_slots = ITEM_SLOT_HEAD)
 
-/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, force, quickstart)
-	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback)
+/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE)
+	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback, force, gentle, quickstart)
 	emote("msqueak")
 
 ///////////////////

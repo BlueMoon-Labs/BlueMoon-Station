@@ -49,13 +49,13 @@
 
 	var/static/list/tool_behaviors = list(
 		TOOL_WELDER = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_HELP = "Repair"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_HELP = "Починить"),
 		),
 		TOOL_WRENCH = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Anchor/Unanchor"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Закрепить/открепить"),
 		),
 		TOOL_WIRECUTTER= list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Cut"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Разрезать"),
 		)
 	)
 

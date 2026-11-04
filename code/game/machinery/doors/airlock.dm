@@ -791,42 +791,42 @@
 	. = ..()
 
 	if(hasSiliconAccessInArea(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Open interface")
-		LAZYSET(context[SCREENTIP_CONTEXT_SHIFT_LMB], INTENT_ANY, density ? "Open" : "Close")
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, locked ? "Unbolt" : "Bolt")
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, secondsElectrified ? "Un-electrify" : "Electrify")
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, emergency ? "Disable emergency access" : "Enable emergency access")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть интерфейс")
+		LAZYSET(context[SCREENTIP_CONTEXT_SHIFT_LMB], INTENT_ANY, density ? "Открыть" : "Закрыть")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, locked ? "Поднять болты" : "Опустить болты")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, secondsElectrified ? "Снять ток" : "Пустить ток")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, emergency ? "Выключить аварийный доступ" : "Включить аварийный доступ")
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item, /obj/item/stack/sheet/plasteel))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Reinforce")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Укрепить")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	switch (held_item?.tool_behaviour)
 		if (TOOL_CROWBAR)
 			if (panel_open)
 				if (security_level == AIRLOCK_SECURITY_PLASTEEL_O_S || security_level == AIRLOCK_SECURITY_PLASTEEL_I_S)
-					LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove shielding")
+					LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Снять обшивку")
 					return CONTEXTUAL_SCREENTIP_SET
 				else if (should_try_removing_electronics())
-					LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove electronics")
+					LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Извлечь электронику")
 					return CONTEXTUAL_SCREENTIP_SET
 
 			// Not always contextually true, but is contextually false in ways that make gameplay interesting.
 			// For example, trying to pry open an airlock, only for the bolts to be down and the lights off.
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Pry open")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вскрыть")
 
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WELDER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Weld shut")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Заварить")
 
 			if (panel_open)
 				switch (security_level)
 					if (AIRLOCK_SECURITY_METAL, AIRLOCK_SECURITY_PLASTEEL_I, AIRLOCK_SECURITY_PLASTEEL_O)
-						LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Cut shielding")
+						LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Срезать обшивку")
 						return CONTEXTUAL_SCREENTIP_SET
 
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Repair")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Починить")
 			return CONTEXTUAL_SCREENTIP_SET
 
 	return .

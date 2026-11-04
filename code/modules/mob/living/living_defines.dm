@@ -10,6 +10,10 @@
 
 	tooltips = TRUE
 
+	/// Слой до сдвига тащения и слой после него: чужая смена слоя делает пару устаревшей
+	var/pull_layer_base
+	var/pull_layer_applied
+
 	var/last_click_move = 0 // Stores the previous next_move value.
 
 	var/resize = 1 //Badminnery resize
@@ -123,6 +127,7 @@
 	///флаг снят, handle_gravity() не опрашивает has_gravity заново: всё, что
 	///меняет гравитацию без перемещения, зовёт refresh_gravity() само.
 	var/gravity_cache_dirty = TRUE
+	var/gravity_inverted = FALSE
 
 	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
 	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().

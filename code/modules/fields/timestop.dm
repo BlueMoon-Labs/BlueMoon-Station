@@ -190,7 +190,7 @@
 	ADD_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
 	walk(L, 0) //stops them mid pathing even if they're stunimmune
 	if(L.client)
-		L.hud_used.show_hud(HUD_STYLE_NOHUD) //полное скрытие
+		L.hud_used?.show_hud(HUD_STYLE_NOHUD) //полное скрытие
 		L.sight = (BLIND | SEE_SELF | SEE_TURFS)
 		L.add_client_colour(/datum/client_colour/sepia)
 
@@ -223,7 +223,7 @@
 	L.AdjustStun(-20, ignore_canstun = TRUE)
 	REMOVE_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
 	if(L.client)
-		L.hud_used.show_hud(HUD_STYLE_STANDARD)// полностью показать
+		L.hud_used?.show_hud(HUD_STYLE_STANDARD)// полностью показать
 		L.remove_client_colour(/datum/client_colour/sepia)
 		L.sight = NONE
 		var/list/given_images = mirage_images_by_mob[L]

@@ -33,7 +33,7 @@
 		target = surgery_target
 		target.surgeries += src
 		if(surgery_location)
-			location = surgery_location
+			location = get_surgery_zone(target, surgery_location)
 		if(surgery_bodypart)
 			operated_bodypart = surgery_bodypart
 			if(targetable_wound)
@@ -41,14 +41,19 @@
 				operated_wound.attached_surgery = src
 
 /datum/surgery/Destroy()
-	if(operated_wound)
+	if(operated_wound?.attached_surgery == src)
 		operated_wound.attached_surgery = null
+	operated_wound = null
 	if(target)
 		target.surgeries -= src
 	target = null
 	operated_bodypart = null
 	return ..()
 
+
+// Хирургический доступ может вести к иной части тела, например из паха к опорному хвосту.
+/datum/surgery/proc/get_target_bodypart(mob/living/patient, zone)
+	return patient.get_bodypart(check_zone(zone))
 
 /datum/surgery/proc/can_start(mob/user, mob/living/patient, obj/item/tool) //FALSE to not show in list
 	. = TRUE
@@ -104,7 +109,8 @@
 /datum/surgery/proc/next_step(mob/user, intent)
 	// Операция на другой зоне тела не должна перехватывать это действие,
 	// даже если её текущий этап уже выполняется.
-	if(user.zone_selected != location)
+	var/selected_zone = get_surgery_zone(target, user.zone_selected)
+	if(selected_zone != location)
 		return FALSE
 	if(step_in_progress)
 		return TRUE
@@ -121,7 +127,7 @@
 			if(!T.is_open)
 				//to_chat(user, span_warning("Вам нужно вскрыть упаковку, прежде чем приступать к операции!"))
 				return
-		if(S.try_op(user, target, user.zone_selected, tool, src, try_to_fail))
+		if(S.try_op(user, target, selected_zone, tool, src, try_to_fail))
 			return TRUE
 		if((tool && tool.item_flags & SURGICAL_TOOL) || (S.stop_implements && (S.implement_type in S.implements))) //Just because you used the wrong tool it doesn't mean you meant to whack the patient with it
 			/* BLUERMOON REMOVAL START - перенесено в try_op

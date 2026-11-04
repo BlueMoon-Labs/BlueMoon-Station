@@ -16,6 +16,7 @@
 	var/static/list/_max_chance_implements = list() // cache for proc get_max_chance_implements()
 
 /datum/surgery_step/proc/try_op(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, try_to_fail = FALSE)
+	target_zone = get_surgery_zone(target, target_zone)
 	var/success = FALSE
 	if(accept_hand)
 		if(!tool)
@@ -81,6 +82,8 @@
 	if(try_to_fail)
 		to_chat(user, span_warning("Вы действуете так, что незаметно провалите этот этап!"))
 	// BLUEMOON ADD END
+	if(HAS_TRAIT(user, TRAIT_PROTEAN_SURGERY))
+		speed_mod /= PROTEAN_SERVO_SURGERY_FACTOR
 	var/delay = time * speed_mod
 	if(target == user && !HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON EDIT - добавлена проверка на роботизированный организм
 		if(HAS_TRAIT(target, TRAIT_PAINKILLER))

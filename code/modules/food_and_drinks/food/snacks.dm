@@ -103,7 +103,7 @@ All foods are distributed among various categories. Use common sense.
 ///This proc handles processable elements, overwrite this if you want to add behavior such as slicing, forking, spooning, whatever, to turn the item into something else
 /obj/item/reagent_containers/food/snacks/proc/make_processable()
 	if(slice_path)
-		AddElement(/datum/element/processable, TOOL_KNIFE, slice_path, slices_num,  3 SECONDS, table_required = TRUE, screentip_verb = "Cut", sound_to_play = SFX_KNIFE_SLICE)
+		AddElement(/datum/element/processable, TOOL_KNIFE, slice_path, slices_num,  3 SECONDS, table_required = TRUE, screentip_verb = "Нарезать", sound_to_play = SFX_KNIFE_SLICE)
 	return
 
 /obj/item/reagent_containers/food/snacks/proc/make_dryable()

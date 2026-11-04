@@ -495,6 +495,7 @@
 	var/dir_filter = get_dir(M, src)
 	if(dir_filter)
 		M.setDir(dir_filter)
+	update_pull_layer(M)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
 	// От исходного смещения спрайта: у крупных мобов оно ненулевое
@@ -520,7 +521,40 @@
 	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
+/// Сдвинутый к тянущему спрайт перекрывает его: тот, кто южнее, рисуется поверх. Сбоку и на одной клетке тащимый под тянущим.
+/// Дальше по цепочке слой каждого считается от нового слоя предыдущего.
+/mob/living/proc/update_pull_layer(mob/living/M)
+	var/mob/living/puller = src
+	var/list/chain = list(src)
+	while(isliving(M) && !(M in chain))
+		chain += M
+		var/base = M.get_unshifted_layer()
+		var/target = base
+		// Лежачий и так под стоящими, ручной сдвиг слоя тоже не трогаем
+		if(base == puller.get_unshifted_layer())
+			target = puller.layer + ((get_dir(M, puller) & NORTH) ? PULL_LAYER_STEP : -PULL_LAYER_STEP)
+		if(M.layer == target)
+			return
+		M.pull_layer_base = base
+		M.pull_layer_applied = target
+		M.layer = target
+		puller = M
+		M = M.pulling
+
+/mob/living/proc/get_unshifted_layer()
+	return (!isnull(pull_layer_applied) && layer == pull_layer_applied) ? pull_layer_base : layer
+
+/mob/living/proc/reset_pull_layer()
+	if(!isnull(pull_layer_applied) && layer == pull_layer_applied)
+		layer = pull_layer_base
+	pull_layer_base = null
+	pull_layer_applied = null
+	if(isliving(pulling))
+		update_pull_layer(pulling)
+
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
+	if(isliving(M))
+		M.reset_pull_layer()
 	if(!override && M.buckled)
 		return
 	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)
@@ -810,6 +844,8 @@
 	cure_nearsighted()
 	cure_blind()
 	cure_husk()
+	if(admin_revive)
+		cure_fakedeath(/datum/reagent/toxin/zombiepowder)
 	hallucination = 0
 	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()
@@ -1055,18 +1091,19 @@
 
 /mob/living/update_gravity(has_gravity,override = 0)
 	. = ..()
+	update_gravity_inversion(has_gravity)
 	if(!SSticker.HasRoundStarted())
 		return
-	if(has_gravity)
-		if(has_gravity == 1)
-			clear_alert("gravity")
-		else
-			if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
-				throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
-			else
-				throw_alert("gravity", /atom/movable/screen/alert/highgravity)
-	else
+	if(has_gravity <= NEGATIVE_GRAVITY)
+		throw_alert("gravity", /atom/movable/screen/alert/negative)
+	else if(!has_gravity)
 		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+	else if(has_gravity <= STANDARD_GRAVITY)
+		clear_alert("gravity")
+	else if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
+		throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
+	else
+		throw_alert("gravity", /atom/movable/screen/alert/highgravity)
 	if(!override && !is_flying())
 		float(!has_gravity)
 
@@ -1290,7 +1327,7 @@
 		return TRUE
 	return FALSE
 
-/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, quickstart = TRUE)
+/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE)
 	stop_pulling()
 	. = ..()
 

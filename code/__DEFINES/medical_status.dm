@@ -1,0 +1,33 @@
+// Дефайны мед. физического статуса
+#define MED_RECORD_STATUS_PH_HEALTHY "Здоров"
+#define MED_RECORD_STATUS_PH_SSD "*КРС/SSD*"
+#define MED_RECORD_STATUS_PH_DEAD "*Мёртв*"
+#define MED_RECORD_STATUS_PH_IMPAIRED "Ограничен"
+#define MED_RECORD_STATUS_PH_DISABLED "Инвалид"
+#define MED_RECORD_STATUS_PH_WATCH "Присматривать"
+#define MED_RECORD_STATUS_PH_LIST list(\
+	MED_RECORD_STATUS_PH_HEALTHY,\
+	MED_RECORD_STATUS_PH_SSD,\
+	MED_RECORD_STATUS_PH_DEAD,\
+	MED_RECORD_STATUS_PH_IMPAIRED,\
+	MED_RECORD_STATUS_PH_DISABLED,\
+	MED_RECORD_STATUS_PH_WATCH\
+	)
+
+GLOBAL_LIST_INIT(med_record_status_ph, MED_RECORD_STATUS_PH_LIST)
+
+// Дефайны мед. психологического статуса
+#define MED_RECORD_STATUS_M_STABLE "Стабилен"
+#define MED_RECORD_STATUS_M_UNSTABLE "Нестабильный"
+#define MED_RECORD_STATUS_M_WATCH "Присматривать"
+#define MED_RECORD_STATUS_M_INSANE "*Психоз*"
+#define MED_RECORD_STATUS_M_LIST list(\
+	MED_RECORD_STATUS_M_WATCH,\
+	MED_RECORD_STATUS_M_STABLE,\
+	MED_RECORD_STATUS_M_UNSTABLE,\
+	MED_RECORD_STATUS_M_INSANE\
+	)
+
+GLOBAL_LIST_INIT(med_record_status_m, MED_RECORD_STATUS_M_LIST)
+
+GLOBAL_LIST_INIT(gender_to_string, list("[MALE]" = "Мужской", "[FEMALE]" = "Женский"))

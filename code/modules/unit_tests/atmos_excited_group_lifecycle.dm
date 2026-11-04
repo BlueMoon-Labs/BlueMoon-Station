@@ -264,3 +264,44 @@
 	result = mix.react()
 	TEST_ASSERT(result & REACTING, "premise: antinoblium replication must react")
 	TEST_ASSERT(result & VOLATILE_REACTION, "antinoblium replication must flag VOLATILE_REACTION")
+
+/// Тихая группа успевает усредниться до того, как её члены уйдут на одиночный отдых: порядок проходов SSair - сначала турфы (засыпание), потом группы (брейкдаун или расформирование).
+/datum/unit_test/excited_group_breaks_down_before_members_rest/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/second = locate(origin.x + 2, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(first) && istype(second), "test locations are not open turfs")
+	var/list/turf/open/members = list(first, second)
+	for(var/turf/open/T as anything in members)
+		if(T.excited_group)
+			T.excited_group.garbage_collect()
+		SSair.remove_from_active(T)
+		T.air.copy_from_turf(T)
+		T.atmos_cooldown = 0
+	first.air.adjust_moles(GAS_O2, 5)
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	// Ни одного значимого шера: каждый проход - тихий для обоих членов.
+	for(var/fire in 1 to EXCITED_GROUP_DISMANTLE_CYCLES)
+		for(var/turf/open/T as anything in members)
+			if(T.excited_group != group || !T.excited)
+				continue
+			T.atmos_cooldown++
+			if(T.atmos_cooldown > SSair.individual_rest_cycles)
+				SSair.sleep_active_turf(T)
+		group.tick_lifecycle()
+		if(!length(group.turf_list))
+			break
+
+	TEST_ASSERT_EQUAL(length(group.turf_list), 0, "the quiet group never dismantled")
+	TEST_ASSERT(abs(first.air.total_moles() - second.air.total_moles()) < 0.01, "the group dismantled without averaging its members: [first.air.total_moles()] vs [second.air.total_moles()] mol")
+
+	for(var/turf/open/T as anything in members)
+		if(T.excited_group)
+			T.excited_group.garbage_collect()
+		SSair.remove_from_active(T)
+		T.air.copy_from_turf(T)
+		T.atmos_cooldown = 0

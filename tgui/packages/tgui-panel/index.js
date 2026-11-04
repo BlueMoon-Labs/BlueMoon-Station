@@ -23,6 +23,7 @@ import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
 import { pingMiddleware } from './ping';
 import { panelReducer } from './reducer';
+import { captureSecondaryLinks } from './secondaryLinks';
 import { serverStateMiddleware } from './serverState';
 import { settingsMiddleware } from './settings';
 import { telemetryMiddleware } from './telemetry';
@@ -66,6 +67,8 @@ const setupApp = () => {
   });
   setupPanelFocusHacks();
   captureExternalLinks();
+
+  captureSecondaryLinks();
 
   if (process.env.NODE_ENV !== 'production') {
     setupHotReloading();
