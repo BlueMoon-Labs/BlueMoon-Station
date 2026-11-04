@@ -190,7 +190,7 @@
 						var/datum/bank_account/account = living_user.get_bank_account()
 						if(account)
 							var/reward = rand(75, 100)
-							account.adjust_money(reward, "Brig: Wanted poster task")
+							account.credit(reward, ECON_WORK, user, "Бриг: размещение плаката розыска")
 							playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
 							to_chat(user, span_green("За выполнение задания начислено [reward] кредитов."))
 					else

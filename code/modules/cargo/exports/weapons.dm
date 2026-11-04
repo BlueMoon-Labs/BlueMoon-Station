@@ -1,6 +1,5 @@
 // Weapon exports. Stun batons, disablers, etc.
 /datum/export/weapon
-    k_elasticity = 1/100 //BLUEMOON CHANGE
 
 /datum/export/weapon
 	include_subtypes = FALSE
@@ -195,7 +194,6 @@
 
 /datum/export/weapon/techslug
 	cost = 30
-	k_elasticity = 0
 	unit_name = "advanced shotgun shell"
 	export_types = list(/obj/item/ammo_casing/shotgun/dragonsbreath, /obj/item/ammo_casing/shotgun/meteorslug, /obj/item/ammo_casing/shotgun/pulseslug, /obj/item/ammo_casing/shotgun/frag12, /obj/item/ammo_casing/shotgun/ion, /obj/item/ammo_casing/shotgun/laserslug)
 

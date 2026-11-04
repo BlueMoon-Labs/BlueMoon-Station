@@ -308,13 +308,14 @@
 /obj/effect/mob_spawn/human/handlebank(mob/living/carbon/human/owner, starting_money = 0)
 	var/datum/bank_account/offstation_bank_account = new(owner.real_name)
 	offstation_bank_account.offstation = TRUE
+	offstation_bank_account.bind_owner(owner)
 	owner.account_id = offstation_bank_account.account_id
 	owner.add_memory("Номер вашего банковского аккаунта - [owner.account_id].")
 	if(owner.wear_id)
 		var/obj/item/card/id/id_card = owner.wear_id
 		id_card.registered_account = offstation_bank_account
 	if(starting_money > 0)
-		offstation_bank_account.account_balance = starting_money
+		offstation_bank_account.credit(starting_money, ECON_STARTING_FUNDS)
 
 // BLUEMOON ADD END
 

@@ -79,7 +79,7 @@
 
 /proc/minor_service_pay_budget(amount, reason)
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(ACCOUNT_SRV)
-	return budget?.adjust_money(amount, reason)
+	return budget?.credit(amount, ECON_WORK, memo = reason)
 
 /// Счёт карты в руках или на поясе, иначе личный счёт персонажа.
 /proc/minor_service_account_of(mob/living/payee)
@@ -91,5 +91,5 @@
 	if(ishuman(payee))
 		var/mob/living/carbon/human/human_payee = payee
 		if(human_payee.account_id)
-			return SSeconomy.bank_accounts_by_id["[human_payee.account_id]"]
+			return SSeconomy.find_account(human_payee.account_id)
 	return null

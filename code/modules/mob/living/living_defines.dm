@@ -15,6 +15,8 @@
 	var/resize = 1 //Badminnery resize
 	var/lastattacker = null
 	var/lastattackerckey = null
+	/// world.time последнего set_last_attacker()
+	var/lastattacker_time = 0
 
 	//Health and life related vars
 	var/maxHealth = 100 //Maximum health that should be possible.

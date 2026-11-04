@@ -22,6 +22,10 @@
 	var/special_pod
 	/// BLUEMOON ADD - если задан, пак виден ТОЛЬКО консолям этих типов (list of /obj/machinery/computer/cargo/express typepaths), и не виден больше нигде
 	var/list/exclusive_consoles
+	/// ACCOUNT_* отдела: пак продаётся только в каталоге этого отдела и не виден консолям снабжения
+	var/department_catalog
+	/// id товара рынка, по которому идёт закупка; без него - по группе пака
+	var/commodity
 
 /datum/supply_pack/proc/generate(atom/A, datum/bank_account/paying_account)
 	var/obj/structure/closet/crate/C
@@ -42,8 +46,33 @@
 	fill(C)
 	return C
 
-/datum/supply_pack/proc/get_cost()
+/// Цена у текущего поставщика, см. econ_pack_price().
+/datum/supply_pack/proc/get_cost(datum/bank_account/paying_account, allow_contraband = FALSE)
+	return econ_pack_price(src, paying_account, allow_contraband)
+
+/// Рынок, наценка и скидка партнёра двигают цену содержимого не ниже дна рынка; упаковка - залог и стоит столько, сколько NT за неё вернёт.
+/datum/supply_pack/proc/market_cost(datum/bank_account/paying_account, datum/trade_partner/partner)
+	var/total = market_total()
+	var/datum/commodity/market_commodity = econ_pack_commodity(src)
+	if(!market_commodity)
+		return round(total)
+	return econ_pack_partner_cost(total, market_packaging(paying_account, total), market_commodity.buy_factor(), partner)
+
+/datum/supply_pack/proc/market_total()
 	return cost * SSeconomy.pack_price_modifier
+
+/datum/supply_pack/proc/market_packaging(datum/bank_account/paying_account, total)
+	return min(econ_packaging_value(packaging_type(paying_account)), total)
+
+/// Во что пак упакует отгрузка шаттла: малый пак - в кейс, частный заказ - в именной ящик или шкаф.
+/datum/supply_pack/proc/packaging_type(datum/bank_account/paying_account)
+	if(goody != PACK_GOODY_NONE)
+		return /obj/item/storage/lockbox/order
+	if(!paying_account)
+		return crate_type
+	if(ispath(crate_type, /obj/structure/closet/secure_closet/cargo))
+		return /obj/structure/closet/secure_closet/cargo/owned
+	return /obj/structure/closet/crate/secure/owned
 
 /datum/supply_pack/proc/fill(obj/structure/closet/crate/C)
 	if (admin_spawned)

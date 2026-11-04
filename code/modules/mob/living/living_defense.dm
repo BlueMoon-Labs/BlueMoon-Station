@@ -727,5 +727,6 @@
 /mob/living/proc/set_last_attacker(mob/attacker)
 	lastattacker = attacker.real_name
 	lastattackerckey = attacker.ckey
+	lastattacker_time = world.time
 	SEND_SIGNAL(src, COMSIG_LIVING_ATTACKER_SET, attacker)
 	SEND_SIGNAL(attacker, COMSIG_LIVING_SET_AS_ATTACKER, src)

@@ -1,0 +1,87 @@
+{
+	"_comment": "Числа баланса экономики. Перечитывается админом из панели «Экономика».",
+	"settings": {
+		"_comment": "Встроенные числа баланса - в modular_bluemoon/code/modules/economy/core/settings.dm. Здесь только то, что сервер перекрывает: ключ с тем же именем, у work_prices - отдельные работы, например {\"tax_default\": 15, \"work_prices\": {\"sci_node\": 25}}."
+	},
+	"market": {
+		"_comment": "Сдвиг цен раз в shift_minutes (±90 с). hot_chance - шанс в процентах, что товар станет горячим за сдвиг. Товары: volatility - сигма шага тренда, consumer - в корзине индекса цен, links - доля отклонения тренда, передаваемая связанным товарам (сумма долей, входящих в один товар, не больше 1), demand_capacity - сумма продаж, выбивающая весь спрос, demand_recovery - восстановление спроса за сдвиг.",
+		"shift_minutes": 5,
+		"hot_chance": 4,
+		"commodities": {
+			"metals": {"name": "Металлы", "volatility": 0.05, "links": {"electronics": 0.3, "machinery": 0.3, "construction": 0.4}},
+			"precious_metals": {"name": "Драгметаллы", "volatility": 0.08, "links": {"luxury": 0.3}},
+			"plasma": {"name": "Плазма", "volatility": 0.1, "links": {"fuel": 0.5, "energy": 0.2}},
+			"crystals": {"name": "Кристаллы", "volatility": 0.09},
+			"gases": {"name": "Газы", "volatility": 0.06},
+			"energy": {"name": "Энергия", "volatility": 0.07},
+			"food": {"name": "Продукты", "volatility": 0.05, "consumer": true, "links": {"drinks": 0.3}},
+			"drinks": {"name": "Напитки", "volatility": 0.05, "consumer": true},
+			"medicine": {"name": "Медикаменты", "volatility": 0.06, "consumer": true, "links": {"chemicals": 0.4}},
+			"chemicals": {"name": "Химреактивы", "volatility": 0.07},
+			"electronics": {"name": "Электроника", "volatility": 0.06, "links": {"robotics": 0.4}},
+			"machinery": {"name": "Механизмы", "volatility": 0.05},
+			"robotics": {"name": "Роботехника", "volatility": 0.07},
+			"weapons": {"name": "Оружие", "volatility": 0.08},
+			"textiles": {"name": "Текстиль", "volatility": 0.04, "consumer": true},
+			"luxury": {"name": "Роскошь", "volatility": 0.1, "consumer": true},
+			"biomaterials": {"name": "Биоматериалы", "volatility": 0.09},
+			"artifacts": {"name": "Артефакты", "volatility": 0.12},
+			"seeds": {"name": "Семена", "volatility": 0.05, "links": {"food": 0.2}},
+			"construction": {"name": "Стройматериалы", "volatility": 0.04},
+			"fuel": {"name": "Топливо", "volatility": 0.08, "links": {"energy": 0.3}},
+			"culture": {"name": "Культура", "volatility": 0.06},
+			"contraband": {"name": "Контрабанда", "volatility": 0.12, "demand_capacity": 5000}
+		},
+		"_partners_comment": "Склад партнёра пополняется раз в partner_restock_minutes за его капитал, до partner_stock_default штук пака. reputation_per_credit - репутация за кредит продаж (за закупки вдвое меньше). Партнёры: buys - товар или * -> множитель цены покупки, sells_groups - группы паков или *, markup - наценка на содержимое пака, wealth - стартовый капитал, base_income - доход за пополнение, unlocked - открыт с начала, unlock - {partner, tier} или {any_two_tier}, company - тикер на бирже, contraband - продаёт контрабанду; контрабандного партнёра открывает только взлом консоли снабжения, unlocked и unlock ему не действуют.",
+		"partner_restock_minutes": 7,
+		"partner_stock_default": 5,
+		"reputation_per_credit": 0.01,
+		"_offers_comment": "Спецзаказы: раз в offer_minutes открытый партнёр, у которого меньше offers_max спецзаказов, с шансом offer_chance (%) выставляет новый из своих offer_items (path - тип предмета, name - как его называть, min..max - количество, unit_price - цена штуки до множителя 1.5-2.5, reagent и volume - нужный реагент в каждой штуке). Невзятый снимается через два интервала, взятый нужно выполнить за offer_deadline_minutes.",
+		"offer_minutes": 15,
+		"offers_max": 2,
+		"offer_chance": 50,
+		"offer_deadline_minutes": 30,
+		"_news_comment": "Канал «Сводка сектора» на ньюскастерах: сводка рынка раз в digest_minutes; срочные новости (события компаний, горячие товары, открытие партнёров, обвал и бум, блюдо дня) копятся и выходят одной статьёй. Между любыми двумя статьями канала проходит не меньше news_flash_minutes (не больше половины digest_minutes); сводка без перемен не выходит.",
+		"digest_minutes": 15,
+		"news_flash_minutes": 7,
+		"_persist_comment": "Между раундами сохраняются тренды и спрос товаров, индекс цен, цены акций, репутация, капитал и открытие партнёров (data/economy/sector_state.json). Цена акции хранится в долях базовой. При загрузке всё это одним скачком сдвигается на persist_decay процентов к базе; открытые партнёры, кроме контрабандного, остаются открытыми. Деньги и акции игроков, спецзаказы, склады партнёров, события и новости раунд не переживают.",
+		"persist_decay": 20,
+		"partners": {
+			"nt_logistics": {"name": "НТ Логистика", "desc": "Логистическое крыло Нанотрейзен: возит и покупает всё по базовой цене, без премий.", "buys": {"*": 1}, "sells_groups": ["*"], "markup": 1, "wealth": 50000, "base_income": 5000, "unlocked": true, "company": "NTRN", "offer_items": []},
+			"prospectors": {"name": "Гильдия старателей", "desc": "Шахтёрские артели пояса астероидов.", "buys": {"metals": 1.05, "precious_metals": 1.25, "plasma": 1.2, "crystals": 1.3, "fuel": 1}, "sells_groups": ["Canisters & Materials"], "markup": 0.95, "wealth": 15000, "base_income": 2000, "unlocked": true, "company": "PRSP", "offer_items": [{"path": "/obj/item/stack/sheet/mineral/gold", "name": "слитки золота", "min": 5, "max": 20, "unit_price": 60}, {"path": "/obj/item/stack/sheet/mineral/silver", "name": "слитки серебра", "min": 10, "max": 30, "unit_price": 25}, {"path": "/obj/item/stack/sheet/mineral/uranium", "name": "листы урана", "min": 5, "max": 20, "unit_price": 50}, {"path": "/obj/item/stack/sheet/mineral/titanium", "name": "листы титана", "min": 5, "max": 20, "unit_price": 60}, {"path": "/obj/item/stack/sheet/mineral/diamond", "name": "алмазы", "min": 2, "max": 6, "unit_price": 250}]},
+			"vey_med": {"name": "Вей-Мед", "desc": "Медицинский концерн.", "buys": {"medicine": 1.25, "chemicals": 1.15, "biomaterials": 1.2}, "sells_groups": ["Medical", "Emergency"], "markup": 0.95, "wealth": 15000, "base_income": 2000, "unlocked": true, "company": "VYMD", "offer_items": [{"path": "/obj/item/stack/sheet/animalhide/goliath_hide", "name": "шкуры голиафа", "min": 2, "max": 6, "unit_price": 160}, {"path": "/obj/item/stack/sheet/bone", "name": "кости", "min": 5, "max": 15, "unit_price": 20}, {"path": "/obj/item/slime_extract/gold", "name": "золотые экстракты слаймов", "min": 1, "max": 3, "unit_price": 150}, {"path": "/obj/item/slime_extract/adamantine", "name": "адамантиновые экстракты слаймов", "min": 1, "max": 3, "unit_price": 150}]},
+			"nakamura": {"name": "Накамура Инжиниринг", "desc": "Двигатели, энергетика и станционные системы.", "buys": {"energy": 1.3, "machinery": 1.2, "electronics": 1.2, "gases": 1.15}, "sells_groups": ["Engineering", "Engine Construction"], "markup": 0.95, "wealth": 15000, "base_income": 2000, "unlock": {"partner": "nt_logistics", "tier": 2}, "company": "NKMR", "offer_items": [{"path": "/obj/item/stock_parts/cell/high/slime", "name": "слаймовые батареи", "min": 1, "max": 3, "unit_price": 150}, {"path": "/obj/item/stack/sheet/mineral/plastitanium", "name": "листы пластитана", "min": 5, "max": 15, "unit_price": 165}, {"path": "/obj/item/stack/sheet/plastitaniumglass", "name": "листы пластитанового стекла", "min": 5, "max": 15, "unit_price": 120}]},
+			"agrarian": {"name": "Аграрный союз", "desc": "Фермерские колонии сектора.", "buys": {"food": 1.25, "drinks": 1.25, "seeds": 1.3}, "sells_groups": ["Food & Hydroponics", "Livestock"], "markup": 0.9, "wealth": 12000, "base_income": 1500, "unlock": {"partner": "vey_med", "tier": 1}, "company": "AGRO", "offer_items": [{"path": "/obj/item/reagent_containers/food/snacks/pizza/margherita", "name": "пиццы «Маргарита»", "min": 2, "max": 6, "unit_price": 100}, {"path": "/obj/item/reagent_containers/food/snacks/store/bread/plain", "name": "буханки хлеба", "min": 3, "max": 10, "unit_price": 15}, {"path": "/obj/item/reagent_containers/food/snacks/grown/ambrosia/gaia", "name": "амброзия гайя", "min": 5, "max": 15, "unit_price": 10}, {"path": "/obj/item/reagent_containers/food/snacks/grown/bluecherries", "name": "синие вишни", "min": 10, "max": 30, "unit_price": 6}]},
+			"sol_federation": {"name": "Солнечная Федерация", "desc": "Торговые палаты Солнечной Федерации.", "buys": {"culture": 1.4, "luxury": 1.3, "artifacts": 1.4}, "sells_groups": ["Service", "Goodies", "Costumes & Toys"], "markup": 1, "wealth": 30000, "base_income": 3000, "unlock": {"any_two_tier": 2}, "company": "SOLX", "offer_items": [{"path": "/obj/item/tea_cup", "name": "стеклянные чашки", "min": 1, "max": 3, "unit_price": 1200}, {"path": "/obj/item/glasswork/glass_base/lens", "name": "стеклянные линзы", "min": 1, "max": 3, "unit_price": 1200}, {"path": "/obj/item/reagent_containers/glass/beaker/flask", "name": "стеклянные колбы", "min": 1, "max": 3, "unit_price": 500}]},
+			"free_traders": {"name": "Вольные торговцы", "desc": "Серые торговцы без лишних вопросов.", "buys": {"contraband": 1.5, "*": 0.9}, "sells_groups": ["Security", "Armory"], "markup": 1.3, "wealth": 10000, "base_income": 1500, "contraband": true, "company": "CYBS", "offer_items": [{"path": "/obj/item/reagent_containers/crack", "name": "крэк", "min": 3, "max": 10, "unit_price": 100}, {"path": "/obj/item/reagent_containers/cocaine", "name": "кокаин", "min": 3, "max": 10, "unit_price": 100}, {"path": "/obj/item/reagent_containers/crackbrick", "name": "брикеты крэка", "min": 1, "max": 3, "unit_price": 600}]}
+		},
+		"_stocks_comment": "Биржа: цена компании раз в минуту сдвигается на случайный шум volatility без возврата к базе; price - базовая цена. Скачком и насовсем цену двигают продажи станции партнёру, у которого в partners указана эта компания (прирост ограничен), события компаний (каждую минуту с шансом company_event_chance %, выходят новостью с задержкой; effect - доля сдвига, %NAME% - название компании) и события станции (station_events: тикер или * для всех -> доля сдвига, одно событие повторяется не сразу). Падение цены намного ниже базы останавливает торги, затем компания возвращается на биржу по сниженной цене, а акции держателей обмениваются так, чтобы их стоимость не выросла.",
+		"company_event_chance": 2,
+		"companies": {
+			"NTRN": {"name": "Нанотрейзен", "price": 250, "volatility": 0.015},
+			"PRSP": {"name": "Гильдия старателей", "price": 60, "volatility": 0.03},
+			"VYMD": {"name": "Вей-Мед", "price": 120, "volatility": 0.025},
+			"NKMR": {"name": "Накамура Инжиниринг", "price": 140, "volatility": 0.025},
+			"AGRO": {"name": "Аграрный союз", "price": 45, "volatility": 0.03},
+			"SOLX": {"name": "Солнечная биржа", "price": 180, "volatility": 0.02},
+			"CYBS": {"name": "Киберсан Индастриз", "price": 90, "volatility": 0.05},
+			"EINS": {"name": "Эйнштейн Энджинс", "price": 110, "volatility": 0.03}
+		},
+		"company_events": [
+			{"key": "product_launch", "headline": "%NAME% представляет новую линейку продукции", "effect": 0.15},
+			{"key": "contract_won", "headline": "%NAME% выигрывает крупный контракт сектора", "effect": 0.2},
+			{"key": "merger", "headline": "%NAME% объявляет о слиянии", "effect": 0.25},
+			{"key": "scandal", "headline": "Скандал в руководстве %NAME%", "effect": -0.2},
+			{"key": "recall", "headline": "%NAME% отзывает партию продукции", "effect": -0.15},
+			{"key": "strike", "headline": "Забастовка на предприятиях %NAME%", "effect": -0.12}
+		],
+		"station_events": {
+			"sm_delam": {"NTRN": -0.25, "NKMR": 0.1},
+			"delta_alert": {"NTRN": -0.15},
+			"disease_outbreak": {"VYMD": 0.2},
+			"meteors": {"NKMR": 0.15, "PRSP": 0.05},
+			"market_crash": {"*": -0.2},
+			"sector_boom": {"*": 0.1}
+		}
+	}
+}

@@ -1,6 +1,5 @@
 /datum/export/gear
 	include_subtypes = FALSE
-	k_elasticity = 1/100 //BLUEMOON CHANGE
 
 //blanket
 /datum/export/gear/hat
@@ -104,19 +103,16 @@
 
 /datum/export/gear/knight_helmet
 	cost = 200
-	k_elasticity = 1/5 //Rare, dont flood it
 	unit_name = "knight helmet"
 	export_types = list(/obj/item/clothing/head/helmet/knight, /obj/item/clothing/head/helmet/knight/blue, /obj/item/clothing/head/helmet/knight/yellow, /obj/item/clothing/head/helmet/knight/red)
 
 /datum/export/gear/skull_hat
 	cost = 70
-	k_elasticity = 1/15 //Its just a skull
 	unit_name = "skull"
 	export_types = list(/obj/item/clothing/head/helmet/skull)
 
 /datum/export/gear/durathread_helm
 	cost = 100
-	k_elasticity = 1/15
 	unit_name = "durathread hat"
 	export_types = list(/obj/item/clothing/head/helmet/durathread, /obj/item/clothing/head/beret/durathread, /obj/item/clothing/head/beanie/durathread)
 
@@ -132,7 +128,6 @@
 
 /datum/export/gear/crowns
 	cost = 350 //Armored, gold 300cr of gold to make so give them 50 more for working
-	k_elasticity = 1/5 //Anti-floods
 	unit_name = "crown"
 	export_types = list(/obj/item/clothing/head/crown, /obj/item/clothing/head/crown/fancy)
 
@@ -153,7 +148,6 @@
 
 /datum/export/gear/dechat
 	cost = 75
-	k_elasticity = 1/8 //Anti-floods
 	unit_name = "fedora"
 	export_types = list(/obj/item/clothing/head/fedora/det_hat, /obj/item/clothing/head/fedora/curator, /obj/item/clothing/head/fedora)
 
@@ -190,20 +184,17 @@
 /datum/export/gear/collectable
 	cost = 500
 	unit_name = "collectable hat"
-	k_elasticity = 1/10 //dont flood these
 	export_types = list(/obj/item/clothing/head/collectable)
 	include_subtypes = TRUE
 
 /datum/export/gear/fancyhats
 	cost = 75
 	unit_name = "fancy hat"
-	k_elasticity = 1/10 //dont flood these
 	export_types = list(/obj/item/clothing/head/that, /obj/item/clothing/head/bowler, /obj/item/clothing/head/lizard, /obj/item/clothing/head/canada)
 
 /datum/export/gear/welders
 	cost = 30
 	unit_name = "welder helm"
-	k_elasticity = 1/20 //dont flood these
 	export_types = list(/obj/item/clothing/head/welding)
 
 /datum/export/gear/magichat //Magic as is Antags-Wiz/Cults
@@ -575,14 +566,12 @@
 /datum/export/gear/jumpsuit
 	cost = 3
 	unit_name = "jumpsuit"
-	k_elasticity = 1/100 //you can craft white jumpsuits, if someone does that 300 times, they deserve the 800 credits
 	export_types = list(/obj/item/clothing/under)
 	include_subtypes = TRUE
 
 /datum/export/gear/fancy_jumpsuit
 	cost = 10
 	unit_name = "fancy clothing"
-	k_elasticity = 1/90 //These will be what sells
 	export_types = list(/obj/item/clothing/under/suit/white_on_white, /obj/item/clothing/under/suit/sl, /obj/item/clothing/under/misc/vice_officer, /obj/item/clothing/under/suit/black, \
 						/obj/item/clothing/under/misc/burial, /obj/item/clothing/under/dress/skirt, /obj/item/clothing/under/rank/captain/parade, /obj/item/clothing/under/rank/security/head_of_security/parade, \
 						/obj/item/clothing/under/rank/security/head_of_security/parade/female, /obj/item/clothing/under/misc/assistantformal, /obj/item/clothing/under/dress/striped, /obj/item/clothing/under/dress/redeveninggown, \
@@ -592,7 +581,6 @@
 /datum/export/gear/armored_jumpsuit
 	cost = 15
 	unit_name = "armored_jumpsuit"
-	k_elasticity = 1/90 //These will be what sells
 	export_types = list(/obj/item/clothing/under/misc/durathread, /obj/item/clothing/under/rank/security/officer, /obj/item/clothing/under/plasmaman, /obj/item/clothing/under/syndicate, \
 						/obj/item/clothing/under/rank/security/detective, /obj/item/clothing/under/rank/security/head_of_security, /obj/item/clothing/under/rank/security/officer/spacepol)
 	exclude_types = list(/obj/item/clothing/under/syndicate/tacticool, /obj/item/clothing/under/syndicate/tacticool/skirt)
@@ -601,7 +589,6 @@
 /datum/export/gear/jumpsuit_addon
 	cost = 12 //Few and rare as well as quick drop off of vaule
 	unit_name = "jumpsuit add on"
-	k_elasticity = 1/10
 	export_types = list(/obj/item/clothing/accessory)
 	include_subtypes = TRUE
 
@@ -687,13 +674,11 @@
 
 /datum/export/gear/reactive_base
 	cost = 600
-	k_elasticity = 1/2 //Lets not go over board
 	unit_name = "hollow reactive armor"
 	export_types = list(/obj/item/reactive_armour_shell, /obj/item/clothing/suit/armor/reactive)
 
 /datum/export/gear/reactive_active
 	cost = 1200
-	k_elasticity = 1/3 //Lets not go over board
 	unit_name = "working reactive armor"
 	export_types = list(/obj/item/clothing/suit/armor/reactive/repulse, /obj/item/clothing/suit/armor/reactive/tesla, /obj/item/clothing/suit/armor/reactive/teleport)
 
@@ -793,7 +778,6 @@
 //////////////////////
 /datum/export/gear/chameleon //Selling a full kit is easy money for 2 tc
 	cost = 280
-	k_elasticity = 0
 	unit_name = "chameleon item"
 	export_types = list(/obj/item/clothing/head/chameleon, /obj/item/clothing/mask/chameleon, /obj/item/clothing/under/chameleon, /obj/item/clothing/suit/chameleon, /obj/item/clothing/glasses/chameleon,\
 						/obj/item/clothing/gloves/chameleon, /obj/item/clothing/head/chameleon, /obj/item/clothing/shoes/chameleon, /obj/item/storage/backpack/chameleon, \

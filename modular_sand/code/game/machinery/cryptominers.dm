@@ -16,6 +16,8 @@
 #define CRYPTO_MULT_MAX			CONFIG_GET(number/crypto_multiplier_max)
 #define CRYPTO_HEATING_POWER	CONFIG_GET(number/crypto_heat_power)
 #define CRYPTO_IGNORE_ATMOS		CONFIG_GET(flag/crypto_ignore_atmos)
+/// Доход на личный счёт уходит в финансовый аудит одной записью не чаще этого
+#define CRYPTO_AUDIT_NOTE_INTERVAL	(30 SECONDS)
 
 /obj/machinery/cryptominer
 	name = "cryptocurrency miner"
@@ -35,7 +37,11 @@
 	var/obj/item/radio/cargo_radio
 	// Should this machine send messages on cargo radio?
 	var/radio_snitch = TRUE
-	var/notice_timer = 0
+	/// Доход на личный счёт виден финансовому аудиту; майнер Синдиката мимо базы NT
+	var/econ_audited = TRUE
+	/// Доход на личный счёт, ещё не переданный аудиту
+	var/econ_audit_pending = 0
+	var/econ_audit_next = 0
 
 /obj/machinery/cryptominer/Initialize(mapload)
 	. = ..()
@@ -62,6 +68,7 @@
 		icon_state = "on"
 
 /obj/machinery/cryptominer/Destroy()
+	flush_econ_audit()
 	STOP_PROCESSING(SSmachines,src)
 	QDEL_NULL(cargo_radio)
 	return ..()
@@ -128,6 +135,7 @@
 		var/old_account = pay_me
 
 		// Set payment account to ID card's account
+		flush_econ_audit()
 		pay_me = CARD.registered_account
 
 		// Say in local chat
@@ -164,6 +172,7 @@
 	var/old_account = pay_me
 
 	// Reset account to Cargo
+	flush_econ_audit()
 	pay_me = SSeconomy.get_dep_account(ACCOUNT_CAR)
 
 	// Say in local chat
@@ -178,6 +187,8 @@
 		. += span_notice("A little screen on the machine reads: Currently the linked bank account is [pay_me.account_holder ? "[pay_me.account_holder]s" : span_boldwarning("ERROR")].")
 		. += "Modify the destination of the credits using your id on it while it is inactive and has its panel open."
 		. += "Alt-Click to reset to the Cargo budget.</span>"
+		if(econ_audited)
+			. += span_warning("Если майнер платит на личный счёт, а не в бюджет снабжения, финансовый аудит открывает дело, и деньги можно вернуть снабжению.")
 
 /obj/machinery/cryptominer/process()
 	// Get turf
@@ -217,11 +228,8 @@
 	// Minimum (most likely)
 	if((env_temp <= temp_mid) && (env_temp >= temp_min))
 		produce_points(CRYPTO_MULT_MAX) // Чем холоднее, тем больше.
-	// Mid
-	if((env_temp <= temp_mid) && (env_temp >= temp_min))
-		produce_points(CRYPTO_MULT_MID)
 	// Maximum
-	if((env_temp <= temp_max) && (env_temp >= temp_mid))
+	else if((env_temp <= temp_max) && (env_temp >= temp_mid))
 		produce_points(CRYPTO_MULT_MIN) // Чем горячее, тем меньше.
 	// Overheat
 	if(env_temp >= temp_max)
@@ -241,10 +249,17 @@
 
 /obj/machinery/cryptominer/proc/produce_points(number)
 	playsound(loc, 'sound/machines/ping.ogg', 50, TRUE, -1)
-	if(pay_me)
-		pay_me.adjust_money(miningpoints)
-		pay_me.suspicious_activity = TRUE
-		pay_me.suspicion_reason = "Received funds from illegal Syndicate cryptominer"
+	if(!pay_me?.credit(miningpoints, ECON_MISC, memo = "Криптомайнинг") || !econ_audited || !(pay_me in SSeconomy.bank_accounts))
+		return
+	econ_audit_pending += miningpoints
+	if(world.time >= econ_audit_next)
+		flush_econ_audit()
+
+/obj/machinery/cryptominer/proc/flush_econ_audit()
+	if(econ_audit_pending && pay_me)
+		SSeconomy.note_crypto_income(pay_me, econ_audit_pending, src)
+	econ_audit_pending = 0
+	econ_audit_next = world.time + CRYPTO_AUDIT_NOTE_INTERVAL
 
 /obj/machinery/cryptominer/attack_hand(mob/living/user)
 	. = ..()
@@ -294,6 +309,7 @@
 	miningtime = 10000
 	miningpoints = 20
 	radio_snitch = FALSE // Illegal tech!
+	econ_audited = FALSE
 
 /obj/machinery/cryptominer/syndie/update_icon()
 	. = ..()
@@ -325,42 +341,6 @@
 	else
 		icon_state = "on_nano"
 
-/obj/machinery/cryptominer/proc/report_suspicious_activity(var/miner_type = "cargo")
-	if(!pay_me)
-		return
-
-	// 🛑 Если уже есть подозрительный флаг или активный таймер — не создаём заново
-	if(pay_me.suspicious_activity || pay_me.suspicion_timer)
-		return
-
-	var/delay = 5 MINUTES
-	if(miner_type == "syndicate")
-		delay = 2 MINUTES
-
-	addtimer(CALLBACK(src, PROC_REF(trigger_suspicious_alert), miner_type), delay)
-
-/datum/bank_account/Destroy()
-	if(suspicion_timer)
-		deltimer(suspicion_timer)
-	return ..()
-
-
-/obj/machinery/cryptominer/proc/trigger_suspicious_alert(miner_type)
-	notice_timer = 0
-	if(pay_me.transferable)
-		pay_me.adjust_money(miningpoints)
-	else
-		visible_message(span_warning("⚠ [src] halts mining — linked account is suspended!"))
-		return
-
-	var/msg
-	if(miner_type == "syndicate")
-		msg = "⚠ ALERT: Suspicious financial activity detected on account [pay_me.account_holder]! Source: illegal Syndicate cryptominer."
-	else
-		msg = "⚠ NOTICE: Unusual credit generation detected from cryptominer linked to account [pay_me.account_holder]."
-
-	log_econ(msg)
-
 /*
  * Some entries are currently unimplemented
  *
@@ -378,3 +358,4 @@
 #undef CRYPTO_MULT_MAX
 #undef CRYPTO_HEATING_POWER
 #undef CRYPTO_IGNORE_ATMOS
+#undef CRYPTO_AUDIT_NOTE_INTERVAL

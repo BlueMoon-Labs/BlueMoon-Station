@@ -10,16 +10,23 @@ GLOBAL_LIST_INIT(vending_products_from_map_varedits, list(
 
 /// Ассортимент всех типов вендоматов: набор зависит только от кода, поэтому хэш входа стабилен.
 /// Инстанс приходится создавать - initial() на списочной переменной отдаёт пустой список, а не типовой дефолт.
-/proc/collect_vending_product_types()
+/// skip_vendor_types и skip_access отсеивают автоматы по типу и по замку доступа; check_tick - только для вызова, которому можно спать.
+/proc/collect_vending_product_types(list/skip_vendor_types, skip_access, check_tick = FALSE)
 	var/list/product_types = list()
 	for(var/product_path in GLOB.vending_products_from_map_varedits)
 		product_types[product_path] = TRUE
 
 	for(var/vendor_type in typesof(/obj/machinery/vending))
+		if(check_tick)
+			CHECK_TICK
+		if(skip_vendor_types && (vendor_type in skip_vendor_types))
+			continue
 		var/machines_before = length(GLOB.machines)
 		var/obj/machinery/vending/vendor = new vendor_type(null)
 		// Вендомат-подменыш (cola/random) в Initialize() создаёт случайного брата и удаляет себя:
 		// читать с него нечего, а брата надо убрать из нулевого пространства.
+		if(!QDELETED(vendor) && skip_access && ((skip_access in (vendor.req_access || list())) || (skip_access in (vendor.req_one_access || list()))))
+			qdel(vendor)
 		if(!QDELETED(vendor))
 			for(var/product_path in vendor.products)
 				product_types[product_path] = TRUE
@@ -35,6 +42,8 @@ GLOBAL_LIST_INIT(vending_products_from_map_varedits, list(
 		qdel_vending_enumeration_strays(machines_before)
 
 	for(var/vendor_type in typesof(/obj/machinery/equipment_vendor))
+		if(check_tick)
+			CHECK_TICK
 		var/machines_before = length(GLOB.machines)
 		var/obj/machinery/equipment_vendor/vendor = new vendor_type(null)
 		if(!QDELETED(vendor))

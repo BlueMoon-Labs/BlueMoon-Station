@@ -226,8 +226,7 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 		linked_techweb.largest_values[LARGEST_BOMB] = point_gain
 		point_gain -= old_tech_largest_bomb_value
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_SCI)
-		if(D)
-			D.adjust_money(point_gain)
+		D?.credit(point_gain, ECON_WORK, memo = "Продажа данных о взрыве")
 		linked_techweb.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, point_gain)
 		say("Explosion details and mixture analyzed and sold to the highest bidder for [point_gain] cr, with a reward of [point_gain] points.")
 

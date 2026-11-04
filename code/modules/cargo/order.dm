@@ -31,6 +31,11 @@
 	var/datum/supply_pack/pack
 	var/datum/bank_account/paying_account
 	var/obj/item/coupon/applied_coupon
+	/// Сумма, уже списанная с бюджета отдела при заказе из каталога; при отмене возвращается
+	var/prepaid = 0
+	var/department_id
+	/// Заказан со взломанной консоли: поставщиком может быть контрабандный партнёр
+	var/contraband_supply = FALSE
 
 /datum/supply_order/New(datum/supply_pack/pack, orderer, orderer_rank, orderer_ckey, reason, paying_account, coupon)
 	id = SSshuttle.ordernum++
@@ -120,11 +125,13 @@
 	else
 		account_holder = "Cargo"
 	var/obj/structure/closet/crate/C = pack.generate(A, paying_account)
+	econ_mark_imported(C)
 	generateManifest(C, account_holder, pack)
 	return C
 
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents)
 	for (var/I in misc_contents)
 		new I(miscbox)
+	econ_mark_imported(miscbox)
 	generateManifest(miscbox, misc_own, "")
 	return

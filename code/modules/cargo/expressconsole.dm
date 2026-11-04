@@ -1,6 +1,7 @@
 #define COOLDOWN_EXPRESSPOD_CONSOLE "expresspod_console"
 #define MAX_EMAG_ROCKETS 5
-#define BEACON_COST 500
+/// Скидка взломанной консоли на содержимое пака; ящик-залог идёт по полной цене
+#define EMAG_ROCKETS_DISCOUNT 0.72
 #define SP_LINKED 1
 #define SP_READY 2
 #define SP_LAUNCH 3
@@ -9,17 +10,19 @@
 
 /obj/machinery/computer/cargo/express
 	name = "express supply console"
-	desc = "This console allows the user to purchase a package \
-		with 1/40th of the delivery time: made possible by Nanotrasen's new \"1500mm Orbital Railgun\".\
-		All sales are near instantaneous - please choose carefully"
+	desc = "Консоль экспресс-доставки: пак прилетает капсулой почти сразу, а его цена у партнёра списывается в момент заказа - с бюджета снабжения или, в режиме частного заказа, с личного счёта карты. Частные малые кейсы покупаются только с личного счёта."
 	icon_screen = "supply_express"
 	circuit = /obj/item/circuitboard/computer/cargo/express
 	blockade_warning = "Bluespace instability detected. Delivery impossible."
 	req_access = list(ACCESS_QM)
 	is_express = TRUE
+	can_send = FALSE
+	can_approve_requests = FALSE
 	icon_screen = "supply_express"
 
 	var/message
+	/// Версия цен, по которой собран meme_pack_data
+	var/prices_version = 0
 	var/printed_beacons = 0 //number of beacons printed. Used to determine beacon names.
 	var/list/meme_pack_data
 	var/obj/item/supplypod_beacon/beacon //the linked supplypod beacon
@@ -83,6 +86,7 @@
 	board.obj_flags |= EMAGGED
 	board.contraband = TRUE
 	packin_up()
+	update_static_data_for_all_viewers()
 	return TRUE
 
 /* BLUEMOON CHANGE выносим переписанный  текст "Oh shit. I'm sorry" отдельным комментарием чтобы не засирать код
@@ -107,6 +111,8 @@ i'd be right happy to */
 		SSshuttle.express_consoles += src
 		return
 	// BLUEMOON ADD END
+	GLOB.econ_cargo_prices.refresh()
+	prices_version = GLOB.econ_cargo_prices.version
 	for(var/pack in SSshuttle.supply_packs)
 		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
 
@@ -115,21 +121,43 @@ i'd be right happy to */
 			continue
 		// BLUEMOON ADD END
 
+		if(P.department_catalog)
+			continue
 		if(!meme_pack_data[P.group])
 			meme_pack_data[P.group] = list(
 				"name" = P.group,
 				"packs" = list()
 			)
-		if((P.hidden) || (P.special))
+		if(!offers_pack(P))
 			continue
-		if(P.contraband && !contraband)
-			continue
-		meme_pack_data[P.group]["packs"] += list(list(
-			"name" = P.name,
-			"cost" = P.get_cost(),
-			"id" = pack,
-			"desc" = P.desc || P.name
-		))
+		var/list/entry = econ_cargo_pack_entry(P, FALSE)
+		entry["name"] = P.name
+		entry["id"] = pack
+		entry["desc"] = P.desc || P.name
+		meme_pack_data[P.group]["packs"] += list(entry)
+
+/// Пак есть в каталоге этой консоли и заказывается с неё.
+/obj/machinery/computer/cargo/express/proc/offers_pack(datum/supply_pack/pack)
+	if(pack.department_catalog || pack.hidden || pack.special)
+		return FALSE
+	if(pack.exclusive_consoles && !is_type_in_list(src, pack.exclusive_consoles))
+		return FALSE
+	return !pack.contraband || contraband
+
+/// Консоль платит бюджетом станции, а не Deep Space или Тарков: только её закупки дают партнёрам репутацию.
+/obj/machinery/computer/cargo/express/proc/station_budget()
+	return !(department_account in list(ACCOUNT_DS, ACCOUNT_TAR))
+
+/// Цена содержимого пака во взломе: со скидкой, но не ниже дна рынка, иначе выкуп купленного окупал бы заказ.
+/obj/machinery/computer/cargo/express/proc/emag_contents_price(datum/supply_pack/pack, datum/bank_account/paying_account)
+	var/unit_cost = pack.get_cost(paying_account)
+	var/packaging = min(pack.market_packaging(paying_account, pack.market_total()), unit_cost)
+	var/contents = unit_cost - packaging
+	return max(round(contents * EMAG_ROCKETS_DISCOUNT), min(round((pack.market_total() - packaging) * MARKET_PRICE_MIN), contents))
+
+/// Взломанная консоль бросает капсулы в случайную зону станции.
+/obj/machinery/computer/cargo/express/proc/emag_landing_area()
+	return GLOB.areas_by_type[pick(GLOB.the_station_areas)]
 
 /obj/machinery/computer/cargo/express/ui_interact(mob/user, datum/tgui/ui)
 	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
@@ -146,21 +174,21 @@ i'd be right happy to */
 	var/datum/bank_account/D = SSeconomy.get_dep_account(department_account)
 	if(D)
 		data["points"] = D.account_balance
+	data["budget_name"] = econ_budget_name(D)
 	data["self_paid"] = self_paid
 	data["locked"] = locked
 	data["siliconUser"] = hasSiliconAccessInArea(user)
 	data["beaconzone"] = beacon ? get_area(beacon) : ""
 	data["usingBeacon"] = usingBeacon
 	data["canBeacon"] = !usingBeacon || canBeacon
-	data["canBuyBeacon"] = cooldown <= 0 && D.account_balance >= BEACON_COST
+	data["canBuyBeacon"] = cooldown <= 0 && D.account_balance >= EXPRESS_BEACON_COST
 	data["beaconError"] = usingBeacon && !canBeacon ? "(BEACON ERROR)" : ""
 	data["hasBeacon"] = beacon != null
 	data["beaconName"] = beacon ? beacon.name : "No Beacon Found"
-	data["printMsg"] = cooldown > 0 ? "Print Beacon for [BEACON_COST] credits ([cooldown])" : "Print Beacon for [BEACON_COST] credits"
+	data["printMsg"] = cooldown > 0 ? "Напечатать маяк за [EXPRESS_BEACON_COST] кр. ([cooldown])" : "Напечатать маяк за [EXPRESS_BEACON_COST] кр."
 	data["department_account"] = department_account // BLUEMOON ADD
 	data["access_hint"] = access_hint // BLUEMOON ADD
 	data["beacon_only"] = beacon_only
-	data["supplies"] = list()
 	message = "Sales are near-instantaneous - please choose carefully."
 	if(SSshuttle.supplyBlocked)
 		message = blockade_warning
@@ -171,16 +199,28 @@ i'd be right happy to */
 	if(obj_flags & EMAGGED)
 		message = "(&!#@ERROR: R0UTING_#PRO7O&OL MALF(*CT#ON. $UG%ESTE@ ACT#0N: !^/PULS3-%E)ET CIR*)ITB%ARD."
 	data["message"] = message
-	if(!meme_pack_data)
+	GLOB.econ_cargo_prices.refresh()
+	if(prices_version != GLOB.econ_cargo_prices.version)
 		packin_up()
-		stack_trace("There was no pack data for [src]")
-	data["supplies"] = meme_pack_data
+		INVOKE_ASYNC(src, TYPE_PROC_REF(/datum, update_static_data_for_all_viewers))
 	if (cooldown > 0)//cooldown used for printing beacons
 		cooldown--
 	return data
 
+/// Каталог уходит статикой: он меняется только с ценами, и ui_data пересылает его, когда сменилась их версия.
+/obj/machinery/computer/cargo/express/ui_static_data(mob/user)
+	if(!meme_pack_data)
+		packin_up()
+		stack_trace("There was no pack data for [src]")
+	. = list("supplies" = meme_pack_data)
+	if(station_budget())
+		.["market_help"] = "[econ_express_help()] [econ_cargo_market_help()]"
+
 /obj/machinery/computer/cargo/express/ui_act(action, params, datum/tgui/ui)
 	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
+		return
+	var/static/list/express_actions = list("toggleLock", "toggleprivate", "LZCargo", "LZBeacon", "printBeacon", "add")
+	if(!(action in express_actions) || (locked && action != "toggleLock"))
 		return
 	. = ..()
 	if(.)
@@ -208,7 +248,7 @@ i'd be right happy to */
 		if("printBeacon")
 			var/datum/bank_account/D = SSeconomy.get_dep_account(department_account) // BLUEMOON EDIT (был ACCOUNT_CAR)
 			if(D)
-				if(D.adjust_money(-BEACON_COST))
+				if(D.debit(EXPRESS_BEACON_COST, ECON_PURCHASE, usr, "Печать маяка снабжения"))
 					cooldown = 10//a ~ten second cooldown for printing beacons to prevent spam
 					var/obj/item/supplypod_beacon/C = new /obj/item/supplypod_beacon(drop_location())
 					C.link_console(src, usr)//rather than in beacon's Initialize(), we can assign the computer to the beacon by reusing this proc)
@@ -227,15 +267,20 @@ i'd be right happy to */
 			var/datum/supply_pack/pack = SSshuttle.supply_packs[id]
 			if(!istype(pack))
 				CRASH("Unknown supply pack id given by express order console ui. ID: [params["id"]]")
+			if(!offers_pack(pack))
+				return
 
 			// BLUEMOON ADD - Personal purchase validation
 			if(self_paid && !pack.can_private_buy)
-				say("This cannot be bought privately.")
+				say("Этот пак нельзя купить на личный счёт.")
 				return
 
 			if(pack.goody == PACK_GOODY_PRIVATE && !self_paid)
 				playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
-				say("ERROR: Private small crates may only be purchased by private accounts.")
+				say("Частные малые кейсы покупаются только с личного счёта: включите частный заказ.")
+				return
+			if(econ_pack_unavailable(pack))
+				say("Нет в наличии у партнёров.")
 				return
 
 			var/datum/bank_account/account
@@ -243,14 +288,14 @@ i'd be right happy to */
 				var/mob/living/L = usr
 				var/obj/item/card/id/id_card = L.get_idcard(TRUE)
 				if(!istype(id_card))
-					say("No ID card detected.")
+					say("Для частного заказа нужна ID-карта.")
 					return
 				if(istype(id_card, /obj/item/card/id/departmental_budget))
-					say("The [src] rejects [id_card].")
+					say("Бюджетные карты отделов для частного заказа не принимаются.")
 					return
 				account = id_card.registered_account
 				if(!istype(account))
-					say("Invalid bank account.")
+					say("У карты нет банковского счёта.")
 					return
 			// BLUEMOON ADD END
 
@@ -276,7 +321,7 @@ i'd be right happy to */
 				points_to_check = D.account_balance
 			// BLUEMOON EDIT END
 			if(!(obj_flags & EMAGGED))
-				if(SO.pack.get_cost() <= points_to_check)
+				if(SO.pack.get_cost(SO.paying_account) <= points_to_check)
 					var/LZ
 					if (istype(beacon) && usingBeacon)//prioritize beacons over landing in cargobay
 						LZ = get_turf(beacon)
@@ -293,14 +338,17 @@ i'd be right happy to */
 							CHECK_TICK
 						if(empty_turfs?.len)
 							LZ = pick(empty_turfs)
-					if (SO.pack.get_cost() <= points_to_check && LZ)//we need to call the cost check again because of the CHECK_TICK call
+					if (SO.pack.get_cost(SO.paying_account) <= points_to_check && LZ)//we need to call the cost check again because of the CHECK_TICK call
 						TIMER_COOLDOWN_START(src, COOLDOWN_EXPRESSPOD_CONSOLE, 5 SECONDS)
 						// BLUEMOON EDIT - Charge personal or department account
-						if(self_paid && account)
-							account.adjust_money(-SO.pack.get_cost())
-							say("Order processed. Charged to [account.account_holder]'s account.")
-						else
-							D.adjust_money(-SO.pack.get_cost())
+						var/datum/bank_account/payer = (self_paid && account) ? account : D
+						var/datum/trade_partner/supplier = econ_pack_supplier(SO.pack, SO.paying_account)
+						var/express_cost = SO.pack.get_cost(SO.paying_account)
+						if(!payer.debit(express_cost, ECON_IMPORT, usr, "Экспресс-заказ: [SO.pack.name]"))
+							say("Оплата не прошла.")
+							return
+						supplier?.note_purchase(SO.pack, express_cost, station_budget())
+						say("Заказ принят: [express_cost] кр. списано, плательщик - [econ_budget_name(payer)].")
 						// BLUEMOON EDIT END
 						if(pack.special_pod)
 							new /obj/effect/pod_landingzone(LZ, pack.special_pod, SO)
@@ -311,14 +359,19 @@ i'd be right happy to */
 				// BLUEMOON ADD - Insufficient funds message
 				else
 					if(self_paid)
-						say("Insufficient funds in personal account. Required: [SO.pack.get_cost()] cr.")
+						say("На личном счёте не хватает денег: нужно [SO.pack.get_cost(SO.paying_account)] кр.")
 					else
-						say("Insufficient funds in cargo budget. Required: [SO.pack.get_cost()] cr.")
+						say("Не хватает денег: нужно [SO.pack.get_cost(SO.paying_account)] кр., плательщик - [econ_budget_name(D)].")
 				// BLUEMOON ADD END
 			else
-				var/total_cost = SO.pack.get_cost() * (0.72*MAX_EMAG_ROCKETS)
+				var/datum/trade_partner/bulk_supplier = econ_pack_supplier(SO.pack, SO.paying_account)
+				if(bulk_supplier && !(PARTNER_ANY in bulk_supplier.sells_groups) && bulk_supplier.stock_of(SO.pack) < MAX_EMAG_ROCKETS)
+					say("У партнёра на складе меньше [MAX_EMAG_ROCKETS] таких паков.")
+					return
+				var/packaging = min(SO.pack.market_packaging(SO.paying_account, SO.pack.market_total()), SO.pack.get_cost(SO.paying_account))
+				var/total_cost = MAX_EMAG_ROCKETS * (packaging + emag_contents_price(SO.pack, SO.paying_account))
 				if(total_cost <= points_to_check) // bulk discount :^)
-					landingzone = GLOB.areas_by_type[pick(GLOB.the_station_areas)]  //override default landing zone
+					landingzone = emag_landing_area()
 					for(var/turf/open/floor/T in landingzone.contents)
 						if(T.is_blocked_turf())
 							continue
@@ -327,14 +380,14 @@ i'd be right happy to */
 					if(empty_turfs?.len)
 						TIMER_COOLDOWN_START(src, COOLDOWN_EXPRESSPOD_CONSOLE, 10 SECONDS)
 						// BLUEMOON EDIT - Charge personal or department account (emagged mode)
-						if(self_paid && account)
-							account.adjust_money(-total_cost)
-						else
-							D.adjust_money(-total_cost)
+						var/datum/bank_account/payer = (self_paid && account) ? account : D
+						if(!payer.debit(total_cost, ECON_IMPORT, usr, "Экспресс-заказ: [SO.pack.name]"))
+							say("Оплата не прошла.")
+							return
 						// BLUEMOON EDIT END
-
 						SO.generateRequisition(get_turf(src))
 						for(var/i in 1 to MAX_EMAG_ROCKETS)
+							bulk_supplier?.note_purchase(SO.pack, total_cost / MAX_EMAG_ROCKETS, station_budget())
 							var/LZ = pick(empty_turfs)
 							LAZYREMOVE(empty_turfs, LZ)
 							if(pack.special_pod)
@@ -347,18 +400,16 @@ i'd be right happy to */
 				// BLUEMOON ADD - Insufficient funds message (emagged mode)
 				else
 					if(self_paid)
-						say("Insufficient funds in personal account. Required: [total_cost] cr.")
+						say("На личном счёте не хватает денег: нужно [total_cost] кр.")
 					else
-						say("Insufficient funds in cargo budget. Required: [total_cost] cr.")
+						say("Не хватает денег: нужно [total_cost] кр., плательщик - [econ_budget_name(D)].")
 				// BLUEMOON ADD END
 
 // BLUEMOON ADD START - консоли для сторонних бюджетов, размещаются только через маппинг
 
 /obj/machinery/computer/cargo/express/tar
 	name = "express supply console (Тарков Индастриз)"
-	desc = "This console allows the user to purchase a package \
-		with 1/40th of the delivery time, billed directly to the Тарков Индастриз account. \
-		All sales are near instantaneous - please choose carefully"
+	desc = "Консоль экспресс-доставки Тарков Индастриз: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Тарков Индастриз или, в режиме частного заказа, с личного счёта карты."
 	department_account = ACCOUNT_TAR
 	req_access = list(ACCESS_TARKOFF)
 	icon_screen = "idce"
@@ -369,9 +420,7 @@ i'd be right happy to */
 
 /obj/machinery/computer/cargo/express/ds
 	name = "express supply console (Deep Space)"
-	desc = "This console allows the user to purchase a package \
-		with 1/40th of the delivery time, billed directly to the Deep Space account. \
-		All sales are near instantaneous - please choose carefully"
+	desc = "Консоль экспресс-доставки Deep Space: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Deep Space или, в режиме частного заказа, с личного счёта карты."
 	department_account = ACCOUNT_DS
 	req_access = list(ACCESS_SYNDICATE_LEADER)
 	icon_screen = "commsyndie"

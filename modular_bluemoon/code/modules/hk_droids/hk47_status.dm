@@ -334,8 +334,6 @@
 	new /obj/effect/pod_landingzone(landing, pod)
 
 /datum/antagonist/hk47/proc/post_core_bounty()
-	if(!length(GLOB.bounties_list))
-		setup_bounties()
 	var/datum/bounty/item/hk47_core/bounty = new
 	bounty.mark_high_priority()
 	return try_add_bounty(bounty)

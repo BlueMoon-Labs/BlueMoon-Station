@@ -38,13 +38,13 @@
 	var/datum/bank_account/department/account = SSeconomy.get_dep_account(account_id)
 	if(!account || amount <= 0)
 		return FALSE
-	return account.adjust_money(amount, reason)
+	return account.credit(amount, ECON_WORK, memo = reason)
 
 /proc/minor_crew_pay_person(mob/living/person, amount, reason)
 	var/datum/bank_account/account = person?.get_bank_account()
 	if(!account || amount <= 0)
 		return FALSE
-	if(!account.adjust_money(amount, reason))
+	if(!account.credit(amount, ECON_WORK, memo = reason))
 		return FALSE
 	account.bank_card_talk("На счёт поступило [amount] кр.: [reason].")
 	return TRUE

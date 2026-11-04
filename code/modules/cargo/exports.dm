@@ -27,13 +27,44 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 	var/list/reagents_volume = list()//export reagents => into the total volume of the object sold
 	var/list/reagents_value = list()//export reagents => into the reagent type total value.
 	var/list/exported_atoms_ref = list()	//if they're not deleted they go in here for use.
+	/// Товар рынка -> выручка: спрос снимается разом после оценки всей отгрузки
+	var/list/market_sales = list()
+	/// Партнёр -> выручка, за которую он даёт репутацию; купленное через снабжение сюда не входит
+	var/list/partner_sales = list()
+	/// Товары без открытого покупателя: при отгрузке не уничтожаются и возвращаются
+	var/list/embargoed = list()
+	/// Строки сообщения ЦК о спецзаказах, засчитанных в этой отгрузке
+	var/list/offer_notes = list()
+	/// То же о спецзаказах контрабандного партнёра: их видит только взломанная консоль снабжения
+	var/list/contraband_notes = list()
+	/// Изъято таможней NT: штук, оценка, имя отдела -> штраф
+	var/customs_seized = 0
+	var/customs_value = 0
+	var/list/customs_fines = list()
+
+/datum/export_report/proc/note_market_sale(datum/commodity/market_commodity, value, atom/movable/thing, allow_contraband = FALSE)
+	if(!market_commodity || value <= 0)
+		return
+	market_sales[market_commodity] += value
+	var/datum/trade_partner/buyer = SSmarket.best_buyer(market_commodity.id, allow_contraband)
+	if(buyer && !thing?.econ_imported)
+		partner_sales[buyer] += value
+
+/datum/export_report/proc/settle_market()
+	for(var/datum/commodity/market_commodity as anything in market_sales)
+		market_commodity.note_sale(market_sales[market_commodity])
+	market_sales.Cut()
+	for(var/datum/trade_partner/partner as anything in partner_sales)
+		partner.note_sale(partner_sales[partner])
+	partner_sales.Cut()
 
 // external_report works as "transaction" object, pass same one in if you're doing more than one export in single go
-/proc/export_item_and_contents(atom/movable/AM, allowed_categories = EXPORT_CARGO, apply_elastic = TRUE, delete_unsold = TRUE, dry_run=FALSE, datum/export_report/external_report)
+/// apply_caps без рынка (apply_elastic = FALSE) всё равно ограничивает цену купленного и собранного на станции.
+/proc/export_item_and_contents(atom/movable/AM, allowed_categories = EXPORT_CARGO, apply_elastic = TRUE, delete_unsold = TRUE, dry_run=FALSE, datum/export_report/external_report, apply_caps = FALSE)
 	if(!GLOB.exports_list.len)
 		setupExports()
 
-	var/profit_ratio = 1 //Percentage that gets sent to the seller, rest goes to cargo.
+	var/allow_contraband = allowed_categories & EXPORT_CONTRABAND
 
 	var/list/contents = AM.GetAllContents()
 
@@ -49,16 +80,28 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 			if(!E)
 				continue
 			if(E.applies_to(thing, allowed_categories, apply_elastic))
-				sold = E.sell_object(thing, report, dry_run, allowed_categories , apply_elastic, profit_ratio)
+				sold = E.sell_object(thing, report, dry_run, allowed_categories , apply_elastic, apply_caps)
 				report.exported_atoms += " [thing.name]"
 				break
+		if(thing in report.embargoed)
+			if(!dry_run && thing != AM)
+				thing.forceMove(get_turf(AM))
+			continue
 		if(thing.reagents?.value_multiplier)
 			for(var/A in thing.reagents.reagent_list)
 				var/datum/reagent/R = A
 				if(!R.value)
 					continue
+				var/list/print_reagents = thing.econ_print_reagents
+				var/reagent_value = max(R.volume - (print_reagents ? print_reagents[R.type] : 0), 0) * R.value * thing.reagents.value_multiplier
+				if(apply_elastic)
+					reagent_value *= econ_reagent_sale_factor(R, thing, allow_contraband)
+					if(!dry_run)
+						report.note_market_sale(econ_reagent_commodity(R), reagent_value, thing, allow_contraband)
+				else if(apply_caps && thing.econ_imported)
+					reagent_value *= min(1, econ_import_resale_factor())
 				report.reagents_volume[R.name] += R.volume
-				report.reagents_value[R.name] += round(R.volume * R.value * thing.reagents.value_multiplier)
+				report.reagents_value[R.name] += round(reagent_value)
 		if(!dry_run && (sold || delete_unsold))
 			if(ismob(thing))
 				thing.investigate_log("deleted through cargo export",INVESTIGATE_CARGO)
@@ -67,18 +110,20 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 				mech.wreckage = null // why a mech left a wreck when sold i will never know
 			qdel(thing)
 
+	if(!external_report)
+		report.settle_market()
 	return report
 
 /datum/export
 	var/unit_name = ""				// Unit name. Only used in "Received [total_amount] [name]s [message]." message
 	var/message = ""
 	var/cost = 100					// Cost of item, in cargo credits. Must not alow for infinite price dupes, see above.
-	var/k_elasticity = 1/100			//coefficient used in marginal price calculation that roughly corresponds to the inverse of price elasticity, or "quantity elasticity" - CIT EDIT 1/30 - > 100
+	/// id товара рынка: от него зависят цена продажи и спрос; без товара цена не меняется
+	var/commodity
 	var/list/export_types = list()	// Type of the exported object. If none, the export datum is considered base type.
 	var/include_subtypes = TRUE		// Set to FALSE to make the datum apply only to a strict type.
 	var/list/exclude_types = list()	// Types excluded from export
 
-	//cost includes elasticity, this does not.
 	var/init_cost
 
 	//All these need to be present in export call parameter for this to apply.
@@ -86,33 +131,17 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 
 /datum/export/New()
 	..()
-	START_PROCESSING(SSprocessing, src)
 	init_cost = cost
 	export_types = typecacheof(export_types)
 	exclude_types = typecacheof(exclude_types)
 
-/datum/export/Destroy()
-	STOP_PROCESSING(SSprocessing, src)
-	return ..()
-
-/datum/export/process()
-	. = ..()
-	if(!k_elasticity)
-		return PROCESS_KILL
-	cost *= NUM_E**(k_elasticity * (1/30))
-	if(cost > init_cost)
-		cost = init_cost
-
-// Checks the cost. 0 cost items are skipped in export.
+// Checks the base cost, without the market. 0 cost items are skipped in export.
 /datum/export/proc/get_cost(obj/O, allowed_categories = NONE, apply_elastic = TRUE)
-	var/amount = get_amount(O)
-	if(apply_elastic)
-		if(k_elasticity!=0)
-			return round((cost/k_elasticity) * (1 - NUM_E**(-1 * k_elasticity * amount)))	//anti-derivative of the marginal cost function
-		else
-			return round(cost * amount)	//alternative form derived from L'Hopital to avoid division by 0
-	else
-		return round(init_cost * amount)
+	return round(init_cost * get_amount(O))
+
+/// Часть get_cost(), которая приходится на содержимое (газ и подобное), а не на сам предмет.
+/datum/export/proc/contents_cost(obj/O)
+	return 0
 
 // Checks the amount of exportable in object. Credits in the bill, sheets in the stack, etc.
 // Usually acts as a multiplier for a cost, so item that has 0 amount will be skipped in export.
@@ -136,7 +165,7 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 // Called only once, when the object is actually sold by the datum.
 // Adds item's cost and amount to the current export cycle.
 // get_cost, get_amount and applies_to do not neccesary mean a successful sale.
-/datum/export/proc/sell_object(obj/O, datum/export_report/report, dry_run = TRUE, allowed_categories = EXPORT_CARGO , apply_elastic = TRUE)
+/datum/export/proc/sell_object(obj/O, datum/export_report/report, dry_run = TRUE, allowed_categories = EXPORT_CARGO , apply_elastic = TRUE, apply_caps = FALSE)
 	var/the_cost = get_cost(O, allowed_categories , apply_elastic)
 	var/amount = get_amount(O)
 
@@ -145,8 +174,25 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 	if(amount <=0 || the_cost <=0)
 		return FALSE
 
+	if(apply_elastic || apply_caps)
+		var/allow_contraband = allowed_categories & EXPORT_CONTRABAND
+		var/sale_factor
+		if(apply_elastic)
+			sale_factor = econ_export_sale_factor(src, O, allow_contraband)
+		else
+			sale_factor = O.econ_imported ? min(1, econ_import_resale_factor()) : 1
+		if(!sale_factor)
+			report.embargoed |= O
+			return FALSE
+		the_cost = round(the_cost * sale_factor)
+		if(islist(O.econ_print_cap))
+			var/contents_part = round(contents_cost(O) * sale_factor)
+			the_cost = min(the_cost - contents_part, econ_cap_value(O.econ_print_cap)) + contents_part
+		if(apply_elastic && !dry_run)
+			report.note_market_sale(econ_export_commodity(src), the_cost, O, allow_contraband)
+
 	if(dry_run == FALSE)
-		if(SEND_SIGNAL(O, COMSIG_ITEM_SOLD, item_value = get_cost(O, allowed_categories , apply_elastic)) & COMSIG_ITEM_SPLIT_VALUE)
+		if(SEND_SIGNAL(O, COMSIG_ITEM_SOLD, item_value = the_cost) & COMSIG_ITEM_SPLIT_VALUE)
 			profit_ratio = SEND_SIGNAL(O, COMSIG_ITEM_SPLIT_PROFIT)
 			the_cost = the_cost*((100-profit_ratio)/100)
 	else
@@ -161,8 +207,6 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 		report.total_amount[src] += amount
 
 	if(!dry_run)
-		if(apply_elastic)
-			cost *= NUM_E**(-1*k_elasticity*amount)		//marginal cost modifier
 		SSblackbox.record_feedback("nested tally", "export_sold_cost", 1, list("[O.type]", "[the_cost]"))
 	return TRUE
 
@@ -198,5 +242,9 @@ GLOBAL_LIST_EMPTY(exports_list)
 /proc/setupExports()
 	for(var/subtype in subtypesof(/datum/export))
 		var/datum/export/E = new subtype
+		// Контрабанду первым забирает её экспорт без списка типов: другой экспорт продал бы её NT
+		if(istype(E, /datum/export/contraband))
+			GLOB.exports_list.Insert(1, E)
+			continue
 		if(E.export_types && E.export_types.len) // Exports without a type are invalid/base types
 			GLOB.exports_list += E

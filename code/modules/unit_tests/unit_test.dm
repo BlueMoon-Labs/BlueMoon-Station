@@ -42,13 +42,26 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 /proc/focused_tests()
 	var/list/focused_tests = list()
-	for (var/datum/unit_test/unit_test as anything in subtypesof(/datum/unit_test))
+	for (var/datum/unit_test/unit_test as anything in runnable_unit_tests())
 		if (initial(unit_test.focus))
 			focused_tests += unit_test
 
 	return focused_tests.len > 0 ? focused_tests : null
 
+/proc/is_abstract_unit_test(datum/unit_test/test_path)
+	return initial(test_path.abstract_type) == test_path
+
+/// Every test type except abstract parents.
+/proc/runnable_unit_tests()
+	var/list/runnable = list()
+	for(var/test_path in subtypesof(/datum/unit_test))
+		if(!is_abstract_unit_test(test_path))
+			runnable += test_path
+	return runnable
+
 /datum/unit_test
+	/// A type equal to this is a shared parent without Run() and is never run.
+	var/abstract_type = /datum/unit_test
 	//Bit of metadata for the future maybe
 	var/list/procs_tested
 
@@ -434,7 +447,8 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 			continue
 		var/test_path = text2path(line)
 		if(ispath(test_path, /datum/unit_test) && test_path != /datum/unit_test)
-			listed_tests |= test_path
+			if(!is_abstract_unit_test(test_path))
+				listed_tests |= test_path
 			continue
 		GLOB.failed_any_test = TRUE
 		log_test("FAIL: [line] 0s\n\tREASON #1: нет такого теста ([list_path])")
@@ -491,7 +505,7 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	var/list/tests_to_run = unit_tests_from_list_file(world.params[UNIT_TEST_LIST_PARAMETER], test_results)
 	var/list/focused_tests = list()
 	if(isnull(tests_to_run))
-		tests_to_run = subtypesof(/datum/unit_test)
+		tests_to_run = runnable_unit_tests()
 		for (var/_test_to_run in tests_to_run)
 			var/datum/unit_test/test_to_run = _test_to_run
 			if (initial(test_to_run.focus))

@@ -270,7 +270,7 @@
 	program.target_created(session, dummy)
 	var/news_before = GLOB.news_network.lastAction
 	var/records_before = length(GLOB.data_core.security)
-	var/bounties_before = length(GLOB.bounties_list)
+	var/contracts_before = length(SSeconomy.all_contracts())
 	for(var/reveal in 1 to HK47_TRACKER_REVEAL)
 		var/datum/hk_contract/dirty = role.make_contract(HK_CLIENT_SYNDICATE, /datum/hk_contract_task/kill, null, dummy.mind)
 		SEND_SIGNAL(droid, COMSIG_HK47_CONTRACT_COMPLETED, dirty, TRUE)
@@ -280,7 +280,7 @@
 	TEST_ASSERT_NULL(role.record_id, "Записи СБ нет.")
 	TEST_ASSERT_EQUAL(length(GLOB.data_core.security), records_before, "База СБ не пополняется.")
 	TEST_ASSERT_EQUAL(GLOB.news_network.lastAction, news_before, "Объявлений станции нет.")
-	TEST_ASSERT_EQUAL(length(GLOB.bounties_list), bounties_before, "Заказа на ядро нет.")
+	TEST_ASSERT_EQUAL(length(SSeconomy.all_contracts()), contracts_before, "Заказа на ядро нет.")
 	TEST_ASSERT_NULL(locate(/obj/item/pinpointer/hk47) in world, "Пеленгатора нет.")
 	role.contracts_done = HK47_CONTRACTS_TO_WIN
 	TEST_ASSERT(findtext(role.extraction_refusal(droid), "полигон"), "Эвакуации на полигоне нет.")

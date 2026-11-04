@@ -499,6 +499,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		credits_balance = sender_comp.stored_id.registered_account.account_balance
 	data["credits_balance"] = credits_balance
 	data["metadollar_balance"] = user?.client?.ckey ? SSmetadollars.get_metadollars(user.client.ckey) : 0
+	data["credits_transfer_max"] = SSeconomy.settings.transfer_max
+	data["credits_transfer_cooldown"] = SSeconomy.settings.transfer_cooldown_seconds
 	return data
 
 /datum/computer_file/program/messenger/ui_assets(mob/user)
@@ -563,8 +565,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		to_chat(user, span_warning("Укажите сумму больше нуля."))
 		return FALSE
 	amount = round(amount)
-	if(amount > 1000000)
-		to_chat(user, span_warning("Сумма слишком большая (максимум 1 000 000)."))
+	var/amount_max = currency == "credits" ? SSeconomy.settings.transfer_max : 1000000
+	if(amount > amount_max)
+		to_chat(user, span_warning("Сумма слишком большая: не больше [amount_max] [currency == "credits" ? "кр." : "M$"] за раз."))
 		return FALSE
 	if(!user.canUseTopic(computer, BE_CLOSE, check_resting = FALSE))
 		return FALSE
@@ -613,9 +616,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 	if(currency == "metadollars")
 		return transfer_metadollars_to_chat(user, target_messenger, target_chat, amount, sender_name, recipient_name)
-	return transfer_credits_to_chat(user, target_messenger, target_chat, amount, sender_name, recipient_name)
+	return transfer_credits_to_chat(user, target_messenger, target_chat, amount, recipient_name)
 
-/datum/computer_file/program/messenger/proc/transfer_credits_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, sender_name, recipient_name)
+/datum/computer_file/program/messenger/proc/transfer_credits_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, recipient_name)
 	var/obj/item/modular_computer/sender_comp = computer
 	if(!istype(sender_comp) || !sender_comp.stored_id)
 		to_chat(user, span_warning("Карта не вставлена в PDA. Вставьте ID-карту для перевода."))
@@ -624,40 +627,19 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(!sender_acc)
 		to_chat(user, span_warning("На вставленной ID-карте нет банковского счёта."))
 		return FALSE
-	var/datum/bank_account/recipient_acc = null
-	var/obj/item/modular_computer/pda/recip_pda = target_messenger.computer
-	if(istype(recip_pda) && recip_pda.stored_id?.registered_account)
-		recipient_acc = recip_pda.stored_id.registered_account
+	var/datum/bank_account/recipient_acc = messenger_recipient_account(target_messenger)
 	if(!recipient_acc)
-		// Fallback: счёт ID у моба-держателя PDA получателя
-		var/obj/item/modular_computer/recip_comp = target_messenger.computer
-		var/mob/living/holder = null
-		if(isliving(recip_comp.loc))
-			holder = recip_comp.loc
-		else if(isliving(recip_comp.loc?.loc))
-			holder = recip_comp.loc.loc
-		if(istype(holder))
-			recipient_acc = holder.get_bank_account()
-	if(!recipient_acc)
-		to_chat(user, span_warning("У получателя нет банковского счёта."))
+		to_chat(user, span_warning("Не удалось найти счёт получателя [recipient_name]: счёта нет или на это имя их несколько. Деньги не отправлены."))
 		return FALSE
-	if(sender_acc == recipient_acc)
-		to_chat(user, span_warning("Нельзя перевести деньги самому себе."))
-		return FALSE
-	if(!sender_acc.has_money(amount))
-		to_chat(user, span_warning("Недостаточно кредитов. Баланс: [sender_acc.account_balance] кр."))
-		return FALSE
-	// dest.transfer_money(from, amount)
-	if(!recipient_acc.transfer_money(sender_acc, amount))
-		to_chat(user, span_warning("Перевод не удался. Проверьте счёт получателя."))
+	var/error = SSeconomy.send_transfer(sender_acc, recipient_acc, amount, user)
+	if(error)
+		to_chat(user, span_warning("Перевод не прошёл: [error]"))
 		return FALSE
 
-	log_econ("[sender_name] ([sender_acc.account_holder]) перевёл [amount] кр. получателю [recipient_name] ([recipient_acc.account_holder]) через PDA Messenger.")
-	sender_acc.bank_card_talk("Перевод [amount] кр. → [recipient_acc.account_holder]. Баланс: [sender_acc.account_balance] кр.", TRUE)
-	recipient_acc.bank_card_talk("Получен перевод [amount] кр. от [sender_acc.account_holder]. Баланс: [recipient_acc.account_balance] кр.", TRUE)
+	sender_acc.bank_card_talk("Перевод [amount] кр. → [recipient_acc.account_holder], без налога. Баланс: [sender_acc.account_balance] кр.", TRUE)
 
 	var/time_now = STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time)
-	var/datum/pda_message/out_msg = new("💵 Перевод: [amount] сr. → [recipient_name]. Баланс: [sender_acc.account_balance] сr.", TRUE, time_now, null, FALSE)
+	var/datum/pda_message/out_msg = new("💵 Перевод: [amount] кр. → [recipient_acc.account_holder]. Баланс: [sender_acc.account_balance] кр.", TRUE, time_now, null, FALSE)
 	target_chat.add_message(out_msg, show_in_recents = TRUE)
 	target_chat.unread_messages = 0
 
@@ -666,15 +648,28 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(!istype(recip_chat))
 		recip_chat = target_messenger.create_chat(REF(src))
 	if(istype(recip_chat))
-		var/datum/pda_message/in_msg = new("💵 Получен перевод: [amount] сr. от [sender_name]. Баланс: [recipient_acc.account_balance] сr.", FALSE, time_now, null, FALSE)
+		var/datum/pda_message/in_msg = new("💵 Получен перевод: [amount] кр. от [sender_acc.account_holder]. Баланс: [recipient_acc.account_balance] кр.", FALSE, time_now, null, FALSE)
 		recip_chat.add_message(in_msg)
 		recip_chat.unread_messages++
 
-	to_chat(user, span_notice("Перевод [amount] сr. отправлен: [recipient_name]."))
+	to_chat(user, span_notice("Перевод [amount] кр. отправлен: [recipient_acc.account_holder]."))
 	SStgui.update_uis(computer)
 	if(target_messenger.computer)
 		SStgui.update_uis(target_messenger.computer)
 	return TRUE
+
+/// Счёт владельца КПК получателя: вставленная карта на его имя, иначе единственный счёт с этим именем. Держатель КПК не в счёт.
+/datum/computer_file/program/messenger/proc/messenger_recipient_account(datum/computer_file/program/messenger/target_messenger)
+	var/obj/item/modular_computer/recipient_comp = target_messenger?.computer
+	if(!recipient_comp)
+		return null
+	var/owner_name = recipient_comp.saved_identification
+	if(!owner_name)
+		return null
+	var/datum/bank_account/inserted = recipient_comp.stored_id?.registered_account
+	if(inserted && lowertext(inserted.account_holder) == lowertext(trim(owner_name)))
+		return inserted
+	return SSeconomy.find_account_by_name(owner_name)
 
 /datum/computer_file/program/messenger/proc/transfer_metadollars_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, sender_name, recipient_name)
 	var/sender_ckey = user.client?.ckey

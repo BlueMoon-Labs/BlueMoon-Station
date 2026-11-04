@@ -230,15 +230,11 @@
 				connected_message("Клон извлечён: нет банковского аккаунта.")
 				if(internal_radio)
 					SPEAK("Клонирование субъекта [mob_occupant.real_name] было отменено ввиду отсутствия банковского аккаунта для взымания оплаты.")
-			else if(!current_insurance.adjust_money(-fair_market_price))
+			else if(!SSeconomy.move(current_insurance, SSeconomy.get_dep_account(payment_department), fair_market_price, ECON_PURCHASE, mob_occupant, "Оплата клонирования"))
 				go_out()
 				connected_message("CКлон извлечён: недостаточно средств.")
 				if(internal_radio)
 					SPEAK("Клонирование субъекта [mob_occupant.real_name] было заранее отменено ввиду отсутствия средств для оплаты.")
-			else
-				var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-				if(D)
-					D.adjust_money(fair_market_price)
 		if(mob_occupant && (mob_occupant.stat == DEAD) || (mob_occupant.suiciding) || mob_occupant.hellbound)  //Autoeject corpses and suiciding dudes.			connected_message("Clone Rejected: Deceased.")
 			if(internal_radio)
 				SPEAK("Клонирование было \

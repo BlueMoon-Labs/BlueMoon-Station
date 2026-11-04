@@ -498,8 +498,7 @@
 			if("Cargo")
 				last_message = "Бюрократическая ошибка. Списано [points_lost] очков карго."
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-				if(D)
-					D.adjust_money(-points_lost)
+				D?.debit(points_lost, ECON_MISC, memo = "Бюрократическая ошибка")
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
 		if(difficulty == "Easy")
 			to_chat(user, span_warning("Вы чувствуете грусть, провалив такую простую задачу..."))
@@ -515,8 +514,7 @@
 		if("Cargo")
 			last_message = "Данные корректны! Начислено [points_awarded] очков карго."
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			if(D)
-				D.adjust_money(points_awarded)
+			D?.credit(points_awarded, ECON_MISC, memo = "Решённая задача")
 	say("Задача решена верно! Начислено [points_awarded] очков.")
 	playsound(src, 'sound/machines/chime.ogg', 30, 1)
 

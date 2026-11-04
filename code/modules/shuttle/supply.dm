@@ -41,11 +41,6 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 	/mob/living/simple_animal/slaughter
 	)))
 
-/// How many goody orders we can fit in a lockbox before we upgrade to a crate
-#define GOODY_FREE_SHIPPING_MAX 5
-/// How much to charge oversized goody orders
-#define CRATE_TAX 700
-
 /obj/docking_port/mobile/supply
 	name = "supply shuttle"
 	shuttle_id = "supply"
@@ -135,28 +130,42 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 	for(var/datum/supply_order/SO in SSshuttle.shoppinglist)
 		if(!empty_turfs.len)
 			break
-		var/price = SO.pack.get_cost()
+		if(econ_pack_unavailable(SO.pack, SO.contraband_supply))
+			SO.paying_account?.bank_card_talk("Заказ #[SO.id] ждёт: [SO.pack.name] нет в наличии у партнёров.")
+			continue
+		var/datum/trade_partner/supplier = econ_pack_supplier(SO.pack, SO.paying_account, SO.contraband_supply)
+		var/base_cost = SO.pack.get_cost(SO.paying_account, SO.contraband_supply)
 		if(SO.applied_coupon)
-			price *= (1 - SO.applied_coupon.discount_pct_off)
+			base_cost *= (1 - SO.applied_coupon.discount_pct_off)
+		base_cost = round(base_cost)
+		var/price = base_cost
 
 		var/datum/bank_account/D
-		if(SO.paying_account) //Someone paid out of pocket
+		var/personal_catalog = SO.paying_account && !SO.prepaid && econ_personal_catalog_pack(SO.pack)
+		if(SO.prepaid)
+			D = SSeconomy.get_dep_account(SO.department_id)
+			if(!D)
+				stack_trace("Предоплаченный заказ #[SO.id] [SO.pack.name] без отдела [SO.department_id] снят с отгрузки")
+				SSshuttle.shoppinglist -= SO
+				continue
+		else if(SO.paying_account) //Someone paid out of pocket
 			D = SO.paying_account
 			var/list/current_buyer_orders = goodies_by_buyer[SO.paying_account] // so we can access the length a few lines down
-			if(!SO.pack.goody)
-				price *= 1.1 //TODO make this customizable by the quartermaster
+			if(!SO.pack.goody && !personal_catalog)
+				price *= ECON_PRIVATE_ORDER_MARKUP
 
 			// note this is before we increment, so this is the GOODY_FREE_SHIPPING_MAX + 1th goody to ship. also note we only increment off this step if they successfully pay the fee, so there's no way around it
-			else if(LAZYLEN(current_buyer_orders) == GOODY_FREE_SHIPPING_MAX)
+			else if(SO.pack.goody && LAZYLEN(current_buyer_orders) == GOODY_FREE_SHIPPING_MAX)
 				price += CRATE_TAX
-				D.bank_card_talk("Goody order size exceeds free shipping limit: Assessing [CRATE_TAX] credit S&H fee.")
+				D.bank_card_talk("Малых кейсов больше [GOODY_FREE_SHIPPING_MAX] за отгрузку: они поедут одним ящиком, сбор за доставку [CRATE_TAX] кр. идёт снабжению.")
 		else
 			D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+		price = round(price)
 
 		if(D)
-			if(!D.adjust_money(-price))
+			if(!SO.prepaid && (!D.has_money(price) || (base_cost && !D.debit(base_cost, personal_catalog ? ECON_PERSONAL_CATALOG : ECON_IMPORT, memo = "Заказ карго: [SO.pack.name]"))))
 				if(SO.paying_account)
-					D.bank_card_talk("Cargo order #[SO.id] rejected due to lack of funds. Credits required: [price]")
+					D.bank_card_talk("Заказ снабжения №[SO.id] не отгружен: на счёте не хватает денег, нужно [price] кр. Заказ ждёт следующего шаттла.")
 				continue
 			else if(ispath(SO.pack.crate_type, /obj/structure/closet/secure_closet/cargo))
 				LAZYADD(lockers_by_buyer[D], SO)
@@ -165,9 +174,8 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		if(SO.paying_account)
 			if(SO.pack.goody)
 				LAZYADD(goodies_by_buyer[SO.paying_account], SO)
-			D.bank_card_talk("Cargo order #[SO.id] has shipped. [price] credits have been charged to your bank account.")
-			var/datum/bank_account/department/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			cargo.adjust_money(price - SO.pack.get_cost()) //Cargo gets the handling fee
+			D.bank_card_talk((SO.pack.goody || personal_catalog) ? "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр." : "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр.: цена пака и наценка частного заказа [round((ECON_PRIVATE_ORDER_MARKUP - 1) * 100)]%.")
+			SSeconomy.move(D, SSeconomy.get_dep_account(ACCOUNT_CAR), price - base_cost, ECON_PRIVATE_ORDER, memo = "Наценка частного заказа: [SO.pack.name]")
 		value += SO.pack.get_cost()
 		SSshuttle.shoppinglist -= SO
 		SSshuttle.orderhistory += SO
@@ -177,6 +185,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 			SO.generate(pick_n_take(empty_turfs))
 
 		SSblackbox.record_feedback("nested tally", "cargo_imports", 1, list("[SO.pack.get_cost()]", "[SO.pack.name]"))
+		supplier?.note_purchase(SO.pack, SO.prepaid || base_cost)
 		investigate_log("Order #[SO.id] ([SO.pack.name], placed by [key_name(SO.orderer_ckey)]), paid by [D.account_holder] has shipped.", INVESTIGATE_CARGO)
 		if(SO.pack.dangerous)
 			message_admins("\A [SO.pack.name] ordered by [ADMIN_LOOKUPFLW(SO.orderer_ckey)], paid by [D.account_holder] has shipped.")
@@ -223,7 +232,8 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 			miscboxes[buyer] = our_closet
 		else
 			var/obj/structure/closet/secure_closet/cargo/our_closet = new /obj/structure/closet/secure_closet/cargo(pick_n_take(empty_turfs))
-			buyer = "Cargo"
+			var/datum/bank_account/department_account = D
+			buyer = department_account == SSeconomy.get_dep_account(ACCOUNT_CAR) ? "Cargo" : department_account.account_holder
 			miscboxes[buyer] = our_closet
 
 		misc_contents[buyer] = list()
@@ -240,7 +250,6 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		SO.generateCombo(miscboxes[I], I, misc_contents[I])
 		qdel(SO)
 
-	SSeconomy.import_total += value
 	var/datum/bank_account/cargo_budget = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	investigate_log("[purchases] orders in this shipment, worth [value] credits. [cargo_budget.account_balance] credits left.", INVESTIGATE_CARGO)
 
@@ -248,6 +257,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/presale_points = D.account_balance
 	var/gain = 0
+	var/list/department_shares = list()
 
 	if(!GLOB.exports_list.len) // No exports list? Generate it!
 		setupExports()
@@ -262,38 +272,74 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		for(var/atom/movable/AM in shuttle_area)
 			if(iscameramob(AM))
 				continue
-			if(bounty_ship_item_and_contents(AM, dry_run = FALSE))
-				matched_bounty = TRUE
-				// ignore mech checks because the mech is ONLY for bounty
+			if(AM.anchored && !istype(AM, /obj/vehicle/sealed/mecha))
 				continue
-			if(!AM.anchored || istype(AM, /obj/vehicle/sealed/mecha))
-				export_item_and_contents(AM, export_categories , dry_run = FALSE, external_report = ex)
+			if(econ_contracts_ship(AM))
+				matched_bounty = TRUE
+			if(!QDELETED(AM))
+				gain += econ_sell_crate(AM, ex, export_categories, department_shares)
+	var/list/buyer_lines = list()
+	var/list/contraband_lines = list()
+	for(var/datum/trade_partner/buyer as anything in ex.partner_sales)
+		var/buyer_line = "[buyer.name] - [round(ex.partner_sales[buyer])] кр."
+		if(buyer.contraband)
+			contraband_lines += "Груз купили [buyer_line]."
+		else
+			buyer_lines += buyer_line
+	var/list/locked_before = list()
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		if(!partner.unlocked && !partner.contraband)
+			locked_before += partner
+	ex.settle_market()
 
 	if(ex.exported_atoms)
 		ex.exported_atoms += "." //ugh
 
 	if(matched_bounty)
-		msg += "Bounty items received. An update has been sent to all bounty consoles. "
+		msg += "Предметы по контрактам NT приняты. "
 
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
+		if(istype(E, /datum/export/contraband))
+			contraband_lines.Insert(1, export_text)
+			continue
 
 		msg += export_text + "\n"
-		gain += ex.total_value[E]
 
 	for(var/chem in ex.reagents_value)
 		var/value = ex.reagents_value[chem]
 		msg += "[value > 0 ? "+" : ""][value] credits: received [ex.reagents_volume[chem]]u of [chem].\n"
-		gain += value
 
-	D.adjust_money(gain)
-	msg = copytext_char(msg, 1, MAX_MESSAGE_LEN)
+	var/list/share_lines = list()
+	for(var/department_name in department_shares)
+		share_lines += "[department_name] - [department_shares[department_name]] кр."
+	var/summary = "Выручка: [gain] кр."
+	if(length(share_lines))
+		summary += " Из неё отделам по накладным: [jointext(share_lines, ", ")]."
+	if(length(buyer_lines))
+		summary += " Груз купили партнёры: [jointext(buyer_lines, ", ")]."
+	for(var/datum/trade_partner/partner as anything in locked_before)
+		if(partner.unlocked)
+			summary += " Репутация открыла нового партнёра: [partner.name]."
+	if(length(ex.embargoed))
+		summary += " Не нашлось покупателя: [length(ex.embargoed)] шт. возвращено."
+	if(ex.customs_seized)
+		var/list/fine_lines = list()
+		for(var/department_name in ex.customs_fines)
+			fine_lines += "[department_name] - [ex.customs_fines[department_name]] кр."
+		summary += " Таможня NT изъяла контрабанду: [ex.customs_seized] шт. на [ex.customs_value] кр.[length(fine_lines) ? ", штраф: [jointext(fine_lines, ", ")]" : ""]."
+	if(length(ex.offer_notes))
+		summary += " [jointext(ex.offer_notes, " ")]"
+	msg = copytext_char(msg, 1, MAX_MESSAGE_LEN - length_char(summary) - 1)
+	if(gain || length(ex.embargoed) || length(ex.offer_notes) || ex.customs_seized)
+		msg += summary
 
-	SSeconomy.export_total += (D.account_balance - presale_points)
 	SSshuttle.centcom_message = msg
-	investigate_log("Shuttle contents sold for [D.account_balance - presale_points] credits. Contents: [ex.exported_atoms ? ex.exported_atoms.Join(",") + "." : "none."] Message: [SSshuttle.centcom_message || "none."]", INVESTIGATE_CARGO)
+	SSmarket.contraband_message = jointext(contraband_lines + ex.contraband_notes, " ")
+	investigate_log("Shuttle contents sold for [gain] credits, [D.account_balance - presale_points] to cargo. Contents: [ex.exported_atoms ? ex.exported_atoms.Join(",") + "." : "none."] Message: [SSshuttle.centcom_message || "none."]", INVESTIGATE_CARGO)
 
 /*
 	По отбытию шаттла перемещает к себе ящик с письмами с каморки на ЦК
@@ -313,6 +359,3 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 			empty_turfs += shuttle_floor
 	if(empty_turfs.len)
 		SSmail.send_storage(pick(empty_turfs))
-
-#undef GOODY_FREE_SHIPPING_MAX
-#undef CRATE_TAX

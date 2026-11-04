@@ -17,7 +17,7 @@
 	if(id.registered_account)
 		id.registered_account.account_holder = "[H.real_name] (VR)"
 		if(starting_funds && id.bank_support == ID_LOCKED_BANK_ACCOUNT) //No payroll or ability to virtually transfer funds to an external account.
-			id.registered_account.adjust_money(starting_funds)
+			id.registered_account.credit(starting_funds, ECON_STARTING_FUNDS)
 
 /datum/outfit/vr/syndicate
 	name = "Syndicate VR Operative - Basic"

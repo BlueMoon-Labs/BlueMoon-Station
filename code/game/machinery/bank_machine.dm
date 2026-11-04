@@ -1,7 +1,7 @@
 /obj/machinery/computer/bank_machine
 	name = "bank machine"
 	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
-	desc = "A machine used to deposit and withdraw station funds."
+	desc = "Хранилище бюджета снабжения. Наличные и голочипы, вложенные в него, зачисляются в бюджет снабжения. Его можно и выкачать в голочипы, но хранилище при этом поднимает тревогу по общей частоте."
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "computer"
 	icon_screen = "vault"
@@ -36,9 +36,8 @@
 		value = H.credits
 	if(value)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D)
-			D.adjust_money(value)
-			to_chat(user, "<span class='notice'>You deposit [I]. The Cargo Budget is now [D.account_balance] cr.</span>")
+		if(D && SSeconomy.move(SSeconomy.cash_account, D, value, ECON_CASH_IN, user))
+			to_chat(user, span_notice("Вы вкладываете [I]. В бюджете снабжения теперь [D.account_balance] кр."))
 		qdel(I)
 		return
 	return ..()
@@ -47,20 +46,23 @@
 	..()
 	if(siphoning)
 		if (machine_stat & (BROKEN|NOPOWER))
-			say("Insufficient power. Halting siphon.")
+			say("Нет питания. Выкачка остановлена.")
 			end_syphon()
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(!D.has_money(200))
-			say("Cargo budget depleted. Halting siphon.")
+			say("Бюджет снабжения пуст. Выкачка остановлена.")
 			end_syphon()
 			return
 
 		playsound(src, 'sound/items/poster_being_created.ogg', 100, TRUE)
+		if(!SSeconomy.move(D, SSeconomy.cash_account, 200, ECON_CASH_OUT))
+			say("Бюджет снабжения пуст. Выкачка остановлена.")
+			end_syphon()
+			return
 		syphoning_credits += 200
-		D.adjust_money(-200)
 		if(next_warning < world.time && prob(15))
 			var/area/A = get_area(loc)
-			var/message = "Unauthorized credit withdrawal underway in [A.map_name]!!"
+			var/message = "Несанкционированная выкачка кредитов из хранилища: [A.map_name]!"
 			radio.talk_into(src, message, radio_channel)
 			next_warning = world.time + minimum_time_between_warnings
 
@@ -89,11 +91,11 @@
 
 	switch(action)
 		if("siphon")
-			say("Siphon of station credits has begun!")
+			say("Начата выкачка бюджета снабжения!")
 			siphoning = TRUE
 			. = TRUE
 		if("halt")
-			say("Station credit withdrawal halted.")
+			say("Выкачка бюджета снабжения остановлена.")
 			end_syphon()
 			. = TRUE
 

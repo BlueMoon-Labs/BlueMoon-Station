@@ -51,6 +51,7 @@
 
 /obj/structure/frame/machine/examine(user)
 	. = ..()
+	. += span_notice("Собранная машина стоит для NT как рама и плата, детали продаются сами по себе. [econ_station_made_note()]")
 	if(state == 3 && req_components && req_component_names)
 		var/hasContent = FALSE
 		var/requires = "It requires"
@@ -271,6 +272,9 @@
 						circuit.forceMove(new_machine)
 						new_machine.component_parts += circuit
 						new_machine.circuit = circuit
+						if(circuit.econ_imported)
+							new_machine.econ_imported = TRUE
+						econ_mark_assembled(new_machine, src, circuit)
 
 						for(var/obj/new_part in src)
 							new_part.forceMove(new_machine)

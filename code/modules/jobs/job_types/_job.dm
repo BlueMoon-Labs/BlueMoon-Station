@@ -178,10 +178,9 @@
 		return FALSE
 	if(!visualsOnly)
 		var/datum/bank_account/bank_account = new(H.real_name, src)
-		bank_account.account_holder = H.real_name
-		bank_account.account_job = src
-		bank_account.account_id = rand(111111,999999)
-		bank_account.payday(STARTING_PAYCHECKS, TRUE)
+		bank_account.set_job(src)
+		bank_account.bind_owner(H)
+		bank_account.credit(bank_account.wage_amount() * SSeconomy.settings.starting_paychecks, ECON_STARTING_FUNDS)
 		H.account_id = bank_account.account_id
 	if(CONFIG_GET(flag/enforce_human_authority) && (title in GLOB.command_positions))
 		if(H.dna.species.id != "human")
@@ -334,12 +333,10 @@
 		C.update_label()
 
 		if(J && J.title != "Stowaway") //SPLURT EDIT
-			for(var/A in SSeconomy.bank_accounts)
-				var/datum/bank_account/B = A
-				if(B.account_id == H.account_id)
-					C.registered_account = B
-					B.bank_cards += C
-					break
+			var/datum/bank_account/B = SSeconomy.find_account(H.account_id)
+			if(B)
+				C.registered_account = B
+				B.bank_cards += C
 		H.sec_hud_set_ID()
 
 	var/obj/item/modular_computer/pda/PDA = H.get_item_by_slot(pda_slot)
