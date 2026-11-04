@@ -496,7 +496,7 @@
 /obj/item/organ/cyberimp/brain/sandevistan/sec_level
 	name = "Corporate Sandevistan"
 	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
-	icon_state = "brain_implant"
+	icon_state = "qian-ti_sandevistan"
 	implant_overlay = "brain_implant_overlay"
 	implant_color = "#ab6509"
 	active_security_level = CNS_REBOOTER_SEC_LEVEL

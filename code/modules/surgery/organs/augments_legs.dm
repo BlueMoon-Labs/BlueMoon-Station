@@ -107,7 +107,7 @@
 /obj/item/organ/cyberimp/leg/tendons
 	name = "reinforced tendons implant"
 	desc = "A pair of synthetic tendon bundles replacing the muscles of both legs. Built-in micro-servos let the user perform a second jump in mid-air."
-	icon_state = "implant-reinforcers"
+	icon_state = "strengthened_tendons"
 
 /obj/item/organ/cyberimp/leg/tendons/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
@@ -150,7 +150,7 @@
 /obj/item/organ/cyberimp/leg/ankles
 	name = "fortified ankles implant"
 	desc = "Hydraulic pistons grafted into both ankles. They grant a built-in impulse boost that allows the user to dash forward in the direction they're facing."
-	icon_state = "implant-reinforcers2"
+	icon_state = "jenkins_tendons"
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	var/recharging_time = 0
 	var/recharging_rate = 60
@@ -181,7 +181,7 @@
 /obj/item/organ/cyberimp/leg/lynx_paws
 	name = "lynx paws implant"
 	desc = "Sound-dampening pads and artificial nerves installed in both feet. The user's footsteps become completely silent."
-	icon_state = "implant-filter"
+	icon_state = "lynx_paws"
 
 /obj/item/organ/cyberimp/leg/lynx_paws/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()

@@ -313,7 +313,7 @@
 	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	slot = INTERNAL_ORGAN_CHEM_IMPLANT
 	w_class = WEIGHT_CLASS_TINY
-	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon = 'icons/obj/surgery.dmi'
 	icon_state = "blood_pump_sec"
 	actions_types = list()
 	var/charge_capacity = 2
@@ -383,6 +383,72 @@
 	health_threshold = 40
 	chem_list = list(/datum/reagent/medicine/synthflesh/neo = 100, /datum/reagent/medicine/stimulants = 2)
 	between_use_cooldown = 300
+
+/////////////////////////
+//Subdermal Armor      //
+/////////////////////////
+
+/obj/item/organ/cyberimp/chest/subdermal_armor
+	name = "Subdermal armor implant"
+	desc = "A lattice of composite plates woven beneath the skin. Absorbs part of incoming melee, bullet and laser damage."
+	slot = ORGAN_SLOT_SUBDERMAL_ARMOR
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "subcutaneous_armor"
+	/// Flat armor percentages granted to the owner's physiology while installed.
+	var/melee_armor_bonus = 20
+	var/bullet_armor_bonus = 10
+	var/laser_armor_bonus = 10
+	/// Flat BRC mitigation granted while installed.
+	var/brc_mitigation_bonus = BRC_MITIGATION_25
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.brc_mitigation += brc_mitigation_bonus
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		H.physiology.armor.melee += melee_armor_bonus
+		H.physiology.armor.bullet += bullet_armor_bonus
+		H.physiology.armor.laser += laser_armor_bonus
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/Remove(special = FALSE)
+	if(owner)
+		owner.brc_mitigation = max(0, owner.brc_mitigation - brc_mitigation_bonus)
+		if(ishuman(owner))
+			var/mob/living/carbon/human/H = owner
+			H.physiology.armor.melee -= melee_armor_bonus
+			H.physiology.armor.bullet -= bullet_armor_bonus
+			H.physiology.armor.laser -= laser_armor_bonus
+	return ..()
+
+/////////////////////////
+//Reinforced Skeleton  //
+/////////////////////////
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton
+	name = "Reinforced skeleton implant"
+	desc = "A carbon-composite endoskeleton grafted over the user's own bones, raising the amount of trauma the body can take before collapsing."
+	slot = ORGAN_SLOT_REINFORCED_SKELETON
+	w_class = WEIGHT_CLASS_NORMAL
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "combat_coating"
+	/// Extra max health granted while installed.
+	var/health_bonus = 25
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.maxHealth += health_bonus
+	M.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/Remove(special = FALSE)
+	if(owner)
+		owner.maxHealth = max(1, owner.maxHealth - health_bonus)
+		owner.updatehealth()
+	return ..()
 
 ///////////////////
 //Shawarma Spit  //

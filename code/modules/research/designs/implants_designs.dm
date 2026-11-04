@@ -339,6 +339,28 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_subdermal_armor
+	name = "Subdermal Armor Implant"
+	desc = "A lattice of composite plates woven beneath the skin that absorbs part of incoming melee, bullet and laser damage."
+	id = "ci-subdermal-armor"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3000, /datum/material/silver = 4000, /datum/material/titanium = 3000)
+	build_path = /obj/item/organ/cyberimp/chest/subdermal_armor
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_reinforced_skeleton
+	name = "Reinforced Skeleton Implant"
+	desc = "A carbon-composite endoskeleton grafted over the user's bones, raising the amount of trauma the body can take before collapsing."
+	id = "ci-reinforced-skeleton"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 7000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/titanium = 5000)
+	build_path = /obj/item/organ/cyberimp/chest/reinforced_skeleton
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/cyberimp_monostring
 	name = "Monowire Implant"
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."

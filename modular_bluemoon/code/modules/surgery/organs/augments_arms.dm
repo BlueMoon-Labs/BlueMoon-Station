@@ -22,7 +22,7 @@
 ///////////////
 
 /obj/item/organ/cyberimp/arm/monostring
-	name = "Monomolecular string implant"
+	name = "Monowire implant"
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	contents = newlist(/obj/item/melee/implantmonostring)
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
@@ -30,12 +30,12 @@
 	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/monostring/sec_level
-	name = "Corporate Monomolecular string implant"
+	name = "Corporate Monowire implant"
 	contents = newlist(/obj/item/melee/implantmonostring/corpo)
 	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /obj/item/organ/cyberimp/arm/monostring/syndie
-	name = "Agent Monomolecular string implant"
+	name = "Militech Monowire implant"
 	icon_state = "implant_mono_wire"
 	contents = newlist(/obj/item/melee/implantmonostring/syndie)
 
@@ -456,7 +456,7 @@
 	block_chance = 10 //больше атаки - меньше защиты
 
 /obj/item/melee/implantmonostring
-	name = "Monomolecular string"
+	name = "Monowire"
 	desc = "A nearly invisible monomolecular filament, perfect for cutting through flesh with surgical precision. Can be lashed out at distant targets, or wrapped around an unsuspecting victim's neck."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
@@ -494,10 +494,10 @@
 	return ..()
 
 /obj/item/melee/implantmonostring/corpo
-	name = "Corporate Monomolecular string"
+	name = "Corporate Monowire"
 
 /obj/item/melee/implantmonostring/syndie
-	name = "Agent Monomolecular string"
+	name = "Agent Monowire"
 	icon_state = "implant_mono_wire"
 	force = 20
 	armour_penetration = MELEE_AP_ANTAGONIST
@@ -523,7 +523,7 @@
 	name = "Integrated hand cannon"
 	desc = "A compact arm-integrated explosive launcher. No visible barrel until deployed."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "implant_projectile_launcher_sec"
+	icon_state = "implant_projectile_launcher_sec_laser"
 	item_state = "projectile_launcher"
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
@@ -637,7 +637,7 @@
 
 /obj/item/gun/energy/implanthandgun/syndie
 	name = "Militech Integrated hand cannon"
-	icon_state = "implant_projectile_launcher"
+	icon_state = "implant_projectile_launcher_laser"
 	ammo_type = list(/obj/item/ammo_casing/energy/implanthandgun/burst)
 	reload_time = 10 SECONDS
 	dual_wield_spread = 12
