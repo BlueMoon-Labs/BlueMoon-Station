@@ -27961,12 +27961,10 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "klU" = (
-/turf/closed/indestructible{
-	icon = 'icons/turf/floors.dmi';
-	icon_state = "reebegame";
-	name = "void"
-	},
-/area/awaymission/ihategordon/hecuannouce)
+/obj/effect/awaymission/blackmesa/difficulty_trigger/trigger6,
+/obj/machinery/door/poddoor/preopen,
+/turf/open/floor/plasteel/white,
+/area/awaymission/ihategordon/dorm_rooms/stillalive)
 "kmh" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 5
@@ -38401,8 +38399,9 @@
 /area/awaymission/ihategordon/dorm_rooms)
 "ofA" = (
 /obj/machinery/gateway/centerstation,
-/turf/open/floor/plasteel/white,
-/area/awaymission/ihategordon/dorm_rooms/stillalive)
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "ofH" = (
 /obj/structure/urbanismcars{
 	icon_state = "van_wreck2"
@@ -142391,7 +142390,7 @@ lDK
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 sYh
 rxk
@@ -142648,7 +142647,7 @@ fNF
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 dlR
 kfP
@@ -142905,7 +142904,7 @@ uZV
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 gsr
 aMo
@@ -143162,8 +143161,8 @@ uZV
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 dlR
 aMo
 aMo
@@ -143419,8 +143418,8 @@ kdw
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 dlR
 aMo
 aMo
@@ -143676,8 +143675,8 @@ sMG
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 dlR
 aMo
 aMo
@@ -143933,8 +143932,8 @@ kdw
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 dlR
 qwP
 ucb
@@ -144190,8 +144189,8 @@ xQy
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 nEf
 ssh
 dpa
@@ -144447,7 +144446,7 @@ sEf
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 mvh
 jhX
@@ -144704,7 +144703,7 @@ uFd
 lDK
 gjb
 cxy
-klU
+gfy
 kKT
 vBq
 jhX
@@ -144961,7 +144960,7 @@ bHU
 lDK
 gjb
 cxy
-klU
+gfy
 kKT
 vBq
 jhX
@@ -145218,7 +145217,7 @@ bXS
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 cwZ
 jhX
@@ -145475,8 +145474,8 @@ vTq
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 fop
 ebf
 gLx
@@ -145732,8 +145731,8 @@ lDK
 lDK
 gjb
 cxy
+gfy
 klU
-qCI
 qsj
 eqo
 rTP
@@ -145989,10 +145988,10 @@ xuB
 aGC
 gjb
 cxy
+gfy
 klU
-qCI
 qsj
-ofA
+aMo
 aMo
 aMo
 aMo
@@ -146246,8 +146245,8 @@ gDM
 aGC
 gjb
 cxy
+gfy
 klU
-qCI
 qsj
 qwP
 ucb
@@ -146503,8 +146502,8 @@ qxo
 aGC
 gjb
 cxy
+gfy
 klU
-qCI
 nEf
 ssh
 uNq
@@ -146760,7 +146759,7 @@ lDK
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 sIZ
 jhX
@@ -147017,7 +147016,7 @@ pdn
 lDK
 gjb
 cxy
-klU
+gfy
 kKT
 vBq
 jhX
@@ -147274,7 +147273,7 @@ pdn
 vXY
 gjb
 cxy
-klU
+gfy
 kKT
 vBq
 jhX
@@ -147531,7 +147530,7 @@ pdn
 vXY
 gjb
 cxy
-klU
+gfy
 wAI
 rOV
 jhX
@@ -147788,7 +147787,7 @@ pdn
 lDK
 gjb
 cxy
-klU
+gfy
 qCI
 fop
 ebf
@@ -148045,7 +148044,7 @@ pdn
 oVH
 gjb
 cxy
-klU
+gfy
 qCI
 qsj
 eqo
@@ -148302,7 +148301,7 @@ pdn
 oVH
 gjb
 cxy
-klU
+gfy
 qCI
 qsj
 aMo
@@ -148559,7 +148558,7 @@ pdn
 oVH
 gjb
 cxy
-klU
+gfy
 qCI
 qsj
 qwP
@@ -148816,7 +148815,7 @@ pdn
 oVH
 gjb
 cxy
-klU
+gfy
 qCI
 nEf
 ssh
@@ -149073,7 +149072,7 @@ pdn
 lDK
 gjb
 cxy
-klU
+gfy
 wAI
 ucL
 jhX
@@ -185404,7 +185403,7 @@ vDC
 uHt
 kiu
 dlJ
-dlJ
+ofA
 dlJ
 moF
 vDC
