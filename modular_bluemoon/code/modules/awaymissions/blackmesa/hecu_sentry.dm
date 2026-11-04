@@ -44,8 +44,8 @@
 	speed_process = TRUE
 	var/beep_timer
 	var/folded_item_type = /obj/item/hecusentry
-	var/mob/living/designated_target
-	var/mob/living/targeting_user
+	var/datum/weakref/designated_target_ref
+	var/datum/weakref/targeting_user_ref
 
 /obj/machinery/porta_turret/hecu/check_should_process()
 	if (datum_flags & DF_ISPROCESSING)
@@ -61,38 +61,51 @@
 /obj/machinery/porta_turret/hecu/AltClick(mob/user)
 	if(!isliving(user) || !user.client || !can_interact(user))
 		return ..()
-	if(targeting_user == user)
+
+	var/mob/living/current_targeting_user = get_targeting_user()
+	if(current_targeting_user && (!current_targeting_user.client || current_targeting_user.stat == DEAD))
+		clear_targeting_user()
+		current_targeting_user = null
+
+	if(current_targeting_user == user)
 		clear_targeting_user()
 		to_chat(user, "<span class='notice'>Target selection cancelled.</span>")
 		return TRUE
-	if(targeting_user)
+	if(current_targeting_user)
 		to_chat(user, "<span class='warning'>Someone else is already selecting a target for this sentry.</span>")
 		return TRUE
 	if(user.client.click_intercept)
 		to_chat(user, "<span class='warning'>Finish your current targeting action first.</span>")
 		return TRUE
 
-	targeting_user = user
+	targeting_user_ref = WEAKREF(user)
 	user.client.click_intercept = src
 	to_chat(user, "<span class='notice'>Click a valid mob to order [src] to attack it. Alt-click the sentry again to cancel.</span>")
 	return TRUE
 
 /obj/machinery/porta_turret/hecu/proc/clear_targeting_user()
-	if(targeting_user && targeting_user.client && targeting_user.client.click_intercept == src)
-		targeting_user.client.click_intercept = null
-	targeting_user = null
+	var/mob/living/current_targeting_user = get_targeting_user()
+	if(current_targeting_user && current_targeting_user.client && current_targeting_user.client.click_intercept == src)
+		current_targeting_user.client.click_intercept = null
+	targeting_user_ref = null
+
+/obj/machinery/porta_turret/hecu/proc/get_targeting_user()
+	if(!targeting_user_ref)
+		return null
+	return targeting_user_ref.resolve()
 
 /obj/machinery/porta_turret/hecu/proc/can_designate_target(mob/living/target)
 	return target && !QDELETED(target) && target.stat != DEAD && !in_faction(target) \
 		&& get_dist(base, target) <= scan_range && can_see(base, target, scan_range)
 
 /obj/machinery/porta_turret/hecu/proc/get_designated_target()
-	if(!designated_target)
+	if(!designated_target_ref)
 		return null
-	if(!can_designate_target(designated_target))
-		designated_target = null
+	var/mob/living/target = designated_target_ref.resolve()
+	if(!can_designate_target(target))
+		designated_target_ref = null
 		return null
-	return designated_target
+	return target
 
 /obj/machinery/porta_turret/hecu/scan_for_targets()
 	var/mob/living/target = get_designated_target()
@@ -101,7 +114,7 @@
 	return ..()
 
 /obj/machinery/porta_turret/hecu/InterceptClickOn(mob/living/caller, params, atom/A)
-	if(caller != targeting_user || !caller.client || caller.client.click_intercept != src)
+	if(caller != get_targeting_user() || !caller.client || caller.client.click_intercept != src)
 		return FALSE
 	if(!isliving(A))
 		to_chat(caller, "<span class='warning'>Choose a living mob in the sentry's line of sight.</span>")
@@ -111,7 +124,7 @@
 		to_chat(caller, "<span class='warning'>That mob cannot be targeted by this sentry.</span>")
 		return TRUE
 
-	designated_target = chosen_target
+	designated_target_ref = WEAKREF(chosen_target)
 	cache_targets(list(chosen_target))
 	to_chat(caller, "<span class='notice'>[src] is now targeting [chosen_target].</span>")
 	clear_targeting_user()
@@ -148,6 +161,7 @@
 
 /obj/machinery/porta_turret/hecu/Destroy()
 	clear_targeting_user()
+	designated_target_ref = null
 	if(beep_timer)
 		deltimer(beep_timer)
 	return ..()

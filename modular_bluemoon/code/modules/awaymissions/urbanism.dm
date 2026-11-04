@@ -27,6 +27,9 @@
 /turf/closed/mineral/mesarock/acid_act(acidpwr, acid_volume, acid_id)
 	return FALSE
 
+/turf/closed/mineral/mesarock/acid_melt()
+	return
+
 /turf/closed/mineral/mesarock/Melt()
 	to_be_destroyed = FALSE
 	return src
@@ -1009,13 +1012,54 @@
 	)
 	var/resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 
+/turf/closed/wall/r_wall/blackmesa/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
+	return FALSE
+
+/turf/closed/wall/r_wall/blackmesa/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
+	return FALSE
+
 /turf/closed/wall/r_wall/blackmesa/try_decon(obj/item/W, mob/user, turf/T)
 	return FALSE
 
 /turf/closed/wall/r_wall/blackmesa/try_destroy(obj/item/I, mob/user, turf/T)
 	return FALSE
 
-/turf/closed/wall/r_wall/blackmesa/dismantle_wall(devastated = 0, explode = 0)
+/turf/closed/wall/r_wall/blackmesa/dismantle_wall(devastated = 0, explode = 0, silent = FALSE)
+	return
+
+/turf/closed/wall/r_wall/blackmesa/ScrapeAway(amount = 1, flags)
+	return src
+
+/turf/closed/wall/r_wall/blackmesa/Melt()
+	to_be_destroyed = FALSE
+	return src
+
+// Keep turf-level effects on the contents without inheriting wall conversion/destruction.
+/turf/closed/wall/r_wall/blackmesa/singularity_act()
+	if(turf_flags & TURF_INTACT)
+		for(var/obj/O in contents)
+			if(O.level != 1 || O.invisibility != INVISIBILITY_MAXIMUM)
+				continue
+			O.singularity_act()
+	return 2
+
+/turf/closed/wall/r_wall/blackmesa/narsie_act(force, ignore_mobs, probability = 20)
+	. = prob(probability) || force
+	for(var/atom/A in src)
+		if(ignore_mobs && ismob(A))
+			continue
+		if(ismob(A) || .)
+			A.narsie_act()
+
+/turf/closed/wall/r_wall/blackmesa/ratvar_act(force, ignore_mobs)
+	. = prob(40) || force
+	for(var/atom/A in src)
+		if(ignore_mobs && ismob(A))
+			continue
+		if(ismob(A) || .)
+			A.ratvar_act()
+
+/turf/closed/wall/r_wall/blackmesa/rust_heretic_act()
 	return
 
 /turf/closed/wall/r_wall/blackmesa/attack_animal(mob/living/simple_animal/M)

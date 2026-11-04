@@ -39,6 +39,24 @@
 	set_moles(GAS_N2, MOLES_N2STANDARD)
 	temperature = T20C
 
+/turf/open/proc/remove_air_from_immutable(amount, proportional = FALSE)
+	var/datum/gas_mixture/source_air = return_air()
+	if(!source_air || amount <= 0)
+		return null
+
+	var/datum/gas_mixture/working_air = new /datum/gas_mixture(source_air.return_volume())
+	if(!working_air.copy_from(source_air))
+		qdel(working_air)
+		return null
+
+	var/datum/gas_mixture/removed_air
+	if(proportional)
+		removed_air = working_air.remove_ratio(amount)
+	else
+		removed_air = working_air.remove(amount)
+	qdel(working_air)
+	return removed_air
+
 // Невидимый чазм для ihategordon - сохраняет спрайт космоса
 /turf/open/chasm/ihategordon_invisible
 	name = "Ihategordon Void"
@@ -122,12 +140,10 @@
 	return
 
 /turf/open/chasm/ihategordon_invisible/remove_air(amount)
-	// Не удаляем воздух из immutable смеси
-	return null
+	return remove_air_from_immutable(amount)
 
 /turf/open/chasm/ihategordon_invisible/remove_air_ratio(amount)
-	// Не удаляем воздух из immutable смеси
-	return null
+	return remove_air_from_immutable(amount, TRUE)
 
 /turf/open/chasm/ihategordon_invisible/return_air()
 	// Возвращаем нашу кастомную атмосферу
@@ -318,12 +334,10 @@
 	return
 
 /turf/open/space/ihategordon/remove_air(amount)
-	// Не удаляем воздух из immutable смеси
-	return null
+	return remove_air_from_immutable(amount)
 
 /turf/open/space/ihategordon/remove_air_ratio(amount)
-	// Не удаляем воздух из immutable смеси
-	return null
+	return remove_air_from_immutable(amount, TRUE)
 
 /turf/open/space/ihategordon/return_air()
 	// Возвращаем нашу кастомную атмосферу

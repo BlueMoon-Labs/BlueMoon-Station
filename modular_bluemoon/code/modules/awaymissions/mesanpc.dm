@@ -26,7 +26,9 @@
 	var/detection_cooldown = 30 SECONDS
 	var/dialogue_active = FALSE
 	var/dialogue_step = 0
-	var/current_interactor = null
+	var/datum/weakref/current_interactor
+	var/dialogue_last_interaction = 0
+	var/dialogue_idle_timeout = 60 SECONDS
 	var/blastdoor_id = null
 	var/next_interaction_time = 0
 	var/dialogue_completed = FALSE
@@ -54,6 +56,9 @@
 	START_PROCESSING(SSobj, src)
 
 /obj/machinery/negotiations_radio/process()
+	if(dialogue_active && dialogue_should_end())
+		end_dialogue()
+
 	if(dialogue_active || dialogue_completed)
 		return
 
@@ -66,6 +71,20 @@
 		playsound(src, sound_to_play, 70, FALSE, 7, 3)
 		addtimer(CALLBACK(src, PROC_REF(reset_icon)), 2 SECONDS)
 		next_play_time = world.time + rand(10 SECONDS, 25 SECONDS)
+
+/obj/machinery/negotiations_radio/proc/get_current_interactor()
+	if(!current_interactor)
+		return null
+	return current_interactor.resolve()
+
+/obj/machinery/negotiations_radio/proc/is_current_interactor(mob/user)
+	return user && get_current_interactor() == user
+
+/obj/machinery/negotiations_radio/proc/dialogue_should_end()
+	var/mob/interactor = get_current_interactor()
+	if(!interactor || QDELETED(interactor) || !interactor.client || interactor.stat == DEAD)
+		return TRUE
+	return world.time >= dialogue_last_interaction + dialogue_idle_timeout
 
 /obj/machinery/negotiations_radio/proc/detect_players()
 	if(!src)
@@ -103,6 +122,9 @@
 	if(!user || !src)
 		return
 
+	if(dialogue_active && dialogue_should_end())
+		end_dialogue()
+
 	if(dialogue_completed)
 		to_chat(user, span_warning("Радио больше не отвечает."))
 		return
@@ -112,7 +134,8 @@
 		return
 
 	if(dialogue_active)
-		if(current_interactor == user)
+		if(is_current_interactor(user))
+			dialogue_last_interaction = world.time
 			if(dialogue_step == dialogue_lines.len)
 				confirm_action(user)
 			else
@@ -129,7 +152,8 @@
 
 	dialogue_active = TRUE
 	dialogue_step = 0
-	current_interactor = user
+	current_interactor = WEAKREF(user)
+	dialogue_last_interaction = world.time
 	next_interaction_time = world.time + 1 SECONDS
 	to_chat(user, span_notice("Вы нажимаете на кнопку радио..."))
 	advance_dialogue(user)
@@ -153,7 +177,7 @@
 		end_dialogue()
 
 /obj/machinery/negotiations_radio/proc/show_interaction_prompt(mob/user)
-	if(!user || !src)
+	if(!user || !src || !is_current_interactor(user) || !user.client || user.stat == DEAD)
 		return
 
 	user.visible_message(span_notice("[user] готов нажать на радио."), span_notice("Вы готовы нажать на радио."))
@@ -166,12 +190,13 @@
 	dialogue_active = FALSE
 	dialogue_step = 0
 	current_interactor = null
+	dialogue_last_interaction = 0
 
 /obj/machinery/negotiations_radio/proc/confirm_action(mob/user)
 	if(!user || !src)
 		return
 
-	if(!dialogue_active || current_interactor != user)
+	if(!dialogue_active || !is_current_interactor(user))
 		return
 
 	dialogue_completed = TRUE
@@ -206,6 +231,7 @@
 /obj/machinery/negotiations_radio/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	current_interactor = null
+	dialogue_last_interaction = 0
 	return ..()
 
 // =============================================================================
@@ -235,7 +261,7 @@
 	if(!user || !src)
 		return
 
-	if(!dialogue_active || current_interactor != user)
+	if(!dialogue_active || !is_current_interactor(user))
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
@@ -389,7 +415,7 @@
 	if(!user || !src)
 		return
 
-	if(!dialogue_active || current_interactor != user)
+	if(!dialogue_active || !is_current_interactor(user))
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
@@ -629,7 +655,7 @@
 	if(!user || !src)
 		return
 
-	if(!dialogue_active || current_interactor != user)
+	if(!dialogue_active || !is_current_interactor(user))
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
@@ -679,7 +705,7 @@
 	if(!user || !src)
 		return
 
-	if(!dialogue_active || current_interactor != user)
+	if(!dialogue_active || !is_current_interactor(user))
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
