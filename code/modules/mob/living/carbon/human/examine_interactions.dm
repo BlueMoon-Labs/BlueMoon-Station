@@ -33,12 +33,14 @@
 
 	return FALSE
 
+/// Админ-наблюдатель видит NSFW-хедшоты всегда; остальные — при известной личности и открытом теле.
 /mob/living/carbon/human/proc/examine_naked_headshots(mob/user, unknown)
 	if(!length(dna?.headshot_naked_links))
 		return list()
 	if((check_rights_for(user.client, R_ADMIN) && isobserver(user)) || (!unknown && can_show_naked_flavor()))
 		return dna.headshot_naked_links.Copy()
 	return list()
+
 /// Можно ли показывать цель обнажённой, как в профиле персонажа.
 /mob/living/carbon/human/proc/can_show_naked_flavor()
 	if(force_naked_flavor)

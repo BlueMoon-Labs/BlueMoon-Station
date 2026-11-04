@@ -34,19 +34,19 @@
 	if(istype(wear_neck, /obj/item/clothing/neck/petcollar))
 		var/obj/item/clothing/neck/petcollar/collar = wear_neck
 		if(collar.tagname)
-			collar_tagname = " \[[collar.tagname]\]"
+			collar_tagname = " \[[html_encode(collar.tagname)]\]"
 	var/id_card_callsign_name = ""
 	if(istype(wear_id?.GetID(), /obj/item/card/id/callsign))
 		var/obj/item/card/id/callsign/callsign_id = wear_id?.GetID()
 		if(callsign_id.callsign)
-			id_card_callsign_name = " \[[callsign_id.callsign]\]"
+			id_card_callsign_name = " \[[html_encode(callsign_id.callsign)]\]"
 	var/identity_hidden = skipface || obscure_name || (get_visible_name() in list("Unknown", "Неизвестный"))
-	var/name_html = "<b>[shown_name][collar_tagname][id_card_callsign_name]</b>"
+	var/name_html = "<b>[html_encode(shown_name)][collar_tagname][id_card_callsign_name]</b>"
 	var/race_html
 	if(identity_hidden)
 		race_html = "<span class='examine_unknown_species'>Вы не можете разобрать, к какому виду относится находящееся перед вами существо.</span>"
 	else
-		race_html = "[capitalize(t_ego)] вид – [spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna.species?.name]</font>"
+		race_html = "[capitalize(t_ego)] вид – [spec_trait_examine_font()][html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)]</font>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
 		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)
@@ -614,7 +614,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					patient_line += photo_links
 				if(length(patient_line))
 					hud_hidden_lines += patient_line.Join(" · ")
-				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
+				if(has_medical_examine_hud(user))
 					var/cyberimp_detect
 					for(var/obj/item/organ/cyberimp/CI in internal_organs)
 						if(CI.status == ORGAN_ROBOTIC && !CI.syndicate_implant)
