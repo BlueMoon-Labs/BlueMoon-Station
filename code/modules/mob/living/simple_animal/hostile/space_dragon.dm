@@ -47,7 +47,7 @@
 	icon_living = "spacedragon"
 	icon_dead = "spacedragon_dead"
 	obj_damage = 50
-	environment_smash = 1.5
+	environment_smash = ENVIRONMENT_SMASH_NONE
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	melee_damage_upper = 35
 	melee_damage_lower = 35
@@ -177,7 +177,7 @@
 	. = ..()
 	if(istype(target, /obj/vehicle/sealed/mecha))
 		var/obj/vehicle/sealed/mecha/M = target
-		M.take_damage(obj_damage, BRUTE, MELEE, 1)
+		M.take_damage(75, BRUTE, MELEE, 1)
 
 /mob/living/simple_animal/hostile/space_dragon/AltClickOn(atom/A)
 	. = ..()

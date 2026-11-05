@@ -5,6 +5,7 @@
 	health = 280
 	icon = 'icons/Xeno/castes/praetorian.dmi'
 	icon_state = "Praetorian Walking"
+	meleeSlashSAPower = 50
 
 /datum/movespeed_modifier/alien_praetorian_speed
 	multiplicative_slowdown = 0.5
