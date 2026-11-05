@@ -37,7 +37,6 @@
 				if((locate(/datum/quirk/ur_pheromones) in target.roundstart_quirks) && viewer.has_quirk(/datum/quirk/sensitive_to_pheramones))
 					. += span_lewd("Вы испытываете сильное возбуждение при взгляде на [anonymous ? "него" : ru_na()] и краснеете!\n")
 
-		// Тот же трейт выдаёт кровососущий метаболизм, у которого своё описание.
 		if(HAS_TRAIT(src, TRAIT_BLOODFLEDGE) && (locate(/datum/quirk/bloodfledge) in target.roundstart_quirks) && ishuman(examiner) && !HAS_TRAIT(examiner, TRAIT_DUMB))
 			var/fellow_bloodfledge = isbloodfledge(examiner)
 			var/hunger_text
