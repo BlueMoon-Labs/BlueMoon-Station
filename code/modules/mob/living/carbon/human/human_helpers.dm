@@ -198,3 +198,11 @@
 	if((shown_name in list("Unknown", "Неизвестный")) || (isliving(user) && (HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA) || HAS_TRAIT(user, TRAIT_INVISIBLE_MAN))))
 		shown_name = "Неизвестный"
 	return shown_name
+
+/// Общая проверка личности для карточки экзамайна и полного профиля.
+/mob/living/carbon/human/proc/examine_identity_hidden(mob/user, check_prosopagnosia = TRUE)
+	if(isobserver(user))
+		return FALSE
+	if(isliving(user) && ((check_prosopagnosia && HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA)) || HAS_TRAIT(user, TRAIT_INVISIBLE_MAN)))
+		return TRUE
+	return (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE)) || (get_visible_name() in list("Unknown", "Неизвестный"))

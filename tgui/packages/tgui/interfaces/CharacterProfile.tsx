@@ -26,6 +26,7 @@ const getTagColor = (erptag) => {
 interface CharacterProfileContext {
   directory_visible: boolean;
   is_unknown: boolean;
+  profile_name: string;
   headshot_links?: (string | null)[];
   headshot_naked_links?: (string | null)[]; // BLUEMOON ADD
   character_ref: any,
@@ -69,7 +70,7 @@ export const CharacterProfile = (props) => {
   ];
 
   return (
-    <Window resizable width={950} height={740}>
+    <Window title={`Профиль персонажа ${data.profile_name}`} resizable width={950} height={740}>
       <Window.Content scrollable>
         <Flex>
           <Flex.Item width="276px" shrink={0} style={{ overflow: 'hidden' }}>

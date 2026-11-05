@@ -16,7 +16,6 @@
 	var/list/hud_lines = list()
 	var/list/hud_hidden_lines = list() // вторичное, уходит под спойлер
 
-	var/obscure_name
 	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
 
 	var/vampDesc = ReturnVampExamine(user) // Vamps recognize the names of other vamps.
@@ -26,10 +25,6 @@
 	if (vassDesc != "")
 		special_lines += vassDesc
 
-	if(isliving(user))
-		var/mob/living/L = user
-		if(HAS_TRAIT(L, TRAIT_PROSOPAGNOSIA) || HAS_TRAIT(L, TRAIT_INVISIBLE_MAN))
-			obscure_name = TRUE
 	var/collar_tagname = ""
 	if(istype(wear_neck, /obj/item/clothing/neck/petcollar))
 		var/obj/item/clothing/neck/petcollar/collar = wear_neck
@@ -40,7 +35,7 @@
 		var/obj/item/card/id/callsign/callsign_id = wear_id?.GetID()
 		if(callsign_id.callsign)
 			id_card_callsign_name = " \[[html_encode(callsign_id.callsign)]\]"
-	var/identity_hidden = (skipface && !isobserver(user)) || obscure_name || (get_visible_name() in list("Unknown", "Неизвестный"))
+	var/identity_hidden = examine_identity_hidden(user)
 	var/name_html = "<b>[html_encode(shown_name)][collar_tagname][id_card_callsign_name]</b>"
 	var/race_html
 	if(identity_hidden)
@@ -606,7 +601,8 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
 						rank_tooltip = " [span_tooltip_fast(html_encode(R.fields["real_rank"]))]"
 					hud_lines += "<span class='deptradio'>Должность:</span> [R.fields["rank"]][rank_tooltip]"
-					photo_links = "<span class='deptradio'>Фото:</span> <a href='?src=[REF(src)];hud=1;photo_front=1'>\[Анфас\]</a> <a href='?src=[REF(src)];hud=1;photo_side=1'>\[Сбоку\]</a>"
+					if(has_medical_examine_hud(user) || hasHUD(user, DATA_HUD_SECURITY_ADVANCED))
+						photo_links = "<span class='deptradio'>Фото:</span> <a href='?src=[REF(src)];hud=1;photo_front=1'>\[Анфас\]</a> <a href='?src=[REF(src)];hud=1;photo_side=1'>\[Сбоку\]</a>"
 				var/list/patient_line = list()
 				if(length(traits_link))
 					patient_line += traits_link

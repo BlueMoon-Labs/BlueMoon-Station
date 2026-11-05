@@ -192,7 +192,7 @@
 				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(href_list["photo_front"] || href_list["photo_side"])
 					if(R)
-						if(!H.canUseHUD())
+						if(!H.canUseHUD() || !(has_medical_examine_hud(H) || hasHUD(H, DATA_HUD_SECURITY_ADVANCED)))
 							return
 						// Клик по ссылке в ХУД-осмотре - такой же первый просмотр записи, как карточка.
 						var/obj/item/photo/P = null
