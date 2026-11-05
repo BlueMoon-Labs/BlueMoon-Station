@@ -55255,6 +55255,20 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"uIm" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/gun/ballistic/automatic/mp5/mp10{
+	pixel_x = -3;
+	pixel_y = -5
+	},
+/obj/item/gun/ballistic/automatic/mp5/mp10{
+	pixel_x = -1;
+	pixel_y = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "uIx" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -66319,7 +66333,7 @@ iRL
 iAm
 bBC
 gHH
-rsp
+uIm
 iRL
 nUr
 nUr

@@ -138,7 +138,7 @@
 
 // TIER 2
 /obj/item/gun/ballistic/automatic/mp5
-	name = "MP5 machinegun"
+	name = "MP5K machinegun"
 	desc = "Heckler Koch Mp5 является хоть и устаревшим, но невероятно сильным оружием в виду своей скорострельности. Какой идиот вообще подумал, что будет отличной идеей отобрать его у морпеха HECU?"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
@@ -156,7 +156,7 @@
 	can_suppress = FALSE
 	weapon_weight = WEAPON_LIGHT
 	w_class = WEIGHT_CLASS_NORMAL
-	spread = 9
+	spread = 11
 	burst_size = 3
 	burst_shot_delay = 2
 	fire_delay = 0.5 ///Это пиздец!
@@ -215,6 +215,42 @@
 		icon_state = "[initial(icon_state)]-ammo"
 	else
 		icon_state = "[initial(icon_state)]"
+
+// TIER 3
+/obj/item/gun/ballistic/automatic/mp5/mp10
+	name = "MP10 machinegun"
+	desc = "Усовершенствованный вариант MP5: сниженная отдача и разброс, но немного меньшая скорострельность. Особенно эффективен против заражённых."
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
+	icon_state = "mp10"
+	item_state = "mp5"
+	mag_type = /obj/item/ammo_box/magazine/mp5
+	weapon_weight = WEAPON_HEAVY
+	recoil = 0.1
+	spread = 7
+	fire_delay = 1
+	progressive_spread_enabled = FALSE
+	projectile_simple_mob_damage_multiplier = 2
+
+/obj/item/gun/ballistic/automatic/mp5/mp10/update_icon_state()
+	if(!magazine)
+		icon_state = "mp10_mag"
+	else if(istype(magazine, /obj/item/ammo_box/magazine/mp5/mp10_drum))
+		icon_state = "mp10_drum"
+	else
+		icon_state = "mp10"
+
+/obj/item/ammo_box/magazine/mp5/mp10_drum
+	name = "MP10 drum magazine (5.7mm)"
+	desc = "60-зарядный барабанный магазин для MP10, использующий патроны 5,7 мм."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "drummagfull"
+	ammo_type = /obj/item/ammo_casing/mm57
+	caliber = "5.7mm"
+	max_ammo = 60
+
+/obj/item/ammo_box/magazine/mp5/mp10_drum/update_icon()
+	. = ..()
+	icon_state = ammo_count() ? "drummagfull" : "drummagempt"
 
 // TIER 1
 /obj/item/gun/ballistic/shotgun
