@@ -461,13 +461,19 @@
 	w_class = WEIGHT_CLASS_TINY
 	icon = 'icons/obj/surgery.dmi'
 	icon_state = "kebab_grill"
-	aug_overlay = "kebab_grill"
+	aug_overlay = "shawarma_skewer_0"
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	var/active = FALSE
 	var/meat_count = 0
 	var/max_meat = 3
 	var/ready_count = 0
 	var/cook_time = 5 SECONDS
+	/// Meat sprite currently drawn on top of the grill sprite.
+	var/image/meat_overlay
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/Initialize(mapload)
+	. = ..()
+	update_icon_state()
 
 /obj/item/organ/cyberimp/chest/shawarma_spit/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
@@ -539,12 +545,25 @@
 		bodypart_aug.set_layers(list(EXTERNAL_FRONT = BODY_FRONT_LAYER))
 
 /obj/item/organ/cyberimp/chest/shawarma_spit/update_icon_state()
-	icon_state = meat_count ? "shawarma_skewer_[min(meat_count, max_meat)]" : "kebab_grill"
-	// Оверлей на теле повторяет иконку; ключ кэша конечности включает aug_overlay,
-	// поэтому после смены достаточно пересобрать части тела.
-	aug_overlay = icon_state
+	icon_state = "kebab_grill"
+	var/meat_state = "shawarma_skewer_[clamp(meat_count, 0, max_meat)]"
+	// Ключ кэша конечности включает aug_overlay, поэтому после смены мяса достаточно
+	// пересобрать части тела. Базовый гриль при этом остаётся нетронутым.
+	aug_overlay = meat_state
+	if(meat_overlay)
+		cut_overlay(meat_overlay)
+		meat_overlay = null
+	meat_overlay = image(icon = icon, icon_state = meat_state)
+	add_overlay(meat_overlay)
 	. = ..()
 	refresh_bodypart_overlays()
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = list()
+	// Гриль и вертел с мясом — отдельные слои: вертел накладывается поверх гриля,
+	// состояние _0 — пустой вертел, _1.._3 — количество слоёв мяса.
+	. += image(icon = aug_icon, icon_state = "kebab_grill", layer = image_layer)
+	. += image(icon = aug_icon, icon_state = "shawarma_skewer_[clamp(meat_count, 0, max_meat)]", layer = image_layer)
 
 /datum/chem_implant
 	var/chemname
