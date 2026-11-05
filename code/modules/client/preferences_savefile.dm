@@ -1133,10 +1133,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 ///
 /// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
 /// честный результат записи прямо сейчас.
-/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+///
+/// lazy = TRUE не заводит своего сброса: ключ уедет с ближайшей записью, логаутом или ребутом.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE, lazy = FALSE)
 	if(!path || !key)
 		return FALSE
-	buffer_single_pref(key, value)
+	buffer_single_pref(key, value, lazy && !immediate)
 	if(immediate)
 		return flush_single_prefs()
 	return TRUE
@@ -1147,11 +1149,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
  * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
  */
-/datum/preferences/proc/buffer_single_pref(key, value)
+/datum/preferences/proc/buffer_single_pref(key, value, lazy = FALSE)
 	if(!key)
 		return FALSE
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
+	if(lazy)
+		return TRUE
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
 	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.

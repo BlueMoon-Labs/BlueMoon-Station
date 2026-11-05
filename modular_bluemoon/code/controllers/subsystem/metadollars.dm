@@ -388,11 +388,8 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
 	if(category == "living")
-		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
-		// Полный сейв префов это ~124 WRITE_FILE подряд ради одного числа, поэтому кладём
-		// ключ в буфер склейки: он уйдёт на диск одним открытием savefile вместе с
-		// остальными одиночными ключами игрока.
-		C.prefs.save_single_pref("metadollar_minute_pool", C.prefs.metadollar_minute_pool)
+		// Остаток минут до М$ (баланс уже в metadollars.json): отдельное открытие savefile на каждое начисление не нужно.
+		C.prefs.save_single_pref("metadollar_minute_pool", C.prefs.metadollar_minute_pool, lazy = TRUE)
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))

@@ -107,6 +107,34 @@
 	qdel(prefs)
 
 /**
+ * Ленивый ключ своего сброса не заводит и уезжает с чужим.
+ *
+ * Остаток минут до М$ писался отдельным открытием savefile на каждое начисление
+ * каждому живому игроку. Ленивый ключ ждёт ближайшего сброса этого игрока.
+ */
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush
+
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush/Run()
+	var/datum/preferences/prefs = new
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 12, lazy = TRUE)
+	TEST_ASSERT_EQUAL(LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool"), 12, "ленивый ключ не попал в буфер")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "ленивый ключ завёл свой сброс - это лишнее открытие savefile")
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 30, lazy = TRUE)
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["metadollar_minute_pool"], 30, "повтор ленивого ключа не схлопнулся до последнего значения")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "повтор ленивого ключа завёл сброс")
+
+	prefs.buffer_single_pref("tgui_panel_theme", "dark")
+	TEST_ASSERT_NOTNULL(prefs.single_pref_queue, "обычный ключ после ленивого не завёл сброс")
+	TEST_ASSERT_EQUAL(length(prefs.pending_single_prefs), 2, "ленивый ключ не уедет вместе с обычным")
+
+	deltimer(prefs.single_pref_queue)
+	prefs.single_pref_queue = null
+	prefs.pending_single_prefs = null
+	qdel(prefs)
+
+/**
  * Полная запись префов уже в очереди - второй таймер заводить нельзя.
  *
  * Полный save_preferences открывает тот же самый savefile и дописывает буфер в конце,
