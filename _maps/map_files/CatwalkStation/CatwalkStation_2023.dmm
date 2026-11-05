@@ -16088,9 +16088,6 @@
 /obj/effect/turf_decal/tile/dark_green{
 	dir = 4
 	},
-/obj/machinery/computer/department_budget/service{
-	dir = 8
-	},
 /turf/open/floor/plasteel/checker,
 /area/service/bar/backroom)
 "dsP" = (
@@ -18950,12 +18947,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
-"eWp" = (
-/obj/machinery/vending/custom,
-/turf/open/floor/plasteel/smooth/edge{
-	dir = 1
-	},
-/area/hallway/primary/central)
 "eai" = (
 /obj/structure/closet/firecloset,
 /turf/open/floor/plasteel,
@@ -23224,6 +23215,12 @@
 "eWl" = (
 /turf/closed/wall,
 /area/engineering/storage_shared)
+"eWp" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 1
+	},
+/area/hallway/primary/central)
 "eWr" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -49101,14 +49098,6 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/plasteel/grimy,
 /area/security/interrogation)
-"kwQ" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/machinery/cash_register/bar{
-	dir = 8
-	},
-/turf/open/floor/wood/wood_large,
-/area/service/bar)
 "kwc" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -49195,6 +49184,14 @@
 	},
 /turf/open/floor/carpet,
 /area/commons/storage/tools)
+"kwQ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/cash_register/bar{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/service/bar)
 "kwW" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /obj/machinery/atmospherics/pipe/simple/multiz/purple/visible{
@@ -54506,6 +54503,7 @@
 	dir = 1
 	},
 /obj/machinery/light/directional/north,
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/dark,
 /area/science/research/lobby)
 "lAQ" = (
@@ -85089,18 +85087,6 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos/upper)
-"sZz" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "kitchen_counter";
-	name = "Kitchen Counter Shutters"
-	},
-/obj/machinery/cash_register/kitchen{
-	dir = 1
-	},
-/turf/open/floor/wood/wood_large,
-/area/service/kitchen)
 "sad" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing/corner/end{
@@ -89551,6 +89537,18 @@
 	},
 /turf/open/floor/plating,
 /area/engineering/supermatter_room)
+"sZz" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen_counter";
+	name = "Kitchen Counter Shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/service/kitchen)
 "sZJ" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
@@ -94941,19 +94939,6 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/captain/private)
-"uiA" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/door/poddoor/shutters{
-	id = "actualcommissaryshutter";
-	name = "Vacant Commissary Shutter"
-	},
-/obj/machinery/cash_register{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/commons/vacant_room/commissary)
 "uib" = (
 /obj/structure/sign/warning/radiation/rad_area{
 	pixel_x = 32
@@ -94985,6 +94970,19 @@
 "uiz" = (
 /turf/closed/wall/r_wall,
 /area/security/brig/brig_medical)
+"uiA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor/shutters{
+	id = "actualcommissaryshutter";
+	name = "Vacant Commissary Shutter"
+	},
+/obj/machinery/cash_register{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/commons/vacant_room/commissary)
 "uiM" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -97991,7 +97989,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/computer/department_budget/science,
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
 "uTR" = (
@@ -100345,6 +100342,9 @@
 	},
 /obj/machinery/status_display/evac{
 	pixel_y = -32
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 1
 	},
 /turf/open/floor/carpet/green,
 /area/command/heads_quarters/hop)

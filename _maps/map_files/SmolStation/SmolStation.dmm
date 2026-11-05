@@ -3725,6 +3725,9 @@
 	dir = 1
 	},
 /obj/effect/landmark/xeno_spawn,
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "cwe" = (
@@ -14359,8 +14362,6 @@
 "ktr" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/firedoor,
-/obj/item/folder/blue,
-/obj/item/pen,
 /obj/machinery/door/window/brigdoor/eastleft{
 	dir = 1;
 	name = "Access Desk";
@@ -15288,12 +15289,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
-"kXV" = (
-/obj/machinery/computer/department_budget/science,
-/turf/open/floor/plasteel/elevatorshaft{
-	name = "landing site"
-	},
-/area/science/lab)
 "kYb" = (
 /obj/item/reagent_containers/glass/bucket,
 /obj/effect/turf_decal/tile/green{
@@ -22822,6 +22817,14 @@
 /obj/item/storage/bag/chemistry,
 /obj/item/storage/box/beakers,
 /obj/item/clothing/neck/stethoscope,
+/obj/item/folder/yellow{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/obj/item/pen{
+	pixel_x = -8;
+	pixel_y = -5
+	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone3)
 "qHo" = (
@@ -25774,22 +25777,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
-"tcT" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/machinery/computer/department_budget{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/command/bridge)
 "tdD" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -26345,6 +26332,16 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
+"twO" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/cargo/qm)
 "tyf" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 5
@@ -26451,6 +26448,14 @@
 /obj/item/stamp/hop,
 /obj/structure/cable{
 	icon_state = "2-8"
+	},
+/obj/item/folder/blue{
+	pixel_x = 9;
+	pixel_y = -5
+	},
+/obj/item/pen{
+	pixel_x = 9;
+	pixel_y = -4
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
@@ -30008,8 +30013,6 @@
 	name = "Chemistry Desk";
 	req_access_txt = "5; 33"
 	},
-/obj/item/folder/yellow,
-/obj/item/pen,
 /obj/effect/turf_decal/delivery,
 /obj/machinery/cash_register/clinic,
 /turf/open/floor/plasteel,
@@ -33028,16 +33031,6 @@
 	},
 /turf/open/floor/plating,
 /area/science/xenobiology)
-"ylD" = (
-/obj/effect/turf_decal/tile/brown,
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/machinery/computer/department_budget/cargo{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/cargo/qm)
 "ylE" = (
 /obj/item/radio/intercom{
 	pixel_x = -28
@@ -63992,7 +63985,7 @@ uRt
 bNs
 ioS
 uRt
-tcT
+uRt
 kXu
 pWA
 gIC
@@ -69188,10 +69181,10 @@ ksk
 vyR
 khW
 oOP
-sHx
+twO
 oBG
 oBG
-ylD
+oBG
 oBG
 rwE
 asC

@@ -15,6 +15,44 @@
 /obj/structure/lattice,
 /turf/open/space,
 /area/space/nearstation)
+"aae" = (
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/structure/cable/white{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel,
+/area/engineering/main)
+"aaf" = (
+/obj/structure/cable/white{
+	icon_state = "0-4"
+	},
+/obj/structure/cable/white{
+	icon_state = "0-8"
+	},
+/obj/structure/cable/white{
+	icon_state = "0-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "aaq" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -7752,25 +7790,6 @@
 /obj/machinery/atmospherics/pipe/simple/orange/hidden,
 /turf/closed/wall/r_wall,
 /area/engineering/atmospherics_engine)
-"aYh" = (
-/obj/structure/cable/white{
-	icon_state = "0-4"
-	},
-/obj/structure/cable/white{
-	icon_state = "0-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "aYE" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral,
@@ -22663,12 +22682,12 @@
 	id = "chemisttop";
 	name = "Chemistry Lobby Shutters"
 	},
-/obj/item/folder/yellow,
 /obj/machinery/door/window/northleft{
 	name = "Chemistry Desk";
 	req_access_txt = "5; 33"
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/cash_register/clinic,
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
 "cZw" = (
@@ -22931,6 +22950,10 @@
 /obj/item/toy/figure/chemist,
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
+	},
+/obj/item/folder/yellow{
+	pixel_x = 6;
+	pixel_y = -4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/chemistry)
@@ -52342,9 +52365,6 @@
 /obj/machinery/door/window/westleft{
 	req_access_txt = "5"
 	},
-/obj/machinery/cash_register/clinic{
-	dir = 4
-	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
 "hNQ" = (
@@ -58997,6 +59017,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
+"jhf" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/service/library)
 "jho" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/white{
@@ -63215,19 +63239,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/hop)
-"kcs" = (
-/obj/effect/turf_decal/tile/yellow{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/yellow,
-/obj/effect/turf_decal/tile/yellow{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/yellow{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "kcv" = (
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk,
@@ -85484,13 +85495,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/commons/fitness/recreation)
-"oQG" = (
-/obj/effect/turf_decal/tile/blue,
-/obj/machinery/computer/department_budget/medical{
-	dir = 8
-	},
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/central)
 "oQL" = (
 /obj/machinery/hydroponics/soil,
 /obj/structure/cable/white{
@@ -121907,6 +121911,9 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "wzg" = (
@@ -122892,10 +122899,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
-"wJC" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall,
-/area/service/kitchen)
 "wJL" = (
 /obj/structure/extinguisher_cabinet,
 /turf/closed/wall/r_wall,
@@ -129807,48 +129810,6 @@
 "ylT" = (
 /obj/effect/decal/cleanable/oil,
 /turf/open/floor/plating,
-/area/engineering/main)
-"jhf" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall,
-/area/service/library)
-"aae" = (
-/obj/effect/turf_decal/tile/yellow{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/yellow,
-/obj/effect/turf_decal/tile/yellow{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/yellow{
-	dir = 8
-	},
-/obj/structure/cable/white{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/main)
-"aaf" = (
-/obj/structure/cable/white{
-	icon_state = "0-4"
-	},
-/obj/structure/cable/white{
-	icon_state = "0-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "0-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
 /area/engineering/main)
 
 (1,1,1) = {"
@@ -164437,8 +164398,8 @@ rox
 sHG
 sHG
 dpR
-sHG
 iSu
+sHG
 ley
 bqU
 rRN
@@ -173715,7 +173676,7 @@ bhw
 fXl
 cXO
 dtI
-oQG
+cXO
 qCY
 pNE
 dAa

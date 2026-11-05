@@ -1112,10 +1112,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)
-"ajB" = (
-/obj/machinery/vending/custom,
-/turf/open/floor/plasteel,
-/area/hallway/secondary/entry)
 "aje" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
@@ -1212,6 +1208,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/checkpoint/escape)
+"ajB" = (
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "ajD" = (
 /obj/structure/grille,
 /obj/structure/window{
@@ -29723,9 +29723,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
-/obj/machinery/computer/department_budget{
-	dir = 4
-	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "eyW" = (
@@ -54796,6 +54793,9 @@
 "iqm" = (
 /obj/effect/turf_decal/siding/wood/corner,
 /obj/machinery/light/directional/west,
+/obj/machinery/computer/department_budget{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "iqp" = (
@@ -91977,6 +91977,13 @@
 /obj/machinery/duct,
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
+"ocz" = (
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/service/bar)
 "ocE" = (
 /obj/structure/girder,
 /obj/structure/grille/broken,
@@ -117891,7 +117898,6 @@
 /obj/machinery/camera/autoname{
 	dir = 2
 	},
-/obj/machinery/computer/department_budget/engineering,
 /turf/open/floor/plasteel/white/corner{
 	dir = 8
 	},
@@ -141171,7 +141177,6 @@
 "vIC" = (
 /obj/machinery/light/directional/north,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
-/obj/machinery/computer/department_budget/service,
 /turf/open/floor/plasteel,
 /area/service/bar/backroom)
 "vII" = (
@@ -147311,6 +147316,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white/side{
 	dir = 8
@@ -192596,7 +192604,7 @@ lFM
 wgY
 cTQ
 fEl
-cue
+ocz
 eaK
 dbq
 bqm

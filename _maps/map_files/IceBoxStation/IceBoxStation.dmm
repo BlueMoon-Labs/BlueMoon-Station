@@ -3,6 +3,35 @@
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/underground/explored/graveyard)
+"aac" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light_switch/directional/north,
+/turf/open/floor/plasteel,
+/area/engineering/storage)
+"aad" = (
+/obj/structure/table/glass,
+/obj/machinery/door/window{
+	name = "Hydroponics Desk";
+	req_access_txt = "35";
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/obj/machinery/cash_register{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/service/hydroponics)
 "aae" = (
 /obj/structure/closet{
 	name = "evidence closet 2"
@@ -29,6 +58,85 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"aah" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/window/northright{
+	name = "Pharmacy Desk";
+	req_access_txt = "33";
+	dir = 4
+	},
+/obj/structure/desk_bell{
+	pixel_x = 7
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "pharmacy_shutters";
+	name = "Pharmacy Shutters"
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/medical/pharmacy)
+"aai" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/structure/table,
+/obj/machinery/power/apc/auto_name/north,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/item/stack/medical/suture/emergency{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/item/stack/medical/ointment{
+	pixel_y = 2;
+	pixel_x = -4
+	},
+/obj/item/folder/white{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -5;
+	pixel_y = -4
+	},
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/lobby)
+"aaj" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 7
+	},
+/obj/item/pen/invisible,
+/obj/machinery/newscaster{
+	pixel_x = 30
+	},
+/turf/open/floor/engine/cult,
+/area/service/library)
+"aak" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/command/heads_quarters/ce)
+"aal" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/obj/machinery/computer/department_budget/engineering,
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "aaE" = (
 /obj/machinery/camera{
 	c_tag = "Central Hallway North";
@@ -10572,6 +10680,14 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/blue/opposingcorners,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -4;
+	pixel_y = -4
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/hydroponics)
 "ctV" = (
@@ -13545,6 +13661,10 @@
 	},
 /turf/open/floor/plasteel/white/side,
 /area/mine/living_quarters)
+"ddq" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/maintenance/port/aft)
 "ddr" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
@@ -33021,12 +33141,6 @@
 "hpf" = (
 /turf/open/floor/plating,
 /area/maintenance/solars/port/aft)
-"hpg" = (
-/obj/machinery/light/directional/north,
-/obj/effect/turf_decal/tile/neutral/fourcorners,
-/obj/machinery/computer/department_budget/engineering,
-/turf/open/floor/plasteel/dark,
-/area/command/heads_quarters/ce)
 "hpi" = (
 /obj/item/radio/intercom{
 	pixel_y = 27
@@ -65025,20 +65139,6 @@
 /obj/structure/flora/grass/green,
 /turf/open/floor/plating/snowed/smoothed/icemoon,
 /area/icemoon/underground/explored)
-"ooV" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/turf_decal/tile/yellow/half/contrasted{
-	dir = 1
-	},
-/obj/machinery/light_switch/directional/north,
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/storage)
 "ooW" = (
 /obj/machinery/dna_scannernew,
 /obj/machinery/camera{
@@ -67754,28 +67854,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/aft/lesser)
-"oVS" = (
-/obj/structure/table/glass,
-/obj/machinery/door/window{
-	name = "Hydroponics Desk";
-	req_access_txt = "35";
-	dir = 1
-	},
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/green/opposingcorners{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue/opposingcorners,
-/obj/item/paper_bin{
-	pixel_y = 4
-	},
-/obj/item/pen{
-	pixel_x = -5
-	},
-/turf/open/floor/plasteel/dark,
-/area/service/hydroponics)
 "oVV" = (
 /obj/effect/turf_decal/tile/neutral/diagonal_centre,
 /obj/machinery/atmospherics/pipe/simple/multiz/violet/visible{
@@ -75120,21 +75198,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
-"qAY" = (
-/obj/structure/table/wood,
-/obj/item/paper_bin{
-	pixel_x = -3;
-	pixel_y = 7
-	},
-/obj/item/pen/invisible,
-/obj/machinery/newscaster{
-	pixel_x = 30
-	},
-/obj/machinery/cash_register{
-	dir = 8
-	},
-/turf/open/floor/engine/cult,
-/area/service/library)
 "qBa" = (
 /obj/item/kirbyplants/random,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
@@ -83490,10 +83553,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos/pumproom)
-"ssL" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall/r_wall,
-/area/command/heads_quarters/hop)
 "ssM" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/door/airlock/maintenance{
@@ -83609,7 +83668,11 @@
 	dir = 6
 	},
 /obj/structure/cable/yellow{
-	icon_state = "2-4"
+	icon_state = "0-2"
+	},
+/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/engineering/storage)
@@ -84192,9 +84255,6 @@
 	},
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
-	},
-/obj/machinery/computer/department_budget/cargo{
-	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
@@ -86648,29 +86708,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"tdv" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/table,
-/obj/machinery/power/apc/auto_name/north,
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/yellow{
-	dir = 8
-	},
-/obj/item/stack/medical/suture/emergency{
-	pixel_x = 6;
-	pixel_y = -2
-	},
-/obj/item/stack/medical/ointment{
-	pixel_y = 2;
-	pixel_x = -4
-	},
-/obj/machinery/cash_register/clinic,
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/lobby)
 "tdw" = (
 /turf/open/floor/plasteel/rivets,
 /area/security/execution/transfer)
@@ -95440,31 +95477,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig/upper)
-"uZB" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/machinery/door/window/northright{
-	name = "Pharmacy Desk";
-	req_access_txt = "33";
-	dir = 4
-	},
-/obj/item/folder/white{
-	pixel_x = -5
-	},
-/obj/item/pen{
-	pixel_x = -5
-	},
-/obj/structure/desk_bell{
-	pixel_x = 7
-	},
-/obj/effect/turf_decal/tile/yellow/fourcorners,
-/obj/machinery/door/poddoor/shutters/preopen{
-	dir = 4;
-	id = "pharmacy_shutters";
-	name = "Pharmacy Shutters"
-	},
-/turf/open/floor/plasteel,
-/area/medical/pharmacy)
 "uZH" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/shutters/window{
@@ -109305,6 +109317,9 @@
 	dir = 1;
 	sortType = 2
 	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/cargo/office)
 "xWI" = (
@@ -110008,15 +110023,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/bar/backroom)
-"ydN" = (
-/obj/effect/turf_decal/tile/yellow/half/contrasted{
-	dir = 1
-	},
-/obj/structure/sign/warning/securearea{
-	pixel_y = 32
-	},
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "ydP" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -110743,139 +110749,6 @@
 	},
 /turf/open/openspace,
 /area/science/xenobiology)
-"aaa" = (
-/obj/effect/turf_decal/siding/yellow{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/yellow{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/storage)
-"aac" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/effect/turf_decal/tile/yellow/half/contrasted{
-	dir = 1
-	},
-/obj/machinery/light_switch/directional/north,
-/turf/open/floor/plasteel,
-/area/engineering/storage)
-"ddq" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall,
-/area/maintenance/port/aft)
-"aad" = (
-/obj/structure/table/glass,
-/obj/machinery/door/window{
-	name = "Hydroponics Desk";
-	req_access_txt = "35";
-	dir = 1
-	},
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/green/opposingcorners{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue/opposingcorners,
-/obj/item/paper_bin{
-	pixel_y = 4
-	},
-/obj/item/pen{
-	pixel_x = -5
-	},
-/obj/machinery/cash_register{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/service/hydroponics)
-"aah" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/machinery/door/window/northright{
-	name = "Pharmacy Desk";
-	req_access_txt = "33";
-	dir = 4
-	},
-/obj/item/folder/white{
-	pixel_x = -5
-	},
-/obj/item/pen{
-	pixel_x = -5
-	},
-/obj/structure/desk_bell{
-	pixel_x = 7
-	},
-/obj/effect/turf_decal/tile/yellow/fourcorners,
-/obj/machinery/door/poddoor/shutters/preopen{
-	dir = 4;
-	id = "pharmacy_shutters";
-	name = "Pharmacy Shutters"
-	},
-/obj/machinery/cash_register/clinic{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/medical/pharmacy)
-"aai" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/table,
-/obj/machinery/power/apc/auto_name/north,
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/yellow{
-	dir = 8
-	},
-/obj/item/stack/medical/suture/emergency{
-	pixel_x = 6;
-	pixel_y = -2
-	},
-/obj/item/stack/medical/ointment{
-	pixel_y = 2;
-	pixel_x = -4
-	},
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/lobby)
-"aaj" = (
-/obj/structure/table/wood,
-/obj/item/paper_bin{
-	pixel_x = -3;
-	pixel_y = 7
-	},
-/obj/item/pen/invisible,
-/obj/machinery/newscaster{
-	pixel_x = 30
-	},
-/turf/open/floor/engine/cult,
-/area/service/library)
-"aak" = (
-/obj/machinery/light/directional/north,
-/obj/effect/turf_decal/tile/neutral/fourcorners,
-/turf/open/floor/plasteel/dark,
-/area/command/heads_quarters/ce)
-"aal" = (
-/obj/effect/turf_decal/tile/yellow/half/contrasted{
-	dir = 1
-	},
-/obj/structure/sign/warning/securearea{
-	pixel_y = 32
-	},
-/obj/machinery/computer/department_budget/engineering,
-/turf/open/floor/plasteel,
-/area/engineering/main)
 
 (1,1,1) = {"
 rvr
@@ -266805,7 +266678,7 @@ uzn
 bPh
 byD
 suz
-aaa
+qKt
 smD
 hHN
 aXW

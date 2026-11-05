@@ -26431,13 +26431,13 @@
 	dir = 8;
 	alpha = 150
 	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
 /obj/structure/sign/poster/contraband/power{
 	desc = "Lord Singuloth must feed. Annoyingly, it's really easy for people to sabotage containment and let Lord Singuloth eat the entire  station.. For this reason, Nanotrasen prefers Supermatter reactors.";
 	pixel_x = -32;
 	poster_item_desc = "This poster depicts Lord Singuloth. Nanotrasen doesn't approve. Nanotrasen wants Supermatter over Singularities, as they are usually much safer."
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
@@ -30968,10 +30968,6 @@
 	name = "scrubbers"
 	},
 /obj/machinery/atmospherics/pipe/simple/orange/hidden,
-/obj/structure/cable{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "bLT" = (
@@ -41490,7 +41486,6 @@
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "csF" = (
-/obj/machinery/computer/department_budget/science,
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
 "csH" = (
@@ -45539,6 +45534,9 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 1
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
@@ -64104,7 +64102,7 @@
 /area/hallway/primary/central)
 "ijD" = (
 /obj/structure/cable{
-	icon_state = "4-8"
+	icon_state = "2-4"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -64124,6 +64122,9 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4;
 	alpha = 80
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
@@ -66286,21 +66287,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
-"jYN" = (
-/obj/effect/turf_decal/tile/blue{
-	alpha = 200;
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	alpha = 200;
-	dir = 1
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/computer/department_budget/medical,
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/central)
 "jaf" = (
 /obj/machinery/portable_atmospherics/canister/air,
 /obj/effect/turf_decal/delivery,
@@ -69048,6 +69034,21 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
+"jYN" = (
+/obj/effect/turf_decal/tile/blue{
+	alpha = 200;
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	alpha = 200;
+	dir = 1
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/computer/department_budget/medical,
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/central)
 "jZc" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 10;
@@ -72801,13 +72802,6 @@
 "lrh" = (
 /turf/closed/wall,
 /area/security/prison/rec)
-"lsB" = (
-/obj/structure/table/wood/fancy,
-/obj/machinery/cash_register/bar{
-	dir = 4
-	},
-/turf/open/floor/carpet,
-/area/service/bar)
 "lsg" = (
 /obj/effect/turf_decal/loading_area,
 /obj/effect/turf_decal/bot/yellow,
@@ -72858,6 +72852,13 @@
 /obj/structure/chair,
 /turf/open/floor/plasteel,
 /area/security/office)
+"lsB" = (
+/obj/structure/table/wood/fancy,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/service/bar)
 "lsP" = (
 /obj/machinery/rnd/production/techfab/department/service,
 /turf/open/floor/wood,
@@ -81102,6 +81103,7 @@
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "okI" = (
@@ -93961,6 +93963,9 @@
 	dir = 4;
 	alpha = 80
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "sSW" = (
@@ -94441,15 +94446,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/maintenance/central)
-"tLk" = (
-/obj/effect/turf_decal/tile/red{
-	dir = 1;
-	alpha = 170;
-	color = "#CD2929"
-	},
-/obj/machinery/evidence_locker,
-/turf/open/floor/plasteel,
-/area/security/office)
 "taq" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4;
@@ -97207,18 +97203,6 @@
 	},
 /turf/open/floor/wood,
 /area/maintenance/bar)
-"uLg" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8;
-	alpha = 80
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1;
-	alpha = 80
-	},
-/obj/machinery/vending/custom,
-/turf/open/floor/plasteel,
-/area/hallway/primary/central)
 "ual" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -99217,6 +99201,18 @@
 	},
 /turf/open/floor/grass,
 /area/medical/medbay/central)
+"uLg" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8;
+	alpha = 80
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1;
+	alpha = 80
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "uLi" = (
 /obj/machinery/airalarm{
 	dir = 4;
@@ -102540,17 +102536,6 @@
 /obj/structure/sign/warning,
 /turf/closed/wall/r_wall,
 /area/space/nearstation)
-"wWc" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "kitchencountershutters";
-	name = "kitchen shutters"
-	},
-/obj/machinery/cash_register/kitchen{
-	dir = 4
-	},
-/turf/open/floor/plasteel/cafeteria,
-/area/service/kitchen)
 "wab" = (
 /obj/effect/turf_decal/tile/green{
 	dir = 8;
@@ -104996,6 +104981,17 @@
 	icon_state = "chapel"
 	},
 /area/service/chapel/main)
+"wWc" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchencountershutters";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/service/kitchen)
 "wWs" = (
 /obj/machinery/doppler_array/research/science{
 	dir = 8
@@ -105906,6 +105902,10 @@
 	c_tag = "Engineering Foyer";
 	dir = 1
 	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "xkZ" = (
@@ -132517,7 +132517,7 @@ atc
 ayT
 aSx
 aBI
-tLk
+aDs
 bfw
 aYo
 aKo

@@ -2101,13 +2101,6 @@
 /area/security/prison/rec)
 "aLt" = (
 /obj/structure/table/reinforced,
-/obj/item/folder/white,
-/obj/item/pen,
-/obj/item/reagent_containers/food/drinks/britcup{
-	desc = "Kingston's personal cup.";
-	pixel_x = 5;
-	pixel_y = 5
-	},
 /obj/machinery/cash_register/clinic{
 	dir = 8
 	},
@@ -17113,6 +17106,9 @@
 /obj/structure/cable{
 	icon_state = "2-4"
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/ce)
 "fPu" = (
@@ -27294,9 +27290,6 @@
 	},
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
-"jsz" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "jsH" = (
 /obj/structure/table/wood,
 /obj/machinery/firealarm{
@@ -32255,13 +32248,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/main)
-"ljB" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/turf/open/floor/plasteel,
-/area/hallway/primary/aft)
 "ljD" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -32984,6 +32970,19 @@
 /obj/item/paper_bin{
 	pixel_x = 6;
 	pixel_y = 9
+	},
+/obj/item/folder/white{
+	pixel_x = -6;
+	pixel_y = -5
+	},
+/obj/item/pen{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/obj/item/reagent_containers/food/drinks/britcup{
+	desc = "Kingston's personal cup.";
+	pixel_x = -7;
+	pixel_y = 7
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
@@ -35606,9 +35605,6 @@
 	c_tag = "Engineering - Fore";
 	dir = 8
 	},
-/obj/machinery/computer/department_budget/engineering{
-	dir = 8
-	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "mnJ" = (
@@ -37946,11 +37942,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
-"nan" = (
-/turf/open/floor/plasteel/yellowsiding{
-	dir = 4
-	},
-/area/commons/fitness/pool)
 "nav" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -41089,7 +41080,6 @@
 	dir = 8
 	},
 /obj/structure/disposalpipe/segment,
-/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "ofQ" = (
@@ -43610,6 +43600,7 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_x = 27
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "ped" = (
@@ -61038,9 +61029,6 @@
 	},
 /turf/open/floor/plating,
 /area/science/lab)
-"vbB" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "vbF" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/visible{
 	dir = 1
@@ -102497,7 +102485,7 @@ xmJ
 tGd
 gzq
 rqA
-ljB
+kkl
 kkl
 fHN
 tPs
@@ -122250,7 +122238,7 @@ gvH
 gvH
 gvH
 gvH
-nan
+gvH
 gvH
 gvH
 gvH
@@ -122503,16 +122491,16 @@ xkZ
 vUt
 nyQ
 iDj
-vbB
-vbB
+iSX
+iSX
 jHQ
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
 jHQ
-vbB
-vbB
+iSX
+iSX
 mCp
 mXF
 vUt
@@ -122760,16 +122748,16 @@ xkZ
 vUt
 nyQ
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 mZk
 vUt
@@ -123017,16 +123005,16 @@ xkZ
 vUt
 rjF
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-jsz
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 mZy
 vUt
@@ -123274,15 +123262,15 @@ aIs
 vUt
 nyQ
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 lXO
 mCp
 nav
@@ -123531,16 +123519,16 @@ gXF
 hwx
 hXv
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 nbu
 vUt
@@ -123789,15 +123777,15 @@ vUt
 tPU
 iDj
 iSX
-vbB
+iSX
 jIV
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
 jIV
 lIh
-vbB
+iSX
 mCp
 nav
 vUt

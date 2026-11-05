@@ -8180,7 +8180,6 @@
 	},
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
-/obj/machinery/evidence_locker,
 /turf/open/floor/wood,
 /area/security/warden)
 "atG" = (
@@ -25276,6 +25275,7 @@
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
 /turf/open/floor/carpet/purple,
 /area/edina/crew_quarters/store/clothes)
 "bkY" = (
@@ -28151,14 +28151,6 @@
 /obj/structure/table/glass,
 /obj/item/clothing/neck/scarf/purple,
 /obj/item/clothing/neck/scarf/purple,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/gloves/mittens/random,
-/obj/item/clothing/neck/scarf/pink,
-/obj/item/clothing/neck/scarf/pink,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
@@ -46195,9 +46187,6 @@
 "cfs" = (
 /turf/open/pool/water,
 /area/commons/fitness/pool)
-"cft" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "cfu" = (
 /obj/structure/pool/ladder{
 	dir = 2;
@@ -46387,9 +46376,6 @@
 /obj/structure/pool/ladder{
 	pixel_x = -4
 	},
-/turf/open/pool/water,
-/area/commons/fitness/pool)
-"cfW" = (
 /turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfX" = (
@@ -55447,6 +55433,9 @@
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/neck/scarf/pink,
+/obj/item/clothing/neck/scarf/pink,
+/obj/item/clothing/gloves/mittens/random,
 /turf/open/floor/carpet/purple,
 /area/edina/crew_quarters/store/clothes)
 "fao" = (
@@ -56904,12 +56893,6 @@
 	},
 /turf/open/floor/wood,
 /area/command/meeting_room/council)
-"iWv" = (
-/obj/machinery/computer/department_budget/security{
-	dir = 8
-	},
-/turf/open/floor/carpet/red,
-/area/command/heads_quarters/hos)
 "iaA" = (
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/wood,
@@ -57454,6 +57437,12 @@
 	},
 /turf/open/floor/plasteel/checker,
 /area/maintenance/bar/cafe)
+"iWv" = (
+/obj/machinery/computer/department_budget/security{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/command/heads_quarters/hos)
 "iXm" = (
 /obj/machinery/power/apc{
 	areastring = "/area/science/robotics/mechbay";
@@ -57913,12 +57902,6 @@
 	},
 /turf/open/floor/wood,
 /area/commons/dorms)
-"kOq" = (
-/obj/structure/sign/ticker_board{
-	pixel_y = -32
-	},
-/turf/open/floor/wood,
-/area/service/bar/atrium)
 "kaF" = (
 /obj/effect/decal/festive/christmas_ivy_string,
 /obj/structure/chair/pew,
@@ -58262,6 +58245,12 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /turf/open/floor/festive/sidewalk,
 /area/edina/street/secondary/command)
+"kOq" = (
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
+	},
+/turf/open/floor/wood,
+/area/service/bar/atrium)
 "kQx" = (
 /obj/machinery/door/airlock/wood/glass,
 /obj/structure/fans/tiny,
@@ -59080,6 +59069,7 @@
 "mwx" = (
 /obj/effect/decal/festive/christmas_ivy_string,
 /obj/machinery/camera/autoname,
+/obj/machinery/evidence_locker,
 /turf/open/floor/wood,
 /area/security/brig)
 "mwL" = (
@@ -59422,10 +59412,6 @@
 	},
 /turf/open/floor/wood,
 /area/security/office)
-"nho" = (
-/obj/effect/turf_decal/siding/yellow,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "nij" = (
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
@@ -62940,13 +62926,6 @@
 	},
 /turf/open/floor/wood,
 /area/commons/cryopod)
-"uWN" = (
-/obj/structure/table/wood,
-/obj/machinery/cash_register/bar{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/service/bar)
 "ucp" = (
 /obj/effect/festive/trainrails/north{
 	icon_state = "trainrails_west"
@@ -63351,6 +63330,13 @@
 	},
 /turf/open/floor/wood,
 /area/cargo/qm)
+"uWN" = (
+/obj/structure/table/wood,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/service/bar)
 "uWR" = (
 /obj/structure/chair/wood/wings{
 	dir = 1
@@ -63600,6 +63586,8 @@
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
 /obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
+/obj/item/clothing/gloves/mittens/random,
 /turf/open/floor/carpet/purple,
 /area/edina/crew_quarters/store/clothes)
 "vyE" = (
@@ -63810,16 +63798,6 @@
 /obj/effect/landmark/start/assistant,
 /turf/open/floor/holofloor/wood,
 /area/commons/arcade)
-"waX" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "wad" = (
 /obj/structure/sign/departments/security,
 /turf/closed/wall/mineral/iron,
@@ -63838,6 +63816,16 @@
 /obj/machinery/portable_atmospherics/canister/air,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"waX" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "wcq" = (
 /obj/effect/festive/street/streetlineeast,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -64697,15 +64685,6 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/wood,
 /area/command/corporate_showroom)
-"xyM" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "kitchen";
-	name = "kitchen shutters"
-	},
-/obj/machinery/cash_register/kitchen,
-/turf/open/floor/wood,
-/area/service/kitchen)
 "xyb" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/closed/festive/whitebrick{
@@ -64726,6 +64705,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
+"xyM" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen,
+/turf/open/floor/wood,
+/area/service/kitchen)
 "xAC" = (
 /obj/structure/mineral_door/wood,
 /turf/open/floor/wood,
@@ -82571,10 +82559,10 @@ bUJ
 bVR
 cfh
 cfs
-cft
+cfs
 cfV
-cft
-cft
+cfs
+cfs
 cgs
 bUJ
 cnH
@@ -82827,11 +82815,11 @@ bHZ
 bUJ
 bVS
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83084,11 +83072,11 @@ cqc
 bUJ
 bVT
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83342,10 +83330,10 @@ bUJ
 xDT
 cfh
 cfu
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83598,11 +83586,11 @@ cqi
 bUJ
 bWP
 cfh
-cft
-cft
-cfW
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83855,11 +83843,11 @@ hHE
 bUJ
 bYw
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -84112,11 +84100,11 @@ hHE
 bUJ
 bZR
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 bUJ
 cnH
@@ -84369,11 +84357,11 @@ pea
 bVO
 bZS
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgu
 bUJ
 cnH
@@ -84625,12 +84613,12 @@ cjY
 bHZ
 bUJ
 bZT
-nho
-cft
-cft
-cft
+cfh
+cfs
+cfs
+cfs
 cgb
-cft
+cfs
 cgs
 bUJ
 cnH

@@ -1,14 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aIC" = (
-/obj/effect/turf_decal/tile/brown/half/contrasted,
-/obj/structure/chair{
-	dir = 1
-	},
-/obj/structure/sign/ticker_board{
-	pixel_y = -32
-	},
-/turf/open/floor/plasteel,
-/area/cargo/lobby)
 "aab" = (
 /obj/structure/transit_tube/curved/flipped{
 	dir = 1
@@ -2729,6 +2719,16 @@
 /obj/structure/railing,
 /turf/open/floor/wood/wood_large,
 /area/commons/lounge)
+"aIC" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted,
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/cargo/lobby)
 "aII" = (
 /obj/machinery/atmospherics/components/trinary/filter/flipped{
 	dir = 4;
@@ -31028,10 +31028,6 @@
 	},
 /turf/open/floor/grass,
 /area/service/park/biodome)
-"iNe" = (
-/obj/machinery/computer/department_budget/security,
-/turf/open/floor/wood,
-/area/command/heads_quarters/hos)
 "iaf" = (
 /obj/structure/chair/stool/bar/directional/north,
 /obj/effect/landmark/start/assistant,
@@ -33795,6 +33791,10 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/solars/starboard/aft)
+"iNe" = (
+/obj/machinery/computer/department_budget/security,
+/turf/open/floor/wood,
+/area/command/heads_quarters/hos)
 "iNq" = (
 /obj/structure/table,
 /obj/item/storage/firstaid/regular{
@@ -50761,17 +50761,6 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/maintenance/aft)
-"ntR" = (
-/obj/machinery/door/poddoor/shutters{
-	dir = 1;
-	id = "commissaryshutter";
-	name = "Vacant Commissary Shutter"
-	},
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor,
-/obj/machinery/cash_register,
-/turf/open/floor/plasteel/smooth/herringbone,
-/area/commons/vacant_room/commissary)
 "nte" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -50839,6 +50828,17 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/fore/upper)
+"ntR" = (
+/obj/machinery/door/poddoor/shutters{
+	dir = 1;
+	id = "commissaryshutter";
+	name = "Vacant Commissary Shutter"
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/obj/machinery/cash_register,
+/turf/open/floor/plasteel/smooth/herringbone,
+/area/commons/vacant_room/commissary)
 "ntU" = (
 /obj/structure/sign/warning/fire{
 	pixel_x = -32
@@ -61436,6 +61436,9 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown/half/contrasted,
+/obj/machinery/computer/stock_terminal{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "qkK" = (
@@ -72600,7 +72603,6 @@
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 1
 	},
-/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "tfT" = (

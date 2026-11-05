@@ -32493,6 +32493,16 @@
 /obj/structure/sign/warning/biohazard,
 /turf/open/floor/engine,
 /area/science/xenobiology)
+"izE" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "izI" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -33326,9 +33336,6 @@
 /obj/machinery/button/door/directional/east{
 	id = "rdoffice";
 	name = "Privacy Control"
-	},
-/obj/machinery/computer/department_budget/science{
-	dir = 8
 	},
 /turf/open/floor/glass/reinforced,
 /area/command/heads_quarters/rd)
@@ -48470,7 +48477,6 @@
 	dir = 4
 	},
 /obj/machinery/firealarm/directional/east,
-/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "mEu" = (
@@ -50882,6 +50888,9 @@
 /area/medical/surgery/room_c)
 "njU" = (
 /obj/machinery/light_switch/directional/east,
+/obj/machinery/computer/department_budget/science{
+	dir = 8
+	},
 /turf/open/floor/glass/reinforced,
 /area/command/heads_quarters/rd)
 "nkl" = (
@@ -65386,10 +65395,6 @@
 /obj/structure/desk_bell{
 	pixel_x = -8
 	},
-/obj/item/folder/white{
-	pixel_x = 4;
-	pixel_y = -3
-	},
 /obj/machinery/door/firedoor,
 /obj/machinery/cash_register/clinic{
 	dir = 1
@@ -65765,6 +65770,10 @@
 /obj/machinery/firealarm/directional/south,
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /obj/effect/turf_decal/trimline/yellow/filled/mid_joiner,
+/obj/item/folder/white{
+	pixel_x = 4;
+	pixel_y = -3
+	},
 /turf/open/floor/plasteel/white/smooth/edge,
 /area/medical/pharmacy)
 "rre" = (
@@ -66543,7 +66552,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
-/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "rCX" = (
@@ -73940,6 +73951,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "tye" = (
@@ -133428,7 +133440,7 @@ tJj
 vmc
 vmc
 vmc
-vmc
+izE
 oGB
 ppm
 bcF

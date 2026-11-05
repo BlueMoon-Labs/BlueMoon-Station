@@ -14709,13 +14709,6 @@
 /obj/effect/turf_decal/bot/white,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/service/bar)
-"dsx" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plating,
-/area/engineering/main)
 "dsH" = (
 /obj/effect/turf_decal/tile/dark_red/opposingcorners,
 /obj/machinery/vending/wardrobe/robo_wardrobe,
@@ -17220,6 +17213,14 @@
 	},
 /obj/effect/turf_decal/tile/neutral,
 /obj/machinery/light/directional/south,
+/obj/item/paper_bin{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = -7;
+	pixel_y = 6
+	},
 /turf/open/floor/plasteel,
 /area/commons/vacant_room/commissary)
 "dWf" = (
@@ -31491,7 +31492,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
-/obj/machinery/computer/department_budget/science,
 /turf/open/floor/engine,
 /area/science/explab)
 "hqM" = (
@@ -37179,14 +37179,6 @@
 /area/science/robotics/mechbay)
 "iEq" = (
 /obj/structure/table,
-/obj/item/paper_bin{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/pen{
-	pixel_x = -4;
-	pixel_y = 4
-	},
 /obj/structure/window{
 	dir = 8
 	},
@@ -49952,7 +49944,9 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
-/obj/machinery/computer/stock_terminal,
+/obj/machinery/computer/stock_terminal{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "lKA" = (
@@ -62094,16 +62088,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/chemistry)
-"oAa" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/engine,
-/area/engineering/main)
 "oAl" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -74622,6 +74606,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
 "rsh" = (
@@ -89373,6 +89358,14 @@
 /obj/effect/turf_decal/siding/white/corner{
 	dir = 8
 	},
+/obj/item/paper_bin{
+	pixel_x = -9;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = -9;
+	pixel_y = 6
+	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/medical/medbay/lobby)
 "uYn" = (
@@ -101234,7 +101227,7 @@
 /area/maintenance/department/medical/upper)
 "xIH" = (
 /obj/structure/cable/yellow{
-	icon_state = "2-4"
+	icon_state = "0-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -101242,6 +101235,10 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "xIO" = (
@@ -102474,12 +102471,6 @@
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/white/end,
 /obj/structure/window/reinforced,
-/obj/item/paper_bin{
-	pixel_y = 5
-	},
-/obj/item/pen{
-	pixel_y = 5
-	},
 /obj/machinery/cash_register/clinic{
 	dir = 8
 	},
@@ -200899,7 +200890,7 @@ kXA
 jfK
 lMf
 lCt
-oAa
+uAi
 wGp
 jkK
 gaR

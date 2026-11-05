@@ -27766,6 +27766,10 @@
 /obj/effect/turf_decal/trimline/yellow/filled/corner{
 	dir = 1
 	},
+/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/main)
 "dyx" = (
@@ -28103,8 +28107,6 @@
 /area/engineering/storage)
 "dAU" = (
 /obj/structure/table/reinforced,
-/obj/item/paper,
-/obj/item/pen,
 /obj/machinery/door/window{
 	name = "Reception Desk";
 	req_access_txt = "5";
@@ -42631,7 +42633,6 @@
 /obj/effect/turf_decal/trimline/brown/filled/corner{
 	dir = 4
 	},
-/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "fsy" = (
@@ -42841,12 +42842,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/lower)
-"ftK" = (
-/obj/machinery/computer/department_budget/cargo{
-	dir = 4
-	},
-/turf/open/floor/wood/wood_large,
-/area/cargo/qm)
 "ftR" = (
 /obj/machinery/telecomms/server/presets/medical,
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted{
@@ -56485,7 +56480,6 @@
 /obj/effect/turf_decal/siding/thinplating_new/light{
 	dir = 8
 	},
-/obj/machinery/computer/department_budget/service,
 /turf/open/floor/plasteel/white/side{
 	dir = 8
 	},
@@ -59432,9 +59426,11 @@
 "huj" = (
 /obj/effect/turf_decal/siding/wood,
 /obj/machinery/light_switch/directional/south,
-/obj/item/banner/cargo/mundane,
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 1
 	},
 /turf/open/floor/wood/wood_large,
 /area/cargo/qm)
@@ -66328,6 +66324,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/main)
 "ils" = (
@@ -68845,13 +68844,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port)
-"iBg" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/obj/machinery/computer/department_budget,
-/turf/open/floor/wood/wood_large,
-/area/command/heads_quarters/captain)
 "iBj" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -97766,8 +97758,8 @@
 /obj/effect/turf_decal/siding/brown{
 	dir = 5
 	},
-/obj/item/kirbyplants/random,
 /obj/effect/turf_decal/trimline/brown/filled/corner,
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "mho" = (
@@ -99828,6 +99820,14 @@
 /obj/structure/window,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "medbay"
+	},
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/office)
@@ -120817,6 +120817,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
 	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/service/kitchen)
 "pcn" = (
@@ -132264,22 +132267,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/maintenance/central)
-"qzJ" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 1
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel/dark,
-/area/engineering/main)
 "qzT" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
 	dir = 1
@@ -136161,6 +136148,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/service/chapel)
+"rai" = (
+/obj/item/banner/cargo/mundane,
+/turf/open/floor/wood/wood_large,
+/area/cargo/qm)
 "rak" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -141833,6 +141824,7 @@
 /obj/item/radio/intercom{
 	pixel_y = 27
 	},
+/obj/item/kirbyplants/random,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "rKZ" = (
@@ -159768,6 +159760,9 @@
 /obj/machinery/light/directional/west,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
+	},
+/obj/machinery/computer/department_budget{
+	dir = 4
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/captain)
@@ -223643,7 +223638,7 @@ twc
 qpx
 evt
 tmb
-qzJ
+vYZ
 vOy
 hfy
 qiC
@@ -227660,7 +227655,7 @@ lxY
 gZC
 bmh
 quI
-dgo
+rai
 fWd
 gZC
 ttW
@@ -227917,7 +227912,7 @@ hbX
 bQA
 wzk
 bqS
-ftK
+dgo
 huj
 gZC
 iWW
@@ -241093,7 +241088,7 @@ gec
 csg
 ctC
 sAo
-iBg
+bob
 hHk
 bob
 ckr

@@ -12602,6 +12602,7 @@
 /obj/effect/turf_decal/tile/neutral/half,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
+/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "aSf" = (
@@ -12619,6 +12620,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/mid_joiner{
 	dir = 4
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "aSg" = (
@@ -14415,9 +14417,6 @@
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 4
-	},
-/obj/machinery/computer/department_budget/service{
-	dir = 8
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
@@ -17978,9 +17977,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
-/obj/machinery/computer/department_budget{
-	dir = 1
-	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/captain)
 "bin" = (
@@ -18949,6 +18945,14 @@
 	},
 /obj/effect/turf_decal/tile/blue/anticorner{
 	dir = 4
+	},
+/obj/item/folder/white{
+	pixel_x = -6;
+	pixel_y = -3
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = -4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
@@ -21457,9 +21461,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/machinery/computer/department_budget/science{
-	dir = 1
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/science)
 "bsE" = (
@@ -23393,6 +23394,7 @@
 	dir = 8;
 	pixel_x = 24
 	},
+/obj/item/kirbyplants/dead,
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/rd)
 "byc" = (
@@ -24882,7 +24884,9 @@
 /obj/machinery/light_switch{
 	pixel_y = -23
 	},
-/obj/item/kirbyplants/dead,
+/obj/machinery/computer/department_budget/science{
+	dir = 1
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/rd)
 "bCg" = (
@@ -50774,9 +50778,6 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/machinery/computer/department_budget/cargo{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/cargo/office)
 "hlp" = (
@@ -53979,6 +53980,16 @@
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/command/heads_quarters/ntr)
+"iQV" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/engine_smes)
 "iQY" = (
 /obj/structure/table/wood/mushroom,
 /obj/machinery/light{
@@ -57890,6 +57901,9 @@
 "kUE" = (
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 10
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -64384,6 +64398,19 @@
 /obj/effect/turf_decal/siding/thinplating/dark,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"ofl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark_red{
+	dir = 1
+	},
+/obj/machinery/computer/department_budget/security,
+/turf/open/floor/mineral/plastitanium,
+/area/security/office)
 "ogf" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
@@ -67825,22 +67852,6 @@
 /obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
-"pUb" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral/half,
-/obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
-/obj/machinery/vending/custom,
-/turf/open/floor/mineral/plastitanium,
-/area/hallway/secondary/entry)
 "pUm" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/security/detectives_office)
@@ -74706,9 +74717,6 @@
 /area/maintenance/aft)
 "tCd" = (
 /obj/structure/table/reinforced/plastitanium,
-/obj/item/folder/white,
-/obj/item/pen,
-/obj/item/reagent_containers/glass/bottle/epinephrine,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
@@ -77338,10 +77346,6 @@
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
-"uRz" = (
-/obj/machinery/computer/department_budget,
-/turf/open/floor/grass,
-/area/command/bridge)
 "uRP" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -77596,18 +77600,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
-"uWG" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/cable{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/mineral/plastitanium,
-/area/engineering/main)
 "uWW" = (
 /obj/structure/table/wood/poker,
 /obj/structure/sign/poster/official/random{
@@ -78022,7 +78014,6 @@
 	},
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
-/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "vhs" = (
@@ -79716,6 +79707,10 @@
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
 	},
+/obj/item/reagent_containers/glass/bottle/epinephrine{
+	pixel_x = 8;
+	pixel_y = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "wbO" = (
@@ -81231,9 +81226,6 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/computer/department_budget/security{
-	dir = 8
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "wQf" = (
@@ -81528,6 +81520,13 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/maintenance/starboard/aft)
+"wYw" = (
+/obj/effect/turf_decal/tile/brown/half,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/cargo/qm)
 "wZi" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner{
 	dir = 1
@@ -83608,6 +83607,12 @@
 /obj/machinery/status_display/evac,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/hallway/primary/central)
+"yeD" = (
+/obj/machinery/computer/department_budget{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/command/heads_quarters/captain)
 "yfo" = (
 /obj/structure/window{
 	dir = 1
@@ -97881,7 +97886,7 @@ aRM
 aRM
 aPx
 aQJ
-pUb
+nNO
 jTU
 sba
 jiQ
@@ -103810,7 +103815,7 @@ dEB
 mbQ
 bBb
 qQd
-maZ
+wYw
 boK
 kPY
 buC
@@ -106935,7 +106940,7 @@ bUs
 bLv
 aaa
 aDM
-cky
+iQV
 clG
 cmB
 clG
@@ -108997,7 +109002,7 @@ cfe
 cfD
 cgv
 chE
-uWG
+ciN
 ciN
 cji
 cDZ
@@ -114793,7 +114798,7 @@ ufE
 dcm
 uro
 lwN
-xCi
+ofl
 sdC
 sFu
 sFu
@@ -115108,7 +115113,7 @@ nbT
 bnY
 baq
 oos
-bcQ
+yeD
 bcQ
 bfC
 eOu

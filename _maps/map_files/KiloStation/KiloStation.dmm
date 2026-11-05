@@ -21082,11 +21082,6 @@
 	id = "emmd";
 	name = "Emergency Medical Lockdown Shutters"
 	},
-/obj/item/paper_bin{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/pen,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -21094,10 +21089,6 @@
 	name = "Reception";
 	req_access_txt = "5";
 	dir = 1
-	},
-/obj/item/toy/figure/paramedic{
-	pixel_y = -3;
-	pixel_x = 5
 	},
 /obj/machinery/cash_register/clinic{
 	dir = 1
@@ -22492,6 +22483,14 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = -3
+	},
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
 "aSy" = (
@@ -32328,9 +32327,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/machinery/computer/department_budget/cargo{
-	dir = 8
-	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "bmE" = (
@@ -32941,6 +32937,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/cargo,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "bom" = (
@@ -59427,6 +59424,7 @@
 /area/maintenance/port/lesser)
 "coF" = (
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/showroomfloor,
 /area/security/warden)
 "coG" = (
@@ -69553,13 +69551,11 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/service/chapel/dock)
 "dxa" = (
-/obj/item/kirbyplants{
-	icon_state = "plant-05"
-	},
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow,
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "dxq" = (
@@ -73987,14 +73983,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/cargo/drone_bay)
-"haC" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/machinery/evidence_locker,
-/turf/open/floor/plasteel,
-/area/security/brig)
 "haJ" = (
 /obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/bot,
@@ -77659,6 +77647,10 @@
 	dir = 8;
 	pixel_y = 3
 	},
+/obj/item/toy/figure/paramedic{
+	pixel_x = 8;
+	pixel_y = 6
+	},
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
 "jTp" = (
@@ -77783,7 +77775,6 @@
 	pixel_y = -32
 	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
-/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel/dark/corner,
 /area/hallway/primary/central/fore)
 "jYs" = (
@@ -80770,6 +80761,14 @@
 	id = "kitchenshutters";
 	name = "Kitchen Shutters"
 	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = 2;
+	pixel_y = -7
+	},
 /turf/open/floor/plasteel,
 /area/service/kitchen)
 "muN" = (
@@ -82112,12 +82111,6 @@
 	dir = 8;
 	id = "kitchenshutters";
 	name = "Kitchen Shutters"
-	},
-/obj/item/reagent_containers/food/condiment/peppermill{
-	pixel_x = 3
-	},
-/obj/item/reagent_containers/food/condiment/saltshaker{
-	pixel_x = -3
 	},
 /obj/machinery/cash_register/kitchen{
 	dir = 4
@@ -88221,10 +88214,6 @@
 	icon_state = "platingdmg2"
 	},
 /area/maintenance/port/lesser)
-"sHz" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall,
-/area/service/bar/backroom)
 "sHW" = (
 /obj/structure/flora/grass/jungle/b,
 /obj/structure/flora/ausbushes/grassybush,
@@ -91239,6 +91228,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningdock/abandoned)
+"uVw" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall/rust,
+/area/cargo/sorting)
 "uWB" = (
 /obj/structure/table/wood/fancy,
 /obj/item/storage/fancy/candle_box,
@@ -92300,6 +92293,9 @@
 "vZC" = (
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
+	},
+/obj/item/kirbyplants{
+	icon_state = "plant-05"
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
@@ -94835,10 +94831,6 @@
 	},
 /turf/open/space/basic,
 /area/space/nearstation)
-"uVw" = (
-/obj/structure/sign/ticker_board,
-/turf/closed/wall/rust,
-/area/cargo/sorting)
 
 (1,1,1) = {"
 aaa
@@ -116846,7 +116838,7 @@ bMl
 bNE
 avJ
 bRO
-haC
+rrG
 bUr
 bWa
 cpR
