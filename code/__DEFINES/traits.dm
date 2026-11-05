@@ -188,6 +188,11 @@
 #define TRAIT_QUICKER_CARRY		"quicker-carry"
 #define TRAIT_QUICK_BUILD		"quick-build"
 #define TRAIT_STRONG_GRABBER	"strong_grabber"
+/// Полностью отключает отдачу (тряску экрана) при стрельбе. Выдаётся имплантом рук-горилл.
+#define TRAIT_NO_RECOIL		"no_recoil"
+#define TRAIT_BALLISTIC_PROCESSOR "ballistic_processor"
+/// Blocks all incoming stamina damage (Sandevistan overdrive).
+#define TRAIT_NO_STAMINA_DAMAGE "no_stamina_damage"
 #define TRAIT_CALCIUM_HEALER	"calcium_healer"
 #define TRAIT_MAGIC_CHOKE		"magic_choke"
 #define TRAIT_CAPTAIN_METABOLISM "captain-metabolism"

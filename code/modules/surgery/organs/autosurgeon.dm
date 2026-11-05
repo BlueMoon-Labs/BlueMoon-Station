@@ -146,15 +146,32 @@
 /obj/item/autosurgeon/syndicate/mantis_blade
 	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
 
-/obj/item/autosurgeon/syndicate/mantis_blade/l
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
-
 /obj/item/autosurgeon/syndicate/inteq/mantis_blade
 	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
 
-/obj/item/autosurgeon/syndicate/inteq/mantis_blade/l
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
+/obj/item/autosurgeon/syndicate/inteq/monowire
+	starting_organ = /obj/item/organ/cyberimp/arm/monostring/syndie
 
+/obj/item/autosurgeon/syndicate/monowire
+	starting_organ = /obj/item/organ/cyberimp/arm/monostring/syndie
+
+/obj/item/autosurgeon/syndicate/hand_canon
+	starting_organ = /obj/item/organ/cyberimp/arm/handgun/syndie
+
+/obj/item/autosurgeon/syndicate/inteq/hand_canon
+	starting_organ = /obj/item/organ/cyberimp/arm/handgun/syndie
+
+/obj/item/autosurgeon/syndicate/gorila_hands
+	starting_organ = /obj/item/organ/cyberimp/arm/gorilla/syndie
+
+/obj/item/autosurgeon/syndicate/inteq/gorila_hands
+	starting_organ = /obj/item/organ/cyberimp/arm/gorilla/syndie
+
+/obj/item/autosurgeon/syndicate/blood_pump
+	starting_organ = /obj/item/organ/cyberimp/chest/blood_pump/antag
+
+/obj/item/autosurgeon/syndicate/inteq/blood_pump
+	starting_organ = /obj/item/organ/cyberimp/chest/blood_pump/antag
 
 //BOX O' IMPLANTS
 

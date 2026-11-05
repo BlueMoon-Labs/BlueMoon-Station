@@ -12,8 +12,13 @@
 	// I would use contents, but they shuffle on every activation/deactivation leading to interface inconsistencies.
 
 	var/obj/item/holder = null
+	/// Secondary deployed item for dual-arm augments (one copy in each hand).
+	var/obj/item/holder_offhand = null
 	// You can use this var for item path, it would be converted into an item on New()
 	var/retracting = FALSE
+	/// While implanted, this augment binds both arm slots and can be deployed/extracted from either arm.
+	/// Only blade/claw augments opt in; tool, gun and shield augments stay in a single arm.
+	var/occupies_both_arms = FALSE
 
 /obj/item/organ/cyberimp/arm/Initialize(mapload)
 	. = ..()
@@ -28,6 +33,7 @@
 /obj/item/organ/cyberimp/arm/Destroy()
 	QDEL_LIST(items_list)
 	QDEL_NULL(holder)
+	QDEL_NULL(holder_offhand)
 	return ..()
 
 /obj/item/organ/cyberimp/arm/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
@@ -58,7 +64,8 @@
 
 /// Arm augments use directional sprites (_left/_right) determined by which arm the implant is in.
 /obj/item/organ/cyberimp/arm/get_overlay_state(image_layer, obj/item/bodypart/limb)
-	return "[aug_overlay][zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"
+	var/side_zone = limb?.body_zone || zone
+	return "[aug_overlay][side_zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"
 
 /obj/item/organ/cyberimp/arm/proc/add_item(obj/item/I)
 	if(I in items_list)
@@ -97,6 +104,53 @@
 		else
 			CRASH("Invalid zone for [type]")
 
+/// TRUE if this augment is explicitly configured to bind both arms at once
+/// (mantis blades, claw implants, Ratvar's brass claw).
+/obj/item/organ/cyberimp/arm/proc/is_dual_arm_implant()
+	return occupies_both_arms
+
+/// Dual-arm augments hold both arm slots simultaneously, while `zone` decides the primary side.
+/// Single-arm augments keep the default behaviour and only occupy their own slot.
+/obj/item/organ/cyberimp/arm/get_organ_slots()
+	if(is_dual_arm_implant())
+		return list(ORGAN_SLOT_LEFT_ARM_AUG, ORGAN_SLOT_RIGHT_ARM_AUG)
+	return ..()
+
+/// Dual-arm augments display the augment overlay on both limbs.
+/obj/item/organ/cyberimp/arm/get_bodypart_zones()
+	if(is_dual_arm_implant())
+		return list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	return ..()
+
+/// A dual-arm implant counts as being inside either arm, so it can be extracted from both.
+/obj/item/organ/cyberimp/arm/occupies_zone(target_zone)
+	if(is_dual_arm_implant())
+		return target_zone == BODY_ZONE_L_ARM || target_zone == BODY_ZONE_R_ARM
+	return ..()
+
+/// Surgery may install a dual-arm implant into either arm; it takes over both afterwards.
+/obj/item/organ/cyberimp/arm/can_insert_into_zone(target_zone)
+	if(is_dual_arm_implant())
+		return target_zone == BODY_ZONE_L_ARM || target_zone == BODY_ZONE_R_ARM
+	return ..()
+
+/// Re-point a dual-arm implant at the arm it is being installed into.
+/obj/item/organ/cyberimp/arm/prepare_insert(mob/living/carbon/target, target_zone)
+	. = ..()
+	if(is_dual_arm_implant())
+		set_arm_zone(target_zone)
+
+/// Changes the primary arm of the implant (sprite direction and default deployment side).
+/obj/item/organ/cyberimp/arm/proc/set_arm_zone(new_zone)
+	if(new_zone != BODY_ZONE_L_ARM && new_zone != BODY_ZONE_R_ARM)
+		return FALSE
+	if(zone == new_zone)
+		return TRUE
+	zone = new_zone
+	SetSlotFromZone()
+	update_icon()
+	return TRUE
+
 /obj/item/organ/cyberimp/arm/update_icon_state()
 	if(zone == BODY_ZONE_R_ARM)
 		transform = null
@@ -105,20 +159,18 @@
 
 /obj/item/organ/cyberimp/arm/examine(mob/user)
 	. = ..()
-	. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration. You can use a screwdriver to reassemble it.</span>"
+	if(is_dual_arm_implant())
+		. += "<span class='info'>[src] is installed as a single unit into both arms at once, filling both slots. The side shown only affects the sprite; you can use a screwdriver to mirror it.</span>"
+	else
+		. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration. You can use a screwdriver to reassemble it.</span>"
 
 /obj/item/organ/cyberimp/arm/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(.)
 		return TRUE
 	I.play_tool_sound(src)
-	if(zone == BODY_ZONE_R_ARM)
-		zone = BODY_ZONE_L_ARM
-	else
-		zone = BODY_ZONE_R_ARM
-	SetSlotFromZone()
-	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
-	update_icon()
+	set_arm_zone(zone == BODY_ZONE_R_ARM ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM)
+	to_chat(user, "<span class='notice'>You mirror [src]'s sprite to the [zone == BODY_ZONE_R_ARM ? "right" : "left"] side.</span>")
 
 /obj/item/organ/cyberimp/arm/deactivate(removing)
 	. = ..()
@@ -134,6 +186,9 @@
 		Retract()
 
 /obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
+	if(holder_offhand)
+		UnregisterSignal(holder_offhand, COMSIG_ITEM_DROPPED)
+		QDEL_NULL(holder_offhand)
 	if(!holder || (holder in src) || retracting)
 		return
 
@@ -160,7 +215,15 @@
 	holder.slot_flags = null
 	holder.set_custom_materials(null)
 
-	var/arm_index = owner.get_empty_held_index_for_side(zone) || owner.get_empty_held_index_for_side("left")
+	// A dual-arm augment deploys into whichever hand was activated (the active hand),
+	// falling back to the other hand. A single-arm augment always uses its own arm.
+	var/arm_index
+	if(is_dual_arm_implant())
+		var/active_side = (owner.active_hand_index % 2 == 0) ? BODY_ZONE_R_ARM : BODY_ZONE_L_ARM
+		var/other_side = (active_side == BODY_ZONE_R_ARM) ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM
+		arm_index = owner.get_empty_held_index_for_side(active_side) || owner.get_empty_held_index_for_side(other_side)
+	else
+		arm_index = owner.get_empty_held_index_for_side(zone) || owner.get_empty_held_index_for_side("left")
 
 	var/obj/item/arm_item = owner.get_item_for_held_index(arm_index)
 
@@ -179,8 +242,47 @@
 	// Activate the hand that now holds our item.
 	owner.swap_hand(result)//... or the 1st hand if the index gets lost somehow
 
+	// Dual-arm augments deploy one copy in each hand at the same time.
+	if(is_dual_arm_implant())
+		deploy_offhand(item)
+
 	ExtendPlaySound(item)
 	return TRUE
+
+/obj/item/organ/cyberimp/arm/proc/deploy_offhand(obj/item/item)
+	if(holder_offhand || !owner)
+		return
+	var/primary_index = owner.get_held_index_of_item(holder)
+	var/other_index
+	for(var/i in 1 to owner.held_items.len)
+		if(i == primary_index)
+			continue
+		if(!owner.get_item_for_held_index(i))
+			other_index = i
+			break
+	if(!other_index)
+		return
+	var/obj/item/other_item = owner.get_item_for_held_index(other_index)
+	if(other_item && !owner.dropItemToGround(other_item))
+		return
+	var/obj/item/offhand = new item.type(src)
+	offhand.resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	offhand.slot_flags = null
+	offhand.set_custom_materials(null)
+	offhand.item_flags |= ABSTRACT
+	ADD_TRAIT(offhand, TRAIT_NODROP, IMPLANT_NODROP)
+	if(!owner.put_in_hand(offhand, other_index))
+		qdel(offhand)
+		return
+	holder_offhand = offhand
+	RegisterSignal(offhand, COMSIG_ITEM_DROPPED, PROC_REF(on_offhand_dropped))
+
+/obj/item/organ/cyberimp/arm/proc/on_offhand_dropped(datum/source, mob/user)
+	SIGNAL_HANDLER
+	if(source != holder_offhand)
+		return
+	UnregisterSignal(holder_offhand, COMSIG_ITEM_DROPPED)
+	QDEL_NULL(holder_offhand)
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/ExtendPlaySound(obj/item/I)

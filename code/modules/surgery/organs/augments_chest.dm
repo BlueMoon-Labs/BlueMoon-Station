@@ -308,6 +308,263 @@
 	icon_state = "chem_implant_corpo"
 	active_security_level = CHEM_SEQ_SEC_LEVEL
 
+/obj/item/organ/cyberimp/chest/blood_pump
+	name = "Blood pump implant"
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
+	slot = INTERNAL_ORGAN_CHEM_IMPLANT
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "blood_pump_sec"
+	actions_types = list()
+	var/charge_capacity = 2
+	var/charge = 2
+	var/charge_recharge_time = 1500
+	var/last_use_time = 0
+	var/last_charge_time = 0
+	var/health_threshold = 60
+	var/list/chem_list = list(/datum/reagent/medicine/synthflesh = 100, /datum/reagent/medicine/charcoal = 5)
+	var/between_use_cooldown = 150
+	var/ready = TRUE
+
+/obj/item/organ/cyberimp/chest/blood_pump/Initialize()
+	. = ..()
+	last_charge_time = world.time
+	last_use_time = 0
+
+/obj/item/organ/cyberimp/chest/blood_pump/on_life(seconds, times_fired)
+	. = ..()
+	if(!.)
+		return
+	if(!owner || owner.stat == DEAD)
+		return
+	// recharge
+	if(charge < charge_capacity && world.time - last_charge_time >= charge_recharge_time)
+		charge++
+		last_charge_time = world.time
+	// check
+	if(charge <= 0)
+		return
+	if(world.time - last_use_time < between_use_cooldown)
+		return
+	if(owner.health <= health_threshold)
+		trigger_pump()
+
+/obj/item/organ/cyberimp/chest/blood_pump/proc/trigger_pump()
+	if(!owner || charge <= 0)
+		return
+	if(world.time - last_use_time < between_use_cooldown)
+		return
+	for(var/reagent_type in chem_list)
+		var/amount = chem_list[reagent_type]
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+		if(istype(reagent, /datum/reagent/medicine/synthflesh))
+			// Синтплоть лечит только при контакте с кожей: применяем её эффект напрямую,
+			// в кровь она не попадает (там она бездействует и вредна в ранах).
+			reagent.reaction_mob(owner, TOUCH, amount)
+		else
+			owner.reagents.add_reagent(reagent_type, amount)
+	charge--
+	last_use_time = world.time
+	last_charge_time = world.time
+	to_chat(owner, span_notice("The blood pump injects emergency compounds into your bloodstream."))
+
+/obj/item/organ/cyberimp/chest/blood_pump/sec_level
+	name = "Corporate Blood pump implant"
+	icon_state = "blood_pump_sec"
+	active_security_level = CHEM_SEQ_SEC_LEVEL
+
+/obj/item/organ/cyberimp/chest/blood_pump/antag
+	name = "Millitech Blood pump implant"
+	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
+	icon_state = "blood_pump"
+	charge_capacity = 3
+	charge = 3
+	charge_recharge_time = 3000
+	health_threshold = 40
+	chem_list = list(/datum/reagent/medicine/synthflesh/neo = 100, /datum/reagent/medicine/stimulants = 2)
+	between_use_cooldown = 300
+
+/////////////////////////
+//Subdermal Armor      //
+/////////////////////////
+
+/obj/item/organ/cyberimp/chest/subdermal_armor
+	name = "Subdermal armor implant"
+	desc = "A lattice of composite plates woven beneath the skin. Absorbs part of incoming melee, bullet and laser damage."
+	slot = ORGAN_SLOT_SUBDERMAL_ARMOR
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "subcutaneous_armor"
+	/// Flat armor percentages granted to the owner's physiology while installed.
+	var/melee_armor_bonus = 20
+	var/bullet_armor_bonus = 10
+	var/laser_armor_bonus = 10
+	/// Flat BRC mitigation granted while installed.
+	var/brc_mitigation_bonus = BRC_MITIGATION_25
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.brc_mitigation += brc_mitigation_bonus
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		H.physiology.armor.melee += melee_armor_bonus
+		H.physiology.armor.bullet += bullet_armor_bonus
+		H.physiology.armor.laser += laser_armor_bonus
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/Remove(special = FALSE)
+	if(owner)
+		owner.brc_mitigation = max(0, owner.brc_mitigation - brc_mitigation_bonus)
+		if(ishuman(owner))
+			var/mob/living/carbon/human/H = owner
+			H.physiology.armor.melee -= melee_armor_bonus
+			H.physiology.armor.bullet -= bullet_armor_bonus
+			H.physiology.armor.laser -= laser_armor_bonus
+	return ..()
+
+/////////////////////////
+//Reinforced Skeleton  //
+/////////////////////////
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton
+	name = "Reinforced skeleton implant"
+	desc = "A carbon-composite endoskeleton grafted over the user's own bones, raising the amount of trauma the body can take before collapsing."
+	slot = ORGAN_SLOT_REINFORCED_SKELETON
+	w_class = WEIGHT_CLASS_NORMAL
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "combat_coating"
+	/// Extra max health granted while installed.
+	var/health_bonus = 25
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.maxHealth += health_bonus
+	M.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/Remove(special = FALSE)
+	if(owner)
+		owner.maxHealth = max(1, owner.maxHealth - health_bonus)
+		owner.updatehealth()
+	return ..()
+
+///////////////////
+//Shawarma Spit  //
+///////////////////
+
+/obj/item/organ/cyberimp/chest/shawarma_spit
+	name = "Shawarma spit implant"
+	desc = "A built-in shawarma spit. Activate it, then stack meat on it (help intent, aimed at the chest); each piece roasts in five seconds. Slices are carved off with a knife."
+	slot = INTERNAL_ORGAN_CHEM_IMPLANT
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "kebab_grill"
+	aug_overlay = "shawarma_skewer_0"
+	actions_types = list(/datum/action/item_action/organ_action/toggle)
+	var/active = FALSE
+	var/meat_count = 0
+	var/max_meat = 3
+	var/ready_count = 0
+	var/cook_time = 5 SECONDS
+	/// Meat sprite currently drawn on top of the grill sprite.
+	var/image/meat_overlay
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/Initialize(mapload)
+	. = ..()
+	update_icon_state()
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(.)
+		RegisterSignal(M, COMSIG_PARENT_ATTACKBY, PROC_REF(on_owner_attackby))
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/Remove(special = FALSE)
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_ATTACKBY)
+	return ..()
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/ui_action_click(mob/user, actiontype)
+	active = !active
+	to_chat(owner, span_notice("You [active ? "extend" : "retract"] your shawarma spit."))
+	playsound(get_turf(owner), 'sound/machines/click.ogg', 30, TRUE)
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/proc/on_owner_attackby(datum/source, obj/item/I, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(user.a_intent != INTENT_HELP || user.zone_selected != BODY_ZONE_CHEST)
+		return
+	if(istype(I, /obj/item/reagent_containers/food/snacks/meat))
+		if(!active)
+			to_chat(user, span_warning("The shawarma spit is retracted!"))
+			return COMPONENT_NO_AFTERATTACK
+		if(meat_count >= max_meat)
+			to_chat(user, span_warning("[src] is already stacked with meat!"))
+			return COMPONENT_NO_AFTERATTACK
+		meat_count++
+		update_icon_state()
+		user.visible_message(span_notice("[user] slides [I] onto [owner]'s shawarma spit."), span_notice("You slide [I] onto [owner]'s shawarma spit."))
+		qdel(I)
+		addtimer(CALLBACK(src, PROC_REF(finish_cooking)), cook_time)
+		return COMPONENT_NO_AFTERATTACK
+	if(istype(I, /obj/item/kitchen/knife))
+		INVOKE_ASYNC(src, PROC_REF(slice_off), user)
+		return COMPONENT_NO_AFTERATTACK
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/proc/finish_cooking()
+	if(!owner || ready_count >= meat_count)
+		return
+	ready_count++
+	playsound(get_turf(owner), 'sound/machines/microwave/microwave-end.ogg', 40, FALSE)
+	to_chat(owner, span_notice("A piece of meat on your shawarma spit is now roasted."))
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/proc/slice_off(mob/living/user)
+	if(meat_count <= 0)
+		to_chat(user, span_warning("The shawarma spit is empty!"))
+		return
+	var/ready = (ready_count > 0)
+	if(ready)
+		ready_count--
+	meat_count--
+	ready_count = min(ready_count, meat_count)
+	update_icon_state()
+	var/obj/item/slice
+	if(ready)
+		slice = new /obj/item/reagent_containers/food/snacks/meat/ready_kebab(get_turf(user))
+	else
+		slice = new /obj/item/reagent_containers/food/snacks/meat/cutlet(get_turf(user))
+	if(!user.put_in_hands(slice))
+		slice.forceMove(get_turf(user))
+	user.visible_message(span_notice("[user] carves a slice of meat off [owner]'s shawarma spit."), span_notice("You carve a slice of meat off [owner]'s shawarma spit."))
+	playsound(get_turf(user), 'sound/weapons/bladeslice.ogg', 30, TRUE)
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/create_bodypart_aug()
+	. = ..()
+	// Вертел рисуется поверх одежды (FRONT-слой), а не только на голом теле.
+	if(bodypart_aug)
+		bodypart_aug.set_layers(list(EXTERNAL_FRONT = BODY_FRONT_LAYER))
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/update_icon_state()
+	icon_state = "kebab_grill"
+	var/meat_state = "shawarma_skewer_[clamp(meat_count, 0, max_meat)]"
+	// Ключ кэша конечности включает aug_overlay, поэтому после смены мяса достаточно
+	// пересобрать части тела. Базовый гриль при этом остаётся нетронутым.
+	aug_overlay = meat_state
+	if(meat_overlay)
+		cut_overlay(meat_overlay)
+		meat_overlay = null
+	meat_overlay = image(icon = icon, icon_state = meat_state)
+	add_overlay(meat_overlay)
+	. = ..()
+	refresh_bodypart_overlays()
+
+/obj/item/organ/cyberimp/chest/shawarma_spit/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = list()
+	// Гриль и вертел с мясом — отдельные слои: вертел накладывается поверх гриля,
+	// состояние _0 — пустой вертел, _1.._3 — количество слоёв мяса.
+	. += image(icon = aug_icon, icon_state = "kebab_grill", layer = image_layer)
+	. += image(icon = aug_icon, icon_state = "shawarma_skewer_[clamp(meat_count, 0, max_meat)]", layer = image_layer)
+
 /datum/chem_implant
 	var/chemname
 	var/key

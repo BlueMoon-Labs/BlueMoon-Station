@@ -95,20 +95,32 @@
 	hacked_only = TRUE
 
 /datum/design/cyberimp_chem
-	name = "Corporate Chemical Sequencer Implant"
-	desc = "This implant can inject limited list of basic reagents into your blood."
+	name = "Corporate Blood pump implant"
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	id = "ci-chemseq"
 	build_type = PROTOLATHE | MECHFAB
-	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
 	construction_time = 120
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_chem/hack
-	name = "Chemical Sequencer Implant"
+	name = "Blood pump implant"
 	id = "ci-chemseq-hack"
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump
+	hacked_only = TRUE
+
+/datum/design/cyberimp_blood_pump_antag
+	name = "Combat Blood pump implant"
+	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
+	id = "ci-blood-pump-antag"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 6000, /datum/material/silver = 4000, /datum/material/gold = 3000, /datum/material/uranium = 2000)
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump/antag
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	hacked_only = TRUE
 
 /datum/design/cyberimp_janitor
@@ -261,6 +273,150 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/datum/design/cyberimp_leg_tendons
+	name = "Reinforced Tendons Implant"
+	desc = "Synthetic tendon bundles for both legs that allow the user to perform a second jump in mid-air."
+	id = "ci-leg-tendons"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 2500, /datum/material/silver = 1500)
+	build_path = /obj/item/organ/cyberimp/leg/tendons
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_leg_ankles
+	name = "Fortified Ankles Implant"
+	desc = "Hydraulic pistons for both ankles that allow the user to charge and release a powerful forward leap."
+	id = "ci-leg-ankles"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 3000, /datum/material/glass = 1000)
+	build_path = /obj/item/organ/cyberimp/leg/ankles
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_leg_lynx_paws
+	name = "Lynx Paws Implant"
+	desc = "Sound-dampening pads for both feet that make the user's footsteps completely silent."
+	id = "ci-leg-lynx-paws"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 80
+	materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000, /datum/material/silver = 1000)
+	build_path = /obj/item/organ/cyberimp/leg/lynx_paws
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_sandevistan_corp
+	name = "Corporate Sandevistan"
+	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
+	id = "ci-sandevistan-corp"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_berserker_corp
+	name = "Corporate Berserker"
+	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Mutually exclusive with the sandvistan."
+	id = "ci-berserker-corp"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 2000)
+	build_path = /obj/item/organ/cyberimp/brain/berserker/sec_level
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_ballistic_processor
+	name = "Ballistic Processor"
+	desc = "A neural-linked ballistic processor that allows bullets to ricochet off of surfaces with high chance and home towards nearby targets."
+	id = "ci-ballistic-processor"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 4000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/ballistic_processor
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_subdermal_armor
+	name = "Subdermal Armor Implant"
+	desc = "A lattice of composite plates woven beneath the skin that absorbs part of incoming melee, bullet and laser damage."
+	id = "ci-subdermal-armor"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3000, /datum/material/silver = 4000, /datum/material/titanium = 3000)
+	build_path = /obj/item/organ/cyberimp/chest/subdermal_armor
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_reinforced_skeleton
+	name = "Reinforced Skeleton Implant"
+	desc = "A carbon-composite endoskeleton grafted over the user's bones, raising the amount of trauma the body can take before collapsing."
+	id = "ci-reinforced-skeleton"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 7000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/titanium = 5000)
+	build_path = /obj/item/organ/cyberimp/chest/reinforced_skeleton
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_monostring
+	name = "Monowire Implant"
+	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
+	id = "ci-monostring"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 2000, /datum/material/diamond = 500)
+	build_path = /obj/item/organ/cyberimp/arm/monostring
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_gorilla_arms
+	name = "Gorilla Arms Implant"
+	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
+	id = "ci-gorilla-arms"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/gorilla
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_handcannon
+	name = "Integrated Hand Cannon Implant"
+	desc = "A compact, arm-integrated explosive launcher. The barrel deploys from the forearm and retracts when not in use."
+	id = "ci-handcannon"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/handgun
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_kiroshi
+	name = "Kiroshi Optics"
+	desc = "A high-precision optical implant that grants a sniper scope-like zoom for long-range targeting."
+	id = "ci-kiroshi-optics"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 80
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 3000, /datum/material/silver = 2000)
+	build_path = /obj/item/organ/cyberimp/eyes/optical/kiroshi
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_militech
+	name = "Militech Optical Suite"
+	desc = "A high-precision optical implant with integrated flash protection and sniper scope-like zoom for long-range targeting."
+	id = "ci-militech-optics"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/eyes/optical/militech
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+
 /datum/design/cyberimp_mantis
 	name = "Corporate Mantis Blade Implant"
 	desc = "A long, sharp, mantis-like blade installed within the forearm, acting as a deadly self defense weapon."
@@ -330,17 +486,6 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 5000, /datum/material/silver = 5000, /datum/material/gold = 5000)
 	build_path = /obj/item/organ/cyberimp/chest/nutrimentextreme
-	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_ALL
-
-/datum/design/binolenses
-	name = "Binocular Lenses Implant"
-	desc = "A pair of binocular lenses, that can be attached to the eyes!"
-	id = "ci-binolenses"
-	build_type = PROTOLATHE | MECHFAB
-	construction_time = 40
-	materials = list(/datum/material/iron = 5000, /datum/material/glass = 6000, /datum/material/silver = 2000, /datum/material/diamond = 2000)
-	build_path = /obj/item/organ/cyberimp/arm/lenses
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 

@@ -54,3 +54,9 @@
 	item_state = "binoculars"
 	user.regenerate_icons()
 	user.client.view_size.zoomIn()
+
+/obj/item/binoculars/strong
+	name = "advanced binoculars"
+	desc = "A high-grade pair of binoculars with reinforced titanium optics, granting significantly better magnification."
+	zoom_out_amt = 6
+	zoom_amt = 13

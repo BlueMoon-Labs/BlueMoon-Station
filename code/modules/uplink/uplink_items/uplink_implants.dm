@@ -181,24 +181,52 @@
 	item = /obj/item/autosurgeon/syndicate/biomorphedlungs
 	purchasable_from = UPLINK_SYNDICATE
 
-#define MANTIS_LEFT_NAME "Gorlex Mantis Blade Implant (left arm)"
-
 /datum/uplink_item/implants/mantis_blade
-	name = "Gorlex Mantis Blade Implant (right arm)"
+	name = "Gorlex Mantis Blade Implant"
 	item = /obj/item/autosurgeon/syndicate/inteq/mantis_blade
-	cost = 4
+	cost = 8
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
-
-/datum/uplink_item/implants/mantis_blade/l
-	name = MANTIS_LEFT_NAME
-	item = /obj/item/autosurgeon/syndicate/inteq/mantis_blade/l
 
 /datum/uplink_item/implants/mantis_blade/syndie
 	item = /obj/item/autosurgeon/syndicate/mantis_blade
 	purchasable_from = UPLINK_SYNDICATE
 
-/datum/uplink_item/implants/mantis_blade/syndie/l
-	name = MANTIS_LEFT_NAME
-	item = /obj/item/autosurgeon/syndicate/mantis_blade/l
+/datum/uplink_item/implants/hand_canon
+	name = "Militech hand canon"
+	cost = 6
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	item = /obj/item/autosurgeon/syndicate/inteq/hand_canon
 
-#undef MANTIS_LEFT_NAME
+/datum/uplink_item/implants/hand_canon/syndie
+	purchasable_from = UPLINK_SYNDICATE
+	item = /obj/item/autosurgeon/syndicate/hand_canon
+
+/datum/uplink_item/implants/monowire
+	name = "Militech monowire"
+	cost = 8
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	item = /obj/item/autosurgeon/syndicate/inteq/monowire
+
+/datum/uplink_item/implants/monowire/syndie
+	item = /obj/item/autosurgeon/syndicate/monowire
+	purchasable_from = UPLINK_SYNDICATE
+
+/datum/uplink_item/implants/gorila_hands
+	name = "Militech gorila hands"
+	cost = 8
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	item = /obj/item/autosurgeon/syndicate/inteq/gorila_hands
+
+/datum/uplink_item/implants/gorila_hands/syndie
+	purchasable_from = UPLINK_SYNDICATE
+	item = /obj/item/autosurgeon/syndicate/gorila_hands
+
+/datum/uplink_item/implants/blood_pump
+	name = "Militech blood pump"
+	cost = 8
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	item = /obj/item/autosurgeon/syndicate/inteq/blood_pump
+
+/datum/uplink_item/implants/blood_pump/syndie
+	purchasable_from = UPLINK_SYNDICATE
+	item = /obj/item/autosurgeon/syndicate/blood_pump
