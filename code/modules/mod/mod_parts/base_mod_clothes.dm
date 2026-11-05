@@ -21,6 +21,16 @@
 	)
 	var/list/linked_modules = list()
 	var/theme_category
+	var/paint_skin
+
+/obj/item/clothing/mod_part/proc/get_visual_skin()
+	return paint_skin || mod?.get_visual_skin()
+
+/obj/item/clothing/mod_part/proc/set_paint_skin(new_skin)
+	paint_skin = new_skin == mod?.get_visual_skin() ? null : new_skin
+	var/sealed_suffix = findtext(icon_state, "-sealed") ? "-sealed" : ""
+	icon_state = "[get_visual_skin()]-[initial(icon_state)][sealed_suffix]"
+	item_state = "[get_visual_skin()]-[initial(item_state)][sealed_suffix]"
 
 /obj/item/clothing/mod_part/proc/restore_normal_features()
 	return mod.wearer.get_item_by_slot(slot_flags)
@@ -45,8 +55,7 @@
 		return
 	ADD_TRAIT(src, TRAIT_NODROP, MOD_TRAIT)
 	toggle_all_linked_modules(MODPART_DEPLOYED)
-	if(mod.need_to_conseal && mod.is_active() && mod.all_parts_deployed())
-		mod.update_hardlight()
+	mod.update_hardlight()
 	// override: повторный equipped на том же носителе (смена слота, повторное
 	// развёртывание) иначе ловит stack_trace "already registered".
 	use_clothing_features_through_overslot()
@@ -57,10 +66,10 @@
 	if(!istype(item, /obj/item/clothing/mod_part) || item != src || !mod?.wearer)
 		return
 	UnregisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM)
+	mod.update_hardlight()
 	if(new_location == null)//чтобы не путать со штатным свертыванием
 		return
 	INVOKE_ASYNC(mod, TYPE_PROC_REF(/obj/item/mod/control, conceal), null, item, TRUE)
-	INVOKE_ASYNC(mod, TYPE_PROC_REF(/obj/item/mod/control, remove_hardlight))
 
 /obj/item/clothing/mod_part/proc/link_modpart_with_module(module)
 	if(istype(module, /obj/item/mod/module) && (module in linked_modules))
@@ -116,8 +125,10 @@
 	for(var/type in overslot_blacklist)
 		if(istype(item, type))
 			return FALSE
+	if(!mod.wearer.transferItemToLoc(item, src, force = TRUE))
+		return FALSE
 	overslot = item
-	return mod.wearer.transferItemToLoc(overslot, item, force = TRUE)
+	return TRUE
 
 /obj/item/clothing/mod_part/proc/use_clothing_features_through_overslot()
 	return
@@ -137,8 +148,8 @@
 		cold_protection = NONE
 	if(!mod)
 		return
-	icon_state = "[mod.skin]-[initial(icon_state)][seal ? "-sealed" : ""]"
-	item_state = "[mod.skin]-[initial(item_state)][seal ? "-sealed" : ""]"
+	icon_state = "[get_visual_skin()]-[initial(icon_state)][seal ? "-sealed" : ""]"
+	item_state = "[get_visual_skin()]-[initial(item_state)][seal ? "-sealed" : ""]"
 
 /obj/item/clothing/mod_part/proc/equip_item_from_overslot()
 	REMOVE_TRAIT(src, TRAIT_NODROP, MOD_TRAIT)

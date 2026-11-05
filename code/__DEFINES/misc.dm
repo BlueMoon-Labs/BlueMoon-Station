@@ -88,7 +88,8 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              49
+#define BODY_HARDLIGHT_LAYER       50
+#define TOTAL_LAYERS              50
 
 /// Задняя половина составной конечности без своего слоя рисуется на столько глубже передней.
 #define BEHIND_LIMB_LAYER_OFFSET 0.1
@@ -607,6 +608,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define STANDARD_GRAVITY 1 //Anything above this is high gravity, anything below no grav
 /// Гравитация, тянущая вверх: has_gravity() <= этого значит, что падают в потолок.
 #define NEGATIVE_GRAVITY -1
+#define GRAVITY_INVERSION_TIME (0.5 SECONDS)
 #define GRAVITY_DAMAGE_TRESHOLD 3 //Starting with this value gravity will start to damage mobs
 
 #define CAMERA_NO_GHOSTS 0
@@ -632,10 +634,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define PREF_SAVE_MAX_DEFER 15 SECONDS
 
 /// Окно склейки одиночных записей префов (save_single_pref) в одну.
-/// Шире клиентского дебаунса панели tgui (3 с): иначе две соседние отправки состояния
-/// чата приходят уже разнесёнными и склеивать их не с чем. Верхняя граница переноса
-/// та же, что и у полной записи - PREF_SAVE_MAX_DEFER.
-#define PREF_SINGLE_SAVE_DEBOUNCE 5 SECONDS
+/// Цена сброса - открытие savefile (~6 мс заморозки процесса), а игрок в среднем пишет одиночный ключ раз в несколько минут: при окне в 5 с склеивать было нечего, и в раунде 10669 4490 сбросов дали 26 с заморозок. Буфер уходит на диск и раньше - на логауте, перед чтением префов и на ребуте; при падении сервера теряется не больше окна правок интерфейса.
+#define PREF_SINGLE_SAVE_DEBOUNCE 10 MINUTES
 
 // Решения pref_defer_decision() - что делать с очередной отложенной записью savefile.
 /// Очереди не было: завести крайний срок и зарядить таймер.

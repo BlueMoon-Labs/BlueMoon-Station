@@ -360,6 +360,12 @@ If you're feeling frisky, examine yourself and click the underlined item to pull
 	var/mob/living/carbon/M = usr
 	return M.help_shake_act(M)
 
+/atom/movable/screen/alert/negative
+	name = "Обратная гравитация"
+	desc = "Вас тянет вверх. Вместо пола вы можете упасть на потолок или улететь в открытое небо."
+	icon_state = "template"
+	overlay_state = "weightless"
+
 /atom/movable/screen/alert/weightless
 	name = "Weightless"
 	desc = "Gravity has ceased affecting you, and you're floating around aimlessly. You'll need something large and heavy, like a \
@@ -423,8 +429,8 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 	return ..()
 
 /atom/movable/screen/alert/give/add_context(atom/source, list/context, obj/item/held_item, mob/user)
-	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, screentip_override_text || "Take [receiving.name]")
-	LAZYSET(context[SCREENTIP_CONTEXT_SHIFT_LMB], INTENT_ANY, "Examine")
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, screentip_override_text || "Взять [receiving.name]")
+	LAZYSET(context[SCREENTIP_CONTEXT_SHIFT_LMB], INTENT_ANY, "Осмотреть")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /**
@@ -486,7 +492,7 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 
 /atom/movable/screen/alert/give/highfive
 	additional_desc_text = "Click this alert to slap it."
-	screentip_override_text = "High Five"
+	screentip_override_text = "Дать пять"
 	examinable = FALSE
 
 /atom/movable/screen/alert/give/highfive/setup(mob/living/carbon/taker, mob/living/carbon/offerer, obj/item/receiving)
@@ -545,7 +551,7 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 /atom/movable/screen/alert/give/secret_handshake
 	icon_state = "default"
 	additional_desc_text = "Click this alert to accept."
-	screentip_override_text = "Handshake"
+	screentip_override_text = "Пожать руку"
 	examinable = FALSE
 
 /atom/movable/screen/alert/give/secret_handshake/setup(mob/living/carbon/taker, mob/living/carbon/offerer, obj/item/receiving)
@@ -939,17 +945,17 @@ so as to remain in compliance with the most up-to-date laws."
 		return CONTEXTUAL_SCREENTIP_SET
 	var/left_click_text
 	if(owner in poll.signed_up)
-		left_click_text = "Leave"
+		left_click_text = "Выйти из опроса"
 	else
-		left_click_text = "Enter"
-	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "[left_click_text] poll")
+		left_click_text = "Записаться в опрос"
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, left_click_text)
 	if(poll.ignoring_category)
 		var/selected_never = FALSE
 		if(GLOB.poll_ignore[poll.ignoring_category] && (owner.ckey in GLOB.poll_ignore[poll.ignoring_category]))
 			selected_never = TRUE
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[selected_never ? "Cancel " : ""]Never for this round")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, (selected_never ? "Снова предлагать в этом раунде" : "Не предлагать в этом раунде"))
 	if(poll.jump_to_me && isobserver(owner))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Jump to")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Переместиться")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /atom/movable/screen/alert/poll_alert/process()

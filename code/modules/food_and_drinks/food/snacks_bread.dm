@@ -203,7 +203,7 @@
 /obj/item/reagent_containers/food/snacks/baguette/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
 	if (user.mind?.miming && held_item == src)
-		context[SCREENTIP_CONTEXT_LMB] = "Toggle Swordplay"
+		context[SCREENTIP_CONTEXT_LMB] = "Режим фехтования"
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/food/snacks/baguette/examine(mob/user)
