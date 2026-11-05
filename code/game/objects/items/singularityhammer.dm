@@ -118,8 +118,8 @@
 	icon_state = "mjollnir0"
 
 /obj/item/mjollnir/proc/shock(mob/living/target)
-	target.Stun(1.5 SECONDS)
-	target.Knockdown(5 SECONDS)
+	target.Stun(10)
+	target.DefaultCombatKnockdown(90)
 	var/datum/effect_system/lightning_spread/s = new /datum/effect_system/lightning_spread
 	s.set_up(5, 1, target.loc)
 	s.start()
