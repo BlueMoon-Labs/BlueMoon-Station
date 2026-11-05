@@ -507,7 +507,7 @@
 		if(!isnull(batch_limit))
 			if(!isnum(batch_limit) || batch_limit < 1 || batch_limit != round(batch_limit))
 				return abort_session("handshake_batch_limit")
-			max_input_commands = min(16, batch_limit)
+			max_input_commands = batch_limit // снят локальный потолок 16 — honor-им предел, объявленный Host
 		session_token = null
 		snapshot_id = rustg_generate_uuid_v4()
 		snapshot_phase = "begin"

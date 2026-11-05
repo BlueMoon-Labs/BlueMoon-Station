@@ -246,7 +246,7 @@
 	var/list/queued_state_commands = list()
 	var/local_states_coalesced = 0
 	var/invocation_limit = 0
-	var/terminal_invocation_limit = 4096
+	var/terminal_invocation_limit = 1048576 // снят потолок 4096: dedup-окно растёт только по реальному трафику, 0 здесь выродился бы в 1
 	var/list/pending = list()
 	/// Old disconnected callbacks retain ownership but never drive the new Host clock.
 	var/pending_current_count = 0
@@ -469,7 +469,7 @@
 	var/characters = 0
 	var/index = 1
 	var/scanned = 0
-	while(index <= length(queue) && length(commands) < client.max_input_commands && scanned++ < 32)
+	while(index <= length(queue) && length(commands) < client.max_input_commands && scanned++ < 128)
 		var/datum/netrun_external_command/command = queue[index]
 		if(!input_command_current(command))
 			queue.Cut(index, index + 1)
