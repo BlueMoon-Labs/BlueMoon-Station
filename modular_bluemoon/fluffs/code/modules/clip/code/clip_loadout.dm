@@ -2,33 +2,34 @@
 // Одежда идёт напрямую (без статов), а скафандры, шлемы, био-костюмы, броня riot и меха
 // выдаются только через коробку улучшалок CLIP kit.
 
+
 /datum/gear/donator/bm/clip
-	ckeywhitelist = list("Tech_Grid", "dagran")
+	ckeywhitelist = list("tech_grid", "dagran")
 
 /datum/gear/donator/bm/clip/deck_uniform
 	name = "CLIP deck uniform"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/syndicate/clip
+	path = /obj/item/clothing/under/clip
 
 /datum/gear/donator/bm/clip/minuteman_uniform
 	name = "CLIP minuteman uniform"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/syndicate/clip/minuteman
+	path = /obj/item/clothing/under/clip/minuteman
 
 /datum/gear/donator/bm/clip/formal_uniform
 	name = "CLIP formal uniform"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/syndicate/clip/formal
+	path = /obj/item/clothing/under/clip/formal
 
 /datum/gear/donator/bm/clip/formal_skirt
 	name = "CLIP formal skirt"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/syndicate/clip/formal_skirt
+	path = /obj/item/clothing/under/clip/formal_skirt
 
 /datum/gear/donator/bm/clip/medic_uniform
 	name = "CLIP medical uniform"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/syndicate/clip/medic
+	path = /obj/item/clothing/under/clip/medic
 
 /datum/gear/donator/bm/clip/general_coat
 	name = "CLIP general's coat"
@@ -68,7 +69,7 @@
 /datum/gear/donator/bm/clip/goggles
 	name = "CLIP ballistic goggles"
 	slot = ITEM_SLOT_EYES
-	path = /obj/item/clothing/glasses/clip_goggles
+	path = /obj/item/clothing/glasses/sunglasses/clip_goggles
 
 /datum/gear/donator/bm/clip/gloves
 	name = "CLIP combat gloves"
