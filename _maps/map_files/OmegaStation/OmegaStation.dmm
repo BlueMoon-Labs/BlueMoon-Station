@@ -14487,6 +14487,9 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
 	},
+/obj/machinery/computer/stock_terminal{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/service/bar/atrium)
 "aBZ" = (
@@ -29933,9 +29936,6 @@
 /obj/machinery/light_switch{
 	pixel_x = -24
 	},
-/obj/machinery/computer/department_budget/science{
-	dir = 4
-	},
 /turf/open/floor/plasteel,
 /area/science/mixing)
 "bfa" = (
@@ -36014,20 +36014,6 @@
 /obj/structure/window/spawner/north,
 /turf/open/floor/plasteel/freezer,
 /area/commons/toilet/restrooms)
-"iRr" = (
-/obj/effect/turf_decal/tile/red{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/red,
-/obj/effect/turf_decal/tile/yellow{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/yellow{
-	dir = 8
-	},
-/obj/machinery/computer/stock_terminal,
-/turf/open/floor/plasteel,
-/area/service/bar/atrium)
 "iSq" = (
 /turf/open/floor/plating/asteroid/airless,
 /area/maintenance/starboard/aft)
@@ -36680,6 +36666,9 @@
 "kCG" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 9
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/science/mixing)
@@ -85605,7 +85594,7 @@ awp
 awX
 axR
 ayN
-iRr
+asg
 blj
 aCb
 aCe

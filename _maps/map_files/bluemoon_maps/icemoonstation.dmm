@@ -7326,6 +7326,7 @@
 	icon_state = "0-2"
 	},
 /obj/machinery/power/apc/auto_name/north,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark,
 /area/security/detectives_office/evidence_room)
 "bsi" = (
@@ -16073,19 +16074,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/tcommsat/computer)
-"cVN" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 1
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 8
-	},
-/obj/machinery/power/export_node,
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plasteel/smooth/edge,
-/area/engineering/break_room)
 "cVW" = (
 /obj/effect/turf_decal/tile/green/diagonal_centre,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
@@ -18265,7 +18253,6 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 8
 	},
-/obj/machinery/vending/custom,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 8
 	},
@@ -18531,9 +18518,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/structure/disposalpipe/segment{
 	dir = 8
-	},
-/obj/structure/cable{
-	icon_state = "0-8"
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/engineering/break_room)
@@ -29501,27 +29485,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/maintenance/department/science)
-"frN" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/evidence_locker,
-/turf/open/floor/plasteel/dark/side{
-	dir = 1
-	},
-/area/security/brig)
 "frT" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/n2{
 	dir = 1
@@ -45023,7 +44986,6 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 1
 	},
-/obj/machinery/computer/department_budget/cargo,
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "ime" = (
@@ -81181,7 +81143,6 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/vending/custom,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 8
 	},
@@ -103588,6 +103549,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/turf_decal/bot/white,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/department_budget/cargo,
 /turf/open/floor/plasteel/dark/side,
 /area/cargo/warehouse)
 "sDX" = (
@@ -112349,6 +112311,7 @@
 	dir = 4;
 	color = "#f0976a"
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel/smooth/edge,
 /area/hallway/primary/starboard)
 "uke" = (
@@ -126066,6 +126029,10 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 8
+	},
+/obj/machinery/power/export_node,
+/obj/structure/cable{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/engineering/break_room)
@@ -251130,7 +251097,7 @@ ldW
 qWU
 hul
 cUf
-cVN
+lzB
 vST
 vyv
 nXI
@@ -294662,7 +294629,7 @@ egk
 rYy
 hpz
 cSr
-frN
+tcg
 ddM
 xUr
 rdC

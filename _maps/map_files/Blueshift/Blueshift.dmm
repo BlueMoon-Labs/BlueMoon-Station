@@ -17011,6 +17011,17 @@
 	dir = 8
 	},
 /area/commons/fitness/recreation)
+"czR" = (
+/obj/machinery/light/directional/south,
+/obj/item/radio/intercom{
+	pixel_y = -27
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel,
+/area/engineering/main)
 "czS" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
@@ -76110,6 +76121,9 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
 	},
 /turf/open/floor/catwalk_floor,
 /area/engineering/main)
@@ -143852,10 +143866,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "waV" = (
@@ -188813,7 +188823,7 @@ gtD
 vqy
 sVQ
 lIb
-vWW
+czR
 vFA
 vFA
 hOE

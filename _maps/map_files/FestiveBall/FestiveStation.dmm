@@ -3027,9 +3027,6 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
-/obj/machinery/computer/department_budget/service{
-	dir = 8
-	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/hop/private)
 "ahr" = (
@@ -60609,6 +60606,9 @@
 "pFV" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/machinery/airalarm/directional/west,
+/obj/machinery/computer/department_budget/service{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/hop/private)
 "pIh" = (

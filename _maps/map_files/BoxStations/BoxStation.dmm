@@ -39,9 +39,6 @@
 /obj/effect/turf_decal/siding/brown{
 	dir = 10
 	},
-/obj/machinery/computer/department_budget/service{
-	dir = 4
-	},
 /turf/open/floor/plasteel/dark/textured/corner{
 	dir = 4
 	},
@@ -53493,6 +53490,12 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/medical/virology)
+"kba" = (
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/service/bar)
 "kbd" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4,
 /turf/open/floor/engine,
@@ -66397,7 +66400,9 @@
 /obj/machinery/status_display/supply{
 	pixel_y = -32
 	},
-/obj/machinery/computer/stock_terminal,
+/obj/machinery/computer/stock_terminal{
+	dir = 1
+	},
 /turf/open/floor/plasteel/textured/large,
 /area/cargo/office)
 "pqQ" = (
@@ -124639,7 +124644,7 @@ oUR
 aJC
 oVr
 anE
-wEk
+kba
 ksc
 qXI
 fTZ

@@ -51589,6 +51589,12 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/private_investigators_office/investigators_room)
+"hEf" = (
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/bar)
 "hEE" = (
 /obj/effect/turf_decal/siding/dark_red/corner,
 /obj/effect/turf_decal/siding/dark_red/corner{
@@ -57901,9 +57907,6 @@
 "kUE" = (
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 10
-	},
-/obj/machinery/computer/department_budget/service{
-	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -120240,7 +120243,7 @@ aGJ
 aJC
 kks
 gAb
-aXk
+hEf
 gMR
 iuq
 fBI

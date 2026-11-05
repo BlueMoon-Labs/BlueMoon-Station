@@ -31438,18 +31438,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/engine,
 /area/science/xenobiology)
-"bzo" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
-/obj/machinery/vending/custom,
-/turf/open/floor/plasteel/white/corner{
-	dir = 1
-	},
-/area/hallway/secondary/entry)
 "bzp" = (
 /obj/machinery/door/poddoor/preopen{
 	id = "xenobio2";
@@ -65020,6 +65008,15 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/engine)
+"wJU" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/vending/custom{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "wKa" = (
 /obj/machinery/light/small,
 /turf/open/floor/plating,
@@ -85559,7 +85556,7 @@ aQt
 gpC
 ppQ
 aYG
-bzo
+aZA
 baK
 bbR
 bcY
@@ -86073,7 +86070,7 @@ aQt
 aOf
 aWK
 aYG
-bzo
+aZA
 baK
 bbS
 bda
@@ -87103,8 +87100,8 @@ aHz
 aYG
 aZA
 baN
-bbR
-bbR
+wJU
+wJU
 aYG
 aaa
 aaa

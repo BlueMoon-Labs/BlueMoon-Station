@@ -5777,6 +5777,9 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/security{
+	dir = 4
+	},
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/hos)
 "alq" = (
@@ -11525,7 +11528,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/machinery/computer/department_budget/service,
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "awl" = (
@@ -14863,6 +14865,7 @@
 /obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/showroomfloor,
 /area/command/heads_quarters/rd)
 "aCG" = (
@@ -16302,7 +16305,6 @@
 /turf/open/floor/plating/airless,
 /area/space/nearstation)
 "aFR" = (
-/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/showroomfloor,
 /area/command/heads_quarters/rd)
 "aFX" = (
@@ -67422,9 +67424,6 @@
 /obj/effect/turf_decal/tile/red/half/contrasted{
 	dir = 1
 	},
-/obj/machinery/computer/department_budget/security{
-	dir = 1
-	},
 /turf/open/floor/plasteel,
 /area/security/office)
 "cKp" = (
@@ -69555,7 +69554,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/machinery/computer/stock_terminal,
+/obj/machinery/computer/stock_terminal{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "dxq" = (
@@ -80196,6 +80197,9 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/siding/wood,
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "mae" = (

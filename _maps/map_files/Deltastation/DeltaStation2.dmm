@@ -26,10 +26,6 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
 	},
-/obj/structure/cable/white{
-	icon_state = "0-1"
-	},
-/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "aaf" = (
@@ -38,9 +34,6 @@
 	},
 /obj/structure/cable/white{
 	icon_state = "0-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "0-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -51,6 +44,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "aaq" = (
@@ -120386,6 +120380,9 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "wii" = (
@@ -121910,9 +121907,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
-	},
-/obj/machinery/computer/department_budget/medical{
-	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)

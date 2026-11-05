@@ -2383,6 +2383,9 @@
 	dir = 1
 	},
 /obj/machinery/light_switch/directional/south,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 1
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/cargo/qm)
 "aDZ" = (
@@ -22139,7 +22142,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
 	},
-/obj/machinery/computer/department_budget/service,
 /turf/open/floor/plasteel/checker,
 /area/service/bar/backroom)
 "fIr" = (
@@ -35272,9 +35274,6 @@
 "jiP" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 6
-	},
-/obj/machinery/computer/department_budget/cargo{
-	dir = 4
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/cargo/qm)
@@ -52416,6 +52415,9 @@
 /obj/machinery/airalarm/directional/south,
 /obj/structure/cable/yellow{
 	icon_state = "0-4"
+	},
+/obj/machinery/computer/department_budget/service{
+	dir = 4
 	},
 /turf/open/floor/plasteel/checker,
 /area/service/bar/backroom)

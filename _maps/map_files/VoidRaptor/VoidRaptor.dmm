@@ -15497,9 +15497,8 @@
 /obj/machinery/newscaster{
 	pixel_x = 30
 	},
-/obj/machinery/power/export_node,
 /obj/structure/cable/yellow{
-	icon_state = "0-1"
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 8
@@ -50485,6 +50484,10 @@
 	},
 /obj/machinery/firealarm/directional/east,
 /obj/machinery/light/directional/east,
+/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 8
 	},
@@ -58805,9 +58808,6 @@
 	name = "Ship Hologram";
 	pixel_x = -32;
 	pixel_y = 27
-	},
-/obj/machinery/computer/department_budget{
-	dir = 1
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/bridge)
@@ -94476,6 +94476,9 @@
 	},
 /obj/effect/turf_decal/siding/wood,
 /obj/machinery/light/cold/directional/south,
+/obj/machinery/computer/department_budget{
+	dir = 1
+	},
 /turf/open/floor/carpet/blue,
 /area/command/bridge)
 "vos" = (

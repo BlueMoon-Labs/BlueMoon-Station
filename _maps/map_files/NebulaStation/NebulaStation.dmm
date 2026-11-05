@@ -92165,9 +92165,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/computer/department_budget/engineering{
-	dir = 8
-	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/ce)
 "lvW" = (
@@ -113735,6 +113732,9 @@
 	},
 /area/space/nearstation)
 "ojv" = (
+/obj/machinery/computer/department_budget/engineering{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/ce)
 "ojx" = (

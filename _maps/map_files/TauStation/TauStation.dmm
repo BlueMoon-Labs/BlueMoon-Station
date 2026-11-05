@@ -808,6 +808,7 @@
 /obj/structure/sign/poster/contraband/yes_erp{
 	pixel_y = 32
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "aow" = (
@@ -43025,6 +43026,10 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "oSU" = (
@@ -43600,7 +43605,6 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_x = 27
 	},
-/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "ped" = (
@@ -61322,10 +61326,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/cable{
-	icon_state = "0-2"
-	},
-/obj/machinery/power/export_node,
 /turf/open/floor/engine,
 /area/engineering/main)
 "vgi" = (

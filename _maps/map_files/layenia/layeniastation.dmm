@@ -30,6 +30,30 @@
 	icon_state = "floor_plate"
 	},
 /area/hallway/primary/fore)
+"aab" = (
+/obj/machinery/status_display/ai{
+	pixel_y = 26
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/command/heads_quarters/rd)
+"aac" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4;
+	name = "air vent"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4;
+	name = "scrubbers pipe"
+	},
+/obj/machinery/computer/department_budget/science,
+/turf/open/floor/plasteel/white,
+/area/command/heads_quarters/rd)
 "aai" = (
 /obj/machinery/light{
 	dir = 8
@@ -204348,7 +204372,7 @@ mdC
 ouc
 kyc
 muU
-iFg
+aab
 iKc
 vsC
 muU
@@ -205376,7 +205400,7 @@ tFo
 ouc
 hZz
 muU
-kWS
+aac
 iGp
 xfO
 ilt

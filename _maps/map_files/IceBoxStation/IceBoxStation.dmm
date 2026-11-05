@@ -5754,7 +5754,7 @@
 /area/security/prison)
 "bse" = (
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "0-1"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -5767,6 +5767,10 @@
 	},
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 1
+	},
+/obj/machinery/power/export_node,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
@@ -83668,11 +83672,7 @@
 	dir = 6
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/machinery/power/export_node,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
+	icon_state = "2-4"
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/engineering/storage)
@@ -85426,7 +85426,9 @@
 /obj/machinery/status_display/supply{
 	pixel_x = -32
 	},
-/obj/machinery/computer/stock_terminal,
+/obj/machinery/computer/stock_terminal{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "sOk" = (

@@ -5510,6 +5510,9 @@
 	name = "Engineering RC";
 	pixel_x = 30
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "dPp" = (
@@ -6810,6 +6813,23 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
+"ePt" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/evidence_locker,
+/turf/open/floor/plasteel/dark,
+/area/security/brig)
 "ePC" = (
 /obj/machinery/portable_atmospherics/scrubber,
 /turf/open/floor/plating,
@@ -8193,17 +8213,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"fUq" = (
-/obj/effect/turf_decal/tile/yellow,
-/obj/effect/turf_decal/tile/yellow{
-	dir = 1
-	},
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
-/obj/machinery/power/export_node,
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "fUB" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -8527,6 +8536,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/landmark/start/station_engineer,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "ggu" = (
@@ -12619,9 +12629,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/cable{
-	icon_state = "1-8"
-	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "jet" = (
@@ -12746,6 +12753,7 @@
 	icon_state = "2-4"
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/computer/account_database,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hop)
 "jgK" = (
@@ -13757,6 +13765,9 @@
 	},
 /obj/machinery/computer/department_budget/engineering{
 	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
@@ -14774,9 +14785,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
-	},
-/obj/machinery/computer/account_database{
-	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
@@ -15798,7 +15806,10 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/effect/landmark/start/station_engineer,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "lqv" = (
@@ -19610,6 +19621,9 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "ohB" = (
@@ -20874,7 +20888,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
-/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
 "pgN" = (
@@ -63281,7 +63294,7 @@ kea
 jcN
 nDP
 mMT
-eJa
+ePt
 nrU
 ufh
 xuz
@@ -64536,7 +64549,7 @@ kmw
 bZn
 bZn
 awR
-fUq
+bZn
 aJa
 cmK
 sxW
