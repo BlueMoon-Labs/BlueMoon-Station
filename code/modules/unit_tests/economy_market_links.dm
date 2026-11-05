@@ -95,16 +95,18 @@
 
 /datum/unit_test/economy_market/imported_seed_no_discovery/Run()
 	var/datum/export/seed/seed_export = locate() in GLOB.exports_list
-	seed_export.discoveredPlants -= /obj/item/seeds/ambrosia/deus
+	TEST_ASSERT_NOTNULL(seed_export, "Нет экспорта семян")
+	var/list/discovered = seed_export.discoveredPlants
+	discovered -= /obj/item/seeds/ambrosia/deus
 	var/obj/item/seeds/ambrosia/deus/grown = allocate(/obj/item/seeds/ambrosia/deus)
 	var/obj/item/seeds/ambrosia/deus/imported = allocate(/obj/item/seeds/ambrosia/deus)
 	import_item(imported)
 	TEST_ASSERT_EQUAL(export_value(imported), 0, "Купленный сорт оплачен как новый вид")
 	TEST_ASSERT(export_value(grown) > 0, "Свой образец нового вида не оплачен")
-	TEST_ASSERT(!(/obj/item/seeds/ambrosia/deus in seed_export.discoveredPlants), "Оценка без продажи записала открытие вида")
+	TEST_ASSERT(!(/obj/item/seeds/ambrosia/deus in discovered), "Оценка без продажи записала открытие вида")
 	TEST_ASSERT(export_value(grown, dry_run = FALSE) > 0, "Новый вид не продан")
-	TEST_ASSERT(/obj/item/seeds/ambrosia/deus in seed_export.discoveredPlants, "Продажа не записала открытие вида")
-	imported.potency = seed_export.discoveredPlants[/obj/item/seeds/ambrosia/deus] + 50
+	TEST_ASSERT(/obj/item/seeds/ambrosia/deus in discovered, "Продажа не записала открытие вида")
+	imported.potency = discovered[/obj/item/seeds/ambrosia/deus] + 50
 	TEST_ASSERT_EQUAL(export_value(imported), 0, "Купленный сорт оплачен за потенцию")
 	var/obj/item/seeds/ambrosia/deus/improved = allocate(/obj/item/seeds/ambrosia/deus)
 	improved.potency = imported.potency
