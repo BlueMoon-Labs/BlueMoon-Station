@@ -347,7 +347,7 @@
 		if(M in hit_list)
 			continue
 		hit_list += M
-		M.take_damage(50, BURN, MELEE, 1)
+		M.take_damage(50, BURN, FIRE, 1)
 
 /**
   * Handles consuming and storing consumed things inside Space Dragon
