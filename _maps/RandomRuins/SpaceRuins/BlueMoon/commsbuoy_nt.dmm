@@ -140,7 +140,7 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav/Sidi_pidor)
 "mn" = (
-/obj/item/mod/construction/armor/security/syndicate,
+/obj/item/mod/construction/armor/security,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/Sidi_pidor)
 "nn" = (

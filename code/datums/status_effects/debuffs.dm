@@ -445,22 +445,25 @@
 		qdel(src)
 
 /datum/status_effect/belligerent/proc/do_movement_toggle(force_damage)
-	var/number_legs = owner.get_num_legs(FALSE)
-	if(iscarbon(owner) && !is_servant_of_ratvar(owner) && !owner.anti_magic_check(chargecost = 0) && number_legs)
+	var/supporting_limbs = owner.get_num_supporting_limbs(FALSE)
+	if(iscarbon(owner) && !is_servant_of_ratvar(owner) && !owner.anti_magic_check(chargecost = 0) && supporting_limbs)
+		var/has_supporting_tail = HAS_TRAIT(owner, TRAIT_NAGA_ANATOMY)
 		if(force_damage || owner.m_intent != MOVE_INTENT_WALK)
 			if(GLOB.ratvar_awakens)
 				owner.DefaultCombatKnockdown(20)
-			if(iscultist(owner))
-				owner.apply_damage(cultist_damage_on_toggle * 0.5, BURN, BODY_ZONE_L_LEG)
-				owner.apply_damage(cultist_damage_on_toggle * 0.5, BURN, BODY_ZONE_R_LEG)
+			var/toggle_damage = iscultist(owner) ? cultist_damage_on_toggle : leg_damage_on_toggle
+			if(has_supporting_tail)
+				owner.apply_damage(toggle_damage, BURN, BODY_ZONE_L_LEG)
 			else
-				owner.apply_damage(leg_damage_on_toggle * 0.5, BURN, BODY_ZONE_L_LEG)
-				owner.apply_damage(leg_damage_on_toggle * 0.5, BURN, BODY_ZONE_R_LEG)
+				owner.apply_damage(toggle_damage * 0.5, BURN, BODY_ZONE_L_LEG)
+				owner.apply_damage(toggle_damage * 0.5, BURN, BODY_ZONE_R_LEG)
 		if(owner.m_intent != MOVE_INTENT_WALK)
-			if(!iscultist(owner))
-				to_chat(owner, "<span class='warning'>Your leg[number_legs > 1 ? "s shiver":" shivers"] with pain!</span>")
-			else //Cultists take extra burn damage
-				to_chat(owner, "<span class='warning'>Your leg[number_legs > 1 ? "s burn":" burns"] with pain!</span>")
+			if(has_supporting_tail)
+				to_chat(owner, span_warning(iscultist(owner) ? "Ваш хвост горит от боли!" : "Ваш хвост дрожит от боли!"))
+			else if(iscultist(owner))
+				to_chat(owner, span_warning(supporting_limbs > 1 ? "Ваши ноги горят от боли!" : "Ваша нога горит от боли!"))
+			else
+				to_chat(owner, span_warning(supporting_limbs > 1 ? "Ваши ноги дрожат от боли!" : "Ваша нога дрожит от боли!"))
 			owner.toggle_move_intent()
 		return TRUE
 	return FALSE
@@ -1339,8 +1342,8 @@
 	if(prob(15))
 		switch(rand(1,5))
 			if(1)
-				if((!owner.lying && !owner.buckled) && isturf(owner.loc))
-					to_chat(owner, "<span class='warning'>Your leg spasms!</span>")
+				if((!owner.lying && !owner.buckled) && isturf(owner.loc) && owner.get_num_supporting_limbs())
+					to_chat(owner, span_warning(HAS_TRAIT(owner, TRAIT_NAGA_ANATOMY) ? "Ваш хвост сводит судорогой!" : "Вашу ногу сводит судорогой!"))
 					step(owner, pick(GLOB.cardinals))
 			if(2)
 				if(owner.incapacitated())
@@ -1497,6 +1500,8 @@
 	return ..()
 
 /datum/status_effect/bola_snared/on_apply()
+	if(HAS_TRAIT(owner, TRAIT_NAGA_ANATOMY))
+		return FALSE
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(bola_trip))
 	RegisterSignal(owner, COMSIG_MOVABLE_TELEPORTED, PROC_REF(bola_teleport))
 	return ..()
@@ -1504,10 +1509,14 @@
 /datum/status_effect/bola_snared/on_remove()
 	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	UnregisterSignal(owner, COMSIG_MOVABLE_TELEPORTED)
+	bola = null
 	return ..()
 
 /datum/status_effect/bola_snared/proc/bola_trip(mob/living/carbon/C)
 	SIGNAL_HANDLER
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) || !istype(C.legcuffed, /obj/item/restraints/legcuffs/bola))
+		C.remove_status_effect(src)
+		return
 	if(!C.has_gravity()) // нет гравитации? Бола не заставит нас падать
 		return
 	if(!C.legcuffed) // если мы сняли болу, то эффекта нет

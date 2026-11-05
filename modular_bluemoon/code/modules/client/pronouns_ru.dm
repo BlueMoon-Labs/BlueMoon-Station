@@ -48,6 +48,8 @@
 /datum/proc/ru_aya_oy(temp_gender)
 	. = "ой"
 
+/datum/proc/ru_iy_oy(temp_gender)
+	. = "ой"
 
 //like clients, which do have gender.
 /client/ru_who(capitalized, temp_gender)
@@ -158,6 +160,19 @@
 	if(capitalized)
 		. = capitalize(.)
 
+// "Встревоженным", "встревоженной"
+/atom/ru_iy_oy(capitalized, temp_gender)
+	if(!temp_gender)
+		temp_gender = gender
+	. = "ой"
+	switch(temp_gender)
+		if(FEMALE)
+			. = "ой"
+		if(MALE)
+			. = "ым"
+	if(capitalized)
+		. = capitalize(.)
+
 //mobs(and atoms but atoms don't really matter write your own proc overrides) also have gender!
 /atom/ru_who(capitalized, temp_gender)
 	if(!temp_gender)
@@ -261,24 +276,31 @@
 	else
 		. = "ен"
 
-//humans need special handling, because they can have their gender hidden
+// Conceal gender when both the face and the underlying clothing are hidden.
+/mob/living/carbon/human/proc/is_gender_obscured()
+	return ((wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))) && (ITEM_SLOT_ICLOTHING in check_obscured_slots())
+
 /mob/living/carbon/human/ru_who(capitalized, temp_gender)
-	var/list/obscured = check_obscured_slots()
-	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
-	if((ITEM_SLOT_OCLOTHING in obscured) && skipface)
-		temp_gender = PLURAL
-	return ..()
+	if(!temp_gender && is_gender_obscured())
+		temp_gender = MALE
+	return ..(capitalized, temp_gender)
 
 /mob/living/carbon/human/ru_ego(capitalized, temp_gender)
-	var/list/obscured = check_obscured_slots()
-	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
-	if((ITEM_SLOT_OCLOTHING in obscured) && skipface)
-		temp_gender = PLURAL
-	return ..()
+	if(!temp_gender && is_gender_obscured())
+		temp_gender = MALE
+	return ..(capitalized, temp_gender)
 
-/mob/living/carbon/human/ru_a(capitalized, temp_gender)
-	var/list/obscured = check_obscured_slots()
-	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
-	if((ITEM_SLOT_OCLOTHING in obscured) && skipface)
-		temp_gender = PLURAL
-	return ..()
+/mob/living/carbon/human/ru_nego(capitalized, temp_gender)
+	if(!temp_gender && is_gender_obscured())
+		temp_gender = MALE
+	return ..(capitalized, temp_gender)
+
+/mob/living/carbon/human/ru_emu(capitalized, temp_gender)
+	if(!temp_gender && is_gender_obscured())
+		temp_gender = MALE
+	return ..(capitalized, temp_gender)
+
+/mob/living/carbon/human/ru_a(temp_gender)
+	if(!temp_gender && is_gender_obscured())
+		temp_gender = MALE
+	return ..(temp_gender)

@@ -71,7 +71,7 @@ GLOBAL_LIST_INIT(double_bedsheets, list(/obj/item/bedsheet/double,
 /obj/item/bedsheet/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(iscarbon(target))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Prepare Surgery")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Подготовить операцию")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/bedsheet/attack(mob/living/M, mob/user)

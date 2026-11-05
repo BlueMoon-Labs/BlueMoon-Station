@@ -1,5 +1,5 @@
 /atom/movable/screen/voretoggle
-	name = "toggle vore mode"
+	name = "Переключатель vore"
 	icon = 'modular_citadel/icons/ui/screen_midnight.dmi'
 	icon_state = "nom_off"
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -9,7 +9,7 @@
 		return
 	var/mob/living/carbon/C = usr
 	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
-		to_chat(usr, "<span class='warning'>Disable combat mode first.</span>")
+		to_chat(usr, span_warning("Для начала выключите боевой режим."))
 		return
 	C.toggle_vore_mode()
 

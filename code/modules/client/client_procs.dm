@@ -1706,7 +1706,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		click_intercept_time = 0 //Just reset. Let's not keep re-checking forever.
 	var/list/modifiers = params2list(params)
 
-	if(modifiers[DRAG])
+	if(click_is_drag_leftover(modifiers))
 		return
 
 	var/mcl = CONFIG_GET(number/minute_click_limit)

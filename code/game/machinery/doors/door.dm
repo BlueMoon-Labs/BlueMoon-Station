@@ -70,7 +70,7 @@
 		return .
 
 	if(isnull(held_item) && Adjacent(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Open" : "Close"))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Открыть" : "Закрыть"))
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/door/Initialize(mapload)

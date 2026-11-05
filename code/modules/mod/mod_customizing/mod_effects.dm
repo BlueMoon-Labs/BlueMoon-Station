@@ -25,3 +25,7 @@
 	name = "White Noize effect"
 	icon_state = "static_base"
 	color = null //изначально просто эффект.
+
+/datum/overlay_effect/Destroy()
+	pre_build_icon = null
+	return ..()

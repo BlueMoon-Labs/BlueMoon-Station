@@ -280,10 +280,11 @@
 	return override_allow_spacemove || AM.has_gravity()
 
 /datum/component/riding/proc/account_limbs(mob/living/M)
-	if(M.get_num_legs() < 2 && !slowed)
+	var/needs_slowdown = M.get_num_supporting_limbs() < 2
+	if(needs_slowdown && !slowed)
 		vehicle_move_delay = vehicle_move_delay + slowvalue
 		slowed = TRUE
-	else if(slowed)
+	else if(!needs_slowdown && slowed)
 		vehicle_move_delay = vehicle_move_delay - slowvalue
 		slowed = FALSE
 

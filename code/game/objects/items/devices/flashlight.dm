@@ -73,6 +73,9 @@
 // BLUEMOON ADD END
 
 /obj/item/flashlight/attack_self(mob/user)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		balloon_alert(user, "излучатель перегружен")
+		return FALSE
 	on = !on
 	update_brightness(user)
 	playsound(src, on ? soundon : soundoff, 40, TRUE) //BM Changes (soundon : soundoff)

@@ -32,8 +32,7 @@
 
 /obj/item/mod/module/armor/Destroy()
 	. = ..()
-	for(var/obj/item/stack/sheet/element in material_to_armor_list)
-		qdel(element)
+	material_to_armor_list = null
 
 /obj/item/mod/module/armor/examine_more(mob/user)
 	. = ..()
@@ -57,6 +56,7 @@
 		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = armor_bonus))))
 	mod.slowdown_active += slowdown_bonus
 	mod.slowdown_inactive += slowdown_bonus
+	mod.update_speed()
 
 /obj/item/mod/module/armor/proc/remove_armor_bonus()
 	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
@@ -64,6 +64,7 @@
 		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = -armor_bonus))))
 	mod.slowdown_active -= slowdown_bonus
 	mod.slowdown_inactive -= slowdown_bonus
+	mod.update_speed()
 
 /obj/item/mod/module/armor/proc/get_armor_by_material(obj/item/stack/sheet/material)
 	for(var/material_name in material_to_armor_list)

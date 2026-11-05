@@ -54,8 +54,22 @@
 		if(5,6)
 			A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 			atk_verb = pick("punches", "kicks", "hits", "slams into")
-			D.visible_message("<span class='danger'>[A] [atk_verb] [D] with inhuman strength, sending [D.ru_na()] flying backwards!</span>", \
-							  "<span class='userdanger'>[A] [atk_verb] you with inhuman strength, sending you flying backwards!</span>")
+			if(!A.get_num_supporting_limbs() && atk_verb == "kicks")
+				atk_verb = "hits"
+			if(atk_verb == "kicks" && HAS_TRAIT(A, TRAIT_NAGA_ANATOMY))
+				D.visible_message(span_danger("[A] с нечеловеческой силой бьёт [D] хвостом, отбрасывая назад!"), \
+					span_userdanger("[A] с нечеловеческой силой бьёт вас хвостом, отбрасывая назад!"))
+			else
+				var/attack_description = "мощный удар"
+				switch(atk_verb)
+					if("punches")
+						attack_description = "удар кулаком"
+					if("kicks")
+						attack_description = "удар ногой"
+					if("slams into")
+						attack_description = "удар всем телом"
+				D.visible_message(span_danger("[A] с нечеловеческой силой наносит [D] [attack_description], отбрасывая назад!"), \
+					span_userdanger("[A] с нечеловеческой силой наносит вам [attack_description], отбрасывая назад!"))
 			D.apply_damage(damage*2, BRUTE)
 			playsound(get_turf(D), 'sound/effects/meteorimpact.ogg', 25, 1, -1)
 			var/throwtarget = get_edge_target_turf(A, get_dir(A, get_step_away(D, A)))
