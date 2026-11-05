@@ -1121,6 +1121,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 
 /proc/ru_exam_parse_zone(zone)
 	var/static/list/zone_names = list(
+		"грудь" = "туловище",
 		"chest" = "туловище",
 		"mouth" = "рот",
 		"groin" = "пах",

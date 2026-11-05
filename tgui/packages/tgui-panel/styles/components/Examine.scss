@@ -41,14 +41,20 @@
 }
 
 .examine_card {
+  table-layout: fixed;
+
   .examine_portrait_cell {
-    width: 1%;
+    // 128px portrait plus the gap; leave the remaining width for text.
+    box-sizing: border-box;
+    width: 138px;
     vertical-align: top;
     padding: 0 10px 0 0;
   }
 
   .examine_card_content {
     vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -62,7 +68,7 @@
 
 .examine_thumbs {
   margin-top: 3px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .examine_flavor,
@@ -148,6 +154,27 @@
 
   &:hover {
     z-index: 50;
+  }
+}
+
+.examine_block img.examine_placeholder {
+  display: inline-block;
+  width: 128px;
+  height: 128px;
+  image-rendering: auto;
+}
+
+.examine_block img.examine_placeholder_light {
+  display: none;
+}
+
+.theme-light .examine_block {
+  img.examine_placeholder_dark {
+    display: none;
+  }
+
+  img.examine_placeholder_light {
+    display: inline-block;
   }
 }
 

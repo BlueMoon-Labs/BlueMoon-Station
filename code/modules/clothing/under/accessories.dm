@@ -8,7 +8,7 @@
 	for(var/obj/item/clothing/accessory/accessory in accessories_attached)
 		var/secondary_link = legacy_chat ? "" : " data-secondary-href='?src=[REF(src)];remove_accessory=[REF(accessory)]'"
 		accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(accessory)]'[secondary_link]>[span_tooltip(html_encode(accessory.name), icon2html(accessory, user), "", "", "")]</a>"
-	var/hint = legacy_chat ? "ЛКМ по иконке — осмотреть, Alt-клик по одежде — снять аксессуар" : "ЛКМ по иконке — осмотреть, ПКМ — снять"
+	var/hint = legacy_chat ? "ЛКМ по иконке – осмотреть, Alt-клик по одежде – снять аксессуар" : "ЛКМ по иконке – осмотреть, ПКМ – снять"
 	return span_notice("Вы видите [span_tooltip_warning(hint, "<u>аксессуары</u>")]: [accessory_icons.Join(" ")]")
 
 /obj/item/clothing/proc/accessories_topic(mob/user, list/href_list)

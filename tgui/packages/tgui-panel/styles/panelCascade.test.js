@@ -40,6 +40,21 @@ const resolved = (rules, node, property, pseudo) => {
 };
 
 describe.each(['dark', 'light'])('%s examine layout', theme => {
+  test('portrait placeholder follows the chat theme', () => {
+    const { message } = mount(theme, '', '');
+    message.innerHTML = '<div class="examine_block">'
+      + '<img class="examine_placeholder examine_placeholder_dark">'
+      + '<img class="examine_placeholder examine_placeholder_light"></div>';
+    const rules = rulesWith({});
+    for (const variant of ['dark', 'light']) {
+      const placeholder = message.querySelector('.examine_placeholder_' + variant);
+      expect(resolved(rules, placeholder, 'display'))
+        .toBe(theme === variant ? 'inline-block' : 'none');
+      expect(resolved(rules, placeholder, 'width')).toBe('128px');
+      expect(resolved(rules, placeholder, 'height')).toBe('128px');
+    }
+  });
+
   test('portraits override sprite rendering without affecting item icons', () => {
     const { message } = mount(theme, '', '');
     message.innerHTML = '<div class="examine_block">'

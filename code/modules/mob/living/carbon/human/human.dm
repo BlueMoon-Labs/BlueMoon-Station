@@ -334,8 +334,7 @@
 			var/setmedical = input(usr, "Уточните новый статус пациента", "Мед-HUD", R.fields["p_stat"]) in med_choices
 			if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC) && setmedical != "Отменить")
 				R.fields["p_stat"] = setmedical
-				spawn()
-					sec_hud_set_security_status()
+				sec_hud_set_security_status()
 
 	if(href_list["medical_mental"])
 		if(is_antag_training_atom(src))

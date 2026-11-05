@@ -73,16 +73,17 @@
 
 	// Define hunger texts
 	var/examine_hunger
+	var/t_on = anonymous ? "Он" : quirk_holder.ru_who(TRUE)
 
 	// Check hunger levels
 	switch(quirk_mob.nutrition)
 		// Hungry
 		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-			examine_hunger = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] blood starved!"
+			examine_hunger = "[t_on] испытывает голод по крови!"
 
 		// Starving
 		if(0 to NUTRITION_LEVEL_STARVING)
-			examine_hunger = "[anonymous ? "He" : quirk_holder.p_they(TRUE)] [anonymous ? "is" : quirk_holder.p_are()] in dire need of blood!"
+			examine_hunger = "[t_on] отчаянно нуждается в крови!"
 
 		// Invalid hunger
 		else
@@ -90,7 +91,7 @@
 			return
 
 	// Add detection text
-	examine_list += span_info("[anonymous ? "His" : quirk_holder.p_their(TRUE)] hunger allows you to identify [anonymous ? "him" : quirk_holder.p_them()] as a lesser Bloodsucker Fledgling!")
+	examine_list += span_info("[anonymous ? "Его" : quirk_holder.ru_ego(TRUE)] голод позволяет вам распознать младшего собрата — начинающего кровососа!")
 
 	// Add hunger text
 	examine_list += span_warning(examine_hunger)

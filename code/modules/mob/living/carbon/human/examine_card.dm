@@ -1,6 +1,6 @@
 /// Представление карточки человека. Данные и права доступа проверяются вызывающей стороной.
-/proc/examine_card(name_html, race_html, height_cm, profile_link, list/headshots, list/naked_headshots, flavor_text)
-	var/portrait_cell = ""
+/proc/examine_card(name_html, race_html, height_cm, profile_link, list/headshots, list/naked_headshots, flavor_text, placeholder_html = "")
+	var/portrait_cell = length(placeholder_html) ? "<td class='examine_portrait_cell'>[placeholder_html]</td>" : ""
 	var/thumbs = ""
 	var/normal_count = 0
 	for(var/link in headshots)
@@ -24,7 +24,7 @@
 		if(naked_count >= EXAMINE_UI_NAKED_THUMBS_MAX)
 			break
 	var/meta = "Рост: ≈[height_cm] см · [profile_link]"
-	var/without_headshots = !normal_count && !naked_count
+	var/without_headshots = !length(portrait_cell) && !naked_count
 	var/card_class = without_headshots ? "examine_card examine_card_no_headshots" : "examine_card"
 	var/flavor_html = examine_flavor_preview(flavor_text, without_headshots ? 66 : 44)
 	var/thumbs_html = length(thumbs) ? "<div class='examine_thumbs'>[thumbs]</div>" : ""

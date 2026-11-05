@@ -40,7 +40,7 @@
 		var/obj/item/card/id/callsign/callsign_id = wear_id?.GetID()
 		if(callsign_id.callsign)
 			id_card_callsign_name = " \[[html_encode(callsign_id.callsign)]\]"
-	var/identity_hidden = skipface || obscure_name || (get_visible_name() in list("Unknown", "Неизвестный"))
+	var/identity_hidden = (skipface && !isobserver(user)) || obscure_name || (get_visible_name() in list("Unknown", "Неизвестный"))
 	var/name_html = "<b>[html_encode(shown_name)][collar_tagname][id_card_callsign_name]</b>"
 	var/race_html
 	if(identity_hidden)
@@ -329,7 +329,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	var/r_limbs_missing = 0
 	for(var/t in missing)
 		if(naga_anatomy && t == BODY_ZONE_L_LEG)
-			msg += span_boldwarning("[ru_ego(TRUE)] опорный хвост оторван!") + "\n"
+			msg += span_boldwarning("[capitalize(t_ego)] опорный хвост оторван!") + "\n"
 			continue
 		if(t==BODY_ZONE_HEAD)
 			msg += span_deadsay("<B>[capitalize(t_ego)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B>\n")
@@ -650,13 +650,20 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	var/list/headshots = list()
 	var/list/naked_headshots = list()
+	var/placeholder_html = ""
 	if(user?.client?.prefs?.examine_headshots)
-		if(!identity_hidden && length(dna?.headshot_links))
-			headshots = dna.headshot_links
-		naked_headshots = examine_naked_headshots(user, identity_hidden)
+		if(user.is_blind() || HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA))
+			var/datum/asset/placeholders = get_asset_datum(/datum/asset/simple/examine_placeholders)
+			placeholders.send(user)
+			var/list/placeholder_urls = placeholders.get_url_mappings()
+			placeholder_html = "<img class='examine_placeholder examine_placeholder_dark' src='[html_encode(placeholder_urls["noheadshot_dark.png"])]' width='128' height='128' alt=''><img class='examine_placeholder examine_placeholder_light' src='[html_encode(placeholder_urls["noheadshot_light.png"])]' width='128' height='128' alt=''>"
+		else
+			if(!identity_hidden && length(dna?.headshot_links))
+				headshots = dna.headshot_links
+			naked_headshots = examine_naked_headshots(user, identity_hidden)
 
 	var/profile_link = "<a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>"
-	var/card_html = examine_card(name_html, race_html, height_cm, profile_link, headshots, naked_headshots, !identity_hidden ? dna?.flavor_text : "")
+	var/card_html = examine_card(name_html, race_html, height_cm, profile_link, headshots, naked_headshots, !identity_hidden ? dna?.flavor_text : "", placeholder_html)
 
 	var/list/flavor_lines = list()
 	if(tempflavor) // BLUEMOON ADD - темпфлавор теперь захардкожен, увы
