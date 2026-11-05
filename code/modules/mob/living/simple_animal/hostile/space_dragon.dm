@@ -104,6 +104,7 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_HEALS_FROM_CARP_RIFTS, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_SHOCKIMMUNE, INNATE_TRAIT)
 	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam(src))
 	rift = new
 	rift.Grant(src)
@@ -176,7 +177,7 @@
 	. = ..()
 	if(istype(target, /obj/vehicle/sealed/mecha))
 		var/obj/vehicle/sealed/mecha/M = target
-		M.take_damage(50, BRUTE, MELEE, 1)
+		M.take_damage(obj_damage, BRUTE, MELEE, 1)
 
 /mob/living/simple_animal/hostile/space_dragon/AltClickOn(atom/A)
 	. = ..()

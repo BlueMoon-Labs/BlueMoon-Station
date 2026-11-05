@@ -6,6 +6,7 @@
 	icon = 'icons/Xeno/castes/sentinel.dmi'
 	icon_state = "Sentinel Walking"
 	meleeSlashHumanPower = 25
+	pixel_x = -11
 
 /datum/movespeed_modifier/alien_sentinel_speed
 	multiplicative_slowdown = 0.2
