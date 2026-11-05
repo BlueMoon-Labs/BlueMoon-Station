@@ -64,6 +64,7 @@
 
 // TGMC queen.dmi: Queen Walking, Queen Dead, Queen Knocked Down, Queen Sleeping
 /mob/living/carbon/alien/humanoid/royal/update_icons()
+	update_fire()
 	cut_overlays()
 	for(var/I in overlays_standing)
 		add_overlay(I)
