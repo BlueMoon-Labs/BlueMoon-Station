@@ -22,10 +22,11 @@
 	var/mob/living/carbon/human/original = allocate(/mob/living/carbon/human)
 	original.real_name = "Assistant #12345"
 	original.dna.update_dna_identity()
+	original.dna.nameless = TRUE
 	original.dna.unique_enzymes = md5("Previously changed blood DNA")
 	var/obj/machinery/clonepod/pod = allocate(/obj/machinery/clonepod)
 	pod.get_clone_mind = CLONEPOD_NO_MIND
-	TEST_ASSERT(pod.growclone(null, original.real_name, original.dna.uni_identity, null, null, original.dna.blood_type, original.dna.species, original.dna.features.Copy(), original.faction, unique_enzymes = original.dna.unique_enzymes, nameless = TRUE), "Clone creation succeeds")
+	TEST_ASSERT(pod.growclone(null, original.real_name, original.dna.uni_identity, null, null, original.dna.blood_type, original.dna.species, original.dna.features.Copy(), original.faction, unique_enzymes = original.dna.unique_enzymes, nameless = original.dna.nameless), "Clone creation succeeds")
 	var/mob/living/carbon/human/clone = pod.occupant
 	TEST_ASSERT_NOTNULL(clone, "Pod contains a clone")
 	allocated += clone
