@@ -91,7 +91,7 @@
 	if(!length(traitstring))
 		to_chat(user, span_notice("Особенностей не обнаружено."))
 		return
-	to_chat(user, examine_box("Особенности: [html_encode(examine_shown_name(user))]", "<div>[examine_chips(traitstring)]</div>"))
+	to_chat(user, examine_box("Особенности: [html_encode(examine_shown_name(user))]", "<div class='examine_traits'>[examine_chips(traitstring)]</div>"))
 
 /// Может ли user сейчас разглядеть цель: в сознании, не слеп, цель в зоне видимости. Null: можно.
 /// Наблюдатели проверку не проходят: они видят всё.

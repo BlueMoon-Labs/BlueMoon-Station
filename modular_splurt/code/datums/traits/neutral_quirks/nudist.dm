@@ -7,20 +7,20 @@
 	lose_text = span_notice("Вы больше не чувствуете дискомфорта при ношении одежды.")
 	medical_record_text = "Пациент выражает психологическую потребность оставаться без одежды."
 	value = 0
+	mob_trait = TRAIT_NUDIST
 	mood_quirk = TRUE
 	var/is_nude
 
 /datum/quirk/nudist/add()
-	// Register signal handlers
+	// Одежда влияет на настроение и состояние нудизма.
 	RegisterSignal(quirk_holder, COMSIG_MOB_UPDATE_GENITALS, PROC_REF(check_outfit))
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_nudist))
 
 /datum/quirk/nudist/remove()
 	// Remove mood event
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, QMOOD_NUDIST)
 
-	// Unregister signals
-	UnregisterSignal(quirk_holder, list(COMSIG_MOB_UPDATE_GENITALS, COMSIG_PARENT_EXAMINE))
+	// Отключаем обновление состояния одежды.
+	UnregisterSignal(quirk_holder, COMSIG_MOB_UPDATE_GENITALS)
 
 /datum/quirk/nudist/post_add()
 	// Evaluate outfit
@@ -41,7 +41,7 @@
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
 
 	// Check if torso is uncovered
-	if(quirk_mob.is_chest_exposed() && quirk_mob.is_groin_exposed())
+	if(is_outfit_comfortable())
 		// Send positive mood event
 		SEND_SIGNAL(quirk_mob, COMSIG_ADD_MOOD_EVENT, QMOOD_NUDIST, /datum/mood_event/nudist_positive)
 
@@ -70,22 +70,7 @@
 		// Set nude status
 		is_nude = FALSE
 
-/datum/quirk/nudist/proc/quirk_examine_nudist(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
-	SIGNAL_HANDLER
-
-	// Define default status term
-	var/mood_term = "в радостном состоянии из-за отсутствия на себе"
-
-	// Define default span class
-	var/span_class
-
-	// Check if dressed
-	if(!is_nude)
-		// Set negative term
-		mood_term = "в раздражении из-за ношения на себе"
-
-		// Set negative span class
-		span_class = "warning"
-
-	// Add examine text
-	examine_list += "<span class='[span_class]'>[anonymous ? "Он" : quirk_holder.p_they_ru(TRUE)] [mood_term] одежды.</span>"
+/// Нудисту комфортно, когда одежда не закрывает грудь и пах.
+/datum/quirk/nudist/proc/is_outfit_comfortable()
+	var/mob/living/carbon/human/target = quirk_holder
+	return istype(target) && target.is_chest_exposed() && target.is_groin_exposed()

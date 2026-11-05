@@ -124,6 +124,10 @@
   }
 }
 
+.examine_traits {
+  font-size: 75%;
+}
+
 .examine_chip {
   display: inline-block;
   margin: 1px 3px 1px 0;
@@ -182,7 +186,7 @@
   width: 128px;
   height: 128px;
 
-  &:hover {
+  &:hover:not(.examine_image_collapsed) {
     transform: scale(2);
   }
 }
@@ -196,7 +200,12 @@
     transform-origin: top right;
   }
 
-  &:hover {
+  &:hover:not(.examine_image_collapsed) {
     transform: scale(3.2);
   }
+}
+
+.examine_block img.examine_image_collapsed {
+  transform: none;
+  transition: none;
 }

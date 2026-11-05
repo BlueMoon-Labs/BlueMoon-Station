@@ -726,7 +726,7 @@ GLOBAL_LIST(unit_test_ghost_notifications)
 		// the defines are in _DEFINES/misc.dm
 
 //Examine text for traits shared by multiple types. I wish examine was less copypasted.
-/mob/proc/common_trait_examine(anonymous = FALSE)
+/mob/proc/common_trait_examine(anonymous = FALSE, mob/examiner = usr)
 	if(HAS_TRAIT(src, TRAIT_DISSECTED))
 		var/dissectionmsg = ""
 		if(HAS_TRAIT_FROM(src, TRAIT_DISSECTED,"Extraterrestrial Dissection"))

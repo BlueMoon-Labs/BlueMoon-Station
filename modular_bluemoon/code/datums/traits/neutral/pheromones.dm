@@ -27,7 +27,6 @@
 	if(!sub.has_quirk(/datum/quirk/sensitive_to_pheramones) || (sub == quirk_holder))
 		return
 
-	examine_list += span_lewd("\nВы испытываете сильное возбуждение при взгляде на [anonymous ? "него" : quirk_holder.ru_na()] и краснеете!")
 	if(!TIMER_COOLDOWN_CHECK(user, COOLDOWN_PHEROMON_AURA))
 		to_chat(quirk_holder, span_notice("[user] смотрит на вас и сильно краснеет, издавая тихий стон..."))
 		TIMER_COOLDOWN_START(user, COOLDOWN_PHEROMON_AURA, 10 SECONDS)
@@ -67,9 +66,6 @@
 		return
 	if(!user.has_quirk(/datum/quirk/ur_pheromones))
 		return
-	examine_list += span_lewd("Вы чувствуете сладкий непонятный запах от [anonymous ? "него" : quirk_holder.ru_nego()], ваш разум заполняет желание секса.")
-
-
 	//Check for possible doms with the dominant_aura quirk, and for the closest one if there is
 	var/mob/living/carbon/human/closest_phero
 	var/list/mob/living/carbon/human/pheros = range(PHEROMONS_DETECT_RANGE, quirk_holder)

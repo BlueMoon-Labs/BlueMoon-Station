@@ -138,7 +138,7 @@
 	if(SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		. += "[t_He] напрягается[CHECK_MOBILITY(src, MOBILITY_STAND) ? "." : ", и встает в боевую стойку."]"
 
-	var/trait_exam = common_trait_examine()
+	var/trait_exam = common_trait_examine(examiner = user)
 	if (!isnull(trait_exam))
 		. += trait_exam
 

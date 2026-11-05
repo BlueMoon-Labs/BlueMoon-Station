@@ -39,7 +39,7 @@
 	var/name_html = "<b>[html_encode(shown_name)][collar_tagname][id_card_callsign_name]</b>"
 	var/race_html
 	if(identity_hidden)
-		race_html = "<span class='examine_unknown_species'>Вы не можете разобрать, к какому виду относится находящееся перед вами существо.</span>"
+		race_html = "<span class='examine_unknown_species'>Вы не можете разобрать, кто перед вами.</span>"
 	else
 		race_html = "[capitalize(t_ego)] вид – [spec_trait_examine_font()][html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)]</font>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
@@ -563,7 +563,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				msg += span_warning("<B>Не стоит [t_ego] трогать.</B> [t_on] имеет пустой, рассеянный взгляд и кажется совершенно не реагирующим ни на что. \
 				В этом состоянии [t_on] находится [round(((world.time - lastclienttime) / (1 MINUTES)), 1)] минут. [t_on] может выйти из этого состояни в ближайшее время.\n")
 
-	var/trait_exam = common_trait_examine(anonymous)
+	var/trait_exam = common_trait_examine(anonymous, user)
 	if (!isnull(trait_exam))
 		trait_lines += trait_exam
 
