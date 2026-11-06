@@ -63,10 +63,12 @@ export const NtosPortraitPrinter = (props) => {
     },
   ];
   const baseList = TABS[tabIndex].list || [];
+  // Скрытые картины видны только админам (чтобы они могли восстановить)
+  const displayList = is_admin ? baseList : baseList.filter(p => !p.hidden);
 
   const filteredList = !query
-    ? baseList
-    : baseList.filter(p => {
+    ? displayList
+    : displayList.filter(p => {
         // Админы могут искать по названию ИЛИ сикею
         if (is_admin) {
           return String(p.title).toLowerCase().includes(query.toLowerCase()) ||
@@ -159,14 +161,27 @@ export const NtosPortraitPrinter = (props) => {
                       })}
                     />
                   )}
-                  {hasPortraits && isAdminOrOwner && (
+                  {hasPortraits && isAdminOrOwner && !currentPortrait.hidden && (
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip={is_admin ? "Удалить картину из базы данных (админ)" : "Удалить свою картину"}
+                      tooltip={is_admin ? "Скрыть картину из галереи (админ)" : "Скрыть свою картину"}
                       tooltipPosition="bottom"
                       confirmContent="Вы уверены?"
-                      onClick={() => act('delete_painting', {
+                      onClick={() => act('hide_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && is_admin && currentPortrait.hidden && (
+                    <Button.Confirm
+                      icon="undo"
+                      color="good"
+                      tooltip="Восстановить картину в галерее (админ)"
+                      tooltipPosition="bottom"
+                      confirmContent="Вы уверены?"
+                      onClick={() => act('unhide_painting', {
                         md5: currentPortrait.md5,
                         asset_prefix: current_portrait_asset_prefix,
                       })}

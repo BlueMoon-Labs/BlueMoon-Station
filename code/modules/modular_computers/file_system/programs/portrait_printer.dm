@@ -24,10 +24,20 @@
 	var/list/data = list()
 	// BLUEMOON EDIT START
 	var/static/list/categorys = list("library", "library_secure", "library_private", "library_large", "library_large_private")
+	var/is_admin = check_rights_for(user?.client, R_DEBUG)
 	for(var/category_name in categorys)
-		data[category_name] = SSpersistence.paintings[category_name]
+		var/list/paintings = SSpersistence.paintings[category_name]
+		if(paintings)
+			var/list/filtered = list()
+			for(var/list/entry in paintings)
+				// Скрытые картины видны только админам (чтобы они могли восстановить)
+				if(!entry["hidden"] || is_admin)
+					filtered += entry
+			data[category_name] = filtered
+		else
+			data[category_name] = list()
 	data["favorite_paintings_md5"] = user?.client?.prefs?.favorite_paintings_md5
-	data["is_admin"] = check_rights_for(user?.client, R_DEBUG)
+	data["is_admin"] = is_admin
 	data["user_ckey"] = user?.ckey
 	// BLUEMOON EDIT END
 	return data
@@ -92,7 +102,7 @@
 			to_chat(usr, span_notice("Картина переименована в [new_title]."))
 			return TRUE
 
-		if("delete_painting")
+		if("hide_painting")
 			var/mob/user = usr
 			var/asset_prefix = params["asset_prefix"]
 			var/md5 = params["md5"]
@@ -115,22 +125,52 @@
 			var/is_owner = author_ckey == user?.ckey
 			if(!check_rights_for(user?.client, R_DEBUG) && !is_owner)
 				return
-			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите удалить картину? ДЕЙСТВИЕ НЕОБРАТИМО!", "Удаление картины из БД", list("Нет", "Да"))
+			if(chosen_portrait["hidden"])
+				return
+			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите скрыть картину? Её можно будет восстановить позже.", "Скрытие картины", list("Нет", "Да"))
 			if(choice != "Да")
 				return
 			// Race condition safecheck: Перепроверка портрета на индексе, если не совпало, мы не трогаем ничего
 			if(!current_list[chosen_idx] || current_list[chosen_idx]["md5"] != chosen_portrait["md5"] || current_list[chosen_idx]["ckey"] != chosen_portrait["ckey"])
 				return
-			current_list.Cut(chosen_idx, chosen_idx + 1)
-			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
-			var/png = "data/paintings/[asset_prefix]/[md5].png"
-			fdel(png)
+			chosen_portrait["hidden"] = TRUE
+			// Убираем картину из всех рамок в мире, где она отображается
 			for(var/obj/structure/sign/painting/P in SSpersistence.painting_frames)
 				if(P.current_canvas && md5(P.current_canvas.get_data_string()) == md5)
 					QDEL_NULL(P.current_canvas)
 					P.update_icon()
-			log_admin("[key_name(user)] deleted a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
-			message_admins(span_notice("[key_name_admin(user)] deleted persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
+			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
+			log_admin("[key_name(user)] hid a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
+			message_admins(span_notice("[key_name_admin(user)] hid persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
+			return TRUE
+
+		if("unhide_painting")
+			var/mob/user = usr
+			if(!check_rights_for(user?.client, R_DEBUG))
+				return
+			var/asset_prefix = params["asset_prefix"]
+			var/md5 = params["md5"]
+			if(!asset_prefix || !md5)
+				return
+			var/list/current_list = SSpersistence.paintings[asset_prefix]
+			if(!current_list)
+				return
+			var/list/chosen_portrait
+			var/chosen_idx
+			for(var/i in 1 to length(current_list))
+				var/list/entry = current_list[i]
+				if(entry["md5"] == md5)
+					chosen_portrait = entry
+					chosen_idx = i
+					break
+			if(!chosen_portrait)
+				return
+			if(!chosen_portrait["hidden"])
+				return
+			chosen_portrait["hidden"] = FALSE
+			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
+			log_admin("[key_name(user)] unhid a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
+			message_admins(span_notice("[key_name_admin(user)] unhid persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
 			return TRUE
 		if("select")
 			//printer check!
