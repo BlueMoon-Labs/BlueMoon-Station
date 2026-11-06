@@ -723,3 +723,46 @@
 	open_blastdoors()
 	dialogue_completed = TRUE
 	end_dialogue()
+
+// =============================================================================
+// FUEL RADIO
+// Radio for the survivor who can open the route to the warehouses
+// =============================================================================
+
+/obj/machinery/negotiations_radio/fuel
+	name = "fuel radio"
+	desc = "A radio for communications with a survivor in the fuel booth."
+	icon_state = "radiohecu"
+	var/list/fuel_alert_phrases = list(
+		"Подойдите сюда!",
+		"ЭЭЙ! Это Грэй!!!",
+		"Я тут!!! Подойдите!!!"
+	)
+	var/list/fuel_dialogue_lines = list(
+		"Как рад, что вижу вас. За меня не беспокойтесь. Я через люк сбегу в безопасные техтоннели. А там уже уеду с парнями",
+		"Я не могу открыть ставни моста. Удивлю вас, но генераторы чёрной мезы можно заправлять батареями ХЭВ костюма.",
+		"Где-то.. Ах да... Вам придётся спуститься... ГЛУБОКО. Я не был в основных атриумах и не могу сказать точное положение дел.",
+		"У меня хватает энергии в будке только что-бы открыть вам ход к складам. Там стопроцентно будут батареи."
+	)
+
+/obj/machinery/negotiations_radio/fuel/Initialize()
+	. = ..()
+	dialogue_lines = fuel_dialogue_lines
+	alert_phrases = fuel_alert_phrases
+
+/obj/machinery/negotiations_radio/fuel/confirm_action(mob/user)
+	if(!user || !src)
+		return
+
+	if(!dialogue_active || !is_current_interactor(user))
+		return
+
+	next_interaction_time = world.time + 2 SECONDS
+	say("Давайте, друзья! Задницами шевелите! Я уже вам оказываю услугу, открывая ход дальше!", language = /datum/language/modular_sand/solcommon)
+	icon_state = "radiohecu_talking"
+	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
+
+	open_blastdoors()
+	dialogue_completed = TRUE
+	end_dialogue()

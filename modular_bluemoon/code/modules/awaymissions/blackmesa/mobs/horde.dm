@@ -125,24 +125,6 @@
 		if(L.client)
 			to_chat(L, span_warning("The acid burns your skin!"))
 
-// Move speed modifier for infected slow effect
-/datum/movespeed_modifier/infected_slow
-	id = MOVESPEED_ID_INFECTED_SLOW
-	multiplicative_slowdown = 15.0
-	blacklisted_movetypes = FLOATING
-
-// Move speed modifier for bruiser slow effect (stronger)
-/datum/movespeed_modifier/bruiser_slow
-	id = MOVESPEED_ID_BRUISER_SLOW
-	multiplicative_slowdown = 20.0
-	blacklisted_movetypes = FLOATING
-
-// Move speed modifier for infected damage slow (when hit)
-/datum/movespeed_modifier/infected_damage_slow
-	id = MOVESPEED_ID_INFECTED_DAMAGE_SLOW
-	multiplicative_slowdown = 3.0
-	blacklisted_movetypes = FLOATING
-
 // Parent infected mob type
 /mob/living/simple_animal/hostile/infected
 	name = "infected"
@@ -198,18 +180,12 @@
 		return TRUE
 	. = ..()
 
-/mob/living/simple_animal/hostile/infected/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	. = ..()
-	if(amount < 0 && !stat)
-		add_movespeed_modifier(/datum/movespeed_modifier/infected_damage_slow, TRUE)
-		addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/infected_damage_slow), 1 SECONDS)
-
 /mob/living/simple_animal/hostile/infected/CanAttack(atom/the_target)
 	if(!the_target)
 		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator))
 		var/obj/structure/urbanism_generator/G = the_target
-		if(!G || !G.activating)
+		if(!G || (!G.activating && !G.waiting_for_fuel))
 			return FALSE
 	return ..()
 
@@ -229,18 +205,6 @@
 	. = ..()
 	if(speak && speak.len && prob(30))
 		playsound(src, pick(speak), 70, TRUE)
-
-/mob/living/simple_animal/hostile/infected/AttackingTarget()
-	var/atom/attack_target = target
-	. = ..()
-	if(!attack_target || QDELETED(attack_target))
-		return
-	if(isliving(attack_target))
-		var/mob/living/L = attack_target
-		if(L && L.client && L.stat != DEAD)
-			L.add_movespeed_modifier(/datum/movespeed_modifier/infected_slow, TRUE)
-			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/infected_slow), 5 SECONDS)
-			to_chat(L, span_warning("Вас замедлил заражённый!"))
 
 // Shared fence movement logic for all infected types
 /mob/living/simple_animal/hostile/infected/proc/handle_fence_movement(atom/newloc)
@@ -297,18 +261,6 @@
 	bare_wound_bonus = 0
 	sharpness = SHARP_NONE // Prevent cutting wounds
 
-/mob/living/simple_animal/hostile/infected/bruiser/AttackingTarget()
-	var/atom/attack_target = target
-	. = ..()
-	if(!attack_target || QDELETED(attack_target))
-		return
-	if(isliving(attack_target))
-		var/mob/living/L = attack_target
-		if(L && L.client && L.stat != DEAD)
-			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
-			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
-			to_chat(L, span_warning("Вас сильно замедлил bruiser!"))
-
 /mob/living/simple_animal/hostile/infected/bruiser/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
 		return TRUE
@@ -362,18 +314,6 @@
 	. = ..()
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
-
-/mob/living/simple_animal/hostile/infected/acid_spitter/AttackingTarget()
-	var/atom/attack_target = target
-	. = ..()
-	if(!attack_target || QDELETED(attack_target))
-		return
-	if(isliving(attack_target))
-		var/mob/living/L = attack_target
-		if(L && L.client && L.stat != DEAD)
-			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
-			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
-			to_chat(L, span_warning("Вас сильно замедлил acid spitter!"))
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
@@ -784,9 +724,6 @@
 	if(isliving(attack_target))
 		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
-			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
-			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
-			to_chat(L, span_warning("Вас сильно замедлил hunter!"))
 			// Apply screen shake to victim on melee hit
 			shake_camera(L, 2, 2)
 

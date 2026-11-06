@@ -577,9 +577,9 @@
 
 	var/activating = FALSE
 	var/active = FALSE
+	var/waiting_for_fuel = FALSE
 	var/activation_start_time = 0
 	var/next_mob_spawn_time = 0
-	var/next_director_horde_time = 0
 	var/damage_taken = 0
 
 	var/spawn_mobs = FALSE
@@ -590,6 +590,9 @@
 
 	var/reward_type = null
 	var/blastdoor_id = null
+	var/required_item_type = null
+	var/required_item_count = 0
+	var/items_inserted = 0
 
 /turf/open/floor/plating/smooth/grass/urbanism
 	name = "urbanism grass"
@@ -618,16 +621,13 @@
 		interrupt_activation()
 		return
 
-	if(spawn_mobs && mob_types && mob_types.len && activating)
+	var/should_spawn_mobs = !istype(src, /obj/structure/urbanism_generator/fuel) && activating
+	if(active && istype(src, /obj/structure/urbanism_generator/continuous))
+		should_spawn_mobs = TRUE
+
+	if(spawn_mobs && mob_types && mob_types.len && should_spawn_mobs)
 		if(world.time >= next_mob_spawn_time)
 			spawn_mob_wave()
-
-	if(activating && GLOB.zombie_director)
-		if(world.time >= next_director_horde_time)
-			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
-			if(D)
-				D.trigger_horde()
-			next_director_horde_time = world.time + 60 SECONDS
 
 	if(!active)
 		return
@@ -661,7 +661,6 @@
 	activating = TRUE
 	damage_taken = 0
 	next_mob_spawn_time = world.time + mob_spawn_interval
-	next_director_horde_time = world.time + mob_spawn_interval
 	to_chat(user, span_notice("Вы начинаете активировать генератор..."))
 
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
@@ -753,21 +752,34 @@
 	if(director)
 		difficulty = director.difficulty_level
 
+	var/minimum_count
+	var/maximum_count
 	switch(difficulty)
 		if(0)
-			return rand(1, min(2, max_count))
+			minimum_count = 1
+			maximum_count = 2
 		if(1)
-			return rand(1, min(3, max_count))
+			minimum_count = 1
+			maximum_count = 3
 		if(2)
-			return rand(2, min(4, max_count))
+			minimum_count = 2
+			maximum_count = 4
 		if(3)
-			return rand(2, min(5, max_count))
+			minimum_count = 2
+			maximum_count = 5
 		if(4)
-			return rand(3, min(6, max_count))
+			minimum_count = 3
+			maximum_count = 6
 		if(5)
-			return rand(3, min(7, max_count))
+			minimum_count = 3
+			maximum_count = 7
 		else
-			return rand(4, max_count)
+			minimum_count = 4
+			maximum_count = max_count
+
+	minimum_count = min(minimum_count, max_count)
+	maximum_count = min(maximum_count, max_count)
+	return rand(minimum_count, max(minimum_count, maximum_count))
 
 /obj/structure/urbanism_generator/proc/spawn_mob_wave()
 	if(!src)
@@ -780,34 +792,27 @@
 	if(!mob_types || !mob_types.len)
 		return
 
-	var/mobs_to_spawn = get_spawn_count_for_difficulty()
-	if(mobs_to_spawn < 1)
-		mobs_to_spawn = 1
+	var/mobs_to_spawn = max(1, get_spawn_count_for_difficulty())
+	var/list/spawn_turfs = list()
+	for(var/turf/candidate in range(spawn_radius, T))
+		var/dist = get_dist(candidate, T)
+		if(dist < 2 || dist > spawn_radius)
+			continue
+		if(candidate.density || candidate.is_blocked_turf())
+			continue
+		spawn_turfs += candidate
 
-	for(var/i = 1; i <= mobs_to_spawn; i++)
+	if(!spawn_turfs.len)
+		log_world("[src] Generator could not find a valid spawn turf")
+		next_mob_spawn_time = world.time + mob_spawn_interval
+		return
+
+	var/spawned_count = 0
+	for(var/i = 1; i <= mobs_to_spawn && spawn_turfs.len; i++)
+		var/turf/spawn_turf = pick(spawn_turfs)
+		spawn_turfs -= spawn_turf
 		var/mob_type = pick(mob_types)
 		if(!mob_type)
-			continue
-
-		var/turf/spawn_turf = null
-		for(var/attempt = 1 to 10)
-			var/turf/candidate = get_step(T, pick(GLOB.cardinals))
-			if(!candidate)
-				continue
-			var/dist = get_dist(candidate, T)
-			if(dist < spawn_radius)
-				var/dir_to_move = get_dir(T, candidate)
-				for(var/j = 1 to (spawn_radius - dist))
-					candidate = get_step(candidate, dir_to_move)
-					if(!candidate)
-						break
-			if(!candidate)
-				continue
-			if(candidate.density || candidate.is_blocked_turf())
-				continue
-			spawn_turf = candidate
-			break
-		if(!spawn_turf)
 			continue
 
 		var/mob/living/M = new mob_type(spawn_turf)
@@ -816,12 +821,18 @@
 
 		if(istype(M, /mob/living/simple_animal/hostile/infected) && GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
-			if(D && D.zombie_hp_multiplier > 1.0)
-				M.maxHealth = round(M.maxHealth * D.zombie_hp_multiplier)
-				M.health = M.maxHealth
+			if(D)
+				if(D.zombie_hp_multiplier > 1.0)
+					M.maxHealth = round(M.maxHealth * D.zombie_hp_multiplier)
+					M.health = M.maxHealth
+				D.active_zombies += M
 
 		new /obj/effect/temp_visual/dir_setting/ninja/phase(spawn_turf)
 		playsound(spawn_turf, 'sound/magic/Teleport_app.ogg', 50, TRUE)
+		spawned_count++
+
+	if(spawned_count < mobs_to_spawn)
+		log_world("[src] Generator wave incomplete: requested=[mobs_to_spawn], spawned=[spawned_count]")
 
 	next_mob_spawn_time = world.time + mob_spawn_interval
 
@@ -947,15 +958,8 @@
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS
-	max_mobs_per_wave = 3
+	max_mobs_per_wave = 6
 	damage_threshold = 600
-
-/obj/structure/urbanism_generator/button/get_spawn_count_for_difficulty()
-	var/spawn_count = ..()
-	var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
-	if(director && director.difficulty_level >= 3)
-		return max(1, round(spawn_count * 0.75))
-	return spawn_count
 
 /obj/structure/urbanism_generator/button/alt
 	name = "secondary door generator"
@@ -966,7 +970,7 @@
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS
-	max_mobs_per_wave = 3
+	max_mobs_per_wave = 6
 
 /obj/structure/urbanism_generator/button/safe
 	name = "safe door generator"
@@ -989,6 +993,119 @@
 	mob_spawn_interval = 10 SECONDS
 	max_mobs_per_wave = 2
 	active_duration = 120 SECONDS
+
+/obj/structure/urbanism_generator/fuel
+	name = "fuel generator"
+	desc = "A generator that needs specific items before it can activate."
+	required_item_type = /obj/item/stock_parts/cell/mesa_battery
+	required_item_count = 8
+	waiting_for_fuel = TRUE
+	spawn_mobs = FALSE
+	var/director_horde_interval = 1 MINUTES
+	var/next_director_horde_time = 0
+	var/fuel_started = FALSE
+	var/battery_spawned = FALSE
+
+/obj/structure/urbanism_generator/fuel/Initialize(mapload)
+	. = ..()
+	next_director_horde_time = world.time + director_horde_interval
+
+/obj/structure/urbanism_generator/fuel/process()
+	..()
+	if(!fuel_started || !waiting_for_fuel)
+		return
+
+	if(world.time >= next_director_horde_time)
+		if(GLOB.zombie_director)
+			var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+			director.trigger_horde()
+		next_director_horde_time = world.time + director_horde_interval
+
+/obj/structure/urbanism_generator/fuel/proc/spawn_fuel_battery()
+	if(battery_spawned)
+		return TRUE
+
+	var/obj/effect/landmark/urbanism_battery_spawn/spawn_landmark = null
+	for(var/obj/effect/landmark/urbanism_battery_spawn/L in GLOB.landmarks_list)
+		if(L.z != z)
+			continue
+		if(!spawn_landmark || get_dist(src, L) < get_dist(src, spawn_landmark))
+			spawn_landmark = L
+
+	if(!spawn_landmark)
+		log_world("fuel_generator: no battery spawn landmark found on z=[z]")
+		return FALSE
+
+	var/turf/spawn_turf = get_turf(spawn_landmark)
+	if(!spawn_turf || !ispath(required_item_type, /obj/item))
+		log_world("fuel_generator: invalid battery spawn turf or item type")
+		return FALSE
+
+	var/obj/item/spawned_battery = new required_item_type(spawn_turf)
+	if(!spawned_battery)
+		log_world("fuel_generator: failed to spawn battery")
+		return FALSE
+
+	battery_spawned = TRUE
+	visible_message(span_notice("На лендмарке появляется батарея!"))
+	return TRUE
+
+/obj/structure/urbanism_generator/fuel/attack_hand(mob/user)
+	if(!user)
+		return
+
+	if(!fuel_started)
+		if(user.get_active_held_item())
+			to_chat(user, span_warning("Вам нужны пустые руки для активации генератора."))
+			return
+		if(!spawn_fuel_battery())
+			balloon_alert(user, "ошибка запуска")
+			return
+
+		fuel_started = TRUE
+		next_director_horde_time = world.time + director_horde_interval
+		visible_message(span_boldnotice("Генератор активирован, но проход заблокирован!"))
+		playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
+		playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_sputter.ogg', 50, TRUE)
+		return
+
+	if(waiting_for_fuel)
+		balloon_alert(user, "осталось [required_item_count - items_inserted] батарей")
+		return
+	to_chat(user, span_warning("Генератор уже активирован!"))
+
+/obj/structure/urbanism_generator/fuel/attackby(obj/item/I, mob/user, params)
+	if(!waiting_for_fuel || !istype(I, required_item_type))
+		return ..()
+
+	if(!fuel_started)
+		balloon_alert(user, "сначала активируйте генератор")
+		return TRUE
+
+	if(items_inserted >= required_item_count)
+		return TRUE
+
+	if(istype(I, /obj/item/stack))
+		var/obj/item/stack/stack_item = I
+		if(!stack_item.use(1))
+			return TRUE
+	else
+		qdel(I)
+
+	items_inserted++
+	balloon_alert(user, "осталось [required_item_count - items_inserted] батарей")
+
+	if(items_inserted >= required_item_count)
+		waiting_for_fuel = FALSE
+		visible_message(span_boldnotice("Генератор полностью заряжен! Проход открывается!"))
+		open_blastdoor()
+	return TRUE
+
+/obj/effect/landmark/urbanism_battery_spawn
+	name = "urbanism battery spawn"
+	icon_state = "x"
+	alpha = 0
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /turf/closed/wall/r_wall/blackmesa
 	name = "indestructible reinforced wall"

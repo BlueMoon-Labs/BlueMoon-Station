@@ -2,6 +2,9 @@
 	var/wave_timer = 1800
 	var/min_wave_interval = 1800
 	var/max_wave_interval = 6000
+	var/max_zombies_per_wave = 35
+	var/special_infected_interval = 10 MINUTES
+	var/next_special_infected_time = 0
 	var/last_wave_time = 0
 	var/current_wave_number = 0
 	var/list/active_zombies = list()
@@ -45,6 +48,7 @@
 	. = ..()
 	initialized = TRUE
 	last_wave_time = world.time
+	next_special_infected_time = world.time + special_infected_interval
 	START_PROCESSING(SSprocessing, src)
 
 /datum/ai_director/zombie_mission/Destroy()
@@ -67,6 +71,7 @@
 		if(!wave_timer_paused)
 			wave_timer_paused = TRUE
 			pause_start_time = world.time
+		next_special_infected_time = world.time + special_infected_interval
 		if(horde_music_playing)
 			manage_horde_music()
 		return
@@ -80,8 +85,36 @@
 	if(world.time - last_wave_time >= wave_timer)
 		attempt_spawn_wave()
 
+	if(world.time >= next_special_infected_time)
+		spawn_special_infected(alive_players)
+		next_special_infected_time = world.time + special_infected_interval
+
 	if(horde_music_playing)
 		manage_horde_music()
+
+/datum/ai_director/zombie_mission/proc/spawn_special_infected(list/players)
+	if(!players || !players.len)
+		return
+
+	var/turf/spawn_turf = find_valid_spawn_turf(players)
+	if(!spawn_turf)
+		return
+
+	var/list/special_mob_types = list(
+		/mob/living/simple_animal/hostile/infected/hunter,
+		/mob/living/simple_animal/hostile/infected/acid_spitter,
+		/mob/living/simple_animal/hostile/infected/charger
+	)
+	var/mob_type = pick(special_mob_types)
+	var/mob/living/simple_animal/hostile/infected/special = new mob_type(spawn_turf)
+	if(!special)
+		log_world("[src] Failed to spawn special infected at [spawn_turf]")
+		return
+
+	if(zombie_hp_multiplier > 1.0)
+		special.maxHealth = round(special.maxHealth * zombie_hp_multiplier)
+		special.health = special.maxHealth
+	active_zombies += special
 
 /datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
 	if(!src)
@@ -168,15 +201,15 @@
 		if(3)
 			base_threat = rand(6, 10)
 		if(4)
-			base_threat = rand(7, 12)
+			base_threat = rand(12, 18)
 		if(5)
-			base_threat = rand(8, 15)
+			base_threat = rand(14, 21)
 		if(6)
-			base_threat = rand(9, 17)
+			base_threat = rand(16, 24)
 		if(7)
-			base_threat = rand(10, 18)
+			base_threat = rand(18, 27)
 		if(8)
-			base_threat = rand(12, 20)
+			base_threat = rand(20, 30)
 		else
 			base_threat = rand(3, 4)
 
@@ -197,14 +230,9 @@
 		log_world("[src] No players provided")
 		return
 
-	var/max_active_zombies = 4 + ((players.len - 1) * 2) + (difficulty_level * 2)
-	var/active_zombie_count = count_active_zombies()
-	var/zombies_to_spawn = min(threat_level, max_active_zombies - active_zombie_count)
-	if(zombies_to_spawn <= 0)
-		log_world("[src] Zombie population cap reached: active=[active_zombie_count], cap=[max_active_zombies]")
-		return
+	var/zombies_to_spawn = min(threat_level, max_zombies_per_wave)
 	if(zombies_to_spawn < threat_level)
-		log_world("[src] Limiting wave from [threat_level] to [zombies_to_spawn] zombies: active=[active_zombie_count], cap=[max_active_zombies]")
+		log_world("[src] Limiting wave from [threat_level] to [zombies_to_spawn] zombies: per-wave cap=[max_zombies_per_wave]")
 
 	var/list/spawned_zombies = list()
 
@@ -216,11 +244,11 @@
 		return
 
 	spawning_wave = TRUE
-	var/batch_size = rand(3, 5)
+	var/batch_size = rand(5, 8)
 	var/zombies_spawned = 0
 	var/failed_spawns = 0
 
-	while(zombies_spawned < zombies_to_spawn && failed_spawns < 20)
+	while(zombies_spawned < zombies_to_spawn && cached_spawn_turfs.len)
 		var/remaining = zombies_to_spawn - zombies_spawned
 		var/current_batch = min(batch_size, remaining)
 
@@ -230,6 +258,8 @@
 				log_world("[src] Failed to pick spawn turf for zombie #[zombies_spawned + i]")
 				failed_spawns++
 				continue
+
+			cached_spawn_turfs -= spawn_turf
 
 			if(spawn_turf.density || spawn_turf.is_blocked_turf())
 				failed_spawns++
@@ -292,7 +322,7 @@
 				failed_spawns++
 				log_world("[src] Failed to spawn zombie at [spawn_turf]")
 
-		if(zombies_spawned < zombies_to_spawn && failed_spawns < 20)
+		if(zombies_spawned < zombies_to_spawn && cached_spawn_turfs.len)
 			sleep(20)
 
 	log_world("[src] Wave complete: intended=[zombies_to_spawn], spawned=[spawned_zombies.len], failed=[failed_spawns]")
@@ -389,7 +419,8 @@
 					var/area/spawn_area = get_area(T)
 					if(!spawn_area || !(spawn_area in valid_areas))
 						continue
-					cached_turfs += T
+					if(!(T in cached_turfs))
+						cached_turfs += T
 
 	return cached_turfs
 
@@ -476,9 +507,6 @@
 	var/threat_level = calculate_threat_level(alive_players.len)
 	if(!threat_level || threat_level <= 0)
 		return
-
-	if(difficulty_level >= 3)
-		threat_level = max(1, round(threat_level * 0.75))
 
 	spawn_zombie_wave(threat_level, alive_players)
 	current_wave_number++
