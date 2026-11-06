@@ -489,6 +489,7 @@
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
 #include "spawners_menu.dm"
+#include "species_worn_icons.dm"
 #include "spritesheet_asset_snapshot.dm"
 #include "spritesheet_batched.dm"
 #include "starlight_queue.dm"
