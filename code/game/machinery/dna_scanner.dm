@@ -117,6 +117,12 @@
 	if(!state_open)
 		return FALSE
 
+	if(user.get_equipped_items().len)
+	{
+		to_chat(user, "<span class='notice'>Вы не можете залезть в сканнер в одежде. Снимите всё перед входом.</span>")
+		return FALSE
+	}
+
 	..(user)
 
 // search for ghosts, if the corpse is empty and the scanner is connected to a cloner
