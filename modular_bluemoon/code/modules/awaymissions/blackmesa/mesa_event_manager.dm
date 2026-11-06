@@ -223,7 +223,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	)
 	issue_hecu_orders(
 		"Перемирие установлено. HECU должны немедленно эвакуироваться из гейта Сектора H.",
-		"Немедленно эвакуироваться из гейта Сектора H.",
+		"Объеденится с персоналом и вторженцами, после чего немедленно эвакуироваться из гейта Сектора H.",
 	)
 	spawn_conflict_ghost_roles(
 		/obj/effect/mob_spawn/human/black_mesa/hecu/blackops/assault,
@@ -334,7 +334,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	director.difficulty_level = 8
 	director.zombie_hp_multiplier = 3.0
 	mesa_announce(
-		"Уровень опасности Сектора H повышен до максимального. Ожидается резкое усиление враждебной активности.",
+		"Отряд ХЕКУ объявляет перемирие и ОТКАЗЫВАЕТСЯ следовать приказу по уничтожению свидетелй. Уровень опасности Сектора H повышен до максимального. Ожидается резкое усиление враждебной активности.",
 		"МАКСИМАЛЬНЫЙ УРОВЕНЬ ОПАСНОСТИ",
 		'modular_bluemoon/sound/ambience/mesa/BMAS3.ogg',
 	)

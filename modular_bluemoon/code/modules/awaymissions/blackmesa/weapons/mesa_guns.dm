@@ -1406,7 +1406,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/right48x32.dmi'
 	icon_state = "m249"
 	item_state = "m249"
-	fire_sound = 'modular_bluemoon/sound/weapons/m249.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m249.ogg'
 	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m249
 	w_class = WEIGHT_CLASS_BULKY

@@ -111,7 +111,7 @@
 
 	icon_state = "radiohecu_talking"
 	var/phrase = pick(alert_phrases)
-	say(phrase)
+	say(phrase, language = /datum/language/modular_sand/solcommon)
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
@@ -167,7 +167,7 @@
 		next_interaction_time = world.time + 2 SECONDS
 		var/line = dialogue_lines[dialogue_step]
 		icon_state = "radiohecu_talking"
-		say(line)
+		say(line, language = /datum/language/modular_sand/solcommon)
 		playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 		addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
@@ -265,7 +265,7 @@
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
-	say("Шлюзы открыл! Деактивируете туррели - возвращаетесь к открывшемуся проходу и продолжаете путь")
+	say("Шлюзы открыл! Деактивируете туррели - возвращаетесь к открывшемуся проходу и продолжаете путь", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -359,7 +359,7 @@
 	if(linked_console)
 		linked_console.balloon_alert_to_viewers("Начало бомбардировки", null)
 
-	say("Вижу цель. ОТОЙДИТЕ ОТ ЗОНЫ БОМБАРДИРОВКИ!!!")
+	say("Вижу цель. ОТОЙДИТЕ ОТ ЗОНЫ БОМБАРДИРОВКИ!!!", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -399,7 +399,7 @@
 	if(!src)
 		return
 
-	say("Говорит пеликан-1. Топливо на критично низком уровне. Улетаю на базу")
+	say("Говорит пеликан-1. Топливо на критично низком уровне. Улетаю на базу", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -412,7 +412,7 @@
 	if(!src)
 		return
 
-	say("Пеликан-1 на связи. Готов к следующему залпу, когда будете готовы")
+	say("Пеликан-1 на связи. Готов к следующему залпу, когда будете готовы", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -425,7 +425,7 @@
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
-	say("Координаты приняты. Консоль бомбардировки активирована.")
+	say("Координаты приняты. Консоль бомбардировки активирована.", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -665,7 +665,7 @@
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
-	say("Всем удачи. Мы на связи.")
+	say("Всем удачи. Мы на связи.", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
@@ -715,7 +715,7 @@
 		return
 
 	next_interaction_time = world.time + 2 SECONDS
-	say("Собирайтесь и выдвигайтесь. Жду вас у моста.")
+	say("Собирайтесь и выдвигайтесь. Жду вас у моста.", language = /datum/language/modular_sand/solcommon)
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)

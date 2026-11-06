@@ -14,7 +14,7 @@
 	short_desc = "Ты являешься одним из немногих выживших после инцидента в чёрной мезе"
 	flavour_text = "Ты старший научный научный сотрудник сектора H. Недавно тебя повысили в должности, перенаправив в этот сектор, но что-то пошло не так. Исходя из оповещений BMAS, По всему сектору начались портальные штормы. По этому вы, засев в одном из кабинетов, ждёте помощи."
 	important_info = "Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
-	category = "offstation"
+	category = "blackmesa"
 	faction = list(FACTION_BLACKMESA)
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	color = "#9a74ac"
@@ -152,7 +152,7 @@
 	short_desc = "Вы являетесь главным директором Сектора H"
 	flavour_text = "Ты стоял на одной из высших должностей в Чёрной Мезе, пока в одном из секторов не случился каскадный резонанс с последующим портальным штормом. Ты инициировал эвакуацию большей части персонала. Но в последний момент, когда вы собирались покинуть свой кабинет, один из порталов отправил вас прямо в сердце сектора. Теперь же вам ничего не остаётся, кроме как ожидать помощи и попытаться привести в чувства оставшийся персонал"
 	important_info = "Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	color = "#a2fcff"
 	restricted_species = "human"
@@ -188,7 +188,7 @@
 	density = TRUE
 	uses = 1
 	permanent = FALSE
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/hecu
 	faction = list(FACTION_HECU)
 	restricted_species = "human"
@@ -350,7 +350,7 @@
 	density = TRUE
 	uses = 1
 	permanent = FALSE
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/losthecu
 	restricted_species = "human"
 
@@ -395,7 +395,7 @@
 	density = TRUE
 	uses = 1
 	permanent = FALSE
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/mesa_hecu_war
 	restricted_species = "human"
 
@@ -410,7 +410,6 @@
 /datum/outfit/machinegunner
 	name = "HECU heavy weapons specialist"
 	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
-	mask = /obj/item/clothing/mask/gas/hecu
 	head = /obj/item/clothing/head/machinegunner
 	suit = /obj/item/clothing/suit/armor/hecu
 	gloves = /obj/item/clothing/gloves/combat
@@ -440,14 +439,13 @@
 	density = TRUE
 	uses = 1
 	permanent = FALSE
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/mesa_hecu_war
 	restricted_species = "human"
 
 /datum/outfit/hecu_sniper
 	name = "HECU sniper"
 	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
-	mask = /obj/item/clothing/mask/gas/hecu
 	head = /obj/item/clothing/head/slouch_hat
 	suit = /obj/item/clothing/suit/armor/hecu
 	gloves = /obj/item/clothing/gloves/combat
@@ -514,7 +512,7 @@
 	short_desc = "Ты являешься чудом попавшим в сектор H чёрным оперативником"
 	flavour_text = "Ваш отряд был отправлен для зачистки оставшихся отрядов HECU, но в один момент почти все ваши напарники были устранены. Теперь вас только двое, и вы буквально виживаете среди всего того происходящего хаоса, что окружает этот клятый сектор. Вам в любом случае плевать на весь этот низший персонал, если они только не будут угрожать вашей жизни."
 	important_info = "Не пытайтесь исследовать карту далее основного атриума, комнат с туррелями ( не ломайте стены в комнаты, закрытые ключ картами/заболтироваными дверьми ). Вы можете покинуть гейт/исследовать его ТОЛЬКО В ТОМ СЛУЧАЕ, когда договоритесь с исследовательской командой. Если вы решили враждовать с исследователями, то вам после этого запрещено покидать гейт и как либо пытатся продвигатся далее по локации"
-	category = "offstation"
+	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	restricted_species = "human"
 
