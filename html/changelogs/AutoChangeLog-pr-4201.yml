@@ -1,0 +1,5 @@
+author: ARZUMATA
+delete-after: true
+changes:
+  - rscadd: Авторы картин и книг теперь могут свои работы удалить через соответствующие
+      консоли
