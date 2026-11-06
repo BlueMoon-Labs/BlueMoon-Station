@@ -23,6 +23,10 @@
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)
 	. = ..()
+	if(em_block)
+		// Силуэт закрывает свечение позади персонажа, но рисуется под его собственным свечением.
+		em_block.vis_flags |= VIS_INHERIT_LAYER | VIS_UNDERLAY
+		em_block.appearance_flags |= RESET_ALPHA | RESET_COLOR
 
 	if(CONFIG_GET(flag/disable_stambuffer))
 		enable_intentional_sprint_mode()
