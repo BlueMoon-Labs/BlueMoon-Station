@@ -365,6 +365,12 @@
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 	addtimer(CALLBACK(src, PROC_REF(drop_bombs), target_turf), 6 SECONDS)
+	if(istype(get_area(target_turf), /area/awaymission/ihategordon))
+		var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+		if(director)
+			addtimer(CALLBACK(director, TYPE_PROC_REF(/datum/ai_director/zombie_mission, trigger_horde)), 1 SECONDS)
+		else
+			log_world("[src] Cannot trigger infected horde for bombardment: zombie director is not initialized.")
 
 /obj/machinery/negotiations_radio/bombardment/proc/drop_bombs(turf/target_turf)
 	if(!src || !target_turf)

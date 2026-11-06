@@ -271,6 +271,178 @@
 	projectile_damage_multiplier = mesa_pointblank_original_damage_multiplier
 	mesa_pointblank_damage_boost_active = FALSE
 
+/obj/item/ammo_box/magazine/m12g/aa12
+	name = "AA-12 drum magazine (12g buckshot)"
+	desc = "A 20-round drum magazine for the AA-12."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	max_ammo = 20
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot/aa12
+
+/obj/item/ammo_box/magazine/m12g/aa12/update_icon()
+	icon_state = ammo_count() ? "shotdrumfull" : "shotdrumempt"
+
+/obj/item/ammo_box/magazine/m12g/pancor
+	name = "Pancor Jackhammer magazine (12g buckshot)"
+	desc = "A 10-round magazine for the Pancor Jackhammer. An empty magazine can be deployed as a mine."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	max_ammo = 10
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot/pancor
+
+/obj/item/ammo_box/magazine/m12g/pancor/update_icon()
+	icon_state = ammo_count() ? "pancordrum" : "pancordrumempt"
+
+/obj/item/ammo_box/magazine/m12g/pancor/AltClick(mob/living/user)
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)
+		return
+	if(ammo_count())
+		to_chat(user, span_warning("The magazine must be empty before it can be deployed as a mine."))
+		return
+	new /obj/effect/mine/explosive(get_turf(user))
+	to_chat(user, span_notice("You arm the empty magazine as an explosive mine beneath you."))
+	qdel(src)
+
+/obj/item/ammo_casing/shotgun/buckshot/aa12
+	name = "AA-12 buckshot shell"
+	projectile_type = /obj/item/projectile/bullet/pellet/shotgun_buckshot/aa12
+
+/obj/item/ammo_casing/shotgun/buckshot/aa12/ready_proj(atom/target, mob/living/user, quiet, zone_override = "", fired_from)
+	. = ..()
+	if(BB && get_dist(user, target) <= 1)
+		BB.damage *= 2
+
+/obj/item/ammo_casing/shotgun/buckshot/pancor
+	name = "Pancor Jackhammer buckshot shell"
+	projectile_type = /obj/item/projectile/bullet/pellet/shotgun_buckshot/pancor
+	var/stun_roll = FALSE
+	var/stun_applied = FALSE
+
+/obj/item/ammo_casing/shotgun/buckshot/pancor/fire_casing(atom/target, mob/living/user, params, distro, quiet, zone_override, spread, atom/fired_from)
+	stun_roll = prob(10)
+	stun_applied = FALSE
+	if(stun_roll && user)
+		user.Stun(20)
+	return ..()
+
+/obj/item/ammo_casing/shotgun/buckshot/pancor/ready_proj(atom/target, mob/living/user, quiet, zone_override = "", fired_from)
+	. = ..()
+	if(BB)
+		var/obj/item/projectile/bullet/pellet/shotgun_buckshot/pancor/projectile = BB
+		projectile.firing_shell = src
+	if(BB && get_dist(user, target) <= 1)
+		BB.damage *= 3
+		BB.simple_mob_damage_multiplier = 3
+
+/obj/item/projectile/bullet/pellet/shotgun_buckshot/aa12
+	name = "AA-12 buckshot pellet"
+
+/obj/item/projectile/bullet/pellet/shotgun_buckshot/aa12/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	var/pointblank_hit = firer && get_dist(firer, target) <= 1
+	. = ..()
+	if(pointblank_hit && blocked < 100 && isliving(target) && !QDELETED(target))
+		var/mob/living/L = target
+		L.safe_throw_at(get_edge_target_turf(L, get_dir(firer, L)), 2, 1, firer)
+
+/obj/item/projectile/bullet/pellet/shotgun_buckshot/pancor
+	name = "Pancor Jackhammer buckshot pellet"
+	var/obj/item/ammo_casing/shotgun/buckshot/pancor/firing_shell
+
+/obj/item/projectile/bullet/pellet/shotgun_buckshot/pancor/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	var/pointblank_hit = firer && get_dist(firer, target) <= 1
+	. = ..()
+	if(isliving(target) && blocked < 100 && !QDELETED(target) && firing_shell && firing_shell.stun_roll && !firing_shell.stun_applied)
+		firing_shell.stun_applied = TRUE
+		var/mob/living/victim = target
+		victim.Stun(20)
+	if(!pointblank_hit || blocked >= 100)
+		return
+	if(istype(target, /obj/machinery/door/airlock))
+		var/obj/machinery/door/airlock/A = target
+		A.deconstruct(FALSE, firer)
+	else if(istype(target, /turf/closed/wall) && !istype(target, /turf/closed/wall/r_wall))
+		var/turf/closed/wall/W = target
+		W.dismantle_wall(TRUE, TRUE)
+
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hl
+	name = "\improper AA-12"
+	desc = "A 20-round automatic combat shotgun built for Black Mesa security forces."
+	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
+	icon_state = "aa12"
+	item_state = "aa12"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/m12g/aa12
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/aa12.ogg'
+	can_suppress = FALSE
+	fire_select = SELECT_FULLY_AUTOMATIC
+	fire_select_modes = list(SELECT_FULLY_AUTOMATIC)
+	burst_size = 1
+	fire_delay = 1.5
+	recoil = 8
+	spread = 22
+	projectile_simple_mob_damage_multiplier = 2
+	automatic_burst_overlay = FALSE
+	actions_types = list()
+
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hl/update_icon_state()
+	icon_state = magazine ? "aa12" : "aa12_mag"
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor
+	name = "\improper Pancor Jackhammer"
+	desc = "A 12-gauge combat shotgun with a 10-round magazine that fires quick three-round bursts."
+	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
+	icon_state = "pancor"
+	item_state = "spas"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/m12g/pancor
+	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
+	can_suppress = FALSE
+	fire_select = SELECT_BURST_SHOT
+	fire_select_modes = list(SELECT_BURST_SHOT)
+	burst_size = 3
+	burst_shot_delay = 1
+	fire_delay = 0.5
+	recoil = 10
+	spread = 24
+	burst_spread = 18
+	tactical_reload = FALSE
+	automatic_burst_overlay = FALSE
+	actions_types = list()
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor/Initialize(mapload)
+	. = ..()
+	burst_size = initial(burst_size)
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(iscarbon(user))
+		user.apply_damage(1, BURN, BODY_ZONE_PRECISE_L_HAND)
+		user.apply_damage(1, BURN, BODY_ZONE_PRECISE_R_HAND)
+		user.adjustStaminaLoss(5)
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor/update_icon_state()
+	icon_state = magazine ? "pancor" : "pancor_mag"
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	if(!istype(AM, mag_type))
+		return
+	if(magazine)
+		return ..()
+	if(!user || !do_after(user, 3 SECONDS, target = src))
+		return FALSE
+	return ..()
+
+/obj/item/gun/ballistic/automatic/shotgun/pancor/attack_self(mob/living/user)
+	if(!magazine)
+		return ..()
+	if(!user || !do_after(user, 3 SECONDS, target = src) || !magazine)
+		return
+	return ..()
+
 /obj/item/gun/ballistic/shotgun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	. = ..()
 	reset_mesa_pointblank_damage()
