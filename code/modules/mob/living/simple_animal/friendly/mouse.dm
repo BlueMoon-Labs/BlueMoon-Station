@@ -40,6 +40,9 @@
 	var/mob/living/swarm_rider
 	var/swarm_rider_was_resting = FALSE
 	var/matrix/swarm_rider_old_transform
+	var/swarm_locked = FALSE
+	var/swarm_gathering = FALSE
+	var/mob/living/swarm_gather_rider
 
 /mob/living/simple_animal/mouse/Initialize(mapload)
 	. = ..()
@@ -194,10 +197,16 @@
 
 /// Пять мышей-качков как в меме про негров, никто и не поймет почему пока не заглянет в код.
 /mob/living/simple_animal/mouse/can_carry_rider(mob/living/rider)
+	if(swarm_gathering && rider == swarm_gather_rider)
+		return TRUE
+	if(swarm_locked || has_buckled_mobs())
+		return FALSE
 	return length(get_ride_swarm(rider)) >= 5
 
 /// Собираем
 /mob/living/simple_animal/mouse/proc/get_ride_swarm(mob/living/rider)
+	if(swarm_locked)
+		return list(src)
 	var/list/mob/living/simple_animal/mouse/swarm = list(src)
 	var/list/mob/living/simple_animal/mouse/candidates = list()
 	for(var/mob/living/simple_animal/mouse/candidate in range(5, src))
@@ -214,7 +223,7 @@
 					candidates |= minion
 
 	for(var/mob/living/simple_animal/mouse/candidate as anything in candidates)
-		if(candidate == src || candidate == rider || QDELETED(candidate) || candidate.stat == DEAD || candidate.client || candidate.buckled || candidate.has_buckled_mobs() || !isturf(candidate.loc))
+		if(candidate == src || candidate == rider || candidate.swarm_locked || QDELETED(candidate) || candidate.stat == DEAD || candidate.client || candidate.buckled || candidate.has_buckled_mobs() || !isturf(candidate.loc))
 			continue
 		var/datum/component/rat_minion/minion_component = candidate.GetComponent(/datum/component/rat_minion)
 		if(minion_component && minion_component.horde && minion_component.horde.leader != rider)
@@ -258,6 +267,14 @@
 		return
 	if(!user || !isturf(src.loc) || !isturf(M.loc) || !in_range(M, src))
 		return
+	if(src.swarm_locked || src.swarm_gathering || src.has_buckled_mobs())
+		if(user == M)
+			to_chat(user, span_warning("Эта мышь уже занята."))
+		return
+	if(M.swarm_gather_lock)
+		if(user == M)
+			to_chat(user, span_warning("Вы уже собираете стаю."))
+		return
 	var/list/swarm = get_ride_swarm(M)
 	if(length(swarm) < 5)
 		if(user == M)
@@ -267,8 +284,32 @@
 
 /// Проверки на вес и вся хуйня дальше
 /mob/living/simple_animal/mouse/proc/attempt_swarm_gather(mob/living/rider, mob/living/user, list/swarm)
+	if(swarm_gathering || swarm_locked || rider.swarm_gather_lock)
+		return FALSE
+
+	var/list/locked_mice = list()
+	for(var/mob/living/simple_animal/mouse/mouse as anything in swarm)
+		if(QDELETED(mouse) || mouse.stat == DEAD)
+			continue
+		if(mouse.swarm_locked)
+			unlock_swarm_mice(locked_mice)
+			if(user == rider)
+				to_chat(user, span_warning("Одна из мышей уже занята другой стаей."))
+			return FALSE
+		mouse.swarm_locked = TRUE
+		locked_mice += mouse
+	if(length(locked_mice) < 5)
+		unlock_swarm_mice(locked_mice)
+		if(user == rider)
+			to_chat(user, span_warning("Для поездки нужна стая из пяти мышей."))
+		return FALSE
+	swarm_gathering = TRUE
+	swarm_gather_rider = rider
+	rider.swarm_gather_lock = TRUE
+
 	var/turf/host_turf = get_turf(rider) || get_turf(src)
 	if(!host_turf)
+		abort_swarm_gather(rider, locked_mice)
 		return FALSE
 	if(get_turf(src) != host_turf)
 		src.forceMove(host_turf)
@@ -312,12 +353,12 @@
 	visible_message(span_notice("Мышки сбегаются в плотную стайку..."))
 
 	if(!do_after(user, 1 SECONDS, src))
-		unlay_swarm_rider()
+		abort_swarm_gather(rider, locked_mice)
 		restore_gathered_swarm(old_stop_automated_movement, old_turf, old_pixel_x, old_pixel_y)
 		return FALSE
 
 	if(QDELETED(src) || QDELETED(rider) || rider.buckled || !in_range(rider, src))
-		unlay_swarm_rider()
+		abort_swarm_gather(rider, locked_mice)
 		restore_gathered_swarm(old_stop_automated_movement, old_turf, old_pixel_x, old_pixel_y)
 		return FALSE
 
@@ -327,7 +368,7 @@
 			continue
 		gathered += mouse
 	if(length(gathered) < 5)
-		unlay_swarm_rider()
+		abort_swarm_gather(rider, locked_mice)
 		restore_gathered_swarm(old_stop_automated_movement, old_turf, old_pixel_x, old_pixel_y)
 		if(user == rider)
 			to_chat(user, span_warning("Стая не успела собраться."))
@@ -345,15 +386,19 @@
 	if(rider.mob_weight >= MOB_WEIGHT_HEAVY_SUPER)
 		unlay_swarm_rider()
 		crush_swarm_with_lie(gathered, rider)
+		unlock_swarm_mice(locked_mice)
+		finish_swarm_gather(rider)
 		return FALSE
 	if(rider.mob_weight >= MOB_WEIGHT_HEAVY)
 		unlay_swarm_rider()
 		scatter_swarm(gathered, rider)
+		unlock_swarm_mice(locked_mice)
+		finish_swarm_gather(rider)
 		return FALSE
 
 	prepare_riding()
 	if(!mouse_buckle_handling(rider, user, TRUE) || rider.buckled != src)
-		unlay_swarm_rider()
+		abort_swarm_gather(rider, locked_mice)
 		restore_gathered_swarm(old_stop_automated_movement, old_turf, old_pixel_x, old_pixel_y)
 		return FALSE
 
@@ -361,7 +406,25 @@
 	if(length(extras))
 		AddComponent(/datum/component/mouse_swarm_mount, extras)
 		visible_message(span_notice("[src] и ещё четыре мыши сбиваются в стаю под [rider]!"))
+	finish_swarm_gather(rider)
 	return TRUE
+
+/mob/living/simple_animal/mouse/proc/unlock_swarm_mice(list/mice)
+	for(var/mob/living/simple_animal/mouse/mouse as anything in mice)
+		if(QDELETED(mouse))
+			continue
+		mouse.swarm_locked = FALSE
+
+/mob/living/simple_animal/mouse/proc/finish_swarm_gather(mob/living/rider)
+	if(rider && !QDELETED(rider))
+		rider.swarm_gather_lock = FALSE
+	swarm_gathering = FALSE
+	swarm_gather_rider = null
+
+/mob/living/simple_animal/mouse/proc/abort_swarm_gather(mob/living/rider, list/locked_mice)
+	unlay_swarm_rider()
+	unlock_swarm_mice(locked_mice)
+	finish_swarm_gather(rider)
 
 /// Снимаем заморозку
 /mob/living/simple_animal/mouse/proc/restore_gathered_swarm(list/old_stop_automated_movement, list/old_turf, list/old_pixel_x, list/old_pixel_y)
@@ -476,7 +539,12 @@
 
 /mob/living/simple_animal/mouse/post_unbuckle_mob(mob/living/M)
 	. = ..()
+	if(swarm_rider && !QDELETED(swarm_rider))
+		swarm_rider.swarm_gather_lock = FALSE
 	unlay_swarm_rider()
+	swarm_locked = FALSE
+	swarm_gathering = FALSE
+	swarm_gather_rider = null
 	var/datum/component/mouse_swarm_mount/swarm = GetComponent(/datum/component/mouse_swarm_mount)
 	if(swarm)
 		qdel(swarm)
@@ -509,7 +577,7 @@
 	var/static/list/offsets = list(list(-6, -4), list(6, -4), list(-4, 6), list(4, 6))
 	for(var/i in 1 to length(extras))
 		var/mob/living/simple_animal/mouse/mouse = extras[i]
-		if(QDELETED(mouse) || mouse.buckled)
+		if(QDELETED(mouse) || mouse.buckled || !isturf(mouse.loc))
 			continue
 		mouse.forceMove(host_turf)
 		var/list/offset = offsets[(i - 1) % length(offsets) + 1]
@@ -526,7 +594,7 @@
 	SIGNAL_HANDLER
 	var/mob/living/simple_animal/mouse/mouse = source
 	var/mob/living/simple_animal/mouse/host = parent
-	if(QDELETED(mouse) || QDELETED(host) || mouse.buckled)
+	if(QDELETED(mouse) || QDELETED(host) || mouse.buckled || !isturf(mouse.loc))
 		return
 	var/turf/host_turf = get_turf(host)
 	if(!host_turf || get_turf(mouse) == host_turf)
@@ -541,6 +609,7 @@
 			continue
 		UnregisterSignal(mouse, COMSIG_PARENT_QDELETING)
 		UnregisterSignal(mouse, COMSIG_MOVABLE_MOVED)
+		mouse.swarm_locked = FALSE
 		mouse.stop_automated_movement = old_stop_automated_movement[mouse] || FALSE
 		mouse.pixel_x = 0
 		mouse.pixel_y = 0

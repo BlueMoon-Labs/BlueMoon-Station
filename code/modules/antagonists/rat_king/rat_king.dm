@@ -297,13 +297,13 @@
 		if(length(candidates))
 			var/mob/dead/selected = pick_n_take(candidates)
 			if(selected && !QDELETED(selected))
-				var/datum/mind/player_mind = new /datum/mind(selected.key)
-				player_mind.active = TRUE
-				player_mind.transfer_to(king)
-				player_mind.assigned_role = ROLE_RAT_KING
-				player_mind.special_role = ROLE_RAT_KING
-				if(!player_mind.has_antag_datum(/datum/antagonist/rat_king))
-					player_mind.add_antag_datum(/datum/antagonist/rat_king)
+				selected.transfer_ckey(king, FALSE)
+				var/datum/mind/player_mind = king.mind
+				if(player_mind)
+					player_mind.assigned_role = ROLE_RAT_KING
+					player_mind.special_role = ROLE_RAT_KING
+					if(!player_mind.has_antag_datum(/datum/antagonist/rat_king))
+						player_mind.add_antag_datum(/datum/antagonist/rat_king)
 		message_admins("[ADMIN_LOOKUPFLW(king)] создан как король крыс ([spawned_kings]/[king_count]).")
 		log_game("[key_name(king)] создан как король крыс ([spawned_kings]/[king_count]).")
 		spawned_mobs += king
