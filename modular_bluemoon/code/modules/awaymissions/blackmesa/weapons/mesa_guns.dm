@@ -189,10 +189,8 @@
 		progressive_spread_current = 0
 	progressive_spread_current = min(progressive_spread_current + progressive_spread_step, progressive_spread_max)
 	progressive_spread_last_shot = world.time
-	var/base_spread = spread
-	spread += progressive_spread_current
+	bonus_spread += progressive_spread_current
 	. = ..()
-	spread = base_spread
 
 /obj/item/gun/ballistic/automatic/mp5/update_icon_state()
 	if(magazine)
@@ -379,7 +377,7 @@
 	fire_select_modes = list(SELECT_FULLY_AUTOMATIC)
 	burst_size = 1
 	fire_delay = 1.5
-	recoil = 8
+	recoil = 5
 	spread = 22
 	projectile_simple_mob_damage_multiplier = 2
 	automatic_burst_overlay = FALSE
@@ -390,7 +388,7 @@
 
 /obj/item/gun/ballistic/automatic/shotgun/pancor
 	name = "\improper Pancor Jackhammer"
-	desc = "A 12-gauge combat shotgun with a 10-round magazine that fires quick three-round bursts."
+	desc = "Этот прототип был очень тайно (нет) поставлен некоторым бойцам ХЕКУ для быстрого сноса дверей.. И людей заодно. 10 патрон. Сумасшедшая отдача. Пустой магазин можно разложить как мину."
 	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
 	icon_state = "pancor"
 	item_state = "spas"
@@ -399,14 +397,14 @@
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/m12g/pancor
-	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/pancor.ogg'
 	can_suppress = FALSE
 	fire_select = SELECT_BURST_SHOT
 	fire_select_modes = list(SELECT_BURST_SHOT)
 	burst_size = 3
 	burst_shot_delay = 1
 	fire_delay = 0.5
-	recoil = 10
+	recoil = 7
 	spread = 24
 	burst_spread = 18
 	tactical_reload = FALSE

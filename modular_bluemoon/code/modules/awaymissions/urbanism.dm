@@ -110,13 +110,6 @@
 	reagent_id = /datum/reagent/fuel
 	tank_volume = 300
 
-/obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
-	. = ..()
-	var/datum/component/radioactive/Comp
-	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
-	Comp = GetComponent(/datum/component/radioactive)
-	Comp.set_strength(rad_strength)
-
 /obj/structure/barricade/urbanism
 	name = "Barricade"
 	desc = "Basic barricade meant to protect idiots like you from danger."

@@ -13,10 +13,10 @@
 	name = "hazardous environment suit helmet"
 	desc = "The Mark IV HEV suit helmet. Provides excellent protection against hazardous environments."
 	icon = 'modular_splurt/icons/obj/clothing/hats.dmi'
-	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/head.dmi'
-	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head/helmet.dmi'
 	icon_state = "hev"
 	item_state = "hev"
+	mutantrace_variation = NONE
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 30, BIO = 40, RAD = 50, FIRE = 40, ACID = 40, WOUND = 40)
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
@@ -32,12 +32,17 @@
 	dog_fashion = null
 	slowdown = 0
 
+/obj/item/clothing/head/helmet/space/hev_suit/build_worn_icon(default_layer = 0, default_icon_file = null, isinhands = FALSE, femaleuniform = NO_FEMALE_UNIFORM, override_state, style_flags = NONE, use_mob_overlay_icon = TRUE, alpha_mask)
+	if(!isinhands)
+		override_state = "hevmk4"
+	return ..(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
+
 /obj/item/clothing/suit/space/hev_suit
 	name = "hazardous environment suit"
 	desc = "The Mark IV HEV suit protects the user from hazardous environments and provides ballistic protection. Has an integrated medical system powered by a cell."
 	icon = 'modular_splurt/icons/obj/clothing/suits.dmi'
-	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
-	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/suit_digi.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suits/armor.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/suits/armor_digi.dmi'
 	icon_state = "hev"
 	item_state = "hev"
 	tail_state = "hev"
@@ -70,7 +75,7 @@
 	var/heal_cooldown = 0
 
 	///Sound placeholder
-	var/sound_file = 'modular_bluemoon/sound/creatures/mesa/madsci/microwaveboom.ogg'
+	var/sound_file = 'modular_bluemoon/sound/creatures/mesa/meds/hev.ogg'
 
 	///Pickup sound system
 	var/firstpickup = TRUE
@@ -81,6 +86,11 @@
 
 	///HEV health scan monitor for detecting nearby entities
 	var/datum/neural_monitor/hev_scan/scan_monitor
+
+/obj/item/clothing/suit/space/hev_suit/build_worn_icon(default_layer = 0, default_icon_file = null, isinhands = FALSE, femaleuniform = NO_FEMALE_UNIFORM, override_state, style_flags = NONE, use_mob_overlay_icon = TRUE, alpha_mask)
+	if(!isinhands)
+		override_state = "hevmk4"
+	return ..(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
 
 /obj/item/clothing/suit/space/hev_suit/Initialize(mapload)
 	. = ..()
@@ -130,8 +140,7 @@
 	STOP_PROCESSING(SSobj, src)
 
 	// Удаляем щит при снятии костюма
-	var/datum/component/shielded/shield = GetComponent(/datum/component/shielded)
-	if(shield)
+	for(var/datum/component/shielded/shield as anything in GetComponents(/datum/component/shielded))
 		qdel(shield)
 
 /obj/item/clothing/suit/space/hev_suit/attackby(obj/item/I, mob/user, params)
@@ -202,19 +211,22 @@
 				to_chat(current_user, span_warning("[src]: Insufficient power for blood replenishment."))
 
 	// Disease curing
-	var/diseased = FALSE
 	if(current_user.diseases && current_user.diseases.len > 0)
-		for(var/datum/disease/disease_to_kill in current_user.diseases)
+		var/list/diseases_to_cure = current_user.diseases.Copy()
+		var/diseased = FALSE
+		for(var/datum/disease/disease_to_kill in diseases_to_cure)
 			if(disease_to_kill)
-				disease_to_kill.cure()
 				diseased = TRUE
-		if(diseased && world.time > heal_cooldown)
-			if(cell.use(HEV_HEAL_COST * efficiency_multiplier))
-				heal_cooldown = world.time + HEV_COOLDOWN
-				to_chat(current_user, span_notice("[src]: Disease cured."))
-				if(neural_interface)
-					SEND_SIGNAL(current_user, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "Disease cured", "HEALTH", "#4ad1fa86", 12, 0)
-				playsound(src, sound_file, 30)
+				break
+		if(diseased && world.time > heal_cooldown && cell.use(HEV_HEAL_COST * efficiency_multiplier))
+			for(var/datum/disease/disease_to_kill in diseases_to_cure)
+				if(disease_to_kill)
+					disease_to_kill.cure()
+			heal_cooldown = world.time + HEV_COOLDOWN
+			to_chat(current_user, span_notice("[src]: Disease cured."))
+			if(neural_interface)
+				SEND_SIGNAL(current_user, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "Disease cured", "HEALTH", "#4ad1fa86", 12, 0)
+			playsound(src, sound_file, 30)
 
 	// Healing damage types
 	if(world.time <= heal_cooldown)

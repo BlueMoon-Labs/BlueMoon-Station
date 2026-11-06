@@ -19,14 +19,11 @@
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	color = "#9a74ac"
 	var/restricted_species = "human" // Ограничение расы для этого спавнера. Если null - без ограничений
-	var/skip_species_check = FALSE // Флаг для пропуска проверки расы при спавне случайного персонажа
 
 /obj/effect/mob_spawn/human/black_mesa/allow_spawn(mob/user, silent = FALSE)
 	. = ..()
 	if(!. || !restricted_species)
 		return .
-	if(skip_species_check)
-		return TRUE
 	if(!user.client || !user.client.prefs)
 		return .
 	var/datum/species/user_species = user.client.prefs.pref_species
@@ -48,19 +45,10 @@
 		var/warning = tgui_alert(user, "Этот гост-роль разрешает только расу: [restricted_species]. Ваша текущая раса: [initial(user_species.name)].\n\nВы хотите зайти за случайно сгенерированного персонажа расы [restricted_species]?", "Ограничение расы", list("Да", "Нет"))
 		if(warning != "Да")
 			return
-		// Skip species check and force random character generation by directly calling create
-		skip_species_check = TRUE
-		var/original_can_load = can_load_appearance
-		can_load_appearance = FALSE
-		// Directly call create to avoid double dialog
 		if(!uses)
 			to_chat(user, "<span class='warning'>This spawner is out of charges!</span>")
-			skip_species_check = FALSE
-			can_load_appearance = original_can_load
 			return
 		if(QDELETED(src) || QDELETED(user))
-			skip_species_check = FALSE
-			can_load_appearance = original_can_load
 			return
 		if(latejoinercalling)
 			var/mob/dead/new_player/NP = user
@@ -68,9 +56,7 @@
 				NP.close_spawn_windows()
 				NP.stop_sound_channel(CHANNEL_LOBBYMUSIC)
 		log_game("[key_name(user)] становится [name]!")
-		create(ckey = user.ckey, load_character = FALSE)
-		can_load_appearance = original_can_load
-		skip_species_check = FALSE
+		create(ckey = user.ckey, load_character = FALSE, skip_appearance = TRUE)
 		return
 	// Если раса совпадает - просто вызываем родительский метод без изменений (позволяет загрузить своего персонажа)
 	return ..()
@@ -476,4 +462,3 @@
 	new /obj/item/reagent_containers/hypospray/combat/omnizine(src)
 	new /obj/item/storage/box/survival/radio(src,30,pick("red","yellow","orange"))
 	new /obj/item/kitchen/knife/combat(src)
-

@@ -136,6 +136,7 @@
 		// The empty state is visual only; the tactical medkit remains usable.
 		used = TRUE
 		update_icon()
+		playsound(loc, 'modular_bluemoon/sound/creatures/mesa/meds/medkit.ogg', 50, TRUE)
 
 	return healed_something
 
@@ -255,11 +256,12 @@
 		if(charge <= 0)
 			icon_state = "hevbattery-empty"
 		if(istype(suit.loc, /mob/living/carbon))
-			var/datum/component/shielded/shield = suit.GetComponent(/datum/component/shielded)
-			if(!shield)
+			var/list/shields = suit.GetComponents(/datum/component/shielded)
+			if(!length(shields))
 				suit.AddComponent(/datum/component/shielded, current = 5, max = 5, delay = 20 SECONDS, rate = 0, slots = ITEM_SLOT_OCLOTHING, state = "shield-red")
 				to_chat(user, "<span class='green'>Вы зарядили [suit] и активировали защитный щит!</span>")
 			else
+				var/datum/component/shielded/shield = shields[1]
 				shield.adjust_charges(5)
 				to_chat(user, "<span class='green'>Вы зарядили [suit] и восстановили заряды щита!</span>")
 

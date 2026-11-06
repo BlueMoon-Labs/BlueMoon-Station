@@ -242,8 +242,7 @@
 
 // Асинхронный сброс в чазм
 /turf/open/space/ihategordon/proc/drop_into_chasm(mob/living/L)
-	ChangeTurf(/turf/open/chasm/ihategordon_invisible, flags = CHANGETURF_INHERIT_AIR)
-	var/turf/open/chasm/ihategordon_invisible/C = src
+	var/turf/open/chasm/ihategordon_invisible/C = ChangeTurf(/turf/open/chasm/ihategordon_invisible, flags = CHANGETURF_INHERIT_AIR)
 	if(istype(C))
 		C.drop(L)
 

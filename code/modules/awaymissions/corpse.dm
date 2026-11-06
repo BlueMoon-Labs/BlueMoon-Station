@@ -126,7 +126,7 @@
  * спящем диалоге (радиальное меню свармера): пока один гост выбирает, второй успевает
  * переписать общий вар спавнера, и первый спавнил "объект типа null".
  */
-/obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type)
+/obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type, skip_appearance = FALSE)
 	if(QDELETED(src))
 		return
 	var/mob_path = spawn_type || mob_type
@@ -202,7 +202,7 @@
 					SSjob.post_equip_loadout(null, H)
 				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
 		// BLUEMOON ADD START - загрузка татуировок для гост-ролей без загрузки внешности
-		else if(ishuman(M) && can_load_appearance)
+		else if(ishuman(M) && can_load_appearance && !skip_appearance)
 			var/mob/living/carbon/human/H = M
 			if(H.client?.prefs)
 				H.client.prefs.apply_tattoos_to_human(H)
