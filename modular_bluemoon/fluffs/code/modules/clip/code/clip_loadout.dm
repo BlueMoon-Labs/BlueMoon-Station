@@ -1,7 +1,7 @@
 // Personal CLIP loadout.
+// Пояса (разгрузки) в лодаут не входят.
 // Одежда идёт напрямую (без статов), а скафандры, шлемы, био-костюмы, броня riot и меха
 // выдаются только через коробку улучшалок CLIP kit.
-
 
 /datum/gear/donator/bm/clip
 	ckeywhitelist = list("tech_grid", "dagran")
@@ -50,21 +50,6 @@
 	name = "CLIP trenchcoat"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/jacket/clip_trenchcoat
-
-/datum/gear/donator/bm/clip/webbing
-	name = "CLIP webbing"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/storage/belt/military/clip_webbing
-
-/datum/gear/donator/bm/clip/webbing_alt
-	name = "CLIP webbing (alt)"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/storage/belt/military/clip_webbing/alt
-
-/datum/gear/donator/bm/clip/webbing_med
-	name = "CLIP medical webbing"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/storage/belt/military/clip_webbing/med
 
 /datum/gear/donator/bm/clip/goggles
 	name = "CLIP ballistic goggles"
