@@ -297,6 +297,7 @@
 #include "foam_spread_limits.dm"
 // #include "food_edibility_check.dm"
 #include "gas_mixture_parser.dm"
+#include "gc_harddel_defer.dm"
 #include "gc_rewrite.dm"
 #include "ghost_follow_link_identity.dm"
 #include "hair_style_picker_cache.dm"

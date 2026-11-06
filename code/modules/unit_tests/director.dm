@@ -2014,6 +2014,8 @@
 		/datum/round_event_control/vox_scavengers,
 		// Бюрократическая проверка без боевой задачи.
 		/datum/round_event_control/sol_inspection,
+		// Король крыс: решением геймдизайна выпадает и в Лайте.
+		/datum/round_event_control/rat_king,
 	)
 	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()

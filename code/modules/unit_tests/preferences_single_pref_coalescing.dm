@@ -107,6 +107,34 @@
 	qdel(prefs)
 
 /**
+ * Ленивый ключ своего сброса не заводит и уезжает с чужим.
+ *
+ * Остаток минут до М$ писался отдельным открытием savefile на каждое начисление
+ * каждому живому игроку. Ленивый ключ ждёт ближайшего сброса этого игрока.
+ */
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush
+
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush/Run()
+	var/datum/preferences/prefs = new
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 12, lazy = TRUE)
+	TEST_ASSERT_EQUAL(LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool"), 12, "ленивый ключ не попал в буфер")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "ленивый ключ завёл свой сброс - это лишнее открытие savefile")
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 30, lazy = TRUE)
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["metadollar_minute_pool"], 30, "повтор ленивого ключа не схлопнулся до последнего значения")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "повтор ленивого ключа завёл сброс")
+
+	prefs.buffer_single_pref("tgui_panel_theme", "dark")
+	TEST_ASSERT_NOTNULL(prefs.single_pref_queue, "обычный ключ после ленивого не завёл сброс")
+	TEST_ASSERT_EQUAL(length(prefs.pending_single_prefs), 2, "ленивый ключ не уедет вместе с обычным")
+
+	deltimer(prefs.single_pref_queue)
+	prefs.single_pref_queue = null
+	prefs.pending_single_prefs = null
+	qdel(prefs)
+
+/**
  * Полная запись префов уже в очереди - второй таймер заводить нельзя.
  *
  * Полный save_preferences открывает тот же самый savefile и дописывает буфер в конце,
@@ -171,6 +199,32 @@
 	TEST_ASSERT_NULL(leftover_timer, "сброс буфера не снял свой таймер")
 	TEST_ASSERT_EQUAL(written_theme, "dark", "ключ, положенный в буфер первым, не доехал до диска")
 	TEST_ASSERT_EQUAL(written_state, "{\"v\":7}", "ключ, положенный в буфер последним, не доехал до диска")
+
+/// Запись персонажа открывает тот же файл и забирает буфер в корень; экспорт буфер не трогает.
+/datum/unit_test/preferences_save_character_flushes_single_prefs
+
+/datum/unit_test/preferences_save_character_flushes_single_prefs/Run()
+	var/datum/preferences/prefs = new
+	prefs.load_path("unit_test_save_character_single_prefs")
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 42, lazy = TRUE)
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE, update_active_preset = FALSE)
+	var/kept_on_export = LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool")
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	var/leftover_keys = length(prefs.pending_single_prefs)
+
+	var/savefile/readback = new /savefile(prefs.path)
+	readback.cd = "/"
+	var/written_pool
+	READ_FILE(readback["metadollar_minute_pool"], written_pool)
+	readback = null
+	fdel(prefs.path)
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(kept_on_export, 42, "экспорт персонажа забрал буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(leftover_keys, 0, "запись персонажа не забрала буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(written_pool, 42, "ленивый ключ не доехал до диска с записью персонажа")
 
 /// Настройка, положенная через буфер, обязана лечь в savefile так же, как её кладёт
 /// полная запись, и пережить следующую полную запись.

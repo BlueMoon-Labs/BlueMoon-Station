@@ -857,7 +857,7 @@
 	},
 	"_maps/map_files/Mining/Lavaland.dmm": {
 		"disposals_without_trunks": {
-			"/obj/machinery/disposal/bin": 4
+			"/obj/machinery/disposal/bin": 1
 		},
 		"grille_stacking": {
 			"/obj/structure/grille": 3

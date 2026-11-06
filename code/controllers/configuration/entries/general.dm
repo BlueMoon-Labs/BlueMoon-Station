@@ -392,6 +392,14 @@
 	default = GC_HARDDEL_LOBBY_MAX_PER_FIRE
 	min_val = 1
 
+/datum/config_entry/number/gc_harddel_defer_min_ms
+	default = GC_HARDDEL_DEFER_MIN_MS
+	min_val = 0
+
+/datum/config_entry/number/gc_harddel_defer_max
+	default = GC_HARDDEL_DEFER_MAX
+	min_val = 0
+
 /// Режим авто-скана ссылок при GC-фейлах: 0 = выкл, 1 = только помеченные типы, 2 = все warnfail.
 /datum/config_entry/number/gc_reftrack_mode
 	default = GC_REFTRACK_OFF

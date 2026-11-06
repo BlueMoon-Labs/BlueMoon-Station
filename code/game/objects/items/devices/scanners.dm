@@ -130,7 +130,7 @@ GENETICS SCANNER
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE) || !user.client?.prefs)
 		return
 	user.client.prefs.health_analyzer_chat = !user.client.prefs.health_analyzer_chat
-	user.client.prefs.save_preferences()
+	user.client.prefs.save_pref_var("health_analyzer_chat")
 	to_chat(user, span_notice("Все ваши анализаторы теперь [user.client.prefs.health_analyzer_chat ? "выдают текстовый медицинский отчёт" : "показывают результаты на медицинском дисплее"]."))
 // BLUEMOON ADD END
 
