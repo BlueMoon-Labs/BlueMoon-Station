@@ -9,7 +9,7 @@
 	var/effective_prob = get_effective_assassin_prob(mode, T.owner)
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
-	if(prob(25))
+	if(prob(25) && bm_traitor_violence_tier() == BM_TRAITOR_VIOLENCE_FULL)
 		return add_targeted_objective(T, new /datum/objective/assassinate/internal)
 	return add_targeted_objective(T, new /datum/objective/assassinate/once)
 

@@ -163,12 +163,12 @@
 /datum/unit_test/antag_opt_in_objective_levels/Run()
 	var/list/expected = list(
 		/datum/objective/assassinate = ANTAG_OPT_IN_ROUND_REMOVE,
+		/datum/objective/assassinate/internal = ANTAG_OPT_IN_ROUND_REMOVE,
 		/datum/objective/maroon = ANTAG_OPT_IN_ROUND_REMOVE,
 		/datum/objective/debrain = ANTAG_OPT_IN_ROUND_REMOVE,
 		/datum/objective/sacrifice = ANTAG_OPT_IN_ROUND_REMOVE,
 		/datum/objective/bloodsucker = ANTAG_OPT_IN_ROUND_REMOVE,
 		/datum/objective/assassinate/once = ANTAG_OPT_IN_KILL,
-		/datum/objective/assassinate/internal = ANTAG_OPT_IN_KILL,
 		/datum/objective/mutiny = ANTAG_OPT_IN_KILL,
 		/datum/objective/destroy = ANTAG_OPT_IN_KILL,
 		/datum/objective/contract = ANTAG_OPT_IN_KILL,
