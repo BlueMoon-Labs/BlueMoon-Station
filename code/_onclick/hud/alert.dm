@@ -101,6 +101,12 @@
 	qdel(alert)
 	return TRUE
 
+/mob/proc/update_pull_alert()
+	if(pulling)
+		throw_alert("stop_pulling", /atom/movable/screen/alert/stop_pulling)
+	else
+		clear_alert("stop_pulling")
+
 /atom/movable/screen/alert
 	icon = 'icons/mob/screen_alert.dmi'
 	icon_state = "default"
@@ -1117,6 +1123,40 @@ so as to remain in compliance with the most up-to-date laws."
 		return
 	L.MarkResistTime()
 	return L.resist_buckle()
+
+/atom/movable/screen/alert/stop_pulling
+	name = "Перестать тянуть"
+	desc = "Кликните, чтобы отпустить." // Иногда нужно просто уметь отпускать.
+	icon = 'icons/mob/screen_gen.dmi'
+	icon_state = "grab"
+	clickable_glow = TRUE
+
+/atom/movable/screen/alert/stop_pulling/Click()
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/L = usr
+	if(istype(L) && L.pulling)
+		L.stop_pulling()
+
+/atom/movable/screen/alert/drop_riders
+	name = "Сбросить пассажира"
+	desc = "Кликните, чтобы сбросить." // Иногда нужно просто уметь сбрасывать.
+	icon = 'icons/mob/screen_alert.dmi'
+	icon_state = "buckled"
+	clickable_glow = TRUE
+
+/atom/movable/screen/alert/drop_riders/Click()
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/L = usr
+	if(!istype(L) || !LAZYLEN(L.buckled_mobs))
+		return
+	for(var/mob/living/rider as anything in L.buckled_mobs.Copy())
+		if(QDELETED(rider))
+			continue
+		L.unbuckle_mob(rider, TRUE)
 
 /atom/movable/screen/alert/belly_riding
 	name = "Belly riding"
