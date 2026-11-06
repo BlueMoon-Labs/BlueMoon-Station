@@ -78,6 +78,7 @@
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
 #include "antag_frame_objective.dm"
+#include "antag_hud_double_antag.dm"
 #include "antag_opt_in.dm"
 #include "antag_removal_without_body.dm"
 #include "antag_team_members.dm"

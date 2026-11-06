@@ -252,7 +252,7 @@
 
 /datum/antagonist/brother/proc/on_mindshield_trait(mob/living/source)
 	SIGNAL_HANDLER
-	set_antag_hud(source, hud_state_for(source))
+	set_antag_hud(source, hud_state_for(source), GLOB.huds[antag_hud_type])
 	on_mute_changed()
 
 /datum/antagonist/brother/proc/on_examine(mob/living/source, mob/user, list/examine_list)
