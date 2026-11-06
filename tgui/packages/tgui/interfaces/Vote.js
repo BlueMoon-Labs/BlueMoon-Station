@@ -55,7 +55,7 @@ export const Vote = (props) => {
 
 const VoteOptions = (props) => {
   const { act, data } = useBackend();
-  const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin, roundtype_vote_block } = data;
+  const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin, roundtype_vote_block, vote_start_block } = data;
 
   const startButton = (label, icon, color, onClick, disabled, tooltip) => (
     <Button
@@ -79,8 +79,8 @@ const VoteOptions = (props) => {
               'dice',
               'blue',
               () => act('gamemode'),
-              !!roundtype_vote_block || (!allow_vote_mode && !lower_admin),
-              roundtype_vote_block
+              !!vote_start_block || !!roundtype_vote_block || (!allow_vote_mode && !lower_admin),
+              vote_start_block || roundtype_vote_block
             )}
           </Stack.Item>
           <Stack.Item>
@@ -89,7 +89,8 @@ const VoteOptions = (props) => {
               'sync-alt',
               'red',
               () => act('restart'),
-              !allow_vote_restart && !lower_admin
+              !!vote_start_block || (!allow_vote_restart && !lower_admin),
+              vote_start_block
             )}
           </Stack.Item>
         </Stack>
@@ -98,7 +99,7 @@ const VoteOptions = (props) => {
         <Stack vertical spacing={0.5}>
           {!!lower_admin && (
             <Stack.Item>
-              {startButton('Карта', 'map', 'green', () => act('map'))}
+              {startButton('Карта', 'map', 'green', () => act('map'), !!vote_start_block, vote_start_block)}
             </Stack.Item>
           )}
           {!!lower_admin && (

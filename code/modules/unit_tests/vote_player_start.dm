@@ -68,4 +68,39 @@
 		GLOB.midround_recorded = saved_midround_recorded
 	return ..()
 
+/// Попытка начать голосование поверх идущего не меняет ему систему подсчёта и вес голосов, а окно объясняет отказ
+/datum/unit_test/vote_refused_start_keeps_active_vote
+	var/saved_started_time
+	var/saved_vote_delay
+
+/datum/unit_test/vote_refused_start_keeps_active_vote/Run()
+	saved_started_time = SSvote.started_time
+	saved_vote_delay = CONFIG_GET(number/vote_delay)
+	TEST_ASSERT_NULL(SSvote.mode, "Перед тестом уже идёт голосование [SSvote.mode]")
+	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human)
+
+	SSvote.started_time = null
+	TEST_ASSERT(SSvote.initiate_vote("transfer", "server", votesystem = APPROVAL_VOTING, vote_time = 1 MINUTES, UseVotePower = TRUE), "Голосование за окончание раунда не началось")
+	TEST_ASSERT(!SSvote.initiate_vote("restart", VOTE_TEST_PLAYER_KEY), "Игрок начал второе голосование поверх идущего")
+	TEST_ASSERT_EQUAL(SSvote.mode, "transfer", "Отказ сбил идущее голосование")
+	TEST_ASSERT_EQUAL(SSvote.vote_system, APPROVAL_VOTING, "Отказ сменил идущему голосованию систему подсчёта")
+	TEST_ASSERT(SSvote.use_vote_power, "Отказ снял идущему голосованию вес голосов")
+	TEST_ASSERT_NOTNULL(SSvote.vote_start_block_reason(viewer), "Во время голосования окно не объясняет, почему нельзя начать новое")
+
+	SSvote.reset()
+	CONFIG_SET(number/vote_delay, 10 MINUTES)
+	TEST_ASSERT_NOTNULL(SSvote.vote_start_block_reason(viewer), "Сразу после голосования игроку не показан кулдаун")
+	TEST_ASSERT(!SSvote.initiate_vote("restart", VOTE_TEST_PLAYER_KEY), "Игрок начал голосование в кулдаун")
+	SSvote.started_time = null
+	TEST_ASSERT_NULL(SSvote.vote_start_block_reason(viewer), "Без голосования и кулдауна старт всё равно заблокирован")
+
+/datum/unit_test/vote_refused_start_keeps_active_vote/Destroy()
+	if(SSvote.mode)
+		SSvote.reset()
+	SSvote.use_vote_power = FALSE
+	SSvote.started_time = saved_started_time
+	if(!isnull(saved_vote_delay))
+		CONFIG_SET(number/vote_delay, saved_vote_delay)
+	return ..()
+
 #undef VOTE_TEST_PLAYER_KEY

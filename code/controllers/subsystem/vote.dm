@@ -632,21 +632,13 @@ SUBSYSTEM_DEF(vote)
 	return FALSE
 
 /datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE, replacing_active_vote = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
-	vote_system = votesystem
 	if(mode && !replacing_active_vote)
 		return FALSE
 	if(!mode || replacing_active_vote)
-		if(started_time)
-			var/next_allowed_time = (started_time + CONFIG_GET(number/vote_delay))
-
-			var/admin = FALSE
-			var/ckey = ckey(initiator_key)
-			if(GLOB.admin_datums[ckey] || initiator_key == "server")
-				admin = TRUE
-
-			if(next_allowed_time > world.time && !admin)
-				to_chat(usr, "<span class='warning'>A vote was initiated recently, you must wait [DisplayTimeText(next_allowed_time-world.time)] before a new vote can be started!</span>")
-				return FALSE
+		var/cooldown_left = vote_cooldown_left(initiator_key)
+		if(cooldown_left)
+			to_chat(usr, span_warning("Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."))
+			return FALSE
 
 		var/saved_custom = (vote_type == "custom") && setting_up_custom
 		var/saved_custom_question = custom_question
@@ -661,6 +653,8 @@ SUBSYSTEM_DEF(vote)
 			if(roundtype_block)
 				to_chat(usr, span_warning(roundtype_block))
 				return FALSE
+		// Не раньше проверок: отказ не должен подменять систему подсчёта идущему голосованию
+		vote_system = votesystem
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
 		display_votes = display
@@ -877,6 +871,21 @@ SUBSYSTEM_DEF(vote)
 		return "До начала раунда слишком мало времени, голосование за режим игры уже не успеет пройти."
 	return null
 
+/// Сколько децисекунд этому инициатору ждать нового голосования; админам и серверу 0.
+/datum/controller/subsystem/vote/proc/vote_cooldown_left(initiator_key)
+	if(!started_time || initiator_key == "server" || GLOB.admin_datums[ckey(initiator_key)])
+		return 0
+	return max(0, started_time + CONFIG_GET(number/vote_delay) - world.time)
+
+/// Почему user сейчас не может начать голосование; null, если можно.
+/datum/controller/subsystem/vote/proc/vote_start_block_reason(mob/user)
+	if(mode)
+		return "Уже идёт голосование, дождитесь его окончания."
+	var/cooldown_left = vote_cooldown_left(user?.ckey)
+	if(cooldown_left)
+		return "Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."
+	return null
+
 /// Сколько децисекунд осталось активному голосованию.
 /datum/controller/subsystem/vote/proc/get_time_remaining()
 	if(!mode)
@@ -990,6 +999,7 @@ SUBSYSTEM_DEF(vote)
 	// Оставшееся время в секундах
 	data["time_remaining"] = round(get_time_remaining() / 10)
 	data["roundtype_vote_block"] = roundtype_vote_block_reason()
+	data["vote_start_block"] = vote_start_block_reason(user)
 	data["vote_system"] = vote_system
 	// Список вариантов с полным состоянием для всех систем голосования
 	var/list/choices_list = list()
