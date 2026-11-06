@@ -406,6 +406,10 @@
 	if(istype(buckled, /obj/structure/bed/nest))
 		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
+		if(handcuffed && is_hulk())
+			MarkResistTime()
+			cuff_resist(handcuffed)
+			return
 		// too soon.
 		var/buckle_cd = 600
 		if(handcuffed)
@@ -485,6 +489,13 @@
 
 /mob/living/carbon/proc/cuff_resist_check()
 	return !incapacitated(ignore_restraints = TRUE)
+
+/mob/living/carbon/proc/is_hulk()
+	if(dna)
+		for(var/datum/mutation/human/HM in dna.mutations)
+			if(istype(HM.type, /datum/mutation/human/hulk))
+				return TRUE
+	return FALSE
 
 /mob/living/carbon/proc/uncuff()
 	if (handcuffed)
