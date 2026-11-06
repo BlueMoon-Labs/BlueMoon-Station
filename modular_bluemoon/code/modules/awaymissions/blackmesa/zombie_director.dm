@@ -1,6 +1,7 @@
 /datum/ai_director/zombie_mission
-	var/wave_timer = 600
-	var/max_wave_interval = 3000
+	var/wave_timer = 1800
+	var/min_wave_interval = 1800
+	var/max_wave_interval = 6000
 	var/last_wave_time = 0
 	var/current_wave_number = 0
 	var/list/active_zombies = list()
@@ -105,12 +106,10 @@
 		last_wave_time = world.time
 		return
 
-	wave_timer = rand(300, max_wave_interval)
+	wave_timer = rand(min_wave_interval, max_wave_interval)
 
 	log_world("[src] Attempting to spawn wave with threat=[threat_level]")
-	spawning_wave = TRUE
 	spawn_zombie_wave(threat_level, alive_players)
-	spawning_wave = FALSE
 
 	last_wave_time = world.time
 	current_wave_number++
@@ -161,7 +160,7 @@
 	var/base_threat
 	switch(difficulty_level)
 		if(0)
-			base_threat = rand(3, 4)
+			base_threat = rand(2, 3)
 		if(1)
 			base_threat = rand(4, 7)
 		if(2)
@@ -181,12 +180,15 @@
 		else
 			base_threat = rand(3, 4)
 
-	var/player_multiplier = 1 + ((player_count - 1) * 0.1)
+	var/player_multiplier = 1 + (min(player_count - 1, 5) * 0.1)
 	var/threat = round(base_threat * player_multiplier)
 	return threat
 
 /datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players)
 	if(!src)
+		return
+	if(spawning_wave)
+		log_world("[src] Already spawning a wave, skipping duplicate spawn")
 		return
 	if(!threat_level || threat_level <= 0)
 		log_world("[src] Invalid threat_level: [threat_level]")
@@ -195,7 +197,15 @@
 		log_world("[src] No players provided")
 		return
 
-	var/zombies_to_spawn = threat_level
+	var/max_active_zombies = 4 + ((players.len - 1) * 2) + (difficulty_level * 2)
+	var/active_zombie_count = count_active_zombies()
+	var/zombies_to_spawn = min(threat_level, max_active_zombies - active_zombie_count)
+	if(zombies_to_spawn <= 0)
+		log_world("[src] Zombie population cap reached: active=[active_zombie_count], cap=[max_active_zombies]")
+		return
+	if(zombies_to_spawn < threat_level)
+		log_world("[src] Limiting wave from [threat_level] to [zombies_to_spawn] zombies: active=[active_zombie_count], cap=[max_active_zombies]")
+
 	var/list/spawned_zombies = list()
 
 	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
@@ -205,6 +215,7 @@
 		log_world("[src] No valid spawn turfs found")
 		return
 
+	spawning_wave = TRUE
 	var/batch_size = rand(3, 5)
 	var/zombies_spawned = 0
 	var/failed_spawns = 0
@@ -286,6 +297,7 @@
 
 	log_world("[src] Wave complete: intended=[zombies_to_spawn], spawned=[spawned_zombies.len], failed=[failed_spawns]")
 	announce_wave(spawned_zombies.len)
+	spawning_wave = FALSE
 
 	if(spawned_zombies.len > 0)
 		if(difficulty_level > 0)
@@ -557,4 +569,15 @@
 		if(A in valid_areas)
 			count++
 
+	return count
+
+/datum/ai_director/zombie_mission/proc/count_active_zombies()
+	if(!src)
+		return 0
+	var/count = 0
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies)
+		if(!Z || QDELETED(Z) || Z.stat == DEAD)
+			active_zombies -= Z
+			continue
+		count++
 	return count
