@@ -275,6 +275,9 @@
 /datum/round_event/ghost_role/rat_king
 	role_name = "Rat king"
 
+/datum/round_event/ghost_role/rat_king/poll_question()
+	return "Хотите стать одним из крысиных королей?"
+
 /datum/round_event/ghost_role/rat_king/spawn_role()
 	var/list/spawn_locs = find_exposed_wires()
 	if(!length(spawn_locs))
@@ -283,11 +286,28 @@
 				spawn_locs += carp_spawn.loc
 	if(!length(spawn_locs))
 		return MAP_ERROR
-	var/mob/living/simple_animal/hostile/regalrat/king = new /mob/living/simple_animal/hostile/regalrat/controlled(pick(spawn_locs))
+	var/list/candidates = get_candidates(ROLE_RAT_KING, null, ROLE_RAT_KING)
+	var/list/available_locs = spawn_locs.Copy()
+	var/king_count = rand(2, 3)
+	var/spawned_kings = 0
+	for(var/i in 1 to king_count)
+		var/turf/spawn_turf = pick_n_take(available_locs) || pick(spawn_locs)
+		var/mob/living/simple_animal/hostile/regalrat/king = new /mob/living/simple_animal/hostile/regalrat(spawn_turf)
+		spawned_kings++
+		if(length(candidates))
+			var/mob/dead/selected = pick_n_take(candidates)
+			if(selected && !QDELETED(selected))
+				var/datum/mind/player_mind = new /datum/mind(selected.key)
+				player_mind.active = TRUE
+				player_mind.transfer_to(king)
+				player_mind.assigned_role = ROLE_RAT_KING
+				player_mind.special_role = ROLE_RAT_KING
+				if(!player_mind.has_antag_datum(/datum/antagonist/rat_king))
+					player_mind.add_antag_datum(/datum/antagonist/rat_king)
+		message_admins("[ADMIN_LOOKUPFLW(king)] создан как король крыс ([spawned_kings]/[king_count]).")
+		log_game("[key_name(king)] создан как король крыс ([spawned_kings]/[king_count]).")
+		spawned_mobs += king
 	SSminor_mapping.trigger_migration(rand(8, 14))
-	message_admins("[ADMIN_LOOKUPFLW(king)] создан как король крыс. Гост-роль предложена призракам.")
-	log_game("[key_name(king)] создан как король крыс; гост-роль предложена призракам.")
-	spawned_mobs += king
 	return SUCCESSFUL_SPAWN
 
 // Квирк, который нужно перенести в особености.
