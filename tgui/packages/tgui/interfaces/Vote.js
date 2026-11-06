@@ -439,6 +439,36 @@ const ChoicesPanel = (props) => {
   );
 };
 
+// Строка варианта: длинный текст переносится, голоса остаются справа
+const ChoiceButton = (props) => {
+  const { selected, lead, leadWidth = '1.6em', side, tooltip, onClick, children } = props;
+  return (
+    <Button
+      fluid
+      fontSize="1.2em"
+      px={0.75}
+      py={0.4}
+      selected={selected}
+      tooltip={tooltip}
+      style={{ whiteSpace: 'normal' }}
+      onClick={onClick}>
+      <Stack align="center">
+        <Stack.Item width={leadWidth} textAlign="center" style={{ flexShrink: 0 }}>
+          {lead}
+        </Stack.Item>
+        <Stack.Item grow basis={0} lineHeight={1.35} style={{ wordBreak: 'break-word' }}>
+          {children}
+        </Stack.Item>
+        {!!side && (
+          <Stack.Item style={{ whiteSpace: 'nowrap' }}>
+            {side}
+          </Stack.Item>
+        )}
+      </Stack>
+    </Button>
+  );
+};
+
 const ChoiceRow = (props) => {
   const { choice, multi, totalVotes, leaderVotes } = props;
   const { act } = useBackend();
@@ -451,33 +481,29 @@ const ChoiceRow = (props) => {
     icon = mine ? 'check-square-o' : 'square-o';
   }
 
+  const side = hidden ? (
+    <Box opacity={0.6}>
+      <Icon name="eye-slash" mr={0.5} />
+      скрыто
+    </Box>
+  ) : (
+    <Box>
+      {isLeader && <Icon name="crown" color="yellow" mr={0.5} />}
+      {choice.votes}
+      <Box inline opacity={0.6} ml={0.5} minWidth="2.6em" textAlign="right">{percent}%</Box>
+    </Box>
+  );
+
   return (
     <Box mb={1}>
-      <Button
-        fluid
-        fontSize="1.2em"
-        lineHeight={2}
-        px={0.75}
+      <ChoiceButton
         selected={mine}
-        icon={icon}
+        lead={<Icon name={icon} />}
+        side={side}
         tooltip={mine && !multi ? 'Ваш голос' : null}
         onClick={() => act('vote', { index: choice.id })}>
-        <Box inline bold={mine}>{choiceLabel(choice.name)}</Box>
-        <Box inline style={{ float: 'right' }}>
-          {hidden ? (
-            <Box inline opacity={0.6}>
-              <Icon name="eye-slash" mr={0.5} />
-              скрыто
-            </Box>
-          ) : (
-            <>
-              {isLeader && <Icon name="crown" color="yellow" mr={0.5} />}
-              {choice.votes}
-              <Box inline opacity={0.6} ml={0.5} minWidth="2.6em" textAlign="right">{percent}%</Box>
-            </>
-          )}
-        </Box>
-      </Button>
+        <Box bold={mine}>{choiceLabel(choice.name)}</Box>
+      </ChoiceButton>
       {!hidden && (
         <ProgressBar
           mt={0.25}
@@ -500,26 +526,19 @@ const RankedChoices = (props) => {
   return (
     <>
       {[...ranked, ...unranked].map((choice) => (
-        <Button
-          key={choice.id}
-          fluid
-          fontSize="1.2em"
-          lineHeight={2}
-          px={0.75}
-          mb={0.75}
-          selected={choice.user_rank > 0}
-          tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
-          onClick={() => act('vote', { index: choice.id })}>
-          <Stack align="center">
-            <Stack.Item width="2.2em" textAlign="center" bold>
-              {choice.user_rank > 0 ? `№${choice.user_rank}` : <Icon name="plus" opacity={0.5} />}
-            </Stack.Item>
-            <Stack.Item grow>{choiceLabel(choice.name)}</Stack.Item>
-            {choice.votes !== -1 && (
-              <Stack.Item opacity={0.6}>{choice.votes} бал.</Stack.Item>
-            )}
-          </Stack>
-        </Button>
+        <Box key={choice.id} mb={0.75}>
+          <ChoiceButton
+            selected={choice.user_rank > 0}
+            leadWidth="2.2em"
+            lead={choice.user_rank > 0
+              ? <Box bold>№{choice.user_rank}</Box>
+              : <Icon name="plus" opacity={0.5} />}
+            side={choice.votes !== -1 && <Box opacity={0.6}>{choice.votes} бал.</Box>}
+            tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
+            onClick={() => act('vote', { index: choice.id })}>
+            {choiceLabel(choice.name)}
+          </ChoiceButton>
+        </Box>
       ))}
     </>
   );
@@ -533,7 +552,7 @@ const ScoreChoices = (props) => {
     <>
       {choices.map((choice) => (
         <Box key={choice.id} mb={1}>
-          <Box fontSize="1.2em" bold mb={0.25}>
+          <Box fontSize="1.2em" bold lineHeight={1.35} mb={0.4}>
             {choiceLabel(choice.name)}
           </Box>
           <Stack>
