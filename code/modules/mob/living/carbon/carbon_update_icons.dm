@@ -48,8 +48,28 @@
 		var/blocker = emissive_blocker_copy(im, src)
 		if(blocker)
 			LAZYADD(blockers, blocker)
+	if(length(blockers) > 1)
+		blockers = pack_emissive_blockers(blockers)
 	if(blockers)
 		overlays_emissive_blockers[cache_index] = blockers
+
+/mob/living/carbon/proc/pack_emissive_blockers(list/blockers)
+	var/list/by_layer = list()
+	for(var/mutable_appearance/blocker as anything in blockers)
+		if(blocker.blend_mode != BLEND_DEFAULT)
+			return blockers
+		LAZYADD(by_layer["[blocker.layer]"], blocker)
+	. = list()
+	for(var/layer_key in by_layer)
+		var/list/layer_blockers = by_layer[layer_key]
+		var/mutable_appearance/first_blocker = layer_blockers[1]
+		if(length(layer_blockers) == 1)
+			. += first_blocker
+			continue
+		// Один оверлей на слой сохраняет порядок перекрытия собственного свечения.
+		var/mutable_appearance/group = mutable_appearance('icons/effects/effects.dmi', "nothing", first_blocker.layer, first_blocker.plane, appearance_flags = KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE)
+		group.overlays = layer_blockers
+		. += group
 
 /mob/living/carbon/proc/remove_emissive_blockers(cache_index)
 	var/blockers = overlays_emissive_blockers[cache_index]
