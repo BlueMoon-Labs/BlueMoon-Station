@@ -1950,7 +1950,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	sync_hearted_pref(prefs)
 	if(!src)
 		return
-	prefs.save_preferences()
+	prefs.save_pref_var("hearted_until")
 
 /// compiles a full list of verbs and sends it to the browser
 /client/proc/init_verbs()
