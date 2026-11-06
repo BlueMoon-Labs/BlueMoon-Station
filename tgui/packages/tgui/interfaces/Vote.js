@@ -55,14 +55,15 @@ export const Vote = (props) => {
 
 const VoteOptions = (props) => {
   const { act, data } = useBackend();
-  const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin } = data;
+  const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin, roundtype_vote_block } = data;
 
-  const startButton = (label, icon, color, onClick, disabled) => (
+  const startButton = (label, icon, color, onClick, disabled, tooltip) => (
     <Button
       fluid
       icon={icon}
       color={color}
       disabled={disabled}
+      tooltip={tooltip}
       onClick={onClick}>
       {label}
     </Button>
@@ -78,7 +79,8 @@ const VoteOptions = (props) => {
               'dice',
               'blue',
               () => act('gamemode'),
-              !allow_vote_mode && !lower_admin
+              !!roundtype_vote_block || (!allow_vote_mode && !lower_admin),
+              roundtype_vote_block
             )}
           </Stack.Item>
           <Stack.Item>
