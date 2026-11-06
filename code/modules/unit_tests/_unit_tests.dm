@@ -496,6 +496,7 @@
 #include "spritesheet_batched.dm"
 #include "starlight_queue.dm"
 #include "startup_bootstrap.dm"
+#include "station_cave_generator_seal.dm"
 #include "station_incidents.dm"
 #include "station_map_equipment.dm"
 #include "station_rock_meteors.dm"
