@@ -15,7 +15,7 @@ const DEFAULTS = settingsReducer(undefined, { type: 'init' });
 const NOT_APPEARANCE = ['version', 'theme', 'adminMusicVolume',
   'highlightText', 'highlightColor', 'highlightSoundEnabled', 'matchWord',
   'matchCase', 'enableTimestamps', 'timestampFormat', 'enableTimeDividers',
-  'timeDividerInterval', 'newMessagesMarker', 'view'];
+  'timeDividerInterval', 'newMessagesMarker', 'visibleMessageLimit', 'view'];
 
 // Кнопка сброса каждой вкладки и ключи оформления этой вкладки.
 const RESETS = [

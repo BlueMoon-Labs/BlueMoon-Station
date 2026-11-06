@@ -517,6 +517,12 @@
 	// 	return
 	if(is_cyborg || !user.canUseTopic(src, BE_CLOSE, TRUE, FALSE) || zero_amount()) //, !iscyborg(user)
 		return
+	split_by_menu(user)
+
+/// Спрашивает, сколько отделить (радиальное меню или число), и отделяет в руку
+/obj/item/stack/proc/split_by_menu(mob/living/user)
+	if(!user.canUseTopic(src, BE_CLOSE, TRUE, FALSE))
+		return
 	//get amount from user
 	var/max = get_amount()
 	var/list/quick_split

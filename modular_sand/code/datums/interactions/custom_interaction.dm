@@ -111,6 +111,7 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	"purr3" = list("label" = "Мурлыканье 3", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr3.ogg'),
 
 	"slap" = list("label" = "Шлепок", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/effects/snap.ogg'),
+	"tail_slap" = list("label" = "Шлепок хвостом", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/effects/tail_slap.ogg'),
 	"whistle" = list("label" = "Свист", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_bluemoon/sound/emotes/svist.ogg'),
 	"applause" = list("label" = "Салютование", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/voice/salute.ogg'),
 	"clawcum1" = list("label" = "Коготь 1", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_splurt/sound/lewd/deathclaw1.ogg'),

@@ -20,7 +20,7 @@
 /datum/hud/var/atom/movable/screen/action_bar/clickdelay/clickdelay
 
 /atom/movable/screen/action_bar/clickdelay
-	name = "click delay"
+	name = "Кулдаун кликов"
 	icon = 'icons/effects/progessbar.dmi'
 	icon_state = "prog_bar_100"
 	layer = 20		// under hand buttons

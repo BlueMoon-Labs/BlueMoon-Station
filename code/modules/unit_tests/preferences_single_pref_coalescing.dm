@@ -107,6 +107,34 @@
 	qdel(prefs)
 
 /**
+ * Ленивый ключ своего сброса не заводит и уезжает с чужим.
+ *
+ * Остаток минут до М$ писался отдельным открытием savefile на каждое начисление
+ * каждому живому игроку. Ленивый ключ ждёт ближайшего сброса этого игрока.
+ */
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush
+
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush/Run()
+	var/datum/preferences/prefs = new
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 12, lazy = TRUE)
+	TEST_ASSERT_EQUAL(LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool"), 12, "ленивый ключ не попал в буфер")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "ленивый ключ завёл свой сброс - это лишнее открытие savefile")
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 30, lazy = TRUE)
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["metadollar_minute_pool"], 30, "повтор ленивого ключа не схлопнулся до последнего значения")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "повтор ленивого ключа завёл сброс")
+
+	prefs.buffer_single_pref("tgui_panel_theme", "dark")
+	TEST_ASSERT_NOTNULL(prefs.single_pref_queue, "обычный ключ после ленивого не завёл сброс")
+	TEST_ASSERT_EQUAL(length(prefs.pending_single_prefs), 2, "ленивый ключ не уедет вместе с обычным")
+
+	deltimer(prefs.single_pref_queue)
+	prefs.single_pref_queue = null
+	prefs.pending_single_prefs = null
+	qdel(prefs)
+
+/**
  * Полная запись префов уже в очереди - второй таймер заводить нельзя.
  *
  * Полный save_preferences открывает тот же самый savefile и дописывает буфер в конце,
@@ -171,6 +199,32 @@
 	TEST_ASSERT_NULL(leftover_timer, "сброс буфера не снял свой таймер")
 	TEST_ASSERT_EQUAL(written_theme, "dark", "ключ, положенный в буфер первым, не доехал до диска")
 	TEST_ASSERT_EQUAL(written_state, "{\"v\":7}", "ключ, положенный в буфер последним, не доехал до диска")
+
+/// Запись персонажа открывает тот же файл и забирает буфер в корень; экспорт буфер не трогает.
+/datum/unit_test/preferences_save_character_flushes_single_prefs
+
+/datum/unit_test/preferences_save_character_flushes_single_prefs/Run()
+	var/datum/preferences/prefs = new
+	prefs.load_path("unit_test_save_character_single_prefs")
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 42, lazy = TRUE)
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE, update_active_preset = FALSE)
+	var/kept_on_export = LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool")
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	var/leftover_keys = length(prefs.pending_single_prefs)
+
+	var/savefile/readback = new /savefile(prefs.path)
+	readback.cd = "/"
+	var/written_pool
+	READ_FILE(readback["metadollar_minute_pool"], written_pool)
+	readback = null
+	fdel(prefs.path)
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(kept_on_export, 42, "экспорт персонажа забрал буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(leftover_keys, 0, "запись персонажа не забрала буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(written_pool, 42, "ленивый ключ не доехал до диска с записью персонажа")
 
 /// Настройка, положенная через буфер, обязана лечь в savefile так же, как её кладёт
 /// полная запись, и пережить следующую полную запись.
@@ -352,3 +406,82 @@
 		if(!(key in root_keys))
 			orphans += key
 	TEST_ASSERT(!length(orphans), "ключи одиночной записи, которых полный путь не пишет (настройка потеряется при переподключении): [jointext(orphans, ", ")]")
+
+// Проверяем настоящий переход версии, включая повторный вход и перезапись слотов персонажей.
+/datum/unit_test/preferences_version_migration_preserves_modular_settings/Run()
+	var/test_path = "[GLOB.log_directory]/preferences_version_migration.sav"
+	var/list/populated = list(
+		"favorite_tracks" = list("Проверочный трек", "Второй трек"),
+		"favorite_paintings_md5" = list("0123456789abcdef0123456789abcdef"),
+		"favorite_interactions" = list("/datum/interaction/handshake", "custom:проверка"),
+		"playlists" = list("Проверка" = list("Проверочный трек")),
+		"use_arousal_multiplier" = TRUE,
+		"arousal_multiplier" = 237,
+		"use_moaning_multiplier" = TRUE,
+		"moaning_multiplier" = 17,
+		"bm_lobby_show_nsfw" = TRUE,
+		"bm_lobby_show_admin_bg" = FALSE,
+		"bm_disclaimer_accepted" = TRUE,
+		"shift_invites" = FALSE,
+		"antag_objective_style" = ANTAG_OBJECTIVE_STYLE_QUIET,
+	)
+	var/list/empty = list(
+		"favorite_tracks" = list(),
+		"favorite_paintings_md5" = list(),
+		"favorite_interactions" = list(),
+		"playlists" = list(),
+		"use_arousal_multiplier" = TRUE,
+		"arousal_multiplier" = 0,
+		"use_moaning_multiplier" = TRUE,
+		"moaning_multiplier" = 0,
+	)
+	for(var/list/expected as anything in list(populated, empty))
+		for(var/version_delta in list(0, 1, 13))
+			var/datum/preferences/writer = new
+			writer.path = test_path
+			for(var/key in expected)
+				writer.vars[key] = deepCopyList(expected[key])
+			writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+			for(var/slot in 1 to 2)
+				writer.default_slot = slot
+				writer.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+			qdel(writer)
+			writer = null
+
+			var/savefile/seed = new /savefile(test_path)
+			seed.cd = "/"
+			var/current_version
+			seed["version"] >> current_version
+			var/old_version = current_version - version_delta
+			WRITE_FILE(seed["version"], old_version)
+			for(var/slot in 1 to 2)
+				seed.cd = "/character[slot]"
+				WRITE_FILE(seed["version"], old_version)
+			seed = null
+
+			for(var/login in 1 to 2)
+				var/datum/preferences/reader = new
+				reader.path = test_path
+				var/loaded = reader.load_preferences(bypass_cooldown = TRUE)
+				if(!istype(loaded, /savefile))
+					TEST_FAIL("Не загрузились преференсы версии [old_version], вход [login].")
+				var/savefile/readback = new /savefile(test_path)
+				readback.cd = "/"
+				for(var/key in expected)
+					var/expected_json = json_encode(expected[key])
+					if(json_encode(reader.vars[key]) != expected_json)
+						TEST_FAIL("Версия [old_version], вход [login]: настройка [key] изменилась в памяти.")
+					var/on_disk
+					READ_FILE(readback[key], on_disk)
+					if(json_encode(on_disk) != expected_json)
+						TEST_FAIL("Версия [old_version], вход [login]: настройка [key] перезаписана на диске.")
+				var/version_after
+				READ_FILE(readback["version"], version_after)
+				if(version_after != current_version)
+					TEST_FAIL("Версия [old_version] не обновилась до [current_version].")
+				readback = null
+				loaded = null
+				qdel(reader)
+				reader = null
+			fdel(test_path)
+			fdel("[test_path].updatebac")

@@ -30,7 +30,7 @@
 		)
 
 	armor_type = /datum/armor/medical_coats
-	togglename = "buttons"
+	togglename = "пуговицы"
 	species_exception = list(/datum/species/golem)
 
 /obj/item/clothing/suit/toggle/labcoat/doctor_tailcoat

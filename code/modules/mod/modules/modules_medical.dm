@@ -13,9 +13,11 @@
 		но что с ними делать — зависит от вас."
 	icon_state = "health"
 	module_type = MODULE_ACTIVE
-	complexity = 2
+	complexity = 1
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/health_analyzer)
+	have_shortcut_activation = TRUE
+	required_modpart_index = MOD_PART_GLOVES
 	cooldown_time = 0.5 SECONDS
 	tgui_id = "health_analyzer"
 	/// Scanning mode, changes how we scan something.
@@ -80,7 +82,6 @@
 
 /obj/item/mod/module/quick_carry/advanced
 	name = "MOD advanced quick carry module"
-	removable = FALSE
 	complexity = 0
 
 ///Injector - No piercing syringes, replace another time
@@ -108,20 +109,50 @@
 	cooldown_time = 0.5 SECONDS
 	mod_module_flags = MOD_MODULE_MEDICAL // BLUEMOON ADD
 	var/obj/item/defibrillator/internal_defib
+	var/recharge_timer
 	var/defib_type = /obj/item/defibrillator
 
 /obj/item/mod/module/defibrillator/proc/setup_internal_defib()
 	internal_defib = new defib_type(src)
+	QDEL_NULL(internal_defib.cell)
+	internal_defib.cell_removable = FALSE
 	internal_device = internal_defib
 	device = internal_defib.paddles
 	internal_defib.paddles.req_defib = FALSE
+	RegisterSignal(device, COMSIG_ITEM_PRE_ATTACK, PROC_REF(check_defib_power))
+	RegisterSignal(device, COMSIG_DEFIBRILLATOR_SUCCESS, PROC_REF(on_defib_success))
 
-/obj/item/mod/module/defibrillator/on_install()
-	. = ..()
-	if(internal_defib)
-		internal_defib.cell = mod.get_cell()
+/obj/item/mod/module/defibrillator/proc/check_defib_power(datum/source, atom/target, mob/user, params)
+	SIGNAL_HANDLER
+	if(!active || user != mod?.wearer || !mod?.is_active() || !check_power(use_power_cost))
+		balloon_alert(user, "module unpowered!")
+		return COMPONENT_NO_ATTACK
+	return NONE
+
+/obj/item/mod/module/defibrillator/proc/on_defib_success(obj/item/shockpaddles/source)
+	SIGNAL_HANDLER
+	drain_power(use_power_cost)
+	source.cooldown = TRUE
+	source.update_icon()
+	deltimer(recharge_timer)
+	recharge_timer = addtimer(CALLBACK(src, PROC_REF(finish_recharge)), 5 SECONDS, TIMER_STOPPABLE)
+	return COMPONENT_DEFIB_STOP
+
+/obj/item/mod/module/defibrillator/proc/finish_recharge()
+	recharge_timer = null
+	var/obj/item/shockpaddles/paddles = device
+	if(QDELETED(paddles))
+		return
+	paddles.cooldown = FALSE
+	paddles.update_icon()
+	var/turf/location = get_turf(mod)
+	if(location)
+		location.audible_message(span_notice("[paddles] beeps: Unit is recharged."))
+		playsound(location, 'sound/machines/defib_ready.ogg', MOD_DEFIB_VOLUME, FALSE)
 
 /obj/item/mod/module/defibrillator/attackby(obj/item/I, mob/living/user, params)
+	if(istype(I, /obj/item/stock_parts/cell))
+		return
 	. = ..()
 	if(!internal_defib)
 		setup_internal_defib()
@@ -132,8 +163,11 @@
 	setup_internal_defib()
 
 /obj/item/mod/module/defibrillator/Destroy()
-	QDEL_NULL(internal_defib)
+	deltimer(recharge_timer)
+	recharge_timer = null
+	UnregisterSignal(device, list(COMSIG_ITEM_PRE_ATTACK, COMSIG_DEFIBRILLATOR_SUCCESS))
 	. = ..()
+	internal_defib = null
 
 /obj/item/mod/module/defibrillator/combat
 	name = "MOD combat defibrillator module"

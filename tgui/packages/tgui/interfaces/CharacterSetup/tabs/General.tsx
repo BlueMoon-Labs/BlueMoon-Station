@@ -234,14 +234,15 @@ export const GeneralTab = () => {
             value={general.customBloodColor}
             action="toggle_custom_blood_color"
           />
-          <ColorField
-            label="Цвет крови"
-            value={general.bloodColor}
-            action="set_blood_color"
-            disabled={!general.customBloodColor}
-          />
+          {!!general.customBloodColor && (
+            <ColorField
+              label="Цвет крови"
+              value={general.bloodColor}
+              action="set_blood_color"
+            />
+          )}
           <ToggleRow
-            label="Скафандр поверх хвоста"
+            label="Скафандры имеют хвост"
             tooltip="Хвост остаётся виден поверх надетого скафандра."
             value={general.hardsuitWithTail}
             action="toggle_hardsuit_with_tail"

@@ -98,3 +98,11 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 	hidden = TRUE
 	experimental = TRUE
+
+/datum/techweb_node/mod_experimental
+	id = "mod_experimental"
+	display_name = "Experimental Modular Suits"
+	description = "Экспериментальные механизмы для модульных костюмов."
+	design_ids = list("mod_joint_torsion", "mod_disposal", "mod_recycler", "mod_shooting")
+	hidden = TRUE
+	experimental = TRUE

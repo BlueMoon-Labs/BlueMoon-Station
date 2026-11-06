@@ -83,6 +83,9 @@
 	button_icon_state = "wrassle_kick"
 
 /datum/action/kick/Trigger()
+	if(!owner.get_num_supporting_limbs())
+		to_chat(owner, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	if(owner.incapacitated())
 		to_chat(owner, "<span class='warning'>You can't WRESTLE while you're OUT FOR THE COUNT.</span>")
 		return
@@ -384,12 +387,15 @@
 /datum/martial_art/wrestling/proc/kick(mob/living/carbon/human/A, mob/living/carbon/human/D)
 	if(!D)
 		return
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = damage_roll(A,D)
 	A.emote("realagony")
 	A.emote("flip")
 	A.setDir(turn(A.dir, 90))
 
-	A.visible_message("<span class = 'danger'><B>[A] roundhouse-kicks [D]!</B></span>")
+	A.visible_message(span_danger("<b>[A] с разворота бьёт [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!</b>"))
 	playsound(A.loc, "swing_hit", 50, 1)
 	D.apply_damage(damage + 15, STAMINA)
 

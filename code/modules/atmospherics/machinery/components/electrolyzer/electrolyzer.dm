@@ -33,14 +33,14 @@
 
 /obj/machinery/electrolyzer/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
-	context[SCREENTIP_CONTEXT_ALT_LMB] = "Turn [on ? "off" : "on"]"
+	context[SCREENTIP_CONTEXT_ALT_LMB] = "[on ? "Выключить" : "Включить"]"
 	if(!held_item)
 		return CONTEXTUAL_SCREENTIP_SET
 	switch(held_item.tool_behaviour)
 		if(TOOL_SCREWDRIVER)
-			context[SCREENTIP_CONTEXT_LMB] = "[panel_open ? "Close" : "Open"] panel"
+			context[SCREENTIP_CONTEXT_LMB] = "[panel_open ? "Закрыть" : "Открыть"] панель"
 		if(TOOL_WRENCH)
-			context[SCREENTIP_CONTEXT_LMB] = "[anchored ? "Unan" : "An"]chor"
+			context[SCREENTIP_CONTEXT_LMB] = "[anchored ? "Открепить" : "Закрепить"]"
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/electrolyzer/Destroy()

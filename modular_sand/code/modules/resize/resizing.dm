@@ -217,6 +217,9 @@
 	if(src.mob_weight == MOB_WEIGHT_HEAVY_SUPER && get_size(src) >= 2)
 		B *= 5 * (get_size(src) / 2)
 
+	// Константа макс урона.
+	B = min(B, MOB_WEIGHT_MAX_STOMP_BRUTE_DAMAGE)
+
 	// BLUEMOON ADDITION END
 
 	target.adjustBruteLoss(B) //final result in brute loss

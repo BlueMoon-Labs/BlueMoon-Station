@@ -456,7 +456,8 @@
 			unnamed += "[station_area.type]"
 	TEST_ASSERT(!length(unnamed), "Станционные зоны без имени: [unnamed.Join(", ")]")
 
-#define SUPERMATTER_COLLECTOR_RANGE 2
+// Случайные движки Box: у "SM 1x3" коллекторы в ряд до 4 клеток от кристалла, у "SM 5x5" - на трёх.
+#define SUPERMATTER_COLLECTOR_RANGE 4
 #define SUPERMATTER_MIN_COLLECTORS 6
 
 /// У кристалла суперматерии станции стоят радколлекторы на сети с вводом СМЕСа: наш кристалл кормит их излучением, в тесла-катушки бьёт только при перегрузке.
@@ -464,6 +465,9 @@
 	requires_full_map = TRUE
 
 /datum/unit_test/station_supermatter_has_rad_collectors/Run()
+	// "Сделай сам": коллекторы лежат на складе, собрать движок - работа инженеров.
+	if("Box DIY_SM" in GLOB.chosen_station_templates)
+		return
 	for(var/obj/machinery/power/supermatter_crystal/engine/crystal as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/supermatter_crystal/engine))
 		if(!is_station_level(crystal.z))
 			continue

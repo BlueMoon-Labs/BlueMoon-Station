@@ -42,6 +42,15 @@
 /// Window is free and ready to receive data
 #define TGUI_WINDOW_READY 2
 
+/// Панель чата пингует раз в 2.5 с: дольше молчит - похоже, она мертва, и чат снова дублируется в старый output.
+#define TGUI_PANEL_SILENT_LIMIT (30 SECONDS)
+/// Сколько игрок без ввода, чтобы панель чата записала историю: запись хранилища BYOND может подвесить клиент.
+#define CHAT_HISTORY_SAVE_IDLE (5 SECONDS)
+/// Не чаще этого сервер зовёт панель записать историю чата.
+#define CHAT_HISTORY_SAVE_EVERY (1 MINUTES)
+/// Сколько последних сообщений, ушедших только в панель, проигрывается в старый output при переходе на него.
+#define CHAT_LEGACY_REPLAY_LIMIT 200
+
 /// Get a window id based on the provided pool index
 #define TGUI_WINDOW_ID(index) "tgui-window-[index]"
 /// Get a pool index of the provided window id

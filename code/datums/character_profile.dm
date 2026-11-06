@@ -123,6 +123,17 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		else
 			data["erp_verbs"] = "Text Only"
 		// mechanical_erp_verbs_examine END
+	if(!iscarbon(M) && M)
+		var/datum/preferences/prefs = M.client?.prefs
+		var/list/features = prefs?.features
+		data["oocnotes"] = format_text("oocnotes", M.mind?.ooc_notes || (features ? features["ooc_notes"] : null))
+		data["flavortext"] = format_text("flavortext", M.mind?.flavor_text || (features ? features["flavor_text"] : null))
+		data["species_name"] = "ЕРП-антагонист"
+		data["custom_species_lore"] = ""
+		if(prefs && (prefs.toggles & VERB_CONSENT))
+			data["erp_verbs"] = "Allowed"
+		else
+			data["erp_verbs"] = "Text Only"
 	if (isobserver(user))
 		data["security_records"] = format_text("security_records", M?.client?.prefs.security_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей
 		data["medical_records"] = format_text("medical_records", M?.client?.prefs.medical_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей

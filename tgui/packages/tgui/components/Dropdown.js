@@ -44,6 +44,7 @@ export class Dropdown extends Component {
       selected: props.selected,
       open: false,
       search: '',
+      flipUp: false,
     };
     this.handleClick = () => {
       if (this.state.open) {
@@ -59,9 +60,10 @@ export class Dropdown extends Component {
   setOpen(open) {
     // The menu node exists only after the re-render, so focus it
     // in the setState callback (setState is asynchronous in React).
-    this.setState({ open: open, search: '' }, () => {
+    this.setState({ open: open, search: '', flipUp: false }, () => {
       if (open) {
         (this.searchRef || this.menuRef)?.focus();
+        this.measureDirection();
       }
     });
     if (open) {
@@ -69,6 +71,25 @@ export class Dropdown extends Component {
     }
     else {
       window.removeEventListener('click', this.handleClick);
+    }
+  }
+
+  measureDirection() {
+    if (this.props.over) {
+      return;
+    }
+    const control = this.rootRef?.querySelector('.Dropdown__control');
+    const menu = this.menuRef;
+    if (!control || !menu) {
+      return;
+    }
+    const controlRect = control.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - controlRect.bottom;
+    const spaceAbove = controlRect.top;
+    const menuHeight = menu.getBoundingClientRect().height;
+    const flipUp = menuHeight > spaceBelow && spaceAbove > spaceBelow;
+    if (flipUp !== this.state.flipUp) {
+      this.setState({ flipUp: flipUp });
     }
   }
 
@@ -141,7 +162,7 @@ export class Dropdown extends Component {
       ...rest
     } = boxProps;
 
-    const adjustedOpen = over ? !this.state.open : this.state.open;
+    const menuUp = over || this.state.flipUp;
 
     // options приходит из окон и не обязан быть массивом: часть вызывающих
     // кладёт туда объект или строку (ComplexModal.js, IPCConstructor.js,
@@ -187,7 +208,7 @@ export class Dropdown extends Component {
         }}
         className={classes([
           noscroll && 'Dropdown__menu-noscroll' || 'Dropdown__menu',
-          over && 'Dropdown__over',
+          menuUp && 'Dropdown__over',
         ])}>
         {showSearch && (
           <input
@@ -238,13 +259,13 @@ export class Dropdown extends Component {
         </span>
         {!!nochevron || (
           <span className="Dropdown__arrow-button">
-            <Icon name={adjustedOpen ? 'chevron-up' : 'chevron-down'} />
+            <Icon name={menuUp || this.state.open ? 'chevron-up' : 'chevron-down'} />
           </span>
         )}
       </Box>
     );
     return (
-      <div className="Dropdown">
+      <div className="Dropdown" ref={root => { this.rootRef = root; }}>
         {tooltip ? (
           <Tooltip content={<span className="Tooltip__text">{tooltip}</span>} position={tooltipPosition}>
             <div>{control}</div>

@@ -16,6 +16,10 @@
 	var/icon_dead = ""
 	///We only try to show a gibbing animation if this exists.
 	var/icon_gib = null
+	/// Профиль персонажа для ЕРП-антагонистов.
+	var/datum/description_profile/profile
+	/// Показывать ли ссылку на профиль в examine.
+	var/show_erp_profile = FALSE
 
 	var/list/speak = list()
 	///Emotes while speaking IE: Ian [emote], [text] -- Ian barks, "WOOF!". Spoken text is generated from the speak variable.
@@ -34,6 +38,11 @@
 	var/wander = 1
 	///When set to 1 this stops the animal from moving when someone is pulling it.
 	var/stop_automated_movement_when_pulled = 1
+	///Предыдущий статус AI до посадки наездника.
+	var/pre_ride_ai_status = null
+	var/pre_ride_stop_automated_movement = 0
+	///Была ли мышь в орде до посадки наездника.
+	var/pre_ride_horde_member = FALSE
 
 	///When someone interacts with the simple animal.
 	///Help-intent verb in present continuous tense.
@@ -230,6 +239,15 @@
 			if(islist(idle_z_list))
 				idle_z_list -= src
 
+	QDEL_NULL(profile)
+	return ..()
+
+/mob/living/simple_animal/Topic(href, href_list)
+	if(href_list["character_profile"] && show_erp_profile)
+		if(!profile)
+			profile = new(src)
+		profile.ui_interact(usr)
+		return
 	return ..()
 
 /mob/living/simple_animal/updatehealth()
@@ -263,6 +281,47 @@
 						Move(get_step(src, anydir), anydir)
 						turns_since_move = 0
 			return TRUE
+
+/mob/living/simple_animal/proc/prepare_riding()
+	LoadComponent(/datum/component/riding)
+
+/mob/living/simple_animal/proc/play_jump()
+	var/start_z = pixel_z
+	animate(src, pixel_z = start_z + 6, time = 2, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	animate(pixel_z = start_z, time = 2, easing = SINE_EASING)
+
+/mob/living/simple_animal/MouseDrop_T(mob/living/M, mob/living/user)
+	if(can_buckle && tame && istype(M) && M != src && !M.buckled)
+		prepare_riding()
+		if(mouse_buckle_handling(M, user))
+			return
+	return ..()
+
+/mob/living/simple_animal/post_buckle_mob(mob/living/M)
+	. = ..()
+	pre_ride_stop_automated_movement = stop_automated_movement
+	pre_ride_horde_member = !!GetComponent(/datum/component/rat_minion)
+	stop_automated_movement = TRUE
+	if(ai_controller)
+		pre_ride_ai_status = ai_controller.ai_status
+		ai_controller.set_ai_status(AI_STATUS_OFF)
+
+/mob/living/simple_animal/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	if(istype(src, /mob/living/simple_animal/mouse))
+		var/datum/component/rat_minion/minion = GetComponent(/datum/component/rat_minion)
+		if(minion)
+			stop_automated_movement = TRUE
+		else if(pre_ride_horde_member)
+			stop_automated_movement = FALSE
+		else
+			stop_automated_movement = pre_ride_stop_automated_movement
+	else
+		stop_automated_movement = pre_ride_stop_automated_movement
+	pre_ride_horde_member = FALSE
+	if(ai_controller && !isnull(pre_ride_ai_status))
+		ai_controller.set_ai_status(pre_ride_ai_status)
+	pre_ride_ai_status = null
 
 /mob/living/simple_animal/proc/handle_automated_speech(var/override)
 	set waitfor = FALSE
@@ -964,6 +1023,8 @@
 
 /mob/living/simple_animal/examine(mob/user)
 	var/list/dat = ..()
+	if(show_erp_profile && client?.prefs)
+		dat += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
 	if(stat == DEAD)
 		dat += "<span class='deadsay'>[p_they_ru(TRUE)] не подаёт признаков жизни.</span>"
 	else if(getBruteLoss() && !isbot(src))

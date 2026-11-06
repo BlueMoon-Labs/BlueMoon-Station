@@ -53,6 +53,8 @@
 	var/list/temp_gated_needs_fuel
 	/// Lowest TEMP gate among temp_gated_reactions, for a single cheap precheck.
 	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
+	/// Температура, ниже которой смесь из одних O2 и N2 не соберёт ни одного кандидата: безгазовые реакции с топливом ждут горючего газа, а O2/N2 им не являются.
+	var/temp_gated_air_ceiling = ATMOS_NO_TEMPERATURE_GATE
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -429,7 +431,8 @@
 		T.process_cell(fire_count)
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
-		maybe_sleep_low_pressure_turf(T)
+		if(!T.excited_group)
+			maybe_sleep_low_pressure_turf(T)
 		// Only pause while there is still work left. Pausing on an emptied
 		// runlist made the next fire see `!length(currentrun)` and re-Copy the
 		// whole active list, running a second full turf pass inside what the
@@ -557,7 +560,8 @@
 			T.excited_group.garbage_collect()
 
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE, reset_stall = TRUE)
-	if(!istype(T) || T.blocks_air || !T.air)
+	// Космос не симулируется: его process_cell только снимает его с очереди, а затравкой обхода зоны он гонял пустой обход.
+	if(!istype(T) || T.blocks_air || !T.air || isspaceturf(T))
 		return
 	// `excited` doubles as the membership flag of active_turfs: every path that
 	// drops a turf out of the list clears it, and nothing marks a turf excited
@@ -661,6 +665,8 @@
 	var/list/temp_gated = list()
 	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuel_gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuelless_gate_floor = ATMOS_NO_TEMPERATURE_GATE
 	// Позиция ПОСЛЕДНЕЙ реакции бакета. Пол бакета читается на сборе кандидатов,
 	// до цикла реакций, поэтому он верен только пока никакая реакция того же
 	// вызова не может поднять газ над порогом. Пара freonformation (приоритет 33,
@@ -710,6 +716,9 @@
 			// пропускать, а не отсекать по отсутствию горячего газа.
 			if(reqs["FIRE_REAGENTS"] > 0)
 				needs_fuel[reaction] = TRUE
+				fuel_gate_floor = min(fuel_gate_floor, temp_gate)
+			else
+				fuelless_gate_floor = min(fuelless_gate_floor, temp_gate)
 	// Газ, который кто-то производит РАНЬШЕ, чем отработает последняя реакция его
 	// бакета, требует двух поблажек сразу, и снятого пола мало.
 	//
@@ -738,6 +747,13 @@
 	temp_gated_reactions = temp_gated
 	temp_gated_needs_fuel = needs_fuel
 	temp_gated_min_temp = gate_floor
+	var/list/fuel_temps = GLOB.gas_data?.fire_temperatures
+	var/air_fuel_temp = ATMOS_NO_TEMPERATURE_GATE
+	for(var/air_gas in list(GAS_O2, GAS_N2))
+		var/air_gas_fire_temp = fuel_temps?[air_gas]
+		if(air_gas_fire_temp)
+			air_fuel_temp = min(air_fuel_temp, air_gas_fire_temp)
+	temp_gated_air_ceiling = min(fuelless_gate_floor, max(fuel_gate_floor, air_fuel_temp))
 
 /proc/auxtools_atmos_init(gas_data)
 	return TRUE
@@ -767,8 +783,7 @@
 	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
 	// fresh stall budget. A door cycling next to a settled room used to hand its
 	// whole neighborhood a new rest window every time it opened.
-	ATMOS_BENCH_WAKE(open_turf, "adjacency")
-	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	SSair.wake_if_gradient(open_turf, "adjacency")
 
 /turf/proc/update_air_ref(flag)
 	if(!SSair)
@@ -1409,10 +1424,10 @@
 	var/datum/controller/subsystem/air/air_controller = SSair
 	var/list/reaction_index = air_controller.reactions_by_key_gas
 	var/gated_min_temp = air_controller.temp_gated_min_temp
-	// The overwhelming turf case is cool O2/N2 air. The reaction index is
+	// The overwhelming turf case is O2/N2 air. The reaction index is
 	// authoritative, so only skip when neither common gas owns a candidate and
-	// no temperature-only reaction can be eligible.
-	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < gated_min_temp)
+	// no temperature-only reaction can be eligible (see temp_gated_air_ceiling).
+	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < air_controller.temp_gated_air_ceiling)
 		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
 			if(length(reaction_results))
 				reaction_results.Cut()

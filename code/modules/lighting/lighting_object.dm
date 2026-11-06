@@ -53,11 +53,12 @@
 	var/blended_ambient = AMBIENT_LIGHT_DEFAULT
 
 /atom/movable/lighting_object/New(turf/source)
-	// Гибридный рендер: объект лежит на турфе (loc = source) И продублирован в vis_contents.
-	// loc-канал обязателен для ДОСТАВКИ обновлений: BYOND надёжно шлёт клиентам animate() и
-	// смену appearance только у ин-ворлд атомов. У nullspace-атома, видимого исключительно
-	// через vis_contents, анимации цвета до клиентов не доезжают - зоны застревают в устаревшей
-	// тьме до полного пересинка турфа (выход за край view, смена z-уровня, реконнект).
+	// Объект лежит на турфе (loc = source) и в vis_contents турфа не дублируется.
+	// loc обязателен: у nullspace-атома, видимого только через vis_contents, animate() цвета
+	// до клиентов не доезжает, и зоны застревают в устаревшей тьме до пересинка турфа.
+	// Дубль в vis_contents SendMaps осматривал второй раз на каждом тайле обзора каждого
+	// клиента: без него вызов на клиента дешевле на четверть. Сквозь openspace свет нижнего
+	// этажа виден и так - турф в vis_contents показывает своё содержимое.
 	// Обходы contents от служебного атома огорожены точечно: onShuttleMove() no-op,
 	// скип в фотозахвате, блэклист радиации. Каноническое создание - new(turf).
 	..()
@@ -77,7 +78,6 @@
 
 	affected_turf.lighting_object = src
 	affected_turf.luminosity = 0
-	affected_turf.vis_contents += src
 
 	if(SSlighting.init_in_progress)
 		// During init, collect space turfs for batch processing (deduped via assoc list)
@@ -96,10 +96,7 @@
 /atom/movable/lighting_object/Destroy(force)
 	if (!force)
 		return QDEL_HINT_LETMELIVE
-	// Remove from queues and detach from the rendering turf BEFORE we fire the animation cancel.
-	// After ChangeTurf transfers this object the turf's vis_contents entry is the only DM-visible
-	// ref chain; breaking it before animate() lets BYOND release the appearance ref in the same
-	// tick as the cancel, instead of carrying it into the next fire() and into a harddel.
+	// Remove from queues and detach from the turf BEFORE we fire the animation cancel.
 	needs_update = FALSE
 	GLOB.lighting_update_objects -= src
 	GLOB.lighting_update_blends -= src
@@ -109,7 +106,6 @@
 		if (affected_turf.lighting_object == src)
 			affected_turf.lighting_object = null
 			affected_turf.luminosity = 1
-		affected_turf.vis_contents -= src
 	affected_turf = null
 	// Cancel any in-progress animation to release BYOND's internal reference that prevents GC.
 	// ANIMATION_END_NOW alone is a no-op — BYOND only runs the "end current" path when there is a
