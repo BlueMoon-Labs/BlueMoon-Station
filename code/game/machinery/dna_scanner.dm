@@ -117,11 +117,10 @@
 	if(!state_open)
 		return FALSE
 
-	if(user.get_equipped_items().len)
-	{
-		to_chat(user, "<span class='notice'>Вы не можете залезть в сканнер в одежде. Снимите всё перед входом.</span>")
+	var/list/equipped = user?.get_equipped_items()
+	if(length(equipped))
+		to_chat(user, span_notice("Вы не можете залезть в сканнер в одежде. Снимите всё перед входом."))
 		return FALSE
-	}
 
 	..(user)
 
