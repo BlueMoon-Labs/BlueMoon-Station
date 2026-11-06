@@ -452,9 +452,12 @@ const ChoiceRow = (props) => {
   }
 
   return (
-    <Box mb={0.75}>
+    <Box mb={1}>
       <Button
         fluid
+        fontSize="1.2em"
+        lineHeight={2}
+        px={0.75}
         selected={mine}
         icon={icon}
         tooltip={mine && !multi ? 'Ваш голос' : null}
@@ -478,7 +481,7 @@ const ChoiceRow = (props) => {
       {!hidden && (
         <ProgressBar
           mt={0.25}
-          height="0.4em"
+          height="0.5em"
           value={percent / 100}
           color={mine ? 'good' : isLeader ? 'blue' : 'grey'}>
           {' '}
@@ -500,7 +503,10 @@ const RankedChoices = (props) => {
         <Button
           key={choice.id}
           fluid
-          mb={0.5}
+          fontSize="1.2em"
+          lineHeight={2}
+          px={0.75}
+          mb={0.75}
           selected={choice.user_rank > 0}
           tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
           onClick={() => act('vote', { index: choice.id })}>
@@ -524,15 +530,18 @@ const ScoreChoices = (props) => {
   const { act } = useBackend();
 
   return (
-    <LabeledList>
+    <>
       {choices.map((choice) => (
-        <LabeledList.Item key={choice.id} label={choiceLabel(choice.name)}>
+        <Box key={choice.id} mb={1}>
+          <Box fontSize="1.2em" bold mb={0.25}>
+            {choiceLabel(choice.name)}
+          </Box>
           <Stack>
             {score_options.map((opt) => (
               <Stack.Item key={opt.value} grow basis={0}>
                 <Button
                   fluid
-                  compact
+                  lineHeight={1.8}
                   textAlign="center"
                   selected={choice.user_score === opt.value}
                   onClick={() => act('vote', { index: choice.id, score: opt.value })}>
@@ -541,9 +550,9 @@ const ScoreChoices = (props) => {
               </Stack.Item>
             ))}
           </Stack>
-        </LabeledList.Item>
+        </Box>
       ))}
-    </LabeledList>
+    </>
   );
 };
 
