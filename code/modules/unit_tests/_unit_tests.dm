@@ -458,6 +458,7 @@
 #include "reinforced_plating.dm"
 #include "resist.dm"
 #include "resize_health_hud.dm"
+#include "riding_mount_and_vehicle_limits.dm"
 #include "riot_shield_implant.dm"
 #include "round_10458_10462_runtimes.dm"
 #include "round_10463_10470_runtimes.dm"
