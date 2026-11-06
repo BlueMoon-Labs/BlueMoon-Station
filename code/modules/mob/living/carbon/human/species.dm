@@ -1150,6 +1150,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 // MARK: добавление оверлея
 			update_overlay_by_key(mutant_string, H, accessory_overlay)
+			var/mutable_appearance/upper_limbs_overlay = S.get_upper_limbs_overlay(accessory_overlay, H)
+			if(upper_limbs_overlay)
+				standing += upper_limbs_overlay
 			standing += accessory_overlay
 			if(glowing)
 				standing += emissive_copy(accessory_overlay, offset_spokesman = H)

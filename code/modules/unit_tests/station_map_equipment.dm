@@ -780,3 +780,18 @@
 		if(is_station_level(lathe.z) && istype(get_area(lathe), /area/security) && lathe.stored_research.isDesignResearchedID("c45"))
 			return
 	TEST_FAIL("В охране нет автолата с патронами .45")
+
+/// Под двойным шлюзом файрлок стоит на обеих створках или ни на одной: иначе при пробоине закрывается половина проёма.
+/datum/unit_test/station_wide_airlocks_firelock_both_leaves
+	requires_full_map = TRUE
+
+/datum/unit_test/station_wide_airlocks_firelock_both_leaves/Run()
+	var/list/half_sealed = list()
+	for(var/obj/machinery/door/airlock/multi_tile/airlock as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock/multi_tile))
+		if(!is_station_level(airlock.z) || !airlock.filler)
+			continue
+		var/turf/first_leaf = get_turf(airlock)
+		var/turf/second_leaf = get_turf(airlock.filler)
+		if(!!(locate(/obj/machinery/door/firedoor) in first_leaf) != !!(locate(/obj/machinery/door/firedoor) in second_leaf))
+			half_sealed += "[airlock.name] ([airlock.x],[airlock.y],[airlock.z])"
+	TEST_ASSERT(!length(half_sealed), "Двойные шлюзы с файрлоком только под одной створкой: [half_sealed.Join(", ")]")

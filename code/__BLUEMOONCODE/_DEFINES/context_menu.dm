@@ -59,6 +59,9 @@
 
 /// Элемент скина браузерного меню действий и сколько ждать загрузки его страницы перед первым показом
 #define CONTEXT_MENU_HTML_CONTROL "mainwindow.context_menu"
+/// Отдельное окно без рамки для меню поверх других окон (VV, tgui): дочерний элемент главного окна они перекрывают
+#define CONTEXT_MENU_HTML_POPUP_WINDOW "context_menu_popup"
+#define CONTEXT_MENU_HTML_POPUP_CONTROL "context_menu_popup.context_menu_float"
 #define CONTEXT_MENU_HTML_PAGE_GRACE (1 SECONDS)
 /// Сколько разных стейтов держит кэш значков браузерного меню
 #define CONTEXT_MENU_HTML_ICON_CACHE 2000

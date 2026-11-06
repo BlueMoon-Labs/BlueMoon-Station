@@ -549,7 +549,7 @@
 			. += "<span class='notice'>Эта крыса служит вам.</span>"
 		else
 			. += "<span class='warning'>Этот крестьянин служит другому королю! Свергните его!</span>"
-	. += span_notice("Можно оседлать.")
+	. += span_notice("Оседлать её может только кто-то не крупнее крысы и не сверхтяжёлый.")
 
 /mob/living/simple_animal/hostile/rat/CanAttack(atom/the_target)
 	if(!the_target)
@@ -1353,7 +1353,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 
 /mob/living/simple_animal/hostile/regalrat/lust/examine(mob/user)
 	. = ..()
-	. += span_notice("Можно оседлать.")
+	. += span_notice("Оседлать её может только кто-то не крупнее её самой и не сверхтяжёлый.")
 
 /mob/living/simple_animal/hostile/regalrat/lust/CanAttack(atom/the_target)
 	return FALSE

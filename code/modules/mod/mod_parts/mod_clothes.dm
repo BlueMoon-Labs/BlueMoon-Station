@@ -176,10 +176,10 @@
 	gloves_tackler = mod.wearer.AddComponent(/datum/component/tackler, stamina_cost=G.tackle_stam_cost, base_knockdown = G.base_knockdown, range = G.tackle_range, speed = G.tackle_speed, skill_mod = G.skill_mod, min_distance = G.min_distance)
 
 /obj/item/clothing/mod_part/gloves/restore_normal_features()
-	var/obj/item/clothing/gloves/gloves_on_human = istype(..(), /obj/item/clothing/gloves) ? ..() : null//результат родителя
-	if(!gloves_on_human)
-		return
-	siemens_coefficient = saved_siemens_coefficient
+	. = ..()
+	if(!isnull(saved_siemens_coefficient))
+		siemens_coefficient = saved_siemens_coefficient
+		saved_siemens_coefficient = null
 	clear_mod_tackler_component()
 
 /obj/item/clothing/mod_part/gloves/seal_part(seal)
