@@ -811,7 +811,7 @@
 	update_health_hud()
 
 /mob/living/carbon/update_sight(forced = TRUE)
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(stat == DEAD)
 		sight = (SEE_TURFS|SEE_MOBS|SEE_OBJS)
@@ -842,7 +842,7 @@
 		see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
 		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_REAL_LOW)
 
-	if(client.eye && client.eye != src)
+	if(client?.eye && client.eye != src)
 		var/atom/A = client.eye
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
 			return

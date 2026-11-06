@@ -1,29 +1,39 @@
 /**
- * Отрисовка меню действий браузером: элемент скина mainwindow.context_menu поверх карты, как тултипы.
+ * Отрисовка меню действий браузером: своё окно поверх остальных окон (по умолчанию) или элемент главного окна поверх карты.
  *
  * maptext BYOND - битмап без ClearType, мелкий текст в нём ступенчатый при любом шрифте и зуме.
  * Браузер рисует текст как остальной интерфейс. Позицию у курсора страница считает сама по размеру
  * и зуму карты (winget), клик по строке приходит в Topic меню.
  */
 /client
-	/// Когда клиенту отправлена страница меню; до её загрузки показ откладывается
-	var/context_menu_page_sent_at
+	/// Элемент скина -> когда ему отправлена страница меню; до её загрузки показ откладывается
+	var/list/context_menu_page_sent_at
 
-/// Страница меню едет клиенту один раз за сессию
-/client/proc/send_context_menu_page()
-	if(context_menu_page_sent_at)
+/// Элемент скина браузерного меню по настройке «Слой»
+/proc/context_menu_html_control(list/style)
+	return context_menu_style_option(style, "layer") == "top" ? CONTEXT_MENU_HTML_POPUP_CONTROL : CONTEXT_MENU_HTML_CONTROL
+
+/// Что показывать и прятать: у меню поверх окон - его окно целиком, иначе сам элемент
+/proc/context_menu_html_window(control)
+	return control == CONTEXT_MENU_HTML_POPUP_CONTROL ? CONTEXT_MENU_HTML_POPUP_WINDOW : control
+
+/// Страница меню едет в элемент один раз за сессию
+/client/proc/send_context_menu_page(control = CONTEXT_MENU_HTML_POPUP_CONTROL)
+	if(context_menu_page_sent_at?[control])
 		return
 	var/static/page
 	if(!page)
 		page = file2text('modular_bluemoon/code/modules/context_menu/context_menu.html')
-	src << browse(page, "window=[CONTEXT_MENU_HTML_CONTROL]")
-	context_menu_page_sent_at = world.time
+	src << browse(page, "window=[control]")
+	LAZYSET(context_menu_page_sent_at, control, world.time)
 
 /datum/context_menu
 	/// Пункты в порядке строк браузерного меню: по номеру из Topic находится пункт
 	var/list/datum/context_menu_entry/html_rows
 	/// Браузерное меню показано, при закрытии его надо спрятать
 	var/html_shown = FALSE
+	/// В каком элементе скина меню показано сейчас
+	var/shown_control
 
 /// Браузерное меню у этого игрока: выбрано в настройках и есть клиент (load_style)
 /datum/context_menu/proc/html_renderer()
@@ -31,8 +41,11 @@
 
 /datum/context_menu/proc/render_html()
 	var/client/viewer = user.client
-	viewer.send_context_menu_page()
-	var/wait = viewer.context_menu_page_sent_at + CONTEXT_MENU_HTML_PAGE_GRACE - world.time
+	// сменили слой при открытом меню: старое место прячется
+	if(html_shown && shown_control && shown_control != html_control)
+		hide_html()
+	viewer.send_context_menu_page(html_control)
+	var/wait = viewer.context_menu_page_sent_at[html_control] + CONTEXT_MENU_HTML_PAGE_GRACE - world.time
 	if(wait > 0)
 		addtimer(CALLBACK(src, PROC_REF(render)), wait, TIMER_UNIQUE|TIMER_OVERRIDE)
 		return
@@ -62,7 +75,9 @@
 	var/list/style = user.context_menu_prefs()?.context_menu_style
 	var/list/data = list(
 		"ref" = REF(src),
-		"control" = CONTEXT_MENU_HTML_CONTROL,
+		"control" = html_control,
+		"window" = context_menu_html_window(html_control),
+		"on_top" = html_control == CONTEXT_MENU_HTML_POPUP_CONTROL,
 		"header" = show_header,
 		"header_text" = header,
 		"rows" = rows,
@@ -111,7 +126,8 @@
 		play_menu_sound()
 	opened = TRUE
 	html_shown = TRUE
-	viewer << output(list2params(list(json_encode(data))), "[CONTEXT_MENU_HTML_CONTROL]:menu.show")
+	shown_control = html_control
+	viewer << output(list2params(list(json_encode(data))), "[html_control]:menu.show")
 	if(icons_pending)
 		addtimer(CALLBACK(src, PROC_REF(render)), 1, TIMER_UNIQUE|TIMER_OVERRIDE)
 
@@ -119,9 +135,10 @@
 	if(!html_shown)
 		return
 	html_shown = FALSE
+	var/control = shown_control || html_control
 	if(user?.client)
-		user.client << output(null, "[CONTEXT_MENU_HTML_CONTROL]:menu.hide")
-		winshow(user.client, CONTEXT_MENU_HTML_CONTROL, FALSE)
+		user.client << output(null, "[control]:menu.hide")
+		winshow(user.client, context_menu_html_window(control), FALSE)
 
 /// Клик по строке браузерного меню: choose - номер строки с 1, header - шапка; ctrl/shift/alt - модификаторы клика
 /datum/context_menu/Topic(href, list/href_list)
