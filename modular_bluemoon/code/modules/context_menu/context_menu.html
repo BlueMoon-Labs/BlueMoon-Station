@@ -153,9 +153,11 @@
 		refocus: function () {
 			byond_winset({ id: "mapwindow.map", focus: "true" });
 		},
+		// окно, где меню показано: своё окно поверх остальных или элемент главного окна
+		shownWindow: null,
 		hide: function () {
 			menu.data = null;
-			byond_winset({ id: "mainwindow.context_menu", "is-visible": "false" });
+			byond_winset({ id: menu.shownWindow || "mainwindow.context_menu", "is-visible": "false" });
 		},
 		send: function (params) {
 			if (!menu.data) {
@@ -466,12 +468,36 @@
 			}
 			x = Math.max(0, Math.min(x, map.size.x - width));
 			y = Math.max(0, Math.min(y, map.size.y - height));
+			menu.shownWindow = d.window;
+			if (!d.on_top) {
+				byond_winset({
+					id: d.window,
+					pos: Math.round(x) + "," + Math.round(y),
+					size: width + "x" + height,
+					"is-visible": "true"
+				});
+				return;
+			}
+			// своё окно стоит в координатах экрана: от угла главного окна
+			menu.pending = { x: x, y: y, width: width, height: height };
+			byond_bridge_call("winget", { callback: "menu.placeTop", id: "mainwindow", property: "outer-pos,inner-pos" });
+		},
+		placeTop: function (win) {
+			var d = menu.data;
+			var p = menu.pending;
+			if (!d || !p || !win || !win["outer-pos"] || !win["inner-pos"]) {
+				return;
+			}
+			var left = win["outer-pos"].x + win["inner-pos"].x + p.x;
+			var top = win["outer-pos"].y + win["inner-pos"].y + p.y;
 			byond_winset({
-				id: "mainwindow.context_menu",
-				pos: Math.round(x) + "," + Math.round(y),
-				size: width + "x" + height,
+				id: d.window,
+				pos: Math.round(left) + "," + Math.round(top),
+				size: p.width + "x" + p.height,
 				"is-visible": "true"
 			});
+			// показанное окно забирает фокус: ходьба и хоткеи должны остаться у карты
+			menu.refocus();
 		}
 	};
 </script>
