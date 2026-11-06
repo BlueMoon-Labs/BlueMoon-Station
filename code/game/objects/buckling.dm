@@ -107,6 +107,7 @@
 
 	// BLUEMOON ADD START
 	if(!pre_buckle_mob(M))
+		M.buckling = null
 		return FALSE
 	// BLUEMOON ADD END
 
@@ -116,6 +117,7 @@
 			// Всё в порядке
 		else if(M != usr)
 			to_chat(usr, span_warning("Слишком много весит!"))
+			M.buckling = null
 			return FALSE
 	// BLUEMOON ADD END
 

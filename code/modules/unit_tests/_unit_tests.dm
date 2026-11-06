@@ -196,6 +196,7 @@
 // #include "breath.dm"
 #include "bodypart_leg_layers.dm"
 #include "brig_assistant_console.dm"
+#include "buckle_refusal_and_hecu_visor.dm"
 #include "bugreport_fixes_2026_10.dm"
 #include "bugreports_2026_11.dm"
 #include "byond_list_references.dm"
