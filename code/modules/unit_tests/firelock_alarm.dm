@@ -162,3 +162,56 @@
 
 	door.issue_turfs = list()
 	door.alarm_type = null
+
+/// ИИ и киборг удалённо включают и снимают пожарную тревогу зоны, а повторное
+/// включение сразу после сброса не теряется в кулдауне сирены.
+/datum/unit_test/firealarm_silicon_remote_toggle
+	var/turf/open/spot
+	var/area/old_area
+
+/datum/unit_test/firealarm_silicon_remote_toggle/Run()
+	spot = run_loc_floor_bottom_left
+	old_area = get_area(spot)
+	var/area/unit_test_decompression/zone = new
+	zone.contents += spot
+	var/obj/machinery/firealarm/alarm = allocate(/obj/machinery/firealarm, spot)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, get_step(spot, NORTH))
+	TEST_ASSERT(alarm.can_use_button(), "предпосылка: кнопка сигнализации недоступна")
+	TEST_ASSERT(zone in door.affecting_areas, "предпосылка: файрлок не слушает зону сигнализации")
+	var/mob/living/carbon/human/donor = allocate(/mob/living/carbon/human)
+	var/mob/living/silicon/ai/station_ai = allocate(/mob/living/silicon/ai, spot, null, donor)
+	var/mob/living/silicon/robot/borg = allocate(/mob/living/silicon/robot, spot)
+
+	alarm.attack_ai(station_ai)
+	TEST_ASSERT(zone.fire, "клик ИИ по сигнализации не поднял тревогу зоны")
+	TEST_ASSERT(door.density, "тревога, поднятая ИИ, не закрыла файрлок зоны")
+	wait_for_var(door, "operating", FALSE)
+	alarm.attack_ai(station_ai)
+	TEST_ASSERT(!zone.fire, "клик ИИ по сигнализации не снял тревогу зоны")
+	alarm.attack_ai(station_ai)
+	TEST_ASSERT(zone.fire, "повторный клик ИИ сразу после сброса не поднял тревогу")
+	alarm.attack_robot(borg)
+	TEST_ASSERT(!zone.fire, "киборг не снял тревогу зоны")
+	alarm.attack_robot(borg)
+	TEST_ASSERT(zone.fire, "киборг не поднял тревогу сразу после сброса")
+	alarm.attack_robot(borg)
+	TEST_ASSERT(!zone.fire, "киборг не снял повторную тревогу")
+	wait_for_var(door, "operating", FALSE)
+
+	// Тревога зоны на воздушной сигнализации снимается ИИ через её окно.
+	var/obj/machinery/airalarm/air_alarm = allocate(/obj/machinery/airalarm, spot)
+	var/datum/tgui/air_ui = allocate(/datum/tgui, station_ai, air_alarm, "AirAlarm")
+	air_ui.status = UI_INTERACTIVE
+	usr = station_ai
+	air_alarm.ui_act("alarm", list(), air_ui)
+	var/raised = air_alarm.ui_data(station_ai)["atmos_alarm"]
+	air_alarm.ui_act("reset", list(), air_ui)
+	var/cleared = !air_alarm.ui_data(station_ai)["atmos_alarm"]
+	usr = null
+	TEST_ASSERT(raised, "ИИ не объявил тревогу зоны с воздушной сигнализации")
+	TEST_ASSERT(cleared, "ИИ не снял тревогу зоны с воздушной сигнализации")
+
+/datum/unit_test/firealarm_silicon_remote_toggle/Destroy()
+	if(old_area)
+		old_area.contents += spot
+	return ..()
