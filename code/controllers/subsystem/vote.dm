@@ -998,6 +998,9 @@ SUBSYSTEM_DEF(vote)
 	data["question"] = question
 	// Оставшееся время в секундах
 	data["time_remaining"] = round(get_time_remaining() / 10)
+	data["time_total"] = mode ? round(max(end_time - started_time, get_time_remaining()) / 10) : 0
+	data["initiator"] = mode ? ((initiator == "server" || initiator == "the Server") ? "автоматически" : initiator) : null
+	data["voters_count"] = length(voted)
 	data["roundtype_vote_block"] = roundtype_vote_block_reason()
 	data["vote_start_block"] = vote_start_block_reason(user)
 	data["vote_system"] = vote_system

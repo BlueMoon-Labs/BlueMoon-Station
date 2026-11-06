@@ -13,10 +13,32 @@ const MODE_META = {
   custom: { icon: 'vote-yea', color: 'purple', label: 'Кастомное' },
 };
 
-const BAR_RANGES = {
-  red: [0, 0.34],
-  orange: [0.34, 0.67],
-  good: [0.67, 1],
+// Служебные английские варианты голосований сервера
+const CHOICE_LABELS = {
+  'Restart Round': 'Перезапустить раунд',
+  'Continue Playing': 'Продолжить игру',
+  'Initiate Crew Transfer': 'Закончить смену',
+};
+
+const choiceLabel = (name) => CHOICE_LABELS[name] || name;
+
+const formatTime = (seconds) => {
+  const total = Math.max(0, seconds || 0);
+  const minutes = Math.floor(total / 60);
+  const rest = String(total % 60).padStart(2, '0');
+  return `${minutes}:${rest}`;
+};
+
+const pluralVoters = (count) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    return 'игрок';
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return 'игрока';
+  }
+  return 'игроков';
 };
 
 export const Vote = (props) => {
@@ -25,7 +47,8 @@ export const Vote = (props) => {
 
   const meta = MODE_META[mode] || MODE_META.custom;
   const title = mode ? (question || meta.label) : 'Голосование';
-  const canManage = lower_admin || allow_vote_restart || allow_vote_mode;
+  // Во время голосования игроку начать новое нельзя - блок управления только мешает
+  const canManage = lower_admin || (!mode && (allow_vote_restart || allow_vote_mode));
 
   return (
     <Window resizable title={title} width={460} height={650}>
@@ -289,12 +312,16 @@ const ChoicesPanel = (props) => {
     rotation_applies,
     mode,
     roundtype_descs,
+    vote_start_block,
   } = data;
 
   if (!mode) {
     return (
       <Section fill title="Варианты">
-        <NoticeBox info>Нет активного голосования.</NoticeBox>
+        <NoticeBox info>
+          Нет активного голосования.
+          {!!vote_start_block && <Box mt={0.5}>{vote_start_block}</Box>}
+        </NoticeBox>
       </Section>
     );
   }
@@ -309,6 +336,9 @@ const ChoicesPanel = (props) => {
   };
 
   const isRanked = vote_system === 'SCHULZE' || vote_system === 'IRV';
+  const canWithdraw = (vote_system === 'PLURALITY' || vote_system === 'APPROVAL')
+    && choices.some((c) => c.user_selected || c.user_approved);
+  const leaderVotes = Math.max(0, ...choices.map((c) => c.votes));
   const totalVotes = choices.reduce((sum, choice) => (
     choice.votes !== -1 ? sum + choice.votes : sum
   ), 0);
@@ -356,8 +386,16 @@ const ChoicesPanel = (props) => {
           vote_system={vote_system}
           score_options={score_options}
           totalVotes={totalVotes}
+          leaderVotes={leaderVotes}
           act={act}
         />
+      )}
+      {canWithdraw && (
+        <Box mt={1}>
+          <Button compact color="transparent" icon="undo" onClick={() => act('vote_reset')}>
+            Отозвать голос
+          </Button>
+        </Box>
       )}
       {isRanked && (
         <Box mt={1}>
@@ -371,7 +409,7 @@ const ChoicesPanel = (props) => {
 };
 
 const ChoicesList = (props) => {
-  const { choices, vote_system, score_options, totalVotes, act } = props;
+  const { choices, vote_system, score_options, totalVotes, leaderVotes, act } = props;
 
   if (vote_system === 'APPROVAL') {
     return (
@@ -382,12 +420,12 @@ const ChoicesList = (props) => {
               fluid
               checked={!!choice.user_approved}
               onClick={() => act('vote', { index: choice.id })}>
-              {choice.name}
+              {choiceLabel(choice.name)}
               {choice.votes !== -1 && (
                 <Box inline ml={1} color="label">({choice.votes})</Box>
               )}
             </Button.Checkbox>
-            <VoteBar choice={choice} totalVotes={totalVotes} />
+            <VoteBar choice={choice} totalVotes={totalVotes} leaderVotes={leaderVotes} mine={!!choice.user_approved} />
           </Stack.Item>
         ))}
       </Stack>
@@ -463,7 +501,7 @@ const ChoicesList = (props) => {
           <Stack align="center" spacing={1}>
             <Stack.Item grow>
               <Box bold>
-                {choice.name}
+                {choiceLabel(choice.name)}
                 {!!choice.user_selected && (
                   <Icon name="check" ml={0.5} color="good" />
                 )}
@@ -471,7 +509,7 @@ const ChoicesList = (props) => {
             </Stack.Item>
             <Stack.Item>
               <Box color={choice.user_selected ? 'good' : 'label'}>
-                {choice.votes === -1 ? '???' : `${choice.votes} гол.`}
+                {choice.votes === -1 ? 'скрыто' : `${choice.votes} гол.`}
               </Box>
             </Stack.Item>
             <Stack.Item>
@@ -484,22 +522,23 @@ const ChoicesList = (props) => {
               </Button>
             </Stack.Item>
           </Stack>
-          <VoteBar choice={choice} totalVotes={totalVotes} />
+          <VoteBar choice={choice} totalVotes={totalVotes} leaderVotes={leaderVotes} mine={!!choice.user_selected} />
         </Stack.Item>
       ))}
     </Stack>
   );
 };
 
-const VoteBar = ({ choice, totalVotes }) => {
+const VoteBar = ({ choice, totalVotes, leaderVotes, mine }) => {
   if (choice.votes === -1 || !totalVotes) {
     return null;
   }
   const percent = Math.round((choice.votes / totalVotes) * 100);
+  const isLeader = choice.votes > 0 && choice.votes === leaderVotes;
   return (
     <ProgressBar
       value={percent / 100}
-      ranges={BAR_RANGES}
+      color={mine ? 'good' : isLeader ? 'blue' : 'grey'}
       mt={0.2}
       mb={0.2}>
       {percent}%
@@ -509,17 +548,22 @@ const VoteBar = ({ choice, totalVotes }) => {
 
 const TimePanel = (props) => {
   const { act, data } = useBackend();
-  const { lower_admin, time_remaining } = data;
+  const { lower_admin, time_remaining = 0, time_total = 0, initiator, voters_count = 0 } = data;
+  const ending = time_remaining <= 30;
 
   return (
     <Stack.Item mt={0.5}>
       <Section>
         <Stack align="center" justify="space-between">
           <Stack.Item>
-            <Box fontSize={1.5} bold>
+            <Box fontSize={1.5} bold color={ending ? 'average' : null}>
               <Icon name="hourglass-half" mr={1} color="label" />
-              {time_remaining || 0}с
+              {formatTime(time_remaining)}
             </Box>
+          </Stack.Item>
+          <Stack.Item grow textAlign="right" color="label">
+            {!!initiator && <Box>Начал: {initiator}</Box>}
+            <Box>Проголосовало: {voters_count} {pluralVoters(voters_count)}</Box>
           </Stack.Item>
           {!!lower_admin && (
             <Stack.Item>
@@ -529,6 +573,15 @@ const TimePanel = (props) => {
             </Stack.Item>
           )}
         </Stack>
+        {time_total > 0 && (
+          <ProgressBar
+            mt={0.5}
+            value={time_remaining / time_total}
+            color={ending ? 'average' : 'blue'}
+            height="0.6em">
+            {' '}
+          </ProgressBar>
+        )}
       </Section>
     </Stack.Item>
   );
