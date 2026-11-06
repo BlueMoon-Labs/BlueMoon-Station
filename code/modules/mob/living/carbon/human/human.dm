@@ -701,9 +701,9 @@
 			to_chat(C, "<span class='unconscious'>Вы ощущаете поток свежего воздуха... неизвестно, откуда...</span>")
 
 /mob/living/carbon/human/cuff_resist(obj/item/I)
-	if(dna && dna.check_mutation(HULK) || istype(mind?.martial_art, /datum/martial_art/nanosuit))
+	if(is_hulk() || istype(mind?.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
-		if(..(I, cuff_break = FAST_CUFFBREAK))
+		if(..(I, cuff_break = INSTANT_CUFFBREAK))
 			dropItemToGround(I)
 	else if(HAS_TRAIT(src, TRAIT_HERETIC_ASCENDED))
 		visible_message(span_warning("[src] начинает рвать путы, будто их тянет сама завеса!"))
@@ -1137,6 +1137,12 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		admin_ticket_log(src, span_notice("[key_name_admin(usr, FALSE)] has [change_text]")) // In case they complained in an ahelp, we'll let them know anything happened
 
 /mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
+	if(istype(target, /mob/living/simple_animal))
+		var/mob/living/simple_animal/rideable = target
+		if(rideable.can_buckle && rideable.tame && rideable != src && !src.buckled)
+			rideable.prepare_riding()
+			if(rideable.mouse_buckle_handling(src, user))
+				return
 	var/GS_needed = istype(target, /mob/living/silicon/pai)? GRAB_PASSIVE : GRAB_AGGRESSIVE
 	if(pulling == target && grab_state >= GS_needed && stat == CONSCIOUS)
 		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback
