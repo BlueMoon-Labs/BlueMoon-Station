@@ -550,27 +550,48 @@ const ScoreChoices = (props) => {
 
   return (
     <>
-      {choices.map((choice) => (
-        <Box key={choice.id} mb={1}>
-          <Box fontSize="1.2em" bold lineHeight={1.35} mb={0.4}>
-            {choiceLabel(choice.name)}
-          </Box>
-          <Stack>
-            {score_options.map((opt) => (
-              <Stack.Item key={opt.value} grow basis={0}>
-                <Button
-                  fluid
-                  lineHeight={1.8}
-                  textAlign="center"
-                  selected={choice.user_score === opt.value}
-                  onClick={() => act('vote', { index: choice.id, score: opt.value })}>
-                  {opt.label}
-                </Button>
+      {choices.map((choice) => {
+        const rated = choice.user_score !== null && choice.user_score !== undefined;
+        return (
+          <Box
+            key={choice.id}
+            mb={1}
+            px={0.75}
+            py={0.6}
+            style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderLeft: `3px solid ${rated ? '#5baa27' : 'rgba(255, 255, 255, 0.15)'}`,
+              borderRadius: '2px',
+            }}>
+            <Stack align="flex-start" mb={0.6}>
+              <Stack.Item grow basis={0} fontSize="1.15em" lineHeight={1.35} style={{ wordBreak: 'break-word' }}>
+                {choiceLabel(choice.name)}
               </Stack.Item>
-            ))}
-          </Stack>
-        </Box>
-      ))}
+              <Stack.Item>
+                <Icon
+                  name={rated ? 'check-circle' : 'circle-o'}
+                  color={rated ? 'good' : 'label'}
+                  mt={0.25}
+                />
+              </Stack.Item>
+            </Stack>
+            <Stack>
+              {score_options.map((opt) => (
+                <Stack.Item key={opt.value} grow basis={0}>
+                  <Button
+                    fluid
+                    lineHeight={1.8}
+                    textAlign="center"
+                    selected={choice.user_score === opt.value}
+                    onClick={() => act('vote', { index: choice.id, score: opt.value })}>
+                    {opt.label}
+                  </Button>
+                </Stack.Item>
+              ))}
+            </Stack>
+          </Box>
+        );
+      })}
     </>
   );
 };
