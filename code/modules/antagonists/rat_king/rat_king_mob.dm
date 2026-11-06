@@ -451,10 +451,11 @@
 		if(length(horde.minions) >= horde.max_minions)
 			break
 		var/new_name = (M.name == "mouse") ? null : M.name
-		var/mob/living/simple_animal/hostile/rat/new_rat = M.change_mob_type(/mob/living/simple_animal/hostile/rat, get_turf(M), new_name, TRUE)
+		// Старую мышь удаляем сами и сразу: change_mob_type убирает её только через тик.
+		var/mob/living/simple_animal/hostile/rat/new_rat = M.change_mob_type(/mob/living/simple_animal/hostile/rat, get_turf(M), new_name, FALSE)
 		if(!new_rat)
 			new_rat = new /mob/living/simple_animal/hostile/rat(get_turf(M))
-			qdel(M)
+		qdel(M)
 		if(!new_rat)
 			continue
 		if(king.faction)

@@ -269,7 +269,7 @@
 	director_ghost_jobban = ROLE_RAT_KING
 	director_ghost_preference = ROLE_RAT_KING
 	family = "vermin"
-	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED) // не лайт: армия крыс грызёт станцию
 	description = "Спавн короля крыс."
 
 /datum/round_event/ghost_role/rat_king
