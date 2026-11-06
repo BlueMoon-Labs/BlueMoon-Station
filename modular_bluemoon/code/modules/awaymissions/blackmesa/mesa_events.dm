@@ -17,8 +17,34 @@
 /obj/effect/landmark/awaymission/blackmesa/hecu_ghost_spawn
 	name = "HECU Ghost Squad Spawn Landmark"
 
+/obj/effect/landmark/awaymission/blackmesa/hecu_machinegunner_spawn
+	name = "HECU Machinegunner Spawn Landmark"
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_sniper_spawn
+	name = "HECU Sniper Spawn Landmark"
+
 /obj/effect/landmark/awaymission/blackmesa/portal_spawn
 	name = "Portal Storm Spawn Landmark"
+
+/datum/antagonist/ghost_role/mesa_hecu_war
+	name = "HECU War Reinforcements"
+
+/datum/antagonist/ghost_role/mesa_hecu_war/on_gain()
+	. = ..()
+	var/datum/objective/custom/objective = new("Уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в Секторе H в момент объявления войны.")
+	objective.owner = owner
+	objectives += objective
+	owner.announce_objectives()
+
+/datum/antagonist/ghost_role/mesa_blackops_assault
+	name = "Black Ops Sector H Assault"
+
+/datum/antagonist/ghost_role/mesa_blackops_assault/on_gain()
+	. = ..()
+	var/datum/objective/custom/objective = new("Убить всех находящихся в гейте Сектора H.")
+	objective.owner = owner
+	objectives += objective
+	owner.announce_objectives()
 
 /datum/round_event_control/blackmesa
 	name = "Black Mesa: Base"
@@ -256,4 +282,3 @@
 	D.spawn_zombie_wave(threat_level, alive_players)
 	D.last_wave_time = world.time
 	D.current_wave_number++
-

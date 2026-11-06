@@ -190,6 +190,7 @@
 	permanent = FALSE
 	category = "offstation"
 	antagonist_type = /datum/antagonist/ghost_role/hecu
+	faction = list(FACTION_HECU)
 	restricted_species = "human"
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/special(mob/living/carbon/human/spawned_human)
@@ -325,6 +326,7 @@
 		/obj/item/ammo_box/magazine/m50,
 		/obj/item/ammo_box/magazine/m16/mesa,
 		/obj/item/ammo_box/magazine/m16/mesa,
+		/obj/item/device/mesa_conflict_announcer,
 	)
 
 
@@ -339,6 +341,7 @@
 /obj/effect/mob_spawn/human/black_mesa/hecu/lost
 	name = "HECU deserter"
 	outfit = /datum/outfit/losthecu
+	faction = null
 	short_desc = "Ты являешься дезертиром который отбился от своей группы в ходе выполнения миссии в Чёрной Мезе и отказался исполнять преступный приказ"
 	flavour_text = "Вы являетесь обычным бойцом одного из многочисленных отрядов HECU, которые были направлены в мезу для зачисти свидетелей. Вместо исполнения приказа вы выждали подходящий момент и сбежали от своих напарников, которые были скоропостижно уничтожены инопланетными силами. Теперь вы находитесь в одной лодке с персоналом черной мезы, который также выжил после инцидента."
 	important_info = "Вы НЕ можете убивать учёных и другой персонал черной мезы без веской причины (В первую очередь вы являетесь их СОЮЗНИКОМ). Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу. "
@@ -380,6 +383,89 @@
 		/obj/item/ammo_box/a357,
 		/obj/item/ammo_box/a357,
 	)
+
+/obj/effect/mob_spawn/human/black_mesa/hecu/machinegunner
+	name = "HECU heavy weapons specialist"
+	outfit = /datum/outfit/machinegunner
+	short_desc = "Ты являешься тяжёлым оружейником небольшого отряда поддержки HECU"
+	flavour_text = "Вы являетесь элитным бойцом одного из многочисленных отрядов HECU, которые были направлены в мезу для зачисти свидетелей."
+	important_info = "Вы являетесь боевой ролью, которая появляется только в случае объявления войны ХЕКУ. Вы можете убивать экспедиторов и учёных. Выход из гейта не рекомендуется"
+	roundstart = FALSE
+	death = FALSE
+	density = TRUE
+	uses = 1
+	permanent = FALSE
+	category = "offstation"
+	antagonist_type = /datum/antagonist/ghost_role/mesa_hecu_war
+	restricted_species = "human"
+
+/obj/effect/mob_spawn/human/black_mesa/hecu/machinegunner/special(mob/living/carbon/human/spawned_human)
+	. = ..()
+	if(!spawned_human)
+		return
+	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
+	spawned_human.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
+	spawned_human.grant_language(/datum/language/signlanguage, source = LANGUAGE_MIND)
+
+/datum/outfit/machinegunner
+	name = "HECU heavy weapons specialist"
+	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
+	mask = /obj/item/clothing/mask/gas/hecu
+	head = /obj/item/clothing/head/machinegunner
+	suit = /obj/item/clothing/suit/armor/hecu
+	gloves = /obj/item/clothing/gloves/combat
+	belt = /obj/item/storage/belt/bandolier
+	shoes = /obj/item/clothing/shoes/combat
+	l_pocket = /obj/item/reagent_containers/food/drinks/flask
+	r_pocket = /obj/item/flashlight/flare
+	r_hand = /obj/item/gun/ballistic/automatic/m249
+	back = /obj/item/storage/backpack/hecu
+	backpack_contents = list(
+		/obj/item/storage/box/survival/radio,
+		/obj/item/storage/ifak,
+		/obj/item/kitchen/knife/combat,
+		/obj/item/ammo_box/magazine/m249,
+		/obj/item/ammo_box/magazine/m249,
+		/obj/item/ammo_box/magazine/m249,
+	)
+
+/obj/effect/mob_spawn/human/black_mesa/hecu/sniper
+	name = "HECU sniper"
+	outfit = /datum/outfit/hecu_sniper
+	short_desc = "Вы снайпер отряда HECU, прибывшего в Сектор H."
+	flavour_text = "Вы получили приказ поддержать HECU в зачистке Сектора H."
+	important_info = "Вы появляетесь только после объявления войны HECU. Ваша задача — уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в Секторе H в момент объявления."
+	roundstart = FALSE
+	death = FALSE
+	density = TRUE
+	uses = 1
+	permanent = FALSE
+	category = "offstation"
+	antagonist_type = /datum/antagonist/ghost_role/mesa_hecu_war
+	restricted_species = "human"
+
+/datum/outfit/hecu_sniper
+	name = "HECU sniper"
+	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
+	mask = /obj/item/clothing/mask/gas/hecu
+	head = /obj/item/clothing/head/slouch_hat
+	suit = /obj/item/clothing/suit/armor/hecu
+	gloves = /obj/item/clothing/gloves/combat
+	belt = /obj/item/storage/belt/military/assault/hecu
+	shoes = /obj/item/clothing/shoes/combat
+	l_pocket = /obj/item/gun/ballistic/automatic/pistol/hl9mm/five_rounds
+	r_pocket = /obj/item/flashlight/flare
+	back = /obj/item/storage/backpack/hecu
+	r_hand = /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1
+	backpack_contents = list(
+		/obj/item/storage/box/survival/radio,
+		/obj/item/storage/ifak,
+		/obj/item/kitchen/knife/combat,
+		/obj/item/ammo_box/magazine/sniper_rounds/m4oa1,
+		/obj/item/ammo_box/magazine/sniper_rounds/m4oa1,
+		/obj/item/ammo_box/magazine/sniper_rounds/m4oa1,
+	)
+
 
 //трупы
 
@@ -454,6 +540,13 @@
 	r_pocket = /obj/item/flashlight/flare
 	back = /obj/item/gun/ballistic/automatic/m16a4
 	r_hand = /obj/item/book/granter/martial/cqc
+
+/obj/effect/mob_spawn/human/black_mesa/hecu/blackops/assault
+	name = "Black Ops assault operative"
+	short_desc = "Вы оперативник Black Ops, направленный для зачистки Сектора H."
+	flavour_text = "Перемирие между HECU и персоналом Сектора H позволило вашей группе начать зачистку."
+	important_info = "Уничтожьте всех, кто находится в гейте Сектора H. Не покидайте территорию гейта."
+	antagonist_type = /datum/antagonist/ghost_role/mesa_blackops_assault
 
 /obj/item/storage/belt/military/assault/hecu/black/blackops/PopulateContents()
 	new /obj/item/ammo_box/magazine/m16/mesa(src)

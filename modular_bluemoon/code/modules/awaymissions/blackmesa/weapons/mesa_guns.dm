@@ -1697,5 +1697,50 @@
 	icon_state = "machinegunner"
 	item_state = "machinegunner"
 	icon = 'modular_bluemoon/icons/obj/clothing/skihellclothes.dmi'
-	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hecu/hecumob.dmi'
 	alternate_worn_layer = null
+
+// HECU CONFLICT ANNOUNCER
+/obj/item/ammo_box/magazine/pistolm9mm/five_rounds
+	name = "9mm magazine (5 rounds)"
+	max_ammo = 5
+
+/obj/item/gun/ballistic/automatic/pistol/hl9mm/five_rounds
+	name = "9mm pistol"
+	mag_type = /obj/item/ammo_box/magazine/pistolm9mm/five_rounds
+
+/obj/item/device/mesa_conflict_announcer
+	name = "HECU command transceiver"
+	desc = "A secure HECU device for declaring a ceasefire or open hostilities in Sector H."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "gangtool-red"
+	item_state = "radio"
+	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
+
+/obj/item/device/mesa_conflict_announcer/attack_self(mob/user)
+	if(!ishuman(user) || !(FACTION_HECU in user.faction))
+		to_chat(user, span_warning("The transceiver only responds to HECU personnel."))
+		return
+	var/mob/living/L = user
+	if(!istype(get_area(L), /area/awaymission/ihategordon))
+		to_chat(L, span_warning("The transceiver only works inside the Sector H gate."))
+		return
+
+	var/choice = tgui_alert(L, "Выберите режим объявления.", "HECU Command", list("Перемирие", "Война", "Отмена"))
+	if(!choice || choice == "Отмена")
+		return
+
+	var/announcement
+	var/custom_announcement_choice = tgui_alert(L, "Хотите написать собственный текст объявления?", "Пользовательское объявление", list("Да", "Нет"))
+	if(isnull(custom_announcement_choice))
+		return
+	if(custom_announcement_choice == "Да")
+		announcement = tgui_input_text(L, "Введите текст объявления.", "HECU Announcement", max_length = MAX_MESSAGE_LEN, multiline = TRUE, encode = FALSE)
+		if(isnull(announcement))
+			return
+
+	if(!SSblackmesa_events)
+		to_chat(L, span_warning("The Black Mesa announcement system is unavailable."))
+		return
+	SSblackmesa_events.declare_hecu_conflict(L, choice == "Война" ? "war" : "truce", announcement)

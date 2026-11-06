@@ -160,6 +160,15 @@
 	name = "hecu warning announcement area"
 	icon_state = "3"
 
+/area/awaymission/ihategordon/hecuannouce/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	if(!isliving(arrived))
+		return
+	var/mob/living/player = arrived
+	if(!player.client || player.stat == DEAD || !SSblackmesa_events)
+		return
+	SSblackmesa_events.notify_hecu_ghost_roles()
+
 // =============================================================================
 // IHATEGORDON CUSTOM ZONES
 // Специальные зоны для кастомного космоса и ивентов

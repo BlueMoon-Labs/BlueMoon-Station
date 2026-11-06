@@ -16,8 +16,13 @@ SUBSYSTEM_DEF(blackmesa_events)
 	var/day_phase = 0 // 0=Evening, 1=Night, 2=Morning, 3=Day
 	var/phase_timer = 2 // Change every 2 fires (10 minutes)
 	var/zombie_director_ref
+	var/hecu_conflict_mode
+	var/hecu_conflict_round_start_time
+	var/hecu_ghost_roles_notified = FALSE
 
 /datum/controller/subsystem/blackmesa_events/Initialize(time, zlevel)
+	if(SSticker)
+		hecu_conflict_round_start_time = SSticker.round_start_time
 	for(var/type in typesof(/datum/round_event_control/blackmesa))
 		if(type == /datum/round_event_control/blackmesa)
 			continue
@@ -138,7 +143,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 		// Set gloomy ambient lighting via the official API so turf overlays are rebuilt
 		A.set_dynamic_lighting(DYNAMIC_LIGHTING_IFSTARLIGHT)
 
-/datum/controller/subsystem/blackmesa_events/proc/mesa_announce(text, title = "", sound = null)
+/datum/controller/subsystem/blackmesa_events/proc/mesa_announce(text, title = "", sound = null, excluded_faction = null)
 	if(!text)
 		return
 	var/announcement = "<h1 class='alert'>Black Mesa Announcement System</h1>"
@@ -157,12 +162,182 @@ SUBSYSTEM_DEF(blackmesa_events)
 		if(!A)
 			continue
 		if(istype(A, /area/awaymission/ihategordon))
+			if(excluded_faction && isliving(M))
+				var/mob/living/living_mob = M
+				if(excluded_faction in living_mob.faction)
+					continue
 			to_chat(M, announcement)
 			players_notified++
 			if(s && M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
 				SEND_SOUND(M, s)
 
 	log_world("mesa_announce: '[title]' - notified [players_notified] players in Black Mesa area")
+
+/datum/controller/subsystem/blackmesa_events/proc/declare_hecu_conflict(mob/living/user, conflict_mode, custom_announcement)
+	if(SSticker && hecu_conflict_round_start_time != SSticker.round_start_time)
+		hecu_conflict_round_start_time = SSticker.round_start_time
+		hecu_conflict_mode = null
+	if(hecu_conflict_mode)
+		to_chat(user, span_warning("Конфликт уже был объявлен. Повторное объявление невозможно."))
+		return FALSE
+	if(!user || !user.client || !(FACTION_HECU in user.faction) || !istype(get_area(user), /area/awaymission/ihategordon))
+		to_chat(user, span_warning("Устройство работает только для HECU внутри гейта Сектора H."))
+		return FALSE
+	if(conflict_mode != "war" && conflict_mode != "truce")
+		to_chat(user, span_warning("Выбран неизвестный режим объявления."))
+		return FALSE
+
+	hecu_conflict_mode = conflict_mode
+	var/announcement = custom_announcement
+	if(!announcement)
+		if(conflict_mode == "war")
+			announcement = "Командование HECU объявляет Сектор H зоной боевых действий. Приказ: уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в гейте на момент объявления."
+		else
+			announcement = "Командование HECU объявляет перемирие. Из-за установления перемирия конфликт между HECU и персоналом Сектора H невозможен. Всем сотрудникам, кроме HECU, оставаться в гейте и соблюдать указания командования."
+
+	if(conflict_mode == "war")
+		mesa_announce(announcement, "HECU: ОБЪЯВЛЕНИЕ ВОЙНЫ", 'modular_bluemoon/sound/ambience/mesa/hecudanger.ogg')
+		issue_hecu_orders(
+			"Приказ HECU: уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в гейте в момент объявления войны.",
+			"Уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в Секторе H в момент объявления войны.",
+		)
+		spawn_conflict_ghost_roles(
+			/obj/effect/mob_spawn/human/black_mesa/hecu/machinegunner,
+			/obj/effect/landmark/awaymission/blackmesa/hecu_machinegunner_spawn,
+			1,
+			"HECU: пулемётчик прибыл",
+		)
+		spawn_conflict_ghost_roles(
+			/obj/effect/mob_spawn/human/black_mesa/hecu/sniper,
+			/obj/effect/landmark/awaymission/blackmesa/hecu_sniper_spawn,
+			1,
+			"HECU: снайпер прибыл",
+		)
+		return TRUE
+
+	mesa_announce(
+		announcement,
+		"HECU: ПЕРЕМИРИЕ",
+		'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg',
+		FACTION_HECU,
+	)
+	issue_hecu_orders(
+		"Перемирие установлено. HECU должны немедленно эвакуироваться из гейта Сектора H.",
+		"Немедленно эвакуироваться из гейта Сектора H.",
+	)
+	spawn_conflict_ghost_roles(
+		/obj/effect/mob_spawn/human/black_mesa/hecu/blackops/assault,
+		/obj/effect/landmark/awaymission/blackmesa/blackops_spawn,
+		4,
+		"Black Ops: доступны роли оперативников зачистки",
+	)
+	set_maximum_difficulty()
+	return TRUE
+
+/datum/controller/subsystem/blackmesa_events/proc/issue_hecu_orders(message, objective_text)
+	for(var/mob/living/hecu in GLOB.player_list)
+		if(!hecu.client || hecu.stat == DEAD || !(FACTION_HECU in hecu.faction))
+			continue
+		if(!istype(get_area(hecu), /area/awaymission/ihategordon))
+			continue
+		to_chat(hecu, span_warning(message))
+		add_scenario_objective(hecu, objective_text)
+
+/datum/controller/subsystem/blackmesa_events/proc/add_scenario_objective(mob/living/target, objective_text)
+	if(!target.mind)
+		return
+	var/datum/antagonist/ghost_role/ghost_role = target.mind.has_antag_datum(/datum/antagonist/ghost_role)
+	if(!ghost_role)
+		return
+	for(var/datum/objective/custom/existing_objective in ghost_role.objectives)
+		if(existing_objective.explanation_text == objective_text)
+			return
+	var/datum/objective/custom/objective = new(objective_text)
+	objective.owner = target.mind
+	ghost_role.objectives += objective
+	target.mind.announce_objectives()
+
+/datum/controller/subsystem/blackmesa_events/proc/spawn_conflict_ghost_roles(spawner_type, landmark_type, amount, notify_header)
+	var/list/spawn_turfs = list()
+	for(var/obj/effect/landmark/awaymission/blackmesa/landmark in GLOB.landmarks_list)
+		if(!istype(landmark, landmark_type))
+			continue
+		var/turf/anchor = get_turf(landmark)
+		if(!anchor)
+			continue
+		var/list/candidate_turfs = list(anchor)
+		candidate_turfs += RANGE_TURFS(4, anchor)
+		for(var/turf/spawn_turf in candidate_turfs)
+			if(!istype(spawn_turf, /turf/open) || is_blocked_turf(spawn_turf))
+				continue
+			if(!istype(get_area(spawn_turf), /area/awaymission/ihategordon))
+				continue
+			if(spawn_turf in spawn_turfs)
+				continue
+			var/has_spawner = FALSE
+			for(var/obj/effect/mob_spawn/human/black_mesa/existing_spawner in spawn_turf)
+				has_spawner = TRUE
+				break
+			if(!has_spawner)
+				spawn_turfs += spawn_turf
+
+	if(!length(spawn_turfs))
+		stack_trace("No valid spawn turfs for Black Mesa ghost role [spawner_type] at landmark [landmark_type].")
+		return 0
+
+	var/spawned_count = 0
+	for(var/i in 1 to amount)
+		if(!length(spawn_turfs))
+			break
+		var/turf/spawn_turf = pick(spawn_turfs)
+		spawn_turfs -= spawn_turf
+		var/obj/effect/mob_spawn/human/black_mesa/spawner = new spawner_type(spawn_turf)
+		if(!spawner)
+			continue
+		spawned_count++
+		notify_ghosts(
+			"[spawner.name] is available in [get_area_name(spawn_turf)].",
+			source = spawner,
+			action = NOTIFY_ATTACK,
+			header = notify_header,
+			ignore_dnr_observers = TRUE,
+		)
+	if(spawned_count < amount)
+		stack_trace("Only [spawned_count] of [amount] requested Black Mesa ghost role spawners could be placed for [spawner_type].")
+	return spawned_count
+
+/datum/controller/subsystem/blackmesa_events/proc/notify_hecu_ghost_roles()
+	if(hecu_ghost_roles_notified)
+		return
+
+	for(var/obj/effect/mob_spawn/human/black_mesa/hecu/spawner in GLOB.poi_list)
+		if(QDELETED(spawner) || !spawner.ghost_usable || !spawner.uses || !get_turf(spawner))
+			continue
+
+		hecu_ghost_roles_notified = TRUE
+		notify_ghosts(
+			"Доступна гост-роль HECU: [spawner.name]. Нажмите на уведомление, чтобы перейти к спавнеру и выбрать эту роль.",
+			source = spawner,
+			action = NOTIFY_ATTACK,
+			header = "Доступны гост-роли HECU",
+			ignore_dnr_observers = TRUE,
+		)
+		return
+
+/datum/controller/subsystem/blackmesa_events/proc/set_maximum_difficulty()
+	if(!GLOB.zombie_director)
+		initialize_zombie_director()
+	var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+	if(!director)
+		stack_trace("Could not raise Black Mesa difficulty: zombie director is unavailable.")
+		return
+	director.difficulty_level = 8
+	director.zombie_hp_multiplier = 3.0
+	mesa_announce(
+		"Уровень опасности Сектора H повышен до максимального. Ожидается резкое усиление враждебной активности.",
+		"МАКСИМАЛЬНЫЙ УРОВЕНЬ ОПАСНОСТИ",
+		'modular_bluemoon/sound/ambience/mesa/BMAS3.ogg',
+	)
 
 /datum/controller/subsystem/blackmesa_events/proc/initialize_zombie_director()
 	if(!GLOB.zombie_director)

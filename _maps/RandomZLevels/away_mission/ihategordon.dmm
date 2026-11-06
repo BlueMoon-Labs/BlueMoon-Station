@@ -25788,6 +25788,8 @@
 /area/awaymission/ihategordon/secret_rooms)
 "mJK" = (
 /obj/effect/landmark/awaymission/blackmesa/hecu_ghost_spawn,
+/obj/effect/landmark/awaymission/blackmesa/hecu_machinegunner_spawn,
+/obj/effect/landmark/awaymission/blackmesa/hecu_sniper_spawn,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
 "mJR" = (
