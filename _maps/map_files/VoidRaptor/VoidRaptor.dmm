@@ -1,4 +1,46 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/south{
+	pixel_x = -7
+	},
+/obj/machinery/button/door/directional/south{
+	id = "MedbayFoyer";
+	name = "Medbay Doors Control";
+	normaldoorcontrol = 1;
+	pixel_x = 7;
+	req_access_txt = "5"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/hallway/secondary/entry/ferry_dock)
+"aab" = (
+/obj/structure/table,
+/obj/item/stack/medical/mesh,
+/obj/item/stack/medical/suture,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 10
+	},
+/obj/machinery/firealarm/directional/south{
+	pixel_x = -7
+	},
+/obj/item/stack/medical/bruise_pack{
+	pixel_y = 8
+	},
+/obj/machinery/vending/wallmed/directional/west,
+/obj/machinery/button/door/directional/south{
+	id = "MedbayFoyer";
+	name = "Medbay Doors Control";
+	normaldoorcontrol = 1;
+	pixel_x = 7;
+	req_access_txt = "5"
+	},
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/lobby)
 "aac" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/public/glass{
@@ -9,6 +51,14 @@
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/hallway/primary/central)
+"aad" = (
+/obj/machinery/door/airlock/multi_tile/glass{
+	dir = 4;
+	name = "Arrivals"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/white/smooth/large,
+/area/medical/medbay/lobby)
 "aae" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -133219,7 +133269,7 @@ upX
 jHe
 xOb
 eUw
-oYY
+aaa
 exu
 eaB
 jNF
@@ -137597,7 +137647,7 @@ fHf
 gKD
 gKD
 eJH
-aZw
+aab
 nff
 jIp
 gAK
@@ -140675,7 +140725,7 @@ jxh
 oiY
 nff
 mbA
-puG
+aad
 vbg
 vbg
 nfZ
