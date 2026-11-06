@@ -55,7 +55,7 @@
 		var/mob/living/living_user = user
 		if(living_user.has_status_effect(/datum/status_effect/rat_friend))
 			. += span_notice("Эта мышь считает вас своим.")
-	. += span_notice("Оседлать её может только кто-то не крупнее мыши: перетащите себя на неё.")
+	. += span_notice("Оседлать её может только кто-то не крупнее мыши и не сверхтяжёлый: перетащите себя на неё.")
 
 /mob/living/simple_animal/mouse/proc/splat()
 	src.health = 0

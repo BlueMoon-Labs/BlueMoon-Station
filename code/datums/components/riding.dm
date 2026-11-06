@@ -696,6 +696,10 @@
 /obj/item/riding_offhand/on_thrown(mob/living/carbon/user, atom/target)
 	if(rider == user)
 		return //Piggyback user.
+	// седок уже исчез: оффхенд устарел, освобождаем руку
+	if(QDELETED(rider))
+		qdel(src)
+		return
 	// unbuckle_mob удаляет этот оффхенд, а его Destroy обнуляет rider
 	var/mob/living/carbon/thrown_rider = rider
 	user.unbuckle_mob(thrown_rider)

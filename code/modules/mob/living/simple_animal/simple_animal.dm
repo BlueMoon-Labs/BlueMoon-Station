@@ -294,6 +294,9 @@
 
 /mob/living/simple_animal/MouseDrop_T(mob/living/M, mob/living/user)
 	if(can_buckle && tame && istype(M) && M != src && !M.buckled)
+		// отказ уже объяснён; общий обработчик повторил бы попытку и сообщение
+		if(!can_carry_rider(M))
+			return
 		prepare_riding()
 		if(mouse_buckle_handling(M, user))
 			return

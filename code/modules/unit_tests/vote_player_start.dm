@@ -8,8 +8,16 @@
 	var/saved_round_type
 	var/saved_master_mode
 	var/saved_midround_recorded
+	var/saved_vote_system
+	var/saved_rotation
+	var/list/saved_player_votes
 
 /datum/unit_test/vote_player_start/Run()
+	saved_vote_system = SSvote.vote_system
+	saved_rotation = GLOB.round_counts_for_rotation
+	// истёкшее голосование сохраняет голоса игроков в data/player_saves: тест туда не пишет
+	saved_player_votes = SSpersistence.saved_votes
+	SSpersistence.saved_votes = list()
 	saved_game_state = SSticker.current_state
 	saved_time_left = SSticker.timeLeft
 	saved_started_time = SSvote.started_time
@@ -66,15 +74,21 @@
 		GLOB.round_type = saved_round_type
 		GLOB.master_mode = saved_master_mode
 		GLOB.midround_recorded = saved_midround_recorded
+	if(!isnull(saved_vote_system))
+		SSvote.vote_system = saved_vote_system
+		GLOB.round_counts_for_rotation = saved_rotation
+		SSpersistence.saved_votes = saved_player_votes
 	return ..()
 
 /// Попытка начать голосование поверх идущего не меняет ему систему подсчёта и вес голосов, а окно объясняет отказ
 /datum/unit_test/vote_refused_start_keeps_active_vote
 	var/saved_started_time
 	var/saved_vote_delay
+	var/saved_vote_system
 
 /datum/unit_test/vote_refused_start_keeps_active_vote/Run()
 	saved_started_time = SSvote.started_time
+	saved_vote_system = SSvote.vote_system
 	saved_vote_delay = CONFIG_GET(number/vote_delay)
 	TEST_ASSERT_NULL(SSvote.mode, "Перед тестом уже идёт голосование [SSvote.mode]")
 	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human)
@@ -99,6 +113,8 @@
 		SSvote.reset()
 	SSvote.use_vote_power = FALSE
 	SSvote.started_time = saved_started_time
+	if(!isnull(saved_vote_system))
+		SSvote.vote_system = saved_vote_system
 	if(!isnull(saved_vote_delay))
 		CONFIG_SET(number/vote_delay, saved_vote_delay)
 	return ..()

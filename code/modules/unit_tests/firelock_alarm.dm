@@ -168,11 +168,12 @@
 /datum/unit_test/firealarm_silicon_remote_toggle
 	var/turf/open/spot
 	var/area/old_area
+	var/area/unit_test_decompression/zone
 
 /datum/unit_test/firealarm_silicon_remote_toggle/Run()
 	spot = run_loc_floor_bottom_left
 	old_area = get_area(spot)
-	var/area/unit_test_decompression/zone = new
+	zone = new
 	zone.contents += spot
 	var/obj/machinery/firealarm/alarm = allocate(/obj/machinery/firealarm, spot)
 	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, get_step(spot, NORTH))
@@ -214,4 +215,6 @@
 /datum/unit_test/firealarm_silicon_remote_toggle/Destroy()
 	if(old_area)
 		old_area.contents += spot
-	return ..()
+	. = ..()
+	// зона - после машин: их удаление ещё снимает тревогу в ней
+	QDEL_NULL(zone)

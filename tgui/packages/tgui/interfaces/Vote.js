@@ -61,7 +61,7 @@ export const Vote = (props) => {
 
   return (
     <Window resizable title={title} width={460} height={650}>
-      <Window.Content>
+      <Window.Content scrollable={!!(lower_admin && custom_setup && custom_setup.active)}>
         <Stack fill vertical>
           {!!canManage && (
             <Stack.Item>
@@ -539,7 +539,6 @@ const RankedChoices = (props) => {
             lead={choice.user_rank > 0
               ? <Box bold>№{choice.user_rank}</Box>
               : <Icon name="plus" opacity={0.5} />}
-            side={choice.votes !== -1 && <Box opacity={0.6}>{choice.votes} бал.</Box>}
             tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
             onClick={() => act('vote', { index: choice.id })}>
             {choiceLabel(choice.name)}

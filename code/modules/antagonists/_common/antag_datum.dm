@@ -297,6 +297,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 	if(owner.current)
 		remove_innate_effects()
+	else if(antag_hud_type)
+		// без тела худ не снимается, а перенос разума в новое тело вернул бы его
+		var/datum/atom_hud/antag/hud = GLOB.huds[antag_hud_type]
+		if(istype(hud))
+			hud.forget_mind(owner)
 	clear_antag_moodies()
 	owner?.do_remove_antag_datum(src)
 	// cit skill

@@ -549,7 +549,7 @@
 			. += "<span class='notice'>Эта крыса служит вам.</span>"
 		else
 			. += "<span class='warning'>Этот крестьянин служит другому королю! Свергните его!</span>"
-	. += span_notice("Оседлать её может только кто-то не крупнее крысы.")
+	. += span_notice("Оседлать её может только кто-то не крупнее крысы и не сверхтяжёлый.")
 
 /mob/living/simple_animal/hostile/rat/CanAttack(atom/the_target)
 	if(!the_target)
