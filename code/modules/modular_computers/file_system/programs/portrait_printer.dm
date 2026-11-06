@@ -156,12 +156,9 @@
 			if(!current_list)
 				return
 			var/list/chosen_portrait
-			var/chosen_idx
-			for(var/i in 1 to length(current_list))
-				var/list/entry = current_list[i]
+			for(var/list/entry as anything in current_list)
 				if(entry["md5"] == md5)
 					chosen_portrait = entry
-					chosen_idx = i
 					break
 			if(!chosen_portrait)
 				return
