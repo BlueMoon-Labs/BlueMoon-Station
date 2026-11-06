@@ -5,6 +5,7 @@ import {
   Input,
   Section,
   Stack,
+  Tooltip,
 } from '../../../components';
 import { TabDataMissing, TextAreaRow } from '../components';
 
@@ -35,6 +36,51 @@ interface BackgroundContext {
 const FORMAT_HINT =
   'Поддерживается форматирование: *курсив* !жирный! -=цвет=-, '
   + '## заголовок, ((скобки)), [спойлер]';
+
+const PORTRAIT_HEADSHOT_TOOLTIP =
+  'Хедшот для отображения миниатюрой 128х128p, при осмотре персонажа '
+  + 'Для отображения обязателен формат .png/.jpeg/.jpg.';
+
+const INSPECT_HEADSHOT_TOOLTIP =
+  'Хедшот для миниатюр 40х40p, при осмотре персонажа. '
+  + 'Для отображения обязателен формат .png/.jpeg/.jpg.';
+
+const NSFW_INSPECT_HEADSHOT_TOOLTIP =
+  'Хедшот для миниатюр 40х40p, при осмотре персонажа. '
+  + 'Отображается при таких же условиях, как и в профиле персонажа. '
+  + 'Для отображения обязателен формат .png/.jpeg/.jpg.';
+
+const getHeadshotSlotMeta = (
+  listKind: 'regular' | 'naked' | 'ass',
+  index: number,
+) => {
+  if (listKind === 'regular') {
+    if (index === 0) {
+      return { label: 'Портретный хедшот', tooltip: PORTRAIT_HEADSHOT_TOOLTIP };
+    }
+    if (index === 1) {
+      return { label: 'Хедшот осмотра 1', tooltip: INSPECT_HEADSHOT_TOOLTIP };
+    }
+    if (index === 2) {
+      return { label: 'Хедшот осмотра 2', tooltip: INSPECT_HEADSHOT_TOOLTIP };
+    }
+  }
+  if (listKind === 'naked') {
+    if (index === 0) {
+      return {
+        label: 'NSFW хедшот осмотра 1',
+        tooltip: NSFW_INSPECT_HEADSHOT_TOOLTIP,
+      };
+    }
+    if (index === 1) {
+      return {
+        label: 'NSFW хедшот осмотра 2',
+        tooltip: NSFW_INSPECT_HEADSHOT_TOOLTIP,
+      };
+    }
+  }
+  return null;
+};
 
 export const BackgroundTab = () => {
   const { act, data } = useBackend<BackgroundContext>();
@@ -102,26 +148,6 @@ export const BackgroundTab = () => {
             placeholder="Запах персонажа... (узнаётся при обнюхивании *sniff)"
             editField="smell"
           />
-          <TextAreaRow
-            label="Охранные записи"
-            tooltip={FORMAT_HINT}
-            value={background.securityRecords}
-            action="set_security_records"
-            maxLength={flavorLen}
-            height="90px"
-            placeholder="Что найдёт служба безопасности"
-            editField="security_records"
-          />
-          <TextAreaRow
-            label="Медицинские записи"
-            tooltip={FORMAT_HINT}
-            value={background.medicalRecords}
-            action="set_medical_records"
-            maxLength={flavorLen}
-            height="90px"
-            placeholder="Что найдёт медслужба"
-            editField="medical_records"
-          />
         </Section>
       </Stack.Item>
 
@@ -161,6 +187,26 @@ export const BackgroundTab = () => {
             height="80px"
             placeholder="Что произойдёт при смерти"
             editField="deathgasp"
+          />
+          <TextAreaRow
+            label="Охранные записи"
+            tooltip={FORMAT_HINT}
+            value={background.securityRecords}
+            action="set_security_records"
+            maxLength={flavorLen}
+            height="90px"
+            placeholder="Что найдёт служба безопасности"
+            editField="security_records"
+          />
+          <TextAreaRow
+            label="Медицинские записи"
+            tooltip={FORMAT_HINT}
+            value={background.medicalRecords}
+            action="set_medical_records"
+            maxLength={flavorLen}
+            height="90px"
+            placeholder="Что найдёт медслужба"
+            editField="medical_records"
           />
         </Section>
       </Stack.Item>
@@ -205,70 +251,85 @@ const HeadshotGrid = (props: {
   return (
     <Section title={title} mt={1}>
       <Stack vertical>
-        {(slots || []).map((link, index) => (
-          <Stack.Item
-            key={index}
-            style={{ width: '100%' }}
-          >
-            {link ? (
-              <Box
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  aspectRatio: '1',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '3px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                }}
-              >
+        {(slots || []).map((link, index) => {
+          const slotMeta = getHeadshotSlotMeta(listKind, index);
+          return (
+            <Stack.Item
+              key={index}
+              style={{ width: '100%' }}
+            >
+              {slotMeta && (
+                <Box bold mb={0.5}>
+                  {slotMeta.label}
+                  <Tooltip
+                    content={<span className="Tooltip__text">{slotMeta.tooltip}</span>}
+                  >
+                    <Box as="span" color="label" ml={0.5} style={{ cursor: 'help' }}>
+                      (?)
+                    </Box>
+                  </Tooltip>
+                </Box>
+              )}
+              {link ? (
                 <Box
-                  as="img"
-                  src={link}
                   style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
+                    display: 'flex',
+                    width: '100%',
+                    aspectRatio: '1',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '3px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.35)',
                   }}
-                />
-              </Box>
-            ) : null}
-            <Stack align="center" mt={link ? 1 : 0}>
-              <Stack.Item grow>
-                <Input
-                  fluid
-                  maxLength={maxLength}
-                  placeholder={single ? 'Ссылка' : `Ссылка ${index + 1}`}
-                  value={link || ''}
-                  onChange={(e, value) =>
-                    act('set_headshot', {
-                      list: listKind,
-                      slot: index + 1,
-                      url: value,
-                    })
-                  }
-                />
-              </Stack.Item>
-              <Stack.Item>
-                <Button
-                  icon="times"
-                  color="bad"
-                  tooltip="Убрать фото"
-                  disabled={!link}
-                  onClick={() =>
-                    act('set_headshot', {
-                      list: listKind,
-                      slot: index + 1,
-                      url: '',
-                    })
-                  }
-                />
-              </Stack.Item>
-            </Stack>
-          </Stack.Item>
-        ))}
+                >
+                  <Box
+                    as="img"
+                    src={link}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </Box>
+              ) : null}
+              <Stack align="center" mt={link ? 1 : 0}>
+                <Stack.Item grow>
+                  <Input
+                    fluid
+                    maxLength={maxLength}
+                    placeholder={single ? 'Ссылка' : `Ссылка ${index + 1}`}
+                    value={link || ''}
+                    onChange={(e, value) =>
+                      act('set_headshot', {
+                        list: listKind,
+                        slot: index + 1,
+                        url: value,
+                      })
+                    }
+                  />
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="times"
+                    color="bad"
+                    tooltip="Убрать фото"
+                    disabled={!link}
+                    onClick={() =>
+                      act('set_headshot', {
+                        list: listKind,
+                        slot: index + 1,
+                        url: '',
+                      })
+                    }
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+          );
+        })}
       </Stack>
     </Section>
   );

@@ -59,9 +59,7 @@
 	if(!QDELETED(cog))
 		cog.remove()
 
-	if(!QDELETED(target))
-		LAZYREMOVE(user.do_afters, target)
-		LAZYREMOVE(target.targeted_by, user)
+	unregister_do_after(user, target)
 
 //some additional checks as a callback for for do_afters that want to break on losing health or on the mob taking action
 /mob/proc/break_do_after_checks(list/checked_health, check_clicks)
@@ -154,12 +152,7 @@
 	if(!QDELETED(cog))
 		cog.remove()
 
-	if(!QDELETED(target))
-		LAZYREMOVE(user.do_afters, target)
-
-	if(!QDELETED(target))
-		LAZYREMOVE(user.do_afters, target)
-		LAZYREMOVE(target.targeted_by, user)
+	unregister_do_after(user, target)
 
 /proc/do_after_mob(mob/user, list/targets, time = 3 SECONDS, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks)
 	if(!user || !targets)
@@ -239,6 +232,17 @@
 
 	for(var/thing in targets)
 		var/atom/target = thing
-		if(!QDELETED(target))
-			LAZYREMOVE(user.do_afters, target)
-			LAZYREMOVE(target.targeted_by, user)
+		unregister_do_after(user, target)
+
+// Снимаем только одно действие: остальные операции того же пользователя с той же целью продолжаются.
+/proc/unregister_do_after(mob/user, atom/target)
+	if(!user || !target)
+		return
+	var/action_index = LAZYFIND(user.do_afters, target)
+	if(action_index)
+		LAZYCUT(user.do_afters, action_index, action_index + 1)
+	if(QDELETED(target))
+		return
+	var/user_index = LAZYFIND(target.targeted_by, user)
+	if(user_index)
+		LAZYCUT(target.targeted_by, user_index, user_index + 1)

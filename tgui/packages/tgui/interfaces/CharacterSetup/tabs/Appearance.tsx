@@ -1,15 +1,31 @@
+import { useEffect, useState } from 'react';
+
 import { useBackend } from '../../../backend';
-import { Box, Button, Dropdown, Section, Stack } from '../../../components';
 import {
+  Box,
+  Button,
+  Dropdown,
+  Section,
+  Stack,
+  Tabs,
+} from '../../../components';
+import {
+  AppearanceSubTab,
   asArray,
   asOptions,
   ColorField,
   CycleChoice,
   FeatureField,
   FieldRow,
+  getAppearanceSplitView,
+  getAppearanceSubTab,
   renderFeatureField,
   SelectRow,
+  setAppearanceSplitView,
+  setAppearanceSubTab,
   SettingsGrid,
+  subscribeAppearanceSplitView,
+  subscribeAppearanceSubTab,
   TabDataMissing,
   TextRow,
   ToggleRow,
@@ -179,6 +195,24 @@ export const AppearanceTab = () => {
   const { act, data } = useBackend<AppearanceContext>();
   const appearance = data.appearance;
   const fields = data.featureFields || [];
+  const [subTab, setSubTabLocal] = useState<AppearanceSubTab>(
+    getAppearanceSubTab()
+  );
+  const [splitView, setSplitViewLocal] = useState(getAppearanceSplitView());
+
+  useEffect(
+    () =>
+      subscribeAppearanceSubTab(() => setSubTabLocal(getAppearanceSubTab())),
+    []
+  );
+
+  useEffect(
+    () =>
+      subscribeAppearanceSplitView(() =>
+        setSplitViewLocal(getAppearanceSplitView())
+      ),
+    []
+  );
 
   if (!appearance) {
     return <TabDataMissing title="Внешность" />;
@@ -190,10 +224,71 @@ export const AppearanceTab = () => {
     visible ? field(key) : null;
 
   const weightNames = Object.keys(appearance.weightOptions || {});
+  const hasGenitals = !!appearance.genitals?.supported;
+  // Если гениталии вдруг стали недоступны, откатываемся на «Тело».
+  const activeSubTab: AppearanceSubTab =
+    subTab === 'genitals' && !hasGenitals ? 'body' : subTab;
+  const selectSubTab = (next: AppearanceSubTab) => {
+    setSubTabLocal(next);
+    setAppearanceSubTab(next);
+  };
+  const toggleSplitView = () => setAppearanceSplitView(!splitView);
+
+  const showBody = !splitView || activeSubTab === 'body';
+  const showParts = !splitView || activeSubTab === 'parts';
+  const showGenitals =
+    (!splitView || activeSubTab === 'genitals') && hasGenitals && !!appearance.genitals;
 
   return (
-    <Section fill scrollable title="Внешность">
-      <SettingsGrid>
+    <Section
+      fill
+      scrollable
+      title="Внешность"
+      className="CharacterSetup__appearance"
+      buttons={
+        <Button
+          icon={splitView ? 'layer-group' : 'list'}
+          selected={splitView}
+          tooltip={
+            splitView
+              ? 'Внешность разделена на подсекции. Нажмите, чтобы показать всё одной вкладкой.'
+              : 'Внешность показана одной вкладкой. Нажмите, чтобы разделить на подсекции.'
+          }
+          aria-label={
+            splitView
+              ? 'Показать внешность одной вкладкой'
+              : 'Разделить внешность на подсекции'
+          }
+          onClick={toggleSplitView}
+        />
+      }
+    >
+      {splitView && (
+        <Tabs mb={1}>
+          <Tabs.Tab
+            selected={activeSubTab === 'body'}
+            onClick={() => selectSubTab('body')}
+          >
+            Тело
+          </Tabs.Tab>
+          <Tabs.Tab
+            selected={activeSubTab === 'parts'}
+            onClick={() => selectSubTab('parts')}
+          >
+            Части тела
+          </Tabs.Tab>
+          {hasGenitals && (
+            <Tabs.Tab
+              selected={activeSubTab === 'genitals'}
+              onClick={() => selectSubTab('genitals')}
+            >
+              Гениталии
+            </Tabs.Tab>
+          )}
+        </Tabs>
+      )}
+      {showBody && (
+        <SettingsGrid>
         <Section title="Тело">
           <SelectRow
             label="Пол"
@@ -358,17 +453,20 @@ export const AppearanceTab = () => {
             </>
           )}
         </Section>
-      </SettingsGrid>
-
-      <Section title="Части тела" mt={1}>
-        <SettingsGrid compact>
-          {asArray(appearance.mutantParts).map((part) => (
-            <MutantPartCard key={part.key} part={part} />
-          ))}
         </SettingsGrid>
-      </Section>
+      )}
 
-      {appearance.genitals && (
+      {showParts && (
+        <Section title="Части тела">
+          <SettingsGrid compact>
+            {asArray(appearance.mutantParts).map((part) => (
+              <MutantPartCard key={part.key} part={part} />
+            ))}
+          </SettingsGrid>
+        </Section>
+      )}
+
+      {showGenitals && appearance.genitals && (
         <GenitalsSection
           genitals={appearance.genitals}
           skinTone={

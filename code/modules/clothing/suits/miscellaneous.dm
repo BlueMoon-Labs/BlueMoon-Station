@@ -187,7 +187,7 @@
 	desc = "A soft brown cloak made of synthetic feathers. Soft to the touch, stylish, and a 2 meter wing span that will drive the ladies mad."
 	icon_state = "owl_wings"
 	item_state = "owl_wings"
-	togglename = "wings"
+	togglename = "крылья"
 	body_parts_covered = ARMS
 	actions_types = list(/datum/action/item_action/toggle_wings)
 
@@ -480,37 +480,39 @@
 	desc = "Comfy and supposedly flammable."
 	icon_state = "flannel_black"
 	item_state = "flannel_black"
-	togglename = "buttons"
+	togglename = "пуговицы"
+
 /obj/item/clothing/suit/toggle/jacket/flannel/red
 	name = "red flannel jacket"
 	desc = "Comfy and supposedly flammable."
 	icon_state = "flannel_red"
 	item_state = "flannel_red"
-	togglename = "buttons"
+
 /obj/item/clothing/suit/toggle/jacket/flannel/aqua
 	name = "aqua flannel jacket"
 	desc = "Comfy and supposedly flammable."
 	icon_state = "flannel_aqua"
 	item_state = "flannel_aqua"
-	togglename = "buttons"
+
 /obj/item/clothing/suit/toggle/jacket/flannel/brown
 	name = "brown flannel jacket"
 	desc = "Comfy and supposedly flammable."
 	icon_state = "flannel_brown"
 	item_state = "flannel_brown"
-	togglename = "buttons"
+
 /obj/item/clothing/suit/toggle/jacket/flannel/white
 	name = "white flannel jacket"
 	desc = "Comfy and supposedly flammable."
 	icon_state = "flannel_white"
 	item_state = "flannel_white"
-	togglename = "buttons"
+
 /obj/item/clothing/suit/toggle/jacket/whitehoodie
 	name = "soft hoodie"
 	desc = "A soft hoodie with a TailorCo brand on the tag."
 	icon_state = "white_hoodie"
 	item_state = "white_hoodie"
-	togglename = "zipper"
+	togglename = "молнию"
+
 /obj/item/clothing/suit/jacket/purplehoodie
 	name = "purple hoodie"
 	desc = "A soft purple hoodie with a TailorCo brand on the tag."
@@ -558,13 +560,15 @@
 	desc = "A green jacket with a TailorCo brand on the tag. Looks expensive."
 	icon_state = "coatar"
 	item_state = "coatar"
-	togglename = "zipper"
+	togglename = "молнию"
+
 /obj/item/clothing/suit/toggle/jacket/fancytrench
 	name = "grey trenchcoat"
 	desc = "A custom-tailored trenchcoat with a TailorCo brand on the tag."
 	icon_state = "fancytrench"
 	item_state = "fancytrench"
-	togglename = "buttons"
+	togglename = "пуговицы"
+
 /obj/item/clothing/suit/jacket/leather
 	name = "leather jacket"
 	desc = "Pompadour not included."
@@ -618,7 +622,7 @@
 	name = "urban jacket"
 	desc = "A canvas jacket styled with a fur neck piece, stylish."
 	icon_state = "urbanjacket"
-	item_state = "urbanjacket"
+	item_state = "brownjsuit"
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver, /obj/item/radio)
 
 /obj/item/clothing/suit/jacket/urbanjacket/polychromic/ComponentInitialize()
@@ -1216,12 +1220,7 @@
 	desc = "Perfect for windy days."
 	icon_state = "wbreakpoly"
 	item_state = "wbreakpoly"
-
-/obj/item/clothing/suit/toggle/wbreakpoly/on_toggle(mob/user)
-	if(suittoggled)
-		to_chat(usr, "<span class='notice'>You zip up [src].</span>")
-	else
-		to_chat(usr, "<span class='notice'>You unzip [src].</span>")
+	togglename = "молнию"
 
 /obj/item/clothing/suit/toggle/wbreakpoly/polychromic/ComponentInitialize()
 	. = ..()
@@ -1334,12 +1333,6 @@
 	desc = "An outfit used by traditional japanese warriors."
 	icon_state = "samurai"
 	item_state = "samurai"
-
-/obj/item/clothing/suit/bomber
-	name = "old bomber jacket"
-	desc = "It looks like someone dragged this out of a muddy lake."
-	icon_state = "bomberalt"
-	item_state = "bomberalt"
 
 /obj/item/clothing/suit/driscoll
 	name = "driscoll poncho"
@@ -1471,12 +1464,20 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
+/obj/item/clothing/suit/toggle/bomber
+	name = "old bomber jacket"
+	desc = "It looks like someone dragged this out of a muddy lake."
+	icon_state = "bomberalt"
+	item_state = "bomberalt"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	togglename = "молнию"
+
 /obj/item/clothing/suit/toggle/jacket/hawaiian
 	name = "black hawaiian shirt"
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiiblack"
 	item_state = "hawaiiblack"
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/toggle/jacket/hawaiian/fuch
@@ -1484,35 +1485,30 @@
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiifuchs"
 	item_state = "hawaiifuchs"
-	togglename = "buttons"
 
 /obj/item/clothing/suit/toggle/jacket/hawaiian/vine
 	name = "vine hawaiian shirt"
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiivine"
 	item_state = "hawaiivine"
-	togglename = "buttons"
 
 /obj/item/clothing/suit/toggle/jacket/hawaiian/orange
 	name = "orange hawaiian shirt"
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiiorange"
 	item_state = "hawaiiorange"
-	togglename = "buttons"
 
 /obj/item/clothing/suit/toggle/jacket/hawaiian/motu
 	name = "motu hawaiian shirt"
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiimotu"
 	item_state = "hawaiimotu"
-	togglename = "buttons"
 
 /obj/item/clothing/suit/toggle/jacket/hawaiian/vice
 	name = "vice hawaiian shirt"
 	desc = "Лёгкая и удобная рубашка."
 	icon_state = "hawaiivice"
 	item_state = "hawaiivice"
-	togglename = "buttons"
 
 /obj/item/clothing/suit/syndie_jacket
 	name = "Cybertechnical Jacket"

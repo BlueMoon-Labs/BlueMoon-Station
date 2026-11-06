@@ -146,14 +146,27 @@
 
 /datum/antagonist/ert/asset_protection/leader
 	name = "Asset Protection Team Officer"
-	outfit = /datum/outfit/death_commando/officer
+	outfit = /datum/outfit/asset_protection/leader
 	role = "Офицер"
 	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
 
 /datum/antagonist/ert/asset_protection
-	name = "Asset Protection Team Trooper"
-	outfit = /datum/outfit/death_commando
-	role = "Солдат"
+	name = "Asset Protection Specialist"
+	outfit = /datum/outfit/asset_protection
+	role = "Специалист"
+	rip_and_tear = TRUE
+
+/datum/antagonist/ert/asset_protection/New()
+	. = ..()
+	name_source = GLOB.commando_names
+
+/datum/antagonist/ert/asset_protection/apply_innate_effects(mob/living/mob_override)
+	. = ..()
+	ADD_TRAIT(owner, TRAIT_DISK_VERIFIER, REF(src))
+
+/datum/antagonist/ert/asset_protection/remove_innate_effects(mob/living/mob_override)
+	REMOVE_TRAIT(owner, TRAIT_DISK_VERIFIER, REF(src))
+	return ..()
 
 /datum/antagonist/ert/syndiesquad
 	name = "Syndiesquad Specialist"
@@ -365,7 +378,7 @@
 
 /datum/antagonist/ert/marine/engineer
 	name = "Marine Engineer"
-	outfit = /datum/outfit/ert/engineer/alert
+	outfit = /datum/outfit/ert/engineer/alert/marine
 	role = "Engineer"
 
 /datum/antagonist/ert/marine/medic

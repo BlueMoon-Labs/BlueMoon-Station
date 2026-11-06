@@ -241,6 +241,11 @@ SUBSYSTEM_DEF(zclear)
 	if(!z_level)
 		return
 
+	//Экспедиция улетела, не закрыв задание: останки авангарда отправляем домой до зачистки.
+	var/datum/orbital_objective/objective = SSorbits.current_objective
+	if(objective?.objective_z_level == z_level)
+		objective.fulton_dead_expeditors_home(TRUE)
+
 	SSair.pause_z(z_level)
 
 	var/list/turfs = block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level))

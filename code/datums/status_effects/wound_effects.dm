@@ -49,6 +49,9 @@
 
 /datum/status_effect/limp/on_remove()
 	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_CARBON_GAIN_WOUND, COMSIG_CARBON_LOSE_WOUND, COMSIG_CARBON_ATTACH_LIMB, COMSIG_CARBON_REMOVE_LIMB))
+	left = null
+	right = null
+	next_leg = null
 	return ..()
 
 /atom/movable/screen/alert/status_effect/limp
@@ -72,6 +75,9 @@
 	var/mob/living/carbon/C = owner
 	left = C.get_bodypart(BODY_ZONE_L_LEG)
 	right = C.get_bodypart(BODY_ZONE_R_LEG)
+	// Единый хвост даёт штраф одной ноги, а не два одинаковых штрафа на каждый шаг.
+	if(right == left)
+		right = null
 
 	if(!left && !right)
 		C.remove_status_effect(src)

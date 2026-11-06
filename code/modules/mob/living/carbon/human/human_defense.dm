@@ -24,13 +24,14 @@
 	if(!d_type || !def_zone)
 		return FALSE
 	var/protection = 0
+	var/coverage_flags = zone2body_parts_covered_complicated(def_zone.get_clothing_zone()) | def_zone.body_part
 	var/list/body_parts = list(head, wear_mask, wear_suit, w_uniform, w_underwear, w_socks, w_shirt, back, gloves, wrists, shoes, belt, s_store, glasses, ears, ears_extra, wear_id, wear_neck) //Everything but pockets. Pockets are l_store and r_store. (if pockets were allowed, putting something armored, gloves or hats for example, would double up on the armor) //skyrat edit
 	for(var/bp in body_parts)
 		if(!bp)
 			continue
 		if(istype(bp, /obj/item/clothing))
 			var/obj/item/clothing/C = bp
-			if(C.body_parts_covered & def_zone.body_part && istype(C.armor, /datum/armor))
+			if(C.body_parts_covered & coverage_flags && istype(C.armor, /datum/armor))
 				var/rating = C.armor.getRating(d_type)
 				if(isnum(rating))
 					protection += rating
@@ -43,13 +44,14 @@
 ///Get all the clothing on a specific body part
 /mob/living/carbon/human/proc/clothingonpart(obj/item/bodypart/def_zone)
 	var/list/covering_part = list()
+	var/coverage_flags = zone2body_parts_covered_complicated(def_zone?.get_clothing_zone()) | def_zone?.body_part
 	var/list/body_parts = list(head, wear_mask, wear_suit, w_uniform, back, gloves, shoes, belt, s_store, glasses, ears, wear_id, wear_neck) //Everything but pockets. Pockets are l_store and r_store. (if pockets were allowed, putting something armored, gloves or hats for example, would double up on the armor)
 	for(var/bp in body_parts)
 		if(!bp)
 			continue
 		if(bp && istype(bp , /obj/item/clothing))
 			var/obj/item/clothing/C = bp
-			if(C.body_parts_covered & def_zone.body_part)
+			if(C.body_parts_covered & coverage_flags)
 				covering_part += C
 	return covering_part
 
@@ -494,14 +496,15 @@
 				damaged += .
 
 
-	//LEGS & FEET//
+	// Нижняя опора: хвост закрывается одеждой на теле.
 	if(!bodyzone_hit || bodyzone_hit == BODY_ZONE_L_LEG || bodyzone_hit == BODY_ZONE_R_LEG || bodyzone_hit == "feet")
 		var/obj/item/clothing/leg_clothes = null
-		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (w_uniform.body_parts_covered & LEGS))))
+		var/lower_body_coverage = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? CHEST : (FEET | (bodyzone_hit != "feet" ? LEGS : NONE))
+		if(w_uniform && (w_uniform.body_parts_covered & lower_body_coverage))
 			leg_clothes = w_uniform
-		if(shoes && ((shoes.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (shoes.body_parts_covered & LEGS))))
-			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
-		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (wear_suit.body_parts_covered & LEGS))))
+		if(shoes && (shoes.body_parts_covered & lower_body_coverage))
+			leg_clothes = shoes
+		if(wear_suit && (wear_suit.body_parts_covered & lower_body_coverage))
 			leg_clothes = wear_suit
 		if(leg_clothes)
 			if(!(leg_clothes.resistance_flags & UNACIDABLE))
@@ -510,14 +513,14 @@
 				update_inv_w_uniform()
 				update_inv_wear_suit()
 			else
-				to_chat(src, "<span class='notice'>Ваша одежда - [leg_clothes.name] - защищает ваши ноги от кислоты!</span>")
+				to_chat(src, span_notice("Ваша одежда - [leg_clothes.name] - защищает ваш[HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? " хвост" : "и ноги"] от кислоты!"))
 		else
 			. = get_bodypart(BODY_ZONE_R_LEG)
 			if(.)
-				damaged += .
+				damaged |= .
 			. = get_bodypart(BODY_ZONE_L_LEG)
 			if(.)
-				damaged += .
+				damaged |= .
 
 
 	//DAMAGE//
@@ -578,6 +581,9 @@
 			to_send += "<span class='notice'><center><b>Вы осматриваете себя</b></span></center><hr>"
 
 			var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+			var/naga_anatomy = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)
+			if(naga_anatomy)
+				missing -= BODY_ZONE_R_LEG
 			for(var/X in bodyparts)
 				var/obj/item/bodypart/LB = X
 				missing -= LB.body_zone
@@ -648,7 +654,10 @@
 					to_send += "\n\t<a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 
 			for(var/t in missing)
-				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
+				if(naga_anatomy && t == BODY_ZONE_L_LEG)
+					to_send += span_boldannounce("Ваш опорный хвост оторван!") + "\n"
+				else
+					to_send += span_boldannounce("Ваша [ru_parse_zone(t)] отсутствует!") + "\n"
 
 			if(is_bleeding())
 				var/list/obj/item/bodypart/bleeding_limbs = list()
@@ -844,6 +853,9 @@
 	var/output = "<span class='notice'>Вы осматриваете себя на предмет повреждений.</span><hr>"
 
 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+	var/naga_anatomy = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)
+	if(naga_anatomy)
+		missing -= BODY_ZONE_R_LEG
 
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/LB = X
@@ -921,6 +933,11 @@
 
 		if(LB.current_gauze)
 			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+	for(var/zone in missing)
+		if(naga_anatomy && zone == BODY_ZONE_L_LEG)
+			output += "\n" + span_boldannounce("Ваш опорный хвост оторван!")
+		else
+			output += "\n" + span_boldannounce("Ваша [ru_parse_zone(zone)] отсутствует!")
 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)
@@ -967,14 +984,15 @@
 		if(arm_clothes)
 			torn_items |= arm_clothes
 
-	//LEGS & FEET//
+	// Нижняя опора: используем ту же область одежды, что и при расчёте брони.
 	if(!def_zone || def_zone == BODY_ZONE_L_LEG || def_zone == BODY_ZONE_R_LEG)
 		var/obj/item/clothing/leg_clothes = null
-		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (w_uniform.body_parts_covered & LEGS)))
+		var/lower_body_coverage = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? CHEST : (FEET | LEGS)
+		if(w_uniform && (w_uniform.body_parts_covered & lower_body_coverage))
 			leg_clothes = w_uniform
-		if(shoes && ((shoes.body_parts_covered & FEET) || (shoes.body_parts_covered & LEGS)))
-			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
-		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (wear_suit.body_parts_covered & LEGS)))
+		if(shoes && (shoes.body_parts_covered & lower_body_coverage))
+			leg_clothes = shoes
+		if(wear_suit && (wear_suit.body_parts_covered & lower_body_coverage))
 			leg_clothes = wear_suit
 		if(leg_clothes)
 			torn_items |= leg_clothes

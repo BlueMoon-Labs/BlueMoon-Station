@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Section } from '../../../components';
+import { Box, Button, Section, Stack } from '../../../components';
 import {
   ColorField,
   FeatureField,
@@ -92,9 +92,27 @@ export const GenitalsSection = (props: {
             }}
           >
             <Box mb={1}>
-              <b>{part.label}</b>
+              <Stack align="center">
+                <Stack.Item grow>
+                  <b>{part.label}</b>
+                </Stack.Item>
+                <Stack.Item>
+                  <Button.Checkbox
+                    className="CharacterSetup__icon-button"
+                    icon={part.active ? 'check' : 'times'}
+                    checked={!!part.active}
+                    tooltip={part.active ? 'Убрать' : 'Иметь'}
+                    aria-label={'Иметь: ' + part.label}
+                    onClick={() =>
+                      act('set_feature', {
+                        key: part.activeKey,
+                        value: !part.active,
+                      })
+                    }
+                  />
+                </Stack.Item>
+              </Stack>
             </Box>
-            {renderField(part.activeKey)}
             {!!part.active && (
               <ToggleRow
                 label="Свечение"
@@ -147,9 +165,27 @@ export const GenitalsSection = (props: {
           }}
         >
           <Box mb={1}>
-            <b>Огонь шеи</b>
+            <Stack align="center">
+              <Stack.Item grow>
+                <b>Огонь шеи</b>
+              </Stack.Item>
+              <Stack.Item>
+                <Button.Checkbox
+                  className="CharacterSetup__icon-button"
+                  icon={genitals.neckfire ? 'check' : 'times'}
+                  checked={!!genitals.neckfire}
+                  tooltip={genitals.neckfire ? 'Убрать' : 'Иметь'}
+                  aria-label="Иметь: Огонь шеи"
+                  onClick={() =>
+                    act('set_feature', {
+                      key: 'neckfire',
+                      value: !genitals.neckfire,
+                    })
+                  }
+                />
+              </Stack.Item>
+            </Stack>
           </Box>
-          {renderField('neckfire')}
           {!!genitals.neckfire && renderField('neckfire_color')}
         </Box>
       )}

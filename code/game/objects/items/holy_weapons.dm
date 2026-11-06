@@ -34,6 +34,10 @@
 	desc = "God wills it!"
 	icon_state = "knight_templar"
 	item_state = "knight_templar"
+	tail_state = ""
+	flags_inv = NONE
+	unique_reskin = null
+	taur_types_icon_whitelist = alist()
 	allowed = list(/obj/item/storage/book/bible, HOLY_WEAPONS, /obj/item/reagent_containers/food/drinks/bottle/holywater, /obj/item/storage/fancy/candle_box, /obj/item/candle, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
 
 // CITADEL CHANGES: More variants

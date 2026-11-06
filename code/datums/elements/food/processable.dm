@@ -17,7 +17,7 @@
 	///Sound to play when the do_after begins
 	var/sound_to_play
 
-/datum/element/processable/Attach(datum/target, tool_behaviour, result_atom_type, amount_created = 3, time_to_process = 2 SECONDS, table_required = FALSE, screentip_verb = "Process", sound_to_play = null)
+/datum/element/processable/Attach(datum/target, tool_behaviour, result_atom_type, amount_created = 3, time_to_process = 2 SECONDS, table_required = FALSE, screentip_verb = "Обработать", sound_to_play = null)
 	. = ..()
 	if(!isatom(target))
 		return ELEMENT_INCOMPATIBLE
@@ -80,6 +80,6 @@
 	if (held_item.tool_behaviour != tool_behaviour)
 		return NONE
 
-	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "[screentip_verb] into [initial(result_atom_type.name)]")
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "[screentip_verb]: [initial(result_atom_type.name)]")
 
 	return CONTEXTUAL_SCREENTIP_SET

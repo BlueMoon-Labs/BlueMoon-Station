@@ -1,7 +1,15 @@
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Button, Input, NoticeBox, Section, Stack, Tabs } from '../components';
+import {
+  Button,
+  Icon,
+  Input,
+  NoticeBox,
+  Section,
+  Stack,
+  Tabs,
+} from '../components';
 import { Window } from '../layouts';
 
 const PREVIEW_BOX_W = 350;
@@ -53,7 +61,8 @@ type HairPickerData = {
   total: number;
   names: string[];
   selected: string;
-  sheet: string | null;
+  cells: (string | null)[];
+  cells_loading?: boolean | number;
   cell_w: number;
   cell_h: number;
   cols: number;
@@ -163,8 +172,8 @@ const StyleGrid = (props: {
   const names = data.names || [];
   const favorites = data.favorites || [];
   const cols = data.cols || 4;
+  const cells = data.cells || [];
   const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
-  const rows = Math.max(1, Math.ceil(names.length / cols));
   const viewedCount =
     data.page < data.pages ? names.length * data.page : data.total;
 
@@ -175,6 +184,11 @@ const StyleGrid = (props: {
       title={`${viewedCount}/${data.total}`}
       buttons={
         <Stack align="center">
+          {data.cells_loading ? (
+            <Stack.Item>
+              <Icon name="spinner" spin color="label" />
+            </Stack.Item>
+          ) : null}
           <Stack.Item>
             <Button
               icon={data.favorites_only ? 'star' : 'star-o'}
@@ -214,11 +228,8 @@ const StyleGrid = (props: {
             <StyleCell
               key={name}
               name={name}
-              index={index}
-              cols={cols}
               aspectRatio={aspectRatio}
-              sheet={data.sheet}
-              rows={rows}
+              image={cells[index] || null}
               selected={name === data.selected}
               favorite={favorites.includes(name)}
               onToggleFavorite={() => onToggleFavorite(name)}
@@ -236,11 +247,8 @@ const StyleGrid = (props: {
 
 const StyleCell = (props: {
   name: string;
-  index: number;
-  cols: number;
   aspectRatio: number;
-  sheet: string | null;
-  rows: number;
+  image: string | null;
   selected: boolean;
   favorite: boolean;
   onToggleFavorite: () => void;
@@ -249,11 +257,8 @@ const StyleCell = (props: {
 }) => {
   const {
     name,
-    index,
-    cols,
     aspectRatio,
-    sheet,
-    rows,
+    image,
     selected,
     favorite,
     onToggleFavorite,
@@ -261,8 +266,6 @@ const StyleCell = (props: {
     onDoubleClick,
   } = props;
   const [hovered, setHovered] = useState(false);
-  const col = index % cols;
-  const row = Math.floor(index / cols);
   return (
     <div
       title={name}
@@ -290,15 +293,14 @@ const StyleCell = (props: {
             : 'none',
         outlineOffset: '-2px',
       }}>
-      {sheet ? (
-        <div
+      {image ? (
+        <img
+          src={`data:image/png;base64,${image}`}
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: `url(data:image/png;base64,${sheet})`,
-            backgroundSize: `${cols * 100}% ${rows * 100}%`,
-            backgroundPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 0}% ${rows > 1 ? (row / (rows - 1)) * 100 : 0}%`,
-            backgroundRepeat: 'no-repeat',
+            width: '100%',
+            height: '100%',
             imageRendering: 'pixelated',
           }}
         />

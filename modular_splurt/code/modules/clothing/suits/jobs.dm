@@ -15,7 +15,7 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/toggle/captains_parade/hop_formal
@@ -29,7 +29,7 @@
 	body_parts_covered = CHEST|ARMS
 	armor_type = /datum/armor/hop_formal
 	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/toggle/captains_parade/hop_formal/Initialize()

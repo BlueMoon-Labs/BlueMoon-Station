@@ -26,7 +26,7 @@
 	. = ..()
 	for(var/m in buckled_mobs)
 		var/mob/living/buckled_mob = m
-		if(buckled_mob.get_num_legs(FALSE) > 0)
+		if(buckled_mob.get_num_supporting_limbs(FALSE) > 0)
 			buckled_mob.pixel_y = 5
 		else
 			buckled_mob.pixel_y = -4
@@ -34,8 +34,8 @@
 /obj/vehicle/ridden/scooter/buckle_mob(mob/living/M, force = 0, check_loc = 1)
 	if(!istype(M))
 		return FALSE
-	if(M.get_num_legs() < 2 && M.get_num_arms() <= 0)
-		to_chat(M, "<span class='warning'>Твое бренное тело не может ездить на \the [src].</span>")
+	if(M.get_num_supporting_limbs() < 2 && M.get_num_arms() <= 0)
+		to_chat(M, span_warning("Ваше тело не позволяет ездить на [src]."))
 		return FALSE
 	. = ..()
 

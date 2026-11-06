@@ -75,6 +75,10 @@
 #define GC_HARDDEL_LOBBY_BUDGET_MS 200
 /// LOBBY-mode maximum number of del() calls per fire().
 #define GC_HARDDEL_LOBBY_MAX_PER_FIRE 50
+/// Утечку типа, чей del() в среднем дороже этого (мс), в раунде не сносим, а перепроверяем раз в GC_HARDDEL_TIMEOUT. 0 - выключено.
+#define GC_HARDDEL_DEFER_MIN_MS 50
+/// Сколько отложенных хардделов может ждать одновременно; сверх этого - обычный del().
+#define GC_HARDDEL_DEFER_MAX 200
 /// Queue depth below which GC may enter HOLD mode if the sampled trend is healthy.
 #define GC_HARDDEL_RECOVER_THRESHOLD 1200
 /// Target q3 growth rate needed before GC may settle into HOLD mode.

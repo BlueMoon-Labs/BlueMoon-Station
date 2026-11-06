@@ -72,7 +72,11 @@
 	SSicon_smooth.smooth_queue = list(null, doomed)
 	SSicon_smooth.deferred = list()
 	SSicon_smooth.state = SS_RUNNING
+	// после тяжёлых тестов тик уже съеден, и MC_TICK_CHECK бросает проход на первом атоме
+	var/saved_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = INFINITY
 	SSicon_smooth.fire()
+	Master.current_ticklimit = saved_ticklimit
 	SSicon_smooth.state = saved_state
 	var/list/leftover = SSicon_smooth.smooth_queue + SSicon_smooth.deferred
 	SSicon_smooth.smooth_queue = saved_queue
