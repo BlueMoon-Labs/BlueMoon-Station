@@ -1153,6 +1153,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			standing += accessory_overlay
 			if(glowing)
 				standing += emissive_copy(accessory_overlay)
+			var/mutable_appearance/upper_limbs_overlay = S.get_upper_limbs_overlay(accessory_overlay)
+			if(upper_limbs_overlay)
+				standing += upper_limbs_overlay
 
 			var/extra_state = severed_taur ? severed_taur.severed_body_extra_state : (S.extra ? S.icon_state : null)
 			var/matrixed_severed_state = severed_taur?.get_matrixed_severed_state(H)

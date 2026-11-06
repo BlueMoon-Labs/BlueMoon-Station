@@ -100,6 +100,10 @@
 /datum/sprite_accessory/proc/is_not_visible(var/mob/living/carbon/human/H, var/tauric) //return if the accessory shouldn't be shown
 	return FALSE
 
+/// Дополнительный оверлей части, которая должна лежать поверх головы и рук; null - такой нет.
+/datum/sprite_accessory/proc/get_upper_limbs_overlay(mutable_appearance/accessory_overlay)
+	return null
+
 /datum/sprite_accessory/underwear
 	icon = 'icons/mob/clothing/underwear.dmi'
 	var/has_color = FALSE

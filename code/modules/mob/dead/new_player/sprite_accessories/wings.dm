@@ -977,16 +977,38 @@
 	icon_state = "witchwinggrey"
 	upgrade_to = SPECIES_WINGS_MOTH
 
-/// Маркинги молей под обычными маркингами, но над телом
+/// Маркинги молей на голове и руках - под обычными маркингами, но над конечностями
 #define INSECT_MARKINGS_UNDER_MARKINGS 0.5
+/// Маркинги молей на торсе и ногах - под задней частью гениталий, но над ногами
+#define INSECT_MARKINGS_UNDER_GENITALS 0.25
 
 /datum/sprite_accessory/insect_markings // Extra markings for insects ported from tg.
 	icon = 'icons/mob/insect_markings.dmi'
 	color_src = WINGCOLOR
 	relevant_layers = list(BODY_ADJ_LAYER)
-	overlay_layer = -(MARKING_LAYER + INSECT_MARKINGS_UNDER_MARKINGS)
+	overlay_layer = -(GENITALS_BEHIND_LAYER + INSECT_MARKINGS_UNDER_GENITALS)
+
+/// Спрайт цельный на всё тело, а обычные маркинги лежат на слоях конечностей: голову и руки дорисовываем копией поверх них.
+/datum/sprite_accessory/insect_markings/get_upper_limbs_overlay(mutable_appearance/marking)
+	var/static/list/upper_icons = list()
+	var/icon/upper_icon = upper_icons[marking.icon_state]
+	if(!upper_icon)
+		var/icon/limbs_mask = icon('icons/mob/human_parts_greyscale.dmi', "human_head_m")
+		limbs_mask.Blend(icon('icons/mob/human_parts_greyscale.dmi', "human_r_arm"), ICON_OVERLAY)
+		limbs_mask.Blend(icon('icons/mob/human_parts_greyscale.dmi', "human_l_arm"), ICON_OVERLAY)
+		limbs_mask.MapColors(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0)
+		upper_icon = icon(marking.icon, marking.icon_state)
+		limbs_mask.Crop(1, 1, upper_icon.Width(), upper_icon.Height())
+		upper_icon.Blend(limbs_mask, ICON_MULTIPLY)
+		upper_icons[marking.icon_state] = upper_icon
+	var/mutable_appearance/upper = new(marking)
+	upper.icon = upper_icon
+	upper.icon_state = null
+	upper.layer = -(MARKING_LAYER + INSECT_MARKINGS_UNDER_MARKINGS)
+	return upper
 
 #undef INSECT_MARKINGS_UNDER_MARKINGS
+#undef INSECT_MARKINGS_UNDER_GENITALS
 
 /datum/sprite_accessory/insect_markings/none
 	name = "None"
