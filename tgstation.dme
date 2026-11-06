@@ -14,6 +14,7 @@
 // END_PREFERENCES
 
 // BEGIN_INCLUDE
+#include "verb_id_order.dm"
 #include "_maps\_basemap.dm"
 #include "_maps\_DEFINES\maps.dm"
 #include "_maps\map_files\BoxStations\job_changes.dm"
@@ -56,6 +57,7 @@
 #include "code\__BLUEMOONCODE\_DEFINES\time.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\traits.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\transport.dm"
+#include "code\__BLUEMOONCODE\_DEFINES\verb_ids.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\vote.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\_datum_armors\none.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\_datum_armors\shared.dm"

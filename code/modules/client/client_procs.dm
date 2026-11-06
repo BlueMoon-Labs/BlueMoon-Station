@@ -1964,6 +1964,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		for(var/AM in mob.contents)
 			var/atom/movable/thing = AM
 			verbstoprocess += thing.verbs
+	check_verb_proc_ids(verbstoprocess)
 	panel_tabs.Cut() // panel_tabs get reset in init_verbs on JS side anyway
 	for(var/thing in verbstoprocess)
 		var/procpath/verb_to_init = thing
