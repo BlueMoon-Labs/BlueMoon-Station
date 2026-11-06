@@ -164,7 +164,7 @@
 	obj/item/held_item,
 	mob/living/user,
 )
-	var/rotation = (rotation_flags & ROTATION_FLIP) ? "Flip" : "Rotate [rotation_flags & ROTATION_CLOCKWISE ? "clockwise" : "counter-clockwise"]"
+	var/rotation = (rotation_flags & ROTATION_FLIP) ? "Отразить" : "Повернуть [rotation_flags & ROTATION_CLOCKWISE ? "по часовой" : "против часовой"]"
 
 	if(rotation_flags & ROTATION_ALTCLICK)
 		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, rotation)

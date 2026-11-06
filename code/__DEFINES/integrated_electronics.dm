@@ -47,3 +47,4 @@
 
 // Data limits.
 #define IC_MAX_LIST_LENGTH			500
+#define IC_MAX_LIST_NESTING			4

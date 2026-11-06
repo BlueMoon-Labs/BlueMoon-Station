@@ -8,6 +8,9 @@
 
 /obj/item/integrated_electronics/analyzer/afterattack(var/atom/A, var/mob/living/user)
 	. = ..()
+	if(istype(A, /obj/item/mod/module/circuit))
+		var/obj/item/mod/module/circuit/module = A
+		A = module.assembly
 	if(istype(A, /obj/item/electronic_assembly))
 		// html_encode обязателен: JSON уезжает в браузерный попап как есть, и любой символ
 		// < > & из подписи компонента или текстпада браузер съедал как разметку - скопированная

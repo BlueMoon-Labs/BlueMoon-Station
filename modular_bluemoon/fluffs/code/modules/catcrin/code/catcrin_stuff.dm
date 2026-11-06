@@ -6,7 +6,7 @@
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
 "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
-"blatoff", "regiska", "lander231", "exkessa" \
+"blatoff", "regiska", "lander231", "exkessa", "vlonger" \
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
@@ -608,7 +608,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/magrifle/pistol/mag
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
 	icon_state = "Har"
-	item_state = "lar"
+	item_state = "har"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Hshot.ogg'
 DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar)
 

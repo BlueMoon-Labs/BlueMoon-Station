@@ -12,8 +12,9 @@ import { loadSettings, updateSettings } from '../settings/actions';
 import { MESSAGE_STYLES } from '../settings/constants';
 import { RADIO_JOB_DEFAULTS } from '../settings/radioJobs';
 import { selectSettings } from '../settings/selectors';
-import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
-import { HISTORY_LOAD_STEP, HISTORY_MAX_MESSAGES, HISTORY_SEGMENT_SIZE, MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
+import { addChatPage, changeChatPage, changeScrollTracking, clearChat, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
+import { createCodec } from './codec';
+import { HISTORY_LOAD_STEP, HISTORY_MAX_CHARS, HISTORY_MAX_MESSAGES, HISTORY_SEGMENT_SIZE, MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
 import { ChatHistory } from './history';
 import { createMessage } from './model';
 import { chatRenderer } from './renderer';
@@ -30,6 +31,8 @@ const FORBID_TAGS = [
 export const chatHistory = new ChatHistory(storage, {
   segmentSize: HISTORY_SEGMENT_SIZE,
   maxMessages: HISTORY_MAX_MESSAGES,
+  maxChars: HISTORY_MAX_CHARS,
+  codec: createCodec(),
 });
 
 // Пока история не поднята, свежим сообщениям не раздаём номера: иначе
@@ -37,11 +40,13 @@ export const chatHistory = new ChatHistory(storage, {
 // входе встал бы не на своё место.
 let historyRestored = false;
 
+// До восстановления сохранять нечего, а запись затёрла бы сохранённые вкладки
+// пустыми: уход со страницы бывает и в первую секунду после входа.
 const saveChatToStorage = async (state, savedAt) => {
-  await Promise.all([
-    storage.set('chat-state', { ...state, savedAt }),
-    historyRestored && chatHistory.save(chatRenderer.messages),
-  ]);
+  if (historyRestored) {
+    await chatHistory.save(chatRenderer.messages,
+      { state: { ...state, savedAt } });
+  }
 };
 
 const sanitizeStoredMessages = messages => {
@@ -99,22 +104,35 @@ export const loadOlderChatHistory = () => {
   return loadingOlder;
 };
 
-// Сохранение раз в MESSAGE_SAVE_INTERVAL пишет состояние вкладок и куски
-// истории с новыми сообщениями; если с прошлого раза ничего не поменялось,
-// не пишем.
+// Слежение за низом и счётчики непрочитанного при входе не восстанавливаются:
+// прокрутка не повод переписывать файл.
+const persistedChatState = state => {
+  const { scrollTracking, ...rest } = state;
+  const pageById = {};
+  for (const [id, page] of Object.entries(state.pageById || {})) {
+    const { unreadCount, ...kept } = page;
+    pageById[id] = kept;
+  }
+  return { ...rest, pageById };
+};
+
+// Сохранение по сигналу сервера, раз в MESSAGE_SAVE_INTERVAL, при уходе со
+// страницы и скрытии окна пишет состояние вкладок и новые сообщения; если
+// с прошлого раза ничего не поменялось, не пишем.
 const createChatSaver = () => {
   let last = null;
   return async (store, force = false) => {
-    const state = selectChat(store.getState());
+    const state = persistedChatState(selectChat(store.getState()));
+    const stateJson = JSON.stringify(state);
     const savedAt = getLastSavedAt();
     const version = chatRenderer.messagesVersion;
-    if (!force && last && last.state === state
+    if (!force && last && last.stateJson === stateJson
       && last.savedAt === savedAt && last.version === version) {
       return;
     }
     try {
       await saveChatToStorage(state, savedAt);
-      last = { state, savedAt, version };
+      last = { stateJson, savedAt, version };
     }
     catch (err) {
       // Запомненное не обновляем: следующий тик повторит запись.
@@ -139,12 +157,15 @@ const restoreHistory = async () => {
 
 const loadChatFromStorage = async store => {
   const [state, messages] = await Promise.all([
-    storage.get('chat-state'),
+    chatHistory.loadState().catch(err => {
+      console.error('Failed to restore chat state:', err);
+    }),
     restoreHistory(),
   ]);
   // Discard incompatible versions
   if (state && state.version <= 4) {
     historyRestored = true;
+    chatHistory.record(chatRenderer.messages);
     store.dispatch(loadChat());
     return;
   }
@@ -160,8 +181,10 @@ const loadChatFromStorage = async store => {
     chatRenderer.processBatch(batch, {
       prepend: true,
     });
+    chatRenderer.pruneSoon();
   }
   historyRestored = true;
+  chatHistory.record(chatRenderer.messages);
   // Compare server vs browser storage by savedAt counter.
   // Use the fresher copy; if equal or both missing, server wins (backward compat).
   const browserSavedAt = (state && typeof state.savedAt === 'number')
@@ -238,6 +261,9 @@ const createApplySettings = () => {
     }
     if (anyChanged(prev, settings, ['showRadioJobs'])) {
       chatRenderer.setRadioJobsVisible(settings.showRadioJobs !== false);
+    }
+    if (anyChanged(prev, settings, ['visibleMessageLimit'])) {
+      chatRenderer.setVisibleLimit(settings.visibleMessageLimit);
     }
     if (anyChanged(prev, settings, ['newMessagesMarker'])) {
       chatRenderer.setNewMessagesMarker(settings.newMessagesMarker !== false);
@@ -318,11 +344,22 @@ export const chatMiddleware = store => {
     if (loaded) {
       store.dispatch(updateMessageCount(countByType));
     }
+    // Номер и место в истории - сразу: обрезка рендерера может выкинуть
+    // сообщение раньше, чем до него дойдёт сохранение.
+    if (historyRestored) {
+      chatHistory.record(chatRenderer.messages);
+    }
   });
   chatRenderer.events.on('scrollTrackingChanged', scrollTracking => {
     store.dispatch(changeScrollTracking(scrollTracking));
   });
   setInterval(() => saveChat(store), MESSAGE_SAVE_INTERVAL);
+  window.addEventListener('pagehide', () => saveChat(store));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      saveChat(store);
+    }
+  });
   return next => action => {
     const { type, payload } = action;
     if (!initialized) {
@@ -411,6 +448,13 @@ export const chatMiddleware = store => {
       chatRenderer.rebuildChat();
       return next(action);
     }
+    if (type === clearChat.type) {
+      chatRenderer.clearChat();
+      chatHistory.clear().catch(err => {
+        console.error('Failed to clear chat history:', err);
+      });
+      return next(action);
+    }
     if (type === updateSettings.type || type === loadSettings.type) {
       next(action);
       const settings = selectSettings(store.getState());
@@ -418,9 +462,15 @@ export const chatMiddleware = store => {
       return;
     }
     if (type === 'roundrestart') {
-      saveChat(store, true);
+      // Сначала сервер: он поднимает savedAt, и уход со страницы после
+      // рестарта не перепишет историю второй раз.
       flushSaveToServer(store);
+      saveChat(store, true);
       return next(action);
+    }
+    if (type === 'chat/saveIdle') {
+      saveChat(store);
+      return;
     }
     if (type === saveChatToDisk.type) {
       chatRenderer.saveToDisk();

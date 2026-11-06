@@ -164,10 +164,14 @@
 	var/mob/living/carbon/human/tourist = new
 	if(selected.client?.prefs)
 		selected.client.prefs.copy_to(tourist)
+		selected.client.prefs.apply_prefs_modified_limbs(tourist)
 		tourist.dna.update_dna_identity()
 	var/datum/mind/player_mind = new /datum/mind(selected.key)
 	player_mind.active = TRUE
 	player_mind.transfer_to(tourist)
+	if(tourist.client?.prefs)
+		tourist.client.prefs.apply_prefs_body_mods(tourist)
+		tourist.update_body()
 	equip_tourist(tourist)
 	SSjob.SendToLateJoin(tourist)
 	to_chat(tourist, examine_block("<span class='big bold'>Вы - турист агентства «Звёздный маршрут».</span><br>\

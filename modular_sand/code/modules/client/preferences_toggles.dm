@@ -3,7 +3,7 @@ TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_lewd_sounds)()
 	set category = "Preferences.Sounds"
 	set desc = "Hear Lewd Verb Sounds From Interactions"
 	usr.client.prefs.toggles ^= LEWD_VERB_SOUNDS
-	usr.client.prefs.save_preferences()
+	usr.client.prefs.save_pref_var("toggles")
 	if(usr.client.prefs.toggles & LEWD_VERB_SOUNDS)
 		to_chat(usr, "You will now hear lewd verb sounds.")
 	else

@@ -114,26 +114,52 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
     if (!renderedTooltip) {
       return;
     }
+    const options = this.buildOptions();
     let singletonPopper = Tooltip.singletonPopper;
     if (singletonPopper === undefined) {
       singletonPopper = createPopper(
         Tooltip.virtualElement,
         renderedTooltip,
-        {
-          ...DEFAULT_OPTIONS,
-          placement: this.props.position || "auto",
-        }
+        options
       );
 
       Tooltip.singletonPopper = singletonPopper;
     } else {
-      singletonPopper.setOptions({
-        ...DEFAULT_OPTIONS,
-        placement: this.props.position || "auto",
-      });
+      singletonPopper.setOptions(options);
 
       singletonPopper.update();
     }
+  }
+
+  buildOptions() {
+    const anchor = Tooltip.currentHoveredElement;
+    const boundary =
+      anchor instanceof Element
+        ? anchor.closest('.CharacterSetup__editor, .CharacterSetup .Modal')
+        : null;
+    const modifiers: any[] = [...DEFAULT_OPTIONS.modifiers];
+    if (boundary) {
+      modifiers.push(
+        {
+          name: 'preventOverflow',
+          options: {
+            boundary: boundary,
+            altAxis: true,
+            tether: false,
+            padding: 4,
+          },
+        },
+        {
+          name: 'flip',
+          options: { boundary: boundary, padding: 4 },
+        }
+      );
+    }
+    return {
+      ...DEFAULT_OPTIONS,
+      modifiers: modifiers,
+      placement: this.props.position || 'auto',
+    };
   }
 
   componentDidUpdate() {

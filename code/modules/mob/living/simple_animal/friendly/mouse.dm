@@ -30,6 +30,9 @@
 	gold_core_spawnable = FRIENDLY_SPAWN
 	var/chew_probability = 1
 	faction = list("rat")
+	can_buckle = TRUE
+	max_buckled_mobs = 1
+	tame = TRUE
 	vocal_bark_id = "squeak"
 	vocal_pitch = 1.4
 
@@ -43,6 +46,16 @@
 	icon_living = "mouse_[body_color]"
 	icon_dead = "mouse_[body_color]_dead"
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(rat_friend_attack_hand))
+	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(rat_friend_attackby))
+
+/mob/living/simple_animal/mouse/examine(mob/user)
+	. = ..()
+	if(isliving(user))
+		var/mob/living/living_user = user
+		if(living_user.has_status_effect(/datum/status_effect/rat_friend))
+			. += span_notice("Эта мышь считает вас своим.")
+	. += span_notice("Можно оседлать: перетащите себя на неё.")
 
 /mob/living/simple_animal/mouse/proc/splat()
 	src.health = 0
@@ -122,21 +135,25 @@
 /mob/living/simple_animal/mouse/proc/be_fruitful()
 	var/cap = CONFIG_GET(number/ratcap)
 	if(LAZYLEN(SSmobs.cheeserats) >= cap)
-		visible_message("<span class='warning'>[src] carefully eats the cheese, hiding it from the [cap] mice on the station!</span>")
+		visible_message("<span class='warning'>[src] осторожно ест сыр, пряча его от [cap] мышей на станции!</span>")
 		return
 	var/mob/living/newmouse = new /mob/living/simple_animal/mouse(loc)
 	SSmobs.cheeserats += newmouse
-	visible_message("<span class='notice'>[src] nibbles through the cheese, attracting another mouse!</span>")
+	visible_message("<span class='notice'>[src] грызёт сыр, приманивая ещё одну мышь!</span>")
 
 /**
   *Spawns a new regal rat, says some good jazz, and if sentient, transfers the relivant mind.
   */
 /mob/living/simple_animal/mouse/proc/evolve()
-	var/mob/living/simple_animal/hostile/regalrat = new /mob/living/simple_animal/hostile/regalrat(loc)
-	visible_message("<span class='warning'>[src] devours the cheese! He morphs into something... greater!</span>")
-	regalrat.say("RISE, MY SUBJECTS! SCREEEEEEE!")
+	var/mob/living/simple_animal/hostile/regalrat/king = new /mob/living/simple_animal/hostile/regalrat/controlled(loc)
+	visible_message("<span class='warning'>[src] пожирает сыр! Он превращается во что-то... большее!</span>")
+	king.say("ВОССТАНЬТЕ, МОИ ПОДДАННЫЕ! ПИИИИ!")
 	if(mind)
-		mind.transfer_to(regalrat)
+		mind.transfer_to(king)
+		if(king.mind && !king.mind.has_antag_datum(/datum/antagonist/rat_king))
+			king.mind.add_antag_datum(/datum/antagonist/rat_king)
+		if(!king.special_moniker)
+			king.grant_titles()
 	qdel(src)
 
 /mob/living/simple_animal/mouse/proc/evolve_plague()

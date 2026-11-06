@@ -167,7 +167,7 @@
 	// Проверка на общее количество
 	if(length(accessories_attached) >= max_accessories)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] уже имеет [length(accessories_attached)] аксессуаров.</span>")
+			to_chat(user, span_warning("[src] уже имеет [length(accessories_attached)] аксессуаров."))
 		return
 	// Проверка на количество особых / боевых
 	if(accessory.restricted_accessory && length(accessories_attached))
@@ -177,7 +177,7 @@
 				restricted_accesories_count++
 		if(restricted_accesories_count >= max_restricted_accessories)
 			if(user && !silent)
-				to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
+				to_chat(user, span_warning("На [src] некуда прикреплять очередной боевой аксессуар, на униформе их уже [restricted_accesories_count]"))
 			return
 	// Проверка на максимальное количество аксессуаров одного вида
 	if(accessory.max_stack != -1 && length(accessories_attached))
@@ -195,13 +195,13 @@
 				similar_accessory_count++
 		if(similar_accessory_count >= accessory.max_stack)
 			if(user && !silent)
-				to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [accessory] аксессуаров!</span>")
+				to_chat(user, span_warning("На \the [src] уже слишком много похожих на \the [accessory] аксессуаров!"))
 			return
 	// BLUEMOON EDIT END
 
 	if(dummy_thick)
 		if(user && !silent)
-			to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+			to_chat(user, span_warning("Громоздкость [src] не позволит прикрепить аксессуары!"))
 		return
 	else
 		if(user && !user.dropItemToGround(accessory, silent = silent))
@@ -211,7 +211,7 @@
 			return
 
 		if(user && !silent)
-			to_chat(user, "<span class='notice'>Вы прикрепили [accessory] к [src].</span>")
+			to_chat(user, span_notice("Вы прикрепили [accessory.name] к \the [src.name]."))
 
 		if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 			return TRUE
@@ -248,32 +248,37 @@
 
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
-	if(can_adjust)
-		if(adjusted == ALT_STYLE)
-			. += "Alt-click для нормального стиля ношения."
-		else
-			. += "Alt-click для повседневного стиля ношения."
+	if(can_adjust && !(user?.client?.use_legacy_chat && length(accessories_attached)))
+		. += "Alt-клик для [adjusted == ALT_STYLE ? "нормального" : "повседневного"] стиля ношения."
 	switch(has_sensor)
 		if(BROKEN_SENSORS)
-			. += "<span class='warning'>Сенсоры полностью вышли из строя. Их можно починить кабелем.</span>"
+			. += span_notice("Сенсоры [span_danger("полностью вышли из строя")]. \
+			[!is_blind(user) ? "От <b>проводки</b> идёт дым." : ""]")
 		if(DAMAGED_SENSORS_LIVING)
-			. += "<span class='warning'>Сенсоры и маячок слежения повреждены, и не передают информацию. Это можно исправить кабелем.</span>"
+			. += span_notice("Сенсоры и маячок слежения [span_warning("повреждены")] и не передают информацию. \
+			[!HAS_TRAIT(user, TRAIT_DEAF) ? "Слышно потрескивание их <b>проводки</b>." : ""]")
 		if(DAMAGED_SENSORS_VITALS)
-			. += "<span class='warning'>Маячок слежения повреждён, невозможно отслеживать локацию владельца. Это можно исправить кабелем</span>"
+			. += span_notice("Маячок слежения [span_warning("повреждён")], невозможно отслеживать локацию владельца.\
+			[!HAS_TRAIT(user, TRAIT_ANOSMIA) ? " Чувствуется запах гари от его <b>проводки</b>." : ""]")
 	if(has_sensor > NO_SENSORS)
 		switch(sensor_mode)
 			if(SENSOR_OFF)
-				. += "Сенсоры одежды выключены."
+				. += span_notice("Сенсоры выключены.")
 			if(SENSOR_LIVING)
-				. += "Бинарные сенсоры статуса смерти включены."
+				. += span_notice("Бинарные сенсоры включены.")
 			if(SENSOR_VITALS)
-				. += "Сенсоры жизненных показателей выключены."
+				. += span_notice("Сенсоры жизненных показателей включены.")
 			if(SENSOR_COORDS)
-				. += "Сенсоры жизненных показателей и маячок местонахождения включены."
-	if(length(accessories_attached))
-		for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
-			. += "\A [attached_accessory] находится на униформе."
+				. += span_notice("Сенсоры и маячок местонахождения включены.")
+	var/accessory_list = accessories_examine(user)
+	if(accessory_list)
+		. += accessory_list
 	//SKYRAT EDIT END
+
+/obj/item/clothing/under/Topic(href, href_list)
+	. = ..()
+	if(!.)
+		return accessories_topic(usr, href_list)
 
 /obj/item/clothing/under/verb/toggle()
 	set name = "Adjust Suit Sensors"
@@ -375,13 +380,15 @@
 	set_to_maximum_sensor(user)
 
 /obj/item/clothing/under/AltClick(mob/user)
+	// Legacy chat cannot send right-click actions from accessory links.
+	if(user?.client?.use_legacy_chat && length(accessories_attached))
+		if(isliving(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) && can_use(user))
+			remove_accessory(user = user)
+		return TRUE
 	. = ..()
 	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
-	if(length(accessories_attached)) //SKYRAT EDIT
-		remove_accessory(user = user)
-	else
-		rolldown()
+	rolldown()
 
 /obj/item/clothing/under/verb/jumpsuit_adjust()
 	set name = "Adjust Jumpsuit Style"
@@ -428,11 +435,11 @@
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to highest sensor")
-	if(length(accessories_attached))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Remove [accessories_attached[length(accessories_attached)]]")
-	else
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Adjust [src]")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Датчики на максимум")
+	if(user.client?.use_legacy_chat && length(accessories_attached))
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Снять [accessories_attached[length(accessories_attached)]]")
+	else if(can_adjust)
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[adjusted == ALT_STYLE ? "Нормальный" : "Повседневный"] стиль ношения")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/clothing/under/rank

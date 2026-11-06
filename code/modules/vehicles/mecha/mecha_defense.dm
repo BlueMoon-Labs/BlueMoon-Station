@@ -66,9 +66,10 @@
 /obj/vehicle/sealed/mecha/attack_alien(mob/living/user)
 	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
 		return
+	var/mob/living/carbon/alien/humanoid/X = user
 	log_message("Атака ксеноморфа. Нападавший: [user].", LOG_MECHA, color="red")
 	playsound(src.loc, 'sound/weapons/slash.ogg', 100, TRUE)
-	attack_generic(user, 15, BRUTE, MELEE, 0)
+	attack_generic(user, X.meleeSlashSAPower, BRUTE, MELEE, 10)
 
 /obj/vehicle/sealed/mecha/attack_animal(mob/living/simple_animal/user)
 	if(!user.can_damage_objects)
@@ -294,7 +295,8 @@
 
 /obj/vehicle/sealed/mecha/crowbar_act(mob/living/user, obj/item/I)
 	..()
-	if(user.a_intent == INTENT_HARM)
+	// Оборудование меха устанавливается через attackby, даже если оно работает как лом.
+	if(user.a_intent == INTENT_HARM || istype(I, /obj/item/mecha_parts))
 		return
 	. = TRUE
 	if(construction_state != MECHA_LOOSE_BOLTS && construction_state != MECHA_OPEN_HATCH)

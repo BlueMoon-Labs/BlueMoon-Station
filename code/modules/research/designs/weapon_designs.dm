@@ -825,7 +825,7 @@
 	build_path = /obj/item/ammo_box/cal41/taser
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/cal41_ion
 	name = "Speed Loader (.41 ion)"

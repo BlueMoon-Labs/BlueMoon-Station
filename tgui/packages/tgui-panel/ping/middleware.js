@@ -6,7 +6,9 @@
 
 import { sendMessage } from 'tgui/backend';
 
+import { chatRenderer } from '../chat/renderer';
 import { pingFail, pingSuccess } from './actions';
+import { createClientMetrics, LOOP_PROBE_INTERVAL } from './clientMetrics';
 import { PING_INTERVAL, PING_QUEUE_SIZE, PING_TIMEOUT } from './constants';
 
 export const pingMiddleware = store => {
@@ -14,6 +16,21 @@ export const pingMiddleware = store => {
   let index = 0;
   let interval;
   const pings = [];
+  const metrics = createClientMetrics();
+  // Одна цепочка rAF на окно счёта: у скрытого окна кадр висит, вторую не заводим.
+  let counting = false;
+  const countFrames = () => {
+    counting = metrics.frame();
+    if (counting) {
+      requestAnimationFrame(countFrames);
+    }
+  };
+  const startProbes = () => {
+    setInterval(() => metrics.loopTick(), LOOP_PROBE_INTERVAL);
+    document.addEventListener('visibilitychange', () =>
+      metrics.noteVisibility(document.hidden),
+    );
+  };
   const sendPing = () => {
     for (let i = 0; i < PING_QUEUE_SIZE; i++) {
       const ping = pings[i];
@@ -26,14 +43,23 @@ export const pingMiddleware = store => {
     pings[index] = ping;
     sendMessage({
       type: 'ping',
-      payload: { index },
+      payload: {
+        index,
+        metrics: metrics.take(document.hidden, chatRenderer.visibleMessages.length),
+      },
     });
+    metrics.startFrames();
+    if (!counting) {
+      counting = true;
+      requestAnimationFrame(countFrames);
+    }
     index = (index + 1) % PING_QUEUE_SIZE;
   };
   return next => action => {
     const { type, payload } = action;
     if (!initialized) {
       initialized = true;
+      startProbes();
       interval = setInterval(sendPing, PING_INTERVAL);
       sendPing();
     }
@@ -50,6 +76,7 @@ export const pingMiddleware = store => {
       if (!ping) {
         return;
       }
+      metrics.noteRoundtrip(Date.now() - ping.sentAt);
       pings[index] = null;
       return next(pingSuccess(ping));
     }

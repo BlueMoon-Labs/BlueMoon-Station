@@ -500,7 +500,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 
 /obj/machinery/airalarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Unlock" : "Lock")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Разблокировать" : "Заблокировать")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/airalarm/Destroy()
@@ -1052,7 +1052,6 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 
 /obj/machinery/airalarm/update_overlays()
 	. = ..()
-	SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 	var/overlay_state = AALARM_OVERLAY_OFF
 	var/area/our_area = get_base_area(src)
 	switch(max(danger_level, !!our_area.active_alarms[ALARM_ATMOS]))
@@ -1066,14 +1065,13 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 			overlay_state = AALARM_OVERLAY_DANGER
 			light_color = LIGHT_COLOR_RED
 
+	. += overlay_state
 	if(overlay_state != AALARM_OVERLAY_OFF)
-		. += overlay_state
+		. += emissive_appearance(icon, overlay_state, offset_spokesman = src)
 		set_light(brightness_on)
 	else
 		set_light(0)
 
-	SSvis_overlays.add_vis_overlay(src, icon, overlay_state, layer, plane, dir)
-	SSvis_overlays.add_vis_overlay(src, icon, overlay_state, EMISSIVE_LAYER, EMISSIVE_PLANE, dir)
 	update_light()
 
 /obj/machinery/airalarm/process()

@@ -93,7 +93,7 @@
 /obj/item/gun/energy/examine(mob/user)
 	. = ..()
 	if(!right_click_overridden)
-		. += "<span class='notice'>Right click in combat mode to switch modes.</span>"
+		. += "<span class='notice'>ПКМ - переключить режим.</span>"
 
 /obj/item/gun/energy/process()
 	if(selfcharge && cell?.charge < cell.maxcharge)
