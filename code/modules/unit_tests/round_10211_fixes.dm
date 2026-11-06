@@ -99,7 +99,7 @@
 	legacy.cd = "/"
 	WRITE_FILE(legacy["ooccolor"], "#ffffff")
 	legacy = null
-	sleep(1)
+	sleep(0.1 SECONDS)
 	TEST_ASSERT(fexists(legacy_path), "предпосылка: savefile не создан")
 
 	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(METADOLLAR_PROBE_CKEY, recover = TRUE), 0, "баланс без ключа в .sav не ноль")

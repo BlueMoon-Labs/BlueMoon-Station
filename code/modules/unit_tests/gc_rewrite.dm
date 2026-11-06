@@ -217,6 +217,8 @@
 		SSgarbage.fail_counts[i] = 0
 		SSgarbage.peak_queue_depths[i] = 0
 	SSgarbage.deferred_harddels = list()
+	SSgarbage.harddels_deferred = 0
+	SSgarbage.harddels_avoided = 0
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
