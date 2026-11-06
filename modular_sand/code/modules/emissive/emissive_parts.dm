@@ -35,6 +35,7 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 /// дополнительные пиксели в bound_icon персонажа, а полное зеркалирование всех оверлеев
 /// (как было в откаченном коммите 2ddd290) упиралось в лимит клиента и давало ERROR-спрайт.
 GLOBAL_LIST_INIT(emissive_blocked_layers, list(
+	BODYPARTS_LAYER, BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_ADJ_UPPER_LAYER, BODY_FRONT_LAYER, HORNS_LAYER,
 	HAIR_LAYER, HEAD_LAYER, FACEMASK_LAYER, GLASSES_LAYER, NECK_LAYER,
 	UNIFORM_LAYER, DRESS_LAYER, SHIRT_LAYER, SHOES_LAYER,
 	UNDERWEAR_LAYER, SOCKS_LAYER, GLOVES_LAYER, SUIT_LAYER, BELT_LAYER, BACK_LAYER

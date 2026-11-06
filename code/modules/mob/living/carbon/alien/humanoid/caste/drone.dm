@@ -6,6 +6,7 @@
 	icon = 'icons/Xeno/castes/drone.dmi'
 	icon_state = "Drone Walking"
 	meleeKnockdownPower = 80
+	pixel_x = -11
 
 /mob/living/carbon/alien/humanoid/drone/maid
 	name = "Xeno Maid"

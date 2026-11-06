@@ -4,7 +4,7 @@
 	icon_state = "durand"
 	movedelay = 4
 	dir_in = 1 //Facing North.
-	max_integrity = 500
+	max_integrity = 400
 	deflect_chance = 30
 	armor_type = /datum/armor/durand_and_marauder
 	max_temperature = 50000
