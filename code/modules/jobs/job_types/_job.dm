@@ -320,7 +320,11 @@
 		if(J.title in GLOB.command_positions)
 			H.real_name = J.title
 		else
-			H.real_name = "[J.title] #[rand(10000, 99999)]"
+			// Preferences already generated the character's five-digit number.
+			var/character_number = copytext(H.real_name, -5)
+			H.real_name = "[J.title] #[character_number]"
+		H.name = H.real_name
+		H.dna.unique_enzymes = H.dna.generate_unique_enzymes()
 
 	var/obj/item/card/id/C = H.wear_id
 	if(J && istype(C) && C.bank_support)
