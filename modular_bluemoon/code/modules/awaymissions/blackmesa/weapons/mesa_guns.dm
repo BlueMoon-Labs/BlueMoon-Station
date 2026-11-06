@@ -1128,7 +1128,7 @@
 
 /obj/item/storage/box/basedgrunt/PopulateContents()
 	new /obj/item/ammo_box/magazine/mp5(src)
-	new /obj/item/gun/ballistic/automatic/mp10(src)
+	new /obj/item/gun/ballistic/automatic/mp5/mp10(src)
 	new /obj/item/ammo_box/magazine/mp5(src)
 
 
