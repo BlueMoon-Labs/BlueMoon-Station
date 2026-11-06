@@ -426,8 +426,14 @@
 /mob/living/carbon/set_plane_offset(new_offset)
 	. = ..()
 	update_body()
+	var/emissive_plane = GET_NEW_PLANE(EMISSIVE_PLANE, new_offset)
 	for(var/cache_index in GLOB.emissive_blocked_layers)
-		if(!overlays_emissive_blockers[cache_index])
+		var/list/blockers = overlays_emissive_blockers[cache_index]
+		if(!blockers)
+			continue
+		var/mutable_appearance/first_blocker = blockers[1]
+		// Уже обновлённый блокер тела стоит перед свечением своего слоя.
+		if(first_blocker.plane == emissive_plane)
 			continue
 		refresh_emissive_blockers(cache_index)
 		if(overlays_emissive_blockers[cache_index])
