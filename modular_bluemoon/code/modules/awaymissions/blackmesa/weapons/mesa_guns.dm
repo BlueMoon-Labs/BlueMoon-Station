@@ -165,7 +165,7 @@
 	var/progressive_spread_enabled = TRUE
 	var/progressive_spread_step = 1.5
 	var/progressive_spread_max = 36
-	var/progressive_spread_reset_delay = 3
+	var/progressive_spread_reset_delay = 3 SECONDS
 	var/progressive_spread_current = 0
 	var/progressive_spread_last_shot = 0
 
@@ -1123,12 +1123,12 @@
 	return grunt_item_list
 
 /obj/item/storage/box/basedgrunt
-	name = "MP5 machinegun kit"
+	name = "MP10 machinegun kit"
 
 
 /obj/item/storage/box/basedgrunt/PopulateContents()
 	new /obj/item/ammo_box/magazine/mp5(src)
-	new /obj/item/gun/ballistic/automatic/mp5(src)
+	new /obj/item/gun/ballistic/automatic/mp10(src)
 	new /obj/item/ammo_box/magazine/mp5(src)
 
 
@@ -1141,15 +1141,6 @@
 	new /obj/item/ammo_box/magazine/scar(src)
 	new /obj/item/ammo_box/magazine/scar(src)
 	new /obj/item/binoculars(src)
-
-/obj/item/storage/box/basedgrunt/rapidgrunt
-	name = "p90 machinegun kit"
-
-/obj/item/storage/box/basedgrunt/rapidgrunt/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/p90(src)
-	new /obj/item/ammo_box/magazine/p90(src)
-	new /obj/item/ammo_box/magazine/p90(src)
-	new /obj/item/ammo_box/magazine/p90(src)
 
 //breacher
 
@@ -1168,20 +1159,20 @@
 	return breacher_item_list
 
 /obj/item/storage/box/basedbreacher
-	name = "SPAS 12 crowd control kit"
+	name = "AA12 kit"
 
 /obj/item/storage/box/basedbreacher/PopulateContents()
-	new /obj/item/gun/ballistic/shotgun/spas(src)
-	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
-
+	new /obj/item/gun/ballistic/automatic/shotgun/aa12/hl(src)
+	new /obj/item/ammo_box/magazine/m12g/aa12(src)
+	new /obj/item/ammo_box/magazine/m12g/aa12(src)
 
 /obj/item/storage/box/basedbreacher/m870
-	name = "m870 breacher kit"
+	name = "Pancor Jackhammer kit"
 
 /obj/item/storage/box/basedbreacher/m870/PopulateContents()
-	new /obj/item/gun/ballistic/shotgun/m870(src)
-	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
-	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
+	new /obj/item/gun/ballistic/automatic/shotgun/pancor(src)
+	new /obj/item/ammo_box/magazine/m12g/pancor(src)
+	new /obj/item/ammo_box/magazine/m12g/pancor(src)
 	new /obj/item/grenade/plastic/c4(src)
 
 //medic
@@ -1210,12 +1201,12 @@
 	new /obj/item/storage/firstaid/emergency(src)
 
 /obj/item/storage/box/basedmedic/mp7
-	name = "mp7 and toxin treatment kit"
+	name = "mp5 and toxin treatment kit"
 
 /obj/item/storage/box/basedmedic/mp7/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/mp7(src)
-	new /obj/item/ammo_box/magazine/mp7(src)
-	new /obj/item/ammo_box/magazine/mp7(src)
+	new /obj/item/gun/ballistic/automatic/mp5(src)
+	new /obj/item/ammo_box/magazine/mp5(src)
+	new /obj/item/ammo_box/magazine/mp5(src)
 	new /obj/item/storage/firstaid/toxin(src)
 
 /obj/item/storage/box/basedmedic/medbeam

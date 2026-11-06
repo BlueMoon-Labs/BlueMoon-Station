@@ -133,6 +133,8 @@
 				knockback_dir = user ? user.dir : dir
 			var/throw_target = get_edge_target_turf(victim, knockback_dir)
 			victim.safe_throw_at(throw_target, rand(2, 3), 1, user)
+			if(istype(pbtarget, /mob/living))
+				victim.Knockdown(20)
 	if(mesa_shotgun_bonus && pbtarget && !ismob(pbtarget))
 		var/turf/target_turf = get_turf(pbtarget)
 		if(target_turf)
@@ -141,9 +143,6 @@
 				if(!movable_target.anchored)
 					var/throw_dir = get_dir(user, movable_target) || (user ? user.dir : dir)
 					movable_target.safe_throw_at(get_edge_target_turf(movable_target, throw_dir), 2, 1, user)
-					if(ismob(movable_target))
-						var/mob/living/victim = movable_target
-						victim.Knockdown(20)
 	if(has_dynamic_sounds && dynamic_sound_datum)
 		if(recoil && !zoomed && user && pbtarget)
 			directional_recoil(user, recoil*dir_recoil_amp, Get_Angle(user, pbtarget))

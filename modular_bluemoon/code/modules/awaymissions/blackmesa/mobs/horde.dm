@@ -230,12 +230,13 @@
 	if(speak && speak.len && prob(30))
 		playsound(src, pick(speak), 70, TRUE)
 
-/mob/living/simple_animal/hostile/infected/AttackingTarget(atom/target)
+/mob/living/simple_animal/hostile/infected/AttackingTarget()
+	var/atom/attack_target = target
 	. = ..()
-	if(!target)
+	if(!attack_target || QDELETED(attack_target))
 		return
-	if(isliving(target))
-		var/mob/living/L = target
+	if(isliving(attack_target))
+		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/infected_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/infected_slow), 5 SECONDS)
@@ -296,12 +297,13 @@
 	bare_wound_bonus = 0
 	sharpness = SHARP_NONE // Prevent cutting wounds
 
-/mob/living/simple_animal/hostile/infected/bruiser/AttackingTarget(atom/target)
+/mob/living/simple_animal/hostile/infected/bruiser/AttackingTarget()
+	var/atom/attack_target = target
 	. = ..()
-	if(!target)
+	if(!attack_target || QDELETED(attack_target))
 		return
-	if(isliving(target))
-		var/mob/living/L = target
+	if(isliving(attack_target))
+		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
@@ -361,12 +363,13 @@
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
 
-/mob/living/simple_animal/hostile/infected/acid_spitter/AttackingTarget(atom/target)
+/mob/living/simple_animal/hostile/infected/acid_spitter/AttackingTarget()
+	var/atom/attack_target = target
 	. = ..()
-	if(!target)
+	if(!attack_target || QDELETED(attack_target))
 		return
-	if(isliving(target))
-		var/mob/living/L = target
+	if(isliving(attack_target))
+		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
@@ -773,12 +776,13 @@
 
 	return ..()
 
-/mob/living/simple_animal/hostile/infected/hunter/AttackingTarget(atom/target)
+/mob/living/simple_animal/hostile/infected/hunter/AttackingTarget()
+	var/atom/attack_target = target
 	. = ..()
-	if(!target)
+	if(!attack_target || QDELETED(attack_target))
 		return
-	if(isliving(target))
-		var/mob/living/L = target
+	if(isliving(attack_target))
+		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)

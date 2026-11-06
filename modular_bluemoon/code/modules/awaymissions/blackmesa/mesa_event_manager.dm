@@ -258,39 +258,24 @@ SUBSYSTEM_DEF(blackmesa_events)
 	target.mind.announce_objectives()
 
 /datum/controller/subsystem/blackmesa_events/proc/spawn_conflict_ghost_roles(spawner_type, landmark_type, amount, notify_header)
-	var/list/spawn_turfs = list()
+	var/list/spawn_landmarks = list()
 	for(var/obj/effect/landmark/awaymission/blackmesa/landmark in GLOB.landmarks_list)
 		if(!istype(landmark, landmark_type))
 			continue
-		var/turf/anchor = get_turf(landmark)
-		if(!anchor)
-			continue
-		var/list/candidate_turfs = list(anchor)
-		candidate_turfs += RANGE_TURFS(4, anchor)
-		for(var/turf/spawn_turf in candidate_turfs)
-			if(!istype(spawn_turf, /turf/open) || is_blocked_turf(spawn_turf))
-				continue
-			if(!istype(get_area(spawn_turf), /area/awaymission/ihategordon))
-				continue
-			if(spawn_turf in spawn_turfs)
-				continue
-			var/has_spawner = FALSE
-			for(var/obj/effect/mob_spawn/human/black_mesa/existing_spawner in spawn_turf)
-				has_spawner = TRUE
-				break
-			if(!has_spawner)
-				spawn_turfs += spawn_turf
+		if(istype(get_area(landmark), /area/awaymission/ihategordon))
+			spawn_landmarks += landmark
 
-	if(!length(spawn_turfs))
-		stack_trace("No valid spawn turfs for Black Mesa ghost role [spawner_type] at landmark [landmark_type].")
+	if(!length(spawn_landmarks))
+		stack_trace("No valid Black Mesa landmarks for ghost role [spawner_type] at landmark [landmark_type].")
 		return 0
 
 	var/spawned_count = 0
 	for(var/i in 1 to amount)
-		if(!length(spawn_turfs))
-			break
-		var/turf/spawn_turf = pick(spawn_turfs)
-		spawn_turfs -= spawn_turf
+		var/obj/effect/landmark/awaymission/blackmesa/spawn_landmark = spawn_landmarks[((i - 1) % length(spawn_landmarks)) + 1]
+		var/turf/spawn_turf = get_turf(spawn_landmark)
+		if(!spawn_turf)
+			stack_trace("Black Mesa ghost role landmark [spawn_landmark] has no turf.")
+			continue
 		var/obj/effect/mob_spawn/human/black_mesa/spawner = new spawner_type(spawn_turf)
 		if(!spawner)
 			continue
