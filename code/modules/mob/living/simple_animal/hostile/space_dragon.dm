@@ -437,6 +437,8 @@
 	riftTimer = -1
 	tiredness_mult = 5
 	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 100, TRUE)
+	if(rift_list.len)
+		priority_announce("Зафиксировано уничтожение всех межпространственных разломов, созданных космическим драконом. Существо значительно ослабло.", "Отдел ЦК по наблюдению за дикой природой")
 	for(var/obj/structure/carp_rift/rift in rift_list)
 		rift.dragon = null
 		rift_list -= rift
