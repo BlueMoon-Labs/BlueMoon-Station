@@ -10,7 +10,8 @@
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
 	if(prob(25) && bm_traitor_violence_tier() == BM_TRAITOR_VIOLENCE_FULL)
-		return add_targeted_objective(T, new /datum/objective/assassinate/internal)
+		if(add_targeted_objective(T, new /datum/objective/assassinate/internal))
+			return TRUE
 	return add_targeted_objective(T, new /datum/objective/assassinate/once)
 
 /datum/traitor_class/human/subterfuge/forge_single_objective(datum/antagonist/traitor/T)
