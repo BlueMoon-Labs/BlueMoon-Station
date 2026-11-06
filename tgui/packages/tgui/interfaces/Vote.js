@@ -441,7 +441,7 @@ const ChoicesPanel = (props) => {
 
 // Строка варианта: длинный текст переносится, голоса остаются справа
 const ChoiceButton = (props) => {
-  const { selected, lead, leadWidth = '1.6em', side, tooltip, onClick, children } = props;
+  const { selected, lead, leadWidth = '1.6em', side, fill, fillColor, tooltip, onClick, children } = props;
   return (
     <Button
       fluid
@@ -450,9 +450,22 @@ const ChoiceButton = (props) => {
       py={0.4}
       selected={selected}
       tooltip={tooltip}
-      style={{ whiteSpace: 'normal' }}
+      style={{ whiteSpace: 'normal', position: 'relative', overflow: 'hidden' }}
       onClick={onClick}>
-      <Stack align="center">
+      {fill > 0 && (
+        <Box
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            height: '3px',
+            width: `${fill}%`,
+            background: fillColor,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      <Stack align="center" style={{ position: 'relative' }}>
         <Stack.Item width={leadWidth} textAlign="center" style={{ flexShrink: 0 }}>
           {lead}
         </Stack.Item>
@@ -495,24 +508,17 @@ const ChoiceRow = (props) => {
   );
 
   return (
-    <Box mb={1}>
+    <Box mb={0.5}>
       <ChoiceButton
         selected={mine}
         lead={<Icon name={icon} />}
         side={side}
+        fill={percent}
+        fillColor={mine ? '#b6f08c' : isLeader ? '#7fc4ff' : 'rgba(255, 255, 255, 0.45)'}
         tooltip={mine && !multi ? 'Ваш голос' : null}
         onClick={() => act('vote', { index: choice.id })}>
         <Box bold={mine}>{choiceLabel(choice.name)}</Box>
       </ChoiceButton>
-      {!hidden && (
-        <ProgressBar
-          mt={0.25}
-          height="0.5em"
-          value={percent / 100}
-          color={mine ? 'good' : isLeader ? 'blue' : 'grey'}>
-          {' '}
-        </ProgressBar>
-      )}
     </Box>
   );
 };
@@ -526,7 +532,7 @@ const RankedChoices = (props) => {
   return (
     <>
       {[...ranked, ...unranked].map((choice) => (
-        <Box key={choice.id} mb={0.75}>
+        <Box key={choice.id} mb={0.5}>
           <ChoiceButton
             selected={choice.user_rank > 0}
             leadWidth="2.2em"
