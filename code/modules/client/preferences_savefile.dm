@@ -2842,6 +2842,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
+	if(!export && length(pending_single_prefs))
+		S.cd = "/"
+		var/root_version
+		READ_FILE(S["version"], root_version)
+		if(isnum(root_version) && root_version >= SAVEFILE_VERSION_MAX)
+			write_pending_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
 		character_setup_ui?.record_saved_state()

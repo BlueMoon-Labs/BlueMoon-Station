@@ -200,6 +200,32 @@
 	TEST_ASSERT_EQUAL(written_theme, "dark", "ключ, положенный в буфер первым, не доехал до диска")
 	TEST_ASSERT_EQUAL(written_state, "{\"v\":7}", "ключ, положенный в буфер последним, не доехал до диска")
 
+/// Запись персонажа открывает тот же файл и забирает буфер в корень; экспорт буфер не трогает.
+/datum/unit_test/preferences_save_character_flushes_single_prefs
+
+/datum/unit_test/preferences_save_character_flushes_single_prefs/Run()
+	var/datum/preferences/prefs = new
+	prefs.load_path("unit_test_save_character_single_prefs")
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 42, lazy = TRUE)
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE, update_active_preset = FALSE)
+	var/kept_on_export = LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool")
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	var/leftover_keys = length(prefs.pending_single_prefs)
+
+	var/savefile/readback = new /savefile(prefs.path)
+	readback.cd = "/"
+	var/written_pool
+	READ_FILE(readback["metadollar_minute_pool"], written_pool)
+	readback = null
+	fdel(prefs.path)
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(kept_on_export, 42, "экспорт персонажа забрал буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(leftover_keys, 0, "запись персонажа не забрала буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(written_pool, 42, "ленивый ключ не доехал до диска с записью персонажа")
+
 /// Настройка, положенная через буфер, обязана лечь в savefile так же, как её кладёт
 /// полная запись, и пережить следующую полную запись.
 /datum/unit_test/preferences_single_pref_var_matches_full_save
