@@ -201,10 +201,8 @@
 
 	if(wear_neck)
 		if(!(head && (head.flags_inv & HIDENECK)))
-			var/chosen_icon = 'icons/mob/clothing/neck.dmi'
-			if(dna.species.icon_neck)
-				chosen_icon = dna.species.icon_neck
-			overlays_standing[NECK_LAYER] = wear_neck.build_worn_icon(default_layer = NECK_LAYER, default_icon_file = chosen_icon, override_state = wear_neck.icon_state)
+			var/chosen_icon = dna.species.species_worn_icon(dna.species.icon_neck, wear_neck.icon_state) || wear_neck.mob_overlay_icon || 'icons/mob/clothing/neck.dmi'
+			overlays_standing[NECK_LAYER] = wear_neck.build_worn_icon(default_layer = NECK_LAYER, default_icon_file = chosen_icon, override_state = wear_neck.icon_state, use_mob_overlay_icon = FALSE)
 		update_hud_neck(wear_neck)
 
 	apply_overlay(NECK_LAYER)
@@ -217,10 +215,8 @@
 		inv?.update_icon()
 
 	if(back)
-		var/chosen_icon = 'icons/mob/clothing/back.dmi'
-		if(dna.species.icon_back)
-			chosen_icon = dna.species.icon_back
-		overlays_standing[BACK_LAYER] = back.build_worn_icon(default_layer = BACK_LAYER, default_icon_file = chosen_icon, override_state = back.icon_state)
+		var/chosen_icon = dna.species.species_worn_icon(dna.species.icon_back, back.icon_state) || back.mob_overlay_icon || 'icons/mob/clothing/back.dmi'
+		overlays_standing[BACK_LAYER] = back.build_worn_icon(default_layer = BACK_LAYER, default_icon_file = chosen_icon, override_state = back.icon_state, use_mob_overlay_icon = FALSE)
 		update_hud_back(back)
 
 	apply_overlay(BACK_LAYER)
@@ -426,8 +422,14 @@
 /mob/living/carbon/set_plane_offset(new_offset)
 	. = ..()
 	update_body()
+	var/emissive_plane = GET_NEW_PLANE(EMISSIVE_PLANE, new_offset)
 	for(var/cache_index in GLOB.emissive_blocked_layers)
-		if(!overlays_emissive_blockers[cache_index])
+		var/list/blockers = overlays_emissive_blockers[cache_index]
+		if(!blockers)
+			continue
+		var/mutable_appearance/first_blocker = blockers[1]
+		// Уже обновлённый блокер тела стоит перед свечением своего слоя.
+		if(first_blocker.plane == emissive_plane)
 			continue
 		refresh_emissive_blockers(cache_index)
 		if(overlays_emissive_blockers[cache_index])

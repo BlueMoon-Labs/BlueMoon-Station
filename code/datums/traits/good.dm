@@ -208,10 +208,13 @@
 	gain_text = "<span class='notice'>Тени кажутся светлее.</span>"
 	lose_text = "<span class='danger'>Всё кажется чуточку темнее.</span>"
 
-/datum/quirk/night_vision/post_add() //BLUEMOON EDIT
-	. = ..()						 //BLUEMOON ADD
-	var/mob/living/carbon/human/H = quirk_holder
-	H.update_sight()
+/datum/quirk/night_vision/add()
+	. = ..()
+	quirk_holder.update_sight()
+
+/datum/quirk/night_vision/on_transfer()
+	. = ..()
+	quirk_holder.update_sight()
 
 /datum/quirk/night_vision/remove()
 	. = ..()
