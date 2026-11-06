@@ -56,12 +56,22 @@
 	var/safe_link = html_encode(link)
 	return "<img class='[css_class]' src='[safe_link]' referrerpolicy='no-referrer'>"
 
-/// Краткий флавор карточки без разрыва HTML-сущностей при обрезке.
 /proc/examine_flavor_preview(flavor, max_length = 44)
 	if(!length(flavor))
 		return ""
-	// В хранилище текст уже закодирован (&#39; и т.п.): декодируем до обрезки, чтобы не порвать сущность, и кодируем обратно
-	flavor = trim(replacetext(html_decode(flavor), "\n", " "))
+	// Используем правила полного профиля, но оставляем только видимый текст.
+	flavor = parsemarkdown_basic(html_encode(html_decode(flavor)), hyperlink = FALSE)
+	var/static/regex/block_tags = regex(@"</?(center|h[2-5]|ul|li)\b[^>]*>|<hr\s*/?>", "gi")
+	flavor = replacetext(flavor, block_tags, " ")
+	flavor = html_decode(strip_html_tags(flavor))
+	// Парсер сохраняет ! буквально; в подсказке настроек это маркер жирного текста.
+	var/static/regex/bold_markers = regex(@"(?<!\\)!([^!\r\n]+)(?<!\\)!", "g")
+	flavor = replacetext(flavor, bold_markers, "$1")
+	var/static/regex/escaped_markers = regex(@"\\([!()])", "g")
+	flavor = replacetext(flavor, escaped_markers, "$1")
+	var/static/regex/whitespace = regex(@"\s+", "g")
+	flavor = sanitize_simple(flavor, list("\n" = " ", ascii2text(13) = " ", "\t" = " "))
+	flavor = trim(replacetext(flavor, whitespace, " "))
 	if(!length(flavor))
 		return ""
 	var/preview = copytext_char(flavor, 1, max_length + 1)

@@ -332,7 +332,7 @@
 				return
 			var/list/med_choices = GLOB.med_record_status_ph + list("Отменить")
 			var/setmedical = input(usr, "Уточните новый статус пациента", "Мед-HUD", R.fields["p_stat"]) in med_choices
-			if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC) && setmedical != "Отменить")
+			if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC) && !usr.incapacitated() && setmedical != "Отменить")
 				R.fields["p_stat"] = setmedical
 				sec_hud_set_security_status()
 
@@ -348,7 +348,7 @@
 				return
 			var/list/med_choices = GLOB.med_record_status_m + list("Отменить")
 			var/setmental = input(usr, "Уточните псих. статус данной личности.", "Мед-HUD", R.fields["m_stat"]) in med_choices
-			if(has_medical_examine_hud(usr) && setmental != "Отменить")
+			if(has_medical_examine_hud(usr) && !usr.incapacitated() && setmental != "Отменить")
 				R.fields["m_stat"] = setmental
 
 	if(href_list["medrecord"])
