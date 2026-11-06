@@ -579,6 +579,7 @@
 #include "vending_product_enumeration.dm"
 #include "vending_stock_keys.dm"
 #include "verb_manager.dm"
+#include "verb_proc_ids.dm"
 #include "viewport_fit_queue.dm"
 // #include "wizard.dm"
 
