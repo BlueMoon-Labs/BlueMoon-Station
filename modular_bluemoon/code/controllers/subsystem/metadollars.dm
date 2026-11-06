@@ -116,8 +116,6 @@ SUBSYSTEM_DEF(metadollars)
 	if(!isnum(legacy) || legacy < 0)
 		legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
 	legacy = max(0, round(legacy))
-	if(legacy <= 0)
-		return FALSE
 	var/current = 0
 	if(target_ckey in metadollar_amount_cache)
 		current = metadollar_amount_cache[target_ckey]
@@ -125,10 +123,11 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(file(bm_metadollar_json_path(target_ckey))))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			current = max(0, round(loaded["metadollar_count"]))
+	// Нулевой баланс тоже завершает перенос: иначе лидерборд каждый раунд открывает старые .sav игрока.
+	metadollar_amount_cache[target_ckey] = max(current, legacy)
+	metadollar_save(target_ckey)
 	if(legacy <= current)
 		return FALSE
-	metadollar_amount_cache[target_ckey] = legacy
-	metadollar_save(target_ckey)
 	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
 	return TRUE
 
@@ -212,7 +211,7 @@ SUBSYSTEM_DEF(metadollars)
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			return max(0, round(loaded["metadollar_count"]))
 	var/legacy = max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
-	if(recover && legacy > 0 && reconcile_legacy_balance(target_ckey, legacy))
+	if(recover && reconcile_legacy_balance(target_ckey, legacy))
 		legacy_balances_recovered++
 	return legacy
 
