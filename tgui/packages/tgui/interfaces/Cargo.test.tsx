@@ -437,6 +437,30 @@ test('аукцион без лота: когда следующий и итог�
   expect(ui.getByText('наша станция: Иван Петров, 2 600 кр.')).toBeTruthy();
 });
 
+test('скупка: пачка только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
+  const ui = setup({
+    bundles: [
+      {
+        uid: 9,
+        partner: 'Вей-Мед',
+        partner_id: 'vey_med',
+        items: ['бинт', 'шина', 'пакет крови', 'скальпель'],
+        full_value: 2000,
+        price: 1400,
+        discount: 30,
+        left: 600,
+      },
+    ],
+  });
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('4 предметов, только вместе')).toBeTruthy();
+  expect(ui.getByText('· пакет крови')).toBeTruthy();
+  expect(ui.getByText('1 400 кр.')).toBeTruthy();
+  expect(ui.getByText('ещё 10:00')).toBeTruthy();
+  fireEvent.click(ui.getByText('Купить пачкой'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
 test('счётчики дел видны в навигации', () => {
   const ui = setup();
   expect(ui.getByText('Заявки')).toBeTruthy();

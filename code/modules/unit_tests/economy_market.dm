@@ -52,6 +52,8 @@
 		"next_auction_at" = SSmarket.next_auction_at,
 		"auction_results" = SSmarket.auction_results,
 		"auction_drop_turf" = SSmarket.auction_drop_turf,
+		"bundles" = SSmarket.bundles,
+		"next_bundle_at" = SSmarket.next_bundle_at,
 	)
 	var/datum/news/feed_channel/channel = SSmarket.news_channel()
 	.["news_messages"] = channel.messages.Copy()
@@ -76,6 +78,8 @@
 	SSmarket.next_auction_at = world.time + 1 HOURS
 	SSmarket.auction_results = list()
 	SSmarket.auction_drop_turf = null
+	SSmarket.bundles = list()
+	SSmarket.next_bundle_at = world.time + 1 HOURS
 	SSmarket.load_settings(SSeconomy.settings.raw?["market"])
 
 /proc/econ_test_restore_market(list/saved)

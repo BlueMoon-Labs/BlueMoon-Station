@@ -110,6 +110,18 @@
 #define AUCTION_RIVAL_HURRY_MAX (15 SECONDS)
 #define AUCTION_HISTORY_MAX 6
 #define AUCTION_RESULTS_MAX 3
+/// Скупка: пачки разных предметов партнёра только целиком, со скидкой к сумме по отдельности
+#define BUNDLE_GROUP "Скупка"
+#define BUNDLES_MAX 3
+#define BUNDLE_ITEMS_MIN 4
+#define BUNDLE_ITEMS_MAX 6
+#define BUNDLE_DISCOUNT_MIN 20
+#define BUNDLE_DISCOUNT_MAX 35
+#define BUNDLE_LIFETIME (20 MINUTES)
+#define BUNDLE_GAP_MIN (8 MINUTES)
+#define BUNDLE_GAP_MAX (15 MINUTES)
+/// Предметы для пачки берутся из паков не больше чем на столько вещей: из больших наборов цена одной вещи слишком мала
+#define BUNDLE_SOURCE_PACK_MAX 12
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
 #define WORK_SRV_DISH "srv_dish"

@@ -136,6 +136,17 @@ type AuctionLot = {
   history: { who: string; amount: number }[];
 };
 
+type BundleOffer = {
+  uid: number;
+  partner: string;
+  partner_id: string;
+  items: string[];
+  full_value: number;
+  price: number;
+  discount: number;
+  left: number;
+};
+
 type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
 
 type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
@@ -177,6 +188,7 @@ type CargoData = {
   partners?: Partner[];
   contracts?: ContractEntry[];
   auction?: AuctionLot | null;
+  bundles?: BundleOffer[];
   auction_next?: number;
   auction_results?: AuctionResult[];
   my_balance?: number | null;
@@ -227,7 +239,7 @@ export const Cargo = (props) => {
   );
 };
 
-type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'auction' | 'market' | 'partners' | 'contracts' | 'help';
+type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'bundles' | 'auction' | 'market' | 'partners' | 'contracts' | 'help';
 
 export const CargoContent = (props) => {
   const { data } = useBackend<CargoData>();
@@ -243,6 +255,7 @@ export const CargoContent = (props) => {
     { key: 'requests', label: 'Заявки', count: requests.length },
     { key: 'departments', label: 'Заказы отделов', count: departmentOrders.length },
     { key: 'offers', label: 'Спецзаказы', count: offers.length },
+    { key: 'bundles', label: 'Скупка', count: (data.bundles || []).length },
     { key: 'auction', label: data.auction ? 'Аукцион ●' : 'Аукцион' },
     { key: 'market', label: 'Рынок' },
     { key: 'partners', label: 'Партнёры' },
@@ -289,6 +302,7 @@ export const CargoContent = (props) => {
       {page === 'requests' && <CargoRequests />}
       {page === 'departments' && <DepartmentOrders />}
       {page === 'offers' && <SpecialOffers />}
+      {page === 'bundles' && <Bundles />}
       {page === 'auction' && <Auction />}
       {page === 'market' && <Market />}
       {page === 'partners' && <Partners />}
@@ -949,6 +963,60 @@ const SpecialOffers = (props) => {
           </Stack.Item>
         ))}
       </Stack>
+    </NtFrame>
+  );
+};
+
+const Bundles = (props) => {
+  const { act, data } = useBackend<CargoData>();
+  const bundles = data.bundles || [];
+  const { self_paid, private_markup = 1, requestonly, can_send } = data;
+  const forCargo = !!can_send && !requestonly;
+  return (
+    <NtFrame
+      title="Скупка"
+      buttons={
+        <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
+          Купить лично
+        </Button.Checkbox>
+      }>
+      <Box className="NtTerm__hint" mb={1.5}>
+        Партнёры распродают пачки разных предметов дешевле, чем по отдельности, - но только целиком. Взятая пачка уходит
+        в корзину и из скупки пропадает.
+        {!forCargo && ' За бюджет снабжения скупку берёт снабжение с консоли; вы можете купить пачку лично.'}
+      </Box>
+      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Новые пачки появляются раз в 8-15 минут.</NtEmpty>}
+      {bundles.map((bundle) => {
+        const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
+        const canBuy = !!self_paid || forCargo;
+        return (
+          <Box key={bundle.uid} className="NtTerm__contract">
+            <Box className="NtTerm__contractMain">
+              <Box className="NtTerm__contractTitle">
+                <span className="NtTerm__tag NtTerm__tag--lead">{bundle.partner}</span>
+                {bundle.items.length} предметов, только вместе
+              </Box>
+              {bundle.items.map((item) => (
+                <Box key={item} className="NtTerm__hint">
+                  · {item}
+                </Box>
+              ))}
+            </Box>
+            <Box className="NtTerm__contractSide">
+              <Box className="NtTerm__hint">
+                <s>{formatCredits(bundle.full_value)}</s> −{bundle.discount}%
+              </Box>
+              <Box className="NtTerm__contractReward">{formatCredits(price)}</Box>
+              <Box className="NtTerm__hint">ещё {formatTime(bundle.left)}</Box>
+              <Box mt={0.5}>
+                <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
+                  Купить пачкой
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        );
+      })}
     </NtFrame>
   );
 };

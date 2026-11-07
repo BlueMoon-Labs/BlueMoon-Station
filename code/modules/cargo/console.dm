@@ -118,6 +118,10 @@
 	switch(action)
 		if("auction_bid")
 			. = econ_cargo_auction_bid(usr, params, src)
+		if("buy_bundle")
+			if(is_express)
+				return
+			. = econ_cargo_buy_bundle(usr, params, src, self_paid, can_send && !requestonly, shows_contraband())
 		if("print_manifest")
 			. = !!econ_print_manifest(usr, src)
 		if("accept_offer")

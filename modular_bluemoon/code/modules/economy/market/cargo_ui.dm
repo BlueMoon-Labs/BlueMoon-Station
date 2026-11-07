@@ -344,6 +344,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/list/auction = econ_auction_ui_data(econ_account_of(user))
 	for(var/key in auction)
 		data[key] = auction[key]
+	data["bundles"] = econ_bundles_ui_data()
 	data["special_offers"] = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
 		if(econ_partner_visible(offer.get_partner(), show_contraband))

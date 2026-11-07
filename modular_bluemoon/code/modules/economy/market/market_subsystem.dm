@@ -96,6 +96,7 @@ SUBSYSTEM_DEF(market)
 /datum/controller/subsystem/market/fire(resumed)
 	tick_stocks()
 	tick_auction()
+	tick_bundles()
 	if(!next_restock)
 		next_restock = world.time + partner_restock_minutes MINUTES
 	else if(world.time >= next_restock)

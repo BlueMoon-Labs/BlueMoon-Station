@@ -151,6 +151,9 @@
 
 /// Поставщик заказа: выбранный при заказе партнёр, если он ещё может везти, иначе самый дешёвый.
 /proc/econ_order_supplier(datum/supply_order/order)
+	if(istype(order.pack, /datum/supply_pack/bundle))
+		var/datum/supply_pack/bundle/bundle = order.pack
+		return SSmarket.get_partner(bundle.seller_id)
 	var/datum/trade_partner/chosen = order.partner_id ? SSmarket.get_partner(order.partner_id) : null
 	if(econ_partner_supplies(chosen, order.pack, order.contraband_supply))
 		return chosen
