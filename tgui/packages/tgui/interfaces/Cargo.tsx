@@ -1,15 +1,15 @@
 import { toArray } from 'common/collections';
 import { BooleanLike } from 'common/react';
+import { storage } from 'common/storage';
 import { createSearch } from 'common/string';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
   AnimatedNumber,
   Box,
   Button,
-  Collapsible,
-  Flex,
+  Icon,
   Input,
   LabeledList,
   NoticeBox,
@@ -34,6 +34,7 @@ type Pack = {
   can_private_buy?: BooleanLike;
   personal?: BooleanLike;
   commodity?: string | null;
+  contents?: string[];
   supplier?: string | null;
   in_stock?: BooleanLike;
 };
@@ -61,6 +62,8 @@ type CartEntry = {
   cost: number;
   orderer: string;
   paid: BooleanLike;
+  pack?: string;
+  department?: string | null;
 };
 
 type RequestRow = {
@@ -107,8 +110,17 @@ type Partner = {
   sells: string;
 };
 
+type HelpTopic = {
+  title: string;
+  icon: string;
+  lines: string[];
+};
+
+type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
+
 type CargoData = {
   location: string;
+  shuttle?: { state: ShuttleState; eta: number };
   points: number;
   away: BooleanLike;
   docked: BooleanLike;
@@ -125,9 +137,11 @@ type CargoData = {
   manifest_department?: string | null;
   manifest_fee?: number;
   market_help?: string;
+  help_topics?: HelpTopic[];
   contracts_help?: string;
   private_markup?: number;
   reason_max?: number;
+  add_max?: number;
   tier_step?: number;
   tier_max?: number;
   supplies: Record<string, SupplyGroup> | SupplyGroup[];
@@ -145,9 +159,40 @@ const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(se
 
 const canEditCart = (data: CargoData) => !!(data.can_edit_cart ?? data.can_send);
 
+/** Платит ли бюджет снабжения: не частный заказ и не оплаченный отделом. */
+const paidByCargo = (entry: CartEntry) => !entry.paid && !entry.department;
+
+const cargoTotal = (cart: CartEntry[]) => cart.filter(paidByCargo).reduce((sum, entry) => sum + entry.cost, 0);
+
+const FAVORITES_KEY = 'cargo-favorites';
+
+/** Избранные паки - у каждого игрока свои, хранятся в клиенте. */
+const useFavorites = () => {
+  const [favorites, setFavorites] = useState<string[]>([]);
+  useEffect(() => {
+    let alive = true;
+    Promise.resolve(storage.get(FAVORITES_KEY))
+      .then((saved: unknown) => {
+        if (alive && Array.isArray(saved)) {
+          setFavorites(saved.filter((id) => typeof id === 'string'));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const toggle = (id: string) => {
+    const next = favorites.includes(id) ? favorites.filter((other) => other !== id) : [...favorites, id];
+    setFavorites(next);
+    Promise.resolve(storage.set(FAVORITES_KEY, next)).catch(() => {});
+  };
+  return [favorites, toggle] as const;
+};
+
 export const Cargo = (props) => {
   return (
-    <Window width={860} height={760} resizable>
+    <Window width={1000} height={780} resizable>
       <Window.Content scrollable>
         <CargoContent />
       </Window.Content>
@@ -155,107 +200,246 @@ export const Cargo = (props) => {
   );
 };
 
+type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'market' | 'partners' | 'contracts' | 'help';
+
 export const CargoContent = (props) => {
   const { data } = useBackend<CargoData>();
-  const [tab, setTab] = useState('catalog');
-  const { requestonly, market_help } = data;
+  const [page, setPage] = useState<Page>('catalog');
+  const { requestonly } = data;
   const cart = data.cart || [];
   const requests = data.requests || [];
   const departmentOrders = data.department_requests || [];
   const offers = data.special_offers || [];
-  const tabs: [string, string, string][] = [
-    ['catalog', 'list', 'Каталог'],
-    ['requests', 'envelope', `Заявки (${requests.length})`],
-    ...(requestonly ? [] : [['cart', 'shopping-cart', `Корзина (${cart.length})`] as [string, string, string]]),
-    ['departments', 'building', `Заказы отделов (${departmentOrders.length})`],
-    ['offers', 'handshake', `Спецзаказы (${offers.length})`],
-    ['market', 'chart-line', 'Рынок'],
-    ['partners', 'users', 'Партнёры'],
-    ['contracts', 'file-signature', 'Контракты'],
+  const pages: { key: Page; icon: string; label: string; count?: number }[] = [
+    { key: 'catalog', icon: 'boxes', label: 'Каталог' },
+    ...(requestonly ? [] : [{ key: 'cart' as Page, icon: 'shopping-cart', label: 'Корзина', count: cart.length }]),
+    { key: 'requests', icon: 'envelope', label: 'Заявки', count: requests.length },
+    { key: 'departments', icon: 'building', label: 'Заказы отделов', count: departmentOrders.length },
+    { key: 'offers', icon: 'handshake', label: 'Спецзаказы', count: offers.length },
+    { key: 'market', icon: 'chart-line', label: 'Рынок' },
+    { key: 'partners', icon: 'users', label: 'Партнёры' },
+    { key: 'contracts', icon: 'file-signature', label: 'Контракты' },
+    { key: 'help', icon: 'question-circle', label: 'Справка' },
   ];
   return (
     <Box>
-      <CargoStatus />
-      {!!market_help && (
-        <Collapsible title="Как работают цены, партнёры и спецзаказы">
-          <NoticeBox info>{market_help}</NoticeBox>
-        </Collapsible>
-      )}
-      <Section fitted>
-        <Tabs>
-          {tabs.map(([key, icon, label]) => (
-            <Tabs.Tab key={key} icon={icon} selected={tab === key} onClick={() => setTab(key)}>
-              {label}
-            </Tabs.Tab>
-          ))}
-        </Tabs>
-      </Section>
-      {tab === 'catalog' && <CargoCatalog />}
-      {tab === 'requests' && <CargoRequests />}
-      {tab === 'cart' && <CargoCart />}
-      {tab === 'departments' && <DepartmentOrders />}
-      {tab === 'offers' && <SpecialOffers />}
-      {tab === 'market' && <Market />}
-      {tab === 'partners' && <Partners />}
-      {tab === 'contracts' && <Contracts />}
+      <CargoStatus onOpenCart={() => setPage('cart')} />
+      <Stack>
+        <Stack.Item basis="190px" shrink={0}>
+          <Section fill>
+            <Tabs vertical>
+              {pages.map((entry) => (
+                <Tabs.Tab key={entry.key} icon={entry.icon} selected={page === entry.key} onClick={() => setPage(entry.key)}>
+                  <Stack align="center">
+                    <Stack.Item grow>{entry.label}</Stack.Item>
+                    {!!entry.count && (
+                      <Stack.Item>
+                        <Box className="Cargo__badge" px={0.75} color={page === entry.key ? undefined : 'average'} bold>
+                          {entry.count}
+                        </Box>
+                      </Stack.Item>
+                    )}
+                  </Stack>
+                </Tabs.Tab>
+              ))}
+            </Tabs>
+          </Section>
+        </Stack.Item>
+        <Stack.Item grow basis={0}>
+          {page === 'catalog' && <CargoCatalog />}
+          {page === 'cart' && <CargoCart />}
+          {page === 'requests' && <CargoRequests />}
+          {page === 'departments' && <DepartmentOrders />}
+          {page === 'offers' && <SpecialOffers />}
+          {page === 'market' && <Market />}
+          {page === 'partners' && <Partners />}
+          {page === 'contracts' && <Contracts />}
+          {page === 'help' && <CargoHelp />}
+        </Stack.Item>
+      </Stack>
     </Box>
   );
 };
 
-const CargoStatus = (props) => {
+const SHUTTLE_TEXT: Record<ShuttleState, string> = {
+  station: 'на станции',
+  centcom: 'у ЦК',
+  to_station: 'летит на станцию',
+  to_centcom: 'летит к ЦК',
+  recharging: 'перезаряжается',
+  loaned: 'передан ЦК',
+  away: 'вне станции',
+};
+
+/** Состояние шаттла: из данных сервера, а у старых данных - по away/docked. */
+const shuttleOf = (data: CargoData): { state: ShuttleState; eta: number } =>
+  data.shuttle || { state: data.docked ? (data.away ? 'centcom' : 'station') : 'to_station', eta: 0 };
+
+const ShuttleButton = (props: { inCart?: boolean }) => {
   const { act, data } = useBackend<CargoData>();
-  const {
-    away,
-    docked,
-    loan,
-    loan_dispatched,
-    location,
-    message,
-    points,
-    requestonly,
-    can_send,
-    manifest_department,
-    manifest_fee,
-    is_app,
-  } = data;
+  const { requestonly, can_send, is_app } = data;
+  const cart = data.cart || [];
+  if (requestonly || !can_send || is_app) {
+    return null;
+  }
+  const { state } = shuttleOf(data);
+  if (state === 'centcom') {
+    return (
+      <Button icon="rocket" color="good" onClick={() => act('send')}>
+        {cart.length ? 'Вызвать шаттл с заказом' : 'Вызвать шаттл'}
+      </Button>
+    );
+  }
+  if (state === 'station' && !props.inCart) {
+    return (
+      <Button icon="plane-departure" onClick={() => act('send')}>
+        Отправить шаттл к ЦК
+      </Button>
+    );
+  }
+  return null;
+};
+
+const CargoStatus = (props: { onOpenCart: () => void }) => {
+  const { act, data } = useBackend<CargoData>();
+  const { loan, loan_dispatched, message, points, requestonly, manifest_department, manifest_fee, is_app } = data;
+  const shuttle = shuttleOf(data);
+  const inTransit = shuttle.state === 'to_station' || shuttle.state === 'to_centcom' || shuttle.state === 'recharging';
+  const cart = data.cart || [];
+  const total = cargoTotal(cart);
   return (
-    <Section
-      title="Снабжение"
-      buttons={
-        <Box inline bold>
-          {'Бюджет снабжения: '}
-          <AnimatedNumber value={points} format={(value) => formatCredits(value)} />
-        </Box>
-      }>
-      <LabeledList>
-        <LabeledList.Item label="Шаттл">
-          {docked && !requestonly && can_send ? <Button content={location} onClick={() => act('send')} /> : location}
-          {!!is_app && (
-            <Box color="label">Шаттл, его аренда и спецзаказы - только с консоли снабжения.</Box>
-          )}
-        </LabeledList.Item>
+    <Section>
+      <Stack align="center" mb={1}>
+        <Stack.Item>
+          <Box fontSize={1.6} mr={1} color="label">
+            <Icon name="space-shuttle" />
+          </Box>
+        </Stack.Item>
+        <Stack.Item grow>
+          <Box fontSize={1.2} bold>
+            Шаттл {SHUTTLE_TEXT[shuttle.state]}
+            {inTransit && shuttle.eta > 0 && (
+              <Box inline color="average" ml={1}>
+                {formatTime(shuttle.eta)}
+              </Box>
+            )}
+          </Box>
+          <Box color="label">{message}</Box>
+        </Stack.Item>
+        <Stack.Item textAlign="right">
+          <Box color="label">Бюджет снабжения</Box>
+          <Box fontSize={1.4} bold>
+            <AnimatedNumber value={points} format={(value) => formatCredits(value)} />
+          </Box>
+        </Stack.Item>
+      </Stack>
+      <Stack align="center" wrap>
+        <Stack.Item>
+          <ShuttleButton />
+        </Stack.Item>
+        {!requestonly && cart.length > 0 && (
+          <Stack.Item>
+            <Button icon="shopping-cart" onClick={props.onOpenCart}>
+              В корзине: {cart.length}
+              {total > 0 && `, ${formatCredits(total)}`}
+            </Button>
+          </Stack.Item>
+        )}
         {!!manifest_department && (
-          <LabeledList.Item label="Экспорт">
+          <Stack.Item>
             <Button
               icon="file-invoice"
-              content={`Накладная: ${manifest_department}`}
               tooltip={`Положите накладную в ящик перед отгрузкой: выручка за ящик уйдёт отделу за вычетом сбора снабжения (${manifest_fee}%).`}
-              onClick={() => act('print_manifest')}
-            />
-          </LabeledList.Item>
+              onClick={() => act('print_manifest')}>
+              {`Накладная: ${manifest_department}`}
+            </Button>
+          </Stack.Item>
         )}
-        <LabeledList.Item label="Сообщение ЦК">{message}</LabeledList.Item>
         {!!loan && !requestonly && !is_app && (
-          <LabeledList.Item label="Аренда шаттла">
+          <Stack.Item>
             {loan_dispatched ? (
-              <Box color="bad">Шаттл у ЦК</Box>
+              <Box color="bad">Шаттл у ЦК по аренде</Box>
             ) : (
-              <Button content="Сдать шаттл ЦК" disabled={!(away && docked)} onClick={() => act('loan')} />
+              <Button
+                icon="handshake"
+                disabled={shuttle.state !== 'centcom'}
+                tooltip="ЦК просит шаттл на время; доступно, пока он стоит у ЦК."
+                onClick={() => act('loan')}>
+                Сдать шаттл ЦК
+              </Button>
             )}
-          </LabeledList.Item>
+          </Stack.Item>
         )}
-      </LabeledList>
+        {!!is_app && (
+          <Stack.Item grow color="label" textAlign="right">
+            Шаттл, его аренда и спецзаказы - только с консоли снабжения.
+          </Stack.Item>
+        )}
+      </Stack>
     </Section>
+  );
+};
+
+const packTags = (pack: Pack) => {
+  const tags: { icon: string; text: string }[] = [];
+  if (pack.goody) {
+    tags.push({ icon: 'box', text: 'Малый кейс' });
+  }
+  if (pack.access) {
+    tags.push({ icon: 'lock', text: 'Доступ' });
+  }
+  if (pack.personal) {
+    tags.push({ icon: 'user', text: 'Без наценки' });
+  }
+  return tags;
+};
+
+const PackDetails = (props: { pack: Pack; cost: number; outOfStock: boolean; onOrder: (amount: number) => void; express?: boolean }) => {
+  const { data } = useBackend<CargoData>();
+  const { pack, cost, outOfStock, onOrder, express } = props;
+  const addMax = data.add_max || 10;
+  const [amount, setAmount] = useState(1);
+  const contents = pack.contents || [];
+  return (
+    <Box className="Cargo__details" px={1.5} py={1} mb={1}>
+      <Box mb={1}>{pack.desc}</Box>
+      {contents.length > 0 && (
+        <Box mb={1}>
+          <Box color="label" mb={0.5}>
+            Внутри по описи:
+          </Box>
+          <Box>{contents.join(', ')}</Box>
+        </Box>
+      )}
+      <LabeledList>
+        <LabeledList.Item label="Поставщик">{outOfStock ? <Box color="bad">ни у кого нет на складе</Box> : pack.supplier || 'NT напрямую'}</LabeledList.Item>
+        {!!pack.commodity && <LabeledList.Item label="Товар рынка">{pack.commodity}: цена идёт за ним, см. «Рынок»</LabeledList.Item>}
+      </LabeledList>
+      {!outOfStock && (
+        <Stack align="center" mt={1}>
+          {!express && (
+            <>
+              <Stack.Item>
+                <Button icon="minus" disabled={amount <= 1} onClick={() => setAmount(amount - 1)} />
+              </Stack.Item>
+              <Stack.Item>
+                <Box bold width="2em" textAlign="center">
+                  {amount}
+                </Box>
+              </Stack.Item>
+              <Stack.Item>
+                <Button icon="plus" disabled={amount >= addMax} onClick={() => setAmount(amount + 1)} />
+              </Stack.Item>
+            </>
+          )}
+          <Stack.Item>
+            <Button icon="cart-plus" color="good" onClick={() => onOrder(amount)}>
+              {`${express ? 'Заказать' : 'В корзину'} за ${formatCredits(cost * amount)}`}
+            </Button>
+          </Stack.Item>
+        </Stack>
+      )}
+    </Box>
   );
 };
 
@@ -264,139 +448,157 @@ export const CargoCatalog = (props: { express?: boolean }) => {
   const { act, data } = useBackend<CargoData>();
   const { self_paid, private_markup = 1, requestonly, reason_max } = data;
   const supplies = toArray(data.supplies) as SupplyGroup[];
-  const [activeSupplyName, setActiveSupplyName] = useState(supplies[0]?.name);
+  const [favorites, toggleFavorite] = useFavorites();
+  const [activeSupplyName, setActiveSupplyName] = useState<string | null>(supplies[0]?.name ?? null);
   const [searchText, setSearchText] = useState('');
-  const activeSupply = supplies.find((supply) => supply.name === activeSupplyName);
-  const searchFn = createSearch(searchText, (pack: Pack) => pack.name + ' ' + pack.desc);
-  const isSearching = searchText.length >= 2;
-  const displayedPacks = isSearching
-    ? supplies
-        .flatMap((supply) => supply.packs)
-        .filter((pack, index, all) => all.findIndex((other) => other.id === pack.id) === index)
-        .filter(searchFn)
-    : activeSupply?.packs || [];
+  const [openId, setOpenId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
+  const allPacks = supplies
+    .flatMap((supply) => supply.packs)
+    .filter((pack, index, all) => all.findIndex((other) => other.id === pack.id) === index);
+  const searchFn = createSearch(searchText, (pack: Pack) => `${pack.name} ${pack.desc} ${(pack.contents || []).join(' ')}`);
+  const isSearching = searchText.length >= 2;
+  const showFavorites = !isSearching && activeSupplyName === null;
+  const activeSupply = supplies.find((supply) => supply.name === activeSupplyName);
+  const displayedPacks = isSearching
+    ? allPacks.filter(searchFn)
+    : showFavorites
+      ? allPacks.filter((pack) => favorites.includes(pack.id))
+      : activeSupply?.packs || [];
   const markupPercent = Math.round((private_markup - 1) * 100);
   const privateHint = express
     ? 'Оплата с вашего счёта сразу при заказе, без наценки частного заказа.'
     : 'Оплата с вашего счёта при доставке.' +
       (markupPercent > 0 ? ` Частный заказ дороже на ${markupPercent}%, наценка идёт снабжению; малые кейсы и личный каталог - без наценки.` : '');
   const asRequest = !!requestonly && !self_paid;
-  const order = (pack: Pack) =>
-    act('add', asRequest && reason.trim() ? { id: pack.id, reason: reason.trim() } : { id: pack.id });
+  const order = (pack: Pack, amount = 1) => {
+    const payload: Record<string, unknown> = { id: pack.id };
+    if (asRequest && reason.trim()) {
+      payload.reason = reason.trim();
+    }
+    if (amount > 1) {
+      payload.amount = amount;
+    }
+    act('add', payload);
+  };
   return (
     <Section
-      title="Каталог"
+      title={express ? 'Каталог' : asRequest ? 'Каталог: заявка снабжению' : 'Каталог'}
       buttons={
-        <>
-          {!express && <CargoCartButtons />}
+        <Button.Checkbox checked={self_paid} tooltip={privateHint} onClick={() => act('toggleprivate')}>
+          Купить лично
+        </Button.Checkbox>
+      }>
+      <Stack align="center" mb={1}>
+        <Stack.Item grow>
           <Input
-            placeholder="Поиск..."
+            fluid
+            placeholder="Поиск по названию, описанию и описи"
             value={searchText}
             onInput={(e, value) => setSearchText(value)}
-            mx={1}
           />
-          <Button.Checkbox
-            ml={1}
-            content="Купить лично"
-            checked={self_paid}
-            tooltip={privateHint}
-            onClick={() => act('toggleprivate')}
-          />
-        </>
-      }>
-      <Flex>
-        <Flex.Item ml={-1} mr={1}>
-          <Tabs vertical>
-            {supplies.map((supply) => (
-              <Tabs.Tab
-                key={supply.name}
-                selected={!isSearching && supply.name === activeSupplyName}
-                onClick={() => {
-                  setActiveSupplyName(supply.name);
-                  setSearchText('');
-                }}>
-                {supply.name} ({supply.packs.length})
-              </Tabs.Tab>
-            ))}
-          </Tabs>
-        </Flex.Item>
-        <Flex.Item grow={1} basis={0}>
-          {asRequest && (
-            <Box mb={1}>
-              <Box inline color="label" mr={1}>
-                Причина заявки:
-              </Box>
-              <Input
-                width="60%"
-                maxLength={reason_max}
-                placeholder="Если оставить пустой, консоль спросит при заказе"
-                value={reason}
-                onInput={(e, value) => setReason(value)}
-              />
-            </Box>
-          )}
-          {isSearching && (
-            <Box color="label" mb={1}>
-              Найдено: {displayedPacks.length}
-            </Box>
-          )}
-          <Table>
-            <Table.Row header>
-              <Table.Cell>Пак</Table.Cell>
-              <Table.Cell collapsing />
-              <Table.Cell collapsing>Поставщик</Table.Cell>
-              <Table.Cell collapsing textAlign="right">
-                Цена
+        </Stack.Item>
+      </Stack>
+      <Box mb={1}>
+        <Button
+          icon="star"
+          selected={showFavorites}
+          onClick={() => {
+            setActiveSupplyName(null);
+            setSearchText('');
+          }}>
+          {`Избранное (${favorites.length})`}
+        </Button>
+        {supplies.map((supply) => (
+          <Button
+            key={supply.name}
+            selected={!isSearching && supply.name === activeSupplyName}
+            onClick={() => {
+              setActiveSupplyName(supply.name);
+              setSearchText('');
+            }}>
+            {`${supply.name} (${supply.packs.length})`}
+          </Button>
+        ))}
+      </Box>
+      {asRequest && (
+        <Stack align="center" mb={1}>
+          <Stack.Item color="label">Причина заявки:</Stack.Item>
+          <Stack.Item grow>
+            <Input
+              fluid
+              maxLength={reason_max}
+              placeholder="Если оставить пустой, консоль спросит при заказе"
+              value={reason}
+              onInput={(e, value) => setReason(value)}
+            />
+          </Stack.Item>
+        </Stack>
+      )}
+      {isSearching && (
+        <Box color="label" mb={1}>
+          Найдено: {displayedPacks.length}
+        </Box>
+      )}
+      {showFavorites && displayedPacks.length === 0 && (
+        <Box color="label" my={2} textAlign="center">
+          Отметьте звёздочкой паки, которые заказываете часто, - они соберутся здесь.
+        </Box>
+      )}
+      <Table>
+        {displayedPacks.map((listed) => {
+          const pack = withPrice(listed, data.prices, data.partners);
+          const priced = typeof pack.cost === 'number';
+          const outOfStock = !priced || (pack.in_stock !== undefined && !pack.in_stock);
+          const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;
+          const open = openId === pack.id;
+          const favorite = favorites.includes(pack.id);
+          return [
+            <Table.Row key={pack.id} className="candystripe">
+              <Table.Cell collapsing py={0.5}>
+                <Button
+                  icon="star"
+                  color="transparent"
+                  textColor={favorite ? 'yellow' : 'label'}
+                  tooltip={favorite ? 'Убрать из избранного' : 'В избранное'}
+                  onClick={() => toggleFavorite(pack.id)}
+                />
               </Table.Cell>
-            </Table.Row>
-            {displayedPacks.map((listed) => {
-              const pack = withPrice(listed, data.prices, data.partners);
-              const tags: string[] = [];
-              if (pack.goody) {
-                tags.push('Малый кейс');
-              }
-              if (pack.access) {
-                tags.push('Доступ');
-              }
-              if (pack.personal) {
-                tags.push('Без наценки');
-              }
-              const priced = typeof pack.cost === 'number';
-              const outOfStock = !priced || (pack.in_stock !== undefined && !pack.in_stock);
-              const cost = self_paid && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;
-              return (
-                <Table.Row key={pack.id} className="candystripe">
-                  <Table.Cell>
-                    {pack.name}
-                    {!!pack.commodity && (
-                      <Box inline color="label" ml={1}>
-                        ({pack.commodity})
-                      </Box>
-                    )}
-                  </Table.Cell>
-                  <Table.Cell collapsing color="label" textAlign="right">
-                    {tags.join(', ')}
-                  </Table.Cell>
-                  <Table.Cell collapsing>
-                    {outOfStock ? <Box color="bad">нет в наличии</Box> : pack.supplier || '-'}
-                  </Table.Cell>
-                  <Table.Cell collapsing textAlign="right">
-                    <Button
-                      fluid
-                      disabled={outOfStock}
-                      tooltip={outOfStock ? 'Ни у одного открытого партнёра нет на складе: ждите пополнения.' : pack.desc}
-                      tooltipPosition="left"
-                      onClick={() => order(pack)}>
-                      {priced ? formatCredits(cost) : '-'}
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-          </Table>
-        </Flex.Item>
-      </Flex>
+              <Table.Cell py={0.5} style={{ cursor: 'pointer' }} onClick={() => setOpenId(open ? null : pack.id)}>
+                <Icon name={open ? 'chevron-down' : 'chevron-right'} color="label" mr={1} />
+                {pack.name}
+                {packTags(pack).map((tag) => (
+                  <Box key={tag.text} inline color="label" ml={1} title={tag.text}>
+                    <Icon name={tag.icon} mr={0.5} />
+                    {tag.text}
+                  </Box>
+                ))}
+              </Table.Cell>
+              <Table.Cell collapsing py={0.5} color={outOfStock ? 'bad' : 'label'} pr={1}>
+                {outOfStock ? 'нет в наличии' : pack.supplier || '-'}
+              </Table.Cell>
+              <Table.Cell collapsing py={0.5} textAlign="right">
+                <Button
+                  fluid
+                  disabled={outOfStock}
+                  tooltip={outOfStock ? 'Ни у одного открытого партнёра нет на складе: ждите пополнения.' : 'Добавить один'}
+                  tooltipPosition="left"
+                  onClick={() => order(pack)}>
+                  {priced ? formatCredits(cost) : '-'}
+                </Button>
+              </Table.Cell>
+            </Table.Row>,
+            open && (
+              <Table.Row key={`${pack.id}-details`}>
+                <Table.Cell />
+                <Table.Cell colSpan={3}>
+                  <PackDetails pack={pack} cost={cost} outOfStock={outOfStock} express={express} onOrder={(amount) => order(pack, amount)} />
+                </Table.Cell>
+              </Table.Row>
+            ),
+          ];
+        })}
+      </Table>
     </Section>
   );
 };
@@ -405,36 +607,57 @@ const CargoRequests = (props) => {
   const { act, data } = useBackend<CargoData>();
   const { requestonly, can_send, can_approve_requests } = data;
   const requests = data.requests || [];
+  const canDecide = (!requestonly || !!can_send) && !!can_approve_requests;
   return (
     <Section
-      title="Заявки в снабжение"
+      title="Заявки экипажа"
       buttons={
-        !requestonly && (
-          <Button icon="times" content="Отклонить все" color="transparent" onClick={() => act('denyall')} />
+        !requestonly &&
+        requests.length > 0 && (
+          <Button icon="times" color="transparent" onClick={() => act('denyall')}>
+            Отклонить все
+          </Button>
         )
       }>
+      <Box color="label" mb={1}>
+        Одобренная заявка уходит в корзину и оплачивается из бюджета снабжения.
+      </Box>
       {requests.length === 0 && <Box color="good">Заявок нет.</Box>}
       {requests.length > 0 && (
         <Table>
+          <Table.Row header>
+            <Table.Cell collapsing>№</Table.Cell>
+            <Table.Cell>Пак</Table.Cell>
+            <Table.Cell>Кто</Table.Cell>
+            <Table.Cell>Зачем</Table.Cell>
+            <Table.Cell collapsing textAlign="right">
+              Цена
+            </Table.Cell>
+            {canDecide && <Table.Cell collapsing />}
+          </Table.Row>
           {requests.map((request) => (
             <Table.Row key={request.id} className="candystripe">
-              <Table.Cell collapsing color="label">
+              <Table.Cell collapsing color="label" py={0.5}>
                 #{request.id}
               </Table.Cell>
-              <Table.Cell>{request.object}</Table.Cell>
-              <Table.Cell>
+              <Table.Cell py={0.5}>{request.object}</Table.Cell>
+              <Table.Cell py={0.5}>
                 <b>{request.orderer}</b>
               </Table.Cell>
-              <Table.Cell width="25%">
+              <Table.Cell py={0.5}>
                 <i>{request.reason}</i>
               </Table.Cell>
-              <Table.Cell collapsing textAlign="right">
+              <Table.Cell collapsing textAlign="right" py={0.5}>
                 <Credits amount={request.cost} />
               </Table.Cell>
-              {(!requestonly || !!can_send) && !!can_approve_requests && (
-                <Table.Cell collapsing>
-                  <Button icon="check" color="good" content="Одобрить" onClick={() => act('approve', { id: request.id })} />
-                  <Button icon="times" color="bad" content="Отклонить" onClick={() => act('deny', { id: request.id })} />
+              {canDecide && (
+                <Table.Cell collapsing py={0.5}>
+                  <Button icon="check" color="good" onClick={() => act('approve', { id: request.id })}>
+                    Одобрить
+                  </Button>
+                  <Button icon="times" color="bad" onClick={() => act('deny', { id: request.id })}>
+                    Отклонить
+                  </Button>
                 </Table.Cell>
               )}
             </Table.Row>
@@ -445,60 +668,116 @@ const CargoRequests = (props) => {
   );
 };
 
-const CargoCartButtons = (props) => {
-  const { act, data } = useBackend<CargoData>();
-  const { requestonly, can_approve_requests } = data;
-  const cart = data.cart || [];
-  const total = cart.reduce((sum, entry) => sum + entry.cost, 0);
-  if (requestonly || !canEditCart(data) || !can_approve_requests) {
-    return null;
+type CartGroup = {
+  key: string;
+  object: string;
+  pack?: string;
+  payer: string;
+  byCargo: boolean;
+  ids: number[];
+  cost: number;
+};
+
+/** Одинаковые паки с одним плательщиком - одной строкой с количеством. */
+const groupCart = (cart: CartEntry[]): CartGroup[] => {
+  const groups: CartGroup[] = [];
+  for (const entry of cart) {
+    const byCargo = paidByCargo(entry);
+    const payer = entry.department ? `Отдел: ${entry.department}` : entry.paid ? `Лично: ${entry.orderer}` : 'Снабжение';
+    const key = `${entry.pack || entry.object}|${payer}`;
+    const group = groups.find((other) => other.key === key);
+    if (group) {
+      group.ids.push(entry.id);
+      group.cost += entry.cost;
+    } else {
+      groups.push({ key, object: entry.object, pack: entry.pack, payer, byCargo, ids: [entry.id], cost: entry.cost });
+    }
   }
-  return (
-    <>
-      <Box inline mx={1}>
-        {cart.length === 0 ? 'Корзина пуста' : `В корзине: ${cart.length}`}
-        {total > 0 && ` (${formatCredits(total)})`}
-      </Box>
-      <Button icon="times" color="transparent" content="Очистить" onClick={() => act('clear')} />
-    </>
-  );
+  return groups;
 };
 
 const CargoCart = (props) => {
   const { act, data } = useBackend<CargoData>();
-  const { requestonly, away, docked, location, can_send } = data;
+  const { requestonly, can_approve_requests, points, self_paid } = data;
   const cart = data.cart || [];
+  const editable = canEditCart(data) && !!can_approve_requests && !requestonly;
+  const groups = groupCart(cart);
+  const total = cargoTotal(cart);
+  const left = points - total;
   return (
-    <Section title="Корзина" buttons={<CargoCartButtons />}>
-      {cart.length === 0 && <Box color="label">Корзина пуста.</Box>}
+    <Section
+      title="Корзина"
+      buttons={
+        editable &&
+        cart.length > 0 && (
+          <Button icon="trash" color="transparent" onClick={() => act('clear')}>
+            Очистить
+          </Button>
+        )
+      }>
+      {cart.length === 0 && (
+        <Box color="label" my={2} textAlign="center">
+          Корзина пуста: добавьте паки из каталога или одобрите заявки.
+        </Box>
+      )}
       {cart.length > 0 && (
         <Table>
-          {cart.map((entry) => (
-            <Table.Row key={entry.id} className="candystripe">
-              <Table.Cell collapsing color="label">
-                #{entry.id}
+          <Table.Row header>
+            <Table.Cell>Пак</Table.Cell>
+            <Table.Cell>Платит</Table.Cell>
+            <Table.Cell collapsing textAlign="center">
+              Штук
+            </Table.Cell>
+            <Table.Cell collapsing textAlign="right">
+              Сумма
+            </Table.Cell>
+          </Table.Row>
+          {groups.map((group) => (
+            <Table.Row key={group.key} className="candystripe">
+              <Table.Cell py={0.5}>{group.object}</Table.Cell>
+              <Table.Cell py={0.5} color={group.byCargo ? undefined : 'label'}>
+                {group.payer}
               </Table.Cell>
-              <Table.Cell>{entry.object}</Table.Cell>
-              <Table.Cell collapsing>{!!entry.paid && <b>[Частный заказ]</b>}</Table.Cell>
-              <Table.Cell collapsing textAlign="right">
-                <Credits amount={entry.cost} />
-              </Table.Cell>
-              <Table.Cell collapsing>
-                {canEditCart(data) && (
-                  <Button icon="minus" tooltip="Снять с корзины" onClick={() => act('remove', { id: entry.id })} />
+              <Table.Cell collapsing py={0.5} textAlign="center" nowrap>
+                {editable && (
+                  <Button
+                    icon="minus"
+                    tooltip={group.ids.length > 1 ? 'Снять один' : 'Снять с корзины'}
+                    onClick={() => act('remove', { id: group.ids[group.ids.length - 1] })}
+                  />
                 )}
+                <Box inline bold mx={1}>
+                  {group.ids.length}
+                </Box>
+                {editable && group.byCargo && !self_paid && !!group.pack && (
+                  <Button icon="plus" tooltip="Ещё один" onClick={() => act('add', { id: group.pack })} />
+                )}
+              </Table.Cell>
+              <Table.Cell collapsing py={0.5} textAlign="right">
+                {group.byCargo ? <Credits amount={group.cost} /> : <Box color="label">{group.payer.startsWith('Отдел') ? 'оплачено' : 'при доставке'}</Box>}
               </Table.Cell>
             </Table.Row>
           ))}
         </Table>
       )}
-      {cart.length > 0 && !requestonly && !!can_send && (
+      {cart.length > 0 && (
         <Box mt={2}>
-          {away && docked ? (
-            <Button color="green" content="Вызвать шаттл с заказом" onClick={() => act('send')} />
-          ) : (
-            <Box opacity={0.5}>Шаттл: {location}.</Box>
+          <LabeledList>
+            <LabeledList.Item label="С бюджета снабжения">
+              <Credits amount={total} />
+            </LabeledList.Item>
+            <LabeledList.Item label="Останется" color={left < 0 ? 'bad' : 'good'}>
+              <Credits amount={left} />
+            </LabeledList.Item>
+          </LabeledList>
+          {left < 0 && (
+            <NoticeBox warning mt={1}>
+              Бюджета не хватает на всё: неоплаченные заказы останутся в корзине до следующего рейса.
+            </NoticeBox>
           )}
+          <Box mt={1}>
+            <ShuttleButton inCart />
+          </Box>
         </Box>
       )}
     </Section>
@@ -529,16 +808,16 @@ const DepartmentOrders = (props) => {
           </Table.Row>
           {orders.map((order) => (
             <Table.Row key={order.id} className="candystripe">
-              <Table.Cell>{order.department}</Table.Cell>
-              <Table.Cell>{order.object}</Table.Cell>
-              <Table.Cell>{order.orderer}</Table.Cell>
-              <Table.Cell>
+              <Table.Cell py={0.5}>{order.department}</Table.Cell>
+              <Table.Cell py={0.5}>{order.object}</Table.Cell>
+              <Table.Cell py={0.5}>{order.orderer}</Table.Cell>
+              <Table.Cell py={0.5}>
                 <i>{order.reason}</i>
               </Table.Cell>
-              <Table.Cell collapsing textAlign="right">
+              <Table.Cell collapsing textAlign="right" py={0.5}>
                 <Credits amount={order.prepaid} />
               </Table.Cell>
-              <Table.Cell collapsing>
+              <Table.Cell collapsing py={0.5}>
                 {canEditCart(data) && (
                   <Button icon="undo" tooltip="Снять и вернуть деньги отделу" onClick={() => act('remove', { id: order.id })} />
                 )}
@@ -571,13 +850,17 @@ const SpecialOffers = (props) => {
               buttons={
                 !!can_take_offers &&
                 (offer.accepted ? (
-                  <Button icon="print" content="Накладная" onClick={() => act('print_offer_manifest', { uid: offer.uid })} />
+                  <Button icon="print" onClick={() => act('print_offer_manifest', { uid: offer.uid })}>
+                    Накладная
+                  </Button>
                 ) : offer.embargoed ? (
                   <Box inline color="bad">
                     Эмбарго
                   </Box>
                 ) : (
-                  <Button icon="check" color="good" content="Принять" onClick={() => act('accept_offer', { uid: offer.uid })} />
+                  <Button icon="check" color="good" onClick={() => act('accept_offer', { uid: offer.uid })}>
+                    Принять
+                  </Button>
                 ))
               }>
               <LabeledList>
@@ -650,11 +933,11 @@ const Market = (props) => {
           <Table.Cell collapsing textAlign="right">
             Спрос
           </Table.Cell>
-          <Table.Cell>Покупатель</Table.Cell>
+          <Table.Cell pl={1}>Покупатель</Table.Cell>
         </Table.Row>
         {market.commodities.map((commodity) => (
           <Table.Row key={commodity.id} className="candystripe">
-            <Table.Cell>
+            <Table.Cell py={0.5}>
               {commodity.name}
               {commodity.hot > 0 && (
                 <Box inline ml={1} bold color="orange">
@@ -662,19 +945,19 @@ const Market = (props) => {
                 </Box>
               )}
             </Table.Cell>
-            <Table.Cell collapsing>
+            <Table.Cell collapsing py={0.5}>
               <Sparkline values={commodity.history} />
             </Table.Cell>
-            <Table.Cell collapsing textAlign="right">
+            <Table.Cell collapsing textAlign="right" py={0.5}>
               ×{commodity.factor}
             </Table.Cell>
-            <Table.Cell collapsing textAlign="right" color={factorColor(commodity.sell)}>
+            <Table.Cell collapsing textAlign="right" py={0.5} color={factorColor(commodity.sell)}>
               ×{commodity.sell}
             </Table.Cell>
-            <Table.Cell collapsing textAlign="right">
+            <Table.Cell collapsing textAlign="right" py={0.5}>
               {commodity.demand}%
             </Table.Cell>
-            <Table.Cell color={commodity.buyer ? undefined : 'bad'}>
+            <Table.Cell py={0.5} pl={1} color={commodity.buyer ? undefined : 'bad'}>
               {commodity.buyer || 'нет покупателя, груз вернётся'}
             </Table.Cell>
           </Table.Row>
@@ -759,5 +1042,33 @@ const Contracts = (props) => {
       )}
       <ContractTable readOnly />
     </Section>
+  );
+};
+
+const CargoHelp = (props) => {
+  const { data } = useBackend<CargoData>();
+  const topics = data.help_topics || (data.market_help ? [{ title: 'Как работает рынок', icon: 'info-circle', lines: [data.market_help] }] : []);
+  if (!topics.length) {
+    return (
+      <Section title="Справка">
+        <Box color="label">Справки для этой консоли нет.</Box>
+      </Section>
+    );
+  }
+  return (
+    <Stack vertical>
+      {topics.map((topic) => (
+        <Stack.Item key={topic.title}>
+          <Section title={topic.title} buttons={<Icon name={topic.icon} color="label" />}>
+            {topic.lines.map((line) => (
+              <Stack key={line} mb={0.75}>
+                <Stack.Item color="label">•</Stack.Item>
+                <Stack.Item grow>{line}</Stack.Item>
+              </Stack>
+            ))}
+          </Section>
+        </Stack.Item>
+      ))}
+    </Stack>
   );
 };

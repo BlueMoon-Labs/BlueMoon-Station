@@ -567,3 +567,53 @@
 	TEST_ASSERT(console.shows_contraband(), "Консоль из взломанной платы не взломана")
 	TEST_ASSERT(traders.unlocked, "Консоль из взломанной платы не открыла Вольных торговцев")
 	TEST_ASSERT_NOTNULL(find_entry(client_view(console, technician)["partners"], "id", "free_traders"), "Консоль из взломанной платы не видит Вольных торговцев")
+
+/// Справка консоли снабжения разбита на темы и вся входит в строку market_help; без допуска контрабанды Вольных торговцев в темах нет.
+/datum/unit_test/economy_ui_cargo/help_topics/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/list/static_data = console.ui_static_data(technician)
+	var/list/topics = static_data["help_topics"]
+	TEST_ASSERT(length(topics) >= 5, "Тем справки: [length(topics)]")
+	var/help = static_data["market_help"]
+	for(var/list/topic as anything in topics)
+		TEST_ASSERT(length(topic["title"]) && length(topic["icon"]) && length(topic["lines"]), "Тема без заголовка, значка или пунктов: [json_encode(topic)]")
+		for(var/line in topic["lines"])
+			TEST_ASSERT(findtext(help, line), "Пункт темы «[topic["title"]]» не попал в строку справки: [line]")
+			TEST_ASSERT(!findtext(line, "Вольные торговцы"), "Обычная консоль называет Вольных торговцев: [line]")
+	TEST_ASSERT_EQUAL(static_data["add_max"], ECON_CARGO_ADD_MAX, "Окно знает предел количества")
+
+/// Опись пака складывает одинаковые предметы; заказ нескольких штук создаёт столько заказов, сколько просили, в пределах ECON_CARGO_ADD_MAX.
+/datum/unit_test/economy_ui_cargo/order_amount/Run()
+	var/datum/supply_pack/fake = new
+	fake.contains = list(/obj/item/crowbar, /obj/item/crowbar, /obj/item/wrench)
+	var/list/contents = econ_pack_contents(fake)
+	var/obj/item/crowbar/crowbar_type = /obj/item/crowbar
+	var/obj/item/wrench/wrench_type = /obj/item/wrench
+	TEST_ASSERT_EQUAL(jointext(contents, ";"), "[initial(crowbar_type.name)] ×2;[initial(wrench_type.name)]", "Опись пака")
+	qdel(fake)
+	TEST_ASSERT_EQUAL(econ_cargo_add_amount(list()), 1, "Без количества - один")
+	TEST_ASSERT_EQUAL(econ_cargo_add_amount(list("amount" = "мусор")), 1, "Мусор вместо количества - один")
+	TEST_ASSERT_EQUAL(econ_cargo_add_amount(list("amount" = 500)), ECON_CARGO_ADD_MAX, "Количество ограничено")
+	TEST_ASSERT_EQUAL(econ_cargo_add_amount(list("amount" = -3)), 1, "Отрицательное количество - один")
+
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/materials/metal50]
+	TEST_ASSERT(!econ_pack_unavailable(pack), "Металл есть у партнёров")
+	press(technician, console, "add", list("id" = "[pack.type]", "amount" = 3))
+	var/added = 0
+	for(var/datum/supply_order/order as anything in SSshuttle.shoppinglist)
+		if(order.pack == pack)
+			added++
+	TEST_ASSERT_EQUAL(added, 3, "Три пака одним нажатием")
+	var/datum/supply_order/first = SSshuttle.shoppinglist[1]
+	var/list/entry = first.cart_entry()
+	TEST_ASSERT_EQUAL(entry["pack"], "[pack.type]", "Строка корзины знает пак для группировки")
+	TEST_ASSERT(isnull(entry["department"]), "Заказ снабжения без отдела")
+
+	var/list/data = console.ui_data(technician)
+	var/list/shuttle = data["shuttle"]
+	var/static/list/states = list("station", "centcom", "to_station", "to_centcom", "recharging", "loaned", "away")
+	TEST_ASSERT(shuttle["state"] in states, "Состояние шаттла: [shuttle["state"]]")
+	TEST_ASSERT(isnum(shuttle["eta"]) && shuttle["eta"] >= 0, "Время до прибытия: [shuttle["eta"]]")

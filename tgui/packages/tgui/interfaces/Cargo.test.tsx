@@ -7,6 +7,8 @@ import { CargoContent } from './Cargo';
 import { CargoExpress } from './CargoExpress';
 import { NtosCargo } from './NtosCargo';
 
+jest.mock('common/storage', () => ({ storage: { get: jest.fn(() => Promise.resolve(undefined)), set: jest.fn(() => Promise.resolve()) } }));
+
 const offer = (uid, extra = {}) => ({
   uid,
   partner: 'Гильдия старателей',
@@ -49,7 +51,7 @@ const backend = {
     Materials: {
       name: 'Canisters & Materials',
       packs: [
-        { name: '50 Metal Sheets', id: '/datum/supply_pack/materials/metal50', desc: 'Металл', goody: 0, commodity: 'Металлы' },
+        { name: '50 Metal Sheets', id: '/datum/supply_pack/materials/metal50', desc: 'Металл', goody: 0, commodity: 'Металлы', contents: ['metal ×50'] },
         { name: '50 Glass Sheets', id: '/datum/supply_pack/materials/glass50', desc: 'Стекло', goody: 0, commodity: 'Стройматериалы' },
       ],
     },
@@ -58,7 +60,7 @@ const backend = {
     '/datum/supply_pack/materials/metal50': [3000, 'prospectors', 1],
     '/datum/supply_pack/materials/glass50': [1500, null, 0],
   },
-  cart: [{ id: 11, object: 'Ящик', cost: 700, orderer: 'Тест', paid: 0 }],
+  cart: [{ id: 11, object: 'Ящик', cost: 700, orderer: 'Тест', paid: 0, pack: '/datum/supply_pack/materials/metal50' }],
   requests: [{ id: 21, object: 'Заявка', cost: 400, orderer: 'Врач', reason: 'Нужно' }],
   department_requests: [{ id: 31, object: 'Инструменты', department: 'Инженерия', orderer: 'СЕ', reason: 'Ремонт', prepaid: 900 }],
   special_offers: [offer(7), offer(8, { accepted: 1, item: 'слитки серебра' })],
@@ -152,14 +154,14 @@ test('личный каталог: без наценки частного зак
     Livestock: { name: 'Livestock', packs: [corgi, cow] },
     'Личный каталог': { name: 'Личный каталог', packs: [corgi] },
   };
-  const ui = setup({ self_paid: 1, supplies });
+  const ui = setup({ self_paid: 1, supplies, points: 12345 });
   expect(ui.getByText('3 300 кр.')).toBeTruthy();
   expect(ui.getByText('5 000 кр.')).toBeTruthy();
   fireEvent.click(ui.getByText('Личный каталог (1)'));
   expect(ui.getByText('Без наценки')).toBeTruthy();
   fireEvent.click(ui.getByText('5 000 кр.'));
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/critter/corgi' }]);
-  fireEvent.input(ui.getByPlaceholderText('Поиск...'), { target: { value: 'Corgi' } });
+  fireEvent.input(ui.getByPlaceholderText('Поиск по названию, описанию и описи'), { target: { value: 'Corgi' } });
   expect(ui.getAllByText('Corgi Crate')).toHaveLength(1);
 });
 
@@ -255,10 +257,11 @@ test('приложение NtosCargo открывает окно снабжен�
 test('корзина, заявки и заказы отделов шлют прежние действия', () => {
   const ui = setup();
   openTab(ui, /^Корзина/);
-  fireEvent.click(ui.getByText('Вызвать шаттл с заказом'));
+  expect(ui.getAllByText('Вызвать шаттл с заказом')).toHaveLength(2);
+  fireEvent.click(ui.getAllByText('Вызвать шаттл с заказом')[1]);
   fireEvent.click(ui.getByText('Очистить'));
   fireEvent.click(ui.container.querySelector('.fa-minus') as Element);
-  openTab(ui, /^Заявки \(/);
+  openTab(ui, /^Заявки$/);
   fireEvent.click(ui.getByText('Одобрить'));
   fireEvent.click(ui.getByText('Отклонить'));
   fireEvent.click(ui.getByText('Отклонить все'));
@@ -276,17 +279,98 @@ test('корзина, заявки и заказы отделов шлют пр�
 test('консоль запросов не правит корзину и не решает заявки', () => {
   const ui = setup({ requestonly: 1, can_send: 0, can_approve_requests: 0 });
   expect(ui.queryByText(/^Корзина/)).toBeNull();
-  openTab(ui, /^Заявки \(/);
+  openTab(ui, /^Заявки$/);
   expect(ui.queryByText('Одобрить')).toBeNull();
   expect(ui.queryByText('Отклонить все')).toBeNull();
 });
 
-test('накладная отдела и справка о рынке', () => {
+test('накладная отдела и справка о рынке: строка без тем показывается целиком', () => {
   const ui = setup({ manifest_department: 'Сервис', market_help: 'Ящик пака - залог' });
   fireEvent.click(ui.getByText('Накладная: Сервис'));
   expect(sent(ui.topic, 'print_manifest')).toHaveLength(1);
-  fireEvent.click(ui.getByText('Как работают цены, партнёры и спецзаказы'));
+  expect(ui.queryByText('Ящик пака - залог')).toBeNull();
+  openTab(ui, /^Справка$/);
   expect(ui.getByText('Ящик пака - залог')).toBeTruthy();
+});
+
+test('справка разбита на темы с отдельными пунктами', () => {
+  const ui = setup({
+    help_topics: [
+      { title: 'Заказ и доставка', icon: 'shopping-cart', lines: ['Ящик пака - залог.', 'Частный заказ дороже на 10%.'] },
+      { title: 'Спецзаказы', icon: 'star', lines: ['Срок - 30 мин.'] },
+    ],
+  });
+  openTab(ui, /^Справка$/);
+  expect(ui.getByText('Заказ и доставка')).toBeTruthy();
+  expect(ui.getByText('Частный заказ дороже на 10%.')).toBeTruthy();
+  expect(ui.getByText('Срок - 30 мин.')).toBeTruthy();
+});
+
+test('шапка: шаттл в пути с таймером, у ЦК - вызов, на станции - отправка', () => {
+  const transit = setup({ shuttle: { state: 'to_station', eta: 84 } });
+  expect(transit.getByText(/летит на станцию/)).toBeTruthy();
+  expect(transit.getByText('1:24')).toBeTruthy();
+  expect(transit.queryByText(/шаттл с заказом/)).toBeNull();
+  transit.unmount();
+  const home = setup({ shuttle: { state: 'station', eta: 0 } });
+  fireEvent.click(home.getByText('Отправить шаттл к ЦК'));
+  expect(sent(home.topic, 'send')).toHaveLength(1);
+  home.unmount();
+  const empty = setup({ shuttle: { state: 'centcom', eta: 0 }, cart: [] });
+  expect(empty.getByText('Вызвать шаттл')).toBeTruthy();
+});
+
+test('карточка пака: опись, количество и заказ нескольких штук одним add', () => {
+  const ui = setup();
+  fireEvent.click(ui.getByText('50 Metal Sheets'));
+  expect(ui.getByText('metal ×50')).toBeTruthy();
+  const plus = ui.container.querySelector('.Cargo__details .fa-plus') as Element;
+  fireEvent.click(plus);
+  fireEvent.click(plus);
+  fireEvent.click(ui.getByText('В корзину за 9 000 кр.'));
+  expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50', amount: 3 }]);
+});
+
+test('избранное: звёздочка собирает пак во вкладку «Избранное»', () => {
+  const ui = setup();
+  fireEvent.click(ui.getByText('Избранное (0)'));
+  expect(ui.getByText(/Отметьте звёздочкой/)).toBeTruthy();
+  fireEvent.click(ui.getByText('Canisters & Materials (2)'));
+  fireEvent.click(ui.container.querySelectorAll('td .fa-star')[0]);
+  fireEvent.click(ui.getByText('Избранное (1)'));
+  expect(ui.getByText('50 Metal Sheets')).toBeTruthy();
+  expect(ui.queryByText('50 Glass Sheets')).toBeNull();
+});
+
+test('корзина складывает одинаковые паки, плюс добавляет ещё один, видно остаток бюджета', () => {
+  const metal = '/datum/supply_pack/materials/metal50';
+  const ui = setup({
+    points: 1000,
+    cart: [
+      { id: 11, object: 'Металл', cost: 700, orderer: 'Тест', paid: 0, pack: metal },
+      { id: 12, object: 'Металл', cost: 700, orderer: 'Тест', paid: 0, pack: metal },
+      { id: 13, object: 'Металл', cost: 770, orderer: 'Иван', paid: 1, pack: metal },
+      { id: 14, object: 'Инструменты (оплачено: Инженерия)', cost: 0, orderer: 'СЕ', paid: 0, pack: '/datum/supply_pack/tools', department: 'Инженерия' },
+    ],
+  });
+  openTab(ui, /^Корзина/);
+  expect(ui.getByText('Снабжение')).toBeTruthy();
+  expect(ui.getByText('Лично: Иван')).toBeTruthy();
+  expect(ui.getByText('Отдел: Инженерия')).toBeTruthy();
+  expect(ui.getAllByText('1 400 кр.')).toHaveLength(2);
+  expect(ui.getByText('-400 кр.')).toBeTruthy();
+  expect(ui.getByText(/Бюджета не хватает на всё/)).toBeTruthy();
+  fireEvent.click(ui.container.querySelector('.fa-plus') as Element);
+  fireEvent.click(ui.container.querySelector('.fa-minus') as Element);
+  expect(sent(ui.topic, 'add')).toEqual([{ id: metal }]);
+  expect(sent(ui.topic, 'remove')).toEqual([{ id: 12 }]);
+});
+
+test('счётчики дел видны в навигации', () => {
+  const ui = setup();
+  expect(ui.getByText('Заявки')).toBeTruthy();
+  const nav = ui.container.querySelectorAll('.Cargo__badge');
+  expect(Array.from(nav).map((badge) => badge.textContent)).toEqual(['1', '1', '1', '2']);
 });
 
 test('контракты в консоли снабжения только для просмотра', () => {

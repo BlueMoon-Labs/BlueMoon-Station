@@ -158,7 +158,37 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 /// Неизменная часть строки каталога окна снабжения; цена, поставщик и наличие - в econ_cargo_live_data().
 /proc/econ_cargo_static_entry(datum/supply_pack/pack)
 	var/datum/commodity/commodity = econ_pack_traded(pack) ? econ_pack_commodity(pack) : null
-	return list("commodity" = commodity?.name)
+	return list("commodity" = commodity?.name, "contents" = econ_pack_contents(pack))
+
+/// Опись пака для карточки каталога: "имя ×N" по списку contains, одинаковые предметы сложены.
+/proc/econ_pack_contents(datum/supply_pack/pack)
+	. = list()
+	var/list/counts = list()
+	for(var/atom/item_type as anything in pack.contains)
+		if(!ispath(item_type, /atom))
+			continue
+		var/item_name = initial(item_type.name)
+		counts[item_name] = (counts[item_name] || 0) + 1
+	for(var/item_name in counts)
+		. += counts[item_name] > 1 ? "[item_name] ×[counts[item_name]]" : item_name
+
+/// Где шаттл снабжения и сколько секунд до прибытия: state - station, centcom, to_station, to_centcom, recharging, loaned или away.
+/proc/econ_cargo_shuttle_data()
+	var/obj/docking_port/mobile/supply/shuttle = SSshuttle.supply
+	if(!shuttle)
+		return list("state" = "away", "eta" = 0)
+	if(SSshuttle.shuttle_loan?.dispatched)
+		return list("state" = "loaned", "eta" = 0)
+	var/docked = shuttle.getDockedId()
+	switch(shuttle.mode)
+		if(SHUTTLE_IDLE)
+			return list("state" = docked == "supply_home" ? "station" : (docked == "supply_away" ? "centcom" : "away"), "eta" = 0)
+		if(SHUTTLE_RECHARGING)
+			return list("state" = "recharging", "eta" = shuttle.timeLeft(1 SECONDS))
+	var/heading_home = shuttle.destination?.shuttle_id == "supply_home"
+	if(shuttle.mode == SHUTTLE_RECALL)
+		heading_home = !heading_home
+	return list("state" = heading_home ? "to_station" : "to_centcom", "eta" = shuttle.timeLeft(1 SECONDS))
 
 /// Группы каталога снабжения без цен: цены уходят отдельной таблицей econ_cargo_live_data().
 /proc/econ_cargo_supplies(show_hidden, show_contraband_packs, show_contraband_partners, obj/machinery/computer/cargo/console)
@@ -191,6 +221,8 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 /proc/econ_cargo_static_data(show_contraband)
 	return list(
 		"market_help" = econ_cargo_market_help(show_contraband),
+		"help_topics" = econ_cargo_help_topics(show_contraband),
+		"add_max" = ECON_CARGO_ADD_MAX,
 		"reason_max" = ECON_REQUEST_REASON_MAX,
 		"contracts_help" = econ_contracts_help(),
 		"tier_step" = PARTNER_TIER_STEP,
@@ -273,6 +305,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/datum/economy_department/manifest_department = econ_manifest_department_for(user)
 	data["manifest_department"] = manifest_department?.name
 	data["location"] = SSshuttle.supply.getStatusText()
+	data["shuttle"] = econ_cargo_shuttle_data()
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	data["points"] = cargo?.account_balance
 	data["away"] = SSshuttle.supply.getDockedId() == "supply_away"
@@ -315,7 +348,16 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/message = SSshuttle.centcom_message
 	if(show_contraband && length(SSmarket.contraband_message))
 		message = message ? "[message] [SSmarket.contraband_message]" : SSmarket.contraband_message
-	return message || "Remember to stamp and send back the supply manifests."
+	return message || "Не забывайте штамповать и возвращать накладные."
+
+/// Сколько одинаковых паков добавить по нажатию: amount из окна в пределах 1..ECON_CARGO_ADD_MAX, без него - один.
+/proc/econ_cargo_add_amount(list/params)
+	var/amount = params["amount"]
+	if(istext(amount))
+		amount = text2num(amount)
+	if(!isnum(amount))
+		return 1
+	return clamp(round(amount), 1, ECON_CARGO_ADD_MAX)
 
 /// Причина заявки из окна или null, если окно её не прислало.
 /proc/econ_cargo_given_reason(list/params)
@@ -328,11 +370,11 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		speaker.say("Нет в наличии у партнёров.")
 		return TRUE
 	if(self_paid && !pack.can_private_buy)
-		speaker.say("This cannot be bought privately.")
+		speaker.say("Этот пак лично не купить.")
 		return TRUE
 	if(pack.goody == PACK_GOODY_PRIVATE && !self_paid)
 		playsound(speaker, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
-		speaker.say("ERROR: Private small crates may only be purchased by private accounts.")
+		speaker.say("Личные малые кейсы покупаются только со своего счёта.")
 		return TRUE
 	return FALSE
 
@@ -344,13 +386,13 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		return null
 	var/obj/item/card/id/id_card = living_user.get_idcard(TRUE)
 	if(!istype(id_card))
-		speaker.say("No ID card detected.")
+		speaker.say("ID-карта не найдена.")
 		return null
 	if(istype(id_card, /obj/item/card/id/departmental_budget))
-		speaker.say("The [speaker] rejects [id_card].")
+		speaker.say("Карта бюджета отдела для личной покупки не годится.")
 		return null
 	if(!istype(id_card.registered_account))
-		speaker.say("Invalid bank account.")
+		speaker.say("У карты нет банковского счёта.")
 		return null
 	return id_card.registered_account
 

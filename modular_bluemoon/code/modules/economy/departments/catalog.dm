@@ -72,8 +72,10 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		"object" = department ? "[pack.name] (оплачено: [department.name])" : pack.name,
 		"cost" = department ? 0 : pack.get_cost(paying_account),
 		"id" = id,
+		"pack" = "[pack.type]",
 		"orderer" = orderer,
 		"paid" = !isnull(paying_account),
+		"department" = department?.name,
 	)
 
 /datum/econ_request

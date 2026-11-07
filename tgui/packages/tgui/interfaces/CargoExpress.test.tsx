@@ -5,6 +5,8 @@ import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
 import { CargoExpress } from './CargoExpress';
 
+jest.mock('common/storage', () => ({ storage: { get: jest.fn(() => Promise.resolve(undefined)), set: jest.fn(() => Promise.resolve()) } }));
+
 const base = {
   locked: 0,
   access_hint: 'ID квартирмейстера',

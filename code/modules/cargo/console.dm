@@ -17,10 +17,9 @@
 	var/can_approve_requests = TRUE
 	var/contraband = FALSE
 	var/self_paid = FALSE
-	var/safety_warning = "For safety reasons, the automated supply shuttle \
-		cannot transport live organisms, human remains, classified nuclear weaponry, \
-		homing beacons or machinery housing any form of artificial intelligence."
-	var/blockade_warning = "Bluespace instability detected. Shuttle movement impossible."
+	var/safety_warning = "Автоматический шаттл снабжения не перевозит живых существ, тела, \
+		ядерное оружие, маяки наведения и машины с искусственным интеллектом."
+	var/blockade_warning = "Блюспейс-нестабильность: шаттл не может двигаться."
 	/// radio used by the console to send messages on supply channel
 	var/obj/item/radio/headset/radio
 	/// var that tracks message cooldown
@@ -98,6 +97,7 @@
 	catalog_ids = list()
 	var/list/data = econ_cargo_window_static(obj_flags & EMAGGED, contraband, shows_contraband(), src, catalog_ids)
 	data["market_help"] = econ_cargo_market_help(has_contraband_permit())
+	data["help_topics"] = econ_cargo_help_topics(has_contraband_permit())
 	data["requestonly"] = requestonly
 	prices_seen = list(GLOB.econ_cargo_prices.version, GLOB.econ_cargo_prices.market_version, GLOB.econ_cargo_prices.catalog_version)
 	RegisterSignal(GLOB.econ_cargo_prices, COMSIG_ECON_CARGO_PRICES_TICK, PROC_REF(on_cargo_prices_tick), override = TRUE)
@@ -155,11 +155,11 @@
 			if(SSshuttle.supply.getDockedId() == "supply_home")
 				SSshuttle.supply.export_categories = get_export_categories()
 				SSshuttle.moveShuttle(SSshuttle.supply.shuttle_id, "supply_away", TRUE)
-				say("The supply shuttle is departing.")
+				say("Шаттл снабжения отправляется.")
 				investigate_log("[key_name(usr)] sent the supply shuttle away.", INVESTIGATE_CARGO)
 			else
 				investigate_log("[key_name(usr)] called the supply shuttle.", INVESTIGATE_CARGO)
-				say("The supply shuttle has been called and will arrive in [SSshuttle.supply.timeLeft(600)] minutes.")
+				say("Шаттл снабжения вызван, прибудет через [DisplayTimeText(SSshuttle.supply.timeLeft(1))].")
 				SSshuttle.moveShuttle(SSshuttle.supply.shuttle_id, "supply_home", TRUE)
 			. = TRUE
 		if("loan")
@@ -174,7 +174,7 @@
 				return
 			else
 				SSshuttle.shuttle_loan.loan_shuttle()
-				say("The supply shuttle has been loaned to CentCom.")
+				say("Шаттл снабжения передан ЦК.")
 				investigate_log("[key_name(usr)] accepted a shuttle loan event.", INVESTIGATE_CARGO)
 				log_game("[key_name(usr)] accepted a shuttle loan event.")
 				. = TRUE
@@ -212,15 +212,17 @@
 			for(var/i in loaded_coupons)
 				var/obj/item/coupon/coupon_check = i
 				if(pack.type == coupon_check.discounted_pack)
-					say("Coupon found! [round(coupon_check.discount_pct_off * 100)]% off applied!")
+					say("Найден купон: скидка [round(coupon_check.discount_pct_off * 100)]%.")
 					coupon_check.moveToNullspace()
 					applied_coupon = coupon_check
 					break
 
-			var/datum/supply_order/order = econ_cargo_new_order(usr, pack, reason, account, requestonly && !self_paid, applied_coupon, get_turf(src))
-			order.contraband_supply = shows_contraband()
+			var/amount = econ_cargo_add_amount(params)
+			for(var/i in 1 to amount)
+				var/datum/supply_order/order = econ_cargo_new_order(usr, pack, reason, account, requestonly && !self_paid, i == 1 ? applied_coupon : null, get_turf(src))
+				order.contraband_supply = shows_contraband()
 			if(account)
-				say("Order processed. The price will be charged to [account.account_holder]'s bank account on delivery.")
+				say("Заказ принят[amount > 1 ? ", [amount] шт." : ""]: оплата со счёта [account.account_holder] при доставке.")
 			if(requestonly && message_cooldown < world.time)
 				radio.talk_into(src, "Был запрошен новый заказ.", RADIO_CHANNEL_SUPPLY)
 				message_cooldown = world.time + ECON_CARGO_REQUEST_RADIO_COOLDOWN

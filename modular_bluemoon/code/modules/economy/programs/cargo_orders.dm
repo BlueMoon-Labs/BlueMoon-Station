@@ -57,7 +57,7 @@
 	data["can_approve_requests"] = staff
 	data["can_take_offers"] = FALSE
 	data["self_paid"] = self_paid
-	data["message"] = econ_cargo_message("Bluespace instability detected. Shuttle movement impossible.")
+	data["message"] = econ_cargo_message("Блюспейс-нестабильность: шаттл не может двигаться.")
 	return data
 
 /datum/computer_file/program/cargo_orders/proc/announce_request()
@@ -98,9 +98,11 @@
 					reason = tgui_input_text(user, "Причина:", "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
 					if(isnull(reason) || QDELETED(computer) || QDELETED(ui) || ui_status(user, ui.state) != UI_INTERACTIVE)
 						return
-			econ_cargo_new_order(user, pack, reason, account, as_request)
+			var/amount = econ_cargo_add_amount(params)
+			for(var/i in 1 to amount)
+				econ_cargo_new_order(user, pack, reason, account, as_request)
 			if(account)
-				computer.say("Order processed. The price will be charged to [account.account_holder]'s bank account on delivery.")
+				computer.say("Заказ принят[amount > 1 ? ", [amount] шт." : ""]: оплата со счёта [account.account_holder] при доставке.")
 			if(as_request)
 				announce_request()
 			return TRUE
