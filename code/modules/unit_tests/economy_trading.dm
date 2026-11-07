@@ -328,6 +328,8 @@
 	var/list/holds = list(1, 10, 30)
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/each = SSmarket.companies[ticker]
+		if(each.is_index)
+			continue
 		var/configured_volatility = each.volatility
 		for(var/state in list("обычное", "после роста", "после падения", "после релиста"))
 			var/list/sums = list()
@@ -373,3 +375,210 @@
 	fdel(path)
 	TEST_ASSERT(!length(errors), "Нулевой кулдаун отвергнут: [jointext(errors, "; ")]")
 	TEST_ASSERT_EQUAL(settings.stock_trade_cooldown_seconds, 0, "Нулевой кулдаун не применился")
+
+/// Счёт трейдера, который запоминает сообщения на карту.
+/datum/unit_test/economy_trading/proc/new_spy(money)
+	var/datum/bank_account/econ_test_spy/trader = new("econ_test_spy_[length(traders) + 1]")
+	traders += trader
+	if(money)
+		trader.credit(money, ECON_ADMIN)
+	return trader
+
+/// 100 × средняя доля базовой цены всех компаний, кроме индекса.
+/datum/unit_test/economy_trading/proc/index_formula()
+	var/total = 0
+	var/count = 0
+	for(var/ticker in SSmarket.companies)
+		if(ticker == STOCK_INDEX_TICKER)
+			continue
+		var/datum/stock_company/each = SSmarket.companies[ticker]
+		total += each.price / each.base_price
+		count++
+	return 100 * total / count
+
+/datum/unit_test/economy_trading/proc/any_pack()
+	for(var/pack_id in SSshuttle.supply_packs)
+		return SSshuttle.supply_packs[pack_id]
+
+/// Закупки станции у партнёра копят фонд дивидендов его компании, продажи - нет; выплата с зарплатой делит фонд по акциям целыми кредитами, остаток остаётся в фонде, деньги выпускаются причиной ECON_DIVIDEND; остановка и релист фонд не трогают.
+/datum/unit_test/economy_trading/dividends/Run()
+	var/datum/trade_partner/partner = SSmarket.get_partner(company.partner_id)
+	TEST_ASSERT_NOTNULL(partner, "У AGRO нет партнёра")
+	var/datum/supply_pack/pack = any_pack()
+	partner.note_sale(1000)
+	TEST_ASSERT_EQUAL(company.dividend_pool, 0, "Продажа партнёру пополнила фонд дивидендов")
+	partner.note_purchase(pack, 1000)
+	var/share = SSeconomy.settings.stock_dividend_share
+	TEST_ASSERT(abs(company.dividend_pool - 1000 * share / 100) < 0.01, "Фонд после закупки на 1000 кр.: [company.dividend_pool]")
+	company.dividend_pool = 50
+	var/datum/bank_account/econ_test_spy/big = new_spy(10000)
+	var/datum/bank_account/econ_test_spy/small = new_spy(10000)
+	var/datum/bank_account/econ_test_spy/outsider = new_spy(10000)
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(big, "AGRO", 2), "Покупка двух акций")
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(small, "AGRO", 1), "Покупка одной акции")
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(outsider, "PRSP", 1), "Акция другой компании")
+	var/list/outstanding = SSmarket.outstanding_shares()
+	TEST_ASSERT_EQUAL(outstanding["AGRO"], 3, "Чужие акции AGRO на счетах мира")
+	var/big_before = big.account_balance
+	var/small_before = small.account_balance
+	var/outsider_before = outsider.account_balance
+	var/minted_before = SSeconomy.ledger.by_reason[ECON_DIVIDEND] || 0
+	SSeconomy.run_payroll()
+	TEST_ASSERT_EQUAL(big.account_balance - big_before, 33, "Две акции из трёх: 2/3 от 50 кр. вниз")
+	TEST_ASSERT_EQUAL(small.account_balance - small_before, 16, "Одна акция из трёх: 1/3 от 50 кр. вниз")
+	TEST_ASSERT_EQUAL(outsider.account_balance, outsider_before, "Держатель другой компании получил дивиденды AGRO")
+	TEST_ASSERT(abs(company.dividend_pool - 1) < 0.01, "Остаток не остался в фонде: [company.dividend_pool]")
+	TEST_ASSERT_EQUAL((SSeconomy.ledger.by_reason[ECON_DIVIDEND] || 0) - minted_before, 49, "Выплата не по причине дивидендов")
+	var/datum/transaction/last = big.transaction_history[length(big.transaction_history)]
+	TEST_ASSERT(last.reason == ECON_DIVIDEND && !last.counterparty_number, "Дивиденды не выпущены, а переведены: [last.reason], [last.counterparty_number]")
+	TEST_ASSERT_EQUAL(big.card_messages[length(big.card_messages)], "Дивиденды [company.name] (AGRO): +33 кр. за 2 акции.", "Сообщение на карту")
+	TEST_ASSERT_EQUAL(small.card_messages[length(small.card_messages)], "Дивиденды [company.name] (AGRO): +16 кр. за 1 акцию.", "Сообщение на карту одной акции")
+	SSeconomy.run_payroll()
+	TEST_ASSERT_EQUAL(big.account_balance - big_before, 33, "Остаток меньше кредита на держателя выплачен")
+	TEST_ASSERT(abs(company.dividend_pool - 1) < 0.01, "Остаток фонда пропал: [company.dividend_pool]")
+	company.halted_until = world.time + STOCK_HALT_TIME
+	partner.note_purchase(pack, 1000)
+	TEST_ASSERT(abs(company.dividend_pool - 1 - 1000 * share / 100) < 0.01, "Остановленная компания не копит фонд: [company.dividend_pool]")
+	var/kept = company.dividend_pool
+	company.halted_until = world.time
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!company.is_halted(), "Повторный листинг")
+	TEST_ASSERT(abs(company.dividend_pool - kept) < 0.01, "Релист сбросил фонд: [company.dividend_pool]")
+
+/// Индекс сектора стоит 100 × среднюю долю базовой цены остальных компаний и следует за ними; события компании и станции, сорванные спецзаказы, продажи партнёрам, его собственные сделки и остановки его не двигают сверх формулы; событий ему не планируют.
+/datum/unit_test/economy_trading/index_fund/Run()
+	var/datum/stock_company/fund = SSmarket.get_company(STOCK_INDEX_TICKER)
+	TEST_ASSERT(fund?.is_index, "Нет индекса сектора")
+	TEST_ASSERT_EQUAL(fund.name, "Индекс сектора", "Название индекса")
+	for(var/ticker in SSmarket.companies)
+		var/datum/stock_company/each = SSmarket.companies[ticker]
+		each.volatility = 0
+	TEST_ASSERT(abs(fund.price - 100) < 0.01, "Все по базе, индекс [fund.price]")
+	var/datum/stock_company/nt = SSmarket.get_company("NTRN")
+	nt.set_price(nt.base_price * 3)
+	company.set_price(company.base_price / 2)
+	TEST_ASSERT(abs(fund.price - index_formula()) < 0.01, "Индекс [fund.price] после сдвига компаний, формула [index_formula()]")
+	SSmarket.tick_stocks()
+	TEST_ASSERT(abs(fund.history[length(fund.history)] - index_formula()) < 0.01, "Тик не записал индекс в историю")
+	SSmarket.station_event_cooldowns.Cut()
+	TEST_ASSERT(SSmarket.station_event("sector_boom"), "Бум не прошёл")
+	TEST_ASSERT(abs(fund.price - index_formula()) < 0.01, "Индекс [fund.price] после бума, формула [index_formula()]")
+	TEST_ASSERT_EQUAL(fund.event_mult, 1, "Шок события станции у индекса")
+	var/before_event = fund.price
+	SSmarket.schedule_company_event(fund, "merger", "тест", 0.5, 0)
+	SSmarket.run_due_events()
+	TEST_ASSERT(abs(fund.price - before_event) < 0.01, "Событие компании сдвинуло индекс: [before_event] -> [fund.price]")
+	var/datum/trade_partner/partner = SSmarket.get_partner(company.partner_id)
+	partner.note_sale(STOCK_TRADE_SCALE * 10)
+	TEST_ASSERT(abs(fund.price - index_formula()) < 0.01, "Продажа партнёру: индекс [fund.price], формула [index_formula()]")
+	SSmarket.company_event_chance = 100
+	SSmarket.maybe_schedule_events()
+	for(var/datum/market_event/event as anything in SSmarket.scheduled_events)
+		TEST_ASSERT(event.company != fund, "Событие индексу в очереди")
+	QDEL_LIST(SSmarket.scheduled_events)
+	SSmarket.company_event_chance = 0
+	var/datum/bank_account/trader = new_trader(10000)
+	var/price = fund.price
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(trader, STOCK_INDEX_TICKER, 10), "Покупка индекса")
+	var/cost = CEILING(price * 10 * (100 + SSeconomy.settings.stock_spread) / 100, 1)
+	TEST_ASSERT_EQUAL(trader.account_balance, 10000 - cost - CEILING(cost * SSeconomy.settings.stock_fee / 100, 1), "Индекс покупается со спредом и комиссией")
+	TEST_ASSERT(abs(fund.price - price) < 0.0001, "Своя сделка сдвинула индекс")
+	TEST_ASSERT_NOTNULL(SSmarket.try_buy_shares(trader, STOCK_INDEX_TICKER, 1), "Кулдаун сделок по индексу")
+	fund.halted_until = world.time + STOCK_HALT_TIME
+	fund.price = STOCK_PRICE_MIN
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!fund.is_halted() && abs(fund.price - index_formula()) < 0.01, "Индекс остановился или ушёл с формулы: [fund.price]")
+	var/problem = SSmarket.press_release_problem(fund, TRUE)
+	TEST_ASSERT(findtext(problem, "Индекс сектора"), "Фальшивый релиз об индексе: [problem]")
+
+/// Заявки срабатывают на тике биржи ровно на пороге: покупка и стоп при цене не выше, фиксация - не ниже; исполняются обычной сделкой и снимаются с сообщением на карту. Кулдаун и остановленные торги держат заявку, отказ сделки снимает её с причиной.
+/datum/unit_test/economy_trading/stock_orders/Run()
+	var/datum/bank_account/econ_test_spy/trader = new_spy(10000)
+	var/spread = SSeconomy.settings.stock_spread
+	var/fee = SSeconomy.settings.stock_fee
+	company.price = 50
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, "AGRO", STOCK_ORDER_BUY_BELOW, 10, 40), "Заявка на покупку")
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!trader.shares["AGRO"] && length(trader.stock_orders) == 1, "Покупка сработала выше порога")
+	company.price = 40.01
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!trader.shares["AGRO"], "Покупка сработала выше порога на копейку")
+	company.price = 40
+	SSmarket.tick_stocks()
+	TEST_ASSERT_EQUAL(trader.shares["AGRO"], 10, "Покупка на пороге")
+	TEST_ASSERT(!length(trader.stock_orders), "Исполненная заявка осталась")
+	var/cost = CEILING(40 * 10 * (100 + spread) / 100, 1)
+	TEST_ASSERT_EQUAL(trader.account_balance, 10000 - cost - CEILING(cost * fee / 100, 1), "Заявка купила по обычным правилам")
+	TEST_ASSERT(findtext(trader.card_messages[length(trader.card_messages)], "куплено 10 шт. AGRO по 40 кр."), "Сообщение о покупке: [trader.card_messages[length(trader.card_messages)]]")
+
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, "AGRO", STOCK_ORDER_SELL_BELOW, 10, 35), "Стоп")
+	company.price = 35
+	SSmarket.tick_stocks()
+	TEST_ASSERT(trader.shares["AGRO"] == 10 && length(trader.stock_orders) == 1, "Кулдаун по компании снял или исполнил стоп")
+	expire_cooldown(trader, "AGRO")
+	company.halted_until = world.time + STOCK_HALT_TIME
+	SSmarket.tick_stocks()
+	TEST_ASSERT(trader.shares["AGRO"] == 10 && length(trader.stock_orders) == 1, "Остановленные торги сняли или исполнили стоп")
+	company.halted_until = 0
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!trader.shares["AGRO"] && !length(trader.stock_orders), "Стоп не продал на пороге")
+	TEST_ASSERT(findtext(trader.card_messages[length(trader.card_messages)], "продано 10 шт. AGRO"), "Сообщение о продаже: [trader.card_messages[length(trader.card_messages)]]")
+
+	expire_cooldown(trader, "AGRO")
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(trader, "AGRO", 5), "Покупка под фиксацию")
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, "AGRO", STOCK_ORDER_SELL_ABOVE, 5, 60), "Фиксация")
+	expire_cooldown(trader, "AGRO")
+	company.price = 59.99
+	SSmarket.tick_stocks()
+	TEST_ASSERT_EQUAL(trader.shares["AGRO"], 5, "Фиксация сработала ниже порога")
+	company.price = 60
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!trader.shares["AGRO"] && !length(trader.stock_orders), "Фиксация не продала на пороге")
+
+	var/datum/bank_account/econ_test_spy/poor = new_spy(10)
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(poor, "AGRO", STOCK_ORDER_BUY_BELOW, 10, 40), "Заявка без денег ставится")
+	company.price = 40
+	SSmarket.tick_stocks()
+	TEST_ASSERT(!length(poor.stock_orders) && !poor.shares["AGRO"], "Неисполнимая заявка осталась")
+	TEST_ASSERT_EQUAL(poor.card_messages[length(poor.card_messages)], "Биржа: заявка «купить 10 шт. AGRO, если цена ≤ 40» снята. Недостаточно средств.", "Причина отказа на карту")
+
+/// Ввод заявки проверяется: тикер, вид, целое количество, цена в коридоре компании, акции для продажи, лимит позиции, счёт и не больше STOCK_ORDERS_MAX заявок.
+/datum/unit_test/economy_trading/stock_order_input/Run()
+	var/datum/bank_account/trader = new_trader(10000)
+	var/cap_count = round(SSeconomy.settings.stock_position_cap / company.base_price)
+	for(var/list/bad as anything in list(
+		list("ZZZZ", STOCK_ORDER_BUY_BELOW, 1, 40),
+		list(null, STOCK_ORDER_BUY_BELOW, 1, 40),
+		list("AGRO", "buy_now", 1, 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 0, 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 1.5, 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, -2, 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, "много", 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, cap_count + 1, 40),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 1, 0),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 1, -5),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 1, company.base_price * STOCK_PRICE_MAX_RATIO + 1),
+		list("AGRO", STOCK_ORDER_BUY_BELOW, 1, "дёшево"),
+		list("AGRO", STOCK_ORDER_SELL_BELOW, 1, 40),
+		list("AGRO", STOCK_ORDER_SELL_ABOVE, 1, 40),
+	))
+		TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(trader, bad[1], bad[2], bad[3], bad[4]), "Принята заявка [json_encode(bad)]")
+	TEST_ASSERT(!length(trader.stock_orders), "Отказ оставил заявку")
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, "AGRO", STOCK_ORDER_BUY_BELOW, cap_count, 40), "Заявка ровно на лимит позиции")
+	TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, STOCK_INDEX_TICKER, STOCK_ORDER_BUY_BELOW, 1, "95.555"), "Заявка на индекс с ценой текстом")
+	var/list/index_order = trader.stock_orders[2]
+	TEST_ASSERT(abs(index_order["price"] - 95.56) < 0.001, "Цена заявки не округлена до сотых: [index_order["price"]]")
+	for(var/i in 1 to STOCK_ORDERS_MAX - 2)
+		TEST_ASSERT_NULL(SSmarket.add_stock_order(trader, "PRSP", STOCK_ORDER_BUY_BELOW, 1, 10), "Заявка [i + 2]")
+	TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(trader, "PRSP", STOCK_ORDER_BUY_BELOW, 1, 10), "Заявка сверх [STOCK_ORDERS_MAX]")
+	TEST_ASSERT_EQUAL(length(trader.stock_orders), STOCK_ORDERS_MAX, "Число заявок")
+	var/list/first = trader.stock_orders[1]
+	TEST_ASSERT(SSmarket.cancel_stock_order(trader, first["id"]), "Снятие заявки")
+	TEST_ASSERT(!SSmarket.cancel_stock_order(trader, first["id"]), "Повторное снятие")
+	TEST_ASSERT_EQUAL(length(trader.stock_orders), STOCK_ORDERS_MAX - 1, "Снятая заявка осталась")
+	var/datum/bank_account/frozen = new_trader(10000)
+	frozen.state = ACCOUNT_FROZEN
+	TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(frozen, "AGRO", STOCK_ORDER_BUY_BELOW, 1, 40), "Заявка с замороженного счёта")
+	TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(SSeconomy.get_dep_account(ACCOUNT_CAR), "AGRO", STOCK_ORDER_BUY_BELOW, 1, 40), "Заявка из бюджета отдела")
+	TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(SSeconomy.cash_account, "AGRO", STOCK_ORDER_BUY_BELOW, 1, 40), "Заявка с системного счёта")
+	TEST_ASSERT_NOTNULL(SSmarket.add_stock_order(null, "AGRO", STOCK_ORDER_BUY_BELOW, 1, 40), "Заявка без счёта")

@@ -364,7 +364,7 @@
 	var/list/tickers = list()
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
-		if(company.is_halted() || (ticker in SSmarket.press_released) || company.price <= STOCK_PRICE_MIN + STOCK_PRICE_EPSILON)
+		if(company.is_index || company.is_halted() || (ticker in SSmarket.press_released) || company.price <= STOCK_PRICE_MIN + STOCK_PRICE_EPSILON)
 			continue
 		tickers += ticker
 	for(var/datum/objective/economy/crash_stock/other in GLOB.objectives)

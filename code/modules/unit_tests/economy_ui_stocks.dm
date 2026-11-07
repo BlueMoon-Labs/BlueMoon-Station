@@ -172,9 +172,9 @@
 	var/encoded = json_encode(data) + json_encode(static_data)
 	qdel(queued)
 	halted.halted_until = 0
-	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap")
-	var/static/list/static_keys = list("history", "drivers", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay")
-	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price", "max_buy")
+	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap", "orders")
+	var/static/list/static_keys = list("history", "drivers", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay", "dividend_share", "payroll_minutes", "orders_max")
+	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price", "max_buy", "index", "dividend_pool", "dividend_per_share")
 	var/mismatch = key_mismatch(data, data_keys)
 	TEST_ASSERT(!mismatch, "Ключи данных окна: [mismatch]")
 	mismatch = key_mismatch(static_data, static_keys)
@@ -302,3 +302,44 @@
 	var/list/lookup = SSmarket.comp_lookup
 	var/listeners = lookup ? lookup[COMSIG_MARKET_STOCKS_TICKED] : null
 	TEST_ASSERT(listeners != board && !(islist(listeners) && (board in listeners)), "Табло отписалось от тика")
+
+/// Заявки из окна: «add_order» ставит заявку на торговый счёт пользователя и отвечает текстом, неверный ввод отказывает, окно получает список; «cancel_order» снимает по id. Фонд дивидендов и выплата на акцию видны в котировках.
+/datum/unit_test/economy_trading/ui/orders/Run()
+	var/mob/living/carbon/human/user = make_user(5000)
+	var/datum/bank_account/own = econ_account_of(user)
+	var/datum/computer_file/program/stock_exchange/program = install_program(user)
+	company.price = 50
+	press(user, program, "NtosStockExchange", "add_order", list("ticker" = "AGRO", "side" = STOCK_ORDER_BUY_BELOW, "count" = 3, "price" = 40))
+	TEST_ASSERT_EQUAL(length(own.stock_orders), 1, "Заявка не поставлена")
+	TEST_ASSERT_EQUAL(message_of(program, user), "Заявка принята: купить 3 шт. AGRO, если цена ≤ 40. Проверяется раз в минуту после смены цен.", "Ответ окна")
+	press(user, program, "NtosStockExchange", "add_order", list("ticker" = "AGRO", "side" = "steal", "count" = 3, "price" = 40))
+	TEST_ASSERT_EQUAL(message_of(program, user), "Неверный вид заявки.", "Неверный вид")
+	press(user, program, "NtosStockExchange", "add_order", list("ticker" = "AGRO", "side" = STOCK_ORDER_SELL_ABOVE, "count" = 3, "price" = 60))
+	TEST_ASSERT_EQUAL(message_of(program, user), "Акций AGRO на счёте нет.", "Продажа без акций")
+	TEST_ASSERT_EQUAL(length(own.stock_orders), 1, "Отказ поставил заявку")
+	company.dividend_pool = 30
+	var/list/data = program.stocks_data(user)
+	var/list/orders = data["orders"]
+	TEST_ASSERT_EQUAL(length(orders), 1, "Окно не видит заявку")
+	var/list/order = orders[1]
+	TEST_ASSERT(order["ticker"] == "AGRO" && order["side"] == STOCK_ORDER_BUY_BELOW && order["count"] == 3 && order["price"] == 40, "Заявка в окне: [json_encode(order)]")
+	var/list/agro_entry
+	var/list/index_entry
+	for(var/list/entry as anything in data["companies"])
+		if(entry["ticker"] == "AGRO")
+			agro_entry = entry
+		if(entry["ticker"] == STOCK_INDEX_TICKER)
+			index_entry = entry
+	TEST_ASSERT(agro_entry["dividend_pool"] == 30 && agro_entry["dividend_per_share"] == 30, "Фонд дивидендов без держателей: [json_encode(agro_entry)]")
+	TEST_ASSERT(index_entry && index_entry["index"] && !agro_entry["index"], "Индекс помечен в котировках")
+	press(user, program, "NtosStockExchange", "buy", list("ticker" = "AGRO", "count" = 4))
+	data = program.stocks_data(user)
+	for(var/list/entry as anything in data["companies"])
+		if(entry["ticker"] == "AGRO")
+			agro_entry = entry
+	TEST_ASSERT_EQUAL(agro_entry["dividend_per_share"], 7.5, "Выплата на акцию при четырёх акциях")
+	press(user, program, "NtosStockExchange", "cancel_order", list("id" = 999))
+	TEST_ASSERT_EQUAL(message_of(program, user), "Такой заявки уже нет.", "Чужой id")
+	press(user, program, "NtosStockExchange", "cancel_order", list("id" = order["id"]))
+	TEST_ASSERT_EQUAL(message_of(program, user), "Заявка снята.", "Ответ на снятие")
+	TEST_ASSERT(!length(own.stock_orders), "Заявка не снята")

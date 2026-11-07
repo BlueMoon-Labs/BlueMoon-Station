@@ -337,6 +337,9 @@ GLOBAL_VAR(economy_config_reloaded_at)
 	if(!company)
 		message = "Нет такой компании."
 		return
+	if(company.is_index)
+		message = "Индекс сектора считается по другим компаниям, своих событий у него нет."
+		return
 	if(company.is_halted())
 		message = "Торги [company.ticker] остановлены, событие не ставится."
 		return

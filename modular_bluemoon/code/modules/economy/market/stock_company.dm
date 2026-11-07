@@ -54,6 +54,10 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	var/trade_volume = 0
 	var/halted_until = 0
 	var/list/history = list()
+	/// Индекс сектора: цена считается по остальным компаниям
+	var/is_index = FALSE
+	/// Доля закупок станции у партнёра; делится между держателями на выплате зарплаты, в следующую смену не переходит
+	var/dividend_pool = 0
 
 /datum/stock_company/proc/reset_params()
 	name = initial(name)
@@ -107,6 +111,7 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 
 /datum/stock_company/proc/set_price(value)
 	price = clamp(value, STOCK_PRICE_MIN, base_price * STOCK_PRICE_MAX_RATIO)
+	SSmarket?.refresh_index_fund()
 
 /// Повторный листинг после банкротства на доле базы; акции держателей консолидируются, их стоимость не растёт.
 /datum/stock_company/proc/relist()
@@ -162,6 +167,7 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 			note += "; партнёр пока не торгует со станцией"
 		. += list(list("label" = "Продажи станции через снабжение партнёру «[partner.name]»", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
 		. += list(list("label" = "Сорванный станцией спецзаказ «[partner.name]»", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
+		. += list(list("label" = "Закупки станции у «[partner.name]»", "effect" = null, "note" = "цену не двигают: [SSeconomy.settings.stock_dividend_share]% суммы идёт в дивиденды держателям"))
 	for(var/key in SSmarket.station_events)
 		var/list/effects = SSmarket.station_events[key]
 		if(isnull(effects[ticker]))
@@ -178,6 +184,59 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 		var/list/effects = SSmarket.station_events[key]
 		if(!isnull(effects[STOCK_ALL_COMPANIES]))
 			. += list(list("label" = GLOB.market_station_event_names[key] || key, "effect" = round(effects[STOCK_ALL_COMPANIES] * 100, 0.1)))
+
+/// Индекс сектора: торгуется как компания, но цену берёт из остальных - без шума, событий, торгового объёма и остановок.
+/datum/stock_company/index
+	ticker = STOCK_INDEX_TICKER
+	name = "Индекс сектора"
+	volatility = 0
+	is_index = TRUE
+
+/datum/stock_company/index/proc/recompute()
+	var/total = 0
+	var/count = 0
+	for(var/ticker in SSmarket.companies)
+		var/datum/stock_company/company = SSmarket.companies[ticker]
+		if(company.is_index || !(company.base_price > 0))
+			continue
+		total += company.price / company.base_price
+		count++
+	price = count ? base_price * total / count : base_price
+
+/datum/stock_company/index/tick()
+	halted_until = 0
+	recompute()
+	history += round(price, 0.01)
+	if(length(history) > STOCK_HISTORY_MAX)
+		history.Cut(1, 2)
+
+/datum/stock_company/index/is_halted()
+	return FALSE
+
+/datum/stock_company/index/set_price(value)
+	return
+
+/datum/stock_company/index/apply_shock(effect)
+	return
+
+/datum/stock_company/index/add_trade_volume(value)
+	return
+
+/datum/stock_company/index/price_drivers()
+	return list(list("label" = "Среднее по всем компаниям сектора", "effect" = null, "note" = "100 - когда все по базовой цене; своих событий и остановок торгов нет"))
+
+/datum/controller/subsystem/market/proc/refresh_index_fund()
+	var/datum/stock_company/index/fund = companies[STOCK_INDEX_TICKER]
+	if(istype(fund))
+		fund.recompute()
+
+/// Сколько настоящих компаний на бирже, без индекса.
+/datum/controller/subsystem/market/proc/real_company_count()
+	. = 0
+	for(var/ticker in companies)
+		var/datum/stock_company/company = companies[ticker]
+		if(!company.is_index)
+			.++
 
 /// Событие компании в очереди: в момент eta двигает акции и уходит в срочные новости рынка.
 /datum/market_event

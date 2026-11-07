@@ -369,7 +369,10 @@ SUBSYSTEM_DEF(market)
 			partner.company = null
 		else
 			company.partner_id = id
+	var/datum/stock_company/index/fund = companies[STOCK_INDEX_TICKER]
+	loaded[STOCK_INDEX_TICKER] = istype(fund) ? fund : new /datum/stock_company/index
 	companies = loaded
+	refresh_index_fund()
 
 /// Шаблоны событий компаний; любая битая запись оставляет встроенный список целиком.
 /datum/controller/subsystem/market/proc/load_company_events(list/section)
@@ -463,10 +466,13 @@ SUBSYSTEM_DEF(market)
 
 /datum/controller/subsystem/market/proc/on_stock_trade(datum/source, datum/trade_partner/partner, value, is_sale)
 	SIGNAL_HANDLER
-	if(!is_sale || value <= 0)
-		return
 	var/datum/stock_company/company = companies[partner.company]
-	company?.add_trade_volume(value)
+	if(!company || !(value > 0))
+		return
+	if(is_sale)
+		company.add_trade_volume(value)
+	else
+		company.dividend_pool += value * SSeconomy.settings.stock_dividend_share / 100
 
 /datum/controller/subsystem/market/proc/on_stock_offer_resolved(datum/source, datum/market_offer/offer, success)
 	SIGNAL_HANDLER
@@ -476,12 +482,14 @@ SUBSYSTEM_DEF(market)
 	var/datum/stock_company/company = partner ? companies[partner.company] : null
 	company?.apply_shock(-MARKET_OFFER_FAIL_STOCK_SHOCK)
 
-/// Минутный тик биржи: цены, новые события компаний, выход созревших.
+/// Минутный тик биржи: цены, индекс сектора, новые события компаний, выход созревших, заявки.
 /datum/controller/subsystem/market/proc/tick_stocks()
 	var/list/halted = list()
 	var/list/relisted = list()
 	for(var/ticker in companies)
 		var/datum/stock_company/company = companies[ticker]
+		if(company.is_index)
+			continue
 		var/was_halted = !!company.halted_until
 		company.tick()
 		if(!was_halted && company.halted_until)
@@ -489,8 +497,11 @@ SUBSYSTEM_DEF(market)
 			alert_holders_halted(company)
 		else if(was_halted && !company.halted_until)
 			relisted += ticker
+	var/datum/stock_company/fund = companies[STOCK_INDEX_TICKER]
+	fund?.tick()
 	maybe_schedule_events()
 	run_due_events()
+	run_stock_orders()
 	SEND_SIGNAL(src, COMSIG_MARKET_STOCKS_TICKED, halted, relisted)
 
 /// Ставит событие компании в очередь; второе фальшивое событие той же компании не ставится, возвращается null.
@@ -519,7 +530,7 @@ SUBSYSTEM_DEF(market)
 			pending[event.company.ticker] = TRUE
 	for(var/ticker in companies)
 		var/datum/stock_company/company = companies[ticker]
-		if(pending[ticker] || company.is_halted() || !prob(company_event_chance))
+		if(company.is_index || pending[ticker] || company.is_halted() || !prob(company_event_chance))
 			continue
 		var/list/template = pick(company_event_templates)
 		schedule_company_event(company, template["key"], replacetext(template["headline"], "%NAME%", company.name), template["effect"], rand(STOCK_EVENT_ETA_MIN, STOCK_EVENT_ETA_MAX))

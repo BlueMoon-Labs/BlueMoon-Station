@@ -4,16 +4,23 @@
 		return "Нет такого счёта."
 	if(!company)
 		return "Нет такой компании."
-	if(istype(account, /datum/bank_account/system) || (istype(account, /datum/bank_account/department) && account != SSeconomy.treasury()))
+	if(!can_hold_stocks(account))
 		return "С этого счёта нельзя торговать акциями."
 	if(company.is_halted())
 		return "Торги [company.ticker] остановлены."
 	if(account.state == ACCOUNT_FROZEN)
 		return "Счёт заморожен."
-	var/last_trade = account.trade_cooldowns[company.ticker]
-	if(!isnull(last_trade) && world.time - last_trade < SSeconomy.settings.stock_trade_cooldown_seconds SECONDS)
+	if(trade_cooling_down(account, company.ticker))
 		return "Слишком частые сделки по [company.ticker]."
 	return null
+
+/// Акциями торгуют личные счета и казна, но не бюджеты отделов и не системные счета.
+/datum/controller/subsystem/market/proc/can_hold_stocks(datum/bank_account/account)
+	return !istype(account, /datum/bank_account/system) && (!istype(account, /datum/bank_account/department) || account == SSeconomy.treasury())
+
+/datum/controller/subsystem/market/proc/trade_cooling_down(datum/bank_account/account, ticker)
+	var/last_trade = account.trade_cooldowns[ticker]
+	return !isnull(last_trade) && world.time - last_trade < SSeconomy.settings.stock_trade_cooldown_seconds SECONDS
 
 /datum/controller/subsystem/market/proc/position_cap(datum/bank_account/account)
 	. = SSeconomy.settings.stock_position_cap
@@ -153,6 +160,134 @@
 		var/datum/stock_company/company = companies[ticker]
 		if(company)
 			. += round(company.price * account.shares[ticker])
+
+/// тикер -> сколько акций на всех счетах.
+/datum/controller/subsystem/market/proc/outstanding_shares()
+	. = list()
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		for(var/ticker in account.shares)
+			.[ticker] += account.shares[ticker]
+
+/// Фонд дивидендов каждой компании делится между держателями по числу акций, целыми кредитами; остаток копится дальше. Деньги закупки импорт уже сжёг, выплата - эмиссия.
+/datum/controller/subsystem/market/proc/pay_dividends()
+	var/list/outstanding = outstanding_shares()
+	for(var/ticker in companies)
+		var/datum/stock_company/company = companies[ticker]
+		var/total = outstanding[ticker]
+		if(company.dividend_pool < 1 || !total)
+			continue
+		var/pool = company.dividend_pool
+		var/paid = 0
+		var/holders = 0
+		for(var/number in SSeconomy.accounts_by_number)
+			var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+			var/held = account.shares[ticker]
+			if(!(held > 0))
+				continue
+			var/amount = round(pool * held / total)
+			if(amount < 1 || !SSeconomy.move(null, account, amount, ECON_DIVIDEND, null, "Дивиденды [ticker]"))
+				continue
+			paid += amount
+			holders++
+			account.bank_card_talk("Дивиденды [company.name] ([ticker]): +[amount] кр. за [held] [ru_plural(held, "акцию", "акции", "акций")].", balloon = "[ticker] +[amount] кр")
+		company.dividend_pool -= paid
+		if(paid)
+			log_econ("Дивиденды [ticker]: [paid] кр. [holders] держателям, в фонде осталось [round(company.dividend_pool, 0.01)] кр.")
+
+/// Ставит заявку на счёт; текст отказа или null.
+/datum/controller/subsystem/market/proc/add_stock_order(datum/bank_account/account, ticker, side, count, trigger)
+	if(!account)
+		return "Нет банковского счёта."
+	if(!can_hold_stocks(account))
+		return "С этого счёта нельзя торговать акциями."
+	if(account.state == ACCOUNT_FROZEN)
+		return "Счёт заморожен."
+	if(length(account.stock_orders) >= STOCK_ORDERS_MAX)
+		return "Заявок не больше [STOCK_ORDERS_MAX] на счёт: снимите одну из старых."
+	var/datum/stock_company/company = istext(ticker) ? companies[ticker] : null
+	if(!company)
+		return "Нет такой компании."
+	if(!(side in list(STOCK_ORDER_BUY_BELOW, STOCK_ORDER_SELL_BELOW, STOCK_ORDER_SELL_ABOVE)))
+		return "Неверный вид заявки."
+	if(istext(count))
+		count = text2num(count)
+	if(!isnum(count) || !(count >= 1) || round(count) != count)
+		return "Количество - целое число от 1."
+	var/held = account.shares[ticker] || 0
+	if(side == STOCK_ORDER_BUY_BELOW)
+		var/fits = round(position_cap(account) / company.base_price) - held
+		if(count > fits)
+			return fits > 0 ? "В лимит позиции поместится не больше [fits] шт. [ticker]." : "Позиция [ticker] уже на лимите."
+	else if(count > held)
+		return held ? "На счёте только [held] шт. [ticker]." : "Акций [ticker] на счёте нет."
+	if(istext(trigger))
+		trigger = text2num(trigger)
+	var/price_max = round(company.base_price * STOCK_PRICE_MAX_RATIO, 0.01)
+	if(!isnum(trigger) || !(trigger >= STOCK_PRICE_MIN) || trigger > price_max)
+		return "Цена срабатывания - от [STOCK_PRICE_MIN] до [price_max] кр."
+	account.stock_order_serial++
+	account.stock_orders += list(list("id" = account.stock_order_serial, "ticker" = ticker, "side" = side, "count" = count, "price" = round(trigger, 0.01)))
+	return null
+
+/datum/controller/subsystem/market/proc/cancel_stock_order(datum/bank_account/account, id)
+	if(!account)
+		return FALSE
+	if(istext(id))
+		id = text2num(id)
+	for(var/list/order as anything in account.stock_orders)
+		if(order["id"] == id)
+			account.stock_orders -= list(order)
+			return TRUE
+	return FALSE
+
+/datum/controller/subsystem/market/proc/stock_order_due(list/order, price)
+	switch(order["side"])
+		if(STOCK_ORDER_BUY_BELOW, STOCK_ORDER_SELL_BELOW)
+			return price <= order["price"] + STOCK_PRICE_EPSILON
+		if(STOCK_ORDER_SELL_ABOVE)
+			return price >= order["price"] - STOCK_PRICE_EPSILON
+	return FALSE
+
+/// Заявки после смены цен: сработавшая исполняется обычной сделкой и снимается, отказ снимает её с объяснением на карту; кулдаун по компании и остановленные торги ждут следующего тика.
+/datum/controller/subsystem/market/proc/run_stock_orders()
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		if(!length(account.stock_orders))
+			continue
+		for(var/list/order as anything in account.stock_orders.Copy())
+			run_stock_order(account, order)
+
+/datum/controller/subsystem/market/proc/run_stock_order(datum/bank_account/account, list/order)
+	var/ticker = order["ticker"]
+	var/datum/stock_company/company = companies[ticker]
+	if(!company)
+		account.stock_orders -= list(order)
+		account.bank_card_talk("Биржа: заявка «[econ_stock_order_text(order)]» снята. Компании больше нет на бирже.")
+		return
+	if(company.is_halted() || trade_cooling_down(account, ticker) || !stock_order_due(order, company.price))
+		return
+	var/is_buy = order["side"] == STOCK_ORDER_BUY_BELOW
+	var/count = is_buy ? order["count"] : min(order["count"], account.shares[ticker] || 0)
+	var/price = company.price
+	var/balance_before = account.account_balance
+	var/error = "Акций [ticker] на счёте больше нет."
+	if(count >= 1)
+		error = is_buy ? try_buy_shares(account, ticker, count) : try_sell_shares(account, ticker, count)
+	account.stock_orders -= list(order)
+	if(error)
+		account.bank_card_talk("Биржа: заявка «[econ_stock_order_text(order)]» снята. [error]", balloon = "заявка [ticker] снята")
+		return
+	var/total = abs(account.account_balance - balance_before)
+	account.bank_card_talk("Биржа: заявка исполнена, [is_buy ? "куплено" : "продано"] [count] шт. [ticker] по [round(price, 0.01)] кр., [is_buy ? "списано" : "зачислено"] [total] кр. с учётом спреда и комиссии.", balloon = "[ticker] [is_buy ? "куплено" : "продано"] [count] шт.")
+
+/proc/econ_stock_order_text(list/order)
+	switch(order["side"])
+		if(STOCK_ORDER_BUY_BELOW)
+			return "купить [order["count"]] шт. [order["ticker"]], если цена ≤ [order["price"]]"
+		if(STOCK_ORDER_SELL_BELOW)
+			return "продать [order["count"]] шт. [order["ticker"]], если цена ≤ [order["price"]]"
+	return "продать [order["count"]] шт. [order["ticker"]], если цена ≥ [order["price"]]"
 
 /// Строки экономики для итогов раунда.
 /proc/econ_market_report()

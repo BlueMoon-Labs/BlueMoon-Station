@@ -95,7 +95,7 @@
 		active = 0
 		for(var/ticker in companies)
 			var/datum/stock_company/company = companies[ticker]
-			if(!company.is_halted())
+			if(!company.is_halted() && !company.is_index)
 				active++
 	var/list/negative = list()
 	var/list/positive = list()
@@ -126,7 +126,7 @@
 	. = SSeconomy.settings.press_release_cooldown_minutes
 	if(company_event_chance <= 0 || !length(company_event_templates))
 		return
-	while(press_release_edge(., length(companies)) >= 1 && . < PRESS_RELEASE_COOLDOWN_LIMIT)
+	while(press_release_edge(., real_company_count()) >= 1 && . < PRESS_RELEASE_COOLDOWN_LIMIT)
 		. += 5
 
 /// Ошибка конфига, если кулдаун фальшивок из настроек небезопасен; в игре всё равно действует press_release_cooldown().
@@ -143,6 +143,8 @@
 		return "Редакции сектора в эту смену фальшивок не пропустят."
 	if(!company || companies[company.ticker] != company)
 		return "Такой компании нет на бирже."
+	if(company.is_index)
+		return "Индекс сектора считается по другим компаниям, новость о нём ничего не сдвинет."
 	if(econ_press_release_reserved(company, author))
 		return "Редакции сектора сейчас не берут новостей о [company.name]."
 	if(company.is_halted())

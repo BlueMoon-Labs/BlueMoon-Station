@@ -33,6 +33,8 @@
 	var/list/saved_companies = list()
 	for(var/ticker in companies)
 		var/datum/stock_company/company = companies[ticker]
+		if(company.is_index)
+			continue
 		if(company.halted_until)
 			saved_companies[ticker] = list("price_ratio" = STOCK_RELIST_RATIO, "event_mult" = 1, "trade_volume" = 0)
 		else

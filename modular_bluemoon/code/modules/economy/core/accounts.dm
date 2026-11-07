@@ -15,6 +15,9 @@
 	var/realized_stock_profit = 0
 	/// тикер -> world.time последней сделки
 	var/list/trade_cooldowns = list()
+	/// Заявки биржи: list("id", "ticker", "side", "count", "price"), до STOCK_ORDERS_MAX
+	var/list/stock_orders = list()
+	var/stock_order_serial = 0
 	/// Общий служебный счёт команды (инспекция Sol): скиммер его не копирует, кража с него не засчитывается
 	var/service_account = FALSE
 

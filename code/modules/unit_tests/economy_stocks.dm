@@ -1,6 +1,9 @@
-/// Восемь компаний из конфига, цены положительные, у каждого партнёра с компанией она есть на бирже.
+/// Восемь компаний из конфига и индекс сектора, цены положительные, у каждого партнёра с компанией она есть на бирже.
 /datum/unit_test/economy_stocks_loaded/Run()
-	TEST_ASSERT_EQUAL(length(SSmarket.companies), 8, "Восемь компаний")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Восемь компаний")
+	var/datum/stock_company/fund = SSmarket.get_company(STOCK_INDEX_TICKER)
+	TEST_ASSERT(istype(fund, /datum/stock_company/index), "Нет индекса сектора")
+	TEST_ASSERT_EQUAL(length(SSmarket.companies), 9, "Компании и индекс")
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		TEST_ASSERT_EQUAL(company.ticker, ticker, "Тикер компании")
@@ -105,7 +108,7 @@
 			TEST_ASSERT_EQUAL(length(company.history), history_before[ticker], "Остановленная компания торгуется")
 		else
 			TEST_ASSERT_EQUAL(length(company.history), history_before[ticker] + 1, "Тик не записал цену [ticker]")
-	TEST_ASSERT_EQUAL(length(SSmarket.scheduled_events), length(SSmarket.companies) - 1, "По событию на каждую торгуемую компанию")
+	TEST_ASSERT_EQUAL(length(SSmarket.scheduled_events), SSmarket.real_company_count() - 1, "По событию на каждую торгуемую компанию, у индекса событий нет")
 	for(var/datum/market_event/event as anything in SSmarket.scheduled_events)
 		TEST_ASSERT(event.company != halted, "Событие у остановленной компании")
 		TEST_ASSERT(event.eta >= world.time + STOCK_EVENT_ETA_MIN && event.eta <= world.time + STOCK_EVENT_ETA_MAX, "ETA вне 3-5 минут")
@@ -114,7 +117,7 @@
 	SSmarket.company_event_chance = 0
 	SSmarket.fire()
 	TEST_ASSERT_EQUAL(length(SSmarket.scheduled_events), 0, "Созревшие события не вышли")
-	TEST_ASSERT_EQUAL(length(company_events), length(SSmarket.companies) - 1, "Сигналы выхода событий")
+	TEST_ASSERT_EQUAL(length(company_events), SSmarket.real_company_count() - 1, "Сигналы выхода событий")
 
 /// Событие станции бьёт по привязанной компании, повтор в окне кулдауна не действует, "*" бьёт по всем.
 /datum/unit_test/economy_stocks/station_event/Run()
@@ -377,7 +380,7 @@
 	var/datum/stock_company/prospectors_company = SSmarket.get_company("PRSP")
 	TEST_ASSERT_NULL(prospectors_company.partner_id, "Компания осталась за партнёром, который на неё не ссылается")
 	TEST_ASSERT_EQUAL(SSmarket.company_event_chance, initial(SSmarket.company_event_chance), "Шанс выше 100 принят")
-	TEST_ASSERT_EQUAL(length(SSmarket.companies), 8, "Неизвестная компания добавлена")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Неизвестная компания добавлена")
 	TEST_ASSERT(SSmarket.get_company("NTRN") == nt, "Перечитывание заменило компанию")
 	TEST_ASSERT_EQUAL(nt.base_price, default_base, "Отрицательная цена принята")
 	TEST_ASSERT(abs(nt.price - 12.5) < 0.01, "Перечитывание сбросило цену")
@@ -387,7 +390,8 @@
 	TEST_ASSERT(!("alien_invasion" in SSmarket.station_events), "Неизвестное событие станции принято")
 	errors = SSmarket.load_settings("мусор")
 	TEST_ASSERT_EQUAL(length(errors), 1, "Секция не объект - одна ошибка ([jointext(errors, "; ")])")
-	TEST_ASSERT_EQUAL(length(SSmarket.companies), 8, "Встроенные компании при битой секции")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Встроенные компании при битой секции")
+	TEST_ASSERT(SSmarket.get_company(STOCK_INDEX_TICKER), "Индекс пропал при битой секции")
 
 /datum/unit_test/economy_stocks/config/proc/snapshot()
 	. = list("chance" = "[SSmarket.company_event_chance]")

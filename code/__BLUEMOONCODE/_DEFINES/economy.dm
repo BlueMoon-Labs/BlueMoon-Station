@@ -252,6 +252,7 @@
 #define ECON_STOCK_BUY "stock_buy"
 #define ECON_STOCK_SELL "stock_sell"
 #define ECON_STOCK_FEE "stock_fee"
+#define ECON_DIVIDEND "dividend"
 #define ECON_CASH_OUT "cash_out"
 #define ECON_CASH_IN "cash_in"
 #define ECON_BLACKMARKET "blackmarket"
@@ -345,6 +346,12 @@
 #define STOCK_ALL_COMPANIES "*"
 /// Ключ события-опровержения фальшивого пресс-релиза
 #define STOCK_REFUTATION_KEY "refutation"
+/// Тикер индекса сектора: 100 × средняя доля базовой цены остальных компаний
+#define STOCK_INDEX_TICKER "SECT"
+#define STOCK_ORDERS_MAX 5
+#define STOCK_ORDER_BUY_BELOW "buy_below"
+#define STOCK_ORDER_SELL_BELOW "sell_below"
+#define STOCK_ORDER_SELL_ABOVE "sell_above"
 /// Кулдаун фальшивых пресс-релизов случайно длиннее настройки, до этой доли
 #define PRESS_RELEASE_COOLDOWN_JITTER 0.5
 /// Безопасный кулдаун фальшивок при проверке конфига ищется не дальше этого, мин.

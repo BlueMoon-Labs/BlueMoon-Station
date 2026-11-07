@@ -109,6 +109,7 @@ SUBSYSTEM_DEF(economy)
 		account.update_dormancy()
 		account.payday()
 		CHECK_TICK
+	SSmarket?.pay_dividends()
 
 /// Экипаж на смене с должностью и все деньги станции: счета без должности, спящие, внестанционные, анонимные, акции и снятые наличные тоже, чтобы бедность нельзя было изобразить.
 /datum/controller/subsystem/economy/proc/state_totals()

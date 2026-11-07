@@ -89,6 +89,9 @@
 		"news_delay" = SSmarket.news_flash_minutes,
 		"refute_minutes" = settings.press_release_refute_minutes,
 		"persist_decay" = SSmarket.persist_decay,
+		"dividend_share" = settings.stock_dividend_share,
+		"payroll_minutes" = round(settings.payroll_interval_ticks * SSeconomy.wait / (1 MINUTES), 1),
+		"orders_max" = STOCK_ORDERS_MAX,
 	)
 
 /datum/computer_file/program/stock_exchange/proc/stocks_data(mob/living/user)
@@ -97,12 +100,16 @@
 	var/list/companies = list()
 	var/list/cooldowns = list()
 	var/list/last_trades = account ? account.trade_cooldowns : list()
+	var/list/outstanding = SSmarket.outstanding_shares()
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		var/list/entry = company.ui_entry()
 		entry -= "history"
 		entry["base_price"] = company.base_price
 		entry["max_buy"] = SSmarket.max_buy_count(account, company)
+		entry["index"] = company.is_index
+		entry["dividend_pool"] = round(company.dividend_pool)
+		entry["dividend_per_share"] = round(company.dividend_pool / max(outstanding[ticker], 1), 0.01)
 		companies += list(entry)
 		var/last_trade = last_trades[ticker]
 		if(!isnull(last_trade))
@@ -123,6 +130,7 @@
 		"using_treasury" = is_treasury,
 		"message" = messages[REF(user)] || "",
 		"position_cap" = account ? SSmarket.position_cap(account) : SSeconomy.settings.stock_position_cap,
+		"orders" = account ? account.stock_orders.Copy() : list(),
 	)
 
 /datum/computer_file/program/stock_exchange/proc/stocks_act(mob/living/user, action, list/params)
@@ -155,6 +163,19 @@
 				return TRUE
 			var/total = abs(account.account_balance - balance_before)
 			messages[user_ref] = "[is_buy ? "Куплено" : "Продано"] [round(count)] [ticker] [is_buy ? "за" : "на"] [total] кр. с учётом спреда и комиссии."
+			return TRUE
+		if("add_order")
+			var/datum/bank_account/account = trading_account(user)
+			var/error = SSmarket.add_stock_order(account, params["ticker"], params["side"], params["count"], params["price"])
+			if(error)
+				messages[user_ref] = error
+				return TRUE
+			var/list/order = account.stock_orders[length(account.stock_orders)]
+			messages[user_ref] = "Заявка принята: [econ_stock_order_text(order)]. Проверяется раз в минуту после смены цен."
+			return TRUE
+		if("cancel_order")
+			var/datum/bank_account/account = trading_account(user)
+			messages[user_ref] = SSmarket.cancel_stock_order(account, params["id"]) ? "Заявка снята." : "Такой заявки уже нет."
 			return TRUE
 		if("use_treasury")
 			if(!econ_can_trade_treasury(user))

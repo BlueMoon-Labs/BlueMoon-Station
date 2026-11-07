@@ -138,7 +138,7 @@
 		else if(template["effect"] > 0)
 			positive += template["effect"]
 	var/cycle_minutes = 100 / SSmarket.company_event_chance + STOCK_EVENT_ETA_MAX / (1 MINUTES)
-	var/real_per_hour = length(SSmarket.companies) * 60 / cycle_minutes
+	var/real_per_hour = SSmarket.real_company_count() * 60 / cycle_minutes
 	var/fakes_per_hour = 60 / SSmarket.press_release_cooldown()
 	var/total = length(SSmarket.company_event_templates)
 	var/negative_share = fakes_per_hour / (fakes_per_hour + real_per_hour * length(negative) / total)
@@ -166,7 +166,7 @@
 	TEST_ASSERT_EQUAL(SSmarket.press_release_cooldown(), SSeconomy.settings.press_release_cooldown_minutes, "Безопасный кулдаун из конфига подменён")
 	TEST_ASSERT_EQUAL(length(SSmarket.check_press_release_cooldown()), 0, "Ошибка на безопасном кулдауне")
 	SSeconomy.settings.press_release_cooldown_minutes = 10
-	TEST_ASSERT(SSmarket.press_release_edge(10, length(SSmarket.companies)) >= 1, "Кулдаун 10 мин. считается безопасным")
+	TEST_ASSERT(SSmarket.press_release_edge(10, SSmarket.real_company_count()) >= 1, "Кулдаун 10 мин. считается безопасным")
 	TEST_ASSERT_EQUAL(length(SSmarket.check_press_release_cooldown()), 1, "Опасный кулдаун без ошибки настройки")
 	TEST_ASSERT(SSmarket.press_release_cooldown() > 10 && SSmarket.press_release_edge() < 1, "Действующий кулдаун не безопасен: [SSmarket.press_release_cooldown()]")
 	TEST_ASSERT_EQUAL(SSeconomy.settings.press_release_cooldown_minutes, 10, "Проверка переписала настройку")
@@ -174,7 +174,7 @@
 	TEST_ASSERT(SSmarket.press_release_ready_at - world.time >= SSmarket.press_release_cooldown() MINUTES - 1 SECONDS, "Релиз взял опасный кулдаун из настройки")
 	SSeconomy.settings.press_release_cooldown_minutes = saved_cooldown
 	SSmarket.company_event_templates += list(list("key" = "moon", "headline" = "%NAME% строит базу на Луне", "effect" = 0.45))
-	TEST_ASSERT(SSmarket.press_release_edge(saved_cooldown, length(SSmarket.companies)) >= 1, "Большой хороший шаблон считается безопасным: продать после хорошей новости и откупить окупается")
+	TEST_ASSERT(SSmarket.press_release_edge(saved_cooldown, SSmarket.real_company_count()) >= 1, "Большой хороший шаблон считается безопасным: продать после хорошей новости и откупить окупается")
 	TEST_ASSERT_EQUAL(length(SSmarket.check_press_release_cooldown()), 1, "Большой хороший шаблон без ошибки настройки")
 	SSmarket.company_event_templates.len--
 	SSmarket.company_event_chance = 0

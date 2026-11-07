@@ -14,7 +14,7 @@
 /// Экипаж медианного раунда; составы p25 и p75 - варианты для отчёта
 #define SIM_ROSTER_MEDIAN 44
 /// Причины, которыми деньги появляются в прогоне
-#define SIM_EMISSION_REASONS list(ECON_GRANT, ECON_WORK, ECON_WORK_PREMIUM, ECON_CONTRACT, ECON_WAGE_FLOOR, ECON_EVENT, ECON_GAMBLING_WIN)
+#define SIM_EMISSION_REASONS list(ECON_GRANT, ECON_WORK, ECON_WORK_PREMIUM, ECON_CONTRACT, ECON_WAGE_FLOOR, ECON_EVENT, ECON_GAMBLING_WIN, ECON_DIVIDEND)
 #define SIM_VEND_ATTEMPTS_MAX 50
 #define SIM_SLOT_BET 25
 /// Лотерея открывается через час прогона: событие с earliest_start 15 мин., к часу у экипажа накоплен бюджет
