@@ -76,11 +76,12 @@
 		stored_item = wearer.s_store
 		wearer.transferItemToLoc(stored_item, src, TRUE)
 	wearer.transferItemToLoc(piece, null, TRUE)
+	// до возврата одежды: её equipped() должен получить слот без эффектов МОДа
+	piece.restore_normal_features()
 	piece.equip_item_from_overslot()
 	if(stored_item && !wearer.equip_to_slot_if_possible(stored_item, ITEM_SLOT_SUITSTORE, qdel_on_fail = FALSE, disable_warning = TRUE))
 		stored_item.forceMove(wearer.drop_location())
 	piece.toggle_all_linked_modules(MODPART_CONSEALED)
-	piece.restore_normal_features()
 	update_control_overlay()
 	update_hardlight()
 	if(user)

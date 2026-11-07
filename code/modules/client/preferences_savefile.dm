@@ -701,6 +701,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
 	S["long_strip_menu"] >> long_strip_menu
+	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
+	S["right_click_mode"] >> right_click_choice
+	S["right_click_notice_seen"] >> right_click_notice_seen
+	S["shift_right_click_mode"] >> shift_right_click_choice
+	S["context_menu_style"] >> context_menu_style
 	S["pixel_size"]	    	>> pixel_size
 	S["scaling_method"]	    >> scaling_method
 	S["hud_toggle_flash"] >> hud_toggle_flash
@@ -881,6 +886,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
+	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
+	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		right_click_choice = null
+	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
+	if(!(shift_right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		shift_right_click_choice = null
+	context_menu_style = sanitize_context_menu_style(context_menu_style)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1121,10 +1133,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 ///
 /// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
 /// честный результат записи прямо сейчас.
-/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+///
+/// lazy = TRUE не заводит своего сброса: ключ уедет с ближайшей записью, логаутом или ребутом.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE, lazy = FALSE)
 	if(!path || !key)
 		return FALSE
-	buffer_single_pref(key, value)
+	buffer_single_pref(key, value, lazy && !immediate)
 	if(immediate)
 		return flush_single_prefs()
 	return TRUE
@@ -1135,11 +1149,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
  * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
  */
-/datum/preferences/proc/buffer_single_pref(key, value)
+/datum/preferences/proc/buffer_single_pref(key, value, lazy = FALSE)
 	if(!key)
 		return FALSE
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
+	if(lazy)
+		return TRUE
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
 	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.
@@ -1396,6 +1412,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
+	WRITE_FILE(S["right_click_mode"], right_click_choice)
+	WRITE_FILE(S["right_click_notice_seen"], right_click_notice_seen)
+	WRITE_FILE(S["shift_right_click_mode"], shift_right_click_choice)
+	WRITE_FILE(S["context_menu_style"], context_menu_style)
 	WRITE_FILE(S["autostand"], autostand)
 	WRITE_FILE(S["cit_toggles"], cit_toggles)
 	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)
@@ -1953,6 +1973,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/list/working_preset_loadout = loadout_data[preset_slot_key]
 	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
 	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
+	// Старый deepCopyList записывал массив предметов как JSON-объект с ключом "/list".
+	if(islist(working_preset_loadout) && length(working_preset_loadout) == 1 && working_preset_loadout[1] == "/list")
+		restore_preset_loadout = TRUE
 	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
@@ -2819,6 +2842,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
+	if(!export && length(pending_single_prefs))
+		S.cd = "/"
+		var/root_version
+		READ_FILE(S["version"], root_version)
+		if(isnum(root_version) && root_version >= SAVEFILE_VERSION_MAX)
+			write_pending_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
 		character_setup_ui?.record_saved_state()

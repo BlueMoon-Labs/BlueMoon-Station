@@ -403,6 +403,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/widescreenpref = TRUE
 	///Strip menu style
 	var/long_strip_menu = TRUE
+	/// Режим ПКМ, RIGHT_CLICK_MODE_*. null - игрок не выбирал, решает конфиг.
+	var/right_click_choice = null
+	/// Сообщение о режимах ПКМ уже было
+	var/right_click_notice_seen = FALSE
+	/// Что делает Shift+ПКМ, RIGHT_CLICK_MODE_*. null - противоположное ПКМ.
+	var/shift_right_click_choice = null
+	/// Вид меню действий: настройка -> значение, варианты в GLOB.context_menu_style_choices. Нет ключа - по умолчанию.
+	var/list/context_menu_style
 	///What size should pixels be displayed as? 0 is strech to fit
 	var/pixel_size = 0
 	///What scaling method should we use?
@@ -926,12 +934,30 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			return group
 	return null
 
+/datum/preferences/proc/body_mod_has_robotic_eyes()
+	return pref_species && (ROBOTIC_LIMBS in pref_species.species_traits) && pref_species.mutanteyes != /obj/item/organ/eyes
+
+/// Общий датум для эээ ну вы поняли тут понятно все
+/datum/preferences/proc/body_mod_organ_option_available(slot, list/option)
+	if(!option)
+		return FALSE
+	if(!pref_species)
+		return TRUE
+	if(slot == ORGAN_SLOT_EYES && body_mod_has_robotic_eyes())
+		return !isnull(option["path"])
+	return TRUE
+
+/datum/preferences/proc/body_mod_can_replace_organ(slot, obj/item/organ/old_organ, list/group)
+	if(old_organ.type == group["base"] || body_mod_organ_registered(old_organ.type))
+		return TRUE
+	return slot == ORGAN_SLOT_EYES && body_mod_has_robotic_eyes()
+
 /datum/preferences/proc/body_mod_organ_option(slot, option_id)
 	var/list/group = body_mod_organ_group(slot)
 	if(!group)
 		return null
 	for(var/list/option in group["options"])
-		if(option["id"] == option_id)
+		if(option["id"] == option_id && body_mod_organ_option_available(slot, option))
 			return option
 	return null
 
@@ -946,7 +972,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		return FALSE
 	switch(slot)
 		if(ORGAN_SLOT_EYES)
-			return pref_species.mutanteyes != /obj/item/organ/eyes
+			return pref_species.mutanteyes != /obj/item/organ/eyes && !body_mod_has_robotic_eyes()
 		if(ORGAN_SLOT_EARS)
 			return pref_species.mutantears != /obj/item/organ/ears
 		if(ORGAN_SLOT_LUNGS)
@@ -1078,7 +1104,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(old_organ)
 			if(old_organ.type == new_path)
 				continue
-			if(old_organ.type != group["base"] && !body_mod_organ_registered(old_organ.type))
+			if(old_organ.type != group["base"] && !body_mod_organ_registered(old_organ.type) && !body_mod_can_replace_organ(slot, old_organ, group))
 				continue
 			old_organ.Remove()
 			qdel(old_organ)
@@ -1127,7 +1153,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(LOADOUT_LIMB_PROSTHETIC)
 			return (pref_species && (ROBOTIC_LIMBS in pref_species.species_traits)) ? 0 : 1
 		if(LOADOUT_LIMB_AMPUTATED)
-			return 2
+			return (pref_species && istype(pref_species, /datum/species/jelly)) ? 0 : 2
 	return 0
 
 /datum/preferences/proc/GetQuirkBalance(mob/user)

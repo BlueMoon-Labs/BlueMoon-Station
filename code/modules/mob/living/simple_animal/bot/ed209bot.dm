@@ -553,3 +553,17 @@
 			C.handcuffed = new /obj/item/restraints/handcuffs/cable/zipties/used(C)
 			C.update_handcuffed()
 			back_to_idle()
+
+/mob/living/simple_animal/bot/ed209/lethal
+	name = "\improper ED-209 Enforcer"
+	desc = "A security robot with its combat inhibitor disabled. It fires live ammunition."
+	emagged = 2
+	arrest_type = TRUE
+	declare_arrests = FALSE
+	idcheck = FALSE
+	weaponscheck = FALSE
+	check_records = FALSE
+
+/mob/living/simple_animal/bot/ed209/lethal/Initialize(mapload)
+	. = ..()
+	set_weapon()

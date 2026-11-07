@@ -1706,7 +1706,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		click_intercept_time = 0 //Just reset. Let's not keep re-checking forever.
 	var/list/modifiers = params2list(params)
 
-	if(modifiers[DRAG])
+	if(click_is_drag_leftover(modifiers))
 		return
 
 	var/mcl = CONFIG_GET(number/minute_click_limit)
@@ -1950,7 +1950,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	sync_hearted_pref(prefs)
 	if(!src)
 		return
-	prefs.save_preferences()
+	prefs.save_pref_var("hearted_until")
 
 /// compiles a full list of verbs and sends it to the browser
 /client/proc/init_verbs()

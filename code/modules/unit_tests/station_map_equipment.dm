@@ -456,7 +456,8 @@
 			unnamed += "[station_area.type]"
 	TEST_ASSERT(!length(unnamed), "Станционные зоны без имени: [unnamed.Join(", ")]")
 
-#define SUPERMATTER_COLLECTOR_RANGE 2
+// Случайные движки Box: у "SM 1x3" коллекторы в ряд до 4 клеток от кристалла, у "SM 5x5" - на трёх.
+#define SUPERMATTER_COLLECTOR_RANGE 4
 #define SUPERMATTER_MIN_COLLECTORS 6
 
 /// У кристалла суперматерии станции стоят радколлекторы на сети с вводом СМЕСа: наш кристалл кормит их излучением, в тесла-катушки бьёт только при перегрузке.
@@ -464,6 +465,9 @@
 	requires_full_map = TRUE
 
 /datum/unit_test/station_supermatter_has_rad_collectors/Run()
+	// "Сделай сам": коллекторы лежат на складе, собрать движок - работа инженеров.
+	if("Box DIY_SM" in GLOB.chosen_station_templates)
+		return
 	for(var/obj/machinery/power/supermatter_crystal/engine/crystal as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/supermatter_crystal/engine))
 		if(!is_station_level(crystal.z))
 			continue
@@ -776,3 +780,18 @@
 		if(is_station_level(lathe.z) && istype(get_area(lathe), /area/security) && lathe.stored_research.isDesignResearchedID("c45"))
 			return
 	TEST_FAIL("В охране нет автолата с патронами .45")
+
+/// Под двойным шлюзом файрлок стоит на обеих створках или ни на одной: иначе при пробоине закрывается половина проёма.
+/datum/unit_test/station_wide_airlocks_firelock_both_leaves
+	requires_full_map = TRUE
+
+/datum/unit_test/station_wide_airlocks_firelock_both_leaves/Run()
+	var/list/half_sealed = list()
+	for(var/obj/machinery/door/airlock/multi_tile/airlock as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock/multi_tile))
+		if(!is_station_level(airlock.z) || !airlock.filler)
+			continue
+		var/turf/first_leaf = get_turf(airlock)
+		var/turf/second_leaf = get_turf(airlock.filler)
+		if(!!(locate(/obj/machinery/door/firedoor) in first_leaf) != !!(locate(/obj/machinery/door/firedoor) in second_leaf))
+			half_sealed += "[airlock.name] ([airlock.x],[airlock.y],[airlock.z])"
+	TEST_ASSERT(!length(half_sealed), "Двойные шлюзы с файрлоком только под одной створкой: [half_sealed.Join(", ")]")

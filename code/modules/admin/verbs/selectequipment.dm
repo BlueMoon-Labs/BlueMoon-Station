@@ -301,7 +301,7 @@
 	if(istype(dresscode, /datum/outfit/admin_loadout))
 		human_target.mind?.set_assigned_heirloom(null)
 		if(human_target.client?.prefs)
-			human_target.client.prefs.copy_to(human_target, icon_updates = TRUE, roundstart_checks = FALSE)
+			human_target.client.prefs.copy_to(human_target, icon_updates = TRUE, roundstart_checks = FALSE, initial_spawn = TRUE)
 		SSjob.equip_loadout(null, human_target, bypass_prereqs = TRUE)
 		new_heirloom = human_target.mind?.assigned_heirloom
 	else if(dresscode != "Naked")
