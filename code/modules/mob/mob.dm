@@ -235,7 +235,7 @@
 		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
-/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
+/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags = NONE, separation = " ")
 	. = ..()
 	if(self_message && target != src)
 		if(omni || !blind_message)

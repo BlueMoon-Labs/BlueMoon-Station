@@ -1027,7 +1027,7 @@ GLOBAL_LIST_INIT(hidden_reaction_suffixes, list(", незаметно", ", ти�
 				return TRUE
 	return FALSE
 
-/mob/living/proc/get_unconsenting(interaction_flags, list/ignored_mobs)
+/mob/living/proc/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
 	var/list/nope = list()
 	nope += ignored_mobs
 	for(var/mob/M in range(7, src))

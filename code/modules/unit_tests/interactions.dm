@@ -23,7 +23,7 @@
 /mob/living/interaction_privacy_probe/show_message(msg, type, alt_msg, alt_type)
 	received_messages += msg
 
-/mob/living/interaction_privacy_probe/get_unconsenting(extreme, list/ignored_mobs, unholy, unholy_hard)
+/mob/living/interaction_privacy_probe/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
 	return ignored_mobs
 
 /datum/interaction/privacy_test
@@ -125,7 +125,7 @@
 /mob/living/carbon/human/interaction_climax_probe
 	var/last_interaction_message
 
-/mob/living/carbon/human/interaction_climax_probe/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
+/mob/living/carbon/human/interaction_climax_probe/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags = NONE, separation = " ")
 	last_interaction_message = message
 
 /datum/unit_test/interaction_eye_ear_climax/Run()

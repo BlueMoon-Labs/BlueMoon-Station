@@ -30,8 +30,7 @@
 		return
 
 	if(prob(50))
-		// var/genital_name = target.get_penetrating_genital_name(TRUE)
-		target.visible_message(span_lewd("\[genital_name] <b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		target.visible_message(span_lewd("<b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
@@ -767,7 +766,7 @@
 		return
 
 	if(prob(50))
-		user.visible_message(span_lewd("\[pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		user.visible_message(span_lewd("Слышится забавный гудок — это [pick(GLOB.breast_nouns)] <b>[target]</b>!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
@@ -831,7 +830,7 @@
 		return
 
 	if(prob(50))
-		target.visible_message(span_lewd("\[pick(GLOB.breast_nouns)] <b>[target]</b> [pick(GLOB.breast_nouns)] забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		target.visible_message(span_lewd("Слышится забавный гудок — это [pick(GLOB.breast_nouns)] <b>[target]</b>!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 

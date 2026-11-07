@@ -182,25 +182,25 @@
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
 			if(partner.has_mouth() && partner.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
+				message = "кончает глубоко в горло <b>[partner]</b>."
 			else
-				message = "cums on \the [partner]'s face."
+				message = "кончает на лицо <b>[partner]</b>."
 		if(CUM_TARGET_VAGINA)
 			if(partner.is_bottomless() && partner.has_vagina())
-				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				message = "кончает в вагину <b>[partner]</b>, наполняя её семенем."
 				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [partner]'s belly."
+				message = "кончает на живот <b>[partner]</b>."
 		if(CUM_TARGET_ANUS)
 			if(partner.is_bottomless() && partner.has_anus())
-				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
+				message = "кончает в зад <b>[partner]</b>, погрузившись до узла."
 			else
-				message = "cums on \the [partner]'s backside."
+				message = "кончает на ягодицы <b>[partner]</b>."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
 	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
-		message = "cums all over [partner]'s body"
+		message = "кончает на тело <b>[partner]</b>."
 
 	if(istype(partner, /mob/living/carbon))
 		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
@@ -410,25 +410,25 @@
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
 			if(partner.has_mouth() && partner.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
+				message = "кончает глубоко в горло <b>[partner]</b>."
 			else
-				message = "cums on \the [partner]'s face."
+				message = "кончает на лицо <b>[partner]</b>."
 		if(CUM_TARGET_VAGINA)
 			if(partner.is_bottomless() && partner.has_vagina())
-				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				message = "кончает в вагину <b>[partner]</b>, наполняя её семенем."
 				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [partner]'s belly."
+				message = "кончает на живот <b>[partner]</b>."
 		if(CUM_TARGET_ANUS)
 			if(partner.is_bottomless() && partner.has_anus())
-				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
+				message = "кончает в зад <b>[partner]</b>, погрузившись до узла."
 			else
-				message = "cums on \the [partner]'s backside."
+				message = "кончает на ягодицы <b>[partner]</b>."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
 	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
-		message = "cums all over [partner]'s body"
+		message = "кончает на тело <b>[partner]</b>."
 
 	if(istype(partner, /mob/living/carbon))
 		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
@@ -639,25 +639,25 @@
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
 			if(partner.has_mouth() && partner.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
+				message = "кончает глубоко в горло <b>[partner]</b>."
 			else
-				message = "cums on \the [partner]'s face."
+				message = "кончает на лицо <b>[partner]</b>."
 		if(CUM_TARGET_VAGINA)
 			if(partner.is_bottomless() && partner.has_vagina())
-				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				message = "кончает в вагину <b>[partner]</b>, наполняя её семенем."
 				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [partner]'s belly."
+				message = "кончает на живот <b>[partner]</b>."
 		if(CUM_TARGET_ANUS)
 			if(partner.is_bottomless() && partner.has_anus())
-				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
+				message = "кончает в зад <b>[partner]</b>, погрузившись до узла."
 			else
-				message = "cums on \the [partner]'s backside."
+				message = "кончает на ягодицы <b>[partner]</b>."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
 	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
-		message = "cums all over [partner]'s body"
+		message = "кончает на тело <b>[partner]</b>."
 
 	if(istype(partner, /mob/living/carbon))
 		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
@@ -868,25 +868,25 @@
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
 			if(partner.has_mouth() && partner.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
+				message = "кончает глубоко в горло <b>[partner]</b>."
 			else
-				message = "cums on \the [partner]'s face."
+				message = "кончает на лицо <b>[partner]</b>."
 		if(CUM_TARGET_VAGINA)
 			if(partner.is_bottomless() && partner.has_vagina())
-				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				message = "кончает в вагину <b>[partner]</b>, наполняя её семенем."
 				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [partner]'s belly."
+				message = "кончает на живот <b>[partner]</b>."
 		if(CUM_TARGET_ANUS)
 			if(partner.is_bottomless() && partner.has_anus())
-				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
+				message = "кончает в зад <b>[partner]</b>, погрузившись до узла."
 			else
-				message = "cums on \the [partner]'s backside."
+				message = "кончает на ягодицы <b>[partner]</b>."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
 	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
-		message = "cums all over [partner]'s body"
+		message = "кончает на тело <b>[partner]</b>."
 
 	if(istype(partner, /mob/living/carbon))
 		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
