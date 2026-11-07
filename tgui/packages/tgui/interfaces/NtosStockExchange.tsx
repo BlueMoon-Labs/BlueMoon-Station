@@ -3,10 +3,10 @@ import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Dropdown, NoticeBox, RestrictedInput, Stack, Table } from '../components';
+import { AnimatedNumber, Box, Button, Dropdown, NoticeBox, RestrictedInput, Stack, Table } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ChangeBadge, Credits, EconomyLogo, formatCredits, StockEntry } from './common/Economy';
-import { NtChart, NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtChart, NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
 
 type CompanyEntry = Omit<StockEntry, 'history'> & {
   base_price: number;
@@ -179,7 +179,7 @@ const QuoteTile = (props: { company: CompanyEntry; held: number; selected: boole
       </div>
       <div className="NtTerm__tileName">{company.name}</div>
       <div className="NtTerm__tilePrice">
-        {company.price.toFixed(2)}
+        <NtPulse value={company.price}>{company.price.toFixed(2)}</NtPulse>
       </div>
     </div>
   );
@@ -221,7 +221,7 @@ const QuotesSection = () => {
         <Stack align="flex-end" mb={0.5} wrap>
           <Stack.Item grow>
             <Box className="NtTerm__num" fontSize={1.9} lineHeight={1.1}>
-              {company.price.toFixed(2)}
+              <NtPulse value={company.price}>{company.price.toFixed(2)}</NtPulse>
             </Box>
             <Box>
               <ChangeBadge percent={company.change} />
@@ -370,8 +370,12 @@ export const NtosStockExchangeContent = () => {
       readout={
         data.has_account ? (
           <>
-            <NtReadout label="Доступно">{formatCredits(data.balance)}</NtReadout>
-            <NtReadout label="Акции">{formatCredits(data.portfolio)}</NtReadout>
+            <NtReadout label="Доступно">
+              <AnimatedNumber value={data.balance} format={(value) => formatCredits(value)} />
+            </NtReadout>
+            <NtReadout label="Акции">
+              <AnimatedNumber value={data.portfolio} format={(value) => formatCredits(value)} />
+            </NtReadout>
             <NtReadout label="Прибыль за смену" tone={data.realized > 0 ? 'good' : data.realized < 0 ? 'bad' : undefined}>
               {formatCredits(data.realized, { signed: true })}
             </NtReadout>

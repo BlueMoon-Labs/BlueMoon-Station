@@ -2,7 +2,7 @@ import { BooleanLike } from 'common/react';
 import { useEffect, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Stack, Table } from '../components';
+import { AnimatedNumber, Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Stack, Table } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
@@ -167,7 +167,7 @@ export const NtosDepartmentBudgetContent = () => {
           <>
             <NtReadout label="Грант NT">{formatCredits(department.grant)}</NtReadout>
             <NtReadout label="Баланс" tone={department.balance < 0 ? 'bad' : undefined}>
-              {formatCredits(department.balance)}
+              <AnimatedNumber value={department.balance} format={(value) => formatCredits(value)} />
             </NtReadout>
           </>
         ) : undefined

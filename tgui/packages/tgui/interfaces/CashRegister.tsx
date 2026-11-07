@@ -1,11 +1,11 @@
 import { BooleanLike, classes } from 'common/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Input, RestrictedInput, Stack } from '../components';
+import { AnimatedNumber, Box, Button, Input, RestrictedInput, Stack } from '../components';
 import { Window } from '../layouts';
 import { formatCredits } from './common/Economy';
-import { NtEmpty, NtFrame, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtEmpty, NtFrame, NtLine, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
 
 type MenuItem = {
   id: number;
@@ -76,7 +76,13 @@ const Bill = (props: { cashier: Cashier; titled: boolean }) => {
           {titled ? `Счёт: ${cashier.name}` : 'К оплате'}
           {!cashier.present && <span className="color-average"> (отошёл)</span>}
         </Stack.Item>
-        {!empty && <Stack.Item className="NtTerm__lcdValue">{formatCredits(cashier.total)}</Stack.Item>}
+        {!empty && (
+          <Stack.Item className="NtTerm__lcdValue">
+            <NtPulse value={cashier.rev} neutral>
+              {formatCredits(cashier.total)}
+            </NtPulse>
+          </Stack.Item>
+        )}
       </Stack>
       {empty ? (
         <Box className="NtTerm__hint" mt={0.5}>
@@ -220,10 +226,34 @@ const CustomerView = () => {
   );
 };
 
+/** Сколько только что оплатили по счёту кассира: выручка кассы выросла, а его счёт опустел. Строка гаснет через 8 с. */
+const usePaid = (cashier: Cashier, totalSales: number) => {
+  const previous = useRef({ total: cashier.total, sales: totalSales });
+  const [paid, setPaid] = useState<number | null>(null);
+  useEffect(() => {
+    const was = previous.current;
+    previous.current = { total: cashier.total, sales: totalSales };
+    if (was.total > 0 && cashier.total === 0 && totalSales > was.sales) {
+      setPaid(was.total);
+    } else if (cashier.total > 0) {
+      setPaid(null);
+    }
+  }, [cashier.total, totalSales]);
+  useEffect(() => {
+    if (paid === null) {
+      return;
+    }
+    const timer = setTimeout(() => setPaid(null), 8000);
+    return () => clearTimeout(timer);
+  }, [paid]);
+  return paid;
+};
+
 /** Свой счёт кассира: штуки каждой позиции правятся тут же. */
 const MyOrder = (props: { cashier: Cashier }) => {
   const { act, data } = useBackend<CashRegisterData>();
   const { cashier } = props;
+  const paid = usePaid(cashier, data.total_sales ?? 0);
   return (
     <NtFrame
       title="Ваш счёт"
@@ -234,6 +264,7 @@ const MyOrder = (props: { cashier: Cashier }) => {
           </Button>
         )
       }>
+      {paid !== null && <div className="NtTerm__paid">Оплачено: {formatCredits(paid)}</div>}
       {cashier.order.length === 0 && <NtEmpty>Пусто: добавьте позиции из меню.</NtEmpty>}
       {cashier.order.map((line) => (
         <Stack key={line.id} align="center" className="NtTerm__line">
@@ -358,9 +389,13 @@ export const CashRegisterContent = () => {
       status={cashiers.length ? `За кассой: ${cashiers.map((cashier) => cashier.name).join(', ')}` : 'Касса свободна'}
       readout={
         is_cashier ? (
-          <NtReadout label="Выручка кассы">{formatCredits(total_sales ?? 0)}</NtReadout>
+          <NtReadout label="Выручка кассы">
+            <AnimatedNumber value={total_sales ?? 0} format={(value) => formatCredits(value)} />
+          </NtReadout>
         ) : (
-          <NtReadout label="Ваш счёт">{has_account ? formatCredits(balance) : 'нет карты'}</NtReadout>
+          <NtReadout label="Ваш счёт">
+            {has_account ? <AnimatedNumber value={balance} format={(value) => formatCredits(value)} /> : 'нет карты'}
+          </NtReadout>
         )
       }>
       {is_cashier ? <CashierView /> : <CustomerView />}

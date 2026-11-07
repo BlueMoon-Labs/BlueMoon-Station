@@ -3,7 +3,7 @@ import { BooleanLike } from 'common/react';
 import { plural } from 'common/ru/plural';
 import { storage } from 'common/storage';
 import { createSearch } from 'common/string';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
@@ -22,7 +22,7 @@ import {
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
-import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Pack = {
   name: string;
@@ -973,11 +973,28 @@ const Bundles = (props) => {
   );
 };
 
+/** Ставку игрока перебили, пока окно открыто: сказать об этом, пока он не поставит снова. */
+const useOutbid = (lot: AuctionLot | null | undefined) => {
+  const previous = useRef<{ uid: number; mine: boolean } | null>(null);
+  const [outbid, setOutbid] = useState<string | null>(null);
+  useEffect(() => {
+    const was = previous.current;
+    previous.current = lot ? { uid: lot.uid, mine: !!lot.mine } : null;
+    if (!lot || lot.mine || (was && was.uid !== lot.uid)) {
+      setOutbid(null);
+    } else if (was?.mine) {
+      setOutbid(`Вашу ставку перебили: ${lot.bidder}, ${formatCredits(lot.bid)}; ваши деньги вернулись на счёт.`);
+    }
+  }, [lot?.uid, lot?.mine, lot?.bid]);
+  return outbid;
+};
+
 const Auction = (props) => {
   const { act, data } = useBackend<CargoData>();
   const lot = data.auction;
   const results = data.auction_results || [];
   const [amount, setAmount] = useState<number | null>(null);
+  const outbid = useOutbid(lot);
   const minBid = lot?.min_bid || 0;
   const bid = Math.max(amount ?? minBid, minBid);
   return (
@@ -995,8 +1012,11 @@ const Auction = (props) => {
             {lot.desc}
           </Box>
           <NtLine label="Оценка лота">{formatCredits(lot.value)}</NtLine>
+          {!!outbid && <NoticeBox warning>{outbid}</NoticeBox>}
           <NtLine label="Текущая ставка" tone={lot.mine ? 'good' : lot.bid ? 'warn' : 'dim'}>
-            {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
+            <NtPulse value={lot.bid} neutral>
+              {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
+            </NtPulse>
           </NtLine>
           <NtLine label="Торгуются ещё">{lot.rivals} станции сектора</NtLine>
           <Stack align="center" mt={1.5} wrap>

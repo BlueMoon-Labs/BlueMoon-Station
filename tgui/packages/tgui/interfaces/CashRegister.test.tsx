@@ -55,7 +55,7 @@ const setup = (data: Partial<CashRegisterData> = {}) => {
   const store = createStore(combineReducers({ backend: backendReducer, debug: debugReducer }));
   setGlobalStore(store);
   store.dispatch(backendUpdate({ config: { interface: 'CashRegister' }, data: { ...base, ...data } }));
-  return { ...render(<CashRegisterContent />), topic };
+  return { ...render(<CashRegisterContent />), topic, store };
 };
 
 const sent = (topic, action) =>
@@ -170,4 +170,28 @@ test('плюс в счёт гаснет на пределе штук', () => {
   });
   expect(getAllByText('В счёт')[0].closest('.Button')?.className).toContain('Button--disabled');
   expect(getAllByText('В счёт')[1].closest('.Button')?.className).not.toContain('Button--disabled');
+});
+
+test('кассир видит, что его счёт оплатили; очистка счёта без выручки - не оплата', () => {
+  const mine = { ...ivan, mine: 1 };
+  const { container, rerender, store } = setup({ is_cashier: 1, total_sales: 130, cashiers: [mine] });
+  const update = (data: Partial<CashRegisterData>) => {
+    store.dispatch(backendUpdate({ data }));
+    rerender(<CashRegisterContent />);
+  };
+  expect(container.querySelector('.NtTerm__paid')).toBeNull();
+  update({ total_sales: 360, cashiers: [{ ...mine, order: [], total: 0, rev: 9 }] });
+  expect(text(container.querySelector('.NtTerm__paid') as HTMLElement)).toBe('Оплачено: 230 кр.');
+  update({ cashiers: [{ ...mine, rev: 10 }] });
+  expect(container.querySelector('.NtTerm__paid')).toBeNull();
+  update({ cashiers: [{ ...mine, order: [], total: 0, rev: 11 }] });
+  expect(container.querySelector('.NtTerm__paid')).toBeNull();
+});
+
+test('клиенту подсвечен изменившийся счёт кассира', () => {
+  const { container, rerender, store } = setup();
+  expect(container.querySelector('.NtTerm__pulse')).toBeNull();
+  store.dispatch(backendUpdate({ data: { cashiers: [{ ...ivan, total: 330, rev: 6 }] } }));
+  rerender(<CashRegisterContent />);
+  expect(text(container.querySelector('.NtTerm__pulse--new') as HTMLElement)).toBe('330 кр.');
 });

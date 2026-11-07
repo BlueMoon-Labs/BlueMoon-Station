@@ -69,7 +69,7 @@ const setup = (data: Partial<StockExchangeData> = {}, component = <NtosStockExch
   const store = createStore(combineReducers({ backend: backendReducer, debug: debugReducer }));
   setGlobalStore(store);
   store.dispatch(backendUpdate({ config: { interface: 'NtosStockExchange' }, data: { ...base, ...data } }));
-  return { ...render(component), topic };
+  return { ...render(component), topic, store };
 };
 
 const sent = (topic: jest.Mock, action: string) =>
@@ -355,4 +355,15 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('Среднее по всем компаниям сектора: 100 - когда все по базовой цене');
     expect(content).toContain('Закупки станции у "Накамура": цену не двигают: 5% суммы идёт в дивиденды держателям');
   });
+});
+
+test('сменившаяся цена подсвечивается по направлению, при открытии окна подсветки нет', () => {
+  const { container, rerender, store } = setup();
+  expect(container.querySelector('.NtTerm__pulse')).toBeNull();
+  const companies = base.companies.map((company) => (company.ticker === 'VYMD' ? { ...company, price: company.price - 5 } : company));
+  store.dispatch(backendUpdate({ data: { companies } }));
+  rerender(<NtosStockExchangeContent />);
+  const pulses = Array.from(container.querySelectorAll('.NtTerm__pulse'));
+  expect(pulses.length).toBeGreaterThan(0);
+  expect(pulses.every((node) => node.className.includes('NtTerm__pulse--down'))).toBe(true);
 });

@@ -501,3 +501,43 @@ test('экспресс-консоль показывает каталог из C
   fireEvent.click(ui.getByText('3 000 кр.'));
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50' }]);
 });
+
+test('аукцион: перебитая ставка видна сразу, своя новая ставка убирает сообщение', () => {
+  const lot = {
+    uid: 4,
+    name: 'золотая скрипка',
+    desc: 'Скрипка из золота.',
+    value: 4000,
+    bid: 1700,
+    bidder: 'Иван Петров',
+    mine: 1,
+    min_bid: 1785,
+    increment: 85,
+    left: 45,
+    rivals: 2,
+    history: [{ who: 'Иван Петров', amount: 1700 }],
+  };
+  const ui = setup({ auction: lot });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  expect(ui.container.textContent).not.toContain('Вашу ставку перебили');
+  expect(ui.container.querySelector('.NtTerm__pulse')).toBeNull();
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, bid: 1800, bidder: 'станция "Кило-7"', mine: 0 } } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.container.textContent?.replace(/\s/g, ' ')).toContain('Вашу ставку перебили: станция "Кило-7", 1 800 кр.; ваши деньги вернулись на счёт.');
+  expect(ui.container.querySelector('.NtTerm__pulse--new')?.textContent?.replace(/\s/g, ' ')).toContain('1 800 кр.');
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, bid: 1900, mine: 1 } } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.container.textContent).not.toContain('Вашу ставку перебили');
+});
+
+test('новая заявка: счётчик вкладки вспыхивает, когда заявок стало больше, а не при открытии окна', () => {
+  const ui = setup();
+  const badge = () => Array.from(ui.container.querySelectorAll('.NtTerm__menuItem')).find((node) => node.textContent?.startsWith('Заявки'))?.querySelector('.NtTerm__menuCount');
+  const count = Number(badge()?.textContent || 0);
+  expect(badge()?.className).not.toContain('NtTerm__menuCount--new');
+  const requests = ((ui.store.getState() as any).backend.data.requests || []) as any[];
+  ui.store.dispatch(backendUpdate({ data: { requests: [...requests, { id: 99, object: 'Pizza Crate', cost: 100, orderer: 'Анна', reason: 'обед' }] } }));
+  ui.rerender(<CargoContent />);
+  expect(badge()?.textContent).toBe(String(count + 1));
+  expect(badge()?.className).toContain('NtTerm__menuCount--new');
+});

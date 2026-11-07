@@ -42,6 +42,51 @@ $nt-tones: (
   margin: 0;
 }
 
+// Подсветка значения, сменившегося с прошлого обновления: гаснет за полторы секунды
+@keyframes nt-pulse-up {
+  from {
+    background-color: rgba($nt-good, 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-pulse-down {
+  from {
+    background-color: rgba($nt-bad, 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-pulse-new {
+  from {
+    background-color: rgba(var(--nt-accent-rgb), 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-count-new {
+  from {
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+  }
+  to {
+    color: $nt-text;
+    background-color: $nt-faint;
+  }
+}
+
+@keyframes nt-now {
+  50% {
+    opacity: 0.35;
+  }
+}
+
 .NtTerm {
   min-height: 100%;
   // Темы КПК задают моноширинный шрифт всему окну; экрану нужен обычный
@@ -138,6 +183,26 @@ $nt-tones: (
     border-bottom: 2px solid transparent;
   }
 
+  &__pulse {
+    border-radius: 2px;
+  }
+
+  &__pulse--up {
+    animation: nt-pulse-up 1.6s ease-out;
+  }
+
+  &__pulse--down {
+    animation: nt-pulse-down 1.6s ease-out;
+  }
+
+  &__pulse--new {
+    animation: nt-pulse-new 1.6s ease-out;
+  }
+
+  &__menuCount--new {
+    animation: nt-count-new 2s ease-out;
+  }
+
   &__menuItem:hover,
   &__menuItem:focus-visible {
     color: $nt-text;
@@ -198,6 +263,25 @@ $nt-tones: (
     stroke: $nt-dim;
     stroke-width: 1;
     stroke-dasharray: 4 4;
+  }
+
+  // Текущая цена - точка на правом конце линии, медленно мерцает: график живой, торги идут
+  &__chartNow {
+    position: absolute;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-radius: 50%;
+    animation: nt-now 2.4s ease-in-out infinite;
+  }
+
+  &__chart--up &__chartNow {
+    background-color: $nt-good;
+  }
+
+  &__chart--down &__chartNow {
+    background-color: $nt-bad;
   }
 
   &__chartMax,
@@ -289,6 +373,7 @@ $nt-tones: (
   &__allocPart {
     height: 100%;
     border-right: 1px solid $nt-bg;
+    transition: width 0.6s ease-out;
   }
 
   &__allocKey {
@@ -359,6 +444,7 @@ $nt-tones: (
     display: block;
     height: 100%;
     background-color: $nt-dim;
+    transition: width 0.6s ease-out;
   }
 
   &__tag--lead {
@@ -372,6 +458,16 @@ $nt-tones: (
     padding: 8px 12px;
     background-color: $nt-panel;
     border: 1px solid $nt-faint;
+  }
+
+  // Кассиру: счёт только что оплатили
+  &__paid {
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    color: $nt-good;
+    background-color: rgba($nt-good, 0.08);
+    border-left: 2px solid $nt-good;
+    animation: nt-pulse-up 1.6s ease-out;
   }
 
   &__lcdLabel {

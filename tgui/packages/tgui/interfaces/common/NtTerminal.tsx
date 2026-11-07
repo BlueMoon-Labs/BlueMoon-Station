@@ -1,5 +1,5 @@
 import { classes } from 'common/react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 /** Цвет экрана устройства: у каждой машины NT свой. */
 export type NtTone = 'supply' | 'exchange' | 'contracts' | 'register' | 'medical' | 'engineering' | 'security' | 'science' | 'service' | 'civil' | 'command';
@@ -21,6 +21,50 @@ export type NtMenuItem<T extends string> = {
   label: string;
   /** Сколько дел ждёт в разделе: показывается рядом с названием */
   count?: number;
+};
+
+export type NtChange = { dir: 'up' | 'down'; tick: number };
+
+/** Как значение сменилось с прошлого обновления окна; на первом показе - null, подсветка не мигает. */
+export const useChange = (value: number): NtChange | null => {
+  const previous = useRef(value);
+  const [change, setChange] = useState<NtChange | null>(null);
+  useEffect(() => {
+    if (value === previous.current) {
+      return;
+    }
+    const dir = value > previous.current ? 'up' : 'down';
+    previous.current = value;
+    setChange((old) => ({ dir, tick: (old?.tick || 0) + 1 }));
+  }, [value]);
+  return change;
+};
+
+/**
+ * Один раз подсвечивает значение, когда оно сменилось: рост зелёным, падение красным.
+ * neutral - без оценки, просто "обновилось" (счёт в кассе, текущая ставка).
+ */
+export const NtPulse = (props: { value: number; neutral?: boolean; className?: string; children: ReactNode }) => {
+  const change = useChange(props.value);
+  const tone = change && (props.neutral ? 'new' : change.dir);
+  return (
+    <span key={change?.tick || 0} className={classes([props.className, tone && `NtTerm__pulse NtTerm__pulse--${tone}`])}>
+      {props.children}
+    </span>
+  );
+};
+
+/** Число дел на вкладке: когда их стало больше, счётчик коротко вспыхивает. */
+const MenuCount = (props: { count: number }) => {
+  const change = useChange(props.count);
+  if (!props.count) {
+    return null;
+  }
+  return (
+    <span key={change?.tick || 0} className={classes(['NtTerm__menuCount', change?.dir === 'up' && 'NtTerm__menuCount--new'])}>
+      {props.count}
+    </span>
+  );
 };
 
 /** Экран терминала: шапка с названием устройства и строкой состояния, под ней меню и рабочая область. */
@@ -63,7 +107,7 @@ export const NtMenu = <T extends string>(props: { items: NtMenuItem<T>[]; select
           }
         }}>
         {item.label}
-        {!!item.count && <span className="NtTerm__menuCount">{item.count}</span>}
+        <MenuCount count={item.count || 0} />
       </span>
     ))}
   </div>
@@ -147,6 +191,7 @@ export const NtChart = (props: { values: number[]; base?: number; height?: numbe
         {base !== undefined && <line x1={0} x2={w} y1={y(base)} y2={y(base)} className="NtTerm__chartBase" vectorEffect="non-scaling-stroke" />}
         <polyline points={line} className="NtTerm__chartLine" vectorEffect="non-scaling-stroke" />
       </svg>
+      <span className="NtTerm__chartNow" style={{ top: `${(y(values[values.length - 1]) / h) * 100}%` }} />
       <span className="NtTerm__chartMax">{format(Math.max(...values))}</span>
       <span className="NtTerm__chartMin">{format(Math.min(...values))}</span>
       {base !== undefined && (
