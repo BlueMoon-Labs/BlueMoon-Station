@@ -89,10 +89,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 							target_gen = partner.getorganslot(ORGAN_SLOT_PENIS)
 							target_gen.climax_modify_size(src, getorganslot(ORGAN_SLOT_PENIS), is_hidden = is_hidden)
 					if(CUM_TARGET_THIGHS)
-						if(partner.has_legs() >= 2)
-							message = "кончает между бёдрами <b>[partner]</b>!"
-						else
-							message = "кончает... как-то..."
+						message = "кончает между бёдрами <b>[partner]</b>!"
 					if(CUM_TARGET_BELLY)
 						cumin = TRUE
 						if(partner.has_belly() == HAS_EXPOSED_GENITAL)
@@ -153,10 +150,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 								target_gen = partner.getorganslot(ORGAN_SLOT_PENIS)
 								target_gen.climax_modify_size(src, last_genital, is_hidden = is_hidden)
 						if(CUM_TARGET_THIGHS)
-							if(partner.has_legs() >= 2)
-								message = "кончает между бёдер <b>[partner]</b>!"
-							else
-								message = "кончает... как-то..."
+							message = "кончает между бёдрами <b>[partner]</b>!"
 						if(CUM_TARGET_BELLY)
 							cumin = TRUE
 							if(partner.has_belly() == HAS_EXPOSED_GENITAL)
@@ -828,12 +822,12 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 			"входит внутрь ляжек <b>[target]</b> и выходит наружу, заставляя бёдра трястись как желе.",
 			//BLUEMOON EDIT START
 			"похотливо скользит своим [has_penis ? "членом" : "дилдо"] туда-сюда между бёдер <b>[target]</b>",
-			"решительно трахает ноги \the <b>[target]</b>, заставляя свой [has_penis ? "кончик" : "дилдо"] проталкиваться взад-вперед между этих упругих ляжек."
+			"решительно двигает своим [has_penis ? "членом" : "дилдо"] взад-вперёд между упругими ляжками <b>[target]</b>."
 		)
 	else
 		lines = list(
 			"прижимает свой [has_penis ? "кончик" : "дилдо"] к мягким ляжкам <b>[target]</b>, вскоре проталкивая всю длинну прямо между ними.",
-			"подставляет свой [has_penis ? "член" : "дилдо"] к ногам <b>[target]</b>, вонзая во весь его размер в объятия бёдер.",
+			"прижимает свой [has_penis ? "член" : "дилдо"] к бёдрам <b>[target]</b> и проталкивает его между ними на всю длину.",
 			"целует междуножье <b>[target]</b> своим кончиком, прямо перед тем как протиснуться между бёдер всем [has_penis ? "членом" : "дилдо"]."
 			//BLUEMOON EDIT END
 		)

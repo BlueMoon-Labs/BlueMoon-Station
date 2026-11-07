@@ -1,7 +1,5 @@
 /datum/interaction/lewd/crushhead
 	description = "Убийственно. Сжать голову бёдрами."
-	require_user_legs = REQUIRE_ANY
-	require_user_num_legs = 2
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_EXTREME_CONTENT
 	write_log_user = "trying to squeeze"
 	write_log_target = "was squeezed by"
@@ -35,7 +33,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/message = "[is_hidden ? (picked_hidden) : null]" + "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
 					"отпускает голову <b>[partner]</b>, чтобы с новой силой сдавить её своими бедрами.",
-					"нежно прижимает <b>[partner]</b> меж ножками и немного встряхивает своими наушниками.",
+					"нежно прижимает <b>[partner]</b> между бёдрами и немного встряхивает своими наушниками.",
 					"обхватывает <b>[partner]</b> своими бедрами и тихо постанывает.",
 					"с шлепком закрывает своими бедрами лицо <b>[partner]</b> и впоследствии слабо сдавливает.")]"
 	var/lust_amount = LOW_LUST // При уроне уже идет накопление LUST, так что много не требуется
@@ -47,7 +45,7 @@
 		message = "[is_hidden ? (picked_hidden) : null]" + "[pick("прижимается к <b>[partner]</b>, своими бедрами, с силой сжимая голову.",
 					"резко сдавливает ляжками <b>[partner]</b>, тем самым вызывая утробный стон жертвы.",
 					"крепко прижимает <b>[partner]</b> к своему паху, сжимая голову с хрустом в шее.",
-					"с силой закрепляется за <b>[partner]</b> своими ногами и хищно наблюдает.",
+					"с силой обхватывает голову <b>[partner]</b> бёдрами и хищно наблюдает.",
 					"максимально грубым образом сдавливает голову <b>[partner]</b> до хруста в шее.")]"
 
 		var/mob/living/carbon/human/H = partner

@@ -837,8 +837,6 @@
 
 /datum/interaction/lewd/fuck_thighs
 	description = "Член. Проникнуть между бёдрами."
-	require_target_legs = REQUIRE_ANY
-	require_target_num_legs = 2
 	required_from_target_exposed = NONE
 	required_from_target_unexposed = NONE
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
@@ -865,8 +863,6 @@
 
 /datum/interaction/lewd/do_thighjob
 	description = "Бёдра. Подрочить член бёдрами."
-	require_user_legs = REQUIRE_ANY
-	require_user_num_legs = 2
 	required_from_target_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_unexposed = NONE
 	required_from_user_exposed = NONE
