@@ -564,6 +564,6 @@
 	weaponscheck = FALSE
 	check_records = FALSE
 
-	Initialize(mapload)
-		. = ..()
-		set_weapon()
+/mob/living/simple_animal/bot/ed209/lethal/Initialize(mapload)
+	. = ..()
+	set_weapon()

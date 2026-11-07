@@ -236,7 +236,6 @@
 	if(!istype(accessory))
 		return
 	accessory.detach(src, user)
-	var/in_hand = user.put_in_hands(accessory, FALSE)
 	if(!silent)
 		balloon_alert(user, span_balloon_warning("Вы открепили [accessory] от [src]."))
 
