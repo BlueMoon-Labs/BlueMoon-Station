@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Button, Stack } from '../../../components';
+import { Box, Button, Slider, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
   tab_interactions_enabled: boolean,
@@ -14,6 +14,10 @@ type ContentPrefsInfo = {
   ranged_verb_pref : boolean,
   lewd_verb_sounds: boolean,
   arousable: boolean,
+  use_arousal_multiplier: boolean | 0 | 1,
+  arousal_multiplier: number,
+  use_moaning_multiplier: boolean | 0 | 1,
+  moaning_multiplier: number,
   sexknotting: boolean,
   genital_examine: boolean,
   vore_examine: boolean,
@@ -39,6 +43,11 @@ type ContentPrefsInfo = {
   cum_onto_pref: boolean,
   sex_jitter: boolean,
 }
+
+const EFFECT_PREFS = [
+  { toggle: 'use_arousal_multiplier', value: 'arousal_multiplier', label: 'Множитель возбуждения', max: 300 },
+  { toggle: 'use_moaning_multiplier', value: 'moaning_multiplier', label: 'Свой шанс стона', max: 100 },
+] as const;
 
 export const ContentPreferencesTab = (props) => {
   const { act, data } = useBackend<ContentPrefsInfo>();
@@ -225,6 +234,37 @@ export const ContentPreferencesTab = (props) => {
           })}
         />
       </Stack.Item>
+      {EFFECT_PREFS.map(({ toggle, value, label, max }) => {
+        const enabled = !!data[toggle];
+        return (
+          <Stack.Item key={value}>
+            <Stack align="center">
+              <Stack.Item grow basis={0}>
+                <Button
+                  fluid
+                  content={label}
+                  icon={enabled ? 'toggle-on' : 'toggle-off'}
+                  selected={enabled}
+                  onClick={() => act('pref', { pref: toggle })}
+                />
+              </Stack.Item>
+              {enabled && (
+                <Stack.Item grow basis={0}>
+                  <Slider
+                    fluid
+                    minValue={0}
+                    maxValue={max}
+                    step={1}
+                    value={data[value]}
+                    unit="%"
+                    onChange={(_, amount) => act('pref', { pref: value, amount })}
+                  />
+                </Stack.Item>
+              )}
+            </Stack>
+          </Stack.Item>
+        );
+      })}
       <Stack.Item>
         <Button
           fluid

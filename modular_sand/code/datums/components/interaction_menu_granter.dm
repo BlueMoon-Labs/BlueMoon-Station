@@ -168,9 +168,6 @@
 	.["isTargetSelf"] = target == self // Why all of these?
 	.["user"] = self // Because people may have the same name
 	.["target"] = target // target == self can distinguish
-	.["selfAttributes"] = self.list_interaction_attributes(self)
-	.["lust"] = self.get_lust()
-	.["maxLust"] = self.get_climax_threshold() // BLUEMOON EDIT
 	if(ishuman(self))
 		var/mob/living/carbon/human/H = self
 		.["force_naked_flavor"] = H.force_naked_flavor
@@ -313,7 +310,6 @@
 	.["user_num_feet"] = self.get_num_feet()
 
 	// Let's clear it in case the user goes directly from interacting with someone to themself
-	.["theirAttributes"] = null
 	.["target_has_active_player"] = null
 	.["max_distance"] = null
 	.["target_is_blacklisted"] = null
@@ -322,7 +318,6 @@
 	.["required_from_target_unexposed"] = null
 	.["target_num_feet"] = null
 	.["theirPrefs"] = null
-	.["theirLust"] = null
 	.["theyAllowLewd"] = null
 	.["theyAllowRanged"] = null
 	.["theyAllowExtreme"] = null
@@ -336,8 +331,6 @@
 		.["required_from_target_unexposed"] = .["required_from_user_unexposed"]
 		.["target_num_feet"] = .["user_num_feet"]
 	else if(target)
-		.["theirAttributes"] = target.list_interaction_attributes(self)
-
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it
 		.["target_has_active_player"] = target.ckey ? (target.client ? 2 : TRUE) : FALSE
 		.["max_distance"] = is_lewd_portal_relay_interaction(self, target) ? 0 : get_dist(self, target)
@@ -476,9 +469,6 @@
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
 			.["theyAllowUnholyHard"] = !!pref_to_num(target.client.prefs.unholyhardpref)
 			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
-		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
-			.["theirLust"] = target.get_lust()
-			.["theirMaxLust"] = target.get_climax_threshold() // BLUEMOON EDIT
 		//SPLURT EDIT
 		.["theyHaveBondage"] = FALSE
 		if(iscarbon(target))
@@ -1149,24 +1139,6 @@
 			else
 				prefs.save_pref_var(dirty_var)
 			return TRUE
-		if("genitals_menu")
-			switch(params["who"])
-				if("user")
-					if(iscarbon(parent_mob))
-						var/mob/living/carbon/C = parent_mob
-						C.genital_menu()
-						return TRUE
-					else
-						to_chat(parent_mob, span_warning("Unavailable for this mob."))
-						return FALSE
-				if("target")
-					if(iscarbon(target))
-						var/mob/living/carbon/C = target
-						C.genital_menu()
-						return TRUE
-					else
-						to_chat(parent_mob, span_warning("Unavailable for this mob."))
-						return FALSE
 		if("force_naked_flavor")
 			if(ishuman(parent_mob))
 				var/mob/living/carbon/human/H = parent_mob
