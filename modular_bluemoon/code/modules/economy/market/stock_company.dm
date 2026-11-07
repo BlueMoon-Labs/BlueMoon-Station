@@ -8,6 +8,8 @@ GLOBAL_LIST_INIT(market_default_companies, list(
 	"SOLX" = list("name" = "Солнечная биржа", "price" = 180, "volatility" = 0.02),
 	"CYBS" = list("name" = "Киберсан Индастриз", "price" = 90, "volatility" = 0.05),
 	"EINS" = list("name" = "Эйнштейн Энджинс", "price" = 110, "volatility" = 0.03),
+	"HEPH" = list("name" = "Гефест Индастриз", "price" = 160, "volatility" = 0.035),
+	"BSHP" = list("name" = "Бишоп Кибернетикс", "price" = 95, "volatility" = 0.04),
 ))
 
 /// Встроенные события компаний; %NAME% заменяется названием компании.
@@ -22,9 +24,9 @@ GLOBAL_LIST_INIT(market_default_company_events, list(
 
 /// Встроенные привязки событий станции: ключ -> тикер или STOCK_ALL_COMPANIES -> шок цены.
 GLOBAL_LIST_INIT(market_default_station_events, list(
-	"sm_delam" = list("NTRN" = -0.25, "NKMR" = 0.1),
-	"delta_alert" = list("NTRN" = -0.15),
-	"disease_outbreak" = list("VYMD" = 0.2),
+	"sm_delam" = list("NTRN" = -0.25, "NKMR" = 0.1, "BSHP" = -0.05),
+	"delta_alert" = list("NTRN" = -0.15, "HEPH" = 0.1),
+	"disease_outbreak" = list("VYMD" = 0.2, "BSHP" = 0.05),
 	"meteors" = list("NKMR" = 0.15, "PRSP" = 0.05),
 	"market_crash" = list(STOCK_ALL_COMPANIES = -0.2),
 	"sector_boom" = list(STOCK_ALL_COMPANIES = 0.1),

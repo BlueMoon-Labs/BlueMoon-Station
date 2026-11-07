@@ -66,7 +66,9 @@
 			"AGRO": {"name": "Аграрный союз", "price": 45, "volatility": 0.03},
 			"SOLX": {"name": "Солнечная биржа", "price": 180, "volatility": 0.02},
 			"CYBS": {"name": "Киберсан Индастриз", "price": 90, "volatility": 0.05},
-			"EINS": {"name": "Эйнштейн Энджинс", "price": 110, "volatility": 0.03}
+			"EINS": {"name": "Эйнштейн Энджинс", "price": 110, "volatility": 0.03},
+			"HEPH": {"name": "Гефест Индастриз", "price": 160, "volatility": 0.035},
+			"BSHP": {"name": "Бишоп Кибернетикс", "price": 95, "volatility": 0.04}
 		},
 		"company_events": [
 			{"key": "product_launch", "headline": "%NAME% представляет новую линейку продукции", "effect": 0.15},
@@ -77,9 +79,9 @@
 			{"key": "strike", "headline": "Забастовка на предприятиях %NAME%", "effect": -0.12}
 		],
 		"station_events": {
-			"sm_delam": {"NTRN": -0.25, "NKMR": 0.1},
-			"delta_alert": {"NTRN": -0.15},
-			"disease_outbreak": {"VYMD": 0.2},
+			"sm_delam": {"NTRN": -0.25, "NKMR": 0.1, "BSHP": -0.05},
+			"delta_alert": {"NTRN": -0.15, "HEPH": 0.1},
+			"disease_outbreak": {"VYMD": 0.2, "BSHP": 0.05},
 			"meteors": {"NKMR": 0.15, "PRSP": 0.05},
 			"market_crash": {"*": -0.2},
 			"sector_boom": {"*": 0.1}

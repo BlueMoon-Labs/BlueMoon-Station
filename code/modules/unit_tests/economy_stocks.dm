@@ -1,9 +1,12 @@
-/// Восемь компаний из конфига и индекс сектора, цены положительные, у каждого партнёра с компанией она есть на бирже.
+/// Десять компаний из конфига и индекс сектора, цены положительные, у каждой компании логотип, у каждого партнёра с компанией она есть на бирже.
 /datum/unit_test/economy_stocks_loaded/Run()
-	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Восемь компаний")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 10, "Десять компаний")
+	var/datum/asset/spritesheet/simple/economy_logos/logos = get_asset_datum(/datum/asset/spritesheet/simple/economy_logos)
+	for(var/ticker in GLOB.market_default_companies)
+		TEST_ASSERT(logos.assets["logo-[lowertext(ticker)]"], "Нет логотипа [ticker]")
 	var/datum/stock_company/fund = SSmarket.get_company(STOCK_INDEX_TICKER)
 	TEST_ASSERT(istype(fund, /datum/stock_company/index), "Нет индекса сектора")
-	TEST_ASSERT_EQUAL(length(SSmarket.companies), 9, "Компании и индекс")
+	TEST_ASSERT_EQUAL(length(SSmarket.companies), 11, "Компании и индекс")
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		TEST_ASSERT_EQUAL(company.ticker, ticker, "Тикер компании")
@@ -380,7 +383,7 @@
 	var/datum/stock_company/prospectors_company = SSmarket.get_company("PRSP")
 	TEST_ASSERT_NULL(prospectors_company.partner_id, "Компания осталась за партнёром, который на неё не ссылается")
 	TEST_ASSERT_EQUAL(SSmarket.company_event_chance, initial(SSmarket.company_event_chance), "Шанс выше 100 принят")
-	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Неизвестная компания добавлена")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 10, "Неизвестная компания добавлена")
 	TEST_ASSERT(SSmarket.get_company("NTRN") == nt, "Перечитывание заменило компанию")
 	TEST_ASSERT_EQUAL(nt.base_price, default_base, "Отрицательная цена принята")
 	TEST_ASSERT(abs(nt.price - 12.5) < 0.01, "Перечитывание сбросило цену")
@@ -390,7 +393,7 @@
 	TEST_ASSERT(!("alien_invasion" in SSmarket.station_events), "Неизвестное событие станции принято")
 	errors = SSmarket.load_settings("мусор")
 	TEST_ASSERT_EQUAL(length(errors), 1, "Секция не объект - одна ошибка ([jointext(errors, "; ")])")
-	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 8, "Встроенные компании при битой секции")
+	TEST_ASSERT_EQUAL(SSmarket.real_company_count(), 10, "Встроенные компании при битой секции")
 	TEST_ASSERT(SSmarket.get_company(STOCK_INDEX_TICKER), "Индекс пропал при битой секции")
 
 /datum/unit_test/economy_stocks/config/proc/snapshot()

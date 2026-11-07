@@ -10,6 +10,8 @@
 		"logo-solx" = 'tgui/packages/tgui/assets/economy/solx.png',
 		"logo-cybs" = 'tgui/packages/tgui/assets/economy/cybs.png',
 		"logo-eins" = 'tgui/packages/tgui/assets/economy/eins.png',
+		"logo-heph" = 'tgui/packages/tgui/assets/economy/eins.png',
+		"logo-bshp" = 'tgui/packages/tgui/assets/economy/nkmr.png',
 		"logo-nt_logistics" = 'tgui/packages/tgui/assets/economy/ntrn.png',
 		"logo-prospectors" = 'tgui/packages/tgui/assets/economy/prsp.png',
 		"logo-vey_med" = 'tgui/packages/tgui/assets/economy/vymd.png',
