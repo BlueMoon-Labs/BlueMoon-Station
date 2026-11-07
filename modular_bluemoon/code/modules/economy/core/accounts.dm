@@ -91,7 +91,7 @@
 	var/floor = SSeconomy.settings.wage_floor
 	if(paid < floor)
 		net += SSeconomy.pay_personal(null, src, floor - paid, ECON_WAGE_FLOOR)
-	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net] кр.[owed_wages ? " Отдел должен вам [owed_wages] кр." : ""]", FALSE, 'sound/economy/coin_soft.ogg', net ? "зарплата +[net] кр" : null)
+	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net] кр.[owed_wages ? " Отдел должен вам [owed_wages] кр." : ""]", FALSE, 'sound/economy/coin_soft.ogg')
 	return max(paid, floor)
 
 /// Владелец счёта - этот моб или его разум в другом теле.

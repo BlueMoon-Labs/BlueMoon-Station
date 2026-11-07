@@ -97,7 +97,7 @@
 	TEST_ASSERT(("sound/economy/account_freeze.ogg" in owner.card_sounds), "Заморозка без звука на карте: [jointext(owner.card_sounds, ", ")]")
 	TEST_ASSERT(("счёт заморожен" in owner.card_balloons), "Заморозка без всплывашки над владельцем: [jointext(owner.card_balloons, ", ")]")
 
-/// Зарплата звенит монетами на карте сотрудника.
+/// Зарплата звенит монетами на карте сотрудника без всплывашки над головой.
 /datum/unit_test/economy_payroll/payday_sound/Run()
 	setup_worker(10000)
 	SSeconomy.tax_rate = 10
@@ -112,7 +112,7 @@
 	qdel(spy)
 	TEST_ASSERT(paid > 0 && paid < SSeconomy.settings.wages[PAY_GRADE_EASY], "Зарплата не пришла или пришла без налога: [paid]")
 	TEST_ASSERT(("sound/economy/coin_soft.ogg" in heard), "Зарплата без звона монет: [jointext(heard, ", ")]")
-	TEST_ASSERT(("зарплата +[paid] кр" in balloons), "Всплывашка зарплаты не равна сумме на руки [paid]: [jointext(balloons, ", ")]")
+	TEST_ASSERT(!length(balloons), "Всплывашка на зарплате: [jointext(balloons, ", ")]")
 
 /// Всплывашка одного вида не чаще кулдауна на держателя; другой вид, другой держатель и force проходят.
 /datum/unit_test/economy_payroll/card_balloon_throttle/Run()

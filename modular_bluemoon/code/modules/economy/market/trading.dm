@@ -190,7 +190,7 @@
 				continue
 			paid += amount
 			holders++
-			account.bank_card_talk("Дивиденды [company.name] ([ticker]): +[amount] кр. за [held] [ru_plural(held, "акцию", "акции", "акций")].", balloon = "[ticker] +[amount] кр")
+			account.bank_card_talk("Дивиденды [company.name] ([ticker]): +[amount] кр. за [held] [ru_plural(held, "акцию", "акции", "акций")].")
 		company.dividend_pool -= paid
 		if(paid)
 			log_econ("Дивиденды [ticker]: [paid] кр. [holders] держателям, в фонде осталось [round(company.dividend_pool, 0.01)] кр.")
