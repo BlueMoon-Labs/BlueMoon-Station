@@ -121,7 +121,7 @@
 		var/mob/living/L = target
 		if(!L)
 			return
-		L.adjustToxLoss(10)
+		L.adjustFireLoss(10)
 		if(L.client)
 			to_chat(L, span_warning("The acid burns your skin!"))
 
@@ -293,6 +293,7 @@
 	turns_per_move = 0
 	melee_damage_lower = 15
 	melee_damage_upper = 25
+	melee_damage_type = BURN
 	sight = SEE_MOBS | SEE_TURFS
 	robust_searching = 1
 	environment_smash = ENVIRONMENT_SMASH_NONE

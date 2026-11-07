@@ -233,9 +233,9 @@
 		log_world("[src] No players provided")
 		return
 
-	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier))
+	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier) - 5)
 	if(zombies_to_spawn < threat_level)
-		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
+		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (multiplier=[horde_size_multiplier], minus 5, cap=[max_zombies_per_wave])")
 
 	var/list/spawned_zombies = list()
 

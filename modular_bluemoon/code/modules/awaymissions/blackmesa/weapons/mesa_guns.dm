@@ -113,8 +113,8 @@
 	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/left48x32.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/right48x32.dmi'
-	icon_state = "m249"
-	item_state = "m249"
+	icon_state = "javelin"
+	item_state = "javelin"
 	fire_sound = null
 	mesa_muzzle_flash = FALSE
 	recoil = 1
@@ -138,7 +138,10 @@
 	actions_types = list()
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/javelin_vdd_svz/update_icon_state()
-	icon_state = "m249"
+	if(magazine)
+		icon_state = "javelin"
+	else
+		icon_state = "javelin_mag"
 
 /obj/item/ammo_box/magazine/sniper_rounds/javelin_vdd_svz
 	name = "Javelin VDD SVZ magazine"
@@ -865,7 +868,10 @@
 	name = "\improper old M16 rifle"
 	desc = "Невероятно старая версия М16 с сломанным подствольным гранатомётом и... Большей отдачей что-ли? Держа её в руках, вы чувствуете странные ощущения... Да и отряды HECU с таким замечены не были"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/left48x32.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/right48x32.dmi'
 	icon_state = "m16hl"
+	item_state = "m16"
 	burst_size = 1
 	fire_delay = 1 //ATATATATATATATATA!!!
 	spread = 11

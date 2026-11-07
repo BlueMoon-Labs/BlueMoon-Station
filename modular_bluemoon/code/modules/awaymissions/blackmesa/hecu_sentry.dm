@@ -136,7 +136,12 @@
 	lethal_projectile = /obj/item/projectile/bullet/c10mm/hecu/infected
 	turret_flags = 0
 	folded_item_type = /obj/item/hecusentry/infected
-	max_integrity = 250
+	max_integrity = 400
+
+/obj/machinery/porta_turret/hecu/infected/bullet_act(obj/item/projectile/P)
+	if(P && istype(P.firer, /obj/machinery/porta_turret))
+		return BULLET_ACT_FORCE_PIERCE
+	return ..()
 
 /obj/machinery/porta_turret/hecu/infected/can_designate_target(mob/living/target)
 	if(!istype(target, /mob/living/simple_animal/hostile/infected))
