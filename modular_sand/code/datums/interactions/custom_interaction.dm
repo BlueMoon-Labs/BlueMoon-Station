@@ -188,6 +188,7 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	var/partner_requires_tail = FALSE
 	var/self_requires_telekinesis = FALSE
 	var/partner_requires_telekinesis = FALSE
+	var/requires_review = FALSE
 
 /datum/interaction/custom/proc/get_lust_amount(level = arousal_level)
 	switch(level)
@@ -385,6 +386,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	return TRUE
 
 /datum/interaction/custom/proc/pass_requirement_gate(mob/living/user, mob/living/target, mob/living/custom_owner, silent = TRUE)
+	if(requires_review)
+		return FALSE
 	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && custom_owner != target)
 		if(!silent)
 			to_chat(user, span_warning("Это действие доступно только на себе."))
@@ -583,7 +586,7 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	if(!ISINTEGER(index) || index < 1 || index > length(customs))
 		return
 	var/datum/interaction/custom/custom = customs[index]
-	if(!custom?.name || !custom.message)
+	if(!custom?.name || !custom.message || custom.requires_review)
 		return
 	custom.custom_interaction_key = key
 	return custom

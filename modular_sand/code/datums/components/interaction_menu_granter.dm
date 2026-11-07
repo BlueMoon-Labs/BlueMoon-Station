@@ -634,6 +634,7 @@
 			own_customs += list(list(
 				"key" = "[CUSTOM_INTERACTION_PREFIX][self.ckey]:[i]",
 				"name" = custom.name,
+				"requires_review" = custom.requires_review,
 				"message" = custom.message,
 				"interaction_type" = custom.interaction_type,
 				"type_label" = custom.get_type_label(),
@@ -1283,6 +1284,7 @@
 		to_chat(user, span_warning("Название и текст кастомного интеракта не могут быть пустыми."))
 		return FALSE
 	custom.update_from_editor(name, message, params)
+	custom.requires_review = FALSE
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	refresh_interaction_panels()

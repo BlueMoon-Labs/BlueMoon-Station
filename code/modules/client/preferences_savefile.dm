@@ -2381,7 +2381,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!(bgstate in bgstate_options))
 		bgstate = initial(bgstate)
 
-	sand_character_pref_load(S)
+	sand_character_pref_load(S, needs_update)
 
 	splurt_character_pref_load(S)
 

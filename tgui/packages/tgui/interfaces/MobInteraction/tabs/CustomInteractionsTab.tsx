@@ -1,11 +1,24 @@
 import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../../backend';
-import { Box, Button, Divider, Dropdown, Icon, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
+import {
+  Box,
+  Button,
+  Divider,
+  Dropdown,
+  Icon,
+  Input,
+  NoticeBox,
+  Section,
+  Stack,
+  TextArea,
+  Tooltip,
+} from '../../../components';
 
 type CustomInteractionData = {
   key: string;
   name: string;
+  requires_review: boolean | 0 | 1;
   message: string;
   interaction_type: string;
   type_label: string;
@@ -818,9 +831,16 @@ export const CustomInteractionsTab = (props) => {
       | (ownArousal?.flag || 0) | (ownOrgasmOrgan?.flag || 0) | (partnerOrgasmTarget?.flag || 0));
     const partnerParts = bodyPartsLabel(custom.partner_required_body_parts
       | (partnerArousal?.flag || 0) | (partnerOrgasmOrgan?.flag || 0) | (ownOrgasmTarget?.flag || 0));
-    return (
+    const needsReview = !!custom.requires_review;
+    const card = (
       <Section
-        title={custom.name}
+        backgroundColor={needsReview ? '#512424' : undefined}
+        title={needsReview ? (
+          <>
+            <Icon name="lock" mr={1} aria-hidden="true" />
+            {custom.name}
+          </>
+        ) : custom.name}
         buttons={
           <>
             <Button icon="pen" tooltip="Редактировать" onClick={() => startEdit(custom)} />
@@ -873,14 +893,20 @@ export const CustomInteractionsTab = (props) => {
         )}
       </Section>
     );
+
+    return needsReview ? (
+      <Tooltip content="Панель эмоций обновилась. Проверьте возбуждение, требования к органам и другие настройки интеракции, затем нажмите «Сохранить».">
+        <div>{card}</div>
+      </Tooltip>
+    ) : card;
   };
 
   return (
     <Stack vertical>
       <Stack.Item>
         <NoticeBox info>
-          Кастомных интерактов: {customs.length}/{max_customs}. Они появляются
-          в твоей панели взаимодействия.
+          Кастомных интерактов: {customs.length}/{max_customs}.
+          В панели взаимодействия доступны интеракты без замка.
           Все поля сохраняются на персонажа.
         </NoticeBox>
       </Stack.Item>
