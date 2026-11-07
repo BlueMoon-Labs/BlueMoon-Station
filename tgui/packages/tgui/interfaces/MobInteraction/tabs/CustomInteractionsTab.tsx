@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../../backend';
-import { Box, Button, Divider, Dropdown, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
+import { Box, Button, Divider, Dropdown, Icon, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
 
 type CustomInteractionData = {
   key: string;
@@ -236,13 +236,30 @@ const SoundGrid = ({ sounds, selectedKeys, onToggle, onPreview }: SoundGridProps
   </Box>
 );
 
+const PARTICIPANT_HEADINGS = {
+  self: { label: 'У тебя', color: 'green', icon: 'user' },
+  partner: { label: 'У партнёра', color: 'blue', icon: 'user-group' },
+};
+
+type Participant = keyof typeof PARTICIPANT_HEADINGS;
+
+const ParticipantHeading = ({ participant }: { participant: Participant }) => {
+  const { label, color, icon } = PARTICIPANT_HEADINGS[participant];
+  return (
+    <Box bold color={color} mb={0.5}>
+      <Icon name={icon} mr={1} aria-hidden="true" />
+      {label}
+    </Box>
+  );
+};
+
 type EffectsProps = {
   settings: ParticipantSettings;
   onChange: (settings: ParticipantSettings) => void;
   arousalOrgans: EffectTargetOption[];
   orgasmOrgans: EffectTargetOption[];
   orgasmTargets: EffectTargetOption[];
-  label: string;
+  participant: Participant;
 };
 
 const Effects = ({
@@ -251,10 +268,10 @@ const Effects = ({
   arousalOrgans,
   orgasmOrgans,
   orgasmTargets,
-  label,
+  participant,
 }: EffectsProps) => (
-  <Box role="group" aria-label={label}>
-    <Box bold mb={0.5}>{label}</Box>
+  <Box role="group" aria-label={PARTICIPANT_HEADINGS[participant].label}>
+    <ParticipantHeading participant={participant} />
     <Box style={{
       display: 'grid',
       gridTemplateColumns: 'max-content repeat(2, minmax(0, 1fr))',
@@ -655,7 +672,7 @@ export const CustomInteractionsTab = (props) => {
             arousalOrgans={arousalOrgans}
             orgasmOrgans={orgasmOrgans}
             orgasmTargets={orgasmTargets}
-            label="У партнёра"
+            participant="partner"
           />
           <Divider />
           <Effects
@@ -664,7 +681,7 @@ export const CustomInteractionsTab = (props) => {
             arousalOrgans={arousalOrgans}
             orgasmOrgans={orgasmOrgans}
             orgasmTargets={orgasmTargets}
-            label="У тебя"
+            participant="self"
           />
         </Section>
       </Stack.Item>
@@ -698,11 +715,11 @@ export const CustomInteractionsTab = (props) => {
               <Box color="label" mb={0.5}>Оголённые части и условия</Box>
               <Stack>
                 {[
-                  { label: 'У тебя', settings: self, update: setSelf, other: partner, lockedParts: selfLockedParts },
-                  { label: 'У партнёра', settings: partner, update: setPartner, other: self, lockedParts: partnerLockedParts },
-                ].map(({ label, settings, update, other, lockedParts }) => (
-                  <Stack.Item key={label} grow basis={0}>
-                    <Box color="label" mb={0.5}>{label}</Box>
+                    { participant: 'self' as const, settings: self, update: setSelf, other: partner, lockedParts: selfLockedParts },
+                    { participant: 'partner' as const, settings: partner, update: setPartner, other: self, lockedParts: partnerLockedParts },
+                  ].map(({ participant, settings, update, other, lockedParts }) => (
+                    <Stack.Item key={participant} grow basis={0}>
+                      <ParticipantHeading participant={participant} />
                     <BodyPartPicker
                       parts={bodyParts}
                       selectedParts={settings.bodyParts}
