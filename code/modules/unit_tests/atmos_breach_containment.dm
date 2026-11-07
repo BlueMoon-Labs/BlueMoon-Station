@@ -545,6 +545,76 @@
 	TEST_ASSERT(!(locate(/obj/item/airbag_module/immediate_arm) in spot), "аккуратная разборка активировала аирбаг")
 	TEST_ASSERT(!door.density, "аккуратная разборка закрыла файрлок")
 
+// Пробоина за открытым двойным шлюзом закрывает файрлоки под обеими створками.
+/datum/unit_test/decompression_wide_airlock_seals_both_leaves
+	var/list/saved_air_state = list()
+	var/list/original_areas = list()
+	var/area/unit_test_decompression/base
+
+/datum/unit_test/decompression_wide_airlock_seals_both_leaves/Run()
+	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "decompression_seals", "currentrun"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+		SSair.vars[state_name] = list()
+	for(var/state_name in list("decompression_context", "decompression_check", "can_fire"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+	SSair.decompression_context = null
+	SSair.decompression_check = null
+	SSair.can_fire = FALSE
+	base = new
+	allocated += base
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/room = list()
+	for(var/dx in -1 to 2)
+		for(var/dy in -1 to 5)
+			var/turf/spot = locate(origin.x + dx, origin.y + dy, origin.z)
+			if(dx < 0 || dx > 1 || dy < 0 || dy > 4)
+				spot.ChangeTurf(/turf/closed/wall)
+				continue
+			var/turf/open/floor = spot.ChangeTurf(/turf/open/floor/plasteel)
+			original_areas[floor] = get_area(floor)
+			base.contents += floor
+			floor.air.copy_from_turf(floor)
+			SSair.remove_from_active(floor)
+			room += floor
+	var/turf/open/source = origin
+	var/turf/hole = get_step(source, SOUTH)
+	hole.ChangeTurf(/turf/open/space/basic)
+	var/turf/open/left_leaf = locate(origin.x, origin.y + 2, origin.z)
+	var/turf/open/right_leaf = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/obj/machinery/door/airlock/multi_tile/glass/airlock = allocate(/obj/machinery/door/airlock/multi_tile/glass, left_leaf)
+	TEST_ASSERT_EQUAL(get_turf(airlock.filler), right_leaf, "контроль: вторая створка шлюза не на соседнем тайле")
+	airlock.open(2)
+	TEST_ASSERT(!airlock.density, "контроль: двойной шлюз не открылся")
+	var/list/doors = list()
+	for(var/turf/open/leaf as anything in list(left_leaf, right_leaf))
+		var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, leaf)
+		door.machine_stat &= ~NOPOWER
+		doors += door
+	for(var/turf/open/member as anything in room)
+		member.ImmediateCalculateAdjacentTurfs()
+	SSair.decompression_areas[base] = TRUE
+	SSair.decompression_started_at[base] = world.time
+	SSair.decompression_seen[base] = list(source)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	var/obj/machinery/door/firedoor/left_door = doors[1]
+	var/obj/machinery/door/firedoor/right_door = doors[2]
+	TEST_ASSERT(left_door.density, "файрлок под первой створкой двойного шлюза не закрылся при разгерметизации")
+	TEST_ASSERT(right_door.density, "файрлок под второй створкой двойного шлюза не закрылся при разгерметизации")
+	TEST_ASSERT(left_door.is_decompression_seal() && right_door.is_decompression_seal(), "не обе створки двойного шлюза вошли в границу изоляции")
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		if(door.operating)
+			wait_for_var(door, "operating", FALSE)
+
+/datum/unit_test/decompression_wide_airlock_seals_both_leaves/Destroy()
+	if(base && length(saved_air_state))
+		SSair.set_decompression_seals(base)
+	for(var/turf/spot as anything in original_areas)
+		var/area/original = original_areas[spot]
+		original.contents += spot
+	for(var/state_name in saved_air_state)
+		SSair.vars[state_name] = saved_air_state[state_name]
+	return ..()
+
 #undef TEST_BREACH_MOLES
 #undef TEST_BREACH_LEAN_MOLES
 #undef TEST_BREACH_RICH_MOLES

@@ -217,8 +217,9 @@
 	var/obj/item/organ/eyes/eyes = H.getorganslot(ORGAN_SLOT_EYES)
 	TEST_ASSERT(istype(eyes, /obj/item/organ/eyes/robotic/toggled/glow), "Synthetic should receive glow eyes from preferences")
 
+	// Свои глаза (ночное зрение) у пеплоходов, а не у обычных ящеров.
 	var/datum/preferences/lizard_prefs = new
-	lizard_prefs.pref_species = new /datum/species/lizard
+	lizard_prefs.pref_species = new /datum/species/lizard/ashwalker
 	TEST_ASSERT(lizard_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed organics should keep the eye group locked")
 
 	qdel(S)

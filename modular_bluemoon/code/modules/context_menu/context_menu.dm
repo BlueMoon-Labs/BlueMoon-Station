@@ -39,8 +39,9 @@
 		full_macro_assert()
 	refresh_popup_menus()
 	// страница браузерного меню грузится заранее: иначе первый ПКМ за сессию ждёт её загрузки
-	if(!context_menu_page_sent_at && mob?.uses_context_menu() && prefs?.context_menu_option("renderer") == "html")
-		addtimer(CALLBACK(src, PROC_REF(send_context_menu_page)), CONTEXT_MENU_HTML_PAGE_GRACE * 2, TIMER_UNIQUE)
+	var/menu_control = context_menu_html_control(prefs?.context_menu_style)
+	if(!context_menu_page_sent_at?[menu_control] && mob?.uses_context_menu() && prefs?.context_menu_option("renderer") == "html")
+		addtimer(CALLBACK(src, PROC_REF(send_context_menu_page), menu_control), CONTEXT_MENU_HTML_PAGE_GRACE * 2, TIMER_UNIQUE)
 
 /// Хоть один из жестов ПКМ открывает меню действий
 /mob/proc/uses_context_menu()
@@ -404,6 +405,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/smooth_hover = TRUE
 	/// Рисовать браузером (чёткий текст), а не maptext на карте
 	var/use_html = TRUE
+	/// Элемент скина браузерного меню: своё окно поверх остальных или элемент главного окна
+	var/html_control = CONTEXT_MENU_HTML_POPUP_CONTROL
 	/// Множитель длительности анимаций
 	var/animation_speed = 1
 	var/show_stripe = FALSE

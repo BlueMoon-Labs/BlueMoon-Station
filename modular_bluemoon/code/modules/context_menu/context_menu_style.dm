@@ -2,6 +2,7 @@
 /// Непрозрачность - число в пределах CONTEXT_MENU_OPACITY_*, акцент - свой цвет "#rrggbb" или "" (цвет темы).
 GLOBAL_LIST_INIT(context_menu_style_choices, list(
 	"renderer" = list("html", "map"),
+	"layer" = list("top", "game"),
 	"layout" = list("list", "columns", "pills"),
 	"theme" = list("dark", "slate", "nanotrasen", "ocean", "forest", "syndicate", "rose", "terminal", "brass", "cult", "mono", "light", "contrast", "amber", "neon", "ice", "plasma", "paper"),
 	"font" = list("segoe", "calibri", "candara", "tahoma", "verdana", "arial", "trebuchet", "georgia", "consolas", "pixel"),
@@ -348,7 +349,7 @@ GLOBAL_LIST_INIT(context_menu_map_fonts, list("calibri", "candara", "tahoma", "v
 
 /// Настройки поведения, а не вида: набор их не сбрасывает, если не задаёт сам
 GLOBAL_LIST_INIT(context_menu_behavior_options, list(
-	"renderer", "open_with", "pile_click", "tile_sort", "group_same", "intents", "danger_order", "confirm_danger",
+	"renderer", "layer", "open_with", "pile_click", "tile_sort", "group_same", "intents", "danger_order", "confirm_danger",
 	"show_examine", "show_point", "admin_pos", "close_on_move", "auto_close", "sound",
 ))
 

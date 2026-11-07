@@ -9,6 +9,9 @@
 	anchored = FALSE
 	layer = 5
 	COOLDOWN_DECLARE(cooldown_vehicle_move)
+	COOLDOWN_DECLARE(cooldown_no_arms_message)
+	/// Сколько действующих рук нужно водителю
+	var/arms_required = 1
 	/// mob = bitflags of their control level.
 	var/list/mob/occupants
 	var/max_occupants = 1
@@ -141,8 +144,22 @@
 	if(!canmove)
 		return FALSE
 	if(is_driver(user))
+		if(!driver_has_arms(user))
+			if(COOLDOWN_FINISHED(src, cooldown_no_arms_message))
+				COOLDOWN_START(src, cooldown_no_arms_message, 2 SECONDS)
+				to_chat(user, span_warning("Чтобы управлять [src], нужны руки."))
+			return FALSE
 		return driver_move(user, direction)
 	return FALSE
+
+/// Зверю без ловких лап рулить нечем, у остальных считаются действующие руки.
+/obj/vehicle/proc/driver_has_arms(mob/user)
+	if(!arms_required || !isliving(user))
+		return TRUE
+	if(isanimal(user))
+		var/mob/living/simple_animal/animal = user
+		return animal.dextrous
+	return user.get_num_arms() >= arms_required
 
 /obj/vehicle/proc/driver_move(mob/user, direction)
 	if(key_type && !is_key(inserted_key))

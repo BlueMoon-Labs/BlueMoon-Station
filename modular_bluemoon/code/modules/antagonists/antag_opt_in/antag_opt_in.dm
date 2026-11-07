@@ -103,9 +103,6 @@ GLOBAL_LIST_INIT(antag_opt_in_forcing_roles, list(
 /datum/objective/assassinate/once
 	required_opt_in_level = ANTAG_OPT_IN_KILL
 
-/datum/objective/assassinate/internal
-	required_opt_in_level = ANTAG_OPT_IN_KILL
-
 /datum/objective/mutiny
 	required_opt_in_level = ANTAG_OPT_IN_KILL
 

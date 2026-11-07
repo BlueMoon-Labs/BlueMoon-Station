@@ -746,6 +746,24 @@ GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 		if(length(GLOB.cached_icon_states_by_file) > ICON_STATES_FILE_CACHE_MAX)
 			GLOB.cached_icon_states_by_file.Cut(1, (ICON_STATES_FILE_CACHE_MAX / 4) + 1) // evict oldest 25%
 
+/// "[файл]" => list(стейт => TRUE): поиск стейта по ключу вместо прохода по списку icon_states().
+GLOBAL_LIST_EMPTY(icon_state_sets_by_file)
+
+/// Есть ли в DMI-файле стейт с таким именем. Отсутствующий стейт BYOND молча рисует безымянным стейтом файла.
+/proc/icon_exists(icon_file, state)
+	if(isnull(icon_file) || isnull(state))
+		return FALSE
+	var/file_name = "[icon_file]"
+	if(!length(file_name) || istype(icon_file, /icon))
+		return (state in icon_states(icon_file))
+	var/list/states = GLOB.icon_state_sets_by_file[file_name]
+	if(!states)
+		states = list()
+		for(var/existing in icon_states(icon_file))
+			states[existing] = TRUE
+		GLOB.icon_state_sets_by_file[file_name] = states
+	return states[state] || FALSE
+
 /// Memoised cache: does `(icon file, icon_state)` have N/E/W frames? Used by getFlatIcon
 /// to decide whether an atom is single-directional. Pure function of immutable DMI data,
 /// but soft-capped so a long-running round can't accumulate one entry per (DMI, state) seen.

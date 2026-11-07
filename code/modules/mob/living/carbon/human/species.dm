@@ -1150,9 +1150,12 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 // MARK: добавление оверлея
 			update_overlay_by_key(mutant_string, H, accessory_overlay)
+			var/mutable_appearance/upper_limbs_overlay = S.get_upper_limbs_overlay(accessory_overlay, H)
+			if(upper_limbs_overlay)
+				standing += upper_limbs_overlay
 			standing += accessory_overlay
 			if(glowing)
-				standing += emissive_copy(accessory_overlay)
+				standing += emissive_copy(accessory_overlay, offset_spokesman = H)
 
 			var/extra_state = severed_taur ? severed_taur.severed_body_extra_state : (S.extra ? S.icon_state : null)
 			var/matrixed_severed_state = severed_taur?.get_matrixed_severed_state(H)
@@ -1214,7 +1217,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				update_overlay_by_key(mutant_string, H, extra_accessory_overlay)
 				standing += extra_accessory_overlay
 				if(glowing)
-					standing += emissive_copy(extra_accessory_overlay)
+					standing += emissive_copy(extra_accessory_overlay, offset_spokesman = H)
 
 			var/extra2_state = severed_taur ? severed_taur.severed_body_extra2_state : (S.extra2 ? S.icon_state : null)
 			if(severed_taur ? !!extra2_state : S.extra2) // Для обычного тавра сохраняем исходное условие extra2.
@@ -1264,7 +1267,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				update_overlay_by_key(mutant_string, H, extra2_accessory_overlay)
 				standing += extra2_accessory_overlay
 				if(glowing)
-					standing += emissive_copy(extra2_accessory_overlay)
+					standing += emissive_copy(extra2_accessory_overlay, offset_spokesman = H)
 
 		H.overlays_standing[layernum] = standing
 	H.add_all_overlays()
@@ -2294,8 +2297,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					if(H.wear_suit)
 						H.wear_suit.add_mob_blood(H)
 						H.update_inv_wear_suit()
-					var/obj/item/mod/control/mod = H.is_wearing_mod()
-					if(H.w_uniform && !mod?.all_parts_deployed())
+					if(H.w_uniform && !(H.wear_suit && (H.wear_suit.flags_inv & HIDEJUMPSUIT)))
 						H.w_uniform.add_mob_blood(H)
 						H.update_inv_w_uniform()
 
