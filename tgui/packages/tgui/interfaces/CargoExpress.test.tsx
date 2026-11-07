@@ -39,7 +39,11 @@ const setup = (data = {}) => {
 const sent = (topic: jest.Mock, action: string) =>
   topic.mock.calls.map(([message]) => message).filter((message) => message.type === `act/${action}`);
 
-const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
+/** Весь текст окна вместе с пояснениями, свёрнутыми под "?". */
+const text = (container: HTMLElement) => {
+  container.querySelectorAll('.NtTerm__helpToggle:not(.NtTerm__helpToggle--open)').forEach((toggle) => fireEvent.click(toggle));
+  return (container.textContent || '').replace(/\u00a0/g, ' ');
+};
 
 describe('CargoExpress', () => {
   test('бюджет и плательщик берутся из данных', () => {

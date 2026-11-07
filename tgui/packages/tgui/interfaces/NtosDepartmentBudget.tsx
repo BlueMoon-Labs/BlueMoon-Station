@@ -228,7 +228,7 @@ const BudgetGauge = (props: { balance: number; threshold: number }) => {
       <div className="NtTerm__alloc" style={{ height: '12px' }}>
         <div
           className="NtTerm__allocPart"
-          style={{ width: `${share * 100}%`, backgroundColor: over ? '#f2c14e' : 'var(--nt-accent)' }}
+          style={{ width: `${share * 100}%`, backgroundColor: over ? '#d2b46a' : 'var(--nt-accent)' }}
         />
       </div>
       <Stack>
@@ -248,7 +248,7 @@ const OverviewTab = () => {
   const department = data.department as DepartmentInfo;
   return (
     <>
-      <NtFrame title={`Бюджет: ${department.name}`}>
+      <NtFrame title={`Бюджет: ${department.name}`} help={<BudgetHelp />}>
         <BudgetGauge balance={department.balance} threshold={department.threshold ?? 0} />
         {!!department.return_due && (
           <NoticeBox warning>
@@ -282,8 +282,20 @@ const OverviewTab = () => {
         )}
         {!!data.manifest_department && <ManifestButton />}
       </NtFrame>
-      <NtFrame title="Как считается">
-        <Box className="NtTerm__hint" mb={1}>
+      {!!data.can_manage && <StaffSection />}
+      {!!data.can_manage && <TreasurySection />}
+      {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
+    </>
+  );
+};
+
+/** Как считаются грант, порог и зарплаты: под кнопкой ? у бюджета. */
+const BudgetHelp = () => {
+  const { data } = useBackend<BudgetData>();
+  const department = data.department as DepartmentInfo;
+  return (
+    <>
+      <Box>
           Грант NT: <Credits amount={department.grant} /> раз в {data.economy_minutes} мин.: {data.grant_payroll_share}%
           окладов сотрудников на смене
           {department.grant_has_base ? (
@@ -293,25 +305,21 @@ const OverviewTab = () => {
           ) : (
             '.'
           )}
-        </Box>
-        <Box className="NtTerm__hint" mb={1}>
+      </Box>
+        <Box>
           Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
           ниже стартового бюджета. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
           Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
           {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в каталоге;
           после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).
         </Box>
-        <Box className="NtTerm__hint">
+        <Box>
           Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел платит
           сколько может, а остаток становится долгом перед сотрудником (не больше {data.owed_cap} базовых окладов); долг
           гасится частями с каждой следующей зарплатой. Если сотрудник получил меньше <Credits amount={data.wage_floor} />,
           NT доплачивает до этого минимума. Кто дольше {data.dormant_minutes} мин. мёртв или не на смене, зарплату не
           получает, и долг ему не копится. Штрафы - долг перед NT, гасятся из бюджета раз в {data.economy_minutes} мин.
         </Box>
-      </NtFrame>
-      {!!data.can_manage && <StaffSection />}
-      {!!data.can_manage && <TreasurySection />}
-      {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
     </>
   );
 };
@@ -320,13 +328,12 @@ const ManifestButton = () => {
   const { act, data } = useBackend<BudgetData>();
   return (
     <Box mt={1}>
-      <Button icon="print" onClick={() => act('print_manifest')}>
+      <Button
+        icon="print"
+        tooltip={`Положите накладную в ящик перед отгрузкой шаттлом снабжения: выручка за ящик уйдёт вашему отделу за вычетом сбора снабжения ${data.handling_fee}%.`}
+        onClick={() => act('print_manifest')}>
         Накладная: {data.manifest_department}
       </Button>
-      <Box color="label" mt={0.5}>
-        Положите накладную в ящик перед отгрузкой шаттлом снабжения: выручка за ящик уйдёт вашему отделу за вычетом
-        сбора снабжения {data.handling_fee}%.
-      </Box>
     </Box>
   );
 };
@@ -394,16 +401,13 @@ const StaffSection = () => {
   const { data } = useBackend<BudgetData>();
   const staff = data.staff || [];
   return (
-    <NtFrame title="Сотрудники">
-      <Box color="label" mb={1}>
-        Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до{' '}
-        {data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт
-        премии не идут.
+    <NtFrame
+      title="Сотрудники"
+      help={`Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до ${data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт премии не идут.`}>
+      <Box className="NtTerm__hint" mb={1}>
+        Премия себе и крупные или частые выплаты одному человеку открывают дело финансового аудита. Аудит ведут:{' '}
+        {data.audit_rights}.
       </Box>
-      <NoticeBox>
-        Премия самому себе и крупные или частые выплаты из бюджета одному человеку открывают дело финансового аудита.
-        Аудит ведут: {data.audit_rights}.
-      </NoticeBox>
       {staff.length ? (
         <Table>
           <Table.Row header>
@@ -430,11 +434,9 @@ const TreasurySection = () => {
   const [reason, setReason] = useState('');
   const requests = data.treasury_requests || [];
   return (
-    <NtFrame title="Запрос в казну">
-      <Box color="label" mb={1}>
-        Деньги из казны станции переводят капитан или ГП в окне казны. До <Credits amount={data.treasury_max} /> за
-        запрос, решения ждут не больше {data.treasury_pending_max} запросов отдела.
-      </Box>
+    <NtFrame
+      title="Запрос в казну"
+      help={`Деньги из казны станции переводят капитан или ГП в окне казны. До ${formatCredits(data.treasury_max)} за запрос, решения ждут не больше ${data.treasury_pending_max} запросов отдела.`}>
       {!!data.can_manage && (
         <Stack mb={1}>
           <Stack.Item>
@@ -486,13 +488,13 @@ const CatalogTab = () => {
   const canOrder = !!data.can_manage;
   const canRequest = canOrder || !!data.is_staff;
   return (
-    <NtFrame title="Каталог отдела">
-      <Box color="label" mb={1}>
-        {canOrder
-          ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным.'
-          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.${data.auto_approve_wait > 0 ? ` Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.` : ''} Решения могут ждать до ${data.pending_per_requester} ваших заявок.`}{' '}
-        Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.
-      </Box>
+    <NtFrame
+      title="Каталог отдела"
+      help={`${
+        canOrder
+          ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным. Кнопка "Копить" ставит цель накопления: цена пака не считается излишком бюджета.'
+          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.${data.auto_approve_wait > 0 ? ` Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.` : ''} Решения могут ждать до ${data.pending_per_requester} ваших заявок.`
+      } Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.`}>
       {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}
       {canRequest && !canOrder && (
         <Input
@@ -614,10 +616,7 @@ const RequestsTab = () => {
 const ContractsTab = () => {
   const { data } = useBackend<BudgetData>();
   return (
-    <NtFrame title="Контракты отдела">
-      <Box color="label" mb={1}>
-        {data.contracts_help}
-      </Box>
+    <NtFrame title="Контракты отдела" help={data.contracts_help}>
       <ContractTable showShare={false} />
     </NtFrame>
   );
@@ -628,11 +627,9 @@ const WorkTab = () => {
   const log = [...(data.work_log || [])].reverse();
   return (
     <>
-      <NtFrame title="Оплата работы">
-        <Box color="label" mb={1}>
-          NT платит отделу за сделанную работу, а исполнитель получает ещё {data.work_share}% сверху личной премией (до{' '}
-          <Credits amount={data.work_cap} /> в час).
-        </Box>
+      <NtFrame
+        title="Оплата работы"
+        help={`NT платит отделу за сделанную работу, а исполнитель получает ещё ${data.work_share}% сверху личной премией (до ${formatCredits(data.work_cap)} в час).`}>
         {data.work_prices.length ? (
           <Table>
             {data.work_prices.map((work) => (
@@ -678,11 +675,9 @@ const RegisterTab = () => {
   const [share, setShare] = useState(data.register_share || 0);
   useEffect(() => setShare(data.register_share || 0), [data.register_share]);
   return (
-    <NtFrame title="Кассы отдела">
-      <Box color="label" mb={1}>
-        Оплата на кассе, за которой стоит сотрудник отдела, делится: доля кассира идёт ему лично, остальное - в бюджет
-        отдела. Налога с продаж нет, чаевые целиком достаются кассиру.
-      </Box>
+    <NtFrame
+      title="Кассы отдела"
+      help="Оплата на кассе, за которой стоит сотрудник отдела, делится: доля кассира идёт ему лично, остальное - в бюджет отдела. Налога с продаж нет, чаевые целиком достаются кассиру.">
       <LabeledList>
         <LabeledList.Item label="Доля кассира">{data.register_share}%</LabeledList.Item>
       </LabeledList>
@@ -702,11 +697,9 @@ const GrantTab = () => {
   const [points, setPoints] = useState(0);
   const left = data.grant_left || 0;
   return (
-    <NtFrame title="Грант на исследования">
-      <Box color="label" mb={1}>
-        Наука покупает очки исследований за деньги бюджета: {data.grant_price} кр. за очко, не больше {data.grant_cap}{' '}
-        очков в час. Очки начисляются сразу.
-      </Box>
+    <NtFrame
+      title="Грант на исследования"
+      help={`Наука покупает очки исследований за деньги бюджета: ${data.grant_price} кр. за очко, не больше ${data.grant_cap} очков в час. Очки начисляются сразу.`}>
       <LabeledList>
         <LabeledList.Item label="Осталось в этом часе">
           {left} очков

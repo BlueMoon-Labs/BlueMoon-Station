@@ -101,7 +101,11 @@ const sent = (topic: jest.Mock, action: string) =>
     .filter((message) => message.type === `act/${action}`)
     .map((message) => JSON.parse(message.payload));
 
-const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
+/** Весь текст окна вместе с пояснениями, свёрнутыми под "?". */
+const text = (container: HTMLElement) => {
+  container.querySelectorAll('.NtTerm__helpToggle:not(.NtTerm__helpToggle--open)').forEach((toggle) => fireEvent.click(toggle));
+  return (container.textContent || '').replace(/\u00a0/g, ' ');
+};
 
 const commit = (input: Element, value: string) => {
   fireEvent.focus(input);
@@ -120,7 +124,7 @@ describe('NtosDepartmentBudget', () => {
     expect(content).toContain('меньше 30 кр., NT доплачивает');
     expect(content).toContain('Кто дольше 10 мин. мёртв или не на смене, зарплату не получает');
     expect(content).not.toContain('в игре');
-    expect(content).toContain('Премия самому себе и крупные или частые выплаты из бюджета одному человеку');
+    expect(content).toContain('Премия себе и крупные или частые выплаты одному человеку');
     expect(content).toContain('Аудит ведут: глава СБ и капитан.');
     expect(content).toContain('Глав Врач (вы)');
   });

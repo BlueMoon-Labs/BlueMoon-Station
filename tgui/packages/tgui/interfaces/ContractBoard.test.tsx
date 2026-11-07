@@ -91,9 +91,10 @@ test('консоль контрактов: бюджет снабжения, пе
 
 test('справка о контрактах и пустая доска без счёта', () => {
   const ui = setup({ contracts: [], my_name: null });
-  fireEvent.click(ui.getByText('Как работают контракты'));
+  expect(ui.queryByText('Контракты NT: поставка и деятельность.')).toBeNull();
+  const toggles = ui.container.querySelectorAll('.NtTerm__helpToggle');
+  fireEvent.click(toggles[toggles.length - 1]);
   expect(ui.getByText('Контракты NT: поставка и деятельность.')).toBeTruthy();
-  fireEvent.click(ui.getByText('Контракты'));
   expect(ui.getByText('Контрактов сейчас нет.')).toBeTruthy();
   expect(ui.getByText('Банковский счёт не найден: контракт не взять.')).toBeTruthy();
 });

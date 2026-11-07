@@ -94,27 +94,6 @@ const AccountNotices = () => {
   );
 };
 
-/** Бегущая строка котировок под шапкой: медленная, на наведение останавливается. */
-const Tape = () => {
-  const { data } = useBackend<StockExchangeData>();
-  const items = (copy: number) => data.companies.map((company) => (
-    <span key={`${company.ticker}-${copy}`} className="NtTerm__tapeItem">
-      <b>{company.ticker}</b> {company.price.toFixed(2)}{' '}
-      <span className={company.change > 0 ? 'color-good' : company.change < 0 ? 'color-bad' : undefined}>
-        {company.halted ? 'стоп' : `${company.change > 0 ? '▲' : company.change < 0 ? '▼' : ''}${Math.abs(company.change)}%`}
-      </span>
-    </span>
-  ));
-  return (
-    <div className="NtTerm__tape">
-      <div className="NtTerm__tapeInner">
-        {items(1)}
-        {items(2)}
-      </div>
-    </div>
-  );
-};
-
 const TradeButtons = (props: { company: CompanyEntry; held: number; wait: number }) => {
   const { act, data } = useBackend<StockExchangeData>();
   const { company, held, wait } = props;
@@ -180,11 +159,11 @@ const DriverList = (props: { drivers: PriceDriver[] }) => (
 
 /** Подсветка плитки: зелёная при росте, красная при падении, тем гуще, чем сильнее движение. */
 const tileTint = (change: number) => {
-  const strength = Math.min(Math.abs(change) / 20, 1) * 0.22;
+  const strength = Math.min(Math.abs(change) / 20, 1) * 0.16;
   if (!strength) {
     return undefined;
   }
-  return change > 0 ? `rgba(111, 220, 140, ${strength})` : `rgba(255, 107, 94, ${strength})`;
+  return change > 0 ? `rgba(140, 191, 150, ${strength})` : `rgba(212, 134, 124, ${strength})`;
 };
 
 const QuoteTile = (props: { company: CompanyEntry; held: number; selected: boolean; onSelect: () => void }) => {
@@ -199,7 +178,7 @@ const QuoteTile = (props: { company: CompanyEntry; held: number; selected: boole
         {company.halted ? <span className="color-bad">стоп</span> : <ChangeBadge percent={company.change} />}
       </div>
       <div className="NtTerm__tileName">{company.name}</div>
-      <div key={company.price} className="NtTerm__tilePrice NtTerm__flash">
+      <div className="NtTerm__tilePrice">
         {company.price.toFixed(2)}
       </div>
     </div>
@@ -400,10 +379,7 @@ export const NtosStockExchangeContent = () => {
         ) : undefined
       }
       menu={
-        <>
-          <Tape />
-          <NtMenu<ExchangePage> items={pages} selected={page} onSelect={setPage} />
-        </>
+        <NtMenu<ExchangePage> items={pages} selected={page} onSelect={setPage} />
       }>
       <AccountNotices />
       {page === 'quotes' && <QuotesSection />}
@@ -421,7 +397,7 @@ export const NtosStockExchangeContent = () => {
 };
 
 /** Цвета долей портфеля: спокойные, различимые на тёмном. */
-const ALLOC_COLORS = ['#4fdc8f', '#74b6ff', '#f2c94c', '#b48cff', '#f0954a', '#5fd0e6', '#ff8a80', '#a9b8cc', '#7bd88f', '#e6a0ff', '#c9d3df'];
+const ALLOC_COLORS = ['#84b598', '#8aa6c6', '#c4ad72', '#a395c4', '#c99a6e', '#7fb0bd', '#c48a86', '#a2adbb', '#8db58f', '#b893b8', '#c9d3df'];
 
 /** Акции на счёте: полоса долей, сколько, почём и на сколько сейчас. */
 const PortfolioSection = () => {
@@ -476,11 +452,9 @@ const DividendsSection = () => {
   const { data } = useBackend<StockExchangeData>();
   const rows = data.companies.filter((company) => (company.dividend_pool || 0) >= 1);
   return (
-    <NtFrame title="Дивиденды">
-      <Box color="label" mb={1}>
-        {data.dividend_share}% закупок станции у партнёра компании идёт в её фонд. Раз в {data.payroll_minutes} мин.,
-        с зарплатой, фонд делится между держателями по числу акций.
-      </Box>
+    <NtFrame
+      title="Дивиденды"
+      help={`${data.dividend_share}% закупок станции у партнёра компании идёт в её фонд. Раз в ${data.payroll_minutes} мин., с зарплатой, фонд делится между держателями по числу акций.`}>
       {rows.length === 0 && <NtEmpty>Фонды пока пусты: станция ещё ничего не закупала у партнёров.</NtEmpty>}
       {rows.map((company) => {
         const held = data.holdings[company.ticker] || 0;
@@ -528,7 +502,9 @@ const OrdersSection = () => {
   const locked = !data.has_account || !!data.frozen;
   const full = orders.length >= data.orders_max;
   return (
-    <NtFrame title={`Заявки ${orders.length}/${data.orders_max}`}>
+    <NtFrame
+      title={`Заявки ${orders.length}/${data.orders_max}`}
+      help="Заявка проверяется раз в минуту после смены цен и исполняется как обычная сделка: со спредом, комиссией и лимитом позиции. Если сделка не проходит, заявка снимается и ID-карта говорит почему; кулдаун по компании и остановленные торги она пережидает.">
       <Stack align="center" mb={1}>
         <Stack.Item>
           <Dropdown
@@ -578,11 +554,6 @@ const OrdersSection = () => {
           </Button>
         </NtLine>
       ))}
-      <Box color="label" mt={1}>
-        Заявка проверяется раз в минуту после смены цен и исполняется как обычная сделка: со спредом, комиссией и
-        лимитом позиции. Если сделка не проходит, заявка снимается и ID-карта говорит почему; кулдаун по компании и
-        остановленные торги она пережидает.
-      </Box>
     </NtFrame>
   );
 };

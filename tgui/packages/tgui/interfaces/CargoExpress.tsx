@@ -1,7 +1,7 @@
 import { BooleanLike } from 'common/react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Button, NoticeBox } from '../components';
+import { AnimatedNumber, Button } from '../components';
 import { Window } from '../layouts';
 import { CargoCatalog } from './Cargo';
 import { formatCredits } from './common/Economy';
@@ -43,16 +43,14 @@ export const CargoExpress = (props) => {
               </NtReadout>
             )
           }>
-          <InterfaceLockNoticeBox accessText={access_hint} />
-          <Button
-            fluid
-            color={locked ? 'good' : 'bad'}
-            icon={locked ? 'unlock' : 'lock'}
-            content={locked ? 'Разблокировать консоль' : 'Заблокировать консоль'}
-            onClick={() => act('toggleLock')}
-            mb={1.5}
-          />
-          {!locked && <CargoExpressContent />}
+          {locked ? (
+            <>
+              <InterfaceLockNoticeBox accessText={access_hint} />
+              <Button fluid icon="unlock" content="Разблокировать консоль" onClick={() => act('toggleLock')} />
+            </>
+          ) : (
+            <CargoExpressContent />
+          )}
         </NtScreen>
       </Window.Content>
     </Window>
@@ -76,8 +74,10 @@ const CargoExpressContent = (props) => {
 
   return (
     <>
-      {!!market_help && <NoticeBox info>{market_help}</NoticeBox>}
-      <NtFrame title="Доставка капсулой">
+      <NtFrame
+        title="Доставка капсулой"
+        help={market_help}
+        buttons={<Button icon="lock" content="Заблокировать" onClick={() => act('toggleLock')} />}>
         <NtLine label="Куда">
           {!beacon_only && <Button content="Склад снабжения" selected={!usingBeacon} onClick={() => act('LZCargo')} />}
           <Button selected={usingBeacon} disabled={!hasBeacon} onClick={() => act('LZBeacon')}>

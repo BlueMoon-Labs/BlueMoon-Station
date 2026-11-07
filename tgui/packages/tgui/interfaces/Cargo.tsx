@@ -274,7 +274,7 @@ export const CargoContent = (props) => {
           <Box>
             Шаттл {SHUTTLE_TEXT[shuttle.state]}
             {inTransit && shuttle.eta > 0 && (
-              <span className="NtTerm__num" style={{ marginLeft: '8px', color: 'var(--nt-accent)' }}>
+              <span className="NtTerm__num" style={{ marginLeft: '8px' }}>
                 {formatTime(shuttle.eta)}
               </span>
             )}
@@ -664,6 +664,7 @@ const CargoRequests = (props) => {
   return (
     <NtFrame
       title="Заявки экипажа"
+      help="Одобренная заявка уходит в корзину и оплачивается из бюджета снабжения."
       buttons={
         !requestonly &&
         requests.length > 0 && (
@@ -672,10 +673,7 @@ const CargoRequests = (props) => {
           </Button>
         )
       }>
-      <Box color="label" mb={1}>
-        Одобренная заявка уходит в корзину и оплачивается из бюджета снабжения.
-      </Box>
-      {requests.length === 0 && <Box color="good">Заявок нет.</Box>}
+      {requests.length === 0 && <NtEmpty>Заявок нет.</NtEmpty>}
       {requests.length > 0 && (
         <Table>
           <Table.Row header>
@@ -846,13 +844,15 @@ const SpecialOffers = (props) => {
   const { can_take_offers } = data;
   const offers = data.special_offers || [];
   return (
-    <NtFrame title="Спецзаказы партнёров">
-      <Box color="label" mb={1}>
-        Спецзаказ платит цену заказа за каждую принятую штуку сразу при отгрузке, а всё сверх неё - снабжению маржой при
-        выполнении. Положите накладную спецзаказа в ящик с товаром и отгрузите шаттлом до конца срока.
-        {!can_take_offers && ' Брать спецзаказы и печатать накладные можно только на консоли снабжения станции.'}
-      </Box>
-      {offers.length === 0 && <Box color="label">Спецзаказов сейчас нет.</Box>}
+    <NtFrame
+      title="Спецзаказы партнёров"
+      help="Спецзаказ платит цену заказа за каждую принятую штуку сразу при отгрузке, а всё сверх неё - снабжению маржой при выполнении. Положите накладную спецзаказа в ящик с товаром и отгрузите шаттлом до конца срока.">
+      {!can_take_offers && (
+        <Box className="NtTerm__hint" mb={1}>
+          Брать спецзаказы и печатать накладные можно только на консоли снабжения станции.
+        </Box>
+      )}
+      {offers.length === 0 && <NtEmpty>Спецзаказов сейчас нет.</NtEmpty>}
       <Stack vertical>
         {offers.map((offer) => (
           <Stack.Item key={offer.uid}>
@@ -928,17 +928,18 @@ const Bundles = (props) => {
   return (
     <NtFrame
       title="Скупка"
+      help="Партнёры распродают пачки разных предметов дешевле, чем по отдельности, но только целиком. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в 8-15 минут."
       buttons={
         <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
           Купить лично
         </Button.Checkbox>
       }>
-      <Box className="NtTerm__hint" mb={1.5}>
-        Партнёры распродают пачки разных предметов дешевле, чем по отдельности, - но только целиком. Взятая пачка уходит
-        в корзину и из скупки пропадает.
-        {!forCargo && ' За бюджет снабжения скупку берёт снабжение с консоли; вы можете купить пачку лично.'}
-      </Box>
-      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Новые пачки появляются раз в 8-15 минут.</NtEmpty>}
+      {!forCargo && (
+        <Box className="NtTerm__hint" mb={1}>
+          За бюджет снабжения скупку берёт снабжение с консоли; вы можете купить пачку лично.
+        </Box>
+      )}
+      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают.</NtEmpty>}
       {bundles.map((bundle) => {
         const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
         const canBuy = !!self_paid || forCargo;
@@ -984,6 +985,7 @@ const Auction = (props) => {
       {lot ? (
         <NtFrame
           title={`Лот: ${lot.name}`}
+          help="Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения."
           buttons={
             <Box inline className="NtTerm__num" color={lot.left < 60 ? 'average' : 'label'}>
               осталось {formatTime(lot.left)}
@@ -1014,10 +1016,6 @@ const Auction = (props) => {
               <Stack.Item className="NtTerm__hint">на счёте {formatCredits(data.my_balance)}</Stack.Item>
             )}
           </Stack>
-          <Box className="NtTerm__hint" mt={1}>
-            Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка
-            в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения.
-          </Box>
           {lot.history.length > 0 && (
             <Box mt={1.5}>
               <Box className="NtTerm__hint" mb={0.5}>
@@ -1058,12 +1056,10 @@ const Market = (props) => {
   const { data } = useBackend<CargoData>();
   const market = data.market || { commodities: [], price_index: 1 };
   return (
-    <NtFrame title="Рынок товаров" buttons={<Box inline>Индекс цен: ×{market.price_index}</Box>}>
-      <Box color="label" mb={1}>
-        Закупка - во сколько раз паки товара дороже базы. Продажа - во сколько раз NT и лучший покупатель платят за груз
-        против базы, с учётом спроса: продажи выбивают спрос, сдвиги рынка его восстанавливают. Горячий товар продаётся
-        дороже, пока не остынет. Индекс цен двигает цены торговых автоматов.
-      </Box>
+    <NtFrame
+      title="Рынок товаров"
+      help="Закупка - во сколько раз паки товара дороже базы. Продажа - во сколько раз NT и лучший покупатель платят за груз против базы, с учётом спроса: продажи выбивают спрос, сдвиги рынка его восстанавливают. Горячий товар продаётся дороже, пока не остынет. Индекс цен двигает цены торговых автоматов."
+      buttons={<Box inline>Индекс цен: ×{market.price_index}</Box>}>
       <Table>
         <Table.Row header>
           <Table.Cell>Товар</Table.Cell>
@@ -1084,7 +1080,7 @@ const Market = (props) => {
             <Table.Cell py={0.5}>
               {commodity.name}
               {commodity.hot > 0 && (
-                <Box inline ml={1} bold color="orange">
+                <Box inline ml={1} color="average">
                   горячий ×{commodity.hot}
                 </Box>
               )}
@@ -1116,11 +1112,9 @@ const Partners = (props) => {
   const { tier_step = 1, tier_max = 1 } = data;
   const partners = data.partners || [];
   return (
-    <NtFrame title="Торговые партнёры">
-      <Box color="label" mb={1}>
-        Паки везёт самый дешёвый открытый партнёр, у которого они есть на складе. Репутация растёт от продаж и закупок,
-        каждые {tier_step} очков - новая ступень и скидка; репутация у одних партнёров открывает других.
-      </Box>
+    <NtFrame
+      title="Торговые партнёры"
+      help={`Паки везёт самый дешёвый открытый партнёр, у которого они есть на складе. Репутация растёт от продаж и закупок, каждые ${tier_step} очков - новая ступень и скидка; репутация у одних партнёров открывает других.`}>
       <Stack vertical>
         {partners.map((partner) => {
           const maxed = partner.tier >= tier_max;
@@ -1189,12 +1183,12 @@ const Partners = (props) => {
 const Contracts = (props) => {
   const { data } = useBackend<CargoData>();
   return (
-    <NtFrame title="Контракты NT">
-      {!!data.contracts_help && (
-        <Box color="label" mb={1}>
-          {data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении &quot;Бюджет отдела&quot;.
-        </Box>
-      )}
+    <NtFrame
+      title="Контракты NT"
+      help={
+        data.contracts_help &&
+        `${data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении "Бюджет отдела".`
+      }>
       <ContractTable readOnly />
     </NtFrame>
   );

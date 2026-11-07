@@ -1,12 +1,11 @@
 import { BooleanLike } from 'common/react';
-import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, NoticeBox } from '../components';
+import { AnimatedNumber, Button } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { formatCredits } from './common/Economy';
-import { NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtFrame, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
 
 type ContractBoardData = {
   mode: 'pad' | 'console';
@@ -25,6 +24,7 @@ const PadSection = (props) => {
   return (
     <NtFrame
       title="Пад подработки"
+      help="Положите на пад то, что просят контракты поставки, и отправьте: подходящее уйдёт ЦК, остальное останется на месте."
       buttons={
         <>
           <Button icon="sync" content="Проверить" disabled={!pad} onClick={() => act('recalc')} />
@@ -41,25 +41,14 @@ const PadSection = (props) => {
         {!pad ? 'Не найден' : pad_on_station ? 'На связи' : 'Вне станции'}
       </NtLine>
       <NtLine label="Отчёт">{status_report || '-'}</NtLine>
-      <Box className="NtTerm__hint" mt={1}>
-        Положите на пад то, что просят контракты поставки, и отправьте: подходящее уйдёт ЦК, остальное останется на
-        месте.
-      </Box>
     </NtFrame>
   );
 };
-
-type BoardPage = 'board' | 'help';
 
 /** Доска контрактов NT: пункт подработки с падом и консоль контрактов снабжения. */
 export const ContractBoardContent = (props) => {
   const { act, data } = useBackend<ContractBoardData>();
   const { mode, contracts_help, my_name, stored_cash } = data;
-  const [page, setPage] = useState<BoardPage>('board');
-  const pages: NtMenuItem<BoardPage>[] = [
-    { key: 'board', label: 'Контракты' },
-    ...(contracts_help ? [{ key: 'help' as BoardPage, label: 'Как работают контракты' }] : []),
-  ];
   return (
     <NtScreen
       tone="contracts"
@@ -71,19 +60,14 @@ export const ContractBoardContent = (props) => {
             <AnimatedNumber value={stored_cash ?? 0} format={(value) => formatCredits(value)} />
           </NtReadout>
         ) : undefined
-      }
-      menu={<NtMenu<BoardPage> items={pages} selected={page} onSelect={setPage} />}>
-      {page === 'help' && !!contracts_help && <NoticeBox info>{contracts_help}</NoticeBox>}
-      {page === 'board' && (
-        <>
-          {mode === 'pad' && <PadSection />}
-          <NtFrame
-            title="Контракты NT"
-            buttons={mode === 'console' && <Button icon="print" content="Распечатать" onClick={() => act('Print')} />}>
-            <ContractTable />
-          </NtFrame>
-        </>
-      )}
+      }>
+      {mode === 'pad' && <PadSection />}
+      <NtFrame
+        title="Контракты NT"
+        help={contracts_help}
+        buttons={mode === 'console' && <Button icon="print" content="Распечатать" onClick={() => act('Print')} />}>
+        <ContractTable />
+      </NtFrame>
     </NtScreen>
   );
 };

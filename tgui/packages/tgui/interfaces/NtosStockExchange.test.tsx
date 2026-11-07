@@ -83,7 +83,11 @@ const openPage = (container: HTMLElement, label: string) => {
   fireEvent.click(item as Element);
 };
 
-const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
+/** Весь текст окна вместе с пояснениями, свёрнутыми под "?". */
+const text = (container: HTMLElement) => {
+  container.querySelectorAll('.NtTerm__helpToggle:not(.NtTerm__helpToggle--open)').forEach((toggle) => fireEvent.click(toggle));
+  return (container.textContent || '').replace(/\u00a0/g, ' ');
+};
 
 const framed = (container: HTMLElement, title: string) =>
   Array.from(container.querySelectorAll('.NtTerm__frame')).find((node) =>
@@ -203,9 +207,8 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('Расслоение суперматерии на станции: +10%');
   });
 
-  test('портфель и бегущая строка: позиция по текущей цене, у остановленной компании - стоп', () => {
+  test('портфель: позиция по текущей цене', () => {
     const { container } = setup();
-    expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('стоп');
     openPage(container, 'Портфель');
     expect(text(container)).toContain('VYMD Вей-Мед, 3 шт. по 120.00');
     expect(text(container)).toContain('360 кр.');
@@ -264,10 +267,10 @@ describe('NtosStockExchange', () => {
     expect(sent(topic, 'buy')).toEqual([{ ticker: 'VYMD', count: 1 }]);
   });
 
-  test('индекс сектора торгуется в котировках без логотипа и есть в бегущей строке', () => {
+  test('индекс сектора торгуется в котировках без логотипа', () => {
     const { container, getAllByText, topic } = setup({ holdings: {}, cooldowns: {} });
     expect(container.querySelector('.logo-sect')).toBeNull();
-    expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('SECT 98.50');
+    expect(container.querySelector('.NtTerm__tiles')?.textContent).toContain('98.50');
     selectTile(container, 'SECT');
     expect(text(container)).toContain('SECT Индекс сектора');
     fireEvent.click(getAllByText('Купить')[0]);
