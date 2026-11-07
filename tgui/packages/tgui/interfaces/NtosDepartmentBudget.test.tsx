@@ -118,7 +118,8 @@ describe('NtosDepartmentBudget', () => {
     expect(content).toContain('не больше 6 базовых окладов');
     expect(content).toContain('долг гасится частями');
     expect(content).toContain('меньше 30 кр., NT доплачивает');
-    expect(content).toContain('дольше 10 мин., зарплату не получает');
+    expect(content).toContain('Кто дольше 10 мин. мёртв или не на смене, зарплату не получает');
+    expect(content).not.toContain('в игре');
     expect(content).toContain('Премия самому себе и крупные или частые выплаты из бюджета одному человеку');
     expect(content).toContain('Аудит ведут: глава СБ и капитан.');
     expect(content).toContain('Глав Врач (вы)');
