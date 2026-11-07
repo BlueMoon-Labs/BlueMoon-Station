@@ -85,6 +85,31 @@
 #define SLOT_JACKPOT_ANNOUNCE_MIN 5000
 /// Джекпот сектора между сменами не растёт выше этого
 #define SLOT_JACKPOT_CARRY_MAX 100000
+/// Аукцион сектора: длительность лота, шаг проверки торгов, пауза между лотами и до первого лота смены
+#define AUCTION_DURATION (10 MINUTES)
+#define AUCTION_STEP (5 SECONDS)
+#define AUCTION_GAP_MIN (15 MINUTES)
+#define AUCTION_GAP_MAX (25 MINUTES)
+#define AUCTION_FIRST_MIN (10 MINUTES)
+#define AUCTION_FIRST_MAX (20 MINUTES)
+/// Ставка в последние столько продлевает торги до них же
+#define AUCTION_SNIPE_WINDOW (1 MINUTES)
+/// Стартовая цена и шаг ставки - доли цены лота и текущей ставки, шаг не меньше AUCTION_MIN_INCREMENT
+#define AUCTION_START_SHARE 0.4
+#define AUCTION_INCREMENT_SHARE 0.05
+#define AUCTION_MIN_INCREMENT 25
+#define AUCTION_BID_MAX 100000
+/// Потолок соперника - процент цены лота
+#define AUCTION_RIVAL_MAX_MIN 70
+#define AUCTION_RIVAL_MAX_MAX 150
+/// Соперники отвечают через случайную паузу, в последнюю минуту - быстрее
+#define AUCTION_RIVAL_CHANCE 70
+#define AUCTION_RIVAL_DELAY_MIN (20 SECONDS)
+#define AUCTION_RIVAL_DELAY_MAX (45 SECONDS)
+#define AUCTION_RIVAL_HURRY_MIN (5 SECONDS)
+#define AUCTION_RIVAL_HURRY_MAX (15 SECONDS)
+#define AUCTION_HISTORY_MAX 6
+#define AUCTION_RESULTS_MAX 3
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
 #define WORK_SRV_DISH "srv_dish"
@@ -209,6 +234,9 @@
 #define ECON_LOTTERY "lottery"
 #define ECON_LOTTERY_PRIZE "lottery_prize"
 #define ECON_LOTTERY_HOUSE "lottery_house"
+#define ECON_AUCTION_BID "auction_bid"
+#define ECON_AUCTION_REFUND "auction_refund"
+#define ECON_AUCTION "auction"
 #define ECON_PERSONAL_CATALOG "personal_catalog"
 #define ECON_TIP "tip"
 #define ECON_TAX "tax"

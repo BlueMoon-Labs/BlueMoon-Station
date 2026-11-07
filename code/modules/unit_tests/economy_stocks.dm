@@ -7,7 +7,8 @@
 		TEST_ASSERT(company.price > 0, "[ticker] цена")
 	for(var/id in SSmarket.partners)
 		var/datum/trade_partner/partner = SSmarket.partners[id]
-		TEST_ASSERT_NOTNULL(SSmarket.get_company(partner.company), "Нет компании [partner.company] партнёра [id]")
+		if(partner.company)
+			TEST_ASSERT_NOTNULL(SSmarket.get_company(partner.company), "Нет компании [partner.company] партнёра [id]")
 
 /// Без событий цена блуждает без сноса, остаётся положительной и не выше потолка; история ограничена.
 /datum/unit_test/economy_stocks_tick/Run()

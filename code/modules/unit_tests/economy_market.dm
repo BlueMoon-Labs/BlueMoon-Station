@@ -48,6 +48,10 @@
 		"contraband_message" = SSmarket.contraband_message,
 		"slot_jackpot" = SSmarket.slot_jackpot,
 		"slot_jackpot_carried" = SSmarket.slot_jackpot_carried,
+		"auction" = SSmarket.auction,
+		"next_auction_at" = SSmarket.next_auction_at,
+		"auction_results" = SSmarket.auction_results,
+		"auction_drop_turf" = SSmarket.auction_drop_turf,
 	)
 	var/datum/news/feed_channel/channel = SSmarket.news_channel()
 	.["news_messages"] = channel.messages.Copy()
@@ -68,6 +72,10 @@
 	SSmarket.contraband_message = ""
 	SSmarket.slot_jackpot = 0
 	SSmarket.slot_jackpot_carried = 0
+	SSmarket.auction = null
+	SSmarket.next_auction_at = world.time + 1 HOURS
+	SSmarket.auction_results = list()
+	SSmarket.auction_drop_turf = null
 	SSmarket.load_settings(SSeconomy.settings.raw?["market"])
 
 /proc/econ_test_restore_market(list/saved)

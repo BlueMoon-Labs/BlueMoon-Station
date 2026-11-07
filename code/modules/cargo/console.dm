@@ -116,6 +116,8 @@
 	if(.)
 		return
 	switch(action)
+		if("auction_bid")
+			. = econ_cargo_auction_bid(usr, params, src)
 		if("print_manifest")
 			. = !!econ_print_manifest(usr, src)
 		if("accept_offer")

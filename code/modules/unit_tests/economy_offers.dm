@@ -485,6 +485,14 @@
 		"/obj/item/reagent_containers/crackbrick|" = "синтез в химии",
 		"/obj/item/reagent_containers/food/snacks/grown/ambrosia/gaia|" = "мутация амброзии в ботанике",
 		"/obj/item/reagent_containers/food/snacks/grown/bluecherries|" = "мутация вишни в ботанике",
+		"/obj/item/slime_extract/rainbow|" = "ксенобиология",
+		"/obj/item/slime_extract/bluespace|" = "ксенобиология",
+		"/obj/item/organ/regenerative_core/legion|" = "охота на Лаваленде",
+		"/obj/item/stack/sheet/bluespace_crystal|" = "шахта",
+		"/obj/item/assembly/signaler/anomaly|" = "аномалии на станции",
+		"/obj/item/stack/sheet/animalhide/ashdrake|" = "охота на пепельного дракона",
+		"/obj/item/crusher_trophy|" = "охота с крашером",
+		"/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit|" = "мутация в ботанике",
 	)
 
 /datum/unit_test/economy_offers/no_offer_farm/Run()

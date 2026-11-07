@@ -16,6 +16,7 @@
 		"logo-nakamura" = 'tgui/packages/tgui/assets/economy/nkmr.png',
 		"logo-agrarian" = 'tgui/packages/tgui/assets/economy/agro.png',
 		"logo-sol_federation" = 'tgui/packages/tgui/assets/economy/sol_federation.png',
+		"logo-collectors" = 'tgui/packages/tgui/assets/economy/sol_federation.png',
 		"logo-free_traders" = 'tgui/packages/tgui/assets/economy/free_traders.png',
 	)
 

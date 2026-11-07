@@ -341,6 +341,9 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 			"reason" = order.reason,
 			"id" = order.id,
 		))
+	var/list/auction = econ_auction_ui_data(econ_account_of(user))
+	for(var/key in auction)
+		data[key] = auction[key]
 	data["special_offers"] = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
 		if(econ_partner_visible(offer.get_partner(), show_contraband))
@@ -364,6 +367,21 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	if(!isnum(amount))
 		return 1
 	return clamp(round(amount), 1, ECON_CARGO_ADD_MAX)
+
+/// Ставка на аукционе из окна снабжения с личного счёта; ответ произносит speaker.
+/proc/econ_cargo_auction_bid(mob/user, list/params, atom/movable/speaker)
+	var/amount = params["amount"]
+	if(istext(amount))
+		amount = text2num(amount)
+	var/uid = params["uid"]
+	if(istext(uid))
+		uid = text2num(uid)
+	var/error = SSmarket.place_auction_bid(econ_account_of(user), amount, user, uid)
+	if(error)
+		to_chat(user, span_warning(error))
+		return FALSE
+	speaker.say("Ставка принята: [amount] кр.")
+	return TRUE
 
 /// Причина заявки из окна или null, если окно её не прислало.
 /proc/econ_cargo_given_reason(list/params)

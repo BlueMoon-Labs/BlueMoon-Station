@@ -14,13 +14,14 @@ import {
   LabeledList,
   NoticeBox,
   ProgressBar,
+  RestrictedInput,
   Stack,
   Table,
 } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
-import { NtFrame, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Pack = {
   name: string;
@@ -120,6 +121,23 @@ type HelpTopic = {
   lines: string[];
 };
 
+type AuctionLot = {
+  uid: number;
+  name: string;
+  desc: string;
+  value: number;
+  bid: number;
+  bidder: string | null;
+  mine: BooleanLike;
+  min_bid: number;
+  increment: number;
+  left: number;
+  rivals: number;
+  history: { who: string; amount: number }[];
+};
+
+type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
+
 type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
 
 type CargoData = {
@@ -158,6 +176,10 @@ type CargoData = {
   market?: { commodities: Commodity[]; price_index: number };
   partners?: Partner[];
   contracts?: ContractEntry[];
+  auction?: AuctionLot | null;
+  auction_next?: number;
+  auction_results?: AuctionResult[];
+  my_balance?: number | null;
 };
 
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -205,7 +227,7 @@ export const Cargo = (props) => {
   );
 };
 
-type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'market' | 'partners' | 'contracts' | 'help';
+type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'auction' | 'market' | 'partners' | 'contracts' | 'help';
 
 export const CargoContent = (props) => {
   const { data } = useBackend<CargoData>();
@@ -221,6 +243,7 @@ export const CargoContent = (props) => {
     { key: 'requests', label: 'Заявки', count: requests.length },
     { key: 'departments', label: 'Заказы отделов', count: departmentOrders.length },
     { key: 'offers', label: 'Спецзаказы', count: offers.length },
+    { key: 'auction', label: data.auction ? 'Аукцион ●' : 'Аукцион' },
     { key: 'market', label: 'Рынок' },
     { key: 'partners', label: 'Партнёры' },
     { key: 'contracts', label: 'Контракты' },
@@ -266,6 +289,7 @@ export const CargoContent = (props) => {
       {page === 'requests' && <CargoRequests />}
       {page === 'departments' && <DepartmentOrders />}
       {page === 'offers' && <SpecialOffers />}
+      {page === 'auction' && <Auction />}
       {page === 'market' && <Market />}
       {page === 'partners' && <Partners />}
       {page === 'contracts' && <Contracts />}
@@ -926,6 +950,86 @@ const SpecialOffers = (props) => {
         ))}
       </Stack>
     </NtFrame>
+  );
+};
+
+const Auction = (props) => {
+  const { act, data } = useBackend<CargoData>();
+  const lot = data.auction;
+  const results = data.auction_results || [];
+  const [amount, setAmount] = useState<number | null>(null);
+  const minBid = lot?.min_bid || 0;
+  const bid = Math.max(amount ?? minBid, minBid);
+  return (
+    <>
+      {lot ? (
+        <NtFrame
+          title={`Лот: ${lot.name}`}
+          buttons={
+            <Box inline className="NtTerm__num" color={lot.left < 60 ? 'average' : 'label'}>
+              осталось {formatTime(lot.left)}
+            </Box>
+          }>
+          <Box className="NtTerm__hint" mb={1}>
+            {lot.desc}
+          </Box>
+          <NtLine label="Оценка лота">{formatCredits(lot.value)}</NtLine>
+          <NtLine label="Текущая ставка" tone={lot.mine ? 'good' : lot.bid ? 'warn' : 'dim'}>
+            {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
+          </NtLine>
+          <NtLine label="Торгуются ещё">{lot.rivals} станции сектора</NtLine>
+          <Stack align="center" mt={1.5} wrap>
+            <Stack.Item>
+              <RestrictedInput width="7em" value={bid} minValue={minBid} maxValue={100000} onChange={(_, value) => setAmount(value)} /> кр.
+            </Stack.Item>
+            <Stack.Item>
+              <Button onClick={() => setAmount(minBid)}>Минимум</Button>
+              <Button onClick={() => setAmount(minBid + lot.increment * 2)}>+2 шага</Button>
+            </Stack.Item>
+            <Stack.Item>
+              <Button color="good" icon="gavel" onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
+                {`Поставить ${formatCredits(bid)}`}
+              </Button>
+            </Stack.Item>
+            {data.my_balance !== null && data.my_balance !== undefined && (
+              <Stack.Item className="NtTerm__hint">на счёте {formatCredits(data.my_balance)}</Stack.Item>
+            )}
+          </Stack>
+          <Box className="NtTerm__hint" mt={1}>
+            Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка
+            в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения.
+          </Box>
+          {lot.history.length > 0 && (
+            <Box mt={1.5}>
+              <Box className="NtTerm__hint" mb={0.5}>
+                Ставки:
+              </Box>
+              {lot.history.map((entry, index) => (
+                <NtLine key={`${entry.who}-${entry.amount}-${index}`} label={entry.who} tone={index === 0 ? undefined : 'dim'}>
+                  {formatCredits(entry.amount)}
+                </NtLine>
+              ))}
+            </Box>
+          )}
+        </NtFrame>
+      ) : (
+        <NtFrame title="Аукцион сектора">
+          <NtEmpty>
+            Сейчас лотов нет.{!!data.auction_next && ` Следующий - примерно через ${formatTime(data.auction_next)}.`} О новом лоте
+            сообщит «Сводка сектора».
+          </NtEmpty>
+        </NtFrame>
+      )}
+      {results.length > 0 && (
+        <NtFrame title="Прошлые лоты">
+          {results.map((result, index) => (
+            <NtLine key={`${result.name}-${index}`} label={result.name} tone={result.ours ? 'good' : 'dim'}>
+              {result.winner ? `${result.ours ? 'наша станция: ' : ''}${result.winner}, ${formatCredits(result.price)}` : 'снят без ставок'}
+            </NtLine>
+          ))}
+        </NtFrame>
+      )}
+    </>
   );
 };
 

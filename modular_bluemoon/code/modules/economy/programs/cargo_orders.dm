@@ -111,6 +111,8 @@
 		if("toggleprivate")
 			self_paid = !self_paid
 			return TRUE
+		if("auction_bid")
+			return econ_cargo_auction_bid(user, params, computer)
 		if("print_manifest")
 			econ_print_manifest(user, computer)
 			return TRUE

@@ -392,6 +392,51 @@ test('закрытый эксклюзив партнёра объясняет, �
   expect(ui.getByText('Эксклюзив «Вей-Мед»')).toBeTruthy();
 });
 
+test('аукцион: лот, ставки соперников и ставка станции шлёт auction_bid', () => {
+  const ui = setup({
+    auction: {
+      uid: 4,
+      name: 'золотая скрипка',
+      desc: 'Скрипка из золота.',
+      value: 4000,
+      bid: 1700,
+      bidder: 'станция «Кило-7»',
+      mine: 0,
+      min_bid: 1785,
+      increment: 85,
+      left: 45,
+      rivals: 2,
+      history: [
+        { who: 'станция «Кило-7»', amount: 1700 },
+        { who: 'Иван Петров', amount: 1600 },
+      ],
+    },
+    my_balance: 5000,
+  });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  expect(ui.getByText('Лот: золотая скрипка')).toBeTruthy();
+  expect(ui.getByText('осталось 0:45')).toBeTruthy();
+  expect(ui.getByText('1 700 кр. - станция «Кило-7»')).toBeTruthy();
+  fireEvent.click(ui.getByText('Поставить 1 785 кр.'));
+  fireEvent.click(ui.getByText('+2 шага'));
+  fireEvent.click(ui.getByText('Поставить 1 955 кр.'));
+  expect(sent(ui.topic, 'auction_bid')).toEqual([
+    { uid: 4, amount: 1785 },
+    { uid: 4, amount: 1955 },
+  ]);
+});
+
+test('аукцион без лота: когда следующий и итоги прошлых', () => {
+  const ui = setup({
+    auction: null,
+    auction_next: 300,
+    auction_results: [{ name: 'корона', winner: 'Иван Петров', price: 2600, ours: 1 }],
+  });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  expect(ui.getByText(/примерно через 5:00/)).toBeTruthy();
+  expect(ui.getByText('наша станция: Иван Петров, 2 600 кр.')).toBeTruthy();
+});
+
 test('счётчики дел видны в навигации', () => {
   const ui = setup();
   expect(ui.getByText('Заявки')).toBeTruthy();
