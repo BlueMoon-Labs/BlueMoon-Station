@@ -5476,6 +5476,7 @@
 #include "modular_bluemoon\code\modules\mob\terror_spiders\terror_controller.dm"
 #include "modular_bluemoon\code\modules\mob\terror_spiders\terror_spiders.dm"
 #include "modular_bluemoon\code\modules\mob\terror_spiders\widow.dm"
+#include "modular_bluemoon\code\modules\modular_computers\papirus.dm"
 #include "modular_bluemoon\code\modules\modular_laser_rifle\laser_guns.dm"
 #include "modular_bluemoon\code\modules\modular_laser_rifle\mode_datums.dm"
 #include "modular_bluemoon\code\modules\modular_laser_rifle\projectiles.dm"
