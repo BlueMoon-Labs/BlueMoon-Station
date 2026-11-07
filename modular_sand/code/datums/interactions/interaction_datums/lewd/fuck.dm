@@ -404,7 +404,7 @@
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
 		ignored_mobs = user.get_unconsenting(),
-		vision_distance = distance,,
+		vision_distance = distance,
 		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
@@ -455,7 +455,7 @@
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
 		ignored_mobs = user.get_unconsenting(),
-		vision_distance = distance,,
+		vision_distance = distance,
 		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
