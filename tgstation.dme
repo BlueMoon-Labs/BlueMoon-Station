@@ -5299,6 +5299,7 @@
 #include "modular_bluemoon\code\modules\economy\market\partner.dm"
 #include "modular_bluemoon\code\modules\economy\market\persistence.dm"
 #include "modular_bluemoon\code\modules\economy\market\personal_catalog.dm"
+#include "modular_bluemoon\code\modules\economy\market\slot_jackpot.dm"
 #include "modular_bluemoon\code\modules\economy\market\stock_company.dm"
 #include "modular_bluemoon\code\modules\economy\market\trading.dm"
 #include "modular_bluemoon\code\modules\economy\programs\cargo_orders.dm"

@@ -15,6 +15,23 @@ GLOBAL_VAR_INIT(econ_sector_test_dir, "data/unit_test_sector/[unit_test_shard_su
 /datum/unit_test/economy_market/sector/proc/keep_share()
 	return (100 - SSmarket.persist_decay) / 100
 
+/// Джекпот автоматов сектора переходит в следующую смену целиком: ставки смены и прошлый перенос складываются, потолок SLOT_JACKPOT_CARRY_MAX держит.
+/datum/unit_test/economy_market/sector/slot_jackpot/Run()
+	SSmarket.slot_jackpot = 120.4
+	SSmarket.slot_jackpot_carried = 300
+	var/list/state = SSmarket.serialize_state()
+	TEST_ASSERT_EQUAL(state["slot_jackpot"], 420, "В файл ушёл весь джекпот")
+	SSmarket.slot_jackpot = 0
+	SSmarket.slot_jackpot_carried = 0
+	TEST_ASSERT(SSmarket.apply_state(state, 50), "Состояние принято")
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot_carried, 420, "Джекпот перенесён без сдвига к базе")
+	state["slot_jackpot"] = SLOT_JACKPOT_CARRY_MAX * 10
+	SSmarket.apply_state(state, 0)
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot_carried, SLOT_JACKPOT_CARRY_MAX, "Потолок переноса")
+	state["slot_jackpot"] = -5
+	SSmarket.apply_state(state, 0)
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot_carried, 0, "Отрицательный джекпот не принят")
+
 /// Файл хранит только состояние сектора; сброс возвращает базу, загрузка сдвигает сохранённое на persist_decay к базе.
 /datum/unit_test/economy_market/sector/roundtrip/Run()
 	var/list/market_section = SSeconomy.settings.raw?["market"]
@@ -51,7 +68,7 @@ GLOBAL_VAR_INIT(econ_sector_test_dir, "data/unit_test_sector/[unit_test_shard_su
 	TEST_ASSERT(fexists(SECTOR_TEST_PATH), "Файл состояния не записан")
 	var/list/state = json_decode(file2text(SECTOR_TEST_PATH))
 	TEST_ASSERT(islist(state), "Файл состояния - объект JSON")
-	TEST_ASSERT_EQUAL(jointext(state, ","), "version,price_index,commodities,companies,partners", "Разделы файла")
+	TEST_ASSERT_EQUAL(jointext(state, ","), "version,price_index,commodities,companies,partners,slot_jackpot", "Разделы файла")
 	var/list/saved_partners = state["partners"]
 	var/list/saved_prospectors = saved_partners["prospectors"]
 	TEST_ASSERT_EQUAL(jointext(saved_prospectors, ","), "reputation,wealth,unlocked", "Поля партнёра в файле")

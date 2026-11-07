@@ -46,6 +46,8 @@
 	/// Наибольший взнос в слот-машину с ID-карты за раз
 	var/slot_card_deposit_max = 1000
 	var/slot_jackpot_share = 5
+	/// Джекпот автоматов сектора не меньше этого: недостающее доплачивает NT
+	var/slot_jackpot_floor = 500
 	/// Лотерея: цена билета, сколько билетов в одни руки, сколько минут идёт продажа, доля NT с продаж в процентах
 	var/lottery_ticket_price = 100
 	var/lottery_tickets_per_account = 10

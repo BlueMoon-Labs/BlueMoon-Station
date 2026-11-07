@@ -204,7 +204,7 @@ export const SlotMachine = (props) => {
           <Stack.Item>
             <div className="SlotMachine__header">
               <div className="SlotMachine__header-text">
-                ★ ДЖЕКПОТ ★
+                ★ ДЖЕКПОТ СЕКТОРА ★
               </div>
               <div className="SlotMachine__header-amount">
                 💰 {money} кр.
@@ -213,7 +213,8 @@ export const SlotMachine = (props) => {
             <Box textAlign="center" fontSize="11px" color="label">
               Банк выигрышей: {prize_bank} кр. С каждой ставки {house_edge}%
               забирает NT, {jackpot_share}% идёт в джекпот, {bank_share}% - в
-              банк. Выигрыш не больше банка.
+              банк. Выигрыш не больше банка. Джекпот общий для всех автоматов
+              сектора и переходит в следующую смену.
             </Box>
           </Stack.Item>
 
@@ -582,7 +583,7 @@ export const SlotMachine = (props) => {
                 <Stack.Item grow basis={0}>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      {jackpot_sevens}× 💰/🃏 в центре
+                      {jackpot_sevens}× 💰/🃏 в центре, 🃏 не больше одного
                     </span>
                     <span className="SlotMachine__paytable-prize SlotMachine__paytable-prize--jackpot">
                       ДЖЕКПОТ

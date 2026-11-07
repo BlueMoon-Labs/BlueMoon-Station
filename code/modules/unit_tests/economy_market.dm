@@ -46,6 +46,8 @@
 		"last_digest_key" = SSmarket.last_digest_key,
 		"persist_decay" = SSmarket.persist_decay,
 		"contraband_message" = SSmarket.contraband_message,
+		"slot_jackpot" = SSmarket.slot_jackpot,
+		"slot_jackpot_carried" = SSmarket.slot_jackpot_carried,
 	)
 	var/datum/news/feed_channel/channel = SSmarket.news_channel()
 	.["news_messages"] = channel.messages.Copy()
@@ -64,6 +66,8 @@
 	SSmarket.last_news = world.time
 	SSmarket.last_digest_key = null
 	SSmarket.contraband_message = ""
+	SSmarket.slot_jackpot = 0
+	SSmarket.slot_jackpot_carried = 0
 	SSmarket.load_settings(SSeconomy.settings.raw?["market"])
 
 /proc/econ_test_restore_market(list/saved)

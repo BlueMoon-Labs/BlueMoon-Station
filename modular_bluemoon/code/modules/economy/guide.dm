@@ -43,7 +43,7 @@
 		"<li>Станционный прилавок: аренда [settings.stall_rent_fee] кр. на [settings.stall_rent_minutes] мин. в казну.</li>",
 		"<li>Цены автоматов следуют индексу цен сектора (сейчас ×[round(SSeconomy.price_index(), 0.01)]), [settings.vend_wholesale_share]% выручки - себестоимость NT, остальное - отделу-владельцу; у премиальных позиций NT берёт [settings.vend_premium_sink_share]%.</li>",
 		"<li>Личный каталог снабжения (питомцы, одежда, украшения, уют) - за свой счёт без наценки, деньги (кроме залога за ящик) уходят NT.</li>",
-		"<li>Слот-машина: [settings.slot_house_edge]% ставки берёт NT, [settings.slot_jackpot_share]% идёт в джекпот, остальное - в банк выигрышей.</li>",
+		"<li>Слот-машина: [settings.slot_house_edge]% ставки берёт NT, [settings.slot_jackpot_share]% идёт в общий джекпот автоматов сектора (переходит в следующую смену, не меньше [settings.slot_jackpot_floor] кр.), остальное - в банк выигрышей.</li>",
 		"<li>Лотерея сектора: билет [settings.lottery_ticket_price] кр. в «Кошельке», до [settings.lottery_tickets_per_account] на счёт, победителю [100 - settings.lottery_house_share]% продаж.</li></ul>",
 		"<h3>Биржа</h3><ul>",
 		"<li>Спред [settings.stock_spread]%, комиссия [settings.stock_fee]%, позиция до [settings.stock_position_cap] кр. на компанию, сделка по ней раз в [settings.stock_trade_cooldown_seconds] с. Цены переходят в следующую смену со сдвигом [SSmarket.persist_decay]% к исходным.</li>",

@@ -25,6 +25,8 @@
 	var/mob/living/carbon/human/player
 	var/saved_cash
 	var/datum/economy_ledger/saved_ledger
+	/// Джекпот сектора и гарантия NT до теста
+	var/list/saved_jackpot
 
 /// Автомат и игрок убираются, наличные возвращаются, и только потом возвращается настоящий журнал: его счётчики тест не трогает.
 /datum/unit_test/economy_slots/Destroy()
@@ -36,6 +38,9 @@
 		if(account)
 			qdel(account)
 		econ_test_set_balance(SSeconomy.cash_account, saved_cash)
+		SSmarket.slot_jackpot = saved_jackpot[1]
+		SSmarket.slot_jackpot_carried = saved_jackpot[2]
+		SSeconomy.settings.slot_jackpot_floor = saved_jackpot[3]
 		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
 		SSeconomy.ledger = saved_ledger
 		qdel(test_ledger)
@@ -52,6 +57,10 @@
 	saved_cash = SSeconomy.cash_account.account_balance
 	saved_ledger = SSeconomy.ledger
 	SSeconomy.ledger = new /datum/economy_ledger
+	saved_jackpot = list(SSmarket.slot_jackpot, SSmarket.slot_jackpot_carried, SSeconomy.settings.slot_jackpot_floor)
+	SSmarket.slot_jackpot = 0
+	SSmarket.slot_jackpot_carried = 0
+	SSeconomy.settings.slot_jackpot_floor = 0
 	machine = allocate(/obj/machinery/computer/slot_machine)
 	machine.set_machine_stat(machine.machine_stat & ~NOPOWER)
 	player = econ_test_card_holder(src, "econ_test_gambler", balance)
@@ -63,9 +72,9 @@
 	machine.ui_act(action, params, window)
 	usr = null
 
-/// Кредиты, которые лежат в автомате: баланс игрока, джекпот и банк выигрышей.
+/// Кредиты, которые лежат в автомате, и джекпот сектора из ставок смены.
 /datum/unit_test/economy_slots/proc/machine_cash()
-	return machine.balance + machine.money + machine.prize_bank
+	return machine.balance + SSmarket.slot_jackpot + machine.prize_bank
 
 /// Взнос с карты уходит в наличные автомата; настоящее вращение сжигает долю NT ровно по настройкам, а джекпот и банк получают свои доли; ничего не создаётся.
 /datum/unit_test/economy_slots/real_spin/Run()
@@ -82,7 +91,7 @@
 	var/datum/economy_settings/settings = SSeconomy.settings
 	press("spin")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned - burned_before, 100 * settings.slot_house_edge / 100, "Доля NT со ставки сгорела")
-	TEST_ASSERT(abs(machine.money - 100 * settings.slot_jackpot_share / 100) < 0.01, "Доля джекпота: [machine.money]")
+	TEST_ASSERT(abs(SSmarket.slot_jackpot - 100 * settings.slot_jackpot_share / 100) < 0.01, "Доля джекпота: [SSmarket.slot_jackpot]")
 	press("set_bet", list("amount" = "5"))
 	TEST_ASSERT_EQUAL(machine.bet_amount, 100, "Ставку нельзя сменить, пока барабаны крутятся")
 	var/waited = 0
@@ -129,17 +138,17 @@
 			for(var/row in 1 to 3)
 				reel[row] = pick(machine.symbols)
 		machine.give_prizes(player.real_name, player)
-		TEST_ASSERT(machine.prize_bank >= 0 && machine.money >= 0, "Банк [machine.prize_bank], джекпот [machine.money] ушли в минус")
+		TEST_ASSERT(machine.prize_bank >= 0 && SSmarket.slot_jackpot >= 0, "Банк [machine.prize_bank], джекпот [SSmarket.slot_jackpot] ушли в минус")
 	var/burned = SSeconomy.ledger.burned - burned_before
 	var/expected = paid_spins * 25 * SSeconomy.settings.slot_house_edge / 100
 	TEST_ASSERT(abs(burned + machine.house_remainder - expected) < 0.01, "Сгорело [burned] при доле NT [expected] с [paid_spins] ставок")
 	TEST_ASSERT(abs(machine_cash() - (1000 - burned)) < 0.01, "Деньги автомата не сходятся: [machine_cash()] при взносе 1000 и сожжённых [burned]")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Слот-машина не создала денег")
 
-/// Джекпот платит накопленное, а не число из воздуха; выигрыш больше банка урезается до банка.
+/// Джекпот сектора платит накопленное, а не число из воздуха; выигрыш больше банка урезается до банка.
 /datum/unit_test/economy_slots/jackpot_and_cap/Run()
 	setup_machine()
-	machine.money = 40
+	SSmarket.slot_jackpot = 40
 	machine.prize_bank = 7
 	for(var/list/reel as anything in machine.reels)
 		reel[1] = "cherry"
@@ -147,7 +156,7 @@
 		reel[3] = "cherry"
 	machine.give_prizes(player.real_name, player)
 	TEST_ASSERT_EQUAL(machine.balance, 40, "Джекпот выплатил накопленное")
-	TEST_ASSERT_EQUAL(machine.money, 0, "Джекпот обнулился")
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot, 0, "Джекпот обнулился")
 	machine.balance = 0
 	for(var/list/reel as anything in machine.reels)
 		reel[1] = "star"
@@ -157,12 +166,46 @@
 	TEST_ASSERT_EQUAL(machine.balance, 7, "Выигрыш урезан до банка")
 	TEST_ASSERT_EQUAL(machine.prize_bank, 0, "Банк выплачен целиком, не в минус")
 	machine.balance = 0
-	machine.money = 25
+	SSmarket.slot_jackpot = 25
 	for(var/col in 1 to 5)
 		var/list/reel = machine.reels[col]
 		reel[2] = col == 3 ? "cherry" : "seven"
 	machine.give_prizes(player.real_name, player)
 	TEST_ASSERT_EQUAL(machine.balance, 25, "Четыре семёрки из пяти - джекпот")
+
+/// Джекпот один на все автоматы: с двумя джокерами в четвёрке не срывается, ставки разных автоматов копятся вместе; гарантия NT доплачивается выпуском.
+/datum/unit_test/economy_slots/sector_jackpot/Run()
+	setup_machine()
+	var/obj/machinery/computer/slot_machine/second = allocate(/obj/machinery/computer/slot_machine)
+	machine.take_bet(100, player)
+	second.take_bet(100, player)
+	TEST_ASSERT(abs(SSmarket.slot_jackpot - 2 * 100 * SSeconomy.settings.slot_jackpot_share / 100) < 0.01, "Ставки двух автоматов в одном джекпоте: [SSmarket.slot_jackpot]")
+	TEST_ASSERT_EQUAL(machine.ui_data(player)["money"], second.ui_data(player)["money"], "Автоматы показывают один джекпот")
+	var/pooled = SSmarket.slot_jackpot
+	machine.reset_spin_state()
+	for(var/col in 1 to 5)
+		var/list/reel = machine.reels[col]
+		reel[1] = "cherry"
+		reel[2] = list("seven", "wild", "wild", "seven", "cherry")[col]
+		reel[3] = "banana"
+	machine.give_prizes(player.real_name, player)
+	TEST_ASSERT(machine.result_type != "jackpot", "Два джокера в четвёрке сорвали джекпот")
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot, pooled, "Джекпот не тронут")
+
+	SSmarket.slot_jackpot = 40
+	SSmarket.slot_jackpot_carried = 100
+	SSeconomy.settings.slot_jackpot_floor = 500
+	TEST_ASSERT_EQUAL(machine.ui_data(player)["money"], 500, "Окно показывает гарантию NT")
+	var/minted_before = SSeconomy.ledger.minted
+	machine.balance = 0
+	machine.reset_spin_state()
+	for(var/col in 1 to 5)
+		var/list/reel = machine.reels[col]
+		reel[2] = col == 3 ? "wild" : "seven"
+	machine.give_prizes(player.real_name, player)
+	TEST_ASSERT_EQUAL(machine.balance, 500, "Выплачена гарантия NT, а не 140 кр.")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted - minted_before, 460, "NT выпустил всё, кроме ставок этой смены")
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot_total(), 0, "Джекпот сектора обнулился")
 
 /// Ставка меняется только на значения из списка; бесплатные вращения играются по ставке, на которой выиграны.
 /datum/unit_test/economy_slots/bets/Run()
@@ -202,13 +245,13 @@
 		press("gamble", list("choice" = "red"))
 		TEST_ASSERT_EQUAL(machine.balance + machine.prize_bank, 400, "Удвоение сохраняет наличные автомата")
 	machine.balance = 0
-	var/before = machine.prize_bank + machine.money
+	var/before = machine.prize_bank + SSmarket.slot_jackpot
 	machine.emp_act(1)
 	var/obj/item/holochip/chip = locate() in machine.loc
 	var/spilled = chip ? chip.credits : 0
 	if(chip)
 		qdel(chip)
-	TEST_ASSERT_EQUAL(machine.prize_bank + machine.money + spilled, before, "ЭМИ выдаёт голочип только из банка")
+	TEST_ASSERT_EQUAL(machine.prize_bank + SSmarket.slot_jackpot + spilled, before, "ЭМИ выдаёт голочип только из банка")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Ничего не создано")
 
 /// Взнос с карты отказывает выше лимита, с замороженного счёта и во время техобслуживания банка.
@@ -271,23 +314,24 @@
 		for(var/list/reel as anything in machine.reels)
 			for(var/row in 1 to 3)
 				reel[row] = pick(machine.symbols)
-		machine.money = 0
+		SSmarket.slot_jackpot = 0
 		var/before = machine.balance
 		machine.give_prizes(player.real_name, player)
 		won += machine.balance - before
 		machine.gamble_available = FALSE
 	return won / paid / machine.prize_scale(bet)
 
-/// Разбор автомата сжигает банк и джекпот, баланс игрока выдаётся голочипом.
+/// Разбор автомата сжигает его банк, общий джекпот сектора остаётся другим автоматам; баланс игрока выдаётся голочипом.
 /datum/unit_test/economy_slots/destroy_burns_pools/Run()
 	setup_machine()
 	var/turf/spot = machine.loc
-	machine.money = 30
+	SSmarket.slot_jackpot = 30
 	machine.prize_bank = 70
 	machine.balance = 20
 	var/burned_before = SSeconomy.ledger.burned
 	qdel(machine)
-	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned - burned_before, 100, "Банк и джекпот сгорели")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned - burned_before, 70, "Сгорел только банк автомата")
+	TEST_ASSERT_EQUAL(SSmarket.slot_jackpot, 30, "Джекпот сектора остался")
 	var/obj/item/holochip/chip = locate() in spot
 	TEST_ASSERT_EQUAL(chip?.credits, 20, "Баланс игрока выдан")
 	qdel(chip)

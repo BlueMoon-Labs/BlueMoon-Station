@@ -81,6 +81,10 @@
 #define EXPRESS_BEACON_COST 500
 /// Консоль запросов и приложение снабжения оповещают канал снабжения о заявке не чаще этого
 #define ECON_CARGO_REQUEST_RADIO_COOLDOWN (30 SECONDS)
+/// Джекпот игровых автоматов от этой суммы объявляет ЦК, меньший - только новость сектора
+#define SLOT_JACKPOT_ANNOUNCE_MIN 5000
+/// Джекпот сектора между сменами не растёт выше этого
+#define SLOT_JACKPOT_CARRY_MAX 100000
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
 #define WORK_SRV_DISH "srv_dish"

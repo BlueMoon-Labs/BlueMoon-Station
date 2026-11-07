@@ -42,7 +42,7 @@
 	for(var/id in partners)
 		var/datum/trade_partner/partner = partners[id]
 		saved_partners[id] = list("reputation" = partner.reputation, "wealth" = partner.wealth, "unlocked" = partner.unlocked && !partner.contraband)
-	return list("version" = MARKET_STATE_VERSION, "price_index" = price_index, "commodities" = saved_commodities, "companies" = saved_companies, "partners" = saved_partners)
+	return list("version" = MARKET_STATE_VERSION, "price_index" = price_index, "commodities" = saved_commodities, "companies" = saved_companies, "partners" = saved_partners, "slot_jackpot" = slot_jackpot_total())
 
 /// Накладывает состояние, сдвинутое на decay процентов к базе одним скачком; FALSE - не объект или чужая версия. Неверные поля пропускаются.
 /datum/controller/subsystem/market/proc/apply_state(list/state, decay)
@@ -51,8 +51,12 @@
 	var/keep = (100 - decay) / 100
 	var/list/unknown = list()
 	for(var/key in state)
-		if(!(key in list("version", "price_index", "commodities", "companies", "partners")))
+		if(!(key in list("version", "price_index", "commodities", "companies", "partners", "slot_jackpot")))
 			unknown += "[key]"
+	// Джекпот автоматов переходит в следующую смену целиком, без сдвига к базе
+	var/saved_jackpot = state_number(state, "slot_jackpot", "sector")
+	if(!isnull(saved_jackpot))
+		slot_jackpot_carried = clamp(round(saved_jackpot), 0, SLOT_JACKPOT_CARRY_MAX)
 	var/saved_index = state_number(state, "price_index", "sector")
 	if(!isnull(saved_index))
 		price_index = clamp(1 + (saved_index - 1) * keep, MARKET_INDEX_MIN, MARKET_INDEX_MAX)
@@ -208,5 +212,6 @@
 	for(var/error in load_partners(islist(section) ? section["partners"] : null))
 		GLOB.economy_config_errors |= error
 		log_config("economy.json: [error]")
+	slot_jackpot_carried = 0
 	log_econ("Сектор сброшен к базе")
 	INVOKE_ASYNC(src, PROC_REF(refresh_vending_prices))

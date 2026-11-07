@@ -24,10 +24,12 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 #define SLOT_BANK_FILL 0.95
 /// Джекпот - столько семёрок или джокеров в центральном ряду
 #define SLOT_JACKPOT_SEVENS 4
+/// Джокеров среди них не больше этого: иначе джекпот срывался раз в ~4400 вращений и не успевал накопиться
+#define SLOT_JACKPOT_WILDS_MAX 1
 
 /obj/machinery/computer/slot_machine
 	name = "slot machine"
-	desc = "Игровой автомат. Принимает голочипы и деньги с ID-карты; часть каждой ставки забирает NT, остальное идёт в банк выигрышей и джекпот."
+	desc = "Игровой автомат. Принимает голочипы и деньги с ID-карты; часть каждой ставки забирает NT, остальное идёт в банк выигрышей и общий джекпот автоматов сектора."
 	icon = 'icons/obj/kazino.dmi'
 	icon_state = "mahins"
 	icon_keyboard = null
@@ -37,8 +39,6 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	circuit = /obj/item/circuitboard/computer/slot_machine
 	light_color = LIGHT_COLOR_BROWN
 	unique_icon = TRUE
-	/// Джекпот: копится из доли ставок, выплачивается целиком
-	var/money = 0
 	/// Банк обычных выигрышей: копится из доли ставок, выигрыш не больше банка
 	var/prize_bank = 0
 	/// Дробные части доли NT и джекпота, ещё не учтённые
@@ -107,18 +107,17 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 /obj/machinery/computer/slot_machine/Destroy()
 	if(balance)
 		give_payout(balance)
-	var/pools = round(money + prize_bank)
+	var/pools = round(prize_bank)
 	if(pools > 0)
 		SSeconomy.move(SSeconomy.cash_account, null, pools, ECON_GAMBLING, memo = "Банк разобранного игрового автомата")
-	money = 0
 	prize_bank = 0
 	return ..()
 
 /obj/machinery/computer/slot_machine/examine(mob/user)
 	. = ..()
 	var/datum/economy_settings/settings = SSeconomy.settings
-	. += span_notice("С каждой платной ставки [settings.slot_house_edge]% забирает NT, [settings.slot_jackpot_share]% идёт в джекпот, [slot_bank_share()]% - в банк выигрышей. Выигрыш не больше банка, джекпот - весь накопленный.")
-	. += span_notice("Сейчас в банке [round(prize_bank)] кр., джекпот [round(money)] кр. Внести с карты можно до [SSeconomy.settings.slot_card_deposit_max] кр. за раз.")
+	. += span_notice("С каждой платной ставки [settings.slot_house_edge]% забирает NT, [settings.slot_jackpot_share]% идёт в общий джекпот автоматов сектора, [slot_bank_share()]% - в банк выигрышей. Выигрыш не больше банка. Джекпот одинаков на всех автоматах, переходит в следующую смену и не бывает меньше [settings.slot_jackpot_floor] кр.")
+	. += span_notice("Сейчас в банке [round(prize_bank)] кр., джекпот сектора [SSmarket.slot_jackpot_payout()] кр. Внести с карты можно до [SSeconomy.settings.slot_card_deposit_max] кр. за раз.")
 
 /obj/machinery/computer/slot_machine/proc/slot_bank_share()
 	return 100 - SSeconomy.settings.slot_house_edge - SSeconomy.settings.slot_jackpot_share
@@ -137,7 +136,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	house_remainder = exact_house - house
 	if(house > 0)
 		SSeconomy.move(SSeconomy.cash_account, null, house, ECON_GAMBLING, user, "Доля NT со ставки")
-	money += jackpot_part
+	SSmarket.add_slot_jackpot(jackpot_part)
 	prize_bank += amount - house - jackpot_part
 
 /// Внесение с ID-карты в руке или на поясе: деньги со счёта уходят в наличные автомата.
@@ -222,7 +221,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 
 /obj/machinery/computer/slot_machine/ui_data(mob/user)
 	var/list/data = list()
-	data["money"] = round(money)
+	data["money"] = SSmarket.slot_jackpot_payout()
 	data["prize_bank"] = round(prize_bank)
 	data["house_edge"] = SSeconomy.settings.slot_house_edge
 	data["jackpot_share"] = SSeconomy.settings.slot_jackpot_share
@@ -513,20 +512,21 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/bonus.ogg', 60, TRUE)
 
 	var/sevens = 0
+	var/wilds = 0
 	for(var/col = 1, col <= 5, col++)
 		var/sym = reels[col][2]
 		if(sym == SYMBOL_SEVEN || sym == SYMBOL_WILD)
 			sevens++
+		if(sym == SYMBOL_WILD)
+			wilds++
 
-	if(sevens >= SLOT_JACKPOT_SEVENS)
+	if(sevens >= SLOT_JACKPOT_SEVENS && wilds <= SLOT_JACKPOT_WILDS_MAX)
 		winning_line = 1
-		won_amount = round(money)
-		money -= won_amount
+		won_amount = SSmarket.pay_slot_jackpot(user)
 		balance += won_amount
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/jackpot.ogg', 80, TRUE)
-		visible_message("<b>[src]</b> объявляет: «ДЖЕКПОТ! Выигрыш [won_amount] кр.!»")
-		if(won_amount)
-			priority_announce("[user ? user.real_name : usrname] срывает джекпот игрового автомата в [get_area(src)]: [won_amount] кр.!")
+		visible_message("<b>[src]</b> объявляет: «ДЖЕКПОТ СЕКТОРА! Выигрыш [won_amount] кр.!»")
+		SSmarket.announce_slot_jackpot(user ? user.real_name : usrname, get_area(src), won_amount)
 		jackpots += 1
 		result_message = "🎉 ДЖЕКПОТ! +[won_amount] кр.!"
 		result_type = "jackpot"
@@ -764,6 +764,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 #undef SPIN_PRICE_MAX
 #undef SLOT_BANK_FILL
 #undef SLOT_JACKPOT_SEVENS
+#undef SLOT_JACKPOT_WILDS_MAX
 #undef MAX_HISTORY
 #undef BONUS_CHANCE
 #undef SYMBOL_WILD
