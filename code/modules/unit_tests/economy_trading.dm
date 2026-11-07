@@ -67,7 +67,7 @@
 /datum/unit_test/economy_trading/proc/expire_cooldown(datum/bank_account/account, ticker)
 	account.trade_cooldowns[ticker] -= SSeconomy.settings.stock_trade_cooldown_seconds SECONDS
 
-/// Во сколько раз должна вырасти цена, чтобы круг «купил-продал» окупил спред и обе комиссии.
+/// Во сколько раз должна вырасти цена, чтобы круг "купил-продал" окупил спред и обе комиссии.
 /datum/unit_test/economy_trading/proc/breakeven()
 	var/spread = SSeconomy.settings.stock_spread
 	var/fee = SSeconomy.settings.stock_fee
@@ -321,7 +321,7 @@
 		TEST_ASSERT(ratio <= 1.0001, "[label], [each.ticker]: цена растёт после видимого события ([ratio])")
 		TEST_ASSERT(ratio < breakeven(), "[label], [each.ticker]: сделка окупается ([ratio], порог [breakeven()])")
 
-/// Монте-Карло на волатильности из конфига: средний рост «купил в видимом состоянии - держал N тиков» не выше 1 с запасом в четыре стандартные ошибки и ниже порога окупаемости.
+/// Монте-Карло на волатильности из конфига: средний рост "купил в видимом состоянии - держал N тиков" не выше 1 с запасом в четыре стандартные ошибки и ниже порога окупаемости.
 /datum/unit_test/economy_trading/monte_carlo/Run()
 	rand_seed(4242)
 	var/samples = 300
@@ -540,7 +540,7 @@
 	company.price = 40
 	SSmarket.tick_stocks()
 	TEST_ASSERT(!length(poor.stock_orders) && !poor.shares["AGRO"], "Неисполнимая заявка осталась")
-	TEST_ASSERT_EQUAL(poor.card_messages[length(poor.card_messages)], "Биржа: заявка «купить 10 шт. AGRO, если цена ≤ 40» снята. Недостаточно средств.", "Причина отказа на карту")
+	TEST_ASSERT_EQUAL(poor.card_messages[length(poor.card_messages)], "Биржа: заявка \"купить 10 шт. AGRO, если цена ≤ 40\" снята. Недостаточно средств.", "Причина отказа на карту")
 
 /// Ввод заявки проверяется: тикер, вид, целое количество, цена в коридоре компании, акции для продажи, лимит позиции, счёт и не больше STOCK_ORDERS_MAX заявок.
 /datum/unit_test/economy_trading/stock_order_input/Run()

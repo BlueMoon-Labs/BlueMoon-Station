@@ -17,8 +17,8 @@ const base: StockExchangeData = {
   drivers: {
     VYMD: [
       { label: 'Случайные колебания за минуту', effect: null, note: 'около ±2.5%' },
-      { label: 'Продажи станции через снабжение партнёру «Вей-Мед»', effect: 15, upto: 1, note: 'медикаменты; +5% за каждые 1000 кр. продаж' },
-      { label: 'Сорванный станцией спецзаказ «Вей-Мед»', effect: -5 },
+      { label: 'Продажи станции через снабжение партнёру "Вей-Мед"', effect: 15, upto: 1, note: 'медикаменты; +5% за каждые 1000 кр. продаж' },
+      { label: 'Сорванный станцией спецзаказ "Вей-Мед"', effect: -5 },
       { label: 'Вспышка болезни на станции', effect: 20 },
     ],
     CYBS: [],
@@ -100,15 +100,27 @@ const pick = (frame: HTMLElement, index: number, option: string) => {
   fireEvent.click(within(frame.querySelector('.Dropdown__menu') as HTMLElement).getByText(option));
 };
 
+const selectTile = (container: HTMLElement, ticker: string) => {
+  const tile = Array.from(container.querySelectorAll('.NtTerm__tile')).find((node) =>
+    (node.querySelector('.NtTerm__tileHead')?.textContent || '').startsWith(ticker),
+  );
+  fireEvent.click(tile as Element);
+};
+
 describe('NtosStockExchange', () => {
-  test('график за час берётся из статической истории по тикеру, компания без истории идёт без графика', () => {
+  test('плитка у каждой компании, выбранная - с графиком из статической истории; без истории - надпись вместо графика', () => {
     const { container } = setup({ history: { VYMD: [100, 110, 120], NKMR: [140, 140] } });
-    expect(container.querySelectorAll('svg')).toHaveLength(2);
+    expect(container.querySelectorAll('.NtTerm__tile')).toHaveLength(4);
+    expect(container.querySelector('.NtTerm__tile--selected')?.textContent).toContain('VYMD');
+    expect(container.querySelectorAll('.NtTerm__chart svg')).toHaveLength(1);
+    selectTile(container, 'CYBS');
+    expect(text(container)).toContain('история появится через минуту');
   });
 
-  test('у каждой компании логотип по тикеру из спрайтшита economy_logos', () => {
+  test('у выбранной компании логотип по тикеру из спрайтшита economy_logos', () => {
     const { container } = setup();
     expect(container.querySelector('.economy_logos32x32.logo-vymd')).not.toBeNull();
+    selectTile(container, 'CYBS');
     expect(container.querySelector('.economy_logos32x32.logo-cybs')).not.toBeNull();
   });
 
@@ -128,18 +140,21 @@ describe('NtosStockExchange', () => {
     ]);
   });
 
-  test('«Макс» показывает доступный объём и просит сервер посчитать его заново', () => {
+  test('"Макс" показывает доступный объём и просит сервер посчитать его заново', () => {
     const { getByText, topic } = setup();
     fireEvent.click(getByText('Макс (37)'));
     expect(sent(topic, 'buy')).toEqual([{ ticker: 'VYMD', count: 'max' }]);
   });
 
   test('остановленные торги и кулдаун убирают кнопки', () => {
-    const { container, getAllByText } = setup();
-    const content = text(container);
-    expect(content).toContain('Торги остановлены');
-    expect(content).toContain('Следующая сделка через 12 с');
-    expect(getAllByText('Купить')).toHaveLength(2);
+    const { container, queryByText } = setup();
+    expect(container.querySelector('.NtTerm__tiles')?.textContent).toContain('стоп');
+    selectTile(container, 'CYBS');
+    expect(text(container)).toContain('Торги остановлены');
+    expect(queryByText('Купить')).toBeNull();
+    selectTile(container, 'NKMR');
+    expect(text(container)).toContain('Следующая сделка через 12 с');
+    expect(queryByText('Купить')).toBeNull();
   });
 
   test('счёт: баланс, стоимость акций, прибыль и позиция', () => {
@@ -150,14 +165,14 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('5 000 кр.');
     expect(content).toContain('368 кр.');
     expect(content).toContain('-45 кр.');
-    expect(content).toContain('3 шт. · 360 кр.');
+    expect(content).toContain('3 шт. на 360 кр.');
   });
 
   test('правила биржи берут числа из данных', () => {
     const { container } = setup();
     openPage(container, 'Правила');
     const content = text(container);
-    expect(content).toContain('в канале «Сводка сектора» на ньюскастерах не сразу, а в течение примерно 7 мин. после скачка цены');
+    expect(content).toContain('в канале "Сводка сектора" на ньюскастерах не сразу, а в течение примерно 7 мин. после скачка цены');
     expect(content).toContain('Через 5 мин. после выхода NT публикует опровержение, и цена возвращается');
     expect(content).toContain('спред 1%');
     expect(content).toContain('комиссия 2%');
@@ -182,8 +197,8 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('Бум в секторе: +10%');
     expect(content).toContain('не чаще раза в 10 мин.');
     expect(content).toContain('Случайные колебания за минуту: около ±2.5%');
-    expect(content).toContain('Продажи станции через снабжение партнёру «Вей-Мед»: до +15% (медикаменты; +5% за каждые 1000 кр. продаж)');
-    expect(content).toContain('Сорванный станцией спецзаказ «Вей-Мед»: −5%');
+    expect(content).toContain('Продажи станции через снабжение партнёру "Вей-Мед": до +15% (медикаменты; +5% за каждые 1000 кр. продаж)');
+    expect(content).toContain('Сорванный станцией спецзаказ "Вей-Мед": −5%');
     expect(content).toContain('Вспышка болезни на станции: +20%');
     expect(content).toContain('Расслоение суперматерии на станции: +10%');
   });
@@ -192,7 +207,7 @@ describe('NtosStockExchange', () => {
     const { container } = setup();
     expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('стоп');
     openPage(container, 'Портфель');
-    expect(text(container)).toContain('VYMD · Вей-Мед · 3 шт. по 120.00');
+    expect(text(container)).toContain('VYMD Вей-Мед, 3 шт. по 120.00');
     expect(text(container)).toContain('360 кр.');
   });
 
@@ -253,10 +268,11 @@ describe('NtosStockExchange', () => {
     const { container, getAllByText, topic } = setup({ holdings: {}, cooldowns: {} });
     expect(container.querySelector('.logo-sect')).toBeNull();
     expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('SECT 98.50');
-    const row = Array.from(container.querySelectorAll('tr')).find((node) => (node.textContent || '').includes('Индекс сектора'));
-    fireEvent.click(within(row as HTMLElement).getByText('Купить'));
+    selectTile(container, 'SECT');
+    expect(text(container)).toContain('SECT Индекс сектора');
+    fireEvent.click(getAllByText('Купить')[0]);
     expect(sent(topic, 'buy')).toEqual([{ ticker: 'SECT', count: 1 }]);
-    expect(getAllByText('Купить')).toHaveLength(3);
+    expect(getAllByText('Купить')).toHaveLength(1);
   });
 
   test('дивиденды: фонд, выплата на акцию и ваша доля; без фондов - пустая строка', () => {
@@ -264,9 +280,9 @@ describe('NtosStockExchange', () => {
     openPage(container, 'Портфель');
     const content = text(container);
     expect(content).toContain('5% закупок станции у партнёра компании идёт в её фонд. Раз в 10 мин.');
-    expect(content).toContain('NKMR · фонд 30 кр., около 30.00 кр. на акцию');
+    expect(content).toContain('NKMR: фонд 30 кр., около 30.00 кр. на акцию');
     expect(content).toContain('вам ≈ 120 кр.');
-    expect(content).not.toContain('VYMD · фонд');
+    expect(content).not.toContain('VYMD: фонд');
     const empty = setup({ companies: base.companies.map((company) => ({ ...company, dividend_pool: 0 })) });
     openPage(empty.container, 'Портфель');
     expect(text(empty.container)).toContain('Фонды пока пусты');
@@ -286,7 +302,7 @@ describe('NtosStockExchange', () => {
     expect(text(frame)).toContain('Заявок нет.');
   });
 
-  test('стоящие заявки с понятными условиями, «Отменить» шлёт id; при пяти заявках новую не поставить', () => {
+  test('стоящие заявки с понятными условиями, "Отменить" шлёт id; при пяти заявках новую не поставить', () => {
     const orders = [
       { id: 1, ticker: 'VYMD', side: 'buy_below', count: 5, price: 100 },
       { id: 2, ticker: 'VYMD', side: 'sell_below', count: 3, price: 90.5 },
@@ -298,9 +314,9 @@ describe('NtosStockExchange', () => {
     openPage(container, 'Портфель');
     const content = text(container);
     expect(content).toContain('Заявки 5/5');
-    expect(content).toContain('VYMD · купить 5 шт., если цена ≤ 100.00');
-    expect(content).toContain('VYMD · продать 3 шт., если цена ≤ 90.50 (стоп)');
-    expect(content).toContain('NKMR · продать 2 шт., если цена ≥ 160.00 (фиксация)');
+    expect(content).toContain('VYMD: купить 5 шт., если цена ≤ 100.00');
+    expect(content).toContain('VYMD: продать 3 шт., если цена ≤ 90.50 (стоп)');
+    expect(content).toContain('NKMR: продать 2 шт., если цена ≥ 160.00 (фиксация)');
     fireEvent.click(getAllByText('Отменить')[2]);
     expect(sent(topic, 'cancel_order')).toEqual([{ id: 7 }]);
     fireEvent.click(getAllByText('Поставить')[0]);
@@ -323,7 +339,7 @@ describe('NtosStockExchange', () => {
       drivers: {
         ...base.drivers,
         SECT: [{ label: 'Среднее по всем компаниям сектора', effect: null, note: '100 - когда все по базовой цене' }],
-        NKMR: [{ label: 'Закупки станции у «Накамура»', effect: null, note: 'цену не двигают: 5% суммы идёт в дивиденды держателям' }],
+        NKMR: [{ label: 'Закупки станции у "Накамура"', effect: null, note: 'цену не двигают: 5% суммы идёт в дивиденды держателям' }],
       },
     });
     openPage(container, 'Правила');
@@ -334,6 +350,6 @@ describe('NtosStockExchange', () => {
     openPage(container, 'От чего зависит цена');
     content = text(container);
     expect(content).toContain('Среднее по всем компаниям сектора: 100 - когда все по базовой цене');
-    expect(content).toContain('Закупки станции у «Накамура»: цену не двигают: 5% суммы идёт в дивиденды держателям');
+    expect(content).toContain('Закупки станции у "Накамура": цену не двигают: 5% суммы идёт в дивиденды держателям');
   });
 });

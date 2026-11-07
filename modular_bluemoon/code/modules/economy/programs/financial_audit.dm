@@ -207,7 +207,7 @@
 				return TRUE
 			var/list/found = search_accounts(query)
 			searches[user_ref] = list(query, found)
-			messages[user_ref] = length(found) ? "Найдено счетов: [length(found)][length(found) >= AUDIT_SEARCH_MAX ? " (показаны первые [AUDIT_SEARCH_MAX], уточните запрос)" : ""]." : "По запросу «[query]» счетов нет."
+			messages[user_ref] = length(found) ? "Найдено счетов: [length(found)][length(found) >= AUDIT_SEARCH_MAX ? " (показаны первые [AUDIT_SEARCH_MAX], уточните запрос)" : ""]." : "По запросу \"[query]\" счетов нет."
 		if("select")
 			var/datum/bank_account/account = target_account(params)
 			if(account)

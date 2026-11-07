@@ -94,7 +94,7 @@
 		var/held = account.shares[company.ticker]
 		if(!held)
 			continue
-		account.bank_card_talk("Биржа: акции «[company.name]» [change > 0 ? "выросли" : "упали"] на [percent]%. Ваши [held] шт. стоят [round(company.price * held)] кр.", balloon = "[company.ticker] [signed]")
+		account.bank_card_talk("Биржа: акции \"[company.name]\" [change > 0 ? "выросли" : "упали"] на [percent]%. Ваши [held] шт. стоят [round(company.price * held)] кр.", balloon = "[company.ticker] [signed]")
 		.++
 
 /// Держателям - почему торги компании встали и что будет с их акциями.
@@ -105,7 +105,7 @@
 		var/held = account.shares[company.ticker]
 		if(!held)
 			continue
-		account.bank_card_talk("Биржа: торги «[company.name]» остановлены на [STOCK_HALT_TIME / (1 MINUTES)] мин. - цена упала ниже [STOCK_BANKRUPT_RATIO * 100]% базовой. Потом компания вернётся на биржу по [STOCK_RELIST_RATIO * 100]% базовой, а ваши [held] шт. обменяют на меньшее число новых по цене остановки.", balloon = "[company.ticker] торги встали")
+		account.bank_card_talk("Биржа: торги \"[company.name]\" остановлены на [STOCK_HALT_TIME / (1 MINUTES)] мин. - цена упала ниже [STOCK_BANKRUPT_RATIO * 100]% базовой. Потом компания вернётся на биржу по [STOCK_RELIST_RATIO * 100]% базовой, а ваши [held] шт. обменяют на меньшее число новых по цене остановки.", balloon = "[company.ticker] торги встали")
 		.++
 
 /// Сколько акций можно купить одной сделкой: в пределах лимита позиции и денег на счёте со спредом и комиссией.
@@ -263,7 +263,7 @@
 	var/datum/stock_company/company = companies[ticker]
 	if(!company)
 		account.stock_orders -= list(order)
-		account.bank_card_talk("Биржа: заявка «[econ_stock_order_text(order)]» снята. Компании больше нет на бирже.")
+		account.bank_card_talk("Биржа: заявка \"[econ_stock_order_text(order)]\" снята. Компании больше нет на бирже.")
 		return
 	if(company.is_halted() || trade_cooling_down(account, ticker) || !stock_order_due(order, company.price))
 		return
@@ -276,7 +276,7 @@
 		error = is_buy ? try_buy_shares(account, ticker, count) : try_sell_shares(account, ticker, count)
 	account.stock_orders -= list(order)
 	if(error)
-		account.bank_card_talk("Биржа: заявка «[econ_stock_order_text(order)]» снята. [error]", balloon = "заявка [ticker] снята")
+		account.bank_card_talk("Биржа: заявка \"[econ_stock_order_text(order)]\" снята. [error]", balloon = "заявка [ticker] снята")
 		return
 	var/total = abs(account.account_balance - balance_before)
 	account.bank_card_talk("Биржа: заявка исполнена, [is_buy ? "куплено" : "продано"] [count] шт. [ticker] по [round(price, 0.01)] кр., [is_buy ? "списано" : "зачислено"] [total] кр. с учётом спреда и комиссии.", balloon = "[ticker] [is_buy ? "куплено" : "продано"] [count] шт.")

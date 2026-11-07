@@ -52,7 +52,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	RegisterSignal(taker, COMSIG_PARENT_QDELETING, PROC_REF(on_taker_deleted))
 	if(!deadline)
 		deadline = world.time + ECON_CONTRACT_TAKEN_TIME
-	log_econ("[account.account_holder] ([account.account_id]) взял контракт #[uid] «[title]» отдела [department_id]")
+	log_econ("[account.account_holder] ([account.account_id]) взял контракт #[uid] \"[title]\" отдела [department_id]")
 	return TRUE
 
 /datum/econ_contract/proc/release_taker()
@@ -87,8 +87,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	department?.account.credit(total - share, ECON_CONTRACT, performer, "Контракт: [title]")
 	if(share)
 		var/net = SSeconomy.pay_personal(null, taker, share, ECON_CONTRACT, performer, "Контракт: [title]")
-		taker.bank_card_talk("Контракт «[title]» выполнен: [share] кр. до налога, на руки [net] кр.", balloon = net ? "контракт +[net] кр" : null)
-	log_econ("Контракт #[uid] «[title]» отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [share]")
+		taker.bank_card_talk("Контракт \"[title]\" выполнен: [share] кр. до налога, на руки [net] кр.", balloon = net ? "контракт +[net] кр" : null)
+	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [share]")
 	qdel(src)
 
 /datum/econ_contract/proc/progress_text()
@@ -137,7 +137,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/refusal = contract ? contract.take_refusal(account) : "Контракт уже снят с доски."
 	if(refusal || !contract.take(account))
 		return list(FALSE, refusal || "Контракт не взят.")
-	return list(TRUE, "Контракт «[contract.title]» закреплён за вами. Ваша доля - [SSeconomy.settings.contract_performer_share]% награды.")
+	return list(TRUE, "Контракт \"[contract.title]\" закреплён за вами. Ваша доля - [SSeconomy.settings.contract_performer_share]% награды.")
 
 /// Взятие контракта с консоли: ответ - в чат пользователю, со звуком машины.
 /proc/econ_take_contract(mob/user, uid, obj/machinery/machine)

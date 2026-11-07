@@ -14,7 +14,7 @@ const offer = (uid, extra = {}) => ({
   partner: 'Гильдия старателей',
   partner_id: 'prospectors',
   item: 'слитки золота',
-  requirement: '«слитки золота»',
+  requirement: '"слитки золота"',
   quantity: 10,
   delivered: 3,
   unit_price: 60,
@@ -73,7 +73,7 @@ const backend = {
   },
   partners: [
     { id: 'prospectors', name: 'Гильдия старателей', desc: 'Шахтёры', unlocked: 1, tier: 1, reputation: 300, discount: 3, markup: 0.95, wealth: 15000, next_unlock: null, buys: 'Металлы x1.05', sells: 'Canisters & Materials' },
-    { id: 'nakamura', name: 'Накамура Инжиниринг', desc: 'Двигатели', unlocked: 0, tier: 0, reputation: 0, discount: 0, markup: 0.95, wealth: 15000, next_unlock: 'Откроется, когда репутация у партнёра «НТ Логистика» дойдёт до ступени 2.', buys: 'Энергия x1.3', sells: 'Engineering' },
+    { id: 'nakamura', name: 'Накамура Инжиниринг', desc: 'Двигатели', unlocked: 0, tier: 0, reputation: 0, discount: 0, markup: 0.95, wealth: 15000, next_unlock: 'Откроется, когда репутация у партнёра "НТ Логистика" дойдёт до ступени 2.', buys: 'Энергия x1.3', sells: 'Engineering' },
   ],
   contracts: [
     { uid: 1, department: 'CIV', department_name: 'Гражданские', title: 'Контракт 1', desc: 'Описание', reward: 5000, urgent: 0, time_left: null, taken_by: null, taker_id: null, takeable: 1, special: 0, progress: '0/1', rotates_in: null, started: 0 },
@@ -131,7 +131,7 @@ test('частичное обновление с таблицей цен мен�
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/glass50' }]);
 });
 
-test('пак без строки в таблице цен недоступен: без цены «0 кр.», заказать нельзя', () => {
+test('пак без строки в таблице цен недоступен: без цены "0 кр.", заказать нельзя', () => {
   const ui = setup({ prices: { '/datum/supply_pack/materials/metal50': [3000, 'prospectors', 1] } });
   expect(ui.queryByText('0 кр.')).toBeNull();
   expect(ui.getAllByText('нет в наличии')).toHaveLength(1);
@@ -165,7 +165,7 @@ test('личный каталог: без наценки частного зак
   expect(ui.getAllByText('Corgi Crate')).toHaveLength(1);
 });
 
-test('вкладка «Рынок» показывает горячий товар с пометкой ×2 и товар без покупателя', () => {
+test('вкладка "Рынок" показывает горячий товар с пометкой ×2 и товар без покупателя', () => {
   const ui = setup();
   openTab(ui, /^Рынок$/);
   expect(ui.getByText('горячий ×2')).toBeTruthy();
@@ -173,10 +173,10 @@ test('вкладка «Рынок» показывает горячий това
   expect(ui.getByText('Индекс цен: ×1.05')).toBeTruthy();
 });
 
-test('вкладка «Партнёры» показывает закрытого партнёра с условием открытия и ступень открытого', () => {
+test('вкладка "Партнёры" показывает закрытого партнёра с условием открытия и ступень открытого', () => {
   const ui = setup();
   openTab(ui, /^Партнёры$/);
-  expect(ui.getByText('Откроется, когда репутация у партнёра «НТ Логистика» дойдёт до ступени 2.')).toBeTruthy();
+  expect(ui.getByText('Откроется, когда репутация у партнёра "НТ Логистика" дойдёт до ступени 2.')).toBeTruthy();
   expect(ui.getByText('Закрыт')).toBeTruthy();
   expect(ui.getByText('Ступень 1 из 4')).toBeTruthy();
   expect(ui.getByText('300, до ступени 2: 200')).toBeTruthy();
@@ -198,7 +198,7 @@ test('партнёр под эмбарго показывает оставшие
   expect(ui.getByText('Эмбарго: ещё 17 мин. партнёр не покупает и не продаёт.')).toBeTruthy();
 });
 
-test('спецзаказ: «Принять» шлёт accept_offer с uid, взятый печатает накладную', () => {
+test('спецзаказ: "Принять" шлёт accept_offer с uid, взятый печатает накладную', () => {
   const ui = setup();
   openTab(ui, /^Спецзаказы/);
   fireEvent.click(ui.getByText('Принять'));
@@ -265,12 +265,9 @@ test('корзина, заявки и заказы отделов шлют пр�
   fireEvent.click(ui.getByText('Одобрить'));
   fireEvent.click(ui.getByText('Отклонить'));
   fireEvent.click(ui.getByText('Отклонить все'));
-  openTab(ui, /^Заказы отделов/);
-  expect(ui.getByText('Инженерия')).toBeTruthy();
-  fireEvent.click(ui.container.querySelector('.fa-undo') as Element);
   expect(sent(ui.topic, 'send')).toHaveLength(1);
   expect(sent(ui.topic, 'clear')).toHaveLength(1);
-  expect(sent(ui.topic, 'remove')).toEqual([{ id: 11 }, { id: 31 }]);
+  expect(sent(ui.topic, 'remove')).toEqual([{ id: 11 }]);
   expect(sent(ui.topic, 'approve')).toEqual([{ id: 21 }]);
   expect(sent(ui.topic, 'deny')).toEqual([{ id: 21 }]);
   expect(sent(ui.topic, 'denyall')).toHaveLength(1);
@@ -331,13 +328,13 @@ test('карточка пака: опись, количество и заказ 
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50', amount: 3 }]);
 });
 
-test('избранное: звёздочка собирает пак во вкладку «Избранное»', () => {
+test('избранное: звёздочка собирает пак во вкладку "Избранное"', () => {
   const ui = setup();
-  fireEvent.click(ui.getByText('★ Избранное (0)'));
+  fireEvent.click(ui.getByText('Избранное (0)'));
   expect(ui.getByText(/Отметьте звёздочкой/)).toBeTruthy();
   fireEvent.click(ui.getByText('Canisters & Materials (2)'));
   fireEvent.click(ui.container.querySelectorAll('td .fa-star')[0]);
-  fireEvent.click(ui.getByText('★ Избранное (1)'));
+  fireEvent.click(ui.getByText('Избранное (1)'));
   expect(ui.getByText('50 Metal Sheets')).toBeTruthy();
   expect(ui.queryByText('50 Glass Sheets')).toBeNull();
 });
@@ -388,8 +385,8 @@ test('закрытый эксклюзив партнёра объясняет, �
     Medical: { name: 'Medical', packs: [{ name: 'Хирургический набор Вей-Мед', id: '/x', desc: 'Набор', goody: 0, exclusive: ['Вей-Мед', 2] }] },
   };
   const ui = setup({ supplies, prices: { '/x': [4500, null, 0] } });
-  expect(ui.getByText('ступень 2 у «Вей-Мед»')).toBeTruthy();
-  expect(ui.getByText('Эксклюзив «Вей-Мед»')).toBeTruthy();
+  expect(ui.getByText('ступень 2 у Вей-Мед')).toBeTruthy();
+  expect(ui.getByText('эксклюзив Вей-Мед')).toBeTruthy();
 });
 
 test('аукцион: лот, ставки соперников и ставка станции шлёт auction_bid', () => {
@@ -400,14 +397,14 @@ test('аукцион: лот, ставки соперников и ставка 
       desc: 'Скрипка из золота.',
       value: 4000,
       bid: 1700,
-      bidder: 'станция «Кило-7»',
+      bidder: 'станция "Кило-7"',
       mine: 0,
       min_bid: 1785,
       increment: 85,
       left: 45,
       rivals: 2,
       history: [
-        { who: 'станция «Кило-7»', amount: 1700 },
+        { who: 'станция "Кило-7"', amount: 1700 },
         { who: 'Иван Петров', amount: 1600 },
       ],
     },
@@ -416,7 +413,7 @@ test('аукцион: лот, ставки соперников и ставка 
   fireEvent.click(ui.getByText(/^Аукцион/));
   expect(ui.getByText('Лот: золотая скрипка')).toBeTruthy();
   expect(ui.getByText('осталось 0:45')).toBeTruthy();
-  expect(ui.getByText('1 700 кр. - станция «Кило-7»')).toBeTruthy();
+  expect(ui.getByText('1 700 кр. - станция "Кило-7"')).toBeTruthy();
   fireEvent.click(ui.getByText('Поставить 1 785 кр.'));
   fireEvent.click(ui.getByText('+2 шага'));
   fireEvent.click(ui.getByText('Поставить 1 955 кр.'));
@@ -453,8 +450,8 @@ test('скупка: пачка только целиком, цена со ски
     ],
   });
   fireEvent.click(ui.getByText('Скупка'));
-  expect(ui.getByText('4 предметов, только вместе')).toBeTruthy();
-  expect(ui.getByText('· пакет крови')).toBeTruthy();
+  expect(ui.getByText('4 предмета, только вместе')).toBeTruthy();
+  expect(ui.getByText('бинт, шина, пакет крови, скальпель')).toBeTruthy();
   expect(ui.getByText('1 400 кр.')).toBeTruthy();
   expect(ui.getByText('ещё 10:00')).toBeTruthy();
   fireEvent.click(ui.getByText('Купить пачкой'));
@@ -465,7 +462,7 @@ test('счётчики дел видны в навигации', () => {
   const ui = setup();
   expect(ui.getByText('Заявки')).toBeTruthy();
   const nav = ui.container.querySelectorAll('.NtTerm__menuCount');
-  expect(Array.from(nav).map((badge) => badge.textContent)).toEqual(['1', '1', '1', '2']);
+  expect(Array.from(nav).map((badge) => badge.textContent)).toEqual(['1', '1', '2']);
 });
 
 test('контракты в консоли снабжения только для просмотра', () => {

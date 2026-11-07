@@ -255,7 +255,7 @@ const AccountTab = () => {
   return (
     <>
       <AccountNotices />
-      <Section title={`${data.holder} · №${data.number}`}>
+      <Section title={`${data.holder}, счёт №${data.number}`}>
         <LabeledList>
           <LabeledList.Item label="Баланс">
             <Box bold fontSize={1.4}>
@@ -390,7 +390,7 @@ const SharesTab = () => {
   return (
     <Section title="Портфель" buttons={<Credits amount={data.portfolio} />}>
       <Box color="label" mb={1}>
-        Стоимость по текущей цене, без спреда и комиссии. Купить и продать акции можно в приложении «Биржа».
+        Стоимость по текущей цене, без спреда и комиссии. Купить и продать акции можно в приложении &quot;Биржа&quot;.
       </Box>
       {shares.length === 0 ? (
         <Box color="label">Акций нет.</Box>

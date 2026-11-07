@@ -36,7 +36,7 @@
 	if(net <= 0)
 		return FALSE
 	log_econ("[key_name(user)] выписал премию [amount] кр. из бюджета [name] счёту [member.account_holder] №[member.account_id]")
-	member.bank_card_talk("Премия от главы отдела «[name]»: [amount] кр. до налога, на руки [net] кр.", balloon = "премия +[net] кр")
+	member.bank_card_talk("Премия от главы отдела \"[name]\": [amount] кр. до налога, на руки [net] кр.", balloon = "премия +[net] кр")
 	return TRUE
 
 /// Счёт пользователя: он владелец или это счёт, на который ему платят.

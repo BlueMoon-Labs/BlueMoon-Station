@@ -256,7 +256,7 @@
 	TEST_ASSERT_EQUAL(cargo.account_balance, balance_before, "Заказ без поставщика списал деньги")
 	QDEL_LIST(SSshuttle.shoppinglist)
 
-/// Вольные торговцы дешевле всех, но обычная консоль заказывает и шаттл везёт у видимого партнёра; без него - «нет в наличии»; у торговцев покупает только взломанная консоль.
+/// Вольные торговцы дешевле всех, но обычная консоль заказывает и шаттл везёт у видимого партнёра; без него - "нет в наличии"; у торговцев покупает только взломанная консоль.
 /datum/unit_test/economy_partners/hidden_supplier/Run()
 	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
 	var/datum/trade_partner/traders = SSmarket.get_partner("free_traders")

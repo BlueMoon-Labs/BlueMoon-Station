@@ -62,7 +62,7 @@
 	TEST_ASSERT_EQUAL(skimmer.siphon(1, drop.account_id, 1, thief), "Не больше [rate] кр. в минуту с одного счёта: сейчас можно ещё 0 кр.", "Сверх лимита отказ")
 	TEST_ASSERT_EQUAL(drop.account_balance, rate, "Дошло")
 	TEST_ASSERT_EQUAL(victim_account.account_balance, 5000 - rate, "Снято ровно столько, денег не напечатано")
-	TEST_ASSERT_EQUAL(flag_count(AUDIT_FLAG_UNKNOWN_DEVICE, victim_account), 1, "Флаг «неопознанное устройство»")
+	TEST_ASSERT_EQUAL(flag_count(AUDIT_FLAG_UNKNOWN_DEVICE, victim_account), 1, "Флаг \"неопознанное устройство\"")
 	var/seen_in_history = FALSE
 	for(var/datum/transaction/entry in victim_account.transaction_history)
 		if(entry.reason == ECON_SKIM && entry.amount == -rate && entry.counterparty_number == drop.account_id)

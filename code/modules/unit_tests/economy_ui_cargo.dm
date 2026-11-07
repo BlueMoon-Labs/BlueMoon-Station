@@ -579,7 +579,7 @@
 	for(var/list/topic as anything in topics)
 		TEST_ASSERT(length(topic["title"]) && length(topic["icon"]) && length(topic["lines"]), "Тема без заголовка, значка или пунктов: [json_encode(topic)]")
 		for(var/line in topic["lines"])
-			TEST_ASSERT(findtext(help, line), "Пункт темы «[topic["title"]]» не попал в строку справки: [line]")
+			TEST_ASSERT(findtext(help, line), "Пункт темы \"[topic["title"]]\" не попал в строку справки: [line]")
 			TEST_ASSERT(!findtext(line, "Вольные торговцы"), "Обычная консоль называет Вольных торговцев: [line]")
 	TEST_ASSERT_EQUAL(static_data["add_max"], ECON_CARGO_ADD_MAX, "Окно знает предел количества")
 
@@ -684,7 +684,7 @@
 	var/escrow_before = escrow.account_balance
 	var/datum/auction_lot/lot = SSmarket.start_auction(list("path" = /obj/item/toy/plush/carpplushie, "name" = "тестовый карп", "value" = 1000))
 	TEST_ASSERT_NOTNULL(lot, "Лот выставлен")
-	lot.rivals = list("станция «Тест»" = 600)
+	lot.rivals = list("станция \"Тест\"" = 600)
 	TEST_ASSERT_EQUAL(lot.min_bid(), 400, "Старт - 40% оценки")
 	TEST_ASSERT(SSmarket.place_auction_bid(account, 399, bidder, lot.uid), "Ставка ниже минимума отвергнута")
 	TEST_ASSERT(SSmarket.place_auction_bid(account, 500, bidder, lot.uid + 1), "Ставка на чужой лот отвергнута")
@@ -692,7 +692,7 @@
 	TEST_ASSERT_EQUAL(lot.bidder_account, account, "Станция ведёт")
 	TEST_ASSERT_EQUAL(account.account_balance, 4600, "Ставка заморожена")
 	TEST_ASSERT_EQUAL(escrow.account_balance - escrow_before, 400, "Деньги на счёте биржи")
-	TEST_ASSERT_EQUAL(SSmarket.rival_bid(lot, TRUE), "станция «Тест»", "Соперник перебил")
+	TEST_ASSERT_EQUAL(SSmarket.rival_bid(lot, TRUE), "станция \"Тест\"", "Соперник перебил")
 	TEST_ASSERT(lot.bid >= 420 && lot.bid <= 600, "Ставка соперника в своём потолке: [lot.bid]")
 	TEST_ASSERT_EQUAL(account.account_balance, 5000, "Перебитая ставка вернулась целиком")
 	TEST_ASSERT_EQUAL(escrow.account_balance, escrow_before, "Счёт биржи пуст")
@@ -717,13 +717,13 @@
 	qdel(prize)
 
 	lot = SSmarket.start_auction(list("path" = /obj/item/toy/plush/carpplushie, "name" = "второй карп", "value" = 1000))
-	lot.rivals = list("станция «Тест»" = 900)
+	lot.rivals = list("станция \"Тест\"" = 900)
 	SSmarket.place_auction_bid(account, 400, bidder, lot.uid)
 	SSmarket.rival_bid(lot, TRUE)
 	SSmarket.finish_auction()
 	TEST_ASSERT_NULL(locate(/obj/item/toy/plush/carpplushie) in run_loc_floor_bottom_left, "Проигранный лот не приехал")
 	TEST_ASSERT_EQUAL(account.account_balance, 4300, "Проигравшему ставка вернулась")
-	TEST_ASSERT_EQUAL(SSmarket.auction_results[1][2], "станция «Тест»", "Итог - соперник")
+	TEST_ASSERT_EQUAL(SSmarket.auction_results[1][2], "станция \"Тест\"", "Итог - соперник")
 	TEST_ASSERT(SSmarket.next_auction_at > world.time, "Следующий лот запланирован")
 
 /// Коллекционеры: открыты, ничего не покупают и не продают, спецзаказ просят на одну-несколько редких вещей дороже обычного.

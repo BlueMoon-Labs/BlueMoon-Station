@@ -286,7 +286,7 @@ const CalibrationSection = (props: { data: EconomyAdminData }) => {
         )}
       </LabeledList>
       <Box color="label" mt={1}>
-        Закупки и возвраты по отделам - на вкладке «Отделы».
+        Закупки и возвраты по отделам - на вкладке &quot;Отделы&quot;.
       </Box>
     </Section>
   );
@@ -391,7 +391,7 @@ const AccountsTab = (props: { data: EconomyAdminData; send: Send }) => {
         </Stack>
         <Box color="label" mt={1}>
           Плюс - эмиссия NT, минус - сток, не больше {formatCredits(data.adjust_max)} за раз. Причина в журнале -
-          «Корректировка NT», она проходит и через заморозку; владелец видит её в истории без вашего комментария.
+          &quot;Корректировка NT&quot;, она проходит и через заморозку; владелец видит её в истории без вашего комментария.
           Корректируются личные счета и бюджеты; бюджеты TAR и DS - счета внестанционных ролей, вне экономики
           станции.
         </Box>
@@ -420,7 +420,7 @@ const AccountsTab = (props: { data: EconomyAdminData; send: Send }) => {
               <Table.Cell collapsing>{account.number}</Table.Cell>
               <Table.Cell>{account.holder}</Table.Cell>
               <Table.Cell collapsing color="label">
-                {account.budget ? 'бюджет' : account.department || '—'}
+                {account.budget ? 'бюджет' : account.department || '-'}
               </Table.Cell>
               <Table.Cell collapsing textAlign="right" nowrap>
                 <Credits amount={account.balance} />
@@ -451,7 +451,7 @@ const AccountsTab = (props: { data: EconomyAdminData; send: Send }) => {
         </Table>
         <Box color="label" mt={1}>
           Заморозка закрывает переводы, покупки и снятие наличных, зарплата копится долгом отдела. Владелец получит
-          на карту причину из поля выше от «Центрального командования NT», комментарий остаётся в админ-логе.
+          на карту причину из поля выше от &quot;Центрального командования NT&quot;, комментарий остаётся в админ-логе.
           Заморозку ЦК аудиторы станции не снимают. Морозятся только личные счета.
         </Box>
       </Section>
@@ -476,7 +476,7 @@ const DepartmentsTab = (props: { data: EconomyAdminData }) => (
       {props.data.departments.map((department) => (
         <Table.Row key={department.id}>
           <Table.Cell>{department.name}</Table.Cell>
-          <Table.Cell collapsing>{department.number ?? '—'}</Table.Cell>
+          <Table.Cell collapsing>{department.number ?? '-'}</Table.Cell>
           <Table.Cell textAlign="right" nowrap>
             <Credits amount={department.balance} />
           </Table.Cell>
@@ -558,7 +558,7 @@ const MarketTab = (props: { data: EconomyAdminData; send: Send }) => {
               <Table.Cell textAlign="right">x{commodity.factor}</Table.Cell>
               <Table.Cell textAlign="right">x{commodity.sell}</Table.Cell>
               <Table.Cell textAlign="right">{commodity.demand}%</Table.Cell>
-              <Table.Cell color="label">{commodity.buyer || '—'}</Table.Cell>
+              <Table.Cell color="label">{commodity.buyer || '-'}</Table.Cell>
               <Table.Cell collapsing>
                 <Sparkline values={commodity.history} />
               </Table.Cell>
@@ -573,7 +573,7 @@ const MarketTab = (props: { data: EconomyAdminData; send: Send }) => {
           {data.persist_decay}%. Позиции держателей акций сохраняют стоимость. Отменить нельзя.
         </Box>
         <Stack align="center">
-          <Stack.Item>Введите «{data.reset_phrase}»:</Stack.Item>
+          <Stack.Item>Введите &quot;{data.reset_phrase}&quot;:</Stack.Item>
           <Stack.Item>
             <Input value={confirm} onInput={(_, value) => setConfirm(value)} />
           </Stack.Item>
@@ -608,7 +608,7 @@ const PartnersTab = (props: { data: EconomyAdminData }) => (
           <Table.Cell>
             {partner.name}
             <Box color="label" fontSize="0.9em">
-              Покупает: {partner.buys || '—'}. Продаёт: {partner.sells || '—'}.
+              Покупает: {partner.buys || '-'}. Продаёт: {partner.sells || '-'}.
             </Box>
           </Table.Cell>
           <Table.Cell color={partner.unlocked ? 'good' : 'label'}>
@@ -764,7 +764,7 @@ const AuditTab = (props: { data: EconomyAdminData }) => {
         <Box color="label">Дел аудита в этом раунде нет.</Box>
       )}
       <Box color="label" mt={1}>
-        Дела ведут аудиторы станции в «Финансовом аудите»; отсюда счёт можно заморозить на вкладке «Счета».
+        Дела ведут аудиторы станции в &quot;Финансовом аудите&quot;; отсюда счёт можно заморозить на вкладке &quot;Счета&quot;.
       </Box>
     </Section>
   );

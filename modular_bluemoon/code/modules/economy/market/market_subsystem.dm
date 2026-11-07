@@ -554,7 +554,7 @@ SUBSYSTEM_DEF(market)
 	alert_holders(company, price_before)
 	if(!event.fake)
 		company.last_real_event_at = world.time
-	log_econ("Событие компании [company.ticker] вышло: «[event.headline]», шок [event.effect * 100]%[event.fake ? ", фальшивое" : ""]")
+	log_econ("Событие компании [company.ticker] вышло: \"[event.headline]\", шок [event.effect * 100]%[event.fake ? ", фальшивое" : ""]")
 	check_insider(event)
 	if(event.press_release)
 		schedule_refutation(event, price_before, mult_before)

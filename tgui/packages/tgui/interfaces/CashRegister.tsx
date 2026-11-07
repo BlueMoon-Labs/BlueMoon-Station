@@ -48,7 +48,7 @@ const Display = () => {
         {item ? formatCredits(item.price) : '- - -'}
       </div>
       <div className="NtTerm__lcdItem">
-        {item ? `${item.name} · получатель: ${data.cashier}` : data.cashier ? 'Кассир ещё не выбрал позицию.' : 'Касса свободна'}
+        {item ? `${item.name}, получатель ${data.cashier}` : data.cashier ? 'Кассир ещё не выбрал позицию.' : 'Касса свободна'}
       </div>
     </div>
   );
@@ -56,7 +56,7 @@ const Display = () => {
 
 const shareText = (data: CashRegisterData) =>
   data.department
-    ? `${data.cashier_share}% кассиру, ${100 - data.cashier_share}% в бюджет отдела «${data.department}». Долю задаёт глава отдела.`
+    ? `${data.cashier_share}% кассиру, ${100 - data.cashier_share}% в бюджет отдела ${data.department}. Долю задаёт глава отдела.`
     : 'Выручка целиком кассиру.';
 
 const CashierMenu = () => {
@@ -76,7 +76,7 @@ const CashierMenu = () => {
             <Stack.Item grow>
               <NtLine label={item.id === selected ? `▶ ${item.name}` : item.name}>{formatCredits(item.price)}</NtLine>
             </Stack.Item>
-            <Stack.Item>
+            <Stack.Item shrink={0} style={{ whiteSpace: 'nowrap' }}>
               <Button
                 icon={item.id === selected ? 'times' : 'check'}
                 selected={item.id === selected}
@@ -183,7 +183,7 @@ const CustomerPanel = () => {
         </Box>
       </NtFrame>
       {menu.length > 0 && (
-        <NtFrame title="Меню">
+        <NtFrame title="Меню" className="NtTerm__receipt">
           {menu.map((entry) => (
             <NtLine key={entry.id} label={entry.id === selected ? `▶ ${entry.name}` : entry.name}>
               {formatCredits(entry.price)}

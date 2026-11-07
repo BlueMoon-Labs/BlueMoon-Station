@@ -25,8 +25,8 @@ describe('formatCredits', () => {
   });
 
   test('без числа - прочерк', () => {
-    expect(formatCredits(null)).toBe('—');
-    expect(formatCredits(NaN)).toBe('—');
+    expect(formatCredits(null)).toBe('-');
+    expect(formatCredits(NaN)).toBe('-');
   });
 });
 

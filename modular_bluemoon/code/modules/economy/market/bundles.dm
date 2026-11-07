@@ -81,7 +81,7 @@
 	bundle.price = max(1, round(bundle.full_value * (100 - bundle.discount) / 100))
 	bundle.cost = bundle.price
 	bundle.expires_at = world.time + BUNDLE_LIFETIME
-	bundle.name = "Скупка у «[seller.name]»: [length(bundle.contains)] предм."
+	bundle.name = "Скупка у \"[seller.name]\": [length(bundle.contains)] предм."
 	bundle.desc = "Только целиком: [jointext(bundle.item_names, ", ")]."
 	bundles += bundle
 	log_econ("Скупка #[bundle.uid] у [seller.name]: [jointext(bundle.item_names, ", ")] за [bundle.price] кр. вместо [bundle.full_value]")

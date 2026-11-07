@@ -18,7 +18,7 @@
 	var/datum/export_report/report = export_item_and_contents(thing, EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = apply_market, delete_unsold = FALSE, dry_run = dry_run)
 	return econ_export_report_value(report)
 
-/// Продажа металла идёт по фактору продажи товара «металлы», реальная продажа выбивает его спрос.
+/// Продажа металла идёт по фактору продажи товара "металлы", реальная продажа выбивает его спрос.
 /datum/unit_test/economy_market/export_follows_market/Run()
 	var/obj/item/stack/sheet/metal/sheets = allocate(/obj/item/stack/sheet/metal, run_loc_floor_bottom_left, 10)
 	var/datum/export/metal_export

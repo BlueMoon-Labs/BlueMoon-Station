@@ -26,12 +26,12 @@ GLOBAL_LIST_INIT(market_auction_lots, list(
 
 /// Кто ещё торгуется на аукционе сектора.
 GLOBAL_LIST_INIT(market_auction_rivals, list(
-	"станция «Кило-7»",
-	"аванпост «Тау Кита»",
-	"станция «Сигма-3»",
-	"база «Ипсилон»",
-	"станция «Дельта-Аква»",
-	"торговый пост «Перекрёсток»",
+	"станция \"Кило-7\"",
+	"аванпост \"Тау Кита\"",
+	"станция \"Сигма-3\"",
+	"база \"Ипсилон\"",
+	"станция \"Дельта-Аква\"",
+	"торговый пост \"Перекрёсток\"",
 ))
 
 /// Лот аукциона сектора: ставки станции замораживаются на счёте биржи, соперники - другие станции сектора.
@@ -109,8 +109,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	for(var/i in 1 to rand(2, 3))
 		lot.rivals[pick_n_take(names)] = round(lot.value * rand(AUCTION_RIVAL_MAX_MIN, AUCTION_RIVAL_MAX_MAX) / 100)
 	auction = lot
-	publish("Аукцион сектора: на торги выставлен лот «[lot.name]», начальная цена [lot.start_price()] кр. Ставки - в консоли снабжения и приложении «Заказы снабжения», торги около [round(AUCTION_DURATION / (1 MINUTES))] мин.")
-	log_econ("Аукцион: лот #[lot.uid] «[lot.name]» выставлен, соперники [json_encode(lot.rivals)]")
+	publish("Аукцион сектора: на торги выставлен лот \"[lot.name]\", начальная цена [lot.start_price()] кр. Ставки - в консоли снабжения и приложении \"Заказы снабжения\", торги около [round(AUCTION_DURATION / (1 MINUTES))] мин.")
+	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники [json_encode(lot.rivals)]")
 	addtimer(CALLBACK(src, PROC_REF(auction_step), lot), AUCTION_STEP)
 	return lot
 
@@ -147,8 +147,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!account)
 		return
 	lot.bidder_account = null
-	SSeconomy.move(SSeconomy.market_account, account, lot.bid, ECON_AUCTION_REFUND, null, "Аукцион: ставку перебили, лот «[lot.name]»")
-	account.bank_card_talk("Аукцион сектора: вашу ставку [lot.bid] кр. на «[lot.name]» перебили, деньги вернулись на счёт.", balloon = "ставку перебили")
+	SSeconomy.move(SSeconomy.market_account, account, lot.bid, ECON_AUCTION_REFUND, null, "Аукцион: ставку перебили, лот \"[lot.name]\"")
+	account.bank_card_talk("Аукцион сектора: вашу ставку [lot.bid] кр. на \"[lot.name]\" перебили, деньги вернулись на счёт.", balloon = "ставку перебили")
 
 /// Ставка станции: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют. Возвращает текст отказа или null.
 /datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid)
@@ -168,13 +168,13 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/needed = raising ? amount - lot.bid : amount
 	if(!account.has_money(needed))
 		return "На счёте не хватает: нужно [needed] кр."
-	if(!SSeconomy.move(account, SSeconomy.market_account, needed, ECON_AUCTION_BID, user, "Аукцион: ставка на «[lot.name]»"))
+	if(!SSeconomy.move(account, SSeconomy.market_account, needed, ECON_AUCTION_BID, user, "Аукцион: ставка на \"[lot.name]\""))
 		return "Ставка не прошла."
 	if(!raising)
 		refund_auction_bid(lot)
 	lot.bidder_account = account
 	lot.note_bid(account.account_holder, amount)
-	log_econ("Аукцион: [key_name(user)] ставит [amount] кр. на лот #[lot.uid] «[lot.name]»")
+	log_econ("Аукцион: [key_name(user)] ставит [amount] кр. на лот #[lot.uid] \"[lot.name]\"")
 	return null
 
 /// Итог торгов: победившая ставка станции сгорает, лот летит на склад снабжения; не долетел - деньги назад.
@@ -188,20 +188,20 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(winner)
 		var/obj/item/prize = deliver_auction_lot(lot)
 		if(prize)
-			SSeconomy.move(SSeconomy.market_account, null, lot.bid, ECON_AUCTION, null, "Аукцион: лот «[lot.name]»")
-			winner.bank_card_talk("Аукцион сектора: лот «[lot.name]» ваш за [lot.bid] кр. Он уже на складе снабжения.", TRUE, balloon = "лот ваш!")
-			publish("Аукцион сектора: лот «[lot.name]» уходит на нашу станцию, покупатель - [winner.account_holder], [lot.bid] кр.")
+			SSeconomy.move(SSeconomy.market_account, null, lot.bid, ECON_AUCTION, null, "Аукцион: лот \"[lot.name]\"")
+			winner.bank_card_talk("Аукцион сектора: лот \"[lot.name]\" ваш за [lot.bid] кр. Он уже на складе снабжения.", TRUE, balloon = "лот ваш!")
+			publish("Аукцион сектора: лот \"[lot.name]\" уходит на нашу станцию, покупатель - [winner.account_holder], [lot.bid] кр.")
 		else
 			refund_auction_bid(lot)
-			publish("Аукцион сектора: лот «[lot.name]» не удалось доставить на станцию, ставка возвращена.")
+			publish("Аукцион сектора: лот \"[lot.name]\" не удалось доставить на станцию, ставка возвращена.")
 	else if(lot.bidder_name)
-		publish("Аукцион сектора: лот «[lot.name]» ушёл: [lot.bidder_name], [lot.bid] кр.")
+		publish("Аукцион сектора: лот \"[lot.name]\" ушёл: [lot.bidder_name], [lot.bid] кр.")
 	else
-		publish("Аукцион сектора: лот «[lot.name]» снят с торгов без ставок.")
+		publish("Аукцион сектора: лот \"[lot.name]\" снят с торгов без ставок.")
 	auction_results.Insert(1, list(list(lot.name, lot.bidder_name, lot.bid, !!winner)))
 	if(length(auction_results) > AUCTION_RESULTS_MAX)
 		auction_results.Cut(AUCTION_RESULTS_MAX + 1)
-	log_econ("Аукцион: лот #[lot.uid] «[lot.name]» закрыт, [lot.bidder_name || "без ставок"] [lot.bid] кр.")
+	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" закрыт, [lot.bidder_name || "без ставок"] [lot.bid] кр.")
 	qdel(lot)
 
 /// Лот с биркой победителя: на заданный турф или капсулой на склад снабжения. Купленное на аукционе NT выкупает как импорт.

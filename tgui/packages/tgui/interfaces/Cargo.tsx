@@ -1,5 +1,6 @@
 import { toArray } from 'common/collections';
 import { BooleanLike } from 'common/react';
+import { plural } from 'common/ru/plural';
 import { storage } from 'common/storage';
 import { createSearch } from 'common/string';
 import { useEffect, useState } from 'react';
@@ -239,7 +240,7 @@ export const Cargo = (props) => {
   );
 };
 
-type Page = 'catalog' | 'cart' | 'requests' | 'departments' | 'offers' | 'bundles' | 'auction' | 'market' | 'partners' | 'contracts' | 'help';
+type Page = 'catalog' | 'cart' | 'requests' | 'offers' | 'bundles' | 'auction' | 'market' | 'partners' | 'contracts' | 'help';
 
 export const CargoContent = (props) => {
   const { data } = useBackend<CargoData>();
@@ -253,10 +254,9 @@ export const CargoContent = (props) => {
     { key: 'catalog', label: 'Каталог' },
     ...(requestonly ? [] : [{ key: 'cart' as Page, label: 'Корзина', count: cart.length }]),
     { key: 'requests', label: 'Заявки', count: requests.length },
-    { key: 'departments', label: 'Заказы отделов', count: departmentOrders.length },
     { key: 'offers', label: 'Спецзаказы', count: offers.length },
     { key: 'bundles', label: 'Скупка', count: (data.bundles || []).length },
-    { key: 'auction', label: data.auction ? 'Аукцион ●' : 'Аукцион' },
+    { key: 'auction', label: 'Аукцион', count: data.auction ? 1 : 0 },
     { key: 'market', label: 'Рынок' },
     { key: 'partners', label: 'Партнёры' },
     { key: 'contracts', label: 'Контракты' },
@@ -287,7 +287,7 @@ export const CargoContent = (props) => {
           {!requestonly && (
             <NtReadout label="В корзине">
               {cart.length}
-              {total > 0 && <span className="NtTerm__hint"> · {formatCredits(total)}</span>}
+              {total > 0 && <span className="NtTerm__hint"> на {formatCredits(total)}</span>}
             </NtReadout>
           )}
           <NtReadout label="Бюджет снабжения">
@@ -300,7 +300,6 @@ export const CargoContent = (props) => {
       {page === 'catalog' && <CargoCatalog />}
       {page === 'cart' && <CargoCart />}
       {page === 'requests' && <CargoRequests />}
-      {page === 'departments' && <DepartmentOrders />}
       {page === 'offers' && <SpecialOffers />}
       {page === 'bundles' && <Bundles />}
       {page === 'auction' && <Auction />}
@@ -408,7 +407,7 @@ const packTags = (pack: Pack) => {
     tags.push({ text: 'Без наценки' });
   }
   if (pack.exclusive) {
-    tags.push({ text: `Эксклюзив «${pack.exclusive[0]}»` });
+    tags.push({ text: `эксклюзив ${pack.exclusive[0]}` });
   }
   return tags;
 };
@@ -449,7 +448,7 @@ const PackDetails = (props: {
           {outOfStock ? (
             <Box color="bad">
               {pack.exclusive
-                ? `эксклюзив «${pack.exclusive[0]}»: откроется на ${pack.exclusive[1]}-й ступени репутации`
+                ? `эксклюзив ${pack.exclusive[0]}, откроется на ${pack.exclusive[1]}-й ступени репутации`
                 : 'ни у кого нет на складе'}
             </Box>
           ) : choices ? (
@@ -457,9 +456,8 @@ const PackDetails = (props: {
               const selected = chosen ? chosen[0] === id : partnerName(id) === pack.supplier;
               return (
                 <Box key={id} className={selected ? 'NtTerm__chip NtTerm__chip--active' : 'NtTerm__chip'} onClick={() => setPartner(id)}>
-                  {selected ? '● ' : '○ '}
-                  {partnerName(id)} - {formatCredits(Math.round(price * ratio))}
-                  {repPerCredit > 0 && <span className="NtTerm__hint"> · +{Math.round((price * repPerCredit) / 2)} репутации</span>}
+                                    {partnerName(id)} - {formatCredits(Math.round(price * ratio))}
+                  {repPerCredit > 0 && <span className="NtTerm__hint">, +{Math.round((price * repPerCredit) / 2)} репутации</span>}
                 </Box>
               );
             })
@@ -467,7 +465,7 @@ const PackDetails = (props: {
             pack.supplier || 'NT напрямую'
           )}
         </LabeledList.Item>
-        {!!pack.commodity && <LabeledList.Item label="Товар рынка">{pack.commodity}: цена идёт за ним, см. «Рынок»</LabeledList.Item>}
+        {!!pack.commodity && <LabeledList.Item label="Товар рынка">{pack.commodity}, цена идёт за ним (вкладка Рынок)</LabeledList.Item>}
       </LabeledList>
       {!outOfStock && (
         <Stack align="center" mt={1}>
@@ -563,7 +561,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
             setActiveSupplyName(null);
             setSearchText('');
           }}>
-          {`★ Избранное (${favorites.length})`}
+          {`Избранное (${favorites.length})`}
         </span>
         {supplies.map((supply) => (
           <span
@@ -630,7 +628,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                 ))}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} color={outOfStock ? 'bad' : 'label'} pr={1}>
-                {outOfStock ? (pack.exclusive ? `ступень ${pack.exclusive[1]} у «${pack.exclusive[0]}»` : 'нет в наличии') : pack.supplier || '-'}
+                {outOfStock ? (pack.exclusive ? `ступень ${pack.exclusive[1]} у ${pack.exclusive[0]}` : 'нет в наличии') : pack.supplier || '-'}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} textAlign="right">
                 <Button
@@ -843,52 +841,6 @@ const CargoCart = (props) => {
   );
 };
 
-const DepartmentOrders = (props) => {
-  const { act, data } = useBackend<CargoData>();
-  const orders = data.department_requests || [];
-  return (
-    <NtFrame title="Заказы отделов">
-      <Box color="label" mb={1}>
-        Отделы оплатили эти заказы из своего бюджета по заявкам, одобренным главой. Снабжение их только везёт: они уйдут
-        со следующим шаттлом, а снятие с корзины вернёт деньги отделу.
-      </Box>
-      {orders.length === 0 && <Box color="good">Заказов отделов в очереди нет.</Box>}
-      {orders.length > 0 && (
-        <Table>
-          <Table.Row header>
-            <Table.Cell>Отдел</Table.Cell>
-            <Table.Cell>Пак</Table.Cell>
-            <Table.Cell>Заказал</Table.Cell>
-            <Table.Cell>Причина</Table.Cell>
-            <Table.Cell collapsing textAlign="right">
-              Оплачено
-            </Table.Cell>
-            <Table.Cell collapsing />
-          </Table.Row>
-          {orders.map((order) => (
-            <Table.Row key={order.id} className="candystripe">
-              <Table.Cell py={0.5}>{order.department}</Table.Cell>
-              <Table.Cell py={0.5}>{order.object}</Table.Cell>
-              <Table.Cell py={0.5}>{order.orderer}</Table.Cell>
-              <Table.Cell py={0.5}>
-                <i>{order.reason}</i>
-              </Table.Cell>
-              <Table.Cell collapsing textAlign="right" py={0.5}>
-                <Credits amount={order.prepaid} />
-              </Table.Cell>
-              <Table.Cell collapsing py={0.5}>
-                {canEditCart(data) && (
-                  <Button icon="undo" tooltip="Снять и вернуть деньги отделу" onClick={() => act('remove', { id: order.id })} />
-                )}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table>
-      )}
-    </NtFrame>
-  );
-};
-
 const SpecialOffers = (props) => {
   const { act, data } = useBackend<CargoData>();
   const { can_take_offers } = data;
@@ -905,6 +857,7 @@ const SpecialOffers = (props) => {
         {offers.map((offer) => (
           <Stack.Item key={offer.uid}>
             <NtFrame
+              minor
               title={`${offer.partner}: ${offer.item}`}
               buttons={
                 !!can_take_offers &&
@@ -994,20 +947,18 @@ const Bundles = (props) => {
             <Box className="NtTerm__contractMain">
               <Box className="NtTerm__contractTitle">
                 <span className="NtTerm__tag NtTerm__tag--lead">{bundle.partner}</span>
-                {bundle.items.length} предметов, только вместе
+                {bundle.items.length} {plural(bundle.items.length, 'предмет', 'предмета', 'предметов')}, только вместе
               </Box>
-              {bundle.items.map((item) => (
-                <Box key={item} className="NtTerm__hint">
-                  · {item}
-                </Box>
-              ))}
+              <Box className="NtTerm__hint" mt={0.5}>
+                {bundle.items.join(', ')}
+              </Box>
             </Box>
             <Box className="NtTerm__contractSide">
               <Box className="NtTerm__hint">
                 <s>{formatCredits(bundle.full_value)}</s> −{bundle.discount}%
               </Box>
               <Box className="NtTerm__contractReward">{formatCredits(price)}</Box>
-              <Box className="NtTerm__hint">ещё {formatTime(bundle.left)}</Box>
+              <Box className={bundle.left < 120 ? 'color-average' : 'NtTerm__hint'}>ещё {formatTime(bundle.left)}</Box>
               <Box mt={0.5}>
                 <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
                   Купить пачкой
@@ -1084,7 +1035,7 @@ const Auction = (props) => {
         <NtFrame title="Аукцион сектора">
           <NtEmpty>
             Сейчас лотов нет.{!!data.auction_next && ` Следующий - примерно через ${formatTime(data.auction_next)}.`} О новом лоте
-            сообщит «Сводка сектора».
+            сообщит канал Сводка сектора на ньюскастерах.
           </NtEmpty>
         </NtFrame>
       )}
@@ -1174,47 +1125,58 @@ const Partners = (props) => {
         {partners.map((partner) => {
           const maxed = partner.tier >= tier_max;
           const progress = maxed ? tier_step : partner.reputation - partner.tier * tier_step;
+          const trades = !!partner.buys || !!partner.sells;
           return (
             <Stack.Item key={partner.id}>
               <NtFrame
-                title={partner.name}
+                minor
+                title={
+                  <>
+                    <EconomyLogo id={partner.id} />
+                    {partner.name}
+                  </>
+                }
                 buttons={
-                  <Box inline color={partner.unlocked ? 'good' : 'label'}>
-                    {partner.unlocked ? `Ступень ${partner.tier} из ${tier_max}` : 'Закрыт'}
-                  </Box>
+                  !trades ? (
+                    <Box inline color="label">
+                      только спецзаказы
+                    </Box>
+                  ) : (
+                    <Box inline color={partner.unlocked ? 'good' : 'label'}>
+                      {partner.unlocked ? `Ступень ${partner.tier} из ${tier_max}` : 'Закрыт'}
+                    </Box>
+                  )
                 }>
-                <Box italic color="label" mb={1}>
-                  <EconomyLogo id={partner.id} />
+                <Box className="NtTerm__hint" mb={1}>
                   {partner.desc}
                 </Box>
                 {!!partner.embargo_minutes && (
-                  <NoticeBox danger>
-                    Эмбарго: ещё {partner.embargo_minutes} мин. партнёр не покупает и не продаёт.
-                  </NoticeBox>
+                  <NoticeBox danger>Эмбарго: ещё {partner.embargo_minutes} мин. партнёр не покупает и не продаёт.</NoticeBox>
                 )}
-                {partner.next_unlock ? (
-                  <NoticeBox>{partner.next_unlock}</NoticeBox>
-                ) : (
+                {!!partner.next_unlock && <NoticeBox>{partner.next_unlock}</NoticeBox>}
+                {trades && (
                   <LabeledList>
-                    <LabeledList.Item label="Репутация">
-                      <ProgressBar value={progress} maxValue={tier_step}>
-                        {maxed
-                          ? `${partner.reputation} - высшая ступень`
-                          : `${partner.reputation}, до ступени ${partner.tier + 1}: ${tier_step - progress}`}
-                      </ProgressBar>
-                    </LabeledList.Item>
-                    <LabeledList.Item label="Цены">
-                      наценка ×{partner.markup}, скидка за репутацию {partner.discount}%
-                    </LabeledList.Item>
-                    <LabeledList.Item label="Капитал">
-                      <Credits amount={partner.wealth} /> - из него пополняется склад
-                    </LabeledList.Item>
+                    {!partner.next_unlock && (
+                      <>
+                        <LabeledList.Item label="Репутация">
+                          <ProgressBar value={progress} maxValue={tier_step}>
+                            {maxed
+                              ? `${partner.reputation} - высшая ступень`
+                              : `${partner.reputation}, до ступени ${partner.tier + 1}: ${tier_step - progress}`}
+                          </ProgressBar>
+                        </LabeledList.Item>
+                        <LabeledList.Item label="Цены">
+                          наценка ×{partner.markup}, скидка за репутацию {partner.discount}%
+                        </LabeledList.Item>
+                        <LabeledList.Item label="Капитал">
+                          <Credits amount={partner.wealth} /> - из него пополняется склад
+                        </LabeledList.Item>
+                      </>
+                    )}
+                    <LabeledList.Item label="Покупает">{partner.buys || '-'}</LabeledList.Item>
+                    <LabeledList.Item label="Продаёт">{partner.sells || '-'}</LabeledList.Item>
                   </LabeledList>
                 )}
-                <LabeledList>
-                  <LabeledList.Item label="Покупает">{partner.buys || '-'}</LabeledList.Item>
-                  <LabeledList.Item label="Продаёт">{partner.sells || '-'}</LabeledList.Item>
-                </LabeledList>
               </NtFrame>
             </Stack.Item>
           );
@@ -1230,7 +1192,7 @@ const Contracts = (props) => {
     <NtFrame title="Контракты NT">
       {!!data.contracts_help && (
         <Box color="label" mb={1}>
-          {data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении «Бюджет отдела».
+          {data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении &quot;Бюджет отдела&quot;.
         </Box>
       )}
       <ContractTable readOnly />
@@ -1254,10 +1216,9 @@ const CargoHelp = (props) => {
         <Stack.Item key={topic.title}>
           <NtFrame title={topic.title} buttons={<Icon name={topic.icon} color="label" />}>
             {topic.lines.map((line) => (
-              <Stack key={line} mb={0.75}>
-                <Stack.Item color="label">•</Stack.Item>
-                <Stack.Item grow>{line}</Stack.Item>
-              </Stack>
+              <Box key={line} mb={0.75}>
+                {line}
+              </Box>
             ))}
           </NtFrame>
         </Stack.Item>

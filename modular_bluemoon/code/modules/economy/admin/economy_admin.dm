@@ -303,7 +303,7 @@ GLOBAL_VAR(economy_config_reloaded_at)
 /datum/economy_panel/proc/reset_sector(mob/user, list/params, comment)
 	var/confirm = params["confirm"]
 	if(!istext(confirm) || trim(confirm) != ECON_ADMIN_RESET_PHRASE)
-		message = "Сброс не подтверждён: введите «[ECON_ADMIN_RESET_PHRASE]» в поле подтверждения."
+		message = "Сброс не подтверждён: введите \"[ECON_ADMIN_RESET_PHRASE]\" в поле подтверждения."
 		return
 	SSmarket.reset_sector()
 	message = "Сектор сброшен к базе: товары, акции и партнёры. Файл состояния удалён, в конце раунда он запишется заново от сброшенного рынка."
@@ -350,11 +350,11 @@ GLOBAL_VAR(economy_config_reloaded_at)
 		return
 	var/headline = econ_ui_reason(params["headline"], ECON_ADMIN_HEADLINE_MAX)
 	if(!length(headline))
-		message = "Нужен заголовок: он выйдет в «[MARKET_NEWS_CHANNEL]»."
+		message = "Нужен заголовок: он выйдет в \"[MARKET_NEWS_CHANNEL]\"."
 		return
 	SSmarket.schedule_company_event(company, ECON_ADMIN_EVENT_KEY, headline, effect, 0)
 	message = "Событие [company.ticker] ([round(percent)]%) выйдет на ближайшем тике биржи, до минуты."
-	log_action(user, "поставил событие компании [company.ticker]: «[headline]», шок [round(percent)]%.", comment)
+	log_action(user, "поставил событие компании [company.ticker]: \"[headline]\", шок [round(percent)]%.", comment)
 
 /datum/economy_panel/proc/reload_config(mob/user, comment)
 	var/datum/economy_settings/fresh = new

@@ -35,7 +35,7 @@ GLOBAL_LIST_INIT(market_default_station_events, list(
 /// Названия событий станции для сносок биржи.
 GLOBAL_LIST_INIT(market_station_event_names, list(
 	"sm_delam" = "Расслоение суперматерии на станции",
-	"delta_alert" = "Код «Дельта» на станции",
+	"delta_alert" = "Код \"Дельта\" на станции",
 	"disease_outbreak" = "Вспышка болезни на станции",
 	"meteors" = "Метеоритный дождь у станции",
 	"market_crash" = "Обвал рынка сектора",
@@ -167,9 +167,9 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 		var/note = "[jointext(goods, ", ")]; +5% за каждые [round(STOCK_TRADE_SCALE / 20)] кр. продаж"
 		if(!partner.unlocked)
 			note += "; партнёр пока не торгует со станцией"
-		. += list(list("label" = "Продажи станции через снабжение партнёру «[partner.name]»", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
-		. += list(list("label" = "Сорванный станцией спецзаказ «[partner.name]»", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
-		. += list(list("label" = "Закупки станции у «[partner.name]»", "effect" = null, "note" = "цену не двигают: [SSeconomy.settings.stock_dividend_share]% суммы идёт в дивиденды держателям"))
+		. += list(list("label" = "Продажи станции через снабжение партнёру \"[partner.name]\"", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
+		. += list(list("label" = "Сорванный станцией спецзаказ \"[partner.name]\"", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
+		. += list(list("label" = "Закупки станции у \"[partner.name]\"", "effect" = null, "note" = "цену не двигают: [SSeconomy.settings.stock_dividend_share]% суммы идёт в дивиденды держателям"))
 	for(var/key in SSmarket.station_events)
 		var/list/effects = SSmarket.station_events[key]
 		if(isnull(effects[ticker]))

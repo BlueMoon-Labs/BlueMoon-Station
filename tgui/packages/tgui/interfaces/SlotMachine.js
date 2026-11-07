@@ -204,7 +204,7 @@ export const SlotMachine = (props) => {
           <Stack.Item>
             <div className="SlotMachine__header">
               <div className="SlotMachine__header-text">
-                ★ ДЖЕКПОТ СЕКТОРА ★
+                ДЖЕКПОТ СЕКТОРА
               </div>
               <div className="SlotMachine__header-amount">
                 💰 {money} кр.

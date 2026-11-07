@@ -27,7 +27,7 @@
 	ends_at = world.time + settings.lottery_sale_minutes MINUTES
 	pool = new("Лотерея сектора")
 	draw_timer = addtimer(CALLBACK(src, PROC_REF(draw)), settings.lottery_sale_minutes MINUTES, TIMER_STOPPABLE)
-	var/text = "Открыта продажа билетов секторальной лотереи: [ticket_price] кр. за билет, до [tickets_per_account] билетов на счёт, в приложении «Кошелёк» КПК. Розыгрыш через [settings.lottery_sale_minutes] мин.: [100 - house_share]% выручки получает владелец выигравшего билета, [house_share]% забирает NT."
+	var/text = "Открыта продажа билетов секторальной лотереи: [ticket_price] кр. за билет, до [tickets_per_account] билетов на счёт, в приложении \"Кошелёк\" КПК. Розыгрыш через [settings.lottery_sale_minutes] мин.: [100 - house_share]% выручки получает владелец выигравшего билета, [house_share]% забирает NT."
 	SSmarket.publish(text)
 	minor_announce(text, "Лотерея сектора")
 

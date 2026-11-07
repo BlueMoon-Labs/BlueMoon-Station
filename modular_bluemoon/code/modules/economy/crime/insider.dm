@@ -69,11 +69,11 @@
 			traders[number] = known ? (known | trade[INSIDER_TRADE_ACTORS]) : trade[INSIDER_TRADE_ACTORS]
 	var/when
 	if(event.press_release)
-		when = "меньше чем за [window] мин. до фальшивого пресс-релиза «[event.headline]»"
+		when = "меньше чем за [window] мин. до фальшивого пресс-релиза \"[event.headline]\""
 	else if(event.refutes)
-		when = "после фальшивого пресс-релиза «[event.refutes]», до его опровержения"
+		when = "после фальшивого пресс-релиза \"[event.refutes]\", до его опровержения"
 	else
-		when = "меньше чем за [DisplayTimeText(STOCK_EVENT_ETA_MAX)] до новости «[event.headline]»"
+		when = "меньше чем за [DisplayTimeText(STOCK_EVENT_ETA_MAX)] до новости \"[event.headline]\""
 	for(var/number in net)
 		var/value = net[number]
 		if(value < SSeconomy.settings.audit_insider_threshold)
@@ -202,7 +202,7 @@
 /datum/controller/subsystem/market/proc/schedule_refutation(datum/market_event/fake, price_before, mult_before)
 	var/datum/stock_company/company = fake.company
 	var/price_factor = price_before / company.price
-	var/datum/market_event/refutation = schedule_company_event(company, STOCK_REFUTATION_KEY, "NT опровергает сообщение «[fake.headline]»: это фальшивый пресс-релиз[fake.press_release_origin ? ", [fake.press_release_origin]" : ""]", price_factor - 1, SSeconomy.settings.press_release_refute_minutes MINUTES, TRUE)
+	var/datum/market_event/refutation = schedule_company_event(company, STOCK_REFUTATION_KEY, "NT опровергает сообщение \"[fake.headline]\": это фальшивый пресс-релиз[fake.press_release_origin ? ", [fake.press_release_origin]" : ""]", price_factor - 1, SSeconomy.settings.press_release_refute_minutes MINUTES, TRUE)
 	if(!refutation)
 		return
 	refutation.refutes = fake.headline
@@ -229,9 +229,9 @@
 	if(!headline)
 		to_chat(user, span_warning("Редакции не нашли, чем подкрепить такую новость."))
 		return FALSE
-	to_chat(user, span_notice("Релиз принят: «[headline]». Цена [company.ticker] сдвинется на ближайшей котировке, а если о компании только что вышла или вот-вот выйдет настоящая новость - через несколько минут после неё. Новость выйдет в «[MARKET_NEWS_CHANNEL]» с ближайшим выпуском. Через [DisplayTimeText(SSeconomy.settings.press_release_refute_minutes MINUTES)] после выхода NT опровергнет её и вернёт цену."))
-	log_game("[key_name(user)] выпустил фальшивый пресс-релиз о [company.ticker] «[headline]»[origin ? " ([origin])" : ""] в [AREACOORD(user)]")
-	message_admins("[ADMIN_LOOKUPFLW(user)] выпустил фальшивый пресс-релиз о [company.ticker]: «[headline]».")
+	to_chat(user, span_notice("Релиз принят: \"[headline]\". Цена [company.ticker] сдвинется на ближайшей котировке, а если о компании только что вышла или вот-вот выйдет настоящая новость - через несколько минут после неё. Новость выйдет в \"[MARKET_NEWS_CHANNEL]\" с ближайшим выпуском. Через [DisplayTimeText(SSeconomy.settings.press_release_refute_minutes MINUTES)] после выхода NT опровергнет её и вернёт цену."))
+	log_game("[key_name(user)] выпустил фальшивый пресс-релиз о [company.ticker] \"[headline]\"[origin ? " ([origin])" : ""] в [AREACOORD(user)]")
+	message_admins("[ADMIN_LOOKUPFLW(user)] выпустил фальшивый пресс-релиз о [company.ticker]: \"[headline]\".")
 	return TRUE
 
 /// Выбор компании и знака новости для фальшивого релиза: list(компания, хорошая ли) или null.
@@ -414,7 +414,7 @@
 	if(!econ_knows_crime_tools(user))
 		to_chat(user, span_warning("[src] мигает и перезагружается."))
 		return TRUE
-	to_chat(user, span_warning("Вы перепрошиваете [src]. Alt-клик по нему отправит один фальшивый пресс-релиз в «[MARKET_NEWS_CHANNEL]»: цена выбранной компании сдвинется на ближайшей котировке, а через [DisplayTimeText(SSeconomy.settings.press_release_refute_minutes MINUTES)] после выхода NT опровергнет новость, вернёт цену и назовёт место ньюскастера. Мультитул сбрасывает прошивку."))
+	to_chat(user, span_warning("Вы перепрошиваете [src]. Alt-клик по нему отправит один фальшивый пресс-релиз в \"[MARKET_NEWS_CHANNEL]\": цена выбранной компании сдвинется на ближайшей котировке, а через [DisplayTimeText(SSeconomy.settings.press_release_refute_minutes MINUTES)] после выхода NT опровергнет новость, вернёт цену и назовёт место ньюскастера. Мультитул сбрасывает прошивку."))
 	return TRUE
 
 /obj/machinery/newscaster/examine(mob/user)

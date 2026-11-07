@@ -161,7 +161,7 @@
 	var/datum/bank_account/target = SSeconomy.find_account(text2num(target_text)) || SSeconomy.find_account_by_name(target_text)
 	if(!target)
 		var/list/namesakes = SSeconomy.find_accounts_by_name(target_text)
-		message = length(namesakes) > 1 ? "На имя «[target_text]» несколько счетов - укажите номер." : "Счёт «[target_text]» не найден."
+		message = length(namesakes) > 1 ? "На имя \"[target_text]\" несколько счетов - укажите номер." : "Счёт \"[target_text]\" не найден."
 		return TRUE
 	var/error
 	if(action == "tip")

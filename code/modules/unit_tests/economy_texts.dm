@@ -41,7 +41,7 @@
 	TEST_ASSERT(findtext(text, "[settings.wage_floor] кр."), "Минимум NT в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "[settings.work_prices[WORK_MED_REVIVE]] кр."), "Цена реанимации в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "не больше [settings.cleaning_cap_per_tick] плиток"), "Памятка не называет потолок уборки на уборщика")
-	TEST_ASSERT(findtext(text, "в «Кошельке» - до [settings.transfer_max] кр."), "Памятка не называет потолок перевода из кошелька")
+	TEST_ASSERT(findtext(text, "в \"Кошельке\" - до [settings.transfer_max] кр."), "Памятка не называет потолок перевода из кошелька")
 	TEST_ASSERT(findtext(text, "на кассе - до [min(REGISTER_PRICE_MAX, settings.transfer_max)] кр."), "Памятка не называет потолок чаевых на кассе")
 	TEST_ASSERT(findtext(text, "[CRATE_TAX] кр."), "Памятка не называет сбор за малые кейсы")
 	TEST_ASSERT(findtext(text, SSeconomy.audit_rights_text()), "Памятка не называет, кто ведёт аудит")

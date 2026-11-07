@@ -115,7 +115,7 @@ GLOBAL_LIST_INIT(econ_reasons_ignore_freeze, list(ECON_REFUND, ECON_ADMIN, ECON_
 /proc/econ_reason_name(reason)
 	return GLOB.econ_reason_names[reason] || reason
 
-/// «в 2 раза», «в 5 раз», «в 1.5 раза»
+/// "в 2 раза", "в 5 раз", "в 1.5 раза"
 /proc/econ_times_text(multiplier)
 	return "в [multiplier] [ru_plural(multiplier, "раз", "раза", "раз")]"
 

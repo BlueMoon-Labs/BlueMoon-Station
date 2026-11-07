@@ -123,7 +123,7 @@
 	var/deposit = econ_packaging_value(/obj/structure/closet/crate)
 	TEST_ASSERT(abs(gain - (2000 + extra_value + deposit)) <= 1, "Карго получило [gain] вместо 2000 за спецзаказ, [extra_value] за лишнее и [deposit] за ящик")
 	TEST_ASSERT(prospectors.reputation >= reputation_before + MARKET_OFFER_REPUTATION_SUCCESS, "Репутация за выполнение: [prospectors.reputation - reputation_before]")
-	TEST_ASSERT(findtext(SSshuttle.centcom_message, "принято 10 шт. «тест» (10 из 10), 1000 кр.") && findtext(SSshuttle.centcom_message, "маржа снабжению 1000 кр."), "Сообщение ЦК не описывает спецзаказ: [SSshuttle.centcom_message]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "принято 10 шт. \"тест\" (10 из 10), 1000 кр.") && findtext(SSshuttle.centcom_message, "маржа снабжению 1000 кр."), "Сообщение ЦК не описывает спецзаказ: [SSshuttle.centcom_message]")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "Выручка: [gain] кр."), "Выручка в сообщении ЦК не сходится: [SSshuttle.centcom_message]")
 
 /// Купленное через снабжение не засчитывается и продаётся по потолку выкупа; частичная поставка платит базу, маржа - при выполнении; напечатанное оплачивается по потолку материалов.

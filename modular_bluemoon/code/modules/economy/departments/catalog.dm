@@ -200,7 +200,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return FALSE
 	request.status = ECON_REQUEST_APPROVED
 	log_econ("Заявка [request.uid] отдела [name] одобрена: [automatic ? "автоматически" : key_name(user)]")
-	request.notify_requester("Заявка на «[request.pack.name]» одобрена и ушла в снабжение.")
+	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена и ушла в снабжение.")
 	econ_trim_resolved(requests)
 	return TRUE
 
@@ -209,7 +209,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return FALSE
 	request.status = ECON_REQUEST_DENIED
 	log_econ("[key_name(user)] отклонил заявку [request.uid] отдела [name]")
-	request.notify_requester("Заявка на «[request.pack.name]» отклонена.")
+	request.notify_requester("Заявка на \"[request.pack.name]\" отклонена.")
 	econ_trim_resolved(requests)
 	return TRUE
 

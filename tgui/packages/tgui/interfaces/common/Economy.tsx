@@ -84,7 +84,7 @@ type CreditsFormat = {
 
 export const formatCredits = (amount: number | null | undefined, options: CreditsFormat = {}) => {
   if (typeof amount !== 'number' || !Number.isFinite(amount)) {
-    return '—';
+    return '-';
   }
   const { signed = false, decimals = 0 } = options;
   const [whole, fraction] = Math.abs(amount).toFixed(decimals).split('.');

@@ -126,7 +126,7 @@
 	TEST_ASSERT_EQUAL(SSmarket.alert_holders_halted(company), holders, "Остановка торгов приходит держателям")
 	TEST_ASSERT_EQUAL(SSmarket.alert_holders(null, price_before), 0, "Без компании - тишина")
 
-/// «Макс» покупает ровно столько, сколько позволяют деньги или лимит позиции: на одну акцию больше уже не проходит; «продать всё» продаёт всё.
+/// "Макс" покупает ровно столько, сколько позволяют деньги или лимит позиции: на одну акцию больше уже не проходит; "продать всё" продаёт всё.
 /datum/unit_test/economy_trading/ui/buy_max/Run()
 	var/mob/living/carbon/human/user = make_user(1000)
 	var/datum/bank_account/own = econ_account_of(user)
@@ -135,19 +135,19 @@
 	var/by_money = SSmarket.max_buy_count(own, company)
 	TEST_ASSERT(by_money > 0, "Есть что купить на 1000 кр.")
 	var/datum/bank_account/probe = new_trader(1000)
-	TEST_ASSERT(SSmarket.try_buy_shares(probe, "AGRO", by_money + 1, user), "На одну акцию больше «Макс» не по карману")
+	TEST_ASSERT(SSmarket.try_buy_shares(probe, "AGRO", by_money + 1, user), "На одну акцию больше \"Макс\" не по карману")
 	var/list/entry
 	var/list/data = program.stocks_data(user)
 	for(var/list/each as anything in data["companies"])
 		if(each["ticker"] == "AGRO")
 			entry = each
-	TEST_ASSERT_EQUAL(entry["max_buy"], by_money, "Окно показывает тот же «Макс»")
+	TEST_ASSERT_EQUAL(entry["max_buy"], by_money, "Окно показывает тот же \"Макс\"")
 	press(user, program, "NtosStockExchange", "buy", list("ticker" = "AGRO", "count" = "max"))
 	TEST_ASSERT_EQUAL(own.shares["AGRO"], by_money, "Куплено на все деньги")
 	TEST_ASSERT_EQUAL(SSmarket.max_buy_count(own, company), 0, "Денег на ещё одну нет")
 	expire_cooldown(own, "AGRO")
 	press(user, program, "NtosStockExchange", "buy", list("ticker" = "AGRO", "count" = "max"))
-	TEST_ASSERT_EQUAL(message_of(program, user), "Купить нечего: позиция упёрлась в лимит или не хватает денег.", "Пустой «Макс» объясняет отказ")
+	TEST_ASSERT_EQUAL(message_of(program, user), "Купить нечего: позиция упёрлась в лимит или не хватает денег.", "Пустой \"Макс\" объясняет отказ")
 	expire_cooldown(own, "AGRO")
 	press(user, program, "NtosStockExchange", "sell", list("ticker" = "AGRO", "count" = "max"))
 	TEST_ASSERT(!own.shares["AGRO"], "Продано всё")
@@ -155,7 +155,7 @@
 	var/datum/bank_account/rich = new_trader(SSeconomy.settings.stock_position_cap * 3)
 	var/by_cap = SSmarket.max_buy_count(rich, company)
 	TEST_ASSERT_EQUAL(by_cap, round(SSeconomy.settings.stock_position_cap / max(company.price, company.base_price)), "Богатого ограничивает лимит позиции")
-	TEST_ASSERT(!SSmarket.try_buy_shares(rich, "AGRO", by_cap, user), "«Макс» по лимиту проходит")
+	TEST_ASSERT(!SSmarket.try_buy_shares(rich, "AGRO", by_cap, user), "\"Макс\" по лимиту проходит")
 	company.halted_until = world.time + STOCK_HALT_TIME
 	TEST_ASSERT_EQUAL(SSmarket.max_buy_count(probe, company), 0, "На остановленных торгах купить нечего")
 	company.halted_until = 0
@@ -225,22 +225,22 @@
 	var/datum/stock_company/bishop = SSmarket.get_company("BSHP")
 	var/list/heph = driver_labels(hephaestus.price_drivers())
 	var/list/bshp = driver_labels(bishop.price_drivers())
-	TEST_ASSERT_EQUAL(heph[GLOB.market_station_event_names["delta_alert"]], 10, "Код «Дельта» поднимает Гефест")
+	TEST_ASSERT_EQUAL(heph[GLOB.market_station_event_names["delta_alert"]], 10, "Код \"Дельта\" поднимает Гефест")
 	TEST_ASSERT_EQUAL(bshp[GLOB.market_station_event_names["disease_outbreak"]], 5, "Вспышка болезни поднимает Бишоп")
 	TEST_ASSERT_EQUAL(bshp[GLOB.market_station_event_names["sm_delam"]], -5, "Расслоение СМ роняет Бишоп")
 	TEST_ASSERT(!hephaestus.partner_id && !bishop.partner_id, "У новых компаний нет торгового партнёра")
 	var/datum/trade_partner/vey_med = SSmarket.get_partner("vey_med")
-	var/list/sale = vymd["Продажи станции через снабжение партнёру «[vey_med.name]»"]
+	var/list/sale = vymd["Продажи станции через снабжение партнёру \"[vey_med.name]\""]
 	TEST_ASSERT(sale, "Продажи партнёру в сносках Вей-Мед")
 	TEST_ASSERT_EQUAL(sale["effect"], STOCK_TRADE_BOOST_MAX * 100, "Потолок роста от продаж")
 	TEST_ASSERT(findtext(sale["note"], "медикаменты"), "Товары партнёра строчными: [sale["note"]]")
 	var/datum/trade_partner/nakamura = SSmarket.get_partner("nakamura")
 	nakamura.unlocked = FALSE
 	nkmr = driver_labels(naka.price_drivers())
-	sale = nkmr["Продажи станции через снабжение партнёру «[nakamura.name]»"]
+	sale = nkmr["Продажи станции через снабжение партнёру \"[nakamura.name]\""]
 	TEST_ASSERT(findtext(sale["note"], "пока не торгует"), "Закрытый партнёр помечен: [sale["note"]]")
 	var/datum/trade_partner/nt_logistics = SSmarket.get_partner("nt_logistics")
-	var/list/nt_sale = ntrn["Продажи станции через снабжение партнёру «[nt_logistics.name]»"]
+	var/list/nt_sale = ntrn["Продажи станции через снабжение партнёру \"[nt_logistics.name]\""]
 	TEST_ASSERT(findtext(nt_sale["note"], "любые товары"), "Партнёр без ограничений покупает любые товары: [nt_sale["note"]]")
 
 /// Сноски по подписи: сдвиг события станции числом, у продаж партнёру - вся запись.
@@ -311,7 +311,7 @@
 	var/listeners = lookup ? lookup[COMSIG_MARKET_STOCKS_TICKED] : null
 	TEST_ASSERT(listeners != board && !(islist(listeners) && (board in listeners)), "Табло отписалось от тика")
 
-/// Заявки из окна: «add_order» ставит заявку на торговый счёт пользователя и отвечает текстом, неверный ввод отказывает, окно получает список; «cancel_order» снимает по id. Фонд дивидендов и выплата на акцию видны в котировках.
+/// Заявки из окна: "add_order" ставит заявку на торговый счёт пользователя и отвечает текстом, неверный ввод отказывает, окно получает список; "cancel_order" снимает по id. Фонд дивидендов и выплата на акцию видны в котировках.
 /datum/unit_test/economy_trading/ui/orders/Run()
 	var/mob/living/carbon/human/user = make_user(5000)
 	var/datum/bank_account/own = econ_account_of(user)

@@ -64,13 +64,13 @@ test('доска показывает, кто взял контракт, сро�
   expect(ui.getByText('Взявший контракт получает 30% награды, остальное - отделу.')).toBeTruthy();
 });
 
-test('«Взять» шлёт take с uid', () => {
+test('"Взять" шлёт take с uid', () => {
   const ui = setup();
   fireEvent.click(ui.getByText('Взять'));
   expect(sent(ui.topic, 'take')).toEqual([{ uid: 1 }]);
 });
 
-test('без счёта «Взять» неактивна', () => {
+test('без счёта "Взять" неактивна', () => {
   const noAccount = setup({ my_account: null });
   fireEvent.click(noAccount.getByText('Взять'));
   expect(sent(noAccount.topic, 'take')).toEqual([]);

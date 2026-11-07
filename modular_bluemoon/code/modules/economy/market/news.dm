@@ -24,7 +24,7 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 	RegisterSignal(src, COMSIG_MARKET_PARTNER_UNLOCKED, PROC_REF(on_partner_unlocked), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_COMPANY_EVENT, PROC_REF(on_company_event), override = TRUE)
 
-/// Закрытый канал «Сводка сектора», создаётся при первом обращении.
+/// Закрытый канал "Сводка сектора", создаётся при первом обращении.
 /datum/controller/subsystem/market/proc/news_channel()
 	for(var/datum/news/feed_channel/channel as anything in GLOB.news_network.network_channels)
 		if(channel.channel_name == MARKET_NEWS_CHANNEL)

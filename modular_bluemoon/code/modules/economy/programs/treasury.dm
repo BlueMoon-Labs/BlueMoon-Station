@@ -281,7 +281,7 @@
 			else if(isnull(amount) || !(amount >= 1))
 				messages[user_ref] = "Неверная сумма."
 			else if(SSeconomy.treasury_transfer(target, amount, user))
-				messages[user_ref] = "В бюджет «[target.name]» переведено [round(amount)] кр.[econ_shield_note(target)]"
+				messages[user_ref] = "В бюджет \"[target.name]\" переведено [round(amount)] кр.[econ_shield_note(target)]"
 			else
 				messages[user_ref] = "В казне не хватает денег."
 		if("move_budget")
@@ -293,9 +293,9 @@
 			else if(isnull(amount) || !(amount >= 1))
 				messages[user_ref] = "Неверная сумма."
 			else if(SSeconomy.department_transfer(source, target, amount, user))
-				messages[user_ref] = "Из бюджета «[source.name]» в «[target.name]» переведено [round(amount)] кр.[econ_shield_note(target, FALSE)]"
+				messages[user_ref] = "Из бюджета \"[source.name]\" в \"[target.name]\" переведено [round(amount)] кр.[econ_shield_note(target, FALSE)]"
 			else
-				messages[user_ref] = "В бюджете «[source.name]» не хватает денег."
+				messages[user_ref] = "В бюджете \"[source.name]\" не хватает денег."
 		if("resolve_request")
 			var/datum/econ_request/treasury/request = find_request(params["uid"])
 			var/approve = econ_ui_number(params["approve"])
@@ -337,15 +337,15 @@
 			else if(!department)
 				messages[user_ref] = "Нет такого отдела."
 			else if(account.department_id == department.id)
-				messages[user_ref] = "[account.account_holder] уже получает зарплату из бюджета «[department.name]»."
+				messages[user_ref] = "[account.account_holder] уже получает зарплату из бюджета \"[department.name]\"."
 			else
 				account.department_id = department.id
 				account.owed_wages = 0
 				account.wage_bonus = 0
 				log_econ("[key_name(user)] перевёл оклад счёта [account.account_holder] №[account.account_id] на бюджет [department.name]")
 				var/no_grade = account.pay_grade ? "" : " Грейд не назначен: пока его нет, оклад не платится и NT платит только минимум [SSeconomy.settings.wage_floor] кр."
-				account.bank_card_talk("Зарплату вам теперь платит бюджет отдела «[department.name]».[no_grade]")
-				messages[user_ref] = "[account.account_holder] теперь получает зарплату из бюджета «[department.name]».[no_grade]"
+				account.bank_card_talk("Зарплату вам теперь платит бюджет отдела \"[department.name]\".[no_grade]")
+				messages[user_ref] = "[account.account_holder] теперь получает зарплату из бюджета \"[department.name]\".[no_grade]"
 		if("toggle_block")
 			var/datum/bank_account/account = crew_account(params["number"])
 			if(!account)
@@ -420,7 +420,7 @@
 	. = list(
 		"<h2>Выписка по счёту</h2><hr>",
 		"<p><b>Владелец:</b> [account.account_holder]<br><b>Номер:</b> [account.account_id]<br><b>Баланс:</b> [num2text(account.account_balance, ECON_TEXT_DIGITS)] кр.<br><b>Состояние:</b> [account_status_text(account)]</p>",
-		"<p><b>Оклад:</b> [account.pay_grade && department ? "[GLOB.econ_pay_grade_names[account.pay_grade]], [account.wage_amount()] кр. из бюджета «[department.name]»" : "не платится ([account.pay_grade ? "нет отдела" : "грейд не назначен"])[account.nt_floor_crew() ? ", NT платит минимум [SSeconomy.settings.wage_floor] кр." : ""]"]</p>",
+		"<p><b>Оклад:</b> [account.pay_grade && department ? "[GLOB.econ_pay_grade_names[account.pay_grade]], [account.wage_amount()] кр. из бюджета \"[department.name]\"" : "не платится ([account.pay_grade ? "нет отдела" : "грейд не назначен"])[account.nt_floor_crew() ? ", NT платит минимум [SSeconomy.settings.wage_floor] кр." : ""]"]</p>",
 		"<table width='100%'><tr><td><b>Время</b></td><td><b>Операция</b></td><td><b>Вторая сторона</b></td><td align='right'><b>Сумма</b></td></tr>",
 	)
 	for(var/datum/transaction/entry in account.transaction_history)

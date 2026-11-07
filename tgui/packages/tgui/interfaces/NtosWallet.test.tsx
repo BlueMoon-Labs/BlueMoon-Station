@@ -91,7 +91,7 @@ describe('NtosWallet', () => {
   test('счёт: баланс, расшифровка зарплаты, налог, долг и аудит', () => {
     const { container } = setup();
     const content = text(container);
-    expect(content).toContain('Иван Петров · №123456');
+    expect(content).toContain('Иван Петров, счёт №123456');
     expect(content).toContain('1 500 кр.');
     expect(content).toContain('Налог 12%');
     expect(content).toContain('50% налога забирает NT, остальное получает казна');
@@ -104,7 +104,7 @@ describe('NtosWallet', () => {
     expect(content).toContain('Медицина (№111)');
   });
 
-  test('без оклада или отдела - минимум NT, а не «не начисляется»', () => {
+  test('без оклада или отдела - минимум NT, а не "не начисляется"', () => {
     const fired = text(setup({ wage: { ...base.wage!, grade: null, department: null, amount: 0, floor_only: 1 } }).container);
     expect(fired).toContain('Оклада нет: отдел не платит, NT платит минимум 30 кр. раз в 10 мин.');
     expect(fired).not.toContain('Не начисляется');

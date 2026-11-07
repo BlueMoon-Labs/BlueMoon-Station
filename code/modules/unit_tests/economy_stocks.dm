@@ -245,7 +245,7 @@
 		expected *= 1 + effect
 	TEST_ASSERT(abs(company.price - expected) / expected < 0.0001, "Цена [company.price] вместо [expected]: пол множителя событий съел падение")
 
-/// Начало тревоги «дельта» бьёт по НТ; уровень тревоги возвращается.
+/// Начало тревоги "дельта" бьёт по НТ; уровень тревоги возвращается.
 /datum/unit_test/economy_stocks/delta/Run()
 	var/datum/stock_company/nt = SSmarket.get_company("NTRN")
 	var/before = nt.price

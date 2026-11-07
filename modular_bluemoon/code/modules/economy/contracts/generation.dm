@@ -98,7 +98,7 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 		var/regular = 0
 		for(var/datum/econ_contract/contract as anything in department.contracts.Copy())
 			if(contract.is_expired())
-				contract.taker?.bank_card_talk("Срок контракта «[contract.title]» истёк, контракт снят.")
+				contract.taker?.bank_card_talk("Срок контракта \"[contract.title]\" истёк, контракт снят.")
 				qdel(contract)
 			else if(contract_rotates(contract, force))
 				qdel(contract)

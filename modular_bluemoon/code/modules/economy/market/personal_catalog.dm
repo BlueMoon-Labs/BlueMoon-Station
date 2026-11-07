@@ -35,7 +35,7 @@ GLOBAL_LIST_INIT(econ_personal_catalog, typecacheof(list(
 /proc/econ_personal_catalog_pack(datum/supply_pack/pack)
 	return !!GLOB.econ_personal_catalog[pack?.type]
 
-/// Группа «Личный каталог» окна снабжения: те же паки, что в своих группах, с пометкой.
+/// Группа "Личный каталог" окна снабжения: те же паки, что в своих группах, с пометкой.
 /proc/econ_personal_catalog_group(show_contraband_partners)
 	var/list/packs = list()
 	for(var/pack_type in GLOB.econ_personal_catalog)

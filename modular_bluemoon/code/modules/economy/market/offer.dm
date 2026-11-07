@@ -102,10 +102,10 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 /datum/market_offer/proc/deliver(atom/movable/shipment, datum/export_report/report, allowed_categories = EXPORT_CARGO)
 	. = 0
 	if(!accepted || !open() || delivered >= quantity)
-		add_note(report, "Спецзаказ «[wanted_name]» уже не принимает груз, ящик продан обычным порядком.")
+		add_note(report, "Спецзаказ \"[wanted_name]\" уже не принимает груз, ящик продан обычным порядком.")
 		return
 	if(contraband() && !(allowed_categories & EXPORT_CONTRABAND))
-		add_note(report, "Спецзаказ «[wanted_name]» принимает только отгрузка с допуском контрабанды, ящик продан обычным порядком.")
+		add_note(report, "Спецзаказ \"[wanted_name]\" принимает только отгрузка с допуском контрабанды, ящик продан обычным порядком.")
 		return
 	var/units_before = delivered
 	var/premium = 0
@@ -132,7 +132,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(.)
 	log_econ("Спецзаказ #[uid] партнёра [partner.name]: принято [units] x [wanted_name] ([delivered]/[quantity]), выплата [.] кр., премия к выполнению [premium] кр.")
-	add_note(report, "Спецзаказ [partner.name]: принято [units] шт. «[wanted_name]» ([delivered] из [quantity]), [.] кр.")
+	add_note(report, "Спецзаказ [partner.name]: принято [units] шт. \"[wanted_name]\" ([delivered] из [quantity]), [.] кр.")
 	if(delivered >= quantity)
 		complete(report)
 
@@ -165,7 +165,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 /datum/market_offer/proc/fail()
 	var/datum/trade_partner/partner = get_partner()
 	partner?.add_reputation(-MARKET_OFFER_REPUTATION_FAIL)
-	var/notice = "Спецзаказ [partner?.name] «[wanted_name]» провален: срок вышел, принято [delivered] из [quantity], маржи не будет. Репутация у партнёра -[MARKET_OFFER_REPUTATION_FAIL][partner?.company ? ", оценка акций [partner.company] -[MARKET_OFFER_FAIL_STOCK_SHOCK * 100]%" : ""]."
+	var/notice = "Спецзаказ [partner?.name] \"[wanted_name]\" провален: срок вышел, принято [delivered] из [quantity], маржи не будет. Репутация у партнёра -[MARKET_OFFER_REPUTATION_FAIL][partner?.company ? ", оценка акций [partner.company] -[MARKET_OFFER_FAIL_STOCK_SHOCK * 100]%" : ""]."
 	if(contraband())
 		SSmarket.contraband_message = SSmarket.contraband_message ? "[SSmarket.contraband_message] [notice]" : notice
 	else
@@ -176,9 +176,9 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 
 /datum/market_offer/proc/requirement_text()
 	if(!wanted_reagent)
-		return "«[wanted_name]»"
+		return "\"[wanted_name]\""
 	var/datum/reagent/reagent_type = wanted_reagent
-	return "«[wanted_name]», в каждой не меньше [wanted_volume] ед. [initial(reagent_type.name)]"
+	return "\"[wanted_name]\", в каждой не меньше [wanted_volume] ед. [initial(reagent_type.name)]"
 
 /datum/market_offer/proc/ui_entry()
 	var/datum/trade_partner/partner = get_partner()

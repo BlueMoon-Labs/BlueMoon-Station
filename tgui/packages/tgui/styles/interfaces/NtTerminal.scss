@@ -62,6 +62,9 @@ $nt-tones: (
 
 .NtTerm {
   min-height: 100%;
+  // Темы КПК задают моноширинный шрифт всему окну; экрану нужен обычный
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 12px;
   line-height: 1.5;
   color: $nt-text;
   background-color: $nt-bg;
@@ -78,8 +81,7 @@ $nt-tones: (
     display: flex;
     align-items: flex-end;
     gap: 16px;
-    padding: 10px 14px 8px;
-    border-bottom: 1px solid var(--nt-accent-line);
+    padding: 12px 14px 10px;
   }
 
   &__brand {
@@ -98,11 +100,9 @@ $nt-tones: (
   }
 
   &__device {
-    font-family: $nt-mono;
     color: var(--nt-accent);
     font-size: 14px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    font-weight: bold;
   }
 
   &__status {
@@ -116,19 +116,24 @@ $nt-tones: (
     text-align: right;
   }
 
+  // Меню - вкладки с подчёркиванием: одна линия под меню отделяет его от рабочей области
   &__menu {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px 14px;
-    padding: 6px 14px;
+    gap: 0 4px;
+    padding: 0 10px;
+    border-top: 1px solid $nt-faint;
     border-bottom: 1px solid $nt-faint;
   }
 
   &__menuItem {
-    padding: 1px 6px;
+    padding: 6px 8px 5px;
+    margin-bottom: -1px;
     color: $nt-dim;
     cursor: pointer;
     outline: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
   }
 
   &__menuItem:hover,
@@ -138,8 +143,8 @@ $nt-tones: (
 
   &__menuItem--active,
   &__menuItem--active:hover {
-    color: $nt-bg;
-    background-color: var(--nt-accent);
+    color: var(--nt-accent);
+    border-bottom-color: var(--nt-accent);
   }
 
   &__menuKey {
@@ -154,8 +159,149 @@ $nt-tones: (
   }
 
   &__menuItem--active &__menuCount {
-    color: $nt-bg;
     font-weight: bold;
+  }
+
+  // График цены: линия по тренду, слабая заливка под ней, пунктир базовой цены
+  &__chart {
+    position: relative;
+    margin: 4px 0 10px;
+    border-left: 1px solid $nt-faint;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__chart--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $nt-dim;
+  }
+
+  &__chartLine {
+    fill: none;
+    stroke-width: 2;
+  }
+
+  &__chart--up &__chartLine {
+    stroke: $nt-good;
+  }
+
+  &__chart--down &__chartLine {
+    stroke: $nt-bad;
+  }
+
+  &__chart--up &__chartFill {
+    fill: rgba($nt-good, 0.08);
+  }
+
+  &__chart--down &__chartFill {
+    fill: rgba($nt-bad, 0.08);
+  }
+
+  &__chartBase {
+    stroke: $nt-dim;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+  }
+
+  &__chartMax,
+  &__chartMin,
+  &__chartBaseLabel {
+    position: absolute;
+    right: 4px;
+    font-family: $nt-mono;
+    font-size: 10px;
+    color: $nt-dim;
+    pointer-events: none;
+  }
+
+  &__chartMax {
+    top: 2px;
+  }
+
+  &__chartMin {
+    bottom: 2px;
+  }
+
+  &__chartBaseLabel {
+    left: 6px;
+    right: auto;
+    transform: translateY(-115%);
+  }
+
+  // Плитки котировок: цвет фона - сила движения цены, рамка - выбранная компания
+  &__tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  &__tile {
+    position: relative;
+    padding: 6px 8px;
+    border: 1px solid $nt-faint;
+    cursor: pointer;
+    min-width: 0;
+  }
+
+  &__tile:hover {
+    border-color: $nt-dim;
+  }
+
+  &__tile--selected,
+  &__tile--selected:hover {
+    border-color: var(--nt-accent);
+    box-shadow: inset 0 0 0 1px var(--nt-accent);
+  }
+
+  &__tile--held::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-style: solid;
+    border-width: 0 9px 9px 0;
+    border-color: transparent var(--nt-accent) transparent transparent;
+  }
+
+  &__tileHead {
+    display: flex;
+    justify-content: space-between;
+    font-family: $nt-mono;
+  }
+
+  &__tileName {
+    color: $nt-dim;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__tilePrice {
+    font-family: $nt-mono;
+    font-size: 15px;
+  }
+
+  // Полоса распределения портфеля
+  &__alloc {
+    display: flex;
+    height: 10px;
+    margin: 4px 0 8px;
+    background-color: $nt-faint;
+  }
+
+  &__allocPart {
+    height: 100%;
+    border-right: 1px solid $nt-bg;
+  }
+
+  &__allocKey {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
   }
 
   &__contract {
@@ -257,8 +403,9 @@ $nt-tones: (
   &__tape {
     overflow: hidden;
     white-space: nowrap;
-    padding: 3px 0;
-    border-bottom: 1px solid $nt-faint;
+    padding: 4px 0;
+    border-top: 1px solid $nt-faint;
+    background-color: rgba(255, 255, 255, 0.015);
     color: $nt-dim;
     font-family: $nt-mono;
     font-size: 11px;
@@ -287,7 +434,11 @@ $nt-tones: (
   }
 
   &__frame {
-    margin-bottom: 14px;
+    margin-bottom: 20px;
+  }
+
+  &__frame:last-child {
+    margin-bottom: 4px;
   }
 
   &__frameHead {
@@ -299,8 +450,22 @@ $nt-tones: (
 
   &__frameTitle {
     color: var(--nt-accent);
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  &__frame--minor {
+    margin-bottom: 12px;
+    padding: 8px 10px 6px;
+    border: 1px solid $nt-faint;
+    background-color: rgba(255, 255, 255, 0.012);
+  }
+
+  &__frame--minor &__frameTitle {
+    color: $nt-text;
+  }
+
+  &__frame--minor &__frameRule {
+    background-color: transparent;
   }
 
   &__frameRule {
@@ -320,8 +485,6 @@ $nt-tones: (
   &__statLabel {
     color: $nt-dim;
     font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
   }
 
   &__statValue {
@@ -347,7 +510,21 @@ $nt-tones: (
     display: flex;
     align-items: baseline;
     gap: 6px;
-    padding: 1px 0;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  &__line:last-child {
+    border-bottom: none;
+  }
+
+  // Чек кассы - единственное место с отточием: так печатают чеки
+  &__receipt &__lineDots {
+    border-bottom: 1px dotted $nt-faint;
+  }
+
+  &__receipt &__line {
+    border-bottom: none;
   }
 
   &__lineLabel {
@@ -357,7 +534,6 @@ $nt-tones: (
   &__lineDots {
     flex: 1;
     min-width: 12px;
-    border-bottom: 1px dotted $nt-faint;
   }
 
   &__line--good &__lineValue {
@@ -430,18 +606,16 @@ $nt-tones: (
 
   &__tag {
     margin-left: 8px;
+    padding: 0 4px;
     color: $nt-dim;
     font-size: 11px;
+    border: 1px solid $nt-faint;
   }
 
-  &__tag::before {
-    content: '[';
-  }
 
-  &__tag::after {
-    content: ']';
-  }
+}
 
+body .NtTerm {
   .color-label {
     color: $nt-dim !important;
   }
@@ -524,8 +698,12 @@ $nt-tones: (
     padding-bottom: 3px;
   }
 
+  .Table__row:not(.Table__row--header) > .Table__cell {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
   .candystripe:nth-child(odd) {
-    background-color: rgba(255, 255, 255, 0.025);
+    background-color: transparent;
   }
 
   .LabeledList__label {
@@ -543,6 +721,8 @@ $nt-tones: (
   }
 
   .NoticeBox {
+    font-style: normal;
+    font-weight: normal;
     color: $nt-text;
     background-color: $nt-panel;
     background-image: none;

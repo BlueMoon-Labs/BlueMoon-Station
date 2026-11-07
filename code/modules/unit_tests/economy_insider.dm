@@ -69,8 +69,8 @@
 	for(var/list/template as anything in SSmarket.company_event_templates)
 		if(template["effect"] > 0 && abs(template["effect"] - effect) < 0.001 && replacetext(template["headline"], "%NAME%", company.name) == headline)
 			matched = TRUE
-	TEST_ASSERT(matched, "Сдвиг [effect] и заголовок «[headline]» не совпадают ни с одним настоящим хорошим событием")
-	TEST_ASSERT(findtext(jointext(SSmarket.pending_news, "|"), html_encode(headline)), "Новость о релизе не ушла в «Сводку сектора»")
+	TEST_ASSERT(matched, "Сдвиг [effect] и заголовок \"[headline]\" не совпадают ни с одним настоящим хорошим событием")
+	TEST_ASSERT(findtext(jointext(SSmarket.pending_news, "|"), html_encode(headline)), "Новость о релизе не ушла в \"Сводку сектора\"")
 	var/datum/market_event/refutation = queued_refutation(company)
 	TEST_ASSERT_NOTNULL(refutation, "Опровержение не встало в очередь")
 	TEST_ASSERT(abs(refutation.eta - world.time - SSeconomy.settings.press_release_refute_minutes MINUTES) < 1 SECONDS, "Срок опровержения не от выхода фальшивки")
@@ -112,7 +112,7 @@
 	TEST_ASSERT(abs(company.event_mult - 2.9) < 0.0001, "Накопленный эффект после опровержения [company.event_mult]")
 	TEST_ASSERT(abs(company.price - company.base_price * 4.9) < 0.01, "Цена после опровержения [company.price]")
 
-/// «Купил после плохой новости - продал после опровержения» в игре даёт модельный выигрыш; по общему расчёту ожидание лучшей публичной стратегии ниже порога окупаемости, на тихой бирже и при опасном кулдауне релиз не принимается, а конфиг поднимает кулдаун.
+/// "Купил после плохой новости - продал после опровержения" в игре даёт модельный выигрыш; по общему расчёту ожидание лучшей публичной стратегии ниже порога окупаемости, на тихой бирже и при опасном кулдауне релиз не принимается, а конфиг поднимает кулдаун.
 /datum/unit_test/economy_trading/insider/refutation_expectation/Run()
 	var/datum/bank_account/trader = new_trader(50000)
 	var/price_before = company.price
@@ -295,7 +295,7 @@
 	var/list/flags = insider_flags(pumper)
 	TEST_ASSERT_EQUAL(length(flags), 1, "Покупка перед релизом не замечена")
 	var/datum/econ_audit_flag/flag = flags[1]
-	TEST_ASSERT(findtext(flag.text, "фальшивого пресс-релиза «[headline]»"), "Дело не говорит, что новость фальшивая: [flag.text]")
+	TEST_ASSERT(findtext(flag.text, "фальшивого пресс-релиза \"[headline]\""), "Дело не говорит, что новость фальшивая: [flag.text]")
 	TEST_ASSERT_EQUAL(length(insider_flags(stale)), 0, "Сделка старше окна попала в дело")
 	release_on_tick(queued_refutation(company))
 
@@ -312,7 +312,7 @@
 	flags = insider_flags(author)
 	TEST_ASSERT_EQUAL(length(flags), 1, "Автор фальшивки не пойман опровержением")
 	flag = flags[1]
-	TEST_ASSERT(findtext(flag.text, "после фальшивого пресс-релиза «[fake_headline]»"), "Дело не говорит о фальшивке: [flag.text]")
+	TEST_ASSERT(findtext(flag.text, "после фальшивого пресс-релиза \"[fake_headline]\""), "Дело не говорит о фальшивке: [flag.text]")
 	TEST_ASSERT_EQUAL(length(insider_flags(dip_buyer)), 0, "Мелкая покупка на просадке попала в дело")
 
 /// Экран пейджера показывает настоящее событие в очереди со сроком и не показывает фальшивку и её опровержение.

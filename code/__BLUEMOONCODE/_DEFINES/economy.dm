@@ -320,7 +320,7 @@
 #define PARTNER_UNLOCK_SPONSORS 2
 /// Встроенный партнёр, который продаёт и покупает всё: на него откатывается конфиг без такого партнёра
 #define PARTNER_UNIVERSAL_ID "nt_logistics"
-/// Ключ «любой товар» в buys и «любая группа» в sells_groups
+/// Ключ "любой товар" в buys и "любая группа" в sells_groups
 #define PARTNER_ANY "*"
 /// Пределы случайного множителя спецзаказа к цене единицы
 #define MARKET_OFFER_MULT_MIN 1.5
@@ -354,7 +354,7 @@
 #define STOCK_EVENT_ETA_MAX (5 MINUTES)
 /// Одно и то же событие станции двигает акции не чаще раза в это время
 #define STOCK_STATION_EVENT_COOLDOWN (10 MINUTES)
-/// Ключ «все компании» в market.station_events
+/// Ключ "все компании" в market.station_events
 #define STOCK_ALL_COMPANIES "*"
 /// Ключ события-опровержения фальшивого пресс-релиза
 #define STOCK_REFUTATION_KEY "refutation"

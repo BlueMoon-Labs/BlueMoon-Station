@@ -209,7 +209,7 @@ describe('NtosDepartmentBudget', () => {
         '/datum/supply_pack/medical/bloodpacks': { price: 900, available: 1 },
       },
     });
-    expect(text(container)).toContain('Surgical Kit», 1 200 кр., ещё 25 мин.');
+    expect(text(container)).toContain('Surgical Kit, 1 200 кр., ещё 25 мин.');
     expect(text(container)).toContain('500 кр. недавних поступлений пока не считаются излишком');
     expect(text(container)).toContain('Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.');
     fireEvent.click(getByText('Каталог'));

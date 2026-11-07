@@ -59,7 +59,7 @@ const sent = (topic, action) =>
     .filter((message) => message.type === `act/${action}`)
     .map((message) => (message.payload ? JSON.parse(message.payload) : {}));
 
-test('пункт подработки: «Взять» шлёт take с uid, «Отправить» - send, «Проверить» - recalc', () => {
+test('пункт подработки: "Взять" шлёт take с uid, "Отправить" - send, "Проверить" - recalc', () => {
   const ui = setup();
   expect(ui.getByText('Ваш контракт')).toBeTruthy();
   expect(ui.getByText('Смена через 1:01')).toBeTruthy();

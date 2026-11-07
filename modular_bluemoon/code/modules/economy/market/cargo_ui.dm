@@ -272,7 +272,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		return "Закрыт для станции."
 	if(partner.unlock["partner"])
 		var/datum/trade_partner/sponsor = SSmarket.get_partner(partner.unlock["partner"])
-		return "Откроется, когда репутация у партнёра «[sponsor?.name]» дойдёт до ступени [partner.unlock["tier"]]."
+		return "Откроется, когда репутация у партнёра \"[sponsor?.name]\" дойдёт до ступени [partner.unlock["tier"]]."
 	return "Откроется, когда у [PARTNER_UNLOCK_SPONSORS] открытых партнёров репутация дойдёт до ступени [partner.unlock["any_two_tier"]]."
 
 /proc/econ_cargo_partners_data(show_contraband)

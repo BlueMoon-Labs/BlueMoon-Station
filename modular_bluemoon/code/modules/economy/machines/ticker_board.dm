@@ -78,7 +78,7 @@
 
 /obj/structure/sign/ticker_board/proc/ticker_line(datum/stock_company/company)
 	if(company.is_halted())
-		// В TinyUnicode нет кириллицы: «СТОП» ушёл бы в запасной крупный шрифт и сломал строку
+		// В TinyUnicode нет кириллицы: "СТОП" ушёл бы в запасной крупный шрифт и сломал строку
 		return "<span style='color:#f4b400'>[company.ticker] STOP</span>"
 	var/change = company.change_percent()
 	var/color = change > 0 ? "#66ff66" : (change < 0 ? "#ff6666" : "#cccccc")
@@ -93,7 +93,7 @@
 			. += "[ticker] ([company.name]): торги остановлены."
 		else
 			. += "[ticker] ([company.name]): [round(company.price, 0.01)] кр., [SSmarket.signed_percent(company.change_percent())]."
-	. += span_notice("Новости компаний выходят в канале «[MARKET_NEWS_CHANNEL]» на ньюскастерах, торговать можно в программе «Биржа» КПК и на терминале биржи.")
+	. += span_notice("Новости компаний выходят в канале \"[MARKET_NEWS_CHANNEL]\" на ньюскастерах, торговать можно в программе \"Биржа\" КПК и на терминале биржи.")
 
 /obj/structure/sign/ticker_board/wrench_act(mob/living/user, obj/item/tool)
 	. = TRUE

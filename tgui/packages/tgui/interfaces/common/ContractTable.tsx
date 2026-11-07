@@ -16,7 +16,7 @@ const formatTimeLeft = (seconds: number) => {
   return `${minutes}:${rest}`;
 };
 
-/** «12 из 30» и подобное: доля для полоски прогресса, если её можно прочитать. */
+/** "12 из 30" и подобное: доля для полоски прогресса, если её можно прочитать. */
 const progressShare = (progress?: string | null) => {
   const match = /(\d+(?:[.,]\d+)?)\D+(\d+(?:[.,]\d+)?)/.exec(progress || '');
   if (!match) {
@@ -101,7 +101,7 @@ const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null
   );
 };
 
-/** Доска контрактов NT: кнопка «Взять» шлёт act('take', { uid }); readOnly - только просмотр. */
+/** Доска контрактов NT: кнопка "Взять" шлёт act('take', { uid }); readOnly - только просмотр. */
 export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }) => {
   const { showShare = true, readOnly = false } = props;
   const { data } = useBackend<ContractBoardData>();

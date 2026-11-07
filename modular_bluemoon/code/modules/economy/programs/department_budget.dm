@@ -267,10 +267,10 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 
 /datum/computer_file/program/department_budget/proc/order_refusal(datum/economy_department/department, datum/supply_pack/pack)
 	if(econ_pack_unavailable(pack))
-		return "«[pack.name]» нет в наличии у партнёров снабжения."
+		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
 	var/price = round(econ_pack_price(pack))
 	if(department.account.account_balance < price)
-		return "В бюджете не хватает денег: «[pack.name]» стоит [price] кр."
+		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
 	return "Заказ не оформлен."
 
 /datum/computer_file/program/department_budget/proc/budget_act(mob/living/user, action, list/params)
@@ -317,9 +317,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
 			else if(department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: «[pack.name]». [SSeconomy.settings.saving_goal_minutes] мин. её цена не считается излишком."
+				messages[user_ref] = "Цель накопления: \"[pack.name]\". [SSeconomy.settings.saving_goal_minutes] мин. её цена не считается излишком."
 			else if(department.saving_goal_amount())
-				messages[user_ref] = "Цель уже выбрана: «[department.saving_goal.name]». Снимите её, чтобы выбрать другую."
+				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal.name]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())
 				messages[user_ref] = "Новую цель можно поставить через [department.saving_goal_cooldown_minutes()] мин."
 			else
@@ -331,7 +331,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(!can_manage)
 				messages[user_ref] = manage_refusal
 			else
-				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "«[pack.name]» заказан, деньги списаны из бюджета." : order_refusal(department, pack)
+				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "\"[pack.name]\" заказан, деньги списаны из бюджета." : order_refusal(department, pack)
 		if("bonus")
 			var/datum/bank_account/member = staff_member(department, params["number"])
 			var/amount = econ_ui_number(params["amount"])
@@ -405,4 +405,4 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	var/datum/static_host = console || src
 	static_host.update_static_data(user)
 	var/datum/economy_department/department = SSeconomy.get_department(id)
-	return "Открыт бюджет отдела «[department.name]»."
+	return "Открыт бюджет отдела \"[department.name]\"."

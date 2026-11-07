@@ -525,7 +525,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 		won_amount = SSmarket.pay_slot_jackpot(user)
 		balance += won_amount
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/jackpot.ogg', 80, TRUE)
-		visible_message("<b>[src]</b> объявляет: «ДЖЕКПОТ СЕКТОРА! Выигрыш [won_amount] кр.!»")
+		visible_message("<b>[src]</b> объявляет: \"ДЖЕКПОТ СЕКТОРА! Выигрыш [won_amount] кр.!\"")
 		SSmarket.announce_slot_jackpot(user ? user.real_name : usrname, get_area(src), won_amount)
 		jackpots += 1
 		result_message = "🎉 ДЖЕКПОТ! +[won_amount] кр.!"
@@ -538,7 +538,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	else if(linelength == 5)
 		won_amount = give_money(round(BIG_PRIZE_BASE * bet_multiplier * bonus_multiplier))
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 60, TRUE)
-		visible_message("<b>[src]</b> объявляет: «Крупный выигрыш: [won_amount] кр.!»")
+		visible_message("<b>[src]</b> объявляет: \"Крупный выигрыш: [won_amount] кр.!\"")
 		result_message = "КРУПНЫЙ ВЫИГРЫШ! +[won_amount] кр.!"
 		if(bonus_active)
 			result_message += " (бонус x[bonus_multiplier]!)"
@@ -553,7 +553,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	else if(linelength == 4)
 		won_amount = give_money(round(SMALL_PRIZE_BASE * bet_multiplier * bonus_multiplier))
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
-		visible_message("<b>[src]</b> объявляет: «Выигрыш: [won_amount] кр.!»")
+		visible_message("<b>[src]</b> объявляет: \"Выигрыш: [won_amount] кр.!\"")
 		result_message = "Выигрыш! +[won_amount] кр.!"
 		if(bonus_active)
 			result_message += " (бонус x[bonus_multiplier]!)"

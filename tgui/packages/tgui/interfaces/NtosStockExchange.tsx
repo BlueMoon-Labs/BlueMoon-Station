@@ -1,12 +1,12 @@
-import { BooleanLike } from 'common/react';
+import { BooleanLike, classes } from 'common/react';
 import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Dropdown, NoticeBox, RestrictedInput, Stack, Table, Tooltip } from '../components';
+import { Box, Button, Dropdown, NoticeBox, RestrictedInput, Stack, Table } from '../components';
 import { NtosWindow, Window } from '../layouts';
-import { ChangeBadge, Credits, EconomyLogo, formatCredits, Sparkline, StockEntry } from './common/Economy';
-import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { ChangeBadge, Credits, EconomyLogo, formatCredits, StockEntry } from './common/Economy';
+import { NtChart, NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type CompanyEntry = Omit<StockEntry, 'history'> & {
   base_price: number;
@@ -101,7 +101,7 @@ const Tape = () => {
     <span key={`${company.ticker}-${copy}`} className="NtTerm__tapeItem">
       <b>{company.ticker}</b> {company.price.toFixed(2)}{' '}
       <span className={company.change > 0 ? 'color-good' : company.change < 0 ? 'color-bad' : undefined}>
-        {company.halted ? 'стоп' : `${company.change > 0 ? '▲' : company.change < 0 ? '▼' : '·'}${Math.abs(company.change)}%`}
+        {company.halted ? 'стоп' : `${company.change > 0 ? '▲' : company.change < 0 ? '▼' : ''}${Math.abs(company.change)}%`}
       </span>
     </span>
   ));
@@ -178,63 +178,103 @@ const DriverList = (props: { drivers: PriceDriver[] }) => (
   </>
 );
 
+/** Подсветка плитки: зелёная при росте, красная при падении, тем гуще, чем сильнее движение. */
+const tileTint = (change: number) => {
+  const strength = Math.min(Math.abs(change) / 20, 1) * 0.22;
+  if (!strength) {
+    return undefined;
+  }
+  return change > 0 ? `rgba(111, 220, 140, ${strength})` : `rgba(255, 107, 94, ${strength})`;
+};
+
+const QuoteTile = (props: { company: CompanyEntry; held: number; selected: boolean; onSelect: () => void }) => {
+  const { company, held, selected, onSelect } = props;
+  return (
+    <div
+      className={classes(['NtTerm__tile', selected && 'NtTerm__tile--selected', held > 0 && 'NtTerm__tile--held'])}
+      style={{ backgroundColor: tileTint(company.change) }}
+      onClick={onSelect}>
+      <div className="NtTerm__tileHead">
+        <b>{company.ticker}</b>
+        {company.halted ? <span className="color-bad">стоп</span> : <ChangeBadge percent={company.change} />}
+      </div>
+      <div className="NtTerm__tileName">{company.name}</div>
+      <div key={company.price} className="NtTerm__tilePrice NtTerm__flash">
+        {company.price.toFixed(2)}
+      </div>
+    </div>
+  );
+};
+
+/** Котировки: плитки всех компаний и крупно - выбранная, с графиком, сносками и сделками. */
 const QuotesSection = () => {
   const { data } = useBackend<StockExchangeData>();
+  const firstHeld = data.companies.find((company) => (data.holdings[company.ticker] || 0) > 0);
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
+  const company =
+    data.companies.find((entry) => entry.ticker === selectedTicker) || firstHeld || data.companies[0];
+  if (!company) {
+    return <NtEmpty>Биржа закрыта.</NtEmpty>;
+  }
+  const held = data.holdings[company.ticker] || 0;
+  const wait = data.cooldowns[company.ticker] || 0;
+  const drivers = data.drivers?.[company.ticker] || [];
   return (
-    <NtFrame title="Котировки">
-      <Table>
-        <Table.Row header>
-          <Table.Cell>Тикер</Table.Cell>
-          <Table.Cell>Компания</Table.Cell>
-          <Table.Cell collapsing>За час</Table.Cell>
-          <Table.Cell collapsing textAlign="right">
-            Цена
-          </Table.Cell>
-          <Table.Cell collapsing>Изменение</Table.Cell>
-          <Table.Cell collapsing>У вас</Table.Cell>
-          <Table.Cell collapsing />
-        </Table.Row>
-        {data.companies.map((company) => {
-          const held = data.holdings[company.ticker] || 0;
-          return (
-            <Table.Row key={company.ticker} className="candystripe">
-              <Table.Cell bold collapsing className="NtTerm__num">
-                {company.index ? (
-                  <Box inline style={{ width: '32px', marginRight: '0.5em' }} />
-                ) : (
-                  <EconomyLogo id={company.ticker} />
-                )}
-                {company.ticker}
-              </Table.Cell>
-              <Table.Cell>
-                <Tooltip content={<DriverList drivers={data.drivers?.[company.ticker] || []} />}>
-                  <Box inline style={{ borderBottom: '1px dotted', cursor: 'help' }}>
-                    {company.name}
-                  </Box>
-                </Tooltip>
-              </Table.Cell>
-              <Table.Cell collapsing>
-                <Sparkline values={data.history[company.ticker] || []} />
-              </Table.Cell>
-              <Table.Cell collapsing textAlign="right" nowrap>
-                <span key={company.price} className="NtTerm__num NtTerm__flash">
-                  {company.price.toFixed(2)}
-                </span>
-              </Table.Cell>
-              <Table.Cell collapsing>
-                <ChangeBadge percent={company.change} />
-              </Table.Cell>
-              <Table.Cell collapsing nowrap>
-                {held} шт.{held > 0 && ` · ${formatCredits(held * company.price)}`}
-              </Table.Cell>
-              <Table.Cell collapsing nowrap>
-                <TradeButtons company={company} held={held} wait={data.cooldowns[company.ticker] || 0} />
-              </Table.Cell>
-            </Table.Row>
-          );
-        })}
-      </Table>
-    </NtFrame>
+    <>
+      <div className="NtTerm__tiles">
+        {data.companies.map((entry) => (
+          <QuoteTile
+            key={entry.ticker}
+            company={entry}
+            held={data.holdings[entry.ticker] || 0}
+            selected={entry.ticker === company.ticker}
+            onSelect={() => setSelectedTicker(entry.ticker)}
+          />
+        ))}
+      </div>
+      <NtFrame
+        title={
+          <>
+            {!company.index && <EconomyLogo id={company.ticker} />}
+            {company.ticker} {company.name}
+          </>
+        }>
+        <Stack align="flex-end" mb={0.5} wrap>
+          <Stack.Item grow>
+            <Box className="NtTerm__num" fontSize={1.9} lineHeight={1.1}>
+              {company.price.toFixed(2)}
+            </Box>
+            <Box>
+              <ChangeBadge percent={company.change} />
+              <span className="NtTerm__hint"> за час, база {company.base_price.toFixed(2)}</span>
+            </Box>
+          </Stack.Item>
+          <Stack.Item textAlign="right">
+            <Box>
+              У вас: <b>{held} шт.</b>
+              {held > 0 && <span className="NtTerm__hint"> на {formatCredits(held * company.price)}</span>}
+            </Box>
+            {(company.dividend_pool || 0) >= 1 && (
+              <Box className="NtTerm__hint">
+                фонд дивидендов {formatCredits(company.dividend_pool)}, ≈{(company.dividend_per_share || 0).toFixed(2)} кр./акция
+              </Box>
+            )}
+          </Stack.Item>
+        </Stack>
+        <NtChart values={data.history[company.ticker] || []} base={company.base_price} />
+        <Box mb={1.5}>
+          <TradeButtons company={company} held={held} wait={wait} />
+        </Box>
+        {drivers.length > 0 && (
+          <>
+            <Box className="NtTerm__hint" mb={0.5}>
+              Что двигает цену:
+            </Box>
+            <DriverList drivers={drivers} />
+          </>
+        )}
+      </NtFrame>
+    </>
   );
 };
 
@@ -283,7 +323,7 @@ const RulesSection = () => {
         скачком, и он остаётся.
       </Box>
       <Box mb={1}>
-        Новость о событии компании выходит в канале «{data.news_channel}» на ньюскастерах не сразу, а в течение
+        Новость о событии компании выходит в канале &quot;{data.news_channel}&quot; на ньюскастерах не сразу, а в течение
         примерно {data.news_delay} мин. после скачка цены: котировка меняется раньше новости.
       </Box>
       <Box mb={1}>
@@ -319,7 +359,7 @@ const RulesSection = () => {
         новостей и остановок торгов у него нет, торгуется по тем же правилам.
       </Box>
       <Box mb={1}>
-        Заявки в «Портфеле» покупают или продают сами, когда цена дойдёт до порога: не больше {data.orders_max} на
+        Заявки в портфеле покупают или продают сами, когда цена дойдёт до порога: не больше {data.orders_max} на
         счёт, смену не переживают.
       </Box>
       <Box mb={1}>Из казны станции торгует только капитан - по доступу капитана на ID-карте.</Box>
@@ -380,21 +420,45 @@ export const NtosStockExchangeContent = () => {
   );
 };
 
-/** Акции на счёте: сколько, почём и на сколько сейчас. */
+/** Цвета долей портфеля: спокойные, различимые на тёмном. */
+const ALLOC_COLORS = ['#4fdc8f', '#74b6ff', '#f2c94c', '#b48cff', '#f0954a', '#5fd0e6', '#ff8a80', '#a9b8cc', '#7bd88f', '#e6a0ff', '#c9d3df'];
+
+/** Акции на счёте: полоса долей, сколько, почём и на сколько сейчас. */
 const PortfolioSection = () => {
   const { data } = useBackend<StockExchangeData>();
-  const rows = data.companies.filter((company) => (data.holdings[company.ticker] || 0) > 0);
+  const rows = data.companies
+    .filter((company) => (data.holdings[company.ticker] || 0) > 0)
+    .map((company) => ({ company, held: data.holdings[company.ticker], value: data.holdings[company.ticker] * company.price }))
+    .sort((left, right) => right.value - left.value);
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
   return (
     <NtFrame title="Портфель">
-      {rows.length === 0 && <NtEmpty>Акций на счёте нет: купить можно в «Котировках».</NtEmpty>}
-      {rows.map((company) => {
-        const held = data.holdings[company.ticker];
-        return (
-          <NtLine key={company.ticker} label={`${company.ticker} · ${company.name} · ${held} шт. по ${company.price.toFixed(2)}`}>
-            {formatCredits(held * company.price)}
-          </NtLine>
-        );
-      })}
+      {rows.length === 0 && <NtEmpty>Акций на счёте нет.</NtEmpty>}
+      {rows.length > 0 && (
+        <div className="NtTerm__alloc">
+          {rows.map((row, index) => (
+            <div
+              key={row.company.ticker}
+              className="NtTerm__allocPart"
+              title={`${row.company.ticker}: ${Math.round((row.value / total) * 100)}%`}
+              style={{ width: `${(row.value / total) * 100}%`, backgroundColor: ALLOC_COLORS[index % ALLOC_COLORS.length] }}
+            />
+          ))}
+        </div>
+      )}
+      {rows.map((row, index) => (
+        <NtLine
+          key={row.company.ticker}
+          label={
+            <>
+              <span className="NtTerm__allocKey" style={{ backgroundColor: ALLOC_COLORS[index % ALLOC_COLORS.length] }} />
+              {`${row.company.ticker} ${row.company.name}, ${row.held} шт. по ${row.company.price.toFixed(2)}`}
+            </>
+          }>
+          {formatCredits(row.value)}
+          <span className="NtTerm__hint"> ({Math.round((row.value / total) * 100)}%)</span>
+        </NtLine>
+      ))}
       {rows.length > 0 && (
         <Box mt={1}>
           <NtLine label="Всего по текущей цене">{formatCredits(data.portfolio)}</NtLine>
@@ -424,7 +488,7 @@ const DividendsSection = () => {
         return (
           <NtLine
             key={company.ticker}
-            label={`${company.ticker} · фонд ${formatCredits(company.dividend_pool)}, около ${perShare.toFixed(2)} кр. на акцию`}
+            label={`${company.ticker}: фонд ${formatCredits(company.dividend_pool)}, около ${perShare.toFixed(2)} кр. на акцию`}
             tone={held > 0 ? undefined : 'dim'}>
             {held > 0 ? `вам ≈ ${formatCredits(Math.floor(held * perShare))}` : 'нет акций'}
           </NtLine>
@@ -508,7 +572,7 @@ const OrdersSection = () => {
       </Stack>
       {orders.length === 0 && <NtEmpty>Заявок нет.</NtEmpty>}
       {orders.map((order) => (
-        <NtLine key={order.id} label={`${order.ticker} · ${orderText(order)}`}>
+        <NtLine key={order.id} label={`${order.ticker}: ${orderText(order)}`}>
           <Button disabled={locked} onClick={() => act('cancel_order', { id: order.id })}>
             Отменить
           </Button>

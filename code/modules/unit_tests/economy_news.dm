@@ -1,4 +1,4 @@
-/// Канал «Сводка сектора» создан при инициализации рынка один раз и закрыт для статей экипажа.
+/// Канал "Сводка сектора" создан при инициализации рынка один раз и закрыт для статей экипажа.
 /datum/unit_test/economy_news_channel/Run()
 	var/list/found = list()
 	for(var/datum/news/feed_channel/candidate as anything in GLOB.news_network.network_channels)
@@ -10,7 +10,7 @@
 	TEST_ASSERT_EQUAL(channel.author, MARKET_NEWS_AUTHOR, "Автор канала")
 	TEST_ASSERT(SSmarket.news_channel() == channel, "Рынок пишет в этот канал")
 	var/help = econ_cargo_market_help()
-	TEST_ASSERT(findtext(help, "«[MARKET_NEWS_CHANNEL]» не чаще раза в [SSmarket.news_flash_minutes] мин.") && findtext(help, "раз в [SSmarket.digest_minutes] мин."), "Справка снабжения описывает канал: [help]")
+	TEST_ASSERT(findtext(help, "\"[MARKET_NEWS_CHANNEL]\" не чаще раза в [SSmarket.news_flash_minutes] мин.") && findtext(help, "раз в [SSmarket.digest_minutes] мин."), "Справка снабжения описывает канал: [help]")
 
 /// Тесты на изолированной копии рынка; статьи канала сводки и состояние SSmarket возвращаются.
 /datum/unit_test/economy_news

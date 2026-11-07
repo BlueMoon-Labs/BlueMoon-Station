@@ -43,7 +43,7 @@
 /obj/machinery/computer/department_budget/examine(mob/user)
 	. = ..()
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
-	. += span_notice((department ? "Привязана к отделу «[department.name]». Права главы проверяются как обычно: глав и капитана узнают по доступу ID-карты, ГП - по должности и доступу ГП на карте." : "Не привязана к отделу: показывает отдел того, кто за ней. Отдел выбирается мультитулом на плате."))
+	. += span_notice((department ? "Привязана к отделу \"[department.name]\". Права главы проверяются как обычно: глав и капитана узнают по доступу ID-карты, ГП - по должности и доступу ГП на карте." : "Не привязана к отделу: показывает отдел того, кто за ней. Отдел выбирается мультитулом на плате."))
 
 /obj/machinery/computer/department_budget/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -111,7 +111,7 @@
 	var/position = choices.Find(department_id)
 	department_id = choices[(position % length(choices)) + 1]
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
-	to_chat(user, span_notice("Плата настроена: [department ? "отдел «[department.name]»" : "отдел по счёту пользователя"]."))
+	to_chat(user, span_notice("Плата настроена: [department ? "отдел \"[department.name]\"" : "отдел по счёту пользователя"]."))
 
 /datum/design/board/department_budget
 	name = "Computer Design (Department Budget Console)"

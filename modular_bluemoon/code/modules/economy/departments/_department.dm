@@ -1,7 +1,7 @@
 /datum/economy_department
 	var/id
 	var/name
-	/// Как бюджет называется в тексте, со строчной: «бюджет снабжения»
+	/// Как бюджет называется в тексте, со строчной: "бюджет снабжения"
 	var/budget_name
 	/// Доступ ID, дающий права главы
 	var/list/head_access = list()
@@ -116,7 +116,7 @@
 		return
 	if(COOLDOWN_FINISHED(src, return_notice_cooldown))
 		COOLDOWN_START(src, return_notice_cooldown, ECON_BUDGET_RETURN_NOTICE_COOLDOWN)
-		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления в «Бюджете отдела».")
+		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления в \"Бюджете отдела\".")
 
 /// Отменённая закупка не считается ни закупкой, ни стоком отдела.
 /datum/economy_department/proc/ledger_cancel_purchase(amount)

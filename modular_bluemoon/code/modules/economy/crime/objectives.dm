@@ -167,7 +167,7 @@
 
 /datum/objective/economy/embezzle/goal_text()
 	var/datum/economy_department/department = SSeconomy.get_department(target_department)
-	return "Выведите из бюджета отдела «[department?.name]» не меньше [target_amount] кр.: на свой счёт или анонимную карту при себе либо наличными с карты бюджета. Деньги, которые финансовый аудит вернёт отделу или вы сами внесёте обратно наличными или переводом, не засчитываются. Без вреда экипажу."
+	return "Выведите из бюджета отдела \"[department?.name]\" не меньше [target_amount] кр.: на свой счёт или анонимную карту при себе либо наличными с карты бюджета. Деньги, которые финансовый аудит вернёт отделу или вы сами внесёте обратно наличными или переводом, не засчитываются. Без вреда экипажу."
 
 /datum/objective/economy/embezzle/progress_text()
 	return "выведено [moved] из [target_amount] кр."

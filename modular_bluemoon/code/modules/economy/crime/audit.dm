@@ -412,7 +412,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	account.frozen_by = frozen_by
 	account.bank_card_talk("Счёт заморожен [freeze_source(frozen_by)]: [html_encode(reason)]. Переводы, покупки и снятие наличных закрыты, зарплата копится долгом отдела (до [settings.owed_wages_cap_paychecks] выплат) до разморозки.", TRUE, 'sound/economy/account_freeze.ogg', "счёт заморожен")
 
-/// Кем заморожен счёт, для карты и кошелька владельца: «Счёт заморожен ...».
+/// Кем заморожен счёт, для карты и кошелька владельца: "Счёт заморожен ...".
 /datum/controller/subsystem/economy/proc/freeze_source(frozen_by)
 	if(frozen_by == ECON_ADMIN_FROZEN_BY)
 		return "Центральным командованием NT, разморозить может только ЦК"

@@ -75,7 +75,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	else
 		var/datum/economy_department/department = SSeconomy.get_department(cashier_account.department_id)
 		if(department?.account)
-			. += span_notice("За кассой [cashier_name]. Выручка: [department.register_cashier_share]% кассиру, [100 - department.register_cashier_share]% в бюджет отдела «[department.name]», долю задаёт глава отдела.")
+			. += span_notice("За кассой [cashier_name]. Выручка: [department.register_cashier_share]% кассиру, [100 - department.register_cashier_share]% в бюджет отдела \"[department.name]\", долю задаёт глава отдела.")
 		else
 			. += span_notice("За кассой [cashier_name], выручка целиком ему.")
 	. += span_notice("Оплата - свайпом карты или рукой по кассе, там же чаевые кассиру и чек последней оплаты. Только с личного счёта, без налога.")
@@ -126,7 +126,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		return FALSE
 	var/new_name = card?.registered_name || user.name
 	if(cashier_account && cashier_account != account)
-		cashier_account.bank_card_talk("Кассу «[name]» заняли: за ней теперь [new_name].")
+		cashier_account.bank_card_talk("Кассу \"[name]\" заняли: за ней теперь [new_name].")
 	cashier_account = account
 	cashier_ref = WEAKREF(user)
 	cashier_name = new_name
@@ -204,7 +204,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	selected = 0
 	receipts["[payer.account_id]"] = list("item" = item["name"], "price" = price, "cashier" = cashier_name, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time))
 	flick("[skin]_paid", src)
-	cashier_account.bank_card_talk("Касса: [customer.name] оплатил «[item["name"]]» - [price] кр., ваша доля [cashier_part] кр.", balloon = cashier_part ? "касса +[cashier_part] кр" : null)
+	cashier_account.bank_card_talk("Касса: [customer.name] оплатил \"[item["name"]]\" - [price] кр., ваша доля [cashier_part] кр.", balloon = cashier_part ? "касса +[cashier_part] кр" : null)
 	if(COOLDOWN_FINISHED(src, feedback_cooldown))
 		COOLDOWN_START(src, feedback_cooldown, REGISTER_FEEDBACK_COOLDOWN)
 		playsound(src, pick(GLOB.econ_register_chings), 40, FALSE)

@@ -54,8 +54,8 @@ const text = (container: HTMLElement) => (container.textContent || '').replace(/
 test('клиент видит кассира, получателя и долю отдела, платит выбранное и оставляет чаевые', () => {
   const { container, getByText, topic } = setup();
   expect(text(container)).toContain('Иван Петров');
-  expect(text(container)).toContain('50% кассиру, 50% в бюджет отдела «Сервис»');
-  expect(text(container)).toContain('Сок · получатель: Иван Петров');
+  expect(text(container)).toContain('50% кассиру, 50% в бюджет отдела Сервис');
+  expect(text(container)).toContain('Сок, получатель Иван Петров');
   expect(text(container)).toContain('делят один кулдаун: не чаще раза в 5 с');
   fireEvent.click(getByText('Оплатить 30 кр.'));
   const tip = container.querySelector('input') as HTMLInputElement;

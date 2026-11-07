@@ -6,7 +6,7 @@ import { Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Stack, Tab
 import { NtosWindow, Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
-import { DEPARTMENT_TONES, NtFrame, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { DEPARTMENT_TONES, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type DepartmentInfo = {
   id: string;
@@ -161,7 +161,7 @@ export const NtosDepartmentBudgetContent = () => {
     <NtScreen
       tone={(department && DEPARTMENT_TONES[department.id]) || 'civil'}
       device="Бюджет отдела"
-      status={hasDepartment ? `${department.name} · на смене ${department.staff_on_shift} чел.` : 'Отдел не выбран'}
+      status={hasDepartment ? `${department.name}, на смене ${department.staff_on_shift} чел.` : 'Отдел не выбран'}
       readout={
         hasDepartment ? (
           <>
@@ -218,74 +218,96 @@ const DepartmentSwitch = () => {
   );
 };
 
+/** Шкала бюджета до порога: заполнение - баланс, за порогом шкала жёлтая - излишек заберёт NT. */
+const BudgetGauge = (props: { balance: number; threshold: number }) => {
+  const { balance, threshold } = props;
+  const share = threshold > 0 ? Math.max(0, Math.min(balance / threshold, 1)) : 0;
+  const over = threshold > 0 && balance > threshold;
+  return (
+    <Box mb={1.5}>
+      <div className="NtTerm__alloc" style={{ height: '12px' }}>
+        <div
+          className="NtTerm__allocPart"
+          style={{ width: `${share * 100}%`, backgroundColor: over ? '#f2c14e' : 'var(--nt-accent)' }}
+        />
+      </div>
+      <Stack>
+        <Stack.Item grow className="NtTerm__hint">
+          Баланс <span className="NtTerm__num">{formatCredits(balance)}</span>
+        </Stack.Item>
+        <Stack.Item className={over ? 'color-average' : 'NtTerm__hint'}>
+          порог <span className="NtTerm__num">{formatCredits(threshold)}</span>
+        </Stack.Item>
+      </Stack>
+    </Box>
+  );
+};
+
 const OverviewTab = () => {
   const { data } = useBackend<BudgetData>();
   const department = data.department as DepartmentInfo;
   return (
     <>
       <NtFrame title={`Бюджет: ${department.name}`}>
-        <LabeledList>
-          <LabeledList.Item label="Баланс">
-            <Credits amount={department.balance} />
-          </LabeledList.Item>
-          <LabeledList.Item label="На смене">{department.staff_on_shift} чел.</LabeledList.Item>
-          <LabeledList.Item label="Грант NT">
-            <Credits amount={department.grant} /> раз в {data.economy_minutes} мин.: {data.grant_payroll_share}% окладов
-            сотрудников на смене
-            {department.grant_has_base ? (
-              <>
-                {' '}и <Credits amount={data.grant_base} /> на закупки из каталога.
-              </>
-            ) : (
-              '.'
-            )}
-          </LabeledList.Item>
-          <LabeledList.Item label="Порог бюджета">
-            <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не ниже
-            стартового бюджета. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
-            Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов
-            первые {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в
-            каталоге; после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).
-          </LabeledList.Item>
-          {!!department.shielded && (
-            <LabeledList.Item label="Защищено">
-              <Credits amount={department.shielded} /> недавних поступлений пока не считаются излишком.
-            </LabeledList.Item>
-          )}
-          {!!department.goal_cooldown && (
-            <LabeledList.Item label="Цель накопления">
-              Новую цель можно поставить через {department.goal_cooldown} мин.
-            </LabeledList.Item>
-          )}
-          {!!department.goal && (
-            <LabeledList.Item label="Цель накопления">
-              «{department.goal.name}», <Credits amount={department.goal.amount} />, ещё {department.goal.minutes_left} мин.
-              Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.
-            </LabeledList.Item>
-          )}
-          {!!department.return_due && (
-            <LabeledList.Item label="Возврат NT" color="average">
-              Бюджет выше порога: через несколько минут NT заберёт <Credits amount={department.return_due} /> Потратьте
-              излишек на закупки или назначьте цель накопления в каталоге.
-            </LabeledList.Item>
-          )}
-          <LabeledList.Item label="Долг по зарплате">
-            <Credits amount={data.owed_wages} />
-          </LabeledList.Item>
-          {department.owed > 0 && (
-            <LabeledList.Item label="Долг перед NT">
-              <Credits amount={department.owed} /> - штрафы, гасятся из бюджета раз в {data.economy_minutes} мин.
-            </LabeledList.Item>
-          )}
-        </LabeledList>
-        <Box color="label" mt={1}>
-          Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел
-          платит сколько может, а остаток становится долгом перед сотрудником (не больше {data.owed_cap} базовых
-          окладов); долг гасится частями с каждой следующей зарплатой. Если сотрудник получил меньше{' '}
-          <Credits amount={data.wage_floor} />, NT доплачивает до этого минимума. Кто дольше {data.dormant_minutes} мин. мёртв или не
-          на смене, зарплату не получает, и долг ему не копится.
-        </Box>
+        <BudgetGauge balance={department.balance} threshold={department.threshold ?? 0} />
+        {!!department.return_due && (
+          <NoticeBox warning>
+            Бюджет выше порога: через несколько минут NT заберёт <Credits amount={department.return_due} /> Потратьте
+            излишек на закупки или назначьте цель накопления в каталоге.
+          </NoticeBox>
+        )}
+        <NtLine label="На смене">{department.staff_on_shift} чел.</NtLine>
+        <NtLine label="Грант NT">
+          {formatCredits(department.grant)} / {data.economy_minutes} мин.
+        </NtLine>
+        <NtLine label="Долг по зарплате" tone={data.owed_wages ? 'warn' : 'dim'}>
+          {formatCredits(data.owed_wages ?? 0)}
+        </NtLine>
+        {department.owed > 0 && (
+          <NtLine label="Долг перед NT (штрафы)" tone="bad">
+            {formatCredits(department.owed)}
+          </NtLine>
+        )}
+        {!!department.goal && (
+          <NtLine label="Цель накопления">
+            {department.goal.name}, {formatCredits(department.goal.amount)}, ещё {department.goal.minutes_left} мин.
+          </NtLine>
+        )}
+        {(!!department.shielded || !!department.goal || !!department.goal_cooldown) && (
+          <Box className="NtTerm__hint" mt={0.5}>
+            {!!department.shielded && <Box>{formatCredits(department.shielded)} недавних поступлений пока не считаются излишком.</Box>}
+            {!!department.goal && <Box>Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.</Box>}
+            {!!department.goal_cooldown && <Box>Новую цель можно поставить через {department.goal_cooldown} мин.</Box>}
+          </Box>
+        )}
         {!!data.manifest_department && <ManifestButton />}
+      </NtFrame>
+      <NtFrame title="Как считается">
+        <Box className="NtTerm__hint" mb={1}>
+          Грант NT: <Credits amount={department.grant} /> раз в {data.economy_minutes} мин.: {data.grant_payroll_share}%
+          окладов сотрудников на смене
+          {department.grant_has_base ? (
+            <>
+              {' '}и <Credits amount={data.grant_base} /> на закупки из каталога.
+            </>
+          ) : (
+            '.'
+          )}
+        </Box>
+        <Box className="NtTerm__hint" mb={1}>
+          Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
+          ниже стартового бюджета. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
+          Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
+          {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в каталоге;
+          после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).
+        </Box>
+        <Box className="NtTerm__hint">
+          Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел платит
+          сколько может, а остаток становится долгом перед сотрудником (не больше {data.owed_cap} базовых окладов); долг
+          гасится частями с каждой следующей зарплатой. Если сотрудник получил меньше <Credits amount={data.wage_floor} />,
+          NT доплачивает до этого минимума. Кто дольше {data.dormant_minutes} мин. мёртв или не на смене, зарплату не
+          получает, и долг ему не копится. Штрафы - долг перед NT, гасятся из бюджета раз в {data.economy_minutes} мин.
+        </Box>
       </NtFrame>
       {!!data.can_manage && <StaffSection />}
       {!!data.can_manage && <TreasurySection />}
