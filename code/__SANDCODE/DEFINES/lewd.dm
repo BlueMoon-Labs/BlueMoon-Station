@@ -385,6 +385,7 @@ GLOBAL_LIST_INIT(interaction_effects_list, list(
 #define HIDDEN_INTERACTION_RANGE 1
 #define HIDDEN_INTERACTION_ADDITIONAL list("Незаметно, ", "Аккуратно, ", "Осторожно, ", "Неприметно, ")
 #define HIDDEN_INTERACTION_PREFIX(_is_hidden) ((_is_hidden) ? pick(GLOB.hidden_interaction_additional) : "")
+#define HIDDEN_REACTION_SUFFIX(_is_hidden) ((_is_hidden) ? pick(GLOB.hidden_reaction_suffixes) : "")
 #define INTERACTION_MESSAGE_RANGE(_is_hidden) ((_is_hidden) ? HIDDEN_INTERACTION_RANGE : DEFAULT_MESSAGE_RANGE)
 #define INTERACTION_MESSAGE_FLAGS(_is_hidden) ((_is_hidden) ? LOCAL_ONLY_MESSAGE : NONE)
 #define INTERACTION_SOUND_EXTRARANGE(_is_hidden, _public_extrarange) ((_is_hidden) ? (HIDDEN_INTERACTION_RANGE - SOUND_RANGE) : (_public_extrarange))

@@ -114,12 +114,11 @@
 			for(var/prefix in GLOB.hidden_interaction_additional)
 				if(findtext(message, prefix))
 					has_prefix = TRUE
-				var/adverb = lowertext(copytext_char(prefix, 1, -2))
-				if(findtext(message, ", [adverb]."))
+			for(var/suffix in GLOB.hidden_reaction_suffixes)
+				if(findtext(message, "[suffix].") || findtext(message, "[suffix]!"))
 					has_suffix = TRUE
-			var/is_moan = index == 2 || index == 4
-			TEST_ASSERT_EQUAL(has_prefix, is_hidden && !is_moan, "Приписка перед текстом есть только у скрытых действий и оргазмов.")
-			TEST_ASSERT_EQUAL(has_suffix, is_hidden && is_moan, "Приписка после текста есть только у скрытых стонов.")
+			TEST_ASSERT_EQUAL(has_prefix, is_hidden && index == 1, "Приписка перед текстом есть только у скрытого действия.")
+			TEST_ASSERT_EQUAL(has_suffix, is_hidden && index > 1, "Приписка в конце текста есть у скрытых стонов и оргазмов.")
 
 	UnregisterSignal(near, COMSIG_ATOM_HEARER_IN_VIEW)
 

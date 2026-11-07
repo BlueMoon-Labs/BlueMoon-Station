@@ -270,7 +270,7 @@
 	new /obj/effect/decal/cleanable/semen(loc)
 
 	playsound(loc, 'sound/effects/splat.ogg', 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
-	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	visible_message(span_userlove("<b>\The [src]</b> [add_hidden_reaction_suffix(message, is_hidden)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 

@@ -212,7 +212,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',
 							'modular_sand/sound/interactions/final_f3.ogg'), 70, 1, extrarange, local_only = is_hidden)
-	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	visible_message(span_userlove("<b>\The [src]</b> [add_hidden_reaction_suffix(message, is_hidden)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	multiorgasms += 1
 
 	if(get_sexual_potency() == -1 || multiorgasms > (get_sexual_potency() * 0.34)) //AAAAA, WE DONT WANT NEGATIVES HERE, RE

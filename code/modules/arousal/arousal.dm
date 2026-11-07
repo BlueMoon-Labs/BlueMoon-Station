@@ -122,7 +122,7 @@
 			if(!istype(cummed_on)) // not human
 				R.trans_to(target, amount_to_transfer, log = TRUE)
 				if(R.total_volume > 0 && cummed_on.is_open_container())
-					visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>[src] переполняет [cummed_on], расплёскивая излишки на пол.</b>"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол[HIDDEN_REACTION_SUFFIX(is_hidden)].</b>"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 					// к сожалению готовые решения генерации капель расплескавшихся жидкостей есть далеко не для всех реагентов, но это уже совсем другая история.
 					R.reaction(get_turf(target), show_message = FALSE)
 					for(var/obj/effect/decal/cleanable/c in get_turf(target))
@@ -228,7 +228,7 @@
 		to_chat(src,"<span class='userlove'>Вы чувствуете, что вот-вот достигнете оргазма!</span>")
 		if(!do_after(src, mb_time, target = src) || !G.climaxable(src, TRUE))
 			return
-	to_chat(src, span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]Вы оргазмируете[isturf(loc) ? ", обливая пространство под собой" : ""]!"))
+	to_chat(src, span_userlove("Вы оргазмируете[isturf(loc) ? ", обливая пространство под собой" : ""][HIDDEN_REACTION_SUFFIX(is_hidden)]!"))
 	do_climax(fluid_source, loc, G, is_hidden = is_hidden)
 
 /mob/living/carbon/human/proc/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)

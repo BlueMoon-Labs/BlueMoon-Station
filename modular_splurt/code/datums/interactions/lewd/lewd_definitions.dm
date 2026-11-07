@@ -74,7 +74,7 @@ GLOBAL_LIST_INIT(anus_traits, list("[TRAIT_HYPERSENS_ANUS]" = 3, "[TRAIT_OVERSTI
 
 	if(CHECK_BITFIELD(sender.genital_flags, GENITAL_IMPOTENT) || CHECK_BITFIELD(sender.genital_flags, GENITAL_DISAPPOINTING))
 		if(is_hidden)
-			audible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>[src]</b> вздыхает."), hearing_distance = HIDDEN_INTERACTION_RANGE, local_only = is_hidden)
+			audible_message(span_lewd("<b>[src]</b> вздыхает[HIDDEN_REACTION_SUFFIX(is_hidden)]."), hearing_distance = HIDDEN_INTERACTION_RANGE, local_only = is_hidden)
 			var/sigh_sound = gender == FEMALE || (gender == PLURAL && isfeminine(src)) ? 'sound/voice/sigh_female.ogg' : 'sound/voice/sigh_male.ogg'
 			playsound(src, sigh_sound, 50, TRUE, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 		else

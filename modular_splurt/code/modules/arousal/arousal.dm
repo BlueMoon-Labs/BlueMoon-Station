@@ -160,7 +160,7 @@
 		if(!do_after(src, mb_time, target = src, timed_action_flags = (IGNORE_HELD_ITEM|IGNORE_INCAPACITATED)) || !in_range(src, container) || !G.climaxable(src, TRUE))
 			return
 	visible_message(
-		span_love("[HIDDEN_INTERACTION_PREFIX(is_hidden)][src] вздрагивает, пока [main_fluid] стекает в <b>[container]</b>."),
+		span_love("[src] вздрагивает, пока [main_fluid] стекает в <b>[container]</b>[HIDDEN_REACTION_SUFFIX(is_hidden)]."),
 		span_userlove("[M] откачивает накопившуюся жидкость в <b>[container]</b>."),
 		span_userlove("Во время оргазма ты чувствуешь, как насос тянет твой [G.name]."),
 		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),

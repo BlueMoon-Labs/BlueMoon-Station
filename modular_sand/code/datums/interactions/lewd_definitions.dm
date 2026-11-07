@@ -293,15 +293,21 @@
 	// If didn't stop before, then we're barefoot
 	return TRUE
 
-/proc/hidden_moan_suffix(is_hidden)
-	if(!is_hidden)
-		return ""
-	var/adverb = lowertext(copytext_char(pick(GLOB.hidden_interaction_additional), 1, -2))
-	return ", [adverb]"
+GLOBAL_LIST_INIT(hidden_reaction_suffixes, list(", незаметно", ", тихо", ", неприметно"))
+
+/proc/add_hidden_reaction_suffix(message, is_hidden)
+	if(!is_hidden || !message)
+		return message
+	var/suffix = HIDDEN_REACTION_SUFFIX(is_hidden)
+	var/punctuation = copytext_char(message, -1)
+	switch(punctuation)
+		if(".", "!", "?")
+			return "[copytext_char(message, 1, -1)][suffix][punctuation]"
+	return "[message][suffix]."
 
 /mob/living/proc/moan(is_hidden = FALSE)
 	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
-	var/hidden_suffix = hidden_moan_suffix(is_hidden)
+	var/hidden_suffix = HIDDEN_REACTION_SUFFIX(is_hidden)
 	if(is_muzzled() || (mind?.miming))
 		visible_message(span_lewd("<b>\The [src]</b> беззвучно стонет[hidden_suffix]."),
 			span_lewd("Вы беззвучно стонете[hidden_suffix]."), vision_distance = vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
@@ -890,7 +896,7 @@
 	// BLUEMOON ADD END
 	if(!message)
 		message = pick("оргазмирует!", "трясётся в оргазме.", "дрожит от оргазма!", "кончает на себя!")
-	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(ignored_mobs = obscure_to), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	visible_message(span_userlove("<b>\The [src]</b> [add_hidden_reaction_suffix(message, is_hidden)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(ignored_mobs = obscure_to), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	multiorgasms += 1
 
 	COOLDOWN_START(src, refractory_period, (rand(300, 900) - get_sexual_potency()))//sex cooldown
