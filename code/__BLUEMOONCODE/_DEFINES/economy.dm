@@ -189,6 +189,10 @@
 #define ECON_REQUEST_REASON_MAX 200
 #define REGISTER_MENU_MAX 20
 #define REGISTER_PRICE_MAX 5000
+/// Сколько кассиров сразу стоит за одной кассой, у каждого свой счёт к оплате
+#define REGISTER_CASHIERS_MAX 2
+/// Сколько штук одной позиции меню влезает в счёт
+#define REGISTER_ORDER_COUNT_MAX 20
 /// Кассир дальше этого или на другом уровне считается ушедшим, его кассу может занять другой
 #define REGISTER_CASHIER_RANGE 7
 /// Свайп клиента сразу после смены позиции не платит: сумму нужно успеть увидеть

@@ -50,22 +50,42 @@
 		card = person.get_active_held_item()
 	card.melee_attack_chain(person, register)
 
-/datum/unit_test/economy_register/proc/pay(mob/living/person)
-	var/price
-	if(register.selected)
-		var/list/item = register.menu[register.selected]
-		price = item["price"]
-	return register.register_act(person, "pay", list("index" = register.selected, "price" = price, "cashier" = register.cashier_account?.account_id))
+/// Место кассира за кассой: по человеку или первое.
+/datum/unit_test/economy_register/proc/till(mob/living/person)
+	if(person)
+		return register.cashier_of(person)
+	return length(register.cashiers) ? register.cashiers[1] : null
+
+/datum/unit_test/economy_register/proc/item_id(index = 1)
+	var/list/item = register.menu[index]
+	return item["id"]
+
+/datum/unit_test/economy_register/proc/order(mob/living/person, index = 1, delta = 1)
+	return register.register_act(person, "order", list("id" = item_id(index), "delta" = delta))
+
+/datum/unit_test/economy_register/proc/pay(mob/living/person, datum/register_cashier/seller)
+	if(!seller)
+		seller = till()
+	if(!seller)
+		return FALSE
+	return register.register_act(person, "pay", list("cashier" = seller.account.account_id, "rev" = seller.order_rev, "total" = register.order_total(seller)))
+
+/// Чек у человека в руках или под кассой.
+/datum/unit_test/economy_register/proc/find_receipt(mob/living/person)
+	. = locate(/obj/item/econ_receipt) in person.held_items
+	if(!.)
+		. = locate(/obj/item/econ_receipt) in register.drop_location()
 
 /datum/unit_test/economy_register/proc/tip(mob/living/person, amount)
-	return register.register_act(person, "tip", list("amount" = amount, "cashier" = register.cashier_account?.account_id))
+	var/datum/register_cashier/seller = till()
+	return register.register_act(person, "tip", list("amount" = amount, "cashier" = seller?.account.account_id))
 
-/// Стоит ли кассир за кассой после свайпа и готова ли позиция к оплате.
+/// Кассир встаёт за кассу свайпом, заводит позицию и ставит одну штуку в свой счёт.
 /datum/unit_test/economy_register/proc/open_with_item(price)
 	swipe(cashier)
 	TEST_ASSERT(register.is_cashier(cashier), "Кассир встал за кассу своей картой")
 	TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Пиво", "price" = price)), "Позиция добавлена")
-	TEST_ASSERT(register.register_act(cashier, "select", list("index" = 1)), "Позиция выбрана")
+	TEST_ASSERT(order(cashier), "Позиция в счёте")
 
 /// Оплата делится между кассиром и отделом по ставке главы, чаевые целиком кассиру; налога и эмиссии нет.
 /datum/unit_test/economy_register/charge_and_tip/Run()
@@ -74,17 +94,19 @@
 	service.register_cashier_share = 40
 	SSeconomy.tax_rate = 10
 	open_with_item(100)
+	var/datum/register_cashier/seller = till()
 	var/budget_before = service.account.account_balance
 	var/minted_before = SSeconomy.ledger.minted
 	var/burned_before = SSeconomy.ledger.burned
-	TEST_ASSERT(!register.register_act(customer, "pay", list("index" = 1, "price" = 50, "cashier" = cashier_account.account_id)), "Цена сменилась - оплата не проходит")
-	TEST_ASSERT(!register.register_act(customer, "pay", list("index" = 1, "price" = 100, "cashier" = customer_account.account_id)), "Кассир сменился - оплата не проходит")
+	TEST_ASSERT(!register.register_act(customer, "pay", list("cashier" = cashier_account.account_id, "rev" = seller.order_rev, "total" = 50)), "Сумма сменилась - оплата не проходит")
+	TEST_ASSERT(!register.register_act(customer, "pay", list("cashier" = cashier_account.account_id, "rev" = seller.order_rev - 1, "total" = 100)), "Счёт правили - оплата не проходит")
+	TEST_ASSERT(!register.register_act(customer, "pay", list("cashier" = customer_account.account_id, "rev" = seller.order_rev, "total" = 100)), "Кассир сменился - оплата не проходит")
 	TEST_ASSERT(pay(customer), "Оплачено")
 	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Списано 100")
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 40, "Доля кассира без налога")
 	TEST_ASSERT_EQUAL(service.account.account_balance - budget_before, 60, "Доля отдела")
 	TEST_ASSERT_EQUAL(register.total_sales, 100, "Выручка кассы")
-	TEST_ASSERT(!register.selected, "После оплаты позиция снята")
+	TEST_ASSERT(!length(seller.order), "После оплаты счёт пуст")
 	TEST_ASSERT(!tip(customer, REGISTER_PRICE_MAX + 1), "Чаевые выше потолка кассы")
 	TEST_ASSERT(!tip(customer, -5), "Отрицательные чаевые")
 	TEST_ASSERT(!tip(cashier, 5), "Чаевые самому себе")
@@ -94,6 +116,116 @@
 	TEST_ASSERT(!tip(customer, 5), "Чаевые подряд ждут общий кулдаун личных платежей")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Касса не создаёт денег")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned, burned_before, "Касса не сжигает денег")
+
+/// Несколько штук одной позиции и разные позиции в одном счёте: сумма по количеству, потолок штук, убранная из меню позиция уходит из счёта.
+/datum/unit_test/economy_register/quantity/Run()
+	setup_register()
+	open_with_item(20)
+	TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Сок", "price" = 15)), "Вторая позиция")
+	TEST_ASSERT(order(cashier, 1, 2), "Ещё два пива")
+	TEST_ASSERT(order(cashier, 2), "Сок")
+	var/datum/register_cashier/seller = till()
+	TEST_ASSERT_EQUAL(register.order_total(seller), 75, "Три пива и сок")
+	TEST_ASSERT(!order(customer, 1), "Клиент не правит счёт")
+	TEST_ASSERT(order(cashier, 1, 1000), "Количество зажато сверху")
+	var/list/lines = register.order_lines(seller)
+	var/list/beer = lines[1]
+	TEST_ASSERT_EQUAL(beer["count"], REGISTER_ORDER_COUNT_MAX, "Потолок штук одной позиции")
+	TEST_ASSERT(order(cashier, 1, -(REGISTER_ORDER_COUNT_MAX - 3)), "Лишнее пиво убрано")
+	TEST_ASSERT(pay(customer), "Оплачен счёт из нескольких позиций")
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 925, "Списано 3 x 20 + 15")
+	TEST_ASSERT(order(cashier, 2, 2), "Новый счёт")
+	TEST_ASSERT(register.register_act(cashier, "remove_item", list("index" = 2)), "Сок убран из меню")
+	TEST_ASSERT(!length(seller.order), "Убранная позиция ушла из счёта")
+	TEST_ASSERT(order(cashier, 1, 2), "Два пива")
+	TEST_ASSERT(register.register_act(cashier, "clear", list()), "Счёт очищен")
+	TEST_ASSERT(!length(seller.order), "Счёт пуст")
+	pay(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 925, "Пустой счёт не платится")
+
+/// Два кассира: у каждого свой счёт, клиент платит выбранный, второй остаётся; коллега встаёт вторым свайпом, клиент свайпом за кассу не встаёт.
+/datum/unit_test/economy_register/two_cashiers/Run()
+	setup_register()
+	open_with_item(20)
+	var/mob/living/carbon/human/colleague = make_person("econ_test_waiter", ACCOUNT_SRV)
+	register.register_act(cashier, "clear", list())
+	swipe(customer)
+	TEST_ASSERT(!register.is_cashier(customer), "Клиент свайпом не встаёт вторым кассиром")
+	swipe(colleague)
+	TEST_ASSERT(register.is_cashier(colleague), "Коллега по отделу встал вторым свайпом")
+	var/mob/living/carbon/human/stranger = make_person("econ_test_stranger", null)
+	TEST_ASSERT(!register.register_act(stranger, "join", list()), "Третьему места нет, пока оба на месте")
+	TEST_ASSERT(order(cashier, 1, 3), "Первый кассир набрал три пива")
+	TEST_ASSERT(order(colleague), "Второй кассир набрал одно")
+	var/list/rows = register.ui_data(customer)["cashiers"]
+	TEST_ASSERT_EQUAL(length(rows), 2, "Клиент видит оба счёта")
+	var/list/first_row = rows[1]
+	var/list/second_row = rows[2]
+	TEST_ASSERT(first_row["total"] == 60 && second_row["total"] == 20, "Суммы счетов в окне")
+	TEST_ASSERT_NULL(first_row["pay_problem"], "Счёт можно оплатить")
+	var/datum/register_cashier/second = till(colleague)
+	TEST_ASSERT(pay(customer, second), "Оплачен счёт второго кассира")
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 980, "Списано 20")
+	TEST_ASSERT_EQUAL(register.order_total(till(cashier)), 60, "Счёт первого кассира цел")
+	TEST_ASSERT(!length(second.order), "Счёт второго закрыт")
+	var/datum/register_cashier/first = till(cashier)
+	first.order_at -= REGISTER_SELECT_GRACE
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 920, "Единственный открытый счёт оплачен свайпом")
+	swipe(colleague)
+	TEST_ASSERT(!register.is_cashier(colleague), "Второй кассир отошёл")
+	TEST_ASSERT(register.is_cashier(cashier), "Первый остался")
+
+/// Наличные: купюры берутся пачкой с округлением вверх и сдачей голочипом, голочип - ровно на сумму; денег не создаётся и не сжигается, чек сразу.
+/datum/unit_test/economy_register/cash/Run()
+	setup_register()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	service.register_cashier_share = 40
+	open_with_item(25)
+	TEST_ASSERT(order(cashier), "Два пива по 25")
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/budget_before = service.account.account_balance
+	var/cash_before = SSeconomy.cash_account.account_balance
+	var/minted_before = SSeconomy.ledger.minted
+	var/burned_before = SSeconomy.ledger.burned
+	var/obj/item/card/id/card = customer.get_active_held_item()
+	customer.dropItemToGround(card)
+	var/obj/item/stack/spacecash/c20/bills = allocate(/obj/item/stack/spacecash/c20, null, 5)
+	customer.put_in_active_hand(bills)
+	bills.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(bills.amount, 2, "Взяты три купюры по 20 на счёт 50")
+	var/obj/item/holochip/change = locate() in customer.held_items
+	TEST_ASSERT(change?.credits == 10, "Сдача 10 голочипом")
+	var/obj/item/econ_receipt/receipt = find_receipt(customer)
+	TEST_ASSERT(receipt && findtext(jointext(receipt.lines, " "), "Итого: 50 кр., наличными, сдача 10 кр."), "Чек наличной оплаты сразу")
+	TEST_ASSERT_EQUAL(cashier_account.account_balance, 20, "Доля кассира")
+	TEST_ASSERT_EQUAL(service.account.account_balance - budget_before, 30, "Доля отдела")
+	TEST_ASSERT_EQUAL(cash_before - SSeconomy.cash_account.account_balance, 50, "Из наличных в обороте ушло 50")
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Счёт клиента не тронут")
+	TEST_ASSERT(!length(seller.order), "Счёт закрыт")
+	QDEL_NULL(change)
+	QDEL_NULL(receipt)
+	QDEL_NULL(bills)
+	TEST_ASSERT(order(cashier, 1, 2), "Новый счёт на 50")
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/holochip/small = allocate(/obj/item/holochip, null, 30)
+	customer.put_in_active_hand(small)
+	small.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(small.credits, 30, "Голочипа не хватило - он цел")
+	TEST_ASSERT_EQUAL(register.order_total(seller), 50, "Счёт ждёт оплаты")
+	QDEL_NULL(small)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 120)
+	customer.put_in_active_hand(chip)
+	chip.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(chip.credits, 70, "С голочипа списано ровно 50")
+	TEST_ASSERT_EQUAL(register.total_sales, 100, "Выручка за два счёта")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Касса не создаёт денег")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned, burned_before, "Касса не сжигает денег")
+	var/atom/counter = register.drop_location()
+	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
+		qdel(extra)
+	QDEL_NULL(chip)
 
 /// Замороженный и приостановленный счёт не платят и не дают чаевых ни при какой доле, касса ничего не засчитывает.
 /datum/unit_test/economy_register/blocked_payer/Run()
@@ -117,17 +249,20 @@
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Кассиру ничего")
 	TEST_ASSERT_EQUAL(service.account.account_balance, budget_before, "Бюджету ничего")
 	TEST_ASSERT_EQUAL(register.total_sales, 0, "Выручка не засчитана")
-	TEST_ASSERT_EQUAL(register.selected, 1, "Позиция ждёт оплаты")
+	TEST_ASSERT_EQUAL(register.order_total(till()), 100, "Счёт ждёт оплаты")
 
-/// Кассира, замороженного или заблокированного после входа, касса не оплачивает; замороженный за кассу не встаёт.
+/// Кассира, замороженного или заблокированного после входа, касса не оплачивает ни картой, ни наличными; замороженный за кассу не встаёт.
 /datum/unit_test/economy_register/blocked_cashier/Run()
 	setup_register()
 	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
 	open_with_item(100)
 	var/budget_before = service.account.account_balance
 	cashier_account.state = ACCOUNT_FROZEN
-	TEST_ASSERT(findtext(register.charge_problem(customer_account), "кассира"), "Отказ объясняет, что дело в кассире")
+	TEST_ASSERT(findtext(register.charge_problem(customer_account, till()), "кассира"), "Отказ объясняет, что дело в кассире")
 	TEST_ASSERT(!pay(customer), "Замороженному кассиру оплата не идёт")
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 200)
+	TEST_ASSERT(!register.pay_cash(customer, chip, till()), "Наличными замороженному кассиру тоже нет")
+	TEST_ASSERT_EQUAL(chip.credits, 200, "Голочип цел")
 	cashier_account.state = ACCOUNT_ACTIVE
 	cashier_account.transferable = FALSE
 	TEST_ASSERT(!pay(customer), "Заблокированному кассиру оплата не идёт")
@@ -139,23 +274,24 @@
 	cashier_account.state = ACCOUNT_FROZEN
 	swipe(cashier)
 	cashier_account.state = ACCOUNT_ACTIVE
-	TEST_ASSERT_NULL(register.cashier_account, "Замороженный счёт за кассу не встаёт")
+	TEST_ASSERT(!length(register.cashiers), "Замороженный счёт за кассу не встаёт")
 
-/// Свайп: свободная касса - вход, кассир - выход, клиент - оплата, но не сразу после смены позиции.
+/// Свайп: свободная касса - вход, кассир - выход, клиент - оплата, но не сразу после правки счёта.
 /datum/unit_test/economy_register/card_swipe/Run()
 	setup_register()
 	open_with_item(100)
 	swipe(customer)
-	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Сразу после выбора позиции свайп не платит")
-	register.selected_at -= REGISTER_SELECT_GRACE
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Сразу после правки счёта свайп не платит")
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
 	swipe(customer)
-	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Свайп оплатил позицию")
-	TEST_ASSERT(register.cashier_account == cashier_account, "Клиент не встал за кассу")
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Свайп оплатил счёт")
+	TEST_ASSERT(!register.is_cashier(customer), "Клиент не встал за кассу")
 	swipe(cashier)
-	TEST_ASSERT_NULL(register.cashier_account, "Кассир отошёл от кассы")
+	TEST_ASSERT(!length(register.cashiers), "Кассир отошёл от кассы")
 	TEST_ASSERT_EQUAL(length(register.menu), 1, "Меню осталось после выхода")
 
-/// Меню правит только кассир; цена от 1 до потолка, длина меню ограничена.
+/// Меню правит только кассир; цена от 1 до потолка, длина меню ограничена; правка меню не сбивает счёт.
 /datum/unit_test/economy_register/menu_rules/Run()
 	setup_register()
 	swipe(cashier)
@@ -165,17 +301,13 @@
 	TEST_ASSERT(!register.register_act(cashier, "add_item", list("name" = "Даром", "price" = 0)), "Нулевая цена")
 	TEST_ASSERT(!register.register_act(cashier, "add_item", list("name" = "", "price" = 5)), "Пустое название")
 	for(var/i in 1 to REGISTER_MENU_MAX)
-		TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Позиция [i]", "price" = 10)), "Позиция [i] добавлена")
+		TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Позиция [i]", "price" = 10 + i)), "Позиция [i] добавлена")
 	TEST_ASSERT(!register.register_act(cashier, "add_item", list("name" = "Лишняя", "price" = 10)), "Потолок меню")
-	TEST_ASSERT(!register.register_act(customer, "select", list("index" = 2)), "Клиент не выбирает позицию")
 	TEST_ASSERT(!register.register_act(customer, "remove_item", list("index" = 1)), "Клиент не убирает позицию")
-	TEST_ASSERT(register.register_act(cashier, "select", list("index" = 3)), "Кассир выбрал позицию")
-	var/list/chosen = register.menu[3]
-	TEST_ASSERT(register.register_act(cashier, "remove_item", list("index" = 2)), "Кассир убрал позицию")
+	TEST_ASSERT(order(cashier, 3), "Кассир поставил позицию в счёт")
+	TEST_ASSERT(register.register_act(cashier, "remove_item", list("index" = 2)), "Кассир убрал другую позицию")
 	TEST_ASSERT_EQUAL(length(register.menu), REGISTER_MENU_MAX - 1, "Позиция убрана")
-	TEST_ASSERT(register.selected && register.menu[register.selected] == chosen, "Выбор держится за ту же позицию при правке меню перед ней")
-	TEST_ASSERT(register.register_act(cashier, "remove_item", list("index" = register.selected)), "Кассир убрал выбранную позицию")
-	TEST_ASSERT(!register.selected, "Выбор сброшен вместе с позицией")
+	TEST_ASSERT_EQUAL(register.order_total(till()), 13, "Счёт держится за ту же позицию при правке меню перед ней")
 
 /// Без денег оплата не проходит и ничего не двигает.
 /datum/unit_test/economy_register/no_money/Run()
@@ -191,56 +323,61 @@
 	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
 	var/obj/item/card/id/departmental_budget/srv/budget_card = allocate(/obj/item/card/id/departmental_budget/srv)
 	swipe(cashier, budget_card)
-	TEST_ASSERT_NULL(register.cashier_account, "За кассу не встать картой бюджета")
+	TEST_ASSERT(!length(register.cashiers), "За кассу не встать картой бюджета")
 	swipe(cashier, customer.get_active_held_item())
-	TEST_ASSERT_NULL(register.cashier_account, "За кассу не встать чужой картой")
+	TEST_ASSERT(!length(register.cashiers), "За кассу не встать чужой картой")
 	open_with_item(100)
 	sleep(REGISTER_SELECT_GRACE)
 	var/budget_before = service.account.account_balance
 	swipe(customer, budget_card)
 	TEST_ASSERT_EQUAL(service.account.account_balance, budget_before, "Картой бюджета не заплатить")
-	TEST_ASSERT(register.selected, "Позиция не оплачена")
+	var/datum/register_cashier/seller = till()
+	TEST_ASSERT(length(seller.order), "Счёт не оплачен")
 	TEST_ASSERT(!pay(cashier), "Кассир не платит сам себе")
 	TEST_ASSERT_EQUAL(service.account.account_balance, budget_before, "Бюджет не тронут")
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Кассиру ничего")
 
-/// Ушедшего далеко или умершего кассира сменяет следующий; меню остаётся, оплата и её подтверждение - новому кассиру; без отдела выручка вся кассиру.
+/// Место ушедшего далеко или умершего кассира занимает следующий; меню остаётся, выручка новому кассиру; без отдела выручка вся кассиру.
 /datum/unit_test/economy_register/takeover/Run()
 	setup_register()
 	var/mob/living/carbon/human/assistant = make_person("Econ Test Assistant", null)
 	var/datum/bank_account/assistant_account = econ_account_of(assistant)
 	var/obj/item/card/id/assistant_card = assistant.get_active_held_item()
 	assistant_card.registered_name = "Econ Test Assistant"
+	var/mob/living/carbon/human/third = make_person("Econ Test Third", null)
 	open_with_item(30)
-	register.register_act(cashier, "select", list("index" = 0))
+	register.register_act(cashier, "clear", list())
 	swipe(assistant)
-	TEST_ASSERT(register.cashier_account == cashier_account, "Пока кассир рядом, кассу не перехватить")
+	TEST_ASSERT(!register.is_cashier(assistant), "Пока кассир рядом, чужой свайпом не встаёт")
+	TEST_ASSERT(register.register_act(assistant, "join", list()), "Вторым кассиром встают из окна")
+	TEST_ASSERT(!register.register_act(third, "join", list()), "Оба на месте - места нет")
 	var/turf/far_turf = locate(min(run_loc_floor_bottom_left.x + REGISTER_CASHIER_RANGE + 1, world.maxx), run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	cashier.forceMove(far_turf)
-	swipe(assistant)
-	TEST_ASSERT(register.cashier_account == assistant_account, "Ушедшего далеко кассира сменил новый")
+	TEST_ASSERT(register.register_act(third, "join", list()), "Место ушедшего далеко кассира занял новый")
+	TEST_ASSERT(!register.is_cashier(cashier), "Ушедший больше не кассир")
 	TEST_ASSERT_EQUAL(length(register.menu), 1, "Меню осталось при перехвате")
-	TEST_ASSERT(register.register_act(assistant, "select", list("index" = 1)), "Новый кассир выбрал позицию")
-	TEST_ASSERT(findtext(register.payment_line(), "Econ Test Assistant"), "Подтверждение называет получателя: [register.payment_line()]")
-	TEST_ASSERT(pay(customer), "Оплачено")
-	TEST_ASSERT_EQUAL(assistant_account.account_balance, 30, "Без отдела выручка вся новому кассиру")
+	TEST_ASSERT(order(assistant), "Ассистент набрал счёт")
+	var/datum/register_cashier/seller = till(assistant)
+	TEST_ASSERT(findtext(register.payment_line(seller), "Econ Test Assistant"), "Подтверждение называет получателя: [register.payment_line(seller)]")
+	TEST_ASSERT(pay(customer, seller), "Оплачено")
+	TEST_ASSERT_EQUAL(assistant_account.account_balance, 30, "Без отдела выручка вся кассиру")
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Прежнему кассиру ничего")
 	cashier.forceMove(run_loc_floor_bottom_left)
-	swipe(cashier)
-	TEST_ASSERT(register.cashier_account == assistant_account, "Живого кассира рядом не сменить")
+	TEST_ASSERT(!register.register_act(cashier, "join", list()), "Живых кассиров рядом не сменить")
 	assistant.death()
-	swipe(cashier)
-	TEST_ASSERT(register.cashier_account == cashier_account, "Умершего кассира сменил новый")
+	TEST_ASSERT(register.register_act(cashier, "join", list()), "Место умершего кассира занял новый")
+	TEST_ASSERT(!register.is_cashier(assistant), "Умерший больше не кассир")
 
-/// Касса без кассира погашена, оплатившему печатает чек из окна один раз, в том числе когда кассир уже отошёл.
+/// Касса без кассира погашена, оплатившему картой печатает чек из окна один раз, в том числе когда кассир уже отошёл.
 /datum/unit_test/economy_register/receipt/Run()
 	setup_register()
 	TEST_ASSERT_EQUAL(register.icon_state, "bar_off", "Касса без кассира погашена")
 	open_with_item(100)
 	TEST_ASSERT_EQUAL(register.icon_state, "bar", "За кассой кассир - экран горит")
+	TEST_ASSERT(order(cashier), "Второе пиво")
 	TEST_ASSERT(pay(customer), "Оплата прошла")
 	swipe(cashier)
-	TEST_ASSERT_NULL(register.cashier_account, "Кассир отошёл")
+	TEST_ASSERT(!length(register.cashiers), "Кассир отошёл")
 	TEST_ASSERT(register.ui_data(customer)["receipt"], "Чек доступен и без кассира")
 	econ_ui_press(customer, register, "CashRegister", "receipt")
 	econ_ui_press(customer, register, "CashRegister", "receipt")
@@ -250,7 +387,8 @@
 	TEST_ASSERT_EQUAL(length(receipts), 1, "Один чек на одну оплату")
 	if(length(receipts))
 		var/obj/item/econ_receipt/receipt = receipts[1]
-		TEST_ASSERT(findtext(jointext(receipt.lines, " "), "Пиво - 100 кр."), "В чеке позиция и цена")
+		var/text = jointext(receipt.lines, " ")
+		TEST_ASSERT(findtext(text, "Пиво x2 - 200 кр.") && findtext(text, "Итого: 200 кр."), "В чеке позиция, количество и итог: [text]")
 	TEST_ASSERT(!register.ui_data(customer)["receipt"], "Чек уже распечатан")
 	QDEL_LIST(receipts)
 
