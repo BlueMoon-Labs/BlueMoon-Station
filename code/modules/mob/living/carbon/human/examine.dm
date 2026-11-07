@@ -41,7 +41,8 @@
 	if(identity_hidden)
 		race_html = "<span class='examine_unknown_species'>Вы не можете разобрать, кто перед вами.</span>"
 	else
-		race_html = "[capitalize(t_ego)] вид – [spec_trait_examine_font()][html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)]</font>"
+		var/species_name = html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)
+		race_html = "<span class='examine_species' title='[species_name]'>[capitalize(t_ego)] вид – [spec_trait_examine_font()][species_name]</font></span>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
 		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)

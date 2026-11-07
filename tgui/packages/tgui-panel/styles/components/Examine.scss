@@ -17,6 +17,14 @@
   opacity: 0.8;
 }
 
+.examine_species {
+  display: block;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .examine_unknown_species {
   font-size: 0.9em;
   opacity: 0.8;
