@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
+import { InfoSection } from './InfoSection';
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
@@ -69,6 +70,9 @@ export const MainContent = (props) => {
   return (
     <Section title={title} fill>
       <Stack vertical fill>
+        <Stack.Item>
+          <InfoSection />
+        </Stack.Item>
         <Stack.Item>
           <Tabs fluid textAlign="center">
             {visibleTabs[0]?.key === 'interactions' && (

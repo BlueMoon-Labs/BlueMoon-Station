@@ -168,6 +168,8 @@
 	.["isTargetSelf"] = target == self // Why all of these?
 	.["user"] = self // Because people may have the same name
 	.["target"] = target // target == self can distinguish
+	.["lust"] = self.get_lust()
+	.["maxLust"] = self.get_climax_threshold()
 	if(ishuman(self))
 		var/mob/living/carbon/human/H = self
 		.["force_naked_flavor"] = H.force_naked_flavor
@@ -318,6 +320,8 @@
 	.["required_from_target_unexposed"] = null
 	.["target_num_feet"] = null
 	.["theirPrefs"] = null
+	.["theirLust"] = null
+	.["theirMaxLust"] = null
 	.["theyAllowLewd"] = null
 	.["theyAllowRanged"] = null
 	.["theyAllowExtreme"] = null
@@ -331,6 +335,10 @@
 		.["required_from_target_unexposed"] = .["required_from_user_unexposed"]
 		.["target_num_feet"] = .["user_num_feet"]
 	else if(target)
+		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
+			.["theirLust"] = target.get_lust()
+			.["theirMaxLust"] = target.get_climax_threshold()
+
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it
 		.["target_has_active_player"] = target.ckey ? (target.client ? 2 : TRUE) : FALSE
 		.["max_distance"] = is_lewd_portal_relay_interaction(self, target) ? 0 : get_dist(self, target)
@@ -1139,6 +1147,20 @@
 				prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 			else
 				prefs.save_pref_var(dirty_var)
+			return TRUE
+		if("genitals_menu")
+			var/mob/living/carbon/menu_target
+			switch(params["who"])
+				if("user")
+					menu_target = parent_mob
+				if("target")
+					menu_target = target
+				else
+					return FALSE
+			if(QDELETED(menu_target) || !istype(menu_target))
+				to_chat(parent_mob, span_warning("Меню гениталий недоступно для этого персонажа."))
+				return FALSE
+			menu_target.genital_menu()
 			return TRUE
 		if("force_naked_flavor")
 			if(ishuman(parent_mob))

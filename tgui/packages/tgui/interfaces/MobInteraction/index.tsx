@@ -26,7 +26,7 @@ export const MobInteraction = () => {
   return (
     <Window
       width={width}
-      height={570}
+      height={650}
       resizable>
       <Window.Content>
         <MainContent />
