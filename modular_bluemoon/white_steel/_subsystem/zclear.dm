@@ -96,6 +96,12 @@ SUBSYSTEM_DEF(zclear)
 		if(bomb.timing)
 			active_levels["[bomb.z]"] = TRUE
 			living_levels["[bomb.z]"] = TRUE	//Dont perform mob saving actions on mobs about to be blown to smitherines.
+	//The z-level of the active mission must survive until the mission is completed. Otherwise the
+	//ruin is wiped while the crew is in supercruise and they return to a half-deleted level.
+	var/datum/orbital_objective/active_objective = SSorbits.current_objective
+	if(active_objective?.objective_z_level)
+		active_levels["[active_objective.objective_z_level]"] = TRUE
+		living_levels["[active_objective.objective_z_level]"] = TRUE
 	//Block z-clear from these levels.
 	for(var/atom/A as() in GLOB.zclear_blockers)
 		if(!A)
@@ -139,9 +145,10 @@ SUBSYSTEM_DEF(zclear)
 			continue
 		//Level is free, do the wiping thing.
 		LAZYREMOVE(autowipe, level)
-		//Reset orbital body.
-		QDEL_NULL(level.orbital_body)
-		//Continue tracking after
+		//Continue tracking after.
+		//orbital_body is intentionally NOT reset here: if the wipe is aborted because a shuttle
+		//or player returns, the level must keep a valid orbital body so the shuttle can still
+		//enter supercruise instead of falling back to the map center.
 		wipe_z_level(level.z_value, TRUE)
 
 //Temporarily stops a z from being wiped for 30 seconds.
@@ -151,6 +158,74 @@ SUBSYSTEM_DEF(zclear)
 
 /datum/controller/subsystem/zclear/proc/unkeep_z(z_level)
 	docking_levels -= z_level
+
+/*
+ * Returns TRUE if the z-level is currently in use and must not be wiped.
+ * Covers living players, shuttles docked on/flying to the level, reserved docking levels and
+ * z-clear blockers. Used both to avoid starting a wipe on an occupied level and to abort an
+ * already running wipe when someone/something returns to it.
+ */
+/datum/controller/subsystem/zclear/proc/is_z_level_in_use(z_level)
+	if(!z_level)
+		return FALSE
+	//Reserved by temp_keep_z() for an incoming shuttle.
+	if(z_level in docking_levels)
+		return TRUE
+	//Active blockers (e.g. a ticking nuke) keep the level alive.
+	for(var/atom/A as() in GLOB.zclear_blockers)
+		if(A && A.z == z_level)
+			return TRUE
+	//The active mission's z-level must survive until the mission is completed.
+	var/datum/orbital_objective/active_objective = SSorbits.current_objective
+	if(active_objective?.objective_z_level == z_level)
+		return TRUE
+	//Any living player mob still on the level (same criteria as check_for_empty_levels, so SSD
+	//crew are still counted even after they lose their client).
+	for(var/mob/living/L in GLOB.mob_list)
+		if(!L)
+			continue
+		if(!(L.ckey || L.mind || L.client))
+			continue
+		if(L.stat == DEAD)
+			continue
+		var/turf/T = get_turf(L)
+		if(T && T.z == z_level)
+			return TRUE
+	//Mobile shuttle ports docked on this level, or whose destination is this level.
+	for(var/obj/docking_port/mobile/M in SSshuttle.mobile)
+		if(!M)
+			continue
+		if(M.z == z_level)
+			return TRUE
+		if(M.destination && M.destination.z == z_level)
+			return TRUE
+	//Shuttles currently docking with an orbital body linked to this level.
+	for(var/port_id in SSorbits.assoc_shuttles)
+		var/datum/orbital_object/shuttle/shuttle = SSorbits.assoc_shuttles[port_id]
+		if(!shuttle || !shuttle.docking_target)
+			continue
+		for(var/datum/space_level/level in shuttle.docking_target.linked_z_level)
+			if(level && level.z_value == z_level)
+				return TRUE
+	return FALSE
+
+/*
+ * Stops an in-progress wipe because the level became active again.
+ * The atoms already removed cannot be restored, but stopping here prevents the far worse
+ * outcome of deleting a shuttle's docking port and the inventories nested inside its crew.
+ * If the level is still tracked it is queued again and will be wiped once it is free.
+ */
+/datum/controller/subsystem/zclear/proc/abort_wipe(datum/zclear_data/cleardata)
+	if(!cleardata)
+		return
+	LAZYREMOVE(processing_levels, cleardata)
+	SSair.unpause_z(cleardata.zvalue)
+	if(cleardata.tracking)
+		var/datum/space_level/level = SSmapping.z_list[cleardata.zvalue]
+		if(level)
+			LAZYOR(autowipe, level)
+	message_admins("SSZCLEAR: Aborted wipe of z-level [cleardata.zvalue] because a shuttle or living player returned to it.")
+	log_game("SSZCLEAR: Aborted wipe of z-level [cleardata.zvalue] because a shuttle or living player returned to it.")
 
 /*
  * Создаёт на старте раунда пул готовых пустых z-уровней.
@@ -307,6 +382,12 @@ SUBSYSTEM_DEF(zclear)
  * Continues the process of wiping a z-level.
 */
 /datum/controller/subsystem/zclear/proc/continue_wipe(datum/zclear_data/cleardata)
+	//A shuttle or living player returned to the level while it was being wiped. Abort before
+	//touching any more atoms: continuing would destroy the shuttle's docking port and every
+	//inventory nested inside the crew.
+	if(is_z_level_in_use(cleardata.zvalue))
+		abort_wipe(cleardata)
+		return
 	//Сперва атомы, пока клетки в своей области: машинерия, удалённая уже в /area/space, не снималась
 	//с реестров своей области (лампы руины держал кэш её APC) и уходила в хардделы.
 	var/atom_list_element = (cleardata.process_num % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
@@ -325,6 +406,12 @@ SUBSYSTEM_DEF(zclear)
 			SSair.unpause_z(cleardata.zvalue)
 			var/area/spaceA = GLOB.areas_by_type[/area/space]
 			spaceA.reg_in_areas_in_z()	//<< Potentially slow proc
+			//Reset the orbital body only after the level is fully wiped. Doing it at wipe start
+			//left aborted wipes with a null orbital_body and made shuttles launch toward the
+			//map center instead of from the POI they were actually at.
+			var/datum/space_level/wiped_level = SSmapping.z_list[cleardata.zvalue]
+			if(wiped_level)
+				QDEL_NULL(wiped_level.orbital_body)
 			if(cleardata.completion_callback)
 				cleardata.completion_callback.Invoke(cleardata.zvalue)
 			if(cleardata.tracking)
@@ -340,12 +427,25 @@ SUBSYSTEM_DEF(zclear)
 /datum/controller/subsystem/zclear/proc/clear_turf_atoms(list/turfs)
 	//Clear atoms
 	for(var/turf/T as() in turfs)
+		//Never touch the shuttle's own footprint. Wiping its machinery/floor while the crew is
+		//aboard is what stranded the expedition and deleted the mobile docking port.
+		if(istype(T.loc, /area/shuttle))
+			continue
 		// Remove all atoms except abstract mobs
 		var/list/allowed_contents = T.GetAllContents()
 		allowed_contents -= T
 		for(var/i in 1 to allowed_contents.len)
 			var/thing = allowed_contents[i]
 			if(is_type_in_typecache(thing, ignored_atoms))
+				continue
+			//Only process top-level atoms. Anything nested inside a mob (bag, PDA, containers
+			//in slots/hands) travels with the mob when it is teleported and must not be
+			//deleted individually, otherwise the player loses their entire inventory.
+			if(is_nested_in_mob(thing))
+				continue
+			//Docking ports are the persistent identity of a shuttle and shuttle areas belong to
+			//the crew; never qdel either one as part of a level wipe.
+			if(istype(thing, /obj/docking_port) || istype(get_area(thing), /area/shuttle))
 				continue
 			//Отвязываем кабель от powernet без дорогого propagate: remove_cable убирает его из
 			//powernet.cables, обнуляет cable.powernet и qdel-ит опустевшую сеть. Просто обнулять
@@ -381,9 +481,34 @@ SUBSYSTEM_DEF(zclear)
 				delete_atom(thing)
 
 /*
+ * Returns TRUE if the atom is held by, worn by, or otherwise nested inside a mob.
+ * Checks the whole loc chain, so bag/PDA/container contents count too.
+ */
+/datum/controller/subsystem/zclear/proc/is_nested_in_mob(atom/A)
+	var/atom/current = A
+	while(current)
+		current = current.loc
+		if(!current)
+			return FALSE
+		if(ismob(current))
+			return TRUE
+	return FALSE
+
+/*
  * DELETES AN ATOM OR TELEPORTS IT TO A RANDOM LOCATION IF IT IS INDESTRUCTIBLE
 */
 /datum/controller/subsystem/zclear/proc/delete_atom(atom/A)
+	//Docking ports are the persistent identity of a shuttle. Force-deleting one unregisters
+	//the shuttle from SSshuttle.mobile forever, which is exactly what stranded the expedition.
+	if(istype(A, /obj/docking_port))
+		return
+	//Never delete anything nested inside a mob (hand, slot, bag, PDA). It travels with the mob
+	//when the mob is teleported.
+	if(is_nested_in_mob(A))
+		return
+	//Shuttle areas belong to the crew and must survive a level wipe.
+	if(istype(get_area(A), /area/shuttle))
+		return
 	//Dont delete indestructible items, but indestructible structures can go
 	if(isitem(A))
 		var/obj/O = A
@@ -393,9 +518,9 @@ SUBSYSTEM_DEF(zclear)
 		if(O.resistance_flags & INDESTRUCTIBLE)
 			random_teleport_atom(A)
 			return
-	//Force delete effects and docking ports, normal delete everything else.
+	//Force delete effects, normal delete everything else.
 	//Probably gunna cause problems in testing.
-	qdel(A, force = (iseffect(A) || istype(A, /obj/docking_port)))
+	qdel(A, force = iseffect(A))
 
 /*
  * Randomly teleports an atom to a random z-level
@@ -430,6 +555,9 @@ SUBSYSTEM_DEF(zclear)
 /datum/controller/subsystem/zclear/proc/reset_turfs(list/turfs)
 	var/list/new_turfs = list()
 	for(var/turf/T as() in turfs)
+		//Do not convert shuttle floors to space while the shuttle is on the level.
+		if(istype(T.loc, /area/shuttle))
+			continue
 		//TODO: This doesn't update turfs around it.
 		var/turf/newT
 		//Неинициализированный basic надо пересоздать, иначе после вайпа уровень вернётся в пул с "мёртвым" космосом.
