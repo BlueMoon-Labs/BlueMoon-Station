@@ -366,6 +366,9 @@
 		return FALSE
 	return ..()
 
+/mob/living/simple_animal/hostile/regalrat/can_carry_rider(mob/living/rider)
+	return TRUE
+
 /mob/living/simple_animal/hostile/regalrat/examine(mob/user)
 	. = ..()
 	if(istype(user,/mob/living/simple_animal/hostile/rat))
@@ -1353,7 +1356,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 
 /mob/living/simple_animal/hostile/regalrat/lust/examine(mob/user)
 	. = ..()
-	. += span_notice("Оседлать её может только кто-то не крупнее её самой и не сверхтяжёлый.")
+	. += span_notice("Кажется, у нее достаточно сильная спина.")
 
 /mob/living/simple_animal/hostile/regalrat/lust/CanAttack(atom/the_target)
 	return FALSE

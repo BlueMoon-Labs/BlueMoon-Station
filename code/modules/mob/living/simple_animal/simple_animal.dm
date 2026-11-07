@@ -292,6 +292,14 @@
 	animate(src, pixel_z = start_z + 6, time = 2, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 	animate(pixel_z = start_z, time = 2, easing = SINE_EASING)
 
+/mob/living/simple_animal/start_pulling(atom/movable/AM, state, force = pull_force, supress_message = FALSE)
+	. = ..()
+	update_pull_alert()
+
+/mob/living/simple_animal/stop_pulling()
+	. = ..()
+	update_pull_alert()
+
 /mob/living/simple_animal/MouseDrop_T(mob/living/M, mob/living/user)
 	if(can_buckle && tame && istype(M) && M != src && !M.buckled)
 		// отказ уже объяснён; общий обработчик повторил бы попытку и сообщение
@@ -304,6 +312,7 @@
 
 /mob/living/simple_animal/post_buckle_mob(mob/living/M)
 	. = ..()
+	throw_alert("drop_riders", /atom/movable/screen/alert/drop_riders)
 	pre_ride_stop_automated_movement = stop_automated_movement
 	pre_ride_horde_member = !!GetComponent(/datum/component/rat_minion)
 	stop_automated_movement = TRUE
@@ -313,6 +322,8 @@
 
 /mob/living/simple_animal/post_unbuckle_mob(mob/living/M)
 	. = ..()
+	if(!LAZYLEN(buckled_mobs))
+		clear_alert("drop_riders")
 	if(istype(src, /mob/living/simple_animal/mouse))
 		var/datum/component/rat_minion/minion = GetComponent(/datum/component/rat_minion)
 		if(minion)
