@@ -552,7 +552,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 				else
 					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange)
 	apply_effect(user, target, arousal_level, self_arousal_organ, self_orgasm, self_orgasm_organ, self_orgasm_target)
-	apply_effect(target, user, partner_arousal_level, partner_arousal_organ, partner_orgasm, partner_orgasm_organ, partner_orgasm_target)
+	if(user != target)
+		apply_effect(target, user, partner_arousal_level, partner_arousal_organ, partner_orgasm, partner_orgasm_organ, partner_orgasm_target)
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(user != target)
