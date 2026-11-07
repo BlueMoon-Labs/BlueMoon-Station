@@ -575,16 +575,16 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	else
 		if(target.is_topless())
 			lines = list(
-				" подставляет [has_penis ? "детородный орган" : "дилдо"] к влажной подмышке \the <b>[target]</b>, начиная двигаться всей длиной прямо под рукой!"
+				"подставляет [has_penis ? "детородный орган" : "дилдо"] к влажной подмышке \the <b>[target]</b>, начиная двигаться всей длиной прямо под рукой!"
 			)
 		else // https://cdn.discordapp.com/attachments/802990353883070474/962478553117622322/NoName-480p.mp4
 			lines = list(
-				" делает дыру, разрывая одежду \the <b>[target]</b> так, чтобы подмышка была видна. \The <b>[target]</b> может внезапно почувствовать [has_penis ? "тепло пульсирующего члена" : "длину твердого дилдо"], скользящеко по влажной и потной подмышке!"
+				"делает дыру, разрывая одежду \the <b>[target]</b> так, чтобы подмышка была видна. \The <b>[target]</b> может внезапно почувствовать [has_penis ? "тепло пульсирующего члена" : "длину твердого дилдо"], скользящеко по влажной и потной подмышке!"
 			//BLUEMOON EDIT END
 			)
 		set_is_fucking(target, CUM_TARGET_ARMPIT, getorganslot(ORGAN_SLOT_PENIS))
 
-	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b>[pick(lines)]</span>"
+	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',

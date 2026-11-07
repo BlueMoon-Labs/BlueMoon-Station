@@ -293,17 +293,23 @@
 	// If didn't stop before, then we're barefoot
 	return TRUE
 
+/proc/hidden_moan_suffix(is_hidden)
+	if(!is_hidden)
+		return ""
+	var/adverb = lowertext(copytext_char(pick(GLOB.hidden_interaction_additional), 1, -2))
+	return ", [adverb]"
+
 /mob/living/proc/moan(is_hidden = FALSE)
 	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
-	var/hidden_prefix = HIDDEN_INTERACTION_PREFIX(is_hidden)
+	var/hidden_suffix = hidden_moan_suffix(is_hidden)
 	if(is_muzzled() || (mind?.miming))
-		visible_message(span_lewd("[hidden_prefix]<b>\The [src]</b> беззвучно стонет."),
-			span_lewd("[hidden_prefix]Вы беззвучно стонете."), vision_distance = vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		visible_message(span_lewd("<b>\The [src]</b> беззвучно стонет[hidden_suffix]."),
+			span_lewd("Вы беззвучно стонете[hidden_suffix]."), vision_distance = vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		return
 	var/message_to_display = pick("стонет%S%", "постанывает%S% от удовольствия")
-	visible_message(span_lewd("[hidden_prefix]<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")]."),
-		span_lewd("[hidden_prefix]Вы [replacetext(message_to_display, "%S%", "е")]."),
-		span_lewd("[hidden_prefix]Вы слышите наполненный удовольствием стон."),
+	visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")][hidden_suffix]."),
+		span_lewd("Вы [replacetext(message_to_display, "%S%", "е")][hidden_suffix]."),
+		span_lewd("Кто-то стонет от удовольствия[hidden_suffix]."),
 		vision_distance = vision_distance, ignored_mobs = get_unconsenting(), omni = TRUE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	// Get reference of the list we're using based on gender.
@@ -488,15 +494,15 @@
 						//weird shit goes here
 						if(CUM_TARGET_EARS)
 							if(partner.has_ears())
-								message = "кончает в \the ухо [partner_name] сквиртом!"
+								message = "кончает в ухо [partner_name] семенем!"
 							else
-								message = "кончает в \the ушную раковину [partner_name] сквиртом!"
+								message = "кончает в ушную раковину [partner_name] семенем!"
 							cumin = TRUE
 						if(CUM_TARGET_EYES)
 							if(partner.has_eyes())
-								message = "кончает на глаз [partner_name] сквиртом!"
+								message = "кончает на глаз [partner_name] семенем!"
 							else
-								message = "кончает в \the глазницу [partner_name] сквиртом!"
+								message = "кончает в глазницу [partner_name] семенем!"
 							cumin = TRUE
 						//
 						if(CUM_TARGET_PENIS)
@@ -719,15 +725,15 @@
 							//weird shit goes here
 							if(CUM_TARGET_EARS)
 								if(partner.has_ears())
-									message = "кончает в \the ухо [partner_name] сквиртом!"
+									message = "кончает в ухо [partner_name] семенем!"
 								else
-									message = "кончает в \the ушную раковину [partner_name] сквиртом!"
+									message = "кончает в ушную раковину [partner_name] семенем!"
 								cumin = TRUE
 							if(CUM_TARGET_EYES)
 								if(partner.has_eyes())
-									message = "кончает на глаз [partner_name] сквиртом!"
+									message = "кончает на глаз [partner_name] семенем!"
 								else
-									message = "кончает в \the глазницу [partner_name] сквиртом!"
+									message = "кончает в глазницу [partner_name] семенем!"
 								cumin = TRUE
 							//
 							if(CUM_TARGET_PENIS)

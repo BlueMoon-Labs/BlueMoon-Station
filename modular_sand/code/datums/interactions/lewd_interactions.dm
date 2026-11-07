@@ -262,7 +262,7 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	if((required_from_target & INTERACTION_FLAG_TARGET_NOT_TIRED) && !COOLDOWN_FINISHED(target, refractory_period))
+	if((interaction_flags & INTERACTION_FLAG_TARGET_NOT_TIRED) && !COOLDOWN_FINISHED(target, refractory_period))
 		if(!silent) //same with this
 			to_chat(user, span_warning("They're still exhausted from the last time. They need to wait [DisplayTimeText(COOLDOWN_TIMELEFT(target, refractory_period), 1)] until you can do that!"))
 		return FALSE

@@ -107,12 +107,49 @@
 		TEST_ASSERT_EQUAL(target.get_lust(), 0, "Оргазм партнёра сбрасывает возбуждение.")
 		TEST_ASSERT_EQUAL(length(near.received_messages), 5, "Рядом видны текст интеракции, оба стона и оба оргазма.")
 		TEST_ASSERT_EQUAL(length(far.received_messages), is_hidden ? 0 : 5, "За пределами одного тайла видны только открытые интеракции и реакции.")
-		for(var/message in near.received_messages)
+		for(var/index in 1 to length(near.received_messages))
+			var/message = near.received_messages[index]
 			var/has_prefix = FALSE
+			var/has_suffix = FALSE
 			for(var/prefix in GLOB.hidden_interaction_additional)
 				if(findtext(message, prefix))
 					has_prefix = TRUE
-					break
-			TEST_ASSERT_EQUAL(has_prefix, is_hidden, "Приписка из общего списка есть только у скрытых сообщений.")
+				var/adverb = lowertext(copytext_char(prefix, 1, -2))
+				if(findtext(message, ", [adverb]."))
+					has_suffix = TRUE
+			var/is_moan = index == 2 || index == 4
+			TEST_ASSERT_EQUAL(has_prefix, is_hidden && !is_moan, "Приписка перед текстом есть только у скрытых действий и оргазмов.")
+			TEST_ASSERT_EQUAL(has_suffix, is_hidden && is_moan, "Приписка после текста есть только у скрытых стонов.")
 
 	UnregisterSignal(near, COMSIG_ATOM_HEARER_IN_VIEW)
+
+/mob/living/carbon/human/interaction_climax_probe
+	var/last_interaction_message
+
+/mob/living/carbon/human/interaction_climax_probe/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
+	last_interaction_message = message
+
+/datum/unit_test/interaction_eye_ear_climax/Run()
+	var/mob/living/carbon/human/interaction_climax_probe/user = allocate(/mob/living/carbon/human/interaction_climax_probe)
+	var/mob/living/carbon/human/partner = allocate(/mob/living/carbon/human)
+	var/obj/item/organ/genital/penis/penis = allocate(/obj/item/organ/genital/penis)
+	var/obj/item/organ/genital/vagina/vagina = allocate(/obj/item/organ/genital/vagina)
+	penis.Insert(user)
+	vagina.Insert(user)
+	TEST_ASSERT(user.has_penis() && user.has_vagina(), "Оба органа должны присутствовать у инициатора.")
+	user.multiorgasms = user.get_sexual_potency()
+
+	var/list/target_orifices = list(
+		/datum/interaction/lewd/eyefuck = CUM_TARGET_EYES,
+		/datum/interaction/lewd/earfuck = CUM_TARGET_EARS,
+	)
+	for(var/interaction_type in target_orifices)
+		var/datum/interaction/lewd/interaction = allocate(interaction_type)
+		user.last_lewd_datum = interaction
+		user.set_is_fucking(partner, target_orifices[interaction_type], vagina)
+		user.set_lust(user.get_climax_threshold() + NORMAL_LUST)
+		interaction.display_interaction(user, partner, is_hidden = TRUE)
+		TEST_ASSERT_EQUAL(user.last_genital, penis, "Интеракция [interaction_type] выбирает член даже после стимуляции вагины той же цели.")
+		TEST_ASSERT(findtext(user.last_interaction_message, "семенем"), "Интеракция [interaction_type] показывает окончание для члена.")
+	user.clear_lewd_datum()
+	partner.clear_lewd_datum()

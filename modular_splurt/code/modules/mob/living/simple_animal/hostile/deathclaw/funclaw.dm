@@ -143,11 +143,11 @@
 		ai_controller?.note_attacker(A)
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/moan(is_hidden = FALSE)
-	var/hidden_prefix = HIDDEN_INTERACTION_PREFIX(is_hidden)
+	var/hidden_suffix = hidden_moan_suffix(is_hidden)
 	var/message_to_display = pick("рычит%S%", "рычит%S% от удовольствия")
-	visible_message(span_lewd("[hidden_prefix]<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")]."),
-		span_lewd("[hidden_prefix]Вы [replacetext(message_to_display, "%S%", "е")]."),
-		span_lewd("[hidden_prefix]Вы слышите наполненный удовольствием рык."),
+	visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")][hidden_suffix]."),
+		span_lewd("Вы [replacetext(message_to_display, "%S%", "е")][hidden_suffix]."),
+		span_lewd("Кто-то рычит от удовольствия[hidden_suffix]."),
 		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(), omni = TRUE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	var/static/list/moans = list('modular_splurt/sound/lewd/deathclaw_grunt1.ogg',

@@ -183,14 +183,6 @@
 	p13target_emote = PLUG13_EMOTE_BREASTS
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-	additional_details = list(
-		list(
-			"info" = "Нежно целовать грудь партнёра.",
-			"icon" = "kiss",
-			"color" = "pink"
-		)
-	)
-
 /datum/interaction/lewd/kiss_breasts/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -205,15 +197,13 @@
 	if(user.a_intent == INTENT_HARM)
 		lines = list(
 			"жадно впивается губами в грудь <b>[target]</b>, оставляя на коже красные следы.",
-			"грубо прикусывает сосок <b>[target]</b>, заставляя [target.ru_ego()] вздрогнуть.",
-			"настойчиво целует грудь <b>[target]</b>, покусывая чувствительную кожу.",
-			"страстно всасывает сосок <b>[target]</b>, слегка прикусывая его."
+			"грубо кусает грудь <b>[target]</b>, заставляя [target.ru_ego()] вздрогнуть.",
+			"настойчиво целует грудь <b>[target]</b>, покусывая кожу.",
 		)
 	else
 		lines = list(
 			"нежно целует грудь <b>[target]</b>, касаясь губами нежной кожи.",
 			"мягко проводит губами по груди <b>[target]</b>, оставляя лёгкие поцелуи.",
-			"с трепетом прикасается губами к соску <b>[target]</b>, вызывая дрожь.",
 			"ласково целует грудь <b>[target]</b>, даря тепло и нежность.",
 			"медленно покрывает поцелуями грудь <b>[target]</b>, наслаждаясь моментом."
 		)
@@ -231,8 +221,11 @@
 	// Обработка возбуждения
 	var/lust_amount = LOW_LUST
 	if(user.a_intent == INTENT_HARM)
-		lust_amount = NORMAL_LUST
-	target.handle_post_sex(lust_amount, null, user, ORGAN_SLOT_BREASTS, is_hidden = is_hidden)
+		lust_amount = HAS_TRAIT(target, TRAIT_MASO) ? NORMAL_LUST : 0
+	if(lust_amount)
+		target.handle_post_sex(lust_amount, null, user, ORGAN_SLOT_BREASTS, is_hidden = is_hidden)
+	if(HAS_TRAIT(user, TRAIT_KISS_SLUT))
+		user.handle_post_sex(LOW_LUST, null, target, null, is_hidden = is_hidden)
 
 	// Реакция цели (стоны/вздохи)
 	var/threshold = target.get_climax_threshold()
