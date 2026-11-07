@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { MainContent, TABS } from './MainContent';
@@ -9,20 +7,21 @@ const MIN_WIDTH = BASE_WIDTH - 200;
 const MAX_WIDTH = 800;
 const WIDTH_PER_TAB = 40;
 
-type MobInteractionInfo = Record<string, boolean>;
+type MobInteractionInfo = Partial<Record<
+  (typeof TABS)[number]['enabledKey'] | 'dynamic_window_size' | 'compact_custom_tab',
+  boolean | 0 | 1
+>>;
 
 export const MobInteraction = () => {
   const { data } = useBackend<MobInteractionInfo>();
-  const [width] = useState(() => {
-    if (!data.dynamic_window_size) {
-      return BASE_WIDTH;
-    }
-    const enabledTabsCount = TABS.filter(t => {
-      const enabled = data[t.enabledKey];
-      return enabled === undefined || !!enabled;
-    }).length;
-    return Math.min(MAX_WIDTH, MIN_WIDTH + enabledTabsCount * WIDTH_PER_TAB);
-  });
+  let width = BASE_WIDTH;
+  if (data.dynamic_window_size) {
+    const enabledTabsCount = TABS.filter(({ key, enabledKey }) => (
+      (data[enabledKey] === undefined || !!data[enabledKey])
+      && (key !== 'custom' || !data.compact_custom_tab)
+    )).length;
+    width = Math.min(MAX_WIDTH, MIN_WIDTH + enabledTabsCount * WIDTH_PER_TAB);
+  }
 
   return (
     <Window
