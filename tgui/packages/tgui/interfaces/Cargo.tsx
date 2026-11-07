@@ -14,14 +14,13 @@ import {
   LabeledList,
   NoticeBox,
   ProgressBar,
-  Section,
   Stack,
   Table,
-  Tabs,
 } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
+import { NtFrame, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Pack = {
   name: string;
@@ -192,7 +191,7 @@ const useFavorites = () => {
 
 export const Cargo = (props) => {
   return (
-    <Window width={1000} height={780} resizable>
+    <Window width={980} height={760} resizable>
       <Window.Content scrollable>
         <CargoContent />
       </Window.Content>
@@ -210,54 +209,62 @@ export const CargoContent = (props) => {
   const requests = data.requests || [];
   const departmentOrders = data.department_requests || [];
   const offers = data.special_offers || [];
-  const pages: { key: Page; icon: string; label: string; count?: number }[] = [
-    { key: 'catalog', icon: 'boxes', label: 'Каталог' },
-    ...(requestonly ? [] : [{ key: 'cart' as Page, icon: 'shopping-cart', label: 'Корзина', count: cart.length }]),
-    { key: 'requests', icon: 'envelope', label: 'Заявки', count: requests.length },
-    { key: 'departments', icon: 'building', label: 'Заказы отделов', count: departmentOrders.length },
-    { key: 'offers', icon: 'handshake', label: 'Спецзаказы', count: offers.length },
-    { key: 'market', icon: 'chart-line', label: 'Рынок' },
-    { key: 'partners', icon: 'users', label: 'Партнёры' },
-    { key: 'contracts', icon: 'file-signature', label: 'Контракты' },
-    { key: 'help', icon: 'question-circle', label: 'Справка' },
+  const pages: NtMenuItem<Page>[] = [
+    { key: 'catalog', label: 'Каталог' },
+    ...(requestonly ? [] : [{ key: 'cart' as Page, label: 'Корзина', count: cart.length }]),
+    { key: 'requests', label: 'Заявки', count: requests.length },
+    { key: 'departments', label: 'Заказы отделов', count: departmentOrders.length },
+    { key: 'offers', label: 'Спецзаказы', count: offers.length },
+    { key: 'market', label: 'Рынок' },
+    { key: 'partners', label: 'Партнёры' },
+    { key: 'contracts', label: 'Контракты' },
+    { key: 'help', label: 'Справка' },
   ];
+  const total = cargoTotal(cart);
+  const shuttle = shuttleOf(data);
+  const inTransit = shuttle.state === 'to_station' || shuttle.state === 'to_centcom' || shuttle.state === 'recharging';
   return (
-    <Box>
-      <CargoStatus onOpenCart={() => setPage('cart')} />
-      <Stack>
-        <Stack.Item basis="190px" shrink={0}>
-          <Section fill>
-            <Tabs vertical>
-              {pages.map((entry) => (
-                <Tabs.Tab key={entry.key} icon={entry.icon} selected={page === entry.key} onClick={() => setPage(entry.key)}>
-                  <Stack align="center">
-                    <Stack.Item grow>{entry.label}</Stack.Item>
-                    {!!entry.count && (
-                      <Stack.Item>
-                        <Box className="Cargo__badge" px={0.75} color={page === entry.key ? undefined : 'average'} bold>
-                          {entry.count}
-                        </Box>
-                      </Stack.Item>
-                    )}
-                  </Stack>
-                </Tabs.Tab>
-              ))}
-            </Tabs>
-          </Section>
-        </Stack.Item>
-        <Stack.Item grow basis={0}>
-          {page === 'catalog' && <CargoCatalog />}
-          {page === 'cart' && <CargoCart />}
-          {page === 'requests' && <CargoRequests />}
-          {page === 'departments' && <DepartmentOrders />}
-          {page === 'offers' && <SpecialOffers />}
-          {page === 'market' && <Market />}
-          {page === 'partners' && <Partners />}
-          {page === 'contracts' && <Contracts />}
-          {page === 'help' && <CargoHelp />}
-        </Stack.Item>
-      </Stack>
-    </Box>
+    <NtScreen
+      tone="supply"
+      device={data.is_app ? 'Заказы снабжения' : requestonly ? 'Консоль заявок' : 'Консоль снабжения'}
+      status={
+        <>
+          <Box>
+            Шаттл {SHUTTLE_TEXT[shuttle.state]}
+            {inTransit && shuttle.eta > 0 && (
+              <span className="NtTerm__num" style={{ marginLeft: '8px', color: 'var(--nt-accent)' }}>
+                {formatTime(shuttle.eta)}
+              </span>
+            )}
+          </Box>
+          <Box>{data.message}</Box>
+        </>
+      }
+      readout={
+        <>
+          {!requestonly && (
+            <NtReadout label="В корзине">
+              {cart.length}
+              {total > 0 && <span className="NtTerm__hint"> · {formatCredits(total)}</span>}
+            </NtReadout>
+          )}
+          <NtReadout label="Бюджет снабжения">
+            <AnimatedNumber value={data.points} format={(value) => formatCredits(value)} />
+          </NtReadout>
+        </>
+      }
+      menu={<NtMenu<Page> items={pages} selected={page} onSelect={setPage} />}>
+      <CargoCommands />
+      {page === 'catalog' && <CargoCatalog />}
+      {page === 'cart' && <CargoCart />}
+      {page === 'requests' && <CargoRequests />}
+      {page === 'departments' && <DepartmentOrders />}
+      {page === 'offers' && <SpecialOffers />}
+      {page === 'market' && <Market />}
+      {page === 'partners' && <Partners />}
+      {page === 'contracts' && <Contracts />}
+      {page === 'help' && <CargoHelp />}
+    </NtScreen>
   );
 };
 
@@ -300,96 +307,61 @@ const ShuttleButton = (props: { inCart?: boolean }) => {
   return null;
 };
 
-const CargoStatus = (props: { onOpenCart: () => void }) => {
+/** Команды консоли над разделом: шаттл, накладная, аренда; пусто - строки нет. */
+const CargoCommands = (props) => {
   const { act, data } = useBackend<CargoData>();
-  const { loan, loan_dispatched, message, points, requestonly, manifest_department, manifest_fee, is_app } = data;
+  const { loan, loan_dispatched, requestonly, manifest_department, manifest_fee, is_app } = data;
   const shuttle = shuttleOf(data);
-  const inTransit = shuttle.state === 'to_station' || shuttle.state === 'to_centcom' || shuttle.state === 'recharging';
-  const cart = data.cart || [];
-  const total = cargoTotal(cart);
+  const showLoan = !!loan && !requestonly && !is_app;
   return (
-    <Section>
-      <Stack align="center" mb={1}>
+    <Stack align="center" wrap mb={1.5}>
+      <Stack.Item>
+        <ShuttleButton />
+      </Stack.Item>
+      {!!manifest_department && (
         <Stack.Item>
-          <Box fontSize={1.6} mr={1} color="label">
-            <Icon name="space-shuttle" />
-          </Box>
+          <Button
+            icon="file-invoice"
+            tooltip={`Положите накладную в ящик перед отгрузкой: выручка за ящик уйдёт отделу за вычетом сбора снабжения (${manifest_fee}%).`}
+            onClick={() => act('print_manifest')}>
+            {`Накладная: ${manifest_department}`}
+          </Button>
         </Stack.Item>
-        <Stack.Item grow>
-          <Box fontSize={1.2} bold>
-            Шаттл {SHUTTLE_TEXT[shuttle.state]}
-            {inTransit && shuttle.eta > 0 && (
-              <Box inline color="average" ml={1}>
-                {formatTime(shuttle.eta)}
-              </Box>
-            )}
-          </Box>
-          <Box color="label">{message}</Box>
-        </Stack.Item>
-        <Stack.Item textAlign="right">
-          <Box color="label">Бюджет снабжения</Box>
-          <Box fontSize={1.4} bold>
-            <AnimatedNumber value={points} format={(value) => formatCredits(value)} />
-          </Box>
-        </Stack.Item>
-      </Stack>
-      <Stack align="center" wrap>
+      )}
+      {showLoan && (
         <Stack.Item>
-          <ShuttleButton />
-        </Stack.Item>
-        {!requestonly && cart.length > 0 && (
-          <Stack.Item>
-            <Button icon="shopping-cart" onClick={props.onOpenCart}>
-              В корзине: {cart.length}
-              {total > 0 && `, ${formatCredits(total)}`}
-            </Button>
-          </Stack.Item>
-        )}
-        {!!manifest_department && (
-          <Stack.Item>
+          {loan_dispatched ? (
+            <Box color="bad">Шаттл у ЦК по аренде</Box>
+          ) : (
             <Button
-              icon="file-invoice"
-              tooltip={`Положите накладную в ящик перед отгрузкой: выручка за ящик уйдёт отделу за вычетом сбора снабжения (${manifest_fee}%).`}
-              onClick={() => act('print_manifest')}>
-              {`Накладная: ${manifest_department}`}
+              icon="handshake"
+              disabled={shuttle.state !== 'centcom'}
+              tooltip="ЦК просит шаттл на время; доступно, пока он стоит у ЦК."
+              onClick={() => act('loan')}>
+              Сдать шаттл ЦК
             </Button>
-          </Stack.Item>
-        )}
-        {!!loan && !requestonly && !is_app && (
-          <Stack.Item>
-            {loan_dispatched ? (
-              <Box color="bad">Шаттл у ЦК по аренде</Box>
-            ) : (
-              <Button
-                icon="handshake"
-                disabled={shuttle.state !== 'centcom'}
-                tooltip="ЦК просит шаттл на время; доступно, пока он стоит у ЦК."
-                onClick={() => act('loan')}>
-                Сдать шаттл ЦК
-              </Button>
-            )}
-          </Stack.Item>
-        )}
-        {!!is_app && (
-          <Stack.Item grow color="label" textAlign="right">
-            Шаттл, его аренда и спецзаказы - только с консоли снабжения.
-          </Stack.Item>
-        )}
-      </Stack>
-    </Section>
+          )}
+        </Stack.Item>
+      )}
+      {!!is_app && (
+        <Stack.Item grow color="label" textAlign="right">
+          Шаттл, его аренда и спецзаказы - только с консоли снабжения.
+        </Stack.Item>
+      )}
+    </Stack>
   );
 };
 
 const packTags = (pack: Pack) => {
-  const tags: { icon: string; text: string }[] = [];
+  const tags: { text: string }[] = [];
   if (pack.goody) {
-    tags.push({ icon: 'box', text: 'Малый кейс' });
+    tags.push({ text: 'Малый кейс' });
   }
   if (pack.access) {
-    tags.push({ icon: 'lock', text: 'Доступ' });
+    tags.push({ text: 'Доступ' });
   }
   if (pack.personal) {
-    tags.push({ icon: 'user', text: 'Без наценки' });
+    tags.push({ text: 'Без наценки' });
   }
   return tags;
 };
@@ -401,7 +373,7 @@ const PackDetails = (props: { pack: Pack; cost: number; outOfStock: boolean; onO
   const [amount, setAmount] = useState(1);
   const contents = pack.contents || [];
   return (
-    <Box className="Cargo__details" px={1.5} py={1} mb={1}>
+    <Box className="NtTerm__detail">
       <Box mb={1}>{pack.desc}</Box>
       {contents.length > 0 && (
         <Box mb={1}>
@@ -482,7 +454,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
     act('add', payload);
   };
   return (
-    <Section
+    <NtFrame
       title={express ? 'Каталог' : asRequest ? 'Каталог: заявка снабжению' : 'Каталог'}
       buttons={
         <Button.Checkbox checked={self_paid} tooltip={privateHint} onClick={() => act('toggleprivate')}>
@@ -499,28 +471,27 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           />
         </Stack.Item>
       </Stack>
-      <Box mb={1}>
-        <Button
-          icon="star"
-          selected={showFavorites}
+      <div className="NtTerm__chips">
+        <span
+          className={showFavorites ? 'NtTerm__chip NtTerm__chip--active' : 'NtTerm__chip'}
           onClick={() => {
             setActiveSupplyName(null);
             setSearchText('');
           }}>
-          {`Избранное (${favorites.length})`}
-        </Button>
+          {`★ Избранное (${favorites.length})`}
+        </span>
         {supplies.map((supply) => (
-          <Button
+          <span
             key={supply.name}
-            selected={!isSearching && supply.name === activeSupplyName}
+            className={!isSearching && supply.name === activeSupplyName ? 'NtTerm__chip NtTerm__chip--active' : 'NtTerm__chip'}
             onClick={() => {
               setActiveSupplyName(supply.name);
               setSearchText('');
             }}>
             {`${supply.name} (${supply.packs.length})`}
-          </Button>
+          </span>
         ))}
-      </Box>
+      </div>
       {asRequest && (
         <Stack align="center" mb={1}>
           <Stack.Item color="label">Причина заявки:</Stack.Item>
@@ -554,7 +525,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           const open = openId === pack.id;
           const favorite = favorites.includes(pack.id);
           return [
-            <Table.Row key={pack.id} className="candystripe">
+            <Table.Row key={pack.id} className={open ? 'NtTerm__row NtTerm__row--open' : 'NtTerm__row'}>
               <Table.Cell collapsing py={0.5}>
                 <Button
                   icon="star"
@@ -564,14 +535,13 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                   onClick={() => toggleFavorite(pack.id)}
                 />
               </Table.Cell>
-              <Table.Cell py={0.5} style={{ cursor: 'pointer' }} onClick={() => setOpenId(open ? null : pack.id)}>
+              <Table.Cell py={0.5} onClick={() => setOpenId(open ? null : pack.id)}>
                 <Icon name={open ? 'chevron-down' : 'chevron-right'} color="label" mr={1} />
                 {pack.name}
                 {packTags(pack).map((tag) => (
-                  <Box key={tag.text} inline color="label" ml={1} title={tag.text}>
-                    <Icon name={tag.icon} mr={0.5} />
+                  <span key={tag.text} className="NtTerm__tag">
                     {tag.text}
-                  </Box>
+                  </span>
                 ))}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} color={outOfStock ? 'bad' : 'label'} pr={1}>
@@ -599,7 +569,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           ];
         })}
       </Table>
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -609,7 +579,7 @@ const CargoRequests = (props) => {
   const requests = data.requests || [];
   const canDecide = (!requestonly || !!can_send) && !!can_approve_requests;
   return (
-    <Section
+    <NtFrame
       title="Заявки экипажа"
       buttons={
         !requestonly &&
@@ -664,7 +634,7 @@ const CargoRequests = (props) => {
           ))}
         </Table>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -705,7 +675,7 @@ const CargoCart = (props) => {
   const total = cargoTotal(cart);
   const left = points - total;
   return (
-    <Section
+    <NtFrame
       title="Корзина"
       buttons={
         editable &&
@@ -780,7 +750,7 @@ const CargoCart = (props) => {
           </Box>
         </Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -788,7 +758,7 @@ const DepartmentOrders = (props) => {
   const { act, data } = useBackend<CargoData>();
   const orders = data.department_requests || [];
   return (
-    <Section title="Заказы отделов">
+    <NtFrame title="Заказы отделов">
       <Box color="label" mb={1}>
         Отделы оплатили эти заказы из своего бюджета по заявкам, одобренным главой. Снабжение их только везёт: они уйдут
         со следующим шаттлом, а снятие с корзины вернёт деньги отделу.
@@ -826,7 +796,7 @@ const DepartmentOrders = (props) => {
           ))}
         </Table>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -835,7 +805,7 @@ const SpecialOffers = (props) => {
   const { can_take_offers } = data;
   const offers = data.special_offers || [];
   return (
-    <Section title="Спецзаказы партнёров">
+    <NtFrame title="Спецзаказы партнёров">
       <Box color="label" mb={1}>
         Спецзаказ платит цену заказа за каждую принятую штуку сразу при отгрузке, а всё сверх неё - снабжению маржой при
         выполнении. Положите накладную спецзаказа в ящик с товаром и отгрузите шаттлом до конца срока.
@@ -845,7 +815,7 @@ const SpecialOffers = (props) => {
       <Stack vertical>
         {offers.map((offer) => (
           <Stack.Item key={offer.uid}>
-            <Section
+            <NtFrame
               title={`${offer.partner}: ${offer.item}`}
               buttons={
                 !!can_take_offers &&
@@ -900,11 +870,11 @@ const SpecialOffers = (props) => {
                   </LabeledList.Item>
                 )}
               </LabeledList>
-            </Section>
+            </NtFrame>
           </Stack.Item>
         ))}
       </Stack>
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -914,7 +884,7 @@ const Market = (props) => {
   const { data } = useBackend<CargoData>();
   const market = data.market || { commodities: [], price_index: 1 };
   return (
-    <Section title="Рынок товаров" buttons={<Box inline>Индекс цен: ×{market.price_index}</Box>}>
+    <NtFrame title="Рынок товаров" buttons={<Box inline>Индекс цен: ×{market.price_index}</Box>}>
       <Box color="label" mb={1}>
         Закупка - во сколько раз паки товара дороже базы. Продажа - во сколько раз NT и лучший покупатель платят за груз
         против базы, с учётом спроса: продажи выбивают спрос, сдвиги рынка его восстанавливают. Горячий товар продаётся
@@ -963,7 +933,7 @@ const Market = (props) => {
           </Table.Row>
         ))}
       </Table>
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -972,7 +942,7 @@ const Partners = (props) => {
   const { tier_step = 1, tier_max = 1 } = data;
   const partners = data.partners || [];
   return (
-    <Section title="Торговые партнёры">
+    <NtFrame title="Торговые партнёры">
       <Box color="label" mb={1}>
         Паки везёт самый дешёвый открытый партнёр, у которого они есть на складе. Репутация растёт от продаж и закупок,
         каждые {tier_step} очков - новая ступень и скидка; репутация у одних партнёров открывает других.
@@ -983,7 +953,7 @@ const Partners = (props) => {
           const progress = maxed ? tier_step : partner.reputation - partner.tier * tier_step;
           return (
             <Stack.Item key={partner.id}>
-              <Section
+              <NtFrame
                 title={partner.name}
                 buttons={
                   <Box inline color={partner.unlocked ? 'good' : 'label'}>
@@ -1022,26 +992,26 @@ const Partners = (props) => {
                   <LabeledList.Item label="Покупает">{partner.buys || '-'}</LabeledList.Item>
                   <LabeledList.Item label="Продаёт">{partner.sells || '-'}</LabeledList.Item>
                 </LabeledList>
-              </Section>
+              </NtFrame>
             </Stack.Item>
           );
         })}
       </Stack>
-    </Section>
+    </NtFrame>
   );
 };
 
 const Contracts = (props) => {
   const { data } = useBackend<CargoData>();
   return (
-    <Section title="Контракты NT">
+    <NtFrame title="Контракты NT">
       {!!data.contracts_help && (
         <Box color="label" mb={1}>
           {data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении «Бюджет отдела».
         </Box>
       )}
       <ContractTable readOnly />
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -1050,23 +1020,23 @@ const CargoHelp = (props) => {
   const topics = data.help_topics || (data.market_help ? [{ title: 'Как работает рынок', icon: 'info-circle', lines: [data.market_help] }] : []);
   if (!topics.length) {
     return (
-      <Section title="Справка">
+      <NtFrame title="Справка">
         <Box color="label">Справки для этой консоли нет.</Box>
-      </Section>
+      </NtFrame>
     );
   }
   return (
     <Stack vertical>
       {topics.map((topic) => (
         <Stack.Item key={topic.title}>
-          <Section title={topic.title} buttons={<Icon name={topic.icon} color="label" />}>
+          <NtFrame title={topic.title} buttons={<Icon name={topic.icon} color="label" />}>
             {topic.lines.map((line) => (
               <Stack key={line} mb={0.75}>
                 <Stack.Item color="label">•</Stack.Item>
                 <Stack.Item grow>{line}</Stack.Item>
               </Stack>
             ))}
-          </Section>
+          </NtFrame>
         </Stack.Item>
       ))}
     </Stack>

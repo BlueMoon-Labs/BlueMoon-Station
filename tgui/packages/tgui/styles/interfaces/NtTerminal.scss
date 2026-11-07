@@ -1,0 +1,428 @@
+// Экраны станционных терминалов NT: окна открывают постоянно, поэтому текст обычным шрифтом и спокойный фон;
+// моноширинный - только цифры, клавиши и имя устройства; цвет устройства - только для акцентов.
+
+$nt-bg: #0b0e12;
+$nt-panel: #10151b;
+$nt-text: #c9d3df;
+$nt-dim: #74818f;
+$nt-faint: #27303a;
+$nt-good: #6fdc8c;
+$nt-bad: #ff6b5e;
+$nt-warn: #f2c14e;
+$nt-mono: Consolas, 'Lucida Console', 'Courier New', monospace;
+
+$nt-tones: (
+  supply: #f0954a,
+  exchange: #4fdc8f,
+  contracts: #74b6ff,
+  register: #5fe0c0,
+  medical: #5fd0e6,
+  engineering: #f2c94c,
+  security: #ff6b6b,
+  science: #b48cff,
+  service: #7bd88f,
+  civil: #a9b8cc,
+  command: #7fa4ff,
+);
+
+@each $tone, $color in $nt-tones {
+  .NtTerm--#{$tone} {
+    --nt-accent: #{$color};
+    --nt-accent-soft: #{rgba($color, 0.14)};
+    --nt-accent-line: #{rgba($color, 0.45)};
+  }
+}
+
+.Window:has(.NtTerm) .TitleBar {
+  background-color: #0e1318;
+  border-bottom: 1px solid $nt-faint;
+}
+
+.Window:has(.NtTerm) .Window__contentPadding {
+  margin: 0;
+}
+
+@keyframes nt-flash {
+  from {
+    background-color: var(--nt-accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.NtTerm {
+  min-height: 100%;
+  line-height: 1.5;
+  color: $nt-text;
+  background-color: $nt-bg;
+
+  &__num {
+    font-family: $nt-mono;
+  }
+
+  &__flash {
+    animation: nt-flash 1.2s ease-out;
+  }
+
+  &__head {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--nt-accent-line);
+  }
+
+  &__brand {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__mark {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 0 4px;
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  &__device {
+    font-family: $nt-mono;
+    color: var(--nt-accent);
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  &__status {
+    margin-top: 4px;
+    color: $nt-dim;
+  }
+
+  &__readout {
+    display: flex;
+    gap: 22px;
+    text-align: right;
+  }
+
+  &__menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    padding: 6px 14px;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__menuItem {
+    padding: 1px 6px;
+    color: $nt-dim;
+    cursor: pointer;
+    outline: none;
+  }
+
+  &__menuItem:hover,
+  &__menuItem:focus-visible {
+    color: $nt-text;
+  }
+
+  &__menuItem--active,
+  &__menuItem--active:hover {
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+  }
+
+  &__menuKey {
+    margin-right: 5px;
+    font-family: $nt-mono;
+    opacity: 0.55;
+  }
+
+  &__menuCount {
+    margin-left: 6px;
+    color: $nt-warn;
+  }
+
+  &__menuItem--active &__menuCount {
+    color: $nt-bg;
+    font-weight: bold;
+  }
+
+  &__body {
+    padding: 12px 14px 14px;
+  }
+
+  &__frame {
+    margin-bottom: 14px;
+  }
+
+  &__frameHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__frameTitle {
+    color: var(--nt-accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  &__frameRule {
+    flex: 1;
+    height: 1px;
+    background-color: $nt-faint;
+  }
+
+  &__frameBody {
+    padding-left: 2px;
+  }
+
+  &__stat {
+    min-width: 90px;
+  }
+
+  &__statLabel {
+    color: $nt-dim;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  &__statValue {
+    font-family: $nt-mono;
+    color: var(--nt-accent);
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  &__stat--good &__statValue {
+    color: $nt-good;
+  }
+
+  &__stat--bad &__statValue {
+    color: $nt-bad;
+  }
+
+  &__stat--warn &__statValue {
+    color: $nt-warn;
+  }
+
+  &__line {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 1px 0;
+  }
+
+  &__lineLabel {
+    color: $nt-dim;
+  }
+
+  &__lineDots {
+    flex: 1;
+    min-width: 12px;
+    border-bottom: 1px dotted $nt-faint;
+  }
+
+  &__line--good &__lineValue {
+    color: $nt-good;
+  }
+
+  &__line--bad &__lineValue {
+    color: $nt-bad;
+  }
+
+  &__line--warn &__lineValue {
+    color: $nt-warn;
+  }
+
+  &__line--dim &__lineValue {
+    color: $nt-dim;
+  }
+
+  &__empty {
+    padding: 18px 0;
+    color: $nt-dim;
+    text-align: center;
+  }
+
+  &__hint {
+    color: $nt-dim;
+  }
+
+  &__row {
+    cursor: pointer;
+  }
+
+  &__row:hover {
+    background-color: var(--nt-accent-soft);
+  }
+
+  &__row--open {
+    background-color: var(--nt-accent-soft);
+  }
+
+  &__detail {
+    margin: 2px 0 10px 18px;
+    padding: 8px 12px;
+    border-left: 2px solid var(--nt-accent);
+    background-color: $nt-panel;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 10px;
+  }
+
+  &__chip {
+    color: $nt-dim;
+    cursor: pointer;
+  }
+
+  &__chip:hover {
+    color: $nt-text;
+  }
+
+  &__chip--active,
+  &__chip--active:hover {
+    color: var(--nt-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &__tag {
+    margin-left: 8px;
+    color: $nt-dim;
+    font-size: 11px;
+  }
+
+  &__tag::before {
+    content: '[';
+  }
+
+  &__tag::after {
+    content: ']';
+  }
+
+  .color-label {
+    color: $nt-dim !important;
+  }
+
+  .color-good {
+    color: $nt-good !important;
+  }
+
+  .color-bad {
+    color: $nt-bad !important;
+  }
+
+  .color-average {
+    color: $nt-warn !important;
+  }
+
+  // Кнопки - команды в скобках, без заливки; главная команда залита цветом экрана
+  .Button {
+    color: var(--nt-accent);
+    background-color: transparent;
+    border: 1px solid var(--nt-accent-line);
+    border-radius: 0;
+    transition: none;
+  }
+
+  .Button:hover,
+  .Button:focus {
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+  }
+
+  .Button--selected,
+  .Button--color--good {
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+    border-color: var(--nt-accent);
+  }
+
+  .Button--color--bad {
+    color: $nt-bad;
+    border-color: rgba($nt-bad, 0.5);
+  }
+
+  .Button--color--bad:hover {
+    color: $nt-bg;
+    background-color: $nt-bad;
+  }
+
+  .Button--color--transparent {
+    border-color: transparent;
+  }
+
+  .Button--disabled,
+  .Button--disabled:hover {
+    color: $nt-faint;
+    background-color: transparent;
+    border-color: $nt-faint;
+  }
+
+  .Input {
+    color: $nt-text;
+    background-color: $nt-panel;
+    border: 1px solid $nt-faint;
+    border-radius: 0;
+  }
+
+  .Input--focused,
+  .Input:focus-within {
+    border-color: var(--nt-accent-line);
+  }
+
+  .Table__row--header .Table__cell {
+    color: $nt-dim;
+    font-weight: normal;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  .Table__cell {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  .candystripe:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.025);
+  }
+
+  .LabeledList__label {
+    color: $nt-dim;
+  }
+
+  .ProgressBar {
+    border-radius: 0;
+    border-color: var(--nt-accent-line);
+  }
+
+  .ProgressBar__fill {
+    background-color: var(--nt-accent-soft) !important;
+    border-right: 1px solid var(--nt-accent);
+  }
+
+  .NoticeBox {
+    color: $nt-text;
+    background-color: $nt-panel;
+    background-image: none;
+    border-left: 2px solid var(--nt-accent);
+  }
+
+  .NoticeBox--type--danger {
+    border-left-color: $nt-bad;
+    color: $nt-bad;
+  }
+
+  .NoticeBox--type--warning {
+    border-left-color: $nt-warn;
+    color: $nt-warn;
+  }
+}

@@ -324,7 +324,7 @@ test('карточка пака: опись, количество и заказ 
   const ui = setup();
   fireEvent.click(ui.getByText('50 Metal Sheets'));
   expect(ui.getByText('metal ×50')).toBeTruthy();
-  const plus = ui.container.querySelector('.Cargo__details .fa-plus') as Element;
+  const plus = ui.container.querySelector('.NtTerm__detail .fa-plus') as Element;
   fireEvent.click(plus);
   fireEvent.click(plus);
   fireEvent.click(ui.getByText('В корзину за 9 000 кр.'));
@@ -333,11 +333,11 @@ test('карточка пака: опись, количество и заказ 
 
 test('избранное: звёздочка собирает пак во вкладку «Избранное»', () => {
   const ui = setup();
-  fireEvent.click(ui.getByText('Избранное (0)'));
+  fireEvent.click(ui.getByText('★ Избранное (0)'));
   expect(ui.getByText(/Отметьте звёздочкой/)).toBeTruthy();
   fireEvent.click(ui.getByText('Canisters & Materials (2)'));
   fireEvent.click(ui.container.querySelectorAll('td .fa-star')[0]);
-  fireEvent.click(ui.getByText('Избранное (1)'));
+  fireEvent.click(ui.getByText('★ Избранное (1)'));
   expect(ui.getByText('50 Metal Sheets')).toBeTruthy();
   expect(ui.queryByText('50 Glass Sheets')).toBeNull();
 });
@@ -369,7 +369,7 @@ test('корзина складывает одинаковые паки, плю�
 test('счётчики дел видны в навигации', () => {
   const ui = setup();
   expect(ui.getByText('Заявки')).toBeTruthy();
-  const nav = ui.container.querySelectorAll('.Cargo__badge');
+  const nav = ui.container.querySelectorAll('.NtTerm__menuCount');
   expect(Array.from(nav).map((badge) => badge.textContent)).toEqual(['1', '1', '1', '2']);
 });
 
