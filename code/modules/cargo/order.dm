@@ -36,6 +36,8 @@
 	var/department_id
 	/// Заказан со взломанной консоли: поставщиком может быть контрабандный партнёр
 	var/contraband_supply = FALSE
+	/// Партнёр, выбранный при заказе; если к отгрузке он не может везти, везёт самый дешёвый
+	var/partner_id
 
 /datum/supply_order/New(datum/supply_pack/pack, orderer, orderer_rank, orderer_ckey, reason, paying_account, coupon)
 	id = SSshuttle.ordernum++

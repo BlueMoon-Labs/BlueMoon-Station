@@ -70,7 +70,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	. = list()
 	for(var/pack_type in rows)
 		var/list/row = rows[pack_type]
-		.[pack_type] = list(row["cost"], row["supplier"], row["in_stock"])
+		.[pack_type] = list(row["cost"], row["supplier"], row["in_stock"], row["choices"])
 
 /// Паки каталога окна по его группам: таблица цен окна несёт только их.
 /proc/econ_cargo_supply_ids(list/supplies)
@@ -139,7 +139,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	if(!offer)
 		return list("cost" = pack.market_cost(), "supplier" = null, "in_stock" = !econ_pack_traded(pack))
 	var/datum/trade_partner/supplier = offer[1]
-	return list("cost" = offer[2], "supplier" = supplier.id, "in_stock" = TRUE)
+	return list("cost" = offer[2], "supplier" = supplier.id, "in_stock" = TRUE, "choices" = length(offer) >= 3 ? offer[3] : null)
 
 /// Цена, поставщик, товар рынка и наличие пака для строки каталога; поставщик - только из видимых окну партнёров.
 /proc/econ_cargo_pack_entry(datum/supply_pack/pack, show_contraband_partners)
@@ -158,7 +158,12 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 /// Неизменная часть строки каталога окна снабжения; цена, поставщик и наличие - в econ_cargo_live_data().
 /proc/econ_cargo_static_entry(datum/supply_pack/pack)
 	var/datum/commodity/commodity = econ_pack_traded(pack) ? econ_pack_commodity(pack) : null
-	return list("commodity" = commodity?.name, "contents" = econ_pack_contents(pack))
+	var/datum/trade_partner/exclusive = pack.partner_exclusive ? SSmarket.get_partner(pack.partner_exclusive) : null
+	return list(
+		"commodity" = commodity?.name,
+		"contents" = econ_pack_contents(pack),
+		"exclusive" = exclusive ? list(exclusive.name, pack.exclusive_tier) : null,
+	)
 
 /// Опись пака для карточки каталога: "имя ×N" по списку contains, одинаковые предметы сложены.
 /proc/econ_pack_contents(datum/supply_pack/pack)
@@ -223,6 +228,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		"market_help" = econ_cargo_market_help(show_contraband),
 		"help_topics" = econ_cargo_help_topics(show_contraband),
 		"add_max" = ECON_CARGO_ADD_MAX,
+		"reputation_per_credit" = SSmarket.reputation_per_credit,
 		"reason_max" = ECON_REQUEST_REASON_MAX,
 		"contracts_help" = econ_contracts_help(),
 		"tier_step" = PARTNER_TIER_STEP,

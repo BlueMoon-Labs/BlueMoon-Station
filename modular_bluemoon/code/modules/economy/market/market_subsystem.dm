@@ -602,15 +602,17 @@ SUBSYSTEM_DEF(market)
 		var/factor = market_commodity.buy_factor()
 		var/datum/trade_partner/best
 		var/best_price
+		var/list/choices = list()
 		for(var/datum/trade_partner/partner as anything in open_partners)
-			if(!partner.sells_group(pack.group) || !partner.in_stock(pack))
+			if(!partner.sells_group(pack.group) || !partner.in_stock(pack) || !econ_exclusive_ok(partner, pack))
 				continue
 			var/price = econ_pack_partner_cost(total, packaging, factor, partner, open_partners[partner])
+			choices += list(list(partner.id, price))
 			if(!best || price < best_price)
 				best = partner
 				best_price = price
 		if(best)
-			.[pack] = list(best, best_price)
+			.[pack] = list(best, best_price, length(choices) > 1 ? choices : null)
 
 /// Открытый партнёр, который платит за товар больше всех; контрабандный - только для отгрузки с допуском контрабанды.
 /datum/controller/subsystem/market/proc/best_buyer(commodity_id, allow_contraband = FALSE)

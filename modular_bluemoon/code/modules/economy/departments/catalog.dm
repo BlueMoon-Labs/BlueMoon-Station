@@ -68,11 +68,13 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 
 /datum/supply_order/proc/cart_entry()
 	var/datum/economy_department/department = prepaid ? SSeconomy.get_department(department_id) : null
+	var/datum/trade_partner/supplier = econ_order_supplier(src)
 	return list(
 		"object" = department ? "[pack.name] (оплачено: [department.name])" : pack.name,
-		"cost" = department ? 0 : pack.get_cost(paying_account),
+		"cost" = department ? 0 : econ_order_cost(src),
 		"id" = id,
 		"pack" = "[pack.type]",
+		"supplier" = supplier?.name,
 		"orderer" = orderer,
 		"paid" = !isnull(paying_account),
 		"department" = department?.name,

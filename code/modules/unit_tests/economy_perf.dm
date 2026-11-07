@@ -13,6 +13,8 @@
 			continue
 		if(!((PARTNER_ANY in partner.sells_groups) || (pack.group in partner.sells_groups)) || !partner.in_stock(pack))
 			continue
+		if(pack.partner_exclusive && (partner.id != pack.partner_exclusive || partner.tier() < pack.exclusive_tier))
+			continue
 		var/factor = max(market_commodity.price_factor * partner.markup * (1 - partner.discount()), MARKET_PRICE_MIN)
 		var/price = round(packaging + (total - packaging) * factor)
 		if(!best || price < best_price)

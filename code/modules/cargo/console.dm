@@ -218,9 +218,11 @@
 					break
 
 			var/amount = econ_cargo_add_amount(params)
+			var/datum/trade_partner/partner = econ_requested_partner(params, pack, shows_contraband())
 			for(var/i in 1 to amount)
 				var/datum/supply_order/order = econ_cargo_new_order(usr, pack, reason, account, requestonly && !self_paid, i == 1 ? applied_coupon : null, get_turf(src))
 				order.contraband_supply = shows_contraband()
+				order.partner_id = partner?.id
 			if(account)
 				say("Заказ принят[amount > 1 ? ", [amount] шт." : ""]: оплата со счёта [account.account_holder] при доставке.")
 			if(requestonly && message_cooldown < world.time)

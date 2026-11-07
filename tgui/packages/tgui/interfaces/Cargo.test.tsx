@@ -366,6 +366,32 @@ test('корзина складывает одинаковые паки, плю�
   expect(sent(ui.topic, 'remove')).toEqual([{ id: 12 }]);
 });
 
+test('карточка пака: выбор партнёра меняет цену и уходит в add, показана репутация', () => {
+  const ui = setup({
+    reputation_per_credit: 0.1,
+    prices: {
+      '/datum/supply_pack/materials/metal50': [3000, 'prospectors', 1, [['nt_logistics', 3300], ['prospectors', 3000]]],
+      '/datum/supply_pack/materials/glass50': [1500, null, 0],
+    },
+    partners: [...backend.partners, { ...backend.partners[0], id: 'nt_logistics', name: 'НТ Логистика' }],
+  });
+  fireEvent.click(ui.getByText('50 Metal Sheets'));
+  expect(ui.getByText(/НТ Логистика - 3 300 кр\./)).toBeTruthy();
+  expect(ui.getByText(/\+165 репутации/)).toBeTruthy();
+  fireEvent.click(ui.getByText(/НТ Логистика - 3 300 кр\./));
+  fireEvent.click(ui.getByText('В корзину за 3 300 кр.'));
+  expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50', partner: 'nt_logistics' }]);
+});
+
+test('закрытый эксклюзив партнёра объясняет, на какой ступени откроется', () => {
+  const supplies = {
+    Medical: { name: 'Medical', packs: [{ name: 'Хирургический набор Вей-Мед', id: '/x', desc: 'Набор', goody: 0, exclusive: ['Вей-Мед', 2] }] },
+  };
+  const ui = setup({ supplies, prices: { '/x': [4500, null, 0] } });
+  expect(ui.getByText('ступень 2 у «Вей-Мед»')).toBeTruthy();
+  expect(ui.getByText('Эксклюзив «Вей-Мед»')).toBeTruthy();
+});
+
 test('счётчики дел видны в навигации', () => {
   const ui = setup();
   expect(ui.getByText('Заявки')).toBeTruthy();

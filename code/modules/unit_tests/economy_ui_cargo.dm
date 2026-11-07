@@ -617,3 +617,59 @@
 	var/static/list/states = list("station", "centcom", "to_station", "to_centcom", "recharging", "loaned", "away")
 	TEST_ASSERT(shuttle["state"] in states, "Состояние шаттла: [shuttle["state"]]")
 	TEST_ASSERT(isnum(shuttle["eta"]) && shuttle["eta"] >= 0, "Время до прибытия: [shuttle["eta"]]")
+
+/// Выбранный в окне партнёр везёт заказ и берёт свою цену; не может везти - везёт самый дешёвый; чужой или скрытый партнёр не принимается.
+/datum/unit_test/economy_ui_cargo/supplier_choice/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/materials/metal50]
+	var/datum/trade_partner/nt = SSmarket.get_partner("nt_logistics")
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	TEST_ASSERT(nt.markup > 1, "НТ Логистика с логистической наценкой: [nt.markup]")
+	var/list/offer = SSmarket.best_offer(pack)
+	TEST_ASSERT_EQUAL(offer[1], prospectors, "Металл дешевле у старателей")
+	var/list/choices = offer[3]
+	TEST_ASSERT_EQUAL(length(choices), 2, "Окно видит обоих поставщиков металла")
+	press(technician, console, "add", list("id" = "[pack.type]", "partner" = "nt_logistics"))
+	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_EQUAL(order.partner_id, "nt_logistics", "Заказ запомнил выбранного партнёра")
+	TEST_ASSERT_EQUAL(econ_order_supplier(order), nt, "Везёт выбранный")
+	TEST_ASSERT_EQUAL(econ_order_cost(order), nt.pack_price(pack), "Цена выбранного партнёра")
+	TEST_ASSERT(econ_order_cost(order) > prospectors.pack_price(pack), "НТ дороже профильного партнёра")
+	nt.embargo_until = world.time + 10 MINUTES
+	TEST_ASSERT_EQUAL(econ_order_supplier(order), prospectors, "Под эмбарго везёт самый дешёвый")
+	nt.embargo_until = 0
+	var/datum/trade_partner/traders = SSmarket.get_partner("free_traders")
+	traders.unlocked = TRUE
+	press(technician, console, "add", list("id" = "[pack.type]", "partner" = "free_traders"))
+	order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_NULL(order.partner_id, "Скрытый контрабандный партнёр не принят")
+	press(technician, console, "add", list("id" = "[pack.type]", "partner" = "nakamura"))
+	order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_NULL(order.partner_id, "Партнёр без металла не принят")
+
+/// Эксклюзив партнёра закрыт до его 2-й ступени, везёт его только он, НТ Логистика - никогда; окно знает, у кого и с какой ступени.
+/datum/unit_test/economy_ui_cargo/exclusive_packs/Run()
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/medical/veymed_surgery]
+	TEST_ASSERT_NOTNULL(pack, "Пак Вей-Мед зарегистрирован")
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	TEST_ASSERT(vey.unlocked, "Вей-Мед открыт со старта")
+	vey.reputation = 0
+	TEST_ASSERT(econ_pack_unavailable(pack), "До 2-й ступени эксклюзив не купить")
+	vey.reputation = PARTNER_TIER_STEP * 2
+	TEST_ASSERT_EQUAL(vey.tier(), 2, "Вторая ступень")
+	var/list/offer = SSmarket.best_offer(pack)
+	TEST_ASSERT_EQUAL(offer[1], vey, "Везёт только Вей-Мед")
+	TEST_ASSERT_NULL(offer[3], "Другого поставщика у эксклюзива нет")
+	TEST_ASSERT(!econ_partner_supplies(SSmarket.get_partner("nt_logistics"), pack), "НТ Логистика эксклюзив не везёт")
+	var/list/entry = econ_cargo_static_entry(pack)
+	TEST_ASSERT_EQUAL(entry["exclusive"][1], vey.name, "Окно знает партнёра эксклюзива")
+	TEST_ASSERT_EQUAL(entry["exclusive"][2], 2, "И ступень")
+	for(var/pack_type in subtypesof(/datum/supply_pack))
+		var/datum/supply_pack/each = SSshuttle.supply_packs[pack_type]
+		if(!each?.partner_exclusive)
+			continue
+		var/datum/trade_partner/owner = SSmarket.get_partner(each.partner_exclusive)
+		TEST_ASSERT_NOTNULL(owner, "[pack_type]: нет партнёра [each.partner_exclusive]")
+		TEST_ASSERT(owner.sells_group(each.group), "[pack_type]: [owner.name] не продаёт группу [each.group]")
+		TEST_ASSERT(econ_pack_traded(each), "[pack_type]: пак не идёт через партнёров")

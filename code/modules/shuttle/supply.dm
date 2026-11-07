@@ -133,8 +133,8 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		if(econ_pack_unavailable(SO.pack, SO.contraband_supply))
 			SO.paying_account?.bank_card_talk("Заказ #[SO.id] ждёт: [SO.pack.name] нет в наличии у партнёров.")
 			continue
-		var/datum/trade_partner/supplier = econ_pack_supplier(SO.pack, SO.paying_account, SO.contraband_supply)
-		var/base_cost = SO.pack.get_cost(SO.paying_account, SO.contraband_supply)
+		var/datum/trade_partner/supplier = econ_order_supplier(SO)
+		var/base_cost = econ_order_cost(SO)
 		if(SO.applied_coupon)
 			base_cost *= (1 - SO.applied_coupon.discount_pct_off)
 		base_cost = round(base_cost)

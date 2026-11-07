@@ -5290,6 +5290,7 @@
 #include "modular_bluemoon\code\modules\economy\machines\ticker_board.dm"
 #include "modular_bluemoon\code\modules\economy\market\cargo_ui.dm"
 #include "modular_bluemoon\code\modules\economy\market\commodity.dm"
+#include "modular_bluemoon\code\modules\economy\market\exclusive_packs.dm"
 #include "modular_bluemoon\code\modules\economy\market\logos.dm"
 #include "modular_bluemoon\code\modules\economy\market\mapping.dm"
 #include "modular_bluemoon\code\modules\economy\market\market_sounds.dm"

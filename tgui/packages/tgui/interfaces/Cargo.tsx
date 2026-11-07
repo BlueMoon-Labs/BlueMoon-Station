@@ -34,12 +34,16 @@ type Pack = {
   personal?: BooleanLike;
   commodity?: string | null;
   contents?: string[];
+  /** Эксклюзив партнёра: [имя партнёра, ступень, с которой он его везёт] */
+  exclusive?: [string, number] | null;
+  /** Все открытые партнёры, у которых пак есть: [id, цена]; только когда их больше одного */
+  choices?: [string, number][] | null;
   supplier?: string | null;
   in_stock?: BooleanLike;
 };
 
 /** Цена, id поставщика и наличие пака: приходят отдельно от каталога и обновляются после пересчёта цен. */
-type PackPrice = [number, string | null, BooleanLike];
+type PackPrice = [number, string | null, BooleanLike, ([string, number][] | null)?];
 
 const withPrice = (pack: Pack, prices?: Record<string, PackPrice>, partners?: Partner[]): Pack => {
   const price = prices?.[pack.id];
@@ -47,7 +51,7 @@ const withPrice = (pack: Pack, prices?: Record<string, PackPrice>, partners?: Pa
     return pack;
   }
   const supplier = price[1] && (partners?.find((partner) => partner.id === price[1])?.name || price[1]);
-  return { ...pack, cost: price[0], supplier, in_stock: price[2] };
+  return { ...pack, cost: price[0], supplier, in_stock: price[2], choices: price[3] || null };
 };
 
 type SupplyGroup = {
@@ -63,6 +67,7 @@ type CartEntry = {
   paid: BooleanLike;
   pack?: string;
   department?: string | null;
+  supplier?: string | null;
 };
 
 type RequestRow = {
@@ -141,6 +146,7 @@ type CargoData = {
   private_markup?: number;
   reason_max?: number;
   add_max?: number;
+  reputation_per_credit?: number;
   tier_step?: number;
   tier_max?: number;
   supplies: Record<string, SupplyGroup> | SupplyGroup[];
@@ -363,15 +369,32 @@ const packTags = (pack: Pack) => {
   if (pack.personal) {
     tags.push({ text: 'Без наценки' });
   }
+  if (pack.exclusive) {
+    tags.push({ text: `Эксклюзив «${pack.exclusive[0]}»` });
+  }
   return tags;
 };
 
-const PackDetails = (props: { pack: Pack; cost: number; outOfStock: boolean; onOrder: (amount: number) => void; express?: boolean }) => {
+const PackDetails = (props: {
+  pack: Pack;
+  cost: number;
+  outOfStock: boolean;
+  onOrder: (amount: number, partner?: string) => void;
+  express?: boolean;
+}) => {
   const { data } = useBackend<CargoData>();
-  const { pack, cost, outOfStock, onOrder, express } = props;
+  const { pack, outOfStock, onOrder, express } = props;
   const addMax = data.add_max || 10;
   const [amount, setAmount] = useState(1);
+  const [partner, setPartner] = useState<string | null>(null);
   const contents = pack.contents || [];
+  // Цена в окне уже с наценкой частного заказа: та же доля ложится на цены других партнёров
+  const ratio = pack.cost ? props.cost / pack.cost : 1;
+  const choices = !express && pack.choices ? pack.choices : null;
+  const chosen = choices?.find(([id]) => id === partner);
+  const cost = chosen ? Math.round(chosen[1] * ratio) : props.cost;
+  const partnerName = (id: string) => data.partners?.find((entry) => entry.id === id)?.name || id;
+  const repPerCredit = data.reputation_per_credit || 0;
   return (
     <Box className="NtTerm__detail">
       <Box mb={1}>{pack.desc}</Box>
@@ -384,7 +407,28 @@ const PackDetails = (props: { pack: Pack; cost: number; outOfStock: boolean; onO
         </Box>
       )}
       <LabeledList>
-        <LabeledList.Item label="Поставщик">{outOfStock ? <Box color="bad">ни у кого нет на складе</Box> : pack.supplier || 'NT напрямую'}</LabeledList.Item>
+        <LabeledList.Item label="Поставщик">
+          {outOfStock ? (
+            <Box color="bad">
+              {pack.exclusive
+                ? `эксклюзив «${pack.exclusive[0]}»: откроется на ${pack.exclusive[1]}-й ступени репутации`
+                : 'ни у кого нет на складе'}
+            </Box>
+          ) : choices ? (
+            choices.map(([id, price]) => {
+              const selected = chosen ? chosen[0] === id : partnerName(id) === pack.supplier;
+              return (
+                <Box key={id} className={selected ? 'NtTerm__chip NtTerm__chip--active' : 'NtTerm__chip'} onClick={() => setPartner(id)}>
+                  {selected ? '● ' : '○ '}
+                  {partnerName(id)} - {formatCredits(Math.round(price * ratio))}
+                  {repPerCredit > 0 && <span className="NtTerm__hint"> · +{Math.round((price * repPerCredit) / 2)} репутации</span>}
+                </Box>
+              );
+            })
+          ) : (
+            pack.supplier || 'NT напрямую'
+          )}
+        </LabeledList.Item>
         {!!pack.commodity && <LabeledList.Item label="Товар рынка">{pack.commodity}: цена идёт за ним, см. «Рынок»</LabeledList.Item>}
       </LabeledList>
       {!outOfStock && (
@@ -405,7 +449,7 @@ const PackDetails = (props: { pack: Pack; cost: number; outOfStock: boolean; onO
             </>
           )}
           <Stack.Item>
-            <Button icon="cart-plus" color="good" onClick={() => onOrder(amount)}>
+            <Button icon="cart-plus" color="good" onClick={() => onOrder(amount, chosen ? chosen[0] : undefined)}>
               {`${express ? 'Заказать' : 'В корзину'} за ${formatCredits(cost * amount)}`}
             </Button>
           </Stack.Item>
@@ -443,8 +487,11 @@ export const CargoCatalog = (props: { express?: boolean }) => {
     : 'Оплата с вашего счёта при доставке.' +
       (markupPercent > 0 ? ` Частный заказ дороже на ${markupPercent}%, наценка идёт снабжению; малые кейсы и личный каталог - без наценки.` : '');
   const asRequest = !!requestonly && !self_paid;
-  const order = (pack: Pack, amount = 1) => {
+  const order = (pack: Pack, amount = 1, partner?: string) => {
     const payload: Record<string, unknown> = { id: pack.id };
+    if (partner) {
+      payload.partner = partner;
+    }
     if (asRequest && reason.trim()) {
       payload.reason = reason.trim();
     }
@@ -545,7 +592,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                 ))}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} color={outOfStock ? 'bad' : 'label'} pr={1}>
-                {outOfStock ? 'нет в наличии' : pack.supplier || '-'}
+                {outOfStock ? (pack.exclusive ? `ступень ${pack.exclusive[1]} у «${pack.exclusive[0]}»` : 'нет в наличии') : pack.supplier || '-'}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} textAlign="right">
                 <Button
@@ -562,7 +609,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
               <Table.Row key={`${pack.id}-details`}>
                 <Table.Cell />
                 <Table.Cell colSpan={3}>
-                  <PackDetails pack={pack} cost={cost} outOfStock={outOfStock} express={express} onOrder={(amount) => order(pack, amount)} />
+                  <PackDetails pack={pack} cost={cost} outOfStock={outOfStock} express={express} onOrder={(amount, partner) => order(pack, amount, partner)} />
                 </Table.Cell>
               </Table.Row>
             ),
@@ -643,6 +690,7 @@ type CartGroup = {
   object: string;
   pack?: string;
   payer: string;
+  supplier?: string | null;
   byCargo: boolean;
   ids: number[];
   cost: number;
@@ -654,13 +702,13 @@ const groupCart = (cart: CartEntry[]): CartGroup[] => {
   for (const entry of cart) {
     const byCargo = paidByCargo(entry);
     const payer = entry.department ? `Отдел: ${entry.department}` : entry.paid ? `Лично: ${entry.orderer}` : 'Снабжение';
-    const key = `${entry.pack || entry.object}|${payer}`;
+    const key = `${entry.pack || entry.object}|${payer}|${entry.supplier || ''}`;
     const group = groups.find((other) => other.key === key);
     if (group) {
       group.ids.push(entry.id);
       group.cost += entry.cost;
     } else {
-      groups.push({ key, object: entry.object, pack: entry.pack, payer, byCargo, ids: [entry.id], cost: entry.cost });
+      groups.push({ key, object: entry.object, pack: entry.pack, payer, supplier: entry.supplier, byCargo, ids: [entry.id], cost: entry.cost });
     }
   }
   return groups;
@@ -704,7 +752,10 @@ const CargoCart = (props) => {
           </Table.Row>
           {groups.map((group) => (
             <Table.Row key={group.key} className="candystripe">
-              <Table.Cell py={0.5}>{group.object}</Table.Cell>
+              <Table.Cell py={0.5}>
+                {group.object}
+                {!!group.supplier && <span className="NtTerm__tag">{group.supplier}</span>}
+              </Table.Cell>
               <Table.Cell py={0.5} color={group.byCargo ? undefined : 'label'}>
                 {group.payer}
               </Table.Cell>
