@@ -1,3 +1,4 @@
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../../backend';
 import { Box, Button, Divider, Dropdown, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
@@ -33,13 +34,7 @@ type CustomInteractionData = {
   sound_labels: string[];
 }
 
-type CustomSoundOption = {
-  key: string;
-  label: string;
-  group: string;
-}
-
-type MoanSoundOption = {
+type SoundOption = {
   key: string;
   label: string;
   group: string;
@@ -68,14 +63,17 @@ type ParticipantSettings = {
 };
 
 type CustomTabInfo = {
+  user?: string;
+  target?: string;
+  isTargetSelf?: boolean | 0 | 1;
   own_custom_interactions: CustomInteractionData[];
   max_custom_interactions: number;
-  custom_interaction_sounds: CustomSoundOption[];
+  custom_interaction_sounds: SoundOption[];
   custom_interaction_body_parts: BodyPartOption[];
   custom_interaction_arousal_organs: EffectTargetOption[];
   custom_interaction_orgasm_organs: EffectTargetOption[];
   custom_interaction_orgasm_targets: EffectTargetOption[];
-  moan_sound_catalogs: { male: MoanSoundOption[]; female: MoanSoundOption[] };
+  moan_sound_catalogs: { male: SoundOption[]; female: SoundOption[] };
   feminine_moan_sounds: boolean;
   custom_moan_sounds: string[];
   use_custom_moan_sounds: boolean;
@@ -130,13 +128,112 @@ type FormRowProps = {
 
 const FormRow = (props: FormRowProps) => (
   <Stack>
-    <Stack.Item width="40%">
+    <Stack.Item width="40%" shrink={0}>
       <Box color="label" nowrap>{props.label}</Box>
     </Stack.Item>
-    <Stack.Item grow>
+    <Stack.Item grow basis={0} minWidth={0}>
       {props.children}
     </Stack.Item>
   </Stack>
+);
+
+type MessagePreviewProps = {
+  message: string;
+  userName: string;
+  targetName: string;
+};
+
+const MessagePreview = ({ message, userName, targetName }: MessagePreviewProps) => {
+  const [variantIndex, setVariantIndex] = useState(0);
+  const text = message.replace(/[<>]/g, '').replace(/[\n\t]/g, '#');
+  if (!text.trim()) {
+    return null;
+  }
+
+  const variants = text.split('/').map(variant => variant.trim()).filter(Boolean);
+  if (!variants.length) {
+    variants.push(text);
+  }
+
+  const index = Math.min(variantIndex, variants.length - 1);
+  const variant = variants[index];
+  const parts = (variant.charAt(0).toUpperCase() + variant.slice(1)).split(/(USER|TARGET)/gi);
+  const multipleVariants = variants.length > 1;
+  const label = multipleVariants
+    ? `Предпросмотр (${index + 1}/${variants.length}):`
+    : 'Предпросмотр:';
+
+  return (
+    <FormRow label={label}>
+      <Stack align="center" mr="2px">
+        <Stack.Item grow basis={0} minWidth={0}>
+          <NoticeBox info mb={0} style={{ overflowWrap: 'anywhere' }}>
+            {parts.map((part, partIndex) => partIndex % 2
+              ? <b key={partIndex}>{part.toUpperCase() === 'USER' ? userName : targetName}</b>
+              : part)}
+          </NoticeBox>
+        </Stack.Item>
+        {multipleVariants && (
+          <Stack.Item shrink={0} nowrap>
+            <Button
+              icon="chevron-left"
+              aria-label="Предыдущий вариант"
+              tooltip="Предыдущий вариант"
+              onClick={() => setVariantIndex((index + variants.length - 1) % variants.length)}
+            />
+            <Button
+              icon="chevron-right"
+              aria-label="Следующий вариант"
+              tooltip="Следующий вариант"
+              onClick={() => setVariantIndex((index + 1) % variants.length)}
+            />
+          </Stack.Item>
+        )}
+      </Stack>
+    </FormRow>
+  );
+};
+
+type SoundGridProps = {
+  sounds: SoundOption[];
+  selectedKeys: string[];
+  onToggle: (key: string) => void;
+  onPreview: (key: string) => void;
+};
+
+const SoundGrid = ({ sounds, selectedKeys, onToggle, onPreview }: SoundGridProps) => (
+  <Box style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '0.5em',
+  }}>
+    {sounds.map(sound => {
+      const checked = selectedKeys.includes(sound.key);
+      return (
+        <Stack key={sound.key}>
+          <Stack.Item grow basis={0} minWidth={0}>
+            <Button
+              fluid
+              ellipsis
+              icon={checked ? 'check-square' : 'square-o'}
+              color={checked ? 'green' : 'transparent'}
+              content={sound.label}
+              title={sound.label}
+              selected={checked}
+              onClick={() => onToggle(sound.key)}
+            />
+          </Stack.Item>
+          <Stack.Item shrink={0}>
+            <Button
+              icon="play"
+              aria-label={`Прослушать «${sound.label}»`}
+              onClick={() => onPreview(sound.key)}
+            />
+          </Stack.Item>
+        </Stack>
+      );
+    })}
+  </Box>
 );
 
 type EffectsProps = {
@@ -145,9 +242,7 @@ type EffectsProps = {
   arousalOrgans: EffectTargetOption[];
   orgasmOrgans: EffectTargetOption[];
   orgasmTargets: EffectTargetOption[];
-  arousalLabel: string;
-  orgasmLabel: string;
-  destinationLabel: string;
+  label: string;
 };
 
 const Effects = ({
@@ -156,13 +251,18 @@ const Effects = ({
   arousalOrgans,
   orgasmOrgans,
   orgasmTargets,
-  arousalLabel,
-  orgasmLabel,
-  destinationLabel,
+  label,
 }: EffectsProps) => (
-  <Stack vertical>
-    <Stack.Item>
-      <FormRow label={arousalLabel}>
+  <Box role="group" aria-label={label}>
+    <Box bold mb={0.5}>{label}</Box>
+    <Box style={{
+      display: 'grid',
+      gridTemplateColumns: 'max-content repeat(2, minmax(0, 1fr))',
+      alignItems: 'end',
+      gap: '0.5em',
+    }}>
+      <Box nowrap>
+        <Box color="label" mb={0.25}>Возбуждение</Box>
         {AROUSAL_LEVELS.map(level => (
           <Button
             key={level.id}
@@ -180,60 +280,56 @@ const Effects = ({
             })}
           />
         ))}
-      </FormRow>
-    </Stack.Item>
-    {!!settings.arousalLevel && (
-      <>
-        <Stack.Item>
-          <FormRow label="Орган для возбуждения">
+      </Box>
+      {!!settings.arousalLevel && (
+        <>
+          <Box style={{ gridColumn: 'span 2' }}>
+            <Box color="label" mb={0.25}>Орган для возбуждения</Box>
             <Dropdown
-              fluid
               width="100%"
+              aria-label="Орган для возбуждения"
               options={arousalOrgans}
               selected={settings.arousalOrgan}
               onSelected={(arousalOrgan: string) => onChange({ ...settings, arousalOrgan })}
             />
-          </FormRow>
-        </Stack.Item>
-        <Stack.Item>
-          <FormRow label={orgasmLabel}>
-            <Button
-              icon={settings.orgasm ? 'toggle-on' : 'toggle-off'}
-              color={settings.orgasm ? 'pink' : 'transparent'}
-              content={settings.orgasm ? 'Разрешён' : 'Выключен'}
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Оргазм</Box>
+            <Button.Checkbox
+              checked={settings.orgasm}
+              content="Разрешить"
+              role="checkbox"
+              aria-label="Разрешить оргазм"
+              aria-checked={settings.orgasm}
               onClick={() => onChange({ ...settings, orgasm: !settings.orgasm })}
             />
-          </FormRow>
-        </Stack.Item>
-        {settings.orgasm && (
-          <>
-            <Stack.Item>
-              <FormRow label="Орган для оргазма">
-                <Dropdown
-                  fluid
-                  width="100%"
-                  options={orgasmOrgans}
-                  selected={settings.orgasmOrgan}
-                  onSelected={(orgasmOrgan: string) => onChange({ ...settings, orgasmOrgan })}
-                />
-              </FormRow>
-            </Stack.Item>
-            <Stack.Item>
-              <FormRow label={destinationLabel}>
-                <Dropdown
-                  fluid
-                  width="100%"
-                  options={orgasmTargets}
-                  selected={settings.orgasmTarget}
-                  onSelected={(orgasmTarget: string) => onChange({ ...settings, orgasmTarget })}
-                />
-              </FormRow>
-            </Stack.Item>
-          </>
-        )}
-      </>
-    )}
-  </Stack>
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Чем</Box>
+            <Dropdown
+              width="100%"
+              aria-label="Орган для оргазма"
+              options={orgasmOrgans}
+              selected={settings.orgasmOrgan}
+              disabled={!settings.orgasm}
+              onSelected={(orgasmOrgan: string) => onChange({ ...settings, orgasmOrgan })}
+            />
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Куда</Box>
+            <Dropdown
+              width="100%"
+              aria-label="Цель оргазма"
+              options={orgasmTargets}
+              selected={settings.orgasmTarget}
+              disabled={!settings.orgasm}
+              onSelected={(orgasmTarget: string) => onChange({ ...settings, orgasmTarget })}
+            />
+          </Box>
+        </>
+      )}
+    </Box>
+  </Box>
 );
 
 type BodyPartPickerProps = {
@@ -410,8 +506,12 @@ export const CustomInteractionsTab = (props) => {
   const soundsInGroup = browsableSounds.filter(sound => sound.group === effectiveBrowsingGroup);
   const selectedSounds = soundKeys
     .map(key => sounds.find(sound => sound.key === key))
-    .filter(Boolean) as CustomSoundOption[];
+    .filter(Boolean) as SoundOption[];
   const canSave = !!interactionType && !!name && !!message;
+  const previewUser = data.user || 'Проверочный';
+  const previewTarget = scope === 'self'
+    ? previewUser
+    : (!data.isTargetSelf && data.target) || 'Партнер';
 
   const moanGroups = [...new Set(moanSounds.map(sound => sound.group))];
   const effectiveMoanGroup = moanGroups.includes(moanGroupBrowsing)
@@ -419,6 +519,12 @@ export const CustomInteractionsTab = (props) => {
     : moanGroups[0];
   const moanSoundsInGroup = moanSounds.filter(sound => sound.group === effectiveMoanGroup);
   const selectedMoanSounds = moanSounds.filter(sound => customMoanSounds.includes(sound.key));
+
+  const toggleSound = (key: string) => {
+    setSoundKeys(soundKeys.includes(key)
+      ? soundKeys.filter(sound => sound !== key)
+      : [...soundKeys, key]);
+  };
 
   const toggleMoanSound = (key: string) => {
     const nextKeys = customMoanSounds.includes(key)
@@ -491,6 +597,16 @@ export const CustomInteractionsTab = (props) => {
                 />
               </FormRow>
             </Stack.Item>
+            {message.trim() && (
+              <Stack.Item>
+                <MessagePreview
+                  key={editingKey ?? 'new'}
+                  message={message}
+                  userName={previewUser}
+                  targetName={previewTarget}
+                />
+              </Stack.Item>
+            )}
             {selectedSounds.length > 0 && (
               <Stack.Item>
                 <Box color="label" nowrap>Выбрано ({selectedSounds.length}):</Box>
@@ -501,7 +617,7 @@ export const CustomInteractionsTab = (props) => {
                       icon="times"
                       content={sound.label}
                       color="green"
-                      onClick={() => setSoundKeys(soundKeys.filter(k => k !== sound.key))}
+                      onClick={() => toggleSound(sound.key)}
                     />
                   ))}
                 </Box>
@@ -521,35 +637,12 @@ export const CustomInteractionsTab = (props) => {
             </Stack.Item>
             <Stack.Item>
               <Box color="label" nowrap>Звук (можно выбрать несколько - сработает случайный):</Box>
-              <Stack vertical>
-                {soundsInGroup.map(sound => {
-                  const checked = soundKeys.includes(sound.key);
-                  return (
-                    <Stack.Item key={sound.key}>
-                      <Stack>
-                        <Stack.Item grow>
-                          <Button
-                            fluid
-                            icon={checked ? "check-square" : "square-o"}
-                            color={checked ? "green" : "transparent"}
-                            content={sound.label}
-                            selected={checked}
-                            onClick={() => setSoundKeys(checked
-                              ? soundKeys.filter(k => k !== sound.key)
-                              : [...soundKeys, sound.key])}
-                          />
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Button
-                            icon="play"
-                            onClick={() => act('custom_preview_sound', { sound_key: sound.key })}
-                          />
-                        </Stack.Item>
-                      </Stack>
-                    </Stack.Item>
-                  );
-                })}
-              </Stack>
+              <SoundGrid
+                sounds={soundsInGroup}
+                selectedKeys={soundKeys}
+                onToggle={toggleSound}
+                onPreview={(key) => act('custom_preview_sound', { sound_key: key })}
+              />
             </Stack.Item>
           </Stack>
         </Section>
@@ -562,9 +655,7 @@ export const CustomInteractionsTab = (props) => {
             arousalOrgans={arousalOrgans}
             orgasmOrgans={orgasmOrgans}
             orgasmTargets={orgasmTargets}
-            arousalLabel="Возбуждение партнёра"
-            orgasmLabel="Оргазм партнёра"
-            destinationLabel="Куда кончит партнёр"
+            label="У партнёра"
           />
           <Divider />
           <Effects
@@ -573,9 +664,7 @@ export const CustomInteractionsTab = (props) => {
             arousalOrgans={arousalOrgans}
             orgasmOrgans={orgasmOrgans}
             orgasmTargets={orgasmTargets}
-            arousalLabel="Твоё возбуждение"
-            orgasmLabel="Твой оргазм"
-            destinationLabel="Куда ты кончишь"
+            label="У тебя"
           />
         </Section>
       </Stack.Item>
@@ -774,7 +863,7 @@ export const CustomInteractionsTab = (props) => {
       <Stack.Item>
         <NoticeBox info>
           Кастомных интерактов: {customs.length}/{max_customs}. Они появляются
-          в твоей панели взаимодействия (Ctrl+Shift+клик по цели).
+          в твоей панели взаимодействия.
           Все поля сохраняются на персонажа.
         </NoticeBox>
       </Stack.Item>
@@ -871,33 +960,12 @@ export const CustomInteractionsTab = (props) => {
                     />
                   );
                 })()}
-                <Stack vertical>
-                  {moanSoundsInGroup.map(sound => {
-                    const checked = customMoanSounds.includes(sound.key);
-                    return (
-                      <Stack.Item key={sound.key}>
-                        <Stack>
-                          <Stack.Item grow>
-                            <Button
-                              fluid
-                              icon={checked ? "check-square" : "square-o"}
-                              color={checked ? "green" : "transparent"}
-                              content={sound.label}
-                              selected={checked}
-                              onClick={() => toggleMoanSound(sound.key)}
-                            />
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button
-                              icon="play"
-                              onClick={() => act('preview_moan_sound', { sound_key: sound.key })}
-                            />
-                          </Stack.Item>
-                        </Stack>
-                      </Stack.Item>
-                      );
-                    })}
-                </Stack>
+                <SoundGrid
+                  sounds={moanSoundsInGroup}
+                  selectedKeys={customMoanSounds}
+                  onToggle={toggleMoanSound}
+                  onPreview={(key) => act('preview_moan_sound', { sound_key: key })}
+                />
               </Stack.Item>
             </Stack>
           </Section>
