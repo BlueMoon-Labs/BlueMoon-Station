@@ -14,8 +14,11 @@
 	if(dumped)
 		to_chat(user, "<span class='warning'>You already activated Protocol CRAB-17.</span>")
 		return FALSE
+	if(isolated_from_station(user))
+		to_chat(user, span_warning("Телефон не ловит сеть станции: отсюда рынок не обрушить."))
+		return FALSE
 	if(alert(user, "Are you sure you want to crash this market with no survivors?", "Protocol CRAB-17", "Yes", "No") == "Yes")
-		if(dumped || QDELETED(src)) //Prevents fuckers from cheesing alert
+		if(dumped || QDELETED(src) || isolated_from_station(user)) //Prevents fuckers from cheesing alert
 			return FALSE
 		var/turf/targetturf = get_safe_random_station_turf()
 		if (!targetturf)
@@ -24,6 +27,13 @@
 		log_admin("[key_name(user)] активировал КРАБ-17.")
 		new /obj/effect/dumpeetTarget(targetturf, user)
 		dumped = TRUE
+
+/// VR и полигон отрезаны от станции, вызов машины оттуда - грифер-ивент без риска.
+/obj/item/suspiciousphone/proc/isolated_from_station(mob/user)
+	if(user.GetComponent(/datum/component/virtual_reality))
+		return TRUE
+	var/area/user_area = get_area(user)
+	return istype(user_area, /area/awaymission/vr) || istype(user_area, /area/antag_training)
 
 /obj/structure/checkoutmachine
 	name = "\improper Nanotrasen Space-Coin Market"
