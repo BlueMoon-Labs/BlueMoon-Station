@@ -272,6 +272,7 @@ const RulesSection = () => {
         берётся комиссия {data.fee}%. Купить и сразу продать - всегда убыток.
       </Box>
       <Box mb={1}>Сделка по одной компании - не чаще раза в {data.cooldown} с.</Box>
+      <Box mb={1}>О резком скачке цены ваших акций и об остановке торгов по ним сообщает ID-карта.</Box>
       <Box mb={1}>
         Акций одной компании - не больше чем на <Credits amount={data.position_cap} />; акции считаются по цене не ниже
         базовой. У казны лимит в {data.treasury_cap_mult} {plural(data.treasury_cap_mult, 'раз', 'раза', 'раз')} больше личного (<Credits amount={data.personal_cap} />).

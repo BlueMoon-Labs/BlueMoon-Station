@@ -104,6 +104,28 @@
 	TEST_ASSERT_EQUAL(own.shares["AGRO"], 1, "Без карты покупка идёт с личного счёта")
 	TEST_ASSERT_EQUAL(treasury_account.shares["AGRO"], 2, "Казна не тронута")
 
+/// Держателям приходит скачок цены от STOCK_HOLDER_ALERT_MIN и остановка торгов; мелкое движение и чужие акции - нет.
+/datum/unit_test/economy_trading/holder_alerts/Run()
+	var/datum/bank_account/holder = new_trader(1000)
+	holder.shares["AGRO"] = 10
+	var/datum/bank_account/other = new_trader(1000)
+	other.shares["VYMD"] = 5
+	var/holders = 0
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		if(account.shares["AGRO"])
+			holders++
+	TEST_ASSERT(holders >= 1, "Держатель AGRO зарегистрирован в банке")
+	var/price_before = company.price
+	TEST_ASSERT_EQUAL(SSmarket.alert_holders(company, price_before), 0, "Без движения цены сообщений нет")
+	company.set_price(price_before * (1 + STOCK_HOLDER_ALERT_MIN / 2))
+	TEST_ASSERT_EQUAL(SSmarket.alert_holders(company, price_before), 0, "Мелкое движение не беспокоит держателей")
+	price_before = company.price
+	company.apply_shock(-0.2)
+	TEST_ASSERT_EQUAL(SSmarket.alert_holders(company, price_before), holders, "Падение на 20% приходит каждому держателю AGRO")
+	TEST_ASSERT_EQUAL(SSmarket.alert_holders_halted(company), holders, "Остановка торгов приходит держателям")
+	TEST_ASSERT_EQUAL(SSmarket.alert_holders(null, price_before), 0, "Без компании - тишина")
+
 /// «Макс» покупает ровно столько, сколько позволяют деньги или лимит позиции: на одну акцию больше уже не проходит; «продать всё» продаёт всё.
 /datum/unit_test/economy_trading/ui/buy_max/Run()
 	var/mob/living/carbon/human/user = make_user(1000)

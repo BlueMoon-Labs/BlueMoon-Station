@@ -485,6 +485,7 @@ SUBSYSTEM_DEF(market)
 		company.tick()
 		if(!was_halted && company.halted_until)
 			halted += ticker
+			alert_holders_halted(company)
 		else if(was_halted && !company.halted_until)
 			relisted += ticker
 	maybe_schedule_events()
@@ -537,6 +538,7 @@ SUBSYSTEM_DEF(market)
 		company.undo_shock(event.refute_price, event.refute_mult)
 	else
 		company.apply_shock(event.effect)
+	alert_holders(company, price_before)
 	if(!event.fake)
 		company.last_real_event_at = world.time
 	log_econ("Событие компании [company.ticker] вышло: «[event.headline]», шок [event.effect * 100]%[event.fake ? ", фальшивое" : ""]")
@@ -552,6 +554,10 @@ SUBSYSTEM_DEF(market)
 	if(!length(effects) || world.time < station_event_cooldowns[key])
 		return FALSE
 	station_event_cooldowns[key] = world.time + STOCK_STATION_EVENT_COOLDOWN
+	var/list/prices_before = list()
+	for(var/ticker in companies)
+		var/datum/stock_company/company = companies[ticker]
+		prices_before[ticker] = company.price
 	for(var/ticker in effects)
 		if(ticker != STOCK_ALL_COMPANIES)
 			var/datum/stock_company/company = companies[ticker]
@@ -560,6 +566,8 @@ SUBSYSTEM_DEF(market)
 		for(var/other in companies)
 			var/datum/stock_company/each = companies[other]
 			each.apply_shock(effects[ticker])
+	for(var/ticker in companies)
+		alert_holders(companies[ticker], prices_before[ticker])
 	log_econ("Событие станции [key] сдвинуло акции компаний")
 	var/news = GLOB.market_station_event_news[key]
 	if(news)

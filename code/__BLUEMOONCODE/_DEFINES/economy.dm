@@ -290,6 +290,8 @@
 /// Цена растёт на долю объём / STOCK_TRADE_SCALE от продаж партнёру, не больше STOCK_TRADE_BOOST_MAX за листинг
 #define STOCK_TRADE_SCALE 20000
 #define STOCK_TRADE_BOOST_MAX 0.15
+/// Скачок цены от этой доли и больше приходит держателям акций сообщением на карту
+#define STOCK_HOLDER_ALERT_MIN 0.05
 #define STOCK_EVENT_MULT_MAX 3
 #define STOCK_PRICE_MIN 0.01
 /// Разница цен меньше этой считается нулевой

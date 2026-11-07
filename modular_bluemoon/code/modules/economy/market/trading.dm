@@ -72,6 +72,35 @@
 	SEND_SIGNAL(src, COMSIG_MARKET_STOCK_TRADE, account, ticker, count, price, TRUE, 0, user)
 	return null
 
+/// Держателям акций - сообщение на карту о скачке цены от STOCK_HOLDER_ALERT_MIN; заголовок новости не раскрывается, он выходит позже. Возвращает число уведомлённых счетов.
+/datum/controller/subsystem/market/proc/alert_holders(datum/stock_company/company, price_before)
+	. = 0
+	if(!company || !(price_before > 0))
+		return
+	var/change = company.price / price_before - 1
+	if(abs(change) < STOCK_HOLDER_ALERT_MIN)
+		return
+	var/percent = round(abs(change) * 100)
+	var/signed = "[change > 0 ? "+" : "-"][percent]%"
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		var/held = account.shares[company.ticker]
+		if(!held)
+			continue
+		account.bank_card_talk("Биржа: акции «[company.name]» [change > 0 ? "выросли" : "упали"] на [percent]%. Ваши [held] шт. стоят [round(company.price * held)] кр.", balloon = "[company.ticker] [signed]")
+		.++
+
+/// Держателям - почему торги компании встали и что будет с их акциями.
+/datum/controller/subsystem/market/proc/alert_holders_halted(datum/stock_company/company)
+	. = 0
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		var/held = account.shares[company.ticker]
+		if(!held)
+			continue
+		account.bank_card_talk("Биржа: торги «[company.name]» остановлены на [STOCK_HALT_TIME / (1 MINUTES)] мин. - цена упала ниже [STOCK_BANKRUPT_RATIO * 100]% базовой. Потом компания вернётся на биржу по [STOCK_RELIST_RATIO * 100]% базовой, а ваши [held] шт. обменяют на меньшее число новых по цене остановки.", balloon = "[company.ticker] торги встали")
+		.++
+
 /// Сколько акций можно купить одной сделкой: в пределах лимита позиции и денег на счёте со спредом и комиссией.
 /datum/controller/subsystem/market/proc/max_buy_count(datum/bank_account/account, datum/stock_company/company)
 	if(!account || !company || company.is_halted())
