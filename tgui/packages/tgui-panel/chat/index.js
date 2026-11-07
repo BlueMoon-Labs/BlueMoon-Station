@@ -4,8 +4,10 @@
  * @license MIT
  */
 
+export { ChatHistoryButton } from './ChatHistoryButton';
 export { ChatPageSettings } from './ChatPageSettings';
 export { ChatPanel } from './ChatPanel';
+export { ChatScrollButton } from './ChatScrollButton';
 export { ChatSearchBar } from './ChatSearchBar';
 export { ChatTabs } from './ChatTabs';
 export { chatMiddleware } from './middleware';

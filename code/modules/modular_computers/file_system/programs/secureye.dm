@@ -25,6 +25,11 @@
 	var/atom/movable/screen/map_view/cam_screen
 	var/datum/plane_master_group/popup/cam_plane_group
 	var/atom/movable/screen/background/cam_background
+	var/list/camera_map_data
+	var/camera_map_updated_at = -1
+	var/show_departments = FALSE
+	// Слабая ссылка сохраняет выбор, не удерживая удалённую камеру.
+	var/datum/weakref/last_camera
 
 /datum/computer_file/program/secureye/New()
 	. = ..()
@@ -51,16 +56,27 @@
 		qdel(cam_screen)
 	QDEL_NULL(cam_plane_group)
 	qdel(cam_background)
+	active_camera = null
+	last_camera = null
+	last_camera_turf = null
+	camera_map_data = null
 	return ..()
 
 /datum/computer_file/program/secureye/ui_interact(mob/user, datum/tgui/ui)
 	// Update UI
 	ui = SStgui.try_update_ui(user, src, ui)
 
+	if(!ui && !length(concurrent_users))
+		active_camera = camera_console_initial_camera(get_available_cameras(), last_camera)
+		last_camera = active_camera ? WEAKREF(active_camera) : null
+		last_camera_turf = null
+
 	// Update the camera, showing static if necessary and updating data if the location has moved.
 	update_active_camera_screen()
 
 	if(!ui)
+		var/turf/device_turf = get_turf(computer) || get_turf(user)
+		send_camera_console_map_assets(user, device_turf?.z)
 		var/user_ref = REF(user)
 		var/is_living = isliving(user)
 		// Ghosts shouldn't count towards concurrent users, which produces
@@ -81,31 +97,36 @@
 /datum/computer_file/program/secureye/ui_data()
 	var/list/data = get_header_data()
 	data["network"] = network
+	data["show_departments"] = show_departments
+	// Не пересобираем одинаковые данные для каждого зрителя в одном цикле TGUI.
+	if(isnull(camera_map_data) || world.time >= camera_map_updated_at + 1 SECONDS)
+		camera_map_updated_at = world.time
+		camera_map_data = camera_console_camera_data(get_available_cameras())
+	data["cameras"] = camera_map_data
 	data["activeCamera"] = null
-	if(active_camera)
+	if(!QDELETED(active_camera))
 		data["activeCamera"] = list(
 			name = active_camera.c_tag,
-			status = active_camera.status,
+			status = active_camera.can_use(),
 		)
 	return data
 
 /datum/computer_file/program/secureye/ui_static_data()
 	var/list/data = list()
 	data["mapRef"] = map_name
-	var/list/cameras = get_available_cameras()
-	data["cameras"] = list()
-	for(var/i in cameras)
-		var/obj/machinery/camera/C = cameras[i]
-		data["cameras"] += list(list(
-			name = C.c_tag,
-		))
-
+	var/turf/device_turf = get_turf(computer)
+	data["z"] = device_turf?.z
+	data["maps"] = camera_console_map_data(device_turf?.z)
 	return data
 
 /datum/computer_file/program/secureye/ui_act(action, params)
 	. = ..()
 	if(.)
 		return
+
+	if(action == "toggle_departments")
+		show_departments = !show_departments
+		return TRUE
 
 	if(action == "switch_camera")
 		var/c_tag = params["name"]
@@ -119,10 +140,9 @@
 		if(selected_camera && !is_station_level(selected_camera.z))
 			selected_camera = null //фильтр не-станционных камер, как в get_available_cameras
 		active_camera = selected_camera
+		last_camera = selected_camera ? WEAKREF(selected_camera) : null
+		last_camera_turf = null
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
-
-		if(!selected_camera)
-			return TRUE
 
 		update_active_camera_screen()
 
@@ -135,11 +155,13 @@
 	// Living creature or not, we remove you anyway.
 	concurrent_users -= user_ref
 	// Unregister map objects
-	cam_plane_group?.unregister_from_client(user.client)
-	user.client?.clear_map(map_name)
+	cam_plane_group?.unregister_from_client(user?.client)
+	user?.client?.clear_map(map_name)
 	// Turn off the console
 	if(length(concurrent_users) == 0 && is_living)
 		active_camera = null
+		last_camera_turf = null
+		cam_screen.vis_contents.Cut()
 		playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
 
 /datum/computer_file/program/secureye/proc/update_active_camera_screen()
@@ -171,7 +193,14 @@
 	for(var/turf/visible_turf in visible_things)
 		visible_turfs += visible_turf
 
+	if(!length(visible_turfs))
+		show_camera_static()
+		return
+
 	var/list/bbox = get_bbox_of_atoms(visible_turfs)
+	if(!bbox)
+		show_camera_static()
+		return
 	var/size_x = bbox[3] - bbox[1] + 1
 	var/size_y = bbox[4] - bbox[2] + 1
 

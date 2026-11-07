@@ -12,6 +12,8 @@ This file contains the cult dagger and rune list code
 		var/static/list/non_revealed_runes = (subtypesof(/obj/effect/rune) - /obj/effect/rune/malformed)
 		for(var/i_can_do_loops_now_thanks_remie in non_revealed_runes)
 			var/obj/effect/rune/R = i_can_do_loops_now_thanks_remie
+			if(initial(R.antag_training_rune))
+				continue
 			GLOB.rune_types[initial(R.cultist_name)] = R //Uses the cultist name for displaying purposes
 
 /obj/item/melee/cultblade/dagger/examine(mob/user)
@@ -146,6 +148,9 @@ This file contains the cult dagger and rune list code
 		return FALSE
 	if(locate(/obj/effect/rune) in T)
 		to_chat(user, "<span class='cult'>There is already a rune here.</span>")
+		return FALSE
+	if(is_antag_training_atom(T))
+		to_chat(user, span_warning("На полигоне руны чертит только учебный ритуальный кинжал: его выдаёт кнопка «Рунный металл» в пульте."))
 		return FALSE
 	var/area/A = get_area(T)
 	if(A?.area_flags & CULTMAGIC_BYPASS)

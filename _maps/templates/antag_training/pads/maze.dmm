@@ -1,0 +1,428 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bZ" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"cH" = (
+/turf/open/floor/plasteel,
+/area/template_noop)
+"dj" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/dark/textured,
+/area/template_noop)
+"dP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"eI" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"fv" = (
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"gm" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark/textured,
+/area/template_noop)
+"hG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ka" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"kY" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/effect/landmark/antag_training/side{
+	side = "entrance"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"mE" = (
+/obj/effect/landmark/antag_training/side{
+	side = "se"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"mG" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"op" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"rx" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/landmark/antag_training/side{
+	side = "center"
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/template_noop)
+"sA" = (
+/turf/closed/wall,
+/area/template_noop)
+"sZ" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"vD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"xu" = (
+/obj/effect/turf_decal/arrows,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"yr" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"CK" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"FH" = (
+/obj/effect/landmark/antag_training/side{
+	side = "ne"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Gj" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/closet/crate/goldcrate,
+/obj/item/stack/spacecash/c1000,
+/obj/item/clothing/accessory/medal,
+/obj/item/paper{
+	name = "maze note";
+	default_raw_text = "Лабиринт: в центре награда. Три стены здесь не настоящие, их можно открыть руками."
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/template_noop)
+"Ke" = (
+/obj/structure/falsewall,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Kg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/arrows,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Ks" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"KC" = (
+/obj/effect/turf_decal/arrows,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Ls" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"LN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Nk" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/dark/textured,
+/area/template_noop)
+"SA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Us" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"XE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/landmark/antag_training/side{
+	side = "nw"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Yj" = (
+/obj/effect/landmark/antag_training/side{
+	side = "sw"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ZB" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ZP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+"}
+(2,1,1) = {"
+sA
+XE
+eI
+sZ
+sA
+cH
+vD
+eI
+vD
+ZP
+vD
+cH
+eI
+Yj
+sA
+"}
+(3,1,1) = {"
+sA
+hG
+sA
+ZB
+sA
+SA
+sA
+sA
+sA
+sA
+sA
+hG
+sA
+ZB
+sA
+"}
+(4,1,1) = {"
+sA
+cH
+vD
+cH
+sA
+hG
+cH
+cH
+sA
+Us
+cH
+fv
+sA
+cH
+sA
+"}
+(5,1,1) = {"
+sA
+hG
+sA
+vD
+sA
+sA
+sA
+Kg
+sA
+vD
+sA
+cH
+sA
+sA
+sA
+"}
+(6,1,1) = {"
+sA
+dP
+Ke
+cH
+yr
+vD
+sA
+hG
+sA
+cH
+cH
+Ls
+cH
+yr
+sA
+"}
+(7,1,1) = {"
+sA
+sA
+sA
+cH
+sA
+sA
+dj
+Nk
+gm
+sA
+sA
+sA
+sA
+fv
+sA
+"}
+(8,1,1) = {"
+sA
+fv
+cH
+mG
+sA
+cH
+Nk
+Gj
+rx
+vD
+cH
+vD
+sA
+kY
+cH
+"}
+(9,1,1) = {"
+sA
+hG
+sA
+sA
+sA
+cH
+dj
+Nk
+dj
+sA
+sA
+cH
+sA
+sA
+sA
+"}
+(10,1,1) = {"
+sA
+fv
+vD
+hG
+Ke
+op
+op
+LN
+KC
+cH
+sA
+fv
+CK
+cH
+sA
+"}
+(11,1,1) = {"
+sA
+Ks
+sA
+fv
+sA
+yr
+sA
+sA
+sA
+cH
+sA
+sA
+sA
+fv
+sA
+"}
+(12,1,1) = {"
+sA
+vD
+sA
+vD
+sA
+cH
+cH
+bZ
+sA
+cH
+cH
+cH
+sA
+cH
+sA
+"}
+(13,1,1) = {"
+sA
+fv
+sA
+ZB
+sA
+cH
+sA
+op
+sA
+cH
+sA
+cH
+sA
+ZB
+sA
+"}
+(14,1,1) = {"
+sA
+FH
+sA
+hG
+ka
+cH
+Ke
+xu
+cH
+eI
+vD
+cH
+hG
+mE
+sA
+"}
+(15,1,1) = {"
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+sA
+"}

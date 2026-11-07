@@ -482,12 +482,16 @@ const constraintPositionOnScreen = (pos, size) => {
   return constraintPosition(pos, size, getScreenPosition(), getScreenSize());
 };
 
-export const dragStartHandler = event => {
+export const dragStartHandler = (event, restoredAnchor) => {
   logger.log('drag start');
   dragging = true;
   cachedAppScale = resolveAppScale(appScale);
   const winPos = getWindowPosition();
-  dragPointOffset = [
+  // После восстановления штатного окна удерживаем заголовок под той же точкой курсора.
+  dragPointOffset = restoredAnchor ? [
+    restoredAnchor.width * restoredAnchor.horizontalRatio,
+    restoredAnchor.clientY * cachedAppScale,
+  ] : [
     event.screenX * cachedAppScale - winPos[0],
     event.screenY * cachedAppScale - winPos[1],
   ];

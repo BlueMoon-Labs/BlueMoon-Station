@@ -65,7 +65,7 @@
 		return
 
 	var/mob/living/simple_animal/bot/bot = locate(params["ref"]) in GLOB.bots_list
-	if(isnull(bot))
+	if(isnull(bot) || is_antag_training_atom(bot) != is_antag_training_atom(owner))
 		return
 
 	switch(action)

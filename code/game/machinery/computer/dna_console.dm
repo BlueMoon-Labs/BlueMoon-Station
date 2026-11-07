@@ -667,7 +667,7 @@
 			var/datum/mutation/human/target_mutation = get_mut_by_ref(bref, search_flags)
 
 			// Prompt for modifier string
-			var/new_sequence_input = input(usr, "Enter a replacement sequence", "Inherent Gene Replacement")
+			var/new_sequence_input = tgui_input_text(usr, "Enter a replacement sequence", "Inherent Gene Replacement")
 			// Drop out if the string is the wrong length
 			if(length(new_sequence_input) != 32)
 				return

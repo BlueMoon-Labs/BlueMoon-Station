@@ -111,7 +111,7 @@
 	icon_state = "chemgunrepeater"
 	item_state = "syringegun"
 
-obj/item/gun/chem/smart/Initialize(mapload)
+/obj/item/gun/chem/smart/Initialize(mapload)
 	. = ..()
 	chambered = new /obj/item/ammo_casing/chemgun/smart(src)
 

@@ -4,6 +4,7 @@ import {
   createAction,
   createStore,
   setGlobalStore,
+  subscribeToChanges,
   useDispatch,
   useSelector,
 } from './redux';
@@ -276,5 +277,23 @@ describe('useSelector', () => {
     expect(useSelector(s => s)).toBe(0);
     store.dispatch({ type: 'INC' });
     expect(useSelector(s => s)).toBe(1);
+  });
+});
+
+describe('subscribeToChanges', () => {
+  test('вызывает listener только при смене state', () => {
+    const reducer = (state = { count: 0 }, action) => (
+      action.type === 'INC' ? { count: state.count + 1 } : state
+    );
+    const store = createStore(reducer);
+    const listener = jest.fn();
+    subscribeToChanges(store, listener);
+    store.dispatch({ type: 'NOOP' });
+    store.dispatch({ type: 'NOOP' });
+    expect(listener).not.toHaveBeenCalled();
+    store.dispatch({ type: 'INC' });
+    expect(listener).toHaveBeenCalledTimes(1);
+    store.dispatch({ type: 'NOOP' });
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });

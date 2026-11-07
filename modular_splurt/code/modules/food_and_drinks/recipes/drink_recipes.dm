@@ -358,3 +358,15 @@
 		/datum/reagent/consumable/sugar = 1,
 		/datum/reagent/consumable/sodawater = 15
 	)
+
+// BLUEMOON ADD START || Banana Shake
+/datum/chemical_reaction/bananashake
+	name = "Банановый шейк"
+	id = /datum/reagent/consumable/bananashake
+	results = list(/datum/reagent/consumable/bananashake = 3)
+	required_reagents = list(
+		/datum/reagent/consumable/banana = 1,
+		/datum/reagent/consumable/ice = 1,
+		/datum/reagent/consumable/cream = 1
+	)
+// BLUEMOON ADD END

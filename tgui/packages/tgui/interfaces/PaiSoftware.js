@@ -309,9 +309,14 @@ const ManifestScreen = (props) => {
         <Table.Cell>Должность</Table.Cell>
       </Table.Row>
       {crew_manifest.map((rec, i) => (
-        <Table.Row key={i}>
+        <Table.Row key={i} bold={!!rec.head}>
           <Table.Cell>{rec.name}</Table.Cell>
-          <Table.Cell>{rec.rank}</Table.Cell>
+          <Table.Cell>
+            {!!rec.head && (
+              <span className="CrewManifest__HeadMark">{'★'}</span>
+            )}
+            {rec.rank}
+          </Table.Cell>
         </Table.Row>
       ))}
     </Table>

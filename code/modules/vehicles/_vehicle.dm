@@ -9,6 +9,9 @@
 	anchored = FALSE
 	layer = 5
 	COOLDOWN_DECLARE(cooldown_vehicle_move)
+	COOLDOWN_DECLARE(cooldown_no_arms_message)
+	/// Сколько действующих рук нужно водителю
+	var/arms_required = 1
 	/// mob = bitflags of their control level.
 	var/list/mob/occupants
 	var/max_occupants = 1
@@ -52,7 +55,7 @@
 /obj/vehicle/examine(mob/user)
 	. = ..()
 	if(resistance_flags & ON_FIRE)
-		. += span_warning("It's on fire!")
+		. += span_warning("Горит!")
 	. += generate_integrity_message()
 
 /// Returns a readable string of the vehicle's health for examining. Overridden by subtypes who want to be more verbose with their health messages.
@@ -61,11 +64,11 @@
 	var/integrity = obj_integrity/max_integrity * 100
 	switch(integrity)
 		if(50 to 99)
-			examine_text = "It looks slightly damaged."
+			examine_text = "Видны лёгкие вмятины."
 		if(25 to 50)
-			examine_text = "It appears heavily damaged."
+			examine_text = "Имеет тяжёлые повреждения."
 		if(0 to 25)
-			examine_text = span_warning("It's falling apart!")
+			examine_text = span_warning("Разваливается на части!")
 
 	return examine_text
 
@@ -141,12 +144,26 @@
 	if(!canmove)
 		return FALSE
 	if(is_driver(user))
+		if(!driver_has_arms(user))
+			if(COOLDOWN_FINISHED(src, cooldown_no_arms_message))
+				COOLDOWN_START(src, cooldown_no_arms_message, 2 SECONDS)
+				to_chat(user, span_warning("Чтобы управлять [src], нужны руки."))
+			return FALSE
 		return driver_move(user, direction)
 	return FALSE
 
+/// Зверю без ловких лап рулить нечем, у остальных считаются действующие руки.
+/obj/vehicle/proc/driver_has_arms(mob/user)
+	if(!arms_required || !isliving(user))
+		return TRUE
+	if(isanimal(user))
+		var/mob/living/simple_animal/animal = user
+		return animal.dextrous
+	return user.get_num_arms() >= arms_required
+
 /obj/vehicle/proc/driver_move(mob/user, direction)
 	if(key_type && !is_key(inserted_key))
-		to_chat(user, span_warning("[src] has no key inserted!"))
+		to_chat(user, span_warning("Внутрь [src] не вставлен ключ!"))
 		return FALSE
 	if(!default_driver_move)
 		return
@@ -224,7 +241,7 @@
 /obj/vehicle/pre_buckle_mob(mob/living/M)
 	if(M.mob_weight > MOB_WEIGHT_HEAVY)
 		//не usr: бакл бывает программным (usr null), да и баклер - не всегда usr
-		M.visible_message(span_warning("[M] tried to get on [src], but it doesn't move. Too much weight!"), span_warning("You tried to get on [src], but it doesn't move. Too much weight!"))
+		M.visible_message(span_warning("[M] пытается влезть в [src], но движения нет. Перевес!"), span_warning("Вы попытались влезть в [src], но движения нет. Перевес!"))
 		unbuckle_mob(M, TRUE)
 		return
 	. = ..()

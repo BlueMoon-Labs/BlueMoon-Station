@@ -44,8 +44,6 @@
 	/// This is the icon state for the icon that appears on the button
 	var/button_icon_state = "default"
 	var/button_overlay_state
-	/// При наведении на кнопу, блокирует открытие контестного меню ПКМ
-	var/button_block_right_click_context_menu = FALSE
 
 /datum/action/New(Target)
 	link_to(Target)
@@ -293,8 +291,6 @@
 	button.actiontooltipstyle = buttontooltipstyle
 	if(desc)
 		button.desc = desc
-	if(button_block_right_click_context_menu)
-		TOGGLE_BITFIELD(button.flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1)
 	return button
 
 /datum/action/proc/SetId(atom/movable/screen/movable/action_button/our_button, mob/owner)
@@ -696,15 +692,15 @@
 	if(IsAvailable())
 		active = !active
 		if(active)
-			owner.research_scanner++
+			ADD_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
 		else
-			owner.research_scanner--
-		to_chat(owner, "<span class='notice'>[target] research scanner has been [active ? "activated" : "deactivated"].</span>")
+			REMOVE_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
+		to_chat(owner, span_notice("Научный сканер [target] был [active ? "активирован" : "деактивирован"]."))
 		return TRUE
 
 /datum/action/item_action/toggle_research_scanner/Remove(mob/M)
 	if(owner && active)
-		owner.research_scanner--
+		REMOVE_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
 		active = FALSE
 	..()
 

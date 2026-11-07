@@ -283,7 +283,7 @@
 	sheet_type = /obj/item/stack/sheet/mineral/plastitanium
 	sheet_amount = 2
 	smooth = SMOOTH_MORE
-	canSmoothWith = list(/turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	canSmoothWith = list(/turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
 
 /turf/closed/wall/r_wall/r_plastitanium/diagonal
 	smooth = SMOOTH_MORE|SMOOTH_DIAGONAL

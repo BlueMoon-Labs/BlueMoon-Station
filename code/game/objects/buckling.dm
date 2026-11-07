@@ -81,6 +81,9 @@
 	if(!istype(M))
 		return FALSE
 
+	if(HAS_TRAIT(src, TRAIT_MOD_INVERTED) || HAS_TRAIT(M, TRAIT_MOD_INVERTED))
+		return FALSE
+
 	if(check_loc && M.loc != loc && !(M.Adjacent(src) || src.Adjacent(M)))
 		return FALSE
 
@@ -104,15 +107,17 @@
 
 	// BLUEMOON ADD START
 	if(!pre_buckle_mob(M))
+		M.buckling = null
 		return FALSE
 	// BLUEMOON ADD END
 
 	// BLUEMOON ADD START - запрет на усаживание сверхтяжёлого персонажа посторонними
-	if(M.mob_weight > MOB_WEIGHT_HEAVY) // проверка не раньше, т.к. в post_buckle_mob обратаюыватся объекты-исключения, на которые сверхтяжёлые персонажи садятся с особым эффектом
+	if(M.mob_weight > MOB_WEIGHT_HEAVY && !istype(src, /obj/structure/energy_net/mod)) // проверка не раньше, т.к. в post_buckle_mob обратаюыватся объекты-исключения, на которые сверхтяжёлые персонажи садятся с особым эффектом
 		if(istype(src, /obj/structure/bed/roller/heavy)) // простая проверка на предмет, пока не появится необходимость в большем количестве предметов-исключений
 			// Всё в порядке
 		else if(M != usr)
 			to_chat(usr, span_warning("Слишком много весит!"))
+			M.buckling = null
 			return FALSE
 	// BLUEMOON ADD END
 

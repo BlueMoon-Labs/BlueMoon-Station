@@ -1,7 +1,7 @@
 // 'basic' language; spoken by default.
 /datum/language/common
 	name = "Galactic Common"
-	desc = "The common galactic tongue."
+	desc = "Общий галактический язык."
 	speech_verb = "говорит"
 	whisper_verb = "шепчет"
 	key = "0"

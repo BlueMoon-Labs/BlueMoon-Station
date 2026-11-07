@@ -268,7 +268,7 @@
 	. = ..()
 
 	// If the owner doesn't need a heart, we don't need to do anything with it.
-	if(!owner.needs_heart())
+	if(!owner?.needs_heart())
 		return
 
 	if(. & EMP_PROTECT_SELF)

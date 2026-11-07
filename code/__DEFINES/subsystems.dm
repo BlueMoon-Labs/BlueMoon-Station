@@ -162,6 +162,7 @@
 #define INIT_ORDER_TIMETRACK		47
 #define INIT_ORDER_SPATIAL_GRID		46 // после маппинга (нужны z-уровни), до инита атомов (они регистрируются в гриде)
 #define INIT_ORDER_NETWORKS			45
+#define INIT_ORDER_ORBITS			76 // Supercruise orbital map: ДО маппинга - mapping создаёт орбитальные тела (WHITESTEEL)
 #define INIT_ORDER_ECONOMY			40
 #define INIT_ORDER_HOLODECK			35
 #define INIT_ORDER_RESTAURANT 		34
@@ -225,6 +226,7 @@
 #define FIRE_PRIORITY_ACID			40
 #define FIRE_PRIOTITY_BURNING		40
 #define FIRE_PRIORITY_AIR_TURFS		40
+#define FIRE_PRIORITY_ORBITS		41 // Supercruise orbital map (WHITESTEEL)
 #define FIRE_PRIORITY_DEFAULT		50
 #define FIRE_PRIORITY_PARALLAX		65
 #define FIRE_PRIORITY_MOBS			100

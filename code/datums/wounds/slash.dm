@@ -13,6 +13,7 @@
 	also_treatable_tools = list(TOOL_HEMOSTAT)
 	base_treat_time = 3 SECONDS
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE)
+	scanner_icon = "droplet"
 
 	/// How much blood we start losing when this wound is first applied
 	var/initial_flow
@@ -184,7 +185,7 @@
 		suture(I, user)
 
 /datum/wound/slash/try_handling(mob/living/carbon/human/user)
-	if(user.pulling != victim || user.zone_selected != limb.body_zone || user.a_intent == INTENT_GRAB)
+	if(user.pulling != victim || victim.get_bodypart(user.zone_selected) != limb || user.a_intent == INTENT_GRAB)
 		return FALSE
 
 	if(!iscatperson(user))

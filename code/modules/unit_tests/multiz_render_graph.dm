@@ -63,15 +63,13 @@
 			TEST_ASSERT(abs(text2num(center_offset.group[1])) <= 5, "[fullscreen_type] ставит якорь [anchor] за край обзора 15x11")
 			position = center_offset.next
 
-/// Два мастера на одном номере плоскости - до клиента доедет только один.
+// Два мастера одной группы на одном номере плоскости - до клиента доедет только один.
 /datum/unit_test/plane_master_numbers_are_unique
 
 /datum/unit_test/plane_master_numbers_are_unique/Run()
 	var/list/claimed_by = list()
-	for(var/atom/movable/screen/plane_master/master_type as anything in subtypesof(/atom/movable/screen/plane_master))
-		//Абстрактная плита своей плоскости не имеет.
-		if(master_type == /atom/movable/screen/plane_master/rendering_plate)
-			continue
+	var/datum/plane_master_group/main/group = allocate(/datum/plane_master_group/main, RENDER_GRAPH_TEST_KEY)
+	for(var/atom/movable/screen/plane_master/master_type as anything in group.get_plane_types())
 		var/plane_key = "[initial(master_type.plane)]"
 		if(!(initial(master_type.offsetting_flags) & BLOCKS_PLANE_OFFSETTING) && SSmapping.plane_offset_blacklist[plane_key])
 			TEST_FAIL("Мастер [master_type] использует несмещаемую плоскость [plane_key] без BLOCKS_PLANE_OFFSETTING.")
@@ -216,6 +214,35 @@
 	var/obj/item/multiz_test_early_mover/mover = allocate(/obj/item/multiz_test_early_mover, null, lower)
 	TEST_ASSERT_EQUAL(mover.loc, lower, "Предмет должен был переехать на этаж до конца Initialize()")
 	TEST_ASSERT_EQUAL(mover.plane, GET_NEW_PLANE(GAME_PLANE, GET_Z_PLANE_OFFSET(lower.z)), "Плоскость сместилась дважды: переездом и Initialize()")
+
+/// Предмет, который при смене z сразу возвращается на свой этаж (как stationloving).
+/obj/item/multiz_test_homing
+	var/turf/home
+
+/obj/item/multiz_test_homing/Initialize(mapload)
+	. = ..()
+	home = get_turf(src)
+	RegisterSignal(src, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(return_home))
+
+/obj/item/multiz_test_homing/proc/return_home(datum/source, old_z, new_z)
+	SIGNAL_HANDLER
+	if(new_z != home.z)
+		forceMove(home)
+
+/// Возврат из обработчика смены z оставляет предмет на плоскости этажа, куда он вернулся.
+/datum/unit_test/multiz_relocation_in_z_signal_keeps_plane
+
+/datum/unit_test/multiz_relocation_in_z_signal_keeps_plane/Run()
+	if(!SSmapping.max_plane_offset)
+		return // Односложный мир: смещений нет.
+
+	var/turf/lower = multiz_test_lower_turf()
+	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
+	TEST_ASSERT_EQUAL(GET_Z_PLANE_OFFSET(run_loc_floor_bottom_left.z), 0, "Арена теста лежит на этаже без смещения")
+	var/obj/item/multiz_test_homing/homing = allocate(/obj/item/multiz_test_homing, lower)
+	homing.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(homing.loc, lower, "Предмет вернулся на свой этаж")
+	TEST_ASSERT_EQUAL(homing.plane, GET_NEW_PLANE(GAME_PLANE, GET_Z_PLANE_OFFSET(lower.z)), "Внешний переезд перезаписал плоскость этажа, куда предмет вернулся")
 
 /// Гост, созданный на нижнем этаже, встаёт на плоскости этого этажа: /mob/dead/Initialize() идёт мимо родителя.
 /datum/unit_test/multiz_ghost_spawns_on_own_floor

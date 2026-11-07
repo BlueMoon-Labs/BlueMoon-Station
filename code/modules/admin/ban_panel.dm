@@ -61,7 +61,7 @@
 		job_list += j
 	for(var/j in GLOB.nonhuman_positions)
 		job_list += j
-	for(var/j in list(ROLE_TRAITOR, ROLE_CHANGELING, ROLE_OPERATIVE, ROLE_REV, ROLE_CULTIST, ROLE_WIZARD, ROLE_HERETIC))
+	for(var/j in list(ROLE_TRAITOR, ROLE_CHANGELING, ROLE_OPERATIVE, ROLE_REV, ROLE_CULTIST, ROLE_WIZARD, ROLE_HERETIC, ROLE_BROTHER))
 		job_list += j
 	.["job_list"] = job_list
 

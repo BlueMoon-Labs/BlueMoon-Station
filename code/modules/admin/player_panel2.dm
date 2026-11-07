@@ -781,10 +781,9 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		if ("update_appearance")
 			if(!ishuman(targetMob) || !targetMob.client?.prefs)
 				return
-			targetMob.client.prefs.copy_to(targetMob, icon_updates = TRUE, roundstart_checks = FALSE)
-			targetMob.regenerate_icons()
-			log_admin("[key_name(admin)] актуализировал внешность [key_name(targetMob)].")
-			message_admins("<span class='notice'>[key_name_admin(admin)] актуализировал внешность [key_name_admin(targetMob)].</span>")
+			targetMob.client.prefs.apply_to_existing_character(targetMob)
+			log_admin("[key_name(admin)] применил персонажа из настроек [key_name(targetMob)], включая квирки и стартовые предметы.")
+			message_admins(span_notice("[key_name_admin(admin)] применил персонажа из настроек [key_name_admin(targetMob)], включая квирки и стартовые предметы."))
 
 		if ("set_organ")
 			if(!iscarbon(targetMob))

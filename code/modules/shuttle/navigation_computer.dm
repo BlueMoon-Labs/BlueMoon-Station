@@ -256,6 +256,10 @@
 		if(I.icon_state != new_state)
 			I.icon_state = new_state
 
+/// turf_type is the real type of T: a hidden port shows the turf it covers instead.
+/obj/machinery/computer/camera_advanced/shuttle_docker/proc/landing_turf_allowed(turf/T, turf_type)
+	return !length(whitelist_turfs) || is_type_in_typecache(turf_type, whitelist_turfs)
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/checkLandingTurf(turf/T, list/overlappers)
 	// Too close to the map edge is never allowed
 	if(!T || T.x <= 10 || T.y <= 10 || T.x >= world.maxx - 10 || T.y >= world.maxy - 10)
@@ -271,10 +275,9 @@
 		if(hidden_turf_info)
 			. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
 
-	if(length(whitelist_turfs))
-		var/turf_type = hidden_turf_info ? hidden_turf_info[2] : T.type
-		if(!is_type_in_typecache(turf_type, whitelist_turfs))
-			return SHUTTLE_DOCKER_BLOCKED
+	var/turf_type = hidden_turf_info ? hidden_turf_info[2] : T.type
+	if(!landing_turf_allowed(T, turf_type))
+		return SHUTTLE_DOCKER_BLOCKED
 
 	// Checking for overlapping dock boundaries
 	for(var/i in 1 to overlappers.len)

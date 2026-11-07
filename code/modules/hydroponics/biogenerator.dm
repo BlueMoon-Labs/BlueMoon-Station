@@ -1,6 +1,6 @@
 /obj/machinery/biogenerator
 	name = "biogenerator"
-	desc = "Converts plants into biomass, which can be used to construct useful items."
+	desc = "Перерабатывает урожай в биомассу, из которой можно синтезировать разные вещи."
 	icon = 'icons/obj/machines/biogenerator.dmi'
 	icon_state = "biogen-empty"
 	density = TRUE
@@ -60,10 +60,10 @@
 		update_static_data_for_all_viewers()
 	// BLUEMOON ADD END
 
-/obj/machinery/biogenerator/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Productivity at <b>[productivity*100]%</b>.<br>Matter consumption at <b>[100/efficiency]</b>%.<br>Machine can hold up to <b>[max_items]</b> pieces of produce.</span>"
+/obj/machinery/biogenerator/examine_display_content(mob/user)
+	. += "– Производительность: <b>[productivity*100]%</b>.\n\
+	– Расход материи: <b>[100/efficiency]</b>%.\n\
+	– Вместимость: до <b>[max_items]</b> шт. урожая."
 
 /obj/machinery/biogenerator/on_reagent_change(changetype)			//When the reagents change, change the icon as well.
 	update_icon()
@@ -114,22 +114,22 @@
 		return ..()
 
 	if(processing)
-		to_chat(user, "<span class='warning'>The biogenerator is currently processing.</span>")
+		to_chat(user, span_warning("Биогенератор сейчас занят переработкой."))
 		return
 
 	if(istype(O, /obj/item/reagent_containers/glass))
 		. = 1 //no afterattack
 		if(!panel_open)
 			if(beaker)
-				to_chat(user, "<span class='warning'>A container is already loaded into the machine.</span>")
+				to_chat(user, span_warning("Контейнер уже вставлен в машину."))
 			else
 				if(!user.transferItemToLoc(O, src))
 					return
 				beaker = O
-				to_chat(user, "<span class='notice'>You add the container to the machine.</span>")
+				to_chat(user, span_notice("Вы вставляете контейнер в машину."))
 				update_icon()
 		else
-			to_chat(user, "<span class='warning'>Close the maintenance panel first.</span>")
+			to_chat(user, span_warning("Сначала закройте панель техобслуживания."))
 		return
 
 	else if(istype(O, /obj/item/storage/bag/plants))
@@ -138,7 +138,7 @@
 		for(var/obj/item/reagent_containers/food/snacks/grown/G in contents)
 			i++
 		if(i >= max_items)
-			to_chat(user, "<span class='warning'>The biogenerator is already full! Activate it.</span>")
+			to_chat(user, span_warning("Биогенератор уже заполнен! Запустите его."))
 		else
 			for(var/obj/item/reagent_containers/food/snacks/grown/G in PB.contents)
 				if(i >= max_items)
@@ -146,11 +146,11 @@
 				if(SEND_SIGNAL(PB, COMSIG_TRY_STORAGE_TAKE, G, src))
 					i++
 			if(i<max_items)
-				to_chat(user, "<span class='info'>You empty the plant bag into the biogenerator.</span>")
+				to_chat(user, span_info("Вы высыпаете содержимое мешка для растений в биогенератор."))
 			else if(PB.contents.len == 0)
-				to_chat(user, "<span class='info'>You empty the plant bag into the biogenerator, filling it to its capacity.</span>")
+				to_chat(user, span_info("Вы высыпаете содержимое мешка для растений в биогенератор, заполняя его до отказа."))
 			else
-				to_chat(user, "<span class='info'>You fill the biogenerator to its capacity.</span>")
+				to_chat(user, span_info("Вы заполняете биогенератор до отказа."))
 		return TRUE //no afterattack
 
 	else if(istype(O, /obj/item/reagent_containers/food/snacks/grown))
@@ -158,15 +158,15 @@
 		for(var/obj/item/reagent_containers/food/snacks/grown/G in contents)
 			i++
 		if(i >= max_items)
-			to_chat(user, "<span class='warning'>The biogenerator is full! Activate it.</span>")
+			to_chat(user, span_warning("Биогенератор заполнен! Запустите его."))
 		else
 			if(user.transferItemToLoc(O, src))
-				to_chat(user, "<span class='info'>You put [O.name] in [src.name]</span>")
+				to_chat(user, span_info("Вы помещаете [O.name] в [src.name]."))
 		return TRUE //no afterattack
 	else if (istype(O, /obj/item/disk/design_disk))
-		user.visible_message("<span class='notice'>[user] begins to load \the [O] in \the [src]...</span>",
-			"<span class='notice'>You begin to load a design from \the [O]...</span>",
-			"<span class='hear'>You hear the chatter of a floppy drive.</span>")
+		user.visible_message(span_notice("[user] начинает загружать [O] в [src]..."),
+			span_notice("Вы начинаете загружать чертежи с [O]..."),
+			span_hear("Вы слышите стрекот дисковода."))
 		processing = TRUE
 		var/obj/item/disk/design_disk/D = O
 		if(do_after(user, 10, target = src))
@@ -176,7 +176,7 @@
 		processing = FALSE
 		return TRUE
 	else
-		to_chat(user, "<span class='warning'>You cannot put this in [src.name]!</span>")
+		to_chat(user, span_warning("Вы не можете положить это в [src.name]!"))
 
 /obj/machinery/biogenerator/AltClick(mob/living/user)
 	. = ..()
@@ -195,7 +195,7 @@
 	if(machine_stat != NONE)
 		return
 	if(processing)
-		to_chat(user, "<span class='warning'>The biogenerator is in the process of working.</span>")
+		to_chat(user, span_warning("Биогенератор уже работает."))
 		return
 	var/S = 0
 	for(var/obj/item/reagent_containers/food/snacks/grown/I in contents)
@@ -255,7 +255,7 @@
 		var/i = amount
 		while(i > 0)
 			if(!check_container_volume(D.make_reagents))
-				say("Warning: Attached container does not have enough free capacity!")
+				say("Внимание: в подключенном контейнере недостаточно свободного места!")
 				return .
 			if(!check_cost(D.materials))
 				return .

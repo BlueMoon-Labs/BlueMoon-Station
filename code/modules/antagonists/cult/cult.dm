@@ -69,7 +69,7 @@
 	if(!new_team && make_team)
 		//todo remove this and allow admin buttons to create more than one cult
 		for(var/datum/antagonist/cult/H in GLOB.antagonists)
-			if(!H.owner)
+			if(!H.owner || istype(H, /datum/antagonist/cult/training))
 				continue
 			if(H.cult_team)
 				cult_team = H.cult_team
@@ -244,7 +244,7 @@
 /datum/antagonist/cult/master/on_gain()
 	. = ..()
 	var/mob/living/current = owner.current
-	set_antag_hud(current, "cultmaster")
+	set_antag_hud(current, "cultmaster", GLOB.huds[ANTAG_HUD_CULT])
 
 /datum/antagonist/cult/master/greet()
 	to_chat(owner.current, "<span class='cultlarge'>You are the cult's Master</span>. As the cult's Master, you have a unique title and loud voice when communicating, are capable of marking \
@@ -342,6 +342,8 @@
 	var/cultplayers = 0
 	for(var/I in GLOB.player_list)
 		var/mob/M = I
+		if(M.training_origin)
+			continue
 		if(M.stat != DEAD)
 			if(iscultist(M))
 				++cultplayers

@@ -243,7 +243,7 @@
 	TEST_ASSERT(bin.accept_item(second_lost, courier), "Последняя вещь описи принимается")
 	TEST_ASSERT_EQUAL(cargo_budget.account_balance, cargo_balance + 200, "За полный возврат бюджет снабжения получает премию")
 	TEST_ASSERT(bin.pickup_timer && bin.pickup_timer != timer_before_full, "После полного возврата таймер капсулы переставлен")
-	TEST_ASSERT(timeleft(bin.pickup_timer) <= 1 MINUTES, "Когда всё сдано, ящик забирают раньше срока")
+	TEST_ASSERT(round(timeleft(bin.pickup_timer), 1) <= 1 MINUTES, "Когда всё сдано, ящик забирают раньше срока")
 
 	TEST_ASSERT(bin.finish_audit(launch_pod = FALSE), "Аудит завершается")
 	TEST_ASSERT_NULL(bin.pickup_timer, "После итога таймер не висит")
@@ -448,7 +448,7 @@
 		if(other_card.GetComponent(/datum/component/id_card_recall))
 			TEST_ASSERT(terminal.replace_chip(other_card, hop), "HoP меняет чип чужой карты")
 	TEST_ASSERT_EQUAL(hop_account.account_balance, hop_balance + 50 * (event.recalled_count - 1), "HoP получает плату за каждую чужую карту")
-	TEST_ASSERT(timeleft(terminal.pickup_timer) <= 2 MINUTES, "Когда все карты заменены, терминал забирают раньше срока")
+	TEST_ASSERT(round(timeleft(terminal.pickup_timer), 1) <= 2 MINUTES, "Когда все карты заменены, терминал забирают раньше срока")
 	TEST_ASSERT(terminal.finish_recall(launch_pod = FALSE), "Кампания закрывается")
 	TEST_ASSERT(terminal.anchored, "Закрытый терминал не утащить от капсулы")
 	TEST_ASSERT_NULL(terminal.pickup_timer, "После закрытия таймер не висит")

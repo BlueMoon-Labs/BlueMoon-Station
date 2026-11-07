@@ -1,0 +1,1416 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ae" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ax" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"bd" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"bi" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"bk" = (
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ca" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"cE" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"cU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/optable,
+/obj/item/robot_suit/prebuilt/training,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"cX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/machinery/rnd/production/protolathe/department/science,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"da" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/screwdriver{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"dv" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"el" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/structure/table/reinforced,
+/obj/item/mmi{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"fF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/table/reinforced,
+/obj/item/screwdriver{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"gJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_hub_reset{
+	pixel_y = -26
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"gX" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/hub/station/science)
+"im" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"iv" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"kb" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ks" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"kZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"my" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/recharge_station,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"nd" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"nt" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"pk" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"qN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"rh" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"rj" = (
+/turf/closed/wall,
+/area/antag_training/hub/station/science)
+"rq" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/screwdriver{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"sM" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ti" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ty" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"tN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"vS" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mecha_part_fabricator/offstation/training,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"vU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/micro_laser{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"xM" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/obj/structure/table/reinforced,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"ye" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/sign/plaques/kiddie{
+	name = "Research door plate";
+	desc = "Табличка: «Научный отсек». Протолат не связан с R&D станции: материалы - в ящике рядом.";
+	pixel_y = -32
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/scanning_module{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"yF" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"zv" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"zy" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"zC" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"zE" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/wardrobe/science_wardrobe,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Bw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Cv" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"CC" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/camera/training{
+	c_tag = "Мини-станция: роботехника";
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Ew" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/science,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"EE" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/south,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"EH" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"EW" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "research note";
+	default_raw_text = "Протолат учебный: свои чертежи, материалы в ящике. Экзофаб заправлен.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Fb" = (
+/obj/machinery/door/airlock/research{
+	name = "Robotics"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/robotics,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Gm" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Gv" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"GM" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"GN" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"GQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"GZ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/directional/east,
+/obj/structure/rack,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"HV" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Research"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/science)
+"Ih" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"IR" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Research Maintenance"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/antag_training/hub/station/science)
+"IW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/science_white,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"JA" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"LJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"MK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/vending/robotics,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"NP" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"NV" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"NX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Ol" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Os" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Pk" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Rd" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"SO" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"TH" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Vu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"VA" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/production/circuit_imprinter/department/science,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"WG" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/screwdriver{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"XG" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Yo" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Ys" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Zc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/machinery/camera/training{
+	c_tag = "Мини-станция: наука";
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+"Zi" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/plasteel/white,
+/area/antag_training/hub/station/science)
+
+(1,1,1) = {"
+vS
+Yo
+CC
+yF
+Gv
+WG
+pk
+MK
+rj
+cX
+zC
+im
+Gv
+iv
+zE
+IW
+rj
+"}
+(2,1,1) = {"
+TH
+NV
+Zi
+LJ
+NP
+GQ
+Gm
+tN
+rj
+VA
+sM
+GQ
+Zi
+GQ
+cE
+ty
+gX
+"}
+(3,1,1) = {"
+NX
+Ih
+Vu
+zy
+Vu
+zy
+Ih
+ty
+rj
+kZ
+GM
+zy
+bk
+Os
+GM
+ye
+rj
+"}
+(4,1,1) = {"
+ks
+ae
+Zi
+cU
+NP
+LJ
+nt
+XG
+Fb
+kb
+zv
+GQ
+NP
+GQ
+SO
+XG
+HV
+"}
+(5,1,1) = {"
+qN
+GN
+bk
+Os
+bk
+Os
+Ih
+Bw
+rj
+ax
+GN
+zy
+bk
+zy
+Ih
+gJ
+rj
+"}
+(6,1,1) = {"
+TH
+Pk
+NP
+el
+Zi
+GQ
+Ol
+ty
+rj
+vU
+ca
+GQ
+Zi
+GQ
+Ol
+rh
+gX
+"}
+(7,1,1) = {"
+Cv
+bk
+bk
+Os
+bk
+Os
+Vu
+ti
+rj
+nd
+Vu
+bi
+bk
+zy
+bk
+EE
+rj
+"}
+(8,1,1) = {"
+my
+JA
+GZ
+rq
+da
+bd
+fF
+EH
+rj
+Ew
+dv
+EW
+Rd
+Ys
+xM
+Zc
+rj
+"}
+(9,1,1) = {"
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+rj
+IR
+rj
+rj
+rj
+rj
+"}

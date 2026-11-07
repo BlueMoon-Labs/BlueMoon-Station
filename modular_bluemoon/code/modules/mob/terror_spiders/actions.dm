@@ -220,6 +220,8 @@
 		return FALSE
 	if(isterrorspider(M))
 		return FALSE
+	if(antag_training_member_body(M))
+		return FALSE
 	return TRUE
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/FindWrapTarget()

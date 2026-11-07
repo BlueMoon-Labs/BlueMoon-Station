@@ -19,7 +19,7 @@
 	bomb = 10
 	bio = 100
 	rad = 100
-	fire = 95
+	fire = 100
 	acid = 70
 	magic = 0
 	wound = 0

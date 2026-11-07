@@ -258,6 +258,8 @@
 	var/servantplayers = 0
 	for(var/I in GLOB.player_list)
 		var/mob/M = I
+		if(is_antag_training_atom(M))
+			continue
 		if(M.stat != DEAD)
 			if(is_servant_of_ratvar(M))
 				++servantplayers

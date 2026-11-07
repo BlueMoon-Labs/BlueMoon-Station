@@ -478,12 +478,23 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 /mob/proc/reagent_check(datum/reagent/R) // utilized in the species code
 	return TRUE
 
+#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+/// Пока тест держит здесь список, каждый notify_ghosts дописывает в него сообщение.
+GLOBAL_LIST(unit_test_ghost_notifications)
+#endif
 /proc/notify_ghosts(message, ghost_sound, enter_link, atom/source, mutable_appearance/alert_overlay, action = NOTIFY_JUMP, flashwindow = TRUE, ignore_mapload = TRUE, ignore_key, ignore_dnr_observers = FALSE, header) //Easy notification of ghosts.
+#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+	if(GLOB.unit_test_ghost_notifications)
+		GLOB.unit_test_ghost_notifications += message
+#endif
 	if(ignore_mapload && SSatoms.initialized != INITIALIZATION_INNEW_REGULAR)	//don't notify for objects created during a map load
 		return
+	var/atom/training_source = (length(GLOB.antag_training_z) && isatom(source) && is_antag_training_atom(source)) ? source : null
 	for(var/mob/dead/observer/O in GLOB.player_list)
 		if(O.client)
 			if ((ignore_key && (O.ckey in GLOB.poll_ignore[ignore_key])) || (ignore_dnr_observers && !O.can_reenter_round(TRUE)))
+				continue
+			if(training_source && !antag_training_observer_hears(O, training_source))
 				continue
 			to_chat(O, "<span class='ghostalert'>[message][(enter_link) ? " [enter_link]" : ""]</span>")
 			if(ghost_sound)
@@ -517,11 +528,11 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		if((brute_heal > 0 && affecting.brute_dam > 0) || (burn_heal > 0 && affecting.burn_dam > 0))
 			if(affecting.heal_damage(brute_heal, burn_heal, 0, TRUE, FALSE))
 				H.update_damage_overlays()
-			user.visible_message("[user] has fixed some of the [dam ? "dents on" : "burnt wires in"] [H]'s [affecting.name].", \
-			"<span class='notice'>You fix some of the [dam ? "dents on" : "burnt wires in"] [H]'s [affecting.name].</span>")
+			user.visible_message(span_notice("[user] частично восстанавливает [dam ? "обшивку" : "проводку"]: [affecting.ru_name] персонажа [H]."), \
+			span_notice("Вы частично восстанавливаете [dam ? "обшивку" : "проводку"]: [affecting.ru_name] персонажа [H]."))
 			return TRUE //successful heal
 		else
-			to_chat(user, "<span class='warning'>[affecting] is already in good condition!</span>")
+			to_chat(user, span_warning("Ремонт не требуется: [affecting.ru_name] персонажа [H]."))
 
 
 /proc/IsAdminGhost(var/mob/user)
@@ -766,6 +777,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	SEND_SOUND(src, 'sound/misc/server-ready.ogg')
 	client.prefs.copy_to(src)
 	client.prefs.apply_prefs_modified_limbs(src)
+	client.prefs.apply_prefs_body_mods(src)
+	update_body()
 	// BLUEMOON ADD START - загрузка татуировок для ghost roles (после copy_to, чтобы set_species() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(src)
 	// BLUEMOON ADD END

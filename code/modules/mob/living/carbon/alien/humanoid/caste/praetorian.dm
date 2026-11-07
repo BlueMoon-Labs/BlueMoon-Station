@@ -5,12 +5,17 @@
 	health = 280
 	icon = 'icons/Xeno/castes/praetorian.dmi'
 	icon_state = "Praetorian Walking"
+	meleeSlashSAPower = 50
+
+/datum/movespeed_modifier/alien_praetorian_speed
+	multiplicative_slowdown = 0.5
 
 /mob/living/carbon/alien/humanoid/royal/praetorian/Initialize(mapload)
 	real_name = name
 	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse/xeno(src))
 	AddAbility(new /obj/effect/proc_holder/alien/royal/praetorian/evolve())
 	. = ..()
+	add_movespeed_modifier(/datum/movespeed_modifier/alien_praetorian_speed)
 
 /mob/living/carbon/alien/humanoid/royal/praetorian/create_internal_organs()
 	internal_organs += new /obj/item/organ/alien/plasmavessel/large
@@ -34,7 +39,7 @@
 	if(node.recent_queen_death)
 		to_chat(user, "<span class='danger'>You are still too burdened with guilt to evolve into a queen.</span>")
 		return FALSE
-	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal/queen))
+	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal/queen, user))
 		var/mob/living/carbon/alien/humanoid/royal/queen/new_xeno
 		if(IS_XENO_MAID_ROUND)
 			new_xeno = new /mob/living/carbon/alien/humanoid/royal/queen/maid(user.loc)

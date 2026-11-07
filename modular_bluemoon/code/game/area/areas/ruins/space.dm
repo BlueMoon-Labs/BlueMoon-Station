@@ -159,6 +159,10 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering
 	name = "DS-2 'Blessed' | Engineering"
 
+//Atmos
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos
+	name = "DS-2 'Blessed' | Atmos"
+
 //Research
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research
 	name = "DS-2 'Blessed' | Research"

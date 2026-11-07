@@ -55,6 +55,10 @@
 #define CHAT_GHOSTRADIO 	(1<<9)
 #define CHAT_LOOC			(1<<10)
 #define CHAT_BANKCARD		(1<<11)
+/// Мед/СБ/диаг-худы у призрака. По умолчанию выключены: сервер каждый тик сверяет картинки худов с обзором каждого призрака
+#define CHAT_GHOSTHUDS		(1<<12)
+/// Инвертирован: у старых сейвов бит 0, и подсказка о плохой связи включена без миграции.
+#define CHAT_NO_PING_HINT	(1<<13)
 
 #define TOGGLES_DEFAULT_CHAT (CHAT_OOC|CHAT_DEAD|CHAT_GHOSTEARS|CHAT_GHOSTSIGHT|CHAT_PRAYER|CHAT_RADIO|CHAT_PULLR|CHAT_GHOSTWHISPER|CHAT_GHOSTPDA|CHAT_GHOSTRADIO|CHAT_LOOC|CHAT_BANKCARD)
 
@@ -124,3 +128,6 @@
 // Кол-во хедшотов, не ставить меньше 1
 #define MAX_HEADSHOTS 6
 #define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS
+
+// Максимум вариантов профессий, квирков и экипировки у одного персонажа.
+#define MAX_CHARACTER_PRESETS 20

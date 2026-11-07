@@ -16,7 +16,7 @@
 
 	// Skyrat balance - xenomorph queen from Skyrat-SS13/Skyrat13
 	meleeKnockdownPower = 125
-	meleeSlashHumanPower = 30
+	meleeSlashHumanPower = 50
 	meleeSlashSAPower = 60
 
 	var/alt_inhands_file = 'icons/Xeno/castes/queen.dmi'
@@ -36,12 +36,16 @@
 	var/datum/action/maid/maidify_action
 	var/obj/effect/proc_holder/alien/royal/queen/promote/promote
 
+/datum/movespeed_modifier/alien_queen_speed
+	multiplicative_slowdown = 2
+
 /mob/living/carbon/alien/humanoid/royal/queen/Initialize(mapload)
 	if(prob(1))
 		rouny = TRUE
 	//there should only be one queen
+	register_training_atom()
 	for(var/mob/living/carbon/alien/humanoid/royal/queen/Q in GLOB.carbon_list)
-		if(Q == src)
+		if(Q == src || Q.training_origin != training_origin)
 			continue
 		if(Q.stat == DEAD)
 			continue
@@ -57,7 +61,9 @@
 	if(caste != "qmaid")
 		maidify_action = new()
 		maidify_action.Grant(src)
-	return ..()
+	. = ..()
+	add_movespeed_modifier(/datum/movespeed_modifier/alien_queen_speed)
+	return
 
 /mob/living/carbon/alien/humanoid/royal/queen/Destroy()
 	RemoveAbility(promote)
@@ -87,11 +93,12 @@
 		to_chat(user, "<span class='alertalien'>There's already an egg here.</span>")
 		return FALSE
 
-	if(!check_vent_block(user))
+	if(!check_vent_block(user) || !antag_training_brood_room(user, 2))
 		return FALSE
 
 	user.visible_message("<span class='alertalien'>[user] has laid an egg!</span>")
-	new /obj/structure/alien/egg(user.loc)
+	var/obj/structure/alien/egg/egg = new(user.loc)
+	antag_training_claim_brood(user, list(egg, egg.child))
 	return TRUE
 
 //Button to let queen choose her praetorian.
@@ -106,7 +113,7 @@
 
 /obj/effect/proc_holder/alien/royal/queen/promote/fire(mob/living/carbon/alien/user)
 	var/obj/item/queenpromote/prom
-	if(get_alien_type(/mob/living/carbon/alien/humanoid/royal/praetorian/))
+	if(get_alien_type(/mob/living/carbon/alien/humanoid/royal/praetorian, user))
 		to_chat(user, "<span class='noticealien'>You already have a Praetorian!</span>")
 		return FALSE
 	else
@@ -138,7 +145,7 @@
 	if(!isalienadult(M) || isalienroyal(M))
 		to_chat(user, "<span class='noticealien'>You may only use this with your adult, non-royal children!</span>")
 		return
-	if(get_alien_type(/mob/living/carbon/alien/humanoid/royal/praetorian/))
+	if(get_alien_type(/mob/living/carbon/alien/humanoid/royal/praetorian, user))
 		to_chat(user, "<span class='noticealien'>You already have a Praetorian!</span>")
 		return
 

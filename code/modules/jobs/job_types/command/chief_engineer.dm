@@ -91,7 +91,7 @@
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	head = /obj/item/clothing/head/hardhat/white
 	gloves = /obj/item/clothing/gloves/color/black
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/storage/briefcase/inflatable=1)
 	accessory = list(/obj/item/clothing/accessory/permit/special/chief_engineer)
 
 	backpack = /obj/item/storage/backpack/industrial
@@ -113,7 +113,7 @@
 	head = /obj/item/clothing/head/hardhat/red/upgraded
 	gloves = /obj/item/clothing/gloves/combat
 	neck = /obj/item/clothing/neck/cloak/syndiecap
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command/engineering=1,/obj/item/syndicate_uplink/station=1)
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command/engineering=1,/obj/item/syndicate_uplink/station=1, /obj/item/storage/briefcase/inflatable=1)
 	accessory = list(/obj/item/clothing/accessory/permit/special/chief_engineer, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 	no_custom_backpack = TRUE

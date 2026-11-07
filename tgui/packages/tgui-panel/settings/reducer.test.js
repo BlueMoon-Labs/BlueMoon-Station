@@ -122,4 +122,17 @@ describe('settingsReducer', () => {
     expect(nextState.highlightText).toBe('hello');
     expect(nextState.highlightSoundEnabled).toBe(false);
   });
+
+  test('loads v6 payload with v7 defaults', () => {
+    const state = settingsReducer(undefined, loadSettings({
+      version: 6,
+      chatStyle: 'retro',
+    }));
+    expect(state.version).toBe(7);
+    expect(state.chatStyle).toBe('retro');
+    expect(state.typeOverrides).toEqual({});
+    expect(state.gameEffectsEnabled).toBe(true);
+    expect(state.gameEffects).toEqual({});
+    expect(state.settleOldAnimations).toBe(true);
+  });
 });

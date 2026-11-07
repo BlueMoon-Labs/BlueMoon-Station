@@ -72,7 +72,33 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
-	body_parts_covered = CHEST | GROIN
+	body_parts_covered = NONE
+
+/obj/item/clothing/underwear/briefs/nano_suit/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
+/obj/item/clothing/underwear/briefs/nano_suit/proc/set_genital_visibility(mob/living/carbon/human/H, vis_flags)
+	for(var/organ_slot in list(ORGAN_SLOT_PENIS, ORGAN_SLOT_TESTICLES, ORGAN_SLOT_VAGINA, ORGAN_SLOT_ANUS, ORGAN_SLOT_BREASTS, ORGAN_SLOT_BELLY))
+		var/obj/item/organ/genital/G = H.getorganslot(organ_slot)
+		G?.toggle_visibility(vis_flags)
+
+/obj/item/clothing/underwear/briefs/nano_suit/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_UNDERWEAR || !ishuman(user))
+		return
+	update_icon()
+	set_genital_visibility(user, GEN_VISIBLE_NEVER)
+
+/obj/item/clothing/underwear/briefs/nano_suit/dropped(mob/user)
+	var/was_underwear = (current_equipped_slot == ITEM_SLOT_UNDERWEAR)
+	. = ..()
+	if(!was_underwear || !ishuman(user))
+		return
+	update_icon()
+	set_genital_visibility(user, GEN_VISIBLE_NO_UNDIES)
+
+////////////////////////////////////////////////////
 
 /obj/item/clothing/underwear/shirt/bm/kladmen_bodysuit
 	name = "Bodysuit"

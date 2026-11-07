@@ -1,6 +1,7 @@
 
 #define DUALWIELD_PENALTY_EXTRA_MULTIPLIER 1.4
 #define FIRING_PIN_REMOVAL_DELAY 50
+#define AKIMBO_PENALTY_SCALING 1.5
 
 /obj/item/gun
 	name = "gun"
@@ -446,17 +447,18 @@
 
 	if(user)
 		bonus_spread = getinaccuracy(user, bonus_spread, stamloss) //CIT CHANGE - adds bonus spread while not aiming
-	if(ishuman(user) && user.a_intent == INTENT_HARM && weapon_weight <= WEAPON_LIGHT)
+	if(ishuman(user) && user.a_intent == INTENT_HARM && weapon_weight <= WEAPON_LIGHT && !HAS_TRAIT(user, TRAIT_MOD_NO_AKIMBO))
 		var/mob/living/carbon/human/H = user
 		for(var/obj/item/gun/G in H.held_items)
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
 			else if(G.can_trigger_gun(user))
-				bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
 				loop_counter++
+				if(loop_counter == 1)
+					bonus_spread += src.dual_wield_spread
+				bonus_spread += G.dual_wield_spread * (1 + AKIMBO_PENALTY_SCALING * (loop_counter + 1)) // BLUEMOON EDIT: скалирование штрафа, как на ТГ
 				var/stam_cost = G.getstamcost(user)
 				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, user, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
-
 	var/stam_cost = getstamcost(user)
 	process_fire(target, user, TRUE, params, null, bonus_spread, stam_cost)
 
@@ -534,7 +536,7 @@
 		randomized_gun_spread = rand(0, spread)
 	else if(burst_size > 1 && burst_spread)
 		randomized_gun_spread = rand(0, burst_spread)
-	var/randomized_bonus_spread = rand(0, bonus_spread)
+	var/randomized_bonus_spread = get_mod_spread(user, bonus_spread, randomized_gun_spread)
 
 	if(burst_size > 1)
 		do_burst_shot(user, target, message, params, zone_override, sprd, randomized_gun_spread, randomized_bonus_spread, rand_spr, 1)
@@ -1106,3 +1108,20 @@
 
 #undef FIRING_PIN_REMOVAL_DELAY
 #undef DUALWIELD_PENALTY_EXTRA_MULTIPLIER
+
+/obj/item/gun/proc/get_mod_spread(mob/living/user, bonus_spread, gun_spread)
+	if(!user)
+		return rand(0, bonus_spread)
+	var/list/spread = list("min" = 0, "max" = bonus_spread)
+	var/modified = SEND_SIGNAL(user, COMSIG_MOD_GUN_SPREAD, src, spread)
+	var/result = rand(spread["min"], spread["max"])
+	return modified & MOD_SHOOT_SPREAD_CHANGED ? max(-gun_spread, result) : result
+
+/obj/item/gun/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	. = ..()
+	var/mob/living/thrower = throwingdatum?.thrower
+	if(QDELETED(hit_atom) || !isliving(hit_atom) || !thrower || !HAS_TRAIT(thrower, TRAIT_MOD_TOSS_GUN))
+		return
+	var/mob/living/target = hit_atom
+	target.Knockdown(0.5 SECONDS)
+	target.apply_damage(max(w_class * MOD_TOSS_GUN_WEIGHT_DAMAGE - throwforce, MOD_TOSS_GUN_MIN_DAMAGE), BRUTE, thrower.zone_selected, wound_bonus = CANT_WOUND)

@@ -7,68 +7,39 @@ on:
 
 jobs:
   handle_test_merge:
-    runs-on: ubuntu-latest
-
+    # Filtered here, not in a step: other comments do not take a runner at all.
+    if: >-
+      github.event.issue.pull_request &&
+      vars.TARGET_USER != '' &&
+      github.event.comment.user.login == vars.TARGET_USER &&
+      (contains(github.event.comment.body, 'Test Merge Deployed') || contains(github.event.comment.body, 'Test Merge Removed'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
-      - name: Check if comment is from the specified user
-        id: filter_comment
-        uses: actions/github-script@v6
+      - name: Add or remove the Test Merged label
+        uses: actions/github-script@v9
         with:
           script: |
-            const comment = context.payload.comment;
-            const user = comment.user.login;
-            const body = comment.body;
-            const targetUser = process.env.TARGET_USER;
-
-            if (!targetUser) {
-              core.setFailed('TARGET_USER environment variable is not set.');
-            }
-
-            if (user !== targetUser) {
-              core.info(`Comment is not from the target user: ${user}`);
-              return "no_match";
-            }
-
-            if (body.includes('Test Merge Deployed')) {
-              return "deployed";
-            }
-
-            if (body.includes('Test Merge Removed')) {
-              return "removed";
-            }
-
-            core.info(`Comment does not contain target text.`);
-            return "no_match";
-          result-encoding: 'string'
-        env:
-          TARGET_USER: ${{ vars.TARGET_USER }}
-
-      - name: Skip if comment doesn't match criteria
-        if: steps.filter_comment.outputs.result == 'no_match'
-        run: echo "Comment did not meet criteria. Skipping."
-
-      - name: Add or remove label based on comment content
-        if: steps.filter_comment.outputs.result == 'deployed' || steps.filter_comment.outputs.result == 'removed'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const body = context.payload.comment.body;
-            const issueNumber = context.payload.issue.number;
-
-            if (body.includes('Test Merge Deployed')) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                labels: ['Test Merged']
-              });
+            const issue = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+            };
+            if (context.payload.comment.body.includes('Test Merge Deployed')) {
+              await github.rest.issues.addLabels({ ...issue, labels: ['Test Merged'] });
               core.info('Label "Test Merged" added.');
-            } else if (body.includes('Test Merge Removed')) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                name: 'Test Merged'
-              });
+              return;
+            }
+            try {
+              await github.rest.issues.removeLabel({ ...issue, name: 'Test Merged' });
               core.info('Label "Test Merged" removed.');
+            }
+            catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+              core.info('The pull request had no "Test Merged" label.');
             }

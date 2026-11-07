@@ -18,7 +18,7 @@ export const DnaVault = (props) => {
   } = data;
   return (
     <Window
-      width={350}
+      width={400}
       height={400}>
       <Window.Content>
         <Section title="База данных ДНК хранилища">

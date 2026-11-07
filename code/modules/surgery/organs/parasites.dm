@@ -98,6 +98,8 @@
 /obj/item/organ/body_egg/terror_eggs/proc/hatch_egg()
 	var/infection_completed = FALSE
 	var/obj/structure/spider/spiderling/terror_spiderling/S = new(get_turf(owner))
+	if(!antag_training_terror_claim(owner, S, FALSE, training_infector?.resolve()))
+		return
 	switch(eggs_hatched)
 		if(0) // 1st spiderling
 			S.grow_as = pick(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/lurker, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/reaper)

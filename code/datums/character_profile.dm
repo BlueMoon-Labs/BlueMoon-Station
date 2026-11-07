@@ -123,6 +123,17 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		else
 			data["erp_verbs"] = "Text Only"
 		// mechanical_erp_verbs_examine END
+	if(!iscarbon(M) && M)
+		var/datum/preferences/prefs = M.client?.prefs
+		var/list/features = prefs?.features
+		data["oocnotes"] = format_text("oocnotes", M.mind?.ooc_notes || (features ? features["ooc_notes"] : null))
+		data["flavortext"] = format_text("flavortext", M.mind?.flavor_text || (features ? features["flavor_text"] : null))
+		data["species_name"] = "ЕРП-антагонист"
+		data["custom_species_lore"] = ""
+		if(prefs && (prefs.toggles & VERB_CONSENT))
+			data["erp_verbs"] = "Allowed"
+		else
+			data["erp_verbs"] = "Text Only"
 	if (isobserver(user))
 		data["security_records"] = format_text("security_records", M?.client?.prefs.security_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей
 		data["medical_records"] = format_text("medical_records", M?.client?.prefs.medical_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей
@@ -181,7 +192,12 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
-		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", C.dna?.custom_species_lore) : ""
+		var/race_lore = C.dna?.custom_species_lore
+		if(!length(race_lore) && !length(C.dna?.custom_species)) // BLUEMOON ADD - лор вида подставляем только без своего названия вида, иначе профиль описывал бы другой вид
+			var/datum/species/species_datum = C.dna?.species
+			if(species_datum)
+				race_lore = species_datum.get_species_lore_text() // BLUEMOON ADD - лор вида, если игрок не задал свой
+		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			var/can_see_naked = TRUE

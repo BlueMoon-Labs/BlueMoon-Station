@@ -19,11 +19,16 @@
 
 /datum/antagonist/fugitive/on_gain()
 	forge_objectives()
-	var/mob/living/carbon/human/H = owner.current
-	var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
-	if(load_character == "Да")
-		H.load_client_appearance(H.client)
+	offer_own_character()
 	. = ..()
+
+/datum/antagonist/fugitive/proc/offer_own_character()
+	var/mob/living/carbon/human/H = owner.current
+	if(!ishuman(H) || !H.client)
+		return
+	var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
+	if(load_character == "Да" && H.client)
+		H.load_client_appearance(H.client)
 
 /datum/antagonist/fugitive/proc/forge_objectives() //this isn't the actual survive objective because it's about who in the team survives
 	var/datum/objective/survive = new /datum/objective

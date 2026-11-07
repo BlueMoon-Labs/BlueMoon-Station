@@ -306,6 +306,8 @@
 	if(targeting_strategy && !targeting_strategy.can_attack(hostile_pawn, target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
+	if(hostile_pawn.escape_if_confined())
+		return AI_BEHAVIOR_DELAY
 	hostile_pawn.target = target
 	var/atom/attack_origin = hostile_pawn.targets_from || hostile_pawn
 	if(target.Adjacent(attack_origin))
@@ -345,6 +347,8 @@
 	if(targeting_strategy && !targeting_strategy.can_attack(hostile_pawn, target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
+	if(hostile_pawn.escape_if_confined())
+		return AI_BEHAVIOR_DELAY
 	hostile_pawn.target = target
 	var/atom/attack_origin = hostile_pawn.targets_from || hostile_pawn
 	if(!target.Adjacent(attack_origin))

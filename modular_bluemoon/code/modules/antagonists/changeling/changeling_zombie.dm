@@ -12,6 +12,8 @@
 		return FALSE
 	if(HAS_TRAIT(host, TRAIT_GENELESS))
 		return FALSE
+	if(is_antag_training_atom(host))
+		return FALSE
 	return TRUE
 
 /proc/try_changeling_zombie_infection(mob/living/carbon/human/host)

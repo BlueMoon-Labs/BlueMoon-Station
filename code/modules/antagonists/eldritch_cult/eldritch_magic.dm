@@ -1086,7 +1086,7 @@
 				to_chat(recipient, msg)
 
 		for(var/mob/dead_mob as anything in GLOB.dead_mob_list)
-			if(!isobserver(dead_mob) && dead_mob.training_origin != living_owner.training_origin)
+			if(isobserver(dead_mob) ? !antag_training_observer_hears(dead_mob, living_owner) : dead_mob.training_origin != living_owner.training_origin)
 				continue
 			var/link = FOLLOW_LINK(dead_mob, living_owner)
 			to_chat(dead_mob, "[link] [msg]")

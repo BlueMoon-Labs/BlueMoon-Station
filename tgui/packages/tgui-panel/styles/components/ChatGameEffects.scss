@@ -1,0 +1,268 @@
+// Игровые эффекты текста (спаны из DM). Эффект действует, пока на корне
+// нет Chat--gameFxOff и его Chat--fxOff-<id>: выключенный спан - обычный текст.
+// На спанах только тень, цвет, прозрачность и маска; transform - только блоку.
+
+$ghost: color-mix(in srgb, currentColor 45%, transparent);
+
+// Дрожь: глиф рисует тень, сдвигаемая на долю пикселя.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-tremble) .tremble {
+  animation: fx-tremble 360ms linear infinite;
+}
+
+@keyframes fx-tremble {
+  0%,
+  100% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 1.1px 0 0 currentColor;
+  }
+  12% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: -1px 0.5px 0 currentColor;
+  }
+  25% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0.5px -0.7px 0 currentColor;
+  }
+  37% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: -1.2px -0.2px 0 currentColor;
+  }
+  50% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0.7px 0.6px 0 currentColor;
+  }
+  62% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: -0.4px -0.8px 0 currentColor;
+  }
+  75% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 1.2px 0.3px 0 currentColor;
+  }
+  87% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: -0.7px 0.5px 0 currentColor;
+  }
+}
+
+// Озноб: голубоватый текст, дрожь накатывает волнами.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-shiver) .shiver {
+  color: color-mix(in srgb, currentColor 40%, #8fc8ff);
+  text-shadow: 0 0 4px rgba(143, 200, 255, 0.45);
+  animation: fx-shiver 1100ms linear infinite;
+}
+
+.theme-light .Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-shiver) .shiver {
+  color: color-mix(in srgb, currentColor 40%, #1f64a8);
+  text-shadow: 0 0 3px rgba(31, 100, 168, 0.3);
+}
+
+@keyframes fx-shiver {
+  0%,
+  44%,
+  100% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 0 currentColor, 0 0 4px rgba(143, 200, 255, 0.45);
+  }
+  6%,
+  18%,
+  30% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: 1.3px 0 0 currentColor, 0 0 4px rgba(143, 200, 255, 0.45);
+  }
+  12%,
+  24%,
+  36% {
+    -webkit-text-fill-color: transparent;
+    text-shadow: -1.3px 0 0 currentColor, 0 0 4px rgba(143, 200, 255, 0.45);
+  }
+}
+
+// Опьянение: в глазах двоится, второй контур отплывает и возвращается.
+// Тень с color-mix Chromium не интерполирует, поэтому движутся длины.
+@property --fx-drunk-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1px;
+}
+
+@property --fx-drunk-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fx-drunk-blur {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1px;
+}
+
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-drunk) .drunk_speech {
+  text-shadow:
+    0 0 var(--fx-drunk-blur) currentColor,
+    var(--fx-drunk-x) var(--fx-drunk-y) var(--fx-drunk-blur) $ghost;
+  animation: fx-drunk 2000ms ease-in-out infinite alternate;
+}
+
+@keyframes fx-drunk {
+  from {
+    --fx-drunk-x: -1.5px;
+    --fx-drunk-y: 0px;
+    --fx-drunk-blur: 0.5px;
+  }
+  to {
+    --fx-drunk-x: 3.5px;
+    --fx-drunk-y: 1px;
+    --fx-drunk-blur: 1.5px;
+  }
+}
+
+// Удушье: текст гаснет к концу, всё целиком тяжело дышит.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-gasp) .gasp_speech {
+  -webkit-mask-image: linear-gradient(90deg, #000 25%, rgba(0, 0, 0, 0.45));
+  mask-image: linear-gradient(90deg, #000 25%, rgba(0, 0, 0, 0.45));
+  animation: fx-gasp 1600ms steps(24) infinite alternate;
+}
+
+@keyframes fx-gasp {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.65;
+  }
+}
+
+// Приглушённость: блёкло и мягко, без движения.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-muffled) .muffled_speech,
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-muffled) .hear_muffled {
+  opacity: 0.6;
+  text-shadow: 0 0 2px currentColor;
+}
+
+// Помехи рации: короткие провалы сигнала и рваный двойной контур.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-radio_static) .radio_static {
+  animation: fx-static 2300ms linear infinite;
+}
+
+@keyframes fx-static {
+  0%,
+  7%,
+  11%,
+  33%,
+  38%,
+  58%,
+  66%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 0 transparent, 0 0 0 transparent;
+  }
+  9% {
+    opacity: 0.35;
+    text-shadow: 2px 0 0 $ghost, -2px 0 0 $ghost;
+  }
+  35% {
+    opacity: 0.7;
+    text-shadow: -1.5px 0 0 $ghost, 1px 0 0 $ghost;
+  }
+  61% {
+    opacity: 0.25;
+    text-shadow: 3px 0 0 $ghost, -1px 0 0 $ghost;
+  }
+  63% {
+    opacity: 0.85;
+    text-shadow: -2px 0 0 $ghost, 2px 0 0 $ghost;
+  }
+}
+
+// Галлюцинации: каналы цвета коротко разъезжаются, три раза, и реплика
+// успокаивается. Копии слабее глифа, текст читается в любом кадре.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-hallucination) .hear_hallucination {
+  animation: fx-hallucination 1000ms linear 3;
+}
+
+@keyframes fx-hallucination {
+  0%,
+  22%,
+  100% {
+    text-shadow: 0 0 0 transparent, 0 0 0 transparent;
+  }
+  4% {
+    text-shadow: -1.8px 0 0 rgba(230, 50, 70, 0.45), 1.8px 0 0 rgba(40, 210, 240, 0.45);
+  }
+  8% {
+    text-shadow: 1.2px 0.5px 0 rgba(230, 50, 70, 0.35), -1.2px -0.5px 0 rgba(40, 210, 240, 0.35);
+  }
+  14% {
+    text-shadow: -0.6px 0 0 rgba(230, 50, 70, 0.2), 0.6px 0 0 rgba(40, 210, 240, 0.2);
+  }
+}
+
+// Вещества: цвет речи перетекает между двумя оттенками, свой цвет
+// вложенных спанов (рация, имя) на время перелива уступает общему.
+// Ссылки и цветные эффекты (озноб) держат свой.
+// Цвет не движение: steps() даёт ~15 обновлений в секунду вместо каждого кадра.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-druggy) .hear_druggy {
+  text-shadow: 0 0 4px color-mix(in srgb, currentColor 45%, transparent);
+  animation: fx-druggy 1400ms steps(21) infinite alternate;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-druggy) .ChatMessage:not(.ChatMessage--settled) .hear_druggy *:not(a, .shiver),
+  .Chat.Chat--noSettle:not(.Chat--gameFxOff):not(.Chat--fxOff-druggy) .hear_druggy *:not(a, .shiver) {
+    color: inherit;
+  }
+}
+
+@keyframes fx-druggy {
+  from {
+    color: color-mix(in oklab, currentColor 50%, #e05cff);
+  }
+  to {
+    color: color-mix(in oklab, currentColor 50%, #36d8a8);
+  }
+}
+
+// Блочные эффекты. Сдвиг только вправо и вверх: слева текст упирается
+// в край панели, а сдвиг вниз растягивает прокрутку. Анимация появления
+// (--enter-anim от класса или канала) идёт вместе с ними.
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-yell) .ChatMessage--fx-shake {
+  animation: var(--enter-anim, none), fx-shake 380ms ease-in-out 1;
+}
+
+@keyframes fx-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  12% {
+    transform: translateX(4px);
+  }
+  28% {
+    transform: translateX(0.5px);
+  }
+  44% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(0.5px);
+  }
+  76% {
+    transform: translateX(1.5px);
+  }
+}
+
+.Chat:not(.Chat--gameFxOff):not(.Chat--fxOff-dizzy) .ChatMessage--fx-sway {
+  animation: var(--enter-anim, none), fx-sway 2600ms ease-in-out 3;
+}
+
+@keyframes fx-sway {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(5px, -1px);
+  }
+}

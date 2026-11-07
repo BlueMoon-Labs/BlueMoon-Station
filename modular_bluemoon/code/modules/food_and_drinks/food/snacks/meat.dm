@@ -71,33 +71,34 @@
 	icon_state = "surstromming"
 	list_reagents = list(
 		/datum/reagent/consumable/nutriment = 1,
-		/datum/reagent/consumable/nutriment/vitamin = 2
+		/datum/reagent/surstromming_juice = 1
 	)
 	tastes = list("fish" = 1, "dried meat" = 1)
 	foodtype = SEAFOOD
 	w_class = WEIGHT_CLASS_SMALL
 	grind_results = list(/datum/reagent/consumable/bonito = 20)
 
-/obj/item/reagent_containers/food/snacks/surstromming/attackby(obj/item/I, mob/user, params)
-	return ..()
+/datum/reagent/surstromming_juice
+	name = "Surstromming Juice"
+	description = "Концентрированный сок тухлой рыбы. Пахнет как химическое оружие."
+	reagent_state = LIQUID
+	color = "#778844"
 
-/obj/item/reagent_containers/food/snacks/surstromming/attack(mob/living/M, mob/living/user)
+/datum/reagent/surstromming_juice/on_mob_add(mob/living/carbon/M, amount)
 	..()
 	if(!iscarbon(M) || M.stat == DEAD)
-		return
-	addtimer(CALLBACK(src, PROC_REF(induce_surstromming_effect), M), 1)
-
-/obj/item/reagent_containers/food/snacks/surstromming/proc/induce_surstromming_effect(mob/living/carbon/M)
-	if(!M || M.stat == DEAD)
 		return
 
 	var/turf/T = get_turf(M)
 	if(!T)
 		return
 
-	playsound(T, pick('modular_bluemoon/sound/plush/surstromming1.ogg', 'modular_bluemoon/sound/plush/surstromming2.ogg', 'modular_bluemoon/sound/plush/surstromming3.ogg', 'modular_bluemoon/sound/plush/surstromming4.ogg', 'modular_bluemoon/sound/plush/surstromming5.ogg'), 60, TRUE)
+	var/list/sur_sounds = list('modular_bluemoon/sound/plush/surstromming1.ogg', 'modular_bluemoon/sound/plush/surstromming2.ogg', 'modular_bluemoon/sound/plush/surstromming3.ogg', 'modular_bluemoon/sound/plush/surstromming4.ogg', 'modular_bluemoon/sound/plush/surstromming5.ogg')
+	playsound(T, pick(sur_sounds), 60, TRUE)
 
-	// Стандартный вызов рвоты 
-	M.vomit(20, TRUE, TRUE)
-
+	M.SetStun(20) 
+	
 	new /obj/effect/decal/cleanable/vomit(T)
+	
+	to_chat(M, span_warning("Вас выворачивает наизнанку от ужасного вкуса сюрстрёмминга!"))
+	M.visible_message(span_danger("[M] начинает бурно тошнить!"))

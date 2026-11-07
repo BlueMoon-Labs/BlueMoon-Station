@@ -445,7 +445,6 @@ function bm_set_loading_progress(p){p=Math.max(0,Math.min(100,parseInt(p)||0));v
 
 		if("character_setup")
 			_bm_play_click_sound()
-			client.prefs.current_tab = SETTINGS_TAB
 			client.prefs.ShowChoices(src)
 			return
 
@@ -466,9 +465,7 @@ function bm_set_loading_progress(p){p=Math.max(0,Math.min(100,parseInt(p)||0));v
 
 		if("changelog")
 			_bm_play_click_sound()
-			if(!GLOB.changelog_tgui)
-				GLOB.changelog_tgui = new /datum/changelog()
-			GLOB.changelog_tgui.ui_interact(src)
+			client?.changelog()
 			return
 
 		if("start_game")

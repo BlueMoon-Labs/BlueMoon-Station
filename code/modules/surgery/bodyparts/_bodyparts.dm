@@ -10,6 +10,8 @@
 	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE | TILE_BOUND
 	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
 	var/as_mob_layer = BODYPARTS_LAYER
+	/// Слой задней половины (_behind) на мобе; без него - чуть ниже as_mob_layer
+	var/behind_mob_layer
 	var/mob/living/carbon/owner = null
 	var/datum/weakref/original_owner = null
 	var/status = BODYPART_ORGANIC
@@ -162,6 +164,9 @@
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
 		if(HAS_TRAIT(C, TRAIT_LIMBATTACHMENT))
+			if((body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && (HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) != istype(src, /obj/item/bodypart/l_leg/naga_tail)))
+				to_chat(user, span_warning("Эта конечность не подходит анатомии [H]."))
+				return
 			if(!H.get_bodypart(body_zone) && !animal_origin)
 				if(H == user)
 					H.visible_message("<span class='warning'>[H] jams [src] into [H.ru_ego()] empty socket!</span>",\
@@ -216,6 +221,10 @@
 		var/obj/item/organ/organ_check = i
 		if(check_zone(organ_check.zone) == body_zone)
 			. += organ_check
+
+// Зона одежды может отличаться от анатомической зоны конечности.
+/obj/item/bodypart/proc/get_clothing_zone()
+	return body_zone
 
 /obj/item/bodypart/proc/consider_processing()
 	if(stamina_dam > DAMAGE_PRECISION)
@@ -369,6 +378,7 @@
 	consider_processing()
 	update_disabled()
 	update_threshhold_state()
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_DAMAGE)
 	return update_bodypart_damage_state()
 
 /// Allows us to roll for and apply a wound without actually dealing damage. Used for aggregate wounding power with pellet clouds
@@ -502,14 +512,15 @@
 	if(owner && ishuman(owner))
 		var/mob/living/carbon/human/H = owner
 		var/list/clothing = H.clothingonpart(src)
+		var/clothing_zone = get_clothing_zone()
 		for(var/obj/item/clothing/C as anything in clothing)
 			// unlike normal armor checks, we tabluate these piece-by-piece manually so we can also pass on appropriate damage the clothing's limbs if necessary
 			if(C.armor)
 				armor_ablation += C.armor.getRating(WOUND)
 			if(wounding_type == WOUND_SLASH)
-				C.take_damage_zone(body_zone, damage, BRUTE, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BRUTE, armour_penetration)
 			else if(wounding_type == WOUND_BURN && damage >= 10) // lazy way to block freezing from shredding clothes without adding another var onto apply_damage()
-				C.take_damage_zone(body_zone, damage, BURN, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BURN, armour_penetration)
 
 		if(!armor_ablation)
 			injury_mod += bare_wound_bonus
@@ -594,6 +605,10 @@
 		var/datum/wound/W = i
 		if(W.disabling)
 			return BODYPART_DISABLED_WOUND
+	return is_disabled_by_damage(silent)
+
+// Общая проверка порога и восстановления используется также хвостом, который иначе обрабатывает переломы.
+/obj/item/bodypart/proc/is_disabled_by_damage(silent = FALSE)
 	var/disable_threshold = get_disable_threshold()
 	if(can_dismember() && !HAS_TRAIT(owner, TRAIT_NODISMEMBER))
 		. = disabled //inertia, to avoid limbs healing 0.1 damage and being re-enabled
@@ -731,101 +746,102 @@
 
 	if(!animal_origin)
 		var/mob/living/carbon/human/H = C
-		color_src = FALSE
+		if(H.dna?.species)
+			color_src = FALSE
 
-		var/datum/species/S = H.dna.species
-		base_bp_icon = S?.icon_limbs || DEFAULT_BODYPART_ICON
-		species_id = S.mutant_bodyparts["limbs_id"]
-		species_flags_list = H.dna.species.species_traits
+			var/datum/species/S = H.dna.species
+			base_bp_icon = S?.icon_limbs || DEFAULT_BODYPART_ICON
+			species_id = S.mutant_bodyparts["limbs_id"]
+			species_flags_list = H.dna.species.species_traits
 
-		//body marking memes
-		var/list/colorlist = list()
-		colorlist.Cut()
-		colorlist += ReadRGB("[H.dna.features["mcolor"]]00")
-		colorlist += ReadRGB("[H.dna.features["mcolor2"]]00")
-		colorlist += ReadRGB("[H.dna.features["mcolor3"]]00")
-		colorlist += list(0,0,0, S.hair_alpha)
-		for(var/index=1, index<=colorlist.len, index++)
-			colorlist[index] = colorlist[index]/255
+			//body marking memes
+			var/list/colorlist = list()
+			colorlist.Cut()
+			colorlist += ReadRGB("[H.dna.features["mcolor"]]00")
+			colorlist += ReadRGB("[H.dna.features["mcolor2"]]00")
+			colorlist += ReadRGB("[H.dna.features["mcolor3"]]00")
+			colorlist += list(0,0,0, S.hair_alpha)
+			for(var/index=1, index<=colorlist.len, index++)
+				colorlist[index] = colorlist[index]/255
 
-		if(S.use_skintones)
-			skin_tone = H.skin_tone
-		else
-			skin_tone = ""
-
-		body_gender = H.dna.features["body_model"]
-		if(GLOB.nongendered_limb_types[species_id])
-			should_draw_gender = FALSE
-		else
-			should_draw_gender = S.sexes
-		if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
-			should_draw_gender = TRUE
-			var/list/current_states = icon_states(icon)
-			if(body_zone == BODY_ZONE_HEAD && !(("robotic_head" in current_states) || (("head_f" in current_states) && ("head_m" in current_states))))
-				icon = 'icons/mob/augmentation/augments.dmi'
-			else if(body_zone == BODY_ZONE_CHEST && !(("robotic_chest" in current_states) || (("chest_f" in current_states) && ("chest_m" in current_states))))
-				icon = 'icons/mob/augmentation/augments.dmi'
-
-		var/mut_colors = (MUTCOLORS in S.species_traits)
-		if(mut_colors)
-			if(S.fixed_mut_color)
-				species_color = S.fixed_mut_color
+			if(S.use_skintones)
+				skin_tone = H.skin_tone
 			else
-				species_color = H.dna.features["mcolor"]
-		else
-			species_color = ""
+				skin_tone = ""
 
-		if(S.mutant_bodyparts["legs"])
-			if(body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG)
-				if(DIGITIGRADE in S.species_traits)
-					digitigrade_type = lowertext(H.dna.features["legs"])
+			body_gender = H.dna.features["body_model"]
+			if(GLOB.nongendered_limb_types[species_id])
+				should_draw_gender = FALSE
 			else
-				digitigrade_type = null
+				should_draw_gender = S.sexes
+			if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
+				should_draw_gender = TRUE
+				var/list/current_states = icon_states(icon)
+				if(body_zone == BODY_ZONE_HEAD && !(("robotic_head" in current_states) || (("head_f" in current_states) && ("head_m" in current_states))))
+					icon = 'icons/mob/augmentation/augments.dmi'
+				else if(body_zone == BODY_ZONE_CHEST && !(("robotic_chest" in current_states) || (("chest_f" in current_states) && ("chest_m" in current_states))))
+					icon = 'icons/mob/augmentation/augments.dmi'
 
-		if(S.mutant_bodyparts["mam_body_markings"]) // checks if the species can actually have body markings
-			// get all markings for this bodypart type
-			for(var/list/marking in H.dna.features["mam_body_markings"])
-				// marking is a list containing bodypart type, bodymarking name, and then the colour (colour won't be used in v1)
-				if(marking[1] == body_part)
-					var/datum/sprite_accessory/Smark
-					Smark = GLOB.mam_body_markings_list[marking[2]]
-					var/body_markings_icon = default_body_markings_icon
-					if(Smark)
-						body_markings_icon = Smark.icon
-					var/marking_value = "" // combination of body and aux markings from old system
-					if(H.dna.features["mam_body_markings"] != "None")
-						marking_value = Smark?.icon_state || lowertext(H.dna.features["mam_body_markings"])
-					else
-						marking_value = "plain"
-					var/list/color_values
-					if(length(marking) >= 3 && islist(marking[3]))
-						color_values = marking[3]
-					else
-						color_values = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
-					var/emissive_value = (length(marking) >= 4 && marking[4]) ? TRUE : FALSE
-					body_markings_list += list(list(body_markings_icon, marking_value, color_values, emissive_value))
-
-			markings_color = list(colorlist)
-		else
-			marking_value = null
-
-		if(S.override_bp_icon)
-			base_bp_icon = S.override_bp_icon
-		else
-			if(species_id in GLOB.greyscale_limb_types) //should they have greyscales?
-				base_bp_icon = DEFAULT_BODYPART_ICON_ORGANIC
+			var/mut_colors = (MUTCOLORS in S.species_traits)
+			if(mut_colors)
+				if(S.fixed_mut_color)
+					species_color = S.fixed_mut_color
+				else
+					species_color = H.dna.features["mcolor"]
 			else
-				base_bp_icon = DEFAULT_BODYPART_ICON
+				species_color = ""
 
-		if(base_bp_icon != DEFAULT_BODYPART_ICON)
-			color_src = mut_colors ? MUTCOLORS : ((H.dna.skin_tone_override && S.use_skintones == USE_SKINTONES_GRAYSCALE_CUSTOM) ? CUSTOM_SKINTONE : SKINTONE)
+			if(S.mutant_bodyparts["legs"])
+				if(body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG)
+					if(DIGITIGRADE in S.species_traits)
+						digitigrade_type = lowertext(H.dna.features["legs"])
+				else
+					digitigrade_type = null
 
-		if(!dropping_limb && H.dna.check_mutation(HULK))
-			mutation_color = "00aa00"
-		else
-			mutation_color = ""
+			if(S.mutant_bodyparts["mam_body_markings"]) // checks if the species can actually have body markings
+				// get all markings for this bodypart type
+				for(var/list/marking in H.dna.features["mam_body_markings"])
+					// marking is a list containing bodypart type, bodymarking name, and then the colour (colour won't be used in v1)
+					if(marking[1] == body_part)
+						var/datum/sprite_accessory/Smark
+						Smark = GLOB.mam_body_markings_list[marking[2]]
+						var/body_markings_icon = default_body_markings_icon
+						if(Smark)
+							body_markings_icon = Smark.icon
+						var/marking_value = "" // combination of body and aux markings from old system
+						if(H.dna.features["mam_body_markings"] != "None")
+							marking_value = Smark?.icon_state || lowertext(H.dna.features["mam_body_markings"])
+						else
+							marking_value = "plain"
+						var/list/color_values
+						if(length(marking) >= 3 && islist(marking[3]))
+							color_values = marking[3]
+						else
+							color_values = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
+						var/emissive_value = (length(marking) >= 4 && marking[4]) ? TRUE : FALSE
+						body_markings_list += list(list(body_markings_icon, marking_value, color_values, emissive_value))
 
-		dmg_overlay_type = S.damage_overlay_type
+				markings_color = list(colorlist)
+			else
+				marking_value = null
+
+			if(S.override_bp_icon)
+				base_bp_icon = S.override_bp_icon
+			else
+				if(species_id in GLOB.greyscale_limb_types) //should they have greyscales?
+					base_bp_icon = DEFAULT_BODYPART_ICON_ORGANIC
+				else
+					base_bp_icon = DEFAULT_BODYPART_ICON
+
+			if(base_bp_icon != DEFAULT_BODYPART_ICON)
+				color_src = mut_colors ? MUTCOLORS : ((H.dna.skin_tone_override && S.use_skintones == USE_SKINTONES_GRAYSCALE_CUSTOM) ? CUSTOM_SKINTONE : SKINTONE)
+
+			if(!dropping_limb && H.dna.check_mutation(HULK))
+				mutation_color = "00aa00"
+			else
+				mutation_color = ""
+
+			dmg_overlay_type = S.damage_overlay_type
 
 	else if(animal_origin == MONKEY_BODYPART) //currently monkeys are the only non human mob to have damage overlays.
 		dmg_overlay_type = animal_origin
@@ -971,7 +987,7 @@
 			limb.icon_state = "[render_species_id]_[body_zone]"
 
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
+			second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
 			second_limb.icon = limb.icon
 			. += second_limb
 
@@ -1049,7 +1065,7 @@
 			if(prosthetic_digi_limbs_cache[cache_id])
 				limb.icon_state = "digi_[body_zone]"
 				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-					second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir)
+					second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir)
 					second_limb.icon = limb.icon
 					var/original_state = limb.icon_state
 					limb.icon_state = "[original_state]_front"

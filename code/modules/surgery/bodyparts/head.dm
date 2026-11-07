@@ -110,45 +110,45 @@
 
 	else if(!animal_origin)
 		var/mob/living/carbon/human/H = C
-		var/datum/species/S = H.dna.species
-
-		//Facial hair
-		if(H.facial_hair_style && (FACEHAIR in S.species_traits))
-			facial_hair_style = H.facial_hair_style
-			if(S.hair_color)
-				if(S.hair_color == "mutcolor")
-					facial_hair_color = H.dna.features["mcolor"]
+		var/datum/species/S = H.dna?.species
+		if(S)
+			//Facial hair
+			if(H.facial_hair_style && (FACEHAIR in S.species_traits))
+				facial_hair_style = H.facial_hair_style
+				if(S.hair_color)
+					if(S.hair_color == "mutcolor")
+						facial_hair_color = H.dna.features["mcolor"]
+					else
+						facial_hair_color = S.hair_color
 				else
-					facial_hair_color = S.hair_color
+					facial_hair_color = H.facial_hair_color
+				hair_alpha = S.hair_alpha
 			else
-				facial_hair_color = H.facial_hair_color
-			hair_alpha = S.hair_alpha
-		else
-			facial_hair_style = "Shaved"
-			facial_hair_color = "000"
-			hair_alpha = 255
-		//Hair
-		if(H.hair_style && (HAIR in S.species_traits))
-			hair_style = H.hair_style
-			if(S.hair_color)
-				if(S.hair_color == "mutcolor")
-					hair_color = H.dna.features["mcolor"]
+				facial_hair_style = "Shaved"
+				facial_hair_color = "000"
+				hair_alpha = 255
+			//Hair
+			if(H.hair_style && (HAIR in S.species_traits))
+				hair_style = H.hair_style
+				if(S.hair_color)
+					if(S.hair_color == "mutcolor")
+						hair_color = H.dna.features["mcolor"]
+					else
+						hair_color = S.hair_color
 				else
-					hair_color = S.hair_color
+					hair_color = H.hair_color
+				hair_alpha = S.hair_alpha
 			else
-				hair_color = H.hair_color
-			hair_alpha = S.hair_alpha
-		else
-			hair_style = "Bald"
-			hair_color = "000"
-			hair_alpha = initial(hair_alpha)
-		// lipstick
-		if(H.lip_style && (LIPS in S.species_traits))
-			lip_style = H.lip_style
-			lip_color = H.lip_color
-		else
-			lip_style = null
-			lip_color = "white"
+				hair_style = "Bald"
+				hair_color = "000"
+				hair_alpha = initial(hair_alpha)
+			// lipstick
+			if(H.lip_style && (LIPS in S.species_traits))
+				lip_style = H.lip_style
+				lip_color = H.lip_color
+			else
+				lip_style = null
+				lip_color = "white"
 	..()
 
 /obj/item/bodypart/head/update_icon_dropped()
@@ -201,7 +201,6 @@
 					hair_overlay.alpha = hair_alpha
 					. += hair_overlay
 
-
 		// lipstick
 		if(lip_style)
 			var/mutable_appearance/lips_overlay = mutable_appearance('icons/mob/lips.dmi', "lips_[lip_style]", -BODY_LAYER, SOUTH)
@@ -213,7 +212,7 @@
 		if(eyes || ignore_brain)
 			var/left_state = DEFAULT_LEFT_EYE_STATE
 			var/right_state = DEFAULT_RIGHT_EYE_STATE
-			if(owner && owner.dna.species)
+			if(owner && owner.dna && owner.dna.species)
 				var/eye_type = owner.dna.species.eye_type
 				if(GLOB.eye_types[eye_type])
 					left_state = eye_type + "_left_eye"
@@ -221,13 +220,13 @@
 			if(left_state != DEFAULT_NO_EYE_STATE)
 				var/mutable_appearance/left_eye = mutable_appearance('icons/mob/hair.dmi', left_state, -BODY_LAYER, SOUTH)
 				left_eye.category = "HEAD"
-				if(eyes.left_eye_color)
+				if(eyes?.left_eye_color)
 					left_eye.color = "#" + eyes.left_eye_color
 				. += left_eye
 			if(right_state != DEFAULT_NO_EYE_STATE)
 				var/mutable_appearance/right_eye = mutable_appearance('icons/mob/hair.dmi', right_state, -BODY_LAYER, SOUTH)
 				right_eye.category = "HEAD"
-				if(eyes.right_eye_color)
+				if(eyes?.right_eye_color)
 					right_eye.color = "#" + eyes.right_eye_color
 				. += right_eye
 		else

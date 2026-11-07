@@ -89,7 +89,7 @@
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/colorpad/ask_for_input(mob/user)
-	var/new_color = input(user, "Enter a color, please.", "Color", "#ffffff") as color|null
+	var/new_color = tgui_input_color(user, "Enter a color, please.", "Color", "#ffffff")
 	if(new_color && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_color)
 		push_data()
@@ -543,11 +543,9 @@
 		radius = rad
 
 /obj/item/integrated_circuit/input/advanced_locator_list/do_work()
-	var/datum/integrated_io/I = inputs[1]
 	var/datum/integrated_io/O = outputs[1]
 	O.data = null
-	var/list/input_list = list()
-	input_list = I.data
+	var/list/input_list = get_pin_data(IC_INPUT, 1)
 	if(length(input_list))	//if there is no input don't do anything.
 		var/turf/T = get_turf(src)
 		var/list/nearby_things = view(radius,T)

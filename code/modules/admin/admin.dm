@@ -1,5 +1,9 @@
 ////////////////////////////////
 /proc/message_admins(msg, islog = TRUE, prefix, list/ignore_ckey)
+#ifdef UNIT_TESTS
+	if(GLOB.unit_test_admin_messages)
+		GLOB.unit_test_admin_messages += msg
+#endif
 	if(!prefix)
 		prefix = islog ? "ADMIN LOG" : "ADMIN MESSAGE"
 	msg = "<span class=\"prefix\">[prefix]:</span> <span class=\"message linkify\">[msg]</span>"

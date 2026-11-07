@@ -5,6 +5,9 @@
  */
 
 export const THEMES = ['light', 'dark', 'default'];
+
+// Тема 'default' панели рисуется светлой.
+export const getPaneTheme = theme => (theme === 'default' ? 'light' : theme);
 /*
 const COLOR_DARK_BG = '#202020';
 const COLOR_DARK_BG_DARKER = '#171717';

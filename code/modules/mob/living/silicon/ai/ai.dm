@@ -61,6 +61,9 @@
 
 	var/obj/machinery/power/apc/malfhack
 	var/explosive = FALSE		//does the AI explode when it dies?
+	/// BLUEMOON ADD: переключаемый стелс АПЦ (APC Camouflage) + его энергия 0-3000
+	var/apc_stealth_on = FALSE
+	var/apc_stealth_energy = 3000
 
 	var/mob/living/silicon/ai/parent
 	var/camera_light_on = FALSE
@@ -110,6 +113,8 @@
 	var/datum/announcement_help/announcement_help
 	/// Saved AI eye locations for quick camera recall.
 	var/list/turf/saved_camera_positions = list()
+	/// Задержка VOX учебного ИИ: общая задержка станции ему не нужна и от него не ставится.
+	var/training_vox_at = 0
 	///remember AI's last location
 	var/atom/lastloc
 	interaction_range = INFINITY
@@ -208,7 +213,8 @@
 	for(var/mob/living/simple_animal/bot/called_bot as anything in GLOB.bots_list)
 		if(called_bot.calling_ai == src)
 			called_bot.calling_ai = null
-	SSshuttle.autoEvac()
+	if(!training_origin)
+		SSshuttle.autoEvac()
 	stop_controlling_display()
 	QDEL_NULL(eyeobj) // No AI, no Eye
 	QDEL_NULL(spark_system)
@@ -330,6 +336,9 @@
     . += "System integrity: [(health + 100) * 0.5]%"
     if(isturf(loc))
         . += "Backup Power: [battery * 0.5]%"
+
+    if(malf_picker)
+        . += "APC Camouflage: [apc_stealth_on ? "ON" : "OFF"] | Charge: [apc_stealth_energy]/3000 kW"
 
     // КИБОРГИ
     . += "Connected cyborgs: [length(connected_robots)]"
@@ -489,7 +498,7 @@
 		unset_machine()
 		src << browse(null, t1)
 	if (href_list["switchcamera"])
-		switchCamera(locate(href_list["switchcamera"])) in GLOB.cameranet.cameras
+		switchCamera(locate(href_list["switchcamera"]) in GLOB.cameranet.cameras)
 	if (href_list["showalerts"])
 		alert_control.ui_interact(src)
 #ifdef AI_VOX
@@ -504,7 +513,7 @@
 	//Carn: holopad requests
 	if(href_list["jumptoholopad"])
 		var/obj/machinery/holopad/H = locate(href_list["jumptoholopad"])
-		if(H)
+		if(istype(H))
 			H.attack_ai(src) //may as well recycle
 		else
 			to_chat(src, "<span class='notice'>Unable to locate the holopad.</span>")
@@ -553,7 +562,7 @@
 			M.transfer_ai(AI_MECH_HACK, src, usr) //Called on the mech itself.
 
 /mob/living/silicon/ai/proc/switchCamera(obj/machinery/camera/C)
-	if(QDELETED(C))
+	if(QDELETED(C) || !antag_training_camera_visible(C, src))
 		return FALSE
 
 	if(!tracking)
@@ -682,7 +691,7 @@
 		var/list/tempnetwork = C.network
 		if(!(is_station_level(C.z) || is_mining_level(C.z) || ("ss13" in tempnetwork)))
 			continue
-		if(!C.can_use())
+		if(!C.can_use() || !antag_training_camera_visible(C, src))
 			continue
 
 		tempnetwork.Remove("rd", "toxins", "prison")
@@ -700,7 +709,7 @@
 		network = old_network // If nothing is selected
 	else
 		for(var/obj/machinery/camera/C in GLOB.cameranet.cameras)
-			if(!C.can_use())
+			if(!C.can_use() || !antag_training_camera_visible(C, src))
 				continue
 			if(network in C.network)
 				U.eyeobj.setLoc(get_turf(C))
@@ -728,9 +737,11 @@
 	emote_display = n_emote
 	for (var/each in GLOB.ai_status_displays) //change status of displays
 		var/obj/machinery/status_display/ai/M = each
+		if(is_antag_training_atom(M) != is_antag_training_atom(src))
+			continue
 		M.emotion = emote_display
 		M.update()
-	if (emote_display == "Friend Computer")
+	if (emote_display == "Friend Computer" && !training_origin)
 		var/datum/radio_frequency/frequency = SSradio.return_frequency(FREQ_STATUS_DISPLAYS)
 
 		if(!frequency)
@@ -750,7 +761,7 @@
 
 	var/new_color
 	while(!new_color)
-		new_color = input(usr, "Выберите новый цвет для вашей голограммы.", "Цвет голограммы", hologram_color) as color|null
+		new_color = tgui_input_color(usr, "Выберите новый цвет для вашей голограммы.", "Цвет голограммы", hologram_color)
 		if(!new_color)
 			return
 		if(color_hex2num(new_color) < 200) //Colors too dark are rejected
@@ -1164,7 +1175,11 @@
 
 		playsound(get_turf(src), 'sound/machines/ding.ogg', 50, TRUE, ignore_walls = FALSE)
 		to_chat(src, "Hack complete. \The [apc] is now under your exclusive control.")
-		apc.update_icon()
+		// BLUEMOON ADD: включённый камуфляж маскирует и будущие взломы (метка 5 сек, дальше продлевает тик)
+		var/mob/living/silicon/ai/base = parent || src
+		if(base.apc_stealth_on && base.apc_stealth_energy > 0)
+			apc.activate_stealth(5 SECONDS, silent = TRUE)
+		apc.update_appearance() // BLUEMOON FIX: update_icon() не пересчитывает update_state, синий экран не появлялся
 
 /mob/living/silicon/ai/verb/deploy_to_shell(var/mob/living/silicon/robot/target)
 	set category = "AI Commands"

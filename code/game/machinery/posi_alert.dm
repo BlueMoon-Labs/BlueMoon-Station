@@ -8,7 +8,7 @@
 
 	var/obj/item/radio/radio
 	var/radio_key = /obj/item/encryptionkey/headset_sci
-	var/science_channel = "Science"
+	var/science_channel = RADIO_CHANNEL_SCIENCE
 
 /obj/machinery/posialert/Initialize(mapload, ndir, building)
 	. = ..()

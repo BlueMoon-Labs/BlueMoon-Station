@@ -236,7 +236,7 @@
 	icon_state = "savannah_sleepwear"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
-	togglename = "buttons"
+	togglename = "пуговицы"
 	body_parts_covered = CHEST | ARMS
 
 /obj/item/clothing/under/donator/bm/urban_misteran
@@ -1226,6 +1226,24 @@
 	desc = "Pants from a secondhand shop that someone resewed, added straps from an old backpack, and called it 'style.' Someone clearly wanted to look like an elite mercenary, but it turned out like a shopping mall security guard. They cover your ass. Thx for that."
 	icon_state = "mall_cop_chic"
 	item_state = "mall_cop_chic"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/crimson_dress
+	name = "Crimson Dress"
+	desc = "A crimson dress with black sleeves and a corset included. Upon closer inspection, one can tell that the garment was custom-made from expensive, high-quality materials. It carries the scent of roses, which its color brings to mind."
+	icon_state = "crimson_dress"
+	item_state = "crimson_dress"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/br_pilotsuit_mk1
+	name = "BLACKROSE© Mark.I Pilot Suit"
+	desc = "Экземпляр старых наработок Ателье 'Black Rose' в виде пилотного костюма устаревшей модели из облегающего и плотного текстиля, состав которого до сих пор известен только им. По крайней мере костюм системы 'вторая кожа' всё ещё поддерживает свою функцию по облегчению нагрузок для носителя, помощь в терморегуляции и малой защите от механических повреждений."
+	icon_state = "brpilotsuitmk1"
+	item_state = "brpilotsuitmk1"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
 	can_adjust = FALSE

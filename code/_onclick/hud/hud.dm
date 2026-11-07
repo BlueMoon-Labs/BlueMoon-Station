@@ -125,6 +125,10 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	var/atom/movable/screen/wanted/wanted_lvl
 	// subtypes can override this to force a specific UI style
 	var/ui_style
+	// Сеанс перетаскивания кнопки и отложенная очистка после отпускания мыши.
+	var/atom/movable/screen/movable/action_button/dragged_action_button
+	var/client/action_drag_client
+	var/action_drag_cleanup_timer
 
 /datum/hud/New(mob/owner)
 	mymob = owner
@@ -160,6 +164,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	static_inventory += screentip_text
 
 /datum/hud/Destroy()
+	hide_landings()
 	if(mymob.hud_used == src)
 		mymob.hud_used = null
 
@@ -282,6 +287,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
 
 /mob/proc/set_hud_used(datum/hud/new_hud)
+	if(hud_used != new_hud)
+		hud_used?.hide_landings()
 	hud_used = new_hud
 	new_hud.build_action_groups()
 
@@ -299,6 +306,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!screenmob.client)
 		return FALSE
 
+	if(screenmob == mymob)
+		hide_landings()
 	screenmob.client.clear_screen()
 	screenmob.client.update_clickcatcher()
 
@@ -460,6 +469,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 /datum/hud/proc/on_client_logout(datum/source, client/old_client)
 	SIGNAL_HANDLER
+	hide_landings()
 	if(old_client)
 		UnregisterSignal(old_client, COMSIG_CLIENT_SET_EYE)
 	track_eye(mymob)
@@ -623,15 +633,58 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 			palette_actions.remove_action(button)
 	button.screen_loc = null
 
-/// Generates visual landings for all groups that the button is not a memeber of
+// Показывает места для кнопки и отслеживает завершение перетаскивания независимо от MouseDrop.
 /datum/hud/proc/generate_landings(atom/movable/screen/movable/action_button/button)
+	var/client/drag_client = mymob?.client
+	if(QDELETED(button) || !drag_client)
+		return
+	if(dragged_action_button != button || action_drag_client != drag_client)
+		hide_landings()
+		dragged_action_button = button
+		action_drag_client = drag_client
+		RegisterSignal(drag_client, COMSIG_CLIENT_MOUSEUP, PROC_REF(on_action_drag_mouseup))
+		RegisterSignal(drag_client, COMSIG_CLIENT_MOUSEDOWN, PROC_REF(on_action_drag_mousedown))
 	listed_actions.generate_landing()
 	palette_actions.generate_landing()
 
-/// Clears all currently visible landings
+// Убирает временные места, подписки и состояние завершённого перетаскивания.
 /datum/hud/proc/hide_landings()
-	listed_actions.clear_landing()
-	palette_actions.clear_landing()
+	if(action_drag_cleanup_timer)
+		deltimer(action_drag_cleanup_timer)
+		action_drag_cleanup_timer = null
+	if(action_drag_client)
+		closeToolTip(action_drag_client.mob)
+		UnregisterSignal(action_drag_client, list(COMSIG_CLIENT_MOUSEUP, COMSIG_CLIENT_MOUSEDOWN))
+		action_drag_client = null
+	if(dragged_action_button)
+		dragged_action_button.last_hovored_ref = null
+		dragged_action_button = null
+	if(istype(last_screentip_atom, /atom/movable/screen/action_landing))
+		if(screentip_text)
+			screentip_text.maptext = ""
+		set_screentip_cache(null, null)
+	listed_actions?.clear_landing()
+	palette_actions?.clear_landing()
+
+/datum/hud/proc/on_action_drag_mouseup(client/source, object, location, control, params)
+	SIGNAL_HANDLER
+	var/list/modifiers = params2list(params)
+	if(modifiers[DRAG] || action_drag_cleanup_timer)
+		return
+	// MouseDrop ещё может использовать место сброса в этом же такте: удаляем его после обработки события.
+	action_drag_cleanup_timer = addtimer(CALLBACK(src, PROC_REF(finish_action_drag)), 0, TIMER_STOPPABLE)
+
+/datum/hud/proc/finish_action_drag()
+	action_drag_cleanup_timer = null
+	hide_landings()
+
+/datum/hud/proc/on_action_drag_mousedown(client/source, object, location, control, params)
+	SIGNAL_HANDLER
+	var/list/modifiers = params2list(params)
+	if(modifiers[DRAG])
+		return
+	// Следующее нажатие очищает остатки, если отпускание за пределами окна не дошло до клиента.
+	hide_landings()
 
 // Updates any existing "owned" visuals, ensures they continue to be visible
 /datum/hud/proc/update_our_owner()

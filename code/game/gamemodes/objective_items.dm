@@ -53,7 +53,7 @@
 	name = "пожарный топор."
 	targetitem = /obj/item/fireaxe
 	difficulty = 3
-	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician", "Captain", "Head of Personnel", "Head Of Security", "Quartermaster", "Research Director", "Chief Medical Officer")
+	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician", "Captain", "Head of Personnel", "Head of Security", "Quartermaster", "Research Director", "Chief Medical Officer")
 
 /datum/objective_item/steal/traitor/nullrod
 	name = "жезл священника."
@@ -77,7 +77,7 @@
 	name = "телескопическую дубинку главы отдела."
 	targetitem = /obj/item/melee/classic_baton/telescopic
 	difficulty = 3
-	excludefromjob = list("Captain", "Head of Personnel", "Head Of Security", "Chief Engineer", "Chief Medical Officer", "Quartermaster", "Research Director")
+	excludefromjob = list("Captain", "Head of Personnel", "Head of Security", "Chief Engineer", "Chief Medical Officer", "Quartermaster", "Research Director")
 
 /datum/objective_item/steal/traitor/telebaton/check_special_completion(obj/item/thing)
 	return !istype(thing, /obj/item/melee/classic_baton/telescopic/contractor_baton)
@@ -158,7 +158,7 @@
 	name = "личное вооружение Синего Щита или Главы Службы Безопасности."
 	targetitem = /obj/item/gun/energy/e_gun/hos
 	difficulty = 8
-	excludefromjob = list("Head Of Security")
+	excludefromjob = list("Head of Security")
 	altitems = list(/obj/item/gun/ballistic/revolver/mws, /obj/item/choice_beacon/hosgun, /obj/item/gun/ballistic/automatic/pistol/g22, /obj/item/gun/ballistic/shotgun/automatic/rsh12) //We now look for either the alt verson of the hos gun or the beacon picker.
 
 /datum/objective_item/steal/handtele

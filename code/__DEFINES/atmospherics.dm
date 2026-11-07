@@ -29,9 +29,10 @@
 #define EXCITED_GROUP_BREAKDOWN_CYCLES				4		//number of FULL air controller ticks before an excited group breaks down (averages gas contents across turfs)
 #define EXCITED_GROUP_DISMANTLE_CYCLES				16		//number of FULL air controller ticks before an excited group dismantles and removes its turfs from active
 ///Stalled cycles before a grouped turf rests individually (leaves the active list but stays in
-///its group, see sleep_active_turf). Kept above EXCITED_GROUP_BREAKDOWN_CYCLES so an idling turf
-///holds the group average through at least one more breakdown before it stops processing.
-#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		6
+///its group, see sleep_active_turf). Не ниже EXCITED_GROUP_BREAKDOWN_CYCLES: иначе тихая группа засыпает целиком в том же проходе, где ей положен брейкдаун, и tick_lifecycle() расформировывает её без усреднения.
+#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		4
+///Во сколько раз парный шер должен превысить порог движения газа, чтобы сбросить тишину турфа и разбудить соседа. Ветер считается от исходного порога. Держать ниже 10 (SIGNIFICANT_SHARE_CONTENT_RATIO / MINIMUM_AIR_RATIO_TO_MOVE).
+#define ATMOS_WAKE_THRESHOLD_SCALE					5
 /// Maximum excited-group members processed between master-controller budget checks.
 /// Breakdown keeps its accumulator and write-back state across SSair resumes.
 #define EXCITED_GROUP_BREAKDOWN_SLICE				192
@@ -282,6 +283,14 @@
 /// which is included before the SECONDS macro exists.
 #define DECOMPRESSION_AREA_ALARM_COOLDOWN 300
 
+// Время на локальную герметизацию до тревоги отсека: 3 секунды
+#define DECOMPRESSION_AREA_ALARM_DELAY 30
+
+// Временной срез проверки локализации в миллисекундах; ноль разрешает атомарную проверку.
+#define DECOMPRESSION_CHECK_SLICE_MS 2
+// Непрерывные изменения при взрыве не должны бесконечно перезапускать фазу атмосферы.
+#define DECOMPRESSION_CHECK_MAX_RESTARTS 8
+
 /// Подтверждающее окно декомп-тревоги в фаерах SSair: зона попадает в очередь
 /// тревоги, только если перевзвелась более поздним фаером не дальше этого окна
 /// от первого замера. Настоящая пробоина перевзводится каждый фаер, пока кромку
@@ -321,14 +330,24 @@
 /// дверью со звуком.
 #define FIRELOCK_ALARM_TEMPERATURE_HYSTERESIS 10
 
-/// Сколько дверь держится открытой после того, как её вскрыли ломом или ручным
-/// приводом. Шести секунд хватало ровно на то, чтобы створка захлопнулась на
-/// человеке в проёме при следующем же переходе тревоги.
-#define FIRELOCK_MANUAL_OVERRIDE_GRACE (20 SECONDS)
+// Защита от автоматического закрытия после открытия ломом или ручным приводом.
+#define FIRELOCK_MANUAL_OVERRIDE_GRACE (6 SECONDS)
+// Короткая защита после ручного открытия через пожарную сигнализацию.
+#define FIRELOCK_ALARM_OVERRIDE_GRACE (2 SECONDS)
+
+// Шанс выбора оконных фаерлоков вместо аирбагов для внешних окон станции.
+// Один выбор на весь раунд; окна шаттлов и капсул всегда получают фаерлоки.
+#define STATION_WINDOW_FIRELOCKS_CHANCE 90
+
+// Предел локального поиска обхода оконной шторки без прохода через её тайл.
+#define FIRELOCK_PASSAGE_CHECK_LIMIT 16
+
+// Блокировка автоматического закрытия фаерлока по Ctrl-клику.
+#define FIRELOCK_CTRL_CLICK_OVERRIDE_TIME (3 MINUTES)
 
 /// Сколько длится ручной привод пожарного шлюза. Не зависит от способа:
 /// альт-клик и бамп открывают за одно и то же время.
-#define FIRELOCK_MANUAL_OVERRIDE_TIME (5 SECONDS)
+#define FIRELOCK_MANUAL_OVERRIDE_TIME (4 SECONDS)
 
 /// Сколько длится ручное открытие бампом: то же время, что и у привода
 /// альт-кликом. Тем же таймером открывается обесточенный шлюз при бампе.
@@ -716,6 +735,8 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// порог, по которому фаза решает, что турф вообще стоит зоны. Раньше жил двумя
 /// независимыми литералами: `var/const/` внутри обхода и голой пятёркой в фазе.
 #define EQUALIZE_MIN_PRESSURE_DELTA 5
+/// Сколько SSair ждёт парного StopLoadingMap() вне загрузки карты, прежде чем разобрать очередь пробуждений шаблона сам.
+#define MAP_LOADING_STUCK_TIMEOUT (2 MINUTES)
 /// Pure-telemetry devices (meters, air sensors) only report once per this many
 /// SSair fires; their power draw is compensated by the same constant.
 #define ATMOS_TELEMETRY_INTERVAL 4

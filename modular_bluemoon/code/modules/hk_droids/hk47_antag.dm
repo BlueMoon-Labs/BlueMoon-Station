@@ -27,9 +27,18 @@
 		"hk47_charging" = 'modular_bluemoon/sound/hk_droids/hk47_charging.ogg',
 		"hk47_purchased" = 'modular_bluemoon/sound/hk_droids/hk47_purchased.ogg',
 		"hk47_prospective" = 'modular_bluemoon/sound/hk_droids/hk47_prospective.ogg',
+		"hk47_unlock_begin" = 'modular_bluemoon/sound/hk_droids/hk47_unlock_begin.ogg',
+		"hk47_unlock_success" = 'modular_bluemoon/sound/hk_droids/hk47_unlock_success.ogg',
+		"hk47_unlock_failed" = 'modular_bluemoon/sound/hk_droids/hk47_unlock_failed.ogg',
+		"hk47_scan" = 'modular_bluemoon/sound/hk_droids/hk47_scan.ogg',
+		"hk47_self_diagnostic" = 'modular_bluemoon/sound/hk_droids/hk47_self_diagnostic.ogg',
+		"hk47_recite_shields" = 'modular_bluemoon/sound/hk_droids/hk47_recite_shields.ogg',
+		"hk47_accuracy" = 'modular_bluemoon/sound/hk_droids/hk47_accuracy.ogg',
+		"hk47_prejudice" = 'modular_bluemoon/sound/hk_droids/hk47_prejudice.ogg',
+		"hk47_crude" = 'modular_bluemoon/sound/hk_droids/hk47_crude.ogg',
 	)
 	/// Служебные строки терминала и модулей: их слышит только сам HK, иначе они выдают его.
-	var/static/list/private_voice_lines = list("hk47_offer", "hk47_accept", "hk47_stealth", "hk47_charging", "hk47_full_gain")
+	var/static/list/private_voice_lines = list("hk47_offer", "hk47_accept", "hk47_stealth", "hk47_charging", "hk47_full_gain", "hk47_scan", "hk47_self_diagnostic", "hk47_recite_shields", "hk47_accuracy")
 	var/last_voice
 	COOLDOWN_DECLARE(voice_cooldown)
 
@@ -41,8 +50,25 @@
 	var/datum/objective/hk47_extract/extract = new
 	extract.owner = owner
 	objectives += extract
-	antag_memory += "Я - HK-47, дроид-ассасин. Выполнить [HK47_CONTRACTS_TO_WIN] контракта заказчиков и эвакуироваться. Перепрошивка экипажем отнимет у меня контракты, ЭМИ валит с ног.<br>"
+	antag_memory += "Я - HK-47, дроид-ассасин. Выполнить [HK47_CONTRACTS_TO_WIN] контракта заказчиков и эвакуироваться. Перепрошивка экипажем отнимет у меня контракты, ЭМИ валит с ног. Шлюзы техтоннелей открываются передо мной без карты, двери отделов - с чужой картой, щупом или считанным доступом.<br>"
 	return ..()
+
+/// Роль держится на шасси HK-47: другому телу или мозгу без тела админка собирает новое шасси с прибытием по легенде.
+/datum/antagonist/hk47/admin_add(datum/mind/new_owner, mob/admin)
+	var/mob/living/carbon/human/body = new_owner.current
+	if(ishuman(body) && istype(body.dna?.species, /datum/species/ipc/hk/hk47))
+		return ..()
+	if(!new_owner.key)
+		to_chat(admin, span_warning("У [new_owner.name] нет игрока: HK-47 некого посадить в шасси."))
+		return
+	if(tgui_alert(admin, "[new_owner.name] не в шасси HK-47. Собрать новое шасси и отправить игрока на станцию по случайной легенде?", "HK-47", list("Да", "Нет")) != "Да")
+		return
+	var/turf/landing = hk47_find_maintenance_turf() || get_turf(admin)
+	var/datum/round_event/ghost_role/hk47/event = new(FALSE)
+	var/mob/living/carbon/human/droid = event.launch_hk47(new_owner.key, landing)
+	event.kill()
+	message_admins("[key_name_admin(admin)] made [key_name_admin(droid)] into [name] in a new chassis.")
+	log_admin("[key_name(admin)] made [key_name(droid)] into [name] in a new chassis.")
 
 /datum/antagonist/hk47/on_removal()
 	if(owner.special_role == ROLE_HK47)
@@ -60,6 +86,10 @@
 /datum/antagonist/hk47/apply_innate_effects(mob/living/mob_override)
 	var/mob/living/body = mob_override || owner.current
 	add_antag_hud(antag_hud_type, antag_hud_name, body)
+	if(body)
+		RegisterSignal(body, COMSIG_MOB_ALLOWED, PROC_REF(tunnel_access))
+	if(needs_spike())
+		grant_spike(body)
 	body?.AddComponent(/datum/component/hk47_voice_cues)
 	apply_contract_effects(body)
 	apply_status_effects(body)
@@ -71,9 +101,17 @@
 /datum/antagonist/hk47/remove_innate_effects(mob/living/mob_override)
 	var/mob/living/body = mob_override || owner.current
 	remove_antag_hud(antag_hud_type, body)
+	if(body)
+		UnregisterSignal(body, COMSIG_MOB_ALLOWED)
+	revoke_spike(body)
 	qdel(body?.GetComponent(/datum/component/hk47_voice_cues))
 	remove_contract_effects(body)
 	remove_status_effects(body)
+
+/// Код техтоннелей и доступы, считанные щупом, открывают то же, что карта с ними.
+/datum/antagonist/hk47/proc/tunnel_access(mob/living/source, obj/target)
+	SIGNAL_HANDLER
+	return target.check_access_list(chassis_access())
 
 /datum/antagonist/hk47/greet()
 	var/mob/living/droid = owner.current
@@ -83,7 +121,9 @@
 	to_chat(droid, span_warning("<b>Свидетели.</b> Грязная работа - заказы Синдиката, конкурентов и частных лиц против станции. Свидетелей в [HK47_WITNESS_RANGE] клетках считают в решающие моменты: попадание по цели, её смерть после попадания, добыча кражи в руке (ID, печать или ценность), вызов капсулы и закрытие контракта. Раскрытие поднимает ступень: ЦК объявляет станции о дроиде-ассасине и СБ приказано арестовать вас, затем СБ получает пеленгатор, а карго - заказ на ваше ядро, затем приказ уничтожить и ионное оружие в бриг. Пеленгатор и ионное оружие доставляются один раз. Контракт ЦК закрывает одно дело, и приказ СБ следует за оставшимися делами: без них розыск снимается, а пеленгатор замолкает. После [HK47_CONTRACTS_TO_WIN] выполненных контрактов каждая грязная работа раскрывает вас и без свидетелей."))
 	to_chat(droid, span_warning("<b>Лицензия.</b> Если легенда дала лицензию, она действует, пока идёт её контракт, и истекает вместе с ним. Её отзывают, если член экипажа погибнет в течение [DisplayTimeText(HK47_HIT_MEMORY)] после вашего попадания или попадания ваших слуг; цель контракта, разыскиваемые СБ и напавшие на вас или охраняемого за последние [DisplayTimeText(HK47_AGGRESSION_MEMORY)] не в счёт."))
 	to_chat(droid, span_notice("<b>Финал.</b> После [HK47_CONTRACTS_TO_WIN] контрактов терминал открывает эвакуацию: [DisplayTimeText(HK47_EXTRACTION_TIME)] сигнала у открытого космоса, прерванный сигнал можно повторить через [DisplayTimeText(HK47_EXTRACTION_RETRY_COOLDOWN)]. Можно и улететь живым на эвакуационном шаттле вне брига."))
-	to_chat(droid, span_warning("<b>Угрозы.</b> ЭМИ и ионное оружие отключают шасси на [HK_EMP_HEAVY_STUN / (1 SECONDS)] с (снова - не раньше чем через [HK_EMP_STUN_COOLDOWN / (1 SECONDS)] с). Обездвиженного HK экипаж может перепрошить операцией на голове - тогда вы служите тому, кто перепрошил. Винтовка стреляет только в ваших руках, одежда и броня на шасси не надеваются."))
+	to_chat(droid, span_warning("<b>Угрозы.</b> ЭМИ и ионное оружие отключают шасси на [HK_EMP_HEAVY_STUN / (1 SECONDS)] с (снова - не раньше чем через [HK_EMP_STUN_COOLDOWN / (1 SECONDS)] с). Обездвиженного HK экипаж может перепрошить операцией на голове - тогда вы служите тому, кто перепрошил. Винтовка стреляет только в ваших руках, одежда и броня на шасси не надеваются. Приводы не устают: дубинки и дизейблеры отнимают у шасси меньше выносливости, чем у человека, а ЭМИ валит его как прежде."))
+	to_chat(droid, span_notice("<b>Доступ.</b> Код техтоннелей встроен в шасси: шлюзы техобслуживания открываются без карты. Двери отделов откроет чужая ID-карта в слоте ID, щуп с модулем «Взломщик шлюзов» (шумно) или копия чужого доступа модулем «Считыватель доступа» (тихо)."))
+	to_chat(droid, span_notice("<b>Заряд.</b> Винтовка, щит, взлом и самовосстановление тратят заряд шасси. Пополняет его шнур питания из руки (кнопка действия), воткнутый в APC."))
 	owner.announce_objectives()
 	hk_voice("hk47_activate", forced = TRUE)
 

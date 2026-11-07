@@ -26,26 +26,8 @@
 	if(!valid_secret.Find(secret))
 		return gear_crypto_failure(diagnostics, "invalid_secret_config")
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
-	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
-	var/node_source = node_executable == "node" ? "PATH" : "config"
-	// The repository build script records process.execPath, including when TGS
-	// uses an older installed PreCompile hook that only runs the TGUI build.
-	if(node_executable == "node")
-		var/path_file_status = "missing"
-		if(fexists("tools/loadout_crypto/node_path.txt"))
-			var/bootstrap_node = trim(file2text("tools/loadout_crypto/node_path.txt"))
-			path_file_status = "invalid"
-			if(length_char(bootstrap_node) && !unsafe_executable.Find(bootstrap_node))
-				node_executable = bootstrap_node
-				node_source = "build"
-				path_file_status = "loaded"
-		if(islist(diagnostics))
-			diagnostics["node_path_file"] = path_file_status
-	if(islist(diagnostics))
-		diagnostics["node_executable"] = node_executable
-		diagnostics["node_source"] = node_source
-	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
-		return gear_crypto_failure(diagnostics, "invalid_node_executable")
+	// Check the in-memory config and caches before resolving Node's path from disk.
+	// A changed or removed secret must never reuse plaintext from the old cache.
 	var/state = "[secret]|[node_executable]"
 	var/static/cached_state
 	var/static/list/encrypted = list()
@@ -81,6 +63,26 @@
 				return gear_crypto_failure(diagnostics, "invalid_token")
 			if(use_cache && (value in decrypted))
 				return decrypted[value]
+	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
+	var/node_source = node_executable == "node" ? "PATH" : "config"
+	// The repository build script records process.execPath, including when TGS
+	// uses an older installed PreCompile hook that only runs the TGUI build.
+	if(node_executable == "node")
+		var/path_file_status = "missing"
+		if(fexists("tools/loadout_crypto/node_path.txt"))
+			var/bootstrap_node = trim(file2text("tools/loadout_crypto/node_path.txt"))
+			path_file_status = "invalid"
+			if(length_char(bootstrap_node) && !unsafe_executable.Find(bootstrap_node))
+				node_executable = bootstrap_node
+				node_source = "build"
+				path_file_status = "loaded"
+		if(islist(diagnostics))
+			diagnostics["node_path_file"] = path_file_status
+	if(islist(diagnostics))
+		diagnostics["node_executable"] = node_executable
+		diagnostics["node_source"] = node_source
+	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
+		return gear_crypto_failure(diagnostics, "invalid_node_executable")
 	if(!fexists("tools/loadout_crypto/crypto.cjs"))
 		return gear_crypto_failure(diagnostics, "helper_missing")
 	var/request_id

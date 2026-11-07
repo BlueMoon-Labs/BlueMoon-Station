@@ -43,7 +43,7 @@
 
 /datum/nanite_program/self_scan
 	name = "Host Scan"
-	desc = "The nanites display a detailed readout of a body scan to the host."
+	desc = "Наниты передают носителю результаты обследования организма и обновляют показатели на медицинском дисплее."
 	unique = FALSE
 	can_trigger = TRUE
 	trigger_cost = 3
@@ -59,13 +59,17 @@
 	var/datum/nanite_extra_setting/NS = extra_settings[NES_SCAN_TYPE]
 	switch(NS.get_value())
 		if("Medical")
-			healthscan(host_mob, host_mob)
+			healthscan(host_mob, host_mob, live_source = src)
 		if("Chemical")
-			chemscan(host_mob, host_mob)
+			chemscan(host_mob, host_mob, live_source = src)
 		if("Wound")
-			woundscan(host_mob, host_mob)
+			woundscan(host_mob, host_mob, live_source = src)
 		if("Nanite")
 			SEND_SIGNAL(host_mob, COMSIG_NANITE_SCAN, host_mob, TRUE)
+
+/datum/nanite_program/self_scan/can_monitor_medical_scan(mob/user, mob/living/patient, scan_kind)
+	var/datum/nanite_extra_setting/setting = extra_settings[NES_SCAN_TYPE]
+	return activated && host_mob == user && patient == host_mob && !QDELETED(nanites) && nanites.nanite_volume > 0 && nanites.nanite_volume >= nanites.safety_threshold && check_conditions() && setting.get_value() == scan_kind
 
 /datum/nanite_program/stealth
 	name = "Stealth"

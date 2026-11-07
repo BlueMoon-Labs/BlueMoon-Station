@@ -1,9 +1,8 @@
 import { toFixed } from 'common/math';
 import { classes } from 'common/react';
-import { storage } from 'common/storage';
 import { multiline } from 'common/string';
 import { createUuid } from 'common/uuid';
-import { Component, Fragment } from 'react';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, ByondUi, Divider, Input, Knob, LabeledControls, NumberInput, Section, Stack } from '../components';
@@ -737,182 +736,124 @@ const ReverseMenu = (props) => {
   );
 };
 
-class PresetsPage extends Component {
-  constructor() {
-    super();
-    this.state = {
-      presets: [],
-    };
-  }
-
-  async componentDidMount() {
-    // This warning is generally considered OK to ignore in this context
-    // eslint-disable-next-line react/no-did-mount-set-state
-    this.setState({
-      presets: await this.getPresets(),
-    });
-  }
-
-  saveDataToPreset(id, data) {
-    storage.set("podlauncher_preset_" + id, data);
-  }
-
-  async loadDataFromPreset(id) {
-    const { act } = useBackend();
-    act("loadDataFromPreset", {
-      payload: await storage.get("podlauncher_preset_" + id),
-    });
-  }
-
-  newPreset(presetName, hue, data) {
-    let { presets } = this.state;
-    if (!presets) {
-      presets = [];
-      presets.push("hi!");
-    }
-    const id = createUuid();
-    const thing = { id, title: presetName, hue };
-    presets.push(thing);
-    storage.set("podlauncher_presetlist", presets);
-    this.saveDataToPreset(id, data);
-  }
-
-  async getPresets() {
-    let thing = await storage.get("podlauncher_presetlist");
-    if (thing === undefined) {
-      thing = [];
-    }
-    return thing;
-  }
-
-  deletePreset(deleteID) {
-    const { presets } = this.state;
-    for (let i = 0; i < presets.length; i++) {
-      if (presets[i].id === deleteID) {
-        presets.splice(i, 1);
-      }
-    }
-    storage.set("podlauncher_presetlist", presets);
-  }
-  render() {
-    const { presets } = this.state;
-    const { act, data } = useBackend();
-    const [
-      presetIndex,
-      setSelectedPreset,
-    ] = useLocalState('presetIndex', 0);
-    const [
-      settingName,
-      setEditingNameStatus,
-    ] = useLocalState('settingName', 0);
-    const [newNameText, setText] = useLocalState('newNameText', "");
-    const [hue, setHue] = useLocalState('hue', 0);
-    return (
-      <Section scrollable
-        fill
-        title="Presets"
-        buttons={(
-          <>
-            {settingName === 0 && (
-              <Button
-                color="transparent"
-                icon="plus"
-                tooltip="New Preset"
-                onClick={() => setEditingNameStatus(1)} />
-            )}
+const PresetsPage = () => {
+  const { act, data } = useBackend();
+  const presets = data.presets || [];
+  const [
+    presetIndex,
+    setSelectedPreset,
+  ] = useLocalState('presetIndex', 0);
+  const [
+    settingName,
+    setEditingNameStatus,
+  ] = useLocalState('settingName', 0);
+  const [newNameText, setText] = useLocalState('newNameText', "");
+  const [hue, setHue] = useLocalState('hue', 0);
+  const hasSelectedPreset = presets.some((preset) => preset.id === presetIndex);
+  return (
+    <Section scrollable
+      fill
+      title="Пресеты"
+      buttons={(
+        <>
+          {settingName === 0 && (
             <Button
-              inline
               color="transparent"
-              content=""
-              icon="download"
-              tooltip="Saves preset"
-              tooltipPosition="bottom"
-              onClick={() => this.saveDataToPreset(presetIndex, data)} />
-            <Button
-              inline
-              color="transparent"
-              content=""
-              icon="upload"
-              tooltip="Loads preset"
-              onClick={() => {
-                this.loadDataFromPreset(presetIndex);
-              }} />
-            <Button
-              inline
-              color="transparent"
-              icon="trash"
-              tooltip="Deletes the selected preset"
-              tooltipPosition="bottom-start"
-              onClick={() => this.deletePreset(presetIndex)} />
-          </>
-        )}>
-        {settingName === 1 && (
-          <>
-            <Button
-              inline
-              icon="check"
-              tooltip="Confirm"
-              tooltipPosition="right"
-              onClick={() => {
-                this.newPreset(newNameText, hue, data);
-                setEditingNameStatus(0);
-              }} />
-            <Button
-              inline
-              icon="window-close"
-              tooltip="Cancel"
-              onClick={() => {
-                setText("");
-                setEditingNameStatus(0);
-              }} />
-            <span color="label"> Hue: </span>
-            <NumberInput
-              inline
-              animated
-              width="40px"
-              step={5}
-              stepPixelSize={5}
-              value={hue}
-              minValue={0}
-              maxValue={360}
-              onChange={(e, value) => setHue(value)} />
-            <Input
-              inline
-              autofocus
-              placeholder="Preset Name"
-              onChange={(e, value) => setText(value)} />
-            <Divider horizontal />
-          </>
-        )}
-        {(!presets || presets.length === 0) && (
-          <span style={pod_grey}>
-            Click [+] to define a new preset.
-            They are persistent across rounds/servers!
-          </span>
-        )}
-        {presets ? presets.map((preset, i) => (
+              icon="plus"
+              tooltip="Новый пресет"
+              onClick={() => setEditingNameStatus(1)} />
+          )}
           <Button
-            key={i}
-            width="100%"
-            backgroundColor={`hsl(${preset.hue}, 50%, 50%)`}
-            onClick={() => setSelectedPreset(preset.id)}
-            onDoubleClick={() => this.loadDataFromPreset(preset.id)}
-            content={preset.title}
-            style={presetIndex === preset.id ? {
-              borderWidth: '1px',
-              borderStyle: 'solid',
-              borderColor: `hsl(${preset.hue}, 80%, 80%)`,
-            } : ''} />
-        )) : ""}
-        <span style={pod_grey}>
-          <br />
-          <br />
-          NOTE: Custom sounds from outside the base game files will not save! :(
-        </span>
-      </Section>
-    );
-  }
-}
+            inline
+            color="transparent"
+            content=""
+            icon="floppy-disk"
+            tooltip="Сохранить настройки в выбранный пресет"
+            tooltipPosition="bottom"
+            disabled={!hasSelectedPreset}
+            onClick={() => act('savePreset', { id: presetIndex })} />
+          <Button
+            inline
+            color="transparent"
+            icon="trash"
+            tooltip="Удалить выбранный пресет"
+            tooltipPosition="bottom-start"
+            disabled={!hasSelectedPreset}
+            onClick={() => {
+              act('deletePreset', { id: presetIndex });
+              setSelectedPreset(0);
+            }} />
+        </>
+      )}>
+      {settingName === 1 && (
+        <>
+          <Button
+            inline
+            icon="check"
+            tooltip="Сохранить"
+            tooltipPosition="right"
+            disabled={!newNameText.trim()}
+            onClick={() => {
+              const id = createUuid();
+              act('newPreset', { id, title: newNameText, hue });
+              setSelectedPreset(id);
+              setText('');
+              setEditingNameStatus(0);
+            }} />
+          <Button
+            inline
+            icon="window-close"
+            tooltip="Отмена"
+            onClick={() => {
+              setText("");
+              setEditingNameStatus(0);
+            }} />
+          <Box inline color="label"> Оттенок: </Box>
+          <NumberInput
+            inline
+            animated
+            width="40px"
+            step={5}
+            stepPixelSize={5}
+            value={hue}
+            minValue={0}
+            maxValue={360}
+            onChange={(e, value) => setHue(value)} />
+          <Input
+            inline
+            autofocus
+            value={newNameText}
+            placeholder="Название пресета"
+            onChange={(e, value) => setText(value)} />
+          <Divider horizontal />
+        </>
+      )}
+      {presets.length === 0 && (
+        <Box color="grey">
+          Нажмите [+], чтобы создать пресет.
+          Пресеты сохраняются в вашем профиле на этом сервере между раундами.
+        </Box>
+      )}
+      {presets.map((preset) => (
+        <Button
+          key={preset.id}
+          width="100%"
+          backgroundColor={`hsl(${preset.hue}, 50%, 50%)`}
+          onClick={() => setSelectedPreset(preset.id)}
+          onDoubleClick={() => act('loadDataFromPreset', { id: preset.id })}
+          content={preset.title}
+          style={presetIndex === preset.id ? {
+            borderWidth: '1px',
+            borderStyle: 'solid',
+            borderColor: `hsl(${preset.hue}, 80%, 80%)`,
+          } : ''} />
+      ))}
+      <Box mt={2} color="grey">
+        Звуки, загруженные из файлов вне игры, не сохраняются в пресетах.
+      </Box>
+    </Section>
+  );
+};
 
 const LaunchPage = (props) => {
   const [compact] = useCompact();

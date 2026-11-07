@@ -41,13 +41,15 @@
 				to_chat(target, "<span class='userdanger'>You feel a sharp stabbing pain!</span>")
 				target.take_overall_damage(40)
 
-		SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("Absorb DNA", "[i]"))
+		if(!is_antag_training_atom(user))
+			SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("Absorb DNA", "[i]"))
 		if(!do_mob(user, target, 150))
 			to_chat(user, "<span class='warning'>Our absorption of [target] has been interrupted!</span>")
 			changeling.isabsorbing = 0
 			return
 
-	SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("Absorb DNA", "4"))
+	if(!is_antag_training_atom(user))
+		SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("Absorb DNA", "4"))
 	user.visible_message("<span class='danger'>[user] sucks the fluids from [target]!</span>", "<span class='notice'>We have absorbed [target].</span>")
 	to_chat(target, "<span class='userdanger'>You are absorbed by the changeling!</span>")
 

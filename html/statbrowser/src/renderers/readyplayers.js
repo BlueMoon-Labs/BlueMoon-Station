@@ -1,7 +1,8 @@
 var rp_els = {};
 
 function rp_ensureSkeleton() {
-	if (rp_els.table && rp_els.table.parentNode) return;
+	// После смены вкладки старая таблица остаётся внутри отсоединённого контейнера статуса.
+	if (rp_els.wrap && rp_els.wrap.parentNode === st_skeleton) return;
 
 	rp_els.header = makeSectionHeader("readyplayers", "Готовые игроки", st_sections);
 	rp_els.summary = el("div", "readyplayers-summary");

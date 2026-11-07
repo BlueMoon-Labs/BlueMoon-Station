@@ -184,9 +184,9 @@
 		"mam_body_markings" = list(),
 		"allow_emissives" = FALSE,
 		"emissive_parts" = list(),
-		"mam_ears" 			= snowflake_ears_list ? pick(snowflake_ears_list) : "None",
-		"mam_snouts"		= snowflake_mam_snouts_list ? pick(snowflake_mam_snouts_list) : "None",
-		"mam_tail"			= snowflake_mam_tails_list ? pick(snowflake_mam_tails_list) : "None",
+		"mam_ears" 			= length(snowflake_ears_list) ? pick(snowflake_ears_list) : "None",
+		"mam_snouts"		= length(snowflake_mam_snouts_list) ? pick(snowflake_mam_snouts_list) : "None",
+		"mam_tail"			= length(snowflake_mam_tails_list) ? pick(snowflake_mam_tails_list) : "None",
 		"mam_tail_animated" = "None",
 		"xenodorsal"		= "None",
 		"xenohead"			= "None",
@@ -266,7 +266,7 @@
 		"anus_accessible" = FALSE,
 		"belly_accessible" = FALSE,
 
-		"ipc_screen"		= snowflake_ipc_antenna_list ? pick(snowflake_ipc_antenna_list) : "None",
+		"ipc_screen"		= length(snowflake_ipc_antenna_list) ? pick(snowflake_ipc_antenna_list) : "None",
 		"ipc_antenna"		= "None",
 		"flavor_text"		= "",
 		"silicon_flavor_text"		= "",
@@ -454,6 +454,17 @@ GLOBAL_LIST_EMPTY(species_datums)
 // Automatically gives the class deadsay to the whole message (message + source)
 /proc/deadchat_broadcast(message, source=null, mob/follow_target=null, turf/turf_target=null, speaker_key=null, message_type=DEADCHAT_REGULAR, admin_only=FALSE)
 	message = span_deadsay("[source][span_linkify(message)]")
+#ifdef UNIT_TESTS
+	if(GLOB.unit_test_deadchat_messages)
+		GLOB.unit_test_deadchat_messages += message
+#endif
+
+	var/atom/training_source
+	if(length(GLOB.antag_training_z) && !speaker_key && !isobserver(follow_target))
+		if(is_antag_training_atom(follow_target))
+			training_source = follow_target
+		else if(is_antag_training_atom(turf_target))
+			training_source = turf_target
 
 	for(var/mob/M in GLOB.player_list)
 		var/chat_toggles = TOGGLES_DEFAULT_CHAT
@@ -482,6 +493,8 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if(M.stat != DEAD && !override)
 			continue
 		if(speaker_key && (speaker_key in ignoring))
+			continue
+		if(training_source && !antag_training_observer_hears(M, training_source))
 			continue
 
 		switch(message_type)

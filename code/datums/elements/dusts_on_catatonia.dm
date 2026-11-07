@@ -24,7 +24,7 @@
 		if(isnull(attached_mob))
 			found_null = TRUE
 			continue
-		if(!attached_mob.key && !attached_mob.get_ghost())
+		if(!attached_mob.key && !attached_mob.get_ghost() && !HAS_TRAIT(attached_mob, TRAIT_TRAINING_DREAMER))
 			attached_mob.dust(TRUE, FALSE, TRUE)
 			Detach(attached_mob)
 	if(found_null)

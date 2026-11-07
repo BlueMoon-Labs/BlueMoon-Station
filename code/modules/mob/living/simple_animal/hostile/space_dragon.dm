@@ -34,8 +34,8 @@
 /mob/living/simple_animal/hostile/space_dragon
 	name = "Space Dragon"
 	desc = "A vile, leviathan-esque creature that flies in the most unnatural way.  Looks slightly similar to a space carp."
-	maxHealth = 777
-	health = 777
+	maxHealth = 700
+	health = 700
 	a_intent = INTENT_HARM
 	speed = 0
 	attack_verb_continuous = "chomps"
@@ -51,6 +51,7 @@
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	melee_damage_upper = 35
 	melee_damage_lower = 35
+	armour_penetration = 30
 	mob_size = MOB_SIZE_LARGE
 	armour_penetration = 30
 	pixel_x = -16
@@ -103,6 +104,7 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_HEALS_FROM_CARP_RIFTS, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_SHOCKIMMUNE, INNATE_TRAIT)
 	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam(src))
 	rift = new
 	rift.Grant(src)
@@ -175,7 +177,7 @@
 	. = ..()
 	if(istype(target, /obj/vehicle/sealed/mecha))
 		var/obj/vehicle/sealed/mecha/M = target
-		M.take_damage(50, BRUTE, MELEE, 1)
+		M.take_damage(75, BRUTE, MELEE, 1)
 
 /mob/living/simple_animal/hostile/space_dragon/AltClickOn(atom/A)
 	. = ..()
@@ -237,7 +239,7 @@
   * If an invalid color is given, will re-prompt the dragon until a proper color is chosen.
   */
 /mob/living/simple_animal/hostile/space_dragon/proc/color_selection()
-	chosen_color = input(src,"What would you like your color to be?","Choose Your Color", COLOR_WHITE) as color|null
+	chosen_color = tgui_input_color(src,"What would you like your color to be?","Choose Your Color", COLOR_WHITE)
 	if(!chosen_color) //redo proc until we get a color
 		to_chat(src, "<span class='warning'>Not a valid color, please try again.</span>")
 		color_selection()
@@ -345,7 +347,7 @@
 		if(M in hit_list)
 			continue
 		hit_list += M
-		M.take_damage(50, BRUTE, MELEE, 1)
+		M.take_damage(50, BURN, FIRE, 1)
 
 /**
   * Handles consuming and storing consumed things inside Space Dragon
@@ -435,6 +437,8 @@
 	riftTimer = -1
 	tiredness_mult = 5
 	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 100, TRUE)
+	if(rift_list.len)
+		priority_announce("Зафиксировано уничтожение всех межпространственных разломов, созданных космическим драконом. Существо значительно ослабло.", "Отдел ЦК по наблюдению за дикой природой")
 	for(var/obj/structure/carp_rift/rift in rift_list)
 		rift.dragon = null
 		rift_list -= rift
@@ -476,6 +480,7 @@
 			var/throwtarget = get_edge_target_turf(L, dir_to_target)
 			L.safe_throw_at(throwtarget, 10, 1, src)
 			L.drop_all_held_items()
+			L.Paralyze(5 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(reset_status)), (4 + ((tiredness * tiredness_mult) / 10)) / speed_mult)
 	tiredness = tiredness + (gust_tiredness * tiredness_mult)
 
@@ -632,8 +637,8 @@
 	START_PROCESSING(SSobj, src)
 	AddComponent( \
 		/datum/component/aura_healing, \
-		range = 3, \
-		simple_heal = 4, \
+		range = 1, \
+		simple_heal = 6, \
 		limit_to_trait = TRAIT_HEALS_FROM_CARP_RIFTS, \
 		healing_color = COLOR_BLUE, \
 	)

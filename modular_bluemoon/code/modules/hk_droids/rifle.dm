@@ -74,6 +74,8 @@
 	. += span_notice("Стреляет только в руках HK-47, за которым закреплён боёк. Ни в турель, ни в эмиттер, ни в схему винтовка не встаёт.")
 	. += span_notice("Встроенная батарея на [HK_RIFLE_SHOTS] выстрелов, к зарядным станциям не подключается.")
 	. += span_notice("В руках или на спине своего HK-47 восстанавливает выстрел раз в [HK_RIFLE_RECHARGE_TIME / (1 SECONDS)] с за [HK_RIFLE_NUTRITION_PER_SHOT] единиц его заряда, но не сажает дроида ниже [HK_RIFLE_MIN_NUTRITION].")
+	if(stun_unlocked)
+		. += span_notice("Парализующий режим открыт, переключается в руке: [HK47_STUN_BOLT_STAMINA] урона выносливости за выстрел, без ран.")
 	if(sniper_unlocked)
 		. += span_notice("Снайперский режим открыт, переключается в руке: прицеливание - [HK47_SNIPER_AIM_TIME / (1 SECONDS)] с, луч виден всем; выстрел [HK47_SNIPER_DAMAGE] ожога с бронепробитием [HK47_SNIPER_ARMOUR_PENETRATION] за [HK47_SNIPER_SHOT_CHARGES] заряда, перезарядка режима [HK47_SNIPER_COOLDOWN / (1 SECONDS)] с.")
 

@@ -401,6 +401,9 @@ SUBSYSTEM_DEF(ticker)
 			var/datum/holiday/holiday = SSholidays.holidays[holidayname]
 			to_chat(world, "<h4>[holiday.greet()]</h4>")
 
+	//Setup orbits.
+	SSorbits.post_load_init()
+
 	PostSetup()
 	SSshuttle.realtimeofstart = world.realtime
 

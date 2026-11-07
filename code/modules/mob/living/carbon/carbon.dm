@@ -149,6 +149,12 @@
 
 /mob/living/carbon/attackby(obj/item/I, mob/user, params)
 	if(lying && surgeries.len)
+		// Вправление вывиха остаётся лечением травмы даже при начатой операции
+		// на той же конечности. Иначе хирургический инструмент перехватит клик.
+		if(user.a_intent == INTENT_HELP)
+			for(var/datum/wound/blunt/moderate/dislocation in all_wounds)
+				if(dislocation.try_treating(I, user))
+					return STOP_ATTACK_PROC_CHAIN
 		if(user.a_intent == INTENT_HELP || user.a_intent == INTENT_DISARM)
 			for(var/datum/surgery/S in surgeries)
 				if(S.next_step(user,user.a_intent))
@@ -348,6 +354,25 @@
 
 	return MUFFLE_NONE
 
+/mob/living/carbon/get_speech_fx_spans(datum/language/message_language)
+	. = ..()
+	if(drunkenness >= SPEECH_FX_DRUNK_MIN)
+		. += SPAN_DRUNK
+	// Порог как у холодового урона вида: синтетик и морозостойкий не дрожат.
+	if(bodytemperature < BODYTEMP_COLD_DAMAGE_LIMIT + dna?.species?.cold_offset && !HAS_TRAIT(src, TRAIT_RESISTCOLD))
+		. += SPAN_SHIVER
+
+/mob/living/carbon/apply_hearing_fx(message, atom/movable/speaker, datum/language/message_language)
+	. = ..()
+	if(speaker == src || speaker?.GetSource() == src)
+		return
+	// Жесты читают глазами, уши им не мешают.
+	if(message_language && initial(message_language.visual_language))
+		return
+	var/obj/item/organ/ears/ears = getorganslot(ORGAN_SLOT_EARS)
+	if(ears && !ears.deaf && ears.damage > ears.low_threshold)
+		. = "<span class='hear_muffled'>[.]</span>"
+
 /// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
 /mob/living/carbon/get_hearing_deprivation_strength()
 	if(!HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
@@ -381,6 +406,10 @@
 	if(istype(buckled, /obj/structure/bed/nest))
 		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
+		if(handcuffed && is_hulk())
+			MarkResistTime()
+			cuff_resist(handcuffed)
+			return
 		// too soon.
 		var/buckle_cd = 600
 		if(handcuffed)
@@ -460,6 +489,13 @@
 
 /mob/living/carbon/proc/cuff_resist_check()
 	return !incapacitated(ignore_restraints = TRUE)
+
+/mob/living/carbon/proc/is_hulk()
+	if(dna)
+		for(var/datum/mutation/human/HM in dna.mutations)
+			if(istype(HM.type, /datum/mutation/human/hulk))
+				return TRUE
+	return FALSE
 
 /mob/living/carbon/proc/uncuff()
 	if (handcuffed)
@@ -786,7 +822,7 @@
 	update_health_hud()
 
 /mob/living/carbon/update_sight(forced = TRUE)
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(stat == DEAD)
 		sight = (SEE_TURFS|SEE_MOBS|SEE_OBJS)
@@ -817,7 +853,7 @@
 		see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
 		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_REAL_LOW)
 
-	if(client.eye && client.eye != src)
+	if(client?.eye && client.eye != src)
 		var/atom/A = client.eye
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
 			return
@@ -1240,6 +1276,9 @@
 
 
 /mob/living/carbon/proc/devour_mob(mob/living/carbon/C, devour_time = 130)
+	if(antag_training_member_body(C))
+		to_chat(src, span_warning("На полигоне нельзя проглотить тело другого участника."))
+		return
 	C.visible_message("<span class='danger'>[src] is attempting to devour [C]!</span>", \
 					"<span class='userdanger'>[src] is attempting to devour you!</span>")
 	if(!do_mob(src, C, devour_time))

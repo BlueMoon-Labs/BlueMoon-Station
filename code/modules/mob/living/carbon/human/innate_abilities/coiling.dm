@@ -87,6 +87,7 @@
 
 	// cancel the coiling action by removing the overlay
 	currently_coiled.pixel_x = 0
+	currently_coiled.layer += 0.1
 
 	currently_coiling = FALSE
 	currently_coiled = null
@@ -103,8 +104,6 @@
 		H.update_mutant_bodyparts()
 
 	H.update_body()
-
-	H.layer += 0.1
 
 	// remove the added overlay
 	owner.cut_overlay(tracked_overlay)

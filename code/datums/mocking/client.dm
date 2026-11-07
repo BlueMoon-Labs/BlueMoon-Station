@@ -5,3 +5,6 @@
 
 	/// The view of the client, similar to /client/var/view.
 	var/view = "15x15"
+
+	var/datum/admins/holder
+	var/datum/mentors/mentor_datum

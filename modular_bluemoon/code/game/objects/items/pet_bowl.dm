@@ -27,8 +27,8 @@
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(iscarbon(user) && isnull(held_item))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HELP, "Eat")
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Pick up")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HELP, "Поесть")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Взять")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/examine(mob/user)

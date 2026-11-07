@@ -165,12 +165,18 @@ GLOBAL_LIST_INIT(reverseradiochannels, list(
 	else
 		filter_list = devices
 
+	var/atom/origin = signal_origin(source)
+
 	//If checking range, find the source turf
 	var/turf/start_point
 	if(range)
-		start_point = get_turf(source)
+		start_point = get_turf(origin)
 		if(!start_point)
 			return FALSE
+
+	// Сигналы полигона и станции не пересекаются; без полигона проверки нет.
+	var/check_training = source && length(GLOB.antag_training_z)
+	var/from_training = check_training && origin && is_antag_training_atom(origin)
 
 	//Send the data
 	for(var/current_filter in filter_list)
@@ -183,7 +189,22 @@ GLOBAL_LIST_INIT(reverseradiochannels, list(
 					continue
 				if(start_point.z != end_point.z || (range > 0 && get_dist(start_point, end_point) > range))
 					continue
+			if(check_training && is_antag_training_atom(device) != from_training)
+				continue
 			device.receive_signal(signal)
+
+/// Атом, откуда ушёл сигнал: программа КПК передаёт сама себя, сигнал идёт от её устройства. Прочие датумы - станция.
+/datum/radio_frequency/proc/signal_origin(datum/source)
+	if(isatom(source))
+		return source
+	if(istype(source, /datum/computer_file/program))
+		var/datum/computer_file/program/program = source
+		if(program.computer)
+			return program.computer
+	if(istype(source, /datum/computer_file))
+		var/datum/computer_file/file = source
+		return file.holder || file.disk_host
+	return null
 
 /datum/radio_frequency/proc/add_listener(obj/device, filter as text|null)
 	if (!filter)

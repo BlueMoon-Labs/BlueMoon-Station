@@ -24,6 +24,7 @@
 		on = !on
 		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
 		update_icon()
 	return ..()
 
@@ -152,6 +153,8 @@
 	if(can_interact(user))
 		on = !on
 		atmos_wake()
+		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
 		update_icon()
 	return ..()
 
@@ -282,6 +285,8 @@
 	if(can_interact(user))
 		on = !on
 		atmos_wake()
+		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
 		update_icon()
 	return ..()
 
@@ -289,6 +294,8 @@
 	if(can_interact(user))
 		target_pressure = MAX_OUTPUT_PRESSURE
 		atmos_wake()
+		investigate_log("was set to [target_pressure] kPa by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "pressure output set to [target_pressure] kPa")
 		update_icon()
 	return ..()
 

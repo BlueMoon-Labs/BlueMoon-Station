@@ -53,7 +53,7 @@
 	stock_max = 10
 	availability_prob = 50
 
-datum/blackmarket_item/syndi/clothing/fullred_spacesuit_set
+/datum/blackmarket_item/syndi/clothing/fullred_spacesuit_set
 	name = "Red Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box
@@ -71,7 +71,7 @@ datum/blackmarket_item/syndi/clothing/fullred_spacesuit_set
 	new /obj/item/clothing/suit/space/syndicate(B)
 	return B
 
-datum/blackmarket_item/syndi/clothing/fullgreen_spacesuit_set
+/datum/blackmarket_item/syndi/clothing/fullgreen_spacesuit_set
 	name = "Green Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box
@@ -88,7 +88,7 @@ datum/blackmarket_item/syndi/clothing/fullgreen_spacesuit_set
 	new /obj/item/clothing/suit/space/syndicate/green(B)
 	return B
 
-datum/blackmarket_item/syndi/clothing/fullgreen_spacesuit_set
+/datum/blackmarket_item/syndi/clothing/fullgreen_spacesuit_set
 	name = "Dark Green Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box

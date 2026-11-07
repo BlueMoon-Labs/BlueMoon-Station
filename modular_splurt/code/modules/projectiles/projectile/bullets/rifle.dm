@@ -39,6 +39,7 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308/rubber //bluemoon change
+	harmful = FALSE
 	advanced_print_req = FALSE
 	custom_materials = list(/datum/material/glass = 400)
 
@@ -94,12 +95,14 @@
 	icon_state = "762-casing"
 	caliber = ".543"
 	projectile_type = /obj/item/projectile/bullet/a543/rubber
+	harmful = FALSE
 
 /obj/item/ammo_casing/g45l
 	name= ".45 Long bullet casing (Rubber)"
 	desc = "An .45 Long bullet casing."
 	caliber = ".45l"
 	projectile_type = /obj/item/projectile/bullet/g45l
+	harmful = FALSE
 
 /obj/item/ammo_casing/g45l/lehtal
 	name= ".45 Long bullet casing (Lethal)"

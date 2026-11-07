@@ -140,8 +140,12 @@
 	// лежачим: без density тело пролетало сквозь людей, не оказывая эффекта удара, -
 	// в отличие от брошенного руками стоячего тела. Поднимаем: полёт и столкновения
 	// работают как у обычного брошенного тела.
+	// Ставим resting напрямую, а не SetKnockdown(0): DefaultCombatKnockdown() роняет
+	// через KnockToFloor() -> set_resting(TRUE) и НЕ вешает STATUS_EFFECT_KNOCKDOWN,
+	// так что SetKnockdown(0) не снимал вообще ничего - тело так и улетало лежачим.
+	// update_mobility() после set_resting(FALSE) поднимет lying и вернёт density.
 	if(isliving(AM))
 		var/mob/living/L = AM
-		L.SetKnockdown(0)
+		L.set_resting(FALSE, TRUE, TRUE)
 	AM.throw_at(target, 200, 4)
 	addtimer(CALLBACK(src, PROC_REF(clear_shock)), 5)

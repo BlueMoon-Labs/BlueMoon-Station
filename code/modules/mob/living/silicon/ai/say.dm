@@ -85,8 +85,9 @@
 #define VOX_DELAY 1 MINUTES
 /mob/living/silicon/ai/proc/announcement(voxType = "Female", message)
 	var/static/announcing_vox = 0 // Stores the time of the last announcement
-	if(announcing_vox > world.time)
-		to_chat(src, span_notice("Please wait [DisplayTimeText(announcing_vox - world.time)]."))
+	var/next_vox = training_origin ? training_vox_at : announcing_vox
+	if(next_vox > world.time)
+		to_chat(src, span_notice("Please wait [DisplayTimeText(next_vox - world.time)]."))
 		return
 
 	last_announcement = message
@@ -119,7 +120,10 @@
 		to_chat(src, span_notice("These words are not available on the announcement system: [english_list(incorrect_words)]."))
 		return
 
-	announcing_vox = world.time + VOX_DELAY
+	if(training_origin)
+		training_vox_at = world.time + VOX_DELAY
+	else
+		announcing_vox = world.time + VOX_DELAY
 
 	log_game("[key_name(src)] made a vocal announcement with the following message: [message].")
 

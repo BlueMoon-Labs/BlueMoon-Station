@@ -116,7 +116,7 @@ SUBSYSTEM_DEF(input)
 		var/loop_started = TICK_USAGE
 		C.keyLoop()
 		var/loop_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - loop_started)
-		if(loop_cost_ms >= SLOW_KEYLOOP_MS)
+		if(C && loop_cost_ms >= SLOW_KEYLOOP_MS)
 			var/turf/new_turf = get_turf(C?.mob)
 			note_slow_keyloop(C, loop_cost_ms, old_turf?.z != new_turf?.z)
 

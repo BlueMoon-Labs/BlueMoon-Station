@@ -353,7 +353,7 @@
 /turf/closed/wall/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the wall.</span>")
+			to_chat(user, span_notice("Вы разбираете стену."))
 			ScrapeAway()
 			return TRUE
 	return FALSE

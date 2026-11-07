@@ -87,7 +87,7 @@
 	permeability_coefficient = 0.5
 	body_parts_covered = CHEST|GROIN|ARMS
 	allowed = list(/obj/item/kitchen)
-	togglename = "sleeves"
+	togglename = "рукава"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 //Cook
@@ -162,7 +162,7 @@
 	item_state = "suitjacket_blue"
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/toggle/lawyer/purple

@@ -66,6 +66,7 @@
 	name = "5.56mm rubber bullet casing"
 	desc = "A 5.56mm rubber bullet casing."
 	projectile_type = /obj/item/projectile/bullet/a556_rubber
+	harmful = FALSE
 	can_be_printed = TRUE
 	advanced_print_req = FALSE
 	custom_materials = list(/datum/material/glass = 400)
@@ -104,6 +105,7 @@
 	name = "7.62x39 rubber bullet casing"
 	desc = "A 7.62x39 rubber bullet casing."
 	projectile_type = /obj/item/projectile/bullet/a762x39_rubber
+	harmful = FALSE
 	can_be_printed = TRUE
 	advanced_print_req = FALSE
 	custom_materials = list(/datum/material/glass = 800)

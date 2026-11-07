@@ -53,6 +53,8 @@
 	var/list/temp_gated_needs_fuel
 	/// Lowest TEMP gate among temp_gated_reactions, for a single cheap precheck.
 	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
+	/// Температура, ниже которой смесь из одних O2 и N2 не соберёт ни одного кандидата: безгазовые реакции с топливом ждут горючего газа, а O2/N2 им не являются.
+	var/temp_gated_air_ceiling = ATMOS_NO_TEMPERATURE_GATE
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -264,7 +266,7 @@
 	// field: their firelocks still close one by one on the pressure drop.
 	if(!base || istype(base, /area/space) || base.outdoors)
 		return
-	queue_decompression_base(base)
+	queue_decompression_base(base, get_turf(source))
 
 /// Ареал, который через проём без файрлока кормит стравливаемый ареал, течёт вместе с ним: этаж над тоннелем, зал без дверей между зонами.
 /datum/controller/subsystem/air/proc/spread_decompression(turf/open/feeding, turf/open/drained)
@@ -276,24 +278,29 @@
 
 /// Леджерная часть постановки зоны в декомп-очередь, отдельно от гарда космоса
 /// выше: тестам нужна ровно она - зона юнит-тестовой резервации это /area/space.
-/datum/controller/subsystem/air/proc/queue_decompression_base(area/base)
+/datum/controller/subsystem/air/proc/queue_decompression_base(area/base, turf/open/source)
 	// A breach keeps its edge turfs above the queue threshold for many fires;
 	// the first handling already alarmed and pressure-stopped the compartment,
 	// so re-sweeping it every SSair fire is pure waste.
 	var/last_handled = decompression_handled_at[base]
 	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 		return
+	if(istype(source))
+		var/list/sources = decompression_seen[base]
+		if(!islist(sources))
+			sources = list()
+			decompression_seen[base] = sources
+		sources[source] = TRUE
+	else if(!decompression_seen[base])
+		decompression_seen[base] = TRUE
 	if(decompression_areas[base])
 		return
-	// Одиночный пшик - цикл наружного шлюза, мгновенно осушенный карман - не
-	// пробоина: настоящая утечка перевзводит зону каждый фаер, пока кромку
-	// кормят соседи. Тревога (полновесная пожарная тревога базового ареала,
-	// которую никто не сбрасывает автоматически) ставится только по перевзводу
-	// более поздним фаером внутри подтверждающего окна; протухший первый замер
-	// считается новым первым разом.
+	// Одиночный выброс воздуха не поднимает тревогу: нужен повторный замер
+	// более поздним фаером внутри подтверждающего окна.
 	var/first_seen = decompression_pending[base]
 	if(isnull(first_seen) || times_fired - first_seen > DECOMPRESSION_PENDING_WINDOW_FIRES)
 		decompression_pending[base] = times_fired
+		decompression_started_at[base] = world.time
 		return
 	if(first_seen == times_fired)
 		return
@@ -326,24 +333,75 @@
 			seen_firedoors[firedoor] = TRUE
 			firedoor.emergency_pressure_stop()
 
-/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
+/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed, slice_ms = DECOMPRESSION_CHECK_SLICE_MS)
+	var/started = TICK_USAGE_REAL
 	if(!resumed)
 		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
 		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
+		queue_decompression_seals()
+		// Если полный проход не подтвердил утечку, локальная защита уже справилась.
+		for(var/area/pending_area as anything in decompression_started_at.Copy())
+			if(!decompression_seen[pending_area] || (!(pending_area in decompression_pending) && !decompression_areas[pending_area]))
+				decompression_pending -= pending_area
+				decompression_started_at -= pending_area
+				decompression_areas -= pending_area
 		currentrun = decompression_areas.Copy()
-		decompression_areas.Cut()
+		for(var/area/base as anything in currentrun)
+			currentrun[base] = decompression_seen[base]
+		decompression_seen.Cut()
 		num_decompression_areas = 0
+		if(!length(currentrun))
+			decompression_context = null
+		else if(!decompression_context?.can_reuse(currentrun))
+			decompression_context = new(currentrun)
+		else
+			decompression_context.restarts = 0
+		decompression_check = null
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
+		// Проверяем бюджет и во время трёхсекундной задержки, и внутри одной большой зоны.
+		if(slice_ms && (TICK_USAGE_TO_MS(started) >= slice_ms || TICK_CHECK))
+			return TRUE
 		var/area/base = currentrun_copy[currentrun_copy.len]
-		currentrun_copy.len--
+		var/list/sources = currentrun_copy[base]
 		if(!base)
+			currentrun_copy.len--
 			continue
+		if(!decompression_check)
+			decompression_check = new(base, sources, decompression_context)
+		var/contained = decompression_check.advance(slice_ms, started)
+		if(isnull(contained))
+			return TRUE
+		currentrun_copy.len--
+		if(contained)
+			set_decompression_seals(base, decompression_check.sealing_doors, decompression_check.sources)
+			if(length(decompression_check.sealing_doors))
+				// Пока участок отсечён, не накапливаем задержку общей тревоги.
+				decompression_started_at[base] = world.time
+			else
+				// Источники больше не сообщаются с космосом: пробоины действительно закрыты.
+				decompression_pending -= base
+				decompression_started_at -= base
+				decompression_areas -= base
+			decompression_check = null
+			continue
+		decompression_check = null
+		var/started_at = decompression_started_at[base]
+		if(isnull(started_at))
+			started_at = world.time
+			decompression_started_at[base] = started_at
+		// Очередь сохраняется до истечения паузы, пока каждый полный проход видит утечку.
+		if(world.time < started_at + DECOMPRESSION_AREA_ALARM_DELAY)
+			continue
+		var/last_handled = decompression_handled_at[base]
+		if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
+			continue
+		decompression_areas -= base
+		decompression_started_at -= base
 		handle_decompression_area(base)
 		num_decompression_areas++
-		if(world.tick_usage > Master.current_ticklimit)
-			pause()
-			return TRUE
+	if(decompression_context?.has_open_firelocks)
+		decompression_context = null
 	return FALSE
 
 /datum/controller/subsystem/air/proc/process_turfs_auxtools(remaining)
@@ -373,7 +431,8 @@
 		T.process_cell(fire_count)
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
-		maybe_sleep_low_pressure_turf(T)
+		if(!T.excited_group)
+			maybe_sleep_low_pressure_turf(T)
 		// Only pause while there is still work left. Pausing on an emptied
 		// runlist made the next fire see `!length(currentrun)` and re-Copy the
 		// whole active list, running a second full turf pass inside what the
@@ -501,7 +560,8 @@
 			T.excited_group.garbage_collect()
 
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE, reset_stall = TRUE)
-	if(!istype(T) || T.blocks_air || !T.air)
+	// Космос не симулируется: его process_cell только снимает его с очереди, а затравкой обхода зоны он гонял пустой обход.
+	if(!istype(T) || T.blocks_air || !T.air || isspaceturf(T))
 		return
 	// `excited` doubles as the membership flag of active_turfs: every path that
 	// drops a turf out of the list clears it, and nothing marks a turf excited
@@ -605,6 +665,8 @@
 	var/list/temp_gated = list()
 	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuel_gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuelless_gate_floor = ATMOS_NO_TEMPERATURE_GATE
 	// Позиция ПОСЛЕДНЕЙ реакции бакета. Пол бакета читается на сборе кандидатов,
 	// до цикла реакций, поэтому он верен только пока никакая реакция того же
 	// вызова не может поднять газ над порогом. Пара freonformation (приоритет 33,
@@ -654,6 +716,9 @@
 			// пропускать, а не отсекать по отсутствию горячего газа.
 			if(reqs["FIRE_REAGENTS"] > 0)
 				needs_fuel[reaction] = TRUE
+				fuel_gate_floor = min(fuel_gate_floor, temp_gate)
+			else
+				fuelless_gate_floor = min(fuelless_gate_floor, temp_gate)
 	// Газ, который кто-то производит РАНЬШЕ, чем отработает последняя реакция его
 	// бакета, требует двух поблажек сразу, и снятого пола мало.
 	//
@@ -682,6 +747,13 @@
 	temp_gated_reactions = temp_gated
 	temp_gated_needs_fuel = needs_fuel
 	temp_gated_min_temp = gate_floor
+	var/list/fuel_temps = GLOB.gas_data?.fire_temperatures
+	var/air_fuel_temp = ATMOS_NO_TEMPERATURE_GATE
+	for(var/air_gas in list(GAS_O2, GAS_N2))
+		var/air_gas_fire_temp = fuel_temps?[air_gas]
+		if(air_gas_fire_temp)
+			air_fuel_temp = min(air_fuel_temp, air_gas_fire_temp)
+	temp_gated_air_ceiling = min(fuelless_gate_floor, max(fuel_gate_floor, air_fuel_temp))
 
 /proc/auxtools_atmos_init(gas_data)
 	return TRUE
@@ -711,8 +783,7 @@
 	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
 	// fresh stall budget. A door cycling next to a settled room used to hand its
 	// whole neighborhood a new rest window every time it opened.
-	ATMOS_BENCH_WAKE(open_turf, "adjacency")
-	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	SSair.wake_if_gradient(open_turf, "adjacency")
 
 /turf/proc/update_air_ref(flag)
 	if(!SSair)
@@ -1353,10 +1424,10 @@
 	var/datum/controller/subsystem/air/air_controller = SSair
 	var/list/reaction_index = air_controller.reactions_by_key_gas
 	var/gated_min_temp = air_controller.temp_gated_min_temp
-	// The overwhelming turf case is cool O2/N2 air. The reaction index is
+	// The overwhelming turf case is O2/N2 air. The reaction index is
 	// authoritative, so only skip when neither common gas owns a candidate and
-	// no temperature-only reaction can be eligible.
-	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < gated_min_temp)
+	// no temperature-only reaction can be eligible (see temp_gated_air_ceiling).
+	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < air_controller.temp_gated_air_ceiling)
 		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
 			if(length(reaction_results))
 				reaction_results.Cut()

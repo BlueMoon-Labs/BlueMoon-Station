@@ -370,11 +370,11 @@ SUBSYSTEM_DEF(vote)
 			if(display_votes & SHOW_RESULTS)
 				var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 				var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-				var/votes_amount = choices[choices[i]]
+				var/votes_amount = get_effective_votes(choices[i])
 				var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
-				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>"
+				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>"
 				text += "<span class='vote-name'>[choices[i]]</span>"
-				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 8px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.55);'></div></div>"
+				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 2px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.2);'></div></div>"
 				text += "<span class='vote-percent'>[percent]%</span>"
 				text += "<span class='vote-count'>[votes_amount]</span>"
 			else
@@ -632,21 +632,13 @@ SUBSYSTEM_DEF(vote)
 	return FALSE
 
 /datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE, replacing_active_vote = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
-	vote_system = votesystem
 	if(mode && !replacing_active_vote)
 		return FALSE
 	if(!mode || replacing_active_vote)
-		if(started_time)
-			var/next_allowed_time = (started_time + CONFIG_GET(number/vote_delay))
-
-			var/admin = FALSE
-			var/ckey = ckey(initiator_key)
-			if(GLOB.admin_datums[ckey] || initiator_key == "server")
-				admin = TRUE
-
-			if(next_allowed_time > world.time && !admin)
-				to_chat(usr, "<span class='warning'>A vote was initiated recently, you must wait [DisplayTimeText(next_allowed_time-world.time)] before a new vote can be started!</span>")
-				return FALSE
+		var/cooldown_left = vote_cooldown_left(initiator_key)
+		if(cooldown_left)
+			to_chat(usr, span_warning("Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."))
+			return FALSE
 
 		var/saved_custom = (vote_type == "custom") && setting_up_custom
 		var/saved_custom_question = custom_question
@@ -656,6 +648,13 @@ SUBSYSTEM_DEF(vote)
 		if(vote_type == "custom")
 			if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 				return FALSE
+		if(vote_type == "roundtype" && !replacing_active_vote)
+			var/roundtype_block = roundtype_vote_block_reason()
+			if(roundtype_block)
+				to_chat(usr, span_warning(roundtype_block))
+				return FALSE
+		// Не раньше проверок: отказ не должен подменять систему подсчёта идущему голосованию
+		vote_system = votesystem
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
 		display_votes = display
@@ -741,7 +740,7 @@ SUBSYSTEM_DEF(vote)
 		for(var/i = 1, i <= choices.len, i++)
 			var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 			var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>[choices[i]]</div>"
+			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>[choices[i]]</div>"
 		text += "<div class='vote-hint'>Нажмите <a href='?src=[REF(src)]'>сюда</a> чтобы проголосовать</div>"
 		log_vote(text)
 		to_chat(world, vote_block(text))
@@ -862,6 +861,40 @@ SUBSYSTEM_DEF(vote)
 		SSticker.SetTimeLeft(min_timeleft)
 	return runoff_ds
 
+/// Почему голосование за режим сейчас закрылось бы сразу после старта; null, если начать можно.
+/datum/controller/subsystem/vote/proc/roundtype_vote_block_reason()
+	if(SSticker.current_state != GAME_STATE_PREGAME)
+		return "Голосование за режим игры можно начать только в лобби, до начала раунда."
+	if(SSticker.timeLeft < 0)
+		return "Начало раунда отложено, голосование за режим игры сейчас недоступно."
+	if(isnull(SSticker.timeLeft) || SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
+		return "До начала раунда слишком мало времени, голосование за режим игры уже не успеет пройти."
+	return null
+
+/// Сколько децисекунд этому инициатору ждать нового голосования; админам и серверу 0.
+/datum/controller/subsystem/vote/proc/vote_cooldown_left(initiator_key)
+	if(!started_time || initiator_key == "server" || GLOB.admin_datums[ckey(initiator_key)])
+		return 0
+	return max(0, started_time + CONFIG_GET(number/vote_delay) - world.time)
+
+/// Почему user сейчас не может начать голосование; null, если можно.
+/datum/controller/subsystem/vote/proc/vote_start_block_reason(mob/user)
+	if(mode)
+		return "Уже идёт голосование, дождитесь его окончания."
+	var/cooldown_left = vote_cooldown_left(user?.ckey)
+	if(cooldown_left)
+		return "Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."
+	return null
+
+/// Сколько децисекунд осталось активному голосованию.
+/datum/controller/subsystem/vote/proc/get_time_remaining()
+	if(!mode)
+		return 0
+	var/remaining = end_time - world.time
+	if(mode == "roundtype" && !roundtype_prime_runoff_ballot)
+		remaining = min(remaining, SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY)
+	return max(0, remaining)
+
 /datum/controller/subsystem/vote/proc/sanitize_roundtype_vote_choices()
 	if(roundtype_prime_runoff_ballot)
 		return
@@ -964,10 +997,12 @@ SUBSYSTEM_DEF(vote)
 	data["mode"] = mode
 	data["question"] = question
 	// Оставшееся время в секундах
-	if(mode == "roundtype")
-		data["time_remaining"] = max(0, round((SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY) / 10))
-	else
-		data["time_remaining"] = mode ? max(0, round((end_time - world.time) / 10)) : 0
+	data["time_remaining"] = round(get_time_remaining() / 10)
+	data["time_total"] = mode ? round(max(end_time - started_time, get_time_remaining()) / 10) : 0
+	data["initiator"] = mode ? ((initiator == "server" || initiator == "the Server") ? "автоматически" : initiator) : null
+	data["voters_count"] = length(voted)
+	data["roundtype_vote_block"] = roundtype_vote_block_reason()
+	data["vote_start_block"] = vote_start_block_reason(user)
 	data["vote_system"] = vote_system
 	// Список вариантов с полным состоянием для всех систем голосования
 	var/list/choices_list = list()
@@ -975,7 +1010,7 @@ SUBSYSTEM_DEF(vote)
 		var/show_votes_count = should_show_votes_to(user)
 		for(var/i in 1 to choices.len)
 			var/choice_name = choices[i]
-			var/vote_count = max(0, choices[choice_name] || 0)
+			var/vote_count = max(0, get_effective_votes(choice_name) || 0)
 			var/user_selected = FALSE  // plurality
 			var/user_approved = FALSE  // approval
 			var/user_rank = 0          // schulze/IRV
@@ -1090,14 +1125,18 @@ SUBSYSTEM_DEF(vote)
 			reset()
 			return TRUE
 		if("toggle_restart")
-			if(!C.holder)
+			if(!check_rights_for(C, R_ADMIN))
 				return
 			CONFIG_SET(flag/allow_vote_restart, !CONFIG_GET(flag/allow_vote_restart))
+			message_admins("[ADMIN_LOOKUP(user)] [CONFIG_GET(flag/allow_vote_restart) ? "разрешил" : "запретил"] игрокам голосование за рестарт")
+			log_admin("[C.key] [CONFIG_GET(flag/allow_vote_restart) ? "разрешил" : "запретил"] игрокам голосование за рестарт")
 			return TRUE
 		if("toggle_gamemode")
-			if(!C.holder)
+			if(!check_rights_for(C, R_ADMIN))
 				return
 			CONFIG_SET(flag/allow_vote_mode, !CONFIG_GET(flag/allow_vote_mode))
+			message_admins("[ADMIN_LOOKUP(user)] [CONFIG_GET(flag/allow_vote_mode) ? "разрешил" : "запретил"] игрокам голосование за режим игры")
+			log_admin("[C.key] [CONFIG_GET(flag/allow_vote_mode) ? "разрешил" : "запретил"] игрокам голосование за режим игры")
 			return TRUE
 		if("restart")
 			if(CONFIG_GET(flag/allow_vote_restart) || C.holder)
@@ -1212,7 +1251,7 @@ SUBSYSTEM_DEF(vote)
 		if(isnum(chaos))
 			total_chaos += chaos
 
-	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_HARD)
+	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM)
 	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 

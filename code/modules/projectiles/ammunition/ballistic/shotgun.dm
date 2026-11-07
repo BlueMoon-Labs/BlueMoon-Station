@@ -26,6 +26,7 @@
 	desc = "A weak beanbag slug for riot control."
 	icon_state = "bshell"
 	projectile_type = /obj/item/projectile/bullet/shotgun_beanbag
+	harmful = FALSE
 	custom_materials = list(/datum/material/iron=250)
 
 /obj/item/ammo_casing/shotgun/incendiary
@@ -47,6 +48,7 @@
 	desc = "A stunning taser slug."
 	icon_state = "stunshell"
 	projectile_type = /obj/item/projectile/bullet/shotgun_stunslug
+	harmful = FALSE
 	custom_materials = list(/datum/material/iron=250)
 
 /obj/item/ammo_casing/shotgun/meteorslug
@@ -82,6 +84,7 @@
 	desc = "A shotgun casing filled with densely-packed rubber balls, used to incapacitate crowds from a distance."
 	icon_state = "bshell"
 	projectile_type = /obj/item/projectile/bullet/pellet/shotgun_rubbershot
+	harmful = FALSE
 	pellets = 6
 	variance = 25
 	custom_materials = list(/datum/material/iron=4000)

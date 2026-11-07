@@ -1,0 +1,320 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cG" = (
+/obj/effect/landmark/antag_training/side{
+	side = "east"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cY" = (
+/turf/open/floor/engine,
+/area/template_noop)
+"lz" = (
+/obj/effect/landmark/antag_training/side{
+	side = "west"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"sA" = (
+/obj/effect/landmark/antag_training/side{
+	side = "north"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"tc" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"uH" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/engine,
+/area/template_noop)
+"Ay" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"Dg" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"Me" = (
+/obj/effect/landmark/antag_training/side{
+	side = "south"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"Mk" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"Oz" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+
+(1,1,1) = {"
+tc
+Oz
+Oz
+Dg
+Oz
+Oz
+Oz
+Oz
+Oz
+Oz
+Oz
+Dg
+Oz
+Oz
+uH
+"}
+(2,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(3,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+lz
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(4,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(5,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(6,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(7,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(8,1,1) = {"
+tc
+cY
+sA
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+Me
+cY
+cY
+uH
+"}
+(9,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(10,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(11,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(12,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(13,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cG
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(14,1,1) = {"
+tc
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+cY
+uH
+"}
+(15,1,1) = {"
+tc
+Ay
+Ay
+Mk
+Ay
+Ay
+Ay
+Ay
+Ay
+Ay
+Ay
+Mk
+Ay
+Ay
+uH
+"}

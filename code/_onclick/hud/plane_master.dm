@@ -540,18 +540,19 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 			remove_filter("lighting_blur_edge_fix")
 	//Яркость матрицей в color, а не фильтром: color мастер накладывает без отдельного прохода рендера.
 	color = null
-	if(is_fast)
-		// В режиме Быстро - стандартное освещение до LightUp, без пользовательской яркости
-		return
-	var/brightness = prefs?.lighting_brightness
-	if(isnull(brightness))
-		brightness = LIGHTING_BRIGHTNESS_DEFAULT
-	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	// Диапазон 0-60 растянут на 0-100: 0 = старая 0, 100 = старая 60
-	var/mapped = brightness * 0.6
-	var/ratio = (mapped - LIGHTING_BRIGHTNESS_DEFAULT) / 200
-	if(ratio != 0)
-		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
+	// В режиме Быстро - стандартное освещение до LightUp, без пользовательской яркости
+	if(!is_fast)
+		var/brightness = prefs?.lighting_brightness
+		if(isnull(brightness))
+			brightness = LIGHTING_BRIGHTNESS_DEFAULT
+		brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+		// Диапазон 0-60 растянут на 0-100: 0 = старая 0, 100 = старая 60
+		var/mapped = brightness * 0.6
+		var/ratio = (mapped - LIGHTING_BRIGHTNESS_DEFAULT) / 200
+		if(ratio != 0)
+			color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
+	//Матрица в color поглощает alpha: прозрачность тьмы от ПНВ, мезонов и квирка ставим заново.
+	alpha = show_alpha
 
 /// Прячем этаж - забираем и его подложки: без видимого мастера белый lit-квадрат рисуется сырым.
 /atom/movable/screen/plane_master/lighting/hide_from(mob/oldmob)

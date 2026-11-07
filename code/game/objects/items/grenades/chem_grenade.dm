@@ -166,9 +166,10 @@
 		if(!exploded_beaker.reagents)
 			continue
 		reagent_string += "[exploded_beaker] [beaker_number++] : " + pretty_string_from_reagent_list(exploded_beaker.reagents.reagent_list) + ";"
-	var/message = "[src] primed by [user] at [ADMIN_VERBOSEJMP(T)] contained [reagent_string]."
-	add_bomber_message(message)
-	message_admins(message)
+	if(!is_antag_training_atom(src))
+		var/message = "[src] primed by [user] at [ADMIN_VERBOSEJMP(T)] contained [reagent_string]."
+		add_bomber_message(message)
+		message_admins(message)
 	user.log_message("primed [src] ([reagent_string])",LOG_GAME)
 
 /obj/item/grenade/chem_grenade/prime(mob/living/lanced_by)
@@ -194,8 +195,7 @@
 	if(nadeassembly)
 		var/mob/M = get_mob_by_ckey(assemblyattacher)
 		var/mob/last = get_mob_by_ckey(nadeassembly.fingerprintslast)
-		message_admins("grenade primed by an assembly, attached by [ADMIN_LOOKUPFLW(M)] and last touched by [ADMIN_LOOKUPFLW(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name]) at [ADMIN_VERBOSEJMP(detonation_turf)]</a>.")
-		log_game("grenade primed by an assembly, attached by [key_name(M)] and last touched by [key_name(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name]) at [AREACOORD(detonation_turf)]")
+		antag_training_game_log(detonation_turf, "grenade primed by an assembly, attached by [ADMIN_LOOKUPFLW(M)] and last touched by [ADMIN_LOOKUPFLW(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name]) at [ADMIN_VERBOSEJMP(detonation_turf)]</a>.", "grenade primed by an assembly, attached by [key_name(M)] and last touched by [key_name(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name]) at [AREACOORD(detonation_turf)]")
 
 	log_game("A grenade detonated at [AREACOORD(detonation_turf)]")
 
@@ -306,8 +306,7 @@
 	if(nadeassembly)
 		var/mob/M = get_mob_by_ckey(assemblyattacher)
 		var/mob/last = get_mob_by_ckey(nadeassembly.fingerprintslast)
-		message_admins("grenade primed by an assembly at [AREACOORD(DT)], attached by [ADMIN_LOOKUPFLW(M)] and last touched by [ADMIN_LOOKUPFLW(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name])</a>.")
-		log_game("grenade primed by an assembly at [AREACOORD(DT)], attached by [key_name(M)] and last touched by [key_name(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name])")
+		antag_training_game_log(DT, "grenade primed by an assembly at [AREACOORD(DT)], attached by [ADMIN_LOOKUPFLW(M)] and last touched by [ADMIN_LOOKUPFLW(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name])</a>.", "grenade primed by an assembly at [AREACOORD(DT)], attached by [key_name(M)] and last touched by [key_name(last)] ([nadeassembly.a_left.name] and [nadeassembly.a_right.name])")
 	else
 		addtimer(CALLBACK(src, PROC_REF(prime)), det_time)
 	log_game("A grenade detonated at [AREACOORD(DT)]")

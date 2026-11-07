@@ -98,7 +98,16 @@
 		stack_trace("/datum/chatmessage created with [isnull(owner) ? "null" : "invalid"] mob owner")
 		qdel(src)
 		return
-	INVOKE_ASYNC(src, PROC_REF(generate_image), text, target, owner, language, extra_classes, lifespan)
+	if(QDELETED(target))
+		qdel(src)
+		return
+	owned_by = owner.client
+	RegisterSignal(owned_by, COMSIG_PARENT_QDELETING, PROC_REF(on_parent_qdel))
+	var/complete_text = build_complete_text(text, target, owner, language, extra_classes)
+	if(isnull(complete_text))
+		qdel(src)
+		return
+	generate_image(complete_text, WEAKREF(target), owner.bound_width, owner.bound_height, lifespan)
 
 /datum/chatmessage/Destroy()
 	if (owned_by)
@@ -124,29 +133,10 @@
 /datum/chatmessage/proc/on_parent_qdel()
 	qdel(src)
 
-/**
-  * Generates a chat message image representation
-  *
-  * Arguments:
-  * * text - The text content of the overlay
-  * * target - The target atom to display the overlay at
-  * * owner - The mob that owns this overlay, only this mob will be able to view it
-  * * language - The language this message was spoken in
-  * * extra_classes - Extra classes to apply to the span that holds the text
-  * * lifespan - The lifespan of the message in deciseconds
-  */
-/datum/chatmessage/proc/generate_image(text, atom/target, mob/owner, datum/language/language, list/extra_classes, lifespan)
+/// Текст реплики со всей разметкой: цвет говорящего, иконки языка и рации, обрезка.
+/datum/chatmessage/proc/build_complete_text(text, atom/target, mob/owner, datum/language/language, list/extra_classes)
 	/// Cached icons to show what language the user is speaking
 	var/static/list/language_icons
-
-	// Register client who owns this message
-	owned_by = owner.client
-	if(!owned_by)
-		return
-	if(isnull(target) || QDELETED(target))
-		qdel(src)
-		return
-	RegisterSignal(owned_by, COMSIG_PARENT_QDELETING, PROC_REF(on_parent_qdel))
 
 	// Clip message
 	var/maxlen = owned_by.prefs.max_chat_length
@@ -185,8 +175,7 @@
 	// Reject whitespace
 	var/static/regex/whitespace = new(@"^\s*$")
 	if (whitespace.Find(text))
-		qdel(src)
-		return
+		return null
 
 	// Non mobs speakers can be small
 	if (!ismob(target))
@@ -239,14 +228,32 @@
 			tgt_color = color_shift(target_color, 0.85, 0.85)
 			GLOB.runechat_color_names_darkened[darkened_key] = tgt_color
 
-	// Approximate text height
 	var/complete_text = "<span class='center maptext [extra_classes.Join(" ")]' style='color: [tgt_color]'>[owner.say_emphasis(text)]</span>"
+	return complete_text
 
-	var/mheight
-	WXH_TO_HEIGHT(owned_by.MeasureText(complete_text, null, CHAT_MESSAGE_WIDTH), mheight)
+/**
+  * Generates a chat message image representation
+  *
+  * Говорящий и слушатель сюда не передаются: MeasureText спит до ответа клиента, у
+  * подвисшего - минутами, и удалённый за это время моб держался бы кадром прока.
+  *
+  * Arguments:
+  * * complete_text - The text content of the overlay, with markup
+  * * target_ref - Weakref to the atom to display the overlay at
+  * * owner_bound_width - bound_width of the mob that owns this overlay
+  * * owner_bound_height - bound_height of the mob that owns this overlay
+  * * lifespan - The lifespan of the message in deciseconds
+  */
+/datum/chatmessage/proc/generate_image(complete_text, datum/weakref/target_ref, owner_bound_width, owner_bound_height, lifespan)
+	set waitfor = FALSE
+	usr = null
+
+	// Approximate text height
+	var/mheight = measure_height(complete_text)
 	approx_lines = max(1, mheight / CHAT_MESSAGE_APPROX_LHEIGHT)
 
 	// Translate any existing messages upwards, apply exponential decay factors to timers
+	var/atom/target = target_ref.resolve()
 	if(isnull(target) || QDELETED(target))
 		qdel(src)
 		return
@@ -284,7 +291,7 @@
 
 	// Build message image
 	var/anim_mode = owned_by.prefs ? owned_by.prefs.runechat_anim : RUNECHAT_ANIM_NONE
-	var/final_pixel_y = round(owner.bound_height * 0.95)
+	var/final_pixel_y = round(owner_bound_height * 0.95)
 
 	message = image(loc = message_loc, layer = CHAT_LAYER + CHAT_LAYER_Z_STEP * current_z_idx++)
 	SET_PLANE_EXPLICIT(message, CHAT_PLANE, message_loc)
@@ -297,7 +304,7 @@
 	// (width*height*4) и держит поверхность до конца сессии, а MeasureText отдаёт
 	// пиксельную высоту, у которой на одинаковом тексте бывают соседние значения.
 	message.maptext_height = CEILING(mheight, CHAT_MESSAGE_APPROX_LHEIGHT)
-	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5)
+	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner_bound_width) * -0.5)
 	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
 	// View the message
@@ -322,6 +329,12 @@
 	scheduled_destruction = world.time + (lifespan - CHAT_MESSAGE_EOL_FADE)
 	enter_subsystem()
 
+
+/// Высота текста у клиента; MeasureText спит до его ответа.
+/datum/chatmessage/proc/measure_height(complete_text)
+	var/height
+	WXH_TO_HEIGHT(owned_by.MeasureText(complete_text, null, CHAT_MESSAGE_WIDTH), height)
+	return height
 
 /**
   * Applies final animations to overlay CHAT_MESSAGE_EOL_FADE deciseconds prior to message deletion

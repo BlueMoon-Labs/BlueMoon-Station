@@ -342,7 +342,7 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/golems)
 "xw" = (
-/obj/machinery/mineral/equipment_vendor/golem,
+/obj/machinery/equipment_vendor/golem,
 /turf/open/floor/pod/dark,
 /area/shuttle/golems)
 "zL" = (

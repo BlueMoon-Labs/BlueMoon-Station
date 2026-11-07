@@ -6,6 +6,11 @@
 	name = "TinyUnicode"
 	font_family = 'interface/fonts/TinyUnicode.ttf'
 
+// Пиксельная кириллица для мелких контекстных подсказок: сетка 6pt (8px).
+/datum/font/tiny5
+	name = "Tiny5"
+	font_family = 'interface/fonts/Tiny5-Regular.ttf'
+
 /// For icon overlays
 /// TinyUnicode 12pt metrics generated using Lummox's dmifontsplus (https://www.byond.com/developer/LummoxJR/DmiFontsPlus)
 /// Note: these variable names have been changed, so you can't straight copy/paste from dmifontsplus.exe

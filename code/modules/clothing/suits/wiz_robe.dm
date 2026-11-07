@@ -330,7 +330,7 @@
 	item_state = "battlemage"
 	min_cold_protection_temperature = ARMOR_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
-	armor_type = /datum/armor/wizard_helmet
+	armor_type = /datum/armor/wizard_suit
 	actions_types = null //No inbuilt light
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/magic_flags = SPELL_WIZARD_HAT|SPELL_CULT_HELMET

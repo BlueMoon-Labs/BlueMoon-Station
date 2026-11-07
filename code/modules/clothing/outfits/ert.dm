@@ -346,6 +346,25 @@
 		/obj/item/organ/cyberimp/arm/surgery/advanced,
 	)
 
+/datum/outfit/ert/medic/medical_technician
+	name = "EMT Paramedic"
+	uniform = /obj/item/clothing/under/rank/medical/doctor/blue
+	mask = /obj/item/clothing/mask/surgical
+	belt = /obj/item/storage/belt/medical
+	glasses = /obj/item/clothing/glasses/hud/health
+	back = /obj/item/mod/control/pre_equipped/medical
+	gloves = null
+	suit = null
+	head = null
+	suit_store = /obj/item/tank/internals/oxygen
+	backpack_contents = list(
+		/obj/item/reagent_containers/hypospray/combat = 1,
+		/obj/item/storage/firstaid/regular = 1,
+		/obj/item/reagent_containers/syringe = 1,
+		/obj/item/reagent_containers/glass/bottle/formaldehyde = 1,
+		/obj/item/bodybag = 2,
+	)
+
 /datum/outfit/ert/medic/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	ADD_TRAIT(H, TRAIT_SURGEON, TRAIT_GENERIC)
 	..()
@@ -519,6 +538,18 @@
 		/obj/item/organ/heart/bioaegis/t3,
 		/obj/item/organ/liver/bioaegis/t3,
 		/obj/item/organ/lungs/bioaegis/t3,
+	)
+
+/datum/outfit/ert/engineer/alert/marine
+	name = "ERT Marine Engineer"
+	back = /obj/item/mod/control/pre_equipped/marine
+	suit = null
+	shoes = null
+	gloves = null
+	suit_store = null
+	backpack_contents = list(
+		/obj/item/storage/box/survival/centcom = 1,
+		/obj/item/ammo_box/magazine/smartgun_drum = MOD_SMARTGUN_SPARE_DRUMS,
 	)
 
 /datum/outfit/ert/engineer/alert/red

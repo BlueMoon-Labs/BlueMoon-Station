@@ -232,10 +232,10 @@
 	var/message = "[sigil_name] в [get_area(src)] <span class='sevtug'>[is_servant_of_ratvar(L) ? "успешно конвертировал" : "не удалось конвертировать"]</span>"
 	new /obj/item/clockwork/slab (get_turf(src))
 	for(var/M in GLOB.mob_list)
-		if(isobserver(M))
+		if(isobserver(M) && antag_training_observer_hears(M, L))
 			var/link = FOLLOW_LINK(M, L)
 			to_chat(M,  "[link] <span class='heavy_brass'>[message] [L.real_name]!</span>")
-		else if(is_servant_of_ratvar(M))
+		else if(is_servant_of_ratvar(M) && !is_antag_training_atom(M))
 			if(M == L)
 				to_chat(M, "<span class='heavy_brass'>[message] вас!</span>")
 			else

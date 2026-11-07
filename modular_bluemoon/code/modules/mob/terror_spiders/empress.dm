@@ -98,13 +98,15 @@
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/empress/proc/EraseBrood()
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		if(T.spider_tier < spider_tier)
+		if(T.spider_tier < spider_tier && T.training_origin == training_origin)
 			T.degenerate = TRUE
 			to_chat(T, "<span class='userdanger'>Through the hivemind, the raw power of [src] floods into your body, burning it from the inside out!</span>")
 	for(var/obj/structure/spider/eggcluster/terror_eggcluster/T in GLOB.ts_egg_list)
-		qdel(T)
+		if(T.training_origin == training_origin)
+			qdel(T)
 	for(var/obj/structure/spider/spiderling/terror_spiderling/T in GLOB.ts_spiderling_list)
-		qdel(T)
+		if(T.training_origin == training_origin)
+			qdel(T)
 	to_chat(src, "<span class='userdanger'>All Terror Spiders, except yourself, will die off shortly.</span>")
 
 /obj/item/projectile/terrorqueenspit/empress

@@ -53,6 +53,22 @@
   background-color: rgba(0, 0, 0, 0.75);
 }
 
+.Dropdown__search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 2px 4px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  outline: none;
+  color: #fff;
+  background-color: #1b1b1b;
+  font-family: Verdana, sans-serif;
+  font-size: base.em(11px);
+}
+
 .Dropdown__menuentry {
   padding: base.em(2px) base.em(4px);
   font-family: Verdana, sans-serif;

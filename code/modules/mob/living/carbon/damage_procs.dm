@@ -125,6 +125,8 @@
 /mob/living/carbon/adjustStaminaLoss(amount, updating_health = TRUE, forced = FALSE)
 	if(!forced && (status_flags & GODMODE))
 		return FALSE
+	if(!forced && HAS_TRAIT(src, TRAIT_STAMINA_IMMUNE))
+		return FALSE
 	if(amount > 0)
 		take_overall_damage(0, 0, amount, updating_health)
 	else
@@ -229,7 +231,7 @@
 	if(!parts.len)
 		return
 	var/obj/item/bodypart/picked = pick(parts)
-	if(picked.receive_damage(brute, burn, stamina,check_armor ? run_armor_check(picked, (brute ? MELEE : burn ? FIRE : stamina ? BULLET : null)) : FALSE, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
+	if(picked.receive_damage(brute, burn, stamina,check_armor ? run_armor_check(picked, (brute ? MELEE : burn ? FIRE : stamina ? ENERGY : null)) : FALSE, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
 		update_damage_overlays()
 
 //Heal MANY bodyparts, in random order

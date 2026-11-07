@@ -81,17 +81,18 @@
 	. = ..()
 	var/mob/living/mob_occupant = occupant
 	. += span_notice("<i>Связующее</i> устройство может быть <i>отсканировано</i> мультитулом.</span>")
-	if(mess)
+	if(mess && in_range(user, src))
 		. += "Наполнено кровю и потрохами. Вы покляться можете, что оно двинулось..."
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("Статус-дисплей сообщает: \n\
-		- Скорость клонирования: <b>[speed_coeff*50]%</b> \n\
-		- Ожидаемые клеточные травмы: <b>[100-heal_level]%</b>.")
-		if(efficiency > 5)
-			to_chat(user, span_notice("Капсула улучшена и поддерживает автообработку."))
 	if(is_operational() && mob_occupant)
 		if(mob_occupant.stat != DEAD)
 			. += "Текущий цикл клонирования завершён на [round(get_completion())]%"
+
+/obj/machinery/clonepod/examine_display_content(mob/user)
+	. += "\
+	– Скорость клонирования: <b>[speed_coeff*50]%</b> \n\
+	– Ожидаемые клеточные травмы: <b>[100-heal_level]%</b>."
+	if(efficiency > 5)
+		. += "\nКапсула улучшена и поддерживает автообработку."
 
 /obj/machinery/clonepod/return_air()
 	// We want to simulate the clone not being in contact with
@@ -112,7 +113,7 @@
 	return examine(user)
 
 //Start growing a human clone in the pod!
-/obj/machinery/clonepod/proc/growclone(ckey, clonename, ui, mutation_index, mindref, blood_type, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas)
+/obj/machinery/clonepod/proc/growclone(ckey, clonename, ui, mutation_index, mindref, blood_type, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas, unique_enzymes, nameless = FALSE)
 	if(panel_open)
 		return FALSE
 	if(mess || attempting)
@@ -149,16 +150,19 @@
 
 	var/mob/living/carbon/human/H = new /mob/living/carbon/human(src)
 
-	H.hardset_dna(ui, mutation_index, H.real_name, blood_type, mrace, features)
+	if(!clonename)
+		clonename = "clone ([rand(1,999)])"
+	H.hardset_dna(ui, mutation_index, clonename, blood_type, mrace, features)
+	H.name = clonename
+	H.nameless = nameless
+	H.dna.nameless = nameless
+	if(unique_enzymes)
+		H.dna.unique_enzymes = unique_enzymes
 
 	H.easy_randmut(NEGATIVE+MINOR_NEGATIVE) //100% bad mutation. Can be cured with mutadone.
 
 	H.silent = 20 //Prevents an extreme edge case where clones could speak if they said something at exactly the right moment.
 	occupant = H
-
-	if(!clonename)	//to prevent null names
-		clonename = "clone ([rand(1,999)])"
-	H.real_name = clonename
 
 	//Get the clone body ready
 	maim_clone(H)

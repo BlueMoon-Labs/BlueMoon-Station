@@ -586,6 +586,8 @@
 	to_chat(user, rendered) // tell yourself, too.
 
 	for(var/mob/dead_mob in GLOB.dead_mob_list)
+		if(isobserver(dead_mob) ? !antag_training_observer_hears(dead_mob, user) : dead_mob.training_origin != user.training_origin)
+			continue
 		var/link = FOLLOW_LINK(dead_mob, user)
 		to_chat(dead_mob, "[link] [rendered]")
 

@@ -61,7 +61,7 @@
 
 /obj/structure/closet/Initialize(mapload)
 	if(mapload && !opened) // if closed, any item at the crate's loc is put in the contents
-		addtimer(CALLBACK(src, PROC_REF(take_contents)), 0)
+		addtimer(CALLBACK(src, PROC_REF(take_initial_contents)), 0)
 	. = ..()
 	update_icon()
 	if(should_populate_contents)
@@ -73,6 +73,15 @@
 //USE THIS TO FILL IT, NOT INITIALIZE OR NEW
 /obj/structure/closet/proc/PopulateContents()
 	return
+
+/obj/structure/closet/proc/take_initial_contents()
+	// Шкаф могли открыть до отложенного сбора содержимого, например при раскладывании мешка.
+	if(!opened)
+		take_contents()
+
+/obj/structure/closet/hitby(atom/movable/hit_by, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
+	// Неплотный контейнер получает урон от попадания, но не сдвигается от него.
+	return ..(hit_by, skipcatch, hitpush && density, blocked, throwingdatum)
 
 /obj/structure/closet/Destroy()
 	dump_contents(override = FALSE)
@@ -211,6 +220,9 @@
 	if(force)
 		return TRUE
 	if(welded || locked)
+		return FALSE
+	if(user && pulledby && user != pulledby && HAS_TRAIT(src, TRAIT_STRONGPULL))
+		to_chat(user, span_warning("[pulledby] крепко удерживает [src], мешая открыть его."))
 		return FALSE
 	var/turf/T = get_turf(src)
 	for(var/mob/living/L in T)
@@ -450,11 +462,16 @@
 	else if(W.tool_behaviour == TOOL_WRENCH && anchorable)
 		if(isinspace() && !anchored)
 			return
+		var/was_anchored = anchored
+		to_chat(user, span_notice("Вы начинаете [anchored ? "откручивать" : "прикручивать"] [src]..."))
+		if(!W.use_tool(src, user, 2 SECONDS, volume = 75))
+			return
+		if(opened || !anchorable || anchored != was_anchored || (isinspace() && !anchored))
+			return
 		set_anchored(!anchored)
-		W.play_tool_sound(src, 75)
-		user.visible_message(span_notice("[user] [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
-						span_notice("You [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
-						span_hear("You hear a ratchet."))
+		user.visible_message(span_notice("[user] [anchored ? "прикручивает [src] к полу" : "откручивает [src] от пола"]."), \
+						span_notice("Вы [anchored ? "прикрутили [src] к полу" : "открутили [src] от пола"]."), \
+						span_hear("Вы слышите треск гаечного ключа."))
 	// cit addons
 	else if(istype(W, /obj/item/electronics/airlock))
 		handle_lock_addition(user, W)

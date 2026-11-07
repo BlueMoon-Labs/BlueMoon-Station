@@ -403,9 +403,9 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	_abstract = /datum/asset/changelog_item
 	var/item_filename
 
-/datum/asset/changelog_item/New(date)
+/datum/asset/changelog_item/New(date, archive_dir = "html/changelogs/archive/")
 	item_filename = sanitize_filename("[date].yml")
-	SSassets.transport.register_asset(item_filename, file("html/changelogs/archive/" + item_filename))
+	SSassets.transport.register_asset(item_filename, file(archive_dir + item_filename))
 
 /datum/asset/changelog_item/send(client)
 	if (!item_filename)

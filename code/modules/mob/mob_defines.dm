@@ -113,8 +113,6 @@
 
 	var/datum/hud/hud_used = null
 
-	var/research_scanner = 0 //For research scanner equipped mobs. Enable to show research data when examining.
-
 	var/throw_mode = 0
 
 	var/job = null//Living
@@ -160,6 +158,8 @@
 	var/list/mousemove_intercept_objects
 
 	var/datum/click_intercept
+	// Постоянные обработчики колеса: колбек -> приоритет, по убыванию приоритета.
+	var/list/mousewheel_handlers
 
 	var/registered_z
 

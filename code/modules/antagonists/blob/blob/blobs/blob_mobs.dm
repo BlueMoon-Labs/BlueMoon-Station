@@ -60,10 +60,10 @@
 /mob/living/simple_animal/hostile/blob/proc/blob_chat(msg)
 	var/spanned_message = say_quote(msg)
 	var/rendered = "<font color=\"#EE4000\"><b>\[Blob Telepathy\] [real_name]</b> [spanned_message]</font>"
-	for(var/M in GLOB.mob_list)
-		if(isovermind(M) || istype(M, /mob/living/simple_animal/hostile/blob))
+	for(var/mob/M as anything in GLOB.mob_list)
+		if((isovermind(M) || istype(M, /mob/living/simple_animal/hostile/blob)) && M.training_origin == training_origin)
 			to_chat(M, rendered)
-		if(isobserver(M))
+		if(isobserver(M) && antag_training_observer_hears(M, src))
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [rendered]")
 

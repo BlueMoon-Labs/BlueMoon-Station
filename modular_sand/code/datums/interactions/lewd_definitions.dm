@@ -213,12 +213,8 @@
 /mob/living/proc/has_feet()
 	if(iscarbon(src))
 		var/mob/living/carbon/C = src
-		var/feetcount = 0
+		var/feetcount = C.get_num_legs(FALSE)
 		var/covered = 0
-		for(var/obj/item/bodypart/l_leg/L in C.bodyparts)
-			feetcount++
-		for(var/obj/item/bodypart/r_leg/R in C.bodyparts)
-			feetcount++
 		if(!feetcount)
 			return FALSE
 		if(!C.is_barefoot())
@@ -233,11 +229,7 @@
 	return 0
 
 /mob/living/carbon/get_num_feet()
-	. = ..()
-	for(var/obj/item/bodypart/l_leg/L in bodyparts)
-		.++
-	for(var/obj/item/bodypart/r_leg/R in bodyparts)
-		.++
+	return get_num_legs(FALSE)
 
 //weird procs go here
 //please check for existance separately

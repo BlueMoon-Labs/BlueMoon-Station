@@ -45,6 +45,21 @@ export const createStore = (reducer, enhancer) => {
 };
 
 /**
+ * Subscribes a listener that runs only when the store state object changes.
+ */
+export const subscribeToChanges = (store, listener) => {
+  let lastState = store.getState();
+  store.subscribe(() => {
+    const state = store.getState();
+    if (state === lastState) {
+      return;
+    }
+    lastState = state;
+    listener();
+  });
+};
+
+/**
  * Creates a store enhancer which applies middleware to all dispatched
  * actions.
  */

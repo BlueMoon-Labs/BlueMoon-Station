@@ -1,6 +1,6 @@
 /obj/machinery/cell_charger_multi
 	name = "multi-cell charging rack"
-	desc = "A cell charging rack for multiple batteries."
+	desc = "Батарейная аккумуляторная стойка, вмещающая несколько батарей."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "cchargermulti"
 	use_power = IDLE_POWER_USE
@@ -56,7 +56,7 @@
 	. = ..()
 	if(!user.canUseTopic(src, BE_CLOSE) || !charging_batteries.len)
 		return
-	to_chat(user, span_notice("You press the quick release as all the cells pop out!"))
+	to_chat(user, span_notice("Вы нажали на \"тостерную\" кнопку и все батареи выстрелило наружу!"))
 	for(var/i in charging_batteries)
 		removecell()
 	return TRUE
@@ -64,42 +64,43 @@
 /obj/machinery/cell_charger_multi/examine(mob/user)
 	. = ..()
 	if(!charging_batteries.len)
-		. += "There are no cells in [src]."
+		. += "Внутри [src] нет батарей."
 	else
 		. += "There are [charging_batteries.len] cells in [src]."
 		for(var/obj/item/stock_parts/cell/charging in charging_batteries)
-			. += "There's [charging] cell in the charger, current charge: [round(charging.percent(), 1)]%."
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Charging speed: <b>[recharge_coeff*100]%</b>.")
-	. += span_notice("Alt click it to remove all the cells at once!")
+			. += "[charging] сейчас заряжается, текущий заряд: [round(charging.percent(), 1)]%."
+	. += span_notice("Alt-клик, чтобы извлечь все батареи разом!")
+
+/obj/machinery/cell_charger_multi/examine_display_content()
+	. += "– Скорость заряда: <b>[recharge_coeff*100]%</b>."
 
 /obj/machinery/cell_charger_multi/attackby(obj/item/tool, mob/user, params)
 	if(istype(tool, /obj/item/stock_parts/cell) && !panel_open)
 		if(machine_stat & BROKEN)
-			to_chat(user, span_warning("[src] is broken!"))
+			to_chat(user, span_warning("[src] сломано!"))
 			return
 		if(!anchored)
-			to_chat(user, span_warning("[src] isn't attached to the ground!"))
+			to_chat(user, span_warning("[src] не прикреплено к поверхности!"))
 			return
 		var/obj/item/stock_parts/cell/inserting_cell = tool
 		if(inserting_cell.chargerate <= 0)
-			to_chat(user, span_warning("[inserting_cell] cannot be recharged!"))
+			to_chat(user, span_warning("[inserting_cell] не может заряжаться!"))
 			return
 		if(charging_batteries.len >= 4)
-			to_chat(user, span_warning("[src] is full, and cannot hold anymore cells!"))
+			to_chat(user, span_warning("У [src] кончились слоты под батареи!"))
 			return
 		else
 			var/area/current_area = loc.loc // Gets our locations location, like a dream within a dream
 			if(!isarea(current_area))
 				return
 			if(current_area.power_equip == 0) // There's no APC in this area, don't try to cheat power!
-				to_chat(user, span_warning("[src] blinks red as you try to insert the cell!"))
+				to_chat(user, span_warning("[src] мигает красным при попытке вставить батарею!"))
 				return
 			if(!user.transferItemToLoc(tool,src))
 				return
 
 			charging_batteries += tool
-			user.visible_message(span_notice("[user] inserts a cell into [src]."), span_notice("You insert a cell into [src]."))
+			user.visible_message(span_notice("[user] вставляет батарею в [src]."), span_notice("Вы вставляете батарею в [src]."))
 			update_appearance()
 	else
 		if(!charging_batteries.len && default_deconstruction_screwdriver(user, icon_state, icon_state, tool))
@@ -114,7 +115,7 @@
 	if(!charging_batteries.len)
 		return
 
-	to_chat(user, span_notice("You telekinetically remove [removecell(user)] from [src]."))
+	to_chat(user, span_notice("Вы телекинетически извлекли [removecell(user)] из [src]."))
 
 	return COMPONENT_CANCEL_ATTACK_CHAIN
 
@@ -168,7 +169,7 @@
 	user.put_in_hands(charging)
 	charging.add_fingerprint(user)
 
-	user.visible_message(span_notice("[user] removes [charging] from [src]."), span_notice("You remove [charging] from [src]."))
+	user.visible_message(span_notice("[user] извлекает [charging] из [src]."), span_notice("Вы извлекли [charging] из [src]."))
 
 /obj/machinery/cell_charger_multi/proc/removecell(mob/user)
 	if(!charging_batteries.len)

@@ -1,4 +1,4 @@
-/// Цель не сопротивляется: крит, наручники, оглушение, паралич или сон.
+/// Цель не сопротивляется: крит, наручники, истощение выносливости, оглушение, паралич или сон.
 /proc/hk47_capture_ready(mob/living/victim)
 	if(!isliving(victim) || victim.stat == DEAD)
 		return FALSE
@@ -7,7 +7,7 @@
 	var/mob/living/carbon/carbon_victim = victim
 	if(istype(carbon_victim) && carbon_victim.handcuffed)
 		return TRUE
-	return victim.IsStun() || victim.IsParalyzed() || victim.IsUnconscious() || victim.IsSleeping()
+	return IS_STAMCRIT(victim) || victim.IsStun() || victim.IsParalyzed() || victim.IsUnconscious() || victim.IsSleeping()
 
 /// Капсула захвата HK-47: без выкупа с карго и с коротким возвратом цели. Цель держится слабой ссылкой.
 /datum/ransom_extraction/hk47

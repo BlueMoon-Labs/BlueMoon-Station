@@ -48,7 +48,7 @@
 	else
 		icon_state = "open"
 
-/obj/machinery/door/password/do_animate(animation)
+/obj/machinery/door/password/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("opening", src)

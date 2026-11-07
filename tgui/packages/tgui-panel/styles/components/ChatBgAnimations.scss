@@ -1,441 +1,1370 @@
 /**
- * Chat Background Animations
- * Animated background layer using ::before on the .Chat root node.
- * Applied via CSS classes (Chat--bgAnim-xxx) on .Chat.
- * The ::before extends with negative inset (-0.5rem) to cover the
- * margin area of .Window__contentPadding, filling the entire viewport.
- * Since .Chat grows with content, the animation covers the full
- * scrollable area, not just the visible viewport.
- *
- * IMPORTANT: Each animation MUST use a SINGLE @keyframes that handles
- * all background-position values. Multiple animations targeting the same
- * CSS property do NOT compose — only the last one takes effect.
+ * Фоны чата (Chat--bgAnim-<id> на .Chat).
+ * Рендерер держит первым ребёнком .Chat узел .ChatBg: он липнет к окну
+ * прокрутки и размером с него, а не со всю историю. Внутри три слоя
+ * .ChatBg__layer, у каждого ещё ::before и ::after. Узор рисуется один
+ * раз, двигаются только transform и opacity - это работа композитора,
+ * перерисовки по кадрам нет.
  */
 
-// Short alias for .Chat with any active background animation
+@use 'sass:math';
+
 $bg: '.Chat[class*="Chat--bgAnim-"]';
 
-// ============================================================
-// Base layer setup
-// ============================================================
+.ChatBg {
+  display: none;
+}
 
 #{$bg} {
   position: relative;
   min-height: 100%;
 
-  &::before {
-    content: '';
-    position: absolute;
-    // Extend beyond .Chat bounds to fill the 0.5rem margin
-    // of .Window__contentPadding, covering the full area
-    inset: -0.5rem;
+  > .ChatBg {
+    display: block;
+    position: sticky;
+    top: 0;
     z-index: 0;
+    height: var(--chat-view-h, 100vh);
+    // Не занимает места в потоке и закрывает поля .Window__contentPadding.
+    margin: -0.5rem -0.5rem calc(0.5rem - var(--chat-view-h, 100vh));
+    overflow: hidden;
+    contain: strict;
     pointer-events: none;
     opacity: var(--chat-bg-anim-opacity, 0.5);
-    will-change: background-position, background-size;
   }
 
-  // Elevate all direct children above the animation layer
-  > * {
+  // Контекст на каждом сообщении дешевле, чем isolation на .Chat с фоном
+  // под z-index -1: тот вариант добавлял ~0.9 мс к кадру при 1500 сообщениях.
+  > :not(.ChatBg) {
     position: relative;
     z-index: 1;
   }
 }
 
-// Reduced motion support
+.ChatBg__layer {
+  position: absolute;
+  inset: 0;
+  // Слоям без сдвига (только opacity или вовсе без анимации) ниже
+  // will-change снят: свой слой им даёт сама анимация прозрачности.
+  will-change: transform;
+
+  &::before,
+  &::after {
+    position: absolute;
+    inset: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  #{$bg}::before {
+  .ChatBg__layer,
+  .ChatBg__layer::before,
+  .ChatBg__layer::after {
     animation: none !important;
   }
 }
 
-// ============================================================
-// Animation: Cosmos (Космос)
-// Parallax starfield — distant stars drift slowly,
-// close stars drift faster. Single keyframe for all layers.
-// ============================================================
-
-.Chat.Chat--bgAnim-cosmos::before {
-  background-image:
-    // Distant small stars (slow — small tile)
-    radial-gradient(1px 1px at 10% 25%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
-    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 65% 15%, rgba(200, 220, 255, 0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 85% 55%, rgba(255, 255, 220, 0.7) 0%, transparent 100%),
-    // Mid-distance stars
-    radial-gradient(1.5px 1.5px at 20% 50%, rgba(255, 255, 200, 0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 55% 80%, rgba(200, 200, 255, 0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 80% 20%, rgba(255, 220, 200, 0.6) 0%, transparent 100%),
-    // Near bright stars (fast — large tile)
-    radial-gradient(2px 2px at 30% 40%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
-    radial-gradient(2px 2px at 70% 75%, rgba(200, 220, 255, 0.5) 0%, transparent 100%);
-  background-size:
-    200px 200px, 250px 220px, 220px 250px, 180px 240px,
-    350px 300px, 300px 350px, 320px 280px,
-    500px 450px, 450px 500px;
-  animation: bgAnimCosmos 100s linear infinite;
+// Сдвиг слоя за цикл - целое число плиток ($dx, $dy), стыка не видно.
+// Слой шире окна на половину сдвига с каждой стороны.
+// $pad - запас под собственный сдвиг ::before/::after внутри слоя.
+@mixin tile-layer($w, $h, $dx, $dy, $pad: 2px) {
+  inset: (-(math.div(math.abs($dy), 2) + $pad)) (-(math.div(math.abs($dx), 2) + $pad));
+  background-size: $w $h;
 }
 
-@keyframes bgAnimCosmos {
+// Сдвиг на ($dx, $dy) за повтор, $reps повторов за итерацию. Между
+// повторами слой отскакивает ровно на плитку, этого не видно. Граница
+// итерации будит основной поток, поэтому итерации длинные.
+@mixin drift-keyframes($name, $dx, $dy, $reps: 1, $pre: null) {
+  $from: translate3d(math.div(-$dx, 2), math.div(-$dy, 2), 0);
+  $to: translate3d(math.div($dx, 2), math.div($dy, 2), 0);
+  @if $pre {
+    $from: $pre $from;
+    $to: $pre $to;
+  }
+  @keyframes #{$name} {
+    @for $i from 0 to $reps {
+      #{math.div($i * 100%, $reps)} {
+        transform: $from;
+      }
+      // Скачок строго в одной точке: кадр композитора не попадёт между.
+      #{math.div(($i + 1) * 100%, $reps) - 0.001%} {
+        transform: $to;
+        animation-timing-function: steps(1, end);
+      }
+    }
+    100% {
+      transform: $to;
+    }
+  }
+}
+
+// Цикл кадров $frames (смещение: свойства), повторённый $reps раз.
+@mixin repeat-keyframes($name, $reps, $frames) {
+  @keyframes #{$name} {
+    @for $i from 0 to $reps {
+      @each $offset, $props in $frames {
+        #{math.div($i * 100% + $offset, $reps)} {
+          @each $prop, $value in $props {
+            #{$prop}: $value;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Мягкая точка радиусом $r.
+@function dot($r, $x, $y, $color) {
+  @return radial-gradient($r $r at $x $y, $color 0%, $color 45%, transparent 100%);
+}
+
+// Точка с ярким ядром и ореолом.
+@function glow($r, $x, $y, $core, $halo) {
+  @return radial-gradient($r $r at $x $y, $core 0%, $halo 30%, transparent 100%);
+}
+
+@function streak($rx, $ry, $x, $y, $color, $tail) {
+  @return radial-gradient($rx $ry at $x $y, $color 0%, $tail 45%, transparent 100%);
+}
+
+// Светлые частицы на светлой теме не видны: слой темнеет фильтром (он
+// статичен, кадры по-прежнему ведёт композитор) и приглушается.
+@mixin light-theme-dim($id, $filter, $k: 0.85) {
+  .theme-light .Chat.Chat--bgAnim-#{$id} > .ChatBg {
+    filter: $filter;
+    opacity: calc(var(--chat-bg-anim-opacity, 0.5) * #{$k});
+  }
+}
+
+$L1: '> .ChatBg > .ChatBg__layer--1';
+$L2: '> .ChatBg > .ChatBg__layer--2';
+$L3: '> .ChatBg > .ChatBg__layer--3';
+
+// ============================================================
+// Космос: три пласта звёзд с параллаксом, средний мерцает.
+// ============================================================
+
+.Chat.Chat--bgAnim-cosmos {
+  #{$L1} {
+    @include tile-layer(180px, 180px, -180px, 180px);
+    background-image:
+      dot(1.2px, 12px, 30px, rgba(255, 255, 255, 1)),
+      dot(1.2px, 70px, 112px, rgba(200, 220, 255, 0.96)),
+      dot(1.2px, 128px, 46px, rgba(255, 255, 230, 0.9)),
+      dot(1.2px, 160px, 150px, rgba(255, 255, 255, 0.96)),
+      dot(1.2px, 40px, 166px, rgba(210, 225, 255, 0.84)),
+      dot(1.2px, 100px, 8px, rgba(255, 240, 220, 0.9));
+    animation: bgCosmosFar 120s linear infinite;
+  }
+
+  #{$L2} {
+    @include tile-layer(260px, 260px, -260px, 260px);
+    background-image:
+      dot(1.65px, 30px, 200px, rgba(255, 255, 255, 1)),
+      dot(1.65px, 150px, 40px, rgba(200, 215, 255, 1)),
+      dot(1.65px, 220px, 160px, rgba(255, 235, 210, 0.96)),
+      dot(1.65px, 90px, 110px, rgba(255, 255, 255, 0.9));
+    animation: bgCosmosMid 75s linear infinite;
+
+    &::before,
+    &::after {
+      content: '';
+      background-size: 260px 260px;
+    }
+
+    &::before {
+      background-image:
+        glow(3.6px, 60px, 60px, rgba(255, 255, 255, 1), rgba(190, 210, 255, 0.54)),
+        glow(3px, 200px, 230px, rgba(255, 250, 235, 1), rgba(255, 220, 180, 0.48));
+      animation: bgTwinkle 24.8s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        glow(3.3px, 180px, 90px, rgba(230, 240, 255, 1), rgba(170, 200, 255, 0.54)),
+        glow(2.7px, 110px, 190px, rgba(255, 255, 255, 1), rgba(200, 210, 255, 0.48));
+      animation: bgTwinkle 34.4s ease-in-out -12s infinite;
+    }
+  }
+
+  #{$L3} {
+    @include tile-layer(380px, 380px, -380px, 380px);
+    background-image:
+      glow(3px, 70px, 300px, rgba(255, 255, 255, 1), rgba(200, 215, 255, 0.42)),
+      glow(2.7px, 300px, 120px, rgba(220, 230, 255, 1), rgba(180, 200, 255, 0.36)),
+      glow(2.4px, 200px, 30px, rgba(255, 240, 220, 1), rgba(255, 210, 170, 0.36));
+    animation: bgCosmosNear 48s linear infinite;
+  }
+}
+
+@include drift-keyframes(bgCosmosFar, -180px, 180px);
+@include drift-keyframes(bgCosmosMid, -260px, 260px);
+@include drift-keyframes(bgCosmosNear, -380px, 380px);
+
+@include repeat-keyframes(bgTwinkle, 4, (
+  0%: (opacity: 0.12),
+  50%: (opacity: 1),
+  100%: (opacity: 0.12),
+));
+
+// ============================================================
+// Туманность: три облака газа медленно плывут и дышат.
+// ============================================================
+
+.Chat.Chat--bgAnim-nebula {
+  #{$L1},
+  #{$L2},
+  #{$L3} {
+    inset: -15%;
+  }
+
+  #{$L1} {
+    background-image: radial-gradient(ellipse 42% 36% at 32% 34%,
+      rgba(135, 75, 215, 0.637) 0%, rgba(135, 75, 215, 0.23) 45%, transparent 72%);
+    animation: bgNebulaA 26s ease-in-out infinite alternate;
+  }
+
+  #{$L2} {
+    background-image: radial-gradient(ellipse 40% 44% at 68% 66%,
+      rgba(60, 110, 225, 0.612) 0%, rgba(60, 110, 225, 0.204) 45%, transparent 72%);
+    animation: bgNebulaB 33s ease-in-out -9s infinite alternate;
+  }
+
+  #{$L3} {
+    background-image:
+      radial-gradient(ellipse 34% 26% at 58% 24%,
+        rgba(45, 165, 175, 0.484) 0%, rgba(45, 165, 175, 0.153) 50%, transparent 74%),
+      radial-gradient(ellipse 28% 24% at 22% 78%,
+        rgba(190, 70, 140, 0.408) 0%, rgba(190, 70, 140, 0.128) 50%, transparent 74%);
+    animation: bgNebulaC 21s ease-in-out -4s infinite alternate;
+  }
+}
+
+@keyframes bgNebulaA {
   from {
-    background-position:
-      0 0, 0 0, 0 0, 0 0,
-      0 0, 0 0, 0 0,
-      0 0, 0 0;
+    transform: translate3d(-6%, -4%, 0) scale(1);
   }
   to {
-    background-position:
-      -200px 200px, 250px -220px, -220px -250px, 180px 240px,
-      -350px 300px, 300px -350px, -320px 280px,
-      -500px 450px, 450px -500px;
+    transform: translate3d(7%, 5%, 0) scale(1.18);
   }
 }
 
-// ============================================================
-// Animation: Nebula (Туманность)
-// Vibrant colorful gas clouds drifting and morphing
-// ============================================================
-
-.Chat.Chat--bgAnim-nebula::before {
-  background-image:
-    radial-gradient(ellipse 60% 50% at 20% 30%,
-      rgba(140, 50, 255, 0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 80% 70%,
-      rgba(50, 120, 255, 0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 45% at 50% 50%,
-      rgba(255, 50, 150, 0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 55% at 70% 20%,
-      rgba(50, 220, 200, 0.12) 0%, transparent 70%);
-  background-size: 200% 200%;
-  animation: bgAnimNebula 25s ease-in-out infinite alternate;
-}
-
-@keyframes bgAnimNebula {
-  0% {
-    background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%;
-  }
-  25% {
-    background-position: 40% 60%, 60% 40%, 20% 80%, 60% 50%;
-  }
-  50% {
-    background-position: 80% 30%, 20% 70%, 70% 20%, 40% 80%;
-  }
-  75% {
-    background-position: 60% 80%, 40% 20%, 80% 60%, 20% 40%;
-  }
-  100% {
-    background-position: 100% 100%, 0% 0%, 50% 50%, 20% 70%;
-  }
-}
-
-// ============================================================
-// Animation: Matrix (Матрица)
-// Green falling code lines at different speeds.
-// Each layer moves by its tile height for seamless loop.
-// ============================================================
-
-.Chat.Chat--bgAnim-matrix::before {
-  background-image:
-    // Fast thin lines
-    repeating-linear-gradient(180deg,
-      rgba(0, 255, 70, 0.2) 0px, transparent 3px, transparent 18px),
-    // Medium lines
-    repeating-linear-gradient(180deg,
-      rgba(0, 255, 70, 0.15) 0px, transparent 2px, transparent 28px),
-    // Slow thick lines
-    repeating-linear-gradient(180deg,
-      rgba(0, 200, 100, 0.1) 0px, transparent 4px, transparent 42px);
-  background-size: 18px 60px, 28px 84px, 42px 126px;
-  animation: bgAnimMatrix 3s linear infinite;
-}
-
-@keyframes bgAnimMatrix {
+@keyframes bgNebulaB {
   from {
-    background-position: 0 0, 10px 0, 5px 0;
+    transform: translate3d(5%, 4%, 0) scale(1.12);
   }
   to {
-    background-position: 0 60px, 10px 84px, 5px 126px;
+    transform: translate3d(-6%, -5%, 0) scale(0.94);
+  }
+}
+
+@keyframes bgNebulaC {
+  from {
+    transform: translate3d(0, 6%, 0) rotate(-4deg);
+  }
+  to {
+    transform: translate3d(-4%, -3%, 0) rotate(5deg) scale(1.1);
   }
 }
 
 // ============================================================
-// Animation: Aurora (Аврора)
-// Northern lights — vivid color bands sweeping horizontally
+// Матрица: столбцы зелёных росчерков падают с разной скоростью.
 // ============================================================
 
-.Chat.Chat--bgAnim-aurora::before {
-  background-image:
-    linear-gradient(
-      110deg,
-      transparent 15%,
-      rgba(0, 255, 120, 0.15) 30%,
-      rgba(0, 180, 255, 0.18) 45%,
-      rgba(100, 0, 255, 0.12) 60%,
-      transparent 80%
-    ),
-    linear-gradient(
-      70deg,
-      transparent 20%,
-      rgba(0, 220, 180, 0.12) 35%,
-      rgba(150, 0, 255, 0.15) 50%,
-      rgba(0, 200, 220, 0.1) 65%,
-      transparent 80%
-    );
-  background-size: 300% 100%, 250% 100%;
-  animation: bgAnimAurora 12s ease-in-out infinite alternate;
+$mx-head: rgba(200, 255, 210, 0.95);
+$mx-body: rgba(80, 255, 140, 0.95);
+$mx-tail: rgba(40, 215, 105, 0.4);
+
+.Chat.Chat--bgAnim-matrix {
+  #{$L1} {
+    @include tile-layer(120px, 220px, 0px, 220px);
+    background-image:
+      streak(1.3px, 39px, 12px, 20px, $mx-body, $mx-tail),
+      streak(1.3px, 39px, 36px, 120px, $mx-body, $mx-tail),
+      streak(1.3px, 39px, 60px, 62px, $mx-body, $mx-tail),
+      streak(1.3px, 39px, 84px, 170px, $mx-body, $mx-tail),
+      streak(1.3px, 39px, 108px, 92px, $mx-body, $mx-tail);
+    animation: bgMatrixNear 10.8s linear infinite;
+
+    &::before {
+      content: '';
+      background-size: 120px 220px;
+      background-image:
+        dot(1.95px, 12px, 50px, $mx-head),
+        dot(1.95px, 36px, 150px, $mx-head),
+        dot(1.95px, 60px, 92px, $mx-head),
+        dot(1.95px, 84px, 200px, $mx-head),
+        dot(1.95px, 108px, 122px, $mx-head);
+      animation: bgTwinkle 7.2s ease-in-out infinite;
+    }
+  }
+
+  #{$L2} {
+    @include tile-layer(100px, 300px, 0px, 300px);
+    background-image:
+      streak(1.3px, 52px, 22px, 50px, rgba(70, 240, 120, 0.7), rgba(40, 200, 100, 0.21)),
+      streak(1.3px, 52px, 48px, 210px, rgba(70, 240, 120, 0.7), rgba(40, 200, 100, 0.21)),
+      streak(1.3px, 52px, 74px, 130px, rgba(70, 240, 120, 0.7), rgba(40, 200, 100, 0.21)),
+      streak(1.3px, 52px, 96px, 270px, rgba(70, 240, 120, 0.7), rgba(40, 200, 100, 0.21));
+    animation: bgMatrixMid 9.6s linear infinite;
+  }
+
+  #{$L3} {
+    @include tile-layer(140px, 360px, 0px, 360px);
+    background-image:
+      streak(1.82px, 70.2px, 18px, 80px, rgba(60, 220, 110, 0.42), rgba(40, 180, 90, 0.14)),
+      streak(1.82px, 70.2px, 64px, 250px, rgba(60, 220, 110, 0.42), rgba(40, 180, 90, 0.14)),
+      streak(1.82px, 70.2px, 110px, 170px, rgba(60, 220, 110, 0.42), rgba(40, 180, 90, 0.14));
+    animation: bgMatrixFar 11s linear infinite;
+  }
 }
 
-@keyframes bgAnimAurora {
+@include drift-keyframes(bgMatrixNear, 0px, 220px, 6);
+@include drift-keyframes(bgMatrixMid, 0px, 300px, 3);
+@include drift-keyframes(bgMatrixFar, 0px, 360px, 2);
+
+// ============================================================
+// Аврора: занавеси сияния колышутся под потолком.
+// ============================================================
+
+.Chat.Chat--bgAnim-aurora {
+  #{$L1},
+  #{$L2} {
+    inset: 0 -60%;
+    mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.825) 45%, transparent 88%);
+  }
+
+  #{$L1} {
+    background-image: linear-gradient(100deg, transparent 18%,
+      rgba(60, 230, 150, 0.63) 31%, rgba(50, 190, 215, 0.54) 43%, transparent 57%);
+    animation: bgAuroraA 15s ease-in-out infinite alternate;
+  }
+
+  #{$L2} {
+    background-image: linear-gradient(75deg, transparent 26%,
+      rgba(125, 95, 225, 0.48) 40%, rgba(60, 205, 170, 0.45) 52%, transparent 66%);
+    animation: bgAuroraB 22s ease-in-out -8s infinite alternate;
+  }
+
+  #{$L3} {
+    will-change: auto;
+    background-image: radial-gradient(ellipse 75% 32% at 50% 0%,
+      rgba(60, 220, 160, 0.45) 0%, transparent 72%);
+    animation: bgBreathe 56s ease-in-out infinite;
+  }
+}
+
+@keyframes bgAuroraA {
+  from {
+    transform: translate3d(-18%, 0, 0) skewX(-8deg);
+  }
+  to {
+    transform: translate3d(14%, 0, 0) skewX(10deg);
+  }
+}
+
+@keyframes bgAuroraB {
+  from {
+    transform: translate3d(16%, 0, 0) skewX(12deg);
+  }
+  to {
+    transform: translate3d(-12%, 0, 0) skewX(-6deg);
+  }
+}
+
+@include repeat-keyframes(bgBreathe, 4, (
+  0%: (opacity: 0.4),
+  50%: (opacity: 1),
+  100%: (opacity: 0.4),
+));
+
+// ============================================================
+// Пульс: свечение в центре дышит, от него расходится кольцо.
+// ============================================================
+
+.Chat.Chat--bgAnim-pulse {
+  #{$L1} {
+    background-image: radial-gradient(circle closest-side at 50% 50%,
+      rgba(100, 150, 255, 0.825) 0%, rgba(100, 150, 255, 0.33) 45%, transparent 100%);
+    animation: bgPulseCore 21.6s ease-in-out infinite;
+  }
+
+  #{$L2} {
+    background-image: radial-gradient(circle closest-side at 50% 50%,
+      transparent 60%, rgba(130, 175, 255, 0.75) 67%, transparent 75%);
+    opacity: 0;
+    animation: bgPulseRing 14.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+}
+
+@include repeat-keyframes(bgPulseCore, 3, (
+  0%: (opacity: 0.45, transform: scale(0.55)),
+  50%: (opacity: 1, transform: scale(1.25)),
+  100%: (opacity: 0.45, transform: scale(0.55)),
+));
+
+@include repeat-keyframes(bgPulseRing, 2, (
+  0%: (opacity: 0, transform: scale(0.25)),
+  12%: (opacity: 0.9),
+  99.9%: (opacity: 0, transform: scale(1.7)),
+));
+
+// ============================================================
+// Волны: два набора полос идут навстречу, поверх ходит зыбь.
+// Сдвиг за цикл - ровно период полос вдоль их нормали.
+// ============================================================
+
+.Chat.Chat--bgAnim-waves {
+  #{$L1},
+  #{$L2} {
+    inset: -70px;
+  }
+
+  #{$L1} {
+    background-image: repeating-linear-gradient(172deg,
+      transparent 0 9.903px, rgba(45, 165, 235, 0.26) 18.815px,
+      transparent 27.727px 37.63px);
+    animation: bgWavesA 12s linear infinite;
+  }
+
+  #{$L2} {
+    background-image: repeating-linear-gradient(186deg,
+      transparent 0 15.912px, rgba(30, 120, 215, 0.223) 25.858px,
+      transparent 35.803px 51.715px);
+    animation: bgWavesB 9s linear infinite;
+  }
+
+  #{$L3} {
+    inset: -20%;
+    background-image: radial-gradient(ellipse 80% 38% at 50% 55%,
+      rgba(45, 155, 230, 0.186) 0%, transparent 70%);
+    animation: bgWavesSwell 8s ease-in-out infinite alternate;
+  }
+}
+
+// Полосы почти горизонтальные и идут навстречу ровно на 38px вниз и 52px
+// вверх: период полос - эти сдвиги, умноженные на cos 8deg и cos 6deg.
+// Целый сдвиг в пикселях не даёт скачка растра на границе цикла.
+@include drift-keyframes(bgWavesA, 0px, 38px, 2);
+@include drift-keyframes(bgWavesB, 0px, -52px);
+
+@keyframes bgWavesSwell {
+  from {
+    transform: translate3d(-4%, -12%, 0);
+  }
+  to {
+    transform: translate3d(4%, 12%, 0);
+  }
+}
+
+// ============================================================
+// Светлячки: две стайки кружат, огоньки разгораются и гаснут.
+// ============================================================
+
+$ff-core: rgba(255, 240, 160, 1);
+$ff-halo: rgba(255, 210, 80, 0.6);
+$ff-green: rgba(215, 255, 150, 1);
+$ff-green-halo: rgba(170, 240, 90, 0.55);
+
+.Chat.Chat--bgAnim-fireflies {
+  #{$L1},
+  #{$L2} {
+    inset: -50px;
+
+    &::before,
+    &::after {
+      content: '';
+    }
+  }
+
+  #{$L1} {
+    animation: bgFirefliesPathA 19s ease-in-out infinite alternate;
+
+    &::before,
+    &::after {
+      background-size: 300px 300px;
+    }
+
+    &::before {
+      background-image:
+        glow(7.5px, 40px, 60px, $ff-core, $ff-halo),
+        glow(6px, 210px, 140px, $ff-core, $ff-halo),
+        glow(7.5px, 120px, 250px, $ff-core, $ff-halo),
+        glow(6px, 270px, 220px, $ff-green, $ff-green-halo);
+      animation: bgFireflyGlow 16.8s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        glow(6px, 260px, 30px, $ff-core, $ff-halo),
+        glow(7.5px, 80px, 180px, $ff-green, $ff-green-halo),
+        glow(6px, 170px, 90px, $ff-core, $ff-halo),
+        glow(6.5px, 20px, 280px, $ff-core, $ff-halo);
+      animation: bgFireflyGlow 22.2s ease-in-out -2.6s infinite;
+    }
+  }
+
+  #{$L2} {
+    animation: bgFirefliesPathB 26s ease-in-out -7s infinite alternate;
+
+    &::before,
+    &::after {
+      background-size: 420px 380px;
+    }
+
+    &::before {
+      background-image:
+        glow(6px, 60px, 300px, $ff-core, $ff-halo),
+        glow(7.5px, 330px, 70px, $ff-green, $ff-green-halo),
+        glow(6px, 250px, 230px, $ff-core, $ff-halo);
+      animation: bgFireflyGlow 19.8s ease-in-out -1.2s infinite;
+    }
+
+    &::after {
+      background-image:
+        glow(7.5px, 150px, 140px, $ff-core, $ff-halo),
+        glow(6px, 390px, 330px, $ff-green, $ff-green-halo);
+      animation: bgFireflyGlow 27.6s ease-in-out -4.4s infinite;
+    }
+  }
+}
+
+@keyframes bgFirefliesPathA {
   0% {
-    background-position: 0% 0%, 100% 0%;
-  }
-  100% {
-    background-position: 100% 0%, 0% 0%;
-  }
-}
-
-// ============================================================
-// Animation: Pulse (Пульс)
-// Breathing radial glow expanding and contracting from center
-// ============================================================
-
-.Chat.Chat--bgAnim-pulse::before {
-  background-image:
-    radial-gradient(circle at 50% 50%,
-      rgba(100, 140, 255, 0.35) 0%,
-      rgba(100, 140, 255, 0.15) 20%,
-      rgba(100, 140, 255, 0.05) 40%,
-      transparent 60%);
-  background-repeat: no-repeat;
-  background-position: center;
-  animation: bgAnimPulse 5s ease-in-out infinite;
-}
-
-@keyframes bgAnimPulse {
-  0%, 100% {
-    background-size: 50% 50%;
-  }
-  50% {
-    background-size: 200% 200%;
-  }
-}
-
-// ============================================================
-// Animation: Waves (Волны)
-// Flowing diagonal wave bands
-// ============================================================
-
-.Chat.Chat--bgAnim-waves::before {
-  background-image:
-    repeating-linear-gradient(
-      135deg,
-      transparent 0%,
-      rgba(0, 150, 220, 0.12) 5%,
-      transparent 10%
-    ),
-    repeating-linear-gradient(
-      135deg,
-      transparent 0%,
-      rgba(0, 100, 200, 0.08) 3%,
-      transparent 6%
-    );
-  background-size: 200% 200%, 150% 150%;
-  animation: bgAnimWaves 10s ease-in-out infinite alternate;
-}
-
-@keyframes bgAnimWaves {
-  0% {
-    background-position: 0% 0%, 100% 100%;
-  }
-  100% {
-    background-position: 100% 100%, 0% 0%;
-  }
-}
-
-// ============================================================
-// Animation: Fireflies (Светлячки)
-// Warm floating dots drifting in organic paths
-// ============================================================
-
-.Chat.Chat--bgAnim-fireflies::before {
-  background-image:
-    radial-gradient(3px 3px at 15% 25%,
-      rgba(255, 220, 100, 0.8) 0%, transparent 100%),
-    radial-gradient(2px 2px at 40% 70%,
-      rgba(255, 200, 50, 0.7) 0%, transparent 100%),
-    radial-gradient(3px 3px at 65% 15%,
-      rgba(200, 255, 100, 0.7) 0%, transparent 100%),
-    radial-gradient(2px 2px at 85% 55%,
-      rgba(255, 230, 120, 0.8) 0%, transparent 100%),
-    radial-gradient(2px 2px at 25% 85%,
-      rgba(255, 200, 80, 0.6) 0%, transparent 100%),
-    radial-gradient(3px 3px at 50% 45%,
-      rgba(200, 255, 150, 0.6) 0%, transparent 100%),
-    radial-gradient(2px 2px at 75% 80%,
-      rgba(255, 240, 100, 0.7) 0%, transparent 100%);
-  background-size:
-    300px 300px, 250px 350px, 350px 250px,
-    200px 400px, 400px 200px, 330px 280px, 280px 330px;
-  animation: bgAnimFireflies 30s ease-in-out infinite alternate;
-}
-
-@keyframes bgAnimFireflies {
-  0% {
-    background-position:
-      0 0, 50px 20px, -30px 40px,
-      20px -10px, -20px 30px, 10px -15px, -15px 25px;
+    transform: translate3d(-30px, 20px, 0);
   }
   33% {
-    background-position:
-      80px -60px, -40px 80px, 60px -30px,
-      -50px 70px, 70px -40px, -60px 55px, 45px -50px;
+    transform: translate3d(25px, -30px, 0);
   }
   66% {
-    background-position:
-      -50px 70px, 60px -40px, -45px 65px,
-      70px -55px, -60px 60px, 50px -45px, -40px 55px;
+    transform: translate3d(-15px, -10px, 0);
   }
   100% {
-    background-position:
-      -60px 80px, 70px -50px, -40px 70px,
-      60px -60px, -50px 80px, 55px -60px, -35px 65px;
+    transform: translate3d(30px, 25px, 0);
   }
 }
 
-// ============================================================
-// Animation: Sakura Petals (Лепестки)
-// Pink spots drifting diagonally downward
-// ============================================================
-
-.Chat.Chat--bgAnim-sakura::before {
-  background-image:
-    radial-gradient(4px 3px at 20% 30%,
-      rgba(255, 180, 200, 0.7) 0%, transparent 100%),
-    radial-gradient(3px 4px at 45% 10%,
-      rgba(255, 150, 180, 0.6) 0%, transparent 100%),
-    radial-gradient(3px 3px at 70% 50%,
-      rgba(255, 200, 210, 0.6) 0%, transparent 100%),
-    radial-gradient(4px 3px at 90% 20%,
-      rgba(255, 160, 190, 0.5) 0%, transparent 100%),
-    radial-gradient(3px 4px at 10% 70%,
-      rgba(255, 180, 200, 0.6) 0%, transparent 100%),
-    radial-gradient(3px 3px at 55% 85%,
-      rgba(255, 150, 170, 0.5) 0%, transparent 100%);
-  background-size:
-    250px 300px, 300px 250px, 200px 350px,
-    350px 280px, 280px 320px, 320px 260px;
-  animation: bgAnimSakura 36s linear infinite;
-}
-
-@keyframes bgAnimSakura {
-  from {
-    background-position:
-      0 0, 0 0, 0 0,
-      0 0, 0 0, 0 0;
+@keyframes bgFirefliesPathB {
+  0% {
+    transform: translate3d(25px, -20px, 0);
   }
-  to {
-    background-position:
-      250px 600px, 300px 500px, 200px 700px,
-      350px 560px, 280px 640px, 320px 520px;
+  40% {
+    transform: translate3d(-35px, 15px, 0);
+  }
+  70% {
+    transform: translate3d(10px, 35px, 0);
+  }
+  100% {
+    transform: translate3d(-25px, -30px, 0);
   }
 }
 
+@include repeat-keyframes(bgFireflyGlow, 3, (
+  0%: (opacity: 0.18, transform: translate3d(-8px, 6px, 0)),
+  50%: (opacity: 1, transform: translate3d(8px, -6px, 0)),
+  100%: (opacity: 0.18, transform: translate3d(-8px, 6px, 0)),
+));
+
 // ============================================================
-// Animation: Gradient (Градиент)
-// Slowly shifting rainbow color gradient
+// Лепестки, снег, пепел: слой несёт хлопья по ветру, ::before и
+// ::after внутри раскачивают свои наборы не в такт.
 // ============================================================
 
-.Chat.Chat--bgAnim-gradient::before {
-  background: linear-gradient(
-    45deg,
-    rgba(255, 0, 100, 0.15),
-    rgba(255, 160, 0, 0.15),
-    rgba(0, 255, 150, 0.15),
-    rgba(0, 100, 255, 0.15),
-    rgba(150, 0, 255, 0.15),
-    rgba(255, 0, 100, 0.15)
-  );
-  background-size: 400% 400%;
-  animation: bgAnimGradient 15s ease infinite;
+// Наборы качаются до 16px, запас 20px держит края окна закрытыми.
+@mixin flakes($w, $h, $dx, $dy) {
+  @include tile-layer($w, $h, $dx, $dy, 20px);
+  background-size: auto;
+
+  &::before,
+  &::after {
+    content: '';
+    background-size: $w $h;
+  }
 }
 
-@keyframes bgAnimGradient {
-  0%, 100% {
-    background-position: 0% 50%;
+$petal: rgba(255, 190, 210, 0.95);
+$petal-edge: rgba(255, 155, 185, 0.7);
+
+.Chat.Chat--bgAnim-sakura {
+  #{$L1} {
+    @include flakes(240px, 280px, 240px, 560px);
+    animation: bgSakuraNear 26s linear infinite;
+
+    &::before {
+      background-image:
+        streak(5.85px, 3.38px, 40px, 60px, $petal, $petal-edge),
+        streak(5.2px, 3.12px, 170px, 150px, $petal, $petal-edge),
+        streak(5.85px, 3.64px, 100px, 240px, $petal, $petal-edge);
+      animation: bgSwayX 20.4s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        streak(3.38px, 5.72px, 210px, 40px, $petal, $petal-edge),
+        streak(3.12px, 5.2px, 70px, 180px, $petal, $petal-edge);
+      animation: bgSwayX 24.6s ease-in-out -4s infinite;
+    }
   }
+
+  #{$L2} {
+    @include flakes(180px, 210px, 180px, 420px);
+    animation: bgSakuraFar 34s linear infinite;
+
+    &::before {
+      background-image:
+        streak(3.9px, 2.34px, 30px, 120px, rgba(255, 180, 200, 0.91), rgba(255, 150, 180, 0.455)),
+        streak(2.34px, 3.9px, 130px, 30px, rgba(255, 180, 200, 0.91), rgba(255, 150, 180, 0.455)),
+        streak(3.9px, 2.34px, 150px, 180px, rgba(255, 180, 200, 0.91), rgba(255, 150, 180, 0.455));
+      animation: bgSwayXSmall 18s ease-in-out -2s infinite;
+    }
+  }
+}
+
+@include drift-keyframes(bgSakuraNear, 240px, 560px);
+@include drift-keyframes(bgSakuraFar, 180px, 420px);
+
+@include repeat-keyframes(bgSwayX, 3, (
+  0%: (transform: translate3d(-16px, 0, 0)),
+  50%: (transform: translate3d(16px, 0, 0)),
+  100%: (transform: translate3d(-16px, 0, 0)),
+));
+
+@include repeat-keyframes(bgSwayXSmall, 3, (
+  0%: (transform: translate3d(-9px, 0, 0)),
+  50%: (transform: translate3d(9px, 0, 0)),
+  100%: (transform: translate3d(-9px, 0, 0)),
+));
+
+$flake: rgba(255, 255, 255, 1);
+
+.Chat.Chat--bgAnim-snow {
+  #{$L1} {
+    @include flakes(230px, 230px, 230px, 690px);
+    animation: bgSnowNear 30s linear infinite;
+
+    &::before {
+      background-image:
+        dot(4.06px, 30px, 50px, $flake),
+        dot(3.38px, 160px, 120px, $flake),
+        dot(4.39px, 90px, 200px, $flake);
+      animation: bgSwayX 27.6s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        dot(3.38px, 200px, 20px, rgba(230, 240, 255, 1)),
+        dot(3.72px, 60px, 150px, rgba(230, 240, 255, 1));
+      animation: bgSwayXSmall 21s ease-in-out -2.4s infinite;
+    }
+  }
+
+  #{$L2} {
+    @include flakes(150px, 150px, 150px, 450px);
+    animation: bgSnowMid 40s linear infinite;
+
+    &::before {
+      background-image:
+        dot(2.54px, 20px, 30px, rgba(235, 242, 255, 1)),
+        dot(2.2px, 100px, 80px, rgba(235, 242, 255, 1)),
+        dot(2.54px, 60px, 130px, rgba(235, 242, 255, 1));
+      animation: bgSwayXSmall 18.6s ease-in-out -4s infinite;
+    }
+  }
+
+  #{$L3} {
+    @include tile-layer(110px, 110px, 0px, 330px);
+    background-image:
+      dot(1.52px, 20px, 70px, rgba(220, 232, 245, 0.858)),
+      dot(1.52px, 80px, 20px, rgba(220, 232, 245, 0.858));
+    animation: bgSnowFar 45s linear infinite;
+  }
+}
+
+@include light-theme-dim('snow', brightness(0.35));
+
+@include drift-keyframes(bgSnowNear, 230px, 690px);
+@include drift-keyframes(bgSnowMid, 150px, 450px);
+@include drift-keyframes(bgSnowFar, 0px, 330px);
+
+// Пепел Лаваленда: ветер несёт вбок, хлопья вздрагивают.
+.Chat.Chat--bgAnim-ash {
+  #{$L1} {
+    @include flakes(200px, 200px, -400px, 200px);
+    animation: bgAshNear 30s linear infinite;
+
+    &::before {
+      background-image:
+        streak(5.58px, 3.81px, 40px, 50px, rgba(180, 170, 160, 1), rgba(160, 150, 140, 0.913)),
+        streak(4.05px, 5.07px, 150px, 110px, rgba(165, 155, 145, 1), rgba(150, 140, 130, 0.811)),
+        streak(6.09px, 3.56px, 90px, 170px, rgba(190, 140, 105, 1), rgba(170, 120, 90, 0.71));
+      animation: bgFlutter 16.2s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        streak(4.56px, 3.56px, 180px, 20px, rgba(170, 162, 154, 1), rgba(150, 142, 134, 0.811)),
+        streak(5.07px, 4.05px, 20px, 140px, rgba(150, 143, 136, 1), rgba(140, 133, 126, 0.811));
+      animation: bgFlutter 21.6s ease-in-out -3s infinite;
+    }
+  }
+
+  #{$L2} {
+    @include flakes(140px, 140px, -280px, 140px);
+    animation: bgAshMid 38s linear infinite;
+
+    &::before {
+      background-image:
+        dot(3.04px, 30px, 40px, rgba(160, 152, 144, 1)),
+        dot(2.79px, 100px, 100px, rgba(150, 140, 130, 1));
+      animation: bgFlutter 18.6s ease-in-out -1.6s infinite;
+    }
+  }
+
+  #{$L3} {
+    @include flakes(260px, 260px, -520px, 260px);
+    animation: bgAshEmbers 24s linear infinite;
+
+    &::before {
+      background-image:
+        glow(4.05px, 60px, 200px, rgba(255, 170, 90, 1), rgba(220, 110, 50, 0.811)),
+        glow(3.56px, 210px, 70px, rgba(255, 150, 80, 1), rgba(220, 100, 40, 0.71));
+      animation: bgTwinkle 13.6s ease-in-out infinite;
+    }
+  }
+}
+
+@include drift-keyframes(bgAshNear, -400px, 200px);
+@include drift-keyframes(bgAshMid, -280px, 140px);
+@include drift-keyframes(bgAshEmbers, -520px, 260px);
+
+@include repeat-keyframes(bgFlutter, 3, (
+  0%: (transform: translate3d(0, -9px, 0)),
+  50%: (transform: translate3d(0, 9px, 0)),
+  100%: (transform: translate3d(0, -9px, 0)),
+));
+
+// ============================================================
+// Дождь: косые струи двух скоростей. Наклон задан поворотом слоя.
+// ============================================================
+
+.Chat.Chat--bgAnim-rain {
+  #{$L1},
+  #{$L2},
+  #{$L3} {
+    inset: -35%;
+  }
+
+  #{$L1} {
+    background-size: 54px 130px;
+    background-image:
+      streak(1.04px, 22.1px, 8px, 20px, rgba(175, 215, 255, 1), rgba(150, 200, 255, 0.42)),
+      streak(1.04px, 22.1px, 30px, 85px, rgba(175, 215, 255, 1), rgba(150, 200, 255, 0.42)),
+      streak(1.04px, 22.1px, 46px, 50px, rgba(175, 215, 255, 1), rgba(150, 200, 255, 0.42));
+    animation: bgRainNear 10.08s linear infinite;
+  }
+
+  #{$L2} {
+    background-size: 36px 90px;
+    background-image:
+      streak(0.78px, 14.3px, 6px, 10px, rgba(160, 200, 250, 0.7), rgba(140, 190, 250, 0.28)),
+      streak(0.78px, 14.3px, 24px, 60px, rgba(160, 200, 250, 0.7), rgba(140, 190, 250, 0.28));
+    animation: bgRainMid 9.8s linear infinite;
+  }
+
+  #{$L3} {
+    background-size: 24px 60px;
+    background-image:
+      streak(0.65px, 9.1px, 6px, 14px, rgba(150, 190, 240, 0.448), rgba(130, 180, 240, 0.168)),
+      streak(0.65px, 9.1px, 18px, 44px, rgba(150, 190, 240, 0.448), rgba(130, 180, 240, 0.168));
+    animation: bgRainFar 9.5s linear infinite;
+  }
+}
+
+@include drift-keyframes(bgRainNear, 0px, 130px, 24, rotate(12deg));
+@include drift-keyframes(bgRainMid, 0px, 90px, 14, rotate(12deg));
+@include drift-keyframes(bgRainFar, 0px, 60px, 10, rotate(12deg));
+
+// ============================================================
+// Угольки: искры поднимаются и вспыхивают, снизу тянет жаром.
+// ============================================================
+
+$ember-core: rgba(255, 205, 130, 1);
+$ember-halo: rgba(255, 120, 40, 0.7);
+
+.Chat.Chat--bgAnim-embers {
+  #{$L1} {
+    @include flakes(240px, 320px, 0px, -320px);
+    animation: bgEmbersNear 9s linear infinite;
+
+    &::before {
+      background-image:
+        glow(4.68px, 40px, 280px, $ember-core, $ember-halo),
+        glow(3.9px, 150px, 200px, $ember-core, $ember-halo),
+        glow(5.07px, 100px, 90px, $ember-core, $ember-halo),
+        glow(3.9px, 210px, 30px, $ember-core, $ember-halo),
+        glow(4.29px, 20px, 150px, $ember-core, $ember-halo),
+        glow(3.64px, 180px, 250px, $ember-core, $ember-halo);
+      animation: bgEmberFlicker 9.2s ease-in-out infinite;
+    }
+
+    &::after {
+      background-image:
+        glow(4.29px, 190px, 300px, $ember-core, $ember-halo),
+        glow(3.9px, 70px, 160px, $ember-core, $ember-halo),
+        glow(4.68px, 230px, 120px, $ember-core, $ember-halo),
+        glow(3.9px, 120px, 40px, $ember-core, $ember-halo),
+        glow(3.64px, 60px, 240px, $ember-core, $ember-halo);
+      animation: bgEmberFlicker 12.4s ease-in-out -5.6s infinite reverse;
+    }
+  }
+
+  #{$L2} {
+    @include flakes(170px, 230px, 0px, -230px);
+    animation: bgEmbersFar 14s linear infinite;
+
+    &::before {
+      background-image:
+        glow(2.93px, 30px, 200px, rgba(255, 190, 120, 1), rgba(240, 110, 40, 0.49)),
+        glow(2.73px, 120px, 90px, rgba(255, 190, 120, 1), rgba(240, 110, 40, 0.49)),
+        glow(2.93px, 80px, 20px, rgba(255, 190, 120, 1), rgba(240, 110, 40, 0.49));
+      animation: bgEmberFlicker 7.6s ease-in-out -2.8s infinite;
+    }
+  }
+
+  #{$L3} {
+    will-change: auto;
+    background-image: linear-gradient(0deg, rgba(255, 110, 40, 0.42), transparent 45%);
+    animation: bgBreathe 32s ease-in-out infinite;
+  }
+}
+
+@include drift-keyframes(bgEmbersNear, 0px, -320px);
+@include drift-keyframes(bgEmbersFar, 0px, -230px);
+
+@include repeat-keyframes(bgEmberFlicker, 4, (
+  0%: (opacity: 0.55, transform: translate3d(-10px, 0, 0)),
+  30%: (opacity: 1),
+  55%: (opacity: 0.7, transform: translate3d(9px, 0, 0)),
+  80%: (opacity: 0.95),
+  100%: (opacity: 0.55, transform: translate3d(-10px, 0, 0)),
+));
+
+// ============================================================
+// Гиперпространство: росчерки трёх скоростей летят мимо.
+// ============================================================
+
+.Chat.Chat--bgAnim-hyperspace {
+  #{$L1} {
+    @include tile-layer(480px, 120px, -480px, 0px);
+    background-image:
+      streak(90px, 1px, 60px, 14px, rgba(205, 222, 255, 1), rgba(150, 180, 230, 0.49)),
+      streak(90px, 1px, 300px, 40px, rgba(205, 222, 255, 1), rgba(150, 180, 230, 0.49)),
+      streak(70px, 1px, 160px, 72px, rgba(205, 222, 255, 1), rgba(150, 180, 230, 0.49)),
+      streak(90px, 1px, 420px, 102px, rgba(205, 222, 255, 1), rgba(150, 180, 230, 0.49));
+    animation: bgHyperNear 10.8s linear infinite;
+  }
+
+  #{$L2} {
+    @include tile-layer(360px, 90px, -360px, 0px);
+    background-image:
+      streak(50px, 1px, 40px, 10px, rgba(170, 195, 235, 0.84), rgba(140, 170, 220, 0.35)),
+      streak(50px, 1px, 230px, 32px, rgba(170, 195, 235, 0.84), rgba(140, 170, 220, 0.35)),
+      streak(40px, 1px, 120px, 56px, rgba(170, 195, 235, 0.84), rgba(140, 170, 220, 0.35)),
+      streak(50px, 1px, 310px, 78px, rgba(170, 195, 235, 0.84), rgba(140, 170, 220, 0.35));
+    animation: bgHyperMid 11.2s linear infinite;
+  }
+
+  #{$L3} {
+    @include tile-layer(260px, 60px, -260px, 0px);
+    background-image:
+      streak(26px, 0.8px, 30px, 8px, rgba(150, 180, 225, 0.63), rgba(130, 160, 210, 0.252)),
+      streak(26px, 0.8px, 170px, 28px, rgba(150, 180, 225, 0.63), rgba(130, 160, 210, 0.252)),
+      streak(22px, 0.8px, 90px, 48px, rgba(150, 180, 225, 0.63), rgba(130, 160, 210, 0.252));
+    animation: bgHyperFar 11s linear infinite;
+  }
+}
+
+@include light-theme-dim('hyperspace', brightness(0.35) saturate(1.5));
+
+@include drift-keyframes(bgHyperNear, -480px, 0px, 12);
+@include drift-keyframes(bgHyperMid, -360px, 0px, 8);
+@include drift-keyframes(bgHyperFar, -260px, 0px, 5);
+
+// ============================================================
+// Помехи ЭЛТ: строки развёртки дрожат, по трубке катится полоса,
+// изредка проскакивает срыв строки.
+// ============================================================
+
+.Chat.Chat--bgAnim-crtnoise {
+  #{$L1} {
+    will-change: auto;
+    background-image: repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.18) 0 1px, transparent 1px 3px);
+    animation: bgCrtFlicker 8.8s linear infinite;
+  }
+
+  #{$L2} {
+    inset: 0 0 auto;
+    height: 22%;
+    background-image: linear-gradient(180deg,
+      transparent, rgba(255, 255, 255, 0.27) 50%, transparent);
+    animation: bgCrtRoll 11s linear infinite;
+  }
+
+  // Срыв - черта сверху слоя высотой с окно чата: проценты сдвига
+  // считаются от этой высоты, а не от всей панели.
+  #{$L3} {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6));
+    background-size: 100% 3px;
+    background-repeat: no-repeat;
+    opacity: 0;
+    animation: bgCrtTear 7.3s linear infinite;
+  }
+}
+
+// Строки развёртки на светлой трубке - тёмные.
+@include light-theme-dim('crtnoise', brightness(0), 0.6);
+
+@include repeat-keyframes(bgCrtFlicker, 4, (
+  0%: (opacity: 0.75),
+  7%: (opacity: 0.95),
+  9%: (opacity: 0.68),
+  23%: (opacity: 1),
+  41%: (opacity: 0.8),
+  43%: (opacity: 1),
+  70%: (opacity: 0.85),
+  100%: (opacity: 0.75),
+));
+
+@keyframes bgCrtRoll {
+  0%,
   50% {
-    background-position: 100% 50%;
+    transform: translate3d(0, -100%, 0);
+  }
+  49.999%,
+  100% {
+    transform: translate3d(0, 560%, 0);
+  }
+}
+
+@keyframes bgCrtTear {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translate3d(0, 28%, 0);
+  }
+  31% {
+    opacity: 1;
+    transform: translate3d(-6px, 28%, 0);
+  }
+  33%,
+  73% {
+    opacity: 0;
+    transform: translate3d(0, 64%, 0);
+  }
+  74% {
+    opacity: 0.8;
+    transform: translate3d(5px, 64%, 0);
+  }
+  76%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 28%, 0);
   }
 }
 
 // ============================================================
-// Animation: Rain (Дождь)
-// Diagonal falling rain streaks at two speeds
+// Метеоры: над неподвижными звёздами раз в несколько секунд
+// пролетает росчерк.
 // ============================================================
 
-.Chat.Chat--bgAnim-rain::before {
-  background-image:
-    // Fast thin rain
-    repeating-linear-gradient(
-      105deg,
-      rgba(150, 200, 255, 0.18) 0px,
-      transparent 1px,
-      transparent 10px
-    ),
-    // Slow wider rain
-    repeating-linear-gradient(
-      100deg,
-      rgba(150, 200, 255, 0.12) 0px,
-      transparent 2px,
-      transparent 18px
-    );
-  background-size: 30px 30px, 54px 54px;
-  animation: bgAnimRain 1.5s linear infinite;
+.Chat.Chat--bgAnim-meteors {
+  --bg-met-rgb: 255, 238, 214;
+
+  #{$L1},
+  #{$L2} {
+    &::before,
+    &::after {
+      inset: auto;
+      width: 170px;
+      height: 2px;
+      border-radius: 1px;
+      background-image: linear-gradient(90deg, transparent,
+        rgba(var(--bg-met-rgb), 0.25) 45%, rgba(var(--bg-met-rgb), 1));
+      transform-origin: 100% 50%;
+      opacity: 0;
+    }
+  }
+
+  #{$L1}::before {
+    content: '';
+    left: 6%;
+    top: 10%;
+    animation: bgMeteor 12s linear infinite;
+  }
+
+  #{$L1}::after {
+    content: '';
+    left: 46%;
+    top: 4%;
+    animation: bgMeteor 12s linear -4.2s infinite;
+  }
+
+  #{$L2}::before {
+    content: '';
+    left: 18%;
+    top: 42%;
+    animation: bgMeteor 12s linear -8.1s infinite;
+  }
+
+  #{$L3} {
+    will-change: auto;
+    background-size: 220px 220px;
+    background-image:
+      dot(1.04px, 30px, 40px, rgba(var(--bg-met-rgb), 0.7)),
+      dot(1.04px, 150px, 90px, rgba(var(--bg-met-rgb), 0.6)),
+      dot(1.3px, 90px, 180px, rgba(var(--bg-met-rgb), 0.7)),
+      dot(1.04px, 200px, 150px, rgba(var(--bg-met-rgb), 0.5));
+  }
 }
 
-@keyframes bgAnimRain {
+// На светлой теме светлые росчерки не видны: делаем их тёмными и приглушёнными.
+.theme-light .Chat.Chat--bgAnim-meteors {
+  --bg-met-rgb: 40, 48, 64;
+
+  > .ChatBg {
+    opacity: calc(var(--chat-bg-anim-opacity, 0.5) * 0.6);
+  }
+}
+
+@keyframes bgMeteor {
+  0% {
+    opacity: 0;
+    transform: rotate(32deg) translate3d(-120px, 0, 0) scaleX(0.3);
+  }
+  1.5% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 1;
+  }
+  8%,
+  100% {
+    opacity: 0;
+    transform: rotate(32deg) translate3d(380px, 0, 0) scaleX(1);
+  }
+}
+
+// ============================================================
+// Аварийный маячок: под потолком вращается красная лампа, два луча
+// обходят стену, комнату заливает красным.
+// ============================================================
+
+.Chat.Chat--bgAnim-beacon {
+  #{$L1} {
+    inset: auto;
+    left: 50%;
+    top: -6%;
+    width: 160vmax;
+    height: 160vmax;
+    margin: -80vmax 0 0 -80vmax;
+    background-image: conic-gradient(from 0deg,
+      transparent 0deg, rgba(235, 50, 35, 0.56) 13deg, rgba(255, 95, 60, 0.84) 20deg,
+      rgba(235, 50, 35, 0.56) 27deg, transparent 40deg 180deg,
+      rgba(235, 50, 35, 0.56) 193deg, rgba(255, 95, 60, 0.84) 200deg,
+      rgba(235, 50, 35, 0.56) 207deg, transparent 220deg);
+    mask-image: radial-gradient(circle closest-side, #000 0%, rgba(0, 0, 0, 0.77) 48%, transparent 96%);
+    animation: bgBeaconSpin 12.8s linear infinite;
+  }
+
+  #{$L2} {
+    will-change: auto;
+    background-image: radial-gradient(circle 90px at 50% 0%,
+      rgba(255, 70, 45, 0.84) 0%, rgba(230, 40, 30, 0.28) 50%, transparent 100%);
+    animation: bgBreathe 12.8s ease-in-out infinite;
+  }
+
+  #{$L3} {
+    will-change: auto;
+    background-color: rgba(200, 30, 20, 0.196);
+    animation: bgBreathe 12.8s ease-in-out -1.6s infinite;
+  }
+}
+
+// На светлой теме красный луч заметнее, его глушим.
+.theme-light .Chat.Chat--bgAnim-beacon > .ChatBg {
+  opacity: calc(var(--chat-bg-anim-opacity, 0.5) * 0.5);
+}
+
+@keyframes bgBeaconSpin {
   from {
-    background-position: 0 0, 0 0;
+    transform: rotate(0deg);
   }
   to {
-    background-position: 30px 30px, 54px 54px;
+    transform: rotate(1440deg);
   }
 }
 
 // ============================================================
-// Animation: Embers (Угольки)
-// Warm particles rising upward with slight horizontal drift
+// Вентиляция: неподвижная решётка, сквозь неё поднимаются клубы пара.
 // ============================================================
 
-.Chat.Chat--bgAnim-embers::before {
-  background-image:
-    radial-gradient(2px 2px at 20% 80%,
-      rgba(255, 150, 50, 0.8) 0%, transparent 100%),
-    radial-gradient(3px 3px at 50% 60%,
-      rgba(255, 100, 30, 0.7) 0%, transparent 100%),
-    radial-gradient(2px 2px at 75% 75%,
-      rgba(255, 180, 50, 0.6) 0%, transparent 100%),
-    radial-gradient(2px 2px at 35% 90%,
-      rgba(255, 120, 40, 0.7) 0%, transparent 100%),
-    radial-gradient(3px 3px at 60% 70%,
-      rgba(255, 160, 60, 0.6) 0%, transparent 100%),
-    radial-gradient(2px 2px at 85% 85%,
-      rgba(255, 140, 30, 0.7) 0%, transparent 100%);
-  background-size:
-    200px 300px, 250px 350px, 300px 250px,
-    220px 320px, 280px 280px, 180px 340px;
-  animation: bgAnimEmbers 8s linear infinite;
+$steam: rgba(205, 215, 220, 0.42);
+$steam-edge: rgba(205, 215, 220, 0.15);
+
+.Chat.Chat--bgAnim-vents {
+  #{$L1} {
+    background-size: 12px 12px;
+    background-image:
+      linear-gradient(90deg,
+        rgba(0, 0, 0, 0.416) 0 1px, rgba(255, 255, 255, 0.056) 1px 2px, transparent 2px),
+      linear-gradient(180deg,
+        rgba(0, 0, 0, 0.416) 0 1px, rgba(255, 255, 255, 0.056) 1px 2px, transparent 2px);
+    will-change: auto;
+  }
+
+  #{$L2} {
+    @include flakes(340px, 440px, 0px, -440px);
+    animation: bgVentsNear 20s linear infinite;
+
+    &::before {
+      background-image:
+        radial-gradient(ellipse 85px 58px at 30% 60%, $steam 0%, $steam-edge 55%, transparent 100%),
+        radial-gradient(ellipse 60px 42px at 75% 20%, $steam 0%, $steam-edge 55%, transparent 100%);
+      animation: bgSteam 22s ease-in-out infinite;
+    }
+
+    // Своя плитка: по высоте делит сдвиг 440px, по ширине сбивает ряды.
+    &::after {
+      background-size: 270px 220px;
+      background-image:
+        radial-gradient(ellipse 70px 50px at 70% 50%, $steam 0%, $steam-edge 55%, transparent 100%),
+        radial-gradient(ellipse 50px 36px at 20% 20%, $steam 0%, $steam-edge 55%, transparent 100%);
+      animation: bgSteam 28s ease-in-out -6s infinite;
+    }
+  }
+
+  #{$L3} {
+    @include tile-layer(460px, 520px, 0px, -520px);
+    background-image: radial-gradient(ellipse 120px 80px at 50% 50%,
+      rgba(190, 200, 205, 0.256) 0%, rgba(190, 200, 205, 0.096) 55%, transparent 100%);
+    animation: bgVentsFar 30s linear infinite;
+  }
 }
 
-@keyframes bgAnimEmbers {
+.theme-light .Chat.Chat--bgAnim-vents > .ChatBg {
+  opacity: calc(var(--chat-bg-anim-opacity, 0.5) * 0.35);
+}
+
+@include drift-keyframes(bgVentsNear, 0px, -440px);
+@include drift-keyframes(bgVentsFar, 0px, -520px);
+
+@include repeat-keyframes(bgSteam, 2, (
+  0%: (opacity: 0.4, transform: translate3d(-16px, 0, 0)),
+  50%: (opacity: 1, transform: translate3d(16px, 0, 0)),
+  100%: (opacity: 0.4, transform: translate3d(-16px, 0, 0)),
+));
+
+// ============================================================
+// Пыль астероидов: зёрна трёх пластов дрейфуют вправо и вверх,
+// крупные и близкие - быстрее.
+// ============================================================
+
+$dust-a: rgba(228, 190, 140, 1);
+$dust-b: rgba(205, 160, 110, 1);
+
+.Chat.Chat--bgAnim-dust {
+  #{$L1} {
+    @include tile-layer(120px, 110px, 240px, -110px);
+    background-image:
+      dot(1.6px, 20px, 30px, $dust-a),
+      dot(1.6px, 84px, 70px, $dust-b),
+      dot(1.6px, 50px, 96px, $dust-a),
+      dot(1.3px, 104px, 14px, $dust-b),
+      dot(1.3px, 8px, 80px, $dust-a);
+    animation: bgDustFar 40s linear infinite;
+  }
+
+  #{$L2} {
+    @include tile-layer(220px, 190px, 440px, -190px);
+    background-image:
+      dot(2.6px, 40px, 60px, $dust-b),
+      dot(3.2px, 160px, 130px, rgba(185, 138, 95, 1)),
+      dot(2.4px, 110px, 20px, $dust-a),
+      dot(2px, 200px, 170px, $dust-a);
+    animation: bgDustMid 30s linear infinite;
+  }
+
+  #{$L3} {
+    @include tile-layer(420px, 360px, 840px, -360px);
+    background-image:
+      radial-gradient(9px 9px at 120px 180px, rgba(170, 125, 85, 0.39) 0%, transparent 100%),
+      radial-gradient(13px 13px at 330px 60px, rgba(150, 110, 75, 0.286) 0%, transparent 100%),
+      dot(4.16px, 260px, 290px, rgba(200, 155, 105, 1));
+    animation: bgDustNear 22s linear infinite;
+  }
+}
+
+@include light-theme-dim('dust', brightness(0.5) saturate(1.3));
+
+@include drift-keyframes(bgDustFar, 240px, -110px);
+@include drift-keyframes(bgDustMid, 440px, -190px);
+@include drift-keyframes(bgDustNear, 840px, -360px);
+
+// ============================================================
+// Радиация: зелёные сцинтилляции вспыхивают в разных местах, на
+// невидимом участке цикла каждая перескакивает на новое место.
+// ============================================================
+
+$rad-core: rgba(215, 255, 185, 1);
+
+@function rad-flash($x, $y) {
+  @return radial-gradient(circle 12px at $x $y, $rad-core 0,
+    rgba(130, 240, 100, 0.75) 2px, rgba(90, 220, 80, 0.25) 5px, transparent 12px);
+}
+
+.Chat.Chat--bgAnim-radiation {
+  #{$L1},
+  #{$L2} {
+    will-change: auto;
+
+    &::before,
+    &::after {
+      content: '';
+      inset: -320px;
+      opacity: 0;
+    }
+  }
+
+  #{$L1}::before {
+    background-size: 700px 800px;
+    background-image: rad-flash(180px, 240px);
+    animation: bgRadFlashA 5.3s linear infinite;
+  }
+
+  #{$L1}::after {
+    background-size: 760px 720px;
+    background-image: rad-flash(520px, 160px);
+    animation: bgRadFlashB 6.1s linear -2s infinite;
+  }
+
+  #{$L2}::before {
+    background-size: 680px 860px;
+    background-image: rad-flash(400px, 610px);
+    animation: bgRadFlashA 7.3s linear -4.4s infinite;
+  }
+
+  #{$L2}::after {
+    background-size: 820px 740px;
+    background-image: rad-flash(120px, 520px);
+    animation: bgRadFlashB 8.9s linear -6s infinite;
+  }
+
+  #{$L3} {
+    will-change: auto;
+    background-image: radial-gradient(ellipse 70% 60% at 50% 50%,
+      rgba(80, 220, 80, 0.21) 0%, transparent 72%);
+    animation: bgBreathe 48s ease-in-out infinite;
+  }
+}
+
+@include light-theme-dim('radiation', brightness(0.6) saturate(2.5));
+
+@keyframes bgRadFlashA {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  8.6% {
+    opacity: 1;
+  }
+  14%,
+  50% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  50.1%,
+  57% {
+    opacity: 0;
+    transform: translate3d(230px, 140px, 0);
+  }
+  57.6% {
+    opacity: 1;
+  }
+  63%,
+  100% {
+    opacity: 0;
+    transform: translate3d(230px, 140px, 0);
+  }
+}
+
+@keyframes bgRadFlashB {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  20.6% {
+    opacity: 1;
+  }
+  27%,
+  60% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  60.1%,
+  78% {
+    opacity: 0;
+    transform: translate3d(-260px, 190px, 0);
+  }
+  78.6% {
+    opacity: 1;
+  }
+  85%,
+  100% {
+    opacity: 0;
+    transform: translate3d(-260px, 190px, 0);
+  }
+}
+
+// ============================================================
+// Градиент: приглушённые полосы станционных цветов медленно
+// переливаются, по ним бродит тёплое пятно.
+// ============================================================
+
+.Chat.Chat--bgAnim-gradient {
+  #{$L1} {
+    inset: 0 -100%;
+    background-image: linear-gradient(110deg,
+      rgba(30, 60, 140, 0.432), rgba(30, 120, 140, 0.346) 25%,
+      rgba(150, 110, 60, 0.281) 50%, rgba(30, 60, 140, 0.432) 75%,
+      rgba(30, 120, 140, 0.346));
+    animation: bgGradientSweep 20s ease-in-out infinite alternate;
+  }
+
+  #{$L2} {
+    inset: -20%;
+    background-image: radial-gradient(ellipse 40% 36% at 50% 50%,
+      rgba(200, 150, 80, 0.259) 0%, transparent 72%);
+    animation: bgGradientSpot 13s ease-in-out -5s infinite alternate;
+  }
+}
+
+@keyframes bgGradientSweep {
   from {
-    background-position:
-      0 0, 0 0, 0 0,
-      0 0, 0 0, 0 0;
+    transform: translate3d(-33.333%, 0, 0);
   }
   to {
-    background-position:
-      0 -300px, 0 -350px, 0 -250px,
-      0 -320px, 0 -280px, 0 -340px;
+    transform: translate3d(33.333%, 0, 0);
+  }
+}
+
+@keyframes bgGradientSpot {
+  from {
+    transform: translate3d(-25%, -20%, 0) scale(0.9);
+  }
+  to {
+    transform: translate3d(25%, 20%, 0) scale(1.15);
   }
 }

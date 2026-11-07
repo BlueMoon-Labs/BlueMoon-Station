@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/demonic
 	name = LANGUAGE_DEMONIC
-	desc = "The native language of many out-worlded beings. Often can be heard from someone a human could describe as a demon, fiend or anyone inbetween. (Используйте русскую букву для префикса)."
+	desc = "Родной язык многих существ с иных миров. Его нередко слышишь от того, кого человек мог бы назвать демоном, бесом или кем-то средним между ними. (Используйте русскую букву для префикса)."
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "demonic"
 	speech_verb = "proclaims"

@@ -37,6 +37,7 @@
 		on = !on
 		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
 		update_appearance()
 	return ..()
 
@@ -151,7 +152,8 @@
 	switch(action)
 		if("power")
 			on = !on
-			message_admins("Pump, [src.name], turned [on ? "on" : "off"] by [ADMIN_LOOKUPFLW(usr)] at [ADMIN_COORDJMP(T)], [A]")
+			if(!is_antag_training_atom(src))
+				message_admins("Pump, [src.name], turned [on ? "on" : "off"] by [ADMIN_LOOKUPFLW(usr)] at [ADMIN_COORDJMP(T)], [A]")
 			investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
 			. = TRUE
 		if("pressure")
@@ -216,7 +218,8 @@
 		return FALSE
 	else
 		investigate_log("Pump, [src.name], was unwrenched by [key_name(usr)] at [x], [y], [z], [A]", INVESTIGATE_ATMOS)
-		message_admins("Pump, [src.name], was unwrenched by [ADMIN_LOOKUPFLW(user)] at [A]")
+		if(!is_antag_training_atom(src))
+			message_admins("Pump, [src.name], was unwrenched by [ADMIN_LOOKUPFLW(user)] at [A]")
 		return TRUE
 
 /obj/machinery/atmospherics/components/binary/pump/layer1

@@ -352,6 +352,23 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			areas_in_z["[floor_z]"] = on_z
 		on_z |= src
 
+/// Дописывает в areas_in_z z новых клеток области. Уже зарегистрированную область не пересчитывает: у космоса это обход миллиона клеток на каждый шаблон.
+/area/proc/reg_on_floors(list/floors)
+	if(isnull(z_levels))
+		reg_in_areas_in_z()
+		return
+	update_areasize()
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in floors)
+		if(floor_z in z_levels)
+			continue
+		z_levels += floor_z
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(!on_z)
+			on_z = list()
+			areas_in_z["[floor_z]"] = on_z
+		on_z |= src
+
 /// Снимает область из SSmapping.areas_in_z под всеми z, где она стояла.
 /area/proc/unreg_from_areas_in_z()
 	if(!z_levels)
@@ -408,44 +425,60 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /**
  * Try to close all the firedoors in the area
  */
-/area/proc/ModifyFiredoors(opening)
+/area/proc/ModifyFiredoors(opening, manual = FALSE)
 	if(firedoors)
 		firedoors_last_closed_on = world.time
 		for(var/FD in firedoors)
 			var/obj/machinery/door/firedoor/D = FD
 			D.refresh_generic_alarm()
 			var/cont = !D.welded
-			if(cont && opening)	//don't open if adjacent area is on fire
+			if(cont && opening && !manual) // Автоматика учитывает пожар в соседней зоне.
 				for(var/I in D.affecting_areas)
 					var/area/A = I
 					if(A.fire)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				if(manual)
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open_manually))
+					else
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close_manually))
+					continue
+				if(opening && !D.can_auto_reopen())
+					continue
+				if(!opening && !D.can_close_for_alarm())
+					continue
 				// Закрытие зоной - тоже работа автоматики, и открывать обратно
 				// обязана она же: собственной тревоги у такой двери нет, а
 				// пересчёт тревоги ходит только по фронту тревоги.
 				if(opening)
 					D.auto_closed = FALSE
 				else if(!D.density)
-					D.mark_auto_closed()
+					D.mark_auto_closed(alarm_checked = TRUE)
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))
-					INVOKE_ASYNC(D, (opening ? TYPE_PROC_REF(/obj/machinery/door/firedoor, open) : TYPE_PROC_REF(/obj/machinery/door/firedoor, close)))
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+					else
+						// INVOKE_ASYNC начинает вызов сразу: используем проверку выше.
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), FALSE, TRUE)
 
-/area/proc/firealert(obj/source)
+/area/proc/firealert(obj/source, manual = FALSE)
 	if(always_unpowered == 1) //no fire alarms in space/asteroid
 		return
 
 	if (!fire)
 		set_fire_alarm_effects(TRUE)
-		ModifyFiredoors(FALSE)
+		ModifyFiredoors(FALSE, manual)
+	else if(manual)
+		ModifyFiredoors(FALSE, TRUE)
 	alarm_manager.send_alarm(ALARM_FIRE, source)
 
 	START_PROCESSING(SSobj, src)
 
-/area/proc/firereset(obj/source)
+/area/proc/firereset(obj/source, manual = FALSE)
 	var/should_reset_alarms = fire
 	if(source)
 		if(istype(source, /obj/machinery/firealarm))
@@ -459,7 +492,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 	if (should_reset_alarms) // if there's a source, make sure there's no fire alarms left
 		set_fire_alarm_effects(FALSE)
-		ModifyFiredoors(TRUE)
+	if(should_reset_alarms || manual)
+		ModifyFiredoors(TRUE, manual)
 	alarm_manager.clear_alarm(ALARM_FIRE, source)
 
 	STOP_PROCESSING(SSobj, src)

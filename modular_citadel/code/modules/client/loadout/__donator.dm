@@ -58,7 +58,19 @@
 	name = "Chameleon Box"
 	path = /obj/item/storage/box/syndie_kit/chameleon
 	cost = 8
+	description = "Хамелеон-набор с именным разрешением на владение и использование."
+	handle_post_equip = TRUE
 
+/datum/gear/donator/t2/chameleon_kit/on_spawn(mob/user, obj/item/I)
+	if(!ishuman(user))
+		return
+	var/mob/living/carbon/human/wearer = user
+	// Если форму нельзя использовать для крепления, разрешение остаётся внутри выданной коробки.
+	var/obj/item/clothing/accessory/permit/special/chameleon/permit = new(I)
+	permit.bind_to_user(wearer, TRUE)
+	var/obj/item/clothing/uniform = wearer.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(istype(uniform))
+		uniform.attach_accessory(permit, wearer, TRUE)
 
 /datum/gear/donator/t2/jukebox_mega
 	name = "Personal Music Box"

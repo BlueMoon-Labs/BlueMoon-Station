@@ -98,6 +98,8 @@
 
 /obj/Destroy(force=FALSE)
 	if(!ismachinery(src) && (datum_flags & DF_ISPROCESSING))
+		// Надетому предмету при qdel dropped() не зовётся, а из SSfastprocess снимает обычно он
+		STOP_PROCESSING(SSfastprocess, src)
 		STOP_PROCESSING(SSobj, src)
 	if(datum_flags & DF_HAS_OPEN_UI)
 		SStgui.close_uis(src)

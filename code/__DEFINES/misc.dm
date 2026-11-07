@@ -39,8 +39,9 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 
 #define MUTATIONS_LAYER           49 // mutations. Tk headglows, cold resistance glow, etc
 #define BODY_BEHIND_LAYER         48 // certain mutantrace features, such as tail when looking south
-#define	LEGS_PART_LAYER           47 // legs bodyparts
+#define	LEGS_PART_LAYER           47 // legs bodyparts, back half (_behind)
 #define	CHEST_PART_LAYER          46 // chest bodypart
+#define	LEGS_FRONT_PART_LAYER     45.5 // legs bodyparts, front half (_front): over the bottom of the chest
 #define GENITALS_BEHIND_LAYER     45 // Some genitalia needs to be behind everything, such as with taurs
 #define	ARMS_PART_LAYER           44 // arms bodypart
 #define	HEAD_PART_LAYER           43 // head bodypart
@@ -87,7 +88,11 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              49
+#define BODY_HARDLIGHT_LAYER       50
+#define TOTAL_LAYERS              50
+
+/// Задняя половина составной конечности без своего слоя рисуется на столько глубже передней.
+#define BEHIND_LIMB_LAYER_OFFSET 0.1
 
 /// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
 /// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого
@@ -477,6 +482,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define ALT_CLICK "alt"
 #define SHIFT_CLICK "shift"
 
+// Обработчики колеса вызываются от большего приоритета к меньшему.
+#define MOUSEWHEEL_PRIORITY_DEFAULT 0
+#define MOUSEWHEEL_PRIORITY_IMPLANT 10
+#define MOUSEWHEEL_PRIORITY_MECHA 20
+
 //Pixel coordinates within the icon, in the icon's coordinate space
 #define ICON_X "icon-x"
 #define ICON_Y "icon-y"
@@ -506,6 +516,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define DUMMY_HUMAN_SLOT_MANIFEST "dummy_manifest_generation"
 #define DUMMY_HUMAN_SLOT_HALLUCINATION "dummy_hallucination"
 #define DUMMY_HUMAN_SLOT_EXAMINER "dummy_examiner"
+#define DUMMY_HUMAN_SLOT_JOB_MENU "dummy_job_menu"
+#define DUMMY_HUMAN_SLOT_HAIR_PICKER "dummy_hair_picker"
 
 #define PR_ANNOUNCEMENTS_PER_ROUND 5 //The number of unique PR announcements allowed per round
 									//This makes sure that a single person can only spam 3 reopens and 3 closes before being ignored
@@ -574,6 +586,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define UNIT_TEST_SHARD_PARAMETER "unit-test-shard"
 //JSON of past wall times per test, used to balance the shards
 #define UNIT_TEST_DURATIONS_PARAMETER "unit-test-durations"
+//Map config to load instead of data/next_map.json, so several test worlds can share one directory
+#define UNIT_TEST_MAP_PARAMETER "unit-test-map"
+//Name of this test world among others running in the same directory, keeps their caches apart
+#define UNIT_TEST_INSTANCE_PARAMETER "unit-test-instance"
 
 #define EGG_LAYING_MESSAGES list("lays an egg.","squats down and croons.","begins making a huge racket.","begins clucking raucously.")
 
@@ -592,6 +608,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define STANDARD_GRAVITY 1 //Anything above this is high gravity, anything below no grav
 /// Гравитация, тянущая вверх: has_gravity() <= этого значит, что падают в потолок.
 #define NEGATIVE_GRAVITY -1
+#define GRAVITY_INVERSION_TIME (0.5 SECONDS)
 #define GRAVITY_DAMAGE_TRESHOLD 3 //Starting with this value gravity will start to damage mobs
 
 #define CAMERA_NO_GHOSTS 0
@@ -617,10 +634,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define PREF_SAVE_MAX_DEFER 15 SECONDS
 
 /// Окно склейки одиночных записей префов (save_single_pref) в одну.
-/// Шире клиентского дебаунса панели tgui (3 с): иначе две соседние отправки состояния
-/// чата приходят уже разнесёнными и склеивать их не с чем. Верхняя граница переноса
-/// та же, что и у полной записи - PREF_SAVE_MAX_DEFER.
-#define PREF_SINGLE_SAVE_DEBOUNCE 5 SECONDS
+/// Цена сброса - открытие savefile (~6 мс заморозки процесса), а игрок в среднем пишет одиночный ключ раз в несколько минут: при окне в 5 с склеивать было нечего, и в раунде 10669 4490 сбросов дали 26 с заморозок. Буфер уходит на диск и раньше - на логауте, перед чтением префов и на ребуте; при падении сервера теряется не больше окна правок интерфейса.
+#define PREF_SINGLE_SAVE_DEBOUNCE 10 MINUTES
 
 // Решения pref_defer_decision() - что делать с очередной отложенной записью savefile.
 /// Очереди не было: завести крайний срок и зарядить таймер.
@@ -691,3 +706,8 @@ GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "
 
 /// Это лист для всевозможных контейнеров реагентов закрытого типа, принимаемого кемдиспенсерами, кеммастерами и т.д.
 #define CLOSED_CONTAINERS_OPERABLE list(/obj/item/reagent_containers/glass/bottle/vial)
+
+/// Хелпер-дефайны для корректной работы стикеров карт
+#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen") // Блэклист корпоративных неймингов
+#define STICKER_SLOT_PREFIX "prefix"
+#define STICKER_SLOT_SUFFIX "suffix"

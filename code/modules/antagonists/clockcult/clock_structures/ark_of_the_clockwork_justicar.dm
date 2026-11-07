@@ -79,7 +79,7 @@
 			for(var/V in GLOB.player_list)
 				var/mob/M = V
 				var/turf/T = get_turf(M)
-				if((T && T.z == z) || is_servant_of_ratvar(M) || isobserver(M))
+				if((T && T.z == z) || (is_servant_of_ratvar(M) && !is_antag_training_atom(M)) || isobserver(M))
 					M.playsound_local(M, 'sound/machines/clockcult/ark_scream.ogg', 100, FALSE, pressure_affected = FALSE)
 			hierophant_message("<span class='big boldwarning'>Ковчег получает урон!</span>")
 	last_scream = world.time + ARK_SCREAM_COOLDOWN
@@ -170,7 +170,7 @@
 			sound_to_playing_players(volume = 50, channel = CHANNEL_JUSTICAR_ARK, S = sound('sound/effects/clockcult_gateway_disrupted.ogg'))
 			for(var/mob/M in GLOB.player_list)
 				var/turf/T = get_turf(M)
-				if((T && T.z == z) || is_servant_of_ratvar(M))
+				if((T && T.z == z) || (is_servant_of_ratvar(M) && !is_antag_training_atom(M)))
 					M.playsound_local(M, 'sound/machines/clockcult/ark_deathrattle.ogg', 100, FALSE, pressure_affected = FALSE)
 			make_glow()
 			glow.icon_state = "clockwork_gateway_disrupted"
@@ -304,7 +304,7 @@
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
 		var/turf/T = get_turf(M)
-		if(is_servant_of_ratvar(M) && (!T || T.z != z))
+		if(is_servant_of_ratvar(M) && !is_antag_training_atom(M) && (!T || T.z != z))
 			M.forceMove(get_step(src, SOUTH))
 			M.overlay_fullscreen("flash", /atom/movable/screen/fullscreen/tiled/flash)
 			M.clear_fullscreen("flash", 5)

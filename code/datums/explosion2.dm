@@ -5,8 +5,7 @@
 		return
 	if(!bypass_logging)
 		var/logstring = "Wave explosion at [COORD(target)]: [power]/[factor]/[constant]/[flash]/[fire]/[speed] initial/factor/constant/flash/fire/speed"
-		log_game(logstring)
-		message_admins(logstring)
+		antag_training_game_log(target, logstring, logstring)
 	return new /datum/wave_explosion(target, power, factor, constant, flash, fire, source, speed, silent, start_immediately, block_resistance)
 
 /**
@@ -196,7 +195,8 @@
 	for(var/mob/living/L as anything in to_flash)
 		L.flash_act()
 
-	SSblackbox.record_feedback("associative", "wave_explosion", 1, feedback)
+	if(!length(_starting) || !is_antag_training_atom(_starting[1]))
+		SSblackbox.record_feedback("associative", "wave_explosion", 1, feedback)
 
 	if(!cycle)
 		cycle = 1

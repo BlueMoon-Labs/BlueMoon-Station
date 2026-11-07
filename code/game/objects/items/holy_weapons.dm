@@ -34,6 +34,10 @@
 	desc = "God wills it!"
 	icon_state = "knight_templar"
 	item_state = "knight_templar"
+	tail_state = ""
+	flags_inv = NONE
+	unique_reskin = null
+	taur_types_icon_whitelist = alist()
 	allowed = list(/obj/item/storage/book/bible, HOLY_WEAPONS, /obj/item/reagent_containers/food/drinks/bottle/holywater, /obj/item/storage/fancy/candle_box, /obj/item/candle, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
 
 // CITADEL CHANGES: More variants
@@ -445,19 +449,19 @@
 	hitsound = 'sound/weapons/bladeslice2.ogg'
 	attack_verb = list("healed", "mended", "soothed", "restored")
 
-	attack(mob/living/carbon/C, mob/living/user)
-		playsound(src, 'sound/weapons/bladeslice2.ogg', 50, TRUE)
-		. = ..()
-		if(!iscarbon(C))
-			return
-		C.heal_bodypart_damage(0, 0, 0, 15)
+/obj/item/nullrod/mimicry_sword/attack(mob/living/carbon/C, mob/living/user)
+	playsound(src, 'sound/weapons/bladeslice2.ogg', 50, TRUE)
+	. = ..()
+	if(!iscarbon(C))
+		return
+	C.heal_bodypart_damage(0, 0, 0, 15)
 
-	run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-		if(attack_type & ATTACK_TYPE_PROJECTILE)
-			if(prob(25))
-				return ..()
-			return NONE
-		return ..()
+/obj/item/nullrod/mimicry_sword/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(attack_type & ATTACK_TYPE_PROJECTILE)
+		if(prob(25))
+			return ..()
+		return NONE
+	return ..()
 
 /obj/item/nullrod/claymore/darkblade
 	icon_state = "cultblade"

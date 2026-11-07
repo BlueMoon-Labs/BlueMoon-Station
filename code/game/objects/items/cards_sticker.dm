@@ -1,32 +1,37 @@
-#define DATA_ICON "icon"
-#define DATA_ICON_STATE "icon_state"
-#define DATA_S_ASSIGNMENT "special_assignment"
-
-#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen")
-
 /obj/item/card_sticker
 	name = "Card sticker"
-	desc = "Расширение, устанавливаемое поверх стандартной ID-карты. \
-	Перехватывает и подменяет отображаемые данные: визуальный стиль карты, цветовую схему и название должности.\n\
-	Не влияет на реальные уровни доступа и системы аутентификации, изменяя исключительно представление информации для интерфейсов и внешнего осмотра."
+	desc = "Наклейка для ID-карты."
 	icon = 'icons/obj/card.dmi'
 	icon_state = "occult_id"
 	w_class = WEIGHT_CLASS_TINY
 	var/const/wrap_delay = 1.3 SECONDS // time to wrap sticker on card
 	var/special_assignment = "syndicate" // id card HUD icon
-	var/prefix = "Test" // prefix for card assigment
+	/// Префикс для спец. карточек. null = без префикса
+	var/prefix = null
+	/// Суффикс для спец. карточек, внешне традиционно должны идти как минорные дополнения карты, добавляются как оверлей
+	var/aftername_suffix = null
+	/// В какой слот ID-карты встаёт наклейка. В префиксном слоте работает prefix, в суффиксном - aftername_suffix
+	var/sticker_slot = STICKER_SLOT_PREFIX
+	/**
+	 * Режимы работы:
+	 * - null: "скин" - карта целиком получает icon/icon_state наклейки
+	 * - не null: "оверлей" - основа карты не трогается, поверх неё рисуется этот icon_state
+	 */
+	var/sticker_state = null
+	/// Заменяет ли оверлей наклейки оверлей должности (id[job]) на карте
+	var/replaces_job_overlay = FALSE
+
 	var/auto_equip = FALSE // for loadout
 	var/permit = null // only for auto_equip
 	var/permit_only_extended = FALSE
-	// Список слов, при наличиии которых в профессии, префикс отображен не будет
-	// Проверка на сам префикс будет, даже если список пустой, что бы избежать «Syndicate Syndicate Admiral»
+
+	/// Блеклист префиксов/суффиксов для избежания рофлов типа Nanotrasen Syndicate Warden.
+	/// Слова сравниваются отдельно, без учёта регистра.
+	/// Проверка на слово префикса/суффикса есть всегда, даже если список пуст
 	var/list/prefix_not_allowed_with = list()
-	// list of changed vars on ID card
-	var/list/previous_icon_data = list(
-		DATA_ICON = "",
-		DATA_ICON_STATE = "",
-		DATA_S_ASSIGNMENT = "",
-	)
+	/// Что было на карте до наклейки (только для режима скинов)
+	var/previous_icon
+	var/previous_icon_state
 
 /obj/item/card_sticker/examine(mob/user)
 	. = ..()
@@ -82,66 +87,113 @@
 
 	return ..()
 
+/// Вид оверлея для карты. Если null - наклейка работает как скин
+/obj/item/card_sticker/proc/get_sticker_overlay()
+	if(!sticker_state)
+		return null
+	return mutable_appearance(icon, sticker_state)
+
+/// Что эта наклейка добавляет к названию должности, вместе с пробелом со стороны должности.
+/// Вся логика названия лежит здесь, карта только склеивает части из своих слотов
+/obj/item/card_sticker/proc/get_name_part(assignment)
+	var/word = (sticker_slot == STICKER_SLOT_SUFFIX) ? aftername_suffix : prefix
+	if(!word || is_decoration_blocked(assignment, word))
+		return ""
+	return (sticker_slot == STICKER_SLOT_SUFFIX) ? " [word]" : "[word] "
+
+/// Хелпер: нельзя ли добавить слово к должности
+/obj/item/card_sticker/proc/is_decoration_blocked(assignment, decoration)
+	if(assignment_has_word(assignment, decoration))
+		return TRUE
+	for(var/word in prefix_not_allowed_with)
+		if(assignment_has_word(assignment, word))
+			return TRUE
+	return FALSE
+
+/obj/item/card_sticker/proc/assignment_has_word(assignment, word)
+	var/regex/word_regex = regex("(^|\[^A-Za-zА-Яа-я0-9\])[word](\[^A-Za-zА-Яа-я0-9\]|$)", "i")
+	return word_regex.Find(assignment) ? TRUE : FALSE
+
+/// Обновляет карту и худ того, кто её носит
+/obj/item/card_sticker/proc/refresh_card(obj/item/card/id/card)
+	card.update_label()
+	if(ishuman(card.loc))
+		var/mob/living/carbon/human/holder = card.loc
+		holder.sec_hud_set_ID()
+
+/obj/item/card_sticker/proc/get_wrap_block_reason(obj/item/card/id/card)
+	if(card.get_sticker(sticker_slot))
+		return "Карта уже обёрнута"
+	// Скин подменит иконку карты целиком, и два скина сразу корректно снять нельзя
+	if(!sticker_state)
+		for(var/obj/item/card_sticker/other in card.get_stickers())
+			if(!other.sticker_state)
+				return "Конфликт внешнего вида"
+	return null
+
+/// Прок оборачивания айди карты в стикер
 /obj/item/card_sticker/proc/wrap(obj/item/card/id/card, mob/user, silent = FALSE, force = FALSE)
 	. = FALSE
 	if(!istype(card, /obj/item/card/id))
 		return
-	if(card.sticker || (user && INTERACTING_WITH(user, card)))
+	if(user && INTERACTING_WITH(user, card))
 		return
-	if(!silent)
+	var/block_reason = get_wrap_block_reason(card)
+	if(block_reason)
+		if(!silent && user)
+			balloon_alert(user, block_reason)
+		return
+	if(!silent && user)
 		balloon_alert(user, "Присоединяю...")
-	if(!force && !do_after(user, wrap_delay, card))
+	if(!force && (!user || !do_after(user, wrap_delay, card)))
+		return
+	if(get_wrap_block_reason(card))
 		return
 
 	if(!forceMove(card))
 		return
-	card.sticker = src
+	card.set_sticker(sticker_slot, src)
 
-	for(var/var_name in previous_icon_data)
-		previous_icon_data[var_name] = card.vars[var_name]
+	if(!sticker_state)
+		previous_icon = card.icon
+		previous_icon_state = card.icon_state
+		card.icon = icon
+		card.icon_state = icon_state
 
-	//if(special_assignment)
-		//card.special_assignment = special_assignment
-	card.icon = icon
-	card.icon_state = icon_state
-
-	card.update_label()
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.sec_hud_set_ID()
-
+	refresh_card(card)
 	return TRUE
 
 /obj/item/card_sticker/proc/unwrap(obj/item/card/id/card, mob/user, silent = FALSE, force = FALSE)
 	. = FALSE
-	if(card.sticker != src || (user && INTERACTING_WITH(user, card)))
+	if(!istype(card) || card.get_sticker(sticker_slot) != src || (user && INTERACTING_WITH(user, card)))
 		return
-	if(!silent)
+	if(!silent && user)
 		balloon_alert(user, "Снимаю...")
-	if(!force && !do_after(user, wrap_delay, card))
+	if(!force && (!user || !do_after(user, wrap_delay, card)))
+		return
+	if(card.get_sticker(sticker_slot) != src)
 		return
 
-	if(user && !user.put_in_hands(src))
-		return
-	else if(!user)
+	if(user)
+		if(!user.put_in_hands(src))
+			return
+	else
 		moveToNullspace()
 
-	card.sticker = null
+	card.set_sticker(sticker_slot, null)
 
-	for(var/var_name in previous_icon_data)
-		card.vars[var_name] = previous_icon_data[var_name]
-		previous_icon_data[var_name] = ""
+	if(!sticker_state)
+		card.icon = previous_icon
+		card.icon_state = previous_icon_state
+		previous_icon = null
+		previous_icon_state = null
 
-	card.update_label()
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.sec_hud_set_ID()
-
+	refresh_card(card)
 	return TRUE
 
 /obj/item/card_sticker/heresy
 	name = "Occult sticker"
-	desc = "Sticker for research related to occult activities whose nature of phenomena is poorly supported by scientific evidence."
+	desc = "Стикер для исследований, связанных с оккультной деятельностью, неизученная натура феноменов которой слабо поддерживается научной практикой."
 	icon_state = "occult_id"
 	prefix = "Heretic"
 	special_assignment = "heresy"
@@ -152,7 +204,7 @@
 
 /obj/item/card_sticker/lust
 	name = "Sex Worker sticker"
-	desc = "Sticker for employee of Silver Love Co."
+	desc = "Стикер для сотрудников компании Silver Love Co."
 	icon_state = "lust_id"
 	prefix = "Sex Worker"
 	special_assignment = "lust"
@@ -164,7 +216,7 @@
 
 /obj/item/card_sticker/agony
 	name = "Ravenheart Resident sticker"
-	desc = "Sticker for research related to extreme activities whose nature of agony is strictly prohibited by scientific evidence."
+	desc = "Стикер для исследований, связанных с экстремальными активностями, агонистическая натура которых строго возбранена научной практикой."
 	icon_state = "agony_id"
 	prefix = "Ravenheart"
 	special_assignment = "agony"
@@ -176,7 +228,7 @@
 
 /obj/item/card_sticker/vampire
 	name = "Bloodfledge sticker"
-	desc = "An sticker made to easily recognize bloodsucker fledglings without requiring medical scans."
+	desc = "Стикер для лёгкого опознания отпрысков кровопийц без дополнительных медицинских анализов."
 	icon_state = "vampire2"
 	prefix = "Bloodsucker"
 	special_assignment = "bloodsuckerfledgling"
@@ -186,7 +238,7 @@
 
 /obj/item/card_sticker/blumenland
 	name = "Blumenland Citizen sticker"
-	desc = "An sticker made to recognize Blumenland Confederation habbitants and tourists."
+	desc = "Стикер для различия граждан Конфедерации Блюменланд и туристов из неё."
 	icon_state = "blumland"
 	prefix = "Blumenland"
 	special_assignment = "bmland"
@@ -196,7 +248,7 @@
 
 /obj/item/card_sticker/syndicate
 	name = "Syndicate Employee sticker"
-	desc = "An sticker made to recognize Triglav Syndicate agents and supportives."
+	desc = "Стикер для различия агентов и поддерживающих Триглав Синдиката."
 	icon_state = "card_black"
 	prefix = "Syndicate"
 	special_assignment = "syndicate"
@@ -207,7 +259,7 @@
 
 /obj/item/card_sticker/nanotrasen
 	name = "Nanotrasen Employee sticker"
-	desc = "A sticker designed to recognize Nanotrasen employees and supportives."
+	desc = "Стикер для различия сотрудников Nanotrasen и поддерживающих корпорацию."
 	icon_state = "centcom"
 	prefix = "Nanotrasen"
 	special_assignment = "centcom"
@@ -218,7 +270,7 @@
 
 /obj/item/card_sticker/sol
 	name = "SolFed Citizen sticker"
-	desc = "An sticker made to recognize Solar Federation habbitants and tourists."
+	desc = "Стикер для различия граждан Солнечной Федерации и туристов из неё."
 	icon_state = "sol"
 	prefix = "SolFed"
 	special_assignment = "sol"
@@ -229,7 +281,7 @@
 
 /obj/item/card_sticker/nri
 	name = "NRI Citizen sticker"
-	desc = "An sticker made to recognize Novaya Rossiyskya Imperia habbitants and tourists."
+	desc = "Стикер для различия граждан Новороссийской Империи и туристов из неё."
 	icon_state = "nri"
 	prefix = "NRI"
 	special_assignment = "nri"
@@ -238,8 +290,34 @@
 /obj/item/card_sticker/nri/loadout
 	auto_equip = TRUE
 
-#undef DATA_ICON
-#undef DATA_ICON_STATE
-#undef DATA_S_ASSIGNMENT
+/// Стикеры авангарда: оверлей поверх обычной карты, без префикса, но с суффиксом
+/obj/item/card_sticker/vanguard
+	sticker_slot = STICKER_SLOT_SUFFIX
+	replaces_job_overlay = TRUE
 
-#undef SYNDI_NT_PREFIX_LIST
+/obj/item/card_sticker/vanguard/grenadier
+	name = "vanguard grenadier sticker"
+	desc = "Стикер авангарда для ID-карты. Гренадёры эскадронов известны своим дурным нравом предложить взорвать каждую встреченную стенку на пути."
+	icon_state = "vanguardgrenadiersticker"
+	sticker_state = "idvanguardgrenadier"
+	aftername_suffix = "Grenadier"
+	special_assignment = "hudvanguardgrenadier"
+	prefix_not_allowed_with = list("Feldscherer", "Shocktrooper")
+
+/obj/item/card_sticker/vanguard/feldscherer
+	name = "vanguard feldscherer sticker"
+	desc = "Стикер авангарда для ID-карты. Многие недооценивают важность хорошего фельдшера в эскадроне, по крайней мере, до первой клинической смерти."
+	icon_state = "vanguardfeldscherersticker"
+	sticker_state = "idvanguardfeldscherer"
+	aftername_suffix = "Feldscherer"
+	special_assignment = "hudvanguardfeldscherer"
+	prefix_not_allowed_with = list("Grenadier", "Shocktrooper")
+
+/obj/item/card_sticker/vanguard/shocktrooper
+	name = "vanguard shocktrooper sticker"
+	desc = "Стикер авангарда для ID-карты. На самом деле, именно штурмовики обязаны принимать на себя первый удар, почему это делают фельдшера с щитами?..."
+	icon_state = "vanguardshocktroopersticker"
+	sticker_state = "idvanguardshocktrooper"
+	aftername_suffix = "Shocktrooper"
+	special_assignment = "hudvanguardshocktrooper"
+	prefix_not_allowed_with = list("Grenadier", "Feldscherer")

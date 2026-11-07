@@ -48,7 +48,7 @@
 	opacity = 0
 	rad_insulation = 1
 /* //SPLURT edit, now handled better in modular
-/obj/machinery/door/poddoor/shutters/radiation/do_animate(animation)
+/obj/machinery/door/poddoor/shutters/radiation/do_animate(animation, from_bump = FALSE)
 	..()
 	switch(animation)
 		if("opening")

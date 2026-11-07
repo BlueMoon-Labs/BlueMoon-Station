@@ -38,6 +38,7 @@
 		HK_PREFIX_STATEMENT = 'modular_bluemoon/sound/hk_droids/hk47_prefix_statement.ogg',
 		HK_PREFIX_QUERY = 'modular_bluemoon/sound/hk_droids/hk47_prefix_query.ogg',
 		HK_PREFIX_EXCLAMATION = 'modular_bluemoon/sound/hk_droids/hk47_prefix_exclamation.ogg',
+		HK_PREFIX_ANALYSIS = 'modular_bluemoon/sound/hk_droids/hk47_prefix_analysis.ogg',
 	)
 	for(var/prefix in prefix_sounds)
 		if(findtext(message, prefix) == 1)

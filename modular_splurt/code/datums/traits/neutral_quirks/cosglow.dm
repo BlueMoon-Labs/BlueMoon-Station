@@ -85,7 +85,7 @@
 	var/mob/living/carbon/human/action_mob = owner
 
 	// Ask user for color input
-	var/input_color = input(action_mob, "Select a color to use for your glow outline.", "Select Glow Color", glow_color) as color|null
+	var/input_color = tgui_input_color(action_mob, "Select a color to use for your glow outline.", "Select Glow Color", glow_color)
 
 	// Check if color input was given
 	// Reset to stored color when not given input

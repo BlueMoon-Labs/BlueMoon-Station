@@ -1,0 +1,214 @@
+.ColorPicker {
+  width: 760px;
+  container-type: inline-size;
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: #202b35;
+  border: 1px solid #65849a;
+  border-radius: 5px;
+  padding: 1rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+
+  &__title {
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(150, 180, 200, 0.2);
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #bdd7e8;
+  }
+
+  &--input {
+    width: 100%;
+    box-shadow: none;
+  }
+
+  &__chip {
+    display: inline-block;
+    flex-shrink: 0;
+    padding: 0;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+    vertical-align: middle;
+
+    &:hover,
+    &:focus-visible {
+      outline: 2px solid #8bc9ee;
+      outline-offset: 2px;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.8rem;
+  }
+
+  &__palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  &__presets {
+    width: 100%;
+    max-width: 312px;
+    margin: 0 auto;
+
+    .ColorPicker__swatch {
+      position: absolute;
+
+      &::before {
+        inset: 0;
+      }
+
+      &:hover,
+      &:focus-visible,
+      &[aria-pressed='true'] {
+        &::before {
+          inset: 2px;
+        }
+      }
+    }
+  }
+
+  &__honeycomb,
+  &__grayscale {
+    position: relative;
+    width: 100%;
+  }
+
+  &__grayscale {
+    margin-top: calc(100% / 91);
+  }
+
+  &__swatch {
+    position: relative;
+    cursor: pointer;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: rgba(255, 255, 255, 0.35);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      background: var(--swatch-color);
+      clip-path: inherit;
+      pointer-events: none;
+    }
+
+    &:hover,
+    &:focus-visible,
+    &[aria-pressed='true'] {
+      background: #fff;
+      outline: none;
+      z-index: 1;
+
+      &::before {
+        inset: 3px;
+      }
+    }
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(312px, 1fr) minmax(0, 1.25fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  &__editor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  &__values {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  &__wheel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    touch-action: none;
+    user-select: none;
+    cursor: crosshair;
+
+    &:focus-visible {
+      outline: 1px solid #8bc9ee;
+      outline-offset: 3px;
+    }
+
+    canvas,
+    svg,
+    .ColorPicker__hue-ring {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  }
+
+  &__hue-ring {
+    border-radius: 50%;
+    background: conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+    mask-image: radial-gradient(
+      circle,
+      transparent 59%,
+      #000 59.5%,
+      #000 70.5%,
+      transparent 71%
+    );
+  }
+
+  &__wheel-marker {
+    fill: none;
+    stroke: white;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 1px black);
+  }
+
+  &__comparison {
+    width: 78px;
+    text-align: center;
+
+    .ColorPicker__sample {
+      display: block;
+      width: 100%;
+      height: 45px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    button {
+      cursor: pointer;
+    }
+  }
+}
+
+@container (max-width: 620px) {
+  .ColorPicker__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ColorPicker__editor {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}

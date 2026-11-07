@@ -46,6 +46,7 @@
 		if(!C)
 			if(is_mentor())
 				to_chat(src, "<span class='danger'>Error: Mentor-PM: Client not found.</span>")
+				return
 			else
 				mentorhelp(msg)	//Mentor we are replying to has vanished, Mentorhelp instead (how the fuck does this work?let's hope it works,shrug)
 				return

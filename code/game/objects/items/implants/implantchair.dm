@@ -185,7 +185,10 @@
 	if(custom)
 		if(!user || !user.Adjacent(src))
 			return FALSE
-		objective = stripped_input(usr,"What order do you want to imprint on [C]?","Enter the order","",120)
+		var/new_objective = tgui_input_text(usr, "Какой приказ вы хотите внушить [C]?", "Введите приказ", max_length = 120, encode = TRUE)
+		if(isnull(new_objective))
+			return FALSE
+		objective = new_objective
 		message_admins("[ADMIN_LOOKUPFLW(user)] set brainwash machine objective to '[objective]'.")
 		log_game("[key_name(user)] set brainwash machine objective to '[objective]'.")
 	if(HAS_TRAIT(C, TRAIT_MINDSHIELD))

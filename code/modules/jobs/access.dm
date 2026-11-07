@@ -204,7 +204,10 @@
 		if(7) //command
 			return "Command"
 
+// Справочник названий не определяет права выдачи: их задают get_all_accesses() и get_region_accesses().
 /proc/get_access_desc(A)
+	if(!A)
+		return
 	switch(A)
 		if(ACCESS_CARGO)
 			return "Cargo Bay"
@@ -348,6 +351,8 @@
 			return "Blueshield"
 		if(ACCESS_BRIDGE_OFFICER)
 			return "Bridge Officer"
+		if(ACCESS_PEACEKEEPER)
+			return "Миротворец"
 		if(ACCESS_PSYCH)
 			return "Psychology Office"
 		if(ACCESS_PRODUCTION_MEDICAL)
@@ -362,10 +367,6 @@
 			return "Cargo Production"
 		if(ACCESS_PRODUCTION_ENGINEERING)
 			return "Engineering Production"
-
-
-/proc/get_centcom_access_desc(A)
-	switch(A)
 		if(ACCESS_CENT_GENERAL)
 			return "Code Grey"
 		if(ACCESS_CENT_THUNDER)
@@ -384,6 +385,53 @@
 			return "Code Gold"
 		if(ACCESS_CENT_BAR)
 			return "Code Scotch"
+		if(ACCESS_SYNDICATE)
+			return "Синдикат"
+		if(ACCESS_SYNDICATE_LEADER)
+			return "Командир Синдиката"
+		if(ACCESS_INTEQ)
+			return "InteQ"
+		if(ACCESS_INTEQ_LEADER)
+			return "Командир InteQ"
+		if(ACCESS_SLAVER)
+			return "Работорговцы"
+		if(ACCESS_AWAY_GENERAL)
+			return "Внешние объекты: общий доступ"
+		if(ACCESS_AWAY_MAINT)
+			return "Внешние объекты: техобслуживание"
+		if(ACCESS_AWAY_MED)
+			return "Внешние объекты: медицина"
+		if(ACCESS_AWAY_SEC)
+			return "Внешние объекты: служба безопасности"
+		if(ACCESS_AWAY_ENGINE)
+			return "Внешние объекты: инженерный отдел"
+		if(ACCESS_AWAY_GENERIC1)
+			return "Внешние объекты: специальный доступ 1"
+		if(ACCESS_AWAY_GENERIC2)
+			return "Внешние объекты: специальный доступ 2"
+		if(ACCESS_AWAY_GENERIC3)
+			return "Внешние объекты: специальный доступ 3"
+		if(ACCESS_AWAY_GENERIC4)
+			return "Внешние объекты: специальный доступ 4"
+		if(ACCESS_AWAY_COMMAND)
+			return "Экспедиции: командование"
+		if(ACCESS_AWAY_ENGINEERING)
+			return "Экспедиции: инженерный отдел"
+		if(ACCESS_AWAY_MEDICAL)
+			return "Экспедиции: медицина"
+		if(ACCESS_AWAY_SUPPLY)
+			return "Экспедиции: снабжение"
+		if(ACCESS_AWAY_SCIENCE)
+			return "Экспедиции: наука"
+		if(ACCESS_AWAY_MAINTENANCE)
+			return "Экспедиции: техобслуживание"
+		if(ACCESS_BLOODCULT)
+			return "Культ крови"
+		if(ACCESS_CLOCKCULT)
+			return "Культ Ратвара"
+		if(ACCESS_TARKOFF)
+			return "Таркофф"
+	return "Неизвестный доступ ([A])"
 
 /proc/get_all_jobs()
 	return list("Assistant","Bridge Officer", "Captain", "Blueshield", "Head of Personnel", "Bartender", "Cook", "Entertainer", "Botanist", "Quartermaster", "Cargo Technician",

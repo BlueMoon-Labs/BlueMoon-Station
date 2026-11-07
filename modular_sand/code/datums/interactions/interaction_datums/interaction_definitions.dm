@@ -114,3 +114,36 @@
 	interaction_sound = 'modular_splurt/sound/voice/vineboom.ogg'
 	max_distance = 25
 	interaction_flags = NONE
+
+/datum/interaction/sniff
+	description = "Обнюхать."
+	simple_message = "USER обнюхивает TARGET!"
+
+/datum/interaction/sniff/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
+	. = ..()
+	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+		playsound(user, 'sound/voice/sniff_f1.ogg', 50, 1)
+	else
+		playsound(user, 'sound/voice/sniff_m1.ogg', 50, 1)
+
+	if(!user.get_smell_sensitivity())
+		return
+	if(target.is_dirty())
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.set_disgust(max(H.disgust, DISGUST_LEVEL_GROSS + 10, user.get_smell_sensitivity() * DISGUST_LEVEL_GROSS))
+			H.show_message(span_warning("Вы чуете вонь <b>[target.name]</b>. В голове стало дурно от запаха."))
+	else
+		user.show_message(span_notice("Вы чуете <b>[target.name]</b>. Этот аромат можно описать как [target.get_smell_message()]."))
+
+/datum/interaction/lick
+	description = "Облизнуть."
+	simple_message = "USER облизывает TARGET!"
+	required_from_user = INTERACTION_REQUIRE_MOUTH
+	interaction_sound = 'sound/effects/attackblob.ogg'
+
+/datum/interaction/lick/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
+	. = ..()
+	if(HAS_TRAIT(user, TRAIT_AGEUSIA))
+		return
+	user.show_message(span_notice("На вкус [target.name] можно описать как [target.get_taste_message()]."))

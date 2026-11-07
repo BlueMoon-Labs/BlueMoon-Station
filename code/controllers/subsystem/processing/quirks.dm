@@ -63,11 +63,12 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 		quirk_points[initial(T.name)] = initial(T.value)
 		quirk_names_by_path[T] = initial(T.name)
 
-/datum/controller/subsystem/processing/quirks/proc/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target)
-	if(!cli?.prefs)
+/datum/controller/subsystem/processing/quirks/proc/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target, spawn_items = TRUE, datum/preferences/preferences_source)
+	var/datum/preferences/prefs = preferences_source || cli?.prefs
+	if(!prefs)
 		return
 	var/badquirk = FALSE
-	var/list/my_quirks = cli.prefs.all_quirks.Copy()
+	var/list/my_quirks = prefs.all_quirks.Copy()
 	var/list/cut
 	if(istext(job))
 		job = SSjob.GetJob(job)
@@ -76,8 +77,8 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	// Обнуление, а не вырезание пар, важно ввиду возможного удаления дорогих отрицательных квирков из-за дешёвых позитивных.
 	if(SSquirks.check_blacklist_conflicts(my_quirks))
 		my_quirks.Cut()
-		cli.prefs.all_quirks.Cut()
-		cli.prefs.save_character()
+		prefs.all_quirks.Cut()
+		prefs.save_character()
 		log_admin("All quirks for [key_name(user)] were reset due to quirk selection blacklist.")
 	if(job?.blacklisted_quirks)
 		cut = filter_quirks(my_quirks, job.blacklisted_quirks)
@@ -86,13 +87,13 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	for(var/V in my_quirks)
 		if(V in quirks)
 			var/datum/quirk/Q = quirks[V]
-			user.add_quirk(Q, spawn_effects)
+			user.add_quirk(Q, spawn_effects, spawn_items)
 		else
-			log_admin("Invalid quirk \"[V]\" in client [cli.ckey] preferences")
-			cli.prefs.all_quirks -= V
+			log_admin("Invalid quirk \"[V]\" in client [cli?.ckey] preferences")
+			prefs.all_quirks -= V
 			badquirk = TRUE
 	if(badquirk)
-		cli.prefs.save_character()
+		prefs.save_character()
 	if (!silent && LAZYLEN(cut))
 		to_chat(to_chat_target || user, "<span class='boldwarning'>Некоторые выбранные вами квирки были убраны, так как конфликтуют с выбранной должностью: [english_list(cut)].</span>")
 	// if (!silent && LAZYLEN(quirk_blacklist))

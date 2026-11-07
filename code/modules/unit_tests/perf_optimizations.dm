@@ -1212,3 +1212,58 @@
 	bot.target = second_target
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure + 1, "Floorbot must retry autonomous targets after the cooldown expires")
+
+
+// ===== Shared emote typecaches =====
+//
+// Profile snapshot (round 2026-10): /proc/typecacheof 1291 calls, 0.105 of its 0.106 s in
+// tick overtime. 431 emotes built typecacheof(list(/mob/living)) one by one at world start.
+
+/datum/unit_test/emote_shared_typecaches/Run()
+	var/datum/emote/first = allocate(/datum/emote/sound/human/snap)
+	var/datum/emote/second = allocate(/datum/emote/sound/human/snap2)
+	TEST_ASSERT(first.mob_type_allowed_typecache == second.mob_type_allowed_typecache, "Emotes naming the same types must share one typecache")
+	TEST_ASSERT(first.mob_type_allowed_typecache == GLOB.typecache_living, "list(/mob/living) must reuse the global living typecache")
+	TEST_ASSERT(first.mob_type_allowed_typecache[/mob/living/carbon/human], "The shared typecache must include subtypes")
+	TEST_ASSERT(!first.mob_type_allowed_typecache[/mob/dead/observer], "The shared typecache must not include unrelated types")
+	TEST_ASSERT_NULL(first.mob_type_blacklist_typecache, "An emote without a blacklist must not get one")
+
+	var/datum/emote/ai_emote = allocate(/datum/emote/ai)
+	TEST_ASSERT(ai_emote.mob_type_allowed_typecache[/mob/living/silicon/ai], "A single-path allowed type must still become a typecache")
+	TEST_ASSERT(!ai_emote.mob_type_allowed_typecache[/mob/living/carbon/human], "A single-path typecache must not widen to other mobs")
+	TEST_ASSERT(islist(ai_emote.mob_type_blacklist_typecache) && !length(ai_emote.mob_type_blacklist_typecache), "An explicitly empty blacklist must stay an empty list")
+
+// ===== Donator groups during config load =====
+//
+// Every donator line regenerated all three tier lists (494 calls per load, all in overtime).
+// During a load the regeneration waits for OnPostload.
+
+/datum/unit_test/donator_groups_regenerate_after_load/Run()
+	var/datum/config_entry/multi_keyed_flag/donator_group/entry = CONFIG_GET_ENTRY(DONATOR_GROUP_TIER_1_CONFIG_SUBPATH)
+	TEST_ASSERT(entry.postload_required, "Donator groups must ask for OnPostload, or a config load would never regenerate them")
+	var/list/groups_before = GLOB.donators_by_group
+	var/test_key = "zztestdonatorkey"
+	entry.ValidateAndSet(test_key, TRUE)
+	TEST_ASSERT(GLOB.donators_by_group == groups_before, "A config line during load must not regenerate the donator groups")
+	entry.OnPostload()
+	TEST_ASSERT(GLOB.donators_by_group != groups_before, "OnPostload must regenerate the donator groups")
+	TEST_ASSERT(is_donator_group(test_key, DONATOR_GROUP_TIER_1), "The regenerated groups must include keys loaded before OnPostload")
+	entry.config_entry_value -= test_key
+	regenerate_donator_grouping_list()
+	TEST_ASSERT(!is_donator_group(test_key, DONATOR_GROUP_TIER_1), "Test cleanup must remove the probe key")
+
+	// The real load path must schedule the regeneration itself.
+	var/config_file = "zz_unit_test_donators.txt"
+	var/config_path = "[config.directory]/[config_file]"
+	var/old_resident_file = entry.resident_file
+	var/old_modified = entry.modified
+	fdel(config_path)
+	text2file("tier_1_donators [test_key]", config_path)
+	config.LoadEntries(config_file)
+	fdel(config_path)
+	var/loaded = is_donator_group(test_key, DONATOR_GROUP_TIER_1)
+	entry.config_entry_value -= test_key
+	entry.resident_file = old_resident_file
+	entry.modified = old_modified
+	regenerate_donator_grouping_list()
+	TEST_ASSERT(loaded, "A donator key loaded from a config file must reach the regenerated groups")

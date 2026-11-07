@@ -6,6 +6,7 @@
 	icon = 'icons/Xeno/castes/drone.dmi'
 	icon_state = "Drone Walking"
 	meleeKnockdownPower = 80
+	pixel_x = -11
 
 /mob/living/carbon/alien/humanoid/drone/maid
 	name = "Xeno Maid"
@@ -52,7 +53,7 @@
 	if(!isturf(user.loc))
 		to_chat(user, "<span class='notice'>You can't evolve here!</span>")
 		return FALSE
-	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal))
+	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal, user))
 		if(istype(user, /mob/living/carbon/alien/humanoid/drone/maid) && IS_XENO_MAID_ROUND)
 			var/mob/living/carbon/alien/humanoid/royal/queen/maid/new_maid_queen = new (user.loc)
 			user.alien_evolve(new_maid_queen)

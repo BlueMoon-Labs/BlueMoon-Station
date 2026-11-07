@@ -114,10 +114,12 @@
 	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/dance/run_emote(mob/user, params, type_override, intentional)
-	. = ..()
+	if(HAS_TRAIT(user, TRAIT_MOD_INVERTED) || !..())
+		return FALSE
 	if(ishuman(user))
 		user.SpinAnimation(8,4)
 		user.spin(30, 1)
+	return TRUE
 
 /datum/emote/sound/human/deathgasp
 	name = "Притвориться Мёртвым"
@@ -477,7 +479,10 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.get_num_arms() == 0)
-			if(H.get_num_legs() != 0)
+			var/obj/item/bodypart/tail = HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) ? H.get_bodypart(BODY_ZONE_L_LEG) : null
+			if(tail && !tail.disabled)
+				message_param = "указывает хвостом на %t."
+			else if(H.get_num_legs() != 0)
 				message_param = "tries to point at %t with a leg, <span class='userdanger'>falling down</span> in the process!"
 				H.DefaultCombatKnockdown(20)
 			else
@@ -592,16 +597,35 @@
 	message = "нюхает."
 	emote_type = EMOTE_AUDIBLE
 	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+	emote_cooldown = 2 SECONDS
 
-/datum/emote/sound/human/sniff/run_emote(mob/user, params)
+/datum/emote/sound/human/sniff/run_emote(mob/living/carbon/user, params)
 	. = ..()
 	if(!. || !isliving(user))
 		return
-	var/mob/living/carbon/C = user
 	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
-		playsound(C, pick('sound/voice/sniff_f1.ogg'), 50, 1)
+		playsound(user, 'sound/voice/sniff_f1.ogg', 50, 1)
 	else
-		playsound(C, pick('sound/voice/sniff_m1.ogg'), 50, 1)
+		playsound(user, 'sound/voice/sniff_m1.ogg', 50, 1)
+
+	var/smell_range = user.get_smell_sensitivity()
+	if(!smell_range)
+		return
+
+	var/list/smellable = list()
+	for(var/mob/living/L in view(smell_range))
+		if(L == user)
+			continue
+		smellable += L
+	if(!smellable.len)
+		return
+
+	var/mob/living/sniffed = pick(smellable)
+	if(sniffed.is_dirty())
+		user.set_disgust(max(user.disgust, DISGUST_LEVEL_GROSS + 10, smell_range * DISGUST_LEVEL_GROSS))
+		user.show_message(span_warning("Вы чуете вонь <b>[sniffed.name]</b>. В голове стало дурно от запаха."))
+	else
+		user.show_message(span_notice("Вы чуете <b>[sniffed.name]</b>. Этот аромат можно описать как [sniffed.get_smell_message()]."))
 
 /datum/emote/sound/human/snore
 	name = "Тихо Храпеть"

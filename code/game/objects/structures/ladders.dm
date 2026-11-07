@@ -104,6 +104,9 @@
 		show_fluff_message(going_up, user, ladder)
 		ladder.add_fingerprint(user)
 
+	if(!is_ghost && !do_after(user, 1.5 SECONDS, target = src))
+		return
+
 	var/turf/T = get_turf(ladder)
 	//Лестница сама решает, куда ставит: проверки полёта и препятствий не нужны, а пристёгнутые и буксируемые едут с мобом.
 	user.zMove(null, T, ZMOVE_CHECK_PULLEDBY|ZMOVE_ALLOW_BUCKLED|ZMOVE_INCLUDE_PULLED)

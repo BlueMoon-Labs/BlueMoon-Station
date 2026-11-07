@@ -7,6 +7,7 @@
 #define MAJOR_THRESHOLD 5500
 #define MINOR_THRESHOLD 3500
 #define STANDARD_DEVIATION 1000
+#define BEPIS_MAX_TRANSFER 15000
 
 /obj/machinery/rnd/bepis
 	name = "\improper B.E.P.I.S. Chamber"
@@ -103,7 +104,7 @@
 		update_icon_state()
 		say("Attempting to deposit 0 credits. Aborting.")
 		return
-	deposit_value = clamp(round(deposit_value, 1), 1, 15000)
+	deposit_value = clamp(round(deposit_value, 1), 1, BEPIS_MAX_TRANSFER)
 	if(!account)
 		say("Cannot find user account. Please swipe a valid ID.")
 		return
@@ -122,7 +123,7 @@
 /obj/machinery/rnd/bepis/proc/withdrawcash()
 	var/withdraw_value = 0
 	withdraw_value = banking_amount
-	if(withdraw_value > banked_cash)
+	if(withdraw_value <= 0 || withdraw_value > banked_cash)
 		say("Cannot withdraw more than stored funds. Aborting.")
 	else
 		banked_cash -= withdraw_value
@@ -266,7 +267,7 @@
 		if("amount")
 			var/input = text2num(params["amount"])
 			if(input)
-				banking_amount = input
+				banking_amount = clamp(round(input), 1, BEPIS_MAX_TRANSFER)
 		if("toggle_power")
 			if(use_power == ACTIVE_POWER_USE)
 				use_power = IDLE_POWER_USE

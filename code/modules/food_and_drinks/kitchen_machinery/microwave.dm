@@ -16,7 +16,7 @@
 
 /obj/machinery/microwave//SKYRAT EDIT - ICON OVERRIDEN BY AESTHETICS - SEE MODULE
 	name = "microwave oven"
-	desc = "Cooks and boils stuff."
+	desc = "Готовит и подогревает вещи."
 	icon = 'icons/obj/kitchen.dmi'
 	icon_state = "map_icon"
 	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE
@@ -100,21 +100,23 @@
 
 /obj/machinery/microwave/examine(mob/user)
 	. = ..()
-	if(!operating)
-		. += span_notice("Right-click [src] to turn it on.")
 
 	if(!in_range(user, src) && !issilicon(user) && !isobserver(user))
-		. += span_warning("You're too far away to examine [src]'s contents and display!")
+		. += span_warning("Вы слишком далеко, чтобы разглядеть содержимое и дисплей [src]!")
 		return
-	if(operating)
-		. += span_notice("\The [src] is operating.")
+
+	if(!operating)
+		. += span_notice("Кликните по [src] для открытия меню.")
+
+	else
+		. += span_notice("[src] работает.")
 		return
 
 	if(length(ingredients))
 		if(issilicon(user))
-			. += span_notice("\The [src] camera shows:")
+			. += span_notice("Камера [src] показывает:")
 		else
-			. += span_notice("\The [src] contains:")
+			. += span_notice("Внутри [src] находится:")
 		var/list/items_counts = new
 		for(var/i in ingredients)
 			if(isstack(i))
@@ -126,12 +128,11 @@
 		for(var/O in items_counts)
 			. += span_notice("- [items_counts[O]]x [O].")
 	else
-		. += span_notice("\The [src] is empty.")
+		. += span_notice("Внутри [src] ничего нет.")
 
-	if(!(machine_stat & (NOPOWER|BROKEN)))
-		. += "[span_notice("The status display reads:")]\n"+\
-		"[span_notice("- Capacity: <b>[max_n_of_items]</b> items.")]\n"+\
-		span_notice("- Cook time reduced by <b>[(efficiency - 1) * 25]%</b>.")
+/obj/machinery/microwave/examine_display_content(mob/user)
+	. += "– Вместимость: <b>[max_n_of_items]</b> шт. предметов\n\
+	– Время готовки сокращено на <b>[(efficiency - 1) * 25]%</b>."
 
 #define MICROWAVE_INGREDIENT_OVERLAY_SIZE 24
 
@@ -261,19 +262,19 @@
 
 	if(broken > NOT_BROKEN)
 		if(broken == REALLY_BROKEN && O.tool_behaviour == TOOL_WIRECUTTER) // If it's broken and they're using a TOOL_WIRECUTTER
-			user.visible_message(span_notice("[user] starts to fix part of \the [src]."), span_notice("You start to fix part of \the [src]..."))
+			user.visible_message(span_notice("[user] начинает чинить части [src]."), span_notice("Вы начинаете чинить части [src]..."))
 			if(O.use_tool(src, user, 20))
-				user.visible_message(span_notice("[user] fixes part of \the [src]."), span_notice("You fix part of \the [src]."))
+				user.visible_message(span_notice("[user] чинит части [src]."), span_notice("Вы чините части [src]."))
 				broken = KINDA_BROKEN // Fix it a bit
 		else if(broken == KINDA_BROKEN && O.tool_behaviour == TOOL_WELDER) // If it's broken and they're doing the wrench
-			user.visible_message(span_notice("[user] starts to fix part of \the [src]."), span_notice("You start to fix part of \the [src]..."))
+			user.visible_message(span_notice("[user] начинает чинить части [src]."), span_notice("Вы начинаете чинить части [src]..."))
 			if(O.use_tool(src, user, 20))
-				user.visible_message(span_notice("[user] fixes \the [src]."), span_notice("You fix \the [src]."))
+				user.visible_message(span_notice("[user] чинит [src]."), span_notice("Вы чините [src]."))
 				broken = NOT_BROKEN
 				update_appearance()
 				return FALSE //to use some fuel
 		else
-			balloon_alert(user, "it's broken!")
+			balloon_alert(user, "Сломано!")
 			return TRUE
 		return
 
@@ -282,12 +283,12 @@
 		if(clean_spray.reagents.has_reagent(/datum/reagent/space_cleaner, clean_spray.amount_per_transfer_from_this))
 			clean_spray.reagents.remove_reagent(/datum/reagent/space_cleaner, clean_spray.amount_per_transfer_from_this,1)
 			playsound(loc, 'sound/effects/spray3.ogg', 50, TRUE, -6)
-			user.visible_message(span_notice("[user] cleans \the [src]."), span_notice("You clean \the [src]."))
+			user.visible_message(span_notice("[user] очищает [src]."), span_notice("Вы очищаете [src]."))
 			dirty = 0
 			//QDEL_LIST(ingredients)
 			update_appearance()
 		else
-			to_chat(user, span_warning("You need more space cleaner!"))
+			to_chat(user, span_warning("Вам нужно больше очистителя!"))
 		return TRUE
 
 	if(istype(O, /obj/item/soap) || istype(O, /obj/item/reagent_containers/rag))
@@ -295,16 +296,16 @@
 		if(istype(O, /obj/item/soap))
 			var/obj/item/soap/used_soap = O
 			cleanspeed = used_soap.cleanspeed
-		user.visible_message(span_notice("[user] starts to clean \the [src]."), span_notice("You start to clean \the [src]..."))
+		user.visible_message(span_notice("[user] начинает чистить [src]."), span_notice("Вы начинаете чистить [src]..."))
 		if(do_after(user, cleanspeed, target = src))
-			user.visible_message(span_notice("[user] cleans \the [src]."), span_notice("You clean \the [src]."))
+			user.visible_message(span_notice("[user] очищает [src]."), span_notice("Вы очищаете [src]."))
 			dirty = 0
 			//QDEL_LIST(ingredients)
 			update_appearance()
 		return TRUE
 
 	if(dirty >= MAX_MICROWAVE_DIRTINESS) // The microwave is all dirty so can't be used!
-		balloon_alert(user, "it's too dirty!")
+		balloon_alert(user, "Слишком грязно!")
 		return TRUE
 
 	if(istype(O, /obj/item/storage/bag/tray))
@@ -312,7 +313,7 @@
 		var/loaded = 0
 		for(var/obj/S in T.contents)
 			if(ingredients.len >= max_n_of_items)
-				balloon_alert(user, "it's full!")
+				balloon_alert(user, "Нет места!")
 				//BLUEMOON CHANGE ранее был return, но там столько важного кода дальше
 				if(loaded)
 					break
@@ -321,20 +322,20 @@
 				loaded++
 				ingredients += S
 		if(loaded)
-			to_chat(user, span_notice("You insert [loaded] items into \the [src]."))
+			to_chat(user, span_notice("Вы загружаете в [src] предметов: [loaded]."))
 			update_appearance()
 		return
 
 	if(O.w_class <= WEIGHT_CLASS_NORMAL && !istype(O, /obj/item/storage))
 		if(ingredients.len >= max_n_of_items)
-			balloon_alert(user, "it's full!")
+			balloon_alert(user, "Нет места!")
 			return TRUE
 		if(!user.transferItemToLoc(O, src))
-			balloon_alert(user, "it's stuck to your hand!")
+			balloon_alert(user, "Предмет прилип к руке!")
 			return FALSE
 
 		ingredients += O
-		user.visible_message(span_notice("[user] adds \a [O] to \the [src]."), span_notice("You add [O] to \the [src]."))
+		user.visible_message(span_notice("[user] добавляет [O] в [src]."), span_notice("Вы добавляете [O] в [src]."))
 		update_appearance()
 		return
 
@@ -388,7 +389,7 @@
 		return
 
 	if(wire_disabled)
-		audible_message("[src] buzzes.")
+		audible_message("[src] жужжит.")
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 		return
 
@@ -413,7 +414,7 @@
 	start(cooker)
 
 /obj/machinery/microwave/proc/wzhzhzh()
-	visible_message(span_notice("\The [src] turns on."), null, span_hear("You hear a microwave humming."))
+	visible_message(span_notice("[src] включается."), null, span_hear("Вы слышите гудение микроволновки."))
 	operating = TRUE
 
 	set_light(1.5)
@@ -421,7 +422,7 @@
 	update_appearance()
 
 /obj/machinery/microwave/proc/spark()
-	visible_message(span_warning("Sparks fly around [src]!"))
+	visible_message(span_warning("Вокруг [src] летят искры!"))
 	var/datum/effect_system/spark_spread/s = new
 	s.set_up(2, 1, src)
 	s.start()
@@ -505,7 +506,7 @@
 	loop(MICROWAVE_NORMAL, 10, cooker = cooker)
 
 /obj/machinery/microwave/proc/muck_finish()
-	visible_message(span_warning("\The [src] gets covered in muck!"))
+	visible_message(span_warning("[src] покрывается грязью!"))
 
 	dirty = MAX_MICROWAVE_DIRTINESS
 	dirty_anim_playing = FALSE
@@ -539,7 +540,7 @@
 /// Type of microwave that automatically turns it self on erratically. Probably don't use this outside of the holodeck program "Microwave Paradise".
 /// You could also live your life with a microwave that will continously run in the background of everything while also not having any power draw. I think the former makes more sense.
 /obj/machinery/microwave/hell
-	desc = "Cooks and boils stuff. This one appears to be a bit... off."
+	desc = "Готовит и подогревает всякое. Эта микроволновка, кажется, немного... Ненормальная."
 	use_power = NO_POWER_USE
 	idle_power_usage = 0
 	active_power_usage = 0

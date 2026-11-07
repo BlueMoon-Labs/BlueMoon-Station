@@ -59,6 +59,7 @@
 	desc = "A .38 rubber bullet casing."
 	caliber = "38"
 	projectile_type = /obj/item/projectile/bullet/c38/rubber
+	harmful = FALSE
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/glass = 800)
 
@@ -107,6 +108,7 @@
 	name = ".38 Rubber bullet casing"
 	desc = "A .38 rubber bullet casing, manufactured to exceedingly high standards."
 	projectile_type = /obj/item/projectile/bullet/c38/match/bouncy
+	harmful = FALSE
 	can_be_printed = TRUE
 	advanced_print_req = TRUE
 	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 600)

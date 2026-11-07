@@ -79,9 +79,17 @@
     background-color: rgba(0, 0, 0, 0.04);
   }
 
+  // Полосы стилей только у сообщений без подсветки: иначе (0,3,0) этого
+  // блока перекрывает подсветку и её цвет акцента.
   .Chat--style-bubbles > .ChatMessage {
     background-color: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.08);
+    border-top-color: rgba(0, 0, 0, 0.08);
+    border-right-color: rgba(0, 0, 0, 0.08);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .Chat--style-bubbles > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: rgba(0, 0, 0, 0.08);
   }
 
   .Chat--style-terminal {
@@ -89,8 +97,8 @@
     background-color: var(--chat-bg, rgba(0, 30, 0, 0.05));
   }
 
-  .Chat--style-terminal > .ChatMessage {
-    border-left-color: rgba(0, 100, 0, 0.3);
+  .Chat--style-terminal > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: color-mix(in srgb, var(--chat-accent, rgb(0, 100, 0)) 30%, transparent);
   }
 
   .Chat--style-terminal .Chat__badge {
@@ -98,13 +106,19 @@
     color: #fff;
   }
 
-  .Chat--style-cozy > .ChatMessage:nth-child(even) {
+  .Chat--style-cozy > .ChatMessage:nth-child(even of .ChatMessage) {
     background-color: rgba(0, 0, 0, 0.02);
   }
 
   .Chat--style-glass > .ChatMessage {
     background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.1);
+    border-top-color: rgba(0, 0, 0, 0.1);
+    border-right-color: rgba(0, 0, 0, 0.1);
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .Chat--style-glass > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: rgba(0, 0, 0, 0.1);
   }
 
   .Chat--style-neon > .ChatMessage {
@@ -130,7 +144,10 @@
       rgba(0, 0, 0, 0.02) 0%,
       transparent 100%
     );
-    border-left-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .Chat--style-darkpro > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: color-mix(in srgb, var(--chat-accent, rgb(0, 0, 0)) 8%, transparent);
   }
 
   .Chat--style-cyberpunk {
@@ -139,12 +156,15 @@
   }
 
   .Chat--style-cyberpunk > .ChatMessage {
-    border-left-color: rgba(180, 0, 100, 0.3);
     text-shadow: none;
   }
 
+  .Chat--style-cyberpunk > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: color-mix(in srgb, var(--chat-accent, rgb(180, 0, 100)) 30%, transparent);
+  }
+
   .Chat--style-cyberpunk .Chat__badge {
-    background-color: #cc0066;
+    background-color: var(--chat-accent, #cc0066);
   }
 
   .Chat--style-sakura {
@@ -152,13 +172,15 @@
     color: var(--chat-text, #4a1020);
   }
 
+  // Чётные строки берут цвет тёмной темы: её правило чётных сильнее.
   .Chat--style-sakura > .ChatMessage {
+    --sakura-stripe: 200, 80, 120;
+    --sakura-stripe-mix: 25%;
     background: linear-gradient(
       90deg,
       rgba(255, 150, 180, 0.06) 0%,
       transparent 100%
     );
-    border-left-color: rgba(200, 80, 120, 0.25);
   }
 
   .Chat--style-space {
@@ -166,8 +188,8 @@
     color: var(--chat-text, #1a1a40);
   }
 
-  .Chat--style-space > .ChatMessage {
-    border-left-color: rgba(60, 70, 180, 0.2);
+  .Chat--style-space > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-left-color: color-mix(in srgb, var(--chat-accent, rgb(60, 70, 180)) 20%, transparent);
   }
 
   .Chat--style-vaporwave {
@@ -175,8 +197,9 @@
     color: var(--chat-text, #2a0040);
   }
 
-  .Chat--style-vaporwave > .ChatMessage {
-    border-image: linear-gradient(180deg, #cc4488, #0099bb) 1;
+  .Chat--style-vaporwave > .ChatMessage:not(.ChatMessage--highlighted) {
+    border-image: linear-gradient(180deg,
+      var(--vaporwave-stripe, #cc4488), var(--vaporwave-stripe, #0099bb)) 1;
   }
 
   // Search bar light theme

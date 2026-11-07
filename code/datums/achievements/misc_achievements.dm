@@ -183,3 +183,10 @@
 	desc = "He can see your every move, pick up a crowbar and try to find"
 	database_id = MEDAL_CROW_NECRO
 	icon = "crow_necro"
+
+/datum/award/achievement/misc/pawlicker
+	name = "PawLicker"
+	desc = "Ты попробовал так много лапок..."
+
+	database_id = MEDAL_PAWLICKER
+	icon = "pawlicker"

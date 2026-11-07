@@ -149,8 +149,10 @@
 	// От истинной плоскости: компонент из ComponentInitialize() мог уже переставить атом на этаж (stationloving).
 	if(SSmapping.max_plane_offset)
 		SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
-	if(length(GLOB.antag_training_arenas))
-		register_training_atom()
+	if(length(GLOB.antag_training_z))
+		var/turf/spot = get_turf(src)
+		if(spot && GLOB.antag_training_z[spot.z])
+			register_training_atom()
 	switch(blocks_emissive)
 		if(EMISSIVE_BLOCK_GENERIC)
 			var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = EMISSIVE_PLANE, alpha = src.alpha)
@@ -172,7 +174,7 @@
 		if(EMISSIVE_BLOCK_UNIQUE)
 			render_target = ref(src)
 			em_block = new(src, render_target)
-			vis_contents += em_block
+			add_vis_on_floor(em_block)
 	switch(light_system)
 		if(OVERLAY_LIGHT)
 			AddComponent(/datum/component/overlay_lighting)
@@ -210,7 +212,9 @@
 	QDEL_NULL(proximity_monitor)
 	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
-	QDEL_NULL(em_block)
+	if(em_block)
+		vis_contents -= em_block
+		QDEL_NULL(em_block)
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null
@@ -575,17 +579,19 @@
 	if(pulledby && moving_diagonally != FIRST_DIAG_STEP && get_dist(src, pulledby) > 1)		//separated from our puller and not in the middle of a diagonal move.
 		pulledby.stop_pulling()
 
-/atom/movable/proc/set_glide_size(target = 8)
+/atom/movable/proc/set_glide_size(target = 8, recursively_set = TRUE)
 #ifdef SMOOTH_MOVEMENT
-	SEND_SIGNAL(src, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE, target)
 	// Cap the upper bound: fast space drift feeds glide via the unclamped MOVEMENT_ADJUSTED_GLIDE_SIZE, and under MC lag the
 	// inflated visual_delay makes the sprite slide past one tile per render -> "teleport" look. Don't raise the floor: 0 means an instant move.
-	glide_size = min(target, MAX_GLIDE_SIZE)
-
+	target = max(0, min(target, MAX_GLIDE_SIZE))
+	if(glide_size == target)
+		return
+	SEND_SIGNAL(src, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE, target)
+	glide_size = target
 	for(var/mob/buckled_mob as anything in buckled_mobs)
 		buckled_mob.set_glide_size(target)
-#else
-	return
+	if(recursively_set)
+		recursive_pulled_glidesize_update()
 #endif
 
 ///Sets the anchored var and returns if it was sucessfully changed or not.
@@ -811,7 +817,7 @@
 
 /// Common proc used by painting tools like spraycans and palettes that can access the entire 24 bits color space.
 /obj/item/proc/pick_painting_tool_color(mob/user, default_color)
-	var/chosen_color = input(user,"Pick new color", "[src]", default_color) as color|null
+	var/chosen_color = tgui_input_color(user,"Pick new color", "[src]", default_color)
 	if(!chosen_color || QDELETED(src) || IS_DEAD_OR_INCAP(user) || !user.is_holding(src))
 		return
 	set_painting_tool_color(chosen_color)

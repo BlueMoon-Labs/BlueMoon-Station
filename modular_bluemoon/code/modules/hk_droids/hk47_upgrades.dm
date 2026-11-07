@@ -5,10 +5,15 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	var/list/upgrades = list()
 	for(var/upgrade_type in list(
 		/datum/hk47_upgrade/sniper,
+		/datum/hk47_upgrade/stun_bolts,
 		/datum/hk47_upgrade/plates,
+		/datum/hk47_upgrade/shield,
 		/datum/hk47_upgrade/disguise,
+		/datum/hk47_upgrade/door_hack,
+		/datum/hk47_upgrade/access_skimmer,
 		/datum/hk47_upgrade/thrusters,
 		/datum/hk47_upgrade/self_repair,
+		/datum/hk47_upgrade/repair_kits,
 		/datum/hk47_upgrade/servants,
 		/datum/hk47_upgrade/ghost_servant,
 	))
@@ -188,6 +193,31 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	to_chat(droid, span_notice("Утверждение: снайперский режим открыт. Переключение - винтовкой в руке, выстрел - после прицеливания."))
 	return TRUE
 
+/datum/hk47_upgrade/stun_bolts
+	id = "stun_bolts"
+	name = "Парализующий заряд"
+	voice_key = "hk47_accuracy"
+	chassis_module = TRUE
+	price_curve = HK47_MODULE_PRICES
+
+/datum/hk47_upgrade/stun_bolts/summary()
+	return "Утверждение: иногда заказчику нужен живой мешок с мясом. Иногда - живой свидетель, который ничего не успел увидеть."
+
+/datum/hk47_upgrade/stun_bolts/specs()
+	return "РЕЖИМ ВИНТОВКИ, ПЕРЕКЛЮЧАЕТСЯ В РУКЕ // [HK47_STUN_BOLT_STAMINA] УРОНА ВЫНОСЛИВОСТИ, БЕЗ РАН // 1 ЗАРЯД ВИНТОВКИ // ИСТОЩЁННАЯ ЦЕЛЬ ГОДИТСЯ ДЛЯ ЗАХВАТА // СВИДЕТЕЛЬ БЕЗ ТРУПА - ЛИЦЕНЗИЮ НЕ ОТЗОВУТ // [module_price_text()]"
+
+/datum/hk47_upgrade/stun_bolts/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	if(!hk47_find_rifle(droid))
+		return "винтовка HK должна быть в руках или на спине."
+	return null
+
+/datum/hk47_upgrade/stun_bolts/apply(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	var/obj/item/gun/energy/hk_rifle/rifle = hk47_find_rifle(droid)
+	if(!rifle?.unlock_stun())
+		return FALSE
+	to_chat(droid, span_notice("Утверждение: парализующий режим открыт. Переключение - винтовкой в руке."))
+	return TRUE
+
 /datum/hk47_upgrade/plates
 	id = "plates"
 	name = "Бронеплиты"
@@ -211,6 +241,28 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	to_chat(droid, span_notice("Утверждение: бронеплиты закреплены. Броня шасси - [droid.dna.species.armor]."))
 	return TRUE
 
+/datum/hk47_upgrade/shield
+	id = "shield"
+	name = "Энергощит"
+	voice_key = "hk47_recite_shields"
+	chassis_module = TRUE
+	price_curve = HK47_MODULE_PRICES
+
+/datum/hk47_upgrade/shield/summary()
+	return "Утверждение: щит. Мешкам с мясом не положено царапать мой корпус, даже когда их много."
+
+/datum/hk47_upgrade/shield/specs()
+	return "КНОПКА ДЕЙСТВИЯ // БРОНЯ +[HK47_SHIELD_ARMOR] НА [HK47_SHIELD_DURATION / (1 SECONDS)] с // [HK47_SHIELD_NUTRITION] ЗАРЯДА // ПЕРЕЗАРЯДКА [HK47_SHIELD_COOLDOWN / (1 SECONDS)] с // ЩИТ ВИДЕН ВСЕМ И СРЫВАЕТ МАСКИРОВКУ // ЭМИ ГАСИТ ЕГО СРАЗУ // [module_price_text()]"
+
+/datum/hk47_upgrade/shield/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	return chassis_reason(droid)
+
+/datum/hk47_upgrade/shield/apply(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	if(!droid.AddComponent(/datum/component/hk47_shield))
+		return FALSE
+	to_chat(droid, span_notice("Утверждение: энергощит установлен. Включение - кнопкой действия."))
+	return TRUE
+
 /datum/hk47_upgrade/disguise
 	id = "disguise"
 	name = "Маскировка"
@@ -231,6 +283,54 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 		return FALSE
 	to_chat(droid, span_notice("Утверждение: маскировочные протоколы загружены. Включение - кнопкой действия."))
 	return TRUE
+
+/datum/hk47_upgrade/door_hack
+	id = "door_hack"
+	name = "Взломщик шлюзов"
+	chassis_module = TRUE
+	price_curve = HK47_MODULE_PRICES
+
+/datum/hk47_upgrade/door_hack/summary()
+	return "Утверждение: замок - это вежливая просьба не входить. Я не отличаюсь вежливостью."
+
+/datum/hk47_upgrade/door_hack/specs()
+	return "ЩУП ИЗ ЗАПЯСТЬЯ, КНОПКА ДЕЙСТВИЯ // ЩУПОМ ПО ШЛЮЗУ ИЛИ СТЕКЛЯННОЙ ДВЕРИ - [HK47_SPIKE_HACK_TIME / (1 SECONDS)] с НА МЕСТЕ // ИСКРЫ И ТРЕСК ВИДНЫ И СЛЫШНЫ // [HK47_SPIKE_HACK_NUTRITION] ЗАРЯДА // БОЛТЫ И СВАРКУ НЕ БЕРЁТ // [module_price_text()]"
+
+/datum/hk47_upgrade/door_hack/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	return chassis_reason(droid)
+
+/datum/hk47_upgrade/door_hack/apply(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	hunter.grant_spike(droid)
+	to_chat(droid, span_notice("Утверждение: взломщик шлюзов установлен. Щуп - кнопкой действия, взлом - щупом по двери."))
+	return TRUE
+
+/datum/hk47_upgrade/access_skimmer
+	id = "access_skimmer"
+	name = "Считыватель доступа"
+	chassis_module = TRUE
+	price_curve = HK47_MODULE_PRICES
+
+/datum/hk47_upgrade/access_skimmer/summary()
+	return "Наблюдение: мешки с мясом носят ключи от своих дверей на груди. Как предупредительно с их стороны."
+
+/datum/hk47_upgrade/access_skimmer/specs()
+	return "ЩУП ИЗ ЗАПЯСТЬЯ, КНОПКА ДЕЙСТВИЯ // ЩУПОМ ПО ID-КАРТЕ - [HK47_SPIKE_CARD_TIME / (1 SECONDS)] с, ПО ЧЕЛОВЕКУ ВПЛОТНУЮ - [HK47_SPIKE_SKIM_TIME / (1 SECONDS)] с, ОН НИЧЕГО НЕ ЗАМЕТИТ // ДО [HK47_ACCESS_PROFILES] ПРОФИЛЕЙ, НОВЫЙ ВЫТЕСНЯЕТ СТАРЫЙ // ДВЕРИ ОТКРЫВАЮТСЯ КАК С КАРТОЙ, И В МАСКИРОВКЕ ТОЖЕ // [module_price_text()]"
+
+/datum/hk47_upgrade/access_skimmer/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	return chassis_reason(droid)
+
+/datum/hk47_upgrade/access_skimmer/apply(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	hunter.grant_spike(droid)
+	to_chat(droid, span_notice("Утверждение: считыватель доступа установлен. Щуп - кнопкой действия, копия - щупом по карте или по человеку рядом."))
+	return TRUE
+
+/datum/hk47_upgrade/access_skimmer/status_text(datum/antagonist/hk47/hunter)
+	if(!length(hunter.access_profiles))
+		return null
+	var/list/labels = list()
+	for(var/list/profile as anything in hunter.access_profiles)
+		labels += profile["label"]
+	return "В памяти: [jointext(labels, "; ")]"
 
 /datum/hk47_upgrade/thrusters
 	id = "thrusters"
@@ -263,7 +363,7 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	return "Утверждение: шасси чинит себя само. Медики мне не нужны. Я им, впрочем, тоже."
 
 /datum/hk47_upgrade/self_repair/specs()
-	return "ПАУЗА [HK47_REPAIR_DELAY / (1 SECONDS)] с БЕЗ УРОНА // [HK47_REPAIR_PER_SECOND] ЕД/с, МЕХАНИКА И ОЖОГИ ПОРОВНУ // ДО [HK47_REPAIR_HEALTH_CAP * 100]% // [HK47_REPAIR_NUTRITION_PER_HP] ЗАРЯДА ЗА ЕД., НЕ НИЖЕ [HK47_UPGRADE_MIN_NUTRITION] // [module_price_text()]"
+	return "ПАУЗА [HK47_REPAIR_DELAY / (1 SECONDS)] с БЕЗ УРОНА // [HK47_REPAIR_PER_SECOND] ЕД/с, МЕХАНИКА И ОЖОГИ ПОРОВНУ // ДО [HK47_REPAIR_HEALTH_CAP * 100]% // ТРАВМЫ ПО ОДНОЙ, ТЯЖЁЛЫЕ ПЕРВЫМИ: [HK47_REPAIR_WOUND_TIME / (1 SECONDS)] с И [HK47_REPAIR_WOUND_NUTRITION] ЗАРЯДА ЗА СТУПЕНЬ ТЯЖЕСТИ // [HK47_REPAIR_NUTRITION_PER_HP] ЗАРЯДА ЗА ЕД., НЕ НИЖЕ [HK47_UPGRADE_MIN_NUTRITION] // [module_price_text()]"
 
 /datum/hk47_upgrade/self_repair/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
 	return chassis_reason(droid)
@@ -272,6 +372,25 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	if(!droid.AddComponent(/datum/component/hk47_self_repair))
 		return FALSE
 	to_chat(droid, span_notice("Утверждение: протокол самовосстановления активен."))
+	return TRUE
+
+/datum/hk47_upgrade/repair_kits
+	id = "repair_kits"
+	name = "Ремкомплекты дроида"
+	voice_key = "hk47_self_diagnostic"
+	repeatable = TRUE
+
+/datum/hk47_upgrade/repair_kits/summary()
+	return "Утверждение: сварка, изолента и немного презрения. Хватает, чтобы подняться и закончить работу."
+
+/datum/hk47_upgrade/repair_kits/specs()
+	return "[HK47_REPAIR_KITS_PER_ORDER] НАБОРА ЗА ПОКУПКУ, В РУКИ ИЛИ ПОД НОГИ // [HK47_REPAIR_KIT_TIME / (1 SECONDS)] с РЕМОНТА БЕЗ ДВИЖЕНИЯ // +[HK47_REPAIR_KIT_HEAL] ПРОЧНОСТИ, МЕХАНИКА И ОЖОГИ ПОРОВНУ // ТОЛЬКО ШАССИ HK: СЕБЯ ИЛИ СВОЕГО HK-50 С РАЗУМОМ // ОТКЛЮЧЁННОЕ ШАССИ НЕ ПОДНИМАЕТ"
+
+/datum/hk47_upgrade/repair_kits/apply(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
+	for(var/kit_index in 1 to HK47_REPAIR_KITS_PER_ORDER)
+		var/obj/item/hk47_repair_kit/kit = new(droid.drop_location())
+		droid.put_in_hands(kit)
+	to_chat(droid, span_notice("Утверждение: ремкомплектов выдано - [HK47_REPAIR_KITS_PER_ORDER]. Ремонт - набором в руке."))
 	return TRUE
 
 /datum/hk47_upgrade/servants
@@ -385,6 +504,8 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 /datum/component/hk47_self_repair
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	var/last_damage_time = 0
+	/// Секунды работы над текущей травмой; новый урон сбрасывает.
+	var/wound_progress = 0
 
 /datum/component/hk47_self_repair/Initialize()
 	if(!iscarbon(parent))
@@ -402,10 +523,37 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	SIGNAL_HANDLER
 	if(damage > 0 && damagetype != STAMINA)
 		last_damage_time = world.time
+		wound_progress = 0
 
 /datum/component/hk47_self_repair/proc/on_life(datum/source, seconds, times_fired)
 	SIGNAL_HANDLER
 	repair_tick(seconds)
+	repair_wounds(seconds)
+
+/// Возвращает TRUE, если травма устранена.
+/datum/component/hk47_self_repair/proc/repair_wounds(seconds)
+	var/mob/living/carbon/droid = parent
+	if(droid.stat == DEAD || world.time - last_damage_time < HK47_REPAIR_DELAY)
+		return FALSE
+	var/datum/wound/worst
+	for(var/datum/wound/wound as anything in droid.all_wounds)
+		if(!worst || wound.severity > worst.severity)
+			worst = wound
+	if(!worst)
+		wound_progress = 0
+		return FALSE
+	var/cost = max(worst.severity, 1) * HK47_REPAIR_WOUND_NUTRITION
+	if(droid.nutrition - cost < HK47_UPGRADE_MIN_NUTRITION)
+		return FALSE
+	wound_progress += seconds
+	if(wound_progress * (1 SECONDS) < max(worst.severity, 1) * HK47_REPAIR_WOUND_TIME)
+		return FALSE
+	wound_progress = 0
+	var/obj/item/bodypart/limb = worst.limb
+	qdel(worst)
+	droid.adjust_nutrition(-cost)
+	to_chat(droid, span_notice("Утверждение: самовосстановление устранило травму[limb ? " ([limb.ru_name])" : ""]."))
+	return TRUE
 
 /// Возвращает, сколько единиц починено.
 /datum/component/hk47_self_repair/proc/repair_tick(seconds)

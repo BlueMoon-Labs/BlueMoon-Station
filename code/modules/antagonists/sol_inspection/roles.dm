@@ -4,7 +4,7 @@
 	var/datum/antagonist/sol_inspector/inspector
 
 /datum/objective/sol_inspection_return/check_completion()
-	if(!inspector || inspector.suspended || !inspector.owner?.current || inspector.owner.current.stat == DEAD)
+	if(!inspector || inspector.suspended)
 		return FALSE
 	return inspector.inspection_team?.is_returned_inspector(inspector.owner)
 
@@ -79,7 +79,6 @@
 
 	var/obj/item/card/id/id_card = inspector.wear_id
 	if(id_card)
-		id_card.access = get_all_accesses()
 		id_card.registered_name = inspector.real_name
 		id_card.assignment = "Всеобщее Бюро Контроля"
 		id_card.update_label()

@@ -7,6 +7,8 @@
 	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/flash_protect = FALSE
 	var/datum/armor/borg_plating_armor
+	// Встроенный ПДА и сетевые приложения модульного интерфейса доступны этому киборгу.
+	var/has_pda = TRUE
 
 /mob/living/silicon/robot/get_cell()
 	return cell
@@ -33,7 +35,7 @@
 
 	ident = rand(1, 999)
 
-	if(!shell)
+	if(!shell && has_pda)
 		aiPDA = new/obj/item/modular_computer/pda/silicon(src)
 		aiPDA.imprint_id(real_name, "Cyborg")
 
@@ -617,6 +619,8 @@
  * * arg2 - update_color, if enabled, will adjust the behavior of the proc to change the color of the light if it is already on.
  */
 /mob/living/silicon/robot/proc/toggle_headlamp(turn_off = FALSE, update_color = FALSE)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		turn_off = TRUE
 	//if both lamp is enabled AND the update_color flag is on, keep the lamp on. Otherwise, if anything listed is true, disable the lamp.
 	if(!(update_color && lamp_enabled) && (turn_off || lamp_enabled || update_color || !lamp_functional || stat || low_power_mode))
 		set_light((lamp_functional && stat != DEAD && lamp_doom) ? lamp_intensity : 0, l_color = COLOR_RED)
@@ -649,6 +653,8 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)

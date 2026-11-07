@@ -136,6 +136,8 @@
 	..()
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
+		if(T.training_origin != training_origin)
+			continue
 		for(var/atom/movable/the_enemy in enemies)
 			T.add_enemy(the_enemy)
 
@@ -267,6 +269,8 @@
 	if(canlay < 1)
 		show_egg_timer()
 		return
+	if(!antag_training_terror_room(src, 1))
+		return
 	var/list/eggtypes = ListAvailableEggTypes()
 	var/list/eggtypes_uncapped = list(TS_DESC_KNIGHT, TS_DESC_LURKER, TS_DESC_HEALER, TS_DESC_REAPER, TS_DESC_BUILDER)
 
@@ -295,6 +299,8 @@
 	if(canlay < numlings)
 		// We have to check this again after the popups, to account for people spam-clicking the button, then doing all the popups at once.
 		to_chat(src, "<span class='warning'>Too soon to do this again!</span>")
+		return
+	if(!antag_training_terror_room(src, numlings))
 		return
 	canlay -= numlings
 	eggslaid += numlings
@@ -333,7 +339,7 @@
 		to_chat(src, "<span class='danger'>Too soon to attempt that again. Wait just a few more seconds...</span>")
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/proc/ListAvailableEggTypes()
-	if(MinutesAlive() >= 25)
+	if(MinutesAlive() >= 25 && !training_origin)
 		var/list/spider_array = CountSpidersDetailed(TRUE, list(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/mother, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/defiler, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/princess))
 		if(spider_array["all"] == 0)
 			return list(TS_DESC_DEFILER, TS_DESC_PRINCESS, TS_DESC_MOTHER)

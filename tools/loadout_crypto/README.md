@@ -23,7 +23,9 @@ LOADOUT_CRYPTO_NODE node
 
 Keep the real `LOADOUT_CKEY_SECRET` only in the deployment copy of the config;
 the placeholder in the repository must remain commented out. Replacing or losing
-the key makes existing `enc1:` IDs unreadable. `LOADOUT_CRYPTO_NODE` may be a
+the key makes existing `enc1:` IDs unreadable. There is no default key: without an
+explicit private key, encryption and decryption fail with `secret_missing` and
+encrypted whitelist entries deny access. `LOADOUT_CRYPTO_NODE` may be a
 Node.js executable name or a full path without quotes or extra arguments.
 
 The DM bridge reads the key through `CONFIG_GET` and sends it to the local helper
@@ -40,6 +42,10 @@ spelling, and `gear_ckey_from_id(id)` decrypts it (or returns null on failure).
 Whitelist checks normalize the decrypted key, preserving account identity across
 case/punctuation changes. Keep the complete `enc1:` prefix when copying an ID.
 Results are cached and the cache is discarded when the configured secret changes.
+Cached requests return before reading `node_path.txt` or accessing the Node helper;
+the loaded secret and configured Node executable are still checked in memory so
+configuration changes invalidate cached results. Uncached requests, including the
+admin diagnostic tool, resolve the current Node path from disk.
 `initialize_global_whitelist_cache()` warms loadout, accessory, bark, AI screen,
 borg skin and hotel whitelists in a single deduplicated batch after config loading
 and loadout initialization. Whitelists are read from live datums, including

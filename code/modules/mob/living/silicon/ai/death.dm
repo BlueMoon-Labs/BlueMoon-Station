@@ -34,7 +34,8 @@
 		set_eyeobj_visible(FALSE)
 
 	GLOB.shuttle_caller_list -= src
-	SSshuttle.autoEvac()
+	if(!training_origin)
+		SSshuttle.autoEvac()
 
 	ShutOffDoomsdayDevice()
 
@@ -48,7 +49,8 @@
 	else if(istype(loc, /obj/item/aicard))
 		loc.icon_state = "aicard-404"
 
-	SSblackbox.ReportDeath(src)
+	if(!training_origin)
+		SSblackbox.ReportDeath(src)
 
 /mob/living/silicon/ai/proc/ShutOffDoomsdayDevice()
 	if(nuking)

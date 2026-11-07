@@ -118,7 +118,7 @@
 				if(!compact_mode)
 					npcs += list(serialized)
 			else
-				if (isswarmer(M)) // BLUEMOON ADD - свармеры уходят в категорию "Ghost-Visible Antagonists"
+				if (isswarmer(M) && !M.training_origin) // свармеры уходят в категорию "Ghost-Visible Antagonists"
 					serialized["assignment"] = "swarmer"
 					serialized["antag"] = "Swarmer"
 					antagonists += list(serialized)

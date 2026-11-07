@@ -28,15 +28,17 @@ $department_map: (
 
   &__Cell {
     padding: 3px 0;
+  }
 
-    &--Captain {
-      color: colors.$yellow;
-      padding: 3px 8px;
-    }
+  &__Cell + &__Cell {
+    padding-left: 9px;
+  }
 
-    &--Command {
-      color: colors.$yellow;
-      padding: 3px 9px;
-    }
+  &__HeadMark {
+    margin-right: 0.3em;
+  }
+
+  &__Cell &__HeadMark {
+    color: colors.$yellow;
   }
 }

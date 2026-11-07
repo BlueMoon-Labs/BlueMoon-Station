@@ -17,7 +17,7 @@
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
-	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — персональная изолированная сеть
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — сеть сервера рядом, без него персональная изолированная
 	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети
 	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
 
@@ -87,13 +87,11 @@
 		return TRUE
 //BLUEMOON ADD END
 
-/obj/machinery/rnd/production/examine(mob/user)
-	. = ..()
+/obj/machinery/rnd/production/examine_display_content(mob/user)
 	var/datum/component/remote_materials/materials = GetComponent(/datum/component/remote_materials)
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Хранится до <b>[materials.local_size]</b> m/u локально.\n\
-		- Затраты материалов: <b>[print_cost_coeff*100]%</b>.</span>"
+	. += "\
+	- Хранится до <b>[materials.local_size]</b> m/u локально.\n\
+	- Затраты материалов: <b>[print_cost_coeff*100]%</b>.</span>"
 
 //we eject the materials upon deconstruction.
 /obj/machinery/rnd/production/on_deconstruction()
@@ -396,7 +394,8 @@
 		return FALSE
 	if(istext(amount))
 		amount = text2num(amount)
-	if(amount <= 0)
+	amount = round(amount)
+	if(!(amount > 0))
 		amount = 1
 	if(amount > max_build_amount)
 		if(COOLDOWN_FINISHED(src, cooldown_say))

@@ -79,7 +79,7 @@
 								"<span class='userdanger'>[user] пытается надеть [src.name] на [C]!</span>")
 
 			playsound(loc, cuffsound, 30, 1, -2)
-			if(do_mob(user, C, 30) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
+			if(do_mob(user, C, 3 SECONDS * (HAS_TRAIT(user, TRAIT_FAST_CUFFING) ? MOD_CUFF_SPEED : 1)) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
 				if(C.handcuffed)
 					to_chat(user, "<span class='warning'>Вы не смогли надеть наручники на [C]!</span>")
 					return
@@ -144,11 +144,11 @@
 
 	var/static/list/hovering_item_typechecks = list(
 		/obj/item/stack/rods = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Craft wired rod"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Собрать прут с проводом"),
 		),
 
 		/obj/item/stack/sheet/metal = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Craft bola"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Собрать болу"),
 		),
 	)
 
@@ -284,8 +284,12 @@
 /obj/item/restraints/legcuffs/proc/on_removed()
 	return
 
+// Проверяет анатомическую совместимость отдельно от занятости слота и числа ног.
+/obj/item/restraints/proc/can_apply_to_legs(mob/living/carbon/target)
+	return target && !HAS_TRAIT(target, TRAIT_NAGA_ANATOMY)
+
 /datum/status_effect/beartrap_ensnared
-	id = "bola_snared"
+	id = "beartrap_ensnared"
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = null
 	var/was_teleported = FALSE // для проверки на факт телепортации
@@ -303,6 +307,12 @@
 
 /obj/item/restraints/legcuffs/beartrap/prearmed
 	armed = TRUE
+
+/obj/item/restraints/legcuffs/beartrap/can_apply_to_legs(mob/living/carbon/target)
+	if(target && HAS_TRAIT(target, TRAIT_NAGA_ANATOMY))
+		// Челюсти капкана могут зажать один хвост, но не отсутствующую конечность.
+		return !!target.get_bodypart(BODY_ZONE_L_LEG)
+	return ..()
 
 /obj/item/restraints/legcuffs/beartrap/Initialize(mapload)
 	. = ..()
@@ -338,7 +348,9 @@
 				def_zone = pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 				if(C.lying)
 					snap = FALSE
-				else if(!C.legcuffed && C.get_num_legs(FALSE) >= 2 && snap) //beartrap can't cuff your leg if there's already a beartrap or legcuffs, or you don't have two legs.
+				else if(!can_apply_to_legs(C))
+					snap = FALSE
+				else if(!C.legcuffed && (C.get_num_legs(FALSE) >= 2 || HAS_TRAIT(C, TRAIT_NAGA_ANATOMY)) && snap)
 					C.legcuffed = src
 					forceMove(C)
 					C.update_equipment_speed_mods()
@@ -407,7 +419,7 @@
   * * C - the carbon that we will try to ensnare
   */
 /obj/item/restraints/legcuffs/bola/proc/ensnare(mob/living/carbon/C)
-	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+	if(can_apply_to_legs(C) && !C.legcuffed && C.get_num_legs(FALSE) >= 2)
 		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
 		C.legcuffed = src
 		forceMove(C)

@@ -81,7 +81,7 @@
 	design_ids = list("adaptiveeyes", "thermalaegiseyes", "darkveilorgan", "optisiaorgan", "babyloncords")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
-datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.
+/datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.
 	id = "bioaegis_danger"
 	display_name = "Experimental Organic Designs"
 	description = "Some evil scientist decided to fuck around and did find out."

@@ -68,7 +68,7 @@ GLOBAL_VAR_INIT(map_modules_loaded, FALSE)
 	preload_size(mappath) // We need to run this here as the map path has been null until now
 
 	T = locate(T.x - x_offset, T.y - y_offset, T.z)
-	. = ..()
+	. = ..(T, centered, orientation, annihilate, force_cache, rotate_placement_to_orientation)
 
 /datum/map_template/map_module/preload_size(path, cache)
 	. = ..(path, TRUE) // Done this way because we still want to know if someone actualy wanted to cache the map

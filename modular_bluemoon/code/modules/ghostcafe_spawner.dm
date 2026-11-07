@@ -149,45 +149,45 @@
 /datum/outfit/syndicate/training
 	name = "Syndicate Operative - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/syndicate/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/syndicate/full/training
 	name = "Syndicate Operative - Full Kit Training"
 	ears = null
 	r_hand = null // Remove bulldog for training
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/syndicate/full/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/syndicate/leader/training
 	name = "Syndicate Leader - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/syndicate/leader/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/syndicate/lone/training
 	name = "Syndicate Lone - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/syndicate/lone/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/ert/commander/training
 	name = "ERT Commander - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/ert/commander/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/ert/security/training
 	name = "ERT Security - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/ert/security/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 /datum/outfit/inteq_agent/training
 	name = "Inteq Agent - Training"
 	ears = null
-	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-		return // Skip antagonist post_equip
+/datum/outfit/inteq_agent/training/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return // Skip antagonist post_equip
 
 // Ghost Cafe specific outfits (based on Black Mesa but without radios)
 

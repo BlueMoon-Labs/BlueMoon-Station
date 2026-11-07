@@ -274,8 +274,7 @@
 
 /obj/machinery/door/airlock/plasma/attackby(obj/item/C, mob/user, params)
 	if(C.get_temperature() > 300)//If the temperature of the object is over 300, then ignite
-		message_admins("Plasma airlock ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]")
-		log_admin("Plasma airlock ignited by [key_name(user)] in [AREACOORD(src)]")
+		antag_training_admin_log(src, "Plasma airlock ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]", "Plasma airlock ignited by [key_name(user)] in [AREACOORD(src)]")
 		ignite(C.get_temperature())
 	else
 		return ..()

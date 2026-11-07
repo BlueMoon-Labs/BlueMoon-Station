@@ -208,24 +208,10 @@
 	cant_discount = TRUE
 
 /datum/uplink_item/bundles_tc/random/purchase(mob/user, datum/component/uplink/U)
-	var/list/uplink_items = U.uplink_items
-	var/list/possible_items = list()
-	for(var/category in uplink_items)
-		for(var/item in uplink_items[category])
-			var/datum/uplink_item/I = uplink_items[category][item]
-			if(src == I || !I.item)
-				continue
-			if(istype(I, /datum/uplink_item/bundles_tc/reroll)) //oops!
-				continue
-			if(U.telecrystals < I.cost)
-				continue
-			if(!U.is_uplink_item_visible_to_user(user, I))
-				continue
-			possible_items += I
-
+	var/list/possible_items = U.random_item_candidates(user, src)
 	if(possible_items.len)
 		var/datum/uplink_item/I = pick(possible_items)
-		SSblackbox.record_feedback("tally", "traitor_random_uplink_items_gotten", 1, initial(I.name))
+		U.record_random_item(I)
 		U.MakePurchase(user, I)
 
 /datum/uplink_item/bundles_tc/telecrystal

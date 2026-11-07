@@ -323,7 +323,6 @@ Contains:
 	icon_state = "hardsuit0-ert_engineer"
 	item_state = "hardsuit0-ert_engineer"
 	hardsuit_type = "ert_engineer"
-	armor_type = /datum/armor/engi // BLUEMOON CHANGE rig rebalance
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 
 /obj/item/clothing/suit/space/hardsuit/ert/engi
@@ -332,7 +331,6 @@ Contains:
 	item_state = "ert_engineer"
 	tail_state = "ert-engineer"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/engi
-	armor_type = /datum/armor/engi // BLUEMOON CHANGE rig rebalance
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 

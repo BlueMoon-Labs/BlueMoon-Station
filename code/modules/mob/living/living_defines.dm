@@ -10,6 +10,10 @@
 
 	tooltips = TRUE
 
+	/// Слой до сдвига тащения и слой после него: чужая смена слоя делает пару устаревшей
+	var/pull_layer_base
+	var/pull_layer_applied
+
 	var/last_click_move = 0 // Stores the previous next_move value.
 
 	var/resize = 1 //Badminnery resize
@@ -121,6 +125,7 @@
 	///флаг снят, handle_gravity() не опрашивает has_gravity заново: всё, что
 	///меняет гравитацию без перемещения, зовёт refresh_gravity() само.
 	var/gravity_cache_dirty = TRUE
+	var/gravity_inverted = FALSE
 
 	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
 	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().
@@ -131,6 +136,7 @@
 	var/limb_destroyer = 0 //1 Sets AI behavior that allows mobs to target and dismember limbs with their basic attack.
 
 	var/mob_size = MOB_SIZE_HUMAN
+	var/swarm_gather_lock = FALSE
 	var/mob_biotypes = MOB_ORGANIC
 	var/metabolism_efficiency = 1 //more or less efficiency to metabolize helpful/harmful reagents and regulate body temperature..
 	var/has_limbs = 0 //does the mob have distinct limbs?(arms,legs, chest,head)

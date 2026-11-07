@@ -2,14 +2,18 @@
 /proc/hierophant_message(message, servantsonly, atom/target)
 	if(!message)
 		return FALSE
-	for(var/M in GLOB.mob_list)
+	var/atom/movable/source = target
+	var/datum/weakref/origin = istype(source) ? source.training_origin : null
+	for(var/mob/M as anything in GLOB.mob_list)
 		if(!servantsonly && isobserver(M))
+			if(!antag_training_observer_hears(M, target))
+				continue
 			if(target)
 				var/link = FOLLOW_LINK(M, target)
 				to_chat(M, "[link] [message]")
 			else
 				to_chat(M, message)
-		else if(is_servant_of_ratvar(M))
+		else if(is_servant_of_ratvar(M) && M.training_origin == origin)
 			to_chat(M, message)
 	return TRUE
 

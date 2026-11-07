@@ -95,11 +95,4 @@
 	set category = "OOC"
 	if(!GLOB.changelog_tgui)
 		GLOB.changelog_tgui = new /datum/changelog()
-
-	if(!mob)
-		return
-	GLOB.changelog_tgui.ui_interact(mob)
-	if(prefs.lastchangelog != GLOB.changelog_hash)
-		prefs.lastchangelog = GLOB.changelog_hash
-		prefs.save_pref_var("lastchangelog")
-		winset(src, "infowindow.changelog", "font-style=;")
+	GLOB.changelog_tgui.open_for(src)

@@ -1,35 +1,37 @@
-/// Повторная установка ДНК-замка не должна менять описание шасси, в том числе после применения emag.
-/datum/unit_test/mecha_dna_lock_description/proc/operate_lock(obj/vehicle/sealed/mecha/mech, list/href_list)
-	mech.Topic(null, href_list)
+// Повторная установка ДНК-замка не должна менять описание шасси, в том числе после применения emag.
+/datum/unit_test/mecha_dna_lock_description/proc/operate_lock(obj/vehicle/sealed/mecha/mech, datum/tgui/ui, action)
+	return mech.ui_act(action, list(), ui, ui.state)
 
 /datum/unit_test/mecha_dna_lock_description/Run()
 	var/obj/vehicle/sealed/mecha/working/ripley/mech = allocate(/obj/vehicle/sealed/mecha/working/ripley)
 	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human)
 	pilot.forceMove(mech)
 	mech.add_occupant(pilot)
-	mech.desc = "Custom chassis description."
+	var/datum/tgui/ui = allocate(/datum/tgui, pilot, mech, "Mecha")
+	mech.desc = "Особое описание шасси."
 	var/original_description = mech.desc
 	for(var/cycle in 1 to 2)
-		pilot.name = "Test Pilot [cycle]"
-		world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, list("dna_lock" = "1"))
-		TEST_ASSERT_EQUAL(mech.dna_lock, pilot.dna.unique_enzymes, "The pilot must actually set the lock")
-		TEST_ASSERT_EQUAL(mech.dna_lock_name, pilot.name, "The lock must remember its owner's name")
+		pilot.real_name = "Test Pilot [cycle]"
+		pilot.name = "Masked Pilot [cycle]"
+		world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, ui, "dna_lock")
+		TEST_ASSERT_EQUAL(mech.dna_lock, pilot.dna.unique_enzymes, "Пилот должен установить ДНК-замок через TGUI")
+		TEST_ASSERT_EQUAL(mech.dna_lock_name, pilot.real_name, "Замок должен запоминать настоящее имя пилота, даже если он скрывает его маской")
 		var/list/locked_examine = mech.examine(pilot)
 		var/lock_lines = 0
 		for(var/line in locked_examine)
 			if(findtext(line, "Этот мех заблокирован ДНК"))
 				lock_lines++
-		TEST_ASSERT_EQUAL(lock_lines, 1, "Examine must contain exactly one DNA lock notice")
-		TEST_ASSERT_EQUAL(mech.desc, original_description, "Locking must not edit desc")
-		world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, list("reset_dna" = "1"))
-		TEST_ASSERT_NULL(mech.dna_lock, "Reset must clear the lock")
-		TEST_ASSERT_NULL(mech.dna_lock_name, "Reset must clear the display name")
-		TEST_ASSERT(!findtext(jointext(mech.examine(pilot), "\n"), "Этот мех заблокирован ДНК"), "Unlocked examine must not show a stale lock")
-	world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, list("dna_lock" = "1"))
+		TEST_ASSERT_EQUAL(lock_lines, 1, "Осмотр должен содержать ровно одно сообщение о ДНК-замке")
+		TEST_ASSERT_EQUAL(mech.desc, original_description, "Установка замка не должна изменять desc")
+		world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, ui, "reset_dna")
+		TEST_ASSERT_NULL(mech.dna_lock, "Сброс должен удалять ДНК-замок")
+		TEST_ASSERT_NULL(mech.dna_lock_name, "Сброс должен удалять сохранённое имя владельца")
+		TEST_ASSERT(!findtext(jointext(mech.examine(pilot), "\n"), "Этот мех заблокирован ДНК"), "После снятия замка осмотр не должен сообщать о блокировке")
+	world.PushUsr(pilot, CALLBACK(src, PROC_REF(operate_lock)), mech, ui, "dna_lock")
 	var/obj/item/card/emag/emag = allocate(/obj/item/card/emag)
 	mech.emag_act(pilot, emag)
-	TEST_ASSERT_NULL(mech.dna_lock_name, "Emag must also clear the display name")
-	TEST_ASSERT_EQUAL(mech.desc, original_description, "Emag must preserve unrelated custom descriptions")
+	TEST_ASSERT_NULL(mech.dna_lock_name, "Взлом emag должен удалять сохранённое имя владельца")
+	TEST_ASSERT_EQUAL(mech.desc, original_description, "Взлом emag должен сохранять описание шасси")
 
 /datum/unit_test/portable_turret_relocation/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)

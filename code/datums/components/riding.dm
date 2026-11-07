@@ -280,10 +280,11 @@
 	return override_allow_spacemove || AM.has_gravity()
 
 /datum/component/riding/proc/account_limbs(mob/living/M)
-	if(M.get_num_legs() < 2 && !slowed)
+	var/needs_slowdown = M.get_num_supporting_limbs() < 2
+	if(needs_slowdown && !slowed)
 		vehicle_move_delay = vehicle_move_delay + slowvalue
 		slowed = TRUE
-	else if(slowed)
+	else if(!needs_slowdown && slowed)
 		vehicle_move_delay = vehicle_move_delay - slowvalue
 		slowed = FALSE
 
@@ -695,11 +696,17 @@
 /obj/item/riding_offhand/on_thrown(mob/living/carbon/user, atom/target)
 	if(rider == user)
 		return //Piggyback user.
-	user.unbuckle_mob(rider)
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
-		to_chat(user, span_notice("Вы аккуратно отпускаете [rider]."))
+	// седок уже исчез: оффхенд устарел, освобождаем руку
+	if(QDELETED(rider))
+		qdel(src)
 		return
-	return rider
+	// unbuckle_mob удаляет этот оффхенд, а его Destroy обнуляет rider
+	var/mob/living/carbon/thrown_rider = rider
+	user.unbuckle_mob(thrown_rider)
+	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+		to_chat(user, span_notice("Вы аккуратно отпускаете [thrown_rider]."))
+		return
+	return thrown_rider
 
 /datum/action/cooldown/true_belly_riding
 	name = "True Belly Riding"

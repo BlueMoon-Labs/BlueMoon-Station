@@ -42,6 +42,8 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 		if(parent1)
 			parent1.reconcile_air()
 		investigate_log("was opened by [usr ? key_name(usr) : "a remote signal"]", INVESTIGATE_ATMOS)
+	if(usr)
+		balloon_alert(usr, "[on ? "открыто" : "закрыто"]")
 
 /obj/machinery/atmospherics/components/binary/valve/interact(mob/user)
 	add_fingerprint(usr)

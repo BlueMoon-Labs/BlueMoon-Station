@@ -9,7 +9,7 @@
 /mob/living/carbon/alien/proc/findQueen()
 	if(hud_used)
 		hud_used.alien_queen_finder.cut_overlays()
-		var/mob/queen = get_alien_type(/mob/living/carbon/alien/humanoid/royal/queen)
+		var/mob/queen = get_alien_type(/mob/living/carbon/alien/humanoid/royal/queen, src)
 		if(!queen)
 			return
 		var/turf/Q = get_turf(queen)

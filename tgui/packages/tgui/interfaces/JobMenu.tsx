@@ -5,6 +5,7 @@ import { useBackend } from '../backend';
 import {
   Box,
   Button,
+  ByondUi,
   Divider,
   Icon,
   NoticeBox,
@@ -75,8 +76,9 @@ type JobMenuData = {
   mode?: string;
   selected?: string | null;
   selectedGhost?: string | null;
-  preview?: string;
-  previewJob?: string;
+  previewMap?: string;
+  previewShown?: BooleanLike;
+  previewTiles?: number;
   departments?: Department[];
   ghostRoles?: GhostRole[];
   ghostInfo?: GhostInfo | null;
@@ -535,16 +537,6 @@ export const JobMenu = () => {
 
   const [tab, setTab] = useState<'jobs' | 'ghosts'>('jobs');
 
-  // БЕЙС 64 МОЙ ЛЮБИМЫЙ БОЖЕ
-  const [previewCache, setPreviewCache] = useState<Record<string, string>>({});
-  useEffect(() => {
-    if (data?.preview && data?.previewJob) {
-      const job = data.previewJob;
-      const image = data.preview;
-      setPreviewCache((prev) => ({ ...prev, [job]: image }));
-    }
-  }, [data?.preview, data?.previewJob]);
-
   const deptMatches = departments.filter((dept) =>
     dept.jobs.some((job) => job.title === selected),
   );
@@ -568,7 +560,24 @@ export const JobMenu = () => {
 
   const previewKey: string | null =
     showGhost && selectedGhost ? `ghost:${selectedGhost}` : selected || null;
-  const previewImage = previewKey ? previewCache[previewKey] : null;
+  // Превью рисует сам клиент на карте окна, сервер шлёт только её имя
+  const previewMap = previewKey && data?.previewShown ? data?.previewMap || null : null;
+  // Нативная карта не следит за вёрсткой: при смене высоты баннера её надо переставить
+  const previewLayout = `${!!round.shuttle}-${!!round.relief}`;
+  // Новая карта в окне: сервер должен пересчитать её вид, иначе клиент покажет её размером с экран игры
+  useEffect(() => {
+    if (previewMap) {
+      act('preview_mounted');
+    }
+  }, [previewMap, previewLayout]);
+  // Целый зум: внешность в previewTiles клеток на всё окно превью, в физических пикселях
+  const previewZoom = Math.max(
+    1,
+    Math.floor(
+      (PREVIEW_BOX * (window.devicePixelRatio || 1)) /
+        ((data?.previewTiles || 1) * 32),
+    ),
+  );
 
   // Гост роли уходят в свою вкладку, чтобы не забивать список профессий.
   // Пустые отделы не показываем — от них остаётся только пустая рамка.
@@ -631,7 +640,9 @@ export const JobMenu = () => {
                 ghostInfo={ghostInfo}
                 ghostBlock={ghostBlock}
                 info={info}
-                previewImage={previewImage}
+                previewMap={previewMap}
+                previewLayout={previewLayout}
+                previewZoom={previewZoom}
                 onGhostTab={isLatejoin && tab === 'ghosts'}
                 isLatejoin={isLatejoin}
                 act={act}
@@ -739,144 +750,6 @@ const buildJoinButton = (
 };
 
 const PREVIEW_BOX = 256;
-const PREVIEW_CACHE_MAX = 64;
-
-type FramedPreview = { url: string; w: number; h: number };
-const previewFrameCache = new Map<string, FramedPreview>();
-
-const framePreview = (image: HTMLImageElement): FramedPreview | null => {
-  const width = image.naturalWidth;
-  const height = image.naturalHeight;
-  if (!width || !height) return null;
-
-  let x0 = 0;
-  let y0 = 0;
-  let x1 = width - 1;
-  let y1 = height - 1;
-
-  const probe = document.createElement('canvas');
-  probe.width = width;
-  probe.height = height;
-  const probeCtx = probe.getContext('2d', { willReadFrequently: true });
-  if (probeCtx) {
-    probeCtx.imageSmoothingEnabled = false;
-    probeCtx.drawImage(image, 0, 0);
-    try {
-      const { data } = probeCtx.getImageData(0, 0, width, height);
-      let left = width;
-      let right = -1;
-      let top = height;
-      let bottom = -1;
-      for (let y = 0; y < height; y++) {
-        const row = y * width * 4;
-        for (let x = 0; x < width; x++) {
-          if (data[row + x * 4 + 3] === 0) continue;
-          if (x < left) left = x;
-          if (x > right) right = x;
-          if (y < top) top = y;
-          if (y > bottom) bottom = y;
-        }
-      }
-      if (right >= 0 && bottom >= 0) {
-        x0 = left;
-        y0 = top;
-        x1 = right;
-        y1 = bottom;
-      }
-    } catch {
-      x0 = 0;
-      y0 = 0;
-      x1 = width - 1;
-      y1 = height - 1;
-    }
-  }
-
-  const contentWidth = x1 - x0 + 1;
-  const contentHeight = y1 - y0 + 1;
-  const scale = Math.max(
-    1,
-    Math.floor(PREVIEW_BOX / Math.max(contentWidth, contentHeight)),
-  );
-
-  const out = document.createElement('canvas');
-  out.width = contentWidth * scale;
-  out.height = contentHeight * scale;
-  const outCtx = out.getContext('2d');
-  if (!outCtx) return null;
-  outCtx.imageSmoothingEnabled = false;
-  outCtx.drawImage(
-    image,
-    x0,
-    y0,
-    contentWidth,
-    contentHeight,
-    0,
-    0,
-    out.width,
-    out.height,
-  );
-
-  return { url: out.toDataURL('image/png'), w: out.width, h: out.height };
-};
-
-const PixelPreview = (props: { src: string }) => {
-  const { src } = props;
-  const [framed, setFramed] = useState<FramedPreview | null>(
-    () => previewFrameCache.get(src) || null,
-  );
-
-  useEffect(() => {
-    const cached = previewFrameCache.get(src);
-    if (cached) {
-      setFramed(cached);
-      return;
-    }
-    setFramed(null);
-
-    let cancelled = false;
-    const image = new Image();
-    image.onload = () => {
-      const result = framePreview(image);
-      if (result) {
-        if (previewFrameCache.size >= PREVIEW_CACHE_MAX) {
-          const oldest = previewFrameCache.keys().next();
-          if (!oldest.done) previewFrameCache.delete(oldest.value);
-        }
-        previewFrameCache.set(src, result);
-      }
-      if (!cancelled) setFramed(result);
-    };
-    image.src = `data:image/png;base64,${src}`;
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
-
-  return (
-    <Box
-      style={{
-        width: PREVIEW_BOX,
-        height: PREVIEW_BOX,
-        margin: '0 auto',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-      {framed && (
-        <Box
-          as="img"
-          src={framed.url}
-          style={{
-            width: `${framed.w}px`,
-            height: `${framed.h}px`,
-            imageRendering: 'pixelated',
-          }}
-        />
-      )}
-    </Box>
-  );
-};
 
 /** Левая колонка превью, название, подчинение, описание, кнопки. */
 const InfoColumn = (props: {
@@ -888,7 +761,9 @@ const InfoColumn = (props: {
   ghostInfo?: GhostInfo | null;
   ghostBlock: { label: string; icon: string; color: string } | null;
   info: { summary: string; tasks?: string[]; reports?: string[] };
-  previewImage: string | null;
+  previewMap: string | null;
+  previewLayout: string;
+  previewZoom: number;
   onGhostTab: boolean;
   isLatejoin: boolean;
   act: (action: string, params?: Record<string, unknown>) => void;
@@ -902,7 +777,9 @@ const InfoColumn = (props: {
     ghostInfo,
     ghostBlock,
     info,
-    previewImage,
+    previewMap,
+    previewLayout,
+    previewZoom,
     onGhostTab,
     isLatejoin,
     act,
@@ -932,6 +809,31 @@ const InfoColumn = (props: {
       width="300px"
       shrink={0}
       style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Превью вне прокрутки: нативная карта не двигается вместе с содержимым */}
+      <Box
+        px={1}
+        py={1}
+        mr="6px"
+        style={{
+          flex: '0 0 auto',
+          border: '1px solid rgba(255,255,255,0.2)',
+          background: 'rgba(0,0,0,0.25)',
+          textAlign: 'center',
+        }}>
+        {previewMap ? (
+          <ByondUi
+            key={previewLayout}
+            style={{
+              width: `${PREVIEW_BOX}px`,
+              height: `${PREVIEW_BOX}px`,
+              margin: '0 auto',
+            }}
+            params={{ id: previewMap, type: 'map', zoom: previewZoom }}
+          />
+        ) : (
+          <Box color="label">{previewFallback}</Box>
+        )}
+      </Box>
       <Box
         style={{
           flex: '1 1 auto',
@@ -941,20 +843,6 @@ const InfoColumn = (props: {
           paddingRight: '6px',
           paddingBottom: '6px',
         }}>
-        <Box
-          px={1}
-          py={1}
-          style={{
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'rgba(0,0,0,0.25)',
-            textAlign: 'center',
-          }}>
-          {previewImage ? (
-            <PixelPreview key={previewImage} src={previewImage} />
-          ) : (
-            <Box color="label">{previewFallback}</Box>
-          )}
-        </Box>
 
         {!!selectedJob && (
           <>

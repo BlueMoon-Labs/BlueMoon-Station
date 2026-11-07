@@ -340,7 +340,7 @@
 			open = !open
 			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
-			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
+			to_chat(user, "<span class='warning'>Панель техобслуживания закрыта.</span>")
 	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
@@ -369,7 +369,7 @@
 				to_chat(user, "<span class='warning'>[src] не требует ремонта!</span>")
 				return
 			if(!open)
-				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью тех-обслуживания!</span>")
+				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью техобслуживания!</span>")
 				return
 
 			if(W.use_tool(src, user, 0, volume=40))

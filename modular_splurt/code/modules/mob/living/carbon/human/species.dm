@@ -13,6 +13,12 @@
 	var/icon_suit
 	var/icon_uniform
 
+/// Видовой файл одежды слота, если в нём нарисована эта вещь; иначе null, и вещь рисуется обычным спрайтом.
+/datum/species/proc/species_worn_icon(species_file, worn_state)
+	if(species_file && icon_exists(species_file, worn_state))
+		return species_file
+	return null
+
 
 /datum/species/althelp(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
 	if(user == target && istype(user))

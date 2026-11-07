@@ -42,7 +42,8 @@
 	if(wizard)
 		wizard.status_flags &= ~GODMODE
 		wizard.mob_transforming = 0
-		wizard.forceMove(get_turf(src))
+		if(!QDELETED(wizard))
+			wizard.forceMove(get_turf(src))
 		wizard = null //иначе род тянет за собой визарда, а тот - свой мозг
 	start_turf = null
 	return ..()

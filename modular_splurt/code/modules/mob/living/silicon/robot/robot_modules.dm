@@ -357,7 +357,7 @@
 		/obj/item/dogborg/jaws/small,
 		/obj/item/storage/bag/borgdelivery,
 		/obj/item/analyzer/nose,
-		/obj/item/soap/tongue,
+		/obj/item/soap/synthtongue,
 		/obj/item/shockpaddles/cyborg/hound
 	)
 	LAZYADD(basic_modules, extra)
@@ -368,7 +368,7 @@
 		/obj/item/dogborg/jaws/small,
 		/obj/item/storage/bag/borgdelivery,
 		/obj/item/analyzer/nose,
-		/obj/item/soap/tongue
+		/obj/item/soap/synthtongue
 	)
 	LAZYADD(basic_modules, extra)
 	. = ..()
@@ -378,7 +378,7 @@
 		/obj/item/storage/bag/borgdelivery,
 		/obj/item/dogborg/jaws/big,
 		/obj/item/dogborg/pounce,
-		/obj/item/soap/tongue,
+		/obj/item/soap/synthtongue,
 		/obj/item/analyzer/nose,
 		/obj/item/holosign_creator/security
 	)
@@ -389,7 +389,7 @@
 	var/list/extra = list(
 		/obj/item/dogborg/jaws/small,
 		/obj/item/analyzer/nose,
-		/obj/item/soap/tongue/scrubpup,
+		/obj/item/soap/synthtongue/scrubpup,
 		/obj/item/gripper/service,
 		/obj/item/kitchen/rollingpin,
 		/obj/item/kitchen/unrollingpin,

@@ -305,3 +305,13 @@
 	build_path = /obj/item/stock_parts/subspace/transmitter
 	category = list("Stock Parts")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/bluespace_crystal
+	name = "Artificial Bluespace Crystal"
+	desc = "Небольшой синий кристалл с необычными свойствами."
+	id = "bluespace_crystal"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/diamond = 3000, /datum/material/plasma = 3000)
+	build_path = /obj/item/stack/ore/bluespace_crystal/artificial
+	category = list("Stock Parts")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING

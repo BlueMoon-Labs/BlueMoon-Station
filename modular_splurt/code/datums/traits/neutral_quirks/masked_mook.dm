@@ -19,6 +19,8 @@
 
 /datum/quirk/masked_mook/on_spawn()
 	. = ..()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/mask/gas/cosmetic/gasmask = new(get_turf(quirk_holder)) // Uses a custom gas mask
 	H.equip_to_slot_if_possible(gasmask, ITEM_SLOT_MASK) // If character have a loadout mask, the custom one will not overwrite it but instead will be dropped on floor

@@ -319,7 +319,7 @@
 /mob/proc/hivecheck()
 	return FALSE
 
-/mob/proc/lingcheck()
+/mob/proc/lingcheck(mob/speaker)
 	return LINGHIVE_NONE
 
 /mob/proc/get_message_mode(message)

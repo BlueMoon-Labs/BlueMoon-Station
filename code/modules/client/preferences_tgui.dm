@@ -107,6 +107,8 @@
 	.["chat_radio"] = !!(chat_toggles & CHAT_RADIO)
 	.["chat_pullr"] = !!(chat_toggles & CHAT_PULLR)
 	.["chat_bankcard"] = !!(chat_toggles & CHAT_BANKCARD)
+	.["chat_ghosthuds"] = !!(chat_toggles & CHAT_GHOSTHUDS)
+	.["chat_ping_hint"] = !(chat_toggles & CHAT_NO_PING_HINT)
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
@@ -121,6 +123,19 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["right_click_mode"] = right_click_mode()
+	.["shift_right_click_mode"] = shift_right_click_mode()
+	var/list/menu_style = list()
+	for(var/key in GLOB.context_menu_style_choices + CONTEXT_MENU_FREE_OPTIONS)
+		menu_style[key] = context_menu_option(key)
+	.["context_menu_style"] = menu_style
+	.["context_menu_themes"] = GLOB.context_menu_themes
+	var/list/menu_presets = list()
+	for(var/preset_id in GLOB.context_menu_style_presets)
+		var/list/preset = GLOB.context_menu_style_presets[preset_id]
+		menu_presets += list(list("id" = preset_id, "name" = preset["name"], "desc" = preset["desc"]))
+	.["context_menu_presets"] = menu_presets
+	.["context_menu_preset"] = current_context_menu_preset()
 	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
@@ -443,6 +458,13 @@
 					chat_toggles ^= CHAT_PULLR
 				if("chat_bankcard")
 					chat_toggles ^= CHAT_BANKCARD
+				if("chat_ghosthuds")
+					chat_toggles ^= CHAT_GHOSTHUDS
+					var/mob/dead/observer/ghost = parent?.mob
+					if(istype(ghost))
+						ghost.sync_data_huds()
+				if("chat_ping_hint")
+					chat_toggles ^= CHAT_NO_PING_HINT
 				if("windowflashing")
 					windowflashing = !windowflashing
 					dirty_var = "windowflashing"
@@ -566,6 +588,21 @@
 			save_pref_var("mentor_toggles")
 			return TRUE
 
+		if("set_right_click_mode")
+			parent?.set_right_click_mode(text2num(params["value"]))
+
+		if("set_shift_right_click_mode")
+			parent?.set_shift_right_click_mode(text2num(params["value"]))
+
+		if("set_context_menu_style")
+			set_context_menu_style(params["key"], params["value"])
+
+		if("reset_context_menu_style")
+			reset_context_menu_style()
+
+		if("apply_context_menu_preset")
+			apply_context_menu_preset(params["preset"])
+
 		if("set_screenshake")
 			var/flag = params["flag"]
 			var/value = text2num(params["value"])
@@ -681,6 +718,9 @@
 					ghost_others = value
 					dirty_var = "ghost_others"
 			save_pref_var(dirty_var)
+			if(dirty_var == "ghost_others" && isobserver(parent?.mob))
+				var/mob/dead/observer/ghost = parent.mob
+				ghost.update_sight()
 
 		if("set_ooc_pref")
 			var/flag = params["flag"]

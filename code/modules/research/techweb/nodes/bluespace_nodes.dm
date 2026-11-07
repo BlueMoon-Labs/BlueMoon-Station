@@ -6,7 +6,15 @@
 	description = "Basic studies into the mysterious alternate dimension known as bluespace."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("base", "datatheory")
-	design_ids = list("beacon", "xenobioconsole", "telesci_gps")
+	design_ids = list(
+		"beacon",
+		"xenobioconsole",
+		"telesci_gps",
+		"telesci_gps_science",
+		"telesci_gps_engineering",
+		"telesci_gps_medical",
+		"telesci_gps_mining",
+	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/practical_bluespace

@@ -189,8 +189,6 @@
 		"allowmobvore" = (host.vore_flags & MOBVORE),
 		"vore_sounds" = (host.client?.prefs?.cit_toggles & EATING_NOISES),
 		"digestion_sounds" = (host.client?.prefs?.cit_toggles & DIGESTION_NOISES),
-		"lickable" = (host.vore_flags & LICKABLE),
-		"smellable" = (host.vore_flags & SMELLABLE),
 	)
 
 	return data
@@ -223,17 +221,16 @@
 			if(host.vore_organs.len >= BELLIES_MAX)
 				return FALSE
 
-			var/new_name = strip_control_chars(html_encode(input(usr,"New belly's name:","New Belly") as text|null))
+			var/new_name = tgui_input_text(usr,"Имя нового нутра. \nИмя должно быть не меньше [BELLIES_NAME_MIN] символов.","New Belly", "", BELLIES_NAME_MAX, FALSE, TRUE)
 
 			var/failure_msg
-			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
-				failure_msg = "Entered belly name length invalid (must be longer than [BELLIES_NAME_MIN], no more than than [BELLIES_NAME_MAX])."
-			// else if(whatever) //Next test here.
+			if(length(new_name) < BELLIES_NAME_MIN)
+				failure_msg = "Введённое имя нутра слишком короткое (минимальное количество символов [BELLIES_NAME_MIN])."
 			else
 				for(var/belly in host.vore_organs)
 					var/obj/belly/B = belly
 					if(lowertext(new_name) == lowertext(B.name))
-						failure_msg = "No duplicate belly names, please."
+						failure_msg = "Введённое имя нутра уже существует!"
 						break
 
 			if(failure_msg) //Something went wrong.
@@ -247,7 +244,9 @@
 			return TRUE
 
 		if("bellypick")
-			host.vore_selected = locate(params["bellypick"])
+			var/obj/belly/picked_belly = locate(params["bellypick"]) in host.vore_organs
+			if(picked_belly)
+				host.vore_selected = picked_belly
 			return TRUE
 		if("move_belly")
 			var/dir = text2num(params["dir"])
@@ -282,28 +281,6 @@
 			else
 				to_chat(usr, "<span class='notice'>Vore preferences applied from active slot!</span>")
 				unsaved_changes = FALSE
-			return TRUE
-		if("setflavor")
-			var/new_flavor = html_encode_readable(input(usr,"What your character tastes like (400ch limit). This text will be printed to the pred after 'X tastes of...' so just put something like 'strawberries and cream':","Character Flavor",host.vore_taste) as text|null)
-			if(!new_flavor)
-				return FALSE
-
-			if(length(new_flavor) > FLAVOR_MAX)
-				tgui_alert_async(usr, "Entered flavor/taste text too long. [FLAVOR_MAX] character limit.","Error!")
-				return FALSE
-			host.vore_taste = new_flavor
-			unsaved_changes = TRUE
-			return TRUE
-		if("setsmell")
-			var/new_smell = html_encode_readable(input(usr,"What your character smells like (400ch limit). This text will be printed to the pred after 'X smells of...' so just put something like 'strawberries and cream':","Character Smell",host.vore_smell) as text|null)
-			if(!new_smell)
-				return FALSE
-
-			if(length(new_smell) > FLAVOR_MAX)
-				tgui_alert_async(usr, "Entered perfume/smell text too long. [FLAVOR_MAX] character limit.","Error!")
-				return FALSE
-			host.vore_smell = new_smell
-			unsaved_changes = TRUE
 			return TRUE
 		if("toggle_digest")
 			(host.vore_flags ^= DIGESTABLE)
@@ -343,20 +320,12 @@
 			(host.client.prefs.cit_toggles ^= DIGESTION_NOISES)
 			unsaved_changes = TRUE
 			return TRUE
-		if("toggle_lickable")
-			(host.vore_flags ^= LICKABLE)
-			unsaved_changes = TRUE
-			return TRUE
-		if("toggle_smellable")
-			(host.vore_flags ^= SMELLABLE)
-			unsaved_changes = TRUE
-			return TRUE
 
 /datum/vore_look/proc/pick_from_inside(mob/user, params)
 	var/atom/movable/target = locate(params["pick"])
 	var/obj/belly/OB = locate(params["belly"])
 
-	if(!(target in OB))
+	if(!istype(OB) || user.loc != OB || !(target in OB))
 		return TRUE // Aren't here anymore, need to update menu
 
 	var/intent = "Examine"
@@ -497,17 +466,16 @@
 	var/attr = params["attribute"]
 	switch(attr)
 		if("b_name")
-			var/new_name = strip_control_chars(html_encode(input(usr,"Belly's new name:","New Name") as text|null))
+			var/new_name = tgui_input_text(usr,"Новое имя нутра. \nИмя должно быть не меньше [BELLIES_NAME_MIN] символов.","New Belly", "", BELLIES_NAME_MAX, FALSE, TRUE)
 
 			var/failure_msg
-			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
-				failure_msg = "Entered belly name length invalid (must be longer than [BELLIES_NAME_MIN], no more than than [BELLIES_NAME_MAX])."
-			// else if(whatever) //Next test here.
+			if(length(new_name) < BELLIES_NAME_MIN)
+				failure_msg = "Введённое имя нутра слишком короткое (минимальное количество символов [BELLIES_NAME_MIN])."
 			else
 				for(var/belly in host.vore_organs)
 					var/obj/belly/B = belly
 					if(lowertext(new_name) == lowertext(B.name))
-						failure_msg = "No duplicate belly names, please."
+						failure_msg = "Введённое имя нутра уже существует!"
 						break
 
 			if(failure_msg) //Something went wrong.
@@ -585,10 +553,10 @@
 						host.vore_selected.emote_lists = initial(host.vore_selected.emote_lists)
 			. = TRUE
 		if("b_verb")
-			var/new_verb = html_encode(input(usr,"New verb when eating (infinitive tense, e.g. nom or swallow):","New Verb") as text|null)
+			var/new_verb = tgui_input_text(usr,"Новый глагол при поглощении. \nГлагол должен быть не меньше [BELLIES_NAME_MIN] символов. \nПример: проглотить; засунуть; вставить ","New Verb", "", BELLIES_NAME_MAX, FALSE, TRUE)
 
-			if(length(new_verb) > BELLIES_NAME_MAX || length(new_verb) < BELLIES_NAME_MIN)
-				tgui_alert_async(usr, "Entered verb length invalid (must be longer than [BELLIES_NAME_MIN], no longer than [BELLIES_NAME_MAX]).","Error")
+			if(length(new_verb) < BELLIES_NAME_MIN)
+				tgui_alert_async(usr, "Введённый глагол слишком короткий (минимальное количество символов [BELLIES_NAME_MIN])","Error")
 				return FALSE
 
 			host.vore_selected.vore_verb = new_verb

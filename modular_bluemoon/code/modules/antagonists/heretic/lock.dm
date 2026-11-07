@@ -1599,7 +1599,7 @@
 		return FALSE
 	var/mob/living/carbon/prisoner = owner
 	if(on_legs)
-		if(prisoner.legcuffed)
+		if(prisoner.legcuffed || HAS_TRAIT(prisoner, TRAIT_NAGA_ANATOMY) || prisoner.get_num_legs(FALSE) < 2)
 			return FALSE
 		var/obj/item/restraints/legcuffs/heretic_lock/fetters = new(prisoner)
 		fetters.hold_ref = WEAKREF(src)

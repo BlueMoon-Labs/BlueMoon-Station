@@ -8,8 +8,10 @@
 	prefs.max_save_slots = 3
 
 	prefs.slot_names_cache = list("Альфа", null, "Гамма")
+	prefs.slot_custom_names_cache = list("Первый", "", "")
 	var/list/cached = prefs.get_slot_names()
 	TEST_ASSERT_EQUAL(cached[1], "Альфа", "Кэш имён слотов должен отдаваться как есть")
+	TEST_ASSERT_EQUAL(prefs.get_slot_custom_names()[1], "Первый", "Названия слотов должны браться из того же кэша")
 	TEST_ASSERT(!fexists(prefs.path), "Попадание в кэш не должно открывать сейвфайл")
 
 	prefs.max_save_slots = 4

@@ -603,7 +603,7 @@
 				to_chat(user, "<span class='warning'>A dark cloud emanates from your hand and swirls around the metal, twisting it into a construct shell!</span>")
 				new /obj/structure/constructshell(T)
 				SEND_SOUND(user, sound('sound/effects/magic.ogg',0,1,25))
-				post_cast(target, proximity_flag, user)
+				post_cast(target, user, proximity_flag)
 			else
 				to_chat(user, "<span class='warning'>You need 50 metal to produce a construct shell!</span>")
 		else if(istype(target, /obj/item/stack/sheet/plasteel))

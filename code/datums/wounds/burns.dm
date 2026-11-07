@@ -9,6 +9,7 @@
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE)
 
 	treatable_by = list(/obj/item/stack/medical/ointment, /obj/item/stack/medical/mesh) // sterilizer and alcohol will require reagent treatments, coming soon
+	scanner_icon = "fire"
 
 		// Flesh damage vars
 	/// How much damage to our flesh we currently have. Once both this and infestation reach 0, the wound is considered healed

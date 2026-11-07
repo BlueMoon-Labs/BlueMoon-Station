@@ -221,6 +221,7 @@
  * Под UNIT_TESTS отложенная сборка выключена (DO_NOT_DEFER_ASSETS), поэтому после
  * SSassets готовы все листы. Тест ловит лист, который молча не зарегистрировался или
  * не собрался: в логе такое не видно, а на проде это пустая витрина у интерфейса.
+ * В hermetic-профиле SSassets листы не собирает, поэтому тест собирает их сам.
  */
 /datum/unit_test/spritesheet_batched_all_generated
 
@@ -229,6 +230,9 @@
 		var/datum/asset/spritesheet_batched/sheet = sheet_type
 		if(sheet_type == initial(sheet._abstract))
 			continue
+		#ifdef UNIT_TEST_PROFILE_HERMETIC
+		get_asset_datum(sheet_type)
+		#endif
 		var/datum/asset/spritesheet_batched/loaded = GLOB.asset_datums[sheet_type]
 		// Через TEST_FAIL, а не TEST_ASSERT: assert выходит из Run() на первом же
 		// битом листе, а знать надо про все сразу - иначе чинить их придётся по одному
@@ -645,5 +649,26 @@
 			if(recipe_data["icon"])
 				TEST_ASSERT(findtext(recipe_data["icon"], "crafting"), "класс спрайта у рецепта [recipe_data["name"]] не от листа крафта: [recipe_data["icon"]]")
 	TEST_ASSERT(checked_recipes > 0, "в статике меню крафта не оказалось ни одного рецепта")
+
+	// Запись рецепта одна на всех: повторное открытие не пересобирает сотни рецептов в одном тике.
+	var/datum/crafting_recipe/first_recipe
+	for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
+		if(recipe.name != "" && recipe.always_availible)
+			first_recipe = recipe
+			break
+	TEST_ASSERT_NOTNULL(first_recipe?.menu_data, "открытие меню не сохранило запись рецепта")
+	var/list/cached_entry = first_recipe.menu_data
+	TEST_ASSERT(payload_entry(static_data, first_recipe) == cached_entry, "первое открытие меню отдало не сохранённую запись рецепта")
+	var/list/reopened_data = crafting.ui_static_data(user)
+	TEST_ASSERT(first_recipe.menu_data == cached_entry, "повторное открытие меню пересобрало запись рецепта")
+	TEST_ASSERT(payload_entry(reopened_data, first_recipe) == cached_entry, "повторное открытие меню отдало копию записи рецепта")
+
+/datum/unit_test/crafting_payload_size/proc/payload_entry(list/static_data, datum/crafting_recipe/recipe)
+	var/list/entries = static_data["crafting_recipes"][recipe.category]
+	if(recipe.subcategory != CAT_NONE)
+		entries = entries[recipe.subcategory]
+	for(var/list/entry in entries)
+		if(entry["ref"] == "[REF(recipe)]")
+			return entry
 
 #undef CRAFTING_PAYLOAD_LIMIT

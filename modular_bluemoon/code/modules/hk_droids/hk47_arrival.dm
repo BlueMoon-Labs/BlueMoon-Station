@@ -74,10 +74,11 @@
 
 /// Крушение: огненный болид падает на клетку, дроид приходит в себя среди обломков; ни взрыва, ни пробоины.
 /datum/round_event/ghost_role/hk47/proc/arrive_crash(mob/living/carbon/human/droid, turf/landing)
+	var/obj/effect/temp_visual/hk47_crash_fall/fall = new(landing, droid)
 	droid.reset_perspective(landing)
 	arrival_text = "крушением"
 	arrival_turf = landing
-	return new /obj/effect/temp_visual/hk47_crash_fall(landing, droid)
+	return fall
 
 /proc/hk47_crash_impact(mob/living/droid, turf/site)
 	playsound(site, 'sound/effects/meteorimpact.ogg', 80, TRUE)
@@ -171,6 +172,7 @@
 /obj/effect/temp_visual/hk47_crash_fall/Initialize(mapload, mob/living/passenger)
 	. = ..()
 	passenger_ref = WEAKREF(passenger)
+	passenger?.forceMove(src)
 	start_x = pick(-1, 1) * HK47_CRASH_FALL_DRIFT
 	pixel_x = start_x
 	transform = matrix() * 2

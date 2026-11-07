@@ -388,7 +388,7 @@
 //2. Gets a number between 1 and that total
 //3. For each element in the list, subtracts its weighting from that number
 //4. If that makes the number 0 or less, return that element.
-//Will output null sometimes if you use decimals (e.g. 0.1 instead of 10) as rand() uses integers, not floats
+//Supports fractional weights (e.g. 0.1): the roll is a float in [0, total), so every element stays reachable.
 /proc/pickweight(list/L)
 	if(length(L) == 0)
 		return null
@@ -403,7 +403,7 @@
 			L[item] = item_weight = 1
 		total += item_weight
 
-	total = rand(1, total)
+	total = rand() * total
 	for(var/item, item_weight in L)
 		if(positional_numbers && isnum(item))
 			item_weight = L[item]
@@ -766,7 +766,9 @@
 		if(islist(key))
 			key = deepCopyList(key)
 			.[i] = key
-			.[key] = value
+			// Присваивание null сделало бы элемент массива ассоциативным ключом при записи JSON.
+			if(!isnull(value))
+				.[key] = value
 
 //takes an input_key, as text, and the list of keys already used, outputting a replacement key in the format of "[input_key] ([number_of_duplicates])" if it finds a duplicate
 //use this for lists of things that might have the same name, like mobs or objects, that you plan on giving to a player as input

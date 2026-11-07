@@ -68,7 +68,7 @@
 	RegisterSignal(C, COMSIG_MOB_SAY, PROC_REF(cache_last_said))
 	return ..()
 
-/datum/status_effect/psychosis/refresh(set_duration, set_theme)
+/datum/status_effect/psychosis/refresh(effect, set_duration, set_theme)
 	// Свежая доза - свежий отсчет: эскалация тиров стартует заново.
 	// HEAR-listener подцепляется только на MODERATE-тире, поэтому при сбросе
 	// state_started его тоже надо снять - иначе игрок продолжит ловить
@@ -169,7 +169,7 @@
 	// Перехватываем здесь и обновляем активный эффект напрямую.
 	var/datum/status_effect/psychosis/existing = has_status_effect(/datum/status_effect/psychosis)
 	if(existing)
-		existing.refresh(duration, theme)
+		existing.refresh(/datum/status_effect/psychosis, duration, theme)
 		return existing
 	return apply_status_effect(/datum/status_effect/psychosis, duration, theme)
 

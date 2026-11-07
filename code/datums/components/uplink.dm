@@ -291,6 +291,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return
 	if(!is_uplink_item_visible_to_user(user, U))
 		return
+	if(refuse_purchase(user, U))
+		return
 
 	var/purchase_cost = get_purchase_cost(U)
 	if(telecrystals < purchase_cost || U.limited_stock == 0)
@@ -298,14 +300,35 @@ GLOBAL_LIST_EMPTY(uplinks)
 	telecrystals -= purchase_cost
 
 	U.purchase(user, src)
+	record_purchase(U, purchase_cost)
+	return TRUE
 
+/// Счётчик рероллов, остаток лимита и статистика раунда после покупки.
+/datum/component/uplink/proc/record_purchase(datum/uplink_item/U, purchase_cost)
 	if(istype(U, /datum/uplink_item/bundles_tc/reroll))
 		traitor_contract_rerolls++
 	else if(U.limited_stock > 0)
 		U.limited_stock -= 1
-
 	SSblackbox.record_feedback("nested tally", "traitor_uplink_items_bought", 1, list("[initial(U.name)]", "[purchase_cost]"))
-	return TRUE
+
+/// TRUE - этот аплинк не продаёт предмет, кредиты не списываются.
+/datum/component/uplink/proc/refuse_purchase(mob/user, datum/uplink_item/item)
+	return FALSE
+
+/// Предметы, среди которых Random Item выбирает покупку.
+/datum/component/uplink/proc/random_item_candidates(mob/user, datum/uplink_item/random_item)
+	. = list()
+	for(var/category in uplink_items)
+		for(var/item_name in uplink_items[category])
+			var/datum/uplink_item/candidate = uplink_items[category][item_name]
+			if(candidate == random_item || !candidate.item || istype(candidate, /datum/uplink_item/bundles_tc/reroll))
+				continue
+			if(telecrystals < candidate.cost || !is_uplink_item_visible_to_user(user, candidate))
+				continue
+			. += candidate
+
+/datum/component/uplink/proc/record_random_item(datum/uplink_item/picked)
+	SSblackbox.record_feedback("tally", "traitor_random_uplink_items_gotten", 1, initial(picked.name))
 
 // Implant signal responses
 

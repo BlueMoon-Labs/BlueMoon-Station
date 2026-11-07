@@ -4,6 +4,9 @@
 
 #ifdef ABSOLUTE_MINIMUM_MODE
 #include "map_files\generic\CentCom_minimal.dmm"
+#elif defined(UNIT_TEST_PROFILE_HERMETIC)
+// Генерирует tools/build/build.js (CentComHermeticTarget)
+#include "map_files\generic\CentCom_hermetic.dmm"
 #else
 #include "map_files\generic\CentCom.dmm"
 #endif

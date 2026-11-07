@@ -55,6 +55,12 @@ type ActiveContract = Contract & {
   capture_called: BooleanLike;
   suspects: Suspect[];
   presence?: number;
+  presence_left?: number;
+};
+
+type ManualEntry = {
+  title: string;
+  text: string;
 };
 
 type CatalogEntry = {
@@ -90,11 +96,17 @@ type Tallies = {
   sabotaged: number;
 };
 
+type ShieldState = {
+  active: BooleanLike;
+  cooldown: number;
+};
+
 type RifleState = {
   shots: number;
   sniper: BooleanLike;
   sniper_mode: BooleanLike;
   sniper_cooldown: number;
+  stun_mode: BooleanLike;
 };
 
 /** Статус HK-47 для станции, эскалация и эвакуация. */
@@ -115,10 +127,12 @@ export type HKContractTerminalData = {
   charge: number;
   charge_max: number;
   rifle: RifleState | null;
+  shield: ShieldState | null;
   rifle_max: number;
   identify_range: number;
   protect_presence_needed: number;
   photos: Record<string, string>;
+  manual: ManualEntry[];
   reroll_cooldown: number;
   identify_cooldown: number;
   scanning: BooleanLike;
@@ -133,7 +147,7 @@ export type HKContractTerminalData = {
   extraction_ready: BooleanLike;
 };
 
-const TABS = ['КОНТРАКТЫ', 'МОДУЛИ', 'ЖУРНАЛ'] as const;
+const TABS = ['КОНТРАКТЫ', 'МОДУЛИ', 'ЖУРНАЛ', 'ШАССИ'] as const;
 type Tab = (typeof TABS)[number];
 
 const OUTCOMES: Record<HistoryEntry['outcome'], string> = {
@@ -388,9 +402,9 @@ type KeyHandlers = {
   onEnter: () => void;
 };
 
-const TAB_KEYS: Record<string, Tab> = { Digit1: 'КОНТРАКТЫ', Digit2: 'МОДУЛИ', Digit3: 'ЖУРНАЛ' };
+const TAB_KEYS: Record<string, Tab> = { Digit1: 'КОНТРАКТЫ', Digit2: 'МОДУЛИ', Digit3: 'ЖУРНАЛ', Digit4: 'ШАССИ' };
 
-/** Клавиши окна: 1-3 вкладки, стрелки и j/k по списку, Enter - главная команда. Не трогает ввод текста и не перехватывает Enter у команды в фокусе. */
+/** Клавиши окна: 1-4 вкладки, стрелки и j/k по списку, Enter - главная команда. Не трогает ввод текста и не перехватывает Enter у команды в фокусе. */
 const useTerminalKeys = (handlers: KeyHandlers) => {
   const ref = useRef(handlers);
   ref.current = handlers;
@@ -426,7 +440,8 @@ export const HKContractTerminal = () => {
   const offers = useSelection(data.offers.length);
   const modules = useSelection(data.catalog.length);
   const journal = useSelection(data.history.length);
-  const selections: Record<Tab, Selection> = { КОНТРАКТЫ: offers, МОДУЛИ: modules, ЖУРНАЛ: journal };
+  const manual = useSelection(data.manual.length);
+  const selections: Record<Tab, Selection> = { КОНТРАКТЫ: offers, МОДУЛИ: modules, ЖУРНАЛ: journal, ШАССИ: manual };
   const states = upgradeStates(data.upgrades);
   const [armed, setArmed] = useState<string | null>(null);
   const buy = (id: string) => {
@@ -478,7 +493,7 @@ export const HKContractTerminal = () => {
                   [{index + 1}] {name}
                 </span>
               ))}
-              <span className="HKContractTerminal__keys">1-3 ВКЛАДКИ // ↑↓ J K ВЫБОР // ENTER КОМАНДА</span>
+              <span className="HKContractTerminal__keys">1-4 ВКЛАДКИ // ↑↓ J K ВЫБОР // ENTER КОМАНДА</span>
             </div>
             <Rule />
           </div>
@@ -497,6 +512,7 @@ export const HKContractTerminal = () => {
               />
             )}
             {tab === 'ЖУРНАЛ' && <JournalScreen selection={journal} />}
+            {tab === 'ШАССИ' && <ManualScreen />}
           </div>
         </div>
       </Window.Content>
@@ -514,11 +530,14 @@ const upgradeStates = (upgrades: UpgradeState[]) => {
 
 const StatusLine = () => {
   const { data } = useBackend<HKContractTerminalData>();
-  const { rifle, station } = data;
+  const { rifle, shield, station } = data;
   const lowCharge = data.charge < data.charge_max / 4;
   let sniper = '';
   if (rifle?.sniper) {
     sniper = rifle.sniper_cooldown > 0 ? ` СНАЙП ${pad2(rifle.sniper_cooldown)}с` : rifle.sniper_mode ? ' СНАЙП' : '';
+  }
+  if (rifle?.stun_mode) {
+    sniper = ` ПАРАЛ${sniper}`;
   }
   const warn = (flag: boolean) => (flag ? 'HKContractTerminal__warn' : undefined);
   return (
@@ -527,6 +546,7 @@ const StatusLine = () => {
       <span className={warn(lowCharge)}>{`${chargeBar(data.charge, data.charge_max)} ${data.charge}`}</span>
       {' // ВИНТОВКА '}
       <span className={warn(!rifle)}>{rifle ? `${pad2(rifle.shots)}/${pad2(data.rifle_max)}${sniper}` : 'ОТСУТСТВУЕТ'}</span>
+      {!!shield && ` // ЩИТ ${shield.active ? 'АКТИВЕН' : shield.cooldown > 0 ? `${pad2(shield.cooldown)}с` : 'ГОТОВ'}`}
       {!!station && (
         <>
           {` // ${station.status_name.toUpperCase()} // УГРОЗА `}
@@ -775,6 +795,20 @@ const ActivePanel = ({ contract }: { contract: ActiveContract }) => {
               <span className="HKContractTerminal__dim"> срока, заказчик платит от {data.protect_presence_needed}%</span>
             </Field>
           )}
+          {contract.presence_left !== undefined && (
+            <Field label="НОРМА:">
+              {contract.presence_left > 0 ? (
+                <span
+                  className={
+                    contract.deadline !== null && contract.presence_left > contract.deadline ? 'HKContractTerminal__warn' : undefined
+                  }>
+                  ещё {formatSeconds(contract.presence_left)} рядом
+                </span>
+              ) : (
+                <span>набрана, держите подопечного живым</span>
+              )}
+            </Field>
+          )}
           {!primary && !!GUIDANCE[kind] && <div className="HKContractTerminal__line">{GUIDANCE[kind]}</div>}
           {!!primary && <div className="HKContractTerminal__commands">{primary}</div>}
           <div className="HKContractTerminal__commands">{secondary}</div>
@@ -910,6 +944,20 @@ const ModuleDetail = ({ entry, state, armed, onBuy }: ModuleDetailProps) => {
           {armed && <span className="HKContractTerminal__dim">повторите команду, чтобы списать очки</span>}
         </div>
       )}
+    </>
+  );
+};
+
+const ManualScreen = () => {
+  const { data } = useBackend<HKContractTerminalData>();
+  return (
+    <>
+      <Heading>ПАМЯТКА ШАССИ HK-47</Heading>
+      {data.manual.map((entry) => (
+        <Field key={entry.title} label={`${entry.title}:`}>
+          {entry.text}
+        </Field>
+      ))}
     </>
   );
 };

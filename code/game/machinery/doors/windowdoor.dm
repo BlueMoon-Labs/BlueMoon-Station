@@ -424,7 +424,7 @@
 	else
 		to_chat(user, "<span class='warning'>The door's motors resist your efforts to force it!</span>")
 
-/obj/machinery/door/window/do_animate(animation)
+/obj/machinery/door/window/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("[src.base_state]opening", src)

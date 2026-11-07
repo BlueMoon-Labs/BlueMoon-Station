@@ -455,6 +455,8 @@
 		return FALSE
 	if(!src.loc || QDELETED(src)) // we're being destroyed or already removed from world
 		return FALSE
+	if(!can_damage_objects && isobj(the_target))
+		return FALSE
 
 	if(ismob(the_target)) //Target is in godmode, ignore it.
 		var/mob/M = the_target
@@ -464,6 +466,8 @@
 	if(see_invisible < the_target.invisibility)//Target's invisible to us, forget it
 		return FALSE
 	if(isbelly(the_target.loc)) //Target's inside a gut, forget about it too
+		return FALSE
+	if(istype(the_target.loc, /obj/effect/dummy/phased_mob)) //кровавый прыжок, джаунт: в мире цели нет
 		return FALSE
 	if(search_objects < 2)
 		if(isliving(the_target))
@@ -611,6 +615,8 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	if(QDELETED(src) || !target || QDELETED(target))
 		return
 	var/atom/attack_target = target
+	if(!can_damage_objects && isobj(attack_target))
+		return FALSE
 	if(SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, attack_target) & COMPONENT_HOSTILE_NO_ATTACK)
 		return
 	// Signal handlers may clear or qdel the current target.
@@ -988,6 +994,14 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	if(!isturf(targets_from.loc) && targets_from.loc != null)//Did someone put us in something?
 		var/atom/A = targets_from.loc
 		A.attack_animal(src)//Bang on it till we get out
+
+/// ИИ не бьёт и не стреляет из шкафа или ящика: вместо атаки ломится наружу. TRUE, если заперт.
+/mob/living/simple_animal/hostile/proc/escape_if_confined()
+	var/atom/attack_origin = targets_from || src
+	if(isnull(attack_origin.loc) || isturf(attack_origin.loc))
+		return FALSE
+	INVOKE_ASYNC(src, PROC_REF(EscapeConfinement))
+	return TRUE
 
 
 /mob/living/simple_animal/hostile/RangedAttack(atom/A, params) //Player firing

@@ -249,6 +249,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		. += "<span style='color:["#FFFFFF"]';>[t_on] измазан[t_a] свежими половыми выделениями...</span>\n" //"Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
 
 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+	var/naga_anatomy = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)
+	if(naga_anatomy)
+		missing -= BODY_ZONE_R_LEG
+		if(get_bodypart(BODY_ZONE_L_LEG))
+			msg += span_info("У [t_nego] вместо ног опорный хвост.\n")
 	var/list/disabled = list()
 //	var/list/writing = list() - BLUEMOON REMOVAL (не используется, заменено на show_written_on_bodypart_text)
 
@@ -320,6 +325,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	var/l_limbs_missing = 0
 	var/r_limbs_missing = 0
 	for(var/t in missing)
+		if(naga_anatomy && t == BODY_ZONE_L_LEG)
+			msg += span_boldwarning("[ru_ego(TRUE)] опорный хвост оторван!") + "\n"
+			continue
 		if(t==BODY_ZONE_HEAD)
 			msg += "<span class='deadsay'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 			continue
@@ -330,9 +338,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 		msg += "<span class='warning'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
 
-	if(l_limbs_missing >= 2 && r_limbs_missing == 0)
+	if(!naga_anatomy && l_limbs_missing >= 2 && r_limbs_missing == 0)
 		msg += "[t_on] стоит на правой ножке.\n"
-	else if(l_limbs_missing == 0 && r_limbs_missing >= 2)
+	else if(!naga_anatomy && l_limbs_missing == 0 && r_limbs_missing >= 2)
 		msg += "[t_on] стоит на левой ножке.\n"
 	else if(l_limbs_missing >= 2 && r_limbs_missing >= 2)
 		msg += "[t_on] выглядит как котлетка.\n"
@@ -462,6 +470,21 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	if(just_sleeping)
 		msg += "[t_on] спит. Гы.\n"
 
+	// BLUEMOON ADD START - телесные метки (татуировки, надписи) видны, пока персонаж действительно не умер,
+	// даже если он выглядит мёртвым (TRAIT_FAKEDEATH: квирк "Не-мёртвый", вампиры и т.п.).
+	if(!appears_dead || stat != DEAD)
+		var/tattoo_examine_text = get_tattoo_examine_text()
+		if(tattoo_examine_text)
+			msg += tattoo_examine_text
+		// Отображение надписей на теле, если они видимы и есть
+		if(show_written_on_bodypart_text != "")
+			msg += show_written_on_bodypart_text
+		if(user?.client?.prefs.cit_toggles & GENITAL_EXAMINE)
+			for(var/obj/item/organ/genital/G in internal_organs)
+				if(length(G.writtentext) && istype(G) && G.is_exposed())
+					msg += "<span class='warning'>На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".</span>\n"
+	// BLUEMOON ADD END
+
 	if(!appears_dead)
 		if(drunkenness && !skipface) //Drunkenness
 			// BLUEMOON EDIT START - опьянение для роботов
@@ -505,19 +528,6 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				var/obj/item/bodypart/BP = X
 				msg += "<span class='warning'>На [t_ego] [BP.name] написано: \"[html_encode(BP.writtentext)]\".</span>\n"
 		/ BLUEMOON REMOVAL END */
-		// BLUEMOON ADD START - отображение надписей на теле, если они видимы и есть
-		if(show_written_on_bodypart_text != "")
-			msg += show_written_on_bodypart_text
-		// BLUEMOON ADD - отображение татуировок
-		var/tattoo_examine_text = get_tattoo_examine_text()
-		if(tattoo_examine_text)
-			msg += tattoo_examine_text
-		if(user.client?.prefs.cit_toggles & GENITAL_EXAMINE)
-		// BLUEMOON ADD END
-			for(var/obj/item/organ/genital/G in internal_organs)
-				if(length(G.writtentext) && istype(G) && G.is_exposed())
-					msg += "<span class='warning'>На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".</span>\n"
-
 		if(!user)
 			return
 
@@ -587,7 +597,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		if(istype(H.glasses, /obj/item/clothing/glasses/hud) || CIH)
 			var/perpname = get_face_name(get_id_name(""))
 			if(perpname)
-				var/datum/data/record/R = GLOB.data_core.general_by_name[perpname]
+				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
@@ -606,7 +616,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 						. += "<a href='?src=[REF(src)];hud=m;p_stat=1'>\[[health_r]\]</a>"
 						health_r = R.fields["m_stat"]
 						. += "<a href='?src=[REF(src)];hud=m;m_stat=1'>\[[health_r]\]</a>"
-					R = GLOB.data_core.medical_by_name[perpname]
+					R = antag_training_station_record(GLOB.data_core.medical_by_name, perpname, src)
 					if(R)
 						. += "<a href='?src=[REF(src)];hud=m;evaluation=1'>\[Medical evaluation\]</a>"
 					traitstring = get_trait_string(FALSE, TRUE)
@@ -620,7 +630,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					//|| !user.canmove || user.restrained()) Fluff: Sechuds have eye-tracking technology and sets 'arrest' to people that the wearer looks and blinks at.
 						var/criminal = "None"
 
-						R = GLOB.data_core.security_by_name[perpname]
+						R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 						if(R)
 							criminal = R.fields["criminal"]
 
@@ -638,6 +648,17 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		.[2] += "<hr>"
 
 	. += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
+
+	if(!skipface && !obscure_name && dna?.headshot_links && length(dna.headshot_links))
+		var/headshot_html = ""
+		for(var/headshot_link in dna.headshot_links)
+			if(!headshot_link)
+				continue
+			headshot_html = headshot_preview_html(headshot_link, 128, 128)
+			break
+		if(headshot_html)
+			. += span_boldnotice("Хедшот персонажа:")
+			. += headshot_html
 
 	if(activity)
 		. += span_nicegreen("<b>Деятельность:</b> [activity]")
@@ -674,6 +695,10 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		var/obj/item/organ/cyberimp/eyes/hud/CIH = H.getorgan(/obj/item/organ/cyberimp/eyes/hud)
 		if(CIH?.HUD_type)
 			have_hudtypes += CIH.HUD_type
+		var/obj/item/organ/cyberimp/brain/nif/implant = H.getorganslot(ORGAN_SLOT_BRAIN_NIF)
+		for(var/datum/nifsoft/hud/program in implant?.loaded_nifsofts)
+			if(program.active && program.hud_type)
+				have_hudtypes += program.hud_type
 
 		return (hudtype in have_hudtypes)
 

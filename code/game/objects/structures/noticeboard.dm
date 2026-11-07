@@ -19,7 +19,7 @@
 
 	var/static/list/tool_behaviors = list(
 		TOOL_WRENCH = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Detach"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Снять"),
 		)
 	)
 	AddElement(/datum/element/contextual_screentip_tools, tool_behaviors)

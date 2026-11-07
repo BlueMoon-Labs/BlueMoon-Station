@@ -424,7 +424,7 @@
 		if(installed_cartridge.access & CART_MEDICAL)
 			user.visible_message("<span class='notice'>[user] analyzes [C]'s vitals.</span>", \
 								"<span class='notice'>You analyze [C]'s vitals.</span>")
-			healthscan(user, C, 1, FALSE)
+			healthscan(user, C)
 			return
 	return ..()
 
@@ -561,33 +561,33 @@
 
 	if(held_item)
 		if(istype(held_item, /obj/item/paicard) && !inserted_pai)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert pAI"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить пИИ"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(istype(held_item, /obj/item/card/id) && !stored_id)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert ID"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить ID"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if((istype(held_item, /obj/item/computer_disk) || istype(held_item, /obj/item/cartridge)) && !inserted_disk)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert disk"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить диск"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(istype(held_item, /obj/item/photo))
-			context[SCREENTIP_CONTEXT_LMB] = "Scan photo"
+			context[SCREENTIP_CONTEXT_LMB] = "Сканировать фото"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(is_type_in_list(held_item, contained_item) && !inserted_item)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert [held_item]"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить [held_item]"
 			. = CONTEXTUAL_SCREENTIP_SET
 
 	if(stored_id)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove ID"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь ID"
 		. = CONTEXTUAL_SCREENTIP_SET
 	else if(inserted_disk)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove disk"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь диск"
 		. = CONTEXTUAL_SCREENTIP_SET
 	else if(inserted_item)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove [inserted_item]"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь [inserted_item]"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	if(inserted_item)
-		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Remove [inserted_item]"
+		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Извлечь [inserted_item]"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	return . || NONE
@@ -1080,9 +1080,14 @@
 /proc/get_viewable_pdas()
 	. = list()
 	for(var/obj/item/modular_computer/pda/P in GLOB.PDAs)
-		if(!P.owner || P.toff || P.hidden)
+		if(!P.owner || P.toff || P.hidden || is_ghost_cafe_pda(P))
 			continue
 		. += P
+
+/// КПК гостей Призрачного Кафе (борги, люди) не попадают в списки станции.
+/proc/is_ghost_cafe_pda(obj/item/modular_computer/pda/pda)
+	var/mob/living/holder = get(pda, /mob/living)
+	return !!holder?.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 
 // ---- AI PDA messaging ----
 
@@ -1162,6 +1167,8 @@
 // ---- Borg PDA messaging ----
 
 /mob/living/silicon/robot/proc/cmd_send_pdamesg(mob/user)
+	if(QDELETED(aiPDA))
+		return
 	var/list/plist = list()
 	var/list/namecounts = list()
 

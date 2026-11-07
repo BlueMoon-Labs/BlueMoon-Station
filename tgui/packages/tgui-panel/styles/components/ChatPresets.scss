@@ -1,0 +1,697 @@
+// Сообщения вне окна свежих: анимации погашены целиком.
+.Chat:not(.Chat--noSettle) .ChatMessage--settled,
+.Chat:not(.Chat--noSettle) .ChatMessage--settled *,
+.Chat:not(.Chat--noSettle) .ChatMessage--settled::before,
+.Chat:not(.Chat--noSettle) .ChatMessage--settled::after {
+  animation: none !important;
+}
+
+// Факс НТ: бумага и чернила, для светлой темы.
+.Chat--style-ntfax {
+  background-color: var(--chat-bg, #f3efe4);
+  min-height: 100%;
+  color: var(--chat-text, #1f2a44);
+  font-family: 'Courier New', monospace;
+}
+
+.Chat--style-ntfax > .ChatMessage {
+  border-bottom: 1px dashed rgba(31, 42, 68, 0.18);
+  padding: 2px 4px;
+}
+
+.Chat--style-ntfax .Chat__badge {
+  background-color: var(--chat-accent, #1f2a44);
+  color: #f3efe4;
+}
+
+// Свои цвета стилей в --st-*, у светлой темы своя палитра: иначе
+// .theme-light .Chat перебивает цвет текста, а спаны goon в ней берут
+// тёмные цвета и пропадают на тёмном фоне.
+
+// Консоль СБ.
+.Chat--style-seccon {
+  --st-bg: #0b0b0c;
+  --st-text: #c9c4c4;
+  --st-line: #b3261e;
+}
+
+.theme-light .Chat--style-seccon {
+  --st-bg: #ecebea;
+  --st-text: #1d1a1a;
+  --st-line: #b3261e;
+}
+
+.Chat--style-seccon,
+.theme-light .Chat.Chat--style-seccon {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+  font-family: 'Lucida Console', 'Courier New', monospace;
+}
+
+.Chat--style-seccon > .ChatMessage {
+  padding-left: 6px;
+  margin-bottom: var(--chat-msg-spacing, 1px);
+}
+
+.Chat--style-seccon > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 5px;
+  border-left: 2px solid var(--chat-accent, var(--st-line));
+}
+
+.Chat.Chat--style-seccon > .ChatMessage--highlighted {
+  padding-left: calc(8px - 1em / 6);
+}
+
+.Chat--style-seccon .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+}
+
+// КПК: экран с пиксельной сеткой, в светлой теме - светлый ЖК.
+.Chat--style-pda {
+  --st-bg: #0f1f14;
+  --st-text: #9fd8a4;
+  --st-line: #9fd8a4;
+  --st-grid: rgba(0, 0, 0, 0.18);
+}
+
+.theme-light .Chat--style-pda {
+  --st-bg: #d9e6d2;
+  --st-text: #16301b;
+  --st-line: #2f6b36;
+  --st-grid: rgba(0, 40, 0, 0.06);
+}
+
+.Chat--style-pda,
+.theme-light .Chat.Chat--style-pda {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+  font-family: 'Lucida Console', monospace;
+  background-image:
+    linear-gradient(var(--st-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--st-grid) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.Chat--style-pda > .ChatMessage {
+  padding: 1px 4px;
+}
+
+.Chat--style-pda .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: var(--st-bg);
+}
+
+// Бортжурнал: плотная таблица, время колонкой.
+.Chat--style-logbook {
+  --st-text: #c3c7cc;
+  --st-rule: rgba(255, 255, 255, 0.06);
+  --st-rule-strong: rgba(255, 255, 255, 0.12);
+}
+
+.theme-light .Chat--style-logbook {
+  --st-text: #1b1e22;
+  --st-rule: rgba(0, 0, 0, 0.1);
+  --st-rule-strong: rgba(0, 0, 0, 0.2);
+}
+
+.Chat--style-logbook,
+.theme-light .Chat.Chat--style-logbook {
+  color: var(--chat-text, var(--st-text));
+}
+
+.Chat--style-logbook > .ChatMessage {
+  border-bottom: 1px solid var(--st-rule);
+  padding: 1px 2px;
+  line-height: 1.25;
+}
+
+.Chat--style-logbook .ChatMessage__timestamp {
+  display: inline-block;
+  min-width: 4.5em;
+  opacity: 0.55;
+  border-right: 1px solid var(--st-rule-strong);
+  margin-right: 6px;
+}
+
+// Шифровка Синдиката: чёрно-красный, жёсткая рамка. Левая сторона рамки
+// уступает подсветке и полосе канала.
+.Chat--style-syndicate {
+  --st-bg: #0d0606;
+  --st-text: #d9c9c9;
+  --st-line: #9e1b1b;
+  --st-frame: rgba(158, 27, 27, 0.45);
+}
+
+.theme-light .Chat--style-syndicate {
+  --st-bg: #f2e9e9;
+  --st-text: #2e0f0f;
+  --st-line: #9e1b1b;
+  --st-frame: rgba(158, 27, 27, 0.4);
+}
+
+.Chat--style-syndicate,
+.theme-light .Chat.Chat--style-syndicate {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+}
+
+.Chat--style-syndicate > .ChatMessage {
+  border-top: 1px solid var(--st-frame);
+  border-right: 1px solid var(--st-frame);
+  border-bottom: 1px solid var(--st-frame);
+  padding: 2px 6px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-syndicate > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 4px;
+  border-left: 1px solid var(--st-frame);
+}
+
+.Chat.Chat--style-syndicate > .ChatMessage--highlighted {
+  padding-left: calc(7px - 1em / 6);
+}
+
+.Chat--style-syndicate .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+}
+
+// Мини-чат предпросмотра в настройках.
+.ChatPreview {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 6px;
+  overflow: hidden;
+}
+
+// Мостик: командный синий, золотая волосяная линия между записями.
+.Chat--style-bridge {
+  --st-bg: #0e1624;
+  --st-text: #c3ccd9;
+  --st-line: #b8964a;
+}
+
+.theme-light .Chat--style-bridge {
+  --st-bg: #e7ebf1;
+  --st-text: #17233a;
+  --st-line: #8f6b1e;
+}
+
+.Chat--style-bridge,
+.theme-light .Chat.Chat--style-bridge {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+}
+
+.Chat--style-bridge > .ChatMessage {
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--chat-accent, var(--st-line)) 45%, transparent);
+  padding: 2px 6px 3px;
+}
+
+// Рамка подсветки из Chat.scss 1/6em: отступ уменьшаем на неё же,
+// чтобы текст стоял на месте. .Chat в селекторе перебивает копию
+// правила подсветки под .theme-light.
+.Chat.Chat--style-bridge > .ChatMessage--highlighted {
+  padding-left: calc(6px - 1em / 6);
+}
+
+.Chat--style-bridge .ChatMessage__timestamp {
+  color: var(--chat-accent, var(--st-line));
+}
+
+.Chat--style-bridge .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: var(--st-bg);
+}
+
+// Медотсек: чистый текст, бирюзовая полоска слева.
+.Chat--style-medbay {
+  --st-bg: #0b1315;
+  --st-text: #dbe6e8;
+  --st-line: #4fb8b2;
+}
+
+.theme-light .Chat--style-medbay {
+  --st-bg: #f0f5f5;
+  --st-text: #0f2427;
+  --st-line: #1d8a85;
+}
+
+.Chat--style-medbay,
+.theme-light .Chat.Chat--style-medbay {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.Chat--style-medbay > .ChatMessage {
+  padding: 2px 6px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-medbay > .ChatMessage:not(.ChatMessage--highlighted) {
+  border-left: 2px solid
+    color-mix(in srgb, var(--chat-accent, var(--st-line)) 75%, transparent);
+  padding-left: 7px;
+}
+
+.Chat.Chat--style-medbay > .ChatMessage--highlighted {
+  padding-left: calc(9px - 1em / 6);
+}
+
+.Chat--style-medbay .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: var(--st-bg);
+}
+
+// Инженерия: тёмная сталь, слева узкая жёлто-чёрная штриховка.
+.Chat--style-engineering {
+  --st-bg: #16191c;
+  --st-text: #cdd2d6;
+  --st-line: #d9a521;
+}
+
+.theme-light .Chat--style-engineering {
+  --st-bg: #e1e3e5;
+  --st-text: #1c2024;
+  --st-line: #d29a12;
+}
+
+.Chat--style-engineering,
+.theme-light .Chat.Chat--style-engineering {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+}
+
+.Chat--style-engineering > .ChatMessage {
+  padding: 2px 6px;
+  margin-bottom: var(--chat-msg-spacing, 1px);
+}
+
+// Штриховка лежит под прозрачной рамкой. Полоса канала (--type-stripe)
+// встаёт на её место, штриховка сжимается в ноль, текст не сдвигается.
+.Chat--style-engineering > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 9px;
+  border-left: 5px solid transparent;
+  padding-left: 7px;
+  background-image: repeating-linear-gradient(-45deg,
+    var(--chat-accent, var(--st-line)) 0 3px, #141414 3px 6px);
+  background-origin: border-box;
+  background-size: calc(5px * (1 - var(--type-stripe, 0))) 100%;
+  background-repeat: no-repeat;
+}
+
+.Chat.Chat--style-engineering > .ChatMessage--highlighted {
+  padding-left: calc(12px - 1em / 6);
+}
+
+.Chat--style-engineering .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: #141414;
+}
+
+// Снабжение: накладная на картоне.
+.Chat--style-cargo {
+  --st-bg: #211a11;
+  --st-text: #e0cfac;
+  --st-line: #b8894a;
+  --st-flute: rgba(0, 0, 0, 0.08);
+}
+
+.theme-light .Chat--style-cargo {
+  --st-bg: #e2d3b4;
+  --st-text: #33240f;
+  --st-line: #7a5526;
+  --st-flute: rgba(90, 60, 20, 0.04);
+}
+
+.Chat--style-cargo,
+.theme-light .Chat.Chat--style-cargo {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+  font-family: Consolas, 'Courier New', monospace;
+  background-image: repeating-linear-gradient(90deg,
+    transparent 0, var(--st-flute) 5px, transparent 10px);
+}
+
+.Chat--style-cargo > .ChatMessage {
+  border-bottom: 1px dotted
+    color-mix(in srgb, var(--chat-accent, var(--st-line)) 45%, transparent);
+  padding: 2px 6px;
+}
+
+.Chat.Chat--style-cargo > .ChatMessage--highlighted {
+  padding-left: calc(6px - 1em / 6);
+}
+
+.Chat--style-cargo .ChatMessage__timestamp {
+  color: var(--chat-accent, var(--st-line));
+  font-weight: bold;
+}
+
+.Chat--style-cargo .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: var(--st-bg);
+}
+
+// ЦентКом: официальный бланк, двойная золотая черта полей.
+.Chat--style-centcom {
+  --st-bg: #0e1c15;
+  --st-text: #e1e3d4;
+  --st-line: #c4a55a;
+}
+
+.theme-light .Chat--style-centcom {
+  --st-bg: #f2efe3;
+  --st-text: #10301e;
+  --st-line: #8a6a1f;
+}
+
+.Chat--style-centcom,
+.theme-light .Chat.Chat--style-centcom {
+  background-color: var(--chat-bg, var(--st-bg));
+  min-height: 100%;
+  color: var(--chat-text, var(--st-text));
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.Chat--style-centcom > .ChatMessage {
+  padding: 3px 8px;
+  line-height: 1.4;
+}
+
+.Chat--style-centcom > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 9px;
+  border-left: 3px double var(--chat-accent, var(--st-line));
+  padding-left: 9px;
+}
+
+.Chat.Chat--style-centcom > .ChatMessage--highlighted {
+  padding-left: calc(12px - 1em / 6);
+}
+
+.Chat--style-centcom .ChatMessage__timestamp {
+  color: var(--chat-accent, var(--st-line));
+  font-style: italic;
+}
+
+.Chat--style-centcom .Chat__badge {
+  background-color: var(--chat-accent, var(--st-line));
+  color: var(--st-bg);
+}
+
+// Чёрный ящик: бортовой самописец, только для тёмной темы.
+.Chat--style-blackbox,
+.theme-light .Chat.Chat--style-blackbox {
+  background-color: var(--chat-bg, #060504);
+  min-height: 100%;
+  color: var(--chat-text, #f0901f);
+  font-family: 'Lucida Console', Consolas, monospace;
+}
+
+.Chat--style-blackbox > .ChatMessage {
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--chat-accent, #f0901f) 9%, transparent);
+  padding: 1px 6px;
+}
+
+.Chat.Chat--style-blackbox > .ChatMessage--highlighted {
+  padding-left: calc(6px - 1em / 6);
+}
+
+.Chat--style-blackbox .ChatMessage__timestamp {
+  color: var(--chat-text, #f0901f);
+  opacity: 0.4;
+}
+
+.Chat--style-blackbox .Chat__badge {
+  background-color: var(--chat-accent, #f0901f);
+  color: #060504;
+}
+
+// Станционные анимации появления. Телетайп и шлюз режут блок clip-path,
+// остальные - transform/opacity/filter.
+.ChatMessage--anim-teletype {
+  animation: chatTeletype min(var(--chat-anim-speed, 320ms) * 1.5, 600ms) linear;
+  --enter-anim: chatTeletype min(var(--chat-anim-speed, 320ms) * 1.5, 600ms) linear;
+}
+
+@keyframes chatTeletype {
+  0% {
+    opacity: 0.5;
+    clip-path: inset(0 100% 0 0);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.ChatMessage--anim-faxfeed {
+  animation: chatFaxFeed var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.75, 0.35, 1);
+  --enter-anim: chatFaxFeed var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.75, 0.35, 1);
+}
+
+// Лист выползает из щели сверху: scaleY с translateY держит верхний край.
+@keyframes chatFaxFeed {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -18%, 0) scaleY(0.64);
+  }
+  65% {
+    opacity: 1;
+    transform: translate3d(0, 0.5%, 0) scaleY(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ChatMessage--anim-interference {
+  animation: chatInterference var(--chat-anim-speed, 320ms) linear;
+  --enter-anim: chatInterference var(--chat-anim-speed, 320ms) linear;
+}
+
+// Срыв строки: рывки со скосом и сдвиг оттенка. Без blur и drop-shadow,
+// их композитор не ведёт.
+@keyframes chatInterference {
+  0% {
+    opacity: 0;
+    transform: translate3d(-12px, 0, 0) skewX(14deg);
+    filter: hue-rotate(-60deg) contrast(1.6) brightness(1.5);
+  }
+  18% {
+    opacity: 0.85;
+    transform: translate3d(8px, 0, 0) skewX(-8deg);
+    filter: hue-rotate(70deg) contrast(1.4) brightness(1.3);
+  }
+  32% {
+    opacity: 0.35;
+    transform: translate3d(-5px, 0, 0) skewX(5deg);
+    filter: hue-rotate(-30deg) contrast(1.2) brightness(1.2);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(3px, 0, 0) skewX(-2deg);
+    filter: hue-rotate(15deg) contrast(1.1) brightness(1.1);
+  }
+  72% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: hue-rotate(0deg) contrast(1) brightness(1);
+  }
+}
+
+.ChatMessage--anim-crtscan {
+  animation: chatCrtScan var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.7, 0.3, 1);
+  --enter-anim: chatCrtScan var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+// Включение кинескопа: яркая черта раскрывается в строку.
+@keyframes chatCrtScan {
+  0% {
+    opacity: 0;
+    transform: scale(0.3, 0.06);
+    filter: brightness(3);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1, 0.12);
+    filter: brightness(2.4);
+  }
+  70% {
+    transform: scale(1, 1.06);
+    filter: brightness(1.3);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: brightness(1);
+  }
+}
+
+.ChatMessage--anim-airlock {
+  animation: chatAirlock var(--chat-anim-speed, 320ms) cubic-bezier(0.7, 0, 0.3, 1);
+  --enter-anim: chatAirlock var(--chat-anim-speed, 320ms) cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+@keyframes chatAirlock {
+  0% {
+    opacity: 0.4;
+    clip-path: inset(0 50% 0 50%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.ChatMessage--anim-develop {
+  animation: chatDevelop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.6, 0.4, 1);
+  --enter-anim: chatDevelop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.6, 0.4, 1);
+}
+
+@keyframes chatDevelop {
+  0% {
+    opacity: 0.15;
+    filter: sepia(1) contrast(0.35) brightness(1.8);
+  }
+  60% {
+    opacity: 1;
+    filter: sepia(0.6) contrast(0.75) brightness(1.25);
+  }
+  100% {
+    opacity: 1;
+    filter: sepia(0) contrast(1) brightness(1);
+  }
+}
+
+// Сканер: блок проявляется, по нему проходит полоса ::after. Её вид
+// задан всем свежим сообщениям без content, поэтому коробка появляется
+// только там, где анимация её включила (здесь и в chat/typeOverrides.js).
+// "Свежее" - то же условие, что у затухания выше: при Chat--noSettle
+// погашенных нет.
+.ChatMessage--anim-scanner {
+  animation: chatScanner var(--chat-anim-speed, 320ms) cubic-bezier(0.4, 0, 0.6, 1);
+  --enter-anim: chatScanner var(--chat-anim-speed, 320ms) cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes chatScanner {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.Chat .ChatMessage:not(.ChatMessage--highlighted):not(.Chat:not(.Chat--noSettle) .ChatMessage--settled) {
+  &::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 28%;
+    background-image: linear-gradient(90deg, transparent,
+      color-mix(in srgb, currentColor 14%, transparent) 30%,
+      color-mix(in srgb, currentColor 38%, transparent) 50%,
+      color-mix(in srgb, currentColor 14%, transparent) 70%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.ChatMessage--anim-scanner:not(.ChatMessage--highlighted):not(.Chat:not(.Chat--noSettle) .ChatMessage--settled) {
+  position: relative;
+
+  &::after {
+    content: '';
+    animation: chatScannerBar var(--chat-anim-speed, 320ms) cubic-bezier(0.4, 0, 0.6, 1);
+  }
+}
+
+@keyframes chatScannerBar {
+  0% {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(360%, 0, 0);
+  }
+}
+
+.ChatMessage--anim-lamp {
+  animation: chatLamp min(var(--chat-anim-speed, 320ms) * 1.6, 600ms) linear;
+  --enter-anim: chatLamp min(var(--chat-anim-speed, 320ms) * 1.6, 600ms) linear;
+}
+
+// Лампа дневного света: пара пробных вспышек, потом ровный свет.
+@keyframes chatLamp {
+  0% {
+    opacity: 0;
+    filter: brightness(1);
+  }
+  8% {
+    opacity: 0.9;
+    filter: brightness(1.8);
+  }
+  15% {
+    opacity: 0.1;
+    filter: brightness(1);
+  }
+  26% {
+    opacity: 1;
+    filter: brightness(1.6);
+  }
+  34% {
+    opacity: 0.35;
+    filter: brightness(1);
+  }
+  48% {
+    opacity: 1;
+    filter: brightness(1.35);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+// Вспышка нового сообщения по типу, см. chat/typeOverrides.js.
+@keyframes chatTypeFlash {
+  0%, 30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Chat .ChatMessage,
+  .Chat .ChatMessage *,
+  .Chat .ChatMessage::before,
+  .Chat .ChatMessage::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

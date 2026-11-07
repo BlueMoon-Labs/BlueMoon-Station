@@ -12,17 +12,21 @@
 	create_bodyparts()
 
 	setup_human_dna()
+	physiology = new()
 
 	if(dna.species)
 		set_species(dna.species.type)
 
 	//initialise organs
 	create_internal_organs() //most of it is done in set_species now, this is only for parent call
-	physiology = new()
 
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)
 	. = ..()
+	if(em_block)
+		// Силуэт закрывает свечение позади персонажа, но рисуется под его собственным свечением.
+		em_block.vis_flags |= VIS_INHERIT_LAYER | VIS_UNDERLAY
+		em_block.appearance_flags |= RESET_ALPHA | RESET_COLOR
 
 	if(CONFIG_GET(flag/disable_stambuffer))
 		enable_intentional_sprint_mode()
@@ -53,6 +57,7 @@
 	AddElement(/datum/element/strippable, GLOB.strippable_human_items, TYPE_PROC_REF(/mob/living/carbon/human, should_strip))
 
 /mob/living/carbon/human/Destroy()
+	applied_innate_features = null
 	QDEL_NULL(profile)
 	QDEL_NULL(physiology)
 	QDEL_NULL(mob_panel)
@@ -188,7 +193,7 @@
 			var/mob/living/carbon/human/H = usr
 			var/perpname = get_face_name(get_id_name(""))
 			if(istype(H.glasses, /obj/item/clothing/glasses/hud) || istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud))
-				var/datum/data/record/R = GLOB.data_core.general_by_name[perpname]
+				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(href_list["photo_front"] || href_list["photo_side"])
 					if(R)
 						if(!H.canUseHUD())
@@ -221,7 +226,7 @@
 							to_chat(H, "<span class='warning'>ERROR: Invalid Access</span>")
 							return
 						if(perpname)
-							R = GLOB.data_core.security_by_name[perpname]
+							R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 							if(R)
 								if(href_list["status"])
 									if(R.locked_security_reason)
@@ -327,6 +332,8 @@
 							to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medical"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -351,6 +358,8 @@
 				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medrecord"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -376,6 +385,8 @@
 				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medrecordComment"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -409,6 +420,8 @@
 
 	if(href_list["lookitem"]) //It's for the show item at modular_sand/code/modules/mob/living/carbon/show.dm
 		var/obj/item/I = locate(href_list["lookitem"])
+		if(!istype(I))
+			return
 		if(I.loc in view(4))
 			examinate(I)
 		else
@@ -418,7 +431,15 @@
 	return CHECK_MOBILITY(src, MOBILITY_UI)
 
 /mob/living/carbon/human/proc/is_zone_covered_by_clothing(target_zone)
-	var/covered_part = zone2body_parts_covered_complicated(target_zone)
+	var/covered_part
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG || target_zone == BODY_ZONE_PRECISE_GROIN))
+		covered_part = NAGA_TAIL_COVERAGE
+	else if(target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG)
+		var/obj/item/bodypart/limb = get_bodypart(target_zone)
+		if(limb)
+			target_zone = limb.get_clothing_zone()
+	if(!covered_part)
+		covered_part = zone2body_parts_covered_complicated(target_zone)
 	if(!covered_part)
 		if(above_neck(target_zone))
 			covered_part = HEAD
@@ -454,6 +475,9 @@
 					. = 0
 		else
 			var/obj/item/bodypart/BP = get_bodypart(target_zone)
+			if(target_zone == BODY_ZONE_PRECISE_GROIN && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+				// Доступ к основанию хвоста существует и перед пересадкой, когда самого хвоста нет.
+				BP = get_bodypart(BODY_ZONE_L_LEG) || get_bodypart(BODY_ZONE_CHEST)
 			var/obj/item/clothing/CS = get_bodypart_protecting_clothing_by_coverage(src, BP)
 			if(CS && (CS.clothing_flags & THICKMATERIAL))
 				. = 0
@@ -548,7 +572,7 @@
 	//Check for arrest warrant
 	if(judgement_criteria & JUDGE_RECORDCHECK)
 		var/perpname = get_face_name(get_id_name())
-		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
+		var/datum/data/record/R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 		if(R && R.fields["criminal"])
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
@@ -615,6 +639,8 @@
 
 //Used for new human mobs created by cloning/goleming/podding
 /mob/living/carbon/human/proc/set_cloned_appearance()
+	if(!dna?.features)
+		return
 	if(dna.features["body_model"] == MALE)
 		facial_hair_style = "Full Beard"
 	else
@@ -679,9 +705,9 @@
 			to_chat(C, "<span class='unconscious'>Вы ощущаете поток свежего воздуха... неизвестно, откуда...</span>")
 
 /mob/living/carbon/human/cuff_resist(obj/item/I)
-	if(dna && dna.check_mutation(HULK) || istype(mind?.martial_art, /datum/martial_art/nanosuit))
+	if(is_hulk() || istype(mind?.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
-		if(..(I, cuff_break = FAST_CUFFBREAK))
+		if(..(I, cuff_break = INSTANT_CUFFBREAK))
 			dropItemToGround(I)
 	else if(HAS_TRAIT(src, TRAIT_HERETIC_ASCENDED))
 		visible_message(span_warning("[src] начинает рвать путы, будто их тянет сама завеса!"))
@@ -779,7 +805,7 @@
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(!Adjacent(M) && (M.loc != src) && !(M in src.GetAllContents()))
-		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
+		if((be_close == 0) || (!no_tk && (dna?.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
 		if(!silent)
 			to_chat(src, "<span class='warning'>You are too far away!</span>")
@@ -858,7 +884,7 @@
 	var/list/limb_states = list()
 	for(var/obj/item/bodypart/limb as anything in bodyparts)
 		limb_states += "[limb.body_zone][hide_damage ? 0 : limb.get_healthdoll_state()][limb.disabled ? "!" : ""]"
-	return "[ui_style]|[jointext(limb_states, "/")]"
+	return "[ui_style]|[HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)]|[jointext(limb_states, "/")]"
 
 /// Builds the doll's overlay list for the given HUD style.
 /mob/living/carbon/human/proc/build_healthdoll_overlays(ui_style)
@@ -867,11 +893,17 @@
 	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
 	for(var/obj/item/bodypart/limb as anything in bodyparts)
 		var/icon_num = hide_damage ? 0 : limb.get_healthdoll_state()
+		if(istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+			continue
 		if(icon_num)
 			. += get_healthdoll_appearance(doll_icons, "[limb.body_zone][icon_num]")
 	for(var/zone in get_missing_limbs())
+		if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+			continue
 		. += get_healthdoll_appearance(doll_icons, "[zone]6")
 	for(var/zone in get_disabled_limbs())
+		if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+			continue
 		. += get_healthdoll_appearance(doll_icons, "[zone]7")
 
 /mob/living/carbon/human/update_health_hud()
@@ -889,7 +921,7 @@
 	if(hud_signature == cached_health_hud_signature && (isnull(existing_doll) || existing_doll.doll_cache_key))
 		return
 	cached_health_hud_signature = hud_signature
-	if(dna.species.update_health_hud())
+	if(dna?.species?.update_health_hud())
 		return
 	else
 		if(hud_used.healths)
@@ -915,11 +947,22 @@
 				doll.doll_cache_key = doll_key
 				doll.cut_overlays()
 				if(stat != DEAD)
+					if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+						var/obj/item/bodypart/tail = get_bodypart(BODY_ZONE_L_LEG)
+						var/tail_state = tail ? ((hal_screwyhud == SCREWYHUD_HEALTHY) ? 0 : tail.get_healthdoll_state()) : 6
+						if(tail?.disabled)
+							tail_state = 7
+						doll.icon = NAGA_DOLL_ICON
+						if(tail_state)
+							doll.add_overlay(get_healthdoll_appearance(NAGA_DOLL_ICON, "tail[tail_state]"))
+					else
+						doll.icon = ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_OVERLAY"
 					var/list/doll_overlays = build_healthdoll_overlays(hud_used.ui_style)
 					if(length(doll_overlays))
 						doll.add_overlay(doll_overlays)
 				else
+					doll.icon = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? NAGA_DOLL_ICON : ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_DEAD"
 
 		hud_used.staminas?.update_icon_state()
@@ -927,11 +970,12 @@
 
 /mob/living/carbon/human/fully_heal(admin_revive = FALSE)
 	if(admin_revive)
+		restore_naga_anatomy_from_mind()
 		regenerate_limbs()
 		regenerate_organs()
 	remove_all_embedded_objects()
 	drunkenness = 0
-	for(var/datum/mutation/human/HM in dna.mutations)
+	for(var/datum/mutation/human/HM in dna?.mutations)
 		if(HM.quality != POSITIVE)
 			dna.remove_mutation(HM.name)
 	if(blood_volume < (BLOOD_VOLUME_NORMAL*blood_ratio))
@@ -1097,6 +1141,15 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		admin_ticket_log(src, span_notice("[key_name_admin(usr, FALSE)] has [change_text]")) // In case they complained in an ahelp, we'll let them know anything happened
 
 /mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
+	if(istype(target, /mob/living/simple_animal/mouse))
+		SEND_SIGNAL(target, COMSIG_CLICK_ALT, user)
+		return
+	if(istype(target, /mob/living/simple_animal))
+		var/mob/living/simple_animal/rideable = target
+		if(rideable.can_buckle && rideable.tame && rideable != src && !src.buckled)
+			rideable.prepare_riding()
+			if(rideable.mouse_buckle_handling(src, user))
+				return
 	var/GS_needed = istype(target, /mob/living/silicon/pai)? GRAB_PASSIVE : GRAB_AGGRESSIVE
 	if(pulling == target && grab_state >= GS_needed && stat == CONSCIOUS)
 		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback
@@ -1330,6 +1383,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		riding_datum.unequip_buckle_inhands(target)
 
 /mob/living/carbon/human/proc/is_shove_knockdown_blocked() //If you want to add more things that block shove knockdown, extend this
+	if(HAS_TRAIT(src, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED))
+		return TRUE
 	for(var/obj/item/clothing/C in get_equipped_items()) //doesn't include pockets
 		if(C.blocks_shove_knockdown)
 			return TRUE
@@ -1337,7 +1392,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 /mob/living/carbon/human/updatehealth()
 	. = ..()
-	dna?.species.spec_updatehealth(src)
+	dna?.species?.spec_updatehealth(src)
 	if(HAS_TRAIT(src, TRAIT_IGNORESLOWDOWN))	//if we want to ignore slowdown from damage and equipment
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown)
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
@@ -1356,12 +1411,12 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
 
 /mob/living/carbon/human/is_bleeding()
-	if(NOBLOOD in dna.species.species_traits || bleedsuppress)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits) || bleedsuppress)
 		return FALSE
 	return ..()
 
 /mob/living/carbon/human/get_total_bleed_rate()
-	if(NOBLOOD in dna.species.species_traits)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits))
 		return FALSE
 	return ..()
 
@@ -1385,15 +1440,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
  * * Green if none of the others apply (aka, generic organic)
 */
 /mob/living/carbon/human/proc/spec_trait_examine_font()
+	return "<font color='[spec_trait_examine_color()]'>"
+
+// Общий цвет расы для осмотра, текстового отчёта и медицинского дисплея.
+/mob/living/carbon/human/proc/spec_trait_examine_color()
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
-		return "<font color='#aaa9ad'>"
+		return "#aaa9ad"
 	if(HAS_TRAIT(src, TRAIT_TOXINLOVER))
-		return "<font color='#00ffff'>"
+		return "#00ffff"
 	if(isplasmaman(src))
-		return "<font color='#800080'>"
+		return "#800080"
 	if(isgolem(src))
-		return "<font color='#8b4513'>"
-	return "<font color='#18d855'>"
+		return "#8b4513"
+	return "#18d855"
 
 
 /mob/living/carbon/human/get_tooltip_data()

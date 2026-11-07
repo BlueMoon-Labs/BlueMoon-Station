@@ -1,6 +1,6 @@
 /datum/language/narsie
 	name = "Nar'Sian"
-	desc = "The ancient, blood-soaked, impossibly complex language of Nar'Sian cultists."
+	desc = "Древний, пропитанный кровью и невероятно сложный язык культистов Нар'Си."
 	speech_verb = "intones"
 	ask_verb = "inquires"
 	exclaim_verb = "invokes"

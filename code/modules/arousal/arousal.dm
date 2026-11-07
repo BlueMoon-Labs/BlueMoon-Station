@@ -109,46 +109,25 @@
 				R.clear_reagents()
 				return
 			// BLUEMOON ADD END
-			var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
-			var/obj/effect/decal/cleanable/semen/femcum/F = locate(/obj/effect/decal/cleanable/semen/femcum) in location
-			if(istype(sender, /obj/item/organ/genital/penis))
-				if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
-					if(R.trans_to(S, R.total_volume))
-						LAZYINITLIST(S.blood_DNA)
-						S.blood_DNA |= get_blood_dna_list()
-						S.update_icon()
-				else
-					var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
-					if(R.trans_to(drip, R.total_volume))
-						LAZYINITLIST(drip.blood_DNA)
-						drip.blood_DNA |= get_blood_dna_list()
-						drip.update_icon()
-						if(drip.reagents.total_volume >= 10)
-							S = new(location)
-							drip.reagents.trans_to(S, drip.reagents.total_volume)
-							LAZYINITLIST(S.blood_DNA)
-							S.blood_DNA |= drip.blood_DNA
-							S.update_icon()
-							qdel(drip)
-			if(istype(sender, /obj/item/organ/genital/vagina))
-				if(F)
-					if(R.trans_to(F, R.total_volume))
-						LAZYINITLIST(F.blood_DNA)
-						F.blood_DNA |= get_blood_dna_list()
-						F.update_icon()
-				else
-					F = new(location)
-					if(R.trans_to(F, R.total_volume))
-						LAZYINITLIST(F.blood_DNA)
-						F.blood_DNA |= get_blood_dna_list()
-						F.update_icon()
-
+			if(is_type_in_list(sender, list(/obj/item/organ/genital/penis, /obj/item/organ/genital/vagina)))
+				var/spilled_modifier = ishuman(target) ? 0.1 : 1 // обливаем ли мы кого то или нет?
+				R.reaction(location, volume_modifier = spilled_modifier, show_message = FALSE)
+				for(var/obj/effect/decal/cleanable/c in location)
+					if(is_type_in_list(c, list(/obj/effect/decal/cleanable/semen, /obj/effect/decal/cleanable/semendrip)))
+						c.transfer_blood_dna(get_blood_dna_list())
 		if(!turfing)
 			// sandstorm edit - advanced cum drip
 			var/amount_to_transfer = R.total_volume * (spill ? sender.fluid_transfer_factor : 1)
 			var/mob/living/carbon/human/cummed_on = target
 			if(!istype(cummed_on)) // not human
 				R.trans_to(target, amount_to_transfer, log = TRUE)
+				if(R.total_volume > 0 && cummed_on.is_open_container())
+					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол.</b>"))
+					// к сожалению готовые решения генерации капель расплескавшихся жидкостей есть далеко не для всех реагентов, но это уже совсем другая история.
+					R.reaction(get_turf(target), show_message = FALSE)
+					for(var/obj/effect/decal/cleanable/c in get_turf(target))
+						if(is_type_in_list(c, list(/obj/effect/decal/cleanable/semen, /obj/effect/decal/cleanable/semendrip)))
+							c.transfer_blood_dna(get_blood_dna_list())
 			else // if human
 				var/datum/reagents/copy = new()
 				R.copy_to(copy, R.total_volume)

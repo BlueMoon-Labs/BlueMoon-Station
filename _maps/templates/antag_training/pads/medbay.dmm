@@ -1,0 +1,1742 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aV" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/office/light,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"bK" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"bU" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/machinery/light_switch/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"cq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/north,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"db" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/bed/roller,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"dt" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/closet/crate/medical,
+/obj/item/bodybag,
+/obj/item/bodybag,
+/obj/item/pen,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ef" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/glass,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"eB" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"gc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"gi" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/light_switch/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"gn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"gO" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"hw" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/table/optable,
+/obj/item/surgical_drapes,
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"hC" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"hE" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-16"
+	},
+/obj/machinery/firealarm/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"hR" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "medbay plaque";
+	desc = "Медотсек площадки: приёмная, палата, химия, хирургия, крио и морг. Палата и кабинеты открываются по ID врача.";
+	pixel_y = -32
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ic" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"ih" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/chem_master,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"iB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"iH" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"js" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"jC" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"jD" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/chair/sofa/middle{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"jX" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/departments/medbay/alt{
+	pixel_y = 32
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"kb" = (
+/obj/machinery/door/airlock/medical{
+	name = "Chemistry"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/medical/chemistry,
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"kk" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"kG" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/computer/antag_training_mockup/records,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"kQ" = (
+/obj/structure/closet/crate/medical,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/mask/surgical,
+/obj/item/clothing/suit/apron/surgical,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"lj" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/snack/random,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"lD" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"mf" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"ng" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/landmark/antag_training/side{
+	side = "chemistry"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"nt" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/light/small/directional/west,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"nT" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"oA" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"pc" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"pN" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"qJ" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/structure/closet/crate/medical,
+/obj/item/reagent_containers/glass/beaker/cryoxadone,
+/obj/item/reagent_containers/glass/beaker,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"qW" = (
+/obj/structure/table/glass,
+/obj/item/circular_saw{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/surgicaldrill{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/cautery{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"rb" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Medbay"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/medical/general,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"rf" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light_switch/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"rF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"rV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"sk" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/stasis,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"sw" = (
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"sy" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"sz" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/sink,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"sB" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"sH" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"sT" = (
+/obj/machinery/door/airlock/medical{
+	name = "Cryo and Morgue"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/medical/morgue,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"tA" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"vN" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"vQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/north,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"wB" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/glass,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "patient queue";
+	default_raw_text = "Очередь: 1) ушиб после учебной стычки;2) ожог от лазера на стрельбище;3) «просто посмотреть».";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"wL" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/closet/secure_closet/chemical,
+/obj/item/reagent_containers/glass/beaker,
+/obj/item/reagent_containers/glass/beaker/large,
+/obj/item/storage/box/syringes,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"wV" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/landmark/antag_training/side{
+	side = "surgery"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"wX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/table/glass,
+/obj/item/stack/medical/bruise_pack{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/ointment{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/gloves{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"xj" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"xH" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"xR" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"ye" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"yt" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/iv_drip,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"yQ" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"yU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"yV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"Bi" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Cg" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"CI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"CS" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/atmospherics/components/unary/cryo_cell,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"CW" = (
+/turf/closed/wall,
+/area/template_noop)
+"Dw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/chair/sofa/left{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"DA" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Ee" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Fe" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/sleeper,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Fx" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/glass,
+/obj/item/reagent_containers/glass/beaker/large{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/sign/departments/chemistry{
+	pixel_y = 32
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"FD" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"FZ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"GO" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/power/apc/auto_name/south,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Hx" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"HI" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Iz" = (
+/obj/structure/table/glass,
+/obj/item/scalpel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/hemostat{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/retractor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"IA" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Jb" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Ji" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/template_noop)
+"Jv" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Surgery"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/medical/surgery,
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"JF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Ka" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/glass,
+/obj/item/storage/pill_bottle{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"KV" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"KY" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Lp" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/atmospherics/pipe/manifold/general/visible{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Md" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Mr" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"MS" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"MZ" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"No" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/sofa/middle{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"NU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/landmark/antag_training/side{
+	side = "ward"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"OD" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"OM" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/closet/secure_closet/medical3,
+/obj/item/storage/firstaid/regular,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/fire,
+/obj/item/healthanalyzer,
+/obj/item/stack/medical/gauze,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"OW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/vending/wallmed{
+	pixel_y = -32
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Pj" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Po" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/reagent_dispensers/water_cooler,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"QB" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"QF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"QM" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"QV" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Rc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Rn" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/light/directional/north,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Rr" = (
+/obj/structure/sink,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Ry" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"RG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"RJ" = (
+/obj/structure/table/glass,
+/obj/item/bonesetter{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sticky_tape/surgical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Sb" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-21"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Sf" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Sv" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/landmark/antag_training/side{
+	side = "lobby"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"SI" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"SN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Tl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/chem_dispenser,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"TC" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"TE" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"TI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/table/glass,
+/obj/item/storage/firstaid/regular{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light_switch/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"TJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/medical,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"UJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"UK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"UY" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Vy" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"VK" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"Wc" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Xb" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/white,
+/area/template_noop)
+"Xc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/kitchen/small,
+/area/template_noop)
+"Yw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/chair/sofa/right{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"YT" = (
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/machinery/light/small/directional/north,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Zh" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"Zs" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ZF" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ZK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ZS" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/computer/operating,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/template_noop)
+"ZZ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/glass,
+/obj/item/healthanalyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+
+(1,1,1) = {"
+Iz
+qW
+RJ
+kQ
+CW
+yU
+yt
+ic
+tA
+OM
+CW
+lj
+Dw
+jD
+Yw
+"}
+(2,1,1) = {"
+IA
+Zh
+Zh
+bU
+CW
+vQ
+QV
+QF
+xR
+TI
+CW
+Po
+nT
+Mr
+rf
+"}
+(3,1,1) = {"
+Rn
+Zh
+Zh
+OD
+CW
+Rc
+TE
+Ry
+KY
+wX
+CW
+cq
+jC
+jC
+hE
+"}
+(4,1,1) = {"
+ZS
+hw
+wV
+OD
+Jv
+SN
+SI
+QF
+KV
+OW
+CW
+No
+TC
+sH
+GO
+"}
+(5,1,1) = {"
+IA
+Zh
+Zh
+OD
+CW
+Ee
+xj
+NU
+xj
+CI
+Ji
+gc
+jC
+jC
+hC
+"}
+(6,1,1) = {"
+IA
+Bi
+Zh
+Sf
+Ji
+Xb
+SI
+rF
+KV
+SN
+Ji
+UK
+TC
+Sv
+hC
+"}
+(7,1,1) = {"
+Pj
+Md
+sw
+Rr
+CW
+Fe
+Wc
+Ry
+KY
+SN
+CW
+UK
+UY
+vN
+hR
+"}
+(8,1,1) = {"
+CW
+CW
+CW
+CW
+CW
+SN
+Vy
+UJ
+DA
+SN
+rb
+Jb
+TC
+ZF
+MS
+"}
+(9,1,1) = {"
+qJ
+Zs
+pN
+nt
+CW
+sk
+HI
+Ry
+HI
+db
+CW
+UK
+yQ
+jC
+hC
+"}
+(10,1,1) = {"
+CS
+Lp
+pc
+QM
+Ji
+eB
+lD
+kk
+tA
+sz
+Ji
+UK
+nT
+Sv
+hC
+"}
+(11,1,1) = {"
+QM
+sy
+sy
+QM
+CW
+CW
+CW
+kb
+CW
+CW
+Ji
+UK
+wB
+jC
+hC
+"}
+(12,1,1) = {"
+bK
+xH
+xH
+Cg
+sT
+oA
+Xc
+gO
+Xc
+wL
+CW
+aV
+ef
+ZF
+hC
+"}
+(13,1,1) = {"
+dt
+xH
+QB
+ZK
+CW
+Fx
+VK
+ng
+ye
+gi
+CW
+jX
+ZZ
+jC
+Sb
+"}
+(14,1,1) = {"
+YT
+RG
+xH
+js
+CW
+yV
+mf
+iH
+mf
+yV
+CW
+kG
+sB
+FZ
+hC
+"}
+(15,1,1) = {"
+FD
+iB
+iB
+MZ
+CW
+Tl
+Hx
+ih
+Xc
+Ka
+CW
+TJ
+rV
+JF
+gn
+"}

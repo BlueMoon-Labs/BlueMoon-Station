@@ -37,6 +37,8 @@
 	return FALSE
 
 /turf/proc/ImmediateCalculateAdjacentTurfs()
+	if(SSair)
+		SSair.decompression_geometry_revision = (SSair.decompression_geometry_revision + 1) % SHORT_REAL_LIMIT
 	var/canpass = CANATMOSPASS(src, src)
 	var/canvpass = CANVERTICALATMOSPASS(src, src)
 
@@ -107,6 +109,8 @@
 	__update_auxtools_turf_adjacency_info()
 
 /turf/proc/clear_adjacencies()
+	if(SSair)
+		SSair.decompression_geometry_revision = (SSair.decompression_geometry_revision + 1) % SHORT_REAL_LIMIT
 	block_all_conductivity()
 	for(var/turf/current_turf as anything in atmos_adjacent_turfs)
 		LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
@@ -180,8 +184,12 @@
 		var/turf/open/open_self = src
 		if(istype(open_self) && open_self.excited_group)
 			open_self.excited_group.garbage_collect()
+	var/turf/open/open_turf = src
 	if(remove)
 		SSair.remove_from_active(src)
+	else if(update && istype(open_turf) && !open_turf.excited)
+		// Смена геометрии газ не двигает: будит только перепад с новыми соседями.
+		SSair.wake_if_gradient(open_turf, "air_update_turf")
 	else
 		ATMOS_BENCH_WAKE(src, "air_update_turf")
 		SSair.add_to_active(src)

@@ -27,7 +27,7 @@ the same goes for Remove(). if you override Remove(), call parent or else your p
 */
 
 /datum/action/changeling/proc/on_purchase(mob/user, is_respec)
-	if(!is_respec)
+	if(!is_respec && !is_antag_training_atom(user))
 		SSblackbox.record_feedback("tally", "changeling_power_purchase", 1, name)
 	if(needs_button)
 		Grant(user)//how powers are added rather than the checks in mob.dm
@@ -43,12 +43,14 @@ the same goes for Remove(). if you override Remove(), call parent or else your p
 		return
 	var/datum/antagonist/changeling/c = user.mind.has_antag_datum(/datum/antagonist/changeling)
 	if(sting_action(user, target))
-		SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("[name]"))
+		if(!is_antag_training_atom(user))
+			SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("[name]"))
 		sting_feedback(user, target)
 		c.chem_charges -= chemical_cost
 
 /datum/action/changeling/proc/sting_action(mob/user, mob/target)
-	SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("[name]"))
+	if(!is_antag_training_atom(user))
+		SSblackbox.record_feedback("nested tally", "changeling_powers", 1, list("[name]"))
 	return FALSE
 
 /datum/action/changeling/proc/sting_feedback(mob/user, mob/target)

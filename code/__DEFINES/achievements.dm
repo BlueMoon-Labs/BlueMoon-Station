@@ -8,6 +8,7 @@
 #define MEDAL_PULSE "Jackpot"
 #define MEDAL_TIMEWASTE "Overextended The Joke"
 #define MEDAL_CROW_NECRO "Crowbar Necropolis"
+#define MEDAL_PAWLICKER "Eat half of the types of paws"
 #define MEDAL_RODSUPLEX "Feat of Strength"
 #define MEDAL_CLOWNCARKING "Round and Full"
 #define MEDAL_THANKSALOT "The Best Driver"

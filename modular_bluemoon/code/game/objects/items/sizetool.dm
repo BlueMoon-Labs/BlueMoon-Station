@@ -35,7 +35,7 @@
 	if(is_ghostcafe)
 		size_select = tgui_input_number(user, "Set prefered size ([RESIZE_MICRO * 100]-[RESIZE_MACRO * 100]%).", "Set Size", size_set_to * 100, RESIZE_MACRO * 100, RESIZE_MICRO * 100)
 	else
-		size_select = tgui_input_number(user, "Set prefered size ([min_size * 100]-[max_size * 100]%).", "Set Size", size_set_to * 100, max_size * 100, min_size * 100)
+		size_select = tgui_input_number(user, "Set prefered size ([min_size * 100]-[max_size * 100]%).", "Set Size", clamp(size_set_to, min_size, max_size) * 100, max_size * 100, min_size * 100)
 
 	if(!size_select)
 		return

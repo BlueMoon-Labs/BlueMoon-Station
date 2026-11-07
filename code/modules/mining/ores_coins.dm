@@ -1,8 +1,3 @@
-
-#define GIBTONITE_QUALITY_HIGH 3
-#define GIBTONITE_QUALITY_MEDIUM 2
-#define GIBTONITE_QUALITY_LOW 1
-
 #define ORESTACK_OVERLAYS_MAX 10
 
 /**********************Mineral ores**************************/

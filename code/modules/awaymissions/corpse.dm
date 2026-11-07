@@ -307,6 +307,7 @@
 
 /obj/effect/mob_spawn/human/handlebank(mob/living/carbon/human/owner, starting_money = 0)
 	var/datum/bank_account/offstation_bank_account = new(owner.real_name)
+	offstation_bank_account.offstation = TRUE
 	owner.account_id = offstation_bank_account.account_id
 	owner.add_memory("Номер вашего банковского аккаунта - [owner.account_id].")
 	if(owner.wear_id)

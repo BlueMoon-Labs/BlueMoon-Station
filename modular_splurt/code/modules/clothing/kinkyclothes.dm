@@ -175,6 +175,6 @@
 	item_state = "tunnelfox"
 	body_parts_covered = CHEST|LEGS|ARMS
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 

@@ -142,8 +142,7 @@
 /datum/antagonist/vassal/proc/update_vassal_icons_added(mob/living/vassal, icontype="vassal")
 	var/datum/atom_hud/antag/bloodsucker/hud = GLOB.huds[ANTAG_HUD_BLOODSUCKER]
 	hud.join_hud(vassal)
-	set_antag_hud(vassal, icontype) // Located in icons/mob/hud.dmi
-	owner.current.hud_list[ANTAG_HUD].icon = image('icons/mob/hud.dmi', owner.current, "bloodsucker")
+	set_antag_hud(vassal, icontype, hud) // Located in icons/mob/hud.dmi
 
 /datum/antagonist/vassal/proc/update_vassal_icons_removed(mob/living/vassal)
 	var/datum/atom_hud/antag/hud = GLOB.huds[ANTAG_HUD_BLOODSUCKER]

@@ -165,6 +165,14 @@
 		var/list/send_bucket = listeners_by_volume[volume_key]
 		SEND_SOUND(send_bucket, played_sound)
 
+/// Звук-сопровождение объявления всем игрокам вне лобби, с тумблером SOUND_ANNOUNCEMENTS.
+/proc/announcement_sound_to_playing_players(announcement_sound)
+	var/list/listeners = list()
+	for(var/mob/player as anything in GLOB.player_list)
+		if(player.client && !isnewplayer(player))
+			listeners += player.client
+	send_announcement_sound(announcement_sound, listeners = listeners)
+
 /**
  * Summon the crew for an emergency meeting
  *

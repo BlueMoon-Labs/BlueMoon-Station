@@ -70,16 +70,34 @@
 	icon_state = "curvscarleyelong"
 	covered_limbs = list("Head" = MATRIX_RED)
 
+/datum/sprite_accessory/mam_body_markings/curved_scar_r_eye_long
+	name = "Curved long scar under right eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarreyelong"
+	covered_limbs = list("Head" = MATRIX_RED)
+
 /datum/sprite_accessory/mam_body_markings/curved_scar_l_eye_short
 	name = "Curved short scar under left eye"
 	icon = 'modular_sand/icons/mob/mam_markings.dmi'
 	icon_state = "curvscarleyeshort"
 	covered_limbs = list("Head" = MATRIX_RED)
 
+/datum/sprite_accessory/mam_body_markings/curved_scar_r_eye_short
+	name = "Curved short scar under right eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarreyeshort"
+	covered_limbs = list("Head" = MATRIX_RED)
+
 /datum/sprite_accessory/mam_body_markings/curved_scar_l_eye_short_alt
 	name = "Curved short scar under left eye - ALT"
 	icon = 'modular_sand/icons/mob/mam_markings.dmi'
 	icon_state = "curvscarleyeshortalt"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/curved_scar_r_eye_short_alt
+	name = "Curved short scar under right eye - ALT"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarreyeshortalt"
 	covered_limbs = list("Head" = MATRIX_RED)
 
 /datum/sprite_accessory/mam_body_markings/face_scar_l

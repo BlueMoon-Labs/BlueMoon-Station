@@ -104,7 +104,7 @@ Doesn't work on other aliens/AI.*/
 		to_chat(M, "<span class='noticealien'>You hear a strange, alien voice in your head...</span>[msg]")
 		to_chat(user, "<span class='noticealien'>You said: \"[msg]\" to [M]</span>")
 		for(var/ded in GLOB.dead_mob_list)
-			if(!isobserver(ded))
+			if(!isobserver(ded) || !antag_training_observer_hears(ded, user))
 				continue
 			var/follow_link_user = FOLLOW_LINK(ded, user)
 			var/follow_link_whispee = FOLLOW_LINK(ded, M)
@@ -251,8 +251,9 @@ Doesn't work on other aliens/AI.*/
 
 /obj/effect/proc_holder/alien/neurotoxin/update_icon()
 	. = ..()
-	action.button_icon_state = "alien_neurotoxin_[active]"
-	action.UpdateButtons()
+	if(action)
+		action.button_icon_state = "alien_neurotoxin_[active]"
+		action.UpdateButtons()
 
 /obj/effect/proc_holder/alien/neurotoxin/InterceptClickOn(mob/living/caller, params, atom/target)
 	if(..())
@@ -264,6 +265,8 @@ Doesn't work on other aliens/AI.*/
 
 	var/mob/living/carbon/user = ranged_ability_user
 
+	if(!user.CheckActionCooldown(CLICK_CD_CLICK_ABILITY)) // BLUEMOON ADD - проверка задержки перед плевком
+		return TRUE
 	if(user.getPlasma() < p_cost)
 		to_chat(user, "<span class='warning'>You need at least [p_cost] plasma to spit.</span>")
 		remove_ranged_ability()
@@ -273,7 +276,7 @@ Doesn't work on other aliens/AI.*/
 	var/turf/U = get_step(user, user.dir) // Get the tile infront of the move, based on their direction
 	if(!isturf(U) || !isturf(T))
 		return FALSE
-
+	user.DelayNextAction(CLICK_CD_CLICK_ABILITY)// BLUEMOON ADD - задержка перед новым плевком
 	user.visible_message("<span class='danger'>[user] spits neurotoxin!", "<span class='alertalien'>You spit neurotoxin.</span>")
 	var/obj/item/projectile/bullet/neurotoxin/A = new /obj/item/projectile/bullet/neurotoxin(user.loc)
 	A.preparePixelProjectile(target, user, params)
@@ -386,7 +389,7 @@ Doesn't work on other aliens/AI.*/
 		var/obj/effect/proc_holder/alien/APH = X
 		if(!APH)
 			continue
-		if(APH.has_action)
+		if(APH.has_action && APH.action)
 			APH.action.UpdateButtons()
 	return TRUE
 

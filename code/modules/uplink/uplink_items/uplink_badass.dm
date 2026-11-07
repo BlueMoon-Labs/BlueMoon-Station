@@ -120,3 +120,19 @@
 	cant_discount = TRUE
 	illegal_tech = FALSE
 	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
+
+/datum/uplink_item/badass/syndie_spraycan
+	name = "Стильный балончик Syndicate"
+	desc = "Стильный Syndicate spraycan. \
+		Этим баллончиком можно нанести узор областью 3х3. Краски хватает ровно на один финальный слой."
+	item = /obj/item/traitor_spraycan
+	cost = 1
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
+
+/datum/uplink_item/badass/inteq_spraycan
+	name = "InteQ Spraycan"
+	desc = "Стильный балончик InteQ. \
+		Этим баллончиком можно нанести узор областью 3х3. Краски хватает ровно на один финальный слой, который будет устрашать окружающих."
+	item = /obj/item/traitor_spraycan/inteq
+	cost = 1
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)

@@ -226,6 +226,8 @@
 		if(chargeleft < stun_cost)
 			stunforce *= round(chargeleft/stun_cost, 0.1)
 	stunforce = block_calculate_resultant_damage(stunforce, block_return)
+	var/stamina_block = target.run_armor_check(BODY_ZONE_CHEST, ENERGY, null, null)
+	stunforce = stunforce * (100 - stamina_block) / 100
 	if(stunforce <= 0)
 		return FALSE
 	target.adjustStaminaLoss(stunforce)
@@ -256,6 +258,8 @@
 		if(chargeleft < lethal_cost)
 			lethal_force *= round(chargeleft/lethal_cost, 0.1)
 	lethal_force = block_calculate_resultant_damage(lethal_force, block_return)
+	var/harm_block = target.run_armor_check(BODY_ZONE_CHEST, MELEE, null, null)
+	lethal_force = lethal_force * (100 - harm_block) / 100
 	target.adjustFireLoss(lethal_force)		//good against ointment spam
 	SEND_SIGNAL(target, COMSIG_LIVING_MINOR_SHOCK)
 	if(user)

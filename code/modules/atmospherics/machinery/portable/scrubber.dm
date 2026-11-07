@@ -12,6 +12,14 @@
 
 	var/list/scrubbing = list(GAS_PLASMA, GAS_CO2, GAS_NITROUS, GAS_BZ, GAS_NITRYL, GAS_TRITIUM, GAS_HYPERNOB, GAS_H2O)
 
+/obj/machinery/portable_atmospherics/scrubber/on_construction()
+	..()
+	anchored = FALSE
+
+/obj/machinery/portable_atmospherics/scrubber/on_deconstruction()
+	QDEL_LIST(component_parts)
+	..()
+
 /obj/machinery/portable_atmospherics/scrubber/Destroy()
 	var/turf/T = get_turf(src)
 	if(T)

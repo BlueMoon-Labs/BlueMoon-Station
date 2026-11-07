@@ -20,4 +20,6 @@
 		update_z(T.z)
 
 	update_icon(null, preferred_form)
-	updateghostimages()
+	sync_data_huds()
+	// Применяем выбранное зрение после завершения входа и настройки экранных плоскостей.
+	update_sight()

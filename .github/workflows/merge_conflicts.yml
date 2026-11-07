@@ -1,0 +1,36 @@
+name: Merge Conflicts
+
+# Labels open PRs that conflict with master and comments on PRs that conflict with each other.
+# Runs the code of the default branch: PR heads are fetched only as trees for git merge-tree.
+on:
+  push:
+    branches:
+      - master
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: merge-conflicts
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check conflicts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          filter: blob:none
+          sparse-checkout: tools/ci
+      - name: Check conflicts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tools/ci/pr_conflicts.mjs

@@ -559,7 +559,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					nipples_overlay.layer = -GENITALS_EXPOSED_LAYER
 					LAZYADD(fully_exposed, nipples_overlay)
 					if(has_emissive_part(dna.features, G.slot))
-						LAZYADD(fully_exposed, emissive_copy(nipples_overlay))
+						LAZYADD(fully_exposed, emissive_copy(nipples_overlay, offset_spokesman = src))
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
@@ -571,7 +571,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					nipples_overlay.layer = -layers_num[layer]
 					standing += nipples_overlay
 					if(has_emissive_part(dna.features, G.slot))
-						standing += emissive_copy(nipples_overlay)
+						standing += emissive_copy(nipples_overlay, offset_spokesman = src)
 
 		if(LAZYLEN(standing))
 			overlays_standing[layers_num[layer]] = standing

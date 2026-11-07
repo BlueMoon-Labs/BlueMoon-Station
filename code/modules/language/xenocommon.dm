@@ -1,6 +1,6 @@
 /datum/language/xenocommon
 	name = "Xenomorph"
-	desc = "The common tongue of the xenomorphs."
+	desc = "Общий язык ксеноформов."
 	speech_verb = "hisses"
 	ask_verb = "hisses"
 	exclaim_verb = "hisses"

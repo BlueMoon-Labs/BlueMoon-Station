@@ -386,7 +386,7 @@
 		/obj/item/tank/internals/plasmaman,
 		)
 	armor_type = /datum/armor/medical_coats
-	togglename = "buttons"
+	togglename = "пуговицы"
 	body_parts_covered = CHEST|ARMS
 
 // //////////////////////////////////////////////////////// gloves (modkit products)

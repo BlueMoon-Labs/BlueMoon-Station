@@ -1,0 +1,42 @@
+name: Map Diff Comment
+
+# Runs the code of the default branch with a write token: the artifact of the PR run is
+# only data, tools/ci/map_diff_publish.mjs validates it before anything is published.
+on:
+  workflow_run:
+    workflows: [Map Diff]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+# Every run rewrites the map-diffs branch, so they go one after another.
+concurrency:
+  group: map-diff-publish
+  cancel-in-progress: false
+
+jobs:
+  comment:
+    name: Comment map diffs
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: tools/ci
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: map-diff
+          path: map_diff
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node tools/ci/map_diff_publish.mjs map_diff

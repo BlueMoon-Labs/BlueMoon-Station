@@ -193,7 +193,7 @@
 	return ..() || (someone?.mind && (someone.mind in training?.arena?.target_minds))
 
 /datum/antagonist/hk47/training/in_contract_zone(atom/thing)
-	return training?.arena?.room && get_area(thing) == training.arena.room
+	return training?.arena?.owns_area(get_area(thing))
 
 /datum/antagonist/hk47/training/sabotage_targets()
 	var/list/machines = list()

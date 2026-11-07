@@ -95,6 +95,8 @@
 	var/ricochets = 0
 	/// how many times we can ricochet max
 	var/ricochets_max = 0
+	var/min_ricochets = 0
+	var/accuracy_falloff = PROJECTILE_DEFAULT_ACCURACY_FALLOFF
 	/// 0-100, the base chance of ricocheting, before being modified by the atom we shoot and our chance decay
 	var/ricochet_chance = 0
 	/// 0-1 (or more, I guess) multiplier, the ricochet_chance is modified by multiplying this after each ricochet
@@ -196,6 +198,8 @@
 	sharpness = SHARP_NONE
 
 	var/chain = null
+	// Попадать в живые цели в крите, без сознания или с ограниченной подвижностью.
+	var/hit_incapacitated_targets = FALSE
 
 /obj/item/projectile/Initialize(mapload)
 	. = ..()
@@ -417,7 +421,7 @@
 
 	var/distance = get_dist(T, starting) // Get the distance between the turf shot from and the mob we hit and use that for the calculations.
 	if(def_zone && check_zone(def_zone) != BODY_ZONE_CHEST)
-		def_zone = ran_zone(def_zone, max(100-(7*distance), 5) * zone_accuracy_factor) //Lower accurancy/longer range tradeoff. 7 is a balanced number to use.
+		def_zone = ran_zone(def_zone, max(100-(accuracy_falloff * distance), 5) * zone_accuracy_factor) //Lower accurancy/longer range tradeoff. 7 is a balanced number to use.
 
 	return process_hit(T, select_target(T, A, A), A)		// SELECT TARGET FIRST!
 
@@ -524,6 +528,11 @@
 	// 5. nothing
 		// (returns null)
 
+/obj/item/projectile/proc/apply_firing_intent(intent)
+	hit_incapacitated_targets = (intent == INTENT_HARM)
+	if(hit_incapacitated_targets || intent == INTENT_GRAB)
+		hit_prone_targets = TRUE
+
 //Returns true if the target atom is on our current turf and above the right layer
 //If direct target is true it's the originally clicked target.
 /obj/item/projectile/proc/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE,cross_failed = FALSE)
@@ -551,19 +560,20 @@
 		var/mob/living/L = target
 		if(direct_target)
 			return TRUE
-		// If target not able to use items, move and stand - or if they're just dead, pass over.
-		if(L.stat == DEAD)
+		// Смерть и её имитацию пропускаем без прямого прицеливания.
+		if(L.stat == DEAD || HAS_TRAIT(L, TRAIT_FAKEDEATH))
 			return FALSE
-		// BLUEMOON ADD START - стрельба по лежачим целям в любом режиме, кроме HELP
+		if(hit_incapacitated_targets)
+			return TRUE
+		// Граб-интент сохраняет прежние ограничения для лежачих целей.
 		if(!hit_prone_targets)
 			var/mob/living/buckled_to = L.lowest_buckled_mob()
 			if(!buckled_to.density) // Will just be us if we're not buckled to another mob
 				return FALSE
 			if(L.resting)
 				return TRUE
-		if(L.stat) // если цель лежит, но в крите, то пули без таргета не берут её
+		if(L.stat)
 			return FALSE
-		// BLUEMOON ADD END
 		var/stunned = HAS_TRAIT(L, TRAIT_MOBILITY_NOMOVE) && HAS_TRAIT(L, TRAIT_MOBILITY_NOREST) && HAS_TRAIT(L, TRAIT_MOBILITY_NOPICKUP)
 		return !stunned || hit_stunned_targets
 	return TRUE
@@ -664,6 +674,8 @@
 		if(PROJECTILE_RICOCHET_NO)
 			return FALSE
 		if(PROJECTILE_RICOCHET_YES)
+			if(ricochets < min_ricochets)
+				return TRUE
 			var/chance = ricochet_chance * A.ricochet_chance_mod
 			if(firer && HAS_TRAIT(firer, TRAIT_NICE_SHOT))
 				chance += NICE_SHOT_RICOCHET_BONUS
@@ -755,6 +767,8 @@
 	LAZYINITLIST(impacted)
 	if(fired_from)
 		SEND_SIGNAL(fired_from, COMSIG_PROJECTILE_BEFORE_FIRE, src, original)	//If no angle needs to resolve it from xo/yo!
+	if(firer && fired_from)
+		SEND_SIGNAL(firer, COMSIG_MOD_PROJECTILE_FIRE, src)
 	if(shrapnel_type)
 		AddElement(/datum/element/embed, projectile_payload = shrapnel_type)
 	if(!log_override && firer && original)

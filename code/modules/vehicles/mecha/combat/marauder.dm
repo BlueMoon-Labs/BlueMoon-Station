@@ -80,6 +80,7 @@
 	destruction_sleep_duration = 20
 	nominalphrase = "sound/mecha/nominal_syndicate.ogg"
 	imagenhphrase = "sound/mecha/imag_enh_syndicate.ogg"
+	ui_theme = "syndicate"
 
 /obj/vehicle/sealed/mecha/combat/marauder/mauler/Initialize(mapload)
 	. = ..()

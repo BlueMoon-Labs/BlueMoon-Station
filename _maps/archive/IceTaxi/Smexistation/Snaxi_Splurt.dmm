@@ -633,7 +633,7 @@
 /turf/open/floor/plating,
 /area/engineering/atmospherics_engine)
 "afp" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},

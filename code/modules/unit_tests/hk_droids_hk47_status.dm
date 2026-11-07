@@ -67,6 +67,7 @@
 	TEST_ASSERT(!length(hunter.test_announcements), "the station is told nothing")
 	TEST_ASSERT(!istype(droid.wear_id, /obj/item/card/id/hk47_license), "no license")
 	TEST_ASSERT_NULL(hunter.record_id, "no security record")
+	TEST_ASSERT_EQUAL(hunter.points, HK47_COVERT_ADVANCE_POINTS, "the client pays an advance for the first module")
 
 /// Лицензия ЦК: охота на засветившегося антага, объявление без имени цели, карта с номером и запись в базе СБ.
 /datum/unit_test/hk47_legend_licensed
@@ -97,6 +98,7 @@
 	TEST_ASSERT_EQUAL(record.fields["name"], droid.real_name, "the record is filed under the droid name")
 	TEST_ASSERT(findtext(record.fields["notes"], license.license_number), "the record carries the license number")
 	TEST_ASSERT_EQUAL(record.fields["criminal"], SEC_RECORD_STATUS_NONE, "a licensed HK is not wanted")
+	TEST_ASSERT_EQUAL(hunter.points, 0, "a license is the cover, no advance")
 
 /// Без засветившегося антага ЦК нанимает охрану главы; без главы и антага легенда сводится к тайной.
 /datum/unit_test/hk47_legend_fallback
@@ -347,6 +349,9 @@
 	TEST_ASSERT(pod.insert(droid, pod), "HK-47 boards")
 	TEST_ASSERT(extract.check_completion(), "boarding completes the extraction")
 	TEST_ASSERT(hunter.owner.force_escaped, "the droid counts as escaped")
+	pod.handleReturnAfterDeparting()
+	var/turf/dock = get_turf(droid)
+	TEST_ASSERT(istype(dock?.loc, /area/centcom/supplypod/podStorage), "the capsule docks in the CentCom pod bay with HK-47 inside, never in nullspace")
 	droid.forceMove(run_loc_floor_bottom_left)
 
 /// Перепрошивка снимает роль HK-47, гасит контракт и снимает розыск в базе СБ; хозяином остаётся перепрошивший.
@@ -383,6 +388,29 @@
 	TEST_ASSERT(findtext(details, "снят перепрошивкой"), "the open contract is closed by the reprogramming: [details]")
 	TEST_ASSERT(!findtext(details, "не закрыт к концу смены"), "the report does not wait for the end of the shift")
 
+/// Шасси HK-47 открывает шлюзы техтоннелей без карты, двери отделов - нет; после перепрошивки код доступа пропадает.
+/datum/unit_test/hk47_tunnel_access
+
+/datum/unit_test/hk47_tunnel_access/Run()
+	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
+	var/mob/living/droid = hunter.owner.current
+	var/obj/machinery/door/airlock/maintenance/tunnel = allocate(/obj/machinery/door/airlock/maintenance, run_loc_floor_top_right)
+	tunnel.req_access = list()
+	tunnel.req_one_access = list(ACCESS_MAINT_TUNNELS, ACCESS_ENGINE)
+	var/obj/machinery/door/airlock/security/brig = allocate(/obj/machinery/door/airlock/security, locate(run_loc_floor_top_right.x - 1, run_loc_floor_top_right.y, run_loc_floor_top_right.z))
+	brig.req_access = list(ACCESS_SECURITY)
+	brig.req_one_access = list()
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	TEST_ASSERT(!tunnel.allowed(stranger), "a maintenance airlock needs access")
+	TEST_ASSERT(tunnel.allowed(droid), "HK-47 opens maintenance airlocks without a card")
+	TEST_ASSERT(!brig.allowed(droid), "department doors stay shut")
+	var/mob/living/carbon/human/surgeon = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	surgeon.mind_initialize()
+	allocated += surgeon.mind
+	var/datum/component/hk_loyalty/loyalty = droid.AddComponent(/datum/component/hk_loyalty)
+	loyalty.set_master(surgeon.mind)
+	TEST_ASSERT(!tunnel.allowed(droid), "the reprogrammed HK loses the tunnel code with the role")
+
 /// Посылка везёт HK-47 в ящике внутри капсулы и открывается изнутри; крушение кладёт его на пол оглушённым, с обломками и без пробоины.
 /datum/unit_test/hk47_arrival_methods
 
@@ -397,6 +425,8 @@
 		allocated += list(zone.helper, zone)
 	allocated += list(parcel?.loc, parcel)
 	TEST_ASSERT_EQUAL(courier.loc, parcel, "HK-47 rides inside the parcel")
+	var/turf/transit_turf = get_turf(courier)
+	TEST_ASSERT(istype(transit_turf?.loc, /area/centcom/supplypod/podStorage), "the parcel waits in the CentCom pod bay, never in nullspace")
 	TEST_ASSERT(istype(parcel.loc, /obj/structure/closet/supplypod/hk47/official), "a CentCom parcel comes in an official capsule")
 	TEST_ASSERT_EQUAL(zone?.pod, parcel.loc, "the capsule targets the landing turf")
 	parcel.forceMove(locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z))
@@ -406,7 +436,7 @@
 	allocated += crasher
 	var/turf/site = run_loc_floor_top_right
 	var/obj/effect/temp_visual/hk47_crash_fall/fall = event.arrive_crash(crasher, site)
-	TEST_ASSERT_NULL(crasher.loc, "HK-47 is still falling")
+	TEST_ASSERT_EQUAL(crasher.loc, fall, "HK-47 rides the falling wreck, not nullspace")
 	var/obj/effect/temp_visual/hk47_crash_shadow/shadow = locate() in site
 	TEST_ASSERT_NOTNULL(shadow, "a shadow marks the crash site")
 	var/obj/effect/temp_visual/hk47_crash_trail/trail = locate() in site

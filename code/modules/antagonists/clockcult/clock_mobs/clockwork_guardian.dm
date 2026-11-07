@@ -323,7 +323,7 @@
 	to_chat(src, "[name_part]<span class='sevtug_small'>:</span> [message]")
 	to_chat(host, "[name_part]<span class='sevtug_small'>:</span> [message]")
 	for(var/M in GLOB.mob_list)
-		if(isobserver(M))
+		if(isobserver(M) && antag_training_observer_hears(M, src))
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [name_part] <span class='sevtug_small'>(to</span> <span class='sevtug'>[findtextEx(host.name, host.real_name) ? "[host.name]" : "[host.real_name] (as [host.name])"]</span><span class='sevtug_small'>):</span> [message] ")
 	return TRUE
@@ -443,7 +443,7 @@
 	to_chat(owner, "[name_part]<span class='sevtug_small'>:</span> [message]")
 	to_chat(linked_guardian, "[name_part]<span class='sevtug_small'>:</span> [message]")
 	for(var/M in GLOB.mob_list)
-		if(isobserver(M))
+		if(isobserver(M) && antag_training_observer_hears(M, src))
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [name_part] <span class='sevtug_small'>(to</span> <span class='sevtug'>[linked_guardian] ([linked_guardian.true_name])</span><span class='sevtug_small'>):</span> [message]")
 	return TRUE

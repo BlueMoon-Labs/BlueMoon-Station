@@ -9,6 +9,7 @@ export const NtosCrewManifest = (props) => {
   const {
     have_printer,
     manifest = {},
+    department_names = {},
   } = data;
   return (
     <NtosWindow
@@ -28,17 +29,20 @@ export const NtosCrewManifest = (props) => {
             <Section
               key={department}
               level={2}
-              title={department}>
+              title={department_names[department] || department}>
               <Table>
                 {entries.map(entry => (
                   <Table.Row
                     key={entry.name}
-                    className="candystripe">
-                    <Table.Cell bold>
+                    className="candystripe"
+                    bold={!!entry.head}>
+                    <Table.Cell>
                       {entry.name}
                     </Table.Cell>
                     <Table.Cell>
-                      ({entry.rank})
+                      ({!!entry.head && (
+                        <span className="CrewManifest__HeadMark">{'★'}</span>
+                      )}{entry.rank})
                     </Table.Cell>
                   </Table.Row>
                 ))}

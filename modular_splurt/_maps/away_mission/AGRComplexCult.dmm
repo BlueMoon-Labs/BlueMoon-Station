@@ -512,6 +512,42 @@
 	},
 /turf/open/floor/plasteel/cult,
 /area/awaymission/complex/cultfacility)
+"awM" = (
+/obj/structure/closet/crate/miningcar,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/turf/open/floor/plating/asteroid/snow/complex{
+	slowdown = 1;
+	icon_state = "snow_dug";
+	floor_variance = 0
+	},
+/area/awaymission/complex/cultfacility)
 "awW" = (
 /obj/machinery/hydroponics/constructable,
 /obj/effect/turf_decal/siding/green/end{
@@ -708,6 +744,14 @@
 /obj/structure/closet/crate/wooden,
 /obj/item/stack/ore/gold,
 /obj/item/stack/ore/gold,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/exterior)
 "aGA" = (
@@ -992,6 +1036,12 @@
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/exterior)
 "aRo" = (
@@ -3334,6 +3384,10 @@
 /obj/item/stack/ore/titanium,
 /obj/item/stack/ore/titanium,
 /obj/item/stack/ore/titanium,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
 /obj/item/stack/ore/diamond,
 /obj/item/stack/ore/diamond,
 /obj/item/stack/ore/diamond,
@@ -7032,6 +7086,29 @@
 /obj/item/stack/ore/titanium,
 /obj/item/stack/ore/titanium,
 /obj/item/stack/ore/titanium,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
+/obj/item/stack/ore/diamond,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/exterior)
 "gbe" = (
@@ -10684,6 +10761,21 @@
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
+/obj/item/stack/ore/bluespace_crystal,
 /turf/open/floor/plating/asteroid/snow/complex{
 	slowdown = 1;
 	icon_state = "snow_dug";
@@ -12019,6 +12111,27 @@
 /area/awaymission/complex/engineering)
 "klQ" = (
 /obj/structure/closet/crate/miningcar,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
 /turf/open/floor/plating/asteroid/snow/complex{
 	slowdown = 1;
 	icon_state = "snow_dug";
@@ -12488,6 +12601,14 @@
 /obj/item/stack/ore/silver,
 /obj/item/stack/ore/silver,
 /obj/item/stack/ore/silver,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/exterior)
 "kGf" = (
@@ -15405,7 +15526,7 @@
 /turf/open/floor/clockwork,
 /area/awaymission/complex/cultfacility)
 "noc" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel,
 /area/awaymission/complex/miningcamp)
 "nou" = (
@@ -18681,6 +18802,16 @@
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/diamond,
 /obj/item/stack/ore/diamond,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/exterior)
 "qjc" = (
@@ -18875,7 +19006,7 @@
 /turf/open/floor/plasteel/cult,
 /area/awaymission/complex/cultholdout)
 "qtL" = (
-/obj/structure/closet/secure/loot,
+/obj/structure/closet/crate/secure/loot,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/reagent_containers/food/snacks/grown/rice,
 /obj/item/reagent_containers/food/snacks/grown/rice,
@@ -21401,7 +21532,7 @@
 /area/awaymission/complex/janitorial)
 "spT" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/mineral/equipment_vendor/golem,
+/obj/machinery/equipment_vendor/golem,
 /turf/open/floor/wood/damturf/broken3,
 /area/awaymission/complex/minerhouse)
 "sqk" = (
@@ -79358,7 +79489,7 @@ mNm
 mNm
 mNm
 mNm
-klQ
+awM
 xOo
 xOo
 oFC

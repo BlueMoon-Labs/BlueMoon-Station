@@ -22,6 +22,14 @@
 	pump.set_machine_stat(0)
 	SSair.add_to_rebuild_queue(pump)
 
+/obj/machinery/portable_atmospherics/pump/on_construction()
+	..()
+	anchored = FALSE
+
+/obj/machinery/portable_atmospherics/pump/on_deconstruction()
+	QDEL_LIST(component_parts)
+	..()
+
 /obj/machinery/portable_atmospherics/pump/Destroy()
 	var/turf/T = get_turf(src)
 	T.assume_air(air_contents)

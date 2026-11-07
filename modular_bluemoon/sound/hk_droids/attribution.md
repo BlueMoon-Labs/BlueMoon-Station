@@ -21,6 +21,15 @@
 | `hk47_charging.ogg` | KOTOR | Charging weapons, just in case this should be fun. |
 | `hk47_purchased.ogg` | KOTOR | Statement: I see you have purchased me, master. I find this a satisfactory arrangement. |
 | `hk47_prospective.ogg` | KOTOR | Greeting: Hello to you, prospective purchaser. |
+| `hk47_unlock_begin.ogg` | KOTOR II | Let me test this security measure. |
+| `hk47_unlock_success.ogg` | KOTOR II | Security measures bypassed. |
+| `hk47_unlock_failed.ogg` | KOTOR II | Oh, stupid primitive mechanism. |
+| `hk47_scan.ogg` | KOTOR II | Reconnaissance mode active. |
+| `hk47_accuracy.ogg` | KOTOR II | Optimal accuracy ratio achieved. |
+| `hk47_self_diagnostic.ogg` | KOTOR II | Analysis: My self-diagnostic indicates that my performance has indeed been improved. |
+| `hk47_recite_shields.ogg` | KOTOR II | Recitation: Do not forget to activate any energy shields you possess. |
+| `hk47_prejudice.ogg` | KOTOR II | Prejudice set to maximum. |
+| `hk47_crude.ogg` | KOTOR II | Crude, but effective. |
 
 ## Реплики HK-50
 
@@ -63,3 +72,26 @@
 | `hk47_prefix_statement.ogg` | Statement. |
 | `hk47_prefix_query.ogg` | Query. |
 | `hk47_prefix_exclamation.ogg` | Exclamation. |
+| `hk47_prefix_analysis.ogg` | Analysis. |
+
+## Звуки механик HK-47
+
+Сведены из записей этого репозитория и синтеза; лицензии слоёв ниже.
+
+| Файл | Слои | Источник и лицензия |
+| --- | --- | --- |
+| `hk47_spike_extend.ogg` | сервопривод вверх, шорох щупа, защёлка со звоном корпуса | `sound/effects/servostep.ogg`, `sound/weapons/gun_slide_lock_1.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_spike_retract.ogg` | отпирающий щелчок, сервопривод вниз, глухая посадка | `sound/weapons/gun_slide_lock_1.ogg`, `sound/effects/servostep.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_hack.ogg` | касание щупа, искры, скрежет панели, треск, перебор кодов и мотив взлома, гул мотиватора, нарастающий вой | `sound/effects/sparks1.ogg`, `sparks2.ogg`, `sparks3.ogg`, `sparks4.ogg`, `sound/machines/airlockforced.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_hack_done.ogg` | мотив взлома, аккорд, засов | `sound/machines/BoltsUp.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_hack_fail.ogg` | сорванный мотив, диссонанс, зуммер, искры | `sound/effects/sparks4.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_skim.ogg` | касание, скан-свип, писк данных, гул | синтез |
+| `hk47_skim_done.ogg` | писк записи данных, щелчок | синтез |
+| `hk47_shield_up.ogg` | нарастающий гул и звон поля, вой, треск поля, трель | синтез |
+| `hk47_shield_hit_1.ogg`, `hk47_shield_hit_2.ogg`, `hk47_shield_hit_3.ogg` | удар, звон поля, шлепок разряда, треск и искры | `sound/effects/sparks1.ogg`, `sparks2.ogg`, `sparks4.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_shield_down.ogg` | гаснущий гул и звон поля, вой, трель | синтез |
+| `hk47_shield_break.ogg` | треск, удар, срыв поля | `sound/effects/sparks4.ogg`, `sound/effects/EMPulse.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_shield_ready.ogg` | звон поля, гул, трель | синтез |
+| `hk47_stun_shot.ogg` | хлопок разряда, ионный гул, треск | синтез |
+| `hk47_repair.ogg` | защёлки, сервопривод, трещотка, сварка, шипение хладагента, гул | `sound/weapons/gun_slide_lock_1.ogg`, `gun_slide_lock_3.ogg`, `sound/effects/servostep.ogg`, `sound/items/Ratchet.ogg`, `sound/items/Welder2.ogg`, `sound/machines/hiss.ogg` из этого репозитория (CC BY-SA 3.0); синтез |
+| `hk47_mode_switch.ogg` | двойной щелчок со звоном корпуса, трель | `sound/weapons/gun_slide_lock_1.ogg`, `gun_slide_lock_2.ogg` из этого репозитория (CC BY-SA 3.0); синтез |

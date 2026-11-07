@@ -1,13 +1,6 @@
-export const SpiritLantern = ({ colored = false }: { colored?: boolean }) => (
-  <g fill="none" stroke={colored ? '#d8d1b8' : 'currentColor'} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 3v8m-7 7v-4a7 7 0 0 1 14 0v4M10 25l12-9 12 9 3 7H7ZM10 32v34l12 10 12-10V32M7 67l15 11 15-11M22 78v7m-5-3h10" fill={colored ? '#25273d' : 'none'} />
-    <path d="M15 29v35l7 7 7-7V29M7 33h30M11 63h22m-11-47v12" />
-    <g className="HereticBook__lanternSoul">
-      <path d="M22 35c-6 0-8 6-5 11-6 6-7 16-1 20 0-6 5-7 5-11 4 9 8 11 7 18 8-9 4-20-3-27 5-5 2-11-3-11Z" fill={colored ? '#9be8cf' : 'currentColor'} fillOpacity={colored ? '.85' : '.18'} stroke={colored ? '#bcffe5' : 'currentColor'} />
-      <path d="M20 40v2m4-2v2" stroke={colored ? '#30384c' : 'currentColor'} />
-    </g>
-  </g>
-);
+import { CSSProperties, ReactNode, useLayoutEffect, useRef } from 'react';
+
+import { resolveAsset } from '../assets';
 
 export const MourningLyre = ({ colored = false }: { colored?: boolean }) => (
   <g className="HereticLyre" fill="none" stroke={colored ? '#d9bb73' : 'currentColor'} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
@@ -40,203 +33,78 @@ export const CarnivalMask = ({ colored = false, strokeWidth = 1.1 }: { colored?:
   </g>
 );
 
-/** Рисунки путей выполнены чернилами, как и остальные записи в книге. */
+/** Перо обводит рисунок при появлении: длина штриха задаётся каждой линии отдельно. */
+const DrawnSvg = ({ className, viewBox, strokeWidth = '1.3', children }: { className: string; viewBox: string; strokeWidth?: string; children: ReactNode }) => {
+  const ref = useRef<SVGSVGElement>(null);
+  useLayoutEffect(() => {
+    const strokes = ref.current?.querySelectorAll<SVGGeometryElement>('path, circle, ellipse, rect');
+    strokes?.forEach((stroke, index) => {
+      if (typeof stroke.getTotalLength !== 'function' || stroke.getAttribute('stroke-dasharray') || stroke.getAttribute('pathLength')) return;
+      // Линии со своей анимацией пути (пламя, лучи) не перебиваем.
+      if (getComputedStyle(stroke).animationName !== 'none') return;
+      const length = Math.ceil(stroke.getTotalLength());
+      stroke.style.setProperty('--ink-length', `${length}`);
+      stroke.style.setProperty('--ink-delay', `${Math.min(index * 45, 1100)}ms`);
+      stroke.style.setProperty('--ink-time', `${Math.min(1400, Math.max(450, length * 2.2))}ms`);
+      stroke.setAttribute('data-ink', '');
+    });
+  }, []);
+  return (
+    <svg ref={ref} className={className} viewBox={viewBox} fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="heretic-hatch" width="3.4" height="3.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0 0v3.4" stroke="currentColor" strokeWidth=".55" strokeOpacity=".75" />
+        </pattern>
+        <pattern id="heretic-crosshatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+          <path d="M0 0v4M0 0h4" stroke="currentColor" strokeWidth=".45" strokeOpacity=".6" />
+        </pattern>
+        <pattern id="heretic-stipple" width="5" height="5" patternUnits="userSpaceOnUse">
+          <circle cx="1.2" cy="1.2" r=".5" fill="currentColor" stroke="none" />
+          <circle cx="3.7" cy="3.6" r=".38" fill="currentColor" stroke="none" />
+        </pattern>
+        <radialGradient id="heretic-halo-fade">
+          <stop offset="0" stopColor="#fff" stopOpacity=".9" />
+          <stop offset=".7" stopColor="#fff" stopOpacity=".25" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+        <mask id="heretic-halo-mask"><rect width="100%" height="100%" fill="url(#heretic-halo-fade)" /></mask>
+      </defs>
+      <rect className="HereticBook__stipple" width="100%" height="100%" fill="url(#heretic-stipple)" stroke="none" mask="url(#heretic-halo-mask)" />
+      {children}
+    </svg>
+  );
+};
+
+/** Гравюра пути: чёрно-белый оттиск служит маской и красится в чернила книги. */
 export const HereticIllumination = ({ path }: { path: string }) => (
-  <svg
+  <div
     className={`HereticBook__illumination HereticBook__illumination--${path}`}
-    viewBox="0 0 320 220"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.3"
+    style={{ '--engraving': `url("${resolveAsset(`heretic-plate-${path.toLowerCase()}.webp`)}")` } as CSSProperties}
     aria-hidden="true"
-    focusable="false"
-  >
-    {path === 'Ash' ? (
-      <>
-        <path d="M36 194h248M56 202h208M105 194l13-74h84l13 74M115 137h90M124 156h72M146 188h28v-24h-28z" />
-        <path className="HereticBook__fire" d="M160 121c-50-17-51-46-24-77-3 25 8 29 16 33-4-36 18-52 17-67 29 41 5 51 23 69l13-22c20 44-5 60-45 64Z" />
-        <path d="M150 119c-15-18-9-27 6-41-2 18 20 16 12 41M104 68l-9-13m-9 42-16-3m149-11 14-7M213 40l8-12" />
-        <g className="HereticBook__embers"><path d="m119 33 3-8m69 5 3-8m49 112 3-8m-152 21 3-8m89-89 3-8" /></g>
-        <circle cx="160" cy="98" r="86" strokeDasharray="2 11" />
-      </>
-    ) : path === 'Rust' ? (
-      <>
-        <path d="M35 23h250v174H35zM46 34h228v152H46zM80 34v152m160-152v152M46 70h228m-228 80h228" />
-        <g className="HereticBook__gear">
-          <path d="m150 44 20 0 3 16 14 6 13-10 14 14-10 13 6 14 16 3v20l-16 3-6 14 10 13-14 14-13-10-14 6-3 16h-20l-3-16-14-6-13 10-14-14 10-13-6-14-16-3v-20l16-3 6-14-10-13 14-14 13 10 14-6Z" />
-          <circle cx="160" cy="110" r="35" /><circle cx="160" cy="110" r="12" />
-          <path d="M160 75v23m0 24v23m-35-35h23m24 0h23" />
-        </g>
-        <path d="m60 49 5 5m0-5-5 5m195-5 5 5m0-5-5 5M60 169l5 5m0-5-5 5m195-5 5 5m0-5-5 5M88 161l8-6 4 13 10-3m116-113-10 5 4 12-11 4" />
-      </>
-    ) : path === 'Flesh' ? (
-      <>
-        <g className="HereticBook__pulse">
-          <path d="M154 68c-17-33-58-24-58 12-23 34 7 83 66 112 48-24 76-55 62-91-7-32-42-50-61-23M154 68l-5-35 19-7 14 33m-43 0-17-29-18 10 13 23M184 80l15-34 18 7-12 40" />
-          <path d="M158 86c-18 11-16 33-3 53l7 53m-7-53-30-15-8-25m38 40 29-8 22-29m-51 38-24 19m33-42 24-13 2-17" />
-        </g>
-        <path className="HereticBook__veins" d="M96 94 66 76 44 39m25 40-28 11m68 48-42 9-30 29m37-30-23-22m169-20 27-22 30 4m-31-5 11-31m-43 96 35 13 27 30m-31-31 25-8" />
-        <path d="M20 19q15 70 0 182M300 19q-15 70 0 182" strokeDasharray="3 9" />
-      </>
-    ) : path === 'Void' ? (
-      <>
-        <g className="HereticBook__winter">
-          {[0, 60, 120, 180, 240, 300].map((angle) => <path key={angle} transform={`rotate(${angle} 160 110)`} d="M160 22l13 43-13 45-13-45Z" />)}
-        </g>
-        <path className="HereticBook__winter" d="M160 23v174M85 66l150 88M85 154l150-88M148 36l12 14 12-14m-24 148 12-14 12 14M91 84l18-4-3-18m107 96-3-18 18-4M91 136l18 4-3 18m107-96-3 18 18 4" />
-        <circle cx="160" cy="110" r="44" strokeDasharray="1 8" />
-        <path d="M50 25h38M50 25v38m220-38h-38m38 0v38M50 195h38m-38 0v-38m220 38h-38m38 0v-38" opacity=".5" />
-        <circle cx="160" cy="110" r="18" />
-      </>
-    ) : path === 'Blade' ? (
-      <>
-        <path d="M40 190h240M160 24v176M44 108h232" strokeDasharray="3 5" />
-        <g className="HereticBook__guard">
-          <path d="m87 176 41-80 6-59 10-18 4 21-18 61-31 82m17-24-35-17m-27 20 38 15m23-74-12-32M235 176l-41-80-6-59-10-18-4 21 18 61 31 82m-17-24 35-17m27 20-38 15m-23-74 12-32" />
-          <path d="M112 127q48-74 96 0M121 115l-9 12 15-1m73-11 8 12-15-1" />
-        </g>
-        <circle cx="160" cy="108" r="74" /><circle cx="160" cy="108" r="78" strokeDasharray="1 8" />
-        <text x="34" y="106">I</text><text x="276" y="106">II</text><text x="153" y="213">III</text>
-      </>
-    ) : path === 'Moon' ? (
-      <>
-        <ellipse cx="160" cy="108" rx="74" ry="92" /><ellipse cx="160" cy="108" rx="65" ry="83" />
-        <path d="M160 7v14m0 174v18M78 108h16m132 0h16M100 38l9 10m102 129 9 10M100 179l9-10m102-129 9-10" />
-        <g className="HereticBook__reflection">
-          <path d="M176 47a40 40 0 1 0 0 78 44 44 0 0 1 0-78Z" />
-          <path d="M118 159q42-21 84 0M121 169q39-16 78 0m-66 9q27-9 54 0" />
-        </g>
-        <path d="m43 73 5 11 11 5-11 5-5 11-5-11-11-5 11-5Zm230 46 5 11 11 5-11 5-5 11-5-11-11-5 11-5Z" />
-      </>
-    ) : path === 'Lock' ? (
-      <>
-        <path d="M65 196V79a95 68 0 0 1 190 0v117M78 196V81a82 56 0 0 1 164 0v115M92 196V84a68 45 0 0 1 136 0v112" />
-        <path d="M42 204h236M99 84h25v-9h25v16h-11v18h-23v23h16v24h-23v33m91-105h-23v-9h-16v19h15v25h26v21h-12v21h20v27" strokeDasharray="2 2" />
-        <g className="HereticBook__key">
-          <circle cx="160" cy="108" r="18" /><circle cx="160" cy="108" r="10" />
-          <path d="M156 126v58h9v-11h13v-9h-13v-12h12v-8h-12v-18" />
-        </g>
-        <path d="M46 75h18m192 0h18M45 148h20m190 0h20M153 22h14m-7-7v14" />
-      </>
-    ) : path === 'Tide' ? (
-      <>
-        <ellipse cx="160" cy="119" rx="103" ry="86" strokeDasharray="1 7" />
-        <path d="M149 47V28q11-16 22 0v19M113 158V91a47 47 0 0 1 94 0v67l13 17H100ZM113 149h94M110 175v10h100v-10" />
-        <circle cx="160" cy="104" r="25" /><circle cx="160" cy="104" r="20" />
-        <path d="M140 104h40m-20-20v40m-14-34 28 28m0-28-28 28" />
-        <g className="HereticBook__tide">
-          <path d="M42 179q19-15 38 0t38 0 38 0 38 0 38 0 38 0M54 192q18-11 36 0t36 0 36 0 36 0 36 0 36 0" />
-          <circle cx="86" cy="130" r="5" /><circle cx="230" cy="104" r="4" /><circle cx="97" cy="67" r="3" /><circle cx="216" cy="49" r="2" />
-        </g>
-        <path d="M35 117h15m220 0h15M160 9v9" />
-      </>
-    ) : path === 'Glass' ? (
-      <>
-        <path d="M62 199V89a98 76 0 0 1 196 0v110M72 195V91a88 66 0 0 1 176 0v104M47 205h226" />
-        <g className="HereticBook__facets">
-          <path d="m160 27 35 52-14 51-21 65-35-75 12-42Zm0 0-1 69-34 24m34-24 36-17m-36 17 22 34m-22-34 1 99" />
-          <path d="m87 74 38 46-37 27Zm145 2-37 3 27 39Zm-17 64-34-10 11 49ZM95 158l21 21-13 18Z" />
-        </g>
-        <path d="M23 95h56m-17-6 17 6-17 6m122-1 33-18m-30 24 40 1m-42 5 35 25M119 43l-16-14m95 0 16-14" />
-        <path className="HereticBook__opticalRay" d="M23 95h64l72 1 36-17 57-23m-93 40 22 34 69 18" pathLength="100" />
-        <circle cx="160" cy="98" r="8" />
-      </>
-    ) : path === 'Blood' ? (
-      <>
-        <circle cx="160" cy="106" r="87" /><circle cx="160" cy="106" r="78" strokeDasharray="2 7" />
-        <path d="M116 105h88c0 33-17 49-44 49s-44-16-44-49Zm44 49v38m-31 0h62m-75-79h88M137 192l-8 8h62l-8-8M127 123q5 18 21 22" />
-        <path className="HereticBook__bloodThread" d="M66 43c-18 43 15 68 50 66m138-66c18 43-15 68-50 66" pathLength="100" />
-        <path className="HereticBook__titheDrop" d="M160 36c-4 17-17 29-17 42a17 17 0 0 0 34 0c0-13-13-25-17-42Zm-9 38q-4 12 5 15" />
-        <path d="m55 33 13 6 41 100-6 4L57 48Zm199 0-13 6-41 100 6 4 46-95ZM90 115l22-8m96 0 22 8M40 169l34-13m172 0 34 13" />
-        <path d="M42 26v40m-6-28h12M278 26v40m-6-28h12M69 184l-9 14m191-14 9 14" />
-      </>
-    ) : path === 'Echo' ? (
-      <>
-        <circle cx="160" cy="108" r="88" /><circle cx="160" cy="108" r="80" strokeDasharray="2 7" />
-        <g transform="translate(109 7) scale(2.3)"><MourningLyre /></g>
-        <g className="HereticBook__echoWaves">
-          <path d="M112 67q-13 29 0 58m-12-70q-21 41 0 82M213 71q13 27 0 54m12-67q21 40 0 80" />
-        </g>
-        <path d="M52 150h43m130 0h43M48 158h56m112 0h56M58 166h54m96 0h54M79 175h36m90 0h36" />
-        <path d="m160 13 4 9-4 9-4-9ZM57 68l8 4-8 4-8-4Zm206 0 8 4-8 4-8-4Z" />
-      </>
-    ) : path === 'Sand' ? (
-      <>
-        <path d="M102 29h116v12H102zM102 180h116v12H102zM114 42v137m92-137v137M126 42q0 44 34 64-34 29-34 73m68-137q0 44-34 64 34 29 34 73" />
-        <path d="m132 59 28 34 28-34Zm0 112 28-35 28 35Z" fill="currentColor" opacity=".25" />
-        <path className="HereticBook__sandStream" d="M160 101v36" strokeDasharray="1 4" />
-        <path d="M83 48q-55 60 0 120m-7-11 7 11-14-2M237 168q55-60 0-120m7 11-7-11 14 2M44 111h39m154 0h39" />
-        <path d="M54 178q24-21 46-12m123-110q21 12 44-4M60 187q21-13 42-8" opacity=".5" />
-        <text x="151" y="23">XII</text><text x="153" y="211">I</text>
-      </>
-    ) : path === 'Wax' ? (
-      <>
-        <path d="M75 188h170M116 177h88l9 11H107ZM160 176v-35m-57-17q0 28 57 17 57 11 57-17M94 119h18m96 0h18M145 134h30" />
-        <path d="M146 65h28v67h-28zM95 79h16v38H95zM209 79h16v38h-16zM146 76q5-9 10 0v23q4 7 8 0V85q4-6 10-1M95 87q7-8 9 1v12m105-12q7-8 9 1v12" />
-        <g className="HereticBook__waxFlames"><path d="M160 21c2 18 15 22 11 34-4 12-23 9-23-3 0-10 12-14 12-31ZM103 42c0 13 10 17 9 25-2 9-18 9-18-1 0-7 9-12 9-24Zm114 0c0 13 10 17 9 25-2 9-18 9-18-1 0-7 9-12 9-24Z" /></g>
-        <path d="M65 31v113l25 38m165-151v113l-25 38M54 47v101l22 35m190-136v101l-22 35" opacity=".5" />
-        <path d="M124 208h72M134 201h52" />
-      </>
-    ) : path === 'Dance' ? (
-      <>
-        <ellipse cx="160" cy="184" rx="112" ry="22" /><ellipse cx="160" cy="184" rx="124" ry="29" strokeDasharray="2 7" />
-        <g className="HereticBook__danceRibbons">
-          <path d="M104 88C82 104 106 124 86 144S72 170 50 178M109 92C92 110 114 128 94 148S82 174 62 184M216 88c22 16-2 36 18 56s14 26 36 34M211 92c17 18-5 36 15 56s12 26 32 36" />
-        </g>
-        <g transform="translate(100 38) scale(2.5)"><CarnivalMask strokeWidth={0.55} /></g>
-        <path d="M106 52C97 36 86 20 70 6c17 5 30 20 34 40-11-8-22-20-34-40m12 11 4 9m5-2 5 8m-18-20 1 4M160 70l-4-7 4-7 4 7Z" />
-        <g className="HereticBook__danceSteps">
-          {[[57, 187, 118], [84, 205, 100], [133, 200, 93], [187, 210, 87], [234, 195, 80], [268, 196, 62]].map(([x, y, angle]) => (
-            <g key={x} transform={`translate(${x} ${y}) rotate(${angle})`}><path d="M0-7c3 0 4 4 3 8s-5 3-5 0 0-8 2-8Zm-1 11a2 2 0 1 0 .1 0Z" /></g>
-          ))}
-        </g>
-        <path d="M138 160c0 10 2 16 5 18 9 1 15 9 28 10l15 1q3-2-3-5c-11-3-18-8-24-14q-10 2-21-10Zm5 18-1 12h3l1-11m12-8-4-4v7Zm0 0 4-4v7Z" />
-        <ellipse cx="54" cy="112" rx="4" ry="3" /><ellipse cx="266" cy="118" rx="4" ry="3" /><ellipse cx="248" cy="148" rx="3" ry="2.2" />
-        <path d="M58 111V94l6 4M270 117v-17M251 147v-12l5 3M160 8v14m-7-7h14M34 60l6 6m0-6-6 6m240-6 6 6m0-6-6 6" />
-      </>
-    ) : path === 'Spirit' ? (
-      <>
-        <path d="M77 191V79q0-56 65-56t65 56v112M85 188V81q0-50 57-50t57 50v107M62 197h160M87 205h109" opacity=".55" />
-        <g className="HereticBook__departingSoul">
-          <path d="M143 44c-23 0-35 23-30 44-5 12-19 23-20 47 9-7 16-8 24-20-4 30-8 41-23 61 23-3 32-12 43-31 1 15 10 22 4 39 25-16 34-44 29-66 9 16 17 20 25 25-5-29-20-43-21-56 6-25-8-43-31-43Z" />
-          <path d="M121 87c-1-20 7-33 21-35 17 1 26 18 24 37M126 98q-11 26-13 40m48-40q16 32 8 52m-27-30q-2 26-17 42" />
-          <path d="m129 68 7-7h13l8 7-2 15-9 10h-7l-9-10Z" fill="currentColor" fillOpacity=".08" />
-          <path d="M132 71h7v4h-7Zm15 0h7v4h-7Zm-4 5-2 5h4ZM136 85h13m-10-2v6m6-6v6" />
-        </g>
-        <g transform="translate(228 85) scale(1.1)"><SpiritLantern /></g>
-        <path className="HereticBook__soulThread" d="M156 117c67-39 22 61 96 27" strokeDasharray="3 4" />
-        <path d="M247 81V45h-23m16 8 7-8 7 8M43 74v39m-7-30h14M43 124v15m-7-7h14M69 61l7 7m137-7-7 7" />
-        <circle cx="142" cy="101" r="90" strokeDasharray="1 9" opacity=".45" />
-      </>
-    ) : path === 'Cosmic' ? (
-      <>
-        <g className="HereticBook__orbit">
-          <circle cx="160" cy="110" r="88" /><circle cx="160" cy="110" r="79" strokeDasharray="1 6" />
-          <ellipse cx="160" cy="110" rx="112" ry="36" transform="rotate(-30 160 110)" />
-          <ellipse cx="160" cy="110" rx="36" ry="105" transform="rotate(-30 160 110)" />
-          <circle cx="202" cy="34" r="5" fill="currentColor" /><circle cx="61" cy="151" r="4" fill="currentColor" />
-        </g>
-        <path d="m94 111 39-45 72 24 16 59-70 24-57-62Zm39-45 18 107 54-83m-111 21 127 38" />
-        {[[94, 111], [133, 66], [205, 90], [221, 149], [151, 173]].map(([x, y]) => <path key={x} d={`M${x-5} ${y}h10m-5-5v10`} />)}
-        <circle cx="160" cy="110" r="12" /><path d="M154 110h12m-6-6v12" />
-      </>
-    ) : (
-      <>
-        <circle cx="160" cy="110" r="78" /><circle cx="160" cy="110" r="69" strokeDasharray="2 7" />
-        <path d="M116 167V82q0-44 44-44t44 44v85M135 167V86q0-27 25-27t25 27v81M110 167h100M153 112h14v39h-14z" />
-        <path d="M160 21V9m69 55 12-7m-12 99 12 7m-81 36v12M91 156l-12 7m12-99-12-7" />
-      </>
-    )}
-  </svg>
+  />
 );
 
+/** Вид сверху: руна 3×3, компоненты на клетках, рука касается центра. */
 export const RitualDiagram = () => (
-  <svg className="HereticBook__ritualDrawing" viewBox="0 0 300 150" fill="none" stroke="currentColor" aria-hidden="true" focusable="false">
-    <path d="M70 14h160v122H70zM123 14v122m54-122v122M70 55h160M70 96h160" strokeDasharray="3 5" />
-    <ellipse cx="150" cy="75" rx="68" ry="52" /><ellipse cx="150" cy="75" rx="58" ry="43" />
-    <path d="m150 27 54 73H96Zm0 96-54-73h108ZM37 75h37m151 0h37M61 68l13 7-13 7m177-14-13 7 13 7" />
-    <circle cx="150" cy="75" r="12" />
-  </svg>
+  <DrawnSvg className="HereticBook__ritualDrawing" viewBox="0 0 300 170" strokeWidth="1.1">
+    <path d="M84 22h132v132H84z" className="HereticBook__bold" />
+    <path d="M128 22v132m44-132v132M84 66h132M84 110h132" className="HereticBook__fine" />
+    <circle cx="150" cy="88" r="60" />
+    <circle cx="150" cy="88" r="52" strokeDasharray="1 5" className="HereticBook__fine" />
+    <path d="m150 40 41 72H109Zm0 96-41-72h82Z" className="HereticBook__fine" />
+    <circle cx="150" cy="88" r="11" className="HereticBook__bold" />
+    <path d="M94 34l18 18m-4-6 4 6-6-2" />
+    <path d="M190 36l16 14m-3-3 5-1m-4 5 1 4" />
+    <path d="M196 128h12m-6-6v12M92 128c6-6 12-6 18 0-6 6-12 6-18 0Z" />
+    <path className="HereticBook__ritualHand" d="M262 88h-62m10-8-10 8 10 8m52-18c6 0 10 4 10 10s-4 10-10 10" />
+    <path d="M84 12h132m-132-4v8m132-8v8M72 22v132m-4-132h8m-8 132h8" className="HereticBook__fine" />
+    <text x="140" y="9">3×3</text>
+    <text x="226" y="122">пустой</text>
+    <text x="226" y="134">рукой</text>
+    <text x="8" y="56">компоненты</text>
+    <text x="8" y="68">на клетках</text>
+    <path d="M60 74h28" strokeDasharray="2 3" className="HereticBook__fine" />
+  </DrawnSvg>
 );
 
 export const HereticPageOrnament = ({ path }: { path: string }) => (
@@ -333,5 +201,37 @@ export const HereticPageOrnament = ({ path }: { path: string }) => (
         {[[24, 47], [59, 18], [29, 15], [296, 553], [261, 582], [291, 585], [36, 582], [284, 18]].map(([x, y]) => <path key={`${x}-${y}`} d={`M${x-3} ${y}h6m-3-3v6`} />)}
       </>
     ) : null}
+  </svg>
+);
+
+/** Заставка над записью: завиток к центральному ромбу. */
+export const Headpiece = () => (
+  <svg className="HereticBook__headpiece" viewBox="0 0 240 22" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" aria-hidden="true" focusable="false">
+    <path d="M120 3.5 126.5 11 120 18.5 113.5 11Z" fill="currentColor" fillOpacity=".25" />
+    <path d="M120 7.5 123 11l-3 3.5-3-3.5Z" fill="currentColor" stroke="none" />
+    <path d="M108 11c-10 0-12-7-20-7-6 0-8 5-4 7 3 1.5 6-.5 5-2.5M132 11c10 0 12-7 20-7 6 0 8 5 4 7-3 1.5-6-.5-5-2.5" />
+    <path d="M108 11c-8 0-10 6-17 6-4 0-6-2-5-4M132 11c8 0 10 6 17 6 4 0 6-2 5-4" strokeOpacity=".7" />
+    <path d="M84 11H22m134 0h62" strokeWidth=".7" />
+    <circle cx="18" cy="11" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="222" cy="11" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+/** Концовка: виньетка в конце записи. */
+export const Tailpiece = () => (
+  <svg className="HereticBook__tailpiece" viewBox="0 0 120 26" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" aria-hidden="true" focusable="false">
+    <path d="M60 4c5 4 7 9 7 14-3-3-5-4-7-4s-4 1-7 4c0-5 2-10 7-14Z" fill="currentColor" fillOpacity=".3" />
+    <path d="M60 14v8M53 18c-8 2-14 0-20-4-4-3-9-3-11 0M67 18c8 2 14 0 20-4 4-3 9-3 11 0" />
+    <path d="M22 14c-3 2-2 6 1 6m75-6c3 2 2 6-1 6" strokeOpacity=".7" />
+    <circle cx="60" cy="24" r="1.3" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+/** Указующая рука на полях у главной команды страницы. */
+export const Manicule = () => (
+  <svg className="HereticBook__manicule" viewBox="0 0 48 24" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true" focusable="false">
+    <path d="M47 7h-7v11h7" />
+    <path d="M40 8c-4-2-8-2-11-1H11c-2 0-3 1-3 2s1 2 3 2h13c-1 1-1 2 0 3h-1c-1 0-2 1-2 2s1 2 2 2h1c-1 1 0 3 1 3h2c0 1 1 2 2 2h8l3-3Z" fill="currentColor" fillOpacity=".12" />
+    <path d="M24 11h4m-5 3h4m-3 3h3M43 9v7" strokeOpacity=".7" />
   </svg>
 );

@@ -1,0 +1,243 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/template_noop,
+/area/template_noop)
+"b" = (
+/obj/structure/musician/piano,
+/obj/structure/window{
+	dir = 8
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"e" = (
+/turf/open/floor/holofloor/beach,
+/area/ruin/space/has_grav/powered/aesthetic)
+"h" = (
+/obj/structure/chair/stool,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"i" = (
+/obj/machinery/light/small,
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"j" = (
+/obj/effect/overlay/palmtree_r,
+/turf/open/floor/holofloor/beach,
+/area/ruin/space/has_grav/powered/aesthetic)
+"k" = (
+/obj/structure/window{
+	dir = 4
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"m" = (
+/obj/structure/statue/sandstone/venus{
+	anchored = 1;
+	desc = "Ugh, this is merely an ugly amateurish replica of the other statue! The letters RIPGOAT are scribbled onto the base.";
+	dir = 8
+	},
+/obj/effect/turf_decal/sand/plating,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/powered/aesthetic)
+"o" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"p" = (
+/obj/structure/statue/sandstone/venus{
+	anchored = 1;
+	dir = 4
+	},
+/obj/effect/turf_decal/sand/plating,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/powered/aesthetic)
+"q" = (
+/obj/structure/window{
+	dir = 8
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"r" = (
+/turf/open/floor/holofloor/beach/coast_t,
+/area/ruin/space/has_grav/powered/aesthetic)
+"s" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"v" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"G" = (
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"H" = (
+/mob/living/simple_animal/butterfly,
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"I" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/powered/aesthetic)
+"L" = (
+/obj/effect/overlay/palmtree_l,
+/turf/open/floor/holofloor/beach,
+/area/ruin/space/has_grav/powered/aesthetic)
+"O" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered/aesthetic)
+"P" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/hatch,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/powered/aesthetic)
+"Q" = (
+/obj/structure/table/reinforced,
+/obj/item/taperecorder,
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"S" = (
+/turf/open/floor/holofloor/beach/coast_b,
+/area/ruin/space/has_grav/powered/aesthetic)
+"T" = (
+/obj/item/instrument/eguitar,
+/turf/open/floor/holofloor/beach,
+/area/ruin/space/has_grav/powered/aesthetic)
+"W" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/glasses/sunglasses/big{
+	name = "aesthetic sunglasses"
+	},
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"X" = (
+/obj/effect/turf_decal/sand,
+/obj/effect/abstract/open_area_marker,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/powered/aesthetic)
+"Z" = (
+/obj/item/statuebust,
+/turf/open/floor/plasteel/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+
+(1,1,1) = {"
+O
+O
+I
+I
+I
+O
+I
+a
+"}
+(2,1,1) = {"
+O
+j
+e
+j
+r
+S
+O
+a
+"}
+(3,1,1) = {"
+I
+b
+q
+q
+q
+q
+O
+a
+"}
+(4,1,1) = {"
+O
+h
+G
+G
+Z
+i
+O
+O
+"}
+(5,1,1) = {"
+O
+G
+G
+G
+G
+G
+O
+m
+"}
+(6,1,1) = {"
+O
+v
+v
+G
+G
+G
+P
+X
+"}
+(7,1,1) = {"
+I
+Q
+W
+G
+G
+G
+O
+p
+"}
+(8,1,1) = {"
+I
+s
+o
+G
+H
+i
+I
+O
+"}
+(9,1,1) = {"
+O
+k
+k
+k
+k
+k
+O
+a
+"}
+(10,1,1) = {"
+I
+L
+T
+L
+r
+S
+I
+a
+"}
+(11,1,1) = {"
+O
+O
+I
+O
+I
+I
+I
+a
+"}

@@ -27,6 +27,16 @@
 	//SHOULD_NOT_SLEEP(TRUE)
 	if(mob_transforming)
 		return
+	if(swallow_right_button_release(params))
+		return
+	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое; ЛКМ по цели меню - см. click_passes()
+	if(active_context_menu)
+		var/list/modifiers = params2list(params)
+		var/reopen = right_click_opens_menu(modifiers, A)
+		var/passes = reopen || active_context_menu.click_passes(A, modifiers)
+		close_context_menu(reopen ? "reopen" : "click", A)
+		if(!passes)
+			return
 	if(SEND_SIGNAL(src, COMSIG_MOB_CLICKON, A, params) & COMSIG_MOB_CANCEL_CLICKON)
 		return
 	. = ClickOn(A, params)
@@ -62,7 +72,10 @@
 			return CtrlMiddleClickOn(A)
 		else
 			return MiddleClickOn(A)
-	if(modifiers["shift"] && (client && client.show_popup_menus || modifiers["right"])) //CIT CHANGE - makes shift-click examine use right click instead of left click in combat mode
+	if(right_click_opens_menu(modifiers, A))
+		open_context_menu(A, params)
+		return
+	if(shift_click_examines(modifiers))
 		return ShiftClickOn(A)
 	if(modifiers["alt"]) // alt and alt-gr (rightalt)
 		return AltClickOn(A)
@@ -71,8 +84,8 @@
 	if(modifiers["ctrl"])
 		return CtrlClickOn(A)
 
-	if(modifiers["right"]) //CIT CHANGE - allows right clicking to perform actions
-		return RightClickOn(A, params) //CIT CHANGE - ditto
+	if(modifiers["right"])
+		return RightClickOn(A, params)
 
 	if(incapacitated(ignore_restraints = 1))
 		return
@@ -580,45 +593,61 @@
 
 /* MouseWheelOn */
 
+// На один источник приходится один обработчик; повторная регистрация заменяет его.
+// Колбек получает (mob/user, atom/target, delta_x, delta_y, list/modifiers); TRUE останавливает цепочку.
+/mob/proc/register_mousewheel_handler(datum/source, proctype, priority = MOUSEWHEEL_PRIORITY_DEFAULT)
+	if(QDELETED(src) || QDELETED(source))
+		return
+	unregister_mousewheel_handler(source)
+	var/datum/callback/mousewheel/handler = new(source, proctype, src)
+	// Копируем только при изменении: текущий обход сохраняет свой список без Copy() на каждом событии.
+	var/list/updated_handlers = mousewheel_handlers ? mousewheel_handlers.Copy() : list()
+	updated_handlers[handler] = priority
+	sortTim(updated_handlers, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	mousewheel_handlers = updated_handlers
+	return handler
+
+/mob/proc/unregister_mousewheel_handler(datum/source)
+	for(var/datum/callback/mousewheel/handler as anything in mousewheel_handlers)
+		if(handler.object == source)
+			qdel(handler)
+			return
+
 /mob/proc/MouseWheelOn(atom/A, delta_x, delta_y, params)
-	return
+	var/list/handlers = mousewheel_handlers
+	if((!delta_x && !delta_y) || !length(handlers))
+		return FALSE
+	var/list/modifiers = params2list(params)
+	for(var/datum/callback/mousewheel/handler as anything in handlers)
+		if(QDELETED(handler) || QDELETED(handler.object))
+			continue
+		if(handler.Invoke(src, A, delta_x, delta_y, modifiers))
+			return TRUE
+	return FALSE
 
-/mob/living/carbon/MouseWheelOn(atom/A, delta_x, delta_y, params)
-	. = ..()
-	var/obj/item/I = get_active_held_item()
-	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
-	// Смена инструментов импланта
-	if(I && implant && length(implant.items_list) > 1 && implant.items_list.Find(I))
-		if(!implant.activate_allowed(user = src, silent = FALSE))
-			return
-		var/list/implants_list = implant.items_list
-		var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
-		if(!to_index)
-			return
-		implant.Retract(TRUE)
-		implant.Extend(implants_list[to_index])
-		return
+// Постоянный колбек сам снимает регистрацию при удалении источника или явном qdel.
+/datum/callback/mousewheel
+	var/mob/receiver
 
-	// Смена выбранной зоны
-	if(!client.check_has_body_select())
-		return
-	var/static/list/b_zones = BODY_ZONE_LIST_ALL
-	var/to_index = delta_y < 0 ? b_zones.Find(next_list_item(zone_selected, b_zones)) : b_zones.Find(previous_list_item(zone_selected, b_zones))
-	if(!to_index)
-		return
+/datum/callback/mousewheel/New(datum/source, proctype, mob/receiver)
+	..(source, proctype)
+	src.receiver = receiver
+	// Обработчик использует текущего игрока, а не usr, который выполнил регистрацию.
+	user = null
+	RegisterSignal(source, COMSIG_PARENT_QDELETING, PROC_REF(on_source_deleted))
 
-	var/atom/movable/screen/zone_sel/selector = hud_used?.zone_select
-	selector?.set_selected_zone(b_zones[to_index], src)
+/datum/callback/mousewheel/Destroy()
+	if(receiver?.mousewheel_handlers && (src in receiver.mousewheel_handlers))
+		var/list/updated_handlers = receiver.mousewheel_handlers.Copy()
+		updated_handlers -= src
+		receiver.mousewheel_handlers = length(updated_handlers) ? updated_handlers : null
+	receiver = null
+	UnregisterSignal(object, COMSIG_PARENT_QDELETING)
+	return ..()
 
-/mob/dead/observer/MouseWheelOn(atom/A, delta_x, delta_y, params)
-	var/list/modifier = params2list(params)
-	if(modifier["shift"])
-		var/view = 0
-		if(delta_y > 0)
-			view = -1
-		else
-			view = 1
-		add_view_range(view)
+/datum/callback/mousewheel/proc/on_source_deleted(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /mob/proc/check_click_intercept(params,A)
 	//Client level intercept

@@ -6,7 +6,7 @@
 	to_chat(src, "Your Brood: ")
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		if(T.spider_awaymission != spider_awaymission)
+		if(T.spider_awaymission != spider_awaymission || T.training_origin != training_origin)
 			continue
 		hsline = "* [T] in [get_area(T)], "
 		if(T.stat == DEAD)
@@ -23,7 +23,7 @@
 	var/numspiders = 0
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		if(T.stat != DEAD && !T.spider_placed && spider_awaymission == T.spider_awaymission)
+		if(T.stat != DEAD && !T.spider_placed && spider_awaymission == T.spider_awaymission && T.training_origin == training_origin)
 			numspiders += 1
 	return numspiders
 
@@ -34,7 +34,7 @@
 		spider_totals[thistype] = 0
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		if(T.stat == DEAD || T.spider_placed || spider_awaymission != T.spider_awaymission)
+		if(T.stat == DEAD || T.spider_placed || spider_awaymission != T.spider_awaymission || T.training_origin != training_origin)
 			continue
 		if(check_mine && T.spider_myqueen != src)
 			continue
@@ -49,6 +49,8 @@
 		spider_totals["all"]++
 	for(var/thing in GLOB.ts_egg_list)
 		var/obj/structure/spider/eggcluster/terror_eggcluster/E = thing
+		if(E.training_origin != training_origin)
+			continue
 		if(check_mine && E.spider_myqueen != src)
 			continue
 		if(check_list && E.spiderling_type && !(E.spiderling_type in mytypes))
@@ -60,7 +62,7 @@
 		spider_totals["all"] += E.spiderling_number
 	for(var/thing in GLOB.ts_spiderling_list)
 		var/obj/structure/spider/spiderling/terror_spiderling/L = thing
-		if(L.stillborn)
+		if(L.stillborn || L.training_origin != training_origin)
 			continue
 		if(check_mine && L.spider_myqueen != src)
 			continue
@@ -82,6 +84,8 @@
 	var/message_a = say_quote(message)
 	var/rendered = "<i><span class='terror'>Terror Spider Hivemind, <span class='name'>[shown_name]</span> <span class='message'>[message_a]</span></span></i>"
 	for(var/mob/S in GLOB.player_list)
+		if(isobserver(S) ? !antag_training_observer_hears(S, src) : S.training_origin != training_origin)
+			continue
 		if(!S.stat && S.terrorhivecheck())
 			to_chat(S, rendered)
 		if(S in GLOB.dead_mob_list)

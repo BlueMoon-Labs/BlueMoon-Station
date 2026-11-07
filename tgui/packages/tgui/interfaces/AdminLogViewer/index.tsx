@@ -22,17 +22,16 @@ export type LogFileState = {
   pageNum: number;
   pageCount: number;
   pageBytes: number;
-  content: string;
   tailAvailable: boolean;
   tailActive: boolean;
 };
 
-// Согласован с белым списком set_page_size на сервере; 0 = весь файл.
+// Согласован с белым списком set_page_size на сервере; 0 = весь файл, но не больше 1 МиБ:
+// пересылка крупной страницы останавливает весь сервер.
 const PAGE_SIZE_OPTIONS: { label: string; value: number }[] = [
   { label: '256 КиБ', value: 256 * 1024 },
   { label: '1 МиБ', value: 1024 * 1024 },
-  { label: '4 МиБ', value: 4 * 1024 * 1024 },
-  { label: 'Весь файл', value: 0 },
+  { label: 'Весь файл (до 1 МиБ)', value: 0 },
 ];
 
 export type LogViewerData = {
@@ -41,6 +40,8 @@ export type LogViewerData = {
   canArchive: boolean;
   osUnix: boolean;
   file: LogFileState | null;
+  // Текст страницы приходит статикой: только при смене страницы, а не с каждым действием.
+  fileContent?: string;
   searchResults: { line: number; offset: number; preview: string }[] | null;
   searchQuery: string;
 };
@@ -296,11 +297,12 @@ type RenderMode = 'text' | 'json' | 'csv';
 const Viewer = (props) => {
   const { act, data } = useBackend<LogViewerData>();
   const file = data.file;
+  const content = data.fileContent ?? '';
   const [clientQuery, setClientQuery] = useState('');
   const [activeMatch, setActiveMatch] = useState(0);
   const [renderMode, setRenderMode] = useState<RenderMode>('text');
   const [wrap, setWrap] = useState(true);
-  const { count } = splitByMatches(file?.content ?? '', clientQuery, SEARCH_HIGHLIGHT_CAP);
+  const { count } = splitByMatches(content, clientQuery, SEARCH_HIGHLIGHT_CAP);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -350,7 +352,7 @@ const Viewer = (props) => {
   let renderedJson: string | null = null;
   if (renderMode === 'json') {
     try {
-      renderedJson = JSON.stringify(JSON.parse(file.content), null, 2);
+      renderedJson = JSON.stringify(JSON.parse(content), null, 2);
     } catch {
       renderedJson = null;
     }
@@ -489,7 +491,7 @@ const Viewer = (props) => {
                 className={
                   'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
                 }>
-                {parseCsv(file.content).map((row, i) => (
+                {parseCsv(content).map((row, i) => (
                   // Заголовок CSV есть только в начале файла - на следующих страницах первая строка это данные
                   <Table.Row header={i === 0 && file.pageStart === 0} key={i}>
                     {row.map((cell, j) => (
@@ -509,7 +511,7 @@ const Viewer = (props) => {
               <ViewerContent
                 activeMatch={activeMatch}
                 clientQuery={clientQuery}
-                content={file.content}
+                content={content}
                 wrap={wrap}
               />
             )}

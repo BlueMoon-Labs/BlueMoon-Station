@@ -24,7 +24,9 @@
 		if(!backpack)
 			//nothing on their back
 			backpack = new /obj/item/storage/backpack(get_turf(src))
-			if(equip_to_slot(backpack, ITEM_SLOT_BACK)) //worst-case-scenario, something that shouldnt wear a backpack gets one
+			// equip_to_slot() возвращает признак необработанного слота, а не успех экипировки.
+			equip_to_slot(backpack, ITEM_SLOT_BACK)
+			if(get_item_by_slot(ITEM_SLOT_BACK) == backpack)
 				if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE, TRUE))
 					I.forceMove(backpack)
 				return ITEM_SLOT_BACK
@@ -49,6 +51,10 @@
 		return
 	if(!istype(I))
 		return
+	if(slot == ITEM_SLOT_LEGCUFFED && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		var/obj/item/restraints/restraint = I
+		if(!istype(restraint) || !restraint.can_apply_to_legs(src))
+			return FALSE
 
 	var/index = get_held_index_of_item(I)
 	if(index)

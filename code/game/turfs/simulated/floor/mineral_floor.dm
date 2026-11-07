@@ -45,8 +45,7 @@
 
 /turf/open/floor/mineral/plasma/attackby(obj/item/W, mob/user, params)
 	if(W.get_temperature() > 300)//If the temperature of the object is over 300, then ignite
-		message_admins("Plasma flooring was ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]")
-		log_admin("Plasma flooring was ignited by [key_name(user)] in [AREACOORD(src)]")
+		antag_training_admin_log(src, "Plasma flooring was ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]", "Plasma flooring was ignited by [key_name(user)] in [AREACOORD(src)]")
 		ignite(W.get_temperature())
 		return
 	..()

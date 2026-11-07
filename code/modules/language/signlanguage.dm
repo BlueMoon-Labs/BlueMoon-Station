@@ -1,6 +1,6 @@
 /datum/language/signlanguage
 	name = "Space Sign Language"
-	desc = "Those who cannot speak can learn this instead."
+	desc = "Те, кто не может говорить, могут выучить его вместо речи."
 	speech_verb = "signs"
 	whisper_verb = "gestures"
 	key = "9"

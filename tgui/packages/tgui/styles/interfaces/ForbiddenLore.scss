@@ -9,33 +9,39 @@
   --ribbon: #66342b;
   --rule: #9a8260;
   --grain: radial-gradient(ellipse at 15% 75%, #8c602022, transparent 44%), radial-gradient(ellipse at 90% 10%, #eee3b777, transparent 55%);
+  --serif: 'Heretic Garamond', Georgia, 'Times New Roman', serif;
+  --reveal: heretic-ink-in;
+  --initial-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23fff' stroke-opacity='.32' stroke-width='.7'%3E%3Cpath d='M3 37C9 25 5 17 13 11s14 2 18-6M7 33c6-2 8-8 6-12M31 5c2 6 8 6 6 12M15 37c4-6 12-4 14-10'/%3E%3Ccircle cx='13' cy='11' r='2'/%3E%3Ccircle cx='29' cy='27' r='2.6'/%3E%3Cpath d='M2.5 2.5h35v35h-35z' stroke-opacity='.45'/%3E%3C/svg%3E") center / 100% 100%, radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 70%, #fff 30%), var(--accent) 60%, color-mix(in srgb, var(--accent) 70%, #000 30%));
+  --initial-ink: var(--paper);
+  --initial-frame: color-mix(in srgb, var(--accent) 60%, #000 40%);
+  --light: #ffd9a022;
   position: relative;
   height: 100%;
   overflow: hidden;
-  padding: 45px 30px 6px;
+  padding: 42px 30px 4px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow-wrap: anywhere;
+  gap: 8px;
+  overflow-wrap: break-word;
   color: var(--ink);
   background: radial-gradient(ellipse at 50% 35%, #38302b, #181613 72%);
-  font: 15px/1.5 Georgia, 'Times New Roman', serif;
+  font: 16.5px/1.48 var(--serif);
   font-weight: 400;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  font-kerning: normal;
 
   *, *::before, *::after { box-sizing: border-box; }
-  h1, h2, h3, p, dl, dd, blockquote { margin: 0; }
-  h1, h2, h3 { font-family: inherit; color: var(--ink); font-weight: 400; }
-  h2 { margin: 8px 0 18px; font-size: 28px; line-height: 1.13; text-wrap: balance; }
-  h3 { margin: 23px 0 9px; font-size: 17px; font-weight: 700; }
-  p { margin-bottom: 13px; }
-  strong { font-weight: 700; }
-  button, input { font: inherit; }
-  button { cursor: pointer; color: inherit; }
-  button:focus-visible, input:focus-visible, .Button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  button:disabled { cursor: default; }
-  button[aria-pressed='true'] { color: var(--accent); }
+  :where(h1, h2, h3, p, dl, dd, ol, ul, blockquote, figure) { margin: 0; }
+  :where(h1, h2, h3) { font-family: inherit; color: var(--ink); font-weight: 500; }
+  :where(p) { margin-bottom: 9px; }
+  :where(b, strong) { font-weight: 600; }
+  :where(button, input) { font: inherit; }
+  :where(button) { cursor: pointer; color: inherit; }
+  :where(button, input, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  :where(button:disabled) { cursor: default; }
   ::selection { background: var(--accent); color: var(--paper); }
 
+  /* Переплёт, обрез и стопки прочитанных и оставшихся листов */
   &__tableShadow { position: absolute; inset: 17% 4% 4%; background: #0009; border-radius: 45%; filter: blur(24px); }
   &__binding {
     flex: 1;
@@ -48,284 +54,589 @@
     box-shadow: 0 2px 0 #000, 0 6px 0 #140e0a, 0 9px 11px #000a, inset 0 0 0 3px #0005, inset 0 0 0 5px var(--cover-light);
   }
   &__leaves { position: absolute; inset: 17px 13px 9px; border-radius: 8px 10px 10px 7px; background: repeating-linear-gradient(to bottom, var(--paper-edge) 0 1px, var(--paper) 1px 3px); transform: rotate(.3deg); box-shadow: 0 2px 2px #0009; }
-  &__spread { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: 100%; min-height: 0; isolation: isolate; perspective: 1800px; }
+  &__stack {
+    position: absolute;
+    top: 15px;
+    bottom: 12px;
+    z-index: 1;
+    background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--paper-edge) 80%, #000 20%) 0 1px, color-mix(in srgb, var(--paper) 88%, #fff 12%) 1px 2px);
+    transition: width 500ms ease, left 500ms ease, right 500ms ease;
+  }
+  &__stack--left { left: calc(13px - var(--stack-left)); width: var(--stack-left); border-radius: 4px 0 0 6px; box-shadow: -2px 2px 3px #0007; }
+  &__stack--right { right: calc(13px - var(--stack-right)); width: var(--stack-right); border-radius: 0 4px 6px 0; box-shadow: 2px 2px 3px #0007; }
+  &__spread { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: 100%; min-height: 0; isolation: isolate; perspective: 2200px; }
+  &__spread::before { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(ellipse 45% 55% at 30% 35%, var(--light), transparent 70%); mix-blend-mode: soft-light; animation: heretic-candle-drift 16s ease-in-out infinite alternate; }
   &__page {
     min-width: 0;
     min-height: 0;
     position: relative;
-    padding: 23px 32px 13px;
+    padding: 16px 30px 8px;
     display: flex;
     flex-direction: column;
     background: var(--grain), repeating-linear-gradient(0deg, #00000003 0 1px, transparent 1px 3px), var(--paper);
     box-shadow: inset 0 0 25px #63411533;
-    &--left { border-radius: 3px 20px 10px 5px; padding-right: 33px; }
-    &--right { border-radius: 20px 3px 5px 10px; padding-left: 33px; }
-    &::after { content: ''; position: absolute; inset: 12px 14px; pointer-events: none; border: 1px solid var(--rule); opacity: .28; }
+    &--left { border-radius: 3px 14px 10px 5px; padding-right: 38px; box-shadow: inset 0 0 25px #63411533, inset -26px 0 26px -16px #2a18085e, inset -2px 0 0 #0000001a; }
+    &--right { border-radius: 14px 3px 5px 10px; padding-left: 38px; box-shadow: inset 0 0 25px #63411533, inset 26px 0 26px -16px #2a18085e, inset 2px 0 0 #ffffff14; }
+    &::after { content: ''; position: absolute; inset: 12px 14px; pointer-events: none; }
   }
   &__pageBody { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  &__pageScroll { flex: 1; overflow: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; padding: 2px 10px 10px; }
-  &__pageScroll:focus-visible { outline: 1px dotted var(--accent); outline-offset: 2px; }
-  &__scrollHint { flex: 0 0 13px; min-height: 13px; text-align: center; font-size: 10px; line-height: 13px; font-style: italic; color: var(--faded); }
+  &__pageScroll {
+    flex: 1;
+    overflow: hidden auto;
+    min-height: 0;
+    scrollbar-width: thin;
+    padding: 4px 8px 16px;
+    &[data-fade='below'] { mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent); }
+    &[data-fade='above'] { mask-image: linear-gradient(to bottom, transparent, #000 26px); }
+    &[data-fade='both'] { mask-image: linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 40px), transparent); }
+    &:focus-visible { outline: 1px dotted var(--accent); outline-offset: 2px; }
+  }
+  /* Перекрывает тёмную полосу темы heretic: на бумаге нужна тонкая полоса в тон. */
+  & &__page &__pageScroll, & &__toolbar &__popover { scrollbar-color: color-mix(in srgb, var(--rule) 75%, transparent) transparent; }
+  &__ink > * { animation: var(--reveal) 520ms ease-out backwards; }
+  @for $i from 2 through 9 { &__ink > :nth-child(#{$i}) { animation-delay: #{($i - 1) * 60}ms; } }
+  &__spread[data-chapter='0'] &__page--left &__pageScroll > div { display: flex; flex-direction: column; justify-content: center; min-height: 100%; }
   &__pageOrnament { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; color: var(--accent); opacity: .35; }
-  &__pageScroll::-webkit-scrollbar { width: 4px; }
-  &__pageScroll::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
-  &__spine { position: absolute; top: 0; bottom: 0; left: calc(50% - 22px); width: 44px; z-index: 4; pointer-events: none; background: linear-gradient(90deg, transparent, #27150415 22%, #27150455 45%, #21110088 49%, #efe3be44 53%, #27150433 60%, transparent); }
+  &__spine { position: absolute; top: 0; bottom: 0; left: calc(50% - 26px); width: 52px; z-index: 4; pointer-events: none; background: linear-gradient(90deg, transparent, #27150412 20%, #2715044d 42%, #170b0099 49.5%, #efe3be40 52%, #2715043a 58%, transparent); }
+  &__clasp { position: absolute; z-index: 3; width: 18px; height: 59px; right: -9px; top: 46%; border: 1px solid #2c241a; background: linear-gradient(90deg, #746044, #bfaa79 45%, #61513c); box-shadow: 1px 2px 3px #000b; border-radius: 3px; }
+
+  /* Колонтитул сверху и номер страницы у внешнего края */
+  &__runningHead {
+    flex: 0 0 auto;
+    margin: 0 8px 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid color-mix(in srgb, var(--rule) 55%, transparent);
+    color: var(--faded);
+    font-size: 13px;
+    font-variant-caps: all-small-caps;
+    letter-spacing: .16em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__page--left &__runningHead { text-align: left; }
+  &__page--right &__runningHead { text-align: right; }
+  &__folio {
+    flex: 0 0 auto;
+    display: flex;
+    margin: 2px 8px 0;
+    color: var(--faded);
+    font-size: 14px;
+    font-style: italic;
+    span { display: inline-flex; align-items: center; gap: 6px; }
+    span::before, span::after { content: ''; width: 9px; border-top: 1px solid color-mix(in srgb, var(--rule) 70%, transparent); }
+  }
+  &__page--right &__folio { justify-content: flex-end; }
+
+  /* Закладки-корешки сверху и загнутые уголки для перелистывания главы */
   &__bookmarks {
     position: absolute;
-    left: 35px;
-    right: 28px;
-    top: -31px;
+    left: 52px;
+    right: 48px;
+    top: -30px;
     display: flex;
     justify-content: space-between;
     gap: 10px;
     z-index: 0;
     button {
-      flex: 0 1 145px;
+      flex: 0 1 132px;
       border: 1px solid #1c120d;
       border-bottom: 0;
-      padding: 8px 8px 17px;
+      padding: 6px 8px 16px;
       font-size: 14px;
-      letter-spacing: .04em;
-      color: #eadac0;
-      background: repeating-linear-gradient(90deg, #ffffff08 0 1px, transparent 1px 3px), var(--ribbon);
-      border-radius: 3px 5px 0 0;
-      transform: translateY(6px) rotate(-1deg);
-      box-shadow: 2px -1px 3px #0006, inset 0 0 0 2px #ffffff12;
-      transition: transform 180ms ease;
-      &:nth-child(even) { transform: translateY(6px) rotate(1.2deg); }
-      &[aria-selected='true'] { transform: translateY(0); color: var(--paper); background-color: var(--accent); }
-      &:hover { transform: translateY(1px); }
+      font-variant-caps: all-small-caps;
+      letter-spacing: .16em;
+      color: #e3d2b4;
+      background: linear-gradient(180deg, #ffffff17, transparent 45%), repeating-linear-gradient(90deg, #ffffff08 0 1px, transparent 1px 3px), var(--ribbon);
+      border-radius: 4px 4px 0 0;
+      transform: translateY(7px);
+      box-shadow: 2px -1px 3px #0006, inset 0 0 0 2px #ffffff10, inset 0 -1px 0 #0000;
+      text-shadow: 0 1px 0 #0006;
+      transition: transform 200ms ease, color 200ms ease;
+      &:hover { transform: translateY(2px); color: #fff3dc; }
+      &[aria-selected='true'] { transform: translateY(0); color: var(--paper); background-color: var(--accent); animation: heretic-ribbon-drop 520ms cubic-bezier(.3, 1.5, .5, 1); }
     }
   }
-  &__clasp { position: absolute; width: 18px; height: 59px; right: -9px; top: 46%; border: 1px solid #2c241a; background: linear-gradient(90deg, #746044, #bfaa79 45%, #61513c); box-shadow: 1px 2px 3px #000b; border-radius: 3px; }
-  &__folio { flex: 0 0 auto; display: flex; justify-content: space-between; border-top: 1px solid var(--rule); color: var(--faded); margin-top: 8px; padding-top: 7px; font-size: 11px; font-style: italic; }
-  &__page--left &__folio { flex-direction: row-reverse; }
-  &__runningTitle { color: var(--faded); font-size: 11px; letter-spacing: .07em; margin: 2px 0 12px !important; text-align: center; }
-  &__bookTitle { text-align: center; margin: 18px 0 14px !important; font-size: 33px; line-height: 1.12; text-wrap: balance; }
-  &__latinTitle { color: var(--faded); font-size: 13px; font-style: italic; letter-spacing: .08em; margin: -8px 0 14px !important; text-align: center; }
-  &__titleRule { height: 11px; margin: 0 auto 20px; width: 60%; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); opacity: .6; }
-  &__prose { white-space: pre-line; margin-bottom: 15px; }
-  &__annotation { background: var(--paper); padding: 5px 7px; border-radius: 2px; font-size: 13px; line-height: 1.5; color: var(--faded); margin: 19px 3px 16px !important; }
-  &__oaths { margin: 16px 0; }
+  &__corner {
+    position: absolute;
+    z-index: 7;
+    bottom: 17px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    background: none;
+    &::after { content: ''; position: absolute; inset: 0; background: #0000004d; clip-path: var(--corner-clip); transform-origin: var(--corner-origin); transform: scale(.82) translate(var(--corner-shadow)); filter: blur(2px); transition: transform 260ms cubic-bezier(.3, 1.4, .5, 1); }
+    &::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(var(--corner-angle), color-mix(in srgb, var(--paper) 55%, #fff 45%) 0%, var(--paper) 55%, color-mix(in srgb, var(--paper-edge) 80%, #000 20%) 100%); clip-path: var(--corner-clip); transform-origin: var(--corner-origin); transform: scale(.8); transition: transform 260ms cubic-bezier(.3, 1.4, .5, 1); }
+    &:hover::before, &:focus-visible::before { transform: scale(1.3); }
+    &:hover::after, &:focus-visible::after { transform: scale(1.3) translate(var(--corner-shadow)); }
+    &:focus-visible { outline: none; }
+  }
+  &__corner--next { right: 13px; --corner-angle: 315deg; --corner-clip: polygon(0 100%, 100% 0, 100% 100%); --corner-origin: 100% 100%; --corner-shadow: -3px -3px; }
+  &__corner--prev { left: 13px; --corner-angle: 45deg; --corner-clip: polygon(0 0, 100% 100%, 0 100%); --corner-origin: 0 100%; --corner-shadow: 3px -3px; }
+
+  /* Шрифтовая система: рубрики, заголовки, буквица-инициал */
+  &__kicker { margin: 0 0 2px !important; color: var(--accent); font-size: 13.5px; font-variant-caps: all-small-caps; letter-spacing: .14em; }
+  &__entryHead { position: relative; margin-bottom: 12px; text-align: center; }
+  &__entryTitle { margin: 0 0 6px; font-size: 30px; font-weight: 500; line-height: 1.08; text-wrap: balance; letter-spacing: .005em; }
+  &__chapterTitle { margin: 0 0 14px; font-size: 25px; font-weight: 500; line-height: 1.2; text-align: center; font-variant-caps: small-caps; letter-spacing: .05em; }
+  &__headpiece { display: block; width: 72%; max-width: 230px; height: 18px; margin: 2px auto 8px; color: var(--accent); opacity: .85; }
+  &__tailpiece { display: block; width: 92px; height: 22px; margin: 18px auto 6px; color: var(--accent); opacity: .8; }
+  &__lead {
+    margin: 0 0 10px !important;
+    font-size: 17.5px;
+    line-height: 1.45;
+    text-align: left; text-wrap: pretty;
+    hyphens: auto;
+    &::first-letter {
+      float: left;
+      margin: 4px 9px 0 0;
+      padding: 7px 8px 3px;
+      font-size: 2.5em;
+      font-weight: 500;
+      line-height: .9;
+      color: var(--initial-ink);
+      background: var(--initial-bg);
+      border: 1px solid var(--initial-frame);
+      text-shadow: 0 1px 2px #0006;
+    }
+  }
+  &__prose { white-space: pre-line; margin-bottom: 9px; text-align: left; text-wrap: pretty; hyphens: auto; }
+  &__note { margin: 6px 0 9px !important; color: var(--faded); font-size: 14.5px; font-style: italic; line-height: 1.4; }
+  &__note--center { text-align: center; margin-top: 14px !important; }
+  &__runIn { font-variant-caps: small-caps; letter-spacing: .04em; color: var(--accent); font-weight: 600; }
+  &__count { margin-left: 6px; color: var(--faded); font-size: 14px; letter-spacing: 0; font-weight: 400; font-style: italic; font-variant-caps: normal; }
+  p.HereticBook__count { margin: 0 0 6px; }
+  &__section {
+    margin-top: 18px;
+    h3 { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 0 4px; margin: 0 0 8px; color: var(--accent); font-size: 15px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: .14em; text-align: center; }
+    h3 .HereticBook__marks { margin-left: 8px; }
+    p { margin-bottom: 8px; }
+  }
+  &__aside { margin: 12px 0 !important; color: var(--faded); font-size: 15.5px; text-align: left; text-wrap: pretty; hyphens: auto; }
+  &__nextStep { margin: 4px 0 10px !important; text-align: left; text-wrap: pretty; }
+  &__result { margin: 8px 0 !important; }
+
+  &__facts {
+    list-style: none;
+    margin: 6px 0 10px;
+    padding: 0;
+    li { position: relative; padding-left: 18px; margin: 5px 0; text-align: left; text-wrap: pretty; hyphens: auto; }
+    li::before { content: '\00B6'; position: absolute; left: 1px; top: 0; color: var(--accent); font-size: .92em; opacity: .85; }
+  }
+  &__traits--plus li::before { content: '+'; left: 2px; opacity: 1; }
+  &__traits--minus li::before { content: '\2212'; left: 2px; color: var(--faded); opacity: 1; }
+  &__steps {
+    counter-reset: heretic-step;
+    list-style: none;
+    margin: 6px 0 10px;
+    padding: 0;
+    li { counter-increment: heretic-step; position: relative; padding-left: 26px; margin: 7px 0; text-align: left; text-wrap: pretty; hyphens: auto; }
+    li::before { content: counter(heretic-step, upper-roman) '.'; position: absolute; left: 0; top: 0; width: 20px; text-align: right; color: var(--accent); font-variant-caps: all-small-caps; }
+  }
+
+  blockquote { margin: 0; }
+  &__epigraph { margin: 0 !important; color: var(--faded); font-style: italic; font-size: 15px; line-height: 1.35; text-align: right; .HereticBook__prose { text-align: right; hyphens: manual; } }
+
+  /* Пометки на полях и указующая рука */
+  &__entryMeta {
+    display: grid;
+    grid-template-columns: minmax(70px, 28%) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    margin-top: 6px;
+    text-align: left;
+  }
+  &__entryMeta--solo { display: flex; justify-content: center; }
+  &__marginalia {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-left: 8px;
+    border-left: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--faded);
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.2;
+    transform: rotate(-1.5deg);
+    > span { overflow-wrap: anywhere; }
+    .HereticBook__key { align-self: flex-start; margin-top: 2px; }
+  }
+  &__entryMeta--solo &__marginalia { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 2px 12px; padding: 0; border: 0; transform: none; }
+  &__marginNumeral { color: var(--accent); font-size: 24px; font-style: normal; font-weight: 500; line-height: 1; font-variant-numeric: lining-nums; }
+  &__entryMeta--solo &__marginNumeral { font-size: 18px; }
+  &__marginState--known { color: var(--accent); }
+  &__marginState--locked { text-decoration: line-through; text-decoration-thickness: 1px; }
+  &__manicule { display: inline-block; width: 38px; height: 19px; margin-right: 8px; vertical-align: middle; color: var(--accent); animation: heretic-manicule-inline 2.8s ease-in-out infinite; }
+
+  /* Кнопка-печать: одна главная команда на странице */
+  &__action { position: relative; margin: 14px 0 12px; text-align: center; }
+  &__action > .HereticBook__note { margin-top: 6px !important; text-align: center; }
+  &__seal {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 0;
+    padding: 6px 22px 8px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--accent) 70%, #000 30%);
+    border-radius: 3px;
+    background: radial-gradient(ellipse at 50% 0%, #ffffff30, transparent 70%), var(--accent);
+    color: var(--paper);
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: .06em;
+    font-variant-caps: small-caps;
+    text-align: center;
+    white-space: normal;
+    text-shadow: 0 1px 0 #0005;
+    box-shadow: inset 0 0 0 1px #ffffff26, inset 0 -3px 0 #0003, 0 2px 3px #0006;
+    transition: filter 150ms ease, box-shadow 150ms ease, transform 120ms ease;
+    &::after { content: ''; position: absolute; inset: -2px; background: linear-gradient(105deg, transparent 35%, #ffffff45 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+    &:hover:not(:disabled) { filter: brightness(1.1); box-shadow: inset 0 0 0 1px #ffffff33, inset 0 -3px 0 #0003, 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), 0 3px 8px #0006; }
+    &:hover:not(:disabled)::after { transform: translateX(120%); transition: transform 700ms ease; }
+    &:active:not(:disabled) { transform: scale(.97) translateY(1px); box-shadow: inset 0 2px 5px #0006; }
+    &:disabled { background: transparent; color: var(--faded); border: 1px dashed var(--rule); box-shadow: none; text-shadow: none; }
+  }
+  &__seal--quiet { background: transparent; color: var(--accent); text-shadow: none; box-shadow: none; &:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 10%, transparent); } }
+  &__seal--armed, &__seal--armed:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); color: var(--paper); animation: heretic-seal-armed 1.6s ease-in-out infinite; }
+  &__buttons { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 18px; margin-top: 12px; }
+  &__link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--accent);
+    text-align: left;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    &:hover { color: var(--ink); text-decoration-color: currentColor; }
+  }
+  &__key { display: inline-block; padding: 0 5px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 3px; color: var(--ink); font: 12px/1.45 var(--serif); font-style: normal; letter-spacing: 0; white-space: nowrap; font-variant-numeric: lining-nums; }
+
+  /* Метки: зарубки запаса, печати ступеней дела, огоньки душ */
+  &__marks {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    vertical-align: middle;
+    i { display: block; width: 4px; height: 12px; border: 1px solid currentColor; border-radius: 1px 1px 2px 2px; opacity: .5; transform: skewX(-8deg); }
+    i.HereticBook__mark--on { background: currentColor; opacity: 1; animation: heretic-mark-in 520ms cubic-bezier(.2, 1.6, .4, 1) backwards; }
+    svg { display: block; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2; }
+  }
+  &__section h3 &__marks { color: var(--accent); }
+  &__marks--seal {
+    gap: 4px;
+    svg { width: 14px; height: 14px; opacity: .55; }
+    .HereticBook__markCore { stroke: none; }
+    svg.HereticBook__mark--on { opacity: 1; animation: heretic-mark-in 600ms cubic-bezier(.2, 1.6, .4, 1) backwards; .HereticBook__markCore { fill: currentColor; } circle:first-child { fill: color-mix(in srgb, currentColor 18%, transparent); } }
+  }
+  &__marks--soul {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 8px 0 16px;
+    color: var(--accent);
+    svg { width: 26px; height: 26px; color: var(--rule); stroke-width: 1; }
+    svg.HereticBook__mark--on { color: var(--accent); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); animation: heretic-mark-in 700ms cubic-bezier(.2, 1.6, .4, 1) backwards, heretic-soul-flicker 3.2s ease-in-out 700ms infinite; transform-origin: 50% 90%; .HereticBook__markCore { fill: color-mix(in srgb, currentColor 55%, transparent); } }
+    svg.HereticBook__mark--on:nth-child(2n) { animation-delay: 0ms, 1.3s; }
+    svg.HereticBook__mark--on:nth-child(3n) { animation-delay: 0ms, 2.1s; }
+  }
+
+  /* Титульный лист и указатель путей */
+  &__titlePage { position: relative; text-align: center; margin: 0 6px 14px; padding: 18px 12px 14px; border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent); outline: 1px solid color-mix(in srgb, var(--rule) 40%, transparent); outline-offset: 4px; }
+  &__motto { margin: 0 0 12px !important; color: var(--faded); font-size: 15px; font-style: italic; }
+  &__bookTitle { margin: 4px 0 8px !important; font-size: 36px; font-weight: 500; line-height: 1.04; text-wrap: balance; letter-spacing: .01em; font-variant-caps: small-caps; animation: heretic-title-in 1.1s cubic-bezier(.2, .7, .2, 1) backwards; }
+  &__latinTitle { margin: 0 0 10px !important; color: var(--faded); font-size: 13px; font-style: italic; letter-spacing: .14em; }
+  &__titleRule { position: relative; width: 44%; height: 9px; margin: 0 auto; border-top: 1px solid var(--ink); opacity: .55; &::after { content: ''; position: absolute; left: 50%; top: -4px; width: 7px; height: 7px; margin-left: -4px; transform: rotate(45deg); background: var(--paper); border: 1px solid var(--ink); } }
+  &__oaths { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 14px; margin: 6px 4px 4px; }
   &__oath {
     position: relative;
     display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 15px;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
     border: 0;
     background: transparent;
-    padding: 3px 0;
+    padding: 2px 0;
     text-align: left;
-    font-size: 19px !important;
-    &[aria-pressed='true'] > span:nth-child(2) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
-    &:hover > span:nth-child(2) { color: var(--accent); }
-    &--Ash { --oath-color: #773823; }
-    &--Rust { --oath-color: #5b6551; }
-    &--Flesh { --oath-color: #803a48; }
-    &--Void { --oath-color: #647f89; }
-    &--Blade { --oath-color: #505567; }
-    &--Moon { --oath-color: #706a8c; }
-    &--Cosmic { --oath-color: #315966; }
-    &--Lock { --oath-color: #78613f; }
-    &--Tide { --oath-color: #2d6968; }
-    &--Glass { --oath-color: #7e5c85; }
-    &--Blood { --oath-color: #973a4b; }
-    &--Echo { --oath-color: #80612b; }
-    &--Sand { --oath-color: #816135; }
-    &--Wax { --oath-color: #774c56; }
-    &--Spirit { --oath-color: #397b6d; }
-    &--Dance { --oath-color: #9a3a2a; }
+    font-size: 17px;
+    &[aria-pressed='true'] .HereticBook__oathName { color: var(--accent); background-size: 100% 1px; }
+    &--Ash { --oath-color: #b0512f; }
+    &--Rust { --oath-color: #6d7a5e; }
+    &--Flesh { --oath-color: #a2475a; }
+    &--Void { --oath-color: #5f8794; }
+    &--Blade { --oath-color: #636a83; }
+    &--Moon { --oath-color: #7d73a3; }
+    &--Cosmic { --oath-color: #3d7385; }
+    &--Lock { --oath-color: #957646; }
+    &--Tide { --oath-color: #2f7d7b; }
+    &--Glass { --oath-color: #8e6597; }
+    &--Blood { --oath-color: #b03d52; }
+    &--Echo { --oath-color: #a07a30; }
+    &--Sand { --oath-color: #a07a42; }
+    &--Wax { --oath-color: #8f5967; }
+    &--Spirit { --oath-color: #3f8f7f; }
+    &--Dance { --oath-color: #b8432e; }
   }
-  &__ribbonMark { display: grid; place-items: center; width: 27px; height: 31px; flex-shrink: 0; font-size: 12px; background: var(--oath-color, var(--ribbon)); color: #eee2c9; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%); }
-  &__signed { margin-left: auto; font-size: 15px; }
-  &__illumination { display: block; width: 220px; max-width: 100%; height: 145px; margin: 0 auto 16px; color: var(--accent); overflow: visible; }
-  &__illumination text { fill: currentColor; stroke: none; font: 11px Georgia, serif; }
-  &__lead { font-size: 17px; line-height: 1.45; margin: 2px 0 6px !important; color: var(--ink); }
-  &__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; color: var(--faded); margin: -10px 0 12px !important; }
-  &__status { font-style: italic; }
-  &__status--known { color: var(--accent); }
-  &__role { --role-color: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border: 1px solid var(--role-color); border-radius: 10px; line-height: 19px; color: var(--ink); > span { color: var(--role-color); } }
-  &__roleMark { --role-color: var(--accent); flex-shrink: 0; font-size: 12px; color: var(--role-color); }
-  &__role--craft { --role-color: #b07d3a; }
-  &__role--capture { --role-color: #8e5bb5; }
-  &__role--escape { --role-color: #3f8f8a; }
-  &__role--attack { --role-color: #c0504d; }
-  &__role--control { --role-color: #4f7fc0; }
-  &__role--defense { --role-color: #7a8a99; }
-  &__role--support { --role-color: #5d9c4a; }
-  &__role--passive { --role-color: #9a8a70; }
-  &__role--relic { --role-color: #b8943c; }
-  &__role--mark { --role-color: #c46a9a; }
-  &__role--grasp { --role-color: #6b6fc7; }
-  &__role--ritual { --role-color: #a0663c; }
-  &__role--ascension { --role-color: #d0a030; }
-  &__details {
-    list-style: none;
-    margin: 10px 0 12px;
-    padding: 0;
-    li { position: relative; padding-left: 16px; margin: 6px 0; }
-    li::before { content: ''; position: absolute; left: 3px; top: .62em; width: 5px; height: 5px; background: var(--accent); transform: rotate(45deg); }
+  &__oathNumber { flex: 0 0 28px; text-align: right; color: var(--oath-color, var(--accent)); font-size: 13px; font-variant-caps: all-small-caps; letter-spacing: .08em; font-variant-numeric: lining-nums; transition: transform 200ms ease; }
+  &__oath:hover &__oathNumber { transform: translateX(-3px); }
+  &__oathName { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 260ms ease, color 160ms ease; }
+  &__oath:hover &__oathName { color: var(--accent); background-size: 100% 1px; }
+  &__signed { flex: 0 0 auto; width: 15px; height: 15px; align-self: center; fill: var(--accent); stroke: var(--paper); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px #0005); }
+
+  /* Таблица-гравюра: оттиск доски, рамка и подпись */
+  &__plate {
+    position: relative;
+    margin: 0 0 14px;
+    padding: 10px 10px 6px;
+    border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+    background: radial-gradient(ellipse at 50% 45%, transparent 55%, color-mix(in srgb, var(--ink) 7%, transparent)), color-mix(in srgb, var(--ink) 3%, transparent);
+    box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5px color-mix(in srgb, var(--rule) 70%, transparent), 1px 1px 0 color-mix(in srgb, #fff 25%, transparent), -1px -1px 0 color-mix(in srgb, #000 12%, transparent);
+    figcaption { display: flex; flex-direction: column; align-items: center; margin-top: 2px; font-size: 15px; font-style: italic; color: var(--ink); }
   }
-  &__more { background: none; border: 0; padding: 2px 0 2px 16px; color: var(--accent); font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; &:hover { color: var(--ink); } }
-  &__flavour { font-size: 12px; font-style: italic; color: var(--faded); margin: 24px 0 6px !important; padding-top: 8px; border-top: 1px solid var(--rule); }
-  &__passive { margin-top: 18px; h3 { margin-top: 0; } }
-  &__model {
-    display: grid;
-    gap: 6px;
-    margin: 14px 0;
-    padding: 10px 12px;
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    background: #ffffff14;
-    font-size: 14px;
-    > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; align-items: baseline; }
-    dt { font-weight: 700; font-size: 12px; letter-spacing: .03em; color: var(--faded); }
-  }
-  &__sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin: 12px 0; font-size: 14px; h3 { margin: 6px 0 4px; font-size: 15px; } p { margin-bottom: 6px; } }
-  &__sides--stacked { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  &__advice { font-size: 13px; line-height: 1.45; border-left: 3px solid var(--accent); background: #ffffff14; padding: 6px 10px; margin: 14px 0 !important; }
-  &__innate { margin: 12px 0; font-size: 14px; summary { cursor: pointer; font-weight: 700; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } p { margin: 6px 0; } }
-  &__guideBlock { margin: 4px 0; summary { cursor: pointer; font-weight: 700; color: var(--ink); } > summary { display: flex; align-items: baseline; gap: 6px; list-style: none; } > summary::-webkit-details-marker { display: none; } > summary > .HereticBook__guideMarker { flex-shrink: 0; color: var(--faded); font-weight: 400; } > summary > .HereticBook__guideMarker::before { content: '▸'; } &[open] > summary > .HereticBook__guideMarker::before { content: '▾'; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } section { margin-top: 6px; } }
-  &__topic { border-bottom: 1px solid var(--rule); padding: 7px 0; summary { cursor: pointer; font-weight: 700; font-size: 16px; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } }
-  &__topicBody { padding: 4px 0 2px; p { margin: 6px 0; } }
-  &__ritualRules { font-size: 13px; color: var(--faded); }
-  &__pathOutline { margin: 18px 0; font-size: 12px; summary { cursor: pointer; font-style: italic; color: var(--accent); } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } ol { padding: 0; margin: 15px 0; list-style: none; } li { display: flex; gap: 7px; align-items: baseline; margin: 9px 0; } li > span:last-child { flex-shrink: 0; } }
-  &__inscribe,
-  &__inscribe.Button {
+  &__plateNumber { color: var(--faded); font-size: 12.5px; font-style: normal; font-variant-caps: all-small-caps; letter-spacing: .2em; }
+  &__illumination {
     display: block;
-    width: fit-content;
-    max-width: 100%;
-    background: transparent;
-    border: 0;
-    border-bottom: 2px solid var(--accent);
-    border-radius: 0;
-    color: var(--accent);
-    padding: 8px 3px 5px;
-    margin: 18px 0 10px;
-    font: italic 16px/1.35 Georgia, 'Times New Roman', serif;
-    white-space: normal;
-    text-align: left;
-    box-shadow: none;
-    &:hover:not(:disabled):not(.Button--disabled) { background: #85704d15; }
-    &:disabled, &.Button--disabled { color: var(--faded); border-bottom-style: dotted; opacity: 1; }
-  }
-  &__inscribe.HereticBook__inscribe--armed,
-  &__inscribe.HereticBook__inscribe--armed:hover:not(:disabled) {
+    width: 100%;
+    height: 214px;
+    margin: 0 auto;
     background: var(--accent);
-    color: var(--paper);
-    border: 2px solid var(--ink);
-    padding: 8px 12px 6px;
-    font-style: normal;
-    font-weight: 700;
-    box-shadow: 0 0 0 3px #00000022;
+    mask-image: var(--engraving), linear-gradient(120deg, #000 42%, transparent 58%);
+    mask-size: contain, 300% 100%;
+    mask-position: center, 0 0;
+    mask-repeat: no-repeat;
+    mask-composite: intersect;
+    animation: heretic-engrave-in 1.8s cubic-bezier(.35, .1, .25, 1) backwards, heretic-wet-ink 2.8s ease-out backwards, var(--plate-life, heretic-life-breathe) var(--plate-time, 6s) ease-in-out 2.8s infinite;
   }
-  &__ritualResult { margin: 8px 0 4px !important; font-size: 14px; }
-  &__checklist {
-    counter-reset: heretic-step;
-    li { counter-increment: heretic-step; padding-left: 22px; }
-    li::before { content: counter(heretic-step) '.'; top: 0; left: 0; width: auto; height: auto; background: none; transform: none; color: var(--accent); font-weight: 700; }
+  &__plate { overflow: hidden; }
+  &__plate::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, color-mix(in srgb, var(--accent) 22%, #fff 18%) 50%, transparent 62%); background-size: 260% 100%; background-position: 130% 0; mix-blend-mode: soft-light; animation: heretic-plate-sheen 11s ease-in-out 3s infinite; }
+  &__ritualDrawing {
+    .HereticBook__bold { stroke-width: 1.9; }
+    .HereticBook__fine { stroke-width: .75; }
+    .HereticBook__guide { stroke-width: .55; opacity: .45; }
+    .HereticBook__stipple { opacity: .3; }
+    text { fill: currentColor; stroke: none; font: 12px var(--serif); letter-spacing: .1em; animation: heretic-ink-in 600ms ease-out 900ms backwards; }
+    [data-ink] { animation: heretic-ink-draw var(--ink-time) cubic-bezier(.5, .05, .3, 1) var(--ink-delay) backwards; }
+    [stroke-dasharray], [fill^='url'] { animation: heretic-ink-in 900ms ease-out 600ms backwards; }
   }
-  &__learned { font-style: italic; margin-top: 24px !important; color: var(--accent); }
-  &__ledger { flex: 0 0 auto; border-top: 1px solid var(--rule); margin-top: 8px; padding: 9px 10px 0; color: var(--faded); font: 13px/1.5 Georgia, 'Times New Roman', serif; p { margin-bottom: 5px; } }
-  &__balances { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; dd { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; } }
-  &__resource {
-    margin-top: 10px;
-    summary { cursor: pointer; color: var(--ink); }
-    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    meter { display: block; appearance: none; width: 100%; height: 5px; margin: 8px 0; background: #6b5b4425; border: 0; }
-    meter::-webkit-meter-bar { background: #6b5b4425; border: 0; border-radius: 0; height: 4px; }
-    meter::-webkit-meter-optimum-value { background: var(--accent); border-radius: 0; }
+  &__anatomy { margin: 10px 0 4px; p { margin-bottom: 7px; text-align: left; text-wrap: pretty; hyphens: auto; } }
+  &__fold {
+    margin: 16px 0 4px;
+    font-size: 15.5px;
+    > summary { cursor: pointer; color: var(--accent); list-style: none; font-style: italic; text-align: center; }
+    > summary::-webkit-details-marker { display: none; }
+    > summary::before { content: '+ '; font-style: normal; }
+    &[open] > summary::before { content: '\2212 '; }
   }
-  &__resourceState { color: var(--ink); margin: 0 0 4px !important; }
-  &__resourceToggle {
+  &__section > &__fold { margin: 4px 0 8px; > summary { text-align: left; } }
+  &__fold[open] > :not(summary) { animation: heretic-ink-in 380ms ease-out; }
+  &__stageList { list-style: none; margin: 8px 0; padding: 0; li { display: flex; gap: 8px; align-items: baseline; margin: 4px 0; } }
+
+  /* Оглавление */
+  &__contents { margin: 0 0 6px; }
+  &__group { margin-bottom: 14px; }
+  &__groupTitle { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; color: var(--accent); font-size: 14px; font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .18em; &::before, &::after { content: ''; flex: 1; border-top: 1px solid var(--rule); opacity: .55; } }
+  &__line {
+    position: relative;
     display: flex;
     width: 100%;
-    justify-content: space-between;
+    align-items: baseline;
     gap: 8px;
     border: 0;
     background: none;
-    padding: 0;
+    padding: 2px 0;
+    font-size: 16.5px;
+    line-height: 1.35;
     text-align: left;
-    color: var(--ink);
-    strong { font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    > span::before { content: '▸ '; color: var(--faded); }
-    &[aria-expanded='true'] > span::before { content: '▾ '; }
-    &:hover > span { color: var(--accent); }
+    &::before { content: ''; position: absolute; left: -7px; top: 4px; bottom: 4px; width: 3px; border-radius: 1px; background: var(--accent); opacity: 0; transform: scaleY(.3); transition: opacity 160ms ease, transform 160ms ease; }
+    &[aria-pressed='true'] { &::before { opacity: 1; transform: none; } .HereticBook__lineName { color: var(--accent); background-size: 100% 1px; } }
   }
-  &__resourceRules { margin: 16px 0 4px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; h3 { margin: 0 0 4px; font-size: 14px; } }
-  &__deedLine p { display: flex; justify-content: space-between; gap: 8px; margin: 0; color: var(--ink); strong { font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; } }
-  &__contents h3 { font-size: 14px; text-align: left; margin-top: 14px; margin-bottom: 6px; }
-  &__contentsTitle { font-size: 20px !important; margin: 14px 0 0 !important; }
-  &__guide {
-    border-left: 2px solid var(--accent);
-    padding-left: 12px;
-    margin-bottom: 24px;
+  &__lineNumber { flex: 0 0 auto; min-width: 28px; white-space: nowrap; text-align: right; color: var(--faded); font-size: 13.5px; font-variant-caps: all-small-caps; letter-spacing: .06em; font-variant-numeric: lining-nums; }
+  &__lineName { min-width: 0; max-width: 82%; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 260ms ease, color 160ms ease; }
+  &__line:hover &__lineName { color: var(--accent); background-size: 100% 1px; }
+  &__line:hover &__lineNumber { color: var(--accent); }
+  &__leader { flex: 1; min-width: 10px; border-bottom: 1px dotted var(--rule); transform: translateY(-4px); }
+  &__amount { flex-shrink: 0; color: var(--accent); font-size: 15px; font-variant-numeric: oldstyle-nums tabular-nums; }
+  &__line--known { .HereticBook__lineNumber { color: var(--accent); } .HereticBook__amount:empty::after { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); } }
+  &__line--locked, &__line--unlearned { color: var(--faded); .HereticBook__amount { color: var(--faded); } .HereticBook__lineName { font-style: italic; } }
+  &__line--ability .HereticBook__key { flex-shrink: 0; }
+
+  &__search {
+    display: block;
+    margin: 0 0 14px;
+    color: var(--faded);
     font-size: 13px;
-    line-height: 1.45;
-    section + section { margin-top: 14px; }
-    h3 { font-size: 14px; margin: 0 0 5px; text-align: left; }
-    p, .HereticBook__prose { margin: 5px 0; }
+    font-variant-caps: all-small-caps;
+    letter-spacing: .12em;
+    input { display: block; width: 100%; margin-top: 2px; padding: 4px 0; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; background: transparent; color: var(--ink); font: italic 17px var(--serif); letter-spacing: 0; font-variant-caps: normal; }
+    input::placeholder { color: var(--faded); opacity: .7; }
   }
-  &__abilityLinks { display: flex; flex-direction: column; gap: 3px; }
-  &__abilityLink {
+  &__ingredients {
+    list-style: none;
+    margin: 4px 0 8px;
+    padding: 0;
+    border-top: 1px solid color-mix(in srgb, var(--rule) 60%, transparent);
+    li { display: flex; gap: 8px; align-items: baseline; padding: 4px 2px; border-bottom: 1px solid color-mix(in srgb, var(--rule) 35%, transparent); }
+    .HereticBook__amount::before { content: '\00D7'; margin-right: 2px; opacity: .7; }
+  }
+  &__ritualDrawing { display: block; width: 100%; max-height: 180px; margin: 6px auto 8px; color: var(--accent); text { font-size: 11px; fill: var(--faded); } }
+  &__ritualHand { animation: heretic-hand-press 2.4s ease-in-out 1.6s infinite; }
+
+  /* Охота */
+  &__target {
+    text-align: center;
+    padding: 0 4px 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--rule) 60%, transparent);
+    h2 { margin: 0 0 2px; font-size: 32px; font-weight: 500; line-height: 1.1; text-wrap: balance; }
+    .HereticBook__note { margin-bottom: 0 !important; }
+  }
+  &__target--empty { color: var(--faded) !important; font-style: italic; }
+  &__targetRole { margin: 0 0 6px !important; color: var(--faded); font-style: italic; }
+  &__targetStatus { margin: 6px auto 12px !important; max-width: 34em; font-size: 15.5px; }
+  &__checklist {
+    margin: 0;
+    > div { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: start; gap: 8px; padding: 4px 0; }
+    dt { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--faded); font-variant-caps: small-caps; letter-spacing: .04em; }
+    dd { font-size: 15.5px; }
+  }
+  &__prepIcon { flex: 0 0 auto; width: 18px; height: 18px; opacity: .7; }
+  &__check--ready dt { color: var(--accent); }
+  &__check--ready &__prepIcon { opacity: 1; fill: color-mix(in srgb, currentColor 22%, transparent); animation: heretic-mark-in 600ms cubic-bezier(.2, 1.6, .4, 1) backwards; }
+  &__heartbeat { width: 11px; height: 11px; margin: 0 6px -1px 0; fill: currentColor; stroke: none; animation: heretic-heartbeat 1.4s ease-in-out infinite; }
+
+  /* Наставления */
+  &__topic {
+    border-bottom: 1px solid color-mix(in srgb, var(--rule) 55%, transparent);
+    > summary { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; cursor: pointer; list-style: none; font-size: 18px; font-variant-caps: small-caps; letter-spacing: .03em; }
+    > summary::-webkit-details-marker { display: none; }
+    > summary::after { content: '+'; color: var(--accent); font-variant-caps: normal; transition: transform 200ms ease; }
+    &[open] > summary::after { content: '\2212'; }
+    > summary:hover { color: var(--accent); }
+  }
+  &__topicBody { padding: 0 0 10px; font-size: 15.5px; p { margin: 6px 0; text-align: left; text-wrap: pretty; hyphens: auto; } }
+  &__topic[open] &__topicBody { animation: heretic-ink-in 380ms ease-out; }
+
+  /* Строка под разворотом */
+  &__toolbar { position: relative; display: flex; flex: 0 0 auto; align-items: center; gap: 14px; min-height: 26px; padding: 0 4px; }
+  &__ledger {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 1px;
-    &.HereticBook__guideLink { text-decoration: none; }
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 4px 18px;
+    color: #bba98b;
+    font-size: 14px;
+    white-space: nowrap;
+    b { color: #f0dfbf; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
   }
-  &__abilityHead { display: flex; align-items: baseline; gap: 8px; }
-  &__abilityName { min-width: 0; text-decoration: underline; text-underline-offset: 3px; }
-  &__abilitySummary { color: var(--faded); font-size: 12px; line-height: 1.35; }
-  &__abilityBlock > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; .HereticBook__hotkey { margin-left: 0; font-weight: 400; } }
-  &__deedRow { display: flex; align-items: baseline; gap: 6px; min-width: 0; margin: 0 !important; }
-  &__deedName { flex-shrink: 0; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 700; }
-  &__deedStep { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 400; color: var(--faded); }
-  &__deedCount { flex-shrink: 0; font-weight: 400; font-variant-numeric: tabular-nums; }
-  &__deedBlock > h3 { margin-top: 6px !important; }
-  &__hotkey {
-    flex-shrink: 0;
-    margin-left: auto;
-    max-width: 55%;
-    padding: 1px 5px;
-    border: 1px solid var(--accent);
-    border-radius: 3px;
-    color: var(--ink);
-    font: inherit;
-    font-size: 11px;
-    text-align: right;
-    overflow-wrap: anywhere;
-  }
-  &__guideLink {
-    background: none;
+  &__tally { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+  button.HereticBook__tally {
     border: 0;
-    padding: 3px 0;
-    color: var(--accent);
-    text-align: left;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    &:hover { color: var(--ink); }
+    border-bottom: 1px dotted #a18c6799;
+    padding: 1px 0;
+    background: none;
+    color: inherit;
+    &:hover, &[aria-expanded='true'] { color: #f0dfbf; border-bottom-color: #f0dfbf; }
   }
-  &__contentsLine { display: flex; width: 100%; align-items: baseline; gap: 7px; border: 0; background: none; padding: 5px 0; font-size: 14px !important; line-height: 1.4; text-align: left; &[aria-pressed='true'] .HereticBook__indexName { text-decoration: underline; text-underline-offset: 3px; } &:hover { color: var(--accent); } }
-  &__contentsLine--known { font-style: italic; }
-  &__contentsLine--locked { color: var(--faded); }
-  &__indexNumber { min-width: 20px; font-size: 11px; color: var(--faded); }
-  &__indexName { min-width: 0; max-width: 83%; }
-  &__leader { flex: 1; min-width: 8px; border-bottom: 1px dotted var(--rule); }
-  blockquote { font-style: italic; color: var(--faded); border-left: 2px solid var(--rule); padding: 0 0 0 14px; margin: 18px 0; }
-  &__requirements { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: 5px 12px; font-size: 13px; margin: 22px 0 7px; padding-top: 10px; border-top: 1px solid var(--rule); dt { color: var(--faded); } }
-  &__search { display: block; font-size: 11px; font-style: italic; margin: 20px 0; input { display: block; width: 100%; border: 0; border-bottom: 1px solid var(--rule); color: var(--ink); background: transparent; font: 14px Georgia, serif; margin-top: 8px; padding: 7px 0; border-radius: 0; } input::placeholder { color: var(--faded); } }
-  &__ritualDrawing { display: block; width: 100%; max-height: 145px; margin: 24px auto 10px; color: var(--accent); }
-  &__ingredientsTitle { font-style: italic; font-size: 14px !important; margin-top: 30px !important; }
-  &__ingredients { list-style: none; margin: 12px 0 26px; padding: 0; li { display: flex; gap: 12px; align-items: baseline; margin: 10px 0; } strong { font-weight: 400; } }
-  &__target { text-align: center; margin: 28px 0 15px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 22px 8px; h3 { font-size: 27px; line-height: 1.2; margin: 13px 0; } }
-  &__soulMarks { display: flex; justify-content: space-around; color: var(--rule); font-size: 30px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 18px 0; }
-  &__soulMarks--filled { color: var(--accent); text-shadow: 0 0 1px currentColor; }
-  &__toolbar { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 12px; }
-  &__ascended { margin-right: auto; font-size: 12px; font-style: italic; color: #d5c4a5; }
-  &__turningLeaf { position: absolute; z-index: 6; pointer-events: none; top: 0; bottom: 0; left: 50%; width: 50%; transform-origin: left center; background: var(--grain), linear-gradient(90deg, #38231566, transparent 25%), var(--paper); backface-visibility: visible; animation: heretic-page-turn 520ms ease-in-out both; }
+  &__tally--resource .HereticBook__marks { color: #e2b77e; }
+  &__tally--deed { flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; }
+  &__tallyState { min-width: 0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; color: #bba98b; font-style: italic; }
+  &__popover {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 30;
+    width: 390px;
+    max-width: calc(100vw - 40px);
+    max-height: 60vh;
+    overflow: auto;
+    padding: 14px 18px 8px;
+    border: 3px double var(--rule);
+    background: var(--grain), var(--paper);
+    color: var(--ink);
+    white-space: normal;
+    font-size: 15px;
+    box-shadow: 0 8px 22px #000b;
+    transform-origin: 30px 100%;
+    animation: heretic-popover-in 240ms cubic-bezier(.2, 1.3, .4, 1);
+    h3 { margin: 0 0 6px; color: var(--accent); font-size: 15px; font-weight: 600; font-variant-caps: all-small-caps; letter-spacing: .14em; }
+    .HereticBook__lead { font-size: 16px; &::first-letter { float: none; font-size: inherit; margin: 0; padding: 0; color: inherit; background: none; border: 0; text-shadow: none; } }
+  }
+  &__ascended { color: #e8cf9a; font-size: 14px; font-style: italic; white-space: nowrap; }
+
+  /* Перелистывание: лист поднимается у корешка и ложится на другую сторону */
+  &__turningLeaf {
+    position: absolute;
+    z-index: 6;
+    pointer-events: none;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 50%;
+    transform-origin: left center;
+    background: var(--grain), var(--paper);
+    border-radius: 0 12px 6px 0;
+    backface-visibility: visible;
+    box-shadow: 0 0 22px #0007;
+    animation: heretic-page-turn 680ms cubic-bezier(.45, .05, .3, 1) both;
+    &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #00000066, transparent 30%, transparent 70%, #ffffff26); animation: heretic-leaf-shade 680ms ease-in-out both; }
+  }
+  &__turningLeaf--back { left: 0; transform-origin: right center; border-radius: 12px 0 0 6px; animation-name: heretic-page-turn-back; &::after { background: linear-gradient(270deg, #00000066, transparent 30%, transparent 70%, #ffffff26); } }
 }
+
+@keyframes heretic-plate-sheen { 0%, 70% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+@keyframes heretic-life-breathe { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 50%, transparent)); } }
+@keyframes heretic-life-ember { 0%, 100% { filter: drop-shadow(0 0 2px #ff7a2a66); } 20% { filter: drop-shadow(0 0 5px #ff7a2acc) brightness(1.12); } 35% { filter: drop-shadow(0 0 3px #ff7a2a88); } 62% { filter: drop-shadow(0 0 6px #ffae5acc) brightness(1.18); } 78% { filter: drop-shadow(0 0 2px #ff7a2a66); } }
+@keyframes heretic-life-frost { 0%, 100% { filter: none; } 45% { filter: brightness(1.25) drop-shadow(0 0 4px #e6fbffcc); } 55% { filter: brightness(1.05); } }
+@keyframes heretic-life-heart { 0%, 40%, 100% { transform: scale(1); } 8% { transform: scale(1.035); } 16% { transform: scale(1.005); } 24% { transform: scale(1.025); } }
+@keyframes heretic-life-float { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
+@keyframes heretic-life-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes heretic-life-prism { 0%, 100% { filter: hue-rotate(0); } 50% { filter: hue-rotate(40deg) drop-shadow(0 0 4px #ffd2fa99); } }
+@keyframes heretic-life-twinkle { 0%, 100% { filter: none; } 30% { filter: brightness(1.3) drop-shadow(0 0 4px #fff6c8aa); } 34% { filter: none; } 70% { filter: brightness(1.2) drop-shadow(0 0 3px #8fe7ff99); } 74% { filter: none; } }
+@keyframes heretic-life-glint { 0%, 80%, 100% { filter: none; } 86% { filter: brightness(1.45) drop-shadow(0 0 3px #fff); } }
+@keyframes heretic-life-echo { 0%, 100% { transform: scale(1); filter: none; } 10% { transform: scale(1.02); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 60%, transparent)); } 22% { transform: scale(1); } 30% { transform: scale(1.01); } }
+@keyframes heretic-life-candle { 0%, 100% { filter: drop-shadow(0 0 2px #fff1b866); } 30% { filter: drop-shadow(0 0 5px #fff1b8cc) brightness(1.1); } 45% { filter: drop-shadow(0 0 3px #fff1b888); } 70% { filter: drop-shadow(0 0 6px #fff1b8cc) brightness(1.12); } }
+@keyframes heretic-life-creak { 0%, 86%, 100% { transform: rotate(0); } 89% { transform: rotate(.8deg); } 93% { transform: rotate(-.4deg); } }
+@keyframes heretic-engrave-in { from { mask-position: center, 100% 0; } to { mask-position: center, 0 0; } }
+@keyframes heretic-ink-draw { from { stroke-dasharray: var(--ink-length); stroke-dashoffset: var(--ink-length); } to { stroke-dasharray: var(--ink-length); stroke-dashoffset: 0; } }
+@keyframes heretic-wet-ink { 0% { filter: drop-shadow(0 0 0 transparent); } 55% { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 55%, transparent)); } 100% { filter: drop-shadow(0 0 0 transparent); } }
+@keyframes heretic-mark-in { from { transform: scale(1.9); opacity: 0; filter: drop-shadow(0 0 6px var(--accent)); } }
+@keyframes heretic-soul-flicker { 0%, 100% { transform: scale(1, 1); } 30% { transform: scale(.94, 1.06); } 55% { transform: scale(1.04, .97); } 80% { transform: scale(.98, 1.03); } }
+@keyframes heretic-heartbeat { 0%, 40%, 100% { transform: scale(1); } 12% { transform: scale(1.3); } 24% { transform: scale(1.08); } 30% { transform: scale(1.22); } }
+@keyframes heretic-hand-press { 0%, 60%, 100% { transform: translateX(0); } 70% { transform: translateX(-6px); } 80% { transform: translateX(0); } }
+@keyframes heretic-manicule-inline { 0%, 55%, 100% { transform: translateX(0); } 65% { transform: translateX(5px); } 75% { transform: translateX(0); } 82% { transform: translateX(3px); } }
+@keyframes heretic-ribbon-drop { 0% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
+@keyframes heretic-title-in { from { opacity: 0; letter-spacing: .14em; filter: blur(2px); } }
+@keyframes heretic-popover-in { from { opacity: 0; transform: translateY(6px) scale(.96); } }
+@keyframes heretic-ink-in { from { opacity: 0; filter: blur(1.5px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes heretic-seal-armed { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent); } }
+@keyframes heretic-candle-drift { 0% { transform: translate(0, 0); opacity: .7; } 35% { opacity: 1; } 60% { transform: translate(38%, 18%); opacity: .8; } 100% { transform: translate(8%, 40%); opacity: 1; } }
+@keyframes heretic-page-turn { 0% { transform: rotateY(0); } 55% { transform: rotateY(-100deg) skewY(-1.5deg); } 92% { opacity: 1; } 100% { transform: rotateY(-180deg); opacity: 0; } }
+@keyframes heretic-page-turn-back { 0% { transform: rotateY(0); } 55% { transform: rotateY(100deg) skewY(1.5deg); } 92% { opacity: 1; } 100% { transform: rotateY(180deg); opacity: 0; } }
+@keyframes heretic-leaf-shade { 0% { opacity: .3; } 50% { opacity: 1; } 100% { opacity: .5; } }
+
+/* Каждый путь пишет своими чернилами: буквица, проявление текста и свет на развороте. */
+@keyframes heretic-reveal-ember { 0% { opacity: 0; color: #ffb36b; text-shadow: 0 0 8px #ff7a2a; } 60% { opacity: 1; color: #ffcf96; text-shadow: 0 0 4px #ff7a2a88; } 100% { text-shadow: none; } }
+@keyframes heretic-reveal-frost { 0% { opacity: 0; filter: blur(3px) brightness(1.6); } 100% { opacity: 1; filter: none; } }
+@keyframes heretic-reveal-blood { 0% { opacity: 0; color: #9c1f2f; transform: translateY(-3px); } 60% { opacity: 1; color: #9c1f2f; } 100% { transform: none; } }
+@keyframes heretic-reveal-silver { 0% { opacity: 0; letter-spacing: .06em; filter: blur(1px); } 100% { opacity: 1; filter: none; } }
+@keyframes heretic-reveal-stars { 0% { opacity: 0; filter: brightness(2.2) blur(1px); } 50% { opacity: 1; } 100% { filter: none; } }
+@keyframes heretic-reveal-flesh { 0% { opacity: 0; transform: scaleY(.94); filter: blur(1.5px); } 60% { transform: scaleY(1.01); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes heretic-reveal-rust { 0% { opacity: 0; color: #8a4422; filter: sepia(1); } 100% { opacity: 1; filter: none; } }
+@keyframes heretic-reveal-glass { 0% { opacity: 0; filter: hue-rotate(90deg) saturate(2); transform: skewX(-4deg); } 100% { opacity: 1; filter: none; transform: none; } }
+@keyframes heretic-reveal-tide { 0% { opacity: 0; transform: translateY(6px); filter: blur(2px); } 60% { transform: translateY(-1px); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes heretic-reveal-sand { 0% { opacity: 0; transform: translateY(-5px); filter: blur(1px); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes heretic-reveal-wax { 0% { opacity: 0; text-shadow: 0 0 10px #fff3c0; } 100% { opacity: 1; text-shadow: none; } }
+@keyframes heretic-reveal-echo { 0% { opacity: 0; transform: scale(1.03); } 40% { opacity: .5; transform: scale(.995); } 70% { opacity: 1; transform: scale(1.003); } 100% { transform: none; } }
+@keyframes heretic-reveal-spirit { 0% { opacity: 0; transform: translateY(5px); filter: blur(2px) drop-shadow(0 0 6px #9be8cf); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes heretic-reveal-dance { 0% { opacity: 0; transform: translateX(-6px) rotate(-.6deg); } 60% { transform: translateX(2px); } 100% { opacity: 1; transform: none; } }
+@keyframes heretic-reveal-blade { 0% { opacity: 0; clip-path: inset(0 100% 0 0); } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-reveal-lock { 0% { opacity: 0; clip-path: inset(0 50% 0 50%); } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
 
 /* Обгоревший молитвенник: ломкий тёмный лист, копоть по обрезу и тлеющий рисунок. */
 .HereticBook--Ash {
@@ -335,8 +646,6 @@
   .HereticBook__page--left { clip-path: polygon(0 1%, 9% 0, 18% 1%, 27% 0, 100% 0, 100% 100%, 73% 99%, 65% 100%, 46% 99%, 37% 100%, 1% 99%, 0 83%, 1% 70%, 0 51%, 1% 25%); }
   .HereticBook__page--right { clip-path: polygon(0 0, 25% 0, 38% 1%, 45% 0, 71% 1%, 83% 0, 99% 1%, 100% 33%, 99% 50%, 100% 71%, 99% 99%, 62% 100%, 55% 99%, 0 100%); }
   .HereticBook__bookTitle, h2 { font-variant: small-caps; }
-  .HereticBook__fire { animation: heretic-ember 3.7s ease-in-out infinite; transform-origin: 160px 121px; }
-  .HereticBook__embers { animation: heretic-ash-rise 5s linear infinite; }
   .HereticBook__page::after { border-style: double; border-width: 3px; }
 }
 
@@ -350,7 +659,6 @@
   .HereticBook__page::after { inset: 11px; border: 2px solid #45544366; background: radial-gradient(circle at 1% 1%, #263020 0 2px, transparent 3px), radial-gradient(circle at 99% 99%, #263020 0 2px, transparent 3px); opacity: 1; }
   .HereticBook__spine { width: 30px; left: calc(50% - 15px); background: repeating-linear-gradient(0deg, transparent 0 58px, #6d6952 58px 63px, #242d22 63px 66px, transparent 66px 106px), linear-gradient(90deg, transparent, #15231188, transparent); }
   .HereticBook__bookTitle, h2 { letter-spacing: .02em; font-variant: small-caps; }
-  .HereticBook__gear { transform-origin: 160px 110px; animation: heretic-rust-creak 17s steps(2, end) infinite; }
 }
 
 /* Живая книга: слоистая ткань, сосуды в полях, медленный пульс переплёта. */
@@ -362,7 +670,6 @@
   .HereticBook__pageOrnament { opacity: .55; }
   .HereticBook__page--left::after { left: 4px; right: auto; }
   .HereticBook__titleRule { border-color: #912943; border-radius: 50%; }
-  .HereticBook__pulse { animation: heretic-heart 2.8s ease-in-out infinite; transform-origin: 160px 115px; }
   .HereticBook__veins { animation: heretic-veins 2.8s ease-in-out infinite; }
   .HereticBook__clasp { background: linear-gradient(90deg, #74333d, #ca8a82, #72353f); border-radius: 50%; border-color: #7c3b43; }
 }
@@ -376,7 +683,6 @@
   .HereticBook__page::after { border: 0; background: repeating-conic-gradient(from 30deg at 0 0, transparent 0 29deg, #fff9 30deg 31deg, transparent 32deg 60deg); width: 24px; opacity: .75; }
   .HereticBook__bookTitle { margin-top: 42px !important; font-size: 31px; font-weight: 400; }
   h2 { font-weight: 400; letter-spacing: .015em; }
-  .HereticBook__winter { animation: heretic-frost 12s ease-in-out infinite; }
 }
 
 /* Клинок: линованный трактат с измерениями, жёсткая ось и гравюра стоек. */
@@ -386,10 +692,9 @@
   .HereticBook__binding { border-radius: 3px; }
   .HereticBook__page { border-radius: 2px; }
   .HereticBook__page::after { inset: 12px; border: 1px solid var(--ink); opacity: .35; }
-  .HereticBook__runningTitle { font-variant: small-caps; letter-spacing: .12em; }
+  .HereticBook__kicker { font-variant: small-caps; letter-spacing: .12em; }
   .HereticBook__bookTitle { font-size: 31px; font-variant: small-caps; }
-  .HereticBook__contentsLine { border-bottom: 1px solid #616b821b; }
-  .HereticBook__guard { animation: heretic-guard 9s ease-in-out infinite; transform-origin: 160px 180px; }
+  .HereticBook__line { border-bottom: 1px solid #616b821b; }
   .HereticBook__clasp { background: linear-gradient(90deg, #545867, #b4b8c1, #505364); }
 }
 
@@ -400,7 +705,6 @@
   .HereticBook__binding { border-color: #bab8ce; box-shadow: 0 5px 13px #000a, inset 0 0 0 3px #383440, inset 0 0 0 5px #aaa5c5; }
   .HereticBook__page::after { border-radius: 44% 44% 3px 3px; border: 1px solid #fff; opacity: .45; }
   .HereticBook__bookTitle, h2 { font-style: italic; }
-  .HereticBook__reflection { animation: heretic-mirror 7s ease-in-out infinite; transform-origin: 160px 110px; }
   .HereticBook__page--right::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(112deg, transparent 24%, #ffffff33 35%, transparent 46%); background-size: 250% 100%; animation: heretic-silver 13s ease-in-out infinite; z-index: 1; }
   .HereticBook__clasp { background: linear-gradient(90deg, #79758b, #ede9f7 50%, #8b839c); border-color: #9992ad; }
 }
@@ -413,8 +717,7 @@
   .HereticBook__page::after { border: 3px double #b9a66a; opacity: .4; }
   .HereticBook__titleRule { border-color: var(--accent); }
   .HereticBook__bookTitle { font-variant: small-caps; letter-spacing: .02em; }
-  .HereticBook__runningTitle { color: #baab78; }
-  .HereticBook__orbit { animation: heretic-orbits 60s linear infinite; transform-origin: 160px 110px; }
+  .HereticBook__kicker { color: #baab78; }
 }
 
 
@@ -434,7 +737,6 @@
   .HereticBook__page { box-shadow: inset 0 0 35px #031a2399; }
   .HereticBook__page::after { border: 1px solid #82c3b2; opacity: .22; border-radius: 35% 2px 30% 2px; }
   .HereticBook__bookTitle { font-weight: 400; font-style: italic; }
-  .HereticBook__tide { animation: heretic-tide 7s ease-in-out infinite; }
   .HereticBook__clasp { background: linear-gradient(90deg, #365553, #baad79, #294c49); }
 }
 
@@ -444,9 +746,6 @@
   --grain: repeating-linear-gradient(28deg, transparent 0 78px, #765d7a0b 79px 80px);
   .HereticBook__binding { border-radius: 3px; border-color: #ad94b7; }
   .HereticBook__page::after { border: 3px double #8f739b; }
-  .HereticBook__facets > path { animation: heretic-glass-light 8s ease-in-out infinite; }
-  .HereticBook__facets > path:nth-child(2) { animation-delay: -3s; }
-  .HereticBook__opticalRay { stroke-dasharray: 14 86; animation: heretic-optical-ray 8s ease-in-out infinite; }
   .HereticBook__clasp { background: linear-gradient(115deg, #504156, #dbbdcb 42%, #a291b1 46%, #e8dac8 62%, #604b6c); }
 }
 
@@ -455,8 +754,6 @@
   --grain: radial-gradient(ellipse at 10% 90%, #a0454e0e, transparent 48%);
   .HereticBook__binding { border-color: #987347; }
   .HereticBook__titleRule { border-color: #a27757; }
-  .HereticBook__titheDrop { transform-origin: 160px 90px; animation: heretic-tithe-drop 6s ease-in-out infinite; }
-  .HereticBook__bloodThread { stroke-dasharray: 4 12; animation: heretic-blood-thread 6s linear infinite; }
   .HereticBook__clasp { background: linear-gradient(90deg, #5b2635, #b08158 40%, #cf917b 55%, #632b39); }
 }
 
@@ -465,7 +762,6 @@
   --grain: repeating-linear-gradient(173deg, #b5986830 0 1px, transparent 1px 8px);
   .HereticBook__binding { border-radius: 4px 13px 9px 4px; border-color: #987548; }
   .HereticBook__clasp { background: linear-gradient(90deg, #493d2c, #d8b97f, #6f5740); }
-  .HereticBook__sandStream { animation: heretic-sand-stream 1s linear infinite; }
 }
 
 .HereticBook--Wax {
@@ -473,7 +769,6 @@
   --grain: radial-gradient(ellipse at 90% 5%, #f2e6c788, transparent 42%), repeating-linear-gradient(92deg, #e8dccf22 0 2px, transparent 2px 19px);
   .HereticBook__binding { border-color: #aca087; border-radius: 17px 9px 14px 7px; }
   .HereticBook__clasp { background: linear-gradient(90deg, #8b7863, #f0e5c5, #bcaa87); }
-  .HereticBook__waxFlames { animation: heretic-wax-light 2.8s ease-in-out infinite; }
 }
 
 .HereticBook--Spirit {
@@ -481,8 +776,6 @@
   --grain: repeating-linear-gradient(0deg, #cbdcd005 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, #cbdcd005 0 1px, transparent 1px 4px);
   .HereticBook__binding { border-color: #989f98; border-radius: 7px 13px 9px 5px; }
   .HereticBook__clasp { background: linear-gradient(90deg, #424956, #d8d1b8 45%, #9ec8b9 60%, #424956); }
-  .HereticBook__departingSoul { animation: heretic-soul-hover 7s ease-in-out infinite; }
-  .HereticBook__soulThread { animation: heretic-soul-thread 5s linear infinite; }
 }
 
 .HereticBook--Dance {
@@ -491,23 +784,10 @@
   .HereticBook__binding { border-color: #b87333; border-radius: 6px; }
   .HereticBook__titleRule { border-color: #b87333; }
   .HereticBook__bookTitle { font-style: italic; }
-  .HereticBook__danceRibbons { animation: heretic-dance-ribbons 6s ease-in-out infinite; transform-origin: 160px 88px; }
-  .HereticBook__danceSteps > g { animation: heretic-dance-step 4.8s ease-in-out infinite; }
-  .HereticBook__danceSteps > g:nth-child(2) { animation-delay: .8s; }
-  .HereticBook__danceSteps > g:nth-child(3) { animation-delay: 1.6s; }
-  .HereticBook__danceSteps > g:nth-child(4) { animation-delay: 2.4s; }
-  .HereticBook__danceSteps > g:nth-child(5) { animation-delay: 3.2s; }
-  .HereticBook__danceSteps > g:nth-child(6) { animation-delay: 4s; }
   .HereticBook__clasp { background: linear-gradient(90deg, #3a1c14, #e0a070 45%, #b87333 58%, #3a1c14); border-color: #5a2a1c; }
 }
 
-@keyframes heretic-dance-ribbons { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
-@keyframes heretic-dance-step { 0%, 100% { opacity: .25; } 12%, 30% { opacity: 1; } }
 
-@keyframes heretic-soul-hover { 0%, 100% { transform: translateY(2px); opacity: .65; } 50% { transform: translateY(-4px); opacity: 1; } }
-@keyframes heretic-soul-thread { to { stroke-dashoffset: -28; } }
-@keyframes heretic-sand-stream { to { stroke-dashoffset: -10; } }
-@keyframes heretic-wax-light { 0%, 100% { opacity: .65; } 37% { opacity: 1; } 65% { opacity: .8; } }
 
 .HereticBook--Echo {
   --paper: #ded4b9; --paper-edge: #a68a5b; --ink: #30271d; --faded: #5f4d36; --accent: #80612b; --cover: #241d17; --cover-light: #b39a61; --ribbon: #64503b; --rule: #aa9368;
@@ -515,69 +795,193 @@
   .HereticBook__binding { border-radius: 5px; border-color: #b39a61; }
   .HereticBook__titleRule { border-color: #a38750; }
   .HereticBook__bookTitle { font-size: 31px; }
-  .HereticBook__echoWaves { animation: heretic-echo-tone 7s ease-in-out infinite; }
-  .HereticBook__illumination .HereticLyre__string { animation: heretic-lyre-string 2.8s ease-in-out infinite; }
-  .HereticBook__illumination .HereticLyre__string--1 { animation-duration: 3.2s; animation-delay: -.85s; }
-  .HereticBook__illumination .HereticLyre__string--2 { animation-duration: 3.7s; animation-delay: -1.9s; }
   .HereticBook__clasp { background: linear-gradient(90deg, #4d3d28, #d9bb73 46%, #8b7144 59%, #4d3d28); }
 }
 
-@keyframes heretic-echo-tone { 0%, 75%, 100% { opacity: .35; } 15%, 35% { opacity: 1; } 25%, 45% { opacity: .6; } }
-@keyframes heretic-lyre-string { 0%, 100% { d: path("M0 0Q0 20 0 40"); } 30% { d: path("M0 0Q1.6 20 0 40"); } 70% { d: path("M0 0Q-1.6 20 0 40"); } }
-@keyframes heretic-lyre-pluck {
-  0%, 100% { d: path("M0 0Q0 20 0 40"); }
-  8% { d: path("M0 0Q4.8 20 0 40"); }
-  19% { d: path("M0 0Q-4 20 0 40"); }
-  31% { d: path("M0 0Q3.2 20 0 40"); }
-  44% { d: path("M0 0Q-2.3 20 0 40"); }
-  59% { d: path("M0 0Q1.5 20 0 40"); }
-  76% { d: path("M0 0Q-.7 20 0 40"); }
-}
-@keyframes heretic-lyre-pendant { 0%, 100% { transform: rotate(0); } 22% { transform: rotate(7deg); } 48% { transform: rotate(-4deg); } 75% { transform: rotate(1.5deg); } }
-@keyframes heretic-glass-light { 0%, 100% { opacity: .5; } 28% { opacity: .75; } 45% { opacity: 1; } 66% { opacity: .6; } }
-@keyframes heretic-optical-ray { 0% { stroke-dashoffset: 14; opacity: 0; } 20%, 62% { opacity: .9; } 88%, 100% { stroke-dashoffset: -100; opacity: 0; } }
-@keyframes heretic-tithe-drop { 0%, 100% { transform: translateY(-3px) scale(1, .94); opacity: .75; } 45% { transform: translateY(3px) scale(.98, 1.03); opacity: 1; } 66% { transform: translateY(8px) scale(1.05, .9); opacity: .8; } }
-@keyframes heretic-blood-thread { to { stroke-dashoffset: -32; } }
-@keyframes heretic-tide { 0%, 100% { transform: translateY(2px); opacity: .65; } 50% { transform: translateY(-3px); opacity: 1; } }
 
 @keyframes heretic-page-turn { 0% { transform: rotateY(0); opacity: .94; } 65% { opacity: .85; } 100% { transform: rotateY(-177deg); opacity: 0; } }
-@keyframes heretic-ember { 0%, 100% { opacity: .7; transform: scaleY(.98); } 50% { opacity: 1; transform: scaleY(1.025); } }
-@keyframes heretic-ash-rise { 0% { transform: translateY(4px); opacity: 0; } 25% { opacity: .8; } 100% { transform: translateY(-12px); opacity: 0; } }
-@keyframes heretic-rust-creak { 0%, 87%, 100% { transform: rotate(0); } 90%, 96% { transform: rotate(4deg); } }
-@keyframes heretic-heart { 0%, 37%, 100% { transform: scale(1); } 42% { transform: scale(1.035); } 48% { transform: scale(1); } 54% { transform: scale(1.022); } }
 @keyframes heretic-veins { 0%, 100% { opacity: .55; } 54% { opacity: 1; } }
-@keyframes heretic-frost { 0%, 100% { opacity: .5; } 60% { opacity: .95; } }
-@keyframes heretic-guard { 0%, 35%, 100% { transform: rotate(0); } 47%, 65% { transform: rotate(3deg); } }
-@keyframes heretic-mirror { 0%, 100% { transform: translateY(0); opacity: .85; } 50% { transform: translateY(3px); opacity: .55; } }
 @keyframes heretic-silver { 0%, 100% { transform: translateX(-3%); opacity: .2; } 50% { transform: translateX(3%); opacity: .8; } }
-@keyframes heretic-orbits { to { transform: rotate(360deg); } }
+
+
+/* Голоса путей: буквица, проявление текста и свет на развороте. */
+.HereticBook--Ash {
+  --plate-life: heretic-life-ember;
+  --plate-time: 3.4s;
+  --reveal: heretic-reveal-ember;
+  --light: #ff8a3a40;
+  --initial-bg: radial-gradient(circle at 50% 100%, #ff7a2a66, transparent 65%), radial-gradient(circle at 30% 20%, #3a1b10, #120806);
+  --initial-ink: #ffbf7a;
+  --initial-frame: #c2622f;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #ff6a1a, 0 0 1px #fff3; }
+}
+.HereticBook--Rust {
+  --plate-life: heretic-life-creak;
+  --plate-time: 7s;
+  --reveal: heretic-reveal-rust;
+  --light: #e0a26a2e;
+  --initial-bg: radial-gradient(circle at 25% 30%, #9a4f2a88, transparent 35%), radial-gradient(circle at 75% 80%, #7a3a1a77, transparent 30%), linear-gradient(135deg, #5b6450, #2f362b);
+  --initial-ink: #e6d7ae;
+  --initial-frame: #20261d;
+}
+.HereticBook--Flesh {
+  --plate-life: heretic-life-heart;
+  --plate-time: 2.6s;
+  --reveal: heretic-reveal-flesh;
+  --light: #ff6a7a33;
+  --initial-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23ffb3b8' stroke-opacity='.4' stroke-width='.8'%3E%3Cpath d='M0 30c8-4 10-12 18-14s10-10 22-12M8 40c2-8 10-10 12-18M30 40c-2-6 2-12 10-14'/%3E%3C/svg%3E") center / 100% 100%, radial-gradient(circle at 40% 30%, #b0485a, #5e1a2a);
+  --initial-ink: #ffe1da;
+  --initial-frame: #43121f;
+}
+.HereticBook--Void {
+  --plate-life: heretic-life-frost;
+  --plate-time: 6s;
+  --reveal: heretic-reveal-frost;
+  --light: #e6fbff40;
+  --initial-bg: repeating-conic-gradient(from 15deg at 50% 50%, #ffffff55 0 2deg, transparent 2deg 30deg), radial-gradient(circle at 50% 40%, #ffffff, #b9d2d8);
+  --initial-ink: #2a5566;
+  --initial-frame: #7fa4ae;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #fff; }
+}
+.HereticBook--Blade {
+  --plate-life: heretic-life-glint;
+  --plate-time: 5s;
+  --reveal: heretic-reveal-blade;
+  --light: #e8eefa2a;
+  --initial-bg: linear-gradient(135deg, #d9dee8, #8e95a4 48%, #e9edf3 52%, #5d6474);
+  --initial-ink: #20242c;
+  --initial-frame: #2c313b;
+  .HereticBook__lead::first-letter { text-shadow: 0 1px 0 #fff8; }
+}
+.HereticBook--Moon {
+  --plate-life: heretic-life-breathe;
+  --plate-time: 7s;
+  --reveal: heretic-reveal-silver;
+  --light: #ece6ff40;
+  --initial-bg: radial-gradient(circle at 70% 30%, #ffffff, transparent 25%), linear-gradient(160deg, #f5f3fb, #b4adc9 60%, #e5e1f2);
+  --initial-ink: #463a68;
+  --initial-frame: #8c84a8;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 4px #fff; }
+}
+.HereticBook--Cosmic {
+  --plate-life: heretic-life-twinkle;
+  --plate-time: 6s;
+  --reveal: heretic-reveal-stars;
+  --light: #7fc8ff26;
+  --initial-bg: radial-gradient(circle at 20% 25%, #fff 0 .6px, transparent 1px), radial-gradient(circle at 75% 60%, #fff 0 .5px, transparent 1px), radial-gradient(circle at 40% 85%, #ffe9a8 0 .6px, transparent 1px), radial-gradient(circle at 50% 40%, #1b3a55, #050d17);
+  --initial-ink: #e9d48a;
+  --initial-frame: #b39a55;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #e9d48a99; }
+}
+.HereticBook--Lock {
+  --plate-life: heretic-life-creak;
+  --plate-time: 9s;
+  --reveal: heretic-reveal-lock;
+  --light: #ffd9902a;
+  --initial-bg: radial-gradient(circle at 50% 50%, transparent 30%, #00000033), linear-gradient(135deg, #d5b26e, #8a6a34 50%, #c9a35e);
+  --initial-ink: #2e2213;
+  --initial-frame: #5a4220;
+  .HereticBook__lead::first-letter { text-shadow: 0 1px 0 #fff6; }
+}
+.HereticBook--Tide {
+  --plate-life: heretic-life-float;
+  --plate-time: 5s;
+  --reveal: heretic-reveal-tide;
+  --light: #7fe0d826;
+  --initial-bg: repeating-radial-gradient(circle at 50% 120%, #7fc9c033 0 2px, transparent 2px 6px), linear-gradient(180deg, #2a6b6b, #0c2b30);
+  --initial-ink: #e9dfba;
+  --initial-frame: #9a8f62;
+}
+.HereticBook--Glass {
+  --plate-life: heretic-life-prism;
+  --plate-time: 8s;
+  --reveal: heretic-reveal-glass;
+  --light: #ffd2fa30;
+  --initial-bg: conic-gradient(from 20deg at 45% 55%, #b33a5a, #e3a43b, #3b8f7a, #3a5fb3, #8a3ab3, #b33a5a);
+  --initial-ink: #fff;
+  --initial-frame: #2b1e30;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 2px #000, 0 0 1px #000; }
+}
+.HereticBook--Blood {
+  --plate-life: heretic-life-heart;
+  --plate-time: 3.2s;
+  --reveal: heretic-reveal-blood;
+  --light: #ff3a5a2a;
+  --initial-bg: radial-gradient(circle at 50% 0%, #e05a6a, transparent 60%), linear-gradient(180deg, #8f2236, #4a0f1c);
+  --initial-ink: #f3d39a;
+  --initial-frame: #b08152;
+}
+.HereticBook--Echo {
+  --plate-life: heretic-life-echo;
+  --plate-time: 4s;
+  --reveal: heretic-reveal-echo;
+  --light: #ffe39a2a;
+  --initial-bg: repeating-radial-gradient(circle at 50% 50%, #ffffff22 0 1px, transparent 1px 5px), linear-gradient(135deg, #e7cd84, #a8843c 55%, #e2c675);
+  --initial-ink: #3a2a14;
+  --initial-frame: #6e5424;
+}
+.HereticBook--Sand {
+  --plate-life: heretic-life-float;
+  --plate-time: 7s;
+  --reveal: heretic-reveal-sand;
+  --light: #ffd8962a;
+  --initial-bg: repeating-linear-gradient(170deg, #ffffff1c 0 1px, transparent 1px 4px), linear-gradient(180deg, #d6b37a, #9a7440);
+  --initial-ink: #2d2416;
+  --initial-frame: #6e5430;
+}
+.HereticBook--Wax {
+  --plate-life: heretic-life-candle;
+  --plate-time: 3s;
+  --reveal: heretic-reveal-wax;
+  --light: #fff1b833;
+  --initial-bg: radial-gradient(ellipse at 50% 0%, #fffbe8, transparent 60%), linear-gradient(180deg, #efe2c4, #c8b38c);
+  --initial-ink: #6a3a46;
+  --initial-frame: #9b7f72;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #fff7d0; }
+}
+.HereticBook--Spirit {
+  --plate-life: heretic-life-float;
+  --plate-time: 6s;
+  --reveal: heretic-reveal-spirit;
+  --light: #9be8cf2a;
+  --initial-bg: radial-gradient(circle at 50% 60%, #9be8cf44, transparent 60%), linear-gradient(180deg, #27304a, #0f1424);
+  --initial-ink: #b9f5e0;
+  --initial-frame: #627a7b;
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #9be8cf; }
+}
+.HereticBook--Dance {
+  --plate-life: heretic-life-sway;
+  --plate-time: 3.6s;
+  --reveal: heretic-reveal-dance;
+  --light: #ff8a5a2a;
+  --initial-bg: repeating-linear-gradient(90deg, #00000022 0 3px, transparent 3px 7px), radial-gradient(circle at 50% 30%, #c22a2e, #5a0c12);
+  --initial-ink: #f2c879;
+  --initial-frame: #b87333;
+}
 
 @media (max-width: 720px) {
   .HereticBook {
-    padding: 43px 13px 6px;
+    padding: 40px 12px 4px;
     font-size: 14px;
-    line-height: 1.5;
     &__binding { padding: 9px 8px 13px; }
-    &__page { padding: 18px 16px 10px; }
-    &__page--left { padding-right: 22px; }
-    &__page--right { padding-left: 22px; }
-    &__page::after { inset: 7px 6px; }
-    &__bookmarks { left: 16px; right: 12px; gap: 6px; button { font-size: 12px; padding: 8px 3px 16px; letter-spacing: 0; } }
-    &__bookTitle { font-size: 25px !important; margin-top: 20px !important; }
-    h2 { font-size: 23px; }
-    h3 { font-size: 15px; }
-    &__runningTitle { font-size: 10px; letter-spacing: 0; }
-    &__oath { font-size: 17px !important; gap: 9px; }
-    &__illumination { max-height: 158px; }
-    &__annotation { background: var(--paper); padding: 5px 7px; border-radius: 2px; font-size: 12px; }
-    &__contentsLine { font-size: 14px !important; gap: 5px; }
-    &__indexNumber { min-width: 14px; }
-    &__sides { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-    &__ledger { font-size: 12px; }
-    &__inscribe, &__inscribe.Button { font-size: 14px; }
+    &__page { padding: 18px 18px 10px; }
+    &__page--left { padding-right: 24px; }
+    &__page--right { padding-left: 24px; }
+    &__bookmarks { left: 38px; right: 34px; gap: 6px; button { font-size: 10.5px; padding: 7px 3px 15px; letter-spacing: .06em; } }
+    &__bookTitle { font-size: 25px !important; }
+    &__entryTitle { font-size: 23px; }
+    &__lead { font-size: 15px; }
+    &__oaths { grid-template-columns: minmax(0, 1fr); }
+    &__oath { font-size: 15px; }
+    &__line { font-size: 14px; gap: 6px; &::before { left: -10px; } }
+    &__lineNumber { min-width: 20px; }
     &__spine { width: 30px; left: calc(50% - 15px); }
     &__clasp { width: 13px; right: -7px; }
-    &__target h3 { font-size: 22px; }
+    &__target h2 { font-size: 23px; }
+    &__ledger { gap: 4px 12px; font-size: 12px; }
+    &__tallyState { display: none; }
+    &__entryMeta { grid-template-columns: minmax(0, 1fr); }
+    &__entryTitle { font-size: 25px; }
   }
 }
 
@@ -585,8 +989,7 @@
   .HereticBook {
     &__page { overflow: auto; }
     &__pageBody { flex: 0 0 auto; }
-    &__pageScroll { flex: 0 0 auto; overflow: visible; }
-    &__scrollHint { display: none; }
+    &__pageScroll { flex: 0 0 auto; overflow: visible; mask-image: none !important; }
   }
 }
 
@@ -596,6 +999,9 @@
     &__page { overflow: visible; }
     &__page--left, &__page--right { padding-left: 28px; padding-right: 28px; }
     &__spine, &__turningLeaf, .HereticBookAtmosphere__art { display: none; }
+    &__ledger { flex-wrap: wrap; white-space: normal; }
+    &__tally--deed { display: none; }
+    &__corner, &__stack { display: none; }
   }
 }
 

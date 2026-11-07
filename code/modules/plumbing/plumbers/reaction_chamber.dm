@@ -59,5 +59,5 @@
 			var/input_reagent = get_chem_id(params["chem"])
 			if(input_reagent && !required_reagents.Find(input_reagent))
 				var/input_amount = text2num(params["amount"])
-				if(input_amount)
+				if(input_amount > 0)
 					required_reagents[input_reagent] = input_amount

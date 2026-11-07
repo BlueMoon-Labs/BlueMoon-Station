@@ -41,7 +41,7 @@
 		to_chat(H, "<span class='userdanger'>You suddenly feel an irresistible compulsion to follow an order...</span>")
 		to_chat(H, "<span class='mind_control'>[command]</span>")
 
-		message_admins("[key_name(user)] broadcasted an abductor mind control message from [key_name(owner)] to [key_name(H)]: [command]")
+		antag_training_admin_log(owner, "[key_name(user)] broadcasted an abductor mind control message from [key_name(owner)] to [key_name(H)]: [command]", "[key_name(user)] broadcasted an abductor mind control message from [key_name(owner)] to [key_name(H)]: [command]")
 
 		var/atom/movable/screen/alert/mind_control/mind_alert = H.throw_alert("mind_control", /atom/movable/screen/alert/mind_control)
 		mind_alert.command = command

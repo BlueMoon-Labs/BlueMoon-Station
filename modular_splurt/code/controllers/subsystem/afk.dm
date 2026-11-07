@@ -67,7 +67,7 @@ SUBSYSTEM_DEF(auto_cryo)
 				return
 			var/mob/living/cryo_mob = currentrun_cryo[currentrun_cryo.len]
 			currentrun_cryo.len--
-			if(QDELETED(cryo_mob) || !isliving(cryo_mob) || !(cryo_mob in GLOB.ssd_mob_list))
+			if(QDELETED(cryo_mob) || !isliving(cryo_mob) || !(cryo_mob in GLOB.ssd_mob_list) || HAS_TRAIT(cryo_mob, TRAIT_TRAINING_DREAMER))
 				continue
 			var/afk_time = world.time - cryo_mob.lastclienttime
 			if(afk_time < SUBSYSTEM_CRYO_TIME)

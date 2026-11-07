@@ -22,7 +22,7 @@
 	item_state = "hev"
 	resistance_flags = ACID_PROOF | FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	armor_type = /datum/armor/hev_helmet
+	armor_type = /datum/armor/hev_suit
 	actions_types = list(/datum/action/item_action/toggle_research_scanner)
 
 /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/no_scanner
@@ -42,7 +42,7 @@
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector,
 	/obj/item/hand_tele, /obj/item/aicard)
-	armor_type = /datum/armor/hev_suit // это костюм защиты от агресивной среды - без защиты от агресивной среды.
+	armor_type = /datum/armor/hev_suit
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev
@@ -202,7 +202,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "teslaup"
 	item_state = "teslaup"
-	armor_type = /datum/armor/teslapahelmet_helmet
+	armor_type = /datum/armor/teslapa_suit
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
@@ -241,7 +241,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "adv_pa"
 	item_state = "adv_pa"
-	armor_type = /datum/armor/advancedpahelmet_helmet
+	armor_type = /datum/armor/advancedpa_suit
 	strip_delay = 300
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 

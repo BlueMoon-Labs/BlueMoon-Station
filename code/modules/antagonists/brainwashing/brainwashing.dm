@@ -21,7 +21,8 @@
 	var/obj_message = english_list(directives)
 	var/end_message = "."
 	var/rendered = begin_message + obj_message + end_message
-	deadchat_broadcast(rendered, "<b>[L]</b>", follow_target = L, turf_target = get_turf(L), message_type=DEADCHAT_ANNOUNCEMENT)
+	if(!is_antag_training_atom(L))
+		deadchat_broadcast(rendered, "<b>[L]</b>", follow_target = L, turf_target = get_turf(L), message_type=DEADCHAT_ANNOUNCEMENT)
 	if(prob(1) || SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS])
 		L.say("You son of a bitch! I'm in.", forced = "That son of a bitch! They're in.")
 

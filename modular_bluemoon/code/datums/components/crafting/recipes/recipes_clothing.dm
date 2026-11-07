@@ -50,9 +50,3 @@
 /datum/crafting_recipe/makeshift_platecarrier/New()
 	. = ..()
 	blacklist |= (subtypesof(/obj/item/clothing/suit/armor/vest) - list(/obj/item/clothing/suit/armor/vest/alt))
-
-/datum/crafting_recipe/makeshift_platecarrier/check_requirements(mob/user, list/collected_requirements)
-	for(var/obj/item/storage/belt/security/belt in collected_requirements[/obj/item/storage/belt/security])
-		if(belt.contents.len)
-			return FALSE
-	return TRUE

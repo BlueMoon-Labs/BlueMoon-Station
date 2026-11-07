@@ -184,8 +184,7 @@ GLOBAL_LIST_INIT(plasma_recipes, list ( \
 /obj/item/stack/sheet/mineral/plasma/attackby(obj/item/W as obj, mob/user as mob, params)
 	if(W.get_temperature() > 300)//If the temperature of the object is over 300, then ignite
 		var/turf/T = get_turf(src)
-		message_admins("Plasma sheets ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
-		log_admin("Plasma sheets ignited by [key_name(user)] in [AREACOORD(T)]")
+		antag_training_admin_log(src, "Plasma sheets ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]", "Plasma sheets ignited by [key_name(user)] in [AREACOORD(T)]")
 		fire_act(W.get_temperature())
 	else
 		return ..()

@@ -402,6 +402,11 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 		return target_near(HK47_PROTECT_RANGE) ? 100 : 0
 	return round(protect_near_samples * 100 / protect_samples)
 
+/// Сколько секунд ещё нужно провести рядом с подопечным, чтобы набрать норму присутствия за весь срок.
+/datum/hk_contract/proc/presence_seconds_left()
+	var/needed_samples = CEILING(HK47_PROTECT_TIME / HK47_PROTECT_SAMPLE * HK47_PROTECT_PRESENCE_PERCENT / 100, 1)
+	return max(0, needed_samples - protect_near_samples) * HK47_PROTECT_SAMPLE / (1 SECONDS)
+
 /// Середина охраны: конкурент шлёт пару HK-50, когда HK рядом с подопечным на станции. Без согласия подопечного на убийство они идут за самим HK.
 /datum/hk_contract/proc/send_rivals()
 	deltimer(rival_timer)
@@ -968,7 +973,7 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 	else if(get_dist(droid, victim) > HK47_SCAN_RANGE || droid.z != victim.z)
 		refusal = "подойдите к цели вплотную."
 	else if(!hk47_capture_ready(victim))
-		refusal = "цель сопротивляется: нужны наручники, оглушение, сон или крит."
+		refusal = "цель сопротивляется: нужны наручники, оглушение, истощение выносливости, сон или крит."
 	else if(droid.incapacitated())
 		refusal = "вызов невозможен в текущем состоянии."
 	if(refusal)

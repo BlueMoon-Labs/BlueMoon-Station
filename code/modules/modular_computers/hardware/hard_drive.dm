@@ -167,6 +167,12 @@
 	store_file(new /datum/computer_file/program/robotact(src))
 	store_file(new /datum/computer_file/program/messenger(src)) // Messenger
 
+// Локальное управление киборгом кафе без средств связи со станцией.
+/obj/item/computer_hardware/hard_drive/small/integrated/offline/install_default_programs()
+	store_file(new /datum/computer_file/program/computerconfig(src))
+	store_file(new /datum/computer_file/program/filemanager(src))
+	store_file(new /datum/computer_file/program/robotact(src))
+
 
 // Syndicate variant - very slight better
 /obj/item/computer_hardware/hard_drive/small/syndicate

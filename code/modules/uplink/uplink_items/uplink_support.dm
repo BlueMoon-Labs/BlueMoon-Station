@@ -80,7 +80,7 @@
 
 /datum/uplink_item/support/honker
 	name = "Dark H.O.N.K."
-	desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также незаменимым HoNkER BlAsT 5000."
+	desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также с незаменимым HoNkER BlAsT 5000."
 	item = /obj/vehicle/sealed/mecha/combat/honker/dark/loaded
 	cost = 80
 	purchasable_from = UPLINK_CLOWN_OPS

@@ -1,6 +1,17 @@
 var _settingsActive = false;
 var _fontApplyTimer = null;
 
+// Ответ общего TGUI-пикера применяем к актуальной теме, даже если настройки уже перерисованы.
+function set_settings_color(varName, color) {
+	if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+	var themeState = loadTheme();
+	themeState.overrides[varName] = color;
+	markCustomIfModified(themeState);
+	saveTheme(themeState);
+	applyTheme(themeState);
+	if (_settingsActive) draw_settings();
+}
+
 // Renders a "columns: Авто / 1..6" select row and (optionally) a "min cell width" slider row
 // for one grid surface. opts: { colLabel, colKey } [ + minLabel, minKey, minDefault, minMin, minMax, minStep ].
 // The min-width slider is greyed out when a fixed column count is chosen (it only affects "Авто" mode).
@@ -136,8 +147,7 @@ function draw_settings() {
 		["--health-bad", "Здоровье (критическое)"]
 	];
 	var effective = getCurrentVarValues(themeState);
-	// Refs we update synchronously so the contrast badge stays in sync with picker drags
-	// without rebuilding the whole panel.
+	// Индикаторы контраста пересчитываются при перерисовке после подтверждения цвета.
 	var contrastBadges = {};
 
 	function _refreshContrastBadges() {
@@ -157,18 +167,15 @@ function draw_settings() {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
 			row.appendChild(el("span", "settings-label", label));
-			var input = document.createElement("input");
-			input.type = "color";
+			var input = document.createElement("button");
+			input.type = "button";
 			input.className = "settings-color-input";
-			input.value = normalizeToHex(effective[varName] || "#000000");
-			input.oninput = function() {
-				themeState.overrides[varName] = input.value;
-				var wasPre = themeState.preset;
-				markCustomIfModified(themeState);
-				saveTheme(themeState);
-				applyTheme(themeState);
-				_refreshContrastBadges();
-				if (themeState.preset !== wasPre) draw_settings();
+			var currentColor = normalizeToHex(effective[varName] || "#000000");
+			input.style.backgroundColor = currentColor;
+			input.title = label + ": " + currentColor;
+			input.setAttribute("aria-label", "Выбрать цвет: " + label);
+			input.onclick = function() {
+				byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
 			};
 			row.appendChild(input);
 			if (varName in COLOR_CONTRAST_PAIRS) {

@@ -1,6 +1,6 @@
 /datum/language/corpspeak
 	name = "Corpspeak"
-	desc = "NT corporative language to allow communication between employees, can be learned only by special nanorobots insertion."
+	desc = "Корпоративный язык NT для связи между сотрудниками, выучить его можно только с помощью введения специальных нанороботов."
 	key = "_"
 	default_priority = 0
 	flags =  LANGUAGE_HIDE_ICON_IF_NOT_UNDERSTOOD // TONGUELESS_SPEECH bluemoon change

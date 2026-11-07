@@ -61,6 +61,7 @@
 		/datum/language/drone, // BLUEMOON ADD - язык дронов
 		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров
 		/datum/language/rootsong, // BLUEMOON ADD - язык дион
+		/datum/language/marish, // BLUEMOON ADD - язык шейдкинов
 	))
 	healing_factor = STANDARD_ORGAN_HEALING*5 //Fast!!
 	decay_factor = STANDARD_ORGAN_DECAY/2
