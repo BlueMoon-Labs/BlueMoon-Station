@@ -1,41 +1,51 @@
-// Экраны станционных терминалов NT: окна открывают постоянно, поэтому текст обычным шрифтом, спокойный фон
-// и приглушённые цвета; цвет устройства - только на имени устройства, активной вкладке и главной кнопке.
+@use 'sass:color';
 
-$nt-bg: #0b0e12;
-$nt-panel: #10151b;
-$nt-text: #c9d3df;
-$nt-dim: #74818f;
-$nt-faint: #27303a;
-$nt-good: #8cbf96;
-$nt-bad: #d4867c;
-$nt-warn: #d2b46a;
+// Экраны станционных терминалов NT: окна открывают постоянно, поэтому текст обычным шрифтом и спокойный фон.
+// Экран слегка окрашен в цвет устройства (фон, шапка, рамки, кнопки), яркий цвет - на имени, вкладке и главной кнопке.
+
+$nt-base: #0c0f13;
+$nt-text: #d3dae2;
+$nt-dim: #8a95a2;
+$nt-good: #7cc98d;
+$nt-bad: #e3806f;
+$nt-warn: #e0b95c;
 $nt-mono: Consolas, 'Lucida Console', 'Courier New', monospace;
 
+$nt-bg: var(--nt-bg);
+$nt-panel: var(--nt-panel);
+$nt-faint: var(--nt-faint);
+
 $nt-tones: (
-  supply: #c99a6e,
-  exchange: #84b598,
-  contracts: #8aa6c6,
-  register: #82b2a8,
-  medical: #7fb0bd,
-  engineering: #c4ad72,
-  security: #c48a86,
-  science: #a395c4,
-  service: #8db58f,
-  civil: #a2adbb,
-  command: #8d9dc4,
+  supply: #e0975c,
+  exchange: #68c793,
+  contracts: #7eaee6,
+  register: #6cc9b4,
+  medical: #68c0d4,
+  engineering: #dbba5c,
+  security: #e07c78,
+  science: #aa92e2,
+  service: #82c690,
+  civil: #a8b8cc,
+  command: #88a2e2,
 );
 
 @each $tone, $color in $nt-tones {
   .NtTerm--#{$tone} {
     --nt-accent: #{$color};
-    --nt-accent-rgb: #{red($color)}, #{green($color)}, #{blue($color)};
-    --nt-accent-line: #{rgba($color, 0.4)};
+    --nt-accent-rgb: #{color.channel($color, 'red', $space: rgb)}, #{color.channel($color, 'green', $space: rgb)}, #{color.channel($color, 'blue', $space: rgb)};
+    --nt-accent-line: #{rgba($color, 0.45)};
+    --nt-bg: #{color.mix($color, $nt-base, 6%)};
+    --nt-panel: #{color.mix($color, #11161c, 10%)};
+    --nt-head: #{color.mix($color, $nt-base, 14%)};
+    --nt-faint: #{color.mix($color, #252d36, 20%)};
+    --nt-button: #{color.mix($color, #19212a, 16%)};
+    --nt-button-hover: #{color.mix($color, #1f2832, 30%)};
   }
-}
 
-.Window:has(.NtTerm) .TitleBar {
-  background-color: #0e1318;
-  border-bottom: 1px solid $nt-faint;
+  .Window:has(.NtTerm--#{$tone}) .TitleBar {
+    background-color: color.mix($color, $nt-base, 10%);
+    border-bottom: 1px solid color.mix($color, #252d36, 20%);
+  }
 }
 
 .Window:has(.NtTerm) .Window__contentPadding {
@@ -105,6 +115,7 @@ $nt-tones: (
     align-items: flex-end;
     gap: 16px;
     padding: 12px 14px 10px;
+    background-color: var(--nt-head);
   }
 
   &__brand {
@@ -169,8 +180,8 @@ $nt-tones: (
     flex-wrap: wrap;
     gap: 0 4px;
     padding: 0 10px;
-    border-top: 1px solid $nt-faint;
-    border-bottom: 1px solid $nt-faint;
+    background-color: var(--nt-head);
+    border-bottom: 1px solid var(--nt-accent-line);
   }
 
   &__menuItem {
@@ -219,7 +230,7 @@ $nt-tones: (
     padding: 0 5px;
     font-size: 11px;
     color: $nt-text;
-    background-color: $nt-faint;
+    background-color: rgba(var(--nt-accent-rgb), 0.22);
     border-radius: 7px;
   }
 
@@ -240,7 +251,7 @@ $nt-tones: (
 
   &__chartLine {
     fill: none;
-    stroke-width: 1.5;
+    stroke-width: 2;
   }
 
   &__chart--up &__chartLine {
@@ -252,11 +263,11 @@ $nt-tones: (
   }
 
   &__chart--up &__chartFill {
-    fill: rgba($nt-good, 0.06);
+    fill: rgba($nt-good, 0.1);
   }
 
   &__chart--down &__chartFill {
-    fill: rgba($nt-bad, 0.06);
+    fill: rgba($nt-bad, 0.1);
   }
 
   &__chartBase {
@@ -331,7 +342,7 @@ $nt-tones: (
 
   &__tile--selected,
   &__tile--selected:hover {
-    border-color: $nt-text;
+    border-color: var(--nt-accent);
   }
 
   &__tile--held::after {
@@ -391,12 +402,12 @@ $nt-tones: (
   }
 
   &__contract:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(var(--nt-accent-rgb), 0.05);
   }
 
   &__contract--mine {
-    border-left: 2px solid var(--nt-accent-line);
-    background-color: rgba(255, 255, 255, 0.03);
+    border-left: 2px solid var(--nt-accent);
+    background-color: rgba(var(--nt-accent-rgb), 0.07);
   }
 
   &__contractMain {
@@ -443,7 +454,7 @@ $nt-tones: (
   &__barFill {
     display: block;
     height: 100%;
-    background-color: $nt-dim;
+    background-color: var(--nt-accent);
     transition: width 0.6s ease-out;
   }
 
@@ -505,13 +516,14 @@ $nt-tones: (
 
   &__frameTitle {
     font-weight: bold;
+    color: var(--nt-accent);
   }
 
   &__frame--minor {
     margin-bottom: 12px;
     padding: 8px 10px 6px;
     border: 1px solid $nt-faint;
-    background-color: rgba(255, 255, 255, 0.012);
+    background-color: $nt-panel;
   }
 
   &__frame--minor &__frameTitle {
@@ -525,7 +537,8 @@ $nt-tones: (
   &__frameRule {
     flex: 1;
     height: 1px;
-    background-color: $nt-faint;
+    background-color: var(--nt-accent-line);
+    opacity: 0.6;
   }
 
   &__frameBody {
@@ -620,17 +633,17 @@ $nt-tones: (
   }
 
   &__row:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: rgba(var(--nt-accent-rgb), 0.06);
   }
 
   &__row--open {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(var(--nt-accent-rgb), 0.09);
   }
 
   &__detail {
     margin: 2px 0 10px 18px;
     padding: 8px 12px;
-    border-left: 2px solid $nt-faint;
+    border-left: 2px solid var(--nt-accent-line);
     background-color: $nt-panel;
   }
 
@@ -687,35 +700,35 @@ body .NtTerm {
   // Кнопки серые; главная команда (good, selected) - в цвете экрана, опасная - красноватая
   .Button {
     color: $nt-text;
-    background-color: #1a222b;
-    border: 1px solid #2b3540;
+    background-color: var(--nt-button);
+    border: 1px solid $nt-faint;
     border-radius: 2px;
     transition: none;
   }
 
   .Button:hover,
   .Button:focus {
-    color: #e6ecf2;
-    background-color: #24303b;
+    color: #eef2f6;
+    background-color: var(--nt-button-hover);
   }
 
   .Button--selected,
   .Button--color--good {
-    color: #e6ecf2;
-    background-color: rgba(var(--nt-accent-rgb), 0.28);
-    border-color: var(--nt-accent-line);
+    color: #f2f5f8;
+    background-color: rgba(var(--nt-accent-rgb), 0.38);
+    border-color: var(--nt-accent);
   }
 
   .Button--selected:hover,
   .Button--selected:focus,
   .Button--color--good:hover,
   .Button--color--good:focus {
-    background-color: rgba(var(--nt-accent-rgb), 0.4);
+    background-color: rgba(var(--nt-accent-rgb), 0.52);
   }
 
   .Button--color--bad {
     color: $nt-bad;
-    background-color: #1a222b;
+    background-color: var(--nt-button);
   }
 
   .Button--color--bad:hover,
@@ -736,8 +749,8 @@ body .NtTerm {
 
   .Button.Button--disabled,
   .Button.Button--disabled:hover {
-    color: #4a5562 !important;
-    background-color: #141a20 !important;
+    color: #56616d !important;
+    background-color: $nt-panel !important;
     border-color: $nt-faint !important;
   }
 
@@ -750,7 +763,7 @@ body .NtTerm {
 
   .Input--focused,
   .Input:focus-within {
-    border-color: $nt-dim;
+    border-color: var(--nt-accent-line);
   }
 
   .Table__row--header .Table__cell {
@@ -782,7 +795,7 @@ body .NtTerm {
   }
 
   .ProgressBar__fill {
-    background-color: rgba(var(--nt-accent-rgb), 0.25) !important;
+    background-color: rgba(var(--nt-accent-rgb), 0.55) !important;
   }
 
   .NoticeBox {
@@ -791,7 +804,7 @@ body .NtTerm {
     color: $nt-text;
     background-color: $nt-panel;
     background-image: none;
-    border-left: 2px solid $nt-dim;
+    border-left: 2px solid var(--nt-accent);
   }
 
   .NoticeBox--type--danger {
