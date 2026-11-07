@@ -196,9 +196,7 @@
 				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(href_list["photo_front"] || href_list["photo_side"])
 					if(R)
-						if(!H.canUseHUD())
-							return
-						else if(!istype(H.glasses, /obj/item/clothing/glasses/hud) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/medical))
+						if(!H.canUseHUD() || !(has_medical_examine_hud(H) || hasHUD(H, DATA_HUD_SECURITY_ADVANCED)))
 							return
 						// Клик по ссылке в ХУД-осмотре - такой же первый просмотр записи, как карточка.
 						var/obj/item/photo/P = null
@@ -215,7 +213,7 @@
 						// Checks the user has security clearence before allowing them to change arrest status via hud, comment out to enable all access
 						var/allowed_access = null
 						var/obj/item/clothing/glasses/G = H.glasses
-						if (!(G.obj_flags & EMAGGED))
+						if (!(G?.obj_flags & EMAGGED))
 							if(H.wear_id)
 								var/list/access = H.wear_id.GetAccess()
 								if(ACCESS_SEC_DOORS in access)
@@ -223,7 +221,7 @@
 						else
 							allowed_access = "@%&ERROR_%$*"
 						if(!allowed_access)
-							to_chat(H, "<span class='warning'>ERROR: Invalid Access</span>")
+							to_chat(H, span_warning("ОШИБКА: в доступе отказано"))
 							return
 						if(perpname)
 							R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
@@ -232,7 +230,7 @@
 									if(R.locked_security_reason)
 										to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
 										return
-									var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
+									var/setcriminal = input(usr, "Уточните новый статус данной личности.", "СБ-HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
 									if(setcriminal != "Отмена")
 										if(R)
 											if(H.canUseHUD())
@@ -251,27 +249,21 @@
 											return
 										else if(!istype(H.glasses, /obj/item/clothing/glasses/hud/security) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
 											return
-										to_chat(usr, "<b>Name:</b> [R.fields["name"]]	<b>Criminal Status:</b> [R.fields["criminal"]]")
-										to_chat(usr, "<b>Minor Crimes:</b>")
+										var/list/minor_entries = list()
 										for(var/datum/data/crime/c in R.fields["mi_crim"])
-											to_chat(usr, "<b>Crime:</b> [c.crimeName]")
-											to_chat(usr, "<b>Details:</b> [c.crimeDetails]")
-											to_chat(usr, "Added by [c.author] at [c.time]")
-											to_chat(usr, "----------")
-										to_chat(usr, "<b>Major Crimes:</b>")
+											minor_entries += "<b>[c.crimeName]</b><br>[c.crimeDetails]<br><span class='examine_meta'>Добавившее лицо: [c.author]. Время: [c.time]</span>"
+										var/list/major_entries = list()
 										for(var/datum/data/crime/c in R.fields["ma_crim"])
-											to_chat(usr, "<b>Crime:</b> [c.crimeName]")
-											to_chat(usr, "<b>Details:</b> [c.crimeDetails]")
-											to_chat(usr, "Added by [c.author] at [c.time]")
-											to_chat(usr, "----------")
-										to_chat(usr, "<b>Notes:</b> [R.fields["notes"]]")
+											major_entries += "<b>[c.crimeName]</b><br>[c.crimeDetails]<br><span class='examine_meta'>Добавившее лицо: [c.author]. Время: [c.time]</span>"
+										var/list/sec_rows = list("Статус" = R.fields["criminal"], "Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+										to_chat(usr, examine_box("Записи СБ: [R.fields["name"]]", examine_table(sec_rows) + examine_box("Малые правонарушения", examine_entries(minor_entries, "Нет записей."), FALSE) + examine_box("Крупные правонарушения", examine_entries(major_entries, "Нет записей."), FALSE)))
 									return
 								if(href_list["add_crime"])
-									switch(alert("What crime would you like to add?","Security HUD","Minor Crime","Major Crime","Cancel"))
-										if("Minor Crime")
+									switch(alert("Какое правонарушение будет добавлено?","HUD, СБ","Малое","Крупное","Отмена"))
+										if("Малое")
 											if(R)
-												var/t1 = stripped_input("Please input minor crime names:", "Security HUD", "", null)
-												var/t2 = stripped_multiline_input("Please input minor crime details:", "Security HUD", "", null)
+												var/t1 = stripped_input("Введите номер малого правонарушения:", "HUD, СБ", "", null)
+												var/t2 = stripped_multiline_input("Введите детали преступления:", "HUD, СБ", "", null)
 												if(R)
 													if (!t1 || !t2 || !allowed_access)
 														return
@@ -282,12 +274,12 @@
 													var/crime = GLOB.data_core.createCrimeEntry(t1, t2, allowed_access, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time))
 													GLOB.data_core.addMinorCrime(R.fields["id"], crime)
 													investigate_log("New Minor Crime: <strong>[t1]</strong>: [t2] | Added to [R.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
-													to_chat(usr, "<span class='notice'>Successfully added a minor crime.</span>")
+													to_chat(usr, span_notice("Малое правонарушение успешно записано."))
 													return
-										if("Major Crime")
+										if("Крупное")
 											if(R)
-												var/t1 = stripped_input("Please input major crime names:", "Security HUD", "", null)
-												var/t2 = stripped_multiline_input("Please input major crime details:", "Security HUD", "", null)
+												var/t1 = stripped_input("Введите номер крупного правонарушения:", "HUD, СБ", "", null)
+												var/t2 = stripped_multiline_input("Введите детали преступления:", "HUD, СБ", "", null)
 												if(R)
 													if (!t1 || !t2 || !allowed_access)
 														return
@@ -298,7 +290,7 @@
 													var/crime = GLOB.data_core.createCrimeEntry(t1, t2, allowed_access, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time))
 													GLOB.data_core.addMajorCrime(R.fields["id"], crime)
 													investigate_log("New Major Crime: <strong>[t1]</strong>: [t2] | Added to [R.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
-													to_chat(usr, "<span class='notice'>Successfully added a major crime.</span>")
+													to_chat(usr, span_notice("Крупное правонарушение успешно записано."))
 									return
 								if(href_list["view_comment"])
 									if(R)
@@ -306,16 +298,16 @@
 											return
 										else if(!istype(H.glasses, /obj/item/clothing/glasses/hud/security) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
 											return
-										to_chat(usr, "<b>Comments/Log:</b>")
+										var/list/comment_entries = list()
 										var/counter = 1
 										while(R.fields[text("com_[]", counter)])
-											to_chat(usr, R.fields[text("com_[]", counter)])
-											to_chat(usr, "----------")
+											comment_entries += R.fields[text("com_[]", counter)]
 											counter++
+										to_chat(usr, examine_box("Комментарии СБ: [R.fields["name"]]", examine_entries(comment_entries, "Комментариев нет.")))
 										return
 								if(href_list["add_comment"])
 									if(R)
-										var/t1 = stripped_multiline_input("Add Comment:", "Secure. records", null, null)
+										var/t1 = stripped_multiline_input("Добавить комментарий:", "Записи Службы Безопасности", null, null)
 										if(R)
 											if (!t1 || !allowed_access)
 												return
@@ -326,10 +318,10 @@
 											var/counter = 1
 											while(R.fields[text("com_[]", counter)])
 												counter++
-											R.fields["com_[counter]"] = "Made by [allowed_access] on [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] [time2text(world.realtime, "MMM DD")], [GLOB.year_integer]<BR>[t1]"
-											to_chat(usr, "<span class='notice'>Successfully added comment.</span>")
+											R.fields["com_[counter]"] = "Добавившее лицо: [allowed_access]. Время: [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] [time2text(world.realtime, "MMM DD")], [GLOB.year_integer]<BR>[t1]"
+											to_chat(usr, span_notice("Комментарий добавлен."))
 											return
-							to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+							to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
 
 	if(href_list["medical"])
 		if(is_antag_training_atom(src))
@@ -337,25 +329,31 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/modified = 0
-			var/perpname = get_visible_name(TRUE)
+			// Одна запись по имени: ровно та, что показал осмотр. Раньше циклы по всему data_core спрашивали статус для каждого дубликата записи.
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/med_choices = GLOB.med_record_status_ph + list("Отменить")
+			var/setmedical = input(usr, "Уточните новый статус пациента", "Мед-HUD", R.fields["p_stat"]) in med_choices
+			if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC) && !usr.incapacitated() && setmedical != "Отменить")
+				R.fields["p_stat"] = setmedical
+				sec_hud_set_security_status()
 
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.general)
-						if(R.fields["id"] == E.fields["id"])
-							var/setmedical = input(usr, "Specify a new medical status for this person.", "Medical HUD", R.fields["p_stat"]) in list("Идеальное Здоровье", "*Космическое Расстройство Сна (ССД)*", "*Мёртв*", "Физически Непригодный", "Инвалид", "Присматривать", "Нестабильный", "Безумный", "Отменить")
-
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								if(setmedical != "Отменить")
-									R.fields["p_stat"] = setmedical
-									modified = 1
-
-									spawn()
-										sec_hud_set_security_status()
-
-			if(!modified)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+	if(href_list["medical_mental"])
+		if(is_antag_training_atom(src))
+			return
+		if(has_medical_examine_hud(usr))
+			if(usr.incapacitated())
+				return
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/med_choices = GLOB.med_record_status_m + list("Отменить")
+			var/setmental = input(usr, "Уточните псих. статус данной личности.", "Мед-HUD", R.fields["m_stat"]) in med_choices
+			if(has_medical_examine_hud(usr) && !usr.incapacitated() && setmental != "Отменить")
+				R.fields["m_stat"] = setmental
 
 	if(href_list["medrecord"])
 		if(is_antag_training_atom(src))
@@ -363,26 +361,18 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/read = 0
-			var/perpname = get_visible_name(TRUE)
-
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.medical)
-						if(R.fields["id"] == E.fields["id"])
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								to_chat(usr, "<b>Name:</b> [R.fields["name"]]	<b>Blood Type:</b> [R.fields["b_type"]]")
-								to_chat(usr, "<b>DNA:</b> [R.fields["b_dna"]]")
-								to_chat(usr, "<b>Minor Disabilities:</b> [R.fields["mi_dis"]]")
-								to_chat(usr, "<b>Details:</b> [R.fields["mi_dis_d"]]")
-								to_chat(usr, "<b>Major Disabilities:</b> [R.fields["ma_dis"]]")
-								to_chat(usr, "<b>Details:</b> [R.fields["ma_dis_d"]]")
-								to_chat(usr, "<b>Notes:</b> [R.fields["notes"]]")
-								to_chat(usr, "<a href='?src=[UID()];medrecordComment=`'>\[View Comment Log\]</a>")
-								read = 1
-
-			if(!read)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.medical_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/record_rows = list(
+				"Имя" = R.fields["name"],
+				"Группа крови" = R.fields["blood_type"],
+				"ДНК" = R.fields["b_dna"],
+				"Незнач. ограничения" = "[R.fields["mi_dis"]]<br><span class='examine_meta'>[R.fields["mi_dis_d"]]</span>",
+				"Серьёзные ограничения" = "[R.fields["ma_dis"]]<br><span class='examine_meta'>[R.fields["ma_dis_d"]]</span>",
+				"Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+			to_chat(usr, examine_box("Медицинская запись", "<div class='examine_medical_record'>[examine_table(record_rows)]</div><div class='examine_record_actions'><a href='?src=[UID()];medrecordComment=`'>\[Просмотреть комментарии\]</a></div>"))
 
 	if(href_list["medrecordComment"])
 		if(is_antag_training_atom(src))
@@ -390,29 +380,20 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/perpname = get_visible_name(TRUE)
-			var/read = FALSE
-
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.medical)
-						if(R.fields["id"] == E.fields["id"])
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								read = TRUE
-								if(LAZYLEN(R.fields["comments"]))
-									for(var/c in R.fields["comments"])
-										to_chat(usr, c)
-								else
-									to_chat(usr, "<span class='warning'>No comment found</span>")
-								to_chat(usr, "<a href='?src=[UID()];medrecordadd=`'>\[Add comment\]</a>")
-
-			if(!read)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.medical_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/comment_entries = list()
+			if(LAZYLEN(R.fields["comments"]))
+				for(var/c in R.fields["comments"])
+					comment_entries += c
+			to_chat(usr, examine_box("Медицинские комментарии", examine_entries(comment_entries, "Комментарии не найдены") + "<div class='examine_record_actions'><a href='?src=[UID()];medrecordadd=`'>\[Добавить комментарий\]</a></div>"))
 
 	if(href_list["medrecordadd"])
 		if(usr.incapacitated() || !hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			return
-		var/raw_input = input("Add Comment:", "Medical records", null, null) as message
+		var/raw_input = input("Добавить комментарий:", "Медицинские записи", null, null) as message
 		var/sanitized = copytext(trim(sanitize(raw_input)), 1, MAX_MESSAGE_LEN)
 		if(!sanitized || usr.stat || usr.restrained() || !hasHUD(usr,  DATA_HUD_MEDICAL_BASIC))
 			return
@@ -425,7 +406,17 @@
 		if(I.loc in view(4))
 			examinate(I)
 		else
-			to_chat(usr, "<span class='warning'>You need to get closer to examine that!</span>")
+			to_chat(usr, span_warning("Вам нужно подойти ближе, чтобы осмотреть!"))
+
+	if(href_list["examine_traits"])
+		examine_traits_topic(usr, href_list["examine_traits"])
+		return
+	if(href_list["examine_accessories"])
+		examine_accessories_topic(usr)
+		return
+	if(href_list["examine_accessory"])
+		examine_accessories_topic(usr, href_list["examine_accessory"])
+		return
 
 /mob/living/carbon/human/proc/canUseHUD()
 	return CHECK_MOBILITY(src, MOBILITY_UI)
@@ -548,7 +539,7 @@
 
 	//Check for ID
 	var/obj/item/card/id/idcard = get_idcard(FALSE)
-	if( (judgement_criteria & JUDGE_IDCHECK) && !idcard && name=="Unknown")
+	if((judgement_criteria & JUDGE_IDCHECK) && !idcard && (name in list("Unknown", "Неизвестный")))
 		threatcount += 4
 
 	//Check for weapons
