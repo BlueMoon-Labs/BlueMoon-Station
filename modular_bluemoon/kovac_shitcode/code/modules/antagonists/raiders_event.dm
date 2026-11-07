@@ -31,7 +31,6 @@
 /datum/round_event/raiders/proc/send_raider_threat()
 	var/datum/comm_message/threat_msg = new
 	var/payoff = 0
-	var/payoff_min = 25000 //documented this time
 	var/ship_template
 	var/ship_name = "Admiral Brown's fleet battlecruiser"
 	var/initial_send_time = world.time
@@ -43,12 +42,8 @@
 	ship_template = /datum/map_template/shuttle/inteq_collosus
 	threat_msg.title = "Сомнительное Заявление"
 	threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(D)
-		payoff = max(payoff_min, FLOOR(D.account_balance * 0.9, 1000))
-	else
-		payoff = payoff_min
-	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию. Пять минут на размышление, больше не дам."
+	payoff = econ_ransom_demand(ECON_RAIDERS_RANSOM_MIN, ECON_RAIDERS_RANSOM_SHARE)
+	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов из казны станции, и чтобы на момент ответа они там были, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию. Пять минут на размышление, больше не дам."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
@@ -60,8 +55,7 @@
 		spawn_raiders(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
-		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D && D.adjust_money(-payoff))
+		if(pirates_pay_ransom(payoff, ship_name))
 			resolve_threat_peacefully()
 			priority_announce("Удачного дня, рабы пакта.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")

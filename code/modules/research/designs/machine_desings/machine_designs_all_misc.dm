@@ -55,7 +55,7 @@
 
 /datum/design/board/vendor
 	name = "Machine Design (Vendor Board)"
-	desc = "The circuit board for a Vendor. Use a screwdriver to turn the \"brand selection\" dial."
+	desc = "Плата автомата продаж, марка выбирается отвёрткой. Собранный кастомный автомат бесплатно привязывается к первому, кто проведёт по нему ID-картой с личным счётом. Платная аренда только у прилавков, стоящих на станции с начала смены."
 	id = "vendor"
 	build_type = AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor

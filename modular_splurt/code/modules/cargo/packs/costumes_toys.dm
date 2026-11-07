@@ -30,7 +30,7 @@
 			/obj/item/clothing/neck/cloak/teshari/standard/rainbow,
 			/obj/item/clothing/neck/cloak/teshari/standard/orange
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_b_vr
 	name = "Teshari cloaks (black)"
@@ -49,7 +49,7 @@
 			/obj/item/clothing/neck/cloak/teshari/standard/black_glow,
 			/obj/item/clothing/neck/cloak/teshari/standard/dark_retrowave
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_vr
 	name = "Teshari cloaks (belted)"
@@ -67,7 +67,7 @@
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/pink_grey,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/brown_grey
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_b_vr
 	name = "Teshari cloaks (belted, black)"
@@ -87,7 +87,7 @@
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_pink,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_brown
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_vr
 	name = "Teshari cloaks (hooded)"
@@ -104,7 +104,7 @@
 			/obj/item/clothing/suit/hooded/teshari/standard/pink_grey,
 			/obj/item/clothing/suit/hooded/teshari/standard/brown_grey
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_b_vr
 	name = "Teshari cloaks (hooded, black)"
@@ -124,4 +124,4 @@
 			/obj/item/clothing/suit/hooded/teshari/standard/black_pink,
 			/obj/item/clothing/suit/hooded/teshari/standard/black_brown
 			)
-	cost = 40
+	cost = 700

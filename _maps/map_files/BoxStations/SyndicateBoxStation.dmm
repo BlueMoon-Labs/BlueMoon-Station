@@ -3229,6 +3229,7 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 10
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "akP" = (
@@ -12601,6 +12602,7 @@
 /obj/effect/turf_decal/tile/neutral/half,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
+/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "aSf" = (
@@ -12618,6 +12620,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/mid_joiner{
 	dir = 4
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "aSg" = (
@@ -18943,6 +18946,14 @@
 /obj/effect/turf_decal/tile/blue/anticorner{
 	dir = 4
 	},
+/obj/item/folder/white{
+	pixel_x = -6;
+	pixel_y = -3
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = -4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "blk" = (
@@ -23383,6 +23394,7 @@
 	dir = 8;
 	pixel_x = 24
 	},
+/obj/item/kirbyplants/dead,
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/rd)
 "byc" = (
@@ -24872,7 +24884,9 @@
 /obj/machinery/light_switch{
 	pixel_y = -23
 	},
-/obj/item/kirbyplants/dead,
+/obj/machinery/computer/department_budget/science{
+	dir = 1
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/rd)
 "bCg" = (
@@ -33008,6 +33022,9 @@
 /obj/structure/noticeboard{
 	dir = 1;
 	pixel_y = -27
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/break_room)
@@ -46200,6 +46217,9 @@
 	pixel_x = -27;
 	pixel_y = 1
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/cmo)
 "eSJ" = (
@@ -50251,6 +50271,9 @@
 	id = "hopflash";
 	pixel_y = 28
 	},
+/obj/machinery/cash_register{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/hop)
 "gXD" = (
@@ -51566,6 +51589,12 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/private_investigators_office/investigators_room)
+"hEf" = (
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/bar)
 "hEE" = (
 /obj/effect/turf_decal/siding/dark_red/corner,
 /obj/effect/turf_decal/siding/dark_red/corner{
@@ -53957,6 +53986,16 @@
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/command/heads_quarters/ntr)
+"iQV" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/engine_smes)
 "iQY" = (
 /obj/structure/table/wood/mushroom,
 /obj/machinery/light{
@@ -63559,6 +63598,9 @@
 /obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
+/obj/structure/sign/ticker_board{
+	pixel_y = 32
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/starboard)
 "nIN" = (
@@ -64359,6 +64401,19 @@
 /obj/effect/turf_decal/siding/thinplating/dark,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"ofl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark_red{
+	dir = 1
+	},
+/obj/machinery/computer/department_budget/security,
+/turf/open/floor/mineral/plastitanium,
+/area/security/office)
 "ogf" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
@@ -72987,6 +73042,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 24
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/office)
 "sCA" = (
@@ -74664,13 +74720,11 @@
 /area/maintenance/aft)
 "tCd" = (
 /obj/structure/table/reinforced/plastitanium,
-/obj/item/folder/white,
-/obj/item/pen,
-/obj/item/reagent_containers/glass/bottle/epinephrine,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
 	},
+/obj/machinery/cash_register/clinic,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "tCs" = (
@@ -79656,6 +79710,10 @@
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
 	},
+/obj/item/reagent_containers/glass/bottle/epinephrine{
+	pixel_x = 8;
+	pixel_y = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "wbO" = (
@@ -79955,6 +80013,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
+"wiF" = (
+/obj/structure/table/reinforced/plastitanium,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/kitchen)
 "wiR" = (
 /obj/effect/landmark/event_spawn,
 /obj/structure/loot_pile/maint,
@@ -80046,6 +80115,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
+"wmL" = (
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/cash_register/bar{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/service/bar)
 "wmM" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/cafeteria,
@@ -81443,6 +81523,13 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/maintenance/starboard/aft)
+"wYw" = (
+/obj/effect/turf_decal/tile/brown/half,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/cargo/qm)
 "wZi" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner{
 	dir = 1
@@ -83523,6 +83610,12 @@
 /obj/machinery/status_display/evac,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/hallway/primary/central)
+"yeD" = (
+/obj/machinery/computer/department_budget{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/command/heads_quarters/captain)
 "yfo" = (
 /obj/structure/window{
 	dir = 1
@@ -103725,7 +103818,7 @@ dEB
 mbQ
 bBb
 qQd
-maZ
+wYw
 boK
 kPY
 buC
@@ -106850,7 +106943,7 @@ bUs
 bLv
 aaa
 aDM
-cky
+iQV
 clG
 cmB
 clG
@@ -114708,7 +114801,7 @@ ufE
 dcm
 uro
 lwN
-xCi
+ofl
 sdC
 sFu
 sFu
@@ -115023,7 +115116,7 @@ nbT
 bnY
 baq
 oos
-bcQ
+yeD
 bcQ
 bfC
 eOu
@@ -119898,7 +119991,7 @@ aJC
 qDn
 sFd
 oaq
-dYs
+wmL
 dsg
 aXk
 oud
@@ -120150,7 +120243,7 @@ aGJ
 aJC
 kks
 gAb
-aXk
+hEf
 gMR
 iuq
 fBI
@@ -122725,7 +122818,7 @@ aRC
 aMF
 aRF
 fvv
-aSO
+wiF
 aVD
 xpN
 jVm

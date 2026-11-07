@@ -595,7 +595,7 @@
 
 /obj/item/circuitboard/machine/vendor
 	name = "Custom Vendor (Machine Board)"
-	desc = "You can turn the \"brand selection\" dial using a screwdriver."
+	desc = "Отвёрткой выбирается марка автомата. Собранный кастомный автомат бесплатно привязывается к первому, кто проведёт по нему ID-картой с личным счётом. Платная аренда только у прилавков, стоящих на станции с начала смены."
 	custom_premium_price = PAYCHECK_ASSISTANT * 1.5
 	build_path = /obj/machinery/vending/custom
 	req_components = list(/obj/item/vending_refill/custom = 1)
@@ -702,7 +702,7 @@
 		/obj/item/vending_refill/wardrobe/syndie_wardrobe/civil = 1)
 
 /obj/item/circuitboard/machine/bountypad
-	name = "Civilian Bounty Pad (Machine Board)"
+	name = "Contract Pad (Machine Board)"
 	icon_state = "generic"
 	build_path = /obj/machinery/piratepad/civilian
 	req_components = list(

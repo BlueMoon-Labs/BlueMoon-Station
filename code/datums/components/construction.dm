@@ -81,6 +81,7 @@
 			if(ITEM_DELETE)
 				. = istype(I.loc, /obj/item/storage/part_replacer) ? I.remove_item_from_storage(parent) : user.transferItemToLoc(I, parent)
 				if(.)
+					econ_add_part_value(parent, I)
 					qdel(I)
 
 			if(ITEM_MOVE_INSIDE)
@@ -88,7 +89,12 @@
 
 			// Using stacks
 			else if(istype(I, /obj/item/stack))
+				var/obj/item/stack/used_stack = I
+				var/used_share = current_step["amount"] / max(used_stack.amount, 1)
+				var/list/used_value = econ_value_list(used_stack)
 				. = I.use_tool(parent, user, 0, volume=50, amount=current_step["amount"])
+				if(.)
+					econ_add_assembly_value(parent, used_value, used_share)
 
 
 	// Going backwards? Undo the last action. Drop/respawn the items used in last action, if any.

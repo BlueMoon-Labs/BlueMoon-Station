@@ -361,25 +361,25 @@
 		QDEL_NULL(SSorbits.current_objective)
 		return
 	completed = TRUE
-	//Handle payout
-	var/rangers_count = 0
-	for(var/I in SSjob.occupations)
-		var/datum/job/J = I
-		if(istype(J, /datum/job/expeditor))
-			rangers_count = J.current_positions
-
-	var/israel = 0
-	if(rangers_count)
-		israel = round((payout / 2) / rangers_count)
-	var/goyam  = round((payout / 2) / max(SSeconomy.generated_accounts.len, 1))
-	for(var/B in SSeconomy.bank_accounts_by_id)
-		var/datum/bank_account/A = SSeconomy.bank_accounts_by_id[B]
-		if(istype(A.account_job, /datum/job/expeditor))
-			A.bank_card_talk("Было получено [israel] кредитов за выполнение задания.")
-			A.adjust_money(israel)
+	var/list/datum/bank_account/ranger_accounts = list()
+	var/list/datum/bank_account/crew_accounts = list()
+	for(var/datum/bank_account/payee_account as anything in SSeconomy.bank_accounts)
+		if(payee_account.offstation || payee_account.state != ACCOUNT_ACTIVE || !payee_account.owner_ref)
+			continue
+		if(istype(payee_account, /datum/bank_account/department) || istype(payee_account, /datum/bank_account/system))
+			continue
+		if(istype(payee_account.account_job, /datum/job/expeditor))
+			ranger_accounts += payee_account
 		else
-			A.bank_card_talk("Было получено [goyam] кредитов за содействие выполнению поручений NanoTrasen.")
-			A.adjust_money(goyam)
+			crew_accounts += payee_account
+	var/ranger_share = length(ranger_accounts) ? round((payout / 2) / length(ranger_accounts)) : 0
+	for(var/datum/bank_account/payee_account as anything in ranger_accounts)
+		if(payee_account.credit(ranger_share, ECON_CONTRACT, memo = "Орбитальное задание"))
+			payee_account.bank_card_talk("Было получено [ranger_share] кредитов за выполнение задания.")
+	var/crew_share = length(crew_accounts) ? round((payout / 2) / length(crew_accounts)) : 0
+	for(var/datum/bank_account/payee_account as anything in crew_accounts)
+		if(payee_account.credit(crew_share, ECON_CONTRACT, memo = "Содействие орбитальному заданию"))
+			payee_account.bank_card_talk("Было получено [crew_share] кредитов за содействие выполнению поручений NanoTrasen.")
 	//WHITE-STEEL PORT: очки задания. Половина пула начисляется на общий счёт карго,
 	//каждый действующий авангард дополнительно получает В ДВА раза больше очков на свой ID.
 	var/cargo_share = round(payout / 2)
@@ -414,6 +414,6 @@
 	var/datum/bank_account/department/cargo_dep = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(cargo_dep)
 		var/cargo_money = round(payout * 1.5)
-		cargo_dep.adjust_money(cargo_money)
+		cargo_dep.credit(cargo_money, ECON_CONTRACT, memo = "Орбитальное задание")
 	//Delete
 	QDEL_NULL(SSorbits.current_objective)

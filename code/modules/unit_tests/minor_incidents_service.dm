@@ -81,7 +81,7 @@
 	return null
 
 /datum/unit_test/minor_incidents_service/proc/reset_budget(datum/bank_account/budget, balance)
-	budget._adjust_money(balance - budget.account_balance)
+	econ_test_set_balance(budget, balance)
 
 /// Без подходящего отсека событие отсеивается до траты бюджета директора и называет причину.
 /datum/unit_test/minor_incidents_service/proc/check_preflight()

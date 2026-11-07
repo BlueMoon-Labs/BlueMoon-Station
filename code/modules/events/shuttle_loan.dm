@@ -73,8 +73,7 @@
 
 	dispatched = 1
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(D)
-		D.adjust_money(bonus_points)
+	D?.credit(bonus_points, ECON_EVENT, memo = "Аренда грузового шаттла")
 	end_when = activeFor + 1
 
 	SSshuttle.supply.mode = SHUTTLE_CALL

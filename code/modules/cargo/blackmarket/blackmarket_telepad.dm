@@ -63,7 +63,7 @@
 	if(recieving)
 		var/datum/blackmarket_purchase/P = recieving
 		if(!P.item || ispath(P.item))
-			P.item = P.entry.spawn_item(T)
+			P.item = P.deliver(T)
 		else
 			var/atom/movable/M = P.item
 			M.forceMove(T)

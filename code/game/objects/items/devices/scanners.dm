@@ -119,6 +119,8 @@ GENETICS SCANNER
 		. += span_notice("Сохранён отчёт от [last_scan_time]. Используйте анализатор в руке, чтобы открыть его.")
 	if(advanced)
 		. += span_notice("Сканер был улучшен и может проводить более глубокий анализ.")
+	if(offers_discharge)
+		. += econ_discharge_examine()
 
 
 /obj/item/healthanalyzer/AltClick(mob/user)
@@ -196,7 +198,7 @@ GENETICS SCANNER
 		report = "[print_header]<br>[report]"
 	return report
 
-/obj/item/healthanalyzer/proc/store_scan(mob/user, list/data)
+/obj/item/healthanalyzer/proc/store_scan(mob/user, list/data, mob/living/patient)
 	scan_number++
 	last_msg = data["report"]
 	last_death_report = data["deathReport"] || ""
@@ -208,6 +210,7 @@ GENETICS SCANNER
 	last_scan_time = data["scanTime"]
 	SStgui.update_uis(src)
 	show_results(user)
+	econ_auto_discharge(user, patient)
 
 /obj/item/healthanalyzer/attack(mob/living/M, mob/living/carbon/human/user)
 	if(user.incapacitated())
@@ -268,7 +271,7 @@ GENETICS SCANNER
 	var/report = data["report"]
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)
 	if(connected_analyzer)
-		connected_analyzer.store_scan(user, data)
+		connected_analyzer.store_scan(user, data, M)
 	else
 		show_medical_scan(user, data, M, live_source, "Medical", advanced, include_chemistry)
 	return report
@@ -1077,6 +1080,7 @@ GENETICS SCANNER
 	name = "first aid analyzer"
 	icon_state = "adv_spectrometer"
 	desc = "A prototype MeLo-Tech medical scanner used to diagnose injuries and recommend treatment for serious wounds, but offers no further insight into the patient's health. You hope the final version is less annoying to read!"
+	offers_discharge = FALSE
 	var/next_encouragement
 	var/greedy
 

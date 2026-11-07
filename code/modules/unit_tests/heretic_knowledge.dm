@@ -46,7 +46,10 @@
 /datum/heretic_test_room/New(area_type)
 	var/static/list/shared_rooms = list()
 	if(!shared_rooms[area_type])
+		var/area/station_room = GLOB.areas_by_type[area_type]
 		shared_rooms[area_type] = new area_type
+		if(station_room)
+			GLOB.areas_by_type[area_type] = station_room
 	room = shared_rooms[area_type]
 
 /datum/heretic_test_room/proc/take(turf/spot)
@@ -71,6 +74,13 @@
 	var/datum/heretic_test_room/lease = new(area_type)
 	allocated += lease
 	lease.take(spot)
+
+/// Тестовая зона уникального типа не подменяет станционную в GLOB.areas_by_type: игра ищет по нему отсеки.
+/datum/unit_test/heretic_test_room_keeps_station_area/Run()
+	var/area/station_bay = GLOB.areas_by_type[/area/cargo/storage]
+	TEST_ASSERT_NOTNULL(station_bay, "На карте нет отсека снабжения")
+	heretic_test_area(run_loc_floor_bottom_left, /area/cargo/storage)
+	TEST_ASSERT(GLOB.areas_by_type[/area/cargo/storage] == station_bay, "Тестовая зона подменила станционный отсек снабжения")
 
 /// Независимые пути укладываются в бюджет охоты.
 /datum/unit_test/heretic_knowledge/Run()

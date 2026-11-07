@@ -74,9 +74,7 @@
 			loaded_tank.air_contents.adjust_moles(GAS_O2, -gasdrained)
 			loaded_tank.air_contents.adjust_moles(GAS_CO2, gasdrained*2)
 			var/bitcoins_mined = stored_power*RAD_COLLECTOR_MINING_CONVERSION_RATE
-			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_ENG)
-			if(D)
-				D.adjust_money(bitcoins_mined)
+			accrue_power_export(SSeconomy.claim_power_export(stored_power) * RAD_COLLECTOR_MINING_CONVERSION_RATE)
 			SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, bitcoins_mined)
 			last_push = stored_power
 			stored_power = 0
@@ -206,6 +204,7 @@
 		else
 			. += "\
 			– Производится <b>[(last_push*RAD_COLLECTOR_MINING_CONVERSION_RATE)*((60 SECONDS)/SSmachines.wait)]</b> научных очков в минуту.\n\
+			- Инженерия получает за эту энергию кредиты по рынку энергии в пределах общего потолка экспорта станции.\n\
 			– <b>Тритий</b> и <b>кислород</b> внутри бака сжигаются в <b>углекислый газ</b>."
 
 /obj/machinery/power/rad_collector/obj_break(damage_flag)

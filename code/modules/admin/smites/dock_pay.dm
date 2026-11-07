@@ -21,11 +21,11 @@
 	var/new_cost = input("How much pay are we docking? Current balance: [card.registered_account.account_balance] credits.", "BUDGET CUTS") as num|null
 	if (!new_cost)
 		return
-	if (!(card.registered_account.has_money(new_cost)))
+	var/datum/bank_account/account = card.registered_account
+	if (!account.has_money(new_cost))
 		to_chat(user,  span_warning("ID Card lacked funds. Emptying account."))
-		card.registered_account.bank_card_talk("[new_cost] credits deducted from your account based on performance review.")
-		card.registered_account.account_balance = 0
-	else
-		card.registered_account.account_balance = card.registered_account.account_balance - new_cost
-		card.registered_account.bank_card_talk("[new_cost] credits deducted from your account based on performance review.")
+		new_cost = account.account_balance
+	if (!account.debit(new_cost, ECON_ADMIN, memo = "Удержание по итогам аттестации"))
+		return
+	account.bank_card_talk("[new_cost] credits deducted from your account based on performance review.")
 	SEND_SOUND(target, 'sound/machines/buzz-sigh.ogg')

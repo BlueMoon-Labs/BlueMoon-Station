@@ -349,7 +349,7 @@
 		if(one_is_spawnpods.first_time)
 			print_command_report(src.announce_text, "Central Command")
 			var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			cargo_bank.adjust_money(50000)
+			cargo_bank.credit(50000, ECON_MISC, memo = "Сделка с работорговцами")
 			for(var/obj/effect/mob_spawn/human/slavers/S in all_avaible_spawnpods)
 				S.first_time = FALSE
 	slaver.equip_outfit = FALSE

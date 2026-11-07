@@ -1,0 +1,806 @@
+// Экраны станционных терминалов NT: окна открывают постоянно, поэтому текст обычным шрифтом, спокойный фон
+// и приглушённые цвета; цвет устройства - только на имени устройства, активной вкладке и главной кнопке.
+
+$nt-bg: #0b0e12;
+$nt-panel: #10151b;
+$nt-text: #c9d3df;
+$nt-dim: #74818f;
+$nt-faint: #27303a;
+$nt-good: #8cbf96;
+$nt-bad: #d4867c;
+$nt-warn: #d2b46a;
+$nt-mono: Consolas, 'Lucida Console', 'Courier New', monospace;
+
+$nt-tones: (
+  supply: #c99a6e,
+  exchange: #84b598,
+  contracts: #8aa6c6,
+  register: #82b2a8,
+  medical: #7fb0bd,
+  engineering: #c4ad72,
+  security: #c48a86,
+  science: #a395c4,
+  service: #8db58f,
+  civil: #a2adbb,
+  command: #8d9dc4,
+);
+
+@each $tone, $color in $nt-tones {
+  .NtTerm--#{$tone} {
+    --nt-accent: #{$color};
+    --nt-accent-rgb: #{red($color)}, #{green($color)}, #{blue($color)};
+    --nt-accent-line: #{rgba($color, 0.4)};
+  }
+}
+
+.Window:has(.NtTerm) .TitleBar {
+  background-color: #0e1318;
+  border-bottom: 1px solid $nt-faint;
+}
+
+.Window:has(.NtTerm) .Window__contentPadding {
+  margin: 0;
+}
+
+// Подсветка значения, сменившегося с прошлого обновления: гаснет за полторы секунды
+@keyframes nt-pulse-up {
+  from {
+    background-color: rgba($nt-good, 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-pulse-down {
+  from {
+    background-color: rgba($nt-bad, 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-pulse-new {
+  from {
+    background-color: rgba(var(--nt-accent-rgb), 0.35);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes nt-count-new {
+  from {
+    color: $nt-bg;
+    background-color: var(--nt-accent);
+  }
+  to {
+    color: $nt-text;
+    background-color: $nt-faint;
+  }
+}
+
+@keyframes nt-now {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.NtTerm {
+  min-height: 100%;
+  // Темы КПК задают моноширинный шрифт всему окну; экрану нужен обычный
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: $nt-text;
+  background-color: $nt-bg;
+
+  &__num {
+    font-family: $nt-mono;
+  }
+
+  &__head {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 12px 14px 10px;
+  }
+
+  &__brand {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__device {
+    color: var(--nt-accent);
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  // Пояснение раздела: кнопка ? в заголовке рамки разворачивает текст под ним
+  &__helpToggle {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 14px;
+    text-align: center;
+    font-size: 11px;
+    color: $nt-dim;
+    border: 1px solid $nt-faint;
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+  }
+
+  &__helpToggle:hover,
+  &__helpToggle:focus-visible,
+  &__helpToggle--open {
+    color: $nt-text;
+    border-color: $nt-dim;
+  }
+
+  &__help {
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    color: $nt-dim;
+    background-color: $nt-panel;
+    border-left: 2px solid $nt-faint;
+  }
+
+  &__help > * + * {
+    margin-top: 6px;
+  }
+
+  &__status {
+    margin-top: 4px;
+    color: $nt-dim;
+  }
+
+  &__readout {
+    display: flex;
+    gap: 22px;
+    text-align: right;
+  }
+
+  // Меню - вкладки с подчёркиванием: одна линия под меню отделяет его от рабочей области
+  &__menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 4px;
+    padding: 0 10px;
+    border-top: 1px solid $nt-faint;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__menuItem {
+    padding: 6px 8px 5px;
+    margin-bottom: -1px;
+    color: $nt-dim;
+    cursor: pointer;
+    outline: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+  }
+
+  &__pulse {
+    border-radius: 2px;
+  }
+
+  &__pulse--up {
+    animation: nt-pulse-up 1.6s ease-out;
+  }
+
+  &__pulse--down {
+    animation: nt-pulse-down 1.6s ease-out;
+  }
+
+  &__pulse--new {
+    animation: nt-pulse-new 1.6s ease-out;
+  }
+
+  &__menuCount--new {
+    animation: nt-count-new 2s ease-out;
+  }
+
+  &__menuItem:hover,
+  &__menuItem:focus-visible {
+    color: $nt-text;
+  }
+
+  &__menuItem--active,
+  &__menuItem--active:hover {
+    color: var(--nt-accent);
+    border-bottom-color: var(--nt-accent);
+  }
+
+  &__menuCount {
+    margin-left: 6px;
+    padding: 0 5px;
+    font-size: 11px;
+    color: $nt-text;
+    background-color: $nt-faint;
+    border-radius: 7px;
+  }
+
+  // График цены: линия по тренду, слабая заливка под ней, пунктир базовой цены
+  &__chart {
+    position: relative;
+    margin: 4px 0 10px;
+    border-left: 1px solid $nt-faint;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__chart--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $nt-dim;
+  }
+
+  &__chartLine {
+    fill: none;
+    stroke-width: 1.5;
+  }
+
+  &__chart--up &__chartLine {
+    stroke: $nt-good;
+  }
+
+  &__chart--down &__chartLine {
+    stroke: $nt-bad;
+  }
+
+  &__chart--up &__chartFill {
+    fill: rgba($nt-good, 0.06);
+  }
+
+  &__chart--down &__chartFill {
+    fill: rgba($nt-bad, 0.06);
+  }
+
+  &__chartBase {
+    stroke: $nt-dim;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+  }
+
+  // Текущая цена - точка на правом конце линии, медленно мерцает: график живой, торги идут
+  &__chartNow {
+    position: absolute;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-radius: 50%;
+    animation: nt-now 2.4s ease-in-out infinite;
+  }
+
+  &__chart--up &__chartNow {
+    background-color: $nt-good;
+  }
+
+  &__chart--down &__chartNow {
+    background-color: $nt-bad;
+  }
+
+  &__chartMax,
+  &__chartMin,
+  &__chartBaseLabel {
+    position: absolute;
+    right: 4px;
+    font-family: $nt-mono;
+    font-size: 10px;
+    color: $nt-dim;
+    pointer-events: none;
+  }
+
+  &__chartMax {
+    top: 2px;
+  }
+
+  &__chartMin {
+    bottom: 2px;
+  }
+
+  &__chartBaseLabel {
+    left: 6px;
+    right: auto;
+    transform: translateY(-115%);
+  }
+
+  // Плитки котировок: цвет фона - сила движения цены, рамка - выбранная компания
+  &__tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  &__tile {
+    position: relative;
+    padding: 6px 8px;
+    border: 1px solid $nt-faint;
+    cursor: pointer;
+    min-width: 0;
+  }
+
+  &__tile:hover {
+    border-color: $nt-dim;
+  }
+
+  &__tile--selected,
+  &__tile--selected:hover {
+    border-color: $nt-text;
+  }
+
+  &__tile--held::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-style: solid;
+    border-width: 0 9px 9px 0;
+    border-color: transparent $nt-dim transparent transparent;
+  }
+
+  &__tileHead {
+    display: flex;
+    justify-content: space-between;
+    font-family: $nt-mono;
+  }
+
+  &__tileName {
+    color: $nt-dim;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__tilePrice {
+    font-size: 14px;
+  }
+
+  // Полоса распределения портфеля
+  &__alloc {
+    display: flex;
+    height: 10px;
+    margin: 4px 0 8px;
+    background-color: $nt-faint;
+  }
+
+  &__allocPart {
+    height: 100%;
+    border-right: 1px solid $nt-bg;
+    transition: width 0.6s ease-out;
+  }
+
+  &__allocKey {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+  }
+
+  &__contract {
+    display: flex;
+    gap: 16px;
+    padding: 8px 10px;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__contract:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  &__contract--mine {
+    border-left: 2px solid var(--nt-accent-line);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  &__contractMain {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__contractTitle {
+    font-weight: bold;
+  }
+
+  &__contractUrgent {
+    margin-left: 8px;
+    color: $nt-warn;
+    font-weight: normal;
+    font-size: 11px;
+  }
+
+  &__contractProgress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: $nt-dim;
+  }
+
+  &__contractSide {
+    min-width: 140px;
+    text-align: right;
+  }
+
+  &__contractReward {
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  &__bar {
+    display: inline-block;
+    width: 120px;
+    height: 6px;
+    background-color: $nt-faint;
+  }
+
+  &__barFill {
+    display: block;
+    height: 100%;
+    background-color: $nt-dim;
+    transition: width 0.6s ease-out;
+  }
+
+  &__tag--lead {
+    margin-left: 0;
+    margin-right: 8px;
+    font-weight: normal;
+  }
+
+  &__lcd {
+    margin-bottom: 14px;
+    padding: 8px 12px;
+    background-color: $nt-panel;
+    border: 1px solid $nt-faint;
+  }
+
+  // Кассиру: счёт только что оплатили
+  &__paid {
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    color: $nt-good;
+    background-color: rgba($nt-good, 0.08);
+    border-left: 2px solid $nt-good;
+    animation: nt-pulse-up 1.6s ease-out;
+  }
+
+  &__lcdLabel {
+    color: $nt-dim;
+  }
+
+  &__lcdValue {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.3;
+  }
+
+  &__lcdItem {
+    color: $nt-text;
+  }
+
+  &__body {
+    padding: 12px 14px 14px;
+  }
+
+  &__frame {
+    margin-bottom: 20px;
+  }
+
+  &__frame:last-child {
+    margin-bottom: 4px;
+  }
+
+  &__frameHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__frameTitle {
+    font-weight: bold;
+  }
+
+  &__frame--minor {
+    margin-bottom: 12px;
+    padding: 8px 10px 6px;
+    border: 1px solid $nt-faint;
+    background-color: rgba(255, 255, 255, 0.012);
+  }
+
+  &__frame--minor &__frameTitle {
+    color: $nt-text;
+  }
+
+  &__frame--minor &__frameRule {
+    background-color: transparent;
+  }
+
+  &__frameRule {
+    flex: 1;
+    height: 1px;
+    background-color: $nt-faint;
+  }
+
+  &__frameBody {
+    padding-left: 2px;
+  }
+
+  &__stat {
+    min-width: 90px;
+  }
+
+  &__statLabel {
+    color: $nt-dim;
+    font-size: 11px;
+  }
+
+  &__statValue {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.3;
+  }
+
+  &__stat--good &__statValue {
+    color: $nt-good;
+  }
+
+  &__stat--bad &__statValue {
+    color: $nt-bad;
+  }
+
+  &__stat--warn &__statValue {
+    color: $nt-warn;
+  }
+
+  &__line {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  &__line:last-child {
+    border-bottom: none;
+  }
+
+  // Чек кассы - единственное место с отточием: так печатают чеки
+  &__receipt &__lineDots {
+    border-bottom: 1px dotted $nt-faint;
+  }
+
+  &__receipt &__line {
+    border-bottom: none;
+  }
+
+  &__lineLabel {
+    color: $nt-dim;
+  }
+
+  &__lineDots {
+    flex: 1;
+    min-width: 12px;
+  }
+
+  &__line--good &__lineValue {
+    color: $nt-good;
+  }
+
+  &__line--bad &__lineValue {
+    color: $nt-bad;
+  }
+
+  &__line--warn &__lineValue {
+    color: $nt-warn;
+  }
+
+  &__line--dim &__lineValue {
+    color: $nt-dim;
+  }
+
+  &__empty {
+    padding: 18px 0;
+    color: $nt-dim;
+    text-align: center;
+  }
+
+  &__hint {
+    color: $nt-dim;
+  }
+
+  &__row {
+    cursor: pointer;
+  }
+
+  &__row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  &__row--open {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  &__detail {
+    margin: 2px 0 10px 18px;
+    padding: 8px 12px;
+    border-left: 2px solid $nt-faint;
+    background-color: $nt-panel;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 10px;
+  }
+
+  &__chip {
+    color: $nt-dim;
+    cursor: pointer;
+  }
+
+  &__chip:hover {
+    color: $nt-text;
+  }
+
+  &__chip--active,
+  &__chip--active:hover {
+    color: $nt-text;
+    text-decoration: underline;
+    text-decoration-color: var(--nt-accent);
+    text-underline-offset: 3px;
+  }
+
+  &__tag {
+    margin-left: 8px;
+    padding: 0 4px;
+    color: $nt-dim;
+    font-size: 11px;
+    border: 1px solid $nt-faint;
+  }
+}
+
+body .NtTerm {
+  .color-label {
+    color: $nt-dim !important;
+  }
+
+  .color-good {
+    color: $nt-good !important;
+  }
+
+  .color-bad {
+    color: $nt-bad !important;
+  }
+
+  .color-average {
+    color: $nt-warn !important;
+  }
+
+  // Кнопки серые; главная команда (good, selected) - в цвете экрана, опасная - красноватая
+  .Button {
+    color: $nt-text;
+    background-color: #1a222b;
+    border: 1px solid #2b3540;
+    border-radius: 2px;
+    transition: none;
+  }
+
+  .Button:hover,
+  .Button:focus {
+    color: #e6ecf2;
+    background-color: #24303b;
+  }
+
+  .Button--selected,
+  .Button--color--good {
+    color: #e6ecf2;
+    background-color: rgba(var(--nt-accent-rgb), 0.28);
+    border-color: var(--nt-accent-line);
+  }
+
+  .Button--selected:hover,
+  .Button--selected:focus,
+  .Button--color--good:hover,
+  .Button--color--good:focus {
+    background-color: rgba(var(--nt-accent-rgb), 0.4);
+  }
+
+  .Button--color--bad {
+    color: $nt-bad;
+    background-color: #1a222b;
+  }
+
+  .Button--color--bad:hover,
+  .Button--color--bad:focus {
+    color: #e6ecf2;
+    background-color: rgba($nt-bad, 0.35);
+  }
+
+  .Button--color--transparent {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .Button--color--transparent:hover,
+  .Button--color--transparent:focus {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .Button.Button--disabled,
+  .Button.Button--disabled:hover {
+    color: #4a5562 !important;
+    background-color: #141a20 !important;
+    border-color: $nt-faint !important;
+  }
+
+  .Input {
+    color: $nt-text;
+    background-color: $nt-panel;
+    border: 1px solid $nt-faint;
+    border-radius: 0;
+  }
+
+  .Input--focused,
+  .Input:focus-within {
+    border-color: $nt-dim;
+  }
+
+  .Table__row--header .Table__cell {
+    color: $nt-dim;
+    font-weight: normal;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  .Table__cell {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  .Table__row:not(.Table__row--header) > .Table__cell {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
+  .candystripe:nth-child(odd) {
+    background-color: transparent;
+  }
+
+  .LabeledList__label {
+    color: $nt-dim;
+  }
+
+  .ProgressBar {
+    border-radius: 0;
+    border-color: $nt-faint;
+  }
+
+  .ProgressBar__fill {
+    background-color: rgba(var(--nt-accent-rgb), 0.25) !important;
+  }
+
+  .NoticeBox {
+    font-style: normal;
+    font-weight: normal;
+    color: $nt-text;
+    background-color: $nt-panel;
+    background-image: none;
+    border-left: 2px solid $nt-dim;
+  }
+
+  .NoticeBox--type--danger {
+    border-left-color: $nt-bad;
+    color: $nt-bad;
+  }
+
+  .NoticeBox--type--warning {
+    border-left-color: $nt-warn;
+    color: $nt-warn;
+  }
+}

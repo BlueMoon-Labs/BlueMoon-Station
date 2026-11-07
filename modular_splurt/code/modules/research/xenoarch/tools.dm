@@ -129,27 +129,39 @@
 
 /obj/item/xenoarch/help/cargo
 	name = "dimensional cargo scanner"
-	desc = "teleports items to be sold."
+	desc = "Телепортирует предметы на продажу. Выручка за находки ксеноархеологии идёт бюджету науки, за всё остальное - карго."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
 
 /obj/item/xenoarch/help/cargo/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 300, target=target))
 		to_chat(user,"You need to stand still to export items.")
 		return
-	export_item_and_contents(target, export_categories , dry_run = FALSE, external_report = ex)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	export_target(target, user)
+
+/obj/item/xenoarch/help/cargo/proc/export_target(obj/item/target, mob/user, apply_elastic = TRUE)
+	var/datum/export_report/ex = new
+	export_item_and_contents(target, EXPORT_CARGO, apply_elastic, dry_run = FALSE, external_report = ex)
+	ex.settle_market()
+	var/export_value = 0
+	var/artifact_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
-		D.adjust_money(ex.total_value[E])
+		if(istype(E, /datum/export/artifacts))
+			artifact_value += ex.total_value[E]
+		else
+			export_value += ex.total_value[E]
+	if(artifact_value)
+		SSeconomy.record_work(ACCOUNT_SCI, WORK_SCI_ARTIFACT, artifact_value, user, memo = "Артефакт: [target]")
+	if(export_value)
+		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+		D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
 	to_chat(user,"The [target] disappears!")
 
 //Bluemoon edit start:
@@ -170,13 +182,15 @@
 	if(!do_after(user, 30, target=target))
 		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
+	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE, apply_caps = TRUE)
+	var/export_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
-		D.adjust_money(ex.total_value[E])
+		export_value += ex.total_value[E]
+	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
+	D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
 	to_chat(user,"Ух ты, [target] пропало!")
 
 /obj/item/xenoarch/help/cargo/tarkoff
@@ -195,13 +209,15 @@
 	if(!do_after(user, 45, target=target))
 		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE, apply_caps = TRUE)
+	var/export_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
-		D.adjust_money(ex.total_value[E])
+		export_value += ex.total_value[E]
+	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
 	to_chat(user,"Ух ты, [target] пропало!")
 
 //Bluemoon edit end.

@@ -169,8 +169,7 @@
 				GLOB.slavers_credits_balance += points_awarded
 			else
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-				if(D)
-					D.adjust_money(points_awarded)
+				D?.credit(points_awarded, ECON_MISC, memo = "Исследовательская сессия")
 	if(points_awarded)
 		var/add_s = points_awarded == 1 ? "" : "s"
 		say("Obtained [points_awarded] [point_type == POINT_TYPE_SCIENCE ? "point" : "credit"][add_s] from the session.")

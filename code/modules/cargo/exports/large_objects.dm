@@ -1,9 +1,7 @@
 /datum/export/large
-	k_elasticity = 1/50 //BLUEMOON CHANGE
 
 /datum/export/large/crate
 	cost = 500
-	k_elasticity = 1/50 //BLUEMOON CHANGE
 	unit_name = "crate"
 	export_types = list(/obj/structure/closet/crate)
 	exclude_types = list(/obj/structure/closet/crate/large, /obj/structure/closet/crate/wooden, /obj/structure/closet/crate/bin, /obj/structure/closet/crate/mail, /obj/structure/closet/crate/coffin)
@@ -15,7 +13,6 @@
 
 /datum/export/large/crate/wooden
 	cost = 100
-	k_elasticity = 1/50 //BLUEMOON ADD "Anti-floods"
 	unit_name = "large wooden crate"
 	export_types = list(/obj/structure/closet/crate/large)
 	exclude_types = list()
@@ -26,20 +23,17 @@
 
 /datum/export/large/crate/wood
 	cost = 140
-	k_elasticity = 1/50 //BLUEMOON ADD "Anti-floods"
 	unit_name = "wooden crate"
 	export_types = list(/obj/structure/closet/crate/wooden)
 	exclude_types = list()
 
 /datum/export/large/barrel
 	cost = 300 //double the wooden cost of a coffin.
-	k_elasticity = 1/50 //BLUEMOON ADD "Anti-floods"
 	unit_name = "wooden barrel"
 	export_types = list(/obj/structure/fermenting_barrel)
 
 /datum/export/large/crate/coffin
 	cost = 150
-	k_elasticity = 1/50 //BLUEMOON ADD "Anti-floods"
 	unit_name = "coffin"
 	export_types = list(/obj/structure/closet/crate/coffin)
 	exclude_types = list() //BLUEMOON CHANGE фикс засчитывания гробов как ящик
@@ -176,7 +170,7 @@
 
 /datum/export/large/gas_canister/get_cost(obj/O)
 	var/obj/machinery/portable_atmospherics/canister/C = O
-	var/worth = 10
+	var/worth = init_cost
 	var/list/gas_prices = GLOB.gas_data.prices
 	var/total_moles = C.air_contents.total_moles()
 	for(var/gas in C.air_contents.get_gases())
@@ -186,6 +180,9 @@
 			gas_worth *= canister_overflow_mult
 		worth += gas_worth
 	return worth
+
+/datum/export/large/gas_canister/contents_cost(obj/O)
+	return get_cost(O) - init_cost
 
 
 //////////////

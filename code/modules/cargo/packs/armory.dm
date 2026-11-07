@@ -94,7 +94,7 @@
 /datum/supply_pack/security/armory/trackingimp
 	name = "Tracking Implants Crate"
 	desc = "Содержит четыре Tracking Implants и три зарядника с отслеживающими патронами 38 калибра. Для открытия требуется доступ к оружейной."
-	cost = 1100
+	cost = 1300
 	contains = list(/obj/item/storage/box/trackimp,
 					/obj/item/ammo_box/c38/trac,
 					/obj/item/ammo_box/c38/trac,
@@ -279,7 +279,7 @@
 /datum/supply_pack/security/armory/wt550ammo_nonlethal // Takes around 12 shots to stamcrit someone
 	name = "WT-550 Semi-Auto SMG Non-Lethal Ammo Crate"
 	desc = "Содержит четыре магазина на 32 нелеталных патрона для полуавтоматического пистолета WT-550 SMG. Каждый магазин предназначен для быстрой тактической перезарядки. Для открытия требуется доступ к оружейной."
-	cost = 1000
+	cost = 1150
 	contains = list(/obj/item/ammo_box/magazine/wt550m9/wtrubber,
 					/obj/item/ammo_box/magazine/wt550m9/wtrubber,
 					/obj/item/ammo_box/magazine/wt550m9/wtrubber,

@@ -7,19 +7,36 @@
 		qdel(report)
 	qdel(map)
 
-/// Fine assessment may put cargo in debt, but routine spending must still require funds.
+/// A fine against an empty cargo budget becomes department debt that later income repays.
+/datum/unit_test/sol_inspection_fine_debt
+	var/datum/economy_department/cargo
+	var/old_balance
+	var/old_owed
+
+/datum/unit_test/sol_inspection_fine_debt/Destroy()
+	if(cargo)
+		cargo.owed = old_owed
+		econ_test_set_balance(cargo.account, old_balance)
+	return ..()
+
 /datum/unit_test/sol_inspection_fine_debt/Run()
-	var/datum/bank_account/cargo = allocate(/datum/bank_account, "Test Cargo")
+	cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	old_balance = cargo.account.account_balance
+	old_owed = cargo.owed
+	cargo.owed = 0
+	econ_test_set_balance(cargo.account, 0)
 	var/datum/bank_account/inspection = allocate(/datum/bank_account, "Test Inspection")
 
-	TEST_ASSERT(cargo.assess_sol_inspection_fine(25000, inspection, "unit test"), "An inspection fine must be assessed against an empty cargo account.")
-	TEST_ASSERT_EQUAL(cargo.account_balance, -25000, "The cargo account must retain its fine debt.")
-	TEST_ASSERT_EQUAL(inspection.account_balance, 25000, "The inspection account must receive the full fine.")
-	TEST_ASSERT_EQUAL(cargo.account_balance + inspection.account_balance, 0, "Fine assessment must conserve credits between both accounts.")
+	TEST_ASSERT(sol_inspection_charge_fine(25000, inspection, "unit test"), "An inspection fine must be assessed against an empty cargo account.")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, 0, "The cargo budget must not go negative.")
+	TEST_ASSERT_EQUAL(cargo.owed, 25000, "The unpaid fine must become cargo debt.")
+	TEST_ASSERT(!cargo.account.allow_debt, "The cargo budget must not stay in debt mode.")
+	TEST_ASSERT_EQUAL(cargo.account.debit(1, ECON_PURCHASE), FALSE, "Ordinary purchases must still fail while cargo lacks funds.")
 
-	TEST_ASSERT(cargo.adjust_money(5000, "test income"), "Positive income must be accepted while cargo has debt.")
-	TEST_ASSERT_EQUAL(cargo.account_balance, -20000, "Income must repay cargo debt instead of clamping it to zero.")
-	TEST_ASSERT_EQUAL(cargo.adjust_money(-1, "test purchase"), FALSE, "Ordinary purchases must still fail while cargo lacks funds.")
+	cargo.account.credit(5000, ECON_ADMIN)
+	cargo.settle_owed()
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, 0, "Income must go to repaying the fine debt.")
+	TEST_ASSERT_EQUAL(cargo.owed, 20000, "Repaid income must reduce the fine debt.")
 
 /// Buying the inspection off is an ordinary purchase: it needs real credits and cancels the vessel.
 /datum/unit_test/sol_inspection_bribe
@@ -28,7 +45,7 @@
 
 /datum/unit_test/sol_inspection_bribe/Destroy()
 	if(cargo_account && !QDELETED(cargo_account))
-		cargo_account.account_balance = old_cargo_balance
+		econ_test_set_balance(cargo_account, old_cargo_balance)
 	return ..()
 
 /datum/unit_test/sol_inspection_bribe/Run()
@@ -41,11 +58,11 @@
 	TEST_ASSERT(cargo_account, "The bribe test requires the cargo department account.")
 	old_cargo_balance = cargo_account.account_balance
 
-	cargo_account.account_balance = 0
+	econ_test_set_balance(cargo_account, 0)
 	TEST_ASSERT(!team.pay_bribe(cargo_account, payoff, "unit test"), "A bribe must be refused when cargo cannot cover it.")
 	TEST_ASSERT_EQUAL(team.bribe_paid, 0, "A refused bribe must not land on the inspection account.")
 
-	cargo_account.account_balance = payoff
+	econ_test_set_balance(cargo_account, payoff)
 	var/datum/comm_message/demand = new
 	demand.answered = 1
 	event.demand_answered(demand, payoff, world.time)
@@ -345,7 +362,7 @@
 
 /datum/unit_test/sol_inspection_scanner_confiscation_integration/Destroy()
 	if(cargo_account && !QDELETED(cargo_account))
-		cargo_account.account_balance = old_cargo_balance
+		econ_test_set_balance(cargo_account, old_cargo_balance)
 	return ..()
 
 /datum/unit_test/sol_inspection_scanner_confiscation_integration/Run()
@@ -360,7 +377,7 @@
 	cargo_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	TEST_ASSERT(cargo_account, "The integration test requires the cargo department account.")
 	old_cargo_balance = cargo_account.account_balance
-	cargo_account.account_balance = old_cargo_balance + fine_amount
+	econ_test_set_balance(cargo_account, old_cargo_balance + fine_amount)
 
 	inspector.mind_initialize("sol_inspection_confiscation")
 	inspector.put_in_hands(scanner, forced = TRUE)

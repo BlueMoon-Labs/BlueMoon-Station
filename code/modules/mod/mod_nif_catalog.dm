@@ -56,13 +56,13 @@ GLOBAL_LIST_INIT(nifsoft_catalog, list(
 	var/datum/nifsoft/program = program_type
 	var/price = initial(program.purchase_price)
 	var/datum/bank_account/account = linked_mob.get_bank_account()
-	if(price && (!account || !account.adjust_money(-price)))
+	if(price && (!account || !account.debit(price, ECON_PURCHASE, linked_mob, "NIF: [initial(program.name)]")))
 		to_chat(linked_mob, span_warning(account ? "NIF: недостаточно средств." : "NIF: наденьте ID с банковским счётом или возьмите её в руку."))
 		return FALSE
 	var/datum/nifsoft/installed = new program_type(src)
 	if(QDELETED(installed))
 		if(price)
-			account.adjust_money(price)
+			account.credit(price, ECON_REFUND, linked_mob, "NIF: [initial(program.name)]")
 		return FALSE
 	to_chat(linked_mob, span_notice("NIF: установлена программа [installed.name].[calibrating ? " Запуск станет доступен после калибровки." : ""]"))
 	return TRUE

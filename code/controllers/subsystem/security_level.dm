@@ -350,6 +350,7 @@ SUBSYSTEM_DEF(security_level)
 
 /datum/controller/subsystem/security_level/proc/delta_process(secret_variant_override)
 	GLOB.security_level = SEC_LEVEL_DELTA
+	SSmarket?.station_event("delta_alert")
 	SEND_SIGNAL(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 	announce_security_level_change(SEC_LEVEL_DELTA, CONFIG_GET(string/alert_delta), TRUE)
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines

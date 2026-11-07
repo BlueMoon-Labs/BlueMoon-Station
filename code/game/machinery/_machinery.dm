@@ -517,11 +517,8 @@ Class Procs:
 		return FALSE
 
 	if(transaction_cost)
-		if(!account.adjust_money(-transaction_cost))
+		if(!SSeconomy.move(account, SSeconomy.get_dep_account(payment_department), transaction_cost, ECON_PURCHASE, memo = "Оплата: [name]"))
 			return FALSE
-		var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-		if(D)
-			D.adjust_money(transaction_cost)
 	return TRUE
 
 /obj/machinery/proc/check_nap_violations()
@@ -537,13 +534,10 @@ Class Procs:
 				nap_violation(L)
 				return FALSE
 			else
-				if(!insurance.adjust_money(-fair_market_price))
+				if(!SSeconomy.move(insurance, SSeconomy.get_dep_account(payment_department), fair_market_price, ECON_PURCHASE, L, "Оплата: [name]"))
 					say("[market_verb] NAP Violation: Невозможно оплатить.")
 					nap_violation(L)
 					return FALSE
-				var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-				if(D)
-					D.adjust_money(fair_market_price)
 		else
 			say("[market_verb] NAP Violation: Карта не найдена.")
 			nap_violation(L)

@@ -2,16 +2,18 @@
 /proc/sol_inspection_allowed_level(level)
 	return is_station_level(level) || is_mining_level(level) || SSmapping.level_trait(level, ZTRAIT_SPACE_RUINS)
 
-/// Unlike a purchase, an assessed fine remains payable even when the cargo account is empty.
-/datum/bank_account/proc/assess_sol_inspection_fine(amount, datum/bank_account/recipient, reason)
-	if(amount <= 0 || QDELETED(recipient) || recipient == src)
+/// Штраф берётся с бюджета Карго сколько есть, остаток становится долгом отдела перед NT.
+/proc/sol_inspection_charge_fine(amount, datum/bank_account/recipient, reason)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	amount = round(amount)
+	if(!cargo || amount <= 0 || recipient == cargo.account)
 		return FALSE
-	allow_debt = TRUE
-	_adjust_money(-amount)
-	recipient._adjust_money(amount)
-	add_log_to_history(-amount, reason)
-	recipient.add_log_to_history(amount, reason)
-	log_econ("Sol inspection fine: [account_holder] paid [amount] to [recipient.account_holder]: [reason]; balance [account_balance].")
+	var/paid = clamp(cargo.account.account_balance, 0, amount)
+	if(paid)
+		var/charged = QDELETED(recipient) ? cargo.account.debit(paid, ECON_FINE, memo = reason) : SSeconomy.move(cargo.account, recipient, paid, ECON_FINE, memo = reason)
+		if(!charged)
+			paid = 0
+	cargo.add_owed(amount - paid)
 	return TRUE
 
 /datum/team/sol_inspection
@@ -38,7 +40,7 @@
 	. = ..()
 	account = new("Всеобщее Бюро Контроля")
 	account.offstation = TRUE
-	account.setup_unique_account_id()
+	account.service_account = TRUE
 
 /datum/team/sol_inspection/Destroy()
 	QDEL_NULL(inspection_radio)
@@ -92,12 +94,10 @@
 /datum/team/sol_inspection/proc/pay_bribe(datum/bank_account/payer, amount, reason = "откуп от инспекции Всеобщего Бюро Контроля")
 	if(amount <= 0 || QDELETED(payer) || QDELETED(account) || account == payer)
 		return FALSE
-	if(!payer.adjust_money(-amount, reason))
+	amount = round(amount)
+	if(!SSeconomy.move(payer, account, amount, ECON_SKIM, memo = reason))
 		return FALSE
-	account._adjust_money(amount)
-	account.add_log_to_history(amount, reason)
 	bribe_paid += amount
-	log_econ("Sol inspection bribe: [payer.account_holder] paid [amount] to [account.account_holder]: [reason]; balance [account.account_balance].")
 	return TRUE
 
 /datum/team/sol_inspection/proc/report_violation(message)

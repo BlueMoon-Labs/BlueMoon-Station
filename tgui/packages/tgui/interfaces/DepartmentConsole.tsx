@@ -1,0 +1,1 @@
+export { DepartmentConsole } from './NtosDepartmentBudget';

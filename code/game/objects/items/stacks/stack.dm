@@ -301,7 +301,7 @@
 
 			var/obj/O
 			if(R.max_res_amount > 1) //Is it a stack?
-				O = new R.result_type(usr.drop_location(), R.res_amount * multiplier)
+				O = new R.result_type(usr.drop_location(), R.res_amount * multiplier, FALSE)
 			else if(ispath(R.result_type, /turf))
 				var/turf/T = usr.drop_location()
 				if(!isturf(T))
@@ -319,6 +319,20 @@
 					crafted_stack.set_mats_per_unit(mats_per_unit, R.req_amount / R.res_amount)
 				else
 					O.set_custom_materials(mats_per_unit, R.req_amount / R.res_amount)
+			if(isstack(O))
+				var/obj/item/stack/crafted_stack = O
+				if(econ_imported)
+					crafted_stack.econ_imported = TRUE
+				for(var/obj/item/stack/neighbour in crafted_stack.loc)
+					if(QDELETED(crafted_stack))
+						break
+					if(neighbour != crafted_stack && crafted_stack.can_merge(neighbour))
+						crafted_stack.merge(neighbour)
+			else if(O)
+				var/list/used_materials = list()
+				for(var/material in mats_per_unit)
+					used_materials[material] = mats_per_unit[material] * R.req_amount * multiplier
+				econ_mark_station_made(O, used_materials, econ_imported)
 
 			if(istype(O, /obj/structure/windoor_assembly))
 				var/obj/structure/windoor_assembly/W = O
@@ -488,6 +502,9 @@
 	if(pulledby)
 		pulledby.start_pulling(S)
 	S.copy_evidences(src)
+	if(econ_imported)
+		S.econ_imported = TRUE
+	econ_merge_stack_cap(src, S, transfer)
 	use(transfer, TRUE)
 	S.add(transfer)
 	return transfer
@@ -588,12 +605,19 @@
  * - amount: The number of units to split from this stack.
  */
 /obj/item/stack/proc/split_stack(mob/user, amount)
+	if(amount > get_amount())
+		return null
+	var/list/split_cap = econ_take_stack_cap(src, amount)
 	if(!use(amount, TRUE, FALSE))
 		return null
 	var/obj/item/stack/F = new type(user? user : drop_location(), amount, FALSE)
 	. = F
 	F.set_mats_per_unit(mats_per_unit, 1) // Required for greyscale sheets and tiles.
 	F.copy_evidences(src)
+	if(econ_imported)
+		F.econ_imported = TRUE
+	F.econ_vended = econ_vended
+	F.econ_print_cap = split_cap
 	if(user)
 		if(!user.put_in_hands(F, merge_stacks = FALSE))
 			F.forceMove(user.drop_location())

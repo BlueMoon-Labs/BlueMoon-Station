@@ -2,6 +2,21 @@
 "aaa" = (
 /turf/open/space/basic,
 /area/space)
+"aab" = (
+/obj/machinery/status_display/supply{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet,
+/area/cargo/qm)
+"aac" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/status_display/ai{
+	pixel_y = 32
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/command/heads_quarters/hop)
 "aad" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 5
@@ -20,6 +35,38 @@
 /obj/structure/lattice/catwalk,
 /turf/open/space,
 /area/space/nearstation)
+"aah" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 4
+	},
+/area/service/bar)
+"aai" = (
+/obj/machinery/power/apc{
+	areastring = "/area/command/heads_quarters/rd";
+	dir = 8;
+	name = "RD Office APC";
+	pixel_x = -25
+	},
+/obj/structure/cable,
+/obj/machinery/light_switch{
+	pixel_y = -23
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 1
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/command/heads_quarters/rd)
+"aaj" = (
+/obj/machinery/airalarm{
+	dir = 8;
+	pixel_x = 24
+	},
+/obj/item/kirbyplants/dead,
+/turf/open/floor/plasteel/cafeteria,
+/area/command/heads_quarters/rd)
 "aak" = (
 /obj/structure/window/reinforced,
 /obj/structure/window/reinforced{
@@ -17143,13 +17190,6 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/rd)
-"byb" = (
-/obj/machinery/airalarm{
-	dir = 8;
-	pixel_x = 24
-	},
-/turf/open/floor/plasteel/cafeteria,
-/area/command/heads_quarters/rd)
 "byf" = (
 /turf/closed/wall/r_wall,
 /area/science/server)
@@ -18160,20 +18200,6 @@
 "bCe" = (
 /turf/open/floor/plasteel/white/corner,
 /area/maintenance/starboard/aft)
-"bCf" = (
-/obj/machinery/power/apc{
-	areastring = "/area/command/heads_quarters/rd";
-	dir = 8;
-	name = "RD Office APC";
-	pixel_x = -25
-	},
-/obj/structure/cable,
-/obj/machinery/light_switch{
-	pixel_y = -23
-	},
-/obj/item/kirbyplants/dead,
-/turf/open/floor/plasteel/cafeteria,
-/area/command/heads_quarters/rd)
 "bCg" = (
 /obj/structure/table,
 /obj/item/cartridge/signal/toxins,
@@ -25850,6 +25876,9 @@
 /obj/structure/disposalpipe/segment{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/command/heads_quarters/ce)
 "cbA" = (
@@ -28205,14 +28234,6 @@
 	},
 /turf/open/floor/plating,
 /area/engineering/atmos)
-"ciw" = (
-/obj/effect/turf_decal/siding/brown{
-	dir = 10
-	},
-/turf/open/floor/plasteel/dark/textured/corner{
-	dir = 4
-	},
-/area/service/bar)
 "cix" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible,
 /turf/closed/wall/r_wall,
@@ -33200,6 +33221,9 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/hallway/secondary/construction)
 "cAD" = (
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/cmo)
 "cAE" = (
@@ -39835,6 +39859,17 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/commons/storage/primary)
+"eLX" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/service/kitchen)
 "eMi" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -48410,6 +48445,7 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 10
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/dark/textured/corner{
 	dir = 4
 	},
@@ -49867,6 +49903,9 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/dark_red,
+/obj/machinery/computer/department_budget/security{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/textured/half,
 /area/security/office)
 "iHk" = (
@@ -51055,6 +51094,9 @@
 	},
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 4
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white/textured/half{
 	dir = 8
@@ -53448,6 +53490,12 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/medical/virology)
+"kba" = (
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/service/bar)
 "kbd" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4,
 /turf/open/floor/engine,
@@ -54212,15 +54260,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/medical/medbay/central)
-"ktg" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/status_display/ai{
-	pixel_y = 32
-	},
-/turf/open/floor/wood/wood_parquet,
-/area/command/heads_quarters/hop)
 "ktj" = (
 /obj/machinery/holopad,
 /obj/structure/extinguisher_cabinet{
@@ -56972,6 +57011,12 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall,
 /area/science/circuit)
+"lAX" = (
+/obj/effect/turf_decal/trimline/green/filled/line,
+/obj/effect/turf_decal/trimline/green/filled/mid_joiner,
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel/textured/half,
+/area/hallway/primary/port)
 "lBa" = (
 /obj/docking_port/stationary{
 	dir = 8;
@@ -59170,6 +59215,10 @@
 	dir = 1
 	},
 /area/medical/medbay/central)
+"mwo" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/service/bar)
 "mwE" = (
 /turf/open/floor/plasteel/textured/edge{
 	dir = 4
@@ -64263,6 +64312,16 @@
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
+"ovX" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/export_node,
+/turf/open/floor/plasteel/dark,
+/area/engineering/engine_smes)
 "owa" = (
 /obj/machinery/light,
 /obj/machinery/status_display/ai{
@@ -66340,6 +66399,9 @@
 /obj/machinery/light,
 /obj/machinery/status_display/supply{
 	pixel_y = -32
+	},
+/obj/machinery/computer/stock_terminal{
+	dir = 1
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/cargo/office)
@@ -73789,6 +73851,12 @@
 /obj/effect/turf_decal/tile/green/half,
 /turf/open/floor/plasteel/textured/half,
 /area/service/hydroponics)
+"swH" = (
+/obj/machinery/computer/department_budget{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/command/heads_quarters/captain)
 "swL" = (
 /obj/structure/rack,
 /obj/effect/spawner/lootdrop/syndicate_present,
@@ -74351,6 +74419,13 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/security/detectives_office/private_investigators_office)
+"sJd" = (
+/obj/effect/turf_decal/tile/brown/half,
+/obj/machinery/computer/department_budget/cargo{
+	dir = 1
+	},
+/turf/open/floor/plasteel/textured/half,
+/area/cargo/qm)
 "sJe" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/green/anticorner{
@@ -84352,6 +84427,9 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
+/obj/machinery/cash_register/bar{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/bar)
 "wDj" = (
@@ -85923,6 +86001,16 @@
 	dir = 4
 	},
 /area/tcommsat/server)
+"xjZ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	id = "commissaryshutters";
+	name = "Vacant Commissary Shutters"
+	},
+/obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/cash_register,
+/turf/open/floor/plasteel/textured/large,
+/area/commons/locker)
 "xko" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -87058,12 +87146,6 @@
 /obj/effect/turf_decal/tile/green/half/contrasted,
 /turf/open/floor/plasteel/white,
 /area/medical/virology)
-"xNz" = (
-/obj/machinery/status_display/supply{
-	pixel_x = 32
-	},
-/turf/open/floor/carpet,
-/area/cargo/qm)
 "xNM" = (
 /obj/item/stack/ore/iron,
 /obj/effect/turf_decal/tile/brown/anticorner{
@@ -88095,6 +88177,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/white/filled/corner,
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel/textured/half,
 /area/hallway/primary/port)
 "yjO" = (
@@ -105289,7 +105372,7 @@ gCC
 cRq
 aNm
 liB
-ekq
+xjZ
 eaz
 lWj
 jLB
@@ -107858,7 +107941,7 @@ ktS
 aDm
 aLq
 jSD
-jke
+lAX
 aPA
 vJu
 iMm
@@ -108136,7 +108219,7 @@ ruk
 anp
 lxW
 pDO
-gUP
+sJd
 vFb
 csh
 vWk
@@ -108646,7 +108729,7 @@ bff
 bjl
 ntG
 mZS
-xNz
+aab
 ama
 ntG
 hqe
@@ -111261,7 +111344,7 @@ bUs
 bLv
 aaa
 cjJ
-cky
+ovX
 clG
 cmB
 clG
@@ -115322,7 +115405,7 @@ sRk
 aZQ
 bbi
 bmr
-ktg
+aac
 aFU
 bcd
 bue
@@ -119434,7 +119517,7 @@ aPR
 aZV
 baq
 mpI
-baQ
+swH
 baQ
 bfC
 saM
@@ -122002,7 +122085,7 @@ iak
 fEG
 ydV
 dyV
-aJC
+mwo
 uOA
 blo
 bcq
@@ -123794,7 +123877,7 @@ gxN
 aJC
 uKb
 tif
-ciw
+aah
 ark
 aKR
 wEk
@@ -124561,7 +124644,7 @@ oUR
 aJC
 oVr
 anE
-wEk
+kba
 ksc
 qXI
 fTZ
@@ -127136,7 +127219,7 @@ wpG
 wXo
 eVp
 trB
-vgY
+eLX
 veF
 aVz
 lZh
@@ -135129,7 +135212,7 @@ bCk
 byo
 aDH
 bxP
-bCf
+aai
 byt
 bEs
 bGc
@@ -136413,7 +136496,7 @@ byt
 bxm
 byu
 sHO
-byb
+aaj
 aGs
 byt
 bBF

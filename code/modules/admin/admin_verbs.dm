@@ -109,6 +109,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/reload_director_config,	/*горячая перезагрузка config/director.json*/
 	/client/proc/director_simulate_verb,	/*оффлайн-прогон битов директора без ожидания реального времени*/
 	/client/proc/director_panel_verb,	/*TGUI-панель директора*/
+	/client/proc/economy_panel,	/*TGUI-панель экономики: журнал, счета, рынок, конфиг*/
 	)
 GLOBAL_LIST_INIT(admin_verbs_ban, list(/client/proc/DB_ban_panel, /client/proc/stickybanpanel))
 GLOBAL_PROTECT(admin_verbs_ban)

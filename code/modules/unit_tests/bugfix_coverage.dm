@@ -151,7 +151,7 @@
 			found_cost = entry["cost"]
 			break
 	TEST_ASSERT_NOTNULL(found_cost, "Injected item should be present in ui_data output")
-	TEST_ASSERT_EQUAL(found_cost, 100, "Mindless viewer should be charged full price (no head-rev discount)")
+	TEST_ASSERT_EQUAL(found_cost, econ_blackmarket_price(100), "Mindless viewer should be charged full price (no head-rev discount)")
 
 	// Cleanup: don't leave the probe/category lingering in the global market.
 	market.available_items -= test_category
