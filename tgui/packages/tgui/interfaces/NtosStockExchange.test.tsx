@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, within } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
@@ -10,7 +10,8 @@ const base: StockExchangeData = {
   companies: [
     { ticker: 'VYMD', name: 'Вей-Мед', price: 120, change: 4.2, halted: 0, base_price: 120, max_buy: 37 },
     { ticker: 'CYBS', name: 'Киберсан', price: 4, change: -60, halted: 1, base_price: 90 },
-    { ticker: 'NKMR', name: 'Накамура', price: 140, change: 0, halted: 0, base_price: 140 },
+    { ticker: 'NKMR', name: 'Накамура', price: 140, change: 0, halted: 0, base_price: 140, dividend_pool: 30, dividend_per_share: 30 },
+    { ticker: 'SECT', name: 'Индекс сектора', price: 98.5, change: -1.5, halted: 0, base_price: 100, index: 1 },
   ],
   history: { VYMD: [100, 110, 120], CYBS: [], NKMR: [140, 140] },
   drivers: {
@@ -54,6 +55,10 @@ const base: StockExchangeData = {
   news_delay: 7,
   refute_minutes: 5,
   persist_decay: 20,
+  orders: [],
+  orders_max: 5,
+  dividend_share: 5,
+  payroll_minutes: 10,
 };
 
 const setup = (data: Partial<StockExchangeData> = {}, component = <NtosStockExchangeContent />) => {
@@ -79,6 +84,21 @@ const openPage = (container: HTMLElement, label: string) => {
 };
 
 const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
+
+const framed = (container: HTMLElement, title: string) =>
+  Array.from(container.querySelectorAll('.NtTerm__frame')).find((node) =>
+    (node.querySelector('.NtTerm__frameTitle')?.textContent || '') === title) as HTMLElement;
+
+const commit = (input: Element, value: string) => {
+  fireEvent.focus(input);
+  fireEvent.input(input, { target: { value } });
+  fireEvent.blur(input);
+};
+
+const pick = (frame: HTMLElement, index: number, option: string) => {
+  fireEvent.click(frame.querySelectorAll('.Dropdown__control')[index]);
+  fireEvent.click(within(frame.querySelector('.Dropdown__menu') as HTMLElement).getByText(option));
+};
 
 describe('NtosStockExchange', () => {
   test('график за час берётся из статической истории по тикеру, компания без истории идёт без графика', () => {
@@ -119,7 +139,7 @@ describe('NtosStockExchange', () => {
     const content = text(container);
     expect(content).toContain('Торги остановлены');
     expect(content).toContain('Следующая сделка через 12 с');
-    expect(getAllByText('Купить')).toHaveLength(1);
+    expect(getAllByText('Купить')).toHaveLength(2);
   });
 
   test('счёт: баланс, стоимость акций, прибыль и позиция', () => {
@@ -227,5 +247,93 @@ describe('NtosStockExchange', () => {
     expect(text(container)).toContain('Котировки');
     fireEvent.click(getAllByText('Купить')[0]);
     expect(sent(topic, 'buy')).toEqual([{ ticker: 'VYMD', count: 1 }]);
+  });
+
+  test('индекс сектора торгуется в котировках без логотипа и есть в бегущей строке', () => {
+    const { container, getAllByText, topic } = setup({ holdings: {}, cooldowns: {} });
+    expect(container.querySelector('.logo-sect')).toBeNull();
+    expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('SECT 98.50');
+    const row = Array.from(container.querySelectorAll('tr')).find((node) => (node.textContent || '').includes('Индекс сектора'));
+    fireEvent.click(within(row as HTMLElement).getByText('Купить'));
+    expect(sent(topic, 'buy')).toEqual([{ ticker: 'SECT', count: 1 }]);
+    expect(getAllByText('Купить')).toHaveLength(3);
+  });
+
+  test('дивиденды: фонд, выплата на акцию и ваша доля; без фондов - пустая строка', () => {
+    const { container } = setup({ holdings: { NKMR: 4 } });
+    openPage(container, 'Портфель');
+    const content = text(container);
+    expect(content).toContain('5% закупок станции у партнёра компании идёт в её фонд. Раз в 10 мин.');
+    expect(content).toContain('NKMR · фонд 30 кр., около 30.00 кр. на акцию');
+    expect(content).toContain('вам ≈ 120 кр.');
+    expect(content).not.toContain('VYMD · фонд');
+    const empty = setup({ companies: base.companies.map((company) => ({ ...company, dividend_pool: 0 })) });
+    openPage(empty.container, 'Портфель');
+    expect(text(empty.container)).toContain('Фонды пока пусты');
+  });
+
+  test('заявка: тикер, условие, цена и количество уходят в add_order', () => {
+    const { container, topic } = setup();
+    openPage(container, 'Портфель');
+    const frame = framed(container, 'Заявки 0/5');
+    pick(frame, 0, 'NKMR');
+    pick(frame, 1, 'Продать, если цена ≥ (фиксация)');
+    const inputs = frame.querySelectorAll('input');
+    commit(inputs[0], '150,5');
+    commit(inputs[1], '3');
+    fireEvent.click(within(frame).getByText('Поставить'));
+    expect(sent(topic, 'add_order')).toEqual([{ ticker: 'NKMR', side: 'sell_above', count: 3, price: 150.5 }]);
+    expect(text(frame)).toContain('Заявок нет.');
+  });
+
+  test('стоящие заявки с понятными условиями, «Отменить» шлёт id; при пяти заявках новую не поставить', () => {
+    const orders = [
+      { id: 1, ticker: 'VYMD', side: 'buy_below', count: 5, price: 100 },
+      { id: 2, ticker: 'VYMD', side: 'sell_below', count: 3, price: 90.5 },
+      { id: 7, ticker: 'NKMR', side: 'sell_above', count: 2, price: 160 },
+      { id: 8, ticker: 'SECT', side: 'buy_below', count: 1, price: 95 },
+      { id: 9, ticker: 'SECT', side: 'buy_below', count: 1, price: 90 },
+    ] as const;
+    const { container, getAllByText, topic } = setup({ orders: [...orders] });
+    openPage(container, 'Портфель');
+    const content = text(container);
+    expect(content).toContain('Заявки 5/5');
+    expect(content).toContain('VYMD · купить 5 шт., если цена ≤ 100.00');
+    expect(content).toContain('VYMD · продать 3 шт., если цена ≤ 90.50 (стоп)');
+    expect(content).toContain('NKMR · продать 2 шт., если цена ≥ 160.00 (фиксация)');
+    fireEvent.click(getAllByText('Отменить')[2]);
+    expect(sent(topic, 'cancel_order')).toEqual([{ id: 7 }]);
+    fireEvent.click(getAllByText('Поставить')[0]);
+    expect(sent(topic, 'add_order')).toEqual([]);
+  });
+
+  test('без счёта и при заморозке заявки не ставятся и не снимаются', () => {
+    for (const locked of [{ has_account: 0 }, { frozen: 1 }]) {
+      const { container, getByText, topic, unmount } = setup({ ...locked, orders: [{ id: 1, ticker: 'VYMD', side: 'buy_below', count: 5, price: 100 }] });
+      openPage(container, 'Портфель');
+      fireEvent.click(getByText('Поставить'));
+      fireEvent.click(getByText('Отменить'));
+      expect(topic.mock.calls.filter(([message]) => String(message.type).startsWith('act/'))).toEqual([]);
+      unmount();
+    }
+  });
+
+  test('правила и сноски объясняют дивиденды, индекс и заявки', () => {
+    const { container } = setup({
+      drivers: {
+        ...base.drivers,
+        SECT: [{ label: 'Среднее по всем компаниям сектора', effect: null, note: '100 - когда все по базовой цене' }],
+        NKMR: [{ label: 'Закупки станции у «Накамура»', effect: null, note: 'цену не двигают: 5% суммы идёт в дивиденды держателям' }],
+      },
+    });
+    openPage(container, 'Правила');
+    let content = text(container);
+    expect(content).toContain('Дивиденды: 5% каждой закупки станции у партнёра компании идёт в её фонд');
+    expect(content).toContain('Индекс сектора стоит 100 × среднюю долю базовой цены всех компаний');
+    expect(content).toContain('не больше 5 на счёт');
+    openPage(container, 'От чего зависит цена');
+    content = text(container);
+    expect(content).toContain('Среднее по всем компаниям сектора: 100 - когда все по базовой цене');
+    expect(content).toContain('Закупки станции у «Накамура»: цену не двигают: 5% суммы идёт в дивиденды держателям');
   });
 });
