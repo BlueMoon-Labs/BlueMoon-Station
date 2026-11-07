@@ -8,11 +8,28 @@ import { StockTerminal } from './StockTerminal';
 
 const base: StockExchangeData = {
   companies: [
-    { ticker: 'VYMD', name: 'Вей-Мед', price: 120, change: 4.2, halted: 0, base_price: 120 },
+    { ticker: 'VYMD', name: 'Вей-Мед', price: 120, change: 4.2, halted: 0, base_price: 120, max_buy: 37 },
     { ticker: 'CYBS', name: 'Киберсан', price: 4, change: -60, halted: 1, base_price: 90 },
     { ticker: 'NKMR', name: 'Накамура', price: 140, change: 0, halted: 0, base_price: 140 },
   ],
   history: { VYMD: [100, 110, 120], CYBS: [], NKMR: [140, 140] },
+  drivers: {
+    VYMD: [
+      { label: 'Случайные колебания за минуту', effect: null, note: 'около ±2.5%' },
+      { label: 'Продажи станции через снабжение партнёру «Вей-Мед»', effect: 15, upto: 1, note: 'медикаменты; +5% за каждые 1000 кр. продаж' },
+      { label: 'Сорванный станцией спецзаказ «Вей-Мед»', effect: -5 },
+      { label: 'Вспышка болезни на станции', effect: 20 },
+    ],
+    CYBS: [],
+    NKMR: [{ label: 'Расслоение суперматерии на станции', effect: 10 }],
+  },
+  common_drivers: [
+    { label: 'Обвал рынка сектора', effect: -20 },
+    { label: 'Бум в секторе', effect: 10 },
+  ],
+  event_min: -20,
+  event_max: 25,
+  station_event_cooldown: 10,
   has_account: 1,
   account_name: 'Иван Петров',
   holdings: { VYMD: 3, CYBS: 2 },
@@ -82,8 +99,14 @@ describe('NtosStockExchange', () => {
     ]);
     expect(sent(topic, 'sell')).toEqual([
       { ticker: 'VYMD', count: 1 },
-      { ticker: 'VYMD', count: 3 },
+      { ticker: 'VYMD', count: 'max' },
     ]);
+  });
+
+  test('«Макс» показывает доступный объём и просит сервер посчитать его заново', () => {
+    const { getByText, topic } = setup();
+    fireEvent.click(getByText('Макс (37)'));
+    expect(sent(topic, 'buy')).toEqual([{ ticker: 'VYMD', count: 'max' }]);
   });
 
   test('остановленные торги и кулдаун убирают кнопки', () => {
@@ -121,6 +144,26 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('крупные сделки с акциями компании перед новостью о ней или до опровержения фальшивки');
     expect(content).not.toContain('2 000');
     expect(content).toContain('только капитан');
+  });
+
+  test('сноски: у компании видно, что и насколько двигает её цену', () => {
+    const { container } = setup();
+    const content = text(container);
+    expect(content).toContain('От чего зависит цена');
+    expect(content).toContain('Новости компании: от −20% до +25%');
+    expect(content).toContain('Обвал рынка сектора: −20%');
+    expect(content).toContain('Бум в секторе: +10%');
+    expect(content).toContain('не чаще раза в 10 мин.');
+    expect(content).toContain('Случайные колебания за минуту: около ±2.5%');
+    expect(content).toContain('Продажи станции через снабжение партнёру «Вей-Мед»: до +15% (медикаменты; +5% за каждые 1000 кр. продаж)');
+    expect(content).toContain('Сорванный станцией спецзаказ «Вей-Мед»: −5%');
+    expect(content).toContain('Вспышка болезни на станции: +20%');
+    expect(content).toContain('Расслоение суперматерии на станции: +10%');
+  });
+
+  test('сноски без данных от сервера не ломают окно', () => {
+    const { container } = setup({ drivers: undefined as any, common_drivers: undefined as any });
+    expect(text(container)).toContain('Котировки');
   });
 
   test('кратность лимита казны согласуется с числом', () => {

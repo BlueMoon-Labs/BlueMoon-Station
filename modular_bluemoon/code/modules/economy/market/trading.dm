@@ -72,6 +72,22 @@
 	SEND_SIGNAL(src, COMSIG_MARKET_STOCK_TRADE, account, ticker, count, price, TRUE, 0, user)
 	return null
 
+/// Сколько акций можно купить одной сделкой: в пределах лимита позиции и денег на счёте со спредом и комиссией.
+/datum/controller/subsystem/market/proc/max_buy_count(datum/bank_account/account, datum/stock_company/company)
+	if(!account || !company || company.is_halted())
+		return 0
+	var/spread = SSeconomy.settings.stock_spread
+	var/fee_percent = SSeconomy.settings.stock_fee
+	var/by_cap = round(position_cap(account) / max(company.price, company.base_price)) - (account.shares[company.ticker] || 0)
+	var/by_money = round(account.account_balance / (company.price * (100 + spread) / 100 * (100 + fee_percent) / 100))
+	. = max(0, min(by_cap, by_money))
+	// Цена и комиссия округляются вверх: число из деления может оказаться на пару акций дороже счёта
+	while(. > 0)
+		var/cost = CEILING(company.price * . * (100 + spread) / 100, 1)
+		if(cost + CEILING(cost * fee_percent / 100, 1) <= account.account_balance)
+			break
+		.--
+
 /datum/controller/subsystem/market/proc/try_sell_shares(datum/bank_account/account, ticker, count, mob/user)
 	var/datum/stock_company/company = companies[ticker]
 	. = trade_guard(account, company)

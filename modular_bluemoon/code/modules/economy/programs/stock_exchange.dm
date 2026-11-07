@@ -60,11 +60,23 @@
 /datum/computer_file/program/stock_exchange/proc/stocks_static_data()
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/list/histories = list()
+	var/list/drivers = list()
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		histories[ticker] = company.history
+		drivers[ticker] = company.price_drivers()
+	var/event_min = 0
+	var/event_max = 0
+	for(var/list/template as anything in SSmarket.company_event_templates)
+		event_min = min(event_min, template["effect"])
+		event_max = max(event_max, template["effect"])
 	return list(
 		"history" = histories,
+		"drivers" = drivers,
+		"common_drivers" = market_common_drivers(),
+		"event_min" = round(event_min * 100, 0.1),
+		"event_max" = round(event_max * 100, 0.1),
+		"station_event_cooldown" = STOCK_STATION_EVENT_COOLDOWN / (1 MINUTES),
 		"fee" = settings.stock_fee,
 		"spread" = settings.stock_spread,
 		"cooldown" = settings.stock_trade_cooldown_seconds,
@@ -90,6 +102,7 @@
 		var/list/entry = company.ui_entry()
 		entry -= "history"
 		entry["base_price"] = company.base_price
+		entry["max_buy"] = SSmarket.max_buy_count(account, company)
 		companies += list(entry)
 		var/last_trade = last_trades[ticker]
 		if(!isnull(last_trade))
@@ -120,15 +133,20 @@
 		if("buy", "sell")
 			var/ticker = params["ticker"]
 			var/count = params["count"]
-			if(istext(count))
+			if(istext(count) && count != "max")
 				count = text2num(count)
-			if(!istext(ticker) || !isnum(count))
+			if(!istext(ticker) || !(isnum(count) || count == "max"))
 				messages[user_ref] = "Неверная заявка."
 				return TRUE
 			var/datum/bank_account/account = trading_account(user)
 			if(!account)
 				messages[user_ref] = "Нет банковского счёта."
 				return TRUE
+			if(count == "max")
+				count = action == "buy" ? SSmarket.max_buy_count(account, SSmarket.get_company(ticker)) : (account.shares[ticker] || 0)
+				if(count < 1 && action == "buy")
+					messages[user_ref] = "Купить нечего: позиция упёрлась в лимит или не хватает денег."
+					return TRUE
 			var/balance_before = account.account_balance
 			var/is_buy = action == "buy"
 			var/error = is_buy ? SSmarket.try_buy_shares(account, ticker, count, user) : SSmarket.try_sell_shares(account, ticker, count, user)

@@ -30,6 +30,16 @@ GLOBAL_LIST_INIT(market_default_station_events, list(
 	"sector_boom" = list(STOCK_ALL_COMPANIES = 0.1),
 ))
 
+/// Названия событий станции для сносок биржи.
+GLOBAL_LIST_INIT(market_station_event_names, list(
+	"sm_delam" = "Расслоение суперматерии на станции",
+	"delta_alert" = "Код «Дельта» на станции",
+	"disease_outbreak" = "Вспышка болезни на станции",
+	"meteors" = "Метеоритный дождь у станции",
+	"market_crash" = "Обвал рынка сектора",
+	"sector_boom" = "Бум в секторе",
+))
+
 /datum/stock_company
 	var/ticker
 	var/name = "компания"
@@ -131,6 +141,43 @@ GLOBAL_LIST_INIT(market_default_station_events, list(
 
 /datum/stock_company/proc/ui_entry()
 	return list("ticker" = ticker, "name" = name, "price" = round(price, 0.01), "change" = change_percent(), "halted" = is_halted(), "history" = history)
+
+/// Сноски биржи: что двигает цену компании. effect - сдвиг в процентах, upto - это потолок, а не разовый скачок.
+/// Событие станции только со сдвигом для всех компаний сюда не входит - оно в общей строке, см. market_common_drivers().
+/datum/stock_company/proc/price_drivers()
+	. = list()
+	. += list(list("label" = "Случайные колебания за минуту", "effect" = null, "note" = "около ±[round(volatility * 100, 0.1)]%"))
+	var/datum/trade_partner/partner = partner_id ? SSmarket.get_partner(partner_id) : null
+	if(partner)
+		var/list/goods = list()
+		for(var/id in partner.buys)
+			if(id == PARTNER_ANY)
+				goods.Insert(1, "любые товары")
+				continue
+			var/datum/commodity/commodity = SSmarket.get_commodity(id)
+			if(commodity)
+				goods += lowertext(commodity.name)
+		var/note = "[jointext(goods, ", ")]; +5% за каждые [round(STOCK_TRADE_SCALE / 20)] кр. продаж"
+		if(!partner.unlocked)
+			note += "; партнёр пока не торгует со станцией"
+		. += list(list("label" = "Продажи станции через снабжение партнёру «[partner.name]»", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
+		. += list(list("label" = "Сорванный станцией спецзаказ «[partner.name]»", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
+	for(var/key in SSmarket.station_events)
+		var/list/effects = SSmarket.station_events[key]
+		if(isnull(effects[ticker]))
+			continue
+		var/mult = 1 + effects[ticker]
+		if(!isnull(effects[STOCK_ALL_COMPANIES]))
+			mult *= 1 + effects[STOCK_ALL_COMPANIES]
+		. += list(list("label" = GLOB.market_station_event_names[key] || key, "effect" = round((mult - 1) * 100, 0.1)))
+
+/// Сноски биржи, общие для всех компаний: события станции со сдвигом STOCK_ALL_COMPANIES.
+/proc/market_common_drivers()
+	. = list()
+	for(var/key in SSmarket.station_events)
+		var/list/effects = SSmarket.station_events[key]
+		if(!isnull(effects[STOCK_ALL_COMPANIES]))
+			. += list(list("label" = GLOB.market_station_event_names[key] || key, "effect" = round(effects[STOCK_ALL_COMPANIES] * 100, 0.1)))
 
 /// Событие компании в очереди: в момент eta двигает акции и уходит в срочные новости рынка.
 /datum/market_event

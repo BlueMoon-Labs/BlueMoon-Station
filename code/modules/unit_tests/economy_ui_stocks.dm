@@ -104,6 +104,40 @@
 	TEST_ASSERT_EQUAL(own.shares["AGRO"], 1, "Без карты покупка идёт с личного счёта")
 	TEST_ASSERT_EQUAL(treasury_account.shares["AGRO"], 2, "Казна не тронута")
 
+/// «Макс» покупает ровно столько, сколько позволяют деньги или лимит позиции: на одну акцию больше уже не проходит; «продать всё» продаёт всё.
+/datum/unit_test/economy_trading/ui/buy_max/Run()
+	var/mob/living/carbon/human/user = make_user(1000)
+	var/datum/bank_account/own = econ_account_of(user)
+	var/datum/computer_file/program/stock_exchange/program = install_program(user)
+	company.price = 47.3
+	var/by_money = SSmarket.max_buy_count(own, company)
+	TEST_ASSERT(by_money > 0, "Есть что купить на 1000 кр.")
+	var/datum/bank_account/probe = new_trader(1000)
+	TEST_ASSERT(SSmarket.try_buy_shares(probe, "AGRO", by_money + 1, user), "На одну акцию больше «Макс» не по карману")
+	var/list/entry
+	var/list/data = program.stocks_data(user)
+	for(var/list/each as anything in data["companies"])
+		if(each["ticker"] == "AGRO")
+			entry = each
+	TEST_ASSERT_EQUAL(entry["max_buy"], by_money, "Окно показывает тот же «Макс»")
+	press(user, program, "NtosStockExchange", "buy", list("ticker" = "AGRO", "count" = "max"))
+	TEST_ASSERT_EQUAL(own.shares["AGRO"], by_money, "Куплено на все деньги")
+	TEST_ASSERT_EQUAL(SSmarket.max_buy_count(own, company), 0, "Денег на ещё одну нет")
+	expire_cooldown(own, "AGRO")
+	press(user, program, "NtosStockExchange", "buy", list("ticker" = "AGRO", "count" = "max"))
+	TEST_ASSERT_EQUAL(message_of(program, user), "Купить нечего: позиция упёрлась в лимит или не хватает денег.", "Пустой «Макс» объясняет отказ")
+	expire_cooldown(own, "AGRO")
+	press(user, program, "NtosStockExchange", "sell", list("ticker" = "AGRO", "count" = "max"))
+	TEST_ASSERT(!own.shares["AGRO"], "Продано всё")
+
+	var/datum/bank_account/rich = new_trader(SSeconomy.settings.stock_position_cap * 3)
+	var/by_cap = SSmarket.max_buy_count(rich, company)
+	TEST_ASSERT_EQUAL(by_cap, round(SSeconomy.settings.stock_position_cap / max(company.price, company.base_price)), "Богатого ограничивает лимит позиции")
+	TEST_ASSERT(!SSmarket.try_buy_shares(rich, "AGRO", by_cap, user), "«Макс» по лимиту проходит")
+	company.halted_until = world.time + STOCK_HALT_TIME
+	TEST_ASSERT_EQUAL(SSmarket.max_buy_count(probe, company), 0, "На остановленных торгах купить нечего")
+	company.halted_until = 0
+
 /// Окно получает ровно котировки, счёт и правила из настроек, без очереди событий, их заголовков, сроков и порогов аудита.
 /datum/unit_test/economy_trading/ui/data/Run()
 	var/mob/living/carbon/human/user = make_user(1000)
@@ -117,8 +151,8 @@
 	qdel(queued)
 	halted.halted_until = 0
 	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap")
-	var/static/list/static_keys = list("history", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay")
-	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price")
+	var/static/list/static_keys = list("history", "drivers", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay")
+	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price", "max_buy")
 	var/mismatch = key_mismatch(data, data_keys)
 	TEST_ASSERT(!mismatch, "Ключи данных окна: [mismatch]")
 	mismatch = key_mismatch(static_data, static_keys)
@@ -139,6 +173,51 @@
 	TEST_ASSERT_EQUAL(static_data["persist_decay"], SSmarket.persist_decay, "Затухание между сменами")
 	TEST_ASSERT_EQUAL(static_data["news_delay"], SSmarket.news_flash_minutes, "Задержка новостей")
 	TEST_ASSERT(!findtext(encoded, "Секретный заголовок теста"), "Заголовок события из очереди утёк в окно")
+
+/// Сноски биржи: у каждой компании колебания, партнёр с его товарами и свои события станции с итоговым сдвигом; события для всех - общей строкой.
+/datum/unit_test/economy_trading/ui/drivers/Run()
+	var/datum/computer_file/program/stock_exchange/program = new
+	var/list/static_data = program.stocks_static_data()
+	qdel(program)
+	var/list/drivers = static_data["drivers"]
+	TEST_ASSERT_EQUAL(length(drivers), length(SSmarket.companies), "Сноски у каждой компании")
+	TEST_ASSERT(static_data["event_min"] < 0 && static_data["event_max"] > 0, "Разброс новостей компаний: [static_data["event_min"]]..[static_data["event_max"]]")
+	SSmarket.station_events["meteors"] = list("NTRN" = 0.1, STOCK_ALL_COMPANIES = 0.1)
+	var/datum/stock_company/nt = SSmarket.get_company("NTRN")
+	var/datum/stock_company/vey = SSmarket.get_company("VYMD")
+	var/datum/stock_company/naka = SSmarket.get_company("NKMR")
+	var/list/ntrn = driver_labels(nt.price_drivers())
+	var/list/vymd = driver_labels(vey.price_drivers())
+	var/list/nkmr = driver_labels(naka.price_drivers())
+	TEST_ASSERT_EQUAL(ntrn[GLOB.market_station_event_names["sm_delam"]], -25, "Расслоение СМ у Нанотрейзен")
+	TEST_ASSERT_EQUAL(nkmr[GLOB.market_station_event_names["sm_delam"]], 10, "Расслоение СМ у Накамуры")
+	TEST_ASSERT(!(GLOB.market_station_event_names["market_crash"] in ntrn), "Обвал рынка - в общей строке, а не у каждой компании")
+	var/list/common = driver_labels(market_common_drivers())
+	TEST_ASSERT_EQUAL(common[GLOB.market_station_event_names["market_crash"]], -20, "Обвал рынка касается всех")
+	TEST_ASSERT_EQUAL(common[GLOB.market_station_event_names["sector_boom"]], 10, "Бум касается всех")
+	TEST_ASSERT_EQUAL(common[GLOB.market_station_event_names["meteors"]], 10, "Общая часть метеоритов в общей строке")
+	TEST_ASSERT_EQUAL(ntrn[GLOB.market_station_event_names["meteors"]], 21, "Свой и общий шок одного события складываются как в station_event()")
+	TEST_ASSERT(!(GLOB.market_station_event_names["disease_outbreak"] in ntrn), "Вспышка болезни Нанотрейзен не касается")
+	TEST_ASSERT_EQUAL(vymd[GLOB.market_station_event_names["disease_outbreak"]], 20, "Вспышка болезни у Вей-Мед")
+	var/datum/trade_partner/vey_med = SSmarket.get_partner("vey_med")
+	var/list/sale = vymd["Продажи станции через снабжение партнёру «[vey_med.name]»"]
+	TEST_ASSERT(sale, "Продажи партнёру в сносках Вей-Мед")
+	TEST_ASSERT_EQUAL(sale["effect"], STOCK_TRADE_BOOST_MAX * 100, "Потолок роста от продаж")
+	TEST_ASSERT(findtext(sale["note"], "медикаменты"), "Товары партнёра строчными: [sale["note"]]")
+	var/datum/trade_partner/nakamura = SSmarket.get_partner("nakamura")
+	nakamura.unlocked = FALSE
+	nkmr = driver_labels(naka.price_drivers())
+	sale = nkmr["Продажи станции через снабжение партнёру «[nakamura.name]»"]
+	TEST_ASSERT(findtext(sale["note"], "пока не торгует"), "Закрытый партнёр помечен: [sale["note"]]")
+	var/datum/trade_partner/nt_logistics = SSmarket.get_partner("nt_logistics")
+	var/list/nt_sale = ntrn["Продажи станции через снабжение партнёру «[nt_logistics.name]»"]
+	TEST_ASSERT(findtext(nt_sale["note"], "любые товары"), "Партнёр без ограничений покупает любые товары: [nt_sale["note"]]")
+
+/// Сноски по подписи: сдвиг события станции числом, у продаж партнёру - вся запись.
+/datum/unit_test/economy_trading/ui/proc/driver_labels(list/drivers)
+	. = list()
+	for(var/list/driver as anything in drivers)
+		.[driver["label"]] = driver["note"] ? driver : driver["effect"]
 
 /// Терминал торгует тем же путём, у каждого пользователя свои ответ и режим казны, закрытие окна их сбрасывает; программа удаляется вместе с терминалом.
 /datum/unit_test/economy_trading/ui/terminal/Run()

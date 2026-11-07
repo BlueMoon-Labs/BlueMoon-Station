@@ -2,15 +2,28 @@ import { BooleanLike } from 'common/react';
 import { plural } from 'common/ru/plural';
 
 import { useBackend } from '../backend';
-import { Box, Button, NoticeBox, Section, Table } from '../components';
+import { Box, Button, NoticeBox, Section, Table, Tooltip } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ChangeBadge, Credits, EconomyLogo, formatCredits, Sparkline, StockEntry } from './common/Economy';
 
-type CompanyEntry = Omit<StockEntry, 'history'> & { base_price: number };
+type CompanyEntry = Omit<StockEntry, 'history'> & { base_price: number; max_buy?: number };
+
+/** Сноска: что двигает цену компании; effect - сдвиг в процентах, upto - потолок, а не разовый скачок. */
+export type PriceDriver = {
+  label: string;
+  effect: number | null;
+  upto?: BooleanLike;
+  note?: string;
+};
 
 export type StockExchangeData = {
   companies: CompanyEntry[];
   history: Record<string, number[]>;
+  drivers: Record<string, PriceDriver[]>;
+  common_drivers: PriceDriver[];
+  event_min: number;
+  event_max: number;
+  station_event_cooldown: number;
   has_account: BooleanLike;
   account_name: string | null;
   holdings: Record<string, number>;
@@ -103,15 +116,50 @@ const TradeButtons = (props: { company: CompanyEntry; held: number; wait: number
       <Button disabled={locked} onClick={() => act('buy', { ticker: company.ticker, count: 10 })}>
         ×10
       </Button>
+      <Button
+        disabled={locked || !company.max_buy}
+        tooltip="Купить сразу столько, сколько позволяют лимит позиции и деньги на счёте"
+        onClick={() => act('buy', { ticker: company.ticker, count: 'max' })}>
+        Макс{company.max_buy ? ` (${company.max_buy})` : ''}
+      </Button>
       <Button disabled={locked || held < 1} onClick={() => act('sell', { ticker: company.ticker, count: 1 })}>
         Продать
       </Button>
-      <Button disabled={locked || held < 1} onClick={() => act('sell', { ticker: company.ticker, count: held })}>
+      <Button disabled={locked || held < 1} onClick={() => act('sell', { ticker: company.ticker, count: 'max' })}>
         Продать всё
       </Button>
     </>
   );
 };
+
+const signedPercent = (value: number) => `${value > 0 ? '+' : value < 0 ? '−' : ''}${Math.abs(value)}%`;
+
+const DriverList = (props: { drivers: PriceDriver[] }) => (
+  <>
+    {props.drivers.map((driver) => (
+      <Box key={driver.label}>
+        {driver.label}
+        {driver.effect !== null && (
+          <>
+            {': '}
+            <Box inline nowrap color={driver.effect > 0 ? 'good' : driver.effect < 0 ? 'bad' : undefined}>
+              {driver.upto ? 'до ' : ''}
+              {signedPercent(driver.effect)}
+            </Box>
+          </>
+        )}
+        {!!driver.note && (
+          <>
+            {driver.effect !== null ? ' ' : ': '}
+            <Box inline color="label">
+              {driver.effect !== null ? `(${driver.note})` : driver.note}
+            </Box>
+          </>
+        )}
+      </Box>
+    ))}
+  </>
+);
 
 const QuotesSection = () => {
   const { data } = useBackend<StockExchangeData>();
@@ -137,7 +185,13 @@ const QuotesSection = () => {
                 <EconomyLogo id={company.ticker} />
                 {company.ticker}
               </Table.Cell>
-              <Table.Cell>{company.name}</Table.Cell>
+              <Table.Cell>
+                <Tooltip content={<DriverList drivers={data.drivers?.[company.ticker] || []} />}>
+                  <Box inline style={{ borderBottom: '1px dotted', cursor: 'help' }}>
+                    {company.name}
+                  </Box>
+                </Tooltip>
+              </Table.Cell>
               <Table.Cell collapsing>
                 <Sparkline values={data.history[company.ticker] || []} />
               </Table.Cell>
@@ -156,6 +210,42 @@ const QuotesSection = () => {
             </Table.Row>
           );
         })}
+      </Table>
+    </Section>
+  );
+};
+
+const DriversSection = () => {
+  const { data } = useBackend<StockExchangeData>();
+  return (
+    <Section title="От чего зависит цена">
+      <Box mb={1}>
+        <Box color="label">У всех компаний:</Box>
+        <DriverList
+          drivers={[
+            {
+              label: 'Новости компании',
+              effect: null,
+              note: `от ${signedPercent(data.event_min)} до ${signedPercent(data.event_max)}`,
+            },
+            ...(data.common_drivers || []),
+          ]}
+        />
+        <Box color="label">
+          Одно и то же событие на станции двигает цену не чаще раза в {data.station_event_cooldown} мин.
+        </Box>
+      </Box>
+      <Table>
+        {data.companies.map((company) => (
+          <Table.Row key={company.ticker} className="candystripe">
+            <Table.Cell bold collapsing verticalAlign="top" py={0.5}>
+              {company.ticker}
+            </Table.Cell>
+            <Table.Cell py={0.5}>
+              <DriverList drivers={data.drivers?.[company.ticker] || []} />
+            </Table.Cell>
+          </Table.Row>
+        ))}
       </Table>
     </Section>
   );
@@ -208,6 +298,7 @@ export const NtosStockExchangeContent = () => (
   <>
     <AccountSection />
     <QuotesSection />
+    <DriversSection />
     <RulesSection />
   </>
 );
