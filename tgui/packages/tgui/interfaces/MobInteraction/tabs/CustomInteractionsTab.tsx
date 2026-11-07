@@ -314,10 +314,10 @@ const Effects = ({
       {!!settings.arousalLevel && (
         <>
           <Box style={{ gridColumn: 'span 2' }}>
-            <Box color="label" mb={0.25}>Орган для возбуждения</Box>
+            <Box color="label" mb={0.25}>Орган получающий удовольствие</Box>
             <Dropdown
               width="100%"
-              aria-label="Орган для возбуждения"
+              aria-label="Орган получающий удовольствие"
               options={arousalOrgans}
               selected={settings.arousalOrgan}
               onSelected={(arousalOrgan: string) => onChange({ ...settings, arousalOrgan })}
