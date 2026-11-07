@@ -1,11 +1,12 @@
 import { BooleanLike } from 'common/react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, LabeledList, NoticeBox, Section } from '../components';
+import { AnimatedNumber, Button, NoticeBox } from '../components';
 import { Window } from '../layouts';
 import { CargoCatalog } from './Cargo';
 import { formatCredits } from './common/Economy';
 import { InterfaceLockNoticeBox } from './common/InterfaceLockNoticeBox';
+import { NtFrame, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Data = {
   locked: BooleanLike;
@@ -31,16 +32,28 @@ export const CargoExpress = (props) => {
   return (
     <Window width={600} height={700}>
       <Window.Content scrollable>
-        <InterfaceLockNoticeBox accessText={access_hint} />
-        <Button
-          fluid
-          color={locked ? 'green' : 'red'}
-          icon={locked ? 'unlock' : 'lock'}
-          content={locked ? 'Unlock Console' : 'Lock Console'}
-          onClick={() => act('toggleLock')}
-          mb={1}
-        />
-        {!locked && <CargoExpressContent />}
+        <NtScreen
+          tone="supply"
+          device="Экспресс-снабжение"
+          status={locked ? 'Консоль заблокирована' : data.message}
+          readout={
+            !locked && (
+              <NtReadout label={data.budget_name || 'Бюджет'}>
+                <AnimatedNumber value={Math.round(data.points)} format={(value) => formatCredits(value)} />
+              </NtReadout>
+            )
+          }>
+          <InterfaceLockNoticeBox accessText={access_hint} />
+          <Button
+            fluid
+            color={locked ? 'good' : 'bad'}
+            icon={locked ? 'unlock' : 'lock'}
+            content={locked ? 'Разблокировать консоль' : 'Заблокировать консоль'}
+            onClick={() => act('toggleLock')}
+            mb={1.5}
+          />
+          {!locked && <CargoExpressContent />}
+        </NtScreen>
       </Window.Content>
     </Window>
   );
@@ -50,8 +63,6 @@ const CargoExpressContent = (props) => {
   const { act, data } = useBackend<Data>();
   const {
     hasBeacon,
-    message,
-    points,
     usingBeacon,
     beaconzone,
     beaconName,
@@ -66,41 +77,18 @@ const CargoExpressContent = (props) => {
   return (
     <>
       {!!market_help && <NoticeBox info>{market_help}</NoticeBox>}
-      <Section
-        title="Cargo Express"
-        buttons={
-          <Box inline bold>
-            {budget_name ? `${budget_name}: ` : ''}
-            <AnimatedNumber value={Math.round(points)} format={(value) => formatCredits(value)} />
-          </Box>
-        }>
-        <LabeledList>
-          <LabeledList.Item label="Landing Location">
-            {!beacon_only && (
-              <Button
-                content="Cargo Bay"
-                selected={!usingBeacon}
-                onClick={() => act('LZCargo')}
-              />
-            )}
-            <Button
-              selected={usingBeacon}
-              disabled={!hasBeacon}
-              onClick={() => act('LZBeacon')}>
-              {beaconzone} ({beaconName})
-            </Button>
-            <Button
-              content={printMsg}
-              disabled={!canBuyBeacon}
-              onClick={() => act('printBeacon')}
-            />
-          </LabeledList.Item>
-          <LabeledList.Item label="Оплата">
-            {self_paid ? 'личный счёт карты' : budget_name}, сразу при заказе, по цене пака у партнёра
-          </LabeledList.Item>
-          <LabeledList.Item label="Notice">{message}</LabeledList.Item>
-        </LabeledList>
-      </Section>
+      <NtFrame title="Доставка капсулой">
+        <NtLine label="Куда">
+          {!beacon_only && <Button content="Склад снабжения" selected={!usingBeacon} onClick={() => act('LZCargo')} />}
+          <Button selected={usingBeacon} disabled={!hasBeacon} onClick={() => act('LZBeacon')}>
+            {beaconzone} ({beaconName})
+          </Button>
+          <Button content={printMsg} disabled={!canBuyBeacon} onClick={() => act('printBeacon')} />
+        </NtLine>
+        <NtLine label="Оплата">
+          {self_paid ? 'личный счёт карты' : budget_name}, сразу при заказе, по цене пака у партнёра
+        </NtLine>
+      </NtFrame>
       <CargoCatalog express />
     </>
   );

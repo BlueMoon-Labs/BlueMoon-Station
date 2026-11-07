@@ -44,7 +44,7 @@ const text = (container: HTMLElement) => (container.textContent || '').replace(/
 describe('CargoExpress', () => {
   test('бюджет и плательщик берутся из данных', () => {
     const content = text(setup().container);
-    expect(content).toContain('бюджет снабжения: 5 000 кр.');
+    expect(content).toContain('бюджет снабжения5 000 кр.');
     expect(content).toContain('бюджет снабжения, сразу при заказе');
     expect(content).toContain('Напечатать маяк за 500 кр.');
     expect(content).toContain('Экспресс-заказ списывает цену пака у партнёра сразу.');

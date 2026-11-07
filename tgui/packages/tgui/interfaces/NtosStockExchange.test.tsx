@@ -73,6 +73,11 @@ const sent = (topic: jest.Mock, action: string) =>
     .filter((message) => message.type === `act/${action}`)
     .map((message) => JSON.parse(message.payload));
 
+const openPage = (container: HTMLElement, label: string) => {
+  const item = Array.from(container.querySelectorAll('.NtTerm__menuItem')).find((node) => (node.textContent || '').includes(label));
+  fireEvent.click(item as Element);
+};
+
 const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
 
 describe('NtosStockExchange', () => {
@@ -130,6 +135,7 @@ describe('NtosStockExchange', () => {
 
   test('правила биржи берут числа из данных', () => {
     const { container } = setup();
+    openPage(container, 'Правила');
     const content = text(container);
     expect(content).toContain('в канале «Сводка сектора» на ньюскастерах не сразу, а в течение примерно 7 мин. после скачка цены');
     expect(content).toContain('Через 5 мин. после выхода NT публикует опровержение, и цена возвращается');
@@ -148,6 +154,7 @@ describe('NtosStockExchange', () => {
 
   test('сноски: у компании видно, что и насколько двигает её цену', () => {
     const { container } = setup();
+    openPage(container, 'От чего зависит цена');
     const content = text(container);
     expect(content).toContain('От чего зависит цена');
     expect(content).toContain('Новости компании: от −20% до +25%');
@@ -161,15 +168,26 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('Расслоение суперматерии на станции: +10%');
   });
 
+  test('портфель и бегущая строка: позиция по текущей цене, у остановленной компании - стоп', () => {
+    const { container } = setup();
+    expect(container.querySelector('.NtTerm__tape')?.textContent).toContain('стоп');
+    openPage(container, 'Портфель');
+    expect(text(container)).toContain('VYMD · Вей-Мед · 3 шт. по 120.00');
+    expect(text(container)).toContain('360 кр.');
+  });
+
   test('сноски без данных от сервера не ломают окно', () => {
     const { container } = setup({ drivers: undefined as any, common_drivers: undefined as any });
     expect(text(container)).toContain('Котировки');
   });
 
   test('кратность лимита казны согласуется с числом', () => {
-    expect(text(setup({ treasury_cap_mult: 5 }).container)).toContain('лимит в 5 раз больше личного');
-    expect(text(setup({ treasury_cap_mult: 3 }).container)).toContain('лимит в 3 раза больше личного');
-    expect(text(setup({ treasury_cap_mult: 22 }).container)).toContain('лимит в 22 раза больше личного');
+    for (const [mult, word] of [[5, 'раз'], [3, 'раза'], [22, 'раза']] as const) {
+      const { container, unmount } = setup({ treasury_cap_mult: mult });
+      openPage(container, 'Правила');
+      expect(text(container)).toContain(`лимит в ${mult} ${word} больше личного`);
+      unmount();
+    }
   });
 
   test('без права на казну переключателя нет', () => {
@@ -180,8 +198,9 @@ describe('NtosStockExchange', () => {
   test('капитан переключает торговлю из казны', () => {
     const { container, getByText, topic } = setup({ can_treasury: 1, using_treasury: 1, account_name: 'Казна станции', position_cap: 50000 });
     expect(text(container)).toContain('Казна станции');
-    expect(text(container)).toContain('не больше чем на 50 000 кр.');
     fireEvent.click(getByText('Торговать из казны'));
+    openPage(container, 'Правила');
+    expect(text(container)).toContain('не больше чем на 50 000 кр.');
     expect(sent(topic, 'use_treasury')).toEqual([{ value: false }]);
   });
 

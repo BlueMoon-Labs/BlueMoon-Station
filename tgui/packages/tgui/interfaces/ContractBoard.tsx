@@ -1,10 +1,12 @@
 import { BooleanLike } from 'common/react';
+import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, Collapsible, LabeledList, NoticeBox, Section } from '../components';
+import { AnimatedNumber, Box, Button, NoticeBox } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { formatCredits } from './common/Economy';
+import { NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type ContractBoardData = {
   mode: 'pad' | 'console';
@@ -21,7 +23,7 @@ const PadSection = (props) => {
   const { act, data } = useBackend<ContractBoardData>();
   const { pad, pad_on_station, sending, status_report } = data;
   return (
-    <Section
+    <NtFrame
       title="Пад подработки"
       buttons={
         <>
@@ -35,51 +37,54 @@ const PadSection = (props) => {
           />
         </>
       }>
-      <LabeledList>
-        <LabeledList.Item label="Пад" color={pad && pad_on_station ? 'good' : 'bad'}>
-          {!pad ? 'Не найден' : pad_on_station ? 'На связи' : 'Вне станции'}
-        </LabeledList.Item>
-        <LabeledList.Item label="Отчёт">{status_report}</LabeledList.Item>
-      </LabeledList>
-      <Box color="label" mt={1}>
+      <NtLine label="Пад" tone={pad && pad_on_station ? 'good' : 'bad'}>
+        {!pad ? 'Не найден' : pad_on_station ? 'На связи' : 'Вне станции'}
+      </NtLine>
+      <NtLine label="Отчёт">{status_report || '-'}</NtLine>
+      <Box className="NtTerm__hint" mt={1}>
         Положите на пад то, что просят контракты поставки, и отправьте: подходящее уйдёт ЦК, остальное останется на
         месте.
       </Box>
-    </Section>
+    </NtFrame>
   );
 };
+
+type BoardPage = 'board' | 'help';
 
 /** Доска контрактов NT: пункт подработки с падом и консоль контрактов снабжения. */
 export const ContractBoardContent = (props) => {
   const { act, data } = useBackend<ContractBoardData>();
   const { mode, contracts_help, my_name, stored_cash } = data;
+  const [page, setPage] = useState<BoardPage>('board');
+  const pages: NtMenuItem<BoardPage>[] = [
+    { key: 'board', label: 'Контракты' },
+    ...(contracts_help ? [{ key: 'help' as BoardPage, label: 'Как работают контракты' }] : []),
+  ];
   return (
-    <>
-      <NoticeBox color={my_name ? 'blue' : 'default'}>
-        {my_name ? `Счёт: ${my_name}` : 'Банковский счёт не найден: контракт не взять.'}
-      </NoticeBox>
-      {!!contracts_help && (
-        <Collapsible title="Как работают контракты">
-          <NoticeBox info>{contracts_help}</NoticeBox>
-        </Collapsible>
+    <NtScreen
+      tone="contracts"
+      device={mode === 'pad' ? 'Пункт подработки' : 'Доска контрактов'}
+      status={my_name ? `Счёт: ${my_name}` : 'Банковский счёт не найден: контракт не взять.'}
+      readout={
+        mode === 'console' ? (
+          <NtReadout label="Бюджет снабжения">
+            <AnimatedNumber value={stored_cash ?? 0} format={(value) => formatCredits(value)} />
+          </NtReadout>
+        ) : undefined
+      }
+      menu={<NtMenu<BoardPage> items={pages} selected={page} onSelect={setPage} />}>
+      {page === 'help' && !!contracts_help && <NoticeBox info>{contracts_help}</NoticeBox>}
+      {page === 'board' && (
+        <>
+          {mode === 'pad' && <PadSection />}
+          <NtFrame
+            title="Контракты NT"
+            buttons={mode === 'console' && <Button icon="print" content="Распечатать" onClick={() => act('Print')} />}>
+            <ContractTable />
+          </NtFrame>
+        </>
       )}
-      {mode === 'pad' && <PadSection />}
-      <Section
-        title="Контракты NT"
-        buttons={
-          mode === 'console' && (
-            <>
-              <Box inline bold mr={1}>
-                {'Бюджет снабжения: '}
-                <AnimatedNumber value={stored_cash ?? 0} format={(value) => formatCredits(value)} />
-              </Box>
-              <Button icon="print" content="Распечатать" onClick={() => act('Print')} />
-            </>
-          )
-        }>
-        <ContractTable />
-      </Section>
-    </>
+    </NtScreen>
   );
 };
 

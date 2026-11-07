@@ -93,6 +93,7 @@ test('справка о контрактах и пустая доска без �
   const ui = setup({ contracts: [], my_name: null });
   fireEvent.click(ui.getByText('Как работают контракты'));
   expect(ui.getByText('Контракты NT: поставка и деятельность.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Контракты'));
   expect(ui.getByText('Контрактов сейчас нет.')).toBeTruthy();
   expect(ui.getByText('Банковский счёт не найден: контракт не взять.')).toBeTruthy();
 });

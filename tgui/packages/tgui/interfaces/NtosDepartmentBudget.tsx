@@ -2,10 +2,11 @@ import { BooleanLike } from 'common/react';
 import { useEffect, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Section, Stack, Table, Tabs } from '../components';
+import { Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Stack, Table } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
-import { ContractEntry, Credits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
+import { ContractEntry, Credits, formatCredits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
+import { DEPARTMENT_TONES, NtFrame, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type DepartmentInfo = {
   id: string;
@@ -142,30 +143,40 @@ export const DepartmentConsole = () => (
 export const NtosDepartmentBudgetContent = () => {
   const { data } = useBackend<BudgetData>();
   const [tab, setTab] = useState<Tab>('overview');
-  const tabs: [Tab, string, string][] = [
-    ['overview', 'Обзор', 'wallet'],
-    ['catalog', 'Каталог', 'boxes'],
-    ['requests', 'Заявки', 'clipboard-list'],
-    ['contracts', 'Контракты', 'file-contract'],
-    ['work', 'Работа', 'briefcase'],
-    ['register', 'Касса', 'cash-register'],
+  const department = data.department;
+  const requests = (data.requests || []).filter((request) => request.status === 'pending').length;
+  const tabs: NtMenuItem<Tab>[] = [
+    { key: 'overview', label: 'Обзор' },
+    { key: 'catalog', label: 'Каталог' },
+    { key: 'requests', label: 'Заявки', count: requests },
+    { key: 'contracts', label: 'Контракты' },
+    { key: 'work', label: 'Работа' },
+    { key: 'register', label: 'Касса' },
   ];
   if (data.is_science) {
-    tabs.push(['grant', 'Грант', 'flask']);
+    tabs.push({ key: 'grant', label: 'Грант' });
   }
+  const hasDepartment = !!data.has_department && !!department;
   return (
-    <>
+    <NtScreen
+      tone={(department && DEPARTMENT_TONES[department.id]) || 'civil'}
+      device="Бюджет отдела"
+      status={hasDepartment ? `${department.name} · на смене ${department.staff_on_shift} чел.` : 'Отдел не выбран'}
+      readout={
+        hasDepartment ? (
+          <>
+            <NtReadout label="Грант NT">{formatCredits(department.grant)}</NtReadout>
+            <NtReadout label="Баланс" tone={department.balance < 0 ? 'bad' : undefined}>
+              {formatCredits(department.balance)}
+            </NtReadout>
+          </>
+        ) : undefined
+      }
+      menu={hasDepartment ? <NtMenu<Tab> items={tabs} selected={tab} onSelect={setTab} /> : undefined}>
       <DepartmentSwitch />
       {!!data.message && <NoticeBox info>{data.message}</NoticeBox>}
-      {data.has_department ? (
+      {hasDepartment ? (
         <>
-          <Tabs>
-            {tabs.map(([id, label, icon]) => (
-              <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
-                {label}
-              </Tabs.Tab>
-            ))}
-          </Tabs>
           {tab === 'overview' && <OverviewTab />}
           {tab === 'catalog' && <CatalogTab />}
           {tab === 'requests' && <RequestsTab />}
@@ -181,7 +192,7 @@ export const NtosDepartmentBudgetContent = () => {
             : 'Отдел не определён: окно показывает отдел по вашему счёту сотрудника. Казна станции - в окне казны.'}
         </NoticeBox>
       )}
-    </>
+    </NtScreen>
   );
 };
 
@@ -191,19 +202,19 @@ const DepartmentSwitch = () => {
     return null;
   }
   return (
-    <Section title="Отдел">
-      <Box color="label" mb={1}>
-        ГП и капитан открывают бюджет любого отдела и управляют им, как глава.
-      </Box>
-      {data.departments.map((department) => (
-        <Button
-          key={department.id}
-          selected={data.department?.id === department.id}
-          onClick={() => act('select_department', { id: department.id })}>
-          {department.name}
-        </Button>
-      ))}
-    </Section>
+    <Box mb={1.5}>
+      <div className="NtTerm__chips">
+        {data.departments.map((department) => (
+          <span
+            key={department.id}
+            className={data.department?.id === department.id ? 'NtTerm__chip NtTerm__chip--active' : 'NtTerm__chip'}
+            onClick={() => act('select_department', { id: department.id })}>
+            {department.name}
+          </span>
+        ))}
+      </div>
+      <Box className="NtTerm__hint">ГП и капитан открывают бюджет любого отдела и управляют им, как глава.</Box>
+    </Box>
   );
 };
 
@@ -212,7 +223,7 @@ const OverviewTab = () => {
   const department = data.department as DepartmentInfo;
   return (
     <>
-      <Section title={`Бюджет: ${department.name}`}>
+      <NtFrame title={`Бюджет: ${department.name}`}>
         <LabeledList>
           <LabeledList.Item label="Баланс">
             <Credits amount={department.balance} />
@@ -275,7 +286,7 @@ const OverviewTab = () => {
           на смене, зарплату не получает, и долг ему не копится.
         </Box>
         {!!data.manifest_department && <ManifestButton />}
-      </Section>
+      </NtFrame>
       {!!data.can_manage && <StaffSection />}
       {!!data.can_manage && <TreasurySection />}
       {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
@@ -361,7 +372,7 @@ const StaffSection = () => {
   const { data } = useBackend<BudgetData>();
   const staff = data.staff || [];
   return (
-    <Section title="Сотрудники">
+    <NtFrame title="Сотрудники">
       <Box color="label" mb={1}>
         Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до{' '}
         {data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт
@@ -387,7 +398,7 @@ const StaffSection = () => {
       ) : (
         <Box color="label">В отделе нет сотрудников со счетами.</Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -397,7 +408,7 @@ const TreasurySection = () => {
   const [reason, setReason] = useState('');
   const requests = data.treasury_requests || [];
   return (
-    <Section title="Запрос в казну">
+    <NtFrame title="Запрос в казну">
       <Box color="label" mb={1}>
         Деньги из казны станции переводят капитан или ГП в окне казны. До <Credits amount={data.treasury_max} /> за
         запрос, решения ждут не больше {data.treasury_pending_max} запросов отдела.
@@ -442,7 +453,7 @@ const TreasurySection = () => {
           )
         </Box>
       ))}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -453,7 +464,7 @@ const CatalogTab = () => {
   const canOrder = !!data.can_manage;
   const canRequest = canOrder || !!data.is_staff;
   return (
-    <Section title="Каталог отдела">
+    <NtFrame title="Каталог отдела">
       <Box color="label" mb={1}>
         {canOrder
           ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным.'
@@ -523,7 +534,7 @@ const CatalogTab = () => {
       ) : (
         <Box color="label">У отдела нет своего каталога.</Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -531,7 +542,7 @@ const RequestsTab = () => {
   const { act, data } = useBackend<BudgetData>();
   const requests = [...(data.requests || [])].reverse();
   return (
-    <Section title="Заявки">
+    <NtFrame title="Заявки">
       {requests.length ? (
         <Table>
           <Table.Row header>
@@ -574,19 +585,19 @@ const RequestsTab = () => {
       ) : (
         <Box color="label">Заявок нет.</Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
 const ContractsTab = () => {
   const { data } = useBackend<BudgetData>();
   return (
-    <Section title="Контракты отдела">
+    <NtFrame title="Контракты отдела">
       <Box color="label" mb={1}>
         {data.contracts_help}
       </Box>
       <ContractTable showShare={false} />
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -595,7 +606,7 @@ const WorkTab = () => {
   const log = [...(data.work_log || [])].reverse();
   return (
     <>
-      <Section title="Оплата работы">
+      <NtFrame title="Оплата работы">
         <Box color="label" mb={1}>
           NT платит отделу за сделанную работу, а исполнитель получает ещё {data.work_share}% сверху личной премией (до{' '}
           <Credits amount={data.work_cap} /> в час).
@@ -615,8 +626,8 @@ const WorkTab = () => {
         ) : (
           <Box color="label">Отделу не платят за отдельные виды работы - только грант и контракты.</Box>
         )}
-      </Section>
-      <Section title="Журнал работы">
+      </NtFrame>
+      <NtFrame title="Журнал работы">
         {log.length ? (
           <Table>
             {log.map((entry, index) => (
@@ -635,7 +646,7 @@ const WorkTab = () => {
         ) : (
           <Box color="label">Оплаченной работы пока нет.</Box>
         )}
-      </Section>
+      </NtFrame>
     </>
   );
 };
@@ -645,7 +656,7 @@ const RegisterTab = () => {
   const [share, setShare] = useState(data.register_share || 0);
   useEffect(() => setShare(data.register_share || 0), [data.register_share]);
   return (
-    <Section title="Кассы отдела">
+    <NtFrame title="Кассы отдела">
       <Box color="label" mb={1}>
         Оплата на кассе, за которой стоит сотрудник отдела, делится: доля кассира идёт ему лично, остальное - в бюджет
         отдела. Налога с продаж нет, чаевые целиком достаются кассиру.
@@ -660,7 +671,7 @@ const RegisterTab = () => {
           <Button onClick={() => act('register_share', { percent: share })}>Сохранить</Button>
         </Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };
 
@@ -669,7 +680,7 @@ const GrantTab = () => {
   const [points, setPoints] = useState(0);
   const left = data.grant_left || 0;
   return (
-    <Section title="Грант на исследования">
+    <NtFrame title="Грант на исследования">
       <Box color="label" mb={1}>
         Наука покупает очки исследований за деньги бюджета: {data.grant_price} кр. за очко, не больше {data.grant_cap}{' '}
         очков в час. Очки начисляются сразу.
@@ -689,6 +700,6 @@ const GrantTab = () => {
           </Button>
         </Box>
       )}
-    </Section>
+    </NtFrame>
   );
 };

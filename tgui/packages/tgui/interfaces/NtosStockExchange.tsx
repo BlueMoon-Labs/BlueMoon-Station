@@ -1,10 +1,12 @@
 import { BooleanLike } from 'common/react';
 import { plural } from 'common/ru/plural';
+import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, NoticeBox, Section, Table, Tooltip } from '../components';
+import { Box, Button, NoticeBox, Table, Tooltip } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ChangeBadge, Credits, EconomyLogo, formatCredits, Sparkline, StockEntry } from './common/Economy';
+import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type CompanyEntry = Omit<StockEntry, 'history'> & { base_price: number; max_buy?: number };
 
@@ -50,51 +52,45 @@ export type StockExchangeData = {
   persist_decay: number;
 };
 
-const AccountSection = () => {
+/** Над разделами: переключатель казны, заморозка и ответ на последнюю сделку. */
+const AccountNotices = () => {
   const { act, data } = useBackend<StockExchangeData>();
   return (
-    <Section
-      title={data.using_treasury ? 'Казна станции' : 'Личный счёт'}
-      buttons={
-        !!data.can_treasury && (
+    <>
+      {!!data.can_treasury && (
+        <Box mb={1}>
           <Button.Checkbox
             checked={!!data.using_treasury}
             onClick={() => act('use_treasury', { value: !data.using_treasury })}>
             Торговать из казны
           </Button.Checkbox>
-        )
-      }>
-      {data.has_account ? (
-        <Table>
-          <Table.Row>
-            <Table.Cell color="label">Счёт</Table.Cell>
-            <Table.Cell>{data.account_name}</Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell color="label">Доступно</Table.Cell>
-            <Table.Cell>
-              <Credits amount={data.balance} />
-            </Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell color="label">Акции по текущей цене</Table.Cell>
-            <Table.Cell>
-              <Credits amount={data.portfolio} />
-            </Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell color="label">Прибыль с продаж за смену</Table.Cell>
-            <Table.Cell color={data.realized > 0 ? 'good' : data.realized < 0 ? 'bad' : undefined}>
-              <Credits amount={data.realized} signed />
-            </Table.Cell>
-          </Table.Row>
-        </Table>
-      ) : (
-        <NoticeBox>Нет банковского счёта: торговать нечем.</NoticeBox>
+        </Box>
       )}
+      {!data.has_account && <NoticeBox>Нет банковского счёта: торговать нечем.</NoticeBox>}
       {!!data.frozen && <NoticeBox danger>Счёт заморожен финансовым аудитом: сделки недоступны.</NoticeBox>}
       {!!data.message && <NoticeBox info>{data.message}</NoticeBox>}
-    </Section>
+    </>
+  );
+};
+
+/** Бегущая строка котировок под шапкой: медленная, на наведение останавливается. */
+const Tape = () => {
+  const { data } = useBackend<StockExchangeData>();
+  const items = (copy: number) => data.companies.map((company) => (
+    <span key={`${company.ticker}-${copy}`} className="NtTerm__tapeItem">
+      <b>{company.ticker}</b> {company.price.toFixed(2)}{' '}
+      <span className={company.change > 0 ? 'color-good' : company.change < 0 ? 'color-bad' : undefined}>
+        {company.halted ? 'стоп' : `${company.change > 0 ? '▲' : company.change < 0 ? '▼' : '·'}${Math.abs(company.change)}%`}
+      </span>
+    </span>
+  ));
+  return (
+    <div className="NtTerm__tape">
+      <div className="NtTerm__tapeInner">
+        {items(1)}
+        {items(2)}
+      </div>
+    </div>
   );
 };
 
@@ -164,7 +160,7 @@ const DriverList = (props: { drivers: PriceDriver[] }) => (
 const QuotesSection = () => {
   const { data } = useBackend<StockExchangeData>();
   return (
-    <Section title="Котировки">
+    <NtFrame title="Котировки">
       <Table>
         <Table.Row header>
           <Table.Cell>Тикер</Table.Cell>
@@ -181,7 +177,7 @@ const QuotesSection = () => {
           const held = data.holdings[company.ticker] || 0;
           return (
             <Table.Row key={company.ticker} className="candystripe">
-              <Table.Cell bold collapsing>
+              <Table.Cell bold collapsing className="NtTerm__num">
                 <EconomyLogo id={company.ticker} />
                 {company.ticker}
               </Table.Cell>
@@ -196,7 +192,9 @@ const QuotesSection = () => {
                 <Sparkline values={data.history[company.ticker] || []} />
               </Table.Cell>
               <Table.Cell collapsing textAlign="right" nowrap>
-                {company.price.toFixed(2)}
+                <span key={company.price} className="NtTerm__num NtTerm__flash">
+                  {company.price.toFixed(2)}
+                </span>
               </Table.Cell>
               <Table.Cell collapsing>
                 <ChangeBadge percent={company.change} />
@@ -211,14 +209,14 @@ const QuotesSection = () => {
           );
         })}
       </Table>
-    </Section>
+    </NtFrame>
   );
 };
 
 const DriversSection = () => {
   const { data } = useBackend<StockExchangeData>();
   return (
-    <Section title="От чего зависит цена">
+    <NtFrame title="От чего зависит цена">
       <Box mb={1}>
         <Box color="label">У всех компаний:</Box>
         <DriverList
@@ -247,14 +245,14 @@ const DriversSection = () => {
           </Table.Row>
         ))}
       </Table>
-    </Section>
+    </NtFrame>
   );
 };
 
 const RulesSection = () => {
   const { data } = useBackend<StockExchangeData>();
   return (
-    <Section title="Как работает биржа">
+    <NtFrame title="Как работает биржа">
       <Box mb={1}>
         Цены меняются раз в минуту. События компаний, события на станции и продажи станции партнёрам двигают цену
         скачком, и он остаётся.
@@ -291,18 +289,79 @@ const RulesSection = () => {
         Инсайд: крупные сделки с акциями компании перед новостью о ней или до опровержения фальшивки финансовый аудит
         видит.
       </Box>
-    </Section>
+    </NtFrame>
   );
 };
 
-export const NtosStockExchangeContent = () => (
-  <>
-    <AccountSection />
-    <QuotesSection />
-    <DriversSection />
-    <RulesSection />
-  </>
-);
+type ExchangePage = 'quotes' | 'portfolio' | 'drivers' | 'rules';
+
+export const NtosStockExchangeContent = () => {
+  const { data } = useBackend<StockExchangeData>();
+  const [page, setPage] = useState<ExchangePage>('quotes');
+  const held = Object.keys(data.holdings || {}).filter((ticker) => data.holdings[ticker] > 0).length;
+  const pages: NtMenuItem<ExchangePage>[] = [
+    { key: 'quotes', label: 'Котировки' },
+    { key: 'portfolio', label: 'Портфель', count: held },
+    { key: 'drivers', label: 'От чего зависит цена' },
+    { key: 'rules', label: 'Правила' },
+  ];
+  return (
+    <NtScreen
+      tone="exchange"
+      device="Биржа сектора"
+      status={data.has_account ? (data.using_treasury ? 'Казна станции' : `Личный счёт: ${data.account_name}`) : 'Счёт не найден'}
+      readout={
+        data.has_account ? (
+          <>
+            <NtReadout label="Доступно">{formatCredits(data.balance)}</NtReadout>
+            <NtReadout label="Акции">{formatCredits(data.portfolio)}</NtReadout>
+            <NtReadout label="Прибыль за смену" tone={data.realized > 0 ? 'good' : data.realized < 0 ? 'bad' : undefined}>
+              {formatCredits(data.realized, { signed: true })}
+            </NtReadout>
+          </>
+        ) : undefined
+      }
+      menu={
+        <>
+          <Tape />
+          <NtMenu<ExchangePage> items={pages} selected={page} onSelect={setPage} />
+        </>
+      }>
+      <AccountNotices />
+      {page === 'quotes' && <QuotesSection />}
+      {page === 'portfolio' && <PortfolioSection />}
+      {page === 'drivers' && <DriversSection />}
+      {page === 'rules' && <RulesSection />}
+    </NtScreen>
+  );
+};
+
+/** Акции на счёте: сколько, почём и на сколько сейчас. */
+const PortfolioSection = () => {
+  const { data } = useBackend<StockExchangeData>();
+  const rows = data.companies.filter((company) => (data.holdings[company.ticker] || 0) > 0);
+  return (
+    <NtFrame title="Портфель">
+      {rows.length === 0 && <NtEmpty>Акций на счёте нет: купить можно в «Котировках».</NtEmpty>}
+      {rows.map((company) => {
+        const held = data.holdings[company.ticker];
+        return (
+          <NtLine key={company.ticker} label={`${company.ticker} · ${company.name} · ${held} шт. по ${company.price.toFixed(2)}`}>
+            {formatCredits(held * company.price)}
+          </NtLine>
+        );
+      })}
+      {rows.length > 0 && (
+        <Box mt={1}>
+          <NtLine label="Всего по текущей цене">{formatCredits(data.portfolio)}</NtLine>
+          <NtLine label="Прибыль с продаж за смену" tone={data.realized > 0 ? 'good' : data.realized < 0 ? 'bad' : undefined}>
+            {formatCredits(data.realized, { signed: true })}
+          </NtLine>
+        </Box>
+      )}
+    </NtFrame>
+  );
+};
 
 export const NtosStockExchange = () => (
   <NtosWindow width={760} height={640}>

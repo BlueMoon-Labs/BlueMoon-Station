@@ -42,6 +42,15 @@ $nt-tones: (
   margin: 0;
 }
 
+@keyframes nt-tape {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @keyframes nt-flash {
   from {
     background-color: var(--nt-accent-soft);
@@ -147,6 +156,130 @@ $nt-tones: (
   &__menuItem--active &__menuCount {
     color: $nt-bg;
     font-weight: bold;
+  }
+
+  &__contract {
+    display: flex;
+    gap: 16px;
+    padding: 8px 10px;
+    border-bottom: 1px solid $nt-faint;
+  }
+
+  &__contract:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  &__contract--mine {
+    border-left: 2px solid var(--nt-accent);
+    background-color: var(--nt-accent-soft);
+  }
+
+  &__contractMain {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__contractTitle {
+    font-weight: bold;
+  }
+
+  &__contractUrgent {
+    margin-left: 8px;
+    color: $nt-warn;
+    font-weight: normal;
+    font-size: 11px;
+  }
+
+  &__contractProgress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: $nt-dim;
+  }
+
+  &__contractSide {
+    min-width: 140px;
+    text-align: right;
+  }
+
+  &__contractReward {
+    font-family: $nt-mono;
+    font-size: 16px;
+    color: var(--nt-accent);
+  }
+
+  &__bar {
+    display: inline-block;
+    width: 120px;
+    height: 6px;
+    background-color: $nt-faint;
+  }
+
+  &__barFill {
+    display: block;
+    height: 100%;
+    background-color: var(--nt-accent);
+  }
+
+  &__tag--lead {
+    margin-left: 0;
+    margin-right: 8px;
+    font-weight: normal;
+  }
+
+  &__lcd {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    text-align: center;
+    background-color: #060a09;
+    border: 1px solid var(--nt-accent-line);
+  }
+
+  &__lcdLabel {
+    color: $nt-dim;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  &__lcdValue {
+    font-family: $nt-mono;
+    font-size: 28px;
+    line-height: 1.3;
+    color: var(--nt-accent);
+  }
+
+  &__lcdItem {
+    color: $nt-text;
+  }
+
+  &__tape {
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 3px 0;
+    border-bottom: 1px solid $nt-faint;
+    color: $nt-dim;
+    font-family: $nt-mono;
+    font-size: 11px;
+  }
+
+  &__tapeInner {
+    display: inline-block;
+    animation: nt-tape 90s linear infinite;
+  }
+
+  &__tape:hover &__tapeInner {
+    animation-play-state: paused;
+  }
+
+  &__tapeItem {
+    margin-right: 28px;
+  }
+
+  &__tapeItem b {
+    color: $nt-text;
+    font-weight: normal;
   }
 
   &__body {
@@ -361,11 +494,11 @@ $nt-tones: (
     border-color: transparent;
   }
 
-  .Button--disabled,
-  .Button--disabled:hover {
-    color: $nt-faint;
-    background-color: transparent;
-    border-color: $nt-faint;
+  .Button.Button--disabled,
+  .Button.Button--disabled:hover {
+    color: #4a5562 !important;
+    background-color: transparent !important;
+    border-color: $nt-faint !important;
   }
 
   .Input {
