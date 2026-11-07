@@ -8,7 +8,7 @@
 
 /datum/econ_contract/activity/New(department_id)
 	..()
-	deadline = world.time + minutes MINUTES
+	set_deadline(world.time + minutes MINUTES)
 	reward = max(round(work_value() * SSeconomy.settings.contract_work_mult, ECON_CONTRACT_REWARD_STEP), ECON_CONTRACT_REWARD_STEP)
 	RegisterSignal(SSeconomy, COMSIG_ECONOMY_WORK_RECORDED, PROC_REF(on_work))
 

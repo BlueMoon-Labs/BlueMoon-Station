@@ -75,7 +75,7 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	if(!account)
 		return
 	for(var/datum/econ_contract/contract as anything in all_contracts())
-		if(contract.taker == account)
+		if(contract.taker == account && !contract.is_expired())
 			. += contract
 
 /datum/controller/subsystem/economy/proc/contract_rotation_age()
@@ -144,7 +144,7 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 		return null
 	if(prob(settings.contract_urgent_chance))
 		contract.urgent = TRUE
-		contract.deadline = world.time + settings.contract_urgent_minutes MINUTES
+		contract.set_deadline(world.time + settings.contract_urgent_minutes MINUTES)
 	return contract
 
 /// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя.

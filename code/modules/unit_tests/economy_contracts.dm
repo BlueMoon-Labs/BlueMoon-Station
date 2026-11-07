@@ -384,3 +384,39 @@
 	if(machine)
 		allocated += machine
 	return machine
+
+/// Взятый контракт снимается в срок по таймеру, а до снятия уже не держит слот взявшего и не принимает поставку.
+/datum/unit_test/economy_contract_machines/taken_expiry_frees_slot/Run()
+	setup()
+	var/datum/econ_contract/delivery/expired = post_contract(/datum/bounty/item/assistant/cheesiehonkers)
+	var/datum/econ_contract/delivery/next = post_scooter_contract()
+	TEST_ASSERT(expired.take(taker_account), "Первый взят")
+	TEST_ASSERT(length(expired.active_timers), "Взятие ставит таймер срока")
+	expired.deadline = world.time - 1
+	TEST_ASSERT(!expired.wants(allocate(/obj/item/reagent_containers/food/snacks/cheesiehonkers)), "Просроченный поставку не принимает")
+	TEST_ASSERT(next.take(taker_account), "Просроченный не держит слот до снятия")
+	expired.expire()
+	TEST_ASSERT(QDELETED(expired), "Просроченный снят по таймеру")
+	TEST_ASSERT(!(expired in civilian.contracts), "Снят с доски")
+
+/// Купленное в автомате пад не отправляет и говорит почему; такой же предмет не из автомата уходит.
+/datum/unit_test/economy_contract_machines/pad_vended/Run()
+	setup()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/computer/piratepad_control/civilian/console = build_pad(station_turf)
+	var/obj/machinery/piratepad/pad = console.linked_pad()
+	var/datum/econ_contract/delivery/contract = post_contract(/datum/bounty/item/assistant/cheesiehonkers)
+	var/list/vended = list()
+	for(var/i in 1 to 3)
+		var/obj/item/snack = allocate(/obj/item/reagent_containers/food/snacks/cheesiehonkers, get_turf(pad))
+		econ_mark_vended(snack, 10)
+		vended += snack
+	click(console, "send")
+	for(var/obj/item/snack as anything in vended)
+		TEST_ASSERT(!QDELETED(snack), "Купленное в автомате осталось на паде")
+	TEST_ASSERT(findtext(console.status_report, "в автоматах"), "Пульт объясняет отказ: [console.status_report]")
+	for(var/i in 1 to 3)
+		allocate(/obj/item/reagent_containers/food/snacks/cheesiehonkers, get_turf(pad))
+	click(console, "send")
+	TEST_ASSERT(contract.completed, "Найденные снеки засчитаны")

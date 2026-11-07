@@ -51,7 +51,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	taker = account
 	RegisterSignal(taker, COMSIG_PARENT_QDELETING, PROC_REF(on_taker_deleted))
 	if(!deadline)
-		deadline = world.time + ECON_CONTRACT_TAKEN_TIME
+		set_deadline(world.time + ECON_CONTRACT_TAKEN_TIME)
 	log_econ("[account.account_holder] ([account.account_id]) взял контракт #[uid] \"[title]\" отдела [department_id]")
 	return TRUE
 
@@ -76,6 +76,17 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 
 /datum/econ_contract/proc/is_expired()
 	return deadline && world.time > deadline
+
+/// Срок снимает контракт сразу, а не на ближайшем тике экономики раз в несколько минут.
+/datum/econ_contract/proc/set_deadline(time)
+	deadline = time
+	addtimer(CALLBACK(src, PROC_REF(expire)), max(time - world.time, 0) + 1, TIMER_STOPPABLE)
+
+/datum/econ_contract/proc/expire()
+	if(completed || QDELETED(src) || !is_expired())
+		return
+	taker?.bank_card_talk("Срок контракта \"[title]\" истёк, контракт снят.")
+	qdel(src)
 
 /datum/econ_contract/proc/complete(mob/performer)
 	if(completed)
@@ -157,4 +168,4 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	return "Контракты NT: поставка - отгрузить нужное шаттлом снабжения или через пункт подработки на станции; деятельность - набрать работу отдела до срока, награда - сверх обычной оплаты этой работы, [settings.contract_work_mult * 100]% её цены по прайсу. \
 		Взявший контракт получает [settings.contract_performer_share]% награды (с налогом), остальное - отделу. \
 		Срочные контракты платят [econ_times_text(settings.contract_urgent_mult)] больше, но снимаются через [settings.contract_urgent_minutes] мин. \
-		Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин., отгруженное по ним не возвращается. Купленное через снабжение по контрактам не засчитывается."
+		Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин., отгруженное по ним не возвращается. Купленное в автоматах и через снабжение по контрактам не засчитывается."

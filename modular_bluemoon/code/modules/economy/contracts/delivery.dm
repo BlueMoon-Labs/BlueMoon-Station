@@ -31,7 +31,7 @@
 	return FALSE
 
 /datum/econ_contract/delivery/proc/wants(atom/movable/thing)
-	return !completed && !thing.econ_imported && bounty.applies_to(thing)
+	return !completed && !is_expired() && !thing.econ_imported && bounty.applies_to(thing)
 
 /datum/econ_contract/delivery/proc/ship(atom/movable/thing, mob/performer)
 	bounty.ship(thing)

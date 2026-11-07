@@ -50,7 +50,7 @@
 		else
 			to_chat(user, span_warning("[O]: NT за это ничего не заплатит."))
 		if(O.econ_vended)
-			to_chat(user, span_notice("Товар куплен: NT заплатит за [O] не больше [econ_cap_value(O.econ_print_cap)] кр., реагенты из покупки не оплачиваются."))
+			to_chat(user, span_notice("Товар куплен: NT заплатит за [O] не больше [econ_cap_value(O.econ_print_cap)] кр., реагенты из покупки не оплачиваются, контракты NT покупку не засчитывают."))
 		else if(islist(O.econ_print_cap))
 			to_chat(user, span_notice("Собрано на станции: NT заплатит за [O] не больше цены его материалов или деталей - [econ_cap_value(O.econ_print_cap)] кр., содержимое оплачивается отдельно."))
 		for(var/atom/movable/thing as anything in O.GetAllContents())

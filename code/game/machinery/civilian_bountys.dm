@@ -108,7 +108,7 @@
 	playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 
 /obj/machinery/computer/piratepad_control/civilian/proc/imported_note(imported)
-	return imported ? " Купленное через снабжение по контрактам не засчитывается: [imported] шт. осталось на паде." : ""
+	return imported ? " Купленное в автоматах и через снабжение по контрактам не засчитывается: [imported] шт. осталось на паде." : ""
 
 /obj/machinery/computer/piratepad_control/civilian/withdraw_points(mob/living/user)
 	to_chat(user, span_notice("У пульта подработки нет своей кассы: награды по контрактам сразу приходят на счета."))
