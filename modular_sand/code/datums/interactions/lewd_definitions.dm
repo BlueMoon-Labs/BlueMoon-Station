@@ -359,7 +359,24 @@
 	else
 		partner_name = "<b>[partner]</b>"
 
-	if(src != partner)
+	var/self_oral = src == partner && (target_orifice == CUM_TARGET_MOUTH || target_orifice == CUM_TARGET_THROAT)
+	if(self_oral)
+		cumin = FALSE
+		if(has_mouth() && mouth_is_free())
+			var/source_slot = last_genital?.slot
+			if(!source_slot)
+				if(has_penis(TRUE))
+					source_slot = ORGAN_SLOT_PENIS
+				else if(has_vagina())
+					source_slot = ORGAN_SLOT_VAGINA
+			switch(source_slot)
+				if(ORGAN_SLOT_PENIS)
+					if(!has_strapon())
+						message = "кончает себе в рот."
+				if(ORGAN_SLOT_VAGINA)
+					message = "сквиртит себе в рот."
+			cumin = !!message
+	else if(src != partner)
 		if(ismob(partner))
 			// BLEMOON ADD START
 			var/list/partner_has_portal = list(
@@ -839,17 +856,18 @@
 			if(did_anything)
 				LAZYADD(obscure_to, src)
 	if(partner_carbon_check && cumin)
-		switch(target_orifice)
-			if(CUM_TARGET_VAGINA)
-				target_gen = c_partner.getorganslot(ORGAN_SLOT_VAGINA)
-			if(CUM_TARGET_ANUS)
-				target_gen = c_partner.getorganslot(ORGAN_SLOT_ANUS)
-			if(CUM_TARGET_BREASTS)
-				target_gen = c_partner.getorganslot(ORGAN_SLOT_BREASTS)
-			if(CUM_TARGET_PENIS)
-				target_gen = c_partner.getorganslot(ORGAN_SLOT_PENIS)
-			if(CUM_TARGET_MOUTH)	//Why wasn't it here?! - Gardelin0
-				target_gen = c_partner.getorganslot(ORGAN_SLOT_STOMACH)
+		if(self_oral || target_orifice == CUM_TARGET_MOUTH)
+			target_gen = c_partner.getorganslot(ORGAN_SLOT_STOMACH)
+		else
+			switch(target_orifice)
+				if(CUM_TARGET_VAGINA)
+					target_gen = c_partner.getorganslot(ORGAN_SLOT_VAGINA)
+				if(CUM_TARGET_ANUS)
+					target_gen = c_partner.getorganslot(ORGAN_SLOT_ANUS)
+				if(CUM_TARGET_BREASTS)
+					target_gen = c_partner.getorganslot(ORGAN_SLOT_BREASTS)
+				if(CUM_TARGET_PENIS)
+					target_gen = c_partner.getorganslot(ORGAN_SLOT_PENIS)
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',

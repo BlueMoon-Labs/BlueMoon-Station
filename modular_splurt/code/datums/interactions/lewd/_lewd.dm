@@ -274,7 +274,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 /mob/living/proc/do_oral_self(mob/living/user, var/fucktarget = "penis", is_hidden)
 	var/message
-	var/obj/item/organ/genital/peepee = null
+	var/obj/item/organ/genital/source_organ = ishuman(user) ? user.getorganslot(fucktarget) : null
 	var/lust_increase = NORMAL_LUST
 	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
@@ -283,7 +283,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/picked_hidden = pick(HIDDEN_ADDITIONAL)
 	if(is_hidden)
 		distance = 1
-	if(user.is_fucking(src, CUM_TARGET_MOUTH))
+	if(user.last_genital == source_organ && user.is_fucking(src, CUM_TARGET_MOUTH))
 		if(prob(user.get_sexual_potency()))
 			if(istype(src, /mob/living)) // Argh.
 				var/mob/living/H = src
@@ -366,16 +366,8 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 				"толкается своим языком к своей же собственной киске и проводит его кончик к самому клитору.",
 				"пробует свою киску на вкус.",
 			)
-			peepee = null
-		else
-			if(ishuman(user))
-				var/mob/living/carbon/human/pardner = user
-				switch(fucktarget)
-					if("vagina")
-						peepee = pardner.getorganslot(ORGAN_SLOT_VAGINA)
-					if("penis")
-						peepee = pardner.getorganslot(ORGAN_SLOT_PENIS)
-		user.set_is_fucking(src, CUM_TARGET_MOUTH, peepee)
+			source_organ = null
+		user.set_is_fucking(src, CUM_TARGET_MOUTH, source_organ)
 
 	playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/bj1.ogg',
 									'modular_sand/sound/interactions/bj2.ogg',

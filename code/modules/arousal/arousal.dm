@@ -189,14 +189,15 @@
 
 				if(!it_a_portal && (!last_genital || last_genital.type == sender.type)) // some lewd interactions are broken, so we checking type
 					if(istype(receiver, /obj/item/organ/stomach))	//in mouth
+						var/self_oral = cummed_on == src && !spill
 						switch(sender.type)
 							if(/obj/item/organ/genital/penis)
-								if(src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_PENIS && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH)	//panel user is sender
+								if(self_oral || (src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_PENIS && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH))
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 								else if(cummed_on.last_lewd_datum?.required_from_user == INTERACTION_REQUIRE_MOUTH && cummed_on.last_lewd_datum?.required_from_target_exposed == INTERACTION_REQUIRE_PENIS)	//panel user is receiver
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 							if(/obj/item/organ/genital/vagina)
-								if(src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_VAGINA && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH)
+								if(self_oral || (src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_VAGINA && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH))
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 								else if(cummed_on.last_lewd_datum?.required_from_user == INTERACTION_REQUIRE_MOUTH && cummed_on.last_lewd_datum?.required_from_target_exposed == INTERACTION_REQUIRE_VAGINA)
 									R.trans_to(target, amount_to_transfer, log = TRUE)

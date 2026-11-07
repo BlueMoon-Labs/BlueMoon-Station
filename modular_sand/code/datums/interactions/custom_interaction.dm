@@ -297,8 +297,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	interaction_type = sanitize_inlist(interaction_type, CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
 	arousal_level = sanitize_integer(arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
 	partner_arousal_level = sanitize_integer(partner_arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
-	self_orgasm = !!self_orgasm
-	partner_orgasm = !!partner_orgasm
+	self_orgasm = arousal_level > CUSTOM_AROUSAL_NONE && !!self_orgasm
+	partner_orgasm = partner_arousal_level > CUSTOM_AROUSAL_NONE && !!partner_orgasm
 	scope = sanitize_inlist(scope, CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
 	self_required_body_parts = sanitize_integer(self_required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
 	partner_required_body_parts = sanitize_integer(partner_required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
@@ -478,6 +478,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	if(QDELETED(recipient))
 		return
 	var/amount = get_lust_amount(level)
+	if(!amount)
+		return
 	var/organ = arousal_organ == CUSTOM_INTERACTION_AROUSAL_GENERAL ? null : arousal_organ
 	if(allow_orgasm)
 		var/orifice = orgasm_target == CUSTOM_INTERACTION_ORGASM_FLOOR ? null : orgasm_target
@@ -495,7 +497,7 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 				recipient.last_lewd_datum = null
 				recipient.set_is_fucking(partner, orifice, source_organ, sub_set = TRUE)
 		recipient.handle_post_sex(amount, orifice, partner, organ)
-	else if(amount)
+	else
 		var/mob/living/carbon/carbon_recipient = recipient
 		if(organ && istype(carbon_recipient))
 			amount = carbon_recipient.check_stimulation(amount, organ)

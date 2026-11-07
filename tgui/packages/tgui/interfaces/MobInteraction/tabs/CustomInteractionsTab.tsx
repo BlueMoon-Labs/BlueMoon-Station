@@ -1,6 +1,6 @@
 
 import { useBackend, useLocalState } from '../../../backend';
-import { Box, Button, Collapsible, Divider, Dropdown, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
+import { Box, Button, Divider, Dropdown, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
 
 type CustomInteractionData = {
   key: string;
@@ -173,65 +173,70 @@ const Effects = ({
             tooltip={level.tooltip}
             aria-label={level.label}
             aria-pressed={level.id === settings.arousalLevel}
-            onClick={() => onChange({ ...settings, arousalLevel: level.id })}
+            onClick={() => onChange({
+              ...settings,
+              arousalLevel: level.id,
+              orgasm: level.id > 0 && (!settings.arousalLevel || settings.orgasm),
+            })}
           />
         ))}
       </FormRow>
     </Stack.Item>
     {!!settings.arousalLevel && (
-      <Stack.Item>
-        <FormRow label="Орган для возбуждения">
-          <Dropdown
-            fluid
-            width="100%"
-            options={arousalOrgans}
-            selected={settings.arousalOrgan}
-            onSelected={(arousalOrgan: string) => onChange({ ...settings, arousalOrgan })}
-          />
-        </FormRow>
-      </Stack.Item>
-    )}
-    <Stack.Item>
-      <FormRow label={orgasmLabel}>
-        <Button
-          icon={settings.orgasm ? 'toggle-on' : 'toggle-off'}
-          color={settings.orgasm ? 'pink' : 'transparent'}
-          content={settings.orgasm ? 'Разрешён' : 'Выключен'}
-          onClick={() => onChange({ ...settings, orgasm: !settings.orgasm })}
-        />
-      </FormRow>
-    </Stack.Item>
-    {settings.orgasm && (
-      <Stack.Item>
-        <FormRow label="Орган для оргазма">
-          <Dropdown
-            fluid
-            width="100%"
-            options={orgasmOrgans}
-            selected={settings.orgasmOrgan}
-            onSelected={(orgasmOrgan: string) => onChange({ ...settings, orgasmOrgan })}
-          />
-        </FormRow>
-      </Stack.Item>
-    )}
-    {settings.orgasm && (
-      <Stack.Item>
-        <FormRow label={destinationLabel}>
-          <Dropdown
-            fluid
-            width="100%"
-            options={orgasmTargets}
-            selected={settings.orgasmTarget}
-            onSelected={(orgasmTarget: string) => onChange({ ...settings, orgasmTarget })}
-          />
-        </FormRow>
-      </Stack.Item>
+      <>
+        <Stack.Item>
+          <FormRow label="Орган для возбуждения">
+            <Dropdown
+              fluid
+              width="100%"
+              options={arousalOrgans}
+              selected={settings.arousalOrgan}
+              onSelected={(arousalOrgan: string) => onChange({ ...settings, arousalOrgan })}
+            />
+          </FormRow>
+        </Stack.Item>
+        <Stack.Item>
+          <FormRow label={orgasmLabel}>
+            <Button
+              icon={settings.orgasm ? 'toggle-on' : 'toggle-off'}
+              color={settings.orgasm ? 'pink' : 'transparent'}
+              content={settings.orgasm ? 'Разрешён' : 'Выключен'}
+              onClick={() => onChange({ ...settings, orgasm: !settings.orgasm })}
+            />
+          </FormRow>
+        </Stack.Item>
+        {settings.orgasm && (
+          <>
+            <Stack.Item>
+              <FormRow label="Орган для оргазма">
+                <Dropdown
+                  fluid
+                  width="100%"
+                  options={orgasmOrgans}
+                  selected={settings.orgasmOrgan}
+                  onSelected={(orgasmOrgan: string) => onChange({ ...settings, orgasmOrgan })}
+                />
+              </FormRow>
+            </Stack.Item>
+            <Stack.Item>
+              <FormRow label={destinationLabel}>
+                <Dropdown
+                  fluid
+                  width="100%"
+                  options={orgasmTargets}
+                  selected={settings.orgasmTarget}
+                  onSelected={(orgasmTarget: string) => onChange({ ...settings, orgasmTarget })}
+                />
+              </FormRow>
+            </Stack.Item>
+          </>
+        )}
+      </>
     )}
   </Stack>
 );
 
 type BodyPartPickerProps = {
-  label: string;
   parts: BodyPartOption[];
   selectedParts: number;
   lockedParts: number;
@@ -239,14 +244,12 @@ type BodyPartPickerProps = {
 };
 
 const BodyPartPicker = ({
-  label,
   parts,
   selectedParts,
   lockedParts,
   onChange,
 }: BodyPartPickerProps) => (
   <Box>
-    <Box color="label" mb={0.5}>{label}</Box>
     {parts.map(part => {
       const locked = !!(lockedParts & part.flag);
       const selected = locked || !!(selectedParts & part.flag);
@@ -323,7 +326,7 @@ export const CustomInteractionsTab = (props) => {
     setSelf({
       arousalLevel: custom.arousal_level,
       arousalOrgan: custom.self_arousal_organ,
-      orgasm: !!custom.self_orgasm,
+      orgasm: !!custom.arousal_level && !!custom.self_orgasm,
       orgasmOrgan: custom.self_orgasm_organ,
       orgasmTarget: custom.self_orgasm_target,
       bodyParts: custom.self_required_body_parts,
@@ -333,7 +336,7 @@ export const CustomInteractionsTab = (props) => {
     setPartner({
       arousalLevel: custom.partner_arousal_level,
       arousalOrgan: custom.partner_arousal_organ,
-      orgasm: !!custom.partner_orgasm,
+      orgasm: !!custom.partner_arousal_level && !!custom.partner_orgasm,
       orgasmOrgan: custom.partner_orgasm_organ,
       orgasmTarget: custom.partner_orgasm_target,
       bodyParts: custom.partner_required_body_parts,
@@ -359,8 +362,8 @@ export const CustomInteractionsTab = (props) => {
       partner_arousal_level: partner.arousalLevel,
       self_arousal_organ: self.arousalOrgan,
       partner_arousal_organ: partner.arousalOrgan,
-      self_orgasm: self.orgasm ? 1 : 0,
-      partner_orgasm: partner.orgasm ? 1 : 0,
+      self_orgasm: self.arousalLevel > 0 && self.orgasm ? 1 : 0,
+      partner_orgasm: partner.arousalLevel > 0 && partner.orgasm ? 1 : 0,
       self_orgasm_organ: self.orgasmOrgan,
       partner_orgasm_organ: partner.orgasmOrgan,
       self_orgasm_target: self.orgasmTarget,
@@ -428,10 +431,10 @@ export const CustomInteractionsTab = (props) => {
     const arousalPart = settings.arousalLevel
       ? arousalOrgans.find(option => option.value === settings.arousalOrgan)?.flag
       : 0;
-    const orgasmOrgan = settings.orgasm
+    const orgasmOrgan = settings.arousalLevel > 0 && settings.orgasm
       ? orgasmOrgans.find(option => option.value === settings.orgasmOrgan)?.flag
       : 0;
-    const orgasmTarget = other.orgasm
+    const orgasmTarget = other.arousalLevel > 0 && other.orgasm
       ? orgasmTargets.find(option => option.value === other.orgasmTarget)?.flag
       : 0;
     return (arousalPart || 0) | (orgasmOrgan || 0) | (orgasmTarget || 0);
@@ -439,8 +442,6 @@ export const CustomInteractionsTab = (props) => {
 
   const selfLockedParts = getLockedBodyParts(self, partner);
   const partnerLockedParts = getLockedBodyParts(partner, self);
-  const selfPartCount = bodyParts.filter(part => (self.bodyParts | selfLockedParts) & part.flag).length;
-  const partnerPartCount = bodyParts.filter(part => (partner.bodyParts | partnerLockedParts) & part.flag).length;
 
   const renderForm = () => (
     <Stack vertical>
@@ -605,49 +606,31 @@ export const CustomInteractionsTab = (props) => {
               <Divider />
             </Stack.Item>
             <Stack.Item>
-              <Collapsible
-                title={`Оголённые части · у тебя: ${selfPartCount} · у партнёра: ${partnerPartCount}`}
-                marginBottom={0}>
-                <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.5em' }}>
-                  <BodyPartPicker
-                    label="У тебя"
-                    parts={bodyParts}
-                    selectedParts={self.bodyParts}
-                    lockedParts={selfLockedParts}
-                    onChange={bodyParts => setSelf({ ...self, bodyParts })}
-                  />
-                  <BodyPartPicker
-                    label="У партнёра"
-                    parts={bodyParts}
-                    selectedParts={partner.bodyParts}
-                    lockedParts={partnerLockedParts}
-                    onChange={bodyParts => setPartner({ ...partner, bodyParts })}
-                  />
-                </Box>
-              </Collapsible>
-            </Stack.Item>
-            <Stack.Item>
-              <Divider />
-            </Stack.Item>
-            <Stack.Item>
-              <Collapsible title="Хвост и телекинез" marginBottom={0}>
-                <Stack>
-                  {[
-                    { label: 'У тебя', settings: self, update: setSelf, other: partner },
-                    { label: 'У партнёра', settings: partner, update: setPartner, other: self },
-                  ].map(({ label, settings, update, other }) => (
-                    <Stack.Item key={label} grow basis={0}>
-                      <Box color="label" mb={0.5}>{label}</Box>
+              <Box color="label" mb={0.5}>Оголённые части и условия</Box>
+              <Stack>
+                {[
+                  { label: 'У тебя', settings: self, update: setSelf, other: partner, lockedParts: selfLockedParts },
+                  { label: 'У партнёра', settings: partner, update: setPartner, other: self, lockedParts: partnerLockedParts },
+                ].map(({ label, settings, update, other, lockedParts }) => (
+                  <Stack.Item key={label} grow basis={0}>
+                    <Box color="label" mb={0.5}>{label}</Box>
+                    <BodyPartPicker
+                      parts={bodyParts}
+                      selectedParts={settings.bodyParts}
+                      lockedParts={lockedParts}
+                      onChange={bodyParts => update({ ...settings, bodyParts })}
+                    />
+                    <Box mt={0.5}>
                       <Button.Checkbox
                         compact
                         checked={settings.requiresTail}
-                        content="Хвост"
+                        content="Нужен хвост"
                         onClick={() => update({ ...settings, requiresTail: !settings.requiresTail })}
                       />
                       <Button.Checkbox
                         compact
                         checked={settings.requiresTelekinesis}
-                        content="Телекинез"
+                        content="Нужен телекинез"
                         onClick={() => {
                           const enabled = !settings.requiresTelekinesis;
                           update({ ...settings, requiresTelekinesis: enabled });
@@ -656,10 +639,13 @@ export const CustomInteractionsTab = (props) => {
                           }
                         }}
                       />
-                    </Stack.Item>
-                  ))}
-                </Stack>
-              </Collapsible>
+                    </Box>
+                  </Stack.Item>
+                ))}
+              </Stack>
+            </Stack.Item>
+            <Stack.Item>
+              <Divider />
             </Stack.Item>
             <Stack.Item>
               <FormRow label="Дистанция:">
@@ -758,10 +744,10 @@ export const CustomInteractionsTab = (props) => {
         {ownParts && <Box color="label">Оголено у тебя <b>{ownParts}</b></Box>}
         {partnerParts && <Box color="label">Оголено у партнёра <b>{partnerParts}</b></Box>}
         <Box color="label">
-          {!!custom.partner_orgasm && (
+          {!!custom.partner_arousal_level && !!custom.partner_orgasm && (
             <>Оргазм партнёра ({partnerOrgasmOrgan?.displayText.toLowerCase()}, {partnerOrgasmTarget?.displayText.toLowerCase()}) · </>
           )}
-          {!!custom.self_orgasm && (
+          {!!custom.arousal_level && !!custom.self_orgasm && (
             <>Твой оргазм ({ownOrgasmOrgan?.displayText.toLowerCase()}, {ownOrgasmTarget?.displayText.toLowerCase()}) · </>
           )}
         </Box>
