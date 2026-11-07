@@ -10,6 +10,8 @@ reviews:
   poem: false
   review_status: true
   collapse_walkthrough: false
+  auto_review:
+    drafts: true
 
   path_filters:
     - "!icons/**"
@@ -168,3 +170,5 @@ knowledge_base:
     enabled: true
   learnings:
     scope: "local"
+
+

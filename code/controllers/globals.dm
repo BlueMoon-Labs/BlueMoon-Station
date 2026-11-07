@@ -1,5 +1,6 @@
 GLOBAL_REAL(GLOB, /datum/controller/global_vars)
 
+
 /datum/controller/global_vars
 	name = "Global Variables"
 

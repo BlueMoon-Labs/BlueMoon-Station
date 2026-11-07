@@ -17,6 +17,7 @@ export const SpawnerContent = (props) => {
   const [tab, setTab] = useSharedState('tab', 'misc');
   const spawners = data.spawners || [];
   const misc = spawners.filter((spawner) => spawner.category === 'misc');
+  const blackmesa = spawners.filter((spawner) => spawner.category === 'blackmesa');
   const syndicate = spawners.filter((spawner) => spawner.category === 'syndicate');
   const inteq = spawners.filter((spawner) => spawner.category === 'inteq');
   const sol = spawners.filter((spawner) => spawner.category === 'sol');
@@ -35,6 +36,14 @@ export const SpawnerContent = (props) => {
               selected={tab === 'misc'}
               onClick={() => setTab('misc')}>
               Misc ({misc.length})
+            </Tabs.Tab>
+          )}
+          {blackmesa.length > 0 && (
+            <Tabs.Tab
+              icon="building"
+              selected={tab === 'blackmesa'}
+              onClick={() => setTab('blackmesa')}>
+              Black Mesa ({blackmesa.length})
             </Tabs.Tab>
           )}
           {syndicate.length > 0 && (
@@ -96,6 +105,7 @@ export const SpawnerContent = (props) => {
         </Tabs>
       </Section>
       {tab === 'misc' && <RolelistMisc spawners={misc} />}
+      {tab === 'blackmesa' && <RolelistMisc spawners={blackmesa} />}
       {tab === 'syndicate' && <RolelistSyndicate spawners={syndicate} />}
       {tab === 'inteq' && <RolelistInteq spawners={inteq} />}
       {tab === 'sol' && <RolelistSol spawners={sol} />}
