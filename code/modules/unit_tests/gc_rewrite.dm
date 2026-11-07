@@ -69,6 +69,11 @@
 	var/saved_gc_harddel_overflow_threshold
 	var/saved_gc_harddel_overflow_budget_max_ms
 	var/saved_gc_harddel_overflow_max_per_fire
+	var/saved_gc_harddel_defer_min_ms
+	var/saved_gc_harddel_defer_max
+	var/list/saved_deferred_harddels
+	var/saved_harddels_deferred
+	var/saved_harddels_avoided
 	var/saved_master_ticklimit
 	var/saved_can_fire
 	var/saved_flags
@@ -143,6 +148,11 @@
 	saved_gc_harddel_overflow_threshold = CONFIG_GET(number/gc_harddel_overflow_threshold)
 	saved_gc_harddel_overflow_budget_max_ms = CONFIG_GET(number/gc_harddel_overflow_budget_max_ms)
 	saved_gc_harddel_overflow_max_per_fire = CONFIG_GET(number/gc_harddel_overflow_max_per_fire)
+	saved_gc_harddel_defer_min_ms = CONFIG_GET(number/gc_harddel_defer_min_ms)
+	saved_gc_harddel_defer_max = CONFIG_GET(number/gc_harddel_defer_max)
+	saved_deferred_harddels = SSgarbage.deferred_harddels.Copy()
+	saved_harddels_deferred = SSgarbage.harddels_deferred
+	saved_harddels_avoided = SSgarbage.harddels_avoided
 	saved_master_ticklimit = Master.current_ticklimit
 	saved_can_fire = detach_subsystem(SSgarbage)
 	saved_flags = SSgarbage.flags
@@ -206,6 +216,9 @@
 		SSgarbage.pass_counts[i] = 0
 		SSgarbage.fail_counts[i] = 0
 		SSgarbage.peak_queue_depths[i] = 0
+	SSgarbage.deferred_harddels = list()
+	SSgarbage.harddels_deferred = 0
+	SSgarbage.harddels_avoided = 0
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
@@ -334,6 +347,11 @@
 	CONFIG_SET(number/gc_harddel_overflow_threshold, saved_gc_harddel_overflow_threshold)
 	CONFIG_SET(number/gc_harddel_overflow_budget_max_ms, saved_gc_harddel_overflow_budget_max_ms)
 	CONFIG_SET(number/gc_harddel_overflow_max_per_fire, saved_gc_harddel_overflow_max_per_fire)
+	CONFIG_SET(number/gc_harddel_defer_min_ms, saved_gc_harddel_defer_min_ms)
+	CONFIG_SET(number/gc_harddel_defer_max, saved_gc_harddel_defer_max)
+	SSgarbage.deferred_harddels = saved_deferred_harddels.Copy()
+	SSgarbage.harddels_deferred = saved_harddels_deferred
+	SSgarbage.harddels_avoided = saved_harddels_avoided
 	SSgarbage.reference_find_on_fail = saved_reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	SSgarbage.test_ref_scan_skip_async = saved_test_ref_scan_skip_async
@@ -358,6 +376,8 @@
 /obj/effect/gc_rewrite_test_object/capped
 
 /obj/effect/gc_rewrite_test_object/expensive
+
+/obj/effect/gc_rewrite_test_object/expensive/second
 
 /mob/unit_test/gc_alert_dummy
 

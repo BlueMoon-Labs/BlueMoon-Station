@@ -44,7 +44,7 @@
 	if(GET_TURF_BELOW(our_turf))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(restore_z_pillars_over), our_turf), 0)
 
-/// Убирает из vis_contents только показанные снизу турфы: там же живёт lighting_object, и очистка списка целиком выбила бы свет.
+/// Убирает из vis_contents только показанные снизу турфы: остальное в списке ставили другие системы.
 /datum/element/turf_z_transparency/proc/clear_shown_turfs(turf/our_turf)
 	var/list/shown
 	for(var/atom/thing as anything in our_turf.vis_contents)

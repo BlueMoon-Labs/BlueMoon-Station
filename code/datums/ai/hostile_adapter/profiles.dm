@@ -250,6 +250,19 @@
 		/datum/ai_planning_subtree/hostile_melee,
 	)
 
+/datum/ai_controller/hostile_adapter/vent_hunter/rat
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/rat_horde_orders,
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/opportunistic_ventcrawler,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
 ///Artificer сначала резервирует и чинит одного раненого союзного конструкта,
 ///а при отсутствии работы использует обычный defensive combat-план.
 /datum/ai_controller/hostile_adapter/support/artificer

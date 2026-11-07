@@ -188,11 +188,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
 					vote_base[++vote_base.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
 				else
- //BLUEMOON ADDITION START
-					var/time_left = SSticker.timeLeft
-					if(SSvote.mode == "roundtype")
-						time_left = max(time_left - ROUNDTYPE_VOTE_END_PENALTY, 0)
- //BLUEMOON ADDITION END
+					var/time_left = SSvote.get_time_remaining()
 					vote_base[++vote_base.len] += list("Time Left:", " [DisplayTimeText(time_left)]")
 					vote_base[++vote_base.len] += list("Choices:", "")
 				cached_vote_base = vote_base

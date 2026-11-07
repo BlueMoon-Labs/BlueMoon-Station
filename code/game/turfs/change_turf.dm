@@ -194,8 +194,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
 		lighting_object = old_lighting_object
-		if(lighting_object)
-			vis_contents += lighting_object
 		lc_topright = old_lc_topright
 		lc_topleft = old_lc_topleft
 		lc_bottomright = old_lc_bottomright

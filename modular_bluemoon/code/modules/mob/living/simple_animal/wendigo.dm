@@ -3,6 +3,7 @@
 /mob/living/simple_animal/wendigo
 	name = "wendigo"
 	desc = "A mythological man-eating legendary creature, you probably aren't going to survive this."
+	show_erp_profile = TRUE
 	health = 2500
 	maxHealth = 2500
 	icon_state = "wendigo_noblood"

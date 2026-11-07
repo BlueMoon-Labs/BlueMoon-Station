@@ -1,14 +1,15 @@
 //CONTAINS: Suit fibers and Detective's Scanning Computer
 
 /atom/proc/add_fibers(mob/living/carbon/human/M)
-	if(M.gloves && istype(M.gloves, /obj/item/clothing/))
-		var/obj/item/clothing/gloves/G = M.gloves
-		if(G.transfer_blood > 1) //bloodied gloves transfer blood to touched objects
-			if(add_blood_DNA(G.blood_DNA)) //only reduces the bloodiness of our gloves if the item wasn't already bloody
-				G.transfer_blood--
-	else if(M.bloody_hands > 1)
-		if(add_blood_DNA(M.blood_DNA, M.diseases))
-			M.bloody_hands--
+	if(!(M.wear_suit && (M.wear_suit.body_parts_covered & HANDS)))
+		if(M.gloves && istype(M.gloves, /obj/item/clothing/))
+			var/obj/item/clothing/gloves/G = M.gloves
+			if(G.transfer_blood > 1) //bloodied gloves transfer blood to touched objects
+				if(add_blood_DNA(G.blood_DNA)) //only reduces the bloodiness of our gloves if the item wasn't already bloody
+					G.transfer_blood--
+		else if(M.bloody_hands > 1)
+			if(add_blood_DNA(M.blood_DNA, M.diseases))
+				M.bloody_hands--
 	LAZYINITLIST(suit_fibers)
 	var/fibertext
 	var/item_multiplier = isitem(src)?1.2:1

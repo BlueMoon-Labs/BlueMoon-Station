@@ -989,30 +989,32 @@
 	if(wear_suit)
 		wear_suit.add_blood_DNA(blood_dna, diseases)
 		update_inv_wear_suit()
-	else if(w_uniform)
+	// Каждый слой защищён только одеждой, которая реально закрывает его.
+	if(w_uniform && !(wear_suit && (wear_suit.flags_inv & HIDEJUMPSUIT)))
 		w_uniform.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_uniform()
-	//skyrat edit
-	else if(w_underwear)
+	if(w_underwear && !underwear_hidden())
 		w_underwear.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_underwear()
-	else if(w_socks)
+	if(w_socks && !socks_hidden())
 		w_socks.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_socks()
-	else if(w_shirt)
+	if(w_shirt && !undershirt_hidden())
 		w_shirt.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_shirt()
-	else if(wrists)
+	var/wrists_cover_flags = wear_suit?.flags_inv | w_uniform?.flags_inv | gloves?.flags_inv
+	if(wrists && !(wrists_cover_flags & HIDEWRISTS) && !(wear_suit && (wear_suit.flags_inv & HIDEGLOVES)))
 		wrists.add_blood_DNA(blood_dna, diseases)
 		update_inv_wrists()
-	//
-	if(gloves)
-		var/obj/item/clothing/gloves/G = gloves
-		G.add_blood_DNA(blood_dna, diseases)
-	else
-		transfer_blood_dna(blood_dna, diseases)
-		bloody_hands = rand(2, 4)
-	update_inv_gloves()	//handles bloody hands overlays and updating
+	// Space suits include their own hand covering over gloves or bare hands.
+	if(!(wear_suit && (wear_suit.body_parts_covered & HANDS)))
+		if(gloves)
+			var/obj/item/clothing/gloves/G = gloves
+			G.add_blood_DNA(blood_dna, diseases)
+		else
+			transfer_blood_dna(blood_dna, diseases)
+			bloody_hands = rand(2, 4)
+		update_inv_gloves()	//handles bloody hands overlays and updating
 	return TRUE
 
 /atom/proc/blood_DNA_to_color()

@@ -88,14 +88,32 @@
 	TEST_ASSERT(pirate_account.offstation, "Счёт гост-роли не помечен внешним")
 	qdel(pirate_account)
 
-/// Маркинги молей ложатся под обычные маркинги, а не поверх них.
-/datum/unit_test/insect_markings_below_body_markings
+/// Маркинги молей лежат как обычные: торс под гениталиями, голова и руки поверх своих конечностей.
+/datum/unit_test/insect_markings_like_body_markings
 
-/datum/unit_test/insect_markings_below_body_markings/Run()
-	var/datum/sprite_accessory/insect_markings/markings = GLOB.insect_markings_list["Deathshead"]
-	TEST_ASSERT_NOTNULL(markings, "Нет маркинга молей Deathshead")
-	TEST_ASSERT(markings.overlay_layer < -MARKING_LAYER, "Маркинги молей выше обычных маркингов")
-	TEST_ASSERT(markings.overlay_layer > -BODYPARTS_LAYER, "Маркинги молей ниже тела")
+/datum/unit_test/insect_markings_like_body_markings/Run()
+	var/mob/living/carbon/human/moth = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	moth.set_species(/datum/species/insect)
+	moth.dna.features["insect_markings"] = "Deathshead"
+	moth.update_mutant_bodyparts()
+	var/mutable_appearance/torso
+	var/mutable_appearance/upper
+	for(var/mutable_appearance/overlay as anything in moth.overlays_standing[BODY_ADJ_LAYER])
+		if(!overlay.icon_state)
+			upper = overlay
+		else if(overlay.icon == 'icons/mob/insect_markings.dmi')
+			torso = overlay
+	TEST_ASSERT_NOTNULL(torso, "Нет оверлея маркингов молей")
+	TEST_ASSERT(torso.layer < -GENITALS_BEHIND_LAYER, "Маркинги молей на торсе поверх гениталий")
+	TEST_ASSERT(torso.layer > -LEGS_FRONT_PART_LAYER, "Маркинги молей под ногами")
+	TEST_ASSERT_NOTNULL(upper, "Голову и руки маркингов молей закрывают конечности")
+	TEST_ASSERT(upper.layer > -HEAD_PART_LAYER, "Маркинги молей на голове под головой")
+	TEST_ASSERT_EQUAL(upper.color, torso.color, "Маркинги молей на голове другого цвета")
+	var/icon/upper_icon = icon(upper.icon)
+	for(var/dir in list(SOUTH, NORTH, EAST))
+		TEST_ASSERT(upper_icon.GetPixel(15, 28, dir = dir), "Нет маркинга молей на голове, dir [dir]")
+		TEST_ASSERT_NULL(upper_icon.GetPixel(dir == EAST ? 17 : 13, 18, dir = dir), "Маркинг молей на торсе поверх гениталий, dir [dir]")
+	TEST_ASSERT(upper_icon.GetPixel(21, 19, dir = SOUTH), "Нет маркинга молей на руке")
 
 /// Все этажи станции на миникарте режутся по одной рамке.
 /datum/unit_test/minimap_floors_share_frame
