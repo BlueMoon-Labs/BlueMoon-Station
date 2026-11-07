@@ -10,6 +10,18 @@ GLOBAL_LIST_INIT(market_auction_lots, list(
 	list("path" = /obj/item/clothing/head/that, "name" = "цилиндр коллекционера", "value" = 800),
 	list("path" = /obj/item/reagent_containers/food/drinks/bottle/goldschlager, "name" = "коллекционный голдшлягер", "value" = 700),
 	list("path" = /obj/item/toy/plush/carpplushie, "name" = "коллекционный плюшевый карп", "value" = 600),
+	list("path" = /obj/item/stock_parts/cell/bluespace, "name" = "блюспейс-батарея", "value" = 1800),
+	list("path" = /obj/item/storage/belt/champion, "name" = "пояс чемпиона", "value" = 1600),
+	list("path" = /obj/item/clothing/suit/jacket/leather/overcoat, "name" = "кожаный плащ", "value" = 1300),
+	list("path" = /obj/item/instrument/piano_synth, "name" = "синтезатор-пианино", "value" = 1200),
+	list("path" = /obj/item/clothing/head/collectable/xenom, "name" = "коллекционная шапка ксеноморфа", "value" = 1100),
+	list("path" = /obj/item/clothing/head/collectable/petehat, "name" = "коллекционная шляпа Пита", "value" = 1000),
+	list("path" = /obj/item/instrument/guitar, "name" = "гитара ручной работы", "value" = 900),
+	list("path" = /obj/item/clothing/head/collectable/wizard, "name" = "коллекционная шляпа волшебника", "value" = 900),
+	list("path" = /obj/item/pen/fountain/captain, "name" = "перьевая ручка капитана", "value" = 900),
+	list("path" = /obj/item/toy/talking/AI, "name" = "говорящая игрушка ИИ", "value" = 700),
+	list("path" = /obj/item/clothing/head/hardhat/cakehat, "name" = "шляпа-торт", "value" = 600),
+	list("path" = /obj/item/toy/plush/beeplushie, "name" = "плюшевая пчёлка", "value" = 600),
 ))
 
 /// Кто ещё торгуется на аукционе сектора.

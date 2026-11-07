@@ -38,6 +38,19 @@
 	)
 	crate_name = "буровой ящик старателей"
 
+/datum/supply_pack/materials/prospectors_explorer
+	name = "Снаряжение старателя"
+	desc = "Костюм исследователя, противогаз, шахтёрский пояс и GPS. Только у Гильдии старателей со 2-й ступени репутации."
+	cost = 2500
+	partner_exclusive = "prospectors"
+	contains = list(
+		/obj/item/clothing/suit/hooded/explorer,
+		/obj/item/clothing/mask/gas/explorer,
+		/obj/item/storage/belt/mining,
+		/obj/item/gps/mining,
+	)
+	crate_name = "ящик снаряжения старателя"
+
 /datum/supply_pack/engineering/nakamura_parts
 	name = "Улучшенные детали Накамуры"
 	desc = "По две детали третьего поколения каждого вида для апгрейда машин. Только у Накамуры со 2-й ступени репутации."
@@ -111,6 +124,18 @@
 		/obj/item/reagent_containers/food/drinks/bottle/champagne,
 	)
 	crate_name = "ящик Солнечной Федерации"
+
+/datum/supply_pack/service/sol_instruments
+	name = "Инструменты Солнечной Федерации"
+	desc = "Скрипка, аккордеон и труба для бара и сцены. Только у Солнечной Федерации со 2-й ступени репутации."
+	cost = 2000
+	partner_exclusive = "sol_federation"
+	contains = list(
+		/obj/item/instrument/violin,
+		/obj/item/instrument/accordion,
+		/obj/item/instrument/trumpet,
+	)
+	crate_name = "ящик инструментов Солнечной Федерации"
 
 /// Эксклюзивный пак везёт только свой партнёр и только со ступени exclusive_tier; обычный - любой.
 /proc/econ_exclusive_ok(datum/trade_partner/partner, datum/supply_pack/pack)
