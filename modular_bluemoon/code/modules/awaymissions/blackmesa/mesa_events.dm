@@ -271,14 +271,4 @@
 	if(!D)
 		return
 
-	var/list/alive_players = D.get_alive_players_in_mission()
-	if(!alive_players || !alive_players.len)
-		return
-
-	var/threat_level = D.calculate_threat_level(alive_players.len)
-	if(threat_level <= 0)
-		return
-
-	D.spawn_zombie_wave(threat_level, alive_players)
-	D.last_wave_time = world.time
-	D.current_wave_number++
+	D.trigger_horde()

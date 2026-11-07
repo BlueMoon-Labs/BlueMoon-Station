@@ -107,6 +107,76 @@
 	else
 		icon_state = "m4oa1_mag"
 
+/obj/item/gun/ballistic/automatic/sniper_rifle/javelin_vdd_svz
+	name = "Javelin VDD SVZ"
+	desc = "Винтовка четвертого тира со встроенным глушителем. Использует патроны немного слабее, чем M4OA1."
+	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/left48x32.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/right48x32.dmi'
+	icon_state = "m249"
+	item_state = "m249"
+	fire_sound = null
+	mesa_muzzle_flash = FALSE
+	recoil = 1
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/sniper_rounds/javelin_vdd_svz
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/javelin.ogg'
+	load_sound = 'modular_bluemoon/sound/weapons/mesa/magin.ogg'
+	load_empty_sound = 'modular_bluemoon/sound/weapons/mesa/magin.ogg'
+	eject_sound = 'modular_bluemoon/sound/weapons/mesa/magout.ogg'
+	eject_empty_sound = 'modular_bluemoon/sound/weapons/mesa/magout.ogg'
+	fire_delay = 3
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
+	projectile_simple_mob_damage_multiplier = 3
+	burst_size = 1
+	suppressed = TRUE
+	can_suppress = FALSE
+	can_unsuppress = FALSE
+	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BACK
+	automatic_burst_overlay = FALSE
+	actions_types = list()
+
+/obj/item/gun/ballistic/automatic/sniper_rifle/javelin_vdd_svz/update_icon_state()
+	icon_state = "m249"
+
+/obj/item/ammo_box/magazine/sniper_rounds/javelin_vdd_svz
+	name = "Javelin VDD SVZ magazine"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "m4oa1"
+	ammo_type = /obj/item/ammo_casing/p50/javelin_vdd_svz
+	max_ammo = 8
+	caliber = ".50"
+
+/obj/item/ammo_box/magazine/sniper_rounds/javelin_vdd_svz/update_icon()
+	. = ..()
+	if(ammo_count())
+		icon_state = "[initial(icon_state)]-ammo"
+	else
+		icon_state = "[initial(icon_state)]"
+
+/obj/item/ammo_casing/p50/javelin_vdd_svz
+	projectile_type = /obj/item/projectile/bullet/p50/javelin_vdd_svz
+
+/obj/item/projectile/bullet/p50/javelin_vdd_svz
+	name = "Javelin VDD SVZ bullet"
+	damage = 45
+	hitsound = null
+
+/obj/item/projectile/bullet/p50/javelin_vdd_svz/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
+	var/original_damage = damage
+	if(iscarbon(target) && def_zone == BODY_ZONE_HEAD)
+		damage = round(damage * 1.5)
+	. = ..()
+	damage = original_damage
+
+/obj/item/projectile/bullet/p50/javelin_vdd_svz/on_hit(atom/target, blocked = FALSE)
+	var/knockback_target = isliving(target) && blocked < 100 && firer
+	. = ..()
+	if(knockback_target && !QDELETED(target))
+		var/mob/living/victim = target
+		victim.safe_throw_at(get_edge_target_turf(victim, get_dir(firer, victim)), 2, 1, firer)
+
 /obj/item/ammo_box/magazine/sniper_rounds/m4oa1
 	name = "m4oa1 magazine"
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
@@ -880,6 +950,7 @@
 	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_LIGHT
 	mag_type = /obj/item/ammo_box/magazine/mp7
+	projectile_simple_mob_damage_multiplier = 0.8
 
 /obj/item/gun/ballistic/automatic/mp7/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : ""]"
@@ -898,7 +969,7 @@
 	icon_state = "mp7"
 	ammo_type = /obj/item/ammo_casing/mm46
 	caliber = "4.6mm"
-	max_ammo = 40
+	max_ammo = 30
 
 /obj/item/ammo_box/magazine/mp7/update_icon()
 	. = ..()

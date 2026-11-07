@@ -1004,7 +1004,6 @@
 	var/director_horde_interval = 1 MINUTES
 	var/next_director_horde_time = 0
 	var/fuel_started = FALSE
-	var/battery_spawned = FALSE
 
 /obj/structure/urbanism_generator/fuel/Initialize(mapload)
 	. = ..()
@@ -1018,37 +1017,8 @@
 	if(world.time >= next_director_horde_time)
 		if(GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
-			director.trigger_horde()
+			director.trigger_horde(TRUE)
 		next_director_horde_time = world.time + director_horde_interval
-
-/obj/structure/urbanism_generator/fuel/proc/spawn_fuel_battery()
-	if(battery_spawned)
-		return TRUE
-
-	var/obj/effect/landmark/urbanism_battery_spawn/spawn_landmark = null
-	for(var/obj/effect/landmark/urbanism_battery_spawn/L in GLOB.landmarks_list)
-		if(L.z != z)
-			continue
-		if(!spawn_landmark || get_dist(src, L) < get_dist(src, spawn_landmark))
-			spawn_landmark = L
-
-	if(!spawn_landmark)
-		log_world("fuel_generator: no battery spawn landmark found on z=[z]")
-		return FALSE
-
-	var/turf/spawn_turf = get_turf(spawn_landmark)
-	if(!spawn_turf || !ispath(required_item_type, /obj/item))
-		log_world("fuel_generator: invalid battery spawn turf or item type")
-		return FALSE
-
-	var/obj/item/spawned_battery = new required_item_type(spawn_turf)
-	if(!spawned_battery)
-		log_world("fuel_generator: failed to spawn battery")
-		return FALSE
-
-	battery_spawned = TRUE
-	visible_message(span_notice("На лендмарке появляется батарея!"))
-	return TRUE
 
 /obj/structure/urbanism_generator/fuel/attack_hand(mob/user)
 	if(!user)
@@ -1057,9 +1027,6 @@
 	if(!fuel_started)
 		if(user.get_active_held_item())
 			to_chat(user, span_warning("Вам нужны пустые руки для активации генератора."))
-			return
-		if(!spawn_fuel_battery())
-			balloon_alert(user, "ошибка запуска")
 			return
 
 		fuel_started = TRUE
@@ -1106,6 +1073,24 @@
 	icon_state = "x"
 	alpha = 0
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/battery_spawned = FALSE
+
+/obj/effect/landmark/urbanism_battery_spawn/proc/spawn_battery()
+	if(battery_spawned)
+		return FALSE
+
+	var/turf/spawn_turf = get_turf(src)
+	if(!spawn_turf)
+		log_world("[src] Cannot spawn battery: landmark has no turf")
+		return FALSE
+
+	var/obj/item/stock_parts/cell/mesa_battery/battery = new(spawn_turf)
+	if(!battery)
+		log_world("[src] Failed to spawn battery")
+		return FALSE
+
+	battery_spawned = TRUE
+	return TRUE
 
 /turf/closed/wall/r_wall/blackmesa
 	name = "indestructible reinforced wall"

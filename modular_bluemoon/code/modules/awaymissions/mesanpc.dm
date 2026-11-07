@@ -764,5 +764,18 @@
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 	open_blastdoors()
+	var/batteries_spawned = 0
+	for(var/obj/effect/landmark/urbanism_battery_spawn/landmark in GLOB.landmarks_list)
+		if(!istype(get_area(landmark), /area/awaymission/ihategordon))
+			continue
+		if(landmark.spawn_battery())
+			batteries_spawned++
+
+	if(!batteries_spawned)
+		log_world("[src] Fuel radio conversation ended, but no batteries spawned; check battery landmarks.")
+		to_chat(user, span_warning("Не удалось найти места для батарей. Сообщите администрации."))
+	else
+		visible_message(span_notice("На точках снабжения появились батареи ([batteries_spawned])."))
+
 	dialogue_completed = TRUE
 	end_dialogue()

@@ -133,8 +133,10 @@
 /obj/machinery/porta_turret/hecu/infected
 	name = "HECU Infected Sentry Gun"
 	desc = "A HECU automated sentry configured to target infected and their subtypes, leaving ordinary players alone."
+	lethal_projectile = /obj/item/projectile/bullet/c10mm/hecu/infected
 	turret_flags = 0
 	folded_item_type = /obj/item/hecusentry/infected
+	max_integrity = 250
 
 /obj/machinery/porta_turret/hecu/infected/can_designate_target(mob/living/target)
 	if(!istype(target, /mob/living/simple_animal/hostile/infected))
@@ -204,6 +206,9 @@
 	name = "small caliber bullet"
 	damage = 10
 	simple_mob_damage_multiplier = 2
+
+/obj/item/projectile/bullet/c10mm/hecu/infected
+	simple_mob_damage_multiplier = 2.5
 
 /obj/item/hecusentry_remote
 	name = "HECU Sentry Remote"

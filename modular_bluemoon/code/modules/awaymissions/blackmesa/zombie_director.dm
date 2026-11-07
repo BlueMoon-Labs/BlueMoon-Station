@@ -3,6 +3,7 @@
 	var/min_wave_interval = 1800
 	var/max_wave_interval = 6000
 	var/max_zombies_per_wave = 35
+	var/horde_size_multiplier = 0.65
 	var/special_infected_interval = 10 MINUTES
 	var/next_special_infected_time = 0
 	var/last_wave_time = 0
@@ -82,7 +83,7 @@
 			last_wave_time += pause_duration
 			pause_start_time = 0
 
-	if(world.time - last_wave_time >= wave_timer)
+	if(world.time - last_wave_time >= wave_timer && !is_fuel_generator_horde_active())
 		attempt_spawn_wave()
 
 	if(world.time >= next_special_infected_time)
@@ -118,6 +119,8 @@
 
 /datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
 	if(!src)
+		return
+	if(is_fuel_generator_horde_active())
 		return
 	if(spawning_wave)
 		log_world("[src] Already spawning a wave, skipping duplicate spawn")
@@ -230,9 +233,9 @@
 		log_world("[src] No players provided")
 		return
 
-	var/zombies_to_spawn = min(threat_level, max_zombies_per_wave)
+	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier))
 	if(zombies_to_spawn < threat_level)
-		log_world("[src] Limiting wave from [threat_level] to [zombies_to_spawn] zombies: per-wave cap=[max_zombies_per_wave]")
+		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
 
 	var/list/spawned_zombies = list()
 
@@ -497,8 +500,12 @@
 	var/message = "ВНИМАНИЕ! Зафиксирована активность заражённых в Секторе H. Количество целей: [zombie_count]. Рекомендуется подготовиться к обороне."
 	SSblackmesa_events.mesa_announce(message, "Zombie Horde Detected")
 
-/datum/ai_director/zombie_mission/proc/trigger_horde()
+/datum/ai_director/zombie_mission/proc/trigger_horde(from_fuel_generator = FALSE)
 	if(!src)
+		return
+	if(spawning_wave)
+		return
+	if(is_fuel_generator_horde_active() && !from_fuel_generator)
 		return
 	var/list/alive_players = get_alive_players_in_mission()
 	if(!alive_players || !alive_players.len)
@@ -508,8 +515,16 @@
 	if(!threat_level || threat_level <= 0)
 		return
 
+	wave_timer = rand(min_wave_interval, max_wave_interval)
+	last_wave_time = world.time
 	spawn_zombie_wave(threat_level, alive_players)
 	current_wave_number++
+
+/datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
+	for(var/obj/structure/urbanism_generator/fuel/generator in world)
+		if(generator.fuel_started && generator.waiting_for_fuel)
+			return TRUE
+	return FALSE
 
 /datum/ai_director/zombie_mission/proc/start_horde_music()
 	if(!src)
