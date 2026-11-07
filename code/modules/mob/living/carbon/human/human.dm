@@ -1291,13 +1291,13 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 #undef PIGGYBACK_DELAYADD_HEAVY
 #undef PIGGYBACK_DELAYADD_HEAVY_SUPER
 
-/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
+/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE, is_hidden = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
 	if(!istype(target))
 		return FALSE
 	if(!is_type_in_typecache(target, can_ride_typecache))
-		target.visible_message(span_warning("[target] действительно не может забраться на [src]..."))
+		target.visible_message(span_warning("[target] действительно не может забраться на [src]..."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		return
 	if(target.has_buckled_mobs())
 		return FALSE
@@ -1312,7 +1312,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 			if(!(H.dna?.features["taur"] in list(null, "None")))
 				var/datum/sprite_accessory/taur/T = GLOB.taur_list[H.dna.features["taur"]]
 				if(T && T.taur_mode != STYLE_SNEK_TAURIC)
-					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."))
+					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 					return
 
 		// Переносчик, проверка, что он 4х лапый, а не змея
@@ -1363,12 +1363,14 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 	if(hands_needed || target_hands_needed)
 		if(hands_needed && !equipped_hands_self)
-			src.visible_message(span_warning("[src] can't get a grip on [target] because their hands are full!"),
-				span_warning("You can't get a grip on [target] because your hands are full!"))
+			visible_message(span_warning("[src] не может ухватить [target], потому что руки заняты!"),
+				span_warning("Твои руки заняты. Не получается ухватить [target]!"),
+				vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			return
 		else if(target_hands_needed && !equipped_hands_target)
-			target.visible_message(span_warning("[target] can't get a grip on [src] because their hands are full!"),
-				span_warning("You can't get a grip on [src] because your hands are full!"))
+			target.visible_message(span_warning("[target] не может ухватить [src], потому что руки заняты!"),
+				span_warning("Твои руки заняты. Не получается ухватить [src]!"),
+				vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			return
 
 	stop_pulling()
@@ -1378,7 +1380,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		riding_datum.belly_harness = belt
 	. = ..(target, force, check_loc)
 	if(!.)
-		visible_message(span_warning("[src] не смог(ла) поднять [target]."))
+		visible_message(span_warning("[src] не смог(ла) поднять [target]."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		riding_datum.unequip_buckle_inhands(src)
 		riding_datum.unequip_buckle_inhands(target)
 

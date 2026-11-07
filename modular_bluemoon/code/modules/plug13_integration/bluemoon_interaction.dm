@@ -5,13 +5,7 @@
 	/// Set it to `null` to disable.
 	var/p13user_emote = null
 	// Приписки перед основным сообщением, при скрытой интеракции. Пробел в конце обязателен
-	var/list/hidden_additional = list(
-		//"Тихо, не спеша, не дыша, не шиша, ",
-		"Незаметно, ",
-		"Аккуратно, ",
-		"Осторожно, ",
-		"Неприметно, ",
-	)
+	var/static/list/hidden_additional = HIDDEN_INTERACTION_ADDITIONAL
 	var/emote_range = 1
 	/// Interaction strength for Plug13: `PLUG13_STRENGTH_` type or number `1-100`.
 	/// This one is for the doer/fucker/attacker.

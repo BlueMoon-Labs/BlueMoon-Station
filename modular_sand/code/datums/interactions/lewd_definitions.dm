@@ -5,7 +5,7 @@
 */
 //I'm sorry, lewd should not have mob procs such as life() and such in it. //NO SHIT IT SHOULDNT I REMOVED THEM
 
-/proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs)
+/proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs, local_only = FALSE)
 	if(!turf_source || !soundin)
 		return
 	// Защита от эффекта "колодца" у звуков. Если вам нужен такой эффект, используйте pressure_affected = FALSE
@@ -20,7 +20,7 @@
 	if(!channel)
 		return
 	var/list/hearing_mobs
-	for(var/mob/H in get_hearers_in_view(max_distance, turf_source))
+	for(var/mob/H in get_hearers_in_view(max_distance, turf_source, include_relays = !local_only))
 		if(QDELETED(H) || !H.client || !(H.client.prefs.toggles & LEWD_VERB_SOUNDS))
 			continue
 		LAZYADD(hearing_mobs, H)
@@ -293,17 +293,18 @@
 	// If didn't stop before, then we're barefoot
 	return TRUE
 
-/mob/living/proc/moan()
+/mob/living/proc/moan(is_hidden = FALSE)
+	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
+	var/hidden_prefix = HIDDEN_INTERACTION_PREFIX(is_hidden)
 	if(is_muzzled() || (mind?.miming))
-		var/message_to_display = pick("mime%S% a pleasured moan","moan%S% in silence")
-		visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "s")]."),
-			span_lewd("You [replacetext(message_to_display, "%S%", "")]."))
+		visible_message(span_lewd("[hidden_prefix]<b>\The [src]</b> беззвучно стонет."),
+			span_lewd("[hidden_prefix]Вы беззвучно стонете."), vision_distance = vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		return
 	var/message_to_display = pick("стонет%S%", "постанывает%S% от удовольствия")
-	visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")]."),
-		span_lewd("Вы [replacetext(message_to_display, "%S%", "е")]."),
-		span_lewd("Вы слышите наполненный удовольствием стон."),
-		ignored_mobs = get_unconsenting(), omni = TRUE)
+	visible_message(span_lewd("[hidden_prefix]<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")]."),
+		span_lewd("[hidden_prefix]Вы [replacetext(message_to_display, "%S%", "е")]."),
+		span_lewd("[hidden_prefix]Вы слышите наполненный удовольствием стон."),
+		vision_distance = vision_distance, ignored_mobs = get_unconsenting(), omni = TRUE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	// Get reference of the list we're using based on gender.
 	var/list/moans
@@ -331,10 +332,10 @@
 	if(isalien(src))
 		sound = 'sound/voice/hiss6.ogg'
 
-	playlewdinteractionsound(get_turf(src), sound, 80, 0, 0)
+	playlewdinteractionsound(get_turf(src), sound, 80, 0, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 	lastmoan = sound
 
-/mob/living/proc/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/proc/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	if(HAS_TRAIT(src, TRAIT_NEVERBONER))
 		return FALSE
 	if(SEND_SIGNAL(src, COMSIG_MOB_PRE_CAME, target_orifice, partner))
@@ -439,7 +440,7 @@
 									var/datum/reagents/fluid_source = G.climaxable(partner)
 									if(!fluid_source)
 										continue
-									sex.do_climax(fluid_source, src, G, TRUE, FALSE)
+									sex.do_climax(fluid_source, src, G, TRUE, FALSE, is_hidden = is_hidden)
 							else
 								silicon_sex = src
 								silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
@@ -461,7 +462,7 @@
 									var/datum/reagents/fluid_source = G.climaxable(partner)
 									if(!fluid_source)
 										continue
-									sex.do_climax(fluid_source, src, G, TRUE, FALSE)
+									sex.do_climax(fluid_source, src, G, TRUE, FALSE, is_hidden = is_hidden)
 							else
 								silicon_sex = src
 								silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
@@ -670,7 +671,7 @@
 										var/datum/reagents/fluid_source = G.climaxable(partner)
 										if(!fluid_source)
 											continue
-										sex.do_climax(fluid_source, src, G, TRUE, FALSE)
+										sex.do_climax(fluid_source, src, G, TRUE, FALSE, is_hidden = is_hidden)
 								else
 									silicon_sex = src
 									silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
@@ -692,7 +693,7 @@
 										var/datum/reagents/fluid_source = G.climaxable(partner)
 										if(!fluid_source)
 											continue
-										sex.do_climax(fluid_source, src, G, TRUE, FALSE)
+										sex.do_climax(fluid_source, src, G, TRUE, FALSE, is_hidden = is_hidden)
 								else
 									silicon_sex = src
 									silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
@@ -868,21 +869,22 @@
 					target_gen = c_partner.getorganslot(ORGAN_SLOT_BREASTS)
 				if(CUM_TARGET_PENIS)
 					target_gen = c_partner.getorganslot(ORGAN_SLOT_PENIS)
+	var/extrarange = INTERACTION_SOUND_EXTRARANGE(is_hidden, 0)
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',
-							'modular_sand/sound/interactions/final_m3.ogg'), 90, 1, 0)
+							'modular_sand/sound/interactions/final_m3.ogg'), 90, 1, extrarange, local_only = is_hidden)
 	else if(gender != MALE || (gender == PLURAL && isfeminine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',
-							'modular_sand/sound/interactions/final_f3.ogg'), 70, 1, 0)
+							'modular_sand/sound/interactions/final_f3.ogg'), 70, 1, extrarange, local_only = is_hidden)
 	// BLUEMOON ADD хвостики!
 	if(target_orifice == CUM_TARGET_TAIL && src == partner)
 		message = "кончает на собственный хвост!"
 	// BLUEMOON ADD END
 	if(!message)
 		message = pick("оргазмирует!", "трясётся в оргазме.", "дрожит от оргазма!", "кончает на себя!")
-	visible_message(message = span_userlove("<b>\The [src]</b> [message]"), ignored_mobs = get_unconsenting(ignored_mobs = obscure_to))
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(ignored_mobs = obscure_to), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	multiorgasms += 1
 
 	COOLDOWN_START(src, refractory_period, (rand(300, 900) - get_sexual_potency()))//sex cooldown
@@ -890,11 +892,11 @@
 		if(ishuman(src))
 			var/mob/living/carbon/human/H = src
 			if(!partner)
-				H.mob_climax(TRUE, "masturbation", "none")
+				H.mob_climax(TRUE, "masturbation", "none", is_hidden = is_hidden)
 			else if(istype(partner, /obj/item/reagent_containers))
-				H.mob_fill_container(last_genital, partner, 0)
+				H.mob_fill_container(last_genital, partner, 0, is_hidden = is_hidden)
 			else
-				H.mob_climax(TRUE, "sex", partner, !cumin, target_gen, anonymous)
+				H.mob_climax(TRUE, "sex", partner, !cumin, target_gen, anonymous, is_hidden)
 		if(iscyborg(src)) //BLUEMOON ADD добавлено взаимодействие с боргами
 			var/mob/living/silicon/robot/R = src
 			if(!partner)
@@ -905,7 +907,7 @@
 				R.mob_climax_silicon(TRUE, "sex", partner, !cumin, target_gen, anonymous)
 	set_lust(0)
 
-	SEND_SIGNAL(src, COMSIG_MOB_POST_CAME, target_orifice, partner, cumin, last_genital)
+	SEND_SIGNAL(src, COMSIG_MOB_POST_CAME, target_orifice, partner, cumin, last_genital, is_hidden)
 
 	return TRUE
 
@@ -961,7 +963,7 @@
 			return txt
 
 ///Handles the sex, if cumming returns true.
-/mob/living/proc/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/proc/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	if(stat != CONSCIOUS)
 		return FALSE
 
@@ -977,7 +979,7 @@
 		else
 			add_lust(amount)
 	if (amount > 0 && use_moaning_multiplier && prob(moaning_multiplier)) // BLUEMOON EDIT
-		moan()
+		moan(is_hidden)
 
 	// Below is an overengineered bezier curve based chance of moaning.
 	/// The current lust (arousal) amount.
@@ -1005,11 +1007,11 @@
 
 		// BLUEMOON EDIT START
 		if (!use_moaning_multiplier && amount > 0 && prob(chance))
-			moan()
+			moan(is_hidden)
 		// BLUEMOON EDIT END
 
 		if (lust > climax)
-			if (cum(partner, orifice, cum_inside, anonymous)) //SPLURT EDIT - extra argument `cum_inside` and `anonymous`
+			if(cum(partner, orifice, cum_inside, anonymous, is_hidden))
 				return TRUE
 	return FALSE
 

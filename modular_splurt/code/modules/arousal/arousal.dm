@@ -1,13 +1,13 @@
-/mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE)
+/mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	. = ..()
-	L.receive_climax(src, Lgen, G, spillage, forced = forced)
+	L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
 	if(iswendigo(L))
 		var/mob/living/carbon/wendigo/W = L
 		if(W.pulling == src)
 			W.slaves |= src
 			to_chat(src, "<font color='red'> You are now [W]'s slave! Serve your master properly! </font>")
 
-/mob/living/proc/receive_climax(mob/living/partner, obj/item/organ/genital/receiver, obj/item/organ/genital/source, spill, forced)
+/mob/living/proc/receive_climax(mob/living/partner, obj/item/organ/genital/receiver, obj/item/organ/genital/source, spill, forced, is_hidden = FALSE)
 
 	if (istype(receiver, /obj/item/organ/genital/penis) || istype(receiver, /obj/item/organ/genital/vagina))
 		partner.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, PLUG13_STRENGTH_LOW, PLUG13_DURATION_MEDIUM)
@@ -26,7 +26,7 @@
 	if(!receiver || spill || forced)
 		return
 
-	receiver.climax_modify_size(partner, source)
+	receiver.climax_modify_size(partner, source, is_hidden = is_hidden)
 
 //handles impregnation, also prefs
 /mob/living/proc/impregnate(mob/living/partner, obj/item/organ/W, baby_type = /mob/living/carbon/human)
@@ -72,12 +72,12 @@
 			eggo.forceMove(container)
 			eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
 
-/mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE)
+/mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE, is_hidden = FALSE)
 	if(!sender)
 		return
 	if(!target || !R)
 		return
-	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, R, target, sender, receiver, spill, anonymous))
+	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, R, target, sender, receiver, spill, anonymous, is_hidden))
 		return
 
 	var/cached_fluid
@@ -141,7 +141,7 @@
 	if(cached_fluid)
 		sender.set_fluid_id(cached_fluid)
 
-/mob/living/carbon/human/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time, obj/item/sucking_machine/M)
+/mob/living/carbon/human/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30, obj/item/sucking_machine/M, is_hidden = FALSE)
 	if(!M)
 		return ..()
 
@@ -150,16 +150,27 @@
 		return
 	var/main_fluid = lowertext(G.get_fluid_name())
 	if(mb_time)
-		visible_message("<span class='love'>You hear a strong suction sound coming from the [M.name] on [src]'s [G.name].</span>", \
-							"<span class='userlove'>The [M.name] pumps faster, trying to get you over the edge.</span>", \
-							"<span class='userlove'>Something vacuums your [G.name] with a quiet but powerfull vrrrr.</span>")
+		visible_message(
+			span_love("Слышно, как работает насос [M] на органе [src]."),
+			span_userlove("[M] работает быстрее, приближая тебя к оргазму."),
+			span_userlove("Ты чувствуешь, как насос тянет твой [G.name]."),
+			vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+			visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
+		)
 		if(!do_after(src, mb_time, target = src, timed_action_flags = (IGNORE_HELD_ITEM|IGNORE_INCAPACITATED)) || !in_range(src, container) || !G.climaxable(src, TRUE))
 			return
-	visible_message("<span class='love'>[src] twitches as [ru_ego()] [main_fluid] trickles into <b>[container]</b>.</span>", \
-								"<span class='userlove'>[M] sucks out all the [main_fluid] you had been saving up into <b>[container]</b>.</span>", \
-								"<span class='userlove'>You feel a vacuum sucking on your [G.name] as you climax!</span>")
-	do_climax(fluid_source, container, G, FALSE, cover = TRUE)
-	emote("moan")
+	visible_message(
+		span_love("[HIDDEN_INTERACTION_PREFIX(is_hidden)][src] вздрагивает, пока [main_fluid] стекает в <b>[container]</b>."),
+		span_userlove("[M] откачивает накопившуюся жидкость в <b>[container]</b>."),
+		span_userlove("Во время оргазма ты чувствуешь, как насос тянет твой [G.name]."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
+	)
+	do_climax(fluid_source, container, G, FALSE, cover = TRUE, is_hidden = is_hidden)
+	if(is_hidden)
+		moan(TRUE)
+	else
+		emote("moan")
 
 /mob/living/carbon/human/proc/mob_climax_over(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30)
 	var/datum/reagents/fluid_source = G.climaxable(src)

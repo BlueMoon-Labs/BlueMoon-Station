@@ -7,11 +7,11 @@
 			return
 	. = ..()
 
-/mob/living/carbon/clear_cuffs(obj/item/I, cuff_break)
+/mob/living/carbon/clear_cuffs(obj/item/I, cuff_break, is_hidden = FALSE)
 	if(istype(I, /obj/item/restraints/bondage_rope))
 		var/obj/item/restraints/bondage_rope/rope = I
 		if(LAZYLEN(rope.rope_stack) > 1)
-			visible_message("<span class='danger'>[src] manages to loosen up their rope!</span>")
+			visible_message(span_danger("[src] ослабляет путы!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			to_chat(src, "<span class='notice'>You successfully loosen up your rope.</span>")
 
 			var/obj/item/restraints/bondage_rope/new_rope = new rope.type()
@@ -21,7 +21,7 @@
 	. = ..()
 
 // Liquid Panty Dropper effect
-/mob/living/carbon/proc/clothing_burst(throw_clothes = FALSE)
+/mob/living/carbon/proc/clothing_burst(throw_clothes = FALSE, is_hidden = FALSE)
 	// Variable for if the action succeeded
 	var/user_disrobed = FALSE
 
@@ -60,7 +60,7 @@
 	// When successfully disrobing a target
 	if(user_disrobed)
 		// Display a chat message
-		visible_message(span_userlove("[src] вырывается из своей одежды!"), span_userlove("Ты вырываешься из своей одежды!"))
+		visible_message(span_userlove("[src] вырывается из своей одежды!"), span_userlove("Ты вырываешься из своей одежды!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 		// Play the ripped poster sound
-		playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1)
+		playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)

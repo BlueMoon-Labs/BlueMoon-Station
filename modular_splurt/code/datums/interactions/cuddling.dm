@@ -35,7 +35,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 // BlueMoon Add
 /datum/interaction/scratch
@@ -73,7 +73,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/neckscratch
@@ -112,7 +112,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/earscratch
@@ -151,5 +151,5 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 

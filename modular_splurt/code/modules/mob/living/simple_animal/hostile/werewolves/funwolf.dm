@@ -169,52 +169,52 @@
 				I = SSinteractions.interactions["/datum/interaction/lewd/throatfuck"]
 				I.display_interaction(src, M)
 
-/mob/living/simple_animal/hostile/werewolf/funwolf/cum(mob/living/M)
+/mob/living/simple_animal/hostile/werewolf/funwolf/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
 
 	var/message
 
-	if(!istype(M))
+	if(!istype(partner))
 		chosen_hole = null
 
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
-			if(M.has_mouth() && M.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [M]'s throat and cums."
+			if(partner.has_mouth() && partner.mouth_is_free())
+				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
 			else
-				message = "cums on \the [M]'s face."
+				message = "cums on \the [partner]'s face."
 		if(CUM_TARGET_VAGINA)
-			if(M.is_bottomless() && M.has_vagina())
-				message = "rams its meaty cock into \the [M]'s pussy and fills it with sperm."
-				M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(partner.is_bottomless() && partner.has_vagina())
+				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [M]'s belly."
+				message = "cums on \the [partner]'s belly."
 		if(CUM_TARGET_ANUS)
-			if(M.is_bottomless() && M.has_anus())
-				message = "hilts its knot into \the [M]'s ass and floods it with Werewolf jizz."
+			if(partner.is_bottomless() && partner.has_anus())
+				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
 			else
-				message = "cums on \the [M]'s backside."
+				message = "cums on \the [partner]'s backside."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
-	if(werewolf_mode == "abomination" && M.client?.prefs.unholypref == "Yes")
-		message = "cums all over [M]'s body"
+	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
+		message = "cums all over [partner]'s body"
 
-	if(istype(M, /mob/living/carbon))
-		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
+	if(istype(partner, /mob/living/carbon))
+		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
-	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
-	shake_camera(M, 6, 1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(slap), partner), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/proc/slap(mob/living/M)
@@ -397,52 +397,52 @@
 				I = SSinteractions.interactions["/datum/interaction/lewd/throatfuck"]
 				I.display_interaction(src, M)
 
-/mob/living/simple_animal/hostile/ice_wolf/funwolf/cum(mob/living/M)
+/mob/living/simple_animal/hostile/ice_wolf/funwolf/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
 
 	var/message
 
-	if(!istype(M))
+	if(!istype(partner))
 		chosen_hole = null
 
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
-			if(M.has_mouth() && M.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [M]'s throat and cums."
+			if(partner.has_mouth() && partner.mouth_is_free())
+				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
 			else
-				message = "cums on \the [M]'s face."
+				message = "cums on \the [partner]'s face."
 		if(CUM_TARGET_VAGINA)
-			if(M.is_bottomless() && M.has_vagina())
-				message = "rams its meaty cock into \the [M]'s pussy and fills it with sperm."
-				M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(partner.is_bottomless() && partner.has_vagina())
+				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [M]'s belly."
+				message = "cums on \the [partner]'s belly."
 		if(CUM_TARGET_ANUS)
-			if(M.is_bottomless() && M.has_anus())
-				message = "hilts its knot into \the [M]'s ass and floods it with Werewolf jizz."
+			if(partner.is_bottomless() && partner.has_anus())
+				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
 			else
-				message = "cums on \the [M]'s backside."
+				message = "cums on \the [partner]'s backside."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
-	if(werewolf_mode == "abomination" && M.client?.prefs.unholypref == "Yes")
-		message = "cums all over [M]'s body"
+	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
+		message = "cums all over [partner]'s body"
 
-	if(istype(M, /mob/living/carbon))
-		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
+	if(istype(partner, /mob/living/carbon))
+		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
-	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
-	shake_camera(M, 6, 1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(slap), partner), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/proc/slap(mob/living/M)
@@ -626,52 +626,52 @@
 				I = SSinteractions.interactions["/datum/interaction/lewd/throatfuck"]
 				I.display_interaction(src, M)
 
-/mob/living/simple_animal/hostile/hellhound/funwolf/cum(mob/living/M)
+/mob/living/simple_animal/hostile/hellhound/funwolf/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
 
 	var/message
 
-	if(!istype(M))
+	if(!istype(partner))
 		chosen_hole = null
 
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
-			if(M.has_mouth() && M.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [M]'s throat and cums."
+			if(partner.has_mouth() && partner.mouth_is_free())
+				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
 			else
-				message = "cums on \the [M]'s face."
+				message = "cums on \the [partner]'s face."
 		if(CUM_TARGET_VAGINA)
-			if(M.is_bottomless() && M.has_vagina())
-				message = "rams its meaty cock into \the [M]'s pussy and fills it with sperm."
-				M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(partner.is_bottomless() && partner.has_vagina())
+				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [M]'s belly."
+				message = "cums on \the [partner]'s belly."
 		if(CUM_TARGET_ANUS)
-			if(M.is_bottomless() && M.has_anus())
-				message = "hilts its knot into \the [M]'s ass and floods it with Werewolf jizz."
+			if(partner.is_bottomless() && partner.has_anus())
+				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
 			else
-				message = "cums on \the [M]'s backside."
+				message = "cums on \the [partner]'s backside."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
-	if(werewolf_mode == "abomination" && M.client?.prefs.unholypref == "Yes")
-		message = "cums all over [M]'s body"
+	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
+		message = "cums all over [partner]'s body"
 
-	if(istype(M, /mob/living/carbon))
-		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
+	if(istype(partner, /mob/living/carbon))
+		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
-	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
-	shake_camera(M, 6, 1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(slap), partner), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/proc/slap(mob/living/M)
@@ -855,52 +855,52 @@
 				I = SSinteractions.interactions["/datum/interaction/lewd/throatfuck"]
 				I.display_interaction(src, M)
 
-/mob/living/simple_animal/hostile/the_mosley/funwolf/cum(mob/living/M)
+/mob/living/simple_animal/hostile/the_mosley/funwolf/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
 
 	var/message
 
-	if(!istype(M))
+	if(!istype(partner))
 		chosen_hole = null
 
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
-			if(M.has_mouth() && M.mouth_is_free())
-				message = "shoves their fat canine cock deep down \the [M]'s throat and cums."
+			if(partner.has_mouth() && partner.mouth_is_free())
+				message = "shoves their fat canine cock deep down \the [partner]'s throat and cums."
 			else
-				message = "cums on \the [M]'s face."
+				message = "cums on \the [partner]'s face."
 		if(CUM_TARGET_VAGINA)
-			if(M.is_bottomless() && M.has_vagina())
-				message = "rams its meaty cock into \the [M]'s pussy and fills it with sperm."
-				M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(partner.is_bottomless() && partner.has_vagina())
+				message = "rams its meaty cock into \the [partner]'s pussy and fills it with sperm."
+				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "cums on \the [M]'s belly."
+				message = "cums on \the [partner]'s belly."
 		if(CUM_TARGET_ANUS)
-			if(M.is_bottomless() && M.has_anus())
-				message = "hilts its knot into \the [M]'s ass and floods it with Werewolf jizz."
+			if(partner.is_bottomless() && partner.has_anus())
+				message = "hilts its knot into \the [partner]'s ass and floods it with Werewolf jizz."
 			else
-				message = "cums on \the [M]'s backside."
+				message = "cums on \the [partner]'s backside."
 		else
 			message = "кончает, заполняя пространство под собой!"
 
-	if(werewolf_mode == "abomination" && M.client?.prefs.unholypref == "Yes")
-		message = "cums all over [M]'s body"
+	if(werewolf_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
+		message = "cums all over [partner]'s body"
 
-	if(istype(M, /mob/living/carbon))
-		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
+	if(istype(partner, /mob/living/carbon))
+		partner.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
-	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
-	shake_camera(M, 6, 1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(slap), partner), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/proc/slap(mob/living/M)

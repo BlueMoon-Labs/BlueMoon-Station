@@ -10,6 +10,8 @@
 - Makes all the code good because yes as well - SandPoot
 **/
 
+GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
+
 	/// The base of all interactions
 /datum/interaction
 	var/description
@@ -121,7 +123,7 @@
 		return FALSE
 
 	// BLUEMOON ADD START - специальные проверки от БМ
-	if(!special_check(user, target))
+	if(!special_check(user, target, is_hidden))
 		return
 	// BLUEMOON ADD END
 
@@ -140,19 +142,16 @@
 /datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target))
 		return
-	var/vision_distance = 7
-	var/hidden_message
-	if(is_hidden)
-		vision_distance = 1
-		hidden_message = pick(hidden_additional)
+	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
+	var/hidden_message = HIDDEN_INTERACTION_PREFIX(is_hidden)
 
 	if(simple_message)
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
 		if(message_by_user)
-			user.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
+			user.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		else
-			target.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
+			target.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 /// After the interaction, the base only plays the sound and only if it has one
 /datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
@@ -211,25 +210,25 @@
 			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
 		else if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
 			ignored_mobs = sound_source.get_unconsenting(unholy_hard = TRUE)
-		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
+		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs, local_only = is_hidden)
 	else
-		playsound(sound_turf, soundin, volume, 1, extrarange)
+		playsound(sound_turf, soundin, volume, 1, extrarange, local_only = is_hidden)
 
 /datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
-    if(user.ckey == "pingvas")
-        if(apply_cooldown)
-            COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
-        playsound(get_turf(user), 'modular_bluemoon/sound/plush/milp7.ogg', 50, FALSE, -1)
-        return
-    . = ..()
+	if(user.ckey == "pingvas")
+		if(apply_cooldown)
+			COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
+		playsound(get_turf(user), 'modular_bluemoon/sound/plush/milp7.ogg', 50, FALSE, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+		return
+	. = ..()
 
 /datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
-    if(user.ckey == "dimakr" || user.ckey == "pingvas")
-        if(apply_cooldown)
-            COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
-        playsound(get_turf(user), 'modular_bluemoon/sound/plush/milp6.ogg', 50, FALSE, -1)
-        return
-    . = ..()
+	if(user.ckey == "dimakr" || user.ckey == "pingvas")
+		if(apply_cooldown)
+			COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
+		playsound(get_turf(user), 'modular_bluemoon/sound/plush/milp6.ogg', 50, FALSE, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+		return
+	. = ..()
 
 /datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	var/obj/item/clothing/mask/screammask/mask = locate() in user.get_equipped_items()
@@ -237,7 +236,7 @@
 		if(apply_cooldown)
 			COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
 		var/soundfile_to_play = pick('modular_bluemoon/sound/interactions/chuv2.ogg', 'modular_bluemoon/sound/interactions/chuv3.ogg')
-		playsound(get_turf(user), soundfile_to_play, 80, FALSE, -1)
+		playsound(get_turf(user), soundfile_to_play, 80, FALSE, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 		return
 	. = ..()
 

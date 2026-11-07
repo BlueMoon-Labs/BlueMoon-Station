@@ -38,7 +38,7 @@
 		return linked_organ.get_fluid_fraction()
 	return 0
 
-/obj/item/organ/genital/proc/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen)
+/obj/item/organ/genital/proc/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
     return
 
 /obj/item/organ/genital/proc/get_fluid_id()

@@ -109,14 +109,14 @@
 	if(D.features["belly_accessible"])
 		toggle_accessibility(TRUE)
 
-/obj/item/organ/genital/belly/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole)
+/obj/item/organ/genital/belly/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
 	if(!(owner.client?.prefs.cit_toggles & BELLY_INFLATION))
 		if(owner.has_anus() == HAS_EXPOSED_GENITAL && (cum_hole == CUM_TARGET_ANUS) && (owner.client?.prefs.cit_toggles & BUTT_ENLARGEMENT))
 			var/obj/item/organ/genital/butt/ass = owner.getorganslot(ORGAN_SLOT_BUTT)
 			if(!ass)
 				ass = new
 				ass.Insert(owner)
-			ass.climax_modify_size(partner, source_gen)
+			ass.climax_modify_size(partner, source_gen, is_hidden = is_hidden)
 		return
 
 	var/datum/reagents/fluid_source = source_gen?.climaxable()
@@ -135,12 +135,12 @@
 		var/growth_amount = climax_fluids.total_volume / (fluid_max_volume * GENITAL_INFLATION_THRESHOLD)
 		modify_size(growth_amount)
 		if(size > round(previous))
-			owner.visible_message("<span class='lewd'>\The Животик <b>[owner]</b> становится совсем выпуклым и раздувается от наполнения [pick("сладкой", "желанной")] '[lowertext(source_gen.get_fluid_name())]'!</span>", ignored_mobs = owner.get_unconsenting())
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]\The Животик <b>[owner]</b> становится совсем выпуклым и раздувается от наполнения [pick("сладкой", "желанной")] '[lowertext(source_gen.get_fluid_name())]'!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		if((growth_amount >= 3 || size >= 3) && (owner.client?.prefs.cit_toggles & BUTT_ENLARGEMENT))
 			var/obj/item/organ/genital/butt/ass = owner.getorganslot(ORGAN_SLOT_BUTT)
 			if(!ass)
 				ass = new
 				ass.Insert(owner)
-			ass.climax_modify_size(partner, source_gen, TRUE)
+			ass.climax_modify_size(partner, source_gen, from_belly = TRUE, is_hidden = is_hidden)
 		climax_fluids.clear_reagents()

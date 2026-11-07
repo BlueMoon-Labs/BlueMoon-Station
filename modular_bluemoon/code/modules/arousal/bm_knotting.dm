@@ -42,6 +42,7 @@
 	var/obj/item/organ/genital/knotted_genital = null
 	var/last_knot_check = 0
 	var/last_tug_time = 0
+	var/tmp/knot_is_hidden = FALSE
 
 /obj/item/organ/genital/penis/Initialize(mapload)
 	. = ..()
@@ -78,7 +79,7 @@
 // ============================================================
 // MAIN KNOTTING LOGIC (REFACTORED)
 // ============================================================
-/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE)
+/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE, is_hidden = FALSE)
 	if(!validate_knotting_conditions(user, partner))
 		return FALSE
 
@@ -90,6 +91,7 @@
 	var/duration = calculate_knot_duration(target_zone)
 
 	activate_knot(user, partner, target_zone, duration)
+	knot_is_hidden = is_hidden
 	setup_knot_signals(user, partner)
 	apply_knot_effects(user, partner, target_zone)
 
@@ -238,9 +240,11 @@
 	knotted_genital?.is_knotted = TRUE
 
 /obj/item/organ/genital/penis/proc/send_knot_messages(mob/living/user, mob/living/partner, zone_text)
-	visible_message(list(user, partner),
-		span_love("<b>[user]</b> застревает узлом в [zone_text] <b>[partner]</b>!"),
-		span_love("Твой узел набухает и фиксируется внутри [partner].")
+	user.visible_message(
+		span_love("[HIDDEN_INTERACTION_PREFIX(knot_is_hidden)]<b>[user]</b> застревает узлом в [zone_text] <b>[partner]</b>!"),
+		span_love("Твой узел набухает и фиксируется внутри [partner]."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(knot_is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(knot_is_hidden)
 	)
 
 	to_chat(partner, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [user]!</b></font>"))
@@ -303,7 +307,9 @@
 
 /obj/item/organ/genital/penis/proc/trigger_random_reactions(mob/living/M)
 	if(prob(10))
-		if(prob(50))
+		if(knot_is_hidden)
+			M.moan(TRUE)
+		else if(prob(50))
 			M.say(pick("Ох-мхх...", "Ахх-р...", "Амрфпф...", "Мрр-ах...", "Ааах...", "Мнх...", "Ммм..."))
 		else
 			M.emote(pick("moan", "blush", "pant"))
@@ -349,11 +355,11 @@
 /obj/item/organ/genital/penis/proc/handle_post_knot_arousal(mob/living/user, mob/living/partner)
 	if(ishuman(user))
 		var/mob/living/carbon/human/HU = user
-		HU.handle_post_sex(NORMAL_LUST, null, partner)
+		HU.handle_post_sex(NORMAL_LUST, null, partner, is_hidden = knot_is_hidden)
 
 	if(ishuman(partner))
 		var/mob/living/carbon/human/HP = partner
-		HP.handle_post_sex(NORMAL_LUST, null, user)
+		HP.handle_post_sex(NORMAL_LUST, null, user, is_hidden = knot_is_hidden)
 
 // ============================================================
 // PROCESS SCHEDULING
@@ -383,7 +389,10 @@
 			M.add_lust(add_amount)
 
 		if(prob(8))
-			M.emote(pick("moan", "pant", "blush"))
+			if(knot_is_hidden)
+				M.moan(TRUE)
+			else
+				M.emote(pick("moan", "pant", "blush"))
 
 	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL)
 
@@ -396,18 +405,20 @@
 
 	var/mob/living/Luser = user
 	var/mob/living/Lpartner = partner
+	var/is_hidden = knot_is_hidden
 
 	cleanup_knot_state(Luser, Lpartner)
 
 	var/zone_text = get_zone_text(target_zone)
 
 	if(forceful)
-		apply_forceful_release(Luser, Lpartner, zone_text)
+		apply_forceful_release(Luser, Lpartner, zone_text, is_hidden)
 	else
-		apply_gentle_release(Luser, Lpartner, zone_text)
+		apply_gentle_release(Luser, Lpartner, zone_text, is_hidden)
 
 /obj/item/organ/genital/penis/proc/cleanup_knot_state(mob/living/user, mob/living/partner)
 	knot_locked = FALSE
+	knot_is_hidden = FALSE
 	knot_state = 0
 	knot_partner = null
 	knot_until = 0
@@ -430,16 +441,19 @@
 		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) return "рта"
 	return "тела"
 
-/obj/item/organ/genital/penis/proc/apply_forceful_release(mob/living/user, mob/living/partner, zone_text)
-	playsound(get_turf(user), 'sound/effects/snap01.ogg', 100, TRUE)
+/obj/item/organ/genital/penis/proc/apply_forceful_release(mob/living/user, mob/living/partner, zone_text, is_hidden)
+	playsound(get_turf(user), 'sound/effects/snap01.ogg', 100, TRUE, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 
 	user.visible_message(
 		span_danger("Узел [user] с силой вырывается из [zone_text] [partner]!"),
-		span_warning("Ты резко выдёргиваешь узел из [partner]! Это больно обоим.")
+		span_warning("Ты резко выдёргиваешь узел из [partner]! Это больно обоим."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
 	to_chat(partner, span_userdanger("Ты чувствуешь резкую боль, когда узел [user] рвётся!"))
-	partner.emote("scream")
+	if(!is_hidden)
+		partner.emote("scream")
 	partner.Stun(40)
 
 	if(ishuman(user))
@@ -447,18 +461,23 @@
 	if(ishuman(partner))
 		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
 
-/obj/item/organ/genital/penis/proc/apply_gentle_release(mob/living/user, mob/living/partner, zone_text)
-	playsound(get_turf(user), 'sound/effects/snap01.ogg', 50, TRUE)
+/obj/item/organ/genital/penis/proc/apply_gentle_release(mob/living/user, mob/living/partner, zone_text, is_hidden)
+	playsound(get_turf(user), 'sound/effects/snap01.ogg', 50, TRUE, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 
 	user.visible_message(
 		span_lewd("Узел [user] постепенно спадает, освобождая [partner] из [zone_text]."),
-		span_love("Ты чувствуешь, как узел спадает, освобождая [partner].")
+		span_love("Ты чувствуешь, как узел спадает, освобождая [partner]."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
 	to_chat(partner, span_lewd("<font color='#ee6bee'>Ты ощущаешь, как узел [user] мягко выходит из твоего [zone_text].</font>"))
 
 	if(prob(25))
-		partner.emote("moan")
+		if(is_hidden)
+			partner.moan(TRUE)
+		else
+			partner.emote("moan")
 
 	if(ishuman(user))
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
@@ -500,7 +519,7 @@
 	to_chat(user, span_warning("Узел натягивается между тобой и [partner]!"))
 	to_chat(partner, span_danger("Ты чувствуешь, как узел внутри натягивается и причиняет боль!"))
 
-	if(prob(25))
+	if(!knot_is_hidden && prob(25))
 		partner.emote("whimper")
 
 	user.apply_damage(rand(10, 20), STAMINA)
@@ -529,10 +548,13 @@
 	partner.apply_damage(rand(10, 20), STAMINA)
 	partner.apply_damage(rand(3, 6), BRUTE)
 
-	if(prob(50))
+	if(!knot_is_hidden && prob(50))
 		user.emote("scream")
 	if(prob(25))
-		partner.emote("moan")
+		if(knot_is_hidden)
+			partner.moan(TRUE)
+		else
+			partner.emote("moan")
 
 	release_knot(user, partner, knot_state, TRUE)
 
@@ -601,18 +623,19 @@
 
 	var/is_partner = (user == pen_partner)
 	var/duration = is_partner ? 4 SECONDS : 3 SECONDS
+	var/is_hidden = knot_is_hidden
 
 	send_resist_start_messages(user, pen_owner, pen_partner, is_partner)
 
 	if(prob(35))
 		to_chat(user, span_danger("Тебе не удаётся найти удобное положение..."))
-		if(prob(40))
+		if(!is_hidden && prob(40))
 			user.emote(pick("pant", "whimper"))
 		return
 
 	if(!do_after(user, duration, target = is_partner ? pen_owner : pen_partner))
 		to_chat(user, span_danger("Ты не смог освободиться от узла!"))
-		if(prob(40))
+		if(!is_hidden && prob(40))
 			user.emote(pick("scream", "pant"))
 		return
 
@@ -621,7 +644,7 @@
 		return
 
 	release_knot(pen_owner, pen_partner, knot_state, FALSE)
-	send_resist_success_messages(user, pen_owner, pen_partner, is_partner)
+	send_resist_success_messages(user, pen_owner, pen_partner, is_partner, is_hidden)
 
 /obj/item/organ/genital/penis/proc/send_resist_start_messages(mob/living/user, mob/living/pen_owner, mob/living/pen_partner, is_partner)
 	var/msg_start
@@ -632,24 +655,32 @@
 
 	user.visible_message(
 		span_notice(msg_start),
-		span_notice("Ты начинаешь попытку освободиться от узла...")
+		span_notice("Ты начинаешь попытку освободиться от узла..."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(knot_is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(knot_is_hidden)
 	)
 
 	to_chat(user, span_warning("Ты пытаешься освободиться... Не двигайся!"))
 
-/obj/item/organ/genital/penis/proc/send_resist_success_messages(mob/living/user, mob/living/pen_owner, mob/living/pen_partner, is_partner)
+/obj/item/organ/genital/penis/proc/send_resist_success_messages(mob/living/user, mob/living/pen_owner, mob/living/pen_partner, is_partner, is_hidden)
 	if(is_partner)
 		to_chat(user, span_love("Узел постепенно выходит, принося облегчение."))
 		if(prob(40))
-			user.emote(pick("moan", "blush"))
-		if(prob(20))
+			if(is_hidden)
+				user.moan(TRUE)
+			else
+				user.emote(pick("moan", "blush"))
+		if(!is_hidden && prob(20))
 			pen_owner.emote(pick("groan", "pant"))
 	else
 		to_chat(user, span_love("Ты осторожно помогаешь узлу сойти."))
+		if(!is_hidden && prob(25))
+			user.emote("sigh")
 		if(prob(25))
-			user.emote(pick("sigh"))
-		if(prob(25))
-			pen_partner.emote(pick("moan", "blush"))
+			if(is_hidden)
+				pen_partner.moan(TRUE)
+			else
+				pen_partner.emote(pick("moan", "blush"))
 
 // ============================================================
 // HUMAN VERB INTEGRATION
@@ -682,7 +713,7 @@
 // ============================================================
 // GLOBAL HELPER PROC
 // ============================================================
-/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE)
+/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE, is_hidden = FALSE)
 	if(!ishuman(user) || !ishuman(partner))
 		return
 
@@ -751,7 +782,7 @@
 		chance = 100
 
 	if(force_knot || prob(chance))
-		if(P.do_knotting(initiator, receiver, target_zone, force_knot))
+		if(P.do_knotting(initiator, receiver, target_zone, force_knot, is_hidden))
 			to_chat(initiator, span_love("Ты чувствуешь, как узел набухает внутри [receiver]!"))
 			to_chat(receiver, span_love("Ты ощущаешь, как узел [initiator] застревает внутри!"))
 			GLOB.knottings++

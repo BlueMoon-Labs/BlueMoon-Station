@@ -10,9 +10,9 @@
 		"\<b>[user]</b> крепко сжимает \<b>[target]</b> за её [pick(GLOB.breast_nouns)] и они громко пищат!"
 	)
 	if(prob(50))
-		target.visible_message("<span class='lewd'>[pick(honks)]</span>")
+		target.visible_message(span_lewd("[pick(honks)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/oral/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -20,9 +20,9 @@
 		return
 
 	if(prob(50))
-		target.visible_message("<span class='lewd'>\<b>[target]</b> неуклюже хонкает!</span>")
+		target.visible_message(span_lewd("\<b>[target]</b> неуклюже хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/oral/blowjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -31,9 +31,9 @@
 
 	if(prob(50))
 		// var/genital_name = target.get_penetrating_genital_name(TRUE)
-		target.visible_message("<span class='lewd'>\[genital_name] <b>[target]</b> громко хонкает!</span>")
+		target.visible_message(span_lewd("\[genital_name] <b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -41,9 +41,9 @@
 		return
 
 	if(prob(50) && isclownjob(target))
-		target.visible_message("<span class='lewd'>\<b>[target]</b> неуклюже хонкает!</span>")
+		target.visible_message(span_lewd("\<b>[target]</b> неуклюже хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fuck/anal/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -51,9 +51,9 @@
 		return
 
 	if(prob(50) && isclownjob(target))
-		target.visible_message("<span class='lewd'>Задница <b>[target]</b> громко хонкает!</span>")
+		target.visible_message(span_lewd("Задница <b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/finger/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -61,9 +61,9 @@
 		return
 
 	if(prob(50))
-		target.visible_message("<span class='lewd'>\<b>[target]</b> неуклюже хонкает!</span>")
+		target.visible_message(span_lewd("\<b>[target]</b> неуклюже хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fingerass/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -71,9 +71,9 @@
 		return
 
 	if(prob(50))
-		target.visible_message("<span class='lewd'>Задница <b>[target]</b> громко хонкает!</span>")
+		target.visible_message(span_lewd("Задница <b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/facefuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -82,9 +82,9 @@
 
 	if(prob(50))
 		//var/genital_name = target.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'><b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("<b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/throatfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -95,15 +95,15 @@
 		var/stat_before = target.stat
 		target.adjustOxyLoss(6)
 		if(target.stat == UNCONSCIOUS && stat_before != UNCONSCIOUS)
-			target.visible_message(message = "<font color=red>[is_hidden ? "Незаметно, " : null]<b>[target]</b> теряет сознание из-за члена <b>[user]</b>.</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+			target.visible_message(message = "<font color=red>[is_hidden ? "Незаметно, " : null]<b>[target]</b> теряет сознание из-за члена <b>[user]</b>.</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(!isclownjob(user))
 		return
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'><b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("<b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/handjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -112,9 +112,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'><b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("<b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/breastfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -122,11 +122,11 @@
 		return
 
 	if(prob(50) && isclownjob(target))
-		target.visible_message("<span class='lewd'>\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!</span>")
+		target.visible_message(span_lewd("\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(get_turf(target), pick('sound/items/bikehorn.ogg',
 						'modular_bluemoon/sound/interactions/fuckClown.ogg',
-						'modular_bluemoon/sound/interactions/fuckClown1.ogg'), 70, 1, -1)
+						'modular_bluemoon/sound/interactions/fuckClown1.ogg'), 70, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/mount/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -134,9 +134,9 @@
 		return
 
 	if(prob(50) && isclownjob(user))
-		user.visible_message("<span class='lewd'>\ Киска <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ Киска <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/mountass/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -144,9 +144,9 @@
 		return
 
 	if(prob(50) && isclownjob(user))
-		target.visible_message("<span class='lewd'>\ Задница <b>[user]</b> забавно хонкает!</span>")
+		target.visible_message(span_lewd("\ Задница <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/mountface/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -154,9 +154,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ Задница <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ Задница <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/footfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -165,9 +165,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/footfuck/double/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -176,9 +176,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/footjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -187,9 +187,9 @@
 
 	if(prob(50))
 		//var/genital_name = target.get_penetrating_genital_name(TRUE)
-		target.visible_message("<span class='lewd'>\ <b>[target]</b> забавно хонкает!</span>")
+		target.visible_message(span_lewd("\ <b>[target]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/footjob/double/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -198,9 +198,9 @@
 
 	if(prob(50))
 		//var/genital_name = target.get_penetrating_genital_name(TRUE)
-		target.visible_message("<span class='lewd'>\ <b>[target]</b> забавно хонкает!</span>")
+		target.visible_message(span_lewd("\ <b>[target]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/nuts/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -208,9 +208,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ Яички <b>[user]</b> забавно хонкают!</span>")
+		user.visible_message(span_lewd("\ Яички <b>[user]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/nut_smack/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
@@ -218,9 +218,9 @@
 		return
 
 	if(prob(50))
-		target.visible_message("<span class='lewd'>\ Яички <b>[user]</b> забавно хонкают!</span>")
+		target.visible_message(span_lewd("\ Яички <b>[user]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/earfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -229,9 +229,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/bite/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	if (istype(user.wear_mask, /obj/item/clothing/mask/muzzle/mouthring))
@@ -247,9 +247,9 @@
 	if(prob(50))
 			//var/genital_name = user.get_penetrating_genital_name(TRUE)
 			//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/eyefuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -258,16 +258,16 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/frotting/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/do_breastfeed/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
@@ -286,9 +286,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!</span>")
+		user.visible_message(span_lewd("\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/jack/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -297,9 +297,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fingerass_self/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -307,9 +307,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ Задница <b>[user]</b> громко хонкает!</span>")
+		user.visible_message(span_lewd("\ Задница <b>[user]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/finger_self/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -317,9 +317,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ Киска <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ Киска <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/titgrope_self/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	. = ..()
@@ -332,9 +332,9 @@
 		"<span class='lewd'>\ <b>[user]</b> издаёт громкое пищание своими [pick(GLOB.breast_nouns)]!</span>"
 	)
 	if(prob(50))
-		user.visible_message("<span class='lewd'>[pick(honks)]</span>")
+		user.visible_message(span_lewd("[pick(honks)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/self_nipsuck/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
@@ -358,9 +358,9 @@
 		"<span class='lewd'>\ <b>[target]</b> издаёт громкое пищание своими [pick(GLOB.breast_nouns)]!</span>"
 	)
 	if(prob(50))
-		user.visible_message("<span class='lewd'>[pick(honks)]</span>")
+		user.visible_message(span_lewd("[pick(honks)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/nipsuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
 	var/obj/item/organ/genital/breasts/milkers = target.getorganslot(ORGAN_SLOT_BREASTS)
@@ -383,9 +383,9 @@
 		"<span class='lewd'>\ <b>[target]</b> издаёт громкое пищание своими [pick(GLOB.breast_nouns)]!</span>"
 	)
 	if(prob(50))
-		user.visible_message("<span class='lewd'>[pick(honks)]</span>")
+		user.visible_message(span_lewd("[pick(honks)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/kiss/post_interaction(mob/living/user, mob/living/partner, apply_cooldown, is_hidden)
 	. = ..()
@@ -396,11 +396,11 @@
 	//SPLURT EDIT START:
 	// Check if user has TRAIT_KISS_SLUT and increase their lust
 	if(HAS_TRAIT(user, TRAIT_KISS_SLUT))
-		user.handle_post_sex(LOW_LUST, null, partner)
+		user.handle_post_sex(LOW_LUST, null, partner, is_hidden = is_hidden)
 
 	// Check if partner has TRAIT_KISS_SLUT and increase their lust
 	if(HAS_TRAIT(partner, TRAIT_KISS_SLUT))
-		partner.handle_post_sex(LOW_LUST, null, user)
+		partner.handle_post_sex(LOW_LUST, null, user, is_hidden = is_hidden)
 	//SPLURT EDIT END
 
 /datum/interaction/lewd/kiss/display_interaction(mob/living/user, mob/living/partner, is_hidden)
@@ -409,9 +409,9 @@
 	var/const/volume = 90
 	if(!HAS_TRAIT(user, TRAIT_KISS_MIME))
 		if(HAS_TRAIT(user, TRAIT_KISS_HONK))
-			playlewdinteractionsound(user.loc, 'modular_sand/sound/interactions/kiss5.ogg', volume, 1, extrarange)
+			playlewdinteractionsound(user.loc, 'modular_sand/sound/interactions/kiss5.ogg', volume, 1, extrarange, local_only = is_hidden)
 		else
-			playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), volume, 1, extrarange)
+			playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), volume, 1, extrarange, local_only = is_hidden)
 
 	if(user.a_intent == INTENT_HARM)
 		if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))
@@ -422,8 +422,9 @@
 		else if(HAS_TRAIT(user, TRAIT_KISS_SPACE_DRUGS))
 			partner.reagents.add_reagent(/datum/reagent/drug/space_drugs, rand(1, 3))
 		else if(HAS_TRAIT(user, TRAIT_KISS_HONK))
-			partner.emote("flip")
-			playsound(partner, 'sound/items/bikehorn.ogg', 50, TRUE)
+			if(!is_hidden)
+				partner.emote("flip")
+			playsound(partner, 'sound/items/bikehorn.ogg', 50, TRUE, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 		else if(HAS_TRAIT(user, TRAIT_KISS_BLOODSUCKER))
 			if(iscarbon(partner))
 				var/mob/living/carbon/C = partner
@@ -442,11 +443,12 @@
 			partner.reagents.add_reagent(pick(drugs), 1)
 		else if(HAS_TRAIT(user, TRAIT_KISS_HEARTBOOM))
 			partner.reagents.add_reagent(/datum/reagent/drug/aphrodisiac, rand(1, 5))
-			new /obj/effect/temp_visual/heart(get_turf(partner))
-			var/obj/effect/particle_effect/smoke/cigsmoke/puff = new(get_turf(partner))
-			puff.color = "#9400D3"
-			puff.alpha = 64
-			puff.lifetime = 1
+			if(!is_hidden)
+				new /obj/effect/temp_visual/heart(get_turf(partner))
+				var/obj/effect/particle_effect/smoke/cigsmoke/puff = new(get_turf(partner))
+				puff.color = "#9400D3"
+				puff.alpha = 64
+				puff.lifetime = 1
 			var/static/list/heartboom_emotes = list(
 				list("gasp", "Ты чувствуешь как леденеют твои вены и сердце на секунду замирает..."),
 				list("sneeze", "Ты чихаешь от попавших тебе в нос блёсток..."),
@@ -460,7 +462,8 @@
 			)
 			var/list/chosen = pick(heartboom_emotes)
 			to_chat(partner, span_love("[chosen[2]]"))
-			partner.emote(chosen[1])
+			if(!is_hidden)
+				partner.emote(chosen[1])
 
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
@@ -489,9 +492,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/oral/suckvagself
 	description = "Вагина. Отлизать свою киску."
@@ -531,9 +534,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ [pick(GLOB.breast_nouns)] <b>[user]</b> забавно хонкают!</span>")
+		user.visible_message(span_lewd("\ [pick(GLOB.breast_nouns)] <b>[user]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fuck/belly
 	description = "Живот. Трахнуть в пупок."
@@ -553,9 +556,9 @@
 		return
 
 	if(prob(50) && isclownjob(target))
-		target.visible_message("<span class='lewd'>\ Живот <b>[target]</b> громко хонкает!</span>")
+		target.visible_message(span_lewd("\ Живот <b>[target]</b> громко хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/deflate_belly
 	description = "Живот. Уменьшить свой живот."
@@ -649,9 +652,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!</span>")
+		user.visible_message(span_lewd("\ [pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/lick_sweat
 	description = "Подмышки. Слизывать пот."
@@ -713,9 +716,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/do_pitjob
 	description = "Подмышки. Вздрочнуть пенис партнёра."
@@ -739,9 +742,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[user]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[user]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/do_boobjob
 	description = "Грудь. Вздрочнуть пенис партнёра."
@@ -764,9 +767,9 @@
 		return
 
 	if(prob(50))
-		user.visible_message("<span class='lewd'>\[pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!</span>")
+		user.visible_message(span_lewd("\[pick(GLOB.breast_nouns)] <b>[target]</b> забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/lick_nuts
 	description = "Яйца. Полизать яички партнёра."
@@ -805,7 +808,7 @@
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/nipple_fuck
 	description = "Грудь. Трахнуть в сосок."
@@ -828,9 +831,9 @@
 		return
 
 	if(prob(50))
-		target.visible_message("<span class='lewd'>\[pick(GLOB.breast_nouns)] <b>[target]</b> [pick(GLOB.breast_nouns)] забавно хонкают!</span>")
+		target.visible_message(span_lewd("\[pick(GLOB.breast_nouns)] <b>[target]</b> [pick(GLOB.breast_nouns)] забавно хонкают!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/fuck_thighs
 	description = "Член. Проникнуть между бёдрами."
@@ -856,9 +859,9 @@
 
 	if(prob(50))
 		//var/genital_name = user.get_penetrating_genital_name(TRUE)
-		user.visible_message("<span class='lewd'>\ <b>[target]</b> забавно хонкает!</span>")
+		user.visible_message(span_lewd("\ <b>[target]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/do_thighjob
 	description = "Бёдра. Подрочить член бёдрами."
@@ -884,9 +887,9 @@
 
 	if(prob(50))
 		//var/genital_name = target.get_penetrating_genital_name(TRUE)
-		target.visible_message("<span class='lewd'>\ <b>[target]</b> забавно хонкает!</span>")
+		target.visible_message(span_lewd("\ <b>[target]</b> забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/clothesplosion
 	description = "Резко снять всю свою одежду!"
@@ -896,7 +899,7 @@
 	write_log_user = "Exploded out of their clothes"
 	hearts_effect = FALSE
 
-/datum/interaction/lewd/clothesplosion/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/clothesplosion/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!.)
 		return
@@ -904,4 +907,4 @@
 		return FALSE
 
 /datum/interaction/lewd/clothesplosion/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)
-	user.clothing_burst(FALSE)
+	user.clothing_burst(is_hidden = is_hidden)

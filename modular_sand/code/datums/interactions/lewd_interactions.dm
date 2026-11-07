@@ -505,5 +505,5 @@
 	user.cleartimer = addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, clear_lewd_datum)), 300, TIMER_STOPPABLE)
 	return ..()
 
-/datum/interaction/proc/special_check(mob/living/user, mob/living/target)
+/datum/interaction/proc/special_check(mob/living/user, mob/living/target, is_hidden = FALSE)
 	return TRUE

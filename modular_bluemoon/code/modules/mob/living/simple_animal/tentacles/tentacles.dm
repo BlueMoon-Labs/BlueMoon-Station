@@ -85,7 +85,7 @@
 	. = ..()
 	//SShorny_mobs_pool.horny_mobs -= src
 
-/mob/living/simple_animal/hostile/tentacles/moan() //Tentacles do not moan lmao
+/mob/living/simple_animal/hostile/tentacles/moan(is_hidden = FALSE)
 	return
 
 /mob/living/simple_animal/hostile/tentacles/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
@@ -238,7 +238,7 @@
 				if(2)
 					tentacle_penis_double(M)
 
-/mob/living/simple_animal/hostile/tentacles/cum(mob/living/M, target_orifice, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/simple_animal/hostile/tentacles/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
@@ -247,31 +247,31 @@
 	var/obj/item/organ/genital/target_gen = null
 	switch(chosen_hole)
 		if(CUM_TARGET_VAGINA)
-			message = "вгоняют свои тентакли в дырочки \the [M] и заполняют их спермой!"
-			target_gen = M.getorganslot(ORGAN_SLOT_WOMB)
+			message = "вгоняют свои тентакли в дырочки \the [partner] и заполняют их спермой!"
+			target_gen = partner.getorganslot(ORGAN_SLOT_WOMB)
 			if(target_gen)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
-				M.impregnate(src, target_gen, src.type)
+				partner.impregnate(src, target_gen, src.type)
 
 		if(CUM_TARGET_PENIS)
-			message = "обхватывают член \the [M] и обливают спермой!"
-			target_gen = M.getorganslot(ORGAN_SLOT_PENIS)
+			message = "обхватывают член \the [partner] и обливают спермой!"
+			target_gen = partner.getorganslot(ORGAN_SLOT_PENIS)
 			if(target_gen)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
 		if(CUM_TARGET_ANUS)
-			message = "вгоняют свои тентакли в задницу \the [M] и заполняют её спермой!"
-			target_gen = M.getorganslot(ORGAN_SLOT_ANUS)
+			message = "вгоняют свои тентакли в задницу \the [partner] и заполняют её спермой!"
+			target_gen = partner.getorganslot(ORGAN_SLOT_ANUS)
 			if(target_gen)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
-	if(istype(M, /mob/living/carbon))
-		M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
+	if(istype(partner, /mob/living/carbon))
+		partner.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playsound(loc, 'sound/effects/splat.ogg', 30, 1, -1)
-	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
-	shake_camera(M, 6, 1)
+	playsound(loc, 'sound/effects/splat.ogg', 30, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+	visible_message(span_userlove("[HIDDEN_INTERACTION_PREFIX(is_hidden)]<b>\The [src]</b> [message]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	set_lust(0) // Nuts at 400

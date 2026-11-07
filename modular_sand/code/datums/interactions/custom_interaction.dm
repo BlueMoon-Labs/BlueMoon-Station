@@ -200,11 +200,11 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 			return 28
 	return 0
 
-/datum/interaction/custom/proc/try_moan(mob/living/M)
+/datum/interaction/custom/proc/try_moan(mob/living/M, is_hidden)
 	var/datum/preferences/prefs = M.client?.prefs
 	if(!prefs || !prefs.use_moaning_multiplier || !prob(prefs.moaning_multiplier))
 		return
-	M.moan()
+	M.moan(is_hidden)
 
 /datum/interaction/custom/proc/get_type_label()
 	switch(interaction_type)
@@ -477,7 +477,7 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 			variants += trimmed
 	return length(variants) ? pick(variants) : message
 
-/datum/interaction/custom/proc/apply_effect(mob/living/recipient, mob/living/other, level, arousal_organ, allow_orgasm, orgasm_organ, orgasm_target)
+/datum/interaction/custom/proc/apply_effect(mob/living/recipient, mob/living/other, level, arousal_organ, allow_orgasm, orgasm_organ, orgasm_target, is_hidden)
 	if(QDELETED(recipient))
 		return
 	var/amount = get_lust_amount(level)
@@ -499,14 +499,14 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 				// Участники могут выбрать разные органы и цели.
 				recipient.last_lewd_datum = null
 				recipient.set_is_fucking(partner, orifice, source_organ, sub_set = TRUE)
-		recipient.handle_post_sex(amount, orifice, partner, organ)
+		recipient.handle_post_sex(amount, orifice, partner, organ, is_hidden = is_hidden)
 	else
 		var/mob/living/carbon/carbon_recipient = recipient
 		if(organ && istype(carbon_recipient))
 			amount = carbon_recipient.check_stimulation(amount, organ)
 		if(amount)
 			recipient.add_lust(amount)
-			try_moan(recipient)
+			try_moan(recipient, is_hidden)
 
 /datum/interaction/custom/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target) || !name || !message)
@@ -523,11 +523,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	if(max_distance == 1 && !(user.Adjacent(target) && target.Adjacent(user)))
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
-	var/vision_distance = 7
-	var/hidden_message
-	if(is_hidden)
-		vision_distance = 1
-		hidden_message = pick(hidden_additional)
+	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
+	var/hidden_message = HIDDEN_INTERACTION_PREFIX(is_hidden)
 	var/use_message = get_random_message_variant()
 	use_message = replacetext(use_message, "USER", "<b>\the [user]</b>")
 	use_message = replacetext(use_message, "TARGET", "<b>\the [target]</b>")
@@ -536,7 +533,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	user.visible_message(
 		is_lewd ? span_lewd(display_message) : span_notice(display_message),
 		vision_distance = vision_distance,
-		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null
+		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null,
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 	if(is_lewd)
 		user.try_play_interaction_effect(is_hidden)
@@ -551,12 +549,12 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 			if(sound_turf)
 				var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 				if(is_lewd)
-					playlewdinteractionsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, ignored_mobs = user.get_unconsenting(get_interaction_flags()))
+					playlewdinteractionsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, ignored_mobs = user.get_unconsenting(get_interaction_flags()), local_only = is_hidden)
 				else
-					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange)
-	apply_effect(user, target, arousal_level, self_arousal_organ, self_orgasm, self_orgasm_organ, self_orgasm_target)
+					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, local_only = is_hidden)
+	apply_effect(user, target, arousal_level, self_arousal_organ, self_orgasm, self_orgasm_organ, self_orgasm_target, is_hidden)
 	if(user != target)
-		apply_effect(target, user, partner_arousal_level, partner_arousal_organ, partner_orgasm, partner_orgasm_organ, partner_orgasm_target)
+		apply_effect(target, user, partner_arousal_level, partner_arousal_organ, partner_orgasm, partner_orgasm_organ, partner_orgasm_target, is_hidden)
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(user != target)

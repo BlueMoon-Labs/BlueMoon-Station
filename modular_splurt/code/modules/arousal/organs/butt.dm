@@ -24,7 +24,7 @@
 	fluid_max_volume += ((size - initial(size))*2.5)*(owner ? get_size(owner) : 1)
 	fluid_rate += ((size - initial(size))/10)*(owner ? get_size(owner) : 1)
 
-/obj/item/organ/genital/butt/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, from_belly = FALSE)
+/obj/item/organ/genital/butt/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
 	if(!(owner.client?.prefs.cit_toggles & BUTT_ENLARGEMENT))
 		return
 
@@ -45,6 +45,6 @@
 		var/list/asscheeks = list("попка", "ягодицы", "булочки", "подушечки", "шары Дамптрака", "[pick(list("покачивающиеся", "непоседливые", "шатающиеся"))] ягодицы")
 		modify_size(growth_amount)
 		if(size != previous)
-			owner.visible_message("<span class='lewd'>\The [pick(GLOB.butt_nouns + asscheeks)] <b>[owner]</b> непристойно отскакивают наружу, как [owner.ru_who()] накачивают [lowertext(source_gen.get_fluid_name())] сзади!</span>", ignored_mobs = owner.get_unconsenting())
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]\The [pick(GLOB.butt_nouns + asscheeks)] <b>[owner]</b> непристойно отскакивают наружу, как [owner.ru_who()] накачивают [lowertext(source_gen.get_fluid_name())] сзади!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		climax_fluids.clear_reagents()

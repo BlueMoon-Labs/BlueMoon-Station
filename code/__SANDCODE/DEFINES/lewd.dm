@@ -376,4 +376,16 @@ GLOBAL_LIST_INIT(interaction_effects_list, list(
 	"color" = "white" \
 )
 
-#define DEFAULT_INTERACTION_SOUND_EXTRARANGE(_is_hidden) (_is_hidden ? (-SOUND_RANGE+2) : -1)
+#define CUSTOM_AROUSAL_NONE 0
+#define CUSTOM_AROUSAL_LIGHT 1
+#define CUSTOM_AROUSAL_MEDIUM 2
+#define CUSTOM_AROUSAL_STRONG 3
+#define CUSTOM_AROUSAL_MAX CUSTOM_AROUSAL_STRONG
+
+#define HIDDEN_INTERACTION_RANGE 1
+#define HIDDEN_INTERACTION_ADDITIONAL list("Незаметно, ", "Аккуратно, ", "Осторожно, ", "Неприметно, ")
+#define HIDDEN_INTERACTION_PREFIX(_is_hidden) ((_is_hidden) ? pick(GLOB.hidden_interaction_additional) : "")
+#define INTERACTION_MESSAGE_RANGE(_is_hidden) ((_is_hidden) ? HIDDEN_INTERACTION_RANGE : DEFAULT_MESSAGE_RANGE)
+#define INTERACTION_MESSAGE_FLAGS(_is_hidden) ((_is_hidden) ? LOCAL_ONLY_MESSAGE : NONE)
+#define INTERACTION_SOUND_EXTRARANGE(_is_hidden, _public_extrarange) ((_is_hidden) ? (HIDDEN_INTERACTION_RANGE - SOUND_RANGE) : (_public_extrarange))
+#define DEFAULT_INTERACTION_SOUND_EXTRARANGE(_is_hidden) INTERACTION_SOUND_EXTRARANGE(_is_hidden, -1)
