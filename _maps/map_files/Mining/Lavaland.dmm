@@ -953,7 +953,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /turf/open/floor/plating,
 /area/mine/common/maintenance/west)
 "aDo" = (
@@ -1272,6 +1274,9 @@
 "aOO" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
+	},
+/obj/machinery/light{
+	dir = 4
 	},
 /turf/open/floor/carpet/black,
 /area/mine/common/dorm1)
@@ -3244,6 +3249,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "bWP" = (
 /obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/plating,
 /area/mine/common/maintenance/west)
 "bXg" = (
@@ -4987,7 +4993,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "cZI" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/machinery/power/deck_relay,
 /turf/open/floor/plating,
 /area/mine/laborcamp/maintenance/south)
@@ -6364,6 +6372,9 @@
 /area/mine/laborcamp/entry)
 "dWK" = (
 /obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 1
+	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/upper)
 "dWQ" = (
@@ -6968,7 +6979,6 @@
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "etR" = (
-/obj/machinery/door/poddoor/shutters/window/preopen,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
@@ -6981,6 +6991,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
+/obj/machinery/door/poddoor/shutters/window/preopen{
+	id = "mecha_mining"
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/mechbay)
 "etX" = (
@@ -7318,10 +7331,8 @@
 	dir = 1
 	},
 /obj/machinery/button/door{
-	id = "sauna_arch";
-	name = "Door Bolt Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4;
+	id = "sauna_arch_window";
+	name = "Window Control";
 	pixel_y = 25
 	},
 /turf/open/floor/wood/wood_large,
@@ -7503,7 +7514,9 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "eIW" = (
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/machinery/power/apc/auto_name/east,
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /turf/open/floor/plating{
@@ -8067,7 +8080,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/mine/common/pool)
 "fak" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -8120,6 +8133,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "fbC" = (
 /obj/machinery/space_heater,
+/obj/item/storage/toolbox/mechanical,
 /turf/open/floor/plating,
 /area/mine/engineering/maintenance)
 "fbO" = (
@@ -8418,6 +8432,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/machinery/door/airlock/glass{
+	name = "Botany"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/common/hydroponics)
@@ -8969,6 +8986,16 @@
 /obj/structure/closet/secure_closet/engineering_electrical/empty,
 /turf/open/floor/plating,
 /area/mine/engineering/maintenance)
+"fAe" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/openspace,
+/area/lavaland/surface/outdoors)
 "fAk" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
@@ -10790,9 +10817,6 @@
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "gCe" = (
-/obj/machinery/light{
-	dir = 1
-	},
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 1
 	},
@@ -10801,9 +10825,9 @@
 /obj/machinery/button/door{
 	id = "dorm1lava";
 	name = "Door Bolt Control";
-	normaldoorcontrol = 1;
+	pixel_y = 25;
 	specialfunctions = 4;
-	pixel_y = 25
+	normaldoorcontrol = 1
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
 /area/mine/common/dorm1)
@@ -11192,7 +11216,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/mine/common/pool)
 "gNp" = (
 /obj/structure/stone_tile{
@@ -13206,7 +13230,8 @@
 /area/lavaland/surface/outdoors)
 "ibj" = (
 /obj/machinery/door/airlock{
-	name = "Restroom"
+	name = "Restroom";
+	id_tag = "toilet_arch"
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 8
@@ -13899,9 +13924,6 @@
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "ivn" = (
-/obj/machinery/light{
-	dir = 1
-	},
 /obj/structure/closet/secure_closet/personal/cabinet,
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 1
@@ -15022,6 +15044,11 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
+/obj/machinery/button/door{
+	id = "mecha_mining";
+	name = "Door Control";
+	pixel_y = -25
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/mechbay)
 "jjb" = (
@@ -17036,9 +17063,6 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/power/apc/auto_name/south,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 1
-	},
 /turf/open/floor/plasteel/textured/edge{
 	dir = 1
 	},
@@ -17371,19 +17395,19 @@
 /turf/open/floor/plating,
 /area/mine/cafeteria)
 "kxJ" = (
-/obj/machinery/button/door{
-	id = "sauna_arch_window";
-	name = "Door Bolt Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4;
-	pixel_y = 25
-	},
 /obj/effect/turf_decal/siding/white{
 	dir = 9
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/machinery/button/door{
+	id = "sauna_arch";
+	name = "Door Bolts Control";
+	pixel_y = 25;
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/common/sauna)
 "kxK" = (
@@ -18010,6 +18034,13 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/machinery/airalarm/directional/east,
+/obj/machinery/button/door{
+	id = "toilet_arch";
+	name = "Door Bolts Control";
+	pixel_y = 25;
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/mine/common/upper)
 "kPF" = (
@@ -18118,7 +18149,9 @@
 	power_gen = 250
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /turf/open/floor/plating,
 /area/mine/laborcamp/security/maintetance)
 "kTP" = (
@@ -18698,7 +18731,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/structure/disposalpipe/segment{
 	dir = 2
 	},
@@ -19153,7 +19188,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
@@ -19461,7 +19498,9 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "lJR" = (
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
@@ -21260,12 +21299,14 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "mKn" = (
-/obj/machinery/door/poddoor/shutters/window/preopen,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
+	},
+/obj/machinery/door/poddoor/shutters/window/preopen{
+	id = "mecha_mining"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/mechbay)
@@ -22249,7 +22290,8 @@
 	},
 /obj/structure/closet/secure_closet/paramedic_mine{
 	anchored = 1;
-	anchorable = 0
+	anchorable = 0;
+	req_access = list(0)
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/dark/textured,
@@ -25660,7 +25702,9 @@
 	lootcount = 2;
 	name = "2maintenance loot spawner"
 	},
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /turf/open/floor/plating,
 /area/mine/laborcamp/maintenance/south)
 "pau" = (
@@ -26901,7 +26945,9 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "pQb" = (
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
@@ -27601,7 +27647,8 @@
 /obj/machinery/power/apc/auto_name/west,
 /obj/structure/closet/secure_closet/paramedic_mine{
 	anchored = 1;
-	anchorable = 0
+	anchorable = 0;
+	req_access = list(0)
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/white/corner{
@@ -27954,7 +28001,9 @@
 /obj/structure/chair/office{
 	dir = 4
 	},
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/decal/cleanable/semen,
 /turf/open/floor/plating{
@@ -28213,7 +28262,8 @@
 /area/lavaland/surface/outdoors)
 "qEw" = (
 /obj/machinery/door/airlock{
-	name = "Dorm 1"
+	name = "Shower Room";
+	id_tag = "shower_arch"
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 8
@@ -29749,6 +29799,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "rzV" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
+/obj/machinery/light,
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
 	},
@@ -31872,6 +31923,11 @@
 "sNa" = (
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/button/door{
+	id = "mecha_mining";
+	name = "Door Control";
+	pixel_y = 25
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/mechbay)
 "sNK" = (
@@ -32523,6 +32579,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"thj" = (
+/obj/structure/railing/corner/end{
+	dir = 4
+	},
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "thq" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -32893,7 +32955,8 @@
 /area/mine/common/lower)
 "tun" = (
 /obj/machinery/door/airlock/maintenance{
-	name = "General Post Maintenance"
+	name = "General Post Maintenance";
+	id_tag = "shower_arch"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
 /obj/effect/turf_decal/siding/white{
@@ -32902,6 +32965,7 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 4
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/freezer,
 /area/mine/common/upper)
 "tus" = (
@@ -33363,13 +33427,6 @@
 "tJD" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
-	},
-/obj/machinery/button/door{
-	id = "dorm2lava";
-	name = "Door Bolt Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4;
-	pixel_y = -25
 	},
 /turf/open/floor/carpet/black,
 /area/mine/common/dorm2)
@@ -36711,6 +36768,13 @@
 	dir = 1
 	},
 /obj/machinery/airalarm/directional/west,
+/obj/machinery/button/door{
+	id = "dorm2lava";
+	name = "Door Bolt Control";
+	pixel_y = -25;
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/common/dorm2)
 "vBl" = (
@@ -36898,7 +36962,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "vKA" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
@@ -37080,9 +37146,6 @@
 /turf/open/floor/plasteel/smooth/diagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "vTa" = (
-/obj/machinery/door/airlock/glass{
-	name = "Botany"
-	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
@@ -37092,6 +37155,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/machinery/door/airlock/glass{
+	name = "Library"
+	},
 /turf/open/floor/wood,
 /area/mine/common/upper)
 "vTe" = (
@@ -39196,7 +39262,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/mine/common/pool)
 "xgc" = (
 /obj/effect/turf_decal/siding/dark{
@@ -39446,7 +39512,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -40068,7 +40136,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "xFs" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/mine/common/pool)
 "xGg" = (
 /obj/structure/sink/oil_well,
@@ -40844,7 +40912,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/effect/decal/fakelattice,
+/obj/effect/decal/fakelattice{
+	density = 0
+	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
@@ -41057,6 +41127,13 @@
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 9
+	},
+/obj/machinery/button/door{
+	id = "shower_arch";
+	name = "Door Bolts Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	pixel_x = -25
 	},
 /turf/open/floor/plasteel/showroomfloor/shower,
 /area/mine/common/upper)
@@ -140006,9 +140083,9 @@ uas
 iwX
 aFt
 aFt
-uas
+uMQ
 eFN
-uas
+uMQ
 aFt
 aFt
 dDg
@@ -140737,7 +140814,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+thj
 nES
 nES
 nES
@@ -140994,7 +141071,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 nES
 nES
 nES
@@ -141251,7 +141328,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+kBD
 thF
 thF
 thF
@@ -141304,7 +141381,7 @@ jmn
 nZC
 rzX
 jmn
-odi
+fAe
 bRs
 nES
 nES
@@ -141508,7 +141585,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+rQN
 odi
 odi
 odi
@@ -141765,7 +141842,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 nES
 nES
 nES
@@ -142022,7 +142099,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+kLY
 nES
 nES
 nES
@@ -144631,7 +144708,7 @@ fZB
 cML
 cML
 fZB
-odi
+fAe
 odi
 iNT
 gIl
@@ -148459,7 +148536,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+thj
 nES
 nES
 uqd
@@ -149744,7 +149821,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+kLY
 nES
 nES
 nES
