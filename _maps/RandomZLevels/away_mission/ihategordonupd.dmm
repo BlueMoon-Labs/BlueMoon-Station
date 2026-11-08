@@ -29,13 +29,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"aao" = (
-/obj/structure/railing{
-	dir = 8
-	},
-/obj/structure/reagent_dispensers/urbanismbarrel,
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/outsideofmesa)
 "aat" = (
 /turf/closed/indestructible/fakedoor,
 /area/space)
@@ -5778,10 +5771,6 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
-"bXS" = (
-/obj/structure/mad_scientist,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/outsideofmesa)
 "bXT" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -7114,10 +7103,6 @@
 	dir = 1
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/outsideofmesa)
-"cuX" = (
-/obj/structure/table/reinforced,
-/turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/outsideofmesa)
 "cvm" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
@@ -12416,7 +12401,7 @@
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "ebB" = (
 /turf/open/water/jungle,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "ebV" = (
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -15741,7 +15726,7 @@
 	name = "old radio"
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "ffM" = (
 /obj/structure/flora/tree/spookylog,
 /turf/open/floor/grass/snow,
@@ -21174,7 +21159,7 @@
 	dir = 1
 	},
 /turf/open/water/jungle,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "gRL" = (
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 1
@@ -33065,19 +33050,15 @@
 /turf/open/floor/plating/cobblestone,
 /area/space)
 "kPn" = (
-/obj/structure/railing{
-	dir = 8
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 1
 	},
-/obj/structure/reagent_dispensers/urbanismbarrel{
-	pixel_x = 11;
-	pixel_y = 8
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	color = "#f79668"
 	},
-/obj/structure/reagent_dispensers/urbanismbarrel{
-	pixel_x = -3;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "kPq" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -35299,10 +35280,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/rocks)
-"lEC" = (
-/obj/structure/reagent_dispensers/urbanismbarrel,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "lEK" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -41195,7 +41172,7 @@
 	pixel_y = 16
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "nCb" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor7"
@@ -55644,15 +55621,6 @@
 	icon_state = "platingdmg2"
 	},
 /area/awaymission/ihategordon/rocks)
-"szI" = (
-/obj/structure/fence/corner{
-	dir = 4
-	},
-/obj/effect/awaymission/blackmesa/bombardment_initiator{
-	trigger_id = 4
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/outsideofmesa)
 "szP" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
 	dir = 8
@@ -55785,7 +55753,7 @@
 "sDg" = (
 /obj/machinery/computer/operating,
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/outsideofmesa)
+/area/awaymission/ihategordon/rocks)
 "sDk" = (
 /obj/structure/flora/junglebush/large,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -68672,11 +68640,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
 "xap" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/poddoor/shutters/window{
-	resistance_flags = 115
+/obj/structure/fence/corner{
+	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/awaymission/blackmesa/bombardment_initiator{
+	trigger_id = 4
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "xaI" = (
 /obj/structure/barricade/wooden,
@@ -138079,7 +138049,7 @@ xhF
 nUr
 nUr
 nUr
-iRL
+sFP
 iRL
 hdg
 hdg
@@ -138330,13 +138300,13 @@ hdg
 hdg
 hdg
 iRL
-csn
-csn
-csn
-wxf
-ciw
-ciw
-iRL
+xhF
+xhF
+xhF
+sFP
+gMf
+gMf
+sFP
 mBb
 hdg
 hdg
@@ -138587,13 +138557,13 @@ hdg
 hdg
 hdg
 iRL
-csn
+xhF
 ebB
-csn
-wxf
-ciw
-ciw
-iRL
+xhF
+sFP
+gMf
+gMf
+sFP
 usU
 usU
 usU
@@ -138844,13 +138814,13 @@ hdg
 hdg
 hdg
 iRL
-csn
+xhF
 ebB
-csn
-wxf
-ciw
-ciw
-iRL
+xhF
+sFP
+gMf
+gMf
+sFP
 rWV
 rWV
 rWV
@@ -139101,13 +139071,13 @@ hdg
 hdg
 hdg
 iRL
-csn
+xhF
 ebB
-csn
-wxf
-ciw
-ciw
-iRL
+xhF
+sFP
+gMf
+gMf
+sFP
 rWV
 rWV
 wND
@@ -139358,13 +139328,13 @@ hdg
 hdg
 hdg
 iRL
-csn
+xhF
 ebB
-csn
-wxf
-ciw
-ciw
-iRL
+xhF
+sFP
+gMf
+gMf
+sFP
 wND
 wND
 wND
@@ -139615,13 +139585,13 @@ hdg
 hdg
 iRL
 iRL
-jiV
+kPn
 gRJ
-jiV
-wxf
-ciw
-ciw
-iRL
+kPn
+sFP
+gMf
+gMf
+sFP
 rWV
 wND
 rWV
@@ -139854,7 +139824,7 @@ gRV
 nUr
 nUr
 lDz
-lDz
+hpr
 lDz
 lDz
 wxf
@@ -139875,10 +139845,10 @@ pHY
 rWV
 wND
 rWV
-iRL
-iRL
-iRL
-iRL
+sFP
+sFP
+sFP
+sFP
 rWV
 wND
 rWV
@@ -140414,12 +140384,12 @@ itL
 ojs
 ojs
 gOp
-wxf
-xap
-xap
-wxf
-wxf
-wxf
+sFP
+aFR
+aFR
+sFP
+sFP
+sFP
 aML
 bpc
 bpc
@@ -140671,12 +140641,12 @@ jHS
 xhF
 ojs
 csn
-xap
+aFR
 sDg
-fZe
-fZe
+qFD
+qFD
 nBv
-wxf
+sFP
 bpc
 bpc
 bpc
@@ -140928,12 +140898,12 @@ jHS
 twy
 jHS
 csn
-xap
+aFR
 sDg
-bXS
-fZe
-fZe
-jHJ
+hpH
+qFD
+qFD
+spA
 bpc
 vQH
 glv
@@ -141188,9 +141158,9 @@ ojs
 aFR
 sDg
 ffB
-cuX
-fZe
-wxf
+fXg
+qFD
+sFP
 ntp
 bpc
 bpc
@@ -141443,11 +141413,11 @@ jHS
 itL
 xhF
 sFP
-wxf
-wxf
-wxf
-wxf
-wxf
+sFP
+sFP
+sFP
+sFP
+sFP
 wxf
 wFE
 wFE
@@ -142882,10 +142852,10 @@ wxf
 lTi
 lTi
 lTi
-szI
+xap
 esa
 esa
-szI
+xap
 lTi
 lTi
 lTi
@@ -143972,7 +143942,7 @@ lDz
 lDz
 lDz
 lDz
-lDz
+hpr
 lDz
 lDz
 lDz
@@ -147026,13 +146996,13 @@ lMu
 vPV
 vPV
 vPV
-aao
+abE
 fKZ
 fKZ
 jCb
 fKZ
 fKZ
-kPn
+jCb
 xcx
 abE
 abE
@@ -147838,7 +147808,7 @@ jRW
 pjL
 lDz
 lDz
-lDz
+hpr
 xjB
 iLE
 qkT
@@ -151950,7 +151920,7 @@ oFB
 lDz
 lDz
 lDz
-lDz
+hpr
 pNg
 qkT
 eel
@@ -155772,7 +155742,7 @@ gMf
 gMf
 gMf
 sFP
-lEC
+rBU
 mgg
 ffd
 juS
@@ -158376,7 +158346,7 @@ mEJ
 ctU
 lDz
 lDz
-lDz
+hpr
 lDz
 pNg
 qkT
