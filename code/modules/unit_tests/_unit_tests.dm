@@ -719,6 +719,7 @@
 #include "vent_label_numbering.dm"
 #include "weeds_growth.dm"
 #include "zclear_pool.dm"
+#include "zclear_protections.dm"
 #include "zclear_wipe_order.dm"
 
 
