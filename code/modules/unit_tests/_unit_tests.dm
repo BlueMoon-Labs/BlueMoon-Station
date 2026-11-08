@@ -422,6 +422,7 @@
 #include "multiz_ventcrawl.dm"
 #include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
+#include "monowire_garrote.dm"
 #include "nightshift.dm"
 #include "northstar.dm"
 #include "ntnet_responses.dm"

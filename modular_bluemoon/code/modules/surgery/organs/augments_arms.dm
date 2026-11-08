@@ -473,9 +473,16 @@
 	attack_verb = list("sliced", "severed")
 	item_flags = NEEDS_PERMIT
 	hitsound = 'sound/weapons/bladeslice.ogg'
+	/// Жертва, которую сейчас душат этой струной.
+	var/mob/living/carbon/strangling
+	/// Удушающий, который держит захват.
+	var/mob/living/carbon/strangler
+	/// Окси-урон за тик удушения, пока цель удерживается захватом.
+	var/garrote_oxy_damage = 12
 
 /obj/item/melee/implantmonostring/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(iscarbon(M) && istype(user) && M != user && !user.pulling && (M.lying || M.dir == user.dir))
+	// Удушение — только на интенте захвата; в остальных интентах струна просто режет.
+	if(iscarbon(M) && istype(user) && M != user && user.a_intent == INTENT_GRAB && !user.pulling && (M.lying || M.dir == user.dir))
 		var/mob/living/carbon/C = M
 		var/victimdir = C.dir
 		C.grabbedby(user, 1)
@@ -490,7 +497,40 @@
 			"You hear struggling and wire strain against flesh!")
 		playsound(src.loc, 'sound/weapons/cablecuff.ogg', 15, 1, -1)
 		log_combat(user, C, "started choking", addition="monostring garrote")
+		start_garrote(C, user)
 		return TRUE
+	return ..()
+
+/// Начинает удушение: пока захват держится, струна наносит окси-урон через process().
+/obj/item/melee/implantmonostring/proc/start_garrote(mob/living/carbon/victim, mob/living/carbon/user)
+	if(QDELETED(victim) || QDELETED(user))
+		return
+	stop_garrote()
+	strangling = victim
+	strangler = user
+	START_PROCESSING(SSobj, src)
+
+/// Завершает удушение и очищает ссылки. Сам захват не трогает: его отпускает игрок.
+/obj/item/melee/implantmonostring/proc/stop_garrote()
+	if(strangling || strangler)
+		STOP_PROCESSING(SSobj, src)
+	strangling = null
+	strangler = null
+
+/// Генерическое удушение в life() даёт считанные единицы окси-урона, поэтому душим явно.
+/obj/item/melee/implantmonostring/process()
+	var/valid = !QDELETED(strangling) && !QDELETED(strangler) \
+		&& strangler.pulling == strangling && strangling.pulledby == strangler \
+		&& strangler.grab_state >= GRAB_KILL && (src in strangler.held_items) \
+		&& strangling.stat != DEAD
+	if(!valid)
+		stop_garrote()
+		return
+	strangling.adjustOxyLoss(garrote_oxy_damage)
+	strangling.Silence(6 SECONDS)
+
+/obj/item/melee/implantmonostring/Destroy()
+	stop_garrote()
 	return ..()
 
 /obj/item/melee/implantmonostring/corpo
