@@ -4,8 +4,9 @@
 	var/list/card_balloons = list()
 	var/list/shown_balloons = list()
 
-/datum/bank_account/econ_test_sound_spy/bank_card_talk(message, force, talk_sound, balloon)
-	card_sounds += "[talk_sound]"
+/datum/bank_account/econ_test_sound_spy/bank_card_talk(message, force, talk_sound, balloon, quiet)
+	if(!quiet)
+		card_sounds += "[talk_sound]"
 	if(balloon)
 		card_balloons += balloon
 	return ..()
@@ -97,7 +98,7 @@
 	TEST_ASSERT(("sound/economy/account_freeze.ogg" in owner.card_sounds), "Заморозка без звука на карте: [jointext(owner.card_sounds, ", ")]")
 	TEST_ASSERT(("счёт заморожен" in owner.card_balloons), "Заморозка без всплывашки над владельцем: [jointext(owner.card_balloons, ", ")]")
 
-/// Зарплата звенит монетами на карте сотрудника без всплывашки над головой.
+/// Зарплата приходит на карту без звука и без всплывашки над головой.
 /datum/unit_test/economy_payroll/payday_sound/Run()
 	setup_worker(10000)
 	SSeconomy.tax_rate = 10
@@ -111,7 +112,7 @@
 	var/paid = spy.account_balance
 	qdel(spy)
 	TEST_ASSERT(paid > 0 && paid < SSeconomy.settings.wages[PAY_GRADE_EASY], "Зарплата не пришла или пришла без налога: [paid]")
-	TEST_ASSERT(("sound/economy/coin_soft.ogg" in heard), "Зарплата без звона монет: [jointext(heard, ", ")]")
+	TEST_ASSERT(!length(heard), "Звук на зарплате: [jointext(heard, ", ")]")
 	TEST_ASSERT(!length(balloons), "Всплывашка на зарплате: [jointext(balloons, ", ")]")
 
 /// Всплывашка одного вида не чаще кулдауна на держателя; другой вид, другой держатель и force проходят.

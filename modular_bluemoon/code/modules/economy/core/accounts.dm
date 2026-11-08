@@ -18,6 +18,8 @@
 	/// Заявки биржи: list("id", "ticker", "side", "count", "price"), до STOCK_ORDERS_MAX
 	var/list/stock_orders = list()
 	var/stock_order_serial = 0
+	/// Первая зарплата смены уже подсказала, где выключаются сообщения о доходах
+	var/income_toggle_hinted = FALSE
 	/// Общий служебный счёт команды (инспекция Sol): скиммер его не копирует, кража с него не засчитывается
 	var/service_account = FALSE
 
@@ -91,7 +93,11 @@
 	var/floor = SSeconomy.settings.wage_floor
 	if(paid < floor)
 		net += SSeconomy.pay_personal(null, src, floor - paid, ECON_WAGE_FLOOR)
-	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net] кр.[owed_wages ? " Отдел должен вам [owed_wages] кр." : ""]", FALSE, 'sound/economy/coin_soft.ogg')
+	var/hint = ""
+	if(!income_toggle_hinted)
+		income_toggle_hinted = TRUE
+		hint = " Выключить сообщения о доходах: настройки чата, «Уведомления о доходах»."
+	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net] кр.[owed_wages ? " Отдел должен вам [owed_wages] кр." : ""][hint]", quiet = TRUE)
 	return max(paid, floor)
 
 /// Владелец счёта - этот моб или его разум в другом теле.

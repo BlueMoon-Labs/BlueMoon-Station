@@ -24,7 +24,7 @@
 /datum/bank_account/econ_test_spy
 	var/list/card_messages = list()
 
-/datum/bank_account/econ_test_spy/bank_card_talk(message, force, talk_sound, balloon)
+/datum/bank_account/econ_test_spy/bank_card_talk(message, force, talk_sound, balloon, quiet)
 	card_messages += message
 
 /datum/unit_test/economy_ui_audit/proc/make_account(holder, balance = 0, account_type = /datum/bank_account)

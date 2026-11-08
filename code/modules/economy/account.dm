@@ -90,9 +90,11 @@
 /datum/bank_account/proc/has_money(amt)
 	return account_balance >= amt
 
-/datum/bank_account/proc/bank_card_talk(message, force, talk_sound = 'sound/machines/twobeep.ogg', balloon)
+/// quiet - без звука и мелким шрифтом, для частых сообщений вроде зарплаты.
+/datum/bank_account/proc/bank_card_talk(message, force, talk_sound = 'sound/machines/twobeep.ogg', balloon, quiet = FALSE)
 	if(!message || !bank_cards.len)
 		return
+	var/text_class = quiet ? "smallnotice" : "notice"
 	for(var/obj/A in bank_cards)
 		var/icon_source = A
 		/*
@@ -106,24 +108,27 @@
 			if(!card_talk_reaches(card_holder, force))
 				return
 
-			card_holder.playsound_local(get_turf(card_holder), talk_sound, 50, TRUE)
+			if(!quiet)
+				card_holder.playsound_local(get_turf(card_holder), talk_sound, 50, TRUE)
 			if(card_holder.can_hear())
-				to_chat(card_holder, "[icon2html(icon_source, card_holder)] <span class='notice'>[message]</span>")
+				to_chat(card_holder, "[icon2html(icon_source, card_holder)] <span class='[text_class]'>[message]</span>")
 				card_balloon(card_holder, balloon, force)
 		else if(isturf(A.loc)) //If on the ground
 			for(var/mob/M in hearers(1,get_turf(A)))
 				if(M.client && !(M.client.prefs.chat_toggles & CHAT_BANKCARD) && !force)
 					return
-				playsound(A, talk_sound, 50, TRUE)
-				A.audible_message("[icon2html(icon_source, hearers(A))] <span class='notice'>[message]</span>", null, 1)
+				if(!quiet)
+					playsound(A, talk_sound, 50, TRUE)
+				A.audible_message("[icon2html(icon_source, hearers(A))] <span class='[text_class]'>[message]</span>", null, 1)
 				break
 		else
 			for(var/mob/M in A.loc) //If inside a container with other mobs (e.g. locker)
 				if(!M.client || (!(M.client.prefs.chat_toggles & CHAT_BANKCARD) && !force))
 					return
-				M.playsound_local(get_turf(M), talk_sound, 50, TRUE)
+				if(!quiet)
+					M.playsound_local(get_turf(M), talk_sound, 50, TRUE)
 				if(M.can_hear())
-					to_chat(M, "[icon2html(icon_source, M)] <span class='notice'>[message]</span>")
+					to_chat(M, "[icon2html(icon_source, M)] <span class='[text_class]'>[message]</span>")
 
 GLOBAL_LIST_INIT(department_account_names, list(
 	ACCOUNT_CMD = ACCOUNT_CMD_NAME,
