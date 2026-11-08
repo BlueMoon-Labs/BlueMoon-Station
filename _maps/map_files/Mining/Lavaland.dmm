@@ -12931,6 +12931,19 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"hTW" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/docking_port/stationary{
+	area_type = /area/lavaland/surface/outdoors;
+	dir = 8;
+	dwidth = 3;
+	height = 7;
+	name = "Xenoarch Public Dock";
+	shuttle_id = "lavaland_common_away_xenoarch_2";
+	width = 7
+	},
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "hUj" = (
 /obj/structure/shipping_container/interdyne{
 	pixel_x = 9;
@@ -27302,6 +27315,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"qfn" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/docking_port/stationary{
+	dir = 2;
+	dwidth = 3;
+	height = 10;
+	name = "lavaland mine";
+	shuttle_id = "mining_away";
+	width = 7
+	},
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "qfo" = (
 /obj/item/spear/bonespear{
 	dir = 8;
@@ -139530,7 +139555,7 @@ cKK
 jdP
 jdP
 jdP
-jdP
+hTW
 jdP
 jdP
 jdP
@@ -148779,7 +148804,7 @@ ehA
 kir
 qxN
 hBF
-jdP
+qfn
 jdP
 jdP
 jdP
