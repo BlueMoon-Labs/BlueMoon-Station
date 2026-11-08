@@ -2323,9 +2323,9 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/common/dorm1)
 "bwg" = (
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp/security/maintetance)
 "bwu" = (
@@ -10562,7 +10562,9 @@
 /turf/open/floor/catwalk_floor,
 /area/mine/common/maintenance/south)
 "gwH" = (
-/obj/machinery/atmospherics/components/unary/tank/air,
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/mine/common/maintenance/north)
 "gxh" = (
@@ -14979,6 +14981,12 @@
 	icon_state = "platingdmg3"
 	},
 /area/mine/common/maintenance/south)
+"jix" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 6
+	},
+/turf/open/floor/plating,
+/area/mine/engineering)
 "jiH" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
@@ -15296,7 +15304,9 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "jrR" = (
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 8
+	},
 /turf/open/floor/plating,
 /area/mine/engineering)
 "jsf" = (
@@ -19428,8 +19438,8 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "lJR" = (
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/decal/fakelattice,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
 	},
@@ -30066,7 +30076,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "rMS" = (
-/obj/machinery/atmospherics/components/unary/tank/air,
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/mine/laborcamp/security/maintetance)
 "rNv" = (
@@ -142153,7 +142165,7 @@ nES
 nES
 cmR
 pLt
-jrR
+jix
 jrR
 iFH
 pLt
