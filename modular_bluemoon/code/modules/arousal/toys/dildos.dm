@@ -135,7 +135,7 @@
 		target.Jitter(jitter)
 	if(use_moan && moan)
 		if(is_hidden)
-			target.moan(is_hidden)
+			target.moan(TRUE)
 		else if(what_cum == CUM_TARGET_MOUTH || what_cum == CUM_TARGET_THROAT)
 			target.emote("girlymoan") // realy small lust
 		else

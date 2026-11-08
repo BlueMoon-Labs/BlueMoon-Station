@@ -43,6 +43,9 @@
 	var/last_knot_check = 0
 	var/last_tug_time = 0
 	var/tmp/knot_is_hidden = FALSE
+	var/tmp/knot_arousal_timer
+	var/tmp/knot_release_timer
+	var/tmp/knot_distance_timer
 
 /obj/item/organ/genital/penis/Initialize(mapload)
 	. = ..()
@@ -53,8 +56,11 @@
 	update_knotting_from_shape()
 
 /obj/item/organ/genital/penis/Destroy()
-	if(knot_locked && !QDELETED(knot_partner))
-		release_knot(owner, knot_partner, knot_state, TRUE)
+	if(knot_locked)
+		if(QDELETED(owner) || QDELETED(knot_partner))
+			cleanup_knot_state(owner, knot_partner)
+		else
+			release_knot(owner, knot_partner, knot_state, TRUE)
 	return ..()
 
 /obj/item/organ/genital/penis/proc/update_knotting_from_shape()
@@ -90,8 +96,7 @@
 
 	var/duration = calculate_knot_duration(target_zone)
 
-	activate_knot(user, partner, target_zone, duration)
-	knot_is_hidden = is_hidden
+	activate_knot(user, partner, target_zone, duration, is_hidden)
 	setup_knot_signals(user, partner)
 	apply_knot_effects(user, partner, target_zone)
 
@@ -206,7 +211,10 @@
 // ============================================================
 // KNOT ACTIVATION
 // ============================================================
-/obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration)
+/obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration, is_hidden = FALSE)
+	if(knot_locked)
+		cleanup_knot_state(user, knot_partner)
+	knot_is_hidden = is_hidden
 	knot_locked = TRUE
 	knot_partner = partner
 	knot_state = target_zone
@@ -220,7 +228,14 @@
 		partner.add_movespeed_modifier(/datum/movespeed_modifier/leash)
 
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
-	RegisterSignal(partner, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_knot_participant_deleted))
+	if(partner != user)
+		RegisterSignal(partner, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+		RegisterSignal(partner, COMSIG_PARENT_QDELETING, PROC_REF(on_knot_participant_deleted))
+
+/obj/item/organ/genital/penis/proc/on_knot_participant_deleted()
+	SIGNAL_HANDLER
+	cleanup_knot_state(owner, knot_partner)
 
 // ============================================================
 // KNOT EFFECTS
@@ -365,14 +380,18 @@
 // PROCESS SCHEDULING
 // ============================================================
 /obj/item/organ/genital/penis/proc/schedule_knot_processes(mob/living/user, mob/living/partner, target_zone, duration)
-	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL)
-	addtimer(CALLBACK(src, PROC_REF(release_knot), user, partner, target_zone, FALSE), duration)
-	addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), user), KNOT_DISTANCE_CHECK_INTERVAL)
+	if(!knot_locked || knot_partner != partner)
+		return
+	if(!knot_arousal_timer)
+		knot_arousal_timer = addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL, TIMER_STOPPABLE)
+	knot_release_timer = addtimer(CALLBACK(src, PROC_REF(release_knot), user, partner, target_zone, FALSE), duration, TIMER_STOPPABLE)
+	knot_distance_timer = addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), user), KNOT_DISTANCE_CHECK_INTERVAL, TIMER_STOPPABLE)
 
 // ============================================================
 // PERIODIC AROUSAL TICK
 // ============================================================
 /obj/item/organ/genital/penis/proc/knot_arousal_tick(mob/living/user, mob/living/partner)
+	knot_arousal_timer = null
 	if(QDELETED(src) || !knot_locked || QDELETED(user) || QDELETED(partner))
 		return
 
@@ -394,7 +413,8 @@
 			else
 				M.emote(pick("moan", "pant", "blush"))
 
-	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL)
+	if(knot_locked && !knot_arousal_timer)
+		knot_arousal_timer = addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL, TIMER_STOPPABLE)
 
 // ============================================================
 // KNOT RELEASE (REFACTORED)
@@ -417,6 +437,12 @@
 		apply_gentle_release(Luser, Lpartner, zone_text, is_hidden)
 
 /obj/item/organ/genital/penis/proc/cleanup_knot_state(mob/living/user, mob/living/partner)
+	deltimer(knot_arousal_timer)
+	deltimer(knot_release_timer)
+	deltimer(knot_distance_timer)
+	knot_arousal_timer = null
+	knot_release_timer = null
+	knot_distance_timer = null
 	knot_locked = FALSE
 	knot_is_hidden = FALSE
 	knot_state = 0
@@ -427,11 +453,12 @@
 	knotted_genital = null
 
 	if(istype(user, /mob/living))
-		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 
 	if(istype(partner, /mob/living))
-		UnregisterSignal(partner, COMSIG_MOVABLE_MOVED)
-		if(partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
+		if(partner != user)
+			UnregisterSignal(partner, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		if(!QDELETED(partner) && partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
 			partner.remove_movespeed_modifier(/datum/movespeed_modifier/leash)
 
 /obj/item/organ/genital/penis/proc/get_zone_text(target_zone)
@@ -488,6 +515,7 @@
 // DISTANCE CHECKING (SIMPLIFIED)
 // ============================================================
 /obj/item/organ/genital/penis/proc/knot_distance_loop(mob/living/who)
+	knot_distance_timer = null
 	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
 		return
 
@@ -497,8 +525,8 @@
 	if(istype(who, /mob/living))
 		check_knot_distance_safe(who)
 
-	if(!QDELETED(src) && knot_locked && !QDELETED(knot_partner))
-		addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), who), KNOT_DISTANCE_CHECK_INTERVAL)
+	if(!QDELETED(src) && knot_locked && !QDELETED(knot_partner) && !knot_distance_timer)
+		knot_distance_timer = addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), who), KNOT_DISTANCE_CHECK_INTERVAL, TIMER_STOPPABLE)
 
 /obj/item/organ/genital/penis/proc/check_knot_distance_safe(mob/living/user)
 	if(QDELETED(user) || QDELETED(knot_partner))

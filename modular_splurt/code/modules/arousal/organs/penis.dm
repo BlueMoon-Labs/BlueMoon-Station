@@ -5,6 +5,8 @@
 	RegisterSignal(owner, COMSIG_MOB_POST_CAME, PROC_REF(splash_cum))
 
 /obj/item/organ/genital/penis/Remove(special)
+	if(knot_locked)
+		cleanup_knot_state(owner, knot_partner)
 	. = ..()
 	var/mob/living/carbon/human/C = .
 	if(!QDELETED(C))

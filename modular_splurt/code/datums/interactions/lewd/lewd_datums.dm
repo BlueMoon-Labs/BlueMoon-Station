@@ -766,7 +766,7 @@
 		return
 
 	if(prob(50))
-		user.visible_message(span_lewd("Слышится забавный гудок — это [pick(GLOB.breast_nouns)] <b>[target]</b>!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		user.visible_message(span_lewd("Слышится забавный гудок — это [pick(GLOB.breast_nouns)] <b>[user]</b>!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 

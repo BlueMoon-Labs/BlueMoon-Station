@@ -138,7 +138,7 @@
 		var/growth_amount = climax_fluids.total_volume / (fluid_max_volume * GENITAL_INFLATION_THRESHOLD)
 		modify_size(growth_amount)
 		if(size > round(previous))
-			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]\The Животик <b>[owner]</b> становится совсем выпуклым и раздувается от наполнения [pick("сладкой", "желанной")] '[lowertext(source_gen.get_fluid_name())]'!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]Животик <b>[owner]</b> становится совсем выпуклым и раздувается от наполнения [pick("сладкой", "желанной")] '[lowertext(source_gen.get_fluid_name())]'!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		if((growth_amount >= 3 || size >= 3) && (owner.client?.prefs.cit_toggles & BUTT_ENLARGEMENT))
 			var/obj/item/organ/genital/butt/ass = owner.getorganslot(ORGAN_SLOT_BUTT)

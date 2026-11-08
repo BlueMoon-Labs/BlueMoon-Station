@@ -12,7 +12,7 @@
 		var/obj/item/restraints/bondage_rope/rope = I
 		if(LAZYLEN(rope.rope_stack) > 1)
 			visible_message(span_danger("[src] ослабляет путы!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
-			to_chat(src, "<span class='notice'>You successfully loosen up your rope.</span>")
+			to_chat(src, span_notice("Ты ослабляешь путы."))
 
 			var/obj/item/restraints/bondage_rope/new_rope = new rope.type()
 			new_rope.color = pop(rope.rope_stack)

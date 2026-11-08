@@ -48,6 +48,6 @@
 		var/list/asscheeks = list("попка", "ягодицы", "булочки", "подушечки", "шары Дамптрака", "[pick(list("покачивающиеся", "непоседливые", "шатающиеся"))] ягодицы")
 		modify_size(growth_amount)
 		if(size != previous)
-			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]\The [pick(GLOB.butt_nouns + asscheeks)] <b>[owner]</b> непристойно отскакивают наружу, как [owner.ru_who()] накачивают [lowertext(source_gen.get_fluid_name())] сзади!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]Сзади у <b>[owner]</b> заметно прибавляется объём — теперь это [pick(GLOB.butt_nouns + asscheeks)]!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		climax_fluids.clear_reagents()
