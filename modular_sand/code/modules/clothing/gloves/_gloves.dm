@@ -76,9 +76,9 @@
 	if(!istype(accessory))
 		return
 	accessory.detach(src, user)
-	var/in_hand = user.put_in_hands(accessory, FALSE)
+	user.put_in_hands(accessory)
 	if(!silent)
-		balloon_alert(user, span_balloon_warning("Вы открепили [accessory] от [src]."))
+		balloon_alert(user, "Вы открепили [accessory].")
 
 	if(ishuman(loc))
 		var/mob/living/carbon/human/H = loc
