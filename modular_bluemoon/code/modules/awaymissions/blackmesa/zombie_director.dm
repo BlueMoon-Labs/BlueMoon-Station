@@ -20,6 +20,8 @@
 	var/pause_start_time = 0
 	var/horde_music_channel = 991
 	var/spawning_wave = FALSE
+	var/fuel_generator_horde_interval = 45 SECONDS
+	var/next_fuel_generator_horde_time = 0
 
 	var/list/excluded_areas = list(
 		/area/awaymission/ihategordon/hecu_abandoned_camp,
@@ -82,6 +84,15 @@
 			var/pause_duration = world.time - pause_start_time
 			last_wave_time += pause_duration
 			pause_start_time = 0
+
+	var/fuel_generator_active = is_fuel_generator_horde_active()
+	if(fuel_generator_active)
+		if(!next_fuel_generator_horde_time || world.time >= next_fuel_generator_horde_time)
+			if(!spawning_wave)
+				trigger_horde(TRUE)
+				next_fuel_generator_horde_time = world.time + fuel_generator_horde_interval
+	else
+		next_fuel_generator_horde_time = 0
 
 	if(world.time - last_wave_time >= wave_timer && !is_generator_horde_active())
 		attempt_spawn_wave()
@@ -257,8 +268,11 @@
 	while(zombies_spawned < zombies_to_spawn && cached_spawn_turfs.len)
 		var/remaining = zombies_to_spawn - zombies_spawned
 		var/current_batch = min(batch_size, remaining)
+		current_batch = min(current_batch, cached_spawn_turfs.len)
 
 		for(var/i = 1 to current_batch)
+			if(!cached_spawn_turfs.len)
+				break
 			var/turf/spawn_turf = pick(cached_spawn_turfs)
 			if(!spawn_turf)
 				log_world("[src] Failed to pick spawn turf for zombie #[zombies_spawned + i]")
@@ -273,7 +287,7 @@
 
 			var/mob_type
 			if(difficulty_level >= 5)
-				// After trigger5, include hunter in rotation (rare special)
+				// At difficulty 5+, include hunters and rare tanks in the rotation.
 				var/spawn_roll = rand(1, 100)
 				if(spawn_roll <= 55)
 					mob_type = /mob/living/simple_animal/hostile/infected
@@ -283,10 +297,12 @@
 					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
 				else if(spawn_roll <= 90)
 					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
-				else if(spawn_roll <= 97)
+				else if(spawn_roll <= 95)
 					mob_type = /mob/living/simple_animal/hostile/infected/charger
-				else
+				else if(spawn_roll <= 98)
 					mob_type = /mob/living/simple_animal/hostile/infected/hunter
+				else
+					mob_type = /mob/living/simple_animal/hostile/infected/tank
 			else if(difficulty_level >= 4)
 				// After trigger4, include acid spitter and charger in rotation
 				var/spawn_roll = rand(1, 100)
@@ -524,11 +540,16 @@
 	current_wave_number++
 
 /datum/ai_director/zombie_mission/proc/is_generator_horde_active()
-	for(var/obj/structure/urbanism_generator/fuel/generator in world)
-		if(generator.fuel_started && generator.waiting_for_fuel)
-			return TRUE
+	if(is_fuel_generator_horde_active())
+		return TRUE
 	for(var/obj/structure/urbanism_generator/truck/generator in world)
 		if(generator.activating || generator.active)
+			return TRUE
+	return FALSE
+
+/datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
+	for(var/obj/structure/urbanism_generator/fuel/generator in world)
+		if(generator.fuel_started && generator.waiting_for_fuel)
 			return TRUE
 	return FALSE
 

@@ -740,7 +740,7 @@
 	)
 	var/list/fuel_dialogue_lines = list(
 		"Как рад, что вижу вас. За меня не беспокойтесь. Я через люк сбегу в безопасные техтоннели. А там уже уеду с парнями",
-		"Я не могу открыть ставни моста. Удивлю вас, но генераторы чёрной мезы можно заправлять батареями ХЭВ костюма.",
+		"...Я не могу открыть ставни моста. Удивлю вас, но генераторы чёрной мезы можно заправлять батареями ХЭВ костюма.",
 		"Где-то.. Ах да... Вам придётся спуститься... ГЛУБОКО. Я не был в основных атриумах и не могу сказать точное положение дел.",
 		"У меня хватает энергии в будке только что-бы открыть вам ход к складам. Там стопроцентно будут батареи."
 	)
@@ -776,6 +776,17 @@
 		to_chat(user, span_warning("Не удалось найти места для батарей. Сообщите администрации."))
 	else
 		visible_message(span_notice("На точках снабжения появились батареи ([batteries_spawned])."))
+
+	var/generator_found = FALSE
+	for(var/obj/structure/urbanism_generator/fuel/generator in world)
+		if(!istype(get_area(generator), /area/awaymission/ihategordon))
+			continue
+		generator_found = TRUE
+		generator.start_fuel_generator()
+
+	if(!generator_found)
+		log_world("[src] Fuel radio conversation ended, but no fuel generator was found in the mission area.")
+		to_chat(user, span_warning("Не удалось найти топливный генератор. Сообщите администрации."))
 
 	dialogue_completed = TRUE
 	end_dialogue()

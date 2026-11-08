@@ -1001,24 +1001,17 @@
 	required_item_count = 8
 	waiting_for_fuel = TRUE
 	spawn_mobs = FALSE
-	var/director_horde_interval = 1 MINUTES
-	var/next_director_horde_time = 0
 	var/fuel_started = FALSE
 
-/obj/structure/urbanism_generator/fuel/Initialize(mapload)
-	. = ..()
-	next_director_horde_time = world.time + director_horde_interval
+/obj/structure/urbanism_generator/fuel/proc/start_fuel_generator()
+	if(QDELETED(src) || fuel_started)
+		return FALSE
 
-/obj/structure/urbanism_generator/fuel/process()
-	..()
-	if(!fuel_started || !waiting_for_fuel)
-		return
-
-	if(world.time >= next_director_horde_time)
-		if(GLOB.zombie_director)
-			var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
-			director.trigger_horde(TRUE)
-		next_director_horde_time = world.time + director_horde_interval
+	fuel_started = TRUE
+	visible_message(span_boldnotice("Генератор активирован, но проход заблокирован!"))
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_sputter.ogg', 50, TRUE)
+	return TRUE
 
 /obj/structure/urbanism_generator/fuel/attack_hand(mob/user)
 	if(!user)
@@ -1029,11 +1022,7 @@
 			to_chat(user, span_warning("Вам нужны пустые руки для активации генератора."))
 			return
 
-		fuel_started = TRUE
-		next_director_horde_time = world.time + director_horde_interval
-		visible_message(span_boldnotice("Генератор активирован, но проход заблокирован!"))
-		playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
-		playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_sputter.ogg', 50, TRUE)
+		start_fuel_generator()
 		return
 
 	if(waiting_for_fuel)

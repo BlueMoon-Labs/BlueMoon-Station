@@ -143,6 +143,60 @@
 		if(L.client)
 			to_chat(L, span_warning("The acid burns your skin!"))
 
+/obj/item/projectile/mesa_tank_rock
+	name = "stone shard"
+	icon = 'icons/obj/meteor.dmi'
+	icon_state = "small1"
+	damage = 20
+	damage_type = BRUTE
+	flag = BULLET
+	hitsound = 'sound/effects/meteorimpact.ogg'
+	hitsound_wall = 'sound/effects/meteorimpact.ogg'
+
+/obj/item/projectile/mesa_tank_rock/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(isliving(target))
+		var/mob/living/victim = target
+		var/atom/throw_target = get_edge_target_turf(victim, get_dir(firer, victim))
+		victim.throw_at(throw_target, 3, 1, firer)
+		victim.Stun(3 SECONDS, ignore_canstun = TRUE)
+
+/datum/ai_controller/hostile_adapter/mesa_tank
+	ai_pack_role = AI_ROLE_TANK
+	pursuit_leashed = FALSE
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm/mesa_tank,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/mesa_tank_rock_attack,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
+
+/datum/ai_planning_subtree/hostile_fsm/mesa_tank/should_retreat(datum/ai_controller/controller)
+	return FALSE
+
+/datum/ai_planning_subtree/mesa_tank_rock_attack
+	var/minimum_range = 3
+
+/datum/ai_planning_subtree/mesa_tank_rock_attack/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/infected/tank/tank = controller.pawn
+	if(!istype(tank))
+		return
+	if(tank.ranged_telegraph_timer_id)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	var/atom/target = controller.blackboard[BB_AI_CURRENT_TARGET]
+	if(QDELETED(target) || tank.ranged_cooldown > world.time)
+		return
+	var/distance = get_dist(tank, target)
+	if(distance < minimum_range || distance > AI_RANGED_MAX_FIRE_RANGE || !can_see(tank, target, AI_RANGED_MAX_FIRE_RANGE))
+		return
+	tank.target = target
+	tank.telegraphed_open_fire(target)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
 // Parent infected mob type
 /mob/living/simple_animal/hostile/infected
 	name = "infected"
@@ -1026,3 +1080,150 @@
 	drag_distance = 0
 	drag_direction = null
 	stop_pulling()
+
+// =============================================================================
+// TIER 5: TANK
+// Slow, durable infected that knocks targets back and pauses after each hit.
+// =============================================================================
+/mob/living/simple_animal/hostile/infected/tank
+	name = "tank infected"
+	desc = "A massive infected creature whose heavy blows send its victims flying."
+	icon = 'modular_bluemoon/icons/mob/tank.dmi'
+	icon_state = "tank"
+	icon_living = "tank"
+	icon_dead = "tankdead"
+	maxHealth = 1000
+	health = 1000
+	speed = 1
+	retreat_distance = null
+	ai_profile_type = /datum/ai_controller/hostile_adapter/mesa_tank
+	melee_damage_lower = 40
+	melee_damage_upper = 40
+	attack_verb_continuous = "smashes"
+	attack_verb_simple = "smash"
+	attack_sound = 'modular_bluemoon/sound/creatures/mesa/tank/tankhit.ogg'
+	deathsound = 'modular_bluemoon/sound/creatures/mesa/tank/tankdead.ogg'
+	speak = null
+	footstep_type = FOOTSTEP_MOB_HEAVY
+	var/list/tank_idle_sounds = list(
+		'modular_bluemoon/sound/creatures/mesa/tank/tankidle.ogg',
+		'modular_bluemoon/sound/creatures/mesa/tank/tankidle1.ogg',
+	)
+	var/list/tank_aggro_sounds = list(
+		'modular_bluemoon/sound/creatures/mesa/tank/tankaggro.ogg',
+		'modular_bluemoon/sound/creatures/mesa/tank/tankaggro2.ogg',
+		'modular_bluemoon/sound/creatures/mesa/tank/tankaggro3.ogg',
+		'modular_bluemoon/sound/creatures/mesa/tank/tankaggro4.ogg',
+	)
+	var/next_idle_sound = 0
+	var/next_step_shake = 0
+	var/attack_recovery_until = 0
+	var/tank_theme_channel
+	var/tank_idle_channel
+	var/tank_theme_playing = FALSE
+	var/list/tank_theme_listeners = list()
+	ranged_cooldown_time = 5 SECONDS
+	ranged_telegraph_duration = 3 SECONDS
+	projectiletype = /obj/item/projectile/mesa_tank_rock
+	projectilesound = 'sound/effects/meteorimpact.ogg'
+
+/mob/living/simple_animal/hostile/infected/tank/Initialize(mapload)
+	. = ..()
+	tank_theme_channel = SSsounds.reserve_sound_channel(src)
+	tank_idle_channel = SSsounds.reserve_sound_channel(src)
+
+/mob/living/simple_animal/hostile/infected/tank/BiologicalLife(seconds, times_fired)
+	if(!(. = ..()))
+		return
+	if(target || stat == DEAD || world.time < next_idle_sound)
+		return
+	playsound(src, sound(pick(tank_idle_sounds), channel = tank_idle_channel), 65, TRUE, channel = tank_idle_channel)
+	next_idle_sound = world.time + rand(80, 160)
+
+/mob/living/simple_animal/hostile/infected/tank/Move(atom/newloc, dir, step_x, step_y)
+	if(world.time < attack_recovery_until)
+		return FALSE
+	. = ..()
+	if(. && world.time >= next_step_shake)
+		next_step_shake = world.time + 10
+		for(var/mob/living/nearby_mob in viewers(6, src))
+			if(nearby_mob.client)
+				shake_camera(nearby_mob, 1, 1)
+
+/mob/living/simple_animal/hostile/infected/tank/can_ai_controller_move()
+	return !ranged_telegraph_timer_id
+
+/mob/living/simple_animal/hostile/infected/tank/AttackingTarget()
+	if(world.time < attack_recovery_until)
+		return FALSE
+	if(!isliving(target))
+		return ..()
+	if(QDELETED(src) || QDELETED(target))
+		return
+	var/mob/living/victim = target
+	if(SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, victim) & COMPONENT_HOSTILE_NO_ATTACK)
+		return
+	if(QDELETED(src) || QDELETED(victim))
+		return
+
+	face_atom(victim)
+	if(!CheckActionCooldown(CLICK_CD_MELEE))
+		return
+	DelayNextAction()
+	if(HAS_TRAIT(src, TRAIT_PACIFISM))
+		return FALSE
+
+	in_melee = TRUE
+	playsound(src, pick(tank_aggro_sounds), 80, TRUE)
+	playsound(victim, attack_sound, 50, TRUE, 1)
+	do_attack_animation(victim)
+	visible_message(
+		"<span class='danger'>\The [src] [attack_verb_continuous] [victim]!</span>",
+		"<span class='userdanger'>\The [src] [attack_verb_continuous] you!</span>",
+		target = victim,
+		target_message = "<span class='danger'>\The [src] [attack_verb_continuous] you!</span>",
+	)
+	log_combat(src, victim, "attacked")
+	victim.apply_damage(40, BRUTE, null, forced = TRUE)
+	victim.Stun(2 SECONDS)
+	var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(victim, src)))
+	victim.throw_at(throwtarget, 3, 1, src)
+	attack_recovery_until = world.time + (2 SECONDS)
+	return TRUE
+
+/mob/living/simple_animal/hostile/infected/tank/telegraphed_open_fire(atom/fire_target)
+	if(QDELETED(fire_target) || stat == DEAD || ranged_telegraph_timer_id)
+		return FALSE
+	. = ..()
+	if(.)
+		playsound(src, pick(tank_aggro_sounds), 80, TRUE)
+
+/mob/living/simple_animal/hostile/infected/tank/Aggro()
+	. = ..()
+	playsound(src, pick(tank_aggro_sounds), 80, TRUE)
+	if(tank_theme_playing)
+		return
+	tank_theme_playing = TRUE
+	for(var/mob/nearby_mob in viewers(10, src))
+		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
+			continue
+		SEND_SOUND(nearby_mob, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
+		tank_theme_listeners += nearby_mob
+
+/mob/living/simple_animal/hostile/infected/tank/proc/stop_tank_sounds()
+	tank_theme_playing = FALSE
+	for(var/mob/listener in GLOB.player_list)
+		if(QDELETED(listener))
+			continue
+		listener.stop_sound_channel(tank_theme_channel)
+		listener.stop_sound_channel(tank_idle_channel)
+	tank_theme_listeners.Cut()
+
+/mob/living/simple_animal/hostile/infected/tank/death(gibbed)
+	stop_tank_sounds()
+	return ..(gibbed)
+
+/mob/living/simple_animal/hostile/infected/tank/Destroy()
+	stop_tank_sounds()
+	SSsounds.free_datum_channels(src)
+	return ..()
