@@ -2077,10 +2077,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/black_hole)
 	load_empty_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg"
 
 /obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
-	load_sound = pick(
-		'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg',
-		'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_two.ogg'
-	)
+	load_sound = pick('modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg', 'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_two.ogg')
 	load_empty_sound = load_sound
 	return ..()
 
