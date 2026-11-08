@@ -1198,10 +1198,10 @@
 	while(src && status == LIGHT_OK && on)
 		on = !on
 		update(FALSE, TRUE)
-		sleep(rand(1, 3))
+		sleep(rand(3, 8))
 		on = (status == LIGHT_OK)
 		update(FALSE, TRUE)
-		sleep(rand(1, 3))
+		sleep(rand(3, 8))
 	flickering_active = FALSE
 
 /obj/machinery/light/urbanism_flicker/break_light_tube(skip_sound_and_sparks = 0)

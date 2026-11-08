@@ -26,6 +26,33 @@
 /obj/effect/landmark/awaymission/blackmesa/portal_spawn
 	name = "Portal Storm Spawn Landmark"
 
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn
+	name = "HECU role spawn landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+	var/spawner_type
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/hecu
+	name = "HECU grunt spawn landmark"
+	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/breacher
+	name = "HECU breacher spawn landmark"
+	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/breacher
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/medic
+	name = "HECU medic spawn landmark"
+	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/medic
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/engineer
+	name = "HECU engineer spawn landmark"
+	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/engineer
+
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader
+	name = "HECU leader spawn landmark"
+	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/leader
+
 /datum/antagonist/ghost_role/mesa_hecu_war
 	name = "HECU War Reinforcements"
 
@@ -35,6 +62,8 @@
 	objective.owner = owner
 	objectives += objective
 	owner.announce_objectives()
+	if(SSblackmesa_events && owner?.current)
+		SSblackmesa_events.mesa_ghost_role_reminder(owner.current)
 
 /datum/antagonist/ghost_role/mesa_blackops_assault
 	name = "Black Ops Sector H Assault"
@@ -45,6 +74,8 @@
 	objective.owner = owner
 	objectives += objective
 	owner.announce_objectives()
+	if(SSblackmesa_events && owner?.current)
+		SSblackmesa_events.mesa_ghost_role_reminder(owner.current)
 
 /datum/round_event_control/blackmesa
 	name = "Black Mesa: Base"
@@ -92,15 +123,17 @@
 	var/list/areas = get_mesa_areas()
 	if(!areas.len)
 		return null
-	var/list/turfs = list()
-	for(var/area/A in areas)
-		turfs += get_area_turfs(A)
-	if(!turfs.len)
-		return null
-	for(var/i in 1 to 30)
-		var/turf/T = pick(turfs)
-		if(T && istype(T, /turf/open) && !is_blocked_turf(T))
-			return T
+	// Pick a random area first, then a random turf inside it - avoids
+	// concatenating every turf of every Mesa area into one giant list.
+	for(var/i in 1 to 10)
+		var/area/A = pick(areas)
+		var/list/turfs = get_area_turfs(A)
+		if(!turfs.len)
+			continue
+		for(var/j in 1 to 10)
+			var/turf/T = pick(turfs)
+			if(T && istype(T, /turf/open) && !is_blocked_turf(T))
+				return T
 	return null
 
 /datum/round_event/blackmesa/proc/get_player_mesa_turf(ignore_hecu = FALSE, radius_min = 5, radius_max = 12)
@@ -169,6 +202,7 @@
 		A.power_change()
 		addtimer(CALLBACK(src, PROC_REF(restore_power), A), 600)
 
+	addtimer(CALLBACK(src, PROC_REF(restore_all_light_charges)), 600)
 	addtimer(CALLBACK(src, PROC_REF(announce_restoration)), 600)
 
 /datum/round_event/blackmesa/power_outage/proc/announce_restoration()
@@ -183,11 +217,21 @@
 	A.power_environ = TRUE
 	A.lightswitch = TRUE
 	A.power_change()
-	// Recharge all light fixtures in the area to 100%
-	for(var/turf/T in get_area_turfs(A))
-		for(var/obj/machinery/light/L in T.contents)
-			if(L.cell && L.cell.maxcharge)
-				L.cell.charge = L.cell.maxcharge
+
+// Recharge all Mesa light fixtures in a single GLOB.machines pass instead of
+// iterating every turf x contents of every Mesa area per area.
+/datum/round_event/blackmesa/power_outage/proc/restore_all_light_charges()
+	if(!GLOB.machines)
+		return
+	var/lookup = alist()
+	for(var/area/A in get_mesa_areas())
+		lookup[A] = TRUE
+	for(var/obj/machinery/light/L in GLOB.machines)
+		if(!L.cell || !L.cell.maxcharge)
+			continue
+		var/area/LA = get_area(L)
+		if(LA && lookup[LA])
+			L.cell.charge = L.cell.maxcharge
 
 // Event 2: Sandstorm (Cosmetic)
 /datum/round_event_control/blackmesa/sandstorm
@@ -228,16 +272,21 @@
 	if(!areas.len)
 		return
 
+	// Scan GLOB.machines/GLOB.airlocks once instead of iterating every turf
+	// and its contents across the whole mission.
+	var/lookup = alist()
 	for(var/area/A in areas)
-		var/list/turfs = get_area_turfs(A)
-		if(!turfs.len)
-			continue
-		for(var/turf/T in turfs)
-			for(var/obj/machinery/door/D in T.contents)
-				if(!D.locked)
-					D.locked = TRUE
-					D.update_icon()
-					locked_doors += D
+		lookup[A] = TRUE
+	for(var/list/machine_list in list(GLOB.machines, GLOB.airlocks))
+		for(var/obj/machinery/door/D in machine_list)
+			if(!D || D.locked)
+				continue
+			var/area/A = get_area(D)
+			if(!A || !(A in lookup))
+				continue
+			D.locked = TRUE
+			D.update_icon()
+			locked_doors += D
 
 	addtimer(CALLBACK(src, PROC_REF(end_lockdown)), lockdown_duration)
 

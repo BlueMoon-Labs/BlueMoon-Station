@@ -167,7 +167,7 @@
 	var/mob/living/player = arrived
 	if(!player.client || player.stat == DEAD || !SSblackmesa_events)
 		return
-	SSblackmesa_events.notify_hecu_ghost_roles()
+	SSblackmesa_events.activate_hecu_roles()
 
 // =============================================================================
 // IHATEGORDON CUSTOM ZONES

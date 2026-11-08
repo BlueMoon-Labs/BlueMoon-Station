@@ -83,11 +83,26 @@
 /datum/antagonist/ghost_role/black_mesa
 	name  = "black mesa staff"
 
+/datum/antagonist/ghost_role/black_mesa/on_gain()
+	. = ..()
+	if(SSblackmesa_events && owner?.current)
+		SSblackmesa_events.mesa_ghost_role_reminder(owner.current)
+
 /datum/antagonist/ghost_role/hecu
 	name  = "HECU squad"
 
+/datum/antagonist/ghost_role/hecu/on_gain()
+	. = ..()
+	if(SSblackmesa_events && owner?.current)
+		SSblackmesa_events.mesa_ghost_role_reminder(owner.current)
+
 /datum/antagonist/ghost_role/losthecu
 	name  = "HECU lost grunt"
+
+/datum/antagonist/ghost_role/losthecu/on_gain()
+	. = ..()
+	if(SSblackmesa_events && owner?.current)
+		SSblackmesa_events.mesa_ghost_role_reminder(owner.current)
 
 
 /mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)

@@ -23,6 +23,15 @@
 	var/fuel_generator_horde_interval = 45 SECONDS
 	var/next_fuel_generator_horde_time = 0
 
+	// Generator horde state is rescanned at most every 5 seconds instead of
+	// iterating all generators in world on every 1s process() tick.
+	var/next_horde_state_check = 0
+	var/cached_fuel_horde_active = FALSE
+	var/cached_horde_active = FALSE
+
+	var/list/cached_mesa_areas = list()
+	var/last_mesa_areas_refresh = 0
+
 	var/list/excluded_areas = list(
 		/area/awaymission/ihategordon/hecu_abandoned_camp,
 		/area/awaymission/ihategordon/rocks,
@@ -65,7 +74,7 @@
 	if(!SSblackmesa_events)
 		return
 
-	var/list/mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
+	var/list/mission_areas = get_mesa_areas()
 	if(!mission_areas || !mission_areas.len)
 		return
 
@@ -186,6 +195,10 @@
 /datum/ai_director/zombie_mission/proc/get_mesa_areas()
 	if(!src)
 		return list()
+	// Area layout is static per round; refresh at most every 30 seconds
+	// instead of rescanning GLOB.sortedAreas on every 1s process() tick.
+	if(cached_mesa_areas.len && world.time - last_mesa_areas_refresh < 30 SECONDS)
+		return cached_mesa_areas
 	var/list/source_areas = get_areas(/area/awaymission/ihategordon, TRUE)
 	if(!source_areas || !source_areas.len)
 		return list()
@@ -202,6 +215,8 @@
 				break
 		if(valid)
 			areas += A
+	cached_mesa_areas = areas
+	last_mesa_areas_refresh = world.time
 	return areas
 
 /datum/ai_director/zombie_mission/proc/calculate_threat_level(player_count)
@@ -405,6 +420,10 @@
 		if(T.is_blocked_turf())
 			continue
 
+		var/area/spawn_area = get_area(T)
+		if(!spawn_area || !(spawn_area in valid_areas))
+			continue
+
 		return T
 
 	return null
@@ -541,19 +560,32 @@
 	spawn_zombie_wave(threat_level, alive_players)
 	current_wave_number++
 
-/datum/ai_director/zombie_mission/proc/is_generator_horde_active()
-	if(is_fuel_generator_horde_active())
-		return TRUE
-	for(var/obj/structure/urbanism_generator/truck/generator in world)
-		if(generator.activating || generator.active)
-			return TRUE
-	return FALSE
+/datum/ai_director/zombie_mission/proc/refresh_horde_state()
+	cached_fuel_horde_active = scan_fuel_generators()
+	cached_horde_active = cached_fuel_horde_active
+	if(!cached_horde_active)
+		for(var/obj/structure/urbanism_generator/truck/generator in world)
+			if(generator.activating || generator.active)
+				cached_horde_active = TRUE
+				break
 
-/datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
+/datum/ai_director/zombie_mission/proc/scan_fuel_generators()
 	for(var/obj/structure/urbanism_generator/fuel/generator in world)
 		if(generator.fuel_started && generator.waiting_for_fuel)
 			return TRUE
 	return FALSE
+
+/datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
+	if(world.time >= next_horde_state_check)
+		refresh_horde_state()
+		next_horde_state_check = world.time + 5 SECONDS
+	return cached_fuel_horde_active
+
+/datum/ai_director/zombie_mission/proc/is_generator_horde_active()
+	if(world.time >= next_horde_state_check)
+		refresh_horde_state()
+		next_horde_state_check = world.time + 5 SECONDS
+	return cached_horde_active
 
 /datum/ai_director/zombie_mission/proc/start_horde_music()
 	if(!src)

@@ -668,7 +668,7 @@
 	var/leap_damage = 35
 	var/miss_stun_duration = 1.5 SECONDS
 	var/last_light_check = 0
-	var/light_check_interval = 5
+	var/light_check_interval = 20 // was 5 - locate() in range(10) scans 441 turfs
 	// AI configuration - use ranged attack for leap (like headcrab)
 	ranged = TRUE
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_hunter
@@ -691,7 +691,7 @@
 	// Light avoidance
 	var/light_avoidance_range = 8
 	var/light_avoidance_strength = 0.7
-	var/light_avoidance_check_interval = 2 SECONDS
+	var/light_avoidance_check_interval = 5 SECONDS // was 2 SECONDS - locate() in range(8) scan
 	var/last_light_avoidance_check = 0
 
 /mob/living/simple_animal/hostile/infected/hunter/Initialize(mapload)
@@ -1153,7 +1153,7 @@
 	if(. && world.time >= next_step_shake)
 		next_step_shake = world.time + 10
 		for(var/mob/living/nearby_mob in viewers(6, src))
-			if(nearby_mob.client)
+			if(nearby_mob.client && istype(get_area(nearby_mob), /area/awaymission/ihategordon))
 				shake_camera(nearby_mob, 1, 1)
 
 /mob/living/simple_animal/hostile/infected/tank/can_ai_controller_move()
@@ -1212,6 +1212,8 @@
 	tank_theme_playing = TRUE
 	for(var/mob/nearby_mob in viewers(10, src))
 		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
+			continue
+		if(!istype(get_area(nearby_mob), /area/awaymission/ihategordon))
 			continue
 		SEND_SOUND(nearby_mob, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
 		tank_theme_listeners += nearby_mob

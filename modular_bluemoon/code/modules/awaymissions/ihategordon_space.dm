@@ -212,9 +212,6 @@
 
 	ComponentInitialize()
 
-	// Начинаем процессинг для стамины
-	START_PROCESSING(SSobj, src)
-
 	return INITIALIZE_HINT_NORMAL
 
 // Обработка входа на тайл
@@ -227,6 +224,9 @@
 		return
 	// Добавляем в список мобов на тайле
 	mobs_on_turf |= L
+	// Запускаем процессинг только пока на тайле есть живые мобы
+	if(!(datum_flags & DF_ISPROCESSING))
+		START_PROCESSING(SSobj, src)
 	// Убираем инерцию космоса
 	L.inertia_dir = 0
 	// Проверяем есть ли джетпак
@@ -291,13 +291,15 @@
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_TELEPORT
 
-// Процессинг стамины
+// Процессинг стамины - работает только пока на тайле есть мобы
 /turf/open/space/ihategordon/process()
 	if(!mobs_on_turf || !mobs_on_turf.len)
+		STOP_PROCESSING(SSobj, src)
 		return
+	var/list/departed = list()
 	for(var/mob/living/L in mobs_on_turf)
-		if(!L || QDELETED(L) || get_turf(L) != src)
-			mobs_on_turf -= L
+		if(!L || QDELETED(L) || L.stat == DEAD || get_turf(L) != src)
+			departed += L
 			continue
 		// Убираем инерцию космоса
 		L.inertia_dir = 0
@@ -311,7 +313,11 @@
 			// Превращаем в невидимый чазм и удаляем игрока
 			to_chat(L, "<span class='userdanger'>Ваши силы покинули вас! Вы проваливаетесь в бездну!</span>")
 			INVOKE_ASYNC(src, PROC_REF(drop_into_chasm), L)
-			mobs_on_turf -= L
+			departed += L
+	for(var/mob/living/L in departed)
+		mobs_on_turf -= L
+	if(!mobs_on_turf.len)
+		STOP_PROCESSING(SSobj, src)
 
 // Останавливаем процессинг при удалении
 /turf/open/space/ihategordon/Destroy()
@@ -428,12 +434,17 @@
 // Перехватываем выбор параллакса для z-уровней с ihategordon тайлами
 // =============================================================================
 
+/datum/controller/subsystem/parallax
+	var/list/ihategordon_zlevels = null
+
 /datum/controller/subsystem/parallax/proc/check_ihategordon_z(z)
-	// Проверяем есть ли на этом z-уровне тайлы ihategordon space
-	for(var/turf/open/space/ihategordon/T in world)
-		if(T.z == z)
-			return TRUE
-	return FALSE
+	// Z-levels containing ihategordon space turfs are static per round -
+	// scan world once and cache instead of rescanning per z-level.
+	if(isnull(ihategordon_zlevels))
+		ihategordon_zlevels = list()
+		for(var/turf/open/space/ihategordon/T in world)
+			ihategordon_zlevels["[T.z]"] = TRUE
+	return ihategordon_zlevels["[z]"]
 
 // Переопределяем get_parallax_type для ihategordon z-уровней
 /datum/controller/subsystem/parallax/pick_profile_for_z(z)

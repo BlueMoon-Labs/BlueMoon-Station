@@ -14,11 +14,25 @@ SUBSYSTEM_DEF(blackmesa_events)
 	wait = 3000
 	var/list/event_controls = list()
 	var/day_phase = 0 // 0=Evening, 1=Night, 2=Morning, 3=Day
-	var/phase_timer = 2 // Change every 2 fires (10 minutes)
+	var/phase_timer = 200 // Change every 200 fires (~10 minutes at wait = 3000)
+	var/last_mesa_light_color = null
+	var/last_mesa_light_power = -1
 	var/zombie_director_ref
 	var/hecu_conflict_mode
 	var/hecu_conflict_round_start_time
-	var/hecu_ghost_roles_notified = FALSE
+	var/list/hecu_role_landmarks = list()
+	var/hecu_roles_activated = FALSE
+	// HECU ghost roles that appear mid-round via hecu_role_spawn landmarks.
+	// Excludes the deserter (/hecu/lost) and the war-only sniper/machinegunner.
+	var/list/hecu_role_landmark_types = list(
+		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/hecu,
+		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/breacher,
+		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/medic,
+		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/engineer,
+		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader,
+	)
+	var/list/cached_mission_areas = null
+	var/next_event_time = 0
 
 /datum/controller/subsystem/blackmesa_events/Initialize(time, zlevel)
 	if(SSticker)
@@ -34,22 +48,31 @@ SUBSYSTEM_DEF(blackmesa_events)
 
 	initialize_zombie_director()
 	zombie_director_ref = GLOB.zombie_director
+	deploy_hecu_role_landmarks()
 	return ..()
 
 /datum/controller/subsystem/blackmesa_events/fire(resumed = FALSE)
-	// Mission load check
-	var/list/mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
+	// Mission load check - areas are static per round, cache the scan.
+	if(isnull(cached_mission_areas))
+		cached_mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
+	var/list/mission_areas = cached_mission_areas
 	if(!mission_areas || !mission_areas.len)
 		return
 
 	// Day/Night Cycle
 	phase_timer--
 	if(phase_timer <= 0)
-		phase_timer = 2
+		phase_timer = 200
 		cycle_day_night()
 
 	if(!length(event_controls))
 		return
+
+	// Random events are heavy (area/turf scans, spawns) - only attempt one
+	// every rand(45, 90) SECONDS instead of on every 3s subsystem fire.
+	if(world.time < next_event_time)
+		return
+	next_event_time = world.time + rand(45, 90) SECONDS
 
 	// Get current difficulty level from zombie director
 	var/current_difficulty = 0
@@ -117,9 +140,14 @@ SUBSYSTEM_DEF(blackmesa_events)
 	mesa_announce(announce_text, announce_title, 'modular_bluemoon/sound/ambience/mesa/timeevent.ogg')
 
 /datum/controller/subsystem/blackmesa_events/proc/update_mesa_lights(color, light_power)
-	// Update floodlights
+	// Update floodlights - skip entirely when nothing changed to avoid
+	// rescanning GLOB.machines and rebuilding lighting on every phase cycle.
 	if(!GLOB.machines)
 		return
+	if(color == last_mesa_light_color && light_power == last_mesa_light_power)
+		return
+	last_mesa_light_color = color
+	last_mesa_light_power = light_power
 	for(var/obj/machinery/power/floodlight/urbanismlight/mesaoutside/L in GLOB.machines)
 		if(!L || !istype(get_area(L), /area/awaymission/ihategordon))
 			continue
@@ -289,23 +317,80 @@ SUBSYSTEM_DEF(blackmesa_events)
 		stack_trace("Only [spawned_count] of [amount] requested Black Mesa ghost role spawners could be placed for [spawner_type].")
 	return spawned_count
 
-/datum/controller/subsystem/blackmesa_events/proc/notify_hecu_ghost_roles()
-	if(hecu_ghost_roles_notified)
+/datum/controller/subsystem/blackmesa_events/proc/deploy_hecu_role_landmarks()
+	if(hecu_role_landmarks.len)
 		return
-
-	for(var/obj/effect/mob_spawn/human/black_mesa/hecu/spawner in GLOB.poi_list)
-		if(QDELETED(spawner) || !spawner.ghost_usable || !spawner.uses || !get_turf(spawner))
+	var/list/camp_turfs = list()
+	for(var/area_type in list(
+		/area/awaymission/ihategordon/outsideofmesa/hecu_camp,
+		/area/awaymission/ihategordon/hecu_camp_hall,
+		/area/awaymission/ihategordon/hecu_camp_medbay,
+		/area/awaymission/ihategordon/hecu_camp_bus_stop,
+	))
+		for(var/turf/T in get_area_turfs(area_type))
+			if(T && !T.density && !T.is_blocked_turf())
+				camp_turfs += T
+	if(!camp_turfs.len)
+		return
+	for(var/landmark_type in hecu_role_landmark_types)
+		var/turf/T = pick(camp_turfs)
+		if(!T)
 			continue
+		camp_turfs -= T
+		var/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/L = new landmark_type(T)
+		if(L)
+			hecu_role_landmarks += L
 
-		hecu_ghost_roles_notified = TRUE
-		notify_ghosts(
-			"Доступна гост-роль HECU: [spawner.name]. Нажмите на уведомление, чтобы перейти к спавнеру и выбрать эту роль.",
-			source = spawner,
-			action = NOTIFY_ATTACK,
-			header = "Доступны гост-роли HECU",
-			ignore_dnr_observers = TRUE,
-		)
+/datum/controller/subsystem/blackmesa_events/proc/activate_hecu_roles()
+	if(hecu_roles_activated)
 		return
+	deploy_hecu_role_landmarks()
+	if(!hecu_role_landmarks.len)
+		return
+	hecu_roles_activated = TRUE
+	var/spawned_count = 0
+	for(var/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/L in hecu_role_landmarks)
+		if(QDELETED(L))
+			continue
+		var/turf/T = get_turf(L)
+		if(T && !T.density && !T.is_blocked_turf() && L.spawner_type)
+			var/obj/effect/mob_spawn/human/black_mesa/spawner = new L.spawner_type(T)
+			if(spawner)
+				spawned_count++
+				notify_ghosts(
+					"Доступна гост-роль HECU: [spawner.name]. Нажмите на уведомление, чтобы перейти к спавнеру и выбрать эту роль.",
+					source = spawner,
+					action = NOTIFY_ATTACK,
+					header = "Доступны гост-роли HECU",
+					ignore_dnr_observers = TRUE,
+				)
+		qdel(L)
+	hecu_role_landmarks.Cut()
+	if(spawned_count)
+		mesa_announce(
+			"Внимание! У лагеря HECU зафиксирована активность. Похоже, в Сектор H прибыло подкрепление. Рекомендуется проявлять осторожность.",
+			"HECU: ПРИБЫТИЕ ПОДКРЕПЛЕНИЯ",
+			'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg',
+		)
+
+// Reminds players who take a Black Mesa ghost role AFTER the HECU conflict
+// was declared about their current objectives. Does nothing pre-conflict.
+/datum/controller/subsystem/blackmesa_events/proc/mesa_ghost_role_reminder(mob/user)
+	if(!istype(user, /mob/living) || !user.client || !hecu_conflict_mode)
+		return
+	var/mob/living/L = user
+	var/text
+	if(hecu_conflict_mode == "truce")
+		if(L.faction && FACTION_HECU in L.faction)
+			text = "Напоминание: действует перемирие HECU. Атаковать игроков и персонал Сектора H строго запрещено правилами. Ваша цель - соблюдать приказ командования и эвакуироваться из гейта."
+		else
+			text = "Напоминание: HECU объявило перемирие. Конфликт с HECU и его персоналом невозможен - оставайтесь в гейте и соблюдайте указания командования."
+	else
+		if(L.faction && ((FACTION_HECU in L.faction) || (FACTION_BLACKOPS in L.faction)))
+			text = "Напоминание: HECU объявило войну. Ваша цель - уничтожить экспедиторов и учёных Чёрной Мезы, находившихся в Секторе H."
+		else
+			text = "Напоминание: HECU объявило войну Сектору H. Вы находитесь в зоне боевых действий - действуйте осторожно."
+	to_chat(L, span_warning(text))
 
 /datum/controller/subsystem/blackmesa_events/proc/set_maximum_difficulty()
 	if(!GLOB.zombie_director)

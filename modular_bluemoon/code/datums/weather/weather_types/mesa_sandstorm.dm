@@ -29,4 +29,5 @@
 
 /datum/weather/ash_storm/mesa_sandstorm/start()
 	. = ..()
-	SSblackmesa_events.mesa_announce("Внимание! В Секторе H началась интенсивная песчаная буря. Рекомендуется укрыться в помещениях!", "Sandstorm Warning", 'modular_bluemoon/sound/ambience/mesa/BMAS2.ogg')
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("Внимание! В Секторе H началась интенсивная песчаная буря. Рекомендуется укрыться в помещениях!", "Sandstorm Warning", 'modular_bluemoon/sound/ambience/mesa/BMAS2.ogg')
