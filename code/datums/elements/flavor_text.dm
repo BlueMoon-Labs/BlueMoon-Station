@@ -70,7 +70,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 /datum/element/flavor_text/proc/show_flavor(atom/target, mob/user, list/examine_list)
 	var/mob/living/L = target
 	if(!always_show && isliving(target))
-		var/unknown = L.get_visible_name() == "Unknown"
+		var/unknown = L.get_visible_name() in list("Unknown", "Неизвестный")
 		if(!unknown && iscarbon(target))
 			var/mob/living/carbon/C = L
 			unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEFACE) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEFACE) && !isobserver(user)) //MASSIVE nonmodular edit. Has to be done here - Yawet330 / Making ghosts ignore gas-masks

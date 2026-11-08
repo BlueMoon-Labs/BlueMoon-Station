@@ -575,7 +575,7 @@ const ViewSecurity = (_properties) => {
         <CriminalStatusSelector />
         <Box mt="0.75rem">
           <CrimeTable
-            title="Некрупные правонарушения"
+            title="Малые правонарушения"
             crimes={security.mi_crim || []}
             addAction="mi_crim_add"
             deleteAction="mi_crim_delete"
