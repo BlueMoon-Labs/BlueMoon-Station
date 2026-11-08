@@ -25,7 +25,7 @@
 
 /datum/quirk/estrous_detection
 	name = "Обнаружение Эструса"
-	desc = "Вы обладаете особым чувством, чтобы определить, находится ли кто-то в эстральном цикле."
+	desc = "Вы чувствуете, находится ли кто-то в эстральном цикле, и можете определить точную степень возбуждения существ рядом."
 	value = 0
 	mob_trait = TRAIT_ESTROUS_DETECT
 	flavor_quirk = TRUE
@@ -46,8 +46,6 @@
 	var/heat_type = "нахождение в эстральном цикле"
 
 /datum/quirk/estrous_active/add()
-	// Add examine hook
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_estrous_active))
 	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_ADD, PROC_REF(update_heat_type))
 	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_REMOVE, PROC_REF(update_heat_type))
 
@@ -64,7 +62,6 @@
 	UnregisterSignal(quirk_holder, list(
 		COMSIG_MOB_ORGAN_ADD,
 		COMSIG_MOB_ORGAN_REMOVE,
-		COMSIG_PARENT_EXAMINE,
 		COMSIG_PREGNANCY_STARTED,
 		COMSIG_PREGNANCY_ENDED,
 		COMSIG_MOB_CLIMAX, // добавим в п. B
@@ -106,7 +103,7 @@
 /datum/quirk/estrous_active/remove()
 	if(!QDELETED(quirk_holder))
 		STOP_PROCESSING(SSfastprocess, src)
-	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE, COMSIG_PARENT_EXAMINE))
+	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE))
 
 // Основной цикл
 /datum/quirk/estrous_active/process()
@@ -165,20 +162,6 @@
 
 	current_stage = 0
 	time_bonus = 0
-
-/datum/quirk/estrous_active/proc/quirk_examine_estrous_active(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	SIGNAL_HANDLER
-
-	// Check if human examiner exists
-	if(!istype(examiner))
-		return
-
-	// Check if examiner lacks the trait, or is self examining
-	if(!HAS_TRAIT(examiner, TRAIT_ESTROUS_DETECT) || (examiner == quirk_holder))
-		return
-
-	// Add quirk message
-	examine_list += span_love("<b>[quirk_holder.ru_who(TRUE)]</b> [heat_type].")
 
 // === НОВЫЕ ПРОЦЕДУРЫ ДЛЯ БЕРЕМЕННОСТИ ===
 

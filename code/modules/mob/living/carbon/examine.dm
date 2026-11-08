@@ -138,7 +138,7 @@
 	if(SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		. += "[t_He] напрягается[CHECK_MOBILITY(src, MOBILITY_STAND) ? "." : ", и встает в боевую стойку."]"
 
-	var/trait_exam = common_trait_examine()
+	var/trait_exam = common_trait_examine(examiner = user)
 	if (!isnull(trait_exam))
 		. += trait_exam
 
@@ -167,6 +167,10 @@
 	. = ..()
 	if(!LAZYLEN(all_scars))
 		return
+	var/anonymous = FALSE
+	if(ishuman(src))
+		var/mob/living/carbon/human/human = src
+		anonymous = human.examine_shown_name(user) == "Неизвестный" || human.is_gender_obscured()
 	var/list/visible_scars
 	for(var/i in all_scars)
 		var/datum/scar/S = i
@@ -176,6 +180,6 @@
 	if(visible_scars)
 		for(var/i in visible_scars)
 			var/datum/scar/S = i
-			var/scar_text = S.get_examine_description(user)
+			var/scar_text = S.get_examine_description(user, anonymous)
 			if(scar_text)
 				. += "[scar_text]"

@@ -139,7 +139,7 @@
 				if("penis")
 					genital = partner.getorganslot(ORGAN_SLOT_PENIS)
 		partner.set_is_fucking(user, CUM_TARGET_MOUTH, genital)
-		try_apply_knot(partner, user, CUM_TARGET_MOUTH)
+		try_apply_knot(partner, user, CUM_TARGET_MOUTH, is_hidden = is_hidden)
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bj1.ogg',
 									'modular_sand/sound/interactions/bj2.ogg',
@@ -151,20 +151,20 @@
 									'modular_sand/sound/interactions/bj8.ogg',
 									'modular_sand/sound/interactions/bj9.ogg',
 									'modular_sand/sound/interactions/bj10.ogg',
-									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 //BLUEMOON EDIT START
 //SPLURT EDIT START
 	if(fucktarget == "penis" && partner.can_penetrating_genital_cum())
-		partner.handle_post_sex(lust_increase, CUM_TARGET_MOUTH, user, ORGAN_SLOT_PENIS)
+		partner.handle_post_sex(lust_increase, CUM_TARGET_MOUTH, user, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 	else if(fucktarget == "vagina" && partner.has_vagina())
-		partner.handle_post_sex(lust_increase, CUM_TARGET_MOUTH, user, ORGAN_SLOT_VAGINA)
+		partner.handle_post_sex(lust_increase, CUM_TARGET_MOUTH, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
 
 	if(fucktarget == "penis")
 		if(!(has_penis) && partner.has_strapon())
 			var/obj/item/clothing/underwear/briefs/strapon/user_strapon = partner.get_strapon()
-			user_strapon.attached_dildo.target_reaction(user, partner, 1, CUM_TARGET_MOUTH, null, partner.a_intent == INTENT_HARM)
+			user_strapon.attached_dildo.target_reaction(user, partner, 1, CUM_TARGET_MOUTH, null, partner.a_intent == INTENT_HARM, is_hidden = is_hidden)
 		else
-			user.handle_post_sex(LOW_LUST, null, partner, CUM_TARGET_THROAT)
+			user.handle_post_sex(LOW_LUST, null, partner, CUM_TARGET_THROAT, is_hidden = is_hidden)
 //SPLURT EDIT END
 //BLUEMOON EDIT END

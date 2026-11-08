@@ -36,14 +36,14 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? pick(hidden_additional) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? pick(hidden_additional) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(get_turf(target), pick(
 		'modular_splurt/sound/interactions/kiss/kiss1.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())
+		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), local_only = is_hidden)
 
 
 ////////////////////// LEWD //////////////////////
@@ -77,22 +77,22 @@
 		user.visible_message(
 			pick(span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> смотрит прямо в глаза \the <b>[partner]</b>, одаривая нежными прикосновениями губ."),
 			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> с трепетом касается губ \the <b>[partner]</b>."),
-			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> почти не прижимаясь к губам \the <b>[partner]</b>, дарит нежный поцелуй.")), vision_distance = distance)
+			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> почти не прижимаясь к губам \the <b>[partner]</b>, дарит нежный поцелуй.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.a_intent == INTENT_DISARM)
 		user.visible_message(
 			pick(span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> прижимается к губкам \the <b>[partner]</b>, даря смущенный поцелуй."),
 			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> осторожно касается губ \the <b>[partner]</b> своими."),
-			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> неловко прижимается к губкам \the <b>[partner]</b>.")), vision_distance = distance)
+			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> неловко прижимается к губкам \the <b>[partner]</b>.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.a_intent == INTENT_GRAB)
 		user.visible_message(
 			pick(span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> настойчиво целует \the <b>[partner]</b>, заводя руку за шею и прижимая к себе."),
 			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> хватается руками за щёки \the <b>[partner]</b> и прижимает к своим губам."),
-			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> хватает за талию \the <b>[partner]</b> и прижимает к себе заключая в долгом поцелуе.")), vision_distance = distance)
+			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> хватает за талию \the <b>[partner]</b> и прижимает к себе заключая в долгом поцелуе.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.a_intent == INTENT_HARM)
 		user.visible_message(
 			pick(span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> облизывает губы \the <b>[partner]</b>, проникая языком сквозь сжатые зубы."),
 			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> бъёт по щеке \the <b>[partner]</b>, и заглушает любой звук из рта своим поцелуем."),
-			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> душит \the <b>[partner]</b>, целуя в распухшие губы.")), vision_distance = distance)
+			span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> душит \the <b>[partner]</b>, целуя в распухшие губы.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))
 			partner.reagents.add_reagent(/datum/reagent/toxin/amanitin , 4)
 			user.reagents.add_reagent(/datum/reagent/toxin/amanitin , 0.5)
@@ -101,8 +101,9 @@
 		else if(HAS_TRAIT(user, TRAIT_KISS_SPACE_DRUGS))
 			partner.reagents.add_reagent(/datum/reagent/drug/space_drugs, rand(1, 3))
 		else if(HAS_TRAIT(user, TRAIT_KISS_HONK))
-			partner.emote("flip")
-			playsound(partner, 'sound/items/bikehorn.ogg', 50, TRUE)
+			if(!is_hidden)
+				partner.emote("flip")
+			playsound(partner, 'sound/items/bikehorn.ogg', 50, TRUE, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 		else if(HAS_TRAIT(user, TRAIT_KISS_BLOODSUCKER))
 			if(iscarbon(partner))
 				var/mob/living/carbon/C = partner
@@ -121,11 +122,12 @@
 			partner.reagents.add_reagent(pick(drugs), 1)
 		else if(HAS_TRAIT(user, TRAIT_KISS_HEARTBOOM))
 			partner.reagents.add_reagent(/datum/reagent/drug/aphrodisiac, rand(1, 5))
-			new /obj/effect/temp_visual/heart(get_turf(partner))
-			var/obj/effect/particle_effect/smoke/cigsmoke/puff = new(get_turf(partner))
-			puff.color = "#9400D3"
-			puff.alpha = 64
-			puff.lifetime = 1
+			if(!is_hidden)
+				new /obj/effect/temp_visual/heart(get_turf(partner))
+				var/obj/effect/particle_effect/smoke/cigsmoke/puff = new(get_turf(partner))
+				puff.color = "#9400D3"
+				puff.alpha = 64
+				puff.lifetime = 1
 			var/static/list/heartboom_emotes = list(
 				list("gasp", "Ты чувствуешь как леденеют твои вены и сердце на секунду замирает..."),
 				list("sneeze", "Ты чихаешь от попавших тебе в нос блёсток..."),
@@ -139,7 +141,8 @@
 			)
 			var/list/chosen = pick(heartboom_emotes)
 			to_chat(partner, span_love("[chosen[2]]"))
-			partner.emote(chosen[1])
+			if(!is_hidden)
+				partner.emote(chosen[1])
 
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
@@ -187,11 +190,11 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	playlewdinteractionsound(get_turf(target), pick(
 		'modular_splurt/sound/interactions/kiss/kiss1.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), pressure_affected = FALSE)
+		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), pressure_affected = FALSE, local_only = is_hidden)

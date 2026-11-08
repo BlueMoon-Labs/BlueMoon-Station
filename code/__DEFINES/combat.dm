@@ -170,6 +170,8 @@
 //the define for visible message range in combat
 #define COMBAT_MESSAGE_RANGE 3
 #define DEFAULT_MESSAGE_RANGE 7
+// Отправляет видимое сообщение только ближайшим получателям без ретрансляции.
+#define LOCAL_ONLY_MESSAGE (1<<2)
 
 //Shove knockdown lengths (deciseconds)
 #define SHOVE_KNOCKDOWN_SOLID 30
