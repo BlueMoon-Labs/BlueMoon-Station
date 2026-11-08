@@ -2076,6 +2076,14 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/black_hole)
 	load_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg"
 	load_empty_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg"
 
+/obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	load_sound = pick(
+		'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg',
+		'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_two.ogg'
+	)
+	load_empty_sound = load_sound
+	return ..()
+
 /obj/item/modkit/melatonin_requiem_kit
 	name = "Requiem Arms \'Crying Lightning\' Kit"
 	desc = "A modkit for making an Apostle into a Requiem Arms \'Crying Lightning\'."
