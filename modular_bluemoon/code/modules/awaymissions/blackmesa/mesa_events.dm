@@ -158,7 +158,8 @@
 	if(!areas.len)
 		return
 
-	SSblackmesa_events.mesa_announce("Внимание! Зафиксирован критический сбой в энергосети Сектора H. Ожидаемое время восстановления: 60 секунд.", "Power Grid Failure", 'modular_bluemoon/sound/ambience/mesa/lightoff.ogg')
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("Внимание! Зафиксирован критический сбой в энергосети Сектора H. Ожидаемое время восстановления: 60 секунд.", "Power Grid Failure", 'modular_bluemoon/sound/ambience/mesa/lightoff.ogg')
 
 	for(var/area/A in areas)
 		A.power_light = FALSE
@@ -171,7 +172,8 @@
 	addtimer(CALLBACK(src, PROC_REF(announce_restoration)), 600)
 
 /datum/round_event/blackmesa/power_outage/proc/announce_restoration()
-	SSblackmesa_events.mesa_announce("Внимание! Энергоснабжение Сектора H восстановлено. Все системы функционируют в штатном режиме.", "Power Restored", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("Внимание! Энергоснабжение Сектора H восстановлено. Все системы функционируют в штатном режиме.", "Power Restored", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
 
 /datum/round_event/blackmesa/power_outage/proc/restore_power(area/A)
 	if(!A)
@@ -219,7 +221,8 @@
 
 /datum/round_event/blackmesa/lockdown/start()
 	lockdown_duration = rand(300, 600)
-	SSblackmesa_events.mesa_announce("ВНИМАНИЕ! АКТИВИРОВАНА СИСТЕМА АВАРИЙНОЙ БЛОКИРОВКИ! Все двери заблокированы на время экстренной ситуации!", "LOCKDOWN ACTIVATED", 'modular_bluemoon/sound/ambience/mesa/BMAS2.ogg')
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("ВНИМАНИЕ! АКТИВИРОВАНА СИСТЕМА АВАРИЙНОЙ БЛОКИРОВКИ! Все двери заблокированы на время экстренной ситуации!", "LOCKDOWN ACTIVATED", 'modular_bluemoon/sound/ambience/mesa/BMAS2.ogg')
 
 	var/list/areas = get_mesa_areas()
 	if(!areas.len)
@@ -245,7 +248,8 @@
 			D.update_icon()
 
 	locked_doors.Cut()
-	SSblackmesa_events.mesa_announce("Система аварийной блокировки отключена. Все двери разблокированы.", "Lockdown Ended", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("Система аварийной блокировки отключена. Все двери разблокированы.", "Lockdown Ended", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
 
 // Event 11: Zombie Horde
 /datum/round_event_control/blackmesa/zombie_horde

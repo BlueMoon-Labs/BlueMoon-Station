@@ -660,7 +660,7 @@
 	var/is_stealthed = FALSE
 	var/mutable_appearance/eyes_overlay
 	var/mob/living/dragging_target = null
-	var/mob/living/ignored_target = null
+	var/datum/weakref/ignored_target = null
 	var/stealth_alpha = 30
 	var/light_threshold = SHADOW_SPECIES_LIGHT_THRESHOLD
 	var/leap_range = 12
@@ -807,7 +807,7 @@
 /mob/living/simple_animal/hostile/infected/hunter/CanAttack(atom/the_target)
 	if(!the_target)
 		return FALSE
-	if(ignored_target && the_target == ignored_target)
+	if(ignored_target && the_target == ignored_target?.ref)
 		return FALSE
 
 	// Implement straggler targeting - prefer isolated targets
@@ -905,18 +905,24 @@
 		to_chat(victim, span_userdanger("Вас оставили в критическом состоянии!"))
 
 	// Add to ignore list so hunter won't target them again
-	ignored_target = victim
+	ignored_target = WEAKREF(victim)
 
 /mob/living/simple_animal/hostile/infected/hunter/death(gibbed)
 	. = ..(gibbed)
 	is_leaping = FALSE
 	dragging_target = null
+	ignored_target = null
 	stop_pulling()
 	is_stealthed = FALSE
 	animate(src, alpha = 255, time = 5)
 	REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
 	if(!ckey)
 		toggle_ai(AI_OFF)
+
+/mob/living/simple_animal/hostile/infected/hunter/Destroy()
+	dragging_target = null
+	ignored_target = null
+	. = ..()
 
 // =============================================================================
 // ZOMBIE SPAWN LANDMARK

@@ -138,8 +138,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 				skip_area = TRUE
 		if(skip_area)
 			continue
-		// Set gloomy ambient lighting
-		A.dynamic_lighting = DYNAMIC_LIGHTING_IFSTARLIGHT
 		// Set gloomy ambient lighting via the official API so turf overlays are rebuilt
 		A.set_dynamic_lighting(DYNAMIC_LIGHTING_IFSTARLIGHT)
 

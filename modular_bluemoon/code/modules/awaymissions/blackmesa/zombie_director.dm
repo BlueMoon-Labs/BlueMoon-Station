@@ -287,22 +287,24 @@
 
 			var/mob_type
 			if(difficulty_level >= 5)
-				// At difficulty 5+, include hunters and rare tanks in the rotation.
-				var/spawn_roll = rand(1, 100)
-				if(spawn_roll <= 55)
-					mob_type = /mob/living/simple_animal/hostile/infected
-				else if(spawn_roll <= 75)
-					mob_type = /mob/living/simple_animal/hostile/infected/bruiser
-				else if(spawn_roll <= 85)
-					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-				else if(spawn_roll <= 90)
-					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
-				else if(spawn_roll <= 95)
-					mob_type = /mob/living/simple_animal/hostile/infected/charger
-				else if(spawn_roll <= 98)
-					mob_type = /mob/living/simple_animal/hostile/infected/hunter
-				else
+				// Tanks scale with difficulty, capped at 30% on difficulty 8.
+				var/tank_chance = min(30, (difficulty_level - 4) * 8)
+				if(prob(tank_chance / 100.0))
 					mob_type = /mob/living/simple_animal/hostile/infected/tank
+				else
+					var/spawn_roll = rand(1, 98)
+					if(spawn_roll <= 55)
+						mob_type = /mob/living/simple_animal/hostile/infected
+					else if(spawn_roll <= 75)
+						mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+					else if(spawn_roll <= 85)
+						mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+					else if(spawn_roll <= 90)
+						mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+					else if(spawn_roll <= 95)
+						mob_type = /mob/living/simple_animal/hostile/infected/charger
+					else
+						mob_type = /mob/living/simple_animal/hostile/infected/hunter
 			else if(difficulty_level >= 4)
 				// After trigger4, include acid spitter and charger in rotation
 				var/spawn_roll = rand(1, 100)
