@@ -12624,7 +12624,7 @@
 /obj/machinery/power/terminal,
 /obj/machinery/airalarm/directional/west,
 /obj/structure/cable{
-	dir = 1
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/mine/engineering/maintenance)
@@ -24511,13 +24511,19 @@
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ono" = (
-/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/power/port_gen/pacman{
 	active = 1;
 	anchored = 1;
 	sheets = 15
+	},
+/obj/structure/cable{
+	icon_state = "0-2";
+	pixel_y = 0
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
 	},
 /turf/open/floor/plating,
 /area/mine/engineering/maintenance)
@@ -33226,6 +33232,18 @@
 	dir = 4
 	},
 /area/mine/lobby)
+"tBm" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/power/port_gen/pacman{
+	active = 1;
+	anchored = 1;
+	sheets = 15
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plating,
+/area/mine/engineering/maintenance)
 "tBn" = (
 /obj/machinery/atmospherics/pipe/manifold/general/visible{
 	dir = 8
@@ -36133,12 +36151,17 @@
 /turf/open/floor/plasteel/showroomfloor/shower,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "vgy" = (
-/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/power/port_gen/pacman{
 	active = 1;
 	anchored = 1;
 	sheets = 15
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/mine/engineering/maintenance)
@@ -140672,7 +140695,7 @@ nES
 nES
 nES
 jAM
-vgy
+tBm
 lxT
 riy
 jAM
