@@ -63,11 +63,11 @@
 		highest_scar.lazy_attach(limb)
 	return ..()
 
-/datum/wound/slash/get_examine_description(mob/user)
+/datum/wound/slash/get_examine_description(mob/user, anonymous = FALSE)
 	if(!limb.current_gauze)
 		return ..()
 
-	var/list/msg = list("Порезы на [victim.ru_ego()] [limb.ru_name_v] перебинтованы")
+	var/list/msg = list("Порезы на [anonymous ? "его" : victim.ru_ego()] [limb.ru_name_v] перебинтованы")
 	// how much life we have left in these bandages
 	switch(limb.current_gauze.absorption_capacity)
 		if(0 to 1.25)

@@ -16,12 +16,15 @@
 /obj/item/mod/module/infiltrator/on_install()
 	. = ..()
 	var/obj/item/clothing/mod_part/head/head = mod.mod_parts[MOD_PART_HEAD]
-	head.blockTracking = TRUE
+	if(head)
+		head.blockTracking = TRUE
 
 /obj/item/mod/module/infiltrator/on_uninstall()
 	. = ..()
+	// Шлем мог уйти раньше модуля: удаление носителя удаляет надетые части.
 	var/obj/item/clothing/mod_part/head/head = mod.mod_parts[MOD_PART_HEAD]
-	head.blockTracking = FALSE
+	if(head)
+		head.blockTracking = FALSE
 
 /obj/item/mod/module/infiltrator/on_activation()
 	. = ..()

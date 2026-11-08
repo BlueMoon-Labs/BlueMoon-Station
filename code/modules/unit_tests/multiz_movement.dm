@@ -371,7 +371,7 @@
 	for(var/offset_plane in game_offsets)
 		TEST_ASSERT_EQUAL(PLANE_TO_TRUE(offset_plane), GAME_PLANE, "Смещённая игровая плоскость должна переводиться обратно в игровую")
 
-/// Показ и снятие показа нижнего турфа не выбивают световой объект из vis_contents дыры.
+/// Показ и снятие показа нижнего турфа не трогают световой объект дыры.
 /datum/unit_test/multiz_transparency_keeps_lighting_object
 
 /datum/unit_test/multiz_transparency_keeps_lighting_object/Run()
@@ -380,18 +380,18 @@
 	ensure_lighting_object(hole)
 
 	TEST_ASSERT_NOTNULL(hole.lighting_object, "Тесту нужен турф со световым объектом")
-	TEST_ASSERT(hole.lighting_object in hole.vis_contents, "Наш световой объект живёт в vis_contents своего турфа — на этом держится весь тест")
+	TEST_ASSERT_EQUAL(hole.lighting_object.loc, hole, "Наш световой объект лежит на своём турфе — на этом держится весь тест")
 
 	var/datum/element/turf_z_transparency/transparency = SSdcs.GetElement(list(/datum/element/turf_z_transparency, FALSE))
 	TEST_ASSERT_NOTNULL(transparency, "Не удалось получить элемент прозрачности")
 
 	transparency.show_turf_below(hole, shown_below)
 	TEST_ASSERT(shown_below in hole.vis_contents, "Показанный снизу турф должен попасть в vis_contents")
-	TEST_ASSERT(hole.lighting_object in hole.vis_contents, "Показ нижнего уровня не должен выбивать световой объект")
+	TEST_ASSERT_EQUAL(hole.lighting_object.loc, hole, "Показ нижнего уровня не должен сдвигать световой объект")
 
 	transparency.clear_shown_turfs(hole)
 	TEST_ASSERT(!(shown_below in hole.vis_contents), "Снятие показа должно убирать показанный турф")
-	TEST_ASSERT(hole.lighting_object in hole.vis_contents, "Снятие показа не должно выбивать световой объект — раньше тут стоял vis_contents.len = 0")
+	TEST_ASSERT_EQUAL(hole.lighting_object.loc, hole, "Снятие показа не должно сдвигать световой объект")
 
 /// Держатели соседей под дырой переиспользуются и живут по счётчику заказчиков.
 /datum/unit_test/multiz_z_pillar_bookkeeping

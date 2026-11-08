@@ -421,9 +421,10 @@
   *
   * Arguments:
   * * mob/user: The user examining the wound's owner, if that matters
+  * * anonymous: Use masculine pronouns without revealing the owner's gender.
   */
-/datum/wound/proc/get_examine_description(mob/user)
-	. = "[victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
+/datum/wound/proc/get_examine_description(mob/user, anonymous = FALSE)
+	. = "[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
 	. = severity <= WOUND_SEVERITY_MODERATE ? "[.]." : "<B>[.]!</B>"
 
 /datum/wound/proc/get_scanner_description(mob/user)

@@ -20,26 +20,26 @@
 	..()
 	gib()
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/proc/show_cock()
+/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/proc/show_cock(is_hidden = FALSE)
 	if (cock_shown)
 		return
 	cock_shown = TRUE
 	icon_state = cock_state
-	visible_message("<font color=purple><b>\The [src]</b>'s cock unsheathes</font>")
+	visible_message(span_userlove("<b>[src]</b> обнажает член."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/proc/hide_cock()
+/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/proc/hide_cock(is_hidden = FALSE)
 	if (!cock_shown)
 		return
 	cock_shown = FALSE
 	icon_state = base_state
-	visible_message("<font color=purple><b>\The [src]</b>'s cock slowly retracts back into its sheate</font>")
+	visible_message(span_userlove("<b>[src]</b> медленно втягивает член."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/handle_post_sex(amount, orifice, mob/living/partner)
+/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	..()
 	if (lust > 0)
-		show_cock()
+		show_cock(is_hidden)
 	else
-		hide_cock()
+		hide_cock(is_hidden)
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw
 	icon = 'modular_splurt/icons/mob/femclaw/newclaws.dmi'

@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	87
+#define SAVEFILE_VERSION_MAX	88
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -191,6 +191,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 86 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_BROTHER in be_special))
 		be_special[ROLE_BROTHER] = ANTAG_PRIORITY_HIGH
+
+	if(current_version < 88)
+		dynamic_window_size = initial(dynamic_window_size)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -630,6 +633,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["windowflash"] 			>> windowflashing
 	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
+	S["examine_headshots"]		>> examine_headshots
 	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
@@ -848,6 +852,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -1133,10 +1138,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 ///
 /// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
 /// честный результат записи прямо сейчас.
-/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+///
+/// lazy = TRUE не заводит своего сброса: ключ уедет с ближайшей записью, логаутом или ребутом.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE, lazy = FALSE)
 	if(!path || !key)
 		return FALSE
-	buffer_single_pref(key, value)
+	buffer_single_pref(key, value, lazy && !immediate)
 	if(immediate)
 		return flush_single_prefs()
 	return TRUE
@@ -1147,11 +1154,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
  * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
  */
-/datum/preferences/proc/buffer_single_pref(key, value)
+/datum/preferences/proc/buffer_single_pref(key, value, lazy = FALSE)
 	if(!key)
 		return FALSE
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
+	if(lazy)
+		return TRUE
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
 	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.
@@ -1447,6 +1456,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
+	WRITE_FILE(S["examine_headshots"], examine_headshots)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)
@@ -2374,7 +2384,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!(bgstate in bgstate_options))
 		bgstate = initial(bgstate)
 
-	sand_character_pref_load(S)
+	sand_character_pref_load(S, needs_update)
 
 	splurt_character_pref_load(S)
 
@@ -2838,6 +2848,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
+	if(!export && length(pending_single_prefs))
+		S.cd = "/"
+		var/root_version
+		READ_FILE(S["version"], root_version)
+		if(isnum(root_version) && root_version >= SAVEFILE_VERSION_MAX)
+			write_pending_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
 		character_setup_ui?.record_saved_state()

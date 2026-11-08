@@ -135,12 +135,11 @@
 /datum/game_mode/proc/update_cult_icons_added(datum/mind/cult_mind)
 	var/datum/atom_hud/antag/culthud = GLOB.huds[ANTAG_HUD_CULT]
 	culthud.join_hud(cult_mind.current)
-	set_antag_hud(cult_mind.current, "cult")
+	set_antag_hud(cult_mind.current, "cult", culthud)
 
 /datum/game_mode/proc/update_cult_icons_removed(datum/mind/cult_mind)
 	var/datum/atom_hud/antag/culthud = GLOB.huds[ANTAG_HUD_CULT]
 	culthud.leave_hud(cult_mind.current)
-	set_antag_hud(cult_mind.current, null)
 
 /datum/game_mode/cult/proc/check_cult_victory()
 	return main_cult.check_cult_victory()

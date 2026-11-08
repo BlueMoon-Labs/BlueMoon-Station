@@ -157,7 +157,7 @@
 
 ///Чумная крыса: вент-охотник
 /mob/living/simple_animal/hostile/plaguerat
-	ai_profile_type = /datum/ai_controller/hostile_adapter/vent_hunter
+	ai_profile_type = /datum/ai_controller/hostile_adapter/vent_hunter/rat
 
 ///Космический дракон: гост-роль, но живёт и без игрока (админ-спавн, гост
 ///из тела) - боссовый профиль. Без таблицы способностей огненное дыхание

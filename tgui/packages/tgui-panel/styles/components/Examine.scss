@@ -1,0 +1,219 @@
+// Shared by both chat themes. Selectors only affect examine markup.
+.examine_title {
+  margin: 8px 0 3px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.45);
+  font-size: 0.85em;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.examine_box > .examine_title:first-child {
+  margin-top: 0;
+}
+
+.examine_meta {
+  opacity: 0.8;
+}
+
+.examine_species {
+  display: block;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.examine_unknown_species {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.examine_note {
+  margin-top: 6px;
+}
+
+.examine_state {
+  font-size: 0.85em;
+
+  > div + div {
+    margin-top: 6px;
+  }
+}
+
+.examine_card,
+.examine_table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.examine_card {
+  table-layout: fixed;
+
+  .examine_portrait_cell {
+    // 128px portrait plus the gap; leave the remaining width for text.
+    box-sizing: border-box;
+    width: 138px;
+    vertical-align: top;
+    padding: 0 10px 0 0;
+  }
+
+  .examine_card_content {
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+}
+
+.examine_name {
+  font-size: 1.1em;
+}
+
+.examine_card_no_headshots .examine_name {
+  text-align: center;
+}
+
+.examine_thumbs {
+  margin-top: 3px;
+  white-space: normal;
+}
+
+.examine_flavor,
+.examine_record_actions {
+  margin-top: 3px;
+}
+
+.examine_table {
+  td {
+    padding: 1px 0;
+    vertical-align: top;
+  }
+
+  td:first-child {
+    padding-right: 8px;
+    opacity: 0.7;
+  }
+}
+
+.examine_records {
+  table-layout: fixed;
+
+  td:first-child {
+    width: 14ch;
+    max-width: 14ch;
+  }
+
+  td + td {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+}
+
+.examine_medical_record .examine_records td:first-child {
+  width: 10ch;
+  max-width: 10ch;
+}
+
+.examine_equipment td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.examine_empty {
+  opacity: 0.7;
+}
+
+.examine_entries > div {
+  padding: 2px 0;
+
+  + div {
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+  }
+}
+
+.examine_traits {
+  font-size: 75%;
+}
+
+.examine_chip {
+  display: inline-block;
+  margin: 1px 3px 1px 0;
+  padding: 0 6px;
+  border: 1px solid rgba(128, 128, 128, 0.55);
+  border-radius: 8px;
+  font-size: 0.92em;
+}
+
+.examine_spoiler {
+  > summary {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+
+  > div {
+    margin-top: 2px;
+  }
+}
+
+.examine_block img.examine_portrait,
+.examine_block img.examine_thumb {
+  position: relative;
+  object-fit: contain;
+  image-rendering: auto;
+  transform-origin: top left;
+  transition: transform 0.12s ease-out;
+
+  &:hover {
+    z-index: 50;
+  }
+}
+
+.examine_block img.examine_placeholder {
+  display: inline-block;
+  width: 128px;
+  height: 128px;
+  image-rendering: auto;
+}
+
+.examine_block img.examine_placeholder_light {
+  display: none;
+}
+
+.theme-light .examine_block {
+  img.examine_placeholder_dark {
+    display: none;
+  }
+
+  img.examine_placeholder_light {
+    display: inline-block;
+  }
+}
+
+.examine_block img.examine_portrait {
+  width: 128px;
+  height: 128px;
+
+  &:hover:not(.examine_image_collapsed) {
+    transform: scale(2);
+  }
+}
+
+.examine_block img.examine_thumb {
+  width: 40px;
+  height: 40px;
+
+  // The fourth thumbnail sits near the right edge of the chat.
+  &:nth-child(4) {
+    transform-origin: top right;
+  }
+
+  &:hover:not(.examine_image_collapsed) {
+    transform: scale(3.2);
+  }
+}
+
+.examine_block img.examine_image_collapsed {
+  transform: none;
+  transition: none;
+}

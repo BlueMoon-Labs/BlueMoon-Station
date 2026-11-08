@@ -406,6 +406,10 @@
 	if(istype(buckled, /obj/structure/bed/nest))
 		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
+		if(handcuffed && is_hulk())
+			MarkResistTime()
+			cuff_resist(handcuffed)
+			return
 		// too soon.
 		var/buckle_cd = 600
 		if(handcuffed)
@@ -486,6 +490,13 @@
 /mob/living/carbon/proc/cuff_resist_check()
 	return !incapacitated(ignore_restraints = TRUE)
 
+/mob/living/carbon/proc/is_hulk()
+	if(dna)
+		for(var/datum/mutation/human/HM in dna.mutations)
+			if(istype(HM.type, /datum/mutation/human/hulk))
+				return TRUE
+	return FALSE
+
 /mob/living/carbon/proc/uncuff()
 	if (handcuffed)
 		var/obj/item/W = handcuffed
@@ -515,10 +526,10 @@
 		SetNextAction(0)
 	update_equipment_speed_mods() // In case cuffs ever change speed
 
-/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break)
+/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break, is_hidden = FALSE)
 	if(!I.loc || buckled)
 		return
-	visible_message("<span class='danger'>[src] manages to [cuff_break ? "break" : "remove"] [I]!</span>")
+	visible_message(span_danger("[src] [cuff_break ? "разрывает" : "снимает"] [I]!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	to_chat(src, "<span class='notice'>You successfully [cuff_break ? "break" : "remove"] [I].</span>")
 
 	if(cuff_break)
@@ -811,7 +822,7 @@
 	update_health_hud()
 
 /mob/living/carbon/update_sight(forced = TRUE)
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(stat == DEAD)
 		sight = (SEE_TURFS|SEE_MOBS|SEE_OBJS)
@@ -842,7 +853,7 @@
 		see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
 		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_REAL_LOW)
 
-	if(client.eye && client.eye != src)
+	if(client?.eye && client.eye != src)
 		var/atom/A = client.eye
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
 			return

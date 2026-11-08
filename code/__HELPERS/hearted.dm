@@ -127,7 +127,7 @@
 	prefs.hearted_until = new_duration
 	prefs.hearted = TRUE
 	sync_hearted_pref(prefs)
-	prefs.save_preferences()
+	prefs.save_pref_var("hearted_until")
 	// Зовётся из declare_completion: алерт не должен ждать ответа игрока.
 	tgui_alert_async(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 

@@ -88,6 +88,8 @@
 	// Это позволяет варлорду стрелять из пушек
 	REMOVE_TRAIT(owner, TRAIT_CHUNKYFINGERS, TRAIT_HULK)
 
+	ADD_TRAIT(owner, TRAIT_STAMINA_IMMUNE, TRAIT_HULK)
+
 	// Увеличиваем максимальное здоровье на 50%
 	owner.maxHealth *= 1.5
 	owner.health *= 1.5

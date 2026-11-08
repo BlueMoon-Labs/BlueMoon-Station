@@ -158,6 +158,11 @@ SUBSYSTEM_DEF(garbage)
 
 	/// Точечные запросы "найти ссылки при фейле": REF-строка -> TRUE.
 	var/list/reference_find_on_fail = list()
+	/// Отложенные дорогие хардделы: REF-строка -> world.time первого откладывания.
+	var/list/deferred_harddels = list()
+	/// За раунд: сколько хардделов отложено и сколько из них собралось без del().
+	var/harddels_deferred = 0
+	var/harddels_avoided = 0
 	/// Рантайм-режим авто-сканов ссылок (GC_REFTRACK_*); -1 = ещё не прочитан из конфига.
 	var/reftrack_mode = -1
 	/// world.time последнего авто-скана.
@@ -234,6 +239,8 @@ SUBSYSTEM_DEF(garbage)
 		msg += "TGR:[round((totalgcs / (totaldels + totalgcs)) * 100, 0.01)]%"
 	msg += "|LR:[round(leak_rate_avg, 0.01)]/мин"
 	msg += "|HD:[round(harddel_ms_avg, 0.1)]мс"
+	if (harddels_deferred)
+		msg += " ОТЛ:[length(deferred_harddels)]/[harddels_deferred] сами:[harddels_avoided]"
 	msg += " P:[pass_counts.Join(",")]"
 	msg += "|F:[fail_counts.Join(",")]"
 	return ..()
@@ -251,6 +258,8 @@ SUBSYSTEM_DEF(garbage)
 /datum/controller/subsystem/garbage/Shutdown()
 	FlushHardDeleteLogSummary()
 	var/list/dellog = list()
+	if (harddels_deferred)
+		dellog += "Отложенные хардделы: [harddels_deferred], собрались сами [harddels_avoided], ждали до конца раунда [length(deferred_harddels)]"
 
 	sortTim(items, cmp=GLOBAL_PROC_REF(cmp_qdel_item_time), associative = TRUE)
 	for (var/path in items)
@@ -487,6 +496,52 @@ SUBSYSTEM_DEF(garbage)
 		return max(GC_HARDDEL_LOBBY_MAX_PER_FIRE, 1)
 	return round(value)
 
+/datum/controller/subsystem/garbage/proc/GetConfiguredHardDeleteDeferMinMs()
+	var/value = CONFIG_GET(number/gc_harddel_defer_min_ms)
+	if (!isnum(value) || value < 0)
+		return GC_HARDDEL_DEFER_MIN_MS
+	return value
+
+/datum/controller/subsystem/garbage/proc/GetConfiguredHardDeleteDeferMax()
+	var/value = CONFIG_GET(number/gc_harddel_defer_max)
+	if (!isnum(value) || value < 0)
+		return GC_HARDDEL_DEFER_MAX
+	return round(value)
+
+/**
+ * Откладывать ли харддел этой утечки.
+ *
+ * del() моба обходит весь мир и стоит 200-300 мс - это отдельный фриз на каждую
+ * утёкшую мышь, слайма или обезьяну (раунды 10679-10683: 280 таких фризов, треть
+ * всего дрифта спайков), при том что очередь харддела почти пуста и спешить некуда.
+ * Держатель у таких утечек часто временный и отпускает сам; отложенная запись
+ * перепроверяется каждые GC_HARDDEL_TIMEOUT и собирается без del(), а то, что так и
+ * не отпустили, освобождает ребут мира.
+ *
+ * Не откладываем: в лобби и при переполнении очереди (там удаляем как раньше), хинт
+ * QDEL_HINT_HARDDEL и QDEL_HINT_QUEUE_THEN_HARDDEL (тип сам просит del()), тип,
+ * чей средний del() ещё не измерен или дешевле порога, и всё сверх потолка.
+ */
+/datum/controller/subsystem/garbage/proc/ShouldDeferHardDelete(datum/qdel_item/I, refID, hint)
+	if (deferred_harddels[refID])
+		return last_hd_mode != GC_HARDDEL_MODE_LOBBY && last_hd_mode != GC_HARDDEL_MODE_OVERFLOW
+	var/min_ms = GetConfiguredHardDeleteDeferMinMs()
+	if (!min_ms || I.hard_delete_avg_ms < min_ms)
+		return FALSE
+	if (hint == QDEL_HINT_HARDDEL || hint == QDEL_HINT_QUEUE_THEN_HARDDEL || (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG))
+		return FALSE
+	if (last_hd_mode == GC_HARDDEL_MODE_LOBBY || last_hd_mode == GC_HARDDEL_MODE_OVERFLOW)
+		return FALSE
+	return length(deferred_harddels) < GetConfiguredHardDeleteDeferMax()
+
+/// Возвращает утечку в стадию харддела ещё на один GC_HARDDEL_TIMEOUT вместо del().
+/datum/controller/subsystem/garbage/proc/DeferHardDelete(datum/D, datum/qdel_item/I, refID, hint, origin_time)
+	if (!deferred_harddels[refID])
+		deferred_harddels[refID] = world.time
+		harddels_deferred++
+		log_harddel("## GC: харддел отложен [D.type]: del() типа в среднем [round(I.hard_delete_avg_ms, 0.1)]мс, ждут [length(deferred_harddels)]")
+	Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
+
 /datum/controller/subsystem/garbage/proc/GetHardDeleteModeText(mode = null)
 	if (!isnum(mode))
 		mode = last_hd_mode
@@ -706,18 +761,22 @@ SUBSYSTEM_DEF(garbage)
 			origin_time = entry_time
 		var/refID = R[i]
 		var/queued_hint = H[i]
+		var/queued_type = Y[i]
 
 		// Pre-flight check for hard-delete: don't start an expensive del() if budget is tight.
 		// Must happen BEFORE tombstoning — if we yield here, the entry stays intact for next fire.
 		// We also resolve the datum early to avoid a second locate() call below.
 		var/datum/D
+		// Отложенная запись стоит копейки: бюджет и потолок del() на неё не тратим.
+		var/defer_harddel = FALSE
 		if (hd_level_start)
 			D = locate(refID)
 			if (D && D.gc_destroyed == entry_time)
 				var/datum/qdel_item/harddel_item = GetOrCreateItem(D.type)
+				defer_harddel = ShouldDeferHardDelete(harddel_item, refID, queued_hint)
 				var/type_avg_ms = harddel_item.hard_delete_avg_ms
 				var/bootstrap_delete = (hd_count == 0) && ((type_avg_ms <= 0) || (hd_mode != GC_HARDDEL_MODE_HOLD))
-				if (!bootstrap_delete)
+				if (!bootstrap_delete && !defer_harddel)
 					if (hd_count >= hd_cap)
 						SaveQueueLevel(level, O, T, R, H, Y)
 						queue_heads[level] = head
@@ -757,8 +816,12 @@ SUBSYSTEM_DEF(garbage)
 			totalgcs++
 			pass_counts[level]++
 			reference_find_on_fail -= refID
+			if (hd_level_start && deferred_harddels[refID])
+				harddels_avoided++
+				log_harddel("## GC: харддел не понадобился [queued_type]: собрался сам через [round((world.time - deferred_harddels[refID]) / 10)]с ожидания")
+				deferred_harddels -= refID
 		else
-			if (hd_level_start)
+			if (hd_level_start && !defer_harddel)
 				hd_count++
 			fail_counts[level]++
 			if (OnLevelFail(D, level, refID, origin_time, queued_hint))
@@ -876,6 +939,10 @@ SUBSYSTEM_DEF(garbage)
 				// but MaybeCompact() bounds that growth once the processed prefix gets large enough.
 				Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
 				return
+			if (ShouldDeferHardDelete(I, refID, hint))
+				DeferHardDelete(D, I, refID, hint, origin_time)
+				return
+			deferred_harddels -= refID
 			HardDelete(D)
 
 /datum/controller/subsystem/garbage/proc/probe_warnfail_clients(ref_id, expected_type, destroyed_at)
