@@ -160,39 +160,68 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
+	var/datum/team/wizard/ritual_coven/ritual_coven
+	var/static/list/ritual_roles = list(
+		/datum/antagonist/wizard/ritualist,
+		/datum/antagonist/wizard/ritualist/battle_mage,
+		/datum/antagonist/wizard/ritualist/support_mage,
+	)
 
 /datum/dynamic_ruleset/roundstart/wizard/acceptable(population=0, threat=0)
 	if(GLOB.wizardstart.len == 0)
 		log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		return FALSE
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED && !wizard_ritual_departments_available())
+		return FALSE
 	return ..()
 
-/datum/dynamic_ruleset/roundstart/wizard/pre_execute()
-	. = ..()
-	if(GLOB.wizardstart.len == 0)
+/datum/dynamic_ruleset/roundstart/wizard/ready(population, forced = FALSE)
+	required_candidates = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? length(ritual_roles) : initial(required_candidates)
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/wizard/pre_execute(population)
+	if(!length(GLOB.wizardstart) || !ready(population))
 		return FALSE
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-		return FALSE
-	// BLUEMOON ADD END
-	var/mob/M = pick_n_take(candidates)
-	if (M)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED)
+		ritual_coven = new
+		if(!ritual_coven.prepare_ritual())
+			QDEL_NULL(ritual_coven)
+			return FALSE
+	for(var/i in 1 to required_candidates)
+		var/mob/M = pick_n_take(candidates)
 		assigned += M.mind
 		M.mind.assigned_role = ROLE_WIZARD
 		M.mind.special_role = ROLE_WIZARD
-
 	return TRUE
 
 /datum/dynamic_ruleset/roundstart/wizard/execute()
+	if(ritual_coven)
+		var/turf/lair_spawn = get_turf(pick(GLOB.wizardstart))
+		if(!lair_spawn || length(assigned) != length(ritual_roles))
+			return FALSE
+		for(var/datum/mind/member as anything in assigned)
+			if(!ishuman(member.current))
+				return FALSE
+		for(var/i in 1 to length(ritual_roles))
+			var/datum/mind/member = assigned[i]
+			var/role_type = ritual_roles[i]
+			var/datum/antagonist/wizard/ritualist/role = new role_type
+			role.move_to_lair = FALSE
+			member.current.forceMove(lair_spawn)
+			member.add_antag_datum(role, ritual_coven)
+		return TRUE
 	for(var/datum/mind/M in assigned)
 		M.current.forceMove(pick(GLOB.wizardstart))
-		M.add_antag_datum(new antag_datum())
+		M.add_antag_datum(antag_datum)
 	return TRUE
+
+/datum/dynamic_ruleset/roundstart/wizard/clean_up()
+	QDEL_NULL(ritual_coven)
+	return ..()
 
 //////////////////////////////////////////////
 //                                          //
