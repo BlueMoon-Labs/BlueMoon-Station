@@ -381,7 +381,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	var/mob/living/L = user
 	var/text
 	if(hecu_conflict_mode == "truce")
-		if(L.faction && FACTION_HECU in L.faction)
+		if(L.faction && (FACTION_HECU in L.faction))
 			text = "Напоминание: действует перемирие HECU. Атаковать игроков и персонал Сектора H строго запрещено правилами. Ваша цель - соблюдать приказ командования и эвакуироваться из гейта."
 		else
 			text = "Напоминание: HECU объявило перемирие. Конфликт с HECU и его персоналом невозможен - оставайтесь в гейте и соблюдайте указания командования."

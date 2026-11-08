@@ -16563,7 +16563,7 @@
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
 "fin" = (
-/obj/effect/mob_spawn/human/black_mesa/hecu/leader,
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "fiz" = (
@@ -23593,7 +23593,7 @@
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "hsx" = (
-/obj/effect/mob_spawn/human/black_mesa/hecu/engineer,
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/engineer,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "hsz" = (
@@ -32262,7 +32262,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
 "khi" = (
-/obj/effect/mob_spawn/human/black_mesa/hecu/breacher,
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/breacher,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "khm" = (
@@ -35515,7 +35515,7 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "lkp" = (
-/obj/effect/mob_spawn/human/black_mesa/hecu,
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/hecu,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "lkI" = (
@@ -47725,13 +47725,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
 "pfS" = (
-/obj/effect/mob_spawn/human/black_mesa/hecu/medic,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 8
 	},
+/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/medic,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "pfW" = (
