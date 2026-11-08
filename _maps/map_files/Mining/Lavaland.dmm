@@ -23866,6 +23866,7 @@
 "nYI" = (
 /obj/effect/spawner/lootdrop/maintenance,
 /obj/structure/rack,
+/obj/item/storage/toolbox/mechanical,
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
@@ -40517,6 +40518,7 @@
 /area/lavaland/necropolis)
 "xQp" = (
 /obj/structure/spider/stickyweb,
+/obj/item/storage/toolbox/mechanical,
 /turf/open/floor/plating,
 /area/mine/maintenance)
 "xQu" = (
