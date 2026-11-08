@@ -18,6 +18,7 @@ import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware } from './audio';
 import { chatMiddleware } from './chat';
+import { captureExamineImages } from './examineImages';
 import { gameMiddleware } from './game';
 import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
@@ -69,6 +70,7 @@ const setupApp = () => {
   captureExternalLinks();
 
   captureSecondaryLinks();
+  captureExamineImages();
 
   if (process.env.NODE_ENV !== 'production') {
     setupHotReloading();

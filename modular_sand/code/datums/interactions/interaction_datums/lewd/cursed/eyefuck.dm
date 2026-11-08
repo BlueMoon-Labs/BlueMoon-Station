@@ -30,7 +30,8 @@
 	if(is_hidden)
 		distance = 1
 	var/picked_hidden = pick(hidden_additional)
-	if(user.is_fucking(partner, CUM_TARGET_EYES))
+	var/obj/item/organ/genital/source_organ = user.getorganslot(ORGAN_SLOT_PENIS)
+	if(user.is_fucking(partner, CUM_TARGET_EYES, source_organ))
 		message = "[pick(
 			"крепко обхватывает голову \the <b>[partner]</b> и начинает долбиться в глаз.",
 			"яростно долбится в череп \the <b>[partner]</b> и довольно стонет.",
@@ -50,11 +51,11 @@
 					partner.adjustBruteLoss(rand(6,12))
 	else
 		message = "с силой загоняет свой орган глубоко в глаз \the <b>[partner]</b> и громко вздыхает."
-		user.set_is_fucking(partner, CUM_TARGET_EYES, user.getorganslot(ORGAN_SLOT_PENIS))
+		user.set_is_fucking(partner, CUM_TARGET_EYES, source_organ)
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/champ1.ogg',
-												'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(interaction_flags), vision_distance = distance)
+												'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(interaction_flags), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_EYES, partner, ORGAN_SLOT_PENIS) //SPLURT edit
-	partner.handle_post_sex(LOW_LUST, null, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_EYES, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
+	partner.handle_post_sex(LOW_LUST, null, user, is_hidden = is_hidden)

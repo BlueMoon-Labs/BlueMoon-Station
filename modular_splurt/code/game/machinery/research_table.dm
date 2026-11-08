@@ -136,20 +136,20 @@
 		parts++
 	tier /= parts
 
-/obj/machinery/research_table/proc/on_cum(mob/living/carbon/buckled_mob, obj/item/organ/genital/target_orifice, mob/living/partner)
+/obj/machinery/research_table/proc/on_cum(mob/living/carbon/buckled_mob, target_orifice, mob/living/partner, cumin, obj/item/organ/genital/source_genital, is_hidden)
 	if(is_centcom_level(src.z) && !slaver_mode) //BLUEMOON ADD защита от абузов и набивания очков через гост кафе
 		return
 	if(!configured)
-		say("Failed to get any data, the table is not configured!")
+		announce_climax_result("Стол не настроен. Данные не получены.", is_hidden)
 		return
 	if(!istype(buckled_mob))
-		say("Failed to get any data from the subject, it is not a human.")
+		announce_climax_result("Данные получены только от людей. Этот испытуемый не подходит.", is_hidden)
 		return
 	if((buckled_mob.last_partner && buckled_mob.last_partner == buckled_mob) || buckled_mob == partner)
-		say("Failed to get any data from the subject, two are needed for the experiment!")
+		announce_climax_result("Для сбора данных нужны двое участников.", is_hidden)
 		return
 	if(users[buckled_mob.name] > (max_repeat_usage * tier))
-		say("There is already too much data from this subject.")
+		announce_climax_result("Достигнут предел данных от этого испытуемого.", is_hidden)
 		return
 	users[buckled_mob.name] += 1
 	var/points_awarded = 0
@@ -170,12 +170,14 @@
 			else
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 				D?.credit(points_awarded, ECON_MISC, memo = "Исследовательская сессия")
-	if(points_awarded)
-		var/add_s = points_awarded == 1 ? "" : "s"
-		say("Obtained [points_awarded] [point_type == POINT_TYPE_SCIENCE ? "point" : "credit"][add_s] from the session.")
+	announce_climax_result("Результат сеанса в [point_type == POINT_TYPE_SCIENCE ? "очках исследования" : "кредитах"] — [points_awarded].", is_hidden)
+	playsound(src, 'sound/machines/chime.ogg', 30, 1, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
+
+/obj/machinery/research_table/proc/announce_climax_result(message, is_hidden)
+	if(is_hidden)
+		audible_message(span_notice("<b>[src]</b> сообщает: «[message]»"), hearing_distance = HIDDEN_INTERACTION_RANGE, local_only = is_hidden)
 	else
-		say("Obtained no [point_type == POINT_TYPE_SCIENCE ? "points" : "credits"] from the session.") // Probably has no genitals at all
-	playsound(src, 'sound/machines/chime.ogg', 30, 1)
+		say(message)
 
 /obj/machinery/research_table/slaver
 	slaver_mode = TRUE

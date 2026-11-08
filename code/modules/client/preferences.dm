@@ -99,6 +99,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windowflashing = TRUE
 	var/adminhelp_windowflash = TRUE
 	var/windownoise = TRUE
+	var/examine_headshots = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	var/sound_toggles = SOUND_BUTTONS

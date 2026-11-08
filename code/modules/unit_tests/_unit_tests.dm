@@ -624,6 +624,7 @@
 #include "ghost_role_limbs.dm"
 #include "gravity_deferred_update.dm"
 #include "manifest_photo_deferred.dm"
+#include "nameless_identity.dm"
 #include "meteor_satellite_registry.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
@@ -769,6 +770,7 @@
 #include "vent_label_numbering.dm"
 #include "weeds_growth.dm"
 #include "zclear_pool.dm"
+#include "zclear_protections.dm"
 #include "zclear_wipe_order.dm"
 
 

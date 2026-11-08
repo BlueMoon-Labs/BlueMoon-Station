@@ -39,6 +39,54 @@ const resolved = (rules, node, property, pseudo) => {
   return decl ? resolveVars(rules, node, decl.value) : null;
 };
 
+describe.each(['dark', 'light'])('%s examine layout', theme => {
+  test('portrait placeholder follows the chat theme', () => {
+    const { message } = mount(theme, '', '');
+    message.innerHTML = '<div class="examine_block">'
+      + '<img class="examine_placeholder examine_placeholder_dark">'
+      + '<img class="examine_placeholder examine_placeholder_light"></div>';
+    const rules = rulesWith({});
+    for (const variant of ['dark', 'light']) {
+      const placeholder = message.querySelector('.examine_placeholder_' + variant);
+      expect(resolved(rules, placeholder, 'display'))
+        .toBe(theme === variant ? 'inline-block' : 'none');
+      expect(resolved(rules, placeholder, 'width')).toBe('128px');
+      expect(resolved(rules, placeholder, 'height')).toBe('128px');
+    }
+  });
+
+  test('portraits override sprite rendering without affecting item icons', () => {
+    const { message } = mount(theme, '', '');
+    message.innerHTML = '<div class="examine_block">'
+      + '<img class="examine_portrait"><img class="examine_thumb">'
+      + '<img class="icon"></div>';
+    const rules = rulesWith({});
+    const portrait = message.querySelector('.examine_portrait');
+    const thumb = message.querySelector('.examine_thumb');
+    const icon = message.querySelector('.icon');
+    expect(resolved(rules, portrait, 'image-rendering')).toBe('auto');
+    expect(resolved(rules, thumb, 'image-rendering')).toBe('auto');
+    expect(resolved(rules, portrait, 'width')).toBe('128px');
+    expect(resolved(rules, thumb, 'width')).toBe('40px');
+    expect(resolved(rules, icon, 'image-rendering')).toBe('pixelated');
+  });
+
+  test('record values wrap and equipment labels stay on one line', () => {
+    const { message } = mount(theme, '', '');
+    message.innerHTML = '<table class="examine_table examine_records">'
+      + '<tr><td>DNA</td><td>long-value</td></tr></table>'
+      + '<table class="examine_table examine_equipment">'
+      + '<tr><td>Equipment</td><td>Item</td></tr></table>';
+    const rules = rulesWith({});
+    const record = message.querySelector('.examine_records');
+    const label = message.querySelector('.examine_equipment td');
+    expect(resolved(rules, record, 'table-layout')).toBe('fixed');
+    expect(resolved(rules, record.querySelector('td + td'), 'overflow-wrap'))
+      .toBe('anywhere');
+    expect(resolved(rules, label, 'white-space')).toBe('nowrap');
+  });
+});
+
 describe('scanner bar', () => {
   const SCANNER = 'ChatMessage--anim-scanner ChatMessage--type-radio';
   const barRuns = (rules, message) => {
