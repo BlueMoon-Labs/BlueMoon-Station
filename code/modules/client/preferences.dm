@@ -1471,14 +1471,14 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 /datum/preferences/proc/find_gear_with_property(save_slot, property, value)
 	var/list/gear_list = loadout_data["SAVE_[save_slot]"]
 	for(var/loadout_gear in gear_list)
-		if(loadout_gear[property] == value)
+		if(islist(loadout_gear) && loadout_gear[property] == value)
 			return loadout_gear
 	return FALSE
 
 /datum/preferences/proc/has_loadout_gear(save_slot, gear_type)
 	var/list/gear_list = loadout_data["SAVE_[save_slot]"]
 	for(var/loadout_gear in gear_list)
-		if(loadout_gear[LOADOUT_ITEM] == gear_type)
+		if(islist(loadout_gear) && loadout_gear[LOADOUT_ITEM] == gear_type)
 			return loadout_gear
 	return FALSE
 

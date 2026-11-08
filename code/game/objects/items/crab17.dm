@@ -47,6 +47,8 @@
 	max_integrity = 5000
 	var/list/accounts_to_rob
 	var/mob/living/carbon/human/bogdanoff
+	/// Счёт активатора, куда уходят деньги; запоминается на старте, чтобы слив шёл и после удаления его тела
+	var/datum/bank_account/payee
 	var/canwalk = FALSE
 
 /obj/structure/checkoutmachine/examine(mob/living/user)
@@ -87,14 +89,23 @@
 /obj/structure/checkoutmachine/Initialize(mapload, mob/living/user)
 	. = ..()
 	bogdanoff = user
+	if(bogdanoff)
+		RegisterSignal(bogdanoff, COMSIG_PARENT_QDELETING, PROC_REF(on_bogdanoff_deleted))
 	add_overlay("flaps")
 	add_overlay("hatch")
 	add_overlay("legs_retracted")
 	addtimer(CALLBACK(src, PROC_REF(startUp)), 50)
 	QDEL_IN(src, 8 MINUTES) //Self destruct after 8 min
 
-/obj/structure/checkoutmachine/Destroy()
+/obj/structure/checkoutmachine/proc/on_bogdanoff_deleted(datum/source)
+	SIGNAL_HANDLER
 	bogdanoff = null
+
+/obj/structure/checkoutmachine/Destroy()
+	if(bogdanoff)
+		UnregisterSignal(bogdanoff, COMSIG_PARENT_QDELETING)
+	bogdanoff = null
+	payee = null
 	stop_dumping()
 	STOP_PROCESSING(SSfastprocess, src)
 	priority_announce("КРАБ-Терминал на территории [get_area(src)] был уничтожен. Средства экипажа больше не находятся под угрозой!", sender_override = "КРАБ-17")
@@ -170,21 +181,25 @@
 	for(var/datum/bank_account/account as anything in SSeconomy.bank_accounts)
 		if(!account.offstation)
 			accounts_to_rob += account
-	accounts_to_rob -= bogdanoff.get_bank_account()
+	payee = bogdanoff?.get_bank_account()
+	if(payee)
+		accounts_to_rob -= payee
 	for(var/i in accounts_to_rob)
 		var/datum/bank_account/B = i
 		B.dumpeet()
 	dump()
 
 /obj/structure/checkoutmachine/proc/dump()
+	if(QDELETED(src))
+		return
 	var/percentage_lost = (rand(5, 15) / 100)
+	var/datum/bank_account/account = QDELETED(payee) ? null : payee
 	for(var/i in accounts_to_rob)
 		var/datum/bank_account/B = i
 		if(!B.being_dumped)
 			continue
 		var/amount = B.account_balance * percentage_lost
-		var/datum/bank_account/account = bogdanoff.get_bank_account()
-		if (account && B.transferable && SSeconomy.move(B, account, amount, ECON_SKIM, bogdanoff)) // get_bank_account() may return FALSE
+		if (account && B.transferable && SSeconomy.move(B, account, amount, ECON_SKIM, bogdanoff))
 			B.bank_card_talk("You have lost [percentage_lost * 100]% of your funds! A spacecoin credit deposit machine is located at: [get_area(src)].")
 	addtimer(CALLBACK(src, PROC_REF(dump)), 150) //Drain every 15 seconds
 
