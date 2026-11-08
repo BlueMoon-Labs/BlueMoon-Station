@@ -25,6 +25,9 @@
 	fluid_rate += ((size - initial(size))/10)*(owner ? get_size(owner) : 1)
 
 /obj/item/organ/genital/butt/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
+	if(source_gen?.get_urethral_obstruction())
+		return
+
 	if(!(owner.client?.prefs.cit_toggles & BUTT_ENLARGEMENT))
 		return
 

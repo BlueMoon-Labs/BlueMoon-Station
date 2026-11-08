@@ -1,6 +1,7 @@
 /mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	. = ..()
-	L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
+	if(!G.get_urethral_obstruction())
+		L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
 	if(iswendigo(L))
 		var/mob/living/carbon/wendigo/W = L
 		if(W.pulling == src)
@@ -77,8 +78,21 @@
 		return
 	if(!target || !R)
 		return
-	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, R, target, sender, receiver, spill, anonymous, is_hidden))
+	var/obj/item/genital_equipment/obstruction = sender.get_urethral_obstruction()
+	if(istype(obstruction, /obj/item/genital_equipment/sounding) && !(sender.genital_flags & (GENITAL_CHASTENED | GENITAL_IMPOTENT | GENITAL_DISAPPOINTING)) && prob(5))
+		var/turf/drop_turf = get_turf(src)
+		if(drop_turf && obstruction.forceMove(drop_turf))
+			if(obstruction.equipment?.holder_genital == sender)
+				obstruction.equipment.holder_genital = null
+			obstruction = null
+			to_chat(src, span_userlove("Ты чувствуешь, как стержень выскальзывает из уретры!"))
+	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, obstruction ? null : R, target, sender, receiver, spill, anonymous, is_hidden))
 		return
+
+	if(obstruction)
+		var/message = "Вставленный предмет удерживает жидкость, и ты чувствуешь давление в уретре."
+		to_chat(src, HAS_TRAIT(src, TRAIT_MASO) ? span_userlove(message) : span_alertwarning(message))
+		return ..()
 
 	var/cached_fluid
 	if(isliving(target) && !spill)
@@ -88,46 +102,6 @@
 			cached_fluid = sender.get_fluid_id()
 			var/default = sender.get_default_fluid()
 			sender.set_fluid_id(default)
-
-	if(istype(sender, /obj/item/organ/genital/penis))
-		var/obj/item/genital_equipment/sounding/sounding_rod = locate(/obj/item/genital_equipment/sounding) in sender.contents
-		if(sounding_rod)
-			var/message = ""
-			if(locate(/obj/item/genital_equipment/chastity_cage) in sender.contents)
-				message = "Ты ощущаешь, как стержень упирается в клетку и не может выйти, поток жидкости обтекает его, раздувая твой член и вызывая болезненную пульсацию!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else
-				spill = TRUE
-				message = span_userlove("Ты чувствуешь, как стержень выталкивается из твоей уретры вместе со струей оргазменной жидкости!")
-				sounding_rod.forceMove(get_turf(src))
-			to_chat(src, message)
-
-	if(istype(sender, /obj/item/organ/genital/vagina))
-		var/obj/item/genital_equipment/urethral_plug/plug = locate(/obj/item/genital_equipment/urethral_plug) in sender.contents
-		if(plug)
-			var/message = "Ты чувствуешь, как уретра сжимается и толкает пробку наружу "
-			var/obj/item/clothing/underwear/chastity_belt/belt = get_item_by_slot(ITEM_SLOT_UNDERWEAR)
-			if(prob(90)) // the flow of liquid is not that strong, so we'll add a chance
-				message += ", но пробка не поддалась! Твоя уретра распирается от давления, ты чувствуешь тяжёлую болезненную пульсацию, отдающую в клитор!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else if(belt && istype(belt.bepis, /obj/item/organ/genital/vagina))
-				message += "но пробка упирается в пояс и не может выйти, поток жидкости обтекает её, раздувая уретру и вызывая болезненную пульсацию, отдающую в клитор!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else
-				spill = TRUE
-				message += "выбрасывая её под напором жидкости!"
-				message = span_userlove(message)
-				plug.forceMove(get_turf(src))
-			to_chat(src, message)
 
 	if(cover == TRUE)
 		if(istype(sender, /obj/item/organ/genital/penis) || HAS_TRAIT(src, TRAIT_MESSY))

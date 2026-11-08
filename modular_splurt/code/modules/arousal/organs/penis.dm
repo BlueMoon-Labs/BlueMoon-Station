@@ -15,6 +15,9 @@
 	original_fluid_id = fluid_id
 
 /obj/item/organ/genital/penis/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
+	if(source_gen?.get_urethral_obstruction())
+		return
+
 	if(!(owner.client?.prefs.cit_toggles & PENIS_ENLARGEMENT))
 		return
 

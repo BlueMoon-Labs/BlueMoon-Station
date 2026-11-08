@@ -83,18 +83,24 @@
 		return
 	if(!target || !R)
 		return
-	var/turfing = isturf(target)
-	var/condomning
-	if(istype(sender, /obj/item/organ/genital/penis))
-		var/obj/item/organ/genital/penis/P = sender
-		condomning = locate(/obj/item/genital_equipment/condom) in P.contents
-	sender.generate_fluid(R)
+	var/fluid_blocked = !!sender.get_urethral_obstruction()
+	if(!fluid_blocked)
+		sender.generate_fluid(R)
 	last_climax = world.time // BLUEMOON ADD
 	sender.last_orgasmed = world.time
 	sender.linked_organ?.last_orgasmed = sender.last_orgasmed
 	log_message("Кончает [sender] благодаря [target]", LOG_EMOTE)
 
 	client?.plug13.send_emote(PLUG13_EMOTE_GROIN, PLUG13_STRENGTH_MAX, PLUG13_DURATION_ORGASM)
+
+	if(fluid_blocked)
+		return
+
+	var/turfing = isturf(target)
+	var/condomning
+	if(istype(sender, /obj/item/organ/genital/penis))
+		var/obj/item/organ/genital/penis/P = sender
+		condomning = locate(/obj/item/genital_equipment/condom) in P.contents
 
 	if(condomning)
 		to_chat(src, "<span class='userlove'>Ты чувствуешь, как презерватив наполняется изнутри твоей спермой!</span>")
@@ -228,7 +234,7 @@
 		to_chat(src,"<span class='userlove'>Вы чувствуете, что вот-вот достигнете оргазма!</span>")
 		if(!do_after(src, mb_time, target = src) || !G.climaxable(src, TRUE))
 			return
-	to_chat(src, span_userlove("Вы оргазмируете[isturf(loc) ? ", обливая пространство под собой" : ""][HIDDEN_REACTION_SUFFIX(is_hidden)]!"))
+	to_chat(src, span_userlove("Вы оргазмируете[isturf(loc) && !G.get_urethral_obstruction() ? ", обливая пространство под собой" : ""][HIDDEN_REACTION_SUFFIX(is_hidden)]!"))
 	do_climax(fluid_source, loc, G, is_hidden = is_hidden)
 
 /mob/living/carbon/human/proc/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)

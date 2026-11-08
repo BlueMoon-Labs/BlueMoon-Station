@@ -51,7 +51,7 @@
 /obj/item/organ/genital/proc/splash_cum(mob/living/carbon/human/orgasming, target_orifice, atom/partner, cumin, genital)
 	SIGNAL_HANDLER
 
-	return !(!owner || cumin || genital != src)
+	return owner && !cumin && genital == src && !get_urethral_obstruction()
 
 /obj/item/organ/genital/proc/get_fluid_name()
 	var/milkies = get_fluid_id()
