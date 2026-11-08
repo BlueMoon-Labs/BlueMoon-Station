@@ -807,7 +807,7 @@
 /mob/living/simple_animal/hostile/infected/hunter/CanAttack(atom/the_target)
 	if(!the_target)
 		return FALSE
-	if(ignored_target && the_target == ignored_target?.ref)
+	if(ignored_target && the_target == ignored_target?.resolve())
 		return FALSE
 
 	// Implement straggler targeting - prefer isolated targets
