@@ -409,18 +409,22 @@
 	M.brc_mitigation += brc_mitigation_bonus
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		H.physiology.armor.melee += melee_armor_bonus
-		H.physiology.armor.bullet += bullet_armor_bonus
-		H.physiology.armor.laser += laser_armor_bonus
+		// При уничтожении моба физиология могла быть уже разобрана.
+		if(H.physiology?.armor)
+			H.physiology.armor.melee += melee_armor_bonus
+			H.physiology.armor.bullet += bullet_armor_bonus
+			H.physiology.armor.laser += laser_armor_bonus
 
 /obj/item/organ/cyberimp/chest/subdermal_armor/Remove(special = FALSE)
 	if(owner)
 		owner.brc_mitigation = max(0, owner.brc_mitigation - brc_mitigation_bonus)
 		if(ishuman(owner))
 			var/mob/living/carbon/human/H = owner
-			H.physiology.armor.melee -= melee_armor_bonus
-			H.physiology.armor.bullet -= bullet_armor_bonus
-			H.physiology.armor.laser -= laser_armor_bonus
+			// При уничтожении моба физиология могла быть уже разобрана.
+			if(H.physiology?.armor)
+				H.physiology.armor.melee -= melee_armor_bonus
+				H.physiology.armor.bullet -= bullet_armor_bonus
+				H.physiology.armor.laser -= laser_armor_bonus
 	return ..()
 
 /////////////////////////

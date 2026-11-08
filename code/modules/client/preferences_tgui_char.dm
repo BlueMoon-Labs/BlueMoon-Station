@@ -2873,12 +2873,31 @@
 		old_cost = old_option["cost"]
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
+		// Возврат к обычному органу снимает имплант, занимавший этот слот (например, оптику Кироши).
+		var/list/slot_implants = list()
+		for(var/implant_id in prefs.implant_mods)
+			var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+			if(implant_option && implant_option["organ_slot"] == slot)
+				slot_implants += implant_id
+		for(var/implant_id in slot_implants)
+			prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
+	// Импланты вроде оптики Кироши занимают тот же слот: выбор органа снимает их и возвращает очки.
+	var/implant_refund = 0
+	var/list/conflicting_implants = list()
+	for(var/implant_id in prefs.implant_mods)
+		var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+		if(implant_option && implant_option["organ_slot"] == slot)
+			if(!prefs.body_mod_implant_locked(implant_option))
+				implant_refund += implant_option["cost"]
+			conflicting_implants += implant_id
 	var/balance = quirk_balance()
-	if(balance + old_cost - option["cost"] < min(0, balance))
-		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
+	if(balance + old_cost + implant_refund - option["cost"] < min(0, balance))
+		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost - implant_refund] очков квирков."))
 		return
+	for(var/implant_id in conflicting_implants)
+		prefs.implant_mods -= implant_id
 	prefs.organ_mods[slot] = option["id"]
 	preview_dirty = TRUE
 
@@ -2898,9 +2917,23 @@
 		prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
-	if(balance - option["cost"] < min(0, balance))
+	if(prefs.body_mod_implant_locked(option))
+		to_chat(user, span_warning("Вид этого персонажа не позволяет заменить этот орган."))
+		return
+	// Снятые конфликтующие импланты (другая рука/нога/глаза) возвращают свои очки.
+	var/refund = prefs.body_mod_implant_swap_refund(implant_id)
+	var/organ_slot = option["organ_slot"]
+	if(organ_slot)
+		var/list/organ_option = prefs.body_mod_organ_option(organ_slot, prefs.organ_mods[organ_slot])
+		if(organ_option)
+			refund += organ_option["cost"]
+	if(balance + refund - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
+	for(var/conflicting_id in prefs.body_mod_implant_conflicts(implant_id))
+		prefs.implant_mods -= conflicting_id
+	if(organ_slot)
+		prefs.organ_mods -= organ_slot
 	prefs.implant_mods[implant_id] = TRUE
 	preview_dirty = TRUE
 

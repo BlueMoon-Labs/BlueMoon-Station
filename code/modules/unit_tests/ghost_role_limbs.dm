@@ -243,3 +243,80 @@
 	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/eyes/robotic/toggled/glow), "Organ modification from preferences should be applied")
 
 	qdel(P)
+
+/datum/unit_test/body_mod_implant_costs
+
+/datum/unit_test/body_mod_implant_costs/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	var/list/expected_costs = list(
+		"kiroshi_optics" = 1,
+		"lynx_paws" = 1,
+		"reinforced_tendons" = 1,
+		"fortified_ankles" = 1,
+		"corp_blood_pump" = 2,
+		"corp_mantis_blades" = 3,
+		"corp_monowire" = 3,
+		"corp_hand_cannon" = 3,
+		"corp_gorilla_arms" = 2,
+		"subdermal_armor" = 2,
+		"reinforced_skeleton" = 2,
+		"nutriment_pump" = 1,
+	)
+	for(var/implant_id in expected_costs)
+		var/list/option = P.body_mod_implant_option(implant_id)
+		TEST_ASSERT_NOTNULL(option, "Implant [implant_id] should be listed in the modifications tab")
+		TEST_ASSERT_EQUAL(option["cost"], expected_costs[implant_id], "Implant [implant_id] should cost the configured amount")
+		TEST_ASSERT(option["organ"], "Implant [implant_id] should be applied as an organ implant")
+
+	P.implant_mods = list(
+		"kiroshi_optics" = TRUE,
+		"lynx_paws" = TRUE,
+		"corp_hand_cannon" = TRUE,
+		"subdermal_armor" = TRUE,
+		"reinforced_skeleton" = TRUE,
+		"nutriment_pump" = TRUE,
+		"corp_blood_pump" = TRUE,
+	)
+	TEST_ASSERT_EQUAL(P.quirk_balance(), -12, "Selected implants should be paid for with quirk points")
+
+	// Импланты одной группы занимают одни и те же слоты: новый выбор снимает старый и возвращает очки.
+	var/datum/preferences/conflict_prefs = new
+	conflict_prefs.pref_species = new /datum/species/human
+	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE)
+	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("corp_monowire"), "Arm implants should conflict with each other")
+	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("corp_monowire"), 3, "Replacing an arm implant should refund its cost")
+	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance(), -3, "A single selected implant should be charged once")
+
+	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE, "corp_monowire" = TRUE, "corp_hand_cannon" = TRUE)
+	conflict_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(length(conflict_prefs.implant_mods), 1, "Only one arm implant should survive sanitizing")
+
+	// Оптика Кироши занимает слот глаз и приоритетнее выбора органа в той же вкладке.
+	conflict_prefs.implant_mods = list("kiroshi_optics" = TRUE)
+	conflict_prefs.organ_mods = list(ORGAN_SLOT_EYES = "glow")
+	conflict_prefs.sanitize_body_mods()
+	TEST_ASSERT_NULL(conflict_prefs.organ_mods[ORGAN_SLOT_EYES], "Kiroshi optics should replace the selected eye organ")
+
+	// Видам с мутантными глазами имплант глаз недоступен так же, как и замена органа глаз.
+	conflict_prefs.pref_species = new /datum/species/lizard/ashwalker
+	conflict_prefs.implant_mods = list("kiroshi_optics" = TRUE)
+	conflict_prefs.sanitize_body_mods()
+	TEST_ASSERT_NULL(conflict_prefs.implant_mods["kiroshi_optics"], "Kiroshi optics should be dropped for mutant-eyed species")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/health_before = H.maxHealth
+	P.apply_prefs_body_mods(H)
+
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/cyberimp/eyes/optical/kiroshi), "Kiroshi optics should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_LEFT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the left leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the right leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG), /obj/item/organ/cyberimp/arm/handgun/sec_level), "Corporate hand cannon should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_SUBDERMAL_ARMOR), /obj/item/organ/cyberimp/chest/subdermal_armor), "Subdermal armor should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_REINFORCED_SKELETON), /obj/item/organ/cyberimp/chest/reinforced_skeleton), "Reinforced skeleton should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_STOMACH_AID), /obj/item/organ/cyberimp/chest/nutriment), "Nutriment pump should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(INTERNAL_ORGAN_CHEM_IMPLANT), /obj/item/organ/cyberimp/chest/blood_pump/sec_level), "Corporate blood pump should be implanted")
+	TEST_ASSERT_EQUAL(H.maxHealth, health_before + 25, "Reinforced skeleton should raise max health")
+
+	qdel(conflict_prefs)
+	qdel(P)
