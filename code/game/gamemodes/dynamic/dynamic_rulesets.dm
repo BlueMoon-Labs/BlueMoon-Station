@@ -15,6 +15,7 @@
 	var/persistent = FALSE
 	/// If set to TRUE, dynamic mode will be able to draft this ruleset again later on. (doesn't apply for roundstart rules)
 	var/repeatable = FALSE
+	var/team_based_hourly = FALSE
 	/// If set higher than 0 decreases weight by itself causing the ruleset to appear less often the more it is repeated.
 	var/repeatable_weight_decrease = 2
 	/// List of players that are being drafted for this rule
@@ -140,26 +141,31 @@
 /// Проверки директора поверх acceptable() (порог по популяции/трету раунда).
 /// Здесь же гейты only_ruleset, повторяемости, blocking_rules и стекинга HIGH_IMPACT.
 /// mode может быть null вне раунда (юнит-тесты) - тогда остальные проверки неприменимы.
-/datum/dynamic_ruleset/can_fire(datum/director_signals/signals)
+/datum/dynamic_ruleset/can_fire(datum/director_signals/signals, hourly = FALSE)
 	. = ..()
 	if(!.)
 		return
-	if(!acceptable(signals.effective_crew, mode ? mode.threat_level : 0))
+	if(hourly != (team_based_hourly && GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED))
+		return FALSE
+	if(!acceptable(signals.effective_crew, hourly ? INFINITY : (mode ? mode.threat_level : 0)))
 		return FALSE
 	if(!mode)
 		return TRUE
 	if(mode.only_ruleset_executed)
 		return FALSE
 	// Неповторяемый рулсет, уже отработавший, больше не выбирается.
-	if(!repeatable && (src in mode.executed_rules))
+	if(!repeatable && (src in mode.executed_rules) && !(hourly && hourly_reinforcement_team()))
 		return FALSE
 	if(mode.check_blocking(blocking_rules, mode.executed_rules))
 		return FALSE
 	// Стекинг раунд-эндеров: без стекинга второй HIGH_IMPACT не выпадет, пока трет ниже лимита.
-	if((flags & HIGH_IMPACT_RULESET) && mode.high_impact_ruleset_executed \
+	if(!hourly && (flags & HIGH_IMPACT_RULESET) && mode.high_impact_ruleset_executed \
 		&& mode.threat_level < GLOB.dynamic_stacking_limit && GLOB.dynamic_no_stacking)
 		return FALSE
 	return TRUE
+
+/datum/dynamic_ruleset/proc/hourly_reinforcement_team()
+	return null
 
 /// When picking rulesets, if dynamic picks the same one multiple times, it will "scale up".
 /// However, doing this blindly would result in lowpop rounds (think under 10 people) where over 80% of the crew is antags!
@@ -222,8 +228,11 @@
 /// Runs from gamemode process() if ruleset fails to start, like delayed rulesets not getting valid candidates.
 /// This one only handles refunding the threat, override in ruleset to clean up the rest.
 /datum/dynamic_ruleset/proc/clean_up()
-	mode.refund_threat(src, cost + (scaled_times * scaling_cost))
-	mode.threat_log += "[worldtime2text()]: [ruletype] [name] refunded [cost + (scaled_times * scaling_cost)]. Failed to execute."
+	var/refund = cost + (scaled_times * scaling_cost)
+	if(src == SSdirector.team_based_wave_pending)
+		refund = director_pending_cost // Почасовой слот мог стартовать с неполным кошельком.
+	mode.refund_threat(src, refund)
+	mode.threat_log += "[worldtime2text()]: [ruletype] [name] refunded [refund]. Failed to execute."
 
 /// Отпустить снапшоты кандидатов. Датумы рулсетов живут до конца раунда, а trim_candidates()
 /// зовётся из preflight каждые несколько секунд - без отпускания последняя пачка ссылок

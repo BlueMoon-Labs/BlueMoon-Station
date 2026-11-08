@@ -160,9 +160,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
-	// BLUEMOON ADD - раундстартовый маг доступен и в Тим-Базе: его Summon Events глушат обычные
-	// события, так что тяжёлая смена идёт силами антаг-капли, а не разнобоем ивентов.
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD)
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
 
@@ -400,18 +398,12 @@
 	revolution = new()
 	for(var/datum/mind/M in assigned)
 		if(check_eligible(M))
-			var/datum/antagonist/rev/head/new_head = new antag_datum()
-			new_head.give_flash = TRUE
-			new_head.give_hud = TRUE
-			new_head.remove_clumsy = TRUE
-			M.add_antag_datum(new_head,revolution)
+			revolution.equip_founder(M)
 		else
 			assigned -= M
 			log_game("DYNAMIC: [ruletype] [name] discarded [M.name] from head revolutionary due to ineligibility.")
 	if(revolution.members.len)
-		revolution.update_objectives()
-		revolution.update_heads()
-		SSshuttle.registerHostileEnvironment(revolution)
+		revolution.start_revolution()
 		return TRUE
 	log_game("DYNAMIC: [ruletype] [name] failed to get any eligible headrevs. Refunding [cost] threat.")
 	return FALSE
