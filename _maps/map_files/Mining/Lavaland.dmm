@@ -2817,6 +2817,12 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment,
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/railing{
+	dir = 8
+	},
 /turf/open/floor/plating,
 /area/lavaland/surface/outdoors)
 "bNs" = (
@@ -3807,6 +3813,16 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"cls" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "clu" = (
 /obj/structure/railing{
 	dir = 4
@@ -4382,13 +4398,6 @@
 	dir = 1
 	},
 /area/mine/laborcamp/security)
-"cDs" = (
-/obj/structure/lattice/catwalk,
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/space/basic,
-/area/lavaland/surface/outdoors)
 "cDC" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -4948,7 +4957,6 @@
 "cYY" = (
 /obj/machinery/power/apc/auto_name/east,
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
-/obj/structure/loot_pile/maint,
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
@@ -6771,6 +6779,10 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
 	},
 /turf/open/openspace,
 /area/lavaland/surface/outdoors)
@@ -11208,6 +11220,10 @@
 	dir = 5
 	},
 /obj/machinery/airalarm/directional/north,
+/obj/vehicle/sealed/mecha/working/ripley{
+	name = "APLU Big Bess";
+	desc = "An ailing, old, repurposed cargo hauler."
+	},
 /turf/open/floor/plasteel/dark/textured/edge,
 /area/mine/mechbay)
 "gOa" = (
@@ -17485,6 +17501,12 @@
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
+"kBD" = (
+/obj/structure/railing/corner{
+	dir = 8
+	},
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "kCJ" = (
 /obj/structure/sink{
 	dir = 4;
@@ -20573,6 +20595,10 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/lavaland/surface/outdoors)
 "mtB" = (
@@ -22199,6 +22225,11 @@
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"njZ" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
+/obj/structure/loot_pile/maint,
+/turf/open/floor/catwalk_floor,
+/area/mine/engineering/maintenance)
 "nkK" = (
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk{
@@ -23949,6 +23980,17 @@
 	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/upper)
+"ocU" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "odi" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing{
@@ -28264,6 +28306,17 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"qGU" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/disposalpipe/segment,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "qGV" = (
 /obj/structure/weightmachine/weightlifter,
 /obj/effect/turf_decal/bot/white,
@@ -28703,6 +28756,14 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
+"qTQ" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
 "qTX" = (
 /obj/machinery/portable_atmospherics/scrubber{
 	pixel_y = 15
@@ -29238,6 +29299,12 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment,
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/railing{
+	dir = 8
+	},
 /turf/open/floor/catwalk_floor,
 /area/lavaland/surface/outdoors)
 "rhs" = (
@@ -29259,6 +29326,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 10
+	},
+/obj/structure/railing{
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/lavaland/surface/outdoors)
@@ -30253,6 +30323,10 @@
 	dir = 8
 	},
 /area/mine/laborcamp/security)
+"rQN" = (
+/obj/structure/railing/corner,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "rRb" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 10
@@ -32632,6 +32706,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"tpG" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor,
+/area/lavaland/surface/outdoors)
 "tpN" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 1
@@ -33796,7 +33879,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "tZA" = (
 /obj/structure/lattice/catwalk,
-/turf/open/space/basic,
+/turf/open/openspace,
 /area/lavaland/surface/outdoors)
 "tZF" = (
 /obj/machinery/door/poddoor{
@@ -35489,6 +35572,16 @@
 /obj/structure/stone_tile/slab,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"uWl" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/railing,
+/turf/open/floor/catwalk_floor,
+/area/lavaland/surface/outdoors)
 "uWm" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
@@ -38023,7 +38116,7 @@
 	dir = 8
 	},
 /obj/structure/ladder,
-/turf/open/space/basic,
+/turf/open/openspace,
 /area/lavaland/surface/outdoors)
 "wBH" = (
 /turf/open/floor/plasteel,
@@ -70010,13 +70103,13 @@ xOc
 kHT
 aWD
 dlc
-fFk
-eNY
-eNY
-eNY
-eNY
-eNY
-fFk
+cls
+tpG
+tpG
+tpG
+tpG
+tpG
+cls
 fFk
 fFk
 cmR
@@ -70275,7 +70368,7 @@ vAU
 vAU
 vAU
 cmR
-fFk
+qTQ
 gIl
 cmR
 cmR
@@ -70532,7 +70625,7 @@ vAU
 cmR
 vAU
 vAU
-eNY
+uWl
 vAU
 cmR
 cmR
@@ -70789,7 +70882,7 @@ vAU
 vAU
 vAU
 vAU
-eNY
+uWl
 vAU
 cmR
 cmR
@@ -71046,7 +71139,7 @@ vAU
 vAU
 vAU
 vAU
-fFk
+ocU
 cmR
 cmR
 cmR
@@ -75377,7 +75470,7 @@ khP
 trv
 apS
 ygl
-gbZ
+njZ
 jAM
 uEY
 uEY
@@ -77954,7 +78047,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 vAU
 vAU
 vAU
@@ -78211,7 +78304,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+kBD
 aWZ
 aWZ
 aWZ
@@ -78468,7 +78561,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+rQN
 hZD
 hZD
 hZD
@@ -78725,7 +78818,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 vAU
 vAU
 vAU
@@ -137342,7 +137435,7 @@ grc
 cWb
 cmR
 rhT
-bMW
+qGU
 rhk
 rhk
 rhk
@@ -141211,7 +141304,7 @@ jmn
 nZC
 rzX
 jmn
-cDs
+odi
 bRs
 nES
 nES
@@ -148623,7 +148716,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 nES
 nES
 nES
@@ -148880,7 +148973,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+kBD
 thF
 thF
 thF
@@ -149137,7 +149230,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+rQN
 odi
 odi
 odi
@@ -149394,7 +149487,7 @@ gIl
 gIl
 gIl
 gIl
-gIl
+wuN
 nES
 nES
 nES
