@@ -20,6 +20,8 @@
 	var/stock_order_serial = 0
 	/// Первая зарплата смены уже подсказала, где выключаются сообщения о доходах
 	var/income_toggle_hinted = FALSE
+	/// Долг NT (квирк «В долгах»): гасится долей каждой зарплаты на руки
+	var/nt_debt = 0
 	/// Общий служебный счёт команды (инспекция Sol): скиммер его не копирует, кража с него не засчитывается
 	var/service_account = FALSE
 
@@ -93,12 +95,33 @@
 	var/floor = SSeconomy.settings.wage_floor
 	if(paid < floor)
 		net += SSeconomy.pay_personal(null, src, floor - paid, ECON_WAGE_FLOOR)
+	var/debt_paid = repay_nt_debt(net)
 	var/hint = ""
 	if(!income_toggle_hinted)
 		income_toggle_hinted = TRUE
 		hint = " Выключить сообщения о доходах: настройки чата, «Уведомления о доходах»."
-	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net] кр.[owed_wages ? " Отдел должен вам [owed_wages] кр." : ""][hint]", quiet = TRUE)
+	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net - debt_paid] кр.[debt_paid ? " В счёт долга NT [debt_paid] кр., осталось [nt_debt] кр." : ""][owed_wages ? " Отдел должен вам [owed_wages] кр." : ""][hint]", quiet = TRUE)
 	return max(paid, floor)
+
+/// Новый долг NT: сразу гасится тем, что лежит на счёте (подъёмными).
+/datum/bank_account/proc/take_nt_debt(amount)
+	if(amount <= 0)
+		return
+	nt_debt += round(amount)
+	var/upfront = min(nt_debt, max(account_balance, 0))
+	if(upfront > 0 && SSeconomy.move(src, null, upfront, ECON_DEBT_PAYMENT, memo = "Долг NT"))
+		nt_debt -= upfront
+	log_econ("[account_holder]: долг NT [amount] кр., погашено подъёмными [upfront] кр., осталось [nt_debt] кр.")
+
+/// Доля зарплаты на руки в счёт долга NT; возвращает погашенное.
+/datum/bank_account/proc/repay_nt_debt(net)
+	if(nt_debt <= 0 || net <= 0)
+		return 0
+	var/payment = min(nt_debt, round(net * SSeconomy.settings.quirk_debt_wage_share / 100), max(account_balance, 0))
+	if(payment <= 0 || !SSeconomy.move(src, null, payment, ECON_DEBT_PAYMENT, memo = "Долг NT"))
+		return 0
+	nt_debt -= payment
+	return payment
 
 /// Владелец счёта - этот моб или его разум в другом теле.
 /datum/bank_account/proc/owned_by(mob/user)

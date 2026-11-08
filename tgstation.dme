@@ -4719,6 +4719,7 @@
 #include "modular_bluemoon\code\datums\traits\good\syscleaner_quirk.dm"
 #include "modular_bluemoon\code\datums\traits\negative\emp_vulnerability.dm"
 #include "modular_bluemoon\code\datums\traits\negative\maintenance_quirk.dm"
+#include "modular_bluemoon\code\datums\traits\negative\nt_debt_quirk.dm"
 #include "modular_bluemoon\code\datums\traits\negative\onelife_quirk.dm"
 #include "modular_bluemoon\code\datums\traits\negative\shower_trait.dm"
 #include "modular_bluemoon\code\datums\traits\negative\water_vulnerability.dm"

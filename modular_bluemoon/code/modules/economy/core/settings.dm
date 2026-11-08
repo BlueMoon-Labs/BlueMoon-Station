@@ -59,6 +59,9 @@
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
+	/// Квирк «В долгах»: долг NT на старте и какой процент каждой зарплаты на руки уходит в его счёт
+	var/quirk_debt_amount = 5000
+	var/quirk_debt_wage_share = 50
 	/// Сколько все криптомайнеры вместе зачисляют на один счёт за тик экономики; остальное намайненное сгорает
 	var/crypto_cap_per_tick = 150
 	var/auto_approve_limit = 2000
@@ -264,7 +267,7 @@
 
 /datum/economy_settings/proc/check_value(key, value)
 	var/static/list/at_least_one = list("payroll_interval_ticks", "dormant_after_minutes", "work_subject_cooldown_minutes", "request_pending_per_requester", "treasury_requests_pending_per_department", "treasury_request_max", "power_export_step_kw", "dish_complexity_max", "dish_of_the_day_mult", "contracts_per_department", "contract_rotation_ticks", "contract_urgent_minutes", "contract_urgent_mult", "stock_position_cap", "stock_treasury_cap_mult", "transfer_max", "stall_rent_minutes", "skim_rate", "skimmer_slots", "audit_bonus_threshold", "audit_siphon_minutes", "audit_structuring_count", "audit_structuring_minutes", "audit_trace_minutes", "audit_trace_depth", "audit_insider_threshold", "audit_insider_window_minutes", "press_release_refute_minutes", "press_release_cooldown_minutes", "event_grant_min", "event_grant_max", "event_ransom_min", "event_embargo_minutes", "event_boom_goods", "event_shortage_mult", "event_shortage_shifts", "budget_cap_paydays", "saving_goal_minutes", "saving_goal_cooldown_minutes", "slot_card_deposit_max", "lottery_ticket_price", "lottery_tickets_per_account", "lottery_sale_minutes")
-	var/static/list/percents = list("tax_default", "tax_max", "tax_nt_share", "department_sink_target_min", "department_sink_target_max", "budget_cap_return_share", "max_wage_bonus", "work_personal_share", "vend_wholesale_share", "vend_premium_sink_share", "slot_house_edge", "slot_jackpot_share", "lottery_house_share", "register_cashier_share_default", "cargo_handling_fee", "contract_urgent_chance", "contract_performer_share", "stock_spread", "stock_fee", "stock_dividend_share", "audit_case_fee_percent", "customs_chance", "customs_chance_inspection", "customs_chance_alert", "customs_fine_share", "traitor_econ_objective_chance", "event_ransom_share", "event_crash_trend_drop")
+	var/static/list/percents = list("tax_default", "tax_max", "tax_nt_share", "department_sink_target_min", "department_sink_target_max", "budget_cap_return_share", "max_wage_bonus", "work_personal_share", "vend_wholesale_share", "vend_premium_sink_share", "slot_house_edge", "slot_jackpot_share", "lottery_house_share", "register_cashier_share_default", "cargo_handling_fee", "contract_urgent_chance", "contract_performer_share", "stock_spread", "stock_fee", "stock_dividend_share", "audit_case_fee_percent", "customs_chance", "customs_chance_inspection", "customs_chance_alert", "customs_fine_share", "traitor_econ_objective_chance", "event_ransom_share", "event_crash_trend_drop", "quirk_debt_wage_share")
 	if(key == "wages")
 		for(var/grade in list(PAY_GRADE_ASSISTANT, PAY_GRADE_MINIMAL, PAY_GRADE_EASY, PAY_GRADE_MEDIUM, PAY_GRADE_HARD, PAY_GRADE_COMMAND))
 			if(!isnum(value[grade]) || value[grade] < 0)
