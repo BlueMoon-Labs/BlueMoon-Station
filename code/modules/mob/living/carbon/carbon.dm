@@ -526,10 +526,10 @@
 		SetNextAction(0)
 	update_equipment_speed_mods() // In case cuffs ever change speed
 
-/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break)
+/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break, is_hidden = FALSE)
 	if(!I.loc || buckled)
 		return
-	visible_message("<span class='danger'>[src] manages to [cuff_break ? "break" : "remove"] [I]!</span>")
+	visible_message(span_danger("[src] [cuff_break ? "разрывает" : "снимает"] [I]!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	to_chat(src, "<span class='notice'>You successfully [cuff_break ? "break" : "remove"] [I].</span>")
 
 	if(cuff_break)

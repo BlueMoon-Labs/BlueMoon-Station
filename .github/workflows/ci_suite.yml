@@ -66,6 +66,9 @@ jobs:
       - name: Check code patterns
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: bash tools/ci/check_grep.sh
+      - name: Check interaction privacy
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: python3 tools/ci/check_interaction_privacy.py
       - name: Check JSON and PHP syntax
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: |
