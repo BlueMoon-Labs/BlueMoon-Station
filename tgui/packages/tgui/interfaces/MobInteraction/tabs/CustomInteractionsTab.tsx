@@ -113,7 +113,7 @@ const INTERACTION_TYPES = [
 ];
 
 const AROUSAL_LEVELS = [
-  { id: 0, label: 'Нет', icon: 'heart-circle-xmark', tooltip: 'Нет возбуждения' },
+  { id: 0, label: 'Нет', icon: 'xmark', tooltip: 'Нет возбуждения' },
   { id: 1, label: 'Малое', icon: 'heart-o', tooltip: 'Малое возбуждение (+6)' },
   { id: 2, label: 'Среднее', icon: 'heart', tooltip: 'Среднее возбуждение (+14)' },
   { id: 3, label: 'Сильное', icon: 'heart-circle-bolt', tooltip: 'Сильное возбуждение (+28)' },
@@ -327,6 +327,8 @@ const Effects = ({
             <Box color="label" mb={0.25}>Оргазм</Box>
             <Button.Checkbox
               checked={settings.orgasm}
+              color={settings.orgasm ? 'pink' : 'transparent'}
+              selected={false}
               content="Разрешить"
               role="checkbox"
               aria-label="Разрешить оргазм"
