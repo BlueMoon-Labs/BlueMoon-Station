@@ -108,8 +108,8 @@
 		icon_state = "m4oa1_mag"
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/javelin_vdd_svz
-	name = "Javelin VDD SVZ"
-	desc = "Винтовка четвертого тира со встроенным глушителем. Использует патроны немного слабее, чем M4OA1."
+	name = "\improper Javelin VDD SVZ MK5"
+	desc = "Джавелин VDD-Винтовка Снайперская Специальная SVZ-Снайперский Вариант Заглушенный. Настоящее извращение в мире прототипов. Но не смотря на дикий внешний вид и громоздкость, прототип МК5 кроме сохранения тишины, обладает хорошим калибром и может пробивать несколько целей подряд "
 	icon = 'modular_bluemoon/icons/obj/guns/Machineguns.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/left48x32.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/right48x32.dmi'
@@ -163,8 +163,13 @@
 
 /obj/item/projectile/bullet/p50/javelin_vdd_svz
 	name = "Javelin VDD SVZ bullet"
-	damage = 45
+	damage = 30
 	hitsound = null
+
+/obj/item/projectile/bullet/p50/javelin_vdd_svz/prehit_pierce(atom/target)
+	if(ismob(target))
+		return PROJECTILE_PIERCE_HIT
+	return ..()
 
 /obj/item/projectile/bullet/p50/javelin_vdd_svz/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
 	var/original_damage = damage
@@ -450,7 +455,7 @@
 	fire_select_modes = list(SELECT_FULLY_AUTOMATIC)
 	burst_size = 1
 	fire_delay = 1.5
-	recoil = 5
+	recoil = 4
 	spread = 22
 	projectile_simple_mob_damage_multiplier = 2
 	automatic_burst_overlay = FALSE

@@ -1323,11 +1323,23 @@
 	var/obj/structure/urbanismcars/truck/linked_truck = null
 	var/obj/effect/landmark/truck_start/start_landmark = null
 	var/obj/effect/landmark/truck_end/end_landmark = null
+	var/director_horde_interval = 30 SECONDS
+	var/next_director_horde_time = 0
 
 /obj/structure/urbanism_generator/truck/Initialize(mapload)
 	. = ..()
 	find_landmarks()
 	spawn_truck()
+
+/obj/structure/urbanism_generator/truck/process()
+	..()
+	if(!active || world.time < next_director_horde_time)
+		return
+
+	if(GLOB.zombie_director)
+		var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+		director.trigger_horde(TRUE)
+	next_director_horde_time = world.time + director_horde_interval
 
 /obj/structure/urbanism_generator/truck/proc/find_landmarks()
 	if(!src)
@@ -1375,6 +1387,10 @@
 		return
 
 	. = ..()
+	next_director_horde_time = world.time + director_horde_interval
+	if(GLOB.zombie_director)
+		var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
+		addtimer(CALLBACK(director, TYPE_PROC_REF(/datum/ai_director/zombie_mission, trigger_horde), TRUE), 1)
 
 	if(linked_truck && end_landmark)
 		var/turf/end_turf = get_turf(end_landmark)

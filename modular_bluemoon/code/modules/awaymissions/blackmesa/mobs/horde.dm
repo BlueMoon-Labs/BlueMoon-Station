@@ -6,6 +6,24 @@
 // Hunter infected stealth ability
 #define HUNTER_STEALTH "hunter_stealth"
 
+/datum/movespeed_modifier/status_effect/mesa_horde_slow
+	multiplicative_slowdown = 1
+
+/datum/status_effect/mesa_horde_slow
+	id = "mesa_horde_slow"
+	duration = 6
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+
+/datum/status_effect/mesa_horde_slow/on_apply()
+	. = ..()
+	if(.)
+		owner.add_movespeed_modifier(/datum/movespeed_modifier/status_effect/mesa_horde_slow)
+
+/datum/status_effect/mesa_horde_slow/on_remove()
+	owner.remove_movespeed_modifier(/datum/movespeed_modifier/status_effect/mesa_horde_slow)
+	return ..()
+
 // =============================================================================
 // ACID OOZE POOL
 // =============================================================================
@@ -136,8 +154,8 @@
 	mob_biotypes = list(MOB_ORGANIC, MOB_HUMANOID)
 	faction = list(FACTION_XEN)
 	turns_per_move = 0 // Instant reaction time
-	maxHealth = 85
-	health = 85
+	maxHealth = 40
+	health = 40
 	speed = 0 // Instant movement
 	melee_damage_lower = 10
 	melee_damage_upper = 15
@@ -185,9 +203,45 @@
 		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator))
 		var/obj/structure/urbanism_generator/G = the_target
-		if(!G || (!G.activating && !G.waiting_for_fuel))
+		if(!G || (!G.activating && !G.active && !G.waiting_for_fuel))
 			return FALSE
 	return ..()
+
+/mob/living/simple_animal/hostile/infected/AttackingTarget()
+	if(type != /mob/living/simple_animal/hostile/infected && !istype(src, /mob/living/simple_animal/hostile/infected/bruiser))
+		return ..()
+	if(!isliving(target))
+		return ..()
+	if(QDELETED(src) || QDELETED(target))
+		return
+	var/atom/attack_target = target
+	if(SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, attack_target) & COMPONENT_HOSTILE_NO_ATTACK)
+		return
+	if(QDELETED(src) || QDELETED(attack_target))
+		return
+
+	var/mob/living/victim = attack_target
+	face_atom(victim)
+	if(!CheckActionCooldown(CLICK_CD_MELEE))
+		return
+	DelayNextAction()
+	if(HAS_TRAIT(src, TRAIT_PACIFISM))
+		return FALSE
+
+	in_melee = TRUE
+	if(attack_sound)
+		playsound(victim, attack_sound, 50, TRUE, 1)
+	do_attack_animation(victim)
+	visible_message(
+		"<span class='danger'>\The [src] [attack_verb_continuous] [victim]!</span>",
+		"<span class='userdanger'>\The [src] [attack_verb_continuous] you!</span>",
+		target = victim,
+		target_message = "<span class='danger'>\The [src] [attack_verb_continuous] you!</span>",
+	)
+	log_combat(src, victim, "attacked")
+	victim.apply_damage(5, BRUTE, null, forced = TRUE)
+	victim.apply_status_effect(/datum/status_effect/mesa_horde_slow)
+	return TRUE
 
 /mob/living/simple_animal/hostile/infected/death(gibbed)
 	. = ..(gibbed)
@@ -245,8 +299,8 @@
 	icon_state = "former_gonome"
 	icon_living = "former_gonome"
 	icon_dead = "former_dead"
-	maxHealth = 85
-	health = 85
+	maxHealth = 60
+	health = 60
 	speed = 2 // Slightly faster
 	turns_per_move = 0 // Faster reaction
 	melee_damage_lower = 15
