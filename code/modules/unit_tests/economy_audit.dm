@@ -4,9 +4,13 @@
 	var/list/saved_balances = list()
 	var/saved_tax_rate
 	var/saved_trace_depth
+	var/list/saved_crypto_paid
 
 /datum/unit_test/economy_audit/New()
 	. = ..()
+	saved_crypto_paid = SSeconomy.crypto_paid
+	SSeconomy.crypto_paid = list()
+	SSeconomy.crypto_paid_tick = SSeconomy.fire_count
 	saved_flags = SSeconomy.audit_flags
 	SSeconomy.audit_flags = list()
 	for(var/id in SSeconomy.departments)
@@ -24,6 +28,7 @@
 		econ_test_set_balance(department.account, saved_balances[id])
 	SSeconomy.tax_rate = saved_tax_rate
 	SSeconomy.settings.audit_trace_depth = saved_trace_depth
+	SSeconomy.crypto_paid = saved_crypto_paid
 	return ..()
 
 /datum/unit_test/economy_audit/proc/make_account(holder, balance = 0)
@@ -531,3 +536,26 @@
 	TEST_ASSERT_EQUAL(length(SSeconomy.audit_flags), AUDIT_FLAGS_MAX + 3, "Открытые дела не вытесняются")
 	TEST_ASSERT(SSeconomy.audit_flags_overflow_logged, "Переполнение отмечено в логе")
 	SSeconomy.audit_flags_overflow_logged = FALSE
+
+/// Все майнеры вместе зачисляют на один счёт не больше потолка за тик экономики, с личного дохода удерживается налог; в новом тике платят снова.
+/datum/unit_test/economy_audit/cryptominer_cap/Run()
+	var/datum/bank_account/personal = econ_account_of(make_person("Econ Audit Miner Cap"))
+	var/obj/machinery/cryptominer/syndie/first = allocate(/obj/machinery/cryptominer/syndie)
+	var/obj/machinery/cryptominer/syndie/second = allocate(/obj/machinery/cryptominer/syndie)
+	first.pay_me = personal
+	second.pay_me = personal
+	SSeconomy.tax_rate = 10
+	var/cap = SSeconomy.settings.crypto_cap_per_tick
+	var/before = personal.account_balance
+	for(var/i in 1 to cap)
+		first.produce_points(1)
+		second.produce_points(1)
+	var/gained = personal.account_balance - before
+	TEST_ASSERT_EQUAL(SSeconomy.crypto_paid["[personal.account_id]"], cap, "Майнеры зачислили на счёт не ровно потолок")
+	TEST_ASSERT(gained > 0 && gained < cap, "С дохода майнера не удержан налог или доход не пришёл: [gained] из [cap]")
+	var/saved_fire_count = SSeconomy.fire_count
+	SSeconomy.fire_count++
+	var/next_before = personal.account_balance
+	first.produce_points(1)
+	SSeconomy.fire_count = saved_fire_count
+	TEST_ASSERT(personal.account_balance > next_before, "В новом тике экономики майнер не платит")

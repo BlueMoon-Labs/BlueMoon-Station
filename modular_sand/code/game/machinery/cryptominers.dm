@@ -187,6 +187,7 @@
 		. += span_notice("A little screen on the machine reads: Currently the linked bank account is [pay_me.account_holder ? "[pay_me.account_holder]s" : span_boldwarning("ERROR")].")
 		. += "Modify the destination of the credits using your id on it while it is inactive and has its panel open."
 		. += "Alt-Click to reset to the Cargo budget.</span>"
+		. += span_notice(econ_crypto_cap_text())
 		if(econ_audited)
 			. += span_warning("Если майнер платит на личный счёт, а не в бюджет снабжения, финансовый аудит открывает дело, и деньги можно вернуть снабжению.")
 
@@ -248,10 +249,13 @@
 	air_update_turf()
 
 /obj/machinery/cryptominer/proc/produce_points(number)
-	playsound(loc, 'sound/machines/ping.ogg', 50, TRUE, -1)
-	if(!pay_me?.credit(miningpoints, ECON_MISC, memo = "Криптомайнинг") || !econ_audited || !(pay_me in SSeconomy.bank_accounts))
+	var/paid = SSeconomy.pay_crypto(pay_me, miningpoints, src)
+	if(!paid)
 		return
-	econ_audit_pending += miningpoints
+	playsound(loc, 'sound/machines/ping.ogg', 50, TRUE, -1)
+	if(!econ_audited || !(pay_me in SSeconomy.bank_accounts))
+		return
+	econ_audit_pending += paid
 	if(world.time >= econ_audit_next)
 		flush_econ_audit()
 

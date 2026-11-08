@@ -17,6 +17,7 @@ type DepartmentInfo = {
   grant: number;
   grant_has_base?: BooleanLike;
   threshold?: number;
+  threshold_floor?: number;
   return_due?: number;
   shielded?: number;
   goal_cooldown?: number;
@@ -308,7 +309,7 @@ const BudgetHelp = () => {
       </Box>
         <Box>
           Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
-          ниже стартового бюджета. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
+          ниже <Credits amount={department.threshold_floor ?? 0} />. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
           Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
           {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в каталоге;
           после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).

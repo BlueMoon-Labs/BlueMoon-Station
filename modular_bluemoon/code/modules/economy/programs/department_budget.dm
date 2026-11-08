@@ -179,6 +179,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"grant" = department.grant_amount(packs, staff_stats),
 		"grant_has_base" = length(packs) && SSeconomy.settings.grant_base > 0,
 		"threshold" = department.budget_threshold(staff_stats),
+		"threshold_floor" = department.budget_floor(),
 		"return_due" = department.budget_return_due(staff_stats),
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),

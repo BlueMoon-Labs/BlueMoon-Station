@@ -91,9 +91,13 @@
 	if(length(isnull(catalog_packs) ? catalog() : catalog_packs))
 		. += settings.grant_base
 
+/// Ниже этого порог бюджета не опускается, сколько бы сотрудников ни было на смене.
+/datum/economy_department/proc/budget_floor()
+	return max(start_budget(), SSeconomy.settings.budget_cap_floor)
+
 /// Выше этой суммы бюджет каждый тик возвращает NT долю излишка.
 /datum/economy_department/proc/budget_threshold(list/stats)
-	return max(base_payroll(stats) * SSeconomy.settings.budget_cap_paydays, start_budget())
+	return max(base_payroll(stats) * SSeconomy.settings.budget_cap_paydays, budget_floor())
 
 /// Долг отдела перед своими сотрудниками и их следующая зарплата: их излишек не съедает.
 /datum/economy_department/proc/owed_to_staff(list/stats)

@@ -282,6 +282,7 @@
 #define ECON_WARMONGERS_RANSOM_MIN 30000
 #define ECON_WARMONGERS_RANSOM_SHARE 85
 #define ECON_ACCOUNT_CLOSED "account_closed"
+#define ECON_CRYPTO "crypto"
 #define ECON_MISC "misc"
 
 /// Ключ economy.json, начинающийся с "_", - комментарий: загрузчики его пропускают без ошибки

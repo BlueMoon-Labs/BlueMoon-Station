@@ -48,6 +48,7 @@ GLOBAL_LIST_INIT(econ_reason_category, list(
 	ECON_EVENT = ECON_CAT_EVENT,
 	ECON_EVENT_RANSOM = ECON_CAT_EVENT,
 	ECON_ACCOUNT_CLOSED = ECON_CAT_ADMIN,
+	ECON_CRYPTO = ECON_CAT_WORK,
 	ECON_MISC = ECON_CAT_MISC,
 ))
 
@@ -101,6 +102,7 @@ GLOBAL_LIST_INIT(econ_reason_names, list(
 	ECON_EVENT = "Событие сектора",
 	ECON_EVENT_RANSOM = "Выкуп",
 	ECON_ACCOUNT_CLOSED = "Закрытие счёта",
+	ECON_CRYPTO = "Криптомайнинг",
 	ECON_MISC = "Прочее",
 ))
 

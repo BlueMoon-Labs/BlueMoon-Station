@@ -4,6 +4,9 @@
 	budget_name = "бюджет снабжения"
 	head_access = list(ACCESS_QM)
 
+/datum/economy_department/cargo/budget_floor()
+	return max(..(), SSeconomy.settings.budget_cap_floor_cargo)
+
 /// Руда платит на станции и на шахтёрских уровнях, кроме руин и чужих шаттлов.
 /datum/economy_department/cargo/proc/pays_ore_at(atom/source)
 	var/turf/source_turf = get_turf(source)

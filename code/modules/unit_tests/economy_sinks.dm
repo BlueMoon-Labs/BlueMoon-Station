@@ -555,7 +555,10 @@
 		doctor.department_id = ACCOUNT_MED
 		doctor.pay_grade = PAY_GRADE_HARD
 	var/threshold = medical.budget_threshold()
-	TEST_ASSERT_EQUAL(threshold, max(4 * settings.wages[PAY_GRADE_HARD] * settings.budget_cap_paydays, medical.start_budget()), "Порог - оклады на смене за budget_cap_paydays выплат")
+	TEST_ASSERT_EQUAL(threshold, max(4 * settings.wages[PAY_GRADE_HARD] * settings.budget_cap_paydays, settings.budget_cap_floor, medical.start_budget()), "Порог - оклады на смене за budget_cap_paydays выплат, не ниже budget_cap_floor")
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	TEST_ASSERT(cargo.budget_threshold() >= settings.budget_cap_floor_cargo, "Порог снабжения ниже budget_cap_floor_cargo: [cargo.budget_threshold()]")
+	TEST_ASSERT(settings.budget_cap_floor_cargo > settings.budget_cap_floor, "Минимум порога снабжения не выше общего")
 	econ_test_set_balance(medical.account, threshold)
 	var/burned_before = SSeconomy.ledger.by_reason[ECON_BUDGET_RETURN]
 	medical.return_excess()

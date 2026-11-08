@@ -5281,6 +5281,7 @@
 #include "modular_bluemoon\code\modules\economy\hooks\organs.dm"
 #include "modular_bluemoon\code\modules\economy\hooks\service.dm"
 #include "modular_bluemoon\code\modules\economy\machines\cash_register.dm"
+#include "modular_bluemoon\code\modules\economy\machines\cryptominer_income.dm"
 #include "modular_bluemoon\code\modules\economy\machines\department_console.dm"
 #include "modular_bluemoon\code\modules\economy\machines\effects.dm"
 #include "modular_bluemoon\code\modules\economy\machines\evidence_locker.dm"

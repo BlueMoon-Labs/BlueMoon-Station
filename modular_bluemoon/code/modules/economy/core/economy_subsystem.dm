@@ -68,6 +68,8 @@ SUBSYSTEM_DEF(economy)
 	audit_flags = SSeconomy.audit_flags
 	audit_flag_uid = SSeconomy.audit_flag_uid
 	audit_flags_overflow_logged = SSeconomy.audit_flags_overflow_logged
+	crypto_paid = SSeconomy.crypto_paid
+	crypto_paid_tick = SSeconomy.crypto_paid_tick
 
 /datum/controller/subsystem/economy/fire(resumed)
 	fire_count++
