@@ -2064,10 +2064,12 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/black_hole)
 	icon_state = "old snub"
 
 /obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Requiem Arms \'Crying Lightning\'"
 	desc = "Крупнокалиберный на вид револьвер из крайне ограниченной серии производства Requiem Arms. Обладает массивным серебристым корпусом с удлинённым стволом и рукояткой, украшенной изящной гравировкой в виде расправленных крыльев. Несмотря на внушительные габариты, рассчитан под патрон .41 калибра. Вес револьвера заметно превышает ожидания от подобного боеприпаса, а его конструкция отличается излишней громоздкостью и непростым обслуживанием. Выстрел сопровождается оглушительным грохотом. Тем не менее, добротная отделка, необычный силуэт и редкость выпуска делают Crying Lightning весьма примечательным экземпляром."
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "requiem-melatonin"
+	item_state = "requiem-melatonin"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	fire_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_shoot.ogg"
