@@ -316,9 +316,10 @@
 		wave.direction = meteor_direction
 		return
 	priority_announce("Великий ритуал превратил станцию в арену Великого ликования.", "Великое ликование")
+	var/list/immune_minds = get_owners()
 	for(var/mob/living/carbon/human/victim as anything in GLOB.human_list.Copy())
 		var/turf/tile = get_turf(victim)
-		if(QDELETED(victim) || victim == invoker || !victim.mind || victim.stat == DEAD || !tile || !is_station_level(tile.z))
+		if(QDELETED(victim) || !victim.mind || (victim.mind in immune_minds) || victim.stat == DEAD || !tile || !is_station_level(tile.z))
 			continue
 		victim.dna?.add_mutation(CLOWNMUT)
 		if(!isplasmaman(victim) && !istype(victim.w_uniform, /obj/item/clothing/under/rank/civilian/clown))
