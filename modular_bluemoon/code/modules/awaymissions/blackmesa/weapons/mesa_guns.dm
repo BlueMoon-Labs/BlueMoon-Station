@@ -899,6 +899,17 @@
 		return
 	. = ..(user, pointblank, pbtarget, message, stam_cost)
 
+/obj/item/gun/ballistic/automatic/m16a4/mesa/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	// Accept the whole M16 magazine family (m16, ap, hp, rubber) plus the mesa mag,
+	// which is a child of /obj/item/ammo_box/magazine/m16.
+	if(!istype(AM, /obj/item/ammo_box/magazine/m16))
+		return
+	var/old_mag_type = mag_type
+	mag_type = /obj/item/ammo_box/magazine/m16
+	var/result = ..(AM, user)
+	mag_type = old_mag_type
+	return result
+
 //  пульки
 
 /obj/item/ammo_box/magazine/m16/mesa
