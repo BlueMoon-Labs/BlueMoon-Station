@@ -192,7 +192,7 @@
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/implants/hand_canon
-	name = "Militech hand canon"
+	name = "Gorlex hand canon"
 	cost = 6
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/hand_canon
@@ -202,7 +202,7 @@
 	item = /obj/item/autosurgeon/syndicate/hand_canon
 
 /datum/uplink_item/implants/monowire
-	name = "Militech monowire"
+	name = "Cybersun monowire"
 	cost = 8
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/monowire
@@ -212,7 +212,7 @@
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/implants/gorila_hands
-	name = "Militech gorila hands"
+	name = "D.P. gorila hands"
 	cost = 8
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/gorila_hands
@@ -222,7 +222,7 @@
 	item = /obj/item/autosurgeon/syndicate/gorila_hands
 
 /datum/uplink_item/implants/blood_pump
-	name = "Militech blood pump"
+	name = "Cybersun blood pump"
 	cost = 8
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/blood_pump

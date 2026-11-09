@@ -476,7 +476,7 @@
 	animate(src, alpha = 0, time = duration)
 
 /obj/item/organ/cyberimp/brain/sandevistan/military
-	name = "Militech Sandevistan"
+	name = "Cybersun Sandevistan"
 	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with a longer duration at the cost of increased strain."
 	icon_state = "militech_sandevistan"
 	implant_overlay = "brain_implant_overlay"

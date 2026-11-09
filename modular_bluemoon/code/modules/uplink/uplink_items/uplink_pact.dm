@@ -131,42 +131,6 @@
 /obj/item/autosurgeon/syndicate/corp_arm_shied
 	starting_organ = /obj/item/organ/cyberimp/arm/shield/sec_level
 
-// /datum/uplink_item/implants/anti_stun
-// 	name = "Corporate CNS Rebooter"
-// 	desc = "This implant will automatically give you back control over your central nervous system, reducing downtime when stunned."
-// 	item = /obj/item/autosurgeon/syndicate/corp_anti_stun
-// 	cost = 3
-
-/obj/item/autosurgeon/syndicate/corp_anti_stun
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
-
-// /datum/uplink_item/implants/thermals
-// 	name = "Corporate Thermals"
-// 	desc = "These cybernetic eye implants will give you thermal vision. Vertical slit pupil included."
-// 	item = /obj/item/autosurgeon/syndicate/corp_thermals
-// 	cost = 4
-
-/obj/item/autosurgeon/syndicate/corp_thermals
-	starting_organ = /obj/item/organ/eyes/robotic/toggled/thermals/sec_level
-
-// /datum/uplink_item/implants/anti_drop
-// 	name = "Corporate Anti drop implant"
-// 	desc = "This cybernetic brain implant will allow you to force your hand muscles to contract, preventing item dropping. Twitch ear to toggle"
-// 	item = /obj/item/autosurgeon/syndicate/corp_antidrop
-// 	cost = 5
-
-/obj/item/autosurgeon/syndicate/corp_antidrop
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
-
-// /datum/uplink_item/implants/arm_blade
-// 	name = "Corporate Blade implant"
-// 	desc = "An integrated blade implant designed to be installed into a persons arm. Stylish and deadly; Although, being caught with this without proper permits is sure to draw unwanted attention"
-// 	item = /obj/item/autosurgeon/syndicate/corp_arm_blade
-// 	cost = 4
-
-/obj/item/autosurgeon/syndicate/corp_arm_blade
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
-
 /datum/uplink_item/implants/nutriment_pump
 	name = "Extreme Nutriment Pump"
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are hungry. This version of the pump also provides a proper water supply."
