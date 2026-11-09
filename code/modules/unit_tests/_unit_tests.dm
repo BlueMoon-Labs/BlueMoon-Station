@@ -282,6 +282,7 @@
 #include "holofan_charge.dm"
 #include "hud_sparse_images.dm"
 #include "immovable_rod_cleanup.dm"
+#include "implant_emp.dm"
 // #include "greyscale_config.dm"
 #include "heretic_knowledge.dm"
 #include "antag_training.dm"

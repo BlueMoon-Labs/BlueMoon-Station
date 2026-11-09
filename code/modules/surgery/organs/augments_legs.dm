@@ -98,8 +98,26 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
-	if(owner)
-		to_chat(owner, span_warning("[src] is hit by EMP!"))
+	if(!owner)
+		return
+	to_chat(owner, span_warning("[src] is hit by EMP!"))
+	emp_damage_limbs(severity)
+	// Импульс бьёт по моторным нервам: носитель перестаёт держать направление.
+	owner.Confused(20 SECONDS + severity * 5)
+	emp_self_activate(severity)
+
+/// ЭМИ прожигает конечность(и), в которую вживлён имплант.
+/obj/item/organ/cyberimp/leg/proc/emp_damage_limbs(severity)
+	if(!owner)
+		return
+	for(var/limb_zone in get_bodypart_zones())
+		var/obj/item/bodypart/L = owner.get_bodypart(limb_zone)
+		if(L)
+			L.receive_damage(brute = severity / 20, burn = severity / 10)
+
+/// Переопределяется имплантами, чьи способности могут сработать сами от импульса.
+/obj/item/organ/cyberimp/leg/proc/emp_self_activate(severity)
+	return
 
 ///////////////
 // Reinforced Tendons
@@ -144,6 +162,15 @@
 	if(jump)
 		jump.leap_distance = 2
 
+/// Перегруженные сервоприводы дёргают носителя в случайную сторону.
+/obj/item/organ/cyberimp/leg/tendons/emp_self_activate(severity)
+	if(!owner || owner.incapacitated() || owner.buckled || !isturf(owner.loc))
+		return
+	var/datum/component/jump/jump = owner.GetComponent(/datum/component/jump)
+	if(!jump)
+		apply_tendons()
+	SEND_SIGNAL(owner, COMSIG_KB_LIVING_JUMP, pick(GLOB.cardinals))
+
 ///////////////
 // Fortified Ankles
 ///////////////
@@ -174,6 +201,13 @@
 		owner.visible_message(span_warning("[owner] dashes forward with a hydraulic hiss!"), span_notice("You dash forward!"))
 	else
 		to_chat(owner, span_warning("Something prevents you from dashing forward!"))
+
+/// Перегрузка сбрасывает кулдаун и заставляет гидравлику толкнуть носителя вперёд.
+/obj/item/organ/cyberimp/leg/ankles/emp_self_activate(severity)
+	if(!owner || owner.incapacitated() || owner.buckled || !isturf(owner.loc))
+		return
+	recharging_time = 0
+	ui_action_click(owner)
 
 ///////////////
 // Lynx Paws

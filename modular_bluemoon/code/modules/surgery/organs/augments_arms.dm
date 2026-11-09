@@ -269,6 +269,32 @@
 /obj/item/organ/cyberimp/arm/handgun/syndie/l
 	zone = BODY_ZONE_L_ARM
 
+/// ЭМИ заставляет ручную пушку выстрелить в пол под носителем.
+/obj/item/organ/cyberimp/arm/handgun/emp_implant_malfunction(severity)
+	. = ..()
+	if(!owner)
+		return
+	var/obj/item/gun/energy/implanthandgun/gun = locate() in contents
+	if(!gun || !gun.ready_to_fire || !gun.can_shoot())
+		return
+	INVOKE_ASYNC(src, PROC_REF(emp_fire_at_feet), gun)
+
+/obj/item/organ/cyberimp/arm/handgun/proc/emp_fire_at_feet(obj/item/gun/energy/implanthandgun/gun)
+	var/mob/living/carbon/user = owner
+	if(QDELETED(src) || QDELETED(gun) || QDELETED(user))
+		return
+	var/turf/target = get_turf(user)
+	if(!target)
+		return
+	gun.ready_to_fire = FALSE
+	var/fired = gun.process_fire(target, user, TRUE)
+	if(QDELETED(src) || QDELETED(gun))
+		return
+	if(fired)
+		gun.start_reload(user)
+	else
+		gun.ready_to_fire = TRUE
+
 /obj/item/organ/cyberimp/arm/ballistic_processor
 	name = "Ballistic processor implant"
 	desc = "A neural-linked ballistic processor that allows bullets to ricochet off of surfaces and home towards nearby targets."
@@ -316,6 +342,9 @@
 	var/cooldown_end = 0
 	/// Исходный action_cooldown_mod, если при активации его пришлось поднять до attack_speed_mult.
 	var/clamped_action_cooldown_mod
+	/// Защита от ЭМИ, выданная после перегрузки, пока имплант не перезарядится.
+	var/emp_shielded = FALSE
+	var/emp_shield_timer
 
 /obj/item/organ/cyberimp/brain/berserker/sec_level
 	name = "Corporate Berserker implant"
@@ -369,27 +398,43 @@
 		to_chat(H, "<span class='notice'>You enter berserker mode! You feel unstoppable!</span>")
 		addtimer(CALLBACK(src, PROC_REF(deactivate_berserk)), berserk_time)
 
-/// ЭМИ по активному берсерку заставляет носителя избивать самого себя.
+/// ЭМИ по берсерку: четверть мозга, полный сброс заряда и защита до конца перезарядки.
 /obj/item/organ/cyberimp/brain/berserker/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
-	if(!active || !ishuman(owner))
+	if(!owner)
 		return
-	INVOKE_ASYNC(src, PROC_REF(emp_selfharm))
+	if(active)
+		deactivate_berserk()
+	if(!iscarbon(owner))
+		return
+	var/mob/living/carbon/C = owner
+	var/obj/item/organ/brain/brain = C.getorganslot(ORGAN_SLOT_BRAIN)
+	// Четверть здоровья мозга (BRAIN_DAMAGE_DEATH = 200), а не четверть текущего урона.
+	var/brain_damage = brain ? brain.maxHealth * 0.25 : BRAIN_DAMAGE_DEATH * 0.25
+	C.adjustOrganLoss(ORGAN_SLOT_BRAIN, brain_damage)
+	// Заряд сгорает полностью: следующий берсерк доступен только после полной перезарядки.
+	cooldown_end = world.time + cooldown_time
+	C.visible_message(span_danger("[C] convulses as their berserker implant is overloaded!"), span_userdanger("Your berserker implant is fried by the EMP! You lose all charge and your mind reels from the feedback."))
+	emp_add_shield()
 
-/obj/item/organ/cyberimp/brain/berserker/proc/emp_selfharm()
-	if(!active || !ishuman(owner))
+/// Пока имплант не перезарядится, ЭМИ ему больше не страшен.
+/obj/item/organ/cyberimp/brain/berserker/proc/emp_add_shield()
+	if(emp_shield_timer)
+		deltimer(emp_shield_timer)
+	emp_shielded = TRUE
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
+	emp_shield_timer = addtimer(CALLBACK(src, PROC_REF(emp_clear_shield)), cooldown_time, TIMER_STOPPABLE)
+
+/obj/item/organ/cyberimp/brain/berserker/proc/emp_clear_shield()
+	emp_shield_timer = null
+	if(!emp_shielded)
 		return
-	var/mob/living/carbon/human/H = owner
-	H.visible_message(span_danger("[H] starts attacking themselves uncontrollably!"), span_userdanger("Your berserker implant malfunctions from EMP and forces you to attack yourself!"))
-	H.a_intent_change(INTENT_HARM)
-	H.SetNextAction(0, flush = TRUE)
-	for(var/i in 1 to 5)
-		if(QDELETED(H))
-			return
-		H.ClickOn(H, list())
-		sleep(2)
+	emp_shielded = FALSE
+	RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF)
+	if(owner)
+		to_chat(owner, span_notice("[src] finishes recharging and its EMP shielding disengages."))
 
 /obj/item/organ/cyberimp/brain/berserker/proc/deactivate_berserk()
 	if(!active || !owner)
@@ -417,6 +462,12 @@
 /obj/item/organ/cyberimp/brain/berserker/Remove(special = FALSE)
 	if(active)
 		deactivate_berserk()
+	if(emp_shield_timer)
+		deltimer(emp_shield_timer)
+		emp_shield_timer = null
+	if(emp_shielded)
+		emp_shielded = FALSE
+		RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 	return ..()
 
 /obj/item/melee/implantarmblade

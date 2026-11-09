@@ -180,10 +180,36 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
-	if(owner)
-		to_chat(owner, "<span class='warning'>[src] is hit by EMP!</span>")
-		// give the owner an idea about why his implant is glitching
-		Retract()
+	if(!owner)
+		return
+	to_chat(owner, "<span class='warning'>[src] is hit by EMP!</span>")
+	// Сначала прячем развёрнутое железо обратно в имплант, чтобы ЭМИ не выбило его из рук.
+	Retract()
+	emp_drop_held_items()
+	emp_damage_limbs(severity)
+	emp_implant_malfunction(severity)
+
+/// Выбивает из рук всё, что удерживается на стороне(ах), в которые вживлён имплант.
+/obj/item/organ/cyberimp/arm/proc/emp_drop_held_items()
+	if(!owner)
+		return
+	for(var/limb_zone in get_bodypart_zones())
+		var/side = (limb_zone == BODY_ZONE_R_ARM) ? "right" : "left"
+		for(var/obj/item/held in owner.get_held_items_for_side(side, all = TRUE))
+			owner.dropItemToGround(held)
+
+/// ЭМИ прожигает конечность(и), в которую вживлён имплант.
+/obj/item/organ/cyberimp/arm/proc/emp_damage_limbs(severity)
+	if(!owner)
+		return
+	for(var/limb_zone in get_bodypart_zones())
+		var/obj/item/bodypart/L = owner.get_bodypart(limb_zone)
+		if(L)
+			L.receive_damage(brute = severity / 20, burn = severity / 10)
+
+/// Переопределяется имплантами, у которых есть опасная активная часть, срабатывающая сама по себе.
+/obj/item/organ/cyberimp/arm/proc/emp_implant_malfunction(severity)
+	return
 
 /obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
 	if(holder_offhand)

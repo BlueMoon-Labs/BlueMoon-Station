@@ -401,31 +401,108 @@
 	var/laser_armor_bonus = 10
 	/// Flat BRC mitigation granted while installed.
 	var/brc_mitigation_bonus = BRC_MITIGATION_25
+	/// How long an EMP keeps the plating offline after shorting it out.
+	var/emp_disabled_time = 3 MINUTES
+	/// TRUE while the normal protection is applied.
+	var/bonus_applied = FALSE
+	/// TRUE while the EMP vulnerability is applied instead.
+	var/emp_disabled = FALSE
+	var/emp_restore_timer
 
 /obj/item/organ/cyberimp/chest/subdermal_armor/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
 	if(!.)
 		return
-	M.brc_mitigation += brc_mitigation_bonus
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
+	apply_bonus()
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/Remove(special = FALSE)
+	if(owner)
+		if(emp_restore_timer)
+			deltimer(emp_restore_timer)
+			emp_restore_timer = null
+		if(emp_disabled)
+			remove_penalty()
+			emp_disabled = FALSE
+		if(bonus_applied)
+			remove_bonus()
+	return ..()
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(!owner)
+		return
+	if(emp_restore_timer)
+		deltimer(emp_restore_timer)
+		emp_restore_timer = null
+	if(!emp_disabled)
+		// Пластины перестают держать удар и на время становятся проводником уязвимости.
+		remove_bonus()
+		apply_penalty()
+		emp_disabled = TRUE
+		to_chat(owner, span_userdanger("Your subdermal armor short-circuits! The plating goes dead and leaves you dangerously exposed."))
+	emp_restore_timer = addtimer(CALLBACK(src, PROC_REF(restore_after_emp)), emp_disabled_time, TIMER_STOPPABLE)
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/proc/apply_bonus()
+	if(bonus_applied || !owner)
+		return
+	bonus_applied = TRUE
+	owner.brc_mitigation += brc_mitigation_bonus
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
 		// При уничтожении моба физиология могла быть уже разобрана.
 		if(H.physiology?.armor)
 			H.physiology.armor.melee += melee_armor_bonus
 			H.physiology.armor.bullet += bullet_armor_bonus
 			H.physiology.armor.laser += laser_armor_bonus
 
-/obj/item/organ/cyberimp/chest/subdermal_armor/Remove(special = FALSE)
+/obj/item/organ/cyberimp/chest/subdermal_armor/proc/remove_bonus()
+	if(!bonus_applied)
+		return
+	bonus_applied = FALSE
+	if(!owner)
+		return
+	owner.brc_mitigation -= brc_mitigation_bonus
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.physiology?.armor)
+			H.physiology.armor.melee -= melee_armor_bonus
+			H.physiology.armor.bullet -= bullet_armor_bonus
+			H.physiology.armor.laser -= laser_armor_bonus
+
+/// Inverse of the granted protection: as much vulnerability as the implant used to absorb.
+/obj/item/organ/cyberimp/chest/subdermal_armor/proc/apply_penalty()
+	if(!owner)
+		return
+	owner.brc_mitigation -= brc_mitigation_bonus
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.physiology?.armor)
+			H.physiology.armor.melee -= melee_armor_bonus
+			H.physiology.armor.bullet -= bullet_armor_bonus
+			H.physiology.armor.laser -= laser_armor_bonus
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/proc/remove_penalty()
+	if(!owner)
+		return
+	owner.brc_mitigation += brc_mitigation_bonus
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.physiology?.armor)
+			H.physiology.armor.melee += melee_armor_bonus
+			H.physiology.armor.bullet += bullet_armor_bonus
+			H.physiology.armor.laser += laser_armor_bonus
+
+/obj/item/organ/cyberimp/chest/subdermal_armor/proc/restore_after_emp()
+	emp_restore_timer = null
+	if(!emp_disabled)
+		return
+	emp_disabled = FALSE
+	remove_penalty()
 	if(owner)
-		owner.brc_mitigation = max(0, owner.brc_mitigation - brc_mitigation_bonus)
-		if(ishuman(owner))
-			var/mob/living/carbon/human/H = owner
-			// При уничтожении моба физиология могла быть уже разобрана.
-			if(H.physiology?.armor)
-				H.physiology.armor.melee -= melee_armor_bonus
-				H.physiology.armor.bullet -= bullet_armor_bonus
-				H.physiology.armor.laser -= laser_armor_bonus
-	return ..()
+		apply_bonus()
+		to_chat(owner, span_notice("Your subdermal armor reboots and its protection comes back online."))
 
 /////////////////////////
 //Reinforced Skeleton  //
@@ -440,19 +517,93 @@
 	icon_state = "combat_coating"
 	/// Extra max health granted while installed.
 	var/health_bonus = 25
+	/// Additional max-HP penalty inflicted by an EMP on top of losing the bonus.
+	var/emp_health_penalty = 25
+	/// How long an EMP keeps the endoskeleton destabilised.
+	var/emp_disabled_time = 3 MINUTES
+	/// TRUE while the normal health bonus is applied.
+	var/bonus_applied = FALSE
+	/// TRUE while the EMP penalty is applied instead.
+	var/emp_disabled = FALSE
+	/// Actual penalty applied, so clamping to 1 HP can be reverted exactly.
+	var/emp_penalty_applied = 0
+	var/emp_restore_timer
 
 /obj/item/organ/cyberimp/chest/reinforced_skeleton/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
 	if(!.)
 		return
-	M.maxHealth += health_bonus
-	M.updatehealth()
+	apply_bonus()
 
 /obj/item/organ/cyberimp/chest/reinforced_skeleton/Remove(special = FALSE)
 	if(owner)
-		owner.maxHealth = max(1, owner.maxHealth - health_bonus)
-		owner.updatehealth()
+		if(emp_restore_timer)
+			deltimer(emp_restore_timer)
+			emp_restore_timer = null
+		if(emp_disabled)
+			remove_penalty()
+			emp_disabled = FALSE
+		if(bonus_applied)
+			remove_bonus()
 	return ..()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(!owner)
+		return
+	if(emp_restore_timer)
+		deltimer(emp_restore_timer)
+		emp_restore_timer = null
+	if(!emp_disabled)
+		// Сначала теряем добавочную прочность, затем получаем штраф сверху.
+		remove_bonus()
+		apply_penalty()
+		emp_disabled = TRUE
+		to_chat(owner, span_userdanger("Your reinforced skeleton shudders from the EMP! You feel far more fragile than before."))
+	emp_restore_timer = addtimer(CALLBACK(src, PROC_REF(restore_after_emp)), emp_disabled_time, TIMER_STOPPABLE)
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/proc/apply_bonus()
+	if(bonus_applied || !owner)
+		return
+	bonus_applied = TRUE
+	owner.maxHealth += health_bonus
+	owner.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/proc/remove_bonus()
+	if(!bonus_applied)
+		return
+	bonus_applied = FALSE
+	if(!owner)
+		return
+	owner.maxHealth = max(1, owner.maxHealth - health_bonus)
+	owner.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/proc/apply_penalty()
+	if(!owner)
+		return
+	var/new_max = max(1, owner.maxHealth - emp_health_penalty)
+	emp_penalty_applied = owner.maxHealth - new_max
+	owner.maxHealth = new_max
+	owner.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/proc/remove_penalty()
+	if(!owner)
+		return
+	owner.maxHealth += emp_penalty_applied
+	emp_penalty_applied = 0
+	owner.updatehealth()
+
+/obj/item/organ/cyberimp/chest/reinforced_skeleton/proc/restore_after_emp()
+	emp_restore_timer = null
+	if(!emp_disabled)
+		return
+	emp_disabled = FALSE
+	remove_penalty()
+	if(owner)
+		apply_bonus()
+		to_chat(owner, span_notice("Your reinforced skeleton stabilises and its bonus returns."))
 
 ///////////////////
 //Shawarma Spit  //
