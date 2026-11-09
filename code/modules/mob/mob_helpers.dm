@@ -792,6 +792,7 @@ GLOBAL_LIST(unit_test_ghost_notifications)
 		id_card.update_label()
 
 	// Переоформление пермитов, если у нас была загрузка из префов
+	client.prefs.apply_combat_implant_permits(src)
 	if(istype(w_uniform, /obj/item/clothing/under))
 		var/obj/item/clothing/under/U = w_uniform
 		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)

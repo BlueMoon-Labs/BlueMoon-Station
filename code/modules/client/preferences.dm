@@ -932,11 +932,11 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "lynx_paws", "label" = "Лапы рыси", "desc" = "Звукопоглощающие подушечки и искусственные нервы в обеих стопах. Шаги становятся беззвучными.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/lynx_paws, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
-	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 2, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
-	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "corp_hand_cannon", "label" = "Корпоративная ручная пушка", "desc" = "Встроенная в руку энергетическая пушка с режимом очереди. Занимает одну руку.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/handgun/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 4, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
+	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_hand_cannon", "label" = "Корпоративная ручная пушка", "desc" = "Встроенная в руку энергетическая пушка с режимом очереди. Занимает одну руку.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/handgun/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
 	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Пара выдвижных когтей из лёгкого сплава в обеих руках. Занимают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "organ" = TRUE, "group" = "arm_augments"),
 	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
 	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
@@ -1200,6 +1200,39 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		var/obj/item/implant/new_implant = new new_path
 		if(!new_implant.implant(character, null, TRUE, TRUE))
 			qdel(new_implant)
+
+/// Боевые импланты (флаг "combat_permit" в ростере) требуют именного разрешения на использование.
+/// Выдаёт пермит и вешает его на форму; вызывается после выдачи экипировки, когда есть форма и ID-карта.
+/datum/preferences/proc/apply_combat_implant_permits(mob/living/carbon/human/character)
+	if(!ishuman(character) || !islist(implant_mods))
+		return
+	var/list/authorized = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(!option || !option["combat_permit"] || !option["path"] || body_mod_implant_locked(option))
+			continue
+		var/obj/item/organ/implant_path = option["path"]
+		var/min_code = initial(implant_path.active_security_level)
+		if(isnull(min_code))
+			continue
+		authorized += list(list("name" = option["label"], "code" = min_code))
+	if(!length(authorized))
+		return
+	var/obj/item/clothing/under/uniform = character.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(!istype(uniform))
+		return
+	// Повторная выдача не плодит дубликаты: существующий пермит просто переоформляется.
+	var/obj/item/clothing/accessory/permit/special/combat_implants/permit = locate() in uniform.accessories_attached
+	if(permit)
+		permit.authorize_implants(authorized)
+		if(!permit.first_inited)
+			permit.bind_to_user(character, TRUE)
+		return
+	permit = new(character)
+	permit.authorize_implants(authorized)
+	permit.bind_to_user(character, TRUE)
+	if(!uniform.attach_accessory(permit, character, TRUE))
+		character.equip_to_slot_or_del(permit, ITEM_SLOT_BACKPACK, TRUE)
 
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
 	var/bal = 0
@@ -1470,6 +1503,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		qdel(old_part)
 
 /datum/preferences/proc/post_copy_to(mob/living/carbon/human/character)
+	apply_combat_implant_permits(character)
 	//if no legs, and not a paraplegic or a slime, give them a free wheelchair
 	if(modified_limbs[BODY_ZONE_L_LEG] == LOADOUT_LIMB_AMPUTATED && modified_limbs[BODY_ZONE_R_LEG] == LOADOUT_LIMB_AMPUTATED && !character.has_quirk(/datum/quirk/paraplegic) && !isjellyperson(character))
 		if(character.buckled)

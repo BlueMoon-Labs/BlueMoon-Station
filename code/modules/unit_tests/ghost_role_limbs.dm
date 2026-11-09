@@ -253,10 +253,10 @@
 		"lynx_paws" = 1,
 		"reinforced_tendons" = 1,
 		"fortified_ankles" = 1,
-		"corp_blood_pump" = 2,
+		"corp_blood_pump" = 4,
 		"corp_mantis_blades" = 6,
 		"corp_monowire" = 6,
-		"corp_hand_cannon" = 3,
+		"corp_hand_cannon" = 6,
 		"corp_gorilla_arms" = 6,
 		"razor_claws" = 3,
 		"subdermal_armor" = 6,
@@ -277,7 +277,7 @@
 		"nutriment_pump" = TRUE,
 		"corp_blood_pump" = TRUE,
 	)
-	TEST_ASSERT_EQUAL(P.quirk_balance(), -19, "Selected implants should be paid for with quirk points")
+	TEST_ASSERT_EQUAL(P.quirk_balance(), -24, "Selected implants should be paid for with quirk points")
 
 	// Импланты одной группы занимают одни и те же слоты: новый выбор снимает старый и возвращает очки.
 	var/datum/preferences/conflict_prefs = new
@@ -334,3 +334,57 @@
 
 	qdel(conflict_prefs)
 	qdel(P)
+
+/// Боевые импланты выдают именное разрешение на использование и вешают его на форму.
+/datum/unit_test/combat_implant_permit
+
+/datum/unit_test/combat_implant_permit/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.real_name = "Permit Test"
+	H.dna.update_dna_identity()
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(H.equip_to_slot_or_del(uniform, ITEM_SLOT_ICLOTHING), "Test human should wear a uniform")
+	var/obj/item/card/id/id_card = allocate(/obj/item/card/id)
+	id_card.registered_name = H.real_name
+	id_card.assignment = "Test Subject"
+	TEST_ASSERT(H.equip_to_slot_or_del(id_card, ITEM_SLOT_ID), "Test human should wear an ID")
+
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("corp_mantis_blades" = TRUE)
+	P.apply_prefs_body_mods(H)
+	P.apply_combat_implant_permits(H)
+
+	var/obj/item/clothing/accessory/permit/special/combat_implants/permit = locate() in uniform.accessories_attached
+	TEST_ASSERT_NOTNULL(permit, "Combat implant permit should be attached to the uniform")
+	TEST_ASSERT(permit.first_inited, "Permit should be initialized for its owner")
+	TEST_ASSERT_EQUAL(permit.owner_name, H.real_name, "Permit should be bound to the wearer")
+	TEST_ASSERT(findtext(permit.permitted_weapons, "Корпоративные клинки богомола"), "Permit should list the mantis blades")
+	TEST_ASSERT(findtext(permit.permitted_weapons, "Янтарный"), "Permit should mention the amber alert level")
+
+	// Повторная выдача не плодит дубликаты, а переоформляет существующий пермит.
+	P.implant_mods = list("corp_gorilla_arms" = TRUE)
+	P.apply_combat_implant_permits(H)
+	var/permits_count = 0
+	var/obj/item/clothing/accessory/permit/special/combat_implants/updated_permit
+	for(var/obj/item/clothing/accessory/A in uniform.accessories_attached)
+		if(istype(A, /obj/item/clothing/accessory/permit/special/combat_implants))
+			permits_count++
+			updated_permit = A
+	TEST_ASSERT_EQUAL(permits_count, 1, "Re-issuing should not duplicate the permit")
+	TEST_ASSERT(findtext(updated_permit.permitted_weapons, "Корпоративные руки гориллы"), "Re-issued permit should list the gorilla arms")
+	TEST_ASSERT(findtext(updated_permit.permitted_weapons, "Синий"), "Gorilla arms permit should mention the blue alert level")
+
+	// Небоевые импланты пермита не требуют.
+	var/mob/living/carbon/human/H2 = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/under/color/grey/uniform2 = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(H2.equip_to_slot_or_del(uniform2, ITEM_SLOT_ICLOTHING), "Second human should wear a uniform")
+	var/datum/preferences/P2 = new
+	P2.pref_species = new /datum/species/human
+	P2.implant_mods = list("lynx_paws" = TRUE)
+	P2.apply_prefs_body_mods(H2)
+	P2.apply_combat_implant_permits(H2)
+	TEST_ASSERT(!(locate(/obj/item/clothing/accessory/permit/special/combat_implants) in uniform2.accessories_attached), "Non-combat implants should not issue a permit")
+
+	qdel(P)
+	qdel(P2)
