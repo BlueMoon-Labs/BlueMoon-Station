@@ -14,6 +14,7 @@ type SwarmerCoreData = {
   organic_resources: number;
   metallic_resources: number;
   organic_goal: number;
+  metal_reference: number;
   cheaper_swap: boolean;
   current_class_path: string;
 };
@@ -54,9 +55,20 @@ const SwarmerGoalProgressBar = (props: unknown) => {
 
 export const SwarmerCore = (_props: unknown) => {
   const { act, data } = useBackend<SwarmerCoreData>();
-  const { classes, cheaper_swap, current_class_path, metallic_resources } = data;
+  const {
+    classes,
+    cheaper_swap,
+    current_class_path,
+    metallic_resources,
+    metal_reference,
+  } = data;
   const [selectedInfo, setSelectedInfo] = useState<string>('');
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const classCost = selectedClass
+    ? cheaper_swap
+      ? Math.round(selectedClass.cost / 2)
+      : selectedClass.cost
+    : null;
 
   const handleClassSelect = (classInfo: Class) => {
     setSelectedInfo(classInfo.additional_info);
@@ -76,7 +88,26 @@ export const SwarmerCore = (_props: unknown) => {
       <Window.Content>
         <Stack fill vertical>
           <SwarmerGoalProgressBar />
-          <Stack.Item>Металл: {metallic_resources}</Stack.Item>
+          <Stack.Item>
+            <Section title="Металлические ресурсы">
+              <ProgressBar
+                fontSize="small"
+                color={
+                  classCost !== null && metallic_resources < classCost
+                    ? 'bad'
+                    : 'blue'
+                }
+                value={metallic_resources}
+                minValue={0}
+                maxValue={classCost ?? metal_reference}
+              >
+                {metallic_resources.toLocaleString('ru-RU', {
+                  maximumFractionDigits: 2,
+                })}{' '}
+                ед.{classCost !== null && ` / ${classCost} за корпус`}
+              </ProgressBar>
+            </Section>
+          </Stack.Item>
           <Stack.Item grow>
             <Stack fill>
               <Stack.Item width={20}>
@@ -143,7 +174,7 @@ export const SwarmerCore = (_props: unknown) => {
                         color={selectedClass ? 'green' : 'grey'}
                       >
                         {selectedClass
-                          ? `Стоимость: ${cheaper_swap ? Math.round(selectedClass.cost / 2) : selectedClass.cost} металла. Подтвердить выбор: ${selectedClass.name}`
+                          ? `Стоимость: ${classCost} металла. Подтвердить выбор: ${selectedClass.name}`
                           : 'Выберите класс'}
                       </Button>
                     </Section>

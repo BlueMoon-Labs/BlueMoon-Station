@@ -4,7 +4,7 @@
 #define is_basicswarmer(target) istype(target, /mob/living/simple_animal/hostile/swarmer/basic)
 #define is_roverswarmer(target) istype(target, /mob/living/simple_animal/hostile/swarmer/rover)
 #define is_builderswarmer(target) istype(target, /mob/living/simple_animal/hostile/swarmer/builder)
-#define is_swarmerprojectile(target) istype(target, /obj/item/projectile/beam/disabler/swarmer)
+#define is_swarmerprojectile(target) (istype(target, /obj/item/projectile/beam/disabler/swarmer) || istype(target, /obj/item/projectile/energy/swarmer_bola))
 #define is_swarmer_object(target) (istype(target, /obj/structure/swarmer) || istype(target, /obj/machinery/porta_turret/swarmer))
 #define SWARMER_STAMINA_SCALE (STAMINA_CRIT / 100)
 
@@ -28,6 +28,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 		),
 	/mob/living/simple_animal/hostile/swarmer/combat = list(
 		/datum/action/innate/swarmer_fire_mode,
+		/datum/action/innate/swarmer_fire_mode/sabotage,
 		/datum/action/cooldown/swarmer/build/barricade,
 		),
 	/mob/living/simple_animal/hostile/swarmer/builder = list(
@@ -45,6 +46,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 	))
 
 #define SWARMER_SPAWN_VALUE 60
+#define SWARMER_STARTING_METAL 150
 #define MEGA_SWARMER_SPAWN_VALUE 1500
 
 #define SLOW_SWARMER_DISMANTLE_DELAY 8 SECONDS

@@ -196,6 +196,7 @@
 /obj/structure/swarmer/core/ui_static_data(mob/user)
 	var/list/data = list()
 	data["organic_goal"] = MEGA_SWARMER_SPAWN_VALUE
+	data["metal_reference"] = SWARMER_STARTING_METAL
 	data["classes"] = selection_classes
 	return data
 

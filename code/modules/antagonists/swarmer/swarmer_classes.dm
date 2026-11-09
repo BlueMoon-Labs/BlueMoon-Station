@@ -56,11 +56,15 @@
 	swap_resource_cost = ROVER_SWAP_COST
 	can_swap_to = TRUE
 	pass_flags = PASSTABLE | PASSMOB
+	projectilesound = 'sound/weapons/bolathrow.ogg'
+	secondary_weapon_hint = "Выстрелить энергоболой"
 	swarmer_class_info = "Данный класс является разведовательной единицей, оснащённой колёсами вместо ног, а также мощным тараном, способным сбивать целей с ног.\n\
 		Способен строить ловушки и \"хабы\", между которыми смогут перемещаться все \"Свармеры\".\n\
+		ПКМ выпускает энергоболу. Перезарядка — 40 секунд.\n\
 		Мгновенно строит ловушки.\n\
 		Достаточно маленький для того, чтобы проползать под столами и шлюзами."
 	knockdown_time = 3 SECONDS
+	COOLDOWN_DECLARE(bola_cooldown)
 
 /mob/living/simple_animal/hostile/swarmer/rover/AttackingTarget()
 	. = ..()
@@ -69,6 +73,16 @@
 
 	var/mob/living/living_target = target
 	living_target.Knockdown(knockdown_time)
+
+/mob/living/simple_animal/hostile/swarmer/rover/fire_secondary_weapon(atom/targeted_atom)
+	if(targeted_atom == src || targeted_atom == loc)
+		return
+	if(!COOLDOWN_FINISHED(src, bola_cooldown))
+		balloon_alert(src, "энергобола перезаряжается!")
+		return
+	if(shoot_with_projectile(targeted_atom, /obj/item/projectile/energy/swarmer_bola))
+		COOLDOWN_START(src, bola_cooldown, 40 SECONDS)
+		DelayNextAction()
 
 #define COMBAT_SWARMER_STRUCTURE_RANGE 7
 
@@ -91,16 +105,18 @@
 	rapid_fire_delay = 0.2 SECONDS
 	swap_resource_cost = COMBAT_SWAP_COST
 	can_swap_to = TRUE
+	secondary_weapon_hint = "Сильный выстрел"
 	swarmer_class_info = "Данный класс является защитной единицей, оснащённой более сильной защитой и пушками.\n\
 		Оснащён следующими типами выстрелов: \n\
 		1. Двойной выстрел — как обычный, но выпускает сразу два снаряда; \n\
 		2. Сильный выстрел — наносит больший урон по стамине и сбивает с ног; \n\
 		3. Саботажный выстрел — разряжает баллистическое оружие, расходует заряд энергетического и переключает его в режим дизейблера, если такой режим есть.\n\
-		Выберите тип выстрела кнопкой «Режим стрельбы» или вторым действием по себе. Стреляйте ЛКМ по цели на расстоянии.\n\
+		ЛКМ стреляет двойным выстрелом. Кнопки «Сильный выстрел» и «Саботажный выстрел» выбирают, что выстрелит по ПКМ.\n\
 		Способен строить баррикады.\n\
 		Чинится автоматически у ядра, становится быстрее, находясь рядом с любой из структур Свармеров."
 	var/increased_speed = -0.15
 	var/datum/weakref/cached_swarmer_obj
+	var/secondary_projectile_type = /obj/item/projectile/beam/disabler/swarmer/empowered
 
 /mob/living/simple_animal/hostile/swarmer/combat/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
@@ -130,32 +146,19 @@
 	if(speed != initial(speed))
 		set_varspeed(initial(speed))
 
-/mob/living/simple_animal/hostile/swarmer/combat/AltUnarmedAttack(atom/A, proximity_flag)
-	if(A != src)
+/mob/living/simple_animal/hostile/swarmer/combat/AttackingTarget()
+	if(!isliving(target) || target == src || isswarmer(target) || a_intent == INTENT_GRAB)
 		return ..()
-	select_fire_mode()
+	if(ranged_cooldown <= world.time)
+		OpenFire(target)
 	return TRUE
 
-/mob/living/simple_animal/hostile/swarmer/combat/proc/select_fire_mode()
-	if(!client || incapacitated() || rapid_fire_shots_left)
+/mob/living/simple_animal/hostile/swarmer/combat/fire_secondary_weapon(atom/targeted_atom)
+	if(ranged_cooldown > world.time || rapid_fire_shots_left)
 		return
-	var/mode = tgui_input_list(src, "Выберите режим стрельбы.", "Режим стрельбы", list("Двойной выстрел", "Сильный выстрел", "Саботажный выстрел"))
-	if(!mode || QDELETED(src) || !client || incapacitated() || rapid_fire_shots_left)
-		return
-	switch(mode)
-		if("Двойной выстрел")
-			projectiletype = /obj/item/projectile/beam/disabler/swarmer/double
-			rapid = 2
-			ranged_cooldown_time = 1.2 SECONDS
-		if("Сильный выстрел")
-			projectiletype = /obj/item/projectile/beam/disabler/swarmer/empowered
-			rapid = 0
-			ranged_cooldown_time = 1.5 SECONDS
-		if("Саботажный выстрел")
-			projectiletype = /obj/item/projectile/beam/disabler/swarmer/sabotage
-			rapid = 0
-			ranged_cooldown_time = 1.5 SECONDS
-	balloon_alert(src, mode)
+	if(shoot_with_projectile(targeted_atom, secondary_projectile_type))
+		ranged_cooldown = world.time + 1.5 SECONDS
+		DelayNextAction()
 
 #undef COMBAT_SWARMER_STRUCTURE_RANGE
 

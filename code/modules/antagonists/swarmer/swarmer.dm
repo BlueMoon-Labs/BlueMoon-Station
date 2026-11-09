@@ -48,6 +48,8 @@
 	var/list/datum/action/swarmer_actions = list()
 	var/datum/weakref/object_attack_target
 	var/object_attack_timer
+	var/object_attack_consumes = FALSE
+	var/secondary_weapon_hint
 
 /mob/living/simple_animal/hostile/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
@@ -192,6 +194,12 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/AltUnarmedAttack(atom/A, proximity_flag)
+	if(secondary_weapon_hint)
+		fire_secondary_weapon(A)
+		return TRUE
+	return use_swarmer_secondary_interaction(A, proximity_flag)
+
+/mob/living/simple_animal/hostile/swarmer/proc/use_swarmer_secondary_interaction(atom/A, proximity_flag)
 	if(!proximity_flag || !team?.swarmer_core || !CheckActionCooldown(immediate = TRUE))
 		return TRUE
 	if(training_origin && isliving(A) && A != src && !isswarmer(A))
@@ -200,6 +208,9 @@
 	return A.attack_swarmer_secondary(src)
 
 /mob/living/simple_animal/hostile/swarmer/AltRangedAttack(atom/A, params)
+	if(secondary_weapon_hint)
+		fire_secondary_weapon(A)
+		return TRUE
 	if(isliving(A))
 		balloon_alert(src, "подойдите ближе!")
 		return TRUE
@@ -207,8 +218,17 @@
 
 /mob/living/simple_animal/hostile/swarmer/CtrlClickOn(atom/A)
 	if(isliving(A) && A != src && Adjacent(A) && !incapacitated() && team?.swarmer_core)
-		return AltUnarmedAttack(A, TRUE)
+		return use_swarmer_secondary_interaction(A, TRUE)
 	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/right_click_needs_clicks()
+	return secondary_weapon_hint || ..()
+
+/mob/living/simple_animal/hostile/swarmer/right_click_map_clicks(shift)
+	return (!shift && secondary_weapon_hint) || ..()
+
+/mob/living/simple_animal/hostile/swarmer/proc/fire_secondary_weapon(atom/targeted_atom)
+	return
 
 /atom/proc/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
 	return FALSE
@@ -218,9 +238,6 @@
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = user
 	if(!istype(swarmer) || !swarmer.team?.swarmer_core)
 		return
-	if(src == swarmer && istype(swarmer, /mob/living/simple_animal/hostile/swarmer/combat))
-		LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Выбрать режим стрельбы")
-		return . | CONTEXTUAL_SCREENTIP_SET
 	if(isswarmer(src))
 		return
 	var/secondary_hint = "Отправить в анализатор или телепортировать"
@@ -228,7 +245,7 @@
 		secondary_hint = "Пересобрать в свармера"
 	else if(swarmer.training_origin)
 		secondary_hint = "Телепортировать"
-	LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, secondary_hint)
+	LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, swarmer.secondary_weapon_hint || secondary_hint)
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, secondary_hint)
 	return . | CONTEXTUAL_SCREENTIP_SET
 
@@ -274,7 +291,7 @@
 	if(swarmer_act_result == SWARMER_ACT_POSSIBLE)
 		CRASH("Swarmer act returned only SWARMER_ACT_POSSIBLE flag, which should not happen. Atom: [atom.type].")
 
-	if((swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DAMAGE) && object_attack_target?.resolve() == atom)
+	if((swarmer_act_result & (SWARMER_ACT_POSSIBLE_ACTION_DAMAGE | SWARMER_ACT_POSSIBLE_ACTION_CONSUME)) && object_attack_target?.resolve() == atom)
 		return
 
 	DelayNextAction(CLICK_CD_MELEE)
@@ -284,7 +301,7 @@
 	if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DAMAGE)
 		start_object_attack(atom)
 	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_CONSUME)
-		extract_resources(atom)
+		start_object_attack(atom, consume = TRUE)
 	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE)
 		dismantle_machine(atom)
 	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DESTROY)
@@ -408,19 +425,26 @@
 		balloon_alert(src, "не совместимо!")
 		return FALSE
 
-	. = TRUE
+	if(!isstack(target))
+		animate_resource_extraction(target)
+		team.adjust_metal(resource_gain, TRUE)
+		qdel(target)
+		return TRUE
+
+	var/obj/item/stack/stack_item = target
+	var/stack_amount_consumed = min(stack_extract_amount, stack_item.get_amount())
+	if(stack_amount_consumed <= 0)
+		return FALSE
+	animate_resource_extraction(target)
+	if(!stack_item.use(stack_amount_consumed))
+		return FALSE
+	team.adjust_metal(resource_gain * stack_amount_consumed, TRUE)
+	return TRUE
+
+/mob/living/simple_animal/hostile/swarmer/proc/animate_resource_extraction(atom/target)
 	do_attack_animation(target, no_effect = TRUE)
 	var/obj/effect/temp_visual/swarmer/integrate/integrate_effect = new(get_turf(target))
 	integrate_effect.adjust_size(target)
-	if(!isstack(target))
-		team?.adjust_metal(resource_gain, TRUE)
-		qdel(target)
-		return
-
-	var/obj/item/stack/stack_item = target
-	var/stack_amount_consumed = min(stack_extract_amount, stack_item.amount)
-	team?.adjust_metal(resource_gain * stack_amount_consumed, TRUE)
-	stack_item.use(stack_amount_consumed)
 
 /mob/living/simple_animal/hostile/swarmer/proc/damage_object(atom/target)
 	do_attack_animation(target, no_effect = TRUE)
@@ -428,17 +452,20 @@
 	disintegrate_effect.adjust_size(target)
 	target.ex_act(EXPLODE_LIGHT)
 
-/mob/living/simple_animal/hostile/swarmer/proc/start_object_attack(atom/attack_target)
+/mob/living/simple_animal/hostile/swarmer/proc/start_object_attack(atom/attack_target, consume = FALSE)
 	stop_object_attack()
-	if(!damage_object_for_salvage(attack_target) || !client)
+	if(!apply_object_attack(attack_target, consume) || !client)
 		return
 	object_attack_target = WEAKREF(attack_target)
+	object_attack_consumes = consume
 	RegisterSignals(src, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT), PROC_REF(stop_object_attack))
 	RegisterSignal(src, COMSIG_MOB_CLICKON, PROC_REF(on_object_attack_click))
 	RegisterSignal(attack_target, COMSIG_PARENT_QDELETING, PROC_REF(stop_object_attack))
 	queue_object_attack()
 
-/mob/living/simple_animal/hostile/swarmer/proc/damage_object_for_salvage(atom/attack_target)
+/mob/living/simple_animal/hostile/swarmer/proc/apply_object_attack(atom/attack_target, consume)
+	if(consume)
+		return extract_resources(attack_target) && isstack(attack_target) && !QDELETED(attack_target)
 	var/obj/target_object = attack_target
 	var/old_integrity = istype(target_object) ? target_object.obj_integrity : 0
 	damage_object(attack_target)
@@ -454,12 +481,12 @@
 /mob/living/simple_animal/hostile/swarmer/proc/repeat_object_attack()
 	object_attack_timer = null
 	var/atom/attack_target = object_attack_target?.resolve()
-	if(!attack_target || !client || incapacitated() || !isturf(loc) || !Adjacent(attack_target) || attack_target.IsObscured() || !can_disassemble(attack_target))
+	if(!attack_target || !client || incapacitated() || !isturf(loc) || !CanReach(attack_target) || attack_target.IsObscured() || !can_disassemble(attack_target))
 		stop_object_attack()
 		return
 	if(CheckActionCooldown(immediate = TRUE))
 		DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
-		if(!damage_object_for_salvage(attack_target))
+		if(!apply_object_attack(attack_target, object_attack_consumes))
 			stop_object_attack()
 			return
 	if(object_attack_target)
@@ -478,6 +505,7 @@
 	if(attack_target)
 		UnregisterSignal(attack_target, COMSIG_PARENT_QDELETING)
 	object_attack_target = null
+	object_attack_consumes = FALSE
 	UnregisterSignal(src, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT, COMSIG_MOB_CLICKON))
 	if(object_attack_timer)
 		deltimer(object_attack_timer)

@@ -1,6 +1,5 @@
 GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
-#define METALLIC_START_RESOURCES 150
 #define METAL_MODIFIER_LIMIT 3
 #define ANALYZER_SEND_LIMIT 2
 
@@ -79,7 +78,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/on_core_init(obj/structure/swarmer/core/core)
 	swarmer_core = core
-	metallic_resources = METALLIC_START_RESOURCES
+	metallic_resources = SWARMER_STARTING_METAL
 	RegisterSignal(swarmer_core, COMSIG_SWARMER_CORE_DAMAGED, PROC_REF(on_core_integrity_changed))
 	RegisterSignal(swarmer_core, COMSIG_MOVABLE_MOVED, PROC_REF(on_core_moved))
 
@@ -240,7 +239,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 /datum/team/swarmer_team/proc/on_nanobot_fabricator_init(obj/structure/swarmer/nanobot_fabricator/fabricator)
 	return
 
-#undef METALLIC_START_RESOURCES
 #undef METAL_MODIFIER_LIMIT
 #undef ANALYZER_SEND_LIMIT
 

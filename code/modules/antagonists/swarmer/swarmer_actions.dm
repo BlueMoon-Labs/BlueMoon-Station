@@ -372,11 +372,29 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	active = FALSE
 
 /datum/action/innate/swarmer_fire_mode
-	name = "Режим стрельбы"
-	desc = "Выбрать тип выстрела. После выбора стреляйте ЛКМ по цели на расстоянии."
+	name = "Сильный выстрел"
+	desc = "Назначить мощный лазер на ПКМ. Сильный выстрел сбивает цель с ног."
 	icon_icon = 'icons/mob/actions/actions_swarmer.dmi'
-	button_icon_state = "double"
+	button_icon_state = "power"
+	var/secondary_projectile_type = /obj/item/projectile/beam/disabler/swarmer/empowered
 
 /datum/action/innate/swarmer_fire_mode/Activate()
 	var/mob/living/simple_animal/hostile/swarmer/combat/swarmer = owner
-	swarmer?.select_fire_mode()
+	if(!istype(swarmer) || swarmer.incapacitated() || swarmer.secondary_projectile_type == secondary_projectile_type)
+		return
+	swarmer.secondary_projectile_type = secondary_projectile_type
+	swarmer.secondary_weapon_hint = name
+	for(var/datum/action/innate/swarmer_fire_mode/fire_mode in swarmer.swarmer_actions)
+		fire_mode.UpdateButtons(status_only = TRUE)
+
+/datum/action/innate/swarmer_fire_mode/UpdateButton(atom/movable/screen/movable/action_button/button, status_only = FALSE, force = FALSE)
+	. = ..()
+	var/mob/living/simple_animal/hostile/swarmer/combat/swarmer = owner
+	if(. && istype(swarmer) && swarmer.secondary_projectile_type == secondary_projectile_type)
+		button.color = COLOR_GOLD
+
+/datum/action/innate/swarmer_fire_mode/sabotage
+	name = "Саботажный выстрел"
+	desc = "Назначить саботажный лазер на ПКМ. Выстрел разряжает оружие в руках цели."
+	button_icon_state = "sabotage"
+	secondary_projectile_type = /obj/item/projectile/beam/disabler/swarmer/sabotage

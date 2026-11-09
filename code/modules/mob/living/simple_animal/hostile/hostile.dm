@@ -896,6 +896,9 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 
 
 /mob/living/simple_animal/hostile/proc/Shoot(atom/targeted_atom)
+	return shoot_with_projectile(targeted_atom, projectiletype)
+
+/mob/living/simple_animal/hostile/proc/shoot_with_projectile(atom/targeted_atom, projectile_type)
 	if(QDELETED(src) || QDELETED(targeted_atom) || targeted_atom == targets_from?.loc || targeted_atom == targets_from)
 		return
 	//Rapid volleys are queued with timers. Recheck every projectile because an
@@ -914,8 +917,8 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		var/obj/item/ammo_casing/casing = new casingtype(startloc)
 		playsound(src, projectilesound, 100, 1)
 		casing.fire_casing(targeted_atom, src, null, null, null, ran_zone(), 0, src)
-	else if(projectiletype)
-		var/obj/item/projectile/P = new projectiletype(startloc)
+	else if(projectile_type)
+		var/obj/item/projectile/P = new projectile_type(startloc)
 		playsound(src, projectilesound, 100, 1)
 		P.starting = startloc
 		P.firer = src
