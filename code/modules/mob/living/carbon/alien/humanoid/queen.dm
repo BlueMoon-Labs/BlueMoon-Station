@@ -16,7 +16,7 @@
 
 	// Skyrat balance - xenomorph queen from Skyrat-SS13/Skyrat13
 	meleeKnockdownPower = 125
-	meleeSlashHumanPower = 30
+	meleeSlashHumanPower = 50
 	meleeSlashSAPower = 60
 
 	var/alt_inhands_file = 'icons/Xeno/castes/queen.dmi'
@@ -35,6 +35,9 @@
 	var/eggsac = TRUE
 	var/datum/action/maid/maidify_action
 	var/obj/effect/proc_holder/alien/royal/queen/promote/promote
+
+/datum/movespeed_modifier/alien_queen_speed
+	multiplicative_slowdown = 2
 
 /mob/living/carbon/alien/humanoid/royal/queen/Initialize(mapload)
 	if(prob(1))
@@ -58,7 +61,9 @@
 	if(caste != "qmaid")
 		maidify_action = new()
 		maidify_action.Grant(src)
-	return ..()
+	. = ..()
+	add_movespeed_modifier(/datum/movespeed_modifier/alien_queen_speed)
+	return
 
 /mob/living/carbon/alien/humanoid/royal/queen/Destroy()
 	RemoveAbility(promote)

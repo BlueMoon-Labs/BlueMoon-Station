@@ -632,21 +632,13 @@ SUBSYSTEM_DEF(vote)
 	return FALSE
 
 /datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE, replacing_active_vote = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
-	vote_system = votesystem
 	if(mode && !replacing_active_vote)
 		return FALSE
 	if(!mode || replacing_active_vote)
-		if(started_time)
-			var/next_allowed_time = (started_time + CONFIG_GET(number/vote_delay))
-
-			var/admin = FALSE
-			var/ckey = ckey(initiator_key)
-			if(GLOB.admin_datums[ckey] || initiator_key == "server")
-				admin = TRUE
-
-			if(next_allowed_time > world.time && !admin)
-				to_chat(usr, "<span class='warning'>A vote was initiated recently, you must wait [DisplayTimeText(next_allowed_time-world.time)] before a new vote can be started!</span>")
-				return FALSE
+		var/cooldown_left = vote_cooldown_left(initiator_key)
+		if(cooldown_left)
+			to_chat(usr, span_warning("Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."))
+			return FALSE
 
 		var/saved_custom = (vote_type == "custom") && setting_up_custom
 		var/saved_custom_question = custom_question
@@ -656,6 +648,13 @@ SUBSYSTEM_DEF(vote)
 		if(vote_type == "custom")
 			if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 				return FALSE
+		if(vote_type == "roundtype" && !replacing_active_vote)
+			var/roundtype_block = roundtype_vote_block_reason()
+			if(roundtype_block)
+				to_chat(usr, span_warning(roundtype_block))
+				return FALSE
+		// Не раньше проверок: отказ не должен подменять систему подсчёта идущему голосованию
+		vote_system = votesystem
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
 		display_votes = display
@@ -862,6 +861,40 @@ SUBSYSTEM_DEF(vote)
 		SSticker.SetTimeLeft(min_timeleft)
 	return runoff_ds
 
+/// Почему голосование за режим сейчас закрылось бы сразу после старта; null, если начать можно.
+/datum/controller/subsystem/vote/proc/roundtype_vote_block_reason()
+	if(SSticker.current_state != GAME_STATE_PREGAME)
+		return "Голосование за режим игры можно начать только в лобби, до начала раунда."
+	if(SSticker.timeLeft < 0)
+		return "Начало раунда отложено, голосование за режим игры сейчас недоступно."
+	if(isnull(SSticker.timeLeft) || SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
+		return "До начала раунда слишком мало времени, голосование за режим игры уже не успеет пройти."
+	return null
+
+/// Сколько децисекунд этому инициатору ждать нового голосования; админам и серверу 0.
+/datum/controller/subsystem/vote/proc/vote_cooldown_left(initiator_key)
+	if(!started_time || initiator_key == "server" || GLOB.admin_datums[ckey(initiator_key)])
+		return 0
+	return max(0, started_time + CONFIG_GET(number/vote_delay) - world.time)
+
+/// Почему user сейчас не может начать голосование; null, если можно.
+/datum/controller/subsystem/vote/proc/vote_start_block_reason(mob/user)
+	if(mode)
+		return "Уже идёт голосование, дождитесь его окончания."
+	var/cooldown_left = vote_cooldown_left(user?.ckey)
+	if(cooldown_left)
+		return "Голосование недавно уже было, новое можно начать через [DisplayTimeText(cooldown_left)]."
+	return null
+
+/// Сколько децисекунд осталось активному голосованию.
+/datum/controller/subsystem/vote/proc/get_time_remaining()
+	if(!mode)
+		return 0
+	var/remaining = end_time - world.time
+	if(mode == "roundtype" && !roundtype_prime_runoff_ballot)
+		remaining = min(remaining, SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY)
+	return max(0, remaining)
+
 /datum/controller/subsystem/vote/proc/sanitize_roundtype_vote_choices()
 	if(roundtype_prime_runoff_ballot)
 		return
@@ -964,10 +997,12 @@ SUBSYSTEM_DEF(vote)
 	data["mode"] = mode
 	data["question"] = question
 	// Оставшееся время в секундах
-	if(mode == "roundtype")
-		data["time_remaining"] = max(0, round((SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY) / 10))
-	else
-		data["time_remaining"] = mode ? max(0, round((end_time - world.time) / 10)) : 0
+	data["time_remaining"] = round(get_time_remaining() / 10)
+	data["time_total"] = mode ? round(max(end_time - started_time, get_time_remaining()) / 10) : 0
+	data["initiator"] = mode ? ((initiator == "server" || initiator == "the Server") ? "автоматически" : initiator) : null
+	data["voters_count"] = length(voted)
+	data["roundtype_vote_block"] = roundtype_vote_block_reason()
+	data["vote_start_block"] = vote_start_block_reason(user)
 	data["vote_system"] = vote_system
 	// Список вариантов с полным состоянием для всех систем голосования
 	var/list/choices_list = list()
@@ -1090,14 +1125,18 @@ SUBSYSTEM_DEF(vote)
 			reset()
 			return TRUE
 		if("toggle_restart")
-			if(!C.holder)
+			if(!check_rights_for(C, R_ADMIN))
 				return
 			CONFIG_SET(flag/allow_vote_restart, !CONFIG_GET(flag/allow_vote_restart))
+			message_admins("[ADMIN_LOOKUP(user)] [CONFIG_GET(flag/allow_vote_restart) ? "разрешил" : "запретил"] игрокам голосование за рестарт")
+			log_admin("[C.key] [CONFIG_GET(flag/allow_vote_restart) ? "разрешил" : "запретил"] игрокам голосование за рестарт")
 			return TRUE
 		if("toggle_gamemode")
-			if(!C.holder)
+			if(!check_rights_for(C, R_ADMIN))
 				return
 			CONFIG_SET(flag/allow_vote_mode, !CONFIG_GET(flag/allow_vote_mode))
+			message_admins("[ADMIN_LOOKUP(user)] [CONFIG_GET(flag/allow_vote_mode) ? "разрешил" : "запретил"] игрокам голосование за режим игры")
+			log_admin("[C.key] [CONFIG_GET(flag/allow_vote_mode) ? "разрешил" : "запретил"] игрокам голосование за режим игры")
 			return TRUE
 		if("restart")
 			if(CONFIG_GET(flag/allow_vote_restart) || C.holder)

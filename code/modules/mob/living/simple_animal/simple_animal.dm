@@ -8,6 +8,8 @@
 	blood_volume = 550
 	rad_flags = RAD_NO_CONTAMINATE
 	hud_type = /datum/hud/living/simple_animal
+	// Седок сидит верхом: лёжа он ехал бы на полной скорости, а пули без прицела пролетали бы мимо
+	buckle_lying = 0
 
 	status_flags = CANPUSH
 
@@ -290,8 +292,19 @@
 	animate(src, pixel_z = start_z + 6, time = 2, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 	animate(pixel_z = start_z, time = 2, easing = SINE_EASING)
 
+/mob/living/simple_animal/start_pulling(atom/movable/AM, state, force = pull_force, supress_message = FALSE)
+	. = ..()
+	update_pull_alert()
+
+/mob/living/simple_animal/stop_pulling()
+	. = ..()
+	update_pull_alert()
+
 /mob/living/simple_animal/MouseDrop_T(mob/living/M, mob/living/user)
 	if(can_buckle && tame && istype(M) && M != src && !M.buckled)
+		// отказ уже объяснён; общий обработчик повторил бы попытку и сообщение
+		if(!can_carry_rider(M))
+			return
 		prepare_riding()
 		if(mouse_buckle_handling(M, user))
 			return
@@ -299,6 +312,7 @@
 
 /mob/living/simple_animal/post_buckle_mob(mob/living/M)
 	. = ..()
+	throw_alert("drop_riders", /atom/movable/screen/alert/drop_riders)
 	pre_ride_stop_automated_movement = stop_automated_movement
 	pre_ride_horde_member = !!GetComponent(/datum/component/rat_minion)
 	stop_automated_movement = TRUE
@@ -308,6 +322,8 @@
 
 /mob/living/simple_animal/post_unbuckle_mob(mob/living/M)
 	. = ..()
+	if(!LAZYLEN(buckled_mobs))
+		clear_alert("drop_riders")
 	if(istype(src, /mob/living/simple_animal/mouse))
 		var/datum/component/rat_minion/minion = GetComponent(/datum/component/rat_minion)
 		if(minion)
@@ -538,6 +554,10 @@
 		new loot_type(loc)
 
 /mob/living/simple_animal/death(gibbed)
+	// Труп игрока-скакуна не удаляется, и седок на нём ловил все пули, летящие в него. Слайм слезает сам в handle_feeding()
+	for(var/mob/living/rider as anything in buckled_mobs)
+		if(!isslime(rider))
+			unbuckle_mob(rider, TRUE)
 	movement_type &= ~FLYING
 	if(nest)
 		nest.spawned_mobs -= src
@@ -832,11 +852,23 @@
 	if(riding_datum)
 		if(user.incapacitated())
 			return
+		if(!can_carry_rider(M))
+			return
 		for(var/atom/movable/A in get_turf(src))
 			if(A != src && A != M && A.density)
 				return
 		M.forceMove(get_turf(src))
 		return ..()
+
+/// Скакун не везёт седока крупнее себя, а сверхтяжёлого - только крупный зверь.
+/mob/living/simple_animal/proc/can_carry_rider(mob/living/rider)
+	if(rider.mob_size > mob_size)
+		rider.visible_message(span_warning("[rider] пытается оседлать [src], но для такого седока [src] слишком мелкий."), span_warning("Вы слишком крупные для [src]."))
+		return FALSE
+	if(rider.mob_weight > MOB_WEIGHT_HEAVY && mob_size < MOB_SIZE_LARGE)
+		rider.visible_message(span_warning("[rider] пытается оседлать [src], но [src] не выдерживает такого веса."), span_warning("[src] не выдержит ваш вес."))
+		return FALSE
+	return TRUE
 
 /mob/living/simple_animal/relaymove(mob/user, direction)
 	var/datum/component/riding/riding_datum = GetComponent(/datum/component/riding)

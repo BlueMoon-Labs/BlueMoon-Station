@@ -844,7 +844,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 
 // BLUEMOON ADD: Hook into handle_post_sex to relay sensations through portal devices
 // This allows threesome scenarios where e.g. someone has sex with a vagina containing portal panties
-/mob/living/carbon/human/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/carbon/human/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	. = ..()
 	// Check if any of our genitals involved contain portal devices
 	if(!amount || !ishuman(partner))
@@ -857,18 +857,18 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		else if(istype(organ, /obj/item/organ/genital))
 			involved_genital = organ
 	if(involved_genital)
-		involved_genital.relay_portal_sensations(partner, amount, orifice, FALSE)
+		involved_genital.relay_portal_sensations(partner, amount, orifice, is_hidden = is_hidden)
 
 // BLUEMOON ADD: Relay sensations through portal devices during regular intercourse
-/obj/item/organ/genital/proc/relay_portal_sensations(mob/living/partner, lust_amount, orifice_type, is_climax = FALSE)
+/obj/item/organ/genital/proc/relay_portal_sensations(mob/living/partner, lust_amount, orifice_type, is_climax = FALSE, is_hidden = FALSE)
 	// Find any portal devices inside this genital
 	for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP in contents)
-		PP.relay_intercourse_sensations(owner, partner, lust_amount, orifice_type, is_climax, slot)
+		PP.relay_intercourse_sensations(owner, partner, lust_amount, orifice_type, is_climax, slot, is_hidden)
 	for(var/obj/item/portallight/PL in contents)
-		PL.relay_intercourse_sensations(owner, partner, lust_amount, orifice_type, is_climax, slot)
+		PL.relay_intercourse_sensations(owner, partner, lust_amount, orifice_type, is_climax, slot, is_hidden)
 
 // Portal panties relay - sends sensations to all connected fleshlights
-/obj/item/clothing/underwear/briefs/panties/portalpanties/proc/relay_intercourse_sensations(mob/living/wearer, mob/living/partner, lust_amount, orifice_type, is_climax, genital_slot)
+/obj/item/clothing/underwear/briefs/panties/portalpanties/proc/relay_intercourse_sensations(mob/living/wearer, mob/living/partner, lust_amount, orifice_type, is_climax, genital_slot, is_hidden = FALSE)
 	if(!portallight.len)
 		return
 	var/panty_location_text = get_insertion_location_text()
@@ -887,6 +887,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(!fleshlight_is_inserted && !PL.portal_settings?.vibration_enabled)
 			continue  // Skip inactive held flashlights - don't send sensations to devices just sitting in pocket
 		if(!fl_holder || fl_holder == wearer || fl_holder == partner)
+			continue
+		if(is_hidden && !in_range(wearer, fl_holder))
 			continue
 		if(!(fl_holder.client?.prefs?.toggles & VERB_CONSENT))
 			continue
@@ -915,13 +917,13 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 				sensation_msg = "Сквозь портальный фонарик в ваших руках вы ощущаете ритмичные движения - кто-то занимается сексом [panty_location_text ? "с трусиками [panty_location_text]" : "в портальных трусиках"]!"
 		to_chat(fl_holder, span_lewd(sensation_msg))
 		// Give reduced lust
-		fl_holder.handle_post_sex(round(lust_amount * 0.5), null, partner, null, FALSE, TRUE)
+		fl_holder.handle_post_sex(round(lust_amount * 0.5), null, partner, anonymous = TRUE, is_hidden = is_hidden)
 		// Jitter if appropriate
 		if(fl_holder.client?.prefs.cit_toggles & SEX_JITTER)
 			fl_holder.do_jitter_animation()
 
 // Portal fleshlight relay - sends sensations to panties wearer
-/obj/item/portallight/proc/relay_intercourse_sensations(mob/living/wearer, mob/living/partner, lust_amount, orifice_type, is_climax, genital_slot)
+/obj/item/portallight/proc/relay_intercourse_sensations(mob/living/wearer, mob/living/partner, lust_amount, orifice_type, is_climax, genital_slot, is_hidden = FALSE)
 	if(!portalunderwear)
 		return
 	var/mob/living/carbon/human/panty_wearer
@@ -934,6 +936,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			panty_wearer = equipment.get_wearer()
 			panties_are_inserted = TRUE
 	if(!panty_wearer || panty_wearer == wearer || panty_wearer == partner)
+		return
+	if(is_hidden && !in_range(wearer, panty_wearer))
 		return
 	if(!(panty_wearer.client?.prefs?.toggles & VERB_CONSENT))
 		return
@@ -964,7 +968,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			sensation_msg = "Сквозь ваши портальные трусики вы ощущаете ритмичные движения - кто-то занимается сексом [fl_location_text ? "с фонариком [fl_location_text]" : "используя портальный фонарик"]!"
 	to_chat(panty_wearer, span_lewd(sensation_msg))
 	// Give reduced lust
-	panty_wearer.handle_post_sex(round(lust_amount * 0.5), null, partner, null, FALSE, TRUE)
+	panty_wearer.handle_post_sex(round(lust_amount * 0.5), null, partner, anonymous = TRUE, is_hidden = is_hidden)
 	// Jitter if appropriate
 	if(panty_wearer.client?.prefs.cit_toggles & SEX_JITTER)
 		panty_wearer.do_jitter_animation()
@@ -976,13 +980,13 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/unregister_climax_signal(mob/living/carbon/human/H)
 	UnregisterSignal(H, COMSIG_MOB_CLIMAX)
 
-/obj/item/clothing/underwear/briefs/panties/portalpanties/proc/on_wearer_climax(datum/source, datum/reagents/senders_cum, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anonymous)
+/obj/item/clothing/underwear/briefs/panties/portalpanties/proc/on_wearer_climax(datum/source, datum/reagents/senders_cum, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anonymous, is_hidden)
 	SIGNAL_HANDLER
 	// Relay climax through portal to connected fleshlights
 	var/mob/living/carbon/human/wearer = source
 	// Validate target is a mob - it could be a turf or item if climaxing outside a partner
 	var/mob/living/carbon/human/partner_mob = ishuman(target) ? target : null
-	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/item/clothing/underwear/briefs/panties/portalpanties, relay_intercourse_sensations), wearer, partner_mob, HIGH_LUST, sender?.slot, TRUE, sender?.slot)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/item/clothing/underwear/briefs/panties/portalpanties, relay_intercourse_sensations), wearer, partner_mob, HIGH_LUST, sender?.slot, TRUE, sender?.slot, is_hidden)
 
 /obj/item/portallight/proc/register_climax_signal(mob/living/carbon/human/H)
 	RegisterSignal(H, COMSIG_MOB_CLIMAX, PROC_REF(on_wearer_climax))
@@ -990,13 +994,13 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 /obj/item/portallight/proc/unregister_climax_signal(mob/living/carbon/human/H)
 	UnregisterSignal(H, COMSIG_MOB_CLIMAX)
 
-/obj/item/portallight/proc/on_wearer_climax(datum/source, datum/reagents/senders_cum, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anonymous)
+/obj/item/portallight/proc/on_wearer_climax(datum/source, datum/reagents/senders_cum, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anonymous, is_hidden)
 	SIGNAL_HANDLER
 	// Relay climax through portal to connected panties
 	var/mob/living/carbon/human/wearer = source
 	// Validate target is a mob - it could be a turf or item if climaxing outside a partner
 	var/mob/living/carbon/human/partner_mob = ishuman(target) ? target : null
-	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/item/portallight, relay_intercourse_sensations), wearer, partner_mob, HIGH_LUST, sender?.slot, TRUE, sender?.slot)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/item/portallight, relay_intercourse_sensations), wearer, partner_mob, HIGH_LUST, sender?.slot, TRUE, sender?.slot, is_hidden)
 
 // BLUEMOON ADD: Examine text for inserted portal devices
 /obj/item/organ/genital/examine(mob/user)

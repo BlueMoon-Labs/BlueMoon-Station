@@ -314,6 +314,28 @@ window "popupwindow"
 		statusbar = false
 		can-resize = false
 
+window "context_menu_popup"
+	elem "context_menu_popup"
+		type = MAIN
+		pos = 0,0
+		size = 200x200
+		anchor1 = none
+		anchor2 = none
+		is-visible = false
+		saved-params = ""
+		titlebar = false
+		statusbar = false
+		can-close = false
+		can-minimize = false
+		can-resize = false
+	elem "context_menu_float"
+		type = BROWSER
+		pos = 0,0
+		size = 200x200
+		anchor1 = 0,0
+		anchor2 = 100,100
+		saved-params = ""
+
 window "statwindow"
 	elem "statwindow"
 		type = MAIN

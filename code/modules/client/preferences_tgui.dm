@@ -112,6 +112,7 @@
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
+	.["examine_headshots"] = examine_headshots
 	.["mood_vignette"] = mood_vignette
 
 	// Gameplay toggles
@@ -473,6 +474,9 @@
 				if("windownoise")
 					windownoise = !windownoise
 					dirty_var = "windownoise"
+				if("examine_headshots")
+					examine_headshots = !examine_headshots
+					dirty_var = "examine_headshots"
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
 					dirty_var = "auto_capitalize_enabled"

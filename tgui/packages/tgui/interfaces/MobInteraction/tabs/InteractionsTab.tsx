@@ -82,21 +82,20 @@ export const InteractionsTab = (props) => {
           interactions_to_display.map((interaction) => (
             <Stack.Item key={interaction.key}>
               <Stack fill>
-                {interaction.type !== INTERACTION_NORMAL && (
-                  <Stack.Item>
-                    <Button
-                      key={interaction.key}
-                      icon={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)
-                        ? "stop" : "play"}
-                      selected={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)}
-                      tooltip={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)
-                        ? `Stop interacting with ${is_auto_target_self ? "yourself" : auto_interaction_target}` : "Automatically repeat this interaction"}
-                      onClick={() => act('toggle_auto_interaction', {
-                        interaction: interaction.key,
-                      })}
-                    />
-                  </Stack.Item>
-                )}
+                <Stack.Item>
+                  <Button
+                    key={interaction.key}
+                    icon={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)
+                      ? "stop" : "play"}
+                    selected={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)}
+                    tooltip={(currently_active_interaction === interaction.key) && (auto_interaction_target === target)
+                      ? `Остановить автоповтор ${is_auto_target_self ? "на себе" : `с ${auto_interaction_target}`}`
+                      : "Включить автоповтор"}
+                    onClick={() => act('toggle_auto_interaction', {
+                      interaction: interaction.key,
+                    })}
+                  />
+                </Stack.Item>
                 <Stack.Item grow>
                   <Button
                     key={interaction.key}

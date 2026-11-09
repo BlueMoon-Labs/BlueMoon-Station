@@ -14,6 +14,7 @@ type ThemeColors = Record<string, string>;
 
 type ContextMenuStyle = {
   renderer: string;
+  layer: string;
   layout: string;
   weight: string;
   width: string;
@@ -85,6 +86,11 @@ const RIGHT_CLICK_MODE_OPTIONS: Option<number>[] = [
 const RENDERER_OPTIONS: Option<string>[] = [
   { value: 'html', label: 'Окном, чёткий текст' },
   { value: 'map', label: 'На карте' },
+];
+
+const LAYER_OPTIONS: Option<string>[] = [
+  { value: 'top', label: 'Поверх других окон' },
+  { value: 'game', label: 'Внутри окна игры' },
 ];
 
 const THEME_OPTIONS: Option<string>[] = [
@@ -652,6 +658,15 @@ export const ContextMenuSection = (props) => {
         value={style.renderer}
         onSelect={(value) => setStyle('renderer', value)}
       />
+      {style.renderer === 'html' && (
+        <DropdownRow
+          label="Слой окна"
+          hint="Поверх - меню не прячется под окнами переменных, настроек и прочими. Внутри окна игры - как раньше, другие окна его перекрывают"
+          options={LAYER_OPTIONS}
+          value={style.layer}
+          onSelect={(value) => setStyle('layer', value)}
+        />
+      )}
       <DropdownRow
         label="Формат"
         hint="Две колонки и плашки - только окном; хоткеи там во всплывающей подсказке"

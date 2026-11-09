@@ -98,7 +98,7 @@
 	#define COMPONENT_NO_AFTERATTACK 1											//Return this in response if you don't want afterattack to be called
 #define COMSIG_ATOM_HULK_ATTACK "hulk_attack"								//from base of atom/attack_hulk(): (/mob/living/carbon/human)
 #define COMSIG_ATOM_ATTACK_ANIMAL "attack_animal"							//from base of atom/animal_attack(): (/mob/user)
-#define COMSIG_PARENT_EXAMINE "atom_examine"                  				 //from base of atom/examine(): (/mob, list/examine_return_text)
+#define COMSIG_PARENT_EXAMINE "atom_examine"                  				 //from base of atom/examine(): (/mob, list/examine_return_text, anonymous [optional, human examine])
 ///from base of atom/get_examine_name(): (/mob, list/overrides)
 #define COMSIG_ATOM_GET_EXAMINE_NAME "atom_examine_name"
 ///from base of [/atom/proc/take_damage]: (damage_amount, damage_type, damage_flag, sound_effect, attack_dir, aurmor_penetration)
