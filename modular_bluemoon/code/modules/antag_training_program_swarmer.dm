@@ -55,7 +55,7 @@
 		return
 	swarmer.revive(full_heal = TRUE, admin_revive = TRUE)
 	if(training_team)
-		training_team.metallic_resources = ANTAG_TRAINING_SWARMER_METAL
+		training_team.set_metal(ANTAG_TRAINING_SWARMER_METAL)
 
 /datum/antag_training_program/creature/swarmer/handle_choice(datum/antag_training_session/session, mob/user, option)
 	if(..())
@@ -177,16 +177,21 @@
 	playsound(src, 'sound/effects/sparks4.ogg', 50, TRUE)
 	do_teleport(target, destination, 0, channel = TELEPORT_CHANNEL_BLUESPACE)
 
-// Безопасная свободная клетка в другой зоне полигона, кроме центра; зоны без других участников - в первую очередь.
+// Выбираем дальний безопасный сектор, отдавая предпочтение зонам без других участников.
 /mob/living/simple_animal/hostile/swarmer/proc/training_disperse_turf(mob/living/target)
 	var/datum/antag_training_arena/arena = training_origin?.resolve()
 	if(!arena)
 		return null
 	var/datum/antag_training_session/session = arena.session_of(src)
 	var/here = arena.match_zone(target)
+	var/turf/core_turf = get_turf(team?.swarmer_core) || get_turf(src)
+	var/core_zone = arena.match_zone(core_turf)
+	var/turf/farthest
 	var/turf/fallback
-	for(var/zone_id in shuffle(arena.zones))
-		if(zone_id == "hub" || zone_id == here)
+	var/max_distance = -1
+	var/fallback_distance = -1
+	for(var/zone_id in arena.zones)
+		if(zone_id == "hub" || zone_id == here || zone_id == core_zone)
 			continue
 		var/list/zone = arena.zones[zone_id]
 		var/turf/spot
@@ -203,10 +208,14 @@
 			if(member != session && member_turf && arena.inside_bounds(member_turf, zone["bounds"]))
 				occupied = TRUE
 				break
-		if(!occupied)
-			return spot
-		fallback ||= spot
-	return fallback
+		var/distance = get_dist_euclidian(core_turf, spot)
+		if(!occupied && distance > max_distance)
+			max_distance = distance
+			farthest = spot
+		else if(occupied && distance > fallback_distance)
+			fallback_distance = distance
+			fallback = spot
+	return farthest || fallback
 
 /datum/antagonist/swarmer_training
 	name = "Учебный сворм"

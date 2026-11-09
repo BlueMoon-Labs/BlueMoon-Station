@@ -265,81 +265,75 @@
 			burn *= 1.2
 			stamina = 0
 
-	/*
-	// START WOUND HANDLING
-	*/
+	var/physical_hit = brute || burn
+	if(physical_hit)
+		// what kind of wounds we're gonna roll for, take the greater between brute and burn, then if it's brute, we subdivide based on sharpness
+		var/wounding_type = (brute > burn ? WOUND_BLUNT : WOUND_BURN)
+		var/wounding_dmg = max(brute, burn)
+		var/mangled_state = get_mangled_state()
+		var/bio_state = owner ? owner.get_biological_state() : (BIO_JUST_FLESH | BIO_JUST_BONE)
+		var/easy_dismember = owner && HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
+		var/glass_bones = owner && HAS_TRAIT(owner, TRAIT_GLASS_BONES)
+		var/paper_skin = owner && HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
 
-	// what kind of wounds we're gonna roll for, take the greater between brute and burn, then if it's brute, we subdivide based on sharpness
-	var/wounding_type = (brute > burn ? WOUND_BLUNT : WOUND_BURN)
-	var/wounding_dmg = max(brute, burn)
-	var/mangled_state = get_mangled_state()
-	var/bio_state = owner ? owner.get_biological_state() : (BIO_JUST_FLESH | BIO_JUST_BONE)
-	var/easy_dismember = owner && HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
-	var/glass_bones = owner && HAS_TRAIT(owner, TRAIT_GLASS_BONES)
-	var/paper_skin = owner && HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
-
-	if(wounding_type == WOUND_BLUNT)
-		if(sharpness == SHARP_EDGED)
-			wounding_type = WOUND_SLASH
-		else if(sharpness == SHARP_POINTY)
-			wounding_type = WOUND_PIERCE
-
-	//Handling for bone only/flesh only(none right now)/flesh and bone targets
-	switch(bio_state)
-		// if we're bone only, all cutting attacks go straight to the bone
-		if(BIO_JUST_BONE)
-			if(wounding_type == WOUND_SLASH)
-				wounding_type = WOUND_BLUNT
-				wounding_dmg *= (easy_dismember ? 3 : 1.5)
-				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			else if(wounding_type == WOUND_PIERCE)
-				wounding_type = WOUND_BLUNT
-				wounding_dmg *= (easy_dismember ? 3 : 1.5)
-				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
-				return
-		// if we're flesh only, all blunt attacks become weakened slashes in terms of wound damage
-		if(BIO_JUST_FLESH)
-			if(wounding_type == WOUND_BLUNT)
+		if(wounding_type == WOUND_BLUNT)
+			if(sharpness == SHARP_EDGED)
 				wounding_type = WOUND_SLASH
-				wounding_dmg *= (easy_dismember ? 3 : 1.5)
-				wounding_dmg *= (paper_skin ? 3 : 1.5)
-			if(can_dismember && (mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
-				return
-		// standard humanoids
-		if(BIO_FLESH_BONE)
-			// if we've already mangled the skin (critical slash or piercing wound), then the bone is exposed, and we can damage it with sharp weapons at a reduced rate
-			// So a big sharp weapon is still all you need to destroy a limb
-			if(wounding_type == WOUND_SLASH || wounding_type == WOUND_PIERCE)
-				wounding_dmg *= (paper_skin ? 3 : 1.5)
-			else
-				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			if(mangled_state == BODYPART_MANGLED_FLESH && sharpness)
-				playsound(src, "sound/effects/wounds/crackandbleed.ogg", 100)
-				if(wounding_type == WOUND_SLASH && !easy_dismember)
-					wounding_dmg *= 0.5 // edged weapons pass along 50% of their wounding damage to the bone since the power is spread out over a larger area
-				if(wounding_type == WOUND_PIERCE && !easy_dismember)
-					wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
-				wounding_type = WOUND_BLUNT
-			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
-				return
+			else if(sharpness == SHARP_POINTY)
+				wounding_type = WOUND_PIERCE
 
-	// now we have our wounding_type and are ready to carry on with wounds and dealing the actual damage
-	if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
-		check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
+		//Handling for bone only/flesh only(none right now)/flesh and bone targets
+		switch(bio_state)
+			// if we're bone only, all cutting attacks go straight to the bone
+			if(BIO_JUST_BONE)
+				if(wounding_type == WOUND_SLASH)
+					wounding_type = WOUND_BLUNT
+					wounding_dmg *= (easy_dismember ? 3 : 1.5)
+					wounding_dmg *= (glass_bones ? 3 : 1.5)
+				else if(wounding_type == WOUND_PIERCE)
+					wounding_type = WOUND_BLUNT
+					wounding_dmg *= (easy_dismember ? 3 : 1.5)
+					wounding_dmg *= (glass_bones ? 3 : 1.5)
+				if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+					return
+			// if we're flesh only, all blunt attacks become weakened slashes in terms of wound damage
+			if(BIO_JUST_FLESH)
+				if(wounding_type == WOUND_BLUNT)
+					wounding_type = WOUND_SLASH
+					wounding_dmg *= (easy_dismember ? 3 : 1.5)
+					wounding_dmg *= (paper_skin ? 3 : 1.5)
+				if(can_dismember && (mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+					return
+			// standard humanoids
+			if(BIO_FLESH_BONE)
+				// if we've already mangled the skin (critical slash or piercing wound), then the bone is exposed, and we can damage it with sharp weapons at a reduced rate
+				// So a big sharp weapon is still all you need to destroy a limb
+				if(wounding_type == WOUND_SLASH || wounding_type == WOUND_PIERCE)
+					wounding_dmg *= (paper_skin ? 3 : 1.5)
+				else
+					wounding_dmg *= (glass_bones ? 3 : 1.5)
+				if(mangled_state == BODYPART_MANGLED_FLESH && sharpness)
+					playsound(src, "sound/effects/wounds/crackandbleed.ogg", 100)
+					if(wounding_type == WOUND_SLASH && !easy_dismember)
+						wounding_dmg *= 0.5 // edged weapons pass along 50% of their wounding damage to the bone since the power is spread out over a larger area
+					if(wounding_type == WOUND_PIERCE && !easy_dismember)
+						wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
+					wounding_type = WOUND_BLUNT
+				else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+					return
 
-	// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
-	// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
-	// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
-	// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
-	// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
-	for(var/i in wounds)
-		var/datum/wound/iter_wound = i
-		iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
+		// now we have our wounding_type and are ready to carry on with wounds and dealing the actual damage
+		if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
+			check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
 
-	/*
-	// END WOUND HANDLING
-	*/
+		// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
+		// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
+		// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
+		// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
+		// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
+		for(var/i in wounds)
+			var/datum/wound/iter_wound = i
+			iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
 
 	//back to our regularly scheduled program, we now actually apply damage if there's room below limb damage cap
 
@@ -376,7 +370,7 @@
 		if(stamina > DAMAGE_PRECISION)
 			owner.update_stamina()
 	consider_processing()
-	update_disabled()
+	update_disabled(silent = !physical_hit)
 	update_threshhold_state()
 	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_DAMAGE)
 	return update_bodypart_damage_state()
@@ -612,15 +606,20 @@
 	var/disable_threshold = get_disable_threshold()
 	if(can_dismember() && !HAS_TRAIT(owner, TRAIT_NODISMEMBER))
 		. = disabled //inertia, to avoid limbs healing 0.1 damage and being re-enabled
-		if(get_damage(TRUE) >= disable_threshold * (HAS_TRAIT(owner, TRAIT_EASYLIMBDISABLE) ? 0.6 : 1)) //Easy limb disable disables the limb at 40% health instead of 0%
+		var/physical_damage = get_damage()
+		var/total_damage = max(physical_damage, stamina_dam)
+		var/damage_threshold = disable_threshold * (HAS_TRAIT(owner, TRAIT_EASYLIMBDISABLE) ? 0.6 : 1)
+		if(physical_damage >= damage_threshold)
 			if(!last_maxed && !silent)
-				if(!HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
+				if(!HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM))
 					owner.emote("scream")
 				last_maxed = TRUE
+		else if(physical_damage <= disable_threshold * 0.8)
+			last_maxed = FALSE
+		if(total_damage >= damage_threshold)
 			if(!is_organic_limb(FALSE) || stamina_dam >= disable_threshold)
 				return BODYPART_DISABLED_DAMAGE
-		else if(disabled && (get_damage(TRUE) <= (disable_threshold * 0.8))) // reenabled at 80% now instead of 50% as of wounds update
-			last_maxed = FALSE
+		else if(disabled && total_damage <= disable_threshold * 0.8)
 			return BODYPART_NOT_DISABLED
 	else
 		return BODYPART_NOT_DISABLED

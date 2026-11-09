@@ -6,6 +6,7 @@
 		return 0
 	if(custom_materials[GET_MATERIAL_REF(/datum/material/iron)] || custom_materials[GET_MATERIAL_REF(/datum/material/glass)] || custom_materials[GET_MATERIAL_REF(/datum/material/plastic)] || custom_materials[GET_MATERIAL_REF(/datum/material/titanium)])
 		return 1
+	return 0
 
 /obj/item/deactivated_swarmer/integrate_amount()
 	return 100

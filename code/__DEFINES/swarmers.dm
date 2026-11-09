@@ -9,7 +9,7 @@
 #define SWARMER_STAMINA_SCALE (STAMINA_CRIT / 100)
 
 GLOBAL_LIST_INIT(common_swarmer_actions, list(
-	/datum/action/cooldown/swarmer/core_location,
+	/datum/action/cooldown/swarmer/consume_tile,
 ))
 
 GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
@@ -76,6 +76,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 #define SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE (1<<4)
 #define SWARMER_ACT_POSSIBLE_ACTION_CONSUME (1<<5)
 #define SWARMER_ACT_POSSIBLE_ACTION_DESTROY (1<<6)
+#define SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC (1<<7)
 
 #define SWARMER_ACT_IMPOSSIBLE_REASON_ENERGY (1<<3)
 #define SWARMER_ACT_IMPOSSIBLE_REASON_LIVING (1<<4)

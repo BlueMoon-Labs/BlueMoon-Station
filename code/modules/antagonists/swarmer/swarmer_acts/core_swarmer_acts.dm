@@ -80,38 +80,31 @@
 			. |= CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/food/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
-	user.send_organic_processer_signal(src, SWARMER_SEND_ORGANIC_DELAY)
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
+	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC
 
 /obj/item/grown/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
-	user.send_organic_processer_signal(src, SWARMER_SEND_ORGANIC_DELAY)
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
+	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC
 
 /obj/item/seeds/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
-	user.send_organic_processer_signal(src, SWARMER_SEND_ORGANIC_DELAY)
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
+	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC
 
 /obj/machinery/hydroponics/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
 	if(!myseed)
 		return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE
+	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC
 
-	user.balloon_alert(user, "отправка растения...")
-	if(!do_after(user, SWARMER_SEND_ORGANIC_DELAY, src))
-		balloon_alert(user, "сбито!")
-		return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
-
+/obj/machinery/hydroponics/proc/harvest_for_swarmer()
+	if(!myseed)
+		return FALSE
 	age = 0
 	plant_health = 0
 	if(harvest)
 		harvest = FALSE
 	QDEL_NULL(myseed)
 	update_icon()
-
-	user.send_organic_processer_signal()
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
+	return TRUE
 
 /obj/item/reagent_containers/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
 	if(!reagents?.total_volume)
 		return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_CONSUME
-	user.send_organic_processer_signal(src, SWARMER_SEND_ORGANIC_DELAY)
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE
+	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC

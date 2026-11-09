@@ -119,6 +119,9 @@
 /obj/effect/mob_spawn/proc/equip(mob/M, load_character)
 	return
 
+/obj/effect/mob_spawn/proc/create_body(mob_path)
+	return new mob_path(get_turf(src))
+
 /**
  * Создаёт моба спавнера.
  *
@@ -130,7 +133,7 @@
 	if(QDELETED(src))
 		return
 	var/mob_path = spawn_type || mob_type
-	var/mob/living/M = new mob_path(get_turf(src)) //living mobs only
+	var/mob/living/M = create_body(mob_path)
 	if(!random)
 		M.real_name = mob_name ? mob_name : M.name
 		if(!mob_gender)

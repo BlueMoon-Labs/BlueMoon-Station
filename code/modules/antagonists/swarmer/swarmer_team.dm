@@ -33,8 +33,19 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 		amount *= metal_modifier
 	if(metallic_resources + amount < 0)
 		return FALSE
-	metallic_resources += amount
+	set_metal(metallic_resources + amount)
 	return TRUE
+
+/datum/team/swarmer_team/proc/set_metal(amount)
+	if(metallic_resources == amount)
+		return
+	metallic_resources = amount
+	for(var/mob/living/simple_animal/hostile/swarmer/body as anything in bodies)
+		if(!body?.client)
+			continue
+		var/datum/hud/swarmer/swarmer_hud = body.hud_used
+		if(istype(swarmer_hud))
+			swarmer_hud.update_core_metal()
 
 /datum/team/swarmer_team/proc/adjust_organic(amount)
 	if(QDELETED(swarmer_core) || organic_resources + amount < 0)
@@ -78,9 +89,10 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/on_core_init(obj/structure/swarmer/core/core)
 	swarmer_core = core
-	metallic_resources = SWARMER_STARTING_METAL
+	set_metal(SWARMER_STARTING_METAL)
 	RegisterSignal(swarmer_core, COMSIG_SWARMER_CORE_DAMAGED, PROC_REF(on_core_integrity_changed))
 	RegisterSignal(swarmer_core, COMSIG_MOVABLE_MOVED, PROC_REF(on_core_moved))
+	update_core_arrows()
 
 /datum/team/swarmer_team/proc/on_core_destroy(obj/structure/swarmer/core/core)
 	if(swarmer_core != core)
@@ -88,9 +100,10 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	UnregisterSignal(swarmer_core, COMSIG_SWARMER_CORE_DAMAGED)
 	UnregisterSignal(swarmer_core, COMSIG_MOVABLE_MOVED)
 	swarmer_core = null
+	update_core_arrows()
 	if(GLOB.active_swarmer_team == src)
 		GLOB.active_swarmer_team = null
-	metallic_resources = 0
+	set_metal(0)
 	organic_resources = 0
 	for(var/obj/effect/mob_spawn/swarmer/shell as anything in shells?.Copy())
 		qdel(shell)
@@ -114,6 +127,9 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/on_core_moved(datum/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	SIGNAL_HANDLER
+	update_core_arrows()
+	if(istype(old_loc, /obj/structure/closet/supplypod/swarmer))
+		return
 	var/area/core_area = get_area(swarmer_core)
 	var/locname = initial(core_area.name)
 	for(var/datum/mind/swarmer_mind as anything in members)
@@ -122,6 +138,12 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 			continue
 		target.balloon_alert(target, "перемещение ядра!")
 		to_chat(target, span_boldnotice("Внимание: Обнаружено перемещение ядра! Новое местоположение: [locname]."))
+
+/datum/team/swarmer_team/proc/update_core_arrows()
+	for(var/mob/living/simple_animal/hostile/swarmer/body as anything in bodies)
+		var/datum/hud/swarmer/swarmer_hud = body?.hud_used
+		if(istype(swarmer_hud))
+			swarmer_hud.update_core_arrow()
 
 /datum/team/swarmer_team/proc/try_process_organic(obj/item/item)
 	if(!LAZYACCESS(swarmer_objects, /obj/structure/swarmer/organic_processer))
@@ -149,6 +171,38 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 			return SWARMER_ANALYZE_FOUND
 
 	return SWARMER_ANALYZE_BUSY
+
+/datum/team/swarmer_team/proc/find_disperse_turf(mob/living/target)
+	var/turf/origin = get_turf(target)
+	if(!origin)
+		return null
+	var/turf/core_turf = get_turf(swarmer_core) || origin
+	var/area/core_area = get_area(core_turf)
+	var/teleport_noise = GLOB.bluespace_teleport_noise
+	var/turf/farthest
+	var/max_distance_squared = -1
+	for(var/area/destination_area as anything in SSmapping.areas_in_z["[origin.z]"])
+		if(destination_area == core_area || istype(destination_area, /area/space) || (destination_area.area_flags & NOTELEPORT))
+			continue
+		for(var/turf/open/floor/candidate in destination_area)
+			if(candidate.z != origin.z || candidate == origin || candidate.density)
+				continue
+			var/dx = candidate.x - core_turf.x
+			var/dy = candidate.y - core_turf.y
+			var/distance_squared = dx * dx + dy * dy
+			if(distance_squared <= max_distance_squared || !is_safe_turf(candidate) || !target.training_move_allowed(candidate))
+				continue
+			if(teleport_noise)
+				var/overlaps_core = FALSE
+				for(var/turf/landing as anything in get_teleport_turfs(candidate, teleport_noise))
+					if(landing.loc == core_area)
+						overlaps_core = TRUE
+						break
+				if(overlaps_core)
+					continue
+			max_distance_squared = distance_squared
+			farthest = candidate
+	return farthest
 
 /datum/team/swarmer_team/proc/adjust_modifier(adjust_amount)
 	unlimited_metal_modifier += adjust_amount

@@ -44,11 +44,9 @@
 
 	var/datum/team/swarmer_team/team = new
 	GLOB.active_swarmer_team = team
-	var/obj/structure/closet/supplypod/swarmer/pod = new
-	pod.team = team
-	pod.source_action = source_action
-	pod.refund_cost = refund_cost
+	var/obj/structure/closet/supplypod/swarmer/pod = new(null, team, source_action, refund_cost)
 	new /obj/effect/pod_landingzone(pick(landing_turfs), pod)
+	team.swarmer_core?.recruit_initial_swarmers()
 	return SUCCESSFUL_SPAWN
 
 /obj/structure/closet/supplypod/swarmer
@@ -56,36 +54,47 @@
 	desc = "Капсула высадки роя свармеров."
 	style = STYLE_SWARMER
 	bluespace = TRUE
-	delays = list(POD_TRANSIT = 3 SECONDS, POD_FALLING = 1.2 SECONDS, POD_OPENING = 3 SECONDS, POD_LEAVING = 3 SECONDS)
+	delays = list(POD_TRANSIT = 3 SECONDS, POD_FALLING = 10 SECONDS, POD_OPENING = 3 SECONDS, POD_LEAVING = 3 SECONDS)
 	specialised = TRUE
 	explosionSize = list(0, 0, 0, 0)
+	effectStealth = TRUE
 	var/datum/team/swarmer_team/team
-	var/datum/director_action/source_action
-	var/refund_cost = 0
+
+/obj/structure/closet/supplypod/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team, datum/director_action/source_action, refund_cost = 0)
+	. = ..(mapload)
+	if(!swarm_team)
+		return
+	team = swarm_team
+	new /obj/structure/swarmer/core(src, team)
+	for(var/direction in GLOB.alldirs)
+		new /obj/structure/swarmer/blockade(src, team)
+	for(var/index in 1 to 4)
+		var/obj/effect/mob_spawn/swarmer/shell = new(src, team, TRUE)
+		shell.director_source_action = source_action
+		if(source_action)
+			shell.director_intensity = source_action.intensity / 4
+			shell.director_refund_cost = refund_cost / 4
+
+/obj/structure/closet/supplypod/swarmer/preOpen()
+	var/turf/landing_turf = get_turf(src)
+	if(landing_turf && !QDELETED(team))
+		swarmer_shield_around_turf(landing_turf, 2, 15 SECONDS, team)
+	return ..()
 
 /obj/structure/closet/supplypod/swarmer/setOpened()
 	. = ..()
 	var/turf/landing_turf = get_turf(src)
 	if(QDELETED(team) || !landing_turf)
 		return
-	var/datum/team/swarmer_team/landing_team = team
-	team = null
-	new /obj/structure/swarmer/core(landing_turf, landing_team)
-	for(var/direction in GLOB.alldirs)
-		var/turf/neighbor = get_step(landing_turf, direction)
+	var/direction_index = 0
+	for(var/obj/structure/swarmer/blockade/barricade in contents.Copy())
+		var/turf/neighbor = get_step(landing_turf, GLOB.alldirs[++direction_index])
 		if(istype(neighbor, /turf/open/floor) && !neighbor.is_blocked_turf(exclude_mobs = TRUE))
-			new /obj/structure/swarmer/blockade(neighbor, landing_team)
-	swarmer_shield_around_turf(landing_turf, 2, 30 SECONDS, landing_team)
-	for(var/index in 1 to 4)
-		var/obj/effect/mob_spawn/swarmer/shell = new(landing_turf, landing_team)
-		shell.director_source_action = source_action
-		if(source_action)
-			shell.director_intensity = source_action.intensity / 4
-			shell.director_refund_cost = refund_cost / 4
-	landing_team.swarmer_core?.recruit_initial_swarmers()
-	source_action = null
+			barricade.forceMove(neighbor)
+		else
+			qdel(barricade)
+	team = null
 
 /obj/structure/closet/supplypod/swarmer/Destroy()
 	QDEL_NULL(team)
-	source_action = null
 	return ..()

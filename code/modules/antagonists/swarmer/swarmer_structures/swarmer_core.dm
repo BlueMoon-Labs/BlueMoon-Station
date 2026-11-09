@@ -132,11 +132,13 @@
 	if(recruit_poll_active || QDELETED(src) || QDELETED(team))
 		return
 	recruit_poll_active = TRUE
-	var/list/mob/dead/observer/candidates = pollGhostCandidates("Хотите сыграть за свармера?", ROLE_ALIEN, null, 0, 15 SECONDS, POLL_IGNORE_SWARMER)
+	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts()
 	recruit_poll_active = FALSE
 	if(QDELETED(src) || QDELETED(team))
 		return
 	for(var/obj/effect/mob_spawn/swarmer/shell as anything in team.shells?.Copy())
+		if(QDELETED(shell) || !get_turf(shell))
+			continue
 		while(length(candidates))
 			var/mob/dead/observer/candidate = pick_n_take(candidates)
 			if(candidate?.client && candidate.can_reenter_round())
@@ -148,7 +150,7 @@
 	if(mega_poll_active || QDELETED(src) || QDELETED(team))
 		return
 	mega_poll_active = TRUE
-	var/list/mob/dead/observer/candidates = pollGhostCandidates("Хотите сыграть за мегасвармера?", ROLE_ALIEN, null, 0, 30 SECONDS, POLL_IGNORE_SWARMER)
+	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts(mega = TRUE)
 	mega_poll_active = FALSE
 	if(QDELETED(src) || QDELETED(team))
 		return
@@ -266,7 +268,7 @@
 		var/list/new_class = list(
 			"name" = swarmer::name,
 			"desc" = swarmer::desc,
-			"icon" = "data:image/png;base64,[icon2base64(icon(swarmer::icon, swarmer::icon_state, SOUTH, 1))]",
+			"icon" = "data:image/png;base64,[icon2base64(icon(swarmer::icon, swarmer::icon_state, SOUTH, 1, FALSE))]",
 			"path" = path,
 			"additional_info" = swarmer::swarmer_class_info,
 			"cost" = swarmer::swap_resource_cost,

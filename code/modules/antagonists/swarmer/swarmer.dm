@@ -50,6 +50,7 @@
 	var/object_attack_timer
 	var/object_attack_consumes = FALSE
 	var/secondary_weapon_hint
+	var/datum/action/cooldown/swarmer/consume_tile/active_tile_attack
 
 /mob/living/simple_animal/hostile/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
@@ -84,6 +85,25 @@
 	team = swarm_team
 	if(team)
 		LAZYADD(team.bodies, src)
+	var/datum/hud/swarmer/swarmer_hud = hud_used
+	if(istype(swarmer_hud))
+		swarmer_hud.update_core_arrow()
+		swarmer_hud.update_core_metal()
+
+/mob/living/simple_animal/hostile/swarmer/set_hud_used(datum/hud/new_hud)
+	if(hud_used == new_hud)
+		return ..()
+	var/datum/hud/swarmer/previous_hud = hud_used
+	if(istype(previous_hud))
+		previous_hud.detach_core_tracking()
+	var/datum/action/cooldown/swarmer/consume_tile/selection = click_intercept
+	if(istype(selection))
+		selection.cancel()
+	active_tile_attack?.stop()
+	. = ..()
+	var/datum/hud/swarmer/current_hud = hud_used
+	if(istype(current_hud))
+		current_hud.attach_core_tracking()
 
 /mob/living/simple_animal/hostile/swarmer/proc/add_datum_if_not_exist()
 	if(mind && team && !mind.has_antag_datum(/datum/antagonist/swarmer))
@@ -139,11 +159,10 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/get_status_tab_items()
-	var/list/status_tab_data = ..()
-	. = status_tab_data
-	status_tab_data[++status_tab_data.len] = list("Металлические ресурсы: ", team.metallic_resources)
+	. = ..()
+	. += "Металл в ядре: [round(team?.metallic_resources || 0, 0.01)]"
 	if(team?.swarmer_core)
-		status_tab_data[++status_tab_data.len] = list("Здоровье ядра: ", "[team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]")
+		. += "Здоровье ядра: [team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]"
 
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()
@@ -163,6 +182,7 @@
 		return TRUE
 
 /mob/living/simple_animal/hostile/swarmer/AttackingTarget()
+	active_tile_attack?.stop()
 	if(isswarmer(target))
 		return FALSE
 
@@ -230,6 +250,11 @@
 /mob/living/simple_animal/hostile/swarmer/proc/fire_secondary_weapon(atom/targeted_atom)
 	return
 
+/mob/living/simple_animal/hostile/swarmer/shoot_with_projectile(atom/targeted_atom, projectile_type)
+	. = ..()
+	if(.)
+		active_tile_attack?.stop()
+
 /atom/proc/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
 	return FALSE
 
@@ -294,6 +319,10 @@
 	if((swarmer_act_result & (SWARMER_ACT_POSSIBLE_ACTION_DAMAGE | SWARMER_ACT_POSSIBLE_ACTION_CONSUME)) && object_attack_target?.resolve() == atom)
 		return
 
+	if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC)
+		process_organic(atom)
+		DelayNextAction(CLICK_CD_MELEE)
+		return
 	DelayNextAction(CLICK_CD_MELEE)
 	if(!can_disassemble(atom))
 		return
@@ -309,42 +338,50 @@
 	else
 		CRASH("Swarmer act returned SWARMER_ACT_POSSIBLE flag with none of the correct flag combinations. Atom: [atom.type], flag: [swarmer_act_result]")
 
-/mob/living/simple_animal/hostile/swarmer/proc/can_disassemble(atom/target)
+/mob/living/simple_animal/hostile/swarmer/proc/can_disassemble(atom/target, quiet = FALSE)
 	var/obj/target_object = target
 	if((istype(target_object) && (target_object.resistance_flags & INDESTRUCTIBLE)) || isindestructiblewall(target))
-		balloon_alert(src, "невозможно сломать!")
+		if(!quiet)
+			balloon_alert(src, "невозможно сломать!")
 		return FALSE
 	if(isitem(target))
 		return TRUE
 
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf || istype(get_area(target_turf), /area/engineering/supermatter))
-		balloon_alert(src, "нельзя, опасная среда!")
+		if(!quiet)
+			balloon_alert(src, "нельзя, опасная среда!")
 		return FALSE
 	if(locate(/mob/living) in target)
-		balloon_alert(src, "внутри живое существо!")
+		if(!quiet)
+			balloon_alert(src, "внутри живое существо!")
 		return FALSE
 	for(var/direction in GLOB.cardinals)
 		var/turf/neighbor = get_step(target_turf, direction)
 		if(isspaceturf(neighbor) && !CANATMOSPASS(target, neighbor))
-			balloon_alert(src, "нельзя, возможна разгерметизация!")
+			if(!quiet)
+				balloon_alert(src, "нельзя, возможна разгерметизация!")
 			return FALSE
 	return TRUE
 
-/mob/living/simple_animal/hostile/swarmer/proc/send_organic_processer_signal(obj/item, delay = 0)
-	if(delay > 0)
-		balloon_alert(src, "отправка...")
-		var/atom/delay_target = item ? item : src
-		if(!do_after(src, delay, delay_target))
+/mob/living/simple_animal/hostile/swarmer/proc/process_organic(atom/target, datum/callback/extra_checks)
+	var/obj/machinery/hydroponics/tray = target
+	var/is_tray = istype(tray)
+	balloon_alert(src, is_tray ? "отправка растения..." : "отправка...")
+	if(!do_after(src, SWARMER_SEND_ORGANIC_DELAY, target, extra_checks = extra_checks) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
+		if(!extra_checks)
 			balloon_alert(src, "сбито!")
-			return
+		return FALSE
 
+	if(is_tray && !tray.harvest_for_swarmer())
+		return FALSE
+	var/obj/item/item = is_tray ? null : target
 	var/process_result = team?.try_process_organic(item) || SWARMER_PROCESS_NONE
 	if(process_result & SWARMER_PROCESS_FOUND)
 		spark_system.start()
 		balloon_alert(src, "успешно отправлено!")
 		playsound(loc, 'sound/swarmer/swarmer_send.ogg', 100, TRUE)
-		return
+		return TRUE
 
 	if(process_result & SWARMER_PROCESS_NONE)
 		balloon_alert(src, "нету переработчиков!")
@@ -352,6 +389,7 @@
 		balloon_alert(src, "нету свободных обработчиков!")
 	else
 		CRASH("Swarmer team try_process_organic returned none of the supposed bitflags. Return value: [process_result]")
+	return is_tray
 
 /mob/living/simple_animal/hostile/swarmer/proc/try_analyze(mob/living/target)
 	balloon_alert(src, "отправка...")
@@ -377,7 +415,7 @@
 	fail_disperse_teleport(target)
 
 /mob/living/simple_animal/hostile/swarmer/proc/fail_disperse_teleport(mob/living/target)
-	var/turf/safe_turf = find_safe_turf(z)
+	var/turf/safe_turf = team?.find_disperse_turf(target)
 	if(!safe_turf)
 		return
 
@@ -413,16 +451,18 @@
 	log_combat(src, target, "Converted into [new_swarmer.name].")
 	qdel(target)
 
-/mob/living/simple_animal/hostile/swarmer/proc/extract_resources(atom/target)
+/mob/living/simple_animal/hostile/swarmer/proc/extract_resources(atom/target, quiet = FALSE)
 	var/resource_gain = target.integrate_amount()
 	if(isnull(resource_gain))
 		CRASH("[target.type] swarmer_act uses consume return value, yet integrate_amount() proc returned null.")
 
 	if(QDELETED(target) || !team?.swarmer_core)
-		balloon_alert(src, "нет ядра!")
+		if(!quiet)
+			balloon_alert(src, "нет ядра!")
 		return FALSE
 	if(!resource_gain)
-		balloon_alert(src, "не совместимо!")
+		if(!quiet)
+			balloon_alert(src, "не совместимо!")
 		return FALSE
 
 	if(!isstack(target))
@@ -517,14 +557,12 @@
 	disintegrate_effect.adjust_size(target)
 	qdel(target)
 
-/mob/living/simple_animal/hostile/swarmer/proc/dismantle_machine(obj/machinery/target)
+/mob/living/simple_animal/hostile/swarmer/proc/dismantle_machine(obj/machinery/target, datum/callback/extra_checks)
 	do_attack_animation(target, no_effect = TRUE)
-	balloon_alert(src, "разбор...")
 	var/obj/effect/temp_visual/swarmer/dismantle/dismantle_effect = new(get_turf(target))
 	dismantle_effect.adjust_size(target)
-	if(!do_after(src, dismantle_speed, target))
+	if(!do_after(src, dismantle_speed, target, extra_checks = extra_checks) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
 		return
-	balloon_alert(src, "успех!")
 	target.deconstruct(TRUE)
 
 /mob/living/simple_animal/hostile/swarmer/proc/toggle_light()

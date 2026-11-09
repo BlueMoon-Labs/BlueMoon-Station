@@ -158,13 +158,14 @@
 		break
 
 /obj/structure/swarmer/organic_analyzer/proc/teleport_to_safe()
-	var/turf/safe_turf = find_safe_turf(z)
-	if(!safe_turf)
-		occupant.forceMove(loc)
-		return
-	playsound(src, 'sound/effects/sparks4.ogg', 50, TRUE)
-	occupant.SetSleeping(5 SECONDS)
-	do_teleport(occupant, safe_turf)
+	var/mob/living/target = occupant
+	var/turf/safe_turf = team?.find_disperse_turf(target)
+	if(safe_turf)
+		playsound(src, 'sound/effects/sparks4.ogg', 50, TRUE)
+		target.SetSleeping(5 SECONDS)
+		do_teleport(target, safe_turf)
+	if(!QDELETED(target) && target.loc == src)
+		target.forceMove(drop_location())
 
 /obj/structure/swarmer/organic_analyzer/return_air()
 	return air_contents

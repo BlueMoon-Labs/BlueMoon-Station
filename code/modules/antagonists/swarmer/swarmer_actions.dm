@@ -33,6 +33,187 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	if(action_cost)
 		desc = "[desc] Стоимость: [action_cost] ед. металла."
 
+/datum/action/cooldown/swarmer/consume_tile
+	name = "Consume Tile"
+	desc = "Выберите свою или соседнюю клетку, чтобы разобрать стену и обработать доступные объекты. Движение, атака или выстрел останавливают цикл."
+	button_icon_state = "swarmer_consume_tile"
+	click_to_activate = TRUE
+	var/turf/selected_tile
+	var/list/datum/weakref/pending_targets
+	var/list/skipped_targets
+	var/needs_rescan = FALSE
+	var/step_timer
+
+/datum/action/cooldown/swarmer/consume_tile/Grant(mob/M)
+	if(owner == M)
+		return
+	. = ..()
+	if(owner)
+		RegisterSignal(owner, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(cancel))
+
+/datum/action/cooldown/swarmer/consume_tile/Remove(mob/remove_from)
+	cancel()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_MOB_CLIENT_LOGOUT)
+	return ..()
+
+/datum/action/cooldown/swarmer/consume_tile/Trigger(trigger_flags, atom/target)
+	if(selected_tile && !target)
+		stop()
+		return TRUE
+	. = ..()
+	if(. && owner?.click_intercept == src)
+		owner.balloon_alert(owner, "выберите клетку!")
+
+/datum/action/cooldown/swarmer/consume_tile/InterceptClickOn(mob/living/caller, params, atom/target)
+	if(caller != owner)
+		return FALSE
+	var/list/modifiers = params2list(params)
+	if(modifiers[RIGHT_CLICK] || modifiers[MIDDLE_CLICK] || modifiers[SHIFT_CLICK] || modifiers[CTRL_CLICK] || modifiers[ALT_CLICK])
+		cancel()
+		return FALSE
+	. = ..()
+	if(.)
+		UpdateButtons(status_only = TRUE)
+	else
+		cancel()
+
+/datum/action/cooldown/swarmer/consume_tile/Activate(atom/target)
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
+	var/turf/target_tile = get_turf(target)
+	if(!istype(swarmer) || !swarmer.client || swarmer.incapacitated() || !isturf(swarmer.loc))
+		return FALSE
+	if(!target_tile || !in_range(swarmer, target_tile))
+		swarmer.balloon_alert(swarmer, "подойдите ближе!")
+		return FALSE
+
+	stop()
+	swarmer.stop_object_attack()
+	selected_tile = target_tile
+	skipped_targets = list()
+	needs_rescan = TRUE
+	swarmer.active_tile_attack = src
+	RegisterSignals(swarmer, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLICKON), PROC_REF(stop))
+	queue_step(swarmer)
+	return TRUE
+
+/datum/action/cooldown/swarmer/consume_tile/proc/cancel()
+	SIGNAL_HANDLER
+	stop()
+	if(owner?.click_intercept == src)
+		owner.click_intercept = null
+		UpdateButtons(status_only = TRUE)
+
+/datum/action/cooldown/swarmer/consume_tile/proc/stop()
+	SIGNAL_HANDLER
+	if(!selected_tile)
+		return
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
+	if(istype(swarmer))
+		if(swarmer.active_tile_attack == src)
+			swarmer.active_tile_attack = null
+		UnregisterSignal(swarmer, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLICKON))
+	selected_tile = null
+	pending_targets = null
+	skipped_targets = null
+	needs_rescan = FALSE
+	if(step_timer)
+		deltimer(step_timer)
+		step_timer = null
+
+/datum/action/cooldown/swarmer/consume_tile/proc/queue_step(mob/living/simple_animal/hostile/swarmer/swarmer)
+	step_timer = addtimer(CALLBACK(src, PROC_REF(run_step)), max(world.tick_lag, swarmer.EstimatedNextActionTime() - world.time), TIMER_STOPPABLE)
+
+// Во время ожидания достаточно проверить цикл и положение цели. Перед разбором проверяем доступ ещё раз.
+/datum/action/cooldown/swarmer/consume_tile/proc/can_work_on(atom/candidate, list/current_run, check_reach = FALSE)
+	if(!selected_tile || current_run != skipped_targets || QDELETED(candidate) || (candidate != selected_tile && candidate.loc != selected_tile))
+		return FALSE
+	if(!check_reach)
+		return TRUE
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
+	return candidate.invisibility <= swarmer.see_invisible && candidate.Adjacent(swarmer) && !candidate.IsObscured() \
+		&& (!swarmer.training_origin || !swarmer.training_consume_refusal(candidate)) && swarmer.can_disassemble(candidate, quiet = TRUE)
+
+/datum/action/cooldown/swarmer/consume_tile/proc/run_step()
+	step_timer = null
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
+	if(!selected_tile || !swarmer?.client || swarmer.incapacitated() || !isturf(swarmer.loc))
+		stop()
+		return
+	if(!swarmer.CheckActionCooldown(immediate = TRUE))
+		queue_step(swarmer)
+		return
+
+	var/list/current_run = skipped_targets
+	while(TRUE)
+		if(!length(pending_targets))
+			if(!needs_rescan)
+				stop()
+				return
+			// После разбора на клетке могут появиться детали или открыться доступ к другим объектам.
+			needs_rescan = FALSE
+			pending_targets = list()
+			for(var/obj/candidate in selected_tile)
+				if(iseffect(candidate) || is_swarmer_object(candidate))
+					continue
+				var/datum/weakref/candidate_ref = WEAKREF(candidate)
+				if(candidate_ref && !skipped_targets[candidate_ref])
+					pending_targets += candidate_ref
+			if(iswallturf(selected_tile))
+				var/datum/weakref/wall_ref = WEAKREF(selected_tile)
+				if(wall_ref && !skipped_targets[wall_ref])
+					pending_targets += wall_ref
+			continue
+
+		var/datum/weakref/candidate_ref = pending_targets[length(pending_targets)]
+		var/atom/candidate = candidate_ref.resolve()
+		if(!can_work_on(candidate, current_run, check_reach = TRUE))
+			pending_targets.len--
+			continue
+		var/result = candidate.swarmer_act(swarmer)
+		if(current_run != skipped_targets)
+			return
+		if(!(result & SWARMER_ACT_POSSIBLE) || QDELETED(candidate) || (candidate != selected_tile && candidate.loc != selected_tile))
+			pending_targets.len--
+			continue
+
+		swarmer.face_atom(candidate)
+		var/repeat_target = FALSE
+		if(result & SWARMER_ACT_POSSIBLE_ACTION_CONSUME)
+			var/consumed = swarmer.extract_resources(candidate, quiet = TRUE)
+			if(current_run != skipped_targets)
+				return
+			if(!consumed)
+				if(istype(candidate, /obj/item/storage))
+					needs_rescan = TRUE
+				skipped_targets[candidate_ref] = TRUE
+				pending_targets.len--
+				continue
+			repeat_target = isstack(candidate) && !QDELETED(candidate)
+			swarmer.DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
+		else
+			swarmer.DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
+			if(result & SWARMER_ACT_POSSIBLE_ACTION_DAMAGE)
+				repeat_target = swarmer.apply_object_attack(candidate, FALSE)
+			else if(result & SWARMER_ACT_POSSIBLE_ACTION_DESTROY)
+				swarmer.destroy_object(candidate)
+			else if(result & (SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE | SWARMER_ACT_POSSIBLE_ACTION_PROCESS_ORGANIC))
+				var/datum/callback/check_target = CALLBACK(src, PROC_REF(can_work_on), candidate, current_run)
+				if(result & SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE)
+					swarmer.dismantle_machine(candidate, check_target)
+				else
+					repeat_target = swarmer.process_organic(candidate, check_target) && istype(candidate, /obj/machinery/hydroponics)
+				qdel(check_target)
+
+		if(current_run != skipped_targets)
+			return
+		needs_rescan = TRUE
+		if(!repeat_target)
+			skipped_targets[candidate_ref] = TRUE
+			pending_targets.len--
+		queue_step(swarmer)
+		return
+
 /datum/action/cooldown/swarmer/build
 	cooldown_time = 3 SECONDS
 	var/build_type = /obj/structure/swarmer
@@ -311,31 +492,6 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	core.forceMove(target_turf)
 	qdel(actual_selected_hub)
 	swarmer_shield_around_turf(target_turf, forcefield_radius, forcefield_duration, swarmer.team)
-
-/datum/action/cooldown/swarmer/core_location
-	name = "Локация ядра"
-	desc = "Узнать, где находится ядро."
-	button_icon_state = "swarmer_core_location"
-
-/datum/action/cooldown/swarmer/core_location/Activate(atom/target)
-	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
-	if(!istype(swarmer) || !swarmer.team?.swarmer_core)
-		return FALSE
-	target = swarmer
-	. = ..()
-	var/datum/team/swarmer_team/team = swarmer.team
-	if(!team)
-		return
-
-	if(!team.swarmer_core)
-		return
-
-	var/dir_to_core = get_dir(target, team.swarmer_core)
-	var/area/core_area = get_area(team.swarmer_core)
-	var/locname = initial(core_area.name)
-	target.balloon_alert(target, "[dir2text_ru(dir_to_core)]!")
-	to_chat(target, "[span_bold("Местоположение ядра:")] [span_boldnotice("[locname]")] \n\
-		[span_bold("Направление от вас:")] [span_boldnotice("[dir2text_ru(dir_to_core)]")]")
 
 #undef SWARMER_BLOCKADE_COST
 #undef SWARMER_TRAP_COST

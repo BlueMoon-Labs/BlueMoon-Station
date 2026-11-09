@@ -128,7 +128,6 @@ export const SwarmerCore = (_props: unknown) => {
                               </>
                             }
                             onClick={() => handleClassSelect(classInfo)}
-                            fluid
                             aria-pressed={selectedClass?.path === classInfo.path}
                             aria-label={classInfo.name}
                           />
