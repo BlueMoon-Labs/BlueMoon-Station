@@ -3214,7 +3214,7 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/common/upper)
 "bVi" = (
 /obj/structure/flora/tree/jungle/small{
 	pixel_x = -16;
@@ -7455,6 +7455,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/mine/common/upper)
 "eFS" = (
@@ -7851,6 +7852,13 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"eTl" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/openspace,
+/area/mine/common/maintenance/south)
 "eTH" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -9015,7 +9023,7 @@
 	dir = 1
 	},
 /turf/open/openspace,
-/area/lavaland/surface/outdoors)
+/area/mine/common/maintenance/south)
 "fAk" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
@@ -14543,7 +14551,7 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/common/upper)
 "iOq" = (
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg2"
@@ -17685,7 +17693,7 @@
 /obj/structure/fans/tiny/invisible,
 /obj/effect/turf_decal/lunar_sand/plating,
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/common/upper)
 "kEd" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing{
@@ -21182,6 +21190,11 @@
 /obj/structure/tubes,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"mDq" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing,
+/turf/open/openspace,
+/area/mine/common/maintenance/south)
 "mDw" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -24786,6 +24799,10 @@
 	dir = 1
 	},
 /area/mine/mechbay)
+"otZ" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/turf/open/floor/plating,
+/area/mine/common/upper)
 "oul" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -28426,7 +28443,7 @@
 /obj/structure/fans/tiny/invisible,
 /obj/effect/turf_decal/lunar_sand/plating,
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/common/upper)
 "qEg" = (
 /obj/structure/stone_tile{
 	dir = 1
@@ -31801,6 +31818,13 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"sEO" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 6
+	},
+/turf/open/openspace,
+/area/mine/common/maintenance/south)
 "sER" = (
 /obj/structure/stone_tile/block{
 	dir = 8
@@ -34129,7 +34153,7 @@
 "tZA" = (
 /obj/structure/lattice/catwalk,
 /turf/open/openspace,
-/area/lavaland/surface/outdoors)
+/area/mine/common/maintenance/south)
 "tZF" = (
 /obj/machinery/door/poddoor{
 	id = "ds2cargo"
@@ -38412,7 +38436,7 @@
 	},
 /obj/structure/ladder,
 /turf/open/openspace,
-/area/lavaland/surface/outdoors)
+/area/mine/common/maintenance/south)
 "wBH" = (
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
@@ -141096,7 +141120,7 @@ jLG
 lzg
 jmn
 wBo
-xSw
+eTl
 nES
 nES
 nES
@@ -141353,7 +141377,7 @@ uBM
 wDa
 nKP
 tZA
-xIk
+mDq
 nES
 nES
 nES
@@ -141610,7 +141634,7 @@ nZC
 rzX
 jmn
 fAe
-bRs
+sEO
 nES
 nES
 nES
@@ -144679,8 +144703,8 @@ fZB
 qOQ
 lTc
 fZB
-jdP
-jdP
+otZ
+otZ
 bVf
 hzK
 mBC
