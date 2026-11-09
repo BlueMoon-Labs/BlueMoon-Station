@@ -75,13 +75,25 @@
 /obj/structure/swarmer/organic_analyzer/update_icon_state()
 	icon_state = occupant ? "[initial(icon_state)]_mob" : initial(icon_state)
 
+/obj/structure/swarmer/organic_analyzer/set_anchored(anchorvalue)
+	var/was_anchored = anchored
+	. = ..()
+	if(was_anchored != anchored)
+		team?.update_analyzer_stats()
+
+/obj/structure/swarmer/organic_analyzer/proc/can_accept_occupant()
+	return anchored && !occupant
+
+/obj/structure/swarmer/organic_analyzer/proc/set_occupant(mob/living/new_occupant)
+	occupant = new_occupant
+	update_icon(UPDATE_ICON_STATE)
+	team?.update_analyzer_stats()
+
 /obj/structure/swarmer/organic_analyzer/proc/try_load_mob(mob/living/target, gib_on_end = FALSE)
-	if(!anchored || QDELETED(target))
-		return FALSE
-	if(occupant)
+	if(!can_accept_occupant() || QDELETED(target))
 		return FALSE
 
-	occupant = target
+	set_occupant(target)
 	gib_after_analyzing = gib_on_end
 	var/delay = SWARMER_ANALYZE_DELAY(occupant)
 	analyze_timer = addtimer(CALLBACK(src, PROC_REF(finish_analyzing)), delay, TIMER_STOPPABLE)
@@ -91,15 +103,13 @@
 
 	spark_system.start()
 	sound_loop.start()
-	update_icon(UPDATE_ICON_STATE)
 	return TRUE
 
 /obj/structure/swarmer/organic_analyzer/proc/finish_analyzing()
 	analyze_timer = null
 	sound_loop.stop()
 	if(QDELETED(occupant) || !(occupant in contents))
-		occupant = null
-		update_icon(UPDATE_ICON_STATE)
+		set_occupant(null)
 		return
 
 	balloon_alert_to_viewers("обработано!")
@@ -110,8 +120,7 @@
 
 	if(gib_after_analyzing)
 		occupant.gib()
-		occupant = null
-		update_icon(UPDATE_ICON_STATE)
+		set_occupant(null)
 		return
 
 	take_random_organs()
@@ -121,8 +130,7 @@
 		if(target.handcuffed)
 			target.clear_cuffs(target.handcuffed)
 
-	occupant = null
-	update_icon(UPDATE_ICON_STATE)
+	set_occupant(null)
 
 /obj/structure/swarmer/organic_analyzer/proc/adjust_resources()
 	if(HAS_TRAIT(occupant, TRAIT_ROBOTIC_ORGANISM))

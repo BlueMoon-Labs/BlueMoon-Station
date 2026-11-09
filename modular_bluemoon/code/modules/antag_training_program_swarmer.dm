@@ -5,7 +5,7 @@
 
 /datum/antag_training_program/creature/swarmer
 	name = "Сворм"
-	desc = "Свармеры SS1984: ядро, общие запасы, смена корпусов, постройки и переработка."
+	desc = "Свармеры: ядро, общие запасы, смена корпусов, постройки и переработка."
 	icon = "recycle"
 	color = "teal"
 	category = "Существа"

@@ -38,10 +38,10 @@
 	name = "Swarmer core status"
 	icon = null
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	maptext_x = -80
+	maptext_x = -112
 	maptext_y = 34
-	maptext_width = 112
-	maptext_height = 40
+	maptext_width = 144
+	maptext_height = 56
 
 /datum/hud/swarmer
 	var/atom/movable/screen/swarmer/core_arrow/core_arrow
@@ -116,9 +116,10 @@
 	var/obj/structure/swarmer/core/core = team?.swarmer_core
 	var/metal = round(team?.metallic_resources || 0, 0.01)
 	var/organic = round(team?.organic_resources || 0, 0.01)
+	var/analyzers = team?.analyzer_status || "0/0"
 	var/core_health = core ? "[core.obj_integrity]/[core.max_integrity]" : "нет"
 	var/core_color = core && core.obj_integrity < core.max_integrity ? COLOR_RED : COLOR_WHITE
-	var/label = MAPTEXT("<div align='right'>Металл: [metal]<br>Органика: [organic]<br><font color='[core_color]'>Ядро: [core_health]</font></div>")
+	var/label = MAPTEXT("<div align='right'>Металл: [metal]<br>Органика: [organic]<br>Анализаторы: [analyzers]<br><font color='[core_color]'>Ядро: [core_health]</font></div>")
 	if(core_stats.maptext != label)
 		core_stats.maptext = label
 

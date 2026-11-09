@@ -18,6 +18,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	var/list/obj/effect/mob_spawn/swarmer/shells
 	var/training = FALSE
 	var/collapse_timer
+	var/analyzer_status = "0/0"
 
 /datum/team/swarmer_team/New(list/starting_members)
 	..()
@@ -52,9 +53,13 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/add_structure(obj/structure_to_add)
 	LAZYADDASSOCLIST(swarmer_objects, structure_to_add.type, structure_to_add.UID())
+	if(structure_to_add.type == /obj/structure/swarmer/organic_analyzer)
+		update_analyzer_stats()
 
 /datum/team/swarmer_team/proc/remove_structure(obj/structure_to_remove)
 	LAZYREMOVEASSOC(swarmer_objects, structure_to_remove.type, structure_to_remove.UID())
+	if(structure_to_remove.type == /obj/structure/swarmer/organic_analyzer)
+		update_analyzer_stats()
 
 /datum/team/swarmer_team/Destroy(force, ...)
 	if(GLOB.active_swarmer_team == src)
@@ -148,6 +153,22 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 		var/datum/hud/swarmer/swarmer_hud = body.hud_used
 		if(istype(swarmer_hud))
 			swarmer_hud.update_core_stats()
+
+/datum/team/swarmer_team/proc/update_analyzer_stats()
+	if(QDELETED(src))
+		return
+
+	var/list/analyzers = LAZYACCESS(swarmer_objects, /obj/structure/swarmer/organic_analyzer)
+	var/free_analyzers = 0
+	for(var/analyzer_uid in analyzers)
+		var/obj/structure/swarmer/organic_analyzer/analyzer = locateUID(analyzer_uid)
+		if(analyzer?.can_accept_occupant())
+			free_analyzers++
+
+	var/status = "[free_analyzers]/[length(analyzers)]"
+	if(analyzer_status != status)
+		analyzer_status = status
+		update_core_stats()
 
 /datum/team/swarmer_team/proc/try_process_organic(obj/item/item)
 	if(!LAZYACCESS(swarmer_objects, /obj/structure/swarmer/organic_processer))

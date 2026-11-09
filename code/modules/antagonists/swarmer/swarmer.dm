@@ -180,7 +180,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()
-	adjustHealth(SWARMER_EMP_DAMAGE(severity), forced = TRUE)
+	adjustHealth(SWARMER_MOB_EMP_DAMAGE(severity), forced = TRUE)
 
 /mob/living/simple_animal/hostile/swarmer/electrocute_act(shock_damage, atom/source, siemens_coeff = 1, flags = NONE, jitter_time = 10 SECONDS, stutter_time = 6 SECONDS, stun_duration = 4 SECONDS)
 	if(!(flags & SHOCK_TESLA))

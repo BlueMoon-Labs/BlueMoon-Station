@@ -11,7 +11,7 @@
 	intensity = 15
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	family = "swarmers"
-	description = "Высаживает капсулу с ядром и оболочками свармеров в техтоннелях."
+	description = "Высаживает капсулу с ядром и оболочками свармеров на станции."
 
 /datum/round_event/spawn_swarmer
 
@@ -22,10 +22,9 @@
 	if(GLOB.active_swarmer_team)
 		return FALSE
 
-	// Те же картографические точки, что у события с фанклавами.
 	var/list/landing_turfs = list()
 	var/list/fallback_turfs = list()
-	for(var/turf/open/floor/landing_turf in GLOB.xeno_spawn)
+	for(var/turf/open/floor/landing_turf in GLOB.blobstart)
 		if(!is_station_level(landing_turf.z) || landing_turf.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		var/datum/gas_mixture/air = landing_turf.return_air()
@@ -89,7 +88,7 @@
 	var/direction_index = 0
 	for(var/obj/structure/swarmer/blockade/barricade in contents.Copy())
 		var/turf/neighbor = get_step(landing_turf, GLOB.alldirs[++direction_index])
-		if(istype(neighbor, /turf/open/floor) && !neighbor.is_blocked_turf(exclude_mobs = TRUE))
+		if(neighbor)
 			barricade.forceMove(neighbor)
 		else
 			qdel(barricade)
