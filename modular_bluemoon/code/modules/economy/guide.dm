@@ -21,7 +21,7 @@
 		"<h2>Памятка по экономике станции</h2>",
 		"<i>Числа - на момент печати. Подробности - в справках приложений \"Кошелёк\", \"Бюджет отдела\", \"Казна\", доски контрактов и консоли снабжения.</i>",
 		"<h3>Зарплата и налог</h3><ul>",
-		"<li>Раз в [settings.payroll_interval_ticks * economy_minutes] мин. из бюджета отдела, кр. по грейду: [jointext(wages, ", ")]. Глава добавляет до [settings.max_wage_bonus]%.</li>",
+		"<li>Раз в [settings.payroll_interval_ticks * economy_minutes] мин. из бюджета отдела, кр. по грейду: [jointext(wages, ", ")]. Глава добавляет до [settings.max_wage_bonus]%. Премии: до [settings.bonus_cap_hour] кр./ч на человека, себе до [settings.bonus_self_cap_hour].</li>",
 		"<li>Если бюджет пуст, недоплата - долг отдела перед вами (до [settings.owed_wages_cap_paychecks] окладов), он гасится первым. Меньше [settings.wage_floor] кр. за выплату не бывает: доплачивает NT, даже без отдела или грейда, в том числе после увольнения; безбилетникам - нет. Кто дольше [settings.dormant_after_minutes] мин. мёртв или не на смене, зарплату не получает.</li>",
 		"<li>Налог с зарплаты, работы и контрактов: сейчас [SSeconomy.tax_rate]%, капитан или ГП ставят от 0 до [settings.tax_max]%; [settings.tax_nt_share]% налога забирает NT, остальное - казне. Чаевые, переводы, биржа, касса и прилавок без налога.</li></ul>",
 		"<h3>Доход отделов</h3><ul>",
@@ -46,7 +46,7 @@
 		"<li>Слот-машина: [settings.slot_house_edge]% ставки берёт NT, [settings.slot_jackpot_share]% идёт в общий джекпот автоматов сектора (переходит в следующую смену, не меньше [settings.slot_jackpot_floor] кр.), остальное - в банк выигрышей.</li>",
 		"<li>Лотерея сектора: билет [settings.lottery_ticket_price] кр. в \"Кошельке\", до [settings.lottery_tickets_per_account] на счёт, победителю [100 - settings.lottery_house_share]% продаж.</li></ul>",
 		"<h3>Биржа</h3><ul>",
-		"<li>Спред [settings.stock_spread]%, комиссия [settings.stock_fee]%, позиция до [settings.stock_position_cap] кр. на компанию, сделка по ней раз в [settings.stock_trade_cooldown_seconds] с. Цены переходят в следующую смену со сдвигом [SSmarket.persist_decay]% к исходным.</li>",
+		"<li>Спред [settings.stock_spread]%, комиссия [settings.stock_fee]%, позиция до [settings.stock_position_cap] кр. на компанию, сделка по ней раз в [settings.stock_trade_cooldown_seconds] с. Цены переходят в следующую смену со сдвигом [SSmarket.persist_decay]% к исходным. Деньги и акции игроков - нет.</li>",
 		"<li>Что двигает цену каждой компании - в разделе \"От чего зависит цена\". О скачке от [STOCK_HOLDER_ALERT_MIN * 100]% и остановке торгов держателю сообщает карта.</li>",
 		"<li>[settings.stock_dividend_share]% закупок станции у партнёра - дивиденды держателям его компании с каждой зарплатой. [STOCK_INDEX_TICKER] - индекс сектора. Заявки в \"Портфеле\" (до [STOCK_ORDERS_MAX]) торгуют сами по порогу цены.</li></ul>",
 		"<h3>Аукцион сектора</h3><ul>",
@@ -57,3 +57,9 @@
 		"<li>Замороженный счёт не платит, зарплата копится долгом отдела. С возврата украденного [settings.audit_case_fee_percent]% идёт бюджету СБ.</li></ul>",
 	)
 	return jointext(lines, "")
+
+/// Короткая памятка для всех в канале "Сводка сектора": полную печатают ГП и квартирмейстеру.
+/proc/econ_guide_summary_text()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/economy_minutes = round(SSeconomy.wait / (1 MINUTES), 1)
+	return "Памятка по экономике станции. Зарплата приходит раз в [settings.payroll_interval_ticks * economy_minutes] мин. из бюджета отдела, с неё удерживается налог (сейчас [SSeconomy.tax_rate]%, капитан или ГП ставят до [settings.tax_max]%). Приложения КПК: \"Кошелёк\" - счёт, переводы и лотерея; \"Биржа\" - акции компаний сектора; \"Бюджет отдела\" - заявки, премии и закупки отдела; \"Заказы снабжения\" - каталог. Заработать сверх зарплаты: работа по прайсу отдела, контракты NT на доске любого отдела (взявшему [settings.contract_performer_share]% награды), касса и чаевые. Личные деньги и акции в следующую смену не переходят - переходят только цены рынка, котировки биржи и репутация партнёров снабжения. Полная памятка с числами есть у ГП и квартирмейстера."

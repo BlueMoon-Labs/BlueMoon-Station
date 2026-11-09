@@ -80,6 +80,7 @@ SUBSYSTEM_DEF(market)
 	press_release_ready_at = SSmarket.press_release_ready_at
 	press_released = SSmarket.press_released
 	news_published = SSmarket.news_published
+	guide_published = SSmarket.guide_published
 	digest_minutes = SSmarket.digest_minutes
 	last_digest_key = SSmarket.last_digest_key
 	news_flash_minutes = SSmarket.news_flash_minutes

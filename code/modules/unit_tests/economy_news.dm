@@ -12,6 +12,15 @@
 	var/help = econ_cargo_market_help()
 	TEST_ASSERT(findtext(help, "\"[MARKET_NEWS_CHANNEL]\" не чаще раза в [SSmarket.news_flash_minutes] мин.") && findtext(help, "раз в [SSmarket.digest_minutes] мин."), "Справка снабжения описывает канал: [help]")
 
+/// Памятка по экономике выходит в канал сводки при инициализации рынка, без табов и с числами из настроек.
+/datum/unit_test/economy_news_guide/Run()
+	TEST_ASSERT(SSmarket.guide_published, "Памятка опубликована при инициализации рынка")
+	var/text = econ_guide_summary_text()
+	TEST_ASSERT(!findtext(text, "\t"), "В памятке табуляция")
+	TEST_ASSERT(findtext(text, "до [SSeconomy.settings.tax_max]%"), "Памятка называет потолок налога")
+	TEST_ASSERT(findtext(text, "[SSeconomy.settings.contract_performer_share]% награды"), "Памятка называет долю исполнителя контракта")
+	TEST_ASSERT(findtext(text, "не переходят"), "Памятка говорит, что деньги не переходят в следующую смену")
+
 /// Тесты на изолированной копии рынка; статьи канала сводки и состояние SSmarket возвращаются.
 /datum/unit_test/economy_news
 	abstract_type = /datum/unit_test/economy_news

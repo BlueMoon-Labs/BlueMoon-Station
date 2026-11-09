@@ -6,6 +6,8 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 
 /datum/controller/subsystem/market
 	var/news_published = 0
+	/// Памятка по экономике выходит в канал один раз за раунд
+	var/guide_published = FALSE
 	/// Раз во сколько минут выходит сводка сектора
 	var/digest_minutes = 15
 	/// Между любыми двумя статьями канала проходит не меньше стольких минут
@@ -20,6 +22,9 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 
 /datum/controller/subsystem/market/proc/setup_news()
 	news_channel()
+	if(!guide_published)
+		guide_published = TRUE
+		GLOB.news_network.SubmitArticle(econ_guide_summary_text(), MARKET_NEWS_AUTHOR, MARKET_NEWS_CHANNEL)
 	RegisterSignal(src, COMSIG_MARKET_HOT, PROC_REF(on_hot), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_PARTNER_UNLOCKED, PROC_REF(on_partner_unlocked), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_COMPANY_EVENT, PROC_REF(on_company_event), override = TRUE)
