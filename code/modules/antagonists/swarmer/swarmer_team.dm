@@ -40,17 +40,14 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	if(metallic_resources == amount)
 		return
 	metallic_resources = amount
-	for(var/mob/living/simple_animal/hostile/swarmer/body as anything in bodies)
-		if(!body?.client)
-			continue
-		var/datum/hud/swarmer/swarmer_hud = body.hud_used
-		if(istype(swarmer_hud))
-			swarmer_hud.update_core_metal()
+	update_core_stats()
 
 /datum/team/swarmer_team/proc/adjust_organic(amount)
 	if(QDELETED(swarmer_core) || organic_resources + amount < 0)
 		return FALSE
 	organic_resources += amount
+	if(amount)
+		update_core_stats()
 	if(!training)
 		swarmer_core.on_organic_changed()
 	return TRUE
@@ -89,10 +86,11 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/on_core_init(obj/structure/swarmer/core/core)
 	swarmer_core = core
-	set_metal(SWARMER_STARTING_METAL)
+	metallic_resources = SWARMER_STARTING_METAL
 	RegisterSignal(swarmer_core, COMSIG_SWARMER_CORE_DAMAGED, PROC_REF(on_core_integrity_changed))
 	RegisterSignal(swarmer_core, COMSIG_MOVABLE_MOVED, PROC_REF(on_core_moved))
 	update_core_arrows()
+	update_core_stats()
 
 /datum/team/swarmer_team/proc/on_core_destroy(obj/structure/swarmer/core/core)
 	if(swarmer_core != core)
@@ -103,8 +101,9 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	update_core_arrows()
 	if(GLOB.active_swarmer_team == src)
 		GLOB.active_swarmer_team = null
-	set_metal(0)
+	metallic_resources = 0
 	organic_resources = 0
+	update_core_stats()
 	for(var/obj/effect/mob_spawn/swarmer/shell as anything in shells?.Copy())
 		qdel(shell)
 	if(!QDELETED(src))
@@ -112,6 +111,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/on_core_integrity_changed(datum/source)
 	SIGNAL_HANDLER
+	update_core_stats()
 	if(!COOLDOWN_FINISHED(src, message_cooldown))
 		return
 
@@ -144,6 +144,14 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 		var/datum/hud/swarmer/swarmer_hud = body?.hud_used
 		if(istype(swarmer_hud))
 			swarmer_hud.update_core_arrow()
+
+/datum/team/swarmer_team/proc/update_core_stats()
+	for(var/mob/living/simple_animal/hostile/swarmer/body as anything in bodies)
+		if(!body?.client)
+			continue
+		var/datum/hud/swarmer/swarmer_hud = body.hud_used
+		if(istype(swarmer_hud))
+			swarmer_hud.update_core_stats()
 
 /datum/team/swarmer_team/proc/try_process_organic(obj/item/item)
 	if(!LAZYACCESS(swarmer_objects, /obj/structure/swarmer/organic_processer))

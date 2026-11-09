@@ -34,20 +34,19 @@
 	icon_state = "arrow"
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/atom/movable/screen/swarmer/core_metal
-	name = "Swarmer core metal"
+/atom/movable/screen/swarmer/core_stats
+	name = "Swarmer core status"
 	icon = null
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	maptext_x = -100
-	maptext_y = 8
-	maptext_width = 96
-	maptext_height = 16
+	maptext_x = -80
+	maptext_y = 34
+	maptext_width = 112
+	maptext_height = 40
 
 /datum/hud/swarmer
 	var/atom/movable/screen/swarmer/core_arrow/core_arrow
 	var/core_angle
-	var/atom/movable/screen/swarmer/core_metal/core_metal
-	var/displayed_metal
+	var/atom/movable/screen/swarmer/core_stats/core_stats
 
 /datum/hud/swarmer/New(mob/owner)
 	..()
@@ -71,13 +70,13 @@
 
 	core_arrow = new(null, src)
 	infodisplay += core_arrow
-	core_metal = new(null, src)
-	infodisplay += core_metal
+	core_stats = new(null, src)
+	infodisplay += core_stats
 
 /datum/hud/swarmer/Destroy()
 	detach_core_tracking()
 	core_arrow = null
-	core_metal = null
+	core_stats = null
 	return ..()
 
 /datum/hud/swarmer/proc/attach_core_tracking()
@@ -95,7 +94,7 @@
 	SIGNAL_HANDLER
 	RegisterSignal(source, COMSIG_MOVABLE_MOVED, PROC_REF(update_core_arrow), override = TRUE)
 	update_core_arrow()
-	update_core_metal()
+	update_core_stats()
 
 /datum/hud/swarmer/proc/stop_core_tracking(mob/source, client/leaving_client)
 	SIGNAL_HANDLER
@@ -103,20 +102,25 @@
 	if(core_arrow)
 		leaving_client?.screen -= core_arrow
 		core_arrow.screen_loc = null
-	if(core_metal)
-		leaving_client?.screen -= core_metal
-		core_metal.screen_loc = null
+	if(core_stats)
+		leaving_client?.screen -= core_stats
+		core_stats.screen_loc = null
 
-/datum/hud/swarmer/proc/update_core_metal()
+/datum/hud/swarmer/proc/update_core_stats()
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = mymob
-	if(!core_metal || !swarmer?.client)
+	if(!core_stats || !swarmer?.client)
 		return
-	if(!core_metal.screen_loc)
-		core_metal.screen_loc = ui_swarmer_core
-	var/metal = round(swarmer.team?.metallic_resources || 0, 0.01)
-	if(isnull(displayed_metal) || displayed_metal != metal)
-		displayed_metal = metal
-		core_metal.maptext = MAPTEXT("<div align='right'>Металл: [metal]</div>")
+	if(!core_stats.screen_loc)
+		core_stats.screen_loc = ui_swarmer_core
+	var/datum/team/swarmer_team/team = swarmer.team
+	var/obj/structure/swarmer/core/core = team?.swarmer_core
+	var/metal = round(team?.metallic_resources || 0, 0.01)
+	var/organic = round(team?.organic_resources || 0, 0.01)
+	var/core_health = core ? "[core.obj_integrity]/[core.max_integrity]" : "нет"
+	var/core_color = core && core.obj_integrity < core.max_integrity ? COLOR_RED : COLOR_WHITE
+	var/label = MAPTEXT("<div align='right'>Металл: [metal]<br>Органика: [organic]<br><font color='[core_color]'>Ядро: [core_health]</font></div>")
+	if(core_stats.maptext != label)
+		core_stats.maptext = label
 
 /datum/hud/swarmer/proc/update_core_arrow()
 	SIGNAL_HANDLER
@@ -158,7 +162,7 @@
 	if(!core_arrow.screen_loc)
 		core_arrow.screen_loc = ui_swarmer_core
 
-	var/angle = distance ? Get_Angle(body_turf, core_turf) : null
+	var/angle = distance > 1 ? Get_Angle(body_turf, core_turf) : null
 	if(angle != core_angle)
 		core_angle = angle
 		core_arrow.transform = isnull(angle) ? null : matrix(angle, MATRIX_ROTATE)

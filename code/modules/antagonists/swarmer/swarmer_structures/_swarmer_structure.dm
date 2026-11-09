@@ -8,11 +8,16 @@
 	max_integrity = 30
 	anchored = TRUE
 	density = TRUE
+	armor_type = /datum/armor/clothing_and_general_objects/swarmer
 	var/lon_range = 1
 	var/swarmer_examine
 	var/projectiles_pass = TRUE
 	var/swarmers_pass = FALSE
 	var/datum/team/swarmer_team/team
+
+/datum/armor/clothing_and_general_objects/swarmer
+	bullet = SWARMER_BULLET_ARMOR_BONUS
+	laser = SWARMER_LASER_ARMOR_BONUS
 
 /obj/structure/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()

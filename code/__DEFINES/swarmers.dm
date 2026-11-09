@@ -7,6 +7,8 @@
 #define is_swarmerprojectile(target) (istype(target, /obj/item/projectile/beam/disabler/swarmer) || istype(target, /obj/item/projectile/energy/swarmer_bola))
 #define is_swarmer_object(target) (istype(target, /obj/structure/swarmer) || istype(target, /obj/machinery/porta_turret/swarmer))
 #define SWARMER_STAMINA_SCALE (STAMINA_CRIT / 100)
+#define SWARMER_BULLET_ARMOR_BONUS 35
+#define SWARMER_LASER_ARMOR_BONUS 20
 
 GLOBAL_LIST_INIT(common_swarmer_actions, list(
 	/datum/action/cooldown/swarmer/consume_tile,
@@ -32,6 +34,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 		/datum/action/cooldown/swarmer/build/barricade,
 		),
 	/mob/living/simple_animal/hostile/swarmer/builder = list(
+		/datum/action/cooldown/swarmer/build/barricade/builder,
 		/datum/action/cooldown/swarmer/build/processer,
 		/datum/action/cooldown/swarmer/build/analyzer,
 		/datum/action/cooldown/swarmer/build/repair_station,

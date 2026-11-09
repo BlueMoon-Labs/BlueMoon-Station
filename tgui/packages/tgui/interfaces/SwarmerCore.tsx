@@ -62,18 +62,12 @@ export const SwarmerCore = (_props: unknown) => {
     metallic_resources,
     metal_reference,
   } = data;
-  const [selectedInfo, setSelectedInfo] = useState<string>('');
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const classCost = selectedClass
     ? cheaper_swap
       ? Math.round(selectedClass.cost / 2)
       : selectedClass.cost
     : null;
-
-  const handleClassSelect = (classInfo: Class) => {
-    setSelectedInfo(classInfo.additional_info);
-    setSelectedClass(classInfo);
-  };
 
   const handleConfirm = () => {
     if (selectedClass) {
@@ -118,6 +112,8 @@ export const SwarmerCore = (_props: unknown) => {
                         <Stack.Item textAlign="center" key={classInfo.path}>
                           <ImageButton
                             color={'blue'}
+                            centerImage
+                            fluid
                             imageSrc={classInfo.icon}
                             imageSize={90}
                             tooltip={
@@ -127,7 +123,7 @@ export const SwarmerCore = (_props: unknown) => {
                                 {classInfo.desc}
                               </>
                             }
-                            onClick={() => handleClassSelect(classInfo)}
+                            onClick={() => setSelectedClass(classInfo)}
                             aria-pressed={selectedClass?.path === classInfo.path}
                             aria-label={classInfo.name}
                           />
@@ -155,27 +151,33 @@ export const SwarmerCore = (_props: unknown) => {
                           wordWrap: 'break-word',
                         }}
                       >
-                        {selectedInfo ||
+                        {selectedClass?.additional_info ||
                           'Выберите класс для просмотра информации'}
                       </pre>
                     </Section>
                   </Stack.Item>
                   <Stack.Item>
                     <Section>
-                      <Button
+                      <Button.Confirm
+                        key={selectedClass?.path}
                         fluid
                         textAlign="center"
                         lineHeight="35px"
                         fontSize="1.2em"
                         height="40px"
-                        disabled={!selectedClass}
+                        disabled={
+                          !selectedClass ||
+                          selectedClass.path === current_class_path
+                        }
                         onClick={handleConfirm}
                         color={selectedClass ? 'green' : 'grey'}
-                      >
-                        {selectedClass
-                          ? `Стоимость: ${classCost} металла. Подтвердить выбор: ${selectedClass.name}`
-                          : 'Выберите класс'}
-                      </Button>
+                        confirmContent="Подтвердить смену корпуса?"
+                        content={
+                          selectedClass
+                            ? `Выбрать ${selectedClass.name} за ${classCost} металла`
+                            : 'Выберите класс'
+                        }
+                      />
                     </Section>
                   </Stack.Item>
                 </Stack>

@@ -80,6 +80,11 @@
 	if(user.electrocute_act(rand(5, 20), src))
 		spark_system.start()
 
+/obj/structure/swarmer/core/repair_damage(amount)
+	. = ..()
+	if(.)
+		team?.update_core_stats()
+
 /obj/structure/swarmer/core/attackby(obj/item/I, mob/user, params)
 	. = ..()
 	if(!. || !isliving(user))
@@ -132,8 +137,9 @@
 	if(recruit_poll_active || QDELETED(src) || QDELETED(team))
 		return
 	recruit_poll_active = TRUE
+	for(var/obj/effect/mob_spawn/swarmer/shell as anything in team.shells)
+		shell.update_ghost_access()
 	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts()
-	recruit_poll_active = FALSE
 	if(QDELETED(src) || QDELETED(team))
 		return
 	for(var/obj/effect/mob_spawn/swarmer/shell as anything in team.shells?.Copy())
@@ -141,9 +147,11 @@
 			continue
 		while(length(candidates))
 			var/mob/dead/observer/candidate = pick_n_take(candidates)
-			if(candidate?.client && candidate.can_reenter_round())
-				shell.create(candidate.ckey)
+			if(candidate?.client && candidate.can_reenter_round() && shell.create(candidate.ckey))
 				break
+	recruit_poll_active = FALSE
+	for(var/obj/effect/mob_spawn/swarmer/shell as anything in team.shells)
+		shell.update_ghost_access()
 
 /obj/structure/swarmer/core/proc/spawn_mega_swarmer_from_ghost()
 	mega_retry_timer = null
@@ -210,10 +218,7 @@
 		return
 
 	var/mob/living/simple_animal/hostile/swarmer/old_swarmer = ui.user
-	if(old_swarmer.team != team || !Adjacent(old_swarmer) || !old_swarmer.mind || old_swarmer.incapacitated())
-		return
-	var/confirm = tgui_alert(old_swarmer, "Вы уверены, что хотите выбрать данный класс?", "Выбор класса", list("Да", "Нет"))
-	if(confirm != "Да" || QDELETED(src) || QDELETED(old_swarmer) || old_swarmer.team != team || !old_swarmer.mind || !old_swarmer.client || !Adjacent(old_swarmer) || old_swarmer.incapacitated())
+	if(QDELETED(src) || QDELETED(old_swarmer) || old_swarmer.team != team || !old_swarmer.mind || !old_swarmer.client || !Adjacent(old_swarmer) || old_swarmer.incapacitated())
 		return
 
 	var/swarmer_path = text2path(params["class"])
@@ -282,8 +287,8 @@
 
 /datum/armor/swarmer_core
 	melee = 25
-	bullet = 25
-	laser = 25
+	bullet = 25 + SWARMER_BULLET_ARMOR_BONUS
+	laser = 25 + SWARMER_LASER_ARMOR_BONUS
 	energy = 25
 	bio = 100
 	fire = 100

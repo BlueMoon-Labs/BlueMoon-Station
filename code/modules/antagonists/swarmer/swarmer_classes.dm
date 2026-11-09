@@ -230,7 +230,8 @@
 	if(!is_energy_reflectable_projectile(P) || !prob(reflection_chance))
 		return ..()
 	if(P.damage_type == BRUTE || P.damage_type == BURN)
-		adjustHealth(P.damage * 0.5)
+		var/armor = run_armor_check(def_zone, P.flag, armour_penetration = P.armour_penetration, silent = TRUE)
+		adjustHealth(P.damage * 0.5 * max(0, 100 - armor) / 100)
 	visible_message(span_danger("[src] отражает [P.name]!"))
 	handle_projectile_attack_redirection(P, REDIRECT_METHOD_REFLECT)
 	return BULLET_ACT_FORCE_PIERCE

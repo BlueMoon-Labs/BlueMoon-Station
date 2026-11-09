@@ -12,6 +12,7 @@ type ImageButtonProps = BoxProps & {
   base64?: string;
   buttons?: ReactNode;
   buttonsAlt?: ReactNode;
+  centerImage?: boolean;
   disabled?: BooleanLike;
   fluid?: boolean;
   imageSize?: number;
@@ -30,6 +31,7 @@ export const ImageButton = (props: ImageButtonProps) => {
     base64,
     buttons,
     buttonsAlt,
+    centerImage,
     children,
     className,
     disabled,
@@ -103,6 +105,7 @@ export const ImageButton = (props: ImageButtonProps) => {
       className={classes([
         'ImageButton',
         fluid && 'ImageButton--fluid',
+        centerImage && 'ImageButton--centerImage',
         disabled && 'ImageButton--disabled',
         className,
       ])}

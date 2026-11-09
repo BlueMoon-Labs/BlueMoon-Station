@@ -36,6 +36,7 @@
 	pull_force = PULL_FORCE_DEFAULT
 	pressure_resistance = 100
 	possible_a_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, INTENT_HARM)
+	simple_mob_flags = SIMPLE_MOB_PROJECTILE_ARMOR
 	var/swarmer_class_info = "Вы не должны это видеть."
 	var/dismantle_speed = NORMAL_SWARMER_DISMANTLE_DELAY
 	var/stack_extract_amount = 3
@@ -88,7 +89,7 @@
 	var/datum/hud/swarmer/swarmer_hud = hud_used
 	if(istype(swarmer_hud))
 		swarmer_hud.update_core_arrow()
-		swarmer_hud.update_core_metal()
+		swarmer_hud.update_core_stats()
 
 /mob/living/simple_animal/hostile/swarmer/set_hud_used(datum/hud/new_hud)
 	if(hud_used == new_hud)
@@ -161,6 +162,7 @@
 /mob/living/simple_animal/hostile/swarmer/get_status_tab_items()
 	. = ..()
 	. += "Металл в ядре: [round(team?.metallic_resources || 0, 0.01)]"
+	. += "Органика в ядре: [round(team?.organic_resources || 0, 0.01)]"
 	if(team?.swarmer_core)
 		. += "Здоровье ядра: [team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]"
 
@@ -175,6 +177,14 @@
 
 /mob/living/simple_animal/hostile/swarmer/get_ear_protection()
 	return INFINITY
+
+/mob/living/simple_animal/hostile/swarmer/getarmor(def_zone, type)
+	switch(type)
+		if(BULLET)
+			return SWARMER_BULLET_ARMOR_BONUS
+		if(LASER)
+			return SWARMER_LASER_ARMOR_BONUS
+	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/CanAllowThrough(atom/movable/mover, border_dir)
 	. = ..()
@@ -643,3 +653,8 @@
 	icon = 'icons/obj/smooth_structures/swarmer_catwalk.dmi'
 	icon_state = "swarmer_catwalk"
 	resistance_flags = FIRE_PROOF | LAVA_PROOF
+	armor_type = /datum/armor/lattice/swarmer
+
+/datum/armor/lattice/swarmer
+	bullet = SWARMER_BULLET_ARMOR_BONUS
+	laser = SWARMER_LASER_ARMOR_BONUS

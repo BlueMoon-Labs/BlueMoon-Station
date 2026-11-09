@@ -67,7 +67,7 @@
 	// tgui вместо нативного alert: BYOND держит нативный промпт (и фрейм с ним) до
 	// ответа даже после дисконнекта - брошенный диалог "Become X?" вечно пинит призрака
 	var/ghost_role = tgui_alert(user, latejoinercalling ? "Latejoin as [mob_name]? (This is a ghost role, and as such, it's very likely to be off-station.)" : "Become [mob_name]? (Warning, You can no longer be cloned!)", "Ghost role", list("Да", "Нет"))
-	if(ghost_role != "Да" || !loc)
+	if(ghost_role != "Да" || !loc || !ghost_usable || !user?.client)
 		return
 	var/requested_char = FALSE
 	if(can_load_appearance == TRUE && ispath(mob_type, /mob/living/carbon/human)) // Can't just use if(can_load_appearance), 2 has a different behavior

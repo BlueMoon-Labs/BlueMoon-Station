@@ -23,7 +23,12 @@
 	mode = TURRET_LETHAL
 	req_access = list()
 	hud_possible = list(DIAG_HUD)
+	armor_type = /datum/armor/porta_turret/swarmer
 	var/datum/team/swarmer_team/team
+
+/datum/armor/porta_turret/swarmer
+	bullet = 30 + SWARMER_BULLET_ARMOR_BONUS
+	laser = 30 + SWARMER_LASER_ARMOR_BONUS
 
 /obj/machinery/porta_turret/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()

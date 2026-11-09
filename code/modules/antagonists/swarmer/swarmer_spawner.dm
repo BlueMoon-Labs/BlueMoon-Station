@@ -30,6 +30,7 @@ GLOBAL_VAR_INIT(standalone_swarmer_poll_active, FALSE)
 /obj/effect/mob_spawn/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team, prepare_body = FALSE)
 	. = ..()
 	team = swarm_team
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(update_ghost_access))
 	if(team)
 		LAZYADD(team.shells, src)
 		if(prepare_body)
@@ -40,15 +41,34 @@ GLOBAL_VAR_INIT(standalone_swarmer_poll_active, FALSE)
 			recruit_standalone_swarmers()
 		else
 			RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(on_round_start))
+	update_ghost_access()
 
 /obj/effect/mob_spawn/swarmer/Destroy()
 	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
 	GLOB.standalone_swarmer_shells -= src
 	QDEL_NULL(staged_body)
 	if(team)
 		LAZYREMOVE(team.shells, src)
 	team = null
 	return ..()
+
+/obj/effect/mob_spawn/swarmer/proc/update_ghost_access()
+	SIGNAL_HANDLER
+	var/obj/structure/swarmer/core/core = team?.swarmer_core
+	var/poll_active = team ? QDELETED(core) || core.recruit_poll_active : GLOB.standalone_swarmer_poll_active
+	var/available = !QDELETED(src) && isturf(loc) && !poll_active
+	if(ghost_usable == available)
+		return
+	ghost_usable = available
+	if(available)
+		GLOB.poi_list |= src
+		LAZYADD(GLOB.mob_spawners[job_description], src)
+	else
+		GLOB.poi_list -= src
+		LAZYREMOVE(GLOB.mob_spawners[job_description], src)
+		if(!LAZYLEN(GLOB.mob_spawners[job_description]))
+			GLOB.mob_spawners -= job_description
 
 /obj/effect/mob_spawn/swarmer/proc/on_round_start()
 	SIGNAL_HANDLER
@@ -60,6 +80,8 @@ GLOBAL_VAR_INIT(standalone_swarmer_poll_active, FALSE)
 	if(GLOB.standalone_swarmer_poll_active || !length(GLOB.standalone_swarmer_shells))
 		return
 	GLOB.standalone_swarmer_poll_active = TRUE
+	for(var/obj/effect/mob_spawn/swarmer/shell as anything in GLOB.standalone_swarmer_shells)
+		shell.update_ghost_access()
 	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts()
 	for(var/obj/effect/mob_spawn/swarmer/shell as anything in GLOB.standalone_swarmer_shells.Copy())
 		if(QDELETED(shell) || shell.team || !get_turf(shell))
@@ -69,6 +91,8 @@ GLOBAL_VAR_INIT(standalone_swarmer_poll_active, FALSE)
 			if(candidate?.client && candidate.can_reenter_round() && shell.create(candidate.ckey))
 				break
 	GLOB.standalone_swarmer_poll_active = FALSE
+	for(var/obj/effect/mob_spawn/swarmer/shell as anything in GLOB.standalone_swarmer_shells)
+		shell.update_ghost_access()
 
 /proc/poll_swarmer_ghosts(mega = FALSE)
 	var/question = mega ? "Хотите сыграть за мегасвармера?" : "Хотите сыграть за свармера?"

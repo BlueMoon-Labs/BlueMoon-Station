@@ -332,6 +332,9 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	action_cost = SWARMER_BLOCKADE_COST
 	build_time = SWARMER_FAST_BUILD_DELAY
 
+/datum/action/cooldown/swarmer/build/barricade/builder
+	action_cost = 4
+
 /datum/action/cooldown/swarmer/build/trap
 	name = "Создать ловушку"
 	desc = "Создаёт ловушку, которая будет оглушать всех, кроме \"Свармеров\"."
