@@ -11,7 +11,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	var/metal_modifier = 1
 	var/unlimited_metal_modifier = 1
 	var/datum/objective/swarmer_goal/swarmer_objective
-	var/mega_swarmer_announcement_made = FALSE
 	COOLDOWN_DECLARE(message_cooldown)
 	var/list/swarmer_objects
 	var/list/analyzer_mob_list
@@ -19,7 +18,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	var/list/obj/effect/mob_spawn/swarmer/shells
 	var/training = FALSE
 	var/collapse_timer
-	var/gamma_timer
 
 /datum/team/swarmer_team/New(list/starting_members)
 	..()
@@ -63,8 +61,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 		GLOB.active_swarmer_team = null
 	if(collapse_timer)
 		deltimer(collapse_timer)
-	if(gamma_timer)
-		deltimer(gamma_timer)
 	if(swarmer_core)
 		UnregisterSignal(swarmer_core, list(COMSIG_SWARMER_CORE_DAMAGED, COMSIG_MOVABLE_MOVED))
 		QDEL_NULL(swarmer_core)
@@ -218,14 +214,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/get_metal_modifier_limit()
 	return METAL_MODIFIER_LIMIT
-
-/datum/team/swarmer_team/proc/on_mega_swarmer_spawn(mob/living/simple_animal/hostile/swarmer/mega/swarmer)
-	if(mega_swarmer_announcement_made)
-		return
-	mega_swarmer_announcement_made = TRUE
-	swarmer_objective.completed = TRUE
-	priority_announce("Обнаружено появление мегасвармера на борту станции [station_name()]. Остановите его, пока рой не захватил станцию.", "Обнаружен мегасвармер")
-	gamma_timer = addtimer(CALLBACK(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, set_level), SEC_LEVEL_GAMMA), 5 SECONDS, TIMER_STOPPABLE)
 
 /datum/team/swarmer_team/proc/start_swarmers_destroying()
 	collapse_timer = null

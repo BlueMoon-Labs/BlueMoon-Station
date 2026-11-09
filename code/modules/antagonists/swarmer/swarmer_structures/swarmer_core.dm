@@ -2,6 +2,11 @@
 #define HEALING_AURA_AMOUNT 2
 #define HEALING_AURA_RANGE 5
 #define FREE_SWARMER_SPAWN_TIMER 8 MINUTES
+#define SWARMER_LAMBDA_SOUND_DURATION 11 SECONDS
+#define SWARMER_FINAL_PHASE_DURATION 6 MINUTES
+#define SWARMER_FINAL_ANNOUNCE_INTERVAL 1 MINUTES
+#define SWARMER_MEGA_POLL_INTERVAL 30 SECONDS
+#define SWARMER_EVAC_ARRIVAL_TIME 3 MINUTES
 
 /obj/structure/swarmer/core
 	name = "swarmer core"
@@ -16,11 +21,13 @@
 	var/stamina_damage = 20
 	var/datum/effect_system/spark_spread/spark_system
 	var/last_swarmer_spawn_value = 0
-	var/last_mega_swarmer_spawn_value = 0
 	var/free_spawn_timer
 	var/mega_retry_timer
 	var/mega_poll_active = FALSE
 	var/recruit_poll_active = FALSE
+	var/mega_phase_started = FALSE
+	var/mega_phase_deadline
+	var/mega_phase_timer
 
 /obj/structure/swarmer/core/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	if(!swarm_team)
@@ -63,6 +70,9 @@
 		deltimer(free_spawn_timer)
 	if(mega_retry_timer)
 		deltimer(mega_retry_timer)
+	if(mega_phase_timer)
+		deltimer(mega_phase_timer)
+	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 	team?.on_core_destroy(src)
 	QDEL_NULL(spark_system)
 	return ..()
@@ -114,17 +124,13 @@
 		spark_system.start()
 
 /obj/structure/swarmer/core/proc/on_organic_changed()
-	if((team.organic_resources - last_swarmer_spawn_value) < SWARMER_SPAWN_VALUE)
+	if(!mega_phase_started && team.organic_resources >= MEGA_SWARMER_SPAWN_VALUE && !mega_poll_active && !mega_retry_timer)
+		mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), 1, TIMER_STOPPABLE)
 		return
 
-	if((team.organic_resources - last_mega_swarmer_spawn_value) < MEGA_SWARMER_SPAWN_VALUE)
+	if((team.organic_resources - last_swarmer_spawn_value) >= SWARMER_SPAWN_VALUE)
 		last_swarmer_spawn_value = team.organic_resources
 		INVOKE_ASYNC(src, PROC_REF(spawn_swarmer_from_ghost))
-		return
-
-	last_mega_swarmer_spawn_value = team.organic_resources
-	if(!mega_poll_active && !mega_retry_timer)
-		INVOKE_ASYNC(src, PROC_REF(spawn_mega_swarmer_from_ghost))
 
 /obj/structure/swarmer/core/proc/spawn_swarmer_from_ghost()
 	if(QDELETED(src) || QDELETED(team))
@@ -155,12 +161,13 @@
 
 /obj/structure/swarmer/core/proc/spawn_mega_swarmer_from_ghost()
 	mega_retry_timer = null
-	if(mega_poll_active || QDELETED(src) || QDELETED(team))
+	if(mega_poll_active || QDELETED(src) || QDELETED(team) || !SSticker.IsRoundInProgress())
 		return
 	mega_poll_active = TRUE
+	var/next_poll_at = world.time + SWARMER_MEGA_POLL_INTERVAL
 	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts(mega = TRUE)
 	mega_poll_active = FALSE
-	if(QDELETED(src) || QDELETED(team))
+	if(QDELETED(src) || QDELETED(team) || !SSticker.IsRoundInProgress())
 		return
 	while(length(candidates))
 		var/mob/dead/observer/candidate = pick_n_take(candidates)
@@ -169,10 +176,61 @@
 		var/mob/living/simple_animal/hostile/swarmer/mega/swarmer = new(get_turf(src), team)
 		swarmer.key = candidate.key
 		swarmer.add_datum_if_not_exist()
-		team.on_mega_swarmer_spawn(swarmer)
+		if(!mega_phase_started)
+			prepare_mega_phase()
 		log_game("[key_name(swarmer)] получил роль мегасвармера.")
 		return
-	mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), 30 SECONDS, TIMER_STOPPABLE)
+	mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), max(1, next_poll_at - world.time), TIMER_STOPPABLE)
+
+/obj/structure/swarmer/core/proc/prepare_mega_phase()
+	mega_phase_started = TRUE
+	team.swarmer_objective.completed = TRUE
+	if(GLOB.security_level == SEC_LEVEL_LAMBDA)
+		start_mega_phase()
+		return
+
+	RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(on_mega_lambda_active))
+	SSsecurity_level.set_level(SEC_LEVEL_LAMBDA, bypass_keycard_lock = TRUE)
+
+/obj/structure/swarmer/core/proc/on_mega_lambda_active(datum/source)
+	SIGNAL_HANDLER
+	if(GLOB.security_level != SEC_LEVEL_LAMBDA)
+		return
+
+	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+	// Даём записи кода «Лямбда» доиграть перед следующим оповещением.
+	mega_phase_timer = addtimer(CALLBACK(src, PROC_REF(start_mega_phase)), SWARMER_LAMBDA_SOUND_DURATION, TIMER_STOPPABLE)
+
+/obj/structure/swarmer/core/proc/start_mega_phase()
+	mega_phase_timer = null
+	if(!SSticker.IsRoundInProgress())
+		return
+
+	mega_phase_deadline = world.time + SWARMER_FINAL_PHASE_DURATION
+	var/area/core_area = get_area(src)
+	var/core_location = core_area?.name || "неизвестна"
+	var/time_left = DisplayTimeText(SWARMER_FINAL_PHASE_DURATION)
+	priority_announce("Внимание! Обнаружена телепортация массивной боевой единицы роя. Ядро свармеров перешло в фазу подготовки к массовой телепортации. Немедленно уничтожьте ядро, пока не стало слишком поздно, локация: [core_location], время до полной активации: [time_left].", "Призыв мегасвармера", 'sound/announcer/classic/megaswarmer_teleportation.ogg')
+	mega_phase_timer = addtimer(CALLBACK(src, PROC_REF(update_mega_phase)), SWARMER_FINAL_ANNOUNCE_INTERVAL, TIMER_STOPPABLE)
+
+/obj/structure/swarmer/core/proc/update_mega_phase()
+	mega_phase_timer = null
+	if(!SSticker.IsRoundInProgress())
+		return
+
+	var/time_left = mega_phase_deadline - world.time
+	if(time_left <= 0)
+		var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
+		if(shuttle && (shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME))
+			var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
+			shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
+		INVOKE_ASYNC(src, PROC_REF(spawn_mega_swarmer_from_ghost))
+		return
+
+	var/area/core_area = get_area(src)
+	var/core_location = core_area?.name || "неизвестна"
+	minor_announce("До полной активации ядра свармеров осталось [DisplayTimeText(time_left)]. Текущее местоположение ядра: [core_location].", "Массовая телепортация роя", TRUE)
+	mega_phase_timer = addtimer(CALLBACK(src, PROC_REF(update_mega_phase)), min(time_left, SWARMER_FINAL_ANNOUNCE_INTERVAL), TIMER_STOPPABLE)
 
 /obj/structure/swarmer/core/swarmer_grab_act(mob/living/simple_animal/hostile/swarmer/swarmer)
 	swarmer.balloon_alert(swarmer, "это нельзя открутить!")
@@ -284,6 +342,11 @@
 #undef HEALING_AURA_AMOUNT
 #undef HEALING_AURA_RANGE
 #undef FREE_SWARMER_SPAWN_TIMER
+#undef SWARMER_LAMBDA_SOUND_DURATION
+#undef SWARMER_FINAL_PHASE_DURATION
+#undef SWARMER_FINAL_ANNOUNCE_INTERVAL
+#undef SWARMER_MEGA_POLL_INTERVAL
+#undef SWARMER_EVAC_ARRIVAL_TIME
 
 /datum/armor/swarmer_core
 	melee = 25
