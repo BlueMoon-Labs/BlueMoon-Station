@@ -20,6 +20,7 @@
 	TEST_ASSERT(findtext(text, "до [SSeconomy.settings.tax_max]%"), "Памятка называет потолок налога")
 	TEST_ASSERT(findtext(text, "[SSeconomy.settings.contract_performer_share]% награды"), "Памятка называет долю исполнителя контракта")
 	TEST_ASSERT(findtext(text, "не переходят"), "Памятка говорит, что деньги не переходят в следующую смену")
+	TEST_ASSERT(findtext(text, "капсулой") && findtext(text, "[SSeconomy.settings.department_express_markup]%"), "Памятка называет капсулу отдела и её наценку")
 
 /// Тесты на изолированной копии рынка; статьи канала сводки и состояние SSmarket возвращаются.
 /datum/unit_test/economy_news

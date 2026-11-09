@@ -390,3 +390,48 @@
 		if(!QDELETED(thing))
 			qdel(thing)
 	econ_test_clear_turf(run_loc_floor_bottom_left)
+
+/// Капсула отдела: глава платит цену с наценкой из бюджета, пак прилетает рядом с ним мимо шаттла и помечен закупкой; дальше пауза, вне станции и не главе - отказ.
+/datum/unit_test/economy_catalog/express_pod/Run()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/datum/supply_pack/pack
+	for(var/datum/supply_pack/candidate as anything in service.catalog())
+		if(candidate.crate_type && !econ_pack_unavailable(candidate))
+			pack = candidate
+			break
+	TEST_ASSERT_NOTNULL(pack, "В каталоге сервиса есть пак в наличии")
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_SRV, list(ACCESS_CAPTAIN))
+	var/mob/living/carbon/human/cook = make_staff(ACCOUNT_SRV)
+	chief.forceMove(station_turf)
+	var/price = service.express_price(pack)
+	TEST_ASSERT(price > round(econ_pack_price(pack)), "Капсула дороже обычного заказа")
+	econ_test_set_balance(service.account, price * 2)
+	service.next_express = 0
+	TEST_ASSERT(findtext(service.express_pack(pack, cook), "глава отдела"), "Не глава капсулу не заказывает")
+	var/turf/away = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/away_chief = make_staff(ACCOUNT_SRV, list(ACCESS_CAPTAIN))
+	away_chief.forceMove(away)
+	TEST_ASSERT(findtext(service.express_pack(pack, away_chief), "негде сесть"), "Вне станции капсула не садится")
+	TEST_ASSERT_EQUAL(service.account.account_balance, price * 2, "Отказы не тронули бюджет")
+	TEST_ASSERT_NULL(service.express_pack(pack, chief), "Глава на станции заказал капсулу")
+	TEST_ASSERT_EQUAL(service.account.account_balance, price, "Списана цена капсулы")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Капсула не встала в очередь шаттла")
+	TEST_ASSERT(findtext(service.express_pack(pack, chief), "Следующую капсулу"), "Вторая капсула сразу не заказывается")
+	TEST_ASSERT_EQUAL(service.account.account_balance, price, "Пауза не списала деньги")
+	var/obj/structure/closet/crate/delivered
+	for(var/i in 1 to 30)
+		for(var/obj/structure/closet/crate/crate in range(ECON_EXPRESS_LANDING_RANGE, station_turf))
+			if(istype(crate, pack.crate_type))
+				delivered = crate
+		if(delivered)
+			break
+		sleep(5)
+	service.next_express = 0
+	TEST_ASSERT_NOTNULL(delivered, "Капсула доставила ящик рядом с главой")
+	allocated += delivered.GetAllContents()
+	TEST_ASSERT_EQUAL(get_area(delivered), get_area(station_turf), "Ящик в том же помещении")
+	for(var/obj/item/thing in delivered)
+		if(!istype(thing, /obj/item/paper))
+			TEST_ASSERT(thing.econ_imported, "[thing] помечен закупкой")

@@ -64,6 +64,9 @@
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
+	/// Экспресс-доставка капсулой из "Бюджета отдела": наценка к цене пака в процентах и пауза между капсулами одного отдела
+	var/department_express_markup = 50
+	var/department_express_cooldown_minutes = 10
 	/// Квирк «В долгах»: долг NT на старте и какой процент каждой зарплаты на руки уходит в его счёт
 	var/quirk_debt_amount = 5000
 	var/quirk_debt_wage_share = 50

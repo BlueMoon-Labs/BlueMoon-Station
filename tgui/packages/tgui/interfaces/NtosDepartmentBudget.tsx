@@ -21,6 +21,7 @@ type DepartmentInfo = {
   return_due?: number;
   shielded?: number;
   goal_cooldown?: number;
+  express_ready_in?: number;
   goal?: { id: string; name: string; amount: number; minutes_left: number } | null;
 };
 
@@ -71,6 +72,8 @@ export type BudgetData = {
   grace_minutes?: number;
   goal_minutes?: number;
   goal_cooldown_minutes?: number;
+  express_markup?: number;
+  express_cooldown?: number;
   economy_minutes: number;
   wage_minutes: number;
   owed_cap: number;
@@ -495,12 +498,13 @@ const CatalogTab = () => {
   const prices = data.prices || {};
   const canOrder = !!data.can_manage;
   const canRequest = canOrder || !!data.is_staff;
+  const expressWait = data.department?.express_ready_in || 0;
   return (
     <NtFrame
       title="Каталог отдела"
       help={`${
         canOrder
-          ? 'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным. Кнопка "Копить" ставит цель накопления: цена пака не считается излишком бюджета.'
+          ? `Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным. "Капсулой" - сразу, мимо шаттла: дороже на ${data.express_markup}%, садится рядом с вами в том же помещении, не чаще раза в ${data.express_cooldown} мин. на отдел. Кнопка "Копить" ставит цель накопления: цена пака не считается излишком бюджета.`
           : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.${data.auto_approve_wait > 0 ? ` Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.` : ''} Решения могут ждать до ${data.pending_per_requester} ваших заявок.`
       } Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.`}>
       {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}
@@ -534,6 +538,18 @@ const CatalogTab = () => {
                   {canOrder && (
                     <Button disabled={!available} onClick={() => act('order', { pack: pack.type })}>
                       Заказать
+                    </Button>
+                  )}
+                  {canOrder && (
+                    <Button
+                      disabled={!available || expressWait > 0}
+                      tooltip={
+                        expressWait > 0
+                          ? `Следующая капсула через ${Math.ceil(expressWait / 60)} мин.`
+                          : `Капсула сядет рядом с вами за ${Math.round(((price?.price || 0) * (100 + (data.express_markup || 0))) / 100)} кр.`
+                      }
+                      onClick={() => act('express', { pack: pack.type })}>
+                      Капсулой
                     </Button>
                   )}
                   {canOrder &&

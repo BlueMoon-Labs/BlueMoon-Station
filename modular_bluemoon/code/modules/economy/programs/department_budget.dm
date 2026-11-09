@@ -132,6 +132,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"wage_floor" = settings.wage_floor,
 		"dormant_minutes" = settings.dormant_after_minutes,
 		"max_wage_bonus" = settings.max_wage_bonus,
+		"express_markup" = settings.department_express_markup,
+		"express_cooldown" = settings.department_express_cooldown_minutes,
 		"bonus_cap_hour" = settings.bonus_cap_hour,
 		"bonus_self_cap_hour" = settings.bonus_self_cap_hour,
 		"treasury_max" = settings.treasury_request_max,
@@ -185,6 +187,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"return_due" = department.budget_return_due(staff_stats),
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
+		"express_ready_in" = CEILING(department.express_ready_in() / (1 SECONDS), 1),
 		"goal" = department.saving_goal_amount() ? list("id" = "[department.saving_goal.type]", "name" = department.saving_goal.name, "amount" = department.saving_goal_amount(), "minutes_left" = CEILING((department.saving_goal_until - world.time) / (1 MINUTES), 1)) : null,
 	)
 	var/list/prices = list()
@@ -328,6 +331,16 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				messages[user_ref] = "Новую цель можно поставить через [department.saving_goal_cooldown_minutes()] мин."
 			else
 				messages[user_ref] = "Этого нет в каталоге отдела."
+		if("express")
+			var/datum/supply_pack/pack = catalog_pack(department, params["pack"])
+			if(!pack)
+				messages[user_ref] = "Этого нет в каталоге отдела."
+			else if(!can_manage)
+				messages[user_ref] = manage_refusal
+			else
+				var/price = department.express_price(pack)
+				var/refusal = department.express_pack(pack, user)
+				messages[user_ref] = refusal || "Капсула с \"[pack.name]\" вылетела: [price] кр. списано из бюджета, сядет рядом с вами."
 		if("order")
 			var/datum/supply_pack/pack = catalog_pack(department, params["pack"])
 			if(!pack)

@@ -28,6 +28,8 @@ const base: BudgetData = {
   max_wage_bonus: 50,
   bonus_cap_hour: 3000,
   bonus_self_cap_hour: 2500,
+  express_markup: 50,
+  express_cooldown: 10,
   treasury_max: 5000,
   treasury_pending_max: 2,
   auto_approve_limit: 1000,
@@ -214,6 +216,17 @@ describe('NtosDepartmentBudget', () => {
     expect(sent(topic, 'order')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
     fireEvent.click(getByText('Копить'));
     expect(sent(topic, 'set_goal')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
+  });
+
+  test('капсула: шлёт express с паком, пока отдел ждёт следующую - недоступна', () => {
+    const ui = setup();
+    fireEvent.click(ui.getByText('Каталог'));
+    fireEvent.click(ui.getByText('Капсулой'));
+    expect(sent(ui.topic, 'express')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
+    ui.unmount();
+    const waiting = setup({ department: { ...base.department!, express_ready_in: 300 } });
+    fireEvent.click(waiting.getByText('Каталог'));
+    expect(waiting.getByText('Капсулой').closest('.Button')?.className).toContain('Button--disabled');
   });
 
   test('цель накопления и защищённые поступления видны, цель снимается', () => {

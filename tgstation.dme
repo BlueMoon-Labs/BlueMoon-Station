@@ -5269,6 +5269,7 @@
 #include "modular_bluemoon\code\modules\economy\departments\civilian.dm"
 #include "modular_bluemoon\code\modules\economy\departments\command.dm"
 #include "modular_bluemoon\code\modules\economy\departments\engineering.dm"
+#include "modular_bluemoon\code\modules\economy\departments\express.dm"
 #include "modular_bluemoon\code\modules\economy\departments\management.dm"
 #include "modular_bluemoon\code\modules\economy\departments\manifest.dm"
 #include "modular_bluemoon\code\modules\economy\departments\medical.dm"
