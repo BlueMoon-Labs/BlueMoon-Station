@@ -390,7 +390,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 /datum/action/cooldown/swarmer/build/repair_station
 	name = "Создать станцию починки"
-	desc = "Быстрая починка для \"Свармеров\"."
+	desc = "Ремонтирует повреждённого свармера роя, пока он стоит на клетке станции."
 	button_icon_state = "swarmer_repair"
 	build_type = /obj/structure/swarmer/repair_station
 	action_cost = SWARMER_REPAIR_STATION_COST

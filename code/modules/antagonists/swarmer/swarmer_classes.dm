@@ -10,8 +10,8 @@
 	icon_living = "swarmer_starter"
 	melee_damage_lower = 20 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 20 * SWARMER_STAMINA_SCALE
-	health = 30
-	maxHealth = 30
+	health = 90
+	maxHealth = 90
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	pass_flags = PASSTABLE | PASSMOB
@@ -30,8 +30,8 @@
 	icon_living = "swarmer_general"
 	melee_damage_lower = 25 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 25 * SWARMER_STAMINA_SCALE
-	health = 80
-	maxHealth = 80
+	health = 240
+	maxHealth = 240
 	speed = 0
 	ranged = TRUE
 	projectiletype = /obj/item/projectile/beam/disabler/swarmer/generalist
@@ -50,8 +50,8 @@
 	icon_living = "swarmer_rover"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 50
-	maxHealth = 50
+	health = 150
+	maxHealth = 150
 	speed = -0.25
 	swap_resource_cost = ROVER_SWAP_COST
 	can_swap_to = TRUE
@@ -93,8 +93,8 @@
 	icon_living = "swarmer_combat"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 120
-	maxHealth = 120
+	health = 360
+	maxHealth = 360
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	ranged = TRUE
@@ -169,8 +169,8 @@
 	icon_living = "swarmer_builder"
 	melee_damage_lower = 40 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 40 * SWARMER_STAMINA_SCALE
-	health = 120
-	maxHealth = 120
+	health = 360
+	maxHealth = 360
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swap_resource_cost = BUILDER_SWAP_COST
 	can_swap_to = TRUE
@@ -199,8 +199,8 @@
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
 	rapid_fire_delay = 1
-	health = 500
-	maxHealth = 500
+	health = 2500
+	maxHealth = 2500
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swarmer_class_info = "Вы — финальная боевая единица \"Свармеров\", оснащённая миниганом, встроенной ACP турелью, а также защитными пластинами.\n\
 		Ваша цель — окончательно захватить станцию под ваш контроль."

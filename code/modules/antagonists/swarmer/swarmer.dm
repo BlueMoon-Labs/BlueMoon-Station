@@ -6,8 +6,8 @@
 	icon = 'icons/mob/swarmer.dmi'
 	icon_state = "swarmer_old"
 	icon_living = "swarmer_old"
-	health = 35
-	maxHealth = 35
+	health = 105
+	maxHealth = 105
 	status_flags = CANPUSH
 	speak_emote = list("гудит")
 	bubble_icon = "swarmer"

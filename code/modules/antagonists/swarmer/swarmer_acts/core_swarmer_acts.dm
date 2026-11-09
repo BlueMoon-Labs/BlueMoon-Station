@@ -37,12 +37,10 @@
 	var/help_hint
 	var/is_core = istype(src, /obj/structure/swarmer/core)
 	var/obj/structure/swarmer/repair_station/repair_station = src
-	var/station_occupied = istype(repair_station) && repair_station.occupant
+	var/station_occupied = istype(repair_station) && repair_station.repair_target
 	if(anchored)
 		if(is_core)
 			help_hint = "Выбрать корпус"
-		else if(istype(repair_station) && !station_occupied)
-			help_hint = "Войти для ремонта"
 		else if(istype(src, /obj/structure/swarmer/transport_hub))
 			var/obj/structure/swarmer/transport_hub/hub = src
 			if(hub.enabled)
