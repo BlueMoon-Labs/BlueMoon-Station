@@ -1,7 +1,6 @@
 
 #define DUALWIELD_PENALTY_EXTRA_MULTIPLIER 1.4
 #define FIRING_PIN_REMOVAL_DELAY 50
-#define AKIMBO_PENALTY_SCALING 1.5
 
 /obj/item/gun
 	name = "gun"
