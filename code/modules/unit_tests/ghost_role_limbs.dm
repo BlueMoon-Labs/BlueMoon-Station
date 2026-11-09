@@ -258,6 +258,7 @@
 		"corp_monowire" = 6,
 		"corp_hand_cannon" = 3,
 		"corp_gorilla_arms" = 6,
+		"razor_claws" = 3,
 		"subdermal_armor" = 6,
 		"reinforced_skeleton" = 6,
 		"nutriment_pump" = 1,
@@ -283,6 +284,7 @@
 	conflict_prefs.pref_species = new /datum/species/human
 	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE)
 	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("corp_monowire"), "Arm implants should conflict with each other")
+	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("razor_claws"), "Claws should conflict with other arm implants")
 	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("corp_monowire"), 6, "Replacing an arm implant should refund its cost")
 	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance(), -6, "A single selected implant should be charged once")
 
