@@ -74,13 +74,13 @@
 	var/mob/living/living_target = target
 	living_target.Knockdown(knockdown_time)
 
-/mob/living/simple_animal/hostile/swarmer/rover/fire_secondary_weapon(atom/targeted_atom)
+/mob/living/simple_animal/hostile/swarmer/rover/fire_secondary_weapon(atom/targeted_atom, params)
 	if(targeted_atom == src || targeted_atom == loc)
 		return
 	if(!COOLDOWN_FINISHED(src, bola_cooldown))
 		balloon_alert(src, "энергобола перезаряжается!")
 		return
-	if(shoot_with_projectile(targeted_atom, /obj/item/projectile/energy/swarmer_bola))
+	if(shoot_with_projectile(targeted_atom, /obj/item/projectile/energy/swarmer_bola, params))
 		COOLDOWN_START(src, bola_cooldown, 40 SECONDS)
 		DelayNextAction()
 
@@ -153,10 +153,10 @@
 		OpenFire(target)
 	return TRUE
 
-/mob/living/simple_animal/hostile/swarmer/combat/fire_secondary_weapon(atom/targeted_atom)
+/mob/living/simple_animal/hostile/swarmer/combat/fire_secondary_weapon(atom/targeted_atom, params)
 	if(ranged_cooldown > world.time || rapid_fire_shots_left)
 		return
-	if(shoot_with_projectile(targeted_atom, secondary_projectile_type))
+	if(shoot_with_projectile(targeted_atom, secondary_projectile_type, params))
 		ranged_cooldown = world.time + 1.5 SECONDS
 		DelayNextAction()
 
@@ -199,8 +199,8 @@
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
 	rapid_fire_delay = 1
-	health = 2500
-	maxHealth = 2500
+	health = 2000
+	maxHealth = 2000
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swarmer_class_info = "Вы — финальная боевая единица \"Свармеров\", оснащённая миниганом, встроенной ACP турелью, а также защитными пластинами.\n\
 		Ваша цель — окончательно захватить станцию под ваш контроль."

@@ -37,6 +37,10 @@
 	pressure_resistance = 100
 	possible_a_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, INTENT_HARM)
 	simple_mob_flags = SIMPLE_MOB_PROJECTILE_ARMOR
+	ranged_message = null
+	ranged_ignores_vision = TRUE
+	ranged_pixel_aim = TRUE
+	blood_volume = 0
 	var/swarmer_class_info = "Вы не должны это видеть."
 	var/dismantle_speed = NORMAL_SWARMER_DISMANTLE_DELAY
 	var/stack_extract_amount = 3
@@ -52,6 +56,7 @@
 	var/object_attack_consumes = FALSE
 	var/secondary_weapon_hint
 	var/datum/action/cooldown/swarmer/consume_tile/active_tile_attack
+	COOLDOWN_DECLARE(damage_sparks_cooldown)
 
 /mob/living/simple_animal/hostile/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
@@ -159,6 +164,13 @@
 	spark_system.start()
 	return ..()
 
+/mob/living/simple_animal/hostile/swarmer/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
+	var/previous_damage = bruteloss
+	. = ..()
+	if(bruteloss > previous_damage && stat != DEAD && COOLDOWN_FINISHED(src, damage_sparks_cooldown))
+		COOLDOWN_START(src, damage_sparks_cooldown, 2 SECONDS)
+		spark_system?.start()
+
 /mob/living/simple_animal/hostile/swarmer/get_status_tab_items()
 	. = ..()
 	. += "Металл в ядре: [round(team?.metallic_resources || 0, 0.01)]"
@@ -239,7 +251,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/AltRangedAttack(atom/A, params)
 	if(secondary_weapon_hint)
-		fire_secondary_weapon(A)
+		fire_secondary_weapon(A, params)
 		return TRUE
 	if(isliving(A))
 		balloon_alert(src, "подойдите ближе!")
@@ -257,10 +269,10 @@
 /mob/living/simple_animal/hostile/swarmer/right_click_map_clicks(shift)
 	return (!shift && secondary_weapon_hint) || ..()
 
-/mob/living/simple_animal/hostile/swarmer/proc/fire_secondary_weapon(atom/targeted_atom)
+/mob/living/simple_animal/hostile/swarmer/proc/fire_secondary_weapon(atom/targeted_atom, params)
 	return
 
-/mob/living/simple_animal/hostile/swarmer/shoot_with_projectile(atom/targeted_atom, projectile_type)
+/mob/living/simple_animal/hostile/swarmer/shoot_with_projectile(atom/targeted_atom, projectile_type, params)
 	. = ..()
 	if(.)
 		active_tile_attack?.stop()

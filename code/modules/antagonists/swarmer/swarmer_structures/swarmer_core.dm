@@ -176,10 +176,11 @@
 		var/mob/living/simple_animal/hostile/swarmer/mega/swarmer = new(get_turf(src), team)
 		swarmer.key = candidate.key
 		swarmer.add_datum_if_not_exist()
+		log_game("[key_name(swarmer)] получил роль мегасвармера.")
 		if(!mega_phase_started)
 			prepare_mega_phase()
-		log_game("[key_name(swarmer)] получил роль мегасвармера.")
-		return
+			return
+		break
 	mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), max(1, next_poll_at - world.time), TIMER_STOPPABLE)
 
 /obj/structure/swarmer/core/proc/prepare_mega_phase()
@@ -222,6 +223,7 @@
 	if(time_left <= 0)
 		var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
 		if(shuttle && (shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME))
+			SSshuttle.emergencyNoRecall = TRUE
 			var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
 			shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
 		INVOKE_ASYNC(src, PROC_REF(spawn_mega_swarmer_from_ghost))
@@ -315,6 +317,7 @@
 		var/datum/antag_training_program/creature/swarmer/program = session?.program
 		if(istype(program))
 			program.body_ref = WEAKREF(new_swarmer)
+	SStgui.close_user_uis(old_swarmer, src)
 	old_swarmer.mind.transfer_to(new_swarmer)
 	new_swarmer.balloon_alert(new_swarmer, "успех!")
 	log_game("[key_name(new_swarmer)] сменил корпус на [new_swarmer.name].")
