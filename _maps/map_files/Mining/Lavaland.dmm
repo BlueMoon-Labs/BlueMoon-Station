@@ -11409,6 +11409,7 @@
 /area/mine/medical)
 "gQF" = (
 /obj/structure/loot_pile/maint,
+/obj/item/multitool,
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
@@ -17369,6 +17370,9 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"ktd" = (
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/jungles)
 "ktg" = (
 /obj/machinery/atmospherics/pipe/simple/multiz/supply/hidden/layer2{
 	dir = 1
@@ -24031,6 +24035,7 @@
 /obj/machinery/door/airlock/wood{
 	name = "Sauna"
 	},
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/wood/wood_large,
 /area/mine/common/sauna)
 "nZC" = (
@@ -35053,6 +35058,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "uvD" = (
 /obj/effect/decal/cleanable/insectguts,
+/obj/item/multitool,
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
@@ -35608,6 +35614,7 @@
 "uOH" = (
 /obj/structure/closet/crate,
 /obj/effect/decal/cleanable/cobweb,
+/obj/item/multitool,
 /turf/open/floor/plating,
 /area/mine/maintenance)
 "uOM" = (
@@ -78064,8 +78071,8 @@ eUw
 eUw
 eUw
 eUw
-eUw
-eUw
+ktd
+ktd
 eUw
 gdj
 gdj
@@ -78320,11 +78327,11 @@ eUw
 eUw
 eUw
 eUw
-eUw
-eUw
-eUw
-eUw
-eUw
+ktd
+ktd
+ktd
+ktd
+ktd
 gdj
 gdj
 llq
@@ -78576,13 +78583,13 @@ eUw
 eUw
 eUw
 eUw
+ktd
+ktd
 eUw
 eUw
-eUw
-eUw
-eUw
-eUw
-eUw
+ktd
+ktd
+ktd
 gdj
 llq
 llq
@@ -78838,9 +78845,9 @@ eUw
 eUw
 eUw
 eUw
-eUw
-eUw
-eUw
+ktd
+ktd
+ktd
 gdj
 gdj
 llq
@@ -79097,8 +79104,8 @@ eUw
 eUw
 eUw
 eUw
-eUw
-eUw
+ktd
+ktd
 gdj
 gdj
 gdj
@@ -81918,14 +81925,14 @@ eUw
 eUw
 eUw
 eUw
+ktd
+ktd
 eUw
 eUw
 eUw
 eUw
-eUw
-eUw
-eUw
-eUw
+ktd
+ktd
 eUw
 eUw
 lSx
@@ -82176,13 +82183,13 @@ eUw
 eUw
 eUw
 eUw
+ktd
+ktd
 eUw
 eUw
-eUw
-eUw
-eUw
-eUw
-eUw
+ktd
+ktd
+ktd
 eUw
 llq
 llq
@@ -82434,10 +82441,10 @@ eUw
 eUw
 eUw
 eUw
-eUw
-eUw
-eUw
-eUw
+ktd
+ktd
+ktd
+ktd
 eUw
 eUw
 llq
@@ -126698,7 +126705,7 @@ bHK
 bHK
 vAU
 vAU
-vAU
+gIl
 vAU
 vAU
 vAU
@@ -128242,7 +128249,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+gIl
 vAU
 "}
 (84,1,2) = {"
@@ -151628,7 +151635,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+gIl
 vAU
 vAU
 "}
@@ -152654,7 +152661,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+gIl
 vAU
 vAU
 vAU
@@ -153678,11 +153685,11 @@ vAU
 vAU
 vAU
 vAU
+gIl
 vAU
 vAU
 vAU
-vAU
-vAU
+gIl
 vAU
 vAU
 vAU
@@ -153939,8 +153946,8 @@ vAU
 vAU
 vAU
 vAU
-vAU
-vAU
+gIl
+gIl
 vAU
 vAU
 vAU
@@ -154195,9 +154202,9 @@ vAU
 vAU
 vAU
 vAU
-vAU
-vAU
-vAU
+gIl
+gIl
+gIl
 vAU
 vAU
 vAU
@@ -154453,7 +154460,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+gIl
 vAU
 vAU
 vAU
