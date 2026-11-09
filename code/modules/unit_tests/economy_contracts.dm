@@ -28,6 +28,25 @@
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
 	TEST_ASSERT_EQUAL(length(command.contracts), 0, "У командования контрактов нет")
 
+/// Каждое баунти, которое попадает на доску контрактов, можно выполнить: предмету есть что искать, реагенту - какой реагент.
+/datum/unit_test/economy_contracts_completable/Run()
+	// Ищут не по типу, а по свойствам предмета в своём applies_to()
+	var/static/list/matched_by_properties = typecacheof(list(/datum/bounty/item/slime/crossbreeded))
+	var/list/bounty_types = GLOB.econ_roundstart_special_bounties.Copy()
+	var/list/by_department = econ_bounty_types_by_department()
+	for(var/department_id in by_department)
+		bounty_types |= by_department[department_id]
+	for(var/bounty_type in bounty_types)
+		var/datum/bounty/bounty = new bounty_type
+		if(bounty.name && bounty.description)
+			var/datum/bounty/item/item_bounty = bounty
+			if(istype(item_bounty) && !is_type_in_typecache(item_bounty, matched_by_properties))
+				TEST_ASSERT(length(item_bounty.wanted_types), "[bounty_type] ([bounty.name]) ничего не ищет: контракт не выполнить")
+			var/datum/bounty/reagent/reagent_bounty = bounty
+			if(istype(reagent_bounty))
+				TEST_ASSERT_NOTNULL(reagent_bounty.wanted_reagent, "[bounty_type] ([bounty.name]) без реагента: контракт не выполнить")
+		qdel(bounty)
+
 /// Контракт деятельности засчитывается по записям работы взявшего и платит отделу и исполнителю.
 /datum/unit_test/economy_work/activity_contract/Run()
 	setup_pair()
