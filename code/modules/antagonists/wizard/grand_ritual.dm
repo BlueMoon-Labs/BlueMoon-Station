@@ -100,9 +100,12 @@
 /datum/antagonist/wizard/ritualist/support_mage
 	name = "Маг поддержки"
 	outfit_type = /datum/outfit/wizard/ritual_coven/support
-	role_brief = "Лечите союзников посохом, закрывайте подходы силовой стеной и активируйте руны, пока вас прикрывают."
+	role_brief = "Лечите союзников палочкой исцеления. Закрывайте подходы силовой стеной и активируйте руны, пока вас прикрывают."
 	can_scribe = FALSE
-	starting_spells = list(/obj/effect/proc_holder/spell/targeted/forcewall)
+	starting_spells = list(
+		/obj/effect/proc_holder/spell/targeted/forcewall,
+		/obj/effect/proc_holder/spell/targeted/charge,
+	)
 
 /datum/outfit/wizard/ritual_coven
 	name = "Ritual Wizard"
@@ -118,7 +121,7 @@
 	name = "Support Wizard"
 	suit = /obj/item/clothing/suit/wizrobe/marisa
 	head = /obj/item/clothing/head/wizard/marisa
-	l_hand = /obj/item/gun/magic/staff/healing
+	l_hand = /obj/item/gun/magic/wand/resurrection
 
 /datum/objective/wizard_grand_ritual
 	name = "Великий ритуал"
