@@ -3630,9 +3630,6 @@
 /obj/structure/rockpilemesa{
 	icon_state = "iron1"
 	},
-/obj/machinery/power/floodlight/urbanismlight/mesamisc{
-	light_color = "#d4654e"
-	},
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
@@ -27004,6 +27001,7 @@
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 6
 	},
+/obj/item/gun/ballistic/automatic/p90,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "ixa" = (
@@ -29943,7 +29941,6 @@
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "jvV" = (
 /obj/structure/flora/junglebush,
-/obj/machinery/power/floodlight/urbanismlight/mesaoutside,
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
 	dir = 1
@@ -33713,6 +33710,8 @@
 	},
 /obj/item/ammo_box/magazine/p90,
 /obj/item/ammo_box/magazine/p90,
+/obj/item/ammo_box/magazine/mp5,
+/obj/item/ammo_box/magazine/mp5,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "kFU" = (
@@ -65240,6 +65239,8 @@
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 1
 	},
+/obj/item/ammo_box/magazine/scar,
+/obj/item/ammo_box/magazine/scar,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "vcs" = (
@@ -68472,16 +68473,6 @@
 /obj/structure/closet/crate/bin,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
-"wix" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	color = "#454545";
-	dir = 1
-	},
-/obj/machinery/power/floodlight/urbanismlight/mesaspec,
-/turf/open/floor/plating/ironsand{
-	color = "#f7caa6"
-	},
-/area/awaymission/ihategordon/outsideofmesa)
 "wiz" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/structure/lattice,
@@ -167060,7 +167051,7 @@ lDz
 jCo
 mcz
 iVW
-wix
+tgR
 uWf
 kUb
 jAe

@@ -586,6 +586,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	var/next_mob_spawn_time = 0
 	var/damage_taken = 0
 	var/next_dead_sound_time = 0
+	var/was_activated = FALSE
 
 	var/spawn_mobs = FALSE
 	var/list/mob_types = list()
@@ -638,7 +639,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 			spawn_mob_wave()
 
 	if(!active)
-		if(world.time >= next_dead_sound_time)
+		if(!activating && !was_activated && world.time >= next_dead_sound_time)
 			next_dead_sound_time = world.time + rand(10 SECONDS, 25 SECONDS)
 			playsound(src, 'modular_bluemoon/sound/ambience/mesa/generator_dead.ogg', 70, FALSE, 7, 3)
 		return
@@ -657,6 +658,10 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 
 	if(activating)
 		to_chat(user, span_warning("Генератор уже запускается!"))
+		return
+
+	if(was_activated)
+		to_chat(user, span_warning("Генератор полностью разряжен и больше не работает."))
 		return
 
 	if(user.get_active_held_item())
@@ -692,6 +697,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 
 	activating = FALSE
 	active = TRUE
+	was_activated = TRUE
 	icon_state = "generatorold"
 	activation_start_time = world.time
 	damage_taken = 0
