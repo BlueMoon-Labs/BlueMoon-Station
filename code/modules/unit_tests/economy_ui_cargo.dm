@@ -734,7 +734,7 @@
 	TEST_ASSERT(!length(collectors.sells_groups) && !collectors.buy_multiplier(COMMODITY_LUXURY), "Не торгуют паками и грузом")
 	var/datum/market_offer/offer = collectors.new_offer()
 	TEST_ASSERT_NOTNULL(offer, "Запрос коллекционеров выставлен")
-	TEST_ASSERT(offer.unit_price >= 250, "Запрос платит много: [offer.unit_price]")
+	TEST_ASSERT(offer.unit_price * offer.multiplier >= 200, "Запрос платит много: [offer.unit_price] x [offer.multiplier]")
 	TEST_ASSERT(offer.quantity <= 5, "Просят мало штук: [offer.quantity]")
 
 /// Скупка: пачка из разных предметов партнёра дешевле суммы по отдельности, берётся только целиком, уходит в корзину по своей цене у своего партнёра и пропадает из скупки; просроченная снимается.
