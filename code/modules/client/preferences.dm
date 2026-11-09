@@ -864,6 +864,7 @@ GLOBAL_LIST_INIT(body_mod_organ_groups, list(
 			list("id" = "organic", "label" = "Обычные", "cost" = 0),
 			list("id" = "robotic", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/eyes/robotic),
 			list("id" = "glow", "label" = "Светящиеся", "cost" = 1, "path" = /obj/item/organ/eyes/robotic/toggled/glow),
+			list("id" = "kiroshi", "label" = "Оптика Кироши", "cost" = 1, "path" = /obj/item/organ/cyberimp/eyes/optical/kiroshi),
 		),
 	),
 	list(
@@ -928,17 +929,16 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "genital_fluid", "label" = "Жидкостный индуктор", "desc" = "Позволяет вырабатывать генитальную жидкость заданного реагента. (груди)", "cost" = 0, "path" = /obj/item/implant/genital_fluid),
 	list("id" = "breathing_tube", "label" = "Дыхательная трубка", "desc" = "Киберимплант в горле: позволяет дышать без лёгких и не снимать шлем ради дыхания.", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube, "organ" = TRUE),
 	// Кибернетические импланты из обновления: одна и та же группа занимает одни и те же слоты.
-	list("id" = "kiroshi_optics", "label" = "Оптика Кироши", "desc" = "Кибернетические глаза с режимом оптического приближения. Заменяют глаза.", "cost" = 1, "path" = /obj/item/organ/cyberimp/eyes/optical/kiroshi, "organ" = TRUE, "group" = "eye_optics", "organ_slot" = ORGAN_SLOT_EYES),
 	list("id" = "lynx_paws", "label" = "Лапы рыси", "desc" = "Звукопоглощающие подушечки и искусственные нервы в обеих стопах. Шаги становятся беззвучными.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/lynx_paws, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 2, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
-	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments"),
 	list("id" = "corp_hand_cannon", "label" = "Корпоративная ручная пушка", "desc" = "Встроенная в руку энергетическая пушка с режимом очереди. Занимает одну руку.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/handgun/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 2, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments"),
-	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 2, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
-	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 2, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
+	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
+	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
 	list("id" = "nutriment_pump", "label" = "Питательный насос", "desc" = "Синтезирует небольшую порцию питательных веществ в кровь при голоде.", "cost" = 1, "path" = /obj/item/organ/cyberimp/chest/nutriment, "organ" = TRUE),
 ))
 
@@ -1058,7 +1058,18 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(option && !body_mod_implant_locked(option))
 			. += option["cost"]
 
+/// Кироши раньше был отдельным имплантом, теперь это выбор в группе глаз.
+/datum/preferences/proc/migrate_kiroshi_body_mod(list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	if(!islist(selected_organs) || !islist(selected_implants))
+		return
+	if(!selected_implants["kiroshi_optics"])
+		return
+	selected_implants -= "kiroshi_optics"
+	if(!body_mod_organ_locked(ORGAN_SLOT_EYES))
+		selected_organs[ORGAN_SLOT_EYES] = "kiroshi"
+
 /datum/preferences/proc/sanitize_body_mods()
+	migrate_kiroshi_body_mod()
 	if(islist(organ_mods) && organ_mods[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(implant_mods))
 			implant_mods = list()
@@ -1096,6 +1107,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		organ_mods -= slot
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	migrate_kiroshi_body_mod(selected_organs, selected_implants)
 	if(islist(selected_organs) && selected_organs[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(selected_implants))
 			selected_implants = list()

@@ -250,17 +250,16 @@
 	var/datum/preferences/P = new
 	P.pref_species = new /datum/species/human
 	var/list/expected_costs = list(
-		"kiroshi_optics" = 1,
 		"lynx_paws" = 1,
 		"reinforced_tendons" = 1,
 		"fortified_ankles" = 1,
 		"corp_blood_pump" = 2,
-		"corp_mantis_blades" = 3,
-		"corp_monowire" = 3,
+		"corp_mantis_blades" = 6,
+		"corp_monowire" = 6,
 		"corp_hand_cannon" = 3,
-		"corp_gorilla_arms" = 2,
-		"subdermal_armor" = 2,
-		"reinforced_skeleton" = 2,
+		"corp_gorilla_arms" = 6,
+		"subdermal_armor" = 6,
+		"reinforced_skeleton" = 6,
 		"nutriment_pump" = 1,
 	)
 	for(var/implant_id in expected_costs)
@@ -270,7 +269,6 @@
 		TEST_ASSERT(option["organ"], "Implant [implant_id] should be applied as an organ implant")
 
 	P.implant_mods = list(
-		"kiroshi_optics" = TRUE,
 		"lynx_paws" = TRUE,
 		"corp_hand_cannon" = TRUE,
 		"subdermal_armor" = TRUE,
@@ -278,34 +276,48 @@
 		"nutriment_pump" = TRUE,
 		"corp_blood_pump" = TRUE,
 	)
-	TEST_ASSERT_EQUAL(P.quirk_balance(), -12, "Selected implants should be paid for with quirk points")
+	TEST_ASSERT_EQUAL(P.quirk_balance(), -19, "Selected implants should be paid for with quirk points")
 
 	// Импланты одной группы занимают одни и те же слоты: новый выбор снимает старый и возвращает очки.
 	var/datum/preferences/conflict_prefs = new
 	conflict_prefs.pref_species = new /datum/species/human
 	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE)
 	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("corp_monowire"), "Arm implants should conflict with each other")
-	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("corp_monowire"), 3, "Replacing an arm implant should refund its cost")
-	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance(), -3, "A single selected implant should be charged once")
+	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("corp_monowire"), 6, "Replacing an arm implant should refund its cost")
+	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance(), -6, "A single selected implant should be charged once")
 
 	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE, "corp_monowire" = TRUE, "corp_hand_cannon" = TRUE)
 	conflict_prefs.sanitize_body_mods()
 	TEST_ASSERT_EQUAL(length(conflict_prefs.implant_mods), 1, "Only one arm implant should survive sanitizing")
 
-	// Оптика Кироши занимает слот глаз и приоритетнее выбора органа в той же вкладке.
-	conflict_prefs.implant_mods = list("kiroshi_optics" = TRUE)
-	conflict_prefs.organ_mods = list(ORGAN_SLOT_EYES = "glow")
-	conflict_prefs.sanitize_body_mods()
-	TEST_ASSERT_NULL(conflict_prefs.organ_mods[ORGAN_SLOT_EYES], "Kiroshi optics should replace the selected eye organ")
+	// Оптика Кироши теперь выбор в группе глаз: она заменяет светящиеся глаза, а не сосуществует с ними.
+	var/datum/preferences/eye_prefs = new
+	eye_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT_NOTNULL(eye_prefs.body_mod_organ_option(ORGAN_SLOT_EYES, "kiroshi"), "Kiroshi optics should be an eye option")
+	TEST_ASSERT_NULL(eye_prefs.body_mod_implant_option("kiroshi_optics"), "Kiroshi optics should no longer be a separate implant")
+	eye_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Kiroshi eye choice should survive sanitizing")
+	TEST_ASSERT_EQUAL(eye_prefs.body_mods_cost(), 1, "Kiroshi optics should cost one quirk point")
 
-	// Видам с мутантными глазами имплант глаз недоступен так же, как и замена органа глаз.
-	conflict_prefs.pref_species = new /datum/species/lizard/ashwalker
-	conflict_prefs.implant_mods = list("kiroshi_optics" = TRUE)
-	conflict_prefs.sanitize_body_mods()
-	TEST_ASSERT_NULL(conflict_prefs.implant_mods["kiroshi_optics"], "Kiroshi optics should be dropped for mutant-eyed species")
+	// Старые сохранения с имплантом kiroshi_optics переносятся в выбор глаз.
+	eye_prefs.organ_mods = list()
+	eye_prefs.implant_mods = list("kiroshi_optics" = TRUE)
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_NULL(eye_prefs.implant_mods["kiroshi_optics"], "Legacy Kiroshi implant should be migrated")
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Legacy Kiroshi implant should become the eye choice")
+
+	// Видам с мутантными глазами оптика недоступна так же, как и прочая замена глаз.
+	var/datum/preferences/mutant_prefs = new
+	mutant_prefs.pref_species = new /datum/species/lizard/ashwalker
+	TEST_ASSERT(mutant_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed species should keep the eye group locked")
+	mutant_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	mutant_prefs.drop_locked_body_mods()
+	TEST_ASSERT_NULL(mutant_prefs.organ_mods[ORGAN_SLOT_EYES], "Kiroshi choice should be dropped for mutant-eyed species")
 
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/health_before = H.maxHealth
+	P.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
 	P.apply_prefs_body_mods(H)
 
 	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/cyberimp/eyes/optical/kiroshi), "Kiroshi optics should be implanted")
