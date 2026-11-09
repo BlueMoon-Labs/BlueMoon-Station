@@ -55,6 +55,9 @@
 		if("take")
 			econ_take_contract(usr, params["uid"], src)
 			return TRUE
+		if("drop")
+			econ_drop_contract(usr, params["uid"], src)
+			return TRUE
 		if("Print")
 			if(printer_ready < world.time)
 				printer_ready = world.time + PRINTER_TIMEOUT

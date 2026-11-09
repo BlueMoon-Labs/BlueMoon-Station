@@ -420,3 +420,43 @@
 		allocate(/obj/item/reagent_containers/food/snacks/cheesiehonkers, get_turf(pad))
 	click(console, "send")
 	TEST_ASSERT(contract.completed, "Найденные снеки засчитаны")
+
+/// Отказ от взятого контракта: неначатый уходит с доски, начатый снова свободен без срока взятия, у срочного срок остаётся; чужой не снять, новый - после паузы.
+/datum/unit_test/economy_contract_machines/drop/Run()
+	setup()
+	var/obj/machinery/computer/bounty/console = allocate(/obj/machinery/computer/bounty)
+	var/datum/econ_contract/delivery/fresh = post_scooter_contract()
+	click(console, "take", list("uid" = fresh.uid))
+	TEST_ASSERT(fresh.taker == taker_account, "Контракт взят")
+	var/datum/bank_account/stranger = new("econ_test_stranger")
+	TEST_ASSERT(!econ_try_drop_contract(user, fresh.uid, stranger)[1], "Чужой контракт снят")
+	qdel(stranger)
+	TEST_ASSERT(fresh.taker == taker_account, "Чужой отказ снял исполнителя")
+	click(console, "drop", list("uid" = fresh.uid))
+	TEST_ASSERT(QDELETED(fresh), "Неначатый контракт после отказа остался на доске")
+
+	var/datum/econ_contract/delivery/started = post_scooter_contract()
+	var/datum/bounty/item/wanted = started.bounty
+	wanted.required_count = 3
+	wanted.shipped_count = 1
+	TEST_ASSERT(!econ_try_take_contract(user, started.uid, taker_account)[1], "Новый контракт взят сразу после отказа")
+	COOLDOWN_RESET(taker_account, contract_drop_cooldown)
+	TEST_ASSERT(econ_try_take_contract(user, started.uid, taker_account)[1], "После паузы контракт берётся")
+	TEST_ASSERT(started.deadline, "Взятый получил срок")
+	click(console, "drop", list("uid" = started.uid))
+	TEST_ASSERT(!QDELETED(started) && (started in civilian.contracts), "Начатый контракт ушёл с доски")
+	TEST_ASSERT_NULL(started.taker, "Исполнитель остался после отказа")
+	TEST_ASSERT_EQUAL(started.deadline, 0, "Срок взятия остался после отказа")
+	TEST_ASSERT_EQUAL(wanted.shipped_count, 1, "Отгруженное по контракту пропало")
+
+	var/datum/econ_contract/delivery/urgent = post_scooter_contract()
+	urgent.urgent = TRUE
+	urgent.set_deadline(world.time + 10 MINUTES)
+	var/urgent_deadline = urgent.deadline
+	COOLDOWN_RESET(taker_account, contract_drop_cooldown)
+	TEST_ASSERT(urgent.take(taker_account), "Срочный взят")
+	var/datum/bounty/item/urgent_wanted = urgent.bounty
+	urgent_wanted.required_count = 3
+	urgent_wanted.shipped_count = 1
+	TEST_ASSERT(urgent.drop(taker_account), "От срочного не отказаться")
+	TEST_ASSERT_EQUAL(urgent.deadline, urgent_deadline, "Срочный потерял свой срок")

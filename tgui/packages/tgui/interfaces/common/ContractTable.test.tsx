@@ -82,3 +82,17 @@ test('только просмотр: без кнопки, свободный к�
   expect(ui.getByText('Свободен')).toBeTruthy();
   expect(ui.getByText('Взял: Другой')).toBeTruthy();
 });
+
+test('от своего контракта можно отказаться с подтверждением, от чужого нет', () => {
+  const ui = setup({ drop_cooldown: 5 });
+  expect(ui.getAllByText('Отказаться')).toHaveLength(1);
+  fireEvent.click(ui.getByText('Отказаться'));
+  expect(sent(ui.topic, 'drop')).toEqual([]);
+  fireEvent.click(ui.getByText('Точно отказаться?'));
+  expect(sent(ui.topic, 'drop')).toEqual([{ uid: 2 }]);
+});
+
+test('только просмотр: отказа нет', () => {
+  const ui = setup({}, true);
+  expect(ui.queryByText('Отказаться')).toBeNull();
+});

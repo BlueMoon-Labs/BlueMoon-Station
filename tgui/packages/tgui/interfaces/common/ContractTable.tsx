@@ -8,6 +8,7 @@ type ContractBoardData = {
   contracts?: ContractEntry[];
   my_account?: number | null;
   performer_share?: number;
+  drop_cooldown?: number;
 };
 
 const formatTimeLeft = (seconds: number) => {
@@ -28,13 +29,31 @@ const progressShare = (progress?: string | null) => {
 };
 
 const ContractAction = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
-  const { act } = useBackend();
+  const { act, data } = useBackend<ContractBoardData>();
   const { contract, myAccount, readOnly } = props;
+  const cooldown = data.drop_cooldown ? ` Новый контракт - через ${data.drop_cooldown} мин.` : '';
   if (contract.taken_by) {
-    return contract.taker_id === myAccount ? (
-      <Box color="good">Ваш контракт</Box>
-    ) : (
-      <Box color="label">Взял: {contract.taken_by}</Box>
+    if (contract.taker_id !== myAccount) {
+      return <Box color="label">Взял: {contract.taken_by}</Box>;
+    }
+    return (
+      <>
+        <Box color="good">Ваш контракт</Box>
+        {!readOnly && (
+          <Button.Confirm
+            mt={0.5}
+            icon="times"
+            content="Отказаться"
+            confirmContent="Точно отказаться?"
+            tooltip={
+              contract.started
+                ? `Контракт снова станет свободным, отгруженное по нему останется засчитанным.${cooldown}`
+                : `Контракт уйдёт с доски, на его место придёт другой.${cooldown}`
+            }
+            onClick={() => act('drop', { uid: contract.uid })}
+          />
+        )}
+      </>
     );
   }
   if (!contract.takeable) {

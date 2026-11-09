@@ -393,6 +393,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		if("take")
 			var/list/result = econ_try_take_contract(user, params["uid"])
 			messages[user_ref] = result[2]
+		if("drop")
+			var/list/result = econ_try_drop_contract(user, params["uid"])
+			messages[user_ref] = result[2]
 		else
 			return FALSE
 	return TRUE

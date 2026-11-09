@@ -172,6 +172,8 @@
 #define ECON_CONTRACTS_PER_TAKER 1
 /// Срок, который получает взятый контракт без своего срока
 #define ECON_CONTRACT_TAKEN_TIME (40 MINUTES)
+/// Отказавшийся от контракта берёт следующий не раньше чем через столько
+#define ECON_CONTRACT_DROP_COOLDOWN (5 MINUTES)
 /// Шанс, что новый контракт отдела - деятельность, а не поставка
 #define ECON_CONTRACT_ACTIVITY_CHANCE 35
 /// Не чаще этого бюджет сообщает картам о возврате излишка NT

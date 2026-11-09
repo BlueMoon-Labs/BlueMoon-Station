@@ -79,6 +79,7 @@
 
 /datum/bank_account
 	COOLDOWN_DECLARE(manifest_print_cooldown)
+	COOLDOWN_DECLARE(contract_drop_cooldown)
 
 /// Печать накладной с консоли: свой отдел, кулдаун по счёту сотрудника, а не по консоли.
 /proc/econ_print_manifest(mob/user, obj/machinery/printer)

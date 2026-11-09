@@ -134,6 +134,9 @@
 			return wallet_payment(user, action, params)
 		if("take")
 			return wallet_take(user, params["uid"])
+		if("drop")
+			message = econ_try_drop_contract(user, params["uid"], wallet_account(user))[2]
+			return TRUE
 		if("lottery_buy")
 			return wallet_lottery(user, params["count"])
 		if("md_withdraw", "md_deposit")

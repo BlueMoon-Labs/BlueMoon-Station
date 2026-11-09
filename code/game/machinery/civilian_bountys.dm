@@ -146,10 +146,15 @@
 	if(action == "send")
 		sender_ref = WEAKREF(usr)
 	. = ..()
-	if(. || action != "take")
+	if(.)
 		return
-	econ_take_contract(usr, params["uid"], src)
-	return TRUE
+	switch(action)
+		if("take")
+			econ_take_contract(usr, params["uid"], src)
+			return TRUE
+		if("drop")
+			econ_drop_contract(usr, params["uid"], src)
+			return TRUE
 
 ///Маяк: сбрасывает пад и пульт пункта подработки.
 /obj/item/civ_bounty_beacon
