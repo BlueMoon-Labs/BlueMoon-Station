@@ -75,6 +75,8 @@
 	if(. || !computer)
 		return
 	var/mob/living/user = usr
+	if(econ_cargo_viewer_act(user, action, params, catalog_ids))
+		return TRUE
 	var/staff = is_supply_staff(user)
 	switch(action)
 		if("add")

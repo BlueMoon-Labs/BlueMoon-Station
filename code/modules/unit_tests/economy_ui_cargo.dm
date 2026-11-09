@@ -788,3 +788,44 @@
 	TEST_ASSERT_NOTEQUAL(econ_cargo_shuttle_data()["state"], "loaned", "Консоль показывает шаттл в аренде")
 	qdel(older)
 	qdel(newer)
+
+/// Каталог не шлёт описания и описи статикой: карточку пака и поиск по описанию и описи окно запрашивает у сервера, скрытые паки не раскрываются.
+/datum/unit_test/economy_ui_cargo/lazy_pack_info/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/obj/machinery/computer/cargo/express/express = allocate(/obj/machinery/computer/cargo/express)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/materials/metal50]
+	var/list/view = client_view(console, technician)
+	var/list/entry = catalog_entry(view["supplies"], pack)
+	TEST_ASSERT_NOTNULL(entry, "Пак в каталоге")
+	TEST_ASSERT(isnull(entry["desc"]) && isnull(entry["contents"]), "Описание и опись не уходят статикой")
+	TEST_ASSERT_NULL(view["pack_info"], "Карточка без запроса")
+	press(technician, console, "pack_info", list("id" = "[pack.type]"))
+	var/list/info = console.ui_data(technician)["pack_info"]
+	TEST_ASSERT_NOTNULL(info, "Карточка пришла по запросу")
+	TEST_ASSERT_EQUAL(info["id"], "[pack.type]", "Карточка того пака")
+	TEST_ASSERT_EQUAL(info["desc"], pack.desc || pack.name, "Описание пака")
+	TEST_ASSERT_EQUAL(length(info["contents"]), length(econ_pack_contents(pack)), "Опись пака")
+	var/datum/supply_pack/hidden = find_pack(FALSE, TRUE, FALSE, FALSE)
+	TEST_ASSERT_NOTNULL(hidden, "Есть скрытый пак")
+	press(technician, console, "pack_info", list("id" = "[hidden.type]"))
+	TEST_ASSERT_NULL(console.ui_data(technician)["pack_info"], "Скрытый пак раскрылся на обычной консоли")
+	var/old_desc = pack.desc
+	pack.desc = "Листы ЭКОНТЕСТЪЯЖ для поиска"
+	GLOB.econ_cargo_search_text -= pack.type
+	press(technician, console, "search", list("text" = " эконтестъяж "))
+	var/list/data = console.ui_data(technician)
+	press(technician, express, "search", list("text" = "эконтестъяж"))
+	var/list/express_data = express.ui_data(technician)
+	pack.desc = old_desc
+	GLOB.econ_cargo_search_text -= pack.type
+	TEST_ASSERT_EQUAL(data["search"], "эконтестъяж", "Строка поиска без пробелов по краям")
+	var/list/hits = data["search_hits"]
+	TEST_ASSERT_EQUAL(length(hits), 1, "Поиск по описанию без учёта регистра нашёл [length(hits)] паков")
+	TEST_ASSERT_EQUAL(hits[1], "[pack.type]", "Найден тот пак")
+	TEST_ASSERT_EQUAL(data["search_total"], 1, "Найден один пак")
+	var/list/express_hits = express_data["search_hits"]
+	TEST_ASSERT(length(express_hits) == 1 && express_hits[1] == "[pack.type]", "Экспресс-консоль ищет так же")
+	press(technician, console, "search", list("text" = "x"))
+	TEST_ASSERT_EQUAL(length(console.ui_data(technician)["search_hits"]), 0, "Строка короче минимума не ищет")
+	GLOB.econ_cargo_viewers -= REF(technician)

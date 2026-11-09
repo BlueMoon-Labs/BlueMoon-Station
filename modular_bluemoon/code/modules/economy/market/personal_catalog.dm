@@ -45,7 +45,6 @@ GLOBAL_LIST_INIT(econ_personal_catalog, typecacheof(list(
 		var/list/entry = econ_cargo_static_entry(pack)
 		entry["name"] = pack.name
 		entry["id"] = pack_type
-		entry["desc"] = pack.desc || pack.name
 		entry["goody"] = pack.goody
 		entry["access"] = pack.access
 		entry["private_goody"] = pack.goody == PACK_GOODY_PRIVATE

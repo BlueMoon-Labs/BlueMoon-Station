@@ -106,6 +106,7 @@ i'd be right happy to */
 
 /obj/machinery/computer/cargo/express/proc/packin_up(forced = FALSE)
 	meme_pack_data = list()
+	catalog_ids = list()
 	// BLUEMOON ADD TG UPSTREAM PULL
 	if(!forced && !SSshuttle.initialized)
 		SSshuttle.express_consoles += src
@@ -133,8 +134,8 @@ i'd be right happy to */
 		var/list/entry = econ_cargo_pack_entry(P, FALSE)
 		entry["name"] = P.name
 		entry["id"] = pack
-		entry["desc"] = P.desc || P.name
 		meme_pack_data[P.group]["packs"] += list(entry)
+		catalog_ids[pack] = TRUE
 
 /// Пак есть в каталоге этой консоли и заказывается с неё.
 /obj/machinery/computer/cargo/express/proc/offers_pack(datum/supply_pack/pack)
@@ -189,6 +190,7 @@ i'd be right happy to */
 	data["department_account"] = department_account // BLUEMOON ADD
 	data["access_hint"] = access_hint // BLUEMOON ADD
 	data["beacon_only"] = beacon_only
+	data += econ_cargo_viewer_data(user)
 	message = "Sales are near-instantaneous - please choose carefully."
 	if(SSshuttle.supplyBlocked)
 		message = blockade_warning
@@ -220,6 +222,8 @@ i'd be right happy to */
 	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
 		return
 	var/static/list/express_actions = list("toggleLock", "toggleprivate", "LZCargo", "LZBeacon", "printBeacon", "add")
+	if(econ_cargo_viewer_act(usr, action, params, catalog_ids))
+		return TRUE
 	if(!(action in express_actions) || (locked && action != "toggleLock"))
 		return
 	. = ..()

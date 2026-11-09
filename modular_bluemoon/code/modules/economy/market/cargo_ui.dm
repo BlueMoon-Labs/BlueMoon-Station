@@ -161,7 +161,6 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/datum/trade_partner/exclusive = pack.partner_exclusive ? SSmarket.get_partner(pack.partner_exclusive) : null
 	return list(
 		"commodity" = commodity?.name,
-		"contents" = econ_pack_contents(pack),
 		"exclusive" = exclusive ? list(exclusive.name, pack.exclusive_tier) : null,
 	)
 
@@ -212,7 +211,6 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		var/list/entry = econ_cargo_static_entry(pack)
 		entry["name"] = pack.name
 		entry["id"] = pack_type
-		entry["desc"] = pack.desc || pack.name
 		entry["goody"] = pack.goody
 		entry["access"] = pack.access
 		entry["private_goody"] = pack.goody == PACK_GOODY_PRIVATE
@@ -307,7 +305,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 
 /// Динамические данные окна снабжения, общие для консоли и приложения КПК.
 /proc/econ_cargo_ui_data(mob/user, show_contraband)
-	var/list/data = econ_contracts_ui_data(user)
+	var/list/data = econ_contracts_ui_data(user) + econ_cargo_viewer_data(user)
 	var/datum/economy_department/manifest_department = econ_manifest_department_for(user)
 	data["manifest_department"] = manifest_department?.name
 	data["location"] = SSshuttle.supply.getStatusText()

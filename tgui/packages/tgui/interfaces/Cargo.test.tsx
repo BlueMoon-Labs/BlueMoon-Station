@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
@@ -51,8 +51,8 @@ const backend = {
     Materials: {
       name: 'Canisters & Materials',
       packs: [
-        { name: '50 Metal Sheets', id: '/datum/supply_pack/materials/metal50', desc: 'Металл', goody: 0, commodity: 'Металлы', contents: ['metal ×50'] },
-        { name: '50 Glass Sheets', id: '/datum/supply_pack/materials/glass50', desc: 'Стекло', goody: 0, commodity: 'Стройматериалы' },
+        { name: '50 Metal Sheets', id: '/datum/supply_pack/materials/metal50', goody: 0, commodity: 'Металлы' },
+        { name: '50 Glass Sheets', id: '/datum/supply_pack/materials/glass50', goody: 0, commodity: 'Стройматериалы' },
       ],
     },
   },
@@ -320,12 +320,36 @@ test('шапка: шаттл в пути с таймером, у ЦК - вызо
 test('карточка пака: опись, количество и заказ нескольких штук одним add', () => {
   const ui = setup();
   fireEvent.click(ui.getByText('50 Metal Sheets'));
+  expect(sent(ui.topic, 'pack_info')).toEqual([{ id: '/datum/supply_pack/materials/metal50' }]);
+  expect(ui.getByText('Загружаю описание...')).toBeTruthy();
+  ui.store.dispatch(backendUpdate({ data: { pack_info: { id: '/datum/supply_pack/materials/metal50', desc: 'Листы металла', contents: ['metal ×50'] } } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('Листы металла')).toBeTruthy();
   expect(ui.getByText('metal ×50')).toBeTruthy();
   const plus = ui.container.querySelector('.NtTerm__detail .fa-plus') as Element;
   fireEvent.click(plus);
   fireEvent.click(plus);
   fireEvent.click(ui.getByText('В корзину за 9 000 кр.'));
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50', amount: 3 }]);
+});
+
+test('поиск: до ответа сервера по названию, затем по найденному сервером в описании и описи', () => {
+  jest.useFakeTimers();
+  const ui = setup();
+  fireEvent.input(ui.getByPlaceholderText('Поиск по названию, описанию и описи'), { target: { value: 'Glass' } });
+  expect(ui.getByText('50 Glass Sheets')).toBeTruthy();
+  expect(ui.queryByText('50 Metal Sheets')).toBeNull();
+  fireEvent.input(ui.getByPlaceholderText('Поиск по названию, описанию и описи'), { target: { value: 'листы' } });
+  expect(sent(ui.topic, 'search')).toEqual([]);
+  act(() => {
+    jest.advanceTimersByTime(300);
+  });
+  expect(sent(ui.topic, 'search')).toEqual([{ text: 'листы' }]);
+  ui.store.dispatch(backendUpdate({ data: { search: 'листы', search_hits: ['/datum/supply_pack/materials/metal50'], search_total: 1 } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('50 Metal Sheets')).toBeTruthy();
+  expect(ui.queryByText('50 Glass Sheets')).toBeNull();
+  jest.useRealTimers();
 });
 
 test('избранное: звёздочка собирает пак во вкладку "Избранное"', () => {

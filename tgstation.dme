@@ -5297,6 +5297,7 @@
 #include "modular_bluemoon\code\modules\economy\market\auction.dm"
 #include "modular_bluemoon\code\modules\economy\market\bundles.dm"
 #include "modular_bluemoon\code\modules\economy\market\cargo_ui.dm"
+#include "modular_bluemoon\code\modules\economy\market\cargo_viewer.dm"
 #include "modular_bluemoon\code\modules\economy\market\commodity.dm"
 #include "modular_bluemoon\code\modules\economy\market\exclusive_packs.dm"
 #include "modular_bluemoon\code\modules\economy\market\logos.dm"

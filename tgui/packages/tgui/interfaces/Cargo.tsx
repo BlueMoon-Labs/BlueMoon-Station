@@ -3,7 +3,7 @@ import { BooleanLike } from 'common/react';
 import { plural } from 'common/ru/plural';
 import { storage } from 'common/storage';
 import { createSearch } from 'common/string';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
@@ -27,7 +27,8 @@ import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScr
 type Pack = {
   name: string;
   id: string;
-  desc: string;
+  /** Описание и опись не приходят каталогом: карточка запрашивает их через pack_info */
+  desc?: string;
   cost?: number;
   goody?: BooleanLike;
   access?: BooleanLike;
@@ -47,14 +48,16 @@ type Pack = {
 /** Цена, id поставщика и наличие пака: приходят отдельно от каталога и обновляются после пересчёта цен. */
 type PackPrice = [number, string | null, BooleanLike, ([string, number][] | null)?];
 
-const withPrice = (pack: Pack, prices?: Record<string, PackPrice>, partners?: Partner[]): Pack => {
+const withPrice = (pack: Pack, prices?: Record<string, PackPrice>, partnerNames?: Record<string, string>): Pack => {
   const price = prices?.[pack.id];
   if (!price) {
     return pack;
   }
-  const supplier = price[1] && (partners?.find((partner) => partner.id === price[1])?.name || price[1]);
+  const supplier = price[1] && (partnerNames?.[price[1]] || price[1]);
   return { ...pack, cost: price[0], supplier, in_stock: price[2], choices: price[3] || null };
 };
+
+type PackInfo = { id: string; desc: string; contents: string[] };
 
 type SupplyGroup = {
   name: string;
@@ -193,6 +196,10 @@ type CargoData = {
   auction_next?: number;
   auction_results?: AuctionResult[];
   my_balance?: number | null;
+  pack_info?: PackInfo | null;
+  search?: string;
+  search_hits?: string[];
+  search_total?: number;
 };
 
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -232,7 +239,7 @@ const useFavorites = () => {
 
 export const Cargo = (props) => {
   return (
-    <Window width={980} height={760} resizable>
+    <Window width={980} height={680} resizable>
       <Window.Content scrollable>
         <CargoContent />
       </Window.Content>
@@ -419,12 +426,17 @@ const PackDetails = (props: {
   onOrder: (amount: number, partner?: string) => void;
   express?: boolean;
 }) => {
-  const { data } = useBackend<CargoData>();
+  const { act, data } = useBackend<CargoData>();
   const { pack, outOfStock, onOrder, express } = props;
   const addMax = data.add_max || 10;
   const [amount, setAmount] = useState(1);
   const [partner, setPartner] = useState<string | null>(null);
-  const contents = pack.contents || [];
+  useEffect(() => {
+    act('pack_info', { id: pack.id });
+  }, [pack.id]);
+  const info = data.pack_info?.id === pack.id ? data.pack_info : null;
+  const contents = info?.contents || pack.contents || [];
+  const desc = info?.desc || pack.desc;
   // Цена в окне уже с наценкой частного заказа: та же доля ложится на цены других партнёров
   const ratio = pack.cost ? props.cost / pack.cost : 1;
   const choices = !express && pack.choices ? pack.choices : null;
@@ -434,7 +446,9 @@ const PackDetails = (props: {
   const repPerCredit = data.reputation_per_credit || 0;
   return (
     <Box className="NtTerm__detail">
-      <Box mb={1}>{pack.desc}</Box>
+      <Box mb={1} color={desc ? undefined : 'label'}>
+        {desc || 'Загружаю описание...'}
+      </Box>
       {contents.length > 0 && (
         <Box mb={1}>
           <Box color="label" mb={0.5}>
@@ -505,18 +519,48 @@ export const CargoCatalog = (props: { express?: boolean }) => {
   const [searchText, setSearchText] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
-  const allPacks = supplies
-    .flatMap((supply) => supply.packs)
-    .filter((pack, index, all) => all.findIndex((other) => other.id === pack.id) === index);
-  const searchFn = createSearch(searchText, (pack: Pack) => `${pack.name} ${pack.desc} ${(pack.contents || []).join(' ')}`);
-  const isSearching = searchText.length >= 2;
+  const allPacks = useMemo(() => {
+    const seen = new Set<string>();
+    return supplies
+      .flatMap((supply) => supply.packs)
+      .filter((pack) => {
+        if (seen.has(pack.id)) {
+          return false;
+        }
+        seen.add(pack.id);
+        return true;
+      });
+  }, [data.supplies]);
+  const partnerNames = useMemo(
+    () => Object.fromEntries((data.partners || []).map((entry) => [entry.id, entry.name])),
+    [data.partners],
+  );
+  const query = searchText.trim();
+  const isSearching = query.length >= 2;
+  useEffect(() => {
+    if (!isSearching) {
+      return;
+    }
+    const timer = setTimeout(() => act('search', { text: query }), 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+  // Пока сервер не ответил на эту строку, ищем по названию: описания и описи у окна нет
+  const serverHits = isSearching && data.search === query ? data.search_hits : null;
+  const displayedPacks = useMemo(() => {
+    if (isSearching) {
+      if (serverHits) {
+        const hits = new Set(serverHits);
+        return allPacks.filter((pack) => hits.has(pack.id));
+      }
+      return allPacks.filter(createSearch(query, (pack: Pack) => pack.name));
+    }
+    if (activeSupplyName === null) {
+      return allPacks.filter((pack) => favorites.includes(pack.id));
+    }
+    return supplies.find((supply) => supply.name === activeSupplyName)?.packs || [];
+  }, [allPacks, isSearching, serverHits, query, activeSupplyName, favorites, data.supplies]);
   const showFavorites = !isSearching && activeSupplyName === null;
-  const activeSupply = supplies.find((supply) => supply.name === activeSupplyName);
-  const displayedPacks = isSearching
-    ? allPacks.filter(searchFn)
-    : showFavorites
-      ? allPacks.filter((pack) => favorites.includes(pack.id))
-      : activeSupply?.packs || [];
+  const foundTotal = serverHits ? data.search_total || serverHits.length : displayedPacks.length;
   const markupPercent = Math.round((private_markup - 1) * 100);
   const privateHint = express
     ? 'Оплата с вашего счёта сразу при заказе, без наценки частного заказа.'
@@ -591,7 +635,9 @@ export const CargoCatalog = (props: { express?: boolean }) => {
       )}
       {isSearching && (
         <Box color="label" mb={1}>
-          Найдено: {displayedPacks.length}
+          Найдено: {foundTotal}
+          {foundTotal > displayedPacks.length ? `, показаны первые ${displayedPacks.length} - уточните запрос` : ''}
+          {serverHits ? '' : ' (пока только по названию)'}
         </Box>
       )}
       {showFavorites && displayedPacks.length === 0 && (
@@ -601,7 +647,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
       )}
       <Table>
         {displayedPacks.map((listed) => {
-          const pack = withPrice(listed, data.prices, data.partners);
+          const pack = withPrice(listed, data.prices, partnerNames);
           const priced = typeof pack.cost === 'number';
           const outOfStock = !priced || (pack.in_stock !== undefined && !pack.in_stock);
           const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;

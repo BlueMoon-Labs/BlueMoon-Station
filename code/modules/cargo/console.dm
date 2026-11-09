@@ -115,6 +115,8 @@
 	. = ..()
 	if(.)
 		return
+	if(econ_cargo_viewer_act(usr, action, params, catalog_ids))
+		return TRUE
 	switch(action)
 		if("auction_bid")
 			. = econ_cargo_auction_bid(usr, params, src)
