@@ -778,11 +778,11 @@
 		visible_message(span_notice("На точках снабжения появились батареи ([batteries_spawned])."))
 
 	var/generator_found = FALSE
-	for(var/obj/structure/urbanism_generator/fuel/generator in world)
-		if(!istype(get_area(generator), /area/awaymission/ihategordon))
+	for(var/obj/structure/urbanism_generator/fuel/F in world)
+		if(!istype(get_area(F), /area/awaymission/ihategordon))
 			continue
 		generator_found = TRUE
-		generator.start_fuel_generator()
+		F.start_fuel_generator()
 
 	if(!generator_found)
 		log_world("[src] Fuel radio conversation ended, but no fuel generator was found in the mission area.")

@@ -23,6 +23,13 @@
 	var/fuel_generator_horde_interval = 45 SECONDS
 	var/next_fuel_generator_horde_time = 0
 
+	// In-flight wave spawn state (spawn_zombie_wave is timer-driven, not slept)
+	var/list/wave_spawn_turfs = null
+	var/list/wave_spawned_zombies = null
+	var/wave_zombies_remaining = 0
+	var/wave_failed_spawns = 0
+	var/wave_batch_size = 0
+
 	// Generator horde state is rescanned at most every 5 seconds instead of
 	// iterating all generators in world on every 1s process() tick.
 	var/next_horde_state_check = 0
@@ -206,7 +213,7 @@
 	var/list/areas = list()
 
 	for(var/area/A in source_areas)
-		if(!A || !A.contents || !A.contents.len)
+		if(!A)
 			continue
 		var/valid = TRUE
 		for(var/EA in excluded_areas)
@@ -266,111 +273,126 @@
 	if(zombies_to_spawn < threat_level)
 		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
 
-	var/list/spawned_zombies = list()
-
-	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
-
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
 	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
 		log_world("[src] No valid spawn turfs found")
 		return
 
+	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
+
+	// Spawning is split into addtimer batches - sleeping inside process()
+	// would stall the SSprocessing tick and stack concurrent spawn threads.
 	spawning_wave = TRUE
-	var/batch_size = rand(5, 8)
-	var/zombies_spawned = 0
-	var/failed_spawns = 0
+	wave_spawn_turfs = cached_spawn_turfs
+	wave_zombies_remaining = zombies_to_spawn
+	wave_spawned_zombies = list()
+	wave_failed_spawns = 0
+	wave_batch_size = rand(5, 8)
+	spawn_wave_step()
 
-	while(zombies_spawned < zombies_to_spawn && cached_spawn_turfs.len)
-		var/remaining = zombies_to_spawn - zombies_spawned
-		var/current_batch = min(batch_size, remaining)
-		current_batch = min(current_batch, cached_spawn_turfs.len)
-
-		for(var/i = 1 to current_batch)
-			if(!cached_spawn_turfs.len)
-				break
-			var/turf/spawn_turf = pick(cached_spawn_turfs)
-			if(!spawn_turf)
-				log_world("[src] Failed to pick spawn turf for zombie #[zombies_spawned + i]")
-				failed_spawns++
-				continue
-
-			cached_spawn_turfs -= spawn_turf
-
-			if(spawn_turf.density || spawn_turf.is_blocked_turf())
-				failed_spawns++
-				continue
-
-			var/mob_type
-			if(difficulty_level >= 5)
-				// Tanks scale with difficulty, capped at 30% on difficulty 8.
-				var/tank_chance = min(30, (difficulty_level - 4) * 8)
-				if(prob(tank_chance / 100.0))
-					mob_type = /mob/living/simple_animal/hostile/infected/tank
-				else
-					var/spawn_roll = rand(1, 98)
-					if(spawn_roll <= 55)
-						mob_type = /mob/living/simple_animal/hostile/infected
-					else if(spawn_roll <= 75)
-						mob_type = /mob/living/simple_animal/hostile/infected/bruiser
-					else if(spawn_roll <= 85)
-						mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-					else if(spawn_roll <= 90)
-						mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
-					else if(spawn_roll <= 95)
-						mob_type = /mob/living/simple_animal/hostile/infected/charger
-					else
-						mob_type = /mob/living/simple_animal/hostile/infected/hunter
-			else if(difficulty_level >= 4)
-				// After trigger4, include acid spitter and charger in rotation
-				var/spawn_roll = rand(1, 100)
-				if(spawn_roll <= 40)
-					mob_type = /mob/living/simple_animal/hostile/infected
-				else if(spawn_roll <= 65)
-					mob_type = /mob/living/simple_animal/hostile/infected/bruiser
-				else if(spawn_roll <= 80)
-					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-				else if(spawn_roll <= 95)
-					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
-				else
-					mob_type = /mob/living/simple_animal/hostile/infected/charger
+/datum/ai_director/zombie_mission/proc/pick_wave_mob_type()
+	var/mob_type
+	if(difficulty_level >= 5)
+		// Tanks scale with difficulty, capped at 30% on difficulty 8.
+		var/tank_chance = min(30, (difficulty_level - 4) * 8)
+		if(prob(tank_chance / 100.0))
+			mob_type = /mob/living/simple_animal/hostile/infected/tank
+		else
+			var/spawn_roll = rand(1, 98)
+			if(spawn_roll <= 55)
+				mob_type = /mob/living/simple_animal/hostile/infected
+			else if(spawn_roll <= 75)
+				mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+			else if(spawn_roll <= 85)
+				mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+			else if(spawn_roll <= 90)
+				mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+			else if(spawn_roll <= 95)
+				mob_type = /mob/living/simple_animal/hostile/infected/charger
 			else
-				// Before trigger4, only normal zombies and bruisers
-				if(prob(70))
-					mob_type = /mob/living/simple_animal/hostile/infected
-				else
-					mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
+				mob_type = /mob/living/simple_animal/hostile/infected/hunter
+	else if(difficulty_level >= 4)
+		// After trigger4, include acid spitter and charger in rotation
+		var/spawn_roll = rand(1, 100)
+		if(spawn_roll <= 40)
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else if(spawn_roll <= 65)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+		else if(spawn_roll <= 80)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+		else if(spawn_roll <= 95)
+			mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+		else
+			mob_type = /mob/living/simple_animal/hostile/infected/charger
+	else
+		// Before trigger4, only normal zombies and bruisers
+		if(prob(70))
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else
+			mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
+	return mob_type
 
-			if(!mob_type)
-				failed_spawns++
-				continue
+/datum/ai_director/zombie_mission/proc/spawn_wave_step()
+	if(!src)
+		spawning_wave = FALSE
+		return
 
-			var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
-			if(Z)
-				if(zombie_hp_multiplier > 1.0)
-					Z.maxHealth = round(Z.maxHealth * zombie_hp_multiplier)
-					Z.health = Z.maxHealth
-					log_world("[src] Applied HP multiplier [zombie_hp_multiplier] to zombie at [spawn_turf], new HP: [Z.maxHealth]")
+	var/wave_intended = wave_zombies_remaining + wave_spawned_zombies.len
+	var/batch = min(wave_batch_size, min(wave_zombies_remaining, wave_spawn_turfs.len))
+	var/attempts = 0
 
-				spawned_zombies += Z
-				active_zombies += Z
-				new /obj/effect/temp_visual/dir_setting/ninja/phase(spawn_turf)
-				playsound(spawn_turf, 'sound/magic/Teleport_app.ogg', 50, TRUE)
-				log_world("[src] Spawned zombie #[zombies_spawned + 1] at [spawn_turf]")
-				zombies_spawned++
-			else
-				failed_spawns++
-				log_world("[src] Failed to spawn zombie at [spawn_turf]")
+	while(wave_zombies_remaining > 0 && attempts < batch && wave_spawn_turfs.len)
+		attempts++
+		var/turf/spawn_turf = pick(wave_spawn_turfs)
+		if(!spawn_turf)
+			log_world("[src] Failed to pick spawn turf for zombie")
+			wave_failed_spawns++
+			continue
 
-		if(zombies_spawned < zombies_to_spawn && cached_spawn_turfs.len)
-			sleep(20)
+		wave_spawn_turfs -= spawn_turf
 
-	log_world("[src] Wave complete: intended=[zombies_to_spawn], spawned=[spawned_zombies.len], failed=[failed_spawns]")
-	announce_wave(spawned_zombies.len)
+		if(spawn_turf.density || spawn_turf.is_blocked_turf())
+			wave_failed_spawns++
+			continue
+
+		var/mob_type = pick_wave_mob_type()
+		if(!mob_type)
+			wave_failed_spawns++
+			continue
+
+		var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
+		if(Z)
+			if(zombie_hp_multiplier > 1.0)
+				Z.maxHealth = round(Z.maxHealth * zombie_hp_multiplier)
+				Z.health = Z.maxHealth
+				log_world("[src] Applied HP multiplier [zombie_hp_multiplier] to zombie at [spawn_turf], new HP: [Z.maxHealth]")
+
+			wave_spawned_zombies += Z
+			active_zombies += Z
+			new /obj/effect/temp_visual/dir_setting/ninja/phase(spawn_turf)
+			playsound(spawn_turf, 'sound/magic/Teleport_app.ogg', 50, TRUE)
+			log_world("[src] Spawned zombie at [spawn_turf]")
+			wave_zombies_remaining--
+		else
+			wave_failed_spawns++
+			log_world("[src] Failed to spawn zombie at [spawn_turf]")
+
+	if(wave_zombies_remaining > 0 && wave_spawn_turfs.len)
+		addtimer(CALLBACK(src, PROC_REF(spawn_wave_step)), 2 SECONDS)
+		return
+
+	var/wave_size = wave_spawned_zombies.len
+	log_world("[src] Wave complete: intended=[wave_intended], spawned=[wave_size], failed=[wave_failed_spawns]")
+	announce_wave(wave_size)
 	spawning_wave = FALSE
+	wave_spawn_turfs = null
+	wave_spawned_zombies = null
+	wave_zombies_remaining = 0
+	wave_failed_spawns = 0
+	wave_batch_size = 0
 
-	if(spawned_zombies.len > 0)
-		if(difficulty_level > 0)
-			start_horde_music()
+	if(wave_size > 0 && difficulty_level > 0)
+		start_horde_music()
 
 /datum/ai_director/zombie_mission/proc/find_valid_spawn_turf(list/players)
 	if(!src)
@@ -561,19 +583,21 @@
 	current_wave_number++
 
 /datum/ai_director/zombie_mission/proc/refresh_horde_state()
-	cached_fuel_horde_active = scan_fuel_generators()
-	cached_horde_active = cached_fuel_horde_active
-	if(!cached_horde_active)
-		for(var/obj/structure/urbanism_generator/truck/generator in world)
-			if(generator.activating || generator.active)
-				cached_horde_active = TRUE
-				break
-
-/datum/ai_director/zombie_mission/proc/scan_fuel_generators()
-	for(var/obj/structure/urbanism_generator/fuel/generator in world)
-		if(generator.fuel_started && generator.waiting_for_fuel)
-			return TRUE
-	return FALSE
+	// Generators self-register in GLOB.urbanism_generators - no world scan.
+	cached_fuel_horde_active = FALSE
+	cached_horde_active = FALSE
+	if(!GLOB.urbanism_generators)
+		return
+	for(var/obj/structure/urbanism_generator/gen in GLOB.urbanism_generators)
+		if(!gen || QDELETED(gen))
+			continue
+		if(istype(gen, /obj/structure/urbanism_generator/fuel))
+			var/obj/structure/urbanism_generator/fuel/F = gen
+			if(F.fuel_started && F.waiting_for_fuel)
+				cached_fuel_horde_active = TRUE
+		if(istype(gen, /obj/structure/urbanism_generator/truck) && (gen.activating || gen.active))
+			cached_horde_active = TRUE
+	cached_horde_active = cached_horde_active || cached_fuel_horde_active
 
 /datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
 	if(world.time >= next_horde_state_check)

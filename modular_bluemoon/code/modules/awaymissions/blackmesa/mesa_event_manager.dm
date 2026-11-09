@@ -13,10 +13,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 	runlevels = RUNLEVEL_GAME
 	wait = 3000
 	var/list/event_controls = list()
-	var/day_phase = 0 // 0=Evening, 1=Night, 2=Morning, 3=Day
-	var/phase_timer = 200 // Change every 200 fires (~10 minutes at wait = 3000)
-	var/last_mesa_light_color = null
-	var/last_mesa_light_power = -1
 	var/zombie_director_ref
 	var/hecu_conflict_mode
 	var/hecu_conflict_round_start_time
@@ -32,7 +28,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader,
 	)
 	var/list/cached_mission_areas = null
-	var/next_event_time = 0
 
 /datum/controller/subsystem/blackmesa_events/Initialize(time, zlevel)
 	if(SSticker)
@@ -59,20 +54,8 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(!mission_areas || !mission_areas.len)
 		return
 
-	// Day/Night Cycle
-	phase_timer--
-	if(phase_timer <= 0)
-		phase_timer = 200
-		cycle_day_night()
-
 	if(!length(event_controls))
 		return
-
-	// Random events are heavy (area/turf scans, spawns) - only attempt one
-	// every rand(45, 90) SECONDS instead of on every 3s subsystem fire.
-	if(world.time < next_event_time)
-		return
-	next_event_time = world.time + rand(45, 90) SECONDS
 
 	// Get current difficulty level from zombie director
 	var/current_difficulty = 0
@@ -106,68 +89,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 	var/datum/round_event_control/selected = pickweight(event_weights)
 	if(selected)
 		selected.runEvent(random = TRUE)
-
-/datum/controller/subsystem/blackmesa_events/proc/cycle_day_night()
-	day_phase = (day_phase + 1) % 4
-	var/new_color = "#6d4525"
-	var/announce_text = ""
-	var/announce_title = ""
-	var/light_power = 0.8
-
-	switch(day_phase)
-		if(0) // Evening - gloomy dark red
-			new_color = "#2a0a00"
-			light_power = 0.6
-			announce_text = "Внимание! Наступает вечер. Рекомендуется включить дополнительное освещение. ВНИМАНИЕ! состояние сектора ухудшается. Всем немедленно проследовать к ближайшим выходам из сектора."
-			announce_title = "Evening Approach"
-		if(1) // Night - gloomy like evening but still oppressive
-			new_color = "#2a0a00"
-			light_power = 0.6
-			announce_text = "Внимание! Наступает ночь. Всем сотрудникам заступивших на ночную смену приступить к работе. ВНИМАНИЕ! Состояние сектора всё ещё критично. Требуется Немедленная эвакуация"
-			announce_title = "Nightfall"
-		if(2) // Morning - still dark and gloomy
-			new_color = "#1f0800"
-			light_power = 0.5
-			announce_text = "Внимание! Наступает утро. Начало дневной смены через 30 минут. ВНИМАНИЕ! Состояние сектора остаётся критичным. Всем сотрудникам рекомендуется следовать указаниям военных подразделений HECU"
-			announce_title = "Morning"
-		if(3) // Day - dim and oppressive
-			new_color = "#2d0f00"
-			light_power = 0.7
-			announce_text = "Внимание! Наступил день. Большая часть систем выведена из строя. Рекомендуется проведение немедленной эвакуации с сектора "
-			announce_title = "Daytime"
-
-	update_mesa_lights(new_color, light_power)
-	mesa_announce(announce_text, announce_title, 'modular_bluemoon/sound/ambience/mesa/timeevent.ogg')
-
-/datum/controller/subsystem/blackmesa_events/proc/update_mesa_lights(color, light_power)
-	// Update floodlights - skip entirely when nothing changed to avoid
-	// rescanning GLOB.machines and rebuilding lighting on every phase cycle.
-	if(!GLOB.machines)
-		return
-	if(color == last_mesa_light_color && light_power == last_mesa_light_power)
-		return
-	last_mesa_light_color = color
-	last_mesa_light_power = light_power
-	for(var/obj/machinery/power/floodlight/urbanismlight/mesaoutside/L in GLOB.machines)
-		if(!L || !istype(get_area(L), /area/awaymission/ihategordon))
-			continue
-		L.light_color = color
-		L.set_light(L.light_range, light_power, color)
-
-	// Update area lighting for all ihategordon areas (except those with ignore_mesa_events)
-	for(var/area/awaymission/ihategordon/A in get_areas(/area/awaymission/ihategordon, TRUE))
-		if(!A)
-			continue
-		// Skip areas that ignore mesa events - safely check if var exists
-		var/skip_area = FALSE
-		if("ignore_mesa_events" in A.vars)
-			var/var_value = A.vars["ignore_mesa_events"]
-			if(var_value)
-				skip_area = TRUE
-		if(skip_area)
-			continue
-		// Set gloomy ambient lighting via the official API so turf overlays are rebuilt
-		A.set_dynamic_lighting(DYNAMIC_LIGHTING_IFSTARLIGHT)
 
 /datum/controller/subsystem/blackmesa_events/proc/mesa_announce(text, title = "", sound = null, excluded_faction = null)
 	if(!text)
@@ -317,6 +238,11 @@ SUBSYSTEM_DEF(blackmesa_events)
 		stack_trace("Only [spawned_count] of [amount] requested Black Mesa ghost role spawners could be placed for [spawner_type].")
 	return spawned_count
 
+/datum/controller/subsystem/blackmesa_events/proc/collect_hecu_role_landmarks()
+	for(var/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/L in GLOB.landmarks_list)
+		if(istype(get_area(L), /area/awaymission/ihategordon))
+			hecu_role_landmarks += L
+
 /datum/controller/subsystem/blackmesa_events/proc/deploy_hecu_role_landmarks()
 	if(hecu_role_landmarks.len)
 		return
@@ -344,6 +270,8 @@ SUBSYSTEM_DEF(blackmesa_events)
 /datum/controller/subsystem/blackmesa_events/proc/activate_hecu_roles()
 	if(hecu_roles_activated)
 		return
+	if(!hecu_role_landmarks.len)
+		collect_hecu_role_landmarks()
 	deploy_hecu_role_landmarks()
 	if(!hecu_role_landmarks.len)
 		return

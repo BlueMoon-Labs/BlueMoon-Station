@@ -193,6 +193,11 @@
 	var/distance = get_dist(tank, target)
 	if(distance < minimum_range || distance > AI_RANGED_MAX_FIRE_RANGE || !can_see(tank, target, AI_RANGED_MAX_FIRE_RANGE))
 		return
+	//can_see смотрит только opacity, а Shoot() стреляет только по чистой
+	//баллистической линии: без этой проверки танк вставал в телеграф сквозь
+	//стол/труп в кресле и молча отменял бросок уже после остановки.
+	if(tank.CheckRangedFireLane(target))
+		return
 	tank.target = target
 	tank.telegraphed_open_fire(target)
 	return SUBTREE_RETURN_FINISH_PLANNING
@@ -1128,8 +1133,9 @@
 	var/tank_idle_channel
 	var/tank_theme_playing = FALSE
 	var/list/tank_theme_listeners = list()
+	ranged_message = "hurls a stone shard"
 	ranged_cooldown_time = 5 SECONDS
-	ranged_telegraph_duration = 3 SECONDS
+	ranged_telegraph_duration = 2 SECONDS
 	projectiletype = /obj/item/projectile/mesa_tank_rock
 	projectilesound = 'sound/effects/meteorimpact.ogg'
 
@@ -1200,9 +1206,14 @@
 /mob/living/simple_animal/hostile/infected/tank/telegraphed_open_fire(atom/fire_target)
 	if(QDELETED(fire_target) || stat == DEAD || ranged_telegraph_timer_id)
 		return FALSE
-	. = ..()
-	if(.)
-		playsound(src, pick(tank_aggro_sounds), 80, TRUE)
+	ranged_cooldown = world.time + ranged_cooldown_time + ranged_telegraph_duration
+	if(isliving(fire_target))
+		var/mob/living/victim = fire_target
+		if(victim.client)
+			to_chat(victim, span_userdanger("В вас целится [src] камнем!"))
+	ranged_telegraph_timer_id = addtimer(CALLBACK(src, PROC_REF(finish_telegraphed_open_fire), fire_target), ranged_telegraph_duration, TIMER_STOPPABLE)
+	playsound(src, pick(tank_aggro_sounds), 80, TRUE)
+	return TRUE
 
 /mob/living/simple_animal/hostile/infected/tank/Aggro()
 	. = ..()
@@ -1216,10 +1227,62 @@
 		if(!istype(get_area(nearby_mob), /area/awaymission/ihategordon))
 			continue
 		SEND_SOUND(nearby_mob, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
-		tank_theme_listeners += nearby_mob
+		register_theme_listener(nearby_mob)
+
+/mob/living/simple_animal/hostile/infected/tank/proc/register_theme_listener(mob/listener)
+	if(!listener || (listener in tank_theme_listeners))
+		return
+	tank_theme_listeners += listener
+	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_theme_listener_death))
+	RegisterSignal(listener, COMSIG_MOB_GHOSTIZE, PROC_REF(on_theme_listener_ghostize))
+	RegisterSignal(listener, COMSIG_PARENT_QDELETING, PROC_REF(on_theme_listener_qdeleting))
+	if(listener.mind)
+		RegisterSignal(listener.mind, COMSIG_MIND_TRANSFER, PROC_REF(on_theme_listener_mind_transfer))
+
+/mob/living/simple_animal/hostile/infected/tank/proc/unregister_theme_listener(mob/listener, datum/mind/mind)
+	if(!listener)
+		return
+	var/datum/mind/listener_mind = mind
+	if(!listener_mind && !QDELETED(listener))
+		listener_mind = listener.mind
+	UnregisterSignal(listener, list(COMSIG_LIVING_DEATH, COMSIG_MOB_GHOSTIZE, COMSIG_PARENT_QDELETING))
+	if(listener_mind && !QDELETED(listener_mind))
+		UnregisterSignal(listener_mind, COMSIG_MIND_TRANSFER)
+	tank_theme_listeners -= listener
+
+/mob/living/simple_animal/hostile/infected/tank/proc/stop_theme_listener_sound(mob/listener)
+	if(!listener || QDELETED(listener) || !tank_theme_channel)
+		return
+	listener.stop_sound_channel(tank_theme_channel)
+
+/mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	stop_theme_listener_sound(source)
+	unregister_theme_listener(source)
+
+/mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_ghostize(mob/source, can_reenter_corpse = FALSE, special = FALSE, penalize = FALSE, voluntary = FALSE)
+	SIGNAL_HANDLER
+	stop_theme_listener_sound(source)
+	unregister_theme_listener(source)
+
+/mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_qdeleting(mob/source)
+	SIGNAL_HANDLER
+	unregister_theme_listener(source, source.mind)
+
+/mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_mind_transfer(datum/mind/source, mob/new_character, mob/old_character)
+	SIGNAL_HANDLER
+	if(!old_character || !(old_character in tank_theme_listeners))
+		UnregisterSignal(source, COMSIG_MIND_TRANSFER)
+		return
+	stop_theme_listener_sound(new_character)
+	stop_theme_listener_sound(old_character)
+	unregister_theme_listener(old_character, source)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/stop_tank_sounds()
 	tank_theme_playing = FALSE
+	for(var/mob/listener in tank_theme_listeners.Copy())
+		stop_theme_listener_sound(listener)
+		unregister_theme_listener(listener)
 	for(var/mob/listener in GLOB.player_list)
 		if(QDELETED(listener))
 			continue

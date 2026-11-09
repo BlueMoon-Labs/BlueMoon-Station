@@ -69,7 +69,7 @@
 	icon_state = "oldfloodlight_on"
 	layer = 4
 	light_range = 15
-	light_color = "#ffffdd"
+	light_color = "#5e737e"
 	light_flags = LIGHT_NO_RANGE_CAP
 	max_integrity = 9999999
 
@@ -561,11 +561,15 @@
 	Comp.set_strength(rad_strength)
 
 
+// All urbanism generators self-register here so systems like the zombie
+// director can check horde state without scanning the whole world.
+GLOBAL_VAR_INIT(urbanism_generators, list())
+
 /obj/structure/urbanism_generator
 	name = "generator"
 	desc = "A strange generator. Activate it with an empty hand."
 	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi'
-	icon_state = "generatorold"
+	icon_state = "generatorold-off"
 	anchored = TRUE
 	density = TRUE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
@@ -581,6 +585,7 @@
 	var/activation_start_time = 0
 	var/next_mob_spawn_time = 0
 	var/damage_taken = 0
+	var/next_dead_sound_time = 0
 
 	var/spawn_mobs = FALSE
 	var/list/mob_types = list()
@@ -610,10 +615,13 @@
 
 /obj/structure/urbanism_generator/Initialize(mapload)
 	. = ..()
+	next_dead_sound_time = world.time + rand(5 SECONDS, 25 SECONDS)
+	GLOB.urbanism_generators += src
 	START_PROCESSING(SSobj, src)
 
 /obj/structure/urbanism_generator/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	GLOB.urbanism_generators -= src
 	return ..()
 
 /obj/structure/urbanism_generator/process()
@@ -630,6 +638,9 @@
 			spawn_mob_wave()
 
 	if(!active)
+		if(world.time >= next_dead_sound_time)
+			next_dead_sound_time = world.time + rand(10 SECONDS, 25 SECONDS)
+			playsound(src, 'modular_bluemoon/sound/ambience/mesa/generator_dead.ogg', 70, FALSE, 7, 3)
 		return
 
 	if(world.time >= activation_start_time + active_duration)
@@ -681,6 +692,7 @@
 
 	activating = FALSE
 	active = TRUE
+	icon_state = "generatorold"
 	activation_start_time = world.time
 	damage_taken = 0
 	next_mob_spawn_time = world.time + mob_spawn_interval
@@ -697,7 +709,7 @@
 		return
 
 	active = FALSE
-	icon_state = "generatorold"
+	icon_state = "generatorold-off"
 	visible_message(span_boldnotice("Генератор завершил работу!"))
 
 	if(reward_type)
@@ -921,7 +933,7 @@
 
 	active = FALSE
 	activating = FALSE
-	icon_state = "generatorold"
+	icon_state = "generatorold-off"
 	damage_taken = 0
 
 	visible_message(span_danger("Генератор был повреждён и остановлен!"))
@@ -1158,6 +1170,11 @@
 	falloff_exponent = 3
 	falloff_distance = 1
 	skip_starting_sounds = TRUE
+
+/obj/machinery/light/urbanism_tube
+	name = "tube lamp"
+	desc = "A steady-burning tube lamp fixture."
+	bulb_colour = "#5E747F"
 
 /obj/machinery/light/urbanism_flicker
 	name = "flickering light fixture"

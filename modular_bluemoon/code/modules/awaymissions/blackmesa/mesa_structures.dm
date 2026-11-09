@@ -280,7 +280,7 @@
 	density = FALSE
 	layer = 4
 	light_range = 45
-	light_color = 	"#aa8577"
+	light_color = 	"#1a130e"
 	light_flags = LIGHT_NO_RANGE_CAP // статичный наружный прожектор: дальность выше базового капа (режется до LIGHTING_MAX_RANGE_STATIC)
 	max_integrity = 9999999
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF

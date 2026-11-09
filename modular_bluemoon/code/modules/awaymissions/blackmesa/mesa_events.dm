@@ -279,10 +279,10 @@
 		lookup[A] = TRUE
 	for(var/list/machine_list in list(GLOB.machines, GLOB.airlocks))
 		for(var/obj/machinery/door/D in machine_list)
-			if(!D || D.locked)
+			if(!D || QDELETED(D) || D.locked)
 				continue
 			var/area/A = get_area(D)
-			if(!A || !(A in lookup))
+			if(!A || !lookup[A])
 				continue
 			D.locked = TRUE
 			D.update_icon()
