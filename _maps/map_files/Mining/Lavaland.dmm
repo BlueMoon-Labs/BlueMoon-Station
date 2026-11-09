@@ -7456,7 +7456,8 @@
 /area/mine/common/upper)
 "eFS" = (
 /obj/machinery/conveyor/inverted{
-	dir = 9
+	dir = 9;
+	id = "gulag"
 	},
 /obj/machinery/camera{
 	c_tag = "Labor Camp Processing Area";
@@ -18653,7 +18654,8 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "lhF" = (
 /obj/machinery/conveyor/inverted{
-	dir = 6
+	dir = 6;
+	id = "gulag"
 	},
 /turf/open/floor/plating,
 /area/mine/laborcamp/mining)
