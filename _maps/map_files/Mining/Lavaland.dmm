@@ -4114,9 +4114,15 @@
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_a)
 "cqk" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
+/obj/effect/decal/cleanable/oil,
+/obj/structure/disposaloutlet{
+	dir = 1
+	},
+/obj/structure/disposalpipe/trunk{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "cqn" = (
 /obj/structure/deployable_barricade/wooden,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -5702,12 +5708,9 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "doZ" = (
-/obj/effect/decal/cleanable/oil,
-/obj/structure/disposaloutlet{
-	dir = 1
-	},
-/obj/structure/disposalpipe/trunk{
-	dir = 4
+/obj/machinery/door/airlock{
+	name = "General Staff quaters";
+	req_access_txt = "150"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
@@ -7480,14 +7483,9 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "euK" = (
-/obj/structure/frame/machine{
-	anchored = 1;
-	state = 2;
-	icon_state = "box_1"
-	},
-/obj/item/circuitboard/machine/stacking_machine,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "euT" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
 /turf/open/floor/circuit/telecomms,
@@ -9509,13 +9507,10 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "fDE" = (
-/obj/structure/railing{
-	dir = 8
+/obj/structure/disposalpipe/segment{
+	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "fDH" = (
 /obj/machinery/firealarm{
@@ -10920,11 +10915,13 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "gtv" = (
-/obj/machinery/atmospherics/components/unary/passive_vent/layer4{
-	dir = 4
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/conveyor{
+	id = "interdynedisp";
+	dir = 1
 	},
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "gtA" = (
 /obj/structure/bookcase/random,
 /turf/open/floor/wood/wood_large,
@@ -14573,21 +14570,6 @@
 "ivJ" = (
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
-"ivR" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/brown/visible{
-	dir = 8
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/turf/open/floor/plasteel/elevatorshaft,
-/area/ruin/lavaland/unpowered)
 "iwe" = (
 /obj/structure/stone_tile{
 	dir = 8
@@ -23344,12 +23326,15 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "nma" = (
-/obj/machinery/conveyor{
-	dir = 5;
-	id = "interdynedisp"
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/obj/structure/disposalpipe/junction/yjunction,
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "nmj" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/engine,
@@ -23991,10 +23976,10 @@
 /area/mine/storage)
 "nBc" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
+	dir = 9
 	},
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "nBi" = (
 /obj/structure/chair/sofa/left{
 	color = "#800000";
@@ -25824,11 +25809,11 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "oAV" = (
-/obj/structure/disposalpipe/segment{
-	dir = 9
+/obj/machinery/atmospherics/components/unary/passive_vent/layer4{
+	dir = 4
 	},
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered)
 "oBe" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
@@ -27398,6 +27383,12 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"pxc" = (
+/obj/structure/disposalpipe/segment{
+	dir = 9
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "pxo" = (
 /obj/machinery/light{
 	dir = 1
@@ -28163,6 +28154,15 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"pTM" = (
+/obj/structure/frame/machine{
+	anchored = 1;
+	state = 2;
+	icon_state = "box_1"
+	},
+/obj/item/circuitboard/machine/stacking_machine,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "pUG" = (
@@ -30810,10 +30810,10 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "rtj" = (
-/obj/structure/disposalpipe/segment{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
 	},
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "rtI" = (
 /obj/machinery/door/firedoor,
@@ -31131,11 +31131,10 @@
 /turf/open/floor/plasteel,
 /area/mine/production)
 "rCG" = (
-/obj/machinery/door/airlock{
-	name = "General Staff quaters";
-	req_access_txt = "150"
+/obj/structure/disposalpipe/segment{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "rCL" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -31157,12 +31156,13 @@
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/mechbay)
 "rCW" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/conveyor{
-	id = "interdynedisp";
-	dir = 1
+/obj/structure/railing{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "rDr" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -35812,10 +35812,11 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "ume" = (
-/obj/structure/disposalpipe/segment{
-	dir = 5
+/obj/machinery/conveyor{
+	dir = 5;
+	id = "interdynedisp"
 	},
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "umf" = (
 /obj/structure/stone_tile/block{
@@ -40298,9 +40299,9 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
 "wWi" = (
-/obj/structure/lattice/catwalk,
-/turf/open/floor/plasteel/elevatorshaft,
-/area/ruin/lavaland/unpowered)
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "wWy" = (
 /obj/structure/stone_tile/surrounding/cracked,
 /obj/structure/stone_tile/center,
@@ -41099,7 +41100,6 @@
 "xuX" = (
 /obj/effect/turf_decal/delivery,
 /obj/structure/closet/crate,
-/obj/item/inteq_sledgehammer/toy,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "xuY" = (
@@ -41119,16 +41119,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
-"xvv" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/brown/visible{
-	dir = 8
-	},
-/obj/structure/disposalpipe/junction/yjunction,
-/turf/open/floor/plasteel/elevatorshaft,
-/area/ruin/lavaland/unpowered)
 "xwr" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -42297,6 +42287,21 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/storage)
+"ydR" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "ydS" = (
 /obj/structure/chair/office/dark{
 	dir = 4
@@ -42487,12 +42492,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"yha" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 9
-	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "yhf" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -62987,7 +62986,7 @@ iVB
 wwd
 nVM
 qOp
-gtv
+oAV
 tfw
 tfw
 tfw
@@ -63244,7 +63243,7 @@ qOp
 qOp
 qOp
 qOp
-fDE
+rCW
 xMP
 eRE
 xMP
@@ -63501,7 +63500,7 @@ tIg
 qBv
 dqg
 qOp
-nBc
+rtj
 wQZ
 wQZ
 fdr
@@ -64011,11 +64010,11 @@ bDg
 wzy
 uOb
 bFW
-cqk
-cqk
-cqk
-cqk
-yha
+wWi
+wWi
+wWi
+wWi
+nBc
 wQZ
 sDX
 sDX
@@ -65550,7 +65549,7 @@ dEi
 tfw
 tfw
 sLv
-ivR
+ydR
 pau
 pau
 pau
@@ -65809,8 +65808,8 @@ tfw
 sLv
 fcc
 piD
-wWi
-wWi
+euK
+euK
 wQZ
 wQZ
 wQZ
@@ -66064,13 +66063,13 @@ dEi
 tfw
 tfw
 sLv
-xvv
+nma
 agC
 agC
 agC
 agC
 agC
-ume
+fDE
 wQZ
 wQZ
 sDX
@@ -66323,11 +66322,11 @@ tfw
 sLv
 qPn
 qHp
-nma
-rCW
-rCW
-doZ
-rtj
+ume
+gtv
+gtv
+cqk
+rCG
 wQZ
 wQZ
 sDX
@@ -66581,10 +66580,10 @@ nel
 xCZ
 qHp
 wYB
-euK
+pTM
 fVY
 bVZ
-oAV
+pxc
 wQZ
 wQZ
 wQZ
@@ -66841,7 +66840,7 @@ hoI
 tMJ
 pVG
 pVG
-rCG
+doZ
 wQZ
 vuo
 wQZ
