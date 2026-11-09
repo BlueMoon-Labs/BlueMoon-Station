@@ -1367,19 +1367,9 @@
 	repeatable = TRUE
 
 /datum/dynamic_ruleset/midround/swarmers/execute()
-	var/list/spawn_locs = list()
-	for(var/x in GLOB.xeno_spawn)
-		var/turf/spawn_turf = x
-		var/light_amount = spawn_turf.get_lumcount()
-		if(light_amount < SHADOW_SPECIES_LIGHT_THRESHOLD)
-			spawn_locs += spawn_turf
-	if(!spawn_locs.len)
-		message_admins("No valid spawn locations found in GLOB.xeno_spawn, aborting swarmer spawning...")
+	var/result = launch_swarmer_pod(src, director_pending_cost)
+	if(result != SUCCESSFUL_SPAWN)
 		return MAP_ERROR
-	var/obj/effect/mob_spawn/swarmer/spawner = new(get_turf(GLOB.the_gateway))
-	spawner.director_source_action = src
-	spawner.director_refund_cost = director_pending_cost
-	log_game("A Swarmer was spawned via Dynamic Mode.")
 	return ..()
 
 /datum/dynamic_ruleset/midround/swarmers/director_execution_detail(assigned_this_attempt)

@@ -1,111 +1,53 @@
-
-
 /atom/movable/screen/swarmer
-	icon = 'icons/mob/swarmer.dmi'
+	icon = 'icons/mob/screen_swarmer.dmi'
 
-/atom/movable/screen/swarmer/FabricateTrap
-	icon_state = "ui_trap"
-	name = "Create trap (Costs 5 Resources)"
-	desc = "Creates a trap that will nonlethally shock any non-swarmer that attempts to cross it. (Costs 5 resources)"
+/atom/movable/screen/swarmer/Click()
+	if(!isswarmer(usr))
+		return FALSE
+	return TRUE
 
-/atom/movable/screen/swarmer/FabricateTrap/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.CreateTrap()
-
-/atom/movable/screen/swarmer/Barricade
-	icon_state = "ui_barricade"
-	name = "Create barricade (Costs 5 Resources)"
-	desc = "Creates a destructible barricade that will stop any non swarmer from passing it. Also allows disabler beams to pass through. (Costs 5 resources)"
-
-/atom/movable/screen/swarmer/Barricade/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.CreateBarricade()
-
-/atom/movable/screen/swarmer/Replicate
-	icon_state = "ui_replicate"
-	name = "Replicate (Costs 50 Resources)"
-	desc = "Creates another of our kind."
-
-/atom/movable/screen/swarmer/Replicate/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.CreateSwarmer()
-
-/atom/movable/screen/swarmer/RepairSelf
-	icon_state = "ui_self_repair"
-	name = "Repair self"
-	desc = "Repairs damage to our body."
-
-/atom/movable/screen/swarmer/RepairSelf/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.RepairSelf()
-
-/atom/movable/screen/swarmer/ToggleLight
+/atom/movable/screen/swarmer/toggle_light
+	name = "Переключить свет"
+	desc = "Включает или выключает встроенную подсветку."
 	icon_state = "ui_light"
-	name = "Toggle light"
-	desc = "Toggles our inbuilt light on or off."
 
-/atom/movable/screen/swarmer/ToggleLight/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.ToggleLight()
+/atom/movable/screen/swarmer/toggle_light/Click()
+	if(!..())
+		return
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = usr
+	swarmer.toggle_light()
 
-/atom/movable/screen/swarmer/ContactSwarmers
+/atom/movable/screen/swarmer/contact_swarmers
+	name = "Связь роя"
+	desc = "Отправить сообщение всем свармерам, если они, конечно, есть."
 	icon_state = "ui_contact_swarmers"
-	name = "Contact swarmers"
-	desc = "Sends a message to all other swarmers, should they exist."
 
-/atom/movable/screen/swarmer/ContactSwarmers/Click()
-	if(isswarmer(usr))
-		var/mob/living/simple_animal/hostile/swarmer/S = usr
-		S.ContactSwarmers()
-
-/atom/movable/screen/swarmer/CreateSwarmBeacon
-	icon_state = "ui_swarmer_console"
-	name = "Create swarm beacon (Costs 100 Resources)"
-	desc = "Creates a swarm beacon that will endlessly produce AI-controlled swarmers to overwhelm this area. (Costs 100 resources)"
-
-/atom/movable/screen/swarmer/CreateSwarmBeacon/Click()
-	if(istype(usr, /mob/living/simple_animal/hostile/swarmer/builder))
-		var/mob/living/simple_animal/hostile/swarmer/builder/S = usr
-		S.CreateSwarmBeacon()
-	else if(isswarmer(usr))
-		to_chat(usr, "<span class='warning'>Our frame cannot handle such heavy fabrication. Only builders among us can.</span>")
+/atom/movable/screen/swarmer/contact_swarmers/Click()
+	if(!..())
+		return
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = usr
+	swarmer.contact_swarmers()
 
 /datum/hud/swarmer/New(mob/owner)
 	..()
 	var/atom/movable/screen/using
-	if(!istype(owner, /mob/living/simple_animal/hostile/swarmer/warrior))
-		using = new /atom/movable/screen/swarmer/FabricateTrap(null, src)
-		using.screen_loc = ui_hand_position(2)
-		static_inventory += using
 
-		using = new /atom/movable/screen/swarmer/Barricade(null, src)
-		using.screen_loc = ui_hand_position(1)
-		static_inventory += using
+	healthdoll = new /atom/movable/screen/healthdoll/living(null, src)
+	infodisplay += healthdoll
 
-	using = new /atom/movable/screen/swarmer/Replicate(null, src)
-	using.screen_loc = ui_zonesel
+	using = new /atom/movable/screen/act_intent/swarmer(null, src)
+	using.icon_state = mymob.a_intent
+	static_inventory += using
+	action_intent = using
+
+	using = new /atom/movable/screen/swarmer/toggle_light(null, src)
+	using.screen_loc = ui_drop_throw
 	static_inventory += using
 
-	if(!istype(owner, /mob/living/simple_animal/hostile/swarmer/warrior))
-		using = new /atom/movable/screen/swarmer/RepairSelf(null, src)
-		using.screen_loc = ui_storage1
-		static_inventory += using
+	using = new /atom/movable/screen/swarmer/contact_swarmers(null, src)
+	using.screen_loc = ui_inventory
+	static_inventory += using
 
-		using = new /atom/movable/screen/swarmer/ToggleLight(null, src)
-		using.screen_loc = ui_back
-		static_inventory += using
-
-		using = new /atom/movable/screen/swarmer/ContactSwarmers(null, src)
-		using.screen_loc = ui_inventory
-		static_inventory += using
-
-	// BLUEMOON ADD END
-	if(istype(owner, /mob/living/simple_animal/hostile/swarmer/builder))
-		using = new /atom/movable/screen/swarmer/CreateSwarmBeacon(null, src)
-		using.screen_loc = ui_hand_position(3)
-		static_inventory += using
+/atom/movable/screen/act_intent/swarmer
+	icon = 'icons/mob/screen_swarmer.dmi'
+	screen_loc = ui_borg_intents

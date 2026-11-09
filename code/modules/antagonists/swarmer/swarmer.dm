@@ -1,731 +1,567 @@
-////Deactivated swarmer shell////
-/obj/item/deactivated_swarmer
-	name = "deactivated swarmer"
-	desc = "A shell of swarmer that was completely powered down. It can no longer activate itself."
-	icon = 'icons/mob/swarmer.dmi'
-	icon_state = "swarmer_unactivated"
-	custom_materials = list(/datum/material/iron=10000, /datum/material/glass=4000)
-
-/obj/item/deactivated_swarmer/Initialize(mapload)
-	. = ..()
-	LAZYADD(GLOB.poi_list, src) // BLUEMOON ADD - показываем оболочки свармеров в меню "Orbit"
-
-/obj/item/deactivated_swarmer/Destroy()
-	LAZYREMOVE(GLOB.poi_list, src)
-	return ..()
-
-/obj/effect/mob_spawn/swarmer
-	name = "unactivated swarmer"
-	desc = "A currently unactivated swarmer. Swarmers can self activate at any time, it would be wise to immediately dispose of this."
-	icon = 'icons/mob/swarmer.dmi'
-	icon_state = "swarmer_unactivated"
-	density = FALSE
-	anchored = FALSE
-
-	mob_type = /mob/living/simple_animal/hostile/swarmer
-	mob_name = "a swarmer"
-	job_description = "Swarmer"
-	death = FALSE
-	roundstart = FALSE
-	short_desc = "You are a swarmer, a weapon of a long dead civilization."
-	flavour_text = {"
-	<b>You are a swarmer, a weapon of a long dead civilization. Until further orders from your original masters are received, you must continue to consume and replicate.</b>
-	<b>Clicking on any object will try to consume it, either deconstructing it into its components, destroying it, or integrating any materials it has into you if successful.</b>
-	<b>Ctrl-Clicking on a mob will attempt to remove it from the area and place it in a safe environment for storage.</b>
-	<b>Objectives:</b>
-	1. Consume resources and replicate until there are no more resources left.
-	2. Ensure that this location is fit for invasion at a later date; do not perform actions that would render it dangerous or inhospitable.
-	3. Biological resources will be harvested at a later date; do not harm them.
-	"}
-	category = "midround"
-
-/obj/effect/mob_spawn/swarmer/Initialize(mapload)
-	. = ..()
-	var/area/A = get_area(src)
-	if(A)
-		notify_ghosts("A swarmer shell has been created in [A.name].", 'sound/effects/bin_close.ogg', source = src, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_dnr_observers = TRUE)
-
-/obj/effect/mob_spawn/swarmer/attack_ghost(mob/user, latejoinercalling)
-	if(!SSticker.HasRoundStarted() || !loc || !ghost_usable)
-		return
-	if(jobban_isbanned(user, banType))
-		to_chat(user, span_warning("You are jobanned!"))
-		return
-	if(!allow_spawn(user, silent = FALSE))
-		return
-	if(QDELETED(src) || QDELETED(user))
-		return
-	if(isobserver(user) && !skip_reentry_check)
-		var/mob/dead/observer/O = user
-		if(!O.can_reenter_round())
-			return FALSE
-	// выбор держим в локальной переменной: show_radial_menu() спит, и общий mob_type
-	// успевал переписать второй гост - первый спавнил "объект типа null"
-	var/chosen_type = GetSwarmerTypeToCreate(user)
-	if(!chosen_type || QDELETED(src)) // отмена выбора - не становимся свармером
-		return
-	if(!uses)
-		to_chat(user, span_warning("This spawner is out of charges!"))
-		return
-	if(QDELETED(src) || QDELETED(user))
-		return
-	log_game("[key_name(user)] становится [mob_name]!")
-	create(ckey = user.ckey, spawn_type = chosen_type)
-	return TRUE
-	// BLUEMOON EDIT END
-
-/obj/effect/mob_spawn/swarmer/proc/GetSwarmerTypeToCreate(mob/user)
-	var/static/image/radial_universal = image(icon = 'icons/mob/swarmer.dmi', icon_state = "swarmer")
-	var/static/image/radial_builder = image(icon = 'icons/mob/swarmer.dmi', icon_state = "swarmer_melee")
-	var/static/image/radial_warrior = image(icon = 'icons/mob/swarmer.dmi', icon_state = "swarmer_ranged")
-	var/static/list/display_to_icon = list(
-		"Универсал" = radial_universal,
-		"Инженер" = radial_builder,
-		"Воин" = radial_warrior,
-	)
-	var/static/list/display_to_type = list(
-		"Универсал" = /mob/living/simple_animal/hostile/swarmer,
-		"Инженер" = /mob/living/simple_animal/hostile/swarmer/builder,
-		"Воин" = /mob/living/simple_animal/hostile/swarmer/warrior,
-	)
-	if(!isobserver(user) || !user.client)
-		return display_to_type[pick(display_to_type)]
-	var/chosen = show_radial_menu(user, src, display_to_icon, tooltips = TRUE)
-	if(!chosen)
-		return
-	return display_to_type[chosen]
-	// BLUEMOON ADD END
-
-/obj/effect/mob_spawn/swarmer/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
-	. = ..()
-	if(.)
-		return
-	to_chat(user, "<span class='notice'>Picking up the swarmer may cause it to activate. You should be careful about this.</span>")
-
-/obj/effect/mob_spawn/swarmer/attackby(obj/item/W, mob/user, params)
-	if(W.tool_behaviour == TOOL_SCREWDRIVER && user.a_intent != INTENT_HARM)
-		user.visible_message("<span class='warning'>[usr.name] deactivates [src].</span>",
-			"<span class='notice'>After some fiddling, you find a way to disable [src]'s power source.</span>",
-			"<span class='italics'>You hear clicking.</span>")
-		new /obj/item/deactivated_swarmer(get_turf(src))
-		qdel(src)
-	else
-		..()
-
-////The Mob itself////
+#define SWARMER_CARBON_MOB_TELEPORT_REWARD 5
 
 /mob/living/simple_animal/hostile/swarmer
 	name = "Swarmer"
-	unique_name = 1
+	desc = "Свармер — автономная единица роя."
 	icon = 'icons/mob/swarmer.dmi'
-	desc = "A robot of unknown design, they seek only to consume materials and replicate themselves indefinitely."
-	speak_emote = list("tones")
-	initial_language_holder = /datum/language_holder/swarmer
-	bubble_icon = "swarmer"
-	mob_biotypes = MOB_ROBOTIC
-	health = 40
-	maxHealth = 40
+	icon_state = "swarmer_old"
+	icon_living = "swarmer_old"
+	health = 35
+	maxHealth = 35
 	status_flags = CANPUSH
-	icon_state = "swarmer"
-	icon_living = "swarmer"
-	icon_dead = "swarmer_unactivated"
-	icon_gib = null
-	wander = 0
-	harm_intent_damage = 5
-	minbodytemp = 0
-	maxbodytemp = 500
-	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
-	unsuitable_atmos_damage = 0
-	melee_damage_lower = 60
-	melee_damage_upper = 60
+	speak_emote = list("гудит")
+	bubble_icon = "swarmer"
+	mob_size = MOB_SIZE_SMALL
 	melee_damage_type = STAMINA
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, CLONE = 0, STAMINA = 0, OXY = 0)
 	hud_possible = list(ANTAG_HUD, DIAG_STAT_HUD, DIAG_HUD)
 	obj_damage = 0
-	environment_smash = ENVIRONMENT_SMASH_NONE
-	attack_verb_continuous = "shocks"
-	attack_verb_simple = "shock"
-	attack_sound = 'sound/effects/empulse.ogg'
-	friendly_verb_continuous = "pinches"
-	friendly_verb_simple = "pinch"
-	speed = 0
-	faction = list("swarmer")
+	faction = list(ROLE_SWARMER)
 	AIStatus = AI_OFF
-	pass_flags = PASSTABLE
-	mob_size = MOB_SIZE_TINY
-	ranged = 1
-	projectiletype = /obj/item/projectile/beam/disabler/swarmer
-	ranged_cooldown_time = 15
-	projectilesound = 'sound/weapons/taser2.ogg'
-	loot = list(/obj/effect/decal/cleanable/robot_debris, /obj/item/stack/ore/bluespace_crystal)
+	wander = 0
+	attack_sound = 'sound/effects/empulse.ogg'
+	deathmessage = "взрывается с резким хлопком!"
 	del_on_death = 1
-	deathmessage = "взрывается со звонким хлопком!"
+	loot = list(/obj/effect/decal/cleanable/robot_debris, /obj/item/stack/ore/bluespace_crystal)
 	light_color = LIGHT_COLOR_CYAN
+	light_range = 3
+	light_on = FALSE
+	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	hud_type = /datum/hud/swarmer
-	speech_span = SPAN_ROBOT
-	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/swarmer
-	var/resources = 0 //Resource points, generated by consuming metal/glass
-	var/max_resources = 100
-	var/replicate_cost = 50 // BLUEMOON ADD - стоимость репликации нового свармера
+	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
+	unsuitable_atmos_damage = 0
+	minbodytemp = 0
+	maxbodytemp = INFINITY
+	move_force = MOVE_FORCE_DEFAULT
+	pull_force = PULL_FORCE_DEFAULT
+	pressure_resistance = 100
+	possible_a_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, INTENT_HARM)
+	var/swarmer_class_info = "Вы не должны это видеть."
+	var/dismantle_speed = NORMAL_SWARMER_DISMANTLE_DELAY
+	var/stack_extract_amount = 3
+	var/swap_resource_cost = 0
+	var/can_swap_to = FALSE
+	var/datum/team/swarmer_team/team
+	var/datum/effect_system/spark_spread/spark_system
+	var/obj/item/mmi/mmi
+	var/sliding_under_doors = FALSE
+	var/list/datum/action/swarmer_actions = list()
+	var/datum/weakref/object_attack_target
+	var/object_attack_timer
 
-/mob/living/simple_animal/hostile/swarmer/builder
-	name = "Builder Swarmer"
-	desc = "A swarmer variant specialized in heavy fabrication. Carries no weaponry, but holds a far larger internal material reserve and can raise swarm beacons."
-	icon_state = "swarmer_melee"
-	icon_living = "swarmer_melee"
-	ranged = FALSE
-	max_resources = 200
-	replicate_cost = 25 // BLUEMOON ADD - строитель создаёт свармеров вдвое дешевле
-
-/mob/living/simple_animal/hostile/swarmer/warrior
-	name = "Warrior Swarmer"
-	desc = "A swarmer variant built for direct combat. Instead of a disabler it projects a focused beam of terrifying integrity."
-	icon_state = "swarmer_ranged"
-	icon_living = "swarmer_ranged"
-	projectiletype = /obj/item/projectile/beam/laser/hellfire/swarmer
-	ranged_cooldown_time = 10
-	projectilesound = 'sound/weapons/laser.ogg'
-	check_friendly_fire = TRUE
-
-/mob/living/simple_animal/hostile/swarmer/warrior/Initialize(mapload)
+/mob/living/simple_animal/hostile/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
-	remove_verb(src, /mob/living/simple_animal/hostile/swarmer/proc/CreateTrap)
-	remove_verb(src, /mob/living/simple_animal/hostile/swarmer/proc/CreateBarricade)
-	remove_verb(src, /mob/living/simple_animal/hostile/swarmer/proc/ContactSwarmers)
-// BLUEMOON ADD END
+	join_swarm(swarm_team)
+	spark_system = new
+	spark_system.set_up(5, 0, src)
+	spark_system.attach(src)
+	grant_language(/datum/language/swarmer)
+	ADD_TRAIT(src, TRAIT_NEGATES_GRAVITY, INNATE_TRAIT)
 
-/mob/living/simple_animal/hostile/swarmer/Initialize(mapload)
-	. = ..()
-	remove_verb(src, /mob/living/verb/pulled)
-	var/datum/atom_hud/diag_hud_viewer = GLOB.huds[DATA_HUD_DIAGNOSTIC_BASIC]
-	diag_hud_viewer.add_hud_to(src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
-		diag_hud.add_to_hud(src)
-	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
+	diag_hud?.add_hud_to(src)
+	diag_hud?.add_to_hud(src)
+	diag_hud_set_swarmerhealth()
+	diag_hud_set_swarmerstat()
+
+	for(var/action_type in GLOB.common_swarmer_actions)
+		grant_swarmer_action(action_type)
+	for(var/action_type in GLOB.swarmer_actions_by_type[type])
+		grant_swarmer_action(action_type)
+
+/mob/living/simple_animal/hostile/swarmer/proc/grant_swarmer_action(action_type)
+	var/datum/action/action = new action_type
+	swarmer_actions += action
+	action.Grant(src)
+
+/mob/living/simple_animal/hostile/swarmer/proc/join_swarm(datum/team/swarmer_team/swarm_team)
+	if(team == swarm_team)
+		return
+	if(team)
+		LAZYREMOVE(team.bodies, src)
+	team = swarm_team
+	if(team)
+		LAZYADD(team.bodies, src)
+
+/mob/living/simple_animal/hostile/swarmer/proc/add_datum_if_not_exist()
+	if(mind && team && !mind.has_antag_datum(/datum/antagonist/swarmer))
+		mind.add_antag_datum(/datum/antagonist/swarmer, team)
 
 /mob/living/simple_animal/hostile/swarmer/med_hud_set_health()
-	if(QDELETED(src) || !loc)
-		return
-	var/image/holder = hud_list[DIAG_HUD]
-	if(!holder)
-		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
-	holder.icon_state = "huddiag[RoundDiagBar(health/maxHealth)]"
+	return diag_hud_set_swarmerhealth()
 
 /mob/living/simple_animal/hostile/swarmer/med_hud_set_status()
-	if(QDELETED(src) || !loc)
+	return diag_hud_set_swarmerstat()
+
+/mob/living/simple_animal/hostile/swarmer/proc/diag_hud_set_swarmerhealth()
+	if(stat == DEAD)
+		set_hud_image_state(DIAG_HUD, "huddiagdead")
+	else
+		set_hud_image_state(DIAG_HUD, "huddiag[RoundDiagBar(health/maxHealth)]")
+
+/mob/living/simple_animal/hostile/swarmer/proc/diag_hud_set_swarmerstat()
+	if(stat == DEAD)
+		set_hud_image_state(DIAG_STAT_HUD, "huddead2")
+	else if(stat == UNCONSCIOUS)
+		set_hud_image_state(DIAG_STAT_HUD, "hudoffline")
+	else
+		set_hud_image_state(DIAG_STAT_HUD, "hudstat")
+
+/mob/living/simple_animal/hostile/swarmer/Destroy()
+	stop_object_attack()
+	QDEL_LIST(swarmer_actions)
+	if(team)
+		LAZYREMOVE(team.bodies, src)
+	QDEL_NULL(spark_system)
+	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
+	diag_hud?.remove_hud_from(src, TRUE)
+	team = null
+	handle_mmi_on_destroy()
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/proc/handle_mmi_on_destroy()
+	if(QDELETED(mmi))
 		return
-	var/image/holder = hud_list[DIAG_STAT_HUD]
-	if(!holder)
+	if(!mind || QDELETED(mmi.brainmob))
+		mmi.forceMove(get_turf(src))
+		mmi = null
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
-	holder.icon_state = "hudstat"
+
+	mind.remove_antag_datum(/datum/antagonist/swarmer)
+	mind.transfer_to(mmi.brainmob)
+	mmi.forceMove(get_turf(src))
+	mmi = null
+
+/mob/living/simple_animal/hostile/swarmer/death(gibbed)
+	spark_system.start()
+	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/get_status_tab_items()
-	. = ..()
-	. += "Resources: [resources]"
-
-/mob/living/simple_animal/hostile/swarmer/emp_act()
-	. = ..()
-	if(. & EMP_PROTECT_SELF)
-		return
-	if(health > 1)
-		adjustHealth(health-20)
-	else
-		death()
-
-/mob/living/simple_animal/hostile/swarmer/CanAllowThrough(atom/movable/O)
-	. = ..()
-	if(istype(O, /obj/item/projectile/beam/disabler) || istype(O, /obj/item/projectile/beam/laser/hellfire/swarmer))//Allows for swarmers to fight as a group without wasting their shots hitting each other
-		return TRUE
-	if(isswarmer(O))
-		return TRUE
-
-////CTRL CLICK FOR SWARMERS AND SWARMER_ACT()'S////
-/mob/living/simple_animal/hostile/swarmer/AttackingTarget()
-	if(!isliving(target))
-		return target.swarmer_act(src)
-	else
-		return ..()
-
-/mob/living/simple_animal/hostile/swarmer/CtrlClickOn(atom/A)
-	face_atom(A)
-	if(!isturf(loc))
-		return
-	if(!CheckActionCooldown())
-		return
-	if(!A.Adjacent(src))
-		return
-	DelayNextAction()
-	A.swarmer_act(src)
-
-/atom/proc/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE //return TRUE/FALSE whether or not an AI swarmer should try this swarmer_act() again, NOT whether it succeeded.
-
-/obj/effect/mob_spawn/swarmer/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.Integrate(src)
-	return FALSE //would logically be TRUE, but we don't want AI swarmers eating player spawn chances.
-
-/obj/effect/mob_spawn/swarmer/IntegrateAmount()
-	return 50
-
-/turf/closed/indestructible/swarmer_act()
-	return FALSE
-
-/obj/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	if(resistance_flags & INDESTRUCTIBLE)
-		return FALSE
-	for(var/mob/living/L in GetAllContents())
-		if(!ispAI(L) && !isbrain(L))
-			to_chat(S, "<span class='warning'>An organism has been detected inside this object. Aborting.</span>")
-			return FALSE
-	return ..()
-
-/obj/item/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	return S.Integrate(src)
-
-/atom/movable/proc/IntegrateAmount()
-	return FALSE
-
-/obj/item/IntegrateAmount() //returns the amount of resources gained when eating this item
-	. = ..()
-	if(!custom_materials)
-		return
-	if(custom_materials[SSmaterials.GetMaterialRef(/datum/material/iron)] || custom_materials[SSmaterials.GetMaterialRef(/datum/material/glass)])
-		return TRUE
-	return ..()
-
-/obj/item/gun/swarmer_act()//Stops you from eating the entire armory
-	return FALSE
-
-/obj/item/clockwork/alloy_shards/IntegrateAmount()
-	return 10
-
-/obj/item/stack/tile/brass/IntegrateAmount()
-	return 5
-
-/obj/item/clockwork/alloy_shards/medium/gear_bit/large/IntegrateAmount()
-	return 4
-
-/obj/item/clockwork/alloy_shards/large/IntegrateAmount()
-	return 3
-
-/obj/item/clockwork/alloy_shards/medium/IntegrateAmount()
-	return 2
-
-/obj/item/clockwork/alloy_shards/small/IntegrateAmount()
-	return TRUE
-
-/turf/open/floor/swarmer_act()//ex_act() on turf calls it on its contents, this is to prevent attacking mobs by DisIntegrate()'ing the floor
-	return FALSE
-
-/obj/structure/lattice/catwalk/swarmer_catwalk/swarmer_act()
-	return FALSE
-
-/obj/structure/swarmer/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	if(S.AIStatus == AI_ON)
-		return FALSE
-	else
-		return ..()
-
-/obj/effect/swarmer_act()
-	return FALSE
-
-/obj/effect/decal/cleanable/robot_debris/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	qdel(src)
-	return TRUE
-
-/obj/structure/flora/swarmer_act()
-	return FALSE
-
-/turf/open/lava/swarmer_act()
-	if(!is_safe())
-		new /obj/structure/lattice/catwalk/swarmer_catwalk(src)
-	return FALSE
-
-/obj/machinery/atmospherics/swarmer_act()
-	return FALSE
-
-/obj/structure/disposalpipe/swarmer_act()
-	return FALSE
-
-/obj/machinery/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DismantleMachine(src)
-	return TRUE
-
-/obj/machinery/light/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/door/swarmer_act(mob/living/simple_animal/hostile/swarmer/actor)
-	var/is_on_shuttle = istype(get_area(src), /area/shuttle)
-	for(var/turf/turf_in_range in range(1, src))
-		var/area/turf_area = get_area(turf_in_range)
-		//Check for dangerous pressure differences
-		// if (turf_in_range.return_turf_delta_p() > DANGEROUS_DELTA_P)
-		// 	to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause an explosive pressure release. Aborting.</span>")
-		// 	actor.target = null
-		// 	return TRUE
-		//Check if breaking this door will expose the station to space/planetary atmos
-		if(isspaceturf(turf_in_range) || (!is_on_shuttle && (istype(turf_area, /area/shuttle) || istype(turf_area, /area/space))) || (is_on_shuttle && !istype(turf_area, /area/shuttle)))
-			to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause a hull breach. Aborting.</span>")
-			actor.target = null
-			return FALSE
-		//Check if this door is important in supermatter containment
-		else if(istype(turf_area, /area/engineering/supermatter))
-			to_chat(actor, "<span class='warning'>Disrupting the containment of a supermatter crystal would not be to our benefit. Aborting.</span>")
-			actor.target = null
-			return FALSE
-	actor.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/door/poddoor/swarmer_act(mob/living/simple_animal/hostile/swarmer/actor)
-	var/is_on_shuttle = istype(get_area(src), /area/shuttle)
-	for(var/turf/turf_in_range in range(1, src))
-		var/area/turf_area = get_area(turf_in_range)
-		if(isspaceturf(turf_in_range) || (!is_on_shuttle && (istype(turf_area, /area/shuttle) || istype(turf_area, /area/space))) || (is_on_shuttle && !istype(turf_area, /area/shuttle)))
-			to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause a hull breach. Aborting.</span>")
-			actor.target = null
-			return FALSE
-		else if(istype(turf_area, /area/engineering/supermatter))
-			to_chat(actor, "<span class='warning'>Disrupting the containment of a supermatter crystal would not be to our benefit. Aborting.</span>")
-			actor.target = null
-			return FALSE
-	var/obj/effect/temp_visual/swarmer/disintegration/D = new /obj/effect/temp_visual/swarmer/disintegration(get_turf(src))
-	D.pixel_x = pixel_x
-	D.pixel_y = pixel_y
-	actor.do_attack_animation(src)
-	actor.DelayNextAction(CLICK_CD_MELEE)
-	take_damage(obj_integrity, BRUTE, MELEE, 1, null, 100)
-	return TRUE
-
-/obj/machinery/camera/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	if(!QDELETED(S)) //If it got blown up no need to turn it off.
-		toggle_cam(S, 0)
-	return TRUE
-
-/obj/machinery/particle_accelerator/control_box/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/field/generator/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/gravity_generator/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/vending/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)//It's more visually interesting than dismantling the machine
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/turretid/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisIntegrate(src)
-	return TRUE
-
-/obj/machinery/chem_dispenser/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>The volatile chemicals in this machine would destroy us. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/nuclearbomb/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This device's destruction would result in the extermination of everything in the area. Aborting.</span>")
-	return FALSE
-
-/obj/effect/rune/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Searching... sensor malfunction! Target lost. Aborting.</span>")
-	return FALSE
-
-/obj/structure/reagent_dispensers/fueltank/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object would cause a chain reaction. Aborting.</span>")
-	return FALSE
-
-/obj/structure/cable/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Disrupting the power grid would bring no benefit to us. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/portable_atmospherics/canister/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>An inhospitable area may be created as a result of destroying this object. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/telecomms/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This communications relay should be preserved, it will be a useful resource to our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/deepfryer/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This kitchen appliance should be preserved, it will make delicious unhealthy snacks for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/power/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Disrupting the power grid would bring no benefit to us. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/gateway/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This bluespace source will be important to us later. Aborting.</span>")
-	return FALSE
-
-/turf/closed/wall/swarmer_act(mob/living/simple_animal/hostile/swarmer/actor)
-	var/is_on_shuttle = istype(loc, /area/shuttle)
-	for(var/turf/turf_in_range in range(1, src))
-		var/area/turf_area = get_area(turf_in_range)
-		// if (turf_in_range.return_turf_delta_p() > DANGEROUS_DELTA_P)
-		// 	to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause an explosive pressure release. Aborting.</span>")
-		// 	actor.target = null
-		// 	return TRUE
-		if(isspaceturf(turf_in_range) || (!is_on_shuttle && (istype(turf_area, /area/shuttle) || istype(turf_area, /area/space))) || (is_on_shuttle && !istype(turf_area, /area/shuttle)))
-			to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause a hull breach. Aborting.</span>")
-			actor.target = null
-			return TRUE
-		else if(istype(turf_area, /area/engineering/supermatter))
-			to_chat(actor, "<span class='warning'>Disrupting the containment of a supermatter crystal would not be to our benefit. Aborting.</span>")
-			actor.target = null
-			return TRUE
-	return ..()
-
-/obj/structure/window/swarmer_act(mob/living/simple_animal/hostile/swarmer/actor)
-	var/is_on_shuttle = istype(get_area(src), /area/shuttle)
-	for(var/t in RANGE_TURFS(1, src))
-		var/turf/turf_in_range = t
-		var/area/turf_area = get_area(turf_in_range)
-		// if (turf_in_range.return_turf_delta_p() > DANGEROUS_DELTA_P)
-		// 	to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause an explosive pressure release. Aborting.</span>")
-		// 	actor.target = null
-		// 	return TRUE
-		if(isspaceturf(turf_in_range) || (!is_on_shuttle && (istype(turf_area, /area/shuttle) || istype(turf_area, /area/space))) || (is_on_shuttle && !istype(turf_area, /area/shuttle)))
-			to_chat(actor, "<span class='warning'>Destroying this object has the potential to cause a hull breach. Aborting.</span>")
-			actor.target = null
-			return TRUE
-		else if(istype(turf_area, /area/engineering/supermatter))
-			to_chat(actor, "<span class='warning'>Disrupting the containment of a supermatter crystal would not be to our benefit. Aborting.</span>")
-			actor.target = null
-			return TRUE
-	return ..()
-
-/obj/item/stack/cable_coil/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)//Wiring would be too effective as a resource
-	to_chat(S, "<span class='warning'>This object does not contain enough materials to work with.</span>")
-	return FALSE
-
-/obj/machinery/porta_turret/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Attempting to dismantle this machine would result in an immediate counterattack. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/porta_turret_cover/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Attempting to dismantle this machine would result in an immediate counterattack. Aborting.</span>")
-	return FALSE
-
-/mob/living/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	S.DisperseTarget(src)
-	return TRUE
-
-/mob/living/simple_animal/slime/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This biological resource is somehow resisting our bluespace transceiver. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/droneDispenser/swarmer/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This object is receiving unactivated swarmer shells to help us. Aborting.</span>")
-	return FALSE
-
-/obj/structure/destructible/clockwork/massive/celestial_gateway/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This object is multiplying existing resources. Aborting.</span>")
-	return FALSE
-
-/obj/structure/lattice/catwalk/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	var/turf/here = get_turf(src)
-	for(var/A in here.contents)
-		var/obj/structure/cable/C = A
-		if(istype(C))
-			to_chat(S, "<span class='warning'>Disrupting the power grid would bring no benefit to us. Aborting.</span>")
-			return FALSE
-	return ..()
-
-/obj/item/deactivated_swarmer/IntegrateAmount()
-	return 50
-
-/obj/machinery/hydroponics/soil/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This object does not contain enough materials to work with.</span>")
-	return FALSE
-
-/obj/machinery/field/generator/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object would cause a catastrophic chain reaction. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/ore_silo/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object, however tempting it's, will disrupt the research development that may serve for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/rnd/server/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object, will disrupt the research development that may serve for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/structure/pool/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>The pool must not be closed, it will provide healthy fun for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/structure/holosign/barrier/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	var/static/list/lazy_typecache = typecacheof(list(/obj/structure/holosign/barrier/engineering, /obj/structure/holosign/barrier/firelock, /obj/structure/holosign/barrier/atmos, /obj/structure/holosign/barrier/combifan))
-	if(lazy_typecache[type])
-		to_chat(S, "<span class='warning'>Destroying this holographic barrier may not benefit us. Aborting.</span>")
-		return FALSE
-	return ..()
-
-/obj/machinery/dominator/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This advanced piece of technology may be of use for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/computer/bsa_control/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This advanced piece of technology may be of use for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/bsa/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This advanced piece of technology may be of use for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/dna_vault/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This advanced piece of technology may be of use for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/structure/filler/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>This advanced piece of technology may be of use for our masters in the future. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/computer/sat_control/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object will lower the station shielding against space debris. Aborting.</span>")
-	return FALSE
-
-/obj/machinery/satellite/meteor_shield/swarmer_act(mob/living/simple_animal/hostile/swarmer/S)
-	to_chat(S, "<span class='warning'>Destroying this object will lower the station shielding against space debris. Aborting.</span>")
-	return FALSE
-
-////END CTRL CLICK FOR SWARMERS////
-
-/mob/living/simple_animal/hostile/swarmer/proc/Fabricate(atom/fabrication_object,fabrication_cost = 0)
-	if(!isturf(loc))
-		to_chat(src, "<span class='warning'>This is not a suitable location for fabrication. We need more space.</span>")
-	if(resources >= fabrication_cost)
-		resources -= fabrication_cost
-	else
-		to_chat(src, "<span class='warning'>You do not have the necessary resources to fabricate this object.</span>")
-		return FALSE
-	return new fabrication_object(loc)
-
-/mob/living/simple_animal/hostile/swarmer/proc/Integrate(atom/movable/target)
-	if(isobj(target))
-		var/obj/O = target
-		if(O.resistance_flags & INDESTRUCTIBLE)
-			return FALSE
-	for(var/mob/living/L in target.GetAllContents())
-		if(!ispAI(L) && !isbrain(L))
-			to_chat(src, "<span class='warning'>An organism has been detected inside this object. Aborting.</span>")
-			return FALSE
-	var/resource_gain = target.IntegrateAmount()
-	if(resources + resource_gain > max_resources)
-		to_chat(src, "<span class='warning'>We cannot hold more materials!</span>")
-		return TRUE
-	if(resource_gain)
-		resources += resource_gain
-		do_attack_animation(target)
-		DelayNextAction(CLICK_CD_MELEE)
-		var/obj/effect/temp_visual/swarmer/integrate/I = new /obj/effect/temp_visual/swarmer/integrate(get_turf(target))
-		I.pixel_x = target.pixel_x
-		I.pixel_y = target.pixel_y
-		I.pixel_z = target.pixel_z
-		if(istype(target, /obj/item/stack))
-			var/obj/item/stack/S = target
-			S.use(1)
-			if(S.amount)
-				return TRUE
-		qdel(target)
-		return TRUE
-	else
-		to_chat(src, "<span class='warning'>[target] is incompatible with our internal matter recycler.</span>")
-	return FALSE
-
-
-/mob/living/simple_animal/hostile/swarmer/proc/DisIntegrate(atom/movable/target)
-	new /obj/effect/temp_visual/swarmer/disintegration(get_turf(target))
-	do_attack_animation(target)
-	DelayNextAction(CLICK_CD_MELEE)
-	target.ex_act(EXPLODE_LIGHT)
-
-/mob/living/simple_animal/hostile/swarmer/proc/DisperseTarget(mob/living/target)
-	if(target == src)
-		return
-
-	if(!is_station_level(z) && !is_mining_level(z))
-		to_chat(src, "<span class='warning'>Our bluespace transceiver cannot locate a viable bluespace link, our teleportation abilities are useless in this area.</span>")
-		return
-
-	to_chat(src, "<span class='info'>Attempting to remove this being from our presence.</span>")
-
-	if(!do_mob(src, target, 30))
-		return
-
-	var/turf/open/floor/F
-	F = find_safe_turf(zlevels = z, extended_safety_checks = TRUE)
-
-	if(!F)
-		return
-	// If we're getting rid of a human, slap some energy cuffs on
-	// them to keep them away from us a little longer
-
-	var/mob/living/carbon/human/H = target
-	if(ishuman(target) && (!H.handcuffed))
-		H.handcuffed = new /obj/item/restraints/handcuffs/energy/used(H)
-		H.update_handcuffed()
-		log_combat(src, H, "handcuffed")
-
-	var/datum/effect_system/spark_spread/S = new
-	S.set_up(4,0,get_turf(target))
-	S.start()
-	playsound(src,'sound/effects/sparks4.ogg',50,1)
-	do_teleport(target, F, 0, channel = TELEPORT_CHANNEL_BLUESPACE)
-
-/mob/living/simple_animal/hostile/swarmer/electrocute_act(shock_damage, source, siemens_coeff = 1, flags = NONE)
+	var/list/status_tab_data = ..()
+	. = status_tab_data
+	status_tab_data[++status_tab_data.len] = list("Металлические ресурсы: ", team.metallic_resources)
+	if(team?.swarmer_core)
+		status_tab_data[++status_tab_data.len] = list("Здоровье ядра: ", "[team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]")
+
+/mob/living/simple_animal/hostile/swarmer/emp_act(severity)
+	..()
+	adjustHealth(SWARMER_EMP_DAMAGE(severity), forced = TRUE)
+
+/mob/living/simple_animal/hostile/swarmer/electrocute_act(shock_damage, atom/source, siemens_coeff = 1, flags = NONE, jitter_time = 10 SECONDS, stutter_time = 6 SECONDS, stun_duration = 4 SECONDS)
 	if(!(flags & SHOCK_TESLA))
 		return FALSE
 	return ..()
 
-/mob/living/simple_animal/hostile/swarmer/proc/DismantleMachine(obj/machinery/target)
-	do_attack_animation(target)
-	to_chat(src, "<span class='info'>We begin to dismantle this machine. We will need to be uninterrupted.</span>")
-	var/obj/effect/temp_visual/swarmer/dismantle/D = new /obj/effect/temp_visual/swarmer/dismantle(get_turf(target))
-	D.pixel_x = target.pixel_x
-	D.pixel_y = target.pixel_y
-	D.pixel_z = target.pixel_z
-	if(do_mob(src, target, 100) && !dismantle_blocked(target))
-		to_chat(src, "<span class='info'>Dismantling complete.</span>")
-		var/atom/Tsec = target.drop_location()
-		claim_dismantled(new /obj/item/stack/sheet/metal(Tsec, 5))
-		for(var/obj/item/I in target.component_parts)
-			I.forceMove(Tsec)
-		var/obj/effect/temp_visual/swarmer/disintegration/N = new /obj/effect/temp_visual/swarmer/disintegration(get_turf(target))
-		N.pixel_x = target.pixel_x
-		N.pixel_y = target.pixel_y
-		N.pixel_z = target.pixel_z
-		target.dropContents()
-		if(istype(target, /obj/machinery/computer))
-			var/obj/machinery/computer/C = target
-			if(C.circuit)
-				C.circuit.forceMove(Tsec)
+/mob/living/simple_animal/hostile/swarmer/get_ear_protection()
+	return INFINITY
+
+/mob/living/simple_animal/hostile/swarmer/CanAllowThrough(atom/movable/mover, border_dir)
+	. = ..()
+	if(is_swarmerprojectile(mover))
+		return TRUE
+
+/mob/living/simple_animal/hostile/swarmer/AttackingTarget()
+	if(isswarmer(target))
+		return FALSE
+
+	if(a_intent == INTENT_GRAB)
+		pulled(target)
+		return TRUE
+
+	. = ..()
+	if(!. || !isliving(target) || ishuman(target))
+		return
+
+	var/mob/living/difficult_target = target
+	var/damage = rand(melee_damage_lower, melee_damage_upper) / SWARMER_STAMINA_SCALE
+	difficult_target.apply_damage(damage, BURN, blocked = difficult_target.getarmor(null, MELEE))
+
+/mob/living/simple_animal/hostile/swarmer/UnarmedAttack(atom/A, proximity, intent = a_intent, flags = NONE)
+	if(proximity && isopenturf(A) && A != loc)
+		for(var/mob/living/victim in A)
+			if(victim.stat == DEAD || isswarmer(victim) || victim.invisibility > see_invisible || victim.IsObscured() || !Adjacent(victim))
+				continue
+			. = ..(victim, proximity, intent, flags)
+			if(!(. & NO_AUTO_CLICKDELAY_HANDLING))
+				DelayNextAction(CLICK_CD_MELEE)
+			return
+	if(training_origin && A != src && (!isswarmer(A) && !is_swarmer_object(A)) && training_refuses(A))
+		return
+	if(proximity && handle_swarmer_act(A, proximity, null))
+		return
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/AltUnarmedAttack(atom/A, proximity_flag)
+	if(!proximity_flag || !team?.swarmer_core || !CheckActionCooldown(immediate = TRUE))
+		return TRUE
+	if(training_origin && isliving(A) && A != src && !isswarmer(A))
+		training_disperse(A)
+		return TRUE
+	return A.attack_swarmer_secondary(src)
+
+/mob/living/simple_animal/hostile/swarmer/AltRangedAttack(atom/A, params)
+	if(isliving(A))
+		balloon_alert(src, "подойдите ближе!")
+		return TRUE
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/CtrlClickOn(atom/A)
+	if(isliving(A) && A != src && Adjacent(A) && !incapacitated() && team?.swarmer_core)
+		return AltUnarmedAttack(A, TRUE)
+	return ..()
+
+/atom/proc/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
+	return FALSE
+
+/mob/living/collect_screentip_context(mob/living/user, obj/item/held_item, list/context)
+	. = ..()
+	var/mob/living/simple_animal/hostile/swarmer/swarmer = user
+	if(!istype(swarmer) || !swarmer.team?.swarmer_core)
+		return
+	if(src == swarmer && istype(swarmer, /mob/living/simple_animal/hostile/swarmer/combat))
+		LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, "Выбрать режим стрельбы")
+		return . | CONTEXTUAL_SCREENTIP_SET
+	if(isswarmer(src))
+		return
+	var/secondary_hint = "Отправить в анализатор или телепортировать"
+	if(iscyborg(src) && !swarmer.training_origin)
+		secondary_hint = "Пересобрать в свармера"
+	else if(swarmer.training_origin)
+		secondary_hint = "Телепортировать"
+	LAZYSET(context[SCREENTIP_CONTEXT_RMB], INTENT_ANY, secondary_hint)
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, secondary_hint)
+	return . | CONTEXTUAL_SCREENTIP_SET
+
+/mob/living/simple_animal/hostile/swarmer/proc/handle_swarmer_act(atom/atom, proximity_flag, list/modifiers)
+	. = COMPONENT_CANCEL_ATTACK_CHAIN
+	var/swarmer_act_result = atom.swarmer_act(src)
+	if(swarmer_act_result & SWARMER_ACT_RIGHT_CLICK_DEFAULT)
+		if(LAZYACCESS(modifiers, RIGHT_CLICK))
+			return FALSE
+
+	if(swarmer_act_result & SWARMER_ACT_POSSIBLE)
+		return handle_possible_swarmer_act(atom, swarmer_act_result, proximity_flag, modifiers)
+
+	if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE)
+		return handle_impossible_swarmer_act(atom, swarmer_act_result, proximity_flag, modifiers)
+
+	stack_trace("Swarmer act was called without either of the two main flags. Atom called on: [atom.type], act return value: [swarmer_act_result].")
+
+/mob/living/simple_animal/hostile/swarmer/proc/handle_impossible_swarmer_act(atom/atom, swarmer_act_result, proximity_flag, list/modifiers)
+	. = COMPONENT_CANCEL_ATTACK_CHAIN
+	if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_DEFAULT)
+		return FALSE
+
+	DelayNextAction(CLICK_CD_MELEE)
+	if(swarmer_act_result == SWARMER_ACT_IMPOSSIBLE)
+		balloon_alert(src, "нельзя!")
+		return
+
+	if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_OVERRIDE)
+		return
+
+	if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_ENERGY)
+		balloon_alert(src, "повредит электроэнергию!")
+	else if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_LIVING)
+		balloon_alert(src, "повредит жизни экипажа!")
+	else if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_ATMOS)
+		balloon_alert(src, "повредит системе воздуха!")
+	else if(swarmer_act_result & SWARMER_ACT_IMPOSSIBLE_REASON_TEAM)
+		balloon_alert(src, "повредит команде!")
+
+/mob/living/simple_animal/hostile/swarmer/proc/handle_possible_swarmer_act(atom/atom, swarmer_act_result, proximity_flag, list/modifiers)
+	. = COMPONENT_CANCEL_ATTACK_CHAIN
+	if(swarmer_act_result == SWARMER_ACT_POSSIBLE)
+		CRASH("Swarmer act returned only SWARMER_ACT_POSSIBLE flag, which should not happen. Atom: [atom.type].")
+
+	if((swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DAMAGE) && object_attack_target?.resolve() == atom)
+		return
+
+	DelayNextAction(CLICK_CD_MELEE)
+	if(!can_disassemble(atom))
+		return
+
+	if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DAMAGE)
+		start_object_attack(atom)
+	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_CONSUME)
+		extract_resources(atom)
+	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DISMANTLE)
+		dismantle_machine(atom)
+	else if(swarmer_act_result & SWARMER_ACT_POSSIBLE_ACTION_DESTROY)
+		destroy_object(atom)
+	else
+		CRASH("Swarmer act returned SWARMER_ACT_POSSIBLE flag with none of the correct flag combinations. Atom: [atom.type], flag: [swarmer_act_result]")
+
+/mob/living/simple_animal/hostile/swarmer/proc/can_disassemble(atom/target)
+	var/obj/target_object = target
+	if((istype(target_object) && (target_object.resistance_flags & INDESTRUCTIBLE)) || isindestructiblewall(target))
+		balloon_alert(src, "невозможно сломать!")
+		return FALSE
+	if(isitem(target))
+		return TRUE
+
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf || istype(get_area(target_turf), /area/engineering/supermatter))
+		balloon_alert(src, "нельзя, опасная среда!")
+		return FALSE
+	if(locate(/mob/living) in target)
+		balloon_alert(src, "внутри живое существо!")
+		return FALSE
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(target_turf, direction)
+		if(isspaceturf(neighbor) && !CANATMOSPASS(target, neighbor))
+			balloon_alert(src, "нельзя, возможна разгерметизация!")
+			return FALSE
+	return TRUE
+
+/mob/living/simple_animal/hostile/swarmer/proc/send_organic_processer_signal(obj/item, delay = 0)
+	if(delay > 0)
+		balloon_alert(src, "отправка...")
+		var/atom/delay_target = item ? item : src
+		if(!do_after(src, delay, delay_target))
+			balloon_alert(src, "сбито!")
+			return
+
+	var/process_result = team?.try_process_organic(item) || SWARMER_PROCESS_NONE
+	if(process_result & SWARMER_PROCESS_FOUND)
+		spark_system.start()
+		balloon_alert(src, "успешно отправлено!")
+		playsound(loc, 'sound/swarmer/swarmer_send.ogg', 100, TRUE)
+		return
+
+	if(process_result & SWARMER_PROCESS_NONE)
+		balloon_alert(src, "нету переработчиков!")
+	else if(process_result & SWARMER_PROCESS_BUSY)
+		balloon_alert(src, "нету свободных обработчиков!")
+	else
+		CRASH("Swarmer team try_process_organic returned none of the supposed bitflags. Return value: [process_result]")
+
+/mob/living/simple_animal/hostile/swarmer/proc/try_analyze(mob/living/target)
+	balloon_alert(src, "отправка...")
+	if(!do_after(src, SWARMER_SEND_ANALYZER_DELAY, target))
+		balloon_alert(src, "сбито!")
+		return
+
+	var/analyze_result = team?.try_analyze_mob(target) || SWARMER_ANALYZE_NONE
+	if(analyze_result & SWARMER_ANALYZE_FOUND)
+		balloon_alert(src, "отправлено в анализатор!")
+		playsound(loc, 'sound/swarmer/swarmer_send.ogg', 100, TRUE)
+		spark_system.start()
+		return
+
+	if(analyze_result & SWARMER_ANALYZE_NONE)
+		balloon_alert(src, "нету анализаторов, телепорт!")
+	else if(analyze_result & SWARMER_ANALYZE_BUSY)
+		balloon_alert(src, "анализаторы заняты, телепорт!")
+	else
+		CRASH("Swarmer team try_analyze_proc returned none of the supposed bitflags. Return value: [analyze_result]")
+
+	spark_system.start()
+	fail_disperse_teleport(target)
+
+/mob/living/simple_animal/hostile/swarmer/proc/fail_disperse_teleport(mob/living/target)
+	var/turf/safe_turf = find_safe_turf(z)
+	if(!safe_turf)
+		return
+
+	if(iscarbon(target))
+		team?.adjust_organic(SWARMER_CARBON_MOB_TELEPORT_REWARD)
+		var/mob/living/carbon/carbon_target = target
+		if(!carbon_target.handcuffed)
+			carbon_target.handcuffed = new /obj/item/restraints/handcuffs/energy/used(carbon_target)
+			carbon_target.update_handcuffed()
+
+	target.Sleeping(10 SECONDS)
+	do_teleport(target, safe_turf)
+
+/mob/living/simple_animal/hostile/swarmer/proc/try_convert(mob/living/silicon/robot/target)
+	if(training_origin || !target.mind)
+		balloon_alert(src, "не имеет разума!")
+		return
+	balloon_alert(src, "пересобираем...")
+	if(!do_after(src, 15 SECONDS, target))
+		balloon_alert(src, "сбито!")
+		return
+	if(QDELETED(target) || !target.mind || !team?.swarmer_core)
+		return
+	var/mob/living/simple_animal/hostile/swarmer/combat/new_swarmer = new(get_turf(target), team)
+	if(target.mmi)
+		new_swarmer.mmi = target.mmi
+		target.mmi.forceMove(new_swarmer)
+		target.mmi = null
+	target.mind.transfer_to(new_swarmer)
+	new_swarmer.add_datum_if_not_exist()
+	balloon_alert(src, "успех!")
+	new_swarmer.spark_system.start()
+	log_combat(src, target, "Converted into [new_swarmer.name].")
+	qdel(target)
+
+/mob/living/simple_animal/hostile/swarmer/proc/extract_resources(atom/target)
+	var/resource_gain = target.integrate_amount()
+	if(isnull(resource_gain))
+		CRASH("[target.type] swarmer_act uses consume return value, yet integrate_amount() proc returned null.")
+
+	if(QDELETED(target) || !team?.swarmer_core)
+		balloon_alert(src, "нет ядра!")
+		return FALSE
+	if(!resource_gain)
+		balloon_alert(src, "не совместимо!")
+		return FALSE
+
+	. = TRUE
+	do_attack_animation(target, no_effect = TRUE)
+	var/obj/effect/temp_visual/swarmer/integrate/integrate_effect = new(get_turf(target))
+	integrate_effect.adjust_size(target)
+	if(!isstack(target))
+		team?.adjust_metal(resource_gain, TRUE)
 		qdel(target)
+		return
 
+	var/obj/item/stack/stack_item = target
+	var/stack_amount_consumed = min(stack_extract_amount, stack_item.amount)
+	team?.adjust_metal(resource_gain * stack_amount_consumed, TRUE)
+	stack_item.use(stack_amount_consumed)
 
-/obj/effect/temp_visual/swarmer //temporary swarmer visual feedback objects
-	icon = 'icons/mob/swarmer.dmi'
+/mob/living/simple_animal/hostile/swarmer/proc/damage_object(atom/target)
+	do_attack_animation(target, no_effect = TRUE)
+	var/obj/effect/temp_visual/swarmer/disintegration/disintegrate_effect = new(get_turf(target))
+	disintegrate_effect.adjust_size(target)
+	target.ex_act(EXPLODE_LIGHT)
+
+/mob/living/simple_animal/hostile/swarmer/proc/start_object_attack(atom/attack_target)
+	stop_object_attack()
+	if(!damage_object_for_salvage(attack_target) || !client)
+		return
+	object_attack_target = WEAKREF(attack_target)
+	RegisterSignals(src, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT), PROC_REF(stop_object_attack))
+	RegisterSignal(src, COMSIG_MOB_CLICKON, PROC_REF(on_object_attack_click))
+	RegisterSignal(attack_target, COMSIG_PARENT_QDELETING, PROC_REF(stop_object_attack))
+	queue_object_attack()
+
+/mob/living/simple_animal/hostile/swarmer/proc/damage_object_for_salvage(atom/attack_target)
+	var/obj/target_object = attack_target
+	var/old_integrity = istype(target_object) ? target_object.obj_integrity : 0
+	damage_object(attack_target)
+	if(QDELETED(src) || QDELETED(attack_target))
+		return FALSE
+	// У стен слабый взрыв разбирает стену с вероятностью hardness, без накопления урона.
+	var/turf/closed/wall/target_wall = attack_target
+	return (istype(target_wall) && target_wall.hardness > 0) || (istype(target_object) && target_object.obj_integrity < old_integrity)
+
+/mob/living/simple_animal/hostile/swarmer/proc/queue_object_attack()
+	object_attack_timer = addtimer(CALLBACK(src, PROC_REF(repeat_object_attack)), max(world.tick_lag, EstimatedNextActionTime() - world.time), TIMER_STOPPABLE)
+
+/mob/living/simple_animal/hostile/swarmer/proc/repeat_object_attack()
+	object_attack_timer = null
+	var/atom/attack_target = object_attack_target?.resolve()
+	if(!attack_target || !client || incapacitated() || !isturf(loc) || !Adjacent(attack_target) || attack_target.IsObscured() || !can_disassemble(attack_target))
+		stop_object_attack()
+		return
+	if(CheckActionCooldown(immediate = TRUE))
+		DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
+		if(!damage_object_for_salvage(attack_target))
+			stop_object_attack()
+			return
+	if(object_attack_target)
+		queue_object_attack()
+
+/mob/living/simple_animal/hostile/swarmer/proc/on_object_attack_click(datum/source, atom/clicked)
+	SIGNAL_HANDLER
+	if(clicked != object_attack_target?.resolve())
+		stop_object_attack()
+
+/mob/living/simple_animal/hostile/swarmer/proc/stop_object_attack()
+	SIGNAL_HANDLER
+	if(!object_attack_target)
+		return
+	var/atom/attack_target = object_attack_target.hard_resolve()
+	if(attack_target)
+		UnregisterSignal(attack_target, COMSIG_PARENT_QDELETING)
+	object_attack_target = null
+	UnregisterSignal(src, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT, COMSIG_MOB_CLICKON))
+	if(object_attack_timer)
+		deltimer(object_attack_timer)
+		object_attack_timer = null
+
+/mob/living/simple_animal/hostile/swarmer/proc/destroy_object(atom/target)
+	do_attack_animation(target, no_effect = TRUE)
+	var/obj/effect/temp_visual/swarmer/disintegration/disintegrate_effect = new(get_turf(target))
+	disintegrate_effect.adjust_size(target)
+	qdel(target)
+
+/mob/living/simple_animal/hostile/swarmer/proc/dismantle_machine(obj/machinery/target)
+	do_attack_animation(target, no_effect = TRUE)
+	balloon_alert(src, "разбор...")
+	var/obj/effect/temp_visual/swarmer/dismantle/dismantle_effect = new(get_turf(target))
+	dismantle_effect.adjust_size(target)
+	if(!do_after(src, dismantle_speed, target))
+		return
+	balloon_alert(src, "успех!")
+	target.deconstruct(TRUE)
+
+/mob/living/simple_animal/hostile/swarmer/proc/toggle_light()
+	if(!light_on && is_type_in_typecache(loc, GLOB.ventcrawl_machinery))
+		to_chat(src, span_warning("Нельзя переключить свет в вентиляции!"))
+		return
+	set_light_on(!light_on)
+
+/mob/living/simple_animal/hostile/swarmer/proc/contact_swarmers()
+	var/message = tgui_input_text(src, "Передайте сообщение другим \"Свармерам\"", "Канал \"Свармеров\"")
+	if(!message)
+		return
+
+	swarmer_chat(message)
+
+/mob/living/simple_animal/hostile/swarmer/proc/swarmer_chat(message)
+	log_talk(message, LOG_SAY, tag = "рой")
+	var/formatted = span_swarmer("[span_bold(name)] передаёт: [html_encode(message)]")
+	for(var/mob/living/swarmer as anything in team?.bodies)
+		to_chat(swarmer, formatted)
+	for(var/mob/dead/observer/ghost in GLOB.dead_mob_list)
+		if(ghost.client?.prefs?.chat_toggles & CHAT_GHOSTRADIO)
+			to_chat(ghost, formatted)
+
+/mob/living/simple_animal/hostile/swarmer/proc/construct_catwalk(turf/target_turf)
+	balloon_alert(src, "постройка...")
+	if(!do_after(src, 3 SECONDS))
+		balloon_alert(src, "провал!")
+		return
+
+	if(!team?.adjust_metal(-2))
+		balloon_alert(src, "недостаточно ресурсов!")
+		return
+
+	balloon_alert(src, "успех!")
+	new /obj/structure/lattice/catwalk/swarmer_catwalk(target_turf)
+
+#undef SWARMER_CARBON_MOB_TELEPORT_REWARD
+
+/mob/living/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
+	user.try_analyze(src)
+	return TRUE
+
+/mob/living/simple_animal/hostile/swarmer/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
+	return TRUE
+
+/mob/living/silicon/robot/attack_swarmer_secondary(mob/living/simple_animal/hostile/swarmer/user)
+	user.try_convert(src)
+	return TRUE
+
+/obj/effect/temp_visual/swarmer
+	icon = 'icons/effects/swarmer.dmi'
 	layer = BELOW_MOB_LAYER
+
+/obj/effect/temp_visual/swarmer/proc/adjust_size(atom/target)
+	pixel_x = target.pixel_x
+	pixel_y = target.pixel_y
+	pixel_z = target.pixel_z
+
+/obj/effect/temp_visual/swarmer/Initialize(mapload)
+	. = ..()
+	playsound(loc, 'sound/effects/sparks4.ogg', 100, TRUE)
 
 /obj/effect/temp_visual/swarmer/disintegration
 	icon_state = "disintegrate"
-	duration = 10
-
-/obj/effect/temp_visual/swarmer/disintegration/Initialize(mapload)
-	. = ..()
-	playsound(loc, "sparks", 100, 1)
 
 /obj/effect/temp_visual/swarmer/dismantle
 	icon_state = "dismantle"
@@ -735,163 +571,9 @@
 	icon_state = "integrate"
 	duration = 5
 
-/obj/structure/swarmer //Default swarmer effect object visual feedback
-	name = "swarmer ui"
-	desc = null
-	gender = NEUTER
-	icon = 'icons/mob/swarmer.dmi'
-	icon_state = "ui_light"
-	layer = MOB_LAYER
-	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	light_color = LIGHT_COLOR_CYAN
-	max_integrity = 30
-	anchored = TRUE
-	density = TRUE
-	var/lon_range = 1
-
-/obj/structure/swarmer/Initialize(mapload)
-	. = ..()
-	set_light(lon_range)
-
-/obj/structure/swarmer/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
-	switch(damage_type)
-		if(BRUTE)
-			playsound(src, 'sound/weapons/egloves.ogg', 80, 1)
-		if(BURN)
-			playsound(src, 'sound/items/welder.ogg', 100, 1)
-
-/obj/structure/swarmer/emp_act()
-	. = ..()
-	if(. & EMP_PROTECT_SELF)
-		return
-	qdel(src)
-
-/obj/structure/swarmer/trap
-	name = "swarmer trap"
-	desc = "A quickly assembled trap that electrifies living beings and overwhelms machine sensors. Will not retain its form if damaged enough."
-	icon_state = "trap"
-	max_integrity = 10
-	density = FALSE
-
-/obj/structure/swarmer/trap/Crossed(atom/movable/AM)
-	if(isliving(AM))
-		var/mob/living/L = AM
-		if(!istype(L, /mob/living/simple_animal/hostile/swarmer))
-			playsound(loc,'sound/effects/snap.ogg',50, 1, -1)
-			L.electrocute_act(30, src, 1, flags = SHOCK_NOGLOVES|SHOCK_ILLUSION)
-			L.Paralyze(100)
-			if(iscyborg(L))
-				L.DefaultCombatKnockdown(150)
-			qdel(src)
-	..()
-
-/mob/living/simple_animal/hostile/swarmer/proc/CreateTrap()
-	set name = "Create trap"
-	set category = "Swarmer"
-	set desc = "Creates a simple trap that will non-lethally electrocute anything that steps on it. Costs 5 resources"
-	if(locate(/obj/structure/swarmer/trap) in loc)
-		to_chat(src, "<span class='warning'>There is already a trap here. Aborting.</span>")
-		return
-	Fabricate(/obj/structure/swarmer/trap, 5)
-
-
-/mob/living/simple_animal/hostile/swarmer/proc/CreateBarricade()
-	set name = "Create barricade"
-	set category = "Swarmer"
-	set desc = "Creates a barricade that will stop anything but swarmers and disabler beams from passing through."
-	if(locate(/obj/structure/swarmer/blockade) in loc)
-		to_chat(src, "<span class='warning'>There is already a blockade here. Aborting.</span>")
-		return
-	if(resources < 5)
-		to_chat(src, "<span class='warning'>We do not have the resources for this!</span>")
-		return
-	if(do_mob(src, src, 10))
-		Fabricate(/obj/structure/swarmer/blockade, 5)
-
-
-/obj/structure/swarmer/blockade
-	name = "swarmer blockade"
-	desc = "A quickly assembled energy blockade. Will not retain its form if damaged enough, but disabler beams and swarmers pass right through."
-	icon_state = "barricade"
-	light_range = MINIMUM_USEFUL_LIGHT_RANGE
-	max_integrity = 100
-
-/obj/structure/swarmer/blockade/CanAllowThrough(atom/movable/O)
-	. = ..()
-	if(isswarmer(O))
-		return TRUE
-	if(istype(O, /obj/item/projectile/beam/disabler) || istype(O, /obj/item/projectile/beam/laser/hellfire/swarmer)) // BLUEMOON EDIT - пропускаем и выстрелы воина
-		return TRUE
-
-/mob/living/simple_animal/hostile/swarmer/proc/CreateSwarmer()
-	set name = "Replicate"
-	set category = "Swarmer"
-	set desc = "Creates a shell for a new swarmer. Swarmers will self activate."
-	to_chat(src, "<span class='info'>We are attempting to replicate ourselves. We will need to stand still until the process is complete.</span>")
-	if(resources < replicate_cost)
-		to_chat(src, "<span class='warning'>We do not have the resources for this!</span>")
-		return
-	if(!isturf(loc))
-		to_chat(src, "<span class='warning'>This is not a suitable location for replicating ourselves. We need more room.</span>")
-		return
-	if(do_mob(src, src, 100))
-		var/createtype = SwarmerTypeToCreate()
-		if(createtype && Fabricate(createtype, replicate_cost))
-			playsound(loc,'sound/items/poster_being_created.ogg',50, 1, -1)
-
-
-/mob/living/simple_animal/hostile/swarmer/proc/SwarmerTypeToCreate()
-	return /obj/effect/mob_spawn/swarmer
-
-
-/mob/living/simple_animal/hostile/swarmer/builder/proc/CreateSwarmBeacon()
-	set name = "Create swarm beacon"
-	set category = "Swarmer"
-	set desc = "Creates a swarm beacon that will endlessly produce AI-controlled swarmers to overwhelm this area. Costs 100 resources"
-	if(resources < 100)
-		to_chat(src, "<span class='warning'>We do not have the resources for this!</span>")
-		return
-	if(!isturf(loc))
-		to_chat(src, "<span class='warning'>This is not a suitable location for creating a beacon. We need more room.</span>")
-		return
-	if(locate(/mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon) in range(1, src))
-		to_chat(src, "<span class='warning'>There is already a swarm beacon here. Aborting.</span>")
-		return
-	to_chat(src, "<span class='info'>We are attempting to create a swarm beacon. We will need to stand still until the process is complete.</span>")
-	if(do_mob(src, src, 100))
-		if(Fabricate(/mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon, 100))
-			playsound(loc, 'sound/effects/bamf.ogg', 50, 1, -1)
-			to_chat(src, "<span class='info'>Beacon created. The swarm will converge on this location.</span>")
-
-/mob/living/simple_animal/hostile/swarmer/proc/RepairSelf()
-	set name = "Self Repair"
-	set category = "Swarmer"
-	set desc = "Attempts to repair damage to our body. You will have to remain motionless until repairs are complete."
-	if(!isturf(loc))
-		return
-	to_chat(src, "<span class='info'>Attempting to repair damage to our body, stand by...</span>")
-	if(do_mob(src, src, 100))
-		adjustHealth(-100)
-		to_chat(src, "<span class='info'>We successfully repaired ourselves.</span>")
-
-/mob/living/simple_animal/hostile/swarmer/proc/ToggleLight()
-	if(!light_range)
-		set_light(3)
-	else
-		set_light(0)
-
-/mob/living/simple_animal/hostile/swarmer/proc/swarmer_chat(msg)
-	var/rendered = "<B>Swarm communication - [src]</b> [say_quote(msg)]"
-	for(var/i in GLOB.mob_list)
-		var/mob/M = i
-		if(isswarmer(M) && M.training_origin == training_origin)
-			to_chat(M, rendered)
-		if(isobserver(M) && antag_training_observer_hears(M, src))
-			var/link = FOLLOW_LINK(M, src)
-			to_chat(M, "[link] [rendered]")
-
-/mob/living/simple_animal/hostile/swarmer/proc/ContactSwarmers()
-	var/message = stripped_input(src, "Announce to other swarmers", "Swarmer contact")
-	// TODO get swarmers their own colour rather than just boldtext
-	if(message)
-		swarmer_chat(message)
+/obj/structure/lattice/catwalk/swarmer_catwalk
+	name = "swarmer catwalk"
+	desc = "Настил из металла, изготовленный роем свармеров."
+	icon = 'icons/obj/smooth_structures/swarmer_catwalk.dmi'
+	icon_state = "swarmer_catwalk"
+	resistance_flags = FIRE_PROOF | LAVA_PROOF

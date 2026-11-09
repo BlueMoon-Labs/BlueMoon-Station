@@ -208,8 +208,8 @@
 	var/turf/far_turf = run_loc_floor_bottom_left
 	var/turf/near_turf = get_step(far_turf, EAST)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(near_turf, EAST))
-	var/mob/living/simple_animal/hostile/swarmer/ai/melee_combat/front = allocate(/mob/living/simple_animal/hostile/swarmer/ai/melee_combat, near_turf)
-	var/mob/living/simple_animal/hostile/swarmer/ai/melee_combat/back = allocate(/mob/living/simple_animal/hostile/swarmer/ai/melee_combat, far_turf)
+	var/mob/living/simple_animal/hostile/swarmer/rover/front = allocate(/mob/living/simple_animal/hostile/swarmer/rover, near_turf)
+	var/mob/living/simple_animal/hostile/swarmer/rover/back = allocate(/mob/living/simple_animal/hostile/swarmer/rover, far_turf)
 	back.target = victim
 
 	TEST_ASSERT(!back.Move(near_turf, EAST), "A swarmer must not step onto another swarmer next to the target")
