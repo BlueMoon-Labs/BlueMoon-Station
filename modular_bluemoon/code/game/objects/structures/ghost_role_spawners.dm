@@ -281,6 +281,17 @@
 		return
 	to_chat(C, span_notice("Вас вернули на Космическую Станцию."))
 
+/// Деньги на выкуп от ЦК приходят снабжению один раз за раунд, а не с каждым спавнером
+GLOBAL_VAR_INIT(slavers_deal_paid, FALSE)
+
+/proc/slavers_pay_deal()
+	if(GLOB.slavers_deal_paid)
+		return FALSE
+	GLOB.slavers_deal_paid = TRUE
+	var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	cargo_bank?.credit(SLAVERS_DEAL_PAYMENT, ECON_EVENT, memo = "Сделка с работорговцами")
+	return TRUE
+
 /obj/effect/mob_spawn/human/slavers
 	name = "Slaver"
 	short_desc = "Вы работорговец, похищающий и насилующий экипаж. \
@@ -300,7 +311,6 @@
 	outfit = /datum/outfit/slaver
 	antagonist_type = /datum/antagonist/slaver
 	category = "special"
-	var/first_time = TRUE
 	var/isLeader = FALSE
 
 	important_info = "В режим игры Extended вы являетесь ЕРП-антагонистом, в Dynamic Light - минорным антагонистом.\n\
@@ -341,17 +351,11 @@
 
 /obj/effect/mob_spawn/human/slavers/special(mob/living/new_spawn)
 	var/datum/antagonist/slaver/slaver = new antagonist_type
-	var/obj/effect/mob_spawn/human/slavers/all_avaible_spawnpods = list(locate(/obj/effect/mob_spawn/human/slavers))
-	var/obj/effect/mob_spawn/human/slavers/one_is_spawnpods = pick(all_avaible_spawnpods)
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		slaver.slaver_outfit = outfit
 		slaver.send_to_spawnpoint = FALSE
-		if(one_is_spawnpods.first_time)
+		if(slavers_pay_deal())
 			print_command_report(src.announce_text, "Central Command")
-			var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			cargo_bank.credit(50000, ECON_MISC, memo = "Сделка с работорговцами")
-			for(var/obj/effect/mob_spawn/human/slavers/S in all_avaible_spawnpods)
-				S.first_time = FALSE
 	slaver.equip_outfit = FALSE
 	antagonist_type = slaver
 	return ..()

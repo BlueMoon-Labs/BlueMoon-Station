@@ -169,7 +169,7 @@
 				GLOB.slavers_credits_balance += points_awarded
 			else
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-				D?.credit(points_awarded, ECON_MISC, memo = "Исследовательская сессия")
+				D?.credit(points_awarded, ECON_WORK, memo = "Исследовательская сессия")
 	announce_climax_result("Результат сеанса в [point_type == POINT_TYPE_SCIENCE ? "очках исследования" : "кредитах"] — [points_awarded].", is_hidden)
 	playsound(src, 'sound/machines/chime.ogg', 30, 1, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 

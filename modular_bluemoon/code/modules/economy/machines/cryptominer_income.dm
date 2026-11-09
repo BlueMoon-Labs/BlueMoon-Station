@@ -12,9 +12,16 @@
 		crypto_paid = list()
 		crypto_paid_tick = fire_count
 	var/key = "[account.account_id]"
-	. = clamp(settings.crypto_cap_per_tick - crypto_paid[key], 0, amount)
+	. = clamp(crypto_cap_for(account) - crypto_paid[key], 0, amount)
 	if(.)
 		crypto_paid[key] += .
+
+/// Потолок майнинга за тик на счёт: бюджеты Deep Space и Таркова живут майнингом и экспортом без грантов станции, им потолок выше.
+/datum/controller/subsystem/economy/proc/crypto_cap_for(datum/bank_account/account)
+	var/datum/bank_account/department/budget = account
+	if(istype(budget) && (budget.department_id in list(ACCOUNT_DS, ACCOUNT_TAR)))
+		return settings.crypto_cap_offstation_per_tick
+	return settings.crypto_cap_per_tick
 
 /// Зачисление дохода майнера: в бюджет отдела целиком, на личный счёт - с налогом. Возвращает зачисленное до налога.
 /datum/controller/subsystem/economy/proc/pay_crypto(datum/bank_account/account, amount, obj/machinery/miner)
@@ -27,4 +34,4 @@
 
 /// Строка осмотра майнера о потолке дохода.
 /proc/econ_crypto_cap_text()
-	return "Все майнеры вместе зачисляют на один счёт не больше [SSeconomy.settings.crypto_cap_per_tick] кр. за [round(SSeconomy.wait / (1 MINUTES), 1)] мин., остальное намайненное сгорает. С дохода на личный счёт удерживается налог."
+	return "Все майнеры вместе зачисляют на один счёт не больше [SSeconomy.settings.crypto_cap_per_tick] кр. за [round(SSeconomy.wait / (1 MINUTES), 1)] мин. (на бюджет Deep Space или Таркова - [SSeconomy.settings.crypto_cap_offstation_per_tick] кр.), остальное намайненное сгорает. С дохода на личный счёт удерживается налог."

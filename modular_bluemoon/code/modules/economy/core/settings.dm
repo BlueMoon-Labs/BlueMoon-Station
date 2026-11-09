@@ -38,6 +38,9 @@
 	/// Через сколько минут после истечения или снятия цели без заказа можно поставить новую
 	var/saving_goal_cooldown_minutes = 30
 	var/max_wage_bonus = 50
+	/// Сколько премий из бюджетов один человек получает за час от других глав и сколько глава выписывает себе, лимиты раздельные
+	var/bonus_cap_hour = 3000
+	var/bonus_self_cap_hour = 2500
 	var/dormant_after_minutes = 10
 	var/state_rich_per_capita = 7500
 	var/state_poor_per_capita = 1250
@@ -51,6 +54,8 @@
 	var/slot_jackpot_share = 5
 	/// Джекпот автоматов сектора не меньше этого: недостающее доплачивает NT
 	var/slot_jackpot_floor = 500
+	/// Стартовый банк выигрышей, который NT кладёт в автомат с карты станции при первой ставке смены
+	var/slot_bank_seed = 300
 	/// Лотерея: цена билета, сколько билетов в одни руки, сколько минут идёт продажа, доля NT с продаж в процентах
 	var/lottery_ticket_price = 100
 	var/lottery_tickets_per_account = 10
@@ -64,6 +69,7 @@
 	var/quirk_debt_wage_share = 50
 	/// Сколько все криптомайнеры вместе зачисляют на один счёт за тик экономики; остальное намайненное сгорает
 	var/crypto_cap_per_tick = 150
+	var/crypto_cap_offstation_per_tick = 450
 	var/auto_approve_limit = 2000
 	/// Через сколько минут без ответа заявка до auto_approve_limit одобряется сама, даже если одобрить есть кому; 0 - не одобрять
 	var/auto_approve_wait_minutes = 10
@@ -187,6 +193,7 @@
 		WORK_SCI_SLIME_DISCOVERY = 10,
 		WORK_SCI_ARTIFACT = 1,
 		WORK_MINING_ORE = 2,
+		WORK_CARGO_PAPERWORK = 30,
 		WORK_SRV_DISH = 40,
 		WORK_SRV_DRINK = 30,
 		WORK_SRV_NEW_PLANT = 150,

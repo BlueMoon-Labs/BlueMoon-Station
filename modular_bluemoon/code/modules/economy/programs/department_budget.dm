@@ -132,6 +132,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"wage_floor" = settings.wage_floor,
 		"dormant_minutes" = settings.dormant_after_minutes,
 		"max_wage_bonus" = settings.max_wage_bonus,
+		"bonus_cap_hour" = settings.bonus_cap_hour,
+		"bonus_self_cap_hour" = settings.bonus_self_cap_hour,
 		"treasury_max" = settings.treasury_request_max,
 		"treasury_pending_max" = settings.treasury_requests_pending_per_department,
 		"auto_approve_limit" = settings.auto_approve_limit,
@@ -217,6 +219,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			"holder" = member.account_holder,
 			"wage" = member.wage_amount(),
 			"bonus" = member.wage_bonus,
+			"bonus_left" = member.bonus_left(econ_own_account(member, user)),
 			"owed" = member.owed_wages,
 			"frozen" = member.state == ACCOUNT_FROZEN,
 			"away" = member.state == ACCOUNT_DORMANT,
@@ -346,6 +349,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				messages[user_ref] = "Неверная сумма."
 			else if(department.account.account_balance < round(amount))
 				messages[user_ref] = "В бюджете не хватает денег."
+			else if(round(amount) > member.bonus_left(econ_own_account(member, user)))
+				messages[user_ref] = econ_own_account(member, user) ? "Себе можно выписать ещё [member.bonus_left(TRUE)] кр. в этом часе." : "[member.account_holder] может получить ещё [member.bonus_left()] кр. премий в этом часе."
 			else
 				messages[user_ref] = department.pay_bonus(member, amount, user) ? "Премия [round(amount)] кр. выписана: [member.account_holder]." : "Премия не выписана."
 		if("wage_bonus")

@@ -67,6 +67,13 @@
 /// Цена WORK_SCI_NODE платится за каждые столько очков стоимости узла
 #define ECON_NODE_POINTS_UNIT 1000
 #define WORK_MINING_ORE "mining_ore"
+#define WORK_CARGO_PAPERWORK "cargo_paperwork"
+/// Очки сложности задачи проблемного компьютера: множитель цены WORK_CARGO_PAPERWORK у снабжения и очков у науки
+#define MATH_REWARD_EASY 1
+#define MATH_REWARD_MEDIUM 2.5
+#define MATH_REWARD_HARD 5
+/// Сколько ЦК один раз за раунд переводит снабжению на выкуп у работорговцев
+#define SLAVERS_DEAL_PAYMENT 50000
 #define ECON_MANIFEST_PRINT_COOLDOWN (5 SECONDS)
 /// Каталог окон снабжения пересчитывает цены и поставщиков не чаще этого
 #define ECON_CARGO_PRICES_REFRESH (5 SECONDS)
@@ -124,6 +131,10 @@
 #define BUNDLE_SOURCE_PACK_MAX 12
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
+/// Полнотекстовый поиск каталога снабжения: с какой длины строки ищет сервер, до какой длины её режет и сколько найденных паков отдаёт окну
+#define ECON_CARGO_SEARCH_MIN 2
+#define ECON_CARGO_SEARCH_MAX 60
+#define ECON_CARGO_SEARCH_HITS_MAX 100
 #define WORK_SRV_DISH "srv_dish"
 #define WORK_SRV_DRINK "srv_drink"
 #define WORK_SRV_NEW_PLANT "srv_new_plant"

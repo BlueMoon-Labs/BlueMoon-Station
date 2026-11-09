@@ -10,6 +10,7 @@ GLOBAL_LIST_INIT(econ_work_names, list(
 	WORK_SCI_SLIME_DISCOVERY = "Новый экстракт слайма",
 	WORK_SCI_ARTIFACT = "Артефакт",
 	WORK_MINING_ORE = "Переработка руды",
+	WORK_CARGO_PAPERWORK = "Расчёты на проблемном компьютере",
 	WORK_SRV_DISH = "Блюдо",
 	WORK_SRV_DRINK = "Напиток",
 	WORK_SRV_NEW_PLANT = "Новый урожай",

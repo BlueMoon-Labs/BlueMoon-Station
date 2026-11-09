@@ -29,6 +29,7 @@ type StaffEntry = {
   holder: string;
   wage: number;
   bonus: number;
+  bonus_left: number;
   owed: number;
   frozen: BooleanLike;
   away: BooleanLike;
@@ -76,6 +77,8 @@ export type BudgetData = {
   wage_floor: number;
   dormant_minutes: number;
   max_wage_bonus: number;
+  bonus_cap_hour: number;
+  bonus_self_cap_hour: number;
   treasury_max: number;
   treasury_pending_max: number;
   auto_approve_limit: number;
@@ -383,13 +386,17 @@ const StaffRow = (props: { member: StaffEntry }) => {
           width="5em"
           value={amount}
           minValue={0}
-          maxValue={departmentBalance(data)}
+          maxValue={Math.min(departmentBalance(data), member.bonus_left)}
           onChange={(_, value) => setAmount(value)}
         />{' '}
         <Button
-          disabled={amount < 1 || !!member.frozen}
+          disabled={amount < 1 || amount > member.bonus_left || !!member.frozen}
           color={isSelf ? 'average' : undefined}
-          tooltip={isSelf ? 'Премия себе открывает дело финансового аудита' : undefined}
+          tooltip={
+            isSelf
+              ? `Премия себе открывает дело финансового аудита. В этом часе можно ещё ${member.bonus_left} кр.`
+              : `В этом часе можно ещё ${member.bonus_left} кр.`
+          }
           onClick={() => act('bonus', { number: member.number, amount })}>
           Премия
         </Button>
@@ -404,7 +411,7 @@ const StaffSection = () => {
   return (
     <NtFrame
       title="Сотрудники"
-      help={`Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до ${data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт премии не идут.`}>
+      help={`Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до ${data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт премии не идут. Один человек получает от глав не больше ${data.bonus_cap_hour} кр. премий в час, себе глава выписывает отдельно не больше ${data.bonus_self_cap_hour} кр. в час.`}>
       <Box className="NtTerm__hint" mb={1}>
         Премия себе и крупные или частые выплаты одному человеку открывают дело финансового аудита. Аудит ведут:{' '}
         {data.audit_rights}.

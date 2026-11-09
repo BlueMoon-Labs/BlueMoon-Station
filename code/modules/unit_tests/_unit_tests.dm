@@ -253,6 +253,7 @@
 #include "economy_engineering.dm"
 #include "economy_events.dm"
 #include "economy_exports.dm"
+#include "economy_farm_caps.dm"
 #include "economy_icons.dm"
 #include "economy_insider.dm"
 #include "economy_ledger.dm"

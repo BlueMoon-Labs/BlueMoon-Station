@@ -1,9 +1,5 @@
-#define MATH_REWARD_EASY  1
-#define MATH_REWARD_MEDIUM  2.5
-#define MATH_REWARD_HARD  5
 
 #define MATH_MULTIPLIER_SCIENCE  750
-#define MATH_MULTIPLIER_CARGO  500
 
 // Мини-игры
 
@@ -473,11 +469,9 @@
 			points_awarded = MATH_REWARD_MEDIUM
 		if("Hard")
 			points_awarded = MATH_REWARD_HARD
-	switch(reward_type)
-		if("Cargo")
-			points_awarded *= MATH_MULTIPLIER_CARGO
-		if("Science")
-			points_awarded *= MATH_MULTIPLIER_SCIENCE
+	var/difficulty_points = points_awarded
+	if(reward_type == "Science")
+		points_awarded *= MATH_MULTIPLIER_SCIENCE
 
 	if(reward_type == "Science" && !linked_techweb) //BLUEMOON ADD: без подключения к серверной сети наука не начисляется
 		last_result = "incorrect"
@@ -496,9 +490,8 @@
 				last_message = "Исследовательские данные были повреждены. Утеряно [points_lost] очков исследования."
 				linked_techweb.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_lost))
 			if("Cargo")
-				last_message = "Бюрократическая ошибка. Списано [points_lost] очков карго."
-				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-				D?.debit(points_lost, ECON_MISC, memo = "Бюрократическая ошибка")
+				last_points = 0
+				last_message = "Бюрократическая ошибка: расчёт не принят, задача потрачена."
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
 		if(difficulty == "Easy")
 			to_chat(user, span_warning("Вы чувствуете грусть, провалив такую простую задачу..."))
@@ -512,10 +505,10 @@
 			last_message = "Данные корректны! Начислено [points_awarded] очков исследования."
 			linked_techweb.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
 		if("Cargo")
-			last_message = "Данные корректны! Начислено [points_awarded] очков карго."
-			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			D?.credit(points_awarded, ECON_MISC, memo = "Решённая задача")
-	say("Задача решена верно! Начислено [points_awarded] очков.")
+			points_awarded = SSeconomy.record_work(ACCOUNT_CAR, WORK_CARGO_PAPERWORK, difficulty_points, user)
+			last_points = points_awarded
+			last_message = "Данные корректны! Бюджету снабжения начислено [points_awarded] кр."
+	say("Задача решена верно! Начислено [points_awarded] [reward_type == "Cargo" ? "кр." : "очков"].")
 	playsound(src, 'sound/machines/chime.ogg', 30, 1)
 
 // Subtypes
@@ -548,6 +541,11 @@
 
 /obj/item/computermath/cargo/attack_self(mob/user)
 	ui_interact(user)
+
+/obj/item/computermath/cargo/examine(mob/user)
+	. = ..()
+	var/price = SSeconomy.settings.work_prices[WORK_CARGO_PAPERWORK]
+	. += span_notice("Верный расчёт приносит бюджету снабжения [price * MATH_REWARD_EASY], [price * MATH_REWARD_MEDIUM] или [price * MATH_REWARD_HARD] кр. по сложности, решившему - премию за работу. Ошибка денег не стоит, но задача сгорает. Новая задача появляется раз в [DisplayTimeText(SSshuttle.problem_computer_charge_time)], в запасе не больше [SSshuttle.problem_computer_max_charges].")
 
 /obj/item/computermath/cargo/process()
 	var/old_charge_count = charge_count

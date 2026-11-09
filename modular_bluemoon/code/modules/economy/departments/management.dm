@@ -28,13 +28,37 @@
 /datum/economy_department/proc/is_staff_account(datum/bank_account/member)
 	return member && member.department_id == id && !member.offstation && (member in SSeconomy.bank_accounts)
 
+/datum/bank_account
+	var/bonus_window_start = 0
+	/// Премии из бюджетов за текущий час: от других и выписанные получателем самому себе
+	var/bonus_in_window = 0
+	var/self_bonus_in_window = 0
+
+/// Сколько премий этот счёт ещё может получить в текущем часе: от других глав или от самого себя.
+/datum/bank_account/proc/bonus_left(self_paid = FALSE)
+	if(world.time - bonus_window_start >= 1 HOURS)
+		bonus_window_start = world.time
+		bonus_in_window = 0
+		self_bonus_in_window = 0
+	var/datum/economy_settings/settings = SSeconomy.settings
+	if(self_paid)
+		return max(settings.bonus_self_cap_hour - self_bonus_in_window, 0)
+	return max(settings.bonus_cap_hour - bonus_in_window, 0)
+
 /datum/economy_department/proc/pay_bonus(datum/bank_account/member, amount, mob/living/user)
 	if(!can_manage(user) || !is_staff_account(member) || member.state == ACCOUNT_FROZEN || !isnum(amount) || amount < 1)
 		return FALSE
 	amount = round(amount)
+	var/self_paid = econ_own_account(member, user)
+	if(amount > member.bonus_left(self_paid))
+		return FALSE
 	var/net = SSeconomy.pay_personal(account, member, amount, ECON_BONUS, user, "Премия: [name]")
 	if(net <= 0)
 		return FALSE
+	if(self_paid)
+		member.self_bonus_in_window += amount
+	else
+		member.bonus_in_window += amount
 	log_econ("[key_name(user)] выписал премию [amount] кр. из бюджета [name] счёту [member.account_holder] №[member.account_id]")
 	member.bank_card_talk("Премия от главы отдела \"[name]\": [amount] кр. до налога, на руки [net] кр.", balloon = "премия +[net] кр")
 	return TRUE

@@ -41,6 +41,8 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	unique_icon = TRUE
 	/// Банк обычных выигрышей: копится из доли ставок, выигрыш не больше банка
 	var/prize_bank = 0
+	/// Автомат с карты станции получает от NT стартовый банк при первой ставке смены
+	var/bank_seed_due = FALSE
 	/// Дробные части доли NT и джекпота, ещё не учтённые
 	var/house_remainder = 0
 	var/plays = 0
@@ -96,6 +98,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 
 /obj/machinery/computer/slot_machine/Initialize(mapload)
 	. = ..()
+	bank_seed_due = mapload
 	INVOKE_ASYNC(src, PROC_REF(toggle_reel_spin), TRUE)//The reels won't spin unless we activate them
 
 	var/list/reel = reels[1]
@@ -117,6 +120,8 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	. = ..()
 	var/datum/economy_settings/settings = SSeconomy.settings
 	. += span_notice("С каждой платной ставки [settings.slot_house_edge]% забирает NT, [settings.slot_jackpot_share]% идёт в общий джекпот автоматов сектора, [slot_bank_share()]% - в банк выигрышей. Выигрыш не больше банка. Джекпот одинаков на всех автоматах, переходит в следующую смену и не бывает меньше [settings.slot_jackpot_floor] кр.")
+	if(bank_seed_due && SSeconomy.settings.slot_bank_seed > 0)
+		. += span_notice("С первой ставкой смены NT положит в банк выигрышей [SSeconomy.settings.slot_bank_seed] кр.")
 	. += span_notice("Сейчас в банке [round(prize_bank)] кр., джекпот сектора [SSmarket.slot_jackpot_payout()] кр. Внести с карты можно до [SSeconomy.settings.slot_card_deposit_max] кр. за раз.")
 
 /obj/machinery/computer/slot_machine/proc/slot_bank_share()
@@ -137,7 +142,16 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	if(house > 0)
 		SSeconomy.move(SSeconomy.cash_account, null, house, ECON_GAMBLING, user, "Доля NT со ставки")
 	SSmarket.add_slot_jackpot(jackpot_part)
+	if(bank_seed_due)
+		seed_bank()
 	prize_bank += amount - house - jackpot_part
+
+/// Стартовый банк выигрышей от NT: иначе первые выигрыши смены упираются в пустой банк.
+/obj/machinery/computer/slot_machine/proc/seed_bank()
+	bank_seed_due = FALSE
+	var/seed = SSeconomy.settings.slot_bank_seed
+	if(seed > 0 && SSeconomy.move(null, SSeconomy.cash_account, seed, ECON_GAMBLING_WIN, memo = "Стартовый банк игрового автомата"))
+		prize_bank += seed
 
 /// Внесение с ID-карты в руке или на поясе: деньги со счёта уходят в наличные автомата.
 /obj/machinery/computer/slot_machine/proc/card_deposit(mob/living/user, amount)

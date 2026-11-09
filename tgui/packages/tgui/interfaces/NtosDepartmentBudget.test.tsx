@@ -26,6 +26,8 @@ const base: BudgetData = {
   wage_floor: 30,
   dormant_minutes: 10,
   max_wage_bonus: 50,
+  bonus_cap_hour: 3000,
+  bonus_self_cap_hour: 2500,
   treasury_max: 5000,
   treasury_pending_max: 2,
   auto_approve_limit: 1000,
@@ -75,8 +77,8 @@ const base: BudgetData = {
   work_log: [{ time: '12:00:00', type: 'Реанимация', amount: 400, performer: 'Анна' }],
   register_share: 50,
   staff: [
-    { number: 111, holder: 'Глав Врач', wage: 300, bonus: 0, owed: 0, frozen: 0, away: 0 },
-    { number: 222, holder: 'Анна', wage: 150, bonus: 10, owed: 40, frozen: 0, away: 0 },
+    { number: 111, holder: 'Глав Врач', wage: 300, bonus: 0, bonus_left: 2500, owed: 0, frozen: 0, away: 0 },
+    { number: 222, holder: 'Анна', wage: 150, bonus: 10, bonus_left: 3000, owed: 40, frozen: 0, away: 0 },
   ],
   owed_wages: 40,
   is_science: 0,
@@ -176,6 +178,20 @@ describe('NtosDepartmentBudget', () => {
     expect(sent(topic, 'treasury_request')).toEqual([{ amount: 700, reason: 'ремонт' }]);
     fireEvent.click(getByText('Накладная: Медицина'));
     expect(sent(topic, 'print_manifest')).toHaveLength(1);
+  });
+
+  test('премия не больше часового лимита сотрудника', () => {
+    const staff = [
+      { ...base.staff![0], bonus_left: 0 },
+      { ...base.staff![1], bonus_left: 100 },
+    ];
+    const { container, getAllByText, topic } = setup({ staff });
+    const inputs = container.querySelectorAll('input');
+    commit(inputs[1], '50');
+    expect(getAllByText('Премия')[1].closest('.Button')?.className).toContain('Button--disabled');
+    commit(inputs[3], '300');
+    fireEvent.click(getAllByText('Премия')[2]);
+    expect(sent(topic, 'bonus')).toEqual([{ number: 222, amount: 100 }]);
   });
 
   test('надбавка в поле обновляется, когда её поменял другой', () => {
