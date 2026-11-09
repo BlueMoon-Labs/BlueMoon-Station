@@ -769,3 +769,22 @@
 	SSmarket.tick_bundles()
 	TEST_ASSERT(!(other in SSmarket.bundles), "Просроченная пачка снята")
 	TEST_ASSERT(!SSshuttle.supply_packs[/datum/supply_pack/bundle], "Тип пачки не попал в каталог")
+
+/// Непринятое предложение аренды шаттла снимается с концом события: по нему не сдать шаттл и консоль не застревает на «передан ЦК».
+/datum/unit_test/economy_ui_cargo/shuttle_loan_expires/Run()
+	var/datum/round_event/shuttle_loan/older = new(FALSE)
+	var/datum/round_event/shuttle_loan/newer = new(FALSE)
+	SSdirector.running -= older
+	SSdirector.running -= newer
+	SSshuttle.shuttle_loan = newer
+	older.end()
+	TEST_ASSERT_EQUAL(SSshuttle.shuttle_loan, newer, "Конец старого события снял чужое предложение")
+	newer.end()
+	TEST_ASSERT_NULL(SSshuttle.shuttle_loan, "Предложение аренды осталось после конца события")
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	press(technician, console, "loan")
+	TEST_ASSERT(!newer.dispatched, "Шаттл сдан по истёкшему предложению")
+	TEST_ASSERT_NOTEQUAL(econ_cargo_shuttle_data()["state"], "loaned", "Консоль показывает шаттл в аренде")
+	qdel(older)
+	qdel(newer)
