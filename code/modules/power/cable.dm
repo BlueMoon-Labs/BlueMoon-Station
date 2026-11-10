@@ -466,33 +466,21 @@ GLOBAL_LIST_EMPTY(cable_cut_ends)
 // cut the cable's powernet at this cable and updates the powergrid
 /obj/structure/cable/proc/cut_cable_from_powernet(remove=TRUE)
 	var/turf/T1 = loc
-	var/list/P_list
 	if(!T1)
 		return
-	if(d1)
-		T1 = get_step(T1, d1)
-		P_list = power_list(T1, src, turn(d1,180),0,cable_only = 1)	// what adjacently joins on to cut cable...
 
-	P_list += power_list(loc, src, d1, 0, cable_only = 1)//... and on turf
-
-
-	if(P_list.len == 0)//if nothing in both list, then the cable was a lone cable, just delete it and its powernet
-		powernet.remove_cable(src)
-
-		for(var/obj/machinery/power/P in T1)//check if it was powering a machine
-			if(!P.connect_to_network()) //can't find a node cable on a the turf to connect to
-				P.disconnect_from_network() //remove from current network (and delete powernet)
-		return
-
-	// Все соседи с обеих сторон: после разреза они либо ещё связаны, либо лежат в разных кусках сети.
+	// Все соседи, даже единственный: соседний кабель мог уйти в этом же тике раньше, и тогда этот конец - единственный у своего куска.
+	var/has_ends = FALSE
 	for(var/obj/structure/cable/cut_end in get_connections())
 		GLOB.cable_cut_ends += cut_end
+		has_ends = TRUE
 	// remove the cut cable from its turf and powernet, so that it doesn't get count in propagate_network worklist
 	if(remove)
 		moveToNullspace()
 	powernet.remove_cable(src) //remove the cut cable from its powernet
 
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_cable_cuts)), 0, TIMER_UNIQUE)
+	if(has_ends)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_cable_cuts)), 0, TIMER_UNIQUE)
 
 	// Disconnect machines connected to nodes
 	if(d1 == 0) // if we cut a node (O-X) cable
