@@ -121,10 +121,7 @@
 	var/list/portable_second = cam.get_visible_turfs()
 	TEST_ASSERT(portable_first != portable_second, "A portable camera (non-turf loc) must not cache")
 
-// --- propagate_network на ассоц-списках + дедуп отложенной пересборки ---
-//
-// Взрыв с резкой магистрали давал серию полных BFS по уже перестроенному
-// фрагменту в одном тике SStimer; см. auto_propogate_cut_cable и power.dm.
+// --- propagate_network на ассоц-списках ---
 
 /datum/unit_test/propagate_network_dedup/Run()
 	var/turf/T0 = run_loc_floor_bottom_left
@@ -137,15 +134,11 @@
 	TEST_ASSERT_EQUAL(cable_south.powernet, PN, "propagate_network must assign the seed cable")
 	TEST_ASSERT_EQUAL(cable_north.powernet, PN, "propagate_network must reach the adjacent connected cable")
 
-	//фрагмент, перестроенный в этом же тике, второй отложенный колбек не трогает
-	cable_south.auto_propogate_cut_cable(cable_north)
-	TEST_ASSERT_EQUAL(cable_north.powernet, PN, "A fragment rebuilt this tick must not be rebuilt again")
-
-	//устаревший фрагмент пересобирается в новый повернет целиком
-	PN.created_at = world.time - 10
-	cable_south.auto_propogate_cut_cable(cable_north)
-	TEST_ASSERT(cable_north.powernet != PN, "A stale fragment must be rebuilt into a new powernet")
-	TEST_ASSERT_EQUAL(cable_south.powernet, cable_north.powernet, "Both cables must land in the same new powernet")
+	var/datum/powernet/rebuilt = new()
+	propagate_network(cable_north, rebuilt)
+	TEST_ASSERT_EQUAL(cable_south.powernet, rebuilt, "A rebuild must move every connected cable")
+	TEST_ASSERT_EQUAL(length(rebuilt.cables), 2, "The rebuilt powernet must hold both cables")
+	TEST_ASSERT(QDELETED(PN), "The emptied old powernet must be deleted")
 
 // --- Кольцо медленной работы SStick_spikes ---
 //

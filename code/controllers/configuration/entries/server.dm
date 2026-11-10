@@ -53,6 +53,15 @@
 	min_val = 0 //oranges warned us
 	integer = FALSE
 
+/datum/config_entry/number/mc_background_tick_budget
+	default = MC_BACKGROUND_TICK_BUDGET_DEFAULT
+	min_val = 0
+	max_val = 100
+	integer = FALSE
+
+/datum/config_entry/flag/mc_pace_passes
+	default = TRUE
+
 /datum/config_entry/flag/usewhitelist
 
 /datum/config_entry/string/hostedby

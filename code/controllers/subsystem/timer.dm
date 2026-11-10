@@ -62,7 +62,10 @@ SUBSYSTEM_DEF(timer)
 	/// List of buckets, each bucket holds every timer that has to run that byond tick
 	var/list/bucket_list = list()
 	/// List of all active timers associated to their timer ID (for easy lookup)
-	var/list/timer_id_dict = list()
+	/// Ключи - числа: строка-id от семи знаков стопорила движок на каждом ~981-м таймере.
+	var/alist/timer_id_dict = alist()
+	/// Следующий id останавливаемого таймера.
+	var/next_timer_id = 1
 	/// Special timers that run in real-time, not BYOND time; these are more expensive to run and maintain
 	var/list/clienttime_timers = list()
 	/// Contains the last time that a timer's callback was invoked, or the last tick the SS fired if no timers are being processed
@@ -542,7 +545,9 @@ SUBSYSTEM_DEF(timer)
 /datum/controller/subsystem/timer/Recover()
 	second_queue |= SStimer.second_queue
 	hashes |= SStimer.hashes
-	timer_id_dict |= SStimer.timer_id_dict
+	for(var/old_id in SStimer.timer_id_dict)
+		timer_id_dict[old_id] = SStimer.timer_id_dict[old_id]
+	next_timer_id = max(next_timer_id, SStimer.next_timer_id)
 	bucket_list |= SStimer.bucket_list
 
 /**
@@ -599,7 +604,6 @@ SUBSYSTEM_DEF(timer)
 	var/in_timer_clienttime_queue = FALSE
 
 /datum/timedevent/New(datum/callback/callBack, wait, flags, hash, source)
-	var/static/nextid = 1
 	id = TIMER_ID_NULL
 	src.callBack = callBack
 	src.wait = wait
@@ -616,11 +620,13 @@ SUBSYSTEM_DEF(timer)
 
 	// Generate ID for the timer if the timer is stoppable, include in the timer id dictionary
 	if (flags & TIMER_STOPPABLE)
-		id = num2text(nextid, 100)
+		var/nextid = SStimer.next_timer_id
+		id = nextid
 		if (nextid >= SHORT_REAL_LIMIT)
 			nextid += min(1, 2 ** round(nextid / SHORT_REAL_LIMIT))
 		else
 			nextid++
+		SStimer.next_timer_id = nextid
 		SStimer.timer_id_dict[id] = src
 
 	if ((timeToRun < world.time || timeToRun < SStimer.head_offset) && !(flags & TIMER_CLIENT_TIME))
@@ -878,7 +884,6 @@ SUBSYSTEM_DEF(timer)
 	if (istype(id, /datum/timedevent))
 		qdel(id)
 		return TRUE
-	//id is string
 	var/datum/timedevent/timer = SStimer.timer_id_dict[id]
 	if (timer && !timer.spent)
 		qdel(timer)
@@ -899,7 +904,6 @@ SUBSYSTEM_DEF(timer)
 	if (istype(id, /datum/timedevent))
 		var/datum/timedevent/timer = id
 		return timer.timeToRun - world.time
-	//id is string
 	var/datum/timedevent/timer = SStimer.timer_id_dict[id]
 	return (timer && !timer.spent) ? timer.timeToRun - world.time : null
 

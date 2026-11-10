@@ -46,23 +46,19 @@
 	if(!length(targets))
 		return
 	if(M.forced_hallucination)
-		for(var/mob/living/carbon/C as anything in targets)
-			new M.forced_hallucination(C, TRUE)
+		INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, M.forced_hallucination)
 		return
 
 	switch(rand(1,4))
 		if(1) //same sound for everyone
 			var/sound = pick("airlock","airlock_pry","console","explosion","far_explosion","mech","glass","alarm","beepsky","mech","wall_decon","door_hack","tesla","seth")
-			for(var/mob/living/carbon/C as anything in targets)
-				new /datum/hallucination/sounds(C, TRUE, sound)
+			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/sounds, sound)
 		if(2)
 			var/weirdsound = pick("phone","hallelujah","highlander","hyperspace","game_over","creepy","tesla")
-			for(var/mob/living/carbon/C as anything in targets)
-				new /datum/hallucination/weird_sounds(C, TRUE, weirdsound)
+			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/weird_sounds, weirdsound)
 		if(3)
 			var/stationmessage = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
-			for(var/mob/living/carbon/C as anything in targets)
-				new /datum/hallucination/stationmessage(C, TRUE, stationmessage)
+			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/stationmessage, stationmessage)
 		if(4 to 6)
 			var/picked_hallucination = pick(	/datum/hallucination/bolts,
 												/datum/hallucination/chat,
@@ -75,8 +71,19 @@
 												/datum/hallucination/death,
 												/datum/hallucination/delusion,
 												/datum/hallucination/oh_yeah)
-			for(var/mob/living/carbon/C as anything in targets)
-				new picked_hallucination(C, TRUE)
+			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, picked_hallucination)
+
+/// Галлюцинация каждой цели стоит до десятка мс (картинки на всех людей станции, поиск дверей вокруг):
+/// сотня целей одним куском давала до 1.2 с стоп-кадра. Цели обходятся кусками по тикам.
+/datum/round_event/mass_hallucination/proc/hallucinate_targets(list/targets, hallucination_type, hallucination_arg)
+	for(var/mob/living/carbon/C as anything in targets)
+		if(QDELETED(C) || !C.client)
+			continue
+		if(isnull(hallucination_arg))
+			new hallucination_type(C, TRUE)
+		else
+			new hallucination_type(C, TRUE, hallucination_arg)
+		CHECK_TICK
 
 /datum/event_admin_setup/mass_hallucination
 	/// For admins, what hallucination did we pick

@@ -445,47 +445,42 @@ By design, d1 is the smallest direction and d2 is the highest
 		if(PN.is_empty()) //can happen with machines made nodeless when smoothing cables
 			qdel(PN)
 
-/obj/structure/cable/proc/auto_propogate_cut_cable(obj/O)
-	if(O && !QDELETED(O))
-		// Массовая резка (взрыв/сингуло) ставит по отложенному колбеку на каждый
-		// кабель, но выжившие концы часто лежат в ОДНОМ фрагменте: первый колбек
-		// перестраивает его целиком, остальным пересборка не нужна. Без этого
-		// гейта взрыв давал серию полных BFS по уже перестроенной сети в одном
-		// тике SStimer (~200мс каждый на станционной сетке).
-		var/obj/structure/cable/cut_end = O //P_list собирается с cable_only = 1
-		if(istype(cut_end) && cut_end.powernet && cut_end.powernet.created_at == world.time)
-			return
-		var/datum/powernet/newPN = new()// creates a new powernet...
-		propagate_network(O, newPN)//... and propagates it to the other side of the cable
+/// Концы разрезанных кабелей ждут проверки на разрыв сети: вся резка тика (взрыв, сингуло) разбирается одним колбеком.
+GLOBAL_LIST_EMPTY(cable_cut_ends)
+
+/proc/process_cable_cuts()
+	var/list/cut_ends = GLOB.cable_cut_ends
+	GLOB.cable_cut_ends = list()
+	var/list/ends_by_net = list()
+	for(var/obj/structure/cable/cut_end as anything in cut_ends)
+		if(QDELETED(cut_end) || !cut_end.powernet || !isturf(cut_end.loc))
+			continue
+		var/list/net_ends = ends_by_net[cut_end.powernet]
+		if(!net_ends)
+			ends_by_net[cut_end.powernet] = net_ends = list()
+		net_ends += cut_end
+	for(var/datum/powernet/net as anything in ends_by_net)
+		if(!QDELETED(net))
+			split_powernet_at(net, ends_by_net[net])
 
 // cut the cable's powernet at this cable and updates the powergrid
 /obj/structure/cable/proc/cut_cable_from_powernet(remove=TRUE)
 	var/turf/T1 = loc
-	var/list/P_list
 	if(!T1)
 		return
-	if(d1)
-		T1 = get_step(T1, d1)
-		P_list = power_list(T1, src, turn(d1,180),0,cable_only = 1)	// what adjacently joins on to cut cable...
 
-	P_list += power_list(loc, src, d1, 0, cable_only = 1)//... and on turf
-
-
-	if(P_list.len == 0)//if nothing in both list, then the cable was a lone cable, just delete it and its powernet
-		powernet.remove_cable(src)
-
-		for(var/obj/machinery/power/P in T1)//check if it was powering a machine
-			if(!P.connect_to_network()) //can't find a node cable on a the turf to connect to
-				P.disconnect_from_network() //remove from current network (and delete powernet)
-		return
-
-	var/obj/O = P_list[1]
+	// Все соседи, даже единственный: соседний кабель мог уйти в этом же тике раньше, и тогда этот конец - единственный у своего куска.
+	var/has_ends = FALSE
+	for(var/obj/structure/cable/cut_end in get_connections())
+		GLOB.cable_cut_ends += cut_end
+		has_ends = TRUE
 	// remove the cut cable from its turf and powernet, so that it doesn't get count in propagate_network worklist
 	if(remove)
 		moveToNullspace()
 	powernet.remove_cable(src) //remove the cut cable from its powernet
 
-	addtimer(CALLBACK(O, PROC_REF(auto_propogate_cut_cable), O), 0) //so we don't rebuild the network X times when singulo/explosion destroys a line of X cables
+	if(has_ends)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_cable_cuts)), 0, TIMER_UNIQUE)
 
 	// Disconnect machines connected to nodes
 	if(d1 == 0) // if we cut a node (O-X) cable

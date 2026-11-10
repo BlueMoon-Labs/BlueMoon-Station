@@ -3738,10 +3738,12 @@
 				if(!prefs.load_character(new_slot, bypass_cooldown = TRUE))
 					prefs.default_slot = old_slot
 					return
+				// Номер слота load_character уже записал в файл, полная запись префов уходит отдельным тиком.
+				prefs.queue_save_pref(1, TRUE)
 			else
 				if(!prefs.create_character(new_slot))
 					return
-			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			prefs.parent?.tgui_panel?.emotes_send_list()
 			stop_sound_preview()
 			save_notice = save_previous ? "[previous_name]: сохранён автоматически при переключении." : null

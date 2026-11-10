@@ -63,6 +63,9 @@ What are the archived variables for?
 	/// mutation_rev на момент последнего снимка архива: равенство означает, что
 	/// Copy() дал бы тот же список, и аллокацию можно не делать.
 	var/tmp/archive_mutation_rev = -1
+	/// mutation_rev и поколение индекса реакций, на которых react() не нашёл ни одного кандидата: та же смесь даст тот же пустой вызов.
+	var/tmp/react_idle_rev = -1
+	var/tmp/react_idle_index = 0
 
 /datum/gas_mixture/New(volume)
 	if (!isnull(volume))

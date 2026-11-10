@@ -17,9 +17,24 @@
 /// Индексы записи statpanel_sent_icons: сам URL и слабая ссылка на атом, которому он принадлежит.
 #define STATPANEL_ICON_ENTRY_URL 1
 #define STATPANEL_ICON_ENTRY_OWNER 2
-/// Атомам с большим числом оверлеев иконку не флаттеним: один getFlatIcon одетого человека
-/// (30-80 оверлеев) блокирует тик на 150-250мс Blend'ов. Таким отдаётся базовая иконка.
+/// Атомам с большим числом оверлеев иконку не флаттеним (одетый человек - 30-80 оверлеев),
+/// им отдаётся базовая иконка. Граница осталась с тех пор, как флаттен шёл в DM.
 #define STATPANEL_MAX_FLAT_OVERLAYS 12
+/// Иконки осмотренного турфа рисует IconForge в своём потоке; сюда он складывает png до регистрации ассетом.
+#define STATPANEL_ICON_DIR "data/statpanel_icons/"
+/// Сколько заданий IconForge может считаться одновременно; остальные иконки ждут следующего фаера.
+#define STATPANEL_ICON_JOBS_MAX 16
+/// Задание, не вернувшееся за это время, считается упавшим, иконка рисуется по-старому.
+#define STATPANEL_ICON_JOB_TIMEOUT (10 SECONDS)
+/// Сколько готовых иконок (описание -> ассет) помнить.
+#define STATPANEL_ICON_CACHE_MAX 2048
+/// statpanel_icon_spec(): рисовать нечего (как пустой результат icon2html).
+#define STATPANEL_ICON_NOTHING "nothing"
+/// request_statpanel_icon(): все слоты заданий заняты, иконку надо запросить позже.
+#define STATPANEL_ICON_BUSY "busy"
+/// Индексы statpanel_dmi_info().
+#define STATPANEL_DMI_SIZE 1
+#define STATPANEL_DMI_STATES 2
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
@@ -71,8 +86,30 @@ SUBSYSTEM_DEF(statpanels)
 	var/client_stats_refresh_counter = 0
 	var/list/ping_run = list()
 	var/list/icon_run = list()
+	/// "путь DMI" -> метаданные из statpanel_dmi_info(); пустой список - файл не читается.
+	var/list/dmi_info_cache = list()
+	/// md5 описания иконки -> /datum/statpanel_icon_job, который её сейчас считает.
+	var/list/icon_jobs = list()
+	/// md5 описания иконки -> имя готового ассета.
+	var/list/icon_assets = list()
+	/// Были задания с последней чистки кэша DMI в rust.
+	var/icon_cache_dirty = FALSE
+
+/// Иконка, которую IconForge считает в своём потоке, и клиенты, которые её ждут.
+/datum/statpanel_icon_job
+	var/key
+	var/job_id
+	var/started_at
+	/// list(list(клиент, weakref атома), ...)
+	var/list/waiters = list()
+
+/datum/statpanel_icon_job/New(key, job_id)
+	src.key = key
+	src.job_id = job_id
+	started_at = world.time
 
 /datum/controller/subsystem/statpanels/Initialize(start_timeofday)
+	fdel(STATPANEL_ICON_DIR)
 	build_global_slow_payload()
 	..()
 
@@ -400,6 +437,8 @@ SUBSYSTEM_DEF(statpanels)
 			return
 
 	// --- Progressive icon generation (resumable via icon_run) ---
+	if(poll_icon_jobs())
+		return
 	var/queued_clients = length(icon_run)
 	var/per_client_budget = queued_clients ? max(round(icon_budget_per_tick / queued_clients), 1) : icon_budget_per_tick
 	while(length(icon_run))
@@ -422,26 +461,17 @@ SUBSYSTEM_DEF(statpanels)
 			var/ref = REF(A)
 			if(statpanel_icon_already_sent(C.statpanel_sent_icons, ref, A))
 				continue
-			var/icon_url
-			var/overlay_count = length(A.overlays)
-			if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
-				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
-			else
-				icon_url = icon2html(A, C, sourceonly=TRUE)
+			var/icon_url = request_statpanel_icon(C, A)
+			if(icon_url == STATPANEL_ICON_BUSY)
+				pending += A
+				break
 			if(icon_url)
 				cache_sent_icon(C, ref, icon_url, A)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
-			// Бюджет в штуках не ограничивает время: тик-чек после каждой сгенерированной иконки,
-			// иначе пачка дорогих флаттенов складывается в сотни мс одним тиком
 			if(MC_TICK_CHECK)
 				break
-		if(length(batch))
-			var/batch_payload = json_encode(batch)
-			// Книга недатумных аллокаций: пачка иконок осмотренного турфа - самая толстая
-			// разовая нагрузка статбраузера, и в ней сидят base64 самих иконок.
-			note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(batch_payload))
-			C << output("[url_encode(batch_payload)];", "statbrowser:update_turf_icons")
+		send_turf_icon_batch(C, batch)
 		if(!length(pending))
 			icon_queue -= C
 		if(MC_TICK_CHECK)
@@ -477,6 +507,117 @@ SUBSYSTEM_DEF(statpanels)
 	if(overflow > 0)
 		C.statpanel_sent_icons.Cut(1, overflow + 1)
 
+/datum/controller/subsystem/statpanels/proc/send_turf_icon_batch(client/C, list/batch)
+	if(!length(batch))
+		return
+	var/batch_payload = json_encode(batch)
+	// Книга недатумных аллокаций: пачка иконок осмотренного турфа - самая толстая
+	// разовая нагрузка статбраузера, и в ней сидят base64 самих иконок.
+	note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(batch_payload))
+	C << output("[url_encode(batch_payload)];", "statbrowser:update_turf_icons")
+
+/**
+ * URL иконки атома для панели осмотренного турфа.
+ *
+ * Готовая иконка отдаётся сразу. Новую считает IconForge в своём потоке, и тогда возвращается
+ * null: картинку клиенту отправит poll_icon_jobs(), когда задание закончится. STATPANEL_ICON_BUSY -
+ * все слоты заданий заняты.
+ */
+/datum/controller/subsystem/statpanels/proc/request_statpanel_icon(client/C, atom/A)
+	var/spec = statpanel_icon_spec(A)
+	if(isnull(spec))
+		return legacy_statpanel_icon(C, A)
+	if(spec == STATPANEL_ICON_NOTHING)
+		return null
+	var/key = md5(json_encode(spec))
+	var/asset_name = icon_assets[key]
+	if(asset_name && SSassets.cache[asset_name])
+		SSassets.transport.send_assets(C, asset_name)
+		return SSassets.transport.get_asset_url(asset_name)
+	var/datum/statpanel_icon_job/job = icon_jobs[key]
+	if(!job)
+		if(length(icon_jobs) >= STATPANEL_ICON_JOBS_MAX)
+			return STATPANEL_ICON_BUSY
+		job = new(key, rustg_iconforge_generate_async(STATPANEL_ICON_DIR, "sp_[key]", json_encode(list("s" = spec)), FALSE, FALSE, TRUE))
+		icon_jobs[key] = job
+		icon_cache_dirty = TRUE
+	job.waiters += list(list(C, WEAKREF(A)))
+	return null
+
+/// Старый путь - иконку рисует DM. Только для рантайм-иконок, которых нет в DMI на диске, и для
+/// упавших заданий IconForge.
+/datum/controller/subsystem/statpanels/proc/legacy_statpanel_icon(client/C, atom/A)
+	var/overlay_count = length(A.overlays)
+	if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
+		return costly_icon2html(A, C, sourceonly = TRUE)
+	return icon2html(A, C, sourceonly = TRUE)
+
+/// Забирает готовые задания IconForge и рассылает иконки ждущим клиентам. TRUE - фаер на паузе.
+/datum/controller/subsystem/statpanels/proc/poll_icon_jobs()
+	for(var/key in icon_jobs)
+		var/datum/statpanel_icon_job/job = icon_jobs[key]
+		var/result = rustg_iconforge_check(job.job_id)
+		if(result == RUSTG_JOB_NO_RESULTS_YET)
+			if(world.time - job.started_at < STATPANEL_ICON_JOB_TIMEOUT)
+				continue
+			result = null
+		icon_jobs -= key
+		finish_icon_job(job, result)
+		if(MC_TICK_CHECK)
+			return TRUE
+	// Кэш разобранных DMI в rust общий на процесс и сам не пустеет: отдаём его, когда ничего не считается.
+	if(icon_cache_dirty && !length(icon_jobs) && !SSasset_loading.sheets_realizing && !SSasset_loading.assets_generating)
+		icon_cache_dirty = FALSE
+		rustg_iconforge_cleanup()
+	return FALSE
+
+/datum/controller/subsystem/statpanels/proc/finish_icon_job(datum/statpanel_icon_job/job, result)
+	var/asset_name = register_icon_job_asset(job.key, result)
+	var/list/batches = list()
+	for(var/list/waiter as anything in job.waiters)
+		var/client/C = waiter[1]
+		var/datum/weakref/atom_ref = waiter[2]
+		var/atom/A = atom_ref.resolve()
+		if(!istype(C) || !C.statbrowser_ready || QDELETED(A))
+			continue
+		var/url
+		if(asset_name)
+			SSassets.transport.send_assets(C, asset_name)
+			url = SSassets.transport.get_asset_url(asset_name)
+		else
+			url = legacy_statpanel_icon(C, A)
+		if(!url)
+			continue
+		var/ref = REF(A)
+		cache_sent_icon(C, ref, url, A)
+		var/list/batch = batches[C]
+		if(!batch)
+			batch = list()
+			batches[C] = batch
+		batch[++batch.len] = list(ref, url)
+	for(var/client/C as anything in batches)
+		send_turf_icon_batch(C, batches[C])
+
+/// Регистрирует png задания ассетом. Имя ассета, либо null, если rust ничего не нарисовал.
+/datum/controller/subsystem/statpanels/proc/register_icon_job_asset(key, result)
+	if(!istext(result) || !findtext(result, "{", 1, 2))
+		return null
+	var/list/generated = safe_json_decode(result, null)
+	var/list/sizes = generated?["sizes"]
+	if(!length(sizes))
+		return null
+	var/png_path = "[STATPANEL_ICON_DIR]sp_[key]_[sizes[1]].png"
+	if(!fexists(png_path))
+		return null
+	var/asset_name = "statpanel_[key].png"
+	if(!SSassets.cache[asset_name])
+		SSassets.transport.register_asset(asset_name, fcopy_rsc(file(png_path)), rustg_hash_file(RUSTG_HASH_MD5, png_path))
+	fdel(png_path)
+	icon_assets[key] = asset_name
+	if(length(icon_assets) > STATPANEL_ICON_CACHE_MAX)
+		icon_assets.Cut(1, (STATPANEL_ICON_CACHE_MAX / 4) + 1)
+	return asset_name
+
 /datum/controller/subsystem/statpanels/proc/get_listedturf_overrides(client/target, turf/listed)
 	if(!target || !listed || !length(target.images))
 		return null
@@ -497,6 +638,10 @@ SUBSYSTEM_DEF(statpanels)
 	turfitems[++turfitems.len] = list("[listed]", listed_ref)
 	if(!statpanel_icon_already_sent(sent_icons, listed_ref, listed))
 		needs_icons += listed
+	var/top_obscurer_layer = null
+	for(var/atom/movable/blocker as anything in listed)
+		if((blocker.flags_1 & PREVENT_CLICK_UNDER_1) && blocker.density && (isnull(top_obscurer_layer) || blocker.layer > top_obscurer_layer))
+			top_obscurer_layer = blocker.layer
 	for(var/tc in listed)
 		var/atom/movable/turf_content = tc
 		if(QDELETED(turf_content))
@@ -507,7 +652,7 @@ SUBSYSTEM_DEF(statpanels)
 			continue
 		if(overrides && (turf_content in overrides))
 			continue
-		if(turf_content.IsObscured())
+		if(listed_content_obscured(turf_content, top_obscurer_layer))
 			continue
 		var/ref = REF(turf_content)
 		turfitems[++turfitems.len] = list("[turf_content.name]", ref)
@@ -518,6 +663,254 @@ SUBSYSTEM_DEF(statpanels)
 		"encoded" = url_encode(json_encode(turfitems)),
 		"needs_icons" = needs_icons,
 	)
+
+/// IsObscured() для вещи на осматриваемом турфе. Оригинал перебирает весь турф на каждую вещь
+/// и зовёт get_turf_pixel(), то есть icon() - холодный разбор DMI посреди фаера. Если вещь по
+/// пиксельному сдвигу заведомо остаётся на своём турфе, ответ даёт верхний слой блокеров клика.
+/datum/controller/subsystem/statpanels/proc/listed_content_obscured(atom/movable/thing, top_obscurer_layer)
+	var/list/frame = statpanel_icon_frame_size(thing.icon)
+	if(!frame)
+		return thing.IsObscured()
+	var/matrix/shift = thing.transform
+	var/offset_x = thing.pixel_x + shift.c + ((frame[1] / world.icon_size) - 1) * (world.icon_size * 0.5)
+	var/offset_y = thing.pixel_y + shift.f + ((frame[2] / world.icon_size) - 1) * (world.icon_size * 0.5)
+	if(abs(offset_x) >= world.icon_size * 0.5 || abs(offset_y) >= world.icon_size * 0.5)
+		return thing.IsObscured()
+	return !isnull(top_obscurer_layer) && top_obscurer_layer > thing.layer
+
+/// Размер кадра DMI, list(ширина, высота). null - рантайм-иконка или нечитаемый файл.
+/datum/controller/subsystem/statpanels/proc/statpanel_icon_frame_size(icon_file)
+	if(!icon_file)
+		return list(world.icon_size, world.icon_size)
+	var/list/info = statpanel_dmi_info(icon_file)
+	return info?[STATPANEL_DMI_SIZE]
+
+/**
+ * Метаданные DMI без разбора иконки в DM: rust читает заголовок файла, ответ кэшируется на файл.
+ *
+ * list(list(ширина, высота), list(стейт = число направлений)) либо null для рантайм-иконок,
+ * которые печатаются не путём к .dmi, и для файлов, которые rust не прочитал.
+ */
+/datum/controller/subsystem/statpanels/proc/statpanel_dmi_info(icon_file)
+	if(!isfile(icon_file))
+		return null
+	var/key = "[icon_file]"
+	if(copytext(key, -4) != ".dmi")
+		return null
+	var/list/cached = dmi_info_cache[key]
+	if(cached)
+		return cached.len ? cached : null
+	cached = list()
+	var/list/metadata = safe_json_decode(RUSTG_CALL(RUST_G, "dmi_read_metadata")(key), null)
+	if(islist(metadata) && isnum(metadata["width"]) && isnum(metadata["height"]) && islist(metadata["states"]))
+		var/list/state_dirs = list()
+		for(var/list/state as anything in metadata["states"])
+			if(!islist(state))
+				continue
+			var/state_name = "[state["name"]]"
+			if(!state_dirs[state_name])
+				state_dirs[state_name] = max(text2num("[state["dirs"]]"), 1)
+		cached = list(list(metadata["width"], metadata["height"]), state_dirs)
+	dmi_info_cache[key] = cached
+	return cached.len ? cached : null
+
+/**
+ * Описание иконки атома для IconForge - та же картинка, что раньше рисовали в DM icon2html()
+ * (базовый стейт) и costly_icon2html() (getFlatIcon с оверлеями). Сами пиксели считает rust в
+ * своём потоке: в DM холодный разбор DMI и Blend'ы флаттена шли одним куском на 30-270 мс.
+ *
+ * Возвращает описание спрайта, STATPANEL_ICON_NOTHING (рисовать нечего) или null - в иконке есть
+ * рантайм-/icon, и её рисует старый DM-путь.
+ */
+/datum/controller/subsystem/statpanels/proc/statpanel_icon_spec(atom/A)
+	var/overlay_count = length(A.overlays)
+	if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
+		var/list/flat = flat_icon_spec(A, A.dir, A.icon, A.icon_state, A.blend_mode)
+		if(!flat)
+			return null
+		return flat[1] || STATPANEL_ICON_NOTHING
+	if(!A.icon)
+		return STATPANEL_ICON_NOTHING
+	var/list/info = statpanel_dmi_info(A.icon)
+	if(!info)
+		return null
+	var/list/states = info[STATPANEL_DMI_STATES]
+	var/state = A.icon_state
+	if(!(state in states))
+		state = initial(A.icon_state)
+	if(!(state in states))
+		if(!("" in states))
+			return STATPANEL_ICON_NOTHING
+		state = ""
+	return list("icon_file" = "[A.icon]", "icon_state" = "[state]", "dir" = SOUTH, "frame" = 1, "transform" = list())
+
+/// Порт getFlatIcon(no_anim = TRUE) в описание для IconForge. Возвращает list(описание или null,
+/// ширина, высота); null вместо всего списка - у самого слоя рантайм-иконка.
+/datum/controller/subsystem/statpanels/proc/flat_icon_spec(image/A, defdir, deficon, defstate, defblend)
+	if(A.alpha <= 0)
+		return list(blank_icon_spec(), world.icon_size, world.icon_size)
+	var/curicon = A.icon || deficon
+	var/curstate = A.icon_state || defstate
+	var/no_icon = !curicon
+	var/list/info
+	var/list/states
+	if(!no_icon)
+		info = statpanel_dmi_info(curicon)
+		if(!info)
+			return null
+		states = info[STATPANEL_DMI_STATES]
+		if(!(curstate in states))
+			if("" in states)
+				curstate = ""
+			else
+				no_icon = TRUE
+	var/curdir = (!A.dir || A.dir == SOUTH) ? defdir : A.dir
+	var/base_icon_dir = curdir
+	if(!no_icon)
+		var/state_dirs = states["[curstate]"]
+		if(state_dirs < 2)
+			base_icon_dir = SOUTH
+		else if(state_dirs < 8 && (base_icon_dir & (NORTH|SOUTH)) && (base_icon_dir & (EAST|WEST)))
+			base_icon_dir &= (EAST|WEST)
+	var/curblend = A.blend_mode || defblend
+
+	if(!length(A.overlays) && !length(A.underlays))
+		if(no_icon)
+			return list(null, 0, 0)
+		var/list/self_spec = list("icon_file" = "[curicon]", "icon_state" = "[curstate]", "dir" = base_icon_dir, "frame" = 1, "transform" = list())
+		if(A.alpha < 255)
+			self_spec["transform"] += list(statpanel_alpha_transform(A.alpha))
+		self_spec["transform"] += statpanel_color_transforms(A.color)
+		var/list/self_size = info[STATPANEL_DMI_SIZE]
+		return list(self_spec, self_size[1], self_size[2])
+
+	// Слои в порядке отрисовки, как в getFlatIcon: запись - list(внешний вид или null для самого атома, слой).
+	var/list/layers = list()
+	if(!no_icon)
+		layers += list(list(null, A.layer))
+	for(var/process_set in 0 to 1)
+		var/list/process = process_set ? A.overlays : A.underlays
+		for(var/i in 1 to length(process))
+			var/image/current = process[i]
+			if(!current)
+				continue
+			if(current.plane != FLOAT_PLANE && current.plane != A.plane)
+				continue
+			var/current_layer = current.layer
+			if(current_layer < 0)
+				if(current_layer <= -1000)
+					return list(blank_icon_spec(), world.icon_size, world.icon_size)
+				current_layer = process_set + A.layer + current_layer / 1000
+			var/inserted = FALSE
+			for(var/p in 1 to length(layers))
+				var/list/existing = layers[p]
+				if(current_layer < existing[2])
+					layers.Insert(p, list(list(current, current_layer)))
+					inserted = TRUE
+					break
+			if(!inserted)
+				layers += list(list(current, current_layer))
+
+	var/x1 = 1
+	var/x2 = world.icon_size
+	var/y1 = 1
+	var/y2 = world.icon_size
+	var/list/blends = list()
+	var/list/reset_color_blends = list()
+	for(var/list/entry as anything in layers)
+		var/image/I = entry[1]
+		var/list/add_spec
+		var/add_width
+		var/add_height
+		var/shift_x = 0
+		var/shift_y = 0
+		if(!I)
+			curblend = BLEND_OVERLAY
+			add_spec = list("icon_file" = "[curicon]", "icon_state" = "[curstate]", "dir" = base_icon_dir, "frame" = 1, "transform" = list())
+			var/list/self_size = info[STATPANEL_DMI_SIZE]
+			add_width = self_size[1]
+			add_height = self_size[2]
+		else
+			if(I.alpha == 0)
+				continue
+			var/list/added = flat_icon_spec(I, curdir, curicon, curstate, curblend)
+			// Оверлей с рантайм-иконкой (кровь на предмете) IconForge не нарисует: такой атом целиком рисует DM.
+			if(!added)
+				return null
+			add_spec = added[1]
+			if(!add_spec)
+				continue
+			add_width = added[2]
+			add_height = added[3]
+			shift_x = I.pixel_x
+			shift_y = I.pixel_y
+		x1 = min(x1, shift_x + 1)
+		x2 = max(x2, shift_x + add_width)
+		y1 = min(y1, shift_y + 1)
+		y2 = max(y2, shift_y + add_height)
+		var/list/blend = list(add_spec, blendMode2iconMode(curblend), shift_x, shift_y)
+		if(I && (I.appearance_flags & RESET_COLOR))
+			reset_color_blends += list(blend)
+		else
+			blends += list(blend)
+
+	var/list/canvas = blank_icon_spec()
+	var/list/transforms = canvas["transform"]
+	var/width = x2 - x1 + 1
+	var/height = y2 - y1 + 1
+	if(width != world.icon_size || height != world.icon_size)
+		transforms += list(list("type" = RUSTG_ICONFORGE_SCALE, "width" = width, "height" = height))
+	for(var/list/blend as anything in blends)
+		transforms += list(list("type" = RUSTG_ICONFORGE_BLEND_ICON, "icon" = blend[1], "blend_mode" = blend[2], "x" = blend[3] + 2 - x1, "y" = blend[4] + 2 - y1))
+	transforms += statpanel_color_transforms(A.color)
+	if(A.alpha < 255)
+		transforms += list(statpanel_alpha_transform(A.alpha))
+	for(var/list/blend as anything in reset_color_blends)
+		transforms += list(list("type" = RUSTG_ICONFORGE_BLEND_ICON, "icon" = blend[1], "blend_mode" = blend[2], "x" = blend[3] + 2 - x1, "y" = blend[4] + 2 - y1))
+	return list(canvas, width, height)
+
+/// Прозрачная заготовка 32x32 - та же, с которой начинает getFlatIcon.
+/datum/controller/subsystem/statpanels/proc/blank_icon_spec()
+	return list("icon_file" = "icons/effects/effects.dmi", "icon_state" = "nothing", "dir" = SOUTH, "frame" = 1, "transform" = list())
+
+/datum/controller/subsystem/statpanels/proc/statpanel_alpha_transform(alpha)
+	return list("type" = RUSTG_ICONFORGE_BLEND_COLOR, "color" = "#ffffff[num2hex(alpha, 2)]", "blend_mode" = ICON_MULTIPLY)
+
+/// Цвет атома операциями IconForge: строка - умножение, матрица - MapColors, как в getFlatIcon.
+/datum/controller/subsystem/statpanels/proc/statpanel_color_transforms(color)
+	if(!color)
+		return list()
+	if(istext(color))
+		if(uppertext(color) == "#FFFFFF" || uppertext(color) == "#FFFFFFFF")
+			return list()
+		return list(list("type" = RUSTG_ICONFORGE_BLEND_COLOR, "color" = color, "blend_mode" = ICON_MULTIPLY))
+	if(!islist(color))
+		return list()
+	var/list/matrix = color
+	for(var/value in matrix)
+		if(!isnum(value))
+			return list()
+	var/list/rows
+	switch(length(matrix))
+		if(9)
+			rows = list(matrix[1], matrix[2], matrix[3], 0, matrix[4], matrix[5], matrix[6], 0, matrix[7], matrix[8], matrix[9], 0, 0, 0, 0, 1, 0, 0, 0, 0)
+		if(12)
+			rows = list(matrix[1], matrix[2], matrix[3], 0, matrix[4], matrix[5], matrix[6], 0, matrix[7], matrix[8], matrix[9], 0, 0, 0, 0, 1, matrix[10], matrix[11], matrix[12], 0)
+		if(16)
+			rows = matrix.Copy()
+			rows += list(0, 0, 0, 0)
+		if(20)
+			rows = matrix.Copy()
+		else
+			return list()
+	return list(list(
+		"type" = RUSTG_ICONFORGE_MAP_COLORS,
+		"rr" = rows[1], "rg" = rows[2], "rb" = rows[3], "ra" = rows[4],
+		"gr" = rows[5], "gg" = rows[6], "gb" = rows[7], "ga" = rows[8],
+		"br" = rows[9], "bg" = rows[10], "bb" = rows[11], "ba" = rows[12],
+		"ar" = rows[13], "ag" = rows[14], "ab" = rows[15], "aa" = rows[16],
+		"r0" = rows[17], "g0" = rows[18], "b0" = rows[19], "a0" = rows[20],
+	))
 
 /datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_dirty_at = 0, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
 	// Dirty signals coalesce: a busy turf that fires entered/exited every tick is rate-limited so
@@ -865,6 +1258,14 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_ICON_ENTRY_URL
 #undef STATPANEL_ICON_ENTRY_OWNER
 #undef STATPANEL_MAX_FLAT_OVERLAYS
+#undef STATPANEL_ICON_DIR
+#undef STATPANEL_ICON_JOBS_MAX
+#undef STATPANEL_ICON_JOB_TIMEOUT
+#undef STATPANEL_ICON_CACHE_MAX
+#undef STATPANEL_ICON_NOTHING
+#undef STATPANEL_ICON_BUSY
+#undef STATPANEL_DMI_SIZE
+#undef STATPANEL_DMI_STATES
 #undef STATPANEL_TIDI_INTERVAL
 #undef STATBROWSER_PROTOCOL_VERSION
 #undef STATPANEL_CHANNEL_STATUS
