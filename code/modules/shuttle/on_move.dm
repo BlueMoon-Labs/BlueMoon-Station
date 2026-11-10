@@ -63,13 +63,26 @@ All ShuttleMove procs go here
 		liquids.ChangeToNewTurf(newT)
 		newT.reasses_liquids()
 	newT.CopyOnTop(src, 1, depth, TRUE)
-	//Air stuff
-	newT.blocks_air = TRUE
-	newT.air_update_turf(TRUE)
-	blocks_air = TRUE
-	air_update_turf(TRUE)
+	newT.seal_air_for_shuttle_move()
+	seal_air_for_shuttle_move()
 
 	return TRUE
+
+/// air_update_turf(TRUE) для турфа с blocks_air: тот же итог без полного пересчёта соседства.
+/// Теплопроводность не трогается - её пересчитает lateShuttleMove, когда содержимое уже на месте.
+/turf/proc/seal_air_for_shuttle_move()
+	blocks_air = TRUE
+	if(!SSair?.initialized)
+		return
+	var/kept_conductivity = conductivity_blocked_directions
+	clear_adjacencies()
+	conductivity_blocked_directions = kept_conductivity
+	var/turf/open/open_self = src
+	if(istype(open_self))
+		open_self.excited_group?.garbage_collect()
+		if(!open_self.excited)
+			SSair.wake_if_gradient(open_self, "air_update_turf")
+	liquid_update_turf()
 
 // Called on the new turf after everything has been moved
 /turf/proc/afterShuttleMove(turf/oldT, rotation)
