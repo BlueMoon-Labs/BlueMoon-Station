@@ -263,6 +263,7 @@
 #include "harddel_round_9827.dm"
 #include "harddel_round_9832.dm"
 #include "harddel_round_9860.dm"
+#include "heavy_callbacks_split.dm"
 #include "heavy_stomp_weightless.dm"
 #include "hitscan_beam_effects.dm"
 #include "hk_droids_chassis.dm"
