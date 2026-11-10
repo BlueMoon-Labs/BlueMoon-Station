@@ -83,6 +83,9 @@
 		// During init, collect space turfs for batch processing (deduped via assoc list)
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, affected_turf))
 			GLOB.lighting_deferred_starlight[space_tile] = TRUE
+	else if(GLOB.lighting_defer_active)
+		// Перелёт шаттла: соседей поставит в очередь звёздного света сама стыковка после переноса.
+		GLOB.lighting_deferred_starlight += affected_turf
 	else
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, affected_turf))
 			space_tile.update_starlight()
