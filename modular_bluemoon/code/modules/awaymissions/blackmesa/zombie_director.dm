@@ -20,7 +20,7 @@
 	var/pause_start_time = 0
 	var/horde_music_channel = 991
 	var/spawning_wave = FALSE
-	var/fuel_generator_horde_interval = 45 SECONDS
+	var/fuel_generator_horde_interval = 60 SECONDS
 	var/next_fuel_generator_horde_time = 0
 
 	// In-flight wave spawn state (spawn_zombie_wave is timer-driven, not slept)
@@ -191,6 +191,10 @@
 	for(var/mob/living/L in GLOB.player_list)
 		if(!L || !L.client || L.stat == DEAD)
 			continue
+		// Downed/crit players are not valid horde targets - if everyone is
+		// dead or incapacitated the director pauses instead of spawning.
+		if(L.incapacitated(ignore_restraints = TRUE))
+			continue
 		var/area/A = get_area(L)
 		if(!A)
 			continue
@@ -270,8 +274,11 @@
 		return
 
 	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier))
+	var/wave_number = current_wave_number + 1
+	if(wave_number >= 6)
+		zombies_to_spawn = max(1, zombies_to_spawn - 3)
 	if(zombies_to_spawn < threat_level)
-		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
+		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (wave=[wave_number], multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
 
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
 	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
@@ -335,6 +342,19 @@
 /datum/ai_director/zombie_mission/proc/spawn_wave_step()
 	if(!src)
 		spawning_wave = FALSE
+		return
+
+	// The players list was captured when the wave started - revalidate every
+	// batch so spawning stops if every target died or went critical mid-wave.
+	var/list/current_players = get_alive_players_in_mission()
+	if(!current_players || !current_players.len)
+		log_world("[src] All targets dead or incapacitated, aborting wave spawn (spawned=[LAZYLEN(wave_spawned_zombies)])")
+		spawning_wave = FALSE
+		wave_spawn_turfs = null
+		wave_spawned_zombies = null
+		wave_zombies_remaining = 0
+		wave_failed_spawns = 0
+		wave_batch_size = 0
 		return
 
 	var/wave_intended = wave_zombies_remaining + wave_spawned_zombies.len

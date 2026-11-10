@@ -260,6 +260,10 @@
 /mob/living/simple_animal/hostile/infected/CanAttack(atom/the_target)
 	if(!the_target)
 		return FALSE
+	if(istype(the_target, /obj/structure/urbanism_generator/fuel))
+		// The fuel generator must never become a zombie target while players
+		// feed it batteries - it would pull the whole horde off the players.
+		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator))
 		var/obj/structure/urbanism_generator/G = the_target
 		if(!G || (!G.activating && !G.active && !G.waiting_for_fuel))
@@ -1230,14 +1234,20 @@
 		register_theme_listener(nearby_mob)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/register_theme_listener(mob/listener)
-	if(!listener || (listener in tank_theme_listeners))
+	if(!listener || !istype(listener))
 		return
+	// Registration must be idempotent: tank_theme_listeners can lose track of a
+	// listener while its signals stay registered (unregister_theme_listener
+	// removes the list entry even when UnregisterSignal no-ops on a dropped
+	// comp_lookup). Re-registering then hits "parent_qdeleting overridden"
+	// warnings and leaks the stale callback, so clear it first.
+	unregister_theme_listener(listener)
 	tank_theme_listeners += listener
-	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_theme_listener_death))
-	RegisterSignal(listener, COMSIG_MOB_GHOSTIZE, PROC_REF(on_theme_listener_ghostize))
-	RegisterSignal(listener, COMSIG_PARENT_QDELETING, PROC_REF(on_theme_listener_qdeleting))
+	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_theme_listener_death), override = TRUE)
+	RegisterSignal(listener, COMSIG_MOB_GHOSTIZE, PROC_REF(on_theme_listener_ghostize), override = TRUE)
+	RegisterSignal(listener, COMSIG_PARENT_QDELETING, PROC_REF(on_theme_listener_qdeleting), override = TRUE)
 	if(listener.mind)
-		RegisterSignal(listener.mind, COMSIG_MIND_TRANSFER, PROC_REF(on_theme_listener_mind_transfer))
+		RegisterSignal(listener.mind, COMSIG_MIND_TRANSFER, PROC_REF(on_theme_listener_mind_transfer), override = TRUE)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/unregister_theme_listener(mob/listener, datum/mind/mind)
 	if(!listener)

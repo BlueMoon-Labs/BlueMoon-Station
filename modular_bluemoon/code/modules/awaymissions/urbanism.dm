@@ -1337,6 +1337,13 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	var/obj/effect/landmark/truck_end/end_landmark = null
 	var/director_horde_interval = 30 SECONDS
 	var/next_director_horde_time = 0
+	spawn_mobs = TRUE
+	mob_types = list(
+		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/bruiser
+	)
+	mob_spawn_interval = 10 SECONDS
+	max_mobs_per_wave = 4
 
 /obj/structure/urbanism_generator/truck/Initialize(mapload)
 	. = ..()
