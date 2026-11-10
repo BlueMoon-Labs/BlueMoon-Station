@@ -1683,9 +1683,6 @@
 /obj/effect/turf_decal/bot/white,
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/common/hydroponics)
-"bbU" = (
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered)
 "bbZ" = (
 /obj/structure/bed/shadow,
 /obj/item/camera,
@@ -10504,9 +10501,6 @@
 /area/mine/common{
 	name = "Park Area"
 	})
-"gtv" = (
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/ruin/lavaland/unpowered)
 "gtA" = (
 /obj/structure/bookcase/random,
 /turf/open/floor/wood/wood_large,
@@ -22430,8 +22424,7 @@
 	},
 /obj/structure/closet/secure_closet/paramedic_mine{
 	anchored = 1;
-	anchorable = 0;
-	req_access = list(0)
+	anchorable = 0
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/dark/textured,
@@ -22690,7 +22683,7 @@
 	dir = 2
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/ruin/lavaland/unpowered)
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "nqU" = (
 /obj/structure/stone_tile/block{
 	dir = 1
@@ -27828,8 +27821,7 @@
 /obj/machinery/power/apc/auto_name/west,
 /obj/structure/closet/secure_closet/paramedic_mine{
 	anchored = 1;
-	anchorable = 0;
-	req_access = list(0)
+	anchorable = 0
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/white/corner{
@@ -63383,7 +63375,7 @@ tfw
 nel
 qPn
 oxx
-bbU
+qOp
 sYF
 uXq
 uUH
@@ -63640,7 +63632,7 @@ tfw
 nel
 fcc
 oxx
-bbU
+qOp
 iTh
 nQM
 xbd
@@ -63897,7 +63889,7 @@ tfw
 nel
 qPn
 oxx
-bbU
+qOp
 qOp
 qOp
 cTH
@@ -65181,7 +65173,7 @@ tfw
 tfw
 sLv
 qPn
-gtv
+qHp
 fEO
 jKq
 jKq
@@ -65438,7 +65430,7 @@ tfw
 tfw
 nel
 xCZ
-gtv
+qHp
 wYB
 xuf
 fVY
