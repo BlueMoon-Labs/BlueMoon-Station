@@ -53,11 +53,12 @@
 	desc = "Капсула высадки роя свармеров."
 	style = STYLE_SWARMER
 	bluespace = TRUE
-	delays = list(POD_TRANSIT = 3 SECONDS, POD_FALLING = 10 SECONDS, POD_OPENING = 3 SECONDS, POD_LEAVING = 3 SECONDS)
+	delays = list(POD_TRANSIT = 3 SECONDS, POD_FALLING = 10 SECONDS, POD_OPENING = 2 SECONDS, POD_LEAVING = 3 SECONDS)
 	specialised = TRUE
 	explosionSize = list(0, 0, 0, 0)
 	effectStealth = TRUE
 	var/datum/team/swarmer_team/team
+	var/landing_shield_timer
 
 /obj/structure/closet/supplypod/swarmer/Initialize(mapload, datum/team/swarmer_team/swarm_team, datum/director_action/source_action, refund_cost = 0)
 	. = ..(mapload)
@@ -76,9 +77,28 @@
 
 /obj/structure/closet/supplypod/swarmer/preOpen()
 	var/turf/landing_turf = get_turf(src)
+	if(landing_turf)
+		for(var/mob/living/victim in range(SWARMER_POD_IMPACT_RADIUS, landing_turf))
+			if(QDELETED(victim) || !isturf(victim.loc))
+				continue
+			victim.adjustBruteLoss(SWARMER_POD_IMPACT_DAMAGE)
+			if(QDELETED(victim) || !isturf(victim.loc))
+				continue
+			var/direction = get_dir(landing_turf, victim) || pick(GLOB.alldirs)
+			var/turf/destination = get_ranged_target_turf(victim, direction, SWARMER_POD_KNOCKBACK_RANGE)
+			if(destination != victim.loc)
+				qdel(victim.force_moving)
+				new /datum/forced_movement(victim, destination, 3)
+		if(!QDELETED(team))
+			// Даём волне отбросить мобов за границу щита до его появления.
+			landing_shield_timer = addtimer(CALLBACK(src, PROC_REF(deploy_landing_shield)), 1 SECONDS, TIMER_STOPPABLE)
+	return ..()
+
+/obj/structure/closet/supplypod/swarmer/proc/deploy_landing_shield()
+	landing_shield_timer = null
+	var/turf/landing_turf = get_turf(src)
 	if(landing_turf && !QDELETED(team))
 		swarmer_shield_around_turf(landing_turf, 2, 15 SECONDS, team)
-	return ..()
 
 /obj/structure/closet/supplypod/swarmer/setOpened()
 	. = ..()
@@ -95,5 +115,8 @@
 	team = null
 
 /obj/structure/closet/supplypod/swarmer/Destroy()
+	if(landing_shield_timer)
+		deltimer(landing_shield_timer)
+		landing_shield_timer = null
 	QDEL_NULL(team)
 	return ..()
