@@ -834,8 +834,10 @@ SUBSYSTEM_DEF(statpanels)
 			if(I.alpha == 0)
 				continue
 			var/list/added = flat_icon_spec(I, curdir, curicon, curstate, curblend)
-			// Оверлей с рантайм-иконкой IconForge не нарисует - пропускаем слой, а не уводим весь флаттен в DM.
-			add_spec = added?[1]
+			// Оверлей с рантайм-иконкой (кровь на предмете) IconForge не нарисует: такой атом целиком рисует DM.
+			if(!added)
+				return null
+			add_spec = added[1]
 			if(!add_spec)
 				continue
 			add_width = added[2]

@@ -269,8 +269,6 @@
 		var/mutable_appearance/extra = mutable_appearance('icons/obj/clothing/masks.dmi', "gas_alt")
 		extra.pixel_x = i
 		layered.add_overlay(extra)
-	// Оверлей с рантайм-иконкой IconForge пропускает, а не отдаёт весь флаттен в DM.
-	layered.add_overlay(image(icon('icons/obj/clothing/masks.dmi', "gas_alt")))
 	var/list/subjects = list(plain, flat_mob, layered)
 
 	var/icons_before = GLOB.nondatum_ledger[NONDATUM_LEDGER_ICONS]
@@ -333,6 +331,20 @@
 		TEST_ASSERT_EQUAL(mismatches, 0, "[subject]: пиксели IconForge расходятся с DM, первый [first_mismatch]")
 
 /// Пиксели совпадают с точностью до округления смешивания.
+/// Кровь на предмете - оверлей из рантайм-иконки, IconForge его не нарисует: такую вещь целиком рисует DM.
+/datum/unit_test/statpanel_icon_runtime_overlay_uses_dm/Run()
+	var/mob/viewer = allocate(/mob/living/simple_animal/pet/dog/corgi)
+	var/obj/item/gun/energy/e_gun/clean = allocate(/obj/item/gun/energy/e_gun)
+	var/obj/item/gun/energy/e_gun/bloody = allocate(/obj/item/gun/energy/e_gun)
+	bloody.add_blood_DNA(list("UNKNOWN DNA" = "O+"))
+	TEST_ASSERT(length(bloody.overlays) > length(clean.overlays), "test premise: кровь должна лечь оверлеем")
+	TEST_ASSERT(islist(SSstatpanels.statpanel_icon_spec(clean)), "Чистая вещь с оверлеями из DMI должна идти через IconForge")
+	TEST_ASSERT_NULL(SSstatpanels.statpanel_icon_spec(bloody), "Вещь с кровью ушла в IconForge, который рисует её без пятна")
+	var/jobs_before = length(SSstatpanels.icon_jobs)
+	var/url = SSstatpanels.request_statpanel_icon(viewer, bloody)
+	TEST_ASSERT(istext(url) && length(url), "Вещь с кровью должна сразу получить иконку старым путём, получено [url]")
+	TEST_ASSERT_EQUAL(length(SSstatpanels.icon_jobs), jobs_before, "Для вещи с кровью запущено задание IconForge")
+
 /proc/statpanel_test_pixels_close(a, b)
 	var/list/rgba_a = a ? rgb2num(a) : list(0, 0, 0, 0)
 	var/list/rgba_b = b ? rgb2num(b) : list(0, 0, 0, 0)
