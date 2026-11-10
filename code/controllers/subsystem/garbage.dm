@@ -160,9 +160,10 @@ SUBSYSTEM_DEF(garbage)
 	var/list/reference_find_on_fail = list()
 	/// Отложенные дорогие хардделы: REF-строка -> world.time первого откладывания.
 	var/list/deferred_harddels = list()
-	/// За раунд: сколько хардделов отложено и сколько из них собралось без del().
+	/// За раунд: сколько хардделов отложено, сколько из них собралось без del() и сколько снесено после ожидания.
 	var/harddels_deferred = 0
 	var/harddels_avoided = 0
+	var/harddels_deferred_deleted = 0
 	/// Рантайм-режим авто-сканов ссылок (GC_REFTRACK_*); -1 = ещё не прочитан из конфига.
 	var/reftrack_mode = -1
 	/// world.time последнего авто-скана.
@@ -178,6 +179,8 @@ SUBSYSTEM_DEF(garbage)
 	#if defined(TESTING) || defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
 	/// Diagnostic/test hook: skip async ref scans while still exercising GC control flow.
 	var/test_ref_scan_skip_async = FALSE
+	/// Test hook: подменяет ответ HardDeleteFreezeVisible(); null - считать по клиентам.
+	var/test_freeze_visible = null
 	#endif
 	#ifdef REFERENCE_TRACKING_DEBUG
 	/// Should we save found refs — used for unit testing.
@@ -259,7 +262,7 @@ SUBSYSTEM_DEF(garbage)
 	FlushHardDeleteLogSummary()
 	var/list/dellog = list()
 	if (harddels_deferred)
-		dellog += "Отложенные хардделы: [harddels_deferred], собрались сами [harddels_avoided], ждали до конца раунда [length(deferred_harddels)]"
+		dellog += "Отложенные хардделы: [harddels_deferred], собрались сами [harddels_avoided], ждали до конца раунда [length(deferred_harddels)], снесены после ожидания [harddels_deferred_deleted]"
 
 	sortTim(items, cmp=GLOBAL_PROC_REF(cmp_qdel_item_time), associative = TRUE)
 	for (var/path in items)
@@ -508,29 +511,38 @@ SUBSYSTEM_DEF(garbage)
 		return GC_HARDDEL_DEFER_MAX
 	return round(value)
 
+/// Увидит ли кто-нибудь фриз от del() прямо сейчас.
+/datum/controller/subsystem/garbage/proc/HardDeleteFreezeVisible()
+	#if defined(TESTING) || defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+	if (!isnull(test_freeze_visible))
+		return test_freeze_visible
+	#endif
+	return length(GLOB.clients) > 0
+
 /**
  * Откладывать ли харддел этой утечки.
  *
- * del() моба обходит весь мир и стоит 200-300 мс - это отдельный фриз на каждую
- * утёкшую мышь, слайма или обезьяну (раунды 10679-10683: 280 таких фризов, треть
- * всего дрифта спайков), при том что очередь харддела почти пуста и спешить некуда.
- * Держатель у таких утечек часто временный и отпускает сам; отложенная запись
- * перепроверяется каждые GC_HARDDEL_TIMEOUT и собирается без del(), а то, что так и
- * не отпустили, освобождает ребут мира.
+ * del() утечки стоит либо доли мс, либо 150-400 мс, и число внешних ссылок этого не
+ * предсказывает (раунды 10652-10719: ровно одна у 1329 дешёвых и у 1364 дорогих).
+ * Цену задаёт место держателя: кадр спящего прока - даром, переменная атома - пара мс,
+ * переменная датума или список - обход кучи. Из DM его не видно, поэтому тип без замера
+ * считаем дорогим, а измеренный судим по худшему del(): у людей и призраков бывает и 0.2, и 260 мс.
  *
- * Не откладываем: в лобби и при переполнении очереди (там удаляем как раньше), хинт
- * QDEL_HINT_HARDDEL и QDEL_HINT_QUEUE_THEN_HARDDEL (тип сам просит del()), тип,
- * чей средний del() ещё не измерен или дешевле порога, и всё сверх потолка.
+ * Отложенное перепроверяется каждые GC_HARDDEL_TIMEOUT; не отпущенное сносится без
+ * клиентов, в лобби или при переполнении очереди, остальное освобождает ребут.
+ * Не откладываем хинты QDEL_HINT_HARDDEL/QUEUE_THEN_HARDDEL и всё сверх потолка.
  */
 /datum/controller/subsystem/garbage/proc/ShouldDeferHardDelete(datum/qdel_item/I, refID, hint)
+	if (last_hd_mode == GC_HARDDEL_MODE_LOBBY || last_hd_mode == GC_HARDDEL_MODE_OVERFLOW || !HardDeleteFreezeVisible())
+		return FALSE
 	if (deferred_harddels[refID])
-		return last_hd_mode != GC_HARDDEL_MODE_LOBBY && last_hd_mode != GC_HARDDEL_MODE_OVERFLOW
+		return TRUE
 	var/min_ms = GetConfiguredHardDeleteDeferMinMs()
-	if (!min_ms || I.hard_delete_avg_ms < min_ms)
+	if (!min_ms)
+		return FALSE
+	if (I.hard_deletes && max(I.hard_delete_avg_ms, I.hard_delete_max) < min_ms)
 		return FALSE
 	if (hint == QDEL_HINT_HARDDEL || hint == QDEL_HINT_QUEUE_THEN_HARDDEL || (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG))
-		return FALSE
-	if (last_hd_mode == GC_HARDDEL_MODE_LOBBY || last_hd_mode == GC_HARDDEL_MODE_OVERFLOW)
 		return FALSE
 	return length(deferred_harddels) < GetConfiguredHardDeleteDeferMax()
 
@@ -539,8 +551,20 @@ SUBSYSTEM_DEF(garbage)
 	if (!deferred_harddels[refID])
 		deferred_harddels[refID] = world.time
 		harddels_deferred++
-		log_harddel("## GC: харддел отложен [D.type]: del() типа в среднем [round(I.hard_delete_avg_ms, 0.1)]мс, ждут [length(deferred_harddels)]")
+		var/cost_note = I.hard_deletes ? "del() типа в среднем [round(I.hard_delete_avg_ms, 0.1)]мс" : "del() типа ещё не измерен"
+		log_harddel("## GC: харддел отложен [D.type]: [cost_note], ждут [length(deferred_harddels)]")
+	RequeueHardDelete(D, refID, hint, origin_time)
+
+/// Снова ставит утечку в стадию харддела. Queue() сдвигает gc_destroyed, а по нему
+/// окно GC-фейлов узнаёт объект для скана держателей - метку переносим вместе с ним.
+/datum/controller/subsystem/garbage/proc/RequeueHardDelete(datum/D, refID, hint, origin_time)
+	var/old_mark = D.gc_destroyed
 	Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
+	if (!GLOB.gc_failure_cache)
+		return
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = GLOB.gc_failure_cache.failures_by_ref[refID]
+	if (entry?.target_gc_destroyed == old_mark)
+		entry.target_gc_destroyed = D.gc_destroyed
 
 /datum/controller/subsystem/garbage/proc/GetHardDeleteModeText(mode = null)
 	if (!isnum(mode))
@@ -937,12 +961,20 @@ SUBSYSTEM_DEF(garbage)
 				// Suspended types stay visible by renewing their harddelete-stage timer instead of deleting.
 				// This creates one new live slot per timeout interval and leaves a tombstoned prefix behind,
 				// but MaybeCompact() bounds that growth once the processed prefix gets large enough.
-				Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
+				RequeueHardDelete(D, refID, hint, origin_time)
 				return
 			if (ShouldDeferHardDelete(I, refID, hint))
 				DeferHardDelete(D, I, refID, hint, origin_time)
 				return
-			deferred_harddels -= refID
+			if (deferred_harddels[refID])
+				harddels_deferred_deleted++
+				var/reason = "переполнение очереди"
+				if (last_hd_mode == GC_HARDDEL_MODE_LOBBY)
+					reason = "лобби"
+				else if (!HardDeleteFreezeVisible())
+					reason = "игроков нет"
+				log_harddel("## GC: отложенный харддел снесён [type]: ждал [round((world.time - deferred_harddels[refID]) / 10)]с, [reason]")
+				deferred_harddels -= refID
 			HardDelete(D)
 
 /datum/controller/subsystem/garbage/proc/probe_warnfail_clients(ref_id, expected_type, destroyed_at)

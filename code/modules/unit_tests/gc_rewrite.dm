@@ -74,12 +74,14 @@
 	var/list/saved_deferred_harddels
 	var/saved_harddels_deferred
 	var/saved_harddels_avoided
+	var/saved_harddels_deferred_deleted
 	var/saved_master_ticklimit
 	var/saved_can_fire
 	var/saved_flags
 	var/list/saved_reference_find_on_fail
 	#ifdef UNIT_TESTS
 	var/saved_test_ref_scan_skip_async
+	var/saved_test_freeze_visible
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Run()
@@ -153,12 +155,15 @@
 	saved_deferred_harddels = SSgarbage.deferred_harddels.Copy()
 	saved_harddels_deferred = SSgarbage.harddels_deferred
 	saved_harddels_avoided = SSgarbage.harddels_avoided
+	saved_harddels_deferred_deleted = SSgarbage.harddels_deferred_deleted
 	saved_master_ticklimit = Master.current_ticklimit
 	saved_can_fire = detach_subsystem(SSgarbage)
 	saved_flags = SSgarbage.flags
 	saved_reference_find_on_fail = SSgarbage.reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	saved_test_ref_scan_skip_async = SSgarbage.test_ref_scan_skip_async
+	saved_test_freeze_visible = SSgarbage.test_freeze_visible
+	SSgarbage.test_freeze_visible = null
 	#endif
 
 	SSgarbage.items = list()
@@ -219,6 +224,7 @@
 	SSgarbage.deferred_harddels = list()
 	SSgarbage.harddels_deferred = 0
 	SSgarbage.harddels_avoided = 0
+	SSgarbage.harddels_deferred_deleted = 0
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
@@ -352,9 +358,11 @@
 	SSgarbage.deferred_harddels = saved_deferred_harddels.Copy()
 	SSgarbage.harddels_deferred = saved_harddels_deferred
 	SSgarbage.harddels_avoided = saved_harddels_avoided
+	SSgarbage.harddels_deferred_deleted = saved_harddels_deferred_deleted
 	SSgarbage.reference_find_on_fail = saved_reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	SSgarbage.test_ref_scan_skip_async = saved_test_ref_scan_skip_async
+	SSgarbage.test_freeze_visible = saved_test_freeze_visible
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Destroy()

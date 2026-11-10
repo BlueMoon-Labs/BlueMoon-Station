@@ -75,7 +75,7 @@
 #define GC_HARDDEL_LOBBY_BUDGET_MS 200
 /// LOBBY-mode maximum number of del() calls per fire().
 #define GC_HARDDEL_LOBBY_MAX_PER_FIRE 50
-/// Утечку типа, чей del() в среднем дороже этого (мс), в раунде не сносим, а перепроверяем раз в GC_HARDDEL_TIMEOUT. 0 - выключено.
+/// Утечку типа без замера del() или с del() дороже этого (мс) при игроках не сносим, а перепроверяем раз в GC_HARDDEL_TIMEOUT. 0 - выключено.
 #define GC_HARDDEL_DEFER_MIN_MS 50
 /// Сколько отложенных хардделов может ждать одновременно; сверх этого - обычный del().
 #define GC_HARDDEL_DEFER_MAX 200

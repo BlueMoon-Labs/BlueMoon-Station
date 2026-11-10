@@ -24,6 +24,7 @@
 	configure_immediate_gc()
 	// RECOVER: тут дорогой del() разрешён сразу, так что отказ от него - заслуга отсрочки.
 	seed_hold_health(0, FALSE, 0.25, 2, 0)
+	SSgarbage.test_freeze_visible = TRUE
 	CONFIG_SET(number/gc_harddel_defer_min_ms, 50)
 	CONFIG_SET(number/gc_harddel_defer_max, 1)
 	var/datum/qdel_item/expensive = seed_cost(/obj/effect/gc_rewrite_test_object/expensive, 250)
@@ -65,10 +66,83 @@
 /datum/unit_test/gc_harddel_defer_disabled_by_config/Run()
 	configure_immediate_gc()
 	seed_hold_health(0, FALSE, 0.25, 2, 0)
+	SSgarbage.test_freeze_visible = TRUE
 	CONFIG_SET(number/gc_harddel_defer_min_ms, 0)
 	var/datum/qdel_item/expensive = seed_cost(/obj/effect/gc_rewrite_test_object/expensive, 250)
 	leak(/obj/effect/gc_rewrite_test_object/expensive)
 	run_gc_fire_cycles(3)
 	TEST_ASSERT_EQUAL(expensive.hard_deletes, 2, "С выключенной отсрочкой утечку не удалили")
 	TEST_ASSERT_EQUAL(length(SSgarbage.deferred_harddels), 0, "С выключенной отсрочкой что-то отложили")
+	keeper.Cut()
+
+/// Число ссылок цену del() не предсказывает, поэтому тип без замера откладываем с
+/// первого же случая, а тип с двумя ценами - по худшему del(), а не по средней.
+/datum/unit_test/gc_harddel_defer_unmeasured_type
+	parent_type = /datum/unit_test/gc_harddel_defer_expensive_leak
+
+/datum/unit_test/gc_harddel_defer_unmeasured_type/Run()
+	configure_immediate_gc()
+	seed_hold_health(0, FALSE, 0.25, 2, 0)
+	SSgarbage.test_freeze_visible = TRUE
+	CONFIG_SET(number/gc_harddel_defer_min_ms, 50)
+	CONFIG_SET(number/gc_harddel_defer_max, 10)
+	var/datum/qdel_item/fresh = SSgarbage.GetOrCreateItem(/obj/effect/gc_rewrite_test_object/expensive)
+	var/datum/qdel_item/bimodal = seed_cost(/obj/effect/gc_rewrite_test_object/expensive/second, 20)
+	bimodal.hard_delete_max = 250
+
+	var/fresh_ref = leak(/obj/effect/gc_rewrite_test_object/expensive)
+	var/bimodal_ref = leak(/obj/effect/gc_rewrite_test_object/expensive/second)
+	run_gc_fire_cycles(3)
+
+	TEST_ASSERT(SSgarbage.deferred_harddels[fresh_ref], "Утечку типа без замера снесли del() с первого раза")
+	TEST_ASSERT_EQUAL(fresh.hard_deletes, 0, "Тип без замера заплатил полный del() посреди раунда")
+	TEST_ASSERT(SSgarbage.deferred_harddels[bimodal_ref], "Тип с дорогим del() в истории снесли из-за низкой средней")
+	TEST_ASSERT_EQUAL(bimodal.hard_deletes, 1, "Тип с дорогим del() в истории снова удалили через del()")
+	keeper.Cut()
+
+/// Без клиентов фриз никто не видит: отложенное сносится на ближайшей перепроверке.
+/datum/unit_test/gc_harddel_defer_flush_without_clients
+	parent_type = /datum/unit_test/gc_harddel_defer_expensive_leak
+
+/datum/unit_test/gc_harddel_defer_flush_without_clients/Run()
+	configure_immediate_gc()
+	seed_hold_health(0, FALSE, 0.25, 2, 0)
+	SSgarbage.test_freeze_visible = TRUE
+	CONFIG_SET(number/gc_harddel_defer_min_ms, 50)
+	CONFIG_SET(number/gc_harddel_defer_max, 10)
+	var/datum/qdel_item/expensive = seed_cost(/obj/effect/gc_rewrite_test_object/expensive, 250)
+	var/parked_ref = leak(/obj/effect/gc_rewrite_test_object/expensive)
+	run_gc_fire_cycles(3)
+	TEST_ASSERT(SSgarbage.deferred_harddels[parked_ref], "Дорогую утечку при игроках не отложили")
+
+	SSgarbage.test_freeze_visible = FALSE
+	var/datum/qdel_item/fresh = SSgarbage.GetOrCreateItem(/obj/effect/gc_rewrite_test_object/expensive/second)
+	leak(/obj/effect/gc_rewrite_test_object/expensive/second)
+	run_gc_fire_cycles(3)
+	TEST_ASSERT(!SSgarbage.deferred_harddels[parked_ref], "Без игроков отложенный харддел так и остался ждать")
+	TEST_ASSERT_EQUAL(expensive.hard_deletes, 2, "Без игроков отложенный харддел не снесли")
+	TEST_ASSERT_EQUAL(SSgarbage.harddels_deferred_deleted, 1, "Снос отложенного харддела не посчитан")
+	TEST_ASSERT_EQUAL(fresh.hard_deletes, 1, "Без игроков новую утечку отложили вместо del()")
+	keeper.Cut()
+
+/// Перепроверка отложенного сдвигает gc_destroyed; окно GC-фейлов должно и дальше находить объект для скана держателей.
+/datum/unit_test/gc_harddel_defer_keeps_viewer_target
+	parent_type = /datum/unit_test/gc_harddel_defer_expensive_leak
+
+/datum/unit_test/gc_harddel_defer_keeps_viewer_target/Run()
+	configure_immediate_gc()
+	seed_hold_health(0, FALSE, 0.25, 2, 0)
+	SSgarbage.test_freeze_visible = TRUE
+	CONFIG_SET(number/gc_harddel_defer_min_ms, 50)
+	CONFIG_SET(number/gc_harddel_defer_max, 10)
+	seed_cost(/obj/effect/gc_rewrite_test_object/expensive, 250)
+	var/parked_ref = leak(/obj/effect/gc_rewrite_test_object/expensive)
+	run_gc_fire_cycles(3)
+	sleep(world.tick_lag)
+	run_gc_fire_cycles(1)
+
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = GLOB.gc_failure_cache.failures_by_ref[parked_ref]
+	TEST_ASSERT(entry, "Утечка не попала в окно GC-фейлов")
+	TEST_ASSERT(SSgarbage.deferred_harddels[parked_ref], "Дорогую утечку не отложили")
+	TEST_ASSERT(entry.resolve_target() == locate(parked_ref), "Окно GC-фейлов потеряло отложенный объект после перепроверки")
 	keeper.Cut()
