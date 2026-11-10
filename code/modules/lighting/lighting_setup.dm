@@ -473,6 +473,7 @@
 		var/turf/T = get_turf(A)
 		if(T?.z == z_level)
 			GLOB.lighting_deferred_atoms -= A
+			A.flags_1 &= ~LIGHTING_DEFERRED_PARKED_1
 			A.update_light()
 		CHECK_TICK
 	GLOB.lighting_deferred_z_cache = null

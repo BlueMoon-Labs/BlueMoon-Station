@@ -391,7 +391,7 @@
 		SSmobs.clients_by_zlevel[test_z] = saved_clients
 	if(saved_dead)
 		SSmobs.dead_players_by_zlevel[test_z] = saved_dead
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	SSlighting.zlevel_empty_since = saved_empty
 	SSlighting.zlevel_teardown_payoff = saved_payoff
 	SSlighting.teardown_zlevel = old_teardown
@@ -1663,6 +1663,7 @@
 	SSlighting.abort_zlevel_lighting_teardown()
 
 	var/parked = (emitter in GLOB.lighting_deferred_atoms)
+	var/parked_flagged = (emitter.flags_1 & LIGHTING_DEFERRED_PARKED_1)
 	var/list/parked_snapshot = GLOB.lighting_deferred_atoms.Copy()
 	var/list/cache_after = GLOB.lighting_deferred_z_cache
 	var/cache_kept = islist(cache_after)
@@ -1690,6 +1691,7 @@
 
 	TEST_ASSERT(precond_live, "предпосылка: источник обязан быть живым до сноса")
 	TEST_ASSERT(parked, "фаза 0 не запарковала источник, тест проверил бы не то")
+	TEST_ASSERT(parked_flagged, "фаза 0 запарковала источник без признака парковки - его удаление оставит его в отложке")
 	TEST_ASSERT(cache_kept, "снос выбросил кэш отложенных z - сейфнет-скан пересоберёт его полным проходом")
 	TEST_ASSERT(cache_has_z, "снос не вписал свой z в кэш - сейфнет потеряет запаркованные им атомы")
 	TEST_ASSERT(scan_trusted_cache, "сейфнет-скан пересобрал кэш вместо того, чтобы ему поверить")
@@ -1708,7 +1710,7 @@
 		new /atom/movable/lighting_object(test_turf)
 	var/queued = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]) - queued_before
 	TEST_ASSERT_EQUAL(destroyed, LIGHTING_GC_QUEUE_SAMPLE * 3, "lighting_clear_overlay() удалил не все объекты света")
-	TEST_ASSERT(queued <= 3, "в очередь GC встали [queued] из [destroyed] удалённых объектов света - каждая строка REF в очереди приближает стопор BYOND")
+	TEST_ASSERT(queued <= 3, "в очередь GC встали [queued] из [destroyed] удалённых объектов света - очередь GC держит каждый не меньше секунды")
 	TEST_ASSERT(queued >= 1, "ни один объект света не попал в очередь GC - их хардделы стали невидимы")
 
 /// Угол, снёсший себя за ненадобностью, встаёт в очередь GC лишь выборкой.
@@ -1732,7 +1734,7 @@
 	for(var/turf/tile as anything in turfs)
 		tile.generate_missing_corners()
 	TEST_ASSERT(destroyed >= LIGHTING_GC_QUEUE_SAMPLE * 3, "предпосылка: за [passes] проходов снесено лишь [destroyed] пустых углов")
-	TEST_ASSERT(queued <= CEILING(destroyed / LIGHTING_GC_QUEUE_SAMPLE, 1), "в очередь GC встали [queued] из [destroyed] снесённых углов - каждая строка REF в очереди приближает стопор BYOND")
+	TEST_ASSERT(queued <= CEILING(destroyed / LIGHTING_GC_QUEUE_SAMPLE, 1), "в очередь GC встали [queued] из [destroyed] снесённых углов - очередь GC держит каждый не меньше секунды")
 	TEST_ASSERT(queued >= 1, "ни один угол не попал в очередь GC - их хардделы стали невидимы")
 
 #undef LIGHTING_TEST_PRESSURE_CEILING_MB

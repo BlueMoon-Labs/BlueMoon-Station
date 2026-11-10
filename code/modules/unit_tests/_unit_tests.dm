@@ -362,6 +362,7 @@
 #include "lewd_summon.dm"
 #include "lighting.dm"
 #include "lighting_build_scope.dm"
+#include "lighting_deferred_destroy.dm"
 #include "lighting_deferred_init.dm"
 #include "lighting_matrix_grid.dm"
 #include "lighting_object_var_diet.dm"

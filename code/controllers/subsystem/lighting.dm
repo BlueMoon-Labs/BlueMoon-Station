@@ -871,6 +871,7 @@ SUBSYSTEM_DEF(lighting)
 	if(!teardown_parked_lookup[source_atom])
 		teardown_parked_lookup[source_atom] = TRUE
 		GLOB.lighting_deferred_atoms += source_atom
+		source_atom.flags_1 |= LIGHTING_DEFERRED_PARKED_1
 		note_deferred_lighting_z(z)
 	if(source_atom.light == source)
 		QDEL_NULL(source_atom.light)
@@ -1184,6 +1185,7 @@ SUBSYSTEM_DEF(lighting)
 				continue
 			var/turf/T = get_turf(A)
 			if(T?.z == z)
+				A.flags_1 &= ~LIGHTING_DEFERRED_PARKED_1
 				A.update_light()
 			else
 				remaining += A
