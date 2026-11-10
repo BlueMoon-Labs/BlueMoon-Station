@@ -190,6 +190,55 @@
 	TEST_ASSERT_EQUAL(sources_deleted, 0, "мгновенный луч создал и удалил собственный источник света")
 	TEST_ASSERT(length(beam_area_effects(area, /obj/effect/projectile_lighting)), "путь луча всё равно подсвечен")
 
+/// An emitter beam turned by a reflector box lights the turn tile and its neighbours like one unit light per tile, not with half of it.
+/datum/unit_test/emitter_beam_lights_reflector_turn/Run()
+	var/datum/turf_reservation/area = beam_test_area()
+	var/obj/machinery/power/emitter/emitter = new(beam_area_turf(area, 1, 2))
+	allocated += emitter
+	emitter.setDir(EAST)
+	var/turf/turn_turf = beam_area_turf(area, 8, 2)
+	var/obj/structure/reflector/box/anchored/reflector = new(turn_turf)
+	allocated += reflector
+	reflector.setAngle(0)
+	var/obj/item/projectile/beam/emitter/hitscan/beam_type = emitter.projectile_type
+	var/unit = beam_unit_corner_light(beam_area_turf(area, 15, 8), initial(beam_type.hitscan_light_intensity))
+	TEST_ASSERT(isnum(unit) && unit > 0, "одиночный свет луча должен светить ровно четыре угла своего тайла поровну: [unit]")
+
+	if(TICK_USAGE > 30)
+		stoplag(1)
+	emitter.fire_beam()
+	var/list/lights = beam_area_effects(area, /obj/effect/projectile_lighting)
+	var/first_x = INFINITY
+	var/last_y = 0
+	for(var/obj/effect/projectile_lighting/beam_light as anything in lights)
+		if(beam_light.y == turn_turf.y)
+			first_x = min(first_x, beam_light.x)
+		if(beam_light.x == turn_turf.x)
+			last_y = max(last_y, beam_light.y)
+	TEST_ASSERT(last_y > turn_turf.y + 2, "луч должен повернуть на отражателе вверх, а свет у отражателя доходит до y=[last_y]")
+	var/list/turf/path = getline(locate(first_x, turn_turf.y, turn_turf.z), turn_turf)
+	path += getline(locate(turn_turf.x, turn_turf.y + 1, turn_turf.z), locate(turn_turf.x, last_y, turn_turf.z))
+	process_nightshift_lighting_work()
+	var/list/lit = list()
+	for(var/obj/effect/projectile_lighting/beam_light as anything in lights)
+		var/datum/light_source/source = beam_light.light
+		for(var/datum/lighting_corner/corner as anything in source?.effect_str)
+			lit[corner] += source.effect_str[corner]
+	var/list/expected = list()
+	for(var/turf/tile as anything in path)
+		for(var/datum/lighting_corner/corner in list(tile.lc_topleft, tile.lc_topright, tile.lc_bottomleft, tile.lc_bottomright))
+			expected[corner] += 1
+	// Концы пути у ствола и у стены подсвечивают вспышки, их не сверяем.
+	for(var/i in 3 to length(path) - 2)
+		var/turf/tile = path[i]
+		var/got = 0
+		var/want = 0
+		for(var/datum/lighting_corner/corner in list(tile.lc_topleft, tile.lc_topright, tile.lc_bottomleft, tile.lc_bottomright))
+			got += lit[corner] || 0
+			want += expected[corner] * unit
+		TEST_ASSERT(abs(got - want) <= unit + 0.001, "тайл [tile.x],[tile.y][tile == turn_turf ? " (отражатель)" : ""]: свет на углах [got] вместо [want]")
+	QDEL_LIST(lights)
+
 /// The glow marks a floor turning to cult; a floor that comes with a loaded map does not flash.
 /datum/unit_test/cult_floor_glow_only_when_converted/Run()
 	var/turf/converted = run_loc_floor_bottom_left

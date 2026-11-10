@@ -26,7 +26,7 @@
 /**
  * Lights a beam path, a turf list in path order.
  * A short-range light touches only its own tile corners, and inside a straight run two neighbours share a corner edge,
- * so every other tile at double power gives the shared corners the same sum. Only the edges next to run ends differ by one light.
+ * so every other tile at double power gives the shared corners the same sum. The alternation goes on through turns; only the edges next to path ends and diagonal steps differ by one light.
  */
 /proc/generate_tracer_lighting(list/turf/path, color, range, intensity)
 	. = list()
@@ -53,8 +53,16 @@
 				if(next.x - current.x != step_x || next.y - current.y != step_y || next.z != current.z)
 					break
 				run_end++
+			// A run that starts on a turn tile with no light of its own goes on with the alternation shifted.
+			var/phase = weights[run_start] == 0 ? 0 : 2
 			for(var/i in run_start + 1 to run_end - 1)
-				weights[i] = (i - run_start) % 2 ? 0 : 2
+				weights[i] = (i - run_start) % 2 ? 2 - phase : phase
+			// A turn into another straight run (a reflector) keeps the alternation, or the turn tile and its neighbours get half the light.
+			if(run_end < count)
+				var/turf/turn_turf = path[run_end]
+				var/turf/after_turn = path[run_end + 1]
+				if(abs(after_turn.x - turn_turf.x) + abs(after_turn.y - turn_turf.y) == 1 && after_turn.z == turn_turf.z)
+					weights[run_end] = 2 - weights[run_end - 1]
 			run_start = run_end
 	for(var/i in 1 to count)
 		if(weights[i])
