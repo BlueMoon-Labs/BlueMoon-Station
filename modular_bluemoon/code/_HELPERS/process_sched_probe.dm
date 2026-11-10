@@ -102,7 +102,8 @@
 	if(!istext(text) || findtext(text, "cpu ") != 1)
 		return null
 	var/line_end = findtext(text, "\n")
-	var/list/fields = splittext(trim(copytext(text, 5, line_end || 0)), regex(" +"))
+	var/static/regex/spaces = regex(" +")
+	var/list/fields = splittext(trim(copytext(text, 5, line_end || 0)), spaces)
 	if(length(fields) < 8)
 		return null
 	var/total = 0

@@ -115,6 +115,8 @@
 /// затевалось, в раунде 10121 были по 8-53 МБ, и полусекундной сетки хватает, чтобы
 /// каждая легла в свой сэмпл целиком, а кольца контекста (5 секунд) её накрыли.
 #define TICK_SPIKES_MEMORY_SAMPLE_TICKS 5
+/// Фоновый снимок /proc - восемь чтений файлов и их разбор, поэтому реже сетки памяти: раз в 2 с.
+#define TICK_SPIKES_SCHED_PROBE_TICKS 40
 /// Порог скачка VmSize (МБ), с которого пишется блок. В раунде 10121 семнадцать ступеней
 /// >= 8 МБ дали 81% всего роста раунда, а 184 сэмпла из 290 не росли вообще: порог 8
 /// ловит весь вклад и молчит на фоне.
@@ -592,13 +594,13 @@ SUBSYSTEM_DEF(tick_spikes)
 		return
 	register_memory_jump(jump, vsz, instances - previous_instances, world.time - previous_world, previous_ledger)
 
-/// Фоновый снимок счётчиков /proc на сетке памяти: блоку спайка нужен снимок ДО столла.
+/// Фоновый снимок счётчиков /proc: блоку спайка нужен снимок до столла.
 /datum/controller/subsystem/tick_spikes/proc/sample_sched_probe()
 	if(!sched_probe_available)
 		return
 	if(--sched_probe_countdown > 0)
 		return
-	sched_probe_countdown = TICK_SPIKES_MEMORY_SAMPLE_TICKS
+	sched_probe_countdown = TICK_SPIKES_SCHED_PROBE_TICKS
 	var/list/snapshot = read_sched_probe(now_ms())
 	if(!snapshot)
 		sched_probe_available = FALSE
@@ -619,7 +621,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	// Окно столла фоном не станет, следующее окно уже спокойное
 	sched_probe_last = now_snapshot
 	sched_probe_window_dirty = FALSE
-	sched_probe_countdown = TICK_SPIKES_MEMORY_SAMPLE_TICKS
+	sched_probe_countdown = TICK_SPIKES_SCHED_PROBE_TICKS
 	return lines
 
 /**
@@ -1487,6 +1489,7 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_MAX_PERIODIC_DUMPS
 #undef TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR
 #undef TICK_SPIKES_MEMORY_SAMPLE_TICKS
+#undef TICK_SPIKES_SCHED_PROBE_TICKS
 #undef TICK_SPIKES_MEMORY_JUMP_MB
 #undef TICK_SPIKES_MAX_MEMORY_EVENTS
 #undef TICK_SPIKES_MEMORY_BYTES_PER_INSTANCE_CEILING
