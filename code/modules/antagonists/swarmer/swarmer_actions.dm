@@ -407,7 +407,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 /datum/action/cooldown/swarmer/build/storage/custom_build_checks(mob/living/user, list/turfs_to_check)
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = user
 	var/datum/team/swarmer_team/swarmer_team = swarmer.team
-	if(swarmer_team.metal_modifier < swarmer_team.get_metal_modifier_limit())
+	if(swarmer_team.metal_modifier < SWARMER_METAL_MODIFIER_LIMIT)
 		return TRUE
 
 	var/choice = tgui_alert(user, "Предупреждение! Лимит модификатора сбора ресурсов уже достигнут, постройка нового хранилища ничего не даст, \
@@ -495,6 +495,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	core.forceMove(target_turf)
 	qdel(actual_selected_hub)
 	swarmer_shield_around_turf(target_turf, forcefield_radius, forcefield_duration, swarmer.team)
+	StartCooldown()
 
 #undef SWARMER_BLOCKADE_COST
 #undef SWARMER_TRAP_COST

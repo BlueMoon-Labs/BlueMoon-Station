@@ -119,7 +119,7 @@
 		totaldamage = -totaldamage
 
 	var/pain_emote_source
-	if(iscarbon(src) && (P.flag == ENERGY || P.flag == LASER))
+	if(iscarbon(src) && P.damage_type == STAMINA)
 		pain_emote_source = REF(P)
 		ADD_TRAIT(src, TRAIT_SUPPRESS_PAIN_EMOTES, pain_emote_source)
 

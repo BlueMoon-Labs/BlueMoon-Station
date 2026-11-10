@@ -134,7 +134,7 @@
 
 
 /datum/quirk/estrous_active/proc/update_heat_type()
-	heat_type = list("пахнет переизбытком феромонных гормонов")
+	heat_type = "пахнет переизбытком феромонных гормонов"
 
 /datum/quirk/estrous_active/proc/_on_climax_reset(datum/source, datum/reagents/R, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anon)
 	SIGNAL_HANDLER

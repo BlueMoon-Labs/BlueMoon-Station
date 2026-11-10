@@ -18,6 +18,7 @@ GLOBAL_VAR_INIT(standalone_swarmer_poll_active, FALSE)
 	death = FALSE
 	roundstart = FALSE
 	show_flavour = FALSE
+	short_desc = "Вы — свармер. Собирайте ресурсы и защищайте ядро роя."
 	job_description = "Swarmer"
 	mob_name = "Drone Swarmer"
 	category = "swarmer"

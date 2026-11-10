@@ -16,8 +16,3 @@
 
 /obj/item/soulscythe/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
 	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_DAMAGE
-
-/obj/item/storage/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
-	for(var/obj/item/stored_item in contents)
-		SEND_SIGNAL(src, COMSIG_TRY_STORAGE_TAKE, stored_item, drop_location(), TRUE)
-	return SWARMER_ACT_POSSIBLE | SWARMER_ACT_POSSIBLE_ACTION_CONSUME

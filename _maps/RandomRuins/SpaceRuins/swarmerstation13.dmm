@@ -23,7 +23,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "h" = (
-/obj/effect/mob_spawn/swarmer,
+/obj/effect/landmark/swarmer_ruin_shell,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "i" = (
@@ -41,7 +41,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "l" = (
-/obj/effect/mob_spawn/swarmer,
+/obj/effect/landmark/swarmer_ruin_shell,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "m" = (

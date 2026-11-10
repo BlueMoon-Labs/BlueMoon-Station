@@ -1,6 +1,5 @@
 GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
-#define METAL_MODIFIER_LIMIT 3
 #define ANALYZER_SEND_LIMIT 2
 
 /datum/team/swarmer_team
@@ -231,10 +230,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/adjust_modifier(adjust_amount)
 	unlimited_metal_modifier += adjust_amount
-	metal_modifier = max(1, min(METAL_MODIFIER_LIMIT, unlimited_metal_modifier))
-
-/datum/team/swarmer_team/proc/get_metal_modifier_limit()
-	return METAL_MODIFIER_LIMIT
+	metal_modifier = max(1, min(SWARMER_METAL_MODIFIER_LIMIT, unlimited_metal_modifier))
 
 /datum/team/swarmer_team/proc/start_swarmers_destroying()
 	collapse_timer = null
@@ -310,7 +306,6 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 /datum/team/swarmer_team/proc/on_nanobot_fabricator_init(obj/structure/swarmer/nanobot_fabricator/fabricator)
 	return
 
-#undef METAL_MODIFIER_LIMIT
 #undef ANALYZER_SEND_LIMIT
 
 /datum/objective/swarmer_goal

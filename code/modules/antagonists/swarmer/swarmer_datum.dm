@@ -6,9 +6,14 @@
 	var/swarmer_class_info = "Если ты это видишь, это баг."
 	var/greet_sound = 'sound/swarmer/swarmer_intro.ogg'
 
+/datum/antagonist/swarmer/can_be_owned(datum/mind/new_owner)
+	var/datum/mind/tested = new_owner || owner
+	return isswarmer(tested?.current) && ..()
+
 /datum/antagonist/swarmer/on_gain()
 	if(!isswarmer(owner.current))
 		stack_trace("This antag datum cannot be attached to a mob of this type.")
+		return
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner.current
 	owner.special_role = ROLE_SWARMER
 	if(team?.swarmer_objective)
@@ -43,7 +48,7 @@
 	messages.Add("Все ваши выстрелы, включая от турелей, пролетают насквозь всех структур \"Свармеров\", кроме турелей.")
 	messages.Add("Вы можете телепортировать в обработчики семена, овощи, реагенты и растения с лотков, добывая с них органические ресурсы.")
 	messages.Add("Используя ПКМ на цели, вы сможете начать процесс телепортации существ, а также конвертации киборгов.")
-	messages.Add("Вы можете обработать только те вещи, что созданы из металла, стекла, пластика или титания.\n")
+	messages.Add("Вы можете обработать только те вещи, что созданы из металла, стекла, пластика или титана.\n")
 	messages.Add("[swarmer_class_info]\n")
 	SEND_SOUND(owner.current, sound(greet_sound))
 	to_chat(owner.current, messages.Join("\n"))

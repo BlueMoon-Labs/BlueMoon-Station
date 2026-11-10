@@ -31,7 +31,7 @@
 		var/oxygen = air?.get_moles(GAS_O2)
 		var/temperature = air?.return_temperature()
 		var/pressure = air?.return_pressure()
-		if(oxygen < 16 || oxygen > 50 || air?.get_moles(GAS_PLASMA) || air?.get_moles(GAS_CO2) >= 10 || temperature <= 270 || temperature >= 360 || pressure <= 20 || pressure >= 550)
+		if(oxygen < SWARMER_POD_MIN_OXYGEN || oxygen > SWARMER_POD_MAX_OXYGEN || air?.get_moles(GAS_PLASMA) || air?.get_moles(GAS_CO2) >= SWARMER_POD_MAX_CO2 || temperature <= SWARMER_POD_MIN_TEMPERATURE || temperature >= SWARMER_POD_MAX_TEMPERATURE || pressure <= SWARMER_POD_MIN_PRESSURE || pressure >= SWARMER_POD_MAX_PRESSURE)
 			fallback_turfs += landing_turf
 		else
 			landing_turfs += landing_turf
@@ -67,12 +67,12 @@
 	new /obj/structure/swarmer/core(src, team)
 	for(var/direction in GLOB.alldirs)
 		new /obj/structure/swarmer/blockade(src, team)
-	for(var/index in 1 to 4)
+	for(var/index in 1 to SWARMER_POD_SHELL_COUNT)
 		var/obj/effect/mob_spawn/swarmer/shell = new(src, team, TRUE)
 		shell.director_source_action = source_action
 		if(source_action)
-			shell.director_intensity = source_action.intensity / 4
-			shell.director_refund_cost = refund_cost / 4
+			shell.director_intensity = source_action.intensity / SWARMER_POD_SHELL_COUNT
+			shell.director_refund_cost = refund_cost / SWARMER_POD_SHELL_COUNT
 
 /obj/structure/closet/supplypod/swarmer/preOpen()
 	var/turf/landing_turf = get_turf(src)

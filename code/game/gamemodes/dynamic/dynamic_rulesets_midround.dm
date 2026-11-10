@@ -1369,7 +1369,7 @@
 /datum/dynamic_ruleset/midround/swarmers/execute()
 	var/result = launch_swarmer_pod(src, director_pending_cost)
 	if(result != SUCCESSFUL_SPAWN)
-		return MAP_ERROR
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/swarmers/director_execution_detail(assigned_this_attempt)

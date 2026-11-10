@@ -437,8 +437,9 @@
 	fail_disperse_teleport(target)
 
 /mob/living/simple_animal/hostile/swarmer/proc/fail_disperse_teleport(mob/living/target)
+	var/turf/origin = get_turf(target)
 	var/turf/safe_turf = team?.find_disperse_turf(target)
-	if(!safe_turf)
+	if(!safe_turf || !do_teleport(target, safe_turf) || QDELETED(target) || get_turf(target) == origin)
 		return
 
 	if(iscarbon(target))
@@ -449,9 +450,11 @@
 			carbon_target.update_handcuffed()
 
 	target.Sleeping(10 SECONDS)
-	do_teleport(target, safe_turf)
 
 /mob/living/simple_animal/hostile/swarmer/proc/try_convert(mob/living/silicon/robot/target)
+	if(target.shell)
+		balloon_alert(src, "нельзя пересобрать оболочку ИИ!")
+		return
 	if(training_origin || !target.mind)
 		balloon_alert(src, "не имеет разума!")
 		return
@@ -459,7 +462,7 @@
 	if(!do_after(src, 15 SECONDS, target))
 		balloon_alert(src, "сбито!")
 		return
-	if(QDELETED(target) || !target.mind || !team?.swarmer_core)
+	if(QDELETED(target) || target.shell || !target.mind || !team?.swarmer_core)
 		return
 	var/mob/living/simple_animal/hostile/swarmer/combat/new_swarmer = new(get_turf(target), team)
 	if(target.mmi)
@@ -474,14 +477,16 @@
 	qdel(target)
 
 /mob/living/simple_animal/hostile/swarmer/proc/extract_resources(atom/target, quiet = FALSE)
-	var/resource_gain = target.integrate_amount()
-	if(isnull(resource_gain))
-		CRASH("[target.type] swarmer_act uses consume return value, yet integrate_amount() proc returned null.")
-
 	if(QDELETED(target) || !team?.swarmer_core)
 		if(!quiet)
 			balloon_alert(src, "нет ядра!")
 		return FALSE
+
+	var/resource_gain = target.integrate_amount()
+	if(isnull(resource_gain))
+		CRASH("[target.type] swarmer_act uses consume return value, yet integrate_amount() proc returned null.")
+	if(istype(target, /obj/item/storage))
+		SEND_SIGNAL(target, COMSIG_TRY_STORAGE_QUICK_EMPTY, target.drop_location())
 	if(!resource_gain)
 		if(!quiet)
 			balloon_alert(src, "не совместимо!")
@@ -615,6 +620,8 @@
 		balloon_alert(src, "провал!")
 		return
 
+	if(locate(/obj/structure/lattice/catwalk/swarmer_catwalk) in target_turf)
+		return
 	if(!team?.adjust_metal(-2))
 		balloon_alert(src, "недостаточно ресурсов!")
 		return

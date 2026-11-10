@@ -54,16 +54,19 @@
 /obj/structure/swarmer/acp_turret/process(seconds_per_tick)
 	if(!length(processing_targets))
 		return PROCESS_KILL
-	if(!anchored)
-		return
 
 	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		processing_targets.Cut()
+		return PROCESS_KILL
 	for(var/mob/mob as anything in processing_targets)
 		var/turf/mob_turf = get_turf(mob)
 		if(QDELETED(mob) || !mob_turf || mob_turf.z != our_turf.z || get_dist(our_turf, mob_turf) > range)
 			processing_targets -= mob
 
-	if(!COOLDOWN_FINISHED(src, cooldown))
+	if(!length(processing_targets))
+		return PROCESS_KILL
+	if(!anchored || !COOLDOWN_FINISHED(src, cooldown))
 		return
 
 	strike()

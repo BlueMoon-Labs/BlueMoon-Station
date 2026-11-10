@@ -17,6 +17,7 @@
 	TEST_ASSERT(team.swarmer_core.swap_class(body, /mob/living/simple_animal/hostile/swarmer/generalist), "Дрон может сменить корпус через ядро.")
 	var/mob/living/simple_animal/hostile/swarmer/generalist/replacement = session.avatar_mind.current
 	TEST_ASSERT(istype(replacement) && replacement.team == team, "Смена корпуса сохраняет рой и разум участника.")
+	TEST_ASSERT_EQUAL(session.current_body, replacement, "Учебный сеанс использует новый корпус свармера.")
 	TEST_ASSERT_EQUAL(team.metallic_resources, 133, "Цена корпуса списана с общего счёта.")
 
 /datum/unit_test/antag_training_swarmer_isolated/Run()
