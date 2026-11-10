@@ -523,6 +523,7 @@
 #include "tgui_oversized_payload.dm"
 #include "tgui_pool_silent_client.dm"
 #include "tgui_preview_caches.dm"
+#include "tick_spike_sched_probe.dm"
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
 #include "turf_reservation_flag.dm"
