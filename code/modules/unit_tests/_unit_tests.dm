@@ -155,6 +155,7 @@
 #include "atmos_load_wakes.dm"
 #include "atmos_lobby_settling.dm"
 #include "atmos_native.dm"
+#include "atmos_pass_memos.dm"
 #include "atmos_performance.dm"
 #include "atmos_superconduction.dm"
 #include "atmos_planetary_churn.dm"
