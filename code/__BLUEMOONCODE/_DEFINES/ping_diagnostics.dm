@@ -58,6 +58,15 @@
 #define PING_DIAG_FAST_PROBE_DS 5
 #define PING_DIAG_VERDICT_EVERY_DS (10 SECONDS)
 #define PING_DIAG_CSV_EVERY_DS (1 MINUTES)
+/// Минутная запись идёт кусками: один фаер тратит на неё не больше этого, остальное - в следующих тиках.
+#define PING_DIAG_ROWS_SLICE_MS 2
+/// Шаги минутной записи: строки клиентов, ping-clients, ping-samples, ping-summary, последней ping-host.
+#define PING_DIAG_ROWS_IDLE 0
+#define PING_DIAG_ROWS_CLIENTS 1
+#define PING_DIAG_ROWS_WRITE_CLIENTS 2
+#define PING_DIAG_ROWS_WRITE_SAMPLES 3
+#define PING_DIAG_ROWS_WRITE_SUMMARY 4
+#define PING_DIAG_ROWS_WRITE_HOST 5
 #define PING_DIAG_HINT_HOLD_DS (3 MINUTES)
 #define PING_DIAG_MAX_EVENTS 100
 #define PING_DIAG_GRAPH_POINTS 300
@@ -86,8 +95,12 @@
 #define PING_DIAG_NEAR_RANGE 10
 
 #define PING_DIAG_CSV_HEADER "time,world_time,ckey,build,mob_kind,view,z_clients,near_clients,samples,base,rtt_median,rtt_p95,personal_median,spikes_per_min,loss_per_min,period_s,freezes,stall_mean,shared_mean,personal_mean,loop_lag,fps,browser_rtt,chat_rate,chat_messages,verdict,old_build"
-/// Хвост ss_* - цена самой подсистемы за минуту: фаеры, их сумма и максимум, чтение /proc, запись логов, расчёт минутных строк, мс.
-#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction,ss_fires,ss_fire_ms,ss_fire_max_ms,ss_proc_read_ms,ss_log_write_ms,ss_rows_ms"
+/**
+ * Хвост ss_* - цена самой подсистемы за минуту: фаеры, их сумма и максимум, чтение /proc, запись логов, расчёт минутных строк, мс.
+ * Дальше расчёт строк по этапам: сколько фаеров занял, срез клиентов, строки CSV, выборка сырых замеров, строки ping-samples,
+ * склейка, освобождение склеенного текста и самый долгий клиент.
+ */
+#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction,ss_fires,ss_fire_ms,ss_fire_max_ms,ss_proc_read_ms,ss_log_write_ms,ss_rows_ms,ss_rows_slices,ss_rows_snapshot_ms,ss_rows_csv_ms,ss_rows_raw_ms,ss_rows_lines_ms,ss_rows_join_ms,ss_rows_free_ms,ss_rows_client_max_ms"
 
 /// Таймеры rustg_time_microseconds для самозамера подсистемы.
 #define PING_DIAG_FIRE_TIMER "ping_diag_fire"

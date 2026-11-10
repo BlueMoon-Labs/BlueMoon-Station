@@ -432,6 +432,7 @@
 // #include "pills.dm"
 // #include "plantgrowth_tests.dm"
 #include "perf_log_columns.dm"
+#include "ping_diagnostics_rows.dm"
 #include "plane_master_backdrop.dm"
 #include "player_report_regressions.dm"
 #include "plumbing_ducts.dm"
