@@ -533,16 +533,20 @@
 	layer = FLY_LAYER
 	duration = SPACE_WIND_VISUAL_COOLDOWN * 2
 	mouse_opacity = 0
+	/// Турф, чей space_wind_visual указывает на визуал: увезённый шаттлом визуал по loc свой турф уже не найдёт.
+	var/turf/open/wind_turf
 
 /obj/effect/temp_visual/dir_setting/space_wind/Initialize(mapload, set_dir, set_alpha = 255)
 	. = ..()
+	if(isopenturf(loc))
+		wind_turf = loc
 	alpha = set_alpha
 	flick("space_wind", src)
 
 /obj/effect/temp_visual/dir_setting/space_wind/Destroy()
-	var/turf/open/wind_turf = loc
-	if(istype(wind_turf) && wind_turf.space_wind_visual == src)
+	if(wind_turf?.space_wind_visual == src)
 		wind_turf.space_wind_visual = null
+	wind_turf = null
 	return ..()
 
 /obj/effect/temp_visual/dir_setting/space_wind/proc/gust(set_dir, set_alpha)

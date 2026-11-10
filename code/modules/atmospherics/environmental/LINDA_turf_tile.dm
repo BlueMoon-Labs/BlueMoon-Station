@@ -1185,7 +1185,7 @@
 	if(pressure_difference > 100 && world.time >= next_space_wind_at)
 		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
 		var/wind_alpha = clamp(round(sqrt(pressure_difference) * 2), 10, 255)
-		if(QDELETED(space_wind_visual))
+		if(QDELETED(space_wind_visual) || space_wind_visual.loc != src)
 			space_wind_visual = new(src, pressure_direction, wind_alpha)
 		else
 			space_wind_visual.gust(pressure_direction, wind_alpha)
