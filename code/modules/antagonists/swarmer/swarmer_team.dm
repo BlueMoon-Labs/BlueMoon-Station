@@ -203,15 +203,16 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	var/turf/core_turf = get_turf(swarmer_core)
 	if(core_turf?.z != origin.z)
 		core_turf = null
+	var/core_radius = SWARMER_DISPERSE_CORE_RADIUS
 	var/require_safe = TRUE
-	var/turf/destination = pick_disperse_turf(target, origin, core_turf, require_safe)
+	var/turf/destination = pick_disperse_turf(target, origin, core_turf, core_radius, require_safe)
 	if(!destination && core_turf)
-		destination = pick_disperse_turf(target, origin, null, require_safe)
-		if(destination)
-			core_turf = null
+		core_radius = SWARMER_DISPERSE_FALLBACK_CORE_RADIUS
+		destination = pick_disperse_turf(target, origin, core_turf, core_radius, require_safe)
 	if(!destination)
+		core_radius = SWARMER_DISPERSE_CORE_RADIUS
 		require_safe = FALSE
-		destination = pick_disperse_turf(target, origin, core_turf, require_safe)
+		destination = pick_disperse_turf(target, origin, core_turf, core_radius, require_safe)
 
 	var/teleport_noise = GLOB.bluespace_teleport_noise
 	if(!destination || !teleport_noise)
@@ -222,7 +223,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	for(var/turf/open/floor/landing in get_teleport_turfs(destination, teleport_noise))
 		if(landing == destination || landing == origin || landing.density)
 			continue
-		if(core_turf && get_dist(core_turf, landing) <= SWARMER_DISPERSE_CORE_RADIUS)
+		if(core_turf && get_dist(core_turf, landing) <= core_radius)
 			continue
 		var/area/landing_area = landing.loc
 		if(!landing_area.is_station_member())
@@ -233,7 +234,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 			landings += landing
 	return pick(landings)
 
-/datum/team/swarmer_team/proc/pick_disperse_turf(mob/living/target, turf/origin, turf/core_turf, require_safe)
+/datum/team/swarmer_team/proc/pick_disperse_turf(mob/living/target, turf/origin, turf/core_turf, core_radius, require_safe)
 	var/turf/destination
 	var/best_roll = -1
 	for(var/area/destination_area as anything in SSmapping.areas_in_z["[origin.z]"])
@@ -242,7 +243,7 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 		for(var/turf/open/floor/candidate in destination_area)
 			if(candidate.z != origin.z || candidate == origin || candidate.density)
 				continue
-			if(core_turf && get_dist(core_turf, candidate) <= SWARMER_DISPERSE_CORE_RADIUS)
+			if(core_turf && get_dist(core_turf, candidate) <= core_radius)
 				continue
 			// Случайный приоритет позволяет проверять безопасность только у кандидатов, способных победить.
 			var/roll = rand()
