@@ -385,6 +385,7 @@
 #include "machinery_idle_sleep.dm"
 #include "machinery_optimization.dm"
 #include "mail_gc.dm"
+#include "mc_pacing.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
 #include "mc_state.dm"
