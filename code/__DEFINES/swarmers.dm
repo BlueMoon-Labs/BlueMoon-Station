@@ -67,7 +67,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 #define SWARMER_REPAIR_COST(swarmer) (is_builderswarmer(swarmer) ? 2 : 4)
 
 #define SWARMER_EMP_DAMAGE(severity) ((severity <= 1) ? 30 : 15)
-#define SWARMER_MOB_EMP_DAMAGE(severity) (max((72 * (severity) / 100), 72*2))
+#define SWARMER_MOB_EMP_DAMAGE(severity) (min((72 * (severity) / 100), 72*2))
 #define SWARMER_STRUCTURE_EMP_DURATION 10 SECONDS
 #define SWARMER_FLASH_ATTACK_STUN 4 SECONDS
 #define SWARMER_FLASHBANG_STUN 2 SECONDS
