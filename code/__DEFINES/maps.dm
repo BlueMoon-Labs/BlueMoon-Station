@@ -114,7 +114,6 @@ require only minor tweaks.
 // ZTRAIT_UP/ZTRAIT_DOWN - смещение до соседа, а не номер уровня; джунгли грузятся первыми, поверхность прямо над ними.
 #define ZTRAITS_LAVALAND_JUNGLE list(\
 	ZTRAIT_MINING = TRUE, \
-	//ZTRAIT_ASHSTORM = TRUE, \
 	ZTRAIT_LAVA_JUNGLE_RUINS = TRUE, \
 	ZTRAIT_BOMBCAP_MULTIPLIER = 2, \
 	ZTRAIT_UP = 1, \
