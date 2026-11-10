@@ -171,7 +171,7 @@
 	if(safe_turf)
 		playsound(src, 'sound/effects/sparks4.ogg', 50, TRUE)
 		target.SetSleeping(5 SECONDS)
-		do_teleport(target, safe_turf)
+		team.teleport_disperse_target(target, safe_turf)
 	if(!QDELETED(target) && target.loc == src)
 		target.forceMove(drop_location())
 

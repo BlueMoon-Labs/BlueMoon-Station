@@ -198,15 +198,14 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
 /datum/team/swarmer_team/proc/find_disperse_turf(mob/living/target)
 	var/turf/origin = get_turf(target)
-	if(!origin)
+	if(!origin || !is_station_level(origin.z))
 		return null
 	var/turf/core_turf = get_turf(swarmer_core) || origin
 	var/area/core_area = get_area(core_turf)
-	var/teleport_noise = GLOB.bluespace_teleport_noise
 	var/turf/farthest
 	var/max_distance_squared = -1
 	for(var/area/destination_area as anything in SSmapping.areas_in_z["[origin.z]"])
-		if(destination_area == core_area || istype(destination_area, /area/space) || (destination_area.area_flags & NOTELEPORT))
+		if(destination_area == core_area || (destination_area.area_flags & NOTELEPORT) || !destination_area.is_station_member())
 			continue
 		for(var/turf/open/floor/candidate in destination_area)
 			if(candidate.z != origin.z || candidate == origin || candidate.density)
@@ -214,19 +213,29 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 			var/dx = candidate.x - core_turf.x
 			var/dy = candidate.y - core_turf.y
 			var/distance_squared = dx * dx + dy * dy
-			if(distance_squared <= max_distance_squared || !is_safe_turf(candidate) || !target.training_move_allowed(candidate))
+			if(distance_squared <= max_distance_squared || candidate.is_transition_turf() || !is_safe_turf(candidate) || !target.training_move_allowed(candidate))
 				continue
-			if(teleport_noise)
-				var/overlaps_core = FALSE
-				for(var/turf/landing as anything in get_teleport_turfs(candidate, teleport_noise))
-					if(landing.loc == core_area)
-						overlaps_core = TRUE
-						break
-				if(overlaps_core)
-					continue
 			max_distance_squared = distance_squared
 			farthest = candidate
-	return farthest
+	var/teleport_noise = GLOB.bluespace_teleport_noise
+	if(!farthest || !teleport_noise)
+		return farthest
+
+	// Учитываем разброс здесь, чтобы точка прибытия прошла те же проверки безопасности.
+	var/list/safe_landings = list(farthest)
+	for(var/turf/open/floor/landing in get_teleport_turfs(farthest, teleport_noise))
+		if(landing == farthest || landing == origin || landing.density)
+			continue
+		var/area/landing_area = landing.loc
+		if(landing_area == core_area || !landing_area.is_station_member())
+			continue
+		if(is_safe_turf(landing) && target.training_move_allowed(landing))
+			safe_landings += landing
+	return pick(safe_landings)
+
+/datum/team/swarmer_team/proc/teleport_disperse_target(mob/living/target, turf/destination)
+	// Точка уже учитывает разброс, поэтому компенсируем его в общем проке телепортации.
+	return do_teleport(target, destination, precision = -GLOB.bluespace_teleport_noise)
 
 /datum/team/swarmer_team/proc/adjust_modifier(adjust_amount)
 	unlimited_metal_modifier += adjust_amount

@@ -439,7 +439,7 @@
 /mob/living/simple_animal/hostile/swarmer/proc/fail_disperse_teleport(mob/living/target)
 	var/turf/origin = get_turf(target)
 	var/turf/safe_turf = team?.find_disperse_turf(target)
-	if(!safe_turf || !do_teleport(target, safe_turf) || QDELETED(target) || get_turf(target) == origin)
+	if(!safe_turf || !team.teleport_disperse_target(target, safe_turf) || QDELETED(target) || get_turf(target) == origin)
 		return
 
 	if(iscarbon(target))
