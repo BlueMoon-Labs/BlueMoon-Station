@@ -183,12 +183,11 @@
 
 /obj/structure/swarmer/organic_analyzer/proc/refresh_air()
 	QDEL_NULL(air_contents)
-	air_contents = new
+	// Стандартный объём даёт достаточно молей кислорода для дыхания простых мобов.
+	air_contents = new(CELL_VOLUME)
 	air_contents.set_temperature(T20C)
-	air_contents.volume = 50
-
-	air_contents.set_moles(GAS_O2, O2STANDARD * ONE_ATMOSPHERE * 50 / (R_IDEAL_GAS_EQUATION * T20C))
-	air_contents.set_moles(GAS_N2, N2STANDARD * ONE_ATMOSPHERE * 50 / (R_IDEAL_GAS_EQUATION * T20C))
+	air_contents.set_moles(GAS_O2, MOLES_O2STANDARD)
+	air_contents.set_moles(GAS_N2, MOLES_N2STANDARD)
 
 /obj/structure/swarmer/organic_analyzer/swarmer_grab_act(mob/living/simple_animal/hostile/swarmer/swarmer)
 	if(!occupant)
