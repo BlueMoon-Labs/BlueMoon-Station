@@ -206,13 +206,17 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	// the departing images are removed from GLOB.ghost_images_* they would stay in
 	// other observer client.images unless we explicitly remove them first.
 	if(departing_default || departing_simple)
+		// Клиенту выдан только набор его lastsetting, а каждое снятие - проход по всему client.images.
 		for(var/mob/dead/observer/O in GLOB.player_list)
 			if(!O.client)
 				continue
-			if(departing_default)
-				O.client.images -= departing_default
-			if(departing_simple)
-				O.client.images -= departing_simple
+			switch(O.lastsetting)
+				if(GHOST_OTHERS_DEFAULT_SPRITE)
+					if(departing_default)
+						O.client.images -= departing_default
+				if(GHOST_OTHERS_SIMPLE)
+					if(departing_simple)
+						O.client.images -= departing_simple
 
 	GLOB.ghost_images_default -= ghostimage_default
 	QDEL_NULL(ghostimage_default)
@@ -761,11 +765,12 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			continue
 		if(!O.ghostvision)
 			continue
+		// Картинка создана только что и ни у кого её ещё нет: проверка |= прошла бы весь client.images впустую.
 		switch(O.lastsetting)
 			if(GHOST_OTHERS_DEFAULT_SPRITE)
-				O.client.images |= ghostimage_default
+				O.client.images += ghostimage_default
 			if(GHOST_OTHERS_SIMPLE)
-				O.client.images |= ghostimage_simple
+				O.client.images += ghostimage_simple
 
 /mob/dead/observer/proc/updateghostimages()
 	if (!client)

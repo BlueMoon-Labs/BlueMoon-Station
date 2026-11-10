@@ -2525,8 +2525,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
 		return FALSE
+	var/list/kept_slot_names
+	var/list/kept_slot_custom_names
 	if(!export)
 		S.cd = "/character[default_slot]"
+		kept_slot_names = slot_names_cache
+		kept_slot_custom_names = slot_custom_names_cache
 		slot_names_cache = null
 		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
 		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
@@ -2851,6 +2855,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			write_pending_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
+		// Запись меняет имя только своего слота: смена слота сразу после неё не перечитывает весь сейвфайл.
+		if(length(kept_slot_names) == max_save_slots && length(kept_slot_custom_names) == max_save_slots)
+			kept_slot_names[default_slot] = real_name
+			kept_slot_custom_names[default_slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(character_slot_name))), 1, MAX_NAME_LEN + 1)
+			slot_names_cache = kept_slot_names
+			slot_custom_names_cache = kept_slot_custom_names
 		character_setup_ui?.record_saved_state()
 	return S
 
