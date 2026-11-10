@@ -30,6 +30,13 @@ STATIONNAME Space Station 13
 ##This is currently a testing optimized setting. A good value for production would be 98.
 TICK_LIMIT_MC_INIT 500
 
+## Сколько процентов тика фоновые подсистемы (атмос, обработка и т.п.) вместе занимают за один тик, пока в раунде есть игроки.
+## Меньше - ровнее пинг, но под нагрузкой фоновая работа идёт медленнее. 0 - без потолка.
+#MC_BACKGROUND_TICK_BUDGET 35
+
+## Растягивать проход подсистемы по тикам её интервала вместо одного длинного куска. 0 - выключить.
+#MC_PACE_PASSES 1
+
 ##Defines the ticklag for the world. Ticklag is the amount of time between game ticks (aka byond ticks) (in 1/10ths of a second).
 ##	This also controls the client network update rate, as well as the default client fps
 TICKLAG 0.5

@@ -23,12 +23,8 @@
 	var/list/smes_inputs
 	/// Узлы экспорта энергии этого цикла: продают остаток после СМЕС в reset().
 	var/list/export_nodes
-	/// world.time создания: отложенные auto_propogate_cut_cable по нему понимают,
-	/// что их фрагмент уже перестроил другой колбек этого же тика (см. cable.dm)
-	var/created_at = 0
 
 /datum/powernet/New()
-	created_at = world.time
 	SSmachines.powernets += src
 
 /datum/powernet/Destroy()

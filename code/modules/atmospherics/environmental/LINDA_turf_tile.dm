@@ -1077,7 +1077,14 @@
 	ATMOS_TPROF_ADD("planet")
 
 	ATMOS_TPROF_MARK
-	var/reaction_result = our_air.react(src)
+	var/reaction_result
+	// Мемо пустого react() проверяется здесь же, без вызова прока: у осевшего турфа смесь не меняется проходами подряд.
+	if(our_air.react_idle_rev == our_air.mutation_rev && our_air.react_idle_index == air_controller.reaction_index_rev)
+		reaction_result = NO_REACTION
+		if(length(our_air.reaction_results))
+			our_air.reaction_results.Cut()
+	else
+		reaction_result = our_air.react(src)
 	ATMOS_TPROF_ADD("react")
 	ATMOS_TPROF_COUNT_IF(reaction_result & REACTING, "reactions")
 
@@ -1091,12 +1098,20 @@
 	ATMOS_TPROF_MARK
 	ATMOS_TPROF_COUNT_IF(atmos_visual_rev == our_air.mutation_rev, "vis_memo")
 	if(atmos_visual_rev != our_air.mutation_rev)
-		// Чистый воздух без старого оверлея - тот же ранний выход, что в update_visuals(), без вызова прока.
-		var/list/visual_gases = our_air.gases
-		if(!atmos_overlay_types && length(visual_gases) == 2 && visual_gases[GAS_O2] && visual_gases[GAS_N2])
-			atmos_visual_rev = our_air.mutation_rev
-		else
+		// Без старого оверлея и без газа выше порога видимости update_visuals() ничего не нарисует: тот же выход без вызова прока.
+		var/overlay_candidate = atmos_overlay_types
+		if(!overlay_candidate)
+			var/static/list/no_overlay_gases = typecache_of_gases_with_no_overlays()
+			var/list/gas_visibility = GLOB.gas_data.visibility
+			for(var/gas_id, gas_moles in our_air.gases)
+				var/visible_from = gas_visibility[gas_id]
+				if(visible_from && gas_moles > visible_from && !no_overlay_gases[gas_id])
+					overlay_candidate = TRUE
+					break
+		if(overlay_candidate)
 			update_visuals()
+		else
+			atmos_visual_rev = our_air.mutation_rev
 	ATMOS_TPROF_ADD("visuals")
 
 	ATMOS_TPROF_MARK
@@ -1185,7 +1200,7 @@
 	if(pressure_difference > 100 && world.time >= next_space_wind_at)
 		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
 		var/wind_alpha = clamp(round(sqrt(pressure_difference) * 2), 10, 255)
-		if(QDELETED(space_wind_visual))
+		if(QDELETED(space_wind_visual) || space_wind_visual.loc != src)
 			space_wind_visual = new(src, pressure_direction, wind_alpha)
 		else
 			space_wind_visual.gust(pressure_direction, wind_alpha)

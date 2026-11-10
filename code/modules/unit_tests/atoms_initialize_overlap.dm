@@ -36,10 +36,10 @@
 	var/obj/machinery/atmospherics/pipe/simple/pipe = new(run_loc_floor_top_right)
 	var/waiting_late = (pipe in SSatoms.late_loaders)
 	qdel(pipe)
-	var/pipe_refs = refcount(pipe)
+	var/pipe_refs = EXTERNAL_REFCOUNT(pipe)
 	TEST_ASSERT(mode_after == INITIALIZATION_INNEW_REGULAR, "После обеих загрузок новые атомы снова создаются не как часть карты, а режим [mode_after].")
 	TEST_ASSERT(!waiting_late, "Труба, поставленная после загрузок, не ждёт чужой загрузки в late_loaders.")
-	TEST_ASSERT(pipe_refs == 1, "Удалённую трубу держит только локальная переменная теста, а ссылок [pipe_refs].")
+	TEST_ASSERT(pipe_refs == 0, "Удалённую трубу держит только локальная переменная теста, а чужих ссылок [pipe_refs].")
 
 /datum/unit_test/atoms_initialize_overlap/Destroy()
 	// Красный прогон оставляет режим карты: остальные тесты мира не должны его унаследовать.

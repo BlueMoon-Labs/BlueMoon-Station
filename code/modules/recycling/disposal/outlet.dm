@@ -62,17 +62,28 @@
 	if(playsound)
 		playsound(src, 'sound/machines/hiss.ogg', 50, 0, 0)
 
-	if(!H)
+	if(QDELETED(H))
 		return
 
 	var/turf/T = get_turf(src)
+	var/eject_dir = dir
+	var/turf/eject_target = target
+	var/range = eject_range
 
-	for(var/A in H)
-		var/atom/movable/AM = A
+	// Слитые в трубе пачки бывают по сотне предметов, и каждый бросок на общий турф дороже
+	// предыдущего: выброс идёт кусками по тикам. Холдер в это время могут слить с новым.
+	for(var/atom/movable/AM as anything in H)
+		if(QDELETED(H))
+			return
+		if(AM.loc != H)
+			continue
 		AM.forceMove(T)
-		AM.pipe_eject(dir)
-		AM.throw_at(target, eject_range, 1)
+		AM.pipe_eject(eject_dir)
+		AM.throw_at(eject_target, range, 1)
+		CHECK_TICK
 
+	if(QDELETED(H))
+		return
 	H.vent_gas(T)
 	qdel(H)
 

@@ -202,6 +202,9 @@
 	var/hit_incapacitated_targets = FALSE
 
 /obj/item/projectile/Initialize(mapload)
+	// A hitscan shot finishes within the tick and is never drawn: its tracers carry the light.
+	if(hitscan)
+		light_range = 0
 	. = ..()
 	decayedRange = range
 	if(embedding)
@@ -802,10 +805,11 @@
 	var/use_fired_range = fired_light_range || light_range
 	var/use_fired_power = fired_light_intensity || light_power || 1
 	var/use_fired_color = fired_light_color || light_color
-	if(use_fired_range > 0)
-		set_light(use_fired_range, use_fired_power, use_fired_color)
-	else
-		set_light(fired_light_range, fired_light_intensity, fired_light_color)
+	if(!hitscan)
+		if(use_fired_range > 0)
+			set_light(use_fired_range, use_fired_power, use_fired_color)
+		else
+			set_light(fired_light_range, fired_light_intensity, fired_light_color)
 	trajectory_ignore_forcemove = FALSE
 	if(isnull(pixel_increment_amount))
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
@@ -1123,10 +1127,19 @@
 	if(!length(beam_segments))
 		return
 	. = list()
+	// Everything that lives for duration goes away on one timer per shot.
+	var/list/expiring = list()
 	if(tracer_type)
 		var/list/turfs = list()
 		for(var/datum/point/p in beam_segments)
-			. += generate_tracer_between_points(p, beam_segments[p], tracer_type, color, duration, hitscan_light_range, hitscan_light_color_override, hitscan_light_intensity, turfs)
+			. += generate_tracer_between_points(p, beam_segments[p], tracer_type, color, 0, hitscan_light_range, hitscan_light_color_override, hitscan_light_intensity, turfs)
+		if(duration > 0)
+			expiring += .
+		var/list/lights = generate_tracer_lighting(turfs, isnull(hitscan_light_color_override) ? color : hitscan_light_color_override, hitscan_light_range, hitscan_light_intensity)
+		if(duration > 0)
+			expiring += lights
+		else if(length(lights))
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(______qdel_list_wrapper), lights), 5)
 	if(muzzle_type && duration > 0)
 		var/datum/point/p = beam_segments[1]
 		var/atom/movable/thing = new muzzle_type
@@ -1137,7 +1150,7 @@
 		thing.transform = M
 		thing.color = color
 		thing.set_light(muzzle_flash_range, muzzle_flash_intensity, muzzle_flash_color_override? muzzle_flash_color_override : color)
-		QDEL_IN(thing, duration)
+		expiring += thing
 	if(impacting && impact_type && duration > 0)
 		var/datum/point/p = beam_segments[beam_segments[beam_segments.len]]
 		var/atom/movable/thing = new impact_type
@@ -1148,7 +1161,9 @@
 		thing.transform = M
 		thing.color = color
 		thing.set_light(impact_light_range, impact_light_intensity, impact_light_color_override? impact_light_color_override : color)
-		QDEL_IN(thing, duration)
+		expiring += thing
+	if(length(expiring))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(______qdel_list_wrapper), expiring), duration)
 	if(cleanup)
 		cleanup_beam_segments()
 
