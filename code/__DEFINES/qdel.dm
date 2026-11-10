@@ -48,6 +48,10 @@
 #define GC_WARNFAIL_TIMEOUT   (90 SECONDS)
 /// Time before hard delete fires (15 seconds).
 #define GC_HARDDEL_TIMEOUT    (15 SECONDS)
+/// Через сколько запись softcheck, которую держит одна очередь, отпускается раньше GC_SOFTCHECK_TIMEOUT.
+#define GC_SOFTCHECK_FILTER_DELAY (1 SECONDS)
+/// Повторная проверка тех же записей: к ней уже отпущен удалённый объект из более поздней записи, державший эту.
+#define GC_SOFTCHECK_RECHECK_DELAY (5 SECONDS)
 /// Historical delayed-qdel threshold: timers above this use weakrefs instead of strong refs.
 #define GC_FILTER_QUEUE (2 MINUTES)
 /// Historical hard-delete grace window used outside the GC subsystem.
@@ -127,6 +131,8 @@
 #define GC_QUEUED_FOR_QUEUING        -1
 /// Object is currently inside its Destroy() proc.
 #define GC_CURRENTLY_BEING_QDELETED  -2
+/// Метка вместо world.time 0: QDELING() читает gc_destroyed как истину, и qdel на старте мира оставлял датум живым.
+#define GC_DESTROYED_AT_WORLD_START  0.1
 
 // ===== Hard-delete controller modes =====
 #define GC_HARDDEL_MODE_HOLD 1
@@ -152,11 +158,14 @@
 /// Минимальный интервал семплирования монитора refcount.
 #define REFCOUNT_MONITOR_MIN_INTERVAL (0.2 SECONDS)
 
-/// Число ссылок на датум помимо ОДНОЙ локальной переменной, через которую его читают.
+/// Число ссылок на датум помимо ОДНОЙ локальной переменной, через которую его читают, и слотов очереди GC.
 /// Контракт: на момент вызова D хранится ровно в одной локали текущего прока.
 /// refcount() своих аргументов не считает (builtin), считает саму локаль - вычитаем её.
 /// Калибровка закреплена тестом /datum/unit_test/gc_refcount_calibration.
-#define EXTERNAL_REFCOUNT(D) (refcount(D) - 1)
+#define EXTERNAL_REFCOUNT(D) (refcount(D) - 1 - SSgarbage.CountQueueSlots(D))
+
+/// Ссылки на датум из записи очереди GC, когда больше его никто не держит: сам слот и локаль, в которую его прочли.
+#define GC_QUEUE_ONLY_REFS 2
 
 /// Служебные ссылки на датум в точке OnLevelFail: локаль HandleLevel + аргумент OnLevelFail.
 /// Закреплено тестом /datum/unit_test/gc_refcount_telemetry.

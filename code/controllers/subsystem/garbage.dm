@@ -144,7 +144,7 @@ SUBSYSTEM_DEF(garbage)
 	// Parallel array queue storage.
 	// queue_origin_times[level] = list of world.time numerics when each datum first entered GC.
 	// queue_times[level] = list of world.time numerics when each entry was queued.
-	// queue_refs[level]  = list of "\ref[D]" strings.
+	// queue_refs[level]  = list of the queued datums themselves (hard refs, see GC_QUEUE_ONLY_REFS).
 	// queue_hints[level] = list of qdel_hint values (or null).
 	// queue_types[level] = list of "[D.type]" strings (preserved after GC for diagnostics).
 	// queue_heads[level] = integer index of the first unprocessed slot.
@@ -155,8 +155,11 @@ SUBSYSTEM_DEF(garbage)
 	var/list/queue_hints
 	var/list/queue_types
 	var/list/queue_heads
+	/// Курсоры FilterSoftcheck(): первый ещё не проверенный слот softcheck для первой проверки и для повторной.
+	var/list/softcheck_filter_heads = list(1, 1)
 
 	/// Точечные запросы "найти ссылки при фейле": REF-строка -> TRUE.
+	/// Строки REF держат только редкие записи: удерживаемые REF подряд созданных объектов стопорят BYOND на сотни мс на каждой ~981-й.
 	var/list/reference_find_on_fail = list()
 	/// Отложенные дорогие хардделы: REF-строка -> world.time первого откладывания.
 	var/list/deferred_harddels = list()
@@ -388,6 +391,7 @@ SUBSYSTEM_DEF(garbage)
 	queue_hints  = new(GC_QUEUE_COUNT)
 	queue_types  = new(GC_QUEUE_COUNT)
 	queue_heads  = new(GC_QUEUE_COUNT)
+	softcheck_filter_heads = list(1, 1)
 	pass_counts  = new(GC_QUEUE_COUNT)
 	fail_counts  = new(GC_QUEUE_COUNT)
 	peak_queue_depths = new(GC_QUEUE_COUNT)
@@ -783,36 +787,37 @@ SUBSYSTEM_DEF(garbage)
 		var/origin_time = O[i]
 		if (isnull(origin_time))
 			origin_time = entry_time
-		var/refID = R[i]
+		var/datum/D = R[i]
+		// refcount() раньше чтения D.gc_destroyed: чтение вара через объект держит его во временном слоте кадра.
+		var/collected = isnull(D) || refcount(D) == GC_QUEUE_ONLY_REFS || D.gc_destroyed != entry_time
 		var/queued_hint = H[i]
 		var/queued_type = Y[i]
+		// REF-строка нужна только утечкам стадии харддела: отложенные хардделы ключуются по ней.
+		var/refID
 
 		// Pre-flight check for hard-delete: don't start an expensive del() if budget is tight.
 		// Must happen BEFORE tombstoning — if we yield here, the entry stays intact for next fire.
-		// We also resolve the datum early to avoid a second locate() call below.
-		var/datum/D
 		// Отложенная запись стоит копейки: бюджет и потолок del() на неё не тратим.
 		var/defer_harddel = FALSE
-		if (hd_level_start)
-			D = locate(refID)
-			if (D && D.gc_destroyed == entry_time)
-				var/datum/qdel_item/harddel_item = GetOrCreateItem(D.type)
-				defer_harddel = ShouldDeferHardDelete(harddel_item, refID, queued_hint)
-				var/type_avg_ms = harddel_item.hard_delete_avg_ms
-				var/bootstrap_delete = (hd_count == 0) && ((type_avg_ms <= 0) || (hd_mode != GC_HARDDEL_MODE_HOLD))
-				if (!bootstrap_delete && !defer_harddel)
-					if (hd_count >= hd_cap)
-						SaveQueueLevel(level, O, T, R, H, Y)
-						queue_heads[level] = head
-						MaybeCompact(level, head)
-						return
-					var/remaining = hd_budget - TICK_USAGE_TO_MS(hd_level_start)
-					var/estimated_next_cost = (type_avg_ms > 0) ? type_avg_ms : max(harddel_ms_avg, 4)
-					if (remaining < estimated_next_cost * 1.25)
-						SaveQueueLevel(level, O, T, R, H, Y)
-						queue_heads[level] = head
-						MaybeCompact(level, head)
-						return
+		if (hd_level_start && !collected)
+			refID = REF(D)
+			var/datum/qdel_item/harddel_item = GetOrCreateItem(D.type)
+			defer_harddel = ShouldDeferHardDelete(harddel_item, refID, queued_hint)
+			var/type_avg_ms = harddel_item.hard_delete_avg_ms
+			var/bootstrap_delete = (hd_count == 0) && ((type_avg_ms <= 0) || (hd_mode != GC_HARDDEL_MODE_HOLD))
+			if (!bootstrap_delete && !defer_harddel)
+				if (hd_count >= hd_cap)
+					SaveQueueLevel(level, O, T, R, H, Y)
+					queue_heads[level] = head
+					MaybeCompact(level, head)
+					return
+				var/remaining = hd_budget - TICK_USAGE_TO_MS(hd_level_start)
+				var/estimated_next_cost = (type_avg_ms > 0) ? type_avg_ms : max(harddel_ms_avg, 4)
+				if (remaining < estimated_next_cost * 1.25)
+					SaveQueueLevel(level, O, T, R, H, Y)
+					queue_heads[level] = head
+					MaybeCompact(level, head)
+					return
 
 		// Tombstone immediately so re-entrant qdels don't double-process this slot
 		O[i] = null
@@ -832,18 +837,18 @@ SUBSYSTEM_DEF(garbage)
 				profiler_hd_checked++
 		#endif
 
-		if (!hd_level_start)
-			D = locate(refID)
-		if (!D || D.gc_destroyed != entry_time)
-			// GC succeeded — object was collected
+		if (collected)
+			// GC succeeded — nothing but this slot held the object
 			gcedlasttick++
 			totalgcs++
 			pass_counts[level]++
-			reference_find_on_fail -= refID
-			if (hd_level_start && deferred_harddels[refID])
-				harddels_avoided++
-				log_harddel("## GC: харддел не понадобился [queued_type]: собрался сам через [round((world.time - deferred_harddels[refID]) / 10)]с ожидания")
-				deferred_harddels -= refID
+			if (D && (length(reference_find_on_fail) || (hd_level_start && length(deferred_harddels))))
+				refID = REF(D)
+				reference_find_on_fail -= refID
+				if (hd_level_start && deferred_harddels[refID])
+					harddels_avoided++
+					log_harddel("## GC: харддел не понадобился [queued_type]: собрался сам через [round((world.time - deferred_harddels[refID]) / 10)]с ожидания")
+					deferred_harddels -= refID
 		else
 			if (hd_level_start && !defer_harddel)
 				hd_count++
@@ -874,6 +879,48 @@ SUBSYSTEM_DEF(garbage)
 	SaveQueueLevel(level, O, T, R, H, Y)
 	queue_heads[level] = head
 	MaybeCompact(level, head)
+	if (level != GC_QUEUE_SOFTCHECK)
+		return
+	FilterSoftcheck(1, GC_SOFTCHECK_FILTER_DELAY)
+	if (state == SS_RUNNING)
+		FilterSoftcheck(2, GC_SOFTCHECK_RECHECK_DELAY)
+
+/**
+ * Отпускает записи softcheck старше delay, которые держит одна очередь.
+ * Иначе каждый qdel-нутый объект жил бы GC_SOFTCHECK_TIMEOUT и был бы виден в `for(... in world)`.
+ * Повторная проверка ловит объекты, которые держал другой удалённый объект из более поздней записи.
+ */
+/datum/controller/subsystem/garbage/proc/FilterSoftcheck(cursor, delay)
+	var/cut_off_time = world.time - min(delay, collection_timeout[GC_QUEUE_SOFTCHECK])
+	var/list/O = queue_origin_times[GC_QUEUE_SOFTCHECK]
+	var/list/T = queue_times[GC_QUEUE_SOFTCHECK]
+	var/list/R = queue_refs[GC_QUEUE_SOFTCHECK]
+	var/list/H = queue_hints[GC_QUEUE_SOFTCHECK]
+	var/list/Y = queue_types[GC_QUEUE_SOFTCHECK]
+	var/qlen = length(T)
+	var/start = max(softcheck_filter_heads[cursor], queue_heads[GC_QUEUE_SOFTCHECK])
+	softcheck_filter_heads[cursor] = start
+	for (var/i in start to qlen)
+		var/entry_time = T[i]
+		if (!isnull(entry_time))
+			if (entry_time > cut_off_time)
+				return
+			var/datum/D = R[i]
+			// Без чтения варов D: чтение через объект держит его во временном слоте кадра.
+			if (D && refcount(D) == GC_QUEUE_ONLY_REFS)
+				O[i] = null
+				T[i] = null
+				R[i] = null
+				H[i] = null
+				Y[i] = null
+				gcedlasttick++
+				totalgcs++
+				pass_counts[GC_QUEUE_SOFTCHECK]++
+				if (length(reference_find_on_fail))
+					reference_find_on_fail -= REF(D)
+		softcheck_filter_heads[cursor] = i + 1
+		if (MC_TICK_CHECK)
+			return
 
 /// Handles a GC failure at the given queue level — logs, notifies, and escalates.
 /datum/controller/subsystem/garbage/proc/OnLevelFail(datum/D, level, refID, origin_time, hint)
@@ -882,6 +929,8 @@ SUBSYSTEM_DEF(garbage)
 	var/datum/qdel_item/I = GetOrCreateItem(type)
 	// D держат локаль HandleLevel и наш аргумент; остальное - внешние держатели.
 	var/external_refs = max(refcount(D) - GC_FAIL_PATH_INTERNAL_REFS, 0)
+	if (isnull(refID) && (level != GC_QUEUE_SOFTCHECK || length(reference_find_on_fail)))
+		refID = REF(D)
 
 	switch (level)
 		if (GC_QUEUE_SOFTCHECK)
@@ -1007,6 +1056,9 @@ SUBSYSTEM_DEF(garbage)
 	types.Cut(1, head)
 	SaveQueueLevel(level, origins, times, refs, hints, types)
 	queue_heads[level] = 1
+	if (level == GC_QUEUE_SOFTCHECK)
+		for (var/cursor in 1 to length(softcheck_filter_heads))
+			softcheck_filter_heads[cursor] = max(softcheck_filter_heads[cursor] - (head - 1), 1)
 	#ifdef GC_PROFILER
 	profiler_compact_events++
 	rustg_log_write("data/logs/gc_profiler_compact.csv", "[world.time],[level],[head],[profiler_old_len],[round(TICK_USAGE_TO_MS(profiler_compact_start), 0.01)]\n", "false")
@@ -1021,6 +1073,8 @@ SUBSYSTEM_DEF(garbage)
 		return
 	if (isnull(queued_at))
 		queued_at = world.time
+	if (!queued_at)
+		queued_at = GC_DESTROYED_AT_WORLD_START
 	if (isnull(origin_time))
 		origin_time = queued_at
 	D.gc_destroyed = queued_at
@@ -1032,7 +1086,7 @@ SUBSYSTEM_DEF(garbage)
 	var/list/Y = queue_types[level]
 	O += origin_time
 	T += queued_at
-	R += REF(D)
+	R += D
 	H += qdel_hint
 	Y += "[D.type]"
 	SaveQueueLevel(level, O, T, R, H, Y)
@@ -1043,23 +1097,36 @@ SUBSYSTEM_DEF(garbage)
 		peak_queue_depths[level] = depth
 
 /// Returns the datum currently represented by the queue slot, or null if the slot is stale.
-/datum/controller/subsystem/garbage/proc/GetQueuedDatum(level, index)
+/// held_only: и null, если датум держит только сама очередь (он уже собрался бы).
+/datum/controller/subsystem/garbage/proc/GetQueuedDatum(level, index, held_only = FALSE)
 	if (level < 1 || level > GC_QUEUE_COUNT)
 		return null
 	var/list/refs = queue_refs[level]
 	if (index < 1 || index > length(refs))
 		return null
-	var/refID = refs[index]
-	if (isnull(refID))
+	var/datum/D = refs[index]
+	if (isnull(D) || (held_only && refcount(D) == GC_QUEUE_ONLY_REFS))
 		return null
 	var/list/times = queue_times[level]
 	var/queued_at = times[index]
-	if (isnull(queued_at))
-		return null
-	var/datum/D = locate(refID)
-	if (!D || D.gc_destroyed != queued_at)
+	if (isnull(queued_at) || D.gc_destroyed != queued_at)
 		return null
 	return D
+
+/// Сколько уровней очереди держат датум в слоте; EXTERNAL_REFCOUNT вычитает эти ссылки.
+/datum/controller/subsystem/garbage/proc/CountQueueSlots(datum/D)
+	if (!D?.gc_destroyed || !queue_refs)
+		return 0
+	. = 0
+	for (var/level in 1 to GC_QUEUE_COUNT)
+		var/list/refs = queue_refs[level]
+		if (D in refs)
+			.++
+
+/// Лежит ли в очереди level датум с этой REF-строкой. Для тестов и отладки: locate() годится, пока слот держит датум.
+/datum/controller/subsystem/garbage/proc/IsRefQueued(level, ref_id)
+	var/datum/D = locate(ref_id)
+	return !isnull(D) && (D in queue_refs[level])
 
 /// Imports queued entries while preserving both original qdel time and current stage time.
 /datum/controller/subsystem/garbage/proc/RecoverQueueEntries(list/source_refs, list/source_times, list/source_origin_times, list/source_hints, list/source_heads)
@@ -1078,8 +1145,8 @@ SUBSYSTEM_DEF(garbage)
 		for (var/j in old_head to length(old_refs))
 			if (isnull(old_refs[j]) || isnull(old_times[j]))
 				continue
-			var/datum/D = locate(old_refs[j])
-			if (D && D.gc_destroyed == old_times[j])
+			var/datum/D = old_refs[j]
+			if (D.gc_destroyed == old_times[j])
 				var/origin_time = islist(old_origins) && j <= length(old_origins) && !isnull(old_origins[j]) ? old_origins[j] : old_times[j]
 				Queue(D, i, old_hints[j], origin_time, old_times[j])
 
@@ -1529,7 +1596,7 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 			if (QDEL_HINT_QUEUE)
 				SSgarbage.Queue(D, qdel_hint = hint)
 			if (QDEL_HINT_IWILLGC)
-				D.gc_destroyed = world.time
+				D.gc_destroyed = world.time || GC_DESTROYED_AT_WORLD_START
 				return
 			if (QDEL_HINT_LETMELIVE)
 				if (!force)
@@ -1582,6 +1649,14 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 		thing = ref.resolve()
 	if(thing)
 		qdel(thing, force)
+
+/// Отпущен ли qdel-нутый датум по его REF-строке: освобождён, слот занят живым объектом или держит его одна очередь GC.
+/proc/gc_ref_released(ref_id)
+	var/datum/D = locate(ref_id)
+	if (isnull(D))
+		return TRUE
+	var/external_refs = EXTERNAL_REFCOUNT(D)
+	return !QDELING(D) || external_refs <= 0
 
 // ============================================================
 // GC Profiler — compile-time instrumentation (GC_PROFILER only)

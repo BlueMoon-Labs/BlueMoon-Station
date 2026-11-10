@@ -13,4 +13,4 @@
 	TEST_ASSERT_NULL(console.shuttleObject, "консоль держит удалённый орбитальный объект шаттла")
 	TEST_ASSERT(!(console.shuttleId in SSorbits.assoc_shuttles), "удалённый шаттл остался в SSorbits.assoc_shuttles")
 	// Кроме локальной переменной теста ссылок быть не должно, иначе через ~2 минуты харддел.
-	TEST_ASSERT_EQUAL(refcount(orbital), 1, "после qdel на орбитальный объект шаттла остались чужие ссылки")
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(orbital), 0, "после qdel на орбитальный объект шаттла остались чужие ссылки")

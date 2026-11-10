@@ -43,7 +43,7 @@
 	sleep(SPACE_WIND_VISUAL_COOLDOWN * 2 + 1 SECONDS)
 	TEST_ASSERT(QDELETED(held[1]), "визуал ветра не удалился по истечении срока")
 	TEST_ASSERT_NULL(subject.space_wind_visual, "турф держит удалённый визуал ветра")
-	TEST_ASSERT(refcount(held[1]) == 1, "на удалённый визуал ветра остались ссылки: [refcount(held[1]) - 1]")
+	TEST_ASSERT(EXTERNAL_REFCOUNT(held[1]) == 0, "на удалённый визуал ветра остались ссылки: [EXTERNAL_REFCOUNT(held[1])]")
 
 /// Шаттл переносит визуал присваиванием loc: удаление на новом месте обязано отпустить ссылку старого турфа.
 /datum/unit_test/space_wind_effect/shuttle_move_release
@@ -60,7 +60,7 @@
 	wind = null
 	qdel(held[1])
 	TEST_ASSERT_NULL(home.space_wind_visual, "старый турф держит уехавший и удалённый визуал ветра")
-	TEST_ASSERT(refcount(held[1]) == 1, "на удалённый визуал ветра остались ссылки: [refcount(held[1]) - 1]")
+	TEST_ASSERT(EXTERNAL_REFCOUNT(held[1]) == 0, "на удалённый визуал ветра остались ссылки: [EXTERNAL_REFCOUNT(held[1])]")
 
 /// Порыв на турфе, с которого визуал увёз шаттл, рисуется на этом турфе, а не переигрывает уехавший.
 /datum/unit_test/space_wind_effect/shuttle_move_regust
