@@ -367,7 +367,7 @@
 		"ambientocclusion", "widescreenpref", "fullscreen", "auto_fit_viewport", "outline_enabled",
 		"screentip_pref", "screentip_images", "tgui_fancy", "tgui_lock", "chat_on_map", "chat_on_map_looc",
 		"see_chat_non_mob", "see_chat_emotes", "hud_toggle_flash", "mood_vignette", "view_pixelshift",
-		"parallax", "clientfps", "runechat_anim", "windowflash", "windownoise", "auto_capitalize_enabled",
+		"parallax", "clientfps", "runechat_anim", "windowflash", "windownoise", "examine_headshots", "auto_capitalize_enabled",
 		"action_buttons_hide_on_spawn", "autostand", "long_strip_menu", "shift_invites", "disable_combat_cursor",
 		"disable_combat_mouse_lock", "ticket_nickname", "adminhelp_windowflash",
 		"screenshake", "damagescreenshake", "recoil_screenshake",

@@ -276,6 +276,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/data[0]
 	var/mob/living/M = host.resolve()
 	var/unknown = FALSE
+	var/profile_name = M.get_visible_name()
 
 	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	data["character_ref"] = viewer_screen?.assigned_map
@@ -283,6 +284,9 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	if (iscarbon(M))
 		var/mob/living/carbon/C = M
 		unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEFACE) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEFACE) && !isobserver(user))
+		if(ishuman(C))
+			var/mob/living/carbon/human/H = C
+			unknown = H.examine_identity_hidden(user, check_prosopagnosia = FALSE)
 		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
@@ -294,28 +298,13 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			var/can_see_naked = TRUE
-			if(!H.force_naked_flavor)
-				var/list/obj/item/clothings = list(
-					H.wear_suit,
-					H.w_uniform,
-					H.belt,
-					H.w_underwear,
-					H.w_socks,
-					H.w_shirt,
-					H.wrists,
-					H.wear_neck
-				)
-				removeNullsFromList(clothings)
-				for (var/obj/item/clothing/clothpiece in clothings)
-					if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
-						can_see_naked = FALSE
-						break
+			var/can_see_naked = !unknown && H.can_show_naked_flavor()
 			data["flavortext_naked"] = can_see_naked ? format_text("flavortext_naked", C.dna?.naked_flavor_text) : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END
 
 	data["is_unknown"] = unknown
+	data["profile_name"] = unknown ? "Неизвестный" : profile_name
 
 	return data
 
@@ -350,7 +339,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
-		ui = new(user, src, "CharacterProfile", "Профиль персонажа [M]")
+		ui = new(user, src, "CharacterProfile", "Профиль персонажа")
 		ui.open()
 		viewer_screen.display_to(user, ui.window)
 
