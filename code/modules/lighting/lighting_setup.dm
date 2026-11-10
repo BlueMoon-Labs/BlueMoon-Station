@@ -320,6 +320,7 @@
 		var/turf/atom_turf = get_turf(deferred_atom)
 		if(atom_turf?.z == z_level)
 			return TRUE
+		CHECK_TICK
 	return FALSE
 
 /// Synchronous gate shared by /mob/living and /mob/dead update_z: should a client entering new_z

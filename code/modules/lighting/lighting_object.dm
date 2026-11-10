@@ -116,7 +116,10 @@
 	// LIGHTING_DARK_MATRIX vs in-flight-to-LIGHTING_DARK_MATRIX cannot apply here.
 	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	. = ..()
-	if(SSlighting.teardown_skip_gc_queue)
+	// Мимо очереди GC, кроме выборки, см. LIGHTING_GC_QUEUE_SAMPLE.
+	var/static/gc_sample_counter = 0
+	gc_sample_counter = (gc_sample_counter + 1) % LIGHTING_GC_QUEUE_SAMPLE
+	if(gc_sample_counter)
 		return QDEL_HINT_IWILLGC
 
 /// Computes blended area lighting profile by averaging this turf's area with 4 cardinal neighbors.

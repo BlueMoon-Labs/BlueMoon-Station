@@ -137,8 +137,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_TEARDOWN_IDLE_TIME (15 MINUTES)
 /// Фаеров между проверками, не пора ли сносить свет опустевшего уровня (~15-30 с).
 #define LIGHTING_TEARDOWN_SCAN_INTERVAL 150
-/// Снос ставит в очередь GC лишь каждый N-й объект света: очередь берёт REF() атома, а BYOND 516 тратит ~0.2 с на каждый ~981-й впервые взятый REF атома.
-#define LIGHTING_TEARDOWN_GC_SAMPLE 64
+/// В очередь GC идёт лишь каждый N-й удалённый объект света и угол. Очередь держит строку REF(), а BYOND 516 на каждой ~980-й новой удерживаемой строке REF стоит 0.3-2.5 с.
+#define LIGHTING_GC_QUEUE_SAMPLE 64
 
 /**
  * Сколько отложенных z-уровней разрешено держать зажжёнными одновременно.

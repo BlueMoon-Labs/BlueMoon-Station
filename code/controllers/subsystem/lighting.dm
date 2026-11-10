@@ -188,8 +188,6 @@ SUBSYSTEM_DEF(lighting)
 	/// Кэш турфов уровня для фаз 1-2 и курсор по нему.
 	var/list/teardown_turfs
 	var/teardown_turf_index = 0
-	/// TRUE на время qdel объекта света сносом: объект уходит мимо очереди GC (см. LIGHTING_TEARDOWN_GC_SAMPLE).
-	var/teardown_skip_gc_queue = FALSE
 	/// Счётчики для итоговой строки в лог.
 	var/teardown_parked = 0
 	var/teardown_objects = 0
@@ -662,14 +660,16 @@ SUBSYSTEM_DEF(lighting)
 	// |= dedups numeric z values as list ELEMENTS (a numeric assoc key would index out of bounds in DM).
 	var/list/parked_z = GLOB.lighting_deferred_z_cache
 	if(isnull(parked_z))
+		// Пересборка уступает тик, поэтому кэш публикуется сразу: парковка во время сна допишет свой z сюда же.
 		parked_z = list()
+		GLOB.lighting_deferred_z_cache = parked_z
 		for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
 			if(QDELETED(deferred_atom))
 				continue
 			var/turf/atom_turf = get_turf(deferred_atom)
 			if(atom_turf)
 				parked_z |= atom_turf.z
-		GLOB.lighting_deferred_z_cache = parked_z
+			CHECK_TICK
 	// Recover only z-levels with a present occupant (see zlevel_has_occupant). A parked-but-empty reserved z stays
 	// deferred on purpose; force-initing it would defeat the deferral optimization.
 	for(var/z in parked_z)
@@ -938,9 +938,7 @@ SUBSYSTEM_DEF(lighting)
 			var/turf/tile = teardown_turfs[teardown_turf_index++]
 			var/area/tile_area = tile.loc
 			if(tile.lighting_object && IS_DYNAMIC_LIGHTING(tile_area) && TURF_IS_DYNAMIC_LIGHTING(tile))
-				teardown_skip_gc_queue = (teardown_objects % LIGHTING_TEARDOWN_GC_SAMPLE) != 0
 				qdel(tile.lighting_object, force = TRUE)
-				teardown_skip_gc_queue = FALSE
 				tile.cached_lumcount = null
 				teardown_objects++
 			if(MC_TICK_CHECK)

@@ -1694,15 +1694,45 @@
 	TEST_ASSERT(cache_has_z, "снос не вписал свой z в кэш - сейфнет потеряет запаркованные им атомы")
 	TEST_ASSERT(scan_trusted_cache, "сейфнет-скан пересобрал кэш вместо того, чтобы ему поверить")
 
-/// Объект света, удаляемый сносом уровня мимо выборки, не встаёт в очередь GC.
-/datum/unit_test/lighting_teardown_skips_gc_queue/Run()
-	var/atom/movable/lighting_object/object = ensure_lighting_object(run_loc_floor_bottom_left)
+/// В очередь GC встаёт лишь выборка удалённых объектов света, а не каждый.
+/datum/unit_test/lighting_object_gc_queue_sampled/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	ensure_lighting_object(test_turf)
+	var/destroyed = 0
 	var/queued_before = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
-	SSlighting.teardown_skip_gc_queue = TRUE
-	qdel(object, force = TRUE)
-	SSlighting.teardown_skip_gc_queue = FALSE
-	var/queued_after = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
-	TEST_ASSERT(QDELETED(object), "объект света не удалён")
-	TEST_ASSERT_EQUAL(queued_after, queued_before, "удалённый сносом объект света встал в очередь GC")
+	for(var/i in 1 to LIGHTING_GC_QUEUE_SAMPLE * 3)
+		var/atom/movable/lighting_object/object = test_turf.lighting_object
+		test_turf.lighting_clear_overlay()
+		if(QDELETED(object))
+			destroyed++
+		new /atom/movable/lighting_object(test_turf)
+	var/queued = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]) - queued_before
+	TEST_ASSERT_EQUAL(destroyed, LIGHTING_GC_QUEUE_SAMPLE * 3, "lighting_clear_overlay() удалил не все объекты света")
+	TEST_ASSERT(queued <= 3, "в очередь GC встали [queued] из [destroyed] удалённых объектов света - каждая строка REF в очереди приближает стопор BYOND")
+	TEST_ASSERT(queued >= 1, "ни один объект света не попал в очередь GC - их хардделы стали невидимы")
+
+/// Угол, снёсший себя за ненадобностью, встаёт в очередь GC лишь выборкой.
+/datum/unit_test/lighting_corner_gc_queue_sampled/Run()
+	var/list/turfs = block(run_loc_floor_bottom_left, run_loc_floor_top_right)
+	var/destroyed = 0
+	var/queued_before = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
+	var/passes = 0
+	while(destroyed < LIGHTING_GC_QUEUE_SAMPLE * 3 && passes < 50)
+		passes++
+		for(var/turf/tile as anything in turfs)
+			tile.generate_missing_corners()
+		for(var/turf/tile as anything in turfs)
+			for(var/datum/lighting_corner/corner in list(tile.lc_topright, tile.lc_bottomright, tile.lc_bottomleft, tile.lc_topleft))
+				if(QDELETED(corner) || LAZYLEN(corner.affecting))
+					continue
+				corner.self_destruct_if_idle()
+				if(QDELETED(corner))
+					destroyed++
+	var/queued = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]) - queued_before
+	for(var/turf/tile as anything in turfs)
+		tile.generate_missing_corners()
+	TEST_ASSERT(destroyed >= LIGHTING_GC_QUEUE_SAMPLE * 3, "предпосылка: за [passes] проходов снесено лишь [destroyed] пустых углов")
+	TEST_ASSERT(queued <= CEILING(destroyed / LIGHTING_GC_QUEUE_SAMPLE, 1), "в очередь GC встали [queued] из [destroyed] снесённых углов - каждая строка REF в очереди приближает стопор BYOND")
+	TEST_ASSERT(queued >= 1, "ни один угол не попал в очередь GC - их хардделы стали невидимы")
 
 #undef LIGHTING_TEST_PRESSURE_CEILING_MB
