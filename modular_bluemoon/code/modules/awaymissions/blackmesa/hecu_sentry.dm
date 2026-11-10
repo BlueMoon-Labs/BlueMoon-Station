@@ -8,9 +8,15 @@
 
 /obj/item/hecusentry/attackby(obj/item/I, mob/living/user, params)
 	if(I.tool_behaviour == TOOL_WRENCH)
+		var/turf/deploy_turf = get_turf(user)
+		if(!deploy_turf)
+			return
+		if(locate(/obj/machinery/porta_turret/hecu) in deploy_turf)
+			to_chat(user, "<span class='warning'>A sentry gun is already deployed on this tile.</span>")
+			return
 		user.visible_message("<span class='notice'>[user] begins deploying the [src]...</span>", "<span class='notice'>You begin deploying the [src]...</span>")
 		if(I.use_tool(src, user, 30, volume=50))
-			var/obj/machinery/porta_turret/hecu/T = new deployed_turret_type(get_turf(user))
+			var/obj/machinery/porta_turret/hecu/T = new deployed_turret_type(deploy_turf)
 			T.update_icon()
 			user.visible_message("<span class='notice'>[user] deploys the [src].</span>", "<span class='notice'>You deploy the [src].</span>")
 			qdel(src)
@@ -137,6 +143,12 @@
 	turret_flags = 0
 	folded_item_type = /obj/item/hecusentry/infected
 	max_integrity = 400
+
+/obj/machinery/porta_turret/hecu/infected/attackby(obj/item/I, mob/living/user, params)
+	if(I.tool_behaviour == TOOL_WRENCH)
+		to_chat(user, "<span class='warning'>This sentry cannot be folded.</span>")
+		return
+	return ..()
 
 /obj/machinery/porta_turret/hecu/infected/bullet_act(obj/item/projectile/P)
 	if(P && istype(P.firer, /obj/machinery/porta_turret))

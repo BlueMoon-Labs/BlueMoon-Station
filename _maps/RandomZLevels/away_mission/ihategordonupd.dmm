@@ -5281,6 +5281,22 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"bML" = (
+/obj/structure/table/reinforced,
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = -2
+	},
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = 18
+	},
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = 7
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/outsideofmesa)
 "bMQ" = (
 /obj/structure/lattice,
 /turf/open/floor/plasteel/rivets,
@@ -8522,6 +8538,14 @@
 	},
 /turf/open/floor/grass/fakebasalt,
 /area/awaymission/ihategordon/custom_walking)
+"cNn" = (
+/obj/structure/barricade/wooden/reinforced{
+	dir = 8;
+	pixel_x = 14;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/bombardment)
 "cNq" = (
 /obj/structure/barricade/wooden/crude,
 /obj/structure/barricade/wooden,
@@ -14342,6 +14366,22 @@
 	},
 /obj/effect/turf_decal/stripes/asteroid/corner{
 	dir = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/outsideofmesa)
+"eAL" = (
+/obj/structure/table/reinforced,
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = 8
+	},
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = 17
+	},
+/obj/item/hecusentry/infected{
+	pixel_x = 0;
+	pixel_y = 0
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
@@ -44256,6 +44296,12 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"nYh" = (
+/obj/structure/barricade/wooden/reinforced{
+	dir = 8
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/bombardment)
 "nYi" = (
 /turf/open/floor/plating/beach/sand,
 /area/awaymission/ihategordon/outsideofmesa)
@@ -49156,6 +49202,12 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"pCL" = (
+/obj/structure/barricade/wooden/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/bombardment)
 "pCO" = (
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 5
@@ -73111,9 +73163,13 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "xPN" = (
-/obj/machinery/door/poddoor,
-/turf/open/space/basic,
-/area/awaymission/ihategordon/rocks)
+/obj/structure/barricade/wooden/reinforced{
+	dir = 8;
+	pixel_x = 12;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/bombardment)
 "xQf" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -141442,7 +141498,7 @@ bWq
 qIh
 wxf
 pjf
-cIp
+bML
 nUr
 nUr
 sFP
@@ -141699,7 +141755,7 @@ bpc
 bpc
 bpc
 bpc
-cIp
+eAL
 nUr
 nUr
 iyT
@@ -164483,7 +164539,7 @@ lTZ
 fVS
 ssS
 xXw
-xPN
+wdE
 lqi
 jSh
 jSh
@@ -164740,7 +164796,7 @@ lDz
 pNg
 rwY
 vrh
-xPN
+wdE
 jqP
 lDz
 lDz
@@ -164997,7 +165053,7 @@ lDz
 wNz
 lDz
 lDz
-xPN
+wdE
 jqP
 lDz
 lDz
@@ -165254,7 +165310,7 @@ qAt
 kWu
 weH
 vrh
-xPN
+wdE
 jqP
 lDz
 lDz
@@ -165511,7 +165567,7 @@ lDz
 vCb
 nQB
 kwh
-xPN
+wdE
 jqP
 lDz
 lDz
@@ -165768,7 +165824,7 @@ lDz
 pNg
 mmx
 vrh
-xPN
+wdE
 jqP
 lDz
 lDz
@@ -166025,7 +166081,7 @@ lDz
 cxN
 tAV
 nZx
-xPN
+wdE
 oIu
 tAV
 tAV
@@ -176292,9 +176348,9 @@ caT
 vPV
 mqh
 aiQ
-dAN
-dAN
-dAN
+nYh
+nYh
+nYh
 nXy
 cbt
 doz
@@ -178605,9 +178661,9 @@ vrh
 lDz
 hts
 eEY
-dAN
-dAN
-dAN
+xPN
+cNn
+xPN
 rNf
 cbt
 cbt
@@ -180411,9 +180467,9 @@ erP
 cbt
 cbt
 eOB
-dAN
-dAN
-dAN
+pCL
+pCL
+pCL
 xnS
 skw
 skw
