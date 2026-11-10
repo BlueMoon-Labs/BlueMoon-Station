@@ -166,7 +166,6 @@
 	damage = 30
 	dismemberment = 5
 	hitsound = null
-
 /obj/item/projectile/bullet/p50/javelin_vdd_svz/prehit_pierce(atom/target)
 	if(ismob(target))
 		return PROJECTILE_PIERCE_HIT
