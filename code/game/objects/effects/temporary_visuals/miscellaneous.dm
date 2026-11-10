@@ -544,7 +544,8 @@
 	flick("space_wind", src)
 
 /obj/effect/temp_visual/dir_setting/space_wind/Destroy()
-	if(wind_turf?.space_wind_visual == src)
+	// ChangeTurf мог сделать турф закрытым: у него этой переменной нет.
+	if(isopenturf(wind_turf) && wind_turf.space_wind_visual == src)
 		wind_turf.space_wind_visual = null
 	wind_turf = null
 	return ..()

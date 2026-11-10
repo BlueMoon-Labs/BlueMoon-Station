@@ -77,3 +77,16 @@
 	TEST_ASSERT(fresh != moved, "второй порыв переиграл визуал, уехавший на [moved.loc]")
 	TEST_ASSERT(fresh.loc == home, "визуал второго порыва лежит в [fresh.loc], а не на турфе порыва")
 	TEST_ASSERT(moved.loc == away, "уехавший визуал вернулся на старый турф")
+
+/// Турф под визуалом стал стеной: визуал удаляется без рантайма.
+/datum/unit_test/space_wind_effect/turf_changed
+
+/datum/unit_test/space_wind_effect/turf_changed/Run()
+	var/turf/open/subject = wind_turf(4, 4)
+	var/floor_type = subject.type
+	var/obj/effect/temp_visual/dir_setting/space_wind/wind = blow(subject)
+	TEST_ASSERT(!QDELETED(wind), "порыв не показал визуал ветра")
+	var/turf/changed = subject.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(!QDELETED(wind), "test premise: смена турфа не должна удалять визуал")
+	qdel(wind)
+	changed.ChangeTurf(floor_type)
