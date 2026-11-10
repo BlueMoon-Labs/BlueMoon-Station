@@ -9,14 +9,58 @@
 	. = PB
 	if(light_range > 0 && light_intensity > 0)
 		var/list/turf/line = getline(starting.return_turf(), ending.return_turf())
-		for(var/i in line)
-			if(turfs[i])
-				continue
-			turfs[i] = TRUE
-			QDEL_IN(new /obj/effect/projectile_lighting(i, light_color_override, light_range, light_intensity), qdel_in > 0? qdel_in : 5)
-		line = null
+		// With a turfs list the caller lights the whole beam path at once (generate_tracer_lighting).
+		if(islist(turfs))
+			for(var/turf/line_turf as anything in line)
+				turfs[line_turf] = TRUE
+		else
+			var/list/lights = generate_tracer_lighting(line, light_color_override, light_range, light_intensity)
+			if(length(lights))
+				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(______qdel_list_wrapper), lights), qdel_in > 0 ? qdel_in : 5)
 	if(qdel_in)
 		QDEL_IN(PB, qdel_in)
+
+/// A beam light of this range or less lights only the four corners of its own tile.
+#define TRACER_LIGHT_OWN_TILE_RANGE 1.5
+
+/**
+ * Lights a beam path, a turf list in path order.
+ * A short-range light touches only its own tile corners, and inside a straight run two neighbours share a corner edge,
+ * so every other tile at double power gives the shared corners the same sum. Only the edges next to run ends differ by one light.
+ */
+/proc/generate_tracer_lighting(list/turf/path, color, range, intensity)
+	. = list()
+	var/count = length(path)
+	if(!count || range <= 0 || intensity <= 0)
+		return
+	var/list/weights = new /list(count)
+	for(var/i in 1 to count)
+		weights[i] = 1
+	if(max(range, MINIMUM_USEFUL_LIGHT_RANGE) <= TRACER_LIGHT_OWN_TILE_RANGE)
+		var/run_start = 1
+		while(run_start < count)
+			var/turf/first = path[run_start]
+			var/turf/second = path[run_start + 1]
+			var/step_x = second.x - first.x
+			var/step_y = second.y - first.y
+			if(abs(step_x) + abs(step_y) != 1 || first.z != second.z)
+				run_start++
+				continue
+			var/run_end = run_start + 1
+			while(run_end < count)
+				var/turf/current = path[run_end]
+				var/turf/next = path[run_end + 1]
+				if(next.x - current.x != step_x || next.y - current.y != step_y || next.z != current.z)
+					break
+				run_end++
+			for(var/i in run_start + 1 to run_end - 1)
+				weights[i] = (i - run_start) % 2 ? 0 : 2
+			run_start = run_end
+	for(var/i in 1 to count)
+		if(weights[i])
+			. += new /obj/effect/projectile_lighting(path[i], color, range, intensity * weights[i])
+
+#undef TRACER_LIGHT_OWN_TILE_RANGE
 
 /obj/effect/projectile/tracer
 	name = "beam"
