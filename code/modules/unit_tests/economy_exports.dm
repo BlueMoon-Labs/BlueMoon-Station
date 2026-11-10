@@ -248,6 +248,33 @@
 	TEST_ASSERT(QDELETED(sheets), "Сканер не продал листы")
 	TEST_ASSERT_EQUAL(ds_budget.account_balance - before, expected, "Сканер Deep Space выкупил купленное по полной цене")
 
+/// Сканеры Deep Space и Таркова продают на общем рынке сектора: продажа съедает спрос, следующая партия дешевле.
+/datum/unit_test/economy_exports/offstation_scanner_elastic
+	var/datum/bank_account/budget
+	var/saved_balance
+
+/datum/unit_test/economy_exports/offstation_scanner_elastic/Destroy()
+	if(budget)
+		econ_test_set_balance(budget, saved_balance)
+	return ..()
+
+/datum/unit_test/economy_exports/offstation_scanner_elastic/Run()
+	set_all_commodities(1)
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	budget = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	saved_balance = budget.account_balance
+	var/list/payouts = list()
+	for(var/sale in 1 to 2)
+		var/obj/item/stack/sheet/mineral/diamond/diamonds = allocate(/obj/item/stack/sheet/mineral/diamond, null, 50)
+		var/before = budget.account_balance
+		var/expected = sale_value(diamonds)
+		TEST_ASSERT_EQUAL(scanner.sell_offstation(diamonds, scavenger, ACCOUNT_TAR), expected, "Сканер продал не по цене рынка")
+		TEST_ASSERT(QDELETED(diamonds), "Сканер не продал алмазы")
+		payouts += budget.account_balance - before
+	TEST_ASSERT(payouts[1] > 0, "Алмазы ничего не стоят")
+	TEST_ASSERT(payouts[2] < payouts[1], "Вторая партия не подешевела: [payouts[2]] после [payouts[1]]")
+
 /// Пиратский пад продаёт купленное через снабжение не дороже потолка выкупа NT.
 /datum/unit_test/economy_exports/pirate_pad_caps/Run()
 	var/obj/machinery/piratepad/pad = allocate(/obj/machinery/piratepad, run_loc_floor_top_right)

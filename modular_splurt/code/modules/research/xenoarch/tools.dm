@@ -175,23 +175,33 @@
 /obj/item/xenoarch/help/cargo/ds/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 30, target=target))
 		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE, apply_caps = TRUE)
+	sell_offstation(target, user, ACCOUNT_DS)
+
+/obj/item/xenoarch/help/cargo/examine(mob/user)
+	. = ..()
+	. += span_notice("Продаёт по ценам рынка сектора: чем больше одного товара уже продано, тем дешевле его берут, спрос возвращается со временем.")
+
+/// Продажа с аванпоста в бюджет account_id: тот же рынок сектора, что у снабжения станции, цена падает от объёма продаж.
+/obj/item/xenoarch/help/cargo/proc/sell_offstation(obj/item/target, mob/user, account_id)
+	var/datum/export_report/ex = new
+	var/target_name = "[target]"
+	export_item_and_contents(target, EXPORT_CARGO, dry_run = FALSE, external_report = ex)
+	ex.settle_market()
 	var/export_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
 		export_value += ex.total_value[E]
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
-	D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
-	to_chat(user,"Ух ты, [target] пропало!")
+	var/datum/bank_account/D = SSeconomy.get_dep_account(account_id)
+	D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target_name]")
+	to_chat(user, export_value ? "Ух ты, [target_name] пропало! Выручка: [round(export_value)] кр." : "Ух ты, [target_name] пропало! Покупателя не нашлось, выручки нет.")
+	return export_value
 
 /obj/item/xenoarch/help/cargo/tarkoff
 	name = "Experimental cargo scanner"
@@ -202,23 +212,12 @@
 /obj/item/xenoarch/help/cargo/tarkoff/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 45, target=target))
 		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE, apply_caps = TRUE)
-	var/export_value = 0
-	for(var/datum/export/E in ex.total_amount)
-		var/export_text = E.total_printout(ex)
-		if(!export_text)
-			continue
-		export_value += ex.total_value[E]
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
-	D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
-	to_chat(user,"Ух ты, [target] пропало!")
+	sell_offstation(target, user, ACCOUNT_TAR)
 
 //Bluemoon edit end.
 
