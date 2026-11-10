@@ -200,38 +200,61 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	var/turf/origin = get_turf(target)
 	if(!origin || !is_station_level(origin.z))
 		return null
-	var/turf/core_turf = get_turf(swarmer_core) || origin
-	var/area/core_area = get_area(core_turf)
-	var/turf/farthest
-	var/max_distance_squared = -1
+	var/turf/core_turf = get_turf(swarmer_core)
+	if(core_turf?.z != origin.z)
+		core_turf = null
+	var/require_safe = TRUE
+	var/turf/destination = pick_disperse_turf(target, origin, core_turf, require_safe)
+	if(!destination && core_turf)
+		destination = pick_disperse_turf(target, origin, null, require_safe)
+		if(destination)
+			core_turf = null
+	if(!destination)
+		require_safe = FALSE
+		destination = pick_disperse_turf(target, origin, core_turf, require_safe)
+
+	var/teleport_noise = GLOB.bluespace_teleport_noise
+	if(!destination || !teleport_noise)
+		return destination
+
+	// Разброс сохраняет ограничения этапа, на котором нашли точку.
+	var/list/landings = list(destination)
+	for(var/turf/open/floor/landing in get_teleport_turfs(destination, teleport_noise))
+		if(landing == destination || landing == origin || landing.density)
+			continue
+		if(core_turf && get_dist(core_turf, landing) <= SWARMER_DISPERSE_CORE_RADIUS)
+			continue
+		var/area/landing_area = landing.loc
+		if(!landing_area.is_station_member())
+			continue
+		if(require_safe ? !is_safe_turf(landing) : landing.is_blocked_turf())
+			continue
+		if(target.training_move_allowed(landing))
+			landings += landing
+	return pick(landings)
+
+/datum/team/swarmer_team/proc/pick_disperse_turf(mob/living/target, turf/origin, turf/core_turf, require_safe)
+	var/turf/destination
+	var/best_roll = -1
 	for(var/area/destination_area as anything in SSmapping.areas_in_z["[origin.z]"])
-		if(destination_area == core_area || (destination_area.area_flags & NOTELEPORT) || !destination_area.is_station_member())
+		if((destination_area.area_flags & NOTELEPORT) || !destination_area.is_station_member())
 			continue
 		for(var/turf/open/floor/candidate in destination_area)
 			if(candidate.z != origin.z || candidate == origin || candidate.density)
 				continue
-			var/dx = candidate.x - core_turf.x
-			var/dy = candidate.y - core_turf.y
-			var/distance_squared = dx * dx + dy * dy
-			if(distance_squared <= max_distance_squared || candidate.is_transition_turf() || !is_safe_turf(candidate) || !target.training_move_allowed(candidate))
+			if(core_turf && get_dist(core_turf, candidate) <= SWARMER_DISPERSE_CORE_RADIUS)
 				continue
-			max_distance_squared = distance_squared
-			farthest = candidate
-	var/teleport_noise = GLOB.bluespace_teleport_noise
-	if(!farthest || !teleport_noise)
-		return farthest
-
-	// Учитываем разброс здесь, чтобы точка прибытия прошла те же проверки безопасности.
-	var/list/safe_landings = list(farthest)
-	for(var/turf/open/floor/landing in get_teleport_turfs(farthest, teleport_noise))
-		if(landing == farthest || landing == origin || landing.density)
-			continue
-		var/area/landing_area = landing.loc
-		if(landing_area == core_area || !landing_area.is_station_member())
-			continue
-		if(is_safe_turf(landing) && target.training_move_allowed(landing))
-			safe_landings += landing
-	return pick(safe_landings)
+			// Случайный приоритет позволяет проверять безопасность только у кандидатов, способных победить.
+			var/roll = rand()
+			if(roll <= best_roll || candidate.is_transition_turf())
+				continue
+			if(require_safe ? !is_safe_turf(candidate) : candidate.is_blocked_turf())
+				continue
+			if(!target.training_move_allowed(candidate))
+				continue
+			best_roll = roll
+			destination = candidate
+	return destination
 
 /datum/team/swarmer_team/proc/teleport_disperse_target(mob/living/target, turf/destination)
 	// Точка уже учитывает разброс, поэтому компенсируем его в общем проке телепортации.

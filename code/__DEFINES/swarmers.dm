@@ -72,6 +72,7 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 #define SWARMER_REPAIR_AMOUNT(swarmer) (is_builderswarmer(swarmer) ? 25 : 15)
 #define SWARMER_SEND_ORGANIC_DELAY 2 SECONDS
 #define SWARMER_SEND_ANALYZER_DELAY 4 SECONDS
+#define SWARMER_DISPERSE_CORE_RADIUS 25
 
 #define SWARMER_REPAIR_COST(swarmer) (is_builderswarmer(swarmer) ? 2 : 4)
 
