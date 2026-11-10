@@ -66,6 +66,11 @@
 	knockdown_time = 3 SECONDS
 	COOLDOWN_DECLARE(bola_cooldown)
 
+/mob/living/simple_animal/hostile/swarmer/rover/get_status_tab_items()
+	. = ..()
+	var/seconds_left = CEILING(COOLDOWN_TIMELEFT(src, bola_cooldown) / (1 SECONDS), 1)
+	. += seconds_left ? "Энергобола: [seconds_left] с до готовности" : "Энергобола: готова"
+
 /mob/living/simple_animal/hostile/swarmer/rover/AttackingTarget()
 	. = ..()
 	if(!. || !isliving(target))

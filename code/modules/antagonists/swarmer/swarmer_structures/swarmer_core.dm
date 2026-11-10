@@ -222,10 +222,11 @@
 	var/time_left = mega_phase_deadline - world.time
 	if(time_left <= 0)
 		var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
-		if(shuttle && (shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME))
+		if(shuttle)
 			SSshuttle.emergencyNoRecall = TRUE
-			var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
-			shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
+			if(shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME)
+				var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
+				shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
 		INVOKE_ASYNC(src, PROC_REF(spawn_mega_swarmer_from_ghost))
 		return
 
