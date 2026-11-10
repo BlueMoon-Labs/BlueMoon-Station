@@ -3,7 +3,10 @@
 
 /datum/econ_contract/delivery/New(department_id, datum/bounty/bounty)
 	..()
-	src.bounty = bounty
+	set_bounty(bounty)
+
+/datum/econ_contract/delivery/proc/set_bounty(datum/bounty/new_bounty)
+	bounty = new_bounty
 	title = bounty.name
 	desc = bounty.description
 	reward = bounty.reward
@@ -12,8 +15,27 @@
 	QDEL_NULL(bounty)
 	return ..()
 
+/// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют.
 /datum/econ_contract/delivery/payout()
-	return round(..() * SSeconomy.bounty_modifier)
+	. = ..() * SSeconomy.bounty_modifier
+	if(owner)
+		. *= SSeconomy.settings.contract_personal_reward / 100
+	if(!pinned && bounty)
+		. *= SSeconomy.contract_demand_mult(bounty.type)
+	return round(.)
+
+/datum/econ_contract/delivery/complete(mob/performer)
+	if(completed)
+		return
+	var/bounty_type = bounty.type
+	var/repeats = !pinned
+	..()
+	if(repeats)
+		SSeconomy.note_contract_demand(bounty_type)
+
+/datum/econ_contract/delivery/ui_entry()
+	. = ..()
+	.["demand"] = pinned ? 100 : round(SSeconomy.contract_demand_mult(bounty.type) * 100)
 
 /datum/econ_contract/delivery/has_progress()
 	var/datum/bounty/item/item_bounty = bounty
@@ -31,9 +53,12 @@
 	return FALSE
 
 /datum/econ_contract/delivery/proc/wants(atom/movable/thing)
+	if(owner && !taker)
+		return FALSE
 	return !completed && !is_expired() && !thing.econ_imported && bounty.applies_to(thing)
 
 /datum/econ_contract/delivery/proc/ship(atom/movable/thing, mob/performer)
+	note_contribution(performer)
 	bounty.ship(thing)
 	if(bounty.can_claim())
 		complete(performer)

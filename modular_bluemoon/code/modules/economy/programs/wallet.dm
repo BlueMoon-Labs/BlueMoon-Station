@@ -91,11 +91,9 @@
 		"owed" = account.owed_wages,
 	)
 	data["history"] = account.ui_history()
-	var/list/contracts = list()
-	for(var/datum/econ_contract/contract as anything in SSeconomy.all_contracts())
-		contracts += list(contract.ui_entry())
-	data["contracts"] = contracts
-	data["my_account"] = account.account_id
+	var/list/board = econ_contracts_ui_data(user, account)
+	for(var/key in board)
+		data[key] = board[key]
 	var/list/shares = list()
 	for(var/ticker in account.shares)
 		var/datum/stock_company/company = SSmarket.get_company(ticker)
@@ -132,15 +130,14 @@
 	switch(action)
 		if("transfer", "tip")
 			return wallet_payment(user, action, params)
-		if("take")
-			return wallet_take(user, params["uid"])
-		if("drop")
-			message = econ_try_drop_contract(user, params["uid"], wallet_account(user))[2]
-			return TRUE
 		if("lottery_buy")
 			return wallet_lottery(user, params["count"])
 		if("md_withdraw", "md_deposit")
 			return metadollar_act(user, action, params)
+	var/list/contract_result = econ_contract_act(user, action, params, wallet_account(user))
+	if(contract_result)
+		message = contract_result[2]
+		return TRUE
 	return FALSE
 
 /datum/computer_file/program/wallet/proc/wallet_payment(mob/living/user, action, list/params)
@@ -185,11 +182,6 @@
 		count = text2num(count)
 	var/error = SSeconomy.lottery.buy(wallet_account(user), count, user)
 	message = error || "Куплено билетов: [round(count)]."
-	return TRUE
-
-/datum/computer_file/program/wallet/proc/wallet_take(mob/living/user, uid)
-	var/list/result = econ_try_take_contract(user, uid, wallet_account(user))
-	message = result[2]
 	return TRUE
 
 /// Метадоллары: постоянный счёт игрока, с кредитами станции не связан.

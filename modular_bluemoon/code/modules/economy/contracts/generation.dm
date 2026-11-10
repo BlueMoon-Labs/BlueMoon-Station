@@ -40,6 +40,11 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	/datum/bounty/item/adamantine,
 ))
 
+/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают.
+GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
+	/datum/bounty/item/assistant/cheesiehonkers,
+)))
+
 /proc/econ_bounty_department_of(bounty_type)
 	for(var/current = bounty_type; current; current = type2parent(current))
 		var/department_id = GLOB.econ_bounty_department[current]
@@ -54,16 +59,23 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	by_department = list()
 	for(var/base in GLOB.econ_bounty_department)
 		for(var/bounty_type in subtypesof(base))
+			if(GLOB.econ_bounty_unobtainable[bounty_type])
+				continue
 			var/department_id = econ_bounty_department_of(bounty_type)
 			LAZYINITLIST(by_department[department_id])
 			by_department[department_id] |= bounty_type
 	return by_department
+
+/datum/controller/subsystem/economy
+	/// Контракты вне досок отделов: личные заказы и объявления экипажа
+	var/list/loose_contracts = list()
 
 /datum/controller/subsystem/economy/proc/all_contracts()
 	. = list()
 	for(var/id in departments)
 		var/datum/economy_department/department = departments[id]
 		. += department.contracts
+	. += loose_contracts
 
 /datum/controller/subsystem/economy/proc/contract_by_uid(uid)
 	for(var/datum/econ_contract/contract as anything in all_contracts())
@@ -98,8 +110,7 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 		var/regular = 0
 		for(var/datum/econ_contract/contract as anything in department.contracts.Copy())
 			if(contract.is_expired())
-				contract.taker?.bank_card_talk("Срок контракта \"[contract.title]\" истёк, контракт снят.")
-				qdel(contract)
+				contract.expire()
 			else if(contract_rotates(contract, force))
 				qdel(contract)
 			else if(!contract.pinned)
@@ -110,6 +121,11 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 				break
 			department.contracts += fresh
 			regular++
+	for(var/datum/econ_contract/contract as anything in loose_contracts.Copy())
+		if(contract.is_expired())
+			contract.expire()
+		else if(contract_rotates(contract, force))
+			qdel(contract)
 
 /datum/controller/subsystem/economy/proc/contract_rotates(datum/econ_contract/contract, force)
 	var/due = contract.rotation_due_at()
@@ -133,19 +149,31 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 		var/activity_type = pick(activity_types)
 		contract = new activity_type(department_id)
 	else
-		while(length(bounty_types) && !contract)
-			var/bounty_type = pick_n_take(bounty_types)
-			var/datum/bounty/bounty = new bounty_type
-			if(bounty.name && bounty.description)
-				contract = new /datum/econ_contract/delivery(department_id, bounty)
-			else
-				qdel(bounty)
+		var/datum/bounty/bounty = pick_bounty(bounty_types)
+		if(bounty && prob(settings.contract_chain_chance))
+			contract = generate_chain(department_id, bounty, bounty_types)
+		else if(bounty)
+			contract = new /datum/econ_contract/delivery(department_id, bounty)
 	if(!contract)
 		return null
-	if(prob(settings.contract_urgent_chance))
+	if(!istype(contract, /datum/econ_contract/delivery/chain) && prob(settings.contract_urgent_chance))
 		contract.urgent = TRUE
 		contract.set_deadline(world.time + settings.contract_urgent_minutes MINUTES)
 	return contract
+
+/// Новое баунти из списка типов, выбранный тип из списка убирается. Заказы, которые недавно сдавали, выпадают реже.
+/datum/controller/subsystem/economy/proc/pick_bounty(list/bounty_types)
+	while(length(bounty_types))
+		var/list/weights = list()
+		for(var/bounty_type in bounty_types)
+			weights[bounty_type] = max(round(contract_demand_mult(bounty_type) * 10), 1)
+		var/picked = pickweight(weights)
+		bounty_types -= picked
+		var/datum/bounty/bounty = new picked
+		if(bounty.name && bounty.description)
+			return bounty
+		qdel(bounty)
+	return null
 
 /// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя.
 /datum/controller/subsystem/economy/proc/post_special_contract(datum/bounty/bounty)

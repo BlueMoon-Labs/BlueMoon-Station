@@ -426,6 +426,37 @@ $nt-tones: (
     font-size: 11px;
   }
 
+  &__contractTag {
+    margin-left: 8px;
+    color: var(--nt-accent);
+    font-weight: normal;
+    font-size: 11px;
+  }
+
+  &__contractTag--low {
+    color: $nt-warn;
+  }
+
+  &__rank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border: 1px solid $nt-faint;
+  }
+
+  &__rankName {
+    font-weight: bold;
+    color: var(--nt-accent);
+  }
+
+  &__post {
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border: 1px solid $nt-faint;
+  }
+
   &__contractProgress {
     display: flex;
     align-items: center;

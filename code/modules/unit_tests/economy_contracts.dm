@@ -18,6 +18,7 @@
 		department.contracts = stash[id]
 		for(var/datum/econ_contract/contract as anything in during_test)
 			qdel(contract)
+	SSeconomy.contract_demand.Cut()
 
 /// После обновления у каждого станционного отдела, кроме командования, есть контракты.
 /datum/unit_test/economy_contracts_generated/Run()
@@ -91,15 +92,18 @@
 	var/wanted_type = wanted.wanted_types[1]
 	var/obj/thing = allocate(wanted_type)
 	var/before = civilian.account.account_balance
-	TEST_ASSERT(econ_contracts_ship(thing), "Предмет засчитан")
-	TEST_ASSERT(contract.completed, "Выполнен (самокат нужен один)")
-	TEST_ASSERT(QDELETED(thing), "Засчитанный предмет уходит")
-	TEST_ASSERT_EQUAL(civilian.account.account_balance - before, contract.payout(), "Без взявшего вся награда отделу")
-	econ_test_set_balance(civilian.account, before)
+	SSeconomy.contract_demand.Cut()
+	var/expected = contract.payout()
 	var/saved_modifier = SSeconomy.bounty_modifier
 	SSeconomy.bounty_modifier = 2
 	var/doubled = contract.payout()
 	SSeconomy.bounty_modifier = saved_modifier
+	TEST_ASSERT(econ_contracts_ship(thing), "Предмет засчитан")
+	TEST_ASSERT(contract.completed, "Выполнен (самокат нужен один)")
+	TEST_ASSERT(QDELETED(thing), "Засчитанный предмет уходит")
+	TEST_ASSERT_EQUAL(civilian.account.account_balance - before, expected, "Без взявшего вся награда отделу")
+	econ_test_set_balance(civilian.account, before)
+	SSeconomy.contract_demand.Cut()
 	TEST_ASSERT_EQUAL(doubled, contract.reward * 2, "Модификатор наград применяется к выплате")
 
 /// Взятый срочный контракт, не выполненный к сроку, снимается при обновлении.

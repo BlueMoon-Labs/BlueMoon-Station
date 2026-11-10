@@ -25,7 +25,9 @@
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	if(!(src in department?.contracts))
 		return
-	progress += contract_units(amount, paid)
+	var/units = contract_units(amount, paid)
+	note_contribution(performer, units)
+	progress += units
 	if(progress >= target)
 		INVOKE_ASYNC(src, PROC_REF(complete), performer)
 

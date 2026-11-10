@@ -191,10 +191,18 @@
 	TEST_ASSERT(first.taker == own, "Контракт взят по uid строкой")
 	var/refusal = press(owner, "take", list("uid" = second.uid))
 	TEST_ASSERT_NULL(second.taker, "Второй контракт не взят")
-	TEST_ASSERT_EQUAL(refusal, "У вас уже есть взятый контракт.", "Отказ объяснён")
+	TEST_ASSERT_EQUAL(refusal, "У вас уже взято контрактов: 1 из 1. Больше одновременно позволяет репутация подрядчика.", "Отказ объяснён")
 	var/datum/computer_file/program/wallet/wallet = wallet_of(owner)
 	var/list/data = wallet.wallet_data(owner)
-	TEST_ASSERT_EQUAL(length(data["contracts"]), 2, "Окно видит доску контрактов")
+	var/board_contracts = 0
+	var/personal_offers = 0
+	for(var/list/entry as anything in data["contracts"])
+		if(entry["kind"] == "personal")
+			personal_offers++
+		else
+			board_contracts++
+	TEST_ASSERT_EQUAL(board_contracts, 2, "Окно видит доску контрактов")
+	TEST_ASSERT_EQUAL(personal_offers, SSeconomy.contracts_started ? SSeconomy.settings.contract_personal_offers : 0, "Окно видит личные заказы владельца")
 	TEST_ASSERT_EQUAL(data["my_account"], own.account_id, "Окно знает свой номер для доски")
 
 /// Акции на счёте видны в кошельке со стоимостью по текущей цене.

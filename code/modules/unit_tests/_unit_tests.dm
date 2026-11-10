@@ -247,6 +247,7 @@
 #include "economy_conservation.dm"
 #include "economy_contraband.dm"
 #include "economy_contracts.dm"
+#include "economy_contracts_board.dm"
 #include "economy_debt_quirk.dm"
 #include "economy_departments.dm"
 #include "economy_effects.dm"

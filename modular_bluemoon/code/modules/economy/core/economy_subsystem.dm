@@ -16,6 +16,8 @@ SUBSYSTEM_DEF(economy)
 	var/list/dep_cards = list()
 	var/datum/bank_account/system/cash_account
 	var/datum/bank_account/system/market_account
+	/// Депозиты объявлений экипажа до расчёта
+	var/datum/bank_account/system/escrow_account
 	var/tax_rate = 0
 	var/fire_count = 0
 	var/economy_state = ECON_STATE_NORMAL
@@ -35,6 +37,7 @@ SUBSYSTEM_DEF(economy)
 	tax_rate = min(settings.tax_default, settings.tax_max)
 	cash_account = new("Наличные в обороте")
 	market_account = new("Биржа сектора")
+	escrow_account = new("Депозит объявлений")
 	for(var/department_type in subtypesof(/datum/economy_department))
 		var/datum/economy_department/department = new department_type
 		departments[department.id] = department
@@ -61,6 +64,9 @@ SUBSYSTEM_DEF(economy)
 	pack_price_modifier = SSeconomy.pack_price_modifier
 	full_ancap = SSeconomy.full_ancap
 	contracts_started = SSeconomy.contracts_started
+	loose_contracts = SSeconomy.loose_contracts
+	contract_demand = SSeconomy.contract_demand
+	escrow_account = SSeconomy.escrow_account
 	lottery = SSeconomy.lottery
 	treasury_requests = SSeconomy.treasury_requests
 	contraband_window_start = SSeconomy.contraband_window_start
@@ -81,6 +87,7 @@ SUBSYSTEM_DEF(economy)
 		department.on_economy_tick()
 		department.settle_owed()
 	if(contracts_started)
+		recover_contract_demand()
 		refresh_contracts()
 	else
 		start_contracts()

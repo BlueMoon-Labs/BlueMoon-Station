@@ -25,6 +25,39 @@ export type ContractEntry = {
   rotates_in: number | null;
   started: BooleanLike;
   progress: string;
+  kind?: 'department' | 'personal' | 'chain' | 'crew';
+  /** Процент награды, который получает взявший контракт. */
+  share?: number;
+  /** Сколько счетов уже вложилось в контракт без исполнителя. */
+  contributors?: number;
+  /** Спрос на заказ, проценты награды: падает от повторных сдач. */
+  demand?: number;
+  stage?: number;
+  stages?: number;
+  chain_bonus?: number;
+  poster?: string | null;
+  poster_id?: number | null;
+  reported?: BooleanLike;
+};
+
+export type ContractRank = {
+  name: string;
+  rep: number;
+  done: number;
+  slots: number;
+  used: number;
+  bonus: number;
+  next_name: string | null;
+  next_rep: number | null;
+};
+
+export type CrewRequestRules = {
+  min: number;
+  max: number;
+  title_max: number;
+  desc_max: number;
+  minutes: number;
+  accept_minutes: number;
 };
 
 export type RequestStatus = 'pending' | 'approved' | 'denied';

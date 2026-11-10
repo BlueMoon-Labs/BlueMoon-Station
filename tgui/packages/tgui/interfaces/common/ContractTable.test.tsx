@@ -96,3 +96,78 @@ test('только просмотр: отказа нет', () => {
   const ui = setup({}, true);
   expect(ui.queryByText('Отказаться')).toBeNull();
 });
+
+const rank = { name: 'Подрядчик', rep: 5, done: 5, slots: 2, used: 1, bonus: 0, next_name: 'Надёжный подрядчик', next_rep: 8 };
+const crewRules = { min: 50, max: 10000, title_max: 60, desc_max: 300, minutes: 60, accept_minutes: 10 };
+
+test('ранг подрядчика: слоты и сколько до следующего ранга', () => {
+  const ui = setup({ rank });
+  expect(ui.getByText('Подрядчик')).toBeTruthy();
+  expect(ui.getByText('Контрактов взято: 1 из 2')).toBeTruthy();
+  expect(ui.getByText('До ранга «Надёжный подрядчик»: ещё 3')).toBeTruthy();
+});
+
+test('личный заказ, серия и упавший спрос помечены, доля исполнителя посчитана', () => {
+  const ui = setup({
+    rank,
+    contracts: [
+      contract(10, { kind: 'personal', share: 60, reward: 1000 }),
+      contract(11, { kind: 'chain', stage: 2, stages: 3, chain_bonus: 50, taken_by: 'Другой', taker_id: 222 }),
+      contract(12, { demand: 60, taken_by: 'Другой', taker_id: 222 }),
+    ],
+  });
+  expect(ui.getByText('Личный заказ')).toBeTruthy();
+  expect(ui.getByText('Исполнителю 60%: 600 кр.')).toBeTruthy();
+  expect(ui.getByText('Серия: этап 2 из 3')).toBeTruthy();
+  expect(ui.getByText('Спрос 60%')).toBeTruthy();
+  fireEvent.click(ui.getByText('Личные (1)'));
+  expect(ui.queryByText('Серия: этап 2 из 3')).toBeNull();
+});
+
+test('личные заказы обновляются кнопкой, на кулдауне она молчит', () => {
+  const ready = setup({ rank, contracts: [contract(10, { kind: 'personal' })] });
+  fireEvent.click(ready.getByText('Обновить личные заказы'));
+  expect(sent(ready.topic, 'reroll')).toHaveLength(1);
+  const waiting = setup({ rank, reroll_left: 90, contracts: [contract(10, { kind: 'personal' })] });
+  fireEvent.click(waiting.getAllByText('Обновить личные заказы').pop()!);
+  expect(sent(waiting.topic, 'reroll')).toHaveLength(0);
+});
+
+test('объявление экипажа: исполнитель сдаёт работу, заказчик принимает или отклоняет', () => {
+  const crew = (uid, extra = {}) => contract(uid, { kind: 'crew', department_name: 'Экипаж', poster: 'Заказчик', poster_id: 333, ...extra });
+  const performer = setup({ rank, crew_request: crewRules, contracts: [crew(20, { taken_by: 'Тест Тестов', taker_id: 111 })] });
+  fireEvent.click(performer.getByText('Сдать работу'));
+  expect(sent(performer.topic, 'crew_report')).toEqual([{ uid: 20 }]);
+  const poster = setup({
+    rank,
+    my_account: 333,
+    crew_request: crewRules,
+    contracts: [crew(21, { taken_by: 'Другой', taker_id: 222, reported: 1 }), crew(22)],
+  });
+  expect(poster.getByText('Работу сдал: Другой')).toBeTruthy();
+  fireEvent.click(poster.getByText('Принять работу'));
+  expect(sent(poster.topic, 'crew_accept')).toEqual([{ uid: 21 }]);
+  fireEvent.click(poster.getByText('Отклонить'));
+  fireEvent.click(poster.getByText('Точно отклонить?'));
+  expect(sent(poster.topic, 'crew_reject')).toEqual([{ uid: 21 }]);
+  fireEvent.click(poster.getByText('Снять'));
+  fireEvent.click(poster.getByText('Снять объявление?'));
+  expect(sent(poster.topic, 'crew_cancel')).toEqual([{ uid: 22 }]);
+  expect(poster.queryByText('Взять')).toBeNull();
+});
+
+test('форма объявления шлёт заголовок, описание и награду', () => {
+  const ui = setup({ rank, crew_request: crewRules });
+  fireEvent.click(ui.getByText('Дать объявление'));
+  const [title, desc, reward] = Array.from(ui.container.querySelectorAll('input'));
+  fireEvent.input(title, { target: { value: 'Починить шлюз' } });
+  fireEvent.input(desc, { target: { value: 'Шлюз в баре не открывается' } });
+  fireEvent.input(reward, { target: { value: '500' } });
+  fireEvent.click(ui.getByText('Разместить'));
+  expect(sent(ui.topic, 'crew_post')).toEqual([{ title: 'Починить шлюз', desc: 'Шлюз в баре не открывается', reward: 500 }]);
+});
+
+test('без ранга в данных (бюджет отдела) панели подрядчика нет', () => {
+  const ui = setup({ crew_request: crewRules });
+  expect(ui.queryByText('Дать объявление')).toBeNull();
+});

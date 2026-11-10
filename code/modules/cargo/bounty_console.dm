@@ -25,6 +25,8 @@
 
 /obj/item/paper/bounty_printout/Initialize(mapload)
 	for(var/datum/econ_contract/contract as anything in SSeconomy.all_contracts())
+		if(contract.owner)
+			continue
 		var/list/entry = contract.ui_entry()
 		default_raw_text += {"<h3>[entry["title"]] ([entry["department_name"]])</h3>
 		<ul><li>Награда: [entry["reward"]] кр.</li>
@@ -51,13 +53,9 @@
 	. = ..()
 	if(.)
 		return
+	if(econ_contract_console_act(usr, action, params, src))
+		return TRUE
 	switch(action)
-		if("take")
-			econ_take_contract(usr, params["uid"], src)
-			return TRUE
-		if("drop")
-			econ_drop_contract(usr, params["uid"], src)
-			return TRUE
 		if("Print")
 			if(printer_ready < world.time)
 				printer_ready = world.time + PRINTER_TIMEOUT

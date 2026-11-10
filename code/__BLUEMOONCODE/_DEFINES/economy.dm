@@ -181,8 +181,21 @@
 #define ECON_OBJECTIVE_CRASH_MAX 30
 /// Счёт главы считается опустошённым, если на нём осталось не больше этого
 #define ECON_OBJECTIVE_DRAIN_LEFT 100
-/// Сколько контрактов один счёт держит взятыми одновременно
-#define ECON_CONTRACTS_PER_TAKER 1
+/// Репутация подрядчика: штраф за отказ от взятого контракта и за сорванный срок
+#define ECON_CONTRACT_REP_DROP 2
+#define ECON_CONTRACT_REP_EXPIRED 1
+/// Подборку личных заказов обновляют не чаще этого
+#define ECON_CONTRACT_REROLL_COOLDOWN (10 MINUTES)
+/// Этапов в серии поставок
+#define ECON_CONTRACT_CHAIN_STAGES 3
+/// Объявлений экипажа от одного счёта одновременно
+#define ECON_CREW_REQUESTS_PER_POSTER 2
+/// Срок объявления экипажа
+#define ECON_CREW_REQUEST_TIME (60 MINUTES)
+/// Сданную работу по объявлению заказчик принимает или отклоняет за это время, иначе она принята
+#define ECON_CREW_REQUEST_ACCEPT_TIME (10 MINUTES)
+#define ECON_CREW_REQUEST_TITLE_MAX 60
+#define ECON_CREW_REQUEST_DESC_MAX 300
 /// Срок, который получает взятый контракт без своего срока
 #define ECON_CONTRACT_TAKEN_TIME (40 MINUTES)
 /// Отказавшийся от контракта берёт следующий не раньше чем через столько
@@ -251,6 +264,7 @@
 #define ECON_WORK "work"
 #define ECON_WORK_PREMIUM "work_premium"
 #define ECON_CONTRACT "contract"
+#define ECON_CREW_REQUEST "crew_request"
 #define ECON_EXPORT "export"
 #define ECON_IMPORT "import"
 #define ECON_HANDLING_FEE "handling_fee"
