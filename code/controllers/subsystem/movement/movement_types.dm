@@ -494,7 +494,7 @@
 		return FALSE
 	var/turf/destination = movement_path[length(movement_path)]
 	var/turf/goal_turf = get_turf(goal)
-	return goal_turf && destination.z == goal_turf.z && get_dist(destination, goal_turf) <= max(reach || 0, 1)
+	return goal_turf && destination.z == goal_turf.z && get_dist(destination, goal_turf) <= (reach || 0)
 
 ///Обойти занятую клетку коротким поиском до точки маршрута на несколько шагов впереди;
 ///не вышло - полный поиск в обход
@@ -508,14 +508,17 @@
 		return
 	repath_in_progress = TRUE
 	var/turf/start = get_turf(moving)
+	var/route_length = length(route)
+	var/list/tail = route.Copy(rejoin_index + 1)
 	var/list/patch = get_path_to(moving, route[rejoin_index], rejoin_index + AI_JPS_REPAIR_SLACK, 0, id, simulated_only, blocked, TRUE, src)
 	if(QDELETED(src))
 		return
 	repath_in_progress = FALSE
-	if(get_turf(moving) != start || movement_path != route)
+	//пока поиск ждал слот, шаг в сторону мог срезать тот же список на месте
+	if(get_turf(moving) != start || movement_path != route || length(route) != route_length)
 		return
 	if(length(patch))
-		movement_path = patch + route.Copy(rejoin_index + 1)
+		movement_path = patch + tail
 		return
 	reroute_around(blocked)
 
