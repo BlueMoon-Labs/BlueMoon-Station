@@ -95,7 +95,9 @@
 	. = ..()
 	if(.)
 		var/damage = .
-		return attack_threshold_check(damage, M.melee_damage_type)
+		var/damage_applied = attack_threshold_check(damage, M.melee_damage_type)
+		// Иммунитет к стамине не отменяет ожог и опрокидывание от незаблокированного удара свармера.
+		return isswarmer(M) ? damage : damage_applied
 
 /mob/living/simple_animal/attack_slime(mob/living/simple_animal/slime/M)
 	. = ..()
