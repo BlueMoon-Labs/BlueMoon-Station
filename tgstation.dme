@@ -2378,6 +2378,7 @@
 #include "code\modules\asset_cache\asset_cache_client.dm"
 #include "code\modules\asset_cache\asset_cache_item.dm"
 #include "code\modules\asset_cache\asset_list.dm"
+#include "code\modules\asset_cache\resource_host_probe.dm"
 #include "code\modules\asset_cache\assets\achievements.dm"
 #include "code\modules\asset_cache\assets\adventure.dm"
 #include "code\modules\asset_cache\assets\arcade.dm"
