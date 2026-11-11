@@ -53,6 +53,9 @@
 	///the tier has to be remembered rather than recomputed from the streak (the
 	///streak keeps growing while we sleep).
 	var/atmos_idle_tier = 0
+	///Последняя холостая проверка не зависела от газа в трубе машины (комната уже на уставке,
+	///машина выключена): скачок давления пайпнета её не будит, только турф, сигнал и сердцебиение.
+	var/atmos_pipe_blind = FALSE
 	///the turf whose atmos_wake_machines list we are registered in
 	var/turf/open/registered_wake_turf
 	///TRUE, пока машина ждёт в SSair.pipenets_needing_rebuilt. Ставится и

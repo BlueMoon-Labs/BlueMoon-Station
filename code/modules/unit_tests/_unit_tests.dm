@@ -157,6 +157,7 @@
 #include "atmos_native.dm"
 #include "atmos_pass_memos.dm"
 #include "atmos_performance.dm"
+#include "atmos_pipe_blind_wake.dm"
 #include "atmos_superconduction.dm"
 #include "atmos_planetary_churn.dm"
 #include "atmos_saturation_valve.dm"
