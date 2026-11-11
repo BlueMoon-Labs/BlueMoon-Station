@@ -2317,6 +2317,7 @@
 #include "code\modules\antagonists\wishgranter\wishgranter.dm"
 #include "code\modules\antagonists\wizard\alive_bones.dm"
 #include "code\modules\antagonists\wizard\wizard.dm"
+#include "code\modules\antagonists\wizard\grand_ritual.dm"
 #include "code\modules\antagonists\wizard\equipment\artefact.dm"
 #include "code\modules\antagonists\wizard\equipment\soulstone.dm"
 #include "code\modules\antagonists\wizard\equipment\spellbook.dm"
