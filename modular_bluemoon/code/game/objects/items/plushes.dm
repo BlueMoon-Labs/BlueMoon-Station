@@ -1089,8 +1089,8 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 
 	update_appearance()
 
-// /obj/item/toy/plush/bm/bozo
-// 	name = "Bozo plush"
-// 	desc = "Маленькая версия Мамочки Бозо у вас дома: греет душу, радует глаз и совсем не требует азота для дыхания! СКРИИИИ!!"
-// 	icon_state = "bozo"
-// 	squeak_override = list('sound/voice/shriek1.ogg' = 1)
+/obj/item/toy/plush/bm/bozo
+	name = "Bozo plush"
+	desc = "Маленькая версия Мамочки Бозо у вас дома: греет душу, радует глаз и совсем не требует азота для дыхания! СКРИИИИ!!"
+	icon_state = "bozo"
+	squeak_override = list('sound/voice/shriek1.ogg' = 1)
