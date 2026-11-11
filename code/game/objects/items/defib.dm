@@ -650,7 +650,7 @@
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - сердце пациента сильно повреждено.</span>"
 				else if(total_burn >= 180 || total_brute >= 180)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело пациента слишком сильно повреждено. Дальнейшие попытки бесполезны.</span>"
-				else if(!H.client)
+				else if(!H.client && !H.is_antag_training_patient())
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - временное отсутствие активности в мозге пациента. Повторите попытку реанимации.")
 				else
 					var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)

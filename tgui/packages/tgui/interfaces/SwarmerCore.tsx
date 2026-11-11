@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   Button,
   ImageButton,
@@ -6,7 +8,6 @@ import {
   Section,
   Stack,
 } from '../components';
-import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 type SwarmerCoreData = {

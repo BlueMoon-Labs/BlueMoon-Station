@@ -872,7 +872,7 @@
 	// Запрет клонирования после поглощения не запрещает восстановить и реанимировать тело.
 	if(HAS_TRAIT_NOT_FROM(src, TRAIT_NOCLONE, CHANGELING_DRAIN))
 		return FALSE
-	if(client)
+	if(client || is_antag_training_patient())
 		return TRUE
 	// Сохраняем штатное лечение животных-НПС, у которых никогда не было игрока.
 	if(!mind && !ckey && (isanimal(src) || ismonkey(src)))

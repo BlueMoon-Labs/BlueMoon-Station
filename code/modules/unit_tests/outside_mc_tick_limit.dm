@@ -48,9 +48,8 @@
 	burn_until(percent)
 
 /datum/outside_mc_probe_guard/proc/burn_until(percent)
-	var/spins = 0
 	while(TICK_USAGE_REAL < percent)
-		spins++
+		continue
 
 /**
  * Ставит прок в очередь сна до или после МК. BYOND будит уснувших в порядке засыпания, а МК спит по тику,
@@ -96,7 +95,6 @@
 		return null
 	var/list/ticks = list()
 	var/work_left = OUTSIDE_MC_PROBE_WORK
-	var/spins = 0
 	while(work_left > 0)
 		var/tick_key = "[world.time]"
 		var/list/record = ticks[tick_key]
@@ -106,7 +104,7 @@
 		var/unit_started = TICK_USAGE_REAL
 		record[6] = unit_started
 		while(TICK_USAGE_REAL - unit_started < OUTSIDE_MC_PROBE_UNIT)
-			spins++
+			continue
 		work_left -= OUTSIDE_MC_PROBE_UNIT
 		record[2] = TICK_USAGE_REAL
 		record[3]++
