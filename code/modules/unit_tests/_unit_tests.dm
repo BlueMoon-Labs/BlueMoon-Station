@@ -509,6 +509,7 @@
 // #include "siunit.dm"
 #include "slippery_worn_items.dm"
 #include "sort_tim.dm"
+#include "sound_file_formats.dm"
 #include "space_cleaner_gentle.dm"
 #include "space_ruin_planetary_turfs.dm"
 #include "space_wind_effect.dm"
