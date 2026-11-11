@@ -400,8 +400,8 @@
 		room_op_end(roomNumber)
 		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
 		return FALSE
-	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
-	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
 	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
 		room_op_end(roomNumber)
 		qdel(roomReservation)
@@ -563,8 +563,8 @@
 		room_op_end(roomNumber)
 		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
 		return FALSE
-	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
-	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
 	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
 		room_op_end(roomNumber)
 		qdel(roomReservation)

@@ -5323,6 +5323,7 @@
 #include "modular_bluemoon\code\modules\food_and_drinks\recipes\tablecraft\recipes_soup.dm"
 #include "modular_bluemoon\code\modules\food_and_drinks\recipes\tablecraft\recipes_spaghetti.dm"
 #include "modular_bluemoon\code\modules\hilbertshotel\hilbertshotel.dm"
+#include "modular_bluemoon\code\modules\hilbertshotel\hotel_room_loading.dm"
 #include "modular_bluemoon\code\modules\hilbertshotel\hotel_room_templates.dm"
 #include "modular_bluemoon\code\modules\hk_droids\body_render.dm"
 #include "modular_bluemoon\code\modules\hk_droids\hk47_antag.dm"
