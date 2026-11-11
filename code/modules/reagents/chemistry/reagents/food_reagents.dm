@@ -57,8 +57,8 @@
 
 /datum/reagent/consumable/nutriment/on_mob_life(mob/living/carbon/M)
 	if(!HAS_TRAIT(M, TRAIT_NO_PROCESS_FOOD))
-		if(prob(50))
-			M.heal_bodypart_damage(brute_heal,burn_heal, 0)
+		// Пересчёт здоровья в metabolize() нужен только если что-то зажило: здоровый сытый моб платил за него каждый второй тик.
+		if(prob(50) && M.heal_bodypart_damage(brute_heal,burn_heal, 0))
 			. = 1
 		..()
 

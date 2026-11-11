@@ -593,6 +593,7 @@
 #include "nameless_identity.dm"
 #include "meteor_satellite_registry.dm"
 #include "newscaster_alert_gate.dm"
+#include "nutriment_health_update.dm"
 #include "harddel_cleanup.dm"
 #include "harddel_xenobio_10151.dm"
 #include "harddel_round_10466.dm"
