@@ -66,6 +66,11 @@
 	if(chems.has_reagent(type, 1))
 		mytray.adjustToxic(1.5) //It is still toxic, mind you, but not to the same degree.
 
+/datum/reagent/toxin/mutagen/used_on_fish(obj/item/fish/fish)
+	ADD_TRAIT(fish, TRAIT_FISH_MUTAGENIC, type)
+	addtimer(CALLBACK(fish, TYPE_PROC_REF(/obj/item/fish, clear_mutagenic), type), fish.feeding_frequency * 0.8, TIMER_UNIQUE|TIMER_OVERRIDE)
+	return TRUE
+
 /datum/reagent/toxin/plasma
 	name = "Plasma"
 	description = "Plasma in its liquid form."
@@ -562,7 +567,7 @@
 	return TRUE
 
 /datum/reagent/toxin/fentanyl/overdose_start(mob/living/M)
-	to_chat(M, "<span class='userdanger'>Грудь сжимается — воздуха не хватает, тело онемело...</span>")
+	to_chat(M, "<span class='userdanger'>Грудь сжимается - воздуха не хватает, тело онемело...</span>")
 	..()
 
 /datum/reagent/toxin/fentanyl/overdose_process(mob/living/M)

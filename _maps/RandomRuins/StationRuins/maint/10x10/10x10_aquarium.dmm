@@ -1,4 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"1" = (
+/obj/structure/aquarium/filled,
+/turf/open/floor/plating,
+/area/template_noop)
 "a" = (
 /obj/effect/spawner/lootdrop/maintenance/two,
 /obj/structure/table,
@@ -279,7 +283,7 @@ a
 (2,1,1) = {"
 F
 S
-A
+1
 A
 A
 A
