@@ -640,7 +640,7 @@
 
 				if(H.hellbound || !H.owns_soul())
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - кажется, душа пациента находится на другом плане существования. Дальнейшие попытки бесполезны.")
-				else if(!H.can_be_medically_revived())
+				else if(!H.can_be_medically_revived(require_player = FALSE))
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - возвращение пациента к жизни невозможно. Дальнейшие попытки бесполезны.")
 				else if (tplus > tlimit)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело слишком долго разлагалось. Дальнейшие попытки бесполезны.</span>"

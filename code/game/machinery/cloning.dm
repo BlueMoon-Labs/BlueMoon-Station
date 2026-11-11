@@ -129,6 +129,9 @@
 				return FALSE
 			if(AmBloodsucker(clonemind.current)) //If the mind is a bloodsucker
 				return FALSE
+			// Старый снимок не обходит запрет клонирования после поглощения; улучшенный сканер сохраняет своё исключение.
+			if(HAS_TRAIT_FROM(clonemind.current, TRAIT_NOCLONE, CHANGELING_DRAIN) && (!connected?.scanner || connected.scanner.scan_level < 2))
+				return FALSE
 		if(!QDELETED(clonemind.current) && clonemind.current.client)
 			if( ckey(clonemind.key)!=ckey )
 				return FALSE

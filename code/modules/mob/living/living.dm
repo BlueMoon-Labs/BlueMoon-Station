@@ -866,7 +866,7 @@
 	updatehealth()
 
 // Проверяет доступность сознания для медицинского оживления независимо от повреждений тела.
-/mob/living/proc/can_be_medically_revived()
+/mob/living/proc/can_be_medically_revived(require_player = TRUE)
 	if(suiciding || hellbound || !owns_soul())
 		return FALSE
 	// Запрет клонирования после поглощения не запрещает восстановить и реанимировать тело.
@@ -877,10 +877,18 @@
 	// Сохраняем штатное лечение животных-НПС, у которых никогда не было игрока.
 	if(!mind && !ckey && (isanimal(src) || ismonkey(src)))
 		return TRUE
+	// Пустая оболочка ИИ не имеет собственной личности: её ремонтируют перед подключением ядра.
+	if(!mind && !ckey && iscyborg(src))
+		var/mob/living/silicon/robot/robot = src
+		if(robot.shell && !robot.deployed)
+			return TRUE
 	if(!mind || mind.current != src)
 		return FALSE
-	var/mob/dead/observer/ghost = get_ghost()
-	return !!ghost?.client
+	var/mob/dead/observer/ghost = get_ghost(even_if_they_cant_reenter = TRUE)
+	if(ghost && !ghost.can_reenter_corpse)
+		return FALSE
+	// Для диагностики отделяем временное отсутствие игрока от запрета возвращения.
+	return !require_player || !!ghost?.client
 
 // Проверяет, сможет ли восстановленное тело поддерживать жизнь.
 /mob/living/proc/can_be_revived()

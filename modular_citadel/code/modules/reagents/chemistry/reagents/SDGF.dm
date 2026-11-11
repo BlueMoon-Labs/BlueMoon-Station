@@ -252,7 +252,7 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 		return
 	if(M.stat == DEAD)
 		if(!M.can_be_medically_revived() || HAS_TRAIT(M, TRAIT_NOCLONE))
-			M.visible_message("<span class='warning'>The growth factor inertly sticks to [M]'s body, failing to do anything of note.</span>")
+			M.visible_message(span_warning("Фактор роста оседает на теле [M], не оказывая заметного действия."))
 			return
 		if(!M.mind)
 			M.visible_message("<span class='warning'>The growth factor shudders, merging with [M]'s body, but is unable to replicate properly.</span>")
