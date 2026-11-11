@@ -1190,7 +1190,7 @@
 /mob/living/carbon/proc/can_revive(ignore_timelimit = FALSE, maximum_brute_dam = MAX_REVIVE_BRUTE_DAMAGE, maximum_fire_dam = MAX_REVIVE_FIRE_DAMAGE, ignore_heart = FALSE)
 	var/tlimit = DEFIB_TIME_LIMIT * 10
 	var/obj/item/organ/heart = getorgan(/obj/item/organ/heart)
-	if(suiciding || hellbound || HAS_TRAIT(src, TRAIT_HUSK) || AmBloodsucker(src))
+	if(!can_be_medically_revived() || HAS_TRAIT_NOT_FROM(src, TRAIT_HUSK, CHANGELING_DRAIN) || AmBloodsucker(src))
 		return
 	if(!ignore_timelimit && (world.time - timeofdeath) > tlimit)
 		return

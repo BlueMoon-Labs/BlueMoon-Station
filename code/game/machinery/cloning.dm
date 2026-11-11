@@ -129,13 +129,13 @@
 				return FALSE
 			if(AmBloodsucker(clonemind.current)) //If the mind is a bloodsucker
 				return FALSE
-		if(clonemind.active)	//somebody is using that mind
+		if(!QDELETED(clonemind.current) && clonemind.current.client)
 			if( ckey(clonemind.key)!=ckey )
 				return FALSE
 		else
 			// get_ghost() will fail if they're unable to reenter their body
 			var/mob/dead/observer/G = clonemind.get_ghost()
-			if(!G)
+			if(!G?.client)
 				return FALSE
 			if(G.suiciding) // The ghost came from a body that is suiciding.
 				return FALSE
@@ -143,6 +143,8 @@
 			INVOKE_ASYNC(src, PROC_REF(horrifyingsound))
 			mess = TRUE
 			update_icon()
+			return FALSE
+		if(!QDELETED(clonemind.current) && !clonemind.current.can_be_medically_revived())
 			return FALSE
 	current_insurance = insurance
 	attempting = TRUE //One at a time!!

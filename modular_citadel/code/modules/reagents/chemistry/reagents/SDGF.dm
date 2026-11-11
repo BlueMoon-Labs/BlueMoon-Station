@@ -251,11 +251,12 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 		M.visible_message("<span class='warning'>The growth factor froths upon [M]'s body, failing to do anything of note.</span>")
 		return
 	if(M.stat == DEAD)
-		if(M.suiciding || (HAS_TRAIT(M, TRAIT_NOCLONE)) || M.hellbound)
+		if(!M.can_be_medically_revived() || HAS_TRAIT(M, TRAIT_NOCLONE))
 			M.visible_message("<span class='warning'>The growth factor inertly sticks to [M]'s body, failing to do anything of note.</span>")
 			return
 		if(!M.mind)
 			M.visible_message("<span class='warning'>The growth factor shudders, merging with [M]'s body, but is unable to replicate properly.</span>")
+			return
 
 		var/bodydamage = (M.getBruteLoss() + M.getFireLoss())
 		var/typepath = M.type

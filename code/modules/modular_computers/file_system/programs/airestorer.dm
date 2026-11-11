@@ -83,7 +83,7 @@
 	A.updatehealth()
 
 	if(A.health >= 0 && A.stat == DEAD)
-		A.revive(full_heal = FALSE, admin_revive = FALSE)
+		A.revive(full_heal = FALSE, admin_revive = FALSE, medical_revive = TRUE)
 		cardhold.update_appearance()
 
 	// Finished restoring

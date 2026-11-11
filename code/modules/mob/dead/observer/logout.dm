@@ -16,5 +16,6 @@
 				UNSETEMPTY(target.observers)
 			observetarget = null
 	..()
+	mind?.current?.loc?.on_log(FALSE)
 	if(!QDELING(src) && !key)
 		qdel(src)

@@ -68,7 +68,7 @@
 
 	occupier.updatehealth()
 	if(occupier.health >= 0 && occupier.stat == DEAD)
-		occupier.revive(full_heal = FALSE, admin_revive = FALSE)
+		occupier.revive(full_heal = FALSE, admin_revive = FALSE, medical_revive = TRUE)
 		if(!occupier.radio_enabled)
 			occupier.radio_enabled = TRUE
 			to_chat(occupier, span_warning("Your Subspace Transceiver has been enabled!"))

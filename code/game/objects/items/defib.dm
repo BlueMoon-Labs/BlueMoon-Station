@@ -638,10 +638,10 @@
 				shock_touching(30, H)
 				var/failed
 
-				if (H.suiciding || (HAS_TRAIT(H, TRAIT_NOCLONE)))
-					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - возвращение пациента к жизни невозможно. Дальнейшие попытки бесполезны.</span>"
-				else if (H.hellbound)
-					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - кажется, душа пациента находится на другом плане существования. Дальнейшие попытки бесполезны.</span>"
+				if(H.hellbound || !H.owns_soul())
+					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - кажется, душа пациента находится на другом плане существования. Дальнейшие попытки бесполезны.")
+				else if(!H.can_be_medically_revived())
+					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - возвращение пациента к жизни невозможно. Дальнейшие попытки бесполезны.")
 				else if (tplus > tlimit)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело слишком долго разлагалось. Дальнейшие попытки бесполезны.</span>"
 				else if (!heart)
@@ -650,8 +650,8 @@
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - сердце пациента сильно повреждено.</span>"
 				else if(total_burn >= 180 || total_brute >= 180)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело пациента слишком сильно повреждено. Дальнейшие попытки бесполезны.</span>"
-				else if(H.get_ghost())
-					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - никакой активности в мозге пациента. Дальнейшие попытки могут быть успешными.</span>"
+				else if(!H.client)
+					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - временное отсутствие активности в мозге пациента. Повторите попытку реанимации.")
 				else
 					var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)
 					if(BR) //BUG_PROBABLE_CAUSE - slight difference between us and tg
@@ -685,7 +685,7 @@
 					user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] пищит: Реанимация прошла успешно.</span>")
 					playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 					H.set_heartattack(FALSE)
-					H.revive(post_revive_effects = TRUE)
+					H.revive(post_revive_effects = TRUE, medical_revive = TRUE)
 					if(breathless)
 						H.emote("twitch")
 						if(H.health > HALFWAYCRITDEATH)

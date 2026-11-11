@@ -270,7 +270,9 @@ Charged extracts:
 		return
 	if(M.maxHealth <= 0)
 		to_chat(user, "<span class='warning'>The slime is too unstable to return!</span>")
-	M.revive(full_heal = 1)
+	if(!M.revive(full_heal = TRUE, medical_revive = TRUE))
+		to_chat(user, span_warning("Сознание слайма недоступно для реанимации."))
+		return
 	M.set_stat(CONSCIOUS)
 	M.visible_message("<span class='notice'>[M] is filled with renewed vigor and blinks awake!</span>")
 	M.maxHealth -= 10 //Revival isn't healthy.

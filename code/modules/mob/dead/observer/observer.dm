@@ -510,6 +510,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return
 
 	can_reenter_corpse = FALSE
+	mind?.current?.loc?.on_log(FALSE)
 	client.prefs?.dnr_triggered = TRUE
 	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
