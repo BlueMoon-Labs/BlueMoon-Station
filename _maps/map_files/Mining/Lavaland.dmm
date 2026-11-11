@@ -2198,9 +2198,9 @@
 	dir = 1
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Cell 2";
+	c_tag = "Labor Camp - Cell 3";
 	dir = 1;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp)
@@ -2644,9 +2644,9 @@
 	},
 /obj/structure/curtain,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Shower";
+	c_tag = "Labor Camp - Shower";
 	dir = 9;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/showroomfloor/shower,
 /area/mine/laborcamp)
@@ -5336,9 +5336,9 @@
 	dir = 8
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Mining Storage";
+	c_tag = "Labor Camp - Mining Storage";
 	dir = 5;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 4
@@ -6145,9 +6145,9 @@
 "dMM" = (
 /obj/effect/turf_decal/trimline/brown/filled/line,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Foyer";
+	c_tag = "Labor Camp - Foyer";
 	dir = 1;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
@@ -6653,9 +6653,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/machinery/power/apc/auto_name/north,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area East";
+	c_tag = "Labor Camp - Common Area East";
 	dir = 6;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/textured,
 /area/mine/laborcamp)
@@ -7457,9 +7457,9 @@
 	id = "gulag"
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Processing Area";
+	c_tag = "Labor Camp - Processing Area";
 	dir = 1;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plating,
 /area/mine/laborcamp/mining)
@@ -8249,6 +8249,13 @@
 	},
 /turf/open/pool,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"fea" = (
+/obj/structure/bed,
+/obj/effect/spawner/lootdrop/bedsheet,
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "feh" = (
 /obj/machinery/computer/security/labor{
 	dir = 4
@@ -8493,6 +8500,11 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"fky" = (
+/turf/closed/wall/mineral/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "fkI" = (
 /obj/structure/table/reinforced/brass,
 /obj/structure/stone_tile/slab,
@@ -8650,9 +8662,9 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/ore_box,
 /obj/machinery/camera{
-	c_tag = "Labor Camp External";
+	c_tag = "Labor Camp - External";
 	dir = 9;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plating,
 /area/mine/laborcamp)
@@ -9929,6 +9941,15 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/mine/common/medical)
+"gaa" = (
+/obj/structure/flora/grass/jungle,
+/obj/structure/flora/biolumi/lamp{
+	pixel_y = 15
+	},
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "gan" = (
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
 	dir = 8
@@ -10542,9 +10563,9 @@
 	dir = 1
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Cell 3";
+	c_tag = "Labor Camp - Cell 2";
 	dir = 1;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
@@ -11214,7 +11235,7 @@
 	dir = 8
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Security Outpost";
+	c_tag = "Labor Camp - Security Area";
 	network = list("labor", "ss13");
 	dir = 9
 	},
@@ -11473,6 +11494,13 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/indestructible/necropolis,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"gTG" = (
+/obj/structure/flora/ausbushes/fullgrass,
+/obj/structure/flora/biolumi/lamp,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "gUb" = (
 /obj/structure/stone_tile/cracked{
 	dir = 8
@@ -13008,6 +13036,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"hRk" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "hRC" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
@@ -16807,6 +16844,12 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"kbe" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "kbK" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 6
@@ -19799,6 +19842,12 @@
 	icon_state = "platingdmg3"
 	},
 /area/mine/common/maintenance/south)
+"lOa" = (
+/obj/structure/flora/biolumi/lamp,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "lOc" = (
 /obj/structure/chair/sofa/right{
 	color = "#800000"
@@ -21127,6 +21176,14 @@
 	initial_gas_mix = "LAVALAND_ATMOS"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"mBw" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "mBB" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -21865,9 +21922,9 @@
 	dir = 1
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Cell 1";
+	c_tag = "Labor Camp - Cell 1";
 	dir = 1;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp)
@@ -21878,6 +21935,13 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"mTQ" = (
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "mUt" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
@@ -21885,9 +21949,9 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Hydroponics";
+	c_tag = "Labor Camp - Hydroponics";
 	dir = 10;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
@@ -22500,7 +22564,7 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Equipment";
+	c_tag = "Labor Camp - Security Equipment";
 	network = list("labor", "ss13");
 	dir = 5
 	},
@@ -22521,6 +22585,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"nmM" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "nmN" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -24389,9 +24459,9 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/cobweb,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Kitchen";
+	c_tag = "Labor Camp - Kitchen";
 	dir = 6;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/kitchen,
 /area/mine/laborcamp)
@@ -25656,6 +25726,13 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"oOY" = (
+/obj/structure/fans/tiny,
+/obj/structure/mineral_door/woodrustic,
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "oPw" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/effect/turf_decal/bot/white,
@@ -26258,9 +26335,9 @@
 /obj/effect/decal/cleanable/molten_object,
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area North";
+	c_tag = "Labor Camp - Common Area North";
 	dir = 8;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/textured,
 /area/mine/laborcamp)
@@ -26894,6 +26971,11 @@
 /obj/structure/grille,
 /turf/open/floor/plating,
 /area/mine/common/maintenance/north)
+"pHY" = (
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "pIp" = (
 /obj/machinery/photocopier,
 /obj/structure/cable/yellow{
@@ -31796,6 +31878,13 @@
 "sDq" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"sDt" = (
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/flora/biolumi/lamp,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "sDE" = (
 /obj/structure/table/reinforced,
 /obj/item/paper_bin{
@@ -33620,9 +33709,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
 "tHO" = (
 /obj/machinery/camera{
-	c_tag = "Labor Camp Medical";
+	c_tag = "Labor Camp - Medical";
 	dir = 6;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
@@ -33949,9 +34038,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/machinery/airalarm/directional/west,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Cell Area";
+	c_tag = "Labor Camp - Cell Area";
 	dir = 5;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 8
@@ -35536,7 +35625,7 @@
 	color = "#579cff"
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Monitoring";
+	c_tag = "Labor Camp - Monitoring";
 	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -37312,6 +37401,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"vLi" = (
+/obj/structure/chair/comfy/brown,
+/turf/open/floor/wood,
+/area/mine/common{
+	name = "Park Area"
+	})
 "vLu" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 4
@@ -38727,9 +38822,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area Center";
+	c_tag = "Labor Camp - Common Area Center";
 	dir = 4;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/corner{
 	dir = 8
@@ -39205,9 +39300,9 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Mining Area";
+	c_tag = "Labor Camp - Mining Area";
 	dir = 4;
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 4
@@ -78455,8 +78550,8 @@ gdj
 gdj
 ibh
 ibh
-ibh
-ibh
+gdj
+gdj
 gdj
 gIl
 gIl
@@ -78714,7 +78809,7 @@ gdj
 ibh
 ibh
 ibh
-ibh
+gdj
 gdj
 gdj
 gdj
@@ -78972,7 +79067,7 @@ ibh
 ibh
 ibh
 ibh
-ibh
+gdj
 gdj
 gdj
 ibh
@@ -79224,7 +79319,7 @@ eUw
 eUw
 eUw
 ktd
-ktd
+eUw
 gdj
 ibh
 ibh
@@ -81548,7 +81643,7 @@ ujQ
 lSx
 ibh
 ibh
-gdj
+ibh
 gdj
 gIl
 vAU
@@ -81797,15 +81892,15 @@ wsl
 wsl
 eUw
 lSx
-uXk
+lOa
 hbT
 lSx
 ibh
 ibh
+maS
+maS
 ibh
 ibh
-ibh
-gdj
 gdj
 vAU
 vAU
@@ -82051,7 +82146,7 @@ eUw
 eUw
 eUw
 ktd
-ktd
+eUw
 eUw
 eUw
 lSx
@@ -82060,9 +82155,9 @@ ibh
 ibh
 ibh
 ibh
+maS
+maS
 ibh
-gdj
-gdj
 gIl
 vAU
 vAU
@@ -82317,9 +82412,9 @@ ibh
 ibh
 ibh
 ibh
-gdj
-gdj
-gdj
+gtu
+maS
+ibh
 gIl
 vAU
 vAU
@@ -82566,16 +82661,16 @@ ktd
 ktd
 eUw
 eUw
-llq
-llq
-llq
+gdj
 ibh
 ibh
 ibh
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+maS
+maS
+gtu
 gdj
 gIl
 vAU
@@ -82822,17 +82917,17 @@ eUw
 eUw
 eUw
 gdj
-llq
-llq
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
+eAF
+oyM
+maS
+gtu
 gdj
 gIl
 vAU
@@ -83079,17 +83174,17 @@ eUw
 eUw
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+ibh
+ibh
+eAF
+uXk
+wqU
+fKr
+maS
+gtu
 gdj
 gIl
 vAU
@@ -83336,19 +83431,19 @@ eUw
 gdj
 gdj
 gdj
+ibh
+fky
+fky
+fky
+fky
+fky
+oyM
+uXk
+eAF
+sDt
+gtu
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gIl
 vAU
 vAU
 vAU
@@ -83592,20 +83687,20 @@ eUw
 gdj
 gdj
 gdj
+ibh
+ibh
+fky
+vLi
+hRk
+mBw
+fky
+uXk
+uXk
+wqU
+lSx
 gdj
+ibh
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gIl
 gIl
 vAU
 vAU
@@ -83849,19 +83944,19 @@ gdj
 gdj
 gdj
 gdj
+ibh
+eAF
+fky
+pHY
+pHY
+pHY
+oOY
+fKr
+eAF
+lSx
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
 gdj
 gIl
 vAU
@@ -84105,20 +84200,20 @@ eUw
 gdj
 gdj
 gdj
+ibh
+ibh
+uXk
+fky
+kbe
+fea
+nmM
+fky
+oyM
+uXk
+ujQ
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
 gdj
 gIl
 gIl
@@ -84362,20 +84457,20 @@ gdj
 gdj
 gdj
 gdj
+ibh
+ibh
+maS
+fky
+fky
+fky
+fky
+fky
+uXk
+bLt
+lSx
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
 gdj
 gIl
 gIl
@@ -84619,21 +84714,21 @@ gdj
 gdj
 gdj
 gdj
+ibh
+ibh
+maS
+maS
+gaa
+eAF
+uXk
+uXk
+uXk
+mTQ
 gdj
 gdj
+ibh
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gIl
 gIl
 vAU
 vAU
@@ -84877,18 +84972,18 @@ gdj
 gdj
 gdj
 gdj
+ibh
+ibh
+maS
+maS
+maS
+uXk
+wqU
+ujQ
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
 gdj
 gIl
 vAU
@@ -85135,17 +85230,17 @@ gdj
 gdj
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+ibh
+maS
+oyM
+gTG
+ibh
+ibh
+ibh
+ibh
 gdj
 gIl
 gIl
@@ -85392,16 +85487,16 @@ llq
 gdj
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
 gdj
 gdj
 gIl
@@ -85651,12 +85746,12 @@ gdj
 gdj
 gdj
 gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+ibh
+ibh
+ibh
+ibh
+ibh
+ibh
 gdj
 gdj
 gdj
