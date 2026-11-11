@@ -98,8 +98,8 @@
 	icon_living = "swarmer_combat"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 360
-	maxHealth = 360
+	health = 300
+	maxHealth = 300
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	ranged = TRUE
@@ -174,8 +174,8 @@
 	icon_living = "swarmer_builder"
 	melee_damage_lower = 40 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 40 * SWARMER_STAMINA_SCALE
-	health = 360
-	maxHealth = 360
+	health = 300
+	maxHealth = 300
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swap_resource_cost = BUILDER_SWAP_COST
 	can_swap_to = TRUE
