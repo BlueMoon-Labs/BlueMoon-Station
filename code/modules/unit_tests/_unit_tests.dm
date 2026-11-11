@@ -76,6 +76,7 @@
 
 #include "action_button_positions.dm"
 #include "advanced_locator.dm"
+#include "ai_path_savings.dm"
 #include "anchored_mobs.dm"
 #include "antag_frame_objective.dm"
 #include "antag_hud_double_antag.dm"

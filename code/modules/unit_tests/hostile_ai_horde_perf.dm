@@ -217,6 +217,9 @@
 #define HORDE_SEGMENT_TIME (5 SECONDS)
 
 GLOBAL_VAR_INIT(ai_horde_savings, TRUE)
+GLOBAL_VAR_INIT(ai_path_savings, TRUE)
+///Счётчики поведения орды за сегмент: поиски пути, удачные шаги, застрявшие, удары
+GLOBAL_LIST_EMPTY(horde_path_notes)
 ///Что бенч суммирует из профиля: полное имя прока -> короткое
 GLOBAL_LIST_INIT(horde_bench_procs, list(
 	"/datum/ai_controller/process" = "process",
@@ -226,6 +229,11 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 	"/mob/living/simple_animal/hostile/proc/MeleeAction" = "attack",
 	"/datum/ai_behavior/ranged_skirmish/proc/fire_at" = "attack",
 	"/datum/controller/subsystem/movement/fire" = "movement",
+	"/proc/get_path_to" = "path",
+	"/mob/living/simple_animal/proc/can_safely_enter_turf" = "safe",
+	"/turf/proc/LinkBlockedWithAccess" = "link",
+	"/datum/ai_controller/proc/best_reposition_tile" = "reposition",
+	"/mob/living/simple_animal/hostile/proc/ranged_fire_lane_state" = "lane",
 ))
 
 /mob/living/simple_animal/hostile/unit_test_horde/ranged
@@ -245,6 +253,17 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 	var/datum/turf_reservation/arena
 	var/mob/dead/observer/watcher
 	var/list/spawned = list()
+	///Какую экономию бенч выключает в сегментах off
+	var/savings_toggle = "horde"
+	///Сегментов замера, по половине на режим, порядок ABBA
+	var/segments = 4
+	var/segment_time = HORDE_SEGMENT_TIME
+
+/datum/unit_test/hostile_ai_horde_bench/proc/set_savings(on)
+	if(savings_toggle == "path")
+		GLOB.ai_path_savings = on
+	else
+		GLOB.ai_horde_savings = on
 
 /datum/unit_test/hostile_ai_horde_bench/proc/arena_turf(x, y)
 	return locate(arena.bottom_left_coords[1] + x - 1, arena.bottom_left_coords[2] + y - 1, arena.bottom_left_coords[3])
@@ -259,8 +278,11 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 				tile.ChangeTurf(/turf/closed/indestructible/wall)
 				continue
 			tile.ChangeTurf(/turf/open/indestructible/boss/air)
+			//грязь на клетке сливается в одну, слитые копии сразу в qdel и держать их нельзя
 			for(var/i in 1 to 3)
-				spawned += new /obj/effect/decal/cleanable/dirt(tile)
+				var/obj/effect/decal/cleanable/dirt/dirt = new(tile)
+				if(!QDELETED(dirt))
+					spawned += dirt
 	for(var/x in list(10, 30))
 		for(var/y in 12 to 28)
 			if(y % 4)
@@ -297,15 +319,22 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 	sleep(HORDE_WARMUP)
 	//с экономией и без в одном мире, порядок ABBA гасит дрейф фоновой нагрузки
 	var/list/totals = list("on" = list(), "off" = list())
-	for(var/segment in 1 to 4)
-		var/mode = (segment == 1 || segment == 4) ? "on" : "off"
-		GLOB.ai_horde_savings = (mode == "on")
+	var/list/notes = list("on" = list(), "off" = list())
+	for(var/segment in 1 to segments)
+		var/mode = (segment % 4 < 2) ? "on" : "off"
+		set_savings(mode == "on")
+		GLOB.horde_path_notes = list()
+		var/moves_before = GLOB.ai_metrics.successful_moves
+		var/searches_before = GLOB.ai_metrics.jps_requests
+		var/list/start_spots = list()
+		for(var/mob/living/horde_mob as anything in mobs)
+			start_spots += horde_mob.loc
 		ai_pack_scans_reset()
 		ai_pack_object_scans_reset()
 		world.Profile(PROFILE_CLEAR)
 		world.Profile(PROFILE_START)
 		var/elapsed = 0
-		while(elapsed < HORDE_SEGMENT_TIME)
+		while(elapsed < segment_time)
 			sleep(5)
 			elapsed += 5
 			for(var/mob/living/carbon/human/prey as anything in humans)
@@ -313,16 +342,42 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 				if(step && !step.density && get_dist(step, arena_turf(20, 20)) < 16)
 					prey.Move(step)
 		var/profile_data = world.Profile(PROFILE_REFRESH, format = "json")
+		GLOB.horde_path_notes["moves_ok"] += GLOB.ai_metrics.successful_moves - moves_before
+		GLOB.horde_path_notes["searches"] += GLOB.ai_metrics.jps_requests - searches_before
+		//застрял: за весь сегмент не сдвинулся и не стоит вплотную ни к одной жертве
+		for(var/index in 1 to length(mobs))
+			var/mob/living/horde_mob = mobs[index]
+			if(horde_mob.loc != start_spots[index])
+				continue
+			var/next_to_prey = FALSE
+			for(var/mob/living/carbon/human/prey as anything in humans)
+				if(get_dist(horde_mob, prey) <= 1)
+					next_to_prey = TRUE
+					break
+			if(!next_to_prey)
+				GLOB.horde_path_notes["stuck"] += 1
 		world.Profile(PROFILE_STOP)
 		world.Profile(PROFILE_CLEAR)
-		fdel("data/horde_profile_[tag]_[segment][mode].json")
-		text2file(profile_data, "data/horde_profile_[tag]_[segment][mode].json")
+		if(segment <= 4)
+			fdel("data/horde_profile_[tag]_[segment][mode].json")
+			text2file(profile_data, "data/horde_profile_[tag]_[segment][mode].json")
 		var/list/mode_totals = totals[mode]
 		for(var/list/entry as anything in json_decode(profile_data))
 			var/short_name = GLOB.horde_bench_procs[entry["name"]]
 			if(short_name)
 				mode_totals[short_name] += entry["total"] * 1000
-	GLOB.ai_horde_savings = TRUE
+				if(short_name == "attack")
+					GLOB.horde_path_notes["attacks"] += entry["calls"]
+		var/list/mode_notes = notes[mode]
+		for(var/reason in GLOB.horde_path_notes)
+			mode_notes[reason] += GLOB.horde_path_notes[reason]
+	set_savings(TRUE)
+	for(var/mode in notes)
+		var/list/mode_notes = notes[mode]
+		var/list/note_parts = list()
+		for(var/reason in mode_notes)
+			note_parts += "[reason]=[mode_notes[reason]]"
+		log_world("HORDE [tag] path notes [mode]: [jointext(note_parts, " ")]")
 	var/list/lines = list()
 	for(var/mode in totals)
 		var/list/mode_totals = totals[mode]
@@ -336,10 +391,21 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 	var/ai_off = off["process"] + off["plan"]
 	var/decide_on = ai_on - on["attack"]
 	var/decide_off = ai_off - off["attack"]
-	log_world("HORDE [tag]: [HORDE_MOB_COUNT] mobs, 2x[HORDE_SEGMENT_TIME / 10]s per mode | [jointext(lines, " | ")] | AI off/on [round(ai_off)]/[round(ai_on)] = [round(ai_off / max(ai_on, 1), 0.01)]x, without attack execution [round(decide_off)]/[round(decide_on)] = [round(decide_off / max(decide_on, 1), 0.01)]x")
+	log_world("HORDE [savings_toggle] [tag]: [HORDE_MOB_COUNT] mobs, [segments / 2]x[segment_time / 10]s per mode | [jointext(lines, " | ")] | AI off/on [round(ai_off)]/[round(ai_on)] = [round(ai_off / max(ai_on, 1), 0.01)]x, without attack execution [round(decide_off)]/[round(decide_on)] = [round(decide_off / max(decide_on, 1), 0.01)]x")
 	QDEL_LIST(mobs)
 	QDEL_LIST(humans)
 	sleep(1 SECONDS)
+
+///Тот же зал, но в сегментах off выключена экономия поиска пути
+/datum/unit_test/hostile_ai_path_bench
+	parent_type = /datum/unit_test/hostile_ai_horde_bench
+	savings_toggle = "path"
+	//короткие сегменты гасят всплески чужой нагрузки на машине, бьющие в один режим
+	segments = 40
+	segment_time = 1 SECONDS
+
+/datum/unit_test/hostile_ai_path_bench/Run()
+	return ..()
 
 #undef HORDE_ARENA_SIZE
 #undef HORDE_MOB_COUNT

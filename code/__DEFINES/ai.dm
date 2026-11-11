@@ -108,6 +108,10 @@
 ///around a corner keeps its reach; raise it if playtesting still sees mobs give up on reachable
 ///prey behind cover, lower it to reclaim more of the failed-search saving.
 #define AI_JPS_DETOUR_SLACK 16
+///Союзник встал на маршрут: короткий поиск в обход ведёт к клетке маршрута на столько шагов впереди
+#define AI_JPS_REPAIR_SPAN 4
+///Запас радиуса короткого обхода сверх расстояния до точки возврата на маршрут
+#define AI_JPS_REPAIR_SLACK 4
 
 ///Ключ отчёта get_path_to(): TRUE = JPS исчерпал открытый список и доказал, что чистого
 ///маршрута в радиусе поиска нет. Ранние выходы и отмена ключ не ставят.
@@ -350,6 +354,12 @@
 #define AI_HORDE_SAVINGS GLOB.ai_horde_savings
 #else
 #define AI_HORDE_SAVINGS TRUE
+#endif
+///Экономия поиска пути ИИ; бенч орды (hostile_ai_path_bench) переключает её на лету
+#ifdef AI_HORDE_BENCH
+#define AI_PATH_SAVINGS GLOB.ai_path_savings
+#else
+#define AI_PATH_SAVINGS TRUE
 #endif
 ///Дальше этого виляние/окружение не планируем - просто бежим к цели
 #define AI_WEAVE_MAX_DIST 7
