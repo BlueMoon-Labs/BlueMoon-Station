@@ -35,8 +35,7 @@
 	if(!istype(body))
 		return
 	if(!training_team)
-		training_team = new
-		training_team.training = TRUE
+		training_team = new /datum/team/swarmer_team/training
 	if(QDELETED(training_team.swarmer_core))
 		var/turf/core_turf = get_turf(body)
 		for(var/turf/open/neighbor in orange(1, body))
@@ -216,6 +215,16 @@
 			fallback_distance = distance
 			fallback = spot
 	return farthest || fallback
+
+/// Учебный рой: вне списка команд раунда и его отчёта.
+/datum/team/swarmer_team/training
+	name = "Training swarm"
+	show_roundend_report = FALSE
+	training = TRUE
+
+/datum/team/swarmer_team/training/New(list/starting_members)
+	. = ..()
+	GLOB.antagonist_teams -= src
 
 /datum/antagonist/swarmer_training
 	name = "Учебный сворм"
