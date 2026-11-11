@@ -1,4 +1,4 @@
-/// Частичное обновление tgui, равное уже отправленному, не уходит повторно; изменение и перезагрузка страницы снова пропускают его.
+/// Частичное обновление tgui, равное уже отправленному, не уходит повторно; изменение, перезагрузка страницы и полное обновление снова пропускают его.
 /datum/unit_test/tgui_partial_update_dedupe
 
 /datum/unit_test/tgui_partial_update_dedupe/Run()
@@ -19,6 +19,11 @@
 	ui.on_message("ready", list(), list())
 	TEST_ASSERT(ui.send_partial_update(list("data" = list("charge" = 2))), "После перезагрузки страницы повтор не ушёл")
 	TEST_ASSERT_EQUAL(length(window.sent[3]), repeat_length, "После перезагрузки ушло не то сообщение")
+
+	// Полное обновление (open() и send_full_update()) показало клиенту другие данные: прежнее частичное уже не повтор
+	ui.send_full_payload(list("data" = list("charge" = 3)))
+	TEST_ASSERT_EQUAL(length(window.sent), 4, "Полное обновление не ушло")
+	TEST_ASSERT(ui.send_partial_update(list("data" = list("charge" = 2))), "После полного обновления частичное приняли за повтор")
 	TEST_ASSERT(findtext(tgui_traffic_report(), "трафик tgui за раунд"), "Раскладка трафика не собирается")
 
 	ui.window = null
@@ -36,3 +41,6 @@
 
 /datum/tgui_window/update_recorder/send_built_message(type, payload, message, force)
 	sent += message
+
+/datum/tgui_window/update_recorder/send_message(type, payload, force)
+	send_built_message(type, payload, TGUI_CREATE_MESSAGE(type, payload), force)

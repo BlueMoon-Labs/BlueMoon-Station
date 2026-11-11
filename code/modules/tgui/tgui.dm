@@ -187,8 +187,7 @@
 		if(!QDELETED(src))
 			close(can_be_suspended = FALSE)
 		return FALSE
-	last_update_digest = null
-	window.send_message("update", payload)
+	send_full_payload(payload)
 	SStgui.on_open(src)
 
 	return TRUE
@@ -310,8 +309,7 @@
 	//нагрузка приехала бы уже чужому интерфейсу
 	if(!payload || !can_send_update())
 		return
-	last_update_digest = null
-	window.send_message("update", payload)
+	send_full_payload(payload)
 	COOLDOWN_START(src, refresh_cooldown, TGUI_REFRESH_FULL_UPDATE_COOLDOWN)
 
 /**
@@ -334,6 +332,11 @@
 	if(!payload || !can_send_update())
 		return
 	send_partial_update(payload)
+
+/// Полное обновление несёт свои данные: следующее частичное, даже равное прошлому частичному, уже не повтор.
+/datum/tgui/proc/send_full_payload(list/payload)
+	last_update_digest = null
+	window.send_message("update", payload)
 
 /// Частичное обновление без static_data. Повтор уже отправленного не уходит: фронтенд сливает данные поверх прежних,
 /// и та же нагрузка ничего бы не поменяла. TRUE, если сообщение ушло.

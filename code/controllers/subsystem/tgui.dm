@@ -37,6 +37,8 @@ SUBSYSTEM_DEF(tgui)
 			context = "SStgui/PreInit")
 
 /datum/controller/subsystem/tgui/Shutdown()
+	// Порог в 100 МБ тихий раунд не переходит: раскладка за раунд пишется и в конце
+	log_tgui(null, tgui_traffic_report())
 	close_all_uis()
 
 /datum/controller/subsystem/tgui/stat_entry(msg)
