@@ -846,9 +846,7 @@
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "azQ" = (
 /obj/effect/turf_decal/tile/green/anticorner/contrasted,
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -2808,9 +2806,7 @@
 "bLt" = (
 /obj/structure/flora/tree/jungle,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "bLJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -3507,9 +3503,7 @@
 "ccY" = (
 /obj/structure/flora/ausbushes/grassybush,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "cdc" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -7251,9 +7245,7 @@
 "eAF" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "eBb" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
@@ -7342,9 +7334,7 @@
 /obj/structure/flora/ausbushes/grassybush,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "eDn" = (
 /obj/effect/turf_decal/siding/wood/thin{
 	dir = 1
@@ -8260,9 +8250,7 @@
 /obj/structure/bed,
 /obj/effect/spawner/lootdrop/bedsheet,
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "feh" = (
 /obj/machinery/computer/security/labor{
 	dir = 4
@@ -8509,9 +8497,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "fky" = (
 /turf/closed/wall/mineral/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "fkI" = (
 /obj/structure/table/reinforced/brass,
 /obj/structure/stone_tile/slab,
@@ -9417,9 +9403,7 @@
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi/flower,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "fJw" = (
 /obj/effect/turf_decal/stripes/yellow,
 /obj/effect/turf_decal/siding/purple,
@@ -9465,9 +9449,7 @@
 "fKr" = (
 /obj/structure/flora/grass/jungle,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "fKz" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
@@ -9959,9 +9941,7 @@
 	pixel_y = 15
 	},
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "gan" = (
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
 	dir = 8
@@ -10550,9 +10530,7 @@
 "gtu" = (
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating/asteroid/basalt,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "gtA" = (
 /obj/structure/bookcase/random,
 /turf/open/floor/wood/wood_large,
@@ -10703,9 +10681,7 @@
 "gxu" = (
 /obj/structure/flora/biolumi,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "gyc" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -11799,9 +11775,7 @@
 "hge" = (
 /obj/item/lighter,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "hgI" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -13045,9 +13019,7 @@
 	pixel_y = 5
 	},
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "hRC" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
@@ -13824,9 +13796,7 @@
 	dir = 4
 	},
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "iph" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
@@ -16843,9 +16813,7 @@
 "kbe" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "kbK" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 6
@@ -19859,9 +19827,7 @@
 "lOa" = (
 /obj/structure/flora/biolumi/flower,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "lOc" = (
 /obj/structure/chair/sofa/right{
 	color = "#800000"
@@ -19928,9 +19894,7 @@
 "lSx" = (
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "lSB" = (
 /obj/structure/window/reinforced/survival_pod{
 	dir = 8;
@@ -20168,9 +20132,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "maS" = (
 /turf/open/floor/plating/asteroid/basalt,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "mbh" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/machinery/shower{
@@ -21195,9 +21157,7 @@
 	dir = 1
 	},
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "mBB" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -22595,9 +22555,7 @@
 "nmM" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "nmN" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -25072,9 +25030,7 @@
 "oyM" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "oyY" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating{
@@ -25737,9 +25693,7 @@
 /obj/structure/fans/tiny,
 /obj/structure/mineral_door/woodrustic,
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "oPw" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/effect/turf_decal/bot/white,
@@ -26980,9 +26934,7 @@
 /area/mine/common/maintenance/north)
 "pHY" = (
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "pIp" = (
 /obj/machinery/photocopier,
 /obj/structure/cable/yellow{
@@ -31893,9 +31845,7 @@
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi/mine,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "sDE" = (
 /obj/structure/table/reinforced,
 /obj/item/paper_bin{
@@ -32542,9 +32492,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "sWm" = (
 /turf/open/water/safe,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "sWv" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/grass,
@@ -34758,9 +34706,7 @@
 /obj/structure/flora/grass/jungle,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "ukh" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -36082,9 +36028,7 @@
 /area/mine/common/pool)
 "uXk" = (
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "uXq" = (
 /obj/structure/cable/yellow,
 /obj/machinery/power/rtg/advanced,
@@ -37415,9 +37359,7 @@
 "vLi" = (
 /obj/structure/chair/comfy/brown,
 /turf/open/floor/wood,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "vLu" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 4
@@ -38356,9 +38298,7 @@
 "wqU" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
+/area/mine/common)
 "wqY" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing{
@@ -145652,7 +145592,7 @@ gIl
 gIl
 gIl
 gIl
-nES
+gIl
 nES
 nES
 nES

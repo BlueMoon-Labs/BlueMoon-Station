@@ -83,6 +83,10 @@
 
 // ------------------------------------ //
 
+/area/mine/common
+	name = "Park Area"
+	icon_state = "mining"
+
 /area/mine/common/upper
 	name = "Common Post Floor 2"
 	icon_state = "mining"
