@@ -1800,15 +1800,12 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		//load info on what assets the client has
 		src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
 
-		// BLUEMOON EDIT: defer the heavyweight preload (asset cache + VOX, multi-MB) until the
-		// statbrowser is up. The BYOND browse() queue is single-threaded per client; if we
-		// enqueue megabytes ahead of statbrowser.html, clients sit on "Downloading resources"
-		// while critical UI never arrives and players perceive a disconnect.
+		// Предзагрузка ассетов ждёт статпанель: очередь browse() у клиента одна, и мегабайты
+		// перед statbrowser.html держат игрока на "Downloading resources".
 		INVOKE_ASYNC(src, PROC_REF(preload_resources_when_ui_ready))
 
-/// BLUEMOON EDIT: heavyweight preload (asset cache + VOX) that fires AFTER the statbrowser
-/// is loaded so the UI reaches the player first. Has a hard timeout so clients whose
-/// statbrowser never reports ready still get their resources eventually.
+/// Предзагрузка ассетов после статпанели, с потолком ожидания для клиентов, чья статпанель так и не ответила.
+/// Слова VOX сюда не входят: их получают слушатели конкретного объявления (play_vox_announcement).
 /client/proc/preload_resources_when_ui_ready()
 	set waitfor = FALSE
 	var/deadline = world.time + 60 SECONDS
@@ -1822,23 +1819,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	//Precache the client with all other assets slowly, so as to not block other browse() calls
 	if (CONFIG_GET(flag/asset_simple_preload))
 		addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
-
-	#if (PRELOAD_RSC == 0)
-	// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
-	// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
-	// Отмечаем весь каталог одной записью и по общему промеру: per-file length(file)
-	// завышал впятеро и заодно дёргал книгу 1596 раз на каждый вход.
-	note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, get_vox_preload_bytes())
-	for (var/type in GLOB.vox_types)
-		if(QDELETED(src))
-			return
-		for(var/word in GLOB.vox_types[type])
-			if(QDELETED(src))
-				return
-			var/file = GLOB.vox_types[type][word]
-			Export("##action=load_rsc", file)
-			stoplag()
-	#endif
 
 
 //Hook, override it to run code when dir changes
