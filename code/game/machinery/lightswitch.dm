@@ -137,6 +137,10 @@
 			set_machine_stat(machine_stat | NOPOWER)
 	update_appearance()
 
+/// Выключатель смотрит на канал света, а не на свой, и рисует положение выключателя области
+/obj/machinery/light_switch/area_power_change_relevant()
+	return TRUE
+
 /obj/machinery/light_switch/emp_act(severity)
 	. = ..()
 	if (. & EMP_PROTECT_SELF)

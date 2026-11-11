@@ -145,6 +145,7 @@
 #include "antag_training_wizard.dm"
 #include "antag_training_xeno.dm"
 #include "antag_training_zombie.dm"
+#include "area_power_channel_filter.dm"
 #include "armor_declarations.dm"
 #include "atmos_breach_containment.dm"
 #include "atmos_engineering_fixes.dm"
