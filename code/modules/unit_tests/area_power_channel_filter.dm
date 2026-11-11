@@ -195,3 +195,32 @@
 	TEST_ASSERT(lamp.on && !lamp.power_loss_stage, "лампа должна снова гореть")
 	original_area.contents.Add(floor)
 	original_area.contents.Add(second_floor)
+
+/// Выключатель с привязанными лампами в полный тик рисует то положение, в которое их перевёл, а второй щелчок возвращает их обратно.
+/datum/unit_test/light_switch_connected_lamps_full_tick/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/turf/second_floor = get_step(floor, EAST)
+	var/area/original_area = get_area(floor)
+	var/area/test_area = power_flip_test_area(list(floor, second_floor))
+	var/obj/machinery/light_switch/light_switch = new(floor)
+	allocated += light_switch
+	var/obj/machinery/light/lamp = new(second_floor)
+	allocated += lamp
+	test_area.power_change()
+	run_deferred_light_power_changes(TRUE)
+	light_switch.connected_lights += lamp
+	light_switch.update_appearance()
+	TEST_ASSERT(lamp.on, "привязанная лампа в запитанной области должна гореть")
+	TEST_ASSERT_EQUAL(light_switch.icon_state, "[light_switch.base_icon_state]1", "выключатель горящей лампы должен стоять во включённом положении")
+
+	var/saved_ticklimit = Master.current_ticklimit
+	for(var/expected_on in list(FALSE, TRUE))
+		Master.current_ticklimit = 0
+		light_switch.interact(null)
+		Master.current_ticklimit = saved_ticklimit
+		TEST_ASSERT_EQUAL(light_switch.icon_state, "[light_switch.base_icon_state][expected_on]", "в полный тик выключатель нарисовал не то положение, в которое перевёл лампу")
+		run_deferred_light_power_changes(TRUE)
+		TEST_ASSERT_EQUAL(lamp.on ? TRUE : FALSE, expected_on, "щелчок в полный тик не перевёл привязанную лампу")
+	TEST_ASSERT_EQUAL(test_area.lightswitch, TRUE, "щелчок по привязанным лампам не трогает выключатель области")
+	original_area.contents.Add(floor)
+	original_area.contents.Add(second_floor)

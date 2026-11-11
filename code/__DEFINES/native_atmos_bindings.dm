@@ -860,11 +860,15 @@
 	// Замапленные градиенты у планетарных границ (устье пещеры, пролом руины)
 	// на роундстарте находит адресный проход в SSair.setup_allturfs() - по
 	// расхождению строк initial_gas_mix соседей, без холостого хвоста.
-	if(SSair.initialized && !SSair.map_loading)
-		// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
-		// турфу нужен, свежее окно отдыха - нет.
-		ATMOS_BENCH_WAKE(open_turf, "air_ref")
-		SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	if(!SSair.initialized)
+		return
+	if(SSair.map_loading)
+		SSair.defer_air_ref_wake(open_turf)
+		return
+	// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
+	// турфу нужен, свежее окно отдыха - нет.
+	ATMOS_BENCH_WAKE(open_turf, "air_ref")
+	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /proc/_dm_atmos_should_process_pair(turf/open/source, turf/open/target)
 	if(!source || !target || source == target)

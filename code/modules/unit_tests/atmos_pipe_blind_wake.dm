@@ -94,3 +94,34 @@
 	scrubber.nodes[1] = null
 	scrubber.parents[1] = null
 	QDEL_LIST(created)
+
+/// Паук ужаса, сорвавший заварку, будит уснувший под ней вент: иначе тот ждал бы сердцебиения.
+/datum/unit_test/atmos_terror_spider_unweld_wakes_vent/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/node_turf = run_loc_floor_top_right
+	var/list/datum/pipeline/created = list()
+	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = allocate(/obj/machinery/atmospherics/components/unary/vent_pump, room)
+	vent.on = TRUE
+	vent.set_machine_stat(0)
+	var/datum/pipeline/net = attach_blind_test_net(vent, node_turf, created)
+	// Без других вентов в сети паук не уходит в трубы, а только срывает заварку.
+	net.other_atmosmch -= vent
+	vent.external_pressure_bound = room.air.return_pressure() - 5
+	fill_blind_test_net(net, vent, 0)
+	vent.atmos_wake()
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		vent.process_atmos()
+	TEST_ASSERT(SSair.idle_machine_queued(vent), "premise: the test vent did not fall asleep")
+	vent.welded = TRUE
+
+	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight/spider = allocate(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight, get_step(room, EAST))
+	spider.ai_ventbreaker = TRUE
+	spider.entry_vent = vent
+	spider.TSVentCrawlRandom()
+	TEST_ASSERT(!vent.welded, "premise: the spider did not smash the weld off")
+	TEST_ASSERT(vent.atmos_processing && !SSair.idle_machine_queued(vent), "вент, с которого паук сорвал заварку, остался спать")
+
+	vent.nodes[1] = null
+	vent.parents[1] = null
+	QDEL_LIST(created)
