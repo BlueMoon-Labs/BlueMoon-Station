@@ -27,6 +27,8 @@
 	/// Moved()-обработчиком, дёргал area/Exited() у ещё пустой комнаты, storeRoom()
 	/// сносил резервацию, и хозяина следом ставило на голый космос.
 	var/area/transfer_target
+	/// Области комнат, которым сфера проставила parentSphere: область живёт дольше резервации и иначе держит удалённую сферу.
+	var/list/area/hilbertshotel/linked_room_areas = list()
 	light_color = "#5692d6"
 	light_range = 5
 	light_power = 3
@@ -51,6 +53,10 @@
 	SShilbertshotel.all_hilbert_spheres -= src
 	transfer_target = null // жёсткая ссылка на область, если сферу снесли посреди переноса
 	ejectRooms()
+	for(var/area/hilbertshotel/room_area as anything in linked_room_areas)
+		if(room_area.parentSphere == src)
+			room_area.parentSphere = null
+	linked_room_areas.Cut()
 	return ..()
 
 /obj/item/hilbertshotel/attack(mob/living/M, mob/living/user)
@@ -595,6 +601,7 @@
 	var/area/hilbertshotel/currentArea = get_area(locate(currentReservation.bottom_left_coords[1], currentReservation.bottom_left_coords[2], currentReservation.bottom_left_coords[3]))
 	currentArea.name = "Hilbert's Hotel Room [currentRoomnumber]"
 	currentArea.parentSphere = src
+	linked_room_areas |= currentArea
 	currentArea.storageTurf = SShilbertshotel.storageTurf
 	currentArea.roomnumber = currentRoomnumber
 	currentArea.reservation = currentReservation
@@ -821,6 +828,11 @@
 
 /area/hilbertshotel/illuminated
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
+
+/area/hilbertshotel/Destroy()
+	parentSphere?.linked_room_areas -= src
+	parentSphere = null
+	return ..()
 
 /area/hilbertshotel/Entered(atom/movable/AM)
 	. = ..()
