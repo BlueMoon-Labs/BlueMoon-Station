@@ -331,7 +331,10 @@
 		src << browse(null, "window=playersetup") //closes the player setup window
 		new_player_panel()
 		return FALSE
+	return become_observer()
 
+/// Переход в наблюдатели после подтверждения: гост с худом строится в одном тике, клиент переезжает в него в следующем
+/mob/dead/new_player/proc/become_observer()
 	var/mob/dead/observer/observer = new()
 	spawning = TRUE
 
@@ -344,6 +347,17 @@
 	else
 		to_chat(src, "<span class='notice'>Teleporting failed. Ahelp an admin please</span>")
 		stack_trace("There's no freaking observer landmark available on this map or you're making observers before the map is initialised")
+	observer.prebuild_hud()
+	stoplag()
+	if(QDELETED(src) || !client)
+		qdel(observer)
+		if(!QDELETED(src))
+			spawning = FALSE
+			ready = PLAYER_NOT_READY
+			ready_reward_pending = FALSE
+			key = null
+			qdel(src)
+		return FALSE
 	transfer_ckey(observer, FALSE)
 	observer.client = client
 	observer.client.prefs?.respawn_time_of_death = world.time
@@ -351,7 +365,6 @@
 	if(observer.client && observer.client.prefs)
 		observer.real_name = observer.client.prefs.real_name
 		observer.name = observer.real_name
-		observer.client.init_verbs()
 	observer.update_icon()
 	observer.stop_sound_channel(CHANNEL_LOBBYMUSIC)
 	QDEL_NULL(mind)

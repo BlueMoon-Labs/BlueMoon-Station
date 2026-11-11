@@ -434,6 +434,7 @@
 #include "ntnet_responses.dm"
 // #include "ntnetwork_tests.dm"
 // #include "outfit_sanity.dm"
+#include "observer_from_lobby.dm"
 #include "orbital_shuttle_console_ref.dm"
 #include "outfit_stack_pockets.dm"
 #include "overlay_lighting_floor.dm"
