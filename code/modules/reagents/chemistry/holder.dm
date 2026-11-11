@@ -351,6 +351,9 @@
  * * liverless - Stops reagents that aren't set as [/datum/reagent/var/self_consuming] from metabolizing
  */
 /datum/reagents/proc/metabolize(mob/living/carbon/owner, delta_time, times_fired, can_overdose = FALSE, liverless = FALSE)
+	var/atom/metabolizing_atom = owner || my_atom
+	if(metabolizing_atom && HAS_TRAIT(metabolizing_atom, TRAIT_NOMETABOLISM))
+		return
 	var/list/cached_reagents = reagent_list
 	if(owner)
 		expose_temperature(owner.bodytemperature, 0.25)
