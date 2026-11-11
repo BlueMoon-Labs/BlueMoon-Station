@@ -52,7 +52,7 @@
 					for(var/datum/gas_mixture/mix as anything in list(fast_a, fast_b, generic_a, generic_b))
 						qdel(mix)
 
-/// Порог, ниже которого react() отпускает смесь O2/N2 без сбора кандидатов, совпадает с перебором безгазовых реакций, а сам выход ведёт себя как общий путь.
+/// Порог, ниже которого react() отпускает смесь O2/N2 без сбора кандидатов, совпадает с перебором безгазовых реакций, а сам выход ведёт себя как полный путь без гейта.
 /datum/unit_test/atmos_react_warm_station_air
 
 /datum/unit_test/atmos_react_warm_station_air/Run()
@@ -79,7 +79,7 @@
 		fast.reaction_results = list("fire" = 1)
 		generic.reaction_results = list("fire" = 1)
 		var/fast_result = fast.react(null)
-		TEST_ASSERT_EQUAL(fast_result, generic.react(null), "итог react() разошёлся при [temperature] K")
+		TEST_ASSERT_EQUAL(fast_result, unit_test_react_without_gate(generic), "итог react() разошёлся при [temperature] K")
 		TEST_ASSERT_EQUAL(unit_test_mix_state(fast), unit_test_mix_state(generic), "смесь после react() разошлась при [temperature] K")
 		if(fast_result == NO_REACTION)
 			TEST_ASSERT(!length(fast.reaction_results), "ранний выход оставил результат прошлой реакции при [temperature] K")

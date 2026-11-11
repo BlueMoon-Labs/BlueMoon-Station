@@ -10,6 +10,17 @@
 	mix.set_temperature(temperature)
 	return mix
 
+/// react() полным путём, без гейта GAS_MIXTURE_REACT_IDLE. Индикатор возвращается и при рантайме, иначе гейт молча выключился бы для остальных тестов.
+/proc/unit_test_react_without_gate(datum/gas_mixture/mix)
+	var/list/key_indicator = SSair.reaction_key_gas_indicator
+	SSair.reaction_key_gas_indicator = null
+	try
+		. = mix.react(null)
+	catch(var/exception/react_error)
+		SSair.reaction_key_gas_indicator = key_indicator
+		throw react_error
+	SSair.reaction_key_gas_indicator = key_indicator
+
 /proc/unit_test_gas_state(datum/gas_mixture/mix)
 	. = "T=[num2text(mix.temperature, 12)]"
 	for(var/id, moles in mix.gases)
@@ -35,9 +46,7 @@
 				gated_cases++
 				var/datum/gas_mixture/full = unit_test_gate_mix(gas_id, amount, temperature)
 				var/gated_result = gated.react(null)
-				SSair.reaction_key_gas_indicator = null
-				var/full_result = full.react(null)
-				SSair.reaction_key_gas_indicator = key_indicator
+				var/full_result = unit_test_react_without_gate(full)
 				var/case_name = "[gas_id] [amount] моль при [temperature] K"
 				TEST_ASSERT_EQUAL(gated_result, NO_REACTION, "гейт вернул реакцию: [case_name]")
 				TEST_ASSERT_EQUAL(full_result, NO_REACTION, "гейт отпустил смесь, в которой полный путь нашёл реакцию: [case_name]")
@@ -121,6 +130,8 @@
 	tile_a.air.last_share = 0
 	tile_a.process_cell(++fire)
 	TEST_ASSERT_EQUAL(tile_a.air.last_share, 0, "равный воздух не должен шерить")
+	// Архив соседа снимается только перед шером: по нему виден сам факт шера, даже нулевого.
+	TEST_ASSERT(tile_b.archived_cycle != fire, "равный воздух ушёл в шер")
 
 	// Газ только у соседа при равной длине списков: у нас вместо него нулевой ключ.
 	tile_a.air.copy_from_turf(tile_a)
@@ -129,6 +140,7 @@
 	tile_b.air.set_moles(GAS_PLASMA, 10)
 	tile_a.process_cell(++fire)
 	TEST_ASSERT(tile_a.air.get_moles(GAS_PLASMA) > 0, "плазма соседа должна была перейти к нам")
+	TEST_ASSERT_EQUAL(tile_b.archived_cycle, fire, "газ только у соседа не дошёл до шера")
 
 	// Только температура, моли равны.
 	tile_a.air.copy_from_turf(tile_a)
@@ -137,6 +149,7 @@
 	var/cold_before = tile_a.air.temperature
 	tile_a.process_cell(++fire)
 	TEST_ASSERT(tile_a.air.temperature > cold_before, "разница температур в группе должна была шерить тепло")
+	TEST_ASSERT_EQUAL(tile_b.archived_cycle, fire, "разница температур не дошла до шера")
 
 	pair_group.garbage_collect()
 	for(var/turf/open/T as anything in list(tile_a, tile_b))
