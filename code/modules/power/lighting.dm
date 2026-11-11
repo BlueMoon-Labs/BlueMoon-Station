@@ -683,7 +683,11 @@
 	if(emergency_mode)
 		if(powered)
 			// С питанием use_emergency_power() только зажёг бы тусклый свет, который update() тут же перепишет
-			update(TRUE, FALSE, TRUE) //Disables emergency mode and sets the color to normal
+			// Пожарный режим держит аварийный свет и при питании: проход его только освежает, лампа не переключается.
+			if(fire_mode)
+				update(FALSE, TRUE, TRUE)
+			else
+				update(TRUE, FALSE, TRUE) //Disables emergency mode and sets the color to normal
 			return
 		if(!use_emergency_power(LIGHT_EMERGENCY_DRAIN_RATE))
 			// Cell exhausted - turn off emergency mode

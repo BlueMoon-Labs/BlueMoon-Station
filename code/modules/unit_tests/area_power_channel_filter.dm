@@ -123,11 +123,8 @@
 	TEST_ASSERT_EQUAL(lamp.light_color, lamp.bulb_emergency_colour, "аварийный свет красный")
 	original_area.contents.Add(floor)
 
-/// Пожарный режим с заряжающейся батарейкой: свет ставится один раз за проход, а бросок на перегорание остаётся один.
-/datum/unit_test/light_fire_mode_one_switch_per_process/Run()
-	var/turf/floor = run_loc_floor_bottom_left
-	var/turf/apc_floor = get_step(floor, EAST)
-	var/area/original_area = get_area(floor)
+/// Запитанная лампа с APC области в пожарном режиме на аварийном свете и с недозаряженной батарейкой.
+/datum/unit_test/proc/fire_mode_test_lamp(turf/floor, turf/apc_floor)
 	var/area/test_area = power_flip_test_area(list(floor, apc_floor))
 	var/obj/machinery/power/apc/apc = new(apc_floor, SOUTH, TRUE)
 	allocated += apc
@@ -141,18 +138,45 @@
 	lamp.update(FALSE, TRUE)
 	TEST_ASSERT(lamp.emergency_mode, "лампа в пожарном режиме должна перейти на аварийный свет")
 	lamp.cell.charge = 10
+	return lamp
+
+/// Пожарный режим с заряжающейся батарейкой: проход ставит свет один раз и не считается переключением лампы.
+/datum/unit_test/light_fire_mode_no_switch_per_process/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/turf/apc_floor = get_step(floor, EAST)
+	var/area/original_area = get_area(floor)
+	var/obj/machinery/light/lamp = fire_mode_test_lamp(floor, apc_floor)
 	var/datum/power_flip_probe/probe = new
 	probe.RegisterSignal(lamp, COMSIG_ATOM_SET_LIGHT, TYPE_PROC_REF(/datum/power_flip_probe, count_set_light))
 	for(var/i in 1 to 3)
 		lamp.switchcount = 1
 		probe.set_light_calls = 0
 		lamp.process()
-		TEST_ASSERT_EQUAL(lamp.switchcount, 2, "проход [i]: ровно один бросок на перегорание")
+		TEST_ASSERT_EQUAL(lamp.switchcount, 1, "проход [i]: лампа не переключалась, а счётчик перегорания вырос")
 		TEST_ASSERT_EQUAL(probe.set_light_calls, 1, "проход [i]: свет переставлен [probe.set_light_calls] раз")
 	probe.UnregisterSignal(lamp, COMSIG_ATOM_SET_LIGHT)
 	TEST_ASSERT(lamp.emergency_mode && lamp.status == LIGHT_OK, "лампа должна остаться целой на аварийном свете")
 	TEST_ASSERT(lamp.light_range == 6 && lamp.light_power == 3 && lamp.light_color == lamp.bulb_emergency_colour, "пожарный свет [lamp.light_range]/[lamp.light_power]/[lamp.light_color]")
 	TEST_ASSERT(abs(lamp.cell.charge - (10 + 3 * LIGHT_EMERGENCY_POWER_USE)) < 0.001, "батарейка заряжается как раньше: [lamp.cell.charge]")
+	original_area.contents.Add(floor)
+	original_area.contents.Add(apc_floor)
+
+/// Красный код держит лампу в пожарном режиме, пока батарейка дозаряжается: изношенная лампа за это время не перегорает.
+/datum/unit_test/light_fire_mode_recharge_does_not_burn_out/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/turf/apc_floor = get_step(floor, EAST)
+	var/area/original_area = get_area(floor)
+	var/obj/machinery/light/lamp = fire_mode_test_lamp(floor, apc_floor)
+	// Изношенная лампа: на старом поведении каждый проход перегорал бы с шансом 60%.
+	lamp.switchcount = 100
+	for(var/i in 1 to 200)
+		lamp.cell.charge = 10
+		lamp.process()
+		if(lamp.status != LIGHT_OK)
+			break
+	TEST_ASSERT_EQUAL(lamp.status, LIGHT_OK, "лампа перегорела на дозарядке батарейки в пожарном режиме")
+	TEST_ASSERT_EQUAL(lamp.switchcount, 100, "проходы дозарядки накрутили счётчик перегорания")
+	TEST_ASSERT(lamp.emergency_mode, "лампа должна остаться на аварийном свете")
 	original_area.contents.Add(floor)
 	original_area.contents.Add(apc_floor)
 
