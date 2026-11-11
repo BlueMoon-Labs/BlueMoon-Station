@@ -145,11 +145,13 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 	///current tick limit, assigned before running a subsystem.
 	///used by CHECK_TICK as well so that the procs subsystems call can obey that SS's tick limits
-	///Между прогонами его выставляет set_idle_ticklimit().
+	///Между прогонами его выставляет set_idle_ticklimit(), а с начала следующего тика - apply_next_tick_ticklimit().
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
-	/// Пока тик занят больше этого, stoplag() не будит уснувший прок. От предела работы вне МК не зависит.
+	/// Пока тик занят больше этого, stoplag() не будит уснувший прок (TICK_CHECK_RESUME). От бюджета работы вне МК не зависит.
 	var/static/resume_ticklimit = TICK_LIMIT_RUNNING
-	/// Предел работы вне МК, % тика; 0 - без отдельного предела. Из конфига MC_OUTSIDE_TICK_LIMIT.
+	/// Предел работы вне МК с начала следующего тика, до прогона МК; 0 - оставить как есть.
+	var/static/next_tick_ticklimit = 0
+	/// Бюджет работы вне МК, % тика сверх уже занятого; 0 - без отдельного бюджета. Из конфига MC_OUTSIDE_TICK_LIMIT.
 	var/outside_tick_limit = TICK_LIMIT_OUTSIDE_MC_DEFAULT
 
 	/// Потолок фоновой работы за итерацию, % тика; 0 - без потолка. Из конфига MC_BACKGROUND_TICK_BUDGET.
@@ -304,6 +306,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 	var/start_timeofday = REALTIMEOFDAY
 	// Initialize subsystems.
+	next_tick_ticklimit = 0
 	current_ticklimit = CONFIG_GET(number/tick_limit_mc_init)
 	// Прогресс для лобби-заглушки BLUEMOON STATION (тот же стиль, но с процентами)
 	var/list/init_queue = list()
@@ -578,7 +581,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		var/idle_ticklimit = TICK_LIMIT_RUNNING
 		if (processing * sleep_delta <= world.tick_lag)
 			idle_ticklimit -= (TICK_LIMIT_RUNNING * 0.25) //reserve the tail 1/4 of the next tick for the mc if we plan on running next tick
-		set_idle_ticklimit(idle_ticklimit)
+		set_idle_ticklimit(TICK_LIMIT_RUNNING, idle_ticklimit)
 		sleep(world.tick_lag * (processing * sleep_delta))
 
 // This is what decides if something should run.
@@ -775,14 +778,28 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 /**
  * Предел тика до следующего прогона МК: по нему CHECK_TICK в Topic, вербах и проснувшихся проках уступает тик.
- * BYOND отдаёт клиентам вывод только после всей DM-работы тика, поэтому в раунде с игроками работа вне МК
- * останавливается на outside_tick_limit, а не тянет тик до конца. Будит уснувших stoplag() по прежнему пределу.
+ * BYOND отдаёт клиентам вывод только после всей DM-работы тика, поэтому в раунде с игроками у работы вне МК
+ * свой бюджет outside_tick_limit: после МК - сверх того, что тик уже занял, а с начала следующего тика до МК - от нуля.
+ * limit - потолок до конца этого тика, next_tick_limit - на следующий тик; по нему же stoplag() будит уснувших.
  */
-/datum/controller/master/proc/set_idle_ticklimit(limit)
-	resume_ticklimit = limit
-	if(outside_tick_limit > 0 && pacing_active())
-		limit = min(limit, outside_tick_limit)
-	current_ticklimit = limit
+/datum/controller/master/proc/set_idle_ticklimit(limit, next_tick_limit = limit)
+	resume_ticklimit = next_tick_limit
+	if(outside_tick_limit <= 0 || !pacing_active())
+		current_ticklimit = next_tick_limit
+		next_tick_ticklimit = 0
+		return
+	current_ticklimit = min(limit, TICK_USAGE + outside_tick_limit)
+	next_tick_ticklimit = min(next_tick_limit, outside_tick_limit)
+
+/// Конец тика: проки, которые проснутся до МК следующего тика, получают бюджет от его начала, а не остаток после МК этого.
+/datum/controller/master/proc/apply_next_tick_ticklimit()
+	current_ticklimit = next_tick_ticklimit
+	next_tick_ticklimit = 0
+
+/// Зовётся после уснувших проков и команд игроков, перед отправкой карты: дальше DM-код идёт уже в следующем тике.
+/world/Tick()
+	if(Master?.next_tick_ticklimit)
+		Master.apply_next_tick_ticklimit()
 
 /**
  * Сколько % тика проходу подсистемы положено за одну итерацию МК; null - темп не ограничен.

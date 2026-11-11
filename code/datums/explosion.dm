@@ -476,15 +476,18 @@ GLOBAL_LIST_EMPTY(explosions)
 	spiral_range_turfs(range, epicenter, outlist = ., tick_checked = TRUE)
 	++stopped
 
+/// Сколько турфов расчёт блокировки проходит за пробуждение даже в занятом тике: реакционный взрыв ждёт его и рос по турфу за тик.
+#define EX_BLOCK_MIN_BATCH 32
+
 /datum/explosion/proc/CaculateExplosionBlock(list/affected_turfs)
 	set waitfor = FALSE
 
 	. = list()
 	var/processed = 0
 	while(running)
-		var/I
-		for(I in (processed + 1) to length(affected_turfs)) // we cache the explosion block rating of every turf in the explosion area
-			var/turf/T = affected_turfs[I]
+		var/slice_turfs = 0
+		while(processed < length(affected_turfs)) // we cache the explosion block rating of every turf in the explosion area
+			var/turf/T = affected_turfs[++processed]
 			var/current_exp_block = T.density ? T.explosion_block : 0
 
 			for(var/obj/O in T)
@@ -493,11 +496,12 @@ GLOBAL_LIST_EMPTY(explosions)
 
 			.[T] = current_exp_block
 
-			if(TICK_CHECK)
+			if(++slice_turfs >= EX_BLOCK_MIN_BATCH && TICK_CHECK)
 				break
 
-		processed = I
 		stoplag()
+
+#undef EX_BLOCK_MIN_BATCH
 
 /datum/explosion/Destroy()
 	running = FALSE

@@ -29,7 +29,7 @@
 	if(world.time == slice_world_time)
 		var/used_ms = TICK_DELTA_TO_MS(TICK_USAGE - slice_started)
 		max_slice_ms = max(max_slice_ms, used_ms)
-		if(used_ms < HILBERT_ROOM_SLICE_MS && !TICK_CHECK)
+		if(used_ms < HILBERT_ROOM_SLICE_MS && !TICK_CHECK_RESUME)
 			return
 		yields++
 		stoplag()

@@ -1208,7 +1208,7 @@ GLOBAL_REAL_VAR(list/stack_trace_storage)
 		. += CEILING(i * DELTA_CALC, 1)
 		sleep(i * world.tick_lag * DELTA_CALC)
 		i *= 2
-	while (TICK_USAGE > min(TICK_LIMIT_TO_RUN, Master.resume_ticklimit))
+	while (TICK_CHECK_RESUME)
 #endif
 
 #undef DELTA_CALC

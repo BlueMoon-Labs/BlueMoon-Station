@@ -15,7 +15,7 @@
 #define TICK_LIMIT_MC 70
 /// Tick limit while initializing
 #define TICK_LIMIT_MC_INIT_DEFAULT (100 - TICK_BYOND_RESERVE)
-/// До какой занятости тика CHECK_TICK вне МК (Topic, вербы, проснувшиеся проки) работает, пока в раунде есть игроки.
+/// Сколько % тика сверх уже занятого работает CHECK_TICK вне МК (Topic, вербы, проснувшиеся проки), пока в раунде есть игроки.
 #define TICK_LIMIT_OUTSIDE_MC_DEFAULT 25
 
 /// Сколько % тика фоновые подсистемы вместе занимают за одну итерацию МК, пока в раунде есть игроки.
@@ -41,6 +41,9 @@
 
 /// runs stoplag if tick_usage is above the limit
 #define CHECK_TICK ( TICK_CHECK ? stoplag() : 0 )
+
+/// Тик занят так, что stoplag() не будит уснувших: здесь уступает и то, что нельзя растягивать по бюджету вне МК (выстрел).
+#define TICK_CHECK_RESUME ( TICK_USAGE > min(TICK_LIMIT_TO_RUN, Master.resume_ticklimit) )
 
 /// Returns true if tick usage is above 95, for high priority usage
 #define TICK_CHECK_HIGH_PRIORITY ( TICK_USAGE > 95 )

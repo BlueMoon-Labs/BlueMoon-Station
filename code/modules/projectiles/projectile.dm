@@ -931,7 +931,7 @@
 		pixel_move(ttm, TRUE, hitscan_movement_decisecond_equivalency)
 		// Hitscans still resolve asynchronously in one logical shot, but yield
 		// instead of monopolizing a lagged world tick across their full range.
-		if(TICK_CHECK)
+		if(TICK_CHECK_RESUME)
 			stoplag(1)
 
 /**
