@@ -21,7 +21,8 @@
 ///Тактическая ценность огневого тайла: чистая линия огня доминирует, дальше -
 ///держим боевую дистанцию, дальше от ближайшей угрозы, под прикрытием стен и не
 ///толкаясь со своими стрелками. allies - свои AI-мобы для разноса позиций.
-/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max, list/allies, atom/cover_from)
+///lane_state - уже снятая с этого тайла трасса линии огня, чтобы не трассировать дважды.
+/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max, list/allies, atom/cover_from, lane_state)
 	if(!tile)
 		return -INFINITY
 	. = 0
@@ -36,7 +37,9 @@
 	//линия огня по реальной трассе снаряда из гипотетического тайла: чистая линия
 	//доминирует, стрельба через дальнее пробиваемое укрытие ценится, но меньше
 	if(istype(shooter) && target)
-		switch(shooter.CheckRangedFireLaneStateFrom(target, tile))
+		if(isnull(lane_state))
+			lane_state = shooter.CheckRangedFireLaneStateFrom(target, tile)
+		switch(lane_state)
 			if(AI_FIRE_LANE_CLEAR)
 				. += AI_FIRE_TILE_LANE_BONUS
 			if(AI_FIRE_LANE_COVER)
@@ -176,9 +179,10 @@ GLOBAL_VAR_INIT(ai_tactical_cache_flush_queued, FALSE)
 		var/turf/candidate = get_step(current_turf, direction)
 		if(!candidate || !can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
 			continue
-		if(want_lane && istype(shooter) && target && shooter.CheckRangedFireLaneFrom(target, candidate))
+		var/lane_state = (istype(shooter) && target) ? shooter.CheckRangedFireLaneStateFrom(target, candidate) : null
+		if(want_lane && lane_state == AI_FIRE_LANE_BLOCKED)
 			continue
-		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max, allies, cover_from)
+		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max, allies, cover_from, lane_state)
 		if(candidate_score > best_score + AI_HOLD_TOLERANCE)
 			best = candidate
 			best_score = candidate_score
