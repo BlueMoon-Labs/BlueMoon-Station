@@ -125,9 +125,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	If you have any  questions about this stuff feel free to ask. ~Carn
 	*/
 
-///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков:
-///замеряет синхронную часть (до первого сна) и пишет медленные в кольцо SStick_spikes
-/client/proc/record_slow_topic(topic_started, href, context)
+///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков: медленные пишутся в кольцо SStick_spikes.
+///Уснувший Topic (alert, input, stoplag) не пишется: разность TICK_USAGE по разным тикам приписала бы ему чужую работу тика пробуждения.
+/proc/record_slow_topic(ckey, topic_started, topic_started_time, href, context)
+	if(world.time != topic_started_time)
+		return
 	var/cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - topic_started)
 	if(!SStick_spikes || cost_ms < SStick_spikes.slow_work_threshold_ms)
 		return
@@ -143,6 +145,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		return
 
 	var/topic_started = TICK_USAGE
+	var/topic_started_time = world.time
 
 	// asset_cache
 	var/asset_cache_job
@@ -167,7 +170,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			"ingress usr=[usr] usr_eq_mob=[usr == mob] type=[topic_type] window_id=[window_id] payload_len=[payload_len] href=[href_preview]",
 			context = "client/Topic")
 	if(tgui_Topic(href_list))
-		record_slow_topic(topic_started, href, "tgui")
+		record_slow_topic(ckey, topic_started, topic_started_time, href, "tgui")
 		return
 
 	if(href_list["legacy_zoom_set"])
@@ -281,11 +284,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			inprefs = TRUE
 			. = prefs.process_antag_opt_in_href(usr, href_list)
 			inprefs = FALSE
-			record_slow_topic(topic_started, href, "prefs")
+			record_slow_topic(ckey, topic_started, topic_started_time, href, "prefs")
 			return
 		if("vars")
 			. = view_var_Topic(href,href_list,hsrc)
-			record_slow_topic(topic_started, href, "vars")
+			record_slow_topic(ckey, topic_started, topic_started_time, href, "vars")
 			return .
 
 	switch(href_list["action"])
@@ -297,7 +300,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			return
 
 	..()	//redirect to hsrc.Topic()
-	record_slow_topic(topic_started, href, hsrc ? "hsrc [hsrc]" : "base")
+	record_slow_topic(ckey, topic_started, topic_started_time, href, hsrc ? "hsrc [hsrc]" : "base")
 
 /client/proc/handle_statpanel_click(list/href_list)
 	var/atom/target = locate(href_list["statpanel_item_target"])

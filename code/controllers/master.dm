@@ -145,7 +145,12 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 	///current tick limit, assigned before running a subsystem.
 	///used by CHECK_TICK as well so that the procs subsystems call can obey that SS's tick limits
+	///Между прогонами его выставляет set_idle_ticklimit().
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
+	/// Пока тик занят больше этого, stoplag() не будит уснувший прок. От предела работы вне МК не зависит.
+	var/static/resume_ticklimit = TICK_LIMIT_RUNNING
+	/// Предел работы вне МК, % тика; 0 - без отдельного предела.
+	var/outside_tick_limit = TICK_LIMIT_OUTSIDE_MC_DEFAULT
 
 	/// Потолок фоновой работы за итерацию, % тика; 0 - без потолка. Из конфига MC_BACKGROUND_TICK_BUDGET.
 	var/background_tick_budget = MC_BACKGROUND_TICK_BUDGET_DEFAULT
@@ -475,7 +480,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		tickdrift = max(0, MC_AVERAGE_FAST(tickdrift, (((REALTIMEOFDAY - init_timeofday) - (world.time - init_time)) / world.tick_lag)))
 		var/starting_tick_usage = TICK_USAGE
 		if (processing <= 0)
-			current_ticklimit = TICK_LIMIT_RUNNING
+			set_idle_ticklimit(TICK_LIMIT_RUNNING)
 			sleep(10)
 			continue
 
@@ -484,7 +489,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		// (because sleeps are processed in the order received, longer sleeps are more likely to run first)
 		if (starting_tick_usage > TICK_LIMIT_MC) //if there isn't enough time to bother doing anything this tick, sleep a bit.
 			sleep_delta *= 2
-			current_ticklimit = TICK_LIMIT_RUNNING * 0.5
+			set_idle_ticklimit(TICK_LIMIT_RUNNING * 0.5)
 			sleep(world.tick_lag * (processing * sleep_delta))
 			continue
 
@@ -532,7 +537,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			if (!error_level)
 				iteration++
 			error_level++
-			current_ticklimit = TICK_LIMIT_RUNNING
+			set_idle_ticklimit(TICK_LIMIT_RUNNING)
 			sleep(10)
 			continue
 
@@ -556,7 +561,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 				if (!error_level)
 					iteration++
 				error_level++
-				current_ticklimit = TICK_LIMIT_RUNNING
+				set_idle_ticklimit(TICK_LIMIT_RUNNING)
 				sleep(10)
 				continue
 		error_level--
@@ -569,9 +574,10 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		if (skip_ticks)
 			skip_ticks--
 		src.sleep_delta = MC_AVERAGE_FAST(src.sleep_delta, sleep_delta)
-		current_ticklimit = TICK_LIMIT_RUNNING
+		var/idle_ticklimit = TICK_LIMIT_RUNNING
 		if (processing * sleep_delta <= world.tick_lag)
-			current_ticklimit -= (TICK_LIMIT_RUNNING * 0.25) //reserve the tail 1/4 of the next tick for the mc if we plan on running next tick
+			idle_ticklimit -= (TICK_LIMIT_RUNNING * 0.25) //reserve the tail 1/4 of the next tick for the mc if we plan on running next tick
+		set_idle_ticklimit(idle_ticklimit)
 		sleep(world.tick_lag * (processing * sleep_delta))
 
 // This is what decides if something should run.
@@ -765,6 +771,17 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(pacing_forced)
 		return TRUE
 	return (current_runlevel & (RUNLEVEL_GAME | RUNLEVEL_POSTGAME)) && length(GLOB.clients)
+
+/**
+ * Предел тика до следующего прогона МК: по нему CHECK_TICK в Topic, вербах и проснувшихся проках уступает тик.
+ * BYOND отдаёт клиентам вывод только после всей DM-работы тика, поэтому в раунде с игроками работа вне МК
+ * останавливается на outside_tick_limit, а не тянет тик до конца. Будит уснувших stoplag() по прежнему пределу.
+ */
+/datum/controller/master/proc/set_idle_ticklimit(limit)
+	resume_ticklimit = limit
+	if(outside_tick_limit > 0 && pacing_active())
+		limit = min(limit, outside_tick_limit)
+	current_ticklimit = limit
 
 /**
  * Сколько % тика проходу подсистемы положено за одну итерацию МК; null - темп не ограничен.
