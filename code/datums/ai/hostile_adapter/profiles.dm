@@ -366,6 +366,7 @@
 	//Босс не бросает погоню: она и есть содержание боя, а убежать от него
 	//полагается разрывом линии и ареной, а не выносливостью.
 	pursuit_leashed = FALSE
+	plan_skip_allowed = FALSE
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/find_hostile_targets,
 		/datum/ai_planning_subtree/hostile_fsm,

@@ -56,6 +56,13 @@
 	var/chosen = prefs ? prefs.get_antag_opt_in_pref_level() : antag_opt_in_default_level()
 	if(self_mind)
 		chosen = isnull(self_mind.antag_opt_in_level) ? antag_opt_in_default_level() : self_mind.antag_opt_in_level
+	return list(
+		"level" = chosen,
+		"effective" = self_mind ? self_mind.get_effective_antag_opt_in_level() : chosen,
+	)
+
+/// Описания уровней для меню взаимодействий: одинаковы весь раунд, поэтому едут в static_data, а не в каждом обновлении.
+/proc/antag_opt_in_static_data()
 	var/list/levels = list()
 	for(var/level in ANTAG_OPT_IN_NOT_TARGET to ANTAG_OPT_IN_ROUND_REMOVE)
 		levels += list(list(
@@ -65,8 +72,6 @@
 			"description" = GLOB.antag_opt_in_descriptions["[level]"],
 		))
 	return list(
-		"level" = chosen,
-		"effective" = self_mind ? self_mind.get_effective_antag_opt_in_level() : chosen,
 		"levels" = levels,
 		"thresholds" = antag_opt_in_thresholds_text(),
 		"disclaimer" = GLOB.antag_opt_in_disclaimer,

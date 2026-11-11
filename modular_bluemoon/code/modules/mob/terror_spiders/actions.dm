@@ -305,6 +305,7 @@
 		for(var/obj/machinery/atmospherics/components/unary/vent_pump/P in range(1, get_turf(src)))
 			if(P.welded)
 				P.welded = 0
+				P.atmos_wake()
 				P.update_icon()
 				forceMove(P.loc)
 				P.visible_message("<span class='danger'>[src] smashes the welded cover off [P]!</span>")
@@ -312,6 +313,7 @@
 		for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/C in range(1, get_turf(src)))
 			if(C.welded)
 				C.welded = 0
+				C.atmos_wake()
 				C.update_icon()
 				forceMove(C.loc)
 				C.visible_message("<span class='danger'>[src] smashes the welded cover off [C]!</span>")

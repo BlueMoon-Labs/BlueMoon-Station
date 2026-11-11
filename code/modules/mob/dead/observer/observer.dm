@@ -896,6 +896,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/mind_initialize()
 	return
 
+/// Худ до входа клиента: Login() застанет его готовым и только покажет
+/mob/dead/observer/proc/prebuild_hud()
+	if(hud_used)
+		return
+	set_hud_used(new hud_type(src))
+	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
+
 /mob/dead/observer/proc/show_data_huds()
 	for(var/hudtype in datahuds)
 		var/datum/atom_hud/H = GLOB.huds[hudtype]

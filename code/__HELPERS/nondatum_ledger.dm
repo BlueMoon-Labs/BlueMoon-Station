@@ -85,3 +85,48 @@ GLOBAL_LIST_INIT(nondatum_ledger, list(0, 0, 0, 0, 0, 0, 0))
 /// Байты мегабайтами для строки лога. Отдельным проком: делитель обязан быть один на всю книгу.
 /proc/nondatum_ledger_mb(bytes)
 	return "[round(bytes / 1048576, 0.01)] МБ"
+
+/// Через сколько собранных байт tgui писать в tgui.log раскладку по окнам.
+#define TGUI_TRAFFIC_REPORT_BYTES (100 * 1048576)
+/// Сколько строк раскладки печатать.
+#define TGUI_TRAFFIC_REPORT_TOP 12
+
+/// Байты tgui, ушедшие клиентам, по ключу "интерфейс или id окна/тип сообщения".
+GLOBAL_LIST_EMPTY(tgui_traffic_sent)
+/// Байты повторных обновлений, собранных, но не отправленных (send_partial_update).
+GLOBAL_LIST_EMPTY(tgui_traffic_skipped)
+GLOBAL_VAR_INIT(tgui_traffic_next_report, TGUI_TRAFFIC_REPORT_BYTES)
+
+/// Учёт собранного сообщения tgui: в книгу идёт каждое, в раскладку по окнам - отдельно ушедшие и непосланные повторы.
+/proc/note_tgui_traffic(key, bytes, skipped = FALSE)
+	if(bytes <= 0)
+		return
+	note_nondatum_alloc(NONDATUM_LEDGER_TGUI_BYTES, bytes)
+	if(skipped)
+		GLOB.tgui_traffic_skipped[key] += bytes
+	else
+		GLOB.tgui_traffic_sent[key] += bytes
+	if(GLOB.nondatum_ledger[NONDATUM_LEDGER_TGUI_BYTES] < GLOB.tgui_traffic_next_report)
+		return
+	GLOB.tgui_traffic_next_report = GLOB.nondatum_ledger[NONDATUM_LEDGER_TGUI_BYTES] + TGUI_TRAFFIC_REPORT_BYTES
+	log_tgui(null, tgui_traffic_report())
+
+/// Строка раскладки трафика tgui: самые тяжёлые окна за раунд.
+/proc/tgui_traffic_report()
+	var/list/sent = sortTim(GLOB.tgui_traffic_sent.Copy(), cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	var/total_sent = 0
+	for(var/key in sent)
+		total_sent += sent[key]
+	var/total_skipped = 0
+	for(var/key in GLOB.tgui_traffic_skipped)
+		total_skipped += GLOB.tgui_traffic_skipped[key]
+	var/list/parts = list()
+	for(var/key in sent)
+		if(length(parts) >= TGUI_TRAFFIC_REPORT_TOP)
+			break
+		var/skipped = GLOB.tgui_traffic_skipped[key]
+		parts += "[key] [nondatum_ledger_mb(sent[key])][skipped ? " (повторов не ушло [nondatum_ledger_mb(skipped)])" : ""]"
+	return "трафик tgui за раунд: ушло [nondatum_ledger_mb(total_sent)], повторов не ушло [nondatum_ledger_mb(total_skipped)]; [parts.Join(", ")]"
+
+#undef TGUI_TRAFFIC_REPORT_BYTES
+#undef TGUI_TRAFFIC_REPORT_TOP

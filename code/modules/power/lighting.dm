@@ -3,6 +3,11 @@
 // consists of light fixtures (/obj/machinery/light) and light tube/bulb items (/obj/item/light)
 
 #define LIGHT_EMERGENCY_POWER_USE 0.2 //How much power emergency lights will consume per tick
+// Биты power_inputs_seen: на что лампа уже отреагировала в power_change()
+#define LIGHT_INPUT_AREA_POWER (1<<0)
+#define LIGHT_INPUT_SHOULD_BE_ON (1<<1)
+/// Столько отложенных ламп доводится за вызов даже в полный тик, чтобы очередь не стояла под постоянной перегрузкой
+#define LIGHT_DEFERRED_POWER_MIN_BATCH 10
 // status values shared between lighting fixtures and items
 #define LIGHT_OK 0
 #define LIGHT_EMPTY 1
@@ -254,6 +259,10 @@
 	// Power loss animation state
 	var/power_loss_stage = 0 // 0=normal, 1=death flicker, 2=dark, 3=emergency
 	var/power_loss_timer_id = null
+	/// Канал света и выключатель области, которые лампа уже отработала; щелчок чужого канала APC её не будит.
+	var/power_inputs_seen
+	/// Лампа ждёт в GLOB.deferred_light_power_changes: смена питания области застала полный тик.
+	var/area_power_change_deferred = FALSE
 
 /obj/machinery/light/directional/north //Pixel offsets get overwritten on New()
 	dir = NORTH
@@ -362,6 +371,9 @@
 		nightshift_light_color = current_area.area_nightlight_color
 	sync_nightshift_from_current_apc(current_area)
 	spawn(2)
+		// Лампу могли снести раньше, чем она успела зажечься
+		if(QDELETED(src))
+			return
 		switch(fitting)
 			if("tube")
 				brightness = 7
@@ -372,7 +384,8 @@
 				if(prob(5))
 					break_light_tube(1)
 		spawn(1)
-			update(0)
+			if(!QDELETED(src))
+				update(0)
 
 /obj/machinery/light/Destroy()
 	unpark_flicker()
@@ -389,6 +402,8 @@
 	mark_apc_light_cache_dirty(A)
 	nightshift_update_queued = FALSE
 	GLOB.nightshift_light_queue -= src
+	if(area_power_change_deferred)
+		GLOB.deferred_light_power_changes -= src
 	QDEL_NULL(cell)
 	return ..()
 
@@ -553,7 +568,8 @@
 		. += emissive_overlay
 
 // update the icon_state and luminosity of the light depending on its state
-/obj/machinery/light/proc/update(trigger = TRUE, silent = FALSE)
+// light_stale - свет сейчас не тот, что лампа показывала бы: переключение засчитывается, как после чужого set_light()
+/obj/machinery/light/proc/update(trigger = TRUE, silent = FALSE, light_stale = FALSE)
 	var/area/current_area = get_base_area(src)
 	switch(status)
 		if(LIGHT_BROKEN,LIGHT_BURNED,LIGHT_EMPTY)
@@ -581,7 +597,7 @@
 			PO = interpolate_light_value(PO, nightshift_light_power, nightshift_level)
 			CO = blend_light_color(CO, nightshift_light_color, nightshift_level)
 		var/desired_cone_dir = turn(dir, 180)
-		var/matching = light && BR == light_range && PO == light_power && CO == light_color && cone_angle == light_cone_angle && desired_cone_dir == light_cone_dir
+		var/matching = !light_stale && light && BR == light_range && PO == light_power && CO == light_color && cone_angle == light_cone_angle && desired_cone_dir == light_cone_dir
 		if(!matching)
 			var/can_apply_light = TRUE
 			if(trigger)
@@ -595,7 +611,9 @@
 					can_apply_light = FALSE
 			if(can_apply_light)
 				use_power = ACTIVE_POWER_USE
-				set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = desired_cone_dir)
+				// В пожарном режиме свет ниже всё равно перепишет set_emergency_lights()
+				if(!fire_mode)
+					set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = desired_cone_dir)
 				if(!silent)
 					playsound(src.loc, 'sound/ambience/light_on.ogg', 65, 1)
 	else if(has_emergency_power(LIGHT_EMERGENCY_POWER_USE) && !turned_off())
@@ -657,16 +675,27 @@
 	// SPLURT EDIT END
 	if (!cell)
 		return PROCESS_KILL
-	if(has_power())
+	var/powered = has_power()
+	if(powered)
 		if (cell.charge == cell.maxcharge)
 			return PROCESS_KILL
 		cell.charge = min(cell.maxcharge, cell.charge + LIGHT_EMERGENCY_POWER_USE) //Recharge emergency power automatically while not using it
 	if(emergency_mode)
+		if(powered)
+			// С питанием use_emergency_power() только зажёг бы тусклый свет, который update() тут же перепишет
+			// Пожарный режим держит аварийный свет и при питании: проход его только освежает, лампа не переключается.
+			if(fire_mode)
+				update(FALSE, TRUE, TRUE)
+			else
+				update(TRUE, FALSE, TRUE) //Disables emergency mode and sets the color to normal
+			return
 		if(!use_emergency_power(LIGHT_EMERGENCY_DRAIN_RATE))
 			// Cell exhausted - turn off emergency mode
 			clear_emergency_state(FALSE)
 			return PROCESS_KILL
-		update() //Disables emergency mode and sets the color to normal
+		// Целая лампа без питания в аварийном режиме из update() выходит сразу
+		if(status != LIGHT_OK)
+			update()
 
 /obj/machinery/light/proc/burn_out()
 	if(status == LIGHT_OK)
@@ -870,7 +899,7 @@
 	var/area/A = get_area(src)
 	if(A?.power_light)
 		// APC еще запитан - светим без расхода батарейки
-		set_light(brightness * bulb_emergency_brightness_mul, bulb_emergency_pow_mul, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+		set_emergency_glow(bulb_emergency_pow_mul)
 		return TRUE
 	if(!has_emergency_power(pwr))
 		return FALSE
@@ -879,8 +908,17 @@
 		burn_out()
 		return FALSE
 	cell.use(pwr)
-	set_light(brightness * bulb_emergency_brightness_mul, max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)), bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+	set_emergency_glow(max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)))
 	return TRUE
+
+/// Аварийный свет заданной силы. Если лампа уже светит ровно так, set_light() пропускаем: он пересчитал бы источник и блум впустую.
+/obj/machinery/light/proc/set_emergency_glow(power)
+	var/glow_range = brightness * bulb_emergency_brightness_mul
+	var/glow_dir = turn(dir, 180)
+	if(light && light_on && light_power == power && light_color == bulb_emergency_colour && light_cone_angle == cone_angle && light_cone_dir == glow_dir \
+		&& light_range == min(max(glow_range, MINIMUM_USEFUL_LIGHT_RANGE), LIGHT_RANGE_CAP_FOR(src)))
+		return
+	set_light(glow_range, power, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = glow_dir)
 
 
 /obj/machinery/light/proc/flicker(var/amount = rand(10, 20))
@@ -1024,14 +1062,60 @@
 	else
 		return ..()
 
-// called when area power state changes
-/obj/machinery/light/power_change()
-	var/area/A = get_area(src)
+/// Что лампа должна взять от области: бит LIGHT_INPUT_AREA_POWER - канал света запитан, LIGHT_INPUT_SHOULD_BE_ON - ей положено гореть.
+/obj/machinery/light/proc/area_power_inputs(area/A = get_area(src))
 	var/should_be_on
 	if(!isnull(individual_switch_state))
 		should_be_on = individual_switch_state && A.power_light
 	else
 		should_be_on = A.lightswitch && A.power_light
+	return (A.power_light ? LIGHT_INPUT_AREA_POWER : NONE) | (should_be_on ? LIGHT_INPUT_SHOULD_BE_ON : NONE)
+
+/// Лампа слушает только канал света и выключатель, а состояние, расходящееся с ними, чинит как раньше.
+/obj/machinery/light/area_power_change_relevant()
+	var/inputs = area_power_inputs()
+	return inputs != power_inputs_seen || !on != !(inputs & LIGHT_INPUT_SHOULD_BE_ON)
+
+/// Лампы, до которых смена питания области дошла в уже полный тик.
+GLOBAL_LIST_EMPTY(deferred_light_power_changes)
+GLOBAL_VAR(deferred_light_power_timer)
+
+/// Лампы большой области стоят дороже всего остального в смене её питания. Если тик уже полон,
+/// лампа доедет в следующем: так щелчок APC не растягивает тик на десяток миллисекунд.
+/obj/machinery/light/on_area_power_change(datum/source)
+	if(!TICK_CHECK)
+		return ..()
+	if(area_power_change_deferred || !area_power_change_relevant())
+		return
+	area_power_change_deferred = TRUE
+	GLOB.deferred_light_power_changes += src
+	if(isnull(GLOB.deferred_light_power_timer))
+		GLOB.deferred_light_power_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(run_deferred_light_power_changes)), world.tick_lag, TIMER_STOPPABLE)
+
+/// Доводит отложенные лампы, пока тик позволяет, остаток переносит дальше. ignore_tick_limit - довести всё сразу.
+/proc/run_deferred_light_power_changes(ignore_tick_limit = FALSE)
+	var/pending_timer = GLOB.deferred_light_power_timer
+	GLOB.deferred_light_power_timer = null
+	if(ignore_tick_limit && pending_timer)
+		deltimer(pending_timer)
+	var/list/queue = GLOB.deferred_light_power_changes
+	var/done = 0
+	while(length(queue))
+		if(!ignore_tick_limit && done >= LIGHT_DEFERRED_POWER_MIN_BATCH && TICK_CHECK)
+			GLOB.deferred_light_power_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(run_deferred_light_power_changes)), world.tick_lag, TIMER_STOPPABLE)
+			return
+		var/obj/machinery/light/lamp = queue[length(queue)]
+		queue.len--
+		lamp.area_power_change_deferred = FALSE
+		done++
+		if(isturf(lamp.loc) && lamp.area_power_change_relevant())
+			lamp.power_change()
+
+// called when area power state changes
+/obj/machinery/light/power_change()
+	var/area/A = get_area(src)
+	power_inputs_seen = area_power_inputs(A)
+	var/should_be_on = (power_inputs_seen & LIGHT_INPUT_SHOULD_BE_ON) ? TRUE : FALSE
 	// If light was on and is losing power, play death flicker animation
 	if(on && !should_be_on && status == LIGHT_OK && !power_loss_stage && !A.power_light)
 		start_power_loss_sequence()
