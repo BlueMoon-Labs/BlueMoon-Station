@@ -22,3 +22,15 @@
 	// CDN отдаёт страницы и скрипты: text/html для ассета не ошибка, размер с .rsc не сравнивается.
 	verdict = resource_probe_verdict(list("code" = 200, "length" = 30000, "type" = "text/html"), FALSE, 0)
 	TEST_ASSERT(findtext(verdict, "ок (") == 1, "живой ассет CDN не прошёл: [verdict]")
+	TEST_ASSERT(resource_probe_verdict_ok(verdict), "живой адрес попал в плохие: [verdict]")
+	TEST_ASSERT(!resource_probe_verdict_ok(resource_probe_verdict(list("code" = 404), TRUE, local_rsc)), "404 не попал в плохие адреса")
+
+/// Сообщение о плохих адресах ресурсов ждёт старта раунда и отписывается, отдав его админам.
+/datum/unit_test/resource_host_probe_report_waits_round_start
+
+/datum/unit_test/resource_host_probe_report_waits_round_start/Run()
+	var/datum/resource_probe_report/report = new("unit_test: адрес не отвечает")
+	TEST_ASSERT(report.signal_procs?[SSticker]?[COMSIG_TICKER_ROUND_STARTING], "сообщение не подписалось на старт раунда")
+	report.on_round_starting(SSticker)
+	TEST_ASSERT(QDELETED(report), "сообщение осталось жить после старта раунда")
+	TEST_ASSERT(!report.signal_procs?[SSticker], "сообщение не отписалось от тикера")
