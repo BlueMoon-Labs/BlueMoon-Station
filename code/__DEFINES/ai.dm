@@ -344,6 +344,13 @@
 #define BB_AI_APPROACH_TILE_AT "BB_ai_approach_tile_at"
 ///Как часто мили-моб перевыбирает тайл подхода
 #define AI_APPROACH_REPICK_COOLDOWN (1 SECONDS)
+///Экономия ИИ орды (общая память стаи, пропуск неизменных подхода и плана). Бенч орды
+///(--define=AI_HORDE_BENCH) переключает её на лету, чтобы мерить с ней и без в одном мире.
+#ifdef AI_HORDE_BENCH
+#define AI_HORDE_SAVINGS GLOB.ai_horde_savings
+#else
+#define AI_HORDE_SAVINGS TRUE
+#endif
 ///Дальше этого виляние/окружение не планируем - просто бежим к цели
 #define AI_WEAVE_MAX_DIST 7
 ///Дальность уклончивого подхода против ОПОЗНАННОГО стрелка. Обычная семёрка -

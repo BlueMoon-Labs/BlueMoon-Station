@@ -12,6 +12,12 @@
 	var/syncing_target_from_legacy = FALSE
 	///Prevents a controller target change from being written back to its own blackboard.
 	var/syncing_target_to_pawn = FALSE
+	///Снимок прошлого плана (см. plan_settled): турф пауна, набор поведений и сводка блэкборда
+	var/tmp/turf/plan_probe_turf
+	var/tmp/list/plan_probe_behaviors
+	var/tmp/plan_probe_signature
+	///Прошлый план уже был пропущен - этот считается честно
+	var/tmp/plan_probe_skipped = FALSE
 
 /datum/ai_controller/hostile_adapter/TryPossessPawn(atom/new_pawn)
 	if(!istype(new_pawn, /mob/living/simple_animal/hostile))
@@ -28,7 +34,39 @@
 ///The movement pre-check remains a fallback for a buckle between planning ticks.
 /datum/ai_controller/hostile_adapter/SelectBehaviors(delta_time)
 	request_unbuckle()
-	return ..()
+	if(plan_settled())
+		plan_probe_skipped = TRUE
+		return
+	plan_probe_skipped = FALSE
+	. = ..()
+	remember_plan()
+
+///Моб в бою, застрявший в толпе, полсекунды спустя спланировал бы ровно то же: он не сдвинулся,
+///поведения те же, цель, здоровье, обстрел и зажатость не менялись. Такой план пропускается,
+///но не два подряд - решения по таймерам боя и сдвигу цели запаздывают не больше чем на один
+///интервал планировщика. Удары и подход ведёт тикер поведений, их это не задерживает. Вне ENGAGE
+///не пропускается: пауза обнаружения, розыск и отступление живут таймерами состояний.
+/datum/ai_controller/hostile_adapter/proc/plan_settled()
+	if(!AI_HORDE_SAVINGS || plan_probe_skipped || isnull(plan_probe_turf) || pawn.loc != plan_probe_turf || !length(current_behaviors))
+		return FALSE
+	if(blackboard[BB_AI_STATE] != AI_STATE_ENGAGE || plan_signature() != plan_probe_signature)
+		return FALSE
+	//поиск целей уходит из плана после каждого своего прогона, пропуск ставит его обратно
+	//тем же сабтри - иначе любой прогон финдера отменял бы пропуск
+	var/datum/ai_planning_subtree/first_subtree = length(planning_subtrees) ? planning_subtrees[1] : null
+	if(istype(first_subtree, /datum/ai_planning_subtree/find_hostile_targets))
+		first_subtree.SelectBehaviors(src, 0)
+	return current_behaviors ~= plan_probe_behaviors
+
+/datum/ai_controller/hostile_adapter/proc/remember_plan()
+	plan_probe_turf = isturf(pawn?.loc) ? pawn.loc : null
+	plan_probe_behaviors = current_behaviors.Copy()
+	plan_probe_signature = plan_signature()
+
+/datum/ai_controller/hostile_adapter/proc/plan_signature()
+	var/mob/living/living_pawn = pawn
+	var/atom/target = blackboard[BB_AI_CURRENT_TARGET]
+	return "[target ? REF(target) : null]|[blackboard[BB_AI_STATE]]|[isliving(living_pawn) ? living_pawn.health : null]|[blackboard[BB_AI_UNDER_FIRE_UNTIL]]|[(blackboard[BB_AI_FRUSTRATION] || 0) >= AI_PINNED_FRUSTRATION]|[blackboard[BB_AI_SIEGE_UNTIL]]"
 
 ///Живой idle: рутина выбирается по типу моба один раз при захвате пауна.
 ///Профили, задавшие своё фоновое поведение явно (майнбот, floor cluwne), не
@@ -254,6 +292,18 @@
 
 // ===== Боевые поведения =====
 
+///Подход перепроверяется не реже этого, даже если ни моб, ни цель не сдвинулись
+#define AI_MELEE_APPROACH_RECHECK (0.5 SECONDS)
+
+/datum/ai_controller
+	///Снимок последнего прохода подхода hostile_melee_attack: пока ни моб, ни цель, ни тайл
+	///подхода не сдвинулись, те же проверки дали бы тот же ответ "ещё идём"
+	var/tmp/turf/approach_probe_pawn_turf
+	var/tmp/turf/approach_probe_target_turf
+	var/tmp/turf/approach_probe_tile
+	var/tmp/approach_probe_target_ref
+	var/tmp/approach_probe_until = 0
+
 ///Милишная атака через легаси-исполнение моба (MeleeAction: rapid_melee, vore и вся кастомщина)
 /datum/ai_behavior/hostile_melee_attack
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
@@ -276,6 +326,7 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(QDELETED(target))
 		return FALSE
+	controller.approach_probe_until = 0
 	set_movement_target(controller, desired_movement_goal(controller, target))
 
 ///Цель движения: тайл подхода от tactical_approach (фланг/окружение), если он
@@ -301,6 +352,9 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(!istype(hostile_pawn) || QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(approach_unchanged(controller, hostile_pawn, target))
+		return AI_BEHAVIOR_INSTANT
+	controller.approach_probe_until = 0
 
 	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_AI_TARGETING_STRATEGY])
 	if(targeting_strategy && !targeting_strategy.can_attack(hostile_pawn, target))
@@ -324,7 +378,36 @@
 	var/atom/movement_goal = desired_movement_goal(controller, target)
 	if(controller.current_movement_target != movement_goal)
 		set_movement_target(controller, movement_goal)
+	remember_approach(controller, hostile_pawn, target)
 	return AI_BEHAVIOR_INSTANT //ещё идём - без кулдауна
+
+///В орде подход перепроверялся каждый проход тикера, хотя пока моб не дошёл до цели, ответ
+///"ещё идём" уже известен. Годность цели при этом перепроверяется не реже AI_MELEE_APPROACH_RECHECK.
+/datum/ai_behavior/hostile_melee_attack/proc/approach_unchanged(datum/ai_controller/controller, mob/living/simple_animal/hostile/hostile_pawn, atom/target)
+	if(!AI_HORDE_SAVINGS || world.time >= controller.approach_probe_until)
+		return FALSE
+	if(!isturf(hostile_pawn.loc) || !isturf(target.loc))
+		return FALSE
+	if(controller.blackboard[BB_AI_APPROACH_TILE] != controller.approach_probe_tile || REF(target) != controller.approach_probe_target_ref)
+		return FALSE
+	//вплотную можно оказаться только с соседней клетки: дальше ответ "ещё идём" не зависит
+	//от того, кто куда шагнул, а рядом его даёт только тот же самый расклад
+	if(get_dist(hostile_pawn, target) <= 1 && (hostile_pawn.loc != controller.approach_probe_pawn_turf || target.loc != controller.approach_probe_target_turf))
+		return FALSE
+	return controller.current_movement_target == desired_movement_goal(controller, target)
+
+/datum/ai_behavior/hostile_melee_attack/proc/remember_approach(datum/ai_controller/controller, mob/living/simple_animal/hostile/hostile_pawn, atom/target)
+	if(!isturf(hostile_pawn.loc) || !isturf(target.loc) || (hostile_pawn.targets_from && hostile_pawn.targets_from != hostile_pawn))
+		return
+	controller.approach_probe_pawn_turf = hostile_pawn.loc
+	controller.approach_probe_target_turf = target.loc
+	controller.approach_probe_tile = controller.blackboard[BB_AI_APPROACH_TILE]
+	controller.approach_probe_target_ref = REF(target)
+	controller.approach_probe_until = world.time + AI_MELEE_APPROACH_RECHECK
+
+/datum/ai_behavior/hostile_melee_attack/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	controller.approach_probe_until = 0
+	return ..()
 
 ///Неподвижный вариант милишки: пауна НЕ двигаем вовсе (нет REQUIRE_MOVEMENT),
 ///каденс наследуем от родителя. Цель вне досягаемости - честный провал:
@@ -440,3 +523,5 @@
 		clear_blackboard_key(BB_AI_PATROL_ANCHOR)
 		blackboard[BB_AI_PATROL_RETURN_FAILS] = 0
 		clear_blackboard_key(BB_AI_PATROL_RETURN_FROM)
+
+#undef AI_MELEE_APPROACH_RECHECK

@@ -80,12 +80,19 @@
 	var/mob/living/living_pawn = pawn
 	if(isliving(living_pawn))
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_AI_TARGETING_STRATEGY])
+		//в орде пул грида - сплошь союзники, их отказы стая уже знает (см. pack_scan.dm)
+		var/datum/ai_pack_scan/pack_scan = ai_pack_scan_for(living_pawn, strategy)
+		var/alist/pack_rejected = pack_scan?.rejected
+		var/hunter_ref = pack_scan ? REF(living_pawn) : null
 		for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(living_pawn, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, radius))
 			if(candidate == living_pawn || QDELETED(candidate))
 				continue
 			if(get_dist(living_pawn, candidate) > radius)
 				continue
+			if(pack_rejected && pack_rejected[candidate])
+				continue
 			if(strategy && !strategy.can_attack(living_pawn, candidate, radius))
+				pack_scan?.note_rejection(candidate, hunter_ref)
 				continue
 			threats |= candidate
 	//текущая цель всегда входит в набор угроз, даже вне грида

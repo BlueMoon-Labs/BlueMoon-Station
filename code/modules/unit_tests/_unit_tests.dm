@@ -284,6 +284,7 @@
 #include "hk_droids_terminal.dm"
 #include "hk_droids_voice.dm"
 #include "holofan_charge.dm"
+#include "hostile_ai_horde_perf.dm"
 #include "hud_sparse_images.dm"
 #include "human_life_perf.dm"
 #include "immovable_rod_cleanup.dm"

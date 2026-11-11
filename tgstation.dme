@@ -770,6 +770,7 @@
 #include "code\datums\ai\hostile_memory.dm"
 #include "code\datums\ai\obstacle_policy.dm"
 #include "code\datums\ai\pack_focus.dm"
+#include "code\datums\ai\pack_scan.dm"
 #include "code\datums\ai\slime_controller.dm"
 #include "code\datums\ai\tactical_positioning.dm"
 #include "code\datums\ai\target_reservations.dm"
