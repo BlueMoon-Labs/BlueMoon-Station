@@ -19,8 +19,13 @@
 	shot.pixel_x = offset
 	shot.pixel_y = -offset
 	shot.fire(angle)
+	// В занятом тике луч уступает его и долетает в следующем
+	for(var/attempt in 1 to 20)
+		if(QDELETED(shot))
+			break
+		sleep(world.tick_lag)
 	var/list/result = shot.recorded || list("пусто")
-	result += "ожоги цели [target.getFireLoss()], луч удалён [QDELETED(shot)]"
+	result += "ожоги цели [target.getFireLoss()], луч удалён [!!QDELETED(shot)]"
 	shot.recorded = null
 	return result
 

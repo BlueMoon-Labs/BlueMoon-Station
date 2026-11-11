@@ -779,7 +779,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 /**
  * Предел тика до следующего прогона МК: по нему CHECK_TICK в Topic, вербах и проснувшихся проках уступает тик.
  * BYOND отдаёт клиентам вывод только после всей DM-работы тика, поэтому в раунде с игроками у работы вне МК
- * свой бюджет outside_tick_limit: после МК - сверх того, что тик уже занял, а с начала следующего тика до МК - от нуля.
+ * свой бюджет outside_tick_limit: после МК - сверх того, что тик уже занял, а с world/Tick() до МК следующего тика - от нуля.
  * limit - потолок до конца этого тика, next_tick_limit - на следующий тик; по нему же stoplag() будит уснувших.
  */
 /datum/controller/master/proc/set_idle_ticklimit(limit, next_tick_limit = limit)
@@ -796,7 +796,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	current_ticklimit = next_tick_ticklimit
 	next_tick_ticklimit = 0
 
-/// Зовётся после уснувших проков и команд игроков, перед отправкой карты: дальше DM-код идёт уже в следующем тике.
+/// Зовётся после уснувших проков и очереди команд, перед отправкой карты. Команды, пришедшие после неё, идут в этом же тике уже с пределом от нуля: первый CHECK_TICK клика уступает тик, и он доделывается со следующего.
 /world/Tick()
 	if(Master?.next_tick_ticklimit)
 		Master.apply_next_tick_ticklimit()

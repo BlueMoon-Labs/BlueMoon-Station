@@ -15,7 +15,7 @@
 #define TICK_LIMIT_MC 70
 /// Tick limit while initializing
 #define TICK_LIMIT_MC_INIT_DEFAULT (100 - TICK_BYOND_RESERVE)
-/// Сколько % тика сверх уже занятого работает CHECK_TICK вне МК (Topic, вербы, проснувшиеся проки), пока в раунде есть игроки.
+/// Бюджет CHECK_TICK вне МК (Topic, вербы, проснувшиеся проки), % тика, пока в раунде есть игроки: после МК - сверх уже занятого, с world/Tick() до МК следующего тика - от нуля.
 #define TICK_LIMIT_OUTSIDE_MC_DEFAULT 25
 
 /// Сколько % тика фоновые подсистемы вместе занимают за одну итерацию МК, пока в раунде есть игроки.

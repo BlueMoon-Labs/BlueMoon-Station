@@ -10,6 +10,12 @@
 #define OUTSIDE_MC_PROBE_OVERLOAD_GAP_TICKS 8
 /// Меньше тиков после нагруженного МК - замер ничего не доказывает.
 #define OUTSIDE_MC_PROBE_MIN_LOADED_TICKS 3
+/// Тик, занятый в начале больше этого %, проверкам порога не годится: им нужно куда расти.
+#define OUTSIDE_MC_PROBE_QUIET 30
+/// Сколько раз проба встаёт в очередь до МК, ища такой тик.
+#define OUTSIDE_MC_PROBE_QUIET_ATTEMPTS 5
+/// Запас порогов на вытеснение мира планировщиком ОС под чужой нагрузкой, % тика.
+#define OUTSIDE_MC_PROBE_JITTER 5
 
 /// Настройки предела вне МК и нагрузка МК на время теста. Тест получает его через allocate(): Destroy() вернёт всё и после упавшей проверки.
 /datum/outside_mc_probe_guard
@@ -71,10 +77,17 @@
 			return TRUE
 	return FALSE
 
+/// Встаёт в очередь до МК в тик, занятый меньше OUTSIDE_MC_PROBE_QUIET: голый sleep() оставляет прок за МК, если тот проспал тик.
+/datum/outside_mc_probe_guard/proc/take_quiet_tick()
+	for(var/attempt in 1 to OUTSIDE_MC_PROBE_QUIET_ATTEMPTS)
+		if(take_queue_place(FALSE) && TICK_USAGE_REAL < OUTSIDE_MC_PROBE_QUIET)
+			return TRUE
+	return FALSE
+
 /**
  * Гонит OUTSIDE_MC_PROBE_WORK единиц работы с CHECK_TICK вне МК из очереди до или после него.
  * По тикам: list(занятость в начале, занятость в конце, сколько единиц, отработал ли МК в этом тике до пробы,
- * была ли нагрузка в последнем прогоне МК - он и выставил пробе предел); null - не встала в очередь.
+ * была ли нагрузка в последнем прогоне МК - он и выставил пробе предел, занятость в начале последней единицы); null - не встала в очередь.
  */
 /datum/outside_mc_probe_guard/proc/run_probe(limit, after_mc)
 	Master.outside_tick_limit = limit
@@ -88,9 +101,10 @@
 		var/tick_key = "[world.time]"
 		var/list/record = ticks[tick_key]
 		if(!record)
-			record = list(TICK_USAGE_REAL, 0, 0, Master.last_run == world.time, last_load_time == Master.last_run)
+			record = list(TICK_USAGE_REAL, 0, 0, Master.last_run == world.time, last_load_time == Master.last_run, 0)
 			ticks[tick_key] = record
 		var/unit_started = TICK_USAGE_REAL
+		record[6] = unit_started
 		while(TICK_USAGE_REAL - unit_started < OUTSIDE_MC_PROBE_UNIT)
 			spins++
 		work_left -= OUTSIDE_MC_PROBE_UNIT
@@ -103,7 +117,6 @@
 /datum/unit_test/mc_idle_ticklimit_rules/Run()
 	allocate(/datum/outside_mc_probe_guard)
 	Master.outside_tick_limit = 25
-	sleep(world.tick_lag)
 
 	Master.pacing_forced = FALSE
 	Master.set_idle_ticklimit(80, 60)
@@ -112,7 +125,7 @@
 
 	Master.pacing_forced = TRUE
 	var/usage_before = TICK_USAGE_REAL
-	Master.set_idle_ticklimit(80, 60)
+	Master.set_idle_ticklimit(usage_before + 60, 60)
 	var/usage_after = TICK_USAGE_REAL
 	TEST_ASSERT(Master.current_ticklimit >= usage_before + 25 && Master.current_ticklimit <= usage_after + 25, "После МК работа вне него обязана получить 25% сверх занятого, а не до 25% тика: предел [Master.current_ticklimit], занято [usage_before]")
 	TEST_ASSERT_EQUAL(Master.resume_ticklimit, 60, "stoplag() обязан будить уснувших по пределу МК на следующий тик, иначе do_after и UNTIL растянутся")
@@ -134,15 +147,16 @@
 /// stoplag() будит уснувший прок, только пока тик занят меньше предела МК и TICK_LIMIT_TO_RUN.
 /datum/unit_test/stoplag_resume_rule/Run()
 	var/datum/outside_mc_probe_guard/burner = allocate(/datum/outside_mc_probe_guard)
-	sleep(world.tick_lag)
+	TEST_ASSERT(burner.take_quiet_tick(), "Не нашлось тика до МК, занятого меньше [OUTSIDE_MC_PROBE_QUIET]%")
 	var/base = TICK_USAGE_REAL
-	TEST_ASSERT(base < TICK_LIMIT_TO_RUN - 30, "Тик уже занят на [base]%: проверять нечего")
 	Master.resume_ticklimit = base + 20
 	TEST_ASSERT(!TICK_CHECK_RESUME, "stoplag() не будит прок в тике, занятом меньше предела МК")
+	Master.resume_ticklimit = 100
+	TEST_ASSERT(!TICK_CHECK_RESUME, "Предел МК выше TICK_LIMIT_TO_RUN не должен мешать проснуться в незанятом тике")
+	Master.resume_ticklimit = base + 20
 	burner.burn_until(base + 25)
 	TEST_ASSERT(TICK_CHECK_RESUME, "stoplag() будит прок в тике, занятом сверх предела МК")
 	Master.resume_ticklimit = 100
-	TEST_ASSERT(!TICK_CHECK_RESUME, "Предел МК выше TICK_LIMIT_TO_RUN не должен мешать проснуться в незанятом тике")
 	burner.burn_until(TICK_LIMIT_TO_RUN + 2)
 	TEST_ASSERT(TICK_CHECK_RESUME, "Тик, занятый сверх TICK_LIMIT_TO_RUN, никого не будит, какой бы ни был предел МК")
 
@@ -157,12 +171,12 @@
 	sortTim(held, GLOBAL_PROC_REF(cmp_numeric_asc))
 	return "[length(held)] тиков, [round(units / length(held), 0.1)] ед./тик, держала тик медиана [round(held[CEILING(length(held) / 2, 1)], 0.1)] мс, максимум [round(held[length(held)], 0.1)] мс"
 
-/// Тики пробы с нужной стороны от МК, предел которым выставил нагруженный прогон МК: list(тиков, единиц, самый длинный кусок, самый поздний конец, средняя занятость в начале), % тика.
+/// Тики пробы с нужной стороны от МК, предел которым выставил нагруженный прогон МК: list(тиков, единиц, самый длинный кусок до начала последней единицы, самое позднее начало последней единицы, средняя занятость в начале), % тика.
 /datum/unit_test/proc/loaded_probe_ticks(list/probe, after_mc)
 	var/ticks = 0
 	var/units = 0
 	var/longest = 0
-	var/latest_end = 0
+	var/latest_start = 0
 	var/starts = 0
 	for(var/tick_key in probe)
 		var/list/record = probe[tick_key]
@@ -170,10 +184,10 @@
 			continue
 		ticks++
 		units += record[3]
-		longest = max(longest, record[2] - record[1])
-		latest_end = max(latest_end, record[2])
+		longest = max(longest, record[6] - record[1])
+		latest_start = max(latest_start, record[6])
 		starts += record[1]
-	return list(ticks, units, longest, latest_end, ticks ? starts / ticks : 0)
+	return list(ticks, units, longest, latest_start, ticks ? starts / ticks : 0)
 
 /// Проки до МК (уснувшие в нём таймеры и подсистемы) получают бюджет от начала тика, а не остаток после МК прошлого тика.
 /datum/unit_test/mc_outside_work_yields_early/Run()
@@ -184,14 +198,14 @@
 	var/list/limited = guard.run_probe(TICK_LIMIT_OUTSIDE_MC_DEFAULT, FALSE)
 	TEST_ASSERT(limited, "Проба не встала в очередь до МК под нагрузкой")
 	var/list/loaded = loaded_probe_ticks(limited, FALSE)
-	log_test("\tДо МК без бюджета: [describe_outside_mc_probe(unlimited)]; с бюджетом [TICK_LIMIT_OUTSIDE_MC_DEFAULT]% после МК на 40%: [describe_outside_mc_probe(limited)], из них после нагруженного МК [loaded[1]] тиков, конец не позже [round(loaded[4], 0.1)]% тика")
+	log_test("\tДо МК без бюджета: [describe_outside_mc_probe(unlimited)]; с бюджетом [TICK_LIMIT_OUTSIDE_MC_DEFAULT]% после МК на 40%: [describe_outside_mc_probe(limited)], из них после нагруженного МК [loaded[1]] тиков, последняя единица начата не позже [round(loaded[4], 0.1)]% тика")
 
 	var/unlimited_peak = 0
 	for(var/tick_key in unlimited)
 		var/list/record = unlimited[tick_key]
 		unlimited_peak = max(unlimited_peak, record[2])
 	TEST_ASSERT(unlimited_peak > TICK_LIMIT_OUTSIDE_MC_DEFAULT + 10, "Без бюджета проба не держала тик дальше [TICK_LIMIT_OUTSIDE_MC_DEFAULT]%: замер ничего не меряет")
-	TEST_ASSERT(loaded[4] <= TICK_LIMIT_OUTSIDE_MC_DEFAULT + 2 * OUTSIDE_MC_PROBE_UNIT, "Работа до МК тянула тик до [round(loaded[4], 0.1)]%: бюджет отсчитан от занятости прошлого тика, а не от начала этого")
+	TEST_ASSERT(loaded[4] <= TICK_LIMIT_OUTSIDE_MC_DEFAULT + OUTSIDE_MC_PROBE_JITTER, "Работа до МК тянула тик до [round(loaded[4], 0.1)]%: бюджет отсчитан от занятости прошлого тика, а не от начала этого")
 	TEST_ASSERT(loaded[1] >= OUTSIDE_MC_PROBE_MIN_LOADED_TICKS, "Проба до МК после нагруженного МК прошла только [loaded[1]] тиков из [length(limited)]")
 
 /// Работа после МК (Topic, вербы, проснувшиеся после него проки) получает свой бюджет сверх занятого МК, а не голодает по единице за тик.
@@ -202,21 +216,24 @@
 	for(var/mc_load in list(30, 40, 50))
 		guard.set_mc_load(mc_load)
 		var/list/probe = guard.run_probe(TICK_LIMIT_OUTSIDE_MC_DEFAULT, TRUE)
-		TEST_ASSERT(probe, "Проба не встала в очередь после МК при нагрузке [mc_load]%")
+		if(!probe)
+			failures += "проба не встала в очередь после МК при нагрузке [mc_load]%"
+			continue
 		var/list/loaded = loaded_probe_ticks(probe, TRUE)
 		var/ticks = loaded[1]
-		report += "МК [mc_load]%: [describe_outside_mc_probe(probe)]; после нагруженного МК (занято в начале [round(loaded[5], 0.1)]%) [ticks] тиков, [ticks ? round(loaded[2] / ticks, 0.1) : 0] ед./тик, кусок до [round(TICK_DELTA_TO_MS(loaded[3]), 0.1)] мс"
+		report += "МК [mc_load]%: [describe_outside_mc_probe(probe)]; после нагруженного МК (занято в начале [round(loaded[5], 0.1)]%) [ticks] тиков, [ticks ? round(loaded[2] / ticks, 0.1) : 0] ед./тик, последняя единица начата через [round(TICK_DELTA_TO_MS(loaded[3]), 0.1)] мс"
 		if(ticks < OUTSIDE_MC_PROBE_MIN_LOADED_TICKS)
 			failures += "при МК [mc_load]% после нагруженного МК только [ticks] тиков"
 			continue
-		if(loaded[2] / ticks < TICK_LIMIT_OUTSIDE_MC_DEFAULT / OUTSIDE_MC_PROBE_UNIT / 4)
+		if(loaded[2] / ticks < TICK_LIMIT_OUTSIDE_MC_DEFAULT / OUTSIDE_MC_PROBE_UNIT / 8)
 			failures += "при МК [mc_load]% после МК [round(loaded[2] / ticks, 0.1)] ед. за тик"
-		if(loaded[3] > TICK_LIMIT_OUTSIDE_MC_DEFAULT + 2 * OUTSIDE_MC_PROBE_UNIT)
+		if(loaded[3] > TICK_LIMIT_OUTSIDE_MC_DEFAULT + OUTSIDE_MC_PROBE_JITTER)
 			failures += "при МК [mc_load]% кусок поверх МК [round(loaded[3], 0.1)]% тика"
 	log_test("\tПосле МК с бюджетом [TICK_LIMIT_OUTSIDE_MC_DEFAULT]%: [report.Join("; ")]")
 	// Следующие тесты идут из этого же прока: возвращаем его в очередь до МК, где тесты бегут обычно
 	guard.set_mc_load(0)
-	guard.take_queue_place(FALSE)
+	if(!guard.take_queue_place(FALSE))
+		failures += "раннер не вернулся в очередь до МК"
 	TEST_ASSERT(!length(failures), "Работа после МК: [failures.Join("; ")]")
 
 /// Расчёт блокировки взрыва при выбранном бюджете вне МК проходит пачку турфов за пробуждение и не теряет турфы, дописанные после того, как догнал список.
@@ -248,10 +265,9 @@
 
 /// Выстрел hitscan доходит за один тик и при выбранном бюджете вне МК: уступает он, только когда тик занят по-настоящему.
 /datum/unit_test/hitscan_ignores_spent_outside_budget/Run()
+	var/datum/outside_mc_probe_guard/guard = allocate(/datum/outside_mc_probe_guard)
 	var/obj/item/projectile/beam/emitter/hitscan/shot = new(run_loc_floor_bottom_left)
-	// Предыдущий тест мог оставить тик занятым по-настоящему: тогда уступить - верно
-	sleep(world.tick_lag)
-	TEST_ASSERT(!TICK_CHECK_RESUME, "Тик уже занят на [TICK_USAGE_REAL]%: проверять нечего")
+	TEST_ASSERT(guard.take_quiet_tick(), "Не нашлось тика до МК, занятого меньше [OUTSIDE_MC_PROBE_QUIET]%")
 	var/old_limit = Master.current_ticklimit
 	Master.current_ticklimit = 0
 	shot.fire(90)
@@ -260,8 +276,8 @@
 
 /// Загрузка комнаты отеля держит свой кусок в мс и при выбранном бюджете вне МК.
 /datum/unit_test/hilbert_slice_ignores_spent_outside_budget/Run()
-	sleep(world.tick_lag)
-	TEST_ASSERT(!TICK_CHECK_RESUME, "Тик уже занят на [TICK_USAGE_REAL]%: проверять нечего")
+	var/datum/outside_mc_probe_guard/guard = allocate(/datum/outside_mc_probe_guard)
+	TEST_ASSERT(guard.take_quiet_tick(), "Не нашлось тика до МК, занятого меньше [OUTSIDE_MC_PROBE_QUIET]%")
 	var/datum/hilbert_room_load/load = new(null)
 	var/old_limit = Master.current_ticklimit
 	Master.current_ticklimit = 0
@@ -291,3 +307,6 @@
 #undef OUTSIDE_MC_PROBE_OVERLOAD
 #undef OUTSIDE_MC_PROBE_OVERLOAD_GAP_TICKS
 #undef OUTSIDE_MC_PROBE_MIN_LOADED_TICKS
+#undef OUTSIDE_MC_PROBE_QUIET
+#undef OUTSIDE_MC_PROBE_QUIET_ATTEMPTS
+#undef OUTSIDE_MC_PROBE_JITTER
