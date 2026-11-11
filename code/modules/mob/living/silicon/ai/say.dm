@@ -129,7 +129,9 @@
 
 	log_game("[key_name(src)] made a vocal announcement with the following message: [message].")
 
-	return play_vox_announcement(words, src.z, voxType)
+	// В интелкарте или APC у самого ИИ z = 0, слушатели на z его турфа
+	var/turf/ai_turf = get_turf(src)
+	return play_vox_announcement(words, ai_turf?.z, voxType)
 
 /// Файлы слов заранее уходят тем, кто услышит объявление, звук - через VOX_PRELOAD_LEAD: слово, которого нет
 /// в кэше клиента, качается в момент проигрыша, и без предзагрузки слова наползают друг на друга. Возвращает id таймера.

@@ -8,14 +8,27 @@
 GLOBAL_LIST_INIT(vox_types, init_vox_list())
 
 /// Размер файла VOX в байтах. Промер один раз на файл за раунд.
-/// Мерим файл на диске: file2text обрывает бинарник на первом нулевом байте.
+/// Мерим файл, а не текст: file2text обрывает бинарник на первом нулевом байте.
 /proc/vox_file_bytes(file)
 	var/static/list/sizes = list()
 	var/key = "[file]"
 	. = sizes[key]
 	if(isnull(.))
-		. = fexists(key) ? length(file(key)) : 0
+		// На проде каталогов sound/ рядом с игрой нет, звук живёт только в rsc
+		. = fexists(key) ? length(file(key)) : rsc_file_bytes(file)
 		sizes[key] = .
+
+/// Размер ресурса из rsc в байтах: копия на диск, промер, удаление.
+/proc/rsc_file_bytes(file)
+#ifdef UNIT_TESTS
+	var/copy_path = "tmp/[unit_test_shard_subdir()]rsc_file_bytes"
+#else
+	var/copy_path = "tmp/rsc_file_bytes"
+#endif
+	if(!fcopy(file, copy_path))
+		return 0
+	. = length(file(copy_path))
+	fdel(copy_path)
 
 /proc/init_vox_list()
 	return list(

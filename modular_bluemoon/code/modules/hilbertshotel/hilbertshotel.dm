@@ -308,6 +308,24 @@
 /obj/item/hilbertshotel/proc/room_op_end(roomNumber)
 	rooms_in_flight -= "[roomNumber]"
 
+/// Загрузка комнаты спит десятки тиков: за это время сферу могли удалить, а гость - отойти, упасть или исчезнуть.
+/obj/item/hilbertshotel/proc/room_load_still_wanted(mob/user)
+	if(QDELETED(user))
+		return FALSE
+	if(QDELETED(src) || !user.CanReach(src) || user.incapacitated())
+		to_chat(user, span_warning("Пока сфера готовила комнату, вы потеряли с ней связь. Попробуйте ещё раз."))
+		return FALSE
+	return TRUE
+
+/// Бросает недогруженную комнату: номер свободен, а резервация и мебель шаблона не остаются висеть в пустоте.
+/obj/item/hilbertshotel/proc/abort_room_load(roomNumber, datum/turf_reservation/roomReservation)
+	room_op_end(roomNumber)
+	for(var/turf/room_turf as anything in roomReservation.reserved_turfs)
+		for(var/atom/movable/leftover in room_turf)
+			if(!ismob(leftover) && !istype(leftover, /atom/movable/lighting_object))
+				qdel(leftover)
+	qdel(roomReservation)
+
 /// Общий гвард телепорта: зона приземления обязана быть комнатой отеля.
 /// Любой сбой загрузки шаблона раньше молча отправлял игрока в пустой резервный космос.
 /obj/item/hilbertshotel/proc/room_landing_valid(datum/turf_reservation/roomReservation, datum/map_template/hilbertshotel/mapTemplate, mob/user)
@@ -408,9 +426,8 @@
 		return FALSE
 	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
 	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
-	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
-		room_op_end(roomNumber)
-		qdel(roomReservation)
+	if(!load_ok || !room_load_still_wanted(user) || !room_landing_valid(roomReservation, mapTemplate, user))
+		abort_room_load(roomNumber, roomReservation)
 		return FALSE
 
 	// Clear all movable atoms from the loaded room template
@@ -571,9 +588,8 @@
 		return FALSE
 	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
 	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
-	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
-		room_op_end(roomNumber)
-		qdel(roomReservation)
+	if(!load_ok || !room_load_still_wanted(user) || !room_landing_valid(roomReservation, mapTemplate, user))
+		abort_room_load(roomNumber, roomReservation)
 		return FALSE
 	activeRooms["[roomNumber]"] = roomReservation
 

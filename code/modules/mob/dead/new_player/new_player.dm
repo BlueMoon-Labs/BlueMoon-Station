@@ -323,7 +323,7 @@
 
 	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
-	var/this_is_like_playing_right = alert(src,"Are you sure you wish to observe? You will not be able to respawn for [round(mintime / 600, 0.1)] minutes!!","Player Setup","Да","Нет")
+	var/this_is_like_playing_right = alert(src,"Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.","Наблюдение","Да","Нет")
 
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Да")
 		ready = PLAYER_NOT_READY
@@ -341,11 +341,11 @@
 	observer.started_as_observer = TRUE
 	close_spawn_windows()
 	var/obj/effect/landmark/observer_start/O = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
-	to_chat(src, "<span class='notice'>Now teleporting.</span>")
+	to_chat(src, "<span class='notice'>Переносим вас к станции...</span>")
 	if (O)
 		observer.forceMove(O.loc)
 	else
-		to_chat(src, "<span class='notice'>Teleporting failed. Ahelp an admin please</span>")
+		to_chat(src, "<span class='notice'>Не вышло перенести вас к станции. Напишите администрации через ахелп.</span>")
 		stack_trace("There's no freaking observer landmark available on this map or you're making observers before the map is initialised")
 	observer.prebuild_hud()
 	stoplag()

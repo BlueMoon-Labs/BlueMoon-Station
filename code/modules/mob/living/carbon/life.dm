@@ -700,7 +700,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 				adjustFireLoss(-0.06, FALSE)
 			sound_environment_override = SOUND_ENVIRONMENT_PSYCHOTIC
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
+			clear_mood_event_if_set("drunk")
 			clear_alert("drunk")
 			sound_environment_override = SOUND_ENVIRONMENT_NONE
 			drunkenness = max(drunkenness - 0.2, 0)
@@ -763,7 +763,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 		if(drunkenness >= 101)
 			adjustToxLoss(4) //Let's be honest you shouldn't be alive by now
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
+			clear_mood_event_if_set("drunk")
 
 	// BLUEMOON ADD START - опьянение для синтетиков
 	else if (drunkenness)
@@ -780,7 +780,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 				adjustFireLoss(-0.06, FALSE)
 			sound_environment_override = SOUND_ENVIRONMENT_PSYCHOTIC
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
+			clear_mood_event_if_set("drunk")
 			clear_alert("drunk")
 			sound_environment_override = SOUND_ENVIRONMENT_NONE
 			drunkenness = max(drunkenness - 0.2, 0)

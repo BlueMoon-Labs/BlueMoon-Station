@@ -89,3 +89,79 @@
 	TEST_ASSERT(get_turf(guest) == landing, "гость приземлился не на точку входа шаблона")
 
 	sphere.MobTransfer(guest, home)
+
+/// Сферу или гостя удалили, пока комната грузилась: никто никуда не уехал, номер и резервация свободны.
+/datum/unit_test/hilbert_checkin_aborts_when_gone
+	priority = TEST_LONGER
+	var/datum/map_template/hilbertshotel/unit_test_sleepy/template
+	var/load_finished = FALSE
+	var/load_result
+
+/datum/unit_test/hilbert_checkin_aborts_when_gone/Destroy()
+	if(template)
+		SShilbertshotel.hotel_map_list -= template.name
+		template = null
+	return ..()
+
+/datum/unit_test/hilbert_checkin_aborts_when_gone/proc/check_in(obj/item/hilbertshotel/sphere, room_number, mob/guest)
+	load_result = sphere.sendToNewRoom(room_number, guest, template.name)
+	load_finished = TRUE
+
+/// Запускает заселение и возвращается, когда оно уснуло посреди загрузки
+/datum/unit_test/hilbert_checkin_aborts_when_gone/proc/start_check_in(obj/item/hilbertshotel/sphere, room_number, mob/guest)
+	load_finished = FALSE
+	load_result = null
+	INVOKE_ASYNC(src, PROC_REF(check_in), sphere, room_number, guest)
+	return !load_finished
+
+/datum/unit_test/hilbert_checkin_aborts_when_gone/proc/wait_check_in()
+	for(var/i in 1 to 300)
+		if(load_finished)
+			return TRUE
+		sleep(1)
+	return FALSE
+
+/datum/unit_test/hilbert_checkin_aborts_when_gone/Run()
+	if(!length(SShilbertshotel.hotel_map_list))
+		SShilbertshotel.prepare_rooms()
+	if(!SShilbertshotel.storageTurf)
+		SShilbertshotel.setup_storage_turf()
+	template = new
+	SShilbertshotel.hotel_map_list[template.name] = template
+	var/turf/home = run_loc_floor_bottom_left
+	var/reservations_before = length(SSmapping.turf_reservations)
+
+	var/obj/item/hilbertshotel/doomed_sphere = allocate(/obj/item/hilbertshotel, home)
+	doomed_sphere.anchored = TRUE
+	var/mob/living/carbon/human/guest = allocate(/mob/living/carbon/human, home)
+	guest.mind_initialize()
+	TEST_ASSERT(start_check_in(doomed_sphere, 6131, guest), "заселение не уснуло, удалить сферу посреди загрузки нечем")
+	qdel(doomed_sphere)
+	TEST_ASSERT(wait_check_in(), "заселение к удалённой сфере не закончилось")
+	TEST_ASSERT(!load_result, "заселение к удалённой сфере прошло")
+	TEST_ASSERT(get_turf(guest) == home, "гость уехал через удалённую сферу в [get_area(guest)]")
+	TEST_ASSERT(!length(doomed_sphere.activeRooms), "удалённая сфера завела активную комнату")
+	TEST_ASSERT(!length(doomed_sphere.linked_room_areas), "удалённая сфера снова привязала к себе комнату")
+	TEST_ASSERT(!doomed_sphere.rooms_in_flight["6131"], "номер удалённой сферы остался занятым")
+	TEST_ASSERT_EQUAL(length(SSmapping.turf_reservations), reservations_before, "резервация комнаты удалённой сферы не освобождена")
+
+	var/obj/item/hilbertshotel/sphere = allocate(/obj/item/hilbertshotel, home)
+	sphere.anchored = TRUE
+	var/mob/living/carbon/human/doomed_guest = allocate(/mob/living/carbon/human, home)
+	doomed_guest.mind_initialize()
+	TEST_ASSERT(start_check_in(sphere, 6132, doomed_guest), "заселение не уснуло, удалить гостя посреди загрузки нечем")
+	qdel(doomed_guest)
+	TEST_ASSERT(wait_check_in(), "заселение удалённого гостя не закончилось")
+	TEST_ASSERT(!load_result, "заселение удалённого гостя прошло")
+	TEST_ASSERT(!length(sphere.activeRooms), "для удалённого гостя завелась активная комната")
+	TEST_ASSERT(!length(sphere.mob_dorms), "удалённый гость записан во владельцы комнаты")
+	TEST_ASSERT(!sphere.rooms_in_flight["6132"], "номер остался занятым после удаления гостя")
+	TEST_ASSERT_EQUAL(length(SSmapping.turf_reservations), reservations_before, "резервация комнаты удалённого гостя не освобождена")
+
+/// Комната отеля, загрузка которой сперва засыпает: окно, в котором сфера или гость успевают исчезнуть
+/datum/map_template/hilbertshotel/unit_test_sleepy
+	name = "Unit Test Sleepy Room"
+
+/datum/map_template/hilbertshotel/unit_test_sleepy/load_room(turf/T)
+	sleep(1)
+	return ..()
