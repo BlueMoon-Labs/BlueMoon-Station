@@ -234,7 +234,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 	relay.mouse_opacity = mouse_opacity
 	relay.name = render_target
 	relays += relay
-	var/client/watcher = force_hidden ? null : home?.our_hud?.mymob?.client
+	var/client/watcher = (force_hidden || !home?.shown) ? null : home?.our_hud?.mymob?.client
 	if(watcher)
 		watcher.screen += relay
 	return relay
