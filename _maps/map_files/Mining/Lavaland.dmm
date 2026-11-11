@@ -9110,7 +9110,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -9349,7 +9348,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -12457,7 +12455,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -16910,7 +16907,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -19773,6 +19769,20 @@
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"lLw" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
+/obj/machinery/door/airlock/external{
+	glass = 1;
+	name = "Mining Post Airlock";
+	opacity = 0
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/mine/lobby)
 "lLG" = (
 /obj/machinery/mineral/unloading_machine{
 	dir = 1;
@@ -29950,7 +29960,6 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rrH" = (
 /obj/effect/turf_decal/delivery,
-/obj/structure/fans/tiny,
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/mapping_helpers/airlock/access/all/supply/mining_station,
 /obj/machinery/door/airlock/external{
@@ -149758,7 +149767,7 @@ odi
 odi
 odi
 odi
-rrH
+lLw
 uMD
 bXS
 pnT
