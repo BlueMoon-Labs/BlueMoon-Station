@@ -510,6 +510,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return
 
 	can_reenter_corpse = FALSE
+	mind?.current?.loc?.on_log(FALSE)
 	client.prefs?.dnr_triggered = TRUE
 	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
@@ -894,6 +895,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 //But we will still carry a mind.
 /mob/dead/observer/mind_initialize()
 	return
+
+/// Худ до входа клиента: Login() застанет его готовым и только покажет
+/mob/dead/observer/proc/prebuild_hud()
+	if(hud_used)
+		return
+	set_hud_used(new hud_type(src))
+	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
 
 /mob/dead/observer/proc/show_data_huds()
 	for(var/hudtype in datahuds)

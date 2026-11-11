@@ -778,7 +778,9 @@
 		clear_fullscreen("brute")
 
 //Proc used to resuscitate a mob, for full_heal see fully_heal()
-/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE)
+/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
+	if(stat == DEAD && medical_revive && !can_be_medically_revived())
+		return FALSE
 	SEND_SIGNAL(src, COMSIG_LIVING_REVIVE, full_heal, admin_revive)
 	if(excess_healing)
 		adjustOxyLoss(-excess_healing, updating_health = FALSE)
@@ -863,7 +865,32 @@
 	// Пересчёт обязателен и без повреждений конечностей: OXY, TOX и CLONE обнулены без обновления.
 	updatehealth()
 
-//proc called by revive(), to check if we can actually ressuscitate the mob (we don't want to revive him and have him instantly die again)
+// Проверяет доступность сознания для медицинского оживления независимо от повреждений тела.
+/mob/living/proc/can_be_medically_revived(require_player = TRUE)
+	if(suiciding || hellbound || !owns_soul())
+		return FALSE
+	// Запрет клонирования после поглощения не запрещает восстановить и реанимировать тело.
+	if(HAS_TRAIT_NOT_FROM(src, TRAIT_NOCLONE, CHANGELING_DRAIN))
+		return FALSE
+	if(client)
+		return TRUE
+	// Сохраняем штатное лечение животных-НПС, у которых никогда не было игрока.
+	if(!mind && !ckey && (isanimal(src) || ismonkey(src)))
+		return TRUE
+	// Пустая оболочка ИИ не имеет собственной личности: её ремонтируют перед подключением ядра.
+	if(!mind && !ckey && iscyborg(src))
+		var/mob/living/silicon/robot/robot = src
+		if(robot.shell && !robot.deployed)
+			return TRUE
+	if(!mind || mind.current != src)
+		return FALSE
+	var/mob/dead/observer/ghost = get_ghost(even_if_they_cant_reenter = TRUE)
+	if(ghost && !ghost.can_reenter_corpse)
+		return FALSE
+	// Для диагностики отделяем временное отсутствие игрока от запрета возвращения.
+	return !require_player || !!ghost?.client
+
+// Проверяет, сможет ли восстановленное тело поддерживать жизнь.
 /mob/living/proc/can_be_revived()
 	. = 1
 	if(health <= HEALTH_THRESHOLD_DEAD)
@@ -1608,6 +1635,8 @@
  * It uses the healing amount on brute/fire damage, and then uses the excess healing for revive
  */
 /mob/living/proc/do_strange_reagent_revival(healing_amount)
+	if(!can_be_medically_revived())
+		return
 	var/brute_loss = getBruteLoss()
 	if(brute_loss)
 		var/brute_healing = min(healing_amount * 0.5, brute_loss) // 50% of the healing goes to brute
@@ -1620,7 +1649,7 @@
 		setFireLoss(round(fire_loss - fire_healing, DAMAGE_PRECISION), updating_health=TRUE, forced=TRUE)
 		healing_amount = max(0, healing_amount - fire_healing)
 
-	if(revive(FALSE, FALSE, excess_healing=max(healing_amount, 0)))
+	if(revive(FALSE, FALSE, excess_healing=max(healing_amount, 0), medical_revive = TRUE))
 		grab_ghost()
 		mind?.forget_death(DEATH_FORGETFULNESS_REASON_STRANGE_REAGENT)
 		mind?.revival_handle_memory("strange reagent")

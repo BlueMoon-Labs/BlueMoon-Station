@@ -14,7 +14,7 @@
 	. = ..()
 	if(!.)
 		return .
-	if(patient.stat != DEAD)
+	if(patient.stat != DEAD || !patient.can_be_medically_revived())
 		. = FALSE
 
 /datum/surgery_step/ventricular_electrotherapy
@@ -96,16 +96,14 @@
 	var/failed
 	var/tdelta = round(world.time - H.timeofdeath)
 
-	if (H.suiciding || (HAS_TRAIT(H, TRAIT_NOCLONE)))
-		failed = "<span class='warning'>The heart is zapped by the [tool], but nothing happens. You feel like the spark of life has fully left [H].</span>"
-	else if (H.hellbound)
-		failed = "<span class='warning'>The heart is zapped by the [tool], but nothing happens. You notice a small tatoo with the words \"Property of Satan\" branded just above the right ventricle.</span>"
+	if(!H.can_be_medically_revived())
+		failed = span_warning("Разряд не помогает: сознание пациента недоступно или его возвращение невозможно. Медицинская реанимация недоступна.")
 	else if(tdelta > (DEFIB_TIME_LIMIT * 10))
 		failed = "<span class='warning'>The heart is zapped by the [tool], but nothing happens. It appears their body decomposed beyond repair.</span>"
 	else if(total_burn >= 180 || total_brute >= 180)
 		failed = "<span class='warning'>The [tool] zaps the heart, inducing a sudden contraction, but it appears [H]'s body is too damaged to revive presently.</span>"
-	else if(H.get_ghost())
-		failed = "<span class='warning'>The [tool] zaps the heart, inducing several contractions before dying down, but there's no spark of life in [H]'s eyes. It may be worth it to try again, however.</span>"
+	else if(!H.client)
+		failed = span_warning("Разряд вызывает лишь краткие сокращения сердца. Повторите попытку после возвращения сознания пациента в тело.")
 	else
 		var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)
 		if(BR)
@@ -134,7 +132,7 @@
 		H.visible_message(span_notice("[tool] проводит разряд по сердцу, вызывая сокращения, после которых сердечный ритм выравнивается и [H] распахивает глаза[breathless ? ", сильно дёргаясь телом" : " с громким вдохом"]!"))
 		playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 		H.set_heartattack(FALSE)
-		H.revive(post_revive_effects = TRUE)
+		H.revive(post_revive_effects = TRUE, medical_revive = TRUE)
 		H.mind?.revival_handle_memory("ghetto defibrillation")
 		if(breathless)
 			H.emote("twitch")

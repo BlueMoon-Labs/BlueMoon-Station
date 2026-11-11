@@ -5,6 +5,8 @@
 #define ECHO_HOLD_TIME (0.6 SECONDS)
 #define ECHO_FADE_TIME (1.4 SECONDS)
 #define ECHO_MAX_VISUALS 1200
+/// Столько турфов эха строится между уступками тика даже в занятом тике: за ECHO_TRAVEL_TIME фронт волны проходит кольцо в десятки турфов.
+#define ECHO_MIN_TURFS_PER_SLICE 32
 #define ECHO_MAX_EAR_DAMAGE 70
 #define ECHO_TYPING_RANGE 6
 #define ECHO_FLOOR_LAYER 1
@@ -381,8 +383,10 @@
 		animate(wave, alpha = 0, time = delay)
 		animate(alpha = 180, time = 0)
 		animate(transform = matrix().Scale(max_radius * world.icon_size / 60), alpha = 0, time = travel_time)
+	var/slice_turfs = 0
 	for(var/turf/where as anything in reached)
-		if(TICK_CHECK)
+		if(++slice_turfs > ECHO_MIN_TURFS_PER_SLICE && TICK_CHECK)
+			slice_turfs = 0
 			stoplag()
 			// The listener may have opened their eyes, logged out or snapped again meanwhile.
 			if(generation != pulse_generation || QDELETED(quirk_holder) || quirk_holder.client != listener_client || !can_listen())
@@ -823,6 +827,7 @@
 #undef ECHO_HOLD_TIME
 #undef ECHO_FADE_TIME
 #undef ECHO_MAX_VISUALS
+#undef ECHO_MIN_TURFS_PER_SLICE
 #undef ECHO_MAX_EAR_DAMAGE
 #undef ECHO_TYPING_RANGE
 #undef ECHO_FLOOR_LAYER

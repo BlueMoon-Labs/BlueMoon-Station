@@ -1632,6 +1632,11 @@ SUBSYSTEM_DEF(air)
 	ATMOS_BENCH_WAKE(T, reason)
 	add_to_active(T, FALSE, reset_stall = FALSE)
 
+/// Турф стал планетарным посреди загрузки шаблона (ChangeTurf): решает StopLoadingMap(). Турфы самого шаблона сюда не идут, их перепад найдёт пересчёт смежности.
+/datum/controller/subsystem/air/proc/defer_air_ref_wake(turf/open/T)
+	if(SSatoms.initialized != INITIALIZATION_INNEW_MAPLOAD)
+		queued_for_activation[T] = TRUE
+
 /datum/controller/subsystem/air/proc/setup_allturfs()
 	var/list/turfs_to_init = block(locate(1, 1, 1), locate(world.maxx, world.maxy, world.maxz))
 	var/times_fired = ++src.times_fired

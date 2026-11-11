@@ -135,6 +135,9 @@ SUBSYSTEM_DEF(director)
 	var/pending_timer_id
 	/// Снапшот сигналов момента выбора pending_action (last_signals мутируется on_latejoin внутри окна)
 	var/datum/director_signals/pending_signals
+	/// The last hourly slot that actually spawned a Team-Based wave.
+	var/team_based_wave_hour = 0
+	var/datum/dynamic_ruleset/team_based_wave_pending
 	/// Подмена world.time для оффлайн-симулятора (director_simulator.dm): 0 значит "часы реальные".
 	/// Все расчёты бита в этом файле идут через now(), а не через world.time напрямую.
 	var/time_override = 0
@@ -1001,6 +1004,8 @@ SUBSYSTEM_DEF(director)
 	// Живое окно отмены: новый пик перезаписал бы pending без deltimer. Это ожидание, не решение - без лога.
 	if(pending_action)
 		return DIRECTOR_BEAT_IDLE
+	if(!forced && try_team_based_wave(signals))
+		return DIRECTOR_BEAT_SCHEDULED
 	// План антаг-пулов: цель накопления на каждый пул (roll_pool_target). Здесь, а не в
 	// filter_candidates: фильтр зовётся и оценкой пула для панели, план - только боевым битом.
 	ensure_pool_targets(signals)
@@ -1052,6 +1057,32 @@ SUBSYSTEM_DEF(director)
 	else
 		announce_pick(picked, candidates, guaranteed, signals)
 	return guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+
+/datum/controller/subsystem/director/proc/try_team_based_wave(datum/director_signals/signals)
+	if(dry_run || GLOB.round_type != ROUNDTYPE_DYNAMIC_TEAMBASED || team_based_wave_pending)
+		return FALSE
+	if(floor((now() - SSticker.round_start_time) / (1 HOURS)) <= team_based_wave_hour)
+		return FALSE
+	var/list/candidates = list()
+	var/list/reinforcements = list()
+	for(var/datum/dynamic_ruleset/midround/rule in actions)
+		if(!rule.team_based_hourly || rule.execution_pending || action_recently_failed(rule) || !rule.can_fire(signals, TRUE))
+			continue
+		if(rule.weight <= 0 || !action_preflight(rule))
+			continue
+		if(rule.hourly_reinforcement_team())
+			reinforcements[rule] = rule.weight
+		else
+			candidates[rule] = rule.weight
+	for(var/list/pool as anything in list(candidates, reinforcements))
+		while(length(pool))
+			var/datum/dynamic_ruleset/rule = pickweight(pool)
+			if(spend_and_execute(rule, "team-based hourly"))
+				team_based_wave_pending = rule
+				director_log_beat(signals, rule, DIRECTOR_BEAT_SCHEDULED, detail = "почасовая командная волна")
+				return TRUE
+			pool -= rule
+	return FALSE
 
 /// Отбор кандидатов с фильтрами темпа. guaranteed: только MINOR/MODERATE, бюджет игнорируется
 /// (allow_ghost_guarantee дополнительно открывает GHOST - с честным гейтом кошелька).
@@ -1413,6 +1444,10 @@ SUBSYSTEM_DEF(director)
 /// Возвращаются не только бюджет/intensity, но и все паузы: провальный Ratvar не имеет права
 /// закрыть ANTAG-пул на полчаса. Само действие получает короткий карантин, затем ищется замена.
 /datum/controller/subsystem/director/proc/note_failed_action(datum/director_action/action, refund_budget = FALSE, retry_replacement = FALSE)
+	if(action == team_based_wave_pending)
+		team_based_wave_pending = null
+		record_action_failure(action)
+		retry_replacement = FALSE // Другую команду предложит следующий почасовой бит.
 	if(action.occurrences > 0)
 		action.occurrences--
 	// Латеджойн note_fired() намеренно не входит в доли битов, откатывать там нечего.
@@ -1499,6 +1534,9 @@ SUBSYSTEM_DEF(director)
 	action_attempt_rollbacks -= action
 
 /datum/controller/subsystem/director/proc/confirm_action_success(datum/director_action/action)
+	if(action == team_based_wave_pending)
+		team_based_wave_hour = floor((now() - SSticker.round_start_time) / (1 HOURS))
+		team_based_wave_pending = null
 	action_attempt_rollbacks -= action
 	action_failure_cooldowns -= action
 	action_failure_delays -= action

@@ -93,20 +93,6 @@
 /mob/living/simple_animal/hostile/floor_cluwne
 	ai_profile_type = /datum/ai_controller/hostile_adapter/floor_cluwne
 
-///AI-сварнеры маяка: боевой контур штатной машиной, фуражирский цикл
-///(починка/репликация/постройки/поедание) - сабтри swarmer_forage.
-/mob/living/simple_animal/hostile/swarmer/ai
-	ai_profile_type = /datum/ai_controller/hostile_adapter/swarmer
-
-/mob/living/simple_animal/hostile/swarmer/ai/resource
-	ai_profile_type = /datum/ai_controller/hostile_adapter/swarmer/resource
-
-/mob/living/simple_animal/hostile/swarmer/ai/ranged_combat
-	ai_profile_type = /datum/ai_controller/hostile_adapter/swarmer/skirmisher
-
-/mob/living/simple_animal/hostile/swarmer/ai/melee_combat
-	ai_profile_type = /datum/ai_controller/hostile_adapter/swarmer/brawler
-
 ///Плачущий ангел: погоня замирает под взглядами (гейты can_be_seen).
 /mob/living/simple_animal/hostile/statue
 	ai_profile_type = /datum/ai_controller/hostile_adapter/melee_chaser/statue

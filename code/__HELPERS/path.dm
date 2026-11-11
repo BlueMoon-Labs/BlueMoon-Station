@@ -86,6 +86,13 @@
 // hold the pass result alongside the first eleven checked bits.
 #define JPS_EDGE_PASS_SHIFT 11
 
+///Факты клетки уже собраны в этом поиске
+#define JPS_TURF_KNOWN (1<<0)
+///В клетке нет объекта, способного перекрыть ребро в неё или из неё
+#define JPS_TURF_NO_BLOCKERS (1<<1)
+///Атмосфера клетки не вредит путнику (или он к ней равнодушен)
+#define JPS_TURF_SAFE (1<<2)
+
 /// The JPS Node datum represents a turf that we find interesting enough to add to the open list and possibly search for new tiles from
 /datum/jps_node
 	/// The turf associated with this node
@@ -143,12 +150,14 @@
 	/// The open list/stack we pop nodes out from (TODO: make this a normal list and macro-ize the heap operations to reduce proc overhead)
 	var/datum/heap/open
 	///An assoc list that serves as the closed list & tracks what turfs came from where. Key is the turf, and the value is what turf it came from
-	var/list/sources
+	var/alist/sources
 	/// The list we compile at the end if successful to pass back
 	var/list/path
 	/// Per-search directed edge snapshot. One integer per source turf stores
 	/// checked direction bits and passable direction bits.
-	var/list/edge_cache
+	var/alist/edge_cache
+	///Клетка -> биты JPS_TURF_*: объекты и атмосфера клетки читаются раз за поиск, а не на каждое из восьми рёбер
+	var/alist/turf_facts
 	/// Whether this path owner actually needs the expensive atmosphere checks.
 	var/check_environment = FALSE
 	/// Optional owner whose deletion cancels this otherwise synchronous search.
@@ -174,8 +183,9 @@
 	start = start_turf
 	end = goal_turf
 	open = new /datum/heap(/proc/HeapPathWeightCompare)
-	sources = new()
-	edge_cache = list()
+	sources = AI_PATH_SAVINGS ? alist() : list()
+	edge_cache = AI_PATH_SAVINGS ? alist() : list()
+	turf_facts = alist()
 	src.id = id
 	src.max_distance = max_distance
 	src.mintargetdist = mintargetdist
@@ -194,6 +204,7 @@
 	sources = null
 	path = null
 	edge_cache = null
+	turf_facts = null
 	cancel_source = null
 	if(open)
 		qdel(open)
@@ -222,8 +233,16 @@
 			blocked = FALSE
 		else if(!vertical_midpoint.density && !link_blocked(from_turf, vertical_midpoint, vertical_direction) && !link_blocked(vertical_midpoint, to_turf, horizontal_direction))
 			blocked = FALSE
-	else
+	else if(!AI_PATH_SAVINGS || !turf_facts)
 		blocked = from_turf.LinkBlockedWithAccess(to_turf, pathing_movable, id, check_environment, TRUE)
+	else
+		var/to_facts = get_turf_facts(to_turf)
+		if(!(to_facts & JPS_TURF_SAFE))
+			blocked = TRUE
+		else if((to_facts & JPS_TURF_NO_BLOCKERS) && (get_turf_facts(from_turf) & JPS_TURF_NO_BLOCKERS))
+			blocked = FALSE
+		else
+			blocked = from_turf.LinkBlockedWithAccess(to_turf, pathing_movable, id, check_environment, TRUE)
 
 	// Recursive diagonal checks may have populated cardinal bits for this turf.
 	cached_edges = edge_cache[from_turf]
@@ -232,6 +251,21 @@
 		cached_edges |= direction_bit << JPS_EDGE_PASS_SHIFT
 	edge_cache[from_turf] = cached_edges
 	return blocked
+
+///То же, что прочитал бы LinkBlockedWithAccess() на клетке: пустая от помех клетка с безопасным воздухом ребро не перекрывает
+/datum/pathfind/proc/get_turf_facts(turf/tile)
+	. = turf_facts[tile]
+	if(.)
+		return
+	. = JPS_TURF_KNOWN | JPS_TURF_NO_BLOCKERS
+	var/mob/living/simple_animal/pathing_animal = pathing_movable
+	if(!check_environment || pathing_animal.can_safely_enter_turf(tile, TRUE))
+		. |= JPS_TURF_SAFE
+	for(var/obj/thing in tile)
+		if((thing.density || thing.can_astar_pass != CANASTARPASS_DENSITY) && !QDELETED(thing))
+			. &= ~JPS_TURF_NO_BLOCKERS
+			break
+	turf_facts[tile] = .
 
 /// Hot JPS step predicate with cheap exclusions first and a per-search edge cache.
 /datum/pathfind/proc/can_step(turf/from_turf, turf/to_turf, direction)
@@ -544,3 +578,6 @@
 #undef LATERAL_FORCED
 #undef DIAGONAL_FORCED
 #undef JPS_EDGE_PASS_SHIFT
+#undef JPS_TURF_KNOWN
+#undef JPS_TURF_NO_BLOCKERS
+#undef JPS_TURF_SAFE

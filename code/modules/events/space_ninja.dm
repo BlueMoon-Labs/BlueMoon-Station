@@ -14,7 +14,7 @@
 	intensity = 20 // одиночка, но очень громкий
 	director_ghost_jobban = ROLE_NINJA
 	director_ghost_preference = ROLE_NINJA
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	description = "A space ninja infiltrates the station."
 
 /datum/round_event/ghost_role/space_ninja

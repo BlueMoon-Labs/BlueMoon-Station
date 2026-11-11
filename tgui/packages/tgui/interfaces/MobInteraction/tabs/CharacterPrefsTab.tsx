@@ -8,16 +8,20 @@ type AntagOptInLevel = {
   description: string,
 }
 
-type AntagOptInInfo = {
+type AntagOptInState = {
   level: number,
   effective: number,
+}
+
+type AntagOptInLevels = {
   levels: AntagOptInLevel[],
   thresholds: string,
   disclaimer: string,
 }
 
 type CharacterPrefsInfo = {
-  antag_opt_in?: AntagOptInInfo,
+  antag_opt_in?: AntagOptInState,
+  antag_opt_in_levels?: AntagOptInLevels,
   erp_pref: number,
   noncon_pref: number,
   vore_pref: number,
@@ -45,7 +49,8 @@ const CONFIRM_DESCRIPTIONS: Record<string, string> = {
 export const CharacterPrefsTab = (props) => {
   const { act, data } = useBackend<CharacterPrefsInfo>();
   const {
-    antag_opt_in,
+    antag_opt_in: antag_opt_in_state,
+    antag_opt_in_levels,
     erp_pref,
     noncon_pref,
     vore_pref,
@@ -56,6 +61,10 @@ export const CharacterPrefsTab = (props) => {
     mobsex_pref,
     tattoo_pref,
   } = data;
+  // Описания уровней приходят в static_data, выбор - в каждом обновлении.
+  const antag_opt_in = antag_opt_in_state && antag_opt_in_levels
+    ? { ...antag_opt_in_levels, ...antag_opt_in_state }
+    : undefined;
 
   const [confirmDialog, setConfirmDialog] = useLocalState<ConfirmState>('confirmPrefDialog', null);
 

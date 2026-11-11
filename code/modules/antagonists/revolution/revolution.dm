@@ -426,6 +426,18 @@
 				return FALSE
 	return TRUE
 
+/datum/team/revolution/proc/equip_founder(datum/mind/founder)
+	var/datum/antagonist/rev/head/new_head = new
+	new_head.give_flash = TRUE
+	new_head.give_hud = TRUE
+	new_head.remove_clumsy = TRUE
+	return founder.add_antag_datum(new_head, src)
+
+/datum/team/revolution/proc/start_revolution()
+	update_objectives()
+	update_heads()
+	SSshuttle.registerHostileEnvironment(src)
+
 /// Updates the state of the world depending on if revs won or loss.
 /// Returns who won, at which case this method should no longer be called.
 /// If revs_win_injection_amount is passed, then that amount of threat will be added if the revs win.

@@ -99,6 +99,14 @@
 	var/fermiReactID //instance of the chem reaction used during a fermireaction, kept here so it's cache isn't lost between loops/procs.
 	var/value_multiplier = DEFAULT_REAGENTS_VALUE //used for cargo reagents selling.
 	var/force_alt_taste = FALSE
+	/// Состав на последнем разборе, не нашедшем реакций: тройки "тип, объём, сколько рецептов
+	/// на этот тип". Условия рецептов - только "не меньше", поэтому пока ни один реагент не
+	/// прибавил, а температура и тип ёмкости те же, разбор снова ничего не найдёт.
+	var/list/reaction_scan_snapshot
+	/// chem_temp того разбора.
+	var/reaction_scan_temp
+	/// Тип my_atom того разбора: от него зависят required_container и mob_react.
+	var/reaction_scan_atom_type
 
 /datum/reagents/New(maximum=100, new_flags = NONE, new_value = DEFAULT_REAGENTS_VALUE)
 	maximum_volume = maximum
@@ -351,6 +359,9 @@
  * * liverless - Stops reagents that aren't set as [/datum/reagent/var/self_consuming] from metabolizing
  */
 /datum/reagents/proc/metabolize(mob/living/carbon/owner, delta_time, times_fired, can_overdose = FALSE, liverless = FALSE)
+	var/atom/metabolizing_atom = owner || my_atom
+	if(metabolizing_atom && HAS_TRAIT(metabolizing_atom, TRAIT_NOMETABOLISM))
+		return
 	var/list/cached_reagents = reagent_list
 	if(owner)
 		expose_temperature(owner.bodytemperature, 0.25)
@@ -489,14 +500,21 @@
 	var/list/cached_reactions = GLOB.chemical_reactions_list
 	var/datum/cached_my_atom = my_atom
 
+	if(reaction_scan_snapshot && reaction_scan_still_empty())
+		update_total()
+		return FALSE
+
 	var/reaction_occurred = 0 // checks if reaction, binary variable
 	/// Жидкости по возврату решают, пересобрать ли лужу после реакции.
 	var/any_reaction = FALSE
 	var/continue_reacting = FALSE //Helps keep track what kind of reaction is occuring; standard or fermi.
+	// особые условия и заряды слайм-экстракта зависят не от объёмов - такой разбор не запоминаем
+	var/scan_cacheable
 
 	do
 		var/list/possible_reactions = list()
 		reaction_occurred = 0
+		scan_cacheable = TRUE
 		for(var/reagent in cached_reagents)
 			var/datum/reagent/R = reagent
 			for(var/reaction in cached_reactions[R.type]) // Was a big list but now it should be smaller since we filtered it with our reagent type
@@ -517,7 +535,6 @@
 				var/meets_temp_requirement = 0
 				var/has_special_react = C.special_react
 				var/can_special_react = 0
-
 
 				for(var/B in cached_required_reagents)
 					if(!has_reagent(B, cached_required_reagents[B]))//Allows vols at less than 1 to react.
@@ -547,6 +564,8 @@
 
 					else if(istype(cached_my_atom, /obj/item/slime_extract))//if the object is a slime_extract.
 						var/obj/item/slime_extract/M = cached_my_atom
+						// заряды экстракта тратятся и пополняются мимо объёмов
+						scan_cacheable = FALSE
 
 						if(M.Uses > 0) // added a limit to slime cores -- Muskets requested this
 							matching_other = 1
@@ -561,6 +580,9 @@
 
 				if(!has_special_react || C.check_special_react(src))
 					can_special_react = 1
+				// особое условие смотрит в данные реагента, а не в объёмы: если решает только оно, разбор не запоминаем
+				if(has_special_react && total_matching_reagents == total_required_reagents && total_matching_catalysts == total_required_catalysts && matching_container && matching_other && meets_temp_requirement)
+					scan_cacheable = FALSE
 
 				if(total_matching_reagents == total_required_reagents && total_matching_catalysts == total_required_catalysts && matching_container && matching_other && meets_temp_requirement && can_special_react)
 					possible_reactions  += C
@@ -655,7 +677,42 @@
 
 	while(reaction_occurred)
 	update_total()
+	if(scan_cacheable && !QDELETED(src))
+		remember_empty_reaction_scan()
 	return any_reaction
+
+///Снимает состав после разбора без реакций; см. reaction_scan_snapshot.
+/datum/reagents/proc/remember_empty_reaction_scan()
+	// пустой разбор и так бесплатный, а список на каждую пустую ёмкость - лишняя память
+	if(!length(reagent_list))
+		reaction_scan_snapshot = null
+		return
+	var/list/cached_reactions = GLOB.chemical_reactions_list
+	var/list/snapshot = list()
+	for(var/datum/reagent/reagent as anything in reagent_list)
+		snapshot += reagent.type
+		snapshot += reagent.volume
+		snapshot += length(cached_reactions[reagent.type])
+	reaction_scan_snapshot = snapshot
+	reaction_scan_temp = chem_temp
+	reaction_scan_atom_type = my_atom?.type
+
+///TRUE, если с последнего разбора без реакций ни один реагент не прибавил и не появился,
+///температура и ёмкость те же, а рецептов на эти реагенты не добавилось.
+/datum/reagents/proc/reaction_scan_still_empty()
+	if(chem_temp != reaction_scan_temp || my_atom?.type != reaction_scan_atom_type)
+		return FALSE
+	var/list/cached_reagents = reagent_list
+	var/list/snapshot = reaction_scan_snapshot
+	if(length(snapshot) != length(cached_reagents) * 3)
+		return FALSE
+	var/list/cached_reactions = GLOB.chemical_reactions_list
+	var/index = 1
+	for(var/datum/reagent/reagent as anything in cached_reagents)
+		if(reagent.type != snapshot[index] || reagent.volume > snapshot[index + 1] || length(cached_reactions[reagent.type]) != snapshot[index + 2])
+			return FALSE
+		index += 3
+	return TRUE
 
 /datum/reagents/process()
 	var/datum/chemical_reaction/C = fermiReactID

@@ -116,7 +116,7 @@
 		return TRUE
 	return ..()
 
-/mob/living/simple_animal/hostile/mushroom/revive(full_heal = 0, admin_revive = 0)
+/mob/living/simple_animal/hostile/mushroom/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..())
 		icon_state = "mushroom_color"
 		UpdateMushroomCap()

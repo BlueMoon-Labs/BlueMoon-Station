@@ -49,7 +49,7 @@
 		INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, M.forced_hallucination)
 		return
 
-	switch(rand(1,4))
+	switch(rand(1,6))
 		if(1) //same sound for everyone
 			var/sound = pick("airlock","airlock_pry","console","explosion","far_explosion","mech","glass","alarm","beepsky","mech","wall_decon","door_hack","tesla","seth")
 			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/sounds, sound)
@@ -57,8 +57,14 @@
 			var/weirdsound = pick("phone","hallelujah","highlander","hyperspace","game_over","creepy","tesla")
 			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/weird_sounds, weirdsound)
 		if(3)
-			var/stationmessage = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
-			INVOKE_ASYNC(src, PROC_REF(hallucinate_targets), targets, /datum/hallucination/stationmessage, stationmessage)
+			var/stationmessage_type = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
+			var/mob/living/carbon/heretic_target = null
+			var/heretic_path_id = null
+			if(stationmessage_type == "heretic")
+				heretic_target = pick(targets)
+				heretic_path_id = heretic_ascension_random_path_id()
+			for(var/mob/living/carbon/C as anything in targets)
+				new /datum/hallucination/stationmessage(C, TRUE, stationmessage_type, heretic_target, heretic_path_id)
 		if(4 to 6)
 			var/picked_hallucination = pick(	/datum/hallucination/bolts,
 												/datum/hallucination/chat,

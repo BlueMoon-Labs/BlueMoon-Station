@@ -26,8 +26,11 @@
 				to_chat(user, "<span class='info'>[src] does not work on this sort of creature.</span>")
 				return
 			if(M.stat == DEAD)
+				if(!M.can_be_medically_revived())
+					to_chat(user, span_warning("Сознание цели недоступно для реанимации."))
+					return
 				M.faction = list("neutral")
-				M.revive(full_heal = 1, admin_revive = 1)
+				M.revive(full_heal = TRUE, admin_revive = TRUE, medical_revive = TRUE)
 				if(ishostile(target))
 					var/mob/living/simple_animal/hostile/H = M
 					H.clear_hostile_aggro()
