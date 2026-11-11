@@ -57,6 +57,12 @@
 	var/temp_gated_air_ceiling = ATMOS_NO_TEMPERATURE_GATE
 	/// Поколение индекса реакций: меняется при каждой перестройке, по нему react() сбрасывает мемо пустого вызова.
 	var/reaction_index_rev = 1
+	/// Газы-ключи индекса реакций (gas id -> 1) для гейта GAS_MIXTURE_REACT_IDLE. null - гейт выключен.
+	var/list/reaction_key_gas_indicator
+	/// Горючие газы, кроме O2 и N2 (gas id -> 1): без них безгазовые реакции молчат ниже temp_gated_air_ceiling.
+	var/list/reaction_fuel_gas_indicator
+	/// Газы, способные дать оверлей (gas id -> 1): гейт визуала в process_cell.
+	var/list/visible_gas_indicator
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -683,6 +689,8 @@
 	// такая: производитель идёт РАНЬШЕ потребителя, и пол отложил бы горение на
 	// один фаер SSair.
 	var/list/bucket_last_index = list()
+	// Гейт react() считает ключевой газ с нулём молей отсутствующим, это верно, только пока каждая реакция требует его положительное количество.
+	var/key_gate_exact = TRUE
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
 		index++
@@ -710,6 +718,8 @@
 			var/reaction_floor = reqs[key_gas]
 			if(isnull(reaction_floor))
 				reaction_floor = 0
+			if(reaction_floor <= 0)
+				key_gate_exact = FALSE
 			var/bucket_floor = floors[key_gas]
 			floors[key_gas] = isnull(bucket_floor) ? reaction_floor : min(bucket_floor, reaction_floor)
 			bucket_last_index[key_gas] = index
@@ -763,6 +773,25 @@
 		if(air_gas_fire_temp)
 			air_fuel_temp = min(air_fuel_temp, air_gas_fire_temp)
 	temp_gated_air_ceiling = min(fuelless_gate_floor, max(fuel_gate_floor, air_fuel_temp))
+	var/list/key_indicator
+	if(key_gate_exact)
+		key_indicator = list()
+		for(var/key_id in by_gas)
+			key_indicator[key_id] = 1
+	reaction_key_gas_indicator = key_indicator
+	var/list/fuel_indicator = list()
+	for(var/fuel_id in fuel_temps)
+		if(fuel_temps[fuel_id] && fuel_id != GAS_O2 && fuel_id != GAS_N2)
+			fuel_indicator[fuel_id] = 1
+	reaction_fuel_gas_indicator = fuel_indicator
+	// Индекс перестраивается и при регистрации нового газа (auxgm), поэтому индикатор видимых газов живёт здесь же.
+	var/list/visibility = GLOB.gas_data?.visibility
+	var/list/no_overlay_gases = typecache_of_gases_with_no_overlays()
+	var/list/visible_indicator = list()
+	for(var/gas_id in visibility)
+		if(visibility[gas_id] && !no_overlay_gases[gas_id])
+			visible_indicator[gas_id] = 1
+	visible_gas_indicator = visible_indicator
 	reaction_index_rev++
 
 /proc/auxtools_atmos_init(gas_data)
@@ -964,17 +993,7 @@
 	return TRUE
 
 /datum/gas_mixture/proc/archive()
-	temperature_archived = temperature
-	// Копия списка - аллокация на турф на цикл. Если с прошлого снимка смесь не
-	// правили, прежний архив побайтово равен тому, что дал бы Copy() сейчас, и
-	// пересниматься незачем. Температура пишется безусловно: она в архив входит
-	// отдельным полем и от списка не зависит.
-	if(gas_archive && archive_mutation_rev == mutation_rev)
-		return TRUE
-	gas_archive = gases.Copy()
-	archive_mutation_rev = mutation_rev
-	// Инвалидация мемо архивной теплоёмкости: она считается по gas_archive.
-	archive_gen++
+	GAS_MIXTURE_ARCHIVE(src)
 	return TRUE
 
 /datum/gas_mixture/proc/get_gases()
@@ -1229,6 +1248,7 @@
 		set_temperature(temperature + heat / cap)
 	return TRUE
 
+/// Пара внутри одной excited-группы в process_cell сравнивается копией этого тела без вызова прока: правка здесь - правка и там.
 /datum/gas_mixture/proc/compare(datum/gas_mixture/other)
 	if(!other)
 		return "invalid"
@@ -1237,21 +1257,27 @@
 	var/list/cached_gases = gases
 	var/list/other_gases = other.gases
 	var/our_moles = 0
+	// Равная длина и ни одного промаха ниже значат равные наборы ключей: второй проход тогда не нужен.
+	var/same_keys = length(other_gases) == length(cached_gases)
 	for(var/id, iter_moles in cached_gases)
 		var/gas_moles = iter_moles || 0
 		our_moles += gas_moles
-		var/delta = abs(gas_moles - (other_gases[id] || 0))
+		var/other_moles = other_gases[id]
+		if(isnull(other_moles))
+			same_keys = FALSE
+		var/delta = abs(gas_moles - (other_moles || 0))
 		if(delta > MINIMUM_MOLES_DELTA_TO_MOVE)
 			if(delta > gas_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 				return id
-	for(var/id, other_moles in other_gases)
-		// Key presence, O(1), same semantics as `in`: a key holding exactly zero
-		// was already compared above and must not be re-tested here.
-		if(!isnull(cached_gases[id]))
-			continue
-		// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
-		if(abs(other_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
-			return id
+	if(!same_keys)
+		for(var/id, other_moles in other_gases)
+			// Key presence, O(1), same semantics as `in`: a key holding exactly zero
+			// was already compared above and must not be re-tested here.
+			if(!isnull(cached_gases[id]))
+				continue
+			// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
+			if(abs(other_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
+				return id
 	if(our_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 		if(abs(temperature - other.temperature) > MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
 			return "temp"
@@ -1438,16 +1464,15 @@
 		return
 	var/list/reaction_index = air_controller.reactions_by_key_gas
 	var/gated_min_temp = air_controller.temp_gated_min_temp
-	// The overwhelming turf case is O2/N2 air. The reaction index is
-	// authoritative, so only skip when neither common gas owns a candidate and
-	// no temperature-only reaction can be eligible (see temp_gated_air_ceiling).
-	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < air_controller.temp_gated_air_ceiling)
-		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
-			if(length(reaction_results))
-				reaction_results.Cut()
-			react_idle_rev = mutation_rev
-			react_idle_index = air_controller.reaction_index_rev
-			return
+	// Подавляющее большинство вызовов - воздух без единого газа-ключа (O2, N2, CO2 от дыхания):
+	// сбор ниже не заведёт ни один бакет, а безгазовые реакции отсекаются порогом TEMP и
+	// отсутствием горючего газа. Тот же гейт process_cell проверяет без вызова прока.
+	if(GAS_MIXTURE_REACT_IDLE(src, air_controller))
+		if(length(reaction_results))
+			reaction_results.Cut()
+		react_idle_rev = mutation_rev
+		react_idle_index = air_controller.reaction_index_rev
+		return
 	// Gather candidates through the key-gas index instead of scanning every
 	// registered reaction: a reaction can only fire if its key gas is present.
 	// This runs for every active turf, pipenet and portable every SSair fire,
