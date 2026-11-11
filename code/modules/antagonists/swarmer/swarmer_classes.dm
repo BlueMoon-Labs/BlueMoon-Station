@@ -204,8 +204,8 @@
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
 	rapid_fire_delay = 0.1 SECONDS
-	health = 2000
-	maxHealth = 2000
+	health = 1500
+	maxHealth = 1500
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swarmer_class_info = "Вы — финальная боевая единица \"Свармеров\", оснащённая миниганом, встроенной ACP турелью, а также защитными пластинами.\n\
 		Ваша цель — окончательно захватить станцию под ваш контроль."
