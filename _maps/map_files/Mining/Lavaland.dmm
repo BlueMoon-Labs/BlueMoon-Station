@@ -842,6 +842,13 @@
 	dir = 8
 	},
 /area/mine/laborcamp)
+"azs" = (
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/flora/biolumi,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "azQ" = (
 /obj/effect/turf_decal/tile/green/anticorner/contrasted,
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -9408,6 +9415,13 @@
 	},
 /turf/open/floor/plating,
 /area/mine/maintenance)
+"fJd" = (
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/flora/biolumi/flower,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "fJw" = (
 /obj/effect/turf_decal/stripes/yellow,
 /obj/effect/turf_decal/siding/purple,
@@ -10688,6 +10702,12 @@
 	dir = 1
 	},
 /area/mine/laborcamp/security)
+"gxu" = (
+/obj/structure/flora/biolumi,
+/turf/open/floor/grass/grass0,
+/area/mine/common{
+	name = "Park Area"
+	})
 "gyc" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -11494,13 +11514,6 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/indestructible/necropolis,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
-"gTG" = (
-/obj/structure/flora/ausbushes/fullgrass,
-/obj/structure/flora/biolumi/lamp,
-/turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
 "gUb" = (
 /obj/structure/stone_tile/cracked{
 	dir = 8
@@ -11711,13 +11724,6 @@
 	dir = 4
 	},
 /area/mine/laborcamp/security)
-"hbT" = (
-/obj/structure/flora/ausbushes/fullgrass,
-/obj/structure/fans/tiny/invisible,
-/turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
 "hbW" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
@@ -14288,13 +14294,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
-"iBI" = (
-/obj/structure/fans/tiny/invisible,
-/obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating/asteroid/basalt,
-/area/mine/common{
-	name = "Park Area"
-	})
 "iCx" = (
 /obj/structure/deployable_barricade/wooden,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -15931,12 +15930,12 @@
 	},
 /area/mine/laborcamp/security/maintetance)
 "jBP" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/machinery/power/port_gen/pacman{
 	active = 1;
 	anchored = 1;
-	sheets = 5
+	sheets = 15
 	},
-/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
@@ -18364,13 +18363,16 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "kTB" = (
-/obj/machinery/power/rtg/advanced/fullupgrade{
-	power_gen = 250
-	},
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/effect/decal/fakelattice{
 	density = 0
 	},
+/obj/structure/frame/machine{
+	anchored = 1;
+	state = 2;
+	icon_state = "box_1"
+	},
+/obj/item/circuitboard/machine/rtg,
 /turf/open/floor/plating,
 /area/mine/laborcamp/security/maintetance)
 "kTP" = (
@@ -19773,8 +19775,10 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "lLG" = (
 /obj/machinery/mineral/unloading_machine{
+	dir = 1;
 	icon_state = "unloader-corner";
-	output_dir = 1
+	input_dir = 1;
+	output_dir = 2
 	},
 /turf/open/floor/plating,
 /area/mine/production)
@@ -19843,7 +19847,7 @@
 	},
 /area/mine/common/maintenance/south)
 "lOa" = (
-/obj/structure/flora/biolumi/lamp,
+/obj/structure/flora/biolumi/flower,
 /turf/open/floor/grass/grass0,
 /area/mine/common{
 	name = "Park Area"
@@ -21935,13 +21939,6 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"mTQ" = (
-/obj/structure/flora/ausbushes/lavendergrass,
-/obj/structure/fans/tiny/invisible,
-/turf/open/floor/grass/grass0,
-/area/mine/common{
-	name = "Park Area"
-	})
 "mUt" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
@@ -31405,6 +31402,11 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"smC" = (
+/turf/closed/mineral/random/low_chance/volcanic{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/lavaland/surface/outdoors)
 "snc" = (
 /obj/structure/closet/secure_closet/engineering_electrical/empty,
 /turf/open/floor/plating,
@@ -31880,7 +31882,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "sDt" = (
 /obj/structure/flora/ausbushes/lavendergrass,
-/obj/structure/flora/biolumi/lamp,
+/obj/structure/flora/biolumi/mine,
 /turf/open/floor/grass/grass0,
 /area/mine/common{
 	name = "Park Area"
@@ -72405,10 +72407,10 @@ gIl
 gIl
 gIl
 gdj
-llq
-llq
-llq
-llq
+ibh
+gdj
+gdj
+gdj
 gdj
 gdj
 gdj
@@ -72662,11 +72664,11 @@ vAU
 gIl
 gIl
 gIl
-llq
-llq
-llq
-llq
-llq
+ibh
+ibh
+ibh
+gdj
+gdj
 gdj
 gdj
 gdj
@@ -72920,9 +72922,9 @@ vAU
 gIl
 gIl
 gIl
-llq
-llq
-llq
+ibh
+ibh
+ibh
 gIl
 gIl
 gIl
@@ -73951,8 +73953,8 @@ vAU
 vAU
 vAU
 gIl
-llq
-llq
+ibh
+ibh
 gIl
 gIl
 gIl
@@ -74206,12 +74208,12 @@ vAU
 vAU
 vAU
 gIl
-llq
-llq
-llq
-llq
-llq
-llq
+ibh
+ibh
+ibh
+ibh
+ibh
+gdj
 gIl
 gIl
 vAU
@@ -74461,17 +74463,17 @@ gIl
 vAU
 vAU
 gIl
-llq
-llq
-llq
+ibh
+ibh
+ibh
+ibh
 gdj
 gdj
 gdj
 gdj
 gdj
 gdj
-llq
-llq
+gdj
 gIl
 vAU
 vAU
@@ -74717,9 +74719,9 @@ gIl
 vAU
 vAU
 vAU
-llq
-llq
-gdj
+ibh
+ibh
+ibh
 gdj
 gdj
 gdj
@@ -74729,8 +74731,8 @@ wUm
 wUm
 wUm
 wUm
-llq
-llq
+gdj
+gdj
 gIl
 gIl
 llq
@@ -74974,8 +74976,8 @@ vAU
 vAU
 vAU
 vAU
-llq
-llq
+ibh
+ibh
 gdj
 gdj
 gdj
@@ -75232,8 +75234,8 @@ vAU
 vAU
 vAU
 vAU
-llq
-llq
+ibh
+ibh
 gdj
 gdj
 gdj
@@ -75490,8 +75492,8 @@ vAU
 vAU
 vAU
 gIl
-llq
-gdj
+ibh
+ibh
 gdj
 uNO
 uNO
@@ -75747,8 +75749,8 @@ gIl
 vAU
 vAU
 vAU
-llq
-llq
+ibh
+gdj
 gdj
 uNO
 qQM
@@ -76005,8 +76007,8 @@ vAU
 vAU
 vAU
 gIl
-llq
-llq
+gdj
+gdj
 uNO
 mLT
 hrz
@@ -76263,7 +76265,7 @@ vAU
 vAU
 gIl
 gIl
-llq
+gdj
 uNO
 jXf
 soM
@@ -77537,9 +77539,9 @@ gIl
 vAU
 vAU
 vAU
-llq
-llq
-llq
+ibh
+ibh
+ibh
 gIl
 vAU
 vAU
@@ -77796,8 +77798,8 @@ vAU
 vAU
 vAU
 vAU
-llq
-llq
+gdj
+ibh
 gIl
 vAU
 gIl
@@ -79330,7 +79332,7 @@ ibh
 ibh
 ibh
 ibh
-lSx
+uXk
 eDf
 uXk
 ujQ
@@ -79580,17 +79582,17 @@ eUw
 eUw
 eUw
 lSx
-ujQ
-hbT
+fKr
+eAF
 eDf
-lSx
-ujQ
-lSx
-eDf
+uXk
+fKr
+uXk
+ccY
 eAF
 oyM
 uXk
-lSx
+uXk
 ibh
 gIl
 gIl
@@ -79846,7 +79848,7 @@ oyM
 uXk
 uXk
 fKr
-lSx
+uXk
 ibh
 ibh
 gIl
@@ -80090,7 +80092,7 @@ eUw
 eUw
 wsl
 wsl
-gtu
+maS
 maS
 gtu
 sWm
@@ -80103,7 +80105,7 @@ uXk
 eAF
 uXk
 uXk
-lSx
+uXk
 ibh
 ibh
 gIl
@@ -80346,7 +80348,7 @@ eUw
 eUw
 wsl
 wsl
-gtu
+maS
 maS
 maS
 sWm
@@ -80359,7 +80361,7 @@ ipb
 ccY
 uXk
 oyM
-ujQ
+fKr
 ibh
 ibh
 gIl
@@ -80603,7 +80605,7 @@ eUw
 eUw
 wsl
 wsl
-gtu
+maS
 maS
 sWm
 sWm
@@ -80615,7 +80617,7 @@ hge
 eAF
 uXk
 wqU
-lSx
+uXk
 ibh
 ibh
 gIl
@@ -80860,7 +80862,7 @@ eUw
 wsl
 wsl
 wsl
-gtu
+maS
 maS
 maS
 sWm
@@ -80872,7 +80874,7 @@ uXk
 uXk
 oyM
 uXk
-lSx
+uXk
 ibh
 ibh
 gIl
@@ -81118,7 +81120,7 @@ wsl
 wsl
 wsl
 wsl
-iBI
+maS
 maS
 sWm
 sWm
@@ -81128,7 +81130,7 @@ uXk
 bLt
 uXk
 fKr
-lSx
+uXk
 ibh
 ibh
 gIl
@@ -81375,7 +81377,7 @@ eUw
 wsl
 wsl
 wsl
-gtu
+maS
 maS
 maS
 sWm
@@ -81384,7 +81386,7 @@ uXk
 ccY
 uXk
 eAF
-lSx
+uXk
 ibh
 ibh
 gdj
@@ -81637,10 +81639,10 @@ gtu
 maS
 wqU
 fKr
-oyM
-hbT
-ujQ
-lSx
+azs
+eAF
+fKr
+uXk
 ibh
 ibh
 ibh
@@ -81893,8 +81895,8 @@ wsl
 eUw
 lSx
 lOa
-hbT
-lSx
+eAF
+uXk
 ibh
 ibh
 maS
@@ -82412,7 +82414,7 @@ ibh
 ibh
 ibh
 ibh
-gtu
+maS
 maS
 ibh
 gIl
@@ -83697,8 +83699,8 @@ fky
 uXk
 uXk
 wqU
-lSx
-gdj
+uXk
+smC
 ibh
 gdj
 gIl
@@ -83728,7 +83730,7 @@ vAU
 gIl
 ibh
 ibh
-ibh
+gdj
 gIl
 gIl
 vAU
@@ -83953,9 +83955,9 @@ pHY
 oOY
 fKr
 eAF
-lSx
-gdj
-gdj
+uXk
+smC
+smC
 ibh
 gdj
 gIl
@@ -83984,8 +83986,8 @@ jWi
 vAU
 ibh
 ibh
-ibh
-ibh
+gdj
+gdj
 ibh
 gIl
 vAU
@@ -84209,9 +84211,9 @@ fea
 nmM
 fky
 oyM
-uXk
-ujQ
-gdj
+gxu
+fKr
+smC
 ibh
 ibh
 gdj
@@ -84240,9 +84242,9 @@ jWi
 jWi
 vAU
 gIl
-ibh
-ibh
-ibh
+gdj
+gdj
+gdj
 ibh
 vAU
 vAU
@@ -84467,8 +84469,8 @@ fky
 fky
 uXk
 bLt
-lSx
-gdj
+uXk
+smC
 ibh
 ibh
 gdj
@@ -84723,9 +84725,9 @@ eAF
 uXk
 uXk
 uXk
-mTQ
-gdj
-gdj
+oyM
+smC
+smC
 ibh
 gdj
 gdj
@@ -84979,9 +84981,9 @@ maS
 maS
 uXk
 wqU
-ujQ
-gdj
-gdj
+fKr
+smC
+smC
 ibh
 ibh
 gdj
@@ -85235,8 +85237,8 @@ ibh
 ibh
 ibh
 maS
-oyM
-gTG
+fJd
+eAF
 ibh
 ibh
 ibh
