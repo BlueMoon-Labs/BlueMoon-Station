@@ -154,6 +154,7 @@
 #include "atmos_high_pressure_pile.dm"
 #include "atmos_load_wakes.dm"
 #include "atmos_lobby_settling.dm"
+#include "atmos_miner_idle.dm"
 #include "atmos_native.dm"
 #include "atmos_pass_memos.dm"
 #include "atmos_performance.dm"
