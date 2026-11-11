@@ -149,7 +149,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
 	/// Пока тик занят больше этого, stoplag() не будит уснувший прок. От предела работы вне МК не зависит.
 	var/static/resume_ticklimit = TICK_LIMIT_RUNNING
-	/// Предел работы вне МК, % тика; 0 - без отдельного предела.
+	/// Предел работы вне МК, % тика; 0 - без отдельного предела. Из конфига MC_OUTSIDE_TICK_LIMIT.
 	var/outside_tick_limit = TICK_LIMIT_OUTSIDE_MC_DEFAULT
 
 	/// Потолок фоновой работы за итерацию, % тика; 0 - без потолка. Из конфига MC_BACKGROUND_TICK_BUDGET.
@@ -419,6 +419,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	// local vars rock
 
 	background_tick_budget = CONFIG_GET(number/mc_background_tick_budget)
+	outside_tick_limit = CONFIG_GET(number/mc_outside_tick_limit)
 	pace_passes = CONFIG_GET(flag/mc_pace_passes)
 
 	//all this shit is here so that flag edits can be refreshed by restarting the MC. (and for speed)
