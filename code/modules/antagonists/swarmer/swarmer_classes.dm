@@ -73,7 +73,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/rover/AttackingTarget()
 	. = ..()
-	if(!. || !isliving(target))
+	if(!. || !isliving(target) || a_intent == INTENT_GRAB)
 		return
 
 	var/mob/living/living_target = target
@@ -133,7 +133,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/combat/Life(seconds, times_fired)
 	. = ..()
-	if(!.)
+	if(QDELETED(src) || stat == DEAD)
 		return
 
 	var/obj/nearby = cached_swarmer_obj?.resolve()
@@ -203,7 +203,7 @@
 	ranged_cooldown_time = 1.5 SECONDS
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
-	rapid_fire_delay = 1
+	rapid_fire_delay = 0.1 SECONDS
 	health = 2000
 	maxHealth = 2000
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
@@ -225,7 +225,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/mega/AttackingTarget()
 	. = ..()
-	if(!. || !isliving(target))
+	if(!. || !isliving(target) || a_intent == INTENT_GRAB)
 		return
 
 	var/mob/living/living_target = target
@@ -245,9 +245,21 @@
 	QDEL_NULL(acp.proximity_monitor)
 	acp.proximity_monitor = new(src, acp_range)
 	acp.range = acp_range
+	HasProximity(src)
 
 /mob/living/simple_animal/hostile/swarmer/mega/HasProximity(atom/movable/AM)
-	acp?.handle_interloper(AM)
+	if(QDELETED(acp))
+		return
+	if(AM != src)
+		acp.handle_interloper(AM)
+		return
+	if(!isturf(loc))
+		return
+
+	// При движении монитор сообщает о самом хозяине; неподвижные цели ищем в ближайших ячейках.
+	for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, acp_range))
+		if(isturf(candidate.loc) && get_dist(src, candidate) <= acp_range)
+			acp.handle_interloper(candidate)
 
 /mob/living/simple_animal/hostile/swarmer/mega/damage_object(atom/movable/target)
 	var/obj/effect/temp_visual/swarmer/disintegration/disintegrate_effect = new(get_turf(target))
@@ -261,7 +273,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/mega/Life(seconds, times_fired)
 	. = ..()
-	if(!.)
+	if(QDELETED(src) || stat == DEAD)
 		return
 
 	if(times_fired % 10 == 0)
