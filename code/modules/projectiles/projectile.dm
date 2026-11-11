@@ -115,6 +115,8 @@
 
 	//Hitscan
 	var/hitscan = FALSE		//Whether this is hitscan. If it is, speed is basically ignored.
+	/// Подшаги луча внутри одного тайла считаются на месте, без вызовов траектории. FALSE - старый пошаговый проход, эталон для тестов.
+	var/hitscan_substep_skip = TRUE
 	var/list/beam_segments	//assoc list of datum/point or datum/point/vector, start = end. Used for hitscan effect generation.
 	var/datum/point/beam_index
 	/// Used in generate_hitscan_tracers to determine which "cycle" we're on.
@@ -948,7 +950,61 @@
 	var/old_px = pixel_x
 	var/old_py = pixel_y
 	var/start_speed = pixels_per_second
-	for(var/i in 1 to times)
+	var/skip_substeps = hitscanning && hitscan_substep_skip
+	var/i = 0
+	while(i < times)
+		i++
+		// Подшаг, который не выводит из тайла и не тратит дальность, меняет только траекторию:
+		// проходим такие подряд на локальных числах теми же сложениями, что и increment().
+		if(skip_substeps && !homing_target && isturf(loc))
+			var/turf/here = loc
+			var/step_x = trajectory.mpx * trajectory_multiplier
+			var/step_y = trajectory.mpy * trajectory_multiplier
+			var/range_step = pixel_increment_amount * trajectory_multiplier
+			var/min_x = (here.x - 1) * world.icon_size
+			var/max_x = here.x * world.icon_size
+			var/min_y = (here.y - 1) * world.icon_size
+			var/max_y = here.y * world.icon_size
+			var/next_x = trajectory.x
+			var/next_y = trajectory.y
+			var/next_leftover = pixels_range_leftover
+			var/skipped = 0
+			// Луч вдоль оси по целым пикселям (эмиттер): все такие подшаги - одним сложением, оно здесь точное.
+			var/jump
+			if(range_step > 0 && round(range_step) == range_step && round(next_leftover) == next_leftover)
+				var/frozen_x = next_x + step_x == next_x
+				var/frozen_y = next_y + step_y == next_y
+				var/jump_x = frozen_x ? ((next_x > min_x && next_x <= max_x) ? INFINITY : 0) : hitscan_axis_inert_steps(next_x, step_x, min_x, max_x)
+				var/jump_y = frozen_y ? ((next_y > min_y && next_y <= max_y) ? INFINITY : 0) : hitscan_axis_inert_steps(next_y, step_y, min_y, max_y)
+				if(!isnull(jump_x) && !isnull(jump_y))
+					jump = min(times - i + 1, jump_x, jump_y, CEILING((world.icon_size - next_leftover) / range_step, 1) - 1)
+					if(jump > 0)
+						if(!frozen_x)
+							next_x += jump * step_x
+						if(!frozen_y)
+							next_y += jump * step_y
+						next_leftover += jump * range_step
+						skipped = jump
+						i += jump
+			while(isnull(jump) && i <= times)
+				var/probe_x = next_x + step_x
+				var/probe_y = next_y + step_y
+				var/probe_leftover = next_leftover + range_step
+				if(probe_x <= min_x || probe_x > max_x || probe_y <= min_y || probe_y > max_y || probe_leftover >= world.icon_size)
+					break
+				next_x = probe_x
+				next_y = probe_y
+				next_leftover = probe_leftover
+				skipped++
+				i++
+			if(skipped)
+				trajectory.x = next_x
+				trajectory.y = next_y
+				trajectory.iteration += skipped
+				pixels_range_leftover = next_leftover
+				. += skipped
+				if(i > times)
+					break
 		// HOMING START - Too expensive to proccall at this point.
 		if(homing_target)
 			// No datum/points, too expensive.
@@ -1007,6 +1063,14 @@
 		else
 			pixel_x = traj_px
 			pixel_y = traj_py
+
+/// Сколько подшагов ось луча остаётся в (low, high], если k сложений шага точно равны сложению k * шаг. null - не равны.
+/proc/hitscan_axis_inert_steps(position, step, low, high)
+	if(round(step) != step || round(position) != position)
+		return null
+	if(step > 0)
+		return (position + step <= low) ? 0 : round((high - position) / step)
+	return (position + step > high) ? 0 : CEILING((position - low) / -step, 1) - 1
 
 /obj/item/projectile/proc/set_homing_target(atom/A)
 	if(!A || (!isturf(A) && !isturf(A.loc)))

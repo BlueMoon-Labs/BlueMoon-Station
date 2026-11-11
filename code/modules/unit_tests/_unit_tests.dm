@@ -269,6 +269,7 @@
 #include "heavy_stomp_weightless.dm"
 #include "hilbert_room_slices.dm"
 #include "hitscan_beam_effects.dm"
+#include "hitscan_substep_skip.dm"
 #include "hk_droids_chassis.dm"
 #include "hk_droids_contracts.dm"
 #include "hk_droids_emp.dm"
