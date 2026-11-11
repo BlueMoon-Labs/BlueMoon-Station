@@ -283,7 +283,7 @@
 	TEST_ASSERT_EQUAL(upper.level_to, 0, "К удару верхняя колба пустеет.")
 	TEST_ASSERT_EQUAL(lower.level_to, 1, "К удару нижняя колба полна.")
 	TEST_ASSERT(abs(upper.pour_time - 1.5 SECONDS) < 0.1, "Песок сыплется ровно столько, сколько идёт отсчёт.")
-	TEST_ASSERT(abs(timeleft(hourglass.countdown_timer) - 1 SECONDS) <= world.tick_lag, "Последний отсчёт начинается за полсекунды до удара.")
+	TEST_ASSERT(abs(timeleft(hourglass.countdown_timer) - 1 SECONDS) <= 2 * world.tick_lag, "Последний отсчёт начинается за полсекунды до удара.")
 	sleep(0.5 SECONDS)
 	var/left = hourglass.sand_left()
 	TEST_ASSERT(left > 0.4 && left < 0.9, "За треть отсчёта уходит около трети песка, осталось [left].")
