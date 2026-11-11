@@ -1,5 +1,0 @@
-author: Herobrine998
-delete-after: true
-changes:
-  - code_imp: nanomaps будет повторять фетч, при неуспехе
-  - code_imp: nanomaps будет повторять фетч, при неуспехе
