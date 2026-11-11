@@ -322,8 +322,14 @@
 	room_op_end(roomNumber)
 	for(var/turf/room_turf as anything in roomReservation.reserved_turfs)
 		for(var/atom/movable/leftover in room_turf)
-			if(!ismob(leftover) && !istype(leftover, /atom/movable/lighting_object))
-				qdel(leftover)
+			if(istype(leftover, /atom/movable/lighting_object))
+				continue
+			// Мобы шаблона (гондола, труп из спавнера) уходят вместе с мебелью, иначе остаются на свободных клетках резервации. Игроков и наблюдателей не трогаем.
+			if(ismob(leftover))
+				var/mob/leftover_mob = leftover
+				if(!isliving(leftover_mob) || leftover_mob.key || leftover_mob.mind || leftover_mob.client)
+					continue
+			qdel(leftover)
 	qdel(roomReservation)
 
 /// Общий гвард телепорта: зона приземления обязана быть комнатой отеля.
