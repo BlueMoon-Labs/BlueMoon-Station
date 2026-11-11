@@ -25690,8 +25690,8 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "oOY" = (
-/obj/structure/fans/tiny,
 /obj/structure/mineral_door/woodrustic,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/wood,
 /area/mine/common)
 "oPw" = (
@@ -31363,11 +31363,6 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"smC" = (
-/turf/closed/mineral/random/low_chance/volcanic{
-	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
-	},
-/area/lavaland/surface/outdoors)
 "snc" = (
 /obj/structure/closet/secure_closet/engineering_electrical/empty,
 /turf/open/floor/plating,
@@ -83134,7 +83129,7 @@ eAF
 uXk
 wqU
 fKr
-maS
+uXk
 gtu
 gdj
 gIl
@@ -83649,7 +83644,7 @@ uXk
 uXk
 wqU
 uXk
-smC
+ibh
 ibh
 gdj
 gIl
@@ -83905,8 +83900,8 @@ oOY
 fKr
 eAF
 uXk
-smC
-smC
+ibh
+ibh
 ibh
 gdj
 gIl
@@ -84162,7 +84157,7 @@ fky
 oyM
 gxu
 fKr
-smC
+ibh
 ibh
 ibh
 gdj
@@ -84419,7 +84414,7 @@ fky
 uXk
 bLt
 uXk
-smC
+ibh
 ibh
 ibh
 gdj
@@ -84675,8 +84670,8 @@ uXk
 uXk
 uXk
 oyM
-smC
-smC
+ibh
+ibh
 ibh
 gdj
 gdj
@@ -84931,8 +84926,8 @@ maS
 uXk
 wqU
 fKr
-smC
-smC
+ibh
+ibh
 ibh
 ibh
 gdj
