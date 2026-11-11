@@ -762,8 +762,6 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 
 		if(drunkenness >= 101)
 			adjustToxLoss(4) //Let's be honest you shouldn't be alive by now
-		else
-			clear_mood_event_if_set("drunk")
 
 	// BLUEMOON ADD START - опьянение для синтетиков
 	else if (drunkenness)
