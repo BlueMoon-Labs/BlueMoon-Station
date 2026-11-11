@@ -285,7 +285,7 @@
 				H.emote(pick("giggle", "laugh"))
 				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "chemical_euphoria", /datum/mood_event/chemical_euphoria)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "chemical_euphoria")
+			owner.clear_mood_event_if_set("chemical_euphoria")
 
 	// BZ
 
@@ -462,7 +462,7 @@
 					owner.adjust_disgust(0.1 * miasma_pp)
 			breath.adjust_moles(GAS_MIASMA, -gas_breathed)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
+			owner.clear_mood_event_if_set("smell")
 
 		handle_breath_temperature(breath, H)
 	return TRUE
