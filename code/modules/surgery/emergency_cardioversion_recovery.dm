@@ -102,7 +102,7 @@
 		failed = "<span class='warning'>The heart is zapped by the [tool], but nothing happens. It appears their body decomposed beyond repair.</span>"
 	else if(total_burn >= 180 || total_brute >= 180)
 		failed = "<span class='warning'>The [tool] zaps the heart, inducing a sudden contraction, but it appears [H]'s body is too damaged to revive presently.</span>"
-	else if(!H.client)
+	else if(!H.client && !H.is_antag_training_patient())
 		failed = span_warning("Разряд вызывает лишь краткие сокращения сердца. Повторите попытку после возвращения сознания пациента в тело.")
 	else
 		var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)
