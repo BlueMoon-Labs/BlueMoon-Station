@@ -147,6 +147,13 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	///used by CHECK_TICK as well so that the procs subsystems call can obey that SS's tick limits
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
 
+	/// Потолок фоновой работы за итерацию, % тика; 0 - без потолка. Из конфига MC_BACKGROUND_TICK_BUDGET.
+	var/background_tick_budget = MC_BACKGROUND_TICK_BUDGET_DEFAULT
+	/// Растягивать проходы подсистем по тикам их интервала. Из конфига MC_PACE_PASSES.
+	var/pace_passes = TRUE
+	/// Ограничения кусков действуют и без игроков: для тестов.
+	var/pacing_forced = FALSE
+
 	/// Процент загрузки лобби во время инициализации (0-100), транслируется в bm_lobby_browser
 	var/loading_progress = 0
 
@@ -406,6 +413,9 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	//Prep the loop (most of this is because we want MC restarts to reset as much state as we can, and because
 	// local vars rock
 
+	background_tick_budget = CONFIG_GET(number/mc_background_tick_budget)
+	pace_passes = CONFIG_GET(flag/mc_pace_passes)
+
 	//all this shit is here so that flag edits can be refreshed by restarting the MC. (and for speed)
 	var/list/tickersubsystems = list()
 	var/list/runlevel_sorted_subsystems = list(list()) //ensure we always have at least one runlevel
@@ -612,6 +622,13 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/bg_calc //have we swtiched current_tick_budget to background mode yet?
 	var/tick_usage
 
+	var/limits_active = pacing_active()
+	var/bg_budget = limits_active ? background_tick_budget : 0
+	var/pacing = limits_active && pace_passes
+	var/bg_used = 0
+	var/slice_left
+	var/node_paced
+
 	//keep running while we have stuff to run and we haven't gone over a tick
 	// this is so subsystems paused eariler can use tick time that later subsystems never used
 	while (ran && queue_head && TICK_USAGE < TICK_LIMIT_MC)
@@ -635,11 +652,31 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			tick_remaining = TICK_LIMIT_RUNNING - TICK_USAGE
 
+			slice_left = null
+			if (bg_calc && bg_budget > 0)
+				slice_left = bg_budget - bg_used
+				tick_remaining = min(tick_remaining, slice_left)
+
 			if (current_tick_budget > 0 && queue_node_priority > 0)
 				//Give the subsystem a precentage of the remaining tick based on the remaning priority
 				tick_precentage = tick_remaining * (queue_node_priority / current_tick_budget)
 			else
 				tick_precentage = tick_remaining
+
+			node_paced = pacing && (bg_calc || queue_node.paced)
+			if (node_paced)
+				var/pace_left = paced_slice(queue_node_flags, queue_node.pace_interval(), queue_node.tick_usage, world.time - queue_node.queued_time)
+				if (!isnull(pace_left))
+					if (queue_node.paced_iteration == iteration)
+						pace_left -= queue_node.paced_used
+					tick_precentage = min(tick_precentage, pace_left)
+					slice_left = isnull(slice_left) ? pace_left : min(slice_left, pace_left)
+
+			// Доля исчерпана: подсистема ждёт следующей итерации, а не добирает остаток тика.
+			if (!isnull(slice_left) && slice_left < 1)
+				current_tick_budget -= queue_node_priority
+				queue_node = queue_node.queue_next
+				continue
 
 			tick_precentage = max(tick_precentage*0.5, tick_precentage-queue_node.tick_overrun)
 
@@ -663,6 +700,14 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			if (tick_usage < 0)
 				tick_usage = 0
+
+			if (bg_calc)
+				bg_used += tick_usage
+			if (node_paced)
+				if (queue_node.paced_iteration != iteration)
+					queue_node.paced_iteration = iteration
+					queue_node.paced_used = 0
+				queue_node.paced_used += tick_usage
 
 			//сырой (неусреднённый) прогон для диагностики тик-спайков: усреднённый cost прячет одиночные фризы
 			if (SStick_spikes && queue_node != SStick_spikes)
@@ -714,6 +759,29 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			queue_node = queue_node.queue_next
 
 	. = 1
+
+/// Куски ограничиваются, только пока их задержку кто-то видит: идёт раунд и есть игроки.
+/datum/controller/master/proc/pacing_active()
+	if(pacing_forced)
+		return TRUE
+	return (current_runlevel & (RUNLEVEL_GAME | RUNLEVEL_POSTGAME)) && length(GLOB.clients)
+
+/**
+ * Сколько % тика проходу подсистемы положено за одну итерацию МК; null - темп не ограничен.
+ * Проход со средней ценой avg_usage (% тика) растягивается на долю интервала interval (дс),
+ * waited - сколько дс он уже в очереди: после этой доли интервала он добирается как раньше.
+ * Подсистемы, у которых следующий запуск отсчитывается от конца прохода, не растягиваются: у них вырос бы период.
+ */
+/datum/controller/master/proc/paced_slice(flags, interval, avg_usage, waited)
+	if(flags & (SS_NO_TICK_CHECK | SS_TICKER | SS_POST_FIRE_TIMING))
+		return null
+	var/interval_ticks = interval / world.tick_lag
+	if(interval_ticks < MC_PACE_MIN_WAIT_TICKS)
+		return null
+	var/share = (flags & SS_KEEP_TIMING) ? MC_PACE_INTERVAL_SHARE_KEEP_TIMING : MC_PACE_INTERVAL_SHARE
+	if(waited >= interval * share)
+		return null
+	return max(MC_PACE_MIN_SLICE, avg_usage / (interval_ticks * share))
 
 //resets the queue, and all subsystems, while filtering out the subsystem lists
 // called if any mc's queue procs runtime or exit improperly.

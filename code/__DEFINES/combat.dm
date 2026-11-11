@@ -301,3 +301,5 @@
 #define FEEBLE_ATTACK_MSG_THRESHOLD 0.5
 
 #define PROJECTILE_DEFAULT_ACCURACY_FALLOFF 7
+
+#define AKIMBO_PENALTY_SCALING 1.5 //добавочный разброс при стрельбе с двух рук одноручным оружием

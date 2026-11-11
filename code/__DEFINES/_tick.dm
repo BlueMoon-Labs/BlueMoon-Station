@@ -16,6 +16,17 @@
 /// Tick limit while initializing
 #define TICK_LIMIT_MC_INIT_DEFAULT (100 - TICK_BYOND_RESERVE)
 
+/// Сколько % тика фоновые подсистемы вместе занимают за одну итерацию МК, пока в раунде есть игроки.
+#define MC_BACKGROUND_TICK_BUDGET_DEFAULT 35
+/// Кусок растянутого прохода мельче этого не дробится, % тика.
+#define MC_PACE_MIN_SLICE 5
+/// На какую долю своего интервала растягивается проход; дальше он добирается без ограничения темпа.
+#define MC_PACE_INTERVAL_SHARE 0.5
+/// То же для SS_KEEP_TIMING: следующий запуск ждёт 0.75 интервала от конца прохода, поэтому с запасом до четверти.
+#define MC_PACE_INTERVAL_SHARE_KEEP_TIMING 0.2
+/// Подсистемы с интервалом короче этого числа тиков не растягиваются.
+#define MC_PACE_MIN_WAIT_TICKS 4
+
 /// for general usage of tick_usage
 #define TICK_USAGE world.tick_usage
 /// to be used where the result isn't checked

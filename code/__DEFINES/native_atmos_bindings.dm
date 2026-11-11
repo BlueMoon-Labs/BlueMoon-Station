@@ -55,6 +55,8 @@
 	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
 	/// Температура, ниже которой смесь из одних O2 и N2 не соберёт ни одного кандидата: безгазовые реакции с топливом ждут горючего газа, а O2/N2 им не являются.
 	var/temp_gated_air_ceiling = ATMOS_NO_TEMPERATURE_GATE
+	/// Поколение индекса реакций: меняется при каждой перестройке, по нему react() сбрасывает мемо пустого вызова.
+	var/reaction_index_rev = 1
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -97,14 +99,20 @@
 	if(total_heat_capacity > 0)
 		target_temperature = max(total_thermal_energy / total_heat_capacity, TCMB)
 	var/inv_total_volume = 1 / total_volume
+	// Компоненты сети идут подряд и почти все одного объёма: доля считается раз на серию, смеси получают копию готового списка.
+	var/last_volume = -1
+	var/list/scaled
 	for(var/datum/gas_mixture/mix as anything in participating)
-		var/volume_ratio = max(mix.volume, 0) * inv_total_volume
-		var/list/mix_gases = mix.gases
-		mix_gases.Cut()
-		for(var/id, total_moles in total_gases)
-			var/moles = total_moles * volume_ratio
-			if(moles > 0)
-				mix_gases[id] = moles
+		var/mix_volume = max(mix.volume, 0)
+		if(mix_volume != last_volume)
+			last_volume = mix_volume
+			var/volume_ratio = mix_volume * inv_total_volume
+			scaled = list()
+			for(var/id, total_moles in total_gases)
+				var/moles = total_moles * volume_ratio
+				if(moles > 0)
+					scaled[id] = moles
+		mix.gases = scaled.Copy()
 		mix.temperature = target_temperature
 		mix.mutation_rev++
 	// Do not keep strong references to pipenet mixtures between calls.
@@ -431,7 +439,8 @@
 		T.process_cell(fire_count)
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
-		if(!T.excited_group)
+		// Снятый с актива турф усыплять уже некуда.
+		if(!T.excited_group && T.excited)
 			maybe_sleep_low_pressure_turf(T)
 		// Only pause while there is still work left. Pausing on an emptied
 		// runlist made the next fire see `!length(currentrun)` and re-Copy the
@@ -754,6 +763,7 @@
 		if(air_gas_fire_temp)
 			air_fuel_temp = min(air_fuel_temp, air_gas_fire_temp)
 	temp_gated_air_ceiling = min(fuelless_gate_floor, max(fuel_gate_floor, air_fuel_temp))
+	reaction_index_rev++
 
 /proc/auxtools_atmos_init(gas_data)
 	return TRUE
@@ -1422,6 +1432,10 @@
 	// кандидатов). Глобальное чтение SSair - не бесплатное, а прок зовут на каждый
 	// активный турф, каждый пайпнет и каждый переносной баллон каждый фаер.
 	var/datum/controller/subsystem/air/air_controller = SSair
+	if(react_idle_rev == mutation_rev && react_idle_index == air_controller.reaction_index_rev)
+		if(length(reaction_results))
+			reaction_results.Cut()
+		return
 	var/list/reaction_index = air_controller.reactions_by_key_gas
 	var/gated_min_temp = air_controller.temp_gated_min_temp
 	// The overwhelming turf case is O2/N2 air. The reaction index is
@@ -1431,6 +1445,8 @@
 		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
 			if(length(reaction_results))
 				reaction_results.Cut()
+			react_idle_rev = mutation_rev
+			react_idle_index = air_controller.reaction_index_rev
 			return
 	// Gather candidates through the key-gas index instead of scanning every
 	// registered reaction: a reaction can only fire if its key gas is present.
@@ -1561,6 +1577,8 @@
 	if(!length(candidates))
 		if(length(reaction_results))
 			reaction_results.Cut()
+		react_idle_rev = mutation_rev
+		react_idle_index = air_controller.reaction_index_rev
 		return
 
 	// Через мемоизированный прок, а не своим циклом: на этом же фаере сумму уже

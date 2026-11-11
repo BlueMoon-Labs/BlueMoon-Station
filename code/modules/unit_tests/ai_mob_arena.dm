@@ -481,7 +481,7 @@
 	var/hard_delete_length = length(SSgarbage.queue_refs[GC_QUEUE_HARDDELETE])
 	if(hard_delete_head <= hard_delete_length)
 		for(var/queue_index in hard_delete_head to hard_delete_length)
-			var/datum/pending = SSgarbage.GetQueuedDatum(GC_QUEUE_HARDDELETE, queue_index)
+			var/datum/pending = SSgarbage.GetQueuedDatum(GC_QUEUE_HARDDELETE, queue_index, held_only = TRUE)
 			if(!pending)
 				continue
 			var/type_string = "[pending.type]"

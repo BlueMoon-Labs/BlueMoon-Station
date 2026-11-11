@@ -1143,6 +1143,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	winset(src, "statwindow", "is-minimized=false")
 
 /client/Del()
+	var/screen_count = length(screen)
+	var/image_count = length(images)
+	var/mob_type = mob ? "[mob.type]" : "нет"
 	if(!gc_destroyed)
 		// Клиента удаляет сам BYOND, минуя qdel() - а COMSIG_PARENT_QDELETING рассылает
 		// именно qdel(). Без этой рассылки при обычном дисконнекте не срабатывала ни одна
@@ -1155,10 +1158,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/leftover_refs = refcount(src)
 	var/deletion_started = TICK_USAGE
 	. = ..()
+	// Встроенный ..() зовёт mob.Logout(), и тот отпускает ещё часть ссылок (окна tgui, экраны).
+	// Поиск BYOND платит только за то, что дожило до этой строки.
+	var/refs_after_logout = refcount(src)
 	if(!SStick_spikes)
 		return
 	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
-	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс", deletion_cost_ms)
+	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс, моб [mob_type], экран [screen_count], картинок [image_count], refcount после Logout [refs_after_logout]", deletion_cost_ms)
 
 /client/Destroy()
 	QDEL_NULL(fractional_movement)
@@ -1964,6 +1970,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		for(var/AM in mob.contents)
 			var/atom/movable/thing = AM
 			verbstoprocess += thing.verbs
+	check_verb_proc_ids(verbstoprocess)
 	panel_tabs.Cut() // panel_tabs get reset in init_verbs on JS side anyway
 	for(var/thing in verbstoprocess)
 		var/procpath/verb_to_init = thing

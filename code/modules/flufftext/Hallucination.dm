@@ -652,17 +652,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				A = image(custom_icon_file, H, custom_icon)
 				A.name = custom_name
 		A.override = 1
-		if(target.client)
-			owner_client = target.client
-			delusions |= A
-			owner_client.images |= A
+		delusions += A
+	// Картинки свежие: `|=` по одной сверял каждую со всеми картинками клиента, и так на каждого человека станции.
+	if(target.client)
+		owner_client = target.client
+		owner_client.images += delusions
 	if(duration)
 		QDEL_IN(src, duration)
 
 /datum/hallucination/delusion/Destroy()
 	if(owner_client)
-		for(var/image/I as anything in delusions)
-			owner_client.images.Remove(I)
+		owner_client.images -= delusions
 	delusions = null
 	return ..()
 

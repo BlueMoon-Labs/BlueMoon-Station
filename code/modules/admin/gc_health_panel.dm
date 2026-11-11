@@ -395,14 +395,14 @@
 		for (var/j in head to length(refs))
 			if (isnull(refs[j]))
 				continue
-			var/datum/D = SSgarbage.GetQueuedDatum(lvl, j)
+			var/datum/D = SSgarbage.GetQueuedDatum(lvl, j, held_only = TRUE)
 			if (D)
 				if (D.type != type_path)
 					continue
 				live_found++
 				var/total_age = round((world.time - origins[j]) / 10, 0.1)
 				var/stage_age = round((world.time - times[j]) / 10, 0.1)
-				output += "<li>[level_names[lvl]] — ref=[refs[j]] возраст=[total_age]с (этап [stage_age]с)"
+				output += "<li>[level_names[lvl]] — ref=[REF(D)] возраст=[total_age]с (этап [stage_age]с)"
 				output += " [ADMIN_VV(D)]"
 				output += "</li>"
 				if (live_found >= 30)

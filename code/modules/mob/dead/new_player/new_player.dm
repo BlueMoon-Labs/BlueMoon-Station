@@ -1,3 +1,5 @@
+#define LATEJOIN_RENDER_DEFER_TRAIT "latejoin_render_defer"
+
 /mob/dead/new_player
 	var/ready = 0
 	var/ready_reward_pending = FALSE
@@ -437,11 +439,15 @@
 
 	SSjob.AssignRole(src, rank, 1)
 
-	var/mob/living/character = create_character(TRUE)	//creates the human and transfers vars and mind
+	var/mob/living/character = create_character(TRUE, defer_render = TRUE)	//creates the human and transfers vars and mind
+	var/mob/living/carbon/human/spawned_body = character
 	var/datum/job/job = SSjob.GetJob(rank)
 
 	var/equip = SSjob.EquipRank(character, rank, TRUE)
 	job.after_latejoin_spawn(character)
+	// Одно полное построение внешности вместо пересборки на каждый надетый предмет.
+	if(!QDELETED(spawned_body))
+		REMOVE_TRAIT(spawned_body, TRAIT_HUMAN_NO_RENDER, LATEJOIN_RENDER_DEFER_TRAIT)
 
 	if(isliving(equip))	//Borgs get borged in the equip, so we need to make sure we handle the new mob.
 		character = equip
@@ -524,11 +530,13 @@
 
 	open_job_menu()
 
-/mob/dead/new_player/proc/create_character(transfer_after)
+/mob/dead/new_player/proc/create_character(transfer_after, defer_render = FALSE)
 	spawning = 1
 	close_spawn_windows()
 
 	var/mob/living/carbon/human/H = new(loc)
+	if(defer_render)
+		ADD_TRAIT(H, TRAIT_HUMAN_NO_RENDER, LATEJOIN_RENDER_DEFER_TRAIT)
 
 	var/frn = CONFIG_GET(flag/force_random_names)
 	if(!frn)
@@ -660,3 +668,4 @@
 		return FALSE
 	return TRUE
 
+#undef LATEJOIN_RENDER_DEFER_TRAIT
