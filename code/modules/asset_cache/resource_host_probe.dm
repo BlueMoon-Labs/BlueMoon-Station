@@ -102,11 +102,18 @@
 		return
 	for(var/problem in problems)
 		log_world("РЕСУРСЫ: [problem]")
-	var/message = "Адреса ресурсов для клиентов не в порядке: [jointext(problems, "; ")]. Подробности в asset.log."
+	var/message = resource_probe_admin_message(problems)
 	if(SSticker?.HasRoundStarted())
 		message_admins(message)
 		return
 	new /datum/resource_probe_report(message)
+
+/// В вердикте заголовки и текст ошибки от удалённого хоста как есть: в чат админам они идут экранированными.
+/proc/resource_probe_admin_message(list/problems)
+	var/list/encoded = list()
+	for(var/problem in problems)
+		encoded += html_encode(problem)
+	return "Адреса ресурсов для клиентов не в порядке: [jointext(encoded, "; ")]. Подробности в asset.log."
 
 /// Держит сообщение о плохих адресах ресурсов до старта раунда.
 /datum/resource_probe_report

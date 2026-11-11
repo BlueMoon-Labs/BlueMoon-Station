@@ -34,3 +34,19 @@
 	report.on_round_starting(SSticker)
 	TEST_ASSERT(QDELETED(report), "сообщение осталось жить после старта раунда")
 	TEST_ASSERT(!report.signal_procs?[SSticker], "сообщение не отписалось от тикера")
+
+/// Заголовки чужого хоста доходят до админов текстом, а не разметкой.
+/datum/unit_test/resource_host_probe_admin_message_encoded
+
+/datum/unit_test/resource_host_probe_admin_message_encoded/Run()
+	var/verdict = resource_probe_verdict(list("code" = 404, "type" = "text/html<b>x</b>", "modified" = "<script>y</script>"), TRUE, 0)
+	TEST_ASSERT(findtext(verdict, "<b>"), "в лог вердикт идёт не сырым: [verdict]")
+	GLOB.unit_test_admin_messages = list()
+	var/datum/resource_probe_report/report = new(resource_probe_admin_message(list("архив http://unit.test - [verdict]")))
+	report.on_round_starting(SSticker)
+	var/list/sent = GLOB.unit_test_admin_messages
+	GLOB.unit_test_admin_messages = null
+	TEST_ASSERT(length(sent) == 1, "админам ушло [length(sent)] сообщений вместо одного")
+	var/message = sent[1]
+	TEST_ASSERT(!findtext(message, "<b>") && !findtext(message, "<script>"), "разметка хоста дошла до админов: [message]")
+	TEST_ASSERT(findtext(message, "&lt;b&gt;x&lt;/b&gt;"), "заголовок хоста пропал из сообщения: [message]")
