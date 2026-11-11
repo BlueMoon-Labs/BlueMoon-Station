@@ -1542,8 +1542,8 @@
 	dir = 5
 	},
 /obj/machinery/camera{
-	c_tag = "Mining Post North";
-	network = list("mine");
+	c_tag = "Mining Post - North";
+	network = list("mine", "ss13");
 	dir = 9
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -2150,7 +2150,7 @@
 	dir = 8
 	},
 /obj/machinery/camera{
-	c_tag = "Crew Area Hallway Lower 1";
+	c_tag = "Public Mining Post - Lower Hallway South";
 	dir = 9
 	},
 /turf/open/floor/plasteel/textured,
@@ -2196,6 +2196,11 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Labor Camp Cell 2";
+	dir = 1;
+	network = list("labor")
 	},
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp)
@@ -2605,9 +2610,9 @@
 	dir = 6
 	},
 /obj/machinery/camera{
-	c_tag = "Mining area External";
+	c_tag = "Mining Post - External";
 	dir = 1;
-	network = list("labor")
+	network = list("mine", "ss13")
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
@@ -2633,6 +2638,18 @@
 "bDt" = (
 /turf/closed/wall,
 /area/mine/common/medical)
+"bDu" = (
+/obj/machinery/shower/directional/south{
+	pixel_y = 20
+	},
+/obj/structure/curtain,
+/obj/machinery/camera{
+	c_tag = "Labor Camp Shower";
+	dir = 9;
+	network = list("labor")
+	},
+/turf/open/floor/plasteel/showroomfloor/shower,
+/area/mine/laborcamp)
 "bDX" = (
 /turf/closed/wall,
 /area/mine/laborcamp/entry)
@@ -5108,9 +5125,6 @@
 	},
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
-"dcR" = (
-/turf/closed/wall,
-/area/lavaland/surface/outdoors)
 "dcZ" = (
 /obj/machinery/vending/kink{
 	extended_inventory = 1;
@@ -5322,7 +5336,7 @@
 	dir = 8
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Storage";
+	c_tag = "Labor Camp Mining Storage";
 	dir = 5;
 	network = list("labor")
 	},
@@ -5587,6 +5601,11 @@
 	},
 /turf/open/floor/clockwork/reebe,
 /area/lavaland/necropolis)
+"dwU" = (
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/mine/laborcamp)
 "dxd" = (
 /obj/structure/cable{
 	icon_state = "1-4"
@@ -6253,7 +6272,7 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/ore_box,
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/laborcamp)
 "dQh" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 4
@@ -6634,7 +6653,7 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
 /obj/machinery/power/apc/auto_name/north,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area 3";
+	c_tag = "Labor Camp Common Area East";
 	dir = 6;
 	network = list("labor")
 	},
@@ -8021,7 +8040,7 @@
 	pixel_x = 26
 	},
 /obj/machinery/camera{
-	c_tag = "Crew Area Hallway West";
+	c_tag = "Public Mining Post - Upper Hallway West";
 	dir = 9
 	},
 /turf/open/floor/plasteel/textured,
@@ -8636,7 +8655,7 @@
 	network = list("labor")
 	},
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/laborcamp)
 "fqi" = (
 /obj/structure/stone_tile/surrounding/cracked,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -10117,8 +10136,8 @@
 	dir = 5
 	},
 /obj/machinery/camera{
-	c_tag = "Processing Area";
-	network = list("mine")
+	c_tag = "Mining Post - Processing Area";
+	network = list("mine", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/production)
@@ -10521,6 +10540,11 @@
 /obj/effect/turf_decal/trimline/brown/filled/line,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Labor Camp Cell 3";
+	dir = 1;
+	network = list("labor")
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
@@ -11190,8 +11214,8 @@
 	dir = 8
 	},
 /obj/machinery/camera{
-	c_tag = "Labor Camp Sec Outpost";
-	network = list("labor");
+	c_tag = "Labor Camp Security Outpost";
+	network = list("labor", "ss13");
 	dir = 9
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -16476,7 +16500,7 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/power/apc/auto_name/east,
 /obj/machinery/camera{
-	c_tag = "Crew Area Hallway Lower 1";
+	c_tag = "Public Mining Post - Lower Hallway North";
 	dir = 9
 	},
 /turf/open/floor/plasteel/textured,
@@ -16657,6 +16681,16 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"jXf" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/machinery/camera{
+	c_tag = "Public Mining Post - Atrium";
+	dir = 6
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/common/atrium)
 "jXo" = (
 /obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/hidden/layer4{
 	dir = 4
@@ -17716,6 +17750,19 @@
 	},
 /turf/open/openspace,
 /area/lavaland/surface/outdoors)
+"kEx" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/machinery/camera{
+	c_tag = "Public Mining Post - Upper Hallway Center";
+	dir = 6
+	},
+/turf/open/floor/plasteel/textured,
+/area/mine/common/upper)
 "kEF" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
@@ -17810,7 +17857,7 @@
 	},
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/camera{
-	c_tag = "Crew Area Pool";
+	c_tag = "Public Mining Post - Botany";
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
@@ -18653,8 +18700,8 @@
 	},
 /obj/machinery/airalarm/directional/north,
 /obj/machinery/camera{
-	c_tag = "Mining Post Chill Room";
-	network = list("mine");
+	c_tag = "Mining Post - Medical";
+	network = list("mine", "ss13");
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
@@ -21059,7 +21106,7 @@
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/camera{
-	c_tag = "Crew Area Botany";
+	c_tag = "Public Mining Post - Pool";
 	dir = 6
 	},
 /turf/open/floor/plasteel/white/smooth/small,
@@ -21338,10 +21385,6 @@
 /obj/effect/turf_decal/tile/dark/opposingcorners,
 /obj/machinery/vending/cigarette,
 /obj/effect/turf_decal/bot/white,
-/obj/machinery/camera{
-	c_tag = "Crew Area Botany";
-	dir = 9
-	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/atrium)
 "mHQ" = (
@@ -21820,6 +21863,11 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Labor Camp Cell 1";
+	dir = 1;
+	network = list("labor")
 	},
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp)
@@ -22453,7 +22501,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/machinery/camera{
 	c_tag = "Labor Camp Equipment";
-	network = list("labor");
+	network = list("labor", "ss13");
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -23747,8 +23795,8 @@
 /mob/living/simple_animal/pet/dog/corgi/pig,
 /obj/machinery/airalarm/directional/north,
 /obj/machinery/camera{
-	c_tag = "Mining Post Medical";
-	network = list("mine");
+	c_tag = "Mining Post - Chill Room";
+	network = list("mine", "ss13");
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
@@ -25720,6 +25768,10 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
 	},
+/obj/machinery/camera{
+	c_tag = "Public Mining Post - Upper Hallway North";
+	dir = 6
+	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/upper)
 "oTZ" = (
@@ -25784,6 +25836,10 @@
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"oYe" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/turf/open/floor/plating,
+/area/mine/laborcamp)
 "oYg" = (
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/laborcamp/mining)
@@ -26202,7 +26258,7 @@
 /obj/effect/decal/cleanable/molten_object,
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area 2";
+	c_tag = "Labor Camp Common Area North";
 	dir = 8;
 	network = list("labor")
 	},
@@ -27670,8 +27726,8 @@
 /obj/structure/ore_box,
 /obj/machinery/airalarm/directional/east,
 /obj/machinery/camera{
-	c_tag = "Storage and Locker room";
-	network = list("mine");
+	c_tag = "Mining Post - Storage";
+	network = list("mine", "ss13");
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -28252,6 +28308,14 @@
 "qyq" = (
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"qyw" = (
+/obj/effect/turf_decal/trimline/brown/filled/line,
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/machinery/light/small,
+/turf/open/floor/plasteel/dark/side,
+/area/mine/laborcamp)
 "qyF" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/table/reinforced{
@@ -30525,8 +30589,8 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Mining Post Lower Area";
-	network = list("mine");
+	c_tag = "Mining Post - Lower Area";
+	network = list("mine", "ss13");
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -30616,7 +30680,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/lavaland/surface/outdoors)
+/area/mine/laborcamp)
 "rSa" = (
 /obj/effect/turf_decal/trimline/dark/line,
 /obj/effect/turf_decal/trimline/purple/warning{
@@ -31026,9 +31090,9 @@
 	dir = 6
 	},
 /obj/machinery/camera{
-	c_tag = "Communications Relay Floor 2";
+	c_tag = "Mining Post - Communications Relay Floor 2";
 	dir = 8;
-	network = list("mine")
+	network = list("mine", "ss13")
 	},
 /turf/open/floor/plasteel/dark/telecomms,
 /area/mine/engineering/telecomms_floor2)
@@ -31429,10 +31493,6 @@
 /obj/machinery/firealarm{
 	pixel_y = 24
 	},
-/obj/machinery/camera{
-	c_tag = "Crew Area Hallway North";
-	dir = 6
-	},
 /turf/open/floor/plasteel/textured/edge,
 /area/mine/common/upper)
 "sua" = (
@@ -31785,8 +31845,8 @@
 	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/camera{
-	c_tag = "Mining Post Mech Area";
-	network = list("mine");
+	c_tag = "Mining Post - Mech Area";
+	network = list("mine", "ss13");
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -32362,22 +32422,6 @@
 	dir = 8
 	},
 /turf/open/floor/plasteel/textured/large,
-/area/mine/common/upper)
-"sVF" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/machinery/camera{
-	c_tag = "Crew Area Hallway East";
-	dir = 9;
-	network = list("mine")
-	},
-/turf/open/floor/plasteel/textured/edge{
-	dir = 8
-	},
 /area/mine/common/upper)
 "sVI" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -33511,7 +33555,7 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Engineering Post";
+	c_tag = "Mining Post - Engineering Area";
 	network = list("mine");
 	dir = 5
 	},
@@ -33576,7 +33620,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
 "tHO" = (
 /obj/machinery/camera{
-	c_tag = "Labor Camp Hydroponics";
+	c_tag = "Labor Camp Medical";
 	dir = 6;
 	network = list("labor")
 	},
@@ -33904,8 +33948,10 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/machinery/airalarm/directional/west,
-/obj/machinery/light{
-	dir = 8
+/obj/machinery/camera{
+	c_tag = "Labor Camp Cell Area";
+	dir = 5;
+	network = list("labor")
 	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 8
@@ -34770,7 +34816,7 @@
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
-/area/lavaland/surface/outdoors)
+/area/mine/laborcamp)
 "umD" = (
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -34936,8 +34982,8 @@
 	pixel_y = -26
 	},
 /obj/machinery/camera{
-	c_tag = "Mining Post South";
-	network = list("mine");
+	c_tag = "Mining Post - South";
+	network = list("mine", "ss13");
 	dir = 10
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
@@ -35014,7 +35060,7 @@
 	},
 /obj/structure/tank_dispenser/oxygen,
 /obj/machinery/camera{
-	c_tag = "Crew Area Medical";
+	c_tag = "Public Mining Post - EVA";
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -35323,7 +35369,7 @@
 /turf/open/floor/plating{
 	icon_state = "platingdmg3"
 	},
-/area/lavaland/surface/outdoors)
+/area/mine/laborcamp)
 "uDf" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/bot/yellow,
@@ -35491,7 +35537,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Labor Camp Monitoring";
-	network = list("labor")
+	network = list("labor", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/laborcamp/security)
@@ -35818,6 +35864,20 @@
 /obj/structure/flora/tree/jungle,
 /turf/open/floor/grass/grass2,
 /area/lavaland/surface/outdoors)
+"uUv" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 8
+	},
+/area/mine/laborcamp)
 "uUH" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
@@ -36303,7 +36363,7 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Crew Area Hallway Lower 1";
+	c_tag = "Public Mining Post - Upper Hallway East";
 	dir = 9
 	},
 /turf/open/floor/plasteel/textured/edge{
@@ -37125,9 +37185,9 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/turf_decal/siding/dark,
 /obj/machinery/camera{
-	c_tag = "Communications Relay";
+	c_tag = "Mining Post - Communications Relay";
 	dir = 8;
-	network = list("mine")
+	network = list("mine", "ss13")
 	},
 /turf/open/floor/plating{
 	icon_state = "platingdmg3"
@@ -37774,7 +37834,7 @@
 	},
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/camera{
-	c_tag = "Crew Area EVA";
+	c_tag = "Public Mining Post - Medical";
 	dir = 5
 	},
 /turf/open/floor/plasteel/white/side{
@@ -38667,7 +38727,7 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/machinery/camera{
-	c_tag = "Labor Camp Common Area 1";
+	c_tag = "Labor Camp Common Area Center";
 	dir = 4;
 	network = list("labor")
 	},
@@ -40672,9 +40732,9 @@
 	},
 /obj/machinery/equipment_vendor,
 /obj/machinery/camera{
-	c_tag = "EVA";
+	c_tag = "Mining Post - EVA";
 	dir = 4;
-	network = list("mine")
+	network = list("mine", "ss13")
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/eva)
@@ -40802,6 +40862,11 @@
 /obj/effect/turf_decal/big_sign/syndicate/bottom/left,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"xQy" = (
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/mine/laborcamp)
 "xQP" = (
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/tile/brown/full,
@@ -41382,7 +41447,7 @@
 	dir = 10
 	},
 /obj/machinery/camera{
-	c_tag = "Crew Area Library";
+	c_tag = "Public Mining Post - Library";
 	dir = 10
 	},
 /turf/open/floor/carpet,
@@ -76105,7 +76170,7 @@ gIl
 gIl
 llq
 uNO
-soM
+jXf
 soM
 rwr
 bOK
@@ -129569,12 +129634,12 @@ bHK
 bHK
 gIl
 gIl
-dcR
-jdP
-jdP
-enk
-uzu
-jdP
+kPS
+oYe
+oYe
+dwU
+xQy
+oYe
 kPS
 qKG
 qKG
@@ -129830,8 +129895,8 @@ uCS
 umu
 dQb
 fpQ
-jdP
-jdP
+oYe
+oYe
 nfZ
 oCP
 rRb
@@ -130088,7 +130153,7 @@ ucW
 ucW
 ucW
 rRY
-enk
+dwU
 kPS
 rlB
 miB
@@ -131886,7 +131951,7 @@ geq
 bwR
 ayL
 kPS
-dsi
+bDu
 qEX
 nbG
 kPS
@@ -132652,7 +132717,7 @@ aqg
 qhq
 bDX
 gJL
-hBv
+uUv
 hBv
 hBv
 hBv
@@ -132916,7 +132981,7 @@ tfH
 tce
 bbB
 qSY
-ekQ
+qyw
 kPS
 kPS
 kPS
@@ -141902,7 +141967,7 @@ qDm
 sKy
 muq
 qDm
-xap
+kEx
 rLC
 uas
 nYd
@@ -143444,7 +143509,7 @@ xTq
 cCa
 gKE
 gKE
-sVF
+eSY
 tQN
 eSY
 eSY
