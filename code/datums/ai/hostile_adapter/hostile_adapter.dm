@@ -18,6 +18,8 @@
 	var/tmp/plan_probe_signature
 	///Прошлый план уже был пропущен - этот считается честно
 	var/tmp/plan_probe_skipped = FALSE
+	///FALSE - профиль планирует каждый раз (боссы: темп способностей и есть бой)
+	var/plan_skip_allowed = TRUE
 
 /datum/ai_controller/hostile_adapter/TryPossessPawn(atom/new_pawn)
 	if(!istype(new_pawn, /mob/living/simple_animal/hostile))
@@ -39,15 +41,20 @@
 		return
 	plan_probe_skipped = FALSE
 	. = ..()
-	remember_plan()
+	if(plan_skip_possible())
+		remember_plan()
+
+/datum/ai_controller/hostile_adapter/proc/plan_skip_possible()
+	return AI_HORDE_SAVINGS && plan_skip_allowed && pursuit_leashed
 
 ///Моб в бою, застрявший в толпе, полсекунды спустя спланировал бы ровно то же: он не сдвинулся,
-///поведения те же, цель, здоровье, обстрел и зажатость не менялись. Такой план пропускается,
-///но не два подряд - решения по таймерам боя и сдвигу цели запаздывают не больше чем на один
-///интервал планировщика. Удары и подход ведёт тикер поведений, их это не задерживает. Вне ENGAGE
-///не пропускается: пауза обнаружения, розыск и отступление живут таймерами состояний.
+///поведения те же, цель, здоровье, обстрел, зажатость и готовность его способностей не менялись.
+///Такой план пропускается, но не два подряд - решения по таймерам блэкборда и сдвигу цели
+///запаздывают не больше чем на один интервал планировщика. Удары и подход ведёт тикер поведений,
+///их это не задерживает. Вне ENGAGE не пропускается: пауза обнаружения, розыск и отступление
+///живут таймерами состояний. Боссы не пропускают никогда.
 /datum/ai_controller/hostile_adapter/proc/plan_settled()
-	if(!AI_HORDE_SAVINGS || plan_probe_skipped || isnull(plan_probe_turf) || pawn.loc != plan_probe_turf || !length(current_behaviors))
+	if(!plan_skip_possible() || plan_probe_skipped || isnull(plan_probe_turf) || pawn.loc != plan_probe_turf || !length(current_behaviors))
 		return FALSE
 	if(blackboard[BB_AI_STATE] != AI_STATE_ENGAGE || plan_signature() != plan_probe_signature)
 		return FALSE
@@ -66,7 +73,10 @@
 /datum/ai_controller/hostile_adapter/proc/plan_signature()
 	var/mob/living/living_pawn = pawn
 	var/atom/target = blackboard[BB_AI_CURRENT_TARGET]
-	return "[target ? REF(target) : null]|[blackboard[BB_AI_STATE]]|[isliving(living_pawn) ? living_pawn.health : null]|[blackboard[BB_AI_UNDER_FIRE_UNTIL]]|[(blackboard[BB_AI_FRUSTRATION] || 0) >= AI_PINNED_FRUSTRATION]|[blackboard[BB_AI_SIEGE_UNTIL]]"
+	. = "[target ? REF(target) : null]|[blackboard[BB_AI_STATE]]|[isliving(living_pawn) ? living_pawn.health : null]|[blackboard[BB_AI_UNDER_FIRE_UNTIL]]|[(blackboard[BB_AI_FRUSTRATION] || 0) >= AI_PINNED_FRUSTRATION]|[blackboard[BB_AI_SIEGE_UNTIL]]"
+	for(var/datum/ai_planning_subtree/subtree as anything in planning_subtrees)
+		if(subtree.gated_by_pawn_timer)
+			. += "|[subtree.pawn_timer_ready(src)]"
 
 ///Живой idle: рутина выбирается по типу моба один раз при захвате пауна.
 ///Профили, задавшие своё фоновое поведение явно (майнбот, floor cluwne), не
@@ -262,6 +272,11 @@
 
 ///Чардж, если моб умеет и цель в band
 /datum/ai_planning_subtree/hostile_charge
+	gated_by_pawn_timer = TRUE
+
+/datum/ai_planning_subtree/hostile_charge/pawn_timer_ready(datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
+	return istype(hostile_pawn) && COOLDOWN_FINISHED(hostile_pawn, charge_cooldown)
 
 /datum/ai_planning_subtree/hostile_charge/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()

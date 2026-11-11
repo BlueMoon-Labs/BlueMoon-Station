@@ -209,6 +209,55 @@
 	controller.SelectBehaviors(0.5)
 	TEST_ASSERT(!controller.plan_probe_skipped, "A pawn that took damage must plan")
 
+/mob/living/simple_animal/hostile/unit_test_horde/plan_charger
+	charger = TRUE
+
+/mob/living/simple_animal/hostile/unit_test_horde/plan_boss
+	ai_profile_type = /datum/ai_controller/hostile_adapter/boss
+
+///Кулдаун способности моба кончился между планами: способность ставится в тот же план, а не через пропущенный
+/datum/unit_test/hostile_ai_horde_plan_skip_ability_timer/Run()
+	var/mob/living/simple_animal/hostile/unit_test_horde/plan_charger/charger = allocate(/mob/living/simple_animal/hostile/unit_test_horde/plan_charger, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + charger.charge_distance, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/datum/ai_controller/hostile_adapter/controller = charger.ai_controller
+	TEST_ASSERT(istype(controller, /datum/ai_controller/hostile_adapter/brute_charger), "Sanity: a charger must get the charger profile")
+	var/datum/ai_behavior/charge = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_charge)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	controller.set_blackboard_key(BB_AI_STATE, AI_STATE_ENGAGE)
+	COOLDOWN_START(charger, charge_cooldown, 1 MINUTES)
+
+	controller.SelectBehaviors(0.5)
+	TEST_ASSERT(!(charge in controller.current_behaviors), "Sanity: no charge while it cools down")
+	controller.SelectBehaviors(0.5)
+	TEST_ASSERT(controller.plan_probe_skipped, "Sanity: a settled charger skips a plan")
+	controller.SelectBehaviors(0.5)
+	COOLDOWN_RESET(charger, charge_cooldown)
+	controller.SelectBehaviors(0.5)
+	TEST_ASSERT(!controller.plan_probe_skipped, "A charge that came off cooldown must not wait out a skipped plan")
+	TEST_ASSERT(charge in controller.current_behaviors, "A charge that came off cooldown must be planned at once")
+
+///Готовность каста визарда входит в сводку плана, как и у чарджа
+/datum/unit_test/hostile_ai_horde_plan_signature_caster/Run()
+	var/mob/living/simple_animal/hostile/wizard/caster = allocate(/mob/living/simple_animal/hostile/wizard, run_loc_floor_bottom_left)
+	var/datum/ai_controller/hostile_adapter/controller = caster.ai_controller
+	caster.next_cast = world.time + 1 MINUTES
+	var/cooling_signature = controller.plan_signature()
+	caster.next_cast = world.time
+	TEST_ASSERT(controller.plan_signature() != cooling_signature, "A spell coming off cooldown must change the plan signature")
+
+///Босс никогда не пропускает план: темп его способностей и есть содержание боя
+/datum/unit_test/hostile_ai_horde_plan_skip_boss/Run()
+	var/mob/living/simple_animal/hostile/unit_test_horde/plan_boss/boss = allocate(/mob/living/simple_animal/hostile/unit_test_horde/plan_boss, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/datum/ai_controller/hostile_adapter/controller = boss.ai_controller
+	TEST_ASSERT(istype(controller, /datum/ai_controller/hostile_adapter/boss), "Sanity: the boss profile must be used")
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	controller.set_blackboard_key(BB_AI_STATE, AI_STATE_ENGAGE)
+	for(var/i in 1 to 3)
+		controller.SelectBehaviors(0.5)
+		TEST_ASSERT(length(controller.current_behaviors), "Sanity: an engaged boss must plan something")
+		TEST_ASSERT(!controller.plan_probe_skipped, "A boss must plan every time, plan [i] was skipped")
+
 #ifdef AI_HORDE_BENCH
 
 #define HORDE_ARENA_SIZE 40
