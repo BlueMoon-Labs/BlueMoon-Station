@@ -761,7 +761,7 @@ export const CustomInteractionsTab = (props) => {
                         }}
                       />
                     </Box>
-                  </Stack.Item>
+                    </Stack.Item>
                 ))}
               </Stack>
             </Stack.Item>

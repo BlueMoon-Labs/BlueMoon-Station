@@ -102,13 +102,10 @@ GLOBAL_LIST(unit_test_deadchat_messages)
 	GLOB.data_core.security_by_name -= wanted_name
 	GLOB.data_core.general_by_name -= wanted_name
 
-	general.fields["id"] = "antag_training_test_record"
 	var/datum/data/record/medical = allocate(/datum/data/record)
-	medical.fields["id"] = general.fields["id"]
 	medical.fields["name"] = wanted_name
-	medical.fields["b_type"] = "Учебная группа крови"
-	GLOB.data_core.general += general
-	GLOB.data_core.medical += medical
+	medical.fields["blood_type"] = "Учебная группа крови"
+	GLOB.data_core.medical_by_name[wanted_name] = medical
 	for(var/mob/living/carbon/human/viewer as anything in list(participant, officer))
 		qdel(viewer.glasses)
 		var/obj/item/clothing/glasses/hud/health/medical_hud = new(viewer)
@@ -123,11 +120,10 @@ GLOBAL_LIST(unit_test_deadchat_messages)
 		for(var/branch in list("medrecord", "medrecordComment"))
 			perp.Topic(null, list("[branch]" = "1"))
 	for(var/list/entry as anything in GLOB.unit_test_chat_capture)
-		if(findtext(entry[2], medical.fields["b_type"]) || findtext(entry[2], "No comment found"))
+		if(findtext(entry[2], medical.fields["blood_type"]) || findtext(entry[2], "Комментарии не найдены"))
 			medical_reads[entry[1]] += 1
 	GLOB.unit_test_chat_capture = null
-	GLOB.data_core.general -= general
-	GLOB.data_core.medical -= medical
+	GLOB.data_core.medical_by_name -= wanted_name
 	TEST_ASSERT_EQUAL(medical_reads[officer], 2, "Ссылки медицинского HUD на станции читают медицинскую запись.")
 	TEST_ASSERT(!medical_reads[participant], "Ссылки медицинского HUD на полигоне не читают записи станции.")
 

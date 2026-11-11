@@ -30,6 +30,7 @@
 
 /datum/unit_test/tetris_music_tracks_unique_ogg/Run()
 	var/obj/machinery/computer/arcade/tetris/arcade = allocate(/obj/machinery/computer/arcade/tetris)
+	TEST_ASSERT_NOTNULL(arcade, "автомат тетриса не создался")
 	var/list/tracks = arcade.music_tracks
 	TEST_ASSERT_EQUAL(length(tracks), TETRIS_MUSIC_TRACKS, "Не то число треков тетриса")
 	var/list/hashes = list()

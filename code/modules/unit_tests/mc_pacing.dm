@@ -21,11 +21,10 @@ SUBSYSTEM_DEF(mc_pace_probe)
 	if(!resumed)
 		work_left = can_fire ? MC_PACE_PROBE_WORK : 0
 	var/started = TICK_USAGE_REAL
-	var/spins = 0
 	while(work_left > 0)
 		var/unit_started = TICK_USAGE_REAL
 		while(TICK_USAGE_REAL - unit_started < MC_PACE_PROBE_UNIT)
-			spins++
+			continue
 		work_left -= MC_PACE_PROBE_UNIT
 		if(MC_TICK_CHECK)
 			break
