@@ -3,11 +3,45 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { crc32, deflateSync, inflateSync } = require('node:zlib');
+const { DownloadError } = require('./renderer.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const outputDirectory = 'icons/_nanomaps';
 const assetFile = 'code/modules/asset_cache/assets/nanomaps.dm';
 const cacheFile = 'data/nanomaps-cache.json';
+const offlineFile = 'data/nanomaps-offline';
+
+function useCachedMaps(manifest = assetFile, offline = offlineFile) {
+  if (!fs.existsSync(manifest)) return false;
+  const assets = [...fs.readFileSync(manifest, 'utf8').matchAll(/'(icons\/_nanomaps\/[^']+\.png)'/g)];
+  if (assets.length === 0) return false;
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const ending = Buffer.from([0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+  const header = Buffer.alloc(24);
+  const footer = Buffer.alloc(12);
+  for (const [, filename] of assets) {
+    // Проверяем заголовок и завершающий блок: обрезанные PNG не подходят для сборки.
+    try {
+      const file = fs.openSync(filename, 'r');
+      try {
+        const size = fs.fstatSync(file).size;
+        if (size < 57 || fs.readSync(file, header, 0, header.length, 0) !== header.length
+          || !header.subarray(0, 8).equals(signature) || header.readUInt32BE(8) !== 13
+          || header.toString('ascii', 12, 16) !== 'IHDR' || !header.readUInt32BE(16) || !header.readUInt32BE(20)
+          || fs.readSync(file, footer, 0, footer.length, size - footer.length) !== footer.length
+          || !footer.equals(ending)) return false;
+      } finally {
+        fs.closeSync(file);
+      }
+    } catch {
+      return false;
+    }
+  }
+  fs.mkdirSync(path.dirname(offline), { recursive: true });
+  fs.writeFileSync(offline, '');
+  console.warn('Загрузка NanoMap недоступна: используются сохранённые PNG из манифеста. Они могут быть устаревшими; следующая сборка повторит обновление.');
+  return true;
+}
 
 // Пересжатие IDAT не меняет пиксели и уменьшает размер PNG, выдаваемых рендерером.
 function compressPng(input) {
@@ -147,7 +181,13 @@ async function main() {
   // Цель сборки перерисовывает только изменённые карты; прямой запуск обновляет все.
   const incremental = process.argv.includes('--incremental');
   const { ensureRenderer } = require('./renderer.cjs');
-  const renderer = await ensureRenderer();
+  let renderer;
+  try {
+    renderer = await ensureRenderer();
+  } catch (error) {
+    if (error instanceof DownloadError && useCachedMaps()) return;
+    throw error;
+  }
   const sources = collectSources();
 
   const shared = sharedSignature(renderer);
@@ -218,6 +258,7 @@ async function main() {
   }
   writeIfChanged(assetFile, buildManifest(maps));
   writeIfChanged(cacheFile, `${JSON.stringify(nextCache, null, 2)}\n`);
+  fs.rmSync(offlineFile, { force: true });
   console.log(`Миникарт: ${assetNames.size}, файлов карт: ${sources.size}, перерисовано карт: ${stale.length}.`);
 }
 
@@ -228,4 +269,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildManifest, writeIfChanged };
+module.exports = { buildManifest, useCachedMaps, writeIfChanged };

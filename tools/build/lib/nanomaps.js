@@ -4,6 +4,7 @@ import Juke from '../juke/index.js';
 
 const MANIFEST = 'code/modules/asset_cache/assets/nanomaps.dm';
 const STAMP = 'data/nanomaps.stamp';
+const OFFLINE = 'data/nanomaps-offline';
 
 /** LOWMEMORYMODE грузит только RuntimeStation, NanoMap для него не собираются. */
 export const isLowMemoryBuild = (defines = [], basemap = '_maps/_basemap.dm') => defines.includes('LOWMEMORYMODE')
@@ -37,6 +38,8 @@ export const NanomapsTarget = new Juke.Target({
   // Свежесть отмечает штамп: Juke касается выходов после рендера, а неизменные PNG
   // со старой меткой не заставляют DM пересобираться. Пропавшие файлы запускают рендер.
   outputs: () => {
+    // Старые PNG позволяют собрать игру без сети, но обновление нужно повторить.
+    if (fs.existsSync(OFFLINE)) return [];
     const results = fs.existsSync(MANIFEST)
       ? [...fs.readFileSync(MANIFEST, 'utf8').matchAll(/'(icons\/_nanomaps\/[^']+\.png)'/g)].map(match => match[1])
       : [];
@@ -45,5 +48,7 @@ export const NanomapsTarget = new Juke.Target({
   executes: async () => {
     await Juke.exec('node', ['tools/nanomaps/render.cjs', '--incremental']);
     fs.mkdirSync('data', { recursive: true });
+    // После выхода из автономного режима Juke ещё работает с пустым списком выходов.
+    if (!fs.existsSync(OFFLINE)) fs.writeFileSync(STAMP, '');
   },
 });
