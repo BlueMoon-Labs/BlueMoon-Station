@@ -46,7 +46,7 @@ const backend = {
   tier_max: 4,
   manifest_department: null,
   manifest_fee: 12,
-  contracts_help: 'Справка о контрактах.',
+  contracts_help_topics: [{ title: 'Как выполнить', lines: ['Справка о контрактах.'] }],
   supplies: {
     Materials: {
       name: 'Canisters & Materials',

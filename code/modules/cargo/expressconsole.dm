@@ -216,7 +216,7 @@ i'd be right happy to */
 		stack_trace("There was no pack data for [src]")
 	. = list("supplies" = meme_pack_data)
 	if(station_budget())
-		.["market_help"] = "[econ_express_help()] [econ_cargo_market_help()]"
+		.["help_topics"] = list(econ_express_help_topic()) + econ_cargo_help_topics()
 
 /obj/machinery/computer/cargo/express/ui_act(action, params, datum/tgui/ui)
 	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции

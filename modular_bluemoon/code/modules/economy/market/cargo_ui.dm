@@ -228,7 +228,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		"add_max" = ECON_CARGO_ADD_MAX,
 		"reputation_per_credit" = SSmarket.reputation_per_credit,
 		"reason_max" = ECON_REQUEST_REASON_MAX,
-		"contracts_help" = econ_contracts_help(),
+		"contracts_help_topics" = econ_contracts_help_topics(),
 		"tier_step" = PARTNER_TIER_STEP,
 		"tier_max" = PARTNER_TIER_MAX,
 		"reputation_max" = PARTNER_REPUTATION_MAX,

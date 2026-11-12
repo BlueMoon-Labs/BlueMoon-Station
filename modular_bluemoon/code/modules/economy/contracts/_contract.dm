@@ -335,16 +335,41 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	playsound(machine, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	return TRUE
 
-/proc/econ_contracts_help()
+/// Строка осмотра пульта и пада: подробности - в справке окна, а не стеной в чат.
+/proc/econ_contracts_examine_note()
+	return "Контракты, их награды и спецзаказы партнёров - в окне. Как всё устроено - кнопка \"?\" у раздела \"Контракты NT\"."
+
+/// Справка контрактов по темам: list(title, icon, lines), по одной мысли в пункте.
+/proc/econ_contracts_help_topics()
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/rotation_minutes = round(settings.contract_rotation_ticks * SSeconomy.wait / (1 MINUTES))
-	return "Контракты NT: поставка - отгрузить нужное шаттлом снабжения или через пункт подработки на станции; деятельность - набрать работу отдела до срока, награда - сверх обычной оплаты этой работы, [settings.contract_work_mult * 100]% её цены по прайсу. \
-		Взявший контракт получает [settings.contract_performer_share]% награды (с налогом), остальное - отделу. У контракта без исполнителя [settings.contract_team_share]% награды делят те, кто над ним работал, по вкладу; общую работу отдела вроде продажи энергии или нормы руды - поровну отдел на смене. \
-		Личные заказы видите только вы: награда меньше, но вам идёт [settings.contract_personal_share]%, а подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)]. \
-		Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд: каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов. \
-		Спрос: каждая сдача одного и того же заказа снижает его награду на [settings.contract_repeat_step]% (не ниже [settings.contract_repeat_floor]%), за [rotation_minutes] мин. спрос возвращается на один шаг. \
-		Репутация подрядчика растёт с закрытыми контрактами и падает за отказы и сорванные сроки: [econ_contract_ranks_text()]. \
-		От взятого контракта можно отказаться: неначатый уйдёт с доски, начатый снова станет свободным, а новый контракт отказавшийся возьмёт через [DisplayTimeText(ECON_CONTRACT_DROP_COOLDOWN)]. \
-		Срочные контракты платят [econ_times_text(settings.contract_urgent_mult)] больше, но снимаются через [settings.contract_urgent_minutes] мин. \
-		Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин., отгруженное по ним не возвращается. Купленное в автоматах и через снабжение по контрактам не засчитывается. \
-		Спецзаказы партнёров снабжения тоже сдаются на паде подработки: первая сдача берёт спецзаказ, оплата за штуки идёт отделу сдавшего (снабжению - сбор [settings.cargo_handling_fee]%), сдавшему лично - [settings.contract_team_share]% с налогом, маржа при выполнении - тому же отделу. Контрабандные спецзаказы - только шаттлом снабжения. 		Объявления экипажа: любой может заказать работу у других, награда от [settings.crew_request_min] до [settings.crew_request_max] кр. сразу уходит в депозит и достаётся исполнителю, когда заказчик примет работу; сданную работу он принимает или отклоняет за [DisplayTimeText(ECON_CREW_REQUEST_ACCEPT_TIME)], иначе она принята. Налога и доли отдела с объявлений нет."
+	. = list()
+	. += list(list("title" = "Как выполнить", "icon" = "clipboard-check", "lines" = list(
+		"Поставка: положите нужное на пад подработки на станции и отправьте с пульта или отгрузите шаттлом снабжения.",
+		"Деятельность: наберите работу отдела до срока. Награда - сверх обычной оплаты этой работы, [settings.contract_work_mult * 100]% её цены по прайсу.",
+		"Купленное в автоматах и через снабжение не засчитывается.",
+	)))
+	. += list(list("title" = "Кто сколько получает", "icon" = "coins", "lines" = list(
+		"Взявшему - [settings.contract_performer_share]% награды (с налогом), остальное - отделу.",
+		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Общую работу отдела (энергия, норма руды) - поровну все на смене.",
+		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
+		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов.",
+		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",
+	)))
+	. += list(list("title" = "Спрос и смена доски", "icon" = "sync", "lines" = list(
+		"Каждая сдача одного и того же заказа снижает его награду на [settings.contract_repeat_step]%, но не ниже [settings.contract_repeat_floor]%. За [rotation_minutes] мин. спрос возвращается на шаг.",
+		"Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин. Отгруженное по снятому контракту не возвращается.",
+	)))
+	var/list/reputation_lines = list("Репутация подрядчика растёт за закрытые контракты и падает за отказы и сорванные сроки.")
+	reputation_lines += econ_contract_rank_lines()
+	reputation_lines += "От взятого контракта можно отказаться: неначатый уйдёт с доски, начатый снова станет свободным. Новый контракт отказавшийся возьмёт через [DisplayTimeText(ECON_CONTRACT_DROP_COOLDOWN)]."
+	. += list(list("title" = "Репутация и отказ", "icon" = "star", "lines" = reputation_lines))
+	. += list(list("title" = "Спецзаказы партнёров", "icon" = "truck-loading", "lines" = list(
+		"Сдаются на паде подработки, первая сдача берёт спецзаказ. Контрабандные - только шаттлом снабжения.",
+		"Оплата за штуки - отделу сдавшего, снабжению сбор [settings.cargo_handling_fee]%, сдавшему лично [settings.contract_team_share]% с налогом. Маржа при выполнении - тому же отделу.",
+	)))
+	. += list(list("title" = "Объявления экипажа", "icon" = "bullhorn", "lines" = list(
+		"Любой может заказать работу у других: награда от [settings.crew_request_min] до [settings.crew_request_max] кр. сразу уходит в депозит.",
+		"Исполнитель получает её целиком, когда заказчик примет работу. Сданную работу заказчик принимает или отклоняет за [DisplayTimeText(ECON_CREW_REQUEST_ACCEPT_TIME)], иначе она принята.",
+		"Налога и доли отдела с объявлений нет.",
+	)))

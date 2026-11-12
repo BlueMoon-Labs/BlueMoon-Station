@@ -8,7 +8,7 @@
 
 /obj/machinery/piratepad/civilian/examine(mob/user)
 	. = ..()
-	. += span_notice("ЦК принимает отправки только с пада на станции. [econ_contracts_help()]")
+	. += span_notice("ЦК принимает отправки только с пада на станции. [econ_contracts_examine_note()]")
 
 ///Пульт пункта подработки: доска контрактов NT и отправка с пада подработки.
 /obj/machinery/computer/piratepad_control/civilian
@@ -24,7 +24,7 @@
 
 /obj/machinery/computer/piratepad_control/civilian/examine(mob/user)
 	. = ..()
-	. += span_notice(econ_contracts_help())
+	. += span_notice(econ_contracts_examine_note())
 
 /obj/machinery/computer/piratepad_control/civilian/LateInitialize()
 	. = ..()
@@ -145,7 +145,7 @@
 		ui.open()
 
 /obj/machinery/computer/piratepad_control/civilian/ui_static_data(mob/user)
-	return list("mode" = "pad", "contracts_help" = econ_contracts_help())
+	return list("mode" = "pad", "contracts_help_topics" = econ_contracts_help_topics())
 
 /obj/machinery/computer/piratepad_control/civilian/ui_data(mob/user)
 	var/list/data = econ_contracts_ui_data(user)

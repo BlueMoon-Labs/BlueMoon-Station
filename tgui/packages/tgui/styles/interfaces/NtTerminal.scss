@@ -163,6 +163,27 @@ $nt-tones: (
     margin-top: 6px;
   }
 
+  // Справка темами: короткий заголовок и пункты списком вместо сплошного абзаца
+  &__helpTopic + .NtTerm__helpTopic {
+    margin-top: 8px;
+  }
+
+  &__helpTopicTitle {
+    margin-bottom: 2px;
+    color: $nt-text;
+    font-weight: bold;
+  }
+
+  &__helpList {
+    margin: 0;
+    padding-left: 16px;
+    line-height: 1.35;
+  }
+
+  &__helpList > li + li {
+    margin-top: 3px;
+  }
+
   &__status {
     margin-top: 4px;
     color: $nt-dim;
@@ -489,12 +510,6 @@ $nt-tones: (
     transition: width 0.6s ease-out;
   }
 
-  &__tag--lead {
-    margin-left: 0;
-    margin-right: 8px;
-    font-weight: normal;
-  }
-
   &__lcd {
     margin-bottom: 14px;
     padding: 8px 12px;
@@ -708,6 +723,13 @@ $nt-tones: (
     color: $nt-dim;
     font-size: 11px;
     border: 1px solid $nt-faint;
+  }
+
+  // Бирка в начале строки: после базовой, иначе её margin-left перебивает модификатор
+  &__tag--lead {
+    margin-left: 0;
+    margin-right: 8px;
+    font-weight: normal;
   }
 }
 

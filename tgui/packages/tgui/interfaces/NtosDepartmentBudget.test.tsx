@@ -40,7 +40,7 @@ const base: BudgetData = {
   work_share: 10,
   work_cap: 1500,
   performer_share: 30,
-  contracts_help: 'Контракты NT: справка.',
+  contracts_help_topics: [{ title: 'Как выполнить', lines: ['Контракты NT: справка.'] }],
   audit_rights: 'глава СБ и капитан',
   grant_price: 3,
   grant_cap: 10000,

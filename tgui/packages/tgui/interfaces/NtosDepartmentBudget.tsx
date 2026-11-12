@@ -6,7 +6,7 @@ import { AnimatedNumber, Box, Button, Input, LabeledList, NoticeBox, RestrictedI
 import { NtosWindow, Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
-import { DEPARTMENT_TONES, NtFrame, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
+import { DEPARTMENT_TONES, NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtMenu, NtMenuItem, NtReadout, NtScreen } from './common/NtTerminal';
 
 type DepartmentInfo = {
   id: string;
@@ -92,7 +92,7 @@ export type BudgetData = {
   work_share: number;
   work_cap: number;
   performer_share: number;
-  contracts_help: string;
+  contracts_help_topics?: NtHelpTopic[];
   audit_rights: string;
   grant_price: number;
   grant_cap: number;
@@ -414,7 +414,19 @@ const StaffSection = () => {
   return (
     <NtFrame
       title="Сотрудники"
-      help={`Премия - разовая выплата из бюджета, облагается налогом. Надбавка - процент к окладу с каждой зарплаты, до ${data.max_wage_bonus}%; при переходе в другой отдел сбрасывается, свою надбавку менять нельзя. На замороженный аудитом счёт премии не идут. Один человек получает от глав не больше ${data.bonus_cap_hour} кр. премий в час, себе глава выписывает отдельно не больше ${data.bonus_self_cap_hour} кр. в час.`}>
+      help={
+        <NtHelpTopics
+          topics={[
+            {
+              lines: [
+                'Премия - разовая выплата из бюджета, облагается налогом. На замороженный аудитом счёт премии не идут.',
+                `Надбавка - процент к окладу с каждой зарплаты, до ${data.max_wage_bonus}%. При переходе в другой отдел сбрасывается, свою надбавку менять нельзя.`,
+                `От глав один человек получает не больше ${data.bonus_cap_hour} кр. премий в час. Себе глава выписывает отдельно, не больше ${data.bonus_self_cap_hour} кр. в час.`,
+              ],
+            },
+          ]}
+        />
+      }>
       <Box className="NtTerm__hint" mb={1}>
         Премия себе и крупные или частые выплаты одному человеку открывают дело финансового аудита. Аудит ведут:{' '}
         {data.audit_rights}.
@@ -502,11 +514,31 @@ const CatalogTab = () => {
   return (
     <NtFrame
       title="Каталог отдела"
-      help={`${
-        canOrder
-          ? `Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным. "Капсулой" - сразу, мимо шаттла: дороже на ${data.express_markup}%, садится рядом с вами в том же помещении, не чаще раза в ${data.express_cooldown} мин. на отдел. Кнопка "Копить" ставит цель накопления: цена пака не считается излишком бюджета.`
-          : `Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета. Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.${data.auto_approve_wait > 0 ? ` Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.` : ''} Решения могут ждать до ${data.pending_per_requester} ваших заявок.`
-      } Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.`}>
+      help={
+        <NtHelpTopics
+          topics={[
+            {
+              lines: [
+                ...(canOrder
+                  ? [
+                      'Заказ сразу списывает цену из бюджета и уходит в очередь снабжения уже оплаченным.',
+                      `"Капсулой" - сразу, мимо шаттла: дороже на ${data.express_markup}%, садится рядом с вами в том же помещении, не чаще раза в ${data.express_cooldown} мин. на отдел.`,
+                      '"Копить" ставит цель накопления: цена пака не считается излишком бюджета.',
+                    ]
+                  : [
+                      'Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета.',
+                      `Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`,
+                      ...(data.auto_approve_wait > 0
+                        ? [`Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.`]
+                        : []),
+                      `Решения могут ждать до ${data.pending_per_requester} ваших заявок.`,
+                    ]),
+                'Цены зависят от рынка и партнёров снабжения и меняются по ходу смены.',
+              ],
+            },
+          ]}
+        />
+      }>
       {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}
       {canRequest && !canOrder && (
         <Input
@@ -640,7 +672,9 @@ const RequestsTab = () => {
 const ContractsTab = () => {
   const { data } = useBackend<BudgetData>();
   return (
-    <NtFrame title="Контракты отдела" help={data.contracts_help}>
+    <NtFrame
+      title="Контракты отдела"
+      help={data.contracts_help_topics?.length ? <NtHelpTopics topics={data.contracts_help_topics} /> : undefined}>
       <ContractTable showShare={false} />
     </NtFrame>
   );

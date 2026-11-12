@@ -22,7 +22,7 @@ import {
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
-import { NtEmpty, NtFrame, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtEmpty, NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Pack = {
   name: string;
@@ -175,7 +175,7 @@ type CargoData = {
   manifest_fee?: number;
   market_help?: string;
   help_topics?: HelpTopic[];
-  contracts_help?: string;
+  contracts_help_topics?: NtHelpTopic[];
   private_markup?: number;
   reason_max?: number;
   add_max?: number;
@@ -1252,8 +1252,14 @@ const Contracts = (props) => {
     <NtFrame
       title="Контракты NT"
       help={
-        data.contracts_help &&
-        `${data.contracts_help} Взять контракт можно на консоли контрактов, в пункте подработки или в приложении "Бюджет отдела".`
+        data.contracts_help_topics?.length ? (
+          <NtHelpTopics
+            topics={[
+              { title: 'Где взять', lines: ['На консоли контрактов, в пункте подработки или в приложении "Бюджет отдела".'] },
+              ...data.contracts_help_topics,
+            ]}
+          />
+        ) : undefined
       }>
       <ContractTable readOnly />
     </NtFrame>

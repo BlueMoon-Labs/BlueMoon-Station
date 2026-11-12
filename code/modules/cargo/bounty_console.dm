@@ -14,7 +14,7 @@
 
 /obj/machinery/computer/bounty/examine(mob/user)
 	. = ..()
-	. += span_notice(econ_contracts_help())
+	. += span_notice(econ_contracts_examine_note())
 
 /obj/machinery/computer/bounty/proc/print_paper()
 	new /obj/item/paper/bounty_printout(loc)
@@ -40,7 +40,7 @@
 		ui.open()
 
 /obj/machinery/computer/bounty/ui_static_data(mob/user)
-	return list("mode" = "console", "contracts_help" = econ_contracts_help())
+	return list("mode" = "console", "contracts_help_topics" = econ_contracts_help_topics())
 
 /obj/machinery/computer/bounty/ui_data(mob/user)
 	var/list/data = list()

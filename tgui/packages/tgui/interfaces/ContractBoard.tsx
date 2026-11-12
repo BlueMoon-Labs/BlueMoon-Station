@@ -5,11 +5,11 @@ import { AnimatedNumber, Button } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { formatCredits } from './common/Economy';
-import { NtFrame, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
 
 type ContractBoardData = {
   mode: 'pad' | 'console';
-  contracts_help?: string;
+  contracts_help_topics?: NtHelpTopic[];
   my_name?: string | null;
   pad?: BooleanLike;
   pad_on_station?: BooleanLike;
@@ -48,7 +48,7 @@ const PadSection = (props) => {
 /** Доска контрактов NT: пункт подработки с падом и консоль контрактов снабжения. */
 export const ContractBoardContent = (props) => {
   const { act, data } = useBackend<ContractBoardData>();
-  const { mode, contracts_help, my_name, stored_cash } = data;
+  const { mode, contracts_help_topics, my_name, stored_cash } = data;
   return (
     <NtScreen
       tone="contracts"
@@ -64,7 +64,7 @@ export const ContractBoardContent = (props) => {
       {mode === 'pad' && <PadSection />}
       <NtFrame
         title="Контракты NT"
-        help={contracts_help}
+        help={contracts_help_topics?.length ? <NtHelpTopics topics={contracts_help_topics} /> : undefined}
         buttons={mode === 'console' && <Button icon="print" content="Распечатать" onClick={() => act('Print')} />}>
         <ContractTable />
       </NtFrame>

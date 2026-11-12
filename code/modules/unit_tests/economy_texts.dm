@@ -55,7 +55,8 @@
 	TEST_ASSERT(findtext(cargo_help, "больше [GOODY_FREE_SHIPPING_MAX] за отгрузку") && findtext(cargo_help, "[CRATE_TAX] кр."), "Справка снабжения не объясняет бесплатную доставку малых кейсов и сбор")
 	var/obj/machinery/computer/cargo/express/express = allocate(/obj/machinery/computer/cargo/express)
 	var/list/express_static = express.ui_static_data(viewer)
-	TEST_ASSERT(findtext(express_static["market_help"], econ_express_help()), "Экспресс-консоль не объясняет, как списывает деньги")
+	var/list/express_topics = express_static["help_topics"]
+	TEST_ASSERT(length(express_topics) && express_topics[1]["title"] == "Экспресс-заказ", "Экспресс-консоль не объясняет, как списывает деньги")
 
 	var/datum/outfit/job/hop/hop_outfit = allocate(/datum/outfit/job/hop)
 	var/datum/outfit/job/quartermaster/qm_outfit = allocate(/datum/outfit/job/quartermaster)

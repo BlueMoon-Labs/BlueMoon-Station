@@ -151,6 +151,24 @@ export const NtFrame = (props: { title?: ReactNode; buttons?: ReactNode; help?: 
   );
 };
 
+export type NtHelpTopic = { title?: string; icon?: string; lines: string[] };
+
+/** Справка темами: заголовок темы и короткие пункты списком, чтобы пояснение читалось, а не стояло стеной. */
+export const NtHelpTopics = (props: { topics: NtHelpTopic[] }) => (
+  <>
+    {props.topics.map((topic, index) => (
+      <div key={topic.title || index} className="NtTerm__helpTopic">
+        {!!topic.title && <div className="NtTerm__helpTopicTitle">{topic.title}</div>}
+        <ul className="NtTerm__helpList">
+          {topic.lines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </>
+);
+
 /** Крупный показатель: подпись мелко, значение крупно. */
 export const NtReadout = (props: { label: string; children: ReactNode; tone?: 'good' | 'bad' | 'warn' }) => (
   <div className={classes(['NtTerm__stat', props.tone && `NtTerm__stat--${props.tone}`])}>

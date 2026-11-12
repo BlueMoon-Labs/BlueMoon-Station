@@ -26,7 +26,7 @@ const contract = (uid, extra = {}) => ({
 
 const backend = {
   mode: 'pad',
-  contracts_help: 'Контракты NT: поставка и деятельность.',
+  contracts_help_topics: [{ title: 'Как выполнить', lines: ['Контракты NT: поставка и деятельность.'] }],
   pad: 1,
   pad_on_station: 1,
   sending: 0,
@@ -94,7 +94,8 @@ test('справка о контрактах и пустая доска без �
   expect(ui.queryByText('Контракты NT: поставка и деятельность.')).toBeNull();
   const toggles = ui.container.querySelectorAll('.NtTerm__helpToggle');
   fireEvent.click(toggles[toggles.length - 1]);
-  expect(ui.getByText('Контракты NT: поставка и деятельность.')).toBeTruthy();
+  expect(ui.getByText('Контракты NT: поставка и деятельность.').tagName).toBe('LI');
+  expect(ui.getByText('Как выполнить')).toBeTruthy();
   expect(ui.getByText('Контрактов сейчас нет.')).toBeTruthy();
   expect(ui.getByText('Банковский счёт не найден: контракт не взять.')).toBeTruthy();
 });

@@ -184,10 +184,13 @@
 	var/list/express_entry = catalog_entry(express_static["supplies"], pack)
 	TEST_ASSERT_EQUAL(express_entry["cost"], entry["cost"], "Экспресс-консоль показывает новую цену")
 	TEST_ASSERT(express_static["supplies"] == express.meme_pack_data, "Экспресс-консоль шлёт свой каталог, а не каталог станционной консоли")
-	TEST_ASSERT(express_static["market_help"] && !findtext(express_static["market_help"], "Вольные торговцы"), "Справка экспресс-консоли без Вольных торговцев")
+	var/list/express_topics = express_static["help_topics"]
+	TEST_ASSERT(length(express_topics), "У экспресс-консоли нет справки")
+	for(var/list/topic as anything in express_topics)
+		TEST_ASSERT(!findtext(jointext(topic["lines"], " "), "Вольные торговцы"), "Справка экспресс-консоли без Вольных торговцев")
 	var/obj/machinery/computer/cargo/express/ds/ds_express = allocate(/obj/machinery/computer/cargo/express/ds)
 	var/list/ds_static = ds_express.ui_static_data(technician)
-	TEST_ASSERT(!ds_static["market_help"], "Экспресс-консоль DS без справки станции")
+	TEST_ASSERT(!ds_static["help_topics"], "Экспресс-консоль DS без справки станции")
 	var/datum/trade_partner/logistics = SSmarket.get_partner(PARTNER_UNIVERSAL_ID)
 	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
 	logistics.unlocked = FALSE

@@ -47,7 +47,7 @@
 		"wage_interval" = round(settings.payroll_interval_ticks * SSeconomy.wait / (1 MINUTES), 1),
 		"dormant_minutes" = settings.dormant_after_minutes,
 		"performer_share" = settings.contract_performer_share,
-		"contracts_help" = econ_contracts_help(),
+		"contracts_help_topics" = econ_contracts_help_topics(),
 		"crew" = wallet_crew_names(),
 	)
 

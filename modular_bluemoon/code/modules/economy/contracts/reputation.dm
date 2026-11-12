@@ -58,11 +58,10 @@ GLOBAL_LIST_INIT(econ_contract_ranks, list(
 		"next_rep" = next_rank?["rep"],
 	)
 
-/// "Подрядчик (от 3) - 2 контракта сразу; ..." для справки.
-/proc/econ_contract_ranks_text()
-	var/list/parts = list()
+/// Пункты справки о рангах: "Подрядчик (от 3 репутации): контрактов сразу - 2."
+/proc/econ_contract_rank_lines()
+	. = list()
 	for(var/list/rank as anything in GLOB.econ_contract_ranks)
 		if(!rank["rep"])
 			continue
-		parts += "[rank["name"]] (от [rank["rep"]]) - контрактов сразу: [rank["slots"]][rank["bonus"] ? ", надбавка к доле [rank["bonus"]]%" : ""]"
-	return parts.Join("; ")
+		. += "[rank["name"]] (от [rank["rep"]] репутации): контрактов сразу - [rank["slots"]][rank["bonus"] ? ", надбавка к доле [rank["bonus"]]%" : ""]."

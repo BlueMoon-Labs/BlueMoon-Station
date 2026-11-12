@@ -21,7 +21,7 @@ const base = {
   canBuyBeacon: 1,
   beacon_only: 0,
   message: '',
-  market_help: 'Экспресс-заказ списывает цену пака у партнёра сразу.',
+  help_topics: [{ title: 'Экспресс-заказ', lines: ['Экспресс-заказ списывает цену пака у партнёра сразу.'] }],
   supplies: {},
 };
 

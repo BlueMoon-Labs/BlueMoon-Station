@@ -6,7 +6,7 @@ import { Window } from '../layouts';
 import { CargoCatalog } from './Cargo';
 import { formatCredits } from './common/Economy';
 import { InterfaceLockNoticeBox } from './common/InterfaceLockNoticeBox';
-import { NtFrame, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
 
 type Data = {
   locked: BooleanLike;
@@ -22,7 +22,7 @@ type Data = {
   message: string;
   access_hint: string;
   beacon_only: BooleanLike;
-  market_help?: string;
+  help_topics?: NtHelpTopic[];
 };
 
 export const CargoExpress = (props) => {
@@ -67,7 +67,7 @@ const CargoExpressContent = (props) => {
     canBuyBeacon,
     printMsg,
     beacon_only,
-    market_help,
+    help_topics,
     budget_name,
     self_paid,
   } = data;
@@ -76,7 +76,7 @@ const CargoExpressContent = (props) => {
     <>
       <NtFrame
         title="Доставка капсулой"
-        help={market_help}
+        help={help_topics?.length ? <NtHelpTopics topics={help_topics} /> : undefined}
         buttons={<Button icon="lock" content="Заблокировать" onClick={() => act('toggleLock')} />}>
         <NtLine label="Куда">
           {!beacon_only && <Button content="Склад снабжения" selected={!usingBeacon} onClick={() => act('LZCargo')} />}

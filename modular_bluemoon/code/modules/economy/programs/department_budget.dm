@@ -146,7 +146,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"work_share" = settings.work_personal_share,
 		"work_cap" = settings.work_personal_cap_hour,
 		"performer_share" = settings.contract_performer_share,
-		"contracts_help" = econ_contracts_help(),
+		"contracts_help_topics" = econ_contracts_help_topics(),
 		"audit_rights" = SSeconomy.audit_rights_text(),
 		"grant_price" = settings.research_grant_price_per_point,
 		"grant_cap" = settings.research_grant_cap_hour,

@@ -18,6 +18,7 @@ import {
 import { NtosWindow } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, HistoryTable, TransactionEntry } from './common/Economy';
+import { NtHelpTopic, NtHelpTopics } from './common/NtTerminal';
 
 type Wage = {
   grade: string | null;
@@ -62,7 +63,7 @@ export type WalletData = {
   wage_interval: number;
   dormant_minutes: number;
   performer_share: number;
-  contracts_help: string;
+  contracts_help_topics?: NtHelpTopic[];
   crew: string[];
   has_account: BooleanLike;
   lottery?: Lottery | null;
@@ -372,12 +373,22 @@ const TransferTab = () => {
 
 const JobsTab = () => {
   const { data } = useBackend<WalletData>();
+  const [helpOpen, setHelpOpen] = useState(false);
+  const topics = data.contracts_help_topics || [];
   return (
-    <Section title="Контракты NT">
-      {!!data.contracts_help && (
-        <Box color="label" mb={1}>
-          {data.contracts_help}
-        </Box>
+    <Section
+      title="Контракты NT"
+      buttons={
+        topics.length > 0 && (
+          <Button icon="question" selected={helpOpen} onClick={() => setHelpOpen(!helpOpen)}>
+            Как это работает
+          </Button>
+        )
+      }>
+      {helpOpen && (
+        <div className="NtTerm__help">
+          <NtHelpTopics topics={topics} />
+        </div>
       )}
       <ContractTable showShare={false} />
     </Section>

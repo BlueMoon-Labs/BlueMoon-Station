@@ -20,7 +20,7 @@ const base: WalletData = {
   wage_interval: 10,
   dormant_minutes: 10,
   performer_share: 30,
-  contracts_help: 'Контракты NT: справка.',
+  contracts_help_topics: [{ title: 'Как выполнить', lines: ['Контракты NT: справка.'] }],
   crew: ['Иван Петров', 'Анна Смирнова'],
   has_account: 1,
   from_card: 1,
@@ -160,6 +160,8 @@ describe('NtosWallet', () => {
   test('подработка: взять контракт шлёт take с uid', () => {
     const { container, getByText, topic } = setup();
     fireEvent.click(getByText('Подработка'));
+    expect(text(container)).not.toContain('Контракты NT: справка.');
+    fireEvent.click(getByText('Как это работает'));
     expect(text(container)).toContain('Контракты NT: справка.');
     expect(text(container)).not.toContain('Взявший контракт получает');
     expect(text(container)).toContain('1 200 кр.');
