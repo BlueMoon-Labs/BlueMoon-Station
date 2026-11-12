@@ -393,3 +393,36 @@
 	TEST_ASSERT_EQUAL(team.account.account_balance, fine_amount, "A successful inspection must credit the inspector team.")
 	TEST_ASSERT(locate(/obj/item/paper) in inspector.GetAllContents(), "A successful inspection must place a receipt in the inspector's inventory.")
 	TEST_ASSERT(locate(/obj/effect/particle_effect/fake_sparks) in station_turf, "A successful inspection must leave confiscation sparks behind.")
+
+/// Fines and the bribe paid to the inspection are sanctioned payments: the audit opens no case on cargo.
+/datum/unit_test/sol_inspection_payments_not_audited
+	var/datum/economy_department/cargo
+	var/old_balance
+	var/old_owed
+	var/list/old_flags
+
+/datum/unit_test/sol_inspection_payments_not_audited/Destroy()
+	if(cargo)
+		cargo.owed = old_owed
+		econ_test_set_balance(cargo.account, old_balance)
+	if(old_flags)
+		SSeconomy.audit_flags = old_flags
+	return ..()
+
+/datum/unit_test/sol_inspection_payments_not_audited/Run()
+	cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	old_balance = cargo.account.account_balance
+	old_owed = cargo.owed
+	old_flags = SSeconomy.audit_flags.Copy()
+	var/datum/team/sol_inspection/team = allocate(/datum/team/sol_inspection, list())
+	allocated += team.account
+	econ_test_set_balance(cargo.account, 100000)
+	var/skim_before = SSeconomy.ledger.by_reason[ECON_SKIM]
+
+	TEST_ASSERT(sol_inspection_charge_fine(25000, team.account, "unit test"), "The inspection fine must be charged.")
+	TEST_ASSERT(team.pay_bribe(cargo.account, 45000), "The bribe must be paid.")
+	TEST_ASSERT_EQUAL(team.account.account_balance, 70000, "Both payments must reach the inspection account.")
+
+	for(var/datum/econ_audit_flag/flag as anything in SSeconomy.audit_flags - old_flags)
+		TEST_FAIL("Payment to the inspection opened an audit case: [flag.text].")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_SKIM], skim_before, "The bribe must not be booked as skimming.")

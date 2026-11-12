@@ -93,6 +93,8 @@
 	var/frozen_by
 	/// Состояние до заморозки: разморозка возвращает спящий счёт спящим
 	var/state_before_freeze = ACCOUNT_ACTIVE
+	/// Счёт официальной стороны вне станции (инспекция): платежи на него аудит не разбирает
+	var/audit_exempt_target = FALSE
 
 /datum/controller/subsystem/economy
 	var/list/audit_flags = list()
@@ -137,7 +139,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 			pairs -= number
 
 /datum/controller/subsystem/economy/proc/audit_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor)
-	if(!source || !target || (reason in GLOB.econ_reasons_unaudited))
+	if(!source || !target || target.audit_exempt_target || (reason in GLOB.econ_reasons_unaudited))
 		return
 	var/personal_target = target.add_to_accounts
 	var/budget_target = istype(target, /datum/bank_account/department)

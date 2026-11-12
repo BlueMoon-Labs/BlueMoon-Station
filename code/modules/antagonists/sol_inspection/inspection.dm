@@ -41,6 +41,7 @@
 	account = new("Всеобщее Бюро Контроля")
 	account.offstation = TRUE
 	account.service_account = TRUE
+	account.audit_exempt_target = TRUE
 
 /datum/team/sol_inspection/Destroy()
 	QDEL_NULL(inspection_radio)
@@ -95,7 +96,7 @@
 	if(amount <= 0 || QDELETED(payer) || QDELETED(account) || account == payer)
 		return FALSE
 	amount = round(amount)
-	if(!SSeconomy.move(payer, account, amount, ECON_SKIM, memo = reason))
+	if(!SSeconomy.move(payer, account, amount, ECON_EVENT_RANSOM, memo = reason))
 		return FALSE
 	bribe_paid += amount
 	return TRUE
