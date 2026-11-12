@@ -567,12 +567,6 @@
 #ifndef TRAIT_WATER_ADAPTATION
 #define TRAIT_WATER_ADAPTATION "water_adaptation"
 #endif
-#ifndef TRAIT_NAIVE
-#define TRAIT_NAIVE "naive"
-#endif
-#ifndef TRAIT_MORBID
-#define TRAIT_MORBID "morbid"
-#endif
 #ifndef MANUAL_SUICIDE_NONLETHAL
 #define MANUAL_SUICIDE_NONLETHAL 2
 #endif

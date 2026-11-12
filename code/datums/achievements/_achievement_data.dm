@@ -28,6 +28,12 @@
 			if(deets)
 				. += list(deets)
 
+/datum/achievement_data/proc/copy_award_value(value)
+	if(islist(value))
+		var/list/list_value = value
+		return list_value.Copy()
+	return value
+
 /datum/achievement_data/proc/load_all_achievements()
 	set waitfor = FALSE
 
@@ -51,7 +57,7 @@
 			continue
 		if(!data[T])
 			data[T] = A.parse_value(kv[A.database_id])
-			original_cached_data[T] = islist(data[T]) ? data[T].Copy() : data[T]
+			original_cached_data[T] = copy_award_value(data[T])
 
 ///Updates local cache with db data for the given achievement type if it wasn't loaded yet.
 /datum/achievement_data/proc/get_data(achievement_type)
@@ -60,7 +66,7 @@
 		return FALSE
 	if(!data[achievement_type])
 		data[achievement_type] = A.load(owner_ckey)
-		original_cached_data[achievement_type] = islist(data[achievement_type]) ? data[achievement_type].Copy() : data[achievement_type]
+		original_cached_data[achievement_type] = copy_award_value(data[achievement_type])
 
 ///Unlocks an achievement of a specific type. achievement type is a typepath to the award, user is the mob getting the award, and value is an optional value to be used for defining a score to add to the leaderboard
 /datum/achievement_data/proc/unlock(achievement_type, mob/user, value = 1)
