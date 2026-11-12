@@ -197,8 +197,8 @@
 	projectile_type = /obj/item/projectile/bullet/p50/m4oa1
 
 /obj/item/projectile/bullet/p50/m4oa1
-	damage = 50
-	dismemberment = 20
+	damage = 30
+	dismemberment = 5
 
 /obj/item/projectile/bullet/p50/m4oa1/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
 	var/original_damage = damage
