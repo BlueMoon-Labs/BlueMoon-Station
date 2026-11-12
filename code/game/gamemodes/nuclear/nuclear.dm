@@ -204,6 +204,7 @@
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/medical,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
+		/obj/item/organ/cyberimp/chest/healer/revitilzer,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
 		/obj/item/organ/lungs/bioaegis/t3/antag,

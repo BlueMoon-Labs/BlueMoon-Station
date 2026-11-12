@@ -25,12 +25,8 @@
 #define HERETIC_SAND_SLOW_COLOR "#d6ad70"
 #define HERETIC_SAND_INK "#c8a66c"
 #define HERETIC_SAND_SUN_LIGHT "#ffd98a"
-#define HERETIC_SAND_RING_ICON_SIZE 256
-#define HERETIC_SAND_RING_ICON_RADIUS 118
+#define HERETIC_SAND_RING_ICON_SIZE 320
 #define HERETIC_SAND_FIELD_SPREAD 6
-#define HERETIC_SAND_FIELD_ALPHA 50
-#define HERETIC_SAND_FIELD_BREATH 1.04
-#define HERETIC_SAND_FIELD_BREATH_TIME (2 SECONDS)
 #define HERETIC_SAND_FIELD_SPIN (24 SECONDS)
 #define HERETIC_SAND_FIELD_SEGMENTS 12
 #define HERETIC_SAND_FIELD_CANVAS 320
@@ -1758,21 +1754,15 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	field_grains = null
 	return ..()
 
-/// Граница поля видна: бледное песчаное кольцо дышит, по нему медленно кружат и осыпаются песчинки.
+/// Граница поля видна: песчаный вал в родном размере течёт по кругу, по нему кружат и осыпаются песчинки.
 /datum/component/heretic_sand_slowtime/proc/show_field()
 	var/mob/living/owner = parent
 	var/radius = HERETIC_SAND_FIELD_REACH * world.icon_size
-	field_ring = heretic_vfx_attach(owner, 'modular_bluemoon/icons/effects/heretic_shockwave.dmi', "ring", HERETIC_SAND_FIELD_ALPHA)
+	field_ring = heretic_vfx_attach(owner, 'modular_bluemoon/icons/effects/heretic_sand_field.dmi', "sand_field")
 	if(field_ring)
-		var/scale = radius / HERETIC_SAND_RING_ICON_RADIUS
 		field_ring.layer = BELOW_MOB_LAYER
-		field_ring.appearance_flags &= ~PIXEL_SCALE
-		field_ring.color = heretic_vfx_ink_ramp(HERETIC_SAND_INK)
 		field_ring.pixel_x = (world.icon_size - HERETIC_SAND_RING_ICON_SIZE) / 2
 		field_ring.pixel_y = field_ring.pixel_x
-		field_ring.transform = matrix(scale, 0, 0, 0, scale, 0)
-		animate(field_ring, transform = matrix(scale * HERETIC_SAND_FIELD_BREATH, 0, 0, 0, scale * HERETIC_SAND_FIELD_BREATH, 0), time = HERETIC_SAND_FIELD_BREATH_TIME, loop = -1, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
-		animate(transform = matrix(scale, 0, 0, 0, scale, 0), time = HERETIC_SAND_FIELD_BREATH_TIME, easing = SINE_EASING)
 	field_grains = heretic_vfx_attach_particles(owner, /particles/heretic_ascension/sand/field)
 	if(field_grains)
 		field_grains.particles.position = generator("circle", radius - HERETIC_SAND_FIELD_SPREAD, radius + HERETIC_SAND_FIELD_SPREAD)
@@ -2040,11 +2030,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 #undef HERETIC_SAND_INK
 #undef HERETIC_SAND_SUN_LIGHT
 #undef HERETIC_SAND_RING_ICON_SIZE
-#undef HERETIC_SAND_RING_ICON_RADIUS
 #undef HERETIC_SAND_FIELD_SPREAD
-#undef HERETIC_SAND_FIELD_ALPHA
-#undef HERETIC_SAND_FIELD_BREATH
-#undef HERETIC_SAND_FIELD_BREATH_TIME
 #undef HERETIC_SAND_FIELD_SPIN
 #undef HERETIC_SAND_FIELD_SEGMENTS
 #undef HERETIC_SAND_FIELD_CANVAS

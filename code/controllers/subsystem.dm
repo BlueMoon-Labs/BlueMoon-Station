@@ -66,6 +66,15 @@
 	/// Tracks how many fires the subsystem takes to complete a run on average.
 	var/ticks = 1
 
+	/// МК растягивает проход по тикам интервала, а не отдаёт ему весь остаток тика. Фоновые растягиваются и без флага.
+	var/paced = FALSE
+
+	/// Итерация МК, за которую посчитан paced_used.
+	var/paced_iteration = 0
+
+	/// Сколько % тика проход занял в итерации paced_iteration.
+	var/paced_used = 0
+
 	/// Tracks the amount of completed runs for the subsystem
 	var/times_fired = 0
 
@@ -98,6 +107,10 @@
 // Prefer to use Initialize if possible
 /datum/controller/subsystem/proc/PreInit()
 	return
+
+/// Интервал, на который МК растягивает проход, в единицах wait. Отличается от wait, если подсистема сама меняет его на ходу.
+/datum/controller/subsystem/proc/pace_interval()
+	return wait
 
 //This is used so the mc knows when the subsystem sleeps. do not override.
 /datum/controller/subsystem/proc/ignite(resumed = FALSE)

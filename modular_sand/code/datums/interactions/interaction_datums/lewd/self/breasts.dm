@@ -41,7 +41,7 @@
 					"крепко сжимает свою грудь",
 					"шлёпает по своим сиськам",
 					"максимально грубо сжимает свои титьки")
-		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/bang1.ogg', volume, 1, extrarange)
+		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/bang1.ogg', volume, 1, extrarange, local_only = is_hidden)
 	else
 		message = pick("нежно ощупывает свою грудь",
 					"мягко хватается за свою грудь",
@@ -49,15 +49,15 @@
 					"проводит несколькими пальцами вдоль своей груди",
 					"деликатно сжимает свой сосок",
 					"возбуждённо проводит пальцем вдоль своей груди")
-		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
+		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange, local_only = is_hidden)
 	if(prob(user.get_lust() / user.get_climax_threshold() * 50)) // 50%
 		user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [pick("дрожит от возбуждения",
 				"тихо стонет",
 				"выдыхает тихий довольный стон",
 				"мурлыкает и звучно вздыхает",
 				"тихонько вздрагивает",
-				"вздрагивает, хватаясь за причинное место")]</span>", vision_distance = distance)
-		playlewdinteractionsound(get_turf(user), pick(GLOB.lewd_softmoans_female), 70, 1, extrarange)
+				"вздрагивает, хватаясь за причинное место")]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		playlewdinteractionsound(get_turf(user), pick(GLOB.lewd_softmoans_female), 70, 1, extrarange, local_only = is_hidden)
 
 	if(liquid_container)
 		message += " прямо в [liquid_container]"
@@ -67,13 +67,13 @@
 		if(milkers.climaxable(user, TRUE))
 			if(milkers && milktype)
 				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange, local_only = is_hidden)
 		else
 			message += ", но дойка не дает результатов..."
-			playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch3.ogg', volume, 1, extrarange)
+			playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch3.ogg', volume, 1, extrarange, local_only = is_hidden)
 
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	user.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS) //SPLURT edit
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	user.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/self_nipsuck
 	description = "Грудь. Пососать свои соски."
@@ -123,7 +123,7 @@
 			"подносит свои груди ко рту и громко обсасывает соски."
 		)
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> [pick(lines)]</span>"
-	user.visible_message(message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	user.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
+	user.visible_message(message, ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	user.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS, is_hidden = is_hidden)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange, local_only = is_hidden)

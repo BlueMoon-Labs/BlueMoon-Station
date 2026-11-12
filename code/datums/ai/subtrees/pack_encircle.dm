@@ -62,7 +62,7 @@
 		if(direction in taken)
 			continue
 		var/turf/tile = get_step(target_turf, direction)
-		if(!tile || !controller.can_enter_turf(tile) || tile.is_blocked_turf(source_atom = pawn))
+		if(!tile || !ai_approach_tile_open(controller, tile))
 			continue
 		//tie-break: ближе к пауну = меньше крюк (роль-бонусы доминируют над ним)
 		var/score = -get_dist(pawn_turf, tile)

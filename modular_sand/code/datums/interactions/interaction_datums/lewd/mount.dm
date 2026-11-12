@@ -25,19 +25,19 @@
 	else
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё влагалище и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_VAGINA, partner.getorganslot(ORGAN_SLOT_PENIS))
-		try_apply_knot(partner, user, CUM_TARGET_VAGINA) // Проверка на узлирование (mount)
+		try_apply_knot(partner, user, CUM_TARGET_VAGINA, is_hidden = is_hidden)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(partner.can_penetrating_genital_cum())
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, user, ORGAN_SLOT_PENIS) //SPLURT edit
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, user, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
 	// BLUEMOON EDIT START
 	if(partner.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/partner_strapon = partner.get_strapon()
-		partner_strapon.attached_dildo.target_reaction(user, partner, 0, CUM_TARGET_VAGINA, CUM_TARGET_PENIS, FALSE)
+		partner_strapon.attached_dildo.target_reaction(user, partner, 0, CUM_TARGET_VAGINA, CUM_TARGET_PENIS, FALSE, is_hidden = is_hidden)
 	else
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner, ORGAN_SLOT_VAGINA)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
 	// BLUEMOON EDIT END
 
 /datum/interaction/lewd/mountass
@@ -64,19 +64,19 @@
 	else
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё анальное кольцо и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_ANUS, partner.getorganslot(ORGAN_SLOT_PENIS))
-		try_apply_knot(partner, user, CUM_TARGET_ANUS) // Проверка на узлирование (mountass)
+		try_apply_knot(partner, user, CUM_TARGET_ANUS, is_hidden = is_hidden)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(partner.can_penetrating_genital_cum())
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, user, ORGAN_SLOT_PENIS) //SPLURT edit
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, user, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
 	// BLUEMOON EDIT START
 	if(partner.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/partner_strapon = partner.get_strapon()
-		partner_strapon.attached_dildo.target_reaction(user, partner, 0, CUM_TARGET_ANUS, null, FALSE)
+		partner_strapon.attached_dildo.target_reaction(user, partner, 0, CUM_TARGET_ANUS, null, FALSE, is_hidden = is_hidden)
 	else
-		user.handle_post_sex(NORMAL_LUST, null, partner, CUM_TARGET_ANUS)
+		user.handle_post_sex(NORMAL_LUST, null, partner, CUM_TARGET_ANUS, is_hidden = is_hidden)
 	// BLUEMOON EDIT END
 
 /datum/interaction/lewd/mountface
@@ -109,9 +109,9 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/squelch1.ogg',
 						'modular_sand/sound/interactions/squelch2.ogg',
-						'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	user.handle_post_sex(LOW_LUST, null, partner)
+						'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	user.handle_post_sex(LOW_LUST, null, partner, is_hidden = is_hidden)
 
 /datum/interaction/lewd/thighs
 	description = "Член. Придушить."
@@ -201,18 +201,18 @@
 					'modular_sand/sound/interactions/bj3.ogg',
 					'modular_sand/sound/interactions/foot_wet1.ogg',
 					'modular_sand/sound/interactions/foot_dry3.ogg')
-	playlewdinteractionsound(get_turf(user), file, volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), file, volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	// BLUEMOON EDIT START
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 	if(fucktarget == "penis")
 		if(user.has_strapon())
 			var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-			user_strapon.attached_dildo.target_reaction(partner, user, 1, CUM_TARGET_MOUTH, null, user.a_intent == INTENT_HARM)
+			user_strapon.attached_dildo.target_reaction(partner, user, 1, CUM_TARGET_MOUTH, null, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 		else
-			user.handle_post_sex(NORMAL_LUST, THIGH_SMOTHERING, partner, genital)
-			partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_MOUTH)
+			user.handle_post_sex(NORMAL_LUST, THIGH_SMOTHERING, partner, genital, is_hidden = is_hidden)
+			partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_MOUTH, is_hidden = is_hidden)
 	else
-		user.handle_post_sex(NORMAL_LUST, THIGH_SMOTHERING, partner, genital) //SPLURT edit
+		user.handle_post_sex(NORMAL_LUST, THIGH_SMOTHERING, partner, genital, is_hidden = is_hidden) //SPLURT edit
 	// BLUEMOON EDIT END

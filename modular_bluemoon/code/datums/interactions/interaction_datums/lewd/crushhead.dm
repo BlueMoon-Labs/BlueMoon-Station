@@ -1,7 +1,5 @@
 /datum/interaction/lewd/crushhead
 	description = "Убийственно. Сжать голову бёдрами."
-	require_user_legs = REQUIRE_ANY
-	require_user_num_legs = 2
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_EXTREME_CONTENT
 	write_log_user = "trying to squeeze"
 	write_log_target = "was squeezed by"
@@ -18,7 +16,7 @@
 
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/crushhead/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/crushhead/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!.)
 		return
@@ -35,7 +33,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/message = "[is_hidden ? (picked_hidden) : null]" + "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
 					"отпускает голову <b>[partner]</b>, чтобы с новой силой сдавить её своими бедрами.",
-					"нежно прижимает <b>[partner]</b> меж ножками и немного встряхивает своими наушниками.",
+					"нежно прижимает <b>[partner]</b> между бёдрами и немного встряхивает своими наушниками.",
 					"обхватывает <b>[partner]</b> своими бедрами и тихо постанывает.",
 					"с шлепком закрывает своими бедрами лицо <b>[partner]</b> и впоследствии слабо сдавливает.")]"
 	var/lust_amount = LOW_LUST // При уроне уже идет накопление LUST, так что много не требуется
@@ -47,7 +45,7 @@
 		message = "[is_hidden ? (picked_hidden) : null]" + "[pick("прижимается к <b>[partner]</b>, своими бедрами, с силой сжимая голову.",
 					"резко сдавливает ляжками <b>[partner]</b>, тем самым вызывая утробный стон жертвы.",
 					"крепко прижимает <b>[partner]</b> к своему паху, сжимая голову с хрустом в шее.",
-					"с силой закрепляется за <b>[partner]</b> своими ногами и хищно наблюдает.",
+					"с силой обхватывает голову <b>[partner]</b> бёдрами и хищно наблюдает.",
 					"максимально грубым образом сдавливает голову <b>[partner]</b> до хруста в шее.")]"
 
 		var/mob/living/carbon/human/H = partner
@@ -66,8 +64,8 @@
 
 			// HeadStomp
 			if(H.InFullCritical())
-				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"),span_userdanger("ААААА ГОЛОВ-"))
-				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, -1)
+				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"), span_userdanger("ААААА ГОЛОВ-"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, extrarange, local_only = is_hidden)
 				var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
 				head.drop_limb()
 				head.drop_organs()
@@ -83,19 +81,19 @@
 
 	partner.apply_damage(damage_amount, BRUTE, BODY_ZONE_HEAD, partner.run_armor_check(BODY_ZONE_HEAD, MELEE))
 
-	user.visible_message(message = message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
+	user.visible_message(message = message, ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange, local_only = is_hidden)
 	if(HAS_TRAIT(partner, TRAIT_MASO))
-		partner.handle_post_sex(lust_amount, null, user)
+		partner.handle_post_sex(lust_amount, null, user, is_hidden = is_hidden)
 
 	var/const/basic_scream_chance = 25 // %
 	if(prob(max(basic_scream_chance, ceil(partner.get_lust() / partner.get_climax_threshold()*100))))
 		if(prob(30) && isclownjob(user))
-			user.visible_message(span_lewd("<b>[user]</b> забавно хонкает!"))
+			user.visible_message(span_lewd("<b>[user]</b> забавно хонкает!"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		else
 			partner.visible_message(span_lewd("<b>\The [partner]</b> [pick("дрожит от боли.",
 					"тихо вскрикивает.",
 					"выдыхает болезненный стон.",
 					"звучно вздыхает от боли.",
 					"сильно вздрагивает.",
-					"вздрагивает, закатывая свои глаза.")]"), vision_distance = distance)
+					"вздрагивает, закатывая свои глаза.")]"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))

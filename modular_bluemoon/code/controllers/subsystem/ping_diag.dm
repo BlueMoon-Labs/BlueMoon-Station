@@ -53,6 +53,32 @@ SUBSYSTEM_DEF(ping_diag)
 	var/minute_proc_us = 0
 	var/minute_log_us = 0
 	var/minute_rows_us = 0
+	/// Расчёт строк по этапам, мкс, и сколько фаеров заняла минутная запись: хвост ping-host.
+	var/minute_rows_slices = 0
+	var/minute_rows_snapshot_us = 0
+	var/minute_rows_csv_us = 0
+	var/minute_rows_raw_us = 0
+	var/minute_rows_lines_us = 0
+	var/minute_rows_join_us = 0
+	var/minute_rows_free_us = 0
+	var/minute_rows_client_max_us = 0
+	/// Минутная запись идёт кусками по фаерам: шаг, срез клиентов на её начало и что уже посчитано.
+	var/rows_step = PING_DIAG_ROWS_IDLE
+	/// Срез: по клиенту list(ckey, датум, x, y, z, mob_kind, view), z - null без турфа.
+	var/list/rows_entries
+	var/rows_next = 0
+	/// Одна метка времени на все строки минуты.
+	var/rows_stamp
+	var/rows_world_time = 0
+	var/rows_clients = 0
+	var/rows_now = 0
+	/// Сетка "людей рядом" и число клиентов по z на момент среза.
+	var/list/rows_cells
+	var/list/rows_z_counts
+	var/list/rows_csv
+	var/list/rows_raw
+	/// Склеенный текст, который ждёт записи.
+	var/rows_text
 
 /datum/controller/subsystem/ping_diag/Initialize(start_timeofday)
 	. = ..()
@@ -88,6 +114,10 @@ SUBSYSTEM_DEF(ping_diag)
 	host_net = SSping_diag.host_net
 
 /datum/controller/subsystem/ping_diag/Shutdown()
+	// Начатая минута дописывается целиком, её последний шаг - итог раунда.
+	if(rows_step != PING_DIAG_ROWS_IDLE)
+		continue_minute_rows(INFINITY)
+		return
 	write_summary()
 
 /// Итог раунда перезаписью: раз в минуту и на выключении, чтобы снятый посреди игры сервер оставил итог.
@@ -113,16 +143,14 @@ SUBSYSTEM_DEF(ping_diag)
 		next_probe_at = world.time + PING_DIAG_FAST_PROBE_DS
 		send_fast_probes()
 	close_due_batches(now)
-	if(!resumed)
-		if(world.time >= next_csv_at)
-			next_csv_at = world.time + PING_DIAG_CSV_EVERY_DS
-			write_client_rows()
-			write_summary()
-			// Минутная запись и вердикты не делят один перегруженный тик.
-			if(MC_TICK_CHECK)
-				return
-		if(!length(currentrun) && world.time >= verdict_started_at + PING_DIAG_VERDICT_EVERY_DS)
-			start_verdict_pass()
+	if(rows_step == PING_DIAG_ROWS_IDLE && world.time >= next_csv_at)
+		next_csv_at = world.time + PING_DIAG_CSV_EVERY_DS
+		start_minute_rows()
+	// Минутная запись и вердикты не делят один перегруженный тик.
+	if(rows_step != PING_DIAG_ROWS_IDLE && !continue_minute_rows())
+		return
+	if(!resumed && !length(currentrun) && world.time >= verdict_started_at + PING_DIAG_VERDICT_EVERY_DS)
+		start_verdict_pass()
 	var/list/run = currentrun
 	var/quota = verdict_quota()
 	while(length(run) && verdict_done < quota)
@@ -350,56 +378,129 @@ SUBSYSTEM_DEF(ping_diag)
 		"server_rtt_median" = round(server_rtt_median, 1),
 	)
 
-/datum/controller/subsystem/ping_diag/proc/write_client_rows()
+/// Начало минутной записи: срез клиентов, метка времени и сетка соседей - одним куском, дальше строки по одному клиенту.
+/datum/controller/subsystem/ping_diag/proc/start_minute_rows(list/clients = GLOB.clients)
 	if(!clients_log)
+		rows_step = PING_DIAG_ROWS_WRITE_SUMMARY
 		return
+	rows_step = PING_DIAG_ROWS_CLIENTS
 	rustg_time_reset(PING_DIAG_ROWS_TIMER)
-	var/now = REALTIMEOFDAY
-	var/stamp = time2text(world.timeofday, "hh:mm:ss")
-	var/list/turfs = list()
-	var/list/by_z = list()
-	for(var/client/target as anything in GLOB.clients)
+	rows_now = REALTIMEOFDAY
+	rows_stamp = time2text(world.timeofday, "hh:mm:ss")
+	rows_world_time = world.time
+	rows_clients = length(clients)
+	rows_entries = list()
+	rows_cells = list()
+	rows_z_counts = list()
+	rows_csv = list()
+	rows_raw = list()
+	rows_next = 1
+	for(var/client/target as anything in clients)
 		var/turf/where = get_turf(target?.mob)
-		if(!where)
-			continue
-		turfs[target] = where
-		var/z_key = "[where.z]"
-		if(!by_z[z_key])
-			by_z[z_key] = list()
-		by_z[z_key] += target
-	var/list/rows = list()
-	var/list/raw_lines = list()
-	for(var/client/target as anything in GLOB.clients)
+		if(where)
+			var/z_key = "[where.z]"
+			rows_z_counts[z_key] = (rows_z_counts[z_key] || 0) + 1
+			ping_diag_grid_add(rows_cells, where.x, where.y, where.z, PING_DIAG_NEAR_RANGE)
 		var/datum/ping_diagnostics/diag = target?.ping_diag
 		if(!diag || !diag.summary["samples"])
 			continue
-		var/turf/where = turfs[target]
-		var/list/same_z = where ? by_z["[where.z]"] : null
-		var/near = 0
-		for(var/client/other as anything in same_z)
-			if(other != target && get_dist(where, turfs[other]) <= PING_DIAG_NEAR_RANGE)
-				near++
-		var/list/context = list(
-			"mob_kind" = ping_diag_mob_kind(target.mob),
-			"view" = target.view,
-			"z_clients" = length(same_z),
-			"near_clients" = near,
-		)
-		rows += ping_diag_csv_row(stamp, world.time, target.ckey, diag.summary, diag.verdicts[1], context)
-		var/list/raw = diag.raw_since(now, diag.raw_dumped_until)
-		if(length(raw["text"]))
-			raw_lines += "wt=[num2text(world.time, 10)] ckey=[target.ckey] t0=[num2text(raw["t0"], 10)] s=[raw["text"]]"
-			diag.raw_dumped_until = raw["last"]
-	var/rows_text = length(rows) ? "[rows.Join("\n")]\n" : null
-	var/raw_text = length(raw_lines) ? "[raw_lines.Join("\n")]\n" : null
-	minute_rows_us += rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
-	if(rows_text)
-		write_log(clients_log, rows_text)
-	if(raw_text)
-		write_log(samples_log, raw_text)
-	write_host_row(stamp, now)
+		rows_entries += list(list(target.ckey, diag, where?.x, where?.y, where?.z, ping_diag_mob_kind(target.mob), target.view))
+	var/spent = rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	minute_rows_snapshot_us += spent
+	minute_rows_us += spent
 
-/datum/controller/subsystem/ping_diag/proc/write_host_row(stamp, now)
+/// Шаги минутной записи, пока фаер не потратил budget_ms или не кончился тик. TRUE - запись закончена.
+/datum/controller/subsystem/ping_diag/proc/continue_minute_rows(budget_ms = PING_DIAG_ROWS_SLICE_MS)
+	minute_rows_slices++
+	while(rows_step != PING_DIAG_ROWS_IDLE)
+		minute_rows_step()
+		if(rows_step != PING_DIAG_ROWS_IDLE && rows_yield(budget_ms))
+			return FALSE
+	return TRUE
+
+/datum/controller/subsystem/ping_diag/proc/rows_yield(budget_ms)
+	if(budget_ms == INFINITY)
+		return FALSE
+	if(rustg_time_microseconds(PING_DIAG_FIRE_TIMER) >= budget_ms * 1000)
+		pause()
+		return TRUE
+	return MC_TICK_CHECK
+
+/datum/controller/subsystem/ping_diag/proc/minute_rows_step()
+	switch(rows_step)
+		if(PING_DIAG_ROWS_CLIENTS)
+			if(rows_next <= length(rows_entries))
+				minute_client_row(rows_entries[rows_next])
+				rows_next++
+				return
+			rows_text = rows_join(rows_csv)
+			rows_step = PING_DIAG_ROWS_WRITE_CLIENTS
+		if(PING_DIAG_ROWS_WRITE_CLIENTS)
+			if(rows_text)
+				write_log(clients_log, rows_text)
+			rows_free(TRUE)
+			rows_step = PING_DIAG_ROWS_WRITE_SAMPLES
+		if(PING_DIAG_ROWS_WRITE_SAMPLES)
+			rows_text = rows_join(rows_raw)
+			if(rows_text && samples_log)
+				write_log(samples_log, rows_text)
+			rows_free(FALSE)
+			rows_step = PING_DIAG_ROWS_WRITE_SUMMARY
+		if(PING_DIAG_ROWS_WRITE_SUMMARY)
+			write_summary()
+			rows_step = clients_log ? PING_DIAG_ROWS_WRITE_HOST : PING_DIAG_ROWS_IDLE
+		if(PING_DIAG_ROWS_WRITE_HOST)
+			write_host_row(rows_stamp, rows_now, rows_world_time, rows_clients)
+			rows_entries = null
+			rows_cells = null
+			rows_z_counts = null
+			rows_step = PING_DIAG_ROWS_IDLE
+		else
+			rows_step = PING_DIAG_ROWS_IDLE
+
+/// Строка ping-clients и сырые замеры одного клиента из среза. Время и соседи - на момент среза.
+/datum/controller/subsystem/ping_diag/proc/minute_client_row(list/entry)
+	rustg_time_reset(PING_DIAG_ROWS_TIMER)
+	var/datum/ping_diagnostics/diag = entry[2]
+	var/z = entry[5]
+	var/list/context = list(
+		"mob_kind" = entry[6],
+		"view" = entry[7],
+		"z_clients" = z ? rows_z_counts["[z]"] : 0,
+		"near_clients" = z ? ping_diag_grid_near(rows_cells, entry[3], entry[4], z, PING_DIAG_NEAR_RANGE) - 1 : 0,
+	)
+	rows_csv += ping_diag_csv_row(rows_stamp, rows_world_time, entry[1], diag.summary, diag.verdicts[1], context)
+	var/csv_done = rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	var/list/raw = diag.raw_since(rows_now, diag.raw_dumped_until)
+	var/raw_done = rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	if(length(raw["text"]))
+		rows_raw += "wt=[num2text(rows_world_time, 10)] ckey=[entry[1]] t0=[num2text(raw["t0"], 10)] s=[raw["text"]]"
+		diag.raw_dumped_until = raw["last"]
+	var/spent = rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	minute_rows_csv_us += csv_done
+	minute_rows_raw_us += raw_done - csv_done
+	minute_rows_lines_us += spent - raw_done
+	minute_rows_client_max_us = max(minute_rows_client_max_us, spent)
+	minute_rows_us += spent
+
+/datum/controller/subsystem/ping_diag/proc/rows_join(list/lines)
+	rustg_time_reset(PING_DIAG_ROWS_TIMER)
+	. = length(lines) ? "[lines.Join("\n")]\n" : null
+	var/spent = rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	minute_rows_join_us += spent
+	minute_rows_us += spent
+
+/// Записанный текст отпускается под замером: большой блок памяти - кандидат в редкие стопоры минутной записи.
+/datum/controller/subsystem/ping_diag/proc/rows_free(csv)
+	rustg_time_reset(PING_DIAG_ROWS_TIMER)
+	rows_text = null
+	if(csv)
+		rows_csv = null
+	else
+		rows_raw = null
+	minute_rows_free_us += rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+
+/datum/controller/subsystem/ping_diag/proc/write_host_row(stamp, now, row_world_time = world.time, clients = length(GLOB.clients))
 	var/total = minute_ours_ms + minute_yours_ms
 	var/ours_fraction = total ? round(minute_ours_ms / total, 0.01) : 0
 	rustg_time_reset(PING_DIAG_IO_TIMER)
@@ -407,8 +508,8 @@ SUBSYSTEM_DEF(ping_diag)
 	minute_proc_us += rustg_time_microseconds(PING_DIAG_IO_TIMER)
 	var/list/cells = list(
 		stamp,
-		num2text(world.time, 10),
-		length(GLOB.clients),
+		num2text(row_world_time, 10),
+		clients,
 		sampled ? num2text(host_net.tx_kbps, 10) : "",
 		sampled ? num2text(host_net.rx_kbps, 10) : "",
 		sampled ? host_net.retrans_per_min : "",
@@ -421,16 +522,21 @@ SUBSYSTEM_DEF(ping_diag)
 		ping_diag_us_to_ms(minute_proc_us),
 		ping_diag_us_to_ms(minute_log_us),
 		ping_diag_us_to_ms(minute_rows_us),
+		minute_rows_slices,
+		ping_diag_us_to_ms(minute_rows_snapshot_us),
+		ping_diag_us_to_ms(minute_rows_csv_us),
+		ping_diag_us_to_ms(minute_rows_raw_us),
+		ping_diag_us_to_ms(minute_rows_lines_us),
+		ping_diag_us_to_ms(minute_rows_join_us),
+		ping_diag_us_to_ms(minute_rows_free_us),
+		ping_diag_us_to_ms(minute_rows_client_max_us),
 	)
 	minute_events = 0
 	minute_ours_ms = 0
 	minute_yours_ms = 0
-	minute_fires = 0
-	minute_fire_us = 0
-	minute_fire_max_us = 0
-	minute_proc_us = 0
-	minute_log_us = 0
-	minute_rows_us = 0
+	var/static/list/minute_costs = list("minute_fires", "minute_fire_us", "minute_fire_max_us", "minute_proc_us", "minute_log_us", "minute_rows_us", "minute_rows_slices", "minute_rows_snapshot_us", "minute_rows_csv_us", "minute_rows_raw_us", "minute_rows_lines_us", "minute_rows_join_us", "minute_rows_free_us", "minute_rows_client_max_us")
+	for(var/name in minute_costs)
+		vars[name] = 0
 	. = cells.Join(",")
 	// Запись этой строки и текущий фаер уходят в цену следующей минуты.
 	if(host_log)

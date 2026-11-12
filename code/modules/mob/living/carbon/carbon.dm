@@ -526,10 +526,10 @@
 		SetNextAction(0)
 	update_equipment_speed_mods() // In case cuffs ever change speed
 
-/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break)
+/mob/living/carbon/proc/clear_cuffs(obj/item/I, cuff_break, is_hidden = FALSE)
 	if(!I.loc || buckled)
 		return
-	visible_message("<span class='danger'>[src] manages to [cuff_break ? "break" : "remove"] [I]!</span>")
+	visible_message(span_danger("[src] [cuff_break ? "разрывает" : "снимает"] [I]!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	to_chat(src, "<span class='notice'>You successfully [cuff_break ? "break" : "remove"] [I].</span>")
 
 	if(cuff_break)
@@ -1190,7 +1190,7 @@
 /mob/living/carbon/proc/can_revive(ignore_timelimit = FALSE, maximum_brute_dam = MAX_REVIVE_BRUTE_DAMAGE, maximum_fire_dam = MAX_REVIVE_FIRE_DAMAGE, ignore_heart = FALSE)
 	var/tlimit = DEFIB_TIME_LIMIT * 10
 	var/obj/item/organ/heart = getorgan(/obj/item/organ/heart)
-	if(suiciding || hellbound || HAS_TRAIT(src, TRAIT_HUSK) || AmBloodsucker(src))
+	if(!can_be_medically_revived() || HAS_TRAIT_NOT_FROM(src, TRAIT_HUSK, CHANGELING_DRAIN) || AmBloodsucker(src))
 		return
 	if(!ignore_timelimit && (world.time - timeofdeath) > tlimit)
 		return

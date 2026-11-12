@@ -61,10 +61,6 @@
 	damage = 25
 	fire_hazard = TRUE
 
-/obj/item/projectile/beam/laser/hellfire/swarmer
-	damage = 20
-	hit_prone_targets = TRUE
-
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)
 	. = ..()
 	transform *= 2
@@ -161,8 +157,95 @@
 	return ..()
 
 /obj/item/projectile/beam/disabler/swarmer
-	damage = 45
+	name = "swarmer laser"
+	icon = 'icons/obj/swarmer_projectiles.dmi'
+	icon_state = "default_swarmer"
+	glow_icon = null
+	glow_icon_state = null
+	damage = 23
 	hit_prone_targets = TRUE
+
+/obj/item/projectile/beam/disabler/swarmer/prehit_pierce(atom/A)
+	if(isswarmer(A))
+		return PROJECTILE_PIERCE_PHASE
+	if(istype(A, /obj/structure/swarmer))
+		var/obj/structure/swarmer/structure = A
+		if(structure.projectiles_pass)
+			return PROJECTILE_PIERCE_PHASE
+
+	damage = initial(damage)
+	damage_type = STAMINA
+	if(ishuman(A) && !HAS_TRAIT(A, TRAIT_ROBOTIC_ORGANISM))
+		damage *= SWARMER_STAMINA_SCALE
+	else if(isliving(A) || istype(A, /obj/vehicle) || istype(A, /obj/durand_shield))
+		damage_type = BURN
+		if(istype(A, /obj/vehicle/sealed/mecha))
+			// Сравниваем долю урона после энергетической брони «Дюранда» при попадании сбоку.
+			damage = round(damage * (100 - max(0, 10 - armour_penetration)) / (100 - max(0, 30 - armour_penetration)), DAMAGE_PRECISION)
+	return ..()
+
+/obj/item/projectile/beam/disabler/swarmer/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(. && damage_type == STAMINA && ishuman(target) && blocked < 100 && !HAS_TRAIT(target, TRAIT_DISABLER_RESISTANCE))
+		var/mob/living/human_target = target
+		human_target.apply_status_effect(/datum/status_effect/swarmer_stamina_block)
+
+/obj/item/projectile/beam/disabler/swarmer/generalist
+	damage = 20
+
+/obj/item/projectile/beam/disabler/swarmer/double
+	name = "double swarmer laser"
+	icon_state = "double_shot_swarmer"
+	damage = 22
+
+/obj/item/projectile/beam/disabler/swarmer/empowered
+	name = "strong swarmer laser"
+	icon_state = "charged_shot_swarmer"
+	damage = 50
+	knockdown = 1 SECONDS
+
+/obj/item/projectile/beam/disabler/swarmer/minigun
+	damage = 15
+
+/obj/item/projectile/beam/disabler/swarmer/weak_turret
+	name = "weak turret laser"
+	damage = 10
+
+/obj/item/projectile/beam/disabler/swarmer/strong_turret
+	name = "strong turret laser"
+	damage = 45
+	armour_penetration = 30
+
+/obj/item/projectile/beam/disabler/swarmer/strong_turret/prehit_pierce(atom/A)
+	. = ..()
+	if(. == PROJECTILE_PIERCE_NONE && pierces < 2)
+		return PROJECTILE_PIERCE_HIT
+
+/obj/item/projectile/beam/disabler/swarmer/sabotage
+	name = "sabotage swarmer laser"
+	icon_state = "sabotage_shot_swarmer"
+	damage = 22
+
+/obj/item/projectile/beam/disabler/swarmer/sabotage/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(!. || !isliving(target) || blocked >= 100)
+		return
+	var/mob/living/victim = target
+	for(var/obj/item/gun/held_gun in victim.held_items)
+		if(istype(held_gun, /obj/item/gun/energy))
+			var/obj/item/gun/energy/energy_gun = held_gun
+			var/ion_weapon = locate(/obj/item/ammo_casing/energy/ion) in energy_gun.ammo_type
+			var/drain = ion_weapon ? 0.5 : 0.25
+			var/obj/item/stock_parts/cell/cell = energy_gun.cell
+			if(cell)
+				cell.use(min(cell.charge, round(cell.maxcharge * drain)))
+			energy_gun.set_firemode_to_type(/obj/item/ammo_casing/energy/disabler)
+			energy_gun.update_icon()
+			return
+		if(istype(held_gun, /obj/item/gun/ballistic))
+			var/obj/item/gun/ballistic/ballistic_gun = held_gun
+			ballistic_gun.swarmer_unload(victim)
+			return
 
 /obj/item/projectile/beam/pulse
 	name = "pulse"

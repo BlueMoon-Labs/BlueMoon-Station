@@ -29,8 +29,11 @@
 
 ///Реальный заблокированный следующий турф маршрута к цели, либо null
 /proc/ai_get_blocked_path_turf(mob/living/pawn, atom/target)
+	return ai_blocked_step_turf(pawn, ai_next_path_step(pawn, target))
+
+///next_step, если он заблокирован преградой (не мобом), иначе null
+/proc/ai_blocked_step_turf(mob/living/pawn, turf/next_step)
 	var/turf/current_turf = get_turf(pawn)
-	var/turf/next_step = ai_next_path_step(pawn, target)
 	if(current_turf && next_step && (next_step.is_blocked_turf(exclude_mobs = TRUE, source_atom = pawn) || current_turf.LinkBlockedWithAccess(next_step, pawn, pawn.get_idcard(), FALSE)))
 		return next_step
 	return null
@@ -45,8 +48,12 @@
 	var/turf/next_step = ai_next_path_step(pawn, target)
 	if(!next_step || !next_step.Adjacent(pawn))
 		return null
-	for(var/mob/living/blocker in next_step)
-		if(blocker == pawn || blocker == target || !blocker.density)
+	return ai_attackable_blocker_on(hostile_pawn, target, next_step)
+
+///Атакуемый плотный моб на уже проверенном соседнем шаге, кроме самой цели
+/proc/ai_attackable_blocker_on(mob/living/simple_animal/hostile/hostile_pawn, atom/target, turf/adjacent_step)
+	for(var/mob/living/blocker in adjacent_step)
+		if(blocker == hostile_pawn || blocker == target || !blocker.density)
 			continue
 		if(hostile_pawn.CanAttack(blocker))
 			return blocker
@@ -108,21 +115,27 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(QDELETED(target))
 		return
+	var/mob/living/pawn = controller.pawn
+	//шаг пути и его смежность считаются один раз на план, а не в каждой из трёх проверок
+	var/turf/next_step = ai_next_path_step(pawn, target)
+	var/turf/adjacent_step = next_step?.Adjacent(pawn) ? next_step : null
 
 	//живой атакуемый блокер (враг, перегородивший телом путь) важнее стены: моб
 	//пробивает его, а не обходит - иначе body-block против мобов не работает.
 	//Проверяется ДО предметного гейта ниже: враг, вставший на пути к добыче, -
 	//законная цель удара независимо от того, что моб шёл за предметом.
-	if(ai_path_blocker_mob(controller.pawn, target))
+	if(adjacent_step && istype(pawn, /mob/living/simple_animal/hostile) && ai_attackable_blocker_on(pawn, target, adjacent_step))
 		controller.queue_behavior(/datum/ai_behavior/attack_path_blocker, target_key)
 		return
 
 	//Труп на стуле - не цель и не толпа: пристёгнутое тело не освободит тайл
 	//само (репорт: "трупики на стул садят и защищаются от ботов"). Отстёгивание
 	//ничего не ломает, поэтому предметный гейт ниже его не касается.
-	if(ai_body_barricade_mob(controller.pawn, target))
-		controller.queue_behavior(/datum/ai_behavior/clear_body_barricade, target_key)
-		return
+	if(adjacent_step)
+		var/mob/living/barricade = ai_seated_body_blocker(pawn, adjacent_step)
+		if(barricade && barricade != target)
+			controller.queue_behavior(/datum/ai_behavior/clear_body_barricade, target_key)
+			return
 
 	//Ломать окружение можно ради добычи, но не ради ХЛАМА. Мобы с
 	//search_objects/wanted_objects (гусь за мусором, watcher за алмазом,
@@ -132,7 +145,7 @@
 	if(isitem(target))
 		return
 
-	if(!ai_get_blocked_path_turf(controller.pawn, target))
+	if(!ai_blocked_step_turf(pawn, next_step))
 		return
 
 	controller.queue_behavior(attack_behaviour, target_key)

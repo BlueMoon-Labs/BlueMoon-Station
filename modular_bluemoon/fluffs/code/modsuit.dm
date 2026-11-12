@@ -33,8 +33,6 @@
 	if(!isnull(modkit_desc))
 		desc = modkit_desc
 		modkit_desc = null
-	activation_sound = null
-	deactivation_sound = null
 
 /obj/item/modsuit_modkit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier)
 	if(!istype(target, /obj/item/mod/control))
@@ -136,8 +134,6 @@
 	modsuit.modkit_desc = modsuit.desc
 	modsuit.name = control_name
 	modsuit.desc = control_desc
-	modsuit.activation_sound = 'sound/items/modsuit/armolex_activation.ogg'
-	modsuit.deactivation_sound = 'sound/items/modsuit/armolex_deactivation.ogg'
 	modsuit.armolex_hud = new hud_type(modsuit)
 	SStgui.close_uis(modsuit)
 
