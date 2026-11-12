@@ -296,64 +296,9 @@
 ///базы через делегацию OpenFire); лавовые катвоки и бросок из пропасти живут
 ///в легаси-Move override пауна, поэтому опасные турфы обязаны быть
 ///проходимыми - легаси walk_to свободно шёл в лаву, а Move сам стелил катвок.
-/datum/ai_controller/hostile_adapter/swarmer
-	cross_dangerous_turfs = TRUE
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/find_hostile_targets,
-		/datum/ai_planning_subtree/hostile_fsm,
-		/datum/ai_planning_subtree/ranged_skirmish,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/hostile_melee,
-	)
-	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
-
 ///Ресурсник: фуражирский цикл (починка/репликация/постройки/поедание
 ///объектов) при отсутствии живой угрозы; стрельба только по живым -
 ///его OpenFire гейтит неживое.
-/datum/ai_controller/hostile_adapter/swarmer/resource
-	ai_pack_role = AI_ROLE_SCAVENGER
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/find_hostile_targets,
-		/datum/ai_planning_subtree/hostile_fsm,
-		/datum/ai_planning_subtree/ranged_skirmish/living_only,
-		/datum/ai_planning_subtree/swarmer_forage,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/hostile_melee,
-	)
-	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
-
-///Боевой стрелок роя: кайт-band из легаси retreat/minimum_distance (3..5)
-/datum/ai_controller/hostile_adapter/swarmer/skirmisher
-	ai_pack_role = AI_ROLE_SKIRMISHER
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/find_hostile_targets,
-		/datum/ai_planning_subtree/hostile_fsm,
-		/datum/ai_planning_subtree/maintain_distance,
-		/datum/ai_planning_subtree/ranged_skirmish,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/hostile_break_away,
-	)
-	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
-
-///Мили-боец роя: электрошок/телепорт-диспёрс живут в его AttackingTarget
-/datum/ai_controller/hostile_adapter/swarmer/brawler
-	ai_pack_role = AI_ROLE_HUNTER
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/find_hostile_targets,
-		/datum/ai_planning_subtree/hostile_fsm,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/take_cover_when_pinned,
-		/datum/ai_planning_subtree/pack_encircle,
-		/datum/ai_planning_subtree/tactical_approach,
-		/datum/ai_planning_subtree/hostile_melee,
-	)
-	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
-
-///Floor cluwne: сценарный призрак-сталкер. Жертву назначает собственный
-///сценарий (Acquire_Victim/Kill), фазы/явления/утаскивание ведёт его Life() -
-///контроллер лишь ведёт пауна к жертве, пока тот не явлен (легаси-гейт Goto
-///переехал в can_ai_controller_move). Целей не ищет (жертва закреплена) и не
-///спит: жертва может быть в другом конце станции, а сценарий обязан идти.
 /datum/ai_controller/hostile_adapter/floor_cluwne
 	can_idle = FALSE
 	planning_subtrees = list(
@@ -421,6 +366,7 @@
 	//Босс не бросает погоню: она и есть содержание боя, а убежать от него
 	//полагается разрывом линии и ареной, а не выносливостью.
 	pursuit_leashed = FALSE
+	plan_skip_allowed = FALSE
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/find_hostile_targets,
 		/datum/ai_planning_subtree/hostile_fsm,

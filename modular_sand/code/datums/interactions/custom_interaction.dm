@@ -6,7 +6,7 @@
 	var/interaction_effect = INTERACTION_EFFECT_HEART
 	var/block_partner_pixel_shift = FALSE
 	var/panel_tab_toggles = ALL_INTERACTION_MENU_TABS
-	var/dynamic_window_size = FALSE
+	var/dynamic_window_size = TRUE
 	var/compact_custom_tab = FALSE
 
 /datum/preferences/proc/get_custom_interaction_limit()
@@ -118,6 +118,53 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	"clawcum2" = list("label" = "Коготь 2", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_splurt/sound/lewd/deathclaw2.ogg'),
 ))
 
+GLOBAL_LIST_INIT(custom_interaction_body_parts, list(
+	"[INTERACTION_REQUIRE_ANUS]" = "Анус",
+	"[INTERACTION_REQUIRE_BALLS]" = "Яички",
+	"[INTERACTION_REQUIRE_BREASTS]" = "Грудь",
+	"[INTERACTION_REQUIRE_BELLY]" = "Живот",
+	"[INTERACTION_REQUIRE_EARS]" = "Уши",
+	"[INTERACTION_REQUIRE_EYES]" = "Глаза",
+	"[INTERACTION_REQUIRE_FEET]" = "Стопы",
+	"[INTERACTION_REQUIRE_PENIS]" = "Член",
+	"[INTERACTION_REQUIRE_VAGINA]" = "Влагалище",
+	"[INTERACTION_REQUIRE_TAIL]" = "Хвост",
+	"[INTERACTION_REQUIRE_HANDS]" = "Руки",
+	"[INTERACTION_REQUIRE_MOUTH]" = "Рот",
+))
+
+GLOBAL_LIST_INIT(custom_interaction_arousal_organs, list(
+	CUSTOM_INTERACTION_AROUSAL_GENERAL = NONE,
+	ORGAN_SLOT_ANUS = INTERACTION_REQUIRE_ANUS,
+	ORGAN_SLOT_TESTICLES = INTERACTION_REQUIRE_BALLS,
+	ORGAN_SLOT_BREASTS = INTERACTION_REQUIRE_BREASTS,
+	ORGAN_SLOT_BELLY = INTERACTION_REQUIRE_BELLY,
+	ORGAN_SLOT_PENIS = INTERACTION_REQUIRE_PENIS,
+	ORGAN_SLOT_VAGINA = INTERACTION_REQUIRE_VAGINA,
+))
+
+GLOBAL_LIST_INIT(custom_interaction_orgasm_organs, list(
+	CUSTOM_INTERACTION_ORGASM_AUTO = NONE,
+	ORGAN_SLOT_PENIS = INTERACTION_REQUIRE_PENIS,
+	ORGAN_SLOT_VAGINA = INTERACTION_REQUIRE_VAGINA,
+))
+
+GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
+	CUSTOM_INTERACTION_ORGASM_FLOOR = list("label" = "На пол", "flag" = NONE),
+	CUM_TARGET_MOUTH = list("label" = "В рот", "flag" = INTERACTION_REQUIRE_MOUTH),
+	CUM_TARGET_THROAT = list("label" = "В горло", "flag" = INTERACTION_REQUIRE_MOUTH),
+	CUM_TARGET_HAND = list("label" = "На руки", "flag" = INTERACTION_REQUIRE_HANDS),
+	CUM_TARGET_FEET = list("label" = "На стопы", "flag" = INTERACTION_REQUIRE_FEET),
+	CUM_TARGET_BREASTS = list("label" = "На грудь", "flag" = INTERACTION_REQUIRE_BREASTS),
+	CUM_TARGET_BELLY = list("label" = "На живот", "flag" = INTERACTION_REQUIRE_BELLY),
+	CUM_TARGET_PENIS = list("label" = "На член", "flag" = INTERACTION_REQUIRE_PENIS),
+	CUM_TARGET_VAGINA = list("label" = "Во влагалище", "flag" = INTERACTION_REQUIRE_VAGINA),
+	CUM_TARGET_ANUS = list("label" = "В анус", "flag" = INTERACTION_REQUIRE_ANUS),
+	CUM_TARGET_EARS = list("label" = "На уши", "flag" = INTERACTION_REQUIRE_EARS),
+	CUM_TARGET_EYES = list("label" = "На глаза", "flag" = INTERACTION_REQUIRE_EYES),
+	CUM_TARGET_TAIL = list("label" = "На хвост", "flag" = INTERACTION_REQUIRE_TAIL),
+))
+
 /datum/interaction/custom
 	max_distance = 1
 	var/name
@@ -128,10 +175,20 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	var/self_orgasm = FALSE
 	var/partner_orgasm = FALSE
 	var/scope = CUSTOM_INTERACTION_SCOPE_BOTH
-	var/required_body_parts = NONE
-	var/requires_tail = FALSE
-	var/requires_telekinesis = FALSE
 	var/list/sound_keys = list()
+	var/self_required_body_parts = NONE
+	var/partner_required_body_parts = NONE
+	var/self_arousal_organ = CUSTOM_INTERACTION_AROUSAL_GENERAL
+	var/partner_arousal_organ = CUSTOM_INTERACTION_AROUSAL_GENERAL
+	var/self_orgasm_target = CUSTOM_INTERACTION_ORGASM_FLOOR
+	var/partner_orgasm_target = CUSTOM_INTERACTION_ORGASM_FLOOR
+	var/self_orgasm_organ = CUSTOM_INTERACTION_ORGASM_AUTO
+	var/partner_orgasm_organ = CUSTOM_INTERACTION_ORGASM_AUTO
+	var/self_requires_tail = FALSE
+	var/partner_requires_tail = FALSE
+	var/self_requires_telekinesis = FALSE
+	var/partner_requires_telekinesis = FALSE
+	var/requires_review = FALSE
 
 /datum/interaction/custom/proc/get_lust_amount(level = arousal_level)
 	switch(level)
@@ -143,11 +200,11 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 			return 28
 	return 0
 
-/datum/interaction/custom/proc/try_moan(mob/living/M)
+/datum/interaction/custom/proc/try_moan(mob/living/M, is_hidden)
 	var/datum/preferences/prefs = M.client?.prefs
 	if(!prefs || !prefs.use_moaning_multiplier || !prob(prefs.moaning_multiplier))
 		return
-	M.moan()
+	M.moan(is_hidden)
 
 /datum/interaction/custom/proc/get_type_label()
 	switch(interaction_type)
@@ -187,6 +244,10 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 
 /datum/interaction/custom/proc/is_body_part_exposed(mob/living/M, requirement)
 	switch(requirement)
+		if(INTERACTION_REQUIRE_HANDS)
+			return M.has_hand() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_MOUTH)
+			return M.has_mouth() && M.mouth_is_free()
 		if(INTERACTION_REQUIRE_ANUS)
 			return M.has_anus() == HAS_EXPOSED_GENITAL
 		if(INTERACTION_REQUIRE_BALLS)
@@ -211,50 +272,74 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 			return M.has_vagina() == HAS_EXPOSED_GENITAL
 		if(INTERACTION_REQUIRE_TAIL)
 			return M.has_tail()
-	return TRUE
+	return FALSE
 
-/datum/interaction/custom/proc/get_body_parts_label()
+/datum/interaction/custom/proc/get_required_body_parts(for_partner = FALSE)
+	var/arousal_organ = for_partner ? partner_arousal_organ : self_arousal_organ
+	var/orgasm_organ = for_partner ? partner_orgasm_organ : self_orgasm_organ
+	var/orgasm_target = for_partner ? self_orgasm_target : partner_orgasm_target
+	var/list/target_info = GLOB.custom_interaction_orgasm_targets[orgasm_target]
+	var/requirements = for_partner ? partner_required_body_parts : self_required_body_parts
+	return requirements | GLOB.custom_interaction_arousal_organs[arousal_organ] | GLOB.custom_interaction_orgasm_organs[orgasm_organ] | target_info["flag"]
+
+/datum/interaction/custom/proc/get_body_parts_label(requirements)
 	var/list/labels = list()
-	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
-		if(!(required_body_parts & requirement))
-			continue
-		switch(requirement)
-			if(INTERACTION_REQUIRE_ANUS)
-				labels += "анус"
-			if(INTERACTION_REQUIRE_BALLS)
-				labels += "яйца"
-			if(INTERACTION_REQUIRE_BELLY)
-				labels += "живот"
-			if(INTERACTION_REQUIRE_BREASTS)
-				labels += "грудь"
-			if(INTERACTION_REQUIRE_EARS)
-				labels += "уши"
-			if(INTERACTION_REQUIRE_EYES)
-				labels += "глаза"
-			if(INTERACTION_REQUIRE_FEET)
-				labels += "ноги"
-			if(INTERACTION_REQUIRE_PENIS)
-				labels += "член"
-			if(INTERACTION_REQUIRE_VAGINA)
-				labels += "вагина"
-			if(INTERACTION_REQUIRE_TAIL)
-				labels += "хвост"
-	return length(labels) ? "оголено: [english_list(labels, nothing_text = "", and_text = ", ")]" : "всегда доступно"
+	for(var/flag in GLOB.custom_interaction_body_parts)
+		if(requirements & text2num(flag))
+			labels += lowertext(GLOB.custom_interaction_body_parts[flag])
+	return jointext(labels, ", ")
 
 /datum/interaction/custom/proc/sanitize_values()
 	name = copytext(strip_html(name), 1, MAX_CUSTOM_INTERACTION_NAME_LENGTH + 1)
 	message = copytext(strip_html(message), 1, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH + 1)
+	sanitize_settings()
+
+/datum/interaction/custom/proc/sanitize_settings()
 	interaction_type = sanitize_inlist(interaction_type, CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
 	arousal_level = sanitize_integer(arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
 	partner_arousal_level = sanitize_integer(partner_arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
-	self_orgasm = !!self_orgasm
-	partner_orgasm = !!partner_orgasm
+	self_orgasm = arousal_level > CUSTOM_AROUSAL_NONE && !!self_orgasm
+	partner_orgasm = partner_arousal_level > CUSTOM_AROUSAL_NONE && !!partner_orgasm
 	scope = sanitize_inlist(scope, CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
-	required_body_parts = sanitize_integer(required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
-	requires_tail = !!requires_tail
-	requires_telekinesis = !!requires_telekinesis
-	max_distance = sanitize_integer(max_distance, 1, 3, 1)
+	self_required_body_parts = sanitize_integer(self_required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
+	partner_required_body_parts = sanitize_integer(partner_required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
+	self_arousal_organ = sanitize_inlist(arousal_level ? self_arousal_organ : null, GLOB.custom_interaction_arousal_organs, CUSTOM_INTERACTION_AROUSAL_GENERAL)
+	partner_arousal_organ = sanitize_inlist(partner_arousal_level ? partner_arousal_organ : null, GLOB.custom_interaction_arousal_organs, CUSTOM_INTERACTION_AROUSAL_GENERAL)
+	self_orgasm_target = sanitize_inlist(self_orgasm ? self_orgasm_target : null, GLOB.custom_interaction_orgasm_targets, CUSTOM_INTERACTION_ORGASM_FLOOR)
+	partner_orgasm_target = sanitize_inlist(partner_orgasm ? partner_orgasm_target : null, GLOB.custom_interaction_orgasm_targets, CUSTOM_INTERACTION_ORGASM_FLOOR)
+	self_orgasm_organ = sanitize_inlist(self_orgasm ? self_orgasm_organ : null, GLOB.custom_interaction_orgasm_organs, CUSTOM_INTERACTION_ORGASM_AUTO)
+	partner_orgasm_organ = sanitize_inlist(partner_orgasm ? partner_orgasm_organ : null, GLOB.custom_interaction_orgasm_organs, CUSTOM_INTERACTION_ORGASM_AUTO)
+	self_requires_tail = !!self_requires_tail
+	self_requires_telekinesis = !!self_requires_telekinesis
+	partner_requires_tail = !!partner_requires_tail
+	partner_requires_telekinesis = !!partner_requires_telekinesis
+	max_distance = (self_requires_telekinesis || partner_requires_telekinesis) ? sanitize_integer(max_distance, 1, 3, 1) : 1
 	sanitize_sound_keys()
+
+/datum/interaction/custom/proc/update_from_editor(new_name, new_message, list/params)
+	name = new_name
+	message = new_message
+	interaction_type = params["interaction_type"]
+	arousal_level = text2num(params["arousal_level"])
+	partner_arousal_level = text2num(params["partner_arousal_level"])
+	self_orgasm = text2num(params["self_orgasm"])
+	partner_orgasm = text2num(params["partner_orgasm"])
+	scope = sanitize_inlist(params["scope"], CUSTOM_INTERACTION_SCOPES, scope)
+	self_required_body_parts = text2num(params["self_required_body_parts"])
+	partner_required_body_parts = text2num(params["partner_required_body_parts"])
+	self_arousal_organ = params["self_arousal_organ"]
+	partner_arousal_organ = params["partner_arousal_organ"]
+	self_orgasm_target = params["self_orgasm_target"]
+	partner_orgasm_target = params["partner_orgasm_target"]
+	self_orgasm_organ = params["self_orgasm_organ"]
+	partner_orgasm_organ = params["partner_orgasm_organ"]
+	self_requires_tail = text2num(params["self_requires_tail"])
+	partner_requires_tail = text2num(params["partner_requires_tail"])
+	self_requires_telekinesis = text2num(params["self_requires_telekinesis"])
+	partner_requires_telekinesis = text2num(params["partner_requires_telekinesis"])
+	max_distance = text2num(params["max_distance"])
+	sound_keys = params["sound_keys"]
+	sanitize_settings()
 
 /datum/interaction/custom/proc/sanitize_sound_keys()
 	sound_keys = SANITIZE_LIST(sound_keys)
@@ -294,52 +379,14 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 /datum/interaction/custom/proc/has_telekinesis(mob/living/M)
 	return M.check_mutation(TK) || HAS_TRAIT(M, TRAIT_TK_POTENTIAL)
 
-/datum/interaction/custom/proc/pass_requirement_gate(mob/living/custom_owner, mob/living/target)
-	if(requires_tail && !(custom_owner.has_tail() || (target && target.has_tail())))
-		return FALSE
-	if(requires_telekinesis && !(has_telekinesis(custom_owner) || (target && has_telekinesis(target))))
-		return FALSE
-	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
-		if(!(required_body_parts & requirement))
-			continue
-		if(!is_body_part_exposed(custom_owner, requirement) && !(target && is_body_part_exposed(target, requirement)))
+/datum/interaction/custom/proc/check_exposed_parts(mob/living/participant, requirements)
+	for(var/flag = INTERACTION_REQUIRE_HANDS; flag <= requirements; flag <<= 1)
+		if((requirements & flag) && !is_body_part_exposed(participant, flag))
 			return FALSE
-	switch(scope)
-		if(CUSTOM_INTERACTION_SCOPE_SELF)
-			return custom_owner == target
-		if(CUSTOM_INTERACTION_SCOPE_OTHERS)
-			return custom_owner != target
-		else
-			return TRUE
+	return TRUE
 
-/datum/interaction/custom/proc/check_requirements(mob/living/user, mob/living/target, silent = TRUE)
-	if(requires_tail && !(user.has_tail() || (target && target.has_tail())))
-		if(!silent)
-			to_chat(user, span_warning("Требования для этого действия не выполнены: нужен хвост у кого-то из вас."))
-		return FALSE
-	if(requires_telekinesis && !(has_telekinesis(user) || (target && has_telekinesis(target))))
-		if(!silent)
-			to_chat(user, span_warning("Требования для этого действия не выполнены: нужен телекинез у кого-то из вас."))
-		return FALSE
-	if(required_body_parts)
-		var/all_parts_missing = TRUE
-		for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
-			if(!(required_body_parts & requirement))
-				continue
-			if(is_body_part_exposed(user, requirement) || (target && is_body_part_exposed(target, requirement)))
-				all_parts_missing = FALSE
-				break
-		if(all_parts_missing)
-			if(!silent)
-				to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
-			return FALSE
-	var/mob/living/custom_owner
-	if(findtext(custom_interaction_key, user?.ckey))
-		custom_owner = user
-	else if(findtext(custom_interaction_key, target?.ckey))
-		custom_owner = target
-
-	if(!custom_owner)
+/datum/interaction/custom/proc/pass_requirement_gate(mob/living/user, mob/living/target, mob/living/custom_owner, silent = TRUE)
+	if(requires_review)
 		return FALSE
 	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && custom_owner != target)
 		if(!silent)
@@ -348,6 +395,45 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && custom_owner == target)
 		if(!silent)
 			to_chat(user, span_warning("Это действие доступно только на других."))
+		return FALSE
+	if(self_requires_tail && !user.has_tail())
+		if(!silent)
+			to_chat(user, span_warning("У тебя должен быть хвост."))
+		return FALSE
+	if(partner_requires_tail && !target.has_tail())
+		if(!silent)
+			to_chat(user, span_warning("У партнёра должен быть хвост."))
+		return FALSE
+	if(self_requires_telekinesis && !has_telekinesis(user))
+		if(!silent)
+			to_chat(user, span_warning("У тебя должен быть телекинез."))
+		return FALSE
+	if(partner_requires_telekinesis && !has_telekinesis(target))
+		if(!silent)
+			to_chat(user, span_warning("У партнёра должен быть телекинез."))
+		return FALSE
+	var/self_parts = get_required_body_parts()
+	if(!check_exposed_parts(user, self_parts))
+		if(!silent)
+			to_chat(user, span_warning("У тебя должны быть оголены: [get_body_parts_label(self_parts)]."))
+		return FALSE
+	var/partner_parts = get_required_body_parts(for_partner = TRUE)
+	if(!check_exposed_parts(target, partner_parts))
+		if(!silent)
+			to_chat(user, span_warning("У цели должны быть оголены: [get_body_parts_label(partner_parts)]."))
+		return FALSE
+	return TRUE
+
+/proc/custom_interaction_allows_distance(mob/living/user, mob/living/target, distance)
+	return distance <= 1 || ((user.client?.prefs.toggles & RANGED_VERBS_CONSENT) && (!target.client || (target.client.prefs.toggles & RANGED_VERBS_CONSENT)))
+
+/datum/interaction/custom/proc/check_requirements(mob/living/user, mob/living/target, silent = TRUE)
+	var/mob/living/custom_owner = SSinteractions.get_custom_interaction_owner(user, target, custom_interaction_key)
+	if(!custom_owner || !pass_requirement_gate(user, target, custom_owner, silent))
+		return FALSE
+	if(user.client && !user.client.prefs.custom_verb_consent)
+		if(!silent)
+			to_chat(user, span_warning("Ты отключил кастомные интеракты."))
 		return FALSE
 	if(target.client && !target.client.prefs.custom_verb_consent)
 		if(!silent)
@@ -383,12 +469,6 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 				return FALSE
 	return TRUE
 
-/datum/interaction/custom/proc/get_message_style()
-	switch(interaction_type)
-		if(CUSTOM_INTERACTION_TYPE_LEWD, CUSTOM_INTERACTION_TYPE_EXTREME, CUSTOM_INTERACTION_TYPE_UNHOLY)
-			return "lewd"
-	return "notice"
-
 /datum/interaction/custom/proc/get_random_message_variant()
 	var/list/variants = list()
 	for(var/variant in splittext(message, "/"))
@@ -397,30 +477,64 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 			variants += trimmed
 	return length(variants) ? pick(variants) : message
 
+/datum/interaction/custom/proc/apply_effect(mob/living/recipient, mob/living/other, level, arousal_organ, allow_orgasm, orgasm_organ, orgasm_target, is_hidden)
+	if(QDELETED(recipient))
+		return
+	var/amount = get_lust_amount(level)
+	if(!amount)
+		return
+	var/organ = arousal_organ == CUSTOM_INTERACTION_AROUSAL_GENERAL ? null : arousal_organ
+	if(allow_orgasm)
+		var/orifice = orgasm_target == CUSTOM_INTERACTION_ORGASM_FLOOR ? null : orgasm_target
+		var/mob/living/partner = QDELETED(other) || (!orifice && recipient == other) ? null : other
+		if(orgasm_organ != CUSTOM_INTERACTION_ORGASM_AUTO || orifice)
+			var/obj/item/organ/genital/source_organ
+			if(orgasm_organ != CUSTOM_INTERACTION_ORGASM_AUTO)
+				source_organ = recipient.getorganslot(orgasm_organ)
+			else
+				source_organ = recipient.getorganslot(ORGAN_SLOT_PENIS) || recipient.getorganslot(ORGAN_SLOT_VAGINA)
+			if(orifice == CUM_TARGET_FEET && !source_organ)
+				orifice = null
+			if(recipient.last_lewd_datum || recipient.last_partner != partner || recipient.last_orifice != orifice || recipient.last_genital != source_organ)
+				// Участники могут выбрать разные органы и цели.
+				recipient.last_lewd_datum = null
+				recipient.set_is_fucking(partner, orifice, source_organ, sub_set = TRUE)
+		recipient.handle_post_sex(amount, orifice, partner, organ, is_hidden = is_hidden)
+	else
+		var/mob/living/carbon/carbon_recipient = recipient
+		if(organ && istype(carbon_recipient))
+			amount = carbon_recipient.check_stimulation(amount, organ)
+		if(amount)
+			recipient.add_lust(amount)
+			try_moan(recipient, is_hidden)
+
 /datum/interaction/custom/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target) || !name || !message)
 		return FALSE
 	if(!check_requirements(user, target, silent = FALSE))
 		return FALSE
-	if(get_dist(user, target) > max_distance)
+	var/distance = get_dist(user, target)
+	if(distance > max_distance)
 		to_chat(user, span_warning("Слишком далеко."))
+		return FALSE
+	if(!custom_interaction_allows_distance(user, target, distance))
+		to_chat(user, span_warning("Для кастомной интеракции на расстоянии нужно согласие обоих участников."))
 		return FALSE
 	if(max_distance == 1 && !(user.Adjacent(target) && target.Adjacent(user)))
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
-	var/vision_distance = 7
-	var/hidden_message
-	if(is_hidden)
-		vision_distance = 1
-		hidden_message = pick(hidden_additional)
+	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
+	var/hidden_message = HIDDEN_INTERACTION_PREFIX(is_hidden)
 	var/use_message = get_random_message_variant()
 	use_message = replacetext(use_message, "USER", "<b>\the [user]</b>")
 	use_message = replacetext(use_message, "TARGET", "<b>\the [target]</b>")
 	var/is_lewd = interaction_type != CUSTOM_INTERACTION_TYPE_NORMAL
+	var/display_message = "[hidden_message][capitalize(use_message)]"
 	user.visible_message(
-		"<span class='[get_message_style()]'>[hidden_message][capitalize(use_message)]</span>",
+		is_lewd ? span_lewd(display_message) : span_notice(display_message),
 		vision_distance = vision_distance,
-		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null
+		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null,
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 	if(is_lewd)
 		user.try_play_interaction_effect(is_hidden)
@@ -435,23 +549,12 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 			if(sound_turf)
 				var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 				if(is_lewd)
-					playlewdinteractionsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, ignored_mobs = user.get_unconsenting(get_interaction_flags()))
+					playlewdinteractionsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, ignored_mobs = user.get_unconsenting(get_interaction_flags()), local_only = is_hidden)
 				else
-					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange)
-	var/lust_amount = get_lust_amount()
-	if(!QDELETED(user))
-		if(self_orgasm)
-			user.handle_post_sex(lust_amount, null, user == target ? null : target)
-		else if(lust_amount)
-			user.add_lust(lust_amount)
-			try_moan(user)
-	var/partner_lust_amount = get_lust_amount(partner_arousal_level)
-	if(!QDELETED(target))
-		if(partner_orgasm)
-			target.handle_post_sex(partner_lust_amount, null, target == user ? null : user)
-		else if(partner_lust_amount)
-			target.add_lust(partner_lust_amount)
-			try_moan(target)
+					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, local_only = is_hidden)
+	apply_effect(user, target, arousal_level, self_arousal_organ, self_orgasm, self_orgasm_organ, self_orgasm_target, is_hidden)
+	if(user != target)
+		apply_effect(target, user, partner_arousal_level, partner_arousal_organ, partner_orgasm, partner_orgasm_organ, partner_orgasm_target, is_hidden)
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(user != target)
@@ -464,24 +567,24 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 		target.log_message("Подвергся[is_hidden ? " (скрытно)" : null] Custom интеракции от [user]: «[use_message]»", LOG_VICTIM, log_globally = FALSE)
 	return TRUE
 
-/datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/user, mob/living/target, key)
-	if(!findtext(key, CUSTOM_INTERACTION_PREFIX))
+/datum/controller/subsystem/processing/interactions/proc/get_custom_interaction_owner(mob/living/user, mob/living/target, key)
+	if(!istext(key) || findtext(key, CUSTOM_INTERACTION_PREFIX) != 1)
 		return
+	if(user?.ckey && findtext(key, "[CUSTOM_INTERACTION_PREFIX][user.ckey]:") == 1)
+		return user
+	if(target?.ckey && findtext(key, "[CUSTOM_INTERACTION_PREFIX][target.ckey]:") == 1)
+		return target
 
-	var/mob/living/custom_owner
-	if(findtext(key, user?.ckey))
-		custom_owner = user
-	else if(findtext(key, target?.ckey))
-		custom_owner = target
-
+/datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/user, mob/living/target, key)
+	var/mob/living/custom_owner = get_custom_interaction_owner(user, target, key)
 	if(!custom_owner?.client?.prefs)
 		return
 	var/index = text2num(copytext(key, findlasttext(key, ":") + 1))
 	var/list/customs = custom_owner.client.prefs.custom_interactions
-	if(!length(customs) || !index || index > length(customs))
+	if(!ISINTEGER(index) || index < 1 || index > length(customs))
 		return
 	var/datum/interaction/custom/custom = customs[index]
-	if(!custom?.name || !custom.message)
+	if(!custom?.name || !custom.message || custom.requires_review)
 		return
 	custom.custom_interaction_key = key
 	return custom

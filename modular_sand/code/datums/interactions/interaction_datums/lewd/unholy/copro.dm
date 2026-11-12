@@ -46,9 +46,9 @@
 		return
 
 	if(prob(50) && isclownjob(target))
-		target.visible_message("<span class='lewd'>\ Жопа <b>[target]</b>забавно хонкает!</span>")
+		target.visible_message(span_lewd("\ Жопа <b>[target]</b>забавно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
-	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 
 /datum/interaction/lewd/unholy/hard/suck_shit
 	description = "Высосать говно из задницы."

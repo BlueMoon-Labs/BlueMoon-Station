@@ -12,6 +12,7 @@ type ImageButtonProps = BoxProps & {
   base64?: string;
   buttons?: ReactNode;
   buttonsAlt?: ReactNode;
+  centerImage?: boolean;
   disabled?: BooleanLike;
   fluid?: boolean;
   imageSize?: number;
@@ -25,11 +26,15 @@ type ImageButtonProps = BoxProps & {
 // Карточка Nova: отдельная область выдачи и независимые элементы управления.
 export const ImageButton = (props: ImageButtonProps) => {
   const {
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-pressed': ariaPressed,
     asset,
     assetSize = 32,
     base64,
     buttons,
     buttonsAlt,
+    centerImage,
     children,
     className,
     disabled,
@@ -47,6 +52,9 @@ export const ImageButton = (props: ImageButtonProps) => {
       className="ImageButton__container"
       role="button"
       aria-disabled={!!disabled}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      aria-pressed={ariaPressed}
       tabIndex={disabled ? undefined : 0}
       style={{ width: fluid ? 'auto' : `calc(${imageSize}px + 0.5em + 2px)` }}
       onClick={(event) => !disabled && onClick?.(event)}
@@ -103,6 +111,7 @@ export const ImageButton = (props: ImageButtonProps) => {
       className={classes([
         'ImageButton',
         fluid && 'ImageButton--fluid',
+        centerImage && 'ImageButton--centerImage',
         disabled && 'ImageButton--disabled',
         className,
       ])}

@@ -1,3 +1,9 @@
+/// Одежда позволяет заглянуть под юбку; положение смотрящего проверяется отдельно.
+/mob/living/carbon/human/proc/has_peekable_skirt()
+	if(wear_suit && CHECK_MULTIPLE_BITFIELDS(wear_suit.body_parts_covered, CHEST | GROIN | LEGS | FEET))
+		return FALSE
+	return w_uniform && is_type_in_typecache(w_uniform.type, GLOB.skirt_peekable)
+
 /datum/element/skirt_peeking
 	element_flags = ELEMENT_DETACH
 
@@ -6,22 +12,13 @@
 	if(!ishuman(peeked))
 		return ELEMENT_INCOMPATIBLE
 
-	RegisterSignal(peeked, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
 	RegisterSignal(peeked, COMSIG_PARENT_EXAMINE_MORE, PROC_REF(on_closer_look))
 
 /datum/element/skirt_peeking/proc/can_skirt_peek(mob/living/carbon/human/peeked, mob/peeker)
 	var/mob/living/living_peeker = peeker
-	var/obj/item/clothing/under/worn_uniform = peeked.get_item_by_slot(ITEM_SLOT_ICLOTHING)
 
-
-	// Unfortunately, you can't see it
-	var/obj/item/clothing/suit/outer_clothing = peeked.get_item_by_slot(ITEM_SLOT_OCLOTHING)
-	if(outer_clothing && CHECK_MULTIPLE_BITFIELDS(outer_clothing.body_parts_covered, CHEST | GROIN | LEGS | FEET))
-		return FALSE
-	//
-
-	// Valid clothing section
-	if(worn_uniform && is_type_in_typecache(worn_uniform.type, GLOB.skirt_peekable))
+	// Проверка одежды общая с подсказкой в осмотре.
+	if(peeked.has_peekable_skirt())
 		// We are being peeked by a spooky ghost who sees all?
 		if(isobserver(peeker))
 			return TRUE
@@ -45,14 +42,6 @@
 				if(!(high_ground_peeker && high_ground_peeker.climbable))
 					return TRUE
 	return FALSE
-
-/datum/element/skirt_peeking/proc/on_examine(mob/living/carbon/human/peeked, mob/peeker, list/examine_list)
-	var/obj/item/clothing/suit/outer_clothing = peeked.get_item_by_slot(ITEM_SLOT_OCLOTHING)
-	if(!(outer_clothing && CHECK_MULTIPLE_BITFIELDS(outer_clothing.body_parts_covered, CHEST | GROIN | LEGS | FEET)))
-		// Valid clothing section
-		var/obj/item/clothing/under/worn_uniform = peeked.get_item_by_slot(ITEM_SLOT_ICLOTHING)
-		if(worn_uniform && is_type_in_typecache(worn_uniform.type, GLOB.skirt_peekable))
-			examine_list += span_purple("[peeked.ru_who(TRUE)] одет[peeked.ru_a()] в юбку! Наверное, под неё можно <b>подсмотреть</b>...")
 
 /datum/element/skirt_peeking/proc/on_closer_look(mob/living/carbon/human/peeked, mob/peeker, list/examine_content)
 	if(can_skirt_peek(peeked, peeker))

@@ -270,6 +270,31 @@
 		return "living"
 	return "other"
 
+/// Клетка сетки "людей рядом" со стороной range: всё в радиусе range лежит в своей и восьми соседних клетках.
+/proc/ping_diag_cell_key(x, y, z, range)
+	return "[z]:[FLOOR(x / range, 1)]:[FLOOR(y / range, 1)]"
+
+/// Кладёт точку в сетку: в клетке координаты идут парами x, y.
+/proc/ping_diag_grid_add(list/cells, x, y, z, range)
+	var/key = ping_diag_cell_key(x, y, z, range)
+	var/list/cell = cells[key]
+	if(!cell)
+		cell = list()
+		cells[key] = cell
+	cell.Add(x, y)
+
+/// Сколько точек сетки на расстоянии get_dist не больше range от (x, y) того же z, сама точка тоже в счёте.
+/proc/ping_diag_grid_near(list/cells, x, y, z, range)
+	. = 0
+	var/cell_x = FLOOR(x / range, 1)
+	var/cell_y = FLOOR(y / range, 1)
+	for(var/dx in -1 to 1)
+		for(var/dy in -1 to 1)
+			var/list/cell = cells["[z]:[cell_x + dx]:[cell_y + dy]"]
+			for(var/i in 1 to length(cell) step 2)
+				if(abs(cell[i] - x) <= range && abs(cell[i + 1] - y) <= range)
+					.++
+
 /// Максимум values в окне [from_world, to_world] по меткам times или null, если замеров в окне нет.
 /proc/ping_diag_window_max(list/times, list/values, from_world, to_world)
 	for(var/i in 1 to length(times))

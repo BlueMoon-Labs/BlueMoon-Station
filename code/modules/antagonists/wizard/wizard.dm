@@ -316,6 +316,8 @@
 
 //Wizard with apprentices report
 /datum/team/wizard/roundend_report()
+	if(!master_wizard?.owner)
+		return ..()
 	var/list/parts = list()
 
 	parts += "<span class='header'>Wizards/witches of [master_wizard.owner.name] team were:</span>"

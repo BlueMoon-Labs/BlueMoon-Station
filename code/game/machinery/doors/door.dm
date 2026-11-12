@@ -138,6 +138,11 @@
 	if(.)
 		return
 
+	if(isswarmer(mover) && istype(src, /obj/machinery/door/airlock))
+		var/mob/living/simple_animal/hostile/swarmer/swarmer = mover
+		if(swarmer.sliding_under_doors)
+			return TRUE
+
 	// Snowflake handling for PASSGLASS.
 	if(istype(mover) && (mover.pass_flags & PASSGLASS))
 		return !opacity

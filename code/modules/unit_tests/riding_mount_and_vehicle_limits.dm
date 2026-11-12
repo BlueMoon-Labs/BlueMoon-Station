@@ -1,35 +1,57 @@
-/// Персонаж крупнее мыши на неё не садится, сверхтяжёлый тоже; седок ростом с мышь садится.
-/datum/unit_test/mouse_refuses_bigger_rider
+/// Одна мышь персонажа не везёт, стая из пяти везёт; тяжёлого стая не держит, сверхтяжёлый её давит.
+/datum/unit_test/mouse_swarm_carries_rider
 
-/datum/unit_test/mouse_refuses_bigger_rider/Run()
+/datum/unit_test/mouse_swarm_carries_rider/proc/add_mouse()
 	var/mob/living/simple_animal/mouse/mouse = allocate(/mob/living/simple_animal/mouse)
+	// мышь не убредает из радиуса сбора стаи, пока тест её ждёт
+	mouse.stop_automated_movement = TRUE
+	return mouse
+
+/datum/unit_test/mouse_swarm_carries_rider/Run()
 	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human)
+	var/mob/living/simple_animal/mouse/host = add_mouse()
+	var/list/mice = list(host)
 
-	mouse.MouseDrop_T(rider, rider)
-	TEST_ASSERT_NULL(rider.buckled, "Персонаж обычного роста оседлал мышь")
+	host.MouseDrop_T(rider, rider)
+	TEST_ASSERT_NULL(rider.buckled, "Одна мышь увезла персонажа")
 
-	rider.update_size(0.3)
-	TEST_ASSERT_EQUAL(rider.mob_size, MOB_SIZE_TINY, "test premise: персонаж ростом 30% должен быть крохотным")
-	mouse.MouseDrop_T(rider, rider)
-	TEST_ASSERT_EQUAL(rider.buckled, mouse, "Седок не крупнее мыши не смог её оседлать")
+	for(var/i in 1 to 4)
+		mice += add_mouse()
+	host.MouseDrop_T(rider, rider)
+	TEST_ASSERT_EQUAL(rider.buckled, host, "Стая из пяти мышей не подняла персонажа")
+	TEST_ASSERT_NOTNULL(host.GetComponent(/datum/component/mouse_swarm_mount), "Остальные мыши не встали под седока")
 
-	mouse.unbuckle_mob(rider, TRUE)
+	host.unbuckle_mob(rider, TRUE)
+	TEST_ASSERT_NULL(host.GetComponent(/datum/component/mouse_swarm_mount), "Стая не распалась, когда седок слез")
+
+	rider.mob_weight = MOB_WEIGHT_HEAVY
+	host.MouseDrop_T(rider, rider)
+	TEST_ASSERT_NULL(rider.buckled, "Тяжёлый персонаж оседлал стаю мышей")
+	for(var/mob/living/simple_animal/mouse/mouse as anything in mice)
+		TEST_ASSERT_EQUAL(mouse.stat, CONSCIOUS, "Мышь, разбежавшаяся из-под тяжёлого, пострадала")
+		// разбежавшиеся мыши снова у ног седока
+		mouse.forceMove(get_turf(rider))
+
 	rider.mob_weight = MOB_WEIGHT_HEAVY_SUPER
-	mouse.MouseDrop_T(rider, rider)
-	TEST_ASSERT_NULL(rider.buckled, "Сверхтяжёлый персонаж оседлал мышь")
+	host.MouseDrop_T(rider, rider)
+	TEST_ASSERT_NULL(rider.buckled, "Сверхтяжёлый персонаж оседлал стаю мышей")
+	for(var/mob/living/simple_animal/mouse/mouse as anything in mice)
+		TEST_ASSERT(QDELETED(mouse), "Сверхтяжёлый не раздавил мышь стаи")
 
 /// Седок на звере сидит, а не лежит: лёжа он ехал бы на полной скорости мимо пуль.
 /datum/unit_test/mount_keeps_rider_upright
 
 /datum/unit_test/mount_keeps_rider_upright/Run()
-	var/mob/living/simple_animal/mouse/mouse = allocate(/mob/living/simple_animal/mouse)
+	var/mob/living/simple_animal/pet/dog/corgi/mount = allocate(/mob/living/simple_animal/pet/dog/corgi)
+	mount.can_buckle = TRUE
+	mount.tame = TRUE
 	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human)
 	rider.update_size(0.3)
 	rider.set_resting(TRUE, TRUE)
 	TEST_ASSERT(rider.lying, "test premise: отдыхающий персонаж должен лежать")
 
-	mouse.MouseDrop_T(rider, rider)
-	TEST_ASSERT_EQUAL(rider.buckled, mouse, "test premise: седок должен оседлать мышь")
+	mount.MouseDrop_T(rider, rider)
+	TEST_ASSERT_EQUAL(rider.buckled, mount, "test premise: седок должен оседлать корги")
 	TEST_ASSERT(!rider.lying, "Седок лежит на спине зверя")
 	TEST_ASSERT(rider.density, "Седок на звере не плотный и пропускает пули")
 

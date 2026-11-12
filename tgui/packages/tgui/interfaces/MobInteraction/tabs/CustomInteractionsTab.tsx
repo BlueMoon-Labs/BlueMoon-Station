@@ -1,46 +1,92 @@
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../../backend';
-import { Box, Button, Divider, Dropdown, Input, NoticeBox, Section, Stack, TextArea } from '../../../components';
+import {
+  Box,
+  Button,
+  Divider,
+  Dropdown,
+  Icon,
+  Input,
+  NoticeBox,
+  Section,
+  Stack,
+  TextArea,
+  Tooltip,
+} from '../../../components';
 
 type CustomInteractionData = {
   key: string;
   name: string;
+  requires_review: boolean | 0 | 1;
   message: string;
   interaction_type: string;
   type_label: string;
   arousal_level: number;
   arousal_label: string;
+  self_arousal_organ: string;
   partner_arousal_level: number;
   partner_arousal_label: string;
-  self_orgasm: boolean;
-  partner_orgasm: boolean;
+  partner_arousal_organ: string;
+  self_orgasm: boolean | 0 | 1;
+  partner_orgasm: boolean | 0 | 1;
+  self_orgasm_organ: string;
+  partner_orgasm_organ: string;
+  self_orgasm_target: string;
+  partner_orgasm_target: string;
   scope: string;
   scope_label: string;
-  required_body_parts: number;
-  requires_tail: boolean;
-  requires_telekinesis: boolean;
+  self_required_body_parts: number;
+  partner_required_body_parts: number;
+  self_requires_tail: boolean | 0 | 1;
+  partner_requires_tail: boolean | 0 | 1;
+  self_requires_telekinesis: boolean | 0 | 1;
+  partner_requires_telekinesis: boolean | 0 | 1;
   max_distance: number;
   sound_keys: string[];
   sound_labels: string[];
 }
 
-type CustomSoundOption = {
+type SoundOption = {
   key: string;
   label: string;
   group: string;
 }
 
-type MoanSoundOption = {
-  key: string;
+type BodyPartOption = {
+  flag: number;
   label: string;
-  group: string;
-}
+};
+
+type EffectTargetOption = {
+  value: string;
+  displayText: string;
+  flag: number;
+};
+
+type ParticipantSettings = {
+  arousalLevel: number;
+  arousalOrgan: string;
+  orgasm: boolean;
+  orgasmOrgan: string;
+  orgasmTarget: string;
+  bodyParts: number;
+  requiresTail: boolean;
+  requiresTelekinesis: boolean;
+};
 
 type CustomTabInfo = {
+  user?: string;
+  target?: string;
+  isTargetSelf?: boolean | 0 | 1;
   own_custom_interactions: CustomInteractionData[];
   max_custom_interactions: number;
-  custom_interaction_sounds: CustomSoundOption[];
-  moan_sound_catalogs: { male: MoanSoundOption[]; female: MoanSoundOption[] };
+  custom_interaction_sounds: SoundOption[];
+  custom_interaction_body_parts: BodyPartOption[];
+  custom_interaction_arousal_organs: EffectTargetOption[];
+  custom_interaction_orgasm_organs: EffectTargetOption[];
+  custom_interaction_orgasm_targets: EffectTargetOption[];
+  moan_sound_catalogs: { male: SoundOption[]; female: SoundOption[] };
   feminine_moan_sounds: boolean;
   custom_moan_sounds: string[];
   use_custom_moan_sounds: boolean;
@@ -48,6 +94,16 @@ type CustomTabInfo = {
 
 const MAX_NAME_LENGTH = 100;
 const MAX_MESSAGE_LENGTH = 500;
+const DEFAULT_PARTICIPANT_SETTINGS: ParticipantSettings = {
+  arousalLevel: 0,
+  arousalOrgan: 'general',
+  orgasm: false,
+  orgasmOrgan: 'auto',
+  orgasmTarget: 'floor',
+  bodyParts: 0,
+  requiresTail: false,
+  requiresTelekinesis: false,
+};
 
 const INTERACTION_TYPES = [
   { id: 'normal', label: 'Действие', desc: 'Обычное действие, без специальных проверок контента.' },
@@ -57,10 +113,10 @@ const INTERACTION_TYPES = [
 ];
 
 const AROUSAL_LEVELS = [
-  { id: 0, label: 'Нет', desc: 'Возбуждение не меняется.' },
-  { id: 1, label: 'Малый', desc: '+6 возбуждения.' },
-  { id: 2, label: 'Средний', desc: '+14 возбуждения.' },
-  { id: 3, label: 'Сильный', desc: '+28 возбуждения.' },
+  { id: 0, label: 'Нет', icon: 'xmark', tooltip: 'Нет возбуждения' },
+  { id: 1, label: 'Малое', icon: 'heart-o', tooltip: 'Малое возбуждение (+6)' },
+  { id: 2, label: 'Среднее', icon: 'heart', tooltip: 'Среднее возбуждение (+14)' },
+  { id: 3, label: 'Сильное', icon: 'heart-circle-bolt', tooltip: 'Сильное возбуждение (+28)' },
 ];
 
 const MAX_DISTANCES = [
@@ -78,19 +134,6 @@ const SCOPES = [
   { id: 'others', label: 'Только на других', desc: 'Интеракцию можно использовать только на других.' },
 ];
 
-const BODY_PARTS = [
-  { flag: 1 << 4, label: 'Анус' },
-  { flag: 1 << 5, label: 'Яйца' },
-  { flag: 1 << 6, label: 'Грудь' },
-  { flag: 1 << 7, label: 'Живот' },
-  { flag: 1 << 8, label: 'Уши' },
-  { flag: 1 << 10, label: 'Глаза' },
-  { flag: 1 << 12, label: 'Ноги' },
-  { flag: 1 << 13, label: 'Член' },
-  { flag: 1 << 14, label: 'Вагина' },
-  { flag: 1 << 15, label: 'Хвост' },
-];
-
 type FormRowProps = {
   label: string;
   children: any;
@@ -98,13 +141,261 @@ type FormRowProps = {
 
 const FormRow = (props: FormRowProps) => (
   <Stack>
-    <Stack.Item width="40%">
+    <Stack.Item width="40%" shrink={0}>
       <Box color="label" nowrap>{props.label}</Box>
     </Stack.Item>
-    <Stack.Item grow>
+    <Stack.Item grow basis={0} minWidth={0}>
       {props.children}
     </Stack.Item>
   </Stack>
+);
+
+type MessagePreviewProps = {
+  message: string;
+  userName: string;
+  targetName: string;
+};
+
+const MessagePreview = ({ message, userName, targetName }: MessagePreviewProps) => {
+  const [variantIndex, setVariantIndex] = useState(0);
+  const text = message.replace(/[<>]/g, '').replace(/[\n\t]/g, '#');
+  if (!text.trim()) {
+    return null;
+  }
+
+  const variants = text.split('/').map(variant => variant.trim()).filter(Boolean);
+  if (!variants.length) {
+    variants.push(text);
+  }
+
+  const index = Math.min(variantIndex, variants.length - 1);
+  const variant = variants[index];
+  const parts = (variant.charAt(0).toUpperCase() + variant.slice(1)).split(/(USER|TARGET)/gi);
+  const multipleVariants = variants.length > 1;
+  const label = multipleVariants
+    ? `Предпросмотр (${index + 1}/${variants.length}):`
+    : 'Предпросмотр:';
+
+  return (
+    <FormRow label={label}>
+      <Stack align="center" mr="2px">
+        <Stack.Item grow basis={0} minWidth={0}>
+          <NoticeBox info mb={0} style={{ overflowWrap: 'anywhere' }}>
+            {parts.map((part, partIndex) => partIndex % 2
+              ? <b key={partIndex}>{part.toUpperCase() === 'USER' ? userName : targetName}</b>
+              : part)}
+          </NoticeBox>
+        </Stack.Item>
+        {multipleVariants && (
+          <Stack.Item shrink={0} nowrap>
+            <Button
+              icon="chevron-left"
+              aria-label="Предыдущий вариант"
+              tooltip="Предыдущий вариант"
+              onClick={() => setVariantIndex((index + variants.length - 1) % variants.length)}
+            />
+            <Button
+              icon="chevron-right"
+              aria-label="Следующий вариант"
+              tooltip="Следующий вариант"
+              onClick={() => setVariantIndex((index + 1) % variants.length)}
+            />
+          </Stack.Item>
+        )}
+      </Stack>
+    </FormRow>
+  );
+};
+
+type SoundGridProps = {
+  sounds: SoundOption[];
+  selectedKeys: string[];
+  onToggle: (key: string) => void;
+  onPreview: (key: string) => void;
+};
+
+const SoundGrid = ({ sounds, selectedKeys, onToggle, onPreview }: SoundGridProps) => (
+  <Box style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '0.5em',
+  }}>
+    {sounds.map(sound => {
+      const checked = selectedKeys.includes(sound.key);
+      return (
+        <Stack key={sound.key}>
+          <Stack.Item grow basis={0} minWidth={0}>
+            <Button
+              fluid
+              ellipsis
+              icon={checked ? 'check-square' : 'square-o'}
+              color={checked ? 'green' : 'transparent'}
+              content={sound.label}
+              title={sound.label}
+              selected={checked}
+              onClick={() => onToggle(sound.key)}
+            />
+          </Stack.Item>
+          <Stack.Item shrink={0}>
+            <Button
+              icon="play"
+              aria-label={`Прослушать «${sound.label}»`}
+              onClick={() => onPreview(sound.key)}
+            />
+          </Stack.Item>
+        </Stack>
+      );
+    })}
+  </Box>
+);
+
+const PARTICIPANT_HEADINGS = {
+  self: { label: 'У тебя', color: 'green', icon: 'user' },
+  partner: { label: 'У партнёра', color: 'blue', icon: 'user-group' },
+};
+
+type Participant = keyof typeof PARTICIPANT_HEADINGS;
+
+const ParticipantHeading = ({ participant }: { participant: Participant }) => {
+  const { label, color, icon } = PARTICIPANT_HEADINGS[participant];
+  return (
+    <Box bold color={color} mb={0.5}>
+      <Icon name={icon} mr={1} aria-hidden="true" />
+      {label}
+    </Box>
+  );
+};
+
+type EffectsProps = {
+  settings: ParticipantSettings;
+  onChange: (settings: ParticipantSettings) => void;
+  arousalOrgans: EffectTargetOption[];
+  orgasmOrgans: EffectTargetOption[];
+  orgasmTargets: EffectTargetOption[];
+  participant: Participant;
+};
+
+const Effects = ({
+  settings,
+  onChange,
+  arousalOrgans,
+  orgasmOrgans,
+  orgasmTargets,
+  participant,
+}: EffectsProps) => (
+  <Box role="group" aria-label={PARTICIPANT_HEADINGS[participant].label}>
+    <ParticipantHeading participant={participant} />
+    <Box style={{
+      display: 'grid',
+      gridTemplateColumns: 'max-content repeat(2, minmax(0, 1fr))',
+      alignItems: 'end',
+      gap: '0.5em',
+    }}>
+      <Box nowrap>
+        <Box color="label" mb={0.25}>Возбуждение</Box>
+        {AROUSAL_LEVELS.map(level => (
+          <Button
+            key={level.id}
+            icon={level.icon}
+            color={level.id === settings.arousalLevel
+              ? (level.id ? 'pink' : 'red')
+              : 'transparent'}
+            tooltip={level.tooltip}
+            aria-label={level.label}
+            aria-pressed={level.id === settings.arousalLevel}
+            onClick={() => onChange({
+              ...settings,
+              arousalLevel: level.id,
+              orgasm: level.id > 0 && (!settings.arousalLevel || settings.orgasm),
+            })}
+          />
+        ))}
+      </Box>
+      {!!settings.arousalLevel && (
+        <>
+          <Box style={{ gridColumn: 'span 2' }}>
+            <Box color="label" mb={0.25}>Орган получающий удовольствие</Box>
+            <Dropdown
+              width="100%"
+              aria-label="Орган получающий удовольствие"
+              options={arousalOrgans}
+              selected={settings.arousalOrgan}
+              onSelected={(arousalOrgan: string) => onChange({ ...settings, arousalOrgan })}
+            />
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Оргазм</Box>
+            <Button.Checkbox
+              checked={settings.orgasm}
+              color={settings.orgasm ? 'pink' : 'transparent'}
+              selected={false}
+              content="Разрешить"
+              role="checkbox"
+              aria-label="Разрешить оргазм"
+              aria-checked={settings.orgasm}
+              onClick={() => onChange({ ...settings, orgasm: !settings.orgasm })}
+            />
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Чем</Box>
+            <Dropdown
+              width="100%"
+              aria-label="Орган для оргазма"
+              options={orgasmOrgans}
+              selected={settings.orgasmOrgan}
+              disabled={!settings.orgasm}
+              onSelected={(orgasmOrgan: string) => onChange({ ...settings, orgasmOrgan })}
+            />
+          </Box>
+          <Box>
+            <Box color="label" mb={0.25}>Куда</Box>
+            <Dropdown
+              width="100%"
+              aria-label="Цель оргазма"
+              options={orgasmTargets}
+              selected={settings.orgasmTarget}
+              disabled={!settings.orgasm}
+              onSelected={(orgasmTarget: string) => onChange({ ...settings, orgasmTarget })}
+            />
+          </Box>
+        </>
+      )}
+    </Box>
+  </Box>
+);
+
+type BodyPartPickerProps = {
+  parts: BodyPartOption[];
+  selectedParts: number;
+  lockedParts: number;
+  onChange: (parts: number) => void;
+};
+
+const BodyPartPicker = ({
+  parts,
+  selectedParts,
+  lockedParts,
+  onChange,
+}: BodyPartPickerProps) => (
+  <Box>
+    {parts.map(part => {
+      const locked = !!(lockedParts & part.flag);
+      const selected = locked || !!(selectedParts & part.flag);
+      return (
+        <Button
+          key={part.flag}
+          compact
+          icon={locked ? 'lock' : selected ? 'check-square' : 'square-o'}
+          color={locked ? 'red' : selected ? 'green' : 'transparent'}
+          content={part.label}
+          aria-disabled={locked}
+          aria-pressed={selected}
+          tooltip={locked ? 'Часть тела обязательна для выбранного эффекта' : undefined}
+          onClick={locked ? undefined : () => onChange(selectedParts ^ part.flag)}
+        />
+      );
+    })}
+  </Box>
 );
 
 export const CustomInteractionsTab = (props) => {
@@ -114,6 +405,10 @@ export const CustomInteractionsTab = (props) => {
   const customs = data.own_custom_interactions || [];
   const max_customs = data.max_custom_interactions || 10;
   const sounds = data.custom_interaction_sounds || [];
+  const bodyParts = data.custom_interaction_body_parts || [];
+  const arousalOrgans = data.custom_interaction_arousal_organs || [];
+  const orgasmOrgans = data.custom_interaction_orgasm_organs || [];
+  const orgasmTargets = data.custom_interaction_orgasm_targets || [];
   const moanSounds = data.moan_sound_catalogs?.[
     data.feminine_moan_sounds ? 'female' : 'male'
   ] || [];
@@ -124,17 +419,13 @@ export const CustomInteractionsTab = (props) => {
   const [interactionType, setInteractionType] = useLocalState('customFormType', '');
   const [name, setName] = useLocalState('customFormName', '');
   const [message, setMessage] = useLocalState('customFormMessage', '');
-  const [arousalLevel, setArousalLevel] = useLocalState('customFormArousal', 0);
-  const [partnerArousalLevel, setPartnerArousalLevel] = useLocalState('customFormPartnerArousal', 0);
-  const [selfOrgasm, setSelfOrgasm] = useLocalState('customFormSelfOrgasm', false);
-  const [partnerOrgasm, setPartnerOrgasm] = useLocalState('customFormPartnerOrgasm', false);
-  const [scope, setScope] = useLocalState('customFormScope', 'both');
-  const [requiredBodyParts, setRequiredBodyParts] = useLocalState('customFormBodyParts', 0);
-  const [requiresTail, setRequiresTail] = useLocalState('customFormTail', false);
-  const [requiresTelekinesis, setRequiresTelekinesis] = useLocalState('customFormTk', false);
+  const [self, setSelf] = useLocalState('customFormSelf', DEFAULT_PARTICIPANT_SETTINGS);
+  const [partner, setPartner] = useLocalState('customFormPartner', DEFAULT_PARTICIPANT_SETTINGS);
+  const [scope, setScope] = useLocalState('customFormScope', 'others');
   const [maxDistance, setMaxDistance] = useLocalState('customFormDistance', 1);
   const [soundKeys, setSoundKeys] = useLocalState<string[]>('customFormSounds', []);
   const [soundGroupBrowsing, setSoundGroupBrowsing] = useLocalState('customFormSoundGroup', '');
+  const requiresTelekinesis = self.requiresTelekinesis || partner.requiresTelekinesis;
 
   const editingCustom = editingKey
     ? customs.find(custom => custom.key === editingKey)
@@ -146,34 +437,44 @@ export const CustomInteractionsTab = (props) => {
     setInteractionType('normal');
     setName('');
     setMessage('');
-    setArousalLevel(0);
-    setPartnerArousalLevel(0);
-    setSelfOrgasm(false);
-    setPartnerOrgasm(false);
-    setScope('both');
-    setRequiredBodyParts(0);
-    setRequiresTail(false);
-    setRequiresTelekinesis(false);
+    setSelf(DEFAULT_PARTICIPANT_SETTINGS);
+    setPartner(DEFAULT_PARTICIPANT_SETTINGS);
+    setScope('others');
     setMaxDistance(1);
     setSoundKeys([]);
     setSoundGroupBrowsing(NORMAL_TYPE_SOUND_GROUPS[0]);
   };
 
-  const startEdit = (custom) => {
+  const startEdit = (custom: CustomInteractionData) => {
     setEditingKey(custom.key);
     setCreating(false);
     setInteractionType(custom.interaction_type);
     setName(custom.name);
     setMessage(custom.message);
-    setArousalLevel(custom.arousal_level);
-    setPartnerArousalLevel(custom.partner_arousal_level || 0);
-    setSelfOrgasm(!!custom.self_orgasm);
-    setPartnerOrgasm(!!custom.partner_orgasm);
+    setSelf({
+      arousalLevel: custom.arousal_level,
+      arousalOrgan: custom.self_arousal_organ,
+      orgasm: !!custom.arousal_level && !!custom.self_orgasm,
+      orgasmOrgan: custom.self_orgasm_organ,
+      orgasmTarget: custom.self_orgasm_target,
+      bodyParts: custom.self_required_body_parts,
+      requiresTail: !!custom.self_requires_tail,
+      requiresTelekinesis: !!custom.self_requires_telekinesis,
+    });
+    setPartner({
+      arousalLevel: custom.partner_arousal_level,
+      arousalOrgan: custom.partner_arousal_organ,
+      orgasm: !!custom.partner_arousal_level && !!custom.partner_orgasm,
+      orgasmOrgan: custom.partner_orgasm_organ,
+      orgasmTarget: custom.partner_orgasm_target,
+      bodyParts: custom.partner_required_body_parts,
+      requiresTail: !!custom.partner_requires_tail,
+      requiresTelekinesis: !!custom.partner_requires_telekinesis,
+    });
     setScope(custom.scope || 'both');
-    setRequiredBodyParts(Number(custom.required_body_parts) || 0);
-    setRequiresTail(custom.requires_tail);
-    setRequiresTelekinesis(custom.requires_telekinesis);
-    setMaxDistance(custom.max_distance || 1);
+    setMaxDistance((custom.self_requires_telekinesis || custom.partner_requires_telekinesis)
+      ? custom.max_distance
+      : 1);
     setSoundKeys(custom.sound_keys || []);
   };
 
@@ -185,15 +486,24 @@ export const CustomInteractionsTab = (props) => {
       interaction_type: interactionType,
       name,
       message,
-      arousal_level: arousalLevel,
-      partner_arousal_level: partnerArousalLevel,
-      self_orgasm: selfOrgasm ? 1 : 0,
-      partner_orgasm: partnerOrgasm ? 1 : 0,
+      arousal_level: self.arousalLevel,
+      partner_arousal_level: partner.arousalLevel,
+      self_arousal_organ: self.arousalOrgan,
+      partner_arousal_organ: partner.arousalOrgan,
+      self_orgasm: self.arousalLevel > 0 && self.orgasm ? 1 : 0,
+      partner_orgasm: partner.arousalLevel > 0 && partner.orgasm ? 1 : 0,
+      self_orgasm_organ: self.orgasmOrgan,
+      partner_orgasm_organ: partner.orgasmOrgan,
+      self_orgasm_target: self.orgasmTarget,
+      partner_orgasm_target: partner.orgasmTarget,
       scope,
-      required_body_parts: requiredBodyParts,
-      requires_tail: requiresTail ? 1 : 0,
-      requires_telekinesis: requiresTelekinesis ? 1 : 0,
-      max_distance: maxDistance,
+      self_required_body_parts: self.bodyParts,
+      partner_required_body_parts: partner.bodyParts,
+      self_requires_tail: self.requiresTail ? 1 : 0,
+      partner_requires_tail: partner.requiresTail ? 1 : 0,
+      self_requires_telekinesis: self.requiresTelekinesis ? 1 : 0,
+      partner_requires_telekinesis: partner.requiresTelekinesis ? 1 : 0,
+      max_distance: requiresTelekinesis ? maxDistance : 1,
       sound_keys: soundKeys,
     };
     if (editingCustom) {
@@ -212,9 +522,9 @@ export const CustomInteractionsTab = (props) => {
   };
 
   const selectedType = INTERACTION_TYPES.find(type => type.id === interactionType);
-  const selectedArousal = AROUSAL_LEVELS.find(level => level.id === arousalLevel);
-  const selectedPartnerArousal = AROUSAL_LEVELS.find(level => level.id === partnerArousalLevel);
   const selectedScope = SCOPES.find(s => s.id === scope);
+  const selectedDistance = MAX_DISTANCES.find(distance =>
+    distance.id === (requiresTelekinesis ? maxDistance : 1));
   const browsableSounds = sounds.filter(sound => sound.key !== 'none');
   const visibleSoundGroups = [...new Set(
     browsableSounds
@@ -228,8 +538,12 @@ export const CustomInteractionsTab = (props) => {
   const soundsInGroup = browsableSounds.filter(sound => sound.group === effectiveBrowsingGroup);
   const selectedSounds = soundKeys
     .map(key => sounds.find(sound => sound.key === key))
-    .filter(Boolean) as CustomSoundOption[];
+    .filter(Boolean) as SoundOption[];
   const canSave = !!interactionType && !!name && !!message;
+  const previewUser = data.user || 'Проверочный';
+  const previewTarget = scope === 'self'
+    ? previewUser
+    : (!data.isTargetSelf && data.target) || 'Партнер';
 
   const moanGroups = [...new Set(moanSounds.map(sound => sound.group))];
   const effectiveMoanGroup = moanGroups.includes(moanGroupBrowsing)
@@ -238,6 +552,12 @@ export const CustomInteractionsTab = (props) => {
   const moanSoundsInGroup = moanSounds.filter(sound => sound.group === effectiveMoanGroup);
   const selectedMoanSounds = moanSounds.filter(sound => customMoanSounds.includes(sound.key));
 
+  const toggleSound = (key: string) => {
+    setSoundKeys(soundKeys.includes(key)
+      ? soundKeys.filter(sound => sound !== key)
+      : [...soundKeys, key]);
+  };
+
   const toggleMoanSound = (key: string) => {
     const nextKeys = customMoanSounds.includes(key)
       ? customMoanSounds.filter(sound => sound !== key)
@@ -245,25 +565,21 @@ export const CustomInteractionsTab = (props) => {
     act('set_custom_moan_sounds', { sound_keys: nextKeys });
   };
 
-  const renderBodyPartButton = (part) => {
-    const selected = !!(requiredBodyParts & part.flag);
-    return (
-      <Button
-        key={part.flag}
-        fluid
-        icon={selected ? "check-square" : "square-o"}
-        color={selected ? "green" : "transparent"}
-        content={part.label}
-        selected={selected}
-        tooltip={selected
-          ? "Часть должна быть оголена у кого-то из пары"
-          : "Часть не требуется"}
-        onClick={() => setRequiredBodyParts(selected
-          ? requiredBodyParts & ~part.flag
-          : requiredBodyParts | part.flag)}
-      />
-    );
+  const getLockedBodyParts = (settings: ParticipantSettings, other: ParticipantSettings) => {
+    const arousalPart = settings.arousalLevel
+      ? arousalOrgans.find(option => option.value === settings.arousalOrgan)?.flag
+      : 0;
+    const orgasmOrgan = settings.arousalLevel > 0 && settings.orgasm
+      ? orgasmOrgans.find(option => option.value === settings.orgasmOrgan)?.flag
+      : 0;
+    const orgasmTarget = other.arousalLevel > 0 && other.orgasm
+      ? orgasmTargets.find(option => option.value === other.orgasmTarget)?.flag
+      : 0;
+    return (arousalPart || 0) | (orgasmOrgan || 0) | (orgasmTarget || 0);
   };
+
+  const selfLockedParts = getLockedBodyParts(self, partner);
+  const partnerLockedParts = getLockedBodyParts(partner, self);
 
   const renderForm = () => (
     <Stack vertical>
@@ -313,6 +629,16 @@ export const CustomInteractionsTab = (props) => {
                 />
               </FormRow>
             </Stack.Item>
+            {message.trim() && (
+              <Stack.Item>
+                <MessagePreview
+                  key={editingKey ?? 'new'}
+                  message={message}
+                  userName={previewUser}
+                  targetName={previewTarget}
+                />
+              </Stack.Item>
+            )}
             {selectedSounds.length > 0 && (
               <Stack.Item>
                 <Box color="label" nowrap>Выбрано ({selectedSounds.length}):</Box>
@@ -323,7 +649,7 @@ export const CustomInteractionsTab = (props) => {
                       icon="times"
                       content={sound.label}
                       color="green"
-                      onClick={() => setSoundKeys(soundKeys.filter(k => k !== sound.key))}
+                      onClick={() => toggleSound(sound.key)}
                     />
                   ))}
                 </Box>
@@ -343,112 +669,35 @@ export const CustomInteractionsTab = (props) => {
             </Stack.Item>
             <Stack.Item>
               <Box color="label" nowrap>Звук (можно выбрать несколько - сработает случайный):</Box>
-              <Stack vertical>
-                {soundsInGroup.map(sound => {
-                  const checked = soundKeys.includes(sound.key);
-                  return (
-                    <Stack.Item key={sound.key}>
-                      <Stack>
-                        <Stack.Item grow>
-                          <Button
-                            fluid
-                            icon={checked ? "check-square" : "square-o"}
-                            color={checked ? "green" : "transparent"}
-                            content={sound.label}
-                            selected={checked}
-                            onClick={() => setSoundKeys(checked
-                              ? soundKeys.filter(k => k !== sound.key)
-                              : [...soundKeys, sound.key])}
-                          />
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Button
-                            icon="play"
-                            onClick={() => act('custom_preview_sound', { sound_key: sound.key })}
-                          />
-                        </Stack.Item>
-                      </Stack>
-                    </Stack.Item>
-                  );
-                })}
-              </Stack>
+              <SoundGrid
+                sounds={soundsInGroup}
+                selectedKeys={soundKeys}
+                onToggle={toggleSound}
+                onPreview={(key) => act('custom_preview_sound', { sound_key: key })}
+              />
             </Stack.Item>
           </Stack>
         </Section>
       </Stack.Item>
       <Stack.Item>
         <Section title="Эффекты">
-          <Stack vertical>
-            <Stack.Item>
-              <FormRow label="Возбуждение партнёра:">
-                <Dropdown
-                  fluid
-                  width="100%"
-                  options={AROUSAL_LEVELS.map(level => level.label)}
-                  selected={selectedPartnerArousal?.label}
-                  displayText={selectedPartnerArousal?.label || 'Нет'}
-                  onSelected={(label) => {
-                    const found = AROUSAL_LEVELS.find(level => level.label === label);
-                    setPartnerArousalLevel(found ? found.id : 0);
-                  }}
-                />
-              </FormRow>
-            </Stack.Item>
-            {selectedPartnerArousal && selectedPartnerArousal.id !== 0 && (
-              <Stack.Item>
-                <Box color="label" nowrap>{selectedPartnerArousal.desc}</Box>
-              </Stack.Item>
-            )}
-            <Stack.Item>
-              <FormRow label="Возбуждение персонажа:">
-                <Dropdown
-                  fluid
-                  width="100%"
-                  options={AROUSAL_LEVELS.map(level => level.label)}
-                  selected={selectedArousal?.label}
-                  displayText={selectedArousal?.label || 'Нет'}
-                  onSelected={(label) => {
-                    const found = AROUSAL_LEVELS.find(level => level.label === label);
-                    setArousalLevel(found ? found.id : 0);
-                  }}
-                />
-              </FormRow>
-            </Stack.Item>
-            {selectedArousal && selectedArousal.id !== 0 && (
-              <Stack.Item>
-                <Box color="label" nowrap>{selectedArousal.desc}</Box>
-              </Stack.Item>
-            )}
-            <Stack.Item>
-              <Divider />
-            </Stack.Item>
-            <Stack.Item>
-              <FormRow label="Оргазм партнёра:">
-                <Button
-                  fluid
-                  icon={partnerOrgasm ? "toggle-on" : "toggle-off"}
-                  color="transparent"
-                  content={partnerOrgasm ? "Может довести партнёра до оргазма" : "Не вызывает оргазм партнёра"}
-                  selected={partnerOrgasm}
-                  tooltip="Если включено, интеракция может довести партнёра до оргазма"
-                  onClick={() => setPartnerOrgasm(!partnerOrgasm)}
-                />
-              </FormRow>
-            </Stack.Item>
-            <Stack.Item>
-              <FormRow label="Собственный оргазм:">
-                <Button
-                  fluid
-                  icon={selfOrgasm ? "toggle-on" : "toggle-off"}
-                  color="transparent"
-                  content={selfOrgasm ? "Может вызвать твой оргазм" : "Не вызывает твой оргазм"}
-                  selected={selfOrgasm}
-                  tooltip="Если включено, интеракция может довести тебя до оргазма"
-                  onClick={() => setSelfOrgasm(!selfOrgasm)}
-                />
-              </FormRow>
-            </Stack.Item>
-          </Stack>
+          <Effects
+            settings={partner}
+            onChange={setPartner}
+            arousalOrgans={arousalOrgans}
+            orgasmOrgans={orgasmOrgans}
+            orgasmTargets={orgasmTargets}
+            participant="partner"
+          />
+          <Divider />
+          <Effects
+            settings={self}
+            onChange={setSelf}
+            arousalOrgans={arousalOrgans}
+            orgasmOrgans={orgasmOrgans}
+            orgasmTargets={orgasmTargets}
+            participant="self"
+          />
         </Section>
       </Stack.Item>
       <Stack.Item>
@@ -461,10 +710,10 @@ export const CustomInteractionsTab = (props) => {
                   width="100%"
                   options={SCOPES.map(s => s.label)}
                   selected={selectedScope?.label}
-                  displayText={selectedScope?.label || 'На обоих'}
+                  displayText={selectedScope?.label}
                   onSelected={(label) => {
                     const found = SCOPES.find(s => s.label === label);
-                    setScope(found ? found.id : 'both');
+                    setScope(found ? found.id : 'others');
                   }}
                 />
               </FormRow>
@@ -478,27 +727,43 @@ export const CustomInteractionsTab = (props) => {
               <Divider />
             </Stack.Item>
             <Stack.Item>
-              <FormRow label="Оголённые части:">
-                <Button
-                  fluid
-                  icon={requiredBodyParts === 0 ? "toggle-on" : "toggle-off"}
-                  color="transparent"
-                  content={requiredBodyParts === 0 ? "Всегда доступно" : "Есть требования"}
-                  selected={requiredBodyParts === 0}
-                  tooltip="Если включено, интеракт доступен всегда, без требований к открытым частям тела"
-                  onClick={() => setRequiredBodyParts(0)}
-                />
-              </FormRow>
-            </Stack.Item>
-            <Stack.Item>
-              <Box style={{ display: 'flex', gap: '0.5em' }}>
-                <Box style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
-                  {BODY_PARTS.slice(0, 5).map(renderBodyPartButton)}
-                </Box>
-                <Box style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
-                  {BODY_PARTS.slice(5, 10).map(renderBodyPartButton)}
-                </Box>
-              </Box>
+              <Box color="label" mb={0.5}>Оголённые части и условия</Box>
+              <Stack>
+                {[
+                    { participant: 'self' as const, settings: self, update: setSelf, other: partner, lockedParts: selfLockedParts },
+                    { participant: 'partner' as const, settings: partner, update: setPartner, other: self, lockedParts: partnerLockedParts },
+                  ].map(({ participant, settings, update, other, lockedParts }) => (
+                    <Stack.Item key={participant} grow basis={0}>
+                      <ParticipantHeading participant={participant} />
+                    <BodyPartPicker
+                      parts={bodyParts}
+                      selectedParts={settings.bodyParts}
+                      lockedParts={lockedParts}
+                      onChange={bodyParts => update({ ...settings, bodyParts })}
+                    />
+                    <Box mt={0.5}>
+                      <Button.Checkbox
+                        compact
+                        checked={settings.requiresTail}
+                        content="Нужен хвост"
+                        onClick={() => update({ ...settings, requiresTail: !settings.requiresTail })}
+                      />
+                      <Button.Checkbox
+                        compact
+                        checked={settings.requiresTelekinesis}
+                        content="Нужен телекинез"
+                        onClick={() => {
+                          const enabled = !settings.requiresTelekinesis;
+                          update({ ...settings, requiresTelekinesis: enabled });
+                          if (!enabled && !other.requiresTelekinesis) {
+                            setMaxDistance(1);
+                          }
+                        }}
+                      />
+                    </Box>
+                    </Stack.Item>
+                ))}
+              </Stack>
             </Stack.Item>
             <Stack.Item>
               <Divider />
@@ -509,8 +774,9 @@ export const CustomInteractionsTab = (props) => {
                   fluid
                   width="100%"
                   options={MAX_DISTANCES.map(distance => distance.label)}
-                  selected={MAX_DISTANCES.find(distance => distance.id === maxDistance)?.label}
-                  displayText={MAX_DISTANCES.find(distance => distance.id === maxDistance)?.label || '1 тайл'}
+                  selected={selectedDistance?.label}
+                  disabled={!requiresTelekinesis}
+                  tooltip={!requiresTelekinesis ? 'Для большей дистанции включи требование телекинеза у одного из участников' : undefined}
                   onSelected={(label) => {
                     const found = MAX_DISTANCES.find(distance => distance.label === label);
                     setMaxDistance(found ? found.id : 1);
@@ -520,34 +786,8 @@ export const CustomInteractionsTab = (props) => {
             </Stack.Item>
             <Stack.Item>
               <Box color="label" nowrap>
-                {MAX_DISTANCES.find(distance => distance.id === maxDistance)?.desc}
+                {selectedDistance?.desc}
               </Box>
-            </Stack.Item>
-            <Stack.Item>
-              <Stack>
-                <Stack.Item width="40%">
-                  <Button
-                    fluid
-                    icon={requiresTail ? "toggle-on" : "toggle-off"}
-                    color="transparent"
-                    content="Нужен хвост"
-                    selected={requiresTail}
-                    tooltip="Вариант будет виден и сработает, только если хвост есть у кого-то из пары"
-                    onClick={() => setRequiresTail(!requiresTail)}
-                  />
-                </Stack.Item>
-                <Stack.Item grow>
-                  <Button
-                    fluid
-                    icon={requiresTelekinesis ? "toggle-on" : "toggle-off"}
-                    color="transparent"
-                    content="Нужен телекинез"
-                    selected={requiresTelekinesis}
-                    tooltip="Вариант будет виден и сработает, только если телекинез есть у кого-то из пары"
-                    onClick={() => setRequiresTelekinesis(!requiresTelekinesis)}
-                  />
-                </Stack.Item>
-              </Stack>
             </Stack.Item>
           </Stack>
         </Section>
@@ -578,16 +818,31 @@ export const CustomInteractionsTab = (props) => {
     </Stack>
   );
 
-  const renderCustomCard = (custom) => {
-    const bodyPartsLabel = custom.required_body_parts
-      ? BODY_PARTS
-        .filter(part => custom.required_body_parts & part.flag)
-        .map(part => part.label.toLowerCase())
-        .join(', ')
-      : '';
-    return (
+  const renderCustomCard = (custom: CustomInteractionData) => {
+    const ownArousal = arousalOrgans.find(option => option.value === custom.self_arousal_organ);
+    const partnerArousal = arousalOrgans.find(option => option.value === custom.partner_arousal_organ);
+    const ownOrgasmOrgan = orgasmOrgans.find(option => option.value === custom.self_orgasm_organ);
+    const partnerOrgasmOrgan = orgasmOrgans.find(option => option.value === custom.partner_orgasm_organ);
+    const ownOrgasmTarget = orgasmTargets.find(option => option.value === custom.self_orgasm_target);
+    const partnerOrgasmTarget = orgasmTargets.find(option => option.value === custom.partner_orgasm_target);
+    const bodyPartsLabel = (mask: number) => bodyParts
+      .filter(part => mask & part.flag)
+      .map(part => part.label.toLowerCase())
+      .join(', ');
+    const ownParts = bodyPartsLabel(custom.self_required_body_parts
+      | (ownArousal?.flag || 0) | (ownOrgasmOrgan?.flag || 0) | (partnerOrgasmTarget?.flag || 0));
+    const partnerParts = bodyPartsLabel(custom.partner_required_body_parts
+      | (partnerArousal?.flag || 0) | (partnerOrgasmOrgan?.flag || 0) | (ownOrgasmTarget?.flag || 0));
+    const needsReview = !!custom.requires_review;
+    const card = (
       <Section
-        title={custom.name}
+        backgroundColor={needsReview ? '#512424' : undefined}
+        title={needsReview ? (
+          <>
+            <Icon name="lock" mr={1} aria-hidden="true" />
+            {custom.name}
+          </>
+        ) : custom.name}
         buttons={
           <>
             <Button icon="pen" tooltip="Редактировать" onClick={() => startEdit(custom)} />
@@ -603,8 +858,10 @@ export const CustomInteractionsTab = (props) => {
           Тип: <b>{custom.type_label}</b> · Применение: <b>{custom.scope_label || 'На обоих'}</b>
         </Box>
         <Box color="label">
-          Возбуждение партнёра: <b>{custom.partner_arousal_label}</b>
-          {" "}· Возбуждение персонажа: <b>{custom.arousal_label}</b>
+          Возбуждение партнёра <b>{custom.partner_arousal_label}</b>
+          {partnerArousal?.flag ? ` (${partnerArousal.displayText.toLowerCase()})` : ''}
+          {' · Твоё возбуждение '}<b>{custom.arousal_label}</b>
+          {ownArousal?.flag ? ` (${ownArousal.displayText.toLowerCase()})` : ''}
         </Box>
         <Box color="label">
           Дистанция: <b>{custom.max_distance || 1} тайл{custom.max_distance > 1 ? "а" : ""}</b>
@@ -612,28 +869,47 @@ export const CustomInteractionsTab = (props) => {
             <>{" "}· Звук: <b>{custom.sound_labels.join(', ')}</b></>
           )}
         </Box>
+        {ownParts && <Box color="label">Оголено у тебя <b>{ownParts}</b></Box>}
+        {partnerParts && <Box color="label">Оголено у партнёра <b>{partnerParts}</b></Box>}
         <Box color="label">
-          {custom.required_body_parts
-            ? <>Оголено: <b>{bodyPartsLabel}</b></>
-            : <b>Всегда доступно</b>}
+          {!!custom.partner_arousal_level && !!custom.partner_orgasm && (
+            <>Оргазм партнёра ({partnerOrgasmOrgan?.displayText.toLowerCase()}, {partnerOrgasmTarget?.displayText.toLowerCase()}) · </>
+          )}
+          {!!custom.arousal_level && !!custom.self_orgasm && (
+            <>Твой оргазм ({ownOrgasmOrgan?.displayText.toLowerCase()}, {ownOrgasmTarget?.displayText.toLowerCase()}) · </>
+          )}
         </Box>
-        <Box color="label">
-          {custom.partner_orgasm ? <>Оргазм партнёра · </> : null}
-          {custom.self_orgasm ? <>Свой оргазм · </> : null}
-          {custom.requires_tail ? <>Нужен хвост · </> : null}
-          {custom.requires_telekinesis ? <>Нужен телекинез</> : null}
-        </Box>
+        {!!(custom.self_requires_tail || custom.partner_requires_tail) && (
+          <Box color="label">
+            Нужен хвост {custom.self_requires_tail
+              ? (custom.partner_requires_tail ? 'у обоих' : 'у тебя')
+              : 'у партнёра'}
+          </Box>
+        )}
+        {!!(custom.self_requires_telekinesis || custom.partner_requires_telekinesis) && (
+          <Box color="label">
+            Нужен телекинез {custom.self_requires_telekinesis
+              ? (custom.partner_requires_telekinesis ? 'у обоих' : 'у тебя')
+              : 'у партнёра'}
+          </Box>
+        )}
       </Section>
     );
+
+    return needsReview ? (
+      <Tooltip content="Панель эмоций обновилась. Проверьте возбуждение, требования к органам и другие настройки интеракции, затем нажмите «Сохранить».">
+        <div>{card}</div>
+      </Tooltip>
+    ) : card;
   };
 
   return (
     <Stack vertical>
       <Stack.Item>
         <NoticeBox info>
-          Кастомных интерактов: {customs.length}/{max_customs}. Они появляются
-          в твоей панели взаимодействия (Ctrl+Shift+клик по цели) и применяются
-          на других персонажей. Все поля сохраняются на персонажа.
+          Кастомных интерактов: {customs.length}/{max_customs}.
+          В панели взаимодействия доступны интеракты без замка.
+          Все поля сохраняются на персонажа.
         </NoticeBox>
       </Stack.Item>
       {(!editingKey && !creating) && (
@@ -729,33 +1005,12 @@ export const CustomInteractionsTab = (props) => {
                     />
                   );
                 })()}
-                <Stack vertical>
-                  {moanSoundsInGroup.map(sound => {
-                    const checked = customMoanSounds.includes(sound.key);
-                    return (
-                      <Stack.Item key={sound.key}>
-                        <Stack>
-                          <Stack.Item grow>
-                            <Button
-                              fluid
-                              icon={checked ? "check-square" : "square-o"}
-                              color={checked ? "green" : "transparent"}
-                              content={sound.label}
-                              selected={checked}
-                              onClick={() => toggleMoanSound(sound.key)}
-                            />
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button
-                              icon="play"
-                              onClick={() => act('preview_moan_sound', { sound_key: sound.key })}
-                            />
-                          </Stack.Item>
-                        </Stack>
-                      </Stack.Item>
-                      );
-                    })}
-                </Stack>
+                <SoundGrid
+                  sounds={moanSoundsInGroup}
+                  selectedKeys={customMoanSounds}
+                  onToggle={toggleMoanSound}
+                  onPreview={(key) => act('preview_moan_sound', { sound_key: key })}
+                />
               </Stack.Item>
             </Stack>
           </Section>

@@ -412,15 +412,16 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/melatonin_
 	illustration = null
 
 /obj/item/storage/box/melatonin_kit/PopulateContents()
-	new /obj/item/modkit/melatonin_belt_kit(src)
-	new /obj/item/modkit/melatonin_shotgun_kit(src)
-	new /obj/item/modkit/melatonin_enforcer_kit(src)
-	new /obj/item/modkit/melatonin_gasmask_kit(src)
-	new /obj/item/modkit/melatonin_riot_kit(src)
-	new /obj/item/modkit/melatonin_stunsword_kit(src)
-	new /obj/item/modkit/melatonin_carrier_kit(src)
-	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)
-	new /obj/item/modsuit_modkit/melatonin(src)
+	new /obj/item/modkit/melatonin_belt_kit(src) // пояс
+	new /obj/item/modkit/melatonin_shotgun_kit(src) // дробаш
+	new /obj/item/modkit/melatonin_enforcer_kit(src) // энфорсер
+	new /obj/item/modkit/melatonin_gasmask_kit(src) // противогаз
+	new /obj/item/modkit/melatonin_riot_kit(src) // riot шлем
+	new /obj/item/modkit/melatonin_stunsword_kit(src) // стан-меч
+	new /obj/item/modkit/melatonin_carrier_kit(src) // плитка
+	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src) // супершорт шотган
+	new /obj/item/modsuit_modkit/melatonin(src) // модсьют
+	new /obj/item/modkit/melatonin_requiem_kit(src) // револьвер Апостол
 
 /obj/item/storage/box/tau_box
 	name = "Tau modkits box"

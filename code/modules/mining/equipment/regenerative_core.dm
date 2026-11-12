@@ -60,7 +60,7 @@
 	if(inert)
 		to_chat(owner, "<span class='notice'>[src] breaks down as it tries to activate.</span>")
 	else
-		owner.revive(full_heal = 1)
+		owner.revive(full_heal = TRUE, medical_revive = TRUE)
 		owner.log_message("[owner] used an implanted [src] to heal themselves! Keep fighting, it's just a flesh wound!", LOG_ATTACK, color="green") //Logging for implanted legion core use
 	qdel(src)
 

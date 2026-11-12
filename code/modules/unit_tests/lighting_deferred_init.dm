@@ -33,6 +33,17 @@
 	emitter.set_light(3, 1, COLOR_WHITE) // power/range/on заданы -> уходит в отложку, а не в живой источник
 	return emitter
 
+/// Возвращает отложку из снимка. Атом из снимка мог сфлашиться за время теста, а без
+/// признака парковки его Destroy() не снимет себя с отложки.
+/datum/unit_test/proc/restore_deferred_lighting_atoms(list/saved)
+	var/list/restored = list()
+	for(var/atom/parked as anything in saved)
+		if(QDELETED(parked))
+			continue
+		parked.flags_1 |= LIGHTING_DEFERRED_PARKED_1
+		restored += parked
+	GLOB.lighting_deferred_atoms = restored
+
 /// Характеризация: на не-инициализированной reserved z update_light() паркует источник, а не создаёт.
 /datum/unit_test/light_deferred_z_parks_source/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
@@ -48,7 +59,7 @@
 	var/has_source = !isnull(emitter.light)
 	var/is_parked = (emitter in GLOB.lighting_deferred_atoms)
 
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	level.lighting_initialized = old_init
 
 	TEST_ASSERT(!has_source, "On a deferred (uninitialized reserved) z, update_light must NOT create a live source")
@@ -90,7 +101,7 @@
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
 	GLOB.lighting_update_objects = saved_objects
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	level.lighting_initialized = old_init
 
 	TEST_ASSERT(precond_parked, "precondition: emitter should be parked as deferred")
@@ -125,7 +136,7 @@
 	var/flushed = !(emitter in GLOB.lighting_deferred_atoms)
 	var/has_source = !isnull(emitter.light)
 
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	level.lighting_initialized = old_init
 
 	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
@@ -226,7 +237,7 @@
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
 	GLOB.lighting_update_objects = saved_objects
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
 	level.lighting_initialized = old_init
 
@@ -268,7 +279,7 @@
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
 	GLOB.lighting_update_objects = saved_objects
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	SSmobs.clients_by_zlevel[test_z] = saved_clientslot
 	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
 	level.lighting_initialized = old_init
@@ -382,7 +393,7 @@
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
 	GLOB.lighting_update_objects = saved_objects
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	level.lighting_initialized = old_init
 	// Восстановление фонового инита. Середину прогона по нашему test_z не восстанавливаем:
 	// прод-семантика create_lighting_for_zlevel - отменить фоновый краул этого z.
@@ -434,7 +445,7 @@
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
 	GLOB.lighting_update_objects = saved_objects
-	GLOB.lighting_deferred_atoms = saved_deferred
+	restore_deferred_lighting_atoms(saved_deferred)
 	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
 	level.lighting_initialized = old_init
 

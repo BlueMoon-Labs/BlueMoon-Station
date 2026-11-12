@@ -437,6 +437,8 @@
 
 	// Карта загружена - тот же вызов обязан будить как раньше. Это путь турфа,
 	// ставшего планетарным уже в игре, и именно он в симуляции и важен.
+	// Пробуждение отложено до StopLoadingMap(), а его тест не зовёт.
+	SSair.queued_for_activation -= subject
 	SSair.map_loading = FALSE
 	subject.update_air_ref(AIR_REF_PLANETARY_TURF)
 	TEST_ASSERT_EQUAL(length(SSair.active_turfs), baseline + 1, "вне загрузки карты планетарный турф не попал в очередь")

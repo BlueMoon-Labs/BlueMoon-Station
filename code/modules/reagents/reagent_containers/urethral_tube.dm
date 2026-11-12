@@ -1,6 +1,6 @@
 /// Уретральная трубка — контейнер с реагентами для переливания жидкостей внутрь уретры цели.
 /obj/item/reagent_containers/urethral_tube
-	name = "уретральная трубка"
+	name = "urethral tube"
 	desc = "Гибкая трубка с наконечником для введения в уретру. Можно наполнить жидкостью и перелить её внутрь при обнажённом пахе цели."
 	icon = 'modular_splurt/icons/obj/sounding.dmi'
 	item_state = "urethral_tube"

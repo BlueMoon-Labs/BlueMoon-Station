@@ -1,3 +1,5 @@
+#define LATEJOIN_RENDER_DEFER_TRAIT "latejoin_render_defer"
+
 /mob/dead/new_player
 	var/ready = 0
 	var/ready_reward_pending = FALSE
@@ -321,7 +323,7 @@
 
 	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
-	var/this_is_like_playing_right = alert(src,"Are you sure you wish to observe? You will not be able to respawn for [round(mintime / 600, 0.1)] minutes!!","Player Setup","Да","Нет")
+	var/this_is_like_playing_right = alert(src,"Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.","Наблюдение","Да","Нет")
 
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Да")
 		ready = PLAYER_NOT_READY
@@ -329,19 +331,33 @@
 		src << browse(null, "window=playersetup") //closes the player setup window
 		new_player_panel()
 		return FALSE
+	return become_observer()
 
+/// Переход в наблюдатели после подтверждения: гост с худом строится в одном тике, клиент переезжает в него в следующем
+/mob/dead/new_player/proc/become_observer()
 	var/mob/dead/observer/observer = new()
 	spawning = TRUE
 
 	observer.started_as_observer = TRUE
 	close_spawn_windows()
 	var/obj/effect/landmark/observer_start/O = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
-	to_chat(src, "<span class='notice'>Now teleporting.</span>")
+	to_chat(src, "<span class='notice'>Переносим вас к станции...</span>")
 	if (O)
 		observer.forceMove(O.loc)
 	else
-		to_chat(src, "<span class='notice'>Teleporting failed. Ahelp an admin please</span>")
+		to_chat(src, "<span class='notice'>Не вышло перенести вас к станции. Напишите администрации через ахелп.</span>")
 		stack_trace("There's no freaking observer landmark available on this map or you're making observers before the map is initialised")
+	observer.prebuild_hud()
+	stoplag()
+	if(QDELETED(src) || !client)
+		qdel(observer)
+		if(!QDELETED(src))
+			spawning = FALSE
+			ready = PLAYER_NOT_READY
+			ready_reward_pending = FALSE
+			key = null
+			qdel(src)
+		return FALSE
 	transfer_ckey(observer, FALSE)
 	observer.client = client
 	observer.client.prefs?.respawn_time_of_death = world.time
@@ -349,7 +365,6 @@
 	if(observer.client && observer.client.prefs)
 		observer.real_name = observer.client.prefs.real_name
 		observer.name = observer.real_name
-		observer.client.init_verbs()
 	observer.update_icon()
 	observer.stop_sound_channel(CHANNEL_LOBBYMUSIC)
 	QDEL_NULL(mind)
@@ -437,11 +452,15 @@
 
 	SSjob.AssignRole(src, rank, 1)
 
-	var/mob/living/character = create_character(TRUE)	//creates the human and transfers vars and mind
+	var/mob/living/character = create_character(TRUE, defer_render = TRUE)	//creates the human and transfers vars and mind
+	var/mob/living/carbon/human/spawned_body = character
 	var/datum/job/job = SSjob.GetJob(rank)
 
 	var/equip = SSjob.EquipRank(character, rank, TRUE)
 	job.after_latejoin_spawn(character)
+	// Одно полное построение внешности вместо пересборки на каждый надетый предмет.
+	if(!QDELETED(spawned_body))
+		REMOVE_TRAIT(spawned_body, TRAIT_HUMAN_NO_RENDER, LATEJOIN_RENDER_DEFER_TRAIT)
 
 	if(isliving(equip))	//Borgs get borged in the equip, so we need to make sure we handle the new mob.
 		character = equip
@@ -524,11 +543,13 @@
 
 	open_job_menu()
 
-/mob/dead/new_player/proc/create_character(transfer_after)
+/mob/dead/new_player/proc/create_character(transfer_after, defer_render = FALSE)
 	spawning = 1
 	close_spawn_windows()
 
 	var/mob/living/carbon/human/H = new(loc)
+	if(defer_render)
+		ADD_TRAIT(H, TRAIT_HUMAN_NO_RENDER, LATEJOIN_RENDER_DEFER_TRAIT)
 
 	var/frn = CONFIG_GET(flag/force_random_names)
 	if(!frn)
@@ -660,3 +681,4 @@
 		return FALSE
 	return TRUE
 
+#undef LATEJOIN_RENDER_DEFER_TRAIT

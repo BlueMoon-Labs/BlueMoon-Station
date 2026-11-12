@@ -33,6 +33,8 @@
 	if(custom_param)
 		param = copytext(act, custom_param + length(act[custom_param]))
 		act = copytext(act, 1, custom_param)
+	if(!intentional && (act == "scream" || act == "pain" || act == "realagony") && HAS_TRAIT(src, TRAIT_SUPPRESS_PAIN_EMOTES))
+		return
 
 	var/list/key_emotes = GLOB.emote_list[act]
 	for(var/datum/emote/emote in key_emotes)

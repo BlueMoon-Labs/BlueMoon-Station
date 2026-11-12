@@ -20,14 +20,14 @@
 	. = ..()
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
-/datum/quirk/well_trained/proc/on_examine_holder(atom/source, mob/living/user, list/examine_list)
+/datum/quirk/well_trained/proc/on_examine_holder(atom/source, mob/living/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 
 	if(!istype(user))
 		return
 	if(!user.has_quirk(/datum/quirk/dominant_aura))
 		return
-	examine_list += span_lewd("Вы чувствуете сильную ауру подчинения от [quirk_holder.ru_nego()].")
+	examine_list += span_lewd("Вы чувствуете сильную ауру подчинения от [anonymous ? "него" : quirk_holder.ru_nego()].")
 
 /datum/quirk/well_trained/on_process()
 	. = ..()

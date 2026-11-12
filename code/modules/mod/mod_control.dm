@@ -51,8 +51,6 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/skin = "standard"
 	var/visual_skin
 	var/ui_theme = "ntos"
-	var/activation_sound
-	var/deactivation_sound
 	var/modkit_name
 	var/modkit_desc
 	var/datum/armolex_hud/armolex_hud

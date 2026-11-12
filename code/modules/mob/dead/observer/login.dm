@@ -1,5 +1,7 @@
 /mob/dead/observer/Login()
 	..()
+	// Пересчитываем индикатор морга при подключении призрака к лежащему внутри телу.
+	mind?.current?.loc?.on_log(TRUE)
 
 	if(!client?.prefs)
 		return

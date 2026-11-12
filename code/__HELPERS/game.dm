@@ -290,7 +290,7 @@
  * мобов-ушей вместо перебора всего содержимого view(): см. комментарий
  * в oranges_ear.dm.
  */
-/proc/get_hearers_in_view(R, atom/source, contents_type = SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+/proc/get_hearers_in_view(R, atom/source, contents_type = SPATIAL_GRID_CONTENTS_TYPE_HEARING, include_relays = TRUE)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
@@ -305,7 +305,7 @@
 			if(listener_turf?.z == T.z && get_dist(listener_turf, T) <= R)
 				LAZYADD(protean_hearers, listener)
 	if(!SSspatial_grid.initialized)
-		return legacy_get_hearers_in_view(R, T, protean_hearers)
+		return legacy_get_hearers_in_view(R, T, protean_hearers, include_relays)
 
 	if(R <= 0) //только турф источника
 		if(length(protean_hearers))
@@ -335,7 +335,7 @@
 		for(var/mob/oranges_ear/remaining_ear as anything in assigned_oranges_ears)
 			remaining_ear.unassign()
 
-	if(contents_type != SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+	if(contents_type != SPATIAL_GRID_CONTENTS_TYPE_HEARING || !include_relays)
 		return
 
 	//сигнал сохраняем: дуллахан слышит телом через голову и т.п.
@@ -350,7 +350,7 @@
 		SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
 
 ///старый BFS-обход view(); нужен только до инициализации спатиал-грида
-/proc/legacy_get_hearers_in_view(R, turf/T, list/extra_hearers)
+/proc/legacy_get_hearers_in_view(R, turf/T, list/extra_hearers, include_relays = TRUE)
 	. = list()
 	var/list/processing = list()
 	var/list/visible_atoms
@@ -370,7 +370,8 @@
 		var/atom/A = processing[++i]
 		if(A.flags_1 & HEAR_1)
 			. += A
-			SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
+			if(include_relays)
+				SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
 		if(length(A.contents))
 			processing += A.contents
 			lim = length(processing)
@@ -378,7 +379,8 @@
 		if(QDELETED(listener) || !(get_turf(listener) in visible_atoms) || (listener in .))
 			continue
 		. |= listener
-		SEND_SIGNAL(listener, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
+		if(include_relays)
+			SEND_SIGNAL(listener, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
 
 /**
  * То же, что get_hearers_in_view, но без учёта видимости: чистый радиус.

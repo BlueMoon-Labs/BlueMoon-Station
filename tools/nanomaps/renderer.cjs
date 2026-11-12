@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const { setTimeout: delay } = require('node:timers/promises');
 
 const version = 'suite-1.11-P';
 const sourceCommit = '0290db5c752fa292f9824521515b603a2afd11dc';
@@ -14,11 +15,43 @@ const checksums = {
 };
 const digest = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
 
+class DownloadError extends Error {
+  constructor(url, cause) {
+    super(`Не удалось загрузить NanoMap: ${url}`, { cause });
+    this.name = 'DownloadError';
+  }
+}
+
 async function download(url, destination, checksum) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Не удалось загрузить NanoMap: HTTP ${response.status}`);
-  const data = Buffer.from(await response.arrayBuffer());
-  if (digest(data) !== checksum) throw new Error('Контрольная сумма NanoMap не совпала.');
+  let data;
+  let failure;
+  // После первой ошибки делаем ещё три попытки с паузой в одну секунду.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await delay(1000);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`Не удалось загрузить NanoMap: HTTP ${response.status}`);
+      }
+      const received = Buffer.from(await response.arrayBuffer());
+      if (digest(received) !== checksum) throw new Error('Контрольная сумма NanoMap не совпала.');
+      data = received;
+      break;
+    } catch (error) {
+      failure = error;
+    }
+  }
+  if (!data) {
+    console.error(`Не удалось загрузить NanoMap после четырёх попыток. URL: ${url}\n${failure.message}`);
+    console.error('error.cause:', failure.cause);
+    // Не затираем сохранённый файл; используем его только при совпадении SHA-256.
+    if (fs.existsSync(destination) && digest(fs.readFileSync(destination)) === checksum) {
+      console.warn(`Используется сохранённый файл NanoMap: ${destination}`);
+      return;
+    }
+    throw new DownloadError(url, failure);
+  }
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.writeFileSync(destination, data, { mode: 0o755 });
 }
@@ -109,4 +142,4 @@ async function ensureRenderer() {
   return selectCompatibleRenderer(release, { build: () => buildLocal(cache, executable) });
 }
 
-module.exports = { ensureRenderer, selectCompatibleRenderer };
+module.exports = { DownloadError, download, ensureRenderer, selectCompatibleRenderer };

@@ -27,9 +27,15 @@
 	. = ..()
 	var/chance = is_hidden ? 2 : 10
 	if(HAS_TRAIT(target, TRAIT_SHY) && prob(chance))
-		target.emote("blush")
+		if(is_hidden)
+			target.visible_message(span_notice("<b>[target]</b> краснеет."), vision_distance = HIDDEN_INTERACTION_RANGE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		else
+			target.emote("blush")
 	if(HAS_TRAIT(user, TRAIT_SHY) && prob(chance))
-		user.emote("blush")
+		if(is_hidden)
+			user.visible_message(span_notice("<b>[user]</b> краснеет."), vision_distance = HIDDEN_INTERACTION_RANGE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		else
+			user.emote("blush")
 
 /datum/interaction/selfhugtail
 	description = "Обнять свой хвост."
@@ -395,6 +401,6 @@
 	if(HAS_TRAIT(partner, TRAIT_CHOKE_SLUT))
 		lust_amount = NORMAL_LUST
 	partner.set_is_fucking(user, CUM_TARGET_TAIL)
-	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, extrarange)
-	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)
+	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, extrarange, local_only = is_hidden)
+	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user, is_hidden = is_hidden)

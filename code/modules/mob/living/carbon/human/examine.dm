@@ -1,41 +1,51 @@
 /mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
-	var/t_on 	= ru_who(TRUE)
-	var/t_ego 	= ru_ego()
-	var/t_nego	= ru_nego()
-	var/t_a 	= ru_a()
+	var/shown_name = examine_shown_name(user)
+	var/anonymous = shown_name == "Неизвестный" || is_gender_obscured()
+	var/t_on = anonymous ? "Он" : ru_who(TRUE)
+	var/t_ego = anonymous ? "его" : ru_ego()
+	var/t_nego = anonymous ? "него" : ru_nego()
+	var/t_emu = anonymous ? "Ему" : ru_emu(TRUE)
+	var/t_a = anonymous ? "" : ru_a()
 
-	var/obscure_name
+	var/list/special_lines = list() // сведения вампиров и вассалов
+	var/list/equip_slots = list()
+	var/list/body_lines = list()
+	var/list/trait_lines = list() // common_trait_examine
+	var/list/lewd_lines = list() // интимные описания
+	var/list/hud_lines = list()
+	var/list/hud_hidden_lines = list() // вторичное, уходит под спойлер
+
 	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
 
 	var/vampDesc = ReturnVampExamine(user) // Vamps recognize the names of other vamps.
 	var/vassDesc = ReturnVassalExamine(user) // Vassals recognize each other's marks.
 	if (vampDesc != "") // If we don't do it this way, we add a blank space to the string...something to do with this -->  . += ""
-		. += vampDesc
+		special_lines += vampDesc
 	if (vassDesc != "")
-		. += vassDesc
+		special_lines += vassDesc
 
-	if(isliving(user))
-		var/mob/living/L = user
-		if(HAS_TRAIT(L, TRAIT_PROSOPAGNOSIA) || HAS_TRAIT(L, TRAIT_INVISIBLE_MAN))
-			obscure_name = TRUE
 	var/collar_tagname = ""
 	if(istype(wear_neck, /obj/item/clothing/neck/petcollar))
 		var/obj/item/clothing/neck/petcollar/collar = wear_neck
 		if(collar.tagname)
-			collar_tagname = " \[[collar.tagname]\]"
+			collar_tagname = " \[[html_encode(collar.tagname)]\]"
 	var/id_card_callsign_name = ""
 	if(istype(wear_id?.GetID(), /obj/item/card/id/callsign))
 		var/obj/item/card/id/callsign/callsign_id = wear_id?.GetID()
 		if(callsign_id.callsign)
-			id_card_callsign_name = " \[[callsign_id.callsign]\]"
-	. = list("<span class='info'>Это - <EM>[!obscure_name ? name : "Неизвестный"][collar_tagname][id_card_callsign_name]</EM>!")
-	if(skipface || get_visible_name() == "Unknown")
-		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
+			id_card_callsign_name = " \[[html_encode(callsign_id.callsign)]\]"
+	var/identity_hidden = examine_identity_hidden(user)
+	var/name_html = "<b>[html_encode(shown_name)][collar_tagname][id_card_callsign_name]</b>"
+	var/race_html
+	if(identity_hidden)
+		race_html = "<span class='examine_unknown_species'>Вы не можете разобрать, кто перед вами.</span>"
 	else
-		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
+		var/species_name = html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)
+		race_html = "<span class='examine_species' title='[species_name]'>[capitalize(t_ego)] вид – [spec_trait_examine_font()][species_name]</font></span>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
-		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
+		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
+		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 
 	//Underwear
@@ -43,14 +53,14 @@
 	var/undies_hidden = underwear_hidden()
 	var/socks_hidden = socks_hidden()
 	if(w_underwear && !undies_hidden)
-		. += "[t_on] одет[t_a] в [w_underwear.get_examine_string(user)]."
+		equip_slots["Бельё"] = w_underwear.get_examine_string(user)
 	if(w_socks && !socks_hidden)
-		. += "[t_on] одет[t_a] в [w_socks.get_examine_string(user)]."
+		equip_slots["Носки"] = w_socks.get_examine_string(user)
 	if(w_shirt && !shirt_hidden)
-		. += "[t_on] одет[t_a] в [w_shirt.get_examine_string(user)]."
+		equip_slots["Рубашка"] = w_shirt.get_examine_string(user)
 	//Wrist slot because you're epic
 	if(wrists && !(ITEM_SLOT_WRISTS in obscured))
-		. += "[t_on] одет[t_a] в [wrists.get_examine_string(user)]."
+		equip_slots["На запястьях"] = wrists.get_examine_string(user)
 	//End of skyrat changes
 
 	//uniform
@@ -60,46 +70,36 @@
 			var/obj/item/clothing/under/U = w_uniform
 			// Аксессуары
 			var/accessory_msg
-			if(length(U.accessories_attached) && !(U.flags_inv & HIDEACCESSORY))
-				var/list/metioned_accessories_list = list()
-				// Фильтруем неспрятанные аксессуары
-				for(var/obj/item/clothing/accessory/attached_accessory in U.accessories_attached)
-					if(attached_accessory.flags_inv & HIDEACCESSORY)
-						continue
-					metioned_accessories_list += attached_accessory
-				// Собираем строку из аксессуаров
-				var/metioned_accessories_count = 0
-				for(var/obj/item/clothing/accessory/mentioned_accessory in metioned_accessories_list)
-					metioned_accessories_count++
-					if(metioned_accessories_count == 1)
-						accessory_msg += " с "
-					else if(metioned_accessories_count < metioned_accessories_list.len)
-						accessory_msg += ", "
-					else
-						accessory_msg += " и "
-					accessory_msg += mentioned_accessory.get_examine_string(user)
-				// BLUEMOON EDIT END
-			. += "[t_on] одет[t_a] в [w_uniform.get_examine_string(user)][accessory_msg]."
+			var/list/metioned_accessories_list = visible_uniform_accessories(U)
+			if(length(metioned_accessories_list) >= EXAMINE_ACCESSORY_ICONS_MIN)
+				var/list/accessory_icons = list()
+				for(var/obj/item/clothing/accessory/icon_accessory as anything in metioned_accessories_list)
+					accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(icon_accessory)]'>[span_tooltip(html_encode(icon_accessory.name), icon2html(icon_accessory, user), "", "", "")]</a>"
+				accessory_msg = " ([accessory_icons.Join(", ")]) <a href='?src=[REF(src)];examine_accessories=1'>\[Список\]</a>"
+			else if(length(metioned_accessories_list))
+				var/obj/item/clothing/accessory/single_accessory = metioned_accessories_list[1]
+				accessory_msg = " с [examine_accessory_string(src, single_accessory, user)]"
+			// BLUEMOON EDIT END
+			equip_slots["На теле"] = "[w_uniform.get_examine_string(user)][accessory_msg]"
 	//head
 	if(head && !(head.obj_flags & EXAMINE_SKIP))
-		. += "[t_on] носит на голове [head.get_examine_string(user)]."
+		equip_slots["На голове"] = head.get_examine_string(user)
 
 	//suit/armor
 	if(wear_suit && !(wear_suit.item_flags & EXAMINE_SKIP))
 		//suit/armor storage
-		var/suit_thing
 		if(s_store && !(ITEM_SLOT_SUITSTORE in obscured))
-			suit_thing += " и к нему прикреплён [s_store.get_examine_string(user)]"
-		. += "[t_on] одет[t_a] в [wear_suit.get_examine_string(user)][suit_thing]."
+			equip_slots["&#8627; В слоте"] = s_store.get_examine_string(user)
+		equip_slots["Поверх тела"] = wear_suit.get_examine_string(user)
 
 	//back
 	if(back && !(back.item_flags & EXAMINE_SKIP))
-		. += "На спине у [t_nego] [back.get_examine_string(user)]."
+		equip_slots["На спине"] = back.get_examine_string(user)
 
 	//Hands
 	for(var/obj/item/I in held_items)
 		if(!(I.item_flags & ABSTRACT))
-			. += "В [get_held_index_name(get_held_index_of_item(I))] он[t_a] держит [I.get_examine_string(user)]."
+			equip_slots["В [get_held_index_name(get_held_index_of_item(I))]"] = I.get_examine_string(user)
 
 	//gloves
 	if(gloves && !(ITEM_SLOT_GLOVES in obscured))
@@ -116,101 +116,100 @@
 				if(length(accessory_preparation))
 					accessory_msg = " c [english_list(accessory_preparation)] на кончиках пальцев"
 
-		. += "[t_on] носит на руках [gloves.get_examine_string(user)][accessory_msg]."
+		equip_slots["На руках"] = "[gloves.get_examine_string(user)][accessory_msg]"
 	else if(length(blood_DNA))
 		var/hand_number = get_num_arms(FALSE)
 		if(hand_number)
-			. += "<span class='warning'>[ru_ego(TRUE)] рук[hand_number > 1 ? "и" : "а"] в крови!</span>"
+			body_lines += span_warning("[capitalize(t_ego)] рук[hand_number > 1 ? "и" : "а"] в крови!")
 
 	//handcuffed?
 	if(handcuffed)
 		if(istype(handcuffed, /obj/item/restraints/handcuffs/cable))
-			. += "<span class='warning'>[t_on] [icon2html(handcuffed, user)] связан[t_a]!</span>"
+			body_lines += span_warning("[t_on] [icon2html(handcuffed, user)] связан[t_a]!")
 		else
-			. += "<span class='warning'>[t_on] [icon2html(handcuffed, user)] в наручниках!</span>"
+			body_lines += span_warning("[t_on] [icon2html(handcuffed, user)] в наручниках!")
 
 	//mask
 	if(wear_mask && !(ITEM_SLOT_MASK in obscured))
-		. += "[t_on] носит на лице [wear_mask.get_examine_string(user)]."
+		equip_slots["На лице"] = wear_mask.get_examine_string(user)
 
 	if(wear_neck && !(ITEM_SLOT_NECK in obscured))
-		. += "[t_on] носит на шее [wear_neck.get_examine_string(user)]."
+		equip_slots["На шее"] = wear_neck.get_examine_string(user)
 
 	//belt
 	if(belt && !(belt.item_flags & EXAMINE_SKIP))
-		. += "[t_on] носит на поясе [belt.get_examine_string(user)]."
+		equip_slots["На поясе"] = belt.get_examine_string(user)
 
 	//shoes
 	if(shoes && !(ITEM_SLOT_FEET in obscured))
-		. += "[t_on] обут[t_a] в [shoes.get_examine_string(user)]."
+		equip_slots["Обувь"] = shoes.get_examine_string(user)
 
 	//eyes
 	if(!(ITEM_SLOT_EYES in obscured))
 		if(glasses)
-			. += "[t_on] носит [glasses.get_examine_string(user)]."
+			equip_slots["Глаза"] = glasses.get_examine_string(user)
 		else if(HAS_TRAIT(src, TRAIT_UNNATURAL_RED_GLOWY_EYES))
-			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза горят неестественным красным свечением!</B></span>"
+			body_lines += span_warning("<B>[capitalize(t_ego)] глаза горят неестественным красным свечением!</B>")
 		else if((left_eye_color == BLOODCULT_EYE || right_eye_color == BLOODCULT_EYE) && iscultist(src) && HAS_TRAIT(src, TRAIT_CULT_EYES))
-			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза ярко-красные и они горят!</B></span>"
+			body_lines += span_warning("<B>[capitalize(t_ego)] глаза ярко-красные и они горят!</B>")
 		else if(HAS_TRAIT(src, TRAIT_HIJACKER))
 			var/obj/item/implant/hijack/H = user.getImplant(/obj/item/implant/hijack)
 			if (H && !H.stealthmode && H.toggled)
-				. += "<b><font color=orange>[ru_ego(TRUE)] глаза ярко-жёлтые и они горят!!</font></b>"
+				body_lines += "<b><font color=orange>[capitalize(t_ego)] глаза ярко-жёлтые и они горят!!</font></b>"
 
 	//ears
 	if(ears && !(ITEM_SLOT_EARS_LEFT in obscured))
-		. += "[t_on] носит на своих ушах [ears.get_examine_string(user)]."
+		equip_slots["Левое ухо"] = ears.get_examine_string(user)
 	if(ears_extra && !(ITEM_SLOT_EARS_RIGHT in obscured))
-		. += "[t_on] носит на своих ушах [ears_extra.get_examine_string(user)]."
+		equip_slots["Правое ухо"] = ears_extra.get_examine_string(user)
 	// //wearing two ear items makes you look like an idiot
 	// if((istype(ears, /obj/item/radio/headset) && !(ITEM_SLOT_EARS_LEFT in obscured)) && (istype(ears_extra, /obj/item/radio/headset) && !(ITEM_SLOT_EARS_RIGHT in obscured)))
-	// 	. += "<span class='warning'>[t_on] выглядит очень глупо ввиду того, что на [t_ego] голове находятся \an [ears.name] и \an [ears_extra.name] одновременно.</span>"
+	// 	. += span_warning("[t_on] выглядит очень глупо ввиду того, что на [t_ego] голове находятся \an [ears.name] и \an [ears_extra.name] одновременно.")
 
 	//ID
 	if(wear_id && !(wear_id.item_flags & EXAMINE_SKIP))
-		. += "[t_on] носит [wear_id.get_examine_string(user)] на своей шее."
-	. += "<hr>"
+		equip_slots["ID-карта"] = wear_id.get_examine_string(user)
 	//Status effects
-	var/list/status_examines = status_effect_examines()
+	var/list/status_examines = status_effect_examines(t_on)
 	if (length(status_examines))
-		. += status_examines
+		body_lines += status_examines
 	//Approximate character height based on current sprite scale
-	. += "[t_on], кажется, около [round(180*get_size(src))] сантиметров в высоту."
+	var/height_cm = round(180*get_size(src)) // выводится в карточке
 	if(has_status_effect(/datum/status_effect/pregnancy))
-		. += "<b>[t_on] имеет выступающую часть на уровне живота. Кажется, это беременность.\n</b>"
+		body_lines += "<b>[t_on] имеет выступающую часть на уровне живота. Кажется, это беременность.\n</b>"
 	//CIT CHANGES START HERE - adds genital details to examine text
 	if(LAZYLEN(internal_organs) && (user.client?.prefs.cit_toggles & GENITAL_EXAMINE))
 		for(var/obj/item/organ/genital/dicc in internal_organs)
 			if(istype(dicc) && dicc.is_exposed())
-				. += dicc.get_examine_string(user)
+				lewd_lines += dicc.get_examine_string(user)
 				if((src == user || HAS_TRAIT(user, TRAIT_GFLUID_DETECT)) && ((dicc?.genital_flags & GENITAL_FUID_PRODUCTION) || ((dicc?.linked_organ?.genital_flags & GENITAL_FUID_PRODUCTION) && !dicc?.linked_organ?.is_exposed())))
 					var/datum/reagent/cummies = find_reagent_object_from_type(dicc?.get_fluid_id())
 					if(cummies)
-						. += "Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
+						lewd_lines += "Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
 	if(user.client?.prefs.cit_toggles & VORE_EXAMINE)
 		var/cursed_stuff = attempt_vr(src,"examine_bellies",args) //vore Code
 		if(cursed_stuff)
-			. += cursed_stuff
+			lewd_lines += cursed_stuff
 	//END OF CIT CHANGES
 	//Jitters
 	switch(jitteriness)
 		if(300 to INFINITY)
-			. += "<span class='warning'><B>[t_on] бьётся в судорогах!</B></span>\n"
+			body_lines += span_warning("<B>[t_on] бьётся в судорогах!</B>\n")
 		if(200 to 300)
-			. += "<span class='warning'>[t_on] нервно дёргается.</span>\n"
+			body_lines += span_warning("[t_on] нервно дёргается.\n")
 		if(100 to 200)
-			. += "<span class='warning'>[t_on] дрожит.</span>\n"
+			body_lines += span_warning("[t_on] дрожит.\n")
 
 	//belly riding
 	if(ishuman(buckled))
 		var/mob/living/carbon/human/H = buckled
 		var/datum/component/riding/human/riding_comp = H.GetComponent(/datum/component/riding/human)
 		if(RIDING_IS_BELLY(riding_comp?.buckle_type))
-			. += span_lewd("[t_on] удерживается ремнями, на животе [H].")
+			lewd_lines += span_lewd("[t_on] удерживается ремнями, на животе [H].")
 
 	var/datum/component/riding/human/riding_comp = GetComponent(/datum/component/riding/human)
 	if(RIDING_IS_BELLY(riding_comp?.buckle_type) && has_buckled_mobs())
-		. += span_lewd("На [t_ego] животе, ремнями удерживаeтся [english_list(buckled_mobs)].")
+		lewd_lines += span_lewd("На [t_ego] животе, ремнями удерживается [english_list(buckled_mobs)].")
 
 	var/appears_dead = FALSE
 	var/just_sleeping = FALSE
@@ -220,33 +219,33 @@
 			just_sleeping = TRUE
 		if(!just_sleeping)
 			if(suiciding)
-				. += "<span class='warning'>[t_on] выглядит как суицидник... [t_ego] уже невозможно спасти.</span>\n"
+				body_lines += span_warning("[t_on] выглядит как суицидник... [t_ego] уже невозможно спасти.\n")
 			if(hellbound)
-				. += span_warning("[ru_ego(TRUE)] душа выглядит вырванной из [t_ego] тела. Воскрешение невозможно.")
+				body_lines += span_warning("[capitalize(t_ego)] душа выглядит вырванной из [t_ego] тела. Воскрешение невозможно.")
 			else
-				. += "<span class='deadsay'>[t_on] ни на что не реагирует; нет никаких признаков жизни...</span>"
+				body_lines += span_deadsay("[t_on] ни на что не реагирует; нет никаких признаков жизни...")
 
 	if(get_bodypart(BODY_ZONE_HEAD) && !getorgan(/obj/item/organ/brain))
-		. += "<span class='deadsay'>Похоже, что у н[t_ego] нет мозга...</span>\n"
+		body_lines += "<span class='deadsay'>Похоже, что у [t_nego] нет мозга...</span>\n"
 
 	var/list/msg = list()
 
 /* BLUEMOON - mechanical_erp_verbs_examine - REMOVAL START
 	if(client && client.prefs)
 		if(client.prefs.toggles & VERB_CONSENT)
-			. += "<b>Игрок разрешил непристойные действия по отношению к его персонажу.</b>"
+			body_lines += "<b>Игрок разрешил непристойные действия по отношению к его персонажу.</b>"
 		else
-			. += "<b>Игрок НЕ разрешил непристойные действия по отношению к его персонажу.</b>"
+			body_lines += "<b>Игрок НЕ разрешил непристойные действия по отношению к его персонажу.</b>"
 BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	//SPLURT edit
 	for(var/obj/item/organ/genital/G in internal_organs)
 		if(istype(G) && G.is_exposed())
 			if(CHECK_BITFIELD(G.genital_flags, GENITAL_CHASTENED))
 				var/obj/item/genital_equipment/chastity_cage/cage = locate(/obj/item/genital_equipment/chastity_cage) in G.contents
-				. += span_lewd("[t_on] носит <b>[cage?.name || "БДСМ-клетку"]</b>. БДСМ-клетка покрывает [G.name].")
+				lewd_lines += span_lewd("[t_on] носит <b>[cage?.name || "БДСМ-клетку"]</b>. БДСМ-клетка покрывает [G.name].")
 	//
 	if(covered_in_cum)
-		. += "<span style='color:["#FFFFFF"]';>[t_on] измазан[t_a] свежими половыми выделениями...</span>\n" //"Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
+		lewd_lines += "<span style='color:["#FFFFFF"]';>[t_on] измазан[t_a] свежими половыми выделениями...</span>" //"Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
 
 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	var/naga_anatomy = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)
@@ -295,14 +294,14 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(I.isEmbedHarmless())
 				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>"
 			else
-				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
+				msg += "<B>У [t_nego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
 			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
 			if(embed?.can_be_ripped_by(user))
 				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
 			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/iter_wound = i
-			msg += "[iter_wound.get_examine_description(user)]\n"
+			msg += "[iter_wound.get_examine_description(user, anonymous)]\n"
 
 	for(var/X in disabled)
 		var/obj/item/bodypart/body_part = X
@@ -313,30 +312,30 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			damage_text = "[body_part.is_robotic_limb() ? "висит и болтается" : "обвисла и побледнела"]" // BLUEMOON EDIT - добавлена проверка на роботизированные конечности
 		else
 			damage_text = (body_part.brute_dam >= body_part.burn_dam) ? body_part.heavy_brute_msg : body_part.heavy_burn_msg
-		msg += "<B>[ru_ego(TRUE)] [body_part.ru_name] [damage_text]!</B>\n"
+		msg += "<B>[capitalize(t_ego)] [body_part.ru_name] [damage_text]!</B>\n"
 
 	var/obj/item/organ/vocal_cords/Vc = user.getorganslot(ORGAN_SLOT_VOICE)
 	if(Vc)
 		if(istype(Vc, /obj/item/organ/vocal_cords/velvet))
 			if(client?.prefs.cit_toggles & HYPNO)
-				msg += "<span class='velvet'><i>Вы чувствуете, как резонируют ваши голосовые связки при взгляде на н[t_ego].</i></span>\n"
+				msg += "<span class='velvet'><i>Вы чувствуете, как резонируют ваши голосовые связки при взгляде на [t_nego].</i></span>\n"
 
 	//stores missing limbs
 	var/l_limbs_missing = 0
 	var/r_limbs_missing = 0
 	for(var/t in missing)
 		if(naga_anatomy && t == BODY_ZONE_L_LEG)
-			msg += span_boldwarning("[ru_ego(TRUE)] опорный хвост оторван!") + "\n"
+			msg += span_boldwarning("[capitalize(t_ego)] опорный хвост оторван!") + "\n"
 			continue
 		if(t==BODY_ZONE_HEAD)
-			msg += "<span class='deadsay'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
+			msg += span_deadsay("<B>[capitalize(t_ego)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B>\n")
 			continue
 		if(t == BODY_ZONE_L_ARM || t == BODY_ZONE_L_LEG)
 			l_limbs_missing++
 		else if(t == BODY_ZONE_R_ARM || t == BODY_ZONE_R_LEG)
 			r_limbs_missing++
 
-		msg += "<span class='warning'><B>[ru_ego(TRUE)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B></span>\n"
+		msg += span_warning("<B>[capitalize(t_ego)] [ru_exam_parse_zone(ru_parse_zone(t))] отсутствует!</B>\n")
 
 	if(!naga_anatomy && l_limbs_missing >= 2 && r_limbs_missing == 0)
 		msg += "[t_on] стоит на правой ножке.\n"
@@ -355,31 +354,31 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(temp < maxHealth*0.25) // BLUEMOON CHANGES, was if(temp < 25) - добавляем скаллирование от максимального ХП
 				msg += "[t_on] имеет незначительные ушибы.\n"
 			else if(temp < maxHealth*0.5) // BLUEMOON CHANGES, was if(temp < 50) - добавляем скаллирование от максимального ХП
-				msg += "[t_on] <b>тяжело</b> ранен[t_a]!\n"
+				msg += "[t_on] [span_warning("<b>тяжело</b>")] ранен[t_a]!\n"
 			else if(temp < maxHealth*0.75) // BLUEMOON ADD START
-				msg += "[t_on] <b>очень тяжело</b> ранен[t_a]!\n" // BLUEMOON ADD END
+				msg += "[t_on] [span_warning("<b>очень тяжело</b>")] ранен[t_a]!\n" // BLUEMOON ADD END
 			else
-				msg += "<B>[t_on] смертельно ранен[t_a]!</B>\n"
+				msg += "<B>[t_on] [span_danger("смертельно")] ранен[t_a]!</B>\n"
 
 		temp = getFireLoss()
 		if(temp)
 			if(temp < maxHealth*0.25) // BLUEMOON CHANGES, was if(temp < 25) - добавляем скаллирование от максимального ХП
 				msg += "[t_on] немного подгорел[t_a].\n"
 			else if(temp < maxHealth*0.5) // BLUEMOON CHANGES, was if(temp < 50) - добавляем скаллирование от максимального ХП
-				msg += "[t_on] имеет <b>серьёзные</b> ожоги!\n"
+				msg += "У [t_nego] [span_warning("<b>серьёзные</b>")] ожоги!\n"
 			else if(temp < maxHealth*0.75) // BLUEMOON ADD START
-				msg += "[t_on] имеет <b>очень серьёзные</b> ожоги!\n" // BLUEMOON ADD END
+				msg += "[t_ego] тело покрыто [span_warning("<b>очень серьёзными</b>")] ожогами!\n" // BLUEMOON ADD END
 			else
-				msg += "<B>[t_on] имеет смертельно опасные ожоги!</B>\n"
+				msg += "<B>[t_on] имеет [span_danger("смертельно опасные")] ожоги!</B>\n"
 
 		temp = getCloneLoss()
 		if(temp)
 			if(temp < 25)
-				msg += "[t_on] имеет незначительные подтёки на теле.\n"
+				msg += "У [t_nego] незначительные подтёки на теле.\n"
 			else if(temp < 50)
-				msg += "[t_on] имеет <b>обвисшую</b> кожу на большей части тела!\n"
+				msg += "[t_ego] кожа [span_warning("<b>обвисла</b>")] на большей части тела!\n"
 			else
-				msg += "<b>[t_on] имеет тело состоящее из кусков свисающей плоти!</b>\n"
+				msg += "<b>У [t_nego] тело, состоящее из кусков свисающей плоти!</b>\n"
 
 
 	if(fire_stacks > 0)
@@ -401,11 +400,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				msg += "[t_on] выглядит довольно плотно.\n"
 	switch(disgust)
 		if(DISGUST_LEVEL_GROSS to DISGUST_LEVEL_VERYGROSS)	//Не он отвратительный, а ему отвратительно.
-			msg += "[ru_emu(TRUE)] слегка неприятно.\n"	//a bit grossed out
+			msg += "[t_emu] слегка неприятно.\n"	//a bit grossed out
 		if(DISGUST_LEVEL_VERYGROSS to DISGUST_LEVEL_DISGUSTED)
-			msg += "[ru_emu(TRUE)] заметно тошно.\n"	//really grossed out
+			msg += "[t_emu] заметно тошно.\n"	//really grossed out
 		if(DISGUST_LEVEL_DISGUSTED to INFINITY)
-			msg += "[ru_ego(TRUE)] физиономия демонстрирует абсолютное отвращение.\n"	//extremely disgusted
+			msg += "[capitalize(t_ego)] физиономия демонстрирует абсолютное отвращение.\n"	//extremely disgusted
 
 	if(!HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
 		var/apparent_blood_volume = blood_volume
@@ -413,11 +412,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			apparent_blood_volume -= 150 // enough to knock you down one tier
 		switch(apparent_blood_volume)
 			if(BLOOD_VOLUME_OKAY to BLOOD_VOLUME_SAFE)
-				msg += "[ru_ego(TRUE)] кожа бледная.\n"
+				msg += "[capitalize(t_ego)] кожа бледная.\n"
 			if(BLOOD_VOLUME_BAD to BLOOD_VOLUME_OKAY)
 				msg += "<b>Выглядит ужасно бледно.</b>\n"
 			if(-INFINITY to BLOOD_VOLUME_BAD)
-				msg += "<span class='deadsay'><b>[t_on] напоминает раздавленный пакет от сока из-за абсолютно бледного цвета кожи.</b></span>\n"
+				msg += span_deadsay("<b>[t_on] напоминает раздавленный пакет от сока из-за абсолютно бледного цвета кожи.</b>\n")
 
 	if(is_bleeding())
 		var/list/obj/item/bodypart/bleeding_limbs = list()
@@ -432,9 +431,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 		var/list/bleed_text
 		if(appears_dead)
-			bleed_text = list("<span class='deadsay'><B>Кровь брызгает струйками из [ru_ego(FALSE)] конечности -")
+			bleed_text = list("<span class='deadsay'><B>Кровь брызгает струйками из [t_ego] конечности -")
 		else
-			bleed_text = list("<B>У н[ru_ego(FALSE)] кровотечение в области")
+			bleed_text = list("<B>У [t_nego] кровотечение в области")
 
 		switch(num_bleeds)
 			if(1 to 2)
@@ -473,7 +472,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	// BLUEMOON ADD START - телесные метки (татуировки, надписи) видны, пока персонаж действительно не умер,
 	// даже если он выглядит мёртвым (TRAIT_FAKEDEATH: квирк "Не-мёртвый", вампиры и т.п.).
 	if(!appears_dead || stat != DEAD)
-		var/tattoo_examine_text = get_tattoo_examine_text()
+		var/tattoo_examine_text = get_tattoo_examine_text(anonymous)
 		if(tattoo_examine_text)
 			msg += tattoo_examine_text
 		// Отображение надписей на теле, если они видимы и есть
@@ -482,7 +481,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		if(user?.client?.prefs.cit_toggles & GENITAL_EXAMINE)
 			for(var/obj/item/organ/genital/G in internal_organs)
 				if(length(G.writtentext) && istype(G) && G.is_exposed())
-					msg += "<span class='warning'>На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".</span>\n"
+					lewd_lines += span_warning("На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".")
 	// BLUEMOON ADD END
 
 	if(!appears_dead)
@@ -495,9 +494,9 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					if(21.01 to 41) //.01s are used in case drunkenness ends up to be a small decimal
 						msg += "[t_on] пьян[t_a].\n"
 					if(41.01 to 51)
-						msg += "[t_on] довольно пьян[t_a] и от н[t_ego] чувствуется запах алкоголя.\n"
+						msg += "[t_on] довольно пьян[t_a] и от [t_nego] чувствуется запах алкоголя.\n"
 					if(51.01 to 61)
-						msg += "Очень пьян[t_a] и от н[t_ego] несёт перегаром.\n"
+						msg += "Очень пьян[t_a] и от [t_nego] несёт перегаром.\n"
 					if(61.01 to 91)
 						msg += "[t_on] в стельку.\n"
 					if(91.01 to INFINITY)
@@ -509,7 +508,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					if(21.01 to 41)
 						msg += "[t_on] изредка вздрагивает под воздействием употреблённых жидкостей.\n"
 					if(41.01 to 61)
-						msg += "От н[t_ego] очень сильно пахнет машинным маслом, а [t_ego] движения кажутся \"пьяными\".\n"
+						msg += "От [t_nego] очень сильно пахнет машинным маслом, а [t_ego] движения кажутся \"пьяными\".\n"
 					if(61.01 to 91)
 						msg += "[t_on] выдаёт множественные ошибки, постоянно зависая.\n"
 					if(91.01 to INFINITY)
@@ -526,11 +525,8 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		for(var/X in writing)
 			if(!w_uniform)
 				var/obj/item/bodypart/BP = X
-				msg += "<span class='warning'>На [t_ego] [BP.name] написано: \"[html_encode(BP.writtentext)]\".</span>\n"
+				msg += span_warning("На [t_ego] [BP.name] написано: \"[html_encode(BP.writtentext)]\".\n")
 		/ BLUEMOON REMOVAL END */
-		if(!user)
-			return
-
 		if(src != user)
 			if (a_intent != INTENT_HELP)
 				msg += "[t_on] выглядит наготове.\n"
@@ -563,13 +559,14 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(ai_controller?.ai_status == AI_STATUS_ON)
 				msg += "<span class='deadsay'>[t_on] выглядит не очень разумно.</span>\n"
 			if(!key)
-				msg += "<span class='warning'>[t_on] кататоник. Стресс от жизни в глубоком космосе сильно повлиял на н[t_ego]. Восстановление маловероятно.</span>\n"
+				msg += span_warning("[t_on] кататоник. Стресс от жизни в глубоком космосе сильно повлиял на [t_nego]. Восстановление маловероятно.\n")
 			else if(!client)
-				msg += "<span class='warning'><B>Не стоит [ru_ego()] трогать.</B> [t_on] имеет пустой, рассеянный взгляд и кажется совершенно не реагирующим ни на что. В этом состоянии [t_on] находится [round(((world.time - lastclienttime) / (1 MINUTES)), 1)] минут. [t_on] может выйти из этого состояни в ближайшее время.</span>\n"
+				msg += span_warning("<B>Не стоит [t_ego] трогать.</B> [t_on] имеет пустой, рассеянный взгляд и кажется совершенно не реагирующим ни на что. \
+				В этом состоянии [t_on] находится [round(((world.time - lastclienttime) / (1 MINUTES)), 1)] минут. [t_on] может выйти из этого состояни в ближайшее время.\n")
 
-	var/trait_exam = common_trait_examine()
+	var/trait_exam = common_trait_examine(anonymous, user)
 	if (!isnull(trait_exam))
-		msg += trait_exam
+		trait_lines += trait_exam
 
 	var/scar_severity = 0
 	for(var/i in all_scars)
@@ -579,95 +576,137 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	switch(scar_severity)
 		if(1 to 4)
-			msg += span_smallnoticeital("\n[t_on], похоже, имеет шрамы... стоит присмотреться, чтобы разглядеть ещё.")
+			msg += span_smallnoticeital("[t_on], похоже, имеет шрамы... стоит присмотреться, чтобы разглядеть ещё.")
 		if(5 to 8)
-			msg += span_notice("\n<i>[t_on] имеет несколько серьёзных шрамов... стоит присмотреться, чтобы разглядеть ещё.</i>")
+			msg += span_notice("<i>[t_on] имеет несколько серьёзных шрамов... стоит присмотреться, чтобы разглядеть ещё.</i>")
 		if(9 to 11)
-			msg += span_notice("\n<b><i>[t_on] имеет множество ужасных шрамов... стоит присмотреться, чтобы разглядеть ещё.</i></b>")
+			msg += span_notice("<b><i>[t_on] имеет множество ужасных шрамов... стоит присмотреться, чтобы разглядеть ещё.</i></b>")
 		if(12 to INFINITY)
-			msg += span_notice("\n<b><i>[t_on] имеет разорванное в хлам тело, состоящее из шрамов... стоит присмотреться, чтобы разглядеть ещё?</i></b>")
+			msg += span_notice("<b><i>[t_on] имеет разорванное в хлам тело, состоящее из шрамов... стоит присмотреться, чтобы разглядеть ещё?</i></b>")
 
-	if (length(msg))
-		. += span_warning("[msg.Join("")]")
+	var/status_html = ""
+	if(length(msg))
+		status_html = trim("[msg.Join("")]")
 
-	var/traitstring
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		var/obj/item/organ/cyberimp/eyes/hud/CIH = H.getorgan(/obj/item/organ/cyberimp/eyes/hud)
 		if(istype(H.glasses, /obj/item/clothing/glasses/hud) || CIH)
 			var/perpname = get_face_name(get_id_name(""))
 			if(perpname)
+				var/traits_link = examine_traits_link(src, user, EXAMINE_TRAITS_MODE_MEDHUD, "Особенности пациента")
+				var/photo_links = ""
 				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
 						rank_tooltip = " [span_tooltip_fast(html_encode(R.fields["real_rank"]))]"
-					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]][rank_tooltip]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
-				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
+					hud_lines += "<span class='deptradio'>Должность:</span> [R.fields["rank"]][rank_tooltip]"
+					if(has_medical_examine_hud(user) || hasHUD(user, DATA_HUD_SECURITY_ADVANCED))
+						photo_links = "<span class='deptradio'>Фото:</span> <a href='?src=[REF(src)];hud=1;photo_front=1'>\[Анфас\]</a> <a href='?src=[REF(src)];hud=1;photo_side=1'>\[Сбоку\]</a>"
+				var/list/patient_line = list()
+				if(length(traits_link))
+					patient_line += traits_link
+				if(length(photo_links))
+					patient_line += photo_links
+				if(length(patient_line))
+					hud_hidden_lines += patient_line.Join(" · ")
+				if(has_medical_examine_hud(user))
 					var/cyberimp_detect
 					for(var/obj/item/organ/cyberimp/CI in internal_organs)
 						if(CI.status == ORGAN_ROBOTIC && !CI.syndicate_implant)
 							cyberimp_detect += "[name] модифицирован[t_a] [CI.name]."
 					if(cyberimp_detect)
-						. += "Обнаружены кибернетические модификации:"
-						. += cyberimp_detect
+						hud_hidden_lines += "Обнаружены кибернетические модификации:"
+						hud_hidden_lines += cyberimp_detect
 					if(R)
-						var/health_r = R.fields["p_stat"]
-						. += "<a href='?src=[REF(src)];hud=m;p_stat=1'>\[[health_r]\]</a>"
-						health_r = R.fields["m_stat"]
-						. += "<a href='?src=[REF(src)];hud=m;m_stat=1'>\[[health_r]\]</a>"
+						// Физический и психический статус в один ряд
+						hud_lines += "<span class='deptradio'>Физ. статус:</span> <a href='?src=[REF(src)];medical=1'>\[[R.fields["p_stat"]]\]</a> <span class='deptradio'>Псих. статус:</span> <a href='?src=[REF(src)];medical_mental=1'>\[[R.fields["m_stat"]]\]</a>"
 					R = antag_training_station_record(GLOB.data_core.medical_by_name, perpname, src)
 					if(R)
-						. += "<a href='?src=[REF(src)];hud=m;evaluation=1'>\[Medical evaluation\]</a>"
-					traitstring = get_trait_string(FALSE, TRUE)
-					if(traitstring)
-						. += "<span class='info'>Обнаружены Особенности:\n[traitstring]</span>"
-
-
+						hud_hidden_lines += "<a href='?src=[REF(src)];medrecord=1'>\[Медицинские записи\]</a>"
 
 				if(istype(H.glasses, /obj/item/clothing/glasses/hud/security) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/security))
 					if(!user.stat && user != src)
 					//|| !user.canmove || user.restrained()) Fluff: Sechuds have eye-tracking technology and sets 'arrest' to people that the wearer looks and blinks at.
-						var/criminal = "None"
+						var/criminal = SEC_RECORD_STATUS_NONE
 
 						R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 						if(R)
 							criminal = R.fields["criminal"]
 
-						. += jointext(list("<span class='deptradio'>Криминальный Статус:</span> <a href='?src=[REF(src)];hud=s;status=1'>\[[criminal]\]</a>",
-							"<span class='deptradio'>База Данных:</span> <a href='?src=[REF(src)];hud=s;view=1'>\[View\]</a>",
-							"<a href='?src=[REF(src)];hud=s;add_crime=1'>\[Add crime\]</a>",
-							"<a href='?src=[REF(src)];hud=s;view_comment=1'>\[View comment log\]</a>",
-							"<a href='?src=[REF(src)];hud=s;add_comment=1'>\[Add comment\]</a>"), "")
+						hud_lines += "<span class='deptradio'>Криминальный Статус:</span> <a href='?src=[REF(src)];hud=s;status=1'>\[[criminal]\]</a>"
+						hud_hidden_lines += jointext(list("<span class='deptradio'>База Данных:</span> <a href='?src=[REF(src)];hud=s;view=1'>\[Сводка\]</a>",
+							"<a href='?src=[REF(src)];hud=s;add_crime=1'>\[Добавить нарушение\]</a>",
+							"<a href='?src=[REF(src)];hud=s;view_comment=1'>\[Комментарии\]</a>",
+							"<a href='?src=[REF(src)];hud=s;add_comment=1'>\[Добавить комментарий\]</a>"), " ")
 	else if(isobserver(user))
-		traitstring = get_trait_string(FALSE)
-		if(traitstring)
-			. += "<span class='info'><b>Особенности:</b> [traitstring]</span>"
+		var/observer_traits_link = examine_traits_link(src, user, EXAMINE_TRAITS_MODE_OBSERVER)
+		if(length(observer_traits_link))
+			hud_lines += "<b>Особенности:</b> [observer_traits_link]"
 
-	if(LAZYLEN(.) > 2) //Want this to appear after species text
-		.[2] += "<hr>"
+	var/list/headshots = list()
+	var/list/naked_headshots = list()
+	var/placeholder_html = ""
+	if(user?.client?.prefs?.examine_headshots)
+		if(user.is_blind() || HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA))
+			var/datum/asset/placeholders = get_asset_datum(/datum/asset/simple/examine_placeholders)
+			placeholders.send(user)
+			var/list/placeholder_urls = placeholders.get_url_mappings()
+			placeholder_html = "<img class='examine_placeholder examine_placeholder_dark' src='[html_encode(placeholder_urls["noheadshot_dark.png"])]' width='128' height='128' alt=''><img class='examine_placeholder examine_placeholder_light' src='[html_encode(placeholder_urls["noheadshot_light.png"])]' width='128' height='128' alt=''>"
+		else
+			if(!identity_hidden && length(dna?.headshot_links))
+				headshots = dna.headshot_links
+			naked_headshots = examine_naked_headshots(user, identity_hidden)
 
-	. += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
+	var/profile_link = "<a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>"
+	var/card_html = examine_card(name_html, race_html, height_cm, profile_link, headshots, naked_headshots, !identity_hidden ? dna?.flavor_text : "", placeholder_html)
 
-	if(!skipface && !obscure_name && dna?.headshot_links && length(dna.headshot_links))
-		var/headshot_html = ""
-		for(var/headshot_link in dna.headshot_links)
-			if(!headshot_link)
-				continue
-			headshot_html = headshot_preview_html(headshot_link, 128, 128)
-			break
-		if(headshot_html)
-			. += span_boldnotice("Хедшот персонажа:")
-			. += headshot_html
-
-	if(activity)
-		. += span_nicegreen("<b>Деятельность:</b> [activity]")
-
-	// send signal last so everything else prioritizes above
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .) //This also handles flavor texts now
-
+	var/list/flavor_lines = list()
 	if(tempflavor) // BLUEMOON ADD - темпфлавор теперь захардкожен, увы
-		. += span_notice(tempflavor)
+		flavor_lines += span_notice(tempflavor)
+
+	var/state_html = body_lines.Join("\n")
+	if(length(status_html))
+		state_html = length(state_html) ? "[state_html]\n[status_html]" : status_html
+	state_html = trim(state_html)
+
+	// Внутри "Состояния" группы разделены отступом: здоровье, затем common_trait_examine, затем НСФВ
+	var/list/state_groups = list()
+	if(length(state_html))
+		state_groups += state_html
+	var/trait_html = trim(trait_lines.Join(""))
+	if(length(trait_html))
+		state_groups += trait_html
+	var/lewd_html = trim(lewd_lines.Join("\n"))
+	if(length(lewd_html))
+		state_groups += lewd_html
+	state_html = ""
+	for(var/i in 1 to length(state_groups))
+		state_html += "<div>[state_groups[i]]</div>"
+
+	if(length(hud_hidden_lines))
+		hud_lines += examine_spoiler("Записи визора", hud_hidden_lines.Join("\n"))
+
+	var/list/layout = list()
+	if(length(special_lines))
+		layout += "<div>[special_lines.Join("\n")]</div>"
+	layout += card_html
+	if(length(flavor_lines))
+		layout += "<div class='examine_note'>[flavor_lines.Join("\n")]</div>"
+	layout += examine_box("Снаряжение", examine_equipment(equip_slots), FALSE)
+	if(length(state_html))
+		layout += examine_box("Состояние", "<div class='examine_state'>[state_html]</div>", FALSE)
+	if(length(hud_lines))
+		layout += examine_box("Данные", "<div>[hud_lines.Join("\n")]</div>", FALSE)
+	if(activity)
+		var/activity_html = span_nicegreen("<b>Деятельность:</b> [activity]")
+		layout += "<div class='examine_note'>[activity_html]</div>"
+
+	// Один элемент без переводов строк между блоками: чат превращает "\n" в <br>, внутри таблиц это ломает вёрстку
+	. = list(layout.Join(""))
+	// Обработчики получают собранный результат и могут изменять или дополнять его.
+	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, ., anonymous)
 
 /mob/living/proc/status_effect_examines(pronoun_replacement) //You can include this in any mob's examine() to show the examine texts of status effects!
 	var/list/dat = list()
@@ -680,34 +719,3 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			dat += "[new_text]\n" //dat.Join("\n") doesn't work here, for some reason
 	if(dat.len)
 		return dat.Join()
-
-//Helper procedure. Called by /mob/living/carbon/human/examine() and /mob/living/carbon/human/Topic() to determine HUD access to security and medical records.
-/proc/hasHUD(mob/M, hudtype)
-	if(istype(M, /mob/living/carbon/human))
-		var/have_hudtypes = list()
-		var/mob/living/carbon/human/H = M
-
-		if(istype(H.glasses, /obj/item/clothing/glasses/hud))
-			var/obj/item/clothing/glasses/hud/hudglasses = H.glasses
-			if(hudglasses?.hud_type)
-				have_hudtypes += hudglasses.hud_type
-
-		var/obj/item/organ/cyberimp/eyes/hud/CIH = H.getorgan(/obj/item/organ/cyberimp/eyes/hud)
-		if(CIH?.HUD_type)
-			have_hudtypes += CIH.HUD_type
-		var/obj/item/organ/cyberimp/brain/nif/implant = H.getorganslot(ORGAN_SLOT_BRAIN_NIF)
-		for(var/datum/nifsoft/hud/program in implant?.loaded_nifsofts)
-			if(program.active && program.hud_type)
-				have_hudtypes += program.hud_type
-
-		return (hudtype in have_hudtypes)
-
-	else if(iscyborg(M) || isAI(M)) //Stand-in/Stopgap to prevent pAIs from freely altering records, pending a more advanced Records system
-		return (hudtype in list(DATA_HUD_SECURITY_BASIC, DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED))
-
-	else if(isobserver(M))
-		var/mob/dead/observer/O = M
-		if(DATA_HUD_SECURITY_ADVANCED in O.datahuds)
-			return (hudtype in list(DATA_HUD_SECURITY_BASIC, DATA_HUD_SECURITY_ADVANCED))
-
-	return FALSE

@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
+import { InfoSection } from './InfoSection';
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
@@ -12,6 +13,8 @@ import {
 } from './tabs';
 
 type MainTypes = {
+  target?: string;
+  isTargetSelf?: boolean | 0 | 1;
   interaction_speeds: number[];
   currently_active_interaction: string;
   auto_interaction_pace: number;
@@ -60,10 +63,16 @@ export const MainContent = (props) => {
     : visibleTabs;
   const showCompactCustomButton = compactCustomTab
     && visibleTabs.some(t => t.key === 'custom');
+  const title = data.isTargetSelf
+    ? 'Взаимодействие с собой'
+    : data.target ? `Цель взаимодействия — ${data.target}` : 'Цель взаимодействия не выбрана';
 
   return (
-    <Section fill>
+    <Section title={title} fill>
       <Stack vertical fill>
+        <Stack.Item>
+          <InfoSection />
+        </Stack.Item>
         <Stack.Item>
           <Tabs fluid textAlign="center">
             {visibleTabs[0]?.key === 'interactions' && (

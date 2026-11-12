@@ -45,7 +45,9 @@
 		return
 	user.visible_message("<span class='notice'>[user] begins to reactivate [src].</span>", "<span class='notice'>You begin to reactivate [src]...</span>")
 	if(do_after(user, 3 SECONDS, src))
-		revive(full_heal = 1)
+		if(!revive(full_heal = TRUE, medical_revive = TRUE))
+			to_chat(user, span_warning("Сознание дрона недоступно для перезапуска."))
+			return
 		user.visible_message("<span class='notice'>[user] reactivates [src]!</span>", "<span class='notice'>You reactivate [src].</span>")
 		alert_drones(DRONE_NET_CONNECT)
 		if(G)

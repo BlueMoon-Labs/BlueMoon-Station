@@ -46,6 +46,13 @@
 		damageoverlaytemp = 0
 		update_damage_hud()
 
+///COMSIG_CLEAR_MOOD_EVENT, но только если снимать есть что. Life снимает одни и те же
+///мудлеты каждый тик, а пустой сигнал платит полную диспетчеризацию в clear_event().
+/mob/living/carbon/proc/clear_mood_event_if_set(category)
+	var/datum/component/mood/mood = GetComponent(/datum/component/mood)
+	if(mood && (mood.mood_events[category] || mood.mood_event_timers[category]))
+		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, category)
+
 //Procs called while dead
 /mob/living/carbon/proc/handle_death()
 	if(reagents) // BLUEMOON EDIT - sanity check
@@ -88,7 +95,7 @@
 			// HYPER CHANGE END
 
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "suffocation")
+			clear_mood_event_if_set("suffocation")
 	else
 		if(istype(loc, /obj/))
 			var/obj/location_as_object = loc
@@ -279,7 +286,7 @@
 			adjustOxyLoss(-5)
 		oxygen_used = breath.get_moles(GAS_O2)
 		clear_alert("not_enough_oxy")
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "suffocation")
+		clear_mood_event_if_set("suffocation")
 
 	breath.adjust_moles(GAS_O2, -oxygen_used)
 	breath.adjust_moles(GAS_CO2, oxygen_used)
@@ -320,7 +327,7 @@
 				emote(pick("giggle","laugh"))
 			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "chemical_euphoria", /datum/mood_event/chemical_euphoria)
 	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "chemical_euphoria")
+		clear_mood_event_if_set("chemical_euphoria")
 
 	//BZ (Facepunch port of their Agent B)
 	if(breath.get_moles(GAS_BZ))
@@ -354,7 +361,7 @@
 			switch(miasma_partialpressure)
 				if(1 to 5)
 					// At lower pp, give out a little warning
-					SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "smell")
+					clear_mood_event_if_set("smell")
 					if(prob(5))
 						to_chat(src, "<span class='notice'>There is an unpleasant smell in the air.</span>")
 				if(5 to 20)
@@ -375,12 +382,12 @@
 						SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/nauseating_stench)
 						vomit()
 				else
-					SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "smell")
+					clear_mood_event_if_set("smell")
 
 
 	//Clear all moods if no miasma at all
 	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "smell")
+		clear_mood_event_if_set("smell")
 
 	//BREATH TEMPERATURE
 	handle_breath_temperature(breath)
@@ -669,7 +676,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 		jitteriness = max(jitteriness - restingpwr * 2, 0)
 		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "jittery", /datum/mood_event/jittery)
 	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "jittery")
+		clear_mood_event_if_set("jittery")
 
 	if(druggy)
 		adjust_drugginess(-1)
@@ -693,7 +700,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 				adjustFireLoss(-0.06, FALSE)
 			sound_environment_override = SOUND_ENVIRONMENT_PSYCHOTIC
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
+			clear_mood_event_if_set("drunk")
 			clear_alert("drunk")
 			sound_environment_override = SOUND_ENVIRONMENT_NONE
 			drunkenness = max(drunkenness - 0.2, 0)
@@ -755,8 +762,6 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 
 		if(drunkenness >= 101)
 			adjustToxLoss(4) //Let's be honest you shouldn't be alive by now
-		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
 
 	// BLUEMOON ADD START - опьянение для синтетиков
 	else if (drunkenness)
@@ -773,7 +778,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 				adjustFireLoss(-0.06, FALSE)
 			sound_environment_override = SOUND_ENVIRONMENT_PSYCHOTIC
 		else
-			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "drunk")
+			clear_mood_event_if_set("drunk")
 			clear_alert("drunk")
 			sound_environment_override = SOUND_ENVIRONMENT_NONE
 			drunkenness = max(drunkenness - 0.2, 0)
@@ -956,6 +961,9 @@ BLUEMOON REMOVAL END */
 ////////////////
 
 /mob/living/carbon/proc/handle_brain_damage()
+	var/obj/item/organ/brain/brain = getorganslot(ORGAN_SLOT_BRAIN)
+	if(!length(brain?.traumas))
+		return
 	for(var/T in get_traumas())
 		var/datum/brain_trauma/BT = T
 		BT.on_life()

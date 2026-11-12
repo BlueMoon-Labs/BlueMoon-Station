@@ -654,7 +654,7 @@
 
 /// Helper function to add a "comment" to a data record. Used for medical or security records.
 /mob/living/carbon/human/proc/add_comment(mob/commenter, comment_kind, comment_text)
-	var/perpname = get_visible_name(TRUE) //gets the name of the perp, works if they have an id or if their face is uncovered
+	var/perpname = get_face_name(get_id_name("")) // Та же личность, что используется при чтении записи через HUD.
 	if(!perpname)
 		return
 	var/datum/data/record/R

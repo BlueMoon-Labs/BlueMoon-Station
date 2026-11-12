@@ -123,6 +123,8 @@ GLOBAL_PROTECT(href_token)
 		remove_verb(owner, /client/proc/readmin)
 		owner.init_verbs() //re-initialize the verb list
 		GLOB.admins |= C
+		if(length(GLOB.uncallable_verbs))
+			to_chat(C, span_userdanger("Сборка переполнила таблицу процов: [length(GLOB.uncallable_verbs)] вербов игроки не вызовут (например, [GLOB.uncallable_verbs[1]]). Нужен откат ТМ или правка verb_id_order.dm, подробности в runtime.log."))
 
 		// mentor stuff
 		if(!C.mentor_datum)
