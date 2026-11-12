@@ -7,13 +7,19 @@
 	var/saved_budget
 	var/list/stashed_contracts
 
+/// В тестовом мире клиентов нет, а медицина оживляет только тело с игроком: пациент проходит ту же проверку, что учебная цель полигона.
+/mob/living/carbon/human/econ_test_patient
+
+/mob/living/carbon/human/econ_test_patient/is_antag_training_patient()
+	return TRUE
+
 /datum/unit_test/economy_work/New()
 	. = ..()
 	stashed_contracts = econ_test_stash_contracts()
 
 /datum/unit_test/economy_work/proc/setup_pair()
 	performer = allocate(/mob/living/carbon/human)
-	patient = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	patient = allocate(/mob/living/carbon/human/econ_test_patient, run_loc_floor_top_right)
 	performer.mind_initialize()
 	patient.mind_initialize()
 	performer.mind.key = "econ_test_medic"
