@@ -35,7 +35,7 @@
 "acm" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/flora/junglebush/b,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "acX" = (
 /obj/structure/flora/junglebush/b,
@@ -224,9 +224,6 @@
 	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
-"ahE" = (
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "ahQ" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
@@ -622,9 +619,6 @@
 /obj/machinery/suit_storage_unit/syndicate/softsuit,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"asY" = (
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "atH" = (
 /obj/effect/turf_decal/siding/wood,
 /obj/structure/window/reinforced/survival_pod,
@@ -1281,7 +1275,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "aOl" = (
 /obj/effect/turf_decal/bot/yellow,
@@ -1561,7 +1555,7 @@
 	pixel_x = -7;
 	pixel_y = 6
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "aYa" = (
 /obj/structure/flora/junglebush,
@@ -1791,10 +1785,6 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"bgs" = (
-/obj/structure/flora/biolumi/mine,
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "bgJ" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
@@ -2750,7 +2740,7 @@
 	pixel_x = 5;
 	pixel_y = 13
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "bJm" = (
 /obj/effect/ash_rune,
@@ -3260,13 +3250,6 @@
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating,
 /area/mine/common/upper)
-"bVi" = (
-/obj/structure/flora/tree/jungle/small{
-	pixel_x = -16;
-	pixel_y = 18
-	},
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "bVZ" = (
 /obj/item/storage/box/stockparts/deluxe,
 /obj/structure/closet/crate,
@@ -4178,7 +4161,7 @@
 "cuB" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/flora/ausbushes/grassybush,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "cuY" = (
 /turf/closed/wall,
@@ -4286,7 +4269,7 @@
 	pixel_y = -46
 	},
 /obj/structure/flora/junglebush,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "czR" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -5693,7 +5676,7 @@
 /obj/structure/stone_tile/cracked{
 	dir = 1
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "dAL" = (
 /obj/structure/stone_tile/cracked{
@@ -6484,7 +6467,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "dYR" = (
 /obj/structure/flora/junglebush/large,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "dYT" = (
 /obj/structure/stone_tile/block,
@@ -6831,7 +6814,7 @@
 /obj/structure/railing{
 	dir = 6
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "emJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
@@ -7470,7 +7453,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "eHh" = (
 /obj/structure/flora/ausbushes/ppflowers,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "eHu" = (
 /obj/structure/cable/yellow{
@@ -7648,10 +7631,6 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
-"ePZ" = (
-/obj/structure/flora/biolumi,
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "eQh" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 10
@@ -7726,7 +7705,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "eRE" = (
 /obj/structure/railing{
@@ -8204,7 +8183,7 @@
 "fcC" = (
 /obj/structure/flora/grass/jungle,
 /obj/structure/window/reinforced,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "fcZ" = (
 /obj/machinery/light/floor,
@@ -8406,10 +8385,6 @@
 	},
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
-"fis" = (
-/obj/structure/flora/tree/spookybranch,
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "fiy" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -8419,10 +8394,6 @@
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"fiY" = (
-/obj/structure/flora/junglebush,
-/turf/open/floor/grass/grass3,
-/area/lavaland/surface/outdoors)
 "fjf" = (
 /obj/effect/turf_decal/box/red/corners{
 	dir = 4
@@ -8537,7 +8508,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "fma" = (
 /obj/structure/flora/biolumi,
-/turf/open/floor/grass/grass3,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "fmJ" = (
 /turf/closed/wall,
@@ -10243,10 +10214,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
-"gjv" = (
-/obj/structure/flora/junglebush,
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "gjw" = (
 /obj/effect/turf_decal/stripes/red/corner{
 	dir = 8
@@ -11279,10 +11246,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"gNB" = (
-/obj/structure/railing,
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "gNH" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Mining Post Maintenance"
@@ -11347,7 +11310,7 @@
 "gPk" = (
 /obj/structure/flora/tree/spookylog,
 /obj/structure/flora/biolumi/mine,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "gPs" = (
 /obj/effect/turf_decal/trimline/dark/line{
@@ -11868,7 +11831,7 @@
 "hlf" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/window/reinforced,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "hlV" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -13161,7 +13124,7 @@
 	pixel_y = -6
 	},
 /obj/structure/flora/ausbushes/brflowers,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "hVh" = (
 /obj/structure/sign/poster/contraband/yes_erp,
@@ -14415,7 +14378,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "iIg" = (
 /obj/structure/flora/rock/jungle,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "iIt" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -14756,10 +14719,6 @@
 /obj/effect/clockwork/overlay/floor,
 /turf/open/floor/clockwork/reebe,
 /area/lavaland/necropolis)
-"iVV" = (
-/obj/structure/flora/biolumi/mine,
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "iWx" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
@@ -15109,7 +15068,7 @@
 	},
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/flora/junglebush/b,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "jig" = (
 /obj/structure/stone_tile/block/burnt,
@@ -16008,7 +15967,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "jFv" = (
 /obj/structure/flora/biolumi/lamp,
-/turf/open/floor/grass/grass3,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "jFL" = (
 /obj/item/kirbyplants/hedge{
@@ -16468,9 +16427,6 @@
 	},
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"jQN" = (
-/turf/open/floor/grass/grass3,
-/area/lavaland/surface/outdoors)
 "jQW" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/machinery/light/small{
@@ -16823,7 +16779,7 @@
 "kdD" = (
 /obj/structure/flora/ausbushes/grassybush,
 /obj/structure/window/reinforced,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "kec" = (
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -17067,10 +17023,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"kiH" = (
-/obj/structure/flora/junglebush,
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "kiN" = (
 /obj/effect/turf_decal/stripes/red/corner{
 	dir = 1
@@ -22802,9 +22754,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
-"nsh" = (
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "nsk" = (
 /obj/structure/stone_tile/surrounding_tile/cracked{
 	dir = 1
@@ -22968,7 +22917,7 @@
 	dir = 8
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "nwh" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
@@ -23099,7 +23048,7 @@
 "nzc" = (
 /obj/structure/flora/tree/spookybranch,
 /obj/structure/flora/ausbushes,
-/turf/open/floor/grass/grass3,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "nzG" = (
 /obj/structure/table,
@@ -23883,10 +23832,6 @@
 "nUY" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"nUZ" = (
-/obj/structure/flora/biolumi/mine,
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "nVa" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
@@ -24844,7 +24789,7 @@
 /obj/structure/flora/rock/jungle{
 	icon_state = "busha1"
 	},
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "oul" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
@@ -26238,10 +26183,6 @@
 	},
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
-"plK" = (
-/obj/structure/flora/tree/jungle/small,
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "plO" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /obj/effect/turf_decal/siding/dark{
@@ -26348,7 +26289,7 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "pro" = (
 /obj/structure/disposalpipe/segment,
@@ -26601,10 +26542,6 @@
 	dir = 1
 	},
 /area/mine/laborcamp)
-"pzX" = (
-/obj/structure/flora/tree/spookylog,
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "pAC" = (
 /obj/effect/turf_decal/tile/blue/full,
 /obj/effect/turf_decal/bot,
@@ -27479,7 +27416,7 @@
 /obj/structure/railing{
 	dir = 10
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "pYW" = (
 /obj/machinery/door/airlock/external{
@@ -27909,7 +27846,7 @@
 "qji" = (
 /obj/structure/flora/junglebush/b,
 /obj/structure/flora/ausbushes/brflowers,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "qjA" = (
 /obj/machinery/light{
@@ -27992,7 +27929,7 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "qlh" = (
 /obj/structure/disposalpipe/segment{
@@ -28074,7 +28011,7 @@
 	pixel_x = -16;
 	pixel_y = 18
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "qoh" = (
 /obj/structure/stone_tile{
@@ -28426,10 +28363,6 @@
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
-"qAZ" = (
-/obj/structure/flora/tree/spookylog,
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "qBe" = (
 /obj/structure/stone_tile/block{
 	dir = 4
@@ -28686,7 +28619,7 @@
 /area/mine/laborcamp/entry)
 "qIg" = (
 /obj/structure/flora/rock,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "qIE" = (
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -29292,13 +29225,9 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
-"qXY" = (
-/obj/structure/flora/biolumi/mine,
-/turf/open/floor/grass/grass3,
-/area/lavaland/surface/outdoors)
 "qYg" = (
 /obj/structure/flora/rock/jungle,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "qYn" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -29382,7 +29311,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "raq" = (
 /obj/structure/flora/junglebush/b,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "raX" = (
 /obj/structure/table/wood/fancy/blackred,
@@ -29735,7 +29664,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "rld" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -29789,7 +29718,7 @@
 /obj/structure/stone_tile{
 	dir = 1
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rmB" = (
 /obj/effect/decal/cleanable/crayon,
@@ -30293,7 +30222,7 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rGS" = (
 /obj/structure/flora/grass/jungle,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "rHn" = (
 /obj/structure/disposalpipe/segment{
@@ -30374,10 +30303,6 @@
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
-"rJP" = (
-/obj/structure/flora/rock/jungle,
-/turf/open/floor/grass,
-/area/lavaland/surface/outdoors)
 "rKe" = (
 /turf/open/floor/catwalk_floor/iron_dark{
 	initial_gas_mix = "LAVALAND_ATMOS"
@@ -32258,7 +32183,7 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "sPu" = (
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "sPx" = (
 /obj/machinery/door/airlock/maintenance{
@@ -32287,13 +32212,6 @@
 /obj/item/wrench/medical,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
-"sRt" = (
-/obj/structure/flora/rock/jungle{
-	pixel_x = -7;
-	pixel_y = 13
-	},
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "sRP" = (
 /obj/effect/turf_decal/trimline/dark/line{
 	dir = 1
@@ -32455,7 +32373,7 @@
 /area/mine/common)
 "sWv" = (
 /obj/structure/flora/ausbushes/fullgrass,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "sWy" = (
 /obj/machinery/power/terminal{
@@ -33379,7 +33297,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "tAy" = (
 /obj/structure/flora/tree/spookybranch,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "tAS" = (
 /obj/structure/railing,
@@ -34040,7 +33958,7 @@
 	pixel_x = -9;
 	pixel_y = -8
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "tUi" = (
 /obj/effect/turf_decal/tile/bar/opposingcorners{
@@ -35301,7 +35219,7 @@
 "uBS" = (
 /obj/structure/flora/tree/spookybranch,
 /obj/structure/flora/junglebush,
-/turf/open/floor/grass/grass2,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "uBX" = (
 /obj/machinery/power/terminal{
@@ -35868,10 +35786,6 @@
 /obj/item/wakibokken_blade,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
-"uUq" = (
-/obj/structure/flora/tree/jungle,
-/turf/open/floor/grass/grass2,
-/area/lavaland/surface/outdoors)
 "uUv" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
@@ -36221,7 +36135,7 @@
 "vdk" = (
 /obj/structure/flora/rock/jungle,
 /obj/structure/flora/ausbushes,
-/turf/open/floor/grass/grass3,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/lavaland/surface/outdoors)
 "vdm" = (
 /turf/open/floor/plasteel/dark/side{
@@ -36621,7 +36535,7 @@
 "vpn" = (
 /obj/structure/flora/junglebush/b,
 /obj/structure/flora/ausbushes/ppflowers,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "vpC" = (
 /obj/effect/turf_decal/trimline/blue/filled/corner{
@@ -37427,7 +37341,7 @@
 	pixel_x = 8;
 	pixel_y = 15
 	},
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "vQL" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
@@ -38051,7 +37965,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "wiW" = (
 /obj/item/flashlight/lantern,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "wjb" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -38453,7 +38367,7 @@
 "wyX" = (
 /obj/structure/flora/rock/jungle,
 /obj/structure/window/reinforced,
-/turf/open/floor/grass,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "wze" = (
 /obj/structure/fence/cut/large{
@@ -39362,13 +39276,6 @@
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
-"wYd" = (
-/obj/structure/flora/tree/jungle{
-	pixel_x = -24;
-	pixel_y = -46
-	},
-/turf/open/floor/grass/grass3,
-/area/lavaland/surface/outdoors)
 "wYB" = (
 /obj/structure/frame/machine{
 	anchored = 1;
@@ -40000,10 +39907,6 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/openspace,
 /area/lavaland/surface/outdoors)
-"xtd" = (
-/obj/structure/flora/tree/spookybranch,
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "xtj" = (
 /obj/structure/stone_tile/block/cracked{
 	dir = 4
@@ -40284,10 +40187,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/smooth/edge,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"xBy" = (
-/obj/structure/flora/tree/jungle,
-/turf/open/floor/grass/grass3,
-/area/lavaland/surface/outdoors)
 "xBI" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -41389,13 +41288,6 @@
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
-"ygf" = (
-/obj/structure/flora/tree/jungle{
-	pixel_x = -24;
-	pixel_y = -46
-	},
-/turf/open/floor/grass/grass1,
-/area/lavaland/surface/outdoors)
 "ygl" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /turf/open/floor/plating{
@@ -41595,12 +41487,12 @@ llq
 llq
 llq
 gIl
-asY
 rIT
 rIT
-nsh
-uUq
-asY
+rIT
+rIT
+eiK
+rIT
 gIl
 gIl
 gIl
@@ -41611,11 +41503,11 @@ gIl
 gIl
 gIl
 gIl
-asY
-uUq
-asY
-asY
-uUq
+rIT
+eiK
+rIT
+rIT
+eiK
 llq
 llq
 llq
@@ -41852,11 +41744,11 @@ llq
 llq
 llq
 gIl
-asY
-uUq
-nUZ
-rJP
-asY
+rIT
+eiK
+anr
+iIg
+rIT
 gIl
 gIl
 gIl
@@ -41869,11 +41761,11 @@ gIl
 gIl
 gIl
 ouc
-asY
-asY
-asY
-asY
-gjv
+rIT
+rIT
+rIT
+rIT
+qGZ
 llq
 llq
 llq
@@ -42110,8 +42002,8 @@ llq
 llq
 gIl
 gIl
-asY
-nsh
+rIT
+rIT
 qnF
 gIl
 gIl
@@ -42126,11 +42018,11 @@ vAU
 vAU
 gIl
 gIl
-asY
+rIT
 czF
-pzX
-asY
-asY
+tSD
+rIT
+rIT
 llq
 llq
 llq
@@ -42368,8 +42260,8 @@ gIl
 gIl
 gIl
 gIl
-asY
-fis
+rIT
+tAy
 gIl
 gIl
 vAU
@@ -42384,11 +42276,11 @@ vAU
 gIl
 gIl
 gIl
-asY
-asY
+rIT
+rIT
 iIg
 qIg
-asY
+rIT
 llq
 llq
 llq
@@ -42643,9 +42535,9 @@ vAU
 gIl
 gIl
 uBS
-asY
-asY
-asY
+rIT
+rIT
+rIT
 llq
 llq
 llq
@@ -42900,7 +42792,7 @@ vAU
 vAU
 gIl
 gIl
-asY
+rIT
 ouc
 llq
 llq
@@ -46470,7 +46362,7 @@ gdj
 gdj
 llq
 rIT
-asY
+rIT
 gIl
 vAU
 vAU
@@ -46727,7 +46619,7 @@ gdj
 llq
 llq
 qGZ
-asY
+rIT
 swX
 gIl
 gIl
@@ -46983,11 +46875,11 @@ gdj
 llq
 llq
 rIT
-asY
-bgs
-asY
 rIT
-jQN
+anr
+rIT
+rIT
+rIT
 gIl
 gIl
 dXL
@@ -47015,8 +46907,8 @@ vAU
 gIl
 gIl
 gIl
-ahE
-ahE
+rIT
+rIT
 llq
 llq
 llq
@@ -47239,10 +47131,10 @@ gdj
 llq
 llq
 llq
-jQN
 rIT
-sRt
-fiY
+rIT
+oAH
+qGZ
 naW
 tSD
 gIl
@@ -47271,12 +47163,12 @@ vAU
 vAU
 gIl
 gIl
-asY
-ahE
-iVV
-asY
+rIT
+rIT
+anr
+rIT
 iIg
-asY
+rIT
 llq
 llq
 llq
@@ -47496,8 +47388,8 @@ gdj
 llq
 llq
 llq
-fiY
-bVi
+qGZ
+qnF
 rIT
 rIT
 rIT
@@ -47528,13 +47420,13 @@ vAU
 vAU
 gIl
 gIl
-asY
-ahE
-plK
-qAZ
+rIT
+rIT
+lnc
+tSD
 fma
 tAy
-asY
+rIT
 llq
 llq
 llq
@@ -47754,7 +47646,7 @@ llq
 llq
 llq
 rIT
-jQN
+rIT
 nsy
 gIl
 gIl
@@ -47784,12 +47676,12 @@ gIl
 vAU
 vAU
 gIl
-jQN
-ahE
-ePZ
-jQN
-xtd
-jQN
+rIT
+rIT
+fma
+rIT
+tAy
+rIT
 bym
 iIg
 llq
@@ -48041,14 +47933,14 @@ vAU
 vAU
 vAU
 gIl
-jQN
-plK
-asY
-vdk
-jQN
-jQN
 rIT
-asY
+lnc
+rIT
+vdk
+rIT
+rIT
+rIT
+rIT
 llq
 llq
 gIl
@@ -48298,14 +48190,14 @@ vAU
 vAU
 vAU
 gIl
-jQN
-wYd
+rIT
+bym
 nzc
 jFv
-jQN
-ahE
 rIT
-asY
+rIT
+rIT
+rIT
 llq
 llq
 llq
@@ -48555,13 +48447,13 @@ vAU
 vAU
 gIl
 gIl
-jQN
-asY
-jQN
-ahE
-ygf
+rIT
+rIT
+rIT
+rIT
+bym
 anr
-asY
+rIT
 llq
 llq
 llq
@@ -48812,12 +48704,12 @@ vAU
 gIl
 gIl
 gIl
-asY
-asY
-jQN
 rIT
 rIT
-asY
+rIT
+rIT
+rIT
+rIT
 llq
 llq
 llq
@@ -49069,12 +48961,12 @@ vAU
 gIl
 gIl
 gIl
-asY
+rIT
 gPk
 rIT
 rIT
-asY
-asY
+rIT
+rIT
 llq
 llq
 llq
@@ -49327,10 +49219,10 @@ vAU
 gIl
 gIl
 gIl
-asY
+rIT
 iIg
 tAy
-asY
+rIT
 gIl
 gIl
 vAU
@@ -51105,11 +50997,11 @@ kHe
 kHe
 dBl
 rIT
-jQN
-qXY
-fiY
 rIT
-jQN
+anr
+qGZ
+rIT
+rIT
 wuN
 gIl
 vAU
@@ -58250,8 +58142,8 @@ llq
 llq
 llq
 llq
-jQN
-jQN
+rIT
+rIT
 tqn
 tqn
 pYF
@@ -58506,8 +58398,8 @@ llq
 llq
 llq
 llq
-jQN
-jQN
+rIT
+rIT
 rIT
 rIT
 naW
@@ -58764,10 +58656,10 @@ llq
 llq
 rIT
 qGZ
-asY
-nsh
-qXY
-kiH
+rIT
+rIT
+anr
+qGZ
 hGw
 gIl
 vAU
@@ -59019,12 +58911,12 @@ llq
 llq
 llq
 rIT
-fiY
+qGZ
 rIT
-nUZ
-nsh
-fiY
-jQN
+anr
+rIT
+qGZ
+rIT
 hGw
 gIl
 gIl
@@ -59275,13 +59167,13 @@ llq
 llq
 llq
 llq
-jQN
+rIT
 eCH
 rIT
-nsh
+rIT
 rIT
 naW
-nsh
+rIT
 hGw
 nTL
 gIl
@@ -59532,13 +59424,13 @@ llq
 llq
 llq
 llq
-jQN
-jQN
 rIT
 rIT
 rIT
 rIT
-jQN
+rIT
+rIT
+rIT
 nvZ
 qhp
 xrj
@@ -59789,13 +59681,13 @@ llq
 llq
 llq
 llq
-jQN
-jQN
 rIT
-gjv
-nsh
-nsh
-nsh
+rIT
+rIT
+qGZ
+rIT
+rIT
+rIT
 dBl
 dBl
 kYu
@@ -60046,12 +59938,12 @@ llq
 llq
 llq
 llq
-jQN
-jQN
-jQN
 rIT
-bgs
-jQN
+rIT
+rIT
+rIT
+anr
+rIT
 rIT
 qns
 ukP
@@ -60304,10 +60196,10 @@ llq
 llq
 llq
 llq
-jQN
-jQN
-jQN
-asY
+rIT
+rIT
+rIT
+rIT
 rIT
 rIT
 hGw
@@ -60562,12 +60454,12 @@ llq
 llq
 llq
 llq
-jQN
-jQN
-jQN
+rIT
+rIT
+rIT
 naW
 eow
-gNB
+hGw
 gIl
 vAU
 vAU
@@ -60820,8 +60712,8 @@ llq
 llq
 llq
 llq
-jQN
-jQN
+rIT
+rIT
 qnB
 sej
 emw
@@ -60839,11 +60731,11 @@ vAU
 vAU
 gIl
 rIT
-ahE
 rIT
-jQN
-jQN
-ahE
+rIT
+rIT
+rIT
+rIT
 nUY
 iiQ
 iiQ
@@ -61098,9 +60990,9 @@ gIl
 gIl
 rIT
 rIT
-xBy
-ahE
-jQN
+eiK
+rIT
+rIT
 nUY
 iiQ
 iiQ
@@ -61355,9 +61247,9 @@ vAU
 gIl
 gIl
 rIT
-ahE
 rIT
-jQN
+rIT
+rIT
 nUY
 iiQ
 iiQ
@@ -61614,7 +61506,7 @@ gIl
 gIl
 rIT
 eiK
-jQN
+rIT
 nUY
 dXj
 iiQ
@@ -61870,8 +61762,8 @@ vAU
 vAU
 gIl
 gIl
-nsh
-nsh
+rIT
+rIT
 nUY
 iiQ
 iiQ
