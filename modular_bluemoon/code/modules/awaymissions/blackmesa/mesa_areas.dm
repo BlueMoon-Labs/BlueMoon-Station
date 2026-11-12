@@ -149,6 +149,9 @@
 	name = "Facility restricted zone"
 	icon_state = "awaycontent25"
 	outdoors = TRUE
+	// Boss arena: silent zone - no battle ambients, no ship hum
+	shipambience = null
+	ambientsounds = null
 
 /area/awaymission/ihategordon/outsideofmesa/bombardment
 	name = "Bombardment Zone"

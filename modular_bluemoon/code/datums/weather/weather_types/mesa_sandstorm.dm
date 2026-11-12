@@ -25,7 +25,7 @@
 
 	area_type = /area/awaymission/ihategordon/outsideofmesa
 	protect_indoors = TRUE
-	protected_areas = list(/area/awaymission/ihategordon/rocks)
+	protected_areas = list(/area/awaymission/ihategordon/rocks, /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 
 /datum/weather/ash_storm/mesa_sandstorm/start()
 	. = ..()

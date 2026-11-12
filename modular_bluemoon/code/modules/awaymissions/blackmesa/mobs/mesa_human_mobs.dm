@@ -163,6 +163,16 @@
 	loot = list(/obj/effect/gibspawner/human, /obj/item/clothing/suit/armor/vest/blueshirt, /obj/item/gun/ballistic/automatic/pistol/hl9mm)
 	rapid_melee = 1
 
+// Black ops fire a visibly weaker 10mm loadout - they suppress and harass,
+// they should not melt players before the Apache is even dead.
+/obj/item/projectile/bullet/c10mm/blackops
+	name = "10mm bullet"
+	damage = 15
+	armour_penetration = BULLET_BR3
+
+/obj/item/ammo_casing/c10mm/blackops
+	projectile_type = /obj/item/projectile/bullet/c10mm/blackops
+
 /mob/living/simple_animal/hostile/blackmesa/blackops
 	name = "black operative"
 	desc = "Why do we always have to clean up a mess the grunts can't handle?"
@@ -178,11 +188,11 @@
 	speed = 0
 	stat_attack = UNCONSCIOUS
 	robust_searching = 1
-	maxHealth = 200
-	health = 200
-	harm_intent_damage = 25
-	melee_damage_lower = 30
-	melee_damage_upper = 30
+	maxHealth = 150
+	health = 150
+	harm_intent_damage = 15
+	melee_damage_lower = 20
+	melee_damage_upper = 20
 	attack_verb_continuous = "strikes"
 	attack_verb_simple = "strikes"
 	attack_sound = 'sound/effects/woodhit.ogg'
@@ -211,12 +221,12 @@
 
 /mob/living/simple_animal/hostile/blackmesa/blackops/ranged
 	ranged = TRUE
-	rapid = 2
+	rapid = 1
 	retreat_distance = 5
 	minimum_distance = 5
 	icon_state = "blackops_ranged"
 	icon_living = "blackops_ranged"
-	casingtype = /obj/item/ammo_casing/c10mm
+	casingtype = /obj/item/ammo_casing/c10mm/blackops
 	projectilesound = 'modular_bluemoon/sound/weapons/mesa/mp5.ogg'
 	attack_sound = 'sound/weapons/cqchit1.ogg'
 	loot = list(/obj/effect/gibspawner/human, /obj/item/ammo_box/magazine/m16)

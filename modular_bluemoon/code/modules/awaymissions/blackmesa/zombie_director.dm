@@ -3,7 +3,7 @@
 	var/min_wave_interval = 1800
 	var/max_wave_interval = 6000
 	var/max_zombies_per_wave = 35
-	var/horde_size_multiplier = 0.7
+	var/horde_size_multiplier = 1.0
 	var/special_infected_interval = 10 MINUTES
 	var/next_special_infected_time = 0
 	var/last_wave_time = 0
@@ -274,11 +274,8 @@
 		return
 
 	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier))
-	var/wave_number = current_wave_number + 1
-	if(wave_number >= 6)
-		zombies_to_spawn = max(1, zombies_to_spawn - 3)
 	if(zombies_to_spawn < threat_level)
-		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (wave=[wave_number], multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
+		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (wave=[current_wave_number + 1], multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
 
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
 	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
@@ -707,7 +704,7 @@
 	if(!valid_areas || !valid_areas.len)
 		return count
 
-	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies)
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
 		if(!Z || QDELETED(Z) || Z.stat == DEAD)
 			active_zombies -= Z
 			continue
@@ -723,7 +720,7 @@
 	if(!src)
 		return 0
 	var/count = 0
-	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies)
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
 		if(!Z || QDELETED(Z) || Z.stat == DEAD)
 			active_zombies -= Z
 			continue

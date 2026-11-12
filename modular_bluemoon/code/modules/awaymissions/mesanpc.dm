@@ -8,6 +8,7 @@
 	desc = "An old radio."
 	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi'
 	icon_state = "radiohecu"
+	resistance_flags = INDESTRUCTIBLE
 	anchored = TRUE
 	density = TRUE
 	var/list/negotiation_sounds = list(

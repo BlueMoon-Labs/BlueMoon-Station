@@ -217,6 +217,10 @@
 // Обработка входа на тайл
 /turf/open/space/ihategordon/proc/on_entered(datum/source, atom/movable/AM)
 	SIGNAL_HANDLER
+	// After drop_into_chasm this atom is a /turf/open/chasm - the registered
+	// signal survives ChangeTurf, but mobs_on_turf no longer exists on it.
+	if(!istype(src, /turf/open/space/ihategordon))
+		return
 	if(!isliving(AM))
 		return
 	var/mob/living/L = AM
@@ -242,6 +246,12 @@
 
 // Асинхронный сброс в чазм
 /turf/open/space/ihategordon/proc/drop_into_chasm(mob/living/L)
+	// ChangeTurf swaps this atom to the chasm type in place: kill the stamina
+	// loop and drop the mob list first, or process() keeps firing on a turf
+	// that no longer has mobs_on_turf (undefined var runtime every tick).
+	STOP_PROCESSING(SSobj, src)
+	if(istype(src, /turf/open/space/ihategordon))
+		mobs_on_turf.Cut()
 	var/turf/open/chasm/ihategordon_invisible/C = ChangeTurf(/turf/open/chasm/ihategordon_invisible, flags = CHANGETURF_INHERIT_AIR)
 	if(istype(C))
 		C.drop(L)
@@ -293,7 +303,10 @@
 
 // Процессинг стамины - работает только пока на тайле есть мобы
 /turf/open/space/ihategordon/process()
-	if(!mobs_on_turf || !mobs_on_turf.len)
+	// The atom can be re-typed to /turf/open/chasm/ihategordon_invisible by
+	// drop_into_chasm while a processing callback is still queued - bail out
+	// before touching mobs_on_turf, which only exists on the space type.
+	if(!istype(src, /turf/open/space/ihategordon) || !mobs_on_turf || !mobs_on_turf.len)
 		STOP_PROCESSING(SSobj, src)
 		return
 	var/list/departed = list()

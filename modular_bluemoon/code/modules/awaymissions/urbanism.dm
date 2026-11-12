@@ -496,6 +496,15 @@
 	else
 		return 0
 
+/obj/structure/barricade/wooden/reinforced/ex_act(severity, target, origin)
+	// Direct bombardment blasts destroy it outright; the default 100-250
+	// chip damage would leave 500 integrity standing after a pod hit.
+	if(severity > EXPLODE_NONE && severity <= EXPLODE_HEAVY)
+		obj_integrity = 0
+		obj_destruction(BOMB)
+		return
+	..()
+
 /obj/structure/barricade/wooden/crude/reinforced
 	name = "reinforced crude wooden barricade"
 	desc = "A heavily reinforced crude wooden barricade. It seems impervious to conventional damage."
@@ -518,6 +527,13 @@
 		..()
 	else
 		return 0
+
+/obj/structure/barricade/wooden/crude/reinforced/ex_act(severity, target, origin)
+	if(severity > EXPLODE_NONE && severity <= EXPLODE_HEAVY)
+		obj_integrity = 0
+		obj_destruction(BOMB)
+		return
+	..()
 
 /obj/structure/mad_scientist
 	name = "mad scientist"
@@ -542,6 +558,14 @@
 	// Allow zombies to path through this fence
 	if(istype(pathing_movable, /mob/living/simple_animal/hostile/infected))
 		return TRUE
+	return ..()
+
+/obj/structure/fence/nocut/CanPass(atom/movable/mover, turf/target)
+	// PASSJUMP and PASSFENCE share bit (1<<10), so the jump component's
+	// temporary pass_flags would let players hop over this fence. Block actual
+	// jumpers here; infected keep their permanent PASSFENCE traversal.
+	if(isliving(mover) && HAS_TRAIT(mover, TRAIT_JUMPING) && !istype(mover, /mob/living/simple_animal/hostile/infected))
+		return FALSE
 	return ..()
 
 
@@ -888,10 +912,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 		if(!offset || offset.len < 2)
 			continue
 
-		var/turf/spawn_turf = get_step(T, offset[1])
-		if(!spawn_turf)
-			continue
-		spawn_turf = get_step(spawn_turf, offset[2])
+		var/turf/spawn_turf = locate(T.x + offset[1], T.y + offset[2], T.z)
 		if(!spawn_turf)
 			continue
 
@@ -908,9 +929,11 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 
 		if(istype(M, /mob/living/simple_animal/hostile/infected) && GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
-			if(D && D.zombie_hp_multiplier > 1.0)
-				M.maxHealth = round(M.maxHealth * D.zombie_hp_multiplier)
-				M.health = M.maxHealth
+			if(D)
+				if(D.zombie_hp_multiplier > 1.0)
+					M.maxHealth = round(M.maxHealth * D.zombie_hp_multiplier)
+					M.health = M.maxHealth
+				D.active_zombies += M
 
 		new /obj/effect/temp_visual/dir_setting/ninja/phase(spawn_turf)
 		playsound(spawn_turf, 'sound/magic/Teleport_app.ogg', 50, TRUE)

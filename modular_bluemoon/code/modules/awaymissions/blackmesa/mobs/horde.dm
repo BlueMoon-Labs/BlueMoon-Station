@@ -404,8 +404,8 @@
 	icon_state = "boomer"
 	icon_living = "boomer"
 	icon_dead = "former_dead"
-	maxHealth = 100
-	health = 100
+	maxHealth = 70
+	health = 70
 	speed = 2
 	turns_per_move = 0
 	melee_damage_lower = 15
