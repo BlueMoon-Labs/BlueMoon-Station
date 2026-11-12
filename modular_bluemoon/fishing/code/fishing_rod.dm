@@ -249,7 +249,7 @@
 	fishing_line.beam_color = line_color
 	fishing_line.set_holder(firer, src)
 	fishing_line.override_target_pixel_y = target_py || 0
-	RegisterSignal(fishing_line, COMSIG_QDELETING, PROC_REF(on_fishing_line_deleted))
+	RegisterSignal(fishing_line, COMSIG_PARENT_QDELETING, PROC_REF(on_fishing_line_deleted))
 	INVOKE_ASYNC(fishing_line, TYPE_PROC_REF(/datum/beam, Start))
 	if(QDELETED(fishing_line))
 		return null
@@ -265,7 +265,7 @@
 
 /obj/item/fishing_rod/proc/clear_fishing_line()
 	if(fishing_line)
-		UnregisterSignal(fishing_line, COMSIG_QDELETING)
+		UnregisterSignal(fishing_line, COMSIG_PARENT_QDELETING)
 		QDEL_NULL(fishing_line)
 	currently_hooked = null
 	refresh_holder_icons()

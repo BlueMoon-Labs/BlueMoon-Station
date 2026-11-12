@@ -300,9 +300,6 @@
 #define FISH_SOURCE_AUTOWIKI_QUESTIONMARK "questionmark"
 
 // псевдонимы DCS и сигналы, которых у нас нет
-#ifndef COMSIG_QDELETING
-#define COMSIG_QDELETING COMSIG_PARENT_QDELETING
-#endif
 #define COMSIG_ATOM_TEMPORARY_ANIMATION_START "atom_temporary_animation_start"
 #define COMSIG_MOVABLE_PRE_IMPACT "movable_pre_impact"
 #define COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON "atom_after_successful_initialized_on"

@@ -128,8 +128,8 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 	location = comp.parent
 	float = new(get_turf(location), location)
 	float.spin_frequency = rod.spin_frequency
-	RegisterSignal(location, COMSIG_QDELETING, PROC_REF(on_spot_gone))
-	RegisterSignal(comp, COMSIG_QDELETING, PROC_REF(on_spot_gone))
+	RegisterSignal(location, COMSIG_PARENT_QDELETING, PROC_REF(on_spot_gone))
+	RegisterSignal(comp, COMSIG_PARENT_QDELETING, PROC_REF(on_spot_gone))
 	register_reward_signals(comp.fish_source)
 	RegisterSignal(fish_source, COMSIG_FISHING_SOURCE_INTERRUPT_CHALLENGE, PROC_REF(interrupt_challenge))
 	background = comp.fish_source.background
@@ -198,7 +198,7 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 		complete(win = FALSE)
 	if(fishing_line)
 		// чтобы сообщение об обрыве лески не всплывало каждый раз после мини-игры
-		UnregisterSignal(fishing_line, COMSIG_QDELETING)
+		UnregisterSignal(fishing_line, COMSIG_PARENT_QDELETING)
 	if(used_rod && !QDELETED(used_rod))
 		used_rod.clear_fishing_line()
 	fishing_line = null
@@ -249,7 +249,7 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 		if(isnull(fishing_line)) // леску создать не вышло, скорее всего её не видно
 			qdel(src)
 			return
-		RegisterSignal(fishing_line, COMSIG_QDELETING, PROC_REF(on_line_deleted))
+		RegisterSignal(fishing_line, COMSIG_PARENT_QDELETING, PROC_REF(on_line_deleted))
 	else // без лески рыбалка обрывается, стоит игроку уйти
 		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_float_or_user_move))
 		RegisterSignal(float, COMSIG_MOVABLE_MOVED, PROC_REF(on_float_or_user_move))
