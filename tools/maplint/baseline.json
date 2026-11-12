@@ -856,25 +856,19 @@
 		}
 	},
 	"_maps/map_files/Mining/Lavaland.dmm": {
-		"conveyor_cardinal_inversion": {
-			"/obj/machinery/conveyor/inverted": 4
-		},
 		"disposals_without_trunks": {
-			"/obj/machinery/disposal/bin": 2
+			"/obj/machinery/disposal/bin": 1
 		},
 		"grille_stacking": {
 			"/obj/structure/grille": 3
 		},
-		"multiple_airlocks": {
-			"/obj/machinery/door/airlock/glass": 2
-		},
 		"multiple_lattice": {
+			"/obj/structure/lattice": 48,
 			"/obj/structure/lattice/catwalk": 12
 		},
 		"multiple_machinery": {
 			"/obj/machinery/door/poddoor/preopen": 6,
-			"/obj/machinery/light": 2,
-			"/obj/machinery/washing_machine": 2
+			"/obj/machinery/light": 2
 		},
 		"multiple_tables": {
 			"/obj/structure/table/reinforced/brass": 2
@@ -888,6 +882,7 @@
 		},
 		"wall_stacking": {
 			"/turf/closed/mineral/random/high_chance/volcanic": 1,
+			"/turf/closed/wall": 16,
 			"/turf/closed/wall/mineral/plastitanium": 1
 		},
 		"window_spawner": {
