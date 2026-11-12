@@ -4676,7 +4676,7 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/machinery/door/airlock/glass{
-	name = "Break Room"
+	name = "Atrium"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/common/atrium)
@@ -8436,9 +8436,6 @@
 "fjD" = (
 /obj/effect/turf_decal/tile/green/half{
 	dir = 8
-	},
-/obj/machinery/door/airlock/glass{
-	name = "Library"
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -13102,7 +13099,7 @@
 	dir = 8;
 	dwidth = 3;
 	height = 7;
-	name = "Mining Outpost Public Dock";
+	name = "Mining Post Public Dock";
 	shuttle_id = "lavaland_common_away_xenoarch_2";
 	width = 7
 	},
@@ -15507,7 +15504,7 @@
 /obj/docking_port/stationary{
 	dwidth = 3;
 	height = 6;
-	name = "labor camp";
+	name = "Labor Camp";
 	roundstart_template = null;
 	shuttle_id = "laborcamp_away";
 	width = 12
@@ -27687,7 +27684,7 @@
 	dir = 2;
 	dwidth = 3;
 	height = 10;
-	name = "lavaland mine";
+	name = "Mining Post";
 	shuttle_id = "mining_away";
 	width = 7
 	},
@@ -34587,7 +34584,7 @@
 "uiQ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/door/airlock/glass{
-	name = "Break Room"
+	name = "Atrium"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/common/atrium)
