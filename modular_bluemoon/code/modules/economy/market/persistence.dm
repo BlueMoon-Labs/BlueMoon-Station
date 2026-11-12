@@ -19,10 +19,18 @@
 		state_path = "[GLOB.econ_sector_test_dir]live.json"
 #endif
 	load_state()
+	seed_history()
 	if(round_end_hooked)
 		return
 	round_end_hooked = TRUE
 	SSticker.OnRoundend(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(market_save_sector_state)))
+
+/// Цена на старте смены - первая точка тренда: иначе график появляется только со второго сдвига рынка.
+/datum/controller/subsystem/market/proc/seed_history()
+	for(var/id in commodities)
+		var/datum/commodity/commodity = commodities[id]
+		if(!length(commodity.history))
+			commodity.history += commodity.price_factor
 
 /// Состояние сектора для следующего раунда. Счета и акции игроков, очередь событий, спецзаказы, склады, новости и открытие контрабандного партнёра сюда не входят.
 /datum/controller/subsystem/market/proc/serialize_state()
@@ -195,6 +203,7 @@
 		commodity.shortage_trend = 1
 		commodity.history = list()
 		commodity.recompute()
+	seed_history()
 	price_index = 1
 	QDEL_LIST(scheduled_events)
 	pending_news = list()

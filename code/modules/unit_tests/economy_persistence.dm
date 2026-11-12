@@ -240,7 +240,7 @@ GLOBAL_VAR_INIT(econ_sector_test_dir, "data/unit_test_sector/[unit_test_shard_su
 	TEST_ASSERT_EQUAL(holder.shares["AGRO"], 50, "Акции держателя не консолидированы по новой цене")
 	TEST_ASSERT(holder.shares["AGRO"] * agro.price <= value_before + 0.01, "Позиция подорожала от сброса")
 	TEST_ASSERT(abs(metals.price_factor - 1) < 0.001 && metals.hot_mult == 1 && !metals.hot_shifts_left, "Товар не сброшен")
-	TEST_ASSERT(!length(metals.history) && !length(agro.history), "История не очищена")
+	TEST_ASSERT(length(metals.history) == 1 && abs(metals.history[1] - 1) < 0.001 && !length(agro.history), "История не очищена до стартовой точки")
 	TEST_ASSERT(!fuel.shortage_shifts_left, "Дефицит пережил сброс сектора")
 	fuel.shift(0)
 	TEST_ASSERT(fuel.trend < 1.5, "Сдвиг после сброса вернул цену дефицита: тренд [fuel.trend]")

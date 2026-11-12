@@ -173,6 +173,21 @@ test('вкладка "Рынок" показывает горячий товар
   expect(ui.getByText('Индекс цен: ×1.05')).toBeTruthy();
 });
 
+test('вкладка "Рынок" рисует тренд по двум точкам, а до первого сдвига ставит прочерк с пояснением', () => {
+  const ui = setup({
+    market: {
+      price_index: 1,
+      commodities: [
+        { id: 'metals', name: 'Металлы', factor: 1, sell: 1, hot: 0, demand: 100, history: [1, 1.1], buyer: 'Гильдия старателей' },
+        { id: 'gases', name: 'Газы', factor: 1, sell: 1, hot: 0, demand: 100, history: [1], buyer: 'Накамура Инжиниринг' },
+      ],
+    },
+  });
+  openTab(ui, /^Рынок$/);
+  expect(ui.container.querySelectorAll('polyline')).toHaveLength(1);
+  expect(ui.getByText('—')).toBeTruthy();
+});
+
 test('вкладка "Партнёры" показывает закрытого партнёра с условием открытия и ступень открытого', () => {
   const ui = setup();
   openTab(ui, /^Партнёры$/);

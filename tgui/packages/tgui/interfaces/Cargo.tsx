@@ -18,6 +18,7 @@ import {
   RestrictedInput,
   Stack,
   Table,
+  Tooltip,
 } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
@@ -1152,7 +1153,15 @@ const Market = (props) => {
               )}
             </Table.Cell>
             <Table.Cell collapsing py={0.5}>
-              <Sparkline values={commodity.history} />
+              {commodity.history.length > 1 ? (
+                <Sparkline values={commodity.history} />
+              ) : (
+                <Tooltip content="Тренд появится после первого сдвига рынка, примерно через 5 минут смены.">
+                  <Box inline color="label">
+                    —
+                  </Box>
+                </Tooltip>
+              )}
             </Table.Cell>
             <Table.Cell collapsing textAlign="right" py={0.5}>
               ×{commodity.factor}

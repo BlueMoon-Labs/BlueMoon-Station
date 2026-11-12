@@ -369,3 +369,15 @@
 	TEST_ASSERT(hot_signals > 23, "Горячие товары при шансе 100: [hot_signals]")
 	var/datum/commodity/metals = SSmarket.get_commodity(COMMODITY_METALS)
 	TEST_ASSERT_EQUAL(length(metals.history), MARKET_HISTORY_MAX, "История обрезается до [MARKET_HISTORY_MAX]")
+
+/// Тренд на рынке консоли снабжения рисуется с первого сдвига смены: стартовая цена - первая точка истории.
+/datum/unit_test/economy_market/history_from_shift_start/Run()
+	SSmarket.restore_sector()
+	for(var/id in SSmarket.commodities)
+		var/datum/commodity/commodity = SSmarket.commodities[id]
+		TEST_ASSERT_EQUAL(length(commodity.history), 1, "[id]: стартовая точка истории")
+	SSmarket.market_shift()
+	var/list/market = econ_cargo_market_data(FALSE)
+	for(var/list/entry as anything in market["commodities"])
+		var/list/history = entry["history"]
+		TEST_ASSERT_EQUAL(length(history), 2, "[entry["id"]]: после первого сдвига в окне две точки тренда")
