@@ -504,7 +504,8 @@
 	retreat_distance = 5
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_charger
 	speak = list('modular_bluemoon/sound/creatures/mesa/charger/alert_01.ogg', 'modular_bluemoon/sound/creatures/mesa/charger/alert_02.ogg')
-	deathsound = 'modular_bluemoon/sound/creatures/mesa/charger/pain_03.ogg'
+	deathsound = 'modular_bluemoon/sound/creatures/mesa/charger/die_02.ogg'
+	var/next_pain_sound_time = 0
 	var/charge_damage = 40
 	var/charge_stamina_damage = 60
 	var/charge_hit_target = FALSE
@@ -573,7 +574,7 @@
 		return FALSE
 
 	visible_message("<span class='danger'><b>[src]</b> braces for a charge!</span>")
-	playsound(src, 'modular_bluemoon/sound/creatures/mesa/charger/charge_02.ogg', 100, TRUE)
+	playsound(src, pick(list('modular_bluemoon/sound/creatures/mesa/charger/charge_01.ogg', 'modular_bluemoon/sound/creatures/mesa/charger/charge_02.ogg')), 100, TRUE)
 	var/obj/effect/temp_visual/decoy/telegraph = new /obj/effect/temp_visual/decoy(loc, src)
 	if(telegraph)
 		animate(telegraph, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 15)
@@ -602,6 +603,15 @@
 	. = ..()
 	// Disable normal melee attacks - charger should only use charge
 	return
+
+/mob/living/simple_animal/hostile/infected/charger/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = FALSE, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE)
+	. = ..(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness)
+	if(!. || stat == DEAD)
+		return .
+	if(world.time >= next_pain_sound_time && prob(20))
+		next_pain_sound_time = world.time + 3 SECONDS
+		playsound(src, 'modular_bluemoon/sound/creatures/mesa/charger/pain_03.ogg', 70, TRUE)
+	return .
 
 /mob/living/simple_animal/hostile/infected/charger/death(gibbed)
 	. = ..(gibbed)
