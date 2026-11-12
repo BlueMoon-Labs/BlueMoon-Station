@@ -149,7 +149,7 @@
 		return
 	fish_table = list(/obj/item/fish/holo/checkered = 1)
 	for(var/source_type in GLOB.preset_fish_sources)
-		if(source_type == type || !ispath(source_type, /datum/fish_source/portal))
+		if(source_type == type || !ispath(source_type, /datum/fish_source/portal) || ispath(source_type, /datum/fish_source/portal/syndicate))
 			continue
 		var/datum/fish_source/portal/other = GLOB.preset_fish_sources[source_type]
 		fish_table |= other.fish_table

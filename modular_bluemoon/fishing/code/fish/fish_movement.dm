@@ -108,7 +108,7 @@
 			var/abs_idle_vel = abs(idle_velocity)
 			// Проследим, чтобы скорость покоя не застопорила рыбу намертво.
 			// Сперва смотрим, не смотрят ли две силы в разные стороны
-			if((idle_velocity / abs_idle_vel) != (target_acceleration / abs(target_acceleration)))
+			if(target_acceleration && ((idle_velocity > 0) != (target_acceleration > 0)))
 				// Дальше берём отношение модуля скорости покоя к половинному множителю ускорения.
 				var/halved_ratio = (acceleration_mult * 0.5) / abs_idle_vel
 				/**
@@ -118,7 +118,7 @@
 				 */
 				if(halved_ratio < 1)
 					var/power = min(halved_ratio + 0.5, 1)
-					target_acceleration *= 1 - (halved_ratio^power)
+					target_acceleration *= 1 - (halved_ratio ** power)
 				/**
 				 * Иначе просто прибавляем скорость покоя к целевой скорости.
 				 * Она точно противоположного знака и по модулю от 0.ε до 0.5

@@ -158,6 +158,8 @@
 
 /obj/item/fishing_rod/attackby(obj/item/item, mob/user, params)
 	if(istype(item, /obj/item/bait))
+		if(ismob(item.loc))
+			user.transferItemToLoc(item, src)
 		if(bait)
 			clear_slot(ROD_SLOT_BAIT)
 		set_slot(item, ROD_SLOT_BAIT)
@@ -165,6 +167,8 @@
 		update_icon()
 		return TRUE
 	if(istype(item, /obj/item/fishing_line))
+		if(ismob(item.loc))
+			user.transferItemToLoc(item, src)
 		if(line)
 			clear_slot(ROD_SLOT_LINE)
 		set_slot(item, ROD_SLOT_LINE)
@@ -172,6 +176,8 @@
 		update_icon()
 		return TRUE
 	if(istype(item, /obj/item/fishing_hook))
+		if(ismob(item.loc))
+			user.transferItemToLoc(item, src)
 		if(hook)
 			clear_slot(ROD_SLOT_HOOK)
 		set_slot(item, ROD_SLOT_HOOK)

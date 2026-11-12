@@ -535,6 +535,8 @@
 	fishing_difficulty_modifier = 15
 	favorite_bait = list(/obj/item/organ/ears)
 	var/mob/living/moron_inside
+	/// Не даёт воплю запускать цепную реакцию среди других вавилон-рыб.
+	var/suppress_wail = FALSE
 
 // Когда деморализаторы перестанут быть намертво захардкожены под Синдикат, этой рыбе стоит их выдать
 
@@ -570,7 +572,7 @@
 
 	visible_message(span_suicide("[user] подносит [src] к губам! Похоже, [user] собирается что-то сказать!"))
 	var/psychic_speech = tgui_input_text(user, message = "Say something!", title = "What are your last words?", timeout = 15 SECONDS)
-	if(!psychic_speech || !locate(src) in user.get_contents())
+	if(!psychic_speech || !(src in user.get_contents()))
 		user.say("Err, umm... uhh... erm...", forced = "blustering like a moron due to babbelfish suicide")
 		visible_message(span_suicide("[user] умирает от стыда!"))
 		return OXYLOSS
@@ -582,30 +584,44 @@
 	return MANUAL_SUICIDE
 
 
-/obj/item/fish/babbelfish/proc/fishes_die_twice()
-	if(isnull(moron_inside))
-		UnregisterSignal(src, COMSIG_FISH_STATUS_CHANGED)
-	if(status == FISH_DEAD)
-		moron_inside.death()
-	if(status == FISH_ALIVE)
-		moron_inside.revive(HEAL_ALL)
-
-/obj/item/fish/babbelfish/proc/check_loc()
-	if(locate(moron_inside) in src)
+/obj/item/fish/babbelfish/proc/fishes_die_twice(datum/source)
+	SIGNAL_HANDLER
+	if(QDELETED(moron_inside))
+		release_moron()
 		return
-	UnregisterSignal(moron_inside, COMSIG_MOVABLE_MOVED)
+	if(status == FISH_DEAD)
+		INVOKE_ASYNC(moron_inside, TYPE_PROC_REF(/mob/living, death))
+	else if(status == FISH_ALIVE)
+		INVOKE_ASYNC(moron_inside, TYPE_PROC_REF(/mob/living, revive), HEAL_ALL)
+
+/obj/item/fish/babbelfish/proc/check_loc(datum/source)
+	SIGNAL_HANDLER
+	if(moron_inside?.loc == src)
+		return
+	release_moron()
+
+/obj/item/fish/babbelfish/proc/release_moron()
+	UnregisterSignal(src, COMSIG_FISH_STATUS_CHANGED)
+	if(moron_inside)
+		UnregisterSignal(moron_inside, COMSIG_MOVABLE_MOVED)
 	moron_inside = null
+
+/obj/item/fish/babbelfish/Destroy()
+	release_moron()
+	return ..()
 
 /obj/item/fish/babbelfish/set_status(new_status, silent)
 	. = ..()
-	// здесь проигрывается сообщение о смерти
 	if(new_status != FISH_DEAD)
+		suppress_wail = FALSE
 		damtype = BRAIN
 		return
 	psy_wail()
 	damtype = BRUTE
 
 /obj/item/fish/babbelfish/proc/psy_wail()
+	if(suppress_wail)
+		return
 	manual_emote("wails!")
 	playsound(src, 'modular_bluemoon/fishing/sound/mobs/non-humanoids/fish/fish_psyblast.ogg', 100)
 	var/list/mob/living/mobs_in_range = get_hearers_in_range(7, src)
@@ -631,7 +647,7 @@
 		if(iscarbon(screeched))
 			var/mob/living/carbon/carbon_screeched = screeched
 			carbon_screeched.vomit(MOB_VOMIT_MESSAGE)
-			carbon_screeched.adjust_organ_loss(ORGAN_SLOT_BRAIN, 50)
+			carbon_screeched.adjust_organ_loss(ORGAN_SLOT_BRAIN, 10)
 
 	var/affected = 0
 	for(var/obj/item/fish/fishie in range(7, src))
@@ -639,6 +655,9 @@
 			continue
 		if(fishie.status == FISH_DEAD)
 			continue
+		if(istype(fishie, /obj/item/fish/babbelfish))
+			var/obj/item/fish/babbelfish/other_babbelfish = fishie
+			other_babbelfish.suppress_wail = TRUE
 		fishie.set_status(FISH_DEAD)
 		affected++
 	if(affected)
@@ -646,7 +665,7 @@
 
 /obj/item/fish/babbelfish/attack_hand(mob/living/user, list/modifiers)
 
-	if(!locate(src) in user)
+	if(loc != user)
 		return ..()
 
 	if((user.usable_hands < 2) && !HAS_TRAIT(user, TRAIT_STRENGTH))
@@ -729,22 +748,23 @@
 	. = ..()
 
 /obj/item/organ/ears/babbelfish/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
-	. = ..()
+	if(!target_mob)
+		return ..()
 	var/obj/item/organ/ears/ears = target_mob.get_organ_slot(ORGAN_SLOT_EARS)
 	if(!ears)
-		to_chat(user, span_notice("[target_mob == user ? "You don't have" : target_mob + "has no"] ears to shove [src] into!"))
+		to_chat(user, span_notice(target_mob == user ? "У вас нет ушей, куда можно засунуть [src]!" : "У [target_mob] нет ушей, куда можно засунуть [src]!"))
+		return ..()
+
+	to_chat(user, span_danger(target_mob == user ? "Вы начинаете заталкивать [src] себе в уши. Наверное, это плохая идея." : "Вы начинаете заталкивать [src] в уши [target_mob]. Наверное, это плохая идея."))
+	if(!do_after(user, 2.5 SECONDS * (target_mob == user ? 1 : 3), target_mob))
 		return
 
-	to_chat(user, span_danger("You start shoving [src] into [target_mob == user ? "your" : target_mob + "'s"] ears. Probably a bad idea."))
-	if(!do_after(user, 2.5 SECONDS * (target_mob == user ? 1 : 3), src))
-		return
-
-	user.apply_damage(25, BRUTE, user.get_bodypart(ears.zone))
-	to_chat(user, span_notice("As you're shoving them in, the [src] take on a life of their own and brutishly crawl right into [target_mob == user ? "your" : target_mob + "'s"] ears, taking their place entirely while maiming [target_mob == user ? "your" : target_mob.p_their()]  [ears.zone]!"))
-	playsound(user, 'sound/effects/magic/demon_consume.ogg', vol = 100, falloff_exponent = 2, vary = TRUE)
+	target_mob.apply_damage(25, BRUTE, ears.zone)
+	to_chat(user, span_notice(target_mob == user ? "Уши вгрызаются в вашу голову, занимая место прежних ушей!" : "Уши вгрызаются в голову [target_mob], занимая место прежних ушей!"))
+	playsound(target_mob, 'sound/effects/magic/demon_consume.ogg', vol = 100, falloff_exponent = 2, vary = TRUE)
 	// заслужил плохой мудлет
 	user.temporarilyRemoveItemFromInventory(src, TRUE)
-	Insert(user, special = TRUE, drop_if_replaced = TRUE)
+	Insert(target_mob, special = TRUE, drop_if_replaced = TRUE)
 
 /obj/item/organ/ears/babbelfish/on_mob_insert(mob/living/carbon/organ_owner, special, movement_flags)
 	bound_component = organ_owner.AddComponent(

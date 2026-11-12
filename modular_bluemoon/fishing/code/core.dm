@@ -46,9 +46,23 @@
 	desc = "Сколько разных видов рыбы вы поймали. Поймайте их всех."
 	database_id = FISH_SCORE
 	default_value = list()
+	track_high_scores = FALSE
 
 /datum/award/score/progress/fish/parse_value(raw_value)
-	return list()
+	if(islist(raw_value))
+		var/list/raw_list = raw_value
+		return raw_list.Copy()
+	if(!istext(raw_value) || !length(raw_value))
+		return list()
+	return splittext(raw_value, ",")
+
+/datum/award/score/progress/fish/load(key)
+	var/list/result = ..()
+	return islist(result) ? result.Copy() : list()
+
+/datum/award/score/progress/fish/get_changed_rows(key, value)
+	var/serialized = islist(value) ? jointext(value, ",") : ""
+	return ..(key, serialized)
 
 /datum/award/score/progress/fish/get_metadata_row()
 	. = ..()

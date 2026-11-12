@@ -280,16 +280,20 @@
 	if(!length(tracked_fish))
 		return
 	if(auto_mode)
-		var/list/fluids = list()
-		var/min_temp = INFINITY
-		var/max_temp = -INFINITY
+		var/list/common_fluids
+		var/min_temp = -INFINITY
+		var/max_temp = INFINITY
 		for(var/obj/item/fish/fish in tracked_fish)
-			fluids |= GLOB.fish_compatible_fluid_types[fish.required_fluid_type] || list(fish.required_fluid_type)
-			min_temp = min(min_temp, fish.required_temperature_min)
-			max_temp = max(max_temp, fish.required_temperature_max)
-		if(length(fluids))
-			fluid_type = fluids[1]
-		if(min_temp != INFINITY && min_temp <= max_temp)
+			var/list/fish_fluids = GLOB.fish_compatible_fluid_types[fish.required_fluid_type] || list(fish.required_fluid_type)
+			if(isnull(common_fluids))
+				common_fluids = fish_fluids.Copy()
+			else
+				common_fluids &= fish_fluids
+			min_temp = max(min_temp, fish.required_temperature_min)
+			max_temp = min(max_temp, fish.required_temperature_max)
+		if(length(common_fluids))
+			fluid_type = common_fluids[1]
+		if(min_temp <= max_temp)
 			fluid_temp = clamp(fluid_temp, min_temp, max_temp)
 	beauty = 0
 	for(var/obj/item/fish/fish in tracked_fish.Copy())

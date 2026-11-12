@@ -632,7 +632,7 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 	phase = MINIGAME_PHASE
 	if(next_phase_timer && next_phase_timer != -1)
 		deltimer(next_phase_timer)
-	if((FISHING_MINIGAME_RULE_KILL in special_effects) && ispath(reward_path,/obj/item/fish))
+	if((special_effects & FISHING_MINIGAME_RULE_KILL) && ispath(reward_path, /obj/item/fish))
 		var/obj/item/fish/fish = reward_path
 		var/wait_time = ((initial(fish.max_integrity) * (1 - initial(fish.integrity_failure))) / FISH_DAMAGE_PER_SECOND) SECONDS
 		addtimer(CALLBACK(src, PROC_REF(win_anyway)), wait_time, TIMER_DELETE_ME)

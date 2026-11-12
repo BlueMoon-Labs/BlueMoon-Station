@@ -841,7 +841,7 @@ GLOBAL_LIST_INIT(fish_compatible_fluid_types, list(
 	if(partner)
 		var/ratio_size = new_fish.average_size * (((size / average_size) + (partner.size / partner.average_size)) / 2)
 		var/mean_size = (size + partner.size)/2
-		var/ratio_weight = new_fish.average_size * (((weight / average_weight) + (partner.weight / partner.average_weight)) / 2)
+		var/ratio_weight = new_fish.average_weight * (((weight / average_weight) + (partner.weight / partner.average_weight)) / 2)
 		var/mean_weight = (weight + partner.weight)/2
 		new_fish.randomize_size_and_weight((mean_size + ratio_size) * 0.5, (mean_weight + ratio_weight) * 0.5, 0.3, update = FALSE)
 		partner.breeding_wait = world.time + partner.breeding_timeout
@@ -851,6 +851,9 @@ GLOBAL_LIST_INIT(fish_compatible_fluid_types, list(
 	new_fish.update_size_and_weight(new_fish.temp_size, new_fish.temp_weight)
 	breeding_wait = world.time + breeding_timeout
 	new_fish.breeding_wait = world.time + new_fish.breeding_timeout * OFFSPRING_FISH_BREEDING_TIMEOUT_MULT
+	if(istype(loc, /obj/structure/aquarium))
+		var/obj/structure/aquarium/aquarium = loc
+		aquarium.add_fish(new_fish)
 	return new_fish
 
 #undef OFFSPRING_FISH_BREEDING_TIMEOUT_MULT
