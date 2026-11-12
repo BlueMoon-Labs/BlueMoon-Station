@@ -439,3 +439,23 @@
 		qdel(register)
 		TEST_ASSERT(QDELETED(register), "[register_type] удалена")
 		register = null
+
+/// Кассу откручивают ключом, перетаскивают на стол и прикручивают обратно.
+/datum/unit_test/economy_register/wrench_onto_table/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/turf/table_turf = get_step(start_turf, EAST)
+	var/obj/structure/table/table = allocate(/obj/structure/table, table_turf)
+	register = allocate(/obj/machinery/cash_register/bar, start_turf)
+	var/mob/living/carbon/human/engineer = allocate(/mob/living/carbon/human, start_turf)
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench)
+	engineer.put_in_active_hand(wrench)
+
+	TEST_ASSERT(register.anchored, "Касса с карты прикручена")
+	wrench.melee_attack_chain(engineer, register)
+	TEST_ASSERT(!register.anchored, "Ключ откручивает кассу")
+	TEST_ASSERT(register.Move(table_turf), "Открученная касса заезжает на стол")
+	TEST_ASSERT_EQUAL(register.loc, table_turf, "Касса стоит на столе")
+	engineer.forceMove(start_turf)
+	wrench.melee_attack_chain(engineer, register)
+	TEST_ASSERT(register.anchored, "Ключ прикручивает кассу на столе")
+	qdel(table)

@@ -35,6 +35,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	icon = 'icons/obj/machines/economy/cash_register.dmi'
 	icon_state = "universal_off"
 	density = FALSE
+	pass_flags = PASSTABLE
 	use_power = NO_POWER_USE
 	circuit = /obj/item/circuitboard/machine/cash_register
 	var/skin = "universal"
@@ -98,6 +99,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		else
 			. += span_notice("За кассой [cashier.name], выручка целиком ему.[order_text]")
 	. += span_notice("Оплата - свайпом карты или из окна кассы, только с личного счёта, без налога. Наличные (голочип, купюры, монеты) прикладывают к кассе: сдачу она выдаёт голочипом.")
+	. += span_notice("[anchored ? "Прикручена к полу" : "Откручена"]: гаечным ключом кассу откручивают, чтобы переставить, в том числе на стол.")
 	if(is_cashier(user))
 		. += span_notice("Цена позиции от 1 до [REGISTER_PRICE_MAX] кр., в меню до [REGISTER_MENU_MAX] позиций, до [REGISTER_ORDER_COUNT_MAX] шт. одной позиции в счёте. Свайп своей картой - отойти от кассы.")
 	if(!user.Adjacent(src))
@@ -602,6 +604,10 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 /obj/machinery/cash_register/screwdriver_act(mob/living/user, obj/item/tool)
 	. = default_deconstruction_screwdriver(user, "[skin]_panel", skin, tool)
 	update_appearance()
+
+/obj/machinery/cash_register/wrench_act(mob/living/user, obj/item/tool)
+	default_unfasten_wrench(user, tool)
+	return TRUE
 
 /obj/machinery/cash_register/crowbar_act(mob/living/user, obj/item/tool)
 	return default_deconstruction_crowbar(tool)
