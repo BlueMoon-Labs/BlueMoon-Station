@@ -17,6 +17,7 @@
 #define HELI_LOCKON_DS 20                // 2s missile lock-on beeping
 #define HELI_RELOCATE_WARN_DS 8          // quick reposition windup
 #define HELI_ROTOR_RANGE 14              // tiles, rotor loop is re-sent to viewers inside this range
+#define HELI_THEME_RANGE 14              // tiles, boss theme reaches viewers inside this range
 
 // =============================================================================
 // LANDMARKS
@@ -215,7 +216,6 @@
 	var/heli_crit_channel                  // dedicated critical-beep channel
 	var/heli_crit_beep_next = 0            // world.time of next beep burst
 	var/heli_theme_channel                  // boss theme sound channel
-	var/heli_theme_playing = FALSE
 	var/list/heli_theme_listeners = list()
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/Initialize(mapload)
@@ -349,7 +349,9 @@
 	playsound(T, 'sound/effects/Explosion1.ogg', 100, TRUE, -2)
 	playsound(T, 'sound/effects/Explosion2.ogg', 90, TRUE, -2)
 	new /obj/effect/temp_visual/helicopter_missile_boom(T)
-	new /obj/effect/temp_visual/helicopter_missile_boom(get_step(T, pick(GLOB.alldirs)))
+	var/turf/adjacent_t = get_step(T, pick(GLOB.alldirs))
+	if(adjacent_t)
+		new /obj/effect/temp_visual/helicopter_missile_boom(adjacent_t)
 	for(var/mob/living/L in range(6, T))
 		if(QDELETED(L) || L.stat == DEAD)
 			continue
@@ -446,6 +448,9 @@
 		// skip players tucked inside containers/lockers
 		if(!isturf(L.loc))
 			continue
+		// only engage targets inside the ihategordon gate area
+		if(!istype(get_area(L), /area/awaymission/ihategordon))
+			continue
 		. += L
 	return .
 
@@ -476,6 +481,7 @@
 	if(QDELETED(src))
 		return
 	heli_update_rotor_sound()
+	heli_update_theme_sound()
 	if(stat != CONSCIOUS || heli_busy || heli_cutscene)
 		return
 	// overheat state visuals
@@ -507,7 +513,6 @@
 	var/list/targets = get_mesa_targets()
 	if(!targets.len)
 		return
-	heli_start_theme()
 	if(attacks_until_relocate <= 0)
 		if(heli_pads.len >= 2)
 			start_relocate()
@@ -574,12 +579,8 @@
 		return
 	var/obj/item/projectile/P = new /obj/item/projectile/bullet/helicopter_autocannon(startloc)
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/apache/apacheshot.ogg', 80, TRUE, -4)
-	P.starting = startloc
 	P.firer = src
 	P.fired_from = src
-	P.yo = targeted_atom.y - startloc.y
-	P.xo = targeted_atom.x - startloc.x
-	P.original = targeted_atom
 	P.preparePixelProjectile(targeted_atom, src)
 	P.fire()
 
@@ -701,12 +702,19 @@
 		heli_busy = FALSE
 		return
 	// fly across the arena, firing continuously
-	while((horizontal ? x : y) != end_coord)
+	while(TRUE)
+		var/coord = horizontal ? x : y
+		if(coord == end_coord)
+			break
+		// external displacement may have pushed us past the end tile -
+		// without this the run would never terminate and cross the map
+		if((coord - end_coord) * step_dir > 0)
+			break
 		if(QDELETED(src) || stat != CONSCIOUS)
 			heli_busy = FALSE
 			return
 		var/turf/next_turf = horizontal ? locate(x + step_dir, y, z) : locate(x, y + step_dir, z)
-		if(!next_turf || !forceMove(next_turf))
+		if(!next_turf || !istype(next_turf, /turf/open) || !forceMove(next_turf))
 			break
 		setDir(horizontal ? (step_dir > 0 ? EAST : WEST) : (step_dir > 0 ? NORTH : SOUTH))
 		var/list/targets = get_mesa_targets()
@@ -715,7 +723,6 @@
 			if(T)
 				heli_fire(T)
 		sleep(HELI_STRAFE_STEP_DS)
-	// overshoot one tile past the edge for style, then settle
 	heli_attack_done()
 
 // =============================================================================
@@ -762,12 +769,8 @@
 		return
 	var/obj/item/projectile/P = new /obj/item/projectile/bullet/a84mm/helicopter_rocket(startloc)
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/apache/apacheshot.ogg', 70, TRUE, -4)
-	P.starting = startloc
 	P.firer = src
 	P.fired_from = src
-	P.yo = targeted_atom.y - startloc.y
-	P.xo = targeted_atom.x - startloc.x
-	P.original = targeted_atom
 	P.preparePixelProjectile(targeted_atom, src)
 	P.fire()
 
@@ -826,7 +829,7 @@
 	var/turf/ST = get_turf(src)
 	for(var/obj/effect/landmark/awaymission/blackmesa/helicopter_pad/P in heli_pads)
 		var/turf/PT = get_turf(P)
-		if(PT && PT != ST && PT.z == ST.z)
+		if(PT && PT != ST && PT.z == ST.z && istype(PT, /turf/open) && !is_blocked_turf(PT, TRUE))
 			candidates += PT
 	if(!candidates.len)
 		attacks_until_relocate = rand(2, 3)
@@ -852,7 +855,11 @@
 			animate(src, pixel_z = 0, transform = matrix(), alpha = 255, time = 0, flags = ANIMATION_END_NOW)
 		heli_busy = FALSE
 		return
-	forceMove(dest)
+	if(!forceMove(dest))
+		// pad turf got blocked between planning and landing - snap back
+		animate(src, pixel_z = 0, transform = matrix(), alpha = 255, time = 0, flags = ANIMATION_END_NOW)
+		heli_busy = FALSE
+		return
 	setDir(pick(GLOB.alldirs))
 	animate(src, pixel_z = 0, transform = matrix(), alpha = 255, time = 8, easing = SINE_EASING)
 	sleep(8)
@@ -1105,11 +1112,14 @@
 	center_x = round(center_x / count)
 	center_y = round(center_y / count)
 	var/best = INFINITY
+	var/turf/center_t = locate(center_x, center_y, ST.z)
+	if(!center_t)
+		return .
 	for(var/obj/effect/landmark/awaymission/blackmesa/helicopter_pad/P in heli_pads)
 		var/turf/PT = get_turf(P)
 		if(!PT || PT.z != ST.z)
 			continue
-		var/d = get_dist(PT, locate(center_x, center_y, ST.z))
+		var/d = get_dist(PT, center_t)
 		if(d < best)
 			best = d
 			. = PT
@@ -1186,17 +1196,20 @@
 	var/turf/ST = get_turf(src)
 	if(!ST)
 		return
+	// one viewers() snapshot drives both removal and addition, so the two
+	// sides can never disagree on range metrics and churn listeners
+	var/list/viewers_list = viewers(HELI_ROTOR_RANGE, src)
 	for(var/mob/listener in heli_rotor_listeners.Copy())
 		var/turf/LT = QDELETED(listener) ? null : get_turf(listener)
-		if(QDELETED(listener) || listener.stat == DEAD || !LT || LT.z != ST.z || get_dist(LT, ST) > HELI_ROTOR_RANGE)
+		if(QDELETED(listener) || listener.stat == DEAD || !LT || LT.z != ST.z || !(listener in viewers_list))
 			if(!QDELETED(listener))
 				listener.stop_sound_channel(heli_rotor_channel)
 			heli_rotor_listeners -= listener
-	for(var/atom/A in viewers(HELI_ROTOR_RANGE, src))
+	for(var/atom/A in viewers_list)
 		if(!isliving(A) || (A in heli_rotor_listeners))
 			continue
 		var/mob/living/L = A
-		if(QDELETED(L) || L.stat == DEAD)
+		if(QDELETED(L) || L.stat == DEAD || !L.client)
 			continue
 		var/turf/LT = get_turf(L)
 		if(!LT || LT.z != ST.z)
@@ -1207,11 +1220,31 @@
 // =============================================================================
 // BOSS THEME - same pattern as the infected tank's tanktheme.ogg
 // =============================================================================
-/mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_start_theme()
-	if(heli_theme_playing || !heli_theme_channel)
+// Theme listeners are re-synced every tick: anyone who leaves the
+// ihategordon area or the listening range loses the loop, and new viewers
+// inside both get it. Without this the repeat track followed players who
+// retreated out of the arena until they died or ghosted.
+/mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_theme_sound()
+	if(!heli_theme_channel || heli_died || stat == DEAD)
 		return
-	heli_theme_playing = TRUE
-	for(var/mob/nearby_mob in viewers(14, src))
+	var/turf/ST = get_turf(src)
+	if(!ST)
+		return
+	var/list/viewers_list = viewers(HELI_THEME_RANGE, src)
+	for(var/mob/listener in heli_theme_listeners.Copy())
+		var/turf/LT = QDELETED(listener) ? null : get_turf(listener)
+		if(QDELETED(listener) || listener.stat == DEAD || !LT || LT.z != ST.z || !(listener in viewers_list) || !istype(get_area(listener), /area/awaymission/ihategordon))
+			stop_theme_listener_sound(listener)
+			unregister_theme_listener(listener)
+	// no new listeners while the intro cinematic or an osprey insertion
+	// has the gunship "away" - same gate the old one-shot version had
+	if(heli_cutscene || stat != CONSCIOUS)
+		return
+	for(var/mob/nearby_mob in viewers_list)
+		if(nearby_mob in heli_theme_listeners)
+			continue
+		if(QDELETED(nearby_mob) || nearby_mob.stat == DEAD)
+			continue
 		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
 			continue
 		if(!istype(get_area(nearby_mob), /area/awaymission/ihategordon))
@@ -1271,7 +1304,6 @@
 	unregister_theme_listener(old_character, source)
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/stop_heli_sounds()
-	heli_theme_playing = FALSE
 	for(var/mob/listener in heli_theme_listeners.Copy())
 		stop_theme_listener_sound(listener)
 		unregister_theme_listener(listener)
