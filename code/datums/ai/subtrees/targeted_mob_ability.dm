@@ -31,6 +31,7 @@
 
 /// Attempts to use an ability on a target then removes it
 /datum/ai_planning_subtree/targeted_mob_ability
+	gated_by_pawn_timer = TRUE
 	/// Blackboard key for the ability datum
 	var/ability_key = BB_AI_TARGETED_ACTION
 	/// Blackboard key for target
@@ -49,6 +50,9 @@
 	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, ability_key, target_key)
 	if(finish_planning)
 		return SUBTREE_RETURN_FINISH_PLANNING
+
+/datum/ai_planning_subtree/targeted_mob_ability/pawn_timer_ready(datum/ai_controller/controller)
+	return ai_ability_available(controller.blackboard[ability_key], controller.pawn)
 
 /// Behavior to activate an ability on a target
 /datum/ai_behavior/targeted_mob_ability

@@ -515,6 +515,10 @@
 	TEST_ASSERT(blocker.density, "Sanity: the blocking mob must be dense")
 	loop.movement_path = list(blocker_turf)
 
+	//первый упор - ждём шаг, как прямой режим: в толчее союзник обычно уходит сам
+	mover.post_move_jps(loop, FALSE)
+	TEST_ASSERT_NULL(loop.avoid, "The first mob-blocked step must wait instead of rerouting")
+	TEST_ASSERT_EQUAL(length(loop.movement_path), 1, "Waiting for the ally must keep the route")
 	mover.post_move_jps(loop, FALSE)
 	TEST_ASSERT_EQUAL(loop.avoid, blocker_turf, "A mob-blocked next step must become the temporary JPS avoidance turf")
 

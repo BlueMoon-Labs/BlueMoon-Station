@@ -83,6 +83,8 @@
 // Make sure that the code compiles with AI_VOX undefined
 #ifdef AI_VOX
 #define VOX_DELAY 1 MINUTES
+/// Сколько файлы слов едут слушателям до первого звука объявления.
+#define VOX_PRELOAD_LEAD (1 SECONDS)
 /mob/living/silicon/ai/proc/announcement(voxType = "Female", message)
 	var/static/announcing_vox = 0 // Stores the time of the last announcement
 	var/next_vox = training_origin ? training_vox_at : announcing_vox
@@ -127,9 +129,40 @@
 
 	log_game("[key_name(src)] made a vocal announcement with the following message: [message].")
 
-	for(var/word in words)
-		play_vox_word(word, src.z, null, voxType)
+	// В интелкарте или APC у самого ИИ z = 0, слушатели на z его турфа
+	var/turf/ai_turf = get_turf(src)
+	return play_vox_announcement(words, ai_turf?.z, voxType)
 
+/// Файлы слов заранее уходят тем, кто услышит объявление, звук - через VOX_PRELOAD_LEAD: слово, которого нет
+/// в кэше клиента, качается в момент проигрыша, и без предзагрузки слова наползают друг на друга. Возвращает id таймера.
+/proc/play_vox_announcement(list/words, z_level, voxType = "Female")
+	var/list/files = list()
+	var/total_bytes = 0
+	for(var/word in words)
+		var/file = LAZYACCESSASSOC(GLOB.vox_types, voxType, lowertext(word))
+		if(file && !(file in files))
+			files += file
+			total_bytes += vox_file_bytes(file)
+	var/list/listeners = vox_listeners(z_level)
+	for(var/mob/listener as anything in listeners)
+		for(var/file in files)
+			listener.client.Export("##action=load_rsc", file)
+	note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, total_bytes * length(listeners))
+	return addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(play_vox_words), words.Copy(), z_level, voxType), VOX_PRELOAD_LEAD, TIMER_STOPPABLE)
+
+/proc/play_vox_words(list/words, z_level, voxType)
+	for(var/word in words)
+		play_vox_word(word, z_level, null, voxType)
+
+/// Мобы с клиентом на z_level, которые сейчас услышат VOX.
+/proc/vox_listeners(z_level)
+	. = list()
+	for(var/mob/player as anything in GLOB.player_list)
+		if(!player.client || !(player.client.prefs.toggles & SOUND_ANNOUNCEMENTS) || !player.can_hear())
+			continue
+		var/turf/player_turf = get_turf(player)
+		if(player_turf?.z == z_level)
+			. += player
 
 /proc/play_vox_word(word, z_level, mob/only_listener, voxType = "Female")
 
@@ -140,16 +173,10 @@
 		var/sound/voice = sound(sound_file, wait = 1, channel = CHANNEL_VOX)
 		voice.status = SOUND_STREAM
 
- 		// If there is no single listener, broadcast to everyone in the same z level
 		if(!only_listener)
-			// Play voice for all mobs in the z level
-			for(var/mob/M in GLOB.player_list)
-				if(M.client && M.can_hear() && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
-					var/turf/T = get_turf(M)
-					if(T.z == z_level)
-						var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
-						voice.volume = pref_vol
-						SEND_SOUND(M, voice)
+			for(var/mob/listener as anything in vox_listeners(z_level))
+				voice.volume = listener.client.prefs.get_sound_volume("announcements")
+				SEND_SOUND(listener, voice)
 		else
 			var/pref_vol = only_listener.client?.prefs?.get_sound_volume("announcements")
 			voice.volume = pref_vol
@@ -158,4 +185,5 @@
 	return FALSE
 
 #undef VOX_DELAY
+#undef VOX_PRELOAD_LEAD
 #endif

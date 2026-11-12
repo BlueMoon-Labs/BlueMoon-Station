@@ -408,3 +408,38 @@
 		"промотка сдвинулась с непустого бакета под курсором")
 
 #undef LONG_TIMER_GRACE_TICKS
+
+/// С какого id тест заводит таймеры: числовые строки от семи знаков движок интернирует со стопором.
+#define TIMER_ID_STALL_PROBE_START 2000000
+/// Один addtimer дольше этого - стопор, а не работа, мкс.
+#define TIMER_ID_STALL_US 100000
+
+/// Останавливаемые таймеры с большими id создаются без стопоров: id - число, а не удерживаемая строка.
+/datum/unit_test/stoppable_timer_ids_do_not_stall
+
+/datum/unit_test/stoppable_timer_ids_do_not_stall/proc/noop()
+	return
+
+/datum/unit_test/stoppable_timer_ids_do_not_stall/Run()
+	SStimer.next_timer_id = max(SStimer.next_timer_id, TIMER_ID_STALL_PROBE_START)
+	var/list/ids = list()
+	var/worst = 0
+	var/stalls = 0
+	for(var/i in 1 to 3000)
+		rustg_time_reset("timer_id_probe")
+		var/id = addtimer(CALLBACK(src, PROC_REF(noop)), 20 MINUTES, TIMER_STOPPABLE)
+		var/spent = rustg_time_microseconds("timer_id_probe")
+		ids += id
+		worst = max(worst, spent)
+		if(spent > TIMER_ID_STALL_US)
+			stalls++
+	var/first_id = ids[1]
+	TEST_ASSERT_NOTNULL(SStimer.timer_id_dict[first_id], "Останавливаемый таймер не найден по своему id")
+	TEST_ASSERT(timeleft(first_id) > 0, "timeleft не видит таймер по id")
+	for(var/id in ids)
+		TEST_ASSERT(deltimer(id), "deltimer не снял таймер по id [id]")
+	TEST_ASSERT_NULL(SStimer.timer_id_dict[first_id], "Снятый таймер остался в словаре id")
+	TEST_ASSERT_EQUAL(stalls, 0, "Создание 3000 останавливаемых таймеров дало [stalls] стопоров, худший [round(worst / 1000)] мс")
+
+#undef TIMER_ID_STALL_PROBE_START
+#undef TIMER_ID_STALL_US

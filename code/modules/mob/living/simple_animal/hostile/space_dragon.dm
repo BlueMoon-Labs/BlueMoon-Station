@@ -209,7 +209,7 @@
 	..()
 	add_dragon_overlay()
 
-/mob/living/simple_animal/hostile/space_dragon/revive(full_heal, admin_revive, excess_healing = 0)
+/mob/living/simple_animal/hostile/space_dragon/revive(full_heal, admin_revive, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	. = ..()
 	add_dragon_overlay()
 

@@ -11,25 +11,29 @@
 	glass_desc = "You feel it's not named like that for no reason."
 	value = 6
 
-// Liquid Panty Dropper drink effect
-/datum/reagent/consumable/ethanol/panty_dropper/on_mob_life(mob/living/carbon/C)
-	// Praise the funny BYOND dots
+// Сверяйте синхронизацию механик с /datum/reagent/consumable/synthdrink/synthanol/database_dropper
+/datum/reagent/consumable/ethanol/panty_dropper/on_mob_add(mob/living/carbon/C)
 	. = ..()
 
-	// Check for client
-	if(C.client)
-		// Check target pref for ERP
-		if(C.client?.prefs.erppref == "No")
-			// Return without triggering
+	if(C.client && C.client.prefs)
+		if(C.client.prefs.erppref == "No")
+			return
+		if(C.client.prefs.cit_toggles & NO_APHRO)
 			return
 
-		// Check target pref for aphrodisiacs
-		if(C.client?.prefs.cit_toggles & NO_APHRO)
-			// Return without triggering
-			return
+	var/disrobed = FALSE
+	for(var/current_slot in list(ITEM_SLOT_UNDERWEAR, ITEM_SLOT_SOCKS, ITEM_SLOT_SHIRT))
+		var/obj/item/I = C.get_item_by_slot(current_slot)
+		if(isnull(I)) // спасибо, что dropItemToGround приравнивает null к успеху от чего происходят ложные срабатывания drop_success
+			continue
+		var/drop_success = C.dropItemToGround(I)
+		if(drop_success)
+			disrobed = TRUE
 
-	// Perform drink effect
-	C.clothing_burst(TRUE)
+	if(disrobed)
+		new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(C))
+		C.visible_message(span_userlove("[C] вырывается из своего нижнего белья!"), span_userlove("Ты вырываешься из своего нижнего белья!"))
+		playsound(C.loc, 'sound/items/poster_ripped.ogg', 50, 1)
 
 /datum/reagent/consumable/ethanol/lean
 	name = "Lean"

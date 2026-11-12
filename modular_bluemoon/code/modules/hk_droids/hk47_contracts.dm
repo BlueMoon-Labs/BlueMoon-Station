@@ -681,6 +681,8 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 	var/static/list/relic_types = typecacheof(HK47_THEFT_RELICS)
 	var/list/found = list()
 	for(var/obj/item/thing in world)
+		if(QDELETED(thing))
+			continue
 		if(is_type_in_typecache(thing, relic_types))
 			found += WEAKREF(thing)
 		CHECK_TICK

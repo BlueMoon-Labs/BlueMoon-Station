@@ -652,17 +652,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				A = image(custom_icon_file, H, custom_icon)
 				A.name = custom_name
 		A.override = 1
-		if(target.client)
-			owner_client = target.client
-			delusions |= A
-			owner_client.images |= A
+		delusions += A
+	// Картинки свежие: `|=` по одной сверял каждую со всеми картинками клиента, и так на каждого человека станции.
+	if(target.client)
+		owner_client = target.client
+		owner_client.images += delusions
 	if(duration)
 		QDEL_IN(src, duration)
 
 /datum/hallucination/delusion/Destroy()
 	if(owner_client)
-		for(var/image/I as anything in delusions)
-			owner_client.images.Remove(I)
+		owner_client.images -= delusions
 	delusions = null
 	return ..()
 
@@ -1025,30 +1025,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	qdel(src)
 
 /datum/hallucination/stationmessage
-	var/static/list/heretic_ascension_bodies = list(
-		list(
-			"text" = "Бойтесь огня! Князь пепла, %FAKENAME% вознёсся! Языки пламени поглотят всё!",
-			"sound" = 'sound/music/antag/heretic/ascend_ash.ogg',
-		),
-		list(
-			"text" = "Мастер клинков, ученик Рваного Чемпиона, %FAKENAME% вознёсся! Их сталь разрежет реальность серебряным ураганом!",
-			"sound" = 'sound/music/antag/heretic/ascend_blade.ogg',
-		),
-		list(
-			"text" = "Вихрь крутится в вечном танце. Реальность выворачивается наизнанку. Повелитель, %FAKENAME% вознёсся! Бойтесь длани господней!",
-			"sound" = 'sound/music/antag/heretic/ascend_flesh.ogg',
-		),
-		list(
-			"text" = "Бойтесь разложения, что несёт Ржавый Всадник, %FAKENAME%, возносясь над вами! Никто не избежит коррозии!",
-			"sound" = 'sound/music/antag/heretic/ascend_rust.ogg',
-		),
-		list(
-			"text" = "Дворянин пустоты, %FAKENAME%, прибыл к вам, кружась в вальсе кончины миров!",
-			"sound" = 'sound/music/antag/heretic/ascend_void.ogg',
-		),
-	)
+	/// Текст и звук фантомного вознесения берутся из данных пути (ascension.dm)
+	var/heretic_path_id
 
-/datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message)
+/datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message, heretic_target = null, heretic_path = null)
 	set waitfor = FALSE
 	..()
 	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
@@ -1075,15 +1055,21 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			to_chat(target, "<br><br><span class='alert'>Все станционные системы подверглись воздействию вредоносного ПО. Немедленно отключите искусственный интеллект станции, во избежание её уничтожения.</span><br><br>")
 			SEND_SOUND(target, SSstation.announcer.event_sounds[ANNOUNCER_AIMALF])
 		if("heretic")
-			var/mob/living/carbon/human/totally_real_heretic = random_non_sec_crewmember()
+			var/mob/living/carbon/totally_real_heretic
+			if(heretic_target)
+				totally_real_heretic = heretic_target
+			else
+				totally_real_heretic = random_non_sec_crewmember()
 			if(!totally_real_heretic)
 				return
 
-			var/list/fake_ascension = pick(heretic_ascension_bodies)
-			var/announcement_text = replacetext(fake_ascension["text"], "%FAKENAME%", totally_real_heretic.real_name)
+			heretic_path_id = heretic_path || heretic_ascension_random_path_id()
+			var/list/fake_ascension = heretic_ascension_announcement(heretic_path_id, totally_real_heretic)
+			if(!fake_ascension)
+				return
 			var/garbled_title = generate_fake_heretic_text()
 			fake_priority_announce(
-				text = "[garbled_title] [announcement_text] [generate_fake_heretic_text()]",
+				text = "[garbled_title] [fake_ascension["text"]] [generate_fake_heretic_text()]",
 				title = garbled_title,
 				sound = fake_ascension["sound"],
 			)

@@ -69,16 +69,21 @@ GLOBAL_LIST_INIT(anus_traits, list("[TRAIT_HYPERSENS_ANUS]" = 3, "[TRAIT_OVERSTI
   * Arguments:
   * * genital: Genital to check for any orgasm modifiers.
 */
-/mob/living/proc/check_orgasm(datum/source, R, target, obj/item/organ/genital/sender, receiver, spill)
+/mob/living/proc/check_orgasm(datum/source, R, target, obj/item/organ/genital/sender, receiver, spill, anonymous, is_hidden)
 	SIGNAL_HANDLER
 
 	if(CHECK_BITFIELD(sender.genital_flags, GENITAL_IMPOTENT) || CHECK_BITFIELD(sender.genital_flags, GENITAL_DISAPPOINTING))
-		emote("sigh")
+		if(is_hidden)
+			audible_message(span_lewd("<b>[src]</b> вздыхает[HIDDEN_REACTION_SUFFIX(is_hidden)]."), hearing_distance = HIDDEN_INTERACTION_RANGE, local_only = is_hidden)
+			var/sigh_sound = gender == FEMALE || (gender == PLURAL && isfeminine(src)) ? 'sound/voice/sigh_female.ogg' : 'sound/voice/sigh_male.ogg'
+			playsound(src, sigh_sound, 50, TRUE, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
+		else
+			emote("sigh")
 		to_chat(src, "<span class='hypnophrase'>[pick("Ugh, that was embarassing...", "I could've done it better...")]</span>")
 		return TRUE
 	return FALSE
 
-/mob/living/carbon/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/carbon/handle_post_sex(amount, orifice, mob/living/partner, organ = null, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	if(organ)
 		amount = check_stimulation(amount, organ)
 

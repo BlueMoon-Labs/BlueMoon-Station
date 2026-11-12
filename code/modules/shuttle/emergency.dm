@@ -196,6 +196,9 @@
 /obj/machinery/computer/emergency_shuttle/proc/attempt_hijack_stage(mob/living/user)
 	if(!user.CanReach(src))
 		return
+	if(src.dir && get_dir(src, user) != src.dir)
+		to_chat(user, "<span class='warning'>Мне нужно видеть экран [src], чтобы приступить к взлому системы.</span>")
+		return
 	if(!user?.mind?.get_hijack_speed())
 		to_chat(user, "<span class='warning'>Вам удалось открыть пользовательскую оболочку на [src], и перед глазами проносятся сотни строк отладочного вывода. Лучше не трогать это.</span>")
 		return

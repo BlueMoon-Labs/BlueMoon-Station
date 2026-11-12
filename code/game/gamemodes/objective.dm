@@ -1611,6 +1611,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			return TRUE
 	// 2) Перма-бриг: шкафчик генпоп оформлен на имя цели
 	for(var/obj/structure/closet/secure_closet/genpop/genpop_locker in world)
+		if(QDELETED(genpop_locker))
+			continue
 		if(genpop_locker.locked && genpop_locker.registered_id && genpop_locker.registered_id.registered_name == target_name)
 			return TRUE
 	// 3) Гулаг: цель отправлена через трудовой телепорт

@@ -34,12 +34,12 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg',), volume, 1, extrarange) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/oral2.ogg',), volume, 1, extrarange, local_only = is_hidden) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	// BLUEMOON EDIT START
-	user.handle_post_sex(HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, partner, ORGAN_SLOT_PENIS)
+	user.handle_post_sex(HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
-		partner.handle_post_sex(LOW_LUST, partner = user)
+		partner.handle_post_sex(LOW_LUST, partner = user, is_hidden = is_hidden)
 	// BLUEMOON EDIT END
 
 /datum/interaction/lewd/nut_smack
@@ -61,7 +61,7 @@
 /datum/interaction/lewd/nut_smack/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	. = ..()
 	if(HAS_TRAIT(user, TRAIT_MASO) || HAS_TRAIT(user, TRAIT_NYMPHO))
-		user.handle_post_sex(LOW_LUST, null, partner)
+		user.handle_post_sex(LOW_LUST, null, partner, is_hidden = is_hidden)
 
 	var/lust_level = GET_MN_LUST_LEVEL(HAS_TRAIT(partner, TRAIT_MASO), HAS_TRAIT(partner, TRAIT_NYMPHO))
 	if(lust_level)
@@ -70,7 +70,7 @@
 			cum_organ = ORGAN_SLOT_PENIS
 		else if(partner.has_vagina())
 			cum_organ = ORGAN_SLOT_VAGINA
-		partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ)
+		partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ, is_hidden = is_hidden)
 
 #undef GET_MN_LUST_LEVEL
 
@@ -115,12 +115,12 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
-	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	if(HAS_TRAIT(user, TRAIT_NYMPHO))
-		user.handle_post_sex(LOW_LUST, null, partner)
+		user.handle_post_sex(LOW_LUST, null, partner, is_hidden = is_hidden)
 
 	var/lust_level = HAS_TRAIT(partner, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
 	var/cum_organ
@@ -128,4 +128,4 @@
 		cum_organ = ORGAN_SLOT_PENIS
 	else if(partner.has_vagina())
 		cum_organ = ORGAN_SLOT_VAGINA
-	partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ)
+	partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ, is_hidden = is_hidden)

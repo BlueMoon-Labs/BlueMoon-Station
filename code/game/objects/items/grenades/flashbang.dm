@@ -51,6 +51,10 @@
 /obj/item/grenade/flashbang/proc/flash(mob/living/M, turf/source)
 	if(M.stat == DEAD)	//They're dead!
 		return
+	if(isswarmer(M))
+		M.flash_act(affect_silicon = TRUE, override_protection = TRUE)
+		M.Stun(SWARMER_FLASHBANG_STUN, ignore_canstun = TRUE)
+		return
 	var/distance = get_dist(get_turf(M), source)
 	if(M.flash_act(affect_silicon = 1))
 		M.DefaultCombatKnockdown(max(200/max(1,distance), 60))

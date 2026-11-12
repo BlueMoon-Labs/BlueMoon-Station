@@ -189,6 +189,7 @@ export const DmTarget = new Juke.Target({
     'tgui/public/tgui.html',
     "modular_*/**", // BLUEMOON ADD
     `${DME_NAME}.dme`,
+    'verb_id_order.dm',
     'modular_citadel/**',
     'modular_sand/**',
   ],
@@ -263,6 +264,7 @@ const dmTestInputs = [
   'tgui/public/tgui.html',
   'modular_*/**',
   `${DME_NAME}.dme`,
+  'verb_id_order.dm',
   'modular_citadel/**',
   'modular_sand/**',
   'tools/build/build.js',

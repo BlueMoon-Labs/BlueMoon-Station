@@ -131,8 +131,7 @@
 		send_modsuit_message(wearer, "ОТКЛЮЧЕНИЕ", "Systems shut down. Parts unsealed. Goodbye, [wearer].")
 		if(ai)
 			send_modsuit_message(ai, "ОТКЛЮЧЕНИЕ", "<b>СИСТЕМЫ ДЕАКТИВИРОВАНЫ. ПРОЩАЙТЕ: \"[ai]\"</b>")
-		if(!deactivation_sound)
-			playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
+		playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 		return TRUE
 	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_deployable_parts())
 		if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
@@ -147,10 +146,9 @@
 			to_chat(ai, span_notice("<b>SYSTEMS [is_active() ? "DEACTIVATED. GOODBYE" : "ACTIVATED. WELCOME"]: \"[ai]\"</b>"))
 		finish_activation(on = !is_active())
 		if(is_active())
-			if(!activation_sound)
-				playsound(src, 'sound/machines/synth_yes.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
-				SEND_SOUND(wearer, sound('sound/mecha/nominal.ogg',volume=50))
-		else if(!deactivation_sound)
+			playsound(src, 'sound/machines/synth_yes.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
+			SEND_SOUND(wearer, sound('sound/mecha/nominal.ogg',volume=50))
+		else
 			playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 	else
 		return toggle_activate_fail()
@@ -198,9 +196,6 @@
 
 	wearer?.update_inv_back()
 	armolex_hud?.update()
-	var/state_sound = on ? activation_sound : deactivation_sound
-	if(wearer && state_sound)
-		SEND_SOUND(wearer, sound(state_sound, volume = 50))
 
 /obj/item/mod/control/update_icon_state()
 	icon_state = "[get_visual_skin()]-control[is_active() && all_parts_deployed() ? "-sealed" : ""]"

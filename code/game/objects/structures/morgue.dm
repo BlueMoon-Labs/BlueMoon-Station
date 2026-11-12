@@ -192,15 +192,14 @@ GLOBAL_LIST_EMPTY(bodycontainers) //Let them act as spawnpoints for revenants an
 	for(var/mob/living/M in compiled)
 		var/mob/living/mob_occupant = get_mob_or_brainmob(M)
 
-		//hellbound
-		if(mob_occupant.hellbound)
+		if(!mob_occupant.can_be_medically_revived())
 			continue
 
-		if(mob_occupant.client && !mob_occupant.suiciding && !(HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)))
-			icon_state = "morgue4" // Cloneable
+		if(mob_occupant.client)
+			icon_state = "morgue4" // Игрок находится в теле; медицинская реанимация допустима.
 			mob_revivible = TRUE
-		else if(mob_occupant.get_ghost())
-			icon_state = "morgue5" // Can be revived
+		else if(mob_occupant.mind)
+			icon_state = "morgue5" // Подключённый призрак может вернуться в тело.
 			mob_revivible = TRUE
 
 		if(mob_revivible)

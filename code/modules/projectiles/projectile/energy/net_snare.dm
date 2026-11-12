@@ -96,3 +96,28 @@
 /obj/item/projectile/energy/trap/cyborg/on_range()
 	do_sparks(1, TRUE, src)
 	qdel(src)
+
+/obj/item/projectile/energy/swarmer_bola
+	name = "Energy Bola"
+	icon_state = "e_snare"
+	nodamage = TRUE
+	hitsound = 'sound/weapons/taserhit.ogg'
+	range = 10
+
+/obj/item/projectile/energy/swarmer_bola/prehit_pierce(atom/A)
+	if(isswarmer(A))
+		return PROJECTILE_PIERCE_PHASE
+	var/obj/structure/swarmer/structure = A
+	if(istype(structure) && structure.projectiles_pass)
+		return PROJECTILE_PIERCE_PHASE
+	return ..()
+
+/obj/item/projectile/energy/swarmer_bola/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(!iscarbon(target) || blocked >= 100 || QDELETED(target))
+		return
+	var/mob/living/carbon/victim = target
+	var/obj/item/restraints/legcuffs/bola/energy/bola = new(get_turf(victim))
+	bola.ensnare(victim)
+	if(victim.legcuffed != bola)
+		qdel(bola)

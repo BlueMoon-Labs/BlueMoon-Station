@@ -71,7 +71,7 @@
 	desc = "Contains NT-CZV vials. Highly classified."
 	special = TRUE
 	contains = list()
-	crate_type = /obj/structure/closet/crate/zombie
+	crate_type = /obj/structure/closet/crate/secure/medical/zombie
 
 /datum/round_event_control/stray_cargo/zombie
 	name = "Stray Zombie Cargo Pod"
@@ -94,13 +94,14 @@
 	S.setStyle(STYLE_SYNDICATE)
 	return S
 
-/obj/structure/closet/crate/zombie
+/obj/structure/closet/crate/secure/medical/zombie
 	name = "biohazard crate"
 	desc = "Пломбированный контейнер высокой биологической опасности. На боку - предупреждающий знак и штрихкод PACT-BT-7."
 	icon_state = "chemcrate"
+	req_access = list(ACCESS_MEDICAL)
 	var/virus_released = FALSE
 
-/obj/structure/closet/crate/zombie/after_open(mob/living/user, force)
+/obj/structure/closet/crate/secure/medical/zombie/after_open(mob/living/user, force)
 	. = ..()
 	if(virus_released)
 		return
@@ -115,7 +116,7 @@
 	smoke.start()
 	qdel(zombie_holder)
 
-/obj/structure/closet/crate/zombie/PopulateContents()
+/obj/structure/closet/crate/secure/medical/zombie/PopulateContents()
 	new /obj/item/reagent_containers/glass/bottle/romerol_interdyne(src)
 	new /obj/item/reagent_containers/glass/bottle/romerol_interdyne/empty(src)
 

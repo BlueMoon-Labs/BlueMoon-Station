@@ -670,6 +670,23 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 
 #define QUANTIZE(variable)		(round(variable,0.0000001))/*I feel the need to document what happens here. Basically this is used to catch most rounding errors, however it's previous value made it so that
 															once gases got hot enough, most procedures wouldnt occur due to the fact that the mole counts would get rounded away. Thus, we lowered it a few orders of magnititude */
+/// Значение не меньше этого QUANTIZE() в ноль не округлит: проверка `x < QUANTIZE_ZERO_GUARD`
+/// перед `QUANTIZE(x) <= 0` отсекает round() на всех нормальных молях, не меняя ответа.
+#define QUANTIZE_ZERO_GUARD	0.000001
+
+/// Тело /datum/gas_mixture/proc/archive(), им же архив снимает process_cell. Несменённая с прошлого
+/// снимка смесь список не копирует; archive_gen инвалидирует мемо архивной теплоёмкости.
+#define GAS_MIXTURE_ARCHIVE(mix) \
+	mix.temperature_archived = mix.temperature; \
+	if(!mix.gas_archive || mix.archive_mutation_rev != mix.mutation_rev) { \
+		mix.gas_archive = mix.gases.Copy(); \
+		mix.archive_mutation_rev = mix.mutation_rev; \
+		mix.archive_gen++; \
+	}
+
+/// Гейт пустого react() на нативных свёртках: ни один газ смеси не владеет бакетом реакций, а безгазовые
+/// реакции отсечены порогом TEMP - общим или, без горючего кроме O2/N2, порогом станционного воздуха.
+#define GAS_MIXTURE_REACT_IDLE(mix, controller) (controller.reaction_key_gas_indicator && !values_dot(mix.gases, controller.reaction_key_gas_indicator) && (mix.temperature < controller.temp_gated_min_temp || (mix.temperature < controller.temp_gated_air_ceiling && !values_dot(mix.gases, controller.reaction_fuel_gas_indicator))))
 
 //If you're doing spreading things related to atmos, DO NOT USE CANATMOSPASS, IT IS NOT CHEAP. use this instead, the info is cached after all. it's tweaked just a bit to allow for circular checks
 #define TURFS_CAN_SHARE(T1, T2) (LAZYACCESS(T2.atmos_adjacent_turfs, T1) || LAZYLEN(T1.atmos_adjacent_turfs & T2.atmos_adjacent_turfs))
