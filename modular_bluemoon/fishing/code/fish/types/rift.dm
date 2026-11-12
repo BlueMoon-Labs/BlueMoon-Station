@@ -123,7 +123,7 @@
 	attack_verb_simple = list("bite", "impale", "ram")
 	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	block_sound = 'sound/items/weapons/parry.ogg'
-	drop_sound = 'sound/mobs/non-humanoids/fish/fish_drop1.ogg'
+	drop_sound = 'modular_bluemoon/fishing/sound/mobs/non-humanoids/fish/fish_drop1.ogg'
 	pickup_sound = SFX_FISH_PICKUP
 	sound_vary = TRUE
 
@@ -607,7 +607,7 @@
 
 /obj/item/fish/babbelfish/proc/psy_wail()
 	manual_emote("wails!")
-	playsound(src, 'sound/mobs/non-humanoids/fish/fish_psyblast.ogg', 100)
+	playsound(src, 'modular_bluemoon/fishing/sound/mobs/non-humanoids/fish/fish_psyblast.ogg', 100)
 	var/list/mob/living/mobs_in_range = get_hearers_in_range(7, src)
 	for(var/mob/living/screeched in mobs_in_range)
 		if(screeched.can_block_magic(MAGIC_RESISTANCE_MIND))
