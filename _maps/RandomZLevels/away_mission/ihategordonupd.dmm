@@ -22401,10 +22401,6 @@
 	pixel_x = 21;
 	pixel_y = -2
 	},
-/obj/structure/closet/crate/bin{
-	pixel_x = 5;
-	pixel_y = -4
-	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
 "gTI" = (
@@ -64160,7 +64156,6 @@
 	layer = 5.0;
 	color = "#ababab"
 	},
-/turf/open/floor/plasteel/rivets,
 /turf/closed/mineral/mesarock{
 	icon_state = "rock2";
 	color = "#f79668"

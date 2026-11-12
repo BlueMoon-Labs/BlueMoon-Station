@@ -415,33 +415,13 @@
 	},
 	"_maps/RandomZLevels/away_mission/ihategordonupd.dmm": {
 		"barricade_stacking": {
-			"/obj/structure/barricade/wooden": 27
-		},
-		"multiple_closets": {
-			"/obj/structure/closet/crate/large": 2
-		},
-		"multiple_lattice": {
-			"/obj/structure/lattice": 2
-		},
-		"multiple_machinery": {
-			"/obj/machinery/door/poddoor": 2
+			"/obj/structure/barricade/wooden": 11
 		},
 		"multiple_tables": {
-			"/obj/structure/table/reinforced": 4
-		},
-		"multiple_turf": {
-			"/turf/closed/mineral/mesarock": 1,
-			"/turf/open/floor/plating/cobblestone": 1
-		},
-		"multiple_windows": {
-			"/obj/structure/window/reinforced/spawner/north": 2
+			"/obj/structure/table/reinforced": 2
 		},
 		"wall_stacking": {
-			"/turf/closed/mineral/mesarock": 3,
-			"/turf/closed/wall/r_wall": 2
-		},
-		"window_spawner": {
-			"/obj/effect/spawner/structure/window/plasma/reinforced": 4
+			"/turf/closed/wall/r_wall": 1
 		}
 	},
 	"_maps/RandomZLevels/away_mission/jungleresort.dmm": {
