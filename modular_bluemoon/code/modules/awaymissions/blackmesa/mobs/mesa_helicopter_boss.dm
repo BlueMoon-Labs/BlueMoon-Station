@@ -139,7 +139,9 @@
 	maptext_width = 64
 	health = 50000
 	maxHealth = 50000
-	faction = list("hostile", FACTION_XEN)
+	// shares FACTION_BLACKOPS so the gunship's own drop team doesn't
+	// treat the transport as hostile (faction_check_mob => same side)
+	faction = list("hostile", FACTION_XEN, FACTION_BLACKOPS)
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stat_attack = CONSCIOUS
 	mob_biotypes = MOB_ROBOTIC|MOB_EPIC
@@ -182,7 +184,9 @@
 	maptext_width = 64
 	health = 5000
 	maxHealth = 5000
-	faction = list("hostile", FACTION_XEN)
+	// FACTION_BLACKOPS: the Apache and its blackops drop team are on the
+	// same side - no targeting, no instant retaliation for stray splash
+	faction = list("hostile", FACTION_XEN, FACTION_BLACKOPS)
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stat_attack = CONSCIOUS
 	mob_biotypes = MOB_ROBOTIC|MOB_EPIC

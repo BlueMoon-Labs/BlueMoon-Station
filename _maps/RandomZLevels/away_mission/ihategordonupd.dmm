@@ -6051,6 +6051,17 @@
 	icon_state = "platingdmg1"
 	},
 /area/awaymission/ihategordon/rocks)
+"bWp" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/reagent_containers/hypospray/medipen/mesa_healing{
+	pixel_x = 2;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "bWq" = (
 /obj/structure/rack/shelf{
 	color = "#556B2F"
@@ -9508,16 +9519,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
-"cZC" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/urbanismcars{
-	icon_state = "humvee";
-	dir = 8;
-	pixel_x = -10;
-	pixel_y = 0
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "cZD" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/plating/cobblestone,
@@ -13107,17 +13108,6 @@
 	},
 /turf/open/floor/pod/light,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"ebb" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/rack/shelf{
-	color = "#556B2F"
-	},
-/obj/item/reagent_containers/hypospray/medipen/mesa_healing{
-	pixel_x = 2;
-	pixel_y = 1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "ebf" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
 	dir = 1
@@ -13923,6 +13913,11 @@
 /obj/effect/turf_decal/stripes,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/big_offices)
+"enm" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/table/reinforced,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "enz" = (
 /obj/structure/urbanismtire{
 	icon_state = "shina3";
@@ -15681,6 +15676,17 @@
 	color = "#474747"
 	},
 /area/awaymission/ihategordon/rocks)
+"eRp" = (
+/obj/item/ammo_box/magazine/mp5/mp10_drum{
+	pixel_x = 10;
+	pixel_y = 5
+	},
+/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted{
+	pixel_x = -4;
+	pixel_y = -11
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "eRy" = (
 /obj/machinery/computer{
 	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
@@ -19076,12 +19082,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"fPB" = (
-/obj/item/reagent_containers/hypospray/medipen/mesa_healing,
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/table/reinforced,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "fPP" = (
 /obj/effect/turf_decal/siding/wideplating/dark/corner{
 	dir = 4
@@ -21698,17 +21698,6 @@
 "gHT" = (
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/rocks)
-"gHU" = (
-/obj/item/ammo_box/magazine/mp5/mp10_drum{
-	pixel_x = 10;
-	pixel_y = 5
-	},
-/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted{
-	pixel_x = -4;
-	pixel_y = -11
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "gIo" = (
 /obj/structure/fence/end{
 	dir = 4
@@ -22294,11 +22283,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"gRE" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/table/reinforced,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "gRI" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire"
@@ -25316,6 +25300,12 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"hMg" = (
+/obj/item/reagent_containers/hypospray/medipen/mesa_healing,
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/table/reinforced,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "hMi" = (
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 4
@@ -33487,6 +33477,14 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"kqL" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted{
+	pixel_x = -4;
+	pixel_y = -11
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "kqT" = (
 /obj/structure/mesaflora{
 	icon_state = "flora2";
@@ -37692,6 +37690,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"lLe" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/table/reinforced,
+/obj/item/extinguisher,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "lLj" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -46482,6 +46486,7 @@
 	pixel_x = -11;
 	pixel_y = 2
 	},
+/obj/item/extinguisher,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "oux" = (
@@ -49765,6 +49770,7 @@
 	pixel_x = 7;
 	pixel_y = -7
 	},
+/obj/item/extinguisher,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "pwX" = (
@@ -53568,6 +53574,26 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/rocks)
+"qMn" = (
+/obj/item/ammo_box/magazine/mp5/mp10_drum{
+	pixel_x = 4;
+	pixel_y = -6
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 5;
+	pixel_y = -6
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 9;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/stack/medical/mesa_tactical,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "qMV" = (
 /obj/effect/turf_decal/siding/wideplating/terracotta,
 /obj/structure/rockpilemesa{
@@ -53694,14 +53720,6 @@
 /obj/structure/barricade/wooden,
 /turf/open/floor/plasteel/dark,
 /area/space)
-"qPs" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted{
-	pixel_x = -4;
-	pixel_y = -11
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "qPC" = (
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/awaymission/ihategordon/secret_rooms)
@@ -61551,11 +61569,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/rocks)
-"trx" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/table/reinforced,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "trA" = (
 /obj/structure/fluff/metalpole/anchor{
 	dir = 1
@@ -67007,6 +67020,16 @@
 	icon_state = "platingdmg1"
 	},
 /area/awaymission/ihategordon/rocks)
+"viy" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/urbanismcars{
+	icon_state = "humvee";
+	dir = 8;
+	pixel_x = -10;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "viE" = (
 /obj/structure/railing,
 /obj/structure/urbanismeffect{
@@ -74562,25 +74585,6 @@
 /obj/item/mod/module/clamp/loader,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"xOT" = (
-/obj/item/ammo_box/magazine/mp5/mp10_drum{
-	pixel_x = 4;
-	pixel_y = -6
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 5;
-	pixel_y = -6
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 9;
-	pixel_y = 5
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = -5;
-	pixel_y = 3
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "xPc" = (
 /obj/machinery/door/airlock/science/glass,
 /turf/open/floor/plasteel/rivets,
@@ -142929,7 +142933,7 @@ mfk
 (6,1,2) = {"
 nUr
 sFP
-gRE
+enm
 npi
 npi
 uoR
@@ -143186,7 +143190,7 @@ mfk
 (7,1,2) = {"
 nUr
 sFP
-gRE
+enm
 npi
 npi
 uoR
@@ -143443,7 +143447,7 @@ gRV
 (8,1,2) = {"
 nUr
 sFP
-gRE
+enm
 npi
 npi
 uoR
@@ -143957,7 +143961,7 @@ gRV
 (10,1,2) = {"
 nUr
 sFP
-cZC
+viy
 dAS
 npi
 uoR
@@ -144985,7 +144989,7 @@ gRV
 (14,1,2) = {"
 nUr
 sFP
-ebb
+bWp
 npi
 npi
 uoR
@@ -153481,7 +153485,7 @@ xPN
 xPN
 udz
 ngf
-gHU
+eRp
 npi
 npi
 npi
@@ -153994,7 +153998,7 @@ xPN
 xPN
 xPN
 lEp
-qPs
+kqL
 npi
 npi
 npi
@@ -154767,7 +154771,7 @@ xPN
 udz
 rSm
 oaF
-xOT
+qMn
 npi
 npi
 uoR
@@ -156055,7 +156059,7 @@ npi
 krL
 npi
 dAS
-fPB
+hMg
 mIk
 eel
 eRo
@@ -156569,7 +156573,7 @@ npi
 npi
 vnA
 npi
-trx
+lLe
 mIk
 eRo
 eel
