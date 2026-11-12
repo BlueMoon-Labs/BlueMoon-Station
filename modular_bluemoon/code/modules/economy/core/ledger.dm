@@ -3,6 +3,8 @@
 	var/burned = 0
 	/// reason -> сумма за раунд
 	var/list/by_reason = list()
+	var/list/minted_by_reason = list()
+	var/list/burned_by_reason = list()
 	/// Последние ECON_SNAPSHOT_MAX снимков: time, minted, burned, in_accounts, cash
 	var/list/snapshots = list()
 	var/last_minted = 0
@@ -31,8 +33,10 @@
 	by_reason[reason] += amount
 	if(!source)
 		minted += amount
+		minted_by_reason[reason] += amount
 	if(!target)
 		burned += amount
+		burned_by_reason[reason] += amount
 	if(reason == ECON_STARTING_FUNDS && target)
 		target.starting_funds += amount
 	var/from_budget = econ_is_station_budget(source)
@@ -100,6 +104,30 @@
 /datum/economy_ledger/proc/department_sink_share()
 	var/kept = department_minted + department_received - department_paid_out
 	return kept > 0 ? department_burned / kept : 0
+
+/proc/econ_reason_totals_text(list/totals)
+	var/list/sorted = sortTim(totals.Copy(), GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	var/list/parts = list()
+	for(var/reason in sorted)
+		if(sorted[reason])
+			parts += "[reason] [num2text(sorted[reason], 12)]"
+	return jointext(parts, ", ")
+
+/// Строки итога смены для econ.log: по ним сверяется калибровка, панель калибровки на проде никто не открывает.
+/datum/economy_ledger/proc/round_summary()
+	. = list()
+	. += "Итог смены: эмиссия [num2text(minted, 12)] кр. ([econ_reason_totals_text(minted_by_reason)]), сток [num2text(burned, 12)] кр. ([econ_reason_totals_text(burned_by_reason)])"
+	. += "Итог смены: сток отделов [round(department_sink_share() * 100)]%, без возврата излишка [round(department_share_of(FALSE, TRUE) * 100)]%, на счетах [num2text(SSeconomy.total_money(), 12)] кр."
+	var/list/parts = list()
+	for(var/id in department_flows)
+		var/list/flow = department_flows[id]
+		parts += "[id] [num2text(flow["kept"], 12)]/[num2text(flow["burned"], 12)]/[num2text(flow["returned"], 12)]"
+	if(length(parts))
+		. += "Итог смены по отделам (пришло/сожжено/возврат излишка): [jointext(parts, ", ")]"
+
+/proc/econ_log_round_summary()
+	for(var/line in SSeconomy.ledger.round_summary())
+		log_econ(line)
 
 /proc/econ_is_station_budget(datum/bank_account/account)
 	var/datum/bank_account/department/budget = account

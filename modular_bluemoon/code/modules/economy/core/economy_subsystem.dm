@@ -44,6 +44,7 @@ SUBSYSTEM_DEF(economy)
 	new /datum/bank_account/department(ACCOUNT_TAR, 0)
 	new /datum/bank_account/department(ACCOUNT_DS, 0)
 	SSticker.OnRoundstart(CALLBACK(src, PROC_REF(start_contracts)))
+	SSticker.OnRoundend(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(econ_log_round_summary)))
 	return ..()
 
 /datum/controller/subsystem/economy/Recover()

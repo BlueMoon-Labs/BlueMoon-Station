@@ -110,7 +110,10 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		lot.rivals[pick_n_take(names)] = round(lot.value * rand(AUCTION_RIVAL_MAX_MIN, AUCTION_RIVAL_MAX_MAX) / 100)
 	auction = lot
 	publish("Аукцион сектора: на торги выставлен лот \"[lot.name]\", начальная цена [lot.start_price()] кр. Ставки - в консоли снабжения и приложении \"Заказы снабжения\", торги около [round(AUCTION_DURATION / (1 MINUTES))] мин.")
-	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники [json_encode(lot.rivals)]")
+	var/list/rival_caps = list()
+	for(var/rival in lot.rivals)
+		rival_caps += "[rival] до [lot.rivals[rival]] кр."
+	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники: [jointext(rival_caps, ", ")]")
 	addtimer(CALLBACK(src, PROC_REF(auction_step), lot), AUCTION_STEP)
 	return lot
 

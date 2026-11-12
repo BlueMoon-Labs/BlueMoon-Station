@@ -93,3 +93,38 @@
 /datum/unit_test/economy_vv_balance_edit/proc/on_moved(datum/source, datum/bank_account/sender, datum/bank_account/receiver, amount, reason)
 	SIGNAL_HANDLER
 	moves += list(list(sender, receiver, amount, reason))
+
+/// Итог смены в econ.log называет эмиссию и сток по причинам и долю стока отделов с возвратом излишка и без него.
+/datum/unit_test/economy_round_summary
+	var/datum/economy_ledger/saved_ledger
+	var/datum/bank_account/budget
+	var/old_balance
+
+/datum/unit_test/economy_round_summary/Destroy()
+	if(budget)
+		econ_test_set_balance(budget, old_balance)
+	if(saved_ledger)
+		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+		SSeconomy.ledger = saved_ledger
+		qdel(test_ledger)
+	return ..()
+
+/datum/unit_test/economy_round_summary/Run()
+	saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
+	budget = SSeconomy.get_dep_account(ACCOUNT_ENG)
+	old_balance = budget.account_balance
+	var/datum/bank_account/worker = allocate(/datum/bank_account, "econ_test_worker")
+
+	budget.credit(3000, ECON_CONTRACT)
+	budget.credit(1000, ECON_GRANT)
+	SSeconomy.move(budget, worker, 1000, ECON_WAGE)
+	budget.debit(1500, ECON_IMPORT)
+	budget.debit(600, ECON_BUDGET_RETURN)
+	worker.debit(200, ECON_PURCHASE)
+
+	var/list/lines = SSeconomy.ledger.round_summary()
+	var/text = jointext(lines, "\n")
+	TEST_ASSERT(findtext(text, "эмиссия 4000 кр. (contract 3000, grant 1000)"), "Эмиссия по причинам: [text]")
+	TEST_ASSERT(findtext(text, "сток 2300 кр. (import 1500, budget_return 600, purchase 200)"), "Сток по причинам: [text]")
+	TEST_ASSERT(findtext(text, "сток отделов 70%, без возврата излишка 62%"), "Доля стока отделов: [text]")
