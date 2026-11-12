@@ -62,14 +62,70 @@ All ShuttleMove procs go here
 	if(liquids)
 		liquids.ChangeToNewTurf(newT)
 		newT.reasses_liquids()
-	newT.CopyOnTop(src, 1, depth, TRUE)
-	//Air stuff
-	newT.blocks_air = TRUE
-	newT.air_update_turf(TRUE)
-	blocks_air = TRUE
-	air_update_turf(TRUE)
+	// Смежность замены сразу же стёрла бы герметизация, а итоговую посчитает lateShuttleMove.
+	newT.CopyOnTop(src, 1, depth, TRUE, CHANGETURF_SKIP_ADJACENCY)
+	newT.seal_replaced_air_for_shuttle_move()
+	seal_air_for_shuttle_move()
 
 	return TRUE
+
+/// air_update_turf(TRUE) для турфа с blocks_air: тот же итог без полного пересчёта соседства.
+/// Теплопроводность не трогается - её пересчитает lateShuttleMove, когда содержимое уже на месте.
+/turf/proc/seal_air_for_shuttle_move()
+	blocks_air = TRUE
+	if(!SSair?.initialized)
+		return
+	var/kept_conductivity = conductivity_blocked_directions
+	clear_adjacencies()
+	conductivity_blocked_directions = kept_conductivity
+	var/turf/open/open_self = src
+	if(istype(open_self))
+		open_self.excited_group?.garbage_collect()
+		if(!open_self.excited)
+			SSair.wake_if_gradient(open_self, "air_update_turf")
+	liquid_update_turf()
+
+/// То же, что пересчёт смежности и seal_air_for_shuttle_move() подряд, для турфа, заменённого с CHANGETURF_SKIP_ADJACENCY.
+/// Собственный список смежности у замены пуст, поэтому записи о нём снимаются с соседей обходом сторон.
+/turf/proc/seal_replaced_air_for_shuttle_move()
+	blocks_air = TRUE
+	if(!SSair?.initialized)
+		return
+	SSair.decompression_geometry_revision = (SSair.decompression_geometry_revision + 1) % SHORT_REAL_LIMIT
+	var/turf/open/open_self = src
+	if(isopenturf(open_self))
+		open_self.settled_edge_revs = null
+	conductivity_blocked_directions = 0
+	for(var/direction in GLOB.cardinals_multiz)
+		var/turf/neighbor = get_step_multiz(src, direction)
+		if(!neighbor)
+			conductivity_blocked_directions |= direction
+			continue
+		var/heat_blocked = !thermal_conductivity || !heat_capacity || !neighbor.thermal_conductivity || !neighbor.heat_capacity
+		if(!heat_blocked)
+			for(var/obj/thing in contents + neighbor.contents)
+				if(thing.BlockThermalConductivity())
+					heat_blocked = TRUE
+					break
+		var/opposite = REVERSE_DIR(direction)
+		if(heat_blocked)
+			conductivity_blocked_directions |= direction
+			neighbor.conductivity_blocked_directions |= opposite
+		else
+			neighbor.conductivity_blocked_directions &= ~opposite
+		var/turf/open/open_neighbor = neighbor
+		if(isopenturf(open_neighbor) && open_neighbor.settled_edge_revs)
+			open_neighbor.settled_edge_revs -= src
+		if(LAZYACCESS(neighbor.atmos_adjacent_turfs, src))
+			LAZYREMOVE(neighbor.atmos_adjacent_turfs, src)
+			neighbor.__update_auxtools_turf_adjacency_info()
+	LAZYNULL(atmos_adjacent_turfs)
+	__update_auxtools_turf_adjacency_info()
+	if(isopenturf(open_self))
+		open_self.excited_group?.garbage_collect()
+		if(!open_self.excited)
+			SSair.wake_if_gradient(open_self, "air_update_turf")
+	liquid_update_turf()
 
 // Called on the new turf after everything has been moved
 /turf/proc/afterShuttleMove(turf/oldT, rotation)
@@ -176,14 +232,18 @@ All ShuttleMove procs go here
 	if(newT == oldT) // In case of in place shuttle rotation shenanigans.
 		return TRUE
 
+	var/area/old_dest_area = newT.loc
+	// Без света под шаттлом и на месте посадки объект света переезжает вместе с полом.
+	var/carry_lighting = SSlighting.initialized && oldT.lighting_object && dynamic_lighting \
+		&& !underlying_old_area.dynamic_lighting && !old_dest_area.dynamic_lighting
+
 	contents -= oldT
 	underlying_old_area.contents += oldT
 	// skip_machinery: содержимое шаттла ещё стоит на oldT (MOVE_CONTENTS идёт после MOVE_AREA),
 	// и переподписывать его на подстилающий космос нельзя - см. /turf/proc/change_area.
-	oldT.change_area(src, underlying_old_area, skip_blend = TRUE, skip_machinery = TRUE)
+	oldT.change_area(src, underlying_old_area, skip_blend = TRUE, skip_machinery = TRUE, skip_lighting = carry_lighting)
 	//The old turf has now been given back to the area that turf originaly belonged to
 
-	var/area/old_dest_area = newT.loc
 	parallax_moving = old_dest_area.parallax_moving
 	parallax_move_angle = old_dest_area.parallax_move_angle
 	parallax_move_speed = old_dest_area.parallax_move_speed
@@ -191,7 +251,9 @@ All ShuttleMove procs go here
 	contents += newT
 	// На newT содержимого шаттла ещё нет, а то, что стояло на месте назначения, разбирается
 	// собственным путём перелёта - машинерию тут трогать нечего.
-	newT.change_area(old_dest_area, src, skip_blend = TRUE, skip_machinery = TRUE)
+	newT.change_area(old_dest_area, src, skip_blend = TRUE, skip_machinery = TRUE, skip_lighting = carry_lighting)
+	if(carry_lighting)
+		oldT.carry_lighting_object_to(newT)
 	return TRUE
 
 // Called on areas after everything has been moved

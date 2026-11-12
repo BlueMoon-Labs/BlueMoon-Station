@@ -97,7 +97,7 @@
 	enemy_roles = list("AI", "Cyborg", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(2,2,1,1,1,1,1,0,0,0)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	weight = 2
 	delay = 1 MINUTES // Prevents rule start while head is offstation.
 	cost = 7 //BLUEMOON CHANGES - маленький шанс и низкая стоимость из-за сложности
@@ -128,14 +128,8 @@
 		assigned += M.mind
 		M.mind.special_role = antag_flag
 		revolution = new()
-		var/datum/antagonist/rev/head/new_head = new()
-		new_head.give_flash = TRUE
-		new_head.give_hud = TRUE
-		new_head.remove_clumsy = TRUE
-		new_head = M.mind.add_antag_datum(new_head, revolution)
-		revolution.update_objectives()
-		revolution.update_heads()
-		SSshuttle.registerHostileEnvironment(revolution)
+		revolution.equip_founder(M.mind)
+		revolution.start_revolution()
 		return TRUE
 	else
 		log_game("DYNAMIC: [ruletype] [name] discarded [M.name] from head revolutionary due to ineligibility.")

@@ -64,6 +64,8 @@ GLOBAL_LIST_INIT(bitflags, list(
 /// This atom is enrolled in SSair.atom_process via /datum/element/atmos_sensitive.
 /// Any-atom flag; do not move into the turf-only block below.
 #define ATMOS_IS_PROCESSING_1 (1<<21)
+/// Атом запаркован в GLOB.lighting_deferred_atoms: только такой Destroy() ищет его в отложке света.
+#define LIGHTING_DEFERRED_PARKED_1 (1<<22)
 
 
 //turf-only flags

@@ -2,17 +2,26 @@
 // cult summon), их хелперов и синхронности pick-листов между местами выбора
 // сообщения (массовая галлюцинация, нанит-программа, прямое создание).
 
-/// Структура static-списка heretic_ascension_bodies: 5 путей (ash/blade/flesh/rust/void),
-/// у каждого есть непустой text с плейсхолдером %FAKENAME% и непустой sound.
+/// Данные пути еретика (ascension.dm) - единственный источник текста и звука
+/// фантомного вознесения: у каждого пути есть заголовок, сообщение и звук,
+/// а собранное объявление содержит имя сотрудника.
 /datum/unit_test/hallucination_heretic_ascension_bodies_structure/Run()
-	var/list/bodies = /datum/hallucination/stationmessage::heretic_ascension_bodies
-	TEST_ASSERT_NOTNULL(bodies, "heretic_ascension_bodies не определён")
-	TEST_ASSERT_EQUAL(length(bodies), 5, "Ожидалось 5 тел путей еретика (ash/blade/flesh/rust/void)")
-	for(var/list/entry in bodies)
-		TEST_ASSERT_NOTNULL(entry["text"], "Запись без поля text: [json_encode(entry)]")
-		TEST_ASSERT(length(entry["text"]) > 0, "Пустой text в записи: [json_encode(entry)]")
-		TEST_ASSERT(findtext(entry["text"], "%FAKENAME%"), "Запись не содержит плейсхолдер %FAKENAME%: [entry["text"]]")
-		TEST_ASSERT_NOTNULL(entry["sound"], "Запись без поля sound: [entry["text"]]")
+	TEST_ASSERT(length(GLOB.heretic_paths), "Список путей еретика пуст.")
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT(path.ascension_title, "У пути [path_id] нет заголовка вознесения.")
+		TEST_ASSERT(path.ascension_message, "У пути [path_id] нет сообщения о вознесении.")
+		TEST_ASSERT(path.ascension_sound, "У пути [path_id] нет звука вознесения.")
+
+	var/mob/living/carbon/human/dummy_target = new(run_loc_floor_bottom_left)
+	dummy_target.real_name = "Тестовый Еретик"
+	var/path_id = heretic_ascension_random_path_id()
+	var/list/announcement = heretic_ascension_announcement(path_id, dummy_target)
+	TEST_ASSERT_NOTNULL(announcement, "Объявление о вознесении не собралось.")
+	TEST_ASSERT(findtext(announcement["text"], "Тестовый Еретик"), "В объявлении нет имени сотрудника: [announcement["text"]]")
+	TEST_ASSERT(announcement["sound"], "У объявления о вознесении нет звука.")
+
+	qdel(dummy_target)
 
 /// Pick-листы stationmessage в трёх местах должны быть в синхроне: дефолтный
 /// pick в /datum/hallucination/stationmessage/New, массовая галлюцинация
@@ -63,8 +72,8 @@
 
 /// fake_priority_announce должен молча выходить при пустом text, не пытаясь
 /// собирать build_priority_announcement и не слать sound. Регрессия:
-/// stationmessage-ветки могут передать пустую строку, если pick из
-/// heretic_ascension_bodies вернёт мусор - не должно крашить.
+/// stationmessage-ветки могут передать пустую строку, если сборка объявления
+/// о вознесении вернёт мусор - не должно крашить.
 /datum/unit_test/hallucination_fake_priority_announce_empty/Run()
 	var/mob/living/carbon/human/dummy_target = new(run_loc_floor_bottom_left)
 	var/datum/hallucination/test_instance = new(dummy_target, TRUE)

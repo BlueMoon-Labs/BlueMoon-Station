@@ -125,9 +125,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	If you have any  questions about this stuff feel free to ask. ~Carn
 	*/
 
-///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков:
-///замеряет синхронную часть (до первого сна) и пишет медленные в кольцо SStick_spikes
-/client/proc/record_slow_topic(topic_started, href, context)
+///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков: медленные пишутся в кольцо SStick_spikes.
+///Уснувший Topic (alert, input, stoplag) не пишется: разность TICK_USAGE по разным тикам приписала бы ему чужую работу тика пробуждения.
+/proc/record_slow_topic(ckey, topic_started, topic_started_time, href, context)
+	if(world.time != topic_started_time)
+		return
 	var/cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - topic_started)
 	if(!SStick_spikes || cost_ms < SStick_spikes.slow_work_threshold_ms)
 		return
@@ -143,6 +145,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		return
 
 	var/topic_started = TICK_USAGE
+	var/topic_started_time = world.time
 
 	// asset_cache
 	var/asset_cache_job
@@ -167,7 +170,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			"ingress usr=[usr] usr_eq_mob=[usr == mob] type=[topic_type] window_id=[window_id] payload_len=[payload_len] href=[href_preview]",
 			context = "client/Topic")
 	if(tgui_Topic(href_list))
-		record_slow_topic(topic_started, href, "tgui")
+		record_slow_topic(ckey, topic_started, topic_started_time, href, "tgui")
 		return
 
 	if(href_list["legacy_zoom_set"])
@@ -281,11 +284,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			inprefs = TRUE
 			. = prefs.process_antag_opt_in_href(usr, href_list)
 			inprefs = FALSE
-			record_slow_topic(topic_started, href, "prefs")
+			record_slow_topic(ckey, topic_started, topic_started_time, href, "prefs")
 			return
 		if("vars")
 			. = view_var_Topic(href,href_list,hsrc)
-			record_slow_topic(topic_started, href, "vars")
+			record_slow_topic(ckey, topic_started, topic_started_time, href, "vars")
 			return .
 
 	switch(href_list["action"])
@@ -297,7 +300,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			return
 
 	..()	//redirect to hsrc.Topic()
-	record_slow_topic(topic_started, href, hsrc ? "hsrc [hsrc]" : "base")
+	record_slow_topic(ckey, topic_started, topic_started_time, href, hsrc ? "hsrc [hsrc]" : "base")
 
 /client/proc/handle_statpanel_click(list/href_list)
 	var/atom/target = locate(href_list["statpanel_item_target"])
@@ -1143,6 +1146,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	winset(src, "statwindow", "is-minimized=false")
 
 /client/Del()
+	var/screen_count = length(screen)
+	var/image_count = length(images)
+	var/mob_type = mob ? "[mob.type]" : "нет"
 	if(!gc_destroyed)
 		// Клиента удаляет сам BYOND, минуя qdel() - а COMSIG_PARENT_QDELETING рассылает
 		// именно qdel(). Без этой рассылки при обычном дисконнекте не срабатывала ни одна
@@ -1155,10 +1161,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/leftover_refs = refcount(src)
 	var/deletion_started = TICK_USAGE
 	. = ..()
+	// Встроенный ..() зовёт mob.Logout(), и тот отпускает ещё часть ссылок (окна tgui, экраны).
+	// Поиск BYOND платит только за то, что дожило до этой строки.
+	var/refs_after_logout = refcount(src)
 	if(!SStick_spikes)
 		return
 	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
-	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс", deletion_cost_ms)
+	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс, моб [mob_type], экран [screen_count], картинок [image_count], refcount после Logout [refs_after_logout]", deletion_cost_ms)
 
 /client/Destroy()
 	QDEL_NULL(fractional_movement)
@@ -1794,15 +1803,12 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		//load info on what assets the client has
 		src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
 
-		// BLUEMOON EDIT: defer the heavyweight preload (asset cache + VOX, multi-MB) until the
-		// statbrowser is up. The BYOND browse() queue is single-threaded per client; if we
-		// enqueue megabytes ahead of statbrowser.html, clients sit on "Downloading resources"
-		// while critical UI never arrives and players perceive a disconnect.
+		// Предзагрузка ассетов ждёт статпанель: очередь browse() у клиента одна, и мегабайты
+		// перед statbrowser.html держат игрока на "Downloading resources".
 		INVOKE_ASYNC(src, PROC_REF(preload_resources_when_ui_ready))
 
-/// BLUEMOON EDIT: heavyweight preload (asset cache + VOX) that fires AFTER the statbrowser
-/// is loaded so the UI reaches the player first. Has a hard timeout so clients whose
-/// statbrowser never reports ready still get their resources eventually.
+/// Предзагрузка ассетов после статпанели, с потолком ожидания для клиентов, чья статпанель так и не ответила.
+/// Слова VOX сюда не входят: их получают слушатели конкретного объявления (play_vox_announcement).
 /client/proc/preload_resources_when_ui_ready()
 	set waitfor = FALSE
 	var/deadline = world.time + 60 SECONDS
@@ -1816,23 +1822,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	//Precache the client with all other assets slowly, so as to not block other browse() calls
 	if (CONFIG_GET(flag/asset_simple_preload))
 		addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
-
-	#if (PRELOAD_RSC == 0)
-	// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
-	// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
-	// Отмечаем весь каталог одной записью и по общему промеру: per-file length(file)
-	// завышал впятеро и заодно дёргал книгу 1596 раз на каждый вход.
-	note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, get_vox_preload_bytes())
-	for (var/type in GLOB.vox_types)
-		if(QDELETED(src))
-			return
-		for(var/word in GLOB.vox_types[type])
-			if(QDELETED(src))
-				return
-			var/file = GLOB.vox_types[type][word]
-			Export("##action=load_rsc", file)
-			stoplag()
-	#endif
 
 
 //Hook, override it to run code when dir changes
@@ -1964,6 +1953,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		for(var/AM in mob.contents)
 			var/atom/movable/thing = AM
 			verbstoprocess += thing.verbs
+	check_verb_proc_ids(verbstoprocess)
 	panel_tabs.Cut() // panel_tabs get reset in init_verbs on JS side anyway
 	for(var/thing in verbstoprocess)
 		var/procpath/verb_to_init = thing

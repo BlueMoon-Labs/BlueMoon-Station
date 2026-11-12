@@ -54,7 +54,7 @@
 	qdel(item)
 	TEST_ASSERT(isnull(read_entry(append, IC_OUTPUT, 1, 1)), "Удалённый атом читается из списка не как null")
 	TEST_ASSERT(isnull(pick.get_pin_data(IC_OUTPUT, 1)), "Удалённый атом читается из одиночного пина не как null")
-	TEST_ASSERT_EQUAL(refcount(item), 1, "Пины схем держат удалённый атом")
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(item), 0, "Пины схем держат удалённый атом")
 
 /// Локатор по списку образцов сравнивает типы атомов, а не слабых ссылок на них.
 /datum/unit_test/integrated_circuit_locator_list_refs

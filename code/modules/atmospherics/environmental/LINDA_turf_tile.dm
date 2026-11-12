@@ -195,8 +195,8 @@
 /turf/proc/archive(cycle)
 	temperature_archived = return_temperature()
 
-/// Снимок начала цикла; process_cell разворачивает его у себя для своего турфа и соседа.
-#define ARCHIVE_OPEN_TURF(target_turf, target_air, fire_cycle) target_air.archive(); target_turf.temperature_archived = target_air.temperature; target_turf.archived_cycle = fire_cycle
+/// Снимок начала цикла; process_cell разворачивает его у себя для своего турфа и соседа, без вызова archive().
+#define ARCHIVE_OPEN_TURF(target_turf, target_air, fire_cycle) GAS_MIXTURE_ARCHIVE(target_air); target_turf.temperature_archived = target_air.temperature; target_turf.archived_cycle = fire_cycle
 
 /// `cycle` - номер фаера SSair: process_cell гейтит по нему и свой архив, и архив соседей.
 /turf/open/archive(cycle = SSair.times_fired)
@@ -888,7 +888,16 @@
 	var/planet_atmos = planetary_atmos
 
 	// Пороги в молях откалиброваны на стандартную клетку, на баллонных тайлах они масштабируются по содержимому (1%, чтобы не гасить реальный поток).
-	var/our_cycle_moles = our_air.total_moles_rev == our_air.mutation_rev ? our_air.total_moles_cache : our_air.total_moles()
+	// Шеры в цикле соседей правят этот список на месте, сам датум списка у смеси не меняется.
+	var/list/our_gases = our_air.gases
+	// Тело total_moles() с тем же мемо, без вызова прока.
+	var/our_cycle_moles
+	if(our_air.total_moles_rev == our_air.mutation_rev)
+		our_cycle_moles = our_air.total_moles_cache
+	else
+		our_cycle_moles = values_sum(our_gases)
+		our_air.total_moles_cache = our_cycle_moles
+		our_air.total_moles_rev = our_air.mutation_rev
 	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
 	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 	// Порог, по которому шер держит пару бодрой (сброс тишины, пробуждение соседа). Ветер и перепады давления считаются от our_move_threshold.
@@ -898,10 +907,11 @@
 	ATMOS_TPROF_MARK
 	for(var/turf/open/enemy_tile as anything in adjacent_turfs)
 		ATMOS_TPROF_DEEP_COUNT("nb_pairs")
-		if(!istype(enemy_tile) || enemy_tile.blocks_air)
-			continue
 		// Пару обрабатывает тот, кто пришёл первым. Космос и спящее небо не обрабатываются, их current_cycle протухший.
+		// Проверка первая: уже отработанная пара - половина всех пар, ей незачем платить за остальные чтения.
 		if(fire_count <= enemy_tile.current_cycle)
+			continue
+		if(!istype(enemy_tile) || enemy_tile.blocks_air)
 			continue
 		var/datum/gas_mixture/enemy_air = enemy_tile.air
 		if(!enemy_air)
@@ -966,8 +976,29 @@
 				our_excited_group = excited_group
 				ATMOS_TPROF_COUNT("group_merges")
 			// Общая группа - это связность, а не градиент: пара без разницы не шерит, остаток выравнивает self_breakdown.
+			// Тело compare(enemy_air) без вызова прока: здесь нужен только ответ "есть ли разница".
 			ATMOS_TPROF_DEEP_MARK
-			should_share_air = !!our_air.compare(enemy_air)
+			var/list/enemy_gases = enemy_air.gases
+			var/compare_moles = 0
+			var/compare_same_keys = length(enemy_gases) == length(our_gases)
+			for(var/id, iter_moles in our_gases)
+				var/gas_moles = iter_moles || 0
+				compare_moles += gas_moles
+				var/enemy_moles = enemy_gases[id]
+				if(isnull(enemy_moles))
+					compare_same_keys = FALSE
+				var/gas_delta = abs(gas_moles - (enemy_moles || 0))
+				if(gas_delta > MINIMUM_MOLES_DELTA_TO_MOVE && gas_delta > gas_moles * MINIMUM_AIR_RATIO_TO_MOVE)
+					should_share_air = TRUE
+					break
+			if(!should_share_air)
+				if(!compare_same_keys)
+					for(var/id, enemy_moles in enemy_gases)
+						if(isnull(our_gases[id]) && abs(enemy_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
+							should_share_air = TRUE
+							break
+				if(!should_share_air && compare_moles > MINIMUM_MOLES_DELTA_TO_MOVE && abs(our_air.temperature - enemy_air.temperature) > MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
+					should_share_air = TRUE
 			ATMOS_TPROF_DEEP_ADD("nb_compare")
 			ATMOS_TPROF_DEEP_COUNT("nb_compares")
 			// Пока ревизии обоих концов не менялись, гейт выше пропускает пару. Протухшую запись не чистим: она просто не совпадёт.
@@ -1005,17 +1036,33 @@
 			ATMOS_TPROF_DEEP_ADD("nb_archive")
 			var/enemy_share_coeff = 1 / (max(1, LAZYLEN(enemy_tile.atmos_adjacent_turfs)) + 1)
 			ATMOS_TPROF_DEEP_MARK
-			var/difference = our_air.share(enemy_air, our_share_coeff, enemy_share_coeff)
+			var/difference = our_air.__share_unchecked(enemy_air, our_share_coeff, enemy_share_coeff)
 			ATMOS_TPROF_DEEP_ADD("nb_share")
 			// compare() смотрит живые значения, share() - архивные, поэтому шер может не сдвинуть ничего.
 			ATMOS_TPROF_COUNT_IF(!our_air.last_share, "shares_noop")
 			if(difference)
-				if(difference > 0)
-					consider_pressure_difference(enemy_tile, difference)
-				else
-					enemy_tile.consider_pressure_difference(src, -difference)
+				// Тело /turf/open/consider_pressure_difference() для стороны с большим давлением, без вызова прока.
+				var/turf/open/pushed_tile = src
+				var/turf/open/push_target = enemy_tile
+				var/push_strength = difference
+				if(difference < 0)
+					pushed_tile = enemy_tile
+					push_target = src
+					push_strength = -difference
+				if(!pushed_tile.high_pressure_queued)
+					pushed_tile.high_pressure_queued = TRUE
+					air_controller.high_pressure_delta += pushed_tile
+				var/push_direction = get_dir(pushed_tile, push_target)
+				if(push_direction & EAST)
+					pushed_tile.pressure_vector_x += push_strength
+				else if(push_direction & WEST)
+					pushed_tile.pressure_vector_x -= push_strength
+				if(push_direction & NORTH)
+					pushed_tile.pressure_vector_y += push_strength
+				else if(push_direction & SOUTH)
+					pushed_tile.pressure_vector_y -= push_strength
 				// Опасный перепад через проём с файрлоком (бит в значении соседства) захлопывает створку сразу.
-				if(abs(difference) >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && (adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
+				if(push_strength >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && (adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
 					consider_firelocks(enemy_tile)
 				else if(enemy_tile.loc != loc && air_controller && !(adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
 					if(difference > 0)
@@ -1077,13 +1124,25 @@
 	ATMOS_TPROF_ADD("planet")
 
 	ATMOS_TPROF_MARK
-	var/reaction_result = our_air.react(src)
+	var/reaction_result = NO_REACTION
+	// Мемо пустого react() и его гейт проверяются здесь же, без вызова прока.
+	if(our_air.react_idle_rev == our_air.mutation_rev && our_air.react_idle_index == air_controller.reaction_index_rev)
+		if(length(our_air.reaction_results))
+			our_air.reaction_results.Cut()
+	else if(GAS_MIXTURE_REACT_IDLE(our_air, air_controller))
+		if(length(our_air.reaction_results))
+			our_air.reaction_results.Cut()
+		our_air.react_idle_rev = our_air.mutation_rev
+		our_air.react_idle_index = air_controller.reaction_index_rev
+	else
+		reaction_result = our_air.react(src)
 	ATMOS_TPROF_ADD("react")
 	ATMOS_TPROF_COUNT_IF(reaction_result & REACTING, "reactions")
 
 	// Живая реакция или хотспот помечают группу, и tick_lifecycle откладывает брейкдаун/расформирование.
 	if(our_excited_group)
-		our_excited_group.turf_reactions |= reaction_result
+		if(reaction_result)
+			our_excited_group.turf_reactions |= reaction_result
 		// genericfire без хотспота тоже волатилен: он пишет reaction_results["fire"], но hotspot не создаёт.
 		if(active_hotspot || ((reaction_result & REACTING) && our_air.reaction_results["fire"]))
 			our_excited_group.turf_reactions |= VOLATILE_REACTION
@@ -1091,12 +1150,22 @@
 	ATMOS_TPROF_MARK
 	ATMOS_TPROF_COUNT_IF(atmos_visual_rev == our_air.mutation_rev, "vis_memo")
 	if(atmos_visual_rev != our_air.mutation_rev)
-		// Чистый воздух без старого оверлея - тот же ранний выход, что в update_visuals(), без вызова прока.
-		var/list/visual_gases = our_air.gases
-		if(!atmos_overlay_types && length(visual_gases) == 2 && visual_gases[GAS_O2] && visual_gases[GAS_N2])
-			atmos_visual_rev = our_air.mutation_rev
-		else
+		// Без старого оверлея и без газа выше порога видимости update_visuals() ничего не нарисует: тот же выход без вызова прока.
+		var/overlay_candidate = atmos_overlay_types
+		// Нативная свёртка с индикатором видимых газов: ноль значит, что видимых газов в смеси нет и обходить её незачем.
+		var/list/visible_gas_indicator = air_controller.visible_gas_indicator
+		if(!overlay_candidate && (!visible_gas_indicator || values_dot(our_air.gases, visible_gas_indicator)))
+			var/static/list/no_overlay_gases = typecache_of_gases_with_no_overlays()
+			var/list/gas_visibility = GLOB.gas_data.visibility
+			for(var/gas_id, gas_moles in our_air.gases)
+				var/visible_from = gas_visibility[gas_id]
+				if(visible_from && gas_moles > visible_from && !no_overlay_gases[gas_id])
+					overlay_candidate = TRUE
+					break
+		if(overlay_candidate)
 			update_visuals()
+		else
+			atmos_visual_rev = our_air.mutation_rev
 	ATMOS_TPROF_ADD("visuals")
 
 	ATMOS_TPROF_MARK
@@ -1133,6 +1202,7 @@
 /turf/proc/consider_pressure_difference(turf/T, difference)
 	return
 
+/// Парный цикл process_cell повторяет это тело у себя без вызова прока: правка здесь - правка и там.
 /turf/open/consider_pressure_difference(turf/T, difference)
 	if(difference <= 0)
 		return
@@ -1185,7 +1255,7 @@
 	if(pressure_difference > 100 && world.time >= next_space_wind_at)
 		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
 		var/wind_alpha = clamp(round(sqrt(pressure_difference) * 2), 10, 255)
-		if(QDELETED(space_wind_visual))
+		if(QDELETED(space_wind_visual) || space_wind_visual.loc != src)
 			space_wind_visual = new(src, pressure_direction, wind_alpha)
 		else
 			space_wind_visual.gust(pressure_direction, wind_alpha)

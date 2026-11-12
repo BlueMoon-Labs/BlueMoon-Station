@@ -15,6 +15,7 @@
 	var/list/saved_queue_hints
 	var/list/saved_queue_types
 	var/list/saved_queue_heads
+	var/list/saved_softcheck_filter_heads
 	var/list/saved_pass_counts
 	var/list/saved_fail_counts
 	var/list/saved_peak_queue_depths
@@ -74,12 +75,14 @@
 	var/list/saved_deferred_harddels
 	var/saved_harddels_deferred
 	var/saved_harddels_avoided
+	var/saved_harddels_deferred_deleted
 	var/saved_master_ticklimit
 	var/saved_can_fire
 	var/saved_flags
 	var/list/saved_reference_find_on_fail
 	#ifdef UNIT_TESTS
 	var/saved_test_ref_scan_skip_async
+	var/saved_test_freeze_visible
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Run()
@@ -94,6 +97,7 @@
 	saved_queue_hints = copy_gc_rewrite_test_list(SSgarbage.queue_hints)
 	saved_queue_types = copy_gc_rewrite_test_list(SSgarbage.queue_types)
 	saved_queue_heads = SSgarbage.queue_heads.Copy()
+	saved_softcheck_filter_heads = SSgarbage.softcheck_filter_heads.Copy()
 	saved_pass_counts = SSgarbage.pass_counts.Copy()
 	saved_fail_counts = SSgarbage.fail_counts.Copy()
 	saved_peak_queue_depths = SSgarbage.peak_queue_depths.Copy()
@@ -153,12 +157,15 @@
 	saved_deferred_harddels = SSgarbage.deferred_harddels.Copy()
 	saved_harddels_deferred = SSgarbage.harddels_deferred
 	saved_harddels_avoided = SSgarbage.harddels_avoided
+	saved_harddels_deferred_deleted = SSgarbage.harddels_deferred_deleted
 	saved_master_ticklimit = Master.current_ticklimit
 	saved_can_fire = detach_subsystem(SSgarbage)
 	saved_flags = SSgarbage.flags
 	saved_reference_find_on_fail = SSgarbage.reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	saved_test_ref_scan_skip_async = SSgarbage.test_ref_scan_skip_async
+	saved_test_freeze_visible = SSgarbage.test_freeze_visible
+	SSgarbage.test_freeze_visible = null
 	#endif
 
 	SSgarbage.items = list()
@@ -216,9 +223,11 @@
 		SSgarbage.pass_counts[i] = 0
 		SSgarbage.fail_counts[i] = 0
 		SSgarbage.peak_queue_depths[i] = 0
+	SSgarbage.softcheck_filter_heads = list(1, 1)
 	SSgarbage.deferred_harddels = list()
 	SSgarbage.harddels_deferred = 0
 	SSgarbage.harddels_avoided = 0
+	SSgarbage.harddels_deferred_deleted = 0
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
@@ -240,15 +249,12 @@
 		if(!has_live_softcheck_entries())
 			return
 
-/// Uses the same queued REF strings SSgarbage itself resolves. Kept in a
-/// separate proc so the temporary locate() reference is released before the
-/// barrier yields again.
+/// Есть ли в softcheck датум, который держит кто-то кроме очереди - та же проверка, что у самого SSgarbage.
 /datum/unit_test/gc_rewrite_base/proc/has_live_softcheck_entries()
 	var/list/refs = SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]
 	var/head = SSgarbage.queue_heads[GC_QUEUE_SOFTCHECK]
 	for(var/index in head to length(refs))
-		var/ref_id = refs[index]
-		if(ref_id && locate(ref_id))
+		if(SSgarbage.GetQueuedDatum(GC_QUEUE_SOFTCHECK, index, held_only = TRUE))
 			return TRUE
 	return FALSE
 
@@ -290,6 +296,9 @@
 	SSgarbage.queue_hints = copy_gc_rewrite_test_list(saved_queue_hints)
 	SSgarbage.queue_types = copy_gc_rewrite_test_list(saved_queue_types)
 	SSgarbage.queue_heads = saved_queue_heads.Copy()
+	SSgarbage.softcheck_filter_heads = saved_softcheck_filter_heads.Copy()
+	// Копия держит датумы настоящей очереди: без сброса они не собрались бы, пока жив тест.
+	saved_queue_refs = null
 	SSgarbage.pass_counts = saved_pass_counts.Copy()
 	SSgarbage.fail_counts = saved_fail_counts.Copy()
 	SSgarbage.peak_queue_depths = saved_peak_queue_depths.Copy()
@@ -352,9 +361,11 @@
 	SSgarbage.deferred_harddels = saved_deferred_harddels.Copy()
 	SSgarbage.harddels_deferred = saved_harddels_deferred
 	SSgarbage.harddels_avoided = saved_harddels_avoided
+	SSgarbage.harddels_deferred_deleted = saved_harddels_deferred_deleted
 	SSgarbage.reference_find_on_fail = saved_reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	SSgarbage.test_ref_scan_skip_async = saved_test_ref_scan_skip_async
+	SSgarbage.test_freeze_visible = saved_test_freeze_visible
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Destroy()
@@ -545,7 +556,7 @@
 		source_hints[i] = list()
 		source_heads[i] = 1
 
-	source_refs[GC_QUEUE_WARNFAIL] = list(null, REF(live), REF(stale))
+	source_refs[GC_QUEUE_WARNFAIL] = list(null, live, stale)
 	source_times[GC_QUEUE_WARNFAIL] = list(null, live_stage_time, stale_stage_time)
 	source_origins[GC_QUEUE_WARNFAIL] = list(null, live_origin_time, world.time - 80)
 	source_hints[GC_QUEUE_WARNFAIL] = list(null, QDEL_HINT_QUEUE, QDEL_HINT_QUEUE)
@@ -679,7 +690,6 @@
 	for (var/i in 1 to 4001)
 		SSgarbage.queue_origin_times[GC_QUEUE_HARDDELETE][i] = world.time + 10
 		SSgarbage.queue_times[GC_QUEUE_HARDDELETE][i] = world.time + 10
-		SSgarbage.queue_refs[GC_QUEUE_HARDDELETE][i] = "overflow-[i]"
 		SSgarbage.queue_hints[GC_QUEUE_HARDDELETE][i] = QDEL_HINT_HARDDEL
 	SSgarbage.queue_heads[GC_QUEUE_HARDDELETE] = 1
 	run_gc_fire_cycles(1)
@@ -983,7 +993,7 @@
 		types += null
 	origins += live_origin
 	times += live_stage
-	refs += REF(live)
+	refs += live
 	hints += QDEL_HINT_QUEUE
 	types += "[live.type]"
 
@@ -1367,3 +1377,79 @@
 	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(null, /obj/effect/gc_rewrite_test_object, "test-ref", world.time - 10, QDEL_HINT_QUEUE_THEN_HARDDEL)
 	allocated += entry
 	TEST_ASSERT(findtext(entry.qdel_hint_to_text(), "QDEL_HINT_QUEUE_THEN_HARDDEL"), "QDEL_HINT_QUEUE_THEN_HARDDEL was not rendered by qdel_hint_to_text()")
+
+/// Слот очереди GC держит сам датум, а не его REF-строку: удерживаемые строки REF стопорят BYOND.
+/datum/unit_test/gc_rewrite_queue_holds_datum
+	parent_type = /datum/unit_test/gc_rewrite_base
+
+/// Свой кадр без временных ссылок теста: удалённый датум держат только эта локаль и слот очереди.
+/datum/unit_test/gc_rewrite_queue_holds_datum/proc/external_refs_after_qdel()
+	var/datum/gc_refcount_probe/probe = new
+	qdel(probe)
+	return EXTERNAL_REFCOUNT(probe)
+
+/datum/unit_test/gc_rewrite_queue_holds_datum/Run()
+	reset_gc_queues()
+	var/obj/effect/gc_rewrite_test_object/queued = allocate(/obj/effect/gc_rewrite_test_object)
+	qdel(queued)
+	var/list/slots = SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]
+	var/slot = slots.Find(queued)
+	TEST_ASSERT(slot, "в слотах softcheck нет удалённого объекта, первый слот: [length(slots) ? slots[1] : "пусто"]")
+	TEST_ASSERT_EQUAL(SSgarbage.queue_times[GC_QUEUE_SOFTCHECK][slot], queued.gc_destroyed, "слот очереди не совпал с меткой gc_destroyed")
+	TEST_ASSERT_EQUAL(external_refs_after_qdel(), 0, "EXTERNAL_REFCOUNT посчитал слот очереди внешним держателем")
+
+/// Объект, который держит одна очередь, отпускается фильтром задолго до таймаута softcheck;
+/// объект с держателем фильтр не трогает, и он проваливает softcheck как раньше.
+/datum/unit_test/gc_rewrite_softcheck_filter
+	parent_type = /datum/unit_test/gc_rewrite_base
+
+/datum/unit_test/gc_rewrite_softcheck_filter/proc/qdel_unheld()
+	var/obj/effect/gc_rewrite_test_object/loose = new(run_loc_floor_bottom_left)
+	qdel(loose)
+	return length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
+
+/datum/unit_test/gc_rewrite_softcheck_filter/Run()
+	reset_gc_queues()
+	Master.current_ticklimit = 1.0e9
+	var/obj/effect/gc_rewrite_test_object/held = allocate(/obj/effect/gc_rewrite_test_object)
+	qdel(held)
+	var/held_slot = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
+	var/loose_slot = qdel_unheld()
+	sleep(GC_SOFTCHECK_FILTER_DELAY * 2)
+	run_gc_fire_cycles(1)
+
+	var/list/slots = SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]
+	TEST_ASSERT(isnull(slots[loose_slot]), "объект без держателей ждёт таймаута softcheck в очереди: [slots[loose_slot]]")
+	TEST_ASSERT(slots[held_slot] == held, "фильтр выбросил из очереди объект, который ещё держат")
+	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(/obj/effect/gc_rewrite_test_object)
+	TEST_ASSERT_EQUAL(item.failures, 0, "softcheck провален раньше своего таймаута")
+
+	SSgarbage.collection_timeout[GC_QUEUE_SOFTCHECK] = 0
+	run_gc_fire_cycles(1)
+	TEST_ASSERT_EQUAL(item.failures, 1, "удерживаемый объект не провалил softcheck")
+	TEST_ASSERT(held in SSgarbage.queue_refs[GC_QUEUE_WARNFAIL], "удерживаемый объект не перешёл в warnfail")
+
+/// Объект, который держал удалённый сосед из более поздней записи, отпускает повторная проверка, не дожидаясь таймаута softcheck.
+/datum/unit_test/gc_rewrite_softcheck_recheck
+	parent_type = /datum/unit_test/gc_rewrite_base
+
+/datum/unit_test/gc_rewrite_softcheck_recheck/proc/qdel_pair()
+	var/obj/effect/gc_rewrite_test_object/held = new(run_loc_floor_bottom_left)
+	var/obj/effect/gc_rewrite_test_object/holder = new(run_loc_floor_bottom_left)
+	holder.hold_refs = list(held)
+	qdel(held)
+	. = length(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK])
+	qdel(holder)
+
+/datum/unit_test/gc_rewrite_softcheck_recheck/Run()
+	reset_gc_queues()
+	Master.current_ticklimit = 1.0e9
+	var/held_slot = qdel_pair()
+	sleep(GC_SOFTCHECK_FILTER_DELAY * 2)
+	run_gc_fire_cycles(1)
+	TEST_ASSERT(!isnull(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK][held_slot]), "предпосылка: первая проверка отпустила объект, который ещё держал удалённый сосед")
+	sleep(GC_SOFTCHECK_RECHECK_DELAY)
+	run_gc_fire_cycles(1)
+	TEST_ASSERT(isnull(SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK][held_slot]), "повторная проверка не отпустила объект, чей держатель уже собран")
+	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(/obj/effect/gc_rewrite_test_object)
+	TEST_ASSERT_EQUAL(item.failures, 0, "softcheck провален раньше своего таймаута")

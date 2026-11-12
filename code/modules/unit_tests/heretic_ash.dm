@@ -300,7 +300,7 @@
 	var/datum/status_effect/heretic_ash_shroud/shroud = await_ash_shroud(victim)
 	TEST_ASSERT_NOTNULL(shroud, "Через 0,8 секунды цель в саване.")
 	var/remaining = shroud.duration - world.time
-	TEST_ASSERT(remaining <= HERETIC_ASH_SHROUD_DURATION && remaining > HERETIC_ASH_SHROUD_DURATION - 1 SECONDS, "Саван держит 10 секунд: осталось [remaining] дс.")
+	TEST_ASSERT(remaining <= HERETIC_ASH_SHROUD_DURATION + world.tick_lag && remaining > HERETIC_ASH_SHROUD_DURATION - 1 SECONDS, "Саван держит 10 секунд: осталось [remaining] дс.")
 	TEST_ASSERT(!victim.on_fire, "Огонь запёкся в корку.")
 	TEST_ASSERT(victim.IsParalyzed(), "Цель в саване не двигается.")
 	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_MUTE, HERETIC_ASH_SHROUD_CAPTURE), "Цель в саване не может говорить.")

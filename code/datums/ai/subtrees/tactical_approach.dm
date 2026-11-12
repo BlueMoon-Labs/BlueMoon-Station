@@ -139,7 +139,7 @@
 		var/turf/tile = get_step(target_turf, direction)
 		if(!tile)
 			continue
-		if(!controller.can_enter_turf(tile) || tile.is_blocked_turf(source_atom = pawn))
+		if(!ai_approach_tile_open(controller, tile))
 			continue
 		var/tile_score = -get_dist(pawn_turf, tile) * 2
 		if(direction & dir_to_pawn)

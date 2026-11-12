@@ -1060,7 +1060,7 @@ SUBSYSTEM_DEF(vote)
 		// Пояснения о вариантах динамика
 		var/list/roundtype_descs = list()
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC, "desc" = "Одна из вариаций динамика выбирается автоматически."))
-		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_TEAMBASED, "desc" = "90–100 угрозы, только командные и особые одиночные антагонисты. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_TEAMBASED, "desc" = "90–100 угрозы, кровавые братья и почасовые командные волны. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_HARD, "desc" = "90–100 угрозы. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_MEDIUM, "desc" = "50–100 угрозы. Нужен хаос < [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_LIGHT, "desc" = "30–70 угрозы, без командных антагонистов, < 20 игроков."))

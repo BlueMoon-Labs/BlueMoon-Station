@@ -182,12 +182,14 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
 	if(atmos_idle_until > world.time)
 		return FALSE
+	atmos_pipe_blind = TRUE
 	if(welded || !is_operational)
 		// Woken by welder_act()/attack_alien()/power_change().
 		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] && !atmos_initialized)
 		// См. комментарий в vent_pump: до atmosinit() нод нет, гасить нельзя.
+		atmos_pipe_blind = FALSE
 		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] || !on)
@@ -220,6 +222,7 @@
 	var/environment_volume = environment.return_volume()
 
 	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
+		atmos_pipe_blind = FALSE
 		return FALSE
 	if(environment_volume <= 0)
 		return FALSE

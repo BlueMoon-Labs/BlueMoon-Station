@@ -28,6 +28,8 @@
 		return
 	var/list/creatures = list()
 	for(var/mob/living/simple_animal/qareen/Q in world)
+		if(QDELETED(Q))
+			continue
 		creatures += Q
 	var/choice = tgui_alert(usr, "Do you want to attempt to summon Qareen?", "Attempt to summon Qareen?", list("Yes", "No"))
 	switch(choice)

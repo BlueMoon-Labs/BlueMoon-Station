@@ -78,7 +78,7 @@ Credit where due:
 	if(ishuman(M) || isbrain(M) || isguardian(M) || issilicon(M) || isclockmob(M) || istype(M, /mob/living/simple_animal/drone/cogscarab) || istype(M, /mob/camera/eminence))
 		return TRUE
 
-/proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type)
+/proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type, datum/team/clockcult/team)
 	if(!L || !L.mind)
 		return
 	var/update_type = /datum/antagonist/clockcult
@@ -96,7 +96,7 @@ Credit where due:
 			R.undeploy()
 			to_chat(AI, "<span class='userdanger'>Обнаружена аномалия. Возвращение в ядро!</span>") //The AI needs to be in its core to properly be converted
 
-	. = L.mind.add_antag_datum(C)
+	. = L.mind.add_antag_datum(C, team)
 
 	if(!silent && L)
 		if(.)

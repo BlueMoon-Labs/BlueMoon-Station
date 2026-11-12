@@ -8,6 +8,8 @@
 
 /datum/round_event/wizard/embedpocalypse/start()
 	for(var/obj/item/I in world)
+		if(QDELETED(I))
+			continue
 		CHECK_TICK
 
 		if(!(I.flags_1 & INITIALIZED_1))
@@ -39,6 +41,8 @@
 
 /datum/round_event/wizard/embedpocalypse/sticky/start()
 	for(var/obj/item/I in world)
+		if(QDELETED(I))
+			continue
 		CHECK_TICK
 
 		if(!(I.flags_1 & INITIALIZED_1))

@@ -19,7 +19,7 @@
 
 	if(target.stat != DEAD)
 		return FALSE
-	if(target.suiciding || HAS_TRAIT(target, TRAIT_NOCLONE) || target.hellbound)
+	if(!target.can_be_medically_revived())
 		return FALSE
 	if(!HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
 		return FALSE
@@ -56,7 +56,7 @@
 
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive())
+	if(target.revive(medical_revive = TRUE))
 		target.visible_message("...[target]'s posibrain flickers to life once again!")
 		target.emote("ping")
 		if(protocol_breach)

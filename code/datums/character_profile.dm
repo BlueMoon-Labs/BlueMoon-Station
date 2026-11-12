@@ -41,10 +41,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		UnregisterSignal(M, COMSIG_ATOM_UPDATED_ICON)
 	host = null
 	for(var/mob/viewer as anything in viewer_screens)
-		var/atom/movable/screen/map_view/viewer_screen = viewer_screens[viewer]
-		if(viewer_screen)
-			viewer_screen.hide_from(viewer)
-			qdel(viewer_screen)
+		release_examine_screen(viewer, viewer_screens[viewer])
 	viewer_screens = null
 	formatted_text_cache = null
 	return ..()
@@ -66,11 +63,85 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	return GLOB.always_state
 
 /datum/description_profile/ui_close(mob/user)
-	var/atom/movable/screen/map_view/viewer_screen = LAZYACCESS(viewer_screens, user)
+	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	LAZYREMOVE(viewer_screens, user)
-	if(viewer_screen)
-		viewer_screen.hide_from(user)
-		qdel(viewer_screen)
+	release_examine_screen(user, viewer_screen)
+
+#define EXAMINE_SCREEN_POOL_MAX 2
+
+/// Экраны осмотра одного клиента. Стопка из ~30 plane master'ов стоила ~1 мс на сборку и столько же на снос при каждом открытии окна.
+/datum/examine_screen_pool
+	var/client/owner
+	/// Все экраны пула, и свободные, и открытые: имена их карт уникальны только внутри пула.
+	var/list/atom/movable/screen/map_view/examine_panel_screen/screens = list()
+	var/list/atom/movable/screen/map_view/examine_panel_screen/idle = list()
+	var/serial = 0
+
+/datum/examine_screen_pool/New(client/owner)
+	. = ..()
+	if(owner)
+		src.owner = owner
+		RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted))
+
+/datum/examine_screen_pool/Destroy()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
+		if(owner.examine_screens == src)
+			owner.examine_screens = null
+		owner = null
+	for(var/atom/movable/screen/map_view/examine_panel_screen/screen as anything in screens)
+		screen.home_pool = null
+	screens = null
+	QDEL_LIST(idle)
+	return ..()
+
+/datum/examine_screen_pool/proc/on_owner_deleted(client/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/examine_screen_pool/proc/take()
+	var/atom/movable/screen/map_view/examine_panel_screen/screen
+	if(length(idle))
+		screen = idle[length(idle)]
+		idle.len--
+		return screen
+	screen = new
+	screen.generate_view("examine_panel_[++serial]_map")
+	screen.home_pool = src
+	screens += screen
+	return screen
+
+/datum/examine_screen_pool/proc/release(atom/movable/screen/map_view/examine_panel_screen/screen)
+	if(QDELETED(screen))
+		return
+	if(screen.home_pool != src || length(idle) >= EXAMINE_SCREEN_POOL_MAX)
+		qdel(screen)
+		return
+	screen.reset_for_pool()
+	idle |= screen
+
+#undef EXAMINE_SCREEN_POOL_MAX
+
+/client/var/datum/examine_screen_pool/examine_screens
+
+/proc/take_examine_screen(client/viewer)
+	if(!viewer)
+		var/atom/movable/screen/map_view/examine_panel_screen/screen = new
+		screen.generate_view("examine_panel_[REF(screen)]_map")
+		return screen
+	if(!viewer.examine_screens)
+		viewer.examine_screens = new(viewer)
+	return viewer.examine_screens.take()
+
+/proc/release_examine_screen(mob/viewer, atom/movable/screen/map_view/examine_panel_screen/screen)
+	if(QDELETED(screen))
+		return
+	screen.hide_from(viewer)
+	var/datum/examine_screen_pool/pool = screen.home_pool
+	if(QDELETED(pool))
+		qdel(screen)
+		return
+	pool.release(screen)
 
 /atom/movable/screen/map_view/examine_panel_screen
 	name = "description profile screen"
@@ -79,6 +150,10 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/cached_target_appearance
 	/// Этаж, на плоскостях которого нарисована показанная внешность.
 	var/shown_offset = 0
+	/// Пул клиента, которому принадлежит имя карты экрана.
+	var/datum/examine_screen_pool/home_pool
+	/// Окно, чьего показа ждёт экран: в пул он уходит без этой подписки.
+	var/datum/tgui_window/awaited_window
 
 /atom/movable/screen/map_view/examine_panel_screen/ensure_plane_group()
 	if(!popup_plane_group)
@@ -87,8 +162,27 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	return popup_plane_group
 
 /atom/movable/screen/map_view/examine_panel_screen/Destroy()
+	if(home_pool)
+		home_pool.screens -= src
+		home_pool.idle -= src
+		home_pool = null
 	cached_target_appearance = null
+	awaited_window = null
 	return ..()
+
+/atom/movable/screen/map_view/examine_panel_screen/display_to(mob/show_to, datum/tgui_window/window)
+	if(window && !window.visible)
+		awaited_window = window
+	return ..()
+
+/atom/movable/screen/map_view/examine_panel_screen/proc/reset_for_pool()
+	if(awaited_window)
+		UnregisterSignal(awaited_window, COMSIG_TGUI_WINDOW_VISIBLE)
+		awaited_window = null
+	cut_overlays()
+	cached_target_appearance = null
+	setDir(initial(dir))
+	icon_state = initial(icon_state)
 
 /atom/movable/screen/map_view/examine_panel_screen/proc/update_character(mob/target)
 	var/target_appearance = target.appearance
@@ -237,8 +331,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	if(isnull(viewer_screen))
-		viewer_screen = new
-		viewer_screen.generate_view("examine_panel_[REF(M)]_[REF(user)]_map")
+		viewer_screen = take_examine_screen(user.client)
 		LAZYSET(viewer_screens, user, viewer_screen)
 
 	viewer_screen.icon_state = current_bg_state
