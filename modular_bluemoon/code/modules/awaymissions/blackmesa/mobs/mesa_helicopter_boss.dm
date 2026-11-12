@@ -1239,7 +1239,7 @@
 	if(heli_cutscene || stat != CONSCIOUS)
 		return
 	for(var/mob/living/nearby_mob in GLOB.player_list)
-		if(QDELETED(nearby_mob) || nearby_mob.stat == DEAD || nearby_mob in heli_theme_listeners)
+		if(QDELETED(nearby_mob) || nearby_mob.stat == DEAD || (nearby_mob in heli_theme_listeners))
 			continue
 		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
 			continue
