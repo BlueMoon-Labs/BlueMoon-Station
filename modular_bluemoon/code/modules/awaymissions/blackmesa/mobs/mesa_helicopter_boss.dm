@@ -17,7 +17,6 @@
 #define HELI_LOCKON_DS 20                // 2s missile lock-on beeping
 #define HELI_RELOCATE_WARN_DS 8          // quick reposition windup
 #define HELI_ROTOR_RANGE 14              // tiles, rotor loop is re-sent to viewers inside this range
-#define HELI_THEME_RANGE 14              // tiles, boss theme reaches viewers inside this range
 
 // =============================================================================
 // LANDMARKS
@@ -1221,29 +1220,22 @@
 // BOSS THEME - same pattern as the infected tank's tanktheme.ogg
 // =============================================================================
 // Theme listeners are re-synced every tick: anyone who leaves the
-// ihategordon area or the listening range loses the loop, and new viewers
-// inside both get it. Without this the repeat track followed players who
-// retreated out of the arena until they died or ghosted.
+// ihategordon area (or dies) loses the loop, and players inside the zone
+// get it regardless of how far they are from the gunship - the track is
+// zone ambience, not a positional sound.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_theme_sound()
 	if(!heli_theme_channel || heli_died || stat == DEAD)
 		return
-	var/turf/ST = get_turf(src)
-	if(!ST)
-		return
-	var/list/viewers_list = viewers(HELI_THEME_RANGE, src)
 	for(var/mob/listener in heli_theme_listeners.Copy())
-		var/turf/LT = QDELETED(listener) ? null : get_turf(listener)
-		if(QDELETED(listener) || listener.stat == DEAD || !LT || LT.z != ST.z || !(listener in viewers_list) || !istype(get_area(listener), /area/awaymission/ihategordon))
+		if(QDELETED(listener) || listener.stat == DEAD || !istype(get_area(listener), /area/awaymission/ihategordon))
 			stop_theme_listener_sound(listener)
 			unregister_theme_listener(listener)
 	// no new listeners while the intro cinematic or an osprey insertion
 	// has the gunship "away" - same gate the old one-shot version had
 	if(heli_cutscene || stat != CONSCIOUS)
 		return
-	for(var/mob/nearby_mob in viewers_list)
-		if(nearby_mob in heli_theme_listeners)
-			continue
-		if(QDELETED(nearby_mob) || nearby_mob.stat == DEAD)
+	for(var/mob/living/nearby_mob in GLOB.player_list)
+		if(QDELETED(nearby_mob) || nearby_mob.stat == DEAD || nearby_mob in heli_theme_listeners)
 			continue
 		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
 			continue
