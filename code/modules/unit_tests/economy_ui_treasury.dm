@@ -327,22 +327,26 @@
 	TEST_ASSERT_EQUAL(flag.kind, AUDIT_FLAG_BUDGET_SIPHON, "Дело оттока")
 	TEST_ASSERT_EQUAL(flag.amount, part * 3, "Сумма дела - все взносы")
 
-/// Орбитальная доля, эмиссионная раздача всем счетам, не достаётся пустому счёту, открытому из казны.
-/datum/unit_test/economy_ui_treasury/emission_needs_owner
+/datum/unit_test/economy_ui_treasury/orbital
+	abstract_type = /datum/unit_test/economy_ui_treasury/orbital
 	var/datum/orbital_objective/saved_objective
 	var/saved_cargo_points
+	var/saved_cargo_mult
 
-/datum/unit_test/economy_ui_treasury/emission_needs_owner/New()
+/datum/unit_test/economy_ui_treasury/orbital/New()
 	. = ..()
 	saved_objective = SSorbits.current_objective
 	saved_cargo_points = GLOB.cargo_objective_points
+	saved_cargo_mult = SSeconomy.settings.orbital_cargo_mult
 
-/datum/unit_test/economy_ui_treasury/emission_needs_owner/Destroy()
+/datum/unit_test/economy_ui_treasury/orbital/Destroy()
 	SSorbits.current_objective = saved_objective
 	GLOB.cargo_objective_points = saved_cargo_points
+	SSeconomy.settings.orbital_cargo_mult = saved_cargo_mult
 	return ..()
 
-/datum/unit_test/economy_ui_treasury/emission_needs_owner/Run()
+/// Орбитальная доля, эмиссионная раздача всем счетам, не достаётся пустому счёту, открытому из казны.
+/datum/unit_test/economy_ui_treasury/orbital/needs_owner/Run()
 	var/obj/machinery/computer/account_database/console = allocate(/obj/machinery/computer/account_database)
 	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
 	var/datum/bank_account/crew = econ_account_of(hop)
@@ -361,6 +365,30 @@
 	objective.complete_objective()
 	TEST_ASSERT_EQUAL(empty.account_balance, 0, "Пустой счёт без орбитальной доли")
 	TEST_ASSERT(crew.account_balance > crew_before, "Член экипажа получил орбитальную долю")
+
+/// Доля экипажа в орбитальном задании облагается налогом и пишется своей причиной, снабжение получает долю награды из настроек.
+/datum/unit_test/economy_ui_treasury/orbital/taxed/Run()
+	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
+	var/datum/bank_account/crew = econ_account_of(hop)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	SSeconomy.tax_rate = 10
+	SSeconomy.settings.orbital_cargo_mult = 0.5
+	var/cargo_before = cargo.account_balance
+	var/list/history = crew.transaction_history.Copy()
+	var/datum/orbital_objective/objective = new
+	objective.payout = 100000
+	SSorbits.current_objective = objective
+	objective.complete_objective()
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 50000, "Снабжению доля награды из orbital_cargo_mult")
+	var/paid = 0
+	var/taxed = FALSE
+	for(var/datum/transaction/entry as anything in crew.transaction_history - history)
+		if(entry.reason == ECON_ORBITAL)
+			paid += entry.amount
+		if(entry.reason == ECON_TAX || entry.reason == ECON_TAX_NT)
+			taxed = TRUE
+	TEST_ASSERT(paid > 0, "Доля экипажа записана причиной орбитального задания")
+	TEST_ASSERT(taxed, "С доли экипажа удержан налог")
 
 /// Казна держит не больше treasury_unowned_accounts_max счетов без владельца; отрицательный лимит в настройках отвергается.
 /datum/unit_test/economy_ui_treasury/unowned_limit

@@ -17,7 +17,7 @@
 
 /// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют.
 /datum/econ_contract/delivery/payout()
-	. = ..() * SSeconomy.bounty_modifier
+	. = ..() * SSeconomy.bounty_modifier * SSeconomy.settings.contract_delivery_mult
 	if(owner)
 		. *= SSeconomy.settings.contract_personal_reward / 100
 	if(!pinned && bounty)

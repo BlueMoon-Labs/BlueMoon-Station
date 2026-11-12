@@ -50,6 +50,7 @@ GLOBAL_LIST_INIT(econ_reason_category, list(
 	ECON_EVENT_RANSOM = ECON_CAT_EVENT,
 	ECON_ACCOUNT_CLOSED = ECON_CAT_ADMIN,
 	ECON_CRYPTO = ECON_CAT_WORK,
+	ECON_ORBITAL = ECON_CAT_CONTRACT,
 	ECON_MISC = ECON_CAT_MISC,
 ))
 
@@ -105,11 +106,12 @@ GLOBAL_LIST_INIT(econ_reason_names, list(
 	ECON_EVENT_RANSOM = "Выкуп",
 	ECON_ACCOUNT_CLOSED = "Закрытие счёта",
 	ECON_CRYPTO = "Криптомайнинг",
+	ECON_ORBITAL = "Орбитальное задание",
 	ECON_MISC = "Прочее",
 ))
 
 /// Разовые поступления в бюджет, которые budget_cap_grace_ticks тиков не считаются излишком; отмена заказа возвращает потраченную им защиту отдельно
-GLOBAL_LIST_INIT(econ_cap_shielded_reasons, list(ECON_BUDGET_TRANSFER, ECON_EVENT, ECON_CONTRACT))
+GLOBAL_LIST_INIT(econ_cap_shielded_reasons, list(ECON_BUDGET_TRANSFER, ECON_EVENT, ECON_CONTRACT, ECON_ORBITAL))
 
 GLOBAL_LIST_INIT(econ_taxable_categories, list(ECON_CAT_WAGE, ECON_CAT_WORK, ECON_CAT_CONTRACT))
 

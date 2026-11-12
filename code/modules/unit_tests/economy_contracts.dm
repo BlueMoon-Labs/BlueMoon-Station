@@ -97,6 +97,11 @@
 	var/saved_modifier = SSeconomy.bounty_modifier
 	SSeconomy.bounty_modifier = 2
 	var/doubled = contract.payout()
+	SSeconomy.bounty_modifier = 1
+	var/saved_mult = SSeconomy.settings.contract_delivery_mult
+	SSeconomy.settings.contract_delivery_mult = 0.5
+	var/halved = contract.payout()
+	SSeconomy.settings.contract_delivery_mult = saved_mult
 	SSeconomy.bounty_modifier = saved_modifier
 	TEST_ASSERT(econ_contracts_ship(thing), "Предмет засчитан")
 	TEST_ASSERT(contract.completed, "Выполнен (самокат нужен один)")
@@ -105,6 +110,7 @@
 	econ_test_set_balance(civilian.account, before)
 	SSeconomy.contract_demand.Cut()
 	TEST_ASSERT_EQUAL(doubled, contract.reward * 2, "Модификатор наград применяется к выплате")
+	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5), "Множитель contract_delivery_mult применяется к выплате")
 
 /// Взятый срочный контракт, не выполненный к сроку, снимается при обновлении.
 /datum/unit_test/economy_contract_expiry/Run()

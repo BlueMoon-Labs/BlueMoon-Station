@@ -374,12 +374,14 @@
 			crew_accounts += payee_account
 	var/ranger_share = length(ranger_accounts) ? round((payout / 2) / length(ranger_accounts)) : 0
 	for(var/datum/bank_account/payee_account as anything in ranger_accounts)
-		if(payee_account.credit(ranger_share, ECON_CONTRACT, memo = "Орбитальное задание"))
-			payee_account.bank_card_talk("Было получено [ranger_share] кредитов за выполнение задания.")
+		var/net = SSeconomy.pay_personal(null, payee_account, ranger_share, ECON_ORBITAL, memo = "Орбитальное задание")
+		if(net)
+			payee_account.bank_card_talk("Орбитальное задание: [ranger_share] кр. до налога, на руки [net] кр.", balloon = "задание +[net] кр")
 	var/crew_share = length(crew_accounts) ? round((payout / 2) / length(crew_accounts)) : 0
 	for(var/datum/bank_account/payee_account as anything in crew_accounts)
-		if(payee_account.credit(crew_share, ECON_CONTRACT, memo = "Содействие орбитальному заданию"))
-			payee_account.bank_card_talk("Было получено [crew_share] кредитов за содействие выполнению поручений NanoTrasen.")
+		var/net = SSeconomy.pay_personal(null, payee_account, crew_share, ECON_ORBITAL, memo = "Содействие орбитальному заданию")
+		if(net)
+			payee_account.bank_card_talk("Содействие орбитальному заданию NT: [crew_share] кр. до налога, на руки [net] кр.", quiet = TRUE)
 	//WHITE-STEEL PORT: очки задания. Половина пула начисляется на общий счёт карго,
 	//каждый действующий авангард дополнительно получает В ДВА раза больше очков на свой ID.
 	var/cargo_share = round(payout / 2)
@@ -410,10 +412,10 @@
 			continue
 		id_card.contraband_points += cargo_share * 2
 		to_chat(H, span_notice("Вы получили [cargo_share * 2] очков Авангарда за выполнение задания."))
-	//WHITE-STEEL PORT: на счёт карго дополнительно поступают деньги в полуторном размере от награды за задание.
 	var/datum/bank_account/department/cargo_dep = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(cargo_dep)
-		var/cargo_money = round(payout * 1.5)
-		cargo_dep.credit(cargo_money, ECON_CONTRACT, memo = "Орбитальное задание")
+	var/cargo_money = round(payout * SSeconomy.settings.orbital_cargo_mult)
+	if(cargo_dep && cargo_money > 0)
+		cargo_dep.credit(cargo_money, ECON_ORBITAL, memo = "Орбитальное задание")
+	log_econ("Орбитальное задание \"[name]\" выполнено: награда [payout] кр., рейнджерам [length(ranger_accounts)] x [ranger_share], экипажу [length(crew_accounts)] x [crew_share], снабжению [cargo_dep ? cargo_money : 0]")
 	//Delete
 	QDEL_NULL(SSorbits.current_objective)
