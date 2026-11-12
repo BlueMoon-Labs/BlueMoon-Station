@@ -1343,6 +1343,7 @@
 	blastdoor_id = "helicopter"
 	var/colin_sequence_active = FALSE
 	var/colin_sequence_done = FALSE
+	can_skip_dialogue = FALSE
 	var/list/colin_lines = list(
 		"ЭЙ!... Э-это К-колин Г-грэй! П-подойдите живо... Я в рубке!...",
 		"П-пожалуйста! Ответьте живо!!!... Я в рубке!",

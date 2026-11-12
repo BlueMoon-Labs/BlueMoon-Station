@@ -503,6 +503,8 @@
 	minimum_distance = 3 // Allow getting closer before charging
 	retreat_distance = 5
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_charger
+	speak = list('modular_bluemoon/sound/creatures/mesa/charger/alert_01.ogg', 'modular_bluemoon/sound/creatures/mesa/charger/alert_02.ogg')
+	deathsound = 'modular_bluemoon/sound/creatures/mesa/charger/pain_03.ogg'
 	var/charge_damage = 40
 	var/charge_stamina_damage = 60
 	var/charge_hit_target = FALSE

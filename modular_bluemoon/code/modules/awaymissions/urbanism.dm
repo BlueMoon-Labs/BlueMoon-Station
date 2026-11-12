@@ -543,6 +543,14 @@
 	density = TRUE
 	anchored = TRUE
 
+/obj/structure/mad_scientist/ex_act(severity, target, origin)
+	// Any real blast finishes him outright instead of chipping integrity.
+	if(severity > EXPLODE_NONE && severity <= EXPLODE_HEAVY)
+		obj_integrity = 0
+		obj_destruction(BOMB)
+		return
+	..()
+
 /obj/structure/mad_scientist/attack_hand(mob/user)
 	. = ..()
 

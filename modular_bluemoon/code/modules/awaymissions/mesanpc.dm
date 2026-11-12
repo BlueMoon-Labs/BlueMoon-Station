@@ -33,6 +33,7 @@
 	var/blastdoor_id = null
 	var/next_interaction_time = 0
 	var/dialogue_completed = FALSE
+	var/can_skip_dialogue = TRUE
 	var/list/dialogue_lines = list(
 		"НАКОНЕЦ-ТО! Я устал ждать помощи.",
 		"Если не будете брыкаться, помогу. Проблема следующая:",
@@ -146,6 +147,22 @@
 		return
 
 	start_dialogue(user)
+
+/obj/machinery/negotiations_radio/AltClick(mob/user)
+	if(!user || !src || !can_skip_dialogue || dialogue_completed)
+		return
+
+	if(dialogue_active && !is_current_interactor(user))
+		to_chat(user, span_warning("Радио уже занято другим разговором!"))
+		return
+
+	// Jump straight to the end of the transmission and run its result.
+	dialogue_active = TRUE
+	dialogue_step = dialogue_lines.len
+	current_interactor = WEAKREF(user)
+	dialogue_last_interaction = world.time
+	to_chat(user, span_notice("Вы прокручиваете передачу..."))
+	confirm_action(user)
 
 /obj/machinery/negotiations_radio/proc/start_dialogue(mob/user)
 	if(!user || !src)
@@ -734,6 +751,7 @@
 	name = "fuel radio"
 	desc = "A radio for communications with a survivor in the fuel booth."
 	icon_state = "radiohecu"
+	can_skip_dialogue = FALSE
 	var/list/fuel_alert_phrases = list(
 		"Подойдите сюда!",
 		"ЭЭЙ! Это Грэй!!!",
