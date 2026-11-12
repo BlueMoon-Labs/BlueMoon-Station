@@ -252,6 +252,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	SSeconomy.ensure_personal_offers(account)
 	return list(
 		"contracts" = econ_contract_entries(account),
+		"partner_offers" = econ_pad_offers_ui(),
 		"my_account" = account?.account_id,
 		"my_name" = account?.account_holder,
 		"performer_share" = settings.contract_performer_share,
@@ -346,4 +347,4 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		От взятого контракта можно отказаться: неначатый уйдёт с доски, начатый снова станет свободным, а новый контракт отказавшийся возьмёт через [DisplayTimeText(ECON_CONTRACT_DROP_COOLDOWN)]. \
 		Срочные контракты платят [econ_times_text(settings.contract_urgent_mult)] больше, но снимаются через [settings.contract_urgent_minutes] мин. \
 		Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин., отгруженное по ним не возвращается. Купленное в автоматах и через снабжение по контрактам не засчитывается. \
-		Объявления экипажа: любой может заказать работу у других, награда от [settings.crew_request_min] до [settings.crew_request_max] кр. сразу уходит в депозит и достаётся исполнителю, когда заказчик примет работу; сданную работу он принимает или отклоняет за [DisplayTimeText(ECON_CREW_REQUEST_ACCEPT_TIME)], иначе она принята. Налога и доли отдела с объявлений нет."
+		Спецзаказы партнёров снабжения тоже сдаются на паде подработки: первая сдача берёт спецзаказ, оплата за штуки идёт отделу сдавшего (снабжению - сбор [settings.cargo_handling_fee]%), сдавшему лично - [settings.contract_team_share]% с налогом, маржа при выполнении - тому же отделу. Контрабандные спецзаказы - только шаттлом снабжения. 		Объявления экипажа: любой может заказать работу у других, награда от [settings.crew_request_min] до [settings.crew_request_max] кр. сразу уходит в депозит и достаётся исполнителю, когда заказчик примет работу; сданную работу он принимает или отклоняет за [DisplayTimeText(ECON_CREW_REQUEST_ACCEPT_TIME)], иначе она принята. Налога и доли отдела с объявлений нет."

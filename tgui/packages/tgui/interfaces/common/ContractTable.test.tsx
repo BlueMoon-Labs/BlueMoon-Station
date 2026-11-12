@@ -171,3 +171,35 @@ test('без ранга в данных (бюджет отдела) панели
   const ui = setup({ crew_request: crewRules });
   expect(ui.queryByText('Дать объявление')).toBeNull();
 });
+
+const partnerOffer = {
+  uid: 7,
+  partner: 'Гильдия старателей',
+  partner_id: 'prospectors',
+  item: 'слитки золота',
+  requirement: '"слитки золота"',
+  quantity: 10,
+  delivered: 4,
+  unit_price: 60,
+  unit_reward: 150,
+  premium: 900,
+  reward: 1500,
+  paid: 240,
+  accepted: 0,
+  contraband: 0,
+  time_left: 600,
+};
+
+test('спецзаказы партнёров видны на доске с оплатой и долей сдавшего', () => {
+  const ui = setup({ team_share: 25, partner_offers: [partnerOffer] });
+  expect(ui.getByText('Спецзаказы партнёров снабжения')).toBeTruthy();
+  expect(ui.getByText('Гильдия старателей')).toBeTruthy();
+  expect(ui.getByText('4 из 10')).toBeTruthy();
+  expect(ui.getByText('Сдавшему 25% оплаты за штуки')).toBeTruthy();
+  expect(ui.getByText('Сдаётся на паде')).toBeTruthy();
+});
+
+test('в режиме просмотра спецзаказов партнёров нет', () => {
+  const ui = setup({ partner_offers: [partnerOffer] }, true);
+  expect(ui.queryByText('Спецзаказы партнёров снабжения')).toBeNull();
+});

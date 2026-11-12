@@ -252,6 +252,95 @@
 	TEST_ASSERT_EQUAL(second.delivered, 0, "Второй спецзаказ в ящике засчитан")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "В ящике учитывается только один спецзаказ"), "Сообщение ЦК о второй накладной: [SSshuttle.centcom_message]")
 
+/// Спецзаказ сдаётся на паде подработки: первая сдача берёт его, база за штуки - отделу сдавшего (сбор снабжению, доля лично), маржа при выполнении - тому же отделу; контрабандный и купленное - не принимаются.
+/datum/unit_test/economy_offers/pad_delivery
+	var/saved_tax_rate
+
+/datum/unit_test/economy_offers/pad_delivery/New()
+	. = ..()
+	saved_tax_rate = SSeconomy.tax_rate
+
+/datum/unit_test/economy_offers/pad_delivery/Destroy()
+	SSeconomy.tax_rate = saved_tax_rate
+	return ..()
+
+/datum/unit_test/economy_offers/pad_delivery/Run()
+	SSeconomy.tax_rate = 10
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	free_traders.unlocked = TRUE
+	var/datum/market_offer/smuggled = add_offer("free_traders", /obj/item/stack/sheet/bone, 5, 2, 20)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_pad_doctor")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	var/list/shown = econ_contracts_ui_data(doctor)["partner_offers"]
+	TEST_ASSERT_EQUAL(length(shown), 1, "На доске контрактов только не контрабандный спецзаказ")
+	TEST_ASSERT_EQUAL(shown[1]["uid"], offer.uid, "На доске нужный спецзаказ")
+
+	var/obj/item/stack/sheet/bone/bones = allocate(/obj/item/stack/sheet/bone, station_turf, 5)
+	TEST_ASSERT_EQUAL(econ_offers_ship(bones, doctor), 0, "Контрабандный спецзаказ принят с пада")
+	TEST_ASSERT(!smuggled.accepted, "Контрабандный спецзаказ взят с пада")
+	var/obj/item/stack/sheet/mineral/plasma/bought = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
+	bought.econ_imported = TRUE
+	TEST_ASSERT_EQUAL(econ_offers_ship(bought, doctor), 0, "Купленное через снабжение принято с пада")
+	qdel(bought)
+
+	var/medical_before = medical.account.account_balance
+	var/cargo_before = cargo.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 6)
+	TEST_ASSERT_EQUAL(econ_offers_ship(first, doctor), 6, "Первая сдача приняла 6 штук")
+	TEST_ASSERT(offer.accepted, "Первая сдача взяла спецзаказ")
+	TEST_ASSERT(QDELETED(first), "Принятая стопка ушла")
+	var/share = round(600 * settings.contract_team_share / 100)
+	var/fee = round((600 - share) * settings.cargo_handling_fee / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 600 - share - fee, "Отделу сдавшего база за штуки без доли и сбора")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, fee, "Снабжению сбор")
+
+	medical_before = medical.account.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 6)
+	TEST_ASSERT_EQUAL(econ_offers_ship(second, doctor), 4, "Вторая сдача добрала 4 штуки")
+	TEST_ASSERT(!QDELETED(second) && second.amount == 2, "Лишнее осталось на паде")
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ выполнен")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
+	share = round(400 * settings.contract_team_share / 100)
+	fee = round((400 - share) * settings.cargo_handling_fee / 100)
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 400 - share - fee + 1000, "Маржа выполнения - отделу сдавшего")
+
+/// Пульт пункта подработки отправляет с пада и спецзаказы партнёров.
+/datum/unit_test/economy_offers/pad_console/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_pad_console")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	var/obj/machinery/piratepad/civilian/pad = allocate(/obj/machinery/piratepad/civilian, station_turf)
+	pad.warmup_time = 0
+	var/obj/machinery/computer/piratepad_control/civilian/console = allocate(/obj/machinery/computer/piratepad_control/civilian, station_turf)
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
+	pad.multitool_act(doctor, tool)
+	console.multitool_act(doctor, tool)
+	TEST_ASSERT(console.linked_pad() == pad, "Пульт связан с падом")
+	var/obj/item/stack/sheet/mineral/plasma/sheets = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
+	var/datum/tgui/window = allocate(/datum/tgui, doctor, console, "ContractBoard")
+	window.status = UI_INTERACTIVE
+	usr = doctor
+	console.ui_act("recalc", list(), window)
+	TEST_ASSERT(findtext(console.status_report, "Подходит под контракты и спецзаказы: 1 шт."), "Проверка пада видит спецзаказ: [console.status_report]")
+	console.ui_act("send", list(), window)
+	usr = null
+	TEST_ASSERT(QDELETED(sheets), "Плазма ушла с пада")
+	TEST_ASSERT_EQUAL(offer.delivered, 3, "Спецзаказ засчитал отправку с пада")
+	TEST_ASSERT(findtext(console.status_report, "по спецзаказам партнёров: 3 шт."), "Отчёт пульта: [console.status_report]")
+
 /// Купленное в автомате спецзаказ не засчитывает, а NT выкупает не дороже доли уплаченного.
 /datum/unit_test/economy_offers/vended_goods/Run()
 	var/obj/machinery/vending/snack/machine = allocate(/obj/machinery/vending/snack)

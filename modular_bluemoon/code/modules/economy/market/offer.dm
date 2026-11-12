@@ -146,18 +146,21 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		inner.forceMove(shipment)
 	qdel(thing)
 
-/// Выполнен: премия снабжению как его маржа, репутация партнёру.
-/datum/market_offer/proc/complete(datum/export_report/report)
+/// Выполнен: премия - маржа отделу, закрывшему спецзаказ (отгрузкой шаттла - снабжению), репутация партнёру.
+/datum/market_offer/proc/complete(datum/export_report/report, datum/economy_department/closer)
 	var/datum/trade_partner/partner = get_partner()
 	var/premium = round(premium_due)
+	if(!closer)
+		closer = SSeconomy.get_department(ACCOUNT_CAR)
+	var/closer_name = closer.id == ACCOUNT_CAR ? "снабжению" : "отделу [closer.name]"
 	if(premium > 0)
-		var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		margin_paid = premium
-		cargo.credit(premium, ECON_EXPORT, memo = "Маржа спецзаказа: [partner?.name]")
+		if(closer.id == ACCOUNT_CAR)
+			margin_paid = premium
+		closer.account.credit(premium, ECON_EXPORT, memo = "Маржа спецзаказа: [partner?.name]")
 		partner?.note_sale(premium)
 	partner?.add_reputation(MARKET_OFFER_REPUTATION_SUCCESS)
-	add_note(report, "Спецзаказ выполнен: маржа снабжению [premium] кр., репутация у партнёра +[MARKET_OFFER_REPUTATION_SUCCESS].")
-	log_econ("Спецзаказ #[uid] партнёра [partner?.name] выполнен: выплачено [paid] кр., маржа снабжению [premium] кр.")
+	add_note(report, "Спецзаказ выполнен: маржа [closer_name] [premium] кр., репутация у партнёра +[MARKET_OFFER_REPUTATION_SUCCESS].")
+	log_econ("Спецзаказ #[uid] партнёра [partner?.name] выполнен: выплачено [paid] кр., маржа [closer_name] [premium] кр.")
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, TRUE)
 	qdel(src)
 
@@ -173,6 +176,74 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	log_econ("Спецзаказ #[uid] партнёра [partner?.name] провален: принято [delivered] из [quantity].")
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, FALSE)
 	qdel(src)
+
+/// Спецзаказ можно сдать на паде подработки: открыт, не контрабандный и ещё не набран.
+/datum/market_offer/proc/pad_open()
+	return open() && !contraband() && delivered < quantity
+
+/// Сдача с пада подработки: первая сдача сама берёт спецзаказ. База за штуки - отделу сдавшего за вычетом сбора снабжения, ему лично доля участника контракта; маржа при выполнении - тому же отделу. Возвращает принятые штуки.
+/datum/market_offer/proc/ship_from_pad(atom/movable/thing, mob/shipper)
+	if(!pad_open() || !matches(thing))
+		return 0
+	if(!accepted && !accept(shipper))
+		return 0
+	var/units = 1
+	if(isstack(thing))
+		var/obj/item/stack/stack = thing
+		units = min(stack.amount, quantity - delivered)
+	var/full = unit_payout(thing)
+	var/base = min(unit_price, full)
+	var/revenue = units * base
+	premium_due += units * (full - base)
+	delivered += units
+	paid += revenue
+	take(thing, units, thing.drop_location())
+	var/datum/trade_partner/partner = get_partner()
+	partner.note_sale(revenue)
+	var/datum/economy_department/department = econ_pad_offer_payee(shipper)
+	var/memo = "Спецзаказ: [partner.name]"
+	var/datum/bank_account/account = econ_account_of(shipper)
+	var/share = account ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
+	if(share > 0)
+		var/net = SSeconomy.pay_personal(null, account, share, ECON_CONTRACT, shipper, memo)
+		account.bank_card_talk("Спецзаказ [partner.name]: [share] кр. до налога, на руки [net] кр.", balloon = net ? "спецзаказ +[net] кр" : null)
+	econ_pay_crate(revenue - share, department, memo)
+	log_econ("Спецзаказ #[uid] партнёра [partner.name]: с пада подработки принято [units] x [wanted_name] ([delivered]/[quantity]) от [key_name(shipper)], выплата [revenue] кр. ([department.name], лично [share])")
+	if(delivered >= quantity)
+		complete(closer = department)
+	return units
+
+/// Отдел, которому платит сдача спецзаказа с пада: отдел счёта сдавшего, без него - снабжение.
+/proc/econ_pad_offer_payee(mob/shipper)
+	var/datum/bank_account/account = econ_account_of(shipper)
+	var/datum/economy_department/department = account ? SSeconomy.get_department(account.department_id) : null
+	if(!department || department.id == ACCOUNT_CMD)
+		department = SSeconomy.get_department(ACCOUNT_CAR)
+	return department
+
+/// Засчитывает предмет и его содержимое по спецзаказам партнёров с пада подработки. Возвращает принятые штуки.
+/proc/econ_offers_ship(atom/movable/thing, mob/shipper)
+	. = 0
+	var/list/offers = list()
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(offer.pad_open())
+			offers += offer
+	if(!length(offers))
+		return
+	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
+		for(var/datum/market_offer/offer as anything in offers)
+			if(QDELETED(item))
+				break
+			if(QDELETED(offer))
+				continue
+			. += offer.ship_from_pad(item, shipper)
+
+/// Спецзаказы, которые можно сдать на паде, для доски контрактов.
+/proc/econ_pad_offers_ui()
+	. = list()
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(offer.pad_open())
+			. += list(offer.ui_entry())
 
 /datum/market_offer/proc/requirement_text()
 	if(!wanted_reagent)
@@ -203,7 +274,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 
 /// Описание для осмотра накладной спецзаказа.
 /datum/market_offer/proc/manifest_text()
-	return "Спецзаказ партнёра [partner_name()]: [requirement_text()], принято [delivered] из [quantity], [unit_price] кр. за штуку при отгрузке и [unit_reward() - unit_price] кр. за штуку маржи снабжению при выполнении, осталось [DisplayTimeText(max(deadline - world.time, 0))]. Купленное через снабжение не засчитывается, собранное на станции оплачивается не дороже его материалов. Накладная отдела в том же ящике делит оплату за штуки, как выручку ящика."
+	return "Спецзаказ партнёра [partner_name()]: [requirement_text()], принято [delivered] из [quantity], [unit_price] кр. за штуку при отгрузке и [unit_reward() - unit_price] кр. за штуку маржи снабжению при выполнении, осталось [DisplayTimeText(max(deadline - world.time, 0))]. Купленное через снабжение не засчитывается, собранное на станции оплачивается не дороже его материалов. Накладная отдела в том же ящике делит оплату за штуки, как выручку ящика. Спецзаказ не контрабандного партнёра можно сдать и на паде подработки."
 
 /// Накладная спецзаказа: печатает консоль снабжения для взятого спецзаказа.
 /proc/print_offer_manifest(datum/market_offer/offer, atom/where)

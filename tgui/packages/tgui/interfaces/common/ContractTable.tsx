@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useBackend } from '../../backend';
 import { Box, Button, Input, NoticeBox } from '../../components';
-import { ContractEntry, ContractRank, CrewRequestRules, formatCredits } from './Economy';
+import { ContractEntry, ContractRank, CrewRequestRules, formatCredits, OfferEntry } from './Economy';
 
 type ContractBoardData = {
   contracts?: ContractEntry[];
@@ -13,6 +13,7 @@ type ContractBoardData = {
   rank?: ContractRank | null;
   reroll_left?: number;
   crew_request?: CrewRequestRules;
+  partner_offers?: OfferEntry[];
 };
 
 const formatTimeLeft = (seconds: number) => {
@@ -238,6 +239,61 @@ const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null
   );
 };
 
+/** Спецзаказ партнёра снабжения: сдаётся на паде подработки, оплата - отделу сдавшего. */
+const PartnerOfferRow = (props: { offer: OfferEntry }) => {
+  const { data } = useBackend<ContractBoardData>();
+  const { offer } = props;
+  const margin = offer.unit_reward - offer.unit_price;
+  return (
+    <div className="NtTerm__contract">
+      <div className="NtTerm__contractMain">
+        <div className="NtTerm__contractTitle">
+          <span className="NtTerm__tag NtTerm__tag--lead">{offer.partner}</span>
+          {offer.item}
+          <span className="NtTerm__contractTag">Спецзаказ</span>
+        </div>
+        <div className="NtTerm__hint">Нужно: {offer.requirement}</div>
+        <div className="NtTerm__hint">
+          {formatCredits(offer.unit_price)} за штуку сразу при сдаче
+          {margin > 0 ? `, ещё ${formatCredits(margin)} за штуку - маржа отделу, закрывшему спецзаказ` : ''}.
+        </div>
+        <div className="NtTerm__contractProgress">
+          <span className="NtTerm__bar">
+            <span className="NtTerm__barFill" style={{ width: `${Math.round((offer.delivered / Math.max(offer.quantity, 1)) * 100)}%` }} />
+          </span>
+          <span>
+            {offer.delivered} из {offer.quantity}
+          </span>
+        </div>
+      </div>
+      <div className="NtTerm__contractSide">
+        <div className="NtTerm__contractReward">{formatCredits(offer.reward)}</div>
+        {!!data.team_share && <div className="NtTerm__hint">Сдавшему {data.team_share}% оплаты за штуки</div>}
+        <div className="NtTerm__hint">Осталось {formatTimeLeft(offer.time_left)}</div>
+        <Box mt={0.5} color="label">
+          {offer.accepted ? 'Взят, сдаётся на паде' : 'Сдаётся на паде'}
+        </Box>
+      </div>
+    </div>
+  );
+};
+
+const PartnerOffers = (props: { offers: OfferEntry[] }) => {
+  const { offers } = props;
+  return (
+    <Box mt={1}>
+      <div className="NtTerm__contractTitle">Спецзаказы партнёров снабжения</div>
+      <Box className="NtTerm__hint" mb={0.5}>
+        Положите товар на пад подработки и отправьте: оплата за штуки уйдёт вашему отделу, вам лично - доля участника. Купленное через
+        снабжение и в автоматах не засчитывается.
+      </Box>
+      {offers.map((offer) => (
+        <PartnerOfferRow key={offer.uid} offer={offer} />
+      ))}
+    </Box>
+  );
+};
+
 /** Репутация подрядчика: ранг, занятые слоты и сколько осталось до следующего ранга. */
 const RankLine = (props: { rank: ContractRank }) => {
   const { rank } = props;
@@ -311,7 +367,7 @@ const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void })
 export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }) => {
   const { showShare = true, readOnly = false } = props;
   const { act, data } = useBackend<ContractBoardData>();
-  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, crew_request } = data;
+  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, crew_request, partner_offers = [] } = data;
   const [filter, setFilter] = useState<Filter>('all');
   const [posting, setPosting] = useState(false);
   const canAct = !readOnly && !!my_account && !!rank;
@@ -390,6 +446,7 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
       {shown.map((contract) => (
         <ContractRow key={contract.uid} contract={contract} myAccount={my_account} readOnly={readOnly} />
       ))}
+      {!readOnly && partner_offers.length > 0 && <PartnerOffers offers={partner_offers} />}
     </>
   );
 };
