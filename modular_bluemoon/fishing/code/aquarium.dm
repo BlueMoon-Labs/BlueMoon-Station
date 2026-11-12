@@ -25,6 +25,7 @@
 /obj/structure/aquarium/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_IS_AQUARIUM, AQUARIUM_TRAIT)
+	ADD_TRAIT(src, TRAIT_STOP_FISH_FLOPPING, AQUARIUM_TRAIT)
 	RegisterSignal(src, COMSIG_AQUARIUM_GET_REPRODUCTION_CANDIDATES, PROC_REF(get_reproduction_candidates))
 	RegisterSignal(src, COMSIG_AQUARIUM_CHECK_EVOLUTION_CONDITIONS, PROC_REF(check_evolution))
 	update_icon()
@@ -55,6 +56,7 @@
 /obj/structure/aquarium/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	REMOVE_TRAIT(src, TRAIT_IS_AQUARIUM, AQUARIUM_TRAIT)
+	REMOVE_TRAIT(src, TRAIT_STOP_FISH_FLOPPING, AQUARIUM_TRAIT)
 	for(var/obj/item/fish/fish in tracked_fish.Copy())
 		if(QDELETED(fish))
 			continue
@@ -165,6 +167,7 @@
 	tracked_fish += fish
 	fish.last_feeding = world.time
 	fish.forceMove(src)
+	fish.stop_flopping()
 	update_fish_state(fish)
 	add_fish_visual(fish)
 	recalculate_beauty()
