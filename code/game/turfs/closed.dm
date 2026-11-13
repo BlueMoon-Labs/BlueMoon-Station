@@ -182,6 +182,22 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	icon = 'icons/turf/mining.dmi'
 	icon_state = "rock"
 
+/turf/closed/indestructible/rock/ash
+	name = "dense ash rock"
+	icon = 'icons/turf/mining.dmi'
+	icon_state = "rock2"
+	smooth = SMOOTH_MORE | SMOOTH_BORDER
+	canSmoothWith = null
+	var/smooth_icon = 'icons/turf/walls/rock_wall.dmi'
+
+/turf/closed/indestructible/rock/ash/Initialize(mapload)
+	canSmoothWith = GLOB.mineral_smooth_targets
+	. = ..()
+	var/matrix/M = new
+	M.Translate(-4, -4)
+	transform = M
+	icon = smooth_icon
+
 /turf/closed/indestructible/rock/snow
 	name = "mountainside"
 	desc = "An extremely densely-packed rock, sheeted over with centuries worth of ice and snow."
