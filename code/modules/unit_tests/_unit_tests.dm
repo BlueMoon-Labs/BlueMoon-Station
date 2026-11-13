@@ -243,6 +243,7 @@
 #include "door_timer_airlock.dm"
 #include "dual_arm_implant.dm"
 #include "dual_leg_implant.dm"
+#include "gorilla_mauler_stack.dm"
 #include "dynamic_ruleset_sanity.dm"
 #include "echolocation.dm"
 // #include "egg_glands.dm"
