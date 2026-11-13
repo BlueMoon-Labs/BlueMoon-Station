@@ -16,6 +16,11 @@
 	var/department_received = 0
 	/// id отдела -> list("kept", "burned", "returned", "purchases", "purchase_amount") для панели калибровки
 	var/list/department_flows = list()
+	/// Бюджеты аванпостов (Deep Space, Тарков): id -> list("in", "spent", "burned"); их эмиссия отдельно от станционной
+	var/list/outpost_flows = list()
+	var/outpost_minted = 0
+	var/list/outpost_minted_by_reason = list()
+	var/summary_logged = FALSE
 
 /datum/bank_account
 	/// Подъёмные смены: от них панель считает рост личных денег
@@ -39,6 +44,7 @@
 		burned_by_reason[reason] += amount
 	if(reason == ECON_STARTING_FUNDS && target)
 		target.starting_funds += amount
+	record_outposts(source, target, amount, reason)
 	var/from_budget = econ_is_station_budget(source)
 	var/to_budget = econ_is_station_budget(target)
 	var/datum/bank_account/department/payer_budget = from_budget ? source : null
@@ -77,6 +83,22 @@
 	if(reason == ECON_IMPORT)
 		flow["purchases"] += 1
 		flow["purchase_amount"] += amount
+
+/datum/economy_ledger/proc/record_outposts(datum/bank_account/source, datum/bank_account/target, amount, reason)
+	if(econ_is_outpost_budget(target))
+		outpost_flow(target.department_id)["in"] += amount
+		if(!source)
+			outpost_minted += amount
+			outpost_minted_by_reason[reason] += amount
+	if(econ_is_outpost_budget(source))
+		outpost_flow(source.department_id)[target ? "spent" : "burned"] += amount
+
+/datum/economy_ledger/proc/outpost_flow(id)
+	var/list/flow = outpost_flows[id]
+	if(!flow)
+		flow = list("in" = 0, "spent" = 0, "burned" = 0)
+		outpost_flows[id] = flow
+	return flow
 
 /datum/economy_ledger/proc/department_flow(id)
 	var/list/flow = department_flows[id]
@@ -117,6 +139,7 @@
 /datum/economy_ledger/proc/round_summary()
 	. = list()
 	. += "Итог смены: эмиссия [num2text(minted, 12)] кр. ([econ_reason_totals_text(minted_by_reason)]), сток [num2text(burned, 12)] кр. ([econ_reason_totals_text(burned_by_reason)])"
+	. += "Итог смены: эмиссия станции [num2text(minted - outpost_minted, 12)] кр., аванпостов [num2text(outpost_minted, 12)] кр.[outpost_minted ? " ([econ_reason_totals_text(outpost_minted_by_reason)])" : ""]"
 	. += "Итог смены: сток отделов [round(department_sink_share() * 100)]%, без возврата излишка [round(department_share_of(FALSE, TRUE) * 100)]%, на счетах [num2text(SSeconomy.total_money(), 12)] кр."
 	var/list/parts = list()
 	for(var/id in department_flows)
@@ -124,14 +147,32 @@
 		parts += "[id] [num2text(flow["kept"], 12)]/[num2text(flow["burned"], 12)]/[num2text(flow["returned"], 12)]"
 	if(length(parts))
 		. += "Итог смены по отделам (пришло/сожжено/возврат излишка): [jointext(parts, ", ")]"
+	parts = list()
+	for(var/datum/bank_account/department/outpost as anything in SSeconomy.generated_accounts)
+		if(!econ_is_outpost_budget(outpost))
+			continue
+		var/list/flow = outpost_flows[outpost.department_id] || list("in" = 0, "spent" = 0, "burned" = 0)
+		parts += "[outpost.department_id] [num2text(flow["in"], 12)]/[num2text(flow["spent"], 12)]/[num2text(flow["burned"], 12)]/[num2text(outpost.account_balance, 12)]"
+	if(length(parts))
+		. += "Итог смены по аванпостам (пришло/потрачено/сожжено/остаток): [jointext(parts, ", ")]"
 
+/// Пишет итог смены в econ.log один раз за раунд. Возвращает TRUE, если записал.
 /proc/econ_log_round_summary()
+	if(SSeconomy.ledger.summary_logged)
+		return FALSE
+	SSeconomy.ledger.summary_logged = TRUE
 	for(var/line in SSeconomy.ledger.round_summary())
 		log_econ(line)
+	return TRUE
 
 /proc/econ_is_station_budget(datum/bank_account/account)
 	var/datum/bank_account/department/budget = account
 	return istype(budget) && !!budget.department
+
+/// Бюджет аванпоста (Deep Space, Тарков): счёт отдела без станционного отдела.
+/proc/econ_is_outpost_budget(datum/bank_account/account)
+	var/datum/bank_account/department/budget = account
+	return istype(budget) && !budget.department
 
 /datum/economy_ledger/proc/snapshot()
 	var/cash = SSeconomy.cash_account?.account_balance || 0

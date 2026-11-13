@@ -79,6 +79,8 @@ SUBSYSTEM_DEF(economy)
 	crypto_paid_tick = SSeconomy.crypto_paid_tick
 
 /datum/controller/subsystem/economy/fire(resumed)
+	if(round_over())
+		return
 	fire_count++
 	var/list/staff_stats = econ_staff_stats()
 	for(var/id in departments)
@@ -100,6 +102,10 @@ SUBSYSTEM_DEF(economy)
 		department.return_excess(staff_stats)
 	update_state()
 	ledger.snapshot()
+
+/// Раунд закончен: зарплаты, гранты и оплата работы больше не начисляются, итог смены уже в econ.log.
+/datum/controller/subsystem/economy/proc/round_over()
+	return SSticker.current_state >= GAME_STATE_FINISHED
 
 /datum/controller/subsystem/economy/proc/get_department(id)
 	return departments[id]

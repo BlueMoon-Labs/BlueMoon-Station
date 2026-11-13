@@ -59,7 +59,7 @@ GLOBAL_LIST_INIT(econ_work_cooldown_groups, list(
 /// Платит отделу цену работы из work_prices и премию исполнителю. Возвращает сумму отделу, 0 при отказе.
 /datum/controller/subsystem/economy/proc/record_work(department_id, work_type, amount = 1, mob/performer, atom/subject, memo)
 	SHOULD_NOT_SLEEP(TRUE)
-	if(!istext(department_id) || !istext(work_type) || !isnum(amount) || amount <= 0)
+	if(round_over() || !istext(department_id) || !istext(work_type) || !isnum(amount) || amount <= 0)
 		return 0
 	var/datum/economy_department/department = get_department(department_id)
 	var/price = settings.work_prices[work_type]

@@ -103,6 +103,7 @@
 /datum/unit_test/economy_round_summary/Destroy()
 	if(budget)
 		econ_test_set_balance(budget, old_balance)
+	QDEL_LIST(allocated)
 	if(saved_ledger)
 		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
 		SSeconomy.ledger = saved_ledger
@@ -128,3 +129,85 @@
 	TEST_ASSERT(findtext(text, "эмиссия 4000 кр. (contract 3000, grant 1000)"), "Эмиссия по причинам: [text]")
 	TEST_ASSERT(findtext(text, "сток 2300 кр. (import 1500, budget_return 600, purchase 200)"), "Сток по причинам: [text]")
 	TEST_ASSERT(findtext(text, "сток отделов 70%, без возврата излишка 62%"), "Доля стока отделов: [text]")
+
+/// Бюджеты аванпостов идут в итоге смены своей строкой, а их эмиссия отделена от станционной.
+/datum/unit_test/economy_round_summary_outposts
+	var/datum/economy_ledger/saved_ledger
+	var/datum/bank_account/department/outpost
+	var/old_balance
+
+/datum/unit_test/economy_round_summary_outposts/Destroy()
+	if(outpost)
+		econ_test_set_balance(outpost, old_balance)
+	QDEL_LIST(allocated)
+	if(saved_ledger)
+		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+		SSeconomy.ledger = saved_ledger
+		qdel(test_ledger)
+	return ..()
+
+/datum/unit_test/economy_round_summary_outposts/Run()
+	saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
+	outpost = SSeconomy.get_dep_account(ACCOUNT_DS)
+	TEST_ASSERT_NOTNULL(outpost, "Бюджет Deep Space есть")
+	old_balance = outpost.account_balance
+	var/datum/bank_account/department/other_outpost = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	var/datum/bank_account/worker = allocate(/datum/bank_account, "econ_test_worker")
+
+	worker.credit(700, ECON_WAGE)
+	outpost.credit(5000, ECON_EXPORT)
+	outpost.debit(1000, ECON_IMPORT)
+	SSeconomy.move(outpost, worker, 500, ECON_TRANSFER)
+
+	var/text = jointext(SSeconomy.ledger.round_summary(), "\n")
+	TEST_ASSERT(findtext(text, "эмиссия станции 700 кр., аванпостов 5000 кр. (export 5000)"), "Эмиссия разделена: [text]")
+	TEST_ASSERT(findtext(text, "Итог смены по аванпостам (пришло/потрачено/сожжено/остаток): "), "Строка аванпостов: [text]")
+	TEST_ASSERT(findtext(text, "DS 5000/500/1000/[outpost.account_balance]"), "Deep Space в строке аванпостов: [text]")
+	TEST_ASSERT(findtext(text, "TAR 0/0/0/[other_outpost.account_balance]"), "Тарков в строке аванпостов без движений: [text]")
+
+/// После конца раунда тик экономики и оплата работы не начисляют, а итог смены пишется один раз.
+/datum/unit_test/economy_round_over_no_accrual
+	var/datum/economy_ledger/saved_ledger
+	var/previous_ticker_state
+	var/datum/bank_account/department/budget
+	var/old_balance
+
+/datum/unit_test/economy_round_over_no_accrual/Destroy()
+	if(!isnull(previous_ticker_state))
+		SSticker.current_state = previous_ticker_state
+	if(budget)
+		econ_test_set_balance(budget, old_balance)
+	QDEL_LIST(allocated)
+	if(saved_ledger)
+		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+		SSeconomy.ledger = saved_ledger
+		qdel(test_ledger)
+	return ..()
+
+/datum/unit_test/economy_round_over_no_accrual/Run()
+	saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
+	budget = SSeconomy.get_dep_account(ACCOUNT_ENG)
+	old_balance = budget.account_balance
+	previous_ticker_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_FINISHED
+	var/fires = SSeconomy.fire_count
+	SSeconomy.fire()
+	var/fires_after = SSeconomy.fire_count
+	var/paid_after_end = SSeconomy.record_work(ACCOUNT_ENG, WORK_ENG_POWER_EXPORT, 100)
+	var/minted_after_end = SSeconomy.ledger.minted
+	var/snapshots_after_end = length(SSeconomy.ledger.snapshots)
+	var/first_summary = econ_log_round_summary()
+	var/second_summary = econ_log_round_summary()
+	SSticker.current_state = previous_ticker_state
+	previous_ticker_state = null
+	var/paid_in_round = SSeconomy.record_work(ACCOUNT_ENG, WORK_ENG_POWER_EXPORT, 100)
+
+	TEST_ASSERT_EQUAL(fires_after, fires, "Тик экономики после конца раунда пропущен")
+	TEST_ASSERT_EQUAL(paid_after_end, 0, "Работа после конца раунда не оплачена")
+	TEST_ASSERT_EQUAL(minted_after_end, 0, "Эмиссии после конца раунда нет")
+	TEST_ASSERT_EQUAL(snapshots_after_end, 0, "Снимок журнала после конца раунда не снят")
+	TEST_ASSERT(first_summary, "Итог смены записан")
+	TEST_ASSERT(!second_summary, "Итог смены записан один раз")
+	TEST_ASSERT(paid_in_round > 0, "Во время раунда работа оплачивается: [paid_in_round]")
