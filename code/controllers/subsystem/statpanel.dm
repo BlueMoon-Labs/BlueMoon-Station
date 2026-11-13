@@ -6,6 +6,8 @@
 #define STATPANEL_AFK_INACTIVITY (5 MINUTES)
 /// MC subsystem rows: each fire reuses cached payload until this many fires have elapsed.
 #define MC_DATA_REFRESH_FIRES 6
+/// Сколько замеров держат спарклайны MC-вкладки. Замер берётся раз в MC_DATA_REFRESH_FIRES фаеров, пока вкладку кто-то смотрит.
+#define MC_HISTORY_LEN 60
 /// Full-cycle gate for slow global data (vote, server section).
 #define STATPANEL_FULL_CYCLE_FIRES 3
 /// Refresh slow server section every Nth full cycle.
@@ -38,7 +40,7 @@
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 3
+#define STATBROWSER_PROTOCOL_VERSION 4
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"
@@ -72,9 +74,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/cached_vote_encoded
 	var/cached_readyplayers_encoded
 	var/readyplayers_cache_time = 0
-	var/list/perf_history_cpu = list()
-	var/list/perf_history_tidi = list()
-	var/list/perf_history_ping = list()
+	/// Истории спарклайнов MC-вкладки: ключ -> последние MC_HISTORY_LEN замеров.
+	var/list/mc_history = list()
 	var/encoded_tidi
 	var/tidi_counter = 0
 	var/is_full_cycle = FALSE
@@ -980,204 +981,38 @@ SUBSYSTEM_DEF(statpanels)
 	queue_listedturf_icons(target, snapshot["needs_icons"])
 
 
+/// Средняя доля КАЖДОГО тика, которую съедает подсистема, %. tick_usage - цена целого прохода,
+/// а проход повторяется раз в интервал (или реже, если сам тянется дольше интервала): дорогая,
+/// но редкая подсистема грузит сервер меньше дешёвой, которая бежит каждый тик.
+/proc/mc_subsystem_tick_load(tick_usage, wait, ticks, ticker, tick_lag)
+	var/interval_ticks = ticker ? wait : wait / tick_lag
+	return tick_usage / max(interval_ticks, ticks, 1)
+
+/// Дописывает замер в историю спарклайна, держа не больше MC_HISTORY_LEN последних.
+/datum/controller/subsystem/statpanels/proc/push_mc_history(key, value)
+	var/list/series = mc_history[key]
+	if(!series)
+		series = list()
+		mc_history[key] = series
+	series += value
+	if(length(series) > MC_HISTORY_LEN)
+		series.Cut(1, length(series) - MC_HISTORY_LEN + 1)
+
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
-	var/list/server_info = list()
-	server_info["cpu"] = world.cpu
-	server_info["instances"] = world.contents.len
-	server_info["world_time"] = world.time
-	server_info["fps"] = world.fps
-	server_info["tick_count"] = round(world.time / world.tick_lag)
-	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
-	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / world.tick_lag, 1)) * 100, 0.1)
-	server_info["internal_tick_usage"] = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
-	// MC state — iteration is the natural per-tick counter; JS uses it to dedupe identical payloads.
-	server_info["iteration"] = Master.iteration
-	server_info["mc_tick_rate"] = Master.processing
-	server_info["mc_iteration"] = Master.iteration
-	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
-	server_info["mc_stat"] = Master.stat_entry()
-	server_info["failsafe_stat"] = Failsafe.stat_entry()
-	// Ping RTT
-	server_info["ping_samples"] = SStime_track.ping_samples
-	server_info["ping_rtt_avg"] = round(SStime_track.ping_rtt_last_avg, 1)
-	server_info["ping_rtt_max"] = round(SStime_track.ping_rtt_last_max, 1)
-	server_info["ping_rtt_avg_avg"] = round(SStime_track.ping_rtt_avg_avg, 1)
-	// Ping tick/server
-	server_info["ping_tick_avg"] = round(SStime_track.ping_tick_last_avg, 1)
-	server_info["ping_tick_max"] = round(SStime_track.ping_tick_last_max, 1)
-	server_info["ping_server_avg"] = round(SStime_track.ping_server_last_avg, 1)
-	server_info["ping_server_max"] = round(SStime_track.ping_server_last_max, 1)
-	// Movement jitter
-	server_info["raw_mult"] = round(SStime_track.raw_multiplier_last, 4)
-	server_info["jitter_last"] = round(SStime_track.raw_multiplier_jitter_abs_last, 2)
-	server_info["jitter_avg"] = round(SStime_track.raw_multiplier_jitter_abs_avg, 2)
-	server_info["jitter_max_wnd"] = round(SStime_track.raw_multiplier_jitter_abs_max_window, 2)
-	server_info["glide_mult"] = round(SStime_track.glide_size_multiplier_current, 4)
-	// Server maintenance
-	server_info["cleanup_last"] = round(SSserver_maint.cleanup_last_ms, 3)
-	server_info["cleanup_avg"] = round(SSserver_maint.cleanup_avg_ms, 3)
-	server_info["cleanup_target"] = SSserver_maint.cleanup_target_last
-	// Time dilation
-	server_info["tidi_current"] = round(SStime_track.time_dilation_current, 0.1)
-	server_info["tidi_avg_fast"] = round(SStime_track.time_dilation_avg_fast, 0.1)
-	server_info["tidi_avg"] = round(SStime_track.time_dilation_avg, 0.1)
-	server_info["tidi_avg_slow"] = round(SStime_track.time_dilation_avg_slow, 0.1)
-	// VV refs
-	server_info["ref_glob"] = "\ref[GLOB]"
-	server_info["ref_config"] = "\ref[config]"
-	server_info["ref_master"] = "\ref[Master]"
-	server_info["ref_failsafe"] = "\ref[Failsafe]"
-	server_info["ref_cameranet"] = "\ref[GLOB.cameranet]"
-	// Camera net
-	server_info["camera_count"] = GLOB.cameranet.cameras.len
-	server_info["camera_chunks"] = GLOB.cameranet.chunks.len
+	var/tick_lag = world.tick_lag
+	var/maptick = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
 
-	perf_history_cpu += world.cpu
-	if(length(perf_history_cpu) > 30)
-		perf_history_cpu.Cut(1, length(perf_history_cpu) - 29)
-	perf_history_tidi += round(SStime_track.time_dilation_current, 0.1)
-	if(length(perf_history_tidi) > 30)
-		perf_history_tidi.Cut(1, length(perf_history_tidi) - 29)
-	perf_history_ping += round(SStime_track.ping_rtt_last_avg, 1)
-	if(length(perf_history_ping) > 30)
-		perf_history_ping.Cut(1, length(perf_history_ping) - 29)
-	server_info["history"] = list(
-		"cpu" = perf_history_cpu.Copy(),
-		"tidi" = perf_history_tidi.Copy(),
-		"ping" = perf_history_ping.Copy()
-	)
-
-	var/list/key_ss = list()
-	// Atmospherics
-	key_ss["Atmospherics"] = list(
-		list("Высокое давление", round(SSair.cost_highpressure, 0.1)),
-		list("Горение", round(SSair.cost_hotspots, 0.1)),
-		list("Сверхпроводимость", round(SSair.cost_superconductivity, 0.1)),
-		list("Трубопроводы", round(SSair.cost_pipenets, 0.1)),
-		list("Атмос. машины", round(SSair.cost_atmos_machinery, 0.1)),
-		list("Активные тайлы", round(SSair.cost_turfs, 0.1)),
-		list("Очаги", SSair.hotspots.len),
-		list("Сети", SSair.networks.len),
-		list("Выс давл. тайлы", SSair.high_pressure_turfs),
-		list("Низк давл. тайлы", SSair.low_pressure_turfs),
-		list("Газовые смеси", SSair.gas_mixes_count)
-	)
-	// Garbage Collector
-	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
-	var/list/gc_queue_counts = list()
-	for (var/i in 1 to GC_QUEUE_COUNT)
-		gc_queue_counts += SSgarbage.GetQueueDepth(i)
-	key_ss["Garbage"] = list(
-		list("Очереди", gc_queue_counts.Join(", ")),
-		list("Del/тик", SSgarbage.delslasttick),
-		list("GC/тик", SSgarbage.gcedlasttick),
-		list("Всего Del", SSgarbage.totaldels),
-		list("Всего GC", SSgarbage.totalgcs),
-		list("GC %", gc_ratio)
-	)
-	// Machines
-	key_ss["Machines"] = list(
-		list("Всего машин", SSmachines.get_machine_count()),
-		list("Типов", SSmachines.get_machine_type_count()),
-		list("Обработка", length(SSmachines.processing)),
-		list("Энергосети", length(SSmachines.powernets))
-	)
-	// Mobs
-	key_ss["Mobs"] = list(
-		list("Живых мобов", length(GLOB.mob_living_list))
-	)
-	// Timer
-	key_ss["Timer"] = list(
-		list("Бакеты", SStimer.bucket_count),
-		list("Очередь", length(SStimer.second_queue)),
-		list("Хэши", length(SStimer.hashes)),
-		list("Клиент таймеры", length(SStimer.clienttime_timers)),
-		list("Всего ID", length(SStimer.timer_id_dict))
-	)
-	// Objects (processing subsystem)
-	key_ss["Objects"] = list(
-		list("Обработка", length(SSobj.processing))
-	)
-	// Lighting
-	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
-	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
-	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
-	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
-	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
-	key_ss["Lighting"] = list(
-		list("Очередь источ.", length(GLOB.lighting_update_lights)),
-		list("Очередь углов", length(GLOB.lighting_update_corners)),
-		list("Очередь объект.", length(GLOB.lighting_update_objects)),
-		list("Кэп источников", SSlighting.sources_cap),
-		list("Фаза: Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
-		list("Фаза: Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
-		list("Фаза: Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
-		list("Среднее/источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
-		list("Пик: Ист./Угл./Объ.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
-		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
-		list("Кэш таблиц", length(GLOB.lighting_sheets)),
-		list("Звёздные тайлы", length(GLOB.starlight))
-	)
-	// Clients performance aggregate — cached separately, refreshed every 3rd MC data call
-	client_stats_refresh_counter++
-	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
-		client_stats_refresh_counter = 0
-		var/total_clients = length(GLOB.clients)
-		if(total_clients)
-			var/sum_ping = 0
-			var/min_ping = INFINITY
-			var/max_ping = 0
-			var/sum_server_delay = 0
-			var/list/fps_counts = list()
-			var/list/version_counts = list()
-			var/valid_clients = total_clients
-			for(var/client/C as anything in GLOB.clients)
-				var/p = C.avgping_rtt || C.avgping
-				if(!p)
-					valid_clients--
-					continue
-				sum_ping += p
-				if(p < min_ping) min_ping = p
-				if(p > max_ping) max_ping = p
-				sum_server_delay += (C.avgping_server || 0)
-				var/fps_key = "[C.fps || world.fps]"
-				fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
-				var/ver_key = "[C.byond_version].[C.byond_build]"
-				version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
-			var/list/fps_parts = list()
-			for(var/fps_val in fps_counts)
-				fps_parts += "[fps_val]: [fps_counts[fps_val]]"
-			var/list/ver_parts = list()
-			var/ver_shown = 0
-			for(var/ver in version_counts)
-				if(ver_shown >= 3)
-					break
-				ver_parts += "[ver] ([version_counts[ver]])"
-				ver_shown++
-			var/avg_ping = valid_clients ? round(sum_ping / valid_clients, 1) : 0
-			var/avg_delay = valid_clients ? round(sum_server_delay / valid_clients, 1) : 0
-			var/ping_minmax = valid_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
-			cached_client_stats = list(
-				list("Подключено", length(GLOB.clients)),
-				list("Ping средний", "[avg_ping]ms"),
-				list("Ping мин/макс", ping_minmax),
-				list("Задержка сервера", "[avg_delay]ms"),
-				list("FPS настройки", jointext(fps_parts, ", ")),
-				list("BYOND версии", jointext(ver_parts, ", "))
-			)
-		else
-			cached_client_stats = null
-	if(cached_client_stats)
-		key_ss["Clients"] = cached_client_stats
-	server_info["key_ss"] = key_ss
-
-	mc_data_encoded = url_encode(json_encode(server_info))
-
-	// Subsystem rows: [name, state, cost, tick_usage, tick_overrun, ticks, times_fired, can_fire, is_bg, ref, stat_extra]
+	// Строки подсистем: [name, state, cost, tick_usage, overrun, ticks, fired, can_fire, is_bg, ref, extra,
+	// load, wait_ds, priority, flags, next_fire_in, last_fire_ago, postponed, paused_ticks, init_order, initialized]
 	var/list/ss_data = list()
+	var/mc_load = 0
 	for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
 		var/is_active = (SS.can_fire && !(SS.flags & SS_NO_FIRE)) ? 1 : 0
-		// Extract subsystem-specific stat data (part after \t in stat_entry)
+		var/ticker = SS.flags & SS_TICKER
+		var/load = 0
+		if(is_active)
+			load = mc_subsystem_tick_load(SS.tick_usage, SS.wait, SS.ticks, ticker, tick_lag)
+			mc_load += load
 		var/stat_text = SS.stat_entry()
 		var/stat_extra = ""
 		var/tab_pos = findtext(stat_text, "\t")
@@ -1194,9 +1029,221 @@ SUBSYSTEM_DEF(statpanels)
 			is_active,
 			(SS.flags & SS_BACKGROUND) ? 1 : 0,
 			"\ref[SS]",
-			stat_extra
+			stat_extra,
+			round(load, 0.01),
+			ticker ? SS.wait * tick_lag : SS.wait,
+			SS.priority,
+			SS.flags,
+			is_active ? round(SS.next_fire - world.time, 0.1) : null,
+			SS.last_fire ? round(world.time - SS.last_fire, 0.1) : null,
+			SS.postponed_fires,
+			SS.paused_ticks,
+			SS.init_order,
+			SS.initialized ? 1 : 0
 		)
 	mc_ss_data_encoded = url_encode(json_encode(ss_data))
+	mc_load = round(mc_load, 0.1)
+
+	var/list/server_info = list()
+	// Сводка
+	server_info["cpu"] = round(world.cpu, 0.1)
+	server_info["maptick"] = maptick
+	server_info["mc_load"] = mc_load
+	server_info["tidi_current"] = round(SStime_track.time_dilation_current, 0.1)
+	server_info["tidi_avg_fast"] = round(SStime_track.time_dilation_avg_fast, 0.1)
+	server_info["tidi_avg"] = round(SStime_track.time_dilation_avg, 0.1)
+	server_info["tidi_avg_slow"] = round(SStime_track.time_dilation_avg_slow, 0.1)
+	server_info["players"] = length(GLOB.clients)
+	server_info["round_time"] = SSticker.round_start_time ? time2text(world.time - SSticker.round_start_time, "hh:mm:ss", 0) : null
+	server_info["mem_vsz"] = round(SStime_track.memory_last_vsz_mb)
+	server_info["mem_ceiling"] = SStime_track.process_address_ceiling_mb || 0
+	server_info["mem_growth"] = round(SStime_track.memory_growth_mb_per_minute, 0.1)
+	server_info["instances"] = length(world.contents)
+
+	// Бюджет тика
+	server_info["tick_limit_running"] = round(TICK_LIMIT_RUNNING, 0.1)
+	server_info["tick_byond_reserve"] = TICK_BYOND_RESERVE
+	server_info["outside_tick_limit"] = Master.outside_tick_limit
+	server_info["background_tick_budget"] = Master.background_tick_budget
+	server_info["pace_passes"] = Master.pace_passes ? 1 : 0
+
+	// Контроллер
+	var/queue_length = 0
+	var/datum/controller/subsystem/queue_node = Master.queue_head
+	while(queue_node && queue_length < 1000)
+		queue_length++
+		queue_node = queue_node.queue_next
+	var/static/list/runlevel_names = list("Лобби", "Подготовка", "Игра", "После раунда")
+	var/runlevel = Master.current_runlevel
+	server_info["mc_processing"] = Master.processing
+	server_info["mc_iteration"] = Master.iteration
+	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
+	server_info["mc_sleep_delta"] = round(Master.sleep_delta, 0.01)
+	server_info["mc_skip_ticks"] = Master.skip_ticks
+	server_info["mc_queue"] = queue_length
+	server_info["mc_runlevel"] = (runlevel && runlevel <= length(runlevel_names)) ? runlevel_names[runlevel] : "Инициализация"
+	server_info["mc_restarts"] = Master.restart_count
+	server_info["mc_map_loading"] = Master.map_loading ? 1 : 0
+	server_info["mc_last_ss"] = Master.last_type_processed ? "[Master.last_type_processed]" : null
+	server_info["failsafe_defcon"] = Failsafe?.defcon
+	server_info["failsafe_stat"] = Failsafe?.stat_entry()
+	server_info["fps"] = world.fps
+	server_info["tick_lag"] = tick_lag
+	server_info["tick_count"] = round(world.time / tick_lag)
+	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
+	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / tick_lag, 1)) * 100, 0.1)
+	server_info["camera_count"] = length(GLOB.cameranet.cameras)
+	server_info["camera_chunks"] = length(GLOB.cameranet.chunks)
+	server_info["cleanup_last"] = round(SSserver_maint.cleanup_last_ms, 0.01)
+	server_info["cleanup_avg"] = round(SSserver_maint.cleanup_avg_ms, 0.01)
+	server_info["cleanup_target"] = SSserver_maint.cleanup_target_last
+	server_info["ref_glob"] = "\ref[GLOB]"
+	server_info["ref_config"] = "\ref[config]"
+	server_info["ref_master"] = "\ref[Master]"
+	server_info["ref_failsafe"] = Failsafe ? "\ref[Failsafe]" : null
+	server_info["ref_cameranet"] = "\ref[GLOB.cameranet]"
+
+	// Сеть
+	server_info["ping_samples"] = SStime_track.ping_samples
+	server_info["ping_rtt_median"] = round(SStime_track.ping_rtt_last_median, 1)
+	server_info["ping_rtt_avg"] = round(SStime_track.ping_rtt_last_avg, 1)
+	server_info["ping_rtt_max"] = round(SStime_track.ping_rtt_last_max, 1)
+	server_info["ping_rtt_avg_avg"] = round(SStime_track.ping_rtt_avg_avg, 1)
+	server_info["ping_tick_avg"] = round(SStime_track.ping_tick_last_avg, 1)
+	server_info["ping_tick_max"] = round(SStime_track.ping_tick_last_max, 1)
+	server_info["ping_server_avg"] = round(SStime_track.ping_server_last_avg, 1)
+	server_info["ping_server_max"] = round(SStime_track.ping_server_last_max, 1)
+	server_info["ping_server_avg_avg"] = round(SStime_track.ping_server_avg_avg, 1)
+	server_info["raw_mult"] = round(SStime_track.raw_multiplier_last, 0.0001)
+	server_info["jitter_last"] = round(SStime_track.raw_multiplier_jitter_abs_last, 0.01)
+	server_info["jitter_avg"] = round(SStime_track.raw_multiplier_jitter_abs_avg, 0.01)
+	server_info["jitter_max_wnd"] = round(SStime_track.raw_multiplier_jitter_abs_max_window, 0.01)
+	server_info["glide_mult"] = round(SStime_track.glide_size_multiplier_current, 0.0001)
+
+	push_mc_history("cpu", server_info["cpu"])
+	push_mc_history("tidi", server_info["tidi_current"])
+	push_mc_history("maptick", maptick)
+	push_mc_history("mc", mc_load)
+	push_mc_history("ping", server_info["ping_rtt_median"])
+	var/list/history = list()
+	for(var/key in mc_history)
+		var/list/series = mc_history[key]
+		history[key] = series.Copy()
+	server_info["history"] = history
+
+	var/list/key_ss = list()
+	key_ss["Atmospherics"] = list(
+		list("Высокое давление", "[round(SSair.cost_highpressure, 0.1)]ms"),
+		list("Горение", "[round(SSair.cost_hotspots, 0.1)]ms"),
+		list("Сверхпроводимость", "[round(SSair.cost_superconductivity, 0.1)]ms"),
+		list("Трубопроводы", "[round(SSair.cost_pipenets, 0.1)]ms"),
+		list("Атмос. машины", "[round(SSair.cost_atmos_machinery, 0.1)]ms"),
+		list("Активные тайлы", "[round(SSair.cost_turfs, 0.1)]ms"),
+		list("Очаги", length(SSair.hotspots)),
+		list("Сети", length(SSair.networks)),
+		list("Тайлы выс./низк. давл.", "[SSair.high_pressure_turfs] / [SSair.low_pressure_turfs]"),
+		list("Газовые смеси", SSair.gas_mixes_count)
+	)
+	var/gc_total = SSgarbage.totaldels + SSgarbage.totalgcs
+	var/list/gc_queue_counts = list()
+	for(var/i in 1 to GC_QUEUE_COUNT)
+		gc_queue_counts += SSgarbage.GetQueueDepth(i)
+	key_ss["Garbage"] = list(
+		list("Очереди", gc_queue_counts.Join(" / ")),
+		list("Del / GC за тик", "[SSgarbage.delslasttick] / [SSgarbage.gcedlasttick]"),
+		list("Всего Del / GC", "[SSgarbage.totaldels] / [SSgarbage.totalgcs]"),
+		list("Ушло мягко", gc_total ? "[round(SSgarbage.totalgcs / gc_total * 100, 0.1)]%" : "n/a")
+	)
+	key_ss["Machines"] = list(
+		list("Машин / типов", "[SSmachines.get_machine_count()] / [SSmachines.get_machine_type_count()]"),
+		list("В обработке", length(SSmachines.processing)),
+		list("Энергосети", length(SSmachines.powernets))
+	)
+	key_ss["Mobs"] = list(
+		list("Живых мобов", length(GLOB.mob_living_list))
+	)
+	key_ss["Timer"] = list(
+		list("Бакеты", SStimer.bucket_count),
+		list("Вторая очередь", length(SStimer.second_queue)),
+		list("Хэши", length(SStimer.hashes)),
+		list("Клиентские", length(SStimer.clienttime_timers)),
+		list("С ID", length(SStimer.timer_id_dict))
+	)
+	key_ss["Objects"] = list(
+		list("В обработке", length(SSobj.processing))
+	)
+	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
+	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
+	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
+	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
+	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
+	key_ss["Lighting"] = list(
+		list("Очередь ист./угл./объ.", "[length(GLOB.lighting_update_lights)] / [length(GLOB.lighting_update_corners)] / [length(GLOB.lighting_update_objects)]"),
+		list("Кэп источников", SSlighting.sources_cap),
+		list("Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
+		list("Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
+		list("Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
+		list("На источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
+		list("Пик ист./угл./объ.", "[SSlighting.peak_sources] / [SSlighting.peak_corners] / [SSlighting.peak_objects]"),
+		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
+		list("Кэш таблиц / звёздные", "[length(GLOB.lighting_sheets)] / [length(GLOB.starlight)]")
+	)
+	// Сводка по клиентам дорогая (обход всех клиентов), пересобирается раз в 3 вызова
+	client_stats_refresh_counter++
+	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
+		client_stats_refresh_counter = 0
+		cached_client_stats = build_mc_client_stats()
+	if(cached_client_stats)
+		key_ss["Clients"] = cached_client_stats
+	server_info["key_ss"] = key_ss
+
+	mc_data_encoded = url_encode(json_encode(server_info))
+
+/// Карточка "Clients" MC-вкладки: пинг, задержка сервера, FPS и версии BYOND по всем клиентам.
+/datum/controller/subsystem/statpanels/proc/build_mc_client_stats()
+	var/total_clients = length(GLOB.clients)
+	if(!total_clients)
+		return null
+	var/sum_ping = 0
+	var/min_ping = INFINITY
+	var/max_ping = 0
+	var/sum_server_delay = 0
+	var/list/fps_counts = list()
+	var/list/version_counts = list()
+	var/valid_clients = 0
+	for(var/client/C as anything in GLOB.clients)
+		var/fps_key = "[C.fps || world.fps]"
+		fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
+		var/ver_key = "[C.byond_version].[C.byond_build]"
+		version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
+		var/p = C.avgping_rtt || C.avgping
+		if(!p)
+			continue
+		valid_clients++
+		sum_ping += p
+		min_ping = min(min_ping, p)
+		max_ping = max(max_ping, p)
+		sum_server_delay += C.avgping_server || 0
+	var/list/fps_parts = list()
+	for(var/fps_val in fps_counts)
+		fps_parts += "[fps_val]: [fps_counts[fps_val]]"
+	// Самые частые версии первыми
+	var/list/ver_parts = list()
+	for(var/i in 1 to min(3, length(version_counts)))
+		var/best_ver
+		for(var/ver in version_counts)
+			if(!best_ver || version_counts[ver] > version_counts[best_ver])
+				best_ver = ver
+		ver_parts += "[best_ver] ([version_counts[best_ver]])"
+		version_counts -= best_ver
+	return list(
+		list("Подключено", total_clients),
+		list("Пинг средний", valid_clients ? "[round(sum_ping / valid_clients, 1)]ms" : "n/a"),
+		list("Пинг мин/макс", valid_clients ? "[round(min_ping, 1)] / [round(max_ping, 1)]ms" : "n/a"),
+		list("Задержка сервера", valid_clients ? "[round(sum_server_delay / valid_clients, 1)]ms" : "n/a"),
+		list("FPS клиентов", jointext(fps_parts, ", ")),
+		list("Версии BYOND", jointext(ver_parts, ", "))
+	)
 
 /// verbs that send information from the browser UI
 /client/verb/set_tab(tab as text|null)
@@ -1251,6 +1298,7 @@ SUBSYSTEM_DEF(statpanels)
 #undef LISTED_TURF_DIRTY_MIN_INTERVAL
 #undef STATPANEL_AFK_INACTIVITY
 #undef MC_DATA_REFRESH_FIRES
+#undef MC_HISTORY_LEN
 #undef STATPANEL_FULL_CYCLE_FIRES
 #undef STATPANEL_SLOW_CYCLE_FULLS
 #undef STATPANEL_STAGGER_GROUPS
