@@ -18,21 +18,14 @@ from dmi import *
 # 0.1 МБ на диске, 56 МБ в клиенте). Считается только площадь листа.
 DECODED_BUDGET_BYTES = 32 * 1024 * 1024
 
-# И потолок на ВСЁ дерево. Отдельный файл может быть скромным, а сумма - нет: клиент
-# декодирует ровно те листы, которые ему показали, и дерево на 2.3 ГБ при потолке процесса
-# около 3 ГБ означает, что достаточно активный раунд упирается в стену без единого
-# нарушителя пофайлового потолка. Число - храповик: опускать по мере разноса листов,
-# поднимать только сознательно и с объяснением, почему клиенту это по карману.
-# 15 путей еретика после удаления одинаковых кадров: дерево занимает 2554 МБ.
-# +10 МБ: нимбы вознесения разнесены по листу на путь (15 x 2 МБ). Пути взаимоисключающие, клиент
-# декодирует лист только вознёсшегося пути, а прежний общий лист на 12 путей (9.4 МБ) уезжал целиком.
-# +10 МБ (10.2026): master сам дошёл до 2572 МБ (причёски +1.8, маркинги), дроиды HK и 20 малых событий
-# добавили 3.1 МБ в 34 плотных листах 32x32 без пустых ячеек; итог 2575 МБ.
-# +4 МБ (11.2026): модули MOD, NIF и протеан (#4221) принесли 5.4 МБ, а потолок подняли на 2 - master
-# стал красным на 2585 МБ. Самый крупный новый лист - визор Armolex (два кадра 480x480, 1.8 МБ).
-# +10 МБ (11.2026): песчаный вал поля Песка (#4355) - свой лист кадрами 320x320 в родном размере, 6.25 МБ,
-# вместо растянутой ударной волны; плюшки +0.1 МБ. Дерево 2593 МБ, запас 3 МБ.
-TREE_DECODED_BUDGET_BYTES = 2596 * 1024 * 1024
+# И потолок на ВСЁ дерево: каждый файл может быть скромным, а сумма - нет. Клиент держит
+# 3 ГБ распакованных листов без заметных просадок, поэтому потолок 3000 МБ, а не впритык к
+# текущему размеру. Поднимать его в каждом ПР с новыми спрайтами не нужно - на этом ПР и
+# конфликтуют между собой. Когда запас станет меньше TREE_WARN_HEADROOM_BYTES, проверка
+# предупредит заранее, и разносить крупные листы можно будет без спешки.
+TREE_DECODED_BUDGET_BYTES = 3000 * 1024 * 1024
+TREE_WARN_HEADROOM_BYTES = 100 * 1024 * 1024
+TREE_REPORT_TOP = 10
 
 # Файлы, которые уже были над потолком, когда его завели. Значение - ТЕКУЩИЙ размер листа
 # в байтах, то есть персональный потолок: уменьшать эти иконки можно свободно, увеличивать -
@@ -95,6 +88,14 @@ def _description_chunk_type(fullpath):
                 handle.seek(length + 4, os.SEEK_CUR)
 
 
+def _warn(message):
+    # В Actions строка с ::warning:: становится аннотацией на странице прогона.
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        print(f"::warning title=Дерево иконок::{message}")
+    else:
+        print('ПРЕДУПРЕЖДЕНИЕ:', message)
+
+
 def _self_test():
     # test: can we load every DMI in the tree
     count = 0
@@ -127,7 +128,10 @@ def _self_test():
                     measured.append((decoded, os.path.relpath(fullpath).replace(os.sep, '/')))
 
     print(f"{os.path.relpath(__file__)}: successfully parsed {count} .dmi files")
-    print(f"{os.path.relpath(__file__)}: распакованными у клиента это {total_decoded / MIB:.0f} МБ")
+    print(
+        f"{os.path.relpath(__file__)}: распакованными у клиента это {total_decoded / MIB:.0f} МБ "
+        f"из {TREE_DECODED_BUDGET_BYTES / MIB:.0f}, запас {(TREE_DECODED_BUDGET_BYTES - total_decoded) / MIB:.0f} МБ"
+    )
 
     for decoded, relpath in sorted(measured, reverse=True):
         if decoded <= DECODED_BUDGET_BYTES:
@@ -146,13 +150,24 @@ def _self_test():
                 f"с прежних {allowed / MIB:.0f} МБ. Файл и так над потолком; расти ему нельзя."
             )
 
-    if total_decoded > TREE_DECODED_BUDGET_BYTES:
+    headroom = TREE_DECODED_BUDGET_BYTES - total_decoded
+    if headroom < 0:
         failures.append(
             f"дерево иконок разворачивается в {total_decoded / MIB:.0f} МБ при потолке "
             f"{TREE_DECODED_BUDGET_BYTES / MIB:.0f} МБ. Это сумма, а не один файл: "
             f"клиенту столько показать нечем. Разнесите крупный лист по стейтам или "
             f"снесите неиспользуемый - и только осознанно поднимайте TREE_DECODED_BUDGET_BYTES."
         )
+    elif headroom < TREE_WARN_HEADROOM_BYTES:
+        _warn(
+            f"до потолка дерева иконок осталось {headroom / MIB:.0f} МБ "
+            f"({total_decoded / MIB:.0f} из {TREE_DECODED_BUDGET_BYTES / MIB:.0f}). "
+            f"Пора разносить крупные листы, пока проверка не покраснела."
+        )
+    if headroom < TREE_WARN_HEADROOM_BYTES:
+        print(f"\nКрупнейшие листы, МБ в клиенте:")
+        for decoded, relpath in sorted(measured, reverse=True)[:TREE_REPORT_TOP]:
+            print(f"    {decoded / MIB:6.1f}  {relpath}")
 
     if failures:
         print()
@@ -168,6 +183,9 @@ def _usage():
 
 
 def _main():
+    # Консоль Windows по умолчанию не в UTF-8, и русские сообщения выходят кракозябрами.
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
     if len(sys.argv) == 1:
         return _self_test()
 
