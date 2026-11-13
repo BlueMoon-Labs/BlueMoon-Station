@@ -15,6 +15,9 @@
 #define SWARMER_ROVER_HEALTH 60
 #define SWARMER_COMBAT_BUILDER_HEALTH 120
 #define SWARMER_MEGA_HEALTH 1500
+#define SWARMER_EVAC_ARRIVAL_TIME (3 MINUTES)
+#define SWARMER_EVAC_BOARDING_TIME (1 MINUTES)
+#define SWARMER_EVAC_RETURN_TIME (1 MINUTES)
 
 GLOBAL_LIST_INIT(common_swarmer_actions, list(
 	/datum/action/cooldown/swarmer/consume_tile,

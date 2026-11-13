@@ -238,7 +238,7 @@
 	living_target.Knockdown(knockdown_time)
 
 /mob/living/simple_animal/hostile/swarmer/mega/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
-	if(!is_energy_reflectable_projectile(P) || !prob(reflection_chance))
+	if(swarmer_actions_blocked(src) || !is_energy_reflectable_projectile(P) || !prob(reflection_chance))
 		return ..()
 	if(P.damage_type == BRUTE || P.damage_type == BURN)
 		var/armor = run_armor_check(def_zone, P.flag, armour_penetration = P.armour_penetration, silent = TRUE)
@@ -254,7 +254,7 @@
 	HasProximity(src)
 
 /mob/living/simple_animal/hostile/swarmer/mega/HasProximity(atom/movable/AM)
-	if(QDELETED(acp))
+	if(QDELETED(acp) || swarmer_actions_blocked(src))
 		return
 	if(AM != src)
 		acp.handle_interloper(AM)

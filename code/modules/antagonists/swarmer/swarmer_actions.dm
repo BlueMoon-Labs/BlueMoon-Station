@@ -24,7 +24,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	var/action_cost = 0
 
 /datum/action/cooldown/swarmer/IsAvailable()
-	if(!isswarmer(owner))
+	if(!isswarmer(owner) || swarmer_actions_blocked(owner))
 		return FALSE
 	return ..()
 
@@ -137,7 +137,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 /datum/action/cooldown/swarmer/consume_tile/proc/run_step()
 	step_timer = null
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
-	if(!selected_tile || !swarmer?.client || swarmer.incapacitated() || !isturf(swarmer.loc))
+	if(!selected_tile || !swarmer?.client || swarmer.incapacitated() || !isturf(swarmer.loc) || swarmer_actions_blocked(swarmer))
 		stop()
 		return
 	if(!swarmer.CheckActionCooldown(immediate = TRUE))
@@ -242,7 +242,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	if(!custom_build_checks(swarmer, turfs_to_check))
 		return
 
-	if(QDELETED(src) || owner != swarmer || swarmer.client != building_client || swarmer.team != swarm_team || get_turf(swarmer) != spawn_turf)
+	if(QDELETED(src) || owner != swarmer || swarmer.client != building_client || swarmer.team != swarm_team || get_turf(swarmer) != spawn_turf || swarmer_actions_blocked(swarmer))
 		return
 
 	if(!can_place_structure(swarmer, spawn_turf))
@@ -255,7 +255,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	if(build_time)
 		if(!do_after(swarmer, build_time, swarmer, extra_checks = CALLBACK(src, PROC_REF(check_for_structure_in_turfs), swarmer, turfs_to_check)) \
 			|| QDELETED(src) || owner != swarmer || swarmer.client != building_client || swarmer.team != swarm_team \
-			|| QDELETED(swarm_team.swarmer_core) || get_turf(swarmer) != spawn_turf)
+			|| QDELETED(swarm_team.swarmer_core) || get_turf(swarmer) != spawn_turf || swarmer_actions_blocked(swarmer))
 			swarm_team.adjust_metal(action_cost)
 			swarmer.balloon_alert(swarmer, "сбито!")
 			return
@@ -491,14 +491,14 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 	var/input_hub_key = tgui_input_list(owner, "Выберите хаб для телепорта ядра.", "Выбор хаба", potential_hubs)
 	var/obj/structure/swarmer/transport_hub/actual_selected_hub = potential_hubs[input_hub_key]
-	if(QDELETED(src) || QDELETED(core) || QDELETED(actual_selected_hub) || !actual_selected_hub.enabled || !core.Adjacent(owner))
+	if(QDELETED(src) || QDELETED(core) || QDELETED(actual_selected_hub) || !actual_selected_hub.enabled || !core.Adjacent(owner) || swarmer_actions_blocked(owner))
 		return
 
 	if(!swarmer.team?.adjust_metal(-action_cost))
 		owner.balloon_alert(owner, "недостаточно ресурсов!")
 		return
 
-	if(!do_after(owner, core_move_delay, core) || QDELETED(actual_selected_hub) || !actual_selected_hub.enabled || !get_turf(actual_selected_hub))
+	if(!do_after(owner, core_move_delay, core) || QDELETED(actual_selected_hub) || !actual_selected_hub.enabled || !get_turf(actual_selected_hub) || swarmer_actions_blocked(owner))
 		owner.balloon_alert(owner, "нельзя двигаться!")
 		swarmer.team?.adjust_metal(action_cost)
 		return
@@ -532,7 +532,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 /datum/action/innate/swarmer_hide/Activate()
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
-	if(!istype(swarmer) || swarmer.incapacitated())
+	if(!istype(swarmer) || swarmer.incapacitated() || swarmer_actions_blocked(swarmer))
 		return
 	swarmer.layer = ABOVE_NORMAL_TURF_LAYER
 	swarmer.sliding_under_doors = TRUE
@@ -554,7 +554,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 /datum/action/innate/swarmer_fire_mode/Activate()
 	var/mob/living/simple_animal/hostile/swarmer/combat/swarmer = owner
-	if(!istype(swarmer) || swarmer.incapacitated() || swarmer.secondary_projectile_type == secondary_projectile_type)
+	if(!istype(swarmer) || swarmer.incapacitated() || swarmer_actions_blocked(swarmer) || swarmer.secondary_projectile_type == secondary_projectile_type)
 		return
 	swarmer.secondary_projectile_type = secondary_projectile_type
 	swarmer.secondary_weapon_hint = name

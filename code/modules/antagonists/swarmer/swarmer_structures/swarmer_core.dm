@@ -6,7 +6,6 @@
 #define SWARMER_FINAL_PHASE_DURATION 12 MINUTES
 #define SWARMER_FINAL_ANNOUNCE_INTERVAL 1 MINUTES
 #define SWARMER_MEGA_WAVE_INTERVAL 30 SECONDS
-#define SWARMER_EVAC_ARRIVAL_TIME 3 MINUTES
 
 /obj/structure/swarmer/core
 	name = "swarmer core"
@@ -222,12 +221,7 @@
 
 	var/time_left = mega_phase_deadline - world.time
 	if(time_left <= 0)
-		var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
-		if(shuttle)
-			SSshuttle.emergencyNoRecall = TRUE
-			if(shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME)
-				var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
-				shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
+		SSshuttle.emergency?.start_swarmer_evacuation()
 		spawn_mega_wave()
 		return
 
@@ -280,7 +274,7 @@
 		return
 
 	var/mob/living/simple_animal/hostile/swarmer/old_swarmer = ui.user
-	if(QDELETED(src) || QDELETED(old_swarmer) || old_swarmer.team != team || !old_swarmer.mind || !old_swarmer.client || !Adjacent(old_swarmer) || old_swarmer.incapacitated())
+	if(QDELETED(src) || QDELETED(old_swarmer) || old_swarmer.team != team || !old_swarmer.mind || !old_swarmer.client || !Adjacent(old_swarmer) || old_swarmer.incapacitated() || swarmer_actions_blocked(old_swarmer))
 		return
 
 	var/swarmer_path = text2path(params["class"])
@@ -351,7 +345,6 @@
 #undef SWARMER_FINAL_PHASE_DURATION
 #undef SWARMER_FINAL_ANNOUNCE_INTERVAL
 #undef SWARMER_MEGA_WAVE_INTERVAL
-#undef SWARMER_EVAC_ARRIVAL_TIME
 
 /datum/armor/swarmer_core
 	melee = 25

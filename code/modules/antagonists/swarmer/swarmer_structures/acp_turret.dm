@@ -48,7 +48,7 @@
 	if(entity.invisibility > SEE_INVISIBLE_LIVING)
 		return
 
-	if(!isliving(entity) || isswarmer(entity))
+	if(!isliving(entity) || isswarmer(entity) || swarmer_actions_blocked(src))
 		return
 
 	processing_targets[entity] = TRUE
@@ -57,6 +57,9 @@
 
 /obj/structure/swarmer/acp_turret/process(seconds_per_tick)
 	if(!length(processing_targets))
+		return PROCESS_KILL
+	if(swarmer_actions_blocked(src))
+		processing_targets.Cut()
 		return PROCESS_KILL
 
 	var/turf/our_turf = get_turf(src)

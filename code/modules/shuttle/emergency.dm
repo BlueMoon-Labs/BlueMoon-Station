@@ -74,14 +74,14 @@
 		A += list(list("name" = name, "job" = job))
 	data["authorizations"] = A
 
-	data["enabled"] = (IS_DOCKED && !ENGINES_STARTED)
+	data["enabled"] = (IS_DOCKED && !ENGINES_STARTED && !SSshuttle.emergency.swarmer_evacuation)
 	data["emagged"] = obj_flags & EMAGGED ? 1 : 0
 	return data
 
 /obj/machinery/computer/emergency_shuttle/ui_act(action, params, datum/tgui/ui)
 	if(..())
 		return
-	if(ENGINES_STARTED) // past the point of no return
+	if(ENGINES_STARTED || SSshuttle.emergency.swarmer_evacuation)
 		return
 	if(!IS_DOCKED) // shuttle computer only has uses when onstation
 		return
@@ -164,7 +164,7 @@
 		authorized.Cut()
 		obj_flags &= ~EMAGGED
 
-	if(ENGINES_STARTED || (!IS_DOCKED))
+	if(ENGINES_STARTED || !IS_DOCKED || SSshuttle.emergency.swarmer_evacuation)
 		return .
 
 	// Check to see if we've reached criteria for early launch
@@ -183,7 +183,7 @@
 		announce_hijack_stage()
 	hijack_last_stage_increase = world.time
 	say("Сбой навигационного протокола! Перезагрузка систем.")
-	if(shuttle.mode == SHUTTLE_ESCAPE)
+	if(shuttle.mode == SHUTTLE_ESCAPE && !shuttle.swarmer_evacuation)
 		if(shuttle.hijack_status >= HIJACKED)
 			shuttle.setTimer(hijack_completion_flight_time_set)
 		else
@@ -195,6 +195,9 @@
 
 /obj/machinery/computer/emergency_shuttle/proc/attempt_hijack_stage(mob/living/user)
 	if(!user.CanReach(src))
+		return
+	if(SSshuttle.emergency.swarmer_evacuation)
+		to_chat(user, span_warning("Маршрут экстренной эвакуации заблокирован для перепрограммирования."))
 		return
 	if(src.dir && get_dir(src, user) != src.dir)
 		to_chat(user, "<span class='warning'>Мне нужно видеть экран [src], чтобы приступить к взлому системы.</span>")
@@ -214,7 +217,7 @@
 	to_chat(user, "<span class='boldwarning'>Вы [SSshuttle.emergency.hijack_status == NOT_BEGUN? "начинаете" : "продолжаете"] перехват навигационных протоколов [src].</span>")
 	say("Перехват управления начат.")
 	. = FALSE
-	if(do_after(user, hijack_stage_time * (1 / user.mind.get_hijack_speed()), target = src))
+	if(do_after(user, hijack_stage_time * (1 / user.mind.get_hijack_speed()), target = src) && !SSshuttle.emergency.swarmer_evacuation)
 		increase_hijack_stage()
 		. = TRUE
 		to_chat(user, "<span class='notice'>Вы перепрограммировали часть кода [src] - консоль уходит в таймаут на [hijack_stage_cooldown/10] секунд.</span>")
@@ -308,6 +311,7 @@
 	var/hijack_status = NOT_BEGUN
 	/// Очередь путей /datum/shuttle_event из GLOB.admin_forceable_hyperspace_events — по порядку при уходе в транзит.
 	var/list/queued_admin_hyperspace_events = list()
+	var/swarmer_evacuation = FALSE
 
 /obj/docking_port/mobile/emergency/canDock(obj/docking_port/stationary/S)
 	return SHUTTLE_CAN_DOCK //If the emergency shuttle can't move, the whole game breaks, so it will force itself to land even if it has to crush a few departments in the process
@@ -341,7 +345,7 @@
 				set_coefficient = 0.8
 			else
 				set_coefficient = 0.5
-	var/call_time = SSshuttle.emergencyCallTime * set_coefficient * engine_coeff
+	var/call_time = swarmer_evacuation ? SWARMER_EVAC_ARRIVAL_TIME : SSshuttle.emergencyCallTime * set_coefficient * engine_coeff
 	switch(mode)
 		// The shuttle can not normally be called while "recalling", so
 		// if this proc is called, it's via admin fiat
@@ -361,6 +365,31 @@
 	if(!silent)
 		priority_announce("Шаттл эвакуации был вызван. [redAlert ? "Подтверждён код Красный: Отправляем шаттл в срочном порядке. " : "" ]Он прибудет через [timeLeft(600)] минут.[reason][SSshuttle.emergencyLastCallLoc ? "\n\nСигнал вызова был отслежен. Результаты можно посмотреть на любой консоли коммуникаций." : "" ]", null, "shuttlecalled", "Priority")
 
+/obj/docking_port/mobile/emergency/proc/start_swarmer_evacuation()
+	swarmer_evacuation = TRUE
+	SSshuttle.emergencyNoRecall = TRUE
+	switch(mode)
+		if(SHUTTLE_IDLE, SHUTTLE_RECALL, SHUTTLE_CALL)
+			request(reason = " Причина: ядро свармеров начало массовую телепортацию.")
+		if(SHUTTLE_DOCKED, SHUTTLE_IGNITING)
+			mode = SHUTTLE_DOCKED
+			sound_played = FALSE
+			setTimer(get_boarding_time())
+			priority_announce("Ядро свармеров начало массовую телепортацию. До вылета эвакуационного шаттла осталась одна минута.", null, "shuttledock", "Priority")
+		if(SHUTTLE_ESCAPE)
+			setTimer(min(timeLeft(1), SWARMER_EVAC_RETURN_TIME))
+
+/obj/docking_port/mobile/emergency/modTimer(multiple)
+	if(swarmer_evacuation)
+		return
+	return ..()
+
+/obj/docking_port/mobile/emergency/proc/get_boarding_time()
+	return swarmer_evacuation ? SWARMER_EVAC_BOARDING_TIME : SSshuttle.emergencyDockTime
+
+/obj/docking_port/mobile/emergency/proc/get_return_flight_time()
+	return swarmer_evacuation ? SWARMER_EVAC_RETURN_TIME : SSshuttle.emergencyEscapeTime * engine_coeff
+
 /obj/docking_port/mobile/emergency/cancel(area/signalOrigin)
 	if(mode != SHUTTLE_CALL)
 		return
@@ -377,7 +406,7 @@
 	priority_announce("Шаттл эвакуации был отозван.[SSshuttle.emergencyLastCallLoc ? " Сигнал отзыва был отслежён. Результаты можно посмотреть на любой консоли коммуникации." : "" ]", null, "shuttlerecalled", "Priority")
 
 /obj/docking_port/mobile/emergency/proc/is_hijacked()
-	return hijack_status == HIJACKED
+	return !swarmer_evacuation && hijack_status == HIJACKED
 
 /obj/docking_port/mobile/emergency/proc/ShuttleDBStuff()
 	set waitfor = FALSE
@@ -395,7 +424,7 @@
 		qdel(old_event)
 	event_list.Cut()
 
-	var/evac_duration = SSshuttle.emergencyEscapeTime * engine_coeff
+	var/evac_duration = get_return_flight_time()
 	var/used_admin_queue = FALSE
 	if(length(queued_admin_hyperspace_events))
 		for(var/event_type in queued_admin_hyperspace_events)
@@ -439,7 +468,7 @@
 					setTimer(20)
 					return
 				mode = SHUTTLE_DOCKED
-				setTimer(SSshuttle.emergencyDockTime)
+				setTimer(get_boarding_time())
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce("Эвакуационный Шаттл пристыковался к станции. Вам отведено [timeLeft(600)] минуты для посадки.", null, "shuttledock", "Priority")
 				ShuttleDBStuff()
@@ -492,7 +521,7 @@
 				enterTransit()
 				mode = SHUTTLE_ESCAPE
 				launch_status = ENDGAME_LAUNCHED
-				setTimer(SSshuttle.emergencyEscapeTime * engine_coeff)
+				setTimer(get_return_flight_time())
 				prepare_hyperspace_events()
 				priority_announce("Шаттл Эвакуации покинул станцию. До прибытия Шаттла Эвакуации на Аванпост Центрального Командования осталось [timeLeft(600)] минут.", null, null, "ВНИМАНИЕ: ОТБЫТИЕ ШАТТЛА")
 				addtimer(CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts)), 0)
@@ -552,7 +581,7 @@
 
 	mode = SHUTTLE_ESCAPE
 	launch_status = ENDGAME_LAUNCHED
-	setTimer(SSshuttle.emergencyEscapeTime)
+	setTimer(swarmer_evacuation ? SWARMER_EVAC_RETURN_TIME : SSshuttle.emergencyEscapeTime)
 	priority_announce("The Emergency Shuttle is preparing for direct jump. Estimate [timeLeft(600)] minutes until the shuttle docks at Central Command.", null, null, "Priority")
 
 
