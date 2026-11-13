@@ -310,7 +310,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 /datum/action/cooldown/swarmer/build/proc/can_place_structure(mob/living/simple_animal/hostile/swarmer/swarmer, turf/spawn_turf)
 	var/datum/team/swarmer_team/swarm_team = swarmer.team
-	if(GLOB.swarmer_structure_limits_per_body[build_type] && swarm_team.get_structure_count(build_type) >= swarm_team.get_structure_limit(build_type))
+	if(GLOB.swarmer_structure_limits_per_body[build_type] && SWARMER_STRUCTURE_COUNT(swarm_team, build_type) >= SWARMER_STRUCTURE_LIMIT(swarm_team, build_type))
 		swarmer.balloon_alert(swarmer, "достигнут лимит построек этого типа!")
 		return FALSE
 

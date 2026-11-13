@@ -179,10 +179,10 @@
 	for(var/obj/item/bodypart/limb as anything in shuffle(eligible_limbs))
 		if(!prob(SWARMER_ANALYZE_FRACTURE_CHANCE))
 			continue
-		if(limb.status == BODYPART_ROBOTIC)
-			team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN)
 		var/datum/wound/blunt/severe/fracture = new
 		fracture.apply_wound(limb)
+		if(!QDELETED(fracture) && limb.status == BODYPART_ROBOTIC)
+			team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN)
 		break
 
 /obj/structure/swarmer/organic_analyzer/proc/amputate_random_limb(mob/living/carbon/patient, list/eligible_limbs)

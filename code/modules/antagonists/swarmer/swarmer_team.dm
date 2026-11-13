@@ -67,14 +67,8 @@ GLOBAL_LIST_INIT(swarmer_structure_limits_per_body, list(
 	if(structure_to_remove.type == /obj/structure/swarmer/organic_analyzer)
 		update_analyzer_stats()
 
-/datum/team/swarmer_team/proc/get_structure_count(structure_type)
-	return length(LAZYACCESS(swarmer_objects, structure_type))
-
-/datum/team/swarmer_team/proc/get_structure_limit(structure_type)
-	return GLOB.swarmer_structure_limits_per_body[structure_type] * length(bodies)
-
 /datum/team/swarmer_team/proc/get_structure_limit_status(structure_type)
-	return "[get_structure_count(structure_type)]/[get_structure_limit(structure_type)]"
+	return "[SWARMER_STRUCTURE_COUNT(src, structure_type)]/[SWARMER_STRUCTURE_LIMIT(src, structure_type)]"
 
 /datum/team/swarmer_team/Destroy(force, ...)
 	if(GLOB.active_swarmer_team == src)

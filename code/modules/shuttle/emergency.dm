@@ -374,7 +374,7 @@
 		if(SHUTTLE_DOCKED, SHUTTLE_IGNITING)
 			mode = SHUTTLE_DOCKED
 			sound_played = FALSE
-			setTimer(get_boarding_time())
+			setTimer(EMERGENCY_BOARDING_TIME(src))
 			priority_announce("Ядро свармеров начало массовую телепортацию. До вылета эвакуационного шаттла осталась одна минута.", null, "shuttledock", "Priority")
 		if(SHUTTLE_ESCAPE)
 			setTimer(min(timeLeft(1), SWARMER_EVAC_RETURN_TIME))
@@ -383,12 +383,6 @@
 	if(swarmer_evacuation)
 		return
 	return ..()
-
-/obj/docking_port/mobile/emergency/proc/get_boarding_time()
-	return swarmer_evacuation ? SWARMER_EVAC_BOARDING_TIME : SSshuttle.emergencyDockTime
-
-/obj/docking_port/mobile/emergency/proc/get_return_flight_time()
-	return swarmer_evacuation ? SWARMER_EVAC_RETURN_TIME : SSshuttle.emergencyEscapeTime * engine_coeff
 
 /obj/docking_port/mobile/emergency/cancel(area/signalOrigin)
 	if(mode != SHUTTLE_CALL)
@@ -424,7 +418,7 @@
 		qdel(old_event)
 	event_list.Cut()
 
-	var/evac_duration = get_return_flight_time()
+	var/evac_duration = EMERGENCY_RETURN_FLIGHT_TIME(src)
 	var/used_admin_queue = FALSE
 	if(length(queued_admin_hyperspace_events))
 		for(var/event_type in queued_admin_hyperspace_events)
@@ -468,7 +462,7 @@
 					setTimer(20)
 					return
 				mode = SHUTTLE_DOCKED
-				setTimer(get_boarding_time())
+				setTimer(EMERGENCY_BOARDING_TIME(src))
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce("Эвакуационный Шаттл пристыковался к станции. Вам отведено [timeLeft(600)] минуты для посадки.", null, "shuttledock", "Priority")
 				ShuttleDBStuff()
@@ -521,7 +515,7 @@
 				enterTransit()
 				mode = SHUTTLE_ESCAPE
 				launch_status = ENDGAME_LAUNCHED
-				setTimer(get_return_flight_time())
+				setTimer(EMERGENCY_RETURN_FLIGHT_TIME(src))
 				prepare_hyperspace_events()
 				priority_announce("Шаттл Эвакуации покинул станцию. До прибытия Шаттла Эвакуации на Аванпост Центрального Командования осталось [timeLeft(600)] минут.", null, null, "ВНИМАНИЕ: ОТБЫТИЕ ШАТТЛА")
 				addtimer(CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts)), 0)
