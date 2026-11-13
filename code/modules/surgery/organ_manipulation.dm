@@ -116,11 +116,14 @@
 		success_sound = 'sound/surgery/organ2.ogg'
 		I = tool
 		if(!I.can_insert_into_zone(target_zone))
-			to_chat(user, span_notice("[I] не поместиться в [parse_zone(target_zone)] [target]!"))
+			to_chat(user, span_notice("[I] не поместится в [parse_zone(target_zone)] [target]!"))
 			return -1
+		// Заменять уже стоящий орган можно: Insert() извлечёт его и выбросит.
+		// Отказываем только если старый орган принципиально нельзя извлечь.
 		for(var/organ_slot in I.get_organ_slots())
-			if(target.getorganslot(organ_slot))
-				to_chat(user, span_notice("[I] не поместиться в [parse_zone(target_zone)] [target]!"))
+			var/obj/item/organ/occupant = target.getorganslot(organ_slot)
+			if(occupant && (occupant.organ_flags & ORGAN_UNREMOVABLE))
+				to_chat(user, span_notice("[I] не поместится в [parse_zone(target_zone)] [target]: [occupant] нельзя извлечь!"))
 				return -1
 		var/obj/item/organ/meatslab = tool
 		if(!meatslab.useable)

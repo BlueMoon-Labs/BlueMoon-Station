@@ -246,6 +246,7 @@
 #include "dynamic_ruleset_sanity.dm"
 #include "echolocation.dm"
 // #include "egg_glands.dm"
+#include "organ_manipulation_replacement.dm"
 // #include "dynamic_ruleset_sanity.dm"
 #include "emergency_shuttle_registration.dm"
 #include "emissive_offset.dm"
