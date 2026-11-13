@@ -864,6 +864,7 @@ GLOBAL_LIST_INIT(body_mod_organ_groups, list(
 			list("id" = "organic", "label" = "Обычные", "cost" = 0),
 			list("id" = "robotic", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/eyes/robotic),
 			list("id" = "glow", "label" = "Светящиеся", "cost" = 1, "path" = /obj/item/organ/eyes/robotic/toggled/glow),
+			list("id" = "kiroshi", "label" = "Оптика Кироши", "cost" = 1, "path" = /obj/item/organ/cyberimp/eyes/optical/kiroshi),
 		),
 	),
 	list(
@@ -927,6 +928,19 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "disrobe", "label" = "Мгновенное раздевание", "desc" = "Кнопка мгновенно сбрасывает всю надетую одежду.", "cost" = 0, "path" = /obj/item/implant/disrobe),
 	list("id" = "genital_fluid", "label" = "Жидкостный индуктор", "desc" = "Позволяет вырабатывать генитальную жидкость заданного реагента. (груди)", "cost" = 0, "path" = /obj/item/implant/genital_fluid),
 	list("id" = "breathing_tube", "label" = "Дыхательная трубка", "desc" = "Киберимплант в горле: позволяет дышать без лёгких и не снимать шлем ради дыхания.", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube, "organ" = TRUE),
+	// Кибернетические импланты из обновления: одна и та же группа занимает одни и те же слоты.
+	list("id" = "lynx_paws", "label" = "Лапы рыси", "desc" = "Звукопоглощающие подушечки и искусственные нервы в обеих стопах. Шаги становятся беззвучными.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/lynx_paws, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 4, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
+	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_hand_cannon", "label" = "Корпоративная ручная пушка", "desc" = "Встроенная в руку энергетическая пушка с режимом очереди. Занимает одну руку.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/handgun/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
+	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Пара выдвижных когтей из лёгкого сплава в обеих руках. Занимают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
+	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
+	list("id" = "nutriment_pump", "label" = "Питательный насос", "desc" = "Синтезирует небольшую порцию питательных веществ в кровь при голоде.", "cost" = 1, "path" = /obj/item/organ/cyberimp/chest/nutriment, "organ" = TRUE),
 ))
 
 /datum/preferences/proc/body_mod_organ_group(slot)
@@ -937,6 +951,16 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 
 /datum/preferences/proc/body_mod_has_robotic_eyes()
 	return pref_species && (ROBOTIC_LIMBS in pref_species.species_traits) && pref_species.mutanteyes != /obj/item/organ/eyes
+
+/// У некоторых видов (синты, IPC и т.п.) в руке уже стоит встроенный киберимплант —
+/// например, силовой кабель. Он занимает слот руки, поэтому выбирать импланты рук нельзя.
+/datum/preferences/proc/body_mod_has_mutant_arm_augment()
+	if(!pref_species || !islist(pref_species.mutant_organs))
+		return FALSE
+	for(var/organ_path in pref_species.mutant_organs)
+		if(ispath(organ_path, /obj/item/organ/cyberimp/arm))
+			return TRUE
+	return FALSE
 
 /// Общий датум для эээ ну вы поняли тут понятно все
 /datum/preferences/proc/body_mod_organ_option_available(slot, list/option)
@@ -967,6 +991,51 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(option["id"] == implant_id)
 			return option
 	return null
+
+/// Импланты, которые занимают те же слоты, что и указанный: их выбор взаимоисключающий.
+/datum/preferences/proc/body_mod_implant_conflicts(implant_id, list/selected_implants = implant_mods)
+	. = list()
+	var/list/option = body_mod_implant_option(implant_id)
+	if(!option)
+		return
+	var/group = option["group"]
+	var/organ_slot = option["organ_slot"]
+	for(var/other_id in selected_implants)
+		if(other_id == implant_id)
+			continue
+		var/list/other = body_mod_implant_option(other_id)
+		if(!other)
+			continue
+		if(group && other["group"] == group)
+			. += other_id
+		else if(organ_slot && other["organ_slot"] == organ_slot)
+			. += other_id
+
+/// Причина, по которой имплант нельзя выбрать в редакторе, или null.
+/datum/preferences/proc/body_mod_implant_lock_reason(list/option)
+	if(!option)
+		return null
+	if(option["group"] == "arm_augments" && body_mod_has_mutant_arm_augment())
+		return "У этого вида в руке уже установлен встроенный киберимплант, поэтому дополнительные импланты рук недоступны."
+	return null
+
+/// Имплант нельзя поставить, если вид запрещает замену занимаемого им органа (например, глаза у вида с мутантными глазами).
+/datum/preferences/proc/body_mod_implant_locked(list/option)
+	if(!option)
+		return FALSE
+	if(body_mod_implant_lock_reason(option))
+		return TRUE
+	if(!option["organ_slot"])
+		return FALSE
+	return body_mod_organ_locked(option["organ_slot"])
+
+/// Стоимость импланта с учётом возврата за снимаемые конфликтующие импланты.
+/datum/preferences/proc/body_mod_implant_swap_refund(implant_id, list/selected_implants = implant_mods)
+	. = 0
+	for(var/conflicting_id in body_mod_implant_conflicts(implant_id, selected_implants))
+		var/list/conflicting = body_mod_implant_option(conflicting_id)
+		if(conflicting && !body_mod_implant_locked(conflicting))
+			. += conflicting["cost"]
 
 /datum/preferences/proc/body_mod_organ_locked(slot)
 	if(!pref_species)
@@ -1009,10 +1078,21 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			. += option["cost"]
 	for(var/implant_id in selected_implants)
 		var/list/option = body_mod_implant_option(implant_id)
-		if(option)
+		if(option && !body_mod_implant_locked(option))
 			. += option["cost"]
 
+/// Кироши раньше был отдельным имплантом, теперь это выбор в группе глаз.
+/datum/preferences/proc/migrate_kiroshi_body_mod(list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	if(!islist(selected_organs) || !islist(selected_implants))
+		return
+	if(!selected_implants["kiroshi_optics"])
+		return
+	selected_implants -= "kiroshi_optics"
+	if(!body_mod_organ_locked(ORGAN_SLOT_EYES))
+		selected_organs[ORGAN_SLOT_EYES] = "kiroshi"
+
 /datum/preferences/proc/sanitize_body_mods()
+	migrate_kiroshi_body_mod()
 	if(islist(organ_mods) && organ_mods[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(implant_mods))
 			implant_mods = list()
@@ -1030,8 +1110,14 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	if(islist(implant_mods))
 		for(var/implant_id in implant_mods)
 			var/list/option = body_mod_implant_option("[implant_id]")
-			if(!option)
+			if(!option || body_mod_implant_locked(option))
 				continue
+			// Взаимоисключающие импланты (руки, ноги, глаза) оставляем только первый.
+			if(length(body_mod_implant_conflicts(option["id"], clean_implants)))
+				continue
+			// Имплант заменяет выбранный в той же вкладке орган; приоритет у импланта.
+			if(option["organ_slot"])
+				organ_mods -= option["organ_slot"]
 			clean_implants[option["id"]] = TRUE
 	implant_mods = clean_implants
 
@@ -1042,8 +1128,17 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			dropped += slot
 	for(var/slot in dropped)
 		organ_mods -= slot
+	// Импланты, недоступные виду (например, руки у синтов с силовым кабелем), тоже снимаем.
+	var/list/dropped_implants = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(option && body_mod_implant_locked(option))
+			dropped_implants += implant_id
+	for(var/implant_id in dropped_implants)
+		implant_mods -= implant_id
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	migrate_kiroshi_body_mod(selected_organs, selected_implants)
 	if(islist(selected_organs) && selected_organs[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(selected_implants))
 			selected_implants = list()
@@ -1120,20 +1215,54 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		new_organ.Insert(character)
 	for(var/implant_id in implant_mods)
 		var/list/option = body_mod_implant_option(implant_id)
-		if(!option || !option["path"])
+		if(!option || !option["path"] || body_mod_implant_locked(option))
 			continue
 		var/new_path = option["path"]
 		if(option["organ"])
 			if(locate(new_path) in character.internal_organs)
 				continue
 			var/obj/item/organ/new_organ = new new_path
-			new_organ.Insert(character)
+			// drop_if_replaced = FALSE: заменённый орган удаляется, а не падает на пол при спавне.
+			new_organ.Insert(character, FALSE, FALSE)
 			continue
 		if(locate(new_path) in character.implants)
 			continue
 		var/obj/item/implant/new_implant = new new_path
 		if(!new_implant.implant(character, null, TRUE, TRUE))
 			qdel(new_implant)
+
+/// Боевые импланты (флаг "combat_permit" в ростере) требуют именного разрешения на использование.
+/// Выдаёт пермит и вешает его на форму; вызывается после выдачи экипировки, когда есть форма и ID-карта.
+/datum/preferences/proc/apply_combat_implant_permits(mob/living/carbon/human/character)
+	if(!ishuman(character) || !islist(implant_mods))
+		return
+	var/list/authorized = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(!option || !option["combat_permit"] || !option["path"] || body_mod_implant_locked(option))
+			continue
+		var/obj/item/organ/implant_path = option["path"]
+		var/min_code = initial(implant_path.active_security_level)
+		if(isnull(min_code))
+			continue
+		authorized += list(list("name" = option["label"], "code" = min_code))
+	if(!length(authorized))
+		return
+	var/obj/item/clothing/under/uniform = character.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(!istype(uniform))
+		return
+	// Повторная выдача не плодит дубликаты: существующий пермит просто переоформляется.
+	var/obj/item/clothing/accessory/permit/special/combat_implants/permit = locate() in uniform.accessories_attached
+	if(permit)
+		permit.authorize_implants(authorized)
+		if(!permit.first_inited)
+			permit.bind_to_user(character, TRUE)
+		return
+	permit = new(character)
+	permit.authorize_implants(authorized)
+	permit.bind_to_user(character, TRUE)
+	if(!uniform.attach_accessory(permit, character, TRUE))
+		character.equip_to_slot_or_del(permit, ITEM_SLOT_BACKPACK, TRUE)
 
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
 	var/bal = 0
@@ -1404,6 +1533,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		qdel(old_part)
 
 /datum/preferences/proc/post_copy_to(mob/living/carbon/human/character)
+	apply_combat_implant_permits(character)
 	//if no legs, and not a paraplegic or a slime, give them a free wheelchair
 	if(modified_limbs[BODY_ZONE_L_LEG] == LOADOUT_LIMB_AMPUTATED && modified_limbs[BODY_ZONE_R_LEG] == LOADOUT_LIMB_AMPUTATED && !character.has_quirk(/datum/quirk/paraplegic) && !isjellyperson(character))
 		if(character.buckled)

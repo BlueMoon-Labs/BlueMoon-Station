@@ -1,3 +1,8 @@
+/obj/item/organ/cyberimp/eyes
+	// Глазные импланты (optical) занимают слот глаз и подменяют орган глаз:
+	// get_eye_protection() в carbon_defense.dm читает эту переменную у органа в слоте.
+	var/flash_protect = 0
+
 /obj/item/organ/cyberimp/eyes/hud
 	name = "HUD implant"
 	desc = "These cybernetic eyes will display a HUD over everything you see. Maybe."
@@ -87,3 +92,131 @@
 	name = "Contraband Security HUD Implant"
 	desc = "A Cybersun Industries brand Security HUD Implant. These illicit cybernetic eye implants will display a security HUD over everything you see."
 	syndicate_implant = TRUE
+
+/obj/item/organ/cyberimp/eyes/optical
+	name = "Optical cybernetic implant"
+	desc = "A modular optical implant."
+	icon_state = "eye_implant"
+	implant_overlay = "eye_implant_overlay"
+	zone = BODY_ZONE_PRECISE_EYES
+	slot = ORGAN_SLOT_EYES
+	w_class = WEIGHT_CLASS_TINY
+	actions_types = list(/datum/action/item_action/organ_action/toggle_zoom)
+	// Имплант занимает ORGAN_SLOT_EYES, поэтому повторяет контракт обычного глаза:
+	// update_sight() и get_total_tint() читают эти поля у органа в слоте глаз.
+	var/sight_flags = 0
+	var/see_in_dark = 2
+	var/tint = 0
+	var/see_invisible = SEE_INVISIBLE_LIVING
+	var/lighting_alpha
+	var/lighting_cutoff = null
+	var/list/color_cutoffs = null
+
+/obj/item/organ/cyberimp/eyes/optical/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	M.update_tint()
+	M.update_sight()
+
+/obj/item/organ/cyberimp/eyes/optical/Remove(special = FALSE)
+	. = ..()
+	if(.)
+		var/mob/living/carbon/C = .
+		C.update_tint()
+		C.update_sight()
+
+/obj/item/organ/cyberimp/eyes/optical/kiroshi
+	name = "\improper Kiroshi optics"
+	desc = "A high-precision optical implant that grants a sniper scope-like zoom for long-range targeting."
+	var/zoomed = FALSE
+	var/zoom_amt = 4
+	var/zoom_out_amt = 0
+	icon_state = "kirosi_seer"
+
+/obj/item/organ/cyberimp/eyes/optical/kiroshi/ui_action_click(mob/user, actiontype)
+	// actiontype - экземпляр действия, а не тип: сравнение с типом всегда ложно, зум не работал.
+	toggle_zoom(user)
+
+/obj/item/organ/cyberimp/eyes/optical/kiroshi/proc/toggle_zoom(mob/living/carbon/user)
+	if(!user || user != owner)
+		return
+	if(user.client)
+		if(zoomed)
+			user.client.view_size.zoomIn()
+			zoomed = FALSE
+			UnregisterSignal(user, COMSIG_ATOM_DIR_CHANGE)
+		else
+			user.client.view_size.zoomOut(zoom_out_amt, zoom_amt, user.dir)
+			zoomed = TRUE
+			RegisterSignal(user, COMSIG_ATOM_DIR_CHANGE, PROC_REF(rotate))
+
+/obj/item/organ/cyberimp/eyes/optical/kiroshi/proc/rotate(atom/thing, old_dir, new_dir)
+	if(ismob(thing) && zoomed)
+		var/mob/living/carbon/human/lad = thing
+		if(lad.client)
+			lad.client.view_size.zoomOut(zoom_out_amt, zoom_amt, new_dir)
+
+/obj/item/organ/cyberimp/eyes/optical/kiroshi/Remove(special = FALSE)
+	if(zoomed && owner)
+		// Состояние зума и сигнал снимаем даже без клиента; zoomIn() требует клиента.
+		if(owner.client)
+			owner.client.view_size.zoomIn()
+		zoomed = FALSE
+		UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
+	return ..()
+
+/obj/item/organ/cyberimp/eyes/optical/militech
+	name = "\improper Militech optical suite"
+	desc = "A high-precision optical implant with integrated flash protection and sniper scope-like zoom for long-range targeting."
+	var/zoomed = FALSE
+	var/zoom_amt = 4
+	var/zoom_out_amt = 0
+	icon_state = "kirosi_basilisk"
+
+/obj/item/organ/cyberimp/eyes/optical/militech/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/organ/eyes/E = H.getorganslot(ORGAN_SLOT_EYES)
+		if(E)
+			E.flash_protect = max(E.flash_protect, 3)
+
+/obj/item/organ/cyberimp/eyes/optical/militech/Remove(special = FALSE)
+	if(zoomed && owner)
+		// Состояние зума и сигнал снимаем даже без клиента; zoomIn() требует клиента.
+		if(owner.client)
+			owner.client.view_size.zoomIn()
+		zoomed = FALSE
+		UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
+	if(owner && ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		var/obj/item/organ/eyes/E = H.getorganslot(ORGAN_SLOT_EYES)
+		if(E)
+			E.flash_protect = initial(E.flash_protect)
+	return ..()
+
+/obj/item/organ/cyberimp/eyes/optical/militech/ui_action_click(mob/user, actiontype)
+	// actiontype - экземпляр действия, а не тип: сравнение с типом всегда ложно, зум не работал.
+	toggle_zoom(user)
+
+/obj/item/organ/cyberimp/eyes/optical/militech/proc/toggle_zoom(mob/living/carbon/user)
+	if(!user || user != owner)
+		return
+	if(user.client)
+		if(zoomed)
+			user.client.view_size.zoomIn()
+			zoomed = FALSE
+			UnregisterSignal(user, COMSIG_ATOM_DIR_CHANGE)
+		else
+			user.client.view_size.zoomOut(zoom_out_amt, zoom_amt, user.dir)
+			zoomed = TRUE
+			RegisterSignal(user, COMSIG_ATOM_DIR_CHANGE, PROC_REF(rotate))
+
+/obj/item/organ/cyberimp/eyes/optical/militech/proc/rotate(atom/thing, old_dir, new_dir)
+	if(ismob(thing) && zoomed)
+		var/mob/living/carbon/human/lad = thing
+		if(lad.client)
+			lad.client.view_size.zoomOut(zoom_out_amt, zoom_amt, new_dir)

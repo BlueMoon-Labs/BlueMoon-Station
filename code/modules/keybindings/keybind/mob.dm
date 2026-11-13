@@ -80,7 +80,8 @@
 		if(iscarbon(M))
 			var/mob/living/carbon/C = M
 			var/obj/item/organ/cyberimp/arm/implant = C.getorganslot((C.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
-			if(implant?.holder == I)
+			// Двуручный имплант держит копию предмета во второй руке: Q убирает имплант с любой руки.
+			if(implant && (implant.holder == I || implant.holder_offhand == I))
 				implant.Retract()
 				return TRUE
 		M.dropItemToGround(I)

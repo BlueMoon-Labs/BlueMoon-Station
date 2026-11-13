@@ -198,3 +198,20 @@
 // Для квирка /datum/quirk/chameleon
 /datum/movespeed_modifier/quirk_chameleon_slowdown
 	multiplicative_slowdown = 1.1
+
+/datum/movespeed_modifier/sandevistan
+	multiplicative_slowdown = -1.25
+	flags = IGNORE_NOSLOW
+	blacklisted_movetypes = FLOATING
+
+/datum/movespeed_modifier/sandevistan/military
+	multiplicative_slowdown = -1.8
+	flags = IGNORE_NOSLOW
+	blacklisted_movetypes = FLOATING
+
+// All Sandevistan activations use this speed; civilian and military versions are equal.
+/datum/movespeed_modifier/sandevistan/weak
+	multiplicative_slowdown = -0.8
+
+/datum/movespeed_modifier/sandevistan/military/weak
+	multiplicative_slowdown = -0.8

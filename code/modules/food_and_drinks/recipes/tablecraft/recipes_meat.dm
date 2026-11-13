@@ -20,6 +20,41 @@
 	result = /obj/item/reagent_containers/food/snacks/kebab/monkey
 	subcategory = CAT_MEAT
 
+/datum/crafting_recipe/food/shawarma
+	name = "Shawarma"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/meat/ready_kebab = 1,
+		/obj/item/reagent_containers/food/snacks/grown/tomato = 1,
+		/obj/item/reagent_containers/food/snacks/grown/cabbage = 1,
+		/datum/reagent/consumable/mayonnaise = 5
+	)
+	result = /obj/item/reagent_containers/food/snacks/shawarma
+	subcategory = CAT_MEAT
+
+/datum/crafting_recipe/food/shawarma_cheese
+	name = "Cheese shawarma"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/meat/ready_kebab = 1,
+		/obj/item/reagent_containers/food/snacks/grown/tomato = 1,
+		/obj/item/reagent_containers/food/snacks/grown/cabbage = 1,
+		/obj/item/reagent_containers/food/snacks/store/cheesewheel = 1,
+		/datum/reagent/consumable/mayonnaise = 5
+	)
+	result = /obj/item/reagent_containers/food/snacks/shawarma/cheese
+	subcategory = CAT_MEAT
+
+/datum/crafting_recipe/food/shawarma_spicy
+	name = "Spicy shawarma"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/meat/ready_kebab = 1,
+		/obj/item/reagent_containers/food/snacks/grown/tomato = 1,
+		/obj/item/reagent_containers/food/snacks/grown/cabbage = 1,
+		/obj/item/reagent_containers/food/snacks/grown/chili = 1,
+		/datum/reagent/consumable/mayonnaise = 5
+	)
+	result = /obj/item/reagent_containers/food/snacks/shawarma/spicy
+	subcategory = CAT_MEAT
+
 /datum/crafting_recipe/food/tofukebab
 	name = "Tofu kebab"
 	reqs = list(

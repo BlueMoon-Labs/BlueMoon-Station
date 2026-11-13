@@ -357,6 +357,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 /proc/directional_recoil(mob/M, strength=1, angle = 0)
 	if(!M || !M.client)
 		return
+	if(HAS_TRAIT(M, TRAIT_NO_RECOIL)) // имплант рук-горилл гасит отдачу
+		return
 	var/client/C = M.client
 	var/client_screenshake = (C.prefs.recoil_screenshake * 0.01)
 	strength *= client_screenshake
@@ -790,6 +792,7 @@ GLOBAL_LIST(unit_test_ghost_notifications)
 		id_card.update_label()
 
 	// Переоформление пермитов, если у нас была загрузка из префов
+	client.prefs.apply_combat_implant_permits(src)
 	if(istype(w_uniform, /obj/item/clothing/under))
 		var/obj/item/clothing/under/U = w_uniform
 		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)

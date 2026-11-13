@@ -38,6 +38,10 @@
 		if(CLONE)
 			adjustCloneLoss(damage_amount, forced = forced)
 		if(STAMINA)
+			// Трейт должен блокировать любой положительный стамина-урон, в том числе
+			// идущий напрямую в конечность в обход adjustStaminaLoss().
+			if(!forced && damage_amount > 0 && HAS_TRAIT(src, TRAIT_NO_STAMINA_DAMAGE))
+				return FALSE
 			if(BP)
 				if(damage > 0 ? BP.receive_damage(0, 0, damage_amount) : BP.heal_damage(0, 0, abs(damage_amount), FALSE, FALSE))
 					update_damage_overlays()

@@ -29,6 +29,8 @@ interface ImplantRow {
   desc: string;
   cost: number;
   selected: boolean;
+  locked: boolean;
+  lockReason?: string;
 }
 
 interface ModsData {
@@ -213,13 +215,19 @@ export const ModificationsTab = () => {
               </Box>
             </Stack.Item>
             <Stack.Item>
-              <Button
-                icon={implant.selected ? 'check' : 'plus'}
-                selected={implant.selected}
-                onClick={() => act('toggle_implant', { id: implant.id })}
-              >
-                {implant.selected ? 'Взято' : 'Взять'}
-              </Button>
+              {implant.locked ? (
+                <Button icon="lock" disabled tooltip={implant.lockReason}>
+                  Недоступно
+                </Button>
+              ) : (
+                <Button
+                  icon={implant.selected ? 'check' : 'plus'}
+                  selected={implant.selected}
+                  onClick={() => act('toggle_implant', { id: implant.id })}
+                >
+                  {implant.selected ? 'Взято' : 'Взять'}
+                </Button>
+              )}
             </Stack.Item>
           </Stack>
         ))}

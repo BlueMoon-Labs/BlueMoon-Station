@@ -243,3 +243,177 @@
 	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/eyes/robotic/toggled/glow), "Organ modification from preferences should be applied")
 
 	qdel(P)
+
+/datum/unit_test/body_mod_implant_costs
+
+/datum/unit_test/body_mod_implant_costs/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	var/list/expected_costs = list(
+		"lynx_paws" = 1,
+		"reinforced_tendons" = 1,
+		"fortified_ankles" = 1,
+		"corp_blood_pump" = 4,
+		"corp_mantis_blades" = 6,
+		"corp_monowire" = 6,
+		"corp_hand_cannon" = 6,
+		"corp_gorilla_arms" = 6,
+		"razor_claws" = 3,
+		"subdermal_armor" = 6,
+		"reinforced_skeleton" = 6,
+		"nutriment_pump" = 1,
+	)
+	for(var/implant_id in expected_costs)
+		var/list/option = P.body_mod_implant_option(implant_id)
+		TEST_ASSERT_NOTNULL(option, "Implant [implant_id] should be listed in the modifications tab")
+		TEST_ASSERT_EQUAL(option["cost"], expected_costs[implant_id], "Implant [implant_id] should cost the configured amount")
+		TEST_ASSERT(option["organ"], "Implant [implant_id] should be applied as an organ implant")
+
+	P.implant_mods = list(
+		"lynx_paws" = TRUE,
+		"corp_hand_cannon" = TRUE,
+		"subdermal_armor" = TRUE,
+		"reinforced_skeleton" = TRUE,
+		"nutriment_pump" = TRUE,
+		"corp_blood_pump" = TRUE,
+	)
+	TEST_ASSERT_EQUAL(P.quirk_balance(), -24, "Selected implants should be paid for with quirk points")
+
+	// Импланты одной группы занимают одни и те же слоты: новый выбор снимает старый и возвращает очки.
+	var/datum/preferences/conflict_prefs = new
+	conflict_prefs.pref_species = new /datum/species/human
+	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE)
+	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("corp_monowire"), "Arm implants should conflict with each other")
+	TEST_ASSERT("corp_mantis_blades" in conflict_prefs.body_mod_implant_conflicts("razor_claws"), "Claws should conflict with other arm implants")
+	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("corp_monowire"), 6, "Replacing an arm implant should refund its cost")
+	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance(), -6, "A single selected implant should be charged once")
+
+	conflict_prefs.implant_mods = list("corp_mantis_blades" = TRUE, "corp_monowire" = TRUE, "corp_hand_cannon" = TRUE)
+	conflict_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(length(conflict_prefs.implant_mods), 1, "Only one arm implant should survive sanitizing")
+
+	// Оптика Кироши теперь выбор в группе глаз: она заменяет светящиеся глаза, а не сосуществует с ними.
+	var/datum/preferences/eye_prefs = new
+	eye_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT_NOTNULL(eye_prefs.body_mod_organ_option(ORGAN_SLOT_EYES, "kiroshi"), "Kiroshi optics should be an eye option")
+	TEST_ASSERT_NULL(eye_prefs.body_mod_implant_option("kiroshi_optics"), "Kiroshi optics should no longer be a separate implant")
+	eye_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Kiroshi eye choice should survive sanitizing")
+	TEST_ASSERT_EQUAL(eye_prefs.body_mods_cost(), 1, "Kiroshi optics should cost one quirk point")
+
+	// Старые сохранения с имплантом kiroshi_optics переносятся в выбор глаз.
+	eye_prefs.organ_mods = list()
+	eye_prefs.implant_mods = list("kiroshi_optics" = TRUE)
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_NULL(eye_prefs.implant_mods["kiroshi_optics"], "Legacy Kiroshi implant should be migrated")
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Legacy Kiroshi implant should become the eye choice")
+
+	// Видам с мутантными глазами оптика недоступна так же, как и прочая замена глаз.
+	var/datum/preferences/mutant_prefs = new
+	mutant_prefs.pref_species = new /datum/species/lizard/ashwalker
+	TEST_ASSERT(mutant_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed species should keep the eye group locked")
+	mutant_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	mutant_prefs.drop_locked_body_mods()
+	TEST_ASSERT_NULL(mutant_prefs.organ_mods[ORGAN_SLOT_EYES], "Kiroshi choice should be dropped for mutant-eyed species")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/health_before = H.maxHealth
+	P.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	P.apply_prefs_body_mods(H)
+
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/cyberimp/eyes/optical/kiroshi), "Kiroshi optics should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_LEFT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the left leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the right leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG), /obj/item/organ/cyberimp/arm/handgun/sec_level), "Corporate hand cannon should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_SUBDERMAL_ARMOR), /obj/item/organ/cyberimp/chest/subdermal_armor), "Subdermal armor should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_REINFORCED_SKELETON), /obj/item/organ/cyberimp/chest/reinforced_skeleton), "Reinforced skeleton should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_STOMACH_AID), /obj/item/organ/cyberimp/chest/nutriment), "Nutriment pump should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(INTERNAL_ORGAN_CHEM_IMPLANT), /obj/item/organ/cyberimp/chest/blood_pump/sec_level), "Corporate blood pump should be implanted")
+	TEST_ASSERT_EQUAL(H.maxHealth, health_before + 25, "Reinforced skeleton should raise max health")
+
+	qdel(conflict_prefs)
+	qdel(P)
+
+/// Боевые импланты выдают именное разрешение на использование и вешают его на форму.
+/datum/unit_test/combat_implant_permit
+
+/datum/unit_test/combat_implant_permit/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.real_name = "Permit Test"
+	H.dna.update_dna_identity()
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(H.equip_to_slot_or_del(uniform, ITEM_SLOT_ICLOTHING), "Test human should wear a uniform")
+	var/obj/item/card/id/id_card = allocate(/obj/item/card/id)
+	id_card.registered_name = H.real_name
+	id_card.assignment = "Test Subject"
+	TEST_ASSERT(H.equip_to_slot_or_del(id_card, ITEM_SLOT_ID), "Test human should wear an ID")
+
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("corp_mantis_blades" = TRUE)
+	P.apply_prefs_body_mods(H)
+	P.apply_combat_implant_permits(H)
+
+	var/obj/item/clothing/accessory/permit/special/combat_implants/permit = locate() in uniform.accessories_attached
+	TEST_ASSERT_NOTNULL(permit, "Combat implant permit should be attached to the uniform")
+	TEST_ASSERT(permit.first_inited, "Permit should be initialized for its owner")
+	TEST_ASSERT_EQUAL(permit.owner_name, H.real_name, "Permit should be bound to the wearer")
+	TEST_ASSERT(findtext(permit.permitted_weapons, "Корпоративные клинки богомола"), "Permit should list the mantis blades")
+	TEST_ASSERT(findtext(permit.permitted_weapons, "Янтарный"), "Permit should mention the amber alert level")
+
+	// Повторная выдача не плодит дубликаты, а переоформляет существующий пермит.
+	P.implant_mods = list("corp_gorilla_arms" = TRUE)
+	P.apply_combat_implant_permits(H)
+	var/permits_count = 0
+	var/obj/item/clothing/accessory/permit/special/combat_implants/updated_permit
+	for(var/obj/item/clothing/accessory/A in uniform.accessories_attached)
+		if(istype(A, /obj/item/clothing/accessory/permit/special/combat_implants))
+			permits_count++
+			updated_permit = A
+	TEST_ASSERT_EQUAL(permits_count, 1, "Re-issuing should not duplicate the permit")
+	TEST_ASSERT(findtext(updated_permit.permitted_weapons, "Корпоративные руки гориллы"), "Re-issued permit should list the gorilla arms")
+	TEST_ASSERT(findtext(updated_permit.permitted_weapons, "Синий"), "Gorilla arms permit should mention the blue alert level")
+
+	// Небоевые импланты пермита не требуют.
+	var/mob/living/carbon/human/H2 = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/under/color/grey/uniform2 = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(H2.equip_to_slot_or_del(uniform2, ITEM_SLOT_ICLOTHING), "Second human should wear a uniform")
+	var/datum/preferences/P2 = new
+	P2.pref_species = new /datum/species/human
+	P2.implant_mods = list("lynx_paws" = TRUE)
+	P2.apply_prefs_body_mods(H2)
+	P2.apply_combat_implant_permits(H2)
+	TEST_ASSERT(!(locate(/obj/item/clothing/accessory/permit/special/combat_implants) in uniform2.accessories_attached), "Non-combat implants should not issue a permit")
+
+	qdel(P)
+	qdel(P2)
+
+/// Виды со встроенным киберимплантом руки (силовой кабель синтов) не могут выбрать имплант в руки.
+/datum/unit_test/synth_arm_implants_locked
+
+/datum/unit_test/synth_arm_implants_locked/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/ipc
+	TEST_ASSERT(P.body_mod_has_mutant_arm_augment(), "IPC should have a built-in arm implant")
+	TEST_ASSERT(P.body_mod_implant_locked(P.body_mod_implant_option("corp_mantis_blades")), "IPC should not be able to pick arm implants")
+	TEST_ASSERT(P.body_mod_implant_locked(P.body_mod_implant_option("razor_claws")), "IPC should not be able to pick claws")
+	TEST_ASSERT(P.body_mod_implant_lock_reason(P.body_mod_implant_option("corp_mantis_blades")), "IPC arm implants should report a lock reason")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("lynx_paws")), "IPC should still be able to pick leg implants")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("corp_blood_pump")), "IPC should still be able to pick chest implants")
+
+	// Смена вида на синта снимает уже выбранные импланты рук.
+	P.implant_mods = list("corp_mantis_blades" = TRUE, "lynx_paws" = TRUE)
+	P.drop_locked_body_mods()
+	TEST_ASSERT_NULL(P.implant_mods["corp_mantis_blades"], "Arm implants should be dropped when the species cannot use them")
+	TEST_ASSERT(P.implant_mods["lynx_paws"], "Leg implants should survive the species lock")
+
+	// У людей встроенного импланта руки нет: обычные импланты рук по-прежнему доступны.
+	var/datum/preferences/human_prefs = new
+	human_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT(!human_prefs.body_mod_has_mutant_arm_augment(), "Humans should not have a built-in arm implant")
+	TEST_ASSERT(!human_prefs.body_mod_implant_locked(human_prefs.body_mod_implant_option("corp_mantis_blades")), "Humans should be able to pick arm implants")
+	TEST_ASSERT_NULL(human_prefs.body_mod_implant_lock_reason(human_prefs.body_mod_implant_option("corp_mantis_blades")), "Humans should have no arm lock reason")
+
+	qdel(P)
+	qdel(human_prefs)

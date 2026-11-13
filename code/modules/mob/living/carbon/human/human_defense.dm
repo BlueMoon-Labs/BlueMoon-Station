@@ -61,6 +61,9 @@
 
 
 /mob/living/carbon/human/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
+	// Активный сандевистан с шансом уклоняет от любого проджектайла.
+	if(try_sandevistan_dodge(P))
+		return BULLET_ACT_FORCE_PIERCE
 	if(dna && dna.species)
 		var/spec_return = dna.species.bullet_act(P, src)
 		if(spec_return)
@@ -72,6 +75,17 @@
 			if(!(martial_art_result == BULLET_ACT_HIT))
 				return martial_art_result
 	return ..()
+
+/// Если у человека стоит активный сандевистан, с шансом уклоняется от проджектайла (возвращает TRUE).
+/mob/living/carbon/human/proc/try_sandevistan_dodge(obj/item/projectile/P)
+	var/obj/item/organ/cyberimp/brain/sandevistan/S = getorganslot(ORGAN_SLOT_BRAIN_SANDEVISTAN)
+	if(!istype(S) || !S.active)
+		return FALSE
+	if(!prob(S.projectile_dodge_chance))
+		return FALSE
+	playsound(get_turf(src), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
+	balloon_alert_to_viewers("[src] уклоняется от снаряда!", "Вы уклоняетесь от снаряда!")
+	return TRUE
 
 /mob/living/carbon/human/proc/check_martial_melee_block()
 	if(mind)
