@@ -13,6 +13,7 @@
 	var/list/saved_shoppinglist
 	var/list/saved_requestlist
 	var/list/saved_announce = list()
+	var/list/saved_supply_notice = list()
 	/// Мобы, добавленные в GLOB.player_list как игроки на смене
 	var/list/fake_players = list()
 
@@ -28,6 +29,8 @@
 		department.auto_approve_after = list()
 		saved_announce[id] = department.request_announce_cooldown
 		department.request_announce_cooldown = 0
+		saved_supply_notice[id] = department.supply_notice_cooldown
+		department.supply_notice_cooldown = 0
 	saved_shoppinglist = SSshuttle.shoppinglist.Copy()
 	SSshuttle.shoppinglist.Cut()
 	saved_requestlist = SSshuttle.requestlist.Copy()
@@ -44,6 +47,7 @@
 		department.requests = saved_requests[id]
 		department.auto_approve_after = saved_auto_approve[id]
 		department.request_announce_cooldown = saved_announce[id]
+		department.supply_notice_cooldown = saved_supply_notice[id]
 	for(var/datum/supply_order/order as anything in SSshuttle.shoppinglist)
 		qdel(order)
 	SSshuttle.shoppinglist.Cut()
@@ -52,9 +56,9 @@
 	SSshuttle.requestlist += saved_requestlist
 	return ..()
 
-/datum/unit_test/economy_catalog/proc/make_staff(department_id, list/access)
+/datum/unit_test/economy_catalog/proc/make_staff(department_id, list/access, account_type = /datum/bank_account)
 	var/mob/living/carbon/human/staff = allocate(/mob/living/carbon/human)
-	var/datum/bank_account/account = new("econ_test_[department_id]")
+	var/datum/bank_account/account = new account_type("econ_test_[department_id]")
 	account.department_id = department_id
 	staff.account_id = account.account_id
 	allocated += account
@@ -64,9 +68,9 @@
 		staff.put_in_hands(card)
 	return staff
 
-/datum/unit_test/economy_catalog/proc/make_with_job(job_type)
+/datum/unit_test/economy_catalog/proc/make_with_job(job_type, account_type = /datum/bank_account)
 	var/datum/job/job = SSjob.GetJobType(job_type)
-	var/mob/living/carbon/human/staff = make_staff(job.paycheck_department, job.access.Copy())
+	var/mob/living/carbon/human/staff = make_staff(job.paycheck_department, job.access | job.get_access(), account_type)
 	staff.mind_initialize()
 	staff.mind.assigned_role = job.title
 	return staff
@@ -90,6 +94,38 @@
 	. = console.ui_act(action, params, window)
 	usr = null
 
+/// Гарнитура, которая запоминает "канал: сообщение" вместо передачи.
+/obj/item/radio/headset/econ_test_spy
+	var/list/heard = list()
+
+/obj/item/radio/headset/econ_test_spy/talk_into(atom/movable/M, message, channel, list/spans, datum/language/language)
+	heard += "[channel]: [message]"
+	return ITALICS | REDUCE_RANGE
+
+/// Счёт, который запоминает сообщения карты вместо показа.
+/datum/bank_account/econ_test_ear
+	var/list/heard = list()
+
+/datum/bank_account/econ_test_ear/bank_card_talk(message, force, talk_sound, balloon, quiet = FALSE)
+	heard += message
+
+/// Рабочая система оповещения станции первой в списке, с гарнитурой-шпионом.
+/datum/unit_test/economy_catalog/proc/spy_announcer()
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/obj/machinery/announcement_system/announcer = allocate(/obj/machinery/announcement_system, locate(2, 2, station_z))
+	announcer.machine_stat = NONE
+	qdel(announcer.radio)
+	var/obj/item/radio/headset/econ_test_spy/spy = new(announcer)
+	announcer.radio = spy
+	GLOB.announcement_systems -= announcer
+	GLOB.announcement_systems.Insert(1, announcer)
+	TEST_ASSERT(announcer.is_operational(), "Система оповещений станции работает")
+	return spy
+
+/datum/unit_test/economy_catalog/proc/on_shift(mob/living/carbon/human/player)
+	GLOB.player_list += player
+	fake_players += player
+
 /// Пак каталога отдела, который видно в окне снабжения и есть у партнёров: дешевле лимита автоодобрения или дороже.
 /datum/unit_test/economy_catalog/proc/window_pack(datum/economy_department/department, cheap)
 	for(var/datum/supply_pack/pack as anything in department.catalog())
@@ -98,7 +134,7 @@
 		if(cheap == (econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit))
 			return pack
 
-/// Сотрудник медицины подаёт с консоли заявок пак своего каталога: заявка уходит медицине, без главы недорогая оплачивается бюджетом медицины сама, дорогие ждут главы до лимита сотрудника, канал медицины оповещён.
+/// Сотрудник медицины подаёт с консоли заявок пак своего каталога: заявка уходит медицине, без главы недорогая оплачивается бюджетом медицины сама, при главе на смене дорогие ждут его до лимита сотрудника, канал медицины и карта главы оповещены.
 /datum/unit_test/economy_catalog/request_console_department/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
 	var/obj/machinery/computer/cargo/request/console = allocate(/obj/machinery/computer/cargo/request)
@@ -133,17 +169,22 @@
 	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
 	TEST_ASSERT(order.prepaid == price && order.department_id == ACCOUNT_MED, "Заказ предоплачен медициной")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение не платило")
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo, /datum/bank_account/econ_test_ear)
+	on_shift(cmo)
 	click_cargo(console, doctor, "add", list("id" = "[expensive.type]", "reason" = "Операционная", "amount" = 5))
 	var/limit = SSeconomy.settings.request_pending_per_requester
 	var/datum/bank_account/doctor_account = econ_account_of(doctor)
 	TEST_ASSERT_EQUAL(medical.pending_requests_of(doctor_account.account_id), limit, "По штуке на заявку, пока не упёрлись в лимит сотрудника")
 	TEST_ASSERT_EQUAL(length(medical.requests), limit + 1, "Сверх лимита заявок нет")
-	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 0, "Дорогой пак не ушёл снабжению")
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 0, "Дорогой пак при главе на смене не ушёл снабжению")
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Дорогой пак ждёт главы")
 	TEST_ASSERT(!COOLDOWN_FINISHED(medical, request_announce_cooldown), "Канал медицины не оповещён о ждущей заявке")
 	TEST_ASSERT(console.radio.channels[RADIO_CHANNEL_MEDICAL], "Консоль не говорила в канал медицины")
+	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
+	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 1, "Главврачу на смене карта сообщила о заявке")
+	TEST_ASSERT(findtext(cmo_ear.heard[1], expensive.name), "Карта главврача назвала пак: [cmo_ear.heard[1]]")
 
-/// С консоли заявок и с КПК снабжению уходят паки вне каталога отдела подающего и заявки людей без отдела; капитан заказывает пак медицины сразу за её бюджет.
+/// С консоли заявок и с КПК снабжению уходят паки вне каталога отдела подающего, заявки людей без отдела и дорогие паки без начальства на смене; капитан заказывает пак медицины сразу за её бюджет, окно не называет ему бюджет отдела его счёта.
 /datum/unit_test/economy_catalog/request_console_cargo/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
 	var/obj/machinery/computer/cargo/request/console = allocate(/obj/machinery/computer/cargo/request)
@@ -162,14 +203,21 @@
 	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda/cargo)
 	var/datum/computer_file/program/cargo_orders/app = locate() in pda.get_all_files()
 	TEST_ASSERT_NOTNULL(app, "Приложение снабжения на КПК")
+	TEST_ASSERT(!medical.has_approver_on_shift(), "Начальства медицины на смене нет")
 	click_cargo(app, doctor, "add", list("id" = "[expensive.type]", "reason" = "С КПК"))
-	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 2, "Заявка с КПК на пак медицины ушла снабжению")
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 3, "Дорогую заявку с КПК без начальства на смене рассматривает снабжение")
+	TEST_ASSERT_EQUAL(length(medical.requests), 0, "Дорогая заявка без начальства не зависла в отделе")
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	econ_test_set_balance(medical.account, round(econ_pack_price(cheap)))
+	click_cargo(app, doctor, "add", list("id" = "[cheap.type]", "reason" = "С КПК"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 3, "Недорогая заявка с КПК на пак медицины ушла снабжению")
 	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Заявка с КПК в отделе")
 	TEST_ASSERT_NULL(app.radio?.loc, "Радио приложения не осталось в КПК")
-	var/mob/living/carbon/human/captain = make_staff(ACCOUNT_CMD, list(ACCESS_CAPTAIN))
+	var/mob/living/carbon/human/captain = make_with_job(/datum/job/captain)
 	var/list/budget = console.ui_data(captain)["budget_request"]
 	TEST_ASSERT_NOTNULL(budget, "Капитану окно обещает бюджет отдела")
-	TEST_ASSERT(budget["any"] && budget["manager"], "Капитану окно обещает бюджет отдела пака")
+	TEST_ASSERT(budget["any"] && budget["manager"] && budget["approver"], "Капитану окно обещает бюджет отдела пака")
+	TEST_ASSERT(isnull(budget["id"]) && isnull(budget["name"]) && isnull(budget["balance"]), "Капитану окно не называет бюджет отдела его счёта: [budget["name"]]")
 	econ_test_set_balance(medical.account, round(econ_pack_price(expensive)))
 	click_cargo(console, captain, "add", list("id" = "[expensive.type]", "reason" = "Срочно"))
 	TEST_ASSERT_EQUAL(length(medical.requests), 2, "Заявка капитана в отделе")
@@ -178,6 +226,89 @@
 	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Списано с бюджета медицины")
 	for(var/obj/item/paper/requisition in get_turf(console))
 		qdel(requisition)
+
+/// Без начальства на смене окно знает, что одобрить некому: дорогой пак с консоли уходит снабжению, недорогой в перерыве автоодобрения ждёт и одобрится сам; ответ на пачку заявок собран по-человечески.
+/datum/unit_test/economy_catalog/request_window_no_approver/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/obj/machinery/computer/cargo/request/console = allocate(/obj/machinery/computer/cargo/request)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/datum/supply_pack/expensive = window_pack(medical, FALSE)
+	TEST_ASSERT(!medical.has_approver_on_shift(), "Начальства на смене нет")
+	var/list/budget = console.ui_data(doctor)["budget_request"]
+	TEST_ASSERT(budget && !isnull(budget["approver"]) && !budget["approver"], "Окно знает, что одобрить некому")
+	click_cargo(console, doctor, "add", list("id" = "[expensive.type]", "reason" = "Операционная"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 1, "Дорогой пак без начальства - заявка снабжению")
+	TEST_ASSERT_EQUAL(length(medical.requests), 0, "Дорогой пак без начальства не завис в отделе")
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo)
+	on_shift(cmo)
+	budget = console.ui_data(doctor)["budget_request"]
+	TEST_ASSERT(budget["approver"], "С главой на смене окно знает, что одобрить есть кому")
+	TEST_ASSERT_EQUAL(econ_request_department(doctor, expensive), medical, "С главой на смене дорогой пак - заявка отделу")
+	GLOB.player_list -= cmo
+	econ_test_set_balance(medical.account, round(econ_pack_price(cheap)) * 3)
+	var/answer = medical.submit_window_requests(cheap, doctor, "Бинты", 3)
+	TEST_ASSERT(istext(answer), "Ответ подавшему - строка")
+	TEST_ASSERT(findtext(answer, "1 одобрена и оплачена из бюджета отдела"), "Ответ про одобренную: [answer]")
+	TEST_ASSERT(findtext(answer, "2 ждут: начальства отдела на смене нет, одобрятся сами через [SSeconomy.settings.auto_approve_wait_minutes] мин."), "Ответ про ждущие без начальства: [answer]")
+	TEST_ASSERT(!findtext(answer, "решения главы"), "Без начальства ответ не обещает решения главы: [answer]")
+	for(var/obj/item/paper/requisition in get_turf(console))
+		qdel(requisition)
+
+/// Одобренную заявку отдела и заказ главы снабжение слышит в своём канале: отдел, пак, без причины заявки, не чаще кулдауна отдела.
+/datum/unit_test/economy_catalog/request_supply_notice/Run()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG)
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_ENG, list(ACCESS_CE))
+	var/datum/supply_pack/pack = pack_above_auto_limit(engineering)
+	econ_test_set_balance(engineering.account, round(econ_pack_price(pack)) * 2)
+	var/datum/econ_request/request = engineering.submit_request(pack, engineer, "Секретная причина")
+	spy.heard.Cut()
+	TEST_ASSERT(engineering.approve(request, chief), "Глава одобряет")
+	var/expected = "[RADIO_CHANNEL_SUPPLY]: Отдел \"[engineering.name]\" оплатил заказ: [pack.name], в корзине снабжения."
+	TEST_ASSERT(expected in spy.heard, "Снабжение слышит об оплаченном заказе: [jointext(spy.heard, "; ")]")
+	for(var/line in spy.heard)
+		TEST_ASSERT(!findtext(line, "Секретная причина"), "Причина заявки ушла в эфир: [line]")
+	spy.heard.Cut()
+	TEST_ASSERT(engineering.order_pack(pack, chief, "тест"), "Глава заказывает второй раз")
+	TEST_ASSERT(!length(spy.heard), "Второй заказ в кулдаун не объявлен: [jointext(spy.heard, "; ")]")
+
+/// О заявке, ждущей решения, отдел оповещает сам, откуда бы её ни подали: канал отдела через систему оповещения и карты начальства на смене, кроме мёртвых; кулдаун общий.
+/datum/unit_test/economy_catalog/request_pending_announce/Run()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo, /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/hop = make_with_job(/datum/job/hop, /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/dead_captain = make_with_job(/datum/job/captain, /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/offline_captain = make_with_job(/datum/job/captain, /datum/bank_account/econ_test_ear)
+	on_shift(cmo)
+	on_shift(hop)
+	on_shift(dead_captain)
+	dead_captain.death()
+	var/datum/supply_pack/pack = pack_above_auto_limit(medical)
+	econ_test_set_balance(medical.account, 0)
+	var/datum/econ_request/request = medical.submit_request(pack, doctor, "Операционная")
+	TEST_ASSERT_EQUAL(request?.status, ECON_REQUEST_PENDING, "Заявка ждёт решения")
+	var/channel_line
+	for(var/line in spy.heard)
+		if(findtext(line, "[RADIO_CHANNEL_MEDICAL]: ") == 1)
+			channel_line = line
+	TEST_ASSERT(channel_line && findtext(channel_line, "№[request.uid]") && findtext(channel_line, pack.name), "Канал медицины слышит о заявке: [jointext(spy.heard, "; ")]")
+	TEST_ASSERT(!findtext(channel_line, "Операционная"), "Причина заявки ушла в эфир: [channel_line]")
+	for(var/mob/living/carbon/human/manager as anything in list(cmo, hop))
+		var/datum/bank_account/econ_test_ear/ear = econ_account_of(manager)
+		TEST_ASSERT_EQUAL(length(ear.heard), 1, "Карта [manager.mind.assigned_role] на смене сообщила о заявке")
+	var/datum/bank_account/econ_test_ear/dead_ear = econ_account_of(dead_captain)
+	TEST_ASSERT(!length(dead_ear.heard), "Мёртвому капитану карта не сообщает")
+	var/datum/bank_account/econ_test_ear/offline_ear = econ_account_of(offline_captain)
+	TEST_ASSERT(!length(offline_ear.heard), "Капитану не на смене карта не сообщает")
+	spy.heard.Cut()
+	medical.submit_request(pack, doctor, "Ещё")
+	TEST_ASSERT(!length(spy.heard), "Вторая заявка в кулдаун не объявлена: [jointext(spy.heard, "; ")]")
+	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
+	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 1, "Вторая заявка в кулдаун не пишет на карту")
 
 /// Заявка: глава одобряет - бюджет списан, заказ встал в очередь карго предоплаченным.
 /datum/unit_test/economy_catalog/request_approve/Run()

@@ -55,6 +55,8 @@ type BudgetRequest = {
   balance?: number | null;
   manager: BooleanLike;
   any: BooleanLike;
+  /** Есть кому одобрить заявку: без него паки дороже auto_limit уходят снабжению */
+  approver?: BooleanLike;
   auto_limit: number;
 };
 
@@ -433,18 +435,26 @@ const packTags = (pack: Pack) => {
   return tags;
 };
 
-/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. */
-const paidByBudget = (pack: Pack, budget?: BudgetRequest | null) => !!budget && !!pack.budget && (!!budget.any || pack.budget === budget.id);
+/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. Без начальства на смене пак дороже лимита автоодобрения уходит снабжению. */
+const paidByBudget = (pack: Pack, budget?: BudgetRequest | null) => {
+  if (!budget || !pack.budget || (!budget.any && pack.budget !== budget.id)) {
+    return false;
+  }
+  return !!budget.manager || !!budget.approver || (pack.cost || 0) <= budget.auto_limit;
+};
 
 const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
-  const own = budget.name ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
+  const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
+  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет глава отдела, ГП или капитан в программе "Бюджет отдела" на КПК; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`;
+  if (budget.manager) {
+    text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
+  } else if (!budget.approver) {
+    text = `Начальства отдела на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)} оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
+  }
   return (
     <NoticeBox info>
-      {budget.manager
-        ? `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`
-        : `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет глава отдела, ГП или капитан в программе "Бюджет отдела" на КПК; если на смене их нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`}{' '}
-      Остальные паки - заявкой снабжению, за его бюджет.
+      {text} Остальные паки - заявкой снабжению, за его бюджет.
     </NoticeBox>
   );
 };
@@ -458,9 +468,11 @@ const PackDetails = (props: {
   payer?: string;
   /** Заказ отдела везёт самый дешёвый партнёр: выбора нет */
   cheapestOnly?: boolean;
+  /** Начальство заказывает за бюджет отдела сразу, без заявки */
+  orderNow?: boolean;
 }) => {
   const { act, data } = useBackend<CargoData>();
-  const { pack, outOfStock, onOrder, express, payer, cheapestOnly } = props;
+  const { pack, outOfStock, onOrder, express, payer, cheapestOnly, orderNow } = props;
   const addMax = data.add_max || 10;
   const [amount, setAmount] = useState(1);
   const [partner, setPartner] = useState<string | null>(null);
@@ -534,7 +546,7 @@ const PackDetails = (props: {
           )}
           <Stack.Item>
             <Button icon="cart-plus" color="good" onClick={() => onOrder(amount, chosen ? chosen[0] : undefined)}>
-              {`${express ? 'Заказать' : payer ? 'Подать заявку' : 'В корзину'} за ${formatCredits(cost * amount)}`}
+              {`${express || orderNow ? 'Заказать' : payer ? 'Подать заявку' : 'В корзину'} за ${formatCredits(cost * amount)}`}
             </Button>
           </Stack.Item>
         </Stack>
@@ -611,6 +623,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
     }
     return budget?.name && !budget.any ? `бюджет отдела "${budget.name}"` : 'бюджет отдела пака';
   };
+  const requestTitle = !budget ? 'Каталог: заявка снабжению' : budget.manager ? 'Каталог: заказ за бюджет отдела или заявка снабжению' : 'Каталог: заявка отделу или снабжению';
   const order = (pack: Pack, amount = 1, partner?: string) => {
     const payload: Record<string, unknown> = { id: pack.id };
     if (partner) {
@@ -626,7 +639,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
   };
   return (
     <NtFrame
-      title={express ? 'Каталог' : asRequest ? 'Каталог: заявка снабжению' : 'Каталог'}
+      title={express ? 'Каталог' : asRequest ? requestTitle : 'Каталог'}
       buttons={
         <Button.Checkbox checked={self_paid} tooltip={privateHint} onClick={() => act('toggleprivate')}>
           Купить лично
@@ -727,7 +740,17 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                 <Button
                   fluid
                   disabled={outOfStock}
-                  tooltip={outOfStock ? 'Ни у одного открытого партнёра нет на складе: ждите пополнения.' : 'Добавить один'}
+                  tooltip={
+                    outOfStock
+                      ? 'Ни у одного открытого партнёра нет на складе: ждите пополнения.'
+                      : byBudget
+                        ? budget?.manager
+                          ? 'Заказать за бюджет отдела'
+                          : 'Подать заявку отделу: оплатит бюджет отдела'
+                        : asRequest
+                          ? 'Подать заявку снабжению'
+                          : 'Добавить один'
+                  }
                   tooltipPosition="left"
                   onClick={() => order(pack)}>
                   {priced ? formatCredits(cost) : '-'}
@@ -745,6 +768,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                     express={express}
                     payer={payerOf(pack)}
                     cheapestOnly={byBudget}
+                    orderNow={byBudget && !!budget?.manager}
                     onOrder={(amount, partner) => order(pack, amount, partner)}
                   />
                 </Table.Cell>

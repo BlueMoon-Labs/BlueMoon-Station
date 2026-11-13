@@ -30,7 +30,7 @@
 
 /obj/machinery/computer/cargo/request
 	name = "supply request console"
-	desc = "Консоль заявок: здесь экипаж просит снабжение заказать пак или заказывает его на свой счёт."
+	desc = "Консоль заявок: здесь экипаж просит снабжение заказать пак или заказывает его на свой счёт. Пак из каталога своего отдела уходит заявкой отделу и оплачивается бюджетом отдела."
 	icon_screen = "request"
 	circuit = /obj/item/circuitboard/computer/cargo/request
 	can_send = FALSE
@@ -210,15 +210,15 @@
 			var/reason = ""
 			var/datum/economy_department/budget_department
 			if(requestonly && !self_paid)
-				budget_department = econ_request_department(usr, pack)
 				reason = econ_cargo_given_reason(params)
 				if(!reason)
 					if(!usr.client)
 						return
+					budget_department = econ_request_department(usr, pack)
 					reason = tgui_input_text(usr, "Причина:", budget_department ? "Заявка: платит [budget_department.budget_name]" : "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
 					if(isnull(reason) || QDELETED(src) || QDELETED(ui) || ui_status(usr, ui.state) != UI_INTERACTIVE)
 						return
-					budget_department = econ_request_department(usr, pack)
+				budget_department = econ_request_department(usr, pack, src)
 			if(budget_department)
 				for(var/obj/item/coupon/coupon_check as anything in loaded_coupons)
 					if(pack.type == coupon_check.discounted_pack)

@@ -4,7 +4,7 @@
 	filedesc = "Заказы снабжения"
 	category = PROGRAM_CATEGORY_SUPL
 	program_icon_state = "request"
-	extended_desc = "Каталог, корзина и заявки снабжения NT с рынком и партнёрами. Снабжение заказывает за бюджет карго и решает заявки, остальные подают заявки. Шаттл и спецзаказы - только с консоли снабжения."
+	extended_desc = "Каталог, корзина и заявки снабжения NT с рынком и партнёрами. Снабжение заказывает за бюджет карго и решает заявки, остальные подают заявки: пак из каталога своего отдела оплатит бюджет отдела, остальное - снабжение. Шаттл и спецзаказы - только с консоли снабжения."
 	requires_ntnet = TRUE
 	size = 5
 	tgui_id = "NtosCargo"
@@ -95,15 +95,15 @@
 			var/reason = ""
 			var/datum/economy_department/budget_department
 			if(as_request)
-				budget_department = econ_request_department(user, pack)
 				reason = econ_cargo_given_reason(params)
 				if(!reason)
 					if(!user.client)
 						return
+					budget_department = econ_request_department(user, pack)
 					reason = tgui_input_text(user, "Причина:", budget_department ? "Заявка: платит [budget_department.budget_name]" : "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
 					if(isnull(reason) || QDELETED(computer) || QDELETED(ui) || ui_status(user, ui.state) != UI_INTERACTIVE)
 						return
-					budget_department = econ_request_department(user, pack)
+				budget_department = econ_request_department(user, pack, computer)
 			var/amount = econ_cargo_add_amount(params)
 			if(budget_department)
 				if(!radio)

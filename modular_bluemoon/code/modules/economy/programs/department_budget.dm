@@ -305,7 +305,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(request.status == ECON_REQUEST_APPROVED)
 				messages[user_ref] = "Заявка №[request.uid] одобрена, заказ ушёл в снабжение."
 			else
-				messages[user_ref] = "Заявка №[request.uid] подана и ждёт решения главы."
+				messages[user_ref] = "Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]."
 		if("approve", "deny")
 			var/datum/econ_request/request = find_request(department, params["uid"])
 			if(!request || request.status != ECON_REQUEST_PENDING)
