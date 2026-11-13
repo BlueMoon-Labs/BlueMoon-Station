@@ -25,6 +25,8 @@
 
 /// Зачисление дохода майнера: в бюджет отдела целиком, на личный счёт - с налогом. Возвращает зачисленное до налога.
 /datum/controller/subsystem/economy/proc/pay_crypto(datum/bank_account/account, amount, obj/machinery/miner)
+	if(round_over())
+		return 0
 	var/allowed = crypto_allowance(account, amount)
 	if(!allowed)
 		return 0

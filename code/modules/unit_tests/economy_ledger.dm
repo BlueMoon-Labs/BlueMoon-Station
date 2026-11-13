@@ -196,6 +196,8 @@
 	SSeconomy.fire()
 	var/fires_after = SSeconomy.fire_count
 	var/paid_after_end = SSeconomy.record_work(ACCOUNT_ENG, WORK_ENG_POWER_EXPORT, 100)
+	SSeconomy.crypto_paid_tick = -1
+	var/crypto_after_end = SSeconomy.pay_crypto(budget, 100)
 	var/minted_after_end = SSeconomy.ledger.minted
 	var/snapshots_after_end = length(SSeconomy.ledger.snapshots)
 	var/first_summary = econ_log_round_summary()
@@ -206,6 +208,7 @@
 
 	TEST_ASSERT_EQUAL(fires_after, fires, "Тик экономики после конца раунда пропущен")
 	TEST_ASSERT_EQUAL(paid_after_end, 0, "Работа после конца раунда не оплачена")
+	TEST_ASSERT_EQUAL(crypto_after_end, 0, "Майнеры после конца раунда не платят")
 	TEST_ASSERT_EQUAL(minted_after_end, 0, "Эмиссии после конца раунда нет")
 	TEST_ASSERT_EQUAL(snapshots_after_end, 0, "Снимок журнала после конца раунда не снят")
 	TEST_ASSERT(first_summary, "Итог смены записан")
