@@ -78,6 +78,23 @@
 	TEST_ASSERT(fresh.loc == home, "визуал второго порыва лежит в [fresh.loc], а не на турфе порыва")
 	TEST_ASSERT(moved.loc == away, "уехавший визуал вернулся на старый турф")
 
+/// До старта раунда порыв двигает газ, но визуал не рисует.
+/datum/unit_test/space_wind_effect/before_round_start
+
+/datum/unit_test/space_wind_effect/before_round_start/Run()
+	var/turf/open/subject = wind_turf(2, 2)
+	var/old_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_PREGAME
+	var/obj/effect/temp_visual/dir_setting/space_wind/wind = blow(subject)
+	SSticker.current_state = old_state
+	TEST_ASSERT(QDELETED(wind), "визуал ветра появился до старта раунда")
+	var/winds = 0
+	for(var/obj/effect/temp_visual/dir_setting/space_wind/stray in subject)
+		winds++
+	TEST_ASSERT_EQUAL(winds, 0, "на турфе лежит [winds] визуалов ветра до старта раунда")
+	wind = blow(subject)
+	TEST_ASSERT(!QDELETED(wind), "после старта раунда порыв не показал визуал ветра")
+
 /// Турф под визуалом стал стеной: визуал удаляется без рантайма.
 /datum/unit_test/space_wind_effect/turf_changed
 

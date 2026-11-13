@@ -1252,7 +1252,8 @@
 				if(budget <= 0 || TICK_CHECK)
 					break
 
-	if(pressure_difference > 100 && world.time >= next_space_wind_at)
+	// До старта раунда карту никто не видит: визуалы первых проходов SSair на проде не собирались и уходили в харддел по ~300 мс в лобби.
+	if(pressure_difference > 100 && world.time >= next_space_wind_at && SSticker.HasRoundStarted())
 		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
 		var/wind_alpha = clamp(round(sqrt(pressure_difference) * 2), 10, 255)
 		if(QDELETED(space_wind_visual) || space_wind_visual.loc != src)
