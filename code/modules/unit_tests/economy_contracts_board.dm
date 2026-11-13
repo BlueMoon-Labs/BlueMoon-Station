@@ -172,7 +172,7 @@
 	TEST_ASSERT(series.has_progress(), "Начатая серия считается неначатой")
 	TEST_ASSERT_EQUAL(series.ui_entry()["stage"], 3, "Этап в данных окна")
 	var/obj/last = single_item(series)
-	var/last_stage = round(series.reward * SSeconomy.bounty_modifier)
+	var/last_stage = round(series.reward * SSeconomy.bounty_modifier * settings.contract_delivery_mult)
 	var/final_total = last_stage + round((stages_sum + last_stage) * settings.contract_chain_bonus / 100)
 	TEST_ASSERT_EQUAL(series.payout(), final_total, "Последний этап без премии серии")
 	TEST_ASSERT(econ_contracts_ship(last, user), "Последний этап: предмет не засчитан")

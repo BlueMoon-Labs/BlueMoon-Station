@@ -109,7 +109,7 @@
 	TEST_ASSERT_EQUAL(civilian.account.account_balance - before, expected, "Без взявшего вся награда отделу")
 	econ_test_set_balance(civilian.account, before)
 	SSeconomy.contract_demand.Cut()
-	TEST_ASSERT_EQUAL(doubled, contract.reward * 2, "Модификатор наград применяется к выплате")
+	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult), "Модификатор наград применяется к выплате")
 	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5), "Множитель contract_delivery_mult применяется к выплате")
 
 /// Взятый срочный контракт, не выполненный к сроку, снимается при обновлении.
@@ -314,6 +314,8 @@
 	TEST_ASSERT_NOTNULL(floor, "Есть пол шаттла снабжения")
 	var/datum/econ_contract/delivery/contract = new(ACCOUNT_CIV, new /datum/bounty/item/assistant/scooter)
 	civilian.contracts.Insert(1, contract)
+	SSeconomy.contract_demand.Cut()
+	var/expected = contract.payout()
 	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, floor)
 	var/obj/scooter = new /obj/vehicle/ridden/scooter(crate)
 	new /obj/item/stack/sheet/metal/fifty(crate)
@@ -322,7 +324,7 @@
 	TEST_ASSERT(contract.completed, "Контракт выполнен шаттлом")
 	TEST_ASSERT(QDELETED(crate), "Ящик продан")
 	TEST_ASSERT_EQUAL(length(moved_to(cargo, ECON_EXPORT)), 1, "Металл продан снабжением")
-	TEST_ASSERT_EQUAL(civilian.account.account_balance - saved_civilian, contract.reward, "Награда отделу-заказчику")
+	TEST_ASSERT_EQUAL(civilian.account.account_balance - saved_civilian, expected, "Награда отделу-заказчику")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "контрактам NT"), "ЦК сообщает о приёме: [SSshuttle.centcom_message]")
 	econ_test_set_balance(civilian.account, saved_civilian)
 

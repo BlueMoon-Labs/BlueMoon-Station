@@ -1,7 +1,9 @@
 {
 	"_comment": "Числа баланса экономики. Перечитывается админом из панели \"Экономика\".",
 	"settings": {
-		"_comment": "Встроенные числа баланса - в modular_bluemoon/code/modules/economy/core/settings.dm. Здесь только то, что сервер перекрывает: ключ с тем же именем, у work_prices - отдельные работы, например {\"tax_default\": 15, \"work_prices\": {\"sci_node\": 25}}."
+		"_comment": "Встроенные числа баланса - в modular_bluemoon/code/modules/economy/core/settings.dm. Здесь только то, что сервер перекрывает: ключ с тем же именем, у work_prices - отдельные работы, например {\"tax_default\": 15, \"work_prices\": {\"sci_node\": 25}}.",
+		"contract_delivery_mult": 0.5,
+		"orbital_cargo_mult": 0.5
 	},
 	"market": {
 		"_comment": "Сдвиг цен раз в shift_minutes (±90 с). hot_chance - шанс в процентах, что товар станет горячим за сдвиг. Товары: volatility - сигма шага тренда, consumer - в корзине индекса цен, links - доля отклонения тренда, передаваемая связанным товарам (сумма долей, входящих в один товар, не больше 1), demand_capacity - сумма продаж, выбивающая весь спрос, demand_recovery - восстановление спроса за сдвиг.",
