@@ -362,37 +362,55 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_monostring
-	name = "Monowire Implant"
+	name = "Corporate Monowire Implant"
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	id = "ci-monostring"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 120
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 2000, /datum/material/diamond = 500)
-	build_path = /obj/item/organ/cyberimp/arm/monostring
+	build_path = /obj/item/organ/cyberimp/arm/monostring/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_monostring/hack
+	name = "Monowire Implant"
+	id = "ci-monostring-hack"
+	build_path = /obj/item/organ/cyberimp/arm/monostring
+	hacked_only = TRUE
+
 /datum/design/cyberimp_gorilla_arms
-	name = "Gorilla Arms Implant"
+	name = "Corporate Gorilla Arms Implant"
 	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
 	id = "ci-gorilla-arms"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 150
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/gold = 2000)
-	build_path = /obj/item/organ/cyberimp/arm/gorilla
+	build_path = /obj/item/organ/cyberimp/arm/gorilla/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_gorilla_arms/hack
+	name = "Gorilla Arms Implant"
+	id = "ci-gorilla-hack"
+	build_path = /obj/item/organ/cyberimp/arm/gorilla
+	hacked_only = TRUE
+
 /datum/design/cyberimp_handcannon
-	name = "Integrated Hand Cannon Implant"
+	name = "Corporate Integrated Hand Cannon Implant"
 	desc = "A compact, arm-integrated explosive launcher. The barrel deploys from the forearm and retracts when not in use."
 	id = "ci-handcannon"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 120
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 2000)
-	build_path = /obj/item/organ/cyberimp/arm/handgun
+	build_path = /obj/item/organ/cyberimp/arm/handgun/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_handcannon/hacked_only
+	name = "Integrated Hand Cannon Implant"
+	id = "ci-handcannon-hack"
+	build_path = /obj/item/organ/cyberimp/arm/handgun
+	hacked_only = TRUE
 
 /datum/design/cyberimp_kiroshi
 	name = "Kiroshi Optics"
@@ -409,12 +427,12 @@
 	name = "Militech Optical Suite"
 	desc = "A high-precision optical implant with integrated flash protection and sniper scope-like zoom for long-range targeting."
 	id = "ci-militech-optics"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 100
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/eyes/optical/militech
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	hacked_only = TRUE
 
 
 /datum/design/cyberimp_mantis
