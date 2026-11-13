@@ -232,6 +232,7 @@
 	vision_range = 25 // Increased pursuit distance
 	aggro_vision_range = 30 // Increased aggro range when attacked
 	var/is_runner = FALSE
+	var/corpse_cleanup_time = 5 MINUTES
 	// Allow zombies to climb tables and pass through fences
 	pass_flags = PASSTABLE | PASSFENCE
 	pass_flags_self = NONE
@@ -311,6 +312,9 @@
 	. = ..(gibbed)
 	if(!ckey)
 		toggle_ai(AI_OFF)
+	// Corpse cleanup: waves leave dozens of dead mobs behind and vanilla never
+	// removes them. Weakref timer - safe if the body is moved or deleted early.
+	QDEL_IN(src, corpse_cleanup_time)
 
 /mob/living/simple_animal/hostile/infected/Destroy()
 	if(GLOB.zombie_director)
