@@ -20,6 +20,9 @@
 	var/metabolization_block_duration = 10 SECONDS
 	var/list/processing_targets = list()
 
+// Встроенная установка мегасвармера учитывается отдельно от стационарных построек.
+/obj/structure/swarmer/acp_turret/mounted
+
 /obj/structure/swarmer/acp_turret/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
 	if(!strike_overlay)

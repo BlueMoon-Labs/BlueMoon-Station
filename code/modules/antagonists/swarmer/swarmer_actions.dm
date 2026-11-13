@@ -227,51 +227,51 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 
 /datum/action/cooldown/swarmer/build/Activate(atom/target)
 	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
-	if(!istype(swarmer) || !swarmer.team?.swarmer_core)
+	if(!istype(swarmer) || QDELETED(swarmer.team?.swarmer_core))
 		return FALSE
-	target = swarmer
-	. = ..()
+	var/datum/team/swarmer_team/swarm_team = swarmer.team
+	var/client/building_client = swarmer.client
 	var/turf/spawn_turf = get_turf(swarmer)
 	var/list/turfs_to_check = list(spawn_turf)
-	if(!turf_build_checks(target, turfs_to_check))
+	if(!turf_build_checks(swarmer, turfs_to_check))
 		return
 
-	if(!check_for_structure_in_turfs(target, turfs_to_check))
+	if(!check_for_structure_in_turfs(swarmer, turfs_to_check))
 		return
 
-	if(!custom_build_checks(target, turfs_to_check))
+	if(!custom_build_checks(swarmer, turfs_to_check))
 		return
 
-	if(!check_for_distance(spawn_turf))
-		target.balloon_alert(target, "слишком близко!")
-		var/obj/build_prototype = build_type
-		to_chat(target, span_warning("Минимальное расстояние между [build_prototype::name] — [GLOB.swarmer_objects_minimum_distance[build_type]]!"))
+	if(QDELETED(src) || owner != swarmer || swarmer.client != building_client || swarmer.team != swarm_team || get_turf(swarmer) != spawn_turf)
 		return
 
-	if(!swarmer.team?.adjust_metal(-action_cost))
-		target.balloon_alert(target, "недостаточно ресурсов!")
+	if(!can_place_structure(swarmer, spawn_turf))
 		return
 
-	if(build_time && !do_after(swarmer, build_time, swarmer, extra_checks = CALLBACK(src, PROC_REF(check_for_structure_in_turfs), target, turfs_to_check)))
-		target.balloon_alert(target, "сбито!")
-		swarmer.team?.adjust_metal(action_cost)
+	if(!swarm_team.adjust_metal(-action_cost))
+		swarmer.balloon_alert(swarmer, "недостаточно ресурсов!")
 		return
 
-	if(!check_for_distance(spawn_turf))
-		target.balloon_alert(target, "слишком близко!")
-		var/obj/build_prototype = build_type
-		to_chat(target, span_warning("Минимальное расстояние между [build_prototype::name] — [GLOB.swarmer_objects_minimum_distance[build_type]]!"))
-		swarmer.team?.adjust_metal(action_cost)
-		return
+	if(build_time)
+		if(!do_after(swarmer, build_time, swarmer, extra_checks = CALLBACK(src, PROC_REF(check_for_structure_in_turfs), swarmer, turfs_to_check)) \
+			|| QDELETED(src) || owner != swarmer || swarmer.client != building_client || swarmer.team != swarm_team \
+			|| QDELETED(swarm_team.swarmer_core) || get_turf(swarmer) != spawn_turf)
+			swarm_team.adjust_metal(action_cost)
+			swarmer.balloon_alert(swarmer, "сбито!")
+			return
 
-	var/obj/structure = new build_type(spawn_turf, swarmer.team)
+		if(!check_for_structure_in_turfs(swarmer, turfs_to_check) || !can_place_structure(swarmer, spawn_turf))
+			swarm_team.adjust_metal(action_cost)
+			return
+
+	var/obj/structure = new build_type(spawn_turf, swarm_team)
 	if(swarmer.training_origin)
 		var/datum/antag_training_arena/arena = swarmer.training_origin.resolve()
 		var/datum/antag_training_session/session = arena?.session_of(swarmer)
 		arena?.track_supply(structure, session)
 		if(arena)
 			arena.placed_structures += WEAKREF(structure)
-	target.balloon_alert(target, "успех!")
+	swarmer.balloon_alert(swarmer, "успех!")
 	return structure
 
 /datum/action/cooldown/swarmer/build/proc/turf_build_checks(mob/living/user, list/turfs_to_check)
@@ -309,17 +309,19 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 				user.balloon_alert(user, "нельзя строить сверху существующего!")
 				return FALSE
 
-/datum/action/cooldown/swarmer/build/proc/check_for_distance(turf/spawn_turf)
+/datum/action/cooldown/swarmer/build/proc/can_place_structure(mob/living/simple_animal/hostile/swarmer/swarmer, turf/spawn_turf)
+	var/datum/team/swarmer_team/swarm_team = swarmer.team
+	if(GLOB.swarmer_structure_limits_per_body[build_type] && swarm_team.get_structure_count(build_type) >= swarm_team.get_structure_limit(build_type))
+		swarmer.balloon_alert(swarmer, "достигнут лимит построек этого типа!")
+		return FALSE
+
 	var/required_range = GLOB.swarmer_objects_minimum_distance[build_type]
-	if(!required_range)
-		return TRUE
-
-	var/mob/living/simple_animal/hostile/swarmer/swarmer = owner
-	var/datum/team/swarmer_team/team = swarmer.team
-	if(!team)
-		return TRUE
-
-	return team.check_objs_of_type_in_range(spawn_turf, required_range, build_type)
+	if(required_range && !swarm_team.check_objs_of_type_in_range(spawn_turf, required_range, build_type))
+		swarmer.balloon_alert(swarmer, "слишком близко!")
+		var/obj/build_prototype = build_type
+		to_chat(swarmer, span_warning("Минимальное расстояние между [build_prototype::name] — [required_range]!"))
+		return FALSE
+	return TRUE
 
 /datum/action/cooldown/swarmer/build/proc/custom_build_checks(mob/living/user, list/turfs_to_check)
 	return TRUE
@@ -342,6 +344,7 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 	build_type = /obj/structure/swarmer/trap
 	action_cost = SWARMER_TRAP_COST
 	build_time = SWARMER_FAST_BUILD_DELAY
+	cooldown_time = 6 SECONDS
 
 /datum/action/cooldown/swarmer/build/trap/Grant(mob/granted_to)
 	. = ..()
@@ -349,6 +352,18 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 		return
 
 	build_time = 0
+
+/datum/action/cooldown/swarmer/build/trap/Remove(mob/remove_from)
+	if(datum_flags & DF_ISPROCESSING)
+		STOP_PROCESSING(SSfastprocess, src)
+	return ..()
+
+/datum/action/cooldown/swarmer/build/trap/Activate(atom/target)
+	if(owner in owner?.do_afters)
+		return FALSE
+	. = ..()
+	if(.)
+		StartCooldown()
 
 /datum/action/cooldown/swarmer/build/transport_hub
 	name = "Создать Хаб"

@@ -10,8 +10,8 @@
 	icon_living = "swarmer_starter"
 	melee_damage_lower = 20 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 20 * SWARMER_STAMINA_SCALE
-	health = 90
-	maxHealth = 90
+	health = 40
+	maxHealth = 40
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	pass_flags = PASSTABLE | PASSMOB
@@ -30,8 +30,8 @@
 	icon_living = "swarmer_general"
 	melee_damage_lower = 25 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 25 * SWARMER_STAMINA_SCALE
-	health = 240
-	maxHealth = 240
+	health = 100
+	maxHealth = 100
 	speed = 0
 	ranged = TRUE
 	projectiletype = /obj/item/projectile/beam/disabler/swarmer/generalist
@@ -50,8 +50,8 @@
 	icon_living = "swarmer_rover"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 150
-	maxHealth = 150
+	health = 60
+	maxHealth = 60
 	speed = -0.25
 	swap_resource_cost = ROVER_SWAP_COST
 	can_swap_to = TRUE
@@ -98,8 +98,8 @@
 	icon_living = "swarmer_combat"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 300
-	maxHealth = 300
+	health = 120
+	maxHealth = 120
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	ranged = TRUE
@@ -174,8 +174,8 @@
 	icon_living = "swarmer_builder"
 	melee_damage_lower = 40 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 40 * SWARMER_STAMINA_SCALE
-	health = 300
-	maxHealth = 300
+	health = 120
+	maxHealth = 120
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swap_resource_cost = BUILDER_SWAP_COST
 	can_swap_to = TRUE
@@ -216,7 +216,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/mega/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
-	acp = new(src, team)
+	acp = new /obj/structure/swarmer/acp_turret/mounted(src, team)
 	configure_acp()
 
 /mob/living/simple_animal/hostile/swarmer/mega/Destroy(force)

@@ -6,8 +6,8 @@
 	icon = 'icons/mob/swarmer.dmi'
 	icon_state = "swarmer_old"
 	icon_living = "swarmer_old"
-	health = 105
-	maxHealth = 105
+	health = 45
+	maxHealth = 45
 	status_flags = CANPUSH
 	speak_emote = list("гудит")
 	bubble_icon = "swarmer"
@@ -178,6 +178,11 @@
 	. += "Органика в ядре: [round(team?.organic_resources || 0, 0.01)]"
 	if(team?.swarmer_core)
 		. += "Здоровье ядра: [team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]"
+	if(team)
+		. += "Штурмовые турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/turret)]"
+		. += "Снайперские турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/sniper)]"
+		. += "Установки ACP: [team.get_structure_limit_status(/obj/structure/swarmer/acp_turret)]"
+		. += "Ремонтные станции: [team.get_structure_limit_status(/obj/structure/swarmer/repair_station)]"
 
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()

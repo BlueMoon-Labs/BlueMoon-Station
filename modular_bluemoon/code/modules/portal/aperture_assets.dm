@@ -112,6 +112,8 @@ GLOBAL_LIST_INIT(aperture_turret_ally_death_vo, list(
 		return FALSE
 	if(istype(turret, /obj/machinery/porta_turret/syndicate))
 		return FALSE
+	if(istype(turret, /obj/machinery/porta_turret/swarmer))
+		return FALSE
 	return TRUE
 
 /proc/apply_aperture_turret_skin(obj/machinery/porta_turret/turret)

@@ -1,5 +1,12 @@
 GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 
+GLOBAL_LIST_INIT(swarmer_structure_limits_per_body, list(
+	/obj/machinery/porta_turret/swarmer/turret = 4,
+	/obj/machinery/porta_turret/swarmer/sniper = 3,
+	/obj/structure/swarmer/acp_turret = 2,
+	/obj/structure/swarmer/repair_station = 1,
+))
+
 #define ANALYZER_SEND_LIMIT 2
 
 /datum/team/swarmer_team
@@ -59,6 +66,15 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	LAZYREMOVEASSOC(swarmer_objects, structure_to_remove.type, structure_to_remove.UID())
 	if(structure_to_remove.type == /obj/structure/swarmer/organic_analyzer)
 		update_analyzer_stats()
+
+/datum/team/swarmer_team/proc/get_structure_count(structure_type)
+	return length(LAZYACCESS(swarmer_objects, structure_type))
+
+/datum/team/swarmer_team/proc/get_structure_limit(structure_type)
+	return GLOB.swarmer_structure_limits_per_body[structure_type] * length(bodies)
+
+/datum/team/swarmer_team/proc/get_structure_limit_status(structure_type)
+	return "[get_structure_count(structure_type)]/[get_structure_limit(structure_type)]"
 
 /datum/team/swarmer_team/Destroy(force, ...)
 	if(GLOB.active_swarmer_team == src)
