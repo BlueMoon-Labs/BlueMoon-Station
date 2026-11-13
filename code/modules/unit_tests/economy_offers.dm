@@ -383,10 +383,15 @@
 	var/tarkov_before = tarkov.account_balance
 	var/cargo_before = cargo.account_balance
 	var/medical_before = medical.account.account_balance
+	var/datum/economy_ledger/ledger = SSeconomy.ledger
+	var/station_minted_before = ledger.minted - ledger.outpost_minted
+	var/outpost_minted_before = ledger.outpost_minted
 	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 6)
 	TEST_ASSERT_EQUAL(scanner.sell_offstation(first, scavenger, ACCOUNT_TAR), 0, "Принятое спецзаказом продано ещё и на рынке")
 	TEST_ASSERT(offer.accepted && offer.delivered == 6, "Сканер не засчитал 6 штук в спецзаказ: [offer.delivered]")
 	TEST_ASSERT(QDELETED(first), "Принятая стопка осталась")
+	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Сдача сканером аванпоста попала в эмиссию станции")
+	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, 600, "Эмиссия аванпоста - вся оплата за штуки, доля сдавшего из неё")
 	var/share = round(600 * settings.contract_team_share / 100)
 	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
@@ -402,6 +407,91 @@
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 - share + 1000 + round(market), "Бюджету Таркова база, маржа выполнения и рынок")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение станции получило деньги со сканера аванпоста")
 	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Отдел станции получил деньги со сканера аванпоста")
+
+/datum/unit_test/economy_offers/outpost_scanner/proc/station_doctor()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_offer_doctor")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	return doctor
+
+/datum/unit_test/economy_offers/outpost_scanner/proc/heard(mob/listener, marker)
+	for(var/list/entry as anything in GLOB.unit_test_chat_capture)
+		if(entry[1] == listener && findtext(entry[2], marker))
+			return TRUE
+	return FALSE
+
+/// Спецзаказ, который трогали только аванпосты: первая сдача сканером берёт его и называет срок, осмотр сканера объясняет срок; провал не штрафует станцию. Тронутый станцией - штрафует.
+/datum/unit_test/economy_offers/outpost_scanner/outpost_only_fail/Run()
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/datum/stock_company/company = SSmarket.companies[prospectors.company]
+	TEST_ASSERT_NOTNULL(company, "У партнёра есть компания на бирже")
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	offer.deadline = world.time + 30 SECONDS
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	var/examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, "до снятия меньше минуты"), "Осмотр невзятого спецзаказа с остатком меньше минуты: [examined]")
+	TEST_ASSERT(findtext(examined, "срок станет [SSmarket.offer_deadline_minutes] мин."), "Осмотр не говорит, что первая сдача запускает срок: [examined]")
+
+	GLOB.unit_test_chat_capture = list()
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 4)
+	scanner.sell_offstation(first, scavenger, ACCOUNT_TAR)
+	var/told_taken = heard(scavenger, "взят") && heard(scavenger, "осталось сдать 6 шт.")
+	GLOB.unit_test_chat_capture = null
+	TEST_ASSERT(offer.accepted && offer.delivered == 4, "Сканер не взял спецзаказ")
+	TEST_ASSERT(told_taken, "Сканер не сказал, что спецзаказ взят и сколько осталось")
+	examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, "взят, осталось") && !findtext(examined, "сейчас"), "Осмотр взятого спецзаказа: [examined]")
+
+	prospectors.reputation = 300
+	var/price_before = company.price
+	SSshuttle.centcom_message = "Прежнее сообщение."
+	offer.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(offer), "Просроченный спецзаказ не снят")
+	TEST_ASSERT(length(resolved) == 1 && !resolved[1][2], "Нет сигнала провала")
+	TEST_ASSERT(abs(prospectors.reputation - 300) < 0.01, "Провал заказа аванпоста снял репутацию станции: [prospectors.reputation]")
+	TEST_ASSERT_EQUAL(company.price, price_before, "Провал заказа аванпоста уронил акции")
+	TEST_ASSERT_EQUAL(SSshuttle.centcom_message, "Прежнее сообщение.", "Провал заказа аванпоста в сообщении ЦК")
+
+	var/datum/market_offer/shared = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	scanner.sell_offstation(allocate(/obj/item/stack/sheet/mineral/gold, run_loc_floor_bottom_left, 1), scavenger, ACCOUNT_TAR)
+	var/mob/living/carbon/human/doctor = station_doctor()
+	TEST_ASSERT_EQUAL(econ_offers_ship(allocate(/obj/item/stack/sheet/mineral/gold, doctor.loc, 1), doctor), 1, "Пад станции принял золото")
+	prospectors.reputation = 300
+	price_before = company.price
+	shared.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(shared), "Просроченный общий спецзаказ не снят")
+	TEST_ASSERT(abs(prospectors.reputation - (300 - MARKET_OFFER_REPUTATION_FAIL)) < 0.01, "Провал заказа, который сдавала станция, без штрафа: [prospectors.reputation]")
+	TEST_ASSERT(company.price < price_before, "Провал заказа, который сдавала станция, не уронил акции")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "провален"), "Провал заказа, который сдавала станция, не в сообщении ЦК: [SSshuttle.centcom_message]")
+
+/// Маржа делится по сданным штукам: за отгрузку шаттлом - снабжению, за пад - отделу сдавшего, за сканер - бюджету аванпоста, кто бы ни сдал последнюю штуку.
+/datum/unit_test/economy_offers/outpost_scanner/margin_split/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	offer.accept()
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	new /obj/item/stack/sheet/mineral/plasma(crate, 3)
+	print_offer_manifest(offer, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(offer.delivered, 3, "Шаттл сдал 3 штуки")
+	var/mob/living/carbon/human/doctor = station_doctor()
+	TEST_ASSERT_EQUAL(econ_offers_ship(allocate(/obj/item/stack/sheet/mineral/plasma, doctor.loc, 3), doctor), 3, "Пад сдал 3 штуки")
+	var/cargo_before = cargo.account_balance
+	var/medical_before = medical.account.account_balance
+	var/tarkov_before = tarkov.account_balance
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	scanner.sell_offstation(allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 4), scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(QDELETED(offer), "Сканер не закрыл спецзаказ")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 300, "Снабжению маржа за 3 штуки шаттла")
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 300, "Медицине маржа за 3 штуки пада")
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 + 400, "Таркову база и маржа за свои 4 штуки")
 
 /// Купленное в автомате спецзаказ не засчитывает, а NT выкупает не дороже доли уплаченного.
 /datum/unit_test/economy_offers/vended_goods/Run()
@@ -556,6 +646,7 @@
 	TEST_ASSERT(findtext(jointext(manifest.examine(user), "\n"), "Спецзаказ по этой накладной закрыт"), "Осмотр накладной закрытого спецзаказа")
 	var/help = econ_cargo_market_help()
 	TEST_ASSERT(findtext(help, "до [SSmarket.offers_max], новые выходят раз в [SSmarket.offer_minutes] мин.") && findtext(help, "закрыть за [SSmarket.offer_deadline_minutes] мин.") && findtext(help, "+[MARKET_OFFER_REPUTATION_SUCCESS] репутации") && findtext(help, "маржа"), "Справка не описывает спецзаказы")
+	TEST_ASSERT(findtext(help, "сканером продажи в свой бюджет"), "Справка не говорит, что аванпосты сдают спецзаказы сканером")
 
 /// Настройки спецзаказов и offer_items партнёров из economy.json совпадают со встроенными; любая битая запись оставляет список партнёра встроенным.
 /datum/unit_test/economy_offers/config/Run()

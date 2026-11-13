@@ -169,10 +169,10 @@
 	var/datum/bank_account/department/budget = account
 	return istype(budget) && !!budget.department
 
-/// Бюджет аванпоста (Deep Space, Тарков): счёт отдела без станционного отдела.
+/// Бюджет аванпоста (Deep Space, Тарков) - по id: у станционного бюджета отдел проставляется уже после стартового зачисления.
 /proc/econ_is_outpost_budget(datum/bank_account/account)
 	var/datum/bank_account/department/budget = account
-	return istype(budget) && !budget.department
+	return istype(budget) && (budget.department_id in list(ACCOUNT_TAR, ACCOUNT_DS))
 
 /datum/economy_ledger/proc/snapshot()
 	var/cash = SSeconomy.cash_account?.account_balance || 0

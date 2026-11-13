@@ -478,7 +478,7 @@ SUBSYSTEM_DEF(market)
 
 /datum/controller/subsystem/market/proc/on_stock_offer_resolved(datum/source, datum/market_offer/offer, success)
 	SIGNAL_HANDLER
-	if(success)
+	if(success || !offer.station_involved)
 		return
 	var/datum/trade_partner/partner = partners[offer.partner_id]
 	var/datum/stock_company/company = partner ? companies[partner.company] : null

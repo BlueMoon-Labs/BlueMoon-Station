@@ -147,6 +147,10 @@
 	return ..()
 
 /datum/unit_test/economy_round_summary_outposts/Run()
+	var/datum/economy_ledger/live = SSeconomy.ledger
+	TEST_ASSERT(!live.outpost_minted_by_reason[ECON_STARTING_FUNDS], "Стартовые бюджеты в эмиссии аванпостов: [live.outpost_minted_by_reason[ECON_STARTING_FUNDS]]")
+	for(var/id in SSeconomy.departments)
+		TEST_ASSERT(!(id in live.outpost_flows), "Отдел станции [id] среди аванпостов в итоге смены")
 	saved_ledger = SSeconomy.ledger
 	SSeconomy.ledger = new /datum/economy_ledger
 	outpost = SSeconomy.get_dep_account(ACCOUNT_DS)
