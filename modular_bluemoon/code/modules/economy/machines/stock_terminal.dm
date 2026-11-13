@@ -1,6 +1,6 @@
 /obj/machinery/computer/stock_terminal
 	name = "stock exchange terminal"
-	desc = "Терминал биржи сектора: котировки компаний и торговля акциями с личного счёта, у капитана - и из казны станции. Работа отделов станции поднимает акции связанных компаний, беды станции их роняют, а у каждой компании видно, почему цена сдвинулась. График на экране показывает, растут ли акции в среднем, и сразу перерисовывается на событиях станции, двигающих акции. При остановке торгов и обвале рынка терминал бьёт тревогу, при возобновлении торгов и буме в секторе звонит."
+	desc = "Терминал биржи сектора: котировки компаний и торговля акциями с личного счёта, у капитана - и из казны станции. Работа отделов и беды станции двигают акции связанных компаний: одни вверх, другие вниз. У каждой компании видно, почему цена сдвинулась. График на экране показывает, растут ли акции в среднем, и сразу перерисовывается на событиях станции, двигающих акции. При остановке торгов и обвале рынка терминал бьёт тревогу, при возобновлении торгов и буме в секторе звонит."
 	icon = 'icons/obj/machines/economy/stock_terminal.dmi'
 	icon_state = "terminal"
 	icon_screen = "terminal_ticker"
@@ -18,9 +18,10 @@
 	program = new
 	RegisterSignal(SSmarket, COMSIG_MARKET_STOCKS_TICKED, PROC_REF(on_stocks_ticked))
 	RegisterSignal(SSmarket, COMSIG_MARKET_STATION_EVENT, PROC_REF(on_station_event))
+	RegisterSignal(SSmarket, COMSIG_MARKET_FEED_CHANGED, PROC_REF(refresh_viewers))
 
 /obj/machinery/computer/stock_terminal/Destroy()
-	UnregisterSignal(SSmarket, list(COMSIG_MARKET_STOCKS_TICKED, COMSIG_MARKET_STATION_EVENT))
+	UnregisterSignal(SSmarket, list(COMSIG_MARKET_STOCKS_TICKED, COMSIG_MARKET_STATION_EVENT, COMSIG_MARKET_FEED_CHANGED))
 	QDEL_NULL(program)
 	return ..()
 
@@ -32,6 +33,13 @@
 		if("sector_boom")
 			market_alarm(MARKET_SOUND_BELL)
 	update_chart()
+	refresh_viewers()
+
+/// Котировки и лента причин уходят в открытые окна статикой.
+/obj/machinery/computer/stock_terminal/proc/refresh_viewers(datum/source)
+	SIGNAL_HANDLER
+	if(length(SStgui.open_uis_by_src[REF(src)]))
+		INVOKE_ASYNC(src, TYPE_PROC_REF(/datum, update_static_data_for_all_viewers))
 
 /// Звонок и тревога биржи на включённом терминале, не чаще MARKET_ALARM_COOLDOWN; тик цен терминал не озвучивает.
 /obj/machinery/computer/stock_terminal/proc/market_alarm(kind)
@@ -47,8 +55,7 @@
 	SIGNAL_HANDLER
 	market_alarm(econ_market_tick_sound(halted, relisted))
 	update_chart()
-	if(length(SStgui.open_uis_by_src[REF(src)]))
-		INVOKE_ASYNC(src, TYPE_PROC_REF(/datum, update_static_data_for_all_viewers))
+	refresh_viewers()
 
 /obj/machinery/computer/stock_terminal/proc/update_chart()
 	var/total = 0

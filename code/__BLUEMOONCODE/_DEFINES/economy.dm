@@ -377,10 +377,14 @@
 /// Новость о сдвиге от работы станции - когда он ушёл от прошлой новости на эту долю, по компании не чаще кулдауна
 #define STOCK_WORK_NEWS_STEP 0.05
 #define STOCK_WORK_NEWS_COOLDOWN (15 MINUTES)
-/// Лента причин у компании: столько последних скачков; одинаковые подряд сливаются в окне MERGE_TIME, скачки меньше MIN не пишутся
+/// Вид работы в market.work_stocks: награды NT за выполненные станцией контракты
+#define STOCK_WORK_CONTRACTS "contracts"
+/// Лента причин у компании: столько последних скачков; работа станции копится одной строкой, пока пауза в ней короче MERGE_TIME; скачки меньше MIN не пишутся
 #define STOCK_MOVES_MAX 5
 #define STOCK_MOVE_MERGE_TIME (10 MINUTES)
 #define STOCK_MOVE_MIN 0.0005
+/// Окна биржи получают новую ленту причин от работы и продаж не чаще этого
+#define STOCK_FEED_UI_DELAY (10 SECONDS)
 /// Скачок цены от этой доли и больше приходит держателям акций сообщением на карту
 #define STOCK_HOLDER_ALERT_MIN 0.05
 #define STOCK_EVENT_MULT_MAX 3
@@ -457,6 +461,8 @@
 #define COMSIG_MARKET_STOCKS_TICKED "market_stocks_ticked"
 ///from SSmarket.station_event(), когда событие станции сдвинуло акции: (key)
 #define COMSIG_MARKET_STATION_EVENT "market_station_event"
+///from SSmarket.send_feed_changed() не чаще STOCK_FEED_UI_DELAY, когда работа или продажи станции дописали ленту причин
+#define COMSIG_MARKET_FEED_CHANGED "market_feed_changed"
 
 #define MARKET_SOUND_TICK "tick"
 #define MARKET_SOUND_BELL "bell"

@@ -297,7 +297,7 @@ GLOBAL_LIST_EMPTY(gravity_generators) // We will keep track of this by adding ne
 				alert = TRUE
 				investigate_log("was brought offline and there is now no gravity for this level.", INVESTIGATE_GRAVITY)
 				message_admins("The gravity generator was brought offline with no backup generator. [ADMIN_VERBOSEJMP(src)]")
-				if(is_station_level(z))
+				if(is_station_level(z) && !(machine_stat & NOPOWER))
 					SSmarket?.station_event("gravity_lost")
 
 	update_appearance()

@@ -46,6 +46,9 @@ SUBSYSTEM_DEF(security_level)
 
 	//Will not be announced if you try to set to the same level as it already is
 	if(new_level >= SEC_LEVEL_GREEN && new_level <= SEC_LEVEL_DELTA && new_level != GLOB.security_level)
+		var/market_key = market_alert_key(current_level, new_level)
+		if(market_key)
+			SSmarket?.station_event(market_key)
 		var/obj/docking_port/mobile/emergency/emergency_shuttle = get_called_emergency_shuttle()
 		switch(new_level)
 			if(SEC_LEVEL_GREEN)
@@ -165,7 +168,6 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_RED)
 				if(GLOB.security_level < SEC_LEVEL_RED)
-					SSmarket?.station_event("red_alert")
 					announce_security_level_change(SEC_LEVEL_RED, CONFIG_GET(string/alert_red_upto), TRUE)
 					if(emergency_shuttle)
 						if(GLOB.security_level == SEC_LEVEL_GREEN)
@@ -218,6 +220,12 @@ SUBSYSTEM_DEF(security_level)
 		SSnightshift.check_nightshift()
 	else
 		return
+
+/// Событие биржи при подъёме кода: красный и тяжелее из-под красного - "red_alert", у дельты своё событие в delta_process().
+/datum/controller/subsystem/security_level/proc/market_alert_key(old_level, new_level)
+	if(old_level < SEC_LEVEL_RED && new_level >= SEC_LEVEL_RED && new_level != SEC_LEVEL_DELTA)
+		return "red_alert"
+	return null
 
 /datum/controller/subsystem/security_level/proc/move_shuttle()
 	if(!SSshuttle.toggleShuttle("lambda","lambda_away","lambda_station"))

@@ -68,6 +68,7 @@ GLOBAL_LIST_INIT(market_default_work_stocks, list(
 	WORK_SRV_NEW_PLANT = list("AGRO" = 0.1),
 	WORK_SRV_CLEANING = list("NTRN" = 0.05),
 	WORK_SEC_CONTRABAND = list("HEPH" = 0.1, "CYBS" = -0.1),
+	STOCK_WORK_CONTRACTS = list("NTRN" = 0.005),
 ))
 
 /// Вид работы -> list(название в сносках биржи, причина скачка в ленте и новостях).
@@ -89,6 +90,7 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	WORK_SRV_NEW_PLANT = list("новый урожай", "ботаники выводят новые сорта"),
 	WORK_SRV_CLEANING = list("уборка", "уборщики отмывают станцию"),
 	WORK_SEC_CONTRABAND = list("изъятая контрабанда", "СБ изымает контрабанду"),
+	STOCK_WORK_CONTRACTS = list("контракты сектора", "станция выполняет контракты сектора"),
 ))
 
 /proc/market_work_driver_name(work_type)
@@ -116,7 +118,11 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	/// work_boost на момент последней новости о работе станции и когда можно следующую
 	var/work_news_boost = 0
 	var/work_news_ready_at = 0
-	/// Последние скачки цены: list(text, factor, at, time), старые в начале
+	/// Знак потолка от работы, о котором уже вышла новость, 0 - не выходила
+	var/work_cap_news = 0
+	/// Строка ленты, в которой копится работа станции, пока пауза в ней короче STOCK_MOVE_MERGE_TIME
+	var/list/work_move
+	/// Последние скачки цены: list(text, factor, at, time), старые в начале; factor null - строка без сдвига цены
 	var/list/moves = list()
 	var/halted_until = 0
 	var/list/history = list()
@@ -173,6 +179,7 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 		history.Cut(1, 2)
 	if(price < base_price * STOCK_BANKRUPT_RATIO)
 		halted_until = world.time + STOCK_HALT_TIME
+		note_status("Торги остановлены на [STOCK_HALT_TIME / (1 MINUTES)] мин.: цена упала ниже [STOCK_BANKRUPT_RATIO * 100]% базовой")
 		log_econ("Торги [ticker] остановлены: цена [round(price, 0.01)] ниже [STOCK_BANKRUPT_RATIO * 100]% базы [base_price]")
 
 /datum/stock_company/proc/set_price(value)
@@ -186,10 +193,21 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	price = base_price * STOCK_RELIST_RATIO
 	event_mult = 1
 	trade_volume = 0
-	work_boost = 0
-	work_news_boost = 0
+	reset_work()
+	note_status("Повторный листинг по [STOCK_RELIST_RATIO * 100]% базовой цены: акции держателей обменяны, их стоимость не выросла")
 	log_econ("Торги [ticker] возобновлены, повторный листинг по [round(price, 0.01)]")
 	SSmarket.consolidate_shares(src, halted_price / price)
+
+/// Сдвиг от работы отделов обнуляется: новый листинг или сброс сектора.
+/datum/stock_company/proc/reset_work()
+	work_boost = 0
+	work_news_boost = 0
+	work_cap_news = 0
+	work_move = null
+
+/// Цена без сдвига от работы отделов за смену.
+/datum/stock_company/proc/price_without_work()
+	return price / (1 + work_boost)
 
 /datum/stock_company/proc/apply_shock(effect)
 	if(!isnum(effect) || effect <= -1)
@@ -222,23 +240,50 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	var/factor = price / price_before
 	if(abs(factor - 1) < STOCK_MOVE_MIN)
 		return
-	var/now = STATION_TIME_TIMESTAMP("hh:mm", world.time)
 	var/list/last = length(moves) ? moves[length(moves)] : null
 	if(merge && last && last["text"] == text && world.time - last["at"] < STOCK_MOVE_MERGE_TIME)
 		last["factor"] = last["factor"] * factor
 		last["at"] = world.time
-		last["time"] = now
+		last["time"] = STATION_TIME_TIMESTAMP("hh:mm", world.time)
 		return
-	moves += list(list("text" = text, "factor" = factor, "at" = world.time, "time" = now))
-	if(length(moves) > STOCK_MOVES_MAX)
-		moves.Cut(1, 2)
+	push_move(list("text" = text, "factor" = factor, "at" = world.time, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time)))
 
-/// Лента причин для окна биржи: новые сверху, сдвиг в процентах.
+/// Строка ленты без сдвига цены: остановка торгов и повторный листинг.
+/datum/stock_company/proc/note_status(text)
+	push_move(list("text" = text, "factor" = null, "at" = world.time, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time)))
+
+/// Работа станции копится одной строкой ленты на компанию, пока пауза в работе короче STOCK_MOVE_MERGE_TIME, и встаёт наверх, набрав STOCK_MOVE_MIN.
+/datum/stock_company/proc/note_work(work_type, price_before)
+	if(!(price_before > 0))
+		return
+	var/list/line = work_move
+	if(!line || world.time - line["at"] >= STOCK_MOVE_MERGE_TIME)
+		moves -= list(line)
+		line = list("text" = null, "factor" = 1, "at" = world.time, "works" = list())
+		work_move = line
+	line["factor"] = line["factor"] * price / price_before
+	line["at"] = world.time
+	line["time"] = STATION_TIME_TIMESTAMP("hh:mm", world.time)
+	var/list/works = line["works"]
+	works |= market_work_driver_name(work_type)
+	line["text"] = "Работа станции: [jointext(works, ", ")]"
+	if(abs(line["factor"] - 1) >= STOCK_MOVE_MIN)
+		push_move(line)
+
+/// Ставит строку наверх ленты, старые сверх STOCK_MOVES_MAX уходят.
+/datum/stock_company/proc/push_move(list/line)
+	moves -= list(line)
+	moves += list(line)
+	if(length(moves) > STOCK_MOVES_MAX)
+		moves.Cut(1, length(moves) - STOCK_MOVES_MAX + 1)
+
+/// Лента причин для окна биржи: новые сверху, сдвиг в процентах или null у строки без сдвига.
 /datum/stock_company/proc/moves_ui()
 	. = list()
 	for(var/index in length(moves) to 1 step -1)
 		var/list/move = moves[index]
-		. += list(list("text" = move["text"], "effect" = round((move["factor"] - 1) * 100, 0.1), "time" = move["time"]))
+		var/factor = move["factor"]
+		. += list(list("text" = move["text"], "effect" = isnull(factor) ? null : round((factor - 1) * 100, 0.1), "time" = move["time"]))
 
 /// Изменение цены в процентах от самой старой точки истории.
 /datum/stock_company/proc/change_percent()
@@ -265,7 +310,7 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 			if(commodity)
 				goods += lowertext(commodity.name)
 		var/note = "[jointext(goods, ", ")]; +5% за каждые [round(STOCK_TRADE_SCALE / 20)] кр. продаж"
-		if(!partner.unlocked)
+		if(!partner.unlocked || partner.contraband)
 			note += "; партнёр пока не торгует со станцией"
 		. += list(list("label" = "Продажи станции через снабжение партнёру \"[partner.name]\"", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
 		. += list(list("label" = "Сорванный станцией спецзаказ \"[partner.name]\"", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
@@ -280,7 +325,11 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 		var/mult = 1 + effects[ticker]
 		if(!isnull(effects[STOCK_ALL_COMPANIES]))
 			mult *= 1 + effects[STOCK_ALL_COMPANIES]
-		. += list(list("label" = GLOB.market_station_event_names[key] || key, "effect" = round((mult - 1) * 100, 0.1)))
+		var/list/entry = list("label" = GLOB.market_station_event_names[key] || key, "effect" = round((mult - 1) * 100, 0.1))
+		var/note = SSmarket.station_event_note(key)
+		if(note)
+			entry["note"] = note
+		. += list(entry)
 
 /// Сноска о работе отделов: какие работы двигают цену и на сколько за каждые STOCK_WORK_NOTE_CREDITS кр. оплаты отделу; null - никакие.
 /datum/stock_company/proc/work_driver()
@@ -306,7 +355,7 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	var/list/parts = list()
 	for(var/rate in by_rate)
 		parts += length(by_rate) > 1 ? "[jointext(by_rate[rate], ", ")] [rate]" : rate
-	var/note = "[jointext(parts, "; ")] за каждые [STOCK_WORK_NOTE_CREDITS] кр., что отдел получил за эту работу; в следующую смену не переходит"
+	var/note = "[jointext(parts, "; ")] за каждые [STOCK_WORK_NOTE_CREDITS] кр., что станция получила за эту работу; в следующую смену не переходит"
 	return list("label" = "Работа станции: [jointext(names, ", ")]", "effect" = round((rising ? 1 : -1) * SSmarket.work_stock_cap * 100, 0.1), "upto" = TRUE, "note" = note)
 
 /// Сноски биржи, общие для всех компаний: события станции со сдвигом STOCK_ALL_COMPANIES.
@@ -358,6 +407,12 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 	return FALSE
 
 /datum/stock_company/index/note_move(text, price_before, merge = FALSE)
+	return
+
+/datum/stock_company/index/note_status(text)
+	return
+
+/datum/stock_company/index/note_work(work_type, price_before)
 	return
 
 /datum/stock_company/index/price_drivers()

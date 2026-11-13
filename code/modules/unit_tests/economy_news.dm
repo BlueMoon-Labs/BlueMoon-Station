@@ -251,7 +251,7 @@
 	taken_offer.accept()
 	var/digest = SSmarket.build_digest(list("Новость с прошлого выпуска"))
 	TEST_ASSERT(findtext(digest, "[rising.ticker] ([rising.name]) +20%"), "Лидер роста: [digest]")
-	TEST_ASSERT(findtext(digest, "[falling.ticker] ([falling.name]) -20%"), "Лидер падения: [digest]")
+	TEST_ASSERT(findtext(digest, "[falling.ticker] ([falling.name]) −20%"), "Лидер падения: [digest]")
 	TEST_ASSERT(findtext(digest, "Торги остановлены: [halted.ticker]"), "Остановленная компания: [digest]")
 	TEST_ASSERT(!findtext(digest, "[halted.ticker] ([halted.name])"), "Остановленная компания среди лидеров: [digest]")
 	TEST_ASSERT(findtext(digest, "[prospectors.name] - [open_offer.wanted_name], [open_offer.quantity] шт."), "Невзятый спецзаказ: [digest]")

@@ -38,6 +38,12 @@ SUBSYSTEM_DEF(market)
 	var/company_event_chance = 2
 	/// Ключ события станции -> world.time, раньше которого оно не повторяется
 	var/list/station_event_cooldowns = list()
+	/// События станции, которые экипаж вызывает сам: двигают акции раз за смену
+	var/list/station_events_once = list("red_alert", "gravity_lost")
+	/// Событие станции -> событие, в кулдаун которого оно акции не двигает: его беда уже учтена
+	var/list/station_event_shadows = list("gravity_lost" = "power_failure")
+	/// Таймер сигнала окнам биржи о новой ленте причин
+	var/feed_update_timer
 	/// Вид работы отдела -> list(тикер -> сдвиг цены на каждые STOCK_WORK_CREDITS кр., полученных отделом)
 	var/list/work_stocks = list()
 	/// Потолок сдвига цены компании от работы отделов за смену, в обе стороны
@@ -488,7 +494,7 @@ SUBSYSTEM_DEF(market)
 		. += "market.work_stocks не объект"
 		return
 	for(var/work_type in section)
-		if(!GLOB.econ_work_names[work_type])
+		if(!GLOB.econ_work_names[work_type] && work_type != STOCK_WORK_CONTRACTS)
 			if(!ECON_CONFIG_COMMENT_KEY(work_type))
 				. += "market.work_stocks.[work_type]: неизвестный вид работы"
 			continue
@@ -517,7 +523,9 @@ SUBSYSTEM_DEF(market)
 	RegisterSignal(src, COMSIG_MARKET_OFFER_RESOLVED, PROC_REF(on_stock_offer_resolved), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_STOCK_TRADE, PROC_REF(note_trade_for_audit), override = TRUE)
 	RegisterSignal(SSeconomy, COMSIG_ECONOMY_WORK_RECORDED, PROC_REF(on_work_recorded), override = TRUE)
+	RegisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED, PROC_REF(on_money_moved), override = TRUE)
 
+/// Сделки с контрабандным партнёром двигают цену молча: лента не выдаёт серый рынок.
 /datum/controller/subsystem/market/proc/on_stock_trade(datum/source, datum/trade_partner/partner, value, is_sale)
 	SIGNAL_HANDLER
 	var/datum/stock_company/company = companies[partner.company]
@@ -526,7 +534,9 @@ SUBSYSTEM_DEF(market)
 	if(is_sale)
 		var/price_before = company.price
 		company.add_trade_volume(value)
-		company.note_move(partner.contraband ? "Сделки на сером рынке сектора" : "Станция продаёт товары партнёру \"[partner.name]\"", price_before, TRUE)
+		if(!partner.contraband)
+			company.note_move("Станция продаёт товары партнёру \"[partner.name]\"", price_before, TRUE)
+			note_feed_changed()
 	else
 		company.dividend_pool += value * SSeconomy.settings.stock_dividend_share / 100
 
@@ -540,11 +550,22 @@ SUBSYSTEM_DEF(market)
 		return
 	var/price_before = company.price
 	company.apply_shock(-MARKET_OFFER_FAIL_STOCK_SHOCK)
-	company.note_move("Станция сорвала спецзаказ партнёра \"[partner.name]\"", price_before)
+	if(!partner.contraband)
+		company.note_move("Станция сорвала спецзаказ партнёра \"[partner.name]\"", price_before)
+		note_feed_changed()
 
-/// Оплаченная работа отдела сдвигает цены привязанных компаний до потолка за смену; остановленные торги работа не двигает.
 /datum/controller/subsystem/market/proc/on_work_recorded(datum/source, department_id, work_type, amount, mob/performer, paid, atom/subject)
 	SIGNAL_HANDLER
+	apply_work(work_type, paid)
+
+/// Награда NT за выполненный станцией контракт - работа STOCK_WORK_CONTRACTS; переводы между счетами станции не в счёт.
+/datum/controller/subsystem/market/proc/on_money_moved(datum/source, datum/bank_account/payer, datum/bank_account/payee, amount, reason, mob/actor)
+	SIGNAL_HANDLER
+	if(reason == ECON_CONTRACT && !payer && payee && !payee.offstation)
+		apply_work(STOCK_WORK_CONTRACTS, amount)
+
+/// Оплаченная работа сдвигает цены привязанных компаний до потолка за смену; остановленные торги работа не двигает.
+/datum/controller/subsystem/market/proc/apply_work(work_type, paid)
 	var/list/shares = work_stocks[work_type]
 	if(!length(shares) || !(paid > 0))
 		return
@@ -555,8 +576,18 @@ SUBSYSTEM_DEF(market)
 		var/price_before = company.price
 		if(!company.add_work(paid * shares[ticker] / STOCK_WORK_CREDITS, work_stock_cap))
 			continue
-		company.note_move(market_work_reason(work_type), price_before, TRUE)
+		company.note_work(work_type, price_before)
 		note_work_news(company, work_type)
+		note_feed_changed()
+
+/// Окна биржи узнают о новой ленте причин одним сигналом на пачку выплат, не позже STOCK_FEED_UI_DELAY.
+/datum/controller/subsystem/market/proc/note_feed_changed()
+	if(!feed_update_timer)
+		feed_update_timer = addtimer(CALLBACK(src, PROC_REF(send_feed_changed)), STOCK_FEED_UI_DELAY, TIMER_STOPPABLE)
+
+/datum/controller/subsystem/market/proc/send_feed_changed()
+	feed_update_timer = null
+	SEND_SIGNAL(src, COMSIG_MARKET_FEED_CHANGED)
 
 /// Минутный тик биржи: цены, индекс сектора, новые события компаний, выход созревших, заявки.
 /datum/controller/subsystem/market/proc/tick_stocks()
@@ -637,12 +668,15 @@ SUBSYSTEM_DEF(market)
 	SEND_SIGNAL(src, COMSIG_MARKET_COMPANY_EVENT, event)
 	qdel(event)
 
-/// Событие станции сразу двигает цену привязанных компаний; повтор в окне кулдауна не действует и возвращает FALSE.
+/// Событие станции сразу двигает цену привязанных компаний; повтор в окне кулдауна, второй раз за смену у station_events_once и в кулдаун затеняющего события не действует и возвращает FALSE.
 /datum/controller/subsystem/market/proc/station_event(key)
 	var/list/effects = station_events[key]
 	if(!length(effects) || world.time < station_event_cooldowns[key])
 		return FALSE
-	station_event_cooldowns[key] = world.time + STOCK_STATION_EVENT_COOLDOWN
+	var/shadow = station_event_shadows[key]
+	if(shadow && world.time < station_event_cooldowns[shadow])
+		return FALSE
+	station_event_cooldowns[key] = (key in station_events_once) ? INFINITY : world.time + STOCK_STATION_EVENT_COOLDOWN
 	var/list/prices_before = list()
 	for(var/ticker in companies)
 		var/datum/stock_company/company = companies[ticker]
@@ -666,6 +700,16 @@ SUBSYSTEM_DEF(market)
 		post_news(news)
 	SEND_SIGNAL(src, COMSIG_MARKET_STATION_EVENT, key)
 	return TRUE
+
+/// Сноска к событию станции: раз за смену и какое событие его затеняет; null - без оговорок.
+/datum/controller/subsystem/market/proc/station_event_note(key)
+	var/list/notes = list()
+	if(key in station_events_once)
+		notes += "раз за смену"
+	var/shadow = station_event_shadows[key]
+	if(shadow)
+		notes += "не вместе с событием \"[GLOB.market_station_event_names[shadow] || shadow]\""
+	return length(notes) ? jointext(notes, ", ") : null
 
 /// Самый дешёвый открытый партнёр, у которого пак есть на складе; контрабандный - только для заказа со взломанной консоли снабжения.
 /datum/controller/subsystem/market/proc/supplier_for(datum/supply_pack/pack, datum/bank_account/paying_account, allow_contraband = FALSE)

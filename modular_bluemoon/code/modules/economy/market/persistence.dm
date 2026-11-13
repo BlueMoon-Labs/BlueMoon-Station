@@ -215,8 +215,7 @@
 		company.price = company.base_price
 		company.event_mult = 1
 		company.trade_volume = 0
-		company.work_boost = 0
-		company.work_news_boost = 0
+		company.reset_work()
 		company.history = list()
 		company.moves = list()
 		if(abs(old_price - company.price) > STOCK_PRICE_EPSILON)

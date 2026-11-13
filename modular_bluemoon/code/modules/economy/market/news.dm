@@ -66,15 +66,21 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 	var/datum/stock_company/company = event.company
 	post_news("[company.ticker]: [html_encode(event.headline)]. Котировка после события - [round(company.price, 0.01)] кр.")
 
-/// Срочная новость, когда сдвиг от работы станции ушёл от прошлой новости на STOCK_WORK_NEWS_STEP; по компании не чаще STOCK_WORK_NEWS_COOLDOWN.
+/// Срочная новость, когда сдвиг от работы станции ушёл от прошлой новости на STOCK_WORK_NEWS_STEP, по компании не чаще STOCK_WORK_NEWS_COOLDOWN; упор в потолок выходит сразу, раз на каждую сторону.
 /datum/controller/subsystem/market/proc/note_work_news(datum/stock_company/company, work_type)
-	if(abs(company.work_boost - company.work_news_boost) < STOCK_WORK_NEWS_STEP || world.time < company.work_news_ready_at)
+	var/cap_side = (work_stock_cap > 0 && abs(company.work_boost) >= work_stock_cap) ? SIGN(company.work_boost) : 0
+	var/cap_news = cap_side && cap_side != company.work_cap_news
+	if(!cap_news && (abs(company.work_boost - company.work_news_boost) < STOCK_WORK_NEWS_STEP || world.time < company.work_news_ready_at))
 		return
 	company.work_news_boost = company.work_boost
 	company.work_news_ready_at = world.time + STOCK_WORK_NEWS_COOLDOWN
-	var/capped = abs(company.work_boost) >= work_stock_cap
-	log_econ("Работа станции сдвинула [company.ticker] на [round(company.work_boost * 100, 0.1)]% за смену, последняя - [work_type]")
-	post_news("[company.name] ([company.ticker]) [signed_percent(round(company.work_boost * 100, 0.1))] за смену от работы станции: [market_work_reason(work_type)].[capped ? " Дальше работа станции цену в эту смену не двигает." : ""]")
+	if(cap_side)
+		company.work_cap_news = cap_side
+	var/cap_text = ""
+	if(cap_side)
+		cap_text = cap_side > 0 ? " Выше работа станции цену в эту смену не поднимет." : " Ниже работа станции цену в эту смену не опустит."
+	log_econ("Работа станции сдвинула [company.ticker] на [round(company.work_boost * 100, 0.1)]% за смену, последняя - [work_type][cap_side ? ", потолок" : ""]")
+	post_news("[company.name] ([company.ticker]) [signed_percent(round(company.work_boost * 100, 0.1))] за смену от работы станции: [market_work_reason(work_type)].[cap_text]")
 
 /datum/controller/subsystem/market/proc/hot_entry(datum/commodity/commodity)
 	return "[commodity.name] ×[round(commodity.hot_mult, 0.1)]"
@@ -115,7 +121,10 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 	if(length(lines))
 		publish(jointext(lines, "<br>"))
 
+/// Процент со знаком; минус - типографский, как в окне биржи.
 /datum/controller/subsystem/market/proc/signed_percent(value)
+	if(value < 0)
+		return "−[-value]%"
 	return "[value > 0 ? "+" : ""][value]%"
 
 /// Горячие товары, лидеры роста и падения, остановленные торги и невзятые спецзаказы для сводки.

@@ -4,7 +4,7 @@
 	filedesc = "Биржа"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "stocks"
-	extended_desc = "Котировки компаний сектора и торговля акциями с личного счёта; капитан может торговать и из казны станции. Работа отделов станции поднимает акции связанных компаний, беды станции их роняют, а у каждой компании видно, почему цена сдвинулась."
+	extended_desc = "Котировки компаний сектора и торговля акциями с личного счёта; капитан может торговать и из казны станции. Работа отделов и беды станции двигают акции связанных компаний: одни вверх, другие вниз. У каждой компании видно, почему цена сдвинулась."
 	requires_ntnet = TRUE
 	usage_flags = PROGRAM_ALL
 	size = 5
@@ -32,14 +32,14 @@
 	treasury_users -= REF(user)
 
 /datum/computer_file/program/stock_exchange/ui_static_data(mob/user)
-	RegisterSignal(SSmarket, COMSIG_MARKET_STOCKS_TICKED, PROC_REF(on_stocks_ticked), override = TRUE)
+	RegisterSignals(SSmarket, list(COMSIG_MARKET_STOCKS_TICKED, COMSIG_MARKET_STATION_EVENT, COMSIG_MARKET_FEED_CHANGED), PROC_REF(on_stocks_changed), override = TRUE)
 	return stocks_static_data()
 
-/// История котировок меняется только на тике биржи и уходит в окна статикой; без открытых окон программа отписывается.
-/datum/computer_file/program/stock_exchange/proc/on_stocks_ticked(datum/source)
+/// История котировок и лента причин уходят в окна статикой: на тике биржи, событии станции и пачке работы; без открытых окон программа отписывается.
+/datum/computer_file/program/stock_exchange/proc/on_stocks_changed(datum/source)
 	SIGNAL_HANDLER
 	if(!length(SStgui.open_uis_by_src[REF(src)]))
-		UnregisterSignal(source, COMSIG_MARKET_STOCKS_TICKED)
+		UnregisterSignal(source, list(COMSIG_MARKET_STOCKS_TICKED, COMSIG_MARKET_STATION_EVENT, COMSIG_MARKET_FEED_CHANGED))
 		return
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum, update_static_data_for_all_viewers))
 

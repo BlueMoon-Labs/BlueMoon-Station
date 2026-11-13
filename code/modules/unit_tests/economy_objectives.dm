@@ -548,6 +548,26 @@
 	TEST_ASSERT(!after.check_completion(), "Падение после опровержения засчитано")
 	TEST_ASSERT(findtext(after.explanation_text, "самая низкая цена при вашей фальшивке"), "Итог без прогресса: [after.explanation_text]")
 
+/// Обвал считается по цене без сдвига от работы отделов: рост от работы при выдаче не завышает планку, а падение от работы СБ не засчитывается.
+/datum/unit_test/economy_trading/insider/econ_objective_crash_work/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestcrashwork")
+	var/datum/stock_company/cybersun = SSmarket.get_company("CYBS")
+	cybersun.add_work(0.1, SSmarket.work_stock_cap)
+	var/clean_price = cybersun.price / 1.1
+	var/datum/objective/economy/crash_stock/objective = econ_objective_new(/datum/objective/economy/crash_stock, traitor.mind)
+	TEST_ASSERT(objective.setup(cybersun.ticker, 25), "Обвал не настроен")
+	econ_objective_assign(traitor, objective)
+	if(abs(objective.start_price - clean_price) >= 0.01)
+		TEST_FAIL("Планка обвала от цены с ростом от работы: [objective.start_price] вместо [clean_price]")
+	objective.fake_until = world.time + 10 MINUTES
+	cybersun.add_work(-0.3, SSmarket.work_stock_cap)
+	cybersun.apply_shock(-0.1)
+	market_tick()
+	TEST_ASSERT(!objective.check_completion(), "Падение от работы станции засчитано в обвал: цена [cybersun.price], без работы [cybersun.price / (1 + cybersun.work_boost)]")
+	cybersun.apply_shock(-0.2)
+	market_tick()
+	TEST_ASSERT(objective.check_completion(), "Обвал без учёта работы не засчитан: [objective.explanation_text]")
+
 /// Снятый антагонист не держит компанию своим заданием на обвал.
 /datum/unit_test/economy_trading/insider/econ_objective_crash_removed/Run()
 	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestcrashremoved")

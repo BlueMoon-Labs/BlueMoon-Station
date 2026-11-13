@@ -380,7 +380,7 @@
 		return FALSE
 	company_ticker = ticker
 	percent = new_percent
-	start_price = company.price
+	start_price = company.price_without_work()
 	lowest_price = null
 	fake_until = 0
 	update_explanation_text()
@@ -390,10 +390,12 @@
 /datum/objective/economy/crash_stock/proc/reserves(datum/stock_company/company)
 	return company?.ticker == company_ticker && !is_done() && is_active()
 
+/// Обвал меряется ценой без сдвига от работы отделов: работа станции его не делает и не отменяет.
 /datum/objective/economy/crash_stock/proc/note_price()
 	var/datum/stock_company/company = SSmarket.get_company(company_ticker)
 	if(company)
-		lowest_price = min(isnull(lowest_price) ? company.price : lowest_price, company.price)
+		var/clean_price = company.price_without_work()
+		lowest_price = min(isnull(lowest_price) ? clean_price : lowest_price, clean_price)
 
 /datum/objective/economy/crash_stock/proc/on_tick(datum/source)
 	SIGNAL_HANDLER
@@ -420,12 +422,12 @@
 
 /datum/objective/economy/crash_stock/goal_text()
 	var/datum/stock_company/company = SSmarket.get_company(company_ticker)
-	return "Обрушьте акции [company?.name] ([company_ticker]) хотя бы на [percent]% от цены при получении задания, [round(start_price, 0.01)] кр.: пока ваш плохой фальшивый пресс-релиз о компании не опровергнут, цена должна опуститься до [target_price()] кр. или ниже. Фальшивку дают аплинк и взломанный ньюскастер; о компании она выходит одна за смену, чужих о ней не пропустят, пока задание не выполнено, а в секторе фальшивки выходят не чаще раза в [SSmarket.press_release_cooldown()] мин. Выпускайте, когда акции уже слабы. Без вреда станции."
+	return "Обрушьте акции [company?.name] ([company_ticker]) хотя бы на [percent]% от цены при получении задания, [round(start_price, 0.01)] кр.: пока ваш плохой фальшивый пресс-релиз о компании не опровергнут, цена должна опуститься до [target_price()] кр. или ниже. Сдвиг цены от работы отделов станции не считается ни в ту, ни в другую сторону. Фальшивку дают аплинк и взломанный ньюскастер; о компании она выходит одна за смену, чужих о ней не пропустят, пока задание не выполнено, а в секторе фальшивки выходят не чаще раза в [SSmarket.press_release_cooldown()] мин. Выпускайте, когда акции уже слабы. Без вреда станции."
 
 /datum/objective/economy/crash_stock/progress_text()
 	if(isnull(lowest_price))
 		return "вашей плохой фальшивки о [company_ticker] ещё не было"
-	return "самая низкая цена при вашей фальшивке [round(lowest_price, 0.01)] кр."
+	return "самая низкая цена при вашей фальшивке [round(lowest_price, 0.01)] кр. без сдвига от работы станции"
 
 /datum/objective/economy/crash_stock/is_done()
 	return !isnull(lowest_price) && lowest_price <= start_price * (100 - percent) / 100

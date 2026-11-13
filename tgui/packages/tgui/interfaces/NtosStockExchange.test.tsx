@@ -23,7 +23,7 @@ const base: StockExchangeData = {
         label: 'Работа станции: выписка пациентов, реанимация',
         effect: 20,
         upto: 1,
-        note: '+1% за каждые 100 кр., что отдел получил за эту работу; в следующую смену не переходит',
+        note: '+1% за каждые 100 кр., что станция получила за эту работу; в следующую смену не переходит',
       },
       { label: 'Вспышка болезни на станции', effect: 20 },
     ],
@@ -32,9 +32,10 @@ const base: StockExchangeData = {
   },
   moves: {
     VYMD: [
-      { text: 'медики выписывают пациентов', effect: 3, time: '14:32' },
+      { text: 'Работа станции: выписка пациентов', effect: 3, time: '14:32' },
       { text: 'Расслоение суперматерии на станции', effect: -12.5, time: '14:05' },
     ],
+    CYBS: [{ text: 'Торги остановлены на 10 мин.: цена упала ниже 5% базовой', effect: null, time: '13:50' }],
   },
   work_cap: 20,
   common_drivers: [
@@ -223,7 +224,7 @@ describe('NtosStockExchange', () => {
   test('лента причин у выбранной компании: время, причина и сдвиг, новые сверху; без скачков и у индекса - пояснение', () => {
     const { container } = setup();
     const lines = Array.from(container.querySelectorAll('.NtTerm__line')).map((node) => (node.textContent || '').replace(/\u00a0/g, ' '));
-    expect(lines[0]).toContain('14:32 медики выписывают пациентов');
+    expect(lines[0]).toContain('14:32 Работа станции: выписка пациентов');
     expect(lines[0]).toContain('+3%');
     expect(lines[1]).toContain('14:05 Расслоение суперматерии на станции');
     expect(lines[1]).toContain('−12.5%');
@@ -235,6 +236,17 @@ describe('NtosStockExchange', () => {
     expect(text(container)).toContain('Индекс движется вместе с компаниями сектора');
   });
 
+  test('строка ленты без сдвига цены - без процента и без цвета', () => {
+    const { container } = setup();
+    selectTile(container, 'CYBS');
+    const line = container.querySelector('.NtTerm__line') as HTMLElement;
+    const content = (line.textContent || '').replace(/\u00a0/g, ' ');
+    expect(content).toContain('13:50 Торги остановлены на 10 мин.: цена упала ниже 5% базовой');
+    expect(content).not.toMatch(/[+−]\d/);
+    expect(content).not.toContain('0%');
+    expect(line.className).not.toMatch(/NtTerm__line--(good|bad)/);
+  });
+
   test('ленты и потолка работы нет в данных - окно не ломается', () => {
     const { container } = setup({ moves: undefined as any, work_cap: undefined as any });
     expect(text(container)).toContain('Скачков пока не было');
@@ -244,12 +256,26 @@ describe('NtosStockExchange', () => {
     const { container } = setup();
     openPage(container, 'От чего зависит цена');
     let content = text(container);
-    expect(content).toContain('Работа станции: выписка пациентов, реанимация: до +20% (+1% за каждые 100 кр., что отдел получил за эту работу');
+    expect(content).toContain('Работа станции: выписка пациентов, реанимация: до +20% (+1% за каждые 100 кр., что станция получила за эту работу');
     expect(content).toContain('не больше чем на 20% за смену в каждую сторону');
     openPage(container, 'Правила');
     content = text(container);
-    expect(content).toContain('Работа отделов поднимает связанные компании');
+    expect(content).toContain('события на станции, работа отделов и продажи станции партнёрам');
+    expect(content).toContain('Работа отделов и беды станции двигают акции связанных компаний: одни вверх, другие вниз.');
     expect(content).toContain('не больше чем на 20% за смену, и в следующую смену этот сдвиг не переходит');
+    expect(content).not.toContain('поднимает связанные компании');
+  });
+
+  test('потолок работы 0 - ни правил, ни сносок о работе отделов', () => {
+    const { container } = setup({ work_cap: 0 });
+    openPage(container, 'От чего зависит цена');
+    expect(text(container)).not.toContain('Работа отделов станции двигает связанную компанию');
+    openPage(container, 'Правила');
+    const content = text(container);
+    expect(content).not.toContain('работа отделов');
+    expect(content).not.toContain('Работа отделов');
+    expect(content).not.toContain('От работы цена');
+    expect(content).toContain('События на станции двигают акции связанных компаний');
   });
 
   test('портфель: позиция по текущей цене', () => {
