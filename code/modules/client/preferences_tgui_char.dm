@@ -2918,7 +2918,7 @@
 		preview_dirty = TRUE
 		return
 	if(prefs.body_mod_implant_locked(option))
-		to_chat(user, span_warning("Вид этого персонажа не позволяет заменить этот орган."))
+		to_chat(user, span_warning(prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет заменить этот орган."))
 		return
 	// Снятые конфликтующие импланты (другая рука/нога/глаза) возвращают свои очки.
 	var/refund = prefs.body_mod_implant_swap_refund(implant_id)
@@ -3312,13 +3312,18 @@
 
 	var/list/implants = list()
 	for(var/list/option in GLOB.body_mod_implants)
-		implants += list(list(
+		var/locked = prefs.body_mod_implant_locked(option)
+		var/list/implant_row = list(
 			"id" = option["id"],
 			"label" = option["label"],
 			"desc" = option["desc"],
 			"cost" = option["cost"],
 			"selected" = !!prefs.implant_mods[option["id"]],
-		))
+			"locked" = locked,
+		)
+		if(locked)
+			implant_row["lockReason"] = prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет установить этот имплант."
+		implants += list(implant_row)
 	data["implants"] = implants
 	return data
 

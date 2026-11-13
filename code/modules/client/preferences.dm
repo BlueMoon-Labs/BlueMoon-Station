@@ -952,6 +952,16 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 /datum/preferences/proc/body_mod_has_robotic_eyes()
 	return pref_species && (ROBOTIC_LIMBS in pref_species.species_traits) && pref_species.mutanteyes != /obj/item/organ/eyes
 
+/// У некоторых видов (синты, IPC и т.п.) в руке уже стоит встроенный киберимплант —
+/// например, силовой кабель. Он занимает слот руки, поэтому выбирать импланты рук нельзя.
+/datum/preferences/proc/body_mod_has_mutant_arm_augment()
+	if(!pref_species || !islist(pref_species.mutant_organs))
+		return FALSE
+	for(var/organ_path in pref_species.mutant_organs)
+		if(ispath(organ_path, /obj/item/organ/cyberimp/arm))
+			return TRUE
+	return FALSE
+
 /// Общий датум для эээ ну вы поняли тут понятно все
 /datum/preferences/proc/body_mod_organ_option_available(slot, list/option)
 	if(!option)
@@ -1001,9 +1011,21 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		else if(organ_slot && other["organ_slot"] == organ_slot)
 			. += other_id
 
+/// Причина, по которой имплант нельзя выбрать в редакторе, или null.
+/datum/preferences/proc/body_mod_implant_lock_reason(list/option)
+	if(!option)
+		return null
+	if(option["group"] == "arm_augments" && body_mod_has_mutant_arm_augment())
+		return "У этого вида в руке уже установлен встроенный киберимплант, поэтому дополнительные импланты рук недоступны."
+	return null
+
 /// Имплант нельзя поставить, если вид запрещает замену занимаемого им органа (например, глаза у вида с мутантными глазами).
 /datum/preferences/proc/body_mod_implant_locked(list/option)
-	if(!option || !option["organ_slot"])
+	if(!option)
+		return FALSE
+	if(body_mod_implant_lock_reason(option))
+		return TRUE
+	if(!option["organ_slot"])
 		return FALSE
 	return body_mod_organ_locked(option["organ_slot"])
 
@@ -1106,6 +1128,14 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			dropped += slot
 	for(var/slot in dropped)
 		organ_mods -= slot
+	// Импланты, недоступные виду (например, руки у синтов с силовым кабелем), тоже снимаем.
+	var/list/dropped_implants = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(option && body_mod_implant_locked(option))
+			dropped_implants += implant_id
+	for(var/implant_id in dropped_implants)
+		implant_mods -= implant_id
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
 	migrate_kiroshi_body_mod(selected_organs, selected_implants)

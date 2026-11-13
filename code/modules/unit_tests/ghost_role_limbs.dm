@@ -388,3 +388,32 @@
 
 	qdel(P)
 	qdel(P2)
+
+/// Виды со встроенным киберимплантом руки (силовой кабель синтов) не могут выбрать имплант в руки.
+/datum/unit_test/synth_arm_implants_locked
+
+/datum/unit_test/synth_arm_implants_locked/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/ipc
+	TEST_ASSERT(P.body_mod_has_mutant_arm_augment(), "IPC should have a built-in arm implant")
+	TEST_ASSERT(P.body_mod_implant_locked(P.body_mod_implant_option("corp_mantis_blades")), "IPC should not be able to pick arm implants")
+	TEST_ASSERT(P.body_mod_implant_locked(P.body_mod_implant_option("razor_claws")), "IPC should not be able to pick claws")
+	TEST_ASSERT(P.body_mod_implant_lock_reason(P.body_mod_implant_option("corp_mantis_blades")), "IPC arm implants should report a lock reason")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("lynx_paws")), "IPC should still be able to pick leg implants")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("corp_blood_pump")), "IPC should still be able to pick chest implants")
+
+	// Смена вида на синта снимает уже выбранные импланты рук.
+	P.implant_mods = list("corp_mantis_blades" = TRUE, "lynx_paws" = TRUE)
+	P.drop_locked_body_mods()
+	TEST_ASSERT_NULL(P.implant_mods["corp_mantis_blades"], "Arm implants should be dropped when the species cannot use them")
+	TEST_ASSERT(P.implant_mods["lynx_paws"], "Leg implants should survive the species lock")
+
+	// У людей встроенного импланта руки нет: обычные импланты рук по-прежнему доступны.
+	var/datum/preferences/human_prefs = new
+	human_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT(!human_prefs.body_mod_has_mutant_arm_augment(), "Humans should not have a built-in arm implant")
+	TEST_ASSERT(!human_prefs.body_mod_implant_locked(human_prefs.body_mod_implant_option("corp_mantis_blades")), "Humans should be able to pick arm implants")
+	TEST_ASSERT_NULL(human_prefs.body_mod_implant_lock_reason(human_prefs.body_mod_implant_option("corp_mantis_blades")), "Humans should have no arm lock reason")
+
+	qdel(P)
+	qdel(human_prefs)
