@@ -301,6 +301,17 @@ describe('NtosWallet', () => {
     ]);
   });
 
+  test('заказы: получателя подарка можно указать номером счёта, которого нет в списке', () => {
+    const { getByText, getAllByText, getByPlaceholderText, topic } = setup(personal);
+    fireEvent.click(getByText('Заказы'));
+    fireEvent.input(getByPlaceholderText('Себе, или имя либо номер счёта получателя'), { target: { value: '4521' } });
+    fireEvent.click(getAllByText('Подарить')[0]);
+    fireEvent.click(getByText('Подарить за 1 200 кр.?'));
+    expect(sent(topic, 'personal_order')).toEqual([
+      { id: '/datum/supply_pack/critter/corgi', price: 1200, recipient: '4521', hide_name: false },
+    ]);
+  });
+
   const lot = (uid: number, extra = {}) => ({
     uid,
     name: `Лот ${uid}`,

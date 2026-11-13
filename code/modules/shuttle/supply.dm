@@ -158,7 +158,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				price *= ECON_PRIVATE_ORDER_MARKUP
 
 			// note this is before we increment, so this is the GOODY_FREE_SHIPPING_MAX + 1th goody to ship. also note we only increment off this step if they successfully pay the fee, so there's no way around it
-			else if(SO.pack.goody && LAZYLEN(current_buyer_orders) == GOODY_FREE_SHIPPING_MAX)
+			else if(SO.pack.goody && !SO.personal_prepaid() && LAZYLEN(current_buyer_orders) == GOODY_FREE_SHIPPING_MAX)
 				price += CRATE_TAX
 				D.bank_card_talk("Малых кейсов больше [GOODY_FREE_SHIPPING_MAX] за отгрузку: они поедут одним ящиком, сбор за доставку [CRATE_TAX] кр. идёт снабжению.")
 		else

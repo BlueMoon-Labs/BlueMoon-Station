@@ -742,6 +742,10 @@
 	TEST_ASSERT(findtext(jointext(receiver.heard, "\n"), "привёз на станцию ваш заказ №[gift.id] [pet.name] (подарок от [payer.account_holder])"), "Получатель не узнал о прибытии подарка")
 	qdel(gift)
 
+	wallet = order_pda(giver, pet, list("recipient" = receiver.account_holder))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Второй подарок подряд оформлен без паузы")
+	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Отказ в подарке подряд не объясняет почему: [wallet.message]")
+	COOLDOWN_RESET(payer, personal_gift_cooldown)
 	receiver.heard.Cut()
 	order_pda(giver, pet, list("recipient" = receiver.account_holder, "hide_name" = TRUE))
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Подарок без имени не оформлен: [wallet.message]")
@@ -1062,3 +1066,25 @@
 	for(var/obj/item/thing in delivered)
 		if(!istype(thing, /obj/item/paper))
 			TEST_ASSERT(thing.econ_imported, "[thing] помечен закупкой")
+
+/// Шестой малый кейс одному получателю за отгрузку: сбор за доставку не списывается с того, кто уже оплатил подарок с КПК.
+/datum/unit_test/economy_catalog/personal_gift_no_crate_tax/Run()
+	var/datum/supply_pack/goody = SSshuttle.supply_packs[/datum/supply_pack/goody/dyespray]
+	TEST_ASSERT(goody?.goody && econ_personal_catalog_orderable(goody.type), "test premise: краска для волос - малый кейс личного каталога")
+	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Goody Friend", 0)
+	var/datum/bank_account/receiver = pda_account(friend)
+	var/list/givers = list()
+	for(var/i in 1 to GOODY_FREE_SHIPPING_MAX + 1)
+		var/mob/living/carbon/human/giver = make_pda_buyer("Econ Goody Giver [i]", 100000)
+		var/datum/computer_file/program/wallet/wallet = order_pda(giver, goody, list("recipient" = "[receiver.account_id]"))
+		TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), i, "Подарок [i] не оформлен: [wallet.message]")
+		var/datum/bank_account/payer = pda_account(giver)
+		givers[payer] = payer.account_balance
+	SSshuttle.supply.buy()
+	for(var/datum/supply_order/order as anything in SSshuttle.orderhistory.Copy())
+		if(order.gift_to == receiver)
+			SSshuttle.orderhistory -= order
+			qdel(order)
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Подарки не отгружены")
+	for(var/datum/bank_account/payer as anything in givers)
+		TEST_ASSERT_EQUAL(payer.account_balance, givers[payer], "С [payer.account_holder] при отгрузке списан сбор за чужие кейсы")

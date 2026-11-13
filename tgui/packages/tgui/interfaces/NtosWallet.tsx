@@ -767,9 +767,18 @@ const OrdersTab = () => {
         <LabeledList>
           <LabeledList.Item label="Кому">
             <Stack align="center">
+              <Stack.Item grow>
+                <Input
+                  fluid
+                  value={recipient}
+                  maxLength={data.name_max}
+                  placeholder="Себе, или имя либо номер счёта получателя"
+                  onInput={(_, value) => setRecipient(value)}
+                />
+              </Stack.Item>
               <Stack.Item>
                 <Dropdown
-                  width="16em"
+                  width="12em"
                   options={[{ value: '', displayText: 'Себе' }, ...crew]}
                   selected={recipient}
                   onSelected={(value: string) => setRecipient(value)}

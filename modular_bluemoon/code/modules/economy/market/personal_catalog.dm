@@ -168,6 +168,9 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 /datum/supply_order/proc/delivery_account()
 	return gift_to || paying_account
 
+/datum/bank_account
+	COOLDOWN_DECLARE(personal_gift_cooldown)
+
 /// Оплаченные с КПК личные заказы и подарки счёта, которые ещё ждут шаттла.
 /proc/econ_personal_orders_of(datum/bank_account/account)
 	. = list()
@@ -202,7 +205,7 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 	if(target.state == ACCOUNT_DORMANT)
 		return list(null, "[target.account_holder] сейчас не на смене: посылку некому будет забрать.")
 	if(target.state == ACCOUNT_FROZEN)
-		return list(null, "Счёт [target.account_holder] заморожен: подарок на него не оформить.")
+		return list(null, "Подарок на этот счёт сейчас не оформить.")
 	return list(target)
 
 /// Личный заказ с КПК: цена партнёра без наценки списывается сразу, заказ встаёт в очередь шаттла снабжения личным. shown_price - цена, которую видел покупатель; recipient_text - имя или номер счёта получателя подарка. Возвращает list(принят ли, ответ игроку).
@@ -223,6 +226,8 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 		recipient = found[1]
 		if(!recipient)
 			return list(FALSE, found[2])
+	if(recipient && !COOLDOWN_FINISHED(account, personal_gift_cooldown))
+		return list(FALSE, "Подарки можно оформлять не чаще раза в [DisplayTimeText(ECON_PERSONAL_GIFT_COOLDOWN)]: подождите ещё [DisplayTimeText(COOLDOWN_TIMELEFT(account, personal_gift_cooldown))].")
 	var/limit = SSeconomy.settings.personal_order_limit
 	if(length(econ_personal_orders_of(account)) >= limit)
 		return list(FALSE, "Больше заказов сразу не принять, шаттла ждут уже [limit]: дождитесь отгрузки или отмените один.")
@@ -244,6 +249,7 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 		return list(TRUE, "Заказ №[order.id] оплачен: [pack.name] за [price] кр.")
 	order.gift_to = recipient
 	order.gift_hide_name = !!hide_name
+	COOLDOWN_START(account, personal_gift_cooldown, ECON_PERSONAL_GIFT_COOLDOWN)
 	if(order.gift_hide_name)
 		order.orderer = "аноним"
 	log_econ("[key_name(user)] заказал с КПК [pack.name] за [price] кр. со счёта [account.account_holder] ([account.account_id]) в подарок [recipient.account_holder] ([recipient.account_id])[order.gift_hide_name ? " без имени дарителя" : ""], заказ #[order.id]")
@@ -275,14 +281,14 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 	return list(FALSE, "Этого заказа уже нет в корзине: шаттл улетел с ним, или его отменили.")
 
 /// Возврат плательщику за снятый с корзины оплаченный с КПК заказ; quiet - без сообщения его карте, card_text - своё сообщение вместо слов о снабжении. Получатель подарка узнаёт, что подарок не приедет.
-/proc/econ_refund_personal_order(datum/supply_order/order, mob/user, quiet = FALSE, card_text)
+/proc/econ_refund_personal_order(datum/supply_order/order, mob/user, quiet = FALSE, card_text, who_text)
 	var/datum/bank_account/buyer = order.paying_account
 	var/refund = order.prepaid
 	order.prepaid = 0
 	var/datum/bank_account/recipient = order.gift_to
 	if(!QDELETED(recipient))
 		recipient.bank_card_talk("Подарок №[order.id] ([order.pack.name])[order.gift_hide_name ? "" : " от [buyer?.account_holder]"] отменён и не приедет.")
-	var/who = user ? key_name(user) : "Снабжение"
+	var/who = user ? key_name(user) : (who_text || "Снабжение")
 	if(QDELETED(buyer) || !buyer.credit(refund, ECON_REFUND, user, "Отмена заказа: [order.pack.name]"))
 		log_econ("Личный заказ #[order.id] [order.pack.name] снят ([who]), но [refund] кр. вернуть некуда")
 		return FALSE
@@ -299,7 +305,7 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 		var/refund = order.prepaid
 		SSshuttle.shoppinglist -= order
 		log_econ("Личный заказ #[order.id] [order.pack.name] снят с корзины: владелец счёта [account.account_holder] ([account.account_id]) ушёл со смены")
-		econ_refund_personal_order(order, null, card_text = order.gift_to ? "Подарок №[order.id] ([order.pack.name]) снят с корзины: [account.account_holder] ушёл со смены. [refund] кр. вернулись на счёт." : "Заказ №[order.id] ([order.pack.name]) снят с корзины, пока вас не было на смене: [refund] кр. вернулись на счёт.")
+		econ_refund_personal_order(order, null, who_text = "автовозврат: владелец ушёл со смены", card_text = order.gift_to ? "Подарок №[order.id] ([order.pack.name]) снят с корзины: [account.account_holder] ушёл со смены. [refund] кр. вернулись на счёт." : "Заказ №[order.id] ([order.pack.name]) снят с корзины, пока вас не было на смене: [refund] кр. вернулись на счёт.")
 		qdel(order)
 
 /obj/docking_port/mobile/supply

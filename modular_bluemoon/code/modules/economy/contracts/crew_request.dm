@@ -216,7 +216,7 @@
 	if(!COOLDOWN_FINISHED(poster, crew_request_announce_cooldown))
 		return " По общему каналу о нём не скажут: ваши объявления звучат там не чаще раза в [SSeconomy.settings.crew_request_personal_announce_minutes] мин."
 	announce_timer = addtimer(CALLBACK(src, PROC_REF(announce)), ECON_CREW_REQUEST_ANNOUNCE_DELAY, TIMER_STOPPABLE)
-	return " Если за [DisplayTimeText(ECON_CREW_REQUEST_ANNOUNCE_DELAY)] его никто не возьмёт, о нём коротко скажет общий канал, когда тот не занят другим объявлением."
+	return " Если за [DisplayTimeText(ECON_CREW_REQUEST_ANNOUNCE_DELAY)] его никто не возьмёт и в этот момент канал не занят другим объявлением, о нём коротко скажет общий канал."
 
 /// Строка по общему каналу без имени заказчика: объявление ещё свободно, заказчик не в муте, канал и личный кулдаун заказчика свободны. TRUE, если прозвучала.
 /datum/econ_contract/crew_request/proc/announce()

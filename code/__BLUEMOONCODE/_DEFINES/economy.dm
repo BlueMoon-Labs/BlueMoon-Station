@@ -204,6 +204,8 @@
 #define ECON_CREW_REQUEST_ACCEPT_TIME (10 MINUTES)
 /// Новое объявление звучит по общему каналу через это время, если его ещё не взяли и не сняли
 #define ECON_CREW_REQUEST_ANNOUNCE_DELAY (45 SECONDS)
+/// Как часто один счёт может оформить подарок с КПК: оформление и отмена шлют сообщения карте получателя
+#define ECON_PERSONAL_GIFT_COOLDOWN (1 MINUTES)
 #define ECON_CREW_REQUEST_TITLE_MAX 60
 #define ECON_CREW_REQUEST_DESC_MAX 300
 /// Срок, который получает взятый контракт без своего срока
