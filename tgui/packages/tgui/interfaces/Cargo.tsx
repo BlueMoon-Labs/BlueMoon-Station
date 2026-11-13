@@ -44,6 +44,18 @@ type Pack = {
   choices?: [string, number][] | null;
   supplier?: string | null;
   in_stock?: BooleanLike;
+  /** id отдела, в каталог которого входит пак */
+  budget?: string;
+};
+
+/** Чей бюджет оплатит заявку зрителя на пак каталога отдела; any - ГП и капитан, им платит отдел пака. */
+type BudgetRequest = {
+  id?: string | null;
+  name?: string | null;
+  balance?: number | null;
+  manager: BooleanLike;
+  any: BooleanLike;
+  auto_limit: number;
 };
 
 /** Цена, id поставщика и наличие пака: приходят отдельно от каталога и обновляются после пересчёта цен. */
@@ -172,6 +184,7 @@ type CargoData = {
   can_take_offers?: BooleanLike;
   self_paid: BooleanLike;
   is_app?: BooleanLike;
+  budget_request?: BudgetRequest | null;
   manifest_department?: string | null;
   manifest_fee?: number;
   market_help?: string;
@@ -420,15 +433,34 @@ const packTags = (pack: Pack) => {
   return tags;
 };
 
+/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. */
+const paidByBudget = (pack: Pack, budget?: BudgetRequest | null) => !!budget && !!pack.budget && (!!budget.any || pack.budget === budget.id);
+
+const BudgetNotice = (props: { budget: BudgetRequest }) => {
+  const { budget } = props;
+  const own = budget.name ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
+  return (
+    <NoticeBox info>
+      {budget.manager
+        ? `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`
+        : `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет глава отдела, ГП или капитан в программе "Бюджет отдела" на КПК; если на смене их нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`}{' '}
+      Остальные паки - заявкой снабжению, за его бюджет.
+    </NoticeBox>
+  );
+};
+
 const PackDetails = (props: {
   pack: Pack;
   cost: number;
   outOfStock: boolean;
   onOrder: (amount: number, partner?: string) => void;
   express?: boolean;
+  payer?: string;
+  /** Заказ отдела везёт самый дешёвый партнёр: выбора нет */
+  cheapestOnly?: boolean;
 }) => {
   const { act, data } = useBackend<CargoData>();
-  const { pack, outOfStock, onOrder, express } = props;
+  const { pack, outOfStock, onOrder, express, payer, cheapestOnly } = props;
   const addMax = data.add_max || 10;
   const [amount, setAmount] = useState(1);
   const [partner, setPartner] = useState<string | null>(null);
@@ -440,7 +472,7 @@ const PackDetails = (props: {
   const desc = info?.desc || pack.desc;
   // Цена в окне уже с наценкой частного заказа: та же доля ложится на цены других партнёров
   const ratio = pack.cost ? props.cost / pack.cost : 1;
-  const choices = !express && pack.choices ? pack.choices : null;
+  const choices = !express && !cheapestOnly && pack.choices ? pack.choices : null;
   const chosen = choices?.find(([id]) => id === partner);
   const cost = chosen ? Math.round(chosen[1] * ratio) : props.cost;
   const partnerName = (id: string) => data.partners?.find((entry) => entry.id === id)?.name || id;
@@ -481,6 +513,7 @@ const PackDetails = (props: {
           )}
         </LabeledList.Item>
         {!!pack.commodity && <LabeledList.Item label="Товар рынка">{pack.commodity}, цена идёт за ним (вкладка Рынок)</LabeledList.Item>}
+        {!!payer && <LabeledList.Item label="Оплатит">{payer}</LabeledList.Item>}
       </LabeledList>
       {!outOfStock && (
         <Stack align="center" mt={1}>
@@ -501,7 +534,7 @@ const PackDetails = (props: {
           )}
           <Stack.Item>
             <Button icon="cart-plus" color="good" onClick={() => onOrder(amount, chosen ? chosen[0] : undefined)}>
-              {`${express ? 'Заказать' : 'В корзину'} за ${formatCredits(cost * amount)}`}
+              {`${express ? 'Заказать' : payer ? 'Подать заявку' : 'В корзину'} за ${formatCredits(cost * amount)}`}
             </Button>
           </Stack.Item>
         </Stack>
@@ -568,6 +601,16 @@ export const CargoCatalog = (props: { express?: boolean }) => {
     : 'Оплата с вашего счёта при доставке.' +
       (markupPercent > 0 ? ` Частный заказ дороже на ${markupPercent}%, наценка идёт снабжению; малые кейсы и личный каталог - без наценки.` : '');
   const asRequest = !!requestonly && !self_paid;
+  const budget = asRequest && !express ? data.budget_request : null;
+  const payerOf = (pack: Pack) => {
+    if (!asRequest || express) {
+      return undefined;
+    }
+    if (!paidByBudget(pack, budget)) {
+      return 'бюджет снабжения, если снабжение одобрит заявку';
+    }
+    return budget?.name && !budget.any ? `бюджет отдела "${budget.name}"` : 'бюджет отдела пака';
+  };
   const order = (pack: Pack, amount = 1, partner?: string) => {
     const payload: Record<string, unknown> = { id: pack.id };
     if (partner) {
@@ -620,6 +663,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           </span>
         ))}
       </div>
+      {!!budget && <BudgetNotice budget={budget} />}
       {asRequest && (
         <Stack align="center" mb={1}>
           <Stack.Item color="label">Причина заявки:</Stack.Item>
@@ -654,6 +698,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;
           const open = openId === pack.id;
           const favorite = favorites.includes(pack.id);
+          const byBudget = paidByBudget(pack, budget);
           return [
             <Table.Row key={pack.id} className={open ? 'NtTerm__row NtTerm__row--open' : 'NtTerm__row'}>
               <Table.Cell collapsing py={0.5}>
@@ -673,6 +718,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
                     {tag.text}
                   </span>
                 ))}
+                {byBudget && <span className="NtTerm__tag">бюджет отдела</span>}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} color={outOfStock ? 'bad' : 'label'} pr={1}>
                 {outOfStock ? (pack.exclusive ? `ступень ${pack.exclusive[1]} у ${pack.exclusive[0]}` : 'нет в наличии') : pack.supplier || '-'}
@@ -692,7 +738,15 @@ export const CargoCatalog = (props: { express?: boolean }) => {
               <Table.Row key={`${pack.id}-details`}>
                 <Table.Cell />
                 <Table.Cell colSpan={3}>
-                  <PackDetails pack={pack} cost={cost} outOfStock={outOfStock} express={express} onOrder={(amount, partner) => order(pack, amount, partner)} />
+                  <PackDetails
+                    pack={pack}
+                    cost={cost}
+                    outOfStock={outOfStock}
+                    express={express}
+                    payer={payerOf(pack)}
+                    cheapestOnly={byBudget}
+                    onOrder={(amount, partner) => order(pack, amount, partner)}
+                  />
                 </Table.Cell>
               </Table.Row>
             ),
@@ -711,7 +765,7 @@ const CargoRequests = (props) => {
   return (
     <NtFrame
       title="Заявки экипажа"
-      help="Одобренная заявка уходит в корзину и оплачивается из бюджета снабжения."
+      help='Одобренная заявка уходит в корзину и оплачивается из бюджета снабжения. Заявки сотрудников отделов на паки каталога своего отдела сюда не попадают: их оплачивает бюджет отдела, а решает глава в "Бюджете отдела".'
       buttons={
         !requestonly &&
         requests.length > 0 && (

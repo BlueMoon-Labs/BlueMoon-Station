@@ -56,6 +56,7 @@
 	data["can_edit_cart"] = staff
 	data["can_approve_requests"] = staff
 	data["can_take_offers"] = FALSE
+	data["budget_request"] = staff ? null : econ_budget_request_ui(user)
 	data["self_paid"] = self_paid
 	data["message"] = econ_cargo_message("Блюспейс-нестабильность: шаттл не может двигаться.")
 	return data
@@ -92,15 +93,25 @@
 					return
 			var/as_request = !staff && !self_paid
 			var/reason = ""
+			var/datum/economy_department/budget_department
 			if(as_request)
+				budget_department = econ_request_department(user, pack)
 				reason = econ_cargo_given_reason(params)
 				if(!reason)
 					if(!user.client)
 						return
-					reason = tgui_input_text(user, "Причина:", "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
+					reason = tgui_input_text(user, "Причина:", budget_department ? "Заявка: платит [budget_department.budget_name]" : "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
 					if(isnull(reason) || QDELETED(computer) || QDELETED(ui) || ui_status(user, ui.state) != UI_INTERACTIVE)
 						return
+					budget_department = econ_request_department(user, pack)
 			var/amount = econ_cargo_add_amount(params)
+			if(budget_department)
+				if(!radio)
+					radio = new /obj/item/radio/headset/headset_cargo(null)
+				radio.forceMove(computer)
+				econ_cargo_department_order(budget_department, user, pack, reason, amount, computer, radio)
+				radio.moveToNullspace()
+				return TRUE
 			var/datum/trade_partner/partner = econ_requested_partner(params, pack, FALSE)
 			for(var/i in 1 to amount)
 				var/datum/supply_order/order = econ_cargo_new_order(user, pack, reason, account, as_request)

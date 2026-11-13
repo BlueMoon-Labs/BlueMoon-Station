@@ -216,6 +216,9 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		entry["private_goody"] = pack.goody == PACK_GOODY_PRIVATE
 		entry["can_private_buy"] = pack.can_private_buy
 		entry["personal"] = econ_personal_catalog_pack(pack)
+		var/budget = econ_pack_catalog_department(pack)
+		if(budget)
+			entry["budget"] = budget
 		supplies[pack.group]["packs"] += list(entry)
 	supplies[ECON_PERSONAL_CATALOG_GROUP] = econ_personal_catalog_group(show_contraband_partners)
 	return supplies

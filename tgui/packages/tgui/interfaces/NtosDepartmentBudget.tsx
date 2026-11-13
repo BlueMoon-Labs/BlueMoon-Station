@@ -527,6 +527,7 @@ const CatalogTab = () => {
                     ]
                   : [
                       'Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета.',
+                      'Пак каталога можно подать и с консоли заявок снабжения: такую заявку тоже оплатит бюджет отдела.',
                       `Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`,
                       ...(data.auto_approve_wait > 0
                         ? [`Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.`]
@@ -622,7 +623,7 @@ const RequestsTab = () => {
   const { act, data } = useBackend<BudgetData>();
   const requests = [...(data.requests || [])].reverse();
   return (
-    <NtFrame title="Заявки">
+    <NtFrame title="Заявки" help="Заявки сотрудников приходят отсюда и с консоли заявок снабжения; о новой ждущей заявке консоль сообщает в канал отдела.">
       {requests.length ? (
         <Table>
           <Table.Row header>

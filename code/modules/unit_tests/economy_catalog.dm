@@ -11,6 +11,8 @@
 	var/list/saved_requests = list()
 	var/list/saved_auto_approve = list()
 	var/list/saved_shoppinglist
+	var/list/saved_requestlist
+	var/list/saved_announce = list()
 	/// Мобы, добавленные в GLOB.player_list как игроки на смене
 	var/list/fake_players = list()
 
@@ -24,8 +26,12 @@
 		department.requests = list()
 		saved_auto_approve[id] = department.auto_approve_after
 		department.auto_approve_after = list()
+		saved_announce[id] = department.request_announce_cooldown
+		department.request_announce_cooldown = 0
 	saved_shoppinglist = SSshuttle.shoppinglist.Copy()
 	SSshuttle.shoppinglist.Cut()
+	saved_requestlist = SSshuttle.requestlist.Copy()
+	SSshuttle.requestlist.Cut()
 
 /datum/unit_test/economy_catalog/Destroy()
 	GLOB.player_list -= fake_players
@@ -37,10 +43,13 @@
 		QDEL_LIST(department.requests)
 		department.requests = saved_requests[id]
 		department.auto_approve_after = saved_auto_approve[id]
+		department.request_announce_cooldown = saved_announce[id]
 	for(var/datum/supply_order/order as anything in SSshuttle.shoppinglist)
 		qdel(order)
 	SSshuttle.shoppinglist.Cut()
 	SSshuttle.shoppinglist += saved_shoppinglist
+	QDEL_LIST(SSshuttle.requestlist)
+	SSshuttle.requestlist += saved_requestlist
 	return ..()
 
 /datum/unit_test/economy_catalog/proc/make_staff(department_id, list/access)
@@ -74,12 +83,101 @@
 		if(econ_pack_price(pack) > SSeconomy.settings.auto_approve_limit)
 			return pack
 
-/datum/unit_test/economy_catalog/proc/click_cargo(obj/machinery/computer/cargo/console, mob/living/user, action, list/params = list())
+/datum/unit_test/economy_catalog/proc/click_cargo(datum/console, mob/living/user, action, list/params = list())
 	var/datum/tgui/window = allocate(/datum/tgui, user, console, "Cargo")
 	window.status = UI_INTERACTIVE
 	usr = user
 	. = console.ui_act(action, params, window)
 	usr = null
+
+/// Пак каталога отдела, который видно в окне снабжения и есть у партнёров: дешевле лимита автоодобрения или дороже.
+/datum/unit_test/economy_catalog/proc/window_pack(datum/economy_department/department, cheap)
+	for(var/datum/supply_pack/pack as anything in department.catalog())
+		if(pack.department_catalog || econ_pack_unavailable(pack))
+			continue
+		if(cheap == (econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit))
+			return pack
+
+/// Сотрудник медицины подаёт с консоли заявок пак своего каталога: заявка уходит медицине, без главы недорогая оплачивается бюджетом медицины сама, дорогие ждут главы до лимита сотрудника, канал медицины оповещён.
+/datum/unit_test/economy_catalog/request_console_department/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/obj/machinery/computer/cargo/request/console = allocate(/obj/machinery/computer/cargo/request)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/datum/supply_pack/expensive = window_pack(medical, FALSE)
+	TEST_ASSERT(cheap && expensive, "В каталоге медицины есть паки по обе стороны лимита автоодобрения")
+	TEST_ASSERT(!medical.has_approver_on_shift(), "Начальства на смене нет")
+	var/list/static_entry
+	var/list/supplies = console.ui_static_data(doctor)["supplies"]
+	for(var/group in supplies)
+		for(var/list/entry as anything in supplies[group]["packs"])
+			if(entry["id"] == cheap.type)
+				static_entry = entry
+	TEST_ASSERT_NOTNULL(static_entry, "Пак медицины в окне")
+	TEST_ASSERT_EQUAL(static_entry["budget"], ACCOUNT_MED, "Окно помечает пак каталога медицины")
+	var/list/budget = console.ui_data(doctor)["budget_request"]
+	TEST_ASSERT_NOTNULL(budget, "Окно знает отдел подающего")
+	TEST_ASSERT(budget["id"] == ACCOUNT_MED && !budget["manager"] && !budget["any"], "Окно: бюджет медицины, сотрудник не глава")
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, price + 1)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/cargo_before = cargo.account_balance
+	click_cargo(console, doctor, "add", list("id" = "[cheap.type]", "reason" = "Бинты"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 0, "Заявка на пак медицины ушла снабжению")
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Заявка в отделе")
+	var/datum/econ_request/request = medical.requests[1]
+	TEST_ASSERT_EQUAL(request.reason, "Бинты", "Причина из окна")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Без главы недорогой пак одобрен сам")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, 1, "Пак оплачен бюджетом медицины")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Оплаченный заказ в очереди снабжения")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	TEST_ASSERT(order.prepaid == price && order.department_id == ACCOUNT_MED, "Заказ предоплачен медициной")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение не платило")
+	click_cargo(console, doctor, "add", list("id" = "[expensive.type]", "reason" = "Операционная", "amount" = 5))
+	var/limit = SSeconomy.settings.request_pending_per_requester
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	TEST_ASSERT_EQUAL(medical.pending_requests_of(doctor_account.account_id), limit, "По штуке на заявку, пока не упёрлись в лимит сотрудника")
+	TEST_ASSERT_EQUAL(length(medical.requests), limit + 1, "Сверх лимита заявок нет")
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 0, "Дорогой пак не ушёл снабжению")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Дорогой пак ждёт главы")
+	TEST_ASSERT(!COOLDOWN_FINISHED(medical, request_announce_cooldown), "Канал медицины не оповещён о ждущей заявке")
+	TEST_ASSERT(console.radio.channels[RADIO_CHANNEL_MEDICAL], "Консоль не говорила в канал медицины")
+
+/// С консоли заявок и с КПК снабжению уходят паки вне каталога отдела подающего и заявки людей без отдела; капитан заказывает пак медицины сразу за её бюджет.
+/datum/unit_test/economy_catalog/request_console_cargo/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/obj/machinery/computer/cargo/request/console = allocate(/obj/machinery/computer/cargo/request)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/supply_pack/metal = SSshuttle.supply_packs[/datum/supply_pack/materials/metal50]
+	TEST_ASSERT_EQUAL(econ_pack_catalog_department(metal), ACCOUNT_ENG, "Металл в каталоге инженерии")
+	click_cargo(console, doctor, "add", list("id" = "[metal.type]", "reason" = "Ремонт"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 1, "Пак чужого каталога - заявка снабжению")
+	TEST_ASSERT_EQUAL(length(medical.requests), 0, "Пак чужого каталога не ушёл медицине")
+	var/datum/supply_pack/expensive = window_pack(medical, FALSE)
+	var/mob/living/carbon/human/visitor = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NULL(console.ui_data(visitor)["budget_request"], "Без отдела окно не обещает бюджет отдела")
+	click_cargo(console, visitor, "add", list("id" = "[expensive.type]", "reason" = "Нужно"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 2, "Заявка без отдела - снабжению")
+	TEST_ASSERT_EQUAL(length(medical.requests), 0, "Заявка без отдела не ушла медицине")
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda/cargo)
+	var/datum/computer_file/program/cargo_orders/app = locate() in pda.get_all_files()
+	TEST_ASSERT_NOTNULL(app, "Приложение снабжения на КПК")
+	click_cargo(app, doctor, "add", list("id" = "[expensive.type]", "reason" = "С КПК"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.requestlist), 2, "Заявка с КПК на пак медицины ушла снабжению")
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Заявка с КПК в отделе")
+	TEST_ASSERT_NULL(app.radio?.loc, "Радио приложения не осталось в КПК")
+	var/mob/living/carbon/human/captain = make_staff(ACCOUNT_CMD, list(ACCESS_CAPTAIN))
+	var/list/budget = console.ui_data(captain)["budget_request"]
+	TEST_ASSERT_NOTNULL(budget, "Капитану окно обещает бюджет отдела")
+	TEST_ASSERT(budget["any"] && budget["manager"], "Капитану окно обещает бюджет отдела пака")
+	econ_test_set_balance(medical.account, round(econ_pack_price(expensive)))
+	click_cargo(console, captain, "add", list("id" = "[expensive.type]", "reason" = "Срочно"))
+	TEST_ASSERT_EQUAL(length(medical.requests), 2, "Заявка капитана в отделе")
+	var/datum/econ_request/request = medical.requests[2]
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Заявку капитана бюджет оплатил сразу")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Списано с бюджета медицины")
+	for(var/obj/item/paper/requisition in get_turf(console))
+		qdel(requisition)
 
 /// Заявка: глава одобряет - бюджет списан, заказ встал в очередь карго предоплаченным.
 /datum/unit_test/economy_catalog/request_approve/Run()

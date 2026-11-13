@@ -17,6 +17,15 @@ GLOBAL_LIST_INIT(econ_group_department, list(
 /proc/econ_pack_department(datum/supply_pack/pack)
 	return pack.department_catalog || GLOB.econ_group_department[pack.group]
 
+/// Отделы, у которых есть паки в общем каталоге снабжения: эксклюзивы отделов в нём не показываются.
+/proc/econ_group_departments()
+	var/static/list/departments
+	if(!departments)
+		departments = list()
+		for(var/group in GLOB.econ_group_department)
+			departments |= GLOB.econ_group_department[group]
+	return departments
+
 /// id отдела -> его паки по группе и department_catalog в порядке SSshuttle.supply_packs; эти поля паков не меняются, флаги catalog() проверяет каждый раз.
 /// Пересобирается при замене списка паков или смене его длины: подмену пака без смены длины индекс не заметит.
 GLOBAL_LIST_EMPTY(econ_department_packs)
@@ -117,15 +126,119 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 /datum/economy_department
 	/// "номер счёта" -> world.time, раньше которого заявки этого сотрудника сами не одобряются
 	var/list/auto_approve_after = list()
+	COOLDOWN_DECLARE(request_announce_cooldown)
 
 /datum/economy_department/proc/catalog()
 	. = list()
 	for(var/datum/supply_pack/pack as anything in econ_department_packs(id))
-		if(pack.hidden || pack.contraband || pack.admin_spawned || pack.DropPodOnly || pack.goody != PACK_GOODY_NONE || pack.exclusive_consoles)
-			continue
-		if(pack.special && !pack.special_enabled)
-			continue
-		. += pack
+		if(econ_catalog_pack_allowed(pack))
+			. += pack
+
+/proc/econ_catalog_pack_allowed(datum/supply_pack/pack)
+	if(pack.hidden || pack.contraband || pack.admin_spawned || pack.DropPodOnly || pack.goody != PACK_GOODY_NONE || pack.exclusive_consoles)
+		return FALSE
+	return !pack.special || pack.special_enabled
+
+/// id отдела, в каталог которого входит пак, или null.
+/proc/econ_pack_catalog_department(datum/supply_pack/pack)
+	return econ_catalog_pack_allowed(pack) ? econ_pack_department(pack) : null
+
+/// Отдел, чей бюджет оплатит заявку user на пак с окна снабжения: пак из каталога отдела, а user - его сотрудник, глава, ГП или капитан. Иначе null - заявка уходит снабжению.
+/proc/econ_request_department(mob/living/user, datum/supply_pack/pack)
+	var/department_id = econ_pack_catalog_department(pack)
+	if(!department_id || department_id == ACCOUNT_CMD)
+		return null
+	var/datum/economy_department/department = SSeconomy.get_department(department_id)
+	return department?.accepts_request(user) ? department : null
+
+/datum/economy_department/proc/accepts_request(mob/living/user)
+	if(can_manage(user))
+		return TRUE
+	var/datum/bank_account/account = econ_account_of(user)
+	return account?.department_id == id
+
+/datum/economy_department/proc/radio_channel()
+	var/static/list/channels = list(
+		ACCOUNT_MED = RADIO_CHANNEL_MEDICAL,
+		ACCOUNT_ENG = RADIO_CHANNEL_ENGINEERING,
+		ACCOUNT_SCI = RADIO_CHANNEL_SCIENCE,
+		ACCOUNT_SEC = RADIO_CHANNEL_SECURITY,
+		ACCOUNT_SRV = RADIO_CHANNEL_SERVICE,
+		ACCOUNT_CAR = RADIO_CHANNEL_SUPPLY,
+		ACCOUNT_CMD = RADIO_CHANNEL_COMMAND,
+	)
+	return channels[id]
+
+/// Подаёт до amount заявок отделу с окна снабжения. Возвращает list(ответ подавшему, сообщение каналу отдела или null): о ждущих заявках канал слышит не чаще ECON_CARGO_REQUEST_RADIO_COOLDOWN.
+/datum/economy_department/proc/submit_window_requests(datum/supply_pack/pack, mob/living/user, reason, amount)
+	var/list/approved = list()
+	var/list/pending = list()
+	for(var/i in 1 to amount)
+		var/datum/econ_request/request = submit_request(pack, user, reason)
+		if(!request)
+			break
+		if(request.status == ECON_REQUEST_APPROVED)
+			approved += request
+		else
+			pending += request
+	var/limit = SSeconomy.settings.request_pending_per_requester
+	var/submitted = length(approved) + length(pending)
+	if(!submitted)
+		return list("Заявку не приняли: решения отдела [name] ждут уже все ваши заявки, не больше [limit] на сотрудника.", null)
+	var/list/parts = list()
+	if(submitted == 1)
+		var/datum/econ_request/request = length(approved) ? approved[1] : pending[1]
+		parts += "Заявка №[request.uid] отдела [name]:"
+	else
+		parts += "Заявки отделу [name], подано [submitted][submitted < amount ? " из [amount]: решения ждут не больше [limit] ваших заявок" : ""]."
+	if(length(approved))
+		parts += "[length(approved) > 1 ? "[length(approved)] одобрено" : "одобрена"], оплачено из бюджета отдела, заказ ушёл в снабжение."
+	if(!length(pending))
+		return list(jointext(parts, " "), null)
+	var/price = round(econ_pack_price(pack))
+	var/manager = can_manage(user)
+	parts += "[length(pending) > 1 ? "[length(pending)] ждут" : "ждёт"] [manager ? "денег в бюджете" : "решения главы"], оплатит бюджет отдела."
+	if(account.account_balance < price)
+		parts += "В бюджете сейчас [account.account_balance] кр., пак стоит [price] кр."
+	var/announce
+	if(!manager && COOLDOWN_FINISHED(src, request_announce_cooldown))
+		COOLDOWN_START(src, request_announce_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
+		var/datum/econ_request/first = pending[1]
+		announce = "Заявка №[first.uid] от [first.requester]: [pack.name][length(pending) > 1 ? " x[length(pending)]" : ""], [price] кр. за штуку. Одобрить - в программе \"Бюджет отдела\" на КПК."
+	return list(jointext(parts, " "), announce)
+
+/// Заявки отделу с окна снабжения: ответ произносит speaker, о ждущих решения слышит канал отдела через radio.
+/proc/econ_cargo_department_order(datum/economy_department/department, mob/living/user, datum/supply_pack/pack, reason, amount, atom/movable/speaker, obj/item/radio/radio)
+	var/list/result = department.submit_window_requests(pack, user, reason, amount)
+	speaker.say(result[1])
+	econ_radio_department(radio, speaker, result[2], department.radio_channel())
+
+/// Сообщение в канал отдела по радио консоли; нужный канал радио получает при первом сообщении.
+/proc/econ_radio_department(obj/item/radio/radio, atom/movable/speaker, message, channel)
+	if(!radio || !channel || !message)
+		return
+	if(!radio.channels[channel])
+		radio.extra_channels[channel] = 1
+		radio.recalculateChannels()
+	radio.talk_into(speaker, message, channel)
+
+/// Окну снабжения в режиме заявок: чей бюджет оплатит заявки зрителя на паки каталога отдела. ГП и капитану - бюджет отдела пака.
+/proc/econ_budget_request_ui(mob/living/user)
+	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
+	var/any = !!command?.can_manage(user)
+	var/datum/bank_account/own = econ_account_of(user)
+	var/department_id = own?.department_id
+	var/datum/economy_department/department = (department_id in econ_group_departments()) ? SSeconomy.get_department(department_id) : null
+	if(!department && !any)
+		return null
+	return list(
+		"id" = department?.id,
+		"name" = department?.name,
+		"balance" = department?.account.account_balance,
+		"manager" = any || !!department?.can_manage(user),
+		"any" = any,
+		"auto_limit" = SSeconomy.settings.auto_approve_limit,
+	)
 
 /// Глава отдела и капитан по доступу ID; ГП - по должности и с доступом ГП на ID. ACCESS_HOP есть и у бридж-офицера, поэтому одного доступа мало.
 /datum/economy_department/proc/can_manage(mob/living/user)
@@ -158,9 +271,9 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 /datum/economy_department/proc/submit_request(datum/supply_pack/pack, mob/living/user, reason)
 	if(!pack || !(pack in catalog()))
 		return null
-	var/datum/bank_account/requester_account = econ_account_of(user)
-	if(!can_manage(user) && requester_account?.department_id != id)
+	if(!accepts_request(user))
 		return null
+	var/datum/bank_account/requester_account = econ_account_of(user)
 	var/account_id = requester_account?.account_id
 	if(account_id && pending_requests_of(account_id) >= SSeconomy.settings.request_pending_per_requester)
 		return null

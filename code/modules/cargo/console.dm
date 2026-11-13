@@ -90,6 +90,7 @@
 	data["can_send"] = can_send
 	data["can_edit_cart"] = can_send
 	data["can_approve_requests"] = can_approve_requests
+	data["budget_request"] = requestonly ? econ_budget_request_ui(user) : null
 	data["message"] = econ_cargo_message(blockade_warning, has_contraband_permit())
 	return data
 
@@ -207,14 +208,25 @@
 				if(!account)
 					return
 			var/reason = ""
+			var/datum/economy_department/budget_department
 			if(requestonly && !self_paid)
+				budget_department = econ_request_department(usr, pack)
 				reason = econ_cargo_given_reason(params)
 				if(!reason)
 					if(!usr.client)
 						return
-					reason = tgui_input_text(usr, "Причина:", "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
+					reason = tgui_input_text(usr, "Причина:", budget_department ? "Заявка: платит [budget_department.budget_name]" : "Заявка снабжению", "", ECON_REQUEST_REASON_MAX, FALSE, TRUE)
 					if(isnull(reason) || QDELETED(src) || QDELETED(ui) || ui_status(usr, ui.state) != UI_INTERACTIVE)
 						return
+					budget_department = econ_request_department(usr, pack)
+			if(budget_department)
+				for(var/obj/item/coupon/coupon_check as anything in loaded_coupons)
+					if(pack.type == coupon_check.discounted_pack)
+						say("Купон остаётся в консоли: заявку оплатит бюджет отдела.")
+						break
+				econ_cargo_department_order(budget_department, usr, pack, reason, econ_cargo_add_amount(params), src, radio)
+				post_signal("supply")
+				return TRUE
 
 			var/obj/item/coupon/applied_coupon
 			for(var/i in loaded_coupons)

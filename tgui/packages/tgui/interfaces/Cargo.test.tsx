@@ -263,6 +263,67 @@ test('заявка с консоли запросов шлёт add с причи
   expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/materials/metal50', reason: 'Ремонт палаты' }]);
 });
 
+const medicalSupplies = {
+  Medical: {
+    name: 'Medical',
+    packs: [{ name: 'Medical Supplies', id: '/datum/supply_pack/medical/supplies', goody: 0, budget: 'MED' }],
+  },
+  Materials: backend.supplies.Materials,
+};
+const medicalPrices = {
+  ...backend.prices,
+  '/datum/supply_pack/medical/supplies': [1200, 'prospectors', 1, [['prospectors', 1200], ['nakamura', 1300]]],
+};
+
+test('консоль заявок: паки каталога отдела помечены, их оплатит бюджет отдела, остальные - снабжение', () => {
+  const ui = setup({
+    requestonly: 1,
+    can_send: 0,
+    can_approve_requests: 0,
+    supplies: medicalSupplies,
+    prices: medicalPrices,
+    budget_request: { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, auto_limit: 2000 },
+  });
+  expect(ui.getByText(/оплатит бюджет отдела "Медицина" \(сейчас 4 500 кр\.\)/)).toBeTruthy();
+  expect(ui.getByText(/если на смене их нет, заявка до 2 000 кр\. одобряется сама/)).toBeTruthy();
+  expect(ui.getByText('бюджет отдела')).toBeTruthy();
+  fireEvent.click(ui.getByText('Medical Supplies'));
+  expect(ui.getByText('бюджет отдела "Медицина"')).toBeTruthy();
+  expect(ui.queryByText(/Накамура Инжиниринг -/)).toBeNull();
+  fireEvent.click(ui.getByText('Подать заявку за 1 200 кр.'));
+  expect(sent(ui.topic, 'add')).toEqual([{ id: '/datum/supply_pack/medical/supplies' }]);
+  fireEvent.click(ui.getByText('Canisters & Materials (2)'));
+  expect(ui.queryByText('бюджет отдела')).toBeNull();
+  fireEvent.click(ui.getByText('50 Metal Sheets'));
+  expect(ui.getByText('бюджет снабжения, если снабжение одобрит заявку')).toBeTruthy();
+});
+
+test('консоль заявок: капитану паки отделов заказываются сразу, без отдела и при личной покупке пометок нет', () => {
+  const captain = setup({
+    requestonly: 1,
+    can_send: 0,
+    supplies: medicalSupplies,
+    prices: medicalPrices,
+    budget_request: { id: null, name: null, balance: null, manager: 1, any: 1, auto_limit: 2000 },
+  });
+  expect(captain.getByText(/вы заказываете сразу за бюджет отдела пака/)).toBeTruthy();
+  expect(captain.getByText('бюджет отдела')).toBeTruthy();
+  captain.unmount();
+  const visitor = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: null });
+  expect(visitor.queryByText('бюджет отдела')).toBeNull();
+  expect(visitor.queryByText(/оплатит бюджет/)).toBeNull();
+  visitor.unmount();
+  const privateBuy = setup({
+    requestonly: 1,
+    can_send: 0,
+    self_paid: 1,
+    supplies: medicalSupplies,
+    prices: medicalPrices,
+    budget_request: { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, auto_limit: 2000 },
+  });
+  expect(privateBuy.queryByText('бюджет отдела')).toBeNull();
+});
+
 test('приложение NtosCargo открывает окно снабжения', () => {
   const ui = setup({ is_app: 1, can_send: 0, PC_device_theme: 'ntos', PC_programheaders: [] }, NtosCargo);
   expect(ui.getByText(/Бюджет снабжения/)).toBeTruthy();
