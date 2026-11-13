@@ -414,7 +414,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/eyes/optical/militech
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 
 /datum/design/cyberimp_mantis

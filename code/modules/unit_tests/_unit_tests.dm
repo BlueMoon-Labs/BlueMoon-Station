@@ -414,6 +414,7 @@
 #include "megafauna_multiz.dm"
 #include "merge_type.dm"
 // #include "metabolizing.dm"
+#include "militech_optics_node.dm"
 #include "minor_incidents_crew.dm"
 #include "minor_incidents_engineering.dm"
 #include "minor_incidents_outside.dm"

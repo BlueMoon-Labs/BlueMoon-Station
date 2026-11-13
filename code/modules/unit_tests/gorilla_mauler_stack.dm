@@ -27,7 +27,9 @@
 
 	// Удар с TRAIT_MAULER наносит 1.2x урона и не трогает стамину цели.
 	// Раны добавляют свой брут к результату, поэтому для проверки множителя их отключаем.
-	user.dna.species.punchwoundbonus = 0
+	// Нулевой бонус не отменяет бросок раны: тяжёлый перелом груди вызывает харканье кровью,
+	// которое добивает брут сверху и делает тест флаки. CANT_WOUND выключает бросок полностью.
+	user.dna.species.punchwoundbonus = CANT_WOUND
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human)
 	user.zone_selected = BODY_ZONE_CHEST
 	var/stamina_before = target.getStaminaLoss()
