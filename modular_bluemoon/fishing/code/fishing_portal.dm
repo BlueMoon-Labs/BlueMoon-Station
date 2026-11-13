@@ -42,6 +42,121 @@
 	associated_safe_turfs = list(/turf/open/water)
 	unlock_requirement = 5
 
+/datum/fish_source/portal/beach
+	background = "background_default"
+	fish_table = list(
+		FISHING_DUD = 8,
+		/obj/item/fish/clownfish = 18,
+		/obj/item/fish/cardinal = 15,
+		/obj/item/fish/greenchromis = 12,
+		/obj/item/fish/pufferfish = 10,
+		/obj/item/fish/plaice = 10,
+		/obj/item/fish/squid = 6,
+		/obj/item/fish/sand_crab = 5,
+		/obj/item/fish/sand_surfer = 5,
+		/obj/item/fish/bumpy = 4,
+	)
+	catalog_description = "Пляж (Фиш-портер 3000)"
+	radial_name = "Пляж"
+	radial_state = "palm_beach"
+	overlay_state = "portal_beach"
+	associated_safe_turfs = list(/turf/open/water)
+	unlock_requirement = 8
+
+/datum/fish_source/portal/chasm
+	background = "background_chasm"
+	fish_table = list(
+		FISHING_DUD = 6,
+		/obj/item/fish/chasm_crab = 12,
+		/obj/item/fish/boned = 5,
+		/obj/item/stack/sheet/bone = 6,
+	)
+	catalog_description = "Бездна (Фиш-портер 3000)"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 20
+	radial_name = "Бездна"
+	radial_state = "ground_hole"
+	overlay_state = "portal_chasm"
+	unlock_requirement = 12
+
+/datum/fish_source/portal/ice
+	background = "background_ice"
+	fish_table = list(
+		FISHING_DUD = 8,
+		/obj/item/fish/arctic_char = 18,
+		/obj/item/fish/sockeye_salmon = 15,
+		/obj/item/fish/chasm_crab/ice = 8,
+		/obj/item/fish/boned = 3,
+	)
+	catalog_description = "Ледяная вода (Фиш-портер 3000)"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 18
+	radial_name = "Лёд"
+	radial_state = "ice"
+	overlay_state = "portal_ocean"
+	unlock_requirement = 14
+
+/datum/fish_source/portal/onsen
+	background = "background_default"
+	fish_table = list(
+		FISHING_DUD = 10,
+		/obj/item/fish/bumpy = 16,
+		/obj/item/fish/sacabambaspis = 14,
+		/obj/item/fish/catfish = 6,
+	)
+	catalog_description = "Горячий источник (Фиш-портер 3000)"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 15
+	radial_name = "Источник"
+	radial_state = "onsen"
+	overlay_state = "portal_ocean"
+	unlock_requirement = 16
+
+/datum/fish_source/portal/plasma
+	background = "background_plasma"
+	fish_table = list(
+		FISHING_DUD = 5,
+		/obj/item/fish/chasm_crab/ice = 14,
+		/obj/item/fish/lavaloop/plasma_river = 12,
+		/obj/item/coin/plasma = 4,
+		/obj/item/stack/ore/plasma = 4,
+		/obj/effect/decal/remains/plasma = 2,
+	)
+	catalog_description = "Плазма (Фиш-портер 3000)"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 25
+	radial_name = "Плазма"
+	radial_state = "plasma"
+	overlay_state = "portal_plasma"
+	unlock_requirement = 18
+
+/datum/fish_source/portal/plasma/reason_we_cant_fish(obj/item/fishing_rod/rod, mob/fisherman, atom/parent)
+	if(!istype(rod) || !rod.line || !(rod.line.resistance_flags & LAVA_PROOF))
+		return "Для рыбалки в плазме нужна укреплённая или огнеупорная леска."
+	return ..()
+
+/datum/fish_source/portal/mansus
+	background = "background_mansus"
+	fish_table = list(
+		FISHING_DUD = 8,
+		/obj/item/fish/starfish/chrystarfish = 6,
+		/obj/item/fish/dolphish = 4,
+		/obj/item/fish/flumpulus = 4,
+		/obj/item/fish/gullion = 4,
+		/obj/item/fish/mossglob = 2,
+		/obj/item/fish/babbelfish = 1,
+	)
+	fish_counts = list(
+		/obj/item/fish/mossglob = 2,
+		/obj/item/fish/babbelfish = 1,
+	)
+	fish_count_regen = list(
+		/obj/item/fish/mossglob = 15 MINUTES,
+		/obj/item/fish/babbelfish = 25 MINUTES,
+	)
+	catalog_description = "Мансус (Фиш-портер 3000)"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 35
+	radial_name = "Мансус"
+	radial_state = "cursed"
+	overlay_state = "portal_mansus"
+	unlock_requirement = 30
+
 /datum/fish_source/portal/ocean
 	background = "background_default"
 	fish_table = list(

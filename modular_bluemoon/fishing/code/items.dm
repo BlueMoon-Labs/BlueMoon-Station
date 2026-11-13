@@ -119,7 +119,20 @@
 	icon_state = "fish_mount"
 	anchored = TRUE
 	density = FALSE
+	layer = SIGN_LAYER
+	max_integrity = 100
+	custom_materials = list(/datum/material/wood = SHEET_MATERIAL_AMOUNT)
+	resistance_flags = FLAMMABLE
 	var/obj/item/fish/mounted_fish
+
+/obj/item/wallframe/fish
+	name = "fish mount frame"
+	desc = "Каркас для настенного крепления трофейной рыбы. Крепится на стену."
+	icon = 'modular_bluemoon/fishing/icons/obj/wallmounts.dmi'
+	icon_state = "fish_mount_item"
+	result_path = /obj/structure/fish_mount
+	custom_materials = list(/datum/material/wood = SHEET_MATERIAL_AMOUNT * 2)
+	pixel_shift = 31
 
 /obj/structure/fish_mount/update_overlays()
 	. = ..()

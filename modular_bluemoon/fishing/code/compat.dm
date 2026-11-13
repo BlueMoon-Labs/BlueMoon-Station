@@ -321,14 +321,26 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 
 /datum/component/boomerang
 	var/range
-	var/spin
+	var/thrower_easy_catch_enabled
 
-/datum/component/boomerang/Initialize(range, spin)
+/datum/component/boomerang/Initialize(range, thrower_easy_catch_enabled = FALSE)
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 	src.range = range
-	src.spin = spin
+	src.thrower_easy_catch_enabled = thrower_easy_catch_enabled
+	RegisterSignal(parent, COMSIG_MOVABLE_POST_THROW, PROC_REF(prepare_throw))
 	RegisterSignal(parent, COMSIG_MOVABLE_IMPACT, PROC_REF(on_impact))
+
+// костыль, включаем режим броска
+/datum/component/boomerang/proc/prepare_throw(obj/item/source, datum/thrownthing/throwingdatum, spin)
+	SIGNAL_HANDLER
+	if(!thrower_easy_catch_enabled)
+		return
+	var/mob/thrower = throwingdatum?.thrower
+	if(!iscarbon(thrower))
+		return
+	var/mob/living/carbon/carbon_thrower = thrower
+	carbon_thrower.throw_mode_on()
 
 /datum/component/boomerang/proc/on_impact(obj/item/source, atom/hit_atom, datum/thrownthing/throwingdatum)
 	SIGNAL_HANDLER
@@ -340,7 +352,13 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 /datum/component/boomerang/proc/throw_back(obj/item/source, mob/thrower)
 	if(QDELETED(source) || QDELETED(thrower))
 		return
-	source.throw_at(thrower, range, 1, thrower, spin)
+	if(source.loc == thrower || (source in thrower.contents))
+		return
+	if(!isturf(source.loc))
+		return
+	if(get_turf(source) == get_turf(thrower))
+		return
+	source.throw_at(thrower, range, 1, thrower, TRUE)
 
 /datum/component/throwbonus_on_windup
 	var/maximum_bonus

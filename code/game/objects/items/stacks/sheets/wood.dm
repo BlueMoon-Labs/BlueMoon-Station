@@ -18,6 +18,9 @@ GLOBAL_LIST_INIT(wood_recipes_generic, list (
 		new/datum/stack_recipe("Painting Frame", /obj/item/wallframe/painting, 1, time = 10),
 		new/datum/stack_recipe("Large Painting Frame", /obj/item/wallframe/painting/large, 1, time = 10),
 		)),
+	new/datum/stack_recipe_list("Fishing", list(
+		new/datum/stack_recipe("Fish Mount Frame", /obj/item/wallframe/fish, 2, time = 10),
+		)),
 	new/datum/stack_recipe_list("Doors", list(
 		new/datum/stack_recipe("Door", /obj/structure/mineral_door/wood, 10, time = 20, one_per_turf = TRUE, on_floor = TRUE),
 		new/datum/stack_recipe("Rustic Door", /obj/structure/mineral_door/woodrustic, 10, time = 20, one_per_turf = TRUE, on_floor = TRUE),

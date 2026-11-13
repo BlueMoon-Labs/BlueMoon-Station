@@ -57,6 +57,7 @@
 	STOP_PROCESSING(SSobj, src)
 	REMOVE_TRAIT(src, TRAIT_IS_AQUARIUM, AQUARIUM_TRAIT)
 	REMOVE_TRAIT(src, TRAIT_STOP_FISH_FLOPPING, AQUARIUM_TRAIT)
+	REMOVE_TRAIT(src, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH, AQUARIUM_TRAIT)
 	for(var/obj/item/fish/fish in tracked_fish.Copy())
 		if(QDELETED(fish))
 			continue
@@ -276,8 +277,31 @@
 			continue
 		beauty += fish.get_aquarium_beauty()
 
+/// Стазис-состояние для рыб
+/obj/structure/aquarium/proc/is_fish_population_safe()
+	var/alive = 0
+	var/not_safe = 0
+	for(var/obj/item/fish/fish in tracked_fish)
+		if(QDELETED(fish) || fish.status == FISH_DEAD)
+			continue
+		alive++
+		if(!fish.proper_environment() || fish.get_hunger() > FISH_STARVING_THRESHOLD * 0.9)
+			not_safe++
+	return not_safe <= (alive / 2)
+
+/// Щадящий авто-режим
+/obj/structure/aquarium/proc/update_auto_stasis()
+	if(!auto_mode)
+		return
+	if(is_fish_population_safe())
+		REMOVE_TRAIT(src, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH, AQUARIUM_TRAIT)
+	else
+		ADD_TRAIT(src, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH, AQUARIUM_TRAIT)
+
 /obj/structure/aquarium/process(seconds_per_tick)
 	if(!length(tracked_fish))
+		if(auto_mode)
+			REMOVE_TRAIT(src, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH, AQUARIUM_TRAIT)
 		return
 	if(auto_mode)
 		var/list/common_fluids
@@ -302,6 +326,7 @@
 			continue
 		update_fish_state(fish)
 		beauty += fish.get_aquarium_beauty()
+	update_auto_stasis()
 	update_fish_visuals()
 	update_icon()
 
@@ -377,6 +402,10 @@
 			allow_breeding = !allow_breeding
 		if("toggle_auto")
 			auto_mode = !auto_mode
+			if(auto_mode)
+				update_auto_stasis()
+			else
+				REMOVE_TRAIT(src, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH, AQUARIUM_TRAIT)
 		if("pet_fish")
 			var/obj/item/fish/fish = locate(params["fish_reference"]) in tracked_fish
 			if(istype(fish) && fish.loc == src && fish.status != FISH_DEAD)
