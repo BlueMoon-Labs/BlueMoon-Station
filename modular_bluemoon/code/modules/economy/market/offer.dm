@@ -146,17 +146,18 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		inner.forceMove(shipment)
 	qdel(thing)
 
-/// Выполнен: премия - маржа отделу, закрывшему спецзаказ (отгрузкой шаттла - снабжению), репутация партнёру.
-/datum/market_offer/proc/complete(datum/export_report/report, datum/economy_department/closer)
+/// Выполнен: премия - маржа счёту, закрывшему спецзаказ (отгрузкой шаттла - снабжению), репутация партнёру.
+/datum/market_offer/proc/complete(datum/export_report/report, datum/bank_account/closer)
 	var/datum/trade_partner/partner = get_partner()
 	var/premium = round(premium_due)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(!closer)
-		closer = SSeconomy.get_department(ACCOUNT_CAR)
-	var/closer_name = closer.id == ACCOUNT_CAR ? "снабжению" : "отделу [closer.name]"
+		closer = cargo
+	var/closer_name = econ_offer_closer_name(closer)
 	if(premium > 0)
-		if(closer.id == ACCOUNT_CAR)
+		if(closer == cargo)
 			margin_paid = premium
-		closer.account.credit(premium, ECON_EXPORT, memo = "Маржа спецзаказа: [partner?.name]")
+		closer.credit(premium, ECON_EXPORT, memo = "Маржа спецзаказа: [partner?.name]")
 		partner?.note_sale(premium)
 	partner?.add_reputation(MARKET_OFFER_REPUTATION_SUCCESS)
 	add_note(report, "Спецзаказ выполнен: маржа [closer_name] [premium] кр., репутация у партнёра +[MARKET_OFFER_REPUTATION_SUCCESS].")
@@ -181,8 +182,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 /datum/market_offer/proc/pad_open()
 	return open() && !contraband() && delivered < quantity
 
-/// Сдача с пада подработки: первая сдача сама берёт спецзаказ. База за штуки - отделу сдавшего за вычетом сбора снабжения, ему лично доля участника контракта; маржа при выполнении - тому же отделу. Возвращает принятые штуки.
-/datum/market_offer/proc/ship_from_pad(atom/movable/thing, mob/shipper)
+/// Сдача с пада подработки: первая сдача сама берёт спецзаказ. База за штуки - отделу сдавшего за вычетом сбора снабжения, ему лично доля участника контракта; маржа при выполнении - тому же отделу. С budget (сканер аванпоста) база и маржа идут этому счёту без сбора снабжения. Возвращает принятые штуки.
+/datum/market_offer/proc/ship_from_pad(atom/movable/thing, mob/shipper, datum/bank_account/budget)
 	if(!pad_open() || !matches(thing))
 		return 0
 	if(!accepted && !accept(shipper))
@@ -200,18 +201,34 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	take(thing, units, thing.drop_location())
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(revenue)
-	var/datum/economy_department/department = econ_pad_offer_payee(shipper)
 	var/memo = "Спецзаказ: [partner.name]"
 	var/datum/bank_account/account = econ_account_of(shipper)
 	var/share = account ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
 	if(share > 0)
 		var/net = SSeconomy.pay_personal(null, account, share, ECON_CONTRACT, shipper, memo)
 		account.bank_card_talk("Спецзаказ [partner.name]: [share] кр. до налога, на руки [net] кр.", balloon = net ? "спецзаказ +[net] кр" : null)
-	econ_pay_crate(revenue - share, department, memo)
-	log_econ("Спецзаказ #[uid] партнёра [partner.name]: с пада подработки принято [units] x [wanted_name] ([delivered]/[quantity]) от [key_name(shipper)], выплата [revenue] кр. ([department.name], лично [share])")
+	var/datum/bank_account/closer = budget
+	if(budget)
+		if(revenue > share)
+			budget.credit(revenue - share, ECON_EXPORT, shipper, memo)
+		log_econ("Спецзаказ #[uid] партнёра [partner.name]: со сканера аванпоста принято [units] x [wanted_name] ([delivered]/[quantity]) от [key_name(shipper)], выплата [revenue] кр. ([econ_budget_name(budget)], лично [share])")
+	else
+		var/datum/economy_department/department = econ_pad_offer_payee(shipper)
+		closer = department.account
+		econ_pay_crate(revenue - share, department, memo)
+		log_econ("Спецзаказ #[uid] партнёра [partner.name]: с пада подработки принято [units] x [wanted_name] ([delivered]/[quantity]) от [key_name(shipper)], выплата [revenue] кр. ([department.name], лично [share])")
 	if(delivered >= quantity)
-		complete(closer = department)
+		complete(closer = closer)
 	return units
+
+/// Кому ушла маржа выполненного спецзаказа, для сообщения ЦК и лога.
+/proc/econ_offer_closer_name(datum/bank_account/closer)
+	if(closer == SSeconomy.get_dep_account(ACCOUNT_CAR))
+		return "снабжению"
+	var/datum/bank_account/department/budget = closer
+	if(istype(budget) && budget.department)
+		return "отделу [budget.department.name]"
+	return "в [econ_budget_name(closer)]"
 
 /// Отдел, которому платит сдача спецзаказа с пада: отдел счёта сдавшего, без него - снабжение.
 /proc/econ_pad_offer_payee(mob/shipper)
@@ -221,8 +238,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		department = SSeconomy.get_department(ACCOUNT_CAR)
 	return department
 
-/// Засчитывает предмет и его содержимое по спецзаказам партнёров с пада подработки. Возвращает принятые штуки.
-/proc/econ_offers_ship(atom/movable/thing, mob/shipper)
+/// Засчитывает предмет и его содержимое по спецзаказам партнёров с пада подработки или, с budget, сканером аванпоста. Возвращает принятые штуки.
+/proc/econ_offers_ship(atom/movable/thing, mob/shipper, datum/bank_account/budget)
 	. = 0
 	var/list/offers = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
@@ -236,7 +253,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 				break
 			if(QDELETED(offer))
 				continue
-			. += offer.ship_from_pad(item, shipper)
+			. += offer.ship_from_pad(item, shipper, budget)
 
 /// Спецзаказы, которые можно сдать на паде, для доски контрактов.
 /proc/econ_pad_offers_ui()

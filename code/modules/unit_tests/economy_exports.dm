@@ -275,6 +275,14 @@
 	TEST_ASSERT(payouts[1] > 0, "Алмазы ничего не стоят")
 	TEST_ASSERT(payouts[2] < payouts[1], "Вторая партия не подешевела: [payouts[2]] после [payouts[1]]")
 
+/// Гост-роль аванпоста слышит, откуда доход бюджета, только если на её уровне есть экспресс-консоль этого бюджета.
+/datum/unit_test/economy_exports/offstation_income_hint/Run()
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(!econ_offstation_income_hint(scavenger, ACCOUNT_TAR), "Подсказка о бюджете Таркова без его консоли")
+	allocate(/obj/machinery/computer/cargo/express/tar, run_loc_floor_top_right)
+	TEST_ASSERT(econ_offstation_income_hint(scavenger, ACCOUNT_TAR), "Нет подсказки о бюджете Таркова рядом с его консолью")
+	TEST_ASSERT(!econ_offstation_income_hint(scavenger, ACCOUNT_DS), "Подсказка о бюджете Deep Space у консоли Таркова")
+
 /// Пиратский пад продаёт купленное через снабжение не дороже потолка выкупа NT.
 /datum/unit_test/economy_exports/pirate_pad_caps/Run()
 	var/obj/machinery/piratepad/pad = allocate(/obj/machinery/piratepad, run_loc_floor_top_right)

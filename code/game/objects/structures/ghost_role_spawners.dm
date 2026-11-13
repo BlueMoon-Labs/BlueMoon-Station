@@ -1111,6 +1111,10 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	antagonist_type = /datum/antagonist/ghost_role/tarkov
 	category = "offstation"
 
+/obj/effect/mob_spawn/human/tarkon/special(mob/living/new_spawn)
+	. = ..()
+	econ_offstation_income_hint(new_spawn, ACCOUNT_TAR)
+
 /datum/outfit/tarkoff
 	name = "Default Port Tarkov Outfit"
 	uniform = /obj/item/clothing/under/rank/cargo/util
@@ -1208,6 +1212,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	gloves = /obj/item/clothing/gloves/combat
 	l_pocket = /obj/item/melee/classic_baton/telescopic
 	r_pocket = /obj/item/grenade/barrier
+	backpack_contents = list(/obj/item/xenoarch/help/cargo/tarkoff = 1)
 
 /obj/item/radio/headset/tarkoff
 	name = "Tarkov Headset"
@@ -1443,6 +1448,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /obj/effect/mob_spawn/human/ds2/syndicate/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	new_spawn.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	econ_offstation_income_hint(new_spawn, ACCOUNT_DS)
 
 	var/obj/item/implant/anchor/ghost_anchor = new
 	ghost_anchor.implant(new_spawn, null, TRUE)
@@ -1450,6 +1456,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /obj/effect/mob_spawn/human/ds2/syndicate_command/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	new_spawn.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	econ_offstation_income_hint(new_spawn, ACCOUNT_DS)
 
 	var/obj/item/implant/anchor/ghost_anchor = new
 	ghost_anchor.implant(new_spawn, null, TRUE)

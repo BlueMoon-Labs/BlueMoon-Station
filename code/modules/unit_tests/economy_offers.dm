@@ -341,6 +341,68 @@
 	TEST_ASSERT_EQUAL(offer.delivered, 3, "Спецзаказ засчитал отправку с пада")
 	TEST_ASSERT(findtext(console.status_report, "по спецзаказам партнёров: 3 шт."), "Отчёт пульта: [console.status_report]")
 
+/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке.
+/datum/unit_test/economy_offers/outpost_scanner
+	var/datum/bank_account/tarkov
+	var/saved_tarkov
+	var/saved_tax_rate
+
+/datum/unit_test/economy_offers/outpost_scanner/New()
+	. = ..()
+	tarkov = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	saved_tarkov = tarkov.account_balance
+	saved_tax_rate = SSeconomy.tax_rate
+
+/datum/unit_test/economy_offers/outpost_scanner/Destroy()
+	econ_test_set_balance(tarkov, saved_tarkov)
+	tarkov = null
+	SSeconomy.tax_rate = saved_tax_rate
+	return ..()
+
+/datum/unit_test/economy_offers/outpost_scanner/Run()
+	SSeconomy.tax_rate = 10
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	free_traders.unlocked = TRUE
+	var/datum/market_offer/smuggled = add_offer("free_traders", /obj/item/stack/sheet/bone, 5, 2, 20)
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/account = new("econ_test_outpost_scavenger")
+	scavenger.account_id = account.account_id
+	allocated += account
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+
+	var/examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, offer.partner_name()) && findtext(examined, "100 кр."), "Осмотр сканера показывает открытый спецзаказ: [examined]")
+	TEST_ASSERT(!findtext(examined, smuggled.partner_name()), "Осмотр сканера показывает контрабандный спецзаказ")
+
+	var/obj/item/stack/sheet/bone/bones = allocate(/obj/item/stack/sheet/bone, run_loc_floor_bottom_left, 5)
+	scanner.sell_offstation(bones, scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(!smuggled.accepted && !smuggled.delivered, "Сканер сдал контрабандный спецзаказ")
+
+	var/tarkov_before = tarkov.account_balance
+	var/cargo_before = cargo.account_balance
+	var/medical_before = medical.account.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 6)
+	TEST_ASSERT_EQUAL(scanner.sell_offstation(first, scavenger, ACCOUNT_TAR), 0, "Принятое спецзаказом продано ещё и на рынке")
+	TEST_ASSERT(offer.accepted && offer.delivered == 6, "Сканер не засчитал 6 штук в спецзаказ: [offer.delivered]")
+	TEST_ASSERT(QDELETED(first), "Принятая стопка осталась")
+	var/share = round(600 * settings.contract_team_share / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
+
+	tarkov_before = tarkov.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 15)
+	var/market = scanner.sell_offstation(second, scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(market > 0, "Остаток стопки сверх спецзаказа не продан на рынке")
+	TEST_ASSERT(QDELETED(second), "Остаток стопки не ушёл")
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ не выполнен")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
+	share = round(400 * settings.contract_team_share / 100)
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 - share + 1000 + round(market), "Бюджету Таркова база, маржа выполнения и рынок")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение станции получило деньги со сканера аванпоста")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Отдел станции получил деньги со сканера аванпоста")
+
 /// Купленное в автомате спецзаказ не засчитывает, а NT выкупает не дороже доли уплаченного.
 /datum/unit_test/economy_offers/vended_goods/Run()
 	var/obj/machinery/vending/snack/machine = allocate(/obj/machinery/vending/snack)
