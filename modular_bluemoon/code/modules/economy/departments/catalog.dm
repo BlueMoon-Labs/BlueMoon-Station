@@ -52,9 +52,12 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/datum/trade_partner/supplier = econ_pack_supplier(pack, paying_account, allow_contraband)
 	return supplier ? supplier.pack_price(pack, paying_account) : pack.market_cost(paying_account)
 
-/// Возвращает отделу деньги за снятый с корзины предоплаченный заказ.
+/// Возвращает отделу или покупателю с КПК деньги за снятый с корзины предоплаченный заказ.
 /proc/econ_cancel_order(datum/supply_order/order, mob/user)
 	if(!order.prepaid)
+		return
+	if(order.personal_prepaid())
+		econ_refund_personal_order(order, user)
 		return
 	var/datum/economy_department/department = SSeconomy.get_department(order.department_id)
 	if(!department)
@@ -79,13 +82,14 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/datum/economy_department/department = prepaid ? SSeconomy.get_department(department_id) : null
 	var/datum/trade_partner/supplier = econ_order_supplier(src)
 	return list(
-		"object" = department ? "[pack.name] (оплачено: [department.name])" : pack.name,
-		"cost" = department ? 0 : econ_order_cost(src),
+		"object" = department ? "[pack.name] (оплачено: [department.name])" : (personal_prepaid() ? "[pack.name] (оплачено с КПК)" : pack.name),
+		"cost" = prepaid ? 0 : econ_order_cost(src),
 		"id" = id,
 		"pack" = "[pack.type]",
 		"supplier" = supplier?.name,
 		"orderer" = orderer,
 		"paid" = !isnull(paying_account),
+		"prepaid" = prepaid > 0,
 		"department" = department?.name,
 	)
 

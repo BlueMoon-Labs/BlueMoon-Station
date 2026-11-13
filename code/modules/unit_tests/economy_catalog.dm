@@ -558,6 +558,117 @@
 	for(var/obj/structure/closet/locker as anything in lockers)
 		TEST_ASSERT_NOTNULL(locate(/obj/item/paper/fluff/jobs/cargo/manifest) in locker, "Шкафчик [locker.name] собран по заказу")
 
+/// Человек с КПК в руке; в КПК - ID-карта со счётом, который запоминает сообщения карты.
+/datum/unit_test/economy_catalog/proc/make_pda_buyer(holder, balance)
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	var/datum/bank_account/econ_test_ear/account = new(holder)
+	allocated += account
+	econ_test_set_balance(account, balance)
+	card.registered_account = account
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda)
+	pda.InsertID(card)
+	buyer.put_in_active_hand(pda)
+	return buyer
+
+/datum/unit_test/economy_catalog/proc/pda_account(mob/living/carbon/human/buyer)
+	var/obj/item/modular_computer/pda/pda = buyer.get_active_held_item()
+	return pda.stored_id.registered_account
+
+/// Нажатие в окне кошелька КПК; возвращает программу кошелька.
+/datum/unit_test/economy_catalog/proc/press_wallet(mob/living/carbon/human/buyer, action, list/params = list())
+	var/obj/item/modular_computer/pda/pda = buyer.get_active_held_item()
+	var/datum/computer_file/program/wallet/wallet = locate() in pda.get_all_files()
+	var/datum/tgui/window = allocate(/datum/tgui, buyer, wallet, "NtosWallet")
+	window.status = UI_INTERACTIVE
+	usr = buyer
+	wallet.ui_act(action, params, window)
+	usr = null
+	return wallet
+
+/// Личный заказ из кошелька КПК: цена партнёра без наценки списывается сразу, заказ встаёт в очередь шаттла личным и оплаченным, карта сообщает об оплате, снабжение видит его в корзине; отмена до отлёта возвращает деньги, пака вне каталога и сверх лимита не заказать.
+/datum/unit_test/economy_catalog/personal_wallet_order/Run()
+	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
+	var/datum/supply_pack/outside = SSshuttle.supply_packs[/datum/supply_pack/critter/cow]
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Wallet Buyer", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/datum/computer_file/program/wallet/wallet = press_wallet(buyer, "personal_order", list("id" = "[outside.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Пак вне личного каталога заказан: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказ списал деньги")
+	var/price = round(econ_pack_price(pet, account))
+	TEST_ASSERT(length(wallet.wallet_static_data()["personal_catalog"]), "Окно кошелька без личного каталога")
+	var/list/prices = wallet.wallet_data(buyer)["personal_prices"]
+	var/list/pet_price = prices["[pet.type]"]
+	TEST_ASSERT(length(pet_price) && pet_price[1] == price, "Окно показывает не ту цену, что спишется: [json_encode(pet_price)] вместо [price]")
+	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ не встал в очередь шаттла: [wallet.message]")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	TEST_ASSERT(order.pack == pet, "В очереди не тот пак")
+	TEST_ASSERT(order.paying_account == account, "Заказ не личный")
+	TEST_ASSERT_NULL(order.department_id, "Заказ записан на отдел")
+	TEST_ASSERT_EQUAL(order.prepaid, price, "Заказ не оплачен ценой партнёра")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - price, "Списана не цена партнёра")
+	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "Заказ №[order.id] оплачен"), "Карта не сообщила об оплате")
+	var/list/orders = wallet.wallet_data(buyer)["personal_orders"]
+	TEST_ASSERT_EQUAL(length(orders), 1, "Кошелёк не показывает заказ")
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/list/cart = console.ui_data(buyer)["cart"]
+	var/list/entry = cart[1]
+	TEST_ASSERT(entry["paid"] && entry["prepaid"] && !entry["department"], "Снабжение видит не личный оплаченный заказ: [json_encode(entry)]")
+	press_wallet(buyer, "personal_cancel", list("id" = order.id))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Отменённый заказ остался в очереди")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отмена не вернула деньги")
+	var/limit = SSeconomy.settings.personal_order_limit
+	for(var/i in 1 to limit)
+		press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), limit, "Заказы до лимита не приняты: [wallet.message]")
+	var/balance = account.account_balance
+	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), limit, "Принят заказ сверх лимита")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "Отказ сверх лимита списал деньги")
+
+/// Оплаченный с КПК заказ летит ближайшим шаттлом: второй раз не списывается, сбора снабжению нет, ящик заперт на покупателя, карта сообщает об отгрузке и о прибытии на станцию. Заказ, снятый снабжением с корзины, возвращает деньги покупателю.
+/datum/unit_test/economy_catalog/personal_wallet_delivery/Run()
+	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Wallet Receiver", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/datum/computer_file/program/wallet/wallet = press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ не оформлен: [wallet.message]")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	var/paid_balance = account.account_balance
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/cargo_before = cargo.account_balance
+	var/list/crates_before = new_crates(list(), /obj/structure/closet)
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= order
+	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Заказ не отгружен")
+	TEST_ASSERT_EQUAL(account.account_balance, paid_balance, "Отгрузка списала деньги второй раз")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение взяло сбор с личного каталога")
+	var/list/delivered = new_crates(crates_before, /obj/structure/closet/crate/secure/owned)
+	TEST_ASSERT_EQUAL(length(delivered), 1, "На шаттле нет именного ящика")
+	var/obj/structure/closet/crate/secure/owned/crate = delivered[1]
+	allocated += crate.GetAllContents()
+	TEST_ASSERT(crate.buyer_account == account, "Ящик заперт не на покупателя")
+	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "№[order.id] ([pet.name]) отгружен"), "Карта не сообщила об отгрузке")
+	TEST_ASSERT(!findtext(jointext(account.heard, "\n"), "привёз"), "О прибытии сказано до посадки")
+	var/list/in_transit = wallet.wallet_data(buyer)["personal_in_transit"]
+	TEST_ASSERT_EQUAL(length(in_transit), 1, "Кошелёк не показывает заказ в пути")
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "привёз на станцию ваш заказ №[order.id]"), "Карта не сообщила о прибытии")
+	qdel(order)
+
+	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второй заказ не оформлен: [wallet.message]")
+	var/datum/supply_order/removed = SSshuttle.shoppinglist[1]
+	var/removed_price = removed.prepaid
+	var/before_removal = account.account_balance
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/cargo_tech = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	click_cargo(console, cargo_tech, "remove", list("id" = "[removed.id]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Снабжение не сняло заказ")
+	TEST_ASSERT_EQUAL(account.account_balance, before_removal + removed_price, "Снятый снабжением заказ не вернул деньги")
+	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "Снабжение сняло ваш заказ №[removed.id]"), "Карта не сообщила о снятии заказа")
+
 /// Ни один пак каталога не продаётся на экспорт по базе дороже своей цены в начале раунда, а доставленный - дороже цены на дне рынка со скидкой высшей ступени, даже горячим и лучшему покупателю; разовые бонусы открытия (семена) засчитываются один раз.
 /datum/unit_test/economy_catalog/no_export_farm
 	var/list/saved_discovered

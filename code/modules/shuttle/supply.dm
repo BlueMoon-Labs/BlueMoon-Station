@@ -106,11 +106,14 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		return
 	if(getDockedId() == "supply_away") // Sell when we get home
 		sell()
+	else if(getDockedId() == "supply_home")
+		notify_personal_arrivals()
 
 /obj/docking_port/mobile/supply/proc/buy()
 	var/list/obj/miscboxes = list() //miscboxes are combo boxes that contain all goody orders grouped
 	var/list/misc_order_num = list() //list of strings of order numbers, so that the manifest can show all orders in a box
 	var/list/misc_contents = list() //list of lists of items that each box will contain
+	personal_arrivals.Cut()
 	if(!SSshuttle.shoppinglist.len)
 		return
 
@@ -142,7 +145,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 
 		var/datum/bank_account/D
 		var/personal_catalog = SO.paying_account && !SO.prepaid && econ_personal_catalog_pack(SO.pack)
-		if(SO.prepaid)
+		if(SO.prepaid && !SO.personal_prepaid())
 			D = SSeconomy.get_dep_account(SO.department_id)
 			if(!D)
 				stack_trace("Предоплаченный заказ #[SO.id] [SO.pack.name] без отдела [SO.department_id] снят с отгрузки")
@@ -151,7 +154,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		else if(SO.paying_account) //Someone paid out of pocket
 			D = SO.paying_account
 			var/list/current_buyer_orders = goodies_by_buyer[SO.paying_account] // so we can access the length a few lines down
-			if(!SO.pack.goody && !personal_catalog)
+			if(!SO.pack.goody && !personal_catalog && !SO.prepaid)
 				price *= ECON_PRIVATE_ORDER_MARKUP
 
 			// note this is before we increment, so this is the GOODY_FREE_SHIPPING_MAX + 1th goody to ship. also note we only increment off this step if they successfully pay the fee, so there's no way around it
@@ -161,11 +164,12 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		else
 			D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		price = round(price)
+		var/due = SO.prepaid ? price - base_cost : price
 
 		if(D)
-			if(!SO.prepaid && (!D.has_money(price) || (base_cost && !D.debit(base_cost, personal_catalog ? ECON_PERSONAL_CATALOG : ECON_IMPORT, memo = "Заказ карго: [SO.pack.name]"))))
+			if(SO.prepaid ? (due > 0 && !D.has_money(due)) : (!D.has_money(price) || (base_cost && !D.debit(base_cost, personal_catalog ? ECON_PERSONAL_CATALOG : ECON_IMPORT, memo = "Заказ карго: [SO.pack.name]"))))
 				if(SO.paying_account)
-					D.bank_card_talk("Заказ снабжения №[SO.id] не отгружен: на счёте не хватает денег, нужно [price] кр. Заказ ждёт следующего шаттла.")
+					D.bank_card_talk("Заказ снабжения №[SO.id] не отгружен: на счёте не хватает денег, нужно [due] кр. Заказ ждёт следующего шаттла.")
 				continue
 			else if(ispath(SO.pack.crate_type, /obj/structure/closet/secure_closet/cargo))
 				LAZYADD(lockers_by_buyer[D], SO)
@@ -174,8 +178,12 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 		if(SO.paying_account)
 			if(SO.pack.goody)
 				LAZYADD(goodies_by_buyer[SO.paying_account], SO)
-			D.bank_card_talk((SO.pack.goody || personal_catalog) ? "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр." : "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр.: цена пака и наценка частного заказа [round((ECON_PRIVATE_ORDER_MARKUP - 1) * 100)]%.")
+			if(SO.prepaid)
+				D.bank_card_talk("Заказ снабжения №[SO.id] ([SO.pack.name]) отгружен: шаттл везёт его на станцию.")
+			else
+				D.bank_card_talk((SO.pack.goody || personal_catalog) ? "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр." : "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр.: цена пака и наценка частного заказа [round((ECON_PRIVATE_ORDER_MARKUP - 1) * 100)]%.")
 			SSeconomy.move(D, SSeconomy.get_dep_account(ACCOUNT_CAR), price - base_cost, ECON_PRIVATE_ORDER, memo = "Наценка частного заказа: [SO.pack.name]")
+			note_personal_shipment(SO)
 		value += SO.pack.get_cost()
 		SSshuttle.shoppinglist -= SO
 		SSshuttle.orderhistory += SO

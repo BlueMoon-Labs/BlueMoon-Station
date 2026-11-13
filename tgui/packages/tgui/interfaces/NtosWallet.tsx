@@ -16,7 +16,7 @@ import {
   Tabs,
 } from '../components';
 import { NtosWindow } from '../layouts';
-import { ContractTable } from './common/ContractTable';
+import { ContractTable, freeCrewRequests } from './common/ContractTable';
 import { ContractEntry, Credits, HistoryTable, TransactionEntry } from './common/Economy';
 import { NtHelpTopic, NtHelpTopics } from './common/NtTerminal';
 
@@ -47,6 +47,28 @@ type ShareEntry = {
   count: number;
   value: number;
 };
+
+type PersonalPack = {
+  id: string;
+  name: string;
+  desc?: string;
+  contents: string[];
+  /** Сколько случайных предметов из описи кладёт пак; 0 - всё. */
+  random?: number;
+};
+
+type PersonalSection = {
+  name: string;
+  packs: PersonalPack[];
+};
+
+type PersonalOrder = {
+  id: number;
+  name: string;
+  price: number;
+};
+
+type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
 
 export type WalletData = {
   message: string;
@@ -85,20 +107,28 @@ export type WalletData = {
   my_account?: number;
   shares?: ShareEntry[];
   portfolio?: number;
+  personal_catalog?: PersonalSection[];
+  personal_order_limit?: number;
+  /** "тип пака" -> [цена для этого счёта, есть ли у партнёров]. */
+  personal_prices?: Record<string, [number, BooleanLike]>;
+  personal_orders?: PersonalOrder[];
+  personal_in_transit?: string[];
+  shuttle?: { state: ShuttleState; eta: number };
 };
 
-type Tab = 'account' | 'transfer' | 'jobs' | 'shares' | 'meta';
+type Tab = 'account' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
 
 const TABS: [Tab, string, string][] = [
   ['account', 'Счёт', 'wallet'],
   ['transfer', 'Перевод', 'paper-plane'],
+  ['orders', 'Заказы', 'box-open'],
   ['jobs', 'Подработка', 'briefcase'],
   ['shares', 'Акции', 'chart-line'],
   ['meta', 'Метадоллары', 'coins'],
 ];
 
 export const NtosWallet = () => (
-  <NtosWindow width={560} height={640}>
+  <NtosWindow width={640} height={640}>
     <NtosWindow.Content scrollable>
       <NtosWalletContent />
     </NtosWindow.Content>
@@ -109,12 +139,13 @@ export const NtosWalletContent = () => {
   const { data } = useBackend<WalletData>();
   const [tab, setTab] = useState<Tab>('account');
   const needsAccount = tab !== 'meta' && !data.has_account;
+  const crewOpen = freeCrewRequests(data.contracts || [], data.my_account);
   return (
     <>
       <Tabs>
         {TABS.map(([id, label, icon]) => (
           <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
-            {label}
+            {id === 'jobs' && crewOpen > 0 ? `${label} (${crewOpen})` : label}
           </Tabs.Tab>
         ))}
       </Tabs>
@@ -125,6 +156,7 @@ export const NtosWalletContent = () => {
         <>
           {tab === 'account' && <AccountTab />}
           {tab === 'transfer' && <TransferTab />}
+          {tab === 'orders' && <OrdersTab />}
           {tab === 'jobs' && <JobsTab />}
           {tab === 'shares' && <SharesTab />}
           {tab === 'meta' && <MetaTab />}
@@ -371,13 +403,169 @@ const TransferTab = () => {
   );
 };
 
+const SHUTTLE_NOTES: Record<ShuttleState, string> = {
+  centcom: 'Шаттл снабжения у ЦК: заказ погрузят, когда снабжение вызовет его на станцию.',
+  to_station: 'Шаттл снабжения уже летит на станцию: новый заказ полетит следующим рейсом.',
+  station: 'Шаттл снабжения на станции: заказ полетит, когда снабжение слетает к ЦК и обратно.',
+  to_centcom: 'Шаттл снабжения летит к ЦК: заказ погрузят, когда его вызовут обратно.',
+  recharging: 'Шаттл снабжения готовится к рейсу.',
+  loaned: 'Шаттл снабжения одолжен ЦК: заказ подождёт его возвращения.',
+  away: 'Шаттл снабжения сейчас недоступен: заказ подождёт.',
+};
+
+const MyOrders = () => {
+  const { act, data } = useBackend<WalletData>();
+  const orders = data.personal_orders || [];
+  const inTransit = data.personal_in_transit || [];
+  if (!orders.length && !inTransit.length) {
+    return null;
+  }
+  return (
+    <Section title="Мои заказы">
+      {orders.length > 0 && (
+        <Table>
+          {orders.map((order) => (
+            <Table.Row key={order.id} className="candystripe">
+              <Table.Cell py={0.5}>
+                №{order.id} {order.name}
+              </Table.Cell>
+              <Table.Cell collapsing py={0.5} textAlign="right">
+                <Credits amount={order.price} />
+              </Table.Cell>
+              <Table.Cell collapsing py={0.5}>
+                <Button.Confirm
+                  icon="times"
+                  content="Отменить"
+                  confirmContent="Отменить и вернуть деньги?"
+                  tooltip="Заказ ещё ждёт шаттла: деньги вернутся на счёт."
+                  onClick={() => act('personal_cancel', { id: order.id })}
+                />
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
+      )}
+      {inTransit.length > 0 && (
+        <Box color="good" mt={orders.length ? 1 : 0}>
+          Уже летит на станцию: {inTransit.join(', ')}. Посылку на ваше имя заберёте в отделе снабжения.
+        </Box>
+      )}
+    </Section>
+  );
+};
+
+const CatalogRow = (props: { pack: PersonalPack; full: boolean }) => {
+  const { act, data } = useBackend<WalletData>();
+  const { pack, full } = props;
+  const [open, setOpen] = useState(false);
+  const [price, inStock] = data.personal_prices?.[pack.id] || [0, 0];
+  const balance = data.balance || 0;
+  let refusal: string | null = null;
+  if (!inStock) {
+    refusal = 'Сейчас нет у партнёров, загляните позже.';
+  } else if (full) {
+    refusal = `Больше заказов сразу не принять, шаттла ждут уже ${data.personal_order_limit}: дождитесь отгрузки или отмените один.`;
+  } else if (balance < price) {
+    refusal = 'Не хватает денег на счёте.';
+  }
+  return (
+    <Table.Row className="candystripe">
+      <Table.Cell py={0.5}>
+        <Box as="span" style={{ cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+          <Box as="span" color="label" mr={0.5}>
+            {open ? '▾' : '▸'}
+          </Box>
+          {pack.name}
+        </Box>
+        {open && (
+          <Box color="label" mt={0.5}>
+            {!!pack.desc && <Box>{pack.desc}</Box>}
+            {pack.contents.length > 0 && (
+              <Box mt={0.5}>
+                {pack.random ? `Случайные ${pack.random} шт. из набора: ` : 'Внутри: '}
+                {pack.contents.join(', ')}.
+              </Box>
+            )}
+          </Box>
+        )}
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5} textAlign="right" color={inStock ? undefined : 'label'}>
+        <Credits amount={price} />
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5}>
+        <Button.Confirm
+          icon="shopping-cart"
+          color="good"
+          content="Заказать"
+          confirmContent="Оплатить?"
+          confirmColor="good"
+          disabled={!!refusal}
+          tooltip={refusal}
+          onClick={() => act('personal_order', { id: pack.id })}
+        />
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const OrdersTab = () => {
+  const { data } = useBackend<WalletData>();
+  const sections = data.personal_catalog || [];
+  const [shown, setShown] = useState<string | null>(null);
+  const full = (data.personal_orders || []).length >= (data.personal_order_limit || 0);
+  const shuttle = data.shuttle;
+  const visible = sections.filter((section) => !shown || section.name === shown);
+  return (
+    <>
+      <AccountNotices />
+      <Box color="label" mb={1}>
+        Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт. Цена партнёра без наценки частного заказа
+        списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на ваше имя будет ждать в отделе
+        снабжения, открыть её можно своей ID-картой. Пока шаттл не вылетел, заказ можно отменить - деньги вернутся.
+        Ждать шаттла могут до {data.personal_order_limit} ваших заказов сразу.
+      </Box>
+      {!!shuttle && (
+        <Box mb={1}>
+          {SHUTTLE_NOTES[shuttle.state]}
+          {shuttle.eta > 0 ? ` До посадки: ${Math.ceil(shuttle.eta / 60)} мин.` : ''}
+        </Box>
+      )}
+      <MyOrders />
+      <Section title="Личный каталог">
+        <Box mb={1}>
+          <Button selected={!shown} onClick={() => setShown(null)}>
+            Всё
+          </Button>
+          {sections.map((section) => (
+            <Button key={section.name} selected={shown === section.name} onClick={() => setShown(section.name)}>
+              {section.name}
+            </Button>
+          ))}
+        </Box>
+        {visible.map((section) => (
+          <Box key={section.name} mb={1}>
+            <Box bold mb={0.5}>
+              {section.name}
+            </Box>
+            <Table>
+              {section.packs.map((pack) => (
+                <CatalogRow key={pack.id} pack={pack} full={full} />
+              ))}
+            </Table>
+          </Box>
+        ))}
+      </Section>
+    </>
+  );
+};
+
 const JobsTab = () => {
   const { data } = useBackend<WalletData>();
   const [helpOpen, setHelpOpen] = useState(false);
   const topics = data.contracts_help_topics || [];
   return (
     <Section
-      title="Контракты NT"
+      title="Контракты NT и объявления экипажа"
       buttons={
         topics.length > 0 && (
           <Button icon="question" selected={helpOpen} onClick={() => setHelpOpen(!helpOpen)}>

@@ -1,10 +1,10 @@
-/// Личный счёт в КПК: баланс, история, переводы, чаевые, контракты, акции и метадоллары.
+/// Личный счёт в КПК: баланс, история, переводы, чаевые, личные заказы, контракты и объявления, акции и метадоллары.
 /datum/computer_file/program/wallet
 	filename = "wallet"
 	filedesc = "Кошелёк"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "wallet"
-	extended_desc = "Личный счёт: баланс, история операций, переводы, чаевые, контракты NT, акции, лотерея сектора и метадоллары."
+	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы из каталога с доставкой шаттлом снабжения, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
@@ -14,6 +14,10 @@
 	var/message = ""
 	/// Счёт, к которому относится message: при смене карты ответ стирается
 	var/datum/weakref/message_account
+	/// Цены личного каталога для personal_prices_for, пересчитываются не чаще ECON_CARGO_PRICES_REFRESH
+	var/list/personal_prices
+	var/personal_prices_at
+	var/datum/weakref/personal_prices_for
 
 /// Счёт ID-карты в устройстве, без карты - собственный счёт пользователя.
 /datum/computer_file/program/wallet/proc/wallet_account(mob/user)
@@ -49,6 +53,8 @@
 		"performer_share" = settings.contract_performer_share,
 		"contracts_help_topics" = econ_contracts_help_topics(),
 		"crew" = wallet_crew_names(),
+		"personal_catalog" = econ_personal_catalog_ui(),
+		"personal_order_limit" = settings.personal_order_limit,
 	)
 
 /datum/computer_file/program/wallet/proc/wallet_data(mob/user)
@@ -105,7 +111,26 @@
 		))
 	data["shares"] = shares
 	data["portfolio"] = SSmarket.portfolio_value(account)
+	var/list/personal = wallet_personal_data(account)
+	for(var/key in personal)
+		data[key] = personal[key]
 	return data
+
+/// Личные заказы: цены каталога для счёта, свои оплаченные заказы в корзине и в пути, где шаттл снабжения.
+/datum/computer_file/program/wallet/proc/wallet_personal_data(datum/bank_account/account)
+	if(personal_prices_for?.resolve() != account || isnull(personal_prices_at) || world.time >= personal_prices_at + ECON_CARGO_PRICES_REFRESH)
+		personal_prices = econ_personal_catalog_prices(account)
+		personal_prices_at = world.time
+		personal_prices_for = WEAKREF(account)
+	var/list/orders = list()
+	for(var/datum/supply_order/order as anything in econ_personal_orders_of(account))
+		orders += list(list("id" = order.id, "name" = order.pack.name, "price" = order.prepaid))
+	return list(
+		"personal_prices" = personal_prices,
+		"personal_orders" = orders,
+		"personal_in_transit" = SSshuttle.supply?.personal_in_transit(account) || list(),
+		"shuttle" = econ_cargo_shuttle_data(),
+	)
 
 /datum/computer_file/program/wallet/proc/wallet_crew_names()
 	. = list()
@@ -132,6 +157,12 @@
 			return wallet_payment(user, action, params)
 		if("lottery_buy")
 			return wallet_lottery(user, params["count"])
+		if("personal_order")
+			message = econ_personal_order(user, wallet_account(user), params["id"])[2]
+			return TRUE
+		if("personal_cancel")
+			message = econ_cancel_personal_order(user, wallet_account(user), params["id"])[2]
+			return TRUE
 		if("md_withdraw", "md_deposit")
 			return metadollar_act(user, action, params)
 	var/list/contract_result = econ_contract_act(user, action, params, wallet_account(user))

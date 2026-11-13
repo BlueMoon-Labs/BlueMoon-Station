@@ -508,6 +508,21 @@ test('корзина складывает одинаковые паки, плю�
   expect(sent(ui.topic, 'remove')).toEqual([{ id: 12 }]);
 });
 
+test('личный заказ, оплаченный с КПК, в корзине помечен оплаченным и не путается с частным заказом при доставке', () => {
+  const pet = '/datum/supply_pack/critter/corgi';
+  const ui = setup({
+    cart: [
+      { id: 21, object: 'Corgi Crate (оплачено с КПК)', cost: 0, orderer: 'Иван', paid: 1, prepaid: 1, pack: pet },
+      { id: 22, object: 'Corgi Crate', cost: 5000, orderer: 'Иван', paid: 1, prepaid: 0, pack: pet },
+    ],
+  });
+  openTab(ui, /^Корзина/);
+  expect(ui.getAllByText('Лично: Иван')).toHaveLength(2);
+  expect(ui.getByText('Corgi Crate (оплачено с КПК)')).toBeTruthy();
+  expect(ui.getByText('оплачено')).toBeTruthy();
+  expect(ui.getByText('при доставке')).toBeTruthy();
+});
+
 test('карточка пака: выбор партнёра меняет цену и уходит в add, показана репутация', () => {
   const ui = setup({
     reputation_per_credit: 0.1,

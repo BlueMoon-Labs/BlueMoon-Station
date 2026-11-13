@@ -176,6 +176,18 @@ test('форма объявления шлёт заголовок, описан�
   expect(sent(ui.topic, 'crew_post')).toEqual([{ title: 'Починить шлюз', desc: 'Шлюз в баре не открывается', reward: 500 }]);
 });
 
+test('чужие свободные объявления экипажа видны сверху, "Показать" оставляет только их', () => {
+  const crew = (uid, extra = {}) => contract(uid, { kind: 'crew', department_name: 'Экипаж', poster: 'Заказчик', poster_id: 333, ...extra });
+  const ui = setup({ rank, contracts: [contract(1), crew(30), crew(31, { taken_by: 'Другой', taker_id: 222 }), crew(32, { poster_id: 111 })] });
+  expect(ui.container.textContent).toContain('Экипаж просит о помощи: свободных объявлений 1.');
+  fireEvent.click(ui.getByText('Показать'));
+  expect(ui.queryByText('Контракт 1')).toBeNull();
+  expect(ui.getByText('Контракт 30')).toBeTruthy();
+  expect(ui.queryByText('Показать')).toBeNull();
+  const viewer = setup({ contracts: [crew(30)] }, true);
+  expect(viewer.queryByText('Показать')).toBeNull();
+});
+
 test('без ранга в данных (бюджет отдела) панели подрядчика нет', () => {
   const ui = setup({ crew_request: crewRules });
   expect(ui.queryByText('Дать объявление')).toBeNull();

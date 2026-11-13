@@ -85,6 +85,8 @@ type CartEntry = {
   cost: number;
   orderer: string;
   paid: BooleanLike;
+  /** Уже оплачен: бюджетом отдела или с КПК покупателя. */
+  prepaid?: BooleanLike;
   pack?: string;
   department?: string | null;
   supplier?: string | null;
@@ -851,6 +853,7 @@ type CartGroup = {
   payer: string;
   supplier?: string | null;
   byCargo: boolean;
+  prepaid: boolean;
   ids: number[];
   cost: number;
 };
@@ -861,13 +864,23 @@ const groupCart = (cart: CartEntry[]): CartGroup[] => {
   for (const entry of cart) {
     const byCargo = paidByCargo(entry);
     const payer = entry.department ? `Отдел: ${entry.department}` : entry.paid ? `Лично: ${entry.orderer}` : 'Снабжение';
-    const key = `${entry.pack || entry.object}|${payer}|${entry.supplier || ''}`;
+    const key = `${entry.pack || entry.object}|${payer}|${entry.supplier || ''}|${entry.prepaid ? 1 : 0}`;
     const group = groups.find((other) => other.key === key);
     if (group) {
       group.ids.push(entry.id);
       group.cost += entry.cost;
     } else {
-      groups.push({ key, object: entry.object, pack: entry.pack, payer, supplier: entry.supplier, byCargo, ids: [entry.id], cost: entry.cost });
+      groups.push({
+        key,
+        object: entry.object,
+        pack: entry.pack,
+        payer,
+        supplier: entry.supplier,
+        byCargo,
+        prepaid: !!entry.prepaid || !!entry.department,
+        ids: [entry.id],
+        cost: entry.cost,
+      });
     }
   }
   return groups;
@@ -934,7 +947,7 @@ const CargoCart = (props) => {
                 )}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} textAlign="right">
-                {group.byCargo ? <Credits amount={group.cost} /> : <Box color="label">{group.payer.startsWith('Отдел') ? 'оплачено' : 'при доставке'}</Box>}
+                {group.byCargo ? <Credits amount={group.cost} /> : <Box color="label">{group.prepaid ? 'оплачено' : 'при доставке'}</Box>}
               </Table.Cell>
             </Table.Row>
           ))}

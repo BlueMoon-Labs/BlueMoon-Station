@@ -301,6 +301,41 @@
 	TEST_ASSERT_EQUAL(taker_account.account_balance, 700, "Депозит просроченного объявления не вернулся")
 	TEST_ASSERT_EQUAL(SSeconomy.escrow_account.account_balance, escrow_before, "После всех объявлений на депозите остались деньги")
 
+/// Рабочая система оповещения станции первой в списке, с гарнитурой, которая запоминает сказанное.
+/datum/unit_test/economy_contract_machines/board/proc/spy_announcer()
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/obj/machinery/announcement_system/announcer = allocate(/obj/machinery/announcement_system, locate(2, 2, station_z))
+	announcer.machine_stat = NONE
+	qdel(announcer.radio)
+	var/obj/item/radio/headset/econ_test_spy/spy = new(announcer)
+	announcer.radio = spy
+	GLOB.announcement_systems -= announcer
+	GLOB.announcement_systems.Insert(1, announcer)
+	return spy
+
+/// Новое объявление одной строкой звучит по общему каналу, с заголовком и наградой и без имени заказчика, но не чаще кулдауна из настроек.
+/datum/unit_test/economy_contract_machines/board/crew_request_radio/Run()
+	setup()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	econ_test_set_balance(taker_account, 1000)
+	econ_test_set_balance(helper_account, 1000)
+	var/obj/machinery/computer/bounty/console = allocate(/obj/machinery/computer/bounty)
+	click(console, "crew_post", list("title" = "Починить шлюз", "desc" = "Шлюз в баре не открывается", "reward" = "150"))
+	TEST_ASSERT_EQUAL(length(SSeconomy.crew_requests_of(taker_account)), 1, "Объявление не размещено")
+	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Объявление не прозвучало по радио")
+	var/line = spy.heard[1]
+	TEST_ASSERT(findtext(line, "[RADIO_CHANNEL_COMMON]: ") == 1, "Объявление не в общем канале: [line]")
+	TEST_ASSERT(findtext(line, "Починить шлюз") && findtext(line, "150 кр."), "В строке нет заголовка и награды: [line]")
+	TEST_ASSERT(!findtext(line, taker_account.account_holder), "Строка называет заказчика: [line]")
+	click(console, "crew_post", list("title" = "Накормить кота", "desc" = "Кот в баре голоден", "reward" = "100"))
+	TEST_ASSERT_EQUAL(length(SSeconomy.crew_requests_of(taker_account)), 2, "Второе объявление не размещено")
+	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Объявление в кулдаун прозвучало снова")
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	TEST_ASSERT(econ_post_crew_request(helper, helper_account, "Сыграть на пианино", "В баре в полдень", 100)[1], "Третье объявление не размещено")
+	TEST_ASSERT_EQUAL(length(spy.heard), 2, "После кулдауна объявление не прозвучало")
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+
 /// Действия доски идут с консоли контрактов, а заказы без источника на станции на доску не попадают.
 /datum/unit_test/economy_contract_machines/board/console_acts/Run()
 	setup()

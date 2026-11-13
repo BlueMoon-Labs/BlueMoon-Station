@@ -189,7 +189,20 @@
 	var/datum/econ_contract/crew_request/request = new(account, title, desc, reward)
 	log_econ("[key_name(user)] разместил объявление #[request.uid] \"[title]\" за [reward] кр.: [desc]")
 	log_game("[key_name(user)] разместил объявление экипажа \"[title]\" за [reward] кр.: [desc]")
-	return list(TRUE, "Объявление \"[title]\" размещено на [DisplayTimeText(ECON_CREW_REQUEST_TIME)], [reward] кр. ушли в депозит до расчёта.")
+	var/announced = econ_crew_request_announce(request)
+	return list(TRUE, "Объявление \"[title]\" размещено на [DisplayTimeText(ECON_CREW_REQUEST_TIME)], [reward] кр. ушли в депозит до расчёта.[announced ? " Экипаж услышал о нём по общему каналу." : ""]")
+
+/datum/controller/subsystem/economy
+	COOLDOWN_DECLARE(crew_request_announce_cooldown)
+
+/// Новое объявление одной строкой по общему каналу, без имени заказчика и не чаще crew_request_announce_minutes на всю станцию. TRUE, если прозвучало.
+/proc/econ_crew_request_announce(datum/econ_contract/crew_request/request)
+	if(!COOLDOWN_FINISHED(SSeconomy, crew_request_announce_cooldown))
+		return FALSE
+	if(!paperwork_radio("Доска объявлений экипажа: «[request.title]», награда [request.reward] кр. Взять - в Кошельке на КПК, вкладка «Подработка», или на доске контрактов.", RADIO_CHANNEL_COMMON))
+		return FALSE
+	COOLDOWN_START(SSeconomy, crew_request_announce_cooldown, SSeconomy.settings.crew_request_announce_minutes MINUTES)
+	return TRUE
 
 /// Действие action над объявлением uid от счёта account. Возвращает list(удалось ли, ответ игроку).
 /proc/econ_crew_request_act(datum/bank_account/account, action, uid)

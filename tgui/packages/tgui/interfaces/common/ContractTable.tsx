@@ -38,6 +38,10 @@ const isMine = (contract: ContractEntry, myAccount?: number | null) => !!contrac
 const isMyPost = (contract: ContractEntry, myAccount?: number | null) =>
   contract.kind === 'crew' && !!myAccount && contract.poster_id === myAccount;
 
+/** Сколько чужих объявлений экипажа ещё никто не взял. */
+export const freeCrewRequests = (contracts: ContractEntry[], myAccount?: number | null) =>
+  contracts.filter((contract) => contract.kind === 'crew' && !contract.taken_by && !isMyPost(contract, myAccount)).length;
+
 const DropButton = (props: { contract: ContractEntry }) => {
   const { act, data } = useBackend<ContractBoardData>();
   const { contract } = props;
@@ -383,6 +387,7 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
   const mineCount = contracts.filter((contract) => isMine(contract, my_account) || isMyPost(contract, my_account)).length;
   const personalCount = contracts.filter((contract) => contract.kind === 'personal').length;
   const crewCount = contracts.filter((contract) => contract.kind === 'crew').length;
+  const crewFree = freeCrewRequests(contracts, my_account);
   const filters: [Filter, string][] = [
     ['all', `Все (${contracts.length})`],
     ...(readOnly ? [] : ([['free', 'Свободные']] as [Filter, string][])),
@@ -437,6 +442,14 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
         </Box>
       )}
       {canAct && posting && !!crew_request && <CrewRequestForm rules={crew_request} onDone={() => setPosting(false)} />}
+      {!readOnly && crewFree > 0 && filter !== 'crew' && (
+        <NoticeBox info>
+          Экипаж просит о помощи: свободных объявлений {crewFree}. Награда - целиком исполнителю, без налога.{' '}
+          <Button icon="bullhorn" onClick={() => setFilter('crew')}>
+            Показать
+          </Button>
+        </NoticeBox>
+      )}
       {!contracts.length && <NoticeBox>Контрактов сейчас нет.</NoticeBox>}
       {filters.length > 1 && contracts.length > 0 && (
         <div className="NtTerm__chips">

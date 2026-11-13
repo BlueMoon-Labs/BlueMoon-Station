@@ -169,6 +169,98 @@ describe('NtosWallet', () => {
     expect(sent(topic, 'take')).toEqual([{ uid: 7 }]);
   });
 
+  const crewRequest = (uid: number, extra = {}) => ({
+    ...base.contracts![0],
+    uid,
+    kind: 'crew' as const,
+    department_name: 'Экипаж',
+    title: `Объявление ${uid}`,
+    poster: 'Заказчик',
+    poster_id: 333,
+    ...extra,
+  });
+
+  test('подработка: на вкладке видно, сколько чужих объявлений ждёт исполнителя', () => {
+    const { getByText } = setup({
+      contracts: [crewRequest(1), crewRequest(2), crewRequest(3, { taken_by: 'Другой', taker_id: 222 }), crewRequest(4, { poster_id: 123456 })],
+    });
+    expect(getByText('Подработка (2)')).toBeTruthy();
+    document.body.innerHTML = '';
+    expect(setup().getByText('Подработка')).toBeTruthy();
+  });
+
+  const personal = {
+    personal_catalog: [
+      {
+        name: 'Питомцы',
+        packs: [{ id: '/datum/supply_pack/critter/corgi', name: 'Corgi Crate', desc: 'Верный друг.', contents: ['корги'] }],
+      },
+      {
+        name: 'Праздник и угощение',
+        packs: [
+          { id: '/datum/supply_pack/organic/party', name: 'Party Equipment', contents: ['пиво ×4', 'шейкер'] },
+          { id: '/datum/supply_pack/organic/randomized/candy', name: 'Candy Crate', contents: ['леденец', 'пончик'], random: 10 },
+        ],
+      },
+    ],
+    personal_order_limit: 5,
+    personal_prices: {
+      '/datum/supply_pack/critter/corgi': [1200, 1] as [number, number],
+      '/datum/supply_pack/organic/party': [900, 0] as [number, number],
+      '/datum/supply_pack/organic/randomized/candy': [2600, 1] as [number, number],
+    },
+    personal_orders: [],
+    personal_in_transit: [],
+    shuttle: { state: 'centcom' as const, eta: 0 },
+  };
+
+  test('заказы: каталог по разделам с ценой, заказ оплачивается после подтверждения', () => {
+    const { container, getByText, getAllByText, topic } = setup(personal);
+    fireEvent.click(getByText('Заказы'));
+    const content = text(container);
+    expect(content).toContain('Цена партнёра без наценки частного заказа списывается сразу');
+    expect(content).toContain('Ждать шаттла могут до 5 ваших заказов сразу');
+    expect(content).toContain('Шаттл снабжения у ЦК: заказ погрузят, когда снабжение вызовет его на станцию.');
+    expect(content).toContain('Corgi Crate');
+    expect(content).toContain('1 200 кр.');
+    fireEvent.click(getByText('Corgi Crate'));
+    expect(text(container)).toContain('Верный друг.');
+    expect(text(container)).toContain('Внутри: корги.');
+    fireEvent.click(getByText('Candy Crate'));
+    expect(text(container)).toContain('Случайные 10 шт. из набора: леденец, пончик.');
+    const [corgi, party, candy] = getAllByText('Заказать');
+    expect(party.closest('.Button')?.className).toContain('Button--disabled');
+    expect(candy.closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.click(corgi);
+    expect(sent(topic, 'personal_order')).toEqual([]);
+    fireEvent.click(getByText('Оплатить?'));
+    expect(sent(topic, 'personal_order')).toEqual([{ id: '/datum/supply_pack/critter/corgi' }]);
+    fireEvent.click(getAllByText('Праздник и угощение')[0]);
+    expect(text(container)).not.toContain('Corgi Crate');
+    expect(text(container)).toContain('Party Equipment');
+  });
+
+  test('заказы: свои заказы отменяются с подтверждением, у предела кнопки заказа гаснут', () => {
+    const orders = [1, 2, 3, 4, 5].map((id) => ({ id, name: 'Corgi Crate', price: 1200 }));
+    const { container, getByText, getAllByText, topic } = setup({
+      ...personal,
+      personal_orders: orders,
+      personal_in_transit: ['№9 Jukebox'],
+      shuttle: { state: 'to_station', eta: 150 },
+    });
+    fireEvent.click(getByText('Заказы'));
+    const content = text(container);
+    expect(content).toContain('№1 Corgi Crate');
+    expect(content).toContain('Уже летит на станцию: №9 Jukebox.');
+    expect(content).toContain('новый заказ полетит следующим рейсом. До посадки: 3 мин.');
+    for (const button of getAllByText('Заказать')) {
+      expect(button.closest('.Button')?.className).toContain('Button--disabled');
+    }
+    fireEvent.click(getAllByText('Отменить')[0]);
+    fireEvent.click(getByText('Отменить и вернуть деньги?'));
+    expect(sent(topic, 'personal_cancel')).toEqual([{ id: 1 }]);
+  });
+
   test('акции: портфель и позиции', () => {
     const { container, getByText } = setup();
     fireEvent.click(getByText('Акции'));
