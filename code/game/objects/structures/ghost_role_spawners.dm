@@ -1212,7 +1212,6 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	gloves = /obj/item/clothing/gloves/combat
 	l_pocket = /obj/item/melee/classic_baton/telescopic
 	r_pocket = /obj/item/grenade/barrier
-	backpack_contents = list(/obj/item/xenoarch/help/cargo/tarkoff = 1)
 
 /obj/item/radio/headset/tarkoff
 	name = "Tarkov Headset"
