@@ -1080,7 +1080,15 @@
 		TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), i, "Подарок [i] не оформлен: [wallet.message]")
 		var/datum/bank_account/payer = pda_account(giver)
 		givers[payer] = payer.account_balance
+	var/list/cargo_before = list()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/atom/movable/thing in shuttle_area)
+			cargo_before += thing
 	SSshuttle.supply.buy()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/obj/thing in shuttle_area)
+			if(!(thing in cargo_before) && (istype(thing, /obj/structure/closet) || istype(thing, /obj/item/storage/lockbox/order)))
+				allocated += thing.GetAllContents()
 	for(var/datum/supply_order/order as anything in SSshuttle.orderhistory.Copy())
 		if(order.gift_to == receiver)
 			SSshuttle.orderhistory -= order

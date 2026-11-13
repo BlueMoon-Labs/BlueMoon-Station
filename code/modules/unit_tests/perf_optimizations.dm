@@ -575,6 +575,8 @@
 	var/mob/null_target = allocate(/mob)
 	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
 
+	// Earlier tests may have cached the same human look or filled the cache up to its eviction cap
+	GLOB.icon2html_result_cache.Cut()
 	var/before = length(GLOB.icon2html_result_cache)
 	var/html_first = icon2html(subject, null_target)
 	TEST_ASSERT_NOTNULL(html_first, "icon2html on a human must return an <img> string")
