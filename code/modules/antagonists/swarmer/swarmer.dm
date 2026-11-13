@@ -6,8 +6,8 @@
 	icon = 'icons/mob/swarmer.dmi'
 	icon_state = "swarmer_old"
 	icon_living = "swarmer_old"
-	health = 45
-	maxHealth = 45
+	health = SWARMER_BASE_HEALTH
+	maxHealth = SWARMER_BASE_HEALTH
 	status_flags = CANPUSH
 	speak_emote = list("гудит")
 	bubble_icon = "swarmer"
@@ -42,6 +42,8 @@
 	ranged_ignores_vision = TRUE
 	ranged_pixel_aim = TRUE
 	blood_volume = 0
+	initial_language_holder = /datum/language_holder/swarmer
+	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/swarmer
 	var/swarmer_class_info = "Вы не должны это видеть."
 	var/dismantle_speed = NORMAL_SWARMER_DISMANTLE_DELAY
 	var/stack_extract_amount = 3
@@ -65,7 +67,6 @@
 	spark_system = new
 	spark_system.set_up(5, 0, src)
 	spark_system.attach(src)
-	grant_language(/datum/language/swarmer)
 	ADD_TRAIT(src, TRAIT_NEGATES_GRAVITY, INNATE_TRAIT)
 
 	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
@@ -187,6 +188,9 @@
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()
 	adjustHealth(SWARMER_MOB_EMP_DAMAGE(severity), forced = TRUE)
+
+/mob/living/simple_animal/hostile/swarmer/could_speak_language(language)
+	return language == /datum/language/swarmer
 
 /mob/living/simple_animal/hostile/swarmer/electrocute_act(shock_damage, atom/source, siemens_coeff = 1, flags = NONE, jitter_time = 10 SECONDS, stutter_time = 6 SECONDS, stun_duration = 4 SECONDS)
 	if(!(flags & SHOCK_TESLA))
@@ -632,7 +636,6 @@
 		balloon_alert(src, "недостаточно ресурсов!")
 		return
 
-	balloon_alert(src, "успех!")
 	new /obj/structure/lattice/catwalk/swarmer_catwalk(target_turf)
 
 #undef SWARMER_CARBON_MOB_TELEPORT_REWARD
@@ -679,6 +682,11 @@
 	icon_state = "swarmer_catwalk"
 	resistance_flags = FIRE_PROOF | LAVA_PROOF
 	armor_type = /datum/armor/lattice/swarmer
+
+/obj/structure/lattice/catwalk/swarmer_catwalk/emp_act(severity)
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		take_damage(SWARMER_EMP_DAMAGE(severity))
 
 /datum/armor/lattice/swarmer
 	bullet = SWARMER_BULLET_ARMOR_BONUS

@@ -26,8 +26,8 @@
 	update_icon(UPDATE_ICON_STATE)
 
 /obj/structure/swarmer/transport_hub/emp_act(severity)
-	..()
-	if(!enabled)
+	. = ..()
+	if(QDELETED(src) || (. & EMP_PROTECT_SELF) || !enabled)
 		return
 	toggle_enabled()
 	addtimer(CALLBACK(src, PROC_REF(toggle_enabled)), SWARMER_STRUCTURE_EMP_DURATION * severity, TIMER_DELETE_ME)

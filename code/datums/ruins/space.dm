@@ -485,41 +485,6 @@
 	name = "Space Hive"
 	description = "A hydroponics experiment gone horribly, horribly wrong!"
 
-/datum/map_template/ruin/space/swarmerstation
-	id = "swarmerstation13"
-	suffix = "swarmerstation13.dmm"
-	name = "Swarmer Station"
-	description = "Shat is left of a syndicate radio station, after swarmers infiltrated it."
-
-/datum/map_template/ruin/space/swarmerstation/on_map_loaded(z, list/bounds)
-	. = ..()
-	var/list/shell_markers = list()
-	var/turf/lower_corner = locate(bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ])
-	var/turf/upper_corner = locate(bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ])
-	for(var/turf/tile in block(lower_corner, upper_corner))
-		for(var/obj/effect/landmark/swarmer_ruin_shell/marker in tile)
-			shell_markers += WEAKREF(marker)
-	if(length(shell_markers))
-		SSticker.OnRoundstart(CALLBACK(src, PROC_REF(create_ruin_swarm), shell_markers))
-
-/datum/map_template/ruin/space/swarmerstation/proc/create_ruin_swarm(list/shell_markers)
-	var/datum/team/swarmer_team/team
-	for(var/datum/weakref/shell_ref as anything in shell_markers)
-		var/obj/effect/landmark/swarmer_ruin_shell/marker = shell_ref.resolve()
-		var/turf/shell_turf = get_turf(marker)
-		if(!shell_turf)
-			continue
-		if(!team)
-			team = new
-			new /obj/structure/swarmer/core(shell_turf, team)
-		new /obj/effect/mob_spawn/swarmer(shell_turf, team)
-		qdel(marker)
-	var/obj/structure/swarmer/core/core = team?.swarmer_core
-	core?.recruit_initial_swarmers()
-
-/obj/effect/landmark/swarmer_ruin_shell
-	name = "Swarmer ruin shell"
-
 /datum/map_template/ruin/space/refference
 	id = "refference"
 	suffix = "refference.dmm"

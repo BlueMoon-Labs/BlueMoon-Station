@@ -5,7 +5,7 @@
 #define SWARMER_LAMBDA_SOUND_DURATION 11 SECONDS
 #define SWARMER_FINAL_PHASE_DURATION 12 MINUTES
 #define SWARMER_FINAL_ANNOUNCE_INTERVAL 1 MINUTES
-#define SWARMER_MEGA_POLL_INTERVAL 30 SECONDS
+#define SWARMER_MEGA_WAVE_INTERVAL 30 SECONDS
 #define SWARMER_EVAC_ARRIVAL_TIME 3 MINUTES
 
 /obj/structure/swarmer/core
@@ -22,12 +22,12 @@
 	var/datum/effect_system/spark_spread/spark_system
 	var/last_swarmer_spawn_value = 0
 	var/free_spawn_timer
-	var/mega_retry_timer
-	var/mega_poll_active = FALSE
 	var/recruit_poll_active = FALSE
 	var/mega_phase_started = FALSE
 	var/mega_phase_deadline
 	var/mega_phase_timer
+	var/mega_wave_timer
+	var/mega_wave_ready_at
 
 /obj/structure/swarmer/core/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	if(!swarm_team)
@@ -68,10 +68,10 @@
 /obj/structure/swarmer/core/Destroy(force)
 	if(free_spawn_timer)
 		deltimer(free_spawn_timer)
-	if(mega_retry_timer)
-		deltimer(mega_retry_timer)
 	if(mega_phase_timer)
 		deltimer(mega_phase_timer)
+	if(mega_wave_timer)
+		deltimer(mega_wave_timer)
 	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 	team?.on_core_destroy(src)
 	QDEL_NULL(spark_system)
@@ -124,8 +124,8 @@
 		spark_system.start()
 
 /obj/structure/swarmer/core/proc/on_organic_changed()
-	if(!mega_phase_started && team.organic_resources >= MEGA_SWARMER_SPAWN_VALUE && !mega_poll_active && !mega_retry_timer)
-		mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), 1, TIMER_STOPPABLE)
+	if(!mega_phase_started && team.organic_resources >= MEGA_SWARMER_SPAWN_VALUE && spawn_mega_swarmer_from_ghost())
+		prepare_mega_phase()
 		return
 
 	if((team.organic_resources - last_swarmer_spawn_value) >= SWARMER_SPAWN_VALUE)
@@ -160,28 +160,29 @@
 		shell.update_ghost_access()
 
 /obj/structure/swarmer/core/proc/spawn_mega_swarmer_from_ghost()
-	mega_retry_timer = null
-	if(mega_poll_active || QDELETED(src) || QDELETED(team) || !SSticker.IsRoundInProgress())
+	var/turf/spawn_turf = get_turf(src)
+	if(!spawn_turf || QDELETED(src) || QDELETED(team) || !SSticker.IsRoundInProgress())
 		return
-	mega_poll_active = TRUE
-	var/next_poll_at = world.time + SWARMER_MEGA_POLL_INTERVAL
-	var/list/mob/dead/observer/candidates = poll_swarmer_ghosts(mega = TRUE)
-	mega_poll_active = FALSE
-	if(QDELETED(src) || QDELETED(team) || !SSticker.IsRoundInProgress())
+	var/mob/living/simple_animal/hostile/swarmer/mega/swarmer = new(spawn_turf, team)
+	var/obj/effect/mob_spawn/swarmer_mega/spawner = new(swarmer)
+	INVOKE_ASYNC(spawner, TYPE_PROC_REF(/obj/effect/mob_spawn/swarmer_mega, offer_to_ghosts))
+	return spawner
+
+/obj/structure/swarmer/core/proc/spawn_mega_wave()
+	mega_wave_timer = null
+	mega_wave_ready_at = world.time + SWARMER_MEGA_WAVE_INTERVAL
+	var/obj/effect/mob_spawn/swarmer_mega/spawner = spawn_mega_swarmer_from_ghost()
+	if(!QDELETED(spawner))
+		RegisterSignal(spawner, COMSIG_PARENT_QDELETING, PROC_REF(schedule_mega_wave))
+
+/obj/structure/swarmer/core/proc/schedule_mega_wave(obj/effect/mob_spawn/swarmer_mega/spawner)
+	SIGNAL_HANDLER
+	UnregisterSignal(spawner, COMSIG_PARENT_QDELETING)
+	if(QDELETED(src) || !SSticker.IsRoundInProgress())
 		return
-	while(length(candidates))
-		var/mob/dead/observer/candidate = pick_n_take(candidates)
-		if(!candidate?.client || !candidate.can_reenter_round())
-			continue
-		var/mob/living/simple_animal/hostile/swarmer/mega/swarmer = new(get_turf(src), team)
-		swarmer.key = candidate.key
-		swarmer.add_datum_if_not_exist()
-		log_game("[key_name(swarmer)] получил роль мегасвармера.")
-		if(!mega_phase_started)
-			prepare_mega_phase()
-			return
-		break
-	mega_retry_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_swarmer_from_ghost)), max(1, next_poll_at - world.time), TIMER_STOPPABLE)
+	// Следующая волна ждёт, пока освободится место после занятия или гибели корпуса.
+	var/delay = max(world.tick_lag, mega_wave_ready_at - world.time)
+	mega_wave_timer = addtimer(CALLBACK(src, PROC_REF(spawn_mega_wave)), delay, TIMER_STOPPABLE)
 
 /obj/structure/swarmer/core/proc/prepare_mega_phase()
 	mega_phase_started = TRUE
@@ -227,7 +228,7 @@
 			if(shuttle.mode != SHUTTLE_CALL || shuttle.timeLeft(1) > SWARMER_EVAC_ARRIVAL_TIME)
 				var/call_coefficient = SWARMER_EVAC_ARRIVAL_TIME / (SSshuttle.emergencyCallTime * shuttle.engine_coeff)
 				shuttle.request(reason = " Причина: ядро свармеров начало массовую телепортацию.", set_coefficient = call_coefficient)
-		INVOKE_ASYNC(src, PROC_REF(spawn_mega_swarmer_from_ghost))
+		spawn_mega_wave()
 		return
 
 	var/area/core_area = get_area(src)
@@ -349,7 +350,7 @@
 #undef SWARMER_LAMBDA_SOUND_DURATION
 #undef SWARMER_FINAL_PHASE_DURATION
 #undef SWARMER_FINAL_ANNOUNCE_INTERVAL
-#undef SWARMER_MEGA_POLL_INTERVAL
+#undef SWARMER_MEGA_WAVE_INTERVAL
 #undef SWARMER_EVAC_ARRIVAL_TIME
 
 /datum/armor/swarmer_core

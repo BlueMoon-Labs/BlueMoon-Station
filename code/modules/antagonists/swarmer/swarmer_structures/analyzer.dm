@@ -56,8 +56,8 @@
 	return ..()
 
 /obj/structure/swarmer/organic_analyzer/emp_act(severity)
-	..()
-	if(!occupant)
+	. = ..()
+	if(QDELETED(src) || (. & EMP_PROTECT_SELF) || !occupant)
 		return
 
 	sound_loop.stop()

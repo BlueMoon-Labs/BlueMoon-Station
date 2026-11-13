@@ -1465,7 +1465,13 @@
 	repeatable = TRUE
 
 /datum/dynamic_ruleset/midround/swarmers/execute()
-	var/result = launch_swarmer_pod(src, director_pending_cost)
+	var/turf/landing_turf
+	if(usr?.client?.holder)
+		var/selection = select_swarmer_pod_landing(usr)
+		if(selection == ADMIN_CANCEL_EVENT)
+			return FALSE
+		landing_turf = selection
+	var/result = launch_swarmer_pod(src, director_pending_cost, landing_turf)
 	if(result != SUCCESSFUL_SPAWN)
 		return FALSE
 	return ..()

@@ -271,7 +271,6 @@ GLOBAL_LIST_INIT(swarmer_objects_minimum_distance, list(
 		arena?.track_supply(structure, session)
 		if(arena)
 			arena.placed_structures += WEAKREF(structure)
-	swarmer.balloon_alert(swarmer, "успех!")
 	return structure
 
 /datum/action/cooldown/swarmer/build/proc/turf_build_checks(mob/living/user, list/turfs_to_check)

@@ -167,8 +167,9 @@
 	return has_friendly_pilot ? 0 : 1
 
 /obj/machinery/porta_turret/swarmer/emp_act(severity)
-	..()
-	take_damage(SWARMER_EMP_DAMAGE(severity))
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		take_damage(SWARMER_EMP_DAMAGE(severity))
 
 /obj/machinery/porta_turret/swarmer/turret
 	name = "swarmer turret"

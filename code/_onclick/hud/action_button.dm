@@ -18,6 +18,7 @@
 	/// God I hate how dragging works
 	var/datum/weakref/last_hovored_ref
 	var/mutable_appearance/keybind_maptext
+	var/mutable_appearance/cooldown_maptext
 
 /atom/movable/screen/movable/action_button/Destroy()
 	if(our_hud)

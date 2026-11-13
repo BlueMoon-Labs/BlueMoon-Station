@@ -9,6 +9,12 @@
 #define SWARMER_STAMINA_SCALE (STAMINA_CRIT / 100)
 #define SWARMER_BULLET_ARMOR_BONUS 35
 #define SWARMER_LASER_ARMOR_BONUS 20
+#define SWARMER_BASE_HEALTH 45
+#define SWARMER_DRONE_HEALTH 40
+#define SWARMER_GENERALIST_HEALTH 100
+#define SWARMER_ROVER_HEALTH 60
+#define SWARMER_COMBAT_BUILDER_HEALTH 120
+#define SWARMER_MEGA_HEALTH 1500
 
 GLOBAL_LIST_INIT(common_swarmer_actions, list(
 	/datum/action/cooldown/swarmer/consume_tile,
@@ -81,7 +87,8 @@ GLOBAL_LIST_INIT(swarmer_actions_by_type, list(
 #define SWARMER_REPAIR_COST(swarmer) (is_builderswarmer(swarmer) ? 2 : 4)
 
 #define SWARMER_EMP_DAMAGE(severity) ((severity <= 1) ? 30 : 15)
-#define SWARMER_MOB_EMP_DAMAGE(severity) (min((24 * (severity) / 100), 24 * 2))
+#define SWARMER_MOB_EMP_BASE_DAMAGE (0.3 * SWARMER_COMBAT_BUILDER_HEALTH)
+#define SWARMER_MOB_EMP_DAMAGE(severity) (min(SWARMER_MOB_EMP_BASE_DAMAGE * (severity) / 100, SWARMER_MOB_EMP_BASE_DAMAGE * 2))
 #define SWARMER_STRUCTURE_EMP_DURATION 10 SECONDS
 #define SWARMER_FLASH_ATTACK_STUN 4 SECONDS
 #define SWARMER_FLASHBANG_STUN 2 SECONDS

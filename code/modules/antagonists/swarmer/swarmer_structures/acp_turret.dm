@@ -37,8 +37,9 @@
 	return ..()
 
 /obj/structure/swarmer/acp_turret/emp_act(severity)
-	..()
-	COOLDOWN_START(src, cooldown, cooldown_after_strike)
+	. = ..()
+	if(!QDELETED(src) && !(. & EMP_PROTECT_SELF))
+		COOLDOWN_START(src, cooldown, cooldown_after_strike)
 
 /obj/structure/swarmer/acp_turret/HasProximity(atom/movable/AM)
 	handle_interloper(AM)

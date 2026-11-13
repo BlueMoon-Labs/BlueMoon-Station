@@ -128,8 +128,9 @@
 		return TRUE
 
 /obj/structure/swarmer/emp_act(severity)
-	..()
-	take_damage(SWARMER_EMP_DAMAGE(severity))
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		take_damage(SWARMER_EMP_DAMAGE(severity))
 
 /obj/structure/swarmer/examine(mob/user)
 	. = ..()

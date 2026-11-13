@@ -10,8 +10,8 @@
 	icon_living = "swarmer_starter"
 	melee_damage_lower = 20 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 20 * SWARMER_STAMINA_SCALE
-	health = 40
-	maxHealth = 40
+	health = SWARMER_DRONE_HEALTH
+	maxHealth = SWARMER_DRONE_HEALTH
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	pass_flags = PASSTABLE | PASSMOB
@@ -30,8 +30,8 @@
 	icon_living = "swarmer_general"
 	melee_damage_lower = 25 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 25 * SWARMER_STAMINA_SCALE
-	health = 100
-	maxHealth = 100
+	health = SWARMER_GENERALIST_HEALTH
+	maxHealth = SWARMER_GENERALIST_HEALTH
 	speed = 0
 	ranged = TRUE
 	projectiletype = /obj/item/projectile/beam/disabler/swarmer/generalist
@@ -50,8 +50,8 @@
 	icon_living = "swarmer_rover"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 60
-	maxHealth = 60
+	health = SWARMER_ROVER_HEALTH
+	maxHealth = SWARMER_ROVER_HEALTH
 	speed = -0.25
 	swap_resource_cost = ROVER_SWAP_COST
 	can_swap_to = TRUE
@@ -98,8 +98,8 @@
 	icon_living = "swarmer_combat"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 120
-	maxHealth = 120
+	health = SWARMER_COMBAT_BUILDER_HEALTH
+	maxHealth = SWARMER_COMBAT_BUILDER_HEALTH
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	ranged = TRUE
@@ -174,8 +174,8 @@
 	icon_living = "swarmer_builder"
 	melee_damage_lower = 40 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 40 * SWARMER_STAMINA_SCALE
-	health = 120
-	maxHealth = 120
+	health = SWARMER_COMBAT_BUILDER_HEALTH
+	maxHealth = SWARMER_COMBAT_BUILDER_HEALTH
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swap_resource_cost = BUILDER_SWAP_COST
 	can_swap_to = TRUE
@@ -204,8 +204,8 @@
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
 	rapid_fire_delay = 0.1 SECONDS
-	health = 1500
-	maxHealth = 1500
+	health = SWARMER_MEGA_HEALTH
+	maxHealth = SWARMER_MEGA_HEALTH
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swarmer_class_info = "Вы — финальная боевая единица \"Свармеров\", оснащённая миниганом, встроенной ACP турелью, а также защитными пластинами.\n\
 		Ваша цель — окончательно захватить станцию под ваш контроль."
@@ -221,6 +221,12 @@
 
 /mob/living/simple_animal/hostile/swarmer/mega/Destroy(force)
 	QDEL_NULL(acp)
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/mega/attack_ghost(mob/user)
+	var/obj/effect/mob_spawn/swarmer_mega/spawner = locate() in contents
+	if(spawner?.ghost_usable)
+		return spawner.attack_ghost(user)
 	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/mega/AttackingTarget()
