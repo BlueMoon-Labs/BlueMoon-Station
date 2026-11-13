@@ -105,6 +105,7 @@ export type OfferEntry = {
   reward: number;
   paid: number;
   accepted: BooleanLike;
+  station_involved?: BooleanLike;
   contraband: BooleanLike;
   embargoed?: BooleanLike;
   time_left: number;

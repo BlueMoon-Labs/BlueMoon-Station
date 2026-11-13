@@ -110,6 +110,7 @@
 	var/obj/item/healthanalyzer/analyzer = allocate(/obj/item/healthanalyzer)
 	patient.adjustBruteLoss(30)
 	patient.fully_heal()
+	TEST_ASSERT(analyzer.econ_discharge_ready(performer, patient), "Пациент готов к выписке")
 	var/previous_state = SSticker.current_state
 	SSticker.current_state = GAME_STATE_FINISHED
 	GLOB.unit_test_chat_capture = list()

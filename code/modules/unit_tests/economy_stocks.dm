@@ -325,7 +325,7 @@
 	var/datum/stock_company/company = SSmarket.get_company(partner.company)
 	var/datum/market_offer/offer = new(partner.id, /obj/item/stack/sheet/bone, "тест", 5, 2, 20)
 	partner.offers += offer
-	offer.accepted = TRUE
+	TEST_ASSERT(offer.accept(), "Спецзаказ не взят")
 	offer.deadline = world.time - 1
 	var/event_mult_before = company.event_mult
 	SSmarket.expire_offers()

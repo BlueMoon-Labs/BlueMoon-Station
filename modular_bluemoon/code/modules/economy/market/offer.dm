@@ -235,7 +235,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	partner.note_sale(revenue)
 	var/memo = "Спецзаказ: [partner.name]"
 	var/datum/bank_account/account = econ_account_of(shipper)
-	var/share = account ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
+	var/share = (account && account != budget) ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
 	var/datum/bank_account/payee = budget
 	if(budget)
 		if(revenue > 0)
@@ -319,6 +319,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		"reward" = unit_reward() * quantity,
 		"paid" = paid,
 		"accepted" = accepted,
+		"station_involved" = station_involved,
 		"contraband" = !!contraband(),
 		"embargoed" = !!partner?.embargoed(),
 		"time_left" = max(round((deadline - world.time) / (1 SECONDS)), 0),

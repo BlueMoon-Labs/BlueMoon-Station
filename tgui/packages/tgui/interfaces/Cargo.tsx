@@ -930,8 +930,8 @@ const SpecialOffers = (props) => {
                   </ProgressBar>
                 </LabeledList.Item>
                 <LabeledList.Item label="Оплата">
-                  <Credits amount={offer.unit_price} /> за штуку при отгрузке, маржа снабжению{' '}
-                  <Credits amount={offer.premium} />, всего <Credits amount={offer.reward} />
+                  <Credits amount={offer.unit_price} /> за штуку при отгрузке, маржа при выполнении до{' '}
+                  <Credits amount={offer.premium} /> (сдавшим по штукам), всего <Credits amount={offer.reward} />
                 </LabeledList.Item>
                 {offer.paid > 0 && (
                   <LabeledList.Item label="Уже выплачено">
@@ -941,7 +941,11 @@ const SpecialOffers = (props) => {
                 <LabeledList.Item label={offer.accepted ? 'Срок' : 'Снимут через'}>
                   <Box color={offer.accepted ? 'average' : 'label'}>
                     {formatTime(offer.time_left)}
-                    {offer.accepted ? ' - взят, провал отнимет репутацию' : ''}
+                    {offer.accepted
+                      ? offer.station_involved
+                        ? ' - взят, провал отнимет репутацию'
+                        : ' - взят аванпостом: провал без штрафа, пока станция не сдавала'
+                      : ''}
                   </Box>
                 </LabeledList.Item>
                 {!!offer.embargoed && (
