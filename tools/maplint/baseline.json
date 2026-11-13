@@ -855,40 +855,6 @@
 			"/turf/closed/wall/r_wall": 107
 		}
 	},
-	"_maps/map_files/Mining/Lavaland.dmm": {
-		"disposals_without_trunks": {
-			"/obj/machinery/disposal/bin": 1
-		},
-		"grille_stacking": {
-			"/obj/structure/grille": 3
-		},
-		"multiple_lattice": {
-			"/obj/structure/lattice": 48,
-			"/obj/structure/lattice/catwalk": 12
-		},
-		"multiple_machinery": {
-			"/obj/machinery/door/poddoor/preopen": 6,
-			"/obj/machinery/light": 2
-		},
-		"multiple_tables": {
-			"/obj/structure/table/reinforced/brass": 2
-		},
-		"multiple_unary_components": {
-			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 1,
-			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
-		},
-		"multiple_windows": {
-			"/obj/structure/window/reinforced/survival_pod": 6
-		},
-		"wall_stacking": {
-			"/turf/closed/mineral/random/high_chance/volcanic": 1,
-			"/turf/closed/wall": 16,
-			"/turf/closed/wall/mineral/plastitanium": 1
-		},
-		"window_spawner": {
-			"/obj/effect/spawner/structure/window/plastitanium": 2
-		}
-	},
 	"_maps/map_files/NebulaStation/NebulaStation.dmm": {
 		"multiple_chairs": {
 			"/obj/structure/chair/noose": 1,
