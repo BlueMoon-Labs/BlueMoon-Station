@@ -117,6 +117,10 @@
 #define AUCTION_RIVAL_HURRY_MAX (15 SECONDS)
 #define AUCTION_HISTORY_MAX 6
 #define AUCTION_RESULTS_MAX 3
+/// Сколько предметов с пада подработки окно предлагает выставить за раз
+#define AUCTION_PAD_ITEMS_MAX 8
+/// Описание лота в радиостроке обрезается до стольких символов
+#define AUCTION_RADIO_DESC_MAX 90
 /// Скупка: пачки разных предметов партнёра только целиком, со скидкой к сумме по отдельности
 #define BUNDLE_GROUP "Скупка"
 #define BUNDLES_MAX 3
@@ -282,6 +286,8 @@
 #define ECON_AUCTION_BID "auction_bid"
 #define ECON_AUCTION_REFUND "auction_refund"
 #define ECON_AUCTION "auction"
+#define ECON_AUCTION_SALE "auction_sale"
+#define ECON_AUCTION_FEE "auction_fee"
 #define ECON_PERSONAL_CATALOG "personal_catalog"
 #define ECON_TIP "tip"
 #define ECON_TAX "tax"

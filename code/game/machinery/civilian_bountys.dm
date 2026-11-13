@@ -1,7 +1,7 @@
 ///Пад пункта подработки: отправляет ЦК предметы по контрактам поставки.
 /obj/machinery/piratepad/civilian
 	name = "contract pad"
-	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте."
+	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте. Свою вещь отсюда же можно выставить на аукцион экипажа - кнопкой на пульте."
 	layer = TABLE_LAYER
 	warmup_time = 3 SECONDS
 	circuit = /obj/item/circuitboard/machine/bountypad
@@ -13,7 +13,7 @@
 ///Пульт пункта подработки: доска контрактов NT и отправка с пада подработки.
 /obj/machinery/computer/piratepad_control/civilian
 	name = "contract terminal"
-	desc = "Пульт пункта подработки NT: контракты всех отделов станции и отправка предметов с пада подработки."
+	desc = "Пульт пункта подработки NT: контракты всех отделов станции, отправка предметов с пада подработки и приём вещей экипажа на аукцион."
 	status_report = "Готов к отправке."
 	icon_screen = "civ_bounty"
 	icon_keyboard = "id_key"
@@ -154,6 +154,7 @@
 	data["pad_on_station"] = !!(linked && is_station_level(linked.z))
 	data["sending"] = sending
 	data["status_report"] = status_report
+	data["auction"] = auction_pad_data(user)
 	return data
 
 /obj/machinery/computer/piratepad_control/civilian/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -162,7 +163,64 @@
 	. = ..()
 	if(.)
 		return
+	if(action == "auction_list")
+		return auction_list(usr, params)
 	return econ_contract_console_act(usr, action, params, src)
+
+/// Аукцион экипажа на пульте: вещи на паде с причиной отказа, условия и лимиты лотов.
+/obj/machinery/computer/piratepad_control/civilian/proc/auction_pad_data(mob/user)
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/list/items = list()
+	var/turf/pad_turf = get_turf(linked_pad())
+	for(var/atom/movable/thing in pad_turf?.contents)
+		if(istype(thing, /obj/machinery/piratepad) || ismob(thing) || iseffect(thing) || thing.invisibility > SEE_INVISIBLE_LIVING)
+			continue
+		items += list(list("ref" = REF(thing), "name" = econ_auction_lot_name(thing), "problem" = econ_auction_item_problem(thing)))
+		if(length(items) >= AUCTION_PAD_ITEMS_MAX)
+			break
+	return list(
+		"items" = items,
+		"minutes" = settings.auction_minutes_options(),
+		"fee" = settings.auction_crew_fee,
+		"min_price" = AUCTION_MIN_INCREMENT,
+		"max_price" = AUCTION_BID_MAX,
+		"mine" = length(SSmarket.crew_lots_of(econ_account_of(user))),
+		"per_account" = settings.auction_crew_lots_per_account,
+		"lots" = length(SSmarket.crew_lots),
+		"lots_max" = settings.auction_crew_lots_max,
+	)
+
+/// Вещь с пада уходит на аукцион экипажа от счёта того, кто нажал.
+/obj/machinery/computer/piratepad_control/civilian/proc/auction_list(mob/living/user, list/params)
+	var/obj/machinery/piratepad/linked = linked_pad()
+	var/list/result
+	if(!linked)
+		result = list(FALSE, "Пад подработки не найден.")
+	else if(sending)
+		result = list(FALSE, "Пад занят отправкой: дождитесь её или отмените.")
+	else if(!is_station_level(linked.z))
+		result = list(FALSE, "Пад вне станции: аукцион принимает вещи только со станции.")
+	else
+		var/atom/movable/thing = istext(params["ref"]) ? locate(params["ref"]) : null
+		if(!istype(thing) || thing.loc != get_turf(linked))
+			result = list(FALSE, "Этой вещи уже нет на паде.")
+		else
+			var/price = params["price"]
+			if(istext(price))
+				price = text2num(price)
+			var/minutes = params["minutes"]
+			if(istext(minutes))
+				minutes = text2num(minutes)
+			var/anonymous = params["anonymous"]
+			if(istext(anonymous))
+				anonymous = text2num(anonymous)
+			result = SSmarket.start_crew_lot(user, econ_account_of(user), thing, price, minutes, !!anonymous, get_turf(linked))
+	status_report = result[2]
+	if(result[1])
+		flick(linked.sending_state, linked)
+		playsound(linked, 'sound/machines/wewewew.ogg', 50, TRUE)
+	playsound(loc, result[1] ? 'sound/machines/synth_yes.ogg' : 'sound/machines/synth_no.ogg', 30, TRUE)
+	return TRUE
 
 ///Маяк: сбрасывает пад и пульт пункта подработки.
 /obj/item/civ_bounty_beacon

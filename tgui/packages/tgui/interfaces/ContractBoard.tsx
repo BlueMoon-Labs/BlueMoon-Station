@@ -1,11 +1,26 @@
 import { BooleanLike } from 'common/react';
+import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Button } from '../components';
+import { AnimatedNumber, Box, Button, RestrictedInput, Stack } from '../components';
 import { Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { formatCredits } from './common/Economy';
-import { NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
+import { NtEmpty, NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtReadout, NtScreen } from './common/NtTerminal';
+
+type PadItem = { ref: string; name: string; problem: string | null };
+
+type AuctionPad = {
+  items: PadItem[];
+  minutes: number[];
+  fee: number;
+  min_price: number;
+  max_price: number;
+  mine: number;
+  per_account: number;
+  lots: number;
+  lots_max: number;
+};
 
 type ContractBoardData = {
   mode: 'pad' | 'console';
@@ -16,6 +31,7 @@ type ContractBoardData = {
   sending?: BooleanLike;
   status_report?: string;
   stored_cash?: number;
+  auction?: AuctionPad;
 };
 
 const PadSection = (props) => {
@@ -45,6 +61,102 @@ const PadSection = (props) => {
   );
 };
 
+/** Аукцион экипажа: своя вещь с пада уходит на торги экипажа. */
+const AuctionPadSection = (props) => {
+  const { act, data } = useBackend<ContractBoardData>();
+  const auction = data.auction;
+  const [selected, setSelected] = useState<string | null>(null);
+  const [price, setPrice] = useState<number | null>(null);
+  const [minutes, setMinutes] = useState<number | null>(null);
+  const [anonymous, setAnonymous] = useState(false);
+  if (!auction) {
+    return null;
+  }
+  const allowed = auction.items.filter((item) => !item.problem);
+  const chosen = allowed.find((item) => item.ref === selected) || allowed[0];
+  const duration = minutes !== null && auction.minutes.includes(minutes) ? minutes : auction.minutes[0];
+  const start = Math.min(Math.max(price ?? auction.min_price * 4, auction.min_price), auction.max_price);
+  let refusal: string | null = null;
+  if (!data.my_name) {
+    refusal = 'Нужен банковский счёт: вставьте ID-карту.';
+  } else if (!data.pad_on_station) {
+    refusal = 'Пад вне станции.';
+  } else if (auction.mine >= auction.per_account) {
+    refusal = `Больше лотов сразу не выставить: ваших на торгах уже ${auction.mine} из ${auction.per_account}.`;
+  } else if (auction.lots >= auction.lots_max) {
+    refusal = 'На аукционе нет мест, загляните позже.';
+  } else if (!chosen) {
+    refusal = 'На паде нет вещи, которую можно выставить.';
+  }
+  return (
+    <NtFrame
+      title="Аукцион экипажа"
+      help={`Положите на пад свою вещь и выставьте её: торгуется только экипаж, ставки - в Кошельке на КПК и в консоли снабжения. Продавцу приходит ставка без сбора NT ${auction.fee}%, покупателю - запертая посылка на его имя на склад снабжения. Без ставок или снятая до первой ставки вещь вернётся к вам такой же посылкой. Оружие, импланты и органы, ID-карты и всё с доступом, деньги, контрабанда, живые существа и непустые контейнеры не принимаются.`}>
+      {auction.items.length === 0 ? (
+        <NtEmpty>Положите на пад вещь, которую хотите продать экипажу.</NtEmpty>
+      ) : (
+        auction.items.map((item) => (
+          <NtLine
+            key={item.ref}
+            label={
+              <Button.Checkbox
+                checked={item === chosen}
+                disabled={!!item.problem}
+                onClick={() => setSelected(item.ref)}>
+                {item.name}
+              </Button.Checkbox>
+            }
+            tone={item.problem ? 'bad' : undefined}>
+            {item.problem || 'можно выставить'}
+          </NtLine>
+        ))
+      )}
+      <Stack align="center" mt={1} wrap>
+        <Stack.Item>
+          Старт{' '}
+          <RestrictedInput
+            width="6em"
+            value={start}
+            minValue={auction.min_price}
+            maxValue={auction.max_price}
+            onChange={(_, value) => setPrice(value)}
+          />{' '}
+          кр.
+        </Stack.Item>
+        <Stack.Item>
+          {auction.minutes.map((option) => (
+            <Button key={option} selected={option === duration} onClick={() => setMinutes(option)}>
+              {`${option} мин.`}
+            </Button>
+          ))}
+        </Stack.Item>
+        <Stack.Item>
+          <Button.Checkbox checked={anonymous} onClick={() => setAnonymous(!anonymous)}>
+            Скрыть моё имя
+          </Button.Checkbox>
+        </Stack.Item>
+      </Stack>
+      <Stack align="center" mt={1}>
+        <Stack.Item>
+          <Button
+            icon="gavel"
+            color="good"
+            disabled={!!refusal}
+            tooltip={refusal}
+            onClick={() => chosen && act('auction_list', { ref: chosen.ref, price: start, minutes: duration, anonymous })}>
+            {chosen ? `Выставить: ${chosen.name}` : 'Выставить'}
+          </Button>
+        </Stack.Item>
+        <Stack.Item>
+          <Box className="NtTerm__hint">
+            Ваших лотов {auction.mine} из {auction.per_account}, на аукционе {auction.lots} из {auction.lots_max}.
+          </Box>
+        </Stack.Item>
+      </Stack>
+    </NtFrame>
+  );
+};
+
 /** Доска контрактов NT: пункт подработки с падом и консоль контрактов снабжения. */
 export const ContractBoardContent = (props) => {
   const { act, data } = useBackend<ContractBoardData>();
@@ -62,6 +174,7 @@ export const ContractBoardContent = (props) => {
         ) : undefined
       }>
       {mode === 'pad' && <PadSection />}
+      {mode === 'pad' && <AuctionPadSection />}
       <NtFrame
         title="Контракты NT"
         help={contracts_help_topics?.length ? <NtHelpTopics topics={contracts_help_topics} /> : undefined}

@@ -711,20 +711,22 @@
 	var/burned_before = SSeconomy.ledger.burned
 	SSmarket.finish_auction()
 	TEST_ASSERT_NULL(SSmarket.auction, "Торги закрыты")
-	var/obj/item/toy/plush/carpplushie/prize = locate() in run_loc_floor_bottom_left
+	var/obj/item/storage/lockbox/order/parcel = locate() in run_loc_floor_bottom_left
+	TEST_ASSERT(parcel?.buyer_account == account, "Лот приехал запертой посылкой на счёт победителя")
+	var/obj/item/toy/plush/carpplushie/prize = locate() in parcel
 	TEST_ASSERT_NOTNULL(prize, "Лот доставлен")
 	TEST_ASSERT(prize.econ_imported, "Лот помечен как импорт")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.burned - burned_before, 700, "Выигравшая ставка сгорела")
 	TEST_ASSERT_EQUAL(escrow.account_balance, escrow_before, "На счёте биржи ничего не осталось")
 	TEST_ASSERT(SSmarket.auction_results[1][4], "Итог - наша станция")
-	qdel(prize)
+	qdel(parcel)
 
 	lot = SSmarket.start_auction(list("path" = /obj/item/toy/plush/carpplushie, "name" = "второй карп", "value" = 1000))
 	lot.rivals = list("станция \"Тест\"" = 900)
 	SSmarket.place_auction_bid(account, 400, bidder, lot.uid)
 	SSmarket.rival_bid(lot, TRUE)
 	SSmarket.finish_auction()
-	TEST_ASSERT_NULL(locate(/obj/item/toy/plush/carpplushie) in run_loc_floor_bottom_left, "Проигранный лот не приехал")
+	TEST_ASSERT_NULL(locate(/obj/item/storage/lockbox/order) in run_loc_floor_bottom_left, "Проигранный лот не приехал")
 	TEST_ASSERT_EQUAL(account.account_balance, 4300, "Проигравшему ставка вернулась")
 	TEST_ASSERT_EQUAL(SSmarket.auction_results[1][2], "станция \"Тест\"", "Итог - соперник")
 	TEST_ASSERT(SSmarket.next_auction_at > world.time, "Следующий лот запланирован")

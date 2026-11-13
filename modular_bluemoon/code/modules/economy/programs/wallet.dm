@@ -1,10 +1,10 @@
-/// Личный счёт в КПК: баланс, история, переводы, чаевые, личные заказы, контракты и объявления, акции и метадоллары.
+/// Личный счёт в КПК: баланс, история, переводы, чаевые, личные заказы, аукцион, контракты и объявления, акции и метадоллары.
 /datum/computer_file/program/wallet
 	filename = "wallet"
 	filedesc = "Кошелёк"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "wallet"
-	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы из каталога с доставкой шаттлом снабжения, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
+	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы из каталога с доставкой шаттлом снабжения, ставки на аукционе сектора и экипажа, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
@@ -114,6 +114,9 @@
 	var/list/personal = wallet_personal_data(account)
 	for(var/key in personal)
 		data[key] = personal[key]
+	var/list/auction = econ_auction_ui_data(account)
+	for(var/key in auction)
+		data[key] = auction[key]
 	return data
 
 /// Личные заказы: цены каталога для счёта, свои оплаченные заказы в корзине и в пути, где шаттл снабжения.
@@ -162,6 +165,14 @@
 			return TRUE
 		if("personal_cancel")
 			message = econ_cancel_personal_order(user, wallet_account(user), params["id"])[2]
+			return TRUE
+		if("auction_bid")
+			return wallet_auction_bid(user, params)
+		if("auction_cancel")
+			var/uid = params["uid"]
+			if(istext(uid))
+				uid = text2num(uid)
+			message = SSmarket.cancel_crew_lot(wallet_account(user), uid, user)[2]
 			return TRUE
 		if("md_withdraw", "md_deposit")
 			return metadollar_act(user, action, params)
@@ -213,6 +224,19 @@
 		count = text2num(count)
 	var/error = SSeconomy.lottery.buy(wallet_account(user), count, user)
 	message = error || "Куплено билетов: [round(count)]."
+	return TRUE
+
+/// Ставка на аукционе с кошелька: тот же счёт, что у окна.
+/datum/computer_file/program/wallet/proc/wallet_auction_bid(mob/living/user, list/params)
+	var/amount = params["amount"]
+	if(istext(amount))
+		amount = text2num(amount)
+	var/uid = params["uid"]
+	if(istext(uid))
+		uid = text2num(uid)
+	var/datum/auction_lot/lot = SSmarket.find_auction_lot(uid)
+	var/error = isnum(uid) ? SSmarket.place_auction_bid(wallet_account(user), amount, user, uid) : "Этот лот уже не продаётся."
+	message = error || "Ставка [amount] кр. на \"[lot.name]\" принята: деньги заморожены до конца торгов, перебьют - вернутся."
 	return TRUE
 
 /// Метадоллары: постоянный счёт игрока, с кредитами станции не связан.

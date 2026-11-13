@@ -155,6 +155,10 @@ type AuctionLot = {
   left: number;
   rivals: number;
   history: { who: string; amount: number }[];
+  outbid?: BooleanLike;
+  /** Лот экипажа: имя продавца или "аноним". */
+  seller?: string | null;
+  my_lot?: BooleanLike;
 };
 
 type BundleOffer = {
@@ -213,6 +217,8 @@ type CargoData = {
   bundles?: BundleOffer[];
   auction_next?: number;
   auction_results?: AuctionResult[];
+  crew_lots?: AuctionLot[];
+  auction_fee?: number;
   my_balance?: number | null;
   pack_info?: PackInfo | null;
   search?: string;
@@ -281,7 +287,7 @@ export const CargoContent = (props) => {
     { key: 'requests', label: 'Заявки', count: requests.length },
     { key: 'offers', label: 'Спецзаказы', count: offers.length },
     { key: 'bundles', label: 'Скупка', count: (data.bundles || []).length },
-    { key: 'auction', label: 'Аукцион', count: data.auction ? 1 : 0 },
+    { key: 'auction', label: 'Аукцион', count: (data.auction ? 1 : 0) + (data.crew_lots || []).length },
     { key: 'market', label: 'Рынок' },
     { key: 'partners', label: 'Партнёры' },
     { key: 'contracts', label: 'Контракты' },
@@ -1144,7 +1150,7 @@ const Auction = (props) => {
       {lot ? (
         <NtFrame
           title={`Лот: ${lot.name}`}
-          help="Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения."
+          help="Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения запертой посылкой на имя победителя."
           buttons={
             <Box inline className="NtTerm__num" color={lot.left < 60 ? 'average' : 'label'}>
               осталось {formatTime(lot.left)}
@@ -1195,10 +1201,11 @@ const Auction = (props) => {
         <NtFrame title="Аукцион сектора">
           <NtEmpty>
             Сейчас лотов нет.{!!data.auction_next && ` Следующий - примерно через ${formatTime(data.auction_next)}.`} О новом лоте
-            сообщит канал Сводка сектора на ньюскастерах.
+            сообщат канал Сводка сектора на ньюскастерах и общий радиоканал.
           </NtEmpty>
         </NtFrame>
       )}
+      <CrewLots />
       {results.length > 0 && (
         <NtFrame title="Прошлые лоты">
           {results.map((result, index) => (
@@ -1209,6 +1216,39 @@ const Auction = (props) => {
         </NtFrame>
       )}
     </>
+  );
+};
+
+/** Лоты экипажа: без соперников-станций, ставка с личного счёта, как у лота сектора. */
+const CrewLots = (props) => {
+  const { act, data } = useBackend<CargoData>();
+  const lots = data.crew_lots || [];
+  return (
+    <NtFrame
+      title="Лоты экипажа"
+      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставка идёт с личного счёта и замораживается до конца торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя на склад снабжения.`}>
+      {lots.length === 0 ? (
+        <NtEmpty>Лотов экипажа нет. Свою вещь выставляют с пада подработки.</NtEmpty>
+      ) : (
+        lots.map((lot) => (
+          <Box key={lot.uid} mb={1}>
+            <NtLine label={lot.name} tone={lot.mine ? 'good' : lot.outbid ? 'warn' : undefined}>
+              {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
+              , осталось {formatTime(lot.left)}
+            </NtLine>
+            <Box className="NtTerm__hint">
+              {lot.my_lot ? 'ваш лот' : `продаёт ${lot.seller}`}
+              {lot.desc ? `: ${lot.desc}` : ''}
+            </Box>
+            {!lot.my_lot && (
+              <Button color="good" icon="gavel" mt={0.5} onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}>
+                {`${lot.mine ? 'Поднять до' : 'Поставить'} ${formatCredits(lot.min_bid)}`}
+              </Button>
+            )}
+          </Box>
+        ))
+      )}
+    </NtFrame>
   );
 };
 

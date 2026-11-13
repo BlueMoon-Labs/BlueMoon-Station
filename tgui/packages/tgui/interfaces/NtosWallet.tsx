@@ -17,7 +17,7 @@ import {
 } from '../components';
 import { NtosWindow } from '../layouts';
 import { ContractTable, freeCrewRequests } from './common/ContractTable';
-import { ContractEntry, Credits, HistoryTable, TransactionEntry } from './common/Economy';
+import { ContractEntry, Credits, formatCredits, HistoryTable, TransactionEntry } from './common/Economy';
 import { NtHelpTopic, NtHelpTopics } from './common/NtTerminal';
 
 type Wage = {
@@ -70,6 +70,28 @@ type PersonalOrder = {
 
 type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
 
+type AuctionLot = {
+  uid: number;
+  name: string;
+  desc?: string | null;
+  /** Оценка лота сектора; у лота экипажа 0. */
+  value?: number;
+  bid: number;
+  bidder: string | null;
+  /** Ведёт ставка этого счёта. */
+  mine: BooleanLike;
+  /** Этот счёт ставил, но его перебили. */
+  outbid?: BooleanLike;
+  min_bid: number;
+  increment: number;
+  left: number;
+  rivals?: number;
+  history: { who: string; amount: number }[];
+  /** Лот экипажа: имя продавца или "аноним". */
+  seller?: string | null;
+  my_lot?: BooleanLike;
+};
+
 export type WalletData = {
   message: string;
   metadollars_available: BooleanLike;
@@ -114,6 +136,12 @@ export type WalletData = {
   personal_orders?: PersonalOrder[];
   personal_in_transit?: string[];
   shuttle?: { state: ShuttleState; eta: number };
+  auction?: AuctionLot | null;
+  crew_lots?: AuctionLot[];
+  /** Секунд до следующего лота сектора, 0 - лот идёт. */
+  auction_next?: number;
+  auction_fee?: number;
+  auction_lots_per_account?: number;
 };
 
 type Tab = 'account' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
@@ -454,6 +482,136 @@ const MyOrders = () => {
   );
 };
 
+const formatLeft = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+const lotStatus = (lot: AuctionLot) => {
+  if (!lot.bid) {
+    return `ставок нет, старт ${formatCredits(lot.min_bid)}`;
+  }
+  return `ставка ${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}`;
+};
+
+const AuctionRow = (props: { lot: AuctionLot }) => {
+  const { act, data } = useBackend<WalletData>();
+  const { lot } = props;
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState<number | null>(null);
+  const bid = Math.max(amount ?? lot.min_bid, lot.min_bid);
+  const crew = lot.seller !== undefined;
+  const needed = (minimum: number) => minimum - (lot.mine ? lot.bid : 0);
+  const shortOf = (minimum: number) => (data.balance || 0) < needed(minimum);
+  return (
+    <Table.Row className="candystripe">
+      <Table.Cell py={0.5}>
+        <Box as="span" style={{ cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+          <Box as="span" color="label" mr={0.5}>
+            {open ? '▾' : '▸'}
+          </Box>
+          {lot.name}
+        </Box>
+        <Box as="span" color="label" ml={1}>
+          {!crew ? 'аукцион сектора' : lot.my_lot ? 'ваш лот' : `продаёт ${lot.seller}`}
+        </Box>
+        <Box color={lot.outbid ? 'average' : lot.mine ? 'good' : 'label'}>
+          {lotStatus(lot)}
+          {lot.outbid ? '; вашу ставку перебили' : ''}
+        </Box>
+        {open && (
+          <Box color="label" mt={0.5}>
+            {!!lot.desc && <Box>{lot.desc}</Box>}
+            {!crew && (
+              <Box mt={0.5}>
+                Оценка лота <Credits amount={lot.value} />, торгуются ещё {lot.rivals} станции сектора.
+              </Box>
+            )}
+            {lot.history.length > 0 && (
+              <Box mt={0.5}>
+                Ставки: {lot.history.map((entry) => `${entry.who} ${formatCredits(entry.amount)}`).join(', ')}.
+              </Box>
+            )}
+            {!lot.my_lot && (
+              <Stack align="center" mt={0.5}>
+                <Stack.Item>
+                  <RestrictedInput
+                    width="7em"
+                    value={bid}
+                    minValue={lot.min_bid}
+                    maxValue={100000}
+                    onChange={(_, value) => setAmount(value)}
+                  />{' '}
+                  кр.
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="gavel"
+                    disabled={shortOf(bid)}
+                    onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
+                    {`Поставить ${formatCredits(bid)}`}
+                  </Button>
+                </Stack.Item>
+              </Stack>
+            )}
+          </Box>
+        )}
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5} textAlign="right" color={lot.left < 60 ? 'average' : 'label'}>
+        {formatLeft(lot.left)}
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5}>
+        {lot.my_lot ? (
+          !lot.bid && (
+            <Button.Confirm
+              icon="times"
+              content="Снять"
+              confirmContent="Снять лот?"
+              tooltip="Ставок ещё нет: вещь вернётся к вам посылкой."
+              onClick={() => act('auction_cancel', { uid: lot.uid })}
+            />
+          )
+        ) : (
+          <Button.Confirm
+            icon="gavel"
+            color="good"
+            content={`${lot.mine ? 'Поднять до' : 'Ставка'} ${formatCredits(lot.min_bid)}`}
+            confirmContent={`Поставить ${formatCredits(lot.min_bid)}?`}
+            confirmColor="good"
+            disabled={shortOf(lot.min_bid)}
+            tooltip={shortOf(lot.min_bid) ? 'Не хватает денег на счёте.' : null}
+            onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}
+          />
+        )}
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const AuctionSection = () => {
+  const { data } = useBackend<WalletData>();
+  const lots = [...(data.auction ? [data.auction] : []), ...(data.crew_lots || [])];
+  return (
+    <Section title="Аукцион">
+      <Box color="label" mb={1}>
+        Ставка списывается сразу и ждёт конца торгов. Перебьют - деньги сразу вернутся, а незадолго до конца карта
+        напомнит о лоте; ставка в последнюю минуту продлевает торги. Выигрыш прилетит запертой посылкой на ваше имя на
+        склад снабжения. Свою вещь можно выставить с пада подработки: старт и срок выбираете сами, имя можно скрыть, NT
+        берёт {data.auction_fee ?? 0}% с продажи; лотов сразу - до {data.auction_lots_per_account ?? 0} на человека.
+      </Box>
+      {lots.length > 0 ? (
+        <Table>
+          {lots.map((lot) => (
+            <AuctionRow key={lot.uid} lot={lot} />
+          ))}
+        </Table>
+      ) : (
+        <Box color="label">
+          Лотов сейчас нет.
+          {data.auction_next ? ` Следующий лот сектора - примерно через ${Math.ceil(data.auction_next / 60)} мин.` : ''}
+        </Box>
+      )}
+    </Section>
+  );
+};
+
 const CatalogRow = (props: { pack: PersonalPack; full: boolean }) => {
   const { act, data } = useBackend<WalletData>();
   const { pack, full } = props;
@@ -518,20 +676,21 @@ const OrdersTab = () => {
   return (
     <>
       <AccountNotices />
-      <Box color="label" mb={1}>
-        Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт. Цена партнёра без наценки частного заказа
-        списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на ваше имя будет ждать в отделе
-        снабжения, открыть её можно своей ID-картой. Пока шаттл не вылетел, заказ можно отменить - деньги вернутся.
-        Ждать шаттла могут до {data.personal_order_limit} ваших заказов сразу.
-      </Box>
-      {!!shuttle && (
-        <Box mb={1}>
-          {SHUTTLE_NOTES[shuttle.state]}
-          {shuttle.eta > 0 ? ` До посадки: ${Math.ceil(shuttle.eta / 60)} мин.` : ''}
-        </Box>
-      )}
+      <AuctionSection />
       <MyOrders />
       <Section title="Личный каталог">
+        <Box color="label" mb={1}>
+          Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт. Цена партнёра без наценки частного заказа
+          списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на ваше имя будет ждать в
+          отделе снабжения, открыть её можно своей ID-картой. Пока шаттл не вылетел, заказ можно отменить - деньги
+          вернутся. Ждать шаттла могут до {data.personal_order_limit} ваших заказов сразу.
+        </Box>
+        {!!shuttle && (
+          <Box mb={1}>
+            {SHUTTLE_NOTES[shuttle.state]}
+            {shuttle.eta > 0 ? ` До посадки: ${Math.ceil(shuttle.eta / 60)} мин.` : ''}
+          </Box>
+        )}
         <Box mb={1}>
           <Button selected={!shown} onClick={() => setShown(null)}>
             Всё

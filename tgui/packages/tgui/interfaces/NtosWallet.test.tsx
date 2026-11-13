@@ -261,6 +261,89 @@ describe('NtosWallet', () => {
     expect(sent(topic, 'personal_cancel')).toEqual([{ id: 1 }]);
   });
 
+  const lot = (uid: number, extra = {}) => ({
+    uid,
+    name: `Лот ${uid}`,
+    desc: 'Описание лота.',
+    value: 0,
+    bid: 0,
+    bidder: null,
+    mine: 0,
+    outbid: 0,
+    min_bid: 100,
+    increment: 25,
+    left: 125,
+    history: [],
+    seller: 'аноним',
+    my_lot: 0,
+    ...extra,
+  });
+
+  const auction = {
+    auction_fee: 10,
+    auction_lots_per_account: 2,
+    auction: { ...lot(1, { name: 'корона', value: 2500, rivals: 2, bid: 1200, bidder: 'станция "Кило-7"', min_bid: 1260 }), seller: undefined },
+    crew_lots: [
+      lot(2, { name: 'гитара', seller: 'Анна Смирнова', bid: 150, bidder: 'Иван Петров', mine: 1, min_bid: 175 }),
+      lot(3, {
+        name: 'шляпа',
+        outbid: 1,
+        bid: 300,
+        bidder: 'Анна Смирнова',
+        min_bid: 325,
+        left: 40,
+        history: [
+          { who: 'Анна Смирнова', amount: 300 },
+          { who: 'Иван Петров', amount: 250 },
+        ],
+      }),
+      lot(4, { name: 'ваза', my_lot: 1, seller: 'Иван Петров' }),
+      lot(5, { name: 'рояль', min_bid: 5000 }),
+    ],
+  };
+
+  test('заказы: аукцион сектора и экипажа, ставка с подтверждением, перебитая ставка, снятие своего лота', () => {
+    const { container, getByText, topic } = setup({ ...personal, ...auction });
+    fireEvent.click(getByText('Заказы'));
+    const content = text(container);
+    expect(content).toContain('NT берёт 10% с продажи; лотов сразу - до 2 на человека');
+    expect(content).toContain('аукцион сектора');
+    expect(content).toContain('продаёт Анна Смирнова');
+    expect(content).toContain('ставка 150 кр. - ваша');
+    expect(content).toContain('ставка 300 кр. - Анна Смирнова; вашу ставку перебили');
+    expect(content).toContain('ваш лот');
+    expect(content).toContain('ставок нет, старт 100 кр.');
+    expect(content).toContain('0:40');
+    expect(getByText('Ставка 5 000 кр.').closest('.Button')?.className).toContain('Button--disabled');
+    expect(getByText('Поднять до 175 кр.')).toBeTruthy();
+    fireEvent.click(getByText('Ставка 1 260 кр.'));
+    expect(sent(topic, 'auction_bid')).toEqual([]);
+    fireEvent.click(getByText('Поставить 1 260 кр.?'));
+    expect(sent(topic, 'auction_bid')).toEqual([{ uid: 1, amount: 1260 }]);
+    fireEvent.click(getByText('Снять'));
+    fireEvent.click(getByText('Снять лот?'));
+    expect(sent(topic, 'auction_cancel')).toEqual([{ uid: 4 }]);
+  });
+
+  test('заказы: раскрытый лот показывает описание и ставки, ставка своей суммы', () => {
+    const { container, getByText, topic } = setup({ ...personal, ...auction });
+    fireEvent.click(getByText('Заказы'));
+    expect(text(container)).not.toContain('Иван Петров 250 кр.');
+    fireEvent.click(getByText('шляпа'));
+    expect(text(container)).toContain('Описание лота.');
+    expect(text(container)).toContain('Ставки: Анна Смирнова 300 кр., Иван Петров 250 кр.');
+    fireEvent.click(getByText('корона'));
+    expect(text(container)).toContain('Оценка лота 2 500 кр., торгуются ещё 2 станции сектора.');
+    fireEvent.click(getByText('Поставить 325 кр.'));
+    expect(sent(topic, 'auction_bid')).toEqual([{ uid: 3, amount: 325 }]);
+  });
+
+  test('заказы: без лотов аукцион говорит, когда следующий лот сектора', () => {
+    const { container, getByText } = setup({ ...personal, auction: null, crew_lots: [], auction_next: 300, auction_fee: 10 });
+    fireEvent.click(getByText('Заказы'));
+    expect(text(container)).toContain('Лотов сейчас нет. Следующий лот сектора - примерно через 5 мин.');
+  });
+
   test('акции: портфель и позиции', () => {
     const { container, getByText } = setup();
     fireEvent.click(getByText('Акции'));

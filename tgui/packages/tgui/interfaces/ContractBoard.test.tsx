@@ -89,6 +89,53 @@ test('консоль контрактов: бюджет снабжения, пе
   expect(sent(ui.topic, 'take')).toEqual([{ uid: 1 }]);
 });
 
+const auctionPad = {
+  items: [
+    { ref: '[0x1]', name: 'гитара', problem: null },
+    { ref: '[0x2]', name: 'лазер', problem: 'Оружие, боеприпасы и снаряжение СБ на аукцион не принимаются.' },
+    { ref: '[0x3]', name: 'шляпа', problem: null },
+  ],
+  minutes: [5, 10, 15],
+  fee: 10,
+  min_price: 25,
+  max_price: 100000,
+  mine: 0,
+  per_account: 2,
+  lots: 1,
+  lots_max: 6,
+};
+
+test('аукцион экипажа: выбранная вещь, цена, срок и скрытое имя уходят в auction_list, запрещённое объяснено', () => {
+  const ui = setup({ auction: auctionPad });
+  expect(ui.getByText('Оружие, боеприпасы и снаряжение СБ на аукцион не принимаются.')).toBeTruthy();
+  expect(ui.getByText('Ваших лотов 0 из 2, на аукционе 1 из 6.')).toBeTruthy();
+  expect(ui.getByText('Выставить: гитара')).toBeTruthy();
+  fireEvent.click(ui.getByText('лазер'));
+  expect(ui.getByText('Выставить: гитара')).toBeTruthy();
+  fireEvent.click(ui.getByText('шляпа'));
+  fireEvent.click(ui.getByText('10 мин.'));
+  fireEvent.click(ui.getByText('Скрыть моё имя'));
+  const price = ui.container.querySelector('input') as HTMLInputElement;
+  fireEvent.focus(price);
+  fireEvent.input(price, { target: { value: '250' } });
+  fireEvent.blur(price);
+  fireEvent.click(ui.getByText('Выставить: шляпа'));
+  expect(sent(ui.topic, 'auction_list')).toEqual([{ ref: '[0x3]', price: 250, minutes: 10, anonymous: true }]);
+});
+
+test('аукцион экипажа: у предела лотов не выставить, пустой пад подсказывает', () => {
+  const ui = setup({ auction: { ...auctionPad, mine: 2 } });
+  expect(ui.getByText('Выставить: гитара').closest('.Button')?.className).toContain('Button--disabled');
+  fireEvent.click(ui.getByText('Выставить: гитара'));
+  expect(sent(ui.topic, 'auction_list')).toEqual([]);
+  document.body.innerHTML = '';
+  const empty = setup({ auction: { ...auctionPad, items: [] } });
+  expect(empty.getByText('Положите на пад вещь, которую хотите продать экипажу.')).toBeTruthy();
+  expect(empty.queryByText('Аукцион экипажа')).toBeTruthy();
+  document.body.innerHTML = '';
+  expect(setup({ mode: 'console', auction: auctionPad }).queryByText('Аукцион экипажа')).toBeNull();
+});
+
 test('справка о контрактах и пустая доска без счёта', () => {
   const ui = setup({ contracts: [], my_name: null });
   expect(ui.queryByText('Контракты NT: поставка и деятельность.')).toBeNull();

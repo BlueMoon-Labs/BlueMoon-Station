@@ -594,6 +594,41 @@ test('аукцион без лота: когда следующий и итог�
   expect(ui.getByText('наша станция: Иван Петров, 2 600 кр.')).toBeTruthy();
 });
 
+test('аукцион: лоты экипажа с продавцом, ставка шлёт auction_bid, на свой лот кнопки нет', () => {
+  const crew = (uid, extra = {}) => ({
+    uid,
+    name: `лот ${uid}`,
+    desc: 'старая гитара',
+    value: 0,
+    bid: 0,
+    bidder: null,
+    mine: 0,
+    min_bid: 100,
+    increment: 25,
+    left: 90,
+    rivals: 0,
+    history: [],
+    seller: 'аноним',
+    my_lot: 0,
+    ...extra,
+  });
+  const ui = setup({
+    auction: null,
+    auction_fee: 10,
+    crew_lots: [crew(7), crew(8, { my_lot: 1, seller: 'Иван Петров', bid: 300, bidder: 'Анна', min_bid: 325 })],
+  });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  const content = ui.container.textContent?.replace(/\s/g, ' ');
+  expect(ui.getByText('Лоты экипажа')).toBeTruthy();
+  expect(content).toContain('ставок нет, старт 100 кр., осталось 1:30');
+  expect(content).toContain('продаёт аноним: старая гитара');
+  expect(content).toContain('300 кр. - Анна');
+  expect(content).toContain('ваш лот: старая гитара');
+  expect(ui.queryByText('Поставить 325 кр.')).toBeNull();
+  fireEvent.click(ui.getByText('Поставить 100 кр.'));
+  expect(sent(ui.topic, 'auction_bid')).toEqual([{ uid: 7, amount: 100 }]);
+});
+
 test('скупка: пачка только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
   const ui = setup({
     bundles: [

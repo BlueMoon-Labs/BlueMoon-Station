@@ -61,6 +61,13 @@
 	var/lottery_tickets_per_account = 10
 	var/lottery_sale_minutes = 20
 	var/lottery_house_share = 30
+	/// Аукцион экипажа: сбор NT с проданного лота в процентах, сколько лотов сразу у одного счёта и на всю станцию, варианты длительности торгов в минутах
+	var/auction_crew_fee = 10
+	var/auction_crew_lots_per_account = 2
+	var/auction_crew_lots_max = 6
+	var/list/auction_crew_minutes = list("short" = 5, "medium" = 10, "long" = 15)
+	/// Новый лот аукциона звучит по общему каналу не чаще раза в столько минут на всю станцию
+	var/auction_announce_minutes = 3
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
@@ -290,6 +297,13 @@
 		. += "settings.event_grant_min: больше event_grant_max ([event_grant_max])"
 		event_grant_min = event_grant_max
 
+/// Варианты длительности лота экипажа в минутах, по возрастанию.
+/datum/economy_settings/proc/auction_minutes_options()
+	. = list()
+	for(var/variant in auction_crew_minutes)
+		. |= auction_crew_minutes[variant]
+	sortTim(., GLOBAL_PROC_REF(cmp_numeric_asc))
+
 /// Цены из JSON накладываются на дефолты по ключам, неуказанные работы сохраняют цену.
 /datum/economy_settings/proc/merge_work_prices(list/value)
 	. = list()
@@ -313,6 +327,14 @@
 			if(!isnum(value[grade]) || value[grade] < 0)
 				return "грейд [grade] - нужно число не меньше 0"
 		return
+	if(key == "auction_crew_minutes")
+		if(!length(value))
+			return "пустой список"
+		for(var/variant in value)
+			var/minutes = istext(variant) ? value[variant] : null
+			if(!isnum(minutes) || minutes < 1 || minutes > 60 || round(minutes) != minutes)
+				return "вариант [variant] - нужны целые минуты от 1 до 60"
+		return
 	if(!isnum(value))
 		return
 	if((key in at_least_one) && value < 1)
@@ -321,5 +343,9 @@
 		return "вне 0..100"
 	if(key == "research_grant_price_per_point" && value <= 0)
 		return "нужно число больше 0"
+	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes")) && value < 1)
+		return "меньше 1"
+	if(key == "auction_crew_fee" && (value < 0 || value > 100))
+		return "вне 0..100"
 	if(value < 0)
 		return "меньше 0"
