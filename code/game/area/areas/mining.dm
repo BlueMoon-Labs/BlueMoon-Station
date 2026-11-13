@@ -42,101 +42,101 @@
 // ------------------------------------ //
 
 /area/mine/lobby
-	name = "Mining Station"
+	name = "Mining Post"
 	icon_state = "mining_lobby"
 
 /area/mine/storage
-	name = "Mining Station Storage"
+	name = "Mining Post Storage"
 	icon_state = "mining_storage"
 
 /area/mine/production
-	name = "Mining Station Starboard Wing"
+	name = "Mining Post Starboard Wing"
 	icon_state = "mining_production"
 
 /area/mine/mechbay
-	name = "Mining Station Mech Bay"
+	name = "Mining Post Mech Bay"
 	icon_state = "mechbay"
 
 /area/mine/abandoned
-	name = "Abandoned Mining Station"
+	name = "Abandoned Mining Post"
 
 /area/mine/living_quarters
-	name = "Mining Station Port Wing"
+	name = "Mining Post Port Wing"
 	icon_state = "mining_living"
 
 /area/mine/eva
-	name = "Mining Station EVA"
+	name = "Mining Post EVA"
 	icon_state = "mining_eva"
 
 /area/mine/eva/lower
-	name = "Mining Station Lower EVA"
+	name = "Mining Post Lower EVA"
 
 /area/mine/medical
-	name = "Mining Station Medical"
+	name = "Mining Post Medical"
 
 /area/mine/maintenance
-	name = "Mining Station Maintenance"
+	name = "Mining Post Maintenance"
 
 /area/mine/cafeteria
-	name = "Mining Station Cafeteria"
+	name = "Mining Post Cafeteria"
 	icon_state = "mining_labor_cafe"
 
 // ------------------------------------ //
 
 /area/mine/common
-	name = "Park Area"
+	name = "Public Mining Post Park Area"
 	icon_state = "mining"
 
 /area/mine/common/upper
-	name = "Common Post Floor 2"
+	name = "Public Mining Post Floor 2"
 	icon_state = "mining"
 
 /area/mine/common/lower
-	name = "Common Post Floor 1"
+	name = "Public Mining Post Floor 1"
 	icon_state = "mining"
 
 /area/mine/common/eva
-	name = "Common Post EVA"
+	name = "Public Mining Post EVA"
 	icon_state = "mining_eva"
 
 /area/mine/common/dorm1
-	name = "Common Post Dorm 1"
+	name = "Public Mining Post Dorm 1"
 	icon_state = "mining"
 
 /area/mine/common/dorm2
-	name = "Common Post Dorm 2"
+	name = "Public Mining Post Dorm 2"
 	icon_state = "mining"
 
 /area/mine/common/hydroponics
-	name = "Common Post Hydroponics"
+	name = "Public Mining Post Hydroponics"
 	icon_state = "mining_labor_hydro"
 
 /area/mine/common/atrium
-	name = "Common Post Atrium"
+	name = "Public Mining Post Atrium"
 	icon_state = "mining"
 
 /area/mine/common/pool
-	name = "Common Post Pool Area"
+	name = "Public Mining Post Pool Area"
 	icon_state = "mining"
 
 /area/mine/common/sauna
-	name = "Common Post Sauna"
+	name = "Public Mining Post Sauna"
 	icon_state = "mining"
 
 /area/mine/common/medical
-	name = "Common Post Medical"
+	name = "Public Mining Post Medical"
 	icon_state = "mining"
 
 /area/mine/common/maintenance/north
-	name = "Common Post North Maintenance"
+	name = "Public Mining Post North Maintenance"
 	icon_state = "mining"
 
 /area/mine/common/maintenance/west
-	name = "Common Post West Maintenance"
+	name = "Public Mining Post West Maintenance"
 	icon_state = "mining"
 
 /area/mine/common/maintenance/south
-	name = "Common Post South Maintenance"
+	name = "Public Mining Post South Maintenance"
 	icon_state = "mining"
 
 // ------------------------------------ //
@@ -150,19 +150,19 @@
 	icon_state = "mining_labor"
 
 /area/mine/laborcamp/security
-	name = "Labor Camp Security"
+	name = "Lavaland Security Post"
 	icon_state = "security"
 	// ambience_index = AMBIENCE_DANGER
 	ambientsounds = HIGHSEC
 
 /area/mine/laborcamp/security/maintetance
-	name = "Security Post Maintenance"
+	name = "Lavaland Sec-Post Maintenance"
 	icon_state = "security"
 	// ambience_index = AMBIENCE_DANGER
 	ambientsounds = HIGHSEC
 
 /area/mine/laborcamp/security/outdoors_maintetance
-	name = "Security Post Outdoors Maintenance"
+	name = "Lavaland Sec-Post Outdoors Maintenance"
 	icon_state = "security"
 	// ambience_index = AMBIENCE_DANGER
 	ambientsounds = HIGHSEC
@@ -184,23 +184,23 @@
 // ------------------------------------ //
 
 /area/mine/engineering
-	name = "Engineering Post Lobby"
+	name = "Lavaland Engi-Post Lobby"
 	icon_state = "mining"
 
 /area/mine/engineering/maintenance
-	name = "Engineering Post Maintenance"
+	name = "Lavaland Engi-Post Maintenance"
 	icon_state = "mining"
 
 /area/mine/engineering/telecomms_floor1
-	name = "Engineering Post Telecomms"
+	name = "Lavaland Engi-Post Telecomms"
 	icon_state = "mining"
 
 /area/mine/engineering/telecomms_floor2
-	name = "Engineering Post Telecomms"
+	name = "Lavaland Engi-Post Telecomms"
 	icon_state = "mining"
 
 /area/mine/engineering/recycling
-	name = "Engineering Post Recycling Area"
+	name = "Lavaland Engi-Post Recycling Area"
 	icon_state = "mining"
 
 /**********************Lavaland Areas**************************/

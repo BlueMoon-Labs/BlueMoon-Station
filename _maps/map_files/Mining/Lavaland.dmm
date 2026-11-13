@@ -39,7 +39,9 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "acX" = (
 /obj/structure/flora/junglebush/b,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "adz" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
@@ -841,7 +843,9 @@
 "azs" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "azQ" = (
 /obj/effect/turf_decal/tile/green/anticorner/contrasted,
@@ -1275,7 +1279,9 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "aOl" = (
 /obj/effect/turf_decal/bot/yellow,
@@ -1472,6 +1478,7 @@
 /obj/machinery/door/airlock/grunge{
 	name = "Morgue"
 	},
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "aWB" = (
@@ -2631,7 +2638,7 @@
 	pixel_x = 5;
 	desc = "Даже ребёнок ксеноса может быть опасен, по этому я сделал эту клетку чтобы сдержи...ИОПЛЯ! ОНА СНОВА СЬЕБАЛАСЬ!!"
 	},
-/obj/item/reagent_containers/food/snacks/grown/tomato/blue/bluespace{
+/obj/item/reagent_containers/food/snacks/grown/tomato{
 	pixel_x = -5
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -2797,7 +2804,9 @@
 /area/mine/laborcamp)
 "bLt" = (
 /obj/structure/flora/tree/jungle,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "bLJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
@@ -3339,6 +3348,9 @@
 /obj/machinery/power/smes{
 	charge = 5e+006
 	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/mine/common/maintenance/north)
 "bYt" = (
@@ -3484,7 +3496,9 @@
 /area/mine/common/hydroponics)
 "ccY" = (
 /obj/structure/flora/ausbushes/grassybush,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "cdc" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -3793,6 +3807,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "cje" = (
@@ -3836,14 +3853,14 @@
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "ckA" = (
-/obj/machinery/conveyor/inverted{
-	dir = 1
-	},
 /obj/effect/spawner/lootdrop/maintenance{
 	lootcount = 2;
 	name = "2maintenance loot spawner"
 	},
 /obj/effect/turf_decal/lunar_sand/plating,
+/obj/machinery/conveyor/inverted{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "ckC" = (
@@ -4161,7 +4178,9 @@
 "cuB" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/flora/ausbushes/grassybush,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "cuY" = (
 /turf/closed/wall,
@@ -6467,7 +6486,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "dYR" = (
 /obj/structure/flora/junglebush/large,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "dYT" = (
 /obj/structure/stone_tile/block,
@@ -7222,7 +7243,9 @@
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "eAF" = (
 /obj/structure/flora/ausbushes/fullgrass,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "eBb" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -7311,7 +7334,9 @@
 "eDf" = (
 /obj/structure/flora/ausbushes/grassybush,
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "eDn" = (
 /obj/effect/turf_decal/siding/wood/thin{
@@ -7547,9 +7572,11 @@
 	dir = 9
 	},
 /obj/structure/table,
-/obj/effect/spawner/lootdrop/random,
 /obj/machinery/light/small{
 	dir = 8
+	},
+/obj/effect/spawner/lootdrop/three_course_meal{
+	pixel_x = 10
 	},
 /turf/open/floor/plasteel/white/smooth,
 /area/mine/common/atrium)
@@ -7705,7 +7732,9 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "eRE" = (
 /obj/structure/railing{
@@ -8183,7 +8212,9 @@
 "fcC" = (
 /obj/structure/flora/grass/jungle,
 /obj/structure/window/reinforced,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "fcZ" = (
 /obj/machinery/light/floor,
@@ -8949,6 +8980,9 @@
 /area/mine/laborcamp/maintenance/south)
 "fyy" = (
 /obj/machinery/disposal/bin,
+/obj/structure/disposalpipe/trunk{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "fyD" = (
@@ -9368,7 +9402,9 @@
 "fJd" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi/flower,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "fJw" = (
 /obj/effect/turf_decal/stripes/yellow,
@@ -9414,7 +9450,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "fKr" = (
 /obj/structure/flora/grass/jungle,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "fKz" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -9830,6 +9868,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "fWP" = (
@@ -9906,7 +9947,9 @@
 /obj/structure/flora/biolumi/lamp{
 	pixel_y = 15
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "gan" = (
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
@@ -10634,7 +10677,9 @@
 /area/mine/laborcamp/security)
 "gxu" = (
 /obj/structure/flora/biolumi,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "gyc" = (
 /obj/structure/cable/yellow{
@@ -10914,6 +10959,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "gEU" = (
@@ -11103,14 +11151,14 @@
 /turf/open/floor/plasteel/kitchen,
 /area/mine/laborcamp)
 "gJf" = (
-/obj/machinery/conveyor/inverted{
-	dir = 8
-	},
 /obj/effect/spawner/lootdrop/maintenance{
 	lootcount = 2;
 	name = "2maintenance loot spawner"
 	},
 /obj/effect/turf_decal/lunar_sand/plating,
+/obj/machinery/conveyor/inverted{
+	dir = 8
+	},
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "gJy" = (
@@ -11726,7 +11774,9 @@
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "hge" = (
 /obj/item/lighter,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "hgI" = (
 /obj/structure/cable/yellow{
@@ -11821,17 +11871,19 @@
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "hkC" = (
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/conveyor/inverted{
 	dir = 1
 	},
-/obj/effect/spawner/lootdrop/syndicate_present,
-/obj/effect/turf_decal/lunar_sand/plating,
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "hlf" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/window/reinforced,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "hlV" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -13410,7 +13462,9 @@
 "ieM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/power/apc/auto_name/south,
-/turf/open/floor/catwalk_floor,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
 /area/mine/common/maintenance/north)
 "ieX" = (
 /obj/structure/cable{
@@ -13532,6 +13586,10 @@
 /obj/structure/dresser,
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
+"iiL" = (
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/plasteel/white/textured/large,
+/area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "iiQ" = (
 /turf/open/floor/catwalk_floor,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
@@ -13744,7 +13802,9 @@
 /area/lavaland/necropolis)
 "ipb" = (
 /obj/structure/bonfire,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "iph" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
@@ -14535,6 +14595,12 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"iPf" = (
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/mine/common/maintenance/north)
 "iPg" = (
 /obj/machinery/firealarm{
 	dir = 1;
@@ -15272,7 +15338,9 @@
 "jnh" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/structure/railing,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "jnx" = (
 /obj/effect/turf_decal/delivery,
@@ -15716,6 +15784,9 @@
 /obj/machinery/light{
 	dir = 4
 	},
+/obj/structure/disposalpipe/trunk{
+	dir = 8
+	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/atrium)
 "jzk" = (
@@ -15842,7 +15913,7 @@
 /obj/machinery/power/port_gen/pacman{
 	active = 1;
 	anchored = 1;
-	sheets = 15
+	sheets = 5
 	},
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
@@ -16779,7 +16850,9 @@
 "kdD" = (
 /obj/structure/flora/ausbushes/grassybush,
 /obj/structure/window/reinforced,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "kec" = (
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -18168,11 +18241,11 @@
 /turf/closed/wall,
 /area/mine/laborcamp)
 "kPX" = (
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/conveyor/inverted{
 	dir = 9
 	},
-/obj/effect/spawner/lootdrop/syndicate_present,
-/obj/effect/turf_decal/lunar_sand/plating,
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "kQX" = (
@@ -18293,6 +18366,7 @@
 	dir = 1
 	},
 /obj/structure/table,
+/obj/effect/spawner/lootdrop/cig_packs,
 /turf/open/floor/plasteel/white/textured/edge,
 /area/mine/common/atrium)
 "kUJ" = (
@@ -18903,7 +18977,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "lnk" = (
 /obj/structure/flora/tree/jungle/small,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "lno" = (
 /obj/effect/decal/cleanable/blood/old,
@@ -19619,7 +19695,9 @@
 /obj/effect/decal/fakelattice{
 	density = 0
 	},
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
 	},
@@ -19758,7 +19836,9 @@
 /area/mine/common/maintenance/south)
 "lOa" = (
 /obj/structure/flora/biolumi/flower,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "lOc" = (
 /obj/structure/chair/sofa/right{
@@ -19825,7 +19905,9 @@
 /area/lavaland/surface/outdoors)
 "lSx" = (
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "lSB" = (
 /obj/structure/window/reinforced/survival_pod{
@@ -20348,6 +20430,9 @@
 "mkc" = (
 /obj/machinery/airalarm/directional/south{
 	req_access = list(150)
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 5
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
@@ -22659,6 +22744,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "npA" = (
@@ -24647,6 +24735,7 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "opQ" = (
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "oqc" = (
@@ -24944,7 +25033,9 @@
 /area/mine/laborcamp/entry)
 "oyM" = (
 /obj/structure/flora/ausbushes/lavendergrass,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "oyY" = (
 /obj/effect/decal/cleanable/glass,
@@ -25064,6 +25155,9 @@
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
@@ -26289,7 +26383,9 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "pro" = (
 /obj/structure/disposalpipe/segment,
@@ -27443,9 +27539,10 @@
 /turf/open/floor/plating/rust,
 /area/mine/laborcamp)
 "pZn" = (
-/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
-/obj/machinery/power/apc/auto_name/east,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/machinery/light/small{
+	dir = 4
+	},
 /turf/open/floor/plating,
 /area/mine/engineering)
 "pZA" = (
@@ -27533,10 +27630,6 @@
 /obj/machinery/smartfridge/extract/preloaded,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"qbr" = (
-/obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/plating,
-/area/mine/common/maintenance/north)
 "qbW" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
@@ -27929,7 +28022,9 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "qlh" = (
 /obj/structure/disposalpipe/segment{
@@ -29450,7 +29545,6 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "reK" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
 /obj/effect/turf_decal/lunar_sand/plating,
 /turf/open/floor/plating,
 /area/mine/common/maintenance/north)
@@ -29664,7 +29758,9 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "rld" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -29677,7 +29773,9 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "rlx" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
@@ -29880,6 +29978,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
@@ -30222,7 +30323,9 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rGS" = (
 /obj/structure/flora/grass/jungle,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "rHn" = (
 /obj/structure/disposalpipe/segment{
@@ -31124,7 +31227,6 @@
 /area/mine/production)
 "sjU" = (
 /obj/machinery/washing_machine,
-/obj/machinery/washing_machine,
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
@@ -31644,6 +31746,15 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"sAo" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/warning{
+	dir = 8
+	},
+/obj/structure/disposalpipe/junction{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/textured/large,
+/area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "sAt" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -31729,7 +31840,9 @@
 "sDt" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/biolumi/mine,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "sDE" = (
 /obj/structure/table/reinforced,
@@ -34579,7 +34692,9 @@
 "ujQ" = (
 /obj/structure/flora/grass/jungle,
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "ukh" = (
 /obj/structure/cable/yellow{
@@ -35824,7 +35939,9 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "uVm" = (
 /obj/structure/stone_tile/block,
@@ -35916,7 +36033,9 @@
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
 "uXk" = (
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "uXq" = (
 /obj/structure/cable/yellow,
@@ -35970,6 +36089,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "uYG" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
@@ -37856,9 +37976,8 @@
 /area/lavaland/surface/outdoors)
 "wfd" = (
 /obj/effect/decal/cleanable/oil,
-/obj/machinery/light/small{
-	dir = 4
-	},
+/obj/machinery/power/apc/auto_name/east,
+/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /turf/open/floor/plating,
 /area/mine/engineering)
 "wfe" = (
@@ -38150,6 +38269,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
+/obj/structure/disposalpipe/segment{
+	dir = 10
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "wqp" = (
@@ -38189,7 +38311,9 @@
 /area/mine/laborcamp/security/maintetance)
 "wqU" = (
 /obj/structure/flora/tree/jungle/small,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "wqY" = (
 /obj/structure/lattice/catwalk,
@@ -38367,7 +38491,9 @@
 "wyX" = (
 /obj/structure/flora/rock/jungle,
 /obj/structure/window/reinforced,
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "wze" = (
 /obj/structure/fence/cut/large{
@@ -38420,7 +38546,9 @@
 /obj/structure/flora/junglebush/large{
 	pixel_y = -5
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "wAS" = (
 /obj/effect/turf_decal/tile/blue/full,
@@ -38646,12 +38774,14 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "wHz" = (
-/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
 /obj/machinery/power/terminal{
 	dir = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/catwalk_floor,
 /area/mine/common/maintenance/north)
@@ -40073,6 +40203,13 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/laborcamp/security)
+"xyw" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plating,
+/area/mine/common/maintenance/north)
 "xyS" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/trimline/purple/warning{
@@ -41261,7 +41398,9 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/floor/plating/smooth/grass/lavaland_jungle,
+/turf/open/floor/plating/smooth/grass/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/mine/common)
 "yfZ" = (
 /obj/machinery/light{
@@ -63855,7 +63994,7 @@ sKK
 pXU
 sWf
 hWZ
-sWf
+sAo
 njN
 pVO
 dEi
@@ -65912,8 +66051,8 @@ tKN
 bOa
 lJE
 wpS
-iMt
-iMt
+iiL
+iiL
 aWb
 opQ
 opQ
@@ -140332,7 +140471,7 @@ nES
 nES
 nES
 ewQ
-gwH
+xyw
 lJR
 reK
 mCx
@@ -140589,8 +140728,8 @@ nES
 nES
 nES
 ewQ
-qbr
-aAH
+gwH
+iPf
 cDC
 dIQ
 msX
