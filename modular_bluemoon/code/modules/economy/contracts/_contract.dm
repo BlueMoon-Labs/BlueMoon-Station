@@ -190,14 +190,17 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/to_people = 0
 	for(var/datum/bank_account/account as anything in shares)
 		to_people += shares[account]
+	var/paid = people_only ? to_people : total
 	if(!people_only)
 		var/datum/economy_department/department = SSeconomy.get_department(department_id)
 		department?.account.credit(total - to_people, ECON_CONTRACT, performer, "Контракт: [title]")
 	for(var/datum/bank_account/account as anything in shares)
 		var/share = shares[account]
 		var/bonus = account == taker ? round(share * account.contract_rank_bonus() / 100) : 0
+		paid += bonus
 		var/net = SSeconomy.pay_personal(null, account, share + bonus, ECON_CONTRACT, performer, "Контракт: [title]")
 		account.bank_card_talk("Контракт \"[title]\": [share] кр.[bonus ? " и [bonus] кр. надбавки за репутацию" : ""] до налога, на руки [net] кр.", balloon = net ? "контракт +[net] кр" : null)
+	SSmarket?.apply_work(STOCK_WORK_CONTRACTS, paid)
 	return to_people
 
 /// Сколько репутации подрядчика даёт закрытие контракта.

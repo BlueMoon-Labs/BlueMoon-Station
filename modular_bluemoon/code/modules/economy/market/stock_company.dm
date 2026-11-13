@@ -45,7 +45,7 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	"power_failure" = "Сбой энергосети станции",
 	"gravity_lost" = "Станция осталась без гравитации",
 	"radiation_storm" = "Радиационный шторм в секторе",
-	"red_alert" = "Красный код на станции",
+	"red_alert" = "Красный код или выше на станции",
 	"market_crash" = "Обвал рынка сектора",
 	"sector_boom" = "Бум в секторе",
 ))
@@ -258,7 +258,6 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 		return
 	var/list/line = work_move
 	if(!line || world.time - line["at"] >= STOCK_MOVE_MERGE_TIME)
-		moves -= list(line)
 		line = list("text" = null, "factor" = 1, "at" = world.time, "works" = list())
 		work_move = line
 	line["factor"] = line["factor"] * price / price_before

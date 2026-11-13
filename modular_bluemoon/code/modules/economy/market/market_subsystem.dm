@@ -523,7 +523,6 @@ SUBSYSTEM_DEF(market)
 	RegisterSignal(src, COMSIG_MARKET_OFFER_RESOLVED, PROC_REF(on_stock_offer_resolved), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_STOCK_TRADE, PROC_REF(note_trade_for_audit), override = TRUE)
 	RegisterSignal(SSeconomy, COMSIG_ECONOMY_WORK_RECORDED, PROC_REF(on_work_recorded), override = TRUE)
-	RegisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED, PROC_REF(on_money_moved), override = TRUE)
 
 /// Сделки с контрабандным партнёром двигают цену молча: лента не выдаёт серый рынок.
 /datum/controller/subsystem/market/proc/on_stock_trade(datum/source, datum/trade_partner/partner, value, is_sale)
@@ -557,12 +556,6 @@ SUBSYSTEM_DEF(market)
 /datum/controller/subsystem/market/proc/on_work_recorded(datum/source, department_id, work_type, amount, mob/performer, paid, atom/subject)
 	SIGNAL_HANDLER
 	apply_work(work_type, paid)
-
-/// Награда NT за выполненный станцией контракт - работа STOCK_WORK_CONTRACTS; переводы между счетами станции не в счёт.
-/datum/controller/subsystem/market/proc/on_money_moved(datum/source, datum/bank_account/payer, datum/bank_account/payee, amount, reason, mob/actor)
-	SIGNAL_HANDLER
-	if(reason == ECON_CONTRACT && !payer && payee && !payee.offstation)
-		apply_work(STOCK_WORK_CONTRACTS, amount)
 
 /// Оплаченная работа сдвигает цены привязанных компаний до потолка за смену; остановленные торги работа не двигает.
 /datum/controller/subsystem/market/proc/apply_work(work_type, paid)

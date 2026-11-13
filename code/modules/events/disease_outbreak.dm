@@ -30,6 +30,8 @@
 
 
 /datum/round_event/disease_outbreak/start()
+	if(announce_chance <= 0)
+		SSmarket?.station_event("disease_outbreak")
 	var/advanced_virus = FALSE
 	var/player_count = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
 	max_severity = 1 + max(FLOOR((world.time - control.earliest_start)/6000, 1),0) //3 symptoms at 20 minutes, plus 1 per 10 minutes

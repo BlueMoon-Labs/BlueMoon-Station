@@ -476,6 +476,10 @@
 	SSmarket.station_event("radiation_storm")
 	for(var/i in 1 to 6)
 		SSeconomy.record_work(ACCOUNT_SRV, i % 2 ? WORK_SRV_DISH : WORK_SRV_DRINK, 100)
+	var/list/before_pause = agro.moves_ui()
+	agro.work_move["at"] -= STOCK_MOVE_MERGE_TIME
+	SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DISH, 1)
+	var/list/after_pause = agro.moves_ui()
 	prices[WORK_SRV_DISH] = dish_price
 	prices[WORK_SRV_DRINK] = drink_price
 	econ_test_set_balance(service.account, balance_before)
@@ -488,6 +492,7 @@
 	TEST_ASSERT_EQUAL(event_line["text"], GLOB.market_station_event_names["radiation_storm"], "Работа вытеснила событие из ленты")
 	TEST_ASSERT(findtext(work_line["text"], market_work_driver_name(WORK_SRV_DISH)) && findtext(work_line["text"], market_work_driver_name(WORK_SRV_DRINK)), "Строка работы не называет обе работы: [work_line["text"]]")
 	TEST_ASSERT(work_line["effect"] > small_line["effect"], "Строка работы не копит сдвиг: [work_line["effect"]]%")
+	TEST_ASSERT_EQUAL(json_encode(after_pause), json_encode(before_pause), "Мелкая работа после паузы стёрла из ленты прошлую строку работы")
 
 /// Красный код и отказ гравитации экипаж вызывает сам: на бирже они срабатывают раз за смену, остальные события - снова после кулдауна.
 /datum/unit_test/economy_stocks/once_per_shift/Run()
@@ -559,12 +564,15 @@
 	var/after_contract = nt.price
 	var/moved = SSeconomy.move(medical.account, service.account, 500, ECON_CONTRACT)
 	var/after_transfer = nt.price
+	SSeconomy.move(null, medical.account, 1000, ECON_CONTRACT)
+	var/after_pad_share = nt.price
 	econ_test_set_balance(medical.account, medical_before)
 	econ_test_set_balance(service.account, service_before)
 	TEST_ASSERT(moved, "Перевод между отделами не прошёл")
 	var/expected = start * (1 + 2000 * shares["NTRN"] / STOCK_WORK_CREDITS)
 	TEST_ASSERT(abs(after_contract - expected) < 0.01, "Цена НТ после контракта [after_contract] вместо [expected]")
 	TEST_ASSERT_EQUAL(after_transfer, after_contract, "Перевод между счетами станции сдвинул НТ как контракт")
+	TEST_ASSERT_EQUAL(after_pad_share, after_contract, "Доля за спецзаказ партнёра сдвинула НТ как контракт NT")
 	TEST_ASSERT_EQUAL(newest_move(nt), "Работа станции: [market_work_driver_name(STOCK_WORK_CONTRACTS)]", "Контракт в ленте НТ")
 	var/list/driver = work_driver_of(nt)
 	TEST_ASSERT(findtext(driver["label"], market_work_driver_name(STOCK_WORK_CONTRACTS)), "Сноска НТ не называет контракты: [driver["label"]]")
