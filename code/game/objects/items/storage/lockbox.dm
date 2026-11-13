@@ -218,6 +218,8 @@
 	req_access = null
 	var/datum/bank_account/buyer_account
 	var/privacy_lock = TRUE
+	/// Чужой карте посылка не называет владельца: посылка анонимного продавца
+	var/hide_owner = FALSE
 
 /obj/item/storage/lockbox/order/Initialize(mapload, datum/bank_account/_buyer_account)
 	. = ..()
@@ -234,7 +236,8 @@
 		to_chat(user, span_warning("Замок [src] сломан."))
 		return
 	if(!buyer_account || id_card.registered_account != buyer_account)
-		to_chat(user, span_warning("Посылка заперта на счёт [buyer_account?.account_holder || "другого человека"]: эта карта её не откроет."))
+		var/owner_name = hide_owner ? null : buyer_account?.account_holder
+		to_chat(user, span_warning("Посылка заперта на счёт [owner_name || "другого человека"]: эта карта её не откроет."))
 		return
 	SEND_SIGNAL(src, COMSIG_TRY_STORAGE_SET_LOCKSTATE, !privacy_lock)
 	privacy_lock = SEND_SIGNAL(src, COMSIG_IS_STORAGE_LOCKED)

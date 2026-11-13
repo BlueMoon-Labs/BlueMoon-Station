@@ -140,8 +140,21 @@
 			others += contract
 	return own + free + others
 
-/// Предмет и всё внутри него, вложенное раньше вложившего; игроков и их вещи не трогает.
+/// Запертые и не взломанные именная посылка или именной ящик: заказ, подарок или итог аукциона.
+/proc/econ_sealed_parcel(atom/movable/thing)
+	if(istype(thing, /obj/item/storage/lockbox/order))
+		var/obj/item/storage/lockbox/order/parcel = thing
+		return parcel.privacy_lock && !parcel.broken
+	if(istype(thing, /obj/structure/closet/crate/secure/owned))
+		var/obj/structure/closet/crate/secure/owned/crate = thing
+		return crate.privacy_lock && !crate.broken
+	var/obj/structure/closet/secure_closet/cargo/owned/locker = thing
+	return istype(locker) && locker.privacy_lock && !locker.broken
+
+/// Предмет и всё внутри него, вложенное раньше вложившего; игроков, их вещи и запертые посылки, даже вложенные в ящик, не трогает: их содержимое сдаёт только владелец.
 /proc/econ_contract_candidates(atom/movable/thing, list/found = list())
+	if(econ_sealed_parcel(thing))
+		return found
 	if(ismob(thing))
 		var/mob/shipped_mob = thing
 		if(shipped_mob.mind || shipped_mob.key)

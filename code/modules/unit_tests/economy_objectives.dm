@@ -343,7 +343,7 @@
 	TEST_ASSERT(SSeconomy.move(head_account, SSeconomy.cash_account, 1000, ECON_CASH_OUT, traitor), "Снятие наличных с украденной карты")
 	TEST_ASSERT_EQUAL(turned.drained, 1000, "После перевыбора цель не слышит перекачку")
 
-/// Ставка на аукционе с украденной карты главы засчитывается, а перебитая и вернувшаяся на его счёт - перестаёт.
+/// Ставка на аукционе с украденной карты главы засчитывается, а перебитая и вернувшаяся на его счёт - перестаёт; перебитая ставка самого главы выкачанное антагонистом не трогает.
 /datum/unit_test/economy_objectives/drain_head_auction_refund/Run()
 	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
 	world_state.set_hard_round(src)
@@ -359,13 +359,17 @@
 	econ_test_set_balance(head_account, 2000)
 	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
 	lot.name = "тестовый лот"
-	TEST_ASSERT(SSeconomy.move(head_account, SSeconomy.market_account, 500, ECON_AUCTION_BID, traitor, "Аукцион: ставка"), "Ставка с украденной карты")
-	lot.set_leader(head_account)
-	lot.bid = 500
+	TEST_ASSERT_NULL(SSmarket.take_auction_bid(lot, head_account, 500, traitor, "Аукцион: ставка"), "Ставка с украденной карты не прошла")
 	TEST_ASSERT_EQUAL(objective.drained, 500, "Ставка с карты главы не засчитана")
 	SSmarket.refund_auction_bid(lot)
 	TEST_ASSERT_EQUAL(head_account.account_balance, 2000, "Перебитая ставка не вернулась главе")
 	TEST_ASSERT_EQUAL(objective.drained, 0, "Вернувшаяся на счёт главы ставка осталась выкачанной")
+
+	TEST_ASSERT(SSeconomy.move(head_account, econ_account_of(traitor), 800, ECON_TRANSFER, traitor, "Перевод"), "Перевод с украденной карты")
+	TEST_ASSERT_EQUAL(objective.drained, 800, "Перевод с карты главы не засчитан")
+	TEST_ASSERT_NULL(SSmarket.take_auction_bid(lot, head_account, 300, head_body, "Аукцион: ставка"), "Ставка главы не прошла")
+	SSmarket.refund_auction_bid(lot)
+	TEST_ASSERT_EQUAL(objective.drained, 800, "Перебитая ставка самого главы сняла выкачанное антагонистом")
 
 /// Задания предателя: при шансе 100 в Лайте только мирные экономические цели без повторов, в Харде выпадают и остальные, при шансе 0 - ни одной.
 /datum/unit_test/economy_objectives/forge/Run()

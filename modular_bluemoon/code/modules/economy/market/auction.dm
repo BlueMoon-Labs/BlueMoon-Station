@@ -3,7 +3,6 @@ GLOBAL_LIST_INIT(market_auction_lots, list(
 	list("path" = /obj/item/storage/backpack/holding, "name" = "блюспейс-рюкзак", "value" = 6000),
 	list("path" = /obj/item/clothing/suit/space/hardsuit/ancient, "name" = "старинный скафандр NT", "value" = 5000),
 	list("path" = /obj/item/instrument/violin/golden, "name" = "золотая скрипка", "value" = 4000),
-	list("path" = /obj/item/clothing/shoes/magboots/advance, "name" = "продвинутые магнитные ботинки", "value" = 3500),
 	list("path" = /obj/item/organ/cyberimp/arm/toolset, "name" = "имплант-инструментарий", "value" = 3000),
 	list("path" = /obj/item/clothing/head/crown, "name" = "корона", "value" = 2500),
 	list("path" = /obj/item/clothing/neck/necklace/dope, "name" = "золотая цепь", "value" = 1500),
@@ -43,6 +42,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/bid = 0
 	/// Счёт станции с текущей ставкой; null - ведёт соперник или ставок нет
 	var/datum/bank_account/bidder_account
+	/// weakref того, кто сделал ведущую ставку: возврат ставки идёт от его имени
+	var/datum/weakref/bidder_mob_ref
 	var/bidder_name
 	var/ends_at
 	var/next_rival_at = 0
@@ -93,8 +94,9 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(ends_at - world.time < AUCTION_SNIPE_WINDOW)
 		ends_at = world.time + AUCTION_SNIPE_WINDOW
 
-/// Чья замороженная ставка сейчас ведёт; удаление этого счёта сжигает его ставку.
-/datum/auction_lot/proc/set_leader(datum/bank_account/account)
+/// Чья замороженная ставка сейчас ведёт и кто её сделал; удаление этого счёта сжигает его ставку.
+/datum/auction_lot/proc/set_leader(datum/bank_account/account, mob/bidder)
+	bidder_mob_ref = account && bidder ? WEAKREF(bidder) : null
 	if(bidder_account == account)
 		return
 	if(bidder_account)
@@ -143,7 +145,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/desc
 	/// Что игрок написал на вещи ручкой или этикеткой: только пометкой в окне
 	var/inscription
-	/// Пад, с которого вещь приняли: посылка с итогом встанет на него
+	/// Пад, с которого вещь приняли: непроданная вещь вернётся на него
 	var/turf/origin
 
 /datum/auction_lot/crew/Destroy()
@@ -212,7 +214,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/list/auction_results = list()
 	/// Итоги последних лотов экипажа: list(лот, победитель или null, цена)
 	var/list/crew_auction_results = list()
-	/// Куда приходит посылка с лотом; null - на пад лота или капсулой в снабжение
+	/// Куда приходит посылка с лотом; null - капсулой в снабжение, возврат продавцу - на пад лота
 	var/turf/auction_drop_turf
 	/// Идущие лоты экипажа
 	var/list/crew_lots = list()
@@ -334,13 +336,14 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	lot.note_bid(rival, amount)
 	return rival
 
-/// Возврат замороженной ставки, которую перебили или чей лот закрылся; notice - текст карте вместо "перебили".
+/// Возврат замороженной ставки, которую перебили или чей лот закрылся, от имени поставившего; notice - текст карте вместо "перебили".
 /datum/controller/subsystem/market/proc/refund_auction_bid(datum/auction_lot/lot, notice)
 	var/datum/bank_account/account = lot.bidder_account
 	if(!account)
 		return
+	var/mob/bidder = lot.bidder_mob_ref?.resolve()
 	lot.set_leader(null)
-	SSeconomy.move(SSeconomy.market_account, account, lot.bid, ECON_AUCTION_REFUND, null, "Аукцион: возврат ставки, лот \"[lot.name]\"")
+	SSeconomy.move(SSeconomy.market_account, account, lot.bid, ECON_AUCTION_REFUND, bidder, "Аукцион: возврат ставки, лот \"[lot.name]\"")
 	if(notice)
 		account.bank_card_talk(notice)
 		return
@@ -377,7 +380,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		return "Ставка не прошла."
 	if(!raising)
 		refund_auction_bid(lot, outbid_notice)
-	lot.set_leader(account)
+	lot.set_leader(account, user)
 	lot.bidder_refs[WEAKREF(account)] = TRUE
 	lot.note_bid(account.account_holder, amount)
 	return null
@@ -435,6 +438,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		var/place = deliver_auction_lot(lot, winner)
 		if(place)
 			SSeconomy.move(SSeconomy.market_account, null, lot.bid, ECON_AUCTION, null, "Аукцион: лот \"[lot.name]\"")
+			SSeconomy.note_outflow(winner, SSeconomy.market_account, lot.bid)
 			lot.set_leader(null)
 			winner.bank_card_talk("Аукцион сектора: лот \"[lot.name]\" ваш за [lot.bid] кр.: [econ_auction_parcel_note(place, TRUE)].", TRUE, balloon = "лот ваш!")
 			publish("Аукцион сектора: лот \"[lot.name]\" уходит на нашу станцию, покупатель - [winner.account_holder], [lot.bid] кр.")
@@ -469,29 +473,30 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!.)
 		qdel(prize)
 
-/// Запертая посылка с вещью на счёт owner, открывает её только ID-карта владельца; named - имя владельца на посылке. Встаёт на свободный пад pad_turf, иначе летит блюспейс-капсулой в снабжение, иначе остаётся на месте пада. Возвращает, где её ждать; null - вещь осталась вне карты.
-/datum/controller/subsystem/market/proc/send_auction_parcel(obj/item/thing, datum/bank_account/owner, named = TRUE, turf/pad_turf)
+/// Запертая посылка с вещью на счёт owner, открывает её только ID-карта владельца; named - имя владельца на посылке и в отказе чужой карте. Возврат продавцу (to_pad) встаёт на свободный пад pad_turf, выигрыш и возврат без пада летят блюспейс-капсулой в снабжение, а без места для капсулы посылка остаётся на месте пада. Возвращает, где её ждать; null - вещь осталась вне карты.
+/datum/controller/subsystem/market/proc/send_auction_parcel(obj/item/thing, datum/bank_account/owner, named = TRUE, turf/pad_turf, to_pad = FALSE)
 	var/obj/item/storage/lockbox/order/parcel = new(null, owner)
 	parcel.name = named ? "auction parcel - [owner.account_holder]" : "auction parcel"
 	parcel.desc = "Запертая посылка аукциона. Открыть её может только [named ? owner.account_holder : "получатель"] своей ID-картой."
+	parcel.hide_owner = !named
 	parcel.econ_imported = TRUE
 	thing.forceMove(parcel)
-	if(auction_drop_turf)
-		parcel.forceMove(auction_drop_turf)
-		return "ждёт на складе снабжения"
-	var/obj/machinery/piratepad/civilian/pad = econ_auction_free_pad(pad_turf)
+	var/obj/machinery/piratepad/civilian/pad = to_pad ? econ_auction_free_pad(pad_turf) : null
 	if(pad)
 		parcel.forceMove(pad_turf)
 		flick(pad.sending_state, pad)
 		playsound(pad, 'sound/machines/wewewew.ogg', 50, TRUE)
-		return "ждёт на паде подработки"
+		return "ждёт на паде подработки ([get_area_name(pad_turf, TRUE)])"
+	if(auction_drop_turf)
+		parcel.forceMove(auction_drop_turf)
+		return "ждёт на складе снабжения"
 	var/turf/landing = econ_aid_landing_turf()
 	if(landing)
 		new /obj/effect/pod_landingzone(landing, /obj/structure/closet/supplypod/bluespacepod, parcel)
-		return istype(get_area(landing), /area/cargo/storage) ? "прилетит капсулой на склад снабжения" : "прилетит капсулой в отдел снабжения"
+		return "прилетит капсулой в снабжение ([get_area_name(landing, TRUE)])"
 	if(pad_turf)
 		parcel.forceMove(pad_turf)
-		return "ждёт там, где стоял пад подработки"
+		return "ждёт [(locate(/obj/machinery/piratepad/civilian) in pad_turf) ? "на паде подработки" : "там, где стоял пад подработки"] ([get_area_name(pad_turf, TRUE)])"
 	thing.moveToNullspace()
 	qdel(parcel)
 	return null
@@ -512,8 +517,13 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 /proc/econ_auction_parcel_note(place, named)
 	return "[named ? "запертая посылка на ваше имя" : "безымянная запертая посылка"] [place], откроет её ваша ID-карта"
 
-/// В nullspace вещь уходит мимо Moved(): свет её и того, что в ней, гасится вручную, иначе остаётся на паде.
+/// В nullspace вещь уходит мимо Moved(): свет её и того, что в ней, гасится вручную, иначе остаётся на паде. Открытые окна хранилищ закрываются у всех смотрящих, с клиентом и без: через них докладывали бы в лот.
 /proc/econ_auction_stash(atom/movable/thing)
+	thing.pulledby?.stop_pulling()
+	for(var/atom/movable/part as anything in thing.GetAllContents())
+		var/datum/component/storage/storage = part.GetComponent(/datum/component/storage)
+		for(var/mob/viewer as anything in storage?.is_using)
+			storage.close(viewer)
 	thing.moveToNullspace()
 	for(var/atom/movable/part as anything in thing.GetAllContents())
 		part.update_light()
@@ -617,7 +627,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/obj/item/thing = lot.take_item()
 	if(!thing)
 		return null
-	. = lot.seller_account ? send_auction_parcel(thing, lot.seller_account, !lot.anonymous, lot.origin) : null
+	. = lot.seller_account ? send_auction_parcel(thing, lot.seller_account, !lot.anonymous, lot.origin, TRUE) : null
 	if(!.)
 		log_econ("Аукцион экипажа: вещь лота #[lot.uid] \"[lot.name]\" некому вернуть, удалена")
 		qdel(thing)
@@ -754,6 +764,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		/obj/item/mecha_parts/mecha_equipment/weapon,
 		/obj/item/reagent_containers/spray/pepper,
 		/obj/item/flamethrower,
+		/obj/item/reagent_containers/food/drinks/bottle/molotov,
 		/obj/item/onetankbomb,
 		/obj/item/bombcore,
 		/obj/item/syndicatedetonator,
@@ -769,6 +780,24 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		/obj/item/abductor,
 		/obj/item/antag_spawner,
 		/obj/item/uplink,
+		/obj/item/tome,
+		/obj/item/voodoo,
+		/obj/item/warpwhistle,
+		/obj/item/guardiancreator,
+		/obj/item/nuclear_challenge,
+		/obj/item/living_heart,
+		/obj/item/pinpointer/nuke,
+	))
+	/// Тяжёлые, но мирные вещи: силу удара им прощают
+	var/static/list/heavy_tools = typecacheof(list(
+		/obj/item/reagent_containers/food/drinks/bottle,
+		/obj/item/pickaxe,
+		/obj/item/retractor,
+		/obj/item/hemostat,
+		/obj/item/cautery,
+		/obj/item/surgicaldrill,
+		/obj/item/scalpel,
+		/obj/item/circular_saw,
 	))
 	var/static/list/body_types = typecacheof(list(
 		/obj/item/organ,
@@ -797,10 +826,14 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!isitem(part))
 		return null
 	var/obj/item/item = part
-	if(is_type_in_typecache(item, GLOB.blacklisted_cargo_types) || antag_types[item.type] || item.GetComponent(/datum/component/uplink) || econ_auction_reserved(item))
+	if(is_type_in_typecache(item, GLOB.blacklisted_cargo_types) || antag_types[item.type] || econ_auction_reserved(item))
 		return "Эту вещь NT продавать не разрешает."
-	if((item.item_flags & NEEDS_PERMIT) || weapon_types[item.type] || item.force >= AUCTION_WEAPON_FORCE || econ_auction_weapon_export(item))
+	if((item.item_flags & NEEDS_PERMIT) || weapon_types[item.type] || econ_auction_weapon_export(item))
 		return "Оружие, взрывчатка, боеприпасы и снаряжение СБ на аукцион не принимаются."
+	if(!heavy_tools[item.type] && econ_item_max_force(item) >= AUCTION_WEAPON_FORCE)
+		return "Слишком опасно как оружие: такое NT на аукцион не пускает."
+	if(econ_sealed_parcel(item))
+		return "Запертую посылку сначала откройте ID-картой владельца."
 	if(body_types[item.type])
 		return "Импланты, органы и части тела на аукцион не принимаются."
 	if(access_types[item.type] || item.GetID() || length(item.GetAccess()))
@@ -811,32 +844,26 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		return "Контрабанду NT на аукцион не пропустит."
 	return null
 
-/// Вещь на особом учёте NT: командные реликвии, за которыми охотятся, и цели краж антагонистов прямо сейчас. Цели из ходовых вещей (баллоны, экстракты) не в счёт: отказ всем баллонам выдал бы, что их кто-то ищет.
+/// Вещь на особом учёте NT: всё, за чем могут охотиться антагонисты, всегда, а не только пока есть цель, иначе отказ выдал бы цель. Ходовые цели (баллоны, экстракты) и замены целей (фото чертежей) не в счёт.
 /proc/econ_auction_reserved(obj/item/item)
 	var/static/list/reserved
-	var/static/list/common_targets
 	if(!reserved)
-		var/list/paths = list()
+		var/list/paths = list(/obj/item/choice_beacon/hosgun)
 		var/datum/objective_item/base = /datum/objective_item
-		common_targets = list(initial(base.targetitem), /obj/item/tank, /obj/item/slime_extract, /obj/item/clothing/underwear/briefs)
+		var/list/common_targets = list(initial(base.targetitem), /obj/item/tank, /obj/item/slime_extract, /obj/item/clothing/underwear/briefs)
 		for(var/datum/objective_item/objective_type as anything in subtypesof(/datum/objective_item/steal) + subtypesof(/datum/objective_item/unique))
 			var/target = initial(objective_type.targetitem)
 			if(ispath(target, /obj/item) && !(target in common_targets))
 				paths += target
 		reserved = typecacheof(paths)
-	if(reserved[item.type])
-		return TRUE
-	for(var/datum/objective/steal/objective in GLOB.objectives)
-		if(!objective.steal_target || (objective.steal_target in common_targets))
-			continue
-		if(istype(item, objective.steal_target))
-			return TRUE
-		if(!objective.targetinfo)
-			continue
-		for(var/alt_type in objective.targetinfo.altitems)
-			if(istype(item, alt_type))
-				return TRUE
-	return FALSE
+	return !!reserved[item.type]
+
+/// Сила удара вещи, двуручным хватом тоже.
+/proc/econ_item_max_force(obj/item/item)
+	var/datum/component/two_handed/grip = item.GetComponent(/datum/component/two_handed)
+	if(!grip || grip.wielded)
+		return item.force
+	return max(item.force, grip.force_wielded, item.force * grip.force_multiplier)
 
 /// Экспорт NT считает вещь оружием или снаряжением СБ.
 /proc/econ_auction_weapon_export(obj/item/item)

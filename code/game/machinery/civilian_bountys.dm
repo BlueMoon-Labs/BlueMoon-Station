@@ -1,7 +1,7 @@
 ///Пад пункта подработки: отправляет ЦК предметы по контрактам поставки.
 /obj/machinery/piratepad/civilian
 	name = "contract pad"
-	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте. Свою вещь отсюда же можно выставить на аукцион экипажа - кнопкой на пульте, итог торгов вернётся сюда запертой посылкой. Чужую запертую посылку пад не отправляет."
+	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте. Свою вещь отсюда же можно выставить на аукцион экипажа кнопкой на пульте: купленное улетит покупателю капсулой в снабжение, а непроданное вернётся сюда запертой посылкой. Чужую запертую посылку или именной ящик пад не отправляет, даже вложенные в другой ящик."
 	layer = TABLE_LAYER
 	warmup_time = 3 SECONDS
 	circuit = /obj/item/circuitboard/machine/bountypad
@@ -61,7 +61,7 @@
 	var/matched = 0
 	var/imported = 0
 	for(var/atom/movable/thing in get_turf(linked))
-		if(thing == linked || locked_parcel(thing))
+		if(thing == linked)
 			continue
 		imported += econ_contracts_imported_matches(thing)
 		for(var/atom/movable/item as anything in econ_contract_candidates(thing))
@@ -103,7 +103,7 @@
 	var/offer_units = 0
 	var/imported = 0
 	for(var/atom/movable/thing in get_turf(linked))
-		if(thing == linked || QDELETED(thing) || locked_parcel(thing))
+		if(thing == linked || QDELETED(thing))
 			continue
 		if(econ_contracts_ship(thing, sender))
 			shipped++
@@ -120,11 +120,6 @@
 	flick(linked.sending_state, linked)
 	playsound(loc, 'sound/machines/wewewew.ogg', 70, TRUE)
 	playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
-
-/// Запертая именная посылка на паде (итог аукциона) чужому нажатию не отправляется: открыть её и сдать содержимое может только владелец.
-/obj/machinery/computer/piratepad_control/civilian/proc/locked_parcel(atom/movable/thing)
-	var/obj/item/storage/lockbox/order/parcel = thing
-	return istype(parcel) && parcel.privacy_lock
 
 /obj/machinery/computer/piratepad_control/civilian/proc/imported_note(imported)
 	return imported ? " Купленное в автоматах и через снабжение по контрактам и спецзаказам не засчитывается: [imported] шт. осталось на паде." : ""
@@ -172,14 +167,14 @@
 		return auction_list(usr, params)
 	return econ_contract_console_act(usr, action, params, src)
 
-/// Аукцион экипажа на пульте: вещи на паде с причиной отказа, условия и лимиты лотов. Всё, что не предмет (свет, машины, мобы), молча пропускается.
+/// Аукцион экипажа на пульте: вещи на паде с причиной отказа, условия и лимиты лотов. Всё, что не предмет (свет, машины, мобы), и запертые посылки молча пропускаются.
 /obj/machinery/computer/piratepad_control/civilian/proc/auction_pad_data(mob/user)
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/datum/bank_account/account = econ_account_of(user)
 	var/list/items = list()
 	var/turf/pad_turf = get_turf(linked_pad())
 	for(var/atom/movable/thing as anything in pad_turf?.contents)
-		if(!isitem(thing) || thing.invisibility > SEE_INVISIBLE_LIVING)
+		if(!isitem(thing) || thing.invisibility > SEE_INVISIBLE_LIVING || econ_sealed_parcel(thing))
 			continue
 		items += list(list("ref" = REF(thing), "name" = econ_auction_lot_name(thing), "problem" = econ_auction_item_problem(thing), "inscription" = econ_auction_inscription(thing)))
 		if(length(items) >= AUCTION_PAD_ITEMS_MAX)
