@@ -16,7 +16,13 @@
 	var/auto_mode = FALSE
 	var/beauty = 0
 	var/glass_color = "#cfe8ff"
+	/// Тип жидкости, для которого уже собраны оверлеи. Нужен, чтобы не перерисовывать аквариум каждый тик.
+	var/rendered_fluid_type
 	var/list/tracked_fish = list()
+	/// Сколько рыб каждого типа сейчас в аквариуме. По нему ограничиваем размножение без перебора всего списка.
+	var/list/fish_type_counts = list()
+	/// Если список рыб изменился в обход обычного входа-выхода, счётчики пересоберутся перед использованием.
+	var/fish_counts_dirty = FALSE
 	/// Связка рыбы и её плавающего визуала в vis_contents.
 	var/list/fish_visuals = list()
 	/// Связка декора и его статичного визуала в vis_contents.
@@ -35,11 +41,38 @@
 	SIGNAL_HANDLER
 	if(!allow_breeding)
 		return
+	ensure_fish_type_counts()
+	var/parent_crossbreeder = HAS_TRAIT(parent, TRAIT_FISH_CROSSBREEDER)
 	for(var/obj/item/fish/fish in tracked_fish)
 		if(fish == parent)
 			continue
-		if(fish.type == parent.type || (fish.type in parent.compatible_types) || HAS_TRAIT(fish, TRAIT_FISH_CROSSBREEDER) || HAS_TRAIT(parent, TRAIT_FISH_CROSSBREEDER))
-			candidates += fish
+		if(!parent_crossbreeder && fish.type != parent.type && !(parent.compatible_types && (fish.type in parent.compatible_types)) && !HAS_TRAIT(fish, TRAIT_FISH_CROSSBREEDER))
+			continue
+		// Не даём одному виду забить весь аквариум сверх его стабильной популяции.
+		if((fish_type_counts[fish.type] || 0) >= fish.stable_population)
+			continue
+		candidates += fish
+
+/obj/structure/aquarium/proc/register_fish_type(obj/item/fish/fish)
+	fish_type_counts[fish.type] = (fish_type_counts[fish.type] || 0) + 1
+
+/obj/structure/aquarium/proc/unregister_fish_type(obj/item/fish/fish)
+	var/type_count = fish_type_counts[fish.type]
+	if(!type_count)
+		return
+	if(type_count <= 1)
+		fish_type_counts -= fish.type
+	else
+		fish_type_counts[fish.type] = type_count - 1
+
+/obj/structure/aquarium/proc/ensure_fish_type_counts()
+	if(!fish_counts_dirty)
+		return
+	fish_counts_dirty = FALSE
+	fish_type_counts.Cut()
+	for(var/obj/item/fish/fish in tracked_fish)
+		if(!QDELETED(fish))
+			register_fish_type(fish)
 
 /// Бросает шанс эволюции при размножении и проверяет нужную температуру.
 /obj/structure/aquarium/proc/check_evolution(datum/source, obj/item/fish/fish, obj/item/fish/mate, datum/fish_evolution/evolution)
@@ -73,6 +106,7 @@
 		qdel(prop_visuals[prop_ref])
 	prop_visuals.Cut()
 	tracked_fish.Cut()
+	fish_type_counts.Cut()
 	return ..()
 
 /obj/structure/aquarium/update_overlays()
@@ -84,6 +118,10 @@
 	var/glass = fluid_type == AQUARIUM_FLUID_AIR ? "aquarium_glass_air" : "aquarium_glass_water"
 	. += mutable_appearance(icon, glass, layer = layer + AQUARIUM_GLASS_LAYER)
 	. += mutable_appearance(icon, "aquarium_borders", layer = layer + AQUARIUM_BORDERS_LAYER)
+
+/obj/structure/aquarium/update_icon()
+	. = ..()
+	rendered_fluid_type = fluid_type
 
 /obj/structure/aquarium/examine(mob/user)
 	. = ..()
@@ -156,6 +194,7 @@
 		fish.aquarium_pixel_x = null
 		fish.aquarium_pixel_y = null
 		remove_fish_visual(fish)
+		unregister_fish_type(fish)
 		tracked_fish -= gone
 		recalculate_beauty()
 		update_icon()
@@ -166,13 +205,20 @@
 	if(QDELETED(fish) || (fish in tracked_fish))
 		return
 	tracked_fish += fish
+	register_fish_type(fish)
 	fish.last_feeding = world.time
 	fish.forceMove(src)
 	fish.stop_flopping()
+	RegisterSignal(fish, COMSIG_FISH_STATUS_CHANGED, PROC_REF(on_aquarium_fish_status_changed))
 	update_fish_state(fish)
 	add_fish_visual(fish)
 	recalculate_beauty()
 	update_icon()
+
+/obj/structure/aquarium/proc/on_aquarium_fish_status_changed(obj/item/fish/source)
+	SIGNAL_HANDLER
+	sync_fish_visual(source)
+	recalculate_beauty()
 
 /obj/structure/aquarium/proc/remove_fish(obj/item/fish/fish, mob/user)
 	if(!(fish in tracked_fish))
@@ -199,6 +245,8 @@
 	sync_fish_visual(fish)
 
 /obj/structure/aquarium/proc/remove_fish_visual(obj/item/fish/fish)
+	if(!QDELETED(fish))
+		UnregisterSignal(fish, COMSIG_FISH_STATUS_CHANGED)
 	var/obj/effect/aquarium_fish/visual = fish_visuals[fish]
 	if(!visual)
 		return
@@ -237,17 +285,28 @@
 	if(QDELETED(fish) || QDELETED(visual))
 		return
 	var/fish_icon = fish.dedicated_in_aquarium_icon || fish.icon
-	var/fish_state = fish.dedicated_in_aquarium_icon_state || "[fish.icon_state]_small"
-	if(!(fish_state in icon_states(fish_icon)))
-		fish_state = fish.icon_state
+	var/desired_state = fish.dedicated_in_aquarium_icon_state || "[fish.icon_state]_small"
+	var/fish_state
+	if(visual.last_icon == fish_icon && visual.last_desired_state == desired_state)
+		fish_state = visual.last_resolved_state
+	else
+		fish_state = (desired_state in icon_states(fish_icon)) ? desired_state : fish.icon_state
+		visual.last_icon = fish_icon
+		visual.last_desired_state = desired_state
+		visual.last_resolved_state = fish_state
+	var/fish_color = fish.aquarium_vc_color || fish.color || null
+	var/fish_alpha = fish.status == FISH_DEAD ? 180 : 255
+	// Малые состояния уже нарисованы под масштаб аквариума, полные спрайты приходится уменьшать.
+	var/base_scale = (fish_state == fish.icon_state && !fish.dedicated_in_aquarium_icon_state) ? 0.4 : 1
+	if(visual.icon == fish_icon && visual.icon_state == fish_state && visual.color == fish_color && visual.alpha == fish_alpha && visual.base_scale == base_scale && visual.last_status == fish.status)
+		return
 	visual.icon = fish_icon
 	visual.icon_state = fish_state
-	visual.color = fish.aquarium_vc_color || fish.color || null
-	visual.alpha = fish.status == FISH_DEAD ? 180 : 255
-	// Малые состояния уже нарисованы под масштаб аквариума, полные спрайты приходится уменьшать.
-	visual.base_scale = (fish_state == fish.icon_state && !fish.dedicated_in_aquarium_icon_state) ? 0.4 : 1
+	visual.color = fish_color
+	visual.alpha = fish_alpha
+	visual.base_scale = base_scale
+	visual.last_status = fish.status
 	visual.set_bounds()
-	visual.apply_transform(visual.flip)
 	if(fish.status == FISH_DEAD)
 		visual.stop_swimming()
 		visual.pixel_y = visual.min_y
@@ -260,13 +319,14 @@
 		sync_fish_visual(fish)
 
 /obj/structure/aquarium/proc/update_fish_state(obj/item/fish/fish)
+	ensure_fish_type_counts()
 	var/list/compatible = GLOB.fish_compatible_fluid_types[fish.required_fluid_type] || list(fish.required_fluid_type)
 	fish.fish_flags &= ~(FISH_FLAG_SAFE_FLUID|FISH_FLAG_SAFE_TEMPERATURE|FISH_FLAG_OVERPOPULATED)
 	if(fluid_type in compatible)
 		fish.fish_flags |= FISH_FLAG_SAFE_FLUID
 	if(ISINRANGE(fluid_temp, fish.required_temperature_min, fish.required_temperature_max))
 		fish.fish_flags |= FISH_FLAG_SAFE_TEMPERATURE
-	if(length(tracked_fish) > AQUARIUM_MAX_BREEDING_POPULATION)
+	if((fish_type_counts[fish.type] || 0) > fish.stable_population)
 		fish.fish_flags |= FISH_FLAG_OVERPOPULATED
 
 /obj/structure/aquarium/proc/recalculate_beauty()
@@ -274,6 +334,8 @@
 	for(var/obj/item/fish/fish in tracked_fish.Copy())
 		if(QDELETED(fish))
 			tracked_fish -= fish
+			remove_fish_visual(fish)
+			fish_counts_dirty = TRUE
 			continue
 		beauty += fish.get_aquarium_beauty()
 
@@ -323,12 +385,15 @@
 	for(var/obj/item/fish/fish in tracked_fish.Copy())
 		if(QDELETED(fish))
 			tracked_fish -= fish
+			remove_fish_visual(fish)
+			fish_counts_dirty = TRUE
 			continue
 		update_fish_state(fish)
 		beauty += fish.get_aquarium_beauty()
 	update_auto_stasis()
 	update_fish_visuals()
-	update_icon()
+	if(rendered_fluid_type != fluid_type)
+		update_icon()
 
 /obj/structure/aquarium/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -482,8 +547,11 @@
 	var/max_x = 12
 	var/min_y = -4
 	var/max_y = 10
-	var/swim_timer
 	var/swimming = FALSE
+	var/last_icon
+	var/last_desired_state
+	var/last_resolved_state
+	var/last_status
 
 /obj/effect/aquarium_fish/proc/set_bounds()
 	if(!fish)
@@ -505,29 +573,33 @@
 	if(swimming || QDELETED(src) || QDELETED(fish) || fish.status == FISH_DEAD)
 		return
 	swimming = TRUE
-	swim_step()
+	swim_animation()
 
 /obj/effect/aquarium_fish/proc/stop_swimming()
+	if(!swimming)
+		return
 	swimming = FALSE
-	if(swim_timer && swim_timer != -1)
-		deltimer(swim_timer)
-		swim_timer = null
+	animate(src)
 
-/obj/effect/aquarium_fish/proc/swim_step()
-	if(!swimming || QDELETED(src) || QDELETED(fish))
-		return
-	if(fish.status == FISH_DEAD)
-		stop_swimming()
-		apply_transform(flip)
-		pixel_y = min_y
-		return
-	var/target_x = rand(min_x, max_x)
-	var/target_y = rand(min_y, max_y)
-	var/distance = abs(target_x - pixel_x) + abs(target_y - pixel_y)
-	var/travel_time = clamp(distance * 2, 8, 40)
-	apply_transform(target_x >= pixel_x ? -1 : 1)
-	animate(src, pixel_x = target_x, pixel_y = target_y, time = travel_time)
-	swim_timer = addtimer(CALLBACK(src, PROC_REF(swim_step)), travel_time + rand(2, 10))
+/// Один длинный цикл анимации вместо серверного таймера на каждую рыбу.
+/obj/effect/aquarium_fish/proc/swim_animation()
+	var/origin_x = pixel_x
+	var/origin_y = pixel_y
+	var/prev_x = origin_x
+	var/prev_y = origin_y
+	animate(src, pixel_x = origin_x, pixel_y = origin_y, time = 0, loop = -1)
+	var/move_count = rand(3, 5)
+	for(var/i in 1 to move_count)
+		var/target_x = (i == move_count) ? origin_x : rand(min_x, max_x)
+		var/target_y = (i == move_count) ? origin_y : rand(min_y, max_y)
+		var/travel_time = clamp((abs(target_x - prev_x) + abs(target_y - prev_y)) * 2, 8, 40)
+		flip = (target_x < prev_x) ? 1 : -1
+		var/matrix/dir_mx = matrix()
+		dir_mx.Scale(base_scale * flip, base_scale)
+		animate(src, transform = dir_mx, time = 0, loop = -1)
+		animate(src, pixel_x = target_x, pixel_y = target_y, time = travel_time, loop = -1)
+		prev_x = target_x
+		prev_y = target_y
 
 /obj/effect/aquarium_fish/Destroy()
 	stop_swimming()

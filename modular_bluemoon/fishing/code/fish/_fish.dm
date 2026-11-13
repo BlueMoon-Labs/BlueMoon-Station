@@ -777,8 +777,15 @@ GLOBAL_LIST_INIT(fish_compatible_fluid_types, list(
 			return FALSE
 	if(being_targeted && HAS_TRAIT(src, TRAIT_FISH_NO_MATING))
 		return FALSE
-	if(!being_targeted && length(get_aquarium_fishes()) >= AQUARIUM_MAX_BREEDING_POPULATION)
-		return FALSE
+	if(!being_targeted)
+		var/fish_count = 0
+		if(istype(loc, /obj/structure/aquarium))
+			var/obj/structure/aquarium/tank = loc
+			fish_count = length(tank.tracked_fish)
+		else
+			fish_count = length(get_aquarium_fishes())
+		if(fish_count >= AQUARIUM_MAX_BREEDING_POPULATION)
+			return FALSE
 	return !HAS_TRAIT(loc, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH) && get_health_percentage() >= 0.8 && world.time >= breeding_wait
 
 /obj/item/fish/proc/try_to_reproduce()
@@ -797,6 +804,11 @@ GLOBAL_LIST_INIT(fish_compatible_fluid_types, list(
 					break
 	if(!second_fish && !HAS_TRAIT(src, TRAIT_FISH_SELF_REPRODUCE))
 		return FALSE
+	if(!second_fish && istype(loc, /obj/structure/aquarium))
+		var/obj/structure/aquarium/tank = loc
+		tank.ensure_fish_type_counts()
+		if((tank.fish_type_counts[type] || 0) >= stable_population)
+			return FALSE
 	var/chosen_type
 	var/datum/fish_evolution/chosen_evolution
 	var/list/possible_evolutions = list()
