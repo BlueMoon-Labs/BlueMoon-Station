@@ -105,6 +105,26 @@ SUBSYSTEM_DEF(mc_pace_probe)
 	TEST_ASSERT_EQUAL(SSair.pace_interval(), nominal, "Растянутый клапаном интервал попал в темп прохода")
 	SSair.wait = old_wait
 
+/// Ограничения кусков включаются в идущем раунде с игроками сами, без pacing_forced: current_runlevel - номер уровня, а не флаг.
+/datum/unit_test/mc_pacing_active_in_round/Run()
+	var/old_forced = Master.pacing_forced
+	var/old_runlevel = Master.current_runlevel
+	Master.pacing_forced = FALSE
+	var/list/with_players = list()
+	var/list/without_players = list()
+	for(var/runlevel in list(RUNLEVEL_LOBBY, RUNLEVEL_SETUP, RUNLEVEL_GAME, RUNLEVEL_POSTGAME))
+		Master.SetRunLevel(runlevel)
+		with_players["[runlevel]"] = !!Master.pacing_active(1)
+		without_players["[runlevel]"] = !!Master.pacing_active(0)
+	Master.current_runlevel = old_runlevel
+	Master.pacing_forced = old_forced
+	TEST_ASSERT(with_players["[RUNLEVEL_GAME]"], "В раунде с игроками ограничения кусков выключены")
+	TEST_ASSERT(with_players["[RUNLEVEL_POSTGAME]"], "После раунда с игроками ограничения кусков выключены")
+	TEST_ASSERT(!with_players["[RUNLEVEL_LOBBY]"], "Ограничения кусков включились в лобби")
+	TEST_ASSERT(!with_players["[RUNLEVEL_SETUP]"], "Ограничения кусков включились на подготовке раунда")
+	for(var/runlevel in without_players)
+		TEST_ASSERT(!without_players[runlevel], "Ограничения кусков включились без игроков на уровне [runlevel]")
+
 #undef MC_PACE_PROBE_WORK
 #undef MC_PACE_PROBE_UNIT
 #undef MC_PACE_PROBE_TIMEOUT_TICKS

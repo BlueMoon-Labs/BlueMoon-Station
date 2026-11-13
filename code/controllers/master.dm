@@ -771,10 +771,13 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	. = 1
 
 /// Куски ограничиваются, только пока их задержку кто-то видит: идёт раунд и есть игроки.
-/datum/controller/master/proc/pacing_active()
+/datum/controller/master/proc/pacing_active(client_count = length(GLOB.clients))
 	if(pacing_forced)
 		return TRUE
-	return (current_runlevel & (RUNLEVEL_GAME | RUNLEVEL_POSTGAME)) && length(GLOB.clients)
+	if(!client_count || !current_runlevel)
+		return FALSE
+	// current_runlevel - номер уровня из SetRunLevel(), а не его флаг.
+	return (1 << (current_runlevel - 1)) & (RUNLEVEL_GAME | RUNLEVEL_POSTGAME)
 
 /**
  * Предел тика до следующего прогона МК: по нему CHECK_TICK в Topic, вербах и проснувшихся проках уступает тик.
