@@ -66,6 +66,8 @@ type PersonalOrder = {
   id: number;
   name: string;
   price: number;
+  /** Подарок: кому едет посылка. */
+  gift_to?: string | null;
 };
 
 type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
@@ -213,7 +215,8 @@ const AccountNotices = () => {
       {data.state === 'dormant' && (
         <NoticeBox warning>
           Счёт спит: владелец дольше {data.dormant_minutes} мин. мёртв или не на смене. Зарплата не начисляется и в долг не
-          копится, по имени счёт не находится - переводы на него только по номеру.
+          копится, по имени счёт не находится - переводы на него только по номеру. Неотгруженные личные заказы на это
+          имя сняты с корзины, деньги вернулись тем, кто платил.
         </NoticeBox>
       )}
       {!!data.anonymous && (
@@ -441,6 +444,23 @@ const SHUTTLE_NOTES: Record<ShuttleState, string> = {
   away: 'Шаттл снабжения сейчас недоступен: заказ подождёт.',
 };
 
+const shuttleEta = (state: ShuttleState, eta: number) => {
+  const minutes = Math.ceil(eta / 60);
+  if (eta <= 0) {
+    return '';
+  }
+  switch (state) {
+    case 'to_station':
+      return ` До посадки на станции: ${minutes} мин.`;
+    case 'to_centcom':
+      return ` До ЦК: ${minutes} мин.`;
+    case 'recharging':
+      return ` Будет готов через ${minutes} мин.`;
+    default:
+      return '';
+  }
+};
+
 const MyOrders = () => {
   const { act, data } = useBackend<WalletData>();
   const orders = data.personal_orders || [];
@@ -456,6 +476,12 @@ const MyOrders = () => {
             <Table.Row key={order.id} className="candystripe">
               <Table.Cell py={0.5}>
                 №{order.id} {order.name}
+                {!!order.gift_to && (
+                  <Box as="span" color="label">
+                    {' '}
+                    - подарок для {order.gift_to}
+                  </Box>
+                )}
               </Table.Cell>
               <Table.Cell collapsing py={0.5} textAlign="right">
                 <Credits amount={order.price} />
@@ -465,7 +491,11 @@ const MyOrders = () => {
                   icon="times"
                   content="Отменить"
                   confirmContent="Отменить и вернуть деньги?"
-                  tooltip="Заказ ещё ждёт шаттла: деньги вернутся на счёт."
+                  tooltip={
+                    order.gift_to
+                      ? 'Подарок ещё ждёт шаттла: деньги вернутся вам, получатель узнает, что он не приедет.'
+                      : 'Заказ ещё ждёт шаттла: деньги вернутся на счёт.'
+                  }
                   onClick={() => act('personal_cancel', { id: order.id })}
                 />
               </Table.Cell>
@@ -612,9 +642,18 @@ const AuctionSection = () => {
   );
 };
 
-const CatalogRow = (props: { pack: PersonalPack; full: boolean }) => {
+type CatalogRowProps = {
+  pack: PersonalPack;
+  full: boolean;
+  /** Получатель подарка, '' - себе. */
+  recipient: string;
+  signed: boolean;
+};
+
+const CatalogRow = (props: CatalogRowProps) => {
   const { act, data } = useBackend<WalletData>();
-  const { pack, full } = props;
+  const { pack, full, recipient, signed } = props;
+  const gift = recipient !== '';
   const [open, setOpen] = useState(false);
   const [price, inStock] = data.personal_prices?.[pack.id] || [0, 0];
   const balance = data.balance || 0;
@@ -652,14 +691,19 @@ const CatalogRow = (props: { pack: PersonalPack; full: boolean }) => {
       </Table.Cell>
       <Table.Cell collapsing py={0.5}>
         <Button.Confirm
-          icon="shopping-cart"
+          icon={gift ? 'gift' : 'shopping-cart'}
           color="good"
-          content="Заказать"
-          confirmContent="Оплатить?"
+          content={gift ? 'Подарить' : 'Заказать'}
+          confirmContent={gift ? `Подарить за ${formatCredits(price)}?` : `Оплатить ${formatCredits(price)}?`}
           confirmColor="good"
           disabled={!!refusal}
           tooltip={refusal}
-          onClick={() => act('personal_order', { id: pack.id })}
+          onClick={() =>
+            act(
+              'personal_order',
+              gift ? { id: pack.id, price, recipient, hide_name: !signed } : { id: pack.id, price },
+            )
+          }
         />
       </Table.Cell>
     </Table.Row>
@@ -670,9 +714,12 @@ const OrdersTab = () => {
   const { data } = useBackend<WalletData>();
   const sections = data.personal_catalog || [];
   const [shown, setShown] = useState<string | null>(null);
+  const [recipient, setRecipient] = useState('');
+  const [signed, setSigned] = useState(true);
   const full = (data.personal_orders || []).length >= (data.personal_order_limit || 0);
   const shuttle = data.shuttle;
   const visible = sections.filter((section) => !shown || section.name === shown);
+  const crew = (data.crew || []).filter((name) => name !== data.holder);
   return (
     <>
       <AccountNotices />
@@ -680,17 +727,46 @@ const OrdersTab = () => {
       <MyOrders />
       <Section title="Личный каталог">
         <Box color="label" mb={1}>
-          Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт. Цена партнёра без наценки частного заказа
-          списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на ваше имя будет ждать в
-          отделе снабжения, открыть её можно своей ID-картой. Пока шаттл не вылетел, заказ можно отменить - деньги
-          вернутся. Ждать шаттла могут до {data.personal_order_limit} ваших заказов сразу.
+          Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт - себе или в подарок. Цена партнёра без
+          наценки частного заказа списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на имя
+          получателя будет ждать в отделе снабжения, открыть её можно его ID-картой. Пока шаттл не вылетел, заказ можно
+          отменить - деньги вернутся вам; если получатель уйдёт со смены раньше, заказ снимется сам. Ждать шаттла могут
+          до {data.personal_order_limit} ваших заказов сразу.
         </Box>
         {!!shuttle && (
           <Box mb={1}>
             {SHUTTLE_NOTES[shuttle.state]}
-            {shuttle.eta > 0 ? ` До посадки: ${Math.ceil(shuttle.eta / 60)} мин.` : ''}
+            {shuttleEta(shuttle.state, shuttle.eta)}
           </Box>
         )}
+        <LabeledList>
+          <LabeledList.Item label="Кому">
+            <Stack align="center">
+              <Stack.Item>
+                <Dropdown
+                  width="16em"
+                  options={[{ value: '', displayText: 'Себе' }, ...crew]}
+                  selected={recipient}
+                  onSelected={(value: string) => setRecipient(value)}
+                />
+              </Stack.Item>
+              {!!recipient && (
+                <Stack.Item>
+                  <Button.Checkbox checked={signed} onClick={() => setSigned(!signed)}>
+                    Подписать моим именем
+                  </Button.Checkbox>
+                </Stack.Item>
+              )}
+            </Stack>
+          </LabeledList.Item>
+        </LabeledList>
+        {!!recipient && (
+          <Box color="label" mt={0.5}>
+            Подарок для {recipient}: платите вы, посылку откроет карта получателя, а его карта сразу скажет, что ему едет
+            посылка{signed ? ' от вас' : ' - без вашего имени'}.
+          </Box>
+        )}
+        <Box mt={1} />
         <Box mb={1}>
           <Button selected={!shown} onClick={() => setShown(null)}>
             Всё
@@ -708,7 +784,7 @@ const OrdersTab = () => {
             </Box>
             <Table>
               {section.packs.map((pack) => (
-                <CatalogRow key={pack.id} pack={pack} full={full} />
+                <CatalogRow key={pack.id} pack={pack} full={full} recipient={recipient} signed={signed} />
               ))}
             </Table>
           </Box>

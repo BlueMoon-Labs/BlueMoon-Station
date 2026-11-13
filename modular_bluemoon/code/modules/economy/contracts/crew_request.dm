@@ -7,6 +7,10 @@
 	var/settled = FALSE
 	/// Номер сдачи: таймер автоприёмки старой сдачи не срабатывает на новую
 	var/report_count = 0
+	/// Отложенная строка по общему каналу
+	var/announce_timer
+	/// Кто дал объявление: мут IC перепроверяется перед строкой по радио
+	var/datum/weakref/poster_mob_ref
 
 /datum/econ_contract/crew_request/New(datum/bank_account/poster, title, desc, reward)
 	..(null)
@@ -167,6 +171,8 @@
 /// Размещает объявление экипажа со счёта account. Возвращает list(размещено ли, ответ игроку).
 /proc/econ_post_crew_request(mob/user, datum/bank_account/account, title, desc, reward)
 	var/datum/economy_settings/settings = SSeconomy.settings
+	if(econ_ic_muted(user))
+		return list(FALSE, "Вам запрещено говорить в IC, поэтому давать объявления нельзя.")
 	if(!account || account.offstation || !(account in SSeconomy.bank_accounts))
 		return list(FALSE, "Объявления размещают со счетов экипажа станции.")
 	if(length(SSeconomy.crew_requests_of(account)) >= ECON_CREW_REQUESTS_PER_POSTER)
@@ -189,19 +195,40 @@
 	var/datum/econ_contract/crew_request/request = new(account, title, desc, reward)
 	log_econ("[key_name(user)] разместил объявление #[request.uid] \"[title]\" за [reward] кр.: [desc]")
 	log_game("[key_name(user)] разместил объявление экипажа \"[title]\" за [reward] кр.: [desc]")
-	var/announced = econ_crew_request_announce(request)
-	return list(TRUE, "Объявление \"[title]\" размещено на [DisplayTimeText(ECON_CREW_REQUEST_TIME)], [reward] кр. ушли в депозит до расчёта.[announced ? " Экипаж услышал о нём по общему каналу." : ""]")
+	request.poster_mob_ref = WEAKREF(user)
+	return list(TRUE, "Объявление \"[title]\" размещено на [DisplayTimeText(ECON_CREW_REQUEST_TIME)], [reward] кр. ушли в депозит до расчёта.[request.schedule_announce()]")
+
+/// IC-мут: такой игрок не даёт объявлений, которые потом звучат по радио.
+/proc/econ_ic_muted(mob/user)
+	if(!user)
+		return FALSE
+	var/client/user_client = GET_CLIENT(user)
+	return !!(user_client?.prefs?.muted & MUTE_IC)
 
 /datum/controller/subsystem/economy
 	COOLDOWN_DECLARE(crew_request_announce_cooldown)
 
-/// Новое объявление одной строкой по общему каналу, без имени заказчика и не чаще crew_request_announce_minutes на всю станцию. TRUE, если прозвучало.
-/proc/econ_crew_request_announce(datum/econ_contract/crew_request/request)
-	if(!COOLDOWN_FINISHED(SSeconomy, crew_request_announce_cooldown))
+/datum/bank_account
+	COOLDOWN_DECLARE(crew_request_announce_cooldown)
+
+/// Откладывает строку по общему каналу на ECON_CREW_REQUEST_ANNOUNCE_DELAY. Возвращает пояснение для заказчика.
+/datum/econ_contract/crew_request/proc/schedule_announce()
+	if(!COOLDOWN_FINISHED(poster, crew_request_announce_cooldown))
+		return " По общему каналу о нём не скажут: ваши объявления звучат там не чаще раза в [SSeconomy.settings.crew_request_personal_announce_minutes] мин."
+	announce_timer = addtimer(CALLBACK(src, PROC_REF(announce)), ECON_CREW_REQUEST_ANNOUNCE_DELAY, TIMER_STOPPABLE)
+	return " Если за [DisplayTimeText(ECON_CREW_REQUEST_ANNOUNCE_DELAY)] его никто не возьмёт, о нём коротко скажет общий канал, когда тот не занят другим объявлением."
+
+/// Строка по общему каналу без имени заказчика: объявление ещё свободно, заказчик не в муте, канал и личный кулдаун заказчика свободны. TRUE, если прозвучала.
+/datum/econ_contract/crew_request/proc/announce()
+	announce_timer = null
+	if(QDELETED(src) || completed || taker || !poster || econ_ic_muted(poster_mob_ref?.resolve()))
 		return FALSE
-	if(!paperwork_radio("Доска объявлений экипажа: «[request.title]», награда [request.reward] кр. Взять - в Кошельке на КПК, вкладка «Подработка», или на доске контрактов.", RADIO_CHANNEL_COMMON))
+	if(!COOLDOWN_FINISHED(SSeconomy, crew_request_announce_cooldown) || !COOLDOWN_FINISHED(poster, crew_request_announce_cooldown))
+		return FALSE
+	if(!paperwork_radio("Доска объявлений экипажа: «[title]», награда [reward] кр. Взять - в Кошельке на КПК, вкладка «Подработка», или на доске контрактов.", RADIO_CHANNEL_COMMON))
 		return FALSE
 	COOLDOWN_START(SSeconomy, crew_request_announce_cooldown, SSeconomy.settings.crew_request_announce_minutes MINUTES)
+	COOLDOWN_START(poster, crew_request_announce_cooldown, SSeconomy.settings.crew_request_personal_announce_minutes MINUTES)
 	return TRUE
 
 /// Действие action над объявлением uid от счёта account. Возвращает list(удалось ли, ответ игроку).

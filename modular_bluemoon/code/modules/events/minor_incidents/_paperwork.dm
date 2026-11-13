@@ -254,12 +254,12 @@
 	var/obj/item/card/id/card = user?.get_idcard(FALSE)
 	return card?.registered_account
 
-/// Сообщение в канал отдела через станционную систему оповещения, если она работает.
+/// Сообщение в канал отдела через станционную систему оповещения, если она работает. Общий канал у её гарнитуры - частота по умолчанию, без имени канала.
 /proc/paperwork_radio(message, channel)
 	for(var/obj/machinery/announcement_system/announcer as anything in GLOB.announcement_systems)
 		if(!is_station_level(announcer.z) || !announcer.is_operational())
 			continue
-		announcer.radio?.talk_into(announcer, message, channel)
+		announcer.radio?.talk_into(announcer, message, channel == RADIO_CHANNEL_COMMON ? null : channel)
 		return TRUE
 	return FALSE
 

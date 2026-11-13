@@ -4,7 +4,7 @@
 	filedesc = "Кошелёк"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "wallet"
-	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы из каталога с доставкой шаттлом снабжения, ставки на аукционе сектора и экипажа, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
+	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы и подарки экипажу из каталога с доставкой шаттлом снабжения, ставки на аукционе сектора и экипажа, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
@@ -127,7 +127,7 @@
 		personal_prices_for = WEAKREF(account)
 	var/list/orders = list()
 	for(var/datum/supply_order/order as anything in econ_personal_orders_of(account))
-		orders += list(list("id" = order.id, "name" = order.pack.name, "price" = order.prepaid))
+		orders += list(list("id" = order.id, "name" = order.pack.name, "price" = order.prepaid, "gift_to" = order.gift_to?.account_holder))
 	return list(
 		"personal_prices" = personal_prices,
 		"personal_orders" = orders,
@@ -161,7 +161,8 @@
 		if("lottery_buy")
 			return wallet_lottery(user, params["count"])
 		if("personal_order")
-			message = econ_personal_order(user, wallet_account(user), params["id"])[2]
+			message = econ_personal_order(user, wallet_account(user), params["id"], params["price"], params["recipient"], params["hide_name"])[2]
+			personal_prices_at = null
 			return TRUE
 		if("personal_cancel")
 			message = econ_cancel_personal_order(user, wallet_account(user), params["id"])[2]

@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, within } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
@@ -233,8 +233,8 @@ describe('NtosWallet', () => {
     expect(candy.closest('.Button')?.className).toContain('Button--disabled');
     fireEvent.click(corgi);
     expect(sent(topic, 'personal_order')).toEqual([]);
-    fireEvent.click(getByText('Оплатить?'));
-    expect(sent(topic, 'personal_order')).toEqual([{ id: '/datum/supply_pack/critter/corgi' }]);
+    fireEvent.click(getByText('Оплатить 1 200 кр.?'));
+    expect(sent(topic, 'personal_order')).toEqual([{ id: '/datum/supply_pack/critter/corgi', price: 1200 }]);
     fireEvent.click(getAllByText('Праздник и угощение')[0]);
     expect(text(container)).not.toContain('Corgi Crate');
     expect(text(container)).toContain('Party Equipment');
@@ -252,13 +252,53 @@ describe('NtosWallet', () => {
     const content = text(container);
     expect(content).toContain('№1 Corgi Crate');
     expect(content).toContain('Уже летит на станцию: №9 Jukebox.');
-    expect(content).toContain('новый заказ полетит следующим рейсом. До посадки: 3 мин.');
+    expect(content).toContain('новый заказ полетит следующим рейсом. До посадки на станции: 3 мин.');
     for (const button of getAllByText('Заказать')) {
       expect(button.closest('.Button')?.className).toContain('Button--disabled');
     }
     fireEvent.click(getAllByText('Отменить')[0]);
     fireEvent.click(getByText('Отменить и вернуть деньги?'));
     expect(sent(topic, 'personal_cancel')).toEqual([{ id: 1 }]);
+  });
+
+  test.each([
+    ['to_station', 'До посадки на станции: 3 мин.'],
+    ['to_centcom', 'До ЦК: 3 мин.'],
+    ['recharging', 'Будет готов через 3 мин.'],
+  ] as const)('заказы: время шаттла в состоянии %s подписано по делу', (state, expected) => {
+    const { container, getByText } = setup({ ...personal, shuttle: { state, eta: 150 } });
+    fireEvent.click(getByText('Заказы'));
+    const content = text(container);
+    expect(content).toContain(expected);
+    if (state !== 'to_station') {
+      expect(content).not.toContain('До посадки');
+    }
+  });
+
+  test('заказы: подарок уходит с получателем, ценой и выбором подписи, в своих заказах видно, кому он', () => {
+    const { container, getByText, getAllByText, topic } = setup({
+      ...personal,
+      personal_orders: [{ id: 4, name: 'Corgi Crate', price: 1200, gift_to: 'Анна Смирнова' }],
+    });
+    fireEvent.click(getByText('Заказы'));
+    expect(text(container)).toContain('№4 Corgi Crate - подарок для Анна Смирнова');
+    const picker = container.querySelector('.Dropdown__control') as HTMLElement;
+    expect(picker.textContent).toContain('Себе');
+    fireEvent.click(picker);
+    const menu = within(container.querySelector('.Dropdown__menu') as HTMLElement);
+    expect(menu.queryByText('Иван Петров')).toBeNull();
+    fireEvent.click(menu.getByText('Анна Смирнова'));
+    expect(text(container)).toContain('Подарок для Анна Смирнова: платите вы');
+    expect(text(container)).toContain('посылка от вас');
+    fireEvent.click(getAllByText('Подарить')[0]);
+    fireEvent.click(getByText('Подарить за 1 200 кр.?'));
+    fireEvent.click(getByText('Подписать моим именем'));
+    expect(text(container)).toContain('без вашего имени');
+    fireEvent.click(getByText('Подарить за 1 200 кр.?'));
+    expect(sent(topic, 'personal_order')).toEqual([
+      { id: '/datum/supply_pack/critter/corgi', price: 1200, recipient: 'Анна Смирнова', hide_name: false },
+      { id: '/datum/supply_pack/critter/corgi', price: 1200, recipient: 'Анна Смирнова', hide_name: true },
+    ]);
   });
 
   const lot = (uid: number, extra = {}) => ({

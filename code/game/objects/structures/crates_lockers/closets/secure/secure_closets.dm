@@ -35,7 +35,7 @@
 
 /obj/structure/closet/secure_closet/cargo/owned/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>It's locked with a privacy lock, and can only be unlocked by the buyer's ID.</span>"
+	. += span_notice("Заперт именным замком: откроет только ID-карта того, на чей счёт заказ, - покупателя или получателя подарка.")
 
 /obj/structure/closet/secure_closet/cargo/owned/Initialize(mapload, datum/bank_account/_buyer_account)
 	. = ..()

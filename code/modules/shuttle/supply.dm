@@ -105,6 +105,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 	if(. != DOCKING_SUCCESS)
 		return
 	if(getDockedId() == "supply_away") // Sell when we get home
+		personal_arrivals.Cut()
 		sell()
 	else if(getDockedId() == "supply_home")
 		notify_personal_arrivals()
@@ -113,7 +114,6 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 	var/list/obj/miscboxes = list() //miscboxes are combo boxes that contain all goody orders grouped
 	var/list/misc_order_num = list() //list of strings of order numbers, so that the manifest can show all orders in a box
 	var/list/misc_contents = list() //list of lists of items that each box will contain
-	personal_arrivals.Cut()
 	if(!SSshuttle.shoppinglist.len)
 		return
 
@@ -153,7 +153,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				continue
 		else if(SO.paying_account) //Someone paid out of pocket
 			D = SO.paying_account
-			var/list/current_buyer_orders = goodies_by_buyer[SO.paying_account] // so we can access the length a few lines down
+			var/list/current_buyer_orders = goodies_by_buyer[SO.gift_to || SO.paying_account] // so we can access the length a few lines down
 			if(!SO.pack.goody && !personal_catalog && !SO.prepaid)
 				price *= ECON_PRIVATE_ORDER_MARKUP
 
@@ -172,14 +172,14 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 					D.bank_card_talk("Заказ снабжения №[SO.id] не отгружен: на счёте не хватает денег, нужно [due] кр. Заказ ждёт следующего шаттла.")
 				continue
 			else if(ispath(SO.pack.crate_type, /obj/structure/closet/secure_closet/cargo))
-				LAZYADD(lockers_by_buyer[D], SO)
+				LAZYADD(lockers_by_buyer[SO.gift_to || D], SO)
 
 
 		if(SO.paying_account)
 			if(SO.pack.goody)
-				LAZYADD(goodies_by_buyer[SO.paying_account], SO)
+				LAZYADD(goodies_by_buyer[SO.gift_to || SO.paying_account], SO)
 			if(SO.prepaid)
-				D.bank_card_talk("Заказ снабжения №[SO.id] ([SO.pack.name]) отгружен: шаттл везёт его на станцию.")
+				D.bank_card_talk(SO.gift_to ? "Подарок №[SO.id] ([SO.pack.name]) для [SO.gift_to.account_holder] отгружен: шаттл везёт его на станцию." : "Заказ снабжения №[SO.id] ([SO.pack.name]) отгружен: шаттл везёт его на станцию.")
 			else
 				D.bank_card_talk((SO.pack.goody || personal_catalog) ? "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр." : "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр.: цена пака и наценка частного заказа [round((ECON_PRIVATE_ORDER_MARKUP - 1) * 100)]%.")
 			SSeconomy.move(D, SSeconomy.get_dep_account(ACCOUNT_CAR), price - base_cost, ECON_PRIVATE_ORDER, memo = "Наценка частного заказа: [SO.pack.name]")

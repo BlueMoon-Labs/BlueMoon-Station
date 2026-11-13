@@ -669,7 +669,7 @@
 	TEST_ASSERT_NOTNULL(list_item(seller, plush, 100), "Лот выставлен: [console.status_report]")
 	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Одна строка о новом лоте")
 	var/line = spy.heard[1]
-	TEST_ASSERT(findtext(line, "[RADIO_CHANNEL_COMMON]:") == 1, "Строка в общем канале: [line]")
+	TEST_ASSERT(findtext(line, "общий:") == 1, "Строка в общем канале: [line]")
 	TEST_ASSERT(findtext(line, plush.name) && findtext(line, "паровозиком") && findtext(line, "Econ Auction Seller"), "В строке название, описание и продавец: [line]")
 	TEST_ASSERT_NOTNULL(list_item(shy, allocate(/obj/item/toy/plush/beeplushie, pad_turf), 100, anonymous = TRUE), "Второй лот выставлен")
 	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Лот в кулдаун канала прозвучал")

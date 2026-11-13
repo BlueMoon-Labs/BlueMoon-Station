@@ -313,7 +313,16 @@
 	GLOB.announcement_systems.Insert(1, announcer)
 	return spy
 
-/// Новое объявление одной строкой звучит по общему каналу, с заголовком и наградой и без имени заказчика, но не чаще кулдауна из настроек.
+/// Отложенная строка объявления срабатывает тем же колбэком, что вызовет SStimer; таймер стоит на ECON_CREW_REQUEST_ANNOUNCE_DELAY от размещения.
+/datum/unit_test/economy_contract_machines/board/proc/fire_announce(datum/econ_contract/crew_request/request)
+	var/id = request.announce_timer
+	var/datum/timedevent/timer = id ? SStimer.timer_id_dict[id] : null
+	TEST_ASSERT_NOTNULL(timer, "Строка объявления \"[request.title]\" не поставлена в очередь радио")
+	TEST_ASSERT(abs(timer.timeToRun - world.time - ECON_CREW_REQUEST_ANNOUNCE_DELAY) < 1, "Строка объявления звучит не через [DisplayTimeText(ECON_CREW_REQUEST_ANNOUNCE_DELAY)]")
+	timer.callBack.Invoke()
+	deltimer(id)
+
+/// Новое объявление звучит по общему каналу не сразу, а через задержку, одной строкой с заголовком и наградой и без имени заказчика; на всю станцию не чаще общего кулдауна, от одного заказчика - не чаще личного.
 /datum/unit_test/economy_contract_machines/board/crew_request_radio/Run()
 	setup()
 	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
@@ -322,19 +331,108 @@
 	econ_test_set_balance(helper_account, 1000)
 	var/obj/machinery/computer/bounty/console = allocate(/obj/machinery/computer/bounty)
 	click(console, "crew_post", list("title" = "Починить шлюз", "desc" = "Шлюз в баре не открывается", "reward" = "150"))
-	TEST_ASSERT_EQUAL(length(SSeconomy.crew_requests_of(taker_account)), 1, "Объявление не размещено")
+	var/list/posted = SSeconomy.crew_requests_of(taker_account)
+	TEST_ASSERT_EQUAL(length(posted), 1, "Объявление не размещено")
+	TEST_ASSERT_EQUAL(length(spy.heard), 0, "Объявление прозвучало сразу, до задержки")
+	fire_announce(posted[1])
 	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Объявление не прозвучало по радио")
 	var/line = spy.heard[1]
-	TEST_ASSERT(findtext(line, "[RADIO_CHANNEL_COMMON]: ") == 1, "Объявление не в общем канале: [line]")
+	TEST_ASSERT(findtext(line, "общий: ") == 1, "Объявление не в общем канале: [line]")
 	TEST_ASSERT(findtext(line, "Починить шлюз") && findtext(line, "150 кр."), "В строке нет заголовка и награды: [line]")
 	TEST_ASSERT(!findtext(line, taker_account.account_holder), "Строка называет заказчика: [line]")
-	click(console, "crew_post", list("title" = "Накормить кота", "desc" = "Кот в баре голоден", "reward" = "100"))
-	TEST_ASSERT_EQUAL(length(SSeconomy.crew_requests_of(taker_account)), 2, "Второе объявление не размещено")
-	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Объявление в кулдаун прозвучало снова")
+
+	TEST_ASSERT(econ_post_crew_request(helper, helper_account, "Сыграть на пианино", "В баре в полдень", 100)[1], "Объявление другого заказчика не размещено")
+	fire_announce(SSeconomy.crew_requests_of(helper_account)[1])
+	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Объявление прозвучало, пока общий канал на кулдауне")
+
 	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
-	TEST_ASSERT(econ_post_crew_request(helper, helper_account, "Сыграть на пианино", "В баре в полдень", 100)[1], "Третье объявление не размещено")
-	TEST_ASSERT_EQUAL(length(spy.heard), 2, "После кулдауна объявление не прозвучало")
+	var/list/answer = econ_post_crew_request(user, taker_account, "Накормить кота", "Кот в баре голоден", 100)
+	TEST_ASSERT(answer[1], "Второе объявление заказчика не размещено: [answer[2]]")
+	var/datum/econ_contract/crew_request/second = SSeconomy.crew_requests_of(taker_account)[2]
+	TEST_ASSERT_NULL(second.announce_timer, "Второе объявление заказчика ушло в эфир раньше личного кулдауна")
+	TEST_ASSERT(findtext(answer[2], "не чаще раза в [SSeconomy.settings.crew_request_personal_announce_minutes] мин."), "Заказчику не сказали, почему объявление не прозвучит: [answer[2]]")
+	TEST_ASSERT(!second.announce(), "Объявление в личный кулдаун заказчика прозвучало")
+
+	TEST_ASSERT(econ_post_crew_request(helper, helper_account, "Спеть в баре", "Вечером", 100)[1], "Второе объявление другого заказчика не размещено")
+	fire_announce(SSeconomy.crew_requests_of(helper_account)[2])
+	TEST_ASSERT_EQUAL(length(spy.heard), 2, "Объявление другого заказчика после общего кулдауна не прозвучало")
 	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+
+/// Телеком-узел, который запоминает пойманные сигналы ("частота: сообщение") и дальше их не передаёт.
+/obj/machinery/telecomms/allinone/econ_test_ear
+	var/list/caught = list()
+
+/obj/machinery/telecomms/allinone/econ_test_ear/receive_signal(datum/signal/subspace/signal)
+	caught += "[signal.frequency]: [signal.data["message"]]"
+
+/// Строка объявления уходит в эфир настоящей гарнитурой системы оповещения на общей частоте: у её ключа ИИ нет канала с именем общего, общий канал - частота по умолчанию.
+/datum/unit_test/economy_contract_machines/board/crew_request_radio_on_air/Run()
+	setup()
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	econ_test_set_balance(taker_account, 1000)
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/obj/machinery/announcement_system/announcer = allocate(/obj/machinery/announcement_system, locate(2, 2, station_z))
+	announcer.machine_stat = NONE
+	GLOB.announcement_systems -= announcer
+	GLOB.announcement_systems.Insert(1, announcer)
+	var/obj/machinery/telecomms/allinone/econ_test_ear/ear = allocate(/obj/machinery/telecomms/allinone/econ_test_ear, run_loc_floor_bottom_left)
+	TEST_ASSERT(econ_post_crew_request(user, taker_account, "Починить шлюз", "Шлюз в баре", 150)[1], "Объявление не размещено")
+	fire_announce(SSeconomy.crew_requests_of(taker_account)[1])
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	TEST_ASSERT_EQUAL(length(ear.caught), 1, "Строка объявления не ушла в эфир")
+	var/line = ear.caught[1]
+	TEST_ASSERT(findtext(line, "[FREQ_COMMON]: ") == 1 && findtext(line, "Починить шлюз"), "В эфире не та строка или не та частота: [line]")
+
+/// Объявление, снятое или взятое до строки по радио, в эфир не попадает и общий канал не занимает; снятое уносит строку из очереди.
+/datum/unit_test/economy_contract_machines/board/crew_request_radio_withdrawn/Run()
+	setup()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	econ_test_set_balance(taker_account, 1000)
+	TEST_ASSERT(econ_post_crew_request(user, taker_account, "Починить шлюз", "Шлюз в баре", 150)[1], "Объявление не размещено")
+	var/datum/econ_contract/crew_request/cancelled = SSeconomy.crew_requests_of(taker_account)[1]
+	var/timer_id = cancelled.announce_timer
+	TEST_ASSERT_NOTNULL(SStimer.timer_id_dict[timer_id], "Строка объявления не в очереди радио")
+	TEST_ASSERT(cancelled.cancel(taker_account)[1], "Объявление не снято")
+	TEST_ASSERT_NULL(SStimer.timer_id_dict[timer_id], "Снятое объявление осталось в очереди радио")
+	TEST_ASSERT_EQUAL(taker_account.account_balance, 1000, "Депозит снятого объявления не вернулся")
+
+	TEST_ASSERT(econ_post_crew_request(user, taker_account, "Накормить кота", "Кот в баре голоден", 100)[1], "Второе объявление не размещено")
+	var/datum/econ_contract/crew_request/taken = SSeconomy.crew_requests_of(taker_account)[1]
+	TEST_ASSERT(taken.take(helper_account), "Объявление не взято")
+	fire_announce(taken)
+	TEST_ASSERT_EQUAL(length(spy.heard), 0, "Взятое объявление прозвучало по радио")
+	TEST_ASSERT(COOLDOWN_FINISHED(SSeconomy, crew_request_announce_cooldown), "Непрозвучавшая строка заняла общий канал")
+	TEST_ASSERT(COOLDOWN_FINISHED(taker_account, crew_request_announce_cooldown), "Непрозвучавшая строка начала личный кулдаун заказчика")
+
+/// Игрок с мутом IC не даёт объявлений и не выставляет вещь на аукцион экипажа - обе строки звучат по общему каналу; мут после размещения глушит отложенную строку.
+/datum/unit_test/economy_contract_machines/board/crew_request_muted/Run()
+	setup()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	COOLDOWN_RESET(SSeconomy, crew_request_announce_cooldown)
+	econ_test_set_balance(taker_account, 1000)
+	var/datum/client_interface/mock = new
+	mock.prefs = new /datum/preferences
+	allocated += mock.prefs
+	mock.prefs.muted = MUTE_IC
+	user.mock_client = mock
+	var/list/answer = econ_post_crew_request(user, taker_account, "Починить шлюз", "Шлюз в баре", 150)
+	var/obj/item/toy/plush/thing = allocate(/obj/item/toy/plush, run_loc_floor_bottom_left)
+	var/list/lot_answer = SSmarket.start_crew_lot(user, taker_account, thing, 100, 10, FALSE, run_loc_floor_bottom_left)
+	user.mock_client = null
+	TEST_ASSERT(!answer[1] && findtext(answer[2], "IC"), "Объявление с мутом IC размещено: [answer[2]]")
+	TEST_ASSERT_EQUAL(length(SSeconomy.crew_requests_of(taker_account)), 0, "Объявление с мутом IC на доске")
+	TEST_ASSERT_EQUAL(taker_account.account_balance, 1000, "Отказ с мутом взял депозит")
+	TEST_ASSERT(!lot_answer[1] && findtext(lot_answer[2], "IC"), "Лот с мутом IC выставлен: [lot_answer[2]]")
+
+	mock.prefs.muted = NONE
+	user.mock_client = mock
+	answer = econ_post_crew_request(user, taker_account, "Накормить кота", "Кот в баре голоден", 100)
+	TEST_ASSERT(answer[1], "Объявление без мута не размещено: [answer[2]]")
+	mock.prefs.muted = MUTE_IC
+	fire_announce(SSeconomy.crew_requests_of(taker_account)[1])
+	user.mock_client = null
+	TEST_ASSERT_EQUAL(length(spy.heard), 0, "Объявление прозвучало, хотя заказчика замутили до строки")
 
 /// Действия доски идут с консоли контрактов, а заказы без источника на станции на доску не попадают.
 /datum/unit_test/economy_contract_machines/board/console_acts/Run()

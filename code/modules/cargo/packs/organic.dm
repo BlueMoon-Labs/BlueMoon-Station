@@ -374,7 +374,7 @@
 
 /datum/supply_pack/organic/party
 	name = "Party Equipment"
-	desc = "Празднуйте как жизнь, так и смерть на станции с помощью Nanotrasen's Party Essentials(tm)! Содержит семь цветных светящихся палочек, четыре сорта пива, две оси, шейкер для питья и бутылку patron & goldschlager!"
+	desc = "Празднуйте как жизнь, так и смерть на станции с помощью Nanotrasen's Party Essentials(tm)! Внутри семь цветных светящихся палочек, четыре пива и два эля, коробка стаканов, шейкер и по бутылке Patron и Goldschlager!"
 	cost = 2000
 	contains = list(/obj/item/storage/box/drinkingglasses,
 					/obj/item/reagent_containers/food/drinks/shaker,

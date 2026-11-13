@@ -64,7 +64,9 @@
 	else
 		away_since = 0
 	if(away_since && world.time - away_since > SSeconomy.settings.dormant_after_minutes MINUTES)
-		state = ACCOUNT_DORMANT
+		if(state != ACCOUNT_DORMANT)
+			state = ACCOUNT_DORMANT
+			econ_refund_dormant_orders(src)
 	else if(!away_since && state == ACCOUNT_DORMANT)
 		state = ACCOUNT_ACTIVE
 

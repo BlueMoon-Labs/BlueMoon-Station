@@ -208,13 +208,14 @@
 
 /obj/item/storage/lockbox/order
 	name = "order lockbox"
-	desc = "A box used to secure small cargo orders from being looted by those who didn't order it. Yeah, cargo tech, that means you."
+	desc = "Запертый кейс для малых заказов снабжения: откроет его только ID-карта того, на чей счёт он едет. Да, грузчик, это про тебя."
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "secure"
 	item_state = "sec-case"
 	lefthand_file = 'icons/mob/inhands/equipment/briefcase_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/briefcase_righthand.dmi'
 	w_class = WEIGHT_CLASS_HUGE
+	req_access = null
 	var/datum/bank_account/buyer_account
 	var/privacy_lock = TRUE
 
@@ -222,19 +223,21 @@
 	. = ..()
 	buyer_account = _buyer_account
 
+/// Замок по счёту: открывает и запирает только ID-карта владельца - в руке, в КПК или в бумажнике; доступ должности тут ни при чём.
 /obj/item/storage/lockbox/order/attackby(obj/item/W, mob/user, params)
-	if(!istype(W, /obj/item/card/id))
+	var/obj/item/card/id/id_card = W.GetID()
+	if(!istype(id_card))
 		return ..()
-
-	var/obj/item/card/id/id_card = W
 	if(iscarbon(user))
 		add_fingerprint(user)
-
-	if(id_card.registered_account != buyer_account)
-		to_chat(user, "<span class='notice'>Bank account does not match with buyer!</span")
+	if(broken)
+		to_chat(user, span_warning("Замок [src] сломан."))
 		return
-
+	if(!buyer_account || id_card.registered_account != buyer_account)
+		to_chat(user, span_warning("Посылка заперта на счёт [buyer_account?.account_holder || "другого человека"]: эта карта её не откроет."))
+		return
 	SEND_SIGNAL(src, COMSIG_TRY_STORAGE_SET_LOCKSTATE, !privacy_lock)
 	privacy_lock = SEND_SIGNAL(src, COMSIG_IS_STORAGE_LOCKED)
-	user.visible_message("<span class='notice'>[user] [privacy_lock ? "" : "un"]locks [src]'s privacy lock.</span>",
-					"<span class='notice'>You [privacy_lock ? "" : "un"]lock [src]'s privacy lock.</span>")
+	if(privacy_lock)
+		SEND_SIGNAL(src, COMSIG_TRY_STORAGE_HIDE_ALL)
+	user.visible_message(span_notice("[user] [privacy_lock ? "запирает" : "отпирает"] [src]."), span_notice("Вы [privacy_lock ? "запираете" : "отпираете"] [src]."))

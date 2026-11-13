@@ -82,7 +82,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/datum/economy_department/department = prepaid ? SSeconomy.get_department(department_id) : null
 	var/datum/trade_partner/supplier = econ_order_supplier(src)
 	return list(
-		"object" = department ? "[pack.name] (оплачено: [department.name])" : (personal_prepaid() ? "[pack.name] (оплачено с КПК)" : pack.name),
+		"object" = department ? "[pack.name] (оплачено: [department.name])" : (personal_prepaid() ? "[pack.name] ([gift_to ? "подарок с КПК для [gift_to.account_holder]" : "оплачено с КПК"])" : pack.name),
 		"cost" = prepaid ? 0 : econ_order_cost(src),
 		"id" = id,
 		"pack" = "[pack.type]",

@@ -16,6 +16,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_vr
 	name = "Teshari cloaks"
+	desc = "Три случайных плаща, скроенных под тешари: цветные с серым, белый, оранжевый или радужный."
+	crate_name = "teshari cloaks crate"
 	contains = list(
 			/obj/item/clothing/neck/cloak/teshari/standard/white,
 			/obj/item/clothing/neck/cloak/teshari/standard/white_grey,
@@ -34,6 +36,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_b_vr
 	name = "Teshari cloaks (black)"
+	desc = "Три случайных чёрных плаща под тешари с цветной отделкой - может попасться и светящийся."
+	crate_name = "teshari black cloaks crate"
 	contains = list(
 			/obj/item/clothing/neck/cloak/teshari,
 			/obj/item/clothing/neck/cloak/teshari/standard/black_red,
@@ -53,6 +57,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_vr
 	name = "Teshari cloaks (belted)"
+	desc = "Три случайных плаща с поясом под тешари: цветные с серым, оранжевый или радужный."
+	crate_name = "teshari belted cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/orange_grey,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/rainbow,
@@ -71,6 +77,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_b_vr
 	name = "Teshari cloaks (belted, black)"
+	desc = "Три случайных чёрных плаща с поясом под тешари, с цветной отделкой."
+	crate_name = "teshari black belted cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/beltcloak,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_orange,
@@ -91,6 +99,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_vr
 	name = "Teshari cloaks (hooded)"
+	desc = "Три случайных плаща с капюшоном под тешари: цветные с серым или оранжевый."
+	crate_name = "teshari hooded cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/standard/orange_grey,
 			/obj/item/clothing/suit/hooded/teshari/standard/lightgrey_grey,
@@ -108,6 +118,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_b_vr
 	name = "Teshari cloaks (hooded, black)"
+	desc = "Три случайных чёрных плаща с капюшоном под тешари, с цветной отделкой."
+	crate_name = "teshari black hooded cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari,
 			/obj/item/clothing/suit/hooded/teshari/standard/black_orange,

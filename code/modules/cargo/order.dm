@@ -71,6 +71,9 @@
 
 /datum/supply_order/proc/generateManifest(obj/container, owner, packname, cost) //generates-the-manifests.
 	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest_paper = new(null, id, cost)
+	var/static/list/owned_parcels = typecacheof(list(/obj/structure/closet/crate/secure/owned, /obj/structure/closet/secure_closet/cargo/owned, /obj/item/storage/lockbox/order))
+	if(is_type_in_typecache(container, owned_parcels))
+		manifest_paper.errors &= ~MANIFEST_ERROR_ITEM
 
 	var/station_name = (manifest_paper.errors & MANIFEST_ERROR_NAME) ? new_station_name() : station_name()
 
@@ -121,12 +124,13 @@
 	return manifest_paper
 
 /datum/supply_order/proc/generate(atom/A)
+	var/datum/bank_account/owner = delivery_account()
 	var/account_holder
-	if(paying_account)
-		account_holder = paying_account.account_holder
+	if(owner)
+		account_holder = owner.account_holder
 	else
 		account_holder = "Cargo"
-	var/obj/structure/closet/crate/C = pack.generate(A, paying_account)
+	var/obj/structure/closet/crate/C = pack.generate(A, owner)
 	econ_mark_imported(C)
 	generateManifest(C, account_holder, pack)
 	return C

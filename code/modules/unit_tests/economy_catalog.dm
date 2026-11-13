@@ -94,12 +94,12 @@
 	. = console.ui_act(action, params, window)
 	usr = null
 
-/// Гарнитура, которая запоминает "канал: сообщение" вместо передачи.
+/// Гарнитура, которая запоминает "канал: сообщение" вместо передачи; без имени канала - "общий", как и уходит в эфир общий канал.
 /obj/item/radio/headset/econ_test_spy
 	var/list/heard = list()
 
 /obj/item/radio/headset/econ_test_spy/talk_into(atom/movable/M, message, channel, list/spans, datum/language/language)
-	heard += "[channel]: [message]"
+	heard += "[isnull(channel) ? "общий" : channel]: [message]"
 	return ITALICS | REDUCE_RANGE
 
 /// Счёт, который запоминает сообщения карты вместо показа.
@@ -586,6 +586,17 @@
 	usr = null
 	return wallet
 
+/datum/unit_test/economy_catalog/proc/pda_wallet(mob/living/carbon/human/holder)
+	var/obj/item/modular_computer/pda/pda = holder.get_active_held_item()
+	return locate(/datum/computer_file/program/wallet) in pda.get_all_files()
+
+/// Заказ из кошелька КПК по цене, которую показывает окно; extra - получатель подарка и подпись.
+/datum/unit_test/economy_catalog/proc/order_pda(mob/living/carbon/human/buyer, datum/supply_pack/pack, list/extra = list())
+	var/datum/computer_file/program/wallet/wallet = pda_wallet(buyer)
+	var/list/prices = wallet.wallet_data(buyer)["personal_prices"]
+	var/list/shown = prices["[pack.type]"]
+	return press_wallet(buyer, "personal_order", list("id" = "[pack.type]", "price" = shown?[1]) + extra)
+
 /// Личный заказ из кошелька КПК: цена партнёра без наценки списывается сразу, заказ встаёт в очередь шаттла личным и оплаченным, карта сообщает об оплате, снабжение видит его в корзине; отмена до отлёта возвращает деньги, пака вне каталога и сверх лимита не заказать.
 /datum/unit_test/economy_catalog/personal_wallet_order/Run()
 	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
@@ -600,7 +611,13 @@
 	var/list/prices = wallet.wallet_data(buyer)["personal_prices"]
 	var/list/pet_price = prices["[pet.type]"]
 	TEST_ASSERT(length(pet_price) && pet_price[1] == price, "Окно показывает не ту цену, что спишется: [json_encode(pet_price)] вместо [price]")
+	press_wallet(buyer, "personal_order", list("id" = "[pet.type]", "price" = price - 1))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Заказ прошёл по устаревшей цене")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказ по цене списал деньги")
+	TEST_ASSERT(findtext(wallet.message, "Цена изменилась") && findtext(wallet.message, "[price] кр."), "Отказ не называет новую цену: [wallet.message]")
 	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Заказ прошёл без показанной цены")
+	order_pda(buyer, pet)
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ не встал в очередь шаттла: [wallet.message]")
 	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
 	TEST_ASSERT(order.pack == pet, "В очереди не тот пак")
@@ -620,10 +637,10 @@
 	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отмена не вернула деньги")
 	var/limit = SSeconomy.settings.personal_order_limit
 	for(var/i in 1 to limit)
-		press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+		order_pda(buyer, pet)
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), limit, "Заказы до лимита не приняты: [wallet.message]")
 	var/balance = account.account_balance
-	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	order_pda(buyer, pet)
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), limit, "Принят заказ сверх лимита")
 	TEST_ASSERT_EQUAL(account.account_balance, balance, "Отказ сверх лимита списал деньги")
 
@@ -632,7 +649,7 @@
 	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
 	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Wallet Receiver", 100000)
 	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
-	var/datum/computer_file/program/wallet/wallet = press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	var/datum/computer_file/program/wallet/wallet = order_pda(buyer, pet)
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ не оформлен: [wallet.message]")
 	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
 	var/paid_balance = account.account_balance
@@ -657,7 +674,7 @@
 	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "привёз на станцию ваш заказ №[order.id]"), "Карта не сообщила о прибытии")
 	qdel(order)
 
-	press_wallet(buyer, "personal_order", list("id" = "[pet.type]"))
+	order_pda(buyer, pet)
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второй заказ не оформлен: [wallet.message]")
 	var/datum/supply_order/removed = SSshuttle.shoppinglist[1]
 	var/removed_price = removed.prepaid
@@ -668,6 +685,276 @@
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Снабжение не сняло заказ")
 	TEST_ASSERT_EQUAL(account.account_balance, before_removal + removed_price, "Снятый снабжением заказ не вернул деньги")
 	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "Снабжение сняло ваш заказ №[removed.id]"), "Карта не сообщила о снятии заказа")
+
+/// Подарок с КПК: платит даритель, посылка заперта на получателя, карта получателя сразу узнаёт, что ему едет посылка, а по прибытии - что она пришла; имя дарителя скрывается по его выбору. Себе, спящему, замороженному и неизвестному подарок не оформить, отмена возвращает деньги дарителю.
+/datum/unit_test/economy_catalog/personal_wallet_gift/Run()
+	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
+	var/mob/living/carbon/human/giver = make_pda_buyer("Econ Gift Giver", 100000)
+	var/datum/bank_account/econ_test_ear/payer = pda_account(giver)
+	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Gift Friend", 0)
+	var/datum/bank_account/econ_test_ear/receiver = pda_account(friend)
+	var/mob/living/carbon/human/sleeper_mob = make_pda_buyer("Econ Gift Sleeper", 0)
+	var/datum/bank_account/sleeper = pda_account(sleeper_mob)
+	sleeper.bind_owner(sleeper_mob)
+	sleeper.away_since = world.time - (SSeconomy.settings.dormant_after_minutes MINUTES) - 1
+	sleeper.update_dormancy()
+	TEST_ASSERT_EQUAL(sleeper.state, ACCOUNT_DORMANT, "test premise: счёт без клиента не уснул")
+	var/mob/living/carbon/human/frozen_mob = make_pda_buyer("Econ Gift Frozen", 0)
+	var/datum/bank_account/frozen = pda_account(frozen_mob)
+	SSeconomy.apply_freeze(frozen, "тест", "проверка подарка")
+	var/datum/computer_file/program/wallet/wallet
+	for(var/target in list(payer.account_holder, "[payer.account_id]", sleeper.account_holder, frozen.account_holder, "Econ Nobody Here"))
+		wallet = order_pda(giver, pet, list("recipient" = target))
+		TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Подарок для [target] оформлен: [wallet.message]")
+	TEST_ASSERT(findtext(wallet.message, "не найден"), "Отказ неизвестному получателю не объясняет почему: [wallet.message]")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000, "Отказ в подарке списал деньги")
+
+	order_pda(giver, pet, list("recipient" = "[receiver.account_id]"))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Подарок не оформлен: [wallet.message]")
+	var/datum/supply_order/gift = SSshuttle.shoppinglist[1]
+	var/price = gift.prepaid
+	TEST_ASSERT(gift.paying_account == payer && gift.gift_to == receiver, "Подарок записан не на тех: платит [gift.paying_account?.account_holder], получает [gift.gift_to?.account_holder]")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Подарок списан не с дарителя")
+	TEST_ASSERT_EQUAL(receiver.account_balance, 0, "Подарок списал деньги с получателя")
+	var/receiver_heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(receiver_heard, "Вам едет посылка") && findtext(receiver_heard, payer.account_holder), "Получатель не узнал, кто дарит: [receiver_heard]")
+	var/list/orders = wallet.wallet_data(giver)["personal_orders"]
+	var/list/listed = length(orders) ? orders[1] : list()
+	TEST_ASSERT_EQUAL(listed["gift_to"], receiver.account_holder, "Кошелёк дарителя не показывает, кому подарок")
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/list/cart = console.ui_data(giver)["cart"]
+	var/list/entry = cart[1]
+	TEST_ASSERT(findtext(entry["object"], "подарок с КПК для [receiver.account_holder]"), "Корзина снабжения не помечает подарок: [json_encode(entry)]")
+
+	var/list/crates_before = new_crates(list(), /obj/structure/closet)
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= gift
+	var/list/delivered = new_crates(crates_before, /obj/structure/closet/crate/secure/owned)
+	TEST_ASSERT_EQUAL(length(delivered), 1, "На шаттле нет именного ящика")
+	var/obj/structure/closet/crate/secure/owned/crate = delivered[1]
+	allocated += crate.GetAllContents()
+	TEST_ASSERT(crate.buyer_account == receiver, "Ящик заперт не на получателя")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Отгрузка подарка списала деньги второй раз")
+	TEST_ASSERT(findtext(jointext(payer.heard, "\n"), "Подарок №[gift.id] ([pet.name]) для [receiver.account_holder] отгружен"), "Даритель не узнал об отгрузке")
+	var/datum/computer_file/program/wallet/friend_wallet = pda_wallet(friend)
+	TEST_ASSERT_EQUAL(length(friend_wallet.wallet_data(friend)["personal_in_transit"]), 1, "Получатель не видит подарок в пути")
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(findtext(jointext(receiver.heard, "\n"), "привёз на станцию ваш заказ №[gift.id] [pet.name] (подарок от [payer.account_holder])"), "Получатель не узнал о прибытии подарка")
+	qdel(gift)
+
+	receiver.heard.Cut()
+	order_pda(giver, pet, list("recipient" = receiver.account_holder, "hide_name" = TRUE))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Подарок без имени не оформлен: [wallet.message]")
+	var/datum/supply_order/secret = SSshuttle.shoppinglist[1]
+	cart = console.ui_data(giver)["cart"]
+	entry = cart[1]
+	TEST_ASSERT_EQUAL(entry["orderer"], "аноним", "Корзина снабжения называет дарителя, скрывшего имя")
+	var/before_cancel = payer.account_balance
+	price = secret.prepaid
+	press_wallet(giver, "personal_cancel", list("id" = secret.id))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Отменённый подарок остался в корзине")
+	TEST_ASSERT_EQUAL(payer.account_balance, before_cancel + price, "Отмена подарка не вернула деньги дарителю")
+	TEST_ASSERT_EQUAL(receiver.account_balance, 0, "Отмена подарка заплатила получателю")
+	var/secret_heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(secret_heard, "кто-то из экипажа") && findtext(secret_heard, "отменён"), "Получатель не узнал о подарке без имени и его отмене: [secret_heard]")
+	TEST_ASSERT(!findtext(secret_heard, payer.account_holder), "Подарок без имени назвал дарителя: [secret_heard]")
+
+/// Владелец счёта ушёл со смены: неотгруженные личные заказы и подарки на его имя снимаются с корзины, деньги возвращаются тому, кто платил; подарок от ушедшего другому и уже отгруженное остаются.
+/datum/unit_test/economy_catalog/personal_dormant_refund/Run()
+	var/datum/supply_pack/pet = SSshuttle.supply_packs[/datum/supply_pack/critter/corgi]
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Dormant Buyer", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Dormant Friend", 100000)
+	var/datum/bank_account/econ_test_ear/friend_account = pda_account(friend)
+	account.bind_owner(buyer)
+	friend_account.bind_owner(friend)
+	order_pda(buyer, pet)
+	var/datum/supply_order/shipped = SSshuttle.shoppinglist[1]
+	var/list/crates_before = new_crates(list(), /obj/structure/closet)
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= shipped
+	for(var/obj/structure/closet/crate as anything in new_crates(crates_before, /obj/structure/closet))
+		allocated += crate.GetAllContents()
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "test premise: первый заказ не отгружен")
+	order_pda(buyer, pet)
+	var/datum/supply_order/own = SSshuttle.shoppinglist[1]
+	order_pda(friend, pet, list("recipient" = account.account_holder))
+	order_pda(buyer, pet, list("recipient" = friend_account.account_holder))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 3, "test premise: заказы и подарки не оформлены")
+	var/datum/supply_order/gift_in = SSshuttle.shoppinglist[2]
+	var/datum/supply_order/gift_out = SSshuttle.shoppinglist[3]
+	var/own_price = own.prepaid
+	var/gift_in_price = gift_in.prepaid
+	var/buyer_before = account.account_balance
+	var/friend_before = friend_account.account_balance
+
+	account.away_since = world.time - (SSeconomy.settings.dormant_after_minutes MINUTES) - 1
+	account.update_dormancy()
+	TEST_ASSERT_EQUAL(account.state, ACCOUNT_DORMANT, "test premise: счёт без клиента не уснул")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "С корзины снято не то: осталось [length(SSshuttle.shoppinglist)]")
+	TEST_ASSERT(SSshuttle.shoppinglist[1] == gift_out, "Подарок от ушедшего другому снят с корзины")
+	TEST_ASSERT_EQUAL(account.account_balance, buyer_before + own_price, "Ушедшему не вернулись деньги за его заказ")
+	TEST_ASSERT_EQUAL(friend_account.account_balance, friend_before + gift_in_price, "Дарителю не вернулись деньги за подарок ушедшему")
+	TEST_ASSERT(findtext(jointext(account.heard, "\n"), "пока вас не было на смене"), "Карта ушедшего не сказала о снятом заказе")
+	TEST_ASSERT(findtext(jointext(friend_account.heard, "\n"), "ушёл со смены"), "Карта дарителя не сказала, почему подарок снят")
+	TEST_ASSERT_EQUAL(length(SSshuttle.supply.personal_in_transit(account)), 1, "Отгруженный заказ ушедшего перестал числиться в пути")
+	account.update_dormancy()
+	TEST_ASSERT_EQUAL(account.account_balance, buyer_before + own_price, "Повторный тик спящего вернул деньги ещё раз")
+	SSshuttle.supply.notify_personal_arrivals()
+	qdel(shipped)
+
+/// Именная посылка приходит целой: ошибка манифеста ничего не забирает из ящика и кейса на имя покупателя.
+/datum/unit_test/economy_catalog/personal_owned_parcels_intact/Run()
+	var/datum/supply_pack/crate_pack = SSshuttle.supply_packs[/datum/supply_pack/misc/candles]
+	var/datum/supply_pack/goody_pack = SSshuttle.supply_packs[/datum/supply_pack/goody/beach_ball]
+	var/datum/bank_account/owner = new("econ_test_parcels")
+	allocated += owner
+	var/lost_crates = 0
+	var/lost_cases = 0
+	for(var/i in 1 to 100)
+		var/datum/supply_order/order = new(crate_pack, "econ_test", "econ_test", "econ_test", "econ_test", owner)
+		var/obj/structure/closet/crate/crate = order.generate(run_loc_floor_bottom_left)
+		qdel(order)
+		if(!istype(crate, /obj/structure/closet/crate/secure/owned))
+			return TEST_FAIL("Частный заказ приехал не в именном ящике: [crate.type]")
+		if(pack_items_inside(crate, crate_pack) != length(crate_pack.contains))
+			lost_crates++
+		for(var/atom/movable/thing as anything in crate.GetAllContents())
+			qdel(thing)
+		var/obj/item/storage/lockbox/order/case = new(run_loc_floor_bottom_left, owner)
+		var/datum/supply_order/combo = new
+		combo.id = "#[i]"
+		combo.generateCombo(case, owner.account_holder, goody_pack.contains)
+		qdel(combo)
+		if(pack_items_inside(case, goody_pack) != length(goody_pack.contains))
+			lost_cases++
+		for(var/atom/movable/thing as anything in case.GetAllContents())
+			qdel(thing)
+	TEST_ASSERT_EQUAL(lost_crates, 0, "Из именных ящиков пропадали вещи")
+	TEST_ASSERT_EQUAL(lost_cases, 0, "Из именных кейсов пропадали вещи")
+
+/// Сколько вещей из описи пака лежит прямо в container.
+/datum/unit_test/economy_catalog/proc/pack_items_inside(atom/container, datum/supply_pack/pack)
+	. = 0
+	for(var/atom/movable/thing as anything in container)
+		if(thing.type in pack.contains)
+			.++
+
+/// Именной кейс открывает и запирает только ID-карта владельца счёта - в руке, в КПК или в бумажнике; КПК с доступом арсенала и чужая карта его не открывают.
+/datum/unit_test/economy_catalog/personal_parcel_lock/Run()
+	var/datum/bank_account/owner = new("econ_test_parcel_owner")
+	allocated += owner
+	var/datum/bank_account/stranger = new("econ_test_parcel_warden")
+	allocated += stranger
+	var/obj/item/storage/lockbox/order/case = allocate(/obj/item/storage/lockbox/order, run_loc_floor_bottom_left, owner)
+	var/mob/living/carbon/human/warden = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/card/id/armory = allocate(/obj/item/card/id)
+	armory.access = list(ACCESS_ARMORY, ACCESS_SECURITY, ACCESS_CAPTAIN)
+	armory.registered_account = stranger
+	warden.put_in_active_hand(armory)
+	armory.melee_attack_chain(warden, case)
+	TEST_ASSERT(SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "Чужая карта с доступом арсенала открыла посылку")
+	var/obj/item/modular_computer/pda/warden_pda = allocate(/obj/item/modular_computer/pda)
+	warden.temporarilyRemoveItemFromInventory(armory)
+	warden_pda.InsertID(armory)
+	warden.put_in_active_hand(warden_pda)
+	warden_pda.melee_attack_chain(warden, case)
+	TEST_ASSERT(SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "КПК с доступом арсенала открыл чужую посылку")
+
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_account = owner
+	buyer.put_in_active_hand(card)
+	card.melee_attack_chain(buyer, case)
+	TEST_ASSERT(!SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "Владелец не открыл посылку картой в руке")
+	card.melee_attack_chain(buyer, case)
+	TEST_ASSERT(SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "Владелец не запер посылку картой")
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda)
+	buyer.temporarilyRemoveItemFromInventory(card)
+	pda.InsertID(card)
+	buyer.put_in_active_hand(pda)
+	pda.melee_attack_chain(buyer, case)
+	TEST_ASSERT(!SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "Владелец не открыл посылку картой в КПК")
+	pda.melee_attack_chain(buyer, case)
+	var/obj/item/card/id/wallet_card = allocate(/obj/item/card/id)
+	wallet_card.registered_account = owner
+	var/obj/item/storage/wallet/wallet = allocate(/obj/item/storage/wallet)
+	wallet_card.forceMove(wallet)
+	buyer.temporarilyRemoveItemFromInventory(pda)
+	buyer.put_in_active_hand(wallet)
+	wallet.melee_attack_chain(buyer, case)
+	TEST_ASSERT(!SEND_SIGNAL(case, COMSIG_IS_STORAGE_LOCKED), "Владелец не открыл посылку картой в бумажнике")
+
+/// Посылка с КПК летит настоящим рейсом: отгружается при вылете от ЦК, о прибытии карта узнаёт, когда шаттл сел на станции; заказ, вернувшийся с шаттлом к ЦК без посадки на станции, в пути больше не числится.
+/datum/unit_test/economy_catalog/personal_wallet_docking/Run()
+	var/obj/docking_port/mobile/supply/supply = SSshuttle.supply
+	var/obj/docking_port/stationary/away = SSshuttle.getDock("supply_away")
+	var/obj/docking_port/stationary/home = SSshuttle.getDock("supply_home")
+	TEST_ASSERT(supply && away && home, "test premise: на тестовой карте нет шаттла снабжения или его доков")
+	var/obj/docking_port/stationary/transit = supply.assigned_transit || SSshuttle.generate_transit_dock(supply)
+	TEST_ASSERT_NOTNULL(transit, "test premise: у шаттла снабжения нет транзита")
+	var/obj/docking_port/stationary/start = supply.get_docked()
+	if(start != away)
+		TEST_ASSERT_EQUAL(supply.initiate_docking(away), DOCKING_SUCCESS, "test premise: шаттл снабжения не встал к ЦК")
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/misc/candles]
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Docking Buyer", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/datum/computer_file/program/wallet/wallet = order_pda(buyer, pack)
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ не оформлен: [wallet.message]")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	var/list/crates_before = new_crates(list(), /obj/structure/closet)
+	var/landed = supply.initiate_docking(home)
+	SSshuttle.orderhistory -= order
+	var/list/delivered = new_crates(crates_before, /obj/structure/closet/crate/secure/owned)
+	for(var/obj/structure/closet/crate as anything in delivered)
+		for(var/atom/movable/thing as anything in crate.GetAllContents())
+			qdel(thing)
+	TEST_ASSERT_EQUAL(landed, DOCKING_SUCCESS, "Шаттл снабжения не сел на станции")
+	TEST_ASSERT_EQUAL(length(delivered), 1, "Рейс привёз не одну посылку")
+	var/heard = jointext(account.heard, "\n")
+	TEST_ASSERT(findtext(heard, "№[order.id] ([pack.name]) отгружен"), "Вылет от ЦК не отгрузил заказ")
+	TEST_ASSERT(findtext(heard, "привёз на станцию ваш заказ №[order.id]"), "Посадка на станции не сообщила о прибытии")
+	TEST_ASSERT_EQUAL(length(supply.personal_in_transit(account)), 0, "Привезённый заказ всё ещё числится в пути")
+	qdel(order)
+
+	TEST_ASSERT_EQUAL(supply.initiate_docking(away), DOCKING_SUCCESS, "Шаттл снабжения не вернулся к ЦК")
+	order_pda(buyer, pack)
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второй заказ не оформлен: [wallet.message]")
+	var/datum/supply_order/returned = SSshuttle.shoppinglist[1]
+	crates_before = new_crates(list(), /obj/structure/closet)
+	TEST_ASSERT_EQUAL(supply.initiate_docking(transit), DOCKING_SUCCESS, "Шаттл снабжения не ушёл в транзит")
+	SSshuttle.orderhistory -= returned
+	TEST_ASSERT_EQUAL(length(supply.personal_in_transit(account)), 1, "Отгруженный заказ не числится в пути")
+	for(var/obj/structure/closet/crate as anything in new_crates(crates_before, /obj/structure/closet))
+		for(var/atom/movable/thing as anything in crate.GetAllContents())
+			qdel(thing)
+	TEST_ASSERT_EQUAL(supply.initiate_docking(away), DOCKING_SUCCESS, "Шаттл снабжения не вернулся к ЦК из транзита")
+	TEST_ASSERT_EQUAL(length(supply.personal_in_transit(account)), 0, "Вернувшийся к ЦК заказ всё ещё числится в пути")
+	qdel(returned)
+	if(start != away)
+		TEST_ASSERT_EQUAL(supply.initiate_docking(start), DOCKING_SUCCESS, "Шаттл снабжения не вернулся на исходный док")
+
+/// Карточки личного каталога: без паков, которые нельзя доставить как есть (гроб, мыло, капсаицин), у бустеров опись числом, у плащей тешари свои описание и ящик, «случайные» - только когда пак кладёт не всё.
+/datum/unit_test/economy_catalog/personal_catalog_cards/Run()
+	for(var/excluded in list(/datum/supply_pack/misc/funeral, /datum/supply_pack/misc/shower, /datum/supply_pack/organic/fiestatortilla))
+		TEST_ASSERT(!GLOB.econ_personal_catalog[excluded], "[excluded] в личном каталоге")
+	var/list/cards = list()
+	for(var/list/section as anything in econ_personal_catalog_ui())
+		for(var/list/card as anything in section["packs"])
+			cards[card["id"]] = card
+	var/list/tcg = cards["[/datum/supply_pack/costumes_toys/randomised/tcg]"]
+	TEST_ASSERT(length(tcg), "Бустеров нет в карточках каталога")
+	var/list/tcg_contents = tcg["contents"]
+	TEST_ASSERT(length(tcg_contents) && findtext(tcg_contents[1], "×10"), "У бустеров пустая опись: [json_encode(tcg_contents)]")
+	TEST_ASSERT_EQUAL(tcg["random"], 0, "Бустеры названы случайными из пустой описи")
+	var/list/plush = cards["[/datum/supply_pack/costumes_toys/randomised/plush]"]
+	TEST_ASSERT_EQUAL(plush?["random"], 0, "Пак плюшевых игрушек кладёт всю опись, но назван случайным")
+	var/list/cloak_card = cards["[/datum/supply_pack/costumes_toys/randomised/tesh_cloaks_vr]"]
+	TEST_ASSERT_EQUAL(cloak_card?["random"], 3, "Плащи тешари - три случайных из набора")
+	var/datum/supply_pack/hats = SSshuttle.supply_packs[/datum/supply_pack/costumes_toys/randomised]
+	for(var/cloak_type in list(/datum/supply_pack/costumes_toys/randomised/tesh_cloaks_vr, /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_b_vr, /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_vr, /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_b_vr, /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_vr, /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_b_vr))
+		var/datum/supply_pack/cloaks = SSshuttle.supply_packs[cloak_type]
+		TEST_ASSERT(cloaks.desc != hats.desc && cloaks.crate_name != hats.crate_name, "[cloak_type] описан как шляпы")
 
 /// Ни один пак каталога не продаётся на экспорт по базе дороже своей цены в начале раунда, а доставленный - дороже цены на дне рынка со скидкой высшей ступени, даже горячим и лучшему покупателю; разовые бонусы открытия (семена) засчитываются один раз.
 /datum/unit_test/economy_catalog/no_export_farm

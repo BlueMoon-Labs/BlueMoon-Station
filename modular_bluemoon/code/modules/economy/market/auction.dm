@@ -433,6 +433,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/datum/economy_settings/settings = SSeconomy.settings
 	if(SSeconomy.round_over())
 		return list(FALSE, "Смена закончилась, аукцион закрыт.")
+	if(econ_ic_muted(user))
+		return list(FALSE, "Вам запрещено говорить в IC, а о новом лоте говорит общий канал - выставлять вещи нельзя.")
 	var/problem = SSeconomy.personal_account_problem(account, TRUE)
 	if(problem)
 		return list(FALSE, problem)

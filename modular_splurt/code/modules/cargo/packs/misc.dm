@@ -179,7 +179,7 @@
 
 /datum/supply_pack/misc/carpet_exotic
 	name = "Exotic Carpet Crate"
-	desc = "Exotic carpets straight from Space Russia, for all your decorating needs. Contains 100 tiles each of 10 different flooring patterns."
+	desc = "Экзотические ковры прямиком из Космической России, чтобы обставить жильё по вкусу. Внутри по 100 плиток ковра десяти разных узоров."
 	cost = 7000
 	contains = list(/obj/item/stack/tile/carpet/blue/fifty,
 					/obj/item/stack/tile/carpet/blue/fifty,
@@ -217,7 +217,7 @@
 
 /datum/supply_pack/misc/microbricks
 	name = "Microbricks Crate"
-	desc = "Extremely bored? Recreate a downscale city and get upset when it all comes crumbling down!"
+	desc = "Совсем скучно? Постройте город в миниатюре и расстраивайтесь, когда он рассыплется!"
 	cost = 1500
 	contains = list(/obj/item/stack/sheet/micro_bricks/fifty)
 	crate_name = "microbricks crate"
@@ -244,7 +244,7 @@
 
 /datum/supply_pack/misc/wedding
 	name = "Small Wedding Crate"
-	desc = "Almost everything you need to host a wedding! Don't forget a ring!"
+	desc = "Почти всё для свадьбы: платье, смокинг, пояс, три букета и шампанское. Кольцо не забудьте!"
 	cost = 1500
 	contains = list(/obj/item/clothing/under/dress/wedding,
 					/obj/item/clothing/under/suit/tuxedo,
