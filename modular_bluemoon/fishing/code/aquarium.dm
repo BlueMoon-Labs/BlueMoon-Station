@@ -123,16 +123,19 @@
 	. = ..()
 	rendered_fluid_type = fluid_type
 
+/obj/structure/aquarium/proc/get_fish_capacity()
+	return min(capacity, AQUARIUM_MAX_FISH)
+
 /obj/structure/aquarium/examine(mob/user)
 	. = ..()
-	. += span_notice("It contains [length(tracked_fish)] / [capacity] fish.")
+	. += span_notice("It contains [length(tracked_fish)] / [get_fish_capacity()] fish.")
 	. += span_notice("Water type: [fluid_type]. Temperature: [round(fluid_temp - T0C, 0.1)] C.")
 	. += span_notice("Beauty score: [beauty].")
 	if(!length(tracked_fish))
 		. += span_info("Use a fish on it to add it, or use a fish feed to feed the inhabitants.")
 	. += span_info("Drag any other item onto it to use it as a decoration.")
 	if(bottomless)
-		. += span_notice("The tank has been expanded with bluespace crystals and is effectively bottomless.")
+		. += span_notice("The tank has been expanded with bluespace crystals and can now hold up to [AQUARIUM_MAX_FISH] fish.")
 
 /obj/structure/aquarium/attackby(obj/item/item, mob/living/user, params)
 	if(istype(item, /obj/item/aquarium_kit))
@@ -140,7 +143,7 @@
 		return TRUE
 	if(istype(item, /obj/item/fish))
 		var/obj/item/fish/fish = item
-		if(length(tracked_fish) >= capacity)
+		if(length(tracked_fish) >= get_fish_capacity())
 			to_chat(user, span_warning("[src] is already full."))
 			return TRUE
 		if(!user.transferItemToLoc(fish, src))
@@ -163,14 +166,14 @@
 		return TRUE
 	if(istype(item, /obj/item/stack/ore/bluespace_crystal) || istype(item, /obj/item/stack/sheet/bluespace_crystal))
 		if(bottomless)
-			to_chat(user, span_warning("[src] уже бездонный."))
+			to_chat(user, span_warning("[src] уже расширен до предела."))
 			return TRUE
 		var/obj/item/stack/crystals = item
 		if(!crystals.use(1))
 			return TRUE
 		bottomless = TRUE
-		capacity = 999
-		user.visible_message(span_notice("[user] вставляет блюспейс-кристалл в [src]."), span_notice("Вы вставляете блюспейс-кристалл в [src]. Теперь он бездонный."))
+		capacity = AQUARIUM_MAX_FISH
+		user.visible_message(span_notice("[user] вставляет блюспейс-кристалл в [src]."), span_notice("Вы вставляете блюспейс-кристалл в [src]. Теперь он вмещает до [AQUARIUM_MAX_FISH] рыб."))
 		return TRUE
 	return ..()
 
@@ -183,6 +186,10 @@
 /obj/structure/aquarium/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	. = ..()
 	if(istype(arrived, /obj/item/fish) && !(arrived in tracked_fish))
+		if(length(tracked_fish) >= get_fish_capacity())
+			var/obj/item/fish/fish = arrived
+			fish.forceMove(drop_location())
+			return
 		add_fish(arrived)
 	else if(isitem(arrived) && !prop_visuals[arrived])
 		add_prop_visual(arrived)
@@ -202,8 +209,8 @@
 		remove_prop_visual(gone)
 
 /obj/structure/aquarium/proc/add_fish(obj/item/fish/fish)
-	if(QDELETED(fish) || (fish in tracked_fish))
-		return
+	if(QDELETED(fish) || (fish in tracked_fish) || length(tracked_fish) >= get_fish_capacity())
+		return FALSE
 	tracked_fish += fish
 	register_fish_type(fish)
 	fish.last_feeding = world.time
@@ -411,7 +418,7 @@
 	data["allowBreeding"] = allow_breeding
 	data["autoMode"] = auto_mode
 	data["beauty"] = beauty
-	data["capacity"] = capacity
+	data["capacity"] = get_fish_capacity()
 	data["fishCount"] = length(tracked_fish)
 	var/list/fish_data = list()
 	for(var/obj/item/fish/fish in tracked_fish)

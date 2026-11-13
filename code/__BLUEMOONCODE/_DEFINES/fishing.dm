@@ -237,9 +237,10 @@
 #define FISH_BEAUTY_GOOD 450
 #define FISH_BEAUTY_GREAT 600
 #define FISH_BEAUTY_EXCELLENT 700
+#define AQUARIUM_MAX_FISH 50
 
 // размножение останавливается, когда рыб становится больше этого
-#define AQUARIUM_MAX_BREEDING_POPULATION 20
+#define AQUARIUM_MAX_BREEDING_POPULATION 30
 
 // дефайны мини-игры
 /// высота ползунка мини-игры, причём в единицах игры, а не в пикселях
