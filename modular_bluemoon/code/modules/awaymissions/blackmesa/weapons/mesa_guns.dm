@@ -884,6 +884,7 @@
 	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m16/mesa
 	obj_flags = UNIQUE_RENAME
+	projectile_simple_mob_damage_multiplier = 3.5
 	unique_reskin = list(
 		"Default" = list("icon_state" = "m16hl"),
 		"Alternative" = list("icon_state" = "m16hl_alt")
@@ -1511,14 +1512,14 @@
 
 	var/bipod_deployed = FALSE
 	var/heat_accumulated = 0
-	var/max_heat = 20
+	var/max_heat = 40
 	var/overheated = FALSE
 	var/overheat_cooldown_end = 0
 	var/last_fire_time = 0
 	var/initial_spread = 6
 	var/bipod_spread = 1
 	var/no_bipod_spread = 15
-	var/stamina_drain_per_shot = 5
+	var/stamina_drain_per_shot = 3
 	var/heat_cooldown_rate = 1.5
 	var/heat_gain_per_shot = 1
 	var/last_bipod_turf = null
@@ -1828,3 +1829,24 @@
 		to_chat(L, span_warning("The Black Mesa announcement system is unavailable."))
 		return
 	SSblackmesa_events.declare_hecu_conflict(L, choice == "Война" ? "war" : "truce", announcement)
+
+/obj/item/projectile/proc/mesa_zombie_pierce_limit()
+	if(!fired_from || !isgun(fired_from))
+		return 0
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/mp5/mp10)) return 4
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/mp5)) return 2
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/shotgun/aa12/hl)) return 4
+	if(istype(fired_from, /obj/item/gun/ballistic/shotgun/spas)) return 3
+	if(istype(fired_from, /obj/item/gun/ballistic/shotgun/m500)) return 2
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/scar)) return 5
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/m16a4/mesa)) return 2
+	if(istype(fired_from, /obj/item/gun/ballistic/automatic/m249)) return 4
+	if(istype(fired_from, /obj/item/gun/ballistic/revolver/hltaurus)) return 2
+	if(istype(fired_from, /obj/item/gun/ballistic/revolver/mateba/hl357)) return 4
+	return 0
+
+/obj/item/projectile/bullet/prehit_pierce(atom/target)
+	var/pierce_limit = mesa_zombie_pierce_limit()
+	if(pierce_limit && pierces < pierce_limit && istype(target, /mob/living/simple_animal/hostile/infected))
+		return PROJECTILE_PIERCE_HIT
+	return ..()

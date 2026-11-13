@@ -2,10 +2,14 @@
 	var/wave_timer = 1800
 	var/min_wave_interval = 1800
 	var/max_wave_interval = 6000
-	var/max_zombies_per_wave = 35
+	var/max_zombies_per_wave = 30
 	var/horde_size_multiplier = 1.0
 	var/special_infected_interval = 10 MINUTES
 	var/next_special_infected_time = 0
+	var/max_special_infected = 3
+	var/min_special_event_interval = 3 MINUTES
+	var/last_special_event_time = 0
+	var/tank_special_chance = 5
 	var/last_wave_time = 0
 	var/current_wave_number = 0
 	var/list/active_zombies = list()
@@ -29,6 +33,7 @@
 	var/wave_zombies_remaining = 0
 	var/wave_failed_spawns = 0
 	var/wave_batch_size = 0
+	var/list/wave_special_types = null
 
 	// Generator horde state is rescanned at most every 5 seconds instead of
 	// iterating all generators in world on every 1s process() tick.
@@ -123,20 +128,61 @@
 	if(horde_music_playing)
 		manage_horde_music()
 
+/datum/ai_director/zombie_mission/proc/get_alive_special_infected()
+	var/list/specials = list()
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
+		if(!Z || QDELETED(Z) || Z.stat == DEAD)
+			active_zombies -= Z
+			continue
+		if(istype(Z, /mob/living/simple_animal/hostile/infected/hunter) || istype(Z, /mob/living/simple_animal/hostile/infected/acid_spitter) || istype(Z, /mob/living/simple_animal/hostile/infected/charger) || istype(Z, /mob/living/simple_animal/hostile/infected/tank))
+			specials += Z
+	return specials
+
+/datum/ai_director/zombie_mission/proc/has_special_type(list/alive_specials, mob_type)
+	for(var/mob/living/simple_animal/hostile/infected/Z in alive_specials)
+		if(Z.type == mob_type)
+			return TRUE
+	return FALSE
+
+/datum/ai_director/zombie_mission/proc/pick_special_infected_type(list/alive_specials)
+	// Tank is a rare bonus on high difficulty and still counts toward the cap.
+	if(difficulty_level >= 5 && prob(tank_special_chance / 100.0) && !has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/tank))
+		return /mob/living/simple_animal/hostile/infected/tank
+	// Hunter is weighted higher - it is the signature special of the event.
+	var/list/candidates = list()
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/hunter))
+		candidates[/mob/living/simple_animal/hostile/infected/hunter] = 3
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/acid_spitter))
+		candidates[/mob/living/simple_animal/hostile/infected/acid_spitter] = 1
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/charger))
+		candidates[/mob/living/simple_animal/hostile/infected/charger] = 1
+	if(!candidates.len)
+		return null
+	return pickweight(candidates)
+
 /datum/ai_director/zombie_mission/proc/spawn_special_infected(list/players)
+	// Specials only appear on high difficulty, silently, one at a time.
+	if(difficulty_level < 4)
+		return
 	if(!players || !players.len)
+		return
+	if(is_generator_horde_active())
+		return
+	if(world.time - last_special_event_time < min_special_event_interval)
+		return
+
+	var/list/alive_specials = get_alive_special_infected()
+	if(alive_specials.len >= max_special_infected)
 		return
 
 	var/turf/spawn_turf = find_valid_spawn_turf(players)
 	if(!spawn_turf)
 		return
 
-	var/list/special_mob_types = list(
-		/mob/living/simple_animal/hostile/infected/hunter,
-		/mob/living/simple_animal/hostile/infected/acid_spitter,
-		/mob/living/simple_animal/hostile/infected/charger
-	)
-	var/mob_type = pick(special_mob_types)
+	var/mob_type = pick_special_infected_type(alive_specials)
+	if(!mob_type)
+		return
+
 	var/mob/living/simple_animal/hostile/infected/special = new mob_type(spawn_turf)
 	if(!special)
 		log_world("[src] Failed to spawn special infected at [spawn_turf]")
@@ -146,6 +192,12 @@
 		special.maxHealth = round(special.maxHealth * zombie_hp_multiplier)
 		special.health = special.maxHealth
 	active_zombies += special
+	last_special_event_time = world.time
+
+	// The hunter announces itself with its greeting sound on event spawn.
+	// No chat/visual announcement - the event stays silent.
+	if(istype(special, /mob/living/simple_animal/hostile/infected/hunter))
+		playsound(spawn_turf, 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 80, FALSE)
 
 /datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
 	if(!src)
@@ -273,7 +325,8 @@
 		log_world("[src] No players provided")
 		return
 
-	var/zombies_to_spawn = max(1, round(min(threat_level, max_zombies_per_wave) * horde_size_multiplier))
+	var/wave_size_bonus = (difficulty_level >= 6) ? 5 : 0
+	var/zombies_to_spawn = max(1, round(min(threat_level + wave_size_bonus, max_zombies_per_wave) * horde_size_multiplier))
 	if(zombies_to_spawn < threat_level)
 		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (wave=[current_wave_number + 1], multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
 
@@ -292,42 +345,73 @@
 	wave_spawned_zombies = list()
 	wave_failed_spawns = 0
 	wave_batch_size = rand(5, 8)
+	wave_special_types = list()
 	spawn_wave_step()
 
-/datum/ai_director/zombie_mission/proc/pick_wave_mob_type()
+/datum/ai_director/zombie_mission/proc/is_special_mob_type(mob_type)
+	return mob_type == /mob/living/simple_animal/hostile/infected/hunter || mob_type == /mob/living/simple_animal/hostile/infected/acid_spitter || mob_type == /mob/living/simple_animal/hostile/infected/charger || mob_type == /mob/living/simple_animal/hostile/infected/tank
+
+/datum/ai_director/zombie_mission/proc/pick_wave_special_type(list/candidate_types, list/already_specials)
+	var/list/allowed = list()
+	for(var/t in candidate_types)
+		var/used = FALSE
+		for(var/spawned in already_specials)
+			if(spawned == t)
+				used = TRUE
+				break
+		if(!used)
+			allowed += t
+	if(!allowed.len)
+		return null
+	return pick(allowed)
+
+/datum/ai_director/zombie_mission/proc/pick_wave_mob_type(list/already_specials = list())
 	var/mob_type
+	// Specials spawn inside waves again, but at most one of each type per wave
+	// and only while the global special-infected cap has room.
+	var/list/alive_specials = get_alive_special_infected()
+	var/can_spawn_specials = alive_specials.len < max_special_infected
+	var/spawn_roll = rand(1, 100)
 	if(difficulty_level >= 5)
 		// Tanks scale with difficulty, capped at 30% on difficulty 8.
 		var/tank_chance = min(30, (difficulty_level - 4) * 8)
-		if(prob(tank_chance / 100.0))
-			mob_type = /mob/living/simple_animal/hostile/infected/tank
-		else
-			var/spawn_roll = rand(1, 98)
-			if(spawn_roll <= 55)
+		if(can_spawn_specials && prob(tank_chance / 100.0))
+			mob_type = pick_wave_special_type(list(/mob/living/simple_animal/hostile/infected/tank), already_specials)
+			if(!mob_type)
 				mob_type = /mob/living/simple_animal/hostile/infected
-			else if(spawn_roll <= 75)
-				mob_type = /mob/living/simple_animal/hostile/infected/bruiser
-			else if(spawn_roll <= 85)
-				mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-			else if(spawn_roll <= 90)
-				mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
-			else if(spawn_roll <= 95)
-				mob_type = /mob/living/simple_animal/hostile/infected/charger
-			else
-				mob_type = /mob/living/simple_animal/hostile/infected/hunter
+		else if(spawn_roll <= 55)
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else if(spawn_roll <= 75)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+		else if(spawn_roll <= 85)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+		else if(can_spawn_specials)
+			mob_type = pick_wave_special_type(list(
+				/mob/living/simple_animal/hostile/infected/acid_spitter,
+				/mob/living/simple_animal/hostile/infected/charger,
+				/mob/living/simple_animal/hostile/infected/hunter
+			), already_specials)
+			if(!mob_type)
+				mob_type = /mob/living/simple_animal/hostile/infected
+		else
+			mob_type = /mob/living/simple_animal/hostile/infected
 	else if(difficulty_level >= 4)
 		// After trigger4, include acid spitter and charger in rotation
-		var/spawn_roll = rand(1, 100)
 		if(spawn_roll <= 40)
 			mob_type = /mob/living/simple_animal/hostile/infected
 		else if(spawn_roll <= 65)
 			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
 		else if(spawn_roll <= 80)
 			mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-		else if(spawn_roll <= 95)
-			mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+		else if(can_spawn_specials)
+			mob_type = pick_wave_special_type(list(
+				/mob/living/simple_animal/hostile/infected/acid_spitter,
+				/mob/living/simple_animal/hostile/infected/charger
+			), already_specials)
+			if(!mob_type)
+				mob_type = /mob/living/simple_animal/hostile/infected
 		else
-			mob_type = /mob/living/simple_animal/hostile/infected/charger
+			mob_type = /mob/living/simple_animal/hostile/infected
 	else
 		// Before trigger4, only normal zombies and bruisers
 		if(prob(70))
@@ -352,6 +436,7 @@
 		wave_zombies_remaining = 0
 		wave_failed_spawns = 0
 		wave_batch_size = 0
+		wave_special_types = null
 		return
 
 	var/wave_intended = wave_zombies_remaining + wave_spawned_zombies.len
@@ -372,13 +457,15 @@
 			wave_failed_spawns++
 			continue
 
-		var/mob_type = pick_wave_mob_type()
+		var/mob_type = pick_wave_mob_type(wave_special_types)
 		if(!mob_type)
 			wave_failed_spawns++
 			continue
 
 		var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
 		if(Z)
+			if(is_special_mob_type(mob_type))
+				wave_special_types += mob_type
 			if(zombie_hp_multiplier > 1.0)
 				Z.maxHealth = round(Z.maxHealth * zombie_hp_multiplier)
 				Z.health = Z.maxHealth
@@ -407,9 +494,17 @@
 	wave_zombies_remaining = 0
 	wave_failed_spawns = 0
 	wave_batch_size = 0
+	wave_special_types = null
 
 	if(wave_size > 0 && difficulty_level > 0)
 		start_horde_music()
+
+	// Silent special-infected event roll - spawns a single special mob
+	// separately from the wave, without any announcement or effects.
+	if(wave_size > 0 && prob(40))
+		var/list/event_players = get_alive_players_in_mission()
+		if(event_players.len)
+			spawn_special_infected(event_players)
 
 /datum/ai_director/zombie_mission/proc/find_valid_spawn_turf(list/players)
 	if(!src)

@@ -1503,7 +1503,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	if(D)
 		animate(D, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 5)
 
-	SSmove_manager.move_towards(src, target_turf)
+	SSmove_manager.move_towards(src, target_turf, 1, FALSE, INFINITY, SSmovement)
 
 /obj/structure/urbanismcars/truck/proc/on_entering_atom(datum/source, atom/destination, atom/old_loc, list/atom/old_locs)
 	SIGNAL_HANDLER

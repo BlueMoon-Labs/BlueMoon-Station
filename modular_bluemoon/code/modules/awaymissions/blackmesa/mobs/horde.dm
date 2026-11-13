@@ -3,9 +3,6 @@
 // AI Director controlled zombie waves for ihategordon mission
 // =============================================================================
 
-// Hunter infected stealth ability
-#define HUNTER_STEALTH "hunter_stealth"
-
 /datum/movespeed_modifier/status_effect/mesa_horde_slow
 	multiplicative_slowdown = 1
 
@@ -271,7 +268,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/infected/AttackingTarget()
-	if(type != /mob/living/simple_animal/hostile/infected && !istype(src, /mob/living/simple_animal/hostile/infected/bruiser))
+	var/is_horde_mob = (type == /mob/living/simple_animal/hostile/infected) || istype(src, /mob/living/simple_animal/hostile/infected/runner) || istype(src, /mob/living/simple_animal/hostile/infected/bruiser)
+	if(!is_horde_mob)
 		return ..()
 	if(!isliving(target))
 		return ..()
@@ -302,7 +300,10 @@
 		target_message = "<span class='danger'>\The [src] [attack_verb_continuous] you!</span>",
 	)
 	log_combat(src, victim, "attacked")
-	victim.apply_damage(5, BRUTE, null, forced = TRUE)
+	// Regular infected and runners chip for 2 HP; bruisers always land a
+	// guaranteed 3 BRUTE hit that ignores armor and stamina block.
+	var/damage_amount = istype(src, /mob/living/simple_animal/hostile/infected/bruiser) ? 3 : 2
+	victim.apply_damage(damage_amount, BRUTE, null, forced = TRUE)
 	victim.apply_status_effect(/datum/status_effect/mesa_horde_slow)
 	return TRUE
 
@@ -650,6 +651,7 @@
 	maxHealth = 70
 	health = 70
 	speed = -1
+	turns_per_move = 0 // instant reaction - hunters are fast
 	melee_damage_lower = 25
 	melee_damage_upper = 35
 	attack_verb_continuous = "mauls"
@@ -679,13 +681,7 @@
 	sharpness = SHARP_NONE
 	// Hunter-specific variables
 	var/is_stealthed = FALSE
-	var/mutable_appearance/eyes_overlay
-	var/mob/living/dragging_target = null
-	var/datum/weakref/ignored_target = null
-	var/stealth_alpha = 30
-	var/light_threshold = SHADOW_SPECIES_LIGHT_THRESHOLD
-	var/leap_range = 12
-	var/leap_cooldown_time = 5 SECONDS
+	var/stealth_alpha = 60
 	var/leap_damage = 35
 	var/miss_stun_duration = 1.5 SECONDS
 	var/last_light_check = 0
@@ -698,10 +694,6 @@
 	var/jumpdistance = 12
 	var/jumpspeed = 2
 	var/is_leaping = FALSE
-	var/is_dragging = FALSE
-	var/drag_distance = 0
-	var/drag_target_distance = 15
-	var/drag_direction = null
 	var/leap_cooldown = 0
 	var/next_vocalization = 0
 	// Dodging configuration - higher dodge chance for evasive movement
@@ -709,23 +701,22 @@
 	// Distance keeping behavior
 	retreat_distance = 5
 	minimum_distance = 3
-	// Light avoidance
-	var/light_avoidance_range = 8
-	var/light_avoidance_strength = 0.7
-	var/light_avoidance_check_interval = 5 SECONDS // was 2 SECONDS - locate() in range(8) scan
-	var/last_light_avoidance_check = 0
 
 /mob/living/simple_animal/hostile/infected/hunter/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
+	// Hunters spawn stealthed - the gate has no real darkness, so the stealth
+	// only breaks under bright light (lamps, flashlights) or when it attacks.
+	is_stealthed = TRUE
+	animate(src, alpha = stealth_alpha, time = 0)
 
 /mob/living/simple_animal/hostile/infected/hunter/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
 		return TRUE
 
 	// Erratic movement when not in combat
-	if(!target && !is_leaping && !is_dragging && prob(15))
+	if(!target && !is_leaping && prob(15))
 		// Occasionally move in a slightly random direction
 		var/random_offset = pick(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST)
 		if(random_offset && random_offset != dir)
@@ -737,7 +728,7 @@
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/hunter/can_ai_controller_move()
-	return !is_leaping && !is_dragging
+	return !is_leaping
 
 /mob/living/simple_animal/hostile/infected/hunter/Life()
 	. = ..()
@@ -745,90 +736,35 @@
 		playsound(get_turf(src), pick(speak), 70, FALSE)
 		next_vocalization = world.time + 3 SECONDS
 	handle_stealth()
-	handle_light_avoidance()
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/exit_stealth()
+	if(!is_stealthed)
+		return
+	is_stealthed = FALSE
+	animate(src, alpha = 255, time = 3)
 
 /mob/living/simple_animal/hostile/infected/hunter/proc/handle_stealth()
-	if(!src)
+	// Once revealed the hunter stays visible - the gate has no dark corners
+	// to fall back into, so there is nothing left to check.
+	if(!is_stealthed)
 		return
 	if(world.time < last_light_check + light_check_interval)
 		return
 	last_light_check = world.time
 
-	var/turf/T = get_turf(src)
-	if(!T)
-		return
-
-	// Calculate light excluding background floodlights
-	var/light_amount = T.get_lumcount()
-
-	// Check for background floodlights nearby and reduce their light contribution
-	var/turf/nearby_turf = locate(/obj/machinery/power/floodlight) in range(10, src)
-	if(nearby_turf)
-		light_amount *= 0.3 // Reduce effect of background floodlights by 70%
-
-	if(light_amount < light_threshold)
-		if(!is_stealthed)
-			is_stealthed = TRUE
-			animate(src, alpha = stealth_alpha, time = 10)
-			ADD_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
-			if(!eyes_overlay)
-				eyes_overlay = mutable_appearance(icon, "hunter_eyes")
-				eyes_overlay.layer = ABOVE_MOB_LAYER
-			add_overlay(eyes_overlay)
-	else
-		if(is_stealthed)
-			is_stealthed = FALSE
-			animate(src, alpha = 255, time = 5)
-			REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
-			cut_overlay(eyes_overlay)
-			eyes_overlay = null
-			// Materialization effect when exposed to light
-			visible_message("<span class='danger'>[src] materializes from the shadows!</span>")
-			playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 80, FALSE)
-
-/mob/living/simple_animal/hostile/infected/hunter/proc/handle_light_avoidance()
-	if(!src || !target)
-		return
-
-	// Check cooldown to avoid expensive operations every tick
-	if(world.time < last_light_avoidance_check + light_avoidance_check_interval)
-		return
-	last_light_avoidance_check = world.time
-
-	// Check if target is holding a light source
-	if(iscarbon(target))
-		var/mob/living/carbon/C = target
+	// Bright light sources - lit machinery and mobs carrying bright items
+	// (flashlights etc.) - force the hunter out of stealth.
+	for(var/obj/machinery/light/L in view(8, src))
+		if(L && L.on)
+			exit_stealth()
+			return
+	for(var/mob/living/carbon/C in view(6, src))
 		if(C && C.luminosity > 3)
-			// Target has bright light - increase retreat distance
-			retreat_distance = 8
-			minimum_distance = 6
-		else
-			// Normal distance keeping
-			retreat_distance = 5
-			minimum_distance = 3
-
-	// Check for nearby light sources to avoid
-	var/obj/machinery/light/L = locate(/obj/machinery/light) in range(light_avoidance_range, src)
-	if(L && L.on)
-		// Move away from light sources
-		var/away_dir = get_dir(L, src)
-		if(away_dir)
-			var/turf/away_turf = get_step(src, away_dir)
-			if(away_turf && !away_turf.density)
-				// Slight bias towards moving away from light
-				if(prob(30))
-					Move(away_turf, away_dir)
-
-/mob/living/simple_animal/hostile/infected/hunter/Aggro()
-	. = ..()
-	if(speak && speak.len && prob(60) && world.time >= next_vocalization)
-		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 80, FALSE)
-		next_vocalization = world.time + 3 SECONDS
+			exit_stealth()
+			return
 
 /mob/living/simple_animal/hostile/infected/hunter/CanAttack(atom/the_target)
 	if(!the_target)
-		return FALSE
-	if(ignored_target && the_target == ignored_target?.resolve())
 		return FALSE
 
 	// Implement straggler targeting - prefer isolated targets
@@ -858,7 +794,7 @@
 			shake_camera(L, 2, 2)
 
 /mob/living/simple_animal/hostile/infected/hunter/OpenFire(atom/A)
-	if(!A || QDELETED(A) || world.time < leap_cooldown || is_leaping || is_dragging)
+	if(!A || QDELETED(A) || world.time < leap_cooldown || is_leaping)
 		return
 	if(check_friendly_fire)
 		for(var/turf/T in getline(src,A))
@@ -873,6 +809,7 @@
 	if(distance < 3 || distance > jumpdistance || !A.has_gravity())
 		return
 
+	exit_stealth()
 	visible_message("<span class='danger'><b>[src]</b> [ranged_message] at [A]!</span>")
 	playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/hscream.ogg', 90, FALSE)
 	shake_camera(src, 2, 2)
@@ -906,43 +843,20 @@
 		L.Paralyze(20)
 		shake_camera(L, 4, 3)
 		shake_camera(src, 2, 3)
-		if(!is_dragging)
-			start_dragging(L)
 	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
 		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg', 70, FALSE)
 		Stun(miss_stun_duration * 10)
 
-/mob/living/simple_animal/hostile/infected/hunter/proc/crit_and_ignore(mob/living/victim)
-	if(!victim || QDELETED(victim))
-		return
-	if(victim.stat == DEAD)
-		return
-
-	// Leave victim in critical condition
-	victim.health = -victim.maxHealth * 0.5
-	victim.updatehealth()
-	if(victim.client)
-		to_chat(victim, span_userdanger("Вас оставили в критическом состоянии!"))
-
-	// Add to ignore list so hunter won't target them again
-	ignored_target = WEAKREF(victim)
-
 /mob/living/simple_animal/hostile/infected/hunter/death(gibbed)
 	. = ..(gibbed)
 	is_leaping = FALSE
-	dragging_target = null
-	ignored_target = null
-	stop_pulling()
 	is_stealthed = FALSE
 	animate(src, alpha = 255, time = 5)
-	REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
 	if(!ckey)
 		toggle_ai(AI_OFF)
 
 /mob/living/simple_animal/hostile/infected/hunter/Destroy()
-	dragging_target = null
-	ignored_target = null
 	. = ..()
 
 // =============================================================================
@@ -1163,6 +1077,9 @@
 /mob/living/simple_animal/hostile/infected/tank/BiologicalLife(seconds, times_fired)
 	if(!(. = ..()))
 		return
+	// Periodic theme maintenance: picks up players who entered the area after
+	// aggro and covers target acquisition paths that skip Aggro().
+	update_theme_listeners()
 	if(target || stat == DEAD || world.time < next_idle_sound)
 		return
 	playsound(src, sound(pick(tank_idle_sounds), channel = tank_idle_channel), 65, TRUE, channel = tank_idle_channel)
@@ -1234,16 +1151,30 @@
 /mob/living/simple_animal/hostile/infected/tank/Aggro()
 	. = ..()
 	playsound(src, pick(tank_aggro_sounds), 80, TRUE)
-	if(tank_theme_playing)
+	update_theme_listeners()
+
+/mob/living/simple_animal/hostile/infected/tank/proc/update_theme_listeners()
+	if(stat == DEAD || QDELETED(src))
 		return
-	tank_theme_playing = TRUE
-	for(var/mob/nearby_mob in viewers(10, src))
-		if(!nearby_mob.client || !nearby_mob.client.prefs || !(nearby_mob.client.prefs.toggles & SOUND_AMBIENCE))
+	// The theme only makes sense while the tank has a living target - this also
+	// covers aggro paths that bypass Aggro() (direct target assignment).
+	if(!isliving(target))
+		return
+	if(!tank_theme_playing)
+		tank_theme_playing = TRUE
+	// Area-based like the helicopter theme: every player inside the gate hears
+	// it, not just viewers() within 10 tiles at the moment of aggro.
+	for(var/mob/living/player in GLOB.player_list)
+		if(!player || QDELETED(player) || !player.client)
 			continue
-		if(!istype(get_area(nearby_mob), /area/awaymission/ihategordon))
+		if(player in tank_theme_listeners)
 			continue
-		SEND_SOUND(nearby_mob, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
-		register_theme_listener(nearby_mob)
+		if(!(player.client.prefs && (player.client.prefs.toggles & SOUND_AMBIENCE)))
+			continue
+		if(!istype(get_area(player), /area/awaymission/ihategordon))
+			continue
+		SEND_SOUND(player, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
+		register_theme_listener(player)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/register_theme_listener(mob/listener)
 	if(!listener || !istype(listener))
