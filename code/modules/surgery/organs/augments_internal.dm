@@ -282,6 +282,8 @@
 	var/trail_color
 	/// Интервал спавна следа в децисекундах (меньше = плотнее след).
 	var/afterimage_interval = 1
+	/// Шанс в процентах уклониться от любого проджектайла, пока имплант активен.
+	var/projectile_dodge_chance = 45
 
 /datum/action/item_action/organ_action/use/sandevistan
 	name = "Activate Sandevistan"

@@ -192,12 +192,11 @@
 	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan
 
 /datum/uplink_item/implants/sandevistan_military
-	name = "Military Sandevistan"
-	desc = "A military-grade neural overclocking implant. Much more potent than civilian models with significantly reduced cooldown. Limited stock for elite operatives."
+	name = "Cybersun Sandevistan"
+	desc = "A military-grade neural overclocking implant. While active, it grants a burst of speed and lets you dodge incoming projectiles with a 45% chance. Comes with a long cooldown."
 	item = /obj/item/autosurgeon/syndicate/sandevistan_military
-	cost = 18
-	purchasable_from = UPLINK_SYNDICATE
-	limited_stock = 1
+	cost = 10
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
 
 /obj/item/autosurgeon/syndicate/sandevistan_military
 	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan/military
