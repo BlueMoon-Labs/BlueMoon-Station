@@ -13,6 +13,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/completed = FALSE
 	/// Работа всего отдела без исполнителя: контракт не берут, долю награды делят участники
 	var/takeable = TRUE
+	/// Бюджет уже получил оплату самой работы: награду целиком делят люди, отделу ничего
+	var/people_only = FALSE
 	/// Особый заказ ЦК: не сменяется ротацией и не занимает место на доске отдела
 	var/pinned = FALSE
 	/// Личный заказ: виден и доступен только этому счёту
@@ -176,7 +178,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 				weight++
 	if(!weight)
 		return
-	var/pool = round(total * SSeconomy.settings.contract_team_share / 100)
+	var/pool = people_only ? total : round(total * SSeconomy.settings.contract_team_share / 100)
 	for(var/datum/bank_account/account as anything in accounts)
 		var/share = round(pool * accounts[account] / weight)
 		if(share > 0)
@@ -188,8 +190,9 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/to_people = 0
 	for(var/datum/bank_account/account as anything in shares)
 		to_people += shares[account]
-	var/datum/economy_department/department = SSeconomy.get_department(department_id)
-	department?.account.credit(total - to_people, ECON_CONTRACT, performer, "Контракт: [title]")
+	if(!people_only)
+		var/datum/economy_department/department = SSeconomy.get_department(department_id)
+		department?.account.credit(total - to_people, ECON_CONTRACT, performer, "Контракт: [title]")
 	for(var/datum/bank_account/account as anything in shares)
 		var/share = shares[account]
 		var/bonus = account == taker ? round(share * account.contract_rank_bonus() / 100) : 0
@@ -208,7 +211,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/total = payout()
 	var/to_people = pay_reward(total, performer)
 	taker?.contract_done(rep_value())
-	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people]")
+	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people][people_only ? ", бюджету ничего: работа уже оплачена" : ""]")
 	qdel(src)
 
 /datum/econ_contract/proc/progress_text()
@@ -231,6 +234,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		"taken_by" = taker?.account_holder,
 		"taker_id" = taker?.account_id,
 		"takeable" = takeable,
+		"people_only" = people_only,
 		"special" = pinned,
 		"rotates_in" = isnull(due) ? null : max(round((due - world.time) / (1 SECONDS)), 0),
 		"started" = has_progress(),
@@ -351,7 +355,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	)))
 	. += list(list("title" = "Кто сколько получает", "icon" = "coins", "lines" = list(
 		"Взявшему - [settings.contract_performer_share]% награды (с налогом), остальное - отделу.",
-		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Общую работу отдела (энергия, норма руды) - поровну все на смене.",
+		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Общая работа отдела (энергия, норма руды) уже оплачена бюджету, поэтому её награду целиком делят люди лично, а без участников - поровну все на смене.",
 		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
 		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов.",
 		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",

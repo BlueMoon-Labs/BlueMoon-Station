@@ -68,16 +68,17 @@
 
 /datum/econ_contract/activity/engineering_export
 	title = "Поставка энергии в сеть сектора"
-	desc = "Продать энергии на указанную сумму в кредитах через узлы экспорта."
+	desc = "Продать энергии на указанную сумму в кредитах через узлы экспорта. Бюджет за энергию уже получил, поэтому награда идёт лично инженерам на смене."
 	work_type = WORK_ENG_POWER_EXPORT
 	target = 1500
 	takeable = FALSE
+	people_only = TRUE
 
 /datum/econ_contract/activity/engineering_export/contract_units(amount, paid)
 	return paid
 
 /datum/econ_contract/activity/engineering_export/work_value()
-	return target
+	return target * SSeconomy.settings.contract_team_share / 100
 
 /datum/econ_contract/activity/science_nodes
 	title = "Исследовательский рывок"
@@ -110,13 +111,14 @@
 
 /datum/econ_contract/activity/cargo_ore
 	title = "Норма переработки"
-	desc = "Переработать руды на указанную сумму в кредитах."
+	desc = "Переработать руды на указанную сумму в кредитах. Бюджет за руду уже получил, поэтому награда идёт лично снабжению на смене."
 	work_type = WORK_MINING_ORE
 	target = 1200
 	takeable = FALSE
+	people_only = TRUE
 
 /datum/econ_contract/activity/cargo_ore/contract_units(amount, paid)
 	return paid
 
 /datum/econ_contract/activity/cargo_ore/work_value()
-	return target
+	return target * SSeconomy.settings.contract_team_share / 100

@@ -228,7 +228,7 @@
 	var/staff = 0
 	for(var/datum/bank_account/member as anything in engineering.staff_accounts())
 		staff += member.state == ACCOUNT_ACTIVE
-	TEST_ASSERT_EQUAL(shares[helper_account], round(round(shared.payout() * SSeconomy.settings.contract_team_share / 100) / staff), "Доля сотрудника отдела на смене")
+	TEST_ASSERT_EQUAL(shares[helper_account], round(shared.payout() / staff), "Доля сотрудника отдела на смене")
 	helper_account.department_id = null
 	qdel(shared)
 	econ_test_set_balance(engineering.account, saved_engineering)

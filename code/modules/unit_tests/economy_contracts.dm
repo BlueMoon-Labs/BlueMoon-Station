@@ -64,6 +64,31 @@
 	TEST_ASSERT(performer_account.account_balance - before >= round(contract.reward * SSeconomy.settings.contract_performer_share / 100) - round(contract.reward * SSeconomy.tax_rate / 100), "Доля исполнителя")
 	TEST_ASSERT(!(contract in medical.contracts), "Снят с доски")
 
+/// Контракты общей работы отдела (энергия, руда) не платят бюджету второй раз за уже оплаченную работу: награда целиком уходит людям.
+/datum/unit_test/economy_work/department_work_contract/Run()
+	var/datum/bank_account/member = new("econ_test_engineer")
+	var/list/contract_departments = list(/datum/econ_contract/activity/engineering_export = ACCOUNT_ENG, /datum/econ_contract/activity/cargo_ore = ACCOUNT_CAR)
+	for(var/contract_type in contract_departments)
+		var/datum/econ_contract/activity/contract = new contract_type(contract_departments[contract_type])
+		var/datum/economy_department/department = SSeconomy.get_department(contract.department_id)
+		department.contracts += contract
+		member.department_id = contract.department_id
+		econ_test_set_balance(member, 0)
+		var/list/shares = contract.reward_shares(contract.payout())
+		var/to_people = 0
+		for(var/datum/bank_account/account as anything in shares)
+			to_people += shares[account]
+		TEST_ASSERT(shares[member] > 0, "[contract_type]: сотрудник на смене без доли")
+		TEST_ASSERT(contract.payout() - to_people < length(shares), "[contract_type]: людям [to_people] из [contract.payout()]")
+		var/saved_budget = department.account.account_balance
+		var/price = SSeconomy.settings.work_prices[contract.work_type]
+		var/paid = SSeconomy.record_work(contract.department_id, contract.work_type, CEILING(contract.target / price, 1))
+		TEST_ASSERT(contract.completed, "[contract_type] не выполнен")
+		TEST_ASSERT_EQUAL(department.account.account_balance - saved_budget, paid, "[contract_type] заплатил бюджету сверх оплаты работы")
+		TEST_ASSERT(member.account_balance > 0, "[contract_type] не заплатил сотруднику")
+		econ_test_set_balance(department.account, saved_budget)
+	qdel(member)
+
 /// Чужая работа, работа другого отдела и другого типа взятый контракт деятельности не двигают.
 /datum/unit_test/economy_work/activity_contract_filters/Run()
 	setup_pair()

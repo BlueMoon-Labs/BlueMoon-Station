@@ -124,6 +124,15 @@ test('личный заказ, серия и упавший спрос поме�
   expect(ui.queryByText('Серия: этап 2 из 3')).toBeNull();
 });
 
+test('общая работа отдела без доли бюджета: награда целиком участникам', () => {
+  const ui = setup({
+    team_share: 25,
+    contracts: [contract(20, { takeable: 0, people_only: 1, reward: 400 }), contract(21, { takeable: 0 })],
+  });
+  expect(ui.getByText('Целиком участникам лично, бюджету ничего')).toBeTruthy();
+  expect(ui.getByText('Участникам 25% по вкладу')).toBeTruthy();
+});
+
 test('личные заказы обновляются кнопкой, на кулдауне она молчит', () => {
   const ready = setup({ rank, contracts: [contract(10, { kind: 'personal' })] });
   fireEvent.click(ready.getByText('Обновить личные заказы'));

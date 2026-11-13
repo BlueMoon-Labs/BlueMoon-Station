@@ -168,6 +168,13 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
       </div>
     );
   }
+  if (!contract.taken_by && !!contract.people_only) {
+    return (
+      <div className="NtTerm__hint">
+        Целиком участникам лично, бюджету ничего{contract.contributors ? `, участвуют: ${contract.contributors}` : ''}
+      </div>
+    );
+  }
   if (!contract.taken_by && !!data.team_share) {
     return (
       <div className="NtTerm__hint">

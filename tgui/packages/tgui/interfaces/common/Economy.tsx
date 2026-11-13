@@ -21,6 +21,8 @@ export type ContractEntry = {
   taken_by: string | null;
   taker_id: number | null;
   takeable: BooleanLike;
+  /** Работа уже оплачена бюджету: награду целиком делят люди. */
+  people_only?: BooleanLike;
   special: BooleanLike;
   rotates_in: number | null;
   started: BooleanLike;
