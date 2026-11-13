@@ -3858,9 +3858,7 @@
 	name = "2maintenance loot spawner"
 	},
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/machinery/conveyor/inverted{
-	dir = 1
-	},
+/obj/machinery/conveyor,
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "ckC" = (
@@ -9361,9 +9359,6 @@
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "fIl" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 1
-	},
 /obj/machinery/vending/wardrobe/robo_wardrobe{
 	pixel_x = 3;
 	onstation = 0
@@ -10843,10 +10838,10 @@
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "gAV" = (
 /obj/machinery/recycler,
-/obj/machinery/conveyor/inverted{
-	dir = 8
-	},
 /obj/effect/turf_decal/lunar_sand/plating,
+/obj/machinery/conveyor{
+	dir = 4
+	},
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "gBz" = (
@@ -11156,8 +11151,8 @@
 	name = "2maintenance loot spawner"
 	},
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/machinery/conveyor/inverted{
-	dir = 8
+/obj/machinery/conveyor{
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
@@ -11873,9 +11868,7 @@
 "hkC" = (
 /obj/effect/spawner/lootdrop/syndicate_present,
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/machinery/conveyor/inverted{
-	dir = 1
-	},
+/obj/machinery/conveyor,
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "hlf" = (
@@ -27961,14 +27954,6 @@
 /turf/open/floor/plating/smooth/grass/lavaland_jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "qjZ" = (
-/obj/structure/table/reinforced{
-	color = "#777777";
-	layer = 2.7
-	},
-/obj/structure/window/reinforced/survival_pod{
-	dir = 2
-	},
-/obj/machinery/door/firedoor/border_only,
 /turf/closed/wall/mineral/plastitanium{
 	layer = 2.8
 	},
@@ -31368,7 +31353,6 @@
 /area/mine/maintenance)
 "snA" = (
 /obj/structure/window/reinforced/clockwork/fulltile,
-/obj/structure/grille,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "snJ" = (
