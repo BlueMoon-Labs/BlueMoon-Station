@@ -529,6 +529,7 @@
 #include "station_trait_hangover.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
+#include "statpanel_mc_tab.dm"
 #include "storage_plane.dm"
 // #include "strippable.dm"
 #include "strippable_hands_gate.dm"
