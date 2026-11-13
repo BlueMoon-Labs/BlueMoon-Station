@@ -36,11 +36,8 @@
 /// Maximum excited-group members processed between master-controller budget checks.
 /// Breakdown keeps its accumulator and write-back state across SSair resumes.
 #define EXCITED_GROUP_BREAKDOWN_SLICE				192
-/// Small groups are cheaper and safer to finish atomically. Resumable state is
-/// reserved for memberships large enough to threaten a server tick. Два среза:
-/// на старом пороге в 1024 группа из ~1000 турфов усреднялась одним куском на
-/// сотни миллисекунд - при станционном пожаре таких групп десятки.
-#define EXCITED_GROUP_RESUMABLE_THRESHOLD			(EXCITED_GROUP_BREAKDOWN_SLICE * 2)
+/// Группа меньше этого усредняется одним вызовом: четыре прохода брейкдауна по её членам укладываются в один срез.
+#define EXCITED_GROUP_RESUMABLE_THRESHOLD			(EXCITED_GROUP_BREAKDOWN_SLICE / 4)
 /// Excited-group size at which the zone equalizer engages even with the config
 /// flag off. Pure LINDA diffusion cannot finish a single differential this
 /// large in bounded time: the giant-hall bench (120x100 hall, 16:1 pressure
