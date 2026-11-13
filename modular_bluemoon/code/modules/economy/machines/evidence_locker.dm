@@ -114,6 +114,9 @@
 	if(!pays_here())
 		to_chat(user, span_warning("Вне станции NT улики не принимает."))
 		return 0
+	if(SSeconomy.round_over())
+		to_chat(user, span_warning("Смена закончена: NT больше не принимает улики, они остаются в хранилище."))
+		return 0
 	var/payout = payout_for(thing)
 	var/cap_left = SSeconomy.contraband_cap_left()
 	if(payout > cap_left)

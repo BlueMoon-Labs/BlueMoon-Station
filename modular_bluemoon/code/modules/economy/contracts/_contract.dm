@@ -355,7 +355,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	)))
 	. += list(list("title" = "Кто сколько получает", "icon" = "coins", "lines" = list(
 		"Взявшему - [settings.contract_performer_share]% награды (с налогом), остальное - отделу.",
-		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Общая работа отдела (энергия, норма руды) уже оплачена бюджету, поэтому её награду целиком делят люди лично, а без участников - поровну все на смене.",
+		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Поставка энергии и норма переработки - общая работа отдела, бюджету она уже оплачена: награда за них считается с [settings.contract_team_share]% цены работы, и её поровну делят все в отделе на смене, бюджету ничего.",
 		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
 		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов.",
 		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",

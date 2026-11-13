@@ -104,6 +104,23 @@
 	patient.fully_heal()
 	TEST_ASSERT_EQUAL(analyzer.try_discharge(performer, patient), 0, "Своя травма")
 
+/// После конца раунда выписка не платит и молчит, а не пишет медику про кулдаун выписки.
+/datum/unit_test/economy_work/discharge_after_round_end/Run()
+	setup_station_pair()
+	var/obj/item/healthanalyzer/analyzer = allocate(/obj/item/healthanalyzer)
+	patient.adjustBruteLoss(30)
+	patient.fully_heal()
+	var/previous_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_FINISHED
+	GLOB.unit_test_chat_capture = list()
+	var/paid = analyzer.try_discharge(performer, patient)
+	var/list/heard = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
+	SSticker.current_state = previous_state
+	TEST_ASSERT_EQUAL(paid, 0, "Выписка после конца раунда оплачена")
+	for(var/list/entry as anything in heard)
+		TEST_ASSERT(!findtext(entry[2], "не засчитана"), "Ложное сообщение о выписке после конца раунда: [entry[2]]")
+
 /// Реанимация дефибриллятором платит медицине.
 /datum/unit_test/economy_work/defib_revive/Run()
 	setup_station_pair()

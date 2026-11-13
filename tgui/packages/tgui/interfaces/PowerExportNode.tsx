@@ -98,7 +98,7 @@ export const PowerExportNodeContent = () => {
           <LabeledList.Item label="Продаётся">{formatKw(export_w)}</LabeledList.Item>
           <LabeledList.Item label="Цена">
             {formatCredits(price_per_mj, { decimals: 2 })} за МДж ({formatCredits(base_price_per_mj, { decimals: 2 })}{' '}
-            × рынок энергии {market_percent}%)
+            × рынок энергии с учётом спроса {market_percent}%)
           </LabeledList.Item>
           <LabeledList.Item label="Спрос сектора">{demand_percent}%</LabeledList.Item>
           <LabeledList.Item label="Доход">~{formatCredits(income_per_minute)} в минуту в бюджет инженерии</LabeledList.Item>

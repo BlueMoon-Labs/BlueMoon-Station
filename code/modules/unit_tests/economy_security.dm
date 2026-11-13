@@ -286,6 +286,23 @@
 	var/expected_tc = round(SSeconomy.settings.contraband_value_per_tc * 2 * econ_sale_factor(COMMODITY_CONTRABAND))
 	TEST_ASSERT(findtext(jointext(locker.examine(performer), " "), "[expected_tc] кр. за каждый телекристалл"), "Осмотр называет цену телекристалла без цены работы")
 
+/// После конца раунда NT улики не забирает: улика остаётся в хранилище, а не исчезает без оплаты.
+/datum/unit_test/economy_work/security/evidence_locker_round_over/Run()
+	TEST_ASSERT_NOTNULL(setup_officer(), "ID офицера надета")
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/evidence_locker/locker = allocate(/obj/machinery/evidence_locker, station_turf)
+	var/obj/item/card/id/syndicate/agent_card = allocate(/obj/item/card/id/syndicate)
+	TEST_ASSERT(locker.store(hold(agent_card), performer), "Карту принимает")
+	var/before = budget.account_balance
+	var/previous_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_FINISHED
+	var/paid = locker.hand_over(agent_card, performer)
+	SSticker.current_state = previous_state
+	TEST_ASSERT_EQUAL(paid, 0, "После конца раунда улика оплачена")
+	TEST_ASSERT_EQUAL(budget.account_balance, before, "Бюджет СБ изменился")
+	TEST_ASSERT(!QDELETED(agent_card) && (agent_card in locker.stored), "Улика ушла без оплаты")
+
 /// Вне станции хранилище улики держит, но NT за них не платит и не забирает.
 /datum/unit_test/economy_work/security/evidence_locker_offstation/Run()
 	TEST_ASSERT_NOTNULL(setup_officer(), "ID офицера надета")

@@ -59,6 +59,17 @@
 	TEST_ASSERT_EQUAL(computer.last_points, 0, "За ошибку ноль кредитов")
 	TEST_ASSERT(findtext(jointext(computer.examine(solver), "\n"), "[price * 5] кр."), "Осмотр называет оплату сложной задачи")
 
+/// После конца раунда проблемный компьютер не обещает «начислено 0 кр.», а говорит, что смена закончена.
+/datum/unit_test/economy_farm_caps/problem_computer_round_over/Run()
+	var/obj/item/computermath/cargo/computer = allocate(/obj/item/computermath/cargo)
+	var/mob/living/carbon/human/solver = allocate(/mob/living/carbon/human)
+	var/previous_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_FINISHED
+	computer.handle_reward(solver, "Cargo", TRUE, "Hard")
+	SSticker.current_state = previous_state
+	TEST_ASSERT_EQUAL(computer.last_points, 0, "После конца раунда расчёт оплачен")
+	TEST_ASSERT(!findtext(computer.last_message, "начислено") && findtext(computer.last_message, "смена закончена"), "Экран после конца раунда: [computer.last_message]")
+
 /// Сделка с работорговцами платит снабжению один раз за раунд, сколько бы спавнеров ни сработало.
 /datum/unit_test/economy_farm_caps/slavers_deal_once/Run()
 	var/saved_flag = GLOB.slavers_deal_paid

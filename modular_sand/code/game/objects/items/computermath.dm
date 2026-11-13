@@ -505,6 +505,12 @@
 			last_message = "Данные корректны! Начислено [points_awarded] очков исследования."
 			linked_techweb.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
 		if("Cargo")
+			if(SSeconomy.round_over())
+				last_points = 0
+				last_message = "Данные корректны, но смена закончена: расчёты больше не оплачиваются."
+				say("Задача решена верно, но смена закончена: оплаты нет.")
+				playsound(src, 'sound/machines/chime.ogg', 30, 1)
+				return
 			points_awarded = SSeconomy.record_work(ACCOUNT_CAR, WORK_CARGO_PAPERWORK, difficulty_points, user)
 			last_points = points_awarded
 			last_message = "Данные корректны! Бюджету снабжения начислено [points_awarded] кр."

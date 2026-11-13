@@ -63,7 +63,7 @@ test('кнопки шлют toggle и set_draw с мощностью в кВт',
 
 test('цена с рыночным фактором, потолок станции и доход объяснены', () => {
   const { container } = setup();
-  expect(text(container)).toContain('4.50 кр. за МДж (3.00 кр. × рынок энергии 150%)');
+  expect(text(container)).toContain('4.50 кр. за МДж (3.00 кр. × рынок энергии с учётом спроса 150%)');
   expect(text(container)).toContain('не больше 3000 кВт со всех узлов');
   expect(text(container)).toContain('~108 кр. в минуту');
   expect(text(container)).toContain('не реже раза в 1 мин., а при сумме от 500 кр. - сразу.');

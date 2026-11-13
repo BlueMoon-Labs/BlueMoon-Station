@@ -170,9 +170,7 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
   }
   if (!contract.taken_by && !!contract.people_only) {
     return (
-      <div className="NtTerm__hint">
-        Целиком участникам лично, бюджету ничего{contract.contributors ? `, участвуют: ${contract.contributors}` : ''}
-      </div>
+      <div className="NtTerm__hint">Поровну всем в отделе на смене, бюджету ничего</div>
     );
   }
   if (!contract.taken_by && !!data.team_share) {
@@ -262,7 +260,7 @@ const PartnerOfferRow = (props: { offer: OfferEntry }) => {
         <div className="NtTerm__hint">Нужно: {offer.requirement}</div>
         <div className="NtTerm__hint">
           {formatCredits(offer.unit_price)} за штуку сразу при сдаче
-          {margin > 0 ? `, ещё ${formatCredits(margin)} за штуку - маржа отделу, закрывшему спецзаказ` : ''}.
+          {margin > 0 ? `, ещё ${formatCredits(margin)} за штуку - маржа отделу сдавшего при выполнении` : ''}.
         </div>
         <div className="NtTerm__contractProgress">
           <span className="NtTerm__bar">

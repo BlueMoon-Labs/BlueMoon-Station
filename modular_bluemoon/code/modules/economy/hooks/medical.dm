@@ -92,6 +92,8 @@
 	if(!econ_discharge_ready(user, patient))
 		to_chat(user, span_warning("Выписка недоступна: пациент должен быть вылечен и стоять рядом с медиком на станции."))
 		return 0
+	if(SSeconomy.round_over())
+		return 0
 	var/static/list/work_by_severity = list(WORK_MED_DISCHARGE_LIGHT, WORK_MED_DISCHARGE_HEAVY, WORK_MED_DISCHARGE_CRIT)
 	. = SSeconomy.record_work(ACCOUNT_MED, work_by_severity[patient.econ_injury_severity], 1, user, patient, "Выписка: [econ_public_name(patient)]")
 	if(!.)
