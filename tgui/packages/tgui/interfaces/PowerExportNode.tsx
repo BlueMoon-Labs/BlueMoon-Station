@@ -22,6 +22,10 @@ export type PowerExportNodeData = {
   income_per_minute: number;
   payout_minutes: number;
   payout_bulk: number;
+  demand_percent: number;
+  demand_floor_percent: number;
+  demand_recovery_percent: number;
+  shift_minutes: number;
 };
 
 const WATTS_PER_KILOWATT = 1000;
@@ -48,6 +52,10 @@ export const PowerExportNodeContent = () => {
     income_per_minute,
     payout_minutes,
     payout_bulk,
+    demand_percent,
+    demand_floor_percent,
+    demand_recovery_percent,
+    shift_minutes,
   } = data;
   const overdraw = target_kw > 0 && target_kw * WATTS_PER_KILOWATT > surplus_w;
   const surplusKw = Math.min(Math.floor(surplus_w / WATTS_PER_KILOWATT / step_kw) * step_kw, max_kw);
@@ -92,6 +100,7 @@ export const PowerExportNodeContent = () => {
             {formatCredits(price_per_mj, { decimals: 2 })} за МДж ({formatCredits(base_price_per_mj, { decimals: 2 })}{' '}
             × рынок энергии {market_percent}%)
           </LabeledList.Item>
+          <LabeledList.Item label="Спрос сектора">{demand_percent}%</LabeledList.Item>
           <LabeledList.Item label="Доход">~{formatCredits(income_per_minute)} в минуту в бюджет инженерии</LabeledList.Item>
         </LabeledList>
         {overdraw && (
@@ -104,7 +113,9 @@ export const PowerExportNodeContent = () => {
       <Section title="Как платит сектор">
         <Box color="label">
           Узел продаёт только то, что осталось в сети после всех потребителей и зарядки СМЕС, шагом {step_kw} кВт, до{' '}
-          {max_kw} кВт. Цена следует рынку энергии. Узел продаёт только из станционной сети. Сектор оплачивает не больше {station_cap_kw} кВт со всех узлов
+          {max_kw} кВт. Цена следует рынку энергии и падает от объёма: каждая продажа сбивает спрос сектора, и цена
+          опускается вплоть до {demand_floor_percent}% рыночной. Без продаж спрос возвращается на {demand_recovery_percent}% каждые ~
+          {shift_minutes} мин. Узел продаёт только из станционной сети. Сектор оплачивает не больше {station_cap_kw} кВт со всех узлов
           станции вместе, сверх этого энергия уходит бесплатно. Доход приходит в бюджет инженерии не реже раза в{' '}
           {payout_minutes} мин., а при сумме от {formatCredits(payout_bulk)} - сразу.
         </Box>

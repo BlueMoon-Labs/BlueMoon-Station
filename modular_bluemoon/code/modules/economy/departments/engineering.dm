@@ -11,10 +11,12 @@
 	pay_power_export()
 	SSeconomy.record_work(id, WORK_ENG_INTEGRITY, integrity_score())
 
-/// Копит доход экспорта энергии и платит его бюджету не чаще раза в ECON_POWER_EXPORT_PAYOUT_INTERVAL или крупной суммой.
+/// Копит доход экспорта энергии и платит его бюджету не чаще раза в ECON_POWER_EXPORT_PAYOUT_INTERVAL или крупной суммой. Проданное сразу сбивает спрос рынка энергии.
 /datum/economy_department/engineering/proc/accrue_power_export(credits)
 	if(!isnum(credits) || credits <= 0)
 		return
+	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
+	energy?.note_sale(credits)
 	if(!export_payout_due)
 		export_payout_due = world.time + ECON_POWER_EXPORT_PAYOUT_INTERVAL
 	export_pending += credits

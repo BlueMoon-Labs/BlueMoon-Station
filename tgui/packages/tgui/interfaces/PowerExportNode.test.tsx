@@ -22,6 +22,10 @@ const base: PowerExportNodeData = {
   income_per_minute: 108,
   payout_minutes: 1,
   payout_bulk: 500,
+  demand_percent: 64,
+  demand_floor_percent: 20,
+  demand_recovery_percent: 10,
+  shift_minutes: 5,
 };
 
 const setup = (data: Partial<PowerExportNodeData> = {}) => {
@@ -63,6 +67,8 @@ test('цена с рыночным фактором, потолок станци
   expect(text(container)).toContain('не больше 3000 кВт со всех узлов');
   expect(text(container)).toContain('~108 кр. в минуту');
   expect(text(container)).toContain('не реже раза в 1 мин., а при сумме от 500 кр. - сразу.');
+  expect(text(container)).toContain('Спрос сектора:64%');
+  expect(text(container)).toContain('вплоть до 20% рыночной. Без продаж спрос возвращается на 10% каждые ~5 мин.');
 });
 
 test('"Сеть не тянет", когда заданная мощность выше излишка', () => {

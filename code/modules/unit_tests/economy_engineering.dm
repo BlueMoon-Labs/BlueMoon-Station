@@ -132,6 +132,9 @@
 	TEST_ASSERT(node.powernet == grid, "Узел не подключился к сети кабеля")
 
 	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
+	energy.demand = 1
+	energy.demand_capacity = INFINITY
 	node.set_target_kw(1000)
 	TEST_ASSERT_EQUAL(node.target_kw, 1000, "Мощность отбора не задана")
 	node.toggle(null)
@@ -193,14 +196,53 @@
 	for(var/obj/machinery/power/export_node/node as anything in list(first, second))
 		node.set_target_kw(settings.power_export_max_kw)
 		node.toggle(null)
+	TEST_ASSERT(abs(econ_sale_factor(COMMODITY_ENERGY) - 1.5) < 0.001, "Рынок энергии не выставлен")
+	var/expected = settings.power_export_station_cap_kw / 1000 * settings.power_export_credits_per_mj * econ_sale_factor(COMMODITY_ENERGY)
 	power_cycle(grid, 100000000)
 	first.process(1)
 	second.process(1)
 	power_cycle(grid, 100000000)
 	TEST_ASSERT(first.last_export_w == second.last_export_w && first.last_export_w == settings.power_export_max_kw * 1000, "Оба узла продают заданную мощность")
-	var/expected = settings.power_export_station_cap_kw / 1000 * settings.power_export_credits_per_mj * econ_sale_factor(COMMODITY_ENERGY)
-	TEST_ASSERT(abs(econ_sale_factor(COMMODITY_ENERGY) - 1.5) < 0.001, "Рынок энергии не выставлен")
 	TEST_ASSERT(abs(engineering.export_pending - expected) < 0.1, "Оплачено [engineering.export_pending] кр. вместо [expected] за потолок станции")
+
+/// Продажа энергии сбивает спрос рынка: час на потолке станции заметно роняет цену, но не до пола, без продаж спрос возвращается за штатные сдвиги.
+/datum/unit_test/economy_engineering/power_export_demand/Run()
+	save_state()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
+	energy.volatility = 0
+	energy.trend = 1
+	energy.noise = 0
+	energy.demand = 1
+	energy.recompute()
+	var/full_price = econ_sale_factor(COMMODITY_ENERGY)
+	TEST_ASSERT(abs(full_price - 1) < 0.001, "Рынок энергии не на базе: [full_price]")
+	var/obj/machinery/power/export_node/first = allocate(/obj/machinery/power/export_node/econ_test_station)
+	var/obj/machinery/power/export_node/second = allocate(/obj/machinery/power/export_node/econ_test_station)
+	var/datum/powernet/grid = test_grid(first)
+	second.connect_to_network()
+	for(var/obj/machinery/power/export_node/node as anything in list(first, second))
+		node.set_target_kw(settings.power_export_max_kw)
+		node.toggle(null)
+	var/shift_seconds = SSmarket.shift_minutes MINUTES / (1 SECONDS)
+	power_cycle(grid, 100000000)
+	for(var/i in 1 to 60 / SSmarket.shift_minutes)
+		first.process(shift_seconds)
+		second.process(shift_seconds)
+		power_cycle(grid, 100000000)
+		if(i == 1)
+			TEST_ASSERT(econ_sale_factor(COMMODITY_ENERGY) < full_price, "Продажа энергии не сбила спрос")
+		energy.shift(0)
+	var/hour_price = econ_sale_factor(COMMODITY_ENERGY)
+	TEST_ASSERT(hour_price < full_price * 0.75, "Час на потолке станции почти не снизил цену энергии: [hour_price] из [full_price]")
+	TEST_ASSERT(hour_price > full_price * 0.4, "Час на потолке станции обвалил цену энергии к полу: [hour_price] из [full_price]")
+	var/demand_percent = round(energy.demand * 100)
+	var/list/data = first.ui_data(null)
+	TEST_ASSERT_EQUAL(data["demand_percent"], demand_percent, "Окно узла не показывает спрос")
+	TEST_ASSERT(findtext(jointext(first.examine(allocate(/mob/living/carbon/human)), "\n"), "Спрос сектора на энергию: [demand_percent]%"), "Осмотр узла не называет спрос")
+	for(var/i in 1 to CEILING(1 / energy.demand_recovery, 1))
+		energy.shift(0)
+	TEST_ASSERT(abs(econ_sale_factor(COMMODITY_ENERGY) - full_price) < 0.001, "Без продаж спрос на энергию не вернулся: [econ_sale_factor(COMMODITY_ENERGY)]")
 
 /// Перегружающий узел сажает батарею APC той же сети, узел на излишке APC не мешает.
 /datum/unit_test/economy_engineering/power_export_apc/Run()
@@ -274,6 +316,8 @@
 			TEST_ASSERT(earned < 0.01, "Коллектор продал энергию сверх выбранного потолка: [earned]")
 		else
 			TEST_ASSERT(earned > 0, "Коллектор не продал энергию при свободном потолке")
+			var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
+			TEST_ASSERT(energy.demand < 1, "Продажа коллектора не сбила спрос на энергию")
 			TEST_ASSERT_EQUAL(SSeconomy.power_export_paid_w, cap_w, "Коллектор не занял потолок станции")
 	SSresearch.science_tech.research_points[TECHWEB_POINT_TYPE_DEFAULT] = saved_points
 	collector.loaded_tank = null

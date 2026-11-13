@@ -8,7 +8,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		WORK_MED_SURGERY = "за операцию",
 	),
 	ACCOUNT_ENG = list(
-		WORK_ENG_POWER_EXPORT = "за кредит экспорта энергии",
+		WORK_ENG_POWER_EXPORT = "за кредит экспорта энергии; чем больше станция продаёт, тем ниже цена, без продаж она восстанавливается",
 		WORK_ENG_INTEGRITY = "за процент исправности станции, каждый цикл экономики",
 	),
 	ACCOUNT_SCI = list(

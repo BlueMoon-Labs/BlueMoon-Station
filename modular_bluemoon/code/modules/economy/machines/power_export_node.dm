@@ -41,7 +41,7 @@
 
 /obj/machinery/power/export_node
 	name = "power export node"
-	desc = "Межсекторный энергоузел: продаёт в сеть сектора излишек мощности станционной сети, оставшийся после всех потребителей. Доход идёт в бюджет инженерии. Подключается к узлу кабеля под собой. Заданная мощность сверх излишка всё равно тянется из сети: станция проседает, APC садят батареи, а узел искрит. Обмотки светятся тем ярче, чем больше заданный отбор; дуги над катушками и \"OVR\" на табло - перегрузка."
+	desc = "Межсекторный энергоузел: продаёт в сеть сектора излишек мощности станционной сети, оставшийся после всех потребителей. Доход идёт в бюджет инженерии. Чем больше энергии станция продаёт, тем ниже спрос и цена; без продаж спрос со временем восстанавливается. Подключается к узлу кабеля под собой. Заданная мощность сверх излишка всё равно тянется из сети: станция проседает, APC садят батареи, а узел искрит. Обмотки светятся тем ярче, чем больше заданный отбор; дуги над катушками и \"OVR\" на табло - перегрузка."
 	light_color = LIGHT_COLOR_CYAN
 	icon = 'icons/obj/machines/economy/power_export_node.dmi'
 	icon_state = "node_off"
@@ -141,6 +141,9 @@
 		. += span_warning("Узел стоит вне станции: сектор покупает энергию только из станционной сети, отсюда узел не продаёт.")
 	. += span_notice("Отбор: [target_kw] кВт из [settings.power_export_max_kw] возможных, шаг [settings.power_export_step_kw] кВт. Цена по рынку энергии: [round(econ_power_export_price_per_mj(), 0.01)] кр. за МДж.")
 	. += span_notice("Сектор оплачивает не больше [settings.power_export_station_cap_kw] кВт со всех узлов станции вместе, сверх этого энергия уходит бесплатно.")
+	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
+	if(energy)
+		. += span_notice("Спрос сектора на энергию: [round(energy.demand * 100)]%. Каждая продажа его сбивает, и цена падает вплоть до [MARKET_DEMAND_FLOOR * 100]% рыночной. Без продаж спрос возвращается на [round(energy.demand_recovery * 100)]% каждые ~[SSmarket.shift_minutes] мин.")
 	. += span_notice("Узел [active ? "включён" : "выключен"][powernet ? "" : ", кабеля под ним нет"][panel_open ? ", панель открыта - продажа остановлена" : ""].")
 	if(overloaded)
 		. += span_warning((last_export_w ? "Отбор больше излишка сети: продаётся только [DisplayPower(last_export_w)], а недостающее узел всё равно тянет из сети." : "Излишка в сети нет: узел ничего не продаёт, но тянет из сети всю заданную мощность."))
@@ -219,7 +222,12 @@
 	var/market_factor = econ_sale_factor(COMMODITY_ENERGY)
 	var/price = econ_power_export_price_per_mj()
 	var/paid_w = min(last_export_w, settings.power_export_station_cap_kw * WATTS_PER_KILOWATT)
+	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
 	return list(
+		"demand_percent" = energy ? round(energy.demand * 100) : 100,
+		"demand_floor_percent" = MARKET_DEMAND_FLOOR * 100,
+		"demand_recovery_percent" = energy ? round(energy.demand_recovery * 100) : 0,
+		"shift_minutes" = SSmarket.shift_minutes,
 		"active" = active,
 		"connected" = !!powernet,
 		"panel_open" = panel_open,

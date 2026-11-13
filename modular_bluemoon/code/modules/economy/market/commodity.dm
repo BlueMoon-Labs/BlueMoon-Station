@@ -5,7 +5,7 @@ GLOBAL_LIST_INIT(market_default_commodities, list(
 	COMMODITY_PLASMA = list("name" = "Плазма", "volatility" = 0.1, "links" = list(COMMODITY_FUEL = 0.5, COMMODITY_ENERGY = 0.2)),
 	COMMODITY_CRYSTALS = list("name" = "Кристаллы", "volatility" = 0.09),
 	COMMODITY_GASES = list("name" = "Газы", "volatility" = 0.06),
-	COMMODITY_ENERGY = list("name" = "Энергия", "volatility" = 0.07),
+	COMMODITY_ENERGY = list("name" = "Энергия", "volatility" = 0.07, "demand_capacity" = 15000),
 	COMMODITY_FOOD = list("name" = "Продукты", "volatility" = 0.05, "consumer" = TRUE, "links" = list(COMMODITY_DRINKS = 0.3)),
 	COMMODITY_DRINKS = list("name" = "Напитки", "volatility" = 0.05, "consumer" = TRUE),
 	COMMODITY_MEDICINE = list("name" = "Медикаменты", "volatility" = 0.06, "consumer" = TRUE, "links" = list(COMMODITY_CHEMICALS = 0.4)),

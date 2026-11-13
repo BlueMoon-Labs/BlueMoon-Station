@@ -79,6 +79,8 @@
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/datum/commodity/energy = SSmarket.get_commodity(COMMODITY_ENERGY)
 	energy.price_factor = 1.5
+	energy.demand = 1
+	energy.demand_capacity = INFINITY
 	settings.work_prices[WORK_ENG_POWER_EXPORT] = 2
 	econ_ui_press(engineer, node, "PowerExportNode", "set_draw", list("kw" = "999999"))
 	TEST_ASSERT_EQUAL(node.target_kw, settings.power_export_max_kw, "Потолок мощности")

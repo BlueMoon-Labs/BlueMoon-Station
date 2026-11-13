@@ -268,6 +268,7 @@
 	engineering.export_pending = saved_pending
 	engineering.export_payout_due = saved_due
 	TEST_ASSERT(abs(pending - 20) < 0.01, "Экспорт энергии не по рынку: [pending] кр. вместо 20")
+	energy.demand = 1
 	TEST_ASSERT(findtext(jointext(node.examine(allocate(/mob/living/carbon/human)), "\n"), "Цена по рынку энергии: [SSeconomy.settings.power_export_credits_per_mj * 2] кр."), "Осмотр узла называет цену по рынку")
 
 #define IMPORT_FARM_SEED 4242
