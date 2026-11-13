@@ -554,6 +554,7 @@
 	var/max_x = 12
 	var/min_y = -4
 	var/max_y = 10
+	var/swim_timer
 	var/swimming = FALSE
 	var/last_icon
 	var/last_desired_state
@@ -580,33 +581,31 @@
 	if(swimming || QDELETED(src) || QDELETED(fish) || fish.status == FISH_DEAD)
 		return
 	swimming = TRUE
-	swim_animation()
+	swim_step()
 
 /obj/effect/aquarium_fish/proc/stop_swimming()
-	if(!swimming)
-		return
 	swimming = FALSE
+	if(swim_timer && swim_timer != -1)
+		deltimer(swim_timer)
+		swim_timer = null
 	animate(src)
 
-/// Один длинный цикл анимации вместо серверного таймера на каждую рыбу.
-/obj/effect/aquarium_fish/proc/swim_animation()
-	var/origin_x = pixel_x
-	var/origin_y = pixel_y
-	var/prev_x = origin_x
-	var/prev_y = origin_y
-	animate(src, pixel_x = origin_x, pixel_y = origin_y, time = 0, loop = -1)
-	var/move_count = rand(3, 5)
-	for(var/i in 1 to move_count)
-		var/target_x = (i == move_count) ? origin_x : rand(min_x, max_x)
-		var/target_y = (i == move_count) ? origin_y : rand(min_y, max_y)
-		var/travel_time = clamp((abs(target_x - prev_x) + abs(target_y - prev_y)) * 2, 8, 40)
-		flip = (target_x < prev_x) ? 1 : -1
-		var/matrix/dir_mx = matrix()
-		dir_mx.Scale(base_scale * flip, base_scale)
-		animate(src, transform = dir_mx, time = 0, loop = -1)
-		animate(src, pixel_x = target_x, pixel_y = target_y, time = travel_time, loop = -1)
-		prev_x = target_x
-		prev_y = target_y
+/// небольшой обосрамс с анимациями.
+/obj/effect/aquarium_fish/proc/swim_step()
+	if(!swimming || QDELETED(src) || QDELETED(fish))
+		return
+	if(fish.status == FISH_DEAD)
+		stop_swimming()
+		apply_transform(flip)
+		pixel_y = min_y
+		return
+	var/target_x = rand(min_x, max_x)
+	var/target_y = rand(min_y, max_y)
+	var/distance = abs(target_x - pixel_x) + abs(target_y - pixel_y)
+	var/travel_time = clamp(distance * 2, 8, 40)
+	apply_transform(target_x >= pixel_x ? -1 : 1)
+	animate(src, pixel_x = target_x, pixel_y = target_y, time = travel_time)
+	swim_timer = addtimer(CALLBACK(src, PROC_REF(swim_step)), travel_time + rand(2, 10))
 
 /obj/effect/aquarium_fish/Destroy()
 	stop_swimming()
