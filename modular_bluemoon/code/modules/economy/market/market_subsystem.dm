@@ -103,6 +103,23 @@ SUBSYSTEM_DEF(market)
 	persist_decay = SSmarket.persist_decay
 	state_path = SSmarket.state_path
 	round_end_hooked = SSmarket.round_end_hooked
+	slot_jackpot = SSmarket.slot_jackpot
+	slot_jackpot_carried = SSmarket.slot_jackpot_carried
+	bundles = SSmarket.bundles
+	next_bundle_at = SSmarket.next_bundle_at
+	bundle_uid = SSmarket.bundle_uid
+	auction = SSmarket.auction
+	next_auction_at = SSmarket.next_auction_at
+	auction_uid = SSmarket.auction_uid
+	auction_results = SSmarket.auction_results
+	crew_auction_results = SSmarket.crew_auction_results
+	auction_drop_turf = SSmarket.auction_drop_turf
+	crew_lots = SSmarket.crew_lots
+	auction_announce_ready_at = SSmarket.auction_announce_ready_at
+	auction_round_end_hooked = SSmarket.auction_round_end_hooked
+	for(var/datum/auction_lot/lot as anything in list(auction) + crew_lots)
+		if(lot)
+			schedule_auction_step(lot)
 	register_stock_signals()
 	setup_news()
 

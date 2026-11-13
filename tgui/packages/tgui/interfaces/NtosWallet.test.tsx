@@ -378,6 +378,31 @@ describe('NtosWallet', () => {
     expect(sent(topic, 'auction_bid')).toEqual([{ uid: 3, amount: 325 }]);
   });
 
+  test('заказы: лот экипажа покупают сразу с подтверждением, у цены выкупа ставка пропадает, надпись видна раскрытой', () => {
+    const { container, getByText, getAllByText, queryByText, topic } = setup({
+      ...personal,
+      ...auction,
+      auction: null,
+      crew_lots: [
+        lot(6, { name: 'гитара', buyout: 400, inscription: 'Гитара Вована' }),
+        lot(7, { name: 'ваза', buyout: 400, bid: 390, bidder: 'Анна Смирнова', min_bid: 415 }),
+        lot(8, { name: 'рояль', buyout: 5000 }),
+      ],
+    });
+    fireEvent.click(getByText('Заказы'));
+    expect(getAllByText('Ставка 100 кр.')).toHaveLength(2);
+    expect(queryByText('Ставка 415 кр.')).toBeNull();
+    expect(getByText('Купить за 5 000 кр.').closest('.Button')?.className).toContain('Button--disabled');
+    expect(text(container)).not.toContain('Гитара Вована');
+    fireEvent.click(getByText('гитара'));
+    expect(text(container)).toContain('На вещи надпись: Гитара Вована');
+    expect(text(container)).toContain('Купить сразу, без торгов: 400 кр.');
+    fireEvent.click(getAllByText('Купить за 400 кр.')[0]);
+    expect(sent(topic, 'auction_buyout')).toEqual([]);
+    fireEvent.click(getByText('Купить сразу за 400 кр.?'));
+    expect(sent(topic, 'auction_buyout')).toEqual([{ uid: 6 }]);
+  });
+
   test('заказы: без лотов аукцион говорит, когда следующий лот сектора', () => {
     const { container, getByText } = setup({ ...personal, auction: null, crew_lots: [], auction_next: 300, auction_fee: 10 });
     fireEvent.click(getByText('Заказы'));

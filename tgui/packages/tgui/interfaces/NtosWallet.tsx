@@ -92,6 +92,10 @@ type AuctionLot = {
   /** Лот экипажа: имя продавца или "аноним". */
   seller?: string | null;
   my_lot?: BooleanLike;
+  /** Лот экипажа можно купить сразу за столько; 0 - только торги. */
+  buyout?: number;
+  /** Что продавец написал на вещи ручкой или этикеткой. */
+  inscription?: string | null;
 };
 
 export type WalletData = {
@@ -528,6 +532,8 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
   const [amount, setAmount] = useState<number | null>(null);
   const bid = Math.max(amount ?? lot.min_bid, lot.min_bid);
   const crew = lot.seller !== undefined;
+  const buyout = crew && !lot.my_lot ? lot.buyout || 0 : 0;
+  const biddable = !lot.my_lot && (!buyout || lot.min_bid < buyout);
   const needed = (minimum: number) => minimum - (lot.mine ? lot.bid : 0);
   const shortOf = (minimum: number) => (data.balance || 0) < needed(minimum);
   return (
@@ -549,6 +555,8 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
         {open && (
           <Box color="label" mt={0.5}>
             {!!lot.desc && <Box>{lot.desc}</Box>}
+            {!!lot.inscription && <Box mt={0.5}>На вещи надпись: {lot.inscription}</Box>}
+            {!!lot.buyout && <Box mt={0.5}>Купить сразу, без торгов: {formatCredits(lot.buyout)}.</Box>}
             {!crew && (
               <Box mt={0.5}>
                 Оценка лота <Credits amount={lot.value} />, торгуются ещё {lot.rivals} станции сектора.
@@ -559,14 +567,14 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
                 Ставки: {lot.history.map((entry) => `${entry.who} ${formatCredits(entry.amount)}`).join(', ')}.
               </Box>
             )}
-            {!lot.my_lot && (
+            {biddable && (
               <Stack align="center" mt={0.5}>
                 <Stack.Item>
                   <RestrictedInput
                     width="7em"
                     value={bid}
                     minValue={lot.min_bid}
-                    maxValue={100000}
+                    maxValue={buyout ? buyout - 1 : 100000}
                     onChange={(_, value) => setAmount(value)}
                   />{' '}
                   кр.
@@ -599,16 +607,31 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
             />
           )
         ) : (
-          <Button.Confirm
-            icon="gavel"
-            color="good"
-            content={`${lot.mine ? 'Поднять до' : 'Ставка'} ${formatCredits(lot.min_bid)}`}
-            confirmContent={`Поставить ${formatCredits(lot.min_bid)}?`}
-            confirmColor="good"
-            disabled={shortOf(lot.min_bid)}
-            tooltip={shortOf(lot.min_bid) ? 'Не хватает денег на счёте.' : null}
-            onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}
-          />
+          <>
+            {biddable && (
+              <Button.Confirm
+                icon="gavel"
+                color="good"
+                content={`${lot.mine ? 'Поднять до' : 'Ставка'} ${formatCredits(lot.min_bid)}`}
+                confirmContent={`Поставить ${formatCredits(lot.min_bid)}?`}
+                confirmColor="good"
+                disabled={shortOf(lot.min_bid)}
+                tooltip={shortOf(lot.min_bid) ? 'Не хватает денег на счёте.' : null}
+                onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}
+              />
+            )}
+            {!!buyout && (
+              <Button.Confirm
+                icon="shopping-cart"
+                content={`Купить за ${formatCredits(buyout)}`}
+                confirmContent={`Купить сразу за ${formatCredits(buyout)}?`}
+                confirmColor="good"
+                disabled={shortOf(buyout)}
+                tooltip={shortOf(buyout) ? 'Не хватает денег на счёте.' : 'Торги закончатся сразу, лот ваш.'}
+                onClick={() => act('auction_buyout', { uid: lot.uid })}
+              />
+            )}
+          </>
         )}
       </Table.Cell>
     </Table.Row>
@@ -622,9 +645,11 @@ const AuctionSection = () => {
     <Section title="Аукцион">
       <Box color="label" mb={1}>
         Ставка списывается сразу и ждёт конца торгов. Перебьют - деньги сразу вернутся, а незадолго до конца карта
-        напомнит о лоте; ставка в последнюю минуту продлевает торги. Выигрыш прилетит запертой посылкой на ваше имя на
-        склад снабжения. Свою вещь можно выставить с пада подработки: старт и срок выбираете сами, имя можно скрыть, NT
-        берёт {data.auction_fee ?? 0}% с продажи; лотов сразу - до {data.auction_lots_per_account ?? 0} на человека.
+        напомнит о лоте; ставка в последнюю минуту продлевает торги. Лоты экипажа бывают с ценой «купить сразу» -
+        тогда торги кончаются на месте. Выигрыш приходит запертой посылкой на ваше имя: лот сектора прилетит капсулой на
+        склад снабжения, лот экипажа встанет на пад подработки, с которого его выставили. Свою вещь можно выставить с пада
+        подработки: старт, срок и цену «купить сразу» выбираете сами, имя можно скрыть, NT берёт {data.auction_fee ?? 0}% с
+        продажи; лотов сразу - до {data.auction_lots_per_account ?? 0} на человека.
       </Box>
       {lots.length > 0 ? (
         <Table>

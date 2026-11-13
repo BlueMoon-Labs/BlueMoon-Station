@@ -169,11 +169,14 @@
 			return TRUE
 		if("auction_bid")
 			return wallet_auction_bid(user, params)
-		if("auction_cancel")
+		if("auction_cancel", "auction_buyout")
 			var/uid = params["uid"]
 			if(istext(uid))
 				uid = text2num(uid)
-			message = SSmarket.cancel_crew_lot(wallet_account(user), uid, user)[2]
+			if(action == "auction_cancel")
+				message = SSmarket.cancel_crew_lot(wallet_account(user), uid, user)[2]
+			else
+				message = SSmarket.buyout_crew_lot(wallet_account(user), uid, user)[2]
 			return TRUE
 		if("md_withdraw", "md_deposit")
 			return metadollar_act(user, action, params)

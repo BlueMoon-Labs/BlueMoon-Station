@@ -629,6 +629,58 @@ test('аукцион: лоты экипажа с продавцом, ставк�
   expect(sent(ui.topic, 'auction_bid')).toEqual([{ uid: 7, amount: 100 }]);
 });
 
+test('аукцион: лот экипажа покупают сразу с подтверждением, ставка у цены выкупа пропадает, надпись и итоги экипажа отдельно', () => {
+  const crew = (uid, extra = {}) => ({
+    uid,
+    name: `лот ${uid}`,
+    desc: 'старая гитара',
+    value: 0,
+    bid: 0,
+    bidder: null,
+    mine: 0,
+    min_bid: 100,
+    increment: 25,
+    left: 90,
+    rivals: 0,
+    history: [],
+    seller: 'аноним',
+    my_lot: 0,
+    buyout: 0,
+    inscription: null,
+    ...extra,
+  });
+  const ui = setup({
+    auction: null,
+    auction_fee: 10,
+    crew_lots: [
+      crew(7, { buyout: 300, inscription: 'Гитара Вована' }),
+      crew(8, { buyout: 300, bid: 290, bidder: 'Анна', min_bid: 315 }),
+      crew(9, { my_lot: 1, buyout: 500 }),
+    ],
+    auction_results: [{ name: 'корона', winner: 'Иван Петров', price: 2600, ours: 1 }],
+    crew_results: [
+      { name: 'ваза', winner: null, price: 0 },
+      { name: 'шляпа', winner: 'Анна', price: 150 },
+    ],
+  });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  const content = ui.container.textContent?.replace(/\s/g, ' ');
+  expect(content).toContain('На вещи надпись: Гитара Вована');
+  expect(ui.getByText('Поставить 100 кр.')).toBeTruthy();
+  expect(ui.queryByText('Поставить 315 кр.')).toBeNull();
+  expect(ui.queryByText('Купить за 500 кр.')).toBeNull();
+  expect(ui.getAllByText('Купить за 300 кр.')).toHaveLength(2);
+  fireEvent.click(ui.getAllByText('Купить за 300 кр.')[0]);
+  expect(sent(ui.topic, 'auction_buyout')).toEqual([]);
+  fireEvent.click(ui.getByText('Купить сразу за 300 кр.?'));
+  expect(sent(ui.topic, 'auction_buyout')).toEqual([{ uid: 7 }]);
+  expect(ui.getByText('Прошлые лоты сектора')).toBeTruthy();
+  expect(content).toContain('наша станция: Иван Петров, 2 600 кр.');
+  expect(content).toContain('без ставок, вернулся продавцу');
+  expect(content).toContain('Анна, 150 кр.');
+  expect(content).not.toContain('наша станция: Анна');
+});
+
 test('скупка: пачка только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
   const ui = setup({
     bundles: [

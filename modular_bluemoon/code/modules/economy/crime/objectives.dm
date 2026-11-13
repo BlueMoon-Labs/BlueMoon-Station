@@ -226,6 +226,9 @@
 	SIGNAL_HANDLER
 	if(!target || !target_account_id || note_put_back(payer, payee, amount, reason, actor))
 		return
+	if(reason == ECON_AUCTION_REFUND && payee?.account_id == target_account_id)
+		lose_progress(count_returned(payee, amount))
+		return
 	if(payer && payer.account_id == target_account_id && is_owner(actor))
 		drained += count_taken(payer, payee, amount)
 

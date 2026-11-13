@@ -126,6 +126,8 @@
 			return TRUE
 		if("auction_bid")
 			return econ_cargo_auction_bid(user, params, computer)
+		if("auction_buyout")
+			return econ_cargo_auction_buyout(user, params, computer)
 		if("buy_bundle")
 			return econ_cargo_buy_bundle(user, params, computer, self_paid, staff)
 		if("print_manifest")

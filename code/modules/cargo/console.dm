@@ -121,6 +121,8 @@
 	switch(action)
 		if("auction_bid")
 			. = econ_cargo_auction_bid(usr, params, src)
+		if("auction_buyout")
+			. = econ_cargo_auction_buyout(usr, params, src)
 		if("buy_bundle")
 			if(is_express)
 				return

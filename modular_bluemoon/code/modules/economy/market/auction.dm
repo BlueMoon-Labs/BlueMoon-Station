@@ -137,8 +137,13 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/datum/bank_account/seller_account
 	var/anonymous = FALSE
 	var/start = 0
+	/// За столько лот покупают сразу, ставки идут ниже; 0 - только торги
+	var/buyout = 0
+	/// Исходное описание типа вещи: правки игрока в эфир и сообщения не идут
 	var/desc
-	/// Пад, с которого вещь приняли: сюда посылка вернётся, если капсуле негде сесть
+	/// Что игрок написал на вещи ручкой или этикеткой: только пометкой в окне
+	var/inscription
+	/// Пад, с которого вещь приняли: посылка с итогом встанет на него
 	var/turf/origin
 
 /datum/auction_lot/crew/Destroy()
@@ -170,11 +175,13 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	. = ..()
 	.["seller"] = seller_name()
 	.["my_lot"] = sold_by(account)
+	.["buyout"] = buyout
+	.["inscription"] = inscription
 
 /// Вещь уходит с пада на хранение лота.
 /datum/auction_lot/crew/proc/hold(obj/item/thing, datum/bank_account/seller)
 	stored = thing
-	thing.moveToNullspace()
+	econ_auction_stash(thing)
 	RegisterSignal(thing, COMSIG_PARENT_QDELETING, PROC_REF(on_item_deleted))
 	seller_account = seller
 	RegisterSignal(seller, COMSIG_PARENT_QDELETING, PROC_REF(on_seller_deleted))
@@ -201,9 +208,11 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/datum/auction_lot/auction
 	var/next_auction_at = 0
 	var/auction_uid = 0
-	/// Итоги последних лотов для окна: list(лот, победитель, цена, станция ли)
+	/// Итоги последних лотов сектора для окна: list(лот, победитель, цена, станция ли)
 	var/list/auction_results = list()
-	/// Куда приходит посылка с лотом; null - капсулой на склад снабжения
+	/// Итоги последних лотов экипажа: list(лот, победитель или null, цена)
+	var/list/crew_auction_results = list()
+	/// Куда приходит посылка с лотом; null - на пад лота или капсулой в снабжение
 	var/turf/auction_drop_turf
 	/// Идущие лоты экипажа
 	var/list/crew_lots = list()
@@ -247,11 +256,12 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	schedule_auction_step(lot)
 	return lot
 
-/// Новый лот одной строкой по общему каналу, не чаще auction_announce_minutes на всю станцию. TRUE, если прозвучал.
+/// Новый лот одной строкой по общему каналу, не чаще auction_announce_minutes на всю станцию. В строке только исходные имя и описание типа вещи, правки игрока в эфир не идут. TRUE, если прозвучал.
 /datum/controller/subsystem/market/proc/announce_auction_lot(datum/auction_lot/lot, minutes)
 	if(world.time < auction_announce_ready_at)
 		return FALSE
 	var/text
+	var/buyout_text = ""
 	var/datum/auction_lot/crew/crew_lot = lot
 	if(istype(crew_lot))
 		var/desc = trim(crew_lot.desc)
@@ -260,9 +270,11 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		else if(desc && !(copytext_char(desc, -1) in list(".", "!", "?")))
 			desc += "."
 		text = "Аукцион экипажа: [crew_lot.seller_name()] продаёт \"[lot.name]\"[desc ? " - [desc]" : "."]"
+		if(crew_lot.buyout)
+			buyout_text = ", купить сразу - [crew_lot.buyout] кр."
 	else
 		text = "Аукцион сектора: на торгах \"[lot.name]\"."
-	if(!paperwork_radio("[text] Старт [lot.start_price()] кр., торги [minutes] мин. Ставки - в Кошельке на КПК, вкладка «Заказы».", RADIO_CHANNEL_COMMON))
+	if(!paperwork_radio("[text] Старт [lot.start_price()] кр.[buyout_text], торги [minutes] мин. Ставки - в Кошельке на КПК, вкладка «Заказы».", RADIO_CHANNEL_COMMON))
 		return FALSE
 	auction_announce_ready_at = world.time + SSeconomy.settings.auction_announce_minutes MINUTES
 	return TRUE
@@ -283,6 +295,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!lot.ending_warned && lot.ends_at - world.time <= AUCTION_SNIPE_WINDOW)
 		lot.ending_warned = TRUE
 		warn_outbid(lot)
+		warn_seller_no_bids(lot)
 	if(length(lot.rivals) && world.time >= lot.next_rival_at)
 		rival_bid(lot)
 		var/hurry = lot.ends_at - world.time < AUCTION_SNIPE_WINDOW
@@ -300,6 +313,12 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		if(!account || account == lot.bidder_account)
 			continue
 		account.bank_card_talk("[lot.label()]: до конца торгов за \"[lot.name]\" [DisplayTimeText(AUCTION_SNIPE_WINDOW)], вашу ставку перебили - сейчас [lot.bid] кр. Перебить можно в Кошельке на КПК, вкладка «Заказы».", balloon = "торги кончаются")
+
+/// Продавцу лота экипажа без ставок - что торги вот-вот закончатся.
+/datum/controller/subsystem/market/proc/warn_seller_no_bids(datum/auction_lot/crew/lot)
+	if(!istype(lot) || lot.bid)
+		return
+	lot.seller_account?.bank_card_talk("Аукцион экипажа: до конца торгов за ваш лот \"[lot.name]\" [DisplayTimeText(AUCTION_SNIPE_WINDOW)], а ставок пока нет. Без ставок вещь вернётся к вам.", balloon = "ставок нет")
 
 /// Соперник, который ещё готов платить и не ведёт, перебивает ставку; возвращает его имя или null.
 /datum/controller/subsystem/market/proc/rival_bid(datum/auction_lot/lot, force = FALSE)
@@ -334,37 +353,77 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		if(lot.uid == uid)
 			return lot
 
-/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют. Возвращает текст отказа или null.
-/datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid)
-	var/datum/auction_lot/lot = find_auction_lot(uid)
+/// Почему account не может торговаться за лот; null - может.
+/datum/controller/subsystem/market/proc/auction_bidder_problem(datum/auction_lot/lot, datum/bank_account/account)
 	if(!lot || world.time >= lot.ends_at)
 		return "Этот лот уже не продаётся."
 	if(!account)
 		return "Нет банковского счёта."
-	var/problem = SSeconomy.personal_account_problem(account, TRUE)
-	if(problem)
-		return problem
+	. = SSeconomy.personal_account_problem(account, TRUE)
+	if(.)
+		return
+	if(account.offstation)
+		return "На аукционе торгуется только экипаж станции: со счёта вне станции ставки не принимаются."
 	if(lot.sold_by(account))
 		return "На свой лот ставить нельзя."
-	if(!isnum(amount) || round(amount) != amount || amount < lot.min_bid())
-		return "Ставка должна быть целой и не меньше [lot.min_bid()] кр."
-	if(amount > AUCTION_BID_MAX)
-		return "Ставка больше [AUCTION_BID_MAX] кр. не принимается."
+
+/// Ставка amount от account становится ведущей: к своей ставке доплачивается разница, перебитая чужая возвращается с текстом outbid_notice. Возвращает текст отказа или null.
+/datum/controller/subsystem/market/proc/take_auction_bid(datum/auction_lot/lot, datum/bank_account/account, amount, mob/user, memo, outbid_notice)
 	var/raising = lot.bidder_account == account
 	var/needed = raising ? amount - lot.bid : amount
 	if(!account.has_money(needed))
 		return "На счёте не хватает: нужно [needed] кр."
-	if(!SSeconomy.move(account, SSeconomy.market_account, needed, ECON_AUCTION_BID, user, "Аукцион: ставка на \"[lot.name]\""))
+	if(!SSeconomy.move(account, SSeconomy.market_account, needed, ECON_AUCTION_BID, user, memo))
 		return "Ставка не прошла."
 	if(!raising)
-		refund_auction_bid(lot)
+		refund_auction_bid(lot, outbid_notice)
 	lot.set_leader(account)
 	lot.bidder_refs[WEAKREF(account)] = TRUE
 	lot.note_bid(account.account_holder, amount)
-	log_econ("Аукцион: [key_name(user)] ставит [amount] кр. на лот #[lot.uid] \"[lot.name]\"")
 	return null
 
-/// Итог торгов: победившая ставка станции сгорает, лот летит посылкой на склад снабжения; не долетел - деньги назад.
+/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют. Возвращает текст отказа или null.
+/datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid)
+	var/datum/auction_lot/lot = find_auction_lot(uid)
+	. = auction_bidder_problem(lot, account)
+	if(.)
+		return
+	var/datum/auction_lot/crew/crew_lot = lot
+	if(istype(crew_lot) && crew_lot.buyout && (lot.min_bid() >= crew_lot.buyout || (isnum(amount) && amount >= crew_lot.buyout)))
+		return "Ставка не дойдёт до цены выкупа: этот лот можно сразу купить за [crew_lot.buyout] кр."
+	if(!isnum(amount) || round(amount) != amount || amount < lot.min_bid())
+		return "Ставка должна быть целой и не меньше [lot.min_bid()] кр."
+	if(amount > AUCTION_BID_MAX)
+		return "Ставка больше [AUCTION_BID_MAX] кр. не принимается."
+	var/first = !lot.bid
+	. = take_auction_bid(lot, account, amount, user, "Аукцион: ставка на \"[lot.name]\"")
+	if(.)
+		return
+	log_econ("Аукцион: [key_name(user)] ставит [amount] кр. на лот #[lot.uid] \"[lot.name]\"")
+	if(first && istype(crew_lot))
+		crew_lot.seller_account?.bank_card_talk("Аукцион экипажа: на ваш лот \"[lot.name]\" поставили [amount] кр. Теперь торги идут до конца, снять лот уже нельзя.", balloon = "первая ставка")
+
+/// Покупка лота экипажа сразу за цену выкупа: лот закрывается проданным. Возвращает list(куплен ли, ответ игроку).
+/datum/controller/subsystem/market/proc/buyout_crew_lot(datum/bank_account/account, uid, mob/user)
+	var/datum/auction_lot/crew/lot = find_auction_lot(uid)
+	if(!istype(lot) || !(lot in crew_lots))
+		return list(FALSE, "Этот лот уже не продаётся.")
+	var/problem = auction_bidder_problem(lot, account)
+	if(problem)
+		return list(FALSE, problem)
+	if(!lot.buyout)
+		return list(FALSE, "Сразу этот лот не купить: продавец выставил его только на торги.")
+	var/price = lot.buyout
+	problem = take_auction_bid(lot, account, price, user, "Аукцион: покупка \"[lot.name]\" сразу", "Аукцион экипажа: лот \"[lot.name]\" купили сразу за [price] кр., ваша ставка [lot.bid] кр. вернулась на счёт.")
+	if(problem)
+		return list(FALSE, problem)
+	log_econ("Аукцион экипажа: [key_name(user)] купил лот #[lot.uid] \"[lot.name]\" сразу за [price] кр. со счёта [account.account_holder] ([account.account_id])")
+	log_game("[key_name(user)] купил лот аукциона экипажа \"[lot.name]\" сразу за [price] кр.")
+	var/lot_name = lot.name
+	var/place = finish_crew_lot(lot)
+	return list(TRUE, "Лот \"[lot_name]\" ваш за [price] кр.[place ? ": [econ_auction_parcel_note(place, TRUE)]" : ""].")
+
+/// Итог торгов: победившая ставка станции сгорает, лот летит посылкой в снабжение; не долетел - деньги назад.
 /datum/controller/subsystem/market/proc/finish_auction()
 	var/datum/auction_lot/lot = auction
 	if(!lot)
@@ -373,10 +432,11 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	next_auction_at = world.time + rand(AUCTION_GAP_MIN, AUCTION_GAP_MAX)
 	var/datum/bank_account/winner = lot.bidder_account
 	if(winner)
-		if(deliver_auction_lot(lot, winner))
+		var/place = deliver_auction_lot(lot, winner)
+		if(place)
 			SSeconomy.move(SSeconomy.market_account, null, lot.bid, ECON_AUCTION, null, "Аукцион: лот \"[lot.name]\"")
 			lot.set_leader(null)
-			winner.bank_card_talk("Аукцион сектора: лот \"[lot.name]\" ваш за [lot.bid] кр. Запертая посылка на ваше имя прилетит капсулой на склад снабжения, откроет её ваша ID-карта.", TRUE, balloon = "лот ваш!")
+			winner.bank_card_talk("Аукцион сектора: лот \"[lot.name]\" ваш за [lot.bid] кр.: [econ_auction_parcel_note(place, TRUE)].", TRUE, balloon = "лот ваш!")
 			publish("Аукцион сектора: лот \"[lot.name]\" уходит на нашу станцию, покупатель - [winner.account_holder], [lot.bid] кр.")
 		else
 			refund_auction_bid(lot, "Аукцион сектора: лот \"[lot.name]\" не удалось доставить на станцию, ставка [lot.bid] кр. вернулась на счёт.")
@@ -394,7 +454,13 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(length(auction_results) > AUCTION_RESULTS_MAX)
 		auction_results.Cut(AUCTION_RESULTS_MAX + 1)
 
-/// Лот сектора с биркой лота в запертой посылке победителю. Купленное на аукционе NT выкупает как импорт.
+/// Итоги лотов экипажа копятся отдельно и не вытесняют итоги лотов сектора.
+/datum/controller/subsystem/market/proc/note_crew_result(name, winner_name, price)
+	crew_auction_results.Insert(1, list(list(name, winner_name, price)))
+	if(length(crew_auction_results) > AUCTION_RESULTS_MAX)
+		crew_auction_results.Cut(AUCTION_RESULTS_MAX + 1)
+
+/// Лот сектора с биркой лота в запертой посылке победителю. Купленное на аукционе NT выкупает как импорт. Возвращает, где ждать посылку; null - не доставлен.
 /datum/controller/subsystem/market/proc/deliver_auction_lot(datum/auction_lot/lot, datum/bank_account/winner)
 	var/obj/item/prize = new lot.item_type(null)
 	prize.econ_imported = TRUE
@@ -403,21 +469,56 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!.)
 		qdel(prize)
 
-/// Запертая посылка с вещью на счёт owner (открывает только его ID-карта): на auction_drop_turf или капсулой на склад снабжения, иначе на fallback. named - имя владельца на посылке. Возвращает посылку; null - вещь осталась вне карты.
-/datum/controller/subsystem/market/proc/send_auction_parcel(obj/item/thing, datum/bank_account/owner, named = TRUE, turf/fallback)
-	var/obj/item/storage/lockbox/order/parcel = new(auction_drop_turf, owner)
+/// Запертая посылка с вещью на счёт owner, открывает её только ID-карта владельца; named - имя владельца на посылке. Встаёт на свободный пад pad_turf, иначе летит блюспейс-капсулой в снабжение, иначе остаётся на месте пада. Возвращает, где её ждать; null - вещь осталась вне карты.
+/datum/controller/subsystem/market/proc/send_auction_parcel(obj/item/thing, datum/bank_account/owner, named = TRUE, turf/pad_turf)
+	var/obj/item/storage/lockbox/order/parcel = new(null, owner)
 	parcel.name = named ? "auction parcel - [owner.account_holder]" : "auction parcel"
 	parcel.desc = "Запертая посылка аукциона. Открыть её может только [named ? owner.account_holder : "получатель"] своей ID-картой."
 	parcel.econ_imported = TRUE
 	thing.forceMove(parcel)
-	if(auction_drop_turf || send_supply_pod_to_area(parcel, /area/cargo/storage) || send_supply_pod_to_area(parcel, /area/cargo))
-		return parcel
-	if(fallback)
-		parcel.forceMove(fallback)
-		return parcel
+	if(auction_drop_turf)
+		parcel.forceMove(auction_drop_turf)
+		return "ждёт на складе снабжения"
+	var/obj/machinery/piratepad/civilian/pad = econ_auction_free_pad(pad_turf)
+	if(pad)
+		parcel.forceMove(pad_turf)
+		flick(pad.sending_state, pad)
+		playsound(pad, 'sound/machines/wewewew.ogg', 50, TRUE)
+		return "ждёт на паде подработки"
+	var/turf/landing = econ_aid_landing_turf()
+	if(landing)
+		new /obj/effect/pod_landingzone(landing, /obj/structure/closet/supplypod/bluespacepod, parcel)
+		return istype(get_area(landing), /area/cargo/storage) ? "прилетит капсулой на склад снабжения" : "прилетит капсулой в отдел снабжения"
+	if(pad_turf)
+		parcel.forceMove(pad_turf)
+		return "ждёт там, где стоял пад подработки"
 	thing.moveToNullspace()
 	qdel(parcel)
 	return null
+
+/// Пад подработки на pad_turf, если он на станции, собран и не занят отправкой; иначе null.
+/proc/econ_auction_free_pad(turf/pad_turf)
+	if(!pad_turf || !is_station_level(pad_turf.z))
+		return null
+	var/obj/machinery/piratepad/civilian/pad = locate() in pad_turf
+	if(!pad || pad.panel_open || (pad.machine_stat & BROKEN))
+		return null
+	for(var/obj/machinery/computer/piratepad_control/civilian/console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/piratepad_control/civilian))
+		if(console.sending && console.linked_pad() == pad)
+			return null
+	return pad
+
+/// Для карты получателя: какая посылка, где её ждать и чем открыть.
+/proc/econ_auction_parcel_note(place, named)
+	return "[named ? "запертая посылка на ваше имя" : "безымянная запертая посылка"] [place], откроет её ваша ID-карта"
+
+/// В nullspace вещь уходит мимо Moved(): свет её и того, что в ней, гасится вручную, иначе остаётся на паде.
+/proc/econ_auction_stash(atom/movable/thing)
+	thing.moveToNullspace()
+	for(var/atom/movable/part as anything in thing.GetAllContents())
+		part.update_light()
+		var/datum/component/overlay_lighting/glow = part.GetComponent(/datum/component/overlay_lighting)
+		glow?.check_holder()
 
 /// Идущие лоты экипажа, которые выставил account.
 /datum/controller/subsystem/market/proc/crew_lots_of(datum/bank_account/account)
@@ -428,20 +529,26 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		if(lot.seller_account == account)
 			. += lot
 
-/// Лот экипажа: вещь с пада уходит на хранение, торгуется только экипаж. Возвращает list(выставлен ли, ответ игроку).
-/datum/controller/subsystem/market/proc/start_crew_lot(mob/user, datum/bank_account/account, atom/movable/thing, price, minutes, anonymous, turf/origin)
+/// Лот экипажа: вещь с пада уходит на хранение, торгуется только экипаж; buyout - цена, за которую лот купят сразу, 0 - без неё. Возвращает list(выставлен ли, ответ игроку).
+/datum/controller/subsystem/market/proc/start_crew_lot(mob/user, datum/bank_account/account, atom/movable/thing, price, minutes, anonymous, turf/origin, buyout = 0)
 	var/datum/economy_settings/settings = SSeconomy.settings
 	if(SSeconomy.round_over())
 		return list(FALSE, "Смена закончилась, аукцион закрыт.")
 	if(econ_ic_muted(user))
 		return list(FALSE, "Вам запрещено говорить в IC, а о новом лоте говорит общий канал - выставлять вещи нельзя.")
+	if(!account)
+		return list(FALSE, "Нужен ваш банковский счёт: возьмите свою ID-карту в руку или наденьте её.")
 	var/problem = SSeconomy.personal_account_problem(account, TRUE)
 	if(problem)
 		return list(FALSE, problem)
 	if(account.offstation)
 		return list(FALSE, "Аукцион экипажа принимает вещи только от экипажа станции.")
+	if(!COOLDOWN_FINISHED(account, auction_relist_cooldown))
+		return list(FALSE, "Вы недавно сняли свой лот: новый можно выставить через [DisplayTimeText(COOLDOWN_TIMELEFT(account, auction_relist_cooldown), 1)].")
 	if(!isnum(price) || round(price) != price || price < AUCTION_MIN_INCREMENT || price > AUCTION_BID_MAX)
 		return list(FALSE, "Стартовая цена - целое число от [AUCTION_MIN_INCREMENT] до [AUCTION_BID_MAX] кр.")
+	if(buyout && (!isnum(buyout) || round(buyout) != buyout || buyout < price || buyout > AUCTION_BID_MAX))
+		return list(FALSE, "Цена, за которую лот купят сразу, - целое число от стартовой цены [price] до [AUCTION_BID_MAX] кр.")
 	var/list/durations = settings.auction_minutes_options()
 	if(!isnum(minutes) || !(minutes in durations))
 		return list(FALSE, "Торги идут [jointext(durations, ", ")] мин. - выберите один из вариантов.")
@@ -457,27 +564,32 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/datum/auction_lot/crew/lot = new
 	lot.uid = ++auction_uid
 	lot.name = econ_auction_lot_name(item)
-	lot.desc = format_text(item.desc)
+	lot.desc = econ_auction_lot_desc(item)
+	lot.inscription = econ_auction_inscription(item)
 	lot.start = price
+	lot.buyout = buyout || 0
 	lot.anonymous = !!anonymous
 	lot.origin = origin
 	lot.ends_at = world.time + minutes MINUTES
+	var/player_desc = item.desc != initial(item.desc) ? ", описание игрока: [item.desc]" : ""
 	lot.hold(item, account)
 	crew_lots += lot
 	hook_auction_round_end()
 	schedule_auction_step(lot)
 	var/announced = announce_auction_lot(lot, minutes)
-	log_econ("Аукцион экипажа: [key_name(user)] выставил лот #[lot.uid] \"[lot.name]\" ([item.type]) со счёта [account.account_holder] ([account.account_id]), старт [price] кр., [minutes] мин.[lot.anonymous ? ", анонимно" : ""]")
-	log_game("[key_name(user)] выставил на аукцион экипажа [item] ([item.type]) за [price] кр. на [minutes] мин.[lot.anonymous ? ", анонимно" : ""]")
-	return list(TRUE, "Лот \"[lot.name]\" выставлен на [minutes] мин., старт [price] кр. Сбор NT с продажи - [settings.auction_crew_fee]%.[announced ? " Экипаж услышал о нём по общему каналу." : ""]")
+	var/buyout_text = lot.buyout ? ", купить сразу - [lot.buyout] кр." : ""
+	log_econ("Аукцион экипажа: [key_name(user)] выставил лот #[lot.uid] \"[lot.name]\" ([item.type]) со счёта [account.account_holder] ([account.account_id]), старт [price] кр.[buyout_text], [minutes] мин.[lot.anonymous ? ", анонимно" : ""]")
+	log_game("[key_name(user)] выставил на аукцион экипажа [item.name] ([item.type]) за [price] кр.[buyout_text] на [minutes] мин.[lot.anonymous ? ", анонимно" : ""][player_desc]")
+	return list(TRUE, "Лот \"[lot.name]\" выставлен на [minutes] мин., старт [price] кр.[buyout_text] Сбор NT с продажи - [settings.auction_crew_fee]%.[announced ? " Экипаж услышал о нём по общему каналу." : ""]")
 
-/// Итог торгов лота экипажа: продавцу ставка без сбора NT, победителю посылка; без ставок вещь едет обратно продавцу.
+/// Итог торгов лота экипажа: продавцу ставка без сбора NT, победителю посылка; без ставок вещь едет обратно продавцу. Возвращает, где победитель ждёт посылку.
 /datum/controller/subsystem/market/proc/finish_crew_lot(datum/auction_lot/crew/lot)
 	if(!(lot in crew_lots))
 		return
 	crew_lots -= lot
 	var/datum/bank_account/winner = lot.bidder_account
 	var/datum/bank_account/seller = lot.seller_account
+	var/place
 	if(winner)
 		var/fee = round(lot.bid * SSeconomy.settings.auction_crew_fee / 100)
 		SSeconomy.move(SSeconomy.market_account, seller, lot.bid - fee, ECON_AUCTION_SALE, null, "Аукцион: продан лот \"[lot.name]\"")
@@ -486,28 +598,31 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 			SSeconomy.note_outflow(winner, seller, lot.bid - fee)
 		lot.set_leader(null)
 		var/obj/item/thing = lot.take_item()
-		if(thing && !send_auction_parcel(thing, winner, TRUE, lot.origin))
+		place = thing ? send_auction_parcel(thing, winner, TRUE, lot.origin) : null
+		if(thing && !place)
 			qdel(thing)
-		winner.bank_card_talk("Аукцион экипажа: лот \"[lot.name]\" ваш за [lot.bid] кр. Запертая посылка на ваше имя прилетит капсулой на склад снабжения, откроет её ваша ID-карта.", TRUE, balloon = "лот ваш!")
+		winner.bank_card_talk("Аукцион экипажа: лот \"[lot.name]\" ваш за [lot.bid] кр.[place ? ": [econ_auction_parcel_note(place, TRUE)]" : ""].", TRUE, balloon = "лот ваш!")
 		seller?.bank_card_talk("Аукцион экипажа: лот \"[lot.name]\" продан за [lot.bid] кр., сбор NT [fee] кр., на счёт пришло [lot.bid - fee] кр.", TRUE, balloon = "лот продан")
 		log_econ("Аукцион экипажа: лот #[lot.uid] \"[lot.name]\" продан [winner.account_holder] ([winner.account_id]) за [lot.bid] кр., продавцу [seller?.account_holder] [lot.bid - fee] кр., сбор [fee] кр.")
+		. = place
 	else
-		return_crew_lot(lot)
-		seller?.bank_card_talk("Аукцион экипажа: лот \"[lot.name]\" ушёл без ставок. Вещь вернётся запертой посылкой на ваше имя на склад снабжения.", TRUE)
+		place = return_crew_lot(lot)
+		seller?.bank_card_talk("Аукцион экипажа: лот \"[lot.name]\" ушёл без ставок[place ? ", вещь возвращается к вам: [econ_auction_parcel_note(place, !lot.anonymous)]" : ""].", TRUE)
 		log_econ("Аукцион экипажа: лот #[lot.uid] \"[lot.name]\" без ставок, вещь возвращена [seller?.account_holder]")
-	note_auction_result(lot.name, winner ? lot.bidder_name : null, winner ? lot.bid : 0, TRUE)
+	note_crew_result(lot.name, winner ? lot.bidder_name : null, winner ? lot.bid : 0)
 	qdel(lot)
 
-/// Вещь лота уходит посылкой обратно продавцу.
+/// Вещь лота уходит посылкой обратно продавцу. Возвращает, где её ждать; null - вещи нет или её некому вернуть.
 /datum/controller/subsystem/market/proc/return_crew_lot(datum/auction_lot/crew/lot)
 	var/obj/item/thing = lot.take_item()
 	if(!thing)
-		return
-	if(!lot.seller_account || !send_auction_parcel(thing, lot.seller_account, !lot.anonymous, lot.origin))
+		return null
+	. = lot.seller_account ? send_auction_parcel(thing, lot.seller_account, !lot.anonymous, lot.origin) : null
+	if(!.)
 		log_econ("Аукцион экипажа: вещь лота #[lot.uid] \"[lot.name]\" некому вернуть, удалена")
 		qdel(thing)
 
-/// Продавец снимает свой лот, пока на него не ставили. Возвращает list(снят ли, ответ игроку).
+/// Продавец снимает свой лот, пока на него не ставили; новый лот он выставит только через auction_crew_relist_minutes. Возвращает list(снят ли, ответ игроку).
 /datum/controller/subsystem/market/proc/cancel_crew_lot(datum/bank_account/account, uid, mob/user)
 	var/datum/auction_lot/crew/lot = find_auction_lot(uid)
 	if(!istype(lot) || !(lot in crew_lots))
@@ -517,9 +632,11 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(lot.bid)
 		return list(FALSE, "На лот уже поставили: торги идут до конца.")
 	crew_lots -= lot
-	return_crew_lot(lot)
+	var/place = return_crew_lot(lot)
+	var/relist_minutes = SSeconomy.settings.auction_crew_relist_minutes
+	COOLDOWN_START(account, auction_relist_cooldown, relist_minutes MINUTES)
 	log_econ("Аукцион экипажа: [key_name(user)] снял лот #[lot.uid] \"[lot.name]\" без ставок")
-	. = list(TRUE, "Лот \"[lot.name]\" снят. Вещь вернётся запертой посылкой на ваше имя на склад снабжения.")
+	. = list(TRUE, "Лот \"[lot.name]\" снят[place ? ", вещь возвращается к вам: [econ_auction_parcel_note(place, !lot.anonymous)]" : ""].[relist_minutes ? " Новый лот можно выставить через [relist_minutes] мин." : ""]")
 	qdel(lot)
 
 /// Лот экипажа закрывается раньше срока: ставка возвращается, вещь, если есть, едет продавцу.
@@ -528,9 +645,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		return
 	crew_lots -= lot
 	refund_auction_bid(lot, "Аукцион экипажа: лот \"[lot.name]\" снят - [reason]. Ваша ставка [lot.bid] кр. вернулась на счёт.")
-	var/had_item = !!lot.stored
-	return_crew_lot(lot)
-	lot.seller_account?.bank_card_talk("Аукцион экипажа: ваш лот \"[lot.name]\" снят - [reason].[had_item ? " Вещь вернётся запертой посылкой на ваше имя на склад снабжения." : ""]")
+	var/place = return_crew_lot(lot)
+	lot.seller_account?.bank_card_talk("Аукцион экипажа: ваш лот \"[lot.name]\" снят - [reason].[place ? " Вещь возвращается к вам: [econ_auction_parcel_note(place, !lot.anonymous)]." : ""]")
 	log_econ("Аукцион экипажа: лот #[lot.uid] \"[lot.name]\" снят - [reason]")
 	qdel(lot)
 
@@ -553,12 +669,37 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	for(var/datum/auction_lot/crew/crew_lot as anything in crew_lots.Copy())
 		close_crew_lot(crew_lot, "смена закончилась")
 
-/// Имя лота экипажа: у стопки - с числом штук.
+/datum/bank_account
+	COOLDOWN_DECLARE(auction_relist_cooldown)
+
+/// Имя лота экипажа - исходное имя типа вещи, переименование ручкой и этикетка в него не идут; у стопки - с числом штук.
 /proc/econ_auction_lot_name(atom/movable/thing)
+	var/name = format_text(initial(thing.name))
 	if(isstack(thing))
 		var/obj/item/stack/stack = thing
-		return "[format_text(stack.name)] ([stack.amount] шт.)"
-	return format_text(thing.name)
+		return "[name] ([stack.amount] шт.)"
+	return name
+
+/// Описание лота экипажа - исходное описание типа вещи.
+/proc/econ_auction_lot_desc(atom/movable/thing)
+	return format_text(initial(thing.desc))
+
+/// Что игрок написал на вещи ручкой или этикеткой, одной строкой; null - ничего.
+/proc/econ_auction_inscription(obj/item/item)
+	var/list/parts = list()
+	var/datum/component/label/label = item.GetComponent(/datum/component/label)
+	if(item.renamedByPlayer)
+		var/custom_name = label ? trim(replacetext(item.name, "([label.label_name])", "")) : item.name
+		if(custom_name != initial(item.name))
+			parts += custom_name
+		if(item.desc != initial(item.desc))
+			parts += item.desc
+	if(label?.label_name)
+		parts += label.label_name
+	if(!length(parts))
+		return null
+	var/text = html_decode(jointext(parts, " - "))
+	return length_char(text) > AUCTION_INSCRIPTION_MAX ? "[copytext_char(text, 1, AUCTION_INSCRIPTION_MAX + 1)]..." : text
 
 /// Почему вещь нельзя выставить на аукцион экипажа; null - можно.
 /proc/econ_auction_item_problem(atom/movable/thing)
@@ -567,6 +708,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/obj/item/item = thing
 	if(item.item_flags & (ABSTRACT | DROPDEL))
 		return "На аукцион принимаются только вещи, которые можно унести в руках."
+	if(!GLOB.econ_contraband_built)
+		return "Каталог NT ещё сверяется, попробуйте позже."
 	var/datum/component/storage/storage = item.GetComponent(/datum/component/storage)
 	var/atom/storage_location = storage?.real_location()
 	if(storage_location && length(storage_location.contents))
@@ -598,6 +741,34 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		/obj/item/katana,
 		/obj/item/dualsaber,
 		/obj/item/nullrod,
+		/obj/item/chainsaw,
+		/obj/item/switchblade,
+		/obj/item/hatchet,
+		/obj/item/scythe,
+		/obj/item/electrostaff,
+		/obj/item/singularityhammer,
+		/obj/item/mjollnir,
+		/obj/item/pneumatic_cannon,
+		/obj/item/kinetic_crusher,
+		/obj/item/minigunpack,
+		/obj/item/mecha_parts/mecha_equipment/weapon,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/flamethrower,
+		/obj/item/onetankbomb,
+		/obj/item/bombcore,
+		/obj/item/syndicatedetonator,
+	))
+	var/static/list/antag_types = typecacheof(list(
+		/obj/item/spellbook,
+		/obj/item/book/granter,
+		/obj/item/soulstone,
+		/obj/item/necromantic_stone,
+		/obj/item/forbidden_book,
+		/obj/item/shuttle_curse,
+		/obj/item/clockwork,
+		/obj/item/abductor,
+		/obj/item/antag_spawner,
+		/obj/item/uplink,
 	))
 	var/static/list/body_types = typecacheof(list(
 		/obj/item/organ,
@@ -626,10 +797,10 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(!isitem(part))
 		return null
 	var/obj/item/item = part
-	if(is_type_in_typecache(item, GLOB.blacklisted_cargo_types) || econ_auction_reserved(item))
+	if(is_type_in_typecache(item, GLOB.blacklisted_cargo_types) || antag_types[item.type] || item.GetComponent(/datum/component/uplink) || econ_auction_reserved(item))
 		return "Эту вещь NT продавать не разрешает."
-	if((item.item_flags & NEEDS_PERMIT) || weapon_types[item.type] || econ_auction_weapon_export(item))
-		return "Оружие, боеприпасы и снаряжение СБ на аукцион не принимаются."
+	if((item.item_flags & NEEDS_PERMIT) || weapon_types[item.type] || item.force >= AUCTION_WEAPON_FORCE || econ_auction_weapon_export(item))
+		return "Оружие, взрывчатка, боеприпасы и снаряжение СБ на аукцион не принимаются."
 	if(body_types[item.type])
 		return "Импланты, органы и части тела на аукцион не принимаются."
 	if(access_types[item.type] || item.GetID() || length(item.GetAccess()))
@@ -640,13 +811,14 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		return "Контрабанду NT на аукцион не пропустит."
 	return null
 
-/// Вещь на особом учёте NT: командные реликвии, за которыми охотятся, и цели краж антагонистов прямо сейчас.
+/// Вещь на особом учёте NT: командные реликвии, за которыми охотятся, и цели краж антагонистов прямо сейчас. Цели из ходовых вещей (баллоны, экстракты) не в счёт: отказ всем баллонам выдал бы, что их кто-то ищет.
 /proc/econ_auction_reserved(obj/item/item)
 	var/static/list/reserved
+	var/static/list/common_targets
 	if(!reserved)
 		var/list/paths = list()
 		var/datum/objective_item/base = /datum/objective_item
-		var/list/common_targets = list(initial(base.targetitem), /obj/item/tank, /obj/item/slime_extract, /obj/item/clothing/underwear/briefs)
+		common_targets = list(initial(base.targetitem), /obj/item/tank, /obj/item/slime_extract, /obj/item/clothing/underwear/briefs)
 		for(var/datum/objective_item/objective_type as anything in subtypesof(/datum/objective_item/steal) + subtypesof(/datum/objective_item/unique))
 			var/target = initial(objective_type.targetitem)
 			if(ispath(target, /obj/item) && !(target in common_targets))
@@ -655,7 +827,9 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(reserved[item.type])
 		return TRUE
 	for(var/datum/objective/steal/objective in GLOB.objectives)
-		if(objective.steal_target && istype(item, objective.steal_target))
+		if(!objective.steal_target || (objective.steal_target in common_targets))
+			continue
+		if(istype(item, objective.steal_target))
 			return TRUE
 		if(!objective.targetinfo)
 			continue
@@ -673,7 +847,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		setupExports()
 	. = FALSE
 	for(var/datum/export/weapon/export in GLOB.exports_list)
-		if(export.include_subtypes ? (export.export_types[item.type] && !export.exclude_types[item.type]) : (item.type in export.export_types))
+		if(export.export_types[item.type] && !export.exclude_types[item.type])
 			. = TRUE
 			break
 	known[item.type] = .
@@ -685,6 +859,9 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/list/results = list()
 	for(var/list/result as anything in SSmarket.auction_results)
 		results += list(list("name" = result[1], "winner" = result[2], "price" = result[3], "ours" = result[4]))
+	var/list/crew_results = list()
+	for(var/list/result as anything in SSmarket.crew_auction_results)
+		crew_results += list(list("name" = result[1], "winner" = result[2], "price" = result[3]))
 	var/list/crew = list()
 	for(var/datum/auction_lot/crew/crew_lot as anything in SSmarket.crew_lots)
 		crew += list(crew_lot.ui_entry(account))
@@ -692,6 +869,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		"auction" = lot?.ui_entry(account),
 		"auction_next" = lot ? 0 : max(0, CEILING((SSmarket.next_auction_at - world.time) / (1 SECONDS), 1)),
 		"auction_results" = results,
+		"crew_results" = crew_results,
 		"crew_lots" = crew,
 		"auction_fee" = settings.auction_crew_fee,
 		"auction_lots_per_account" = settings.auction_crew_lots_per_account,

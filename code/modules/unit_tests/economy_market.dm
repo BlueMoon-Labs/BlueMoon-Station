@@ -51,6 +51,7 @@
 		"auction" = SSmarket.auction,
 		"next_auction_at" = SSmarket.next_auction_at,
 		"auction_results" = SSmarket.auction_results,
+		"crew_auction_results" = SSmarket.crew_auction_results,
 		"auction_drop_turf" = SSmarket.auction_drop_turf,
 		"crew_lots" = SSmarket.crew_lots,
 		"auction_announce_ready_at" = SSmarket.auction_announce_ready_at,
@@ -79,6 +80,7 @@
 	SSmarket.auction = null
 	SSmarket.next_auction_at = world.time + 1 HOURS
 	SSmarket.auction_results = list()
+	SSmarket.crew_auction_results = list()
 	SSmarket.auction_drop_turf = null
 	SSmarket.crew_lots = list()
 	SSmarket.auction_announce_ready_at = world.time + 1 HOURS
@@ -387,25 +389,28 @@
 		var/list/history = entry["history"]
 		TEST_ASSERT_EQUAL(length(history), 2, "[entry["id"]]: после первого сдвига в окне две точки тренда")
 
-/// Аукцион экипажа на подменённом рынке: пад подработки на станции, посылки падают на тестовый турф.
+/// Аукцион экипажа на подменённом рынке: пад подработки на станции, посылки с итогом встают на него.
 /datum/unit_test/economy_market/crew_auction
 	abstract_type = /datum/unit_test/economy_market/crew_auction
 	var/obj/machinery/computer/piratepad_control/civilian/console
+	var/obj/machinery/piratepad/civilian/pad
 	var/turf/pad_turf
 	/// Человек -> его ID-карта
 	var/list/cards = list()
 
 /datum/unit_test/economy_market/crew_auction/proc/setup_pad()
+	econ_test_contraband_ready()
 	pad_turf = find_walkable_station_turf()
 	TEST_ASSERT_NOTNULL(pad_turf, "Есть станционный турф")
+	for(var/obj/item/stray in pad_turf)
+		stray.forceMove(run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/tech = allocate(/mob/living/carbon/human)
-	var/obj/machinery/piratepad/civilian/pad = allocate(/obj/machinery/piratepad/civilian, pad_turf)
+	pad = allocate(/obj/machinery/piratepad/civilian, pad_turf)
 	console = allocate(/obj/machinery/computer/piratepad_control/civilian, pad_turf)
 	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
 	pad.multitool_act(tech, tool)
 	console.multitool_act(tech, tool)
 	TEST_ASSERT(console.linked_pad() == pad, "Пульт связан с падом")
-	SSmarket.auction_drop_turf = run_loc_floor_bottom_left
 
 /// Человек со счётом, который запоминает сообщения карты; with_pda - карта в КПК с кошельком, иначе в руке.
 /datum/unit_test/economy_market/crew_auction/proc/make_person(holder, balance, with_pda = TRUE)
@@ -447,9 +452,9 @@
 	return wallet.message
 
 /// Выставляет вещь с пада кнопкой пульта; возвращает новый лот или null.
-/datum/unit_test/economy_market/crew_auction/proc/list_item(mob/living/user, atom/movable/thing, price = 100, minutes, anonymous = FALSE)
+/datum/unit_test/economy_market/crew_auction/proc/list_item(mob/living/user, atom/movable/thing, price = 100, minutes, anonymous = FALSE, buyout = 0)
 	var/before = length(SSmarket.crew_lots)
-	click(user, "auction_list", list("ref" = REF(thing), "price" = price, "minutes" = minutes || SSeconomy.settings.auction_minutes_options()[1], "anonymous" = anonymous))
+	click(user, "auction_list", list("ref" = REF(thing), "price" = price, "minutes" = minutes || SSeconomy.settings.auction_minutes_options()[1], "anonymous" = anonymous, "buyout" = buyout))
 	if(length(SSmarket.crew_lots) > before)
 		return SSmarket.crew_lots[length(SSmarket.crew_lots)]
 
@@ -458,16 +463,50 @@
 	SSmarket.auction_step(lot)
 
 /datum/unit_test/economy_market/crew_auction/proc/heard(datum/bank_account/econ_test_ear/account, text)
+	return heard_count(account, text) > 0
+
+/datum/unit_test/economy_market/crew_auction/proc/heard_count(datum/bank_account/econ_test_ear/account, text)
+	. = 0
 	for(var/message in account.heard)
 		if(findtext(message, text))
-			return TRUE
-	return FALSE
+			.++
 
-/// Лот экипажа: пад принимает разрешённую вещь, прячет имя анонимного продавца, отклоняет запрещённые категории и сверх лимита лотов на счёт.
+/// Посылка аукциона на счёт owner, которая ещё летит капсулой: list(посылка, тип капсулы, область посадки). Капсула убирается до посадки, посылка ложится на тестовый турф.
+/datum/unit_test/economy_market/crew_auction/proc/catch_pod_parcel(datum/bank_account/owner)
+	for(var/obj/effect/pod_landingzone/zone in world)
+		var/obj/item/storage/lockbox/order/parcel = locate() in zone.pod
+		if(!parcel || parcel.buyer_account != owner)
+			continue
+		var/pod_type = zone.pod.type
+		var/area/landing = get_area(zone)
+		parcel.forceMove(run_loc_floor_bottom_left)
+		allocated += parcel
+		qdel(zone.helper)
+		qdel(zone.pod)
+		qdel(zone)
+		return list(parcel, pod_type, landing)
+	return list(null, null, null)
+
+/// Общий канал слышит гарнитура-шпион рабочей системы оповещения.
+/datum/unit_test/economy_market/crew_auction/proc/spy_radio()
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/obj/machinery/announcement_system/announcer = allocate(/obj/machinery/announcement_system, locate(2, 2, station_z))
+	announcer.machine_stat = NONE
+	qdel(announcer.radio)
+	var/obj/item/radio/headset/econ_test_spy/spy = new(announcer)
+	announcer.radio = spy
+	GLOB.announcement_systems -= announcer
+	GLOB.announcement_systems.Insert(1, announcer)
+	SSmarket.auction_announce_ready_at = 0
+	return spy
+
+/// Лот экипажа: пад принимает разрешённую вещь, прячет имя анонимного продавца, отклоняет запрещённые категории и сверх лимита лотов на счёт; на пустом паде пульт ничего не предлагает.
 /datum/unit_test/economy_market/crew_auction/listing/Run()
 	setup_pad()
 	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0, FALSE)
 	var/datum/bank_account/account = econ_account_of(seller)
+	var/list/empty = console.ui_data(seller)["auction"]["items"]
+	TEST_ASSERT_EQUAL(length(empty), 0, "На пустом паде пульт предлагает выставить: [json_encode(empty)]")
 	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
 	var/list/pad_entry
 	for(var/list/entry as anything in console.ui_data(seller)["auction"]["items"])
@@ -525,7 +564,71 @@
 	TEST_ASSERT_NULL(list_item(seller, extra), "Сверх лимита на счёт выставлено")
 	TEST_ASSERT(findtext(console.status_report, "на торгах"), "Пульт объясняет лимит: [console.status_report]")
 
-/// Лот экипажа: ставка из Кошелька КПК замораживается, на свой лот не поставить, перебитому за минуту до конца напоминает карта; итог - ставка продавцу без сбора NT, сбор сгорает, победителю запертая посылка на его имя; без ставок вещь едет продавцу посылкой.
+/// Фильтр аукциона экипажа: оружие и взрывчатка, вещи антагонистов, вещь с аплинком и тяжёлое по силе удара не принимаются; пока каталог NT не сверен, не принимается ничего.
+/datum/unit_test/economy_market/crew_auction/filter/Run()
+	econ_test_contraband_ready()
+	var/list/forbidden = list(
+		/obj/item/chainsaw,
+		/obj/item/hatchet,
+		/obj/item/flamethrower/full,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/syndicatedetonator,
+		/obj/item/necromantic_stone,
+		/obj/item/kinetic_crusher,
+	)
+	for(var/forbidden_type in forbidden)
+		var/obj/item/thing = allocate(forbidden_type, run_loc_floor_bottom_left)
+		TEST_ASSERT(econ_auction_item_problem(thing), "[forbidden_type] пропущен на аукцион")
+	var/obj/item/pen/pen = allocate(/obj/item/pen, run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(econ_auction_item_problem(pen), "Обычная ручка не годится: [econ_auction_item_problem(pen)]")
+	pen.AddComponent(/datum/component/uplink, null, TRUE, FALSE, UPLINK_TRAITORS, 0)
+	var/problem = econ_auction_item_problem(pen)
+	TEST_ASSERT(problem && !findtext(problem, "аплинк"), "Ручка с аплинком пропущена или отказ его выдаёт: [problem]")
+	var/obj/item/toy/plush/beeplushie/heavy = allocate(/obj/item/toy/plush/beeplushie, run_loc_floor_bottom_left)
+	heavy.force = AUCTION_WEAPON_FORCE
+	TEST_ASSERT(findtext(econ_auction_item_problem(heavy), "Оружие"), "Вещь с силой удара [AUCTION_WEAPON_FORCE] пропущена")
+
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(econ_auction_item_problem(plush), "Плюшевый карп не годится")
+	GLOB.econ_contraband_built = FALSE
+	problem = econ_auction_item_problem(plush)
+	GLOB.econ_contraband_built = TRUE
+	TEST_ASSERT(findtext(problem, "сверяется"), "Пока каталог NT не сверен, вещь принята: [problem]")
+
+/// Цель кражи из ходовых вещей (экстракты, баллоны) отказом себя не выдаёт: такие вещи аукцион экипажа принимает.
+/datum/unit_test/economy_market/crew_auction/common_steal_target/Run()
+	econ_test_contraband_ready()
+	var/list/saved_items = GLOB.possible_items
+	GLOB.possible_items = list(null)
+	var/datum/objective/steal/objective = new
+	GLOB.possible_items = saved_items
+	allocated += objective
+	objective.steal_target = /obj/item/slime_extract
+	var/obj/item/slime_extract/grey/extract = allocate(/obj/item/slime_extract/grey, run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(econ_auction_item_problem(extract), "Отказ всем экстрактам выдаёт цель кражи: [econ_auction_item_problem(extract)]")
+
+/// Снявший свой лот выставляет новый только через auction_crew_relist_minutes, и пульт с Кошельком говорят когда.
+/datum/unit_test/economy_market/crew_auction/relist/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/datum/bank_account/account = econ_account_of(seller)
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
+	var/datum/auction_lot/crew/lot = list_item(seller, plush, 100)
+	TEST_ASSERT_NOTNULL(lot, "Лот выставлен: [console.status_report]")
+	var/answer = press_wallet(seller, "auction_cancel", list("uid" = lot.uid))
+	TEST_ASSERT(QDELETED(lot), "Продавец не снял лот: [answer]")
+	allocated += plush.loc
+	var/minutes = SSeconomy.settings.auction_crew_relist_minutes
+	TEST_ASSERT(minutes > 0, "Пауза после снятия лота задана")
+	TEST_ASSERT(findtext(answer, "через [minutes] мин."), "Кошелёк не говорит, когда можно выставить снова: [answer]")
+	var/obj/item/toy/plush/beeplushie/bee = allocate(/obj/item/toy/plush/beeplushie, pad_turf)
+	TEST_ASSERT_NULL(list_item(seller, bee, 100), "Новый лот выставлен сразу после снятия старого")
+	TEST_ASSERT(findtext(console.status_report, "недавно сняли"), "Пульт не объясняет паузу: [console.status_report]")
+	TEST_ASSERT(console.ui_data(seller)["auction"]["relist_left"] > 0, "Окно пульта не знает о паузе")
+	COOLDOWN_RESET(account, auction_relist_cooldown)
+	TEST_ASSERT_NOTNULL(list_item(seller, bee, 100), "После паузы лот не выставлен: [console.status_report]")
+
+/// Лот экипажа: ставка из Кошелька КПК замораживается, на свой лот не поставить, перебитому за минуту до конца напоминает карта; итог - ставка продавцу без сбора NT, сбор сгорает, победителю запертая посылка на его имя на паде; аудит видит след от покупателя к продавцу одной строкой; без ставок вещь едет продавцу посылкой.
 /datum/unit_test/economy_market/crew_auction/sale/Run()
 	setup_pad()
 	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
@@ -569,8 +672,11 @@
 	TEST_ASSERT_EQUAL(escrow.account_balance, escrow_before, "На счёте биржи ничего не осталось")
 	TEST_ASSERT_EQUAL(total_before - (seller_account.account_balance + first_account.account_balance + second_account.account_balance + escrow.account_balance), fee, "Аукцион экипажа не создаёт денег")
 	TEST_ASSERT(length(second_account.audit_outflows?["[seller_account.account_id]"]), "Аудит не видит след денег от покупателя к продавцу")
+	TEST_ASSERT_EQUAL(length(second_account.audit_outflows), 1, "След покупателя в аудите не одной строкой: [json_encode(second_account.audit_outflows)]")
+	TEST_ASSERT(!length(first_account.audit_outflows), "Перебитая ставка осталась в следе аудита: [json_encode(first_account.audit_outflows)]")
 	var/obj/item/storage/lockbox/order/parcel = plush.loc
-	TEST_ASSERT(istype(parcel) && parcel.loc == run_loc_floor_bottom_left, "Лот приехал посылкой")
+	catch_pod_parcel(second_account)
+	TEST_ASSERT(istype(parcel) && parcel.loc == pad_turf, "Лот приехал не посылкой на пад: [parcel?.loc]")
 	allocated += parcel
 	TEST_ASSERT(parcel.buyer_account == second_account && findtext(parcel.name, "Econ Auction Second"), "Посылка на имя победителя: [parcel.name]")
 	TEST_ASSERT_EQUAL(econ_packaging_value(parcel.type), 0, "Посылку аукциона NT не выкупает как упаковку")
@@ -579,7 +685,8 @@
 	parcel.attackby(cards[second], second)
 	TEST_ASSERT(!SEND_SIGNAL(parcel, COMSIG_IS_STORAGE_LOCKED), "Карта победителя не открыла посылку")
 	TEST_ASSERT(heard(seller_account, "продан за [price] кр."), "Продавцу не сообщили о продаже")
-	TEST_ASSERT(heard(second_account, "ваш за [price] кр."), "Победителю не сообщили о выигрыше")
+	TEST_ASSERT(heard(second_account, "ваш за [price] кр.: запертая посылка на ваше имя ждёт на паде подработки"), "Победителю не сказали, где посылка")
+	TEST_ASSERT_EQUAL(SSmarket.crew_auction_results[1][2], "Econ Auction Second", "Итог лота экипажа")
 
 	var/obj/item/toy/plush/beeplushie/bee = allocate(/obj/item/toy/plush/beeplushie, pad_turf)
 	lot = list_item(seller, bee, 50, anonymous = TRUE)
@@ -587,11 +694,185 @@
 	var/seller_before = seller_account.account_balance
 	finish(lot)
 	var/obj/item/storage/lockbox/order/returned = bee.loc
-	TEST_ASSERT(istype(returned) && returned.buyer_account == seller_account, "Без ставок вещь едет продавцу посылкой")
+	catch_pod_parcel(seller_account)
+	TEST_ASSERT(istype(returned) && returned.buyer_account == seller_account && returned.loc == pad_turf, "Без ставок вещь едет продавцу посылкой на пад")
 	allocated += returned
 	TEST_ASSERT(!findtext(returned.name, "Econ Auction Seller"), "Посылка анонимного продавца без имени: [returned.name]")
 	TEST_ASSERT_EQUAL(seller_account.account_balance, seller_before, "Без ставок денег не прибавилось")
-	TEST_ASSERT(heard(seller_account, "без ставок"), "Продавцу не сообщили, что ставок не было")
+	TEST_ASSERT(heard(seller_account, "без ставок, вещь возвращается к вам: безымянная запертая посылка"), "Анонимному продавцу не сказали про безымянную посылку")
+	TEST_ASSERT(isnull(SSmarket.crew_auction_results[1][2]), "Лот без ставок в итогах с победителем")
+
+/// Итог лота экипажа встаёт посылкой на пад, с которого вещь выставили; без пада - и у лота сектора всегда - посылка летит блюспейс-капсулой, которая не взрывается, в снабжение.
+/datum/unit_test/economy_market/crew_auction/delivery/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/mob/living/carbon/human/buyer = make_person("Econ Auction Buyer", 5000)
+	var/datum/bank_account/econ_test_ear/buyer_account = econ_account_of(buyer)
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
+	var/datum/auction_lot/crew/lot = list_item(seller, plush, 100)
+	TEST_ASSERT_NOTNULL(lot, "Лот выставлен: [console.status_report]")
+	press_wallet(buyer, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	finish(lot)
+	var/obj/item/storage/lockbox/order/parcel = plush.loc
+	var/list/caught = catch_pod_parcel(buyer_account)
+	allocated += parcel
+	TEST_ASSERT(!caught[1] && parcel?.loc == pad_turf, "Проданный лот улетел капсулой вместо своего пада: [caught[2]]")
+	var/datum/economy_department/civilian = SSeconomy.get_department(ACCOUNT_CIV)
+	var/datum/bounty/item/bounty = new
+	bounty.wanted_types = typecacheof(list(/obj/item/toy/plush/carpplushie))
+	var/datum/econ_contract/delivery/contract = new(ACCOUNT_CIV, bounty)
+	civilian.contracts.Insert(1, contract)
+	pad.warmup_time = 0
+	click(seller, "send", list())
+	civilian.contracts -= contract
+	qdel(contract)
+	TEST_ASSERT(!QDELETED(plush) && plush.loc == parcel, "Пад отправил по контракту вещь из чужой запертой посылки")
+
+	var/obj/item/toy/plush/beeplushie/bee = allocate(/obj/item/toy/plush/beeplushie, pad_turf)
+	lot = list_item(seller, bee, 100)
+	TEST_ASSERT_NOTNULL(lot, "Второй лот выставлен: [console.status_report]")
+	press_wallet(buyer, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	qdel(pad)
+	finish(lot)
+	caught = catch_pod_parcel(buyer_account)
+	TEST_ASSERT(caught[1] && (locate(/obj/item/toy/plush/beeplushie) in caught[1]), "Без пада посылка не улетела капсулой")
+	TEST_ASSERT_EQUAL(caught[2], /obj/structure/closet/supplypod/bluespacepod, "Посылка летит взрывающейся капсулой")
+	TEST_ASSERT(istype(caught[3], /area/cargo), "Капсула садится не в снабжение: [caught[3]]")
+	TEST_ASSERT(heard(buyer_account, "прилетит капсулой"), "Покупателю не сказали, что посылка прилетит капсулой")
+
+	var/datum/auction_lot/sector = SSmarket.start_auction(list("path" = /obj/item/toy/plush/lizardplushie, "name" = "тестовая ящерица", "value" = 1000))
+	sector.rivals = list()
+	TEST_ASSERT_NULL(SSmarket.place_auction_bid(buyer_account, sector.min_bid(), buyer, sector.uid), "Ставка на лот сектора не прошла")
+	SSmarket.finish_auction()
+	caught = catch_pod_parcel(buyer_account)
+	TEST_ASSERT(caught[1] && (locate(/obj/item/toy/plush/lizardplushie) in caught[1]), "Лот сектора не улетел капсулой")
+	TEST_ASSERT_EQUAL(caught[2], /obj/structure/closet/supplypod/bluespacepod, "Лот сектора летит взрывающейся капсулой")
+
+/// Со счёта вне станции на аукционе не торгуются: ни ставкой на лот экипажа или сектора, ни покупкой сразу.
+/datum/unit_test/economy_market/crew_auction/offstation/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/mob/living/carbon/human/outsider = make_person("Econ Auction Outsider", 1000)
+	var/datum/bank_account/outsider_account = econ_account_of(outsider)
+	outsider_account.offstation = TRUE
+	var/datum/auction_lot/crew/lot = list_item(seller, allocate(/obj/item/toy/plush/carpplushie, pad_turf), 100, buyout = 200)
+	TEST_ASSERT_NOTNULL(lot, "Лот выставлен: [console.status_report]")
+	var/answer = press_wallet(outsider, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	TEST_ASSERT(isnull(lot.bidder_account) && findtext(answer, "вне станции"), "Ставка со счёта вне станции: [answer]")
+	answer = press_wallet(outsider, "auction_buyout", list("uid" = lot.uid))
+	TEST_ASSERT((lot in SSmarket.crew_lots) && findtext(answer, "вне станции"), "Покупка сразу со счёта вне станции: [answer]")
+	TEST_ASSERT_EQUAL(outsider_account.account_balance, 1000, "Со счёта вне станции списали деньги")
+	var/datum/auction_lot/sector = SSmarket.start_auction(list("path" = /obj/item/toy/plush/lizardplushie, "name" = "тестовая ящерица", "value" = 1000))
+	answer = SSmarket.place_auction_bid(outsider_account, sector.min_bid(), outsider, sector.uid)
+	SSmarket.auction = null
+	qdel(sector)
+	TEST_ASSERT(findtext(answer, "вне станции"), "Ставка на лот сектора со счёта вне станции: [answer]")
+
+/// Лот экипажа с ценой «купить сразу»: ставки идут ниже неё, покупка сразу закрывает лот проданным - продавцу без сбора NT, перебитому возврат, покупателю посылка на пад; свой лот сразу не купить, лот без цены выкупа - тоже; цена выкупа ниже старта не принимается.
+/datum/unit_test/economy_market/crew_auction/buyout/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/mob/living/carbon/human/first = make_person("Econ Auction First", 1000)
+	var/mob/living/carbon/human/buyer = make_person("Econ Auction Buyer", 1000)
+	var/datum/bank_account/econ_test_ear/seller_account = econ_account_of(seller)
+	var/datum/bank_account/econ_test_ear/first_account = econ_account_of(first)
+	var/datum/bank_account/econ_test_ear/buyer_account = econ_account_of(buyer)
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
+	TEST_ASSERT_NULL(list_item(seller, plush, 100, buyout = 50), "Цена выкупа ниже старта принята")
+	var/datum/auction_lot/crew/lot = list_item(seller, plush, 100, buyout = 300)
+	TEST_ASSERT_NOTNULL(lot, "Лот с ценой выкупа не выставлен: [console.status_report]")
+	TEST_ASSERT_EQUAL(lot.ui_entry(null)["buyout"], 300, "Окно не знает цену выкупа")
+	press_wallet(seller, "auction_buyout", list("uid" = lot.uid))
+	TEST_ASSERT(lot in SSmarket.crew_lots, "Продавец купил свой лот")
+	press_wallet(first, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	TEST_ASSERT(lot.bidder_account == first_account, "Ставка ниже цены выкупа не прошла")
+	var/answer = press_wallet(first, "auction_bid", list("uid" = lot.uid, "amount" = 300))
+	TEST_ASSERT(lot.bid == 100 && findtext(answer, "купить за 300"), "Ставка дошла до цены выкупа: [answer]")
+	answer = press_wallet(buyer, "auction_buyout", list("uid" = "[lot.uid]"))
+	TEST_ASSERT(QDELETED(lot) && !(lot in SSmarket.crew_lots), "Лот не купили сразу: [answer]")
+	TEST_ASSERT(findtext(answer, "ваш за 300 кр.: запертая посылка на ваше имя ждёт на паде подработки"), "Кошелёк не говорит, где посылка: [answer]")
+	var/fee = round(300 * SSeconomy.settings.auction_crew_fee / 100)
+	TEST_ASSERT_EQUAL(buyer_account.account_balance, 700, "Покупатель заплатил цену выкупа")
+	TEST_ASSERT_EQUAL(first_account.account_balance, 1000, "Перебитому не вернулась ставка")
+	TEST_ASSERT_EQUAL(seller_account.account_balance, 300 - fee, "Продавцу - цена выкупа без сбора NT")
+	TEST_ASSERT(heard(first_account, "купили сразу за 300 кр."), "Перебитому не сказали, что лот купили сразу")
+	var/obj/item/storage/lockbox/order/parcel = plush.loc
+	catch_pod_parcel(buyer_account)
+	allocated += parcel
+	TEST_ASSERT(istype(parcel) && parcel.buyer_account == buyer_account && parcel.loc == pad_turf, "Купленный сразу лот не на паде посылкой покупателя")
+
+	var/datum/auction_lot/crew/plain = list_item(seller, allocate(/obj/item/toy/plush/beeplushie, pad_turf), 100)
+	TEST_ASSERT_NOTNULL(plain, "Лот без цены выкупа выставлен")
+	answer = press_wallet(buyer, "auction_buyout", list("uid" = plain.uid))
+	TEST_ASSERT((plain in SSmarket.crew_lots) && findtext(answer, "только на торги"), "Лот без цены выкупа купили сразу: [answer]")
+	TEST_ASSERT_EQUAL(buyer_account.account_balance, 700, "За отказ списали деньги")
+
+/// Продавцу карта говорит о первой ставке на лот один раз, а за минуту до конца лота без ставок - что ставок нет, тоже один раз.
+/datum/unit_test/economy_market/crew_auction/seller_notices/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/mob/living/carbon/human/first = make_person("Econ Auction First", 1000)
+	var/mob/living/carbon/human/second = make_person("Econ Auction Second", 1000)
+	var/datum/bank_account/econ_test_ear/seller_account = econ_account_of(seller)
+	var/datum/auction_lot/crew/lot = list_item(seller, allocate(/obj/item/toy/plush/carpplushie, pad_turf), 100)
+	TEST_ASSERT_NOTNULL(lot, "Лот выставлен: [console.status_report]")
+	press_wallet(first, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	TEST_ASSERT_EQUAL(heard_count(seller_account, "поставили 100 кр."), 1, "Продавцу не сказали о первой ставке")
+	press_wallet(second, "auction_bid", list("uid" = lot.uid, "amount" = lot.min_bid()))
+	TEST_ASSERT_EQUAL(heard_count(seller_account, "поставили"), 1, "Продавцу сообщают о каждой ставке")
+	lot.ends_at = world.time + AUCTION_SNIPE_WINDOW - 1
+	SSmarket.auction_step(lot)
+	TEST_ASSERT(!heard(seller_account, "ставок пока нет"), "Продавцу со ставками сказали, что ставок нет")
+	var/datum/auction_lot/crew/quiet = list_item(seller, allocate(/obj/item/toy/plush/beeplushie, pad_turf), 100)
+	TEST_ASSERT_NOTNULL(quiet, "Второй лот выставлен: [console.status_report]")
+	quiet.ends_at = world.time + AUCTION_SNIPE_WINDOW - 1
+	SSmarket.auction_step(quiet)
+	SSmarket.auction_step(quiet)
+	TEST_ASSERT_EQUAL(heard_count(seller_account, "ставок пока нет"), 1, "Продавцу лота без ставок не сказали один раз, что ставок нет")
+
+/// Лот экипажа называется исходным именем вещи и описывается исходным описанием - в окне, по радио и в сообщениях карт; переименование ручкой видно в окне отдельной надписью.
+/datum/unit_test/economy_market/crew_auction/inscription/Run()
+	setup_pad()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_radio()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/mob/living/carbon/human/buyer = make_person("Econ Auction Buyer", 1000)
+	var/datum/bank_account/econ_test_ear/seller_account = econ_account_of(seller)
+	var/datum/bank_account/econ_test_ear/buyer_account = econ_account_of(buyer)
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
+	var/official_name = format_text(initial(plush.name))
+	var/official_desc = format_text(initial(plush.desc))
+	plush.name = "Самый ценный карп станции"
+	plush.desc = "Продам срочно, звоните."
+	plush.renamedByPlayer = TRUE
+	var/list/pad_entry
+	for(var/list/entry as anything in console.ui_data(seller)["auction"]["items"])
+		if(entry["ref"] == REF(plush))
+			pad_entry = entry
+	TEST_ASSERT(pad_entry && pad_entry["name"] == official_name && findtext(pad_entry["inscription"], "Самый ценный карп"), "Пульт называет вещь не исходным именем или без надписи: [json_encode(pad_entry)]")
+	var/datum/auction_lot/crew/lot = list_item(seller, plush, 100)
+	TEST_ASSERT_NOTNULL(lot, "Лот выставлен: [console.status_report]")
+	var/list/entry = lot.ui_entry(null)
+	TEST_ASSERT_EQUAL(entry["name"], official_name, "Лот назван правкой игрока")
+	TEST_ASSERT_EQUAL(entry["desc"], official_desc, "Описание лота - правка игрока")
+	TEST_ASSERT(findtext(entry["inscription"], "Самый ценный карп") && findtext(entry["inscription"], "звоните"), "Надпись игрока не видна в окне: [entry["inscription"]]")
+	TEST_ASSERT_EQUAL(length(spy.heard), 1, "О лоте не прозвучала одна строка")
+	TEST_ASSERT(findtext(spy.heard[1], official_name) && !findtext(spy.heard[1], "Самый ценный") && !findtext(spy.heard[1], "звоните"), "Правки игрока ушли в эфир: [spy.heard[1]]")
+	press_wallet(buyer, "auction_bid", list("uid" = lot.uid, "amount" = 100))
+	finish(lot)
+	allocated += plush.loc
+	TEST_ASSERT(heard(buyer_account, official_name) && !heard(buyer_account, "Самый ценный") && !heard(seller_account, "Самый ценный"), "Правки игрока в сообщениях карт")
+
+/// Выставленная вещь уходит с пада вместе со своим светом.
+/datum/unit_test/economy_market/crew_auction/light/Run()
+	setup_pad()
+	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
+	var/obj/item/flashlight/torch = allocate(/obj/item/flashlight, pad_turf)
+	torch.on = TRUE
+	torch.update_brightness()
+	var/datum/component/overlay_lighting/glow = torch.GetComponent(/datum/component/overlay_lighting)
+	TEST_ASSERT(glow?.current_holder == torch, "Фонарь на паде не светит")
+	TEST_ASSERT_NOTNULL(list_item(seller, torch, 100), "Фонарь не выставлен: [console.status_report]")
+	TEST_ASSERT_NULL(glow.current_holder, "Свет выставленного фонаря остался на паде")
 
 /// Лот экипажа снимает только продавец и только до первой ставки; снятая вещь едет продавцу посылкой.
 /datum/unit_test/economy_market/crew_auction/cancel/Run()
@@ -609,6 +890,7 @@
 	var/obj/item/storage/lockbox/order/returned = plush.loc
 	TEST_ASSERT(istype(returned) && returned.buyer_account == seller_account, "Снятая вещь не вернулась посылкой продавцу")
 	allocated += returned
+	COOLDOWN_RESET(seller_account, auction_relist_cooldown)
 
 	var/obj/item/toy/plush/beeplushie/bee = allocate(/obj/item/toy/plush/beeplushie, pad_turf)
 	lot = list_item(seller, bee, 100)
@@ -650,27 +932,20 @@
 	TEST_ASSERT_EQUAL(bidder_account.account_balance, 1000, "Ставка на лот закрытого счёта вернулась")
 	TEST_ASSERT(refcount(lot) == GC_QUEUE_ONLY_REFS, "Закрытый лот держит кто-то, кроме очереди GC: [refcount(lot)]")
 
-/// О новом лоте общий канал слышит одну строку с названием, описанием и выбранным именем продавца; лот в кулдаун канала молчит.
+/// О новом лоте общий канал слышит одну строку с исходным названием и описанием вещи, ценой «купить сразу» и выбранным именем продавца; описание игрока в эфир не идёт; лот в кулдаун канала молчит.
 /datum/unit_test/economy_market/crew_auction/radio/Run()
 	setup_pad()
-	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
-	var/obj/machinery/announcement_system/announcer = allocate(/obj/machinery/announcement_system, locate(2, 2, station_z))
-	announcer.machine_stat = NONE
-	qdel(announcer.radio)
-	var/obj/item/radio/headset/econ_test_spy/spy = new(announcer)
-	announcer.radio = spy
-	GLOB.announcement_systems -= announcer
-	GLOB.announcement_systems.Insert(1, announcer)
-	SSmarket.auction_announce_ready_at = 0
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_radio()
 	var/mob/living/carbon/human/seller = make_person("Econ Auction Seller", 0)
 	var/mob/living/carbon/human/shy = make_person("Econ Auction Shy", 0)
 	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, pad_turf)
 	plush.desc = "Мягкий карп с паровозиком."
-	TEST_ASSERT_NOTNULL(list_item(seller, plush, 100), "Лот выставлен: [console.status_report]")
+	TEST_ASSERT_NOTNULL(list_item(seller, plush, 100, buyout = 400), "Лот выставлен: [console.status_report]")
 	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Одна строка о новом лоте")
 	var/line = spy.heard[1]
 	TEST_ASSERT(findtext(line, "общий:") == 1, "Строка в общем канале: [line]")
-	TEST_ASSERT(findtext(line, plush.name) && findtext(line, "паровозиком") && findtext(line, "Econ Auction Seller"), "В строке название, описание и продавец: [line]")
+	TEST_ASSERT(findtext(line, format_text(initial(plush.name))) && findtext(line, "Econ Auction Seller") && findtext(line, "купить сразу - 400 кр."), "В строке название, продавец и цена выкупа: [line]")
+	TEST_ASSERT(!findtext(line, "паровозиком"), "Описание игрока ушло в эфир: [line]")
 	TEST_ASSERT_NOTNULL(list_item(shy, allocate(/obj/item/toy/plush/beeplushie, pad_turf), 100, anonymous = TRUE), "Второй лот выставлен")
 	TEST_ASSERT_EQUAL(length(spy.heard), 1, "Лот в кулдаун канала прозвучал")
 	SSmarket.auction_announce_ready_at = 0

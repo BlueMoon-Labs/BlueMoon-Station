@@ -731,6 +731,43 @@
 	TEST_ASSERT_EQUAL(SSmarket.auction_results[1][2], "станция \"Тест\"", "Итог - соперник")
 	TEST_ASSERT(SSmarket.next_auction_at > world.time, "Следующий лот запланирован")
 
+/// Итоги лотов экипажа идут в окно снабжения отдельно и не вытесняют итоги лотов сектора; «Купить сразу» из консоли снабжения закрывает лот экипажа проданным.
+/datum/unit_test/economy_ui_cargo/auction_crew/Run()
+	econ_test_contraband_ready()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/buyer = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/bank_account/account = econ_account_of(buyer)
+	account.credit(5000, ECON_ADMIN)
+	var/mob/living/carbon/human/seller = make_staff(ACCOUNT_CIV)
+	var/datum/bank_account/seller_account = econ_account_of(seller)
+	SSmarket.auction_drop_turf = run_loc_floor_bottom_left
+	SSmarket.note_auction_result("корона", "Иван Петров", 2600, TRUE)
+	var/minutes = SSeconomy.settings.auction_minutes_options()[1]
+	for(var/i in 1 to AUCTION_RESULTS_MAX + 1)
+		var/obj/item/toy/plush/beeplushie/bee = allocate(/obj/item/toy/plush/beeplushie)
+		var/list/answer = SSmarket.start_crew_lot(seller, seller_account, bee, 100, minutes, FALSE, run_loc_floor_bottom_left)
+		TEST_ASSERT(answer[1], "Лот экипажа [i] не выставлен: [answer[2]]")
+		SSmarket.finish_crew_lot(SSmarket.crew_lots[1])
+		allocated += bee.loc
+	var/list/data = console.ui_data(buyer)
+	TEST_ASSERT_EQUAL(length(data["auction_results"]), 1, "Итоги лотов экипажа вытеснили итог лота сектора")
+	TEST_ASSERT(data["auction_results"][1]["ours"], "Итог лота сектора потерял победу станции")
+	TEST_ASSERT_EQUAL(length(data["crew_results"]), AUCTION_RESULTS_MAX, "Итогов лотов экипажа в окне не столько, сколько помнит аукцион")
+	TEST_ASSERT(isnull(data["crew_results"][1]["winner"]) && isnull(data["crew_results"][1]["ours"]), "Лот экипажа без ставок показан чьей-то победой")
+
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie)
+	var/list/answer = SSmarket.start_crew_lot(seller, seller_account, plush, 100, minutes, FALSE, run_loc_floor_bottom_left, 250)
+	TEST_ASSERT(answer[1], "Лот с ценой выкупа не выставлен: [answer[2]]")
+	var/datum/auction_lot/crew/lot = SSmarket.crew_lots[1]
+	TEST_ASSERT_EQUAL(console.ui_data(buyer)["crew_lots"][1]["buyout"], 250, "Окно снабжения не знает цену выкупа")
+	press(buyer, console, "auction_buyout", list("uid" = "[lot.uid]"))
+	TEST_ASSERT(QDELETED(lot), "Консоль снабжения не купила лот сразу")
+	TEST_ASSERT_EQUAL(account.account_balance, 4750, "Цена выкупа не списана")
+	TEST_ASSERT_EQUAL(SSmarket.crew_auction_results[1][3], 250, "Покупка сразу не попала в итоги")
+	var/obj/item/storage/lockbox/order/parcel = plush.loc
+	TEST_ASSERT(istype(parcel) && parcel.buyer_account == account, "Купленный лот не приехал посылкой покупателю")
+	allocated += parcel
+
 /// Коллекционеры: открыты, ничего не покупают и не продают, спецзаказ просят на одну-несколько редких вещей дороже обычного.
 /datum/unit_test/economy_ui_cargo/collectors/Run()
 	var/datum/trade_partner/collectors = SSmarket.get_partner("collectors")

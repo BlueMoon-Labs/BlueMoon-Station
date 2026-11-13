@@ -107,7 +107,8 @@
 		return AUDIT_WATCH_UNOWNED
 	return "[counterparty?.account_id]"
 
-GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, ECON_ADMIN, ECON_ACCOUNT_CLOSED, ECON_BUDGET_RETURN))
+/// Ставка аукциона - залог, а не отток: след покупателя к продавцу пишет итог лота экипажа одной строкой
+GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, ECON_ADMIN, ECON_ACCOUNT_CLOSED, ECON_BUDGET_RETURN, ECON_AUCTION_BID))
 
 /proc/econ_audit_bucket_add(list/buckets, amount)
 	var/list/last = length(buckets) ? buckets[length(buckets)] : null

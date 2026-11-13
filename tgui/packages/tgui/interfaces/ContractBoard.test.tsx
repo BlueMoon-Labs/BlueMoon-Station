@@ -120,7 +120,26 @@ test('аукцион экипажа: выбранная вещь, цена, ср
   fireEvent.input(price, { target: { value: '250' } });
   fireEvent.blur(price);
   fireEvent.click(ui.getByText('Выставить: шляпа'));
-  expect(sent(ui.topic, 'auction_list')).toEqual([{ ref: '[0x3]', price: 250, minutes: 10, anonymous: true }]);
+  expect(sent(ui.topic, 'auction_list')).toEqual([{ ref: '[0x3]', price: 250, minutes: 10, anonymous: true, buyout: 0 }]);
+});
+
+test('аукцион экипажа: цена «купить сразу» уходит в auction_list, надпись на вещи видна, после снятия лота пауза', () => {
+  const items = [{ ref: '[0x1]', name: 'гитара', problem: null, inscription: 'Гитара Вована' }];
+  const ui = setup({ auction: { ...auctionPad, items } });
+  expect(ui.getByText('Гитара Вована', { exact: false })).toBeTruthy();
+  fireEvent.click(ui.getByText('Можно купить сразу за'));
+  const inputs = ui.container.querySelectorAll('input');
+  const buyout = inputs[inputs.length - 1] as HTMLInputElement;
+  fireEvent.focus(buyout);
+  fireEvent.input(buyout, { target: { value: '600' } });
+  fireEvent.blur(buyout);
+  fireEvent.click(ui.getByText('Выставить: гитара'));
+  expect(sent(ui.topic, 'auction_list')).toEqual([{ ref: '[0x1]', price: 100, minutes: 5, anonymous: false, buyout: 600 }]);
+  document.body.innerHTML = '';
+  const waiting = setup({ auction: { ...auctionPad, relist_left: 95 } });
+  expect(waiting.getByText('Выставить: гитара').closest('.Button')?.className).toContain('Button--disabled');
+  fireEvent.click(waiting.getByText('Выставить: гитара'));
+  expect(sent(waiting.topic, 'auction_list')).toEqual([]);
 });
 
 test('аукцион экипажа: у предела лотов не выставить, пустой пад подсказывает', () => {

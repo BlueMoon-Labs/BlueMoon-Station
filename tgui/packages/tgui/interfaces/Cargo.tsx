@@ -159,6 +159,10 @@ type AuctionLot = {
   /** Лот экипажа: имя продавца или "аноним". */
   seller?: string | null;
   my_lot?: BooleanLike;
+  /** Лот экипажа можно купить сразу за столько; 0 - только торги. */
+  buyout?: number;
+  /** Что продавец написал на вещи ручкой или этикеткой. */
+  inscription?: string | null;
 };
 
 type BundleOffer = {
@@ -173,6 +177,9 @@ type BundleOffer = {
 };
 
 type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
+
+/** Итог лота экипажа: без победителя - ушёл без ставок. */
+type CrewResult = { name: string; winner: string | null; price: number };
 
 type ShuttleState = 'station' | 'centcom' | 'to_station' | 'to_centcom' | 'recharging' | 'loaned' | 'away';
 
@@ -217,6 +224,7 @@ type CargoData = {
   bundles?: BundleOffer[];
   auction_next?: number;
   auction_results?: AuctionResult[];
+  crew_results?: CrewResult[];
   crew_lots?: AuctionLot[];
   auction_fee?: number;
   my_balance?: number | null;
@@ -1207,7 +1215,7 @@ const Auction = (props) => {
       )}
       <CrewLots />
       {results.length > 0 && (
-        <NtFrame title="Прошлые лоты">
+        <NtFrame title="Прошлые лоты сектора">
           {results.map((result, index) => (
             <NtLine key={`${result.name}-${index}`} label={result.name} tone={result.ours ? 'good' : 'dim'}>
               {result.winner ? `${result.ours ? 'наша станция: ' : ''}${result.winner}, ${formatCredits(result.price)}` : 'снят без ставок'}
@@ -1219,34 +1227,62 @@ const Auction = (props) => {
   );
 };
 
-/** Лоты экипажа: без соперников-станций, ставка с личного счёта, как у лота сектора. */
+/** Лоты экипажа: без соперников-станций, ставка с личного счёта, как у лота сектора; у некоторых есть цена «купить сразу». */
 const CrewLots = (props) => {
   const { act, data } = useBackend<CargoData>();
   const lots = data.crew_lots || [];
+  const results = data.crew_results || [];
   return (
     <NtFrame
       title="Лоты экипажа"
-      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставка идёт с личного счёта и замораживается до конца торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя на склад снабжения.`}>
+      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставка идёт с личного счёта и замораживается до конца торгов; лот с ценой «купить сразу» можно забрать без торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя на пад подработки, с которого лот выставили.`}>
       {lots.length === 0 ? (
         <NtEmpty>Лотов экипажа нет. Свою вещь выставляют с пада подработки.</NtEmpty>
       ) : (
-        lots.map((lot) => (
-          <Box key={lot.uid} mb={1}>
-            <NtLine label={lot.name} tone={lot.mine ? 'good' : lot.outbid ? 'warn' : undefined}>
-              {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
-              , осталось {formatTime(lot.left)}
-            </NtLine>
-            <Box className="NtTerm__hint">
-              {lot.my_lot ? 'ваш лот' : `продаёт ${lot.seller}`}
-              {lot.desc ? `: ${lot.desc}` : ''}
+        lots.map((lot) => {
+          const buyout = !lot.my_lot && lot.buyout ? lot.buyout : 0;
+          const biddable = !lot.my_lot && (!buyout || lot.min_bid < buyout);
+          return (
+            <Box key={lot.uid} mb={1}>
+              <NtLine label={lot.name} tone={lot.mine ? 'good' : lot.outbid ? 'warn' : undefined}>
+                {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
+                , осталось {formatTime(lot.left)}
+              </NtLine>
+              <Box className="NtTerm__hint">
+                {lot.my_lot ? 'ваш лот' : `продаёт ${lot.seller}`}
+                {lot.desc ? `: ${lot.desc}` : ''}
+              </Box>
+              {!!lot.inscription && <Box className="NtTerm__hint">На вещи надпись: {lot.inscription}</Box>}
+              {biddable && (
+                <Button color="good" icon="gavel" mt={0.5} onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}>
+                  {`${lot.mine ? 'Поднять до' : 'Поставить'} ${formatCredits(lot.min_bid)}`}
+                </Button>
+              )}
+              {!!buyout && (
+                <Button.Confirm
+                  icon="shopping-cart"
+                  mt={0.5}
+                  content={`Купить за ${formatCredits(buyout)}`}
+                  confirmContent={`Купить сразу за ${formatCredits(buyout)}?`}
+                  confirmColor="good"
+                  onClick={() => act('auction_buyout', { uid: lot.uid })}
+                />
+              )}
             </Box>
-            {!lot.my_lot && (
-              <Button color="good" icon="gavel" mt={0.5} onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}>
-                {`${lot.mine ? 'Поднять до' : 'Поставить'} ${formatCredits(lot.min_bid)}`}
-              </Button>
-            )}
+          );
+        })
+      )}
+      {results.length > 0 && (
+        <Box mt={1}>
+          <Box className="NtTerm__hint" mb={0.5}>
+            Итоги лотов экипажа:
           </Box>
-        ))
+          {results.map((result, index) => (
+            <NtLine key={`${result.name}-${index}`} label={result.name} tone="dim">
+              {result.winner ? `${result.winner}, ${formatCredits(result.price)}` : 'без ставок, вернулся продавцу'}
+            </NtLine>
+          ))}
+        </Box>
       )}
     </NtFrame>
   );

@@ -66,6 +66,8 @@
 	var/auction_crew_lots_per_account = 2
 	var/auction_crew_lots_max = 6
 	var/list/auction_crew_minutes = list("short" = 5, "medium" = 10, "long" = 15)
+	/// Снявший свой лот выставляет новый не раньше чем через столько минут
+	var/auction_crew_relist_minutes = 3
 	/// Новый лот аукциона звучит по общему каналу не чаще раза в столько минут на всю станцию
 	var/auction_announce_minutes = 3
 	/// Доля кассира в оплате на кассе по умолчанию, проценты

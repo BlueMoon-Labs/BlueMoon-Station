@@ -1,7 +1,7 @@
 ///Пад пункта подработки: отправляет ЦК предметы по контрактам поставки.
 /obj/machinery/piratepad/civilian
 	name = "contract pad"
-	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте. Свою вещь отсюда же можно выставить на аукцион экипажа - кнопкой на пульте."
+	desc = "Пад пункта подработки NT. Положите на него то, что просят контракты поставки или спецзаказы партнёров, и отправьте с пульта: подходящие предметы уйдут ЦК, остальное останется на месте. Свою вещь отсюда же можно выставить на аукцион экипажа - кнопкой на пульте, итог торгов вернётся сюда запертой посылкой. Чужую запертую посылку пад не отправляет."
 	layer = TABLE_LAYER
 	warmup_time = 3 SECONDS
 	circuit = /obj/item/circuitboard/machine/bountypad
@@ -61,7 +61,7 @@
 	var/matched = 0
 	var/imported = 0
 	for(var/atom/movable/thing in get_turf(linked))
-		if(thing == linked)
+		if(thing == linked || locked_parcel(thing))
 			continue
 		imported += econ_contracts_imported_matches(thing)
 		for(var/atom/movable/item as anything in econ_contract_candidates(thing))
@@ -103,7 +103,7 @@
 	var/offer_units = 0
 	var/imported = 0
 	for(var/atom/movable/thing in get_turf(linked))
-		if(thing == linked || QDELETED(thing))
+		if(thing == linked || QDELETED(thing) || locked_parcel(thing))
 			continue
 		if(econ_contracts_ship(thing, sender))
 			shipped++
@@ -120,6 +120,11 @@
 	flick(linked.sending_state, linked)
 	playsound(loc, 'sound/machines/wewewew.ogg', 70, TRUE)
 	playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
+
+/// Запертая именная посылка на паде (итог аукциона) чужому нажатию не отправляется: открыть её и сдать содержимое может только владелец.
+/obj/machinery/computer/piratepad_control/civilian/proc/locked_parcel(atom/movable/thing)
+	var/obj/item/storage/lockbox/order/parcel = thing
+	return istype(parcel) && parcel.privacy_lock
 
 /obj/machinery/computer/piratepad_control/civilian/proc/imported_note(imported)
 	return imported ? " Купленное в автоматах и через снабжение по контрактам и спецзаказам не засчитывается: [imported] шт. осталось на паде." : ""
@@ -167,15 +172,16 @@
 		return auction_list(usr, params)
 	return econ_contract_console_act(usr, action, params, src)
 
-/// Аукцион экипажа на пульте: вещи на паде с причиной отказа, условия и лимиты лотов.
+/// Аукцион экипажа на пульте: вещи на паде с причиной отказа, условия и лимиты лотов. Всё, что не предмет (свет, машины, мобы), молча пропускается.
 /obj/machinery/computer/piratepad_control/civilian/proc/auction_pad_data(mob/user)
 	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/bank_account/account = econ_account_of(user)
 	var/list/items = list()
 	var/turf/pad_turf = get_turf(linked_pad())
-	for(var/atom/movable/thing in pad_turf?.contents)
-		if(istype(thing, /obj/machinery/piratepad) || ismob(thing) || iseffect(thing) || thing.invisibility > SEE_INVISIBLE_LIVING)
+	for(var/atom/movable/thing as anything in pad_turf?.contents)
+		if(!isitem(thing) || thing.invisibility > SEE_INVISIBLE_LIVING)
 			continue
-		items += list(list("ref" = REF(thing), "name" = econ_auction_lot_name(thing), "problem" = econ_auction_item_problem(thing)))
+		items += list(list("ref" = REF(thing), "name" = econ_auction_lot_name(thing), "problem" = econ_auction_item_problem(thing), "inscription" = econ_auction_inscription(thing)))
 		if(length(items) >= AUCTION_PAD_ITEMS_MAX)
 			break
 	return list(
@@ -184,7 +190,8 @@
 		"fee" = settings.auction_crew_fee,
 		"min_price" = AUCTION_MIN_INCREMENT,
 		"max_price" = AUCTION_BID_MAX,
-		"mine" = length(SSmarket.crew_lots_of(econ_account_of(user))),
+		"relist_left" = account ? CEILING(COOLDOWN_TIMELEFT(account, auction_relist_cooldown) / (1 SECONDS), 1) : 0,
+		"mine" = length(SSmarket.crew_lots_of(account)),
 		"per_account" = settings.auction_crew_lots_per_account,
 		"lots" = length(SSmarket.crew_lots),
 		"lots_max" = settings.auction_crew_lots_max,
@@ -214,7 +221,10 @@
 			var/anonymous = params["anonymous"]
 			if(istext(anonymous))
 				anonymous = text2num(anonymous)
-			result = SSmarket.start_crew_lot(user, econ_account_of(user), thing, price, minutes, !!anonymous, get_turf(linked))
+			var/buyout = params["buyout"]
+			if(istext(buyout))
+				buyout = text2num(buyout)
+			result = SSmarket.start_crew_lot(user, econ_account_of(user), thing, price, minutes, !!anonymous, get_turf(linked), buyout || 0)
 	status_report = result[2]
 	if(result[1])
 		flick(linked.sending_state, linked)

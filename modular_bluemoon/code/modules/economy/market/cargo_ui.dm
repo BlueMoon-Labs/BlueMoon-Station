@@ -385,6 +385,19 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	speaker.say("Ставка принята: [amount] кр.")
 	return TRUE
 
+/// Покупка лота экипажа сразу из окна снабжения с личного счёта; где ждать посылку, говорит окно и карта.
+/proc/econ_cargo_auction_buyout(mob/user, list/params, atom/movable/speaker)
+	var/uid = params["uid"]
+	if(istext(uid))
+		uid = text2num(uid)
+	var/list/result = SSmarket.buyout_crew_lot(econ_account_of(user), uid, user)
+	if(!result[1])
+		to_chat(user, span_warning(result[2]))
+		return FALSE
+	to_chat(user, span_notice(result[2]))
+	speaker.say("Лот куплен.")
+	return TRUE
+
 /// Причина заявки из окна или null, если окно её не прислало.
 /proc/econ_cargo_given_reason(list/params)
 	var/reason = econ_ui_reason(params["reason"])

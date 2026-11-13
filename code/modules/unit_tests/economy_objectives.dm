@@ -343,6 +343,30 @@
 	TEST_ASSERT(SSeconomy.move(head_account, SSeconomy.cash_account, 1000, ECON_CASH_OUT, traitor), "Снятие наличных с украденной карты")
 	TEST_ASSERT_EQUAL(turned.drained, 1000, "После перевыбора цель не слышит перекачку")
 
+/// Ставка на аукционе с украденной карты главы засчитывается, а перебитая и вернувшаяся на его счёт - перестаёт.
+/datum/unit_test/economy_objectives/drain_head_auction_refund/Run()
+	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
+	world_state.set_hard_round(src)
+	CONFIG_SET(number/antag_opt_in_command_min, ANTAG_OPT_IN_NOT_TARGET)
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestbidder")
+	var/datum/mind/head = antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY, "Captain")
+	var/datum/bank_account/head_account = allocate(/datum/bank_account, "Econ Test Captain")
+	var/mob/living/carbon/human/head_body = head.current
+	head_body.account_id = head_account.account_id
+	world_state.set_crew(list(traitor.mind, head))
+	var/datum/objective/economy/drain_head/objective = econ_objective_new(/datum/objective/economy/drain_head, traitor.mind)
+	TEST_ASSERT(objective.forge() && objective.target == head, "Опустошение счёта главы не выдано")
+	econ_test_set_balance(head_account, 2000)
+	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
+	lot.name = "тестовый лот"
+	TEST_ASSERT(SSeconomy.move(head_account, SSeconomy.market_account, 500, ECON_AUCTION_BID, traitor, "Аукцион: ставка"), "Ставка с украденной карты")
+	lot.set_leader(head_account)
+	lot.bid = 500
+	TEST_ASSERT_EQUAL(objective.drained, 500, "Ставка с карты главы не засчитана")
+	SSmarket.refund_auction_bid(lot)
+	TEST_ASSERT_EQUAL(head_account.account_balance, 2000, "Перебитая ставка не вернулась главе")
+	TEST_ASSERT_EQUAL(objective.drained, 0, "Вернувшаяся на счёт главы ставка осталась выкачанной")
+
 /// Задания предателя: при шансе 100 в Лайте только мирные экономические цели без повторов, в Харде выпадают и остальные, при шансе 0 - ни одной.
 /datum/unit_test/economy_objectives/forge/Run()
 	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
