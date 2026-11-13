@@ -116,6 +116,11 @@
 
 ///Каст по ситуации: цель есть и легаси-каденс "один спелл в секунду" свободен
 /datum/ai_planning_subtree/wizard_spellcasting
+	gated_by_pawn_timer = TRUE
+
+/datum/ai_planning_subtree/wizard_spellcasting/pawn_timer_ready(datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/wizard/caster = controller.pawn
+	return istype(caster) && caster.next_cast <= world.time
 
 /datum/ai_planning_subtree/wizard_spellcasting/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()

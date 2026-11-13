@@ -102,6 +102,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/process_atmos()
 	if(atmos_idle_until > world.time)
 		return
+	atmos_pipe_blind = TRUE
 	if(!is_operational)
 		// Woken by power_change(); no point polling an unpowered vent.
 		atmos_consider_idle()
@@ -111,6 +112,7 @@
 		// терять: mid-round шаблон успевает получить фаер SSair между New() и
 		// setup_template_machinery(), потому что маплоадер спит на CHECK_TICK.
 		if(!atmos_initialized)
+			atmos_pipe_blind = FALSE
 			atmos_consider_idle()
 			return
 		on = FALSE
@@ -135,6 +137,9 @@
 			pressure_delta = min(pressure_delta, (external_pressure_bound - environment_pressure))
 		if(pressure_checks&INT_BOUND)
 			pressure_delta = min(pressure_delta, (air_contents.return_pressure() - internal_pressure_bound))
+			atmos_pipe_blind = FALSE
+		else if(pressure_delta > ATMOS_VENT_PRESSURE_EPSILON)
+			atmos_pipe_blind = FALSE
 
 		// Sub-epsilon imbalances are invisible to players but a transfer would
 		// re-excite the room's turfs every fire, forever.
@@ -153,6 +158,7 @@
 				moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION))
 			if(pressure_checks&INT_BOUND)
 				moles_delta = min(moles_delta, (internal_pressure_bound - air_contents.return_pressure()) * our_multiplier)
+				atmos_pipe_blind = FALSE
 
 			// Same epsilon as above, expressed in moles of environment air.
 			var/epsilon_moles = ATMOS_VENT_PRESSURE_EPSILON * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION)

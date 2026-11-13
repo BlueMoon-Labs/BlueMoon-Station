@@ -17,6 +17,13 @@ GLOBAL_LIST_INIT(antag_training_z, alist())
 	var/turf/spot = get_turf(thing)
 	return !!(spot && GLOB.antag_training_z[spot.z])
 
+/// Учебная цель полигона: живёт без игрока, и медицина оживляет её как пациента.
+/mob/living/proc/is_antag_training_patient()
+	if(ckey)
+		return FALSE
+	var/datum/antag_training_arena/arena = training_origin?.resolve()
+	return !!(arena && mind && (mind in arena.target_minds))
+
 /// Камеры полигона видны только с полигона, камеры станции - только со станции.
 /proc/antag_training_camera_visible(obj/machinery/camera/camera, atom/viewer)
 	return is_antag_training_atom(camera) == is_antag_training_atom(viewer)

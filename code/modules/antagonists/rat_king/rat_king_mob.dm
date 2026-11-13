@@ -1161,7 +1161,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 // simple_animal/revive() сбрасывает icon в initial(icon), но оставляет icon_living
 // от выбранного облика. Из-за этого после лазера-оживителя король становился
 // прозрачным: спрайт искался в старом .dmi. Возвращаем облик после оживления.
-/mob/living/simple_animal/hostile/regalrat/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+/mob/living/simple_animal/hostile/regalrat/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	. = ..()
 	if(.)
 		reapply_fashion()

@@ -76,7 +76,7 @@
 				say(pick_list_replacements(BRAIN_DAMAGE_FILE, braindamage_variant), forced = "brain damage")
 				// BLUEMOON EDIT END
 	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "brain_damage")
+		clear_mood_event_if_set("brain_damage")
 
 /mob/living/carbon/human/handle_mutations_and_radiation()
 	if(!dna || !dna.species.handle_mutations_and_radiation(src))

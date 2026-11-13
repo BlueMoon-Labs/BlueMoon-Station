@@ -68,6 +68,12 @@
 				if(do_knot)
 					new /obj/structure/cable(loc, cable_color, NONE, network_directions[i])
 					do_knot = FALSE
+				var/turf/T = loc
+				if(istype(T, /turf/open/floor/catwalk_floor))
+					var/turf/open/floor/catwalk_floor/C = T
+					if(C.covered)
+						for(var/obj/structure/cable/cable in T)
+							SET_PLANE_EXPLICIT(cable, FLOOR_PLANE, T)
 
 /obj/effect/mapping_helpers/network_builder/power_cable/proc/should_auto_knot()
 	return (locate(/obj/machinery/power/terminal) in loc)

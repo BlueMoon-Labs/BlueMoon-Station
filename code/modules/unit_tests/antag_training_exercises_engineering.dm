@@ -102,6 +102,7 @@
 	TEST_ASSERT(antag_training_wait_step(run, 2), "Прокладка засчитана.")
 	TEST_ASSERT(wait_for_var(run, "ended", TRUE, 90 SECONDS), "Щиток заряжается и включает свет.")
 	TEST_ASSERT(run.success, "Упражнение выполнено: [run.result_text]")
+	run_deferred_light_power_changes(TRUE)
 	var/lit = FALSE
 	for(var/obj/machinery/light/lamp in room_area)
 		lit ||= lamp.status == LIGHT_OK && lamp.on

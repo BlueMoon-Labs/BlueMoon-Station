@@ -252,10 +252,19 @@ Class Procs:
 		register_power_change_area(null)
 
 ///Signal wrapper: power_change() returns TRUE on a state flip, which must not leak into the signal's return bitfield.
+///APC щёлкает каналами по одному, а сигнал слышит вся область: машина, которой щелчок ничего не меняет, его пропускает.
 /obj/machinery/proc/on_area_power_change(datum/source)
 	SIGNAL_HANDLER
 	SHOULD_CALL_PARENT(TRUE)
+	if(!area_power_change_relevant())
+		return
 	power_change()
+
+///Сменит ли power_change() флаг NOPOWER машины.
+/obj/machinery/proc/area_power_change_relevant()
+	var/has_power = powered(power_channel) ? TRUE : FALSE
+	var/flagged_unpowered = (machine_stat & NOPOWER) ? TRUE : FALSE
+	return has_power == flagged_unpowered
 
 /obj/machinery/proc/locate_machinery()
 	return

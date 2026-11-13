@@ -59,7 +59,10 @@
 		generate_missing_corners()
 
 	new /atom/movable/lighting_object(src)
+	activate_lighting_corners()
 
+/// Включает неактивные углы турфа и досчитывает в них уже горящие источники.
+/turf/proc/activate_lighting_corners()
 	var/datum/light_source/S
 	var/i
 #define OPERATE(corner) \
@@ -75,6 +78,36 @@
 	OPERATE(lc_bottomleft)
 	OPERATE(lc_topleft)
 #undef OPERATE
+
+/**
+ * Перелёт шаттла: объект света уходит с этого турфа на new_turf целиком.
+ * Итог тот же, что у lighting_clear_overlay() здесь и lighting_build_overlay() на new_turf,
+ * но без qdel и new объекта на каждый турф шаттла.
+ */
+/turf/proc/carry_lighting_object_to(turf/new_turf)
+	var/atom/movable/lighting_object/carried = lighting_object
+	lighting_object = null
+	luminosity = 1
+	PROC_ON_CORNERS(update_active())
+
+	if(new_turf.lighting_object)
+		qdel(new_turf.lighting_object, force = TRUE)
+	if(!(new_turf.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
+		new_turf.generate_missing_corners()
+	carried.loc = new_turf
+	carried.affected_turf = new_turf
+	new_turf.lighting_object = carried
+	new_turf.luminosity = 0
+	if(GLOB.lighting_defer_active)
+		GLOB.lighting_deferred_starlight += new_turf
+	else
+		for(var/turf/open/space/space_tile in RANGE_TURFS(1, new_turf))
+			space_tile.update_starlight()
+	carried.calculate_area_blend()
+	if(!carried.needs_update)
+		carried.needs_update = TRUE
+		GLOB.lighting_update_objects += carried
+	new_turf.activate_lighting_corners()
 
 // Used to get a scaled lumcount.
 /turf/proc/get_lumcount(var/minlum = 0, var/maxlum = 1)
@@ -156,7 +189,7 @@
 		else if(Obj.shadow_weight > 0)
 			adjust_shadow_weight(-Obj.shadow_weight)
 
-/turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE, skip_machinery = FALSE)
+/turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE, skip_machinery = FALSE, skip_lighting = FALSE)
 	// Handing a turf between areas (admin area editing, shuttle creation) never fires area
 	// Entered/Exited for what is standing on it, so machinery would go on listening to the area it
 	// left. Re-point it here - this is the only moment the swap is observable.
@@ -178,7 +211,8 @@
 			// синхронизируем machine_stat сразу, как это делает on_enter_area().
 			machine.power_change()
 	if(SSlighting.initialized)
-		if (new_area.dynamic_lighting != old_area.dynamic_lighting)
+		// skip_lighting: объект света перенёс сам вызывающий, см. carry_lighting_object_to().
+		if (!skip_lighting && new_area.dynamic_lighting != old_area.dynamic_lighting)
 			if (new_area.dynamic_lighting)
 				lighting_build_overlay()
 			else

@@ -172,3 +172,16 @@
 
 	TEST_ASSERT(victim.found_refs[global_vars], "The ref-tracking tool failed to find a natively global variable")
 	SSgarbage.should_save_refs = FALSE
+
+/// Рефтрекер не считает слот очереди GC держателем утечки.
+/datum/unit_test/gc_rewrite_reftracker_skips_queue
+	parent_type = /datum/unit_test/gc_rewrite_base
+
+/datum/unit_test/gc_rewrite_reftracker_skips_queue/Run()
+	reset_gc_queues()
+	var/obj/effect/gc_rewrite_test_object/queued = allocate(/obj/effect/gc_rewrite_test_object)
+	qdel(queued)
+	SSgarbage.should_save_refs = TRUE
+	queued.DoSearchVar(SSgarbage, "SSgarbage", search_time = world.time + 1)
+	SSgarbage.should_save_refs = FALSE
+	TEST_ASSERT(!length(queued.found_refs), "рефтрекер нашёл удалённый объект в очереди GC")

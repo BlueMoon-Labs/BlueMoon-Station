@@ -146,6 +146,7 @@
 		if(get_dist(src, entry_vent) <= 2)
 			if(ai_ventbreaker && entry_vent.welded)
 				entry_vent.welded = 0
+				entry_vent.atmos_wake()
 				entry_vent.update_icon()
 				entry_vent.visible_message("<span class='danger'>[src] smashes the welded cover off [entry_vent]!</span>")
 			var/list/vents = list()
@@ -175,6 +176,7 @@
 							return
 						if(ai_ventbreaker && exit_vent.welded)
 							exit_vent.welded = 0
+							exit_vent.atmos_wake()
 							exit_vent.update_icon()
 							exit_vent.visible_message("<span class='danger'>[src] smashes the welded cover off [exit_vent]!</span>")
 							playsound(exit_vent.loc, 'sound/machines/airlock_alien_prying.ogg', 50, 0)

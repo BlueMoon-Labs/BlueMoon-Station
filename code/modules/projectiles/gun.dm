@@ -1,7 +1,6 @@
 
 #define DUALWIELD_PENALTY_EXTRA_MULTIPLIER 1.4
 #define FIRING_PIN_REMOVAL_DELAY 50
-#define AKIMBO_PENALTY_SCALING 1.5
 
 /obj/item/gun
 	name = "gun"
@@ -452,7 +451,7 @@
 		for(var/obj/item/gun/G in H.held_items)
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
-			else if(G.can_trigger_gun(user))
+			else if(G.can_trigger_gun(user) && G.can_shoot())
 				loop_counter++
 				if(loop_counter == 1)
 					bonus_spread += src.dual_wield_spread

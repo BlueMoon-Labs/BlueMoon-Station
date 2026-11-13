@@ -224,8 +224,11 @@
 	if(!parts.len)
 		return
 	var/obj/item/bodypart/picked = pick(parts)
+	var/damage_before = picked.brute_dam + picked.burn_dam + picked.stamina_dam
 	if(picked.heal_damage(brute, burn, stamina, only_robotic, only_organic))
 		update_damage_overlays()
+	// TRUE, если часть реально зажила: по нему вызывающий решает, нужен ли пересчёт моба.
+	return picked.brute_dam + picked.burn_dam + picked.stamina_dam != damage_before
 
 //Damages ONE bodypart randomly selected from damagable ones.
 //It automatically updates damage overlays if necessary

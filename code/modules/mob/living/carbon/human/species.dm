@@ -2698,8 +2698,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	else
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/cold)
 		H.clear_alert("temp")
-		SEND_SIGNAL(H, COMSIG_CLEAR_MOOD_EVENT, "cold")
-		SEND_SIGNAL(H, COMSIG_CLEAR_MOOD_EVENT, "hot")
+		H.clear_mood_event_if_set("cold")
+		H.clear_mood_event_if_set("hot")
 
 	var/pressure = environment.return_pressure()
 	var/adjusted_pressure = H.calculate_affecting_pressure(pressure) //Returns how much pressure actually affects the mob.

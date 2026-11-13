@@ -201,20 +201,17 @@
 	mech.remove_occupant(pilot)
 	pilot.forceMove(run_loc_floor_bottom_left)
 
-/// AI swarmers do not pile onto a tile next to their target that another swarmer already holds.
-/datum/unit_test/ai_swarmers_do_not_stack_on_target
+// Разведчик может пройти через другого свармера благодаря PASSMOB.
+/datum/unit_test/rover_swarmer_can_pass_other_swarmers
 
-/datum/unit_test/ai_swarmers_do_not_stack_on_target/Run()
+/datum/unit_test/rover_swarmer_can_pass_other_swarmers/Run()
 	var/turf/far_turf = run_loc_floor_bottom_left
 	var/turf/near_turf = get_step(far_turf, EAST)
-	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(near_turf, EAST))
-	var/mob/living/simple_animal/hostile/swarmer/ai/melee_combat/front = allocate(/mob/living/simple_animal/hostile/swarmer/ai/melee_combat, near_turf)
-	var/mob/living/simple_animal/hostile/swarmer/ai/melee_combat/back = allocate(/mob/living/simple_animal/hostile/swarmer/ai/melee_combat, far_turf)
-	back.target = victim
-
-	TEST_ASSERT(!back.Move(near_turf, EAST), "A swarmer must not step onto another swarmer next to the target")
-	TEST_ASSERT_EQUAL(back.loc, far_turf, "The rear swarmer must stay put")
-	TEST_ASSERT_EQUAL(front.loc, near_turf, "Sanity: the front swarmer holds its tile")
+	var/mob/living/simple_animal/hostile/swarmer/rover/front = allocate(/mob/living/simple_animal/hostile/swarmer/rover, near_turf)
+	var/mob/living/simple_animal/hostile/swarmer/rover/back = allocate(/mob/living/simple_animal/hostile/swarmer/rover, far_turf)
+	TEST_ASSERT(back.Move(near_turf, EAST), "Разведчик может войти на тайл другого свармера.")
+	TEST_ASSERT_EQUAL(back.loc, near_turf, "Разведчик переместился.")
+	TEST_ASSERT_EQUAL(front.loc, near_turf, "Другой свармер остался на месте.")
 
 /// A loaded radiation collector shields its tank from the radiation it collects.
 /datum/unit_test/rad_collector_shields_loaded_tank

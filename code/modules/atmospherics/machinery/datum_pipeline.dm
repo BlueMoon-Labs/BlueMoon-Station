@@ -116,7 +116,8 @@
 	last_wake_pressure = current_pressure
 	// The filtering `in` form skips stale nulls left by hard-deleted members.
 	for(var/obj/machinery/atmospherics/components/component in other_atmosmch)
-		component.atmos_wake()
+		if(!component.atmos_pipe_blind)
+			component.atmos_wake()
 	// Nets bridged through this one (open valve, portables connector) receive gas
 	// from reconcile_air without their update flag ever being set, so they would
 	// sleep through the jump. Dirty them for one pass: each then runs this same
