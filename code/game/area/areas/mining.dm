@@ -39,6 +39,8 @@
 	min_ambience_cooldown = 70 SECONDS
 	max_ambience_cooldown = 220 SECONDS
 
+// ------------------------------------ //
+
 /area/mine/lobby
 	name = "Mining Station"
 	icon_state = "mining_lobby"
@@ -50,6 +52,10 @@
 /area/mine/production
 	name = "Mining Station Starboard Wing"
 	icon_state = "mining_production"
+
+/area/mine/mechbay
+	name = "Mining Station Mech Bay"
+	icon_state = "mechbay"
 
 /area/mine/abandoned
 	name = "Abandoned Mining Station"
@@ -65,26 +71,82 @@
 /area/mine/eva/lower
 	name = "Mining Station Lower EVA"
 
+/area/mine/medical
+	name = "Mining Station Medical"
+
 /area/mine/maintenance
-	name = "Mining Station Communications"
+	name = "Mining Station Maintenance"
 
 /area/mine/cafeteria
 	name = "Mining Station Cafeteria"
 	icon_state = "mining_labor_cafe"
 
-/area/mine/hydroponics
-	name = "Mining Station Hydroponics"
+// ------------------------------------ //
+
+/area/mine/common
+	name = "Park Area"
+	icon_state = "mining"
+
+/area/mine/common/upper
+	name = "Common Post Floor 2"
+	icon_state = "mining"
+
+/area/mine/common/lower
+	name = "Common Post Floor 1"
+	icon_state = "mining"
+
+/area/mine/common/eva
+	name = "Common Post EVA"
+	icon_state = "mining_eva"
+
+/area/mine/common/dorm1
+	name = "Common Post Dorm 1"
+	icon_state = "mining"
+
+/area/mine/common/dorm2
+	name = "Common Post Dorm 2"
+	icon_state = "mining"
+
+/area/mine/common/hydroponics
+	name = "Common Post Hydroponics"
 	icon_state = "mining_labor_hydro"
 
-/area/mine/sleeper
-	name = "Mining Station Emergency Sleeper"
+/area/mine/common/atrium
+	name = "Common Post Atrium"
+	icon_state = "mining"
 
-/area/mine/mechbay
-	name = "Mining Station Mech Bay"
-	icon_state = "mechbay"
+/area/mine/common/pool
+	name = "Common Post Pool Area"
+	icon_state = "mining"
+
+/area/mine/common/sauna
+	name = "Common Post Sauna"
+	icon_state = "mining"
+
+/area/mine/common/medical
+	name = "Common Post Medical"
+	icon_state = "mining"
+
+/area/mine/common/maintenance/north
+	name = "Common Post North Maintenance"
+	icon_state = "mining"
+
+/area/mine/common/maintenance/west
+	name = "Common Post West Maintenance"
+	icon_state = "mining"
+
+/area/mine/common/maintenance/south
+	name = "Common Post South Maintenance"
+	icon_state = "mining"
+
+// ------------------------------------ //
 
 /area/mine/laborcamp
 	name = "Labor Camp"
+	icon_state = "mining_labor"
+
+/area/mine/laborcamp/mining
+	name = "Labor Camp Mining Area"
 	icon_state = "mining_labor"
 
 /area/mine/laborcamp/security
@@ -93,8 +155,53 @@
 	// ambience_index = AMBIENCE_DANGER
 	ambientsounds = HIGHSEC
 
+/area/mine/laborcamp/security/maintetance
+	name = "Security Post Maintenance"
+	icon_state = "security"
+	// ambience_index = AMBIENCE_DANGER
+	ambientsounds = HIGHSEC
 
+/area/mine/laborcamp/security/outdoors_maintetance
+	name = "Security Post Outdoors Maintenance"
+	icon_state = "security"
+	// ambience_index = AMBIENCE_DANGER
+	ambientsounds = HIGHSEC
 
+/area/mine/laborcamp/entry
+	name = "Labor Camp Entry"
+	icon_state = "security"
+	// ambience_index = AMBIENCE_DANGER
+	ambientsounds = HIGHSEC
+
+/area/mine/laborcamp/maintenance/south
+	name = "Labor Camp South Maintenance"
+	icon_state = "security"
+
+/area/mine/laborcamp/maintenance/west
+	name = "Labor Camp West Maintenance"
+	icon_state = "security"
+
+// ------------------------------------ //
+
+/area/mine/engineering
+	name = "Engineering Post Lobby"
+	icon_state = "mining"
+
+/area/mine/engineering/maintenance
+	name = "Engineering Post Maintenance"
+	icon_state = "mining"
+
+/area/mine/engineering/telecomms_floor1
+	name = "Engineering Post Telecomms"
+	icon_state = "mining"
+
+/area/mine/engineering/telecomms_floor2
+	name = "Engineering Post Telecomms"
+	icon_state = "mining"
+
+/area/mine/engineering/recycling
+	name = "Engineering Post Recycling Area"
+	icon_state = "mining"
 
 /**********************Lavaland Areas**************************/
 
@@ -139,6 +246,10 @@
 	name = "Lavaland Wastes"
 	outdoors = TRUE
 
+/area/lavaland/surface/jungles
+	name = "Lavaland Wastes"
+	outdoors = FALSE
+
 /area/lavaland/surface/outdoors/unexplored //monsters and ruins spawn here
 	icon_state = "unexplored"
 	area_flags = VALID_TERRITORY | UNIQUE_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NO_ALERTS
@@ -151,8 +262,6 @@
 /area/lavaland/surface/outdoors/explored
 	name = "Lavaland Labor Camp"
 	area_flags = VALID_TERRITORY | UNIQUE_AREA | NO_ALERTS
-
-
 
 /**********************Ice Moon Areas**************************/
 

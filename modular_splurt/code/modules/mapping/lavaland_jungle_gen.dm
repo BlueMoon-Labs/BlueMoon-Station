@@ -5,7 +5,7 @@
 #define RANDOM_LOWER_X 40
 #define RANDOM_LOWER_Y 40
 
-/proc/spawn_river_like_gen(target_z, nodes = 4, turf_type = /turf/open/water/lavaland_jungle, whitelist_area = /area/lavaland/surface/outdoors, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, new_baseturfs)
+/proc/spawn_river_like_gen(target_z, nodes = 4, turf_type = /turf/open/water/lavaland_jungle, whitelist_area = /area/lavaland/surface/jungles, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, new_baseturfs)
 	var/list/river_nodes = list()
 	var/num_spawned = 0
 	var/list/possible_locs = block(locate(min_x, min_y, target_z), locate(max_x, max_y, target_z))
@@ -62,7 +62,7 @@
 	for(var/WP in river_nodes)
 		qdel(WP)
 
-/proc/spawn_patch_like_gen(target_z, turf_type = /turf/open/floor/plating/smooth/grass/lavaland_jungle, whitelist_area = /area/lavaland/surface/outdoors, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, new_baseturfs, required_distance = 0.4, min_radius = 3, max_radius = 5)
+/proc/spawn_patch_like_gen(target_z, turf_type = /turf/open/floor/plating/smooth/grass/lavaland_jungle, whitelist_area = /area/lavaland/surface/jungles, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, new_baseturfs, required_distance = 0.4, min_radius = 3, max_radius = 5)
 	var/list/affected = list()
 	var/turf/cur_turf
 	var/turf/target_turf

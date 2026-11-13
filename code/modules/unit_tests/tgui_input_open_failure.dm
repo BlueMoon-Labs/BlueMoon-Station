@@ -33,9 +33,7 @@
 	var/listed_ref = start_prompt(user)
 	sleep(world.tick_lag * 3)
 	TEST_ASSERT(caller_finished, "tgui_list_input без открытого окна ждёт ответа вечно")
-	var/datum/still_listed = locate(listed_ref)
-	TEST_ASSERT(isnull(still_listed) || !QDELING(still_listed), "Ждущий кадр держит удалённый элемент списка выбора")
-	still_listed = null
+	TEST_ASSERT(gc_ref_released(listed_ref), "Ждущий кадр держит удалённый элемент списка выбора")
 
 	TEST_ASSERT(is_closed_after_failed_open(new /datum/tgui_alert(user, "Текст", "Заголовок", list("Да", "Нет"), 0), user), "tgui_alert не закрылся, когда окно не открылось")
 	TEST_ASSERT(is_closed_after_failed_open(new /datum/tgui_checkbox_input(user, "Текст", "Заголовок", list("а", "б"), 0, 1, 0), user), "tgui_checkbox_input не закрылся, когда окно не открылось")

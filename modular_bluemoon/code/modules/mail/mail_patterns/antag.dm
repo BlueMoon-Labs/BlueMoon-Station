@@ -41,6 +41,8 @@
 
 /datum/mail_pattern/antag/anecdote/on_mail_open(mob/living/carbon/human/recipient)
 	. = ..()
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED)
+		return
 	sleep(70)
 	// То, что письмо было отфильтровано при первоначальном выпадении, не означает, что получателя не
 	// проимплантируют / завербуют в антажку позже

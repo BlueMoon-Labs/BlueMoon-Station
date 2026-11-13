@@ -14,6 +14,7 @@ SUBSYSTEM_DEF(tgui)
 	name = "tgui"
 	wait = 9
 	flags = SS_NO_INIT
+	paced = TRUE
 	priority = FIRE_PRIORITY_TGUI
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 
@@ -36,6 +37,8 @@ SUBSYSTEM_DEF(tgui)
 			context = "SStgui/PreInit")
 
 /datum/controller/subsystem/tgui/Shutdown()
+	// Порог в 100 МБ тихий раунд не переходит: раскладка за раунд пишется и в конце
+	log_tgui(null, tgui_traffic_report())
 	close_all_uis()
 
 /datum/controller/subsystem/tgui/stat_entry(msg)

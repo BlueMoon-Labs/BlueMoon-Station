@@ -280,8 +280,10 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
-	if(GLOB.lighting_deferred_atoms.Remove(src)) // кэш отложенных z протухает только если атом реально был запаркован
-		GLOB.lighting_deferred_z_cache = null
+	if(flags_1 & LIGHTING_DEFERRED_PARKED_1)
+		flags_1 &= ~LIGHTING_DEFERRED_PARKED_1
+		if(GLOB.lighting_deferred_atoms.Remove(src))
+			GLOB.lighting_deferred_z_cache = null
 	if(light)
 		QDEL_NULL(light)
 

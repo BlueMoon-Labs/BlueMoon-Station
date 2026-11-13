@@ -22,6 +22,8 @@
 
 	var/list/trays = list()
 	for(var/obj/machinery/hydroponics/H in world)
+		if(QDELETED(H))
+			continue
 		var/plant_name = "Empty"
 		var/plant_health = 0
 		var/plant_max = 0

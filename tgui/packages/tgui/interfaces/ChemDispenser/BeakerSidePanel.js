@@ -189,7 +189,7 @@ export const BeakerSidePanel = (props) => {
                   ? ((chemical.volume / beakerCurrentVolume) * 100).toFixed(0)
                   : 0;
                 return (
-                  <Table.Row key={chemical.id} className="candystripe">
+                  <Table.Row key={chemical.id || chemical.name} className="candystripe">
                     <Table.Cell collapsing>
                       <ColorBox color={chemical.pHCol || 'label'} />
                     </Table.Cell>

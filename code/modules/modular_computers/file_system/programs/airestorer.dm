@@ -43,7 +43,7 @@
 
 	switch(action)
 		if("PRG_beginReconstruction")
-			if(A && A.health < 100)
+			if(A && (A.health < 100 || A.stat == DEAD))
 				restoring = TRUE
 				A.notify_ghost_cloning("Your core files are being restored!", source = computer)
 			return TRUE
@@ -83,8 +83,8 @@
 	A.updatehealth()
 
 	if(A.health >= 0 && A.stat == DEAD)
-		A.revive(full_heal = FALSE, admin_revive = FALSE)
-		cardhold.update_appearance()
+		if(A.revive(full_heal = FALSE, admin_revive = FALSE, medical_revive = TRUE))
+			cardhold.update_appearance()
 
 	// Finished restoring
 	if(A.health >= 100)

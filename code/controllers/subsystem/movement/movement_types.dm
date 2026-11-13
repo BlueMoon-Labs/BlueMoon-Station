@@ -301,6 +301,16 @@
 	SIGNAL_HANDLER
 	qdel(src)
 
+///Сменить цель, не пересоздавая луп
+/datum/move_loop/has_target/proc/retarget(atom/new_target)
+	if(new_target == target)
+		return
+	if(!isturf(target))
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
+	target = new_target
+	if(!isturf(target))
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(handle_no_target))
+
 
 /**
  * Used for force-move loops, similar to move_towards_legacy() but not quite the same
@@ -402,6 +412,10 @@
 	var/list/movement_path
 	///Only one asynchronous route search may own this loop at a time.
 	var/repath_in_progress = FALSE
+	///Сорванный шаг перепрокладывает не move(), а обработчик COMSIG_MOVELOOP_POSTPROCESS: он отличает пробку из мобов от стены
+	var/defer_failed_step_repath = FALSE
+	///Сколько шагов подряд маршрут перегорожен мобом
+	var/mob_block_streak = 0
 	///Cooldown for repathing, prevents spam
 	COOLDOWN_DECLARE(repath_cooldown)
 
@@ -474,6 +488,47 @@
 		movement_path = new_path
 	repath_in_progress = FALSE
 
+///Маршрут кончается не дальше reach от цели, как кончился бы и новый
+/datum/move_loop/has_target/jps/proc/route_serves(atom/goal, reach)
+	if(!length(movement_path))
+		return FALSE
+	var/turf/destination = movement_path[length(movement_path)]
+	var/turf/goal_turf = get_turf(goal)
+	return goal_turf && destination.z == goal_turf.z && get_dist(destination, goal_turf) <= (reach || 0)
+
+///Обойти занятую клетку коротким поиском до точки маршрута на несколько шагов впереди;
+///не вышло - полный поиск в обход
+/datum/move_loop/has_target/jps/proc/repair_path(turf/blocked)
+	if(repath_in_progress)
+		return
+	var/list/route = movement_path
+	var/rejoin_index = min(length(route), AI_JPS_REPAIR_SPAN)
+	if(rejoin_index < 2)
+		reroute_around(blocked)
+		return
+	repath_in_progress = TRUE
+	var/turf/start = get_turf(moving)
+	var/route_length = length(route)
+	var/list/tail = route.Copy(rejoin_index + 1)
+	var/list/patch = get_path_to(moving, route[rejoin_index], rejoin_index + AI_JPS_REPAIR_SLACK, 0, id, simulated_only, blocked, TRUE, src)
+	if(QDELETED(src))
+		return
+	repath_in_progress = FALSE
+	//пока поиск ждал слот, шаг в сторону мог срезать тот же список на месте
+	if(get_turf(moving) != start || movement_path != route || length(route) != route_length)
+		return
+	if(length(patch))
+		movement_path = patch + tail
+		return
+	reroute_around(blocked)
+
+///Полный поиск в обход занятой клетки, без ожидания кулдауна
+/datum/move_loop/has_target/jps/proc/reroute_around(turf/blocked)
+	avoid = blocked
+	movement_path = null
+	COOLDOWN_RESET(src, repath_cooldown)
+	recalculate_path()
+
 /// TRUE when the cached route no longer ends anywhere near the target. The path is
 /// planned once for wherever the target stood, and the loop only rebuilds it when the
 /// cache runs out - so the longer the route, the longer the mover chases a stale
@@ -521,7 +576,8 @@
 	if(get_turf(moving) == next_step)
 		movement_path.Cut(1,2)
 	else
-		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
+		if(!defer_failed_step_repath)
+			INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 		return FALSE
 
 

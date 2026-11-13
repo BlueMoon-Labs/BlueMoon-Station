@@ -675,6 +675,7 @@
 
 /datum/component/interaction_menu_granter/ui_static_data(mob/living/user)
 	. = ..()
+	.["antag_opt_in_levels"] = antag_opt_in_static_data()
 	.["moan_sound_catalogs"] = list(
 		"male" = build_interaction_moan_options(FALSE),
 		"female" = build_interaction_moan_options(TRUE),

@@ -993,7 +993,7 @@
 	update_health_hud()
 	..()
 
-/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..()) //successfully ressuscitated from death
 		if(!QDELETED(builtInCamera) && !wires.is_cut(WIRE_CAMERA))
 			builtInCamera.toggle_cam(src,0)
