@@ -4,7 +4,7 @@
 	filedesc = "Биржа"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "stocks"
-	extended_desc = "Котировки компаний сектора и торговля акциями с личного счёта; капитан может торговать и из казны станции."
+	extended_desc = "Котировки компаний сектора и торговля акциями с личного счёта; капитан может торговать и из казны станции. Работа отделов станции поднимает акции связанных компаний, беды станции их роняют, а у каждой компании видно, почему цена сдвинулась."
 	requires_ntnet = TRUE
 	usage_flags = PROGRAM_ALL
 	size = 5
@@ -61,10 +61,12 @@
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/list/histories = list()
 	var/list/drivers = list()
+	var/list/moves = list()
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		histories[ticker] = company.history
 		drivers[ticker] = company.price_drivers()
+		moves[ticker] = company.moves_ui()
 	var/event_min = 0
 	var/event_max = 0
 	for(var/list/template as anything in SSmarket.company_event_templates)
@@ -73,6 +75,8 @@
 	return list(
 		"history" = histories,
 		"drivers" = drivers,
+		"moves" = moves,
+		"work_cap" = round(SSmarket.work_stock_cap * 100, 0.1),
 		"common_drivers" = market_common_drivers(),
 		"event_min" = round(event_min * 100, 0.1),
 		"event_max" = round(event_max * 100, 0.1),

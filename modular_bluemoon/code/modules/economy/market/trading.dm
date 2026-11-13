@@ -299,3 +299,10 @@
 	. += "NT выпустило в оборот [num2text(SSeconomy.ledger.minted, ECON_TEXT_DIGITS)] кр., из оборота ушло [num2text(SSeconomy.ledger.burned, ECON_TEXT_DIGITS)] кр."
 	if(best)
 		. += "Лучший трейдер смены: <b>[best.account_holder]</b>, прибыль [num2text(best.realized_stock_profit, ECON_TEXT_DIGITS)] кр."
+	var/list/worked = list()
+	for(var/ticker in SSmarket.companies)
+		var/datum/stock_company/company = SSmarket.companies[ticker]
+		if(abs(company.work_boost) >= STOCK_MOVE_MIN)
+			worked += "[company.name] [SSmarket.signed_percent(round(company.work_boost * 100, 0.1))]"
+	if(length(worked))
+		. += "Работа отделов сдвинула акции: [jointext(worked, ", ")]."

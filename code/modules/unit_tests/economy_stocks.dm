@@ -164,14 +164,14 @@
 	qdel(silent)
 	TEST_ASSERT(nakamura.price > announced, "Волна без объявления не подняла Накамуру")
 
-/// Ложная тревога о метеорах, пыли и эпидемии не двигает акции и не тратит кулдаун события станции.
+/// Ложная тревога о метеорах, пыли, эпидемии, радиации и сбое энергосети не двигает акции и не тратит кулдаун события станции.
 /datum/unit_test/economy_stocks/false_alarm/Run()
 	SSmarket.station_event_cooldowns.Cut()
 	var/list/prices = list()
 	for(var/ticker in SSmarket.companies)
 		var/datum/stock_company/company = SSmarket.companies[ticker]
 		prices[ticker] = company.price
-	for(var/event_type in list(/datum/round_event/meteor_wave, /datum/round_event/meteor_wave/major_dust, /datum/round_event/meteor_wave/meaty, /datum/round_event/disease_outbreak))
+	for(var/event_type in list(/datum/round_event/meteor_wave, /datum/round_event/meteor_wave/major_dust, /datum/round_event/meteor_wave/meaty, /datum/round_event/disease_outbreak, /datum/round_event/radiation_storm, /datum/round_event/grid_check))
 		var/datum/round_event_control/control
 		for(var/datum/round_event_control/candidate in SSdirector.event_controls())
 			if(candidate.typepath == event_type)
@@ -317,6 +317,216 @@
 		SSmarket.fire()
 	TEST_ASSERT(abs(company.price - boosted) < 0.01, "Цена после торговли сдвинулась сама: [company.price]")
 	TEST_ASSERT(abs(idle.price - idle.base_price) < 0.01, "Компания без торговли сдвинулась: [idle.price]")
+	TEST_ASSERT_EQUAL(newest_move(company), "Станция продаёт товары партнёру \"[partner.name]\"", "Причина скачка от продаж в ленте")
+	TEST_ASSERT_EQUAL(length(company.moves), 1, "Продажи подряд не слились в одну строку ленты")
+	var/datum/trade_partner/grey = SSmarket.get_partner("free_traders")
+	var/datum/stock_company/grey_company = SSmarket.get_company(grey.company)
+	grey.note_sale(STOCK_TRADE_SCALE * STOCK_TRADE_BOOST_MAX / 2)
+	TEST_ASSERT_EQUAL(newest_move(grey_company), "Сделки на сером рынке сектора", "Лента выдала продажи станции контрабандному партнёру")
+
+/datum/unit_test/economy_stocks/proc/newest_move(datum/stock_company/company)
+	if(!length(company.moves))
+		return null
+	var/list/move = company.moves[length(company.moves)]
+	return move["text"]
+
+/datum/unit_test/economy_stocks/proc/work_driver_of(datum/stock_company/company)
+	for(var/list/driver as anything in company.price_drivers())
+		if(findtext(driver["label"], "Работа станции") == 1)
+			return driver
+
+/// Работа отдела сразу поднимает цену привязанной компании и пишет причину в ленту, повторы копятся одной строкой; рост упирается в потолок за смену.
+/datum/unit_test/economy_stocks/work_moves_price/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/balance_before = medical.account.account_balance
+	var/datum/stock_company/vey = SSmarket.get_company("VYMD")
+	var/datum/stock_company/idle = SSmarket.get_company("EINS")
+	var/list/shares = SSmarket.work_stocks[WORK_MED_REVIVE]
+	TEST_ASSERT(islist(shares) && shares["VYMD"] > 0, "Реанимация не привязана к Вей-Мед")
+	var/start = vey.price
+	var/paid = SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1)
+	TEST_ASSERT(paid > 0, "Реанимация не оплачена")
+	var/expected = start * (1 + paid * shares["VYMD"] / STOCK_WORK_CREDITS)
+	TEST_ASSERT(abs(vey.price - expected) < 0.01, "Цена после реанимации [vey.price] вместо [expected]")
+	TEST_ASSERT(abs(idle.price - idle.base_price) < 0.01, "Работа медиков сдвинула [idle.ticker]: [idle.price]")
+	TEST_ASSERT_EQUAL(newest_move(vey), market_work_reason(WORK_MED_REVIVE), "Причина скачка от работы в ленте")
+	for(var/i in 1 to 100)
+		SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1)
+	econ_test_set_balance(medical.account, balance_before)
+	TEST_ASSERT(abs(vey.price - start * (1 + SSmarket.work_stock_cap)) < 0.01, "Цена [vey.price] не упёрлась в потолок работы за смену")
+	TEST_ASSERT_EQUAL(length(vey.moves), 1, "Повторы одной работы не слились в одну строку ленты")
+	var/list/feed = vey.moves_ui()
+	var/list/entry = feed[1]
+	TEST_ASSERT(abs(entry["effect"] - SSmarket.work_stock_cap * 100) < 0.11, "Строка ленты [entry["effect"]]% вместо потолка")
+	var/report = jointext(econ_market_report(), "\n")
+	TEST_ASSERT(findtext(report, "Работа отделов сдвинула акции: ") && findtext(report, "[vey.name] +[round(SSmarket.work_stock_cap * 100, 0.1)]%"), "Итоги смены без сдвига от работы: [report]")
+	TEST_ASSERT(!findtext(report, idle.name), "Итоги смены называют компанию без работы")
+
+/// Изъятая контрабанда поднимает Гефест и роняет Киберсан; остановленные торги работа не двигает.
+/datum/unit_test/economy_stocks/work_signs/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/security_before = security.account.account_balance
+	var/cargo_before = cargo.account.account_balance
+	var/datum/stock_company/hephaestus = SSmarket.get_company("HEPH")
+	var/datum/stock_company/cybersun = SSmarket.get_company("CYBS")
+	var/heph_before = hephaestus.price
+	var/cybs_before = cybersun.price
+	var/paid = SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, 1000)
+	var/datum/stock_company/miners = SSmarket.get_company("PRSP")
+	miners.halted_until = world.time + 1 HOURS
+	var/halted_price = miners.price
+	var/mined = SSeconomy.record_work(ACCOUNT_CAR, WORK_MINING_ORE, 1000)
+	miners.halted_until = 0
+	econ_test_set_balance(security.account, security_before)
+	econ_test_set_balance(cargo.account, cargo_before)
+	TEST_ASSERT(paid > 0 && mined > 0, "Работа не оплачена: [paid], [mined]")
+	TEST_ASSERT(hephaestus.price > heph_before, "Изъятие контрабанды не подняло Гефест")
+	TEST_ASSERT(cybersun.price < cybs_before, "Изъятие контрабанды не уронило Киберсан")
+	TEST_ASSERT(miners.price == halted_price && !miners.work_boost && !length(miners.moves), "Работа сдвинула остановленные торги [miners.ticker]")
+
+/// Сноски называют работу, которая двигает компанию, с потолком за смену и знаком; новые события станции видны у своих компаний.
+/datum/unit_test/economy_stocks/work_drivers/Run()
+	var/datum/stock_company/vey = SSmarket.get_company("VYMD")
+	var/list/driver = work_driver_of(vey)
+	TEST_ASSERT_NOTNULL(driver, "У Вей-Мед нет сноски о работе станции")
+	TEST_ASSERT(findtext(driver["label"], market_work_driver_name(WORK_MED_DISCHARGE_LIGHT)) && findtext(driver["label"], market_work_driver_name(WORK_MED_SURGERY)), "Сноска не называет работу: [driver["label"]]")
+	TEST_ASSERT_EQUAL(driver["effect"], round(SSmarket.work_stock_cap * 100, 0.1), "Потолок роста от работы")
+	TEST_ASSERT(driver["upto"], "Сдвиг от работы - потолок, а не скачок")
+	var/list/shares = SSmarket.work_stocks[WORK_MED_REVIVE]
+	var/rate = SSmarket.signed_percent(round(shares["VYMD"] * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))
+	TEST_ASSERT(findtext(driver["note"], "[rate]") && findtext(driver["note"], "[STOCK_WORK_NOTE_CREDITS] кр."), "Сноска без шага: [driver["note"]]")
+	var/list/cybersun = work_driver_of(SSmarket.get_company("CYBS"))
+	TEST_ASSERT_EQUAL(cybersun["effect"], -round(SSmarket.work_stock_cap * 100, 0.1), "Изъятие контрабанды роняет Киберсан")
+	TEST_ASSERT_NULL(work_driver_of(SSmarket.get_company(STOCK_INDEX_TICKER)), "У индекса сноска о работе")
+	var/datum/stock_company/nakamura = SSmarket.get_company("NKMR")
+	var/list/labels = list()
+	for(var/list/each as anything in nakamura.price_drivers())
+		labels[each["label"]] = each["effect"]
+	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["power_failure"]], -10, "Сбой энергосети в сносках Накамуры")
+	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["gravity_lost"]], -10, "Отказ гравитации в сносках Накамуры")
+
+/// Заметный сдвиг от работы станции выходит срочной новостью рынка, повтор до кулдауна - нет.
+/datum/unit_test/economy_stocks/work_news/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/balance_before = security.account.account_balance
+	var/datum/stock_company/hephaestus = SSmarket.get_company("HEPH")
+	var/list/shares = SSmarket.work_stocks[WORK_SEC_CONTRABAND]
+	var/units = STOCK_WORK_NEWS_STEP * 0.6 * STOCK_WORK_CREDITS / shares["HEPH"] / SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND]
+	SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, units)
+	var/list/news_small = news_about(hephaestus)
+	SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, units)
+	var/list/news_step = news_about(hephaestus)
+	for(var/i in 1 to 3)
+		SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, units)
+	econ_test_set_balance(security.account, balance_before)
+	TEST_ASSERT_EQUAL(length(news_small), 0, "Новость о сдвиге меньше шага")
+	TEST_ASSERT_EQUAL(length(news_step), 1, "Нет новости о заметном сдвиге от работы")
+	TEST_ASSERT(findtext(news_step[1], hephaestus.name) && findtext(news_step[1], market_work_reason(WORK_SEC_CONTRABAND)), "Новость без компании или причины: [news_step[1]]")
+	TEST_ASSERT_EQUAL(length(news_about(hephaestus)), 1, "Вторая новость о работе раньше кулдауна")
+
+/datum/unit_test/economy_stocks/work_news/proc/news_about(datum/stock_company/company)
+	. = list()
+	for(var/line in SSmarket.pending_news)
+		if(findtext(line, "([company.ticker])"))
+			. += line
+
+/// Сдвиг от работы отделов в следующую смену не переходит: состояние сектора хранит цену без него.
+/datum/unit_test/economy_stocks/work_not_persisted/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/balance_before = medical.account.account_balance
+	var/datum/stock_company/vey = SSmarket.get_company("VYMD")
+	SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1)
+	econ_test_set_balance(medical.account, balance_before)
+	TEST_ASSERT(vey.price > vey.base_price, "Работа не подняла цену")
+	var/list/state = SSmarket.serialize_state()
+	var/list/saved_companies = state["companies"]
+	var/list/saved = saved_companies["VYMD"]
+	TEST_ASSERT(abs(saved["price_ratio"] - 1) < 0.0001, "Сдвиг от работы ушёл в следующую смену: [saved["price_ratio"]]")
+
+/// Сбой энергосети, отказ гравитации, радиационный шторм и красный код двигают привязанные акции и пишут причину в ленту.
+/datum/unit_test/economy_stocks/station_troubles/Run()
+	var/datum/stock_company/nakamura = SSmarket.get_company("NKMR")
+	var/datum/stock_company/nt = SSmarket.get_company("NTRN")
+	var/datum/stock_company/agro = SSmarket.get_company("AGRO")
+	var/datum/stock_company/hephaestus = SSmarket.get_company("HEPH")
+	var/before = nakamura.price
+	var/datum/round_event/grid_check/outage = new(FALSE)
+	var/list/saved_apcs = GLOB.apcs_list
+	GLOB.apcs_list = list()
+	outage.start()
+	GLOB.apcs_list = saved_apcs
+	outage.kill()
+	qdel(outage)
+	TEST_ASSERT(nakamura.price < before, "Сбой энергосети не уронил Накамуру")
+	TEST_ASSERT_EQUAL(newest_move(nakamura), GLOB.market_station_event_names["power_failure"], "Причина в ленте Накамуры")
+
+	var/obj/machinery/gravity_generator/main/generator
+	for(var/obj/machinery/gravity_generator/main/candidate as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/gravity_generator/main))
+		if(is_station_level(candidate.z))
+			generator = candidate
+			break
+	TEST_ASSERT_NOTNULL(generator, "На станции нет генератора гравитации")
+	var/was_on = generator.on
+	if(!was_on)
+		generator.set_state(TRUE)
+	before = nakamura.price
+	generator.set_state(FALSE)
+	var/after_gravity = nakamura.price
+	generator.set_state(TRUE)
+	if(!was_on)
+		generator.set_state(FALSE)
+	TEST_ASSERT(after_gravity < before, "Отказ гравитации не уронил Накамуру")
+	TEST_ASSERT(nakamura.price == after_gravity, "Возврат гравитации сдвинул Накамуру")
+
+	before = agro.price
+	var/datum/round_event/radiation_storm/storm = new(FALSE)
+	storm.announce(FALSE)
+	storm.kill()
+	qdel(storm)
+	TEST_ASSERT(agro.price < before, "Радиационный шторм не уронил Аграрный союз")
+
+	var/saved_level = GLOB.security_level
+	if(saved_level >= SEC_LEVEL_RED)
+		SSsecurity_level.set_level(SEC_LEVEL_GREEN, bypass_keycard_lock = TRUE)
+	before = nt.price
+	var/heph_before = hephaestus.price
+	SSsecurity_level.set_level(SEC_LEVEL_RED, bypass_keycard_lock = TRUE)
+	SSsecurity_level.set_level(saved_level, bypass_keycard_lock = TRUE)
+	TEST_ASSERT(nt.price < before, "Красный код не уронил НТ")
+	TEST_ASSERT(hephaestus.price > heph_before, "Красный код не поднял Гефест")
+	TEST_ASSERT_EQUAL(newest_move(nt), GLOB.market_station_event_names["red_alert"], "Причина в ленте НТ")
+
+/// Лента причин: новость компании и событие станции пишутся с процентом и временем, новые сверху, не больше STOCK_MOVES_MAX; окно получает ленту и потолок работы.
+/datum/unit_test/economy_stocks/moves_feed/Run()
+	SSmarket.company_event_chance = 0
+	var/datum/stock_company/nt = SSmarket.get_company("NTRN")
+	SSmarket.schedule_company_event(nt, "product_launch", "Тестовая новость НТ", 0.2, 0)
+	SSmarket.run_due_events()
+	var/list/feed = nt.moves_ui()
+	var/list/top = length(feed) ? feed[1] : list()
+	TEST_ASSERT_EQUAL(top["text"], "Тестовая новость НТ", "Новость компании не в ленте")
+	TEST_ASSERT(abs(top["effect"] - 20) < 0.11, "Сдвиг новости в ленте: [top["effect"]]")
+	TEST_ASSERT(istext(top["time"]) && length(top["time"]), "Нет времени скачка")
+	SSmarket.station_event("sm_delam")
+	feed = nt.moves_ui()
+	top = feed[1]
+	TEST_ASSERT_EQUAL(top["text"], GLOB.market_station_event_names["sm_delam"], "Новое событие не сверху")
+	TEST_ASSERT(abs(top["effect"] + 25) < 0.11, "Сдвиг события в ленте: [top["effect"]]")
+	for(var/key in list("delta_alert", "power_failure", "gravity_lost", "red_alert"))
+		SSmarket.station_event(key)
+	feed = nt.moves_ui()
+	TEST_ASSERT_EQUAL(length(feed), STOCK_MOVES_MAX, "Лента не ограничена")
+	var/list/oldest = feed[length(feed)]
+	TEST_ASSERT_EQUAL(oldest["text"], GLOB.market_station_event_names["sm_delam"], "Старая строка не вытеснена")
+	var/datum/stock_company/solar = SSmarket.get_company("SOLX")
+	TEST_ASSERT(!length(solar.moves), "События без SOLX попали в его ленту")
+	var/datum/computer_file/program/stock_exchange/program = new
+	var/list/static_data = program.stocks_static_data()
+	qdel(program)
+	var/list/moves = static_data["moves"]
+	TEST_ASSERT_EQUAL(length(moves["NTRN"]), STOCK_MOVES_MAX, "Окно не получило ленту НТ")
+	TEST_ASSERT_EQUAL(static_data["work_cap"], round(SSmarket.work_stock_cap * 100, 0.1), "Потолок работы в окне")
 
 /// Проваленный по сроку спецзаказ роняет акции компании партнёра.
 /datum/unit_test/economy_stocks/offer_fail/Run()
@@ -331,6 +541,7 @@
 	SSmarket.expire_offers()
 	TEST_ASSERT(QDELETED(offer), "Спецзаказ не провалился")
 	TEST_ASSERT(company.event_mult < event_mult_before, "Провал спецзаказа не ударил по акциям [company.ticker]")
+	TEST_ASSERT_EQUAL(newest_move(company), "Станция сорвала спецзаказ партнёра \"[partner.name]\"", "Причина скачка от провала в ленте")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "оценка акций [company.ticker] -[MARKET_OFFER_FAIL_STOCK_SHOCK * 100]%"), "Сообщение ЦК не говорит об акциях: [SSshuttle.centcom_message]")
 
 /// Компании и события из economy.json совпадают со встроенными; битые записи пишут ошибки и оставляют встроенное; перечитывание сохраняет цены.
@@ -377,9 +588,21 @@
 			"meteors" = "плохо",
 			"alien_invasion" = list("NTRN" = -0.1),
 		),
+		"work_stock_cap" = 5,
+		"work_stocks" = list(
+			"no_such_work" = list("VYMD" = 0.1),
+			"med_revive" = list("ZZZZ" = 0.1),
+			"srv_dish" = "плохо",
+			"mining_ore" = list("PRSP" = 7),
+			"sci_node" = list(STOCK_INDEX_TICKER = 0.1),
+		),
 	)
 	errors = SSmarket.load_settings(bad)
-	TEST_ASSERT_EQUAL(length(errors), 11, "Ошибки: шанс, цена, не объект, неизвестная компания, ключ partner, волатильность, компания партнёра, эффект события, тикер, не объект, неизвестное событие ([jointext(errors, "; ")])")
+	TEST_ASSERT_EQUAL(length(errors), 17, "Ошибки: шанс, цена, не объект, неизвестная компания, ключ partner, волатильность, компания партнёра, эффект события, тикер, не объект, неизвестное событие, потолок работы, вид работы, тикер работы, не объект, доля, индекс ([jointext(errors, "; ")])")
+	TEST_ASSERT_EQUAL(SSmarket.work_stock_cap, initial(SSmarket.work_stock_cap), "Потолок работы выше допустимого принят")
+	var/list/revive = SSmarket.work_stocks[WORK_MED_REVIVE]
+	TEST_ASSERT(islist(revive) && revive["VYMD"] > 0 && !("ZZZZ" in revive), "Битая привязка работы затёрла встроенную")
+	TEST_ASSERT(!("no_such_work" in SSmarket.work_stocks), "Неизвестный вид работы принят")
 	var/datum/stock_company/prospectors_company = SSmarket.get_company("PRSP")
 	TEST_ASSERT_NULL(prospectors_company.partner_id, "Компания осталась за партнёром, который на неё не ссылается")
 	TEST_ASSERT_EQUAL(SSmarket.company_event_chance, initial(SSmarket.company_event_chance), "Шанс выше 100 принят")
@@ -411,6 +634,13 @@
 		for(var/ticker in effects)
 			texts += "[ticker]=[effects[ticker]]"
 		.["station_[key]"] = jointext(texts, ",")
+	.["work_cap"] = "[SSmarket.work_stock_cap]"
+	for(var/work_type in SSmarket.work_stocks)
+		var/list/shares = SSmarket.work_stocks[work_type]
+		var/list/texts = list()
+		for(var/ticker in shares)
+			texts += "[ticker]=[shares[ticker]]"
+		.["work_[work_type]"] = jointext(texts, ",")
 
 /// Вторая ссылка партнёра на занятую компанию и неизвестный тикер - ошибки конфига; компания остаётся за первым партнёром, битые ссылки сбрасываются.
 /datum/unit_test/economy_stocks/partner_links/Run()

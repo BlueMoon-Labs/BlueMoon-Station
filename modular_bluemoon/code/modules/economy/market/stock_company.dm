@@ -28,6 +28,10 @@ GLOBAL_LIST_INIT(market_default_station_events, list(
 	"delta_alert" = list("NTRN" = -0.15, "HEPH" = 0.1),
 	"disease_outbreak" = list("VYMD" = 0.2, "BSHP" = 0.05),
 	"meteors" = list("NKMR" = 0.15, "PRSP" = 0.05),
+	"power_failure" = list("NKMR" = -0.1, "NTRN" = -0.05),
+	"gravity_lost" = list("NKMR" = -0.1, "NTRN" = -0.05),
+	"radiation_storm" = list("AGRO" = -0.12, "VYMD" = 0.05),
+	"red_alert" = list("NTRN" = -0.08, "HEPH" = 0.05),
 	"market_crash" = list(STOCK_ALL_COMPANIES = -0.2),
 	"sector_boom" = list(STOCK_ALL_COMPANIES = 0.1),
 ))
@@ -38,9 +42,62 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	"delta_alert" = "Код \"Дельта\" на станции",
 	"disease_outbreak" = "Вспышка болезни на станции",
 	"meteors" = "Метеоритный дождь у станции",
+	"power_failure" = "Сбой энергосети станции",
+	"gravity_lost" = "Станция осталась без гравитации",
+	"radiation_storm" = "Радиационный шторм в секторе",
+	"red_alert" = "Красный код на станции",
 	"market_crash" = "Обвал рынка сектора",
 	"sector_boom" = "Бум в секторе",
 ))
+
+/// Встроенные привязки работы отделов: вид работы -> тикер -> сдвиг цены на каждые STOCK_WORK_CREDITS кр., полученных отделом.
+GLOBAL_LIST_INIT(market_default_work_stocks, list(
+	WORK_MED_DISCHARGE_LIGHT = list("VYMD" = 0.1),
+	WORK_MED_DISCHARGE_HEAVY = list("VYMD" = 0.1),
+	WORK_MED_DISCHARGE_CRIT = list("VYMD" = 0.1),
+	WORK_MED_REVIVE = list("VYMD" = 0.1),
+	WORK_MED_SURGERY = list("BSHP" = 0.1, "VYMD" = 0.05),
+	WORK_ENG_POWER_EXPORT = list("NKMR" = 0.04),
+	WORK_SCI_NODE = list("EINS" = 0.3),
+	WORK_SCI_SLIME_DISCOVERY = list("EINS" = 0.02),
+	WORK_SCI_ARTIFACT = list("SOLX" = 0.1),
+	WORK_MINING_ORE = list("PRSP" = 0.04),
+	WORK_CARGO_PAPERWORK = list("SOLX" = 0.1),
+	WORK_SRV_DISH = list("AGRO" = 0.1),
+	WORK_SRV_DRINK = list("AGRO" = 0.1),
+	WORK_SRV_NEW_PLANT = list("AGRO" = 0.1),
+	WORK_SRV_CLEANING = list("NTRN" = 0.05),
+	WORK_SEC_CONTRABAND = list("HEPH" = 0.1, "CYBS" = -0.1),
+))
+
+/// Вид работы -> list(название в сносках биржи, причина скачка в ленте и новостях).
+GLOBAL_LIST_INIT(market_work_reasons, list(
+	WORK_MED_DISCHARGE_LIGHT = list("выписка пациентов", "медики выписывают пациентов"),
+	WORK_MED_DISCHARGE_HEAVY = list("выписка пациентов", "медики выписывают пациентов"),
+	WORK_MED_DISCHARGE_CRIT = list("выписка пациентов", "медики выписывают пациентов"),
+	WORK_MED_REVIVE = list("реанимация", "медики возвращают пациентов к жизни"),
+	WORK_MED_SURGERY = list("операции", "хирурги оперируют"),
+	WORK_ENG_POWER_EXPORT = list("экспорт энергии", "инженеры продают энергию сектору"),
+	WORK_ENG_INTEGRITY = list("исправность станции", "инженеры держат станцию в порядке"),
+	WORK_SCI_NODE = list("исследования", "учёные открывают технологии"),
+	WORK_SCI_SLIME_DISCOVERY = list("новые экстракты слаймов", "ксенобиологи выводят новые экстракты"),
+	WORK_SCI_ARTIFACT = list("артефакты", "станция сдаёт найденные артефакты"),
+	WORK_MINING_ORE = list("переработка руды", "станция перерабатывает руду"),
+	WORK_CARGO_PAPERWORK = list("расчёты на проблемном компьютере", "снабжение решает расчёты"),
+	WORK_SRV_DISH = list("блюда", "кухня кормит экипаж"),
+	WORK_SRV_DRINK = list("напитки", "бар поит экипаж"),
+	WORK_SRV_NEW_PLANT = list("новый урожай", "ботаники выводят новые сорта"),
+	WORK_SRV_CLEANING = list("уборка", "уборщики отмывают станцию"),
+	WORK_SEC_CONTRABAND = list("изъятая контрабанда", "СБ изымает контрабанду"),
+))
+
+/proc/market_work_driver_name(work_type)
+	var/list/reason = GLOB.market_work_reasons[work_type]
+	return reason ? reason[1] : lowertext(econ_work_name(work_type))
+
+/proc/market_work_reason(work_type)
+	var/list/reason = GLOB.market_work_reasons[work_type]
+	return reason ? reason[2] : "отделы станции: [lowertext(econ_work_name(work_type))]"
 
 /datum/stock_company
 	var/ticker
@@ -54,6 +111,13 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	var/event_mult = 1
 	/// Продажи станции связанному партнёру с последнего листинга
 	var/trade_volume = 0
+	/// Сдвиг цены от работы отделов за смену, в пределах ±SSmarket.work_stock_cap; в следующую смену не переходит
+	var/work_boost = 0
+	/// work_boost на момент последней новости о работе станции и когда можно следующую
+	var/work_news_boost = 0
+	var/work_news_ready_at = 0
+	/// Последние скачки цены: list(text, factor, at, time), старые в начале
+	var/list/moves = list()
 	var/halted_until = 0
 	var/list/history = list()
 	/// Индекс сектора: цена считается по остальным компаниям
@@ -122,6 +186,8 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	price = base_price * STOCK_RELIST_RATIO
 	event_mult = 1
 	trade_volume = 0
+	work_boost = 0
+	work_news_boost = 0
 	log_econ("Торги [ticker] возобновлены, повторный листинг по [round(price, 0.01)]")
 	SSmarket.consolidate_shares(src, halted_price / price)
 
@@ -139,6 +205,40 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	trade_volume += value
 	var/new_boost = min(trade_volume / STOCK_TRADE_SCALE, STOCK_TRADE_BOOST_MAX)
 	set_price(price * (1 + new_boost) / (1 + old_boost))
+
+/// Работа отдела двигает цену скачком, пока сдвиг от работы за смену не упрётся в ±cap. TRUE - цена сдвинулась.
+/datum/stock_company/proc/add_work(effect, cap)
+	var/old_boost = work_boost
+	work_boost = clamp(work_boost + effect, -cap, cap)
+	if(work_boost == old_boost)
+		return FALSE
+	set_price(price * (1 + work_boost) / (1 + old_boost))
+	return TRUE
+
+/// Пишет скачок от price_before в ленту причин; при merge тот же текст подряд в окне STOCK_MOVE_MERGE_TIME копится в одной строке.
+/datum/stock_company/proc/note_move(text, price_before, merge = FALSE)
+	if(!(price_before > 0))
+		return
+	var/factor = price / price_before
+	if(abs(factor - 1) < STOCK_MOVE_MIN)
+		return
+	var/now = STATION_TIME_TIMESTAMP("hh:mm", world.time)
+	var/list/last = length(moves) ? moves[length(moves)] : null
+	if(merge && last && last["text"] == text && world.time - last["at"] < STOCK_MOVE_MERGE_TIME)
+		last["factor"] = last["factor"] * factor
+		last["at"] = world.time
+		last["time"] = now
+		return
+	moves += list(list("text" = text, "factor" = factor, "at" = world.time, "time" = now))
+	if(length(moves) > STOCK_MOVES_MAX)
+		moves.Cut(1, 2)
+
+/// Лента причин для окна биржи: новые сверху, сдвиг в процентах.
+/datum/stock_company/proc/moves_ui()
+	. = list()
+	for(var/index in length(moves) to 1 step -1)
+		var/list/move = moves[index]
+		. += list(list("text" = move["text"], "effect" = round((move["factor"] - 1) * 100, 0.1), "time" = move["time"]))
 
 /// Изменение цены в процентах от самой старой точки истории.
 /datum/stock_company/proc/change_percent()
@@ -170,6 +270,9 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 		. += list(list("label" = "Продажи станции через снабжение партнёру \"[partner.name]\"", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
 		. += list(list("label" = "Сорванный станцией спецзаказ \"[partner.name]\"", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
 		. += list(list("label" = "Закупки станции у \"[partner.name]\"", "effect" = null, "note" = "цену не двигают: [SSeconomy.settings.stock_dividend_share]% суммы идёт в дивиденды держателям"))
+	var/list/work = work_driver()
+	if(work)
+		. += list(work)
 	for(var/key in SSmarket.station_events)
 		var/list/effects = SSmarket.station_events[key]
 		if(isnull(effects[ticker]))
@@ -178,6 +281,33 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 		if(!isnull(effects[STOCK_ALL_COMPANIES]))
 			mult *= 1 + effects[STOCK_ALL_COMPANIES]
 		. += list(list("label" = GLOB.market_station_event_names[key] || key, "effect" = round((mult - 1) * 100, 0.1)))
+
+/// Сноска о работе отделов: какие работы двигают цену и на сколько за каждые STOCK_WORK_NOTE_CREDITS кр. оплаты отделу; null - никакие.
+/datum/stock_company/proc/work_driver()
+	var/list/names = list()
+	var/list/by_rate = list()
+	var/rising = FALSE
+	for(var/work_type in SSmarket.work_stocks)
+		var/list/binding = SSmarket.work_stocks[work_type]
+		var/share = binding[ticker]
+		if(!share)
+			continue
+		var/work_name = market_work_driver_name(work_type)
+		names |= work_name
+		rising ||= share > 0
+		var/rate = SSmarket.signed_percent(round(share * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))
+		var/list/group = by_rate[rate]
+		if(!group)
+			group = list()
+			by_rate[rate] = group
+		group |= work_name
+	if(!length(names) || !(SSmarket.work_stock_cap > 0))
+		return null
+	var/list/parts = list()
+	for(var/rate in by_rate)
+		parts += length(by_rate) > 1 ? "[jointext(by_rate[rate], ", ")] [rate]" : rate
+	var/note = "[jointext(parts, "; ")] за каждые [STOCK_WORK_NOTE_CREDITS] кр., что отдел получил за эту работу; в следующую смену не переходит"
+	return list("label" = "Работа станции: [jointext(names, ", ")]", "effect" = round((rising ? 1 : -1) * SSmarket.work_stock_cap * 100, 0.1), "upto" = TRUE, "note" = note)
 
 /// Сноски биржи, общие для всех компаний: события станции со сдвигом STOCK_ALL_COMPANIES.
 /proc/market_common_drivers()
@@ -222,6 +352,12 @@ GLOBAL_LIST_INIT(market_station_event_names, list(
 	return
 
 /datum/stock_company/index/add_trade_volume(value)
+	return
+
+/datum/stock_company/index/add_work(effect, cap)
+	return FALSE
+
+/datum/stock_company/index/note_move(text, price_before, merge = FALSE)
 	return
 
 /datum/stock_company/index/price_drivers()

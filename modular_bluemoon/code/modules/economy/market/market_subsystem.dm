@@ -38,6 +38,10 @@ SUBSYSTEM_DEF(market)
 	var/company_event_chance = 2
 	/// Ключ события станции -> world.time, раньше которого оно не повторяется
 	var/list/station_event_cooldowns = list()
+	/// Вид работы отдела -> list(тикер -> сдвиг цены на каждые STOCK_WORK_CREDITS кр., полученных отделом)
+	var/list/work_stocks = list()
+	/// Потолок сдвига цены компании от работы отделов за смену, в обе стороны
+	var/work_stock_cap = 0.2
 	/// Сообщение ЦК о сделках с контрабандным партнёром: его видит только взломанная консоль снабжения
 	var/contraband_message = ""
 
@@ -73,6 +77,8 @@ SUBSYSTEM_DEF(market)
 	company_event_templates = SSmarket.company_event_templates
 	company_event_chance = SSmarket.company_event_chance
 	station_event_cooldowns = SSmarket.station_event_cooldowns
+	work_stocks = SSmarket.work_stocks
+	work_stock_cap = SSmarket.work_stock_cap
 	contraband_message = SSmarket.contraband_message
 	recent_trades = SSmarket.recent_trades
 	trade_serial = SSmarket.trade_serial
@@ -130,6 +136,7 @@ SUBSYSTEM_DEF(market)
 	offer_chance = initial(offer_chance)
 	offer_deadline_minutes = initial(offer_deadline_minutes)
 	company_event_chance = initial(company_event_chance)
+	work_stock_cap = initial(work_stock_cap)
 	digest_minutes = initial(digest_minutes)
 	news_flash_minutes = initial(news_flash_minutes)
 	persist_decay = initial(persist_decay)
@@ -325,9 +332,16 @@ SUBSYSTEM_DEF(market)
 			company_event_chance = chance
 		else
 			. += "market.company_event_chance: нужно число 0..100"
+	var/cap = section["work_stock_cap"]
+	if(!isnull(cap))
+		if(isnum(cap) && cap >= 0 && cap <= -STOCK_EFFECT_MIN)
+			work_stock_cap = cap
+		else
+			. += "market.work_stock_cap: нужно число 0..[-STOCK_EFFECT_MIN]"
 	. += load_companies(section["companies"])
 	. += load_company_events(section["company_events"])
 	. += load_station_events(section["station_events"])
+	. += load_work_stocks(section["work_stocks"])
 
 /// Встроенные компании, поверх - записи из конфига; уже существующие сохраняют цену и историю.
 /datum/controller/subsystem/market/proc/load_companies(list/section)
@@ -461,10 +475,48 @@ SUBSYSTEM_DEF(market)
 		if(valid)
 			station_events[key] = accepted
 
+/// Привязки работы отделов к компаниям; битая привязка оставляет встроенную для своего вида работы, пустая отключает его.
+/datum/controller/subsystem/market/proc/load_work_stocks(list/section)
+	. = list()
+	work_stocks = list()
+	for(var/work_type in GLOB.market_default_work_stocks)
+		var/list/shares = GLOB.market_default_work_stocks[work_type]
+		work_stocks[work_type] = shares.Copy()
+	if(isnull(section))
+		return
+	if(!islist(section))
+		. += "market.work_stocks не объект"
+		return
+	for(var/work_type in section)
+		if(!GLOB.econ_work_names[work_type])
+			if(!ECON_CONFIG_COMMENT_KEY(work_type))
+				. += "market.work_stocks.[work_type]: неизвестный вид работы"
+			continue
+		var/list/shares = section[work_type]
+		if(!islist(shares))
+			. += "market.work_stocks.[work_type]: не объект"
+			continue
+		var/list/accepted = list()
+		var/valid = TRUE
+		for(var/ticker in shares)
+			var/datum/stock_company/company = companies[ticker]
+			var/share = shares[ticker]
+			if(!company || company.is_index)
+				. += "market.work_stocks.[work_type].[ticker]: нет такой компании"
+				valid = FALSE
+			else if(!isnum(share) || share < STOCK_EFFECT_MIN || share > STOCK_EFFECT_MAX)
+				. += "market.work_stocks.[work_type].[ticker]: нужно число [STOCK_EFFECT_MIN]..[STOCK_EFFECT_MAX]"
+				valid = FALSE
+			else
+				accepted[ticker] = share
+		if(valid)
+			work_stocks[work_type] = accepted
+
 /datum/controller/subsystem/market/proc/register_stock_signals()
 	RegisterSignal(src, COMSIG_MARKET_TRADE, PROC_REF(on_stock_trade), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_OFFER_RESOLVED, PROC_REF(on_stock_offer_resolved), override = TRUE)
 	RegisterSignal(src, COMSIG_MARKET_STOCK_TRADE, PROC_REF(note_trade_for_audit), override = TRUE)
+	RegisterSignal(SSeconomy, COMSIG_ECONOMY_WORK_RECORDED, PROC_REF(on_work_recorded), override = TRUE)
 
 /datum/controller/subsystem/market/proc/on_stock_trade(datum/source, datum/trade_partner/partner, value, is_sale)
 	SIGNAL_HANDLER
@@ -472,7 +524,9 @@ SUBSYSTEM_DEF(market)
 	if(!company || !(value > 0))
 		return
 	if(is_sale)
+		var/price_before = company.price
 		company.add_trade_volume(value)
+		company.note_move(partner.contraband ? "Сделки на сером рынке сектора" : "Станция продаёт товары партнёру \"[partner.name]\"", price_before, TRUE)
 	else
 		company.dividend_pool += value * SSeconomy.settings.stock_dividend_share / 100
 
@@ -482,7 +536,27 @@ SUBSYSTEM_DEF(market)
 		return
 	var/datum/trade_partner/partner = partners[offer.partner_id]
 	var/datum/stock_company/company = partner ? companies[partner.company] : null
-	company?.apply_shock(-MARKET_OFFER_FAIL_STOCK_SHOCK)
+	if(!company)
+		return
+	var/price_before = company.price
+	company.apply_shock(-MARKET_OFFER_FAIL_STOCK_SHOCK)
+	company.note_move("Станция сорвала спецзаказ партнёра \"[partner.name]\"", price_before)
+
+/// Оплаченная работа отдела сдвигает цены привязанных компаний до потолка за смену; остановленные торги работа не двигает.
+/datum/controller/subsystem/market/proc/on_work_recorded(datum/source, department_id, work_type, amount, mob/performer, paid, atom/subject)
+	SIGNAL_HANDLER
+	var/list/shares = work_stocks[work_type]
+	if(!length(shares) || !(paid > 0))
+		return
+	for(var/ticker in shares)
+		var/datum/stock_company/company = companies[ticker]
+		if(!company || company.is_halted())
+			continue
+		var/price_before = company.price
+		if(!company.add_work(paid * shares[ticker] / STOCK_WORK_CREDITS, work_stock_cap))
+			continue
+		company.note_move(market_work_reason(work_type), price_before, TRUE)
+		note_work_news(company, work_type)
 
 /// Минутный тик биржи: цены, индекс сектора, новые события компаний, выход созревших, заявки.
 /datum/controller/subsystem/market/proc/tick_stocks()
@@ -552,6 +626,7 @@ SUBSYSTEM_DEF(market)
 		company.undo_shock(event.refute_price, event.refute_mult)
 	else
 		company.apply_shock(event.effect)
+	company.note_move(event.headline, price_before)
 	alert_holders(company, price_before)
 	if(!event.fake)
 		company.last_real_event_at = world.time
@@ -580,8 +655,11 @@ SUBSYSTEM_DEF(market)
 		for(var/other in companies)
 			var/datum/stock_company/each = companies[other]
 			each.apply_shock(effects[ticker])
+	var/reason = GLOB.market_station_event_names[key] || key
 	for(var/ticker in companies)
-		alert_holders(companies[ticker], prices_before[ticker])
+		var/datum/stock_company/company = companies[ticker]
+		company.note_move(reason, prices_before[ticker])
+		alert_holders(company, prices_before[ticker])
 	log_econ("Событие станции [key] сдвинуло акции компаний")
 	var/news = GLOB.market_station_event_news[key]
 	if(news)

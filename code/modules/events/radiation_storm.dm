@@ -19,6 +19,8 @@
 	if(locate(/area/icemoon/underground) in GLOB.sortedAreas)
 		shelter_hint += " Подземные пещеры планеты тоже укрывают от излучения."
 	priority_announce("Вблизи станции обнаружены высокие уровни радиации. [shelter_hint]", "ВНИМАНИЕ: АНОМАЛИЯ", "radiation", has_important_message = TRUE)
+	if(!fake)
+		SSmarket?.station_event("radiation_storm")
 	//sound not longer matches the text, but an audible warning is probably good
 
 /datum/round_event/radiation_storm/start()

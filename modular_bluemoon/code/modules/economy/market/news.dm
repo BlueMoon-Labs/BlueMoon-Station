@@ -66,6 +66,16 @@ GLOBAL_LIST_INIT(market_station_event_news, list(
 	var/datum/stock_company/company = event.company
 	post_news("[company.ticker]: [html_encode(event.headline)]. Котировка после события - [round(company.price, 0.01)] кр.")
 
+/// Срочная новость, когда сдвиг от работы станции ушёл от прошлой новости на STOCK_WORK_NEWS_STEP; по компании не чаще STOCK_WORK_NEWS_COOLDOWN.
+/datum/controller/subsystem/market/proc/note_work_news(datum/stock_company/company, work_type)
+	if(abs(company.work_boost - company.work_news_boost) < STOCK_WORK_NEWS_STEP || world.time < company.work_news_ready_at)
+		return
+	company.work_news_boost = company.work_boost
+	company.work_news_ready_at = world.time + STOCK_WORK_NEWS_COOLDOWN
+	var/capped = abs(company.work_boost) >= work_stock_cap
+	log_econ("Работа станции сдвинула [company.ticker] на [round(company.work_boost * 100, 0.1)]% за смену, последняя - [work_type]")
+	post_news("[company.name] ([company.ticker]) [signed_percent(round(company.work_boost * 100, 0.1))] за смену от работы станции: [market_work_reason(work_type)].[capped ? " Дальше работа станции цену в эту смену не двигает." : ""]")
+
 /datum/controller/subsystem/market/proc/hot_entry(datum/commodity/commodity)
 	return "[commodity.name] ×[round(commodity.hot_mult, 0.1)]"
 

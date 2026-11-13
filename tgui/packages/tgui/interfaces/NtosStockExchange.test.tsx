@@ -19,11 +19,24 @@ const base: StockExchangeData = {
       { label: 'Случайные колебания за минуту', effect: null, note: 'около ±2.5%' },
       { label: 'Продажи станции через снабжение партнёру "Вей-Мед"', effect: 15, upto: 1, note: 'медикаменты; +5% за каждые 1000 кр. продаж' },
       { label: 'Сорванный станцией спецзаказ "Вей-Мед"', effect: -5 },
+      {
+        label: 'Работа станции: выписка пациентов, реанимация',
+        effect: 20,
+        upto: 1,
+        note: '+1% за каждые 100 кр., что отдел получил за эту работу; в следующую смену не переходит',
+      },
       { label: 'Вспышка болезни на станции', effect: 20 },
     ],
     CYBS: [],
     NKMR: [{ label: 'Расслоение суперматерии на станции', effect: 10 }],
   },
+  moves: {
+    VYMD: [
+      { text: 'медики выписывают пациентов', effect: 3, time: '14:32' },
+      { text: 'Расслоение суперматерии на станции', effect: -12.5, time: '14:05' },
+    ],
+  },
+  work_cap: 20,
   common_drivers: [
     { label: 'Обвал рынка сектора', effect: -20 },
     { label: 'Бум в секторе', effect: 10 },
@@ -205,6 +218,38 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('Сорванный станцией спецзаказ "Вей-Мед": −5%');
     expect(content).toContain('Вспышка болезни на станции: +20%');
     expect(content).toContain('Расслоение суперматерии на станции: +10%');
+  });
+
+  test('лента причин у выбранной компании: время, причина и сдвиг, новые сверху; без скачков и у индекса - пояснение', () => {
+    const { container } = setup();
+    const lines = Array.from(container.querySelectorAll('.NtTerm__line')).map((node) => (node.textContent || '').replace(/\u00a0/g, ' '));
+    expect(lines[0]).toContain('14:32 медики выписывают пациентов');
+    expect(lines[0]).toContain('+3%');
+    expect(lines[1]).toContain('14:05 Расслоение суперматерии на станции');
+    expect(lines[1]).toContain('−12.5%');
+    expect(container.querySelector('.NtTerm__line--good')?.textContent).toContain('+3%');
+    expect(container.querySelector('.NtTerm__line--bad')?.textContent).toContain('−12.5%');
+    selectTile(container, 'NKMR');
+    expect(text(container)).toContain('Скачков пока не было');
+    selectTile(container, 'SECT');
+    expect(text(container)).toContain('Индекс движется вместе с компаниями сектора');
+  });
+
+  test('ленты и потолка работы нет в данных - окно не ломается', () => {
+    const { container } = setup({ moves: undefined as any, work_cap: undefined as any });
+    expect(text(container)).toContain('Скачков пока не было');
+  });
+
+  test('работа отделов: сноска компании и потолок за смену в правилах', () => {
+    const { container } = setup();
+    openPage(container, 'От чего зависит цена');
+    let content = text(container);
+    expect(content).toContain('Работа станции: выписка пациентов, реанимация: до +20% (+1% за каждые 100 кр., что отдел получил за эту работу');
+    expect(content).toContain('не больше чем на 20% за смену в каждую сторону');
+    openPage(container, 'Правила');
+    content = text(container);
+    expect(content).toContain('Работа отделов поднимает связанные компании');
+    expect(content).toContain('не больше чем на 20% за смену, и в следующую смену этот сдвиг не переходит');
   });
 
   test('портфель: позиция по текущей цене', () => {

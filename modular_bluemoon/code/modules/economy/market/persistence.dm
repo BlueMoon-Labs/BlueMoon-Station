@@ -32,7 +32,7 @@
 		if(!length(commodity.history))
 			commodity.history += commodity.price_factor
 
-/// Состояние сектора для следующего раунда. Счета и акции игроков, очередь событий, спецзаказы, склады, новости и открытие контрабандного партнёра сюда не входят.
+/// Состояние сектора для следующего раунда. Счета и акции игроков, очередь событий, сдвиг цен от работы отделов, спецзаказы, склады, новости и открытие контрабандного партнёра сюда не входят.
 /datum/controller/subsystem/market/proc/serialize_state()
 	var/list/saved_commodities = list()
 	for(var/id in commodities)
@@ -47,7 +47,7 @@
 			saved_companies[ticker] = list("price_ratio" = STOCK_RELIST_RATIO, "event_mult" = 1, "trade_volume" = 0)
 		else
 			var/list/refuted = pending_refutation(company)
-			saved_companies[ticker] = list("price_ratio" = company.price * refuted[1] / company.base_price, "event_mult" = company.event_mult * refuted[2], "trade_volume" = company.trade_volume)
+			saved_companies[ticker] = list("price_ratio" = company.price * refuted[1] / (1 + company.work_boost) / company.base_price, "event_mult" = company.event_mult * refuted[2], "trade_volume" = company.trade_volume)
 	var/list/saved_partners = list()
 	for(var/id in partners)
 		var/datum/trade_partner/partner = partners[id]
@@ -215,7 +215,10 @@
 		company.price = company.base_price
 		company.event_mult = 1
 		company.trade_volume = 0
+		company.work_boost = 0
+		company.work_news_boost = 0
 		company.history = list()
+		company.moves = list()
 		if(abs(old_price - company.price) > STOCK_PRICE_EPSILON)
 			consolidate_shares(company, old_price / company.price, "Сброс сектора")
 	QDEL_LIST_ASSOC_VAL(partners)

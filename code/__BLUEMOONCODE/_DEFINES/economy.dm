@@ -370,6 +370,17 @@
 /// Цена растёт на долю объём / STOCK_TRADE_SCALE от продаж партнёру, не больше STOCK_TRADE_BOOST_MAX за листинг
 #define STOCK_TRADE_SCALE 20000
 #define STOCK_TRADE_BOOST_MAX 0.15
+/// Доля в market.work_stocks - сдвиг цены на каждые столько кредитов, полученных отделом за работу
+#define STOCK_WORK_CREDITS 1000
+/// Сноски биржи пишут сдвиг от работы на столько кредитов
+#define STOCK_WORK_NOTE_CREDITS 100
+/// Новость о сдвиге от работы станции - когда он ушёл от прошлой новости на эту долю, по компании не чаще кулдауна
+#define STOCK_WORK_NEWS_STEP 0.05
+#define STOCK_WORK_NEWS_COOLDOWN (15 MINUTES)
+/// Лента причин у компании: столько последних скачков; одинаковые подряд сливаются в окне MERGE_TIME, скачки меньше MIN не пишутся
+#define STOCK_MOVES_MAX 5
+#define STOCK_MOVE_MERGE_TIME (10 MINUTES)
+#define STOCK_MOVE_MIN 0.0005
 /// Скачок цены от этой доли и больше приходит держателям акций сообщением на карту
 #define STOCK_HOLDER_ALERT_MIN 0.05
 #define STOCK_EVENT_MULT_MAX 3

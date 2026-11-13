@@ -173,7 +173,7 @@
 	qdel(queued)
 	halted.halted_until = 0
 	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap", "orders")
-	var/static/list/static_keys = list("history", "drivers", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay", "dividend_share", "payroll_minutes", "orders_max")
+	var/static/list/static_keys = list("history", "drivers", "moves", "work_cap", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay", "dividend_share", "payroll_minutes", "orders_max")
 	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price", "max_buy", "index", "dividend_pool", "dividend_per_share")
 	var/mismatch = key_mismatch(data, data_keys)
 	TEST_ASSERT(!mismatch, "Ключи данных окна: [mismatch]")

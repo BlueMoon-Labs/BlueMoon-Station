@@ -165,6 +165,7 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_RED)
 				if(GLOB.security_level < SEC_LEVEL_RED)
+					SSmarket?.station_event("red_alert")
 					announce_security_level_change(SEC_LEVEL_RED, CONFIG_GET(string/alert_red_upto), TRUE)
 					if(emergency_shuttle)
 						if(GLOB.security_level == SEC_LEVEL_GREEN)

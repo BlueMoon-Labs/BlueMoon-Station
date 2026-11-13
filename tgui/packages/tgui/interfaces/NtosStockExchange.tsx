@@ -35,10 +35,20 @@ export type PriceDriver = {
   note?: string;
 };
 
+/** Скачок цены из ленты причин: что случилось, сдвиг в процентах и станционное время. */
+export type PriceMove = {
+  text: string;
+  effect: number;
+  time: string;
+};
+
 export type StockExchangeData = {
   companies: CompanyEntry[];
   history: Record<string, number[]>;
   drivers: Record<string, PriceDriver[]>;
+  moves: Record<string, PriceMove[]>;
+  /** Потолок сдвига цены от работы отделов за смену, % */
+  work_cap: number;
   common_drivers: PriceDriver[];
   event_min: number;
   event_max: number;
@@ -157,6 +167,33 @@ const DriverList = (props: { drivers: PriceDriver[] }) => (
   </>
 );
 
+/** Лента причин: последние скачки цены компании, новые сверху. */
+const MoveList = (props: { company: CompanyEntry; moves: PriceMove[] }) => {
+  const { company, moves } = props;
+  if (company.index) {
+    return <Box className="NtTerm__hint">Индекс движется вместе с компаниями сектора: смотрите их ленты.</Box>;
+  }
+  if (!moves.length) {
+    return <Box className="NtTerm__hint">Скачков пока не было: цену двигают только случайные колебания.</Box>;
+  }
+  return (
+    <>
+      {moves.map((move, index) => (
+        <NtLine
+          key={`${move.time}-${index}`}
+          label={
+            <>
+              <span className="NtTerm__hint">{move.time}</span> {move.text}
+            </>
+          }
+          tone={move.effect > 0 ? 'good' : move.effect < 0 ? 'bad' : undefined}>
+          {signedPercent(move.effect)}
+        </NtLine>
+      ))}
+    </>
+  );
+};
+
 /** Подсветка плитки: зелёная при росте, красная при падении, тем гуще, чем сильнее движение. */
 const tileTint = (change: number) => {
   const strength = Math.min(Math.abs(change) / 20, 1) * 0.16;
@@ -244,6 +281,12 @@ const QuotesSection = () => {
         <Box mb={1.5}>
           <TradeButtons company={company} held={held} wait={wait} />
         </Box>
+        <Box className="NtTerm__hint" mb={0.5}>
+          Почему менялась цена:
+        </Box>
+        <Box mb={1.5}>
+          <MoveList company={company} moves={data.moves?.[company.ticker] || []} />
+        </Box>
         {drivers.length > 0 && (
           <>
             <Box className="NtTerm__hint" mb={0.5}>
@@ -276,6 +319,12 @@ const DriversSection = () => {
         <Box color="label">
           Одно и то же событие на станции двигает цену не чаще раза в {data.station_event_cooldown} мин.
         </Box>
+        {data.work_cap > 0 && (
+          <Box color="label">
+            Работа отделов станции двигает связанную компанию не больше чем на {data.work_cap}% за смену в каждую
+            сторону; в следующую смену этот сдвиг не переходит.
+          </Box>
+        )}
       </Box>
       <Table>
         {data.companies.map((company) => (
@@ -298,12 +347,17 @@ const RulesSection = () => {
   return (
     <NtFrame title="Как работает биржа">
       <Box mb={1}>
-        Цены меняются раз в минуту. События компаний, события на станции и продажи станции партнёрам двигают цену
-        скачком, и он остаётся.
+        Цены меняются раз в минуту. События компаний, события на станции, работа отделов и продажи станции партнёрам
+        двигают цену скачком, и он остаётся. Последние скачки с причиной видны у компании в котировках.
+      </Box>
+      <Box mb={1}>
+        Работа отделов поднимает связанные компании, а беды станции вроде сбоя энергосети или красного кода роняют
+        их: что двигает какую компанию, написано на странице &quot;От чего зависит цена&quot;. От работы цена сдвигается не
+        больше чем на {data.work_cap}% за смену, и в следующую смену этот сдвиг не переходит.
       </Box>
       <Box mb={1}>
         Новость о событии компании выходит в канале &quot;{data.news_channel}&quot; на ньюскастерах не сразу, а в течение
-        примерно {data.news_delay} мин. после скачка цены: котировка меняется раньше новости.
+        примерно {data.news_delay} мин. после скачка цены: котировка и причина в окне биржи меняются раньше новости.
       </Box>
       <Box mb={1}>
         Бывают фальшивые пресс-релизы. Через {data.refute_minutes} мин. после выхода NT публикует опровержение, и цена
