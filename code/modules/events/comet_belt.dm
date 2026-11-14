@@ -469,9 +469,11 @@
 		flash_overlays[C] = flash
 		C.screen += flash
 		flash.do_flash()
-		addtimer(CALLBACK(src, PROC_REF(remove_flash), C), 60)
+		addtimer(CALLBACK(src, PROC_REF(remove_flash), WEAKREF(C)), 60)
 
-/datum/round_event/comet_belt/proc/remove_flash(client/C)
+/// Ушедшего клиента вспышка уже снята в on_client_deleted().
+/datum/round_event/comet_belt/proc/remove_flash(datum/weakref/client_ref)
+	var/client/C = client_ref?.resolve()
 	if(!C)
 		return
 	var/atom/movable/screen/comet_flash/flash = flash_overlays[C]

@@ -549,9 +549,11 @@
 /proc/flick_overlay(image/I, list/show_to, duration)
 	// Таймер держит только weakref: пузырь речи висит 3 с у всех слышавших, и клиента, ушедшего в это окно, BYOND искал бы обходом мира.
 	var/list/client_refs = list()
-	for(var/client/C as anything in show_to)
-		if(!C)
+	// Мобы в списке - ошибка вызывателя (мех раньше слал слышащих вперемешку с клиентами): пропускаем, а не рантайм на каждую реплику.
+	for(var/viewer in show_to)
+		if(!istype(viewer, /client) && !istype(viewer, /datum/client_interface))
 			continue
+		var/client/C = viewer
 		C.images += I
 		client_refs += WEAKREF(C)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_images_from_clients), I, client_refs), duration, TIMER_CLIENT_TIME)

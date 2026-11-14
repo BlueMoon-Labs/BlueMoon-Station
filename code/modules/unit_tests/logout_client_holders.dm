@@ -69,6 +69,17 @@
 	remove_image_from_client(flash, WEAKREF(viewer))
 	TEST_ASSERT(!(flash in viewer.images), "remove_image_from_client должен снимать картинку по weakref клиента")
 
+/// Мех шлёт пузырь речи пилота: в списке получателей мог оказаться моб, это не должно ронять показ остальным
+/datum/unit_test/flick_overlay_skips_non_clients
+
+/datum/unit_test/flick_overlay_skips_non_clients/Run()
+	var/mob/living/carbon/human/hearer = allocate(/mob/living/carbon/human)
+	var/datum/client_interface/holder_viewer/viewer = new
+	var/image/bubble = image('icons/blanks/32x32.dmi', run_loc_floor_bottom_left, "nothing")
+	flick_overlay(bubble, list(hearer, viewer, null), 10 SECONDS)
+	TEST_ASSERT(bubble in viewer.images, "Моб в списке получателей сорвал показ пузыря клиенту")
+	remove_image_from_client(bubble, WEAKREF(viewer))
+
 /// Отдельный кадр: чтения через viewer в Run() держат его во временных слотах и сбивают refcount.
 /datum/unit_test/flick_overlay_timer_holds_no_client/proc/flick_to(datum/client_interface/holder_viewer/viewer, image/flash)
 	var/list/show_to = list(viewer)
@@ -167,10 +178,18 @@
 	SEND_SIGNAL(target, COMSIG_MOB_CLIENT_LOGOUT, null)
 	GLOB.clients -= viewer
 	var/kept_live = (vision.owner_client == viewer)
+	// Сменив тело, игрок выходит уже из нового: цель логаута не видит, остаётся удаление самого клиента
+	SEND_SIGNAL(viewer, COMSIG_PARENT_QDELETING, FALSE)
+	var/kept_after_quit = !isnull(vision.owner_client)
+
+	var/obj/effect/hallucination/simple/gone_vision = allocate(/obj/effect/hallucination/simple, run_loc_floor_bottom_left, target)
+	var/datum/client_interface/holder_viewer/gone = new
+	gone_vision.owner_client = gone
 	SEND_SIGNAL(target, COMSIG_MOB_CLIENT_LOGOUT, null)
 
 	TEST_ASSERT(kept_live, "Живой клиент после смены тела должен остаться, чтобы с него сняли картинку")
-	TEST_ASSERT(isnull(vision.owner_client), "Удалённый клиент не должен держаться в галлюцинации")
+	TEST_ASSERT(!kept_after_quit, "Клиент, вышедший из нового тела, не должен держаться в галлюцинации")
+	TEST_ASSERT(isnull(gone_vision.owner_client), "Удалённый клиент не должен держаться в галлюцинации")
 
 /// Админская панель, удаляемая при закрытии, не оставляет клиента в очереди SSgarbage
 /datum/unit_test/closed_admin_panel_drops_client
@@ -180,6 +199,25 @@
 	panel.owner = new /datum/client_interface/holder_viewer
 	panel.ui_close(null)
 	TEST_ASSERT(isnull(panel.owner), "Закрытая панель снаряжения держит клиента")
+
+/// Окно секретов закрыли, пока ui_act спит на подтверждении: после него действие пишет лог от имени админа, клиент нужен живым
+/datum/unit_test/closed_admin_panel_keeps_live_client
+
+/datum/unit_test/closed_admin_panel_keeps_live_client/Run()
+	var/datum/client_interface/holder_viewer/admin = new
+	GLOB.clients += admin
+	var/datum/secrets_menu/secrets = new(allocate(/mob/living/carbon/human))
+	secrets.holder = admin
+	secrets.ui_close()
+	var/secrets_kept = (secrets.holder == admin)
+	var/datum/outfit_manager/outfits = new(null)
+	outfits.owner = admin
+	outfits.ui_close(null)
+	var/outfits_kept = (outfits.owner == admin)
+	GLOB.clients -= admin
+
+	TEST_ASSERT(secrets_kept, "Закрытие секретов отняло клиента у спящего ui_act")
+	TEST_ASSERT(outfits_kept, "Закрытие панели снаряжения отняло клиента у спящего ui_act")
 
 /// Экран карты (меню профессий, hardlight, создание персонажа) отпускает удалённого клиента, даже если его не закрыли через ui_close
 /datum/unit_test/map_view_drops_deleted_client
