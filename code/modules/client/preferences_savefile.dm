@@ -701,6 +701,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["lighting_lamp_brightness"] >> lighting_lamp_brightness
 	S["lighting_bloom_intensity"] >> lighting_bloom_intensity
 	S["lighting_quality"] >> lighting_quality
+	S["nearsigh_darkening"] >> nearsigh_darkening
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -1395,6 +1396,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["lighting_lamp_brightness"], lighting_lamp_brightness)
 	WRITE_FILE(S["lighting_bloom_intensity"], lighting_bloom_intensity)
 	WRITE_FILE(S["lighting_quality"], lighting_quality)
+	WRITE_FILE(S["nearsigh_darkening"], nearsigh_darkening)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
