@@ -41,7 +41,7 @@ SUBSYSTEM_DEF(ai_controllers)
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
-	//дорогой проход планирования раскладывается по типам контроллеров в tick_spikes.log, как у processing-подсистем
+	//дорогой проход планирования раскладывается по парам контроллер@паун в tick_spikes.log: один контроллер водит десятки разных мобов
 	var/profiling = profile_armed
 	while(length(currentrun))
 		var/datum/ai_controller/ai_controller = currentrun[currentrun.len]
@@ -58,7 +58,7 @@ SUBSYSTEM_DEF(ai_controllers)
 		if(!LAZYLEN(ai_controller.current_behaviors)) //Still no plan
 			ai_controller.planning_failed()
 		if(profiling)
-			profile_note(ai_controller.type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)), ai_controller.pawn)
+			profile_note("[ai_controller.type]@[ai_controller.pawn?.type]", max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)), ai_controller.pawn)
 
 		if(MC_TICK_CHECK)
 			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))

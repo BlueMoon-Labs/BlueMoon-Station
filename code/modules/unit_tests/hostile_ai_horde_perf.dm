@@ -129,6 +129,45 @@
 	ai_pack_object_scans_reset()
 	TEST_ASSERT(!length(GLOB.ai_pack_object_scans), "The object window reset must drop every stored scan")
 
+///Смэшер, ведущий цель без LOS, не берёт вещь из обзора сородича по ту сторону стены: видимость вещи ему потом никто не проверит
+/datum/unit_test/hostile_ai_horde_ignore_sight_skips_shared_objects/Run()
+	ai_pack_scans_reset()
+	ai_pack_object_scans_reset()
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	var/turf/corner = run_loc_floor_bottom_left
+	var/list/walls = list()
+	for(var/offset in 0 to 4)
+		var/turf/wall_turf = locate(corner.x + 2, corner.y + offset, corner.z)
+		walls[wall_turf] = wall_turf.type
+		wall_turf.ChangeTurf(/turf/closed/wall)
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, locate(corner.x + 4, corner.y, corner.z))
+	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/seer = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, locate(corner.x + 3, corner.y + 1, corner.z))
+	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/smasher = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, locate(corner.x + 1, corner.y + 1, corner.z))
+	var/obj/item/paper/old_target = allocate(/obj/item/paper, locate(corner.x, corner.y + 4, corner.z))
+	for(var/mob/living/simple_animal/hostile/hunter as anything in list(seer, smasher))
+		hunter.wanted_objects = typecacheof(/obj/structure/reagent_dispensers/fueltank)
+		hunter.ai_controller.set_blackboard_key(BB_AI_TARGETING_STRATEGY, /datum/targeting_strategy/hostile_legacy/ignore_sight)
+	var/datum/ai_controller/smasher_controller = smasher.ai_controller
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/hostile_legacy/ignore_sight)
+	smasher.target = old_target
+
+	finder.perform(0.5, seer.ai_controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	var/seer_target = seer.ai_controller.blackboard[BB_AI_CURRENT_TARGET]
+	var/sanity_pack = horde_pack_scan(smasher) == horde_pack_scan(seer)
+	var/sanity_ignores = strategy.ignores_sight(smasher)
+	finder.perform(0.5, smasher_controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	var/smasher_target = smasher_controller.blackboard[BB_AI_CURRENT_TARGET]
+
+	smasher.target = null
+	for(var/turf/wall_turf as anything in walls)
+		wall_turf.ChangeTurf(walls[wall_turf])
+	ai_pack_scans_reset()
+	ai_pack_object_scans_reset()
+	TEST_ASSERT(seer_target == tank, "Sanity: the packmate with a clear view must take the fuel tank")
+	TEST_ASSERT(sanity_pack, "Sanity: both smashers must share one pack scan")
+	TEST_ASSERT(sanity_ignores, "Sanity: an engaged smasher must ignore sight")
+	TEST_ASSERT(smasher_target != tank, "An engaged smasher took a fuel tank behind a wall from its packmate's view")
+
 ///Окно ячеек грида не пересобирается шагом внутри тех же ячеек, но пересобирается при выходе из них
 /datum/unit_test/hostile_ai_horde_cell_window_skip/Run()
 	var/mob/living/simple_animal/hostile/unit_test_horde/walker = allocate(/mob/living/simple_animal/hostile/unit_test_horde, run_loc_floor_bottom_left)
@@ -160,7 +199,7 @@
 	TEST_ASSERT(tracker.member_cells ~= far_cells, "The rebuilt window must track the cells around the new spot")
 	walker.forceMove(to_turf)
 
-///Взведённый профиль тикера планирования раскладывает проход по типам контроллеров и снимается в конце прохода
+///Взведённый профиль тикера планирования раскладывает проход по парам контроллер@паун и снимается в конце прохода
 /datum/unit_test/hostile_ai_controller_ticker_profile/Run()
 	var/mob/living/simple_animal/hostile/unit_test_horde/planner = allocate(/mob/living/simple_animal/hostile/unit_test_horde, run_loc_floor_bottom_left)
 	var/datum/ai_controller/controller = planner.ai_controller
@@ -183,7 +222,8 @@
 	var/armed_after = SSai_controllers.profile_armed
 	var/counts_after = SSai_controllers.profile_count_by_type
 	SSai_controllers.profile_cooldown_until = saved_cooldown
-	TEST_ASSERT_EQUAL(counts[controller.type], 1, "An armed planning pass must note the planned controller under its type")
+	TEST_ASSERT_EQUAL(counts["[controller.type]@[planner.type]"], 1, "An armed planning pass must note the planned controller under its type and the pawn type")
+	TEST_ASSERT_NULL(counts[controller.type], "A shared controller type alone must not hide which mobs it drives")
 	TEST_ASSERT(!armed_after, "The finished pass must disarm the profile")
 	TEST_ASSERT_NULL(counts_after, "The finished pass must drop its profile lists")
 

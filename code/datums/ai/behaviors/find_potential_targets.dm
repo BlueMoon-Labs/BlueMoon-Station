@@ -86,7 +86,7 @@
 	//гейтнут этим флагом; обычные hostile используют только spatial grid.
 	var/datum/ai_pack_scan/pack_scan = ai_pack_scan_for(hostile_mob, targeting_strategy)
 	if(istype(hostile_mob) && hostile_mob.search_objects && length(hostile_mob.wanted_objects))
-		potential_targets |= find_wanted_objects(hostile_mob, target_scan_range, pack_scan)
+		potential_targets |= find_wanted_objects(hostile_mob, target_scan_range, pack_scan, !targeting_strategy.ignores_sight(hostile_mob))
 
 	//враждебные машины: сразу только текущий z-бакет вместо глобального скана
 	var/turf/perception_turf = get_turf(perception)
@@ -311,9 +311,10 @@
 
 ///Объекты wanted_objects в обзоре. Сородич, только что смотревший почти с той же точки на ту же
 ///дальность, отдаёт свой результат: oview на 25-30 клеток - самая дорогая часть скана.
-/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects(mob/living/simple_animal/hostile/hostile_mob, scan_range, datum/ai_pack_scan/pack_scan)
+///take_shared = FALSE, когда LOS кандидата потом не проверяется: чужой обзор видит вещи за нашей стеной.
+/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects(mob/living/simple_animal/hostile/hostile_mob, scan_range, datum/ai_pack_scan/pack_scan, take_shared = TRUE)
 	var/turf/origin = get_turf(hostile_mob.targets_from)
-	if(origin && pack_scan)
+	if(origin && pack_scan && take_shared)
 		var/list/shared = pack_scan.shared_objects(origin, scan_range)
 		if(shared)
 			return shared
