@@ -105,13 +105,13 @@
 
 /obj/machinery/recharge_station/open_machine()
 	. = ..()
-	if(iscyborg(occupant) || ispAI(occupant))
+	if(iscyborg(occupant) || ispAI(occupant) || (ishuman(occupant) && isrobotic(occupant)))
 		use_power = IDLE_POWER_USE
 
 /obj/machinery/recharge_station/close_machine()
 	. = ..()
 	if(occupant)
-		if(iscyborg(occupant) || ispAI(occupant))
+		if(iscyborg(occupant) || ispAI(occupant) || (ishuman(occupant) && isrobotic(occupant)))
 			use_power = ACTIVE_POWER_USE
 		add_fingerprint(occupant)
 

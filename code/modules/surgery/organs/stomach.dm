@@ -137,6 +137,19 @@
 	icon_state = "stomach-ipc"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
 
+/obj/item/organ/stomach/ipc/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
+	. = ..()
+	if(owner)
+		RegisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(charge))
+
+/obj/item/organ/stomach/ipc/Remove(mob/living/carbon/M, special = 0)
+	UnregisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT)
+	. = ..()
+
+/obj/item/organ/stomach/ipc/proc/charge(datum/source, amount, repairs)
+	if(owner)
+		owner.adjust_nutrition(amount / 10, NUTRITION_LEVEL_WELL_FED)
+
 /obj/item/organ/stomach/ipc/biogenerator
 	name = "biogenerator"
 	desc = "Биогенератор, перерабатывающий пищу в энергию для синтетика."
