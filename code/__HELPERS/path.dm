@@ -92,6 +92,20 @@
 #define JPS_TURF_NO_BLOCKERS (1<<1)
 ///Атмосфера клетки не вредит путнику (или он к ней равнодушен)
 #define JPS_TURF_SAFE (1<<2)
+///Клетка вошла бы в путь без оговорок: между двумя такими соседями любое ребро открыто, проверки рёбер не нужны
+#define JPS_TURF_CLEAR (1<<3)
+#define JPS_CLEAR(T) (T && ((turf_facts[T] || get_turf_facts(T)) & JPS_TURF_CLEAR))
+///Скан проверяет тик раз в столько шагов (маска), чтобы одно раскрытие узла не съедало тик целиком
+#define JPS_YIELD_STEP_MASK 7
+
+///Порядок сканов к цели, предел боковых сканов, быстрые открытые клетки и уступка тика внутри сканов; бенч (--define=AI_HORDE_BENCH) переключает на лету
+#ifdef AI_HORDE_BENCH
+#define JPS_SCAN_SAVINGS GLOB.jps_scan_savings
+#define JPS_BENCH_CHECKPOINT GLOB.jps_bench_gap = max(GLOB.jps_bench_gap, TICK_USAGE - GLOB.jps_bench_last_check); GLOB.jps_bench_last_check = TICK_USAGE
+#else
+#define JPS_SCAN_SAVINGS TRUE
+#define JPS_BENCH_CHECKPOINT
+#endif
 
 /// The JPS Node datum represents a turf that we find interesting enough to add to the open list and possibly search for new tiles from
 /datum/jps_node
@@ -165,6 +179,10 @@
 	/// TRUE only when the open list ran dry without a path: proof that no clean route
 	/// exists inside max_distance. Early bail-outs and cancellations leave it FALSE.
 	var/exhausted_search = FALSE
+	///Поиск уснул посреди скана, а путник или владелец отмены за это время удалён
+	var/aborted = FALSE
+	///Сканы идут к цели первыми, боковые сканы обрезаны бюджетом длины, тик уступается внутри сканов
+	var/scan_savings = FALSE
 
 	// general pathfinding vars/args
 	/// An ID card representing what access we have and what doors we can open. Its location relative to the pathing atom is irrelevant
@@ -194,6 +212,7 @@
 	src.cancel_source = cancel_source
 	var/mob/living/simple_animal/pathing_animal = path_owner
 	check_environment = istype(pathing_animal) && pathing_animal.requires_safe_atmosphere()
+	scan_savings = JPS_SCAN_SAVINGS
 
 /datum/pathfind/Destroy(force, ...)
 	pathing_movable = null
@@ -265,11 +284,48 @@
 		if((thing.density || thing.can_astar_pass != CANASTARPASS_DENSITY) && !QDELETED(thing))
 			. &= ~JPS_TURF_NO_BLOCKERS
 			break
+	if((. & (JPS_TURF_NO_BLOCKERS | JPS_TURF_SAFE)) == (JPS_TURF_NO_BLOCKERS | JPS_TURF_SAFE) && !tile.density && tile != avoid && !(simulated_only && SSpathfinder.space_type_cache[tile.type]))
+		. |= JPS_TURF_CLEAR
 	turf_facts[tile] = .
 
 /// Hot JPS step predicate with cheap exclusions first and a per-search edge cache.
 /datum/pathfind/proc/can_step(turf/from_turf, turf/to_turf, direction)
+	#ifdef AI_HORDE_BENCH
+	GLOB.jps_bench_can_steps++
+	#endif
 	return to_turf && !to_turf.density && to_turf != avoid && !(simulated_only && SSpathfinder.space_type_cache[to_turf.type]) && !link_blocked(from_turf, to_turf, direction)
+
+/datum/pathfind/proc/search_cancelled()
+	return !pathing_movable || QDELETED(pathing_movable) || (cancel_source && QDELETED(cancel_source))
+
+///Уступить тик; после сна поиск продолжается с того же шага, если путник ещё жив. TRUE - поиск надо бросить
+/datum/pathfind/proc/yield_search()
+	stoplag()
+	#ifdef AI_HORDE_BENCH
+	GLOB.jps_bench_last_check = TICK_USAGE
+	#endif
+	if(search_cancelled())
+		aborted = TRUE
+	return aborted
+
+///Восемь направлений сканов, ближайшие к цели первыми: найденный путь обрывает раскрытие узла, и сканы в сторону от цели обычно не нужны
+/proc/jps_scan_order(goal_dir)
+	var/static/list/orders
+	if(!orders)
+		orders = new /list(SOUTHWEST + 1)
+		//без направления к цели - прежний порядок
+		orders[1] = list(EAST, WEST, NORTH, SOUTH, NORTHEAST, SOUTHEAST, NORTHWEST, SOUTHWEST)
+		for(var/direction in GLOB.cardinals)
+			var/list/side = (direction & (NORTH | SOUTH)) ? list(EAST, WEST) : list(NORTH, SOUTH)
+			var/back = REVERSE_DIR(direction)
+			orders[direction + 1] = list(direction, direction | side[1], direction | side[2], side[1], side[2], back | side[1], back | side[2], back)
+		for(var/direction in GLOB.diagonals)
+			var/vertical = direction & (NORTH | SOUTH)
+			var/horizontal = direction & (EAST | WEST)
+			var/flip_vertical = REVERSE_DIR(vertical)
+			var/flip_horizontal = REVERSE_DIR(horizontal)
+			orders[direction + 1] = list(direction, vertical, horizontal, vertical | flip_horizontal, flip_vertical | horizontal, flip_horizontal, flip_vertical, flip_vertical | flip_horizontal)
+	return orders[goal_dir + 1]
 
 /**
  * search() is the proc you call to kick off and handle the actual pathfinding, and kills the pathfind datum instance when it's done.
@@ -295,24 +351,25 @@
 
 	//then run the main loop
 	while(!open.is_empty() && !path)
-		if(!pathing_movable || (cancel_source && QDELETED(cancel_source)))
-			return
+		if(aborted || search_cancelled())
+			aborted = TRUE
+			break
 		current_processed_node = open.pop() //get the lower f_value turf in the open list
 		if(max_distance && (current_processed_node.number_tiles > max_distance))//if too many steps, don't process that path
 			continue
 
 		var/turf/current_turf = current_processed_node.tile
-		// Fixed calls avoid rebuilding two direction lists for every expanded node.
-		lateral_scan_spec(current_turf, EAST, current_processed_node)
-		lateral_scan_spec(current_turf, WEST, current_processed_node)
-		lateral_scan_spec(current_turf, NORTH, current_processed_node)
-		lateral_scan_spec(current_turf, SOUTH, current_processed_node)
-		diag_scan_spec(current_turf, NORTHEAST, current_processed_node)
-		diag_scan_spec(current_turf, SOUTHEAST, current_processed_node)
-		diag_scan_spec(current_turf, NORTHWEST, current_processed_node)
-		diag_scan_spec(current_turf, SOUTHWEST, current_processed_node)
+		for(var/heading in jps_scan_order(scan_savings ? get_dir(current_turf, end) : 0))
+			if(ISDIAGONALDIR(heading))
+				diag_scan_spec(current_turf, heading, current_processed_node)
+			else
+				lateral_scan_spec(current_turf, heading, current_processed_node)
+			if(path || aborted)
+				break
 
-		CHECK_TICK
+		JPS_BENCH_CHECKPOINT
+		if(!aborted && TICK_CHECK)
+			yield_search()
 		#ifdef UNIT_TESTS
 		if(!test_checkpoint_sent)
 			test_checkpoint_sent = TRUE
@@ -320,7 +377,9 @@
 		#endif
 
 	//we're done! reverse the path to get it from start to finish
-	if(path)
+	if(aborted)
+		path = null
+	else if(path)
 		for(var/i = 1 to round(0.5 * length(path)))
 			path.Swap(i, length(path) - i + 1)
 	else
@@ -357,8 +416,9 @@
  * * original_turf: What turf did we start this scan at?
  * * heading: What direction are we going in? Obviously, should be cardinal
  * * parent_node: Only given for normal lateral scans, if we don't have one, we're a diagonal subscan.
+ * * step_budget: Subscans only: how many steps are left before the path would outgrow max_distance. Null means unbounded.
 */
-/datum/pathfind/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node)
+/datum/pathfind/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node, step_budget)
 	var/steps_taken = 0
 
 	var/turf/current_turf = original_turf
@@ -389,13 +449,16 @@
 			blocked_side_b = SOUTH
 			forced_diagonal_b = SOUTHWEST
 
-	if(path)
+	if(path || aborted)
 		return
+	var/fast = scan_savings
 	while(TRUE)
 		lag_turf = current_turf
 		current_turf = get_step(current_turf, heading)
 		steps_taken++
-		if(!can_step(lag_turf, current_turf, heading))
+		//две чистые клетки подряд: ребро между ними открыто без проверки
+		var/open_step = fast && JPS_CLEAR(current_turf) && JPS_CLEAR(lag_turf)
+		if(!open_step && !can_step(lag_turf, current_turf, heading))
 			return
 
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
@@ -411,12 +474,30 @@
 
 		if(parent_node && max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
+		if(!isnull(step_budget) && steps_taken > step_budget)
+			return
 
-		if(LATERAL_FORCED(current_turf, blocked_side_a, forced_diagonal_a, heading) || LATERAL_FORCED(current_turf, blocked_side_b, forced_diagonal_b, heading))
+		//вынужденного соседа нет, если обе стороны и обе диагонали впереди чистые
+		var/sides_open = FALSE
+		if(open_step)
+			var/turf/probe = get_step(current_turf, blocked_side_a)
+			if(JPS_CLEAR(probe))
+				probe = get_step(current_turf, forced_diagonal_a)
+				if(JPS_CLEAR(probe))
+					probe = get_step(current_turf, blocked_side_b)
+					if(JPS_CLEAR(probe))
+						probe = get_step(current_turf, forced_diagonal_b)
+						sides_open = JPS_CLEAR(probe)
+		if(!sides_open && (LATERAL_FORCED(current_turf, blocked_side_a, forced_diagonal_a, heading) || LATERAL_FORCED(current_turf, blocked_side_b, forced_diagonal_b, heading)))
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
 			if(parent_node) // if we're a diagonal subscan, we'll handle adding ourselves to the heap in the diag
 				open.insert(newnode)
 			return newnode
+
+		if(fast && !(steps_taken & JPS_YIELD_STEP_MASK))
+			JPS_BENCH_CHECKPOINT
+			if(TICK_CHECK && yield_search())
+				return
 
 /**
  * For performing diagonal scans from a given starting turf.
@@ -471,13 +552,26 @@
 	var/vertical_heading = heading & (NORTH|SOUTH)
 	var/horizontal_heading = heading & (EAST|WEST)
 
-	if(path)
+	if(path || aborted)
 		return
+	var/fast = scan_savings
 	while(TRUE)
 		lag_turf = current_turf
 		current_turf = get_step(current_turf, heading)
 		steps_taken++
-		if(!can_step(lag_turf, current_turf, heading))
+		//стороны шага - это и середины диагонального ребра, и задние клетки проверки вынужденных соседей
+		var/turf/side_a
+		var/turf/side_b
+		var/side_a_clear = FALSE
+		var/side_b_clear = FALSE
+		var/open_step = FALSE
+		if(fast && JPS_CLEAR(current_turf) && JPS_CLEAR(lag_turf))
+			side_a = get_step(current_turf, blocked_side_a)
+			side_b = get_step(current_turf, blocked_side_b)
+			side_a_clear = JPS_CLEAR(side_a)
+			side_b_clear = JPS_CLEAR(side_b)
+			open_step = side_a_clear || side_b_clear
+		if(!open_step && !can_step(lag_turf, current_turf, heading))
 			return
 
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
@@ -493,10 +587,21 @@
 		if(max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
 
-		var/interesting = DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_a, forced_diagonal_a, vertical_heading) || DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_b, forced_diagonal_b, horizontal_heading)
+		var/interesting
+		if(side_a_clear && side_b_clear)
+			var/turf/probe = get_step(current_turf, forced_diagonal_a)
+			if(JPS_CLEAR(probe))
+				probe = get_step(current_turf, forced_diagonal_b)
+				if(JPS_CLEAR(probe))
+					interesting = FALSE
+		if(isnull(interesting))
+			interesting = DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_a, forced_diagonal_a, vertical_heading) || DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_b, forced_diagonal_b, horizontal_heading)
 		var/datum/jps_node/possible_child_node // otherwise, did one of our lateral subscans turn up something?
 		if(!interesting)
-			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a) || lateral_scan_spec(current_turf, lateral_heading_b)
+			var/subscan_budget = (fast && max_distance) ? max_distance - parent_node.number_tiles - steps_taken : null
+			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a, null, subscan_budget) || lateral_scan_spec(current_turf, lateral_heading_b, null, subscan_budget)
+			if(aborted)
+				return
 
 		if(interesting || possible_child_node)
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
@@ -507,6 +612,11 @@
 				if(possible_child_node.tile == end || (mintargetdist && (get_dist(possible_child_node.tile, end) <= mintargetdist)))
 					unwind_path(possible_child_node)
 			return
+
+		if(fast)
+			JPS_BENCH_CHECKPOINT
+			if(TICK_CHECK && yield_search())
+				return
 
 /**
  * For seeing if we can actually move between 2 given turfs while accounting for our access and the caller's pass_flags
@@ -581,3 +691,8 @@
 #undef JPS_TURF_KNOWN
 #undef JPS_TURF_NO_BLOCKERS
 #undef JPS_TURF_SAFE
+#undef JPS_TURF_CLEAR
+#undef JPS_CLEAR
+#undef JPS_YIELD_STEP_MASK
+#undef JPS_SCAN_SAVINGS
+#undef JPS_BENCH_CHECKPOINT

@@ -371,6 +371,7 @@
 #include "jetpack_thrust.dm"
 // #include "keybinding_init.dm"
 #include "join_render_cost.dm"
+#include "jps_pathfinding.dm"
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "latejoin_fallback.dm"
