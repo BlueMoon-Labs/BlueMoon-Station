@@ -136,9 +136,10 @@
 		return
 	html_shown = FALSE
 	var/control = shown_control || html_control
-	if(user?.client)
-		user.client << output(null, "[control]:menu.hide")
-		winshow(user.client, context_menu_html_window(control), FALSE)
+	var/client/shown_to = menu_client()
+	if(shown_to)
+		shown_to << output(null, "[control]:menu.hide")
+		winshow(shown_to, context_menu_html_window(control), FALSE)
 
 /// Клик по строке браузерного меню: choose - номер строки с 1, header - шапка; ctrl/shift/alt - модификаторы клика
 /datum/context_menu/Topic(href, list/href_list)

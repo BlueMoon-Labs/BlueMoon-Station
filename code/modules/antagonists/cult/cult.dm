@@ -115,7 +115,7 @@
 
 	if(cult_team?.blood_target && cult_team.blood_target_image && current.client)
 		current.client.images += cult_team.blood_target_image
-		cult_team.blood_target_image_recipients |= current.client // BLUEMOON FIX: track recipient
+		cult_team.track_blood_target_recipient(current.client)
 
 
 /datum/antagonist/cult/proc/equip_cultist(metal=TRUE)
@@ -312,6 +312,15 @@
 /datum/team/cult/proc/on_blood_target_destroyed(datum/source)
 	SIGNAL_HANDLER
 	reset_blood_target(src)
+
+/// Метка видна 90 секунд: культист, вышедший в это время, не держится в списке и не стоит обхода мира на логауте.
+/datum/team/cult/proc/track_blood_target_recipient(client/recipient)
+	blood_target_image_recipients |= recipient
+	RegisterSignal(recipient, COMSIG_PARENT_QDELETING, PROC_REF(on_blood_target_recipient_deleted), override = TRUE)
+
+/datum/team/cult/proc/on_blood_target_recipient_deleted(client/source)
+	SIGNAL_HANDLER
+	blood_target_image_recipients -= source
 
 /datum/team/cult/Destroy()
 	if(blood_target)

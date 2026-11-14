@@ -62,6 +62,9 @@ SUBSYSTEM_DEF(ping_diag)
 	var/minute_rows_join_us = 0
 	var/minute_rows_free_us = 0
 	var/minute_rows_client_max_us = 0
+	/// Проба дерева строк на срезе минуты, мкс: метки hh:mm:ss и SQLtime().
+	var/minute_probe_time_us = 0
+	var/minute_probe_sqltime_us = 0
 	/// Минутная запись идёт кусками по фаерам: шаг, срез клиентов на её начало и что уже посчитано.
 	var/rows_step = PING_DIAG_ROWS_IDLE
 	/// Срез: по клиенту list(ckey, датум, x, y, z, mob_kind, view), z - null без турфа.
@@ -384,9 +387,14 @@ SUBSYSTEM_DEF(ping_diag)
 		rows_step = PING_DIAG_ROWS_WRITE_SUMMARY
 		return
 	rows_step = PING_DIAG_ROWS_CLIENTS
+	// Пробы вне замера строк: перестройка дерева строк на пробе - стопор движка, а не цена диагностики. Метка - та же проба: она первая новая строка этой секунды.
+	rustg_time_reset(PING_DIAG_PROBE_TIMER)
+	rows_stamp = time2text(world.timeofday, "hh:mm:ss")
+	var/stamp_us = rustg_time_microseconds(PING_DIAG_PROBE_TIMER)
+	minute_probe_time_us = max(stamp_us, ping_diag_string_tree_probe(rows_stamp))
+	minute_probe_sqltime_us = ping_diag_string_tree_probe(SQLtime())
 	rustg_time_reset(PING_DIAG_ROWS_TIMER)
 	rows_now = REALTIMEOFDAY
-	rows_stamp = time2text(world.timeofday, "hh:mm:ss")
 	rows_world_time = world.time
 	rows_clients = length(clients)
 	rows_entries = list()
@@ -530,11 +538,13 @@ SUBSYSTEM_DEF(ping_diag)
 		ping_diag_us_to_ms(minute_rows_join_us),
 		ping_diag_us_to_ms(minute_rows_free_us),
 		ping_diag_us_to_ms(minute_rows_client_max_us),
+		num2text(minute_probe_time_us, 10),
+		num2text(minute_probe_sqltime_us, 10),
 	)
 	minute_events = 0
 	minute_ours_ms = 0
 	minute_yours_ms = 0
-	var/static/list/minute_costs = list("minute_fires", "minute_fire_us", "minute_fire_max_us", "minute_proc_us", "minute_log_us", "minute_rows_us", "minute_rows_slices", "minute_rows_snapshot_us", "minute_rows_csv_us", "minute_rows_raw_us", "minute_rows_lines_us", "minute_rows_join_us", "minute_rows_free_us", "minute_rows_client_max_us")
+	var/static/list/minute_costs = list("minute_fires", "minute_fire_us", "minute_fire_max_us", "minute_proc_us", "minute_log_us", "minute_rows_us", "minute_rows_slices", "minute_rows_snapshot_us", "minute_rows_csv_us", "minute_rows_raw_us", "minute_rows_lines_us", "minute_rows_join_us", "minute_rows_free_us", "minute_rows_client_max_us", "minute_probe_time_us", "minute_probe_sqltime_us")
 	for(var/name in minute_costs)
 		vars[name] = 0
 	. = cells.Join(",")

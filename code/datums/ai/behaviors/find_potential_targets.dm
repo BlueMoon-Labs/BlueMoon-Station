@@ -86,7 +86,7 @@
 	//гейтнут этим флагом; обычные hostile используют только spatial grid.
 	var/datum/ai_pack_scan/pack_scan = ai_pack_scan_for(hostile_mob, targeting_strategy)
 	if(istype(hostile_mob) && hostile_mob.search_objects && length(hostile_mob.wanted_objects))
-		potential_targets |= find_wanted_objects(hostile_mob, target_scan_range, pack_scan)
+		potential_targets |= find_wanted_objects(hostile_mob, target_scan_range, pack_scan, !targeting_strategy.ignores_sight(hostile_mob))
 
 	//враждебные машины: сразу только текущий z-бакет вместо глобального скана
 	var/turf/perception_turf = get_turf(perception)
@@ -287,6 +287,9 @@
 	var/hunter_ref = pack_scan ? REF(living_mob) : null
 	for(var/atom/candidate as anything in candidates)
 		AI_METRIC_INC(candidates_examined)
+		//в орде почти весь пул - союзники, уже отвергнутые сородичем: отсекаются первой проверкой
+		if(AI_CROWD_SAVINGS && pack_rejected && pack_rejected[candidate] && candidate != validated_target)
+			continue
 		if(candidate == impervious_target || QDELETED(candidate))
 			continue
 		if(candidate == validated_target)
@@ -299,7 +302,7 @@
 		var/turf/candidate_turf = get_turf(candidate)
 		if(!candidate_turf || candidate_turf.z != perception_turf.z)
 			continue
-		if(pack_rejected && pack_rejected[candidate])
+		if(!AI_CROWD_SAVINGS && pack_rejected && pack_rejected[candidate])
 			continue
 		if(!targeting_strategy.can_attack(living_mob, candidate, aggro_range))
 			pack_scan?.note_rejection(candidate, hunter_ref)
@@ -308,12 +311,14 @@
 
 ///Объекты wanted_objects в обзоре. Сородич, только что смотревший почти с той же точки на ту же
 ///дальность, отдаёт свой результат: oview на 25-30 клеток - самая дорогая часть скана.
-/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects(mob/living/simple_animal/hostile/hostile_mob, scan_range, datum/ai_pack_scan/pack_scan)
+///take_shared = FALSE, когда LOS кандидата потом не проверяется: чужой обзор видит вещи за нашей стеной.
+/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects(mob/living/simple_animal/hostile/hostile_mob, scan_range, datum/ai_pack_scan/pack_scan, take_shared = TRUE)
 	var/turf/origin = get_turf(hostile_mob.targets_from)
-	if(origin && pack_scan)
+	if(origin && pack_scan && take_shared)
 		var/list/shared = pack_scan.shared_objects(origin, scan_range)
 		if(shared)
 			return shared
+	AI_METRIC_INC(object_scans)
 	. = typecache_filter_list(oview(scan_range, hostile_mob.targets_from), hostile_mob.wanted_objects)
 	if(origin && pack_scan)
 		pack_scan.store_objects(origin, scan_range, .)

@@ -1148,7 +1148,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /client/Del()
 	var/screen_count = length(screen)
 	var/image_count = length(images)
-	var/mob_type = mob ? "[mob.type]" : "нет"
+	var/mob/logout_mob = mob
+	var/destroy_started = TICK_USAGE_REAL
 	if(!gc_destroyed)
 		// Клиента удаляет сам BYOND, минуя qdel() - а COMSIG_PARENT_QDELETING рассылает
 		// именно qdel(). Без этой рассылки при обычном дисконнекте не срабатывала ни одна
@@ -1156,18 +1157,18 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		// клиентом, а держатели экранных объектов не успевали снять их до screen.Cut().
 		SEND_SIGNAL(src, COMSIG_PARENT_QDELETING, FALSE)
 		Destroy() //Clean up signals and timers.
-	// Логаут пишется всегда: BYOND ищет уцелевшие ссылки на клиента уже после выхода из Del(),
-	// этот столл в замер del() не попадает, а refcount после Destroy показывает, будет ли поиск.
-	var/leftover_refs = refcount(src)
-	var/deletion_started = TICK_USAGE
+	var/destroy_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - destroy_started)
+	var/refs_before_logout = refcount(src)
 	. = ..()
-	// Встроенный ..() зовёт mob.Logout(), и тот отпускает ещё часть ссылок (окна tgui, экраны).
-	// Поиск BYOND платит только за то, что дожило до этой строки.
-	var/refs_after_logout = refcount(src)
 	if(!SStick_spikes)
 		return
-	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
-	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс, моб [mob_type], экран [screen_count], картинок [image_count], refcount после Logout [refs_after_logout]", deletion_cost_ms)
+	var/report = "[ckey]: Destroy [round(destroy_cost_ms, 0.1)]мс, refcount до Logout [refs_before_logout], моб [logout_mob ? logout_mob.type : "нет"], экран [screen_count], картинок [image_count]"
+	// Встроенный ..() mob.Logout() не зовёт: BYOND вызывает его уже после выхода из Del(), сразу за ним
+	// освобождает клиента и уцелевшие ссылки на него ищет обходом мира. Итог подводит /mob/Logout().
+	if(logout_mob)
+		logout_mob.logout_report = list("\ref[src]", report, destroy_cost_ms)
+	else
+		SStick_spikes.record_slow_work("логаут", report, destroy_cost_ms)
 
 /client/Destroy()
 	QDEL_NULL(fractional_movement)
@@ -1186,8 +1187,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// Отложенные одиночные записи префов ждут таймера склейки. Игрок уходит - дописываем
 	// их сейчас: датум префов переживёт логаут и таймер бы отработал, но настройка,
 	// изменённая в последние секунды, иначе доедет до диска только если сервер доживёт до
-	// срабатывания. Пустой буфер до диска не доходит, так что обычный логаут бесплатен.
+	// срабатывания. Буфер уходит в журнал без открытия savefile, открытый savefile закрываем.
 	prefs?.flush_single_prefs()
+	prefs?.release_savefile()
 	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
 	if(listed_turf_watched || mob?.listed_turf)
 		clear_listed_turf(send_output = FALSE)
@@ -1207,6 +1209,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSblackbox.exp_update_queue -= src
 	if(SSparallax?.currentrun)
 		SSparallax.currentrun -= src
+	// Окно голосования снимает клиента в ui_close() через user.client, а в Logout он уже null:
+	// вышедший посреди автоголосования оставался в списке, и BYOND искал эту ссылку обходом мира.
+	SSvote?.voting -= src
 	SSping_diag?.forget_client(src)
 	QDEL_NULL(ping_diag_ui)
 	if(GLOB.ahelp_tickets)

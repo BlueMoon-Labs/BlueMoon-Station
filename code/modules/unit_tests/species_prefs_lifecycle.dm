@@ -42,6 +42,7 @@
 
 /datum/unit_test/species_prefs_load_reuses_matching_datum/Destroy()
 	if(fixture_path)
-		fdel(fixture_path)
+		// Весь каталог ckey: оставшийся каталог пересбор лидерборда metadollars принимал за игрока.
+		fdel(copytext(fixture_path, 1, findlasttext(fixture_path, "/") + 1))
 		fixture_path = null
 	return ..()

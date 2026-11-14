@@ -98,7 +98,8 @@
 	desc = "A series of armwraps, soaked in holy water. Makes you pretty keen to smite evil magic users."
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	enhancement = 2 //It is not magic that makes you punch harder, but force of will. Trust me.
-	secondary_trait = TRAIT_ANTIMAGIC
+	// Чужая магия не проходит, свои молитвы священник читает.
+	secondary_trait = TRAIT_ANTIMAGIC_NO_SELFBLOCK
 	var/chaplain_spawnable = TRUE
 
 /obj/item/clothing/gloves/fingerless/pugilist/chaplain/Initialize(mapload)

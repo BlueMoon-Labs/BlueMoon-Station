@@ -31,8 +31,8 @@
 	return ..()
 
 /obj/structure/swarmer/organic_processer/emp_act(severity)
-	..()
-	if(!currently_processing)
+	. = ..()
+	if(QDELETED(src) || (. & EMP_PROTECT_SELF) || !currently_processing)
 		return
 
 	sound_loop.stop()

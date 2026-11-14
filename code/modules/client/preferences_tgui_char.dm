@@ -3735,11 +3735,10 @@
 			var/list/slot_names = prefs.get_slot_names()
 			if(slot_names?[new_slot])
 				var/old_slot = prefs.default_slot
+				// Номер слота load_character записал в файл сам, полная запись префов тут не нужна.
 				if(!prefs.load_character(new_slot, bypass_cooldown = TRUE))
 					prefs.default_slot = old_slot
 					return
-				// Номер слота load_character уже записал в файл, полная запись префов уходит отдельным тиком.
-				prefs.queue_save_pref(1, TRUE)
 			else
 				if(!prefs.create_character(new_slot))
 					return
@@ -4582,6 +4581,10 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 /atom/movable/screen/map_view/character_setup_screen/display_to_client(client/show_to)
 	. = ..()
 	apply_native_camera()
+
+/atom/movable/screen/map_view/character_setup_screen/hide_from(mob/hide_from)
+	. = ..()
+	prepared_for_client = null
 
 /atom/movable/screen/map_view/character_setup_screen/proc/apply_native_camera()
 	if(registered_client)

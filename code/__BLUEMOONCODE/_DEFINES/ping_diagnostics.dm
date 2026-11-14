@@ -99,10 +99,12 @@
  * Хвост ss_* - цена самой подсистемы за минуту: фаеры, их сумма и максимум, чтение /proc, запись логов, расчёт минутных строк, мс.
  * Дальше расчёт строк по этапам: сколько фаеров занял, срез клиентов, строки CSV, выборка сырых замеров, строки ping-samples,
  * склейка, освобождение склеенного текста и самый долгий клиент.
+ * str_probe_* - новая строка за метками hh:mm:ss и SQLtime() этой секунды, мкс: единицы - норма, десятки - ветка дерева строк, см. string_tree_anchors.dm. В str_probe_time_us - большее из пробы и создания самой метки hh:mm:ss.
  */
-#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction,ss_fires,ss_fire_ms,ss_fire_max_ms,ss_proc_read_ms,ss_log_write_ms,ss_rows_ms,ss_rows_slices,ss_rows_snapshot_ms,ss_rows_csv_ms,ss_rows_raw_ms,ss_rows_lines_ms,ss_rows_join_ms,ss_rows_free_ms,ss_rows_client_max_ms"
+#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction,ss_fires,ss_fire_ms,ss_fire_max_ms,ss_proc_read_ms,ss_log_write_ms,ss_rows_ms,ss_rows_slices,ss_rows_snapshot_ms,ss_rows_csv_ms,ss_rows_raw_ms,ss_rows_lines_ms,ss_rows_join_ms,ss_rows_free_ms,ss_rows_client_max_ms,str_probe_time_us,str_probe_sqltime_us"
 
 /// Таймеры rustg_time_microseconds для самозамера подсистемы.
 #define PING_DIAG_FIRE_TIMER "ping_diag_fire"
 #define PING_DIAG_IO_TIMER "ping_diag_io"
+#define PING_DIAG_PROBE_TIMER "ping_diag_probe"
 #define PING_DIAG_ROWS_TIMER "ping_diag_rows"

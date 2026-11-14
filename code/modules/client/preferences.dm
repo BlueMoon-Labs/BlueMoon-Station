@@ -398,6 +398,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
 	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
+	/// Затемнение экрана вместо блюра при близорукости.
+	var/nearsigh_darkening = FALSE
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -538,6 +540,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/single_pref_queue
 	/// world.time, позже которого сброс буфера одиночных записей больше не переносят.
 	var/single_pref_queue_deadline = 0
+	/// Префы живой сессии: savefile держится открытым на время пачки обращений, одиночные ключи
+	/// уходят в журнал (см. open_savefile). null - решать по наличию клиента.
+	var/tmp/session_savefile = null
 
 	var/silicon_lawset
 
@@ -648,10 +653,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return
 
 /datum/preferences/Destroy(force)
-	// Буфер одиночных записей дописываем: это одно открытие файла и только если
+	// Буфер одиночных записей дописываем (в журнал или открытый файл) и только если
 	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
 	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
 	flush_single_prefs()
+	release_savefile()
 	if(pref_queue)
 		deltimer(pref_queue)
 		pref_queue = null

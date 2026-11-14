@@ -53,7 +53,9 @@
 	if(!client)
 		return FALSE
 
-	// SEND_SIGNAL(src, COMSIG_MOB_LOGIN)
+	SEND_SIGNAL(src, COMSIG_MOB_LOGIN)
+	if(!client)
+		return FALSE
 
 	if (key != client.key)
 		key = client.key

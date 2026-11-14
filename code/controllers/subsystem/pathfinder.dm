@@ -1,3 +1,6 @@
+///Сколько поиск держит слот, прежде чем слот отберут и поиск запишут в game.log
+#define PATHFINDER_LEASE_TIMEOUT (15 SECONDS)
+
 SUBSYSTEM_DEF(pathfinder)
 	name = "Pathfinder"
 	init_order = INIT_ORDER_PATH
@@ -10,6 +13,12 @@ SUBSYSTEM_DEF(pathfinder)
 	space_type_cache = typecacheof(/turf/open/space)
 	mobs = new(10)
 	circuits = new(3)
+	return ..()
+
+/datum/controller/subsystem/pathfinder/stat_entry(msg)
+	var/datum/ai_metrics/metrics = GLOB.ai_metrics
+	if(metrics)
+		msg = "Поиски:[metrics.jps_searches]|Уступки:[metrics.jps_yields]|Брошено:[metrics.jps_aborted]|Тиков ср:[metrics.jps_searches ? round(metrics.jps_search_ticks / metrics.jps_searches, 0.1) : 0] макс:[metrics.jps_search_ticks_max]"
 	return ..()
 
 /datum/flowcache
@@ -25,6 +34,8 @@ SUBSYSTEM_DEF(pathfinder)
 	var/slot
 	var/timer
 	var/atom/owner
+	///Поиск, который держит слот: для строки о слишком долгом поиске
+	var/datum/pathfind/search
 
 /datum/pathfinder_lease/Destroy(force, ...)
 	if(timer)
@@ -32,6 +43,7 @@ SUBSYSTEM_DEF(pathfinder)
 	timer = null
 	cache = null
 	owner = null
+	search = null
 	return ..()
 
 /datum/flowcache/New(n)
@@ -57,7 +69,7 @@ SUBSYSTEM_DEF(pathfinder)
 		lease.cache = src
 		lease.slot = free
 		lease.owner = M
-		lease.timer = addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/flowcache, toolong), lease), 150, TIMER_STOPPABLE)
+		lease.timer = addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/flowcache, toolong), lease), PATHFINDER_LEASE_TIMEOUT, TIMER_STOPPABLE)
 		flow[free] = lease
 		return lease
 	else
@@ -66,8 +78,11 @@ SUBSYSTEM_DEF(pathfinder)
 /datum/flowcache/proc/toolong(datum/pathfinder_lease/lease)
 	if(QDELETED(lease) || lease.cache != src || flow[lease.slot] != lease)
 		return
-	log_game("Pathfinder route took longer than 150 ticks, src bot [lease.owner]")
+	log_game(toolong_message(lease))
 	found(lease, FALSE, FALSE)
+
+/datum/flowcache/proc/toolong_message(datum/pathfinder_lease/lease)
+	return "Pathfinder route took longer than [PATHFINDER_LEASE_TIMEOUT / (1 SECONDS)] seconds, src bot [lease.owner], radius [lease.search?.max_distance], yields [lease.search?.yields]"
 
 /datum/flowcache/proc/found(datum/pathfinder_lease/lease, cancel_timer = TRUE, delete_lease = TRUE)
 	if(QDELETED(lease))
@@ -84,6 +99,9 @@ SUBSYSTEM_DEF(pathfinder)
 	run = max(run - 1, 0)
 	lease.cache = null
 	lease.owner = null
+	lease.search = null
 	lease.timer = null
 	if(delete_lease)
 		qdel(lease)
+
+#undef PATHFINDER_LEASE_TIMEOUT

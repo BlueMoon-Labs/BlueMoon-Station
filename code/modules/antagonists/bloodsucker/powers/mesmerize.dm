@@ -91,6 +91,9 @@
 /datum/action/cooldown/bloodsucker/targeted/mesmerize/proc/ContinueTarget(atom/A)
 	var/mob/living/carbon/target = A
 	var/mob/living/L = owner
+	if(!L)
+		UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
+		return
 
 	var/cancontinue = CheckCanTarget(target)
 	if(!cancontinue)
@@ -119,6 +122,12 @@
 	addtimer(CALLBACK(src, PROC_REF(apply_effects), L, target, power_time), 6 SECONDS)
 
 /datum/action/cooldown/bloodsucker/targeted/mesmerize/proc/apply_effects(aggressor, victim, power_time)
+	// За шесть секунд замаха силу могли снять вместе с ролью.
+	if(!owner)
+		success = FALSE
+		if(victim)
+			UnregisterSignal(victim, COMSIG_MOVABLE_MOVED)
+		return
 	var/mob/living/carbon/target = victim
 	var/mob/living/L = aggressor
 	if(!success)
