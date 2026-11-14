@@ -1,0 +1,823 @@
+/datum/ai_director/zombie_mission
+	var/wave_timer = 1800
+	var/min_wave_interval = 1800
+	var/max_wave_interval = 6000
+	var/max_zombies_per_wave = 40
+	var/horde_size_multiplier = 1.0
+	var/special_infected_interval = 10 MINUTES
+	var/next_special_infected_time = 0
+	var/max_special_infected = 3
+	var/min_special_event_interval = 3 MINUTES
+	var/last_special_event_time = 0
+	var/tank_special_chance = 5
+	var/last_wave_time = 0
+	var/current_wave_number = 0
+	var/list/active_zombies = list()
+	var/horde_music_playing = FALSE
+	var/horde_music_start_time = 0
+	var/horde_music_duration = 12000
+	var/horde_music_cutoff_threshold = 5
+	var/difficulty_level = 0
+	var/zombie_hp_multiplier = 1.0
+	var/initialized = FALSE
+	var/wave_timer_paused = FALSE
+	var/pause_start_time = 0
+	var/horde_music_channel = 991
+	var/spawning_wave = FALSE
+	var/fuel_generator_horde_interval = 60 SECONDS
+	var/next_fuel_generator_horde_time = 0
+
+	// In-flight wave spawn state (spawn_zombie_wave is timer-driven, not slept)
+	var/list/wave_spawn_turfs = null
+	var/list/wave_spawned_zombies = null
+	var/wave_zombies_remaining = 0
+	var/wave_failed_spawns = 0
+	var/wave_batch_size = 0
+	var/list/wave_special_types = null
+
+	// Generator horde state is rescanned at most every 5 seconds instead of
+	// iterating all generators in world on every 1s process() tick.
+	var/next_horde_state_check = 0
+	var/cached_fuel_horde_active = FALSE
+	var/cached_horde_active = FALSE
+
+	var/list/cached_mesa_areas = list()
+	var/last_mesa_areas_refresh = 0
+
+	var/list/excluded_areas = list(
+		/area/awaymission/ihategordon/hecu_abandoned_camp,
+		/area/awaymission/ihategordon/rocks,
+		/area/awaymission/ihategordon/outsideofmesa/hecu_camp,
+		/area/awaymission/ihategordon/secret_rooms,
+		/area/awaymission/ihategordon/underground_tunnels,
+		/area/awaymission/ihategordon/sectorhnorthoffices,
+		/area/awaymission/ihategordon/opposing/end,
+		/area/awaymission/ihategordon/opposing/comlpex,
+		/area/awaymission/ihategordon/opposing,
+		/area/awaymission/ihategordon/outsideofmesa/restricted_zone,
+		/area/awaymission/ihategordon/science_tunnel,
+		/area/awaymission/ihategordon/gonome,
+		/area/awaymission/ihategordon/sec_armory,
+		/area/awaymission/ihategordon/tram_tunnel,
+		/area/awaymission/ihategordon/entrance,
+		/area/awaymission/ihategordon/dorm_rooms,
+		/area/awaymission/ihategordon/hecu_camp_hall,
+		/area/awaymission/ihategordon/hecu_camp_medbay,
+		/area/awaymission/ihategordon/sci_medbay,
+		/area/awaymission/ihategordon/custom_space,
+		/area/awaymission/ihategordon/custom_walking
+	)
+
+/datum/ai_director/zombie_mission/New()
+	. = ..()
+	initialized = TRUE
+	last_wave_time = world.time
+	next_special_infected_time = world.time + special_infected_interval
+	START_PROCESSING(SSprocessing, src)
+
+/datum/ai_director/zombie_mission/Destroy()
+	STOP_PROCESSING(SSprocessing, src)
+	active_zombies.Cut()
+	. = ..()
+
+/datum/ai_director/zombie_mission/process()
+	if(!src)
+		return
+	if(!SSblackmesa_events)
+		return
+
+	var/list/mission_areas = get_mesa_areas()
+	if(!mission_areas || !mission_areas.len)
+		return
+
+	var/list/alive_players = get_alive_players_in_mission()
+	if(!alive_players || !alive_players.len)
+		if(!wave_timer_paused)
+			wave_timer_paused = TRUE
+			pause_start_time = world.time
+		next_special_infected_time = world.time + special_infected_interval
+		if(horde_music_playing)
+			manage_horde_music()
+		return
+	else
+		if(wave_timer_paused)
+			wave_timer_paused = FALSE
+			var/pause_duration = world.time - pause_start_time
+			last_wave_time += pause_duration
+			pause_start_time = 0
+
+	var/fuel_generator_active = is_fuel_generator_horde_active()
+	if(fuel_generator_active)
+		if(!next_fuel_generator_horde_time || world.time >= next_fuel_generator_horde_time)
+			if(!spawning_wave)
+				trigger_horde(TRUE)
+				next_fuel_generator_horde_time = world.time + fuel_generator_horde_interval
+	else
+		next_fuel_generator_horde_time = 0
+
+	if(world.time - last_wave_time >= wave_timer && !is_generator_horde_active())
+		attempt_spawn_wave()
+
+	if(world.time >= next_special_infected_time)
+		if(is_generator_horde_active())
+			next_special_infected_time = world.time + special_infected_interval
+		else
+			spawn_special_infected(alive_players)
+			next_special_infected_time = world.time + special_infected_interval
+
+	if(horde_music_playing)
+		manage_horde_music()
+
+/datum/ai_director/zombie_mission/proc/get_alive_special_infected()
+	var/list/specials = list()
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
+		if(!Z || QDELETED(Z) || Z.stat == DEAD)
+			active_zombies -= Z
+			continue
+		if(istype(Z, /mob/living/simple_animal/hostile/infected/hunter) || istype(Z, /mob/living/simple_animal/hostile/infected/acid_spitter) || istype(Z, /mob/living/simple_animal/hostile/infected/charger) || istype(Z, /mob/living/simple_animal/hostile/infected/tank))
+			specials += Z
+	return specials
+
+/datum/ai_director/zombie_mission/proc/has_special_type(list/alive_specials, mob_type)
+	for(var/mob/living/simple_animal/hostile/infected/Z in alive_specials)
+		if(Z.type == mob_type)
+			return TRUE
+	return FALSE
+
+/datum/ai_director/zombie_mission/proc/pick_special_infected_type(list/alive_specials)
+	// Tank is a rare bonus on high difficulty and still counts toward the cap.
+	if(difficulty_level >= 5 && prob(tank_special_chance / 100.0) && !has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/tank))
+		return /mob/living/simple_animal/hostile/infected/tank
+	// Hunter is weighted higher - it is the signature special of the event.
+	var/list/candidates = list()
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/hunter))
+		candidates[/mob/living/simple_animal/hostile/infected/hunter] = 3
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/acid_spitter))
+		candidates[/mob/living/simple_animal/hostile/infected/acid_spitter] = 1
+	if(!has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/charger))
+		candidates[/mob/living/simple_animal/hostile/infected/charger] = 1
+	if(!candidates.len)
+		return null
+	return pickweight(candidates)
+
+/datum/ai_director/zombie_mission/proc/spawn_special_infected(list/players)
+	// Specials only appear on high difficulty, silently, one at a time.
+	if(difficulty_level < 4)
+		return
+	if(!players || !players.len)
+		return
+	if(is_generator_horde_active())
+		return
+	if(world.time - last_special_event_time < min_special_event_interval)
+		return
+
+	var/list/alive_specials = get_alive_special_infected()
+	if(alive_specials.len >= max_special_infected)
+		return
+
+	var/turf/spawn_turf = find_valid_spawn_turf(players)
+	if(!spawn_turf)
+		return
+
+	var/mob_type = pick_special_infected_type(alive_specials)
+	if(!mob_type)
+		return
+
+	var/mob/living/simple_animal/hostile/infected/special = new mob_type(spawn_turf)
+	if(!special)
+		log_world("[src] Failed to spawn special infected at [spawn_turf]")
+		return
+
+	if(zombie_hp_multiplier > 1.0)
+		special.maxHealth = round(special.maxHealth * zombie_hp_multiplier)
+		special.health = special.maxHealth
+	active_zombies += special
+	last_special_event_time = world.time
+
+	// The hunter announces itself with its greeting sound on event spawn.
+	// No chat/visual announcement - the event stays silent.
+	if(istype(special, /mob/living/simple_animal/hostile/infected/hunter))
+		playsound(spawn_turf, 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 80, FALSE)
+
+/datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
+	if(!src)
+		return
+	if(is_generator_horde_active())
+		return
+	if(spawning_wave)
+		log_world("[src] Already spawning a wave, skipping duplicate spawn")
+		return
+	var/time_since_last = world.time - last_wave_time
+	if(time_since_last < wave_timer)
+		return
+
+	var/list/alive_players = get_alive_players_in_mission()
+	if(!alive_players || !alive_players.len)
+		log_world("[src] No alive players in mission, pausing wave timer")
+		wave_timer_paused = TRUE
+		pause_start_time = world.time
+		return
+
+	var/threat_level = calculate_threat_level(alive_players.len)
+	if(!threat_level || threat_level <= 0)
+		log_world("[src] Invalid threat level: [threat_level]")
+		last_wave_time = world.time
+		return
+
+	wave_timer = rand(min_wave_interval, max_wave_interval)
+
+	log_world("[src] Attempting to spawn wave with threat=[threat_level]")
+	spawn_zombie_wave(threat_level, alive_players)
+
+	last_wave_time = world.time
+	current_wave_number++
+
+/datum/ai_director/zombie_mission/proc/get_alive_players_in_mission()
+	if(!src)
+		return list()
+	var/list/players = list()
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return players
+
+	for(var/mob/living/L in GLOB.player_list)
+		if(!L || !L.client || L.stat == DEAD)
+			continue
+		// Downed/crit players are not valid horde targets - if everyone is
+		// dead or incapacitated the director pauses instead of spawning.
+		if(L.incapacitated(ignore_restraints = TRUE))
+			continue
+		var/area/A = get_area(L)
+		if(!A)
+			continue
+		if(A in valid_areas)
+			players += L
+
+	return players
+
+/datum/ai_director/zombie_mission/proc/get_mesa_areas()
+	if(!src)
+		return list()
+	// Area layout is static per round; refresh at most every 30 seconds
+	// instead of rescanning GLOB.sortedAreas on every 1s process() tick.
+	if(cached_mesa_areas.len && world.time - last_mesa_areas_refresh < 30 SECONDS)
+		return cached_mesa_areas
+	var/list/source_areas = get_areas(/area/awaymission/ihategordon, TRUE)
+	if(!source_areas || !source_areas.len)
+		return list()
+
+	var/list/areas = list()
+
+	for(var/area/A in source_areas)
+		if(!A)
+			continue
+		var/valid = TRUE
+		for(var/EA in excluded_areas)
+			if(ispath(A.type, EA))
+				valid = FALSE
+				break
+		if(valid)
+			areas += A
+	cached_mesa_areas = areas
+	last_mesa_areas_refresh = world.time
+	return areas
+
+/datum/ai_director/zombie_mission/proc/calculate_threat_level(player_count)
+	if(!player_count)
+		player_count = 1
+	var/base_threat
+	switch(difficulty_level)
+		if(0)
+			base_threat = rand(2, 3)
+		if(1)
+			base_threat = rand(4, 7)
+		if(2)
+			base_threat = rand(5, 8)
+		if(3)
+			base_threat = rand(6, 10)
+		if(4)
+			base_threat = rand(12, 18)
+		if(5)
+			base_threat = rand(14, 21)
+		if(6)
+			base_threat = rand(16, 24)
+		if(7)
+			base_threat = rand(18, 27)
+		if(8)
+			base_threat = rand(20, 30)
+		else
+			base_threat = rand(3, 4)
+
+	var/player_multiplier = 1 + (min(player_count - 1, 5) * 0.1)
+	var/threat = round(base_threat * player_multiplier)
+	return threat
+
+/datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players)
+	if(!src)
+		return
+	if(spawning_wave)
+		log_world("[src] Already spawning a wave, skipping duplicate spawn")
+		return
+	if(!threat_level || threat_level <= 0)
+		log_world("[src] Invalid threat_level: [threat_level]")
+		return
+	if(!players || !players.len)
+		log_world("[src] No players provided")
+		return
+
+	var/wave_size_bonus = (difficulty_level >= 6) ? 5 : 0
+	var/zombies_to_spawn = max(1, round(min(threat_level + wave_size_bonus, max_zombies_per_wave) * horde_size_multiplier))
+	if(zombies_to_spawn < threat_level)
+		log_world("[src] Reducing wave from [threat_level] to [zombies_to_spawn] zombies (wave=[current_wave_number + 1], multiplier=[horde_size_multiplier], cap=[max_zombies_per_wave])")
+
+	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
+	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
+		log_world("[src] No valid spawn turfs found")
+		return
+
+	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
+
+	// Spawning is split into addtimer batches - sleeping inside process()
+	// would stall the SSprocessing tick and stack concurrent spawn threads.
+	spawning_wave = TRUE
+	wave_spawn_turfs = cached_spawn_turfs
+	wave_zombies_remaining = zombies_to_spawn
+	wave_spawned_zombies = list()
+	wave_failed_spawns = 0
+	wave_batch_size = rand(5, 8)
+	wave_special_types = list()
+	spawn_wave_step()
+
+/datum/ai_director/zombie_mission/proc/is_special_mob_type(mob_type)
+	return mob_type == /mob/living/simple_animal/hostile/infected/hunter || mob_type == /mob/living/simple_animal/hostile/infected/acid_spitter || mob_type == /mob/living/simple_animal/hostile/infected/charger || mob_type == /mob/living/simple_animal/hostile/infected/tank
+
+/datum/ai_director/zombie_mission/proc/pick_wave_special_type(list/candidate_types, list/already_specials)
+	var/list/allowed = list()
+	for(var/t in candidate_types)
+		var/used = FALSE
+		for(var/spawned in already_specials)
+			if(spawned == t)
+				used = TRUE
+				break
+		if(!used)
+			allowed += t
+	if(!allowed.len)
+		return null
+	return pick(allowed)
+
+/datum/ai_director/zombie_mission/proc/pick_wave_mob_type(list/already_specials = list())
+	var/mob_type
+	// Specials spawn inside waves again, but at most one of each type per wave
+	// and only while the global special-infected cap has room.
+	var/list/alive_specials = get_alive_special_infected()
+	var/can_spawn_specials = alive_specials.len < max_special_infected
+	var/spawn_roll = rand(1, 100)
+	if(difficulty_level >= 5)
+		// Tanks scale with difficulty, capped at 30% on difficulty 8.
+		var/tank_chance = min(30, (difficulty_level - 4) * 8)
+		if(can_spawn_specials && prob(tank_chance / 100.0))
+			mob_type = pick_wave_special_type(list(/mob/living/simple_animal/hostile/infected/tank), already_specials)
+			if(!mob_type)
+				mob_type = /mob/living/simple_animal/hostile/infected
+		else if(spawn_roll <= 55)
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else if(spawn_roll <= 75)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+		else if(spawn_roll <= 85)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+		else if(can_spawn_specials)
+			mob_type = pick_wave_special_type(list(
+				/mob/living/simple_animal/hostile/infected/acid_spitter,
+				/mob/living/simple_animal/hostile/infected/charger,
+				/mob/living/simple_animal/hostile/infected/hunter
+			), already_specials)
+			if(!mob_type)
+				mob_type = /mob/living/simple_animal/hostile/infected
+		else
+			mob_type = /mob/living/simple_animal/hostile/infected
+	else if(difficulty_level >= 4)
+		// After trigger4, include acid spitter and charger in rotation
+		if(spawn_roll <= 40)
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else if(spawn_roll <= 65)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+		else if(spawn_roll <= 80)
+			mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+		else if(can_spawn_specials)
+			mob_type = pick_wave_special_type(list(
+				/mob/living/simple_animal/hostile/infected/acid_spitter,
+				/mob/living/simple_animal/hostile/infected/charger
+			), already_specials)
+			if(!mob_type)
+				mob_type = /mob/living/simple_animal/hostile/infected
+		else
+			mob_type = /mob/living/simple_animal/hostile/infected
+	else
+		// Before trigger4, only normal zombies and bruisers
+		if(prob(70))
+			mob_type = /mob/living/simple_animal/hostile/infected
+		else
+			mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
+	return mob_type
+
+/datum/ai_director/zombie_mission/proc/spawn_wave_step()
+	if(!src)
+		spawning_wave = FALSE
+		return
+
+	// The players list was captured when the wave started - revalidate every
+	// batch so spawning stops if every target died or went critical mid-wave.
+	var/list/current_players = get_alive_players_in_mission()
+	if(!current_players || !current_players.len)
+		log_world("[src] All targets dead or incapacitated, aborting wave spawn (spawned=[LAZYLEN(wave_spawned_zombies)])")
+		spawning_wave = FALSE
+		wave_spawn_turfs = null
+		wave_spawned_zombies = null
+		wave_zombies_remaining = 0
+		wave_failed_spawns = 0
+		wave_batch_size = 0
+		wave_special_types = null
+		return
+
+	var/wave_intended = wave_zombies_remaining + wave_spawned_zombies.len
+	var/batch = min(wave_batch_size, min(wave_zombies_remaining, wave_spawn_turfs.len))
+	var/attempts = 0
+
+	while(wave_zombies_remaining > 0 && attempts < batch && wave_spawn_turfs.len)
+		attempts++
+		var/turf/spawn_turf = pick(wave_spawn_turfs)
+		if(!spawn_turf)
+			log_world("[src] Failed to pick spawn turf for zombie")
+			wave_failed_spawns++
+			continue
+
+		wave_spawn_turfs -= spawn_turf
+
+		if(spawn_turf.density || spawn_turf.is_blocked_turf())
+			wave_failed_spawns++
+			continue
+
+		var/mob_type = pick_wave_mob_type(wave_special_types)
+		if(!mob_type)
+			wave_failed_spawns++
+			continue
+
+		var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
+		if(Z)
+			if(is_special_mob_type(mob_type))
+				wave_special_types += mob_type
+			if(zombie_hp_multiplier > 1.0)
+				Z.maxHealth = round(Z.maxHealth * zombie_hp_multiplier)
+				Z.health = Z.maxHealth
+				log_world("[src] Applied HP multiplier [zombie_hp_multiplier] to zombie at [spawn_turf], new HP: [Z.maxHealth]")
+
+			wave_spawned_zombies += Z
+			active_zombies += Z
+			new /obj/effect/temp_visual/dir_setting/ninja/phase(spawn_turf)
+			playsound(spawn_turf, 'sound/magic/Teleport_app.ogg', 50, TRUE)
+			log_world("[src] Spawned zombie at [spawn_turf]")
+			wave_zombies_remaining--
+		else
+			wave_failed_spawns++
+			log_world("[src] Failed to spawn zombie at [spawn_turf]")
+
+	if(wave_zombies_remaining > 0 && wave_spawn_turfs.len)
+		addtimer(CALLBACK(src, PROC_REF(spawn_wave_step)), 2 SECONDS)
+		return
+
+	var/wave_size = wave_spawned_zombies.len
+	log_world("[src] Wave complete: intended=[wave_intended], spawned=[wave_size], failed=[wave_failed_spawns]")
+	announce_wave(wave_size)
+	spawning_wave = FALSE
+	wave_spawn_turfs = null
+	wave_spawned_zombies = null
+	wave_zombies_remaining = 0
+	wave_failed_spawns = 0
+	wave_batch_size = 0
+	wave_special_types = null
+
+	if(wave_size > 0 && difficulty_level > 0)
+		start_horde_music()
+
+	// Silent special-infected event roll - spawns a single special mob
+	// separately from the wave, without any announcement or effects.
+	if(wave_size > 0 && prob(40))
+		var/list/event_players = get_alive_players_in_mission()
+		if(event_players.len)
+			spawn_special_infected(event_players)
+
+/datum/ai_director/zombie_mission/proc/find_valid_spawn_turf(list/players)
+	if(!src)
+		return null
+	if(!players || !players.len)
+		return null
+
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return null
+
+	var/min_dist = 7
+	var/max_dist = 8
+
+	var/list/player_spawn_turfs = list()
+	for(var/mob/living/target in players)
+		if(!target)
+			continue
+		var/turf/center = get_turf(target)
+		if(!center)
+			continue
+		var/area/player_area = get_area(center)
+		if(!player_area || !(player_area in valid_areas))
+			continue
+		player_spawn_turfs[target] = list()
+		for(var/turf/T in range(max_dist, center))
+			if(!T)
+				continue
+			var/dist = get_dist(T, center)
+			if(dist >= min_dist && dist <= max_dist)
+				player_spawn_turfs[target] += T
+
+	for(var/i = 1 to 50)
+		var/mob/living/target = pick(players)
+		if(!target)
+			continue
+		if(!player_spawn_turfs[target] || !LAZYLEN(player_spawn_turfs[target]))
+			continue
+
+		var/turf/T = pick(player_spawn_turfs[target])
+		if(!T)
+			continue
+
+		if(T.density)
+			continue
+
+		if(T.is_blocked_turf())
+			continue
+
+		var/area/spawn_area = get_area(T)
+		if(!spawn_area || !(spawn_area in valid_areas))
+			continue
+
+		return T
+
+	return null
+
+/datum/ai_director/zombie_mission/proc/get_cached_spawn_turfs(list/players)
+	if(!src)
+		return null
+	if(!players || !players.len)
+		return null
+
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return null
+
+	var/min_dist = 7
+	var/max_dist = 8
+
+	var/list/cached_turfs = list()
+
+	for(var/mob/living/target in players)
+		if(!target)
+			continue
+		var/turf/center = get_turf(target)
+		if(!center)
+			continue
+		var/area/player_area = get_area(center)
+		if(!player_area || !(player_area in valid_areas))
+			continue
+
+		for(var/turf/T in range(max_dist, center))
+			if(!T)
+				continue
+			var/dist = get_dist(T, center)
+			if(dist >= min_dist && dist <= max_dist)
+				if(!T.density && !T.is_blocked_turf())
+					var/area/spawn_area = get_area(T)
+					if(!spawn_area || !(spawn_area in valid_areas))
+						continue
+					if(!(T in cached_turfs))
+						cached_turfs += T
+
+	return cached_turfs
+
+/datum/ai_director/zombie_mission/proc/can_reach_player(turf/start_turf, turf/target_turf)
+	if(!src)
+		return FALSE
+	if(!start_turf || !target_turf)
+		return FALSE
+
+	var/list/visited = list()
+	var/list/queue = list(start_turf)
+	visited[start_turf] = TRUE
+	var/steps = 0
+	var/max_steps = 50
+
+	while(queue.len && steps < max_steps)
+		var/turf/current = queue[1]
+		queue.Cut(1, 2)
+		steps++
+
+		if(current == target_turf)
+			return TRUE
+
+		for(var/dir in GLOB.cardinals)
+			var/turf/next_turf = get_step(current, dir)
+			if(!next_turf || visited[next_turf])
+				continue
+			if(next_turf.density)
+				continue
+			var/blocked = FALSE
+			for(var/atom/movable/AM in next_turf)
+				if(AM.density && !istype(AM, /mob/living))
+					if(istype(AM, /obj/structure/window) || istype(AM, /obj/structure/grille) || istype(AM, /obj/structure/fence))
+						continue
+					blocked = TRUE
+					break
+			if(blocked)
+				continue
+			visited[next_turf] = TRUE
+			queue += next_turf
+
+	return FALSE
+
+/datum/ai_director/zombie_mission/proc/has_line_of_sight(turf/start_turf, turf/target_turf)
+	if(!src)
+		return FALSE
+	if(!start_turf || !target_turf)
+		return FALSE
+
+	for(var/turf/T in getline(start_turf, target_turf))
+		if(T == start_turf || T == target_turf)
+			continue
+		if(T.opacity)
+			return FALSE
+		if(T.density)
+			return FALSE
+		for(var/atom/movable/AM in T)
+			if(AM.opacity || (AM.density && !istype(AM, /mob/living)))
+				return FALSE
+
+	return TRUE
+
+/datum/ai_director/zombie_mission/proc/announce_wave(zombie_count)
+	if(!src)
+		return
+	if(!SSblackmesa_events)
+		log_world("[src] SSblackmesa_events is null, cannot announce")
+		return
+	if(!zombie_count)
+		log_world("[src] zombie_count is 0, skipping announce")
+		return
+
+	log_world("[src] Announcing wave with [zombie_count] zombies")
+	var/message = "ВНИМАНИЕ! Зафиксирована активность заражённых в Секторе H. Количество целей: [zombie_count]. Рекомендуется подготовиться к обороне."
+	SSblackmesa_events.mesa_announce(message, "Zombie Horde Detected")
+
+/datum/ai_director/zombie_mission/proc/trigger_horde(from_generator = FALSE)
+	if(!src)
+		return
+	if(spawning_wave)
+		return
+	if(is_generator_horde_active() && !from_generator)
+		return
+	var/list/alive_players = get_alive_players_in_mission()
+	if(!alive_players || !alive_players.len)
+		return
+
+	var/threat_level = calculate_threat_level(alive_players.len)
+	if(!threat_level || threat_level <= 0)
+		return
+
+	wave_timer = rand(min_wave_interval, max_wave_interval)
+	last_wave_time = world.time
+	spawn_zombie_wave(threat_level, alive_players)
+	current_wave_number++
+
+/datum/ai_director/zombie_mission/proc/refresh_horde_state()
+	// Generators self-register in GLOB.urbanism_generators - no world scan.
+	cached_fuel_horde_active = FALSE
+	cached_horde_active = FALSE
+	if(!GLOB.urbanism_generators)
+		return
+	for(var/obj/structure/urbanism_generator/gen in GLOB.urbanism_generators)
+		if(!gen || QDELETED(gen))
+			continue
+		if(istype(gen, /obj/structure/urbanism_generator/fuel))
+			var/obj/structure/urbanism_generator/fuel/F = gen
+			if(F.fuel_started && F.waiting_for_fuel)
+				cached_fuel_horde_active = TRUE
+		if(istype(gen, /obj/structure/urbanism_generator/truck) && (gen.activating || gen.active))
+			cached_horde_active = TRUE
+	cached_horde_active = cached_horde_active || cached_fuel_horde_active
+
+/datum/ai_director/zombie_mission/proc/is_fuel_generator_horde_active()
+	if(world.time >= next_horde_state_check)
+		refresh_horde_state()
+		next_horde_state_check = world.time + 5 SECONDS
+	return cached_fuel_horde_active
+
+/datum/ai_director/zombie_mission/proc/is_generator_horde_active()
+	if(world.time >= next_horde_state_check)
+		refresh_horde_state()
+		next_horde_state_check = world.time + 5 SECONDS
+	return cached_horde_active
+
+/datum/ai_director/zombie_mission/proc/start_horde_music()
+	if(!src)
+		return
+	if(horde_music_playing)
+		return
+
+	var/zombie_count = count_visible_zombies()
+	if(zombie_count <= 0)
+		return
+
+	horde_music_playing = TRUE
+	horde_music_start_time = world.time
+
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return
+
+	for(var/mob/M in GLOB.player_list)
+		if(!M || isnewplayer(M))
+			continue
+		var/area/A = get_area(M)
+		if(!A)
+			continue
+		if(A in valid_areas)
+			if(M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_AMBIENCE))
+				var/music_file = 'modular_bluemoon/sound/ambience/mesa/horde_music.ogg'
+				if(istype(A, /area/awaymission/ihategordon/custom_event))
+					music_file = 'modular_bluemoon/sound/ambience/mesa/xenhorde.ogg'
+				SEND_SOUND(M, sound(music_file, repeat = FALSE, volume = 50, channel = horde_music_channel))
+
+/datum/ai_director/zombie_mission/proc/stop_horde_music()
+	if(!src)
+		return
+	if(!horde_music_playing)
+		return
+
+	horde_music_playing = FALSE
+
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return
+
+	for(var/mob/M in GLOB.player_list)
+		if(!M || isnewplayer(M))
+			continue
+		var/area/A = get_area(M)
+		if(!A)
+			continue
+		if(A in valid_areas)
+			M.stop_sound_channel(horde_music_channel)
+
+/datum/ai_director/zombie_mission/proc/manage_horde_music()
+	if(!src)
+		return
+	if(!horde_music_playing)
+		return
+
+	var/time_elapsed = world.time - horde_music_start_time
+
+	if(time_elapsed >= horde_music_duration)
+		stop_horde_music()
+		return
+
+	var/visible_zombie_count = count_visible_zombies()
+	if(visible_zombie_count <= horde_music_cutoff_threshold)
+		stop_horde_music()
+		return
+
+/datum/ai_director/zombie_mission/proc/count_visible_zombies()
+	if(!src)
+		return 0
+	var/count = 0
+	var/list/valid_areas = get_mesa_areas()
+	if(!valid_areas || !valid_areas.len)
+		return count
+
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
+		if(!Z || QDELETED(Z) || Z.stat == DEAD)
+			active_zombies -= Z
+			continue
+		var/area/A = get_area(Z)
+		if(!A)
+			continue
+		if(A in valid_areas)
+			count++
+
+	return count
+
+/datum/ai_director/zombie_mission/proc/count_active_zombies()
+	if(!src)
+		return 0
+	var/count = 0
+	for(var/mob/living/simple_animal/hostile/infected/Z in active_zombies.Copy())
+		if(!Z || QDELETED(Z) || Z.stat == DEAD)
+			active_zombies -= Z
+			continue
+		count++
+	return count

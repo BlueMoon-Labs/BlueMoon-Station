@@ -83,6 +83,12 @@
 /turf/open/water/jungle
 	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
 
+// Variant that uses the standard open-turf atmosphere. Used by the
+// ihategordon awaymission where hundreds of these turfs sit inside a
+// planetary zone - a divergent mix keeps atmospherics churning forever.
+/turf/open/water/jungle/default_atmos
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+
 /turf/open/floor/plating/dirt/jungle
 	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
 

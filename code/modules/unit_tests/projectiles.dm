@@ -9,6 +9,10 @@
 	var/obj/item/projectile/bullet/magnetic/hyper/hyper_round = allocate(/obj/item/projectile/bullet/magnetic/hyper, run_loc_floor_bottom_left)
 	TEST_ASSERT_EQUAL(hyper_round.prehit_pierce(target), PROJECTILE_PIERCE_HIT, "A hyper round must hit and continue through its target")
 
+	var/obj/item/projectile/bullet/p50/javelin_vdd_svz/javelin_round = allocate(/obj/item/projectile/bullet/p50/javelin_vdd_svz, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(javelin_round.prehit_pierce(target), PROJECTILE_PIERCE_HIT, "A Javelin round must hit and continue through mobs")
+	TEST_ASSERT_EQUAL(javelin_round.prehit_pierce(get_turf(target)), PROJECTILE_PIERCE_NONE, "A Javelin round must not continue through non-mob turfs, including walls")
+
 	var/obj/item/projectile/bullet/cannonball/cannonball = allocate(/obj/item/projectile/bullet/cannonball, run_loc_floor_bottom_left)
 	TEST_ASSERT_EQUAL(cannonball.prehit_pierce(target), PROJECTILE_PIERCE_HIT, "A cannonball with momentum must hit and continue")
 	TEST_ASSERT_EQUAL(cannonball.damage, 100, "A pierced target must consume cannonball momentum")
