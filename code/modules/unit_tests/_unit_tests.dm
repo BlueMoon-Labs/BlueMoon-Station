@@ -532,6 +532,7 @@
 #include "statpanel_mc_tab.dm"
 #include "storage_plane.dm"
 // #include "strippable.dm"
+#include "string_tree_anchors.dm"
 #include "strippable_hands_gate.dm"
 #include "subsystem_init.dm"
 #include "surgeries.dm"
