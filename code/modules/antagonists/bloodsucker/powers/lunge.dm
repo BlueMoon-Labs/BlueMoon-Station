@@ -39,5 +39,8 @@
 
 /datum/action/cooldown/bloodsucker/lunge/DeactivatePower(mob/living/user = owner)
 	. = ..()
+	// Отложенное выключение после рывка приходит и к силе, уже снятой с роли.
+	if(!user)
+		return
 	qdel(user.GetComponent(/datum/component/tackler))
 	UnregisterSignal(user, COMSIG_CARBON_TACKLED)

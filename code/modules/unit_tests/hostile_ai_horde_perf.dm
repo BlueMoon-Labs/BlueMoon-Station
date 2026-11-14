@@ -29,7 +29,7 @@
 
 /mob/living/simple_animal/hostile/unit_test_horde/infected_like/Initialize(mapload)
 	. = ..()
-	wanted_objects = typecacheof(list(/obj/structure/reagent_dispensers/fueltank), TRUE)
+	wanted_objects = typecacheof(list(/obj/structure/reagent_dispensers/fueltank))
 
 ///Эталон фильтра пула без общей памяти: candidate_passes() на каждого кандидата
 /proc/horde_reference_filter(mob/living/simple_animal/hostile/hunter, list/pool)
@@ -107,7 +107,7 @@
 /datum/unit_test/hostile_ai_horde_shared_object_scan/Run()
 	ai_pack_scans_reset()
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
-	allocate(/obj/structure/reagent_dispensers/fueltank, run_loc_floor_top_right)
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, run_loc_floor_top_right)
 	var/turf/first_spot = run_loc_floor_bottom_left
 	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/first = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, first_spot)
 	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/neighbour = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, get_step(first_spot, NORTH))
@@ -116,13 +116,18 @@
 	TEST_ASSERT_NOTNULL(pack_scan, "Object hunters of one type must share a pack scan")
 
 	var/list/first_hits = finder.find_wanted_objects(first, 25, pack_scan)
-	TEST_ASSERT(finder.find_wanted_objects(neighbour, 25, pack_scan) == first_hits, "A packmate one tile away must reuse the stored object scan")
+	TEST_ASSERT(length(first_hits) == 1 && first_hits[1] == tank, "Sanity: the first scan must find the fuel tank, found [length(first_hits)] objects")
+	var/scans_before = GLOB.ai_metrics.object_scans
+	var/list/neighbour_hits = finder.find_wanted_objects(neighbour, 25, pack_scan)
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.object_scans, scans_before, "A packmate one tile away must not run its own oview")
+	TEST_ASSERT(neighbour_hits == first_hits && (tank in neighbour_hits), "A packmate one tile away must reuse the stored object scan")
 	TEST_ASSERT(finder.find_wanted_objects(neighbour, 9, pack_scan) != first_hits, "Another scan range must not reuse the stored object scan")
 	//дальний обзор делится на четверть дальности, ближний - на три клетки
 	TEST_ASSERT(finder.find_wanted_objects(far, 25, pack_scan) == first_hits, "A packmate four tiles away must reuse a long-range object scan")
 	var/turf/seven_away = locate(first_spot.x + 7, first_spot.y, first_spot.z)
 	TEST_ASSERT_NULL(pack_scan.shared_objects(seven_away, 25), "A packmate seven tiles away must look for itself")
 	var/list/short_hits = finder.find_wanted_objects(first, 9, pack_scan)
+	TEST_ASSERT(tank in short_hits, "Sanity: the short scan must find the fuel tank")
 	TEST_ASSERT(pack_scan.shared_objects(get_turf(neighbour), 9) == short_hits, "Sanity: a short scan is shared one tile away")
 	TEST_ASSERT_NULL(pack_scan.shared_objects(get_turf(far), 9), "A short scan must not be shared four tiles away")
 	ai_pack_scans_reset()

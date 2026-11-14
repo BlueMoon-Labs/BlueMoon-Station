@@ -314,6 +314,61 @@
 	TEST_ASSERT_EQUAL(requests, 1, "Пока поиск пути обезьяны ждёт слот, второй вызов начал ещё один поиск")
 	TEST_ASSERT(!walker.path_search_until, "Поиск пути обезьяны не закончился и не снял отметку")
 
+///Поиск, переживший свою отметку, не снимает отметку следующего поиска
+/datum/unit_test/monkey_stale_path_search_keeps_newer_mark/Run()
+	var/mob/living/carbon/monkey/walker = allocate(/mob/living/carbon/monkey, run_loc_floor_bottom_left)
+	var/datum/flowcache/cache = SSpathfinder.mobs
+	var/saved_run = cache.run
+	var/searches_before = GLOB.ai_metrics.jps_searches
+	cache.run = cache.lcount
+	INVOKE_ASYNC(walker, TYPE_PROC_REF(/mob/living/carbon/monkey, walk2derpless), run_loc_floor_top_right)
+	cache.run = saved_run
+	TEST_ASSERT(walker.path_search_until, "Sanity: поиск обезьяны начался и поставил отметку")
+	var/newer_mark = walker.path_search_until + 1
+	walker.path_search_until = newer_mark
+	var/waited = 0
+	while(GLOB.ai_metrics.jps_searches == searches_before && waited < 5 SECONDS)
+		sleep(world.tick_lag)
+		waited += world.tick_lag
+	sleep(world.tick_lag)
+	walk(walker, 0)
+	TEST_ASSERT(GLOB.ai_metrics.jps_searches > searches_before, "Sanity: старый поиск обезьяны закончился")
+	TEST_ASSERT_EQUAL(walker.path_search_until, newer_mark, "Закончившийся старый поиск снял отметку идущего нового")
+
+///Бот ищет путь к призыву один раз, пока поиск ждёт слот, а результат сброшенного призыва отбрасывает
+/datum/unit_test/bot_single_summon_path_search/Run()
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, run_loc_floor_bottom_left)
+	bot.toggle_ai(AI_OFF)
+	bot.auto_patrol = FALSE
+	bot.summon_target = run_loc_floor_top_right
+	bot.mode = BOT_SUMMON
+	var/datum/flowcache/cache = SSpathfinder.mobs
+	var/saved_run = cache.run
+	var/requests_before = GLOB.ai_metrics.jps_requests
+	cache.run = cache.lcount
+	bot.calc_summon_path()
+	bot.calc_summon_path()
+	var/requests = GLOB.ai_metrics.jps_requests - requests_before
+	cache.run = saved_run
+	var/waited = 0
+	while(bot.summon_path_search_until && waited < 5 SECONDS)
+		sleep(world.tick_lag)
+		waited += world.tick_lag
+	TEST_ASSERT_EQUAL(requests, 1, "Пока поиск пути к призыву ждёт слот, второй вызов начал ещё один поиск")
+	TEST_ASSERT(!bot.summon_path_search_until, "Поиск пути к призыву не закончился и не снял отметку")
+	TEST_ASSERT(length(bot.path), "Бот нашёл путь к месту призыва")
+
+	bot.set_path(null)
+	cache.run = cache.lcount
+	bot.calc_summon_path()
+	cache.run = saved_run
+	bot.bot_reset()
+	waited = 0
+	while(bot.summon_path_search_until && waited < 5 SECONDS)
+		sleep(world.tick_lag)
+		waited += world.tick_lag
+	TEST_ASSERT(!length(bot.path), "Сброшенный во время поиска бот взял путь к старому призыву")
+
 #ifdef AI_HORDE_BENCH
 GLOBAL_VAR_INIT(jps_bench_slice_max, 0)
 

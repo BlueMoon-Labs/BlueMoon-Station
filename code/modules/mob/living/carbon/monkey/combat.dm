@@ -161,9 +161,12 @@
 	if(myPath.len <= 0)
 		if(world.time < path_search_until)
 			return FALSE
-		path_search_until = world.time + MONKEY_PATH_SEARCH_TIMEOUT
+		var/deadline = world.time + MONKEY_PATH_SEARCH_TIMEOUT
+		path_search_until = deadline
 		var/list/new_path = get_path_to(src, target, 250, 1, cancel_source = src)
-		path_search_until = 0
+		// Поиск, переживший свою отметку, не снимает отметку следующего.
+		if(path_search_until == deadline)
+			path_search_until = 0
 		if(QDELETED(src) || QDELETED(target))
 			return FALSE
 		myPath = new_path

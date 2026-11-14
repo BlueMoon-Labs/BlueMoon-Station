@@ -257,6 +257,131 @@
 	TEST_ASSERT(!implant.hijacking, "Извлечённый имплант не считает себя занятым.")
 	TEST_ASSERT_EQUAL(user.light_range, 0, "Бывший носитель не светится.")
 
+/proc/hijack_test_wait(obj/machinery/power/apc/apc)
+	var/waited = 0
+	while(apc.being_hijacked && waited < 3 SECONDS)
+		sleep(world.tick_lag)
+		waited += world.tick_lag
+
+/datum/unit_test/hijack_apc_at_area_limit_releases_flags/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/obj/item/implant/hijack/implant = allocate(/obj/item/implant/hijack)
+	TEST_ASSERT(implant.implant(user, null, TRUE), "Имплант встаёт.")
+	TEST_ASSERT_NOTNULL(apc.area, "APC стоит в зоне.")
+	for(var/area/other as anything in GLOB.sortedAreas)
+		if(other != apc.area && length(user.siliconaccessareas) < HIJACK_APC_MAX_AMOUNT)
+			user.siliconaccessareas += other
+	TEST_ASSERT_EQUAL(length(user.siliconaccessareas), HIJACK_APC_MAX_AMOUNT, "Взломщик уже держит предельное число зон.")
+	user.cached_multiplicative_actions_slowdown = 0.05
+	INVOKE_ASYNC(apc, TYPE_PROC_REF(/obj/machinery/power/apc, hijack), user)
+	TEST_ASSERT(apc.being_hijacked, "Взлом начался.")
+	hijack_test_wait(apc)
+	var/stuck_apc = apc.being_hijacked
+	var/stuck_implant = implant.hijacking
+	var/taken = (apc.area in user.siliconaccessareas)
+	user.siliconaccessareas = list()
+	TEST_ASSERT(!stuck_apc, "Взлом сверх предела зон снят с APC.")
+	TEST_ASSERT(!stuck_implant, "Имплант после отказа по пределу зон снова свободен.")
+	TEST_ASSERT(!taken && !apc.hijacker, "Шестнадцатая зона не взята.")
+
+/datum/unit_test/hijack_apc_counter_after_relinquish/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/mob/living/carbon/human/previous = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/obj/item/implant/hijack/implant = allocate(/obj/item/implant/hijack)
+	TEST_ASSERT(implant.implant(user, null, TRUE), "Имплант встаёт.")
+	TEST_ASSERT(previous.toggleSiliconAccessArea(apc.area), "Прежний взломщик держит зону.")
+	apc.hijacker = previous
+	user.cached_multiplicative_actions_slowdown = 0.05
+	INVOKE_ASYNC(apc, TYPE_PROC_REF(/obj/machinery/power/apc, hijack), user)
+	TEST_ASSERT(apc.being_hijacked, "Контр-взлом начался.")
+	// Relinquish APC прежнего владельца посреди контр-взлома.
+	apc.hijacker = null
+	previous.toggleSiliconAccessArea(apc.area)
+	hijack_test_wait(apc)
+	TEST_ASSERT(!apc.being_hijacked, "Контр-взлом отпущенного APC закончился.")
+	TEST_ASSERT(!implant.hijacking, "Имплант после контр-взлома свободен.")
+	TEST_ASSERT_EQUAL(apc.hijacker, user, "Отпущенный APC достался контр-взломщику.")
+	TEST_ASSERT(!(apc.area in previous.siliconaccessareas), "Прежний взломщик зону не вернул.")
+	user.siliconaccessareas = list()
+	apc.hijacker = null
+
+/datum/unit_test/hijack_apc_implant_removed_mid_hijack/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	apc.hijack(stranger)
+	TEST_ASSERT(!apc.being_hijacked, "Без импланта взлом не начинается.")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/obj/item/implant/hijack/implant = allocate(/obj/item/implant/hijack)
+	TEST_ASSERT(implant.implant(user, null, TRUE), "Имплант встаёт.")
+	user.cached_multiplicative_actions_slowdown = 0.05
+	INVOKE_ASYNC(apc, TYPE_PROC_REF(/obj/machinery/power/apc, hijack), user)
+	TEST_ASSERT(apc.being_hijacked, "Взлом начался.")
+	implant.removed(user)
+	hijack_test_wait(apc)
+	var/taken = (apc.area in user.siliconaccessareas)
+	user.siliconaccessareas = list()
+	TEST_ASSERT(!apc.being_hijacked, "Взлом извлечённым имплантом снят с APC.")
+	TEST_ASSERT(!implant.hijacking, "Извлечённый имплант не считает себя занятым.")
+	TEST_ASSERT(!taken && !apc.hijacker, "Без импланта зона не взята.")
+
+/datum/unit_test/hijack_apc_abilities_only_for_hijacker/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	if(!apc.cell)
+		apc.cell = new /obj/item/stock_parts/cell/high(apc)
+	apc.cell.charge = apc.cell.maxcharge
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/obj/item/implant/hijack/implant = allocate(/obj/item/implant/hijack)
+	var/obj/item/implant/hijack/stranger_implant = allocate(/obj/item/implant/hijack)
+	TEST_ASSERT(implant.implant(user, null, TRUE) && stranger_implant.implant(stranger, null, TRUE), "Импланты встают.")
+	implant.activate()
+	stranger_implant.activate()
+	TEST_ASSERT_NULL(apc.hijack_ability_implant(user, 85), "Невзломанный APC никому не даёт осушить ячейку.")
+	apc.hijacker = user
+	TEST_ASSERT(apc.hijack_ability_implant(user, 85) == implant, "Взломщик может осушить свой APC.")
+	TEST_ASSERT_NULL(apc.hijack_ability_implant(stranger, 35), "Чужой взломщик не управляет этим APC.")
+	apc.cell.charge = apc.cell.maxcharge * 0.5
+	var/drain_on_half = apc.hijack_ability_implant(user, 85)
+	var/lockdown_on_half = apc.hijack_ability_implant(user, 35)
+	apc.hijacker = null
+	TEST_ASSERT_NULL(drain_on_half, "Осушение требует 85% заряда.")
+	TEST_ASSERT(lockdown_on_half == implant, "Блокировке дверей хватает половины заряда.")
+
+/datum/unit_test/bloodsucker_mesmerize_windup_after_removal/Run()
+	var/mob/living/carbon/human/vampire = allocate(/mob/living/carbon/human)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	vampire.mind_initialize()
+	var/datum/antagonist/bloodsucker/training/role = vampire.mind.add_antag_datum(/datum/antagonist/bloodsucker/training)
+	var/datum/action/cooldown/bloodsucker/targeted/mesmerize/gaze = new
+	role.BuyPower(gaze)
+	gaze.FireTargetedPower(victim)
+	TEST_ASSERT(gaze.signal_procs?[victim]?[COMSIG_MOVABLE_MOVED], "Замах следит за жертвой.")
+	vampire.mind.remove_antag_datum(/datum/antagonist/bloodsucker/training)
+	TEST_ASSERT_NULL(gaze.owner, "Сила снята вместе с ролью.")
+	gaze.apply_effects(vampire, victim, 10 SECONDS)
+	var/stunned = victim.IsStun()
+	var/still_watching = gaze.signal_procs?[victim]?[COMSIG_MOVABLE_MOVED]
+	qdel(gaze)
+	TEST_ASSERT(!stunned, "Снятая сила не дотягивает гипноз до жертвы.")
+	TEST_ASSERT(!still_watching, "Снятая сила больше не следит за шагами жертвы.")
+
+/datum/unit_test/bloodsucker_haste_removed_mid_dash/Run()
+	var/mob/living/carbon/human/vampire = allocate(/mob/living/carbon/human)
+	vampire.mind_initialize()
+	var/datum/antagonist/bloodsucker/training/role = vampire.mind.add_antag_datum(/datum/antagonist/bloodsucker/training)
+	var/datum/action/cooldown/bloodsucker/targeted/haste/dash = new
+	role.BuyPower(dash)
+	dash.speed_override = 1 SECONDS
+	INVOKE_ASYNC(dash, TYPE_PROC_REF(/datum/action/cooldown/bloodsucker/targeted/haste, FireTargetedPower), run_loc_floor_top_right)
+	TEST_ASSERT(dash.signal_procs?[vampire]?[COMSIG_MOVABLE_MOVED], "Рывок следит за шагами.")
+	vampire.mind.remove_antag_datum(/datum/antagonist/bloodsucker/training)
+	sleep(1.5 SECONDS)
+	var/still_watching = dash.signal_procs?[vampire]?[COMSIG_MOVABLE_MOVED]
+	qdel(dash)
+	TEST_ASSERT(!still_watching, "Рывок снятой силы отписался от шагов тела.")
+
 /datum/unit_test/ssd_body_ghost_keeps_disconnect_time/Run()
 	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human)
 	body.ckey = "unit_test_ssd_ghost"
