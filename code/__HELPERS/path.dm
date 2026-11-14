@@ -446,9 +446,9 @@
 		open = null
 	return path
 
-///Сколько шагов пути через узел нельзя избежать: пройденное плюс расстояние до края зоны цели
+///Сколько шагов пути через узел нельзя избежать: пройденное плюс расстояние до края зоны цели, и хотя бы шаг со старта, даже если он уже в зоне
 /datum/pathfind/proc/node_bound(datum/jps_node/node)
-	return node.number_tiles + max(0, node.heuristic - mintargetdist)
+	return max(1, node.number_tiles + max(0, node.heuristic - mintargetdist))
 
 ///Скан дошёл до цели. Путь готов сразу, если он не длиннее нижней оценки раскрываемого узла: короче через кучу не выйдет
 /datum/pathfind/proc/found_goal(datum/jps_node/goal_node)

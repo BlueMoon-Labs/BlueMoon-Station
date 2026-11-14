@@ -78,8 +78,8 @@
 			if(!tile.density && !(locate(/obj/structure) in tile))
 				. += tile
 
-///Кратчайшее число шагов поиском в ширину по тем же рёбрам, что видит JPS; null - не дойти за max_distance
-/datum/unit_test/jps_arena/proc/reference_length(atom/movable/walker, turf/start, turf/goal, max_distance)
+///Кратчайшее число шагов поиском в ширину по тем же рёбрам, что видит JPS, до клетки не дальше mintargetdist от цели; null - не дойти за max_distance
+/datum/unit_test/jps_arena/proc/reference_length(atom/movable/walker, turf/start, turf/goal, max_distance, mintargetdist = 0)
 	var/datum/pathfind/edges = new(walker, start, goal, null, max_distance, 0, TRUE, null)
 	var/alist/depth = alist()
 	depth[start] = 0
@@ -93,7 +93,7 @@
 				var/turf/to_turf = get_step(from_turf, direction)
 				if(!to_turf || !isnull(depth[to_turf]) || !edges.can_step(from_turf, to_turf, direction))
 					continue
-				if(to_turf == goal)
+				if(get_dist(to_turf, goal) <= mintargetdist)
 					qdel(edges)
 					return steps
 				depth[to_turf] = steps
@@ -103,7 +103,7 @@
 	return null
 
 ///Путь идёт по соседним клеткам через открытые рёбра от старта до цели
-/datum/unit_test/jps_arena/proc/path_problem(atom/movable/walker, turf/start, turf/goal, list/path)
+/datum/unit_test/jps_arena/proc/path_problem(atom/movable/walker, turf/start, turf/goal, list/path, mintargetdist = 0)
 	var/datum/pathfind/edges = new(walker, start, goal, null, 0, 0, TRUE, null)
 	if(path[1] != start)
 		qdel(edges)
@@ -117,7 +117,7 @@
 			return "шаг [previous.x],[previous.y] -> [step.x],[step.y] не открыт"
 		previous = step
 	qdel(edges)
-	if(previous != goal)
+	if(get_dist(previous, goal) > mintargetdist)
 		return "путь кончился на [previous.x],[previous.y], а не в цели"
 
 ///На каждой паре клеток JPS находит путь тогда же, когда его находит поиск в ширину, и путь кратчайший. Пары выбраны до первого поиска: поиск уступает тик, и чужие проки за это время тратят общий генератор случайных чисел
@@ -132,33 +132,57 @@
 		rand_seed(JPS_TEST_SEED + 1)
 		var/list/pairs = list()
 		for(var/index in 1 to JPS_TEST_PAIRS)
-			pairs += list(list(pick(tiles), pick(tiles), index % 2))
+			pairs += list(list(pick(tiles), pick(tiles), index % 2, index % 3))
 		//здесь первый найденный путь был длиннее кратчайшего на 4-6 шагов
 		if(layout == "station")
-			pairs += list(list(arena_turf(29, 12), arena_turf(11, 36), TRUE), list(arena_turf(37, 5), arena_turf(13, 33), TRUE), list(arena_turf(38, 28), arena_turf(27, 12), TRUE))
+			pairs += list(list(arena_turf(29, 12), arena_turf(11, 36), TRUE, 0), list(arena_turf(37, 5), arena_turf(13, 33), TRUE, 0), list(arena_turf(38, 28), arena_turf(27, 12), TRUE, 0))
 		for(var/list/pair as anything in pairs)
 			var/turf/start = pair[1]
 			var/turf/goal = pair[2]
 			if(start == goal)
 				continue
 			var/max_distance = pair[3] ? get_dist(start, goal) + AI_JPS_DETOUR_SLACK : 120
+			var/zone = pair[4]
 			walker.forceMove(start)
 			//JPS дотягивается и на шаг сверх бюджета: такие пары ничего не доказывают
-			var/shortest = reference_length(walker, start, goal, max_distance + 1)
+			var/shortest = reference_length(walker, start, goal, max_distance + 1, zone)
 			if(shortest == max_distance + 1)
 				continue
-			var/datum/pathfind/finder = new(walker, start, goal, null, max_distance, 0, TRUE, null)
+			var/datum/pathfind/finder = new(walker, start, goal, null, max_distance, zone, TRUE, null)
 			var/list/path = finder.search()
 			qdel(finder)
-			var/where = "[layout] [arena_coords(start)] -> [arena_coords(goal)], бюджет [max_distance]"
+			var/where = "[layout] [arena_coords(start)] -> [arena_coords(goal)], бюджет [max_distance], зона цели [zone]"
 			if(isnull(shortest))
 				TEST_ASSERT(!length(path), "JPS нашёл путь там, где его нет: [where]")
 				continue
 			TEST_ASSERT(length(path), "JPS не нашёл путь длиной [shortest]: [where]")
-			var/problem = path_problem(walker, start, goal, path)
+			var/problem = path_problem(walker, start, goal, path, zone)
 			TEST_ASSERT(!problem, "Негодный путь, [problem]: [where]")
 			//в пути есть и стартовая клетка
 			TEST_ASSERT_EQUAL(length(path) - 1, shortest, "Путь JPS длиннее кратчайшего: [where]")
+
+///Обезьяна вплотную к цели с mintargetdist 1: путь в один шаг отдаётся сразу, без сканов во все стороны зала
+/datum/unit_test/jps_adjacent_goal_zone
+	parent_type = /datum/unit_test/jps_arena
+	var/sources_after_first_node
+
+/datum/unit_test/jps_adjacent_goal_zone/proc/on_first_node(atom/movable/walker, datum/pathfind/search)
+	SIGNAL_HANDLER
+	sources_after_first_node = length(search.sources)
+
+/datum/unit_test/jps_adjacent_goal_zone/Run()
+	build_arena("open")
+	var/obj/item/crowbar/walker = allocate(/obj/item/crowbar)
+	var/turf/start = arena_turf(20, 20)
+	var/turf/goal = arena_turf(21, 20)
+	walker.forceMove(start)
+	RegisterSignal(walker, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK, PROC_REF(on_first_node))
+	var/datum/pathfind/finder = new(walker, start, goal, null, 250, 1, TRUE, null)
+	var/list/path = finder.search()
+	qdel(finder)
+	UnregisterSignal(walker, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK)
+	TEST_ASSERT_EQUAL(length(path), 2, "Путь к соседней цели не из одного шага")
+	TEST_ASSERT(sources_after_first_node && sources_after_first_node < 10, "Поиск к соседней цели обошёл [sources_after_first_node] клеток")
 
 ///Длинный скан по пустому залу уступает тик, не дожидаясь конца раскрытия узла, и после сна продолжает ровно с того же места: путь тот же, что без сна
 /datum/unit_test/jps_scan_yields_mid_expansion
