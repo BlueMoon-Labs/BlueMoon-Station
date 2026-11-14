@@ -10,6 +10,7 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 	return_list[FISHING_RANDOM_SEED] = FISH_ICON_SEED
 	return_list[FISHING_RANDOM_ORGAN] = FISH_ICON_ORGAN
 	return_list[FISHING_VENDING_CHUCK] = FISH_ICON_COIN
+	return_list[/obj/structure/closet/crate/necropolis/tendril] = FISH_ICON_COIN
 	return_list[/obj/item/fish/armorfish] = FISH_ICON_CRAB
 	return_list[/obj/item/fish/boned] = FISH_ICON_BONE
 	return_list[/obj/item/fish/chainsawfish] = FISH_ICON_WEAPON

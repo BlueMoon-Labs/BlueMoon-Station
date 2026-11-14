@@ -227,7 +227,15 @@
 		/obj/item/fish/boned = 6,
 		/obj/item/stack/sheet/bone = 8,
 		/obj/item/stack/ore/slag = 6,
+		/obj/structure/closet/crate/necropolis/tendril = 1,
 		/obj/item/stack/sheet/mineral/runite = 1,
+	)
+	// Сундук из лавы появляется редко и восстанавливается за 27 минут.
+	fish_counts = list(
+		/obj/structure/closet/crate/necropolis/tendril = 1,
+	)
+	fish_count_regen = list(
+		/obj/structure/closet/crate/necropolis/tendril = 27 MINUTES,
 	)
 	associated_safe_turfs = list(/turf/open/lava)
 

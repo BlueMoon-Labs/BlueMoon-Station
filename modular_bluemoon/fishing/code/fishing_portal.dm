@@ -192,6 +192,13 @@
 		/obj/item/fish/lavaloop/plasma_river = 4,
 		/obj/item/fish/boned = 4,
 		/obj/item/stack/sheet/bone = 4,
+		/obj/structure/closet/crate/necropolis/tendril = 1,
+	)
+	fish_counts = list(
+		/obj/structure/closet/crate/necropolis/tendril = 1,
+	)
+	fish_count_regen = list(
+		/obj/structure/closet/crate/necropolis/tendril = 27 MINUTES,
 	)
 	catalog_description = "Лавовое измерение (Фиш-портер 3000)"
 	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 25
@@ -271,6 +278,10 @@
 	fish_table -= FISHING_DUD
 	for(var/reward in fish_table)
 		fish_table[reward] = rand(1, 4)
+	// Сундук остаётся лимитированным и в случайном портале.
+	if(fish_table[/obj/structure/closet/crate/necropolis/tendril])
+		fish_counts = list(/obj/structure/closet/crate/necropolis/tendril = 1)
+		fish_count_regen = list(/obj/structure/closet/crate/necropolis/tendril = 27 MINUTES)
 
 // ---- Сам фиш-портер ----
 /obj/machinery/fishing_portal

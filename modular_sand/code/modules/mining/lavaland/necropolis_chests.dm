@@ -607,7 +607,7 @@
 		if(31)
 			new /obj/item/gun/ballistic/shotgun/boltaction(src)
 		if(32)
-			new /obj/item/gun/magic/staff/locker/trashy
+			new /obj/item/gun/magic/staff/locker/trashy(src)
 		if(33)
 			new /obj/item/clothing/accessory/fireresist(src)
 		if(34)
@@ -866,7 +866,7 @@
 		if(31)
 			new /obj/item/gun/ballistic/shotgun/boltaction(src)
 		if(32)
-			new /obj/item/gun/magic/staff/locker/trashy
+			new /obj/item/gun/magic/staff/locker/trashy(src)
 		if(33)
 			new /obj/item/clothing/accessory/fireresist(src)
 		if(34)
