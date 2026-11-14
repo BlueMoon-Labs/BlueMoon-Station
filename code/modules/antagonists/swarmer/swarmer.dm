@@ -183,10 +183,11 @@
 	if(team?.swarmer_core)
 		. += "Здоровье ядра: [team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]"
 	if(team)
-		. += "Штурмовые турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/turret)]"
-		. += "Снайперские турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/sniper)]"
-		. += "Установки ACP: [team.get_structure_limit_status(/obj/structure/swarmer/acp_turret)]"
-		. += "Ремонтные станции: [team.get_structure_limit_status(/obj/structure/swarmer/repair_station)]"
+		var/living_body_count = team.count_living_bodies()
+		. += "Штурмовые турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/turret, living_body_count)]"
+		. += "Снайперские турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/sniper, living_body_count)]"
+		. += "Установки ACP: [team.get_structure_limit_status(/obj/structure/swarmer/acp_turret, living_body_count)]"
+		. += "Ремонтные станции: [team.get_structure_limit_status(/obj/structure/swarmer/repair_station, living_body_count)]"
 
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()

@@ -19,7 +19,7 @@
 #define SWARMER_EVAC_BOARDING_TIME (1 MINUTES)
 #define SWARMER_EVAC_RETURN_TIME (1 MINUTES)
 #define SWARMER_STRUCTURE_COUNT(team, structure_type) (length(LAZYACCESS((team).swarmer_objects, (structure_type))))
-#define SWARMER_STRUCTURE_LIMIT(team, structure_type) (GLOB.swarmer_structure_limits_per_body[(structure_type)] * length((team).bodies))
+#define SWARMER_STRUCTURE_LIMIT(living_body_count, structure_type) (GLOB.swarmer_structure_limits_per_body[(structure_type)] * (living_body_count))
 
 GLOBAL_LIST_INIT(common_swarmer_actions, list(
 	/datum/action/cooldown/swarmer/consume_tile,

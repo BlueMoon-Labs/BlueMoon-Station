@@ -67,8 +67,14 @@ GLOBAL_LIST_INIT(swarmer_structure_limits_per_body, list(
 	if(structure_to_remove.type == /obj/structure/swarmer/organic_analyzer)
 		update_analyzer_stats()
 
-/datum/team/swarmer_team/proc/get_structure_limit_status(structure_type)
-	return "[SWARMER_STRUCTURE_COUNT(src, structure_type)]/[SWARMER_STRUCTURE_LIMIT(src, structure_type)]"
+/datum/team/swarmer_team/proc/count_living_bodies()
+	. = 0
+	for(var/mob/living/simple_animal/hostile/swarmer/body as anything in bodies)
+		if(!QDELETED(body) && body.stat != DEAD)
+			.++
+
+/datum/team/swarmer_team/proc/get_structure_limit_status(structure_type, living_body_count)
+	return "[SWARMER_STRUCTURE_COUNT(src, structure_type)]/[SWARMER_STRUCTURE_LIMIT(living_body_count, structure_type)]"
 
 /datum/team/swarmer_team/Destroy(force, ...)
 	if(GLOB.active_swarmer_team == src)
