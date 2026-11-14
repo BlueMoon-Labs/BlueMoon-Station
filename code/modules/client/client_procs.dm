@@ -1187,8 +1187,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// Отложенные одиночные записи префов ждут таймера склейки. Игрок уходит - дописываем
 	// их сейчас: датум префов переживёт логаут и таймер бы отработал, но настройка,
 	// изменённая в последние секунды, иначе доедет до диска только если сервер доживёт до
-	// срабатывания. Пустой буфер до диска не доходит, так что обычный логаут бесплатен.
+	// срабатывания. Буфер уходит в журнал без открытия savefile, открытый savefile закрываем.
 	prefs?.flush_single_prefs()
+	prefs?.release_savefile()
 	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
 	if(listed_turf_watched || mob?.listed_turf)
 		clear_listed_turf(send_output = FALSE)

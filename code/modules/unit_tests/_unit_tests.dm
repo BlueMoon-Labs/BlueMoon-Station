@@ -459,6 +459,8 @@
 #include "pool_tile_placement.dm"
 #include "portal_toys_cleanup.dm"
 #include "preferences_preview_yield.dm"
+#include "preferences_savefile_cost.dm"
+#include "preferences_savefile_session.dm"
 #include "process_memory.dm"
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"

@@ -3735,11 +3735,10 @@
 			var/list/slot_names = prefs.get_slot_names()
 			if(slot_names?[new_slot])
 				var/old_slot = prefs.default_slot
+				// Номер слота load_character записал в файл сам, полная запись префов тут не нужна.
 				if(!prefs.load_character(new_slot, bypass_cooldown = TRUE))
 					prefs.default_slot = old_slot
 					return
-				// Номер слота load_character уже записал в файл, полная запись префов уходит отдельным тиком.
-				prefs.queue_save_pref(1, TRUE)
 			else
 				if(!prefs.create_character(new_slot))
 					return

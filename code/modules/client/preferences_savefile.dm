@@ -582,7 +582,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
 	flush_single_prefs()
 
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_savefile("savefile (чтение)")
 	if(!S)
 		return FALSE
 	S.cd = "/"
@@ -596,6 +596,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		return FALSE
 
 	. = TRUE
+	// Журнал прошлой сессии (падение сервера до слияния) ложится в файл до чтения. Его значения
+	// записаны в формате версии этого же файла, поэтому сливаем и в непромигрированный.
+	merge_single_pref_journal(S)
+	S.cd = "/"
 
 	//general preferences
 	S["ooccolor"] 				>> ooccolor
@@ -969,7 +973,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		var/old_default_slot = default_slot
 		var/old_max_save_slots = max_save_slots
 
-		for (var/slot in S.dir) //but first, update all current character slots.
+		// Копия: открытый файл общий, и load_character ниже уводит его cd в слот.
+		for (var/slot in S.dir.Copy()) //but first, update all current character slots.
 			if (copytext(slot, 1, 10) != "character")
 				continue
 			var/slotnum = text2num(copytext(slot, 10))
@@ -1114,6 +1119,242 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// WRITE_FILE по такому списку) скомпилировалась бы в опкод вывода и испортила список.
 	pending[key] = value
 
+/// Открытые на время savefile игроков: путь -> /savefile.
+GLOBAL_LIST_EMPTY(held_player_savefiles)
+/// Путь открытого savefile -> world.time последнего обращения к нему.
+GLOBAL_LIST_EMPTY(held_player_savefile_used)
+/// Таймер, который закрывает простаивающие savefile.
+GLOBAL_VAR(held_player_savefile_timer)
+/// Путь savefile -> поколение его журнала одиночных ключей; пути нет, пока файл не открывался.
+GLOBAL_LIST_EMPTY(player_savefile_journal_epochs)
+/// Сколько раз за мир savefile игрока открывался заново, а не брался уже открытым.
+GLOBAL_VAR_INIT(player_savefile_opens, 0)
+
+/**
+ * Savefile игрока для чтения и записи.
+ *
+ * На линуксовом DreamDaemon само открытие savefile ждёт синхронной записи на диск: около 5 мс
+ * заморозки всего процесса при любом размере файла (на tmpfs - 0.2 мс). Запись ключа в уже
+ * открытый файл стоит 25 мкс, персонажа целиком - 0.6 мс, и на диске она оказывается сразу, без
+ * Flush() и закрытия: убитый процесс её не теряет. Поэтому файл живого игрока держим открытым,
+ * пока к нему обращаются (см. hold_player_savefile). Другой хэндл того же файла в этом мире видит
+ * все записи, так что сторонние читатели вроде голоформ остаются корректными.
+ *
+ * Файл общий: вызывающий обязан сам выставить cd.
+ */
+/datum/preferences/proc/open_savefile(blocking_kind)
+	if(!path)
+		return null
+	var/savefile/held = GLOB.held_player_savefiles[path]
+	if(held)
+		GLOB.held_player_savefile_used[path] = world.time
+		return held
+	var/blocking_started_ms = blocking_kind ? blocking_call_start() : null
+	GLOB.player_savefile_opens++
+	var/savefile/opened = new /savefile(path)
+	if(blocking_kind)
+		blocking_call_finish(blocking_started_ms, blocking_kind, "открытие [parent?.ckey || "?"]")
+	if(!opened)
+		return null
+	if(is_session_savefile())
+		hold_player_savefile(path, opened)
+	return opened
+
+/// Префы живого игрока: файл держится открытым, одиночные ключи уходят в журнал.
+/datum/preferences/proc/is_session_savefile()
+	return isnull(session_savefile) ? istype(parent) : session_savefile
+
+/datum/preferences/proc/release_savefile()
+	release_player_savefile(path)
+
+/**
+ * Оставляет savefile открытым.
+ *
+ * Открытый файл держит в памяти процесса втрое больше своего размера, поэтому открытыми остаются
+ * не больше PLAYER_SAVEFILE_HOLD_MAX файлов (лишний закрывается самый давний) и не дольше
+ * PLAYER_SAVEFILE_HOLD_IDLE без обращений. Этого хватает на пачки: вход (префы и персонаж),
+ * переключение слотов в редакторе, спавн, конец раунда.
+ */
+/proc/hold_player_savefile(path, savefile/opened)
+	GLOB.held_player_savefiles[path] = opened
+	GLOB.held_player_savefile_used[path] = world.time
+	while(length(GLOB.held_player_savefiles) > PLAYER_SAVEFILE_HOLD_MAX)
+		var/oldest_path
+		var/oldest_time
+		for(var/held_path in GLOB.held_player_savefile_used)
+			var/used_at = GLOB.held_player_savefile_used[held_path]
+			if(isnull(oldest_time) || used_at < oldest_time)
+				oldest_path = held_path
+				oldest_time = used_at
+		if(!oldest_path)
+			break
+		release_player_savefile(oldest_path)
+	if(!GLOB.held_player_savefile_timer)
+		GLOB.held_player_savefile_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(prune_held_player_savefiles)), PLAYER_SAVEFILE_HOLD_IDLE, TIMER_STOPPABLE)
+
+/proc/release_player_savefile(path)
+	if(!path)
+		return
+	GLOB.held_player_savefiles -= path
+	GLOB.held_player_savefile_used -= path
+
+/// Закрывает savefile, к которым не обращались PLAYER_SAVEFILE_HOLD_IDLE, и ждёт следующего.
+/proc/prune_held_player_savefiles()
+	GLOB.held_player_savefile_timer = null
+	var/next_due
+	for(var/held_path in GLOB.held_player_savefile_used)
+		var/due = GLOB.held_player_savefile_used[held_path] + PLAYER_SAVEFILE_HOLD_IDLE
+		if(world.time >= due)
+			release_player_savefile(held_path)
+		else if(isnull(next_due) || due < next_due)
+			next_due = due
+	if(!isnull(next_due))
+		GLOB.held_player_savefile_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(prune_held_player_savefiles)), max(1, next_due - world.time), TIMER_STOPPABLE)
+
+/datum/preferences/proc/single_pref_journal_path()
+	return path ? "[path].journal" : null
+
+/// Значение переживёт ExportText/ImportText без изменений: числа, null, типы, текст без
+/// маркеров \proper/\improper (их ExportText теряет) и списки из такого же. Текст с метками
+/// блоков журнала тоже не годится: на них журнал режется, и чужой текст стал бы ключами.
+/proc/pref_journal_safe(value, depth = 0)
+	if(isnull(value) || isnum(value) || ispath(value))
+		return TRUE
+	if(istext(value))
+		return !findtext(value, "\proper") && !findtext(value, "\improper") && !findtext(value, PREF_JOURNAL_BLOCK_BEGIN) && !findtext(value, PREF_JOURNAL_BLOCK_END)
+	if(!islist(value) || depth > 4)
+		return FALSE
+	var/list/entries = value
+	for(var/entry in entries)
+		if(!pref_journal_safe(entry, depth + 1))
+			return FALSE
+		if(isnum(entry))
+			continue
+		if(!pref_journal_safe(entries[entry], depth + 1))
+			return FALSE
+	return TRUE
+
+/**
+ * Дописывает буфер одиночных ключей в журнал рядом с savefile, не открывая сам savefile.
+ *
+ * Блок журнала - ExportText временного savefile: временный файл диска не ждёт (на линуксе
+ * 30-60 мкс на блок), а ImportText возвращает значения в точности, вместе с типами и большими
+ * числами, которые json_encode округлил бы до шести знаков. Блок помечен поколением журнала:
+ * savefile, в который журнал уже слит, носит следующее, и такие блоки при чтении пропускаются.
+ * Журнал сливается в savefile при любом его открытии на запись, при входе и на ребуте.
+ *
+ * Возвращает FALSE, если журнал сейчас не годится - тогда буфер пишется в сам savefile.
+ */
+/datum/preferences/proc/journal_single_prefs()
+	var/epoch = GLOB.player_savefile_journal_epochs[path]
+	if(!isnum(epoch))
+		return FALSE
+	var/journal = single_pref_journal_path()
+	if(fexists(journal) && length(file(journal)) > PREF_JOURNAL_MAX_BYTES)
+		return FALSE
+	for(var/key in pending_single_prefs)
+		if(!pref_journal_safe(pending_single_prefs[key]))
+			return FALSE
+	var/blocking_started_ms = blocking_call_start()
+	var/list/pending = pending_single_prefs
+	var/savefile/block = new /savefile()
+	block.cd = "/"
+	for(var/key in pending)
+		var/value = pending[key]
+		WRITE_FILE(block[key], value)
+	WRITE_FILE(block[PREF_JOURNAL_EPOCH_KEY], epoch)
+	if(!text2file("[PREF_JOURNAL_BLOCK_BEGIN]\n[block.ExportText("/")]\n[PREF_JOURNAL_BLOCK_END]\n", journal))
+		blocking_call_finish(blocking_started_ms, "savefile (журнал)", "не записан [parent?.ckey || "?"]")
+		return FALSE
+	pending_single_prefs = null
+	blocking_call_finish(blocking_started_ms, "savefile (журнал)", "ключей [length(pending)] [parent?.ckey || "?"]")
+	return TRUE
+
+/// Значения журнала нужного поколения; поздний блок перекрывает ранний. Блок читается от последней
+/// метки начала до метки конца: оборванный хвост и обрывок перед следующим блоком пропускаются.
+/proc/read_single_pref_journal(journal, epoch)
+	var/list/values = list()
+	var/raw = file2text(journal)
+	if(!length(raw))
+		return values
+	var/list/blocks = splittext(raw, PREF_JOURNAL_BLOCK_END)
+	for(var/block_index in 1 to length(blocks) - 1)
+		var/chunk = blocks[block_index]
+		var/begin_at = findlasttext(chunk, PREF_JOURNAL_BLOCK_BEGIN)
+		if(!begin_at)
+			continue
+		var/savefile/block = new /savefile()
+		try
+			block.ImportText("/", copytext(chunk, begin_at + length(PREF_JOURNAL_BLOCK_BEGIN)))
+		catch
+			continue
+		block.cd = "/"
+		var/block_epoch
+		READ_FILE(block[PREF_JOURNAL_EPOCH_KEY], block_epoch)
+		if(block_epoch != epoch)
+			continue
+		for(var/key in block.dir)
+			if(key == PREF_JOURNAL_EPOCH_KEY)
+				continue
+			var/value
+			READ_FILE(block[key], value)
+			values[key] = value
+	return values
+
+/**
+ * Сливает журнал одиночных ключей в открытый savefile и снимает его.
+ *
+ * Порядок держит данные при падении на любом шаге: сначала значения журнала ложатся в savefile,
+ * потом savefile получает следующее поколение (с этой записи блоки журнала считаются слитыми) и
+ * только потом журнал удаляется. Вызывающий держит target.cd на корне. Возвращает число ключей.
+ */
+/datum/preferences/proc/merge_single_pref_journal(savefile/target)
+	var/epoch
+	READ_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
+	if(!isnum(epoch))
+		epoch = 0
+	var/journal = single_pref_journal_path()
+	if(!fexists(journal))
+		GLOB.player_savefile_journal_epochs[path] = epoch
+		return 0
+	var/list/values = read_single_pref_journal(journal, epoch)
+	for(var/key in values)
+		var/value = values[key]
+		WRITE_FILE(target[key], value)
+	epoch++
+	WRITE_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
+	GLOB.player_savefile_journal_epochs[path] = epoch
+	fdel(journal)
+	return length(values)
+
+/**
+ * Дописывает в открытый savefile всё, что лежит мимо него: журнал и буфер склейки.
+ *
+ * Файл ниже текущей версии дописывать по ключу нельзя - миграция уходит полной записью.
+ * full_save снимает эту проверку для полной записи, которая сама ставит текущую версию.
+ * Возвращает FALSE, если из-за версии ничего не дописано.
+ */
+/datum/preferences/proc/absorb_single_prefs(savefile/target, full_save = FALSE)
+	target.cd = "/"
+	if(!full_save)
+		var/file_version
+		READ_FILE(target["version"], file_version)
+		if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
+			return FALSE
+	merge_single_pref_journal(target)
+	write_pending_single_prefs(target)
+	return TRUE
+
+/// Сливает журнал в savefile, если он есть. Зовётся на ребуте: журнал не переживает раунд, и
+/// откат сборки, которая журнала не знает, не теряет настроек.
+/datum/preferences/proc/merge_single_pref_journal_now()
+	if(!path || !fexists(single_pref_journal_path()) || !fexists(path))
+		return FALSE
+	var/blocking_started_ms = blocking_call_start()
+	var/savefile/target = open_savefile()
+	. = target ? absorb_single_prefs(target) : FALSE
+	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "журнал [parent?.ckey || "?"]")
+
 /// Записывает в savefile ОДИН ключ, не переписывая весь блок префов.
 ///
 /// Полный save_preferences() это ~124 WRITE_FILE подряд, и каждый - синхронный поход
@@ -1212,12 +1453,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 /proc/flush_pending_single_prefs()
 	for(var/ckey in GLOB.preferences_datums)
 		var/datum/preferences/prefs = GLOB.preferences_datums[ckey]
-		if(!istype(prefs) || !length(prefs.pending_single_prefs))
+		if(!istype(prefs))
 			continue
-		prefs.flush_single_prefs()
+		if(length(prefs.pending_single_prefs))
+			prefs.flush_single_prefs()
+		prefs.merge_single_pref_journal_now()
 
 /**
- * Сбрасывает буфер склейки на диск ОДНИМ открытием savefile.
+ * Сбрасывает буфер склейки на диск: в открытый savefile, в журнал живого игрока или, если
+ * журнал не годится, ОДНИМ открытием savefile.
  *
  * Дёргается таймером из buffer_single_pref, разлогином клиента, Destroy датума и
  * ребутом мира (flush_pending_single_prefs). Пустой буфер до диска не доходит вовсе.
@@ -1240,6 +1484,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		// сама (write_pending_single_prefs), а если файл не откроется - буфер
 		// переживёт провал и уйдёт со следующим сбросом.
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	// Открытый файл дописываем напрямую, а закрытый ради пары ключей не открываем.
+	if(is_session_savefile() && !GLOB.held_player_savefiles[path] && journal_single_prefs())
+		return TRUE
 	var/keys_written = length(pending_single_prefs)
 	// Три разных kind вместо одного общего "savefile (запись)": детектор спайков ведёт
 	// разбивку по kind и печатает её в итоге раунда, а имя вызова (desc) он запоминает
@@ -1247,19 +1494,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
 	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/single_file = new /savefile(path)
+	var/savefile/single_file = open_savefile()
 	if(!single_file)
 		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 		return FALSE
-	single_file.cd = "/"
-	// Файл ниже текущей версии дописывать по ключу нельзя - миграция уходит полной записью.
-	var/file_version
-	READ_FILE(single_file["version"], file_version)
-	if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
-		single_file = null
+	if(!absorb_single_prefs(single_file))
 		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
-	write_pending_single_prefs(single_file)
 	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 	return TRUE
 
@@ -1282,7 +1523,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
 	// безымянный "внешний столл", поэтому замеряем
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_savefile()
 	if(!S)
 		blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "не открылся [parent?.ckey || "?"]")
 		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
@@ -1292,12 +1533,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
-	S.cd = "/"
 	if(single_pref_queue)
 		deltimer(single_pref_queue)
 	single_pref_queue = null
 	single_pref_queue_deadline = 0
-	write_pending_single_prefs(S)
+	absorb_single_prefs(S, full_save = TRUE)
 
 	WRITE_FILE(S["version"] , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
 
@@ -1509,7 +1749,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(provided)
 		S = provided
 	else
-		S = new /savefile(path)
+		S = open_savefile("savefile (чтение)")
 	if(!S)
 		return FALSE
 
@@ -2414,7 +2654,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		return slot_names_cache
 	if(!path)
 		return null
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_savefile("savefile (чтение)")
 	if(!S)
 		return null
 	var/list/names = new /list(max_save_slots)
@@ -2473,7 +2713,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		return FALSE
 	slot = sanitize_integer(slot, 1, max_save_slots, 1)
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_savefile("savefile (чтение)")
 	if(!S)
 		return FALSE
 
@@ -2528,7 +2768,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	char_queue = null
 	char_queue_deadline = 0
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(export ? null : path)
+	var/savefile/S = export ? new /savefile() : open_savefile()
 	if(!S)
 		return FALSE
 	var/list/kept_slot_names
@@ -2852,13 +3092,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
-	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
-	if(!export && length(pending_single_prefs))
-		S.cd = "/"
-		var/root_version
-		READ_FILE(S["version"], root_version)
-		if(isnum(root_version) && root_version >= SAVEFILE_VERSION_MAX)
-			write_pending_single_prefs(S)
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) и журнал уезжают в корень без своего открытия.
+	if(!export && (length(pending_single_prefs) || fexists(single_pref_journal_path())))
+		absorb_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
 		// Запись меняет имя только своего слота: смена слота сразу после неё не перечитывает весь сейвфайл.
