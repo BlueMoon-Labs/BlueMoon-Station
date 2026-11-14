@@ -398,7 +398,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	SSshuttle.shoppinglist += order
 	order.shield_entries = account.department_shield_spent
 	if(pack == saving_goal)
-		order.saving_goal_until = saving_goal_until
+		order.saving_goal_until = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
 		clear_saving_goal(ordered = TRUE)
 	log_econ("[automatic ? "Автоодобрение" : key_name(user)]: заказ [pack.name] для [name] за [price] кр.")
 	if(id != ACCOUNT_CAR && COOLDOWN_FINISHED(src, supply_notice_cooldown))

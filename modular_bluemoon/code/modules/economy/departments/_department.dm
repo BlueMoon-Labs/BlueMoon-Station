@@ -18,7 +18,7 @@
 	var/register_cashier_share
 	/// Разовые поступления под защитой от возврата: list(сумма, номер тика, когда защита кончится)
 	var/list/shield = list()
-	/// Пак, на который копит глава, и до какого world.time его цена не считается излишком
+	/// Пак, на который копит глава, и до какого world.time его цена не считается излишком; 0 - бюджет ещё не набрал цену, срок не идёт
 	var/datum/supply_pack/saving_goal
 	var/saving_goal_until = 0
 	/// До этого world.time новую цель не поставить
@@ -103,11 +103,18 @@
 /datum/economy_department/proc/owed_to_staff(list/stats)
 	return staff_stat(stats, "owed_to_staff")
 
-/// Сколько вернётся NT на ближайшем тике: доля излишка над порогом; долги и следующая зарплата сотрудникам, долг NT, разовые поступления и цель накопления не трогаются.
+/// Красный код и выше: NT не забирает излишек бюджетов, чтобы отделам было на что восстанавливать станцию.
+/proc/econ_emergency_active()
+	return GLOB.security_level >= SEC_LEVEL_RED
+
+/// Сколько вернётся NT на ближайшем тике: доля излишка над порогом; долги и следующая зарплата сотрудникам, долг NT, разовые поступления и цель накопления не трогаются. При ЧС - ничего.
 /datum/economy_department/proc/budget_return_due(list/stats)
 	if(!stats)
 		stats = econ_staff_stats(id)
-	var/excess = account.account_balance - budget_threshold(stats) - owed_to_staff(stats) - owed - shielded() - saving_goal_amount()
+	var/goal = saving_goal_amount()
+	if(econ_emergency_active())
+		return 0
+	var/excess = account.account_balance - budget_threshold(stats) - owed_to_staff(stats) - owed - shielded() - goal
 	if(excess <= 0)
 		return 0
 	return round(excess * SSeconomy.settings.budget_cap_return_share / 100)
@@ -170,11 +177,11 @@
 		last = max(last, entry[2])
 	return max(last - SSeconomy.fire_count, 0) * round(SSeconomy.wait / (1 MINUTES), 1)
 
-/// Сумма цели накопления; цена пересчитывается раз в тик экономики. Истёкшая цель снимается с перерывом.
+/// Сумма цели накопления; цена пересчитывается раз в тик экономики. Пока бюджет не набрал цену, срока нет; набрал - saving_goal_minutes на заказ. Истёкшая цель снимается с перерывом.
 /datum/economy_department/proc/saving_goal_amount()
 	if(!saving_goal)
 		return 0
-	if(world.time >= saving_goal_until)
+	if(saving_goal_until && world.time >= saving_goal_until)
 		lapse_saving_goal(saving_goal_until)
 		return 0
 	if(saving_goal_cache_tick != SSeconomy.fire_count || isnull(saving_goal_cache))
@@ -189,6 +196,9 @@
 				top = max(top, pack.market_cost())
 		saving_goal_cache = min(round(econ_pack_price(saving_goal)), top)
 		saving_goal_cache_tick = SSeconomy.fire_count
+	if(!saving_goal_until && account.account_balance >= saving_goal_cache)
+		saving_goal_until = world.time + SSeconomy.settings.saving_goal_minutes MINUTES
+		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal.name]\": закажите её за [SSeconomy.settings.saving_goal_minutes] мин., потом её цена снова станет излишком.")
 	return saving_goal_cache
 
 /// Цель снята без заказа: новую можно поставить через saving_goal_cooldown_minutes.
@@ -202,10 +212,10 @@
 	return max(CEILING((saving_goal_cooldown_until - world.time) / (1 MINUTES), 1), 0)
 
 /datum/economy_department/proc/set_saving_goal(datum/supply_pack/pack, mob/living/user)
-	if(!can_manage(user) || !pack || !(pack in catalog()) || world.time < saving_goal_cooldown_until || (saving_goal && world.time < saving_goal_until))
+	if(!can_manage(user) || !pack || !(pack in catalog()) || world.time < saving_goal_cooldown_until || (saving_goal && (!saving_goal_until || world.time < saving_goal_until)))
 		return FALSE
 	saving_goal = pack
-	saving_goal_until = world.time + SSeconomy.settings.saving_goal_minutes MINUTES
+	saving_goal_until = 0
 	saving_goal_cache = null
 	log_econ("[key_name(user)] назначил цель накопления [name]: [pack.name]")
 	return TRUE
@@ -227,7 +237,8 @@
 /// Снят заказ, закрывший цель: цель возвращается с прежним сроком; поставленная на её место живёт не дольше него.
 /datum/economy_department/proc/restore_saving_goal(datum/supply_pack/pack, until)
 	if(saving_goal)
-		saving_goal_until = min(saving_goal_until, until)
+		if(!saving_goal_until || until < saving_goal_until)
+			saving_goal_until = until
 	else
 		saving_goal = pack
 		saving_goal_until = until

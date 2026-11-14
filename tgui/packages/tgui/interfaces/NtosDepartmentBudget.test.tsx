@@ -242,13 +242,23 @@ describe('NtosDepartmentBudget', () => {
         '/datum/supply_pack/medical/bloodpacks': { price: 900, available: 1 },
       },
     });
-    expect(text(container)).toContain('Surgical Kit, 1 200 кр., ещё 25 мин.');
+    expect(text(container)).toContain('Surgical Kit, 1 200 кр., набрано, заказать за 25 мин.');
     expect(text(container)).toContain('500 кр. недавних поступлений пока не считаются излишком');
     expect(text(container)).toContain('Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.');
+    expect(text(container)).not.toContain('Красный код');
     fireEvent.click(getByText('Каталог'));
     expect(getByText('Копить').closest('.Button')?.className).toContain('Button--disabled');
     fireEvent.click(getByText('Цель'));
     expect(sent(topic, 'clear_goal')).toHaveLength(1);
+  });
+
+  test('цель без срока, пока бюджет копит; при красном коде излишек не забирают', () => {
+    const goal = { id: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', amount: 12000, minutes_left: null };
+    const { container } = setup({
+      department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, threshold: 9000, return_due: 0, goal, emergency: 1 },
+    });
+    expect(text(container)).toContain('Surgical Kit, 12 000 кр., копим: срок на заказ пойдёт, когда бюджет наберёт цену');
+    expect(text(container)).toContain('Красный код: пока его не снимут, NT не забирает излишек бюджета.');
   });
 
   test('сотрудник: без одобрения и премий, заявка с причиной', () => {

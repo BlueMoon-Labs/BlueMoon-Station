@@ -398,7 +398,8 @@
 			var/datum/economy_department/saver = SSeconomy.get_department(id)
 			if(goal_packs[id] && !(id in goals_bought) && !saver.saving_goal && world.time >= saver.saving_goal_cooldown_until)
 				saver.saving_goal = goal_packs[id]
-				saver.saving_goal_until = world.time + SSeconomy.settings.saving_goal_minutes MINUTES
+				saver.saving_goal_until = 0
+				saver.saving_goal_cache = null
 		for(var/id in work)
 			var/list/workers = performers[id]
 			if(!length(workers))
@@ -455,7 +456,8 @@
 				qdel(order)
 		for(var/id in departments)
 			var/datum/economy_department/guarded = SSeconomy.get_department(id)
-			protected_last[id] = guarded.saving_goal_amount() + guarded.shielded()
+			// Снятая защита (истёкшая набранная цель) уходит возвратом за несколько тиков, по budget_cap_return_share за тик
+			protected_last[id] = max(guarded.saving_goal_amount() + guarded.shielded(), round((protected_last[id] || 0) * (100 - SSeconomy.settings.budget_cap_return_share) / 100))
 		if(hour_tick == ticks_per_hour - 1)
 			med_hourly += med_bought_hour
 			med_bought_hour = 0
@@ -761,7 +763,7 @@
 		SSeconomy.lottery.ends_at -= delta
 	for(var/id in SSeconomy.departments)
 		var/datum/economy_department/department = SSeconomy.departments[id]
-		if(department.saving_goal)
+		if(department.saving_goal && department.saving_goal_until)
 			department.saving_goal_until -= delta
 		department.saving_goal_cooldown_until -= delta
 

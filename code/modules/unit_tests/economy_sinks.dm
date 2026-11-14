@@ -766,6 +766,49 @@
 	TEST_ASSERT_EQUAL(medical.saving_goal_amount(), 0, "Возвращённая цель не истекла")
 	TEST_ASSERT(!medical.set_saving_goal(pack, head), "После истечения возвращённой цели нет перерыва")
 
+/// Пока бюджет не набрал цену цели, срок не идёт: дорогой пак можно копить дольше saving_goal_minutes. Срок на заказ начинается, когда денег хватает.
+/datum/unit_test/economy_budget_cap/goal_waits_until_reached/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/head_card = allocate(/obj/item/card/id)
+	head_card.access = list(ACCESS_CMO)
+	head.put_in_active_hand(head_card)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	var/price = round(econ_pack_price(pack))
+	econ_test_set_balance(medical.account, price - 1)
+	TEST_ASSERT(medical.set_saving_goal(pack, head), "Цель не поставлена")
+	TEST_ASSERT_EQUAL(medical.saving_goal_amount(), price, "Цель - цена пака")
+	TEST_ASSERT_EQUAL(medical.saving_goal_until, 0, "Срок цели пошёл, пока денег на пак нет")
+	TEST_ASSERT_EQUAL(medical.budget_return_due(), 0, "Пока копим, излишка нет")
+	TEST_ASSERT(!medical.set_saving_goal(pack, head), "Копящуюся цель можно перезавести")
+	econ_test_set_balance(medical.account, price)
+	TEST_ASSERT_EQUAL(medical.saving_goal_amount(), price, "Набранная цель пропала")
+	TEST_ASSERT_EQUAL(medical.saving_goal_until, world.time + SSeconomy.settings.saving_goal_minutes MINUTES, "Набранная цель не дала срок на заказ")
+	var/list/before = SSshuttle.shoppinglist.Copy()
+	TEST_ASSERT(medical.order_pack(pack, head, "Тест"), "Пак-цель не заказан")
+	var/datum/supply_order/order = (SSshuttle.shoppinglist - before)[1]
+	econ_cancel_order(order)
+	SSshuttle.shoppinglist -= order
+	qdel(order)
+	TEST_ASSERT(medical.saving_goal == pack, "Отмена заказа не вернула цель")
+
+/// Красный код и выше - ЧС: NT не забирает излишек, чтобы отделу было на что чинить станцию.
+/datum/unit_test/economy_budget_cap/emergency_pauses_return/Run()
+	var/datum/economy_department/medical = staff_medical()
+	econ_test_set_balance(medical.account, medical.budget_threshold() + 20000)
+	var/due_green = medical.budget_return_due()
+	var/saved_level = GLOB.security_level
+	GLOB.security_level = SEC_LEVEL_RED
+	var/due_red = medical.budget_return_due()
+	var/balance_before = medical.account.account_balance
+	medical.return_excess()
+	var/balance_after = medical.account.account_balance
+	GLOB.security_level = saved_level
+	TEST_ASSERT(due_green > 0, "Без ЧС излишек не возвращается")
+	TEST_ASSERT_EQUAL(due_red, 0, "При красном коде NT забирает излишек")
+	TEST_ASSERT_EQUAL(balance_after, balance_before, "При красном коде возврат списал деньги")
+	TEST_ASSERT_EQUAL(medical.budget_return_due(), due_green, "После снятия кода возврат не вернулся")
+
 /// Возврат излишка не тратит защиту: переведённое из казны остаётся защищённым весь срок.
 /datum/unit_test/economy_budget_cap/return_keeps_shield/Run()
 	var/datum/economy_department/medical = staff_medical()

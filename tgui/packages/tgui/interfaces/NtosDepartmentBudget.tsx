@@ -22,7 +22,8 @@ type DepartmentInfo = {
   shielded?: number;
   goal_cooldown?: number;
   express_ready_in?: number;
-  goal?: { id: string; name: string; amount: number; minutes_left: number } | null;
+  goal?: { id: string; name: string; amount: number; minutes_left?: number | null } | null;
+  emergency?: BooleanLike;
 };
 
 type StaffEntry = {
@@ -257,6 +258,9 @@ const OverviewTab = () => {
     <>
       <NtFrame title={`Бюджет: ${department.name}`} help={<BudgetHelp />}>
         <BudgetGauge balance={department.balance} threshold={department.threshold ?? 0} />
+        {!!department.emergency && (
+          <NoticeBox info>Красный код: пока его не снимут, NT не забирает излишек бюджета.</NoticeBox>
+        )}
         {!!department.return_due && (
           <NoticeBox warning>
             Бюджет выше порога: через несколько минут NT заберёт <Credits amount={department.return_due} /> Потратьте
@@ -277,7 +281,8 @@ const OverviewTab = () => {
         )}
         {!!department.goal && (
           <NtLine label="Цель накопления">
-            {department.goal.name}, {formatCredits(department.goal.amount)}, ещё {department.goal.minutes_left} мин.
+            {department.goal.name}, {formatCredits(department.goal.amount)},{' '}
+            {department.goal.minutes_left ? `набрано, заказать за ${department.goal.minutes_left} мин.` : 'копим: срок на заказ пойдёт, когда бюджет наберёт цену'}
           </NtLine>
         )}
         {(!!department.shielded || !!department.goal || !!department.goal_cooldown) && (
@@ -317,8 +322,9 @@ const BudgetHelp = () => {
           Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
           ниже <Credits amount={department.threshold_floor ?? 0} />. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
           Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
-          {data.grace_minutes} мин., а также цена пака - цели накопления ({data.goal_minutes} мин., ставится в каталоге;
-          после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.).
+          {data.grace_minutes} мин., а также цена пака - цели накопления (ставится в каталоге; пока бюджет её не набрал, срока
+          нет, после - {data.goal_minutes} мин. на заказ; после её истечения или снятия новая - через {data.goal_cooldown_minutes}{' '}
+          мин.). При красном коде и выше NT излишек не забирает.
         </Box>
         <Box>
           Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел платит

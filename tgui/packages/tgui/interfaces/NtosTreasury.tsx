@@ -231,7 +231,8 @@ const TreasuryTab = () => {
         <Box color="label" mt={1}>
           Сверх <Credits amount={data.treasury_cap ?? 0} /> казна раз в {data.economy_minutes} мин. возвращает NT{' '}
           {data.cap_share ?? 0}% излишка. Бюджеты отделов тоже, пороги - в таблице ниже. Перевод из казны в бюджет первые{' '}
-          {data.grace_minutes ?? 0} мин. излишком не считается, перевод между отделами такой защиты не получает.
+          {data.grace_minutes ?? 0} мин. излишком не считается, перевод между отделами такой защиты не получает. При красном
+          коде и выше NT излишек не забирает.
         </Box>
         {!!data.treasury_return_due && (
           <NoticeBox warning mt={1}>

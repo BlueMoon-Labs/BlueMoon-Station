@@ -188,7 +188,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
 		"express_ready_in" = CEILING(department.express_ready_in() / (1 SECONDS), 1),
-		"goal" = department.saving_goal_amount() ? list("id" = "[department.saving_goal.type]", "name" = department.saving_goal.name, "amount" = department.saving_goal_amount(), "minutes_left" = CEILING((department.saving_goal_until - world.time) / (1 MINUTES), 1)) : null,
+		"goal" = department.saving_goal_amount() ? list("id" = "[department.saving_goal.type]", "name" = department.saving_goal.name, "amount" = department.saving_goal_amount(), "minutes_left" = department.saving_goal_until ? CEILING((department.saving_goal_until - world.time) / (1 MINUTES), 1) : null) : null,
+		"emergency" = econ_emergency_active(),
 	)
 	var/list/prices = list()
 	var/list/offers = SSmarket.best_offers(packs)
@@ -324,7 +325,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
 			else if(department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: \"[pack.name]\". [SSeconomy.settings.saving_goal_minutes] мин. её цена не считается излишком."
+				messages[user_ref] = "Цель накопления: \"[pack.name]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрали - [SSeconomy.settings.saving_goal_minutes] мин. на заказ."
 			else if(department.saving_goal_amount())
 				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal.name]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())
