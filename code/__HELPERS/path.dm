@@ -1,7 +1,7 @@
 /**
  * This file contains the stuff you need for using JPS (Jump Point Search) pathing, an alternative to A* that skips
  * over large numbers of uninteresting tiles resulting in much quicker pathfinding solutions. Mind that diagonals
- * cost the same as cardinal moves currently, so paths may look a bit strange, but should still be optimal.
+ * cost the same as cardinal moves currently, so paths may look a bit strange, but are optimal: the goal waits until no open node could beat it.
  */
 
 /// Rate-limited warning for invalid path requests that would otherwise spam runtimes.
@@ -107,12 +107,14 @@
 ///Сколько % тика поиск работает с пробуждения, прежде чем уступить: при выбранном бюджете вне МК поиск без этого шёл по восемь клеток за тик
 #define JPS_MIN_SLICE_USAGE 2
 
-///Порядок сканов к цели, предел боковых сканов, быстрые открытые клетки и уступка тика внутри сканов; бенч (--define=AI_HORDE_BENCH) переключает на лету
+///Порядок сканов к цели, предел боковых сканов, быстрые открытые клетки и уступка тика внутри сканов; кратчайший путь. Бенч (--define=AI_HORDE_BENCH) переключает их на лету
 #ifdef AI_HORDE_BENCH
 #define JPS_SCAN_SAVINGS GLOB.jps_scan_savings
+#define JPS_SHORTEST GLOB.jps_shortest
 #define JPS_BENCH_CHECKPOINT GLOB.jps_bench_gap = max(GLOB.jps_bench_gap, TICK_USAGE - GLOB.jps_bench_last_check); GLOB.jps_bench_last_check = TICK_USAGE
 #else
 #define JPS_SCAN_SAVINGS TRUE
+#define JPS_SHORTEST TRUE
 #define JPS_BENCH_CHECKPOINT
 #endif
 
@@ -158,9 +160,15 @@
 	heuristic = get_dist(tile, node_goal)
 	f_value = number_tiles + heuristic
 
-/// TODO: Macro this to reduce proc overhead
+///Меньший f первым, при равном - узел дальше от старта: он ближе к цели, и кратчайший путь находится раньше
 /proc/HeapPathWeightCompare(datum/jps_node/a, datum/jps_node/b)
-	return b.f_value - a.f_value
+	. = b.f_value - a.f_value
+	#ifdef AI_HORDE_BENCH
+	if(!GLOB.jps_shortest)
+		return
+	#endif
+	if(!.)
+		. = a.number_tiles - b.number_tiles
 
 /// The datum used to handle the JPS pathfinding, completely self-contained
 /datum/pathfind
@@ -197,6 +205,12 @@
 	///TICK_USAGE начала текущего куска работы и сколько % тика кусок держит при занятом тике
 	var/slice_started = 0
 	var/min_slice_usage = JPS_MIN_SLICE_USAGE
+	///Путь берётся кратчайший: найденная цель ждёт, пока в куче не кончатся узлы, способные дать путь короче
+	var/shortest = FALSE
+	///Самый короткий из найденных узлов цели
+	var/datum/jps_node/best_goal
+	///Нижняя оценка пути через раскрываемый узел; у всех узлов кучи она не меньше
+	var/expanding_bound = 0
 
 	// general pathfinding vars/args
 	/// An ID card representing what access we have and what doors we can open. Its location relative to the pathing atom is irrelevant
@@ -227,9 +241,11 @@
 	var/mob/living/simple_animal/pathing_animal = path_owner
 	check_environment = istype(pathing_animal) && pathing_animal.requires_safe_atmosphere()
 	scan_savings = JPS_SCAN_SAVINGS
+	shortest = JPS_SHORTEST
 
 /datum/pathfind/Destroy(force, ...)
 	pathing_movable = null
+	best_goal = null
 	start = null
 	end = null
 	id = null
@@ -367,8 +383,11 @@
 
 	//initialization
 	var/datum/jps_node/current_processed_node = new (start, -1, 0, end)
+	current_processed_node.number_tiles = 0
+	current_processed_node.heuristic = get_dist(start, end)
+	current_processed_node.f_value = current_processed_node.heuristic
 	open.insert(current_processed_node)
-	sources[start] = start // i'm sure this is fine
+	sources[start] = 0
 	slice_started = TICK_USAGE
 	#ifdef UNIT_TESTS
 	var/test_checkpoint_sent = FALSE
@@ -382,6 +401,13 @@
 		current_processed_node = open.pop() //get the lower f_value turf in the open list
 		if(max_distance && (current_processed_node.number_tiles > max_distance))//if too many steps, don't process that path
 			continue
+		//узел устарел: его клетку потом прошёл скан ближе к старту
+		if(shortest && sources[current_processed_node.tile] < current_processed_node.number_tiles)
+			continue
+		expanding_bound = node_bound(current_processed_node)
+		if(best_goal && best_goal.number_tiles <= expanding_bound)
+			unwind_path(best_goal)
+			break
 
 		var/turf/current_turf = current_processed_node.tile
 		for(var/heading in jps_scan_order(scan_savings ? get_dir(current_turf, end) : 0))
@@ -401,6 +427,9 @@
 			SEND_SIGNAL(pathing_movable, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK, src)
 		#endif
 
+	if(!path && !aborted && best_goal)
+		unwind_path(best_goal)
+	best_goal = null
 	//we're done! reverse the path to get it from start to finish
 	if(aborted)
 		AI_METRIC_INC(jps_aborted)
@@ -416,6 +445,20 @@
 		qdel(open)
 		open = null
 	return path
+
+///Сколько шагов пути через узел нельзя избежать: пройденное плюс расстояние до края зоны цели
+/datum/pathfind/proc/node_bound(datum/jps_node/node)
+	return node.number_tiles + max(0, node.heuristic - mintargetdist)
+
+///Скан дошёл до цели. Путь готов сразу, если он не длиннее нижней оценки раскрываемого узла: короче через кучу не выйдет
+/datum/pathfind/proc/found_goal(datum/jps_node/goal_node)
+	if(!shortest)
+		unwind_path(goal_node)
+		return
+	if(!best_goal || goal_node.number_tiles < best_goal.number_tiles)
+		best_goal = goal_node
+	if(best_goal.number_tiles <= expanding_bound)
+		unwind_path(best_goal)
 
 /// Called when we've hit the goal with the node that represents the last tile, then sets the path var to that path so it can be returned by [datum/pathfind/proc/search]
 /datum/pathfind/proc/unwind_path(datum/jps_node/unwind_node)
@@ -443,9 +486,11 @@
  * * heading: What direction are we going in? Obviously, should be cardinal
  * * parent_node: Only given for normal lateral scans, if we don't have one, we're a diagonal subscan.
  * * step_budget: Subscans only: how many steps are left before the path would outgrow max_distance. Null means unbounded.
+ * * subscan_steps: Subscans only: steps from the start to original_turf.
 */
-/datum/pathfind/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node, step_budget)
+/datum/pathfind/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node, step_budget, subscan_steps)
 	var/steps_taken = 0
+	var/start_steps = parent_node ? parent_node.number_tiles : subscan_steps
 
 	var/turf/current_turf = original_turf
 	var/turf/lag_turf = original_turf
@@ -487,16 +532,17 @@
 		if(!open_step && !can_step(lag_turf, current_turf, heading))
 			return
 
+		var/steps_here = start_steps + steps_taken
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
 			var/datum/jps_node/final_node = new(current_turf, parent_node, steps_taken)
-			sources[current_turf] = original_turf
+			sources[current_turf] = steps_here
 			if(parent_node) // if this is a direct lateral scan we can wrap up, if it's a subscan from a diag, we need to let the diag make their node first, then finish
-				unwind_path(final_node)
+				found_goal(final_node)
 			return final_node
-		else if(sources[current_turf]) // already visited, essentially in the closed list
+		var/known_steps = sources[current_turf]
+		if(!isnull(known_steps) && (!shortest || known_steps <= steps_here)) //клетку уже прошёл скан не дальше от старта
 			return
-		else
-			sources[current_turf] = original_turf
+		sources[current_turf] = steps_here
 
 		if(parent_node && max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
@@ -600,15 +646,16 @@
 		if(!open_step && !can_step(lag_turf, current_turf, heading))
 			return
 
+		var/steps_here = parent_node.number_tiles + steps_taken
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
 			var/datum/jps_node/final_node = new(current_turf, parent_node, steps_taken)
-			sources[current_turf] = original_turf
-			unwind_path(final_node)
+			sources[current_turf] = steps_here
+			found_goal(final_node)
 			return
-		else if(sources[current_turf]) // already visited, essentially in the closed list
+		var/known_steps = sources[current_turf]
+		if(!isnull(known_steps) && (!shortest || known_steps <= steps_here)) //клетку уже прошёл скан не дальше от старта
 			return
-		else
-			sources[current_turf] = original_turf
+		sources[current_turf] = steps_here
 
 		if(max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
@@ -625,7 +672,7 @@
 		var/datum/jps_node/possible_child_node // otherwise, did one of our lateral subscans turn up something?
 		if(!interesting)
 			var/subscan_budget = (fast && max_distance) ? max_distance - parent_node.number_tiles - steps_taken : null
-			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a, null, subscan_budget) || lateral_scan_spec(current_turf, lateral_heading_b, null, subscan_budget)
+			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a, null, subscan_budget, steps_here) || lateral_scan_spec(current_turf, lateral_heading_b, null, subscan_budget, steps_here)
 			if(aborted)
 				return
 
@@ -636,7 +683,7 @@
 				possible_child_node.update_parent(newnode)
 				open.insert(possible_child_node)
 				if(possible_child_node.tile == end || (mintargetdist && (get_dist(possible_child_node.tile, end) <= mintargetdist)))
-					unwind_path(possible_child_node)
+					found_goal(possible_child_node)
 			return
 
 		if(fast)
@@ -722,4 +769,5 @@
 #undef JPS_YIELD_STEP_MASK
 #undef JPS_MIN_SLICE_USAGE
 #undef JPS_SCAN_SAVINGS
+#undef JPS_SHORTEST
 #undef JPS_BENCH_CHECKPOINT

@@ -2,6 +2,8 @@
 
 #define JPS_TEST_ARENA_SIZE 40
 #define JPS_TEST_SEED 1114
+///Сколько пар клеток сверяется с поиском в ширину на каждой планировке
+#define JPS_TEST_PAIRS 100
 ///Предел тика ниже нуля: любая проверка тика в поиске уступает
 #define JPS_TEST_FORCE_YIELD -1
 ///Срок, после которого пасфайндер отбирает у поиска слот
@@ -28,6 +30,10 @@
 
 /datum/unit_test/jps_arena/proc/arena_turf(x, y)
 	return locate(arena.bottom_left_coords[1] + x - 1, arena.bottom_left_coords[2] + y - 1, arena.bottom_left_coords[3])
+
+///Координаты клетки внутри зала: по ним пару можно повторить на любом месте резервации
+/datum/unit_test/jps_arena/proc/arena_coords(turf/tile)
+	return "[tile.x - arena.bottom_left_coords[1] + 1],[tile.y - arena.bottom_left_coords[2] + 1]"
 
 ///open - пустой зал, на каждой клетке предмет; station - сетка комнат 14x14 с проходами, столами, окнами и перилами
 /datum/unit_test/jps_arena/proc/build_arena(layout)
@@ -114,7 +120,7 @@
 	if(previous != goal)
 		return "путь кончился на [previous.x],[previous.y], а не в цели"
 
-///На каждой паре клеток JPS находит путь тогда же, когда его находит поиск в ширину, и путь годный; длиннее кратчайшего он бывает лишь на пару шагов (JPS обрывается на первом найденном пути)
+///На каждой паре клеток JPS находит путь тогда же, когда его находит поиск в ширину, и путь кратчайший. Пары выбраны до первого поиска: поиск уступает тик, и чужие проки за это время тратят общий генератор случайных чисел
 /datum/unit_test/jps_paths_match_reference
 	parent_type = /datum/unit_test/jps_arena
 
@@ -124,13 +130,18 @@
 		build_arena(layout)
 		var/list/tiles = open_tiles()
 		rand_seed(JPS_TEST_SEED + 1)
-		var/excess_total = 0
-		for(var/pair in 1 to 40)
-			var/turf/start = pick(tiles)
-			var/turf/goal = pick(tiles)
+		var/list/pairs = list()
+		for(var/index in 1 to JPS_TEST_PAIRS)
+			pairs += list(list(pick(tiles), pick(tiles), index % 2))
+		//здесь первый найденный путь был длиннее кратчайшего на 4-6 шагов
+		if(layout == "station")
+			pairs += list(list(arena_turf(29, 12), arena_turf(11, 36), TRUE), list(arena_turf(37, 5), arena_turf(13, 33), TRUE), list(arena_turf(38, 28), arena_turf(27, 12), TRUE))
+		for(var/list/pair as anything in pairs)
+			var/turf/start = pair[1]
+			var/turf/goal = pair[2]
 			if(start == goal)
 				continue
-			var/max_distance = pair % 2 ? get_dist(start, goal) + AI_JPS_DETOUR_SLACK : 120
+			var/max_distance = pair[3] ? get_dist(start, goal) + AI_JPS_DETOUR_SLACK : 120
 			walker.forceMove(start)
 			//JPS дотягивается и на шаг сверх бюджета: такие пары ничего не доказывают
 			var/shortest = reference_length(walker, start, goal, max_distance + 1)
@@ -139,7 +150,7 @@
 			var/datum/pathfind/finder = new(walker, start, goal, null, max_distance, 0, TRUE, null)
 			var/list/path = finder.search()
 			qdel(finder)
-			var/where = "[layout] [start.x],[start.y] -> [goal.x],[goal.y], бюджет [max_distance]"
+			var/where = "[layout] [arena_coords(start)] -> [arena_coords(goal)], бюджет [max_distance]"
 			if(isnull(shortest))
 				TEST_ASSERT(!length(path), "JPS нашёл путь там, где его нет: [where]")
 				continue
@@ -147,10 +158,7 @@
 			var/problem = path_problem(walker, start, goal, path)
 			TEST_ASSERT(!problem, "Негодный путь, [problem]: [where]")
 			//в пути есть и стартовая клетка
-			var/steps = length(path) - 1
-			TEST_ASSERT(steps <= shortest + 2, "Путь в [steps] шагов при кратчайшем [shortest]: [where]")
-			excess_total += steps - shortest
-		TEST_ASSERT(excess_total <= 10, "[layout]: пути JPS в сумме на [excess_total] шагов длиннее кратчайших")
+			TEST_ASSERT_EQUAL(length(path) - 1, shortest, "Путь JPS длиннее кратчайшего: [where]")
 
 ///Длинный скан по пустому залу уступает тик, не дожидаясь конца раскрытия узла, и после сна продолжает ровно с того же места: путь тот же, что без сна
 /datum/unit_test/jps_scan_yields_mid_expansion
@@ -372,7 +380,7 @@
 #ifdef AI_HORDE_BENCH
 GLOBAL_VAR_INIT(jps_bench_slice_max, 0)
 
-///Долгие поиски ботов и обезьян (радиус 120-250) при бюджете вне МК, выбранном к их пробуждению: тики до ответа с уступкой на узел, по восьми клеткам и по куску времени
+///Долгие поиски ботов и обезьян (радиус 120-250) при бюджете вне МК, выбранном к их пробуждению: тики до ответа с уступкой на узел, по восьми клеткам и по куску времени (first - с первым найденным путём, slice - с кратчайшим)
 /datum/unit_test/jps_contended_bench
 	parent_type = /datum/unit_test/jps_scan_yields_mid_expansion
 	priority = TEST_LONGER
@@ -401,16 +409,17 @@ GLOBAL_VAR_INIT(jps_bench_slice_max, 0)
 	Master.pacing_forced = TRUE
 	var/datum/jps_budget_burner/burner = new
 	burner.burn()
-	for(var/mode in list("node", "steps", "slice"))
+	for(var/mode in list("node", "steps", "first", "slice"))
 		var/list/parts = list()
 		var/total_ticks = 0
 		var/max_ticks = 0
 		var/over_slot = 0
 		for(var/list/search as anything in searches)
 			walker.forceMove(search[1])
+			GLOB.jps_shortest = mode == "slice"
 			var/datum/pathfind/finder = new(walker, search[1], search[2], null, search[3], 0, TRUE, null)
 			finder.scan_savings = mode != "node"
-			if(mode != "slice")
+			if(mode == "node" || mode == "steps")
 				finder.min_slice_usage = 0
 			async_done = FALSE
 			async_result = null
@@ -435,16 +444,18 @@ GLOBAL_VAR_INIT(jps_bench_slice_max, 0)
 			qdel(finder)
 		log_world("JPS CONTENDED [mode]: тиков ср [round(total_ticks / length(searches), 0.1)] макс [max_ticks], дольше слота [over_slot]/[length(searches)] | [jointext(parts, " | ")]")
 	burner.running = FALSE
+	GLOB.jps_shortest = TRUE
 #endif
 
 #ifdef AI_HORDE_BENCH
 
 GLOBAL_VAR_INIT(jps_scan_savings, TRUE)
+GLOBAL_VAR_INIT(jps_shortest, TRUE)
 GLOBAL_VAR_INIT(jps_bench_can_steps, 0)
 GLOBAL_VAR_INIT(jps_bench_gap, 0)
 GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 
-///Цена одного поиска со старыми и новыми сканами в одном мире: мс, вызовы can_step, самый длинный кусок без проверки тика, длина пути против кратчайшего
+///Цена одного поиска со старыми сканами, с первым найденным путём и с кратчайшим в одном мире: мс, вызовы can_step, самый длинный кусок без проверки тика, длина пути против кратчайшего
 /datum/unit_test/jps_path_bench
 	parent_type = /datum/unit_test/jps_arena
 	priority = TEST_LONGER
@@ -452,30 +463,38 @@ GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 
 /datum/unit_test/jps_path_bench/Run()
 	var/obj/item/crowbar/walker = allocate(/obj/item/crowbar)
-	//open - зал орды; corridors - коридоры шириной 3 как в бенче драки; station - комнаты и долгие пути ботов
-	for(var/layout in list("open", "corridors", "station"))
+	//open - зал орды; corridors - коридоры шириной 3 как в бенче драки; station - комнаты и долгие пути ботов; sealed - те же комнаты и замурованная цель: поиск обходит весь радиус
+	for(var/layout in list("open", "corridors", "station", "sealed"))
 		build_bench_arena(layout)
+		var/turf/sealed = layout == "sealed" ? sealed_goal(22, 22) : null
 		var/list/tiles = open_tiles()
 		rand_seed(JPS_TEST_SEED + 2)
 		var/list/pairs = list()
-		while(length(pairs) < 60)
+		while(length(pairs) < (sealed ? 30 : 100))
 			var/turf/start = pick(tiles)
-			var/turf/goal = pick(tiles)
+			var/turf/goal = sealed || pick(tiles)
 			var/distance = get_dist(start, goal)
-			if(layout == "station" ? distance < 30 : (distance < 4 || distance > 25))
+			if(layout == "open" || layout == "corridors" ? (distance < 4 || distance > 25) : distance < 30)
 				continue
-			pairs += list(list(start, goal, layout == "station" ? 120 : distance + AI_JPS_DETOUR_SLACK))
-		var/list/stats = list("old" = list(), "new" = list())
+			pairs += list(list(start, goal, layout == "open" || layout == "corridors" ? distance + AI_JPS_DETOUR_SLACK : 120))
+		var/list/stats = list("old" = list(), "first" = list(), "new" = list())
 		for(var/index in 1 to length(pairs))
 			var/list/pair = pairs[index]
 			var/shortest = reference_length(walker, pair[1], pair[2], pair[3])
-			//ABBA по парам гасит дрейф чужой нагрузки
-			var/list/order = (index % 4 < 2) ? list("old", "new") : list("new", "old")
+			//порядок режимов меняется от пары к паре и гасит дрейф чужой нагрузки
+			var/list/order = list("old", "first", "new")
+			for(var/turn in 1 to (index % 3))
+				order.Add(order[1])
+				order.Cut(1, 2)
+			if(index % 2)
+				reverseRange(order)
 			for(var/mode in order)
-				measure(walker, pair, shortest, stats[mode], mode == "new")
+				GLOB.jps_shortest = mode == "new"
+				measure(walker, pair, shortest, stats[mode], mode != "old")
 			if(!(index % 10))
 				sleep(1)
 		GLOB.jps_scan_savings = TRUE
+		GLOB.jps_shortest = TRUE
 		for(var/mode in stats)
 			var/list/mode_stats = stats[mode]
 			log_world("JPS BENCH [layout] [mode]: [length(pairs)] searches | ms avg [round(mode_stats["ms"] / length(pairs), 0.01)] max [round(mode_stats["ms_max"], 0.01)] | can_step avg [round(mode_stats["can_step"] / length(pairs))] | worst slice without tick check [round(mode_stats["gap_max"], 0.01)]ms | found [mode_stats["found"]]/[mode_stats["reachable"]] reachable, steps over shortest total [mode_stats["excess"]] max [mode_stats["excess_max"]]")
@@ -484,6 +503,7 @@ GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 ///Куда уходит время новых поисков: самые дорогие проки по собственному времени
 /datum/unit_test/jps_path_bench/proc/profile_new_searches(atom/movable/walker, list/pairs, layout)
 	GLOB.jps_scan_savings = TRUE
+	GLOB.jps_shortest = TRUE
 	world.Profile(PROFILE_CLEAR)
 	world.Profile(PROFILE_START)
 	for(var/list/pair as anything in pairs)
@@ -508,7 +528,7 @@ GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 
 /datum/unit_test/jps_path_bench/proc/build_bench_arena(layout)
 	if(layout != "corridors")
-		build_arena(layout)
+		build_arena(layout == "sealed" ? "station" : layout)
 		return
 	build_arena("open")
 	for(var/x in 2 to arena_size - 1)
@@ -553,6 +573,7 @@ GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 
 #undef JPS_TEST_ARENA_SIZE
 #undef JPS_TEST_SEED
+#undef JPS_TEST_PAIRS
 #undef JPS_TEST_FORCE_YIELD
 #undef JPS_TEST_SLOT_TIME
 #undef JPS_TEST_SPENT_BUDGET_WAIT
