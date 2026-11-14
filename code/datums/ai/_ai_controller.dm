@@ -307,7 +307,9 @@ multiple modular subtrees with behaviors
 	if(isnull(our_turf))
 		clear_tracked_cells()
 		return
-
+	if(AI_CROWD_SAVINGS && our_cells.window_unchanged(our_turf))
+		return
+	AI_METRIC_INC(cell_windows)
 	var/list/cell_collections = our_cells.recalculate_cells(our_turf)
 
 	for(var/datum/old_grid as anything in cell_collections[2])
@@ -325,7 +327,7 @@ multiple modular subtrees with behaviors
 		return
 	for(var/datum/spatial_grid_cell/cell as anything in our_cells.member_cells)
 		UnregisterSignal(cell, list(SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS), SPATIAL_GRID_CELL_EXITED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)))
-	our_cells.member_cells.Cut()
+	our_cells.forget_cells()
 
 ///TRUE, если в отслеживаемых ячейках нет живых клиентов и можно засыпать
 /datum/ai_controller/proc/should_idle()

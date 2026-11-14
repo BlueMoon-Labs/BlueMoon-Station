@@ -361,6 +361,13 @@
 #else
 #define AI_PATH_SAVINGS TRUE
 #endif
+///Экономия большой толпы (дальний обзор объектов, отказы стаи, окно ячеек); бенч драки
+///орды (hostile_ai_horde_brawl_bench) переключает её на лету
+#ifdef AI_HORDE_BENCH
+#define AI_CROWD_SAVINGS GLOB.ai_crowd_savings
+#else
+#define AI_CROWD_SAVINGS TRUE
+#endif
 ///Дальше этого виляние/окружение не планируем - просто бежим к цели
 #define AI_WEAVE_MAX_DIST 7
 ///Дальность уклончивого подхода против ОПОЗНАННОГО стрелка. Обычная семёрка -

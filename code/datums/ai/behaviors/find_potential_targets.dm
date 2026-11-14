@@ -287,6 +287,9 @@
 	var/hunter_ref = pack_scan ? REF(living_mob) : null
 	for(var/atom/candidate as anything in candidates)
 		AI_METRIC_INC(candidates_examined)
+		//в орде почти весь пул - союзники, уже отвергнутые сородичем: отсекаются первой проверкой
+		if(AI_CROWD_SAVINGS && pack_rejected && pack_rejected[candidate] && candidate != validated_target)
+			continue
 		if(candidate == impervious_target || QDELETED(candidate))
 			continue
 		if(candidate == validated_target)
@@ -299,7 +302,7 @@
 		var/turf/candidate_turf = get_turf(candidate)
 		if(!candidate_turf || candidate_turf.z != perception_turf.z)
 			continue
-		if(pack_rejected && pack_rejected[candidate])
+		if(!AI_CROWD_SAVINGS && pack_rejected && pack_rejected[candidate])
 			continue
 		if(!targeting_strategy.can_attack(living_mob, candidate, aggro_range))
 			pack_scan?.note_rejection(candidate, hunter_ref)
@@ -314,6 +317,7 @@
 		var/list/shared = pack_scan.shared_objects(origin, scan_range)
 		if(shared)
 			return shared
+	AI_METRIC_INC(object_scans)
 	. = typecache_filter_list(oview(scan_range, hostile_mob.targets_from), hostile_mob.wanted_objects)
 	if(origin && pack_scan)
 		pack_scan.store_objects(origin, scan_range, .)

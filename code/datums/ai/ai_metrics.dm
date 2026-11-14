@@ -22,6 +22,10 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 	var/targets_acquired = 0
 	///вызовов hearers() из поиска целей hostile-мобов
 	var/hearers_calls = 0
+	///собственных oview по wanted_objects (без взятых у сородича)
+	var/object_scans = 0
+	///пересборок окна ячеек грида на шаге пауна
+	var/cell_windows = 0
 
 /// Снимок всех счётчиков одним ассоц-списком (для JSON бенчмарка)
 /datum/ai_metrics/proc/snapshot()
@@ -35,6 +39,8 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 		"successful_moves" = successful_moves,
 		"targets_acquired" = targets_acquired,
 		"hearers_calls" = hearers_calls,
+		"object_scans" = object_scans,
+		"cell_windows" = cell_windows,
 	)
 
 /datum/ai_metrics/proc/reset()
@@ -47,6 +53,8 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 	successful_moves = 0
 	targets_acquired = 0
 	hearers_calls = 0
+	object_scans = 0
+	cell_windows = 0
 
 /// Разница между текущим состоянием и ранее взятым снимком
 /datum/ai_metrics/proc/delta_since(list/base_snapshot)
