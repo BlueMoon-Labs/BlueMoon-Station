@@ -21611,10 +21611,6 @@
 	icon_state = "platingdmg2"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"gGe" = (
-/obj/effect/portal/mesa_rift,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "gGw" = (
 /obj/structure/rack/shelf,
 /obj/item/reagent_containers/food/snacks/cornchips{
@@ -151913,7 +151909,7 @@ mIk
 jRW
 aEj
 npi
-gGe
+kGI
 dAS
 jJr
 rtp
@@ -156281,7 +156277,7 @@ tsX
 qQb
 hNy
 npi
-kGI
+npi
 aTl
 kaR
 pSA
