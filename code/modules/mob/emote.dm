@@ -47,6 +47,31 @@
 		to_chat(src, span_notice("Unusable emote '[act]'. Say *help for a list."))
 		return
 
+/mob/living
+	var/spin_flip_count = 0
+	var/spin_flip_last_time = 0
+	var/spin_flip_cooldown = 0
+
+/mob/living/proc/handle_spin_flip_dizziness()
+	if(world.time - spin_flip_last_time > 50)
+		spin_flip_count = 0
+	spin_flip_last_time = world.time
+	spin_flip_count++
+	if(spin_flip_count >= 3 && world.time >= spin_flip_cooldown)
+		spin_flip_cooldown = world.time + 100
+		spin_flip_count = 0
+		to_chat(src, span_warning("От частых кувырков у вас закружилась голова и подступила тошнота."))
+		Dizzy(30)
+		Jitter(20)
+		add_movespeed_modifier(/datum/movespeed_modifier/spin_dizzy)
+		addtimer(CALLBACK(src, PROC_REF(remove_spin_dizzy)), 100)
+
+/mob/living/proc/remove_spin_dizzy()
+	remove_movespeed_modifier(/datum/movespeed_modifier/spin_dizzy)
+
+/datum/movespeed_modifier/spin_dizzy
+	multiplicative_slowdown = 1.5
+
 /datum/emote/flip
 	name = "Сделать Кувырок"
 	key = "flip"
@@ -61,6 +86,10 @@
 	. = ..()
 	if(.)
 		user.SpinAnimation(7,1)
+		if(ismob(user))
+			var/mob/living/L = user
+			if(istype(L))
+				L.handle_spin_flip_dizziness()
 
 /datum/emote/spin
 	key = "spin"
@@ -73,6 +102,10 @@
 	. = ..()
 	if(.)
 		user.spin(20, 1)
+		if(ismob(user))
+			var/mob/living/L = user
+			if(istype(L))
+				L.handle_spin_flip_dizziness()
 
 		if(iscyborg(user))
 			var/mob/living/silicon/robot/R = user
