@@ -42,12 +42,14 @@
 
 /datum/quirk/biogenerator/remove()
 	var/mob/living/carbon/human/H = quirk_holder
-	if(!istype(H))
+	if(!istype(H) || !isrobotic(H))
 		return
 	var/obj/item/organ/stomach/ipc/biogenerator/gen = locate(/obj/item/organ/stomach/ipc/biogenerator) in H.internal_organs
 	if(gen)
 		gen.Remove()
 		qdel(gen)
+	var/obj/item/organ/stomach/ipc/stomach = new()
+	stomach.Insert(H, 0, FALSE)
 	var/obj/item/organ/cyberimp/arm/power_cord/cord = new()
 	cord.Insert(H, 0, FALSE)
 	ADD_TRAIT(H, TRAIT_NO_PROCESS_FOOD, SPECIES_TRAIT)

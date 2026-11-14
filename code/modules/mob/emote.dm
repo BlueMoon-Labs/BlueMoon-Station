@@ -67,6 +67,8 @@
 		addtimer(CALLBACK(src, PROC_REF(remove_spin_dizzy)), 100)
 
 /mob/living/proc/remove_spin_dizzy()
+	if(world.time < spin_flip_cooldown)
+		return
 	remove_movespeed_modifier(/datum/movespeed_modifier/spin_dizzy)
 
 /datum/movespeed_modifier/spin_dizzy

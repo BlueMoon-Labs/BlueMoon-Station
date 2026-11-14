@@ -147,6 +147,7 @@
 	. = ..()
 
 /obj/item/organ/stomach/ipc/proc/charge(datum/source, amount, repairs)
+	SIGNAL_HANDLER
 	if(owner)
 		owner.adjust_nutrition(amount / 10, NUTRITION_LEVEL_WELL_FED)
 
