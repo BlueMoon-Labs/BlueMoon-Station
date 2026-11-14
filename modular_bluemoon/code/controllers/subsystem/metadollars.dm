@@ -90,7 +90,10 @@ SUBSYSTEM_DEF(metadollars)
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
 	if(!prefs_path || !fexists(prefs_path))
 		return 0
-	var/savefile/S = new /savefile(prefs_path)
+	// Удерживаемый файл живого игрока берём как есть, без своего открытия (~5 мс на ckey).
+	var/savefile/S = open_player_savefile(prefs_path)
+	if(!S)
+		return 0
 	S.cd = "/"
 	var/amount = 0
 	READ_FILE(S["metadollars"], amount)

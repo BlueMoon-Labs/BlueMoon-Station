@@ -44,6 +44,21 @@
 	reader.load_preferences(bypass_cooldown = TRUE)
 	return reader
 
+/// Падение сервера: префы пропали без слияния журнала, а следующий мир ничего не знает о файле.
+/proc/savefile_session_test_crash(datum/preferences/prefs)
+	var/test_path = prefs.path
+	release_player_savefile(test_path, "тест")
+	prefs.path = null
+	qdel(prefs)
+	GLOB.player_savefile_journal_epochs -= test_path
+	GLOB.player_savefile_journal_bases -= test_path
+	GLOB.player_savefile_journal_started -= test_path
+
+/// Сколько вызовов такого вида детектор спайков записал в учёт блокирующих.
+/proc/savefile_session_test_blocking_count(kind)
+	var/list/bucket = SStick_spikes?.blocking_by_kind?[kind]
+	return bucket ? bucket["count"] : 0
+
 /// Пачка обращений одного игрока открывает файл один раз, а записанное видно всем и переживает закрытие.
 /datum/unit_test/preferences_savefile_session_burst_opens_once
 
@@ -231,12 +246,14 @@
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	prefs.release_savefile()
 
-	// Обрывки нужного поколения: от чтения их спасают только метки начала и конца блока.
-	text2file("[PREF_JOURNAL_BLOCK_BEGIN]\n[PREF_JOURNAL_EPOCH_KEY] = 0\ntgui_panel_theme = \"default\"\nmax_chat_length = 7\n", "[test_path].journal")
 	prefs.tgui_panel_theme = "light"
 	prefs.save_single_pref("tgui_panel_theme", "light")
 	prefs.flush_single_prefs()
-	text2file("[PREF_JOURNAL_BLOCK_BEGIN]\n[PREF_JOURNAL_EPOCH_KEY] = 0\nmax_chat_length = 9", "[test_path].journal")
+	// Обрывки нужного поколения и отпечатка вокруг целого блока: от чтения их спасают только метки начала и конца.
+	var/whole_block = file2text("[test_path].journal")
+	var/torn_head = "[PREF_JOURNAL_BLOCK_BEGIN]\n[PREF_JOURNAL_EPOCH_KEY] = 0\n[PREF_JOURNAL_BASE_KEY] = \"[GLOB.player_savefile_journal_bases[test_path]]\"\ntgui_panel_theme = \"default\"\nmax_chat_length = 7\n"
+	fdel("[test_path].journal")
+	text2file("[torn_head][whole_block][PREF_JOURNAL_BLOCK_BEGIN]\n[PREF_JOURNAL_EPOCH_KEY] = 0\nmax_chat_length = 9", "[test_path].journal")
 	prefs.path = null
 	qdel(prefs)
 
@@ -333,3 +350,399 @@
 	TEST_ASSERT(!journal_after, "ребут не слил журнал в savefile")
 	TEST_ASSERT_EQUAL(pending_after, 0, "ребут оставил буфер одиночных ключей")
 	TEST_ASSERT_EQUAL(on_disk_theme, "dark", "ребут записал не последнее значение")
+
+/**
+ * Журнал, переживший падение сервера, не откатывает правку сборки без журнала (откат или тест-мерж
+ * между раундами): та пишет в savefile напрямую, и следующий вход видит её значение.
+ */
+/datum/unit_test/preferences_single_pref_journal_skips_foreign_write
+
+/datum/unit_test/preferences_single_pref_journal_skips_foreign_write/Run()
+	var/test_path = savefile_session_test_path("journal_foreign")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	// 1. Сброс уходит в журнал мимо savefile.
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	prefs.flush_single_prefs()
+	var/journal_written = fexists("[test_path].journal")
+	// 2. Сервер падает до слияния.
+	savefile_session_test_crash(prefs)
+	// 3. Раунд на сборке без журнала: она пишет в savefile напрямую и журнала не видит.
+	var/savefile/old_build = new /savefile(test_path)
+	old_build.cd = "/"
+	WRITE_FILE(old_build["tgui_panel_theme"], "dark")
+	old_build = null
+	// 4. Вход на сборке с журналом.
+	var/stale_before = GLOB.player_savefile_journal_stale_blocks
+	var/merges_before = savefile_session_test_blocking_count("savefile (слияние журнала)")
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	var/reader_theme = reader.tgui_panel_theme
+	qdel(reader)
+	// 5. Что лежит в файле после входа.
+	var/on_disk_theme = savefile_session_test_read(test_path, "tgui_panel_theme")
+	var/journal_left = fexists("[test_path].journal")
+	var/stale_blocks = GLOB.player_savefile_journal_stale_blocks - stale_before
+	var/merges_measured = savefile_session_test_blocking_count("savefile (слияние журнала)") - merges_before
+	var/summary = player_savefile_summary()
+	fdel(test_path)
+	fdel("[test_path].journal")
+
+	TEST_ASSERT(journal_written, "сброс не записал журнал")
+	TEST_ASSERT_EQUAL(reader_theme, "dark", "устаревший журнал перекрыл правку сборки без журнала")
+	TEST_ASSERT_EQUAL(on_disk_theme, "dark", "устаревший журнал лёг в savefile поверх более новой записи")
+	TEST_ASSERT(!journal_left, "устаревший журнал не удалён")
+	TEST_ASSERT_EQUAL(stale_blocks, 1, "отброшенный блок журнала не посчитан")
+	TEST_ASSERT_EQUAL(merges_measured, 1, "слияние журнала на входе не попало в учёт блокирующих вызовов")
+	TEST_ASSERT(findtext(summary, "отброшено устаревших блоков [GLOB.player_savefile_journal_stale_blocks]"), "итог раунда не называет отброшенные блоки журнала")
+
+/// Журнал, начатый больше PREF_JOURNAL_MAX_AGE назад, не дописывается: сброс уходит в savefile и сливает его.
+/datum/unit_test/preferences_single_pref_journal_age_limit
+
+/datum/unit_test/preferences_single_pref_journal_age_limit/Run()
+	var/test_path = savefile_session_test_path("journal_age")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	prefs.flush_single_prefs()
+	var/journal_written = fexists("[test_path].journal")
+	GLOB.player_savefile_journal_started[test_path] = world.time - PREF_JOURNAL_MAX_AGE - 1
+	prefs.max_chat_length = 444
+	prefs.save_pref_var("max_chat_length")
+	var/opens_before = GLOB.player_savefile_opens
+	prefs.flush_single_prefs()
+	var/old_journal_flush_opens = GLOB.player_savefile_opens - opens_before
+	var/journal_left = fexists("[test_path].journal")
+	var/on_disk_theme = savefile_session_test_read(test_path, "tgui_panel_theme")
+	var/on_disk_length = savefile_session_test_read(test_path, "max_chat_length")
+	qdel(prefs)
+
+	TEST_ASSERT(journal_written, "сброс не записал журнал")
+	TEST_ASSERT_EQUAL(old_journal_flush_opens, 1, "сброс дописал журнал старше предела вместо записи в savefile")
+	TEST_ASSERT(!journal_left, "журнал старше предела не слит")
+	TEST_ASSERT_EQUAL(on_disk_theme, "light", "ключ старого журнала не доехал до savefile")
+	TEST_ASSERT_EQUAL(on_disk_length, 444, "свежий ключ не доехал до savefile")
+
+/// Миграция версии на входе идёт через один удерживаемый хэндл и обновляет все слоты, хотя load_character уводит его cd.
+/datum/unit_test/preferences_savefile_session_migrates_held_file
+
+/datum/unit_test/preferences_savefile_session_migrates_held_file/Run()
+	var/test_path = savefile_session_test_path("migration")
+	var/list/names = list("Мигрант Первый", "Мигрант Второй", "Мигрант Третий")
+	var/datum/preferences/savefile_session_test/writer = new(test_path)
+	writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	for(var/slot in 1 to length(names))
+		writer.default_slot = slot
+		writer.real_name = names[slot]
+		writer.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	writer.default_slot = 2
+	writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	writer.release_savefile()
+	writer.path = null
+	qdel(writer)
+	var/current_version = savefile_session_test_read(test_path, "version")
+	var/savefile/older = new /savefile(test_path)
+	older.cd = "/"
+	WRITE_FILE(older["version"], current_version - 1)
+	for(var/slot in 1 to length(names))
+		older.cd = "/character[slot]"
+		WRITE_FILE(older["version"], current_version - 1)
+	older = null
+
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	var/opens_before = GLOB.player_savefile_opens
+	// Без ссылки на сам savefile: она держала бы файл открытым и после release_savefile.
+	var/loaded = !!prefs.load_preferences(bypass_cooldown = TRUE)
+	var/migration_opens = GLOB.player_savefile_opens - opens_before
+	var/held_after = !!GLOB.held_player_savefiles[test_path]
+	var/slot_after = prefs.default_slot
+	prefs.load_character(null, bypass_cooldown = TRUE)
+	var/loaded_name = prefs.real_name
+	prefs.release_savefile()
+	var/root_version = savefile_session_test_read(test_path, "version")
+	var/list/slot_versions = list()
+	var/list/slot_names = list()
+	for(var/slot in 1 to length(names))
+		slot_versions += savefile_session_test_read(test_path, "version", "/character[slot]")
+		slot_names += savefile_session_test_read(test_path, "real_name", "/character[slot]")
+	qdel(prefs)
+
+	TEST_ASSERT(loaded, "сейв старой версии не прочитался")
+	TEST_ASSERT_EQUAL(migration_opens, 1, "миграция открывала файл не один раз")
+	TEST_ASSERT(held_after, "файл после миграции не удерживается")
+	TEST_ASSERT_EQUAL(slot_after, 2, "миграция сбила выбранный слот")
+	TEST_ASSERT_EQUAL(loaded_name, names[2], "после миграции загрузился не выбранный слот")
+	TEST_ASSERT_EQUAL(root_version, current_version, "версия префов не поднята")
+	for(var/slot in 1 to length(names))
+		TEST_ASSERT_EQUAL(slot_versions[slot], current_version, "слот [slot] не промигрирован")
+		TEST_ASSERT_EQUAL(slot_names[slot], names[slot], "миграция испортила имя в слоте [slot]")
+
+/// Удерживаемый хэндл и второй хэндл того же файла видят записи друг друга, а закрытие ни одной не откатывает.
+/datum/unit_test/preferences_savefile_session_second_handle
+
+/datum/unit_test/preferences_savefile_session_second_handle/Run()
+	var/test_path = savefile_session_test_path("second_handle")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.real_name = "Первая Запись"
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light", immediate = TRUE)
+
+	var/savefile/second = new /savefile(test_path)
+	second.cd = "/"
+	var/second_theme_first
+	READ_FILE(second["tgui_panel_theme"], second_theme_first)
+	second.cd = "/character1"
+	var/second_name_first
+	READ_FILE(second["real_name"], second_name_first)
+
+	prefs.real_name = "Вторая Запись"
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	prefs.tgui_panel_theme = "dark"
+	prefs.save_single_pref("tgui_panel_theme", "dark", immediate = TRUE)
+	second.cd = "/"
+	var/second_theme_second
+	READ_FILE(second["tgui_panel_theme"], second_theme_second)
+	second.cd = "/character1"
+	var/second_name_second
+	READ_FILE(second["real_name"], second_name_second)
+
+	var/closes_before = savefile_session_test_blocking_count("savefile (закрытие)")
+	prefs.release_savefile()
+	var/closes_measured = savefile_session_test_blocking_count("savefile (закрытие)") - closes_before
+	second = null
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	reader.load_character(1, bypass_cooldown = TRUE)
+	var/reader_theme = reader.tgui_panel_theme
+	var/reader_name = reader.real_name
+	qdel(reader)
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(second_theme_first, "light", "второй хэндл не видит ключ удерживаемого")
+	TEST_ASSERT_EQUAL(second_name_first, "Первая Запись", "второй хэндл не видит персонажа удерживаемого")
+	TEST_ASSERT_EQUAL(second_theme_second, "dark", "второй хэндл не видит повторную запись ключа")
+	TEST_ASSERT_EQUAL(second_name_second, "Вторая Запись", "второй хэндл не видит повторную запись персонажа")
+	TEST_ASSERT_EQUAL(closes_measured, 1, "закрытие удерживаемого файла не попало в учёт блокирующих вызовов")
+	TEST_ASSERT_EQUAL(reader_theme, "dark", "закрытие хэндлов откатило ключ")
+	TEST_ASSERT_EQUAL(reader_name, "Вторая Запись", "закрытие хэндлов откатило персонажа")
+
+/// Крайние значения доезжают через журнал в точности: пустой список, пустая строка, дробь, строка в 16 КБ, null в списке.
+/datum/unit_test/preferences_single_pref_journal_value_edges
+
+/datum/unit_test/preferences_single_pref_journal_value_edges/Run()
+	var/test_path = savefile_session_test_path("journal_edges")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	var/big = ""
+	while(length(big) < 16 * 1024)
+		big += "Чат «главный» \\ \"кавычки\" \[1\]; "
+	var/list/values = list(
+		"journal_edge_empty_list" = list(),
+		"journal_edge_empty_text" = "",
+		"journal_edge_fraction" = 1.1,
+		"journal_edge_big_text" = big,
+		"journal_edge_null_in_list" = list("а", null, "б"),
+		"journal_edge_null_value" = list("ключ" = null, "число" = 2),
+	)
+	var/list/unsafe = list()
+	for(var/key in values)
+		var/value = values[key]
+		if(!pref_journal_safe(value))
+			unsafe += key
+		var/list/as_list = value
+		prefs.save_single_pref(key, islist(value) ? as_list.Copy() : value)
+	var/opens_before = GLOB.player_savefile_opens
+	prefs.flush_single_prefs()
+	var/flush_opens = GLOB.player_savefile_opens - opens_before
+	var/journal_written = fexists("[test_path].journal")
+	savefile_session_test_crash(prefs)
+
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	qdel(reader)
+	var/list/merged = list()
+	for(var/key in values)
+		merged[key] = savefile_session_test_read(test_path, key)
+	fdel(test_path)
+	fdel("[test_path].journal")
+
+	TEST_ASSERT_EQUAL(length(unsafe), 0, "значения сочтены небезопасными для журнала: [jointext(unsafe, ", ")]")
+	TEST_ASSERT_EQUAL(flush_opens, 0, "сброс крайних значений открыл savefile")
+	TEST_ASSERT(journal_written, "сброс крайних значений не записал журнал")
+	for(var/key in values)
+		var/expected = values[key]
+		var/got = merged[key]
+		if(islist(expected))
+			TEST_ASSERT(islist(got), "[key]: из журнала пришёл не список")
+			TEST_ASSERT_EQUAL(length(got), length(expected), "[key]: длина списка изменилась")
+			TEST_ASSERT_EQUAL(json_encode(got), json_encode(expected), "[key]: список изменился")
+		else
+			TEST_ASSERT(!isnull(got), "[key]: значение потерялось")
+			TEST_ASSERT_EQUAL(got, expected, "[key]: значение изменилось")
+	TEST_ASSERT(istext(merged["journal_edge_empty_text"]), "пустая строка стала не строкой")
+
+/// С выключенным PLAYER_SAVEFILE_HOLD файл закрывается после каждого обращения, как до удержания, а журнал работает.
+/datum/unit_test/preferences_savefile_hold_disabled
+	var/old_hold
+
+/datum/unit_test/preferences_savefile_hold_disabled/Run()
+	old_hold = CONFIG_GET(flag/player_savefile_hold)
+	CONFIG_SET(flag/player_savefile_hold, FALSE)
+	var/test_path = savefile_session_test_path("hold_disabled")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+
+	var/opens_before = GLOB.player_savefile_opens
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/held_after_save = !!GLOB.held_player_savefiles[test_path]
+	prefs.real_name = "Без Удержания"
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	prefs.load_character(1, bypass_cooldown = TRUE)
+	prefs.slot_names_cache = null
+	prefs.get_slot_names()
+	var/access_opens = GLOB.player_savefile_opens - opens_before
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	opens_before = GLOB.player_savefile_opens
+	prefs.flush_single_prefs()
+	var/flush_opens = GLOB.player_savefile_opens - opens_before
+	var/journal_written = fexists("[test_path].journal")
+	var/held_after_flush = !!GLOB.held_player_savefiles[test_path]
+	var/summary = player_savefile_summary()
+
+	var/datum/preferences/savefile_session_test/reader = new(test_path)
+	reader.load_preferences(bypass_cooldown = TRUE)
+	reader.load_character(1, bypass_cooldown = TRUE)
+	var/reader_theme = reader.tgui_panel_theme
+	var/reader_name = reader.real_name
+	var/held_after_reader = !!GLOB.held_player_savefiles[test_path]
+	var/journal_left = fexists("[test_path].journal")
+	reader.path = null
+	qdel(reader)
+	qdel(prefs)
+	CONFIG_SET(flag/player_savefile_hold, old_hold)
+
+	TEST_ASSERT(!held_after_save, "файл остался открытым при выключенном удержании")
+	TEST_ASSERT_EQUAL(access_opens, 4, "запись, персонаж, загрузка и имена слотов открыли файл не по разу")
+	TEST_ASSERT_EQUAL(flush_opens, 0, "одиночный ключ при выключенном удержании открыл savefile мимо журнала")
+	TEST_ASSERT(journal_written, "журнал не работает при выключенном удержании")
+	TEST_ASSERT(!held_after_flush && !held_after_reader, "файл остался открытым при выключенном удержании")
+	TEST_ASSERT(findtext(summary, "удержание выключено"), "итог раунда не говорит, что удержание выключено")
+	TEST_ASSERT_EQUAL(reader_theme, "light", "ключ из журнала не дошёл до следующего входа")
+	TEST_ASSERT_EQUAL(reader_name, "Без Удержания", "персонаж не дошёл до следующего входа")
+	TEST_ASSERT(!journal_left, "вход не слил журнал")
+
+/datum/unit_test/preferences_savefile_hold_disabled/Destroy()
+	if(!isnull(old_hold))
+		CONFIG_SET(flag/player_savefile_hold, old_hold)
+	return ..()
+
+/// Клиент-заглушка для временных префов: настоящие префы этого клиента - другой датум.
+/datum/client_interface/savefile_session_test
+	var/ckey = "savefilesessiontest"
+
+/// Временные префы клиента (голоформа ИИ) читают чужой слот, не перезаписывая выбранный игроком.
+/datum/unit_test/preferences_temporary_prefs_keep_default_slot
+
+/datum/unit_test/preferences_temporary_prefs_keep_default_slot/Run()
+	var/test_path = savefile_session_test_path("borrowed_slot")
+	var/list/names = list("Хозяин Слота", "Голоформа Слота")
+	var/datum/preferences/savefile_session_test/owner = new(test_path)
+	owner.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	for(var/slot in 1 to length(names))
+		owner.default_slot = slot
+		owner.real_name = names[slot]
+		owner.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	owner.default_slot = 1
+	owner.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+
+	var/datum/client_interface/savefile_session_test/fake_client = new
+	fake_client.prefs = owner
+	var/datum/preferences/savefile_session_test/borrowed = new(test_path)
+	borrowed.parent = fake_client
+	borrowed.load_character(2, bypass_cooldown = TRUE)
+	var/borrowed_name = borrowed.real_name
+	var/slot_after_borrow = savefile_session_test_read(test_path, "default_slot")
+	borrowed.parent = null
+	borrowed.path = null
+	qdel(borrowed)
+	fake_client.prefs = null
+	qdel(fake_client)
+
+	owner.load_character(2, bypass_cooldown = TRUE)
+	var/slot_after_owner = savefile_session_test_read(test_path, "default_slot")
+	qdel(owner)
+
+	TEST_ASSERT_EQUAL(borrowed_name, names[2], "временные префы прочитали не тот слот")
+	TEST_ASSERT_EQUAL(slot_after_borrow, 1, "временные префы перезаписали выбранный игроком слот")
+	TEST_ASSERT_EQUAL(slot_after_owner, 2, "префы игрока не запомнили выбранный слот")
+
+/datum/preferences/savefile_session_test/scar_counter
+	var/character_saves = 0
+
+/datum/preferences/savefile_session_test/scar_counter/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, update_active_preset = TRUE)
+	character_saves++
+	return TRUE
+
+/// Спавн с целыми постоянными шрамами персонажа не переписывает, а с битыми чистит набор и пишет один раз.
+/datum/unit_test/preferences_persistent_scars_save_only_on_change
+
+/datum/unit_test/preferences_persistent_scars_save_only_on_change/Run()
+	var/datum/preferences/savefile_session_test/scar_counter/prefs = new(null)
+	prefs.persistent_scars = TRUE
+	prefs.scars_index = 1
+	var/scar = "[SCAR_CURRENT_VERSION]|[BODY_ZONE_CHEST]|тонкий шрам|грудь|[WOUND_SEVERITY_MODERATE];"
+	prefs.scars_list["1"] = scar
+	var/mob/living/carbon/human/whole_body = allocate(/mob/living/carbon/human)
+	var/saves_before = prefs.character_saves
+	var/changed_whole = prefs.apply_persistent_scars(whole_body)
+	var/saves_whole = prefs.character_saves - saves_before
+	var/whole_scars = LAZYLEN(whole_body.all_scars)
+
+	prefs.scars_list["1"] = "битый шрам;[scar]"
+	var/mob/living/carbon/human/torn_body = allocate(/mob/living/carbon/human)
+	var/changed_torn = prefs.apply_persistent_scars(torn_body)
+	var/saves_torn = prefs.character_saves - saves_before - saves_whole
+	var/kept = prefs.scars_list["1"]
+	qdel(prefs)
+
+	TEST_ASSERT(!changed_whole, "целый набор шрамов сочтён изменённым")
+	TEST_ASSERT_EQUAL(saves_whole, 0, "спавн с целыми шрамами переписал персонажа")
+	TEST_ASSERT_EQUAL(whole_scars, 1, "шрам не нанесён на тело")
+	TEST_ASSERT(changed_torn, "битый шрам не выкинут из набора")
+	TEST_ASSERT_EQUAL(saves_torn, 1, "очищенный набор шрамов не записан один раз")
+	TEST_ASSERT_EQUAL(kept, scar, "из набора выкинут целый шрам")
+
+/// Старый баланс metadollars читается из удерживаемого файла живого игрока без нового открытия.
+/datum/unit_test/preferences_metadollars_legacy_read_uses_held_file
+
+/datum/unit_test/preferences_metadollars_legacy_read_uses_held_file/Run()
+	var/test_path = savefile_session_test_path("metadollars")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/savefile/held = GLOB.held_player_savefiles[test_path]
+	held.cd = "/"
+	WRITE_FILE(held["metadollars"], 77)
+	held = null
+
+	var/opens_before = GLOB.player_savefile_opens
+	var/held_amount = bm_read_metadollars_from_savefile_path(test_path)
+	var/held_opens = GLOB.player_savefile_opens - opens_before
+	prefs.release_savefile()
+	opens_before = GLOB.player_savefile_opens
+	var/closed_amount = bm_read_metadollars_from_savefile_path(test_path)
+	var/closed_opens = GLOB.player_savefile_opens - opens_before
+	var/held_after_read = !!GLOB.held_player_savefiles[test_path]
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(held_amount, 77, "баланс из удерживаемого файла не прочитан")
+	TEST_ASSERT_EQUAL(held_opens, 0, "чтение баланса открыло удерживаемый файл заново")
+	TEST_ASSERT_EQUAL(closed_amount, 77, "баланс из закрытого файла не прочитан")
+	TEST_ASSERT_EQUAL(closed_opens, 1, "чтение баланса из закрытого файла прошло мимо open_player_savefile")
+	TEST_ASSERT(!held_after_read, "чтение баланса оставило файл открытым")

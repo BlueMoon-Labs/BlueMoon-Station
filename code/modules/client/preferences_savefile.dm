@@ -596,10 +596,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		return FALSE
 
 	. = TRUE
-	// Журнал прошлой сессии (падение сервера до слияния) ложится в файл до чтения. Его значения
-	// записаны в формате версии этого же файла, поэтому сливаем и в непромигрированный.
-	merge_single_pref_journal(S)
-	S.cd = "/"
 
 	//general preferences
 	S["ooccolor"] 				>> ooccolor
@@ -1127,8 +1123,20 @@ GLOBAL_LIST_EMPTY(held_player_savefile_used)
 GLOBAL_VAR(held_player_savefile_timer)
 /// Путь savefile -> поколение его журнала одиночных ключей; пути нет, пока файл не открывался.
 GLOBAL_LIST_EMPTY(player_savefile_journal_epochs)
+/// Путь savefile -> отпечаток файла, поверх которого этот мир пишет текущий журнал.
+GLOBAL_LIST_EMPTY(player_savefile_journal_bases)
+/// Путь savefile -> world.time первого блока текущего журнала.
+GLOBAL_LIST_EMPTY(player_savefile_journal_started)
 /// Сколько раз за мир savefile игрока открывался заново, а не брался уже открытым.
 GLOBAL_VAR_INIT(player_savefile_opens, 0)
+/// Сколько блоков журнала дописано за мир.
+GLOBAL_VAR_INIT(player_savefile_journal_blocks, 0)
+/// Сколько журналов слито в savefile за мир.
+GLOBAL_VAR_INIT(player_savefile_journal_merges, 0)
+/// Сколько блоков журнала слияние отбросило: блок уже слит или файл с начала журнала менялся мимо него.
+GLOBAL_VAR_INIT(player_savefile_journal_stale_blocks, 0)
+/// Сколько открытых savefile закрыто сверх PLAYER_SAVEFILE_HOLD_MAX.
+GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 
 /**
  * Savefile игрока для чтения и записи.
@@ -1136,13 +1144,19 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
  * На линуксовом DreamDaemon само открытие savefile ждёт синхронной записи на диск: около 5 мс
  * заморозки всего процесса при любом размере файла (на tmpfs - 0.2 мс). Запись ключа в уже
  * открытый файл стоит 25 мкс, персонажа целиком - 0.6 мс, и на диске она оказывается сразу, без
- * Flush() и закрытия: убитый процесс её не теряет. Поэтому файл живого игрока держим открытым,
- * пока к нему обращаются (см. hold_player_savefile). Другой хэндл того же файла в этом мире видит
- * все записи, так что сторонние читатели вроде голоформ остаются корректными.
+ * Flush() и закрытия: убитый процесс её не теряет. Поэтому файл живого игрока держим открытым
+ * (hold), пока к нему обращаются (см. hold_player_savefile), если это не выключено конфигом
+ * PLAYER_SAVEFILE_HOLD. Другой хэндл того же файла в этом мире видит все записи, а вот другой
+ * процесс BYOND открыть удерживаемый файл не может.
+ *
+ * Свежеоткрытый файл сначала принимает журнал одиночных ключей. Пока файл открыт, журнал не
+ * пишется, поэтому любая запись этого мира в файл ложится уже поверх журнала. Журнал прошлой
+ * сессии (падение сервера до слияния) записан в формате версии этого же файла, поэтому сливается
+ * и в непромигрированный.
  *
  * Файл общий: вызывающий обязан сам выставить cd.
  */
-/datum/preferences/proc/open_savefile(blocking_kind)
+/proc/open_player_savefile(path, hold = FALSE, blocking_kind, who)
 	if(!path)
 		return null
 	var/savefile/held = GLOB.held_player_savefiles[path]
@@ -1153,19 +1167,26 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 	GLOB.player_savefile_opens++
 	var/savefile/opened = new /savefile(path)
 	if(blocking_kind)
-		blocking_call_finish(blocking_started_ms, blocking_kind, "открытие [parent?.ckey || "?"]")
+		blocking_call_finish(blocking_started_ms, blocking_kind, "открытие [who]")
 	if(!opened)
 		return null
-	if(is_session_savefile())
+	blocking_started_ms = blocking_kind ? blocking_call_start() : null
+	var/merged_keys = merge_player_savefile_journal(path, opened)
+	if(blocking_kind && !isnull(merged_keys))
+		blocking_call_finish(blocking_started_ms, "savefile (слияние журнала)", "ключей [merged_keys] [who]")
+	if(hold && CONFIG_GET(flag/player_savefile_hold))
 		hold_player_savefile(path, opened)
 	return opened
+
+/datum/preferences/proc/open_savefile(blocking_kind)
+	return open_player_savefile(path, is_session_savefile(), blocking_kind, parent?.ckey || "?")
 
 /// Префы живого игрока: файл держится открытым, одиночные ключи уходят в журнал.
 /datum/preferences/proc/is_session_savefile()
 	return isnull(session_savefile) ? istype(parent) : session_savefile
 
 /datum/preferences/proc/release_savefile()
-	release_player_savefile(path)
+	release_player_savefile(path, "выход")
 
 /**
  * Оставляет savefile открытым.
@@ -1188,15 +1209,24 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 				oldest_time = used_at
 		if(!oldest_path)
 			break
-		release_player_savefile(oldest_path)
+		GLOB.player_savefile_evictions++
+		release_player_savefile(oldest_path, "вытеснение")
 	if(!GLOB.held_player_savefile_timer)
 		GLOB.held_player_savefile_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(prune_held_player_savefiles)), PLAYER_SAVEFILE_HOLD_IDLE, TIMER_STOPPABLE)
 
-/proc/release_player_savefile(path)
+/// Закрывает удерживаемый savefile. Закрытие дописывает файл, поэтому идёт в учёт блокирующих вызовов.
+/proc/release_player_savefile(path, reason)
 	if(!path)
 		return
-	GLOB.held_player_savefiles -= path
 	GLOB.held_player_savefile_used -= path
+	var/savefile/held = GLOB.held_player_savefiles[path]
+	if(!held)
+		return
+	var/blocking_started_ms = blocking_call_start()
+	GLOB.held_player_savefiles -= path
+	// Последняя ссылка уходит здесь, и файл закрывается внутри замера.
+	held = null
+	blocking_call_finish(blocking_started_ms, "savefile (закрытие)", "[reason] [path]")
 
 /// Закрывает savefile, к которым не обращались PLAYER_SAVEFILE_HOLD_IDLE, и ждёт следующего.
 /proc/prune_held_player_savefiles()
@@ -1205,7 +1235,7 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 	for(var/held_path in GLOB.held_player_savefile_used)
 		var/due = GLOB.held_player_savefile_used[held_path] + PLAYER_SAVEFILE_HOLD_IDLE
 		if(world.time >= due)
-			release_player_savefile(held_path)
+			release_player_savefile(held_path, "простой")
 		else if(isnull(next_due) || due < next_due)
 			next_due = due
 	if(!isnull(next_due))
@@ -1239,23 +1269,33 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
  *
  * Блок журнала - ExportText временного savefile: временный файл диска не ждёт (на линуксе
  * 30-60 мкс на блок), а ImportText возвращает значения в точности, вместе с типами и большими
- * числами, которые json_encode округлил бы до шести знаков. Блок помечен поколением журнала:
- * savefile, в который журнал уже слит, носит следующее, и такие блоки при чтении пропускаются.
- * Журнал сливается в savefile при любом его открытии на запись, при входе и на ребуте.
+ * числами, которые json_encode округлил бы до шести знаков. Блок помечен поколением журнала и
+ * отпечатком savefile на момент первого блока (см. merge_player_savefile_journal). Журнал
+ * сливается в savefile при любом открытии файла и на ребуте, а начатый больше PREF_JOURNAL_MAX_AGE
+ * назад не дописывается.
  *
  * Возвращает FALSE, если журнал сейчас не годится - тогда буфер пишется в сам savefile.
  */
 /datum/preferences/proc/journal_single_prefs()
+	// Поколение известно, только если этот мир открывал файл и уже слил в него прежний журнал.
 	var/epoch = GLOB.player_savefile_journal_epochs[path]
 	if(!isnum(epoch))
 		return FALSE
 	var/journal = single_pref_journal_path()
-	if(fexists(journal) && length(file(journal)) > PREF_JOURNAL_MAX_BYTES)
+	var/journal_exists = fexists(journal)
+	var/base = GLOB.player_savefile_journal_bases[path]
+	// Журнал без отпечатка этого мира разбирает слияние при открытии файла.
+	if(journal_exists && (!base || length(file(journal)) > PREF_JOURNAL_MAX_BYTES || world.time - GLOB.player_savefile_journal_started[path] > PREF_JOURNAL_MAX_AGE))
 		return FALSE
 	for(var/key in pending_single_prefs)
 		if(!pref_journal_safe(pending_single_prefs[key]))
 			return FALSE
 	var/blocking_started_ms = blocking_call_start()
+	if(!journal_exists)
+		base = player_savefile_fingerprint(path)
+		if(!base)
+			blocking_call_finish(blocking_started_ms, "savefile (журнал)", "нет отпечатка [parent?.ckey || "?"]")
+			return FALSE
 	var/list/pending = pending_single_prefs
 	var/savefile/block = new /savefile()
 	block.cd = "/"
@@ -1263,16 +1303,27 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 		var/value = pending[key]
 		WRITE_FILE(block[key], value)
 	WRITE_FILE(block[PREF_JOURNAL_EPOCH_KEY], epoch)
+	WRITE_FILE(block[PREF_JOURNAL_BASE_KEY], base)
 	if(!text2file("[PREF_JOURNAL_BLOCK_BEGIN]\n[block.ExportText("/")]\n[PREF_JOURNAL_BLOCK_END]\n", journal))
 		blocking_call_finish(blocking_started_ms, "savefile (журнал)", "не записан [parent?.ckey || "?"]")
 		return FALSE
+	if(!journal_exists)
+		GLOB.player_savefile_journal_bases[path] = base
+		GLOB.player_savefile_journal_started[path] = world.time
+	GLOB.player_savefile_journal_blocks++
 	pending_single_prefs = null
 	blocking_call_finish(blocking_started_ms, "savefile (журнал)", "ключей [length(pending)] [parent?.ckey || "?"]")
 	return TRUE
 
-/// Значения журнала нужного поколения; поздний блок перекрывает ранний. Блок читается от последней
-/// метки начала до метки конца: оборванный хвост и обрывок перед следующим блоком пропускаются.
-/proc/read_single_pref_journal(journal, epoch)
+/// Отпечаток savefile на диске. Его меняет любая запись в файл, даже значения той же длины, и не
+/// меняют открытие и чтение (замер на 516.1688, Windows и линукс). На линуксе 0.3 мс на файл в 0.9 МБ.
+/proc/player_savefile_fingerprint(path)
+	return rustg_hash_file(RUSTG_HASH_XXH64, path)
+
+/// Значения журнала, записанного поверх именно этого состояния savefile (base - его отпечаток) и
+/// этого поколения; поздний блок перекрывает ранний. Блок читается от последней метки начала до
+/// метки конца: оборванный хвост и обрывок перед следующим блоком пропускаются.
+/proc/read_single_pref_journal(journal, epoch, base)
 	var/list/values = list()
 	var/raw = file2text(journal)
 	if(!length(raw))
@@ -1290,11 +1341,14 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 			continue
 		block.cd = "/"
 		var/block_epoch
+		var/block_base
 		READ_FILE(block[PREF_JOURNAL_EPOCH_KEY], block_epoch)
-		if(block_epoch != epoch)
+		READ_FILE(block[PREF_JOURNAL_BASE_KEY], block_base)
+		if(block_epoch != epoch || !base || block_base != base)
+			GLOB.player_savefile_journal_stale_blocks++
 			continue
 		for(var/key in block.dir)
-			if(key == PREF_JOURNAL_EPOCH_KEY)
+			if(key == PREF_JOURNAL_EPOCH_KEY || key == PREF_JOURNAL_BASE_KEY)
 				continue
 			var/value
 			READ_FILE(block[key], value)
@@ -1302,29 +1356,42 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 	return values
 
 /**
- * Сливает журнал одиночных ключей в открытый savefile и снимает его.
+ * Сливает журнал одиночных ключей в открытый savefile и снимает его. Без журнала только запоминает
+ * поколение файла и возвращает null, иначе - число слитых ключей.
+ *
+ * Блок ложится в файл, только если файл с начала журнала не менялся: отпечаток файла совпадает с
+ * записанным в блок. Так журнал, переживший падение сервера, не откатывает правки сборки, которая о
+ * журнале не знает (откат или тест-мерж между раундами): она пишет в файл напрямую, и отпечаток
+ * расходится. Сам этот мир пишет в файл только после слияния (см. open_player_savefile).
  *
  * Порядок держит данные при падении на любом шаге: сначала значения журнала ложатся в savefile,
  * потом savefile получает следующее поколение (с этой записи блоки журнала считаются слитыми) и
- * только потом журнал удаляется. Вызывающий держит target.cd на корне. Возвращает число ключей.
+ * только потом журнал удаляется.
  */
-/datum/preferences/proc/merge_single_pref_journal(savefile/target)
+/proc/merge_player_savefile_journal(path, savefile/target)
+	target.cd = "/"
 	var/epoch
 	READ_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
 	if(!isnum(epoch))
 		epoch = 0
-	var/journal = single_pref_journal_path()
+	GLOB.player_savefile_journal_epochs[path] = epoch
+	var/journal = "[path].journal"
 	if(!fexists(journal))
-		GLOB.player_savefile_journal_epochs[path] = epoch
-		return 0
-	var/list/values = read_single_pref_journal(journal, epoch)
+		return null
+	GLOB.player_savefile_journal_bases -= path
+	GLOB.player_savefile_journal_started -= path
+	var/list/values = read_single_pref_journal(journal, epoch, player_savefile_fingerprint(path))
 	for(var/key in values)
 		var/value = values[key]
 		WRITE_FILE(target[key], value)
 	epoch++
 	WRITE_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
 	GLOB.player_savefile_journal_epochs[path] = epoch
+	// Записи открытого файла и так переживают kill -9, но служебную часть файла BYOND дописывает
+	// на Flush или закрытии: журнал удаляем, когда файл дописан целиком (7 мкс на линуксе).
+	target.Flush()
 	fdel(journal)
+	GLOB.player_savefile_journal_merges++
 	return length(values)
 
 /**
@@ -1341,9 +1408,13 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 		READ_FILE(target["version"], file_version)
 		if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
 			return FALSE
-	merge_single_pref_journal(target)
+	merge_player_savefile_journal(path, target)
 	write_pending_single_prefs(target)
 	return TRUE
+
+/// Строка итога раунда о savefile игроков (детектор спайков печатает её рядом с блокирующими вызовами).
+/proc/player_savefile_summary()
+	return "savefile игроков[CONFIG_GET(flag/player_savefile_hold) ? "" : " (удержание выключено)"]: открытий [GLOB.player_savefile_opens], открыто сейчас [length(GLOB.held_player_savefiles)], вытеснений [GLOB.player_savefile_evictions], блоков журнала [GLOB.player_savefile_journal_blocks], слияний журнала [GLOB.player_savefile_journal_merges], отброшено устаревших блоков [GLOB.player_savefile_journal_stale_blocks]"
 
 /// Сливает журнал в savefile, если он есть. Зовётся на ребуте: журнал не переживает раунд, и
 /// откат сборки, которая журнала не знает, не теряет настроек.
@@ -1759,7 +1830,9 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))
 	if(slot != default_slot)
 		default_slot = slot
-		WRITE_FILE(S["default_slot"] , slot)
+		// Временные префы клиента (голоформа ИИ читает чужой слот) выбор игрока не перезаписывают.
+		if(!parent || parent.prefs == src)
+			WRITE_FILE(S["default_slot"] , slot)
 
 	if(!provided)
 		S.cd = "/character[slot]"
@@ -3092,8 +3165,8 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
-	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) и журнал уезжают в корень без своего открытия.
-	if(!export && (length(pending_single_prefs) || fexists(single_pref_journal_path())))
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
+	if(!export && length(pending_single_prefs))
 		absorb_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
@@ -3105,6 +3178,23 @@ GLOBAL_VAR_INIT(player_savefile_opens, 0)
 			slot_custom_names_cache = kept_slot_custom_names
 		character_setup_ui?.record_saved_state()
 	return S
+
+/// Наносит на тело постоянные шрамы текущего набора и выкидывает из набора не загрузившиеся.
+/// Персонаж пишется на диск, только если набор от этого изменился.
+/datum/preferences/proc/apply_persistent_scars(mob/living/carbon/human/target)
+	var/scar_key = "[scars_index]"
+	var/scar_string = scars_list[scar_key]
+	if(!persistent_scars || !scar_string)
+		return FALSE
+	var/valid_scars = ""
+	for(var/scar_line in splittext(scar_string, ";"))
+		if(target.load_scar(scar_line))
+			valid_scars += "[scar_line];"
+	if(valid_scars == scar_string)
+		return FALSE
+	scars_list[scar_key] = valid_scars
+	save_character()
+	return TRUE
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
 	if(parent && !silent)
