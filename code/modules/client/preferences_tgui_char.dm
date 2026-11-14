@@ -4582,6 +4582,10 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 	. = ..()
 	apply_native_camera()
 
+/atom/movable/screen/map_view/character_setup_screen/hide_from(mob/hide_from)
+	. = ..()
+	prepared_for_client = null
+
 /atom/movable/screen/map_view/character_setup_screen/proc/apply_native_camera()
 	if(registered_client)
 		winset(registered_client, assigned_map, list("zoom" = native_zoom, "background-color" = cached_background_style == "transparent" ? "none" : "#202020"))

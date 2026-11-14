@@ -48,6 +48,12 @@
 	var/mob/mob
 	var/datum/parallax_holder/parallax_holder
 
+/datum/client_interface/holder_viewer/proc/register_map_obj(atom/movable/screen/screen_obj)
+	screen |= screen_obj
+
+/datum/client_interface/holder_viewer/proc/clear_map(map_name)
+	return
+
 /// Пузырь речи и прочие flick_overlay: таймер не держит клиента, иначе каждый ушедший в 3 с после чужой реплики стоил бы обхода мира
 /datum/unit_test/flick_overlay_timer_holds_no_client
 
@@ -174,3 +180,69 @@
 	panel.owner = new /datum/client_interface/holder_viewer
 	panel.ui_close(null)
 	TEST_ASSERT(isnull(panel.owner), "Закрытая панель снаряжения держит клиента")
+
+/// Экран карты (меню профессий, hardlight, создание персонажа) отпускает удалённого клиента, даже если его не закрыли через ui_close
+/datum/unit_test/map_view_drops_deleted_client
+
+/datum/unit_test/map_view_drops_deleted_client/Run()
+	var/atom/movable/screen/map_view/view = allocate(/atom/movable/screen/map_view)
+	view.generate_view("logout_holder_test_view")
+	var/datum/client_interface/holder_viewer/viewer = new
+	view.display_to_client(viewer)
+	TEST_ASSERT(view.registered_client == viewer, "Экран карты должен запомнить зрителя")
+
+	SEND_SIGNAL(viewer, COMSIG_PARENT_QDELETING, FALSE)
+
+	TEST_ASSERT(isnull(view.registered_client), "Удалённый клиент не должен держаться в экране карты")
+	TEST_ASSERT(!(viewer in view.popup_plane_group.registered_clients), "Удалённый клиент должен уйти из стопки экрана карты")
+
+/// Подсветка создателя шаттлов и админские панели логов отпускают удалённого клиента
+/datum/unit_test/tool_overlays_drop_deleted_client
+
+/datum/unit_test/tool_overlays_drop_deleted_client/Run()
+	var/datum/shuttle_creator_overlay_holder/overlay = new
+	var/datum/client_interface/holder_viewer/builder = new
+	overlay.add_client(builder)
+	SEND_SIGNAL(builder, COMSIG_PARENT_QDELETING, FALSE)
+	var/overlay_kept = !isnull(overlay.holder)
+	qdel(overlay)
+
+	var/datum/admin_log_viewer/panel = new(new /datum/client_interface/holder_viewer)
+	SEND_SIGNAL(panel.owner, COMSIG_PARENT_QDELETING, FALSE)
+	var/panel_kept = !isnull(panel.owner)
+	qdel(panel)
+
+	var/datum/log_viewer/player_logs = new(null)
+	var/datum/client_interface/holder_viewer/target = new
+	player_logs.set_target_client(target)
+	SEND_SIGNAL(target, COMSIG_PARENT_QDELETING, FALSE)
+	var/target_kept = !isnull(player_logs.target_client)
+	qdel(player_logs)
+
+	TEST_ASSERT(!overlay_kept, "Подсветка шаттла держит удалённого клиента")
+	TEST_ASSERT(!panel_kept, "Панель логов админа держит удалённого клиента")
+	TEST_ASSERT(!target_kept, "Логи игрока держат удалённого клиента цели")
+
+/// Окно tgui уходящего моба: у него client ещё есть, когда у моба в Logout уже нет.
+/datum/logout_test_window
+	var/client
+
+/datum/logout_test_ui
+	var/datum/logout_test_window/window
+
+/// Смена моба посреди голосования: ui_close в Logout видит user.client == null и снимает клиента по окну
+/datum/unit_test/vote_drops_client_on_mob_change
+
+/datum/unit_test/vote_drops_client_on_mob_change/Run()
+	var/mob/living/carbon/human/old_body = allocate(/mob/living/carbon/human)
+	var/datum/client_interface/holder_viewer/viewer = new
+	var/datum/logout_test_ui/closing_ui = new
+	closing_ui.window = new
+	closing_ui.window.client = viewer
+	SSvote.voting |= viewer
+
+	SSvote.ui_close(old_body, closing_ui)
+	var/kept = (viewer in SSvote.voting)
+	SSvote.voting -= viewer
+
+	TEST_ASSERT(!kept, "Голосование держит клиента, сменившего моба с открытым окном")
