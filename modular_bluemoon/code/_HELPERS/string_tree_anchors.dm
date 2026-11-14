@@ -3,15 +3,27 @@
  * Удерживаемые метки времени идут по возрастанию и тянут одну ветку; минута суток в обоих форматах уже в дереве - ветка не длиннее минуты.
  */
 GLOBAL_LIST_INIT(string_tree_anchors, build_string_tree_anchors())
+/// Минуты SQLtime() текущих суток world.timeofday: на смене суток у меток новая дата, update_midnight_rollover() строит их заново.
+GLOBAL_LIST_INIT(string_tree_sql_anchors, build_string_tree_sql_anchors())
+
+/// Минуты суток вперемешку: подряд якоря сами вытянулись бы веткой.
+/proc/string_tree_anchor_minutes()
+	. = list()
+	for(var/minute in 0 to 1439)
+		. += minute
+	shuffle_inplace(.)
 
 /proc/build_string_tree_anchors()
-	var/list/minutes = list()
-	for(var/minute in 0 to 1439)
-		minutes += minute
-	// Подряд якоря сами вытянулись бы веткой.
-	shuffle_inplace(minutes)
 	. = list()
-	for(var/minute in minutes)
+	for(var/minute in string_tree_anchor_minutes())
 		. += time2text(minute MINUTES, "hh:mm", 0)
-		// Как SQLtime() от world.timeofday: дату у времени суток даёт тот же time2text.
-		. += time2text(minute MINUTES + 1, "YYYY-MM-DD hh:mm")
+
+/// Без date - как SQLtime() от world.timeofday: дату у времени суток даёт тот же time2text, в поясе сервера сутки ложатся на две даты.
+/proc/build_string_tree_sql_anchors(date)
+	. = list()
+	for(var/minute in string_tree_anchor_minutes())
+		. += date ? "[date] [time2text(minute MINUTES, "hh:mm", 0)]" : time2text(minute MINUTES + 1, "YYYY-MM-DD hh:mm")
+
+/proc/update_string_tree_sql_anchors()
+	if(islist(GLOB.string_tree_sql_anchors))
+		GLOB.string_tree_sql_anchors = build_string_tree_sql_anchors()

@@ -17,6 +17,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 // Common vars and procs are kept at the gc_failure_viewer level
 /datum/gc_failure_viewer
 	var/name = ""
+	/// world.timeofday записи: метка печатается при показе, как в error_viewer.dm.
+	var/logged_at
+
+/datum/gc_failure_viewer/proc/display_name()
+	return isnull(logged_at) ? name : "<b>\[[time2text(logged_at, "hh:mm:ss")]]</b> [name]"
 
 /datum/gc_failure_viewer/proc/browse_to(client/user, html)
 	var/datum/browser/browser = new(user.mob, "gc_failure_viewer", null, 900, 600)
@@ -81,7 +86,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 /datum/gc_failure_viewer/proc/make_link(linktext, datum/gc_failure_viewer/back_to, linear)
 	var/back_to_param = ""
 	if (!linktext)
-		linktext = name
+		linktext = display_name()
 
 	if (istype(back_to))
 		back_to_param = ";viewgcfailure_backto=[REF(back_to)]"
@@ -356,7 +361,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		build_self_reference_info(D)
 		build_testing_info(D)
 		#endif
-	name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> GC failure: <b>[type_path]</b>[obj_name ? " \"[html_encode(obj_name)]\"" : ""] ([ref_id])"
+	logged_at = world.timeofday
+	name = "GC failure: <b>[type_path]</b>[obj_name ? " \"[html_encode(obj_name)]\"" : ""] ([ref_id])"
 
 /// Префикс списка для вторичных фейлов каскада (визуальный отступ).
 /datum/gc_failure_viewer/gc_failure_entry/proc/cascade_decoration_prefix()
