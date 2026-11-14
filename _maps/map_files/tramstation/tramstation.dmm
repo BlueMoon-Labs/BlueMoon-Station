@@ -7821,11 +7821,9 @@
 /turf/open/floor/plasteel/dark,
 /area/commons/fitness)
 "cgx" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/neutral/line{
-	dir = 4
+/obj/structure/fish_mount{
+	pixel_x = 0;
+	pixel_y = -32
 	},
 /obj/structure/table/wood,
 /turf/open/floor/plasteel,
@@ -8818,6 +8816,9 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit)
+"cuT" = (
+/turf/open/floor/plasteel,
+/area/service/hydroponics/garden)
 "cuU" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
@@ -11421,8 +11422,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 5
 	},
-/obj/effect/turf_decal/siding/thinplating/corner,
-/obj/effect/turf_decal/trimline/neutral/corner,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "dhu" = (
@@ -17530,18 +17529,13 @@
 /turf/open/floor/wood,
 /area/service/theater)
 "eVQ" = (
-/obj/item/crowbar,
-/obj/item/storage/bag/plants,
-/obj/item/hatchet,
-/obj/item/plant_analyzer,
-/obj/item/cultivator,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
 	},
 /obj/machinery/newscaster{
 	pixel_y = 30
 	},
-/obj/structure/table/wood,
+/obj/machinery/seed_extractor,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "eWn" = (
@@ -18155,6 +18149,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-4"
 	},
+/obj/effect/spawner/lootdrop{
+	lootcount = 8;
+	loot = list(/obj/item/reagent_containers/food/snacks/grown/banana = 1, /obj/item/reagent_containers/food/snacks/grown/soybeans = 1, /obj/item/reagent_containers/food/snacks/grown/berries = 1, /obj/item/reagent_containers/food/snacks/grown/wheat = 1, /obj/item/reagent_containers/food/snacks/grown/rice = 1, /obj/item/reagent_containers/food/snacks/grown/oat = 1, /obj/item/reagent_containers/food/snacks/grown/apple = 1, /obj/item/reagent_containers/food/snacks/grown/cherries = 1, /obj/item/reagent_containers/food/snacks/grown/chili = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/orange = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/lime = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/lemon = 1, /obj/item/reagent_containers/food/snacks/grown/cocoapod = 1, /obj/item/reagent_containers/food/snacks/grown/corn = 1, /obj/item/reagent_containers/food/snacks/grown/eggplant = 1, /obj/item/reagent_containers/food/snacks/grown/garlic = 1, /obj/item/reagent_containers/food/snacks/grown/onion = 1, /obj/item/reagent_containers/food/snacks/grown/potato = 1, /obj/item/reagent_containers/food/snacks/grown/pumpkin = 1, /obj/item/reagent_containers/food/snacks/grown/carrot = 1, /obj/item/reagent_containers/food/snacks/grown/whitebeet = 1, /obj/item/reagent_containers/food/snacks/grown/tomato = 1, /obj/item/reagent_containers/food/snacks/grown/cabbage = 1)
+	},
+/obj/structure/table/wood,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "fdN" = (
@@ -22063,6 +22062,11 @@
 /obj/item/reagent_containers/glass/bucket,
 /obj/structure/table/wood,
 /obj/machinery/airalarm/directional/west,
+/obj/effect/spawner/lootdrop{
+	lootcount = 5;
+	lootdoubles = 0;
+	loot = list(/obj/item/seeds/poppy = 1, /obj/item/seeds/poppy/lily = 1, /obj/item/seeds/harebell = 1, /obj/item/seeds/sunflower = 1, /obj/item/seeds/rose = 1)
+	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "gjS" = (
@@ -22621,6 +22625,26 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
+"grK" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/fishing_rod,
+/obj/structure/fish_mount{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/obj/item/toy/plush/carpplushie{
+	pixel_x = 0;
+	pixel_y = -32;
+	layer = 3.41
+	},
+/turf/open/floor/plasteel,
+/area/service/hydroponics/garden)
 "grZ" = (
 /obj/structure/chair{
 	pixel_y = -2
@@ -29189,6 +29213,7 @@
 	dir = 1
 	},
 /obj/machinery/light/warm/directional/west,
+/obj/machinery/airalarm/directional/west,
 /turf/open/floor/wood,
 /area/service/library)
 "ilv" = (
@@ -43546,7 +43571,7 @@
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 5
 	},
-/obj/structure/reagent_dispensers/watertank,
+/obj/machinery/fish_market,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "mcq" = (
@@ -43637,13 +43662,13 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "meg" = (
-/obj/machinery/biogenerator,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
 	},
 /obj/machinery/camera{
 	c_tag = "Civilian - Public Garden"
 	},
+/obj/machinery/vending/fishing,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "meo" = (
@@ -51286,8 +51311,8 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/neutral/line,
-/obj/effect/turf_decal/siding/thinplating,
+/obj/effect/turf_decal/siding/thinplating/corner,
+/obj/effect/turf_decal/trimline/neutral/corner,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "opG" = (
@@ -55438,11 +55463,7 @@
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
 	},
-/obj/effect/spawner/lootdrop{
-	lootcount = 8;
-	loot = list(/obj/item/reagent_containers/food/snacks/grown/banana = 1, /obj/item/reagent_containers/food/snacks/grown/soybeans = 1, /obj/item/reagent_containers/food/snacks/grown/berries = 1, /obj/item/reagent_containers/food/snacks/grown/wheat = 1, /obj/item/reagent_containers/food/snacks/grown/rice = 1, /obj/item/reagent_containers/food/snacks/grown/oat = 1, /obj/item/reagent_containers/food/snacks/grown/apple = 1, /obj/item/reagent_containers/food/snacks/grown/cherries = 1, /obj/item/reagent_containers/food/snacks/grown/chili = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/orange = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/lime = 1, /obj/item/reagent_containers/food/snacks/grown/citrus/lemon = 1, /obj/item/reagent_containers/food/snacks/grown/cocoapod = 1, /obj/item/reagent_containers/food/snacks/grown/corn = 1, /obj/item/reagent_containers/food/snacks/grown/eggplant = 1, /obj/item/reagent_containers/food/snacks/grown/garlic = 1, /obj/item/reagent_containers/food/snacks/grown/onion = 1, /obj/item/reagent_containers/food/snacks/grown/potato = 1, /obj/item/reagent_containers/food/snacks/grown/pumpkin = 1, /obj/item/reagent_containers/food/snacks/grown/carrot = 1, /obj/item/reagent_containers/food/snacks/grown/whitebeet = 1, /obj/item/reagent_containers/food/snacks/grown/tomato = 1, /obj/item/reagent_containers/food/snacks/grown/cabbage = 1)
-	},
-/obj/structure/table/wood,
+/obj/machinery/biogenerator,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "pur" = (
@@ -63751,7 +63772,6 @@
 /turf/open/floor/wood,
 /area/command/meeting_room)
 "rET" = (
-/obj/machinery/seed_extractor,
 /obj/machinery/firealarm/directional/north,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
@@ -63760,11 +63780,7 @@
 	pixel_x = -8;
 	pixel_y = 23
 	},
-/obj/effect/spawner/lootdrop{
-	lootcount = 5;
-	lootdoubles = 0;
-	loot = list(/obj/item/seeds/poppy = 1, /obj/item/seeds/poppy/lily = 1, /obj/item/seeds/harebell = 1, /obj/item/seeds/sunflower = 1, /obj/item/seeds/rose = 1)
-	},
+/obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "rFa" = (
@@ -70148,7 +70164,6 @@
 	desc = "It's your run-of-the-mill wall clock. Perfect for staring at instead of working.";
 	pixel_x = -32
 	},
-/obj/machinery/airalarm/directional/north,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "toT" = (
@@ -73132,6 +73147,10 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/research/lobby)
+"uhh" = (
+/obj/item/toy/plush/crab,
+/turf/open/water/safe,
+/area/service/hydroponics/garden)
 "uhj" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
@@ -75525,6 +75544,12 @@
 	},
 /obj/effect/turf_decal/siding/thinplating,
 /obj/structure/extinguisher_cabinet/directional/west,
+/obj/structure/table/wood,
+/obj/item/plant_analyzer,
+/obj/item/cultivator,
+/obj/item/hatchet,
+/obj/item/storage/bag/plants,
+/obj/item/crowbar,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
 "uMb" = (
@@ -83755,14 +83780,14 @@
 /turf/open/floor/plasteel/white,
 /area/security/brig/brig_medical)
 "wUR" = (
-/obj/effect/spawner/lootdrop{
-	loot = list(/obj/item/beacon = 35, "" = 65)
-	},
 /obj/effect/turf_decal/trimline/neutral/corner{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating/corner{
 	dir = 8
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/beacon = 35, "" = 65)
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
@@ -167232,7 +167257,7 @@ tJb
 hkk
 cKi
 dhc
-gGQ
+cuT
 cgx
 vhk
 vhk
@@ -167489,8 +167514,8 @@ gVj
 sfb
 rET
 opF
-juJ
-juJ
+gGQ
+grK
 sfb
 toM
 xel
@@ -168004,7 +168029,7 @@ sfb
 mcp
 xyZ
 juJ
-juJ
+uhh
 sfb
 jve
 mgW
