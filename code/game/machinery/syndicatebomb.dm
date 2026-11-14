@@ -203,18 +203,20 @@
 				visible_message("<span class='warning'>[icon2html(src, viewers(src))] Device error: User intervention required.</span>")
 			return
 		else
-			visible_message("<span class='danger'>[icon2html(src, viewers(loc))] [timer_set] seconds until detonation, please clear the area.</span>")
-			activate()
-			update_icon()
-			add_fingerprint(user)
-			if(payload)
-				payload.primed_by = user
+			start_countdown(user)
 
-			var/turf/bombturf = get_turf(src)
-			if(payload && !istype(payload, /obj/item/bombcore/training))
-				message_admins("[ADMIN_LOOKUPFLW(user)] has primed a [name] ([payload]) for detonation at [ADMIN_VERBOSEJMP(bombturf)]</a>.")
-				log_game("[key_name(user)] has primed a [name] ([payload]) for detonation at [AREACOORD(bombturf)]")
-				payload.adminlog = "The [name] that [key_name(user)] had primed detonated!"
+/obj/machinery/syndicatebomb/proc/start_countdown(mob/user)
+	visible_message("<span class='danger'>[icon2html(src, viewers(loc))] [timer_set] seconds until detonation, please clear the area.</span>")
+	activate()
+	update_icon()
+	add_fingerprint(user)
+	if(payload)
+		payload.primed_by = user
+
+	var/turf/bombturf = get_turf(src)
+	if(payload && !istype(payload, /obj/item/bombcore/training))
+		antag_training_game_log(bombturf, "[ADMIN_LOOKUPFLW(user)] has primed a [name] ([payload]) for detonation at [ADMIN_VERBOSEJMP(bombturf)]</a>.", "[key_name(user)] has primed a [name] ([payload]) for detonation at [AREACOORD(bombturf)]")
+		payload.adminlog = "The [name] that [key_name(user)] had primed detonated!"
 
 ///Bomb Subtypes///
 
@@ -283,8 +285,7 @@
 
 /obj/item/bombcore/proc/detonate()
 	if(adminlog)
-		message_admins(adminlog)
-		log_game(adminlog)
+		antag_training_game_log(src, adminlog, adminlog)
 	explosion(src, range_heavy, range_medium, range_light, flame_range = range_flame, attacker = primed_by)
 	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
 		qdel(loc)
@@ -380,8 +381,7 @@
 
 /obj/item/bombcore/self_destruct/detonate()
 	if(adminlog)
-		message_admins(adminlog)
-		log_game(adminlog)
+		antag_training_game_log(src, adminlog, adminlog)
 	explosion(src, range_heavy, range_medium, range_light, range_light, adminlog = TRUE, ignorecap = TRUE, flame_range = range_flame, attacker = primed_by)
 	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
 		qdel(loc)
@@ -448,8 +448,7 @@
 		return // The Explosion didn't do anything. No need to log, or disappear.
 
 	if(adminlog)
-		message_admins(adminlog)
-		log_game(adminlog)
+		antag_training_game_log(src, adminlog, adminlog)
 
 	playsound(loc, 'sound/effects/bamf.ogg', 75, 1, 5)
 
@@ -535,7 +534,10 @@
 
 /obj/item/syndicatedetonator/attack_self(mob/user)
 	if(timer < world.time)
+		var/in_training = is_antag_training_atom(user)
 		for(var/obj/machinery/syndicatebomb/B in GLOB.machines)
+			if(is_antag_training_atom(B) != in_training)
+				continue
 			if(B.active)
 				B.detonation_timer = world.time + BUTTON_DELAY
 				detonated++
@@ -546,9 +548,9 @@
 			var/turf/T = get_turf(src)
 			detonated--
 			var/log_str = "[ADMIN_LOOKUPFLW(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [ADMIN_VERBOSEJMP(T)]</a>."
-			add_bomber_message(log_str)
-			message_admins(log_str)
-			log_game("[key_name(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [AREACOORD(T)]")
+			if(!in_training)
+				add_bomber_message(log_str)
+			antag_training_game_log(T, log_str, "[key_name(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [AREACOORD(T)]")
 		detonated =	0
 		existent =	0
 		timer = world.time + BUTTON_COOLDOWN

@@ -67,6 +67,8 @@
 		// We have to check this again after the popup, to account for people spam-clicking the button, then doing all the popups at once.
 		to_chat(src, "<span class='warning'>You must wrap more humanoid prey before you can do this!</span>")
 		return
+	if(!antag_training_terror_room(src, 1))
+		return
 	visible_message("<span class='notice'>[src] lays a cluster of eggs.</span>")
 	if(eggtype == TS_DESC_KNIGHT)
 		DoLayTerrorEggs(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight, 1)

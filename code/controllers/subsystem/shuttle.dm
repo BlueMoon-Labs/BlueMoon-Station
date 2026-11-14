@@ -18,6 +18,8 @@ SUBSYSTEM_DEF(shuttle)
 
 	var/list/transit_requesters = list()
 	var/list/transit_request_failures = list()
+	/// shuttle_id шаттлов, которые летают почти каждый раунд и получают транзит заранее.
+	var/list/pregenerated_transit_ids = list("arrivals", "supply", "mining", "laborcamp", "emergency")
 
 		//emergency shuttle stuff
 	var/obj/docking_port/mobile/emergency/emergency
@@ -120,6 +122,15 @@ SUBSYSTEM_DEF(shuttle)
 	for(var/s in stationary)
 		var/obj/docking_port/stationary/S = s
 		S.load_roundstart()
+		CHECK_TICK
+	pregenerate_transit_docks()
+
+/// Транзит регулярно летающих шаттлов строится при инициализации: в раунде это один неделимый кусок на 30-70 мс.
+/datum/controller/subsystem/shuttle/proc/pregenerate_transit_docks()
+	for(var/obj/docking_port/mobile/port as anything in mobile)
+		if(QDELETED(port) || port.assigned_transit || !(port.shuttle_id in pregenerated_transit_ids))
+			continue
+		generate_transit_dock(port)
 		CHECK_TICK
 
 /datum/controller/subsystem/shuttle/fire()
@@ -588,13 +599,10 @@ SUBSYSTEM_DEF(shuttle)
 	GLOB.lighting_defer_active = FALSE
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
-	var/list/starlight_batch = list()
 	for(var/turf/deferred_turf as anything in GLOB.lighting_deferred_starlight)
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, deferred_turf))
-			starlight_batch |= space_tile
+			space_tile.queue_starlight()
 	GLOB.lighting_deferred_starlight.Cut()
-	if(starlight_batch.len)
-		GLOB.lighting_starlight_queue |= starlight_batch
 
 	// Boost SSlighting processing cap to drain post-transit queues faster
 	SSlighting.temp_cap_boost = 50

@@ -1,0 +1,44 @@
+name: NanoMaps
+
+# The released renderer needs glibc 2.39, the server host has Debian 12: there the
+# loader builds its own. Checked only when the renderer or its loader change.
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'tools/nanomaps/**'
+      - 'tools/build/lib/nanomaps.js'
+      - 'SpacemanDMM.toml'
+      - '.github/workflows/nanomaps.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'tools/nanomaps/**'
+      - 'tools/build/lib/nanomaps.js'
+      - 'SpacemanDMM.toml'
+      - '.github/workflows/nanomaps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nanomaps_debian:
+    name: NanoMaps on Debian 12
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container: debian:12
+    env:
+      TG_BOOTSTRAP_NODE_LINUX: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install renderer build dependencies
+        run: |
+          apt-get update
+          apt-get install -y ca-certificates curl git build-essential pkg-config cmake xz-utils
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+      - name: Build and run NanoMap on Debian 12
+        run: |
+          tools/bootstrap/node -e 'require("./tools/nanomaps/renderer.cjs").ensureRenderer().then(renderer => { const run = require("node:child_process").execFileSync; run(renderer, ["map-info", "--json", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); run(renderer, ["-e", "tgstation.dme", "minimap", "--enable", "nanomaps", "--disable", "icon-smoothing", "--width", "120", "--height", "208", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); }).catch(error => { console.error(error); process.exitCode = 1; })'

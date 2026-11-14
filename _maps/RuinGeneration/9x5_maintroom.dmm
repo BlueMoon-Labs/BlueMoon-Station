@@ -1,0 +1,102 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"f" = (
+/obj/structure/closet/toolcloset,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"w" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"y" = (
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"E" = (
+/obj/effect/loot_site_spawner,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Q" = (
+/obj/effect/abstract/open_area_marker{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"S" = (
+/obj/effect/abstract/open_area_marker{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"W" = (
+/obj/effect/turf_decal/dust,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Z" = (
+/turf/closed/wall,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+Z
+a
+Q
+a
+Z
+"}
+(2,1,1) = {"
+Z
+Z
+w
+Z
+Z
+"}
+(3,1,1) = {"
+Z
+f
+W
+y
+Z
+"}
+(4,1,1) = {"
+Z
+y
+y
+W
+Z
+"}
+(5,1,1) = {"
+Z
+W
+y
+W
+Z
+"}
+(6,1,1) = {"
+Z
+y
+W
+W
+Z
+"}
+(7,1,1) = {"
+Z
+W
+W
+E
+Z
+"}
+(8,1,1) = {"
+Z
+Z
+w
+Z
+Z
+"}
+(9,1,1) = {"
+Z
+a
+S
+a
+Z
+"}

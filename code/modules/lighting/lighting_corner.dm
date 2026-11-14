@@ -263,4 +263,9 @@
 	// фаза 2): удаление элемента из-под курсора сдвинет список, и Cut выбросит углы,
 	// которых никто не обработал. Потребители вместо этого пропускают QDELETED - стоит
 	// это одну лишнюю итерацию до ближайшего Cut.
-	return ..()
+	. = ..()
+	// Мимо очереди GC, кроме выборки, см. LIGHTING_GC_QUEUE_SAMPLE.
+	var/static/gc_sample_counter = 0
+	gc_sample_counter = (gc_sample_counter + 1) % LIGHTING_GC_QUEUE_SAMPLE
+	if(gc_sample_counter)
+		return QDEL_HINT_IWILLGC

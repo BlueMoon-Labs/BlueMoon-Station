@@ -29,6 +29,9 @@
 	if(!home)
 		var/list/consoles = list()
 		for(var/obj/machinery/abductor/console/C in GLOB.machines)
-			consoles += C
+			if(is_antag_training_atom(C) == is_antag_training_atom(target))
+				consoles += C
+		if(!length(consoles))
+			return
 		console = pick(consoles)
 		home = console.pad

@@ -19,6 +19,11 @@
 	var/static/rotation_flags = ROTATION_ALTCLICK | ROTATION_CLOCKWISE | ROTATION_COUNTERCLOCKWISE | ROTATION_FLIP | ROTATION_VERBS
 	AddComponent(/datum/component/simple_rotation, rotation_flags)
 
+/obj/item/assembly_holder/Destroy()
+	QDEL_NULL(a_left)
+	QDEL_NULL(a_right)
+	return ..()
+
 /obj/item/assembly_holder/setDir(newdir)
 	. = ..()
 	a_left?.holder_movement()

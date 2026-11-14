@@ -197,7 +197,10 @@ GLOBAL_LIST_INIT(blacklisted_borg_hats, typecacheof(list( //Hats that don't real
 		return
 
 	to_chat(user, "<span class='notice'>You emag [src]'s interface.</span>")
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	if(training_origin)
+		log_game("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	else
+		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	emag_cooldown = world.time + 100
 
 	if(is_servant_of_ratvar(src))
@@ -226,10 +229,10 @@ GLOBAL_LIST_INIT(blacklisted_borg_hats, typecacheof(list( //Hats that don't real
 	SetStun(60) //Borgs were getting into trouble because they would attack the emagger before the new laws were shown
 	lawupdate = FALSE
 	set_connected_ai(null)
-	message_admins("[ADMIN_LOOKUPFLW(user)] emagged cyborg [ADMIN_LOOKUPFLW(src)].  Laws overridden.")
-	log_game("[key_name(user)] emagged cyborg [key_name(src)].  Laws overridden.")
-	var/time = time2text(world.realtime,"hh:mm:ss")
-	GLOB.lawchanges.Add("[time] <B>:</B> [user.name]([user.key]) emagged [name]([key])")
+	antag_training_game_log(src, "[ADMIN_LOOKUPFLW(user)] emagged cyborg [ADMIN_LOOKUPFLW(src)].  Laws overridden.", "[key_name(user)] emagged cyborg [key_name(src)].  Laws overridden.")
+	if(!training_origin)
+		var/time = time2text(world.realtime,"hh:mm:ss")
+		GLOB.lawchanges.Add("[time] <B>:</B> [user.name]([user.key]) emagged [name]([key])")
 	to_chat(src, "<span class='danger'>ALERT: Foreign software detected.</span>")
 	sleep(5)
 	to_chat(src, "<span class='danger'>Initiating diagnostics...</span>")

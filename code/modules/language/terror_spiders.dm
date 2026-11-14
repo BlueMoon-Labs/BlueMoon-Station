@@ -1,6 +1,6 @@
 /datum/language/terrorspiders
 	name = "Spider Hivemind"
-	desc = "Terror spiders have a limited ability to commune over a psychic hivemind, similar to xenomorphs."
+	desc = "Ужасные пауки обладают ограниченной способностью общаться через психический коллективный разум, подобно ксеноформам."
 	speech_verb = "chitters"
 	ask_verb = "chitters"
 	exclaim_verb = "hisses"

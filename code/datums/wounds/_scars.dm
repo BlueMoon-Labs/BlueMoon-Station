@@ -112,11 +112,11 @@
 	qdel(src)
 
 /// What will show up in examine_more() if this scar is visible
-/datum/scar/proc/get_examine_description(mob/viewer)
+/datum/scar/proc/get_examine_description(mob/viewer, anonymous = FALSE)
 	if(!victim || !is_visible(viewer))
 		return
 
-	var/msg = "[capitalize(description)] на [victim.ru_ego()] [ru_gde_zone(precise_location)]."
+	var/msg = "[capitalize(description)] на [anonymous ? "его" : victim.ru_ego()] [ru_gde_zone(precise_location)]."
 	switch(severity)
 		if(WOUND_SEVERITY_MODERATE)
 			msg = span_tinynoticeital("[msg]")
@@ -125,7 +125,7 @@
 		if(WOUND_SEVERITY_CRITICAL)
 			msg = span_smallnoticeital("<b>[msg]</b>")
 		if(WOUND_SEVERITY_LOSS)
-			msg = "[victim.ru_ego(TRUE)] [limb.ru_name] [description]." // different format
+			msg = "[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [description]." // different format
 			msg = span_notice("<i><b>[msg]</b></i>")
 	return "[msg]"
 

@@ -67,6 +67,9 @@
 		return
 
 	bursting = TRUE
+	if(owner.training_origin)
+		antag_training_burst(kill_on_sucess)
+		return
 
 	var/list/candidates = pollGhostCandidates("Do you want to play as an alien larva that will burst out of [owner]?", ROLE_ALIEN, null, ROLE_ALIEN, 100, POLL_IGNORE_ALIEN_LARVA)
 
@@ -121,8 +124,9 @@ Proc: AddInfectionImages(C)
 Des: Adds the infection image to all aliens for this embryo
 ----------------------------------------*/
 /obj/item/organ/body_egg/alien_embryo/AddInfectionImages(mob/living/carbon/C)
+	C ||= owner
 	for(var/mob/living/carbon/alien/alien in GLOB.player_list)
-		if(alien.client)
+		if(alien.client && alien.training_origin == C?.training_origin)
 			var/I = image('icons/mob/alien.dmi', loc = C, icon_state = "infected[stage]")
 			alien.client.images += I
 

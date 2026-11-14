@@ -59,7 +59,7 @@
 	to_chat(owner, "<span class='userdanger'>You suddenly feel an irresistible compulsion to follow an order...</span>")
 	to_chat(owner, "<span class='mind_control'>[command]</span>")
 	active_mind_control = TRUE
-	message_admins("[key_name(user)] sent an abductor mind control message to [key_name(owner)]: [command]")
+	antag_training_admin_log(owner, "[key_name(user)] sent an abductor mind control message to [key_name(owner)]: [command]", "[key_name(user)] sent an abductor mind control message to [key_name(owner)]: [command]")
 	update_gland_hud()
 	var/atom/movable/screen/alert/mind_control/mind_alert = owner.throw_alert("mind_control", /atom/movable/screen/alert/mind_control)
 	mind_alert.command = command

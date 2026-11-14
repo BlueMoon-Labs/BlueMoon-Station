@@ -60,13 +60,16 @@ Judgement 80k power or nine converts
 			return FALSE
 		pre_recital()
 		slab.busy = "Вызов([name]) в процессе"
+		var/charged = FALSE
 		if(GLOB.ratvar_awakens)
 			channel_time *= 0.5 //if ratvar has awoken, half channel time and no cost
 		else if(!slab.no_cost)
 			adjust_clockwork_power(-power_cost)
+			charged = TRUE
 		channel_time *= slab.speed_multiplier
 		if(!recital() || !check_special_requirements() || !scripture_effects()) //if we fail any of these, refund components used
-			adjust_clockwork_power(power_cost)
+			if(charged)
+				adjust_clockwork_power(power_cost)
 			update_slab_info()
 		else
 			successful = TRUE

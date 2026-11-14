@@ -57,6 +57,10 @@ GLOBAL_LIST(topic_status_cache)
 	SSdbcore.SetRoundID()
 	SetupLogs()
 
+	var/verb_scan_started = REALTIMEOFDAY
+	GLOB.max_verb_proc_id = scan_verb_proc_ids()
+	log_world("Вербы: самый большой id проца [GLOB.max_verb_proc_id] из [MAX_VERB_PROC_ID], не вызываются: [length(GLOB.uncallable_verbs)], обход [(REALTIMEOFDAY - verb_scan_started) * 100] мс")
+
 #ifndef USE_CUSTOM_ERROR_HANDLER
 	world.log = file("[GLOB.log_directory]/dd.log")
 #else
@@ -192,6 +196,7 @@ GLOBAL_LIST(topic_status_cache)
 
 	var/latest_changelog = file("[global.config.directory]/../html/changelogs/archive/" + time2text(world.timeofday, "YYYY-MM") + ".yml")
 	GLOB.changelog_hash = fexists(latest_changelog) ? md5(latest_changelog) : 0 //for telling if the changelog has changed recently
+	GLOB.changelog_latest_date = changelog_latest_entry_date()
 	if(fexists(GLOB.config_error_log))
 		fcopy(GLOB.config_error_log, "[GLOB.log_directory]/config_error.log")
 		fdel(GLOB.config_error_log)

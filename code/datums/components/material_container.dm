@@ -336,7 +336,8 @@
 /datum/component/material_container/proc/retrieve_sheets(sheet_amt, var/datum/material/M, target = null)
 	if(!M.sheet_type)
 		return FALSE //Add greyscale sheet handling here later
-	if(sheet_amt <= 0)
+	sheet_amt = round(sheet_amt)
+	if(!(sheet_amt > 0))
 		return FALSE
 
 	if(!target)
@@ -347,7 +348,7 @@
 	while(sheet_amt > MAX_STACK_SIZE)
 		new M.sheet_type(target, MAX_STACK_SIZE)
 		count += MAX_STACK_SIZE
-		use_amount_mat(sheet_amt * MINERAL_MATERIAL_AMOUNT, M)
+		use_amount_mat(MAX_STACK_SIZE * MINERAL_MATERIAL_AMOUNT, M)
 		sheet_amt -= MAX_STACK_SIZE
 	if(sheet_amt >= 1)
 		new M.sheet_type(target, sheet_amt)

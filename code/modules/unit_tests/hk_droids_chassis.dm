@@ -273,6 +273,7 @@
 	var/mob/living/carbon/human/viewer = allocate_minded_human()
 	var/examine_text = jointext(droid.examine(viewer), "\n")
 	TEST_ASSERT(!findtext(examine_text, "перепрошить"), "a free HK shows no reprogramming hint")
+	TEST_ASSERT(findtext(examine_text, "бронеплита"), "examine shows the chassis armor")
 	TEST_ASSERT(!findtext(examine_text, "Блок лояльности:"), "a crewman can't read the loyalty block")
 
 	droid.Knockdown(10 SECONDS)

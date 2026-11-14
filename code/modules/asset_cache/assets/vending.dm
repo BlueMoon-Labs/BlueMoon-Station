@@ -34,21 +34,11 @@ GLOBAL_LIST_INIT(vending_products_from_map_varedits, list(
 			qdel(vendor)
 		qdel_vending_enumeration_strays(machines_before)
 
-	for(var/vendor_type in typesof(/obj/machinery/mineral/equipment_vendor))
+	for(var/vendor_type in typesof(/obj/machinery/equipment_vendor))
 		var/machines_before = length(GLOB.machines)
-		var/obj/machinery/mineral/equipment_vendor/vendor = new vendor_type(null)
+		var/obj/machinery/equipment_vendor/vendor = new vendor_type(null)
 		if(!QDELETED(vendor))
 			for(var/datum/data/mining_equipment/prize as anything in vendor.prize_list)
-				if(prize.equipment_path)
-					product_types[prize.equipment_path] = TRUE
-			qdel(vendor)
-		qdel_vending_enumeration_strays(machines_before)
-
-	for(var/vendor_type in typesof(/obj/machinery/bountyvend))
-		var/machines_before = length(GLOB.machines)
-		var/obj/machinery/bountyvend/vendor = new vendor_type(null)
-		if(!QDELETED(vendor))
-			for(var/datum/data/bounty_equipment/prize as anything in vendor.prize_list)
 				if(prize.equipment_path)
 					product_types[prize.equipment_path] = TRUE
 			qdel(vendor)

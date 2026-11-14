@@ -68,7 +68,6 @@
 			var/atom/movable/lighting_object/lo = new(T)
 			if((dx + dy) % 2 == 0) // Orphan every other one
 				T.lighting_object = null
-				T.vis_contents -= lo
 				lo.affected_turf = null
 				orphans += lo
 			else

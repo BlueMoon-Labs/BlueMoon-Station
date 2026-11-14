@@ -9,6 +9,12 @@ SUBSYSTEM_DEF(atoms)
 	flags = SS_NO_FIRE
 
 	var/old_initialized
+	/// Сколько вызовов InitializeAtoms() идёт сейчас: шаблоны грузятся параллельно и уступают тик посреди обхода.
+	var/mapload_runs = 0
+
+	//WHITE-STEEL PORT: стек предыдущих значений initialized для map_loader_begin/stop.
+	//Нужен, чтобы вложенные begin/stop не перезаписывали общий old_initialized.
+	var/list/map_loader_initialized = list()
 
 	var/list/late_loaders = list()
 
@@ -50,7 +56,10 @@ SUBSYSTEM_DEF(atoms)
 	if(initialized == INITIALIZATION_INSSATOMS)
 		return
 
-	old_initialized = initialized
+	// Режим до загрузки запоминает только первый из перекрывшихся вызовов: второй увидел бы MAPLOAD первого и вернул бы его навсегда,
+	// и каждая машина, созданная потом где угодно, висела бы в late_loaders до следующей загрузки шаблона.
+	if(!mapload_runs++)
+		old_initialized = initialized
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 
 	var/count
@@ -121,22 +130,26 @@ SUBSYSTEM_DEF(atoms)
 		CHECK_TICK
 	#endif								// --- END ATOM STATISTICS LOGGING ---
 
-	initialized = old_initialized
+	// Режим INSSATOMS здесь ставит чужой загрузчик посреди сборки: его вернёт map_loader_stop().
+	if(!--mapload_runs && initialized == INITIALIZATION_INNEW_MAPLOAD)
+		initialized = old_initialized
 
-	if(late_loaders.len)
-		for(var/I in 1 to late_loaders.len)
-			var/atom/A = late_loaders[I]
-			if(QDELETED(A))
-				continue
-			A.LateInitialize()
-		testing("Late initialized [late_loaders.len] atoms")
-		late_loaders.Cut()
+	// Список забирается целиком: LateInitialize() может уснуть, и параллельный вызов не должен вычистить его посреди обхода.
+	var/list/to_late_init = late_loaders
+	late_loaders = list()
+	for(var/atom/A as anything in to_late_init)
+		if(QDELETED(A))
+			continue
+		A.LateInitialize()
+	testing("Late initialized [length(to_late_init)] atoms")
 
-	for (var/queued_deletion in queued_deletions)
-		qdel(queued_deletion)
+	var/list/to_delete = queued_deletions
+	queued_deletions = list()
+	// prepare_deletion() кладёт слабые ссылки: удалять надо сам атом, а не ссылку на него.
+	for(var/datum/weakref/queued_deletion as anything in to_delete)
+		qdel(queued_deletion.resolve())
 
-	testing("[queued_deletions.len] atoms were queued for deletion.")
-	queued_deletions.Cut()
+	testing("[length(to_delete)] atoms were queued for deletion.")
 
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)
@@ -180,11 +193,32 @@ SUBSYSTEM_DEF(atoms)
 	return qdeleted || QDELING(A)
 
 /datum/controller/subsystem/atoms/proc/map_loader_begin()
-	old_initialized = initialized
+	//WHITE-STEEL PORT: держим стек предыдущих значений. Раньше использовался общий
+	//old_initialized, который перезаписывает InitializeAtoms(), из-за чего при
+	//вложенных begin/stop (build_coordinate -> instance_atom -> stoplag) или при
+	//исключении initialized мог застрять в INSSATOMS(0) - и двери/стёкла руин
+	//через раз не инициализировались.
+	map_loader_initialized += initialized
 	initialized = INITIALIZATION_INSSATOMS
 
 /datum/controller/subsystem/atoms/proc/map_loader_stop()
-	initialized = old_initialized
+	if(!length(map_loader_initialized))
+		//Не должно случаться, но не оставляем initialized в INSSATOMS навсегда.
+		initialized = INITIALIZATION_INNEW_REGULAR
+		return
+	var/restored = map_loader_initialized[length(map_loader_initialized)]
+	map_loader_initialized.len--
+	// Сборка, начатая посреди чужого InitializeAtoms(), сняла его MAPLOAD, а он уже закончился.
+	if(restored == INITIALIZATION_INNEW_MAPLOAD && !mapload_runs)
+		restored = INITIALIZATION_INNEW_REGULAR
+	initialized = restored
+
+/datum/controller/subsystem/atoms/proc/map_loader_abort()
+	//Полный сброс маплоадера после исключения (напр. в build_coordinate), когда
+	//стек begin/stop не сбалансирован. Иначе initialized остаётся INSSATOMS и
+	//все последующие атомы (двери, стёкла) перестают инициализироваться.
+	map_loader_initialized.Cut()
+	initialized = INITIALIZATION_INNEW_REGULAR
 
 /datum/controller/subsystem/atoms/Recover()
 	initialized = SSatoms.initialized
@@ -192,6 +226,7 @@ SUBSYSTEM_DEF(atoms)
 		InitializeAtoms()
 	old_initialized = SSatoms.old_initialized
 	BadInitializeCalls = SSatoms.BadInitializeCalls
+	map_loader_initialized = SSatoms.map_loader_initialized
 
 /datum/controller/subsystem/atoms/proc/setupGenetics()
 	var/list/mutations = subtypesof(/datum/mutation/human)

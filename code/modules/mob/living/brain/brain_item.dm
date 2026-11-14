@@ -121,6 +121,8 @@
 	if(!L.mind)
 		return
 	brainmob = new(src)
+	// Мозг из тела лежит в nullspace: метку полигона brainmob берёт у владельца.
+	brainmob.training_origin = L.training_origin
 	brainmob.name = L.real_name
 	brainmob.real_name = L.real_name
 	brainmob.timeofhostdeath = L.timeofdeath

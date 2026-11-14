@@ -55,12 +55,25 @@
 	else
 		to_chat(user, span_warning("There is nothing to remove; try putting some clothing or bondage ropes into it first!"))
 
+/obj/item/shibola/proc/can_apply_payload_to(mob/living/carbon/C)
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY))
+		if(!payload || (payload.slot_flags & (ITEM_SLOT_FEET | ITEM_SLOT_SOCKS)))
+			return FALSE
+		if(istype(payload, /obj/item/restraints/bondage_rope))
+			var/obj/item/restraints/bondage_rope/rope = payload
+			if((rope.rope_target == ROPE_TARGET_LEGS || rope.rope_target == ROPE_TARGET_LEGS_OBJECT) && !rope.can_apply_to_legs(C))
+				return FALSE
+	return TRUE
+
 /obj/item/shibola/proc/ensnare(mob/living/carbon/C)
+	if(!can_apply_payload_to(C))
+		return
 	visible_message("<span class='danger'>\The [src] tangles around [C]!</span>")
 
 	if(!C.client || C.client?.prefs.nonconpref == "No")
-		C.Knockdown(5)
-		visible_message("<span class='danger'>\The [src] slips downwards, causing [C] to trip!</span>")
+		if(!HAS_TRAIT(C, TRAIT_NAGA_ANATOMY))
+			C.Knockdown(5)
+			visible_message(span_danger("[src] соскальзывает вниз, заставляя [C] споткнуться!"))
 		if(payload)
 			payload.forceMove(get_turf(C))
 		qdel(src)

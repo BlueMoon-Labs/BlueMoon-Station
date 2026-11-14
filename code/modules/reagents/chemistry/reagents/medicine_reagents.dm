@@ -1235,7 +1235,7 @@
 	if(exposed_mob.stat != DEAD || !(exposed_mob.mob_biotypes & MOB_ORGANIC))
 		return ..()
 
-	if(exposed_mob.suiciding) //they are never coming back
+	if(!exposed_mob.can_be_medically_revived())
 		exposed_mob.visible_message(span_warning("Тело [exposed_mob] не реагирует..."))
 		return
 
@@ -1287,7 +1287,7 @@
 		addtimer(CALLBACK(exposed_mob, TYPE_PROC_REF(/mob/living, do_strange_reagent_revival), healing), 7 SECONDS)
 		addtimer(CALLBACK(exposed_mob, TYPE_PROC_REF(/mob/living, do_jitter_animation), 1 SECONDS), 8 SECONDS)
 
-	if(exposed_mob.revive())
+	if(exposed_mob.revive(medical_revive = TRUE))
 		exposed_mob.grab_ghost()
 		// BLUEMOON EDIT START - изменение памяти после смерти
 		exposed_mob.mind?.forget_death(DEATH_FORGETFULNESS_REASON_STRANGE_REAGENT)

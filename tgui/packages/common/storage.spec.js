@@ -3,8 +3,10 @@ import {
   IMPL_HUB_STORAGE,
   IMPL_LOCAL_STORAGE,
   IMPL_MEMORY,
+  IMPL_SERVER_STORAGE,
   LocalStorageBackend,
   MemoryBackend,
+  ServerStorageBackend,
   storage,
   StorageProxy,
 } from './storage';
@@ -333,6 +335,295 @@ describe('HubStorageBackend', () => {
 
     await expect(proxy.set('fallback-key', 'fallback-value')).resolves.toBeUndefined();
     await expect(proxy.get('fallback-key')).resolves.toBe('fallback-value');
+  });
+});
+
+describe('ServerStorageBackend', () => {
+  let serverStore;
+  let hubStore;
+
+  // Как у BYOND 516: только getItem/setItem/removeItem, без key и length.
+  const createByondStorage = store => ({
+    getItem: jest.fn(key => (store.has(key) ? store.get(key) : null)),
+    setItem: jest.fn((key, value) => store.set(key, value)),
+    removeItem: jest.fn(key => store.delete(key)),
+  });
+
+  beforeEach(() => {
+    localStorage.clear();
+    serverStore = new Map();
+    hubStore = new Map();
+    window.serverStorage = createByondStorage(serverStore);
+    window.hubStorage = createByondStorage(hubStore);
+  });
+
+  afterEach(() => {
+    delete window.serverStorage;
+    delete window.hubStorage;
+  });
+
+  test('StorageProxy picks serverStorage first, even without key and length', async () => {
+    const proxy = new StorageProxy();
+    const backend = await proxy.backendPromise;
+
+    expect(backend).toBeInstanceOf(ServerStorageBackend);
+    expect(backend.impl).toBe(IMPL_SERVER_STORAGE);
+    await proxy.set('chat-state', { visible: true });
+    expect(serverStore.get('bluemoon-chat-state')).toBe('{"visible":true}');
+    expect(hubStore.size).toBe(0);
+  });
+
+  test('hubStorage without key and length is still used when there is no serverStorage', async () => {
+    delete window.serverStorage;
+    const proxy = new StorageProxy();
+
+    await expect(proxy.backendPromise).resolves.toBeInstanceOf(HubStorageBackend);
+  });
+
+  test('a missing key is moved over from hubStorage once', async () => {
+    hubStore.set('bluemoon-panel-settings', '{"theme":"dark"}');
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+    expect(serverStore.get('bluemoon-panel-settings')).toBe('{"theme":"dark"}');
+  });
+
+  test('falls back to pre-516 storage when hubStorage has nothing', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    expect(serverStore.get('bluemoon-panel-settings')).toBe('{"theme":"light"}');
+  });
+
+  test('hubStorage is only read: moving and removing leave it as it was', async () => {
+    hubStore.set('bluemoon-chat-messages', '[1,2]');
+    const proxy = new StorageProxy();
+    await expect(proxy.get('chat-messages')).resolves.toEqual([1, 2]);
+
+    await proxy.remove('chat-messages');
+    await proxy.clear();
+
+    expect(hubStore.get('bluemoon-chat-messages')).toBe('[1,2]');
+    expect(window.hubStorage.setItem).not.toHaveBeenCalled();
+    expect(window.hubStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  test('clear without key and length removes own known keys, keeps foreign ones and reports it', async () => {
+    serverStore.set('statbrowser_theme', '{}');
+    serverStore.set('bluemoon-panel-settings', '{"theme":"dark"}');
+    const backend = new ServerStorageBackend();
+    await backend.get('panel-settings');
+    await backend.set('chat-state', { visible: true });
+
+    await expect(backend.clear()).resolves.toBe(false);
+    expect(serverStore.get('statbrowser_theme')).toBe('{}');
+    expect(serverStore.has('bluemoon-panel-settings')).toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
+  });
+
+  test('StorageProxy.clear passes the incomplete clear on to the caller', async () => {
+    const proxy = new StorageProxy();
+    await proxy.set('chat-state', { visible: true });
+
+    await expect(proxy.clear()).resolves.toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
+  });
+});
+
+describe('ServerStorageBackend.setReplacing', () => {
+  // Копия ByondStorage из byondwin.dll: setItem и removeItem отправляют клиенту
+  // всё хранилище, sync просит у клиента его копию, клиент отвечает fill.
+  function ByondStorage(client, answerSync = true) {
+    let storage = {};
+    let synced = true;
+    let waiting = [];
+    const update = () => {
+      client.file = JSON.stringify(storage);
+      client.updates++;
+    };
+    const ready = () => {
+      synced = true;
+      const list = waiting;
+      waiting = [];
+      for (const resolve of list) {
+        resolve(this);
+      }
+    };
+    this.getItem = item => (Object.hasOwn(storage, item) ? storage[item] : null);
+    this.setItem = (item, value) => {
+      storage[item] = value;
+      update();
+    };
+    this.removeItem = item => {
+      if (Object.hasOwn(storage, item)) {
+        delete storage[item];
+        update();
+      }
+    };
+    this.sync = () => new Promise(resolve => {
+      waiting.push(resolve);
+      if (synced) {
+        synced = false;
+        if (answerSync) {
+          setTimeout(() => window.serverStorage.fill(client.file), 0);
+        }
+      }
+    });
+    this.fill = function (data) {
+      storage = data ? JSON.parse(data) : {};
+      ready();
+    };
+    this.fill(client.file);
+  }
+
+  afterEach(() => {
+    jest.useRealTimers();
+    delete window.serverStorage;
+  });
+
+  test('writes the key and drops old keys in one write, keeping foreign keys', async () => {
+    const client = {
+      file: JSON.stringify({
+        'statbrowser_theme': '{}',
+        'bluemoon-chat-log-0': '[1]',
+        'bluemoon-chat-log-index': '{}',
+      }),
+      updates: 0,
+    };
+    window.serverStorage = new ByondStorage(client);
+    const store = window.serverStorage;
+    // Другое окно успело записать свой ключ: эта копия о нём не знает.
+    client.file = JSON.stringify({ ...JSON.parse(client.file), 'bluemoon-geometries': '{"a":1}' });
+    const fill = store.fill;
+    const backend = new ServerStorageBackend();
+
+    await expect(backend.setReplacing('chat-history-z', { version: 3 },
+      ['chat-log-0', 'chat-log-index'])).resolves.toBe(true);
+    expect(client.updates).toBe(1);
+    expect(store.fill).toBe(fill);
+    expect(JSON.parse(client.file)).toEqual({
+      'statbrowser_theme': '{}',
+      'bluemoon-geometries': '{"a":1}',
+      'bluemoon-chat-history-z': '{"version":3}',
+    });
+  });
+
+  test('between the answer to sync and the write nothing else gets in', async () => {
+    const client = { file: JSON.stringify({ 'bluemoon-chat-log-0': '[1]' }), updates: 0 };
+    window.serverStorage = new ByondStorage(client);
+    const proxy = new StorageProxy();
+    await proxy.backendPromise;
+    const writing = proxy.setReplacing('chat-history-z', 1, ['chat-log-0']);
+    const other = proxy.set('panel-settings', 2);
+    await Promise.all([writing, other]);
+    expect(JSON.parse(client.file)).toEqual({
+      'bluemoon-chat-history-z': '1',
+      'bluemoon-panel-settings': '2',
+    });
+  });
+
+  test('without an answer to sync only the key is written', async () => {
+    jest.useFakeTimers();
+    const client = { file: JSON.stringify({ 'bluemoon-chat-log-0': '[1]' }), updates: 0 };
+    window.serverStorage = new ByondStorage(client, false);
+    const fill = window.serverStorage.fill;
+    const writing = new ServerStorageBackend().setReplacing('chat-history-z', 1, ['chat-log-0']);
+    await jest.advanceTimersByTimeAsync(5000);
+
+    await expect(writing).resolves.toBe(false);
+    expect(JSON.parse(client.file)).toEqual({
+      'bluemoon-chat-log-0': '[1]',
+      'bluemoon-chat-history-z': '1',
+    });
+    await jest.advanceTimersByTimeAsync(60000);
+    expect(window.serverStorage.fill).toBe(fill);
+  });
+
+  test('a stale answer to sync does not undo writes made while waiting', async () => {
+    jest.useFakeTimers();
+    const client = { file: JSON.stringify({ 'bluemoon-chat-log-0': '[1]' }), updates: 0 };
+    window.serverStorage = new ByondStorage(client, false);
+    const stale = client.file;
+    const proxy = new StorageProxy();
+    await proxy.backendPromise;
+    const writing = proxy.setReplacing('chat-history-z', 1, ['chat-log-0']);
+    await proxy.set('panel-settings', 2);
+    window.serverStorage.fill(stale);
+
+    await expect(writing).resolves.toBe(true);
+    expect(JSON.parse(client.file)).toEqual({
+      'bluemoon-chat-history-z': '1',
+      'bluemoon-panel-settings': '2',
+    });
+  });
+
+  test('a late answer to sync does not undo writes made while waiting', async () => {
+    jest.useFakeTimers();
+    const client = { file: JSON.stringify({ 'bluemoon-chat-log-0': '[1]' }), updates: 0 };
+    window.serverStorage = new ByondStorage(client, false);
+    const fill = window.serverStorage.fill;
+    const stale = client.file;
+    const proxy = new StorageProxy();
+    await proxy.backendPromise;
+    const writing = proxy.setReplacing('chat-history-z', 1, ['chat-log-0']);
+    await proxy.set('panel-settings', 2);
+    await jest.advanceTimersByTimeAsync(5000);
+    await expect(writing).resolves.toBe(false);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    window.serverStorage.fill(stale);
+    await proxy.set('telemetry', 3);
+    expect(JSON.parse(client.file)).toEqual({
+      'bluemoon-chat-log-0': '[1]',
+      'bluemoon-chat-history-z': '1',
+      'bluemoon-panel-settings': '2',
+      'bluemoon-telemetry': '3',
+    });
+    expect(window.serverStorage.fill).toBe(fill);
+  });
+
+  test('storage without sync and fill writes only the key', async () => {
+    window.serverStorage = {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+    };
+    await expect(new ServerStorageBackend().setReplacing('chat-history-z', 1, ['chat-log-0']))
+      .resolves.toBe(false);
+    expect(window.serverStorage.setItem).toHaveBeenCalledWith('bluemoon-chat-history-z', '1');
+    expect(window.serverStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  test('StorageProxy.setReplacing elsewhere removes the old keys only after the write', async () => {
+    localStorage.clear();
+    localStorage.setItem('chat-log-0', '[1]');
+    localStorage.setItem('panel-settings', '{}');
+    const proxy = new StorageProxy();
+    const setItem = jest.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      throw new Error('quota');
+    });
+
+    await expect(proxy.setReplacing('chat-history-z', 1, ['chat-log-0'])).rejects.toThrow('quota');
+    expect(localStorage.getItem('chat-log-0')).toBe('[1]');
+    setItem.mockRestore();
+    await expect(proxy.setReplacing('chat-history-z', 1, ['chat-log-0'])).resolves.toBe(true);
+    expect(localStorage.getItem('chat-log-0')).toBeNull();
+    expect(localStorage.getItem('chat-history-z')).toBe('1');
+    expect(localStorage.getItem('panel-settings')).toBe('{}');
+  });
+
+  test('peek does not pull values from older storages', async () => {
+    const client = { file: JSON.stringify({}), updates: 0 };
+    window.serverStorage = new ByondStorage(client);
+    localStorage.clear();
+    localStorage.setItem('chat-history', '{"version":2}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.peek('chat-history')).resolves.toBeUndefined();
+    expect(client.updates).toBe(0);
+    localStorage.clear();
   });
 });
 

@@ -1,8 +1,9 @@
-/datum/controller/subsystem/processing/quirks/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target)
-	if(!cli?.prefs)
+/datum/controller/subsystem/processing/quirks/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target, spawn_items = TRUE, datum/preferences/preferences_source)
+	var/datum/preferences/prefs = preferences_source || cli?.prefs
+	if(!prefs)
 		return
 	. = ..()
-	var/list/my_quirks = cli.prefs.all_quirks.Copy()
+	var/list/my_quirks = prefs.all_quirks.Copy()
 	var/list/cut_because_balance = check_and_cut_balance(my_quirks)
 	if(LAZYLEN(cut_because_balance))
 		to_chat(to_chat_target || user, span_boldwarning("Some quirks have been cut from your character due to invalid balance: [english_list(cut_because_balance)]"))

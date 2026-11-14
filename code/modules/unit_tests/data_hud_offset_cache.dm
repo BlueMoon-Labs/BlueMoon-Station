@@ -41,7 +41,7 @@
 
 	var/image/holder = patient.hud_list[HEALTH_HUD]
 	TEST_ASSERT_NOTNULL(holder, "A human should have a HEALTH_HUD holder image")
-	TEST_ASSERT_EQUAL(holder.icon_state, "hud[RoundHealth(patient)]", "med_hud_set_health must still set the health icon state")
+	TEST_ASSERT_EQUAL(holder.icon_state, "", "У здорового персонажа полоска здоровья должна быть скрыта")
 	TEST_ASSERT_EQUAL(holder.pixel_y, get_hud_pixel_offset(patient.icon, patient.icon_state, patient.dir), "med_hud_set_health must position the marker with the cached offset")
 
 /datum/unit_test/med_hud_set_status_uses_cached_offset

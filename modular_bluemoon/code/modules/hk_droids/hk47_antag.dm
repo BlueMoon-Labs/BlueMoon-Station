@@ -53,6 +53,23 @@
 	antag_memory += "Я - HK-47, дроид-ассасин. Выполнить [HK47_CONTRACTS_TO_WIN] контракта заказчиков и эвакуироваться. Перепрошивка экипажем отнимет у меня контракты, ЭМИ валит с ног. Шлюзы техтоннелей открываются передо мной без карты, двери отделов - с чужой картой, щупом или считанным доступом.<br>"
 	return ..()
 
+/// Роль держится на шасси HK-47: другому телу или мозгу без тела админка собирает новое шасси с прибытием по легенде.
+/datum/antagonist/hk47/admin_add(datum/mind/new_owner, mob/admin)
+	var/mob/living/carbon/human/body = new_owner.current
+	if(ishuman(body) && istype(body.dna?.species, /datum/species/ipc/hk/hk47))
+		return ..()
+	if(!new_owner.key)
+		to_chat(admin, span_warning("У [new_owner.name] нет игрока: HK-47 некого посадить в шасси."))
+		return
+	if(tgui_alert(admin, "[new_owner.name] не в шасси HK-47. Собрать новое шасси и отправить игрока на станцию по случайной легенде?", "HK-47", list("Да", "Нет")) != "Да")
+		return
+	var/turf/landing = hk47_find_maintenance_turf() || get_turf(admin)
+	var/datum/round_event/ghost_role/hk47/event = new(FALSE)
+	var/mob/living/carbon/human/droid = event.launch_hk47(new_owner.key, landing)
+	event.kill()
+	message_admins("[key_name_admin(admin)] made [key_name_admin(droid)] into [name] in a new chassis.")
+	log_admin("[key_name(admin)] made [key_name(droid)] into [name] in a new chassis.")
+
 /datum/antagonist/hk47/on_removal()
 	if(owner.special_role == ROLE_HK47)
 		owner.special_role = null

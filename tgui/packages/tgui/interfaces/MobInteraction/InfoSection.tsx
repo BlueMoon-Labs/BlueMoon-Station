@@ -1,187 +1,122 @@
 import { useBackend } from '../../backend';
-import { BlockQuote, Button, Icon, ProgressBar, Section, Slider, Stack, Tooltip } from '../../components';
+import { Button, Icon, ProgressBar, Slider, Stack, Tooltip } from '../../components';
+
+type Flag = boolean | 0 | 1;
 
 type HeaderInfo = {
-  isTargetSelf: boolean;
-  target: string;
+  isTargetSelf: Flag;
+  target: string | null;
   lust: number;
   maxLust: number;
-  selfAttributes: string[];
-  theirAttributes: string[];
-  theirLust: number;
-  theirMaxLust: number;
-
-  // Arousal prefs stuff
-  use_arousal_multiplier: boolean;
+  theirLust: number | null;
+  theirMaxLust: number | null;
+  use_arousal_multiplier: Flag;
   arousal_multiplier: number;
-  use_moaning_multiplier: boolean;
+  use_moaning_multiplier: Flag;
   moaning_multiplier: number;
-}
+};
 
-export const InfoSection = (props) => {
+const EFFECT_PREFS = [
+  {
+    toggle: 'use_arousal_multiplier',
+    value: 'arousal_multiplier',
+    label: 'Множитель возбуждения',
+    max: 300,
+    stepPixelSize: 3,
+    ranges: {
+      bad: [-Infinity, 75],
+      good: [76, 125],
+      average: [126, Infinity],
+    },
+  },
+  {
+    toggle: 'use_moaning_multiplier',
+    value: 'moaning_multiplier',
+    label: 'Свой шанс стона',
+    max: 100,
+    stepPixelSize: undefined,
+    ranges: undefined,
+  },
+] as const;
+
+const LustBar = ({ value, max, label, showTooltip }: { value: number; max: number; label: string; showTooltip: boolean }) => {
+  const bar = (
+    <ProgressBar role="progressbar" aria-label={label} value={value} maxValue={Math.max(1, max)} color="purple">
+      <Icon name="heart" />
+    </ProgressBar>
+  );
+  return showTooltip ? <Tooltip content={label}><div>{bar}</div></Tooltip> : bar;
+};
+
+export const InfoSection = () => {
   const { act, data } = useBackend<HeaderInfo>();
-  const {
-    isTargetSelf,
-    target,
-    lust,
-    maxLust,
-    selfAttributes,
-    theirAttributes,
-    theirLust,
-    theirMaxLust,
+  const hasPartner = !!data.target && !data.isTargetSelf;
+  const { theirLust, theirMaxLust } = data;
+  const showPartnerLust = hasPartner && typeof theirLust === 'number' && typeof theirMaxLust === 'number';
 
-    // Arousal prefs stuff
-    use_arousal_multiplier,
-    arousal_multiplier,
-    use_moaning_multiplier,
-    moaning_multiplier,
-  } = data;
   return (
-    <Section title={`Interacting with ${isTargetSelf ? "yourself" : target}...`} fill>
-      <Stack vertical fill>
-        <Stack.Item grow basis={0}>
-          <Section scrollable fill>
-            <Stack>
-              <Stack.Item>
-                <BlockQuote>
-                  You...<br />
-                  {selfAttributes.map(attribute => (
-                    <div key={attribute}>
-                      {attribute}<br />
-                    </div>
-                  ))}
-                </BlockQuote>
-              </Stack.Item>
-              {!isTargetSelf ? (
-                <Stack.Item>
-                  <BlockQuote>
-                    They...<br />
-                    {theirAttributes.map(attribute => (
-                      <div key={attribute}>
-                        {attribute}<br />
-                      </div>
-                    ))}
-                  </BlockQuote>
-                </Stack.Item>
-              ) : (null)}
-            </Stack>
-          </Section>
-        </Stack.Item>
+    <Stack vertical>
+      {showPartnerLust && (
         <Stack.Item>
-          <Stack fill>
-            <Stack.Item grow>
-              <ProgressBar fill value={lust} maxValue={maxLust} color="purple"><Icon name="heart" /></ProgressBar>
-            </Stack.Item>
-            {(!isTargetSelf && (theirLust !== null) ? (
-              <Stack.Item grow>
-                <ProgressBar value={theirLust} maxValue={theirMaxLust} color="purple"><Icon name="heart" /></ProgressBar>
-              </Stack.Item>
-            ) : (null))}
-          </Stack>
+          <LustBar value={theirLust} max={theirMaxLust} label="Возбуждение партнёра" showTooltip />
         </Stack.Item>
-        <Stack.Item>
-          <Stack fill>
+      )}
+      <Stack.Item>
+        <LustBar value={data.lust ?? 0} max={data.maxLust ?? 1} label="Твоё возбуждение" showTooltip={showPartnerLust} />
+      </Stack.Item>
+      <Stack.Item>
+        <Stack>
+          <Stack.Item grow basis={0}>
+            <Button fluid mb={0} content="Твои гениталии" color="pink" onClick={() => act('genitals_menu', { who: 'user' })} />
+          </Stack.Item>
+          {hasPartner && (
             <Stack.Item grow basis={0}>
-              <Button
-                fluid
-                mb={-0.7}
-                content="Your genitals menu"
-                color="pink"
-                onClick={() => act('genitals_menu', {
-                  who: 'user',
-                })}
-              />
+              <Button fluid mb={0} content="Гениталии партнёра" color="pink" onClick={() => act('genitals_menu', { who: 'target' })} />
             </Stack.Item>
-            {(!isTargetSelf ? (
-              <Stack.Item grow basis={0}>
-                <Button
-                  fluid
-                  mb={-0.7}
-                  content="Partner's genitals menu"
-                  color="pink"
-                  onClick={() => act('genitals_menu', {
-                    who: 'target',
-                  })}
-                />
-              </Stack.Item>
-            ) : (null))}
-          </Stack>
-        </Stack.Item>
-        <Stack.Item>
-          <Stack fill>
-            <Stack.Item grow basis={0}>
-              <Stack>
-                <Stack.Item grow>
-                  <Button
-                    fluid
-                    mb={-0.7}
-                    content={use_arousal_multiplier ? "" : "Custom lust gain"}
-                    tooltip={`${use_arousal_multiplier ? "Disable" : "Enable"} lust gain multiplier`}
-                    icon={use_arousal_multiplier ? "toggle-on" : "toggle-off"}
-                    selected={use_arousal_multiplier}
-                    onClick={() => act('pref', {
-                      pref: 'use_arousal_multiplier',
-                    })}
-                  />
-                </Stack.Item>
-
-                {(!!use_arousal_multiplier && (
-                  <Stack.Item grow basis={90}>
-                    <Tooltip content="Arousal Multiplier">
-                      <Slider
-                        minValue={0}
-                        maxValue={300}
-                        stepPixelSize={3}
-                        value={arousal_multiplier}
-                        unit="%"
-                        ranges={{
-                          bad: [-Infinity, 75],
-                          good: [76, 125],
-                          average: [126, Infinity],
-                        }}
-                        onChange={(_, value) => act("pref", { pref: 'arousal_multiplier', amount: value })}
-                      />
-                    </Tooltip>
+          )}
+        </Stack>
+      </Stack.Item>
+      <Stack.Item>
+        <Stack>
+          {EFFECT_PREFS.map(({ toggle, value, label, max, stepPixelSize, ranges }) => {
+            const enabled = !!data[toggle];
+            return (
+              <Stack.Item key={toggle} grow basis={0}>
+                <Stack align="center">
+                  <Stack.Item grow={!enabled}>
+                    <Button
+                      fluid
+                      mb={0}
+                      content={enabled ? undefined : label}
+                      aria-label={label}
+                      tooltip={label}
+                      icon={enabled ? 'toggle-on' : 'toggle-off'}
+                      selected={enabled}
+                      onClick={() => act('pref', { pref: toggle })}
+                    />
                   </Stack.Item>
-                ))}
-              </Stack>
-            </Stack.Item>
-
-            <Stack.Item grow basis={0}>
-              <Stack>
-                <Stack.Item grow>
-                  <Button
-                    fluid
-                    mb={-0.7}
-                    content={use_moaning_multiplier ? "" : "Custom moaning chance"}
-                    tooltip={`${use_moaning_multiplier ? "Disable" : "Enable"} moaning chance customizaton`}
-                    icon={use_moaning_multiplier ? "toggle-on" : "toggle-off"}
-                    selected={use_moaning_multiplier}
-                    onClick={() => act('pref', {
-                      pref: 'use_moaning_multiplier',
-                    })}
-                  />
-                </Stack.Item>
-                {(!!use_moaning_multiplier && (
-                  <Stack.Item grow basis={90}>
-                    <Tooltip content="Moaning chance">
-                      <Slider
-                        minValue={0}
-                        maxValue={100}
-                        step={1}
-                        value={moaning_multiplier}
-                        unit="%"
-                        onChange={(_, value) => act("pref", { pref: 'moaning_multiplier', amount: value })}
-                      />
-                    </Tooltip>
-                  </Stack.Item>
-                ))}
-              </Stack>
-            </Stack.Item>
-          </Stack>
-        </Stack.Item>
-
-      </Stack>
-    </Section>
+                  {enabled && (
+                    <Stack.Item grow basis={0}>
+                      <Tooltip content={label}>
+                        <Slider
+                          minValue={0}
+                          maxValue={max}
+                          step={1}
+                          stepPixelSize={stepPixelSize}
+                          value={data[value]}
+                          unit="%"
+                          ranges={ranges}
+                          onChange={(_, amount) => act('pref', { pref: value, amount })}
+                        />
+                      </Tooltip>
+                    </Stack.Item>
+                  )}
+                </Stack>
+              </Stack.Item>
+            );
+          })}
+        </Stack>
+      </Stack.Item>
+    </Stack>
   );
 };

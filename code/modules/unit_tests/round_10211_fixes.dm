@@ -84,6 +84,27 @@
 		SSmetadollars.save_metadollar_leaderboard()
 	return ..()
 
+/// Нулевой legacy-баланс тоже завершает перенос: иначе лидерборд каждый раунд открывает старые .sav игрока.
+/datum/unit_test/metadollar_zero_legacy_balance_is_finalized
+	parent_type = /datum/unit_test/metadollar_refresh_recovers_legacy_balance
+
+/datum/unit_test/metadollar_zero_legacy_balance_is_finalized/Run()
+	had_cache_entry = (METADOLLAR_PROBE_CKEY in SSmetadollars.metadollar_amount_cache)
+	SSmetadollars.metadollar_amount_cache -= METADOLLAR_PROBE_CKEY
+	var/json_path = bm_metadollar_json_path(METADOLLAR_PROBE_CKEY)
+	if(fexists(json_path))
+		fdel(json_path)
+	var/legacy_path = "[METADOLLAR_PROBE_DIR]/preferences.sav"
+	var/savefile/legacy = new /savefile(legacy_path)
+	legacy.cd = "/"
+	WRITE_FILE(legacy["ooccolor"], "#ffffff")
+	legacy = null
+	sleep(0.1 SECONDS)
+	TEST_ASSERT(fexists(legacy_path), "предпосылка: savefile не создан")
+
+	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(METADOLLAR_PROBE_CKEY, recover = TRUE), 0, "баланс без ключа в .sav не ноль")
+	TEST_ASSERT(fexists(json_path), "нулевой баланс не записан в metadollars.json - .sav будет открываться каждый раунд")
+
 #undef METADOLLAR_PROBE_CKEY
 #undef METADOLLAR_PROBE_DIR
 #undef METADOLLAR_PROBE_AMOUNT

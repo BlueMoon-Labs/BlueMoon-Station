@@ -104,8 +104,7 @@
 
 /turf/closed/wall/mineral/plasma/attackby(obj/item/W, mob/user, params)
 	if(W.get_temperature() > 300)//If the temperature of the object is over 300, then ignite
-		message_admins("Plasma wall ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]")
-		log_admin("Plasma wall ignited by [key_name(user)] in [AREACOORD(src)]")
+		antag_training_admin_log(src, "Plasma wall ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(src)]", "Plasma wall ignited by [key_name(user)] in [AREACOORD(src)]")
 		ignite(W.get_temperature())
 		return
 	..()
@@ -224,9 +223,9 @@
 
 //sub-type to be used for interior shuttle walls
 //won't get an underlay of the destination turf on shuttle move
-/turf/closed/wall/mineral/titanium/interior/copyTurf(turf/T)
+/turf/closed/wall/mineral/titanium/interior/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	if(T.type != type)
-		T.ChangeTurf(type)
+		T.ChangeTurf(type, null, changeturf_flags)
 		if(underlays.len)
 			T.underlays = underlays
 	if(T.icon_state != icon_state)
@@ -269,7 +268,7 @@
 	explosion_block = 3
 	sheet_type = /obj/item/stack/sheet/mineral/plastitanium
 	smooth = SMOOTH_MORE|SMOOTH_DIAGONAL
-	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
 
 /turf/closed/wall/mineral/plastitanium/nodiagonal
 	smooth = SMOOTH_MORE
@@ -285,9 +284,9 @@
 	fixed_underlay = list("space"=1)
 
 //have to copypaste this code
-/turf/closed/wall/mineral/plastitanium/interior/copyTurf(turf/T)
+/turf/closed/wall/mineral/plastitanium/interior/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	if(T.type != type)
-		T.ChangeTurf(type)
+		T.ChangeTurf(type, null, changeturf_flags)
 		if(underlays.len)
 			T.underlays = underlays
 	if(T.icon_state != icon_state)

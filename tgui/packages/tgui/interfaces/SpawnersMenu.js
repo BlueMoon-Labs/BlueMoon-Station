@@ -24,6 +24,7 @@ export const SpawnerContent = (props) => {
   const special = spawners.filter((spawner) => spawner.category === 'special');
   const offstation = spawners.filter((spawner) => spawner.category === 'offstation');
   const trauma = spawners.filter((spawner) => spawner.category === 'trauma');
+  const swarmers = spawners.filter((spawner) => spawner.category === 'swarmer');
 
   return (
     <Box>
@@ -93,6 +94,14 @@ export const SpawnerContent = (props) => {
               Trauma ({trauma.length})
             </Tabs.Tab>
           )}
+          {swarmers.length > 0 && (
+            <Tabs.Tab
+              icon="robot"
+              selected={tab === 'swarmer'}
+              onClick={() => setTab('swarmer')}>
+              Свармеры ({swarmers.length})
+            </Tabs.Tab>
+          )}
         </Tabs>
       </Section>
       {tab === 'misc' && <RolelistMisc spawners={misc} />}
@@ -103,6 +112,7 @@ export const SpawnerContent = (props) => {
       {tab === 'special' && <RolelistSpecial spawners={special} />}
       {tab === 'offstation' && <RolelistOffstation spawners={offstation} />}
       {tab === 'trauma' && <RolelistSyndicate spawners={trauma} />}
+      {tab === 'swarmer' && <RolelistMisc spawners={swarmers} />}
     </Box>
   );
 };

@@ -166,38 +166,36 @@
 
 		else user.newtonian_move(turn(direction, 180))
 
-		//Get all the turfs that can be shot at
-		var/turf/T = get_turf(target)
-		var/turf/T1 = get_step(T,turn(direction, 90))
-		var/turf/T2 = get_step(T,turn(direction, -90))
-		var/list/the_targets = list(T,T1,T2)
+		spray_extinguisher(src, target, reagents, power, precision)
+
+// Общий конус распыления ручного и установленного на мехе огнетушителя.
+/proc/spray_extinguisher(atom/origin, atom/target, datum/reagents/reagents, power = 5, precision = FALSE)
+	var/direction = get_dir(origin, target)
+	var/turf/T = get_turf(target)
+	var/turf/T1 = get_step(T, turn(direction, 90))
+	var/turf/T2 = get_step(T, turn(direction, -90))
+	var/list/the_targets = list(T, T1, T2)
+	if(precision)
+		var/turf/T3 = get_step(T1, turn(direction, 90))
+		var/turf/T4 = get_step(T2, turn(direction, -90))
+		the_targets.Add(T3, T4)
+
+	var/list/water_particles = list()
+	for(var/a = 0, a < 5, a++)
+		var/obj/effect/particle_effect/water/W = new(get_turf(origin))
+		var/my_target = pick(the_targets)
+		water_particles[W] = my_target
+		// При точном распылении каждая частица получает отдельную цель.
 		if(precision)
-			var/turf/T3 = get_step(T1, turn(direction, 90))
-			var/turf/T4 = get_step(T2,turn(direction, -90))
-			the_targets.Add(T3,T4)
+			the_targets -= my_target
+		W.create_reagents(5)
+		reagents.trans_to(W, 1)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(move_extinguisher_particles), water_particles, power), 2)
 
-		var/list/water_particles=list()
-		for(var/a=0, a<5, a++)
-			var/obj/effect/particle_effect/water/W = new /obj/effect/particle_effect/water(get_turf(src))
-			var/my_target = pick(the_targets)
-			water_particles[W] = my_target
-			// If precise, remove turf from targets so it won't be picked more than once
-			if(precision)
-				the_targets -= my_target
-			var/datum/reagents/R = new/datum/reagents(5)
-			W.reagents = R
-			R.my_atom = W
-			reagents.trans_to(W,1)
-
-		//Make em move dat ass, hun
-		addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/extinguisher, move_particles), water_particles), 2)
-
-//Particle movement loop
-/obj/item/extinguisher/proc/move_particles(var/list/particles, var/repetition=0)
-	//Check if there's anything in here first
+// Все частицы конуса перемещаются одновременно.
+/proc/move_extinguisher_particles(list/particles, power, repetition = 0)
 	if(!particles || particles.len == 0)
 		return
-	// Second loop: Get all the water particles and make them move to their target
 	for(var/obj/effect/particle_effect/water/W in particles)
 		var/turf/my_target = particles[W]
 		if(!W)
@@ -212,7 +210,7 @@
 			break
 	if(repetition < power)
 		repetition++
-		addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/extinguisher, move_particles), particles, repetition), 2)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(move_extinguisher_particles), particles, power, repetition), 2)
 
 //Chair movement loop
 /obj/item/extinguisher/proc/move_chair(var/obj/B, var/movementdirection, var/repetition=0)

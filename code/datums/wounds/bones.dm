@@ -13,6 +13,7 @@
 	sound_effect = 'sound/effects/wounds/crack1.ogg'
 	wound_type = WOUND_BLUNT
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE)
+	scanner_icon = "bone"
 
 	/// Have we been taped?
 	var/taped
@@ -311,13 +312,13 @@
 					new /obj/effect/temp_visual/dir_setting/bloodsplatter(victim.loc, victim.dir)
 				victim.add_splatter_floor(get_step(victim.loc, victim.dir))
 
-/datum/wound/blunt/get_examine_description(mob/user)
+/datum/wound/blunt/get_examine_description(mob/user, anonymous = FALSE)
 	if(!limb.current_gauze && !gelled && !taped)
 		return ..()
 
 	var/list/msg = list()
 	if(!limb.current_gauze)
-		msg += "[victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
+		msg += "[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
 	else
 		var/sling_condition = ""
 		// how much life we have left in these bandages
@@ -331,7 +332,7 @@
 			else
 				sling_condition = "туго "
 
-		msg += "[victim.ru_ego(TRUE)] [limb.ru_name] [sling_condition] перевязана жгутом из [limb.current_gauze.name]"
+		msg += "[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [sling_condition] перевязана жгутом из [limb.current_gauze.name]"
 
 	if(taped)
 		msg += ", [span_notice("и, похоже, восстанавливается после обработки хирургической лентой!")]"
@@ -360,6 +361,8 @@
 
 	if(initial(disabling))
 		disabling = !limb.current_gauze
+	if(istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+		disabling = FALSE
 
 	limb.update_wounds()
 
@@ -385,6 +388,7 @@
 	wound_flags = (BONE_WOUND)
 	status_effect_type = /datum/status_effect/wound/blunt/moderate
 	scar_keyword = "bluntmoderate"
+	scanner_icon = "hand-spock"
 
 // BLUEMOON ADD START
 /datum/wound/blunt/moderate/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
@@ -408,7 +412,7 @@
 		remove_wound()
 
 /datum/wound/blunt/moderate/try_handling(mob/living/carbon/human/user)
-	if(user.pulling != victim || user.zone_selected != limb.body_zone || user.a_intent == INTENT_GRAB)
+	if(user.pulling != victim || victim.get_bodypart(user.zone_selected) != limb || user.a_intent == INTENT_GRAB)
 		return FALSE
 
 	if(user.grab_state == GRAB_PASSIVE)

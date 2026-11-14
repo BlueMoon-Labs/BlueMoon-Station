@@ -1,12 +1,12 @@
 /client/verb/show_station_minimap()
 	set category = "OOC"
 	set name = "Show Station Minimap"
-	set desc = "Shows a minimap of the currently loaded station map."
+	set desc = "Показывает интерактивную миникарту текущей станции."
 
 	if(!CONFIG_GET(flag/minimaps_enabled))
-		to_chat(usr, "<span class='boldwarning'>Minimap generation is not enabled in the server's configuration.</span>")
+		to_chat(usr, span_boldwarning("Генерация миникарт отключена в настройках сервера."))
 		return
 	if(!SSminimaps.station_minimap)
-		to_chat(usr, "<span class='boldwarning'>Minimap generation is in progress, please wait!</span>")
+		to_chat(usr, span_boldwarning("Миникарта ещё создаётся, подождите!"))
 		return
-	SSminimaps.station_minimap.show(src)
+	SSminimaps.station_minimap.show(mob)

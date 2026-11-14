@@ -7,10 +7,11 @@
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	var/starting_tc = 0
 	var/uplink_flag
+	var/uplink_type = /datum/component/uplink
 
 /obj/item/implant/uplink/Initialize(mapload, _owner)
 	. = ..()
-	AddComponent(/datum/component/uplink, _owner, TRUE, FALSE, null, starting_tc)
+	AddComponent(uplink_type, _owner, TRUE, FALSE, null, starting_tc)
 
 /obj/item/implanter/uplink
 	name = "Implanter (uplink)"

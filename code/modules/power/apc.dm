@@ -334,7 +334,7 @@
 /obj/machinery/power/apc/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(operating)
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Unlock" : "Lock")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Разблокировать" : "Заблокировать")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/power/apc/Destroy()
@@ -899,6 +899,7 @@
 	if(!user.canUseTopic(src, !area.hasSiliconAccessInArea(user)) || !isturf(loc))
 		return
 	togglelock(user)
+	balloon_alert(user, "[locked ? "заблокировано" : "разблокировано"]")
 	return TRUE
 
 /obj/machinery/power/apc/proc/togglelock(mob/living/user)

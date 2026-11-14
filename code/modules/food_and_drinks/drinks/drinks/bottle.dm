@@ -683,9 +683,10 @@
 /obj/item/reagent_containers/food/drinks/bottle/molotov/attackby(obj/item/I, mob/user, params)
 	if(I.get_temperature() && !active)
 		active = 1
-		var/message = "[ADMIN_LOOKUP(user)] has primed a [name] for detonation at [ADMIN_VERBOSEJMP(user)]."
-		add_bomber_message(message)
-		message_admins(message)
+		if(!is_antag_training_atom(user))
+			var/message = "[ADMIN_LOOKUP(user)] has primed a [name] for detonation at [ADMIN_VERBOSEJMP(user)]."
+			add_bomber_message(message)
+			message_admins(message)
 		log_game("[key_name(user)] has primed a [name] for detonation at [AREACOORD(user)].")
 
 		to_chat(user, "<span class='info'>You light [src] on fire.</span>")

@@ -1,5 +1,6 @@
 /datum/config_entry/multi_keyed_flag/donator_group
 	abstract_type = /datum/config_entry/multi_keyed_flag/donator_group
+	postload_required = TRUE
 
 //If we're in the middle of a config load, only do the regeneration afterwards to prevent this from wasting a massive amount of CPU for list regenerations.
 /datum/config_entry/multi_keyed_flag/donator_group/ValidateAndSet(str_val, during_load)
@@ -24,7 +25,7 @@
 
 /// Private AES-256-GCM key, kept in the server-only donator config.
 /datum/config_entry/string/loadout_ckey_secret
-	default = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	default = ""
 	protection = CONFIG_ENTRY_LOCKED | CONFIG_ENTRY_HIDDEN
 
 /// Node.js executable (not a shell command); uses only the built-in crypto module.

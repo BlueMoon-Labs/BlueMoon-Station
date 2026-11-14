@@ -31,7 +31,7 @@
 	return ..()
 
 /datum/round_event_control/silicon_firmware_patch/proc/is_recipient(mob/living/silicon/silicon, require_client = TRUE)
-	if(QDELETED(silicon) || silicon.stat == DEAD)
+	if(QDELETED(silicon) || silicon.stat == DEAD || silicon.training_origin)
 		return FALSE
 	if(require_client && !silicon.client)
 		return FALSE

@@ -4,15 +4,15 @@
 //#define DONATE_ITEM_TOOLTIP(original_item_path) _DONATE_ITEM_TOOLTIP_PATH(original_item_path, FALSE)
 //#define DONATE_ITEM_TOOLTIP_HIGHRISK(original_item_path) _DONATE_ITEM_TOOLTIP_PATH(original_item_path, TRUE)
 
-#define _DONATE_ITEM_TOOLTIP_PARENT(highrisk) \
-	get_examine_name(mob/user) { \
+#define _DONATE_ITEM_TOOLTIP_PARENT(path, highrisk) \
+	##path/get_examine_name(mob/user) { \
 		. = ..(); \
 		var/obj/tooltip_path = parent_type; \
 		. += _DONATE_ITEM_TOOLTIP(initial(tooltip_path.name), highrisk); \
-	} ;
+	}
 
-#define DONATE_ITEM_TOOLTIP_PARENT _DONATE_ITEM_TOOLTIP_PARENT(FALSE)
-#define DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK _DONATE_ITEM_TOOLTIP_PARENT(TRUE)
+#define DONATE_ITEM_TOOLTIP_PARENT(path) _DONATE_ITEM_TOOLTIP_PARENT(path, FALSE)
+#define DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK(path) _DONATE_ITEM_TOOLTIP_PARENT(path, TRUE)
 
 // Название временных файлов для /proc/gear_crypto
 #define LOADOUT_CRYPTO_TMP_FILENAME "loadout_crypto"

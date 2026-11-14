@@ -17,6 +17,11 @@
 	infra_luminosity = 6
 	internals_req_access = list(ACCESS_ROBOTICS, ACCESS_MEDICAL)
 
+/obj/vehicle/sealed/mecha/medical/medigax/can_bump_smash(atom/obstacle, mob/driver)
+	if(isobj(obstacle) || isturf(obstacle))
+		return driver?.a_intent == INTENT_HARM
+	return ..()
+
 /obj/vehicle/sealed/mecha/medical/medigax/moved_inside(mob/living/carbon/human/H)
 	. = ..()
 	if(.)

@@ -235,6 +235,36 @@
 	droid.apply_damage(30, BRUTE, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(repair.repair_tick(2), 0, "new damage restarts the pause")
 
+/// Самовосстановление устраняет травмы по одной, тяжёлые первыми, за заряд и только после паузы без урона.
+/datum/unit_test/hk47_self_repair_wounds
+
+/datum/unit_test/hk47_self_repair_wounds/Run()
+	var/datum/antagonist/hk47/contract_fixture/upgrade_test/hunter = allocate_hk47_droid()
+	var/mob/living/carbon/human/droid = hunter.owner.current
+	hunter.points = 1
+	TEST_ASSERT(hunter.buy_upgrade("self_repair"), "self-repair bought")
+	var/datum/component/hk47_self_repair/repair = droid.GetComponent(/datum/component/hk47_self_repair)
+	var/datum/wound/blunt/moderate/dislocation = new
+	dislocation.apply_wound(droid.get_bodypart(BODY_ZONE_L_ARM))
+	var/datum/wound/blunt/severe/fracture = new
+	fracture.apply_wound(droid.get_bodypart(BODY_ZONE_R_LEG))
+	TEST_ASSERT_EQUAL(length(droid.all_wounds), 2, "two wounds applied")
+	repair.last_damage_time = world.time
+	TEST_ASSERT(!repair.repair_wounds(100), "no wound repair right after damage")
+	repair.last_damage_time = world.time - HK47_REPAIR_DELAY
+	var/nutrition_before = droid.nutrition
+	var/severe_time = WOUND_SEVERITY_SEVERE * HK47_REPAIR_WOUND_TIME / (1 SECONDS)
+	TEST_ASSERT(!repair.repair_wounds(severe_time - 1), "a severe wound takes its full time")
+	TEST_ASSERT(repair.repair_wounds(1), "the severe wound is repaired")
+	TEST_ASSERT(QDELETED(fracture), "the fracture goes first")
+	TEST_ASSERT_EQUAL(length(droid.all_wounds), 1, "one wound left")
+	TEST_ASSERT(abs(nutrition_before - droid.nutrition - WOUND_SEVERITY_SEVERE * HK47_REPAIR_WOUND_NUTRITION) < 0.01, "the repair costs charge per severity")
+	droid.set_nutrition(HK47_UPGRADE_MIN_NUTRITION)
+	TEST_ASSERT(!repair.repair_wounds(100), "no repair without charge")
+	droid.set_nutrition(NUTRITION_LEVEL_WELL_FED)
+	TEST_ASSERT(repair.repair_wounds(100), "the dislocation is repaired")
+	TEST_ASSERT(!length(droid.all_wounds), "no wounds left")
+
 /// Кнопки терминала доходят до контрактов и магазина: принять, отказаться, скан, захват, опознание, покупка.
 /datum/unit_test/hk47_terminal_actions
 
@@ -256,6 +286,10 @@
 	TEST_ASSERT_NULL(offer_entry["photo"], "photos never ride in the per-second data")
 	var/list/static_data = terminal.ui_static_data(droid)
 	var/list/photos = static_data["photos"]
+	TEST_ASSERT(!length(photos), "the photo is taken on its own tick, not while building static data")
+	terminal.take_next_photo()
+	static_data = terminal.ui_static_data(droid)
+	photos = static_data["photos"]
 	TEST_ASSERT(length(photos[offer_entry["id"]]), "a known target comes with a photo in the static data")
 	terminal.ui_act("accept", list("ref" = REF(offer)), ui)
 	TEST_ASSERT_EQUAL(hunter.active_contract, offer, "accept takes the offer")
@@ -368,11 +402,17 @@
 	var/datum/hk_terminal/terminal = hunter.terminal
 	var/datum/mind/target = hunter.add_crew(src, "Assistant", ANTAG_OPT_IN_KILL)
 	var/datum/hk_contract/offer = hunter.add_offer(/datum/hk_contract_task/kill, target)
+	var/datum/hk_contract/second_offer = hunter.add_offer(/datum/hk_contract_task/kill, hunter.add_crew(src, "Assistant", ANTAG_OPT_IN_KILL))
+	terminal.take_next_photo()
+	TEST_ASSERT(offer.photo_taken != second_offer.photo_taken, "one photo per tick, the next one waits for its own timer")
+	terminal.take_next_photo()
 	var/list/static_data = terminal.ui_static_data(droid)
 	var/list/photos = static_data["photos"]
 	var/photo = photos["[offer.id]"]
 	TEST_ASSERT(length(photo), "the photo is taken")
-	TEST_ASSERT_EQUAL(terminal.sent_photos_key, "[offer.id]", "the terminal remembers which photos it sent")
+	TEST_ASSERT_EQUAL(terminal.sent_photos_key, "[offer.id]:photo,[second_offer.id]:photo", "the terminal remembers which photos it sent")
+	hunter.offers -= second_offer
+	qdel(second_offer)
 	offer.photo = "retaken"
 	static_data = terminal.ui_static_data(droid)
 	photos = static_data["photos"]

@@ -745,7 +745,7 @@
 /obj/effect/abstract/liquid_turf/proc/ExposeMyTurf()
 	var/datum/reagents/tempr = simulate_reagents_threshold(LIQUID_REAGENT_THRESHOLD_TURF_EXPOSURE)
 	if(tempr.total_volume > 0)
-		tempr.reaction(my_turf, TOUCH, tempr.total_volume)
+		tempr.reaction(my_turf, TOUCH, tempr.total_volume, from_liquid = TRUE)
 	qdel(tempr)
 
 /obj/effect/abstract/liquid_turf/proc/ChangeToNewTurf(turf/NewT)

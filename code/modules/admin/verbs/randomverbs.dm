@@ -379,9 +379,11 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		new_character.age = record_found.fields["age"]
 		new_character.hardset_dna(record_found.fields["identity"], record_found.fields["enzymes"], null, record_found.fields["name"], record_found.fields["blood_type"], new record_found.fields["species"], record_found.fields["features"])
 	else
-		var/datum/preferences/A = new()
+		var/datum/preferences/A = G_found.client?.prefs || new()
 		A.copy_to(new_character)
-		A.real_name = G_found.real_name
+		new_character.real_name = G_found.real_name
+		new_character.name = new_character.real_name
+		new_character.dna.real_name = new_character.real_name
 		new_character.dna.update_dna_identity()
 
 	new_character.name = new_character.real_name
@@ -394,6 +396,10 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		new_character.mind.assigned_role = "Assistant"//If they somehow got a null assigned role.
 
 	G_found.transfer_ckey(new_character, FALSE)
+	if(new_character.client?.prefs)
+		new_character.client.prefs.apply_prefs_modified_limbs(new_character)
+		new_character.client.prefs.apply_prefs_body_mods(new_character)
+		new_character.update_body()
 
 	/*
 	The code below functions with the assumption that the mob is already a traitor if they have a special role.

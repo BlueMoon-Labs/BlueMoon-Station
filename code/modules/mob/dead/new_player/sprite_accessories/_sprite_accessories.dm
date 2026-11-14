@@ -66,6 +66,8 @@
 	var/center = FALSE	//Should we center the sprite?
 	var/list/relevant_layers //list of layers that this accessory uses. As of now only used in species.handle_mutant_bodyparts(), but that's where most sprite accessories are anyway.
 	var/mutant_part_string //Also used in species.handle_mutant_bodyparts() to generate the overlay icon state.
+	/// Слой оверлея вместо слоя из relevant_layers; иконка и кэш остаются по relevant_layers
+	var/overlay_layer
 	var/alpha_mask_state
 	var/matrixed_sections = MATRIX_NONE //if color_src is MATRIXED, how many sections does it have? 1-3
 	var/ignore = FALSE //NEVER include in customization if set to TRUE
@@ -97,6 +99,10 @@
 
 /datum/sprite_accessory/proc/is_not_visible(var/mob/living/carbon/human/H, var/tauric) //return if the accessory shouldn't be shown
 	return FALSE
+
+/// Дополнительный оверлей части, которая должна лежать поверх головы и рук; null - такой нет.
+/datum/sprite_accessory/proc/get_upper_limbs_overlay(mutable_appearance/accessory_overlay, mob/living/carbon/human/owner)
+	return null
 
 /datum/sprite_accessory/underwear
 	icon = 'icons/mob/clothing/underwear.dmi'

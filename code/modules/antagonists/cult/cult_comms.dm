@@ -39,6 +39,8 @@
 	my_message = "<span class='[span]'><b>[title] [findtextEx(user.name, user.real_name) ? user.name : "[user.real_name] (as [user.name])"]:</b> [message]</span>"
 	for(var/i in GLOB.player_list)
 		var/mob/M = i
+		if(isobserver(M) ? !antag_training_observer_hears(M, user) : M.training_origin != user.training_origin)
+			continue
 		if(iscultist(M))
 			to_chat(M, my_message)
 		else if(M in GLOB.dead_mob_list)
@@ -62,6 +64,8 @@
 	my_message = "<span class='cultboldtalic'>The [user.name]: [message]</span>"
 	for(var/i in GLOB.player_list)
 		var/mob/M = i
+		if(isobserver(M) ? !antag_training_observer_hears(M, user) : M.training_origin != user.training_origin)
+			continue
 		if(iscultist(M))
 			to_chat(M, my_message)
 		else if(M in GLOB.dead_mob_list)

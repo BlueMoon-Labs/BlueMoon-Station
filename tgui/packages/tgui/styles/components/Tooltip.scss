@@ -23,3 +23,10 @@ $border-radius: base.$border-radius !default;
   width: max-content;
   max-width: min(base.em(700px), calc(100vw - 1rem));
 }
+
+.Tooltip__text {
+  display: inline-block;
+  max-width: min(36rem, calc(100vw - 2rem));
+  font-family: Verdana, sans-serif;
+  white-space: pre-line;
+}

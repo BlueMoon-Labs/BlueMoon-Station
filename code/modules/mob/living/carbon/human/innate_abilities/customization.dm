@@ -32,7 +32,7 @@
 	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
 
 	if(select_alteration == "Body Color")
-		var/new_color = input(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
+		var/new_color = tgui_input_color(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"])
 		if(new_color)
 			var/temp_hsv = RGBtoHSV(new_color)
 			if(ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits)) // mutantcolors must be bright //SPLURT EDIT
@@ -50,14 +50,14 @@
 		if(isnull(heterochromia))
 			return
 		if(heterochromia == "Yes")
-			var/new_color1 = input(owner, "Choose your left eye color:", "Eye Color Change","#"+H.dna?.features["left_eye_color"]) as color|null
+			var/new_color1 = tgui_input_color(owner, "Choose your left eye color:", "Eye Color Change","#"+H.dna?.features["left_eye_color"])
 			if(new_color1)
 				H.left_eye_color = sanitize_hexcolor(new_color1, 6)
-			var/new_color2 = input(owner, "Choose your right eye color:",  "Eye Color Change","#"+H.dna?.features["right_eye_color"]) as color|null
+			var/new_color2 = tgui_input_color(owner, "Choose your right eye color:",  "Eye Color Change","#"+H.dna?.features["right_eye_color"])
 			if(new_color2)
 				H.right_eye_color = sanitize_hexcolor(new_color2, 6)
 		else
-			var/new_eyes = input(owner, "Choose your eye color:", "Character Preference","#"+H.dna?.features["left_eye_color"]) as color|null
+			var/new_eyes = tgui_input_color(owner, "Choose your eye color:", "Character Preference","#"+H.dna?.features["left_eye_color"])
 			if(new_eyes)
 				H.left_eye_color = sanitize_hexcolor(new_eyes, 6)
 				H.right_eye_color = sanitize_hexcolor(new_eyes, 6)
@@ -118,7 +118,7 @@
 		H.update_body()
 
 	else if (select_alteration == "Wings")
-		var/new_color = input(owner, "Choose your wing color:", "Race change","#"+H.dna.features["wings_color"]) as color|null
+		var/new_color = tgui_input_color(owner, "Choose your wing color:", "Race change","#"+H.dna.features["wings_color"])
 		if(new_color)
 			H.dna.features["wings_color"] = sanitize_hexcolor(new_color, 6)
 			H.update_body()
@@ -152,6 +152,9 @@
 		H.update_body()
 
 	else if (select_alteration == "Tail")
+		if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+			to_chat(H, span_warning("Опорный хвост нельзя заменить декоративным. Выберите другой вариант тела Naga."))
+			return
 		var/list/snowflake_tails_list = list("Normal" = null)
 		for(var/path in GLOB.mam_tails_list)
 			var/datum/sprite_accessory/tails/mam_tails/instance = GLOB.mam_tails_list[path]
@@ -161,6 +164,8 @@
 					snowflake_tails_list[S.name] = path
 		var/new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
 		if(new_tail)
+			if(QDELETED(H) || HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+				return
 			H.dna.features["mam_tail"] = new_tail
 			if(new_tail != "None")
 				H.dna.features["taur"] = "None"
@@ -168,16 +173,22 @@
 
 	else if (select_alteration == "Taur body")
 		var/list/snowflake_taur_list = list("Normal" = null)
+		if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+			snowflake_taur_list = list()
 		for(var/path in GLOB.taur_list)
 			var/datum/sprite_accessory/taur/instance = GLOB.taur_list[path]
+			if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !istype(instance, /datum/sprite_accessory/taur/naga))
+				continue
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
 				if(S.ignore)
 					continue
 				if(S.is_allowed_for(H.client.key))
 					snowflake_taur_list[S.name] = path
-		var/new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
+		var/new_taur = tgui_input_list(owner, "Выберите вариант таврического тела:", "Изменение тела", snowflake_taur_list)
 		if(new_taur)
+			if(QDELETED(H) || (HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !istype(GLOB.taur_list[new_taur], /datum/sprite_accessory/taur/naga)))
+				return
 			H.dna.features["taur"] = new_taur
 			if(new_taur != "None")
 				H.dna.features["mam_tail"] = "None"
@@ -323,25 +334,25 @@
 		else
 			var/hex_color = null
 			if (genital_part == "Penis")
-				hex_color = input(owner, "Choose your " + "penis" + " color:", "Genital Color", "#" + H.dna.features["cock_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "penis" + " color:", "Genital Color", "#" + H.dna.features["cock_color"])
 				genital_part = "cock"
 			else if (genital_part == "Vagina")
-				hex_color = input(owner, "Choose your " + "vagina" + " color:", "Genital Color", "#" + H.dna.features["vag_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "vagina" + " color:", "Genital Color", "#" + H.dna.features["vag_color"])
 				genital_part = "vag"
 			else if (genital_part == "Balls")
-				hex_color = input(owner, "Choose your " + "balls" + " color:", "Genital Color", "#" + H.dna.features["balls_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "balls" + " color:", "Genital Color", "#" + H.dna.features["balls_color"])
 				genital_part = "balls"
 			else if (genital_part == "Breasts")
-				hex_color = input(owner, "Choose your " + "breasts" + " color:", "Genital Color", "#" + H.dna.features["breasts_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "breasts" + " color:", "Genital Color", "#" + H.dna.features["breasts_color"])
 				genital_part = "breasts"
 			else if (genital_part == "Butt")
-				hex_color = input(owner, "Choose your " + "butt" + " color:", "Genital Color", "#" + H.dna.features["butt_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "butt" + " color:", "Genital Color", "#" + H.dna.features["butt_color"])
 				genital_part = "butt"
 			else if (genital_part == "Anus")
-				hex_color = input(owner, "Choose your " + "anus" + " color:", "Genital Color", "#" + H.dna.features["anus_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "anus" + " color:", "Genital Color", "#" + H.dna.features["anus_color"])
 				genital_part = "anus"
 			else if (genital_part == "Belly")
-				hex_color = input(owner, "Choose your " + "belly" + " color:", "Genital Color", "#" + H.dna.features["belly_color"]) as color|null
+				hex_color = tgui_input_color(owner, "Choose your " + "belly" + " color:", "Genital Color", "#" + H.dna.features["belly_color"])
 				genital_part = "belly"
 
 			if (hex_color)
@@ -355,7 +366,7 @@
 		if(new_horns)
 			H.dna.features["horns"] = new_horns
 
-		var/new_horn_color = input(owner, "Choose your character's horn color:", "Character Preference", "#" + H.dna.features["horns_color"]) as color|null
+		var/new_horn_color = tgui_input_color(owner, "Choose your character's horn color:", "Character Preference", "#" + H.dna.features["horns_color"])
 		if(new_horn_color)
 			if (new_horn_color == "#000000" && H.dna.features["horns_color"] != "85615A")
 				H.dna.features["horns_color"] = "85615A"
@@ -372,7 +383,7 @@
 		if(new_s_tone)
 			if(new_s_tone == "custom")
 				var/default = H.skin_tone
-				var/custom_tone = input(owner, "Choose your character's skin tone: (This is different than the Body Color option, which changes your character's mutant colors)", "Character Preference", default) as color|null
+				var/custom_tone = tgui_input_color(owner, "Choose your character's skin tone: (This is different than the Body Color option, which changes your character's mutant colors)", "Character Preference", default)
 				if(custom_tone)
 					var/temp_hsv = RGBtoHSV(custom_tone)
 					if(ReadHSV(temp_hsv)[3] < ReadHSV("#333333")[3] && CONFIG_GET(flag/character_color_limits)) // rgb(50,50,50) //SPLURT EDIT

@@ -49,6 +49,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	base_icon_state = "standard"
 	/// Scan range of the turret for locating targets
 	var/scan_range = 7
+	var/projectiles_per_shot = 1
 	/// For turrets inside other objects
 	var/atom/base = null
 	/// If the turret cover is "open" and the turret is raised
@@ -113,7 +114,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/mob/remote_controller
 	/// MISSING:
 	var/shot_stagger = 0
-	/// Cached result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weakrefs to the result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weak: a turret switched off with a full cache kept every target it had seen from being deleted.
 	var/list/cached_targets
 	COOLDOWN_DECLARE(target_scan_cooldown)
 
@@ -144,6 +146,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	apply_aperture_turret_skin(src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED) && (isnull(set_to) || set_to))
+		return
 	var/current = on
 	if (!isnull(set_to))
 		on = set_to
@@ -466,26 +470,36 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/list/targets
 	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
 		targets = scan_for_targets()
-		cached_targets = targets.Copy() // tryToShootAt() mutates `targets`; keep an untouched cache
+		cache_targets(targets)
 		COOLDOWN_START(src, target_scan_cooldown, TURRET_TARGET_SCAN_INTERVAL)
 	else
-		// reuse the last scan; build a fresh, mutable list and drop anything deleted since then
-		targets = list()
-		for(var/atom/movable/candidate as anything in cached_targets)
-			if(!QDELETED(candidate))
-				targets += candidate
+		targets = cached_live_targets()
 
 	if(targets.len)
 		tryToShootAt(targets)
 	else if(!always_up)
 		popDown() // no valid targets, close the cover
 
+/obj/machinery/porta_turret/proc/cache_targets(list/targets)
+	cached_targets = list()
+	for(var/atom/movable/target as anything in targets)
+		cached_targets += WEAKREF(target)
+
+/// A fresh, mutable list of the cached targets that still exist.
+/obj/machinery/porta_turret/proc/cached_live_targets()
+	. = list()
+	for(var/datum/weakref/target_ref as anything in cached_targets)
+		var/atom/movable/candidate = target_ref.resolve()
+		if(!QDELETED(candidate))
+			. += candidate
+
 /// Scans the turret's surroundings (view(), mechs, blobs) for things it should shoot at and
 /// returns them as a list. Throttled by process() behind target_scan_cooldown — between scans
 /// process() reuses the cached result instead of calling this.
 /obj/machinery/porta_turret/proc/scan_for_targets()
 	var/list/targets = list()
-	for(var/mob/A in view(scan_range, base))
+	var/list/visible_atoms = view(scan_range, base)
+	for(var/mob/A in visible_atoms)
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
 			continue
 
@@ -540,6 +554,15 @@ DEFINE_BITFIELD(turret_flags, list(
 				if(!in_faction(C))
 					targets += C
 
+	add_mech_targets(targets, visible_atoms)
+
+	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
+		for(var/obj/structure/blob/B in visible_atoms)
+			targets += B
+
+	return targets
+
+/obj/machinery/porta_turret/proc/add_mech_targets(list/targets, list/visible_atoms)
 	for(var/A in GLOB.mechas_list)
 		if((get_dist(A, base) < scan_range) && can_see(base, A, scan_range))
 			var/obj/vehicle/sealed/mecha/mech = A
@@ -553,12 +576,6 @@ DEFINE_BITFIELD(turret_flags, list(
 						targets += mech
 				else if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)
 					targets += mech
-
-	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
-		for(var/obj/structure/blob/B in view(scan_range, base))
-			targets += B
-
-	return targets
 
 /obj/machinery/porta_turret/proc/randomize_shot_stagger()
 	shot_stagger = rand(0, min(2 SECONDS, round(shot_delay/3, world.tick_lag)))
@@ -629,7 +646,7 @@ DEFINE_BITFIELD(turret_flags, list(
 			if(istype(perp.belt, /obj/item/gun) || istype(perp.belt, /obj/item/melee/baton))
 				threatcount += 2
 
-	if(turret_flags & TURRET_FLAG_SHOOT_CRIMINALS)	//if the turret can check the records, check if they are set to *Arrest* on records
+	if((turret_flags & TURRET_FLAG_SHOOT_CRIMINALS) && !is_antag_training_atom(perp))	//if the turret can check the records, check if they are set to *Arrest* on records
 		var/perpname = perp.get_face_name(perp.get_id_name())
 		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
 		if(!R || (R.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED)))
@@ -728,7 +745,14 @@ DEFINE_BITFIELD(turret_flags, list(
 	A.preparePixelProjectile(target, T)
 	A.firer = src
 	A.fired_from = src
+	var/projectile_type = A.type
 	A.fire()
+	for(var/index in 2 to projectiles_per_shot)
+		var/obj/item/projectile/additional_shot = new projectile_type(T)
+		additional_shot.preparePixelProjectile(target, T)
+		additional_shot.firer = src
+		additional_shot.fired_from = src
+		additional_shot.fire()
 	return A
 
 /obj/machinery/porta_turret/proc/setState(on, mode, shoot_cyborgs)
@@ -1024,8 +1048,8 @@ DEFINE_BITFIELD(turret_flags, list(
 /obj/machinery/turretid/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(issilicon(user) && !(machine_stat & BROKEN))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Disable" : "Enable")
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Set to stun" : "Set to kill")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Выключить" : "Включить")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Режим оглушения" : "Режим поражения")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/turretid/Destroy()

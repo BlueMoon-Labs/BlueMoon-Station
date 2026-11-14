@@ -1,0 +1,4 @@
+help: "reagents is the runtime reagent holder, a mapped value replaces it and breaks the object at roundstart. Use list_reagents."
+"*":
+  banned_variables:
+    - reagents

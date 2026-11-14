@@ -1,6 +1,6 @@
 /datum/language/tajaran
 	name = "Siiktajr"
-	desc = "The traditionally employed tongue of Ahdomai, composed of expressive yowls and chirps. Native to the Tajaran."
+	desc = "Традиционный язык Ахдомая, сложенный из выразительного воения и щебета. Родной для таярян."
 	speech_verb = "mrowls"
 	ask_verb = "mrowls"
 	exclaim_verb = "yowls"

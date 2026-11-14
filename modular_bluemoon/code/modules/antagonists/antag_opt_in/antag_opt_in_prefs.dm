@@ -16,11 +16,6 @@
 /datum/preferences/proc/get_antag_opt_in_pref_level()
 	return isnull(antag_opt_in_level) ? antag_opt_in_default_level() : antag_opt_in_level
 
-/datum/preferences/proc/antag_opt_in_pref_html()
-	var/level = get_antag_opt_in_pref_level()
-	var/default_suffix = isnull(antag_opt_in_level) ? " (по умолчанию)" : ""
-	return "<span title='Может ли персонаж выпасть целью в заданиях антагонистов. [GLOB.antag_opt_in_descriptions["[level]"]] [GLOB.antag_opt_in_disclaimer]'>Задания антагов : <a href='?_src_=prefs;preference=antag_opt_in_level;task=input'><font color='[antag_opt_in_level_color(level)]'>[antag_opt_in_level_name(level)][default_suffix]</font></a></span><br>"
-
 /datum/preferences/proc/choose_antag_opt_in_level(mob/user)
 	var/list/choices = list()
 	var/list/explanation = list()
@@ -33,6 +28,12 @@
 	if(isnull(choice) || !(choice in choices))
 		return
 	antag_opt_in_level = choices[choice]
+
+/datum/preferences/proc/process_antag_opt_in_href(mob/user, list/href_list)
+	if(href_list["preference"] != "antag_opt_in_level" || href_list["task"] != "input")
+		return FALSE
+	choose_antag_opt_in_level(user)
+	return TRUE
 
 /datum/preferences/proc/show_antag_opt_in_notice()
 	if(antag_opt_in_notice_seen || !parent)
@@ -55,6 +56,13 @@
 	var/chosen = prefs ? prefs.get_antag_opt_in_pref_level() : antag_opt_in_default_level()
 	if(self_mind)
 		chosen = isnull(self_mind.antag_opt_in_level) ? antag_opt_in_default_level() : self_mind.antag_opt_in_level
+	return list(
+		"level" = chosen,
+		"effective" = self_mind ? self_mind.get_effective_antag_opt_in_level() : chosen,
+	)
+
+/// Описания уровней для меню взаимодействий: одинаковы весь раунд, поэтому едут в static_data, а не в каждом обновлении.
+/proc/antag_opt_in_static_data()
 	var/list/levels = list()
 	for(var/level in ANTAG_OPT_IN_NOT_TARGET to ANTAG_OPT_IN_ROUND_REMOVE)
 		levels += list(list(
@@ -64,8 +72,6 @@
 			"description" = GLOB.antag_opt_in_descriptions["[level]"],
 		))
 	return list(
-		"level" = chosen,
-		"effective" = self_mind ? self_mind.get_effective_antag_opt_in_level() : chosen,
 		"levels" = levels,
 		"thresholds" = antag_opt_in_thresholds_text(),
 		"disclaimer" = GLOB.antag_opt_in_disclaimer,

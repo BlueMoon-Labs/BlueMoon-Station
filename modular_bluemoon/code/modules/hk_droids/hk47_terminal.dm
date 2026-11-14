@@ -144,6 +144,17 @@
 		"identify_range" = HK47_IDENTIFY_RANGE,
 		"protect_presence_needed" = HK47_PROTECT_PRESENCE_PERCENT,
 		"photos" = collect_photos(),
+		"manual" = chassis_manual(),
+	)
+
+/datum/hk_terminal/proc/chassis_manual()
+	return list(
+		list("title" = "БРОНЯ", "text" = "Шасси бронировано само: броня [HK_ARMOR], с модулем бронеплит - [HK_ARMOR + HK47_PLATES_ARMOR]. Комбинезон, костюм и шлем на шасси не надеваются."),
+		list("title" = "ЗАРЯД", "text" = "Шасси питается зарядом из шкалы в строке статуса. Подзарядка - шнуром питания из руки от ЛКП. Двигатели и самовосстановление не работают ниже [HK47_UPGRADE_MIN_NUTRITION] заряда."),
+		list("title" = "РЕМОНТ", "text" = "Вмятины чинит сварка, обгоревшую проводку - кабель, по выбранной части тела. Себя чинить дольше, чем другого. Часть тела с уроном от [HYBRID_BODYPART_DAMAGE_THRESHHOLD] сварка и кабель доводят только до [HYBRID_BODYPART_THESHHOLD_MINDAMAGE], дальше - роботехник операцией. Травмы корпуса чинятся отдельно: вывих - гаечным ключом, пробоины и порезы - сваркой, проводка - кабелем, тяжёлые переломы - наногелем. Модуль самовосстановления чинит на ходу до [HK47_REPAIR_HEALTH_CAP * 100]% корпуса и устраняет травмы по одной."),
+		list("title" = "ЭМИ", "text" = "Сильный ЭМИ отключает приводы на [HK_EMP_HEAVY_STUN / (1 SECONDS)] с, слабый - на [HK_EMP_LIGHT_STUN / (1 SECONDS)] с; снова отключить можно не раньше чем через [HK_EMP_STUN_COOLDOWN / (1 SECONDS)] с. Прочие эффекты ЭМИ на синтетика действуют как обычно. Обездвиженного HK экипаж может перепрошить операцией на голове."),
+		list("title" = "ВИНТОВКА", "text" = "Стреляет только в ваших руках, батарея на [HK_RIFLE_SHOTS] выстрелов. В руках или на спине восстанавливает выстрел каждые [HK_RIFLE_RECHARGE_TIME / (1 SECONDS)] с из заряда шасси."),
+		list("title" = "ЛИЦЕНЗИЯ", "text" = "Карту лицензии легенды можно предъявить кнопкой Show License: все рядом увидят номер, статус и полномочия. Её же видно при осмотре карты."),
 	)
 
 /datum/hk_terminal/ui_data(mob/user)
@@ -228,31 +239,52 @@
 		. += hunter.active_contract
 
 /// Номера досье, у которых есть снимок; засекреченная цель охоты появляется здесь только после опознания.
+/// Отметка готового снимка в ключе: снимок, ушедший в ещё не готовое окно, ui_data отправит повторно.
 /datum/hk_terminal/proc/photos_key()
 	if(QDELETED(hunter))
 		return ""
 	var/list/ids = list()
 	for(var/datum/hk_contract/contract as anything in shown_contracts())
 		if(contract.trackable())
-			ids += "[contract.id]"
+			ids += "[contract.id][contract.photo_taken ? ":photo" : ""]"
 	return jointext(ids, ",")
 
 /// Номер досье -> снимок цели; getFlatIcon дорогой, поэтому снимок один на контракт и только в static data.
+/// Новые снимки делает take_next_photo() по одному за тик: пачка досье разом стоила до 0.45 с стоп-кадра (раунд 10618).
 /datum/hk_terminal/proc/collect_photos()
 	var/list/photos = list()
 	if(QDELETED(hunter))
 		return photos
+	var/photos_pending = FALSE
 	for(var/datum/hk_contract/contract as anything in shown_contracts())
 		if(!contract.trackable())
 			continue
 		if(!contract.photo_taken)
-			contract.photo_taken = TRUE
-			var/atom/pictured = contract.tracked_atom()
-			var/icon/flat = pictured ? getFlatIcon(pictured, defdir = SOUTH, no_anim = TRUE) : null
-			contract.photo = flat ? icon2base64(flat) : null
-		if(contract.photo)
+			photos_pending = TRUE
+		else if(contract.photo)
 			photos["[contract.id]"] = contract.photo
+	if(photos_pending)
+		addtimer(CALLBACK(src, PROC_REF(take_next_photo)), 1, TIMER_UNIQUE | TIMER_DELETE_ME)
 	return photos
+
+/// Следующий снимок взводится здесь же: кулдаун полного обновления окна не должен растягивать очередь досье.
+/datum/hk_terminal/proc/take_next_photo()
+	if(QDELETED(hunter))
+		return
+	var/datum/hk_contract/taken
+	for(var/datum/hk_contract/contract as anything in shown_contracts())
+		if(!contract.trackable() || contract.photo_taken)
+			continue
+		if(taken)
+			addtimer(CALLBACK(src, PROC_REF(take_next_photo)), 1, TIMER_UNIQUE | TIMER_DELETE_ME)
+			break
+		taken = contract
+		contract.photo_taken = TRUE
+		var/atom/pictured = contract.tracked_atom()
+		var/icon/flat = pictured ? getFlatIcon(pictured, defdir = SOUTH, no_anim = TRUE) : null
+		contract.photo = flat ? icon2base64(flat) : null
+	if(taken)
+		update_static_data_for_all_viewers()
 
 /datum/hk_terminal/proc/contract_data(datum/hk_contract/contract)
 	return list(
@@ -296,6 +328,7 @@
 	entry["suspects"] = contract.trackable() ? list() : suspects(droid)
 	if(istype(contract.task, /datum/hk_contract_task/protect))
 		entry["presence"] = contract.presence_percent()
+		entry["presence_left"] = contract.presence_seconds_left()
 	return entry
 
 /// Игроки в паре клеток от HK, которых он видит, для опознания: имя видно и так, цель среди них не отмечена.

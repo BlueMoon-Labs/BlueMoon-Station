@@ -108,9 +108,8 @@
 					if("reset")
 						contained_id.points = 0
 					if("setgoal")
-						var/num = round(input(usr, "Choose prisoner's goal:", "Input an Integer", null) as num|null)
-						if(num >= 0)
-							num = min(num,1000) //Cap the quota to the equivilent of 10 minutes.
+						var/num = tgui_input_number(usr, "Choose prisoner's goal:", "Input an Integer", contained_id.goal, max_value = 1000, min_value = 0, round_value = TRUE)
+						if(!isnull(num))
 							contained_id.goal = num
 		else if(href_list["inject1"])
 			var/obj/item/implant/I = locate(href_list["inject1"]) in GLOB.tracked_chem_implants
@@ -133,7 +132,7 @@
 				to_chat(usr, "<span class='danger'>Unauthorized access.</span>")
 
 		else if(href_list["warn"])
-			var/warning = stripped_input(usr, "Message:", "Enter your message here!", "", MAX_MESSAGE_LEN)
+			var/warning = tgui_input_text(usr, "Message:", "Enter your message here!", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!warning)
 				return
 			var/obj/item/implant/I = locate(href_list["warn"]) in GLOB.tracked_implants

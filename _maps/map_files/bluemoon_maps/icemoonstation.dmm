@@ -56,6 +56,26 @@
 	},
 /turf/open/floor/wood,
 /area/maintenance/bar)
+"aae" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 6
+	},
+/obj/machinery/pipedispenser,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"aaf" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/maintenance/department/crew_quarters/dorms)
+"aag" = (
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
 "aaj" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/computer/aifixer{
@@ -11134,7 +11154,6 @@
 	req_access_txt = "19";
 	id_tag = "bridgerestarealock"
 	},
-/obj/machinery/door/firedoor,
 /obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/access/any/command/general,
 /turf/open/floor/plasteel,
@@ -25325,15 +25344,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "eDv" = (
@@ -25902,9 +25912,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ai_monitored/security/armory)
 "eIF" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -54551,7 +54558,7 @@
 	},
 /area/hallway/primary/starboard)
 "jWd" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/light{
 	dir = 4
@@ -74301,7 +74308,6 @@
 /area/service/chapel/main/monastery)
 "nxB" = (
 /obj/structure/disposalpipe/segment,
-/obj/structure/disposalpipe/segment,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -88390,7 +88396,6 @@
 	id_tag = "bridgerestarealock"
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/access/any/command/general,
 /turf/open/floor/plasteel,
 /area/command/bridge)
@@ -91943,7 +91948,6 @@
 /obj/effect/turf_decal/trimline/purple/warning{
 	dir = 10
 	},
-/obj/structure/disposalpipe/segment,
 /obj/structure/disposalpipe/segment,
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -115533,7 +115537,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/science/general,
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel,
 /area/science/nanite)
 "uMa" = (
@@ -125472,9 +125475,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 6
-	},
 /turf/open/floor/wood,
 /area/service/library)
 "wHM" = (
@@ -125823,7 +125823,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/trunk/multiz/down,
 /obj/structure/disposalpipe/trunk/multiz/down,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1
@@ -234889,11 +234888,11 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dPU
-dPU
-dPU
-dPU
+sdJ
+sdJ
+sdJ
+sdJ
+sdJ
 qYi
 hlY
 mIV
@@ -235146,7 +235145,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 lFa
 nwd
 xrX
@@ -235403,7 +235402,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 xrX
 kzj
 hnH
@@ -235660,7 +235659,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 mwC
 hLv
 mTi
@@ -235916,8 +235915,8 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dPU
+sdJ
+sdJ
 ior
 ior
 ior
@@ -236173,8 +236172,8 @@ ssT
 ssT
 ssT
 ssT
-dPU
-tRt
+sdJ
+aae
 cDP
 mlf
 cDP
@@ -236430,9 +236429,9 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dFg
-tPC
+sdJ
+sIr
+aaf
 xzG
 rtg
 sIr
@@ -236687,9 +236686,9 @@ ssT
 ssT
 ssT
 ssT
-dPU
-ixt
-hFH
+sdJ
+ngy
+aag
 hTt
 kgV
 ngy

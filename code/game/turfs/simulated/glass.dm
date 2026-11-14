@@ -4,7 +4,7 @@
 	icon = 'icons/turf/floors/glass.dmi'
 	icon_state = "floor_glass"
 	baseturfs = /turf/open/openspace
-	turf_flags = TURF_FLAGS_FLOOR & ~TURF_INTACT
+	turf_flags = TURF_FLAGS_FLOOR
 	smooth = SMOOTH_MORE
 	canSmoothWith = list(/turf/open/floor/glass, /turf/open/floor/glass/reinforced)
 	footstep = FOOTSTEP_PLATING
@@ -36,7 +36,7 @@
 		if(!istype(src, /turf/open/floor/glass))
 			return TRUE
 		if(floor_tile)
-			new floor_tile(src, 2)
+			new floor_tile(src, 1)
 		ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	return TRUE
 
@@ -46,6 +46,7 @@
 	icon = 'icons/turf/floors/reinf_glass.dmi'
 	icon_state = "floor_glass"
 	base_icon_state = "reinf_glass"
+	floor_tile = /obj/item/stack/sheet/rglass
 
 // /turf/open/floor/glass/reinforced/setup_broken_states()
 // 	return list("reinf_glass-damaged1", "reinf_glass-damaged2", "reinf_glass-damaged3")
@@ -56,6 +57,6 @@
 		if(!istype(src, /turf/open/floor/glass/reinforced))
 			return TRUE
 		if(floor_tile)
-			new floor_tile(src, 2)
+			new floor_tile(src, 1)
 		ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	return TRUE

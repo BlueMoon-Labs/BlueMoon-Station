@@ -1,11 +1,13 @@
 /obj/vehicle/sealed/mecha/combat
+	mouse_pointer = 'icons/mecha/mecha_mouse.dmi'
 	force = 30
 	internals_req_access = list(ACCESS_ROBOTICS, ACCESS_SECURITY)
 	internal_damage_threshold = 50
 	armor_type = /datum/armor/mecha_combat
-	mouse_pointer = 'icons/mecha/mecha_mouse.dmi'
 	destruction_sleep_duration = 40
 	exit_delay = 40
+	mecha_type = MECHA_TYPE_COMBAT
+	ui_theme = "security"
 
 /obj/vehicle/sealed/mecha/combat/restore_equipment()
 	mouse_pointer = 'icons/mecha/mecha_mouse.dmi'

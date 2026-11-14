@@ -120,6 +120,10 @@
 	if(!T)
 		return
 	var/mob/living/carbon/human/H = parent
+	if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+		playsound(T, FOOTSTEP_SOUND_CRAWL, 35 * volume, falloff_distance = 1)
+		play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE)
+		return
 	var/list/L = GLOB.barefootstep
 	var/turf_footstep = T.barefootstep
 	var/special = FALSE

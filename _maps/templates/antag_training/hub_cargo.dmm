@@ -1,0 +1,1801 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"av" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"aV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/machinery/computer/antag_training_mockup/records,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"aX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"bc" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"bz" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/cardboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/power/apc/auto_name/south,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"bJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/glass/five,
+/obj/item/flashlight,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/sheet/glass/five,
+/obj/item/flashlight,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/rods/ten,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"bU" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"cd" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"ce" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"ci" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/engineering,
+/obj/item/storage/box,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/cardboard,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/stack/cable_coil,
+/obj/item/crowbar,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"cF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/pen,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/folder/blue,
+/obj/item/dest_tagger,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/stack/wrapping_paper,
+/obj/item/folder/blue,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"cZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/item/paper/crumpled,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"db" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/antag_training_hub_reset{
+	pixel_y = 26
+	},
+/obj/structure/closet/crate,
+/obj/item/stamp,
+/obj/item/crowbar,
+/obj/item/clothing/mask/breath,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/dest_tagger,
+/obj/item/pen,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"du" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/wardrobe/cargo_wardrobe,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"dJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/plaques/kiddie{
+	name = "Cargo door plate";
+	desc = "Табличка: «Снабжение». Заказы со станции сюда не приходят: склад учебный.";
+	pixel_y = 32
+	},
+/obj/structure/closet/crate,
+/obj/item/flashlight,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/stamp,
+/obj/item/flashlight,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/gloves/fingerless,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"eX" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/pen,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/storage/box,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/clothing/gloves/fingerless,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"fC" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"gu" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/cardboard,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/stack/rods/ten,
+/obj/item/stack/cable_coil,
+/obj/item/crowbar,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"gU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"gV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"hf" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/cardboard{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"ho" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"hJ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"il" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/clothing/mask/breath,
+/obj/item/crowbar,
+/obj/item/crowbar,
+/obj/item/crowbar,
+/obj/item/clothing/suit/jacket,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/suit/jacket,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"ix" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"jF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"jH" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/structure/closet/wardrobe/cargotech,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"kB" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Office"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"kC" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/hub/station/cargo)
+"kF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"lF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/structure/closet/crate,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"lZ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"nf" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"nX" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"pc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"po" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/dest_tagger{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "cargo manifest";
+	default_raw_text = "Накладная склада: металл, стекло, ящики снабжения. Со станцией склад не связан.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"pr" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/crowbar,
+/obj/item/stack/sheet/glass/five,
+/obj/item/clothing/suit/jacket,
+/obj/item/stack/rods/ten,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"pB" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/glass/five,
+/obj/item/flashlight,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/crowbar,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"qu" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/rods/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/cardboard{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"qw" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"rb" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"rN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/storage/box,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/clothing/suit/jacket,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/storage/box,
+/obj/item/clothing/suit/jacket,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"sr" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"uo" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/camera/training{
+	c_tag = "Мини-станция: склад";
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"vP" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/science,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"wb" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/flashlight,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/rods/ten,
+/obj/item/flashlight,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/suit/jacket,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"wr" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"wO" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"xe" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Warehouse"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"xm" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/five{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"xo" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/stamp{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper_bin{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"yh" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/machinery/light/directional/south,
+/obj/structure/rack,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"yV" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"zK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/storage/box,
+/obj/item/stack/sheet/cardboard,
+/obj/item/clothing/suit/jacket,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Am" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Bq" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"BV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/science,
+/obj/item/clothing/suit/jacket,
+/obj/item/clothing/mask/breath,
+/obj/item/crowbar,
+/obj/item/stack/rods/ten,
+/obj/item/clothing/suit/jacket,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Cl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Cq" = (
+/turf/closed/wall,
+/area/antag_training/hub/station/cargo)
+"CI" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"CO" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Du" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/cardboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"DL" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/clothing/suit/jacket,
+/obj/item/clothing/mask/breath,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/flashlight,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/stamp,
+/obj/item/crowbar,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"DM" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Et" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"EO" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Fj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"FR" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"FU" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"GU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/structure/filingcabinet,
+/obj/machinery/camera/training{
+	c_tag = "Мини-станция: снабжение";
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Ho" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/cardboard,
+/obj/item/flashlight,
+/obj/item/stack/rods/ten,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/stack/sheet/glass/five,
+/obj/item/clothing/mask/breath,
+/obj/item/storage/box,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"HK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Iv" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/rods/ten,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/rods/ten,
+/obj/item/stack/rods/ten,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Ix" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"IB" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/crowbar,
+/obj/item/clothing/suit/jacket,
+/obj/item/crowbar,
+/obj/item/crowbar,
+/obj/item/clothing/suit/jacket,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Jh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Jr" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/internals,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"JJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Ne" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/storage/box,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/flashlight,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Nm" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/structure/rack,
+/obj/item/stack/sheet/plasteel/twenty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"NA" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"NL" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Ob" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/pen,
+/obj/item/stack/wrapping_paper,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/stack/wrapping_paper,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/folder/white,
+/obj/item/folder/blue,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/item/folder/yellow,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/paper,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Ou" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/internals,
+/obj/item/stack/sheet/cardboard,
+/obj/item/storage/box,
+/obj/item/flashlight,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"OT" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/west,
+/obj/structure/table,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Pm" = (
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"PA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Qi" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/five{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/cardboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"RI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/crowbar,
+/obj/item/clothing/mask/breath,
+/obj/item/flashlight,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/suit/jacket,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Sc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Sf" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/stack/wrapping_paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/hand_labeler{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Sr" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/folder/blue{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stamp{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"TW" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Uw" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Ux" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/stack/packageWrap{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/yellow{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stamp{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"UT" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/rods/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"VW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/cardboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"WM" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"WU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"WZ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Xe" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/station/cargo)
+"Xq" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/storage/box,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/clothing/suit/jacket,
+/obj/item/storage/box,
+/obj/item/flashlight,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Yf" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"Yy" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/structure/closet/secure_closet/miner,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+"ZG" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Cargo Maintenance"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/antag_training/hub/station/cargo)
+"ZN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/station/cargo)
+
+(1,1,1) = {"
+Cq
+aV
+CO
+OT
+ix
+jH
+Cq
+UT
+Ix
+hf
+pr
+Du
+VW
+qu
+ZN
+xm
+"}
+(2,1,1) = {"
+Cq
+xo
+DM
+Xe
+FU
+du
+Cq
+JJ
+cd
+pB
+Ou
+gU
+Uw
+ci
+hJ
+bz
+"}
+(3,1,1) = {"
+kC
+po
+nf
+WM
+nf
+eX
+kC
+Qi
+NA
+Ne
+Xq
+ho
+kF
+rN
+NA
+zK
+"}
+(4,1,1) = {"
+Cq
+dJ
+yV
+Xe
+NL
+Sr
+Cq
+gu
+nX
+gU
+bU
+gU
+Uw
+gU
+EO
+rb
+"}
+(5,1,1) = {"
+Cq
+PA
+nf
+WM
+nf
+Sc
+xe
+av
+NA
+ho
+Jh
+ho
+Jh
+ho
+qw
+yh
+"}
+(6,1,1) = {"
+kB
+wr
+yV
+aX
+NL
+DL
+Cq
+cZ
+nX
+gU
+Uw
+FR
+Uw
+gU
+EO
+Ho
+"}
+(7,1,1) = {"
+Cq
+db
+CI
+WM
+nf
+Am
+Cq
+RI
+Et
+BV
+wb
+ho
+Pm
+bJ
+NA
+Iv
+"}
+(8,1,1) = {"
+Cq
+jF
+fC
+aX
+bc
+cF
+kC
+sr
+TW
+vP
+Jr
+FR
+Bq
+IB
+WZ
+il
+"}
+(9,1,1) = {"
+kC
+Ob
+Fj
+WM
+Fj
+gV
+Cq
+lF
+Jh
+ho
+Pm
+ho
+Pm
+ho
+kF
+HK
+"}
+(10,1,1) = {"
+Cq
+GU
+Sf
+Ux
+lZ
+ce
+Cq
+pc
+WU
+wO
+Cl
+Yy
+Cl
+uo
+Nm
+Yf
+"}
+(11,1,1) = {"
+Cq
+Cq
+Cq
+Cq
+Cq
+Cq
+Cq
+Cq
+ZG
+Cq
+Cq
+Cq
+Cq
+Cq
+Cq
+Cq
+"}

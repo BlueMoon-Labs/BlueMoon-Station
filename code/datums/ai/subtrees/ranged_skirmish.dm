@@ -151,6 +151,8 @@
 	//fire, however, a cached target must still be visible at that exact moment.
 	if(istype(hostile_pawn) && hostile_pawn.ranged_cooldown > world.time)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(istype(hostile_pawn) && hostile_pawn.escape_if_confined())
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	if(!can_fire_without_sight(controller, targeting_strategy))
 		AI_METRIC_INC(los_checks)
 		if(!can_see(controller.pawn, target, max_range))

@@ -20,7 +20,7 @@
 /obj/machinery/ai_slipper/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(issilicon(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Dispense foam")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Выпустить пену")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/ai_slipper/examine(mob/user)

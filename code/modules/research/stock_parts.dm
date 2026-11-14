@@ -15,7 +15,12 @@ If you create T5+ please take a pass at gene_modder.dm [L40]. Max_values MUST fi
 	var/alt_sound = null
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE	//cutting down on exploits
 
-/obj/item/storage/part_replacer/pre_attack(obj/machinery/T, mob/living/user, params)
+/obj/item/storage/part_replacer/pre_attack(atom/target, mob/living/user, params)
+	// Сборка должна обработать RPED до перехвата клика хранилищем для сбора предметов.
+	if(user.Adjacent(target) && (istype(target, /obj/vehicle/sealed/mecha) || istype(target, /obj/item/bodypart/chest/robot) || istype(target, /obj/item/bodypart/head/robot) || (istype(target, /obj/item/mecha_parts/chassis) && target.GetComponent(/datum/component/construction/mecha))))
+		target.attackby(src, user, params)
+		return TRUE
+	var/obj/machinery/T = target
 	if(!istype(T) || !T.component_parts)
 		return ..()
 	if(user.Adjacent(T)) // no TK upgrading.
@@ -40,6 +45,34 @@ If you create T5+ please take a pass at gene_modder.dm [L40]. Max_values MUST fi
 		playsound(src, alt_sound, 40, 1)
 	else
 		playsound(src, pshoom_or_beepboopblorpzingshadashwoosh, 40, 1)
+
+// Выбираем лучшие детали тем же способом, что и при улучшении машин.
+/obj/item/storage/part_replacer/proc/get_sorted_parts()
+	var/list/parts = contents.Copy()
+	sortTim(parts, GLOBAL_PROC_REF(cmp_rped_sort))
+	return parts
+
+// Устанавливаем только недостающие детали через обычные проверки сборки цели.
+/obj/item/storage/part_replacer/proc/install_parts(atom/target, mob/living/user, list/needed_parts)
+	if(!user.Adjacent(target) || SEND_SIGNAL(src, COMSIG_IS_STORAGE_LOCKED, user, TRUE))
+		return FALSE
+	var/list/parts = get_sorted_parts()
+	var/installed = FALSE
+	for(var/part_type in needed_parts)
+		var/remaining = needed_parts[part_type]
+		for(var/obj/item/part as anything in parts)
+			if(!remaining)
+				break
+			if(QDELETED(part) || part.loc != src || !istype(part, part_type))
+				continue
+			if(target.attackby(part, user))
+				remaining--
+				installed = TRUE
+	if(installed)
+		play_rped_sound()
+	else
+		to_chat(user, span_warning("В [src] нет подходящих деталей для установки в [target]."))
+	return installed
 
 /obj/item/storage/part_replacer/mini
 	name = "mini rapid part exchange device"

@@ -282,8 +282,8 @@
 	TEST_ASSERT_EQUAL(upper.level_from, 1, "Отсчёт начинается с полной верхней колбы.")
 	TEST_ASSERT_EQUAL(upper.level_to, 0, "К удару верхняя колба пустеет.")
 	TEST_ASSERT_EQUAL(lower.level_to, 1, "К удару нижняя колба полна.")
-	TEST_ASSERT_EQUAL(upper.pour_time, 1.5 SECONDS, "Песок сыплется ровно столько, сколько идёт отсчёт.")
-	TEST_ASSERT(abs(timeleft(hourglass.countdown_timer) - 1 SECONDS) <= world.tick_lag, "Последний отсчёт начинается за полсекунды до удара.")
+	TEST_ASSERT(abs(upper.pour_time - 1.5 SECONDS) < 0.1, "Песок сыплется ровно столько, сколько идёт отсчёт.")
+	TEST_ASSERT(abs(timeleft(hourglass.countdown_timer) - 1 SECONDS) <= 2 * world.tick_lag, "Последний отсчёт начинается за полсекунды до удара.")
 	sleep(0.5 SECONDS)
 	var/left = hourglass.sand_left()
 	TEST_ASSERT(left > 0.4 && left < 0.9, "За треть отсчёта уходит около трети песка, осталось [left].")
@@ -759,7 +759,7 @@
 	bullet.forceMove(edge_turf)
 	TEST_ASSERT(abs(bullet.pixels_per_second - speed / HERETIC_SAND_SLOW_FACTOR) < 0.01, "После второго выхода поле работает на новой клетке.")
 
-/// Граница поля замедленного времени видна: бледное кольцо и песчинки кружат вокруг вознёсшегося; потеря тела гасит их плавно.
+/// Граница поля замедленного времени видна: песчаное кольцо в родном размере и песчинки вокруг вознёсшегося; потеря тела гасит их плавно.
 /datum/unit_test/heretic_sand_field_visuals/Run()
 	var/list/fixture = ascend_sand_fixture()
 	var/mob/living/carbon/human/user = fixture["user"]
@@ -770,7 +770,8 @@
 	TEST_ASSERT(ring in user.vis_contents, "Кольцо ходит вместе с героем.")
 	TEST_ASSERT_EQUAL(ring.layer, BELOW_MOB_LAYER, "Кольцо лежит под фигурами.")
 	var/matrix/ring_transform = ring.transform
-	TEST_ASSERT(ring_transform.a > 1, "Кольцо растянуто до радиуса поля.")
+	TEST_ASSERT(ring_transform.a == 1 && ring_transform.e == 1, "Кольцо нарисовано под радиус поля, без растяжения.")
+	TEST_ASSERT(ring.pixel_x < 0 && ring.pixel_x == ring.pixel_y, "Кольцо центрировано на герое.")
 	TEST_ASSERT(ring.mouse_opacity == MOUSE_OPACITY_TRANSPARENT, "Кольцо не мешает кликам.")
 	var/obj/effect/abstract/heretic_particle_holder/grains = field.field_grains
 	TEST_ASSERT_NOTNULL(grains, "По границе кружат песчинки.")

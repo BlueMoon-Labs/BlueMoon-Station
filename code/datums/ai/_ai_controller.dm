@@ -511,16 +511,10 @@ multiple modular subtrees with behaviors
 		UnpossessPawn(FALSE)
 		return
 	for(var/datum/ai_behavior/current_behavior as anything in current_behaviors)
-
-		// Convert the current behaviour action cooldown to realtime seconds from deciseconds
-		// Then pick the max of this and the delta_time passed to ai_controller.process()
-		// Action cooldowns cannot happen faster than delta_time, so delta_time should be the value used in this scenario.
-		var/action_delta_time = max(current_behavior.get_cooldown(src) * 0.1, delta_time)
-
 		if(!(current_behavior.behavior_flags & AI_BEHAVIOR_REQUIRE_MOVEMENT))
 			if(behavior_cooldowns[current_behavior] > world.time) //Still on cooldown
 				continue
-			ProcessBehavior(action_delta_time, current_behavior)
+			ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior)
 			return
 
 		if(isnull(current_movement_target))
@@ -536,7 +530,7 @@ multiple modular subtrees with behaviors
 
 			if(behavior_cooldowns[current_behavior] > world.time) //Still on cooldown
 				continue
-			ProcessBehavior(action_delta_time, current_behavior)
+			ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior)
 			return
 
 		if(ai_movement.moving_controllers[src] != current_movement_target) //We're too far, if we're not already moving start doing it.
@@ -550,9 +544,14 @@ multiple modular subtrees with behaviors
 			//раньше файндера, морил восприятие голодом на всю погоню: последняя
 			//подтверждённая позиция протухала, разжалование скрывшейся цели не
 			//наступало до самой адьяценси, перевыбор целей был мёртв.
-			if(ProcessBehavior(action_delta_time, current_behavior) == AI_BEHAVIOR_INSTANT)
+			if(ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior) == AI_BEHAVIOR_INSTANT)
 				continue
 			return
+
+///Кулдаун поведения в секундах, но не меньше delta_time прохода: чаще delta_time действие не случается.
+///Считается только перед реальным исполнением - поведение на кулдауне за него не платит.
+/datum/ai_controller/proc/behavior_delta_time(datum/ai_behavior/behavior, delta_time)
+	return max(behavior.get_cooldown(src) * 0.1, delta_time)
 
 ///This is where you decide what actions are taken by the AI.
 /datum/ai_controller/proc/SelectBehaviors(delta_time)
@@ -563,7 +562,12 @@ multiple modular subtrees with behaviors
 		if(subtree.SelectBehaviors(src, delta_time) == SUBTREE_RETURN_FINISH_PLANNING)
 			break
 
-	for(var/datum/ai_behavior/forgotten_behavior as anything in current_behaviors - planned_behaviors)
+	//вычитание списков аллоцировало новый список каждый план, хотя забытых почти никогда нет
+	var/list/forgotten_behaviors
+	for(var/datum/ai_behavior/kept_behavior as anything in current_behaviors)
+		if(!planned_behaviors[kept_behavior])
+			LAZYADD(forgotten_behaviors, kept_behavior)
+	for(var/datum/ai_behavior/forgotten_behavior as anything in forgotten_behaviors)
 		var/list/arguments = list(src, FALSE)
 		var/list/stored_arguments = behavior_args[forgotten_behavior.type]
 		if(stored_arguments)

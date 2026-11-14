@@ -31,6 +31,8 @@ the new instance inside the host to be updated to the template's stats.
 	var/list/disease_instances
 	var/list/hosts //this list is associative, affected_mob -> disease_instance
 	var/datum/disease/advance/sentient_disease/disease_template
+	/// Тип вируса этой камеры: учебная камера полигона ставит свой, с запретом заражать кого-либо вне полигона.
+	var/template_type = /datum/disease/advance/sentient_disease
 
 	var/total_points = 0
 	var/points = 0
@@ -53,7 +55,7 @@ the new instance inside the host to be updated to the template's stats.
 	purchased_abilities = list()
 	unpurchased_abilities = list()
 
-	disease_template = new /datum/disease/advance/sentient_disease()
+	disease_template = new template_type()
 	disease_template.overmind = src
 	qdel(SSdisease.archive_diseases[disease_template.GetDiseaseID()])
 	SSdisease.archive_diseases[disease_template.GetDiseaseID()] = disease_template //important for stuff that uses disease IDs
@@ -402,8 +404,12 @@ the new instance inside the host to be updated to the template's stats.
 		if(!disease_instances.len)
 			to_chat(src, "<span class='userdanger'>The last of your infection has disappeared.</span>")
 			set_following(null)
-			qdel(src)
+			on_last_host_cured()
 		refresh_adaptation_menu()
+
+/// Излечён последний носитель: болезнь раунда исчезает вместе с камерой, учебная возвращает участника в своё тело.
+/mob/camera/disease/proc/on_last_host_cured()
+	qdel(src)
 
 /mob/camera/disease/proc/set_following(mob/living/L)
 	if(following_host)

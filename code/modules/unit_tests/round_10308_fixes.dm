@@ -25,16 +25,17 @@
 /// Кнопка способности модуля обязана удалиться вместе с модулем.
 /datum/unit_test/mod_ability_button_dies_with_module/Run()
 	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
-	var/obj/item/mod/control/suit = allocate(/obj/item/mod/control)
-	var/obj/item/mod/module/module = allocate(/obj/item/mod/module)
-	suit.wearer = wearer
-	suit.generate_ability_button(module)
-	suit.wearer = null
+	var/obj/item/mod/control/suit = allocate(/obj/item/mod/control/pre_equipped)
+	var/obj/item/mod/module/flashlight/module = allocate(/obj/item/mod/module/flashlight)
+	suit.install(module)
+	suit.set_wearer(wearer)
+	TEST_ASSERT(suit.generate_ability_button(module), "Установленный модуль должен получить кнопку способности")
 	var/datum/action/cooldown/module_action/button = locate() in wearer.actions
 	TEST_ASSERT_NOTNULL(button, "Кнопка способности не выдана носителю")
 	qdel(module)
 	TEST_ASSERT(QDELETED(button), "Кнопка способности пережила свой модуль")
 	TEST_ASSERT(!(button in wearer.actions), "Удалённая кнопка осталась в actions носителя")
+	suit.unset_wearer()
 
 /// Удаляемый мозг не должен заводить себе новый brainmob.
 /datum/unit_test/brain_destroy_makes_no_brainmob/Run()

@@ -192,3 +192,9 @@
 	path = /obj/item/clothing/neck/cloak/teshari/jobs/service
 	restricted_roles = list("Bartender","Botanist","Bouncer","Entertainer","Cook","Janitor")
 //BM add end
+
+// BLUEMOON ADD - шарф из меха шейдкина
+/datum/gear/neck/shadekin_scarf
+	name = "Shadekin Fur Scarf"
+	path = /obj/item/clothing/neck/scarf/shadekin
+	subcategory = LOADOUT_SUBCATEGORY_NECK_SCARVES

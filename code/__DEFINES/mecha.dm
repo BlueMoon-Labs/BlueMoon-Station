@@ -21,6 +21,14 @@
 #define MECHA_MELEE (1 << 0)
 #define MECHA_RANGED (1 << 1)
 
+// Категории совместимости оборудования: мех может принадлежать нескольким одновременно.
+#define MECHA_TYPE_WORKING (1 << 0)
+#define MECHA_TYPE_COMBAT (1 << 1)
+#define MECHA_TYPE_MEDICAL (1 << 2)
+#define MECHA_TYPE_RIPLEY (1 << 3)
+#define MECHA_TYPE_HONKER (1 << 4)
+#define MECHA_TYPE_NEOVGRE (1 << 5)
+
 #define MECHA_FRONT_ARMOUR 1
 #define MECHA_SIDE_ARMOUR 2
 #define MECHA_BACK_ARMOUR 3

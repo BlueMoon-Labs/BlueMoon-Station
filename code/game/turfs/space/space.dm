@@ -118,9 +118,16 @@
 
 /// Звёзды на PLANE_SPACE под картинкой этажа снизу: закрывают черноту там, куда сжатый нижний этаж не достаёт.
 /turf/open/space/proc/add_starfield_underlay()
-	var/mutable_appearance/starfield = mutable_appearance(icon, SPACE_ICON_STATE, layer = TURF_LAYER - 0.02)
-	SET_PLANE_EXPLICIT(starfield, PLANE_SPACE, src)
-	starfield.appearance_flags = RESET_ALPHA | RESET_COLOR
+	//Прозрачного космоса на верхних этажах станции десятки тысяч турфов, а вариантов подложки - стейт на этаж.
+	var/static/alist/starfields = alist()
+	var/state = SPACE_ICON_STATE
+	var/key = "[icon]|[state]|[GET_TURF_PLANE_OFFSET(src)]"
+	var/mutable_appearance/starfield = starfields[key]
+	if(!starfield)
+		starfield = mutable_appearance(icon, state, layer = TURF_LAYER - 0.02)
+		SET_PLANE_EXPLICIT(starfield, PLANE_SPACE, src)
+		starfield.appearance_flags = RESET_ALPHA | RESET_COLOR
+		starfields[key] = starfield
 	underlays += starfield
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
@@ -155,17 +162,32 @@
 	return null
 
 /turf/open/space/proc/update_starlight()
-	if(CONFIG_GET(flag/starlight))
-		for(var/t in RANGE_TURFS(1,src)) //RANGE_TURFS is in code\__HELPERS\game.dm
-			if(isspaceturf(t))
-				continue
-			var/use_color = GLOB.current_starlight_color || light_color
-			var/use_power = GLOB.current_starlight_power || light_power
+	if(!CONFIG_GET(flag/starlight))
+		return
+	for(var/t in RANGE_TURFS(1,src)) //RANGE_TURFS is in code\__HELPERS\game.dm
+		if(isspaceturf(t))
+			continue
+		var/use_color = GLOB.current_starlight_color || light_color
+		var/use_power = GLOB.current_starlight_power || light_power
+		if(light_range != 3 || light_power != use_power || light_color != use_color)
 			set_light(l_range = 3, l_power = use_power, l_color = use_color)
+		// Турф, пересозданный в обход ChangeTurf (загрузчик карт), теряет отметку, но может уже стоять в списке.
+		if(!(lighting_flags & TURF_STARLIT))
+			lighting_flags |= TURF_STARLIT
 			GLOB.starlight |= src
-			return
+		return
+	if(lighting_flags & TURF_STARLIT)
+		lighting_flags &= ~TURF_STARLIT
 		GLOB.starlight -= src
+	if(light_range)
 		set_light(l_range = 0)
+
+/// Ставит клетку в очередь старлайта SSlighting, если её там ещё нет.
+/turf/open/space/proc/queue_starlight()
+	if(lighting_flags & TURF_STARLIGHT_QUEUED)
+		return
+	lighting_flags |= TURF_STARLIGHT_QUEUED
+	GLOB.lighting_starlight_queue += src
 
 /turf/open/space/attack_paw(mob/user)
 	return attack_hand(user)
@@ -341,6 +363,8 @@
 		return FALSE
 
 	switch(the_rcd.mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			return ..()
 		if(RCD_FLOORWALL)
 			var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 			if(L)
@@ -351,8 +375,12 @@
 
 /turf/open/space/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			if(!CanBuildHere())
+				return FALSE
+			return ..()
 		if(RCD_FLOORWALL)
-			to_chat(user, "<span class='notice'>You build a floor.</span>")
+			to_chat(user, span_notice("Вы строите пол."))
 			PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 			return TRUE
 	return FALSE

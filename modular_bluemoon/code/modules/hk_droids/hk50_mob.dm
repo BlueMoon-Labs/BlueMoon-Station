@@ -169,6 +169,18 @@ GLOBAL_LIST_EMPTY(hk50_voice_quiet_until)
 	righthand_file = 'modular_bluemoon/icons/obj/hk_droids/hk50_laser_righthand.dmi'
 	pin = /obj/item/firing_pin/hk_chassis
 
+/obj/item/gun/energy/e_gun/advtaser/mounted/hk51
+	name = "HK-51 arm taser"
+	desc = "Тазер в предплечье HK-51: дизейблер, а правым кликом в боевом режиме - электрод. Сам перезаряжается, но боёк сверяет сигнатуру шасси: стреляет только у дроидов серии HK."
+	pin = /obj/item/firing_pin/hk_chassis
+
+/obj/item/organ/cyberimp/arm/gun/taser/hk51
+	name = "HK-51 arm taser implant"
+	desc = "Встроенный тазер HK-51. Боёк сверяет сигнатуру шасси: в руке человека ствол выдвигается и молчит."
+	zone = BODY_ZONE_L_ARM
+	aug_overlay = null
+	contents = newlist(/obj/item/gun/energy/e_gun/advtaser/mounted/hk51)
+
 /obj/item/organ/cyberimp/arm/gun/laser/hk50
 	name = "HK-50 arm laser implant"
 	desc = "Встроенный лазер HK-50, снятый со сборочной линии. Ставится в руку как обычный имплант, но боёк сверяет сигнатуру шасси: стреляет только у дроидов серии HK - HK-47, HK-50 и HK-51. В руке человека ствол выдвигается и молчит."

@@ -417,10 +417,9 @@ GLOBAL_LIST_INIT(psychosis_radio_fragments, list(
 		return
 	psy_log("start type=[type] target=[target]")
 	var/list/humans = list()
-	for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
-		if(H == target || H.stat == DEAD || !H.mind)
-			continue
-		humans += H
+	for(var/mob/living/carbon/human/H as anything in hallucination_radio_talkers(target))
+		if(H.mind)
+			humans += H
 	if(!length(humans))
 		psy_log("early_out type=[type] reason=no_humans")
 		qdel(src)
@@ -433,9 +432,8 @@ GLOBAL_LIST_INIT(psychosis_radio_fragments, list(
 		built += "[pick(GLOB.psychosis_radio_fragments)] "
 	built = capitalize(trim(built))
 	var/datum/language/understood_language = target.get_random_understood_language()
-	var/message = target.compose_message(source, understood_language, built, "[FREQ_COMMON]", list(source.speech_span), face_name = TRUE)
+	target.hear_fake_speech(source, understood_language, built, FREQ_COMMON)
 	feedback_details += "Source: [source.real_name], Fragments: [built]"
-	to_chat(target, message)
 	qdel(src)
 
 GLOBAL_LIST_INIT(psychosis_laughter_lines, list(

@@ -249,6 +249,7 @@
 	. = ..()
 
 /datum/emote/sound/human/clap1
+	echolocation_pulse = TRUE
 	name = "Единично хлопнуть"
 	key = "clap1"
 	key_third_person = "clap1s"

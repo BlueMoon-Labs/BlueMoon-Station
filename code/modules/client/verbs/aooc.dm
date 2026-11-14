@@ -106,10 +106,13 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 			else
 				to_chat(C, "<span class='antagooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></span>")
 
-/client/proc/set_aooc(newColor as color)
+/client/proc/set_aooc()
 	set name = "Set Antag OOC Color"
 	set desc = "Modifies antag OOC Color"
 	set category = "Fun"
+	var/newColor = tgui_input_color(src, "Please select the new antag OOC color.", "Antag OOC color", GLOB.AOOC_COLOR)
+	if(isnull(newColor))
+		return
 	GLOB.AOOC_COLOR = sanitize_ooccolor(newColor)
 
 /client/proc/reset_aooc()

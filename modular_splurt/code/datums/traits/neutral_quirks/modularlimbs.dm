@@ -24,48 +24,85 @@
 
 	var/mob/living/carbon/human/U = usr
 	var/mob/living/carbon/human/C = src
-
-	var/obj/item/I = U.get_active_held_item()
-	if(istype(I,/obj/item/bodypart))
-		var/obj/item/bodypart/L = I
-		if(!C.Adjacent(U))
-			to_chat(U, span_warning("You must be adjacent to [C] to do this!"))
-			return
-		if(C.get_bodypart(L.body_zone))
-			to_chat(U, span_warning("[C] already has a limb attached there!"))
-			return
-		C.visible_message(span_warning("[U] is attempting to attach [L] onto [C]!"), span_userdanger("[U] is attempting to re-attach one of your limbs!"))
-		if(do_after(U, 40, target = C) && C.Adjacent(U))
-			L.attach_limb(C)
-			C.visible_message(span_warning("[U] successfully attaches [L] onto [C]"), span_userdanger("[U] has successfully attached a [L.name] onto you; you can use that limb again!"))
-			return
-		else
-			to_chat(U, span_warning("You and [C] must both stand still for you to remove one of their limbs!"))
-			return
+	if(!istype(U) || !istype(C))
+		return
+	var/obj/item/bodypart/L = U.get_active_held_item()
+	if(istype(L))
+		C.modular_attach_limb(U, L)
 	else
-		if(!C.Adjacent(U))
-			to_chat(U, span_warning("You must be adjacent to [C] to do this!"))
-			return
-		if(U.zone_selected == BODY_ZONE_CHEST || U.zone_selected == BODY_ZONE_HEAD)
-			to_chat(U, span_warning("You must target either an arm or a leg!"))
-			return
-		if(U.zone_selected == BODY_ZONE_PRECISE_GROIN || U.zone_selected == BODY_ZONE_PRECISE_EYES || U.zone_selected == BODY_ZONE_PRECISE_MOUTH)
-			to_chat(U, span_warning("There is no limb here; select an arm or a leg!"))
-			return
-		if(!C.get_bodypart(U.zone_selected))
-			to_chat(U, span_warning("They are already missing that limb!"))
-			return
-		C.visible_message(span_warning("[U] is attempting to remove one of [C]'s limbs!"), span_userdanger("[U] is attempting to disconnect one of your limbs!"))
-		var/obj/item/bodypart/B = C.get_bodypart(U.zone_selected)
-		if(C.Adjacent(U) && do_after(U, 40, target = C))
-			var/obj/item/bodypart/D = C.get_bodypart(U.zone_selected)
-			if(B != D)
-				to_chat(U, span_warning("You cannot target a different limb while already removing another!"))
-				return
-			D.drop_limb()
-			C.update_equipment_speed_mods()
-			C.visible_message(span_warning("[U] smoothly disconnects [C]'s [D.name]!"), span_userdanger("[U] has forcefully disconnected your [D.name]!"))
-			return
-		else
-			to_chat(U, span_warning("You and [C] must both stand still for you to remove one of their limbs!"))
-			return
+		C.modular_detach_limb(U, U.zone_selected)
+
+/// Руки и ноги, которые снимаются с модульными конечностями
+GLOBAL_LIST_INIT(modular_limb_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+
+/mob/living/carbon/human/proc/modular_attach_limb(mob/living/carbon/human/user, obj/item/bodypart/limb)
+	if(!HAS_TRAIT(src, TRAIT_MODULAR_LIMBS) || !user.is_holding(limb))
+		return
+	if(!Adjacent(user))
+		to_chat(user, span_warning("Нужно стоять рядом с [src]!"))
+		return
+	if(get_bodypart(limb.body_zone))
+		to_chat(user, span_warning("У [src] уже есть [ru_parse_zone(limb.body_zone)]!"))
+		return
+	modular_limb_message(user, "пытается присоединить", "пытаетесь присоединить", "к телу", limb.body_zone)
+	if(!do_after(user, 4 SECONDS, target = src) || !Adjacent(user) || !user.is_holding(limb) || get_bodypart(limb.body_zone))
+		to_chat(user, span_warning("Вы и [src] должны стоять на месте, чтобы присоединить конечность!"))
+		return
+	if(!user.temporarilyRemoveItemFromInventory(limb))
+		return
+	limb.attach_limb(src)
+	update_equipment_speed_mods()
+	modular_limb_message(user, "присоединяет", "присоединяете", "к телу", limb.body_zone)
+
+/mob/living/carbon/human/proc/modular_detach_limb(mob/living/carbon/human/user, zone)
+	if(!HAS_TRAIT(src, TRAIT_MODULAR_LIMBS))
+		return
+	if(!Adjacent(user))
+		to_chat(user, span_warning("Нужно стоять рядом с [src]!"))
+		return
+	zone = check_zone(zone)
+	if(!(zone in GLOB.modular_limb_zones))
+		to_chat(user, span_warning("Выберите руку или ногу!"))
+		return
+	var/obj/item/bodypart/limb = get_bodypart(zone)
+	if(!limb)
+		to_chat(user, span_warning("У [src] уже нет этой конечности!"))
+		return
+	modular_limb_message(user, "пытается отсоединить", "пытаетесь отсоединить", "у", zone)
+	if(!do_after(user, 4 SECONDS, target = src) || !Adjacent(user))
+		to_chat(user, span_warning("Вы и [src] должны стоять на месте, чтобы отсоединить конечность!"))
+		return
+	if(get_bodypart(zone) != limb)
+		return
+	limb.drop_limb()
+	update_equipment_speed_mods()
+	modular_limb_message(user, "ловко отсоединяет", "ловко отсоединяете", "у", zone)
+
+/// Себе - «себе», другому - «у/к телу [src]»; action - от третьего лица, action_you - от второго
+/mob/living/carbon/human/proc/modular_limb_message(mob/user, action, action_you, preposition, zone)
+	var/limb_name = ru_kogo_zone(zone)
+	if(user == src)
+		var/self_text = "Вы [action_you] себе [limb_name]."
+		visible_message(span_warning("[user] [action] себе [limb_name]."), span_notice(self_text))
+		return
+	var/seen_text = "[user] [action] [preposition] [src] [limb_name]."
+	var/target_text = "[user] [action] вам [limb_name]!"
+	visible_message(span_warning(seen_text), span_userdanger(target_text))
+
+/// Пункты меню ПКМ: присоединить конечность из руки или отсоединить выбранную (без выбранной - любую из оставшихся)
+/mob/living/carbon/human/proc/modular_limb_menu_entries(mob/living/carbon/human/user)
+	. = list()
+	if(!HAS_TRAIT(src, TRAIT_MODULAR_LIMBS) || !istype(user) || !Adjacent(user))
+		return
+	var/obj/item/bodypart/held = user.get_active_held_item()
+	if(istype(held))
+		if(!get_bodypart(held.body_zone))
+			. += new /datum/context_menu_entry/callback("Присоединить [ru_kogo_zone(held.body_zone)]", null, CONTEXT_ENTRY_NORMAL, CALLBACK(src, PROC_REF(modular_attach_limb), user, held))
+		return
+	var/list/zones = GLOB.modular_limb_zones
+	var/selected = check_zone(user.zone_selected)
+	if((selected in zones) && get_bodypart(selected))
+		zones = list(selected)
+	for(var/zone in zones)
+		if(get_bodypart(zone))
+			. += new /datum/context_menu_entry/callback("Отсоединить [ru_kogo_zone(zone)]", null, CONTEXT_ENTRY_NORMAL, CALLBACK(src, PROC_REF(modular_detach_limb), user, zone))

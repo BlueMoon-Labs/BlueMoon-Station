@@ -159,3 +159,77 @@
 	wearer.ZImpactDamage(get_turf(wearer), 1)
 	TEST_ASSERT(wearer.getBruteLoss() > 0, "A fall after the suit is off must hurt again")
 	mod.wearer = null
+
+// "Вышел с полигона в инфильтраторе - рантайм" (10600)
+//
+// Выключение модуля возвращало голос из префов клиента носителя. У тела,
+// которое удаляют без игрока, клиента нет: удаление падало на null.prefs.
+/datum/unit_test/mod_infiltrator_deactivates_without_client/Run()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/obj/item/mod/control/pre_equipped/infiltrator_inteq/mod = allocate(/obj/item/mod/control/pre_equipped/infiltrator_inteq)
+	var/obj/item/mod/module/infiltrator/module = locate() in mod.modules
+	TEST_ASSERT_NOTNULL(module, "test premise: the InteQ infiltrator MOD must come with the infiltrator module")
+	var/own_bark
+	for(var/bark_id in GLOB.bark_list)
+		if(bark_id != "bump")
+			own_bark = bark_id
+			break
+	wearer.set_bark(own_bark)
+	mod.set_wearer(wearer)
+	ENABLE_BITFIELD(mod.status_flags, MOD_ACTIVE)
+	var/obj/item/clothing/mod_part/head/helmet = mod.mod_parts[MOD_PART_HEAD]
+	TEST_ASSERT(wearer.equip_to_slot_if_possible(helmet, ITEM_SLOT_HEAD, disable_warning = TRUE, bypass_equip_delay_self = TRUE), "test premise: the helmet must go on the head")
+
+	TEST_ASSERT(module.on_activation(), "test premise: the module must turn on")
+	TEST_ASSERT_EQUAL(wearer.vocal_bark_id, "bump", "The infiltrator must swap the voice while on")
+	module.on_deactivation()
+	TEST_ASSERT_EQUAL(wearer.vocal_bark_id, own_bark, "Turning the infiltrator off without a client must give back the wearer's own voice")
+
+	TEST_ASSERT(module.on_activation(), "test premise: the module must turn on again")
+	qdel(wearer)
+	TEST_ASSERT_NULL(mod.wearer, "Deleting a clientless wearer with the module on must let the MOD drop its wearer")
+
+// "Развернул и свернул перчатки МОДа поверх перчаток-хватателей - бросок не работает, пока не переоденешь"
+//
+// Вернувшиеся на руки хвататели брали себе уникальный tackler, выданный МОДом
+// на время развёртывания, а restore_normal_features() следом его удалял.
+/datum/unit_test/mod_gauntlets_give_back_working_tackle_gloves
+	var/area/gravity_area
+	var/saved_gravity
+
+/datum/unit_test/mod_gauntlets_give_back_working_tackle_gloves/Destroy()
+	if(gravity_area)
+		gravity_area.has_gravity = saved_gravity
+		gravity_area = null
+	return ..()
+
+/datum/unit_test/mod_gauntlets_give_back_working_tackle_gloves/Run()
+	// резервный z без гравитации, а без неё checkTackle() не прыгает
+	gravity_area = get_area(run_loc_floor_bottom_left)
+	saved_gravity = gravity_area.has_gravity
+	gravity_area.has_gravity = STANDARD_GRAVITY
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/obj/item/clothing/gloves/tackler/gripper = allocate(/obj/item/clothing/gloves/tackler)
+	var/obj/item/mod/control/pre_equipped/standard/mod = allocate(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(user.equip_to_slot_if_possible(gripper, ITEM_SLOT_GLOVES), "test premise: the gripper gloves must go on the hands")
+	TEST_ASSERT(user.equip_to_slot_if_possible(mod, ITEM_SLOT_BACK), "test premise: the MOD must go on the back")
+	var/obj/item/clothing/mod_part/gloves/gauntlets = mod.get_gauntlets()
+
+	TEST_ASSERT(mod.deploy(user, gauntlets), "test premise: the gauntlets must deploy over the gripper gloves")
+	TEST_ASSERT_EQUAL(gripper.loc, gauntlets, "test premise: the gripper gloves must wait inside the gauntlets")
+	TEST_ASSERT_NOTNULL(user.GetComponent(/datum/component/tackler), "Gauntlets deployed over gripper gloves must keep the tackle")
+
+	mod.conceal(user, gauntlets)
+	TEST_ASSERT_EQUAL(user.gloves, gripper, "test premise: retracting the gauntlets must put the gripper gloves back on")
+	var/datum/component/tackler/tackle = user.GetComponent(/datum/component/tackler)
+	TEST_ASSERT(tackle && !QDELETED(tackle), "Gripper gloves given back by the MOD must tackle without being taken off and put on again")
+	TEST_ASSERT(gripper.tackler == tackle, "The gripper gloves must own their tackle again, or taking them off would leave it on the wearer")
+
+	var/deadline = world.time + 3 SECONDS
+	while(user.tackling && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!user.tackling, "test premise: the tackle cooldown from putting the gloves on must run out")
+	user.throw_mode_on()
+	user.CommonClickOn(target, "")
+	TEST_ASSERT(user.IsKnockdown(), "A throw-mode click with the given back gripper gloves must launch a tackle")

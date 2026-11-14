@@ -29,6 +29,7 @@
 	desc = "Хорошо сконструированное, заряжаемое вручную лазерное оружие. Его конденсаторы гудят от потенциала."
 	icon_state = "musket_prime"
 	item_state = "musket_prime"
+	w_class = WEIGHT_CLASS_HUGE
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/musket/prime)
 	shaded_charge = TRUE
 	custom_materials = list(

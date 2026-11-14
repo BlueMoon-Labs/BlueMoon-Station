@@ -14,7 +14,7 @@
 		return
 
 	for(var/mob/living/carbon/C in GLOB.alive_mob_list)
-		if(C == src) //Make sure not to proc it on ourselves.
+		if(C == src || C.training_origin != training_origin) //Not on ourselves, and only within the same hive.
 			continue
 		var/obj/item/organ/alien/hivenode/node = C.getorgan(/obj/item/organ/alien/hivenode)
 		if(istype(node)) // just in case someone would ever add a diffirent node to hivenode slot

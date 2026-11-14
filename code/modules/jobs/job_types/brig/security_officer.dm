@@ -167,7 +167,6 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	jobtype = /datum/job/officer
 
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	mask = /obj/item/clothing/mask/gas/sechailer
 	belt = /obj/item/storage/belt/security
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer
@@ -180,7 +179,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/choice_beacon/copgun
 						)
-						
+
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
 	duffelbag = /obj/item/storage/backpack/duffelbag/sec

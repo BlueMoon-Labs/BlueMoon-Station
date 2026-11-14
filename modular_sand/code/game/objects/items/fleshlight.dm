@@ -46,7 +46,7 @@
 			style = new_style
 	update_appearance()
 	if(src && !user.incapacitated() && in_range(user,src))
-		var/new_color = input(user, "Изменить Цвет", "Изменить 'Фонарик'", sleevecolor) as color|null
+		var/new_color = tgui_input_color(user, "Изменить Цвет", "Изменить 'Фонарик'", sleevecolor)
 		if(new_color)
 			sleevecolor = new_color
 	update_appearance()

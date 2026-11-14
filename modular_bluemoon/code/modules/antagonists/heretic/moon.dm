@@ -819,8 +819,8 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		var/image/mirrored = parent_mob.hud_list[hud_key]
 		if(!istype(holder) || !istype(mirrored))
 			continue
-		holder.icon_state = mirrored.icon_state
 		holder.pixel_y = mirrored.pixel_y
+		set_hud_image_state(hud_key, mirrored.icon_state)
 	var/datum/atom_hud/data/human/medical/basic/basic_medhud = GLOB.huds[DATA_HUD_MEDICAL_BASIC]
 	var/sensors_on = basic_medhud.check_sensors(src)
 	if(sensors_on != sensors_shown)

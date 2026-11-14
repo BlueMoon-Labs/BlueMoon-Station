@@ -25,12 +25,12 @@ DYNAMIC_LIGHT_ROUNDTYPE_VOTE_END_HOUR 0
 ROUNDTYPE_ROTATION_MIN_PLAYERS 60
 
 ## First server hour (0-23) of the night window without roundtype rotation. The window may cross midnight.
-## Server local time: on a UTC host 22-9 is 01:00-12:00 MSK. The vote window shows these hours in MSK.
+## Server local time: on a UTC host 22-7 is 01:00-10:00 MSK. The vote window shows these hours in MSK.
 ## Equal start and end hours make the whole day night, which turns the rotation off.
 ROUNDTYPE_ROTATION_NIGHT_START_HOUR 22
 
-## Server hour when the night window ends, exclusive: with 9 the hour 9 is already day. 24 works like 0.
-ROUNDTYPE_ROTATION_NIGHT_END_HOUR 9
+## Server hour when the night window ends, exclusive: with 7 the hour 7 is already day. 24 works like 0.
+ROUNDTYPE_ROTATION_NIGHT_END_HOUR 7
 
 ## Multiplies votes cast specifically for Dynamic Light in roundtype votes.
 ## Example: 24 votes with value 2 becomes 48 effective votes.

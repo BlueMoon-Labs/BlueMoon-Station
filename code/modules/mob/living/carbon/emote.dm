@@ -16,6 +16,7 @@
 	message = "быстро моргает."
 
 /datum/emote/sound/human/clap
+	echolocation_pulse = TRUE
 	name = "Хлопать"
 	key = "clap"
 	key_third_person = "claps"
@@ -88,6 +89,17 @@
 	key = "tail"
 	message = "начинает двигать своим хвостом."
 
+/datum/emote/sound/human/carbon/tailslap
+	name = "Tail Slap"
+	key = "tailslap"
+	key_third_person = "tailslaps"
+	message = "ударяет хвостом по полу."
+	sound = 'sound/effects/tail_slap.ogg'
+	muzzle_ignore = TRUE
+
+/datum/emote/sound/human/carbon/tailslap/can_run_emote(mob/user, status_check = TRUE, intentional = FALSE)
+	return ..() && user.has_tail()
+
 /datum/emote/sound/human/carbon/wink
 	name = "Подмигнуть"
 	key = "wink"
@@ -136,7 +148,7 @@
 	if(user.get_active_held_item())
 		to_chat(user, span_warning("Ваша активная рука занята, и поэтому вы не можете ничего лизнуть! Не спрашивайте, почему!"))
 		return
-	var/obj/item/soap/tongue/organic/licky = new(user)
+	var/obj/item/soap/tongue/licky = new(user)
 	if(user.put_in_active_hand(licky))
 		to_chat(user, span_notice("Вы вытягиваете язык и готовитесь что-то лизнуть."))
 	else

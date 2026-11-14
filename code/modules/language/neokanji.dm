@@ -1,6 +1,6 @@
 /datum/language/neokanji
 	name = "Neo-Kanji"
-	desc = "A bastardized mixture of many old Earth asian dialects. Famously known as the official language of the spider clan."
+	desc = "Смесь множества древних азиатских диалектов Земли, перемешанных между собой до неузнаваемости. Известен как официальный язык паучьего клана."
 	speech_verb = "proclaims"
 	ask_verb = "queries"
 	exclaim_verb = "declares"

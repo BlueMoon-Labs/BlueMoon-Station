@@ -21,7 +21,7 @@
 		return FALSE
 	if(target.stat != DEAD)
 		return FALSE
-	if(target.suiciding || HAS_TRAIT(target, TRAIT_NOCLONE) || target.hellbound)
+	if(!target.can_be_medically_revived())
 		return FALSE
 	var/obj/item/organ/brain/B = target.getorganslot(ORGAN_SLOT_BRAIN)
 	if(!B)
@@ -68,12 +68,15 @@
 		..()
 
 /datum/surgery_step/revive/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	if(!target.can_be_medically_revived())
+		to_chat(user, span_warning("Мозг пациента не реагирует: медицинская реанимация невозможна."))
+		return FALSE
 	display_results(user, target, "<span class='notice'>You successfully shock [target]'s brain with [tool]...</span>",
 		"[user] send a powerful shock to [target]'s brain with [tool]...",
 		"[user] send a powerful shock to [target]'s brain with [tool]...")
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive(post_revive_effects = TRUE))
+	if(target.revive(post_revive_effects = TRUE, medical_revive = TRUE))
 		var/breathless = HAS_TRAIT(target, TRAIT_NOBREATH)
 		user.visible_message("...[target] wakes up, alive and aware!", "<span class='notice'><b>IT'S ALIVE!</b></span>")
 		target.visible_message("...[target] wakes up, alive and aware!")

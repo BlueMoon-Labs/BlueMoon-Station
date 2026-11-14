@@ -17,6 +17,7 @@ export const SmokeMachine = (props) => {
     open,
     hasPowercell,
     powerLevel,
+    smokeCost = 0,
   } = data;
   return (
     <Window
@@ -66,7 +67,14 @@ export const SmokeMachine = (props) => {
             <AnimatedNumber initial={0} value={TankCurrentVolume || 0} />
             {' / ' + TankMaxVolume}
           </ProgressBar>
-          <Box mt={1}>
+          <Box>
+            <Box mt="5px" mb="5px">
+              <LabeledList>
+                <LabeledList.Item label="Расход реагентов на облако" textAlign="right">
+                  {smokeCost} u
+                </LabeledList.Item>
+              </LabeledList>
+            </Box>
             <LabeledList>
               <LabeledList.Item label="Радиус облака" textAlign="right">
                 {[1, 2, 3, 4, 5, 6, 9].map(amount => (

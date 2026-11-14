@@ -290,22 +290,34 @@
  * мобов-ушей вместо перебора всего содержимого view(): см. комментарий
  * в oranges_ear.dm.
  */
-/proc/get_hearers_in_view(R, atom/source, contents_type = SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+/proc/get_hearers_in_view(R, atom/source, contents_type = SPATIAL_GRID_CONTENTS_TYPE_HEARING, include_relays = TRUE)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
 		return
 
-	if(!SSspatial_grid.initialized) //речь до инита грида (лобби и т.п.)
-		return legacy_get_hearers_in_view(R, T)
+	var/list/protean_hearers
+	if(contents_type == SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		for(var/mob/living/listener in GLOB.protean_listeners)
+			if(QDELETED(listener))
+				continue
+			var/turf/listener_turf = get_turf(listener)
+			if(listener_turf?.z == T.z && get_dist(listener_turf, T) <= R)
+				LAZYADD(protean_hearers, listener)
+	if(!SSspatial_grid.initialized)
+		return legacy_get_hearers_in_view(R, T, protean_hearers, include_relays)
 
 	if(R <= 0) //только турф источника
+		if(length(protean_hearers))
+			. |= protean_hearers
 		for(var/atom/movable/target as anything in T)
 			var/list/hearables_from_this_atom = target.important_recursive_contents?[contents_type]
 			if(hearables_from_this_atom)
 				. += hearables_from_this_atom
 	else
 		var/list/hearables_from_grid = SSspatial_grid.orthogonal_range_search(T, contents_type, R)
+		if(length(protean_hearers))
+			hearables_from_grid |= protean_hearers
 		if(!length(hearables_from_grid))
 			return
 
@@ -323,7 +335,7 @@
 		for(var/mob/oranges_ear/remaining_ear as anything in assigned_oranges_ears)
 			remaining_ear.unassign()
 
-	if(contents_type != SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+	if(contents_type != SPATIAL_GRID_CONTENTS_TYPE_HEARING || !include_relays)
 		return
 
 	//сигнал сохраняем: дуллахан слышит телом через голову и т.п.
@@ -338,15 +350,18 @@
 		SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
 
 ///старый BFS-обход view(); нужен только до инициализации спатиал-грида
-/proc/legacy_get_hearers_in_view(R, turf/T)
+/proc/legacy_get_hearers_in_view(R, turf/T, list/extra_hearers, include_relays = TRUE)
 	. = list()
 	var/list/processing = list()
+	var/list/visible_atoms
 	if(R == 0)
+		visible_atoms = list(T)
 		processing += T.contents
 	else
 		var/lum = T.luminosity
 		T.luminosity = 6
-		for(var/atom/movable/AM in view(R, T))
+		visible_atoms = view(R, T)
+		for(var/atom/movable/AM in visible_atoms)
 			processing.Add(AM)
 		T.luminosity = lum
 	var/i = 0
@@ -355,10 +370,17 @@
 		var/atom/A = processing[++i]
 		if(A.flags_1 & HEAR_1)
 			. += A
-			SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
+			if(include_relays)
+				SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
 		if(length(A.contents))
 			processing += A.contents
 			lim = length(processing)
+	for(var/atom/movable/listener as anything in extra_hearers)
+		if(QDELETED(listener) || !(get_turf(listener) in visible_atoms) || (listener in .))
+			continue
+		. |= listener
+		if(include_relays)
+			SEND_SIGNAL(listener, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
 
 /**
  * То же, что get_hearers_in_view, но без учёта видимости: чистый радиус.

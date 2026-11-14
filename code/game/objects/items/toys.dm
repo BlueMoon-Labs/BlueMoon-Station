@@ -255,7 +255,7 @@
 		return TRUE
 
 	if(alert("Are you sure you want to recolor your blade?", "Confirm Repaint", "Yes", "No") == "Yes")
-		var/energy_color_input = input(usr,"","Choose Energy Color",light_color) as color|null
+		var/energy_color_input = tgui_input_color(usr,"","Choose Energy Color",light_color)
 		if(energy_color_input)
 			light_color = sanitize_hexcolor(energy_color_input, desired_format=6, include_crunch=1)
 		update_icon()

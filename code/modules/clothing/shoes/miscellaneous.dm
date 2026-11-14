@@ -692,4 +692,4 @@
 
 /obj/item/clothing/shoes/ducky/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/squeak, list('sound/items/squeaktoy.ogg' = 1), 50, falloff_exponent = 20)
+	AddComponent(/datum/component/squeak, list('sound/items/squeaktoy.ogg' = 1), 50, 35, falloff_exponent = 20)

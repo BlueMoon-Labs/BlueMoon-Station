@@ -1,0 +1,667 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bZ" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"cH" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/autolathe,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"dj" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/chair/sofa/bench/right{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"dP" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/template_noop)
+"dX" = (
+/obj/effect/landmark/antag_training/side{
+	side = "west"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"dY" = (
+/obj/effect/landmark/antag_training/side{
+	side = "east"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"eI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/rods/fifty,
+/obj/item/paper{
+	name = "build hall rules";
+	default_raw_text = "Стройте что угодно внутри разметки. Материалы на стеллажах, сварка и лист дерева - у стены."
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"eW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"fc" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/plating,
+/area/template_noop)
+"hw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/landmark/antag_training/side{
+	side = "south"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"lR" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"my" = (
+/obj/effect/turf_decal/stripes/yellow{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/template_noop)
+"mE" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/rglass/fifty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"mG" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "build hall plaque";
+	desc = "Пустой зал под стройку: материалы и инструменты у северной стены, размеченная зона - ваша. Перезагрузка площадки возвращает зал как был.";
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"op" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ov" = (
+/obj/effect/turf_decal/stripes/yellow{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"rw" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/template_noop)
+"rx" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/rack,
+/obj/item/stack/sheet/plasteel/twenty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/mineral/wood/fifty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"rC" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/t_scanner{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"rP" = (
+/turf/open/floor/plating,
+/area/template_noop)
+"vD" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"xu" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"yr" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/pipedispenser,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"yW" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/closet/toolcloset,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Bv" = (
+/obj/effect/turf_decal/stripes/yellow,
+/turf/open/floor/plating,
+/area/template_noop)
+"Cp" = (
+/obj/effect/turf_decal/stripes/yellow{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"Cv" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/reinforced,
+/obj/item/clothing/head/welding{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/yellow{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Ea" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Fc" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/toolbox/electrical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"FH" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Gj" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Ke" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/left{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Kg" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Ks" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"KC" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"LN" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"MH" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"MO" = (
+/obj/effect/landmark/antag_training/side{
+	side = "north"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"Qe" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/left{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Rh" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/table/reinforced,
+/obj/item/clothing/head/hardhat{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"SA" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/right{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"XE" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/template_noop)
+"Yj" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"YY" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/plating,
+/area/template_noop)
+"ZB" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/vending/tool,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ZE" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/structure/closet/crate/engineering,
+/obj/item/electronics/airlock,
+/obj/item/electronics/airlock,
+/obj/item/electronics/apc,
+/obj/item/electronics/firelock,
+/turf/open/floor/plasteel,
+/area/template_noop)
+"ZP" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+Yj
+Rh
+rC
+ov
+rP
+rP
+YY
+rP
+rP
+rP
+YY
+Bv
+eI
+Ke
+dj
+"}
+(2,1,1) = {"
+mE
+lR
+lR
+ov
+rP
+rP
+rP
+eW
+rP
+rP
+rP
+Bv
+op
+op
+xu
+"}
+(3,1,1) = {"
+rx
+lR
+lR
+ov
+rP
+rP
+rP
+dX
+rP
+rP
+rP
+dP
+op
+op
+Kg
+"}
+(4,1,1) = {"
+XE
+MH
+MH
+ov
+eW
+rP
+rP
+rP
+rw
+rP
+rP
+Bv
+op
+op
+Gj
+"}
+(5,1,1) = {"
+FH
+MH
+MH
+ov
+rP
+rP
+eW
+rP
+rP
+rP
+rP
+Bv
+op
+op
+ZP
+"}
+(6,1,1) = {"
+yW
+MH
+MH
+Cp
+rP
+rP
+rP
+rP
+rw
+rP
+rP
+Ks
+op
+op
+ZP
+"}
+(7,1,1) = {"
+ZE
+MH
+MH
+ov
+rP
+rP
+rP
+rP
+rP
+rP
+rP
+Bv
+op
+op
+mG
+"}
+(8,1,1) = {"
+MH
+MH
+MH
+my
+MO
+rP
+rP
+rP
+eW
+rP
+hw
+Bv
+op
+op
+op
+"}
+(9,1,1) = {"
+cH
+MH
+MH
+ov
+eW
+rP
+rP
+rP
+rP
+rP
+rP
+Bv
+op
+op
+ZP
+"}
+(10,1,1) = {"
+ZB
+MH
+MH
+ov
+rP
+rP
+rP
+rP
+eW
+rP
+rP
+Bv
+op
+op
+ZP
+"}
+(11,1,1) = {"
+yr
+MH
+MH
+Cp
+rP
+eW
+rP
+rP
+rP
+rP
+rP
+Bv
+op
+op
+ZP
+"}
+(12,1,1) = {"
+vD
+MH
+MH
+ov
+rP
+rP
+rP
+rP
+rP
+rP
+rP
+Bv
+op
+op
+ZP
+"}
+(13,1,1) = {"
+KC
+lR
+lR
+ov
+rP
+rP
+rP
+dY
+rw
+rP
+rP
+Bv
+op
+op
+Kg
+"}
+(14,1,1) = {"
+LN
+lR
+lR
+ov
+rP
+rP
+rP
+rP
+rP
+rP
+rP
+dP
+op
+op
+ZP
+"}
+(15,1,1) = {"
+bZ
+Fc
+Cv
+ov
+rP
+eW
+fc
+rP
+rP
+rP
+fc
+Bv
+Ea
+SA
+Qe
+"}

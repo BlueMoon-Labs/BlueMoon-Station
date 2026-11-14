@@ -1,6 +1,6 @@
 /datum/language/monkey
 	name = "Chimpanzee"
-	desc = "Ook ook ook."
+	desc = "Угггх-угггх-мраххх."
 	speech_verb = "chimpers"
 	ask_verb = "chimpers"
 	exclaim_verb = "screeches"

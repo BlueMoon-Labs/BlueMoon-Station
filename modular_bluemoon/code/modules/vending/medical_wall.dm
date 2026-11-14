@@ -1,6 +1,6 @@
 /obj/machinery/vending/wallmed
 	name = "\improper NanoMed"
-	desc = "Настенный раздатчики медицинского снаряжения."
+	desc = "Настенный раздатчик медицинского снаряжения."
 	icon_state = "wallmed"
 	icon_deny = "wallmed-deny"
 	//panel_type = "wallmed-panel"

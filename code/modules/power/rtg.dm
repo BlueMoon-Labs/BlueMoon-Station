@@ -3,7 +3,7 @@
 
 /obj/machinery/power/rtg
 	name = "radioisotope thermoelectric generator"
-	desc = "A simple nuclear power generator, used in small outposts to reliably provide power for decades."
+	desc = "РИТЭГ. Простейший ядерный источник электричества, используемый на небольших аванпостах для надёжной выработки энергии, десятилетиями."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "rtg"
 	density = TRUE
@@ -36,10 +36,8 @@
 
 	power_gen = initial(power_gen) * part_level
 
-/obj/machinery/power/rtg/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Power generation now at <b>[power_gen*0.001]</b>kW.</span>"
+/obj/machinery/power/rtg/examine_display_content(mob/user)
+	. += "– Выработка энергии: <b>[power_gen*0.001]</b>kW."
 
 /obj/machinery/power/rtg/attackby(obj/item/I, mob/user, params)
 	if(default_deconstruction_screwdriver(user, "[initial(icon_state)]-open", initial(icon_state), I))
@@ -49,12 +47,12 @@
 	return ..()
 
 /obj/machinery/power/rtg/advanced
-	desc = "An advanced RTG capable of moderating isotope decay, increasing power output but reducing lifetime. It uses plasma-fueled radiation collectors to increase output even further."
+	desc = "Продвинутый РИТЭГ с функцией регуляции радиоизотопного распада, ради увеличения выработки ценой срока жизни топлива. Использует наполнненые плазмой рад-коллекторы для ещё большего увеличения выработки."
 	power_gen = 1250 // 2500 on T1, 10000 on T4.
 	circuit = /obj/item/circuitboard/machine/rtg/advanced
 
 /obj/machinery/power/rtg/advanced/fullupgrade //fully ugpraded stock parts
-	desc = "An advanced RTG capable of moderating isotope decay, increasing power output but reducing lifetime. It uses plasma-fueled radiation collectors to increase output even further. This model is fully upgraded with the latest tech available in this quadrant."
+	desc = "Продвинутый РИТЭГ с функцией регуляции радиоизотопного распада, ради увеличения выработки ценой срока жизни топлива. Использует наполнненые плазмой рад-коллекторы для ещё большего увеличения выработки. Эта модель полностью улучшена последними технологиями, доступными в этом секторе."
 
 /obj/machinery/power/rtg/advanced/fullupgrade/Initialize(mapload)
 	. = ..()
@@ -87,7 +85,7 @@
 	name = "Void Core"
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "core"
-	desc = "An alien power source that produces energy seemingly out of nowhere."
+	desc = "Инопланетный источник энергии, берущий её, похоже, из ниоткуда."
 	circuit = /obj/item/circuitboard/machine/abductor/core
 	power_gen = 20000 // 280 000 at T1, 400 000 at T4. Starts at T4.
 	irradiate = FALSE // Green energy!
@@ -99,8 +97,8 @@
 	if(going_kaboom)
 		return
 	going_kaboom = TRUE
-	visible_message("<span class='danger'>\The [src] lets out an shower of sparks as it starts to lose stability!</span>",\
-		"<span class='italics'>You hear a loud electrical crack!</span>")
+	visible_message(span_danger("\The [src] сыпется дождём искр как начинает дестабилизироваться!"),\
+		span_italics("Вы слышите громкий электрический треск!"))
 	playsound(src.loc, 'sound/magic/lightningshock.ogg', 100, 1, extrarange = 5)
 	tesla_zap(src, 5, power_gen * 0.05)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(explosion), get_turf(src), 2, 3, 4, 8), 100) // Not a normal explosion.

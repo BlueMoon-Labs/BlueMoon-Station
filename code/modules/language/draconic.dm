@@ -1,6 +1,6 @@
 /datum/language/draconic
 	name = "Draconic"
-	desc = "The common language of lizard-people, composed of sibilant hisses and rattles."
+	desc = "Общий язык ящеролюдей, сложенный из шипения и сухого треска."
 	speech_verb = "hisses"
 	ask_verb = "hisses"
 	exclaim_verb = "roars"

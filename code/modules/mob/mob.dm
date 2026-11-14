@@ -23,6 +23,9 @@
 	hook_args.Cut()
 
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
+	var/list/old_mousewheel_handlers = mousewheel_handlers
+	mousewheel_handlers = null
+	QDEL_LIST(old_mousewheel_handlers)
 	// if(client)
 	// 	stack_trace("Mob with client has been deleted.")
 	// else if(ckey)
@@ -33,6 +36,10 @@
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
+	if(istext(real_name))
+		LAZYREMOVE(GLOB.mob_spawners[real_name], src)
+		if(!LAZYLEN(GLOB.mob_spawners[real_name]))
+			GLOB.mob_spawners -= real_name
 	QDEL_LIST(mob_spell_list)
 	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src
@@ -175,7 +182,8 @@
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
+	var/local_only = visible_message_flags & LOCAL_ONLY_MESSAGE
+	var/list/hearers = get_hearers_in_view(vision_distance, src, include_relays = !local_only)
 	if(!length(hearers))
 		return
 
@@ -185,7 +193,7 @@
 
 	hearers -= ignored_mobs
 
-	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect))
+	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect) && (!local_only || (target in hearers)))
 		hearers -= target
 		if(omni || !blind_message)
 			target.show_message(target_message)
@@ -227,7 +235,7 @@
 		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
-/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
+/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags = NONE, separation = " ")
 	. = ..()
 	if(self_message && target != src)
 		if(omni || !blind_message)
@@ -250,11 +258,11 @@
   * * runechat_popup (optional) if TRUE, will display a runechat popup using rune_msg if set otherwise it will use message and self_message accordingly.
   * * rune_msg (optional) is the message to display in the runechat popup.
   */
-/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, ignored_mobs, runechat_popup, rune_msg) //SKYRAT CHANGE
+/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, ignored_mobs, runechat_popup, rune_msg, local_only = FALSE)
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	var/list/hearers = get_hearers_in_view(hearing_distance, src)
+	var/list/hearers = get_hearers_in_view(hearing_distance, src, include_relays = !local_only)
 	if(!length(hearers))
 		return
 	hearers -= ignored_mobs
@@ -277,7 +285,7 @@
   * * hearing_distance (optional) is the range, how many tiles away the message can be heard.
   * * ignored_mobs (optional) doesn't show any message to any given mob in the list.
   */
-/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, list/ignored_mobs, runechat_popup, rune_msg) //SKYRAT CHANGE
+/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, list/ignored_mobs, runechat_popup, rune_msg, local_only = FALSE)
 	. = ..()
 	if(self_message)
 		if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
@@ -562,16 +570,22 @@
  */
 /mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
-		return FALSE
+		// В кабине активируем модуль манипулятора, а не настоящий предмет в руке пилота.
+		var/obj/vehicle/sealed/mecha/chassis = loc
+		var/obj/item/mecha_parts/mecha_equipment/module = chassis.selected
+		if(!module || module.chassis != chassis || !(chassis.occupants[src] & VEHICLE_CONTROL_EQUIPMENT))
+			return FALSE
+		module.attack_self(src)
+		return TRUE
 	if(incapacitated())
 		return FALSE
 	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
 		return FALSE
 
 	var/obj/item/I = get_active_held_item()
+	if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+		return FALSE
 	if(I)
-		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
-			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
 		return TRUE

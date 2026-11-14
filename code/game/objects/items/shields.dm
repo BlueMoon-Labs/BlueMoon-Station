@@ -46,7 +46,7 @@
 /obj/item/shield/examine(mob/user)
 	. = ..()
 	if(shield_flags & SHIELD_CAN_BASH)
-		. += "<span class='notice'>Right click on combat mode attack with [src] to shield bash!</span>"
+		. += "<span class='notice'>ПКМ - ударить щитом!</span>"
 		if(shield_flags & SHIELD_BASH_GROUND_SLAM)
 			. += "<span class='notice'>Directly rightclicking on a downed target with [src] will slam them instead of bashing.</span>"
 

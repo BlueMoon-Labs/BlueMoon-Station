@@ -58,10 +58,9 @@
 
 /mob/living/attack_ghost(mob/dead/observer/user)
 	if(user.client && user.health_scan)
-		healthscan(user, src, 1, TRUE)
-		woundscan(user, src, 1, TRUE)
-	if(user.client && user.ghost_reagent_scan)
-		chemscan(user, src, 1, TRUE)
+		healthscan(user, src, advanced = TRUE, include_chemistry = user.ghost_reagent_scan)
+	else if(user.client && user.ghost_reagent_scan)
+		chemscan(user, src)
 	return ..()
 
 // Ghost gas scanner: click any floor and get the analyzer report, no analyzer

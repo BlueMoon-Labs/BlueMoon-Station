@@ -4,6 +4,7 @@ import { useBackend } from '../../backend';
 import {
   Box,
   Button,
+  ColorPicker,
   Dropdown,
   Input,
   Modal,
@@ -496,16 +497,13 @@ const ColorValueEditor = ({ editor, act }) => {
   return (
     <Stack align="center" wrap>
       <Stack.Item>
-        <input
-          type="color"
+        <ColorPicker
           value={hex}
-          onChange={(e) => act('ie_value_edit', { value: e.target.value.toUpperCase() })}
-          style={{
-            width: '36px',
-            height: '28px',
-            padding: 0,
-            border: 'none',
-            cursor: 'pointer',
+          width="36px"
+          height="28px"
+          onCommit={(value) => {
+            setDraft(value);
+            act('ie_value_edit', { value });
           }}
         />
       </Stack.Item>
@@ -696,20 +694,13 @@ const AnyValueEditor = ({ editor, act }) => {
     kindInput = (
       <Stack align="center" wrap>
         <Stack.Item>
-          <input
-            type="color"
+          <ColorPicker
             value={hex}
-            onChange={(e) => {
-              const val = e.target.value.toUpperCase();
-              setDraft(val);
-              act('ie_value_edit', { kind: 'color', value: val });
-            }}
-            style={{
-              width: '36px',
-              height: '28px',
-              padding: 0,
-              border: 'none',
-              cursor: 'pointer',
+            width="36px"
+            height="28px"
+            onCommit={(value) => {
+              setDraft(value);
+              act('ie_value_edit', { kind: 'color', value });
             }}
           />
         </Stack.Item>

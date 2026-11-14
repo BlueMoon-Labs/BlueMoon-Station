@@ -5,7 +5,7 @@
 	icon_state = "slutbelt"
 	item_state = "security"
 
-obj/item/storage/belt/slut/ComponentInitialize()
+/obj/item/storage/belt/slut/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 5

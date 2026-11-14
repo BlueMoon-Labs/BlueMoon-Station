@@ -32,6 +32,8 @@
 		))
 	// Mop buckets (not in janitor_devices)
 	for(var/obj/structure/mopbucket/B in world)
+		if(QDELETED(B))
+			continue
 		items += list(list(
 			"name" = B.name,
 			"area" = get_area_name(B, TRUE),

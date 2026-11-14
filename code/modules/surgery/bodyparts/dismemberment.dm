@@ -58,6 +58,11 @@
 /obj/item/bodypart/chest/dismember(dam_type = BRUTE, silent=TRUE, harmless=FALSE)
 	if(!owner)
 		return FALSE
+	if(GetComponent(/datum/component/protean_limb) && get_protean_modsuit(owner))
+		var/obj/item/organ/brain/protean/brain = owner.getorganslot(ORGAN_SLOT_BRAIN)
+		if(istype(brain) && !brain.dead)
+			owner.death()
+			return FALSE
 	var/mob/living/carbon/C = owner
 	if(!dismemberable)
 		return FALSE
@@ -68,6 +73,8 @@
 	. = list()
 	var/organ_spilled = 0
 	var/turf/T = get_turf(C)
+	var/mob/attacker = get_mob_by_ckey(C.lastattackerckey)
+	var/fly_dir = attacker ? get_dir(attacker, C) : null
 	C.bleed(50)
 	playsound(get_turf(C), 'sound/misc/splort.ogg', 80, 1)
 	for(var/X in C.internal_organs)
@@ -76,6 +83,7 @@
 			continue
 		O.Remove()
 		O.forceMove(T)
+		O.fly_away(fly_dir)
 		organ_spilled = 1
 		. += X
 	if(cavity_item)
@@ -94,12 +102,14 @@
 	var/atom/Tsec = owner.drop_location()
 	var/mob/living/carbon/C = owner
 	SEND_SIGNAL(C, COMSIG_CARBON_REMOVE_LIMB, src, dismembered)
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_REMOVED, special)
 	update_limb(1)
 	C.bodyparts -= src
 
 	if(held_index)
 		C.dropItemToGround(owner.get_item_for_held_index(held_index), 1)
-		C.hand_bodyparts[held_index] = null
+		if(C.hand_bodyparts)
+			C.hand_bodyparts[held_index] = null
 
 	for(var/thing in scars)
 		var/datum/scar/S = thing
@@ -289,6 +299,8 @@
 	..()
 
 /obj/item/bodypart/head/drop_limb(special)
+	if(!owner)                            // ← ранний выход
+		return
 	if(!special)
 		//Drop all worn head items
 		for(var/X in list(owner.glasses, owner.ears, owner.wear_mask, owner.head))
@@ -316,6 +328,8 @@
 /obj/item/bodypart/proc/replace_limb(mob/living/carbon/C, special)
 	if(!istype(C))
 		return
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	var/obj/item/bodypart/O = C.get_bodypart(body_zone)
 	if(O)
 		O.drop_limb(1)
@@ -333,14 +347,17 @@
 	attach_limb(C, special)
 
 /obj/item/bodypart/proc/attach_limb(mob/living/carbon/C, special)
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	moveToNullspace()
 	owner = C
 	C.bodyparts += src
 	if(held_index)
-		if(held_index > C.hand_bodyparts.len)
-			C.hand_bodyparts.len = held_index
-		C.hand_bodyparts[held_index] = src
-		if(C.dna.species.mutanthands && !is_pseudopart)
+		if(C.hand_bodyparts) // Проверяем, что список существует
+			if(held_index > C.hand_bodyparts.len)
+				C.hand_bodyparts.len = held_index
+			C.hand_bodyparts[held_index] = src
+		if(C.dna?.species?.mutanthands && !is_pseudopart)
 			C.put_in_hand(new C.dna.species.mutanthands(), held_index)
 		if(C.hud_used)
 			var/atom/movable/screen/inventory/hand/hand = C.hud_used.hand_slots["[held_index]"]
@@ -381,6 +398,8 @@
 	C.update_damage_overlays()
 	C.update_wound_overlays()
 	C.update_mobility()
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_OWNER)
+	SEND_SIGNAL(C, COMSIG_PROTEAN_LIMB_ATTACHED, src, special)
 
 /obj/item/bodypart/head/attach_limb(mob/living/carbon/C, special)
 	//Transfer some head appearance vars over
@@ -422,6 +441,10 @@
 /mob/living/carbon/regenerate_limbs(noheal = FALSE, list/excluded_limbs = list())
 	. = ..()
 	var/list/limb_list = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		limb_list -= BODY_ZONE_R_LEG
+		if(BODY_ZONE_R_LEG in excluded_limbs)
+			limb_list -= BODY_ZONE_L_LEG
 	if(excluded_limbs.len)
 		limb_list -= excluded_limbs
 	for(var/Z in limb_list)
@@ -445,6 +468,14 @@
 		var/datum/wound/loss/phantom_loss = new // stolen valor, really
 		scaries.generate(L, phantom_loss)
 		L.attach_limb(src, 1)
-		if(ROBOTIC_LIMBS in dna.species.species_traits) //Snowflake trait moment, but needed.
+		if(dna?.species && (ROBOTIC_LIMBS in dna.species.species_traits)) //Snowflake trait moment, but needed.
 			L.change_bodypart_status(BODYPART_HYBRID, FALSE, TRUE) //Haha what if IPC-lings actually regenerated the right limbs instead of organic ones? That'd be pretty cool, right?
 		return TRUE
+
+//органы смешно отлетают от стороны атакующего
+/obj/item/organ/proc/fly_away(from_dir = null)
+	if(QDELETED(src) || !isturf(loc))
+		return
+	var/angle = from_dir ? 90 - dir2angle(from_dir) + rand(-60, 60) : rand(0, 360)
+	var/dist = rand(6, 20)
+	animate(src, pixel_x=cos(angle)*dist, pixel_y=sin(angle)*dist, time = 3, easing = ELASTIC_EASING | EASE_OUT)

@@ -38,6 +38,7 @@
 	threat = 10
 	can_coexist_with_others = FALSE
 	// reminded_times_left = 1
+	var/outfit_type = /datum/outfit/hatred
 	var/list/allowed_z_levels = list()
 	/**
 	 * Level of available gear is determined by a number of alive security officers and other conditions.
@@ -128,7 +129,7 @@
 	RegisterSignal(H, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(prevent_spawnloc_movement))
 	RegisterSignal(H, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(check_equipped_item)) // any knife we pick might be our deadliest weapon. also sets nodrop trait onto some weapons
 	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(recover_from_softcrit))
-	H.equipOutfit(/datum/outfit/hatred)
+	H.equipOutfit(outfit_type)
 	if(QDELETED(H)) // админы сказали "нет"
 		return
 	. = ..()
@@ -232,9 +233,12 @@
 		// UnregisterSignal(L, COMSIG_MOB_TRYING_TO_FIRE_GUN) can_trigger_gun
 	. = ..()
 	if(istype(L) && !QDELETED(L))
-		to_chat(L, span_userdanger("Ненависть покидает твой разум, окончательно поглощая тебя всего..."))
-		L.dust(FALSE, FALSE, TRUE) // from ghosts we come, to ghosts we leave.
-		// deathgasp doesn't appear during dust() so implant doesn't go boom.
+		leave_body(L)
+
+/datum/antagonist/hatred/proc/leave_body(mob/living/body)
+	to_chat(body, span_userdanger("Ненависть покидает твой разум, окончательно поглощая тебя всего..."))
+	body.dust(FALSE, FALSE, TRUE) // from ghosts we come, to ghosts we leave.
+	// deathgasp doesn't appear during dust() so implant doesn't go boom.
 
 /// Железно запрещаем перемещение по стартовой локации ерроров
 /datum/antagonist/hatred/proc/prevent_spawnloc_movement()
@@ -429,7 +433,7 @@
 	var/is_glory = TRUE
 	// already dead bodies or npcs don't count
 	// if((!target.client && ((world.time - target.lastclienttime) > 10 SECONDS)) || (target.stat == DEAD && ((world.time - target.timeofdeath) > 3 SECONDS)))
-	if(!target.client || target.stat == DEAD)
+	if((!target.client && !antag_training_glory_target(src, target)) || target.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(src, killing_speech_cd))
 		playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
@@ -457,7 +461,7 @@
 	var/is_glory = TRUE
 	// already dead bodies or npcs don't count
 	// if((!target.client && ((world.time - target.lastclienttime) > 10 SECONDS)) || (target.stat == DEAD && ((world.time - target.timeofdeath) > 3 SECONDS)))
-	if(!target.client || target?.stat == DEAD)
+	if((!target.client && !antag_training_glory_target(Ha, target)) || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
 		playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
@@ -897,6 +901,13 @@
 	Ha.chosen_gun = tgui_input_list(H, "Выбери стартовое оружие", , available_sets, available_sets[1], 10 SECONDS)
 	if(!Ha.chosen_gun)
 		Ha.chosen_gun = available_sets[1]
+	arm(H, Ha)
+	if(Ha.gear_level >= 2)
+		Ha.chosen_high_gear = tgui_input_list(H, "Выбери дополнительную экипировку", , Ha.high_gear, Ha.high_gear[1], 10 SECONDS)
+		if(!Ha.chosen_high_gear)
+			Ha.chosen_high_gear = Ha.high_gear[1]
+
+/datum/outfit/hatred/proc/arm(mob/living/carbon/human/H, datum/antagonist/hatred/Ha)
 	switch(Ha.chosen_gun)
 		if("AK47")
 			suit_store = /obj/item/gun/ballistic/automatic/ak47/hatred
@@ -909,10 +920,6 @@
 			suit_store = /obj/item/storage/belt/holster/hatred
 			l_pocket = /obj/item/storage/bag/ammo/hatred_c4
 			ADD_TRAIT(H, TRAIT_DOUBLE_TAP, HATRED_ANTAG)
-	if(Ha.gear_level >= 2)
-		Ha.chosen_high_gear = tgui_input_list(H, "Выбери дополнительную экипировку", , Ha.high_gear, Ha.high_gear[1], 10 SECONDS)
-		if(!Ha.chosen_high_gear)
-			Ha.chosen_high_gear = Ha.high_gear[1]
 
 /datum/outfit/hatred/post_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	if(!istype(H) || QDELETED(H))

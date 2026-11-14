@@ -47,7 +47,7 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	return
 
 /mob/dead/forceMove(atom/destination)
-	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(destination))
+	if(ANTAG_TRAINING_MOVE_GATED(src, destination) && !training_move_allowed(destination))
 		return FALSE
 	var/turf/old_turf = get_turf(src)
 	var/turf/new_turf = get_turf(destination)

@@ -363,7 +363,7 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	return "Утверждение: шасси чинит себя само. Медики мне не нужны. Я им, впрочем, тоже."
 
 /datum/hk47_upgrade/self_repair/specs()
-	return "ПАУЗА [HK47_REPAIR_DELAY / (1 SECONDS)] с БЕЗ УРОНА // [HK47_REPAIR_PER_SECOND] ЕД/с, МЕХАНИКА И ОЖОГИ ПОРОВНУ // ДО [HK47_REPAIR_HEALTH_CAP * 100]% // [HK47_REPAIR_NUTRITION_PER_HP] ЗАРЯДА ЗА ЕД., НЕ НИЖЕ [HK47_UPGRADE_MIN_NUTRITION] // [module_price_text()]"
+	return "ПАУЗА [HK47_REPAIR_DELAY / (1 SECONDS)] с БЕЗ УРОНА // [HK47_REPAIR_PER_SECOND] ЕД/с, МЕХАНИКА И ОЖОГИ ПОРОВНУ // ДО [HK47_REPAIR_HEALTH_CAP * 100]% // ТРАВМЫ ПО ОДНОЙ, ТЯЖЁЛЫЕ ПЕРВЫМИ: [HK47_REPAIR_WOUND_TIME / (1 SECONDS)] с И [HK47_REPAIR_WOUND_NUTRITION] ЗАРЯДА ЗА СТУПЕНЬ ТЯЖЕСТИ // [HK47_REPAIR_NUTRITION_PER_HP] ЗАРЯДА ЗА ЕД., НЕ НИЖЕ [HK47_UPGRADE_MIN_NUTRITION] // [module_price_text()]"
 
 /datum/hk47_upgrade/self_repair/blocked_reason(datum/antagonist/hk47/hunter, mob/living/carbon/human/droid)
 	return chassis_reason(droid)
@@ -504,6 +504,8 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 /datum/component/hk47_self_repair
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	var/last_damage_time = 0
+	/// Секунды работы над текущей травмой; новый урон сбрасывает.
+	var/wound_progress = 0
 
 /datum/component/hk47_self_repair/Initialize()
 	if(!iscarbon(parent))
@@ -521,10 +523,37 @@ GLOBAL_LIST_INIT(hk47_upgrades, hk47_build_upgrades())
 	SIGNAL_HANDLER
 	if(damage > 0 && damagetype != STAMINA)
 		last_damage_time = world.time
+		wound_progress = 0
 
 /datum/component/hk47_self_repair/proc/on_life(datum/source, seconds, times_fired)
 	SIGNAL_HANDLER
 	repair_tick(seconds)
+	repair_wounds(seconds)
+
+/// Возвращает TRUE, если травма устранена.
+/datum/component/hk47_self_repair/proc/repair_wounds(seconds)
+	var/mob/living/carbon/droid = parent
+	if(droid.stat == DEAD || world.time - last_damage_time < HK47_REPAIR_DELAY)
+		return FALSE
+	var/datum/wound/worst
+	for(var/datum/wound/wound as anything in droid.all_wounds)
+		if(!worst || wound.severity > worst.severity)
+			worst = wound
+	if(!worst)
+		wound_progress = 0
+		return FALSE
+	var/cost = max(worst.severity, 1) * HK47_REPAIR_WOUND_NUTRITION
+	if(droid.nutrition - cost < HK47_UPGRADE_MIN_NUTRITION)
+		return FALSE
+	wound_progress += seconds
+	if(wound_progress * (1 SECONDS) < max(worst.severity, 1) * HK47_REPAIR_WOUND_TIME)
+		return FALSE
+	wound_progress = 0
+	var/obj/item/bodypart/limb = worst.limb
+	qdel(worst)
+	droid.adjust_nutrition(-cost)
+	to_chat(droid, span_notice("Утверждение: самовосстановление устранило травму[limb ? " ([limb.ru_name])" : ""]."))
+	return TRUE
 
 /// Возвращает, сколько единиц починено.
 /datum/component/hk47_self_repair/proc/repair_tick(seconds)

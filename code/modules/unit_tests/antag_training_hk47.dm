@@ -99,7 +99,7 @@
 	TEST_ASSERT(!door.CanPass(pair[2], get_turf(door)) && door.CanPass(droid, get_turf(door)), "Дверь сектора пропускает HK-47, но не HK-50.")
 	var/mob/living/simple_animal/hostile/hk50/escapee = pair[1]
 	escapee.forceMove(run_loc_floor_bottom_left)
-	TEST_ASSERT_EQUAL(get_area(escapee), arena.room, "HK-50 не покидает полигон.")
+	TEST_ASSERT(arena.owns_area(get_area(escapee)), "HK-50 не покидает полигон.")
 
 	var/datum/component/hk_loyalty/loyalty = droid.GetComponent(/datum/component/hk_loyalty)
 	program.handle_choice(session, droid, "Перепрошить меня")
@@ -186,7 +186,7 @@
 	TEST_ASSERT(role.try_capture(dummy), "Учебная капсула вызывается к обездвиженной цели.")
 	role.finish_practice_capture(WEAKREF(contract), WEAKREF(dummy), get_turf(dummy))
 	TEST_ASSERT_EQUAL(role.contracts_done, 2, "Захват засчитан учебной капсулой.")
-	TEST_ASSERT_EQUAL(get_area(dummy), arena.room, "Захваченный манекен остаётся на полигоне.")
+	TEST_ASSERT(arena.owns_area(get_area(dummy)), "Захваченный манекен остаётся на полигоне.")
 	dummy.SetParalyzed(0)
 
 	program.handle_choice(session, droid, "Контракт: кража")
@@ -281,7 +281,8 @@
 	TEST_ASSERT_EQUAL(length(GLOB.data_core.security), records_before, "База СБ не пополняется.")
 	TEST_ASSERT_EQUAL(GLOB.news_network.lastAction, news_before, "Объявлений станции нет.")
 	TEST_ASSERT_EQUAL(length(GLOB.bounties_list), bounties_before, "Заказа на ядро нет.")
-	TEST_ASSERT_NULL(locate(/obj/item/pinpointer/hk47) in world, "Пеленгатора нет.")
+	for(var/obj/item/pinpointer/hk47/tracker in world)
+		TEST_ASSERT(QDELETED(tracker), "Пеленгатора нет.")
 	role.contracts_done = HK47_CONTRACTS_TO_WIN
 	TEST_ASSERT(findtext(role.extraction_refusal(droid), "полигон"), "Эвакуации на полигоне нет.")
 

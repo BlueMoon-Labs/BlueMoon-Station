@@ -235,14 +235,7 @@
 	suffix = "lavaland_surface_hermit.dmm"
 	allow_duplicates = FALSE
 	cost = 10
-
-/datum/map_template/ruin/lavaland/swarmer_boss
-	name = "Crashed Shuttle"
-	id = "swarmerboss"
-	description = "A Syndicate shuttle had an unfortunate stowaway..."
-	suffix = "lavaland_surface_swarmer_crash.dmm"
-	allow_duplicates = FALSE
-	cost = 20
+	always_place = TRUE
 
 /datum/map_template/ruin/lavaland/miningripley
 	name = "Ripley"
@@ -258,6 +251,7 @@
 	description = "A ruin with dark wizards. What secret do they guard?"
 	suffix = "lavaland_surface_wizard.dmm"
 	cost = 5
+	always_place = TRUE
 
 /datum/map_template/ruin/lavaland/puzzle
 	name = "Ancient Puzzle"

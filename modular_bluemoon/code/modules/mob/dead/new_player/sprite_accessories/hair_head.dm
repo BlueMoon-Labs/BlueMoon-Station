@@ -383,3 +383,8 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	name = "Inari Flowerchild (Ponyful)"
 	icon_state = "hair_inari_flowerchild_ponyful"
+
+/datum/sprite_accessory/hair/cloud_cascade
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Cloud Cascade"
+	icon_state = "hair_cloud_cascade"

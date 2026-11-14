@@ -29,6 +29,9 @@
 		standard_station_regex = new(regexstr)
 
 /obj/item/station_charter/attack_self(mob/living/user)
+	if(is_antag_training_atom(src))
+		to_chat(user, span_warning("Учебный экземпляр: с полигона станцию не переименовать."))
+		return
 	if(used)
 		to_chat(user, "The [name_type] has already been named.")
 		return
@@ -68,6 +71,9 @@
 	to_chat(GLOB.admins, "<span class='adminnotice'><b><font color=orange>CUSTOM STATION RENAME:</font></b>[ADMIN_LOOKUPFLW(user)] proposes to rename the [name_type] to [html_encode(new_name)] ([requires_approval ? "REQUIRES ADMIN APPROVAL and will autodeny" : "will autoapprove"] in [DisplayTimeText(approval_time)]). [ADMIN_SMITE(user)] (<A HREF='?_src_=holder;[HrefToken(TRUE)];reject_custom_name=[REF(src)]'>REJECT</A>)[requires_approval ? " (<A HREF='?_src_=holder;[HrefToken(TRUE)];approve_custom_name=[REF(src)]'>APPROVE</A>)" : ""] [ADMIN_CENTCOM_REPLY(user)]</span>")
 
 /obj/item/station_charter/proc/check_state(designation, uname, ureal_name, ukey)
+	if(is_antag_training_atom(src))
+		response_timer_id = null
+		return
 	var/requires_approval = CONFIG_GET(flag/station_name_needs_approval)
 	if(requires_approval && !admin_approved)
 		var/turf/T = get_turf(src)

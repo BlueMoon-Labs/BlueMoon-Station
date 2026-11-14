@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/acratarian
 	name = LANGUAGE_ACRATARIAN
-	desc = "A main language across the globe of Acratar, the planet of Acradors in Trios system. Primary spoken by all nations, like Rohai Empire, Irellian Republic and Norn. A form with much of gang-slang could be found in Corvex. (Используйте русскую букву для префикса)."
+	desc = "Основной язык на всём Акратаре - планете Акрадоров в системе Триос. На нём говорят все народы: Империя Рохай, Республика Иреллий и Норн. В Корвексе распространился вариант, переполненный бандитским сленгом. (Используйте русскую букву для префикса)."
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "acratarian"
 	speech_verb = "snarls"

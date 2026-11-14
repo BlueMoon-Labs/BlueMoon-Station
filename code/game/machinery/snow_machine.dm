@@ -89,6 +89,7 @@
 		return
 	if(istype(T, /turf/open))
 		cool_turf(T, cooling_speed)
+		make_snowcloud(T)
 	for(var/turf/open/TF in range(1, src))
 		if(prob(50))
 			continue
@@ -146,8 +147,6 @@
 		playsound(loc, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 	update_icon(UPDATE_ICON_STATE)
 	return TRUE
-
-//Снежное облако: остужает свой турф и расползается по холодным соседям.
 
 /obj/effect/snowcloud
 	name = "снежное облако"

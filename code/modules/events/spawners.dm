@@ -35,7 +35,7 @@
 	set waitfor = FALSE
 	if(isnull(impact_area))
 		impact_area = placer.findValidArea()
-	sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
+	announcement_sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
 	sleep(80)
 	priority_announce("На [station_name()] зафиксирован разрыв в пространстве на [ANOMALY_ANNOUNCE_DANGEROUS_TEXT] [impact_area.name]. Приготовьтесь к столкновению с угрозами из иных планов.", "Центральное Командование, Отдел Работы с Реальностью", triggersound)
 

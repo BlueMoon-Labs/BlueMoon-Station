@@ -142,8 +142,8 @@
 /datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, modifier=1, loc, silent=FALSE)
 	amount = setting * 2
 	var/cost = SMOKE_COST(setting, modifier)
-	carry.copy_to(chemholder, cost)
-	carry.remove_any(cost)
+	var/transferred = carry.copy_to(chemholder, cost)
+	carry.remove_all(transferred)
 	location = loc
 
 /datum/effect_system/smoke_spread/chem/smoke_machine
@@ -245,7 +245,7 @@
 	data["maxSetting"] = max_range
 	data["modifier"] = modifier
 	data["maxModifier"] = max_modifier
-
+	data["smokeCost"] = round(SMOKE_COST(setting, modifier), 0.01)
 	data["open"] = panel_open
 	data["hasPowercell"] = !QDELETED(cell)
 	if(!QDELETED(cell))

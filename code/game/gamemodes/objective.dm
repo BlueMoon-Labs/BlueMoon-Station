@@ -28,7 +28,7 @@ GLOBAL_LIST_EMPTY(objectives)
 	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
 	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
 	//Идём по фактическим держателям, а не по одному предполагаемому.
-	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists + GLOB.antag_training_unlisted_antagonists)
 		holder.objectives -= src
 	if(team)
 		team.objectives -= src
@@ -1611,6 +1611,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			return TRUE
 	// 2) Перма-бриг: шкафчик генпоп оформлен на имя цели
 	for(var/obj/structure/closet/secure_closet/genpop/genpop_locker in world)
+		if(QDELETED(genpop_locker))
+			continue
 		if(genpop_locker.locked && genpop_locker.registered_id && genpop_locker.registered_id.registered_name == target_name)
 			return TRUE
 	// 3) Гулаг: цель отправлена через трудовой телепорт

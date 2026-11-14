@@ -20,7 +20,7 @@
 /datum/interaction/lewd/belly_riding/proc/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return
 
-/datum/interaction/lewd/belly_riding/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/belly_riding/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!. || !target_organ)
 		return FALSE
@@ -35,16 +35,16 @@
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, target_organ, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST, target_organ, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
-		partner.handle_post_sex(NORMAL_LUST, (target_organ == CUM_TARGET_VAGINA ? CUM_TARGET_PENIS : null), user, target_organ)
-		try_apply_knot(user, partner, target_organ) // Проверка на узлирование.
+		partner.handle_post_sex(NORMAL_LUST, (target_organ == CUM_TARGET_VAGINA ? CUM_TARGET_PENIS : null), user, target_organ, is_hidden = is_hidden)
+		try_apply_knot(user, partner, target_organ, is_hidden = is_hidden) // Проверка на узлирование.
 
 	if(!prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
 		return
@@ -69,7 +69,7 @@
 	message = pick(reactions)
 
 
-	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/lewd/belly_riding/vagina

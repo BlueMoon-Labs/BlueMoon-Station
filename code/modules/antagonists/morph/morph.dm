@@ -14,6 +14,7 @@
 	a_intent = INTENT_HARM
 	stop_automated_movement = 1
 	status_flags = CANPUSH
+	move_resist = MOVE_FORCE_STRONG // как Prince of Terror: нельзя толкать обычным игрокам/мобам
 	pass_flags = PASSTABLE
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
@@ -92,6 +93,8 @@
 	return bonus
 
 /mob/living/simple_animal/hostile/morph/proc/eat(atom/movable/A)
+	if(training_eat_refused(A))
+		return FALSE
 	if(morphed && !eat_while_disguised)
 		to_chat(src, "<span class='warning'>You can not eat anything while you are disguised!</span>")
 		return FALSE

@@ -180,3 +180,13 @@
 		M.cut_overlay(forbearance)
 
 		M.cure_trauma_type(/datum/brain_trauma/special/godwoken, TRAUMA_RESILIENCE_ABSOLUTE)
+
+// BLUEMOON ADD START || Shadekin Mutation Toxin
+/datum/reagent/mutationtoxin/shadekin
+	name = "Токсин мутации шейдкина"
+	description = "Токсин, превращающий в шейдкина."
+	color = "#5EFF3B" //RGB: 94, 255, 59
+	race = /datum/species/mammal/shadekin
+	taste_description = "что-то тёмное и пушистое"
+	mutationtext = "<span class='danger'>Боль отступает. Вы чувствуете... себя как дома в темноте.</span>"
+// BLUEMOON ADD END

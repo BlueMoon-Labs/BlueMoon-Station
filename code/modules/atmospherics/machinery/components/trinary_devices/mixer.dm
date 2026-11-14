@@ -20,6 +20,7 @@
 	if(can_interact(user))
 		on = !on
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
 		update_appearance()
 	return ..()
 

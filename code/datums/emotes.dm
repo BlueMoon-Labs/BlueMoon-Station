@@ -25,21 +25,26 @@
 	var/image_popup
 
 /datum/emote/New()
-	if (ispath(mob_type_allowed_typecache))
-		switch (mob_type_allowed_typecache)
-			if (/mob)
-				mob_type_allowed_typecache = GLOB.typecache_mob
-			if (/mob/living)
-				mob_type_allowed_typecache = GLOB.typecache_living
-			else
-				mob_type_allowed_typecache = typecacheof(mob_type_allowed_typecache)
-	else
-		mob_type_allowed_typecache = typecacheof(mob_type_allowed_typecache)
-	mob_type_blacklist_typecache = typecacheof(mob_type_blacklist_typecache)
-	mob_type_ignore_stat_typecache = typecacheof(mob_type_ignore_stat_typecache)
+	mob_type_allowed_typecache = shared_typecache(mob_type_allowed_typecache)
+	mob_type_blacklist_typecache = shared_typecache(mob_type_blacklist_typecache)
+	mob_type_ignore_stat_typecache = shared_typecache(mob_type_ignore_stat_typecache)
 
 	if(!name)
 		name = key
+
+/// Hundreds of emotes name the same few roots, and typesof(/mob/living) alone is thousands of paths.
+/// Emote typecaches are read-only, so equal type lists share one cache.
+/datum/emote/proc/shared_typecache(types)
+	var/static/list/typecaches
+	if(isnull(types))
+		return null
+	if(!typecaches)
+		typecaches = list("[/mob]" = GLOB.typecache_mob, "[/mob/living]" = GLOB.typecache_living)
+	var/key = islist(types) ? jointext(types, ",") : "[types]"
+	. = typecaches[key]
+	if(isnull(.))
+		. = typecacheof(types)
+		typecaches[key] = .
 
 /// Makes the mob to run the specified emote.
 /// * `user` - our mob.
@@ -208,6 +213,8 @@
 
 	// Should the emote consider atmospheric pressure?
 	var/emote_check_pressure = TRUE
+	/// Whether each successfully played sound also creates an acoustic snapshot.
+	var/echolocation_pulse = FALSE
 
 	// Should the emote ignore walls?
 	var/emote_ignore_walls = FALSE
@@ -239,6 +246,9 @@
 			return TRUE
 		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote")) / 100)
 		playsound(user.loc, sound, vol, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
+
+		if(echolocation_pulse)
+			emit_echolocation_pulse(user)
 
 		//Cooldown.
 		user.nextsoundemote = world.time + emote_cooldown

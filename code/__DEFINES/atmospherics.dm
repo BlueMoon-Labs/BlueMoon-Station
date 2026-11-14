@@ -29,17 +29,15 @@
 #define EXCITED_GROUP_BREAKDOWN_CYCLES				4		//number of FULL air controller ticks before an excited group breaks down (averages gas contents across turfs)
 #define EXCITED_GROUP_DISMANTLE_CYCLES				16		//number of FULL air controller ticks before an excited group dismantles and removes its turfs from active
 ///Stalled cycles before a grouped turf rests individually (leaves the active list but stays in
-///its group, see sleep_active_turf). Kept above EXCITED_GROUP_BREAKDOWN_CYCLES so an idling turf
-///holds the group average through at least one more breakdown before it stops processing.
-#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		6
+///its group, see sleep_active_turf). Не ниже EXCITED_GROUP_BREAKDOWN_CYCLES: иначе тихая группа засыпает целиком в том же проходе, где ей положен брейкдаун, и tick_lifecycle() расформировывает её без усреднения.
+#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		4
+///Во сколько раз парный шер должен превысить порог движения газа, чтобы сбросить тишину турфа и разбудить соседа. Ветер считается от исходного порога. Держать ниже 10 (SIGNIFICANT_SHARE_CONTENT_RATIO / MINIMUM_AIR_RATIO_TO_MOVE).
+#define ATMOS_WAKE_THRESHOLD_SCALE					5
 /// Maximum excited-group members processed between master-controller budget checks.
 /// Breakdown keeps its accumulator and write-back state across SSair resumes.
 #define EXCITED_GROUP_BREAKDOWN_SLICE				192
-/// Small groups are cheaper and safer to finish atomically. Resumable state is
-/// reserved for memberships large enough to threaten a server tick. Два среза:
-/// на старом пороге в 1024 группа из ~1000 турфов усреднялась одним куском на
-/// сотни миллисекунд - при станционном пожаре таких групп десятки.
-#define EXCITED_GROUP_RESUMABLE_THRESHOLD			(EXCITED_GROUP_BREAKDOWN_SLICE * 2)
+/// Группа меньше этого усредняется одним вызовом: четыре прохода брейкдауна по её членам укладываются в один срез.
+#define EXCITED_GROUP_RESUMABLE_THRESHOLD			(EXCITED_GROUP_BREAKDOWN_SLICE / 4)
 /// Excited-group size at which the zone equalizer engages even with the config
 /// flag off. Pure LINDA diffusion cannot finish a single differential this
 /// large in bounded time: the giant-hall bench (120x100 hall, 16:1 pressure
@@ -282,6 +280,14 @@
 /// which is included before the SECONDS macro exists.
 #define DECOMPRESSION_AREA_ALARM_COOLDOWN 300
 
+// Время на локальную герметизацию до тревоги отсека: 3 секунды
+#define DECOMPRESSION_AREA_ALARM_DELAY 30
+
+// Временной срез проверки локализации в миллисекундах; ноль разрешает атомарную проверку.
+#define DECOMPRESSION_CHECK_SLICE_MS 2
+// Непрерывные изменения при взрыве не должны бесконечно перезапускать фазу атмосферы.
+#define DECOMPRESSION_CHECK_MAX_RESTARTS 8
+
 /// Подтверждающее окно декомп-тревоги в фаерах SSair: зона попадает в очередь
 /// тревоги, только если перевзвелась более поздним фаером не дальше этого окна
 /// от первого замера. Настоящая пробоина перевзводится каждый фаер, пока кромку
@@ -322,13 +328,19 @@
 #define FIRELOCK_ALARM_TEMPERATURE_HYSTERESIS 10
 
 // Защита от автоматического закрытия после открытия ломом или ручным приводом.
-#define FIRELOCK_MANUAL_OVERRIDE_GRACE (10 SECONDS)
+#define FIRELOCK_MANUAL_OVERRIDE_GRACE (6 SECONDS)
+// Короткая защита после ручного открытия через пожарную сигнализацию.
+#define FIRELOCK_ALARM_OVERRIDE_GRACE (2 SECONDS)
+
+// Шанс выбора оконных фаерлоков вместо аирбагов для внешних окон станции.
+// Один выбор на весь раунд; окна шаттлов и капсул всегда получают фаерлоки.
+#define STATION_WINDOW_FIRELOCKS_CHANCE 90
+
+// Предел локального поиска обхода оконной шторки без прохода через её тайл.
+#define FIRELOCK_PASSAGE_CHECK_LIMIT 16
 
 // Блокировка автоматического закрытия фаерлока по Ctrl-клику.
 #define FIRELOCK_CTRL_CLICK_OVERRIDE_TIME (3 MINUTES)
-
-// Длительность включения и снятия блокировки автозакрытия по Ctrl-клику.
-#define FIRELOCK_CTRL_CLICK_ACTION_TIME (0.5 SECONDS)
 
 /// Сколько длится ручной привод пожарного шлюза. Не зависит от способа:
 /// альт-клик и бамп открывают за одно и то же время.
@@ -655,6 +667,23 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 
 #define QUANTIZE(variable)		(round(variable,0.0000001))/*I feel the need to document what happens here. Basically this is used to catch most rounding errors, however it's previous value made it so that
 															once gases got hot enough, most procedures wouldnt occur due to the fact that the mole counts would get rounded away. Thus, we lowered it a few orders of magnititude */
+/// Значение не меньше этого QUANTIZE() в ноль не округлит: проверка `x < QUANTIZE_ZERO_GUARD`
+/// перед `QUANTIZE(x) <= 0` отсекает round() на всех нормальных молях, не меняя ответа.
+#define QUANTIZE_ZERO_GUARD	0.000001
+
+/// Тело /datum/gas_mixture/proc/archive(), им же архив снимает process_cell. Несменённая с прошлого
+/// снимка смесь список не копирует; archive_gen инвалидирует мемо архивной теплоёмкости.
+#define GAS_MIXTURE_ARCHIVE(mix) \
+	mix.temperature_archived = mix.temperature; \
+	if(!mix.gas_archive || mix.archive_mutation_rev != mix.mutation_rev) { \
+		mix.gas_archive = mix.gases.Copy(); \
+		mix.archive_mutation_rev = mix.mutation_rev; \
+		mix.archive_gen++; \
+	}
+
+/// Гейт пустого react() на нативных свёртках: ни один газ смеси не владеет бакетом реакций, а безгазовые
+/// реакции отсечены порогом TEMP - общим или, без горючего кроме O2/N2, порогом станционного воздуха.
+#define GAS_MIXTURE_REACT_IDLE(mix, controller) (controller.reaction_key_gas_indicator && !values_dot(mix.gases, controller.reaction_key_gas_indicator) && (mix.temperature < controller.temp_gated_min_temp || (mix.temperature < controller.temp_gated_air_ceiling && !values_dot(mix.gases, controller.reaction_fuel_gas_indicator))))
 
 //If you're doing spreading things related to atmos, DO NOT USE CANATMOSPASS, IT IS NOT CHEAP. use this instead, the info is cached after all. it's tweaked just a bit to allow for circular checks
 #define TURFS_CAN_SHARE(T1, T2) (LAZYACCESS(T2.atmos_adjacent_turfs, T1) || LAZYLEN(T1.atmos_adjacent_turfs & T2.atmos_adjacent_turfs))
@@ -720,6 +749,8 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// порог, по которому фаза решает, что турф вообще стоит зоны. Раньше жил двумя
 /// независимыми литералами: `var/const/` внутри обхода и голой пятёркой в фазе.
 #define EQUALIZE_MIN_PRESSURE_DELTA 5
+/// Сколько SSair ждёт парного StopLoadingMap() вне загрузки карты, прежде чем разобрать очередь пробуждений шаблона сам.
+#define MAP_LOADING_STUCK_TIMEOUT (2 MINUTES)
 /// Pure-telemetry devices (meters, air sensors) only report once per this many
 /// SSair fires; their power draw is compensated by the same constant.
 #define ATMOS_TELEMETRY_INTERVAL 4

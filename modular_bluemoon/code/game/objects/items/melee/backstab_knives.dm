@@ -330,7 +330,7 @@
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(victim_fade_in), victim, initial_alpha, 0.3 SECONDS), 10 SECONDS) // появляется через 10 секунд
 
 // Такая себе реализация через глобальный прок, но мне было лень придумывать более адекватное решение, не привязанное к ножу
-proc/victim_fade_in(mob/target, required_alpha, fade_time)
+/proc/victim_fade_in(mob/target, required_alpha, fade_time)
 	animate(target, alpha = required_alpha, time = fade_time)
 	target.visible_message("<span class='warning'>Тело [target] внезапно появляется...</span>")
 

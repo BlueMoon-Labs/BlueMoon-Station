@@ -213,16 +213,18 @@ GLOBAL_LIST_EMPTY(explosions)
 	var/max_range = max(devastation_range, heavy_impact_range, light_impact_range, flame_range)
 
 	if(adminlog)
-		message_admins("Explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) in [ADMIN_VERBOSEJMP(epicenter)]")
-		log_admin("Explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) in [loc_name(epicenter)]")
+		antag_training_admin_log(epicenter, "Explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) in [ADMIN_VERBOSEJMP(epicenter)]", "Explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) in [loc_name(epicenter)]")
 
-	deadchat_broadcast("<span class='deadsay bold'>An explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) has occured at ([get_area(epicenter)])</span>", turf_target = get_turf(epicenter))
+	var/in_training = is_antag_training_atom(epicenter)
+	if(!in_training)
+		deadchat_broadcast("<span class='deadsay bold'>An explosion with size ([devastation_range], [heavy_impact_range], [light_impact_range], [flame_range]) has occured at ([get_area(epicenter)])</span>", turf_target = get_turf(epicenter))
 
 	var/x0 = epicenter.x
 	var/y0 = epicenter.y
 	var/z0 = epicenter.z
 	var/area/areatype = get_area(epicenter)
-	SSblackbox.record_feedback("associative", "explosion", 1, list("dev" = devastation_range, "heavy" = heavy_impact_range, "light" = light_impact_range, "flash" = flash_range, "flame" = flame_range, "orig_dev" = orig_dev_range, "orig_heavy" = orig_heavy_range, "orig_light" = orig_light_range, "x" = x0, "y" = y0, "z" = z0, "area" = areatype.type, "time" = TIME_STAMP("YYYY-MM-DD hh:mm:ss", 1)))
+	if(!in_training)
+		SSblackbox.record_feedback("associative", "explosion", 1, list("dev" = devastation_range, "heavy" = heavy_impact_range, "light" = light_impact_range, "flash" = flash_range, "flame" = flame_range, "orig_dev" = orig_dev_range, "orig_heavy" = orig_heavy_range, "orig_light" = orig_light_range, "x" = x0, "y" = y0, "z" = z0, "area" = areatype.type, "time" = TIME_STAMP("YYYY-MM-DD hh:mm:ss", 1)))
 
 	// Play sounds; we want sounds to be different depending on distance so we will manually do it ourselves.
 	// Stereo users will also hear the direction of the explosion!
@@ -474,15 +476,18 @@ GLOBAL_LIST_EMPTY(explosions)
 	spiral_range_turfs(range, epicenter, outlist = ., tick_checked = TRUE)
 	++stopped
 
+/// Сколько турфов расчёт блокировки проходит за пробуждение даже в занятом тике: реакционный взрыв ждёт его и рос по турфу за тик.
+#define EX_BLOCK_MIN_BATCH 32
+
 /datum/explosion/proc/CaculateExplosionBlock(list/affected_turfs)
 	set waitfor = FALSE
 
 	. = list()
 	var/processed = 0
 	while(running)
-		var/I
-		for(I in (processed + 1) to length(affected_turfs)) // we cache the explosion block rating of every turf in the explosion area
-			var/turf/T = affected_turfs[I]
+		var/slice_turfs = 0
+		while(processed < length(affected_turfs)) // we cache the explosion block rating of every turf in the explosion area
+			var/turf/T = affected_turfs[++processed]
 			var/current_exp_block = T.density ? T.explosion_block : 0
 
 			for(var/obj/O in T)
@@ -491,11 +496,12 @@ GLOBAL_LIST_EMPTY(explosions)
 
 			.[T] = current_exp_block
 
-			if(TICK_CHECK)
+			if(++slice_turfs >= EX_BLOCK_MIN_BATCH && TICK_CHECK)
 				break
 
-		processed = I
 		stoplag()
+
+#undef EX_BLOCK_MIN_BATCH
 
 /datum/explosion/Destroy()
 	running = FALSE

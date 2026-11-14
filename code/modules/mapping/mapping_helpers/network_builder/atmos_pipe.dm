@@ -148,3 +148,9 @@
 	for(var/obj/machinery/meter/M in built.loc) // those things are being initialized before we create pipes.
 		if(!M.target)
 			M.reattach_to_layer()
+	var/turf/T = loc
+	if(istype(T, /turf/open/floor/catwalk_floor))
+		var/turf/open/floor/catwalk_floor/C = T
+		if(C.covered)
+			if(built)
+				SET_PLANE_EXPLICIT(built, FLOOR_PLANE, T)

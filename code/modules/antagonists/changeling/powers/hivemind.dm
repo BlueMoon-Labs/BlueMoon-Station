@@ -43,6 +43,10 @@
 // HIVE MIND UPLOAD/DOWNLOAD DNA
 GLOBAL_LIST_EMPTY(hivemind_bank)
 
+/// Банк ДНК, через который этот генокрад делится профилями с ульем.
+/datum/antagonist/changeling/proc/hive_bank()
+	return GLOB.hivemind_bank
+
 /datum/action/changeling/hivemind_upload
 	name = "Hive Channel DNA"
 	desc = "Allows us to channel DNA in the airwaves to allow other changelings to absorb it. Costs 10 chemicals."
@@ -55,8 +59,9 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 		return
 	var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
 	var/list/names = list()
+	var/list/bank = changeling.hive_bank()
 	for(var/datum/changelingprofile/prof in changeling.stored_profiles)
-		if(!(prof in GLOB.hivemind_bank))
+		if(!(prof in bank))
 			names += prof.name
 
 	if(names.len <= 0)
@@ -73,7 +78,7 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 
 	var/datum/changelingprofile/uploaded_dna = new chosen_dna.type
 	chosen_dna.copy_profile(uploaded_dna)
-	GLOB.hivemind_bank += uploaded_dna
+	bank += uploaded_dna
 	to_chat(user, "<span class='notice'>We channel the DNA of [chosen_name] to the air.</span>")
 	return TRUE
 
@@ -99,7 +104,7 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 /datum/action/changeling/hivemind_download/sting_action(mob/user)
 	var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
 	var/list/names = list()
-	for(var/datum/changelingprofile/prof in GLOB.hivemind_bank)
+	for(var/datum/changelingprofile/prof in changeling.hive_bank())
 		if(!(prof in changeling.stored_profiles))
 			names[prof.name] = prof
 

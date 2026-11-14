@@ -40,7 +40,7 @@
 	var/list/mob/living/carbon/changelings = list()
 
 	for(var/mob/living/carbon/C in GLOB.alive_mob_list)
-		if(C != owner && C.mind)
+		if(C != owner && C.mind && C.training_origin == owner.training_origin)
 			var/datum/antagonist/changeling/antag_datum = C.mind.has_antag_datum(/datum/antagonist/changeling)
 			if(istype(antag_datum))
 				var/their_loc = get_turf(C)

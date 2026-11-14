@@ -106,10 +106,12 @@
 	user.log_talk(message, LOG_SAY, tag="abductor")
 	for(var/mob/living/carbon/C in GLOB.alive_mob_list)
 		var/obj/item/organ/tongue/abductor/T = C.getorgan(/obj/item/organ/tongue/abductor)
-		if(!T || T.mothership != A.mothership)
+		if(!T || T.mothership != A.mothership || C.training_origin != user.training_origin)
 			continue
 		to_chat(C, rendered)
 	for(var/mob/M in GLOB.dead_mob_list)
+		if(isobserver(M) ? !antag_training_observer_hears(M, user) : M.training_origin != user.training_origin)
+			continue
 		var/link = FOLLOW_LINK(M, user)
 		to_chat(M, "[link] [rendered]")
 	speech_args[SPEECH_MESSAGE] = ""

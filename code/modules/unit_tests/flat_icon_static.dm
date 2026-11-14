@@ -44,6 +44,19 @@
 		subject.overlays += reset_overlay
 		compare_first_frame(subject, "матрица цвета и RESET_COLOR, [dir2text(direction)]")
 
+/// Рантайм-иконка без направлений не делает ненаправленной другую рантайм-иконку с тем же стейтом.
+/datum/unit_test/flat_icon_runtime_icon_direction_cache/Run()
+	var/icon/single = new
+	single.Insert(icon('icons/effects/effects.dmi', "nothing"), "test", SOUTH, 1, FALSE)
+	var/image/single_image = image(single, icon_state = "test")
+	TEST_ASSERT(!icon_state_has_directional_frames(single_image.icon, "test"), "Иконка из одного направления ненаправленная")
+
+	var/icon/directional = new
+	for(var/direction in GLOB.cardinals)
+		directional.Insert(icon('icons/effects/effects.dmi', "nothing"), "test", direction, 1, FALSE)
+	var/image/directional_image = image(directional, icon_state = "test")
+	TEST_ASSERT(icon_state_has_directional_frames(directional_image.icon, "test"), "Иконка с четырьмя направлениями направленная")
+
 /datum/unit_test/flat_icon_static_frames/proc/compare_first_frame(image/subject, context)
 	var/icon/full_animation = getFlatIcon(subject)
 	var/icon/expected = icon(full_animation, "", SOUTH, 1, FALSE)
@@ -53,3 +66,21 @@
 	for(var/pixel_x in 1 to expected.Width())
 		for(var/pixel_y in 1 to expected.Height())
 			TEST_ASSERT_EQUAL(actual.GetPixel(pixel_x, pixel_y), expected.GetPixel(pixel_x, pixel_y), "Пиксель [pixel_x],[pixel_y] отличается: [context]")
+
+/// Направления из заголовка DMI совпадают с пробой icon() по каждому стейту, включая дубли имён со стейтами движения.
+/datum/unit_test/dmi_state_dirs_match_probe/Run()
+	for(var/icon_file in list('icons/effects/effects.dmi', 'icons/mob/secbot_accessories.dmi', 'icons/mob/gondolapod.dmi', 'icons/mob/clothing/uniform.dmi'))
+		var/list/state_dirs = dmi_state_dirs("[icon_file]")
+		TEST_ASSERT(length(state_dirs), "rust-g не прочитал заголовок [icon_file]")
+		var/list/states = uniqueList(icon_states(icon_file))
+		for(var/index in 1 to min(length(states), 80))
+			var/state = states[index]
+			var/probe_directional = FALSE
+			for(var/checkdir in list(NORTH, EAST, WEST))
+				if(length(icon_states(icon(icon_file, state, checkdir))))
+					probe_directional = TRUE
+					break
+			TEST_ASSERT(state_dirs["[state]"], "Нет стейта [icon_file]:[state] в заголовке")
+			TEST_ASSERT_EQUAL(state_dirs["[state]"] > 1, probe_directional, "Направленность [icon_file]:[state] не совпала с пробой")
+	var/missing_file = "icons/nonexistent_for_test"
+	TEST_ASSERT_NULL(dmi_state_dirs("[missing_file].dmi"), "Отсутствующий файл дал заголовок")

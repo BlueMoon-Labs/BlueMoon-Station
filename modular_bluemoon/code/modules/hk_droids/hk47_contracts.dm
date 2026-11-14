@@ -402,6 +402,11 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 		return target_near(HK47_PROTECT_RANGE) ? 100 : 0
 	return round(protect_near_samples * 100 / protect_samples)
 
+/// Сколько секунд ещё нужно провести рядом с подопечным, чтобы набрать норму присутствия за весь срок.
+/datum/hk_contract/proc/presence_seconds_left()
+	var/needed_samples = CEILING(HK47_PROTECT_TIME / HK47_PROTECT_SAMPLE * HK47_PROTECT_PRESENCE_PERCENT / 100, 1)
+	return max(0, needed_samples - protect_near_samples) * HK47_PROTECT_SAMPLE / (1 SECONDS)
+
 /// Середина охраны: конкурент шлёт пару HK-50, когда HK рядом с подопечным на станции. Без согласия подопечного на убийство они идут за самим HK.
 /datum/hk_contract/proc/send_rivals()
 	deltimer(rival_timer)
@@ -676,6 +681,8 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 	var/static/list/relic_types = typecacheof(HK47_THEFT_RELICS)
 	var/list/found = list()
 	for(var/obj/item/thing in world)
+		if(QDELETED(thing))
+			continue
 		if(is_type_in_typecache(thing, relic_types))
 			found += WEAKREF(thing)
 		CHECK_TICK

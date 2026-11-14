@@ -65,19 +65,19 @@
 			to_chat(user, "<span class='warning'>Repair the plating first!</span>")
 			return
 		var/obj/item/stack/sheet/glass/G = C
-		if (G.get_amount() < 2)
-			to_chat(user, "<span class='warning'>You need two glass sheets to make a glass floor!</span>")
+		if (G.get_amount() < 1)
+			to_chat(user, span_warning("Для установки стеклянного пола нужен один лист стекла!"))
 			return
 		else
 			to_chat(user, "<span class='notice'>You begin adding glass to the floor...</span>")
 			if(do_after(user, 5, target = src))
-				if (G.get_amount() >= 2 && !istype(src, /turf/open/floor/glass))
+				if (G.get_amount() >= 1 && !istype(src, /turf/open/floor/glass))
 					for(var/obj/effect/decal/cleanable/decal in src)
 						if(decal.wiped_by_floor_change)
 							qdel(decal)
 					PlaceOnTop(/turf/open/floor/glass, flags = CHANGETURF_INHERIT_AIR)
 					playsound(src, 'sound/items/deconstruct.ogg', 80, 1)
-					G.use(2)
+					G.use(1)
 					to_chat(user, "<span class='notice'>You add glass to the floor.</span>")
 				return
 	if(istype(C, /obj/item/stack/sheet/rglass))
@@ -85,19 +85,19 @@
 			to_chat(user, "<span class='warning'>Repair the plating first!</span>")
 			return
 		var/obj/item/stack/sheet/rglass/RG = C
-		if (RG.get_amount() < 2)
-			to_chat(user, "<span class='warning'>You need two reinforced glass sheets to make a reinforced glass floor!</span>")
+		if (RG.get_amount() < 1)
+			to_chat(user, span_warning("Для установки армированного стеклянного пола нужен один лист армированного стекла!"))
 			return
 		else
 			to_chat(user, "<span class='notice'>You begin adding reinforced glass to the floor...</span>")
 			if(do_after(user, 10, target = src))
-				if (RG.get_amount() >= 2 && !istype(src, /turf/open/floor/glass/reinforced))
+				if (RG.get_amount() >= 1 && !istype(src, /turf/open/floor/glass/reinforced))
 					for(var/obj/effect/decal/cleanable/decal in src)
 						if(decal.wiped_by_floor_change)
 							qdel(decal)
 					PlaceOnTop(/turf/open/floor/glass/reinforced, flags = CHANGETURF_INHERIT_AIR)
 					playsound(src, 'sound/items/deconstruct.ogg', 80, 1)
-					RG.use(2)
+					RG.use(1)
 					to_chat(user, "<span class='notice'>You add reinforced glass to the floor.</span>")
 				return
 	else if(istype(C, /obj/item/stack/tile))

@@ -176,6 +176,10 @@
 	return FALSE
 
 
+/// Причина, по которой сила не продаётся этому генокраду, иначе null.
+/datum/antagonist/changeling/proc/power_refusal(datum/action/changeling/ability)
+	return null
+
 /datum/antagonist/changeling/proc/purchase_power(sting_name)
 	var/datum/action/changeling/thepower
 
@@ -209,6 +213,11 @@
 		to_chat(owner.current, "We lack the energy to evolve new abilities right now.")
 		return
 
+	var/refusal = power_refusal(thepower)
+	if(refusal)
+		to_chat(owner.current, span_warning(refusal))
+		return
+
 	geneticpoints -= thepower.dna_cost
 	purchasedpowers += thepower
 	thepower.on_purchase(owner.current)//Grant() is ran in this proc, see changeling_powers.dm
@@ -234,7 +243,8 @@
 		reset_powers()
 		playsound(get_turf(owner.current), 'sound/effects/lingreadapt.ogg', 75, TRUE, 5)
 		can_respec = 0
-		SSblackbox.record_feedback("tally", "changeling_power_purchase", 1, "Readapt")
+		if(!is_antag_training_atom(owner.current))
+			SSblackbox.record_feedback("tally", "changeling_power_purchase", 1, "Readapt")
 		return TRUE
 	else
 		to_chat(owner.current, "<span class='danger'>You lack the power to readapt your evolutions!</span>")

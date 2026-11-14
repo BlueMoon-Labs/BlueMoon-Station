@@ -13,6 +13,7 @@
 	droid.mind_initialize()
 	allocated += droid.mind
 	var/datum/antagonist/hk47/antag = droid.mind.add_antag_datum(/datum/antagonist/hk47)
+	TEST_ASSERT_NOTNULL(antag, "HK-47 gets the antag datum")
 	TEST_ASSERT_EQUAL(length(antag.voice_lines), length(expected), "voice line count")
 	for(var/key in expected)
 		var/voice = antag.voice_lines[key]
@@ -59,7 +60,7 @@
 	heard_locally.Cut()
 	return ..()
 
-/mob/living/carbon/human/hk_voice_probe/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance, falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer, source_pressure, list/source_echo)
+/mob/living/carbon/human/hk_voice_probe/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance, falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer, source_pressure, list/source_echo, list/excluded_listeners)
 	heard_locally += soundin
 	return ..()
 

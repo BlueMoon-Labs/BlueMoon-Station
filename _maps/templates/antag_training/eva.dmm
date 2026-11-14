@@ -1,0 +1,3417 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"am" = (
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"as" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"ay" = (
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"aA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"aD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/ash,
+/obj/item/stock_parts/manipulator,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"aG" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/antag_training_eva,
+/obj/structure/sign/warning/vacuum{
+	pixel_y = 32
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/screwdriver,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"aN" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"aO" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"br" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"bt" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"bF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/flashlight{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/snacks/donkpocket{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"bP" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"bT" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/antag_training_eva,
+/obj/item/trash/can,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"ca" = (
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"cF" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"cJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/shard,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"cK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"de" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/item/shard,
+/obj/item/stack/rods,
+/obj/item/shard,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"dp" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"dM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"dX" = (
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"ew" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/firecloset{
+	anchored = 1
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"eB" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/paper/antag_training_eva/salvage_log{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"eS" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"eT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"fq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/chips,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"fK" = (
+/obj/machinery/door/airlock/external/glass,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"fO" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"fP" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/rods,
+/obj/item/stack/cable_coil,
+/obj/item/shard,
+/obj/item/shard,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"gm" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"gH" = (
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"gV" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate{
+	anchored = 1
+	},
+/obj/item/stack/rods/fifty,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"hk" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"hC" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/stack/rods/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"hZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"if" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"it" = (
+/obj/item/trash/can,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"iX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"ja" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/broken{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"jN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/paper/antag_training_eva{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"jZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"kw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"kH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"kP" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"kV" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"lD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/emergency{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"lH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/wrench,
+/obj/item/stack/sheet/plasteel/twenty,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"lM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/sign/warning/docking{
+	pixel_y = -32
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"mj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/stock_parts/scanning_module{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/book/manual/random{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"mo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate/internals{
+	anchored = 1
+	},
+/obj/item/tank/internals/oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"my" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"mA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/capacitor,
+/obj/machinery/light/small/broken{
+	dir = 1
+	},
+/obj/item/shard,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"mI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/crowbar,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"ng" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/ash,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"nG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"oq" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"ou" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"oC" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"oI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"pa" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"pt" = (
+/obj/item/shard,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"pA" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/rods,
+/obj/item/shard,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"pD" = (
+/obj/item/stack/rods,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"pZ" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/reagent_dispensers/watertank{
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"qa" = (
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"qb" = (
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"qh" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"qm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"qt" = (
+/obj/item/stock_parts/manipulator,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"qx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/obj/item/paper/crumpled,
+/obj/item/stock_parts/manipulator,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"qK" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"qL" = (
+/obj/item/stack/cable_coil,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"ro" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/machinery/light/small/broken{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"ru" = (
+/obj/structure/sign/antag_training_board,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"rJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/tile/plasteel,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"rM" = (
+/obj/item/stack/rods,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"sf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"si" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate/bin{
+	anchored = 1
+	},
+/obj/item/trash/can,
+/obj/item/cigbutt,
+/obj/item/trash/chips,
+/obj/item/stack/tile/plasteel,
+/obj/item/clothing/head/hardhat,
+/obj/item/stack/tile/plasteel,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"sw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/ore/glass,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"sA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"sB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/frame/machine{
+	anchored = 1
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"sI" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"th" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/ash,
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"tl" = (
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"tv" = (
+/obj/structure/grille/broken,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"tF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"tR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"uc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_x = 32
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"ug" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"uJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/ash,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"uK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/obj/item/stock_parts/manipulator,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"uQ" = (
+/obj/machinery/door/airlock/external/glass,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"vn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/rods,
+/obj/item/stack/rods,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"vs" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/machinery/light/small/broken{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"vS" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"wi" = (
+/obj/item/stack/sheet/metal/five,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"ws" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/structure/closet/crate/large{
+	anchored = 1
+	},
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/sheet/metal/twenty,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"wI" = (
+/obj/item/cigbutt,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"xq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/bag/ore{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"xs" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_y = 30
+	},
+/obj/item/paper/crumpled,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"xu" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/cable_coil,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"xT" = (
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"ya" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"yh" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/item/trash/can,
+/obj/item/shard,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"yi" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"yw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"yT" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/shard,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"zg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/miningcar{
+	anchored = 1
+	},
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"zk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"zm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/shuttle/engine/propulsion{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"zn" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/warning/vacuum{
+	pixel_x = -32
+	},
+/obj/item/shard,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"zr" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"zR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering{
+	anchored = 1
+	},
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/crowbar/red,
+/obj/item/stack/cable_coil,
+/obj/item/storage/backpack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/under/color/grey,
+/obj/item/storage/briefcase,
+/obj/item/clothing/mask/breath,
+/obj/item/trash/can,
+/obj/item/clothing/mask/breath,
+/obj/item/paper/crumpled,
+/obj/item/stack/rods,
+/obj/item/storage/briefcase,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/book/manual/random,
+/obj/item/stack/rods,
+/obj/item/stack/rods,
+/obj/item/clothing/under/color/grey,
+/obj/item/paper/crumpled,
+/obj/item/storage/backpack,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods,
+/obj/item/stack/cable_coil,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Ak" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"Az" = (
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"AB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/trash/chips{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/donkpockets{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"AH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"Bj" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"Bz" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"BM" = (
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"BN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Cf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"Ck" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"CR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/trash/can,
+/obj/item/trash/can,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"CZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"Dw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/grille/broken,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"DM" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods/ten,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Ex" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"Ez" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"EH" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"EM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/flashlight{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"EV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Fa" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate/internals{
+	anchored = 1
+	},
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/mask/breath,
+/obj/item/folder/yellow,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"FJ" = (
+/obj/machinery/door/airlock/external/glass,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"FL" = (
+/turf/closed/indestructible,
+/area/antag_training/sector/eva)
+"Ge" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Il" = (
+/obj/item/stack/ore/iron,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"Iz" = (
+/obj/structure/girder/displaced,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"IR" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"IX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/dark{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"IY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"IZ" = (
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"Jp" = (
+/obj/structure/lattice/catwalk,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"JD" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"JL" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/sign/warning/nosmoking/circle{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"JU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"JY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/ash,
+/obj/item/paper/crumpled,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"Kl" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/item/stack/ore/iron,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Kp" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"Kv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Kx" = (
+/turf/closed/wall/r_wall,
+/area/antag_training/sector/eva)
+"Lc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Lh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"LC" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_x = -32
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"LV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"LY" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"Me" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Mg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/filingcabinet,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"ME" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/titanium{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/mineral/titanium{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"MN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/obj/item/trash/can,
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"MO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/closet/crate/engineering{
+	anchored = 1
+	},
+/obj/item/stock_parts/matter_bin,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/paper/crumpled,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/clothing/head/hardhat,
+/obj/item/stack/cable_coil,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/folder,
+/obj/item/storage/backpack/satchel,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/cable_coil,
+/obj/item/paper/crumpled,
+/obj/item/clipboard,
+/obj/item/paper,
+/obj/item/stack/rods,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/storage/backpack,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"MP" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"MV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/ore/glass,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"MX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"NC" = (
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"NF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"NL" = (
+/obj/item/shard,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"Of" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Ow" = (
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Oz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"Py" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate{
+	anchored = 1
+	},
+/obj/item/stack/rods/fifty,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"PV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Qj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Qq" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"QA" = (
+/obj/machinery/door/airlock/external/glass,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"Rw" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 2
+	},
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"RQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/bed,
+/obj/item/bedsheet,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"RS" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Sb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/shuttle/engine/heater{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Sp" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/antag_training/sector/eva)
+"SJ" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"Tj" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"TC" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/antag_training_eva,
+/obj/structure/sign/warning/pods{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"TV" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"TW" = (
+/obj/item/stack/rods,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"TY" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/antag_training_eva,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"Uc" = (
+/obj/structure/lattice,
+/obj/structure/grille/broken,
+/turf/open/space/basic,
+/area/antag_training/sector/eva)
+"Uv" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/warning/vacuum/external{
+	pixel_x = 32
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"UD" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"UH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/obj/item/trash/chips,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"UR" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/ore_box{
+	anchored = 1
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Vn" = (
+/turf/closed/wall/mineral/titanium,
+/area/antag_training/sector/eva)
+"VN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/eva)
+"VX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_x = -27
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/eva)
+"Wq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/glass,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"WE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/mining{
+	pixel_x = -32
+	},
+/obj/item/wirecutters,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"WO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"WT" = (
+/turf/closed/mineral,
+/area/antag_training/sector/eva)
+"WX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/engineering{
+	anchored = 1
+	},
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/sheet/plasteel/twenty,
+/obj/item/stack/cable_coil,
+/obj/structure/sign/mining{
+	pixel_y = -32
+	},
+/obj/item/stack/ore/iron,
+/obj/item/paper,
+/obj/item/folder,
+/obj/item/storage/backpack/satchel,
+/obj/item/clothing/under/rank/cargo/miner,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/head/hardhat/orange,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"WY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/eva)
+"Xh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/t_scanner{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"Xt" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/internals{
+	anchored = 1
+	},
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/rods,
+/obj/item/clothing/head/hardhat/orange,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"Xy" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"XQ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/eva)
+"Yv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/obj/item/paper/crumpled,
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+"Zd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/shuttle/engine/propulsion{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/antag_training/sector/eva)
+"Zx" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pickaxe{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/mining_scanner{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/eva)
+"ZC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/machinery/light/small/broken{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/antag_training/sector/eva)
+
+(1,1,1) = {"
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+"}
+(2,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+gH
+qa
+qa
+qa
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+Kx
+TY
+VX
+Of
+Fa
+si
+nG
+WE
+Zx
+FL
+"}
+(3,1,1) = {"
+FL
+gH
+gH
+aN
+gH
+gH
+Vn
+eS
+Kp
+Kp
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+TC
+eT
+Lh
+Kv
+MP
+BM
+xT
+hC
+FL
+"}
+(4,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+aN
+Vn
+vs
+qx
+kw
+Vn
+gH
+dX
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+it
+gH
+gH
+gH
+gH
+Kx
+bT
+hZ
+iX
+jN
+UD
+ou
+cK
+gV
+FL
+"}
+(5,1,1) = {"
+FL
+gH
+dX
+gH
+gH
+qL
+vS
+qm
+tF
+xu
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+Sp
+Sp
+Iz
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+aG
+ru
+Ow
+EM
+Qj
+am
+cK
+Xt
+FL
+"}
+(6,1,1) = {"
+FL
+Rw
+gH
+aN
+gH
+gH
+Vn
+mj
+de
+ja
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+IZ
+Sp
+WT
+Sp
+Sp
+Sp
+rM
+gH
+gH
+gH
+gH
+gH
+Kx
+JL
+ay
+LV
+WY
+ou
+tl
+pD
+lM
+FL
+"}
+(7,1,1) = {"
+FL
+gH
+TW
+Uc
+gH
+gH
+Vn
+vn
+qm
+MO
+Vn
+gH
+TW
+gH
+gH
+gH
+gH
+gH
+Bj
+WT
+WT
+WT
+WT
+Sp
+Sp
+gH
+gH
+gH
+gH
+gH
+oC
+oI
+ay
+rJ
+Kv
+Ez
+bP
+aA
+Oz
+FL
+"}
+(8,1,1) = {"
+FL
+gH
+aN
+gH
+gH
+gH
+Vn
+PV
+NF
+hk
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+Sp
+WT
+WT
+WT
+WT
+IZ
+gH
+gH
+gH
+gH
+gH
+oC
+qh
+pa
+bP
+yi
+Ez
+MX
+qb
+WO
+FL
+"}
+(9,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+qL
+gH
+gH
+gH
+Sp
+Sp
+WT
+WT
+WT
+WT
+kV
+gH
+gH
+gH
+gH
+gH
+oC
+Az
+qh
+cF
+bt
+wI
+Ge
+IY
+Xh
+FL
+"}
+(10,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+dX
+gH
+Vn
+jZ
+fP
+th
+gH
+gH
+gH
+gH
+gH
+gH
+wi
+Sp
+LY
+Sp
+WT
+Sp
+LY
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+kP
+ew
+Uv
+EV
+EH
+pZ
+dM
+lD
+FL
+"}
+(11,1,1) = {"
+FL
+dX
+dX
+gH
+gH
+aN
+Uc
+Vn
+uJ
+JY
+ro
+Vn
+Uc
+aN
+gH
+gH
+gH
+gH
+gH
+gH
+tv
+Sp
+tv
+gH
+aN
+Uc
+it
+gH
+gH
+gH
+Kx
+Kx
+Kx
+Kx
+QA
+Kx
+oC
+oC
+Kx
+FL
+"}
+(12,1,1) = {"
+FL
+gH
+qt
+gH
+gH
+gH
+gH
+qa
+Wq
+Yv
+my
+qa
+aN
+NL
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Il
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+XQ
+Kx
+gH
+gH
+gH
+FL
+"}
+(13,1,1) = {"
+FL
+gH
+gH
+qL
+qt
+aN
+gH
+Vn
+ZC
+UH
+yh
+Vn
+aN
+NL
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+XQ
+Kx
+gH
+gH
+gH
+FL
+"}
+(14,1,1) = {"
+FL
+Uc
+gH
+gH
+Uc
+gH
+oq
+qa
+sA
+CR
+my
+qa
+gH
+gH
+aN
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Kx
+FJ
+Kx
+gH
+gH
+gH
+FL
+"}
+(15,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+gH
+Vn
+aD
+uK
+Cf
+Vn
+qt
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Ak
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+LC
+Tj
+RS
+gH
+gH
+gH
+FL
+"}
+(16,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Dw
+cJ
+ng
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+Sp
+Sp
+Sp
+gH
+gH
+it
+gH
+gH
+gH
+gH
+Me
+Kl
+ug
+gH
+gH
+gH
+FL
+"}
+(17,1,1) = {"
+FL
+aN
+gH
+gH
+gH
+dX
+gH
+gH
+gH
+dX
+gH
+NC
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+WT
+WT
+WT
+Sp
+gH
+aN
+gH
+gH
+gH
+gH
+aO
+Xy
+Py
+gH
+gH
+gH
+FL
+"}
+(18,1,1) = {"
+FL
+gH
+gH
+gH
+Qq
+gH
+qL
+yw
+sf
+kH
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+tv
+Sp
+WT
+WT
+WT
+Sp
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+Jp
+gH
+gH
+gH
+gH
+FL
+"}
+(19,1,1) = {"
+FL
+gH
+gH
+gH
+dX
+NC
+Vn
+sB
+Ck
+zR
+Vn
+gH
+gH
+oq
+aN
+gH
+gH
+gH
+gH
+gH
+gH
+kV
+Sp
+rM
+WT
+Sp
+Iz
+gH
+gH
+Ak
+gH
+gH
+gH
+gH
+Jp
+gH
+gH
+gH
+gH
+FL
+"}
+(20,1,1) = {"
+FL
+gH
+gH
+Uc
+gH
+gH
+Vn
+mA
+fO
+qK
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Bj
+Sp
+pt
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+FL
+"}
+(21,1,1) = {"
+FL
+NC
+Uc
+gH
+gH
+gH
+Vn
+as
+pA
+lH
+Vn
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+kV
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+aN
+gH
+FL
+"}
+(22,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+Vn
+Sb
+BN
+Sb
+Vn
+qt
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+aN
+gH
+gH
+gH
+gH
+FL
+"}
+(23,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+gH
+zm
+yT
+Zd
+gH
+gH
+aN
+gH
+aN
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+kV
+IZ
+Sp
+aN
+aN
+gH
+gH
+gH
+gH
+FL
+"}
+(24,1,1) = {"
+FL
+gH
+gH
+qt
+gH
+gH
+gH
+gH
+aN
+aN
+aN
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+pt
+Sp
+WT
+WT
+Iz
+aN
+wi
+gH
+gH
+gH
+FL
+"}
+(25,1,1) = {"
+FL
+gH
+gH
+gH
+gH
+gH
+Uc
+NL
+gH
+aN
+NC
+gH
+gH
+qL
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+aN
+gH
+rM
+IZ
+WT
+WT
+WT
+WT
+pt
+gH
+gH
+gH
+gH
+FL
+"}
+(26,1,1) = {"
+FL
+gH
+gH
+gH
+Sp
+Sp
+Sp
+gH
+gH
+kV
+Sp
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+WT
+WT
+WT
+WT
+WT
+Sp
+aN
+gH
+gH
+gH
+FL
+"}
+(27,1,1) = {"
+FL
+gH
+Bj
+rM
+WT
+WT
+pt
+kV
+Sp
+pt
+tv
+IZ
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+kV
+WT
+WT
+WT
+WT
+Sp
+Sp
+gH
+gH
+gH
+gH
+FL
+"}
+(28,1,1) = {"
+FL
+gH
+pt
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+rM
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+WT
+WT
+WT
+rM
+gH
+gH
+gH
+gH
+gH
+FL
+"}
+(29,1,1) = {"
+FL
+Sp
+Sp
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+gH
+gH
+Sp
+IZ
+LY
+tv
+IZ
+gH
+gH
+gH
+gH
+gH
+FL
+"}
+(30,1,1) = {"
+FL
+WT
+WT
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+LY
+pt
+Sp
+Sp
+Bj
+Sp
+gH
+gH
+gH
+aN
+Ak
+gH
+gH
+gH
+gH
+FL
+"}
+(31,1,1) = {"
+FL
+WT
+WT
+Kx
+RQ
+sw
+ME
+Mg
+zn
+br
+Kx
+WT
+WT
+Sp
+JD
+UR
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+WT
+WT
+WT
+WT
+pt
+Sp
+gH
+gH
+aN
+gH
+gH
+gH
+gH
+gH
+gH
+FL
+"}
+(32,1,1) = {"
+FL
+WT
+WT
+Kx
+bF
+MV
+mI
+fq
+IX
+xq
+Kx
+Kx
+Kx
+Kx
+Bz
+Lc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+LY
+WT
+WT
+WT
+WT
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+FL
+"}
+(33,1,1) = {"
+FL
+WT
+WT
+Kx
+Ex
+CZ
+CZ
+CZ
+if
+SJ
+fK
+zr
+uc
+uQ
+IR
+ya
+gH
+gH
+gH
+gH
+gH
+gH
+LY
+Sp
+WT
+WT
+WT
+WT
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+Il
+aN
+gH
+gH
+FL
+"}
+(34,1,1) = {"
+FL
+WT
+WT
+Kx
+xs
+VN
+ca
+AH
+sI
+WX
+Kx
+Kx
+Kx
+Kx
+dp
+DM
+gH
+gH
+gH
+gH
+gH
+gH
+Bj
+Sp
+WT
+WT
+WT
+WT
+WT
+Iz
+LY
+gH
+aN
+gH
+gH
+Sp
+kV
+gH
+gH
+FL
+"}
+(35,1,1) = {"
+FL
+WT
+WT
+Kx
+eB
+zk
+CZ
+CZ
+JU
+zg
+Kx
+WT
+WT
+WT
+Bz
+ws
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+LY
+pt
+WT
+WT
+WT
+Iz
+tv
+gH
+gH
+gH
+aN
+tv
+Sp
+Sp
+Sp
+gH
+FL
+"}
+(36,1,1) = {"
+FL
+WT
+WT
+Kx
+AB
+MN
+TV
+mo
+gm
+tR
+Kx
+WT
+WT
+WT
+pt
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Sp
+IZ
+WT
+Sp
+Sp
+gH
+gH
+gH
+gH
+pt
+WT
+WT
+kV
+gH
+gH
+FL
+"}
+(37,1,1) = {"
+FL
+WT
+WT
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+Kx
+WT
+WT
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+Uc
+gH
+gH
+Sp
+WT
+WT
+Bj
+gH
+gH
+FL
+"}
+(38,1,1) = {"
+FL
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+tv
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+qL
+gH
+gH
+gH
+gH
+gH
+gH
+LY
+Iz
+Sp
+gH
+gH
+FL
+"}
+(39,1,1) = {"
+FL
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+WT
+Sp
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+aN
+gH
+gH
+gH
+TW
+gH
+gH
+Uc
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+gH
+FL
+"}
+(40,1,1) = {"
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+"}

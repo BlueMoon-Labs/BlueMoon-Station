@@ -231,7 +231,7 @@
 	set_item(null)
 	return ..()
 
-/// Предмет рисуется на плоскости держателя: своя у него смещена под этаж и множится освещением.
+// Предмет рисуется на плоскости держателя: своя у него смещена под этаж и множится освещением.
 /atom/movable/screen/storage/item_holder/proc/set_item(obj/item/I)
 	//предмет мог умереть между сбором содержимого и отрисовкой (слияние стеков):
 	//на удалённый COMSIG_PARENT_QDELETING уже не придёт, ссылку держать нельзя
@@ -242,7 +242,11 @@
 	vis_contents.Cut()
 	if(our_item)
 		UnregisterSignal(our_item, COMSIG_PARENT_QDELETING)
-		our_item.vis_flags &= ~VIS_INHERIT_PLANE
+		// Один предмет могут видеть несколько игроков, включая наблюдателей. Снимаем флаг
+		// только после последнего держателя, иначе оставшиеся окна затемняются освещением мира.
+		if(!(initial(our_item.vis_flags) & VIS_INHERIT_PLANE))
+			if(!(locate(/atom/movable/screen/storage/item_holder) in our_item.vis_locs))
+				our_item.vis_flags &= ~VIS_INHERIT_PLANE
 	our_item = I
 	if(I)
 		RegisterSignal(I, COMSIG_PARENT_QDELETING, PROC_REF(on_item_deleted))

@@ -19,7 +19,8 @@
 	name = "hypnosis module"
 	desc = "A module inserted into the visor of a suit in which commands can be processed. Use on self to set directives."
 	icon_state = "module_hypno"
-	module_type = MODULE_PASSIVE
+	module_type = MODULE_TOGGLE
+	startup_with_suit = TRUE
 	complexity = 0
 	idle_power_cost = 0
 	incompatible_modules = list(/obj/item/mod/module/hypno_visor)
@@ -31,36 +32,69 @@
 		"lustwish",
 		// "standard", не могу проверить сейчас, работает ли оно на рескине стандарт-ластвиш. Но на обычном стандарте выглядит плохо.
 	)
+	var/datum/weakref/trauma_ref
 	var/hypno_message
 
 /obj/item/mod/module/hypno_visor/Destroy()
-	if(!mod)
-		return ..()
-	if(mod.wearer) //&& part_activated
-		mod.wearer.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_MAGIC)
+	clear_hypnosis()
 	return ..()
 
 /obj/item/mod/module/hypno_visor/attack_self(mob/user)
 	. = ..()
-	hypno_message = tgui_input_text(user, "Выберите гипно-фразу.", max_length = MAX_MESSAGE_LEN)
+	edit_message(user)
 
-/obj/item/mod/module/hypno_visor/on_suit_activation()
-	if(!mod.is_active())
-		return
-	if(!iscarbon(mod.wearer) || !(mod.wearer.client?.prefs.cit_toggles & HYPNO))
-		return to_chat(mod.wearer, span_warning("Разум сопротивляется гипно-эффектам: Отключение"))
-	if(hypno_message == "" || isnull(hypno_message))
-		hypno_message = "Чтобы настроить модуль нужно его вытащить и нажать рукой на нём кнопку."
-	active = TRUE
-	mod.wearer.gain_trauma(new /datum/brain_trauma/induced_hypnosis(hypno_message), TRAUMA_RESILIENCE_MAGIC)
-	update_modsuit_slot()
+/obj/item/mod/module/hypno_visor/proc/can_edit(mob/user)
+	if(!user || user.incapacitated())
+		return FALSE
+	return mod ? (user == mod.wearer || user == mod.ai) : user.is_holding(src)
 
-/obj/item/mod/module/hypno_visor/on_suit_deactivation()
-	if(!mod.wearer)
-		return
-	active = FALSE
-	mod.wearer.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_MAGIC)
+/obj/item/mod/module/hypno_visor/proc/edit_message(mob/user)
+	if(!can_edit(user))
+		return FALSE
+	var/message = tgui_input_text(user, "Выберите гипно-фразу.", default = hypno_message, max_length = MAX_MESSAGE_LEN)
+	if(isnull(message) || QDELETED(src) || !can_edit(user))
+		return FALSE
+	var/restart = active
+	if(restart)
+		on_deactivation()
+	hypno_message = message
+	if(restart)
+		on_activation()
+	return TRUE
+
+/obj/item/mod/module/hypno_visor/get_configuration()
+	. = ..()
+	.["message"] = add_ui_configuration("Гипно-фраза", "text", hypno_message)
+
+/obj/item/mod/module/hypno_visor/configure_edit(key, value)
+	if(key == "message")
+		return edit_message(usr)
+
+/obj/item/mod/module/hypno_visor/on_activation()
+	if(active)
+		return TRUE
+	if(!(mod?.wearer?.client?.prefs.cit_toggles & HYPNO))
+		return FALSE
+	if(!length(hypno_message) || !..())
+		return FALSE
+	var/datum/brain_trauma/induced_hypnosis/trauma = new(hypno_message)
+	if(!mod.wearer.gain_trauma(trauma, TRAUMA_RESILIENCE_MAGIC))
+		qdel(trauma)
+		on_deactivation()
+		return FALSE
+	trauma_ref = WEAKREF(trauma)
 	update_modsuit_slot()
+	return TRUE
+
+/obj/item/mod/module/hypno_visor/on_deactivation()
+	clear_hypnosis()
+	return ..()
+
+/obj/item/mod/module/hypno_visor/proc/clear_hypnosis()
+	var/datum/brain_trauma/trauma = trauma_ref?.resolve()
+	trauma_ref = null
+	if(trauma)
+		qdel(trauma)
 
 /obj/item/mod/module/hypno_visor/on_install()
 	. = ..()

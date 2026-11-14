@@ -364,7 +364,7 @@
 /obj/machinery/status_display/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(isAI(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Start streaming") // funny
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Начать трансляцию") // funny
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/status_display/evac/Initialize(mapload)

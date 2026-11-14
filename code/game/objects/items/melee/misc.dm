@@ -470,6 +470,7 @@
 				if(check_martial_counter(H, user))
 					return
 			if(HAS_TRAIT(target, TRAIT_BATON_RESISTANCE))
+				SEND_SIGNAL(target, COMSIG_MOD_BATON_RESISTED)
 				target.visible_message(span_warning("[target] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
 				playsound(target, 'sound/weapons/genhit.ogg', 50, 1)
 				return
@@ -479,6 +480,8 @@
 			playsound(get_turf(src), on_stun_sound, 75, 1, -1)
 			var/countered = size_countered || block_return[BLOCK_RETURN_MITIGATION_PERCENT] > block_percent_to_counter
 			final_stun_damage = block_calculate_resultant_damage(final_stun_damage, block_return)
+			var/stamina_block = target.run_armor_check(BODY_ZONE_CHEST, ENERGY, null, null)
+			final_stun_damage = final_stun_damage * (100 - stamina_block) / 100
 			target.DefaultCombatKnockdown(softstun_ds, TRUE, FALSE, countered? 0 : hardstun_ds, final_stun_damage, !countered)
 			additional_effects_carbon(target, user)
 			log_combat(user, target, "stunned", src)

@@ -209,6 +209,27 @@
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_spirit.dmi'
 	ascension_aura_state = "spirit_aura"
 
+/// Случайный путь для фантомного вознесения: галлюцинация показывает, как поднялся чужой сотрудник.
+/// null, если путей в мире нет.
+/proc/heretic_ascension_random_path_id()
+	var/list/path_ids = list()
+	for(var/path_id in GLOB.heretic_paths)
+		path_ids += path_id
+	return length(path_ids) ? pick(path_ids) : null
+
+/// Объявление о фантомном вознесении: то же, что и настоящее, но с чужим именем.
+/// Возвращает list("text", "sound") или null, если путь не найден.
+/proc/heretic_ascension_announcement(path_id, mob/living/who)
+	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+	if(!path || !who)
+		return null
+	var/area/place = get_area(who)
+	var/place_name = place?.name || "неизвестном секторе"
+	return list(
+		"text" = "[path.ascension_message] [path.ascension_title] — [who.real_name]. Вознесение завершено в секторе «[place_name]».",
+		"sound" = path.ascension_sound,
+	)
+
 /// Объявление появляется только после подбора и резервирования настоящих компонентов.
 /datum/eldritch_knowledge/final_eldritch/proc/begin_ascension_ritual(mob/living/user, obj/effect/eldritch/rune)
 	var/datum/heretic_path/path = GLOB.heretic_paths[route]

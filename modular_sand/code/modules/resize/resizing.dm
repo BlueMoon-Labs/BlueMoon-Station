@@ -72,6 +72,8 @@
 			var/can_harm = TRUE
 			if(user.mob_weight < MOB_WEIGHT_NORMAL && get_size(user) > 1 && get_size(target) > 0.6) //Лёгкие большие персонажи не могут навредить кому-либо больше 60%
 				can_harm = FALSE
+			if(user.is_weightless_over(target))
+				can_harm = FALSE
 			if(target.mind?.martial_art?.id && target.mind.martial_art.can_use(target) && can_harm) // нельзя давить тех, кто обучен и может применять боевые искусства
 			// У людей по умолчанию есть плейсходерное боевое искусство, но у него нет ID. Потому проверка на него, т.к. любое другое ID изменяет
 				if(target.a_intent != INTENT_HELP)
@@ -160,6 +162,12 @@
 			micro_step_under(target)
 			return TRUE
 
+/// Давит вес, а без гравитации, в полёте или в парении веса нет.
+/mob/living/proc/is_weightless_over(mob/living/target)
+	if(movement_type & (FLYING|FLOATING))
+		return TRUE
+	return !has_gravity(get_turf(target))
+
 /mob/living/proc/macro_step_around(mob/living/target)
 	if(ishuman(src))
 		var/mob/living/carbon/human/validmob = src
@@ -216,6 +224,9 @@
 	// Сверхтяжёлые персонажи размером 200% и выше наносят огромный урон при наступании
 	if(src.mob_weight == MOB_WEIGHT_HEAVY_SUPER && get_size(src) >= 2)
 		B *= 5 * (get_size(src) / 2)
+
+	// Константа макс урона.
+	B = min(B, MOB_WEIGHT_MAX_STOMP_BRUTE_DAMAGE)
 
 	// BLUEMOON ADDITION END
 

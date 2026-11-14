@@ -25,16 +25,19 @@
 	var/return_available_at
 	/// Set once the berth opens, so the grace period before the unattended departure runs only once.
 	var/departure_scheduled_at
-	/// Guards the one-shot announcement that a rich haul bought out the mandatory stay.
-	var/early_return_announced = FALSE
 	/// Откуп, выплаченный станцией вместо инспекции.
 	var/bribe_paid = 0
+	/// Накопленная сумма взысканных штрафов (без откупа): за каждые 100 000 кредитов инспекция получает метадоллары.
+	var/fines_total = 0
+	/// Уже начисленные части по 100 000 кредитов, чтобы не платить дважды.
+	var/metadollars_awarded = 0
 	/// Snapshot of the inspectors who actually returned aboard the vessel.
 	var/list/returned_members = list()
 
 /datum/team/sol_inspection/New()
 	. = ..()
 	account = new("Всеобщее Бюро Контроля")
+	account.offstation = TRUE
 	account.setup_unique_account_id()
 
 /datum/team/sol_inspection/Destroy()
@@ -46,39 +49,44 @@
 	return ..()
 
 #define SOL_INSPECTION_EARLY_RETURN_FINE 100000
-#define SOL_INSPECTION_MINIMUM_STAY 30 MINUTES
+#define SOL_INSPECTION_MINIMUM_STAY 60 MINUTES
 #define SOL_INSPECTION_RETURN_POLL 30 SECONDS
 /// Opening the berth does not pull the ship out from under the inspectors: they get a short grace
 /// period to finish the last scan or walk back aboard before the vessel leaves on its own.
 #define SOL_INSPECTION_DEPARTURE_DELAY 3 MINUTES
-
-/// World time at which the CentCom berth opens, or 0 when the haul already unlocked it.
-/datum/team/sol_inspection/proc/return_unlock_at()
-	if(account?.account_balance >= SOL_INSPECTION_EARLY_RETURN_FINE)
-		return 0
-	return return_available_at
+#define SOL_INSPECTION_SURVEY_DOCK "sol_inspection_survey"
+#define SOL_INSPECTION_SURVEY_STEP 6
+#define SOL_INSPECTION_SURVEY_MARGIN 12
+#define SOL_INSPECTION_SURVEY_ROCK_TOLERANCE 60
 
 /datum/team/sol_inspection/proc/return_time_left()
-	var/unlock_at = return_unlock_at()
-	if(!unlock_at)
+	if(!return_available_at)
 		return 0
-	return max(0, unlock_at - world.time)
+	return max(0, return_available_at - world.time)
 
 /datum/team/sol_inspection/proc/return_unlocked()
-	return visited_station && return_time_left() <= 0
+	return visited_station && (fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE || return_time_left() <= 0)
 
-/// Tell everyone once, the first time the haul buys out the rest of the mandatory stay. This only
-/// opens an option; the inspection is not over and the station is not let off the hook yet.
-/datum/team/sol_inspection/proc/announce_early_return_if_unlocked()
-	if(early_return_announced || !return_unlocked())
+/// По окончании инспекции живые инспекторы отправляются обратно на ЦК со взрывами искр; мертвые остаются как есть.
+/datum/team/sol_inspection/proc/end_inspection()
+	for(var/datum/mind/member as anything in members)
+		var/mob/m = member.current
+		if(m && !QDELETED(m) && m.stat != DEAD)
+			do_fake_sparks(5, FALSE, get_turf(m))
+			qdel(m)
+
+/// За каждые 100 000 кредитов взысканных штрафов каждый член инспекции получает по одному метадоллару.
+/datum/team/sol_inspection/proc/award_inspector_metadollars()
+	if(!SSmetadollars)
 		return
-	// Once the stay simply ran out there is nothing to announce; only an early unlock counts.
-	if(!return_available_at || world.time >= return_available_at)
+	var/chunks = floor(fines_total / 100000)
+	var/new_chunks = chunks - metadollars_awarded
+	if(new_chunks <= 0)
 		return
-	early_return_announced = TRUE
-	var/message = "Общая сумма взысканий достигла [account?.account_balance || 0] кредитов. Бюро открывает досрочный вылет — пункт назначения доступен на бортовой консоли."
-	report_violation(message)
-	priority_announce(message, "Всеобщее Бюро Контроля")
+	metadollars_awarded = chunks
+	for(var/datum/mind/member as anything in members)
+		if(member.current && !QDELETED(member.current) && member.current.stat != DEAD)
+			SSmetadollars.metadollar_adjust(new_chunks, ckey(member.key))
 
 /// Unlike a fine, a bribe is an ordinary purchase: the station has to actually own the credits.
 /datum/team/sol_inspection/proc/pay_bribe(datum/bank_account/payer, amount, reason = "откуп от инспекции Всеобщего Бюро Контроля")
@@ -106,8 +114,9 @@
 		inspection_radio.talk_into(shuttle, message, RADIO_CHANNEL_SUPPLY)
 	log_game("Sol inspection: [message]")
 
+/// returned_members пишется живыми на момент возвращения: end_inspection() потом удаляет их тела
 /datum/team/sol_inspection/proc/is_returned_inspector(datum/mind/inspector)
-	return returned_home && visited_station && (inspector in returned_members) && inspector.current && inspector.current.stat != DEAD
+	return returned_home && visited_station && (inspector in returned_members)
 
 /datum/team/sol_inspection/roundend_report()
 	var/list/report = list("<b>Всеобщее Бюро Контроля</b>", printplayerlist(members))
@@ -335,13 +344,22 @@
 	launch_status = NOLAUNCH
 	var/datum/team/sol_inspection/inspection_team
 	var/obj/docking_port/stationary/home_dock
+	var/obj/docking_port/stationary/survey_dock
 	/// Polls until the CentCom berth opens, then flies the vessel home unattended.
 	var/return_timer_id
+	/// Удаляет шаттл с искрами через три минуты после окончания инспекции.
+	var/end_timer_id
 
 /obj/docking_port/mobile/sol_inspection/Destroy(force)
 	if(return_timer_id)
 		deltimer(return_timer_id)
 		return_timer_id = null
+	if(end_timer_id)
+		deltimer(end_timer_id)
+		end_timer_id = null
+	if(survey_dock)
+		qdel(survey_dock, force = TRUE)
+		survey_dock = null
 	if(force)
 		if(inspection_team?.shuttle == src)
 			inspection_team.shuttle = null
@@ -359,6 +377,8 @@
 	return ..()
 
 /obj/docking_port/mobile/sol_inspection/initiate_docking(obj/docking_port/stationary/new_dock, movement_direction, force = FALSE)
+	if(!istype(new_dock, /obj/docking_port/stationary/transit) && is_station_level(new_dock.z))
+		clear_landing_rock(new_dock)
 	. = ..()
 	if(. != DOCKING_SUCCESS || !inspection_team || istype(new_dock, /obj/docking_port/stationary/transit))
 		return
@@ -371,7 +391,19 @@
 		for(var/datum/mind/member as anything in inspection_team.members)
 			if(member.current && member.current.stat != DEAD && (get_area(member.current) in shuttle_areas))
 				inspection_team.returned_members |= member
+		inspection_team.end_inspection()
+		src.schedule_end_deletion()
 		priority_announce("Инспекция Всеобщего Бюро Контроля завершена. Инспекционный шаттл покидает [GLOB.station_name].", "Транс-Солнечная Федерация")
+
+/// Порода под корпусом и кольцом вокруг него выжигается, иначе шлюзы откроются в скалу.
+/obj/docking_port/mobile/sol_inspection/proc/clear_landing_rock(obj/docking_port/stationary/dock)
+	var/list/bounds = dock.return_coords()
+	var/turf/low_corner = locate(max(min(bounds[1], bounds[3]) - 1, 1), max(min(bounds[2], bounds[4]) - 1, 1), dock.z)
+	var/turf/high_corner = locate(min(max(bounds[1], bounds[3]) + 1, world.maxx), min(max(bounds[2], bounds[4]) + 1, world.maxy), dock.z)
+	for(var/turf/closed/mineral/rock in block(low_corner, high_corner))
+		var/area/place = rock.loc
+		if(place.outdoors)
+			rock.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 
 /// The mandatory stay used to be armed by initiate_docking alone, so a single missed call stranded
 /// the inspection on the station forever. Derive it from where the port actually is instead, and
@@ -390,7 +422,8 @@
 	return_timer_id = addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/docking_port/mobile/sol_inspection, check_return)), max(1, delay), TIMER_STOPPABLE)
 
 /// The vessel leaves on its own once the berth opens, so an abandoned inspection still wraps up
-/// and stops blocking every later one.
+/// and stops blocking every later one. Досрочная разблокировка штрафом позволяет улететь вручную
+/// с консоли, но не инициирует автовылет — только истечение обязательного срока пребывания.
 /obj/docking_port/mobile/sol_inspection/proc/check_return()
 	return_timer_id = null
 	if(QDELETED(src) || !inspection_team || !home_dock || inspection_team.returned_home)
@@ -402,7 +435,13 @@
 		schedule_return_check()
 		return
 
-	if(!inspection_team.return_unlocked() || !canDock(home_dock))
+	// Автоотправка только по истечении обязательного срока пребывания. Досрочная разблокировка
+	// штрафом открывает причал для ручного отлёта с консоли, но не выкидывает шаттл сам.
+	if(!inspection_team.return_available_at || world.time < inspection_team.return_available_at)
+		schedule_return_check()
+		return
+
+	if(!canDock(home_dock))
 		schedule_return_check()
 		return
 
@@ -415,10 +454,24 @@
 
 	schedule_return_check(inspection_team.departure_scheduled_at - world.time)
 
+/obj/docking_port/mobile/sol_inspection/proc/schedule_end_deletion()
+	if(end_timer_id)
+		deltimer(end_timer_id)
+	end_timer_id = addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/docking_port/mobile/sol_inspection, end_delete)), SOL_INSPECTION_DEPARTURE_DELAY, TIMER_STOPPABLE)
+
+/obj/docking_port/mobile/sol_inspection/proc/end_delete()
+	end_timer_id = null
+	if(QDELETED(src))
+		return
+	if(src.inspection_team)
+		src.inspection_team.shuttle = null
+	do_fake_sparks(5, FALSE, get_turf(src))
+	qdel(src)
+
 /obj/machinery/computer/shuttle/sol_inspection
-	desc = "Консоль полётов Всеобщего Бюро Контроля. Возврат на ЦК разрешён через 30 минут после прибытия в сектор станции либо досрочно, когда общая сумма взысканных штрафов достигнет 100 000 кредитов. По истечении срока шаттл уходит автоматически через 3 минуты."
+	desc = "Консоль полётов Всеобщего Бюро Контроля. Возврат на ЦК разрешён через 60 минут после прибытия в сектор станции. По истечении срока шаттл уходит автоматически через 3 минуты."
 	shuttleId = "sol_inspection"
-	possible_destinations = "sol_inspection_custom;sol_inspection_home"
+	possible_destinations = "sol_inspection_custom;sol_inspection_survey;sol_inspection_home"
 	no_destination_swap = TRUE
 
 /// A "Locked" console with no explanation reads as a bug to the crew, so spell the reason out.
@@ -433,8 +486,10 @@
 		.["status_note"] = "Инспекция завершена."
 	else if(!team.visited_station)
 		.["status_note"] = "Инспекция ещё не прибыла в сектор станции."
+	else if(team.fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE)
+		.["status_note"] = "Доступен досрочный вылет на ЦК (взыскано [team.fines_total] кредитов)."
 	else
-		.["status_note"] = "Возврат на ЦК через [DisplayTimeText(team.return_time_left())], затем шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет открывается при [SOL_INSPECTION_EARLY_RETURN_FINE] кредитах взыскания (сейчас [team.account?.account_balance || 0])."
+		.["status_note"] = "Возврат на ЦК через [DisplayTimeText(team.return_time_left())], затем шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]."
 	return
 
 /obj/machinery/computer/shuttle/sol_inspection/ui_act(action, params)
@@ -452,10 +507,10 @@
 	if(!team.visited_station)
 		. += span_notice("Инспекция ещё не прибыла в сектор станции: таймер возврата на ЦК не запущен.")
 		return
-	. += span_notice("До разрешения вернуться на ЦК: [DisplayTimeText(team.return_time_left())], по истечении срока шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет открывается при взыскании [SOL_INSPECTION_EARLY_RETURN_FINE] кредитов.")
+	. += span_notice("До разрешения вернуться на ЦК: [DisplayTimeText(team.return_time_left())], по истечении срока шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет доступен при взыскании [SOL_INSPECTION_EARLY_RETURN_FINE] кредитов.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection
-	desc = "Выбирает безопасную точку посадки в секторе станции."
+	desc = "Выбирает безопасную точку посадки в секторе станции: открытый космос или дикий грунт планеты, включая скалы, но не постройки станции. Двигатели выжигают породу под корпусом и вокруг шлюзов. Ближайшая к станции разведанная площадка уже внесена в список направлений."
 	shuttleId = "sol_inspection"
 	shuttlePortId = "sol_inspection_custom"
 	shuttlePortName = "место инспекции"
@@ -468,6 +523,85 @@
 	for(var/obj/docking_port/stationary/dock as anything in SSshuttle.stationary)
 		if(is_station_level(dock.z))
 			add_jumpable_port(dock.shuttle_id)
+	var/obj/docking_port/mobile/sol_inspection/vessel = SSshuttle.getShuttle(shuttleId)
+	var/turf/site = survey_landing_site()
+	if(!istype(vessel) || !site)
+		return
+	var/obj/docking_port/stationary/survey_dock = new(site)
+	survey_dock.unregister()
+	survey_dock.shuttle_id = SOL_INSPECTION_SURVEY_DOCK
+	survey_dock.name = "Разведанная площадка инспекции"
+	survey_dock.setDir(vessel.dir)
+	survey_dock.width = vessel.width
+	survey_dock.height = vessel.height
+	survey_dock.dwidth = vessel.dwidth
+	survey_dock.dheight = vessel.dheight
+	survey_dock.register()
+	vessel.survey_dock = survey_dock
+	add_jumpable_port(SOL_INSPECTION_SURVEY_DOCK)
+
+/// На станционном уровне планеты садимся на дикий грунт и скалы открытых зон, но не на постройки.
+/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/landing_turf_allowed(turf/T, turf_type)
+	if(..())
+		return TRUE
+	var/static/list/wild_ground = typecacheof(list(/turf/closed/mineral, /turf/open/floor/grass))
+	var/area/place = T.loc
+	return place.outdoors && is_station_level(T.z) && is_type_in_typecache(turf_type, wild_ground)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/placeLandingSpot()
+	. = ..()
+	if(!. || !my_port)
+		return
+	var/area/landing_area = get_area(my_port)
+	my_port.area_type = landing_area ? landing_area.type : SHUTTLE_DEFAULT_UNDERLYING_AREA
+
+/// Ближайшая к центру карты площадка, где скал не больше допуска, иначе площадка с наименьшим числом скал.
+/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/proc/survey_landing_site()
+	if(!shuttle_port)
+		shuttle_port = SSshuttle.getShuttle(shuttleId)
+	if(!shuttle_port)
+		return null
+	var/list/spots = list()
+	var/center_x = world.maxx / 2
+	var/center_y = world.maxy / 2
+	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		for(var/spot_x in SOL_INSPECTION_SURVEY_MARGIN to world.maxx - SOL_INSPECTION_SURVEY_MARGIN step SOL_INSPECTION_SURVEY_STEP)
+			for(var/spot_y in SOL_INSPECTION_SURVEY_MARGIN to world.maxy - SOL_INSPECTION_SURVEY_MARGIN step SOL_INSPECTION_SURVEY_STEP)
+				spots[locate(spot_x, spot_y, station_z)] = (spot_x - center_x) ** 2 + (spot_y - center_y) ** 2
+	sortTim(spots, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	var/turf/best_spot
+	var/best_rocks = INFINITY
+	for(var/turf/spot as anything in spots)
+		var/rocks = count_landing_rock(spot, best_rocks - 1)
+		CHECK_TICK
+		if(isnull(rocks))
+			continue
+		best_spot = spot
+		best_rocks = rocks
+		if(rocks <= SOL_INSPECTION_SURVEY_ROCK_TOLERANCE)
+			break
+	return best_spot
+
+/// Число скал под корпусом с портом на spot, или null, если сесть нельзя или скал больше rock_limit.
+/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/proc/count_landing_rock(turf/spot, rock_limit)
+	var/list/bounds = shuttle_port.return_coords(spot.x, spot.y, shuttle_port.dir)
+	var/turf/first_corner = locate(bounds[1], bounds[2], spot.z)
+	var/turf/second_corner = locate(bounds[3], bounds[4], spot.z)
+	if(!first_corner || !second_corner)
+		return null
+	var/list/overlappers = SSshuttle.get_dock_overlap(bounds[1], bounds[2], bounds[3], bounds[4], spot.z)
+	. = 0
+	for(var/turf/place as anything in block(first_corner, second_corner))
+		if(checkLandingTurf(place, overlappers) != SHUTTLE_DOCKER_LANDING_CLEAR)
+			return null
+		if(ismineralturf(place))
+			.++
+			if(. > rock_limit)
+				return null
+			continue
+		for(var/atom/movable/thing as anything in place.contents)
+			if(ismob(thing) || (isobj(thing) && thing.anchored && !istype(thing, /obj/structure/flora) && !istype(thing, /obj/effect)))
+				return null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(!user.mind?.has_antag_datum(/datum/antagonist/sol_inspector))
@@ -484,3 +618,7 @@
 #undef SOL_INSPECTION_MINIMUM_STAY
 #undef SOL_INSPECTION_RETURN_POLL
 #undef SOL_INSPECTION_DEPARTURE_DELAY
+#undef SOL_INSPECTION_SURVEY_DOCK
+#undef SOL_INSPECTION_SURVEY_STEP
+#undef SOL_INSPECTION_SURVEY_MARGIN
+#undef SOL_INSPECTION_SURVEY_ROCK_TOLERANCE

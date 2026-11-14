@@ -104,7 +104,7 @@
 	death = FALSE
 	random = TRUE
 	mob_species = /datum/species/human
-	mob_name = "a wandering hermit"
+	mob_name = "a rmit"
 	short_desc = "You are a hermit abandoned by fate."
 	flavour_text = "You've survived weeks in this hellish place. Maybe you want to live here with ash tribe or return to civilisation. \
 	Only you know how you got to this planetoid, whether this place in which you woke up was one of your shelters, or you just stumbled upon it."
@@ -438,7 +438,7 @@
 
 /obj/effect/mob_spawn/human/ghostcafeVR/special(mob/living/carbon/human/new_spawn)
 	if(new_spawn.client)
-		new_spawn.client.prefs.copy_to(new_spawn)
+		new_spawn.client.prefs.copy_to(new_spawn, initial_spawn = TRUE)
 		var/datum/outfit/O = new /datum/outfit/ghostcafeVR()
 		O.equip(new_spawn, FALSE, new_spawn.client)
 		SSjob.equip_loadout(null, new_spawn)

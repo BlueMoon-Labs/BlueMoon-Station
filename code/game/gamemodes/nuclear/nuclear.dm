@@ -133,6 +133,7 @@
 	var/tc = 30
 	var/command_radio = FALSE
 	var/uplink_type = /obj/item/inteq/uplink/radio/nuclear
+	var/give_explosive_implant = TRUE //WHITE-STEEL PORT: экспедиционная версия может не получать взрывной имплант.
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
 
@@ -177,7 +178,7 @@
 		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/weapons_auth) in H.implants))
 			var/obj/item/implant/weapons_auth/W = new
 			W.implant(H)
-		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants))
+		if(give_explosive_implant && (!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants)))
 			var/obj/item/implant/explosive/E = new
 			E.implant(H)
 
@@ -203,6 +204,7 @@
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/medical,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
+		/obj/item/organ/cyberimp/chest/healer/revitilzer,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
 		/obj/item/organ/lungs/bioaegis/t3/antag,
@@ -210,6 +212,9 @@
 
 	tc = null
 	uplink_type = null
+	//WHITE-STEEL PORT: expedition-вариант набора (цель охоты) не должен получать objective
+	//на захват шаттла. Флаг позволяет переиспользовать весь набор InteQ, отключив только его.
+	var/give_hijack_objective = TRUE
 
 /datum/outfit/inteq/full/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
@@ -242,6 +247,10 @@
 	var/obj/item/tank/jetpack/J = H.get_jetpack()
 	if(istype(J, /obj/item/tank/jetpack/suit) && !J.on)
 		J.cycle(H)
+
+	//WHITE-STEEL PORT: expedition-вариант (цель охоты) не получает objective на захват шаттла.
+	if(!give_hijack_objective)
+		return
 
 	//превью в панели спавна одевает безмозглого дамми: цели ему выдавать некому
 	//("Cannot execute null.get all objectives()", раунд 9827)

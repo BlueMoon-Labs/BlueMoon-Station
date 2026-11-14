@@ -48,6 +48,9 @@
 		to_chat(owner, "<span class='warning'>You can't use [name] while you're incapacitated.</span>")
 		return
 	var/mob/living/carbon/human/H = owner
+	if(!H.get_num_supporting_limbs())
+		to_chat(H, span_warning("Для подсечки нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/datum/martial_art/style = owner_martial_art()
 	if(!style)
 		return
@@ -131,13 +134,16 @@
 /datum/martial_art/krav_maga/proc/leg_sweep(mob/living/carbon/human/A, mob/living/carbon/human/D)
 	if(!can_use(A))
 		return FALSE
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для подсечки нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/obj/item/bodypart/affecting = D.get_bodypart(BODY_ZONE_CHEST)
 	var/armor_block = D.run_armor_check(affecting, MELEE)
 	var/damage = (damage_roll(A,D)*2 + 25)
 	if(!CHECK_MOBILITY(D, MOBILITY_STAND))
 		return FALSE
-	D.visible_message("<span class='warning'>[A] leg sweeps [D]!</span>", \
-					  	"<span class='userdanger'>[A] leg sweeps you!</span>")
+	D.visible_message(span_warning("[A] подсекает [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+		span_userdanger("[A] подсекает вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 	playsound(get_turf(A), 'sound/effects/hit_kick.ogg', 50, 1, -1)
 	D.apply_damage(damage, STAMINA, affecting, armor_block)
 	D.Paralyze(1.2 SECONDS) // BLUEMOON ADD balancing
@@ -187,9 +193,10 @@
 	if(check_streak(A,D))
 		return TRUE
 	log_combat(A, D, "punched")
-	var/picked_hit_type = pick("punches", "kicks")
+	var/can_kick = !!A.get_num_supporting_limbs()
+	var/picked_hit_type = can_kick ? pick("punches", "kicks") : "punches"
 	var/bonus_damage = damage_roll(A,D)
-	if(!CHECK_MOBILITY(D, MOBILITY_STAND))
+	if(!CHECK_MOBILITY(D, MOBILITY_STAND) && can_kick)
 		bonus_damage += 10
 		picked_hit_type = "stomps on"
 	D.apply_damage(bonus_damage, BRUTE, affecting, armor_block)
@@ -200,8 +207,18 @@
 	else
 		A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 		playsound(get_turf(D), 'sound/effects/hit_punch.ogg', 50, 1, -1)
-	D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
-					  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
+	if(HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) && (picked_hit_type == "kicks" || picked_hit_type == "stomps on"))
+		D.visible_message(span_danger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] [D] хвостом!"), \
+			span_userdanger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] вас хвостом!"))
+	else
+		var/attack_description = "удар кулаком"
+		switch(picked_hit_type)
+			if("kicks")
+				attack_description = "удар ногой"
+			if("stomps on")
+				attack_description = "сильный удар ногой сверху"
+		D.visible_message(span_danger("[A] наносит [D] [attack_description]!"), \
+			span_userdanger("[A] наносит вам [attack_description]!"))
 	log_combat(A, D, "[picked_hit_type] with [name]")
 	return TRUE
 
@@ -214,7 +231,7 @@
 	var/armor_block = D.run_armor_check(affecting, MELEE)
 	var/damage = damage_roll(A,D)
 	var/stunthreshold = A.dna.species.punchstunthreshold
-	if(CHECK_MOBILITY(D, MOBILITY_STAND))
+	if(CHECK_MOBILITY(D, MOBILITY_STAND) || !A.get_num_supporting_limbs())
 		D.visible_message("<span class='danger'>[A] reprimands [D]!</span>", \
 					"<span class='userdanger'>You're slapped by [A]!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
 		to_chat(A, "<span class='danger'>You jab [D]!</span>")
@@ -225,7 +242,7 @@
 	else
 		D.visible_message("<span class='danger'>[A] reprimands [D]!</span>", \
 					"<span class='userdanger'>You're manhandled by [A]!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
-		to_chat(A, "<span class='danger'>You stomp [D]!</span>")
+		to_chat(A, span_danger("Вы с силой придавливаете [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
 		playsound(D, 'sound/effects/hit_punch.ogg', 50, TRUE, -1)
 		D.apply_damage(damage*2 + 20, STAMINA, affecting, armor_block)

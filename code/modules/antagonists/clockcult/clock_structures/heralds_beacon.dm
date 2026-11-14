@@ -42,7 +42,7 @@
 	if(!time_remaining)
 		hierophant_message("<span class='bold sevtug_small'>[src] потерял свою силу и больше не может быть активирован.</span>")
 		for(var/mob/M in GLOB.player_list)
-			if(isobserver(M) || is_servant_of_ratvar(M))
+			if(isobserver(M) || (is_servant_of_ratvar(M) && !is_antag_training_atom(M)))
 				M.playsound_local(M, 'sound/magic/blind.ogg', 50, FALSE)
 		available = FALSE
 		icon_state = "interdiction_lens_unwrenched"
@@ -87,7 +87,7 @@
 	message_admins("[ADMIN_LOOKUPFLW(user)] has [voting ? "voted" : "undone their vote"] to activate [src]! [ADMIN_JMP(user)]")
 	hierophant_message("<span class='brass'><b>[user.real_name]</b> [voting ? "проголосовал" : "отозвал свой голос"] за активацию [src]! Маяку [votes_left == 1 ? "нужен" : "нужно"] ещё [votes_left] голос[votes_left % 10 == 1 && votes_left % 100 != 11 ? "" : (votes_left % 10 >= 2 && votes_left % 10 <= 4 && (votes_left % 100 < 10 || votes_left % 100 >= 20) ? "а" : "ов")] для активации.")
 	for(var/mob/M in GLOB.player_list)
-		if(isobserver(M) || is_servant_of_ratvar(M))
+		if(isobserver(M) || (is_servant_of_ratvar(M) && !is_antag_training_atom(M)))
 			M.playsound_local(M, 'sound/magic/clockwork/fellowship_armory.ogg', 50, FALSE)
 	if(!votes_left)
 		herald_the_justiciar()
@@ -106,7 +106,7 @@
 		C.update_values()
 		to_chat(C, C.empower_string)
 	for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
-		if(is_servant_of_ratvar(H))
+		if(is_servant_of_ratvar(H) && !is_antag_training_atom(H))
 			to_chat(H, "<span class='bold alloy'>Энергия маяка превращает ваше тело в часовой механизм! Теперь вы защищены от многих опасностей, а ваше тело более устойчиво к повреждениям!</span>")
 			H.set_species(/datum/species/golem/clockwork/no_scrap)
 	var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar

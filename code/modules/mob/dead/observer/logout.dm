@@ -4,7 +4,11 @@
 		deltimer(ghost_t_ray_timer)
 		ghost_t_ray_timer = null
 	if (client)
-		client.images -= (GLOB.ghost_images_default+GLOB.ghost_images_simple)
+		switch(lastsetting)
+			if(GHOST_OTHERS_DEFAULT_SPRITE)
+				client.images -= GLOB.ghost_images_default
+			if(GHOST_OTHERS_SIMPLE)
+				client.images -= GLOB.ghost_images_simple
 	lastclienttime = world.time //BLUEMOON ADD фиксируем время выхода игрока
 
 	if(observetarget)
@@ -15,5 +19,6 @@
 				UNSETEMPTY(target.observers)
 			observetarget = null
 	..()
+	mind?.current?.loc?.on_log(FALSE)
 	if(!QDELING(src) && !key && !keep_while_keyless)
 		qdel(src)

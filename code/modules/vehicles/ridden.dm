@@ -6,7 +6,6 @@
 	default_driver_move = FALSE
 	pass_flags_self = PASSTABLE
 	var/legs_required = 1
-	var/arms_required = 0	//why not?
 
 /obj/vehicle/ridden/Initialize(mapload)
 	. = ..()
@@ -32,8 +31,8 @@
 
 /obj/vehicle/ridden/post_buckle_mob(mob/living/M)
 	add_occupant(M)
-	if(M.get_num_legs() < legs_required)
-		to_chat(M, "<span class='warning'>You don't have enough legs to operate the pedals!</span>")
+	if(M.get_num_supporting_limbs() < legs_required)
+		to_chat(M, span_warning("Для управления транспортом нужна действующая нога или опорный хвост!"))
 		unbuckle_mob(M)
 	return ..()
 

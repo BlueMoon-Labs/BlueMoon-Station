@@ -29,9 +29,9 @@
 	check_flags(/turf/open/floor, TURF_FLAGS_FLOOR, "базовый пол")
 	check_flags(/turf/open/floor/plasteel, TURF_FLAGS_FLOOR, "плистил наследует пол без правок")
 
-	// Провода поверх: плитинг, стекло и опенспейс не целы.
+	// Провода поверх: плитинг и опенспейс не целы; стеклянный пол прячет трубы и кабели.
 	check_flags(/turf/open/floor/plating, TURF_FLAGS_FLOOR & ~TURF_INTACT, "плитинг не цел")
-	check_flags(/turf/open/floor/glass, TURF_FLAGS_FLOOR & ~TURF_INTACT, "стеклянный пол не цел")
+	check_flags(/turf/open/floor/glass, TURF_FLAGS_FLOOR, "стеклянный пол цел")
 	check_flags(/turf/open/openspace, TURF_FLAGS_DEFAULT & ~TURF_INTACT, "опенспейс не цел")
 
 	// Космос: не цел, свет не динамический, грязи нет.

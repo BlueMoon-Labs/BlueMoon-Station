@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Actions of the workflows and of the composite action in .github/actions, one PR a month.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - "*"

@@ -1,0 +1,87 @@
+/// «Найди цель в темноте»: манекен в комнате за дверями, светящийся маяк у входа; касание манекена и возврат к маяку завершают упражнение.
+/datum/unit_test/antag_training_exercise_dark_find/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/mob/living/carbon/human/user = session.current_body
+	user.a_intent = INTENT_HELP
+	var/datum/tgui/ui = allocate(/datum/tgui, user, session, "AntagTraining")
+	var/datum/antag_training_sector/sector = enter_training_sector(session, ui, "dark")
+	var/datum/antag_training_exercise_run/run = start_training_drill(session, ui, "dark_find")
+	TEST_ASSERT_NOTNULL(run, "Упражнение стартует в тёмном секторе.")
+	var/obj/structure/antag_training_mannequin/mannequin = run.find_prop(/obj/structure/antag_training_mannequin)
+	var/obj/effect/antag_training_beacon/lit/beacon = run.find_prop(/obj/effect/antag_training_beacon/lit)
+	TEST_ASSERT_NOTNULL(mannequin, "Манекен поставлен.")
+	TEST_ASSERT(session.arena.inside_bounds(get_turf(mannequin), sector.bounds), "Манекен в тёмном секторе.")
+	TEST_ASSERT_EQUAL(get_turf(beacon), sector.spawn_turf(), "Маяк отмечает вход.")
+	var/datum/antag_training_exercise/drill/dark/find/exercise = run.exercise
+	for(var/list/room as anything in exercise.rooms(sector))
+		if(get_turf(mannequin) in room)
+			TEST_ASSERT(!(sector.spawn_turf() in room), "Манекен стоит в комнате, а не в коридоре входа.")
+
+	var/turf/beside = antag_training_free_step(mannequin)
+	TEST_ASSERT_NOTNULL(beside, "К манекену можно подойти.")
+	user.forceMove(beside)
+	mannequin.attack_hand(user)
+	TEST_ASSERT_EQUAL(run.step_index, 2, "Касание манекена засчитано.")
+	user.forceMove(get_turf(beacon))
+	TEST_ASSERT(run.ended && run.success, "Возврат к маяку завершает упражнение: [run.result_text]")
+
+/datum/unit_test/proc/wait_for_runner_step(mob/living/runner, max_wait = 3 SECONDS)
+	var/turf/start = get_turf(runner)
+	var/list/budget = new_wait_budget(max_wait, "шаг бегущей цели")
+	while(get_turf(runner) == start && wait_budget_tick(budget))
+		continue
+	return get_turf(runner) != start
+
+/datum/unit_test/proc/beside_runner(mob/living/runner)
+	for(var/direction in list(EAST, WEST))
+		var/turf/open/spot = get_step(runner, direction)
+		if(istype(spot) && !spot.is_blocked_turf(exclude_mobs = FALSE))
+			return spot
+
+/// «Засада»: бегущая цель в коридоре тёмного сектора; в темноте рядом с ней участника не замечают и толчок дубинкой завершает упражнение, с фонарём цель замечает участника.
+/datum/unit_test/antag_training_exercise_dark_ambush/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/mob/living/carbon/human/user = session.current_body
+	var/datum/tgui/ui = allocate(/datum/tgui, user, session, "AntagTraining")
+	var/datum/antag_training_sector/sector = enter_training_sector(session, ui, "dark")
+	var/datum/antag_training_exercise_run/run = start_training_drill(session, ui, "dark_ambush")
+	TEST_ASSERT_NOTNULL(run, "Упражнение стартует в тёмном секторе.")
+	var/mob/living/carbon/human/runner = run.find_prop(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(runner, "Упражнение создаёт бегущую цель.")
+	TEST_ASSERT(session.arena.inside_bounds(get_turf(runner), sector.bounds), "Цель в тёмном секторе.")
+	TEST_ASSERT(wait_for_runner_step(runner), "Цель ходит по коридору.")
+
+	var/turf/hideout = beside_runner(runner)
+	TEST_ASSERT_NOTNULL(hideout, "Рядом с коридором цели есть где встать.")
+	user.forceMove(hideout)
+	TEST_ASSERT(hideout.lighting_object && hideout.get_lumcount() < 0.1, "Укрытие участника в темноте.")
+	TEST_ASSERT(wait_for_runner_step(runner), "Цель проходит мимо участника.")
+	TEST_ASSERT(!run.ended, "В темноте цель не замечает участника рядом.")
+	antag_training_console_act(session, ui, "target_condition", list("id" = REF(runner), "condition" = "knockdown"))
+	TEST_ASSERT(runner.body_position != LYING_DOWN && !run.ended, "Пульт не сбивает цель засады.")
+
+	var/obj/item/melee/baton/loaded/baton = allocate(/obj/item/melee/baton/loaded, get_turf(user))
+	TEST_ASSERT(drill_hold(user, baton), "Участник держит дубинку.")
+	baton.attack_self(user)
+	hideout = beside_runner(runner)
+	TEST_ASSERT_NOTNULL(hideout, "К цели можно подойти вплотную.")
+	user.forceMove(hideout)
+	baton.alt_pre_attack(runner, user)
+	TEST_ASSERT(run.ended && run.success, "Толчок из засады завершает упражнение: [run.result_text]")
+
+	user.forceMove(sector.spawn_turf())
+	run = start_training_drill(session, ui, "dark_ambush")
+	runner = run.find_prop(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(runner, "Повтор создаёт новую цель.")
+	var/obj/item/flashlight/flashlight = allocate(/obj/item/flashlight, get_turf(user))
+	TEST_ASSERT(drill_hold(user, flashlight), "Участник держит фонарь.")
+	TEST_ASSERT(wait_for_runner_step(runner), "Новая цель ходит по коридору.")
+	hideout = beside_runner(runner)
+	TEST_ASSERT_NOTNULL(hideout, "К новой цели можно подойти вплотную.")
+	user.forceMove(hideout)
+	flashlight.attack_self(user)
+	TEST_ASSERT(flashlight.on, "Фонарь включён.")
+	wait_for_runner_step(runner)
+	TEST_ASSERT(run.ended && !run.success && findtext(run.result_text, "заметила"), "С фонарём рядом цель замечает участника.")

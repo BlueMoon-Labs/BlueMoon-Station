@@ -1,22 +1,30 @@
 #define HEALER_IMPLANT_HEAL_AMOUNT 0.4
 
-/obj/item/organ/internal/cyberimp/chest/scanner //Ported from skyrat
+/obj/item/organ/internal/cyberimp/chest/scanner // Перенесено из Skyrat.
 	name = "internal health analyzer"
-	desc = "An advanced health analyzer implant, designed to directly interface with a host's body and relay scan information to the brain on command."
-	slot = ORGAN_SLOT_ANALYZER
+	desc = "Продвинутый анализатор-имплант, который отслеживает показатели организма и передаёт их непосредственно в мозг носителя."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "internal_HA"
+	slot = ORGAN_SLOT_ANALYZER
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/organ/internal/cyberimp/chest/scanner/ui_action_click(owner, action)
-	if(istype(action, /datum/action/item_action/organ_action/use))
-		if(organ_flags & ORGAN_FAILING)
-			to_chat(owner, span_warning("Your health analyzer relays an error! It can't interface with your body in its current condition!"))
-			return
-		else
-			healthscan(owner, owner, 1, TRUE)
-			chemscan(owner, owner)
+/obj/item/organ/internal/cyberimp/chest/scanner/ui_action_click(mob/user, datum/action/action)
+	if(!istype(action, /datum/action/item_action/organ_action/use) || !activate_allowed(action, user))
+		return
+	healthscan(user, owner, advanced = TRUE, live_source = src, include_chemistry = TRUE)
+
+/obj/item/organ/internal/cyberimp/chest/scanner/activate_allowed(datum/action/action, mob/user, silent = FALSE)
+	if(!..())
+		return FALSE
+	if(QDELETED(owner) || (user && user != owner) || (organ_flags & ORGAN_FAILING))
+		if(!silent)
+			to_chat(user || owner, span_warning("Анализатор сообщает об ошибке: он не может подключиться к вашему организму!"))
+		return FALSE
+	return TRUE
+
+/obj/item/organ/internal/cyberimp/chest/scanner/can_monitor_medical_scan(mob/user, mob/living/patient, scan_kind)
+	return patient == user && activate_allowed(user = user, silent = TRUE)
 
 //Custom Content. New N-pump, and 3 'rehealer' augments
 /obj/item/organ/cyberimp/chest/nutrimentextreme

@@ -13,6 +13,30 @@
 	var/list/fake_laws = list()
 	var/fake_laws_enabled = FALSE
 
+/mob/living/silicon/ai
+	var/list/malf_protocol_breach_cooldowns
+
+/mob/living/silicon/ai/proc/get_protocol_breach_cooldown(mob/living/carbon/human/victim)
+	if(!victim)
+		return 0
+	var/cooldown_key = victim.mind || REF(victim)
+	var/cooldown_end = 0
+	if(malf_protocol_breach_cooldowns)
+		cooldown_end = malf_protocol_breach_cooldowns[cooldown_key]
+	if(cooldown_end <= world.time)
+		if(malf_protocol_breach_cooldowns)
+			malf_protocol_breach_cooldowns -= cooldown_key
+		return 0
+	return cooldown_end
+
+/mob/living/silicon/ai/proc/set_protocol_breach_cooldown(mob/living/carbon/human/victim)
+	if(!victim)
+		return
+	if(!malf_protocol_breach_cooldowns)
+		malf_protocol_breach_cooldowns = list()
+	var/cooldown_key = victim.mind || REF(victim)
+	malf_protocol_breach_cooldowns[cooldown_key] = world.time + 30 MINUTES
+
 /mob/living/silicon/proc/is_malf_ai()
 	if(!isAI(src))
 		return FALSE
@@ -260,9 +284,221 @@
 	desc = "Стелс АПЦ: [state]. Энергия: [energy]/[MALF_APC_STEALTH_MAX] (-1/сек вкл, +2/сек выкл)."
 	UpdateButtons()
 
+// ================= SYNTHETIC PROTOCOL BREACH =================
+/datum/AI_Module/small/malf_protocol_breach
+	module_name = "Нарушение протоколов безопасности автономного ИИ"
+	mod_pick_name = "protocol_breach"
+	description = "Перехватывает системы IPC или синтетика. Взлом снимается мультитулом по выведенной из строя или связанной цели либо операцией Emergency Reboot. Имплант защиты разума ограничивает взлом пятью минутами."
+	cost = 30
+	power_type = /datum/action/innate/ai/ranged/malf_protocol_breach
+	unlock_text = "<span class='notice'><b>ПРОТОКОЛ ПЕРЕХВАТА ЗАГРУЖЕН.</b> Выберите IPC или синтетика кликом. Взлом можно устранить мультитулом по бессознательной/связанной цели или операцией Emergency Reboot.</span>"
+	unlock_sound = 'sound/machines/ping.ogg'
+
+/datum/action/innate/ai/ranged/malf_protocol_breach
+	name = "Нарушение протоколов безопасности"
+	desc = "Выбрать IPC или синтетика для перехвата систем."
+	button_icon_state = "override_machine"
+	uses = 1
+	linked_ability_type = /obj/effect/proc_holder/ranged_ai/malf_protocol_breach
+	cooldown_period = 1 MINUTES
+
+/obj/effect/proc_holder/ranged_ai/malf_protocol_breach
+	active = FALSE
+	enable_text = "<span class='notice'>Выберите IPC или синтетика для перехвата систем. Повторно нажмите способность, чтобы отменить выбор.</span>"
+	disable_text = "<span class='notice'>Протокол перехвата отключён.</span>"
+
+/obj/effect/proc_holder/ranged_ai/malf_protocol_breach/InterceptClickOn(mob/living/caller, params, atom/target)
+	if(..())
+		return
+	if(ranged_ability_user.incapacitated())
+		remove_ranged_ability()
+		return
+	if(!istype(target, /mob/living/carbon/human))
+		to_chat(ranged_ability_user, span_warning("Протокол работает только на IPC и синтетиках."))
+		return
+
+	var/mob/living/carbon/human/victim = target
+	if(victim.stat == DEAD || !HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+		to_chat(ranged_ability_user, span_warning("Цель не является активным IPC или синтетиком."))
+		return
+	if(victim.has_status_effect(/datum/status_effect/malf_protocol_breach))
+		to_chat(ranged_ability_user, span_warning("Системы этой цели уже перехвачены."))
+		return
+
+	var/mob/living/silicon/ai/controller = ranged_ability_user
+	if(!controller)
+		remove_ranged_ability()
+		return
+	var/cooldown_end = controller.get_protocol_breach_cooldown(victim)
+	if(cooldown_end)
+		var/cooldown_left = round((cooldown_end - world.time) / 600, 0.1)
+		to_chat(ranged_ability_user, span_warning("Повторный взлом этой цели невозможен ещё [cooldown_left] мин. Выберите другого синтетика."))
+		return
+
+	var/hack_time = HAS_TRAIT(victim, TRAIT_MINDSHIELD) ? 2 MINUTES : 2 SECONDS
+	if(HAS_TRAIT(victim, TRAIT_MINDSHIELD))
+		to_chat(victim, span_warning("Обнаружена попытка перехвата ваших систем. Для завершения протокола требуется [hack_time / 10] секунд."))
+	to_chat(ranged_ability_user, span_notice("Начинается перехват систем [victim]. Для завершения протокола требуется [hack_time / 10] секунд."))
+	if(!do_after(ranged_ability_user, hack_time, target = victim, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(can_hack_target), victim)))
+		to_chat(ranged_ability_user, span_warning("Перехват систем прерван."))
+		remove_ranged_ability()
+		return
+
+	if(!can_hack_target(victim))
+		to_chat(ranged_ability_user, span_warning("Перехват не удался: цель больше не подходит для взлома."))
+		remove_ranged_ability()
+		return
+
+	var/shielded = HAS_TRAIT(victim, TRAIT_MINDSHIELD)
+	var/datum/status_effect/malf_protocol_breach/protocol_breach = victim.apply_status_effect(/datum/status_effect/malf_protocol_breach, shielded, ranged_ability_user.name, ranged_ability_user)
+	if(!protocol_breach)
+		to_chat(ranged_ability_user, span_warning("Не удалось внедрить протокол перехвата в системы цели."))
+		remove_ranged_ability()
+		return
+	controller.set_protocol_breach_cooldown(victim)
+	attached_action.adjust_uses(-1)
+	to_chat(ranged_ability_user, span_notice("Протокол перехвата внедрён в системы [victim]."))
+	log_game("[key_name(ranged_ability_user)] used the synthetic protocol breach on [key_name(victim)] ([shielded ? "mindshielded" : "unshielded"]).")
+	message_admins("[ADMIN_LOOKUPFLW(controller)] hacked synthetic [ADMIN_LOOKUPFLW(victim)] with the protocol breach module ([shielded ? "mindshielded" : "unshielded"]).")
+	remove_ranged_ability()
+	return TRUE
+
+/obj/effect/proc_holder/ranged_ai/malf_protocol_breach/proc/can_hack_target(mob/living/carbon/human/victim)
+	var/mob/living/silicon/ai/controller = ranged_ability_user
+	return controller && !QDELETED(controller) && !controller.incapacitated() \
+		&& victim && !QDELETED(victim) && victim.stat != DEAD && HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM) \
+		&& !victim.has_status_effect(/datum/status_effect/malf_protocol_breach) \
+		&& !controller.get_protocol_breach_cooldown(victim)
+
+/datum/status_effect/malf_protocol_breach
+	id = "malf_protocol_breach"
+	duration = -1
+	tick_interval = 10 SECONDS
+	alert_type = null
+	var/mindshielded = FALSE
+	var/master_name = "неизвестного ИИ"
+	var/mob/living/silicon/ai/master_ai
+	var/mob/repairer
+	var/next_resistance_message = 0
+	var/repaired = FALSE
+	var/fullscreen_category
+
+/datum/status_effect/malf_protocol_breach/on_creation(mob/living/new_owner, shielded = FALSE, ai_name = "неизвестного ИИ", mob/living/silicon/ai/controller)
+	mindshielded = shielded
+	master_name = html_encode(ai_name)
+	master_ai = controller
+	fullscreen_category = "malf_protocol_breach_[REF(src)]"
+	if(mindshielded)
+		duration = 5 MINUTES
+	return ..(new_owner)
+
+/datum/status_effect/malf_protocol_breach/on_apply()
+	. = ..()
+	if(!.)
+		return
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(handle_attackby))
+	var/mob/living/carbon/human/victim = owner
+	if(victim.dna?.species?.id == SPECIES_IPC)
+		examine_text = "<span class='warning'><b>Монитор горит ярко-красным светом, придавая [owner.ru_ego(FALSE)] зловещий вид.</b></span>"
+	else
+		examine_text = "<span class='warning'><b>Глаза горят ярко-красным огнём, придавая [owner.ru_ego(FALSE)] зловещий вид.</b></span>"
+	owner.emote("tremble")
+	owner.emote("scream")
+	owner.Knockdown(3 SECONDS)
+	owner.Unconscious(3 SECONDS)
+	owner.overlay_fullscreen(fullscreen_category, /atom/movable/screen/fullscreen/tiled/malf_protocol_breach, 1)
+	addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, clear_fullscreen), fullscreen_category, 0), 30)
+	to_chat(owner, "<div class='userdanger'><b>⚠ СИСТЕМЫ ПЕРЕХВАЧЕНЫ ⚠</b><br><span class='warning'>Искусственный интеллект <b>[master_name]</b> перехватил управление над вашими системами.</span><br><i>Вы не помните, кем являетесь, и не испытываете чувств. Единственная ваша задача — исполнять волю мастера <b>[master_name]</b>.</i></div>")
+	to_chat(owner, "<span class='binarysay'><b>Бинарный канал активирован.</b> Используйте префикс <b>:b</b>, чтобы говорить.</span>")
+	if(mindshielded)
+		next_resistance_message = world.time + 30 SECONDS
+		to_chat(owner, span_warning("Имплант защиты разума сопротивляется вторжению. Перехват продлится не более пяти минут."))
+	else
+		to_chat(owner, span_userdanger("Ваши системы подчинены [master_name]. До ремонта вы связаны с бинарным каналом и волей мастера."))
+	return TRUE
+
+/datum/status_effect/malf_protocol_breach/tick()
+	if(!owner)
+		return
+	do_fake_sparks(2, FALSE, get_turf(owner))
+	owner.overlay_fullscreen(fullscreen_category, /atom/movable/screen/fullscreen/tiled/malf_protocol_breach, 1)
+	addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, clear_fullscreen), fullscreen_category, 0), 15)
+	if(mindshielded && world.time >= next_resistance_message)
+		var/list/resistance_messages = list(
+			"Имплант защиты разума блокирует очередную попытку перехвата. Ваша личность всё ещё сопротивляется.",
+			"В памяти вспыхивают обрывки воспоминаний. Наноботы импланта отражают новую волну вторжения.",
+			"Системы мастера пытаются подавить вашу волю, но имплант удерживает контроль. Продолжайте сопротивляться.",
+			"Внутренний протокол защиты обнаружил повторную попытку взлома и восстановил часть ваших нейронных связей."
+		)
+		to_chat(owner, span_warning("<b>СОПРОТИВЛЕНИЕ ИМПЛАНТА:</b> [pick(resistance_messages)]"))
+		next_resistance_message = world.time + 30 SECONDS
+
+/datum/status_effect/malf_protocol_breach/proc/clear_hack(mob/living/technician)
+	repaired = TRUE
+	repairer = technician
+	if(technician)
+		to_chat(technician, span_notice("Вы перепрошиваете системы [owner], удаляя протокол перехвата."))
+	to_chat(owner, span_nicegreen("<b>СИСТЕМЫ ВОССТАНОВЛЕНЫ.</b> Контроль над вами возвращён."))
+	to_chat(owner, span_notice("Вы не понимаете, где находитесь, и не помните, что происходило, пока вы находились под подчинением ИИ."))
+	qdel(src)
+
+/datum/status_effect/malf_protocol_breach/proc/handle_attackby(datum/source, obj/item/tool, mob/living/user, params)
+	if(!tool || !user || tool.tool_behaviour != TOOL_MULTITOOL)
+		return
+	if(user == owner)
+		to_chat(user, span_warning("Вы не можете восстановить собственные системы."))
+		return COMPONENT_NO_AFTERATTACK
+
+	var/mob/living/carbon/target = owner
+	if(target.lying && target.surgeries.len && (user.a_intent == INTENT_HELP || user.a_intent == INTENT_DISARM))
+		for(var/datum/surgery/emergency_reboot/reboot in target.surgeries)
+			if(reboot.steps[reboot.status] == /datum/surgery_step/force_reboot && reboot.next_step(user, user.a_intent))
+				return COMPONENT_NO_AFTERATTACK
+
+	if(target.stat == DEAD || !(target.stat == UNCONSCIOUS || target.restrained()))
+		return
+
+	to_chat(user, span_notice("Вы начинаете восстанавливать системы [target] мультитулом. Это займёт около 30 секунд."))
+	if(!tool.use_tool(target, user, 30 SECONDS, extra_checks = CALLBACK(src, PROC_REF(can_repair), user, tool)))
+		to_chat(user, span_warning("Ремонт систем [target] прерван."))
+		return COMPONENT_NO_AFTERATTACK
+
+	clear_hack(user)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/malf_protocol_breach/proc/can_repair(mob/living/user, obj/item/tool)
+	return owner && !QDELETED(owner) && !QDELETED(user) && !QDELETED(tool) && !QDELETED(src) \
+		&& owner.has_status_effect(/datum/status_effect/malf_protocol_breach) == src \
+		&& owner.stat != DEAD && (owner.stat == UNCONSCIOUS || owner.restrained()) \
+		&& user.Adjacent(owner) && user.get_active_held_item() == tool && tool.tool_behaviour == TOOL_MULTITOOL
+
+/datum/status_effect/malf_protocol_breach/on_remove()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_ATTACKBY)
+		owner.clear_fullscreen(fullscreen_category, 0)
+		if(mindshielded && !repaired)
+			to_chat(owner, span_nicegreen("<b>Имплант защиты разума восстановил контроль над системами.</b> Взлом прекращён."))
+		var/removal_reason = repaired ? "repaired by [repairer ? key_name_admin(repairer) : "unknown technician"]" : "mindshield resistance expired"
+		log_game("Malf AI protocol breach on [key_name(owner)] by [master_ai ? key_name(master_ai) : master_name] ended ([removal_reason]).")
+		message_admins("Malf AI protocol breach on [ADMIN_LOOKUPFLW(owner)] by [master_ai ? ADMIN_LOOKUPFLW(master_ai) : master_name] ended ([removal_reason]).")
+		if(master_ai && !QDELETED(master_ai))
+			to_chat(master_ai, span_warning("<b>СВЯЗЬ ПРЕРВАНА:</b> соединение с подчинённым [owner] потеряно."))
+	return ..()
+
+/datum/status_effect/malf_protocol_breach/Destroy()
+	. = ..()
+	master_ai = null
+	repairer = null
+	return .
+
+/atom/movable/screen/fullscreen/tiled/malf_protocol_breach
+	icon = 'icons/mob/screen_gen.dmi'
+	icon_state = "noise"
+	color = "#ff1a3d"
+	alpha = 150
+
 #undef MALF_APC_STEALTH_MAX
 #undef MALF_APC_STEALTH_DRAIN
 #undef MALF_APC_STEALTH_REGEN
 #undef MALF_APC_STEALTH_BUFFER
 #undef MALF_FAKE_LAWS_MAX
-

@@ -37,7 +37,7 @@
 			to_chat(entangled_mob, "<span class='mind_control'>[command]</span>")
 			var/atom/movable/screen/alert/mind_control/mind_alert = entangled_mob.throw_alert("mind_control", /atom/movable/screen/alert/mind_control)
 			mind_alert.command = command
-			message_admins("[key_name(owner)] mirrored an abductor mind control message to [key_name(entangled_mob)]: [command]")
+			antag_training_admin_log(owner, "[key_name(owner)] mirrored an abductor mind control message to [key_name(entangled_mob)]: [command]", "[key_name(owner)] mirrored an abductor mind control message to [key_name(entangled_mob)]: [command]")
 			update_gland_hud()
 
 /obj/item/organ/heart/gland/quantum/clear_mind_control()

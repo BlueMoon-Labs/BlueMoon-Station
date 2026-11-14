@@ -5,7 +5,15 @@
 
 /datum/buildmode_mode/area_edit/New()
 	areaimage = image('icons/turf/areas.dmi', null, "yellow")
+	//BLEND_MULTIPLY области на пустой AREA_PLANE ничего не рисует
+	areaimage.blend_mode = BLEND_OVERLAY
+	areaimage.plane = AREA_PLANE
 	..()
+
+/datum/buildmode_mode/area_edit/proc/highlight_stored_area(turf/floor)
+	areaimage.loc = storedarea
+	if(floor)
+		SET_PLANE(areaimage, AREA_PLANE, floor)
 
 /datum/buildmode_mode/area_edit/enter_mode(datum/buildmode/BM)
 	BM.holder.images += areaimage
@@ -40,7 +48,7 @@
 		storedarea.power_environ = 0
 		storedarea.always_unpowered = 0
 		storedarea.name = areaname
-		areaimage.loc = storedarea // color our area
+		highlight_stored_area(get_turf(c.mob))
 
 /datum/buildmode_mode/area_edit/handle_click(client/c, params, object)
 	var/list/pa = params2list(params)
@@ -55,7 +63,8 @@
 		if(istype(storedarea, /area) && islist(storedarea.contents) && get_area(T) != storedarea)
 			log_admin("Build Mode: [key_name(c)] added [AREACOORD(T)] to [storedarea]")
 			storedarea.contents.Add(T)
+		highlight_stored_area(T)
 	else if(right_click)
 		var/turf/T = get_turf(object)
 		storedarea = get_area(T)
-		areaimage.loc = storedarea // color our area
+		highlight_stored_area(T)

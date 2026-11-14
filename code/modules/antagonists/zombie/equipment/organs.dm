@@ -83,7 +83,7 @@
 	if(!iszombie(owner))
 		old_species = owner.dna.species.type
 		owner.set_species(/datum/species/zombie/infectious)
-		owner.mind?.add_antag_datum(/datum/antagonist/zombie)
+		owner.mind?.add_antag_datum(owner.training_origin ? /datum/antagonist/zombie/training : /datum/antagonist/zombie)
 
 	var/stand_up = (owner.stat == DEAD) || (owner.stat == UNCONSCIOUS)
 

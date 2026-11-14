@@ -1,7 +1,6 @@
 /datum/language/arachnid
 	name = "Rachnidian"
-	desc = "A language that exploits the multiple limbs of arachnids to do subtle dance like movements to communicate.\
-	A proper speaker's movements are quick and sharp enough to make audible whiffs and thumps however, which are intelligible over the radio."
+	desc = "Язык, в котором пауки используют множество своих конечностей для тонких, танцевальных движений. У настоящего собеседника движения достаточно быстры и чётки, чтобы издавать слышимые свисты и удары, различимые даже по радио."
 	speech_verb = "chitter"
 	ask_verb = "chitter"
 	exclaim_verb = "chitter"
@@ -17,8 +16,8 @@
 		"a",  "a",  "e",  "e",  "i",  "i",  "o",  "o",  "u",  "u",  "s",  "s"
 	)
 	flags = NO_STUTTER | LANGUAGE_HIDE_ICON_IF_NOT_UNDERSTOOD
-
-	icon_state = "arachnid"
+	// Спиздите сюда пожалуйста стейт арахнидов, мне лень
+	icon_state = "spider"
 	//SKYRAT CHANGE - language restriction
 	restricted = FALSE
 	//

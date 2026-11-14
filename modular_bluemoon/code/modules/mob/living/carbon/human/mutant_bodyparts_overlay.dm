@@ -1,4 +1,5 @@
 GLOBAL_LIST_INIT(mutant_overlays_cache, list())
+GLOBAL_LIST_INIT(body_hardlight_layers, list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 
 #define MUTANT_OVERLAY_CACHE_MAX 1024
 #define MUTANT_OVERLAY_CACHE_EVICT (MUTANT_OVERLAY_CACHE_MAX / 4)
@@ -60,6 +61,8 @@ GLOBAL_LIST_INIT(mutant_overlay_layer_bumps, list(
 /mutable_appearance
 	var/color_tone
 	var/datum/overlay_effect/used_effect_datum
+	var/hardlight_icon
+	var/hardlight_state
 
 //Этот прок важен для пересоздания точно такого же оверлея
 //Он сохраняет наложенный эффект,цвет и т.д.
@@ -101,7 +104,7 @@ GLOBAL_LIST_INIT(mutant_overlay_layer_bumps, list(
 		flat_icon.Blend(M, ICON_ADD)
 	return flat_icon
 
-/mob/living/carbon/human/proc/use_effect_by_params(mutable_appearance/accessory_overlay, list/overlay_params)
+/mob/living/carbon/human/proc/use_effect_by_params(mutable_appearance/accessory_overlay, list/overlay_params, target_index)
 	var/datum/overlay_effect/effect_datum = overlay_params[OVERLAYS_EFFECT_DATUM_INDEX]
 	var/layer_name = overlay_params[OVERLAYS_LAYER_NAME_KEY_INDEX]
 	var/cache_list_key = generate_accessory_cache_key(accessory_overlay, effect_datum)
@@ -118,8 +121,11 @@ GLOBAL_LIST_INIT(mutant_overlay_layer_bumps, list(
 
 	var/mutable_appearance/overlay_MA = mutable_appearance(icon = template, layer = MA_layer, plane = accessory_overlay.plane, alpha = LIGHTING_PLANE_ALPHA_VISIBLE, appearance_flags = accessory_overlay.appearance_flags, color = effect_datum.color, pixel_x = accessory_overlay.pixel_x, pixel_y = accessory_overlay.pixel_y, blend_mode=BLEND_OVERLAY)
 	overlay_MA.name = "[layer_name]_[accessory_overlay.icon_state]"
+	overlay_MA.hardlight_icon = accessory_overlay.icon
+	overlay_MA.hardlight_state = accessory_overlay.icon_state
 
-	var/target_index = (layer_name in GLOB.mutant_overlay_genital_layers) ? GENITAL_EFFECT_LAYER : BODYPART_EFFECT_LAYER
+	if(isnull(target_index))
+		target_index = (layer_name in GLOB.mutant_overlay_genital_layers) ? GENITAL_EFFECT_LAYER : BODYPART_EFFECT_LAYER
 	return add_new_overlay_effect_in_standing(target_index, overlay_MA)
 
 //MARK: Обновление и применение
@@ -131,10 +137,45 @@ GLOBAL_LIST_INIT(mutant_overlay_layer_bumps, list(
 
 //Обновляем только те проходы, которых коснулась правка. null = оба.
 /mob/living/carbon/human/proc/update_overlayed_parts(list/changed_layers)
+	if(!changed_layers || (HAIR_APPEARANCE in changed_layers))
+		update_hair()
+	else if(has_common_layer(changed_layers, GLOB.body_hardlight_layers))
+		update_body_hardlight()
 	if(!changed_layers || has_common_layer(changed_layers, GLOB.mutant_overlay_layers))
 		update_mutant_bodyparts()
 	if(!changed_layers || has_common_layer(changed_layers, GLOB.mutant_overlay_genital_layers))
 		update_genitals()
+
+/mob/living/carbon/human/update_body_parts()
+	. = ..()
+	update_body_hardlight()
+
+/mob/living/carbon/human/proc/update_body_hardlight()
+	if(!length(overlays_standing[BODY_HARDLIGHT_LAYER]) && !layers_for_apply_effect[HAIR_APPEARANCE] && !has_common_layer(layers_for_apply_effect, GLOB.body_hardlight_layers))
+		return
+	remove_overlay(BODY_HARDLIGHT_LAYER)
+	for(var/obj/item/bodypart/part as anything in bodyparts)
+		var/list/params = layers_for_apply_effect[part.body_zone]
+		if(!params)
+			continue
+		for(var/image/limb_icon as anything in part.get_limb_icon())
+			var/mutable_appearance/base = new /mutable_appearance(limb_icon)
+			base.layer = -BODYPART_EFFECT_LAYER
+			use_effect_by_params(base, params, BODY_HARDLIGHT_LAYER)
+	add_hair_hardlight()
+	apply_overlay(BODY_HARDLIGHT_LAYER)
+
+/mob/living/carbon/human/proc/add_hair_hardlight()
+	var/list/params = layers_for_apply_effect[HAIR_APPEARANCE]
+	if(!params)
+		return
+	for(var/mutable_appearance/hair as anything in overlays_standing[HAIR_LAYER])
+		if(!hair.icon || !hair.alpha)
+			continue
+		var/mutable_appearance/base = new /mutable_appearance(hair)
+		base.layer = -BODYPART_EFFECT_LAYER
+		var/mutable_appearance/projection = use_effect_by_params(base, params, BODY_HARDLIGHT_LAYER)
+		projection.alpha = hair.alpha
 
 /mob/living/carbon/human/proc/has_common_layer(list/changed_layers, list/target_layers)
 	for(var/layer in changed_layers)

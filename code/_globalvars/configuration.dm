@@ -6,6 +6,7 @@ GLOBAL_VAR(host)
 GLOBAL_VAR(station_name)
 GLOBAL_VAR_INIT(game_version, "/tg/ Station 13")
 GLOBAL_VAR_INIT(changelog_hash, "")
+GLOBAL_VAR_INIT(changelog_latest_date, "")
 GLOBAL_VAR_INIT(hub_visibility, FALSE)
 
 GLOBAL_VAR_INIT(ooc_allowed, TRUE)	// used with admin verbs to disable ooc - not a config option apparently
@@ -16,6 +17,9 @@ GLOBAL_VAR_INIT(enter_allowed, TRUE)
 GLOBAL_VAR_INIT(shuttle_frozen, FALSE)
 GLOBAL_VAR_INIT(shuttle_left, FALSE)
 GLOBAL_VAR_INIT(tinted_weldhelh, TRUE)
+
+// Временное ограничение переключения формата медицинских отчётов; кнопка «Текстом» в окне остаётся доступна.
+GLOBAL_VAR_INIT(health_analyzer_allow_chat_mode, FALSE)
 
 
 // Debug is used exactly once (in living.dm) but is commented out in a lot of places.  It is not set anywhere and only checked.

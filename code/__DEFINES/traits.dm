@@ -102,6 +102,7 @@
 #define TRAIT_BLIND 			"blind"
 #define TRAIT_MUTE				"mute"
 #define TRAIT_EMOTEMUTE			"emotemute"
+#define TRAIT_SUPPRESS_PAIN_EMOTES "suppress_pain_emotes"
 #define TRAIT_LOOC_MUTE			"looc_mute" //Just like unconsciousness, it disables LOOC salt.
 #define TRAIT_AOOC_MUTE			"aooc_mute" //Same as above but for AOOC.
 #define TRAIT_DEAF				"deaf"
@@ -125,6 +126,7 @@
 #define TRAIT_TASED_RESISTANCE	"tased_resistance" //prevents you from suffering most of the effects of being tased
 #define TRAIT_BATON_RESISTANCE	"baton_resistance" //prevents you from suffering most of the effects of being batoned
 #define TRAIT_DISABLER_RESISTANCE "disabler_resistance" //prevents you from suffering stamina damage from disablers
+#define TRAIT_STAMINA_IMMUNE		"stamina_immune" //prevents all stamina damage (e.g. superhuman hulk)
 #define TRAIT_SLEEPIMMUNE		"sleep_immunity"
 #define TRAIT_PUSHIMMUNE		"push_immunity"
 #define TRAIT_SHOCKIMMUNE		"shock_immunity"

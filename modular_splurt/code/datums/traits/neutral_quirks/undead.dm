@@ -39,6 +39,11 @@
 	if(H.physiology)
 		H.physiology.hunger_mod /= 1.8
 		H.physiology.thirst_mod /= 1.8
+	// BLUEMOON ADD START - возвращаем обычный HUD здоровья, иначе после снятия квирка
+	// (например, ядром гиврлорда) персонаж до конца раунда видит себя полностью здоровым
+	if(H.hal_screwyhud == SCREWYHUD_HEALTHY)
+		H.set_screwyhud(SCREWYHUD_NONE)
+	// BLUEMOON ADD END
 
 /datum/quirk/undead/on_process()
 	. = ..()

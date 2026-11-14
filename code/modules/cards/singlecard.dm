@@ -17,7 +17,7 @@
 
 /obj/item/toy/cards/singlecard/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	context[SCREENTIP_CONTEXT_ALT_LMB] = "Flip"
+	context[SCREENTIP_CONTEXT_ALT_LMB] = "Перевернуть"
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/toy/cards/singlecard/examine(mob/user)

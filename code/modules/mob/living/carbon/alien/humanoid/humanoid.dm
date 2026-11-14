@@ -21,7 +21,8 @@
 	can_ventcrawl = TRUE
 	var/obj/effect/proc_holder/alien/regurgitate/regurg
 	var/obj/effect/proc_holder/alien/set_genital/set_genital //BLUEMOON ADD
-
+	rotate_on_lying = FALSE
+	var/mutable_appearance/fire_overlay
 GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 	/datum/strippable_item/hand/left,
 	/datum/strippable_item/hand/right,
@@ -103,9 +104,9 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 	..()
 
 //For alien evolution/promotion/queen finder procs. Checks for an active alien of that type
-/proc/get_alien_type(var/alienpath)
+/proc/get_alien_type(alienpath, atom/movable/seeker)
 	for(var/mob/living/carbon/alien/humanoid/A in GLOB.alive_mob_list)
-		if(!istype(A, alienpath))
+		if(!istype(A, alienpath) || A.training_origin != seeker?.training_origin)
 			continue
 		if(!A.key || A.stat == DEAD) //Only living aliens with a ckey are valid.
 			continue

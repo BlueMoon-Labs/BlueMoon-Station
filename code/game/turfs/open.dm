@@ -371,6 +371,33 @@
 /turf/open/get_dumping_location()
 	return src
 
+/turf/open/proc/can_rcd_build_firelock(mob/user)
+	// За пределами пола опорой служит уже установленная преграда.
+	if(!isfloorturf(src) && !(locate(/obj/structure/window) in src) && !(locate(/obj/structure/grille) in src) && !(locate(/obj/machinery/door/airlock) in src) && !(locate(/obj/structure/inflatable/airbag) in src))
+		return FALSE
+	if(locate(/obj/machinery/door/firedoor) in src)
+		to_chat(user, span_warning("Здесь уже установлен фаерлок."))
+		return FALSE
+	return TRUE
+
+/turf/open/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
+	if(the_rcd.mode == RCD_FIRELOCK || the_rcd.mode == RCD_WINDOW_FIRELOCK)
+		if(!can_rcd_build_firelock(user))
+			return FALSE
+		return list("mode" = the_rcd.mode, "delay" = 3 SECONDS, "cost" = the_rcd.mode == RCD_WINDOW_FIRELOCK ? 12 : 10)
+	return ..()
+
+/turf/open/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
+	if(passed_mode == RCD_FIRELOCK || passed_mode == RCD_WINDOW_FIRELOCK)
+		if(!can_rcd_build_firelock(user))
+			return FALSE
+		var/firelock_type = passed_mode == RCD_WINDOW_FIRELOCK ? /obj/machinery/door/firedoor/window : /obj/machinery/door/firedoor
+		var/obj/machinery/door/firedoor/firelock = new firelock_type(src)
+		firelock.add_fingerprint(user)
+		to_chat(user, span_notice("Вы устанавливаете [passed_mode == RCD_WINDOW_FIRELOCK ? "оконный" : "стеклянный"] фаерлок."))
+		return TRUE
+	return ..()
+
 /turf/open/proc/ClearWet()//Nuclear option of immediately removing slipperyness from the tile instead of the natural drying over time
 	qdel(GetComponent(/datum/component/wet_floor))
 

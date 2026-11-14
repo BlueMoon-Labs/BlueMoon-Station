@@ -101,7 +101,7 @@ GLOBAL_DATUM_INIT(shift_invite_link, /datum/shift_invite_link, new)
 		return
 	WRITE_FILE(.["shift_invites"], shift_invites)
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/load_preferences_data(savefile/S)
 	. = ..()
 	if(!istype(., /savefile))
 		return

@@ -64,6 +64,8 @@
 		return FALSE
 	challenger.stop_practice()
 	opponent.stop_practice()
+	challenger.stop_exercise()
+	opponent.stop_exercise()
 	challenger.heal_self()
 	opponent.heal_self()
 	challenger.current_body.forceMove(first_start)
@@ -84,13 +86,14 @@
 	if(phase == "invite" || phase == "ended")
 		return
 	for(var/datum/antag_training_session/fighter as anything in list(challenger, opponent))
-		if(QDELETED(fighter.current_body) || arena.match_zone(fighter.current_body) != "melee")
+		var/mob/living/body = fighter.current_body
+		if(QDELETED(body) || !isliving(body) || arena.match_zone(body) != "melee")
 			finish("Дуэль завершена: участник покинул арену или потерял тело.")
 			return
-		if(phase == "countdown" && (fighter.current_body.health < fighter.current_body.maxHealth || fighter.current_body.stat != CONSCIOUS))
+		if(phase == "countdown" && (body.health < body.maxHealth || body.stat != CONSCIOUS))
 			finish("Дуэль отменена: повреждение до команды «Бой».")
 			return
-		if(phase == "active" && (fighter.current_body.stat == DEAD || (!to_death && fighter.current_body.health <= HEALTH_THRESHOLD_CRIT)))
+		if(phase == "active" && (body.stat == DEAD || (!to_death && body.health <= HEALTH_THRESHOLD_CRIT)))
 			var/datum/antag_training_session/winner = fighter == challenger ? opponent : challenger
 			finish("Победитель: [winner.current_body.real_name]. Время: [round((world.time - started_at) / (1 SECONDS), 0.1)] с.")
 			return

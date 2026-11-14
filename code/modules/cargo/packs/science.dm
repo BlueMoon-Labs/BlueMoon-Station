@@ -10,6 +10,15 @@
 	group = "Science"
 	crate_type = /obj/structure/closet/crate/science
 
+/datum/supply_pack/science/modsuit
+	name = "Научный MOD"
+	desc = "Один научный MOD с батареей и установленными штатными модулями."
+	cost = 2500
+	access = ACCESS_RESEARCH
+	contains = list(/obj/item/mod/control/pre_equipped/research)
+	crate_name = "научный MOD"
+	crate_type = /obj/structure/closet/crate/secure/science
+
 /datum/supply_pack/science/ape  //Ape out!
 	name = "Ape Cube Crate"
 	desc = "Псс...что за новый испытуемый с суперсилой, скоростью и любовью к бананам одновременно? Больше ничего не говори... Содержит один куб обезьяны. Не добавляйте воду!"

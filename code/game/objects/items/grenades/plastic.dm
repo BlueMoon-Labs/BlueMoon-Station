@@ -123,7 +123,8 @@
 		target = AM
 
 		primed_by = user
-		message_admins("[ADMIN_LOOKUPFLW(user)] planted [name] on [target.name] at [ADMIN_VERBOSEJMP(target)] with [det_time] second fuse")
+		if(!is_antag_training_atom(user))
+			message_admins("[ADMIN_LOOKUPFLW(user)] planted [name] on [target.name] at [ADMIN_VERBOSEJMP(target)] with [det_time] second fuse")
 		log_game("[key_name(user)] planted [name] on [target.name] at [AREACOORD(user)] with [det_time] second fuse")
 
 		moveToNullspace()	//Yep
@@ -166,7 +167,8 @@
 	M.say(message_say, forced="C4 suicide")
 
 /obj/item/grenade/plastic/suicide_act(mob/user)
-	message_admins("[ADMIN_LOOKUPFLW(user)] suicided with [src] at [ADMIN_VERBOSEJMP(user)]")
+	if(!is_antag_training_atom(user))
+		message_admins("[ADMIN_LOOKUPFLW(user)] suicided with [src] at [ADMIN_VERBOSEJMP(user)]")
 	log_game("[key_name(user)] suicided with [src] at [AREACOORD(user)]")
 	user.visible_message("<span class='suicide'>[user] activates [src] and holds it above [user.ru_ego()] head! It looks like [user.ru_who()] going out with a bang!</span>")
 	shout_syndicate_crap(user)
@@ -205,7 +207,8 @@
 	user.visible_message("<span class='suicide'>[user] activates the [src.name] and holds it above [user.ru_ego()] head! It looks like [user.ru_who()] going out with a bang!</span>")
 	shout_syndicate_crap(user)
 	target = user
-	message_admins("[ADMIN_LOOKUPFLW(user)] suicided with [name] at [ADMIN_VERBOSEJMP(src)]")
+	if(!is_antag_training_atom(user))
+		message_admins("[ADMIN_LOOKUPFLW(user)] suicided with [name] at [ADMIN_VERBOSEJMP(src)]")
 	log_game("[key_name(user)] suicided with [name] at [AREACOORD(user)]")
 	sleep(10)
 	prime()

@@ -48,17 +48,19 @@
 	recorder.reset_state()
 
 	// 1. Ровная последовательность: 50мс реального времени на 0.5дс игрового - дрифта нет
-	recorder.sample_tick(1000, 100, 5, 10, 5) // первый замер задаёт базу
-	var/drift = recorder.sample_tick(1050, 100.5, 5, 10, 5)
+	// record_heavy_run() ниже штампует настоящий world.time - спайк обязан лечь в тот же тик
+	var/heavy_world = world.time - 1.5
+	recorder.sample_tick(1000, heavy_world, 5, 10, 5) // первый замер задаёт базу
+	var/drift = recorder.sample_tick(1050, heavy_world + 0.5, 5, 10, 5)
 	TEST_ASSERT_EQUAL(drift, 0, "Ровный тик дал ненулевой дрифт")
-	recorder.sample_tick(1100, 101, 5, 10, 5)
+	recorder.sample_tick(1100, heavy_world + 1, 5, 10, 5)
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 0, "Спайк зафиксирован на ровной последовательности")
 
 	// 2. Тяжёлый прогон подсистемы попадает в кольцо и в контекст события
 	recorder.record_heavy_run(recorder, 85)
 
 	// 3. Фриз: +550мс реального времени на 0.5дс игрового = дрифт 500мс
-	drift = recorder.sample_tick(1650, 101.5, 90, 95, 5)
+	drift = recorder.sample_tick(1650, heavy_world + 1.5, 90, 95, 5)
 	TEST_ASSERT_EQUAL(drift, 500, "Дрифт фриза посчитан неверно: [drift]")
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Фриз 500мс не зафиксирован как спайк")
 	TEST_ASSERT_EQUAL(length(recorder.spike_events), 1, "Событие спайка не сохранено")
@@ -150,11 +152,14 @@
 	// вокруг примитива закрывает большую часть дрифта - виним его поимённо.
 	// Половина спайков раунда 9838 была безымянными столлами именно из-за того,
 	// что ожидание клиента и диска ничем не измерялось.
+	// record_blocking_call() штампует настоящий world.time, поэтому синтетика идёт от него:
+	// при фиксированном wt 500 тест падал всякий раз, когда мир не дожил до 50 секунд.
 	recorder.reset_state()
-	recorder.sample_tick(1000, 500, 2, 5, 3)
-	recorder.sample_tick(1050, 500.5, 2, 5, 3)
+	var/blocking_world = world.time
+	recorder.sample_tick(1000, blocking_world - 1, 2, 5, 3)
+	recorder.sample_tick(1050, blocking_world - 0.5, 2, 5, 3)
 	recorder.record_blocking_call("winget", "тестклиент: input.text", 480)
-	recorder.sample_tick(1600, 501, 2, 5, 3)
+	recorder.sample_tick(1600, blocking_world, 2, 5, 3)
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Спайк с блокирующим вызовом не зафиксирован")
 	TEST_ASSERT(findtext(recorder.spike_events[1], "блокирующий вызов"), "Спайк, закрытый блокирующим вызовом, не классифицирован как блокирующий")
 	TEST_ASSERT(findtext(recorder.spike_events[1], "тестклиент: input.text"), "Описание блокирующего вызова не попало в событие")

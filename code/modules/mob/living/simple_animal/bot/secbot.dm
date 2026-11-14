@@ -510,6 +510,8 @@
 // look for a criminal in view of the bot
 
 /mob/living/simple_animal/bot/secbot/proc/look_for_perp()
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		return
 	anchored = FALSE
 	var/judgement_criteria = judgement_criteria()
 	for (var/mob/living/carbon/C in view(7,src)) //Let's find us a criminal

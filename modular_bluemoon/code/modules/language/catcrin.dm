@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/cetria
 	name = LANGUAGE_CETRIA
-	desc = "A rare language spoken by absolutely all Catcrins.  It has similarities with the German and Latin languages, as well as a mixture of hissing, purring and occasionally growling. (Используйте русскую букву для префикса)."
+	desc = "Редкий язык, на котором говорят абсолютно все кеткрины. Он родственен немецкому и латинскому и представляет собой смесь шипения, мурлыканья и изредка рычания. (Используйте русскую букву для префикса)."
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "cetria"
 	speech_verb = "mrowls"

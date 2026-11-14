@@ -1,5 +1,7 @@
 /obj/vehicle/sealed/mecha/working
 	internal_damage_threshold = 60
+	mecha_type = MECHA_TYPE_WORKING
+	ui_theme = "engineering"
 
 /obj/vehicle/sealed/mecha/working/Move()
 	. = ..()

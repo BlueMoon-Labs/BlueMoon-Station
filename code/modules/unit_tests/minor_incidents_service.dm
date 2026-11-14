@@ -228,6 +228,7 @@
 /// Каждое блюдо и коктейль из меню реально готовится на станции.
 /datum/unit_test/minor_incidents_service/proc/check_orders_cookable()
 	var/datum/round_event/station_incident/service/tasting_request/request = make_event(/datum/round_event/station_incident/service/tasting_request)
+	TEST_ASSERT_NOTNULL(request, "Заказ на дегустацию создаётся")
 	var/list/dish_results = list()
 	for(var/datum/crafting_recipe/recipe as anything in subtypesof(/datum/crafting_recipe/food))
 		dish_results[initial(recipe.result)] = TRUE

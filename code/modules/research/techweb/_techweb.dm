@@ -19,6 +19,7 @@
 	var/list/research_logs = list()								//IC logs.
 	var/largest_values = list()
 	var/organization = "Third-Party"							//Organization name, used for display.
+	var/pays_research_bounty = TRUE
 	var/list/next_income = list()								//To be applied on the next passive techweb income
 	var/list/last_bitcoins = list()								//Current per-second production, used for display only.
 	var/list/discovered_mutations = list()                           //Mutations discovered by genetics, this way they are shared and cant be destroyed by destroying a single console
@@ -67,6 +68,7 @@
 /datum/techweb/admin
 	id = "ADMIN"
 	organization = "CentCom"
+	pays_research_bounty = FALSE
 
 /datum/techweb/admin/New()	//All unlocked.
 	. = ..()
@@ -387,7 +389,7 @@
 	for(var/id in node.design_ids)
 		add_design_by_id(id)
 	update_node_status(node)
-	if(!istype(src, /datum/techweb/admin))
+	if(pays_research_bounty)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_SCI)
 		if(D)
 			D.adjust_money(SSeconomy.techweb_bounty)

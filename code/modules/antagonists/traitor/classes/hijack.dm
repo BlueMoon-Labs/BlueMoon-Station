@@ -20,3 +20,18 @@
 
 /datum/traitor_class/human/hijack/clean_up_traitor(datum/antagonist/traitor/T)
 	T.hijack_speed = 0.5
+
+/datum/traitor_class/human/hijack/team_based
+	name = "InteQ Evacuation Saboteur"
+	employer = "Admiral Brown's Evacuation Sabotage Division"
+	min_players = INFINITY // Назначается только рулсетом саботажника.
+
+/datum/traitor_class/human/hijack/team_based/forge_objectives(datum/antagonist/traitor/T)
+	if(prob(50) && add_targeted_objective(T, new /datum/objective/maroon))
+		return
+	return ..()
+
+/datum/traitor_class/human/hijack/team_based/finalize_traitor(datum/antagonist/traitor/T)
+	if(locate(/datum/objective/hijack) in T.objectives)
+		return ..()
+	return TRUE

@@ -7,6 +7,9 @@
 	time = 32
 	var/obj/item/bodypart/L = null // L because "limb"
 /datum/surgery_step/replace_limb/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	if(istype(surgery.operated_bodypart, /obj/item/bodypart/l_leg/naga_tail))
+		to_chat(user, span_warning("Опорный хвост пересаживают через доступ в области паха."))
+		return -1
 	if(istype(tool, /obj/item/organ_storage) && istype(tool.contents[1], /obj/item/bodypart))
 		tool = tool.contents[1]
 	var/obj/item/bodypart/aug = tool
@@ -40,6 +43,11 @@
 	is_healing = FALSE // BLUEMOON ADD
 	icon_state = "surgery_any"
 	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_THIRD
+
+/datum/surgery/augmentation/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
+	if(istype(target.get_bodypart(user.zone_selected), /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
+	return ..()
 
 //The augmentation surgery for synthetic limbs
 /datum/surgery/augmentation/synth

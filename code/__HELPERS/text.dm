@@ -951,6 +951,10 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 /proc/random_capital_letter()
 	return uppertext(pick(GLOB.alphabet))
 
+/// Регэксп, в котором body стоит целым словом. \b в BYOND не считает кириллицу буквами. body уже экранирован (REGEX_QUOTE).
+/proc/whole_word_regex(body, flags)
+	return regex(@"(?<![\wа-яёА-ЯЁ])" + body + @"(?![\wа-яёА-ЯЁ])", flags)
+
 /proc/unintelligize(message)
 	var/regex/word_boundaries = regex(@"\b[\S]+\b", "g")
 	var/prefix = message[1]
@@ -1074,7 +1078,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 		BODY_ZONE_R_LEG = "правой ноге",
 		BODY_ZONE_PRECISE_L_FOOT = "левой ступне",
 		BODY_ZONE_PRECISE_R_FOOT = "правой ступне",
-		"chest" = "груди",
+		"chest" = "туловище",
 		"mouth" = "ротовой полости",
 		"groin" = "паховой области",
 		"head" = "голове",
@@ -1091,7 +1095,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 		"правая нога" = "правой ноги",
 		"левая ступня" = "левой ступни",
 		"правая ступня" = "правой ступни",
-		"грудь" = "груди",
+		"туловище" = "туловища",
 		"рот" = "ротовой полости",
 		"пах" = "паховой области",
 		"голова" = "головы",
@@ -1108,7 +1112,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 		"правая нога" = "правой ногой",
 		"левая ступня" = "левой ступней",
 		"правая ступня" = "правой ступней",
-		"грудь" = "грудью",
+		"туловище" = "туловищем",
 		"рот" = "ртом",
 		"пах" = "пахом",
 		"голова" = "головой",
@@ -1117,7 +1121,8 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 
 /proc/ru_exam_parse_zone(zone)
 	var/static/list/zone_names = list(
-		"chest" = "грудь",
+		"грудь" = "туловище",
+		"chest" = "туловище",
 		"mouth" = "рот",
 		"groin" = "пах",
 		"head" = "голова",

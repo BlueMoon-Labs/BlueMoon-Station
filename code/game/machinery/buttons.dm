@@ -187,13 +187,12 @@
 		return
 
 	if(!allowed(user))
-		to_chat(user, "<span class='danger'>Access Denied</span>")
+		balloon_alert(user, "нет доступа")
 		flick("[skin]-denied", src)
 		return
 
 	use_power(5)
 	icon_state = "[skin]1"
-
 	if(device)
 		device.pulsed()
 

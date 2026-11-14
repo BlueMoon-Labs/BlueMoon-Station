@@ -7,7 +7,6 @@ export const RadioactiveMicrolaser = (props) => {
   const {
     irradiate,
     stealth,
-    scanmode,
     intensity,
     wavelength,
     on_cooldown,
@@ -45,13 +44,6 @@ export const RadioactiveMicrolaser = (props) => {
                 disabled={!irradiate}
                 selected={stealth}
                 onClick={() => act('stealth')} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Scan Mode">
-              <Button
-                icon={scanmode ? 'mortar-pestle' : 'heartbeat'}
-                content={scanmode ? 'Scan Reagents' : 'Scan Health'}
-                disabled={irradiate && stealth}
-                onClick={() => act('scanmode')} />
             </LabeledList.Item>
           </LabeledList>
         </Section>

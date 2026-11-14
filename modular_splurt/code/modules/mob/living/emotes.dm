@@ -1618,6 +1618,7 @@ To add randomization to your emote, copy and paste this line of code:
 	emote_pitch_variance = FALSE // why would you
 
 /datum/emote/sound/human/mrrp
+	name = "Муркнуть"
 	key = "mrrp"
 	key_third_person = "mrrps"
 	message = "муркает как кошка!"

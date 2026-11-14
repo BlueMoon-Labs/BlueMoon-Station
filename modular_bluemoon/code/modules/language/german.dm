@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/german
 	name = "Katzenjammer"
-	desc = "Modernised version of the German language, combined with Austrian, Swiss, Neo Berlin and many other various dialects. Usually used by the inhabitants of the Earth. (Используйте русскую букву для префикса)"
+	desc = "Модернизированный немецкий, скрещённый с австрийским, швейцарским, необерлинским и множеством других диалектов. Обычно его используют жители Земли. (Используйте русскую букву для префикса)"
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "german"
 	speech_verb = "говорит"

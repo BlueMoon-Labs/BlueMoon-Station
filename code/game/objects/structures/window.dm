@@ -152,7 +152,7 @@
 /obj/structure/window/rcd_act(mob/user, var/obj/item/construction/rcd/the_rcd)
 	switch(the_rcd.mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the window.</span>")
+			to_chat(user, span_notice("Вы разбираете окно."))
 			qdel(src)
 			return TRUE
 	return FALSE
@@ -526,7 +526,7 @@
 	if(QDELETED(src))
 		return
 	if(!disassembled)
-		deploy_airbag()
+		deploy_window_safety()
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -895,10 +895,21 @@
 	airbag_installed = TRUE
 	return TRUE
 
-/// Destruction by fire or acid can bypass deconstruct(), so deploy before the parent.
+// Огонь и кислота могут обойти deconstruct(), поэтому защита срабатывает до родителя.
 /obj/structure/window/obj_destruction(damage_flag)
-	deploy_airbag()
+	deploy_window_safety()
 	return ..()
+
+/obj/structure/window/proc/deploy_window_safety()
+	if(!isturf(loc))
+		return
+	// Окно уже разбивается: проверяем перепад через открывшийся проём,
+	// учитывая реальные атмосферные соединения и остальные преграды.
+	density = FALSE
+	for(var/obj/machinery/door/firedoor/firelock in loc)
+		if(!firelock.density && firelock.is_holding_pressure(include_open = TRUE))
+			firelock.emergency_pressure_stop()
+	deploy_airbag()
 
 /obj/structure/window/proc/deploy_airbag()
 	if(!airbag_installed || !isturf(loc))
@@ -1033,7 +1044,7 @@
 	heat_resistance = 1600
 	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass
@@ -1306,23 +1317,9 @@
 
 /obj/structure/inflatable/airbag
 	name = "window airbag"
-	desc = "Аварийная мембрана, закрывающая проём разбитого окна. Автоматически сдувается через десять минут."
+	desc = "Аварийная мембрана, закрывающая проём разбитого окна."
 	icon_state = "airbag_wall"
 	max_integrity = 40
 	CanAtmosPass = ATMOS_PASS_NO
 	intact = /obj/item/airbag_module
 	torn = null
-	var/lifetime_timer
-
-/obj/structure/inflatable/airbag/Initialize(mapload)
-	. = ..()
-	lifetime_timer = addtimer(CALLBACK(src, PROC_REF(expire)), 10 MINUTES, TIMER_STOPPABLE)
-
-/obj/structure/inflatable/airbag/Destroy()
-	if(lifetime_timer)
-		deltimer(lifetime_timer)
-		lifetime_timer = null
-	return ..()
-
-/obj/structure/inflatable/airbag/proc/expire()
-	deconstruct(FALSE)

@@ -82,10 +82,12 @@
 	invisibility = 60
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
-/obj/effect/dummy/phased_mob/spell_jaunt/Destroy()
-	// Eject contents if deleted somehow
-	for(var/atom/movable/AM in src)
-		AM.forceMove(get_turf(src))
+// Тень, кровь и эфир при удалении выпускают того, кто внутри, а не удаляют его вместе с собой.
+/obj/effect/dummy/phased_mob/Destroy()
+	var/turf/drop = get_turf(src)
+	if(drop)
+		for(var/atom/movable/AM in src)
+			AM.forceMove(drop)
 	return ..()
 
 /obj/effect/dummy/phased_mob/spell_jaunt/relaymove(var/mob/user, direction)

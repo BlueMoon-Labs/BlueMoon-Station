@@ -264,6 +264,8 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flash_protect = -1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	color_cutoffs = list(10, 25, 10)
+	/// Пороги цвета ПНВ при опущенном забрале
+	var/list/nvg_color_cutoffs = list(10, 25, 10)
 	mutantrace_variation = STYLE_MUZZLE
 	armor_type = /datum/armor/hecu
 	cold_protection = HEAD
@@ -294,7 +296,11 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			flags_inv ^= visor_flags_inv
 			flags_cover ^= visor_flags_cover
 			icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
-			darkness_view = 0
+			// ПНВ стоит на забрале: поднял - прибор не работает, опустил - снова видно в темноте
+			darkness_view = up ? 0 : initial(darkness_view)
+			lighting_alpha = up ? null : initial(lighting_alpha)
+			color_cutoffs = up ? null : nvg_color_cutoffs.Copy()
+			flash_protect = up ? 0 : initial(flash_protect)
 			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
 
 			user.update_inv_head()
@@ -310,12 +316,11 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "bulletproof Helmet"
 	desc = "A bulletproof combat helmet that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
 	icon_state = "helmetalt"
-	armor_type = /datum/armor/alt
+	armor_type = /datum/armor/bulletproof
 	can_flashlight = TRUE
 	dog_fashion = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
-	// BLUEMOON ADD START - визор открывается так же, как у riot-шлема
 	can_toggle = 1
 	toggle_message = "You pull the visor down on"
 	alt_toggle_message = "You push the visor up on"
@@ -383,7 +388,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	alt_toggle_message = "You push the visor up on"
 	can_toggle = 1
 	can_flashlight = TRUE
-	armor_type = /datum/armor/head_riot
+	armor_type = /datum/armor/suit_riot
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	strip_delay = 80
 	actions_types = list(/datum/action/item_action/toggle)

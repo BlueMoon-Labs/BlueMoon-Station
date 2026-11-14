@@ -67,7 +67,6 @@
 	qdel(src)
 
 /datum/escape_menu/proc/home_open_character_prefs()
-	client?.prefs.current_tab = 0
 	client?.prefs.ShowChoices(client?.mob)
 	qdel(src)
 

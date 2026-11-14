@@ -505,9 +505,8 @@
 /area/awaymission/undergroundoutpost45/central)
 "bo" = (
 /obj/structure/table/wood,
-/obj/structure/spider/cocoon{
-	contents = null/obj/item/lighter
-	},
+/obj/item/lighter,
+/obj/structure/spider/cocoon,
 /obj/structure/spider/terrorweb,
 /turf/open/floor/plasteel/grimy{
 	heat_capacity = 1e+006

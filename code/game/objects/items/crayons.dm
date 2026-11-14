@@ -298,15 +298,22 @@
 	update_icon()
 
 /obj/item/toy/crayon/proc/select_colour(mob/user)
-	var/chosen_colour = input(user, "", "Choose Color", paint_color) as color|null
+	var/chosen_colour = tgui_input_color(user, "", "Choose Color", paint_color)
 	if (!isnull(chosen_colour) && user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		paint_color = chosen_colour
 		return TRUE
 	return FALSE
 
 /obj/item/toy/crayon/proc/crayon_text_strip(text)
-	var/static/regex/crayon_r = new /regex(@"[^\w!?,.=%#&+\/\-]")
+	var/static/regex/crayon_r = new /regex(@"[^\wa-яёА-ЯЁ!?,.=%#&+\/\-]") //НАШИ буквы
 	return replacetext(lowertext(text), crayon_r, "")
+
+// BANDASTATION ADD START - Russian Crayons
+/obj/item/toy/crayon/proc/get_unicode_letter(letter)
+	var/char_code = text2ascii(letter)
+	if((char_code >= 1072 && char_code <= 1103) || char_code == 1105)
+		return "u[char_code]"
+// BANDASTATION ADD END - Russian Crayons
 
 /obj/item/toy/crayon/afterattack(atom/target, mob/user, proximity, params)
 	. = ..()
@@ -435,6 +442,10 @@
 
 	if(length(text_buffer))
 		drawing = text_buffer[1]
+		// BANDASTATION ADD START - Russian Crayons
+		if(length(drawing) != length_char(drawing))
+			drawing = get_unicode_letter(drawing)
+		// BANDASTATION ADD END - Russian Crayons
 
 
 	var/list/turf/affected_turfs = list()
@@ -515,7 +526,7 @@
 //////////////Gang mode stuff/////////////////
 /obj/item/toy/crayon/proc/can_claim_for_gang(mob/user, atom/target)
 	var/area/A = get_area(target)
-	if(!A || (!is_station_level(A.z)))
+	if(!A || (!is_station_level(A.z) && !(istype(A, /area/antag_training) && (A.area_flags & VALID_TERRITORY))))
 		to_chat(user, "<span class='warning'>[A] is unsuitable for tagging.</span>")
 		return FALSE
 

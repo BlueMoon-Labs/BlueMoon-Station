@@ -1,6 +1,6 @@
 /datum/language/aphasia
 	name = "Gibbering"
-	desc = "It is theorized that any sufficiently brain-damaged person can speak this language."
+	desc = "Предполагается, что говорить на этом языке способен любой с достаточно повреждённым мозгом."
 	speech_verb = "garbles"
 	ask_verb = "mumbles"
 	whisper_verb = "mutters"

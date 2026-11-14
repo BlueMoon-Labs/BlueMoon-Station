@@ -189,8 +189,3 @@
 				to_chat(user, span_warning("You can't do anything with their [pick(GLOB.butt_nouns)] like this!"))
 			return FALSE
 	. = ..()
-
-/mob/living/list_interaction_attributes(mob/living/LM)
-	. = ..()
-	if(has_belly() == HAS_EXPOSED_GENITAL)
-		. += "...обладает выпуклым животом."

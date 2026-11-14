@@ -31,6 +31,8 @@ GLOBAL_LIST_INIT(character_offers, list())
 	var/datum/preferences/to_remove = LAZYACCESS(GLOB.preferences_datums, owner_ckey)
 	if(to_remove)
 		to_remove.offer = null
+		if(!QDELETED(to_remove.character_setup_ui))
+			SStgui.update_uis(to_remove.character_setup_ui)
 	LAZYREMOVE(GLOB.character_offers, redemption_code)
 	owner_ckey = null
 	character_savefile = null

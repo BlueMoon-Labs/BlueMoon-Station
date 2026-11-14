@@ -26,6 +26,8 @@
 	var/skill_mod
 	///Some gloves, generally ones that increase mobility, may have a minimum distance to fly. Rocket gloves are especially dangerous with this, be sure you'll hit your target or have a clear background if you miss, or else!
 	var/min_distance
+	///Потолок броска rollTackle(): 4 и ниже не даёт агрессивного захвата
+	var/max_roll = INFINITY
 	///The throwdatum we're currently dealing with, if we need it
 	var/datum/thrownthing/tackle
 	///Таймер resetTackle: без deltimer в Destroy его CALLBACK держал бы компонент в SStimer
@@ -330,7 +332,7 @@
 			sacker.adjustStaminaLoss(20)
 
 	var/r = rand(-3, 3) - defense_mod + attack_mod + skill_mod
-	return r
+	return min(r, max_roll)
 
 
 /**

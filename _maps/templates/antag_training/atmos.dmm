@@ -1,0 +1,6126 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"aj" = (
+/obj/item/trash/sosjerky,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"aq" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/clothing/shoes/magboots{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson/engine{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"aw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/turf/closed/wall,
+/area/antag_training/sector/atmos)
+"az" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/cigbutt/cigarbutt{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"aF" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/machinery/light/small/directional/south,
+/obj/structure/rack,
+/obj/item/clothing/shoes/magboots{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen/yellow{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"aH" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 4;
+	name = "distribution pump"
+	},
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"aW" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"bd" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/item/kirbyplants/training,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"bf" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/box/lights/mixed{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"by" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"bB" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/item/analyzer,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"bC" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"bN" = (
+/obj/machinery/atmospherics/pipe/manifold/green/visible{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"bP" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"bQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"bX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"bZ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"cb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/metal/five{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/igniter{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"cf" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stamp/denied{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"cl" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"cv" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"cE" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/rglass{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"cH" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"cI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"cL" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"cU" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"cW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"cX" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"db" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/securearea{
+	pixel_y = -32
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"df" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/west,
+/obj/item/hand_labeler,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"dk" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/holosign_creator/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"dp" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"dJ" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"dK" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/book/manual/wiki/atmospherics{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"dN" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/mirror{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"dU" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"dX" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"dY" = (
+/obj/machinery/door/airlock{
+	name = "Locker Room"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"eb" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/airalarm/unlocked{
+	dir = 2;
+	pixel_y = 24
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"ec" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"eg" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"eh" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ei" = (
+/obj/machinery/door/airlock/atmos/glass{
+	name = "Atmospherics Workshop"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"ek" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister/toxins,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ep" = (
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"er" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"ev" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/yellow{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "shift log";
+	default_raw_text = "Журнал смены. Зал пробоев: окно камеры целое, заслонка открыта. Пол у окна так и не перестелили.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ew" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/item/stock_parts/cell/crap,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ez" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/clothing/glasses/meson{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/assembly/igniter{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"eC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"eE" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/extinguisher/mini,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"eL" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "nitrogen valve"
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"eM" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"eO" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"eT" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/clothing/mask/gas{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"eX" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/nitrous_oxide,
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"fc" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/clothing/mask/gas{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"fi" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/clothing/mask/gas,
+/obj/item/stack/cable_coil,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/stack/sheet/rglass,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/flashlight,
+/obj/item/lighter/greyscale,
+/obj/item/toy/cards/deck,
+/obj/item/light/tube/broken,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/stamp/denied,
+/obj/item/flashlight,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/obj/item/stack/rods/ten,
+/obj/item/flashlight,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"fj" = (
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"fk" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"fl" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"fu" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/firecloset,
+/obj/item/clothing/mask/gas,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/mask/breath,
+/obj/item/pen,
+/obj/item/pen,
+/obj/item/pen,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/paper{
+	name = "shift log";
+	default_raw_text = "Журнал смены. Зал пробоев: окно камеры целое, заслонка открыта. Пол у окна так и не перестелили."
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"fA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"fF" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"fG" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/south,
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"fR" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"fV" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/south,
+/obj/item/trash/sosjerky,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"fX" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"gb" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/portable_atmospherics/scrubber,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ge" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/pipedispenser,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"gf" = (
+/obj/machinery/door/airlock/atmos/glass{
+	name = "Distribution Pumps"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"gj" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"gq" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"gy" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/glasses/meson,
+/obj/item/bedsheet/yellow,
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"gC" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"gT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/atmospherics_yellow,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/mask/breath,
+/obj/item/flashlight,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/glasses/regular,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/newspaper,
+/obj/item/folder,
+/obj/item/paper{
+	name = "shift log";
+	default_raw_text = "Журнал смены. Зал пробоев: окно камеры целое, заслонка открыта. Пол у окна так и не перестелили."
+	},
+/obj/item/folder,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/stack/sheet/metal/five,
+/obj/item/pipe_meter,
+/obj/item/stack/cable_coil,
+/obj/item/newspaper,
+/obj/item/stack/cable_coil,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/folder,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/folder/yellow,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/flashlight,
+/obj/item/stack/sheet/glass/five,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/tank/internals/emergency_oxygen/engi,
+/obj/item/assembly/igniter,
+/obj/item/stack/cable_coil,
+/obj/item/toy/cards/deck,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"gU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"gX" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"hh" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"hl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"hq" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"hs" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"hC" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/nitrogen,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"hI" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ie" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/scrubber,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"if" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"io" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/mothpiping{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"iv" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ix" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"iC" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/space_heater,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"iK" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"iM" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/rods/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"iT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/item/tank/internals/oxygen/empty,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"iU" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/obj/item/light/tube/broken,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"iV" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/fire/firefighter{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/red{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen/red{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"jd" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"jf" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ji" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/girder,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"jr" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/l3closet,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/mask/gas,
+/obj/item/toy/cards/deck,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"jE" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"jX" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"jY" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"kp" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/fire{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"kq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"ks" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/clothing/head/hardhat/atmos{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/suit/hazardvest{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"kC" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/rods/ten,
+/obj/item/stack/tile/plasteel,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/storage/box/lights/mixed,
+/obj/item/stack/cable_coil,
+/obj/item/electronics/airalarm,
+/obj/item/electronics/airalarm,
+/obj/item/light/tube/broken,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/cable_coil,
+/obj/item/wallframe/airalarm,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"kG" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"kJ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"lo" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"lu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"lJ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"lT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/pipe_dispenser{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pipe_meter{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"lW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"lX" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"mc" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"mf" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/lighter/greyscale,
+/obj/item/flashlight,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/clothing/gloves/color/black,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"mk" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"mq" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/obj/item/trash/sosjerky,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"mr" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/holosign_creator/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/structure/sign/warning/vacuum{
+	pixel_y = 32
+	},
+/obj/item/stack/sheet/rglass{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"mx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"mC" = (
+/obj/structure/table/reinforced,
+/obj/item/electronics/firelock{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/electronics/airalarm{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"mD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"mT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/securearea{
+	pixel_x = -32
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"mW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/extinguisher,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"ni" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/antag_training_board,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"nj" = (
+/obj/machinery/atmospherics/components/trinary/filter{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"nw" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/trash/candy,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/newspaper,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/trash/sosjerky,
+/obj/item/pen/fourcolor,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"nz" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/vacuum{
+	pixel_x = 32
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"nC" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/crowbar,
+/turf/open/floor/plating{
+	icon_state = "platingdmg3"
+	},
+/area/antag_training/sector/atmos)
+"od" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"ok" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/fire/atmos{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"oo" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"op" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/rods,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"os" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/stock_parts/cell,
+/obj/item/electronics/airalarm,
+/obj/item/electronics/firealarm,
+/obj/item/electronics/airlock,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/stack/rods/ten,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/lighter/greyscale,
+/obj/item/stack/sheet/glass/five,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/pipe_meter,
+/obj/item/circuitboard/machine/thermomachine,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oz" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/vg_decals/atmos/oxygen,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"oA" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sticky_tape{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oD" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"oF" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "nitrous oxide valve"
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oH" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oM" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oN" = (
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"oR" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"oU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"oZ" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"pc" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/five{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"pr" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"pv" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"px" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/mix,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"pB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"pG" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"pX" = (
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"qk" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/structure/sign/warning/vacuum{
+	pixel_y = -32
+	},
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ql" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"qm" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"qq" = (
+/obj/machinery/atmospherics/pipe/simple/orange/visible,
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"qt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"qy" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher_refill{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"qN" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"qQ" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/toy/cards/deck,
+/obj/item/clothing/glasses/regular,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/extinguisher/mini,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"qR" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"qS" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"ra" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"ri" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"rj" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"rk" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/mask/gas,
+/obj/item/trash/candy,
+/obj/item/bedsheet/yellow,
+/obj/item/toy/cards/deck,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/newspaper,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/under/rank/engineering/atmospheric_technician,
+/obj/item/clothing/mask/breath,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"rq" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"rt" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/landmark/antag_training/side{
+	side = "crew"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"ru" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"rv" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/pipe_dispenser{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"rA" = (
+/obj/item/chair,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"rB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/wrench,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"rC" = (
+/obj/item/cigbutt,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"rK" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/radiation,
+/obj/item/flashlight,
+/obj/item/trash/candy,
+/obj/item/clothing/glasses/regular,
+/obj/item/flashlight,
+/obj/item/flashlight,
+/obj/item/extinguisher/mini,
+/obj/item/stack/sheet/rglass,
+/obj/item/stock_parts/cell/crap,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/sticky_tape,
+/obj/item/storage/box/lights/mixed,
+/obj/item/stack/sheet/glass/five,
+/obj/item/electronics/airalarm,
+/obj/item/stack/rods/ten,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"rL" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods/ten,
+/obj/item/stack/tile/plasteel,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stack/sheet/rglass,
+/obj/item/flashlight,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/wallframe/airalarm,
+/obj/item/stock_parts/cell/crap,
+/obj/item/newspaper,
+/obj/item/stack/sticky_tape,
+/obj/item/clothing/gloves/color/black,
+/obj/item/stack/sheet/metal/five,
+/obj/item/light/tube/broken,
+/obj/item/stack/sheet/glass/five,
+/obj/item/tank/internals/oxygen/empty,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"rN" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/fire{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"rQ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"rZ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/emcloset,
+/obj/item/flashlight,
+/obj/item/clothing/glasses/meson,
+/obj/item/toy/cards/deck,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/trash/candy,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"sd" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"sf" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"sk" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"sp" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"st" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/toolcloset,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/extinguisher/mini,
+/obj/item/clothing/mask/breath,
+/obj/item/stack/sheet/metal/five,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/flashlight,
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/tile/plasteel,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stock_parts/cell/crap,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"sv" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"sB" = (
+/obj/machinery/atmospherics/pipe/simple/dark/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"sL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"sO" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/structure/sign/warning/vacuum{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"sP" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"sT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/five{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"sX" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"tf" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"tl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ty" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"tT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/chair,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"tZ" = (
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"ug" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/mask/breath,
+/obj/item/newspaper,
+/obj/item/clothing/mask/breath,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"uv" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/west,
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ux" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/structure/closet/emcloset,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/clothing/glasses/meson,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/pen,
+/obj/item/reagent_containers/food/drinks/mug,
+/obj/item/toy/cards/deck,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"uE" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"uV" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/extinguisher/mini,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"uW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"va" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/enginesafety{
+	pixel_x = 32
+	},
+/obj/structure/rack,
+/obj/item/clothing/mask/gas{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"vc" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"vm" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/storage/belt/utility{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"vq" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"vG" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = 32
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"vJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/extinguisher/mini,
+/obj/effect/landmark/antag_training/side{
+	side = "medbay"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"vS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/west,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"vT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"vX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/space_heater,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"vZ" = (
+/obj/machinery/door/firedoor/window,
+/obj/structure/grille,
+/obj/structure/window/reinforced/fulltile,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"wc" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"we" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"wj" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"wk" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"wm" = (
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"wA" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/vacuum{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"wE" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/toxins,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"wG" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/securearea{
+	pixel_x = 32
+	},
+/obj/structure/rack,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку.";
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sticky_tape{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"wK" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"wL" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering,
+/obj/item/wrench,
+/obj/item/analyzer,
+/obj/item/stack/sheet/metal/five,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/stack/tile/plasteel,
+/obj/item/light/tube/broken,
+/obj/item/wrench,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/rglass,
+/obj/item/wallframe/airalarm,
+/obj/item/stack/cable_coil,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/obj/item/folder,
+/obj/item/paper{
+	name = "pressure log";
+	default_raw_text = "Журнал давления «Пневмы». Хранилище: по две канистры каждого газа, пустые канистры - у стен. Стенд смесителя выключен."
+	},
+/obj/item/electronics/airalarm,
+/obj/item/stack/tile/plasteel,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/paper{
+	name = "shift log";
+	default_raw_text = "Журнал смены. Зал пробоев: окно камеры целое, заслонка открыта. Пол у окна так и не перестелили."
+	},
+/obj/item/clothing/head/soft/yellow,
+/obj/item/newspaper,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/paper{
+	name = "pressure log";
+	default_raw_text = "Журнал давления «Пневмы». Хранилище: по две канистры каждого газа, пустые канистры - у стен. Стенд смесителя выключен."
+	},
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/analyzer,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stack/sheet/rglass,
+/obj/item/newspaper,
+/obj/item/clothing/glasses/regular,
+/obj/item/stack/sticky_tape,
+/obj/item/stack/sticky_tape,
+/obj/item/clothing/gloves/color/black,
+/obj/item/toy/cards/deck,
+/obj/item/clothing/gloves/fingerless,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"wN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"wR" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"wU" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/flashlight,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/clothing/mask/gas,
+/obj/item/lighter/greyscale,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"xi" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/grenade/chem_grenade/metalfoam{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"xk" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/extinguisher/mini,
+/obj/item/lighter/greyscale,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/newspaper,
+/obj/item/newspaper,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"xl" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"xm" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"xo" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"xq" = (
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"xt" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/air{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"xz" = (
+/obj/machinery/atmospherics/pipe/simple/orange/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"xG" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"xP" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/trash/candy,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/gloves/color/black,
+/obj/item/newspaper,
+/obj/item/newspaper,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/paper/crumpled,
+/obj/item/extinguisher/mini,
+/obj/item/toy/cards/deck,
+/obj/item/clipboard,
+/obj/item/trash/candy,
+/obj/item/trash/sosjerky,
+/obj/item/newspaper,
+/obj/item/paper{
+	name = "pressure log";
+	default_raw_text = "Журнал давления «Пневмы». Хранилище: по две канистры каждого газа, пустые канистры - у стен. Стенд смесителя выключен."
+	},
+/obj/item/paper{
+	name = "shift log";
+	default_raw_text = "Журнал смены. Зал пробоев: окно камеры целое, заслонка открыта. Пол у окна так и не перестелили."
+	},
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/clothing/head/soft/yellow,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"xS" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"xT" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"xV" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"yi" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"yl" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "plasma valve"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"yr" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"yA" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 8
+	},
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"yJ" = (
+/obj/machinery/atmospherics/pipe/simple/dark/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"yK" = (
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"yP" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"yQ" = (
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"yW" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"yX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"za" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 8
+	},
+/obj/structure/closet/emcloset,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/extinguisher/mini,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/storage/box/lights/mixed,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/obj/item/stack/tile/plasteel,
+/obj/item/electronics/airalarm,
+/obj/item/stack/sticky_tape,
+/obj/item/electronics/firelock,
+/obj/item/pipe_meter,
+/obj/item/stock_parts/cell/crap,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"ze" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/wrench,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"zg" = (
+/obj/machinery/atmospherics/pipe/simple/dark/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"zq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"zw" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"zx" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"zB" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/toolcloset,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/trash/sosjerky,
+/obj/item/bedsheet/yellow,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/flashlight,
+/obj/item/toy/cards/deck,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/obj/item/electronics/firelock,
+/obj/item/stack/cable_coil,
+/obj/item/assembly/igniter,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/circuitboard/machine/thermomachine,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"zD" = (
+/obj/item/shard,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"zF" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"zK" = (
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"zM" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"zN" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/hand_labeler,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"zO" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/holosign_creator/atmos{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/holosign_creator/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"zT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/obj/structure/table/reinforced,
+/obj/item/electronics/airalarm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/electronics/airalarm{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pipe_meter{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"zV" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Ai" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/closed/wall,
+/area/antag_training/sector/atmos)
+"Aw" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Ax" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"AE" = (
+/obj/machinery/atmospherics/pipe/simple/orange/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"AH" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"AI" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"AJ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"AL" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"AR" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"AS" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/candy,
+/obj/effect/landmark/antag_training/side{
+	side = "crew"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"AV" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Bn" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Bp" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Br" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Bv" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar/red{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"BC" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/directions/engineering{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"BH" = (
+/obj/machinery/door/airlock/atmos/glass{
+	name = "Ventilation Test Room"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"BI" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"BL" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"BW" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = 32
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Ca" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"Cb" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "mix valve"
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Cc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/nitrous_oxide,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Ce" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Cn" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Cr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"Cw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/effect/landmark/antag_training/side{
+	side = "medbay"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"CC" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"CF" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"CG" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"CK" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"CN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/mask/gas,
+/obj/item/stack/sheet/glass/five,
+/obj/item/electronics/firelock,
+/obj/item/storage/toolbox/emergency,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/tile/plasteel,
+/obj/item/analyzer,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/light/tube/broken,
+/obj/item/clipboard,
+/obj/item/pen,
+/obj/item/paper{
+	name = "breach incident report";
+	default_raw_text = "Акт о разгерметизации зала пробоев «Пневмы». Окно вакуумной камеры выбило на учениях, пробой закрыла аварийная заслонка, стулья и бумаги унесло к окну. Окно поставили заново, плиты пола так и не перестелили. Перед учениями проверять заслонки и держать баллоны под рукой."
+	},
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stack/sheet/metal/five,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/flashlight,
+/obj/item/flashlight,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"CP" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/mask/breath,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/extinguisher/mini,
+/obj/item/trash/sosjerky,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"CV" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Db" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/electronics/airalarm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Dn" = (
+/obj/machinery/atmospherics/pipe/simple/orange/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"DC" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"DD" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/atmospherics_yellow,
+/obj/item/clothing/mask/gas,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/bedsheet/yellow,
+/obj/item/toy/cards/deck,
+/obj/item/clothing/gloves/color/black,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/mask/breath,
+/obj/item/lighter/greyscale,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"DT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/vg_decals/atmos/nitrogen,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Ed" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Ee" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/emcloset,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/bedsheet/yellow,
+/obj/item/flashlight,
+/obj/item/flashlight,
+/obj/item/toy/cards/deck,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/cable_coil,
+/obj/item/wallframe/airalarm,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Eg" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/lighter/greyscale,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/bedsheet/yellow,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/stock_parts/cell/crap,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sticky_tape,
+/obj/item/stock_parts/cell/crap,
+/obj/item/light/tube/broken,
+/obj/item/electronics/airalarm,
+/obj/item/stack/sheet/glass/five,
+/obj/item/wallframe/airalarm,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Em" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Ep" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"EB" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/carbon_dioxide,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Fd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Ff" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Fo" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Fp" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Fu" = (
+/obj/machinery/atmospherics/pipe/simple/green/hidden{
+	dir = 4
+	},
+/turf/closed/wall,
+/area/antag_training/sector/atmos)
+"Fv" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/emcloset,
+/obj/item/shard,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Fz" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell/crap,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"FA" = (
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"FH" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"FI" = (
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"FM" = (
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/rods,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/antag_training/sector/atmos)
+"FS" = (
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Gg" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/oxygen,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Gl" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Gr" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/directional/east,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen/empty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen/empty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pipe_meter{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Gs" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/electronics/airalarm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/electronics/firelock{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Gu" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"GA" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/machinery/light/broken{
+	dir = 2
+	},
+/obj/item/light/tube/broken,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"GD" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"GF" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"GK" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/plaques/atmos{
+	name = "Pneuma atmospherics plaque";
+	desc = "Атмосферный цех «Пневма» - учебная копия станционного атмоса. Трубы окрашены по газам, у портов - надписи. В зале пробоев остались следы аварии: окно вакуумной камеры однажды уже выбило.";
+	pixel_y = 32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Hj" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/hazardvest{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/atmos{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Hq" = (
+/obj/machinery/atmospherics/pipe/simple/dark/visible,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Hv" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"HI" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"HQ" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/safety_internals{
+	pixel_y = 32
+	},
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"HR" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/stack/tile/plasteel,
+/obj/effect/landmark/antag_training/casualties,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Il" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Io" = (
+/obj/machinery/door/airlock/atmos/glass{
+	name = "Gas Mixing Stand"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Iq" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Is" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Iu" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"IF" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"IJ" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"IR" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/extinguisher/mini,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/bedsheet/yellow,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"IX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Jj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Jl" = (
+/obj/item/stack/rods,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Jp" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/emcloset,
+/obj/item/flashlight,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/mask/gas,
+/obj/item/toy/cards/deck,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/clothing/head/hardhat/atmos,
+/obj/item/lighter/greyscale,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Jt" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/plasma,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Jv" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/nitrous_oxide,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"JD" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"JG" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"JI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"JK" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"JO" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"JX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Kf" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "oxygen valve"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Kh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Ki" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Kn" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Ku" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/fire{
+	pixel_y = 32
+	},
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Kv" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Kz" = (
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/candy{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"KF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"KI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"KJ" = (
+/obj/machinery/door/airlock/glass{
+	name = "Fire Safety Station"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"KL" = (
+/obj/effect/turf_decal/vg_decals/atmos/mix,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"KM" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"KO" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Lb" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Lj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"LA" = (
+/obj/item/stack/tile/plasteel,
+/obj/item/paper/crumpled,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/antag_training/sector/atmos)
+"LB" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"LY" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Mf" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/west,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Mj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"Ml" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/pipedispenser,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Mp" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Mu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"MB" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"MD" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/air,
+/obj/item/clothing/mask/gas,
+/obj/item/tank/internals/oxygen,
+/obj/item/electronics/firelock,
+/obj/item/flashlight,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/grenade/chem_grenade/metalfoam,
+/obj/item/clothing/glasses/regular,
+/obj/item/paper{
+	name = "pressure log";
+	default_raw_text = "Журнал давления «Пневмы». Хранилище: по две канистры каждого газа, пустые канистры - у стен. Стенд смесителя выключен."
+	},
+/obj/item/pen/fourcolor,
+/obj/item/cigbutt,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/glasses/regular,
+/obj/item/pen/fourcolor,
+/obj/item/clothing/gloves/fingerless,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"ME" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"MK" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/rods/ten,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/cable_coil,
+/obj/item/weldingtool,
+/obj/structure/sign/poster/official/here_for_your_safety{
+	pixel_x = 32
+	},
+/obj/item/pipe_meter,
+/obj/item/stock_parts/cell/crap,
+/obj/item/cigbutt,
+/obj/item/newspaper,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"MS" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"MU" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/mask/gas{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/air{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"MV" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Ne" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Nh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Ni" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Nj" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Nm" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Nw" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"NQ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/securearea{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"NU" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"NW" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Oa" = (
+/obj/machinery/door/airlock/atmos{
+	name = "Distribution Pumps"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Ob" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/chair,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Od" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Oe" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Of" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/bedsheet/yellow,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Og" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Op" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Os" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Ot" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen/yellow,
+/obj/item/tank/internals/air,
+/obj/item/clothing/mask/gas,
+/obj/item/light/tube/broken,
+/obj/item/light/tube/broken,
+/obj/item/crowbar,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/metal/five,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/obj/item/clothing/gloves/color/black,
+/obj/item/pipe_meter,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stack/cable_coil,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Ou" = (
+/turf/closed/indestructible,
+/area/antag_training/sector/atmos)
+"Ox" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"OD" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"OE" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"OR" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"OV" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"OY" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Pc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Ph" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Pm" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Pn" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"PE" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"PG" = (
+/obj/machinery/atmospherics/components/trinary/mixer{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"PL" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"PQ" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Qf" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Qi" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Qu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/wtf_is_co2{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"QF" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"QG" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"QL" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/circuitboard/machine/thermomachine{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"QN" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"QP" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "Vacuum Chamber"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"QX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/vacuum{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Rf" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Rk" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/vg_decals/atmos/carbon_dioxide,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Rs" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Rv" = (
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"RN" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"RP" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"RV" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/suit/hazardvest{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Sa" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Se" = (
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"Si" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/pipe_meter{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Sj" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"So" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Sp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Sq" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Ss" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"St" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 10
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"SD" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/sheet/plasteel,
+/obj/item/stack/rods/ten,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/sheet/rglass,
+/obj/item/wrench,
+/obj/item/stack/sheet/glass/five,
+/obj/item/flashlight,
+/obj/item/clothing/head/welding,
+/obj/item/stack/cable_coil,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"SJ" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 8
+	},
+/obj/structure/closet/emcloset,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/flashlight,
+/obj/item/clothing/mask/gas,
+/obj/item/flashlight,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/toy/cards/deck,
+/obj/item/toy/cards/deck,
+/obj/item/storage/fancy/cigarettes,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/glasses/regular,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/head/soft/yellow,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"SQ" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister/proto/training,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"SR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"SY" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/glasses/meson,
+/obj/item/toy/cards/deck,
+/obj/item/newspaper,
+/obj/item/trash/sosjerky,
+/obj/item/newspaper,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/flashlight,
+/obj/item/electronics/airalarm,
+/obj/item/crowbar,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/flashlight,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Td" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Te" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/hazardvest{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/suit/hazardvest{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/atmos{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"Tu" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Ty" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"TD" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"TE" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"TF" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/machinery/light/directional/south,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"TH" = (
+/obj/effect/decal/cleanable/robot_debris,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"TT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/firecloset,
+/obj/item/clothing/mask/gas,
+/obj/item/trash/candy,
+/obj/item/clothing/gloves/color/black,
+/obj/item/flashlight,
+/obj/item/clothing/mask/breath,
+/obj/item/newspaper,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/newspaper,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"TW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Uc" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Uv" = (
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"Ux" = (
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Uy" = (
+/turf/closed/wall,
+/area/antag_training/sector/atmos)
+"UF" = (
+/obj/machinery/door/airlock{
+	name = "Atmospherics Workshop"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"UP" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can,
+/obj/effect/landmark/antag_training/side{
+	side = "crew"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"UV" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot/yellow,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"UW" = (
+/obj/machinery/door/airlock/atmos{
+	name = "Breach Range"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"UY" = (
+/obj/effect/turf_decal/tile/neutral/half{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/storage/backpack/industrial{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/atmos)
+"UZ" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Vg" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Vp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
+/area/antag_training/sector/atmos)
+"Vu" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Vx" = (
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"VD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"VK" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/analyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"VO" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"VS" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/rods/ten,
+/obj/item/electronics/firelock,
+/obj/item/electronics/firelock,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/tile/plasteel,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/rods/ten,
+/obj/item/stack/sticky_tape,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к работе."
+	},
+/obj/item/storage/box/lights/mixed,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"VX" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Wb" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"We" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Wn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/antag_training/sector/atmos)
+"Ws" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"Wt" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/gas{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"Wy" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"WH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"WI" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/toy/cards/deck,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"WS" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 1;
+	name = "carbon dioxide valve"
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"WT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"WU" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/departments/engineering{
+	pixel_y = 32
+	},
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Xe" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/portable_atmospherics/scrubber,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Xg" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Xn" = (
+/turf/closed/wall/r_wall,
+/area/antag_training/sector/atmos)
+"Xo" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Xp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Xq" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"XI" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/toolcloset,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/trash/sosjerky,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/gloves/color/black,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/metal/five,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/storage/box/lights/mixed,
+/obj/item/stack/sheet/glass/five,
+/obj/item/assembly/igniter,
+/obj/item/multitool,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/folder/yellow,
+/obj/item/paper{
+	name = "pressure log";
+	default_raw_text = "Журнал давления «Пневмы». Хранилище: по две канистры каждого газа, пустые канистры - у стен. Стенд смесителя выключен."
+	},
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/circuitboard/machine/thermomachine,
+/obj/item/stock_parts/cell/crap,
+/obj/item/pipe_meter,
+/obj/item/electronics/firelock,
+/obj/item/flashlight,
+/obj/item/pipe_meter,
+/obj/item/stack/sheet/glass/five,
+/obj/item/electronics/firelock,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/tank/internals/oxygen/empty,
+/obj/item/electronics/firelock,
+/obj/item/assembly/igniter,
+/obj/item/stack/sheet/glass/five,
+/obj/item/paper{
+	name = "canister tag";
+	default_raw_text = "ПУСТО. Сдать на заправку."
+	},
+/obj/item/stack/rods/ten,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"XR" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/wallframe/airalarm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wallframe/firealarm{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"XW" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Yb" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/fire/firefighter{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat/red{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/tank/internals/oxygen/red{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Yd" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/vacuum,
+/area/antag_training/sector/atmos)
+"Yp" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/thermomachine,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Yt" = (
+/obj/effect/landmark/antag_training/side{
+	side = "medbay"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Yy" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"YA" = (
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"YE" = (
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"YF" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"YI" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/antag_training/sector/atmos)
+"YL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+"YV" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Za" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Ze" = (
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/atmos)
+"Zf" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Zg" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Zh" = (
+/obj/machinery/atmospherics/pipe/simple/green/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/atmos)
+"Zk" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"Zn" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/atmos)
+"Zp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/atmos)
+"Zx" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/antag_training/sector/atmos)
+"ZP" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/tank/internals/emergency_oxygen/empty,
+/turf/open/floor/engine,
+/area/antag_training/sector/atmos)
+"ZZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/atmos)
+
+(1,1,1) = {"
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+"}
+(2,1,1) = {"
+Ou
+tf
+Qu
+EB
+EB
+Mf
+NQ
+lu
+eX
+Jv
+lu
+AJ
+Uy
+wU
+wj
+mf
+Uy
+nw
+Ss
+OV
+ok
+Yb
+iV
+Uy
+yA
+mk
+dN
+SJ
+za
+Ou
+"}
+(3,1,1) = {"
+Ou
+tf
+ru
+FH
+bZ
+Fd
+Ne
+bZ
+bZ
+ze
+jf
+Pn
+Uy
+WU
+rt
+TF
+Uy
+xP
+oU
+sk
+af
+mx
+eM
+Uy
+HQ
+cI
+KF
+KF
+aF
+Ou
+"}
+(4,1,1) = {"
+Ou
+hs
+Gg
+Ki
+Mp
+dX
+jY
+Fp
+jY
+Kf
+Og
+iC
+Uy
+ni
+Ce
+Ze
+Uy
+zw
+tZ
+az
+Xg
+Yt
+Nj
+Uy
+eg
+yQ
+oN
+FI
+Te
+Ou
+"}
+(5,1,1) = {"
+Ou
+gq
+hC
+zM
+iv
+Od
+iv
+Za
+iv
+eL
+hI
+AH
+oD
+xT
+OD
+JO
+Uy
+AL
+qt
+qy
+Bp
+Em
+mx
+dY
+cI
+Uv
+yQ
+yQ
+aq
+Ou
+"}
+(6,1,1) = {"
+Ou
+XW
+Jt
+fF
+Dn
+xz
+AE
+qq
+AE
+yl
+Og
+AH
+oD
+xT
+UP
+CG
+KJ
+lo
+tZ
+eT
+uV
+Cw
+eM
+Uy
+sv
+yQ
+oN
+cI
+fX
+Ou
+"}
+(7,1,1) = {"
+Ou
+rN
+Rk
+ql
+yJ
+zg
+Hq
+sB
+yJ
+WS
+hI
+iC
+Uy
+IX
+wK
+JI
+aw
+CV
+IJ
+fc
+dk
+aj
+fV
+Uy
+eg
+KF
+Mj
+FI
+Gu
+Ou
+"}
+(8,1,1) = {"
+Ou
+wE
+Cc
+fF
+YV
+xm
+YV
+bP
+pr
+oF
+Og
+MU
+Uy
+xS
+AS
+ME
+Uy
+Bv
+Zp
+Sp
+IJ
+vJ
+sX
+Uy
+eg
+yQ
+Cr
+yQ
+UY
+Ou
+"}
+(9,1,1) = {"
+Ou
+ek
+px
+zM
+VO
+ix
+VO
+jX
+pv
+Cb
+Zn
+Ot
+Uy
+GK
+dp
+fR
+Uy
+Ku
+tZ
+Os
+mW
+mx
+xi
+Uy
+rq
+cI
+sf
+yQ
+rK
+Ou
+"}
+(10,1,1) = {"
+Ou
+ie
+KM
+zF
+wL
+xt
+CK
+Nw
+iT
+lu
+oA
+Ph
+Uy
+xk
+OD
+Br
+Uy
+MD
+JK
+Uc
+gX
+kp
+YF
+Uy
+DD
+rk
+cI
+qQ
+jr
+Ou
+"}
+(11,1,1) = {"
+Ou
+Uy
+Uy
+Uy
+Uy
+Uy
+oD
+oD
+Uy
+Uy
+Uy
+Uy
+Uy
+kG
+OD
+JG
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+UF
+Uy
+Uy
+Ou
+"}
+(12,1,1) = {"
+Ou
+ge
+Qf
+oz
+mq
+DT
+HI
+MV
+Si
+df
+mc
+ks
+Uy
+Xe
+Ce
+bd
+Uy
+Ml
+rQ
+Vg
+rL
+NW
+oM
+GD
+fi
+Yp
+Ne
+cl
+vq
+Ou
+"}
+(13,1,1) = {"
+Ou
+ez
+cU
+Lb
+cU
+UV
+PL
+od
+sP
+UV
+VD
+Gl
+Uy
+iK
+kq
+wR
+Uy
+rv
+Is
+Ne
+Ne
+fj
+Xp
+Xp
+fj
+yK
+pX
+Yy
+QN
+Ou
+"}
+(14,1,1) = {"
+Ou
+lT
+yW
+IF
+YI
+fk
+yP
+bB
+sP
+dJ
+FA
+qm
+aw
+lW
+Ox
+cH
+ei
+fj
+wN
+Ne
+Ed
+Rs
+mC
+dU
+ew
+Ed
+sd
+qR
+pc
+Ou
+"}
+(15,1,1) = {"
+Ou
+VK
+Kn
+VD
+Qi
+fk
+yP
+cU
+sP
+nj
+Wy
+RN
+Uy
+vc
+NU
+TT
+Uy
+XR
+oR
+WH
+sd
+Rs
+cb
+pG
+RP
+YE
+Ne
+Oe
+cE
+Ou
+"}
+(16,1,1) = {"
+Ou
+dK
+od
+KL
+PG
+QF
+yP
+od
+sP
+wc
+YA
+zN
+Uy
+kJ
+uW
+Ee
+Uy
+yi
+ru
+mD
+Jj
+fj
+ra
+Kv
+sd
+Xq
+Ne
+AH
+PE
+Ou
+"}
+(17,1,1) = {"
+Ou
+zT
+cU
+Il
+bN
+VD
+yP
+cU
+Aw
+SQ
+FA
+JX
+Uy
+AI
+Op
+Iu
+Uy
+bf
+TD
+Eg
+zB
+Ne
+VX
+oH
+Zg
+eh
+aW
+os
+st
+Ou
+"}
+(18,1,1) = {"
+Ou
+sp
+cU
+eO
+LY
+VD
+Bn
+xV
+sP
+YA
+Jl
+Nm
+Uy
+BC
+Ce
+IR
+Uy
+Uy
+Uy
+Uy
+Uy
+UW
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Ou
+"}
+(19,1,1) = {"
+Ou
+RV
+Nh
+YA
+LY
+YA
+YA
+rB
+YA
+er
+YA
+VD
+Io
+Fo
+OD
+yX
+Uy
+Of
+SD
+uv
+mT
+Vx
+lJ
+iM
+Zf
+yr
+iU
+uE
+zO
+Ou
+"}
+(20,1,1) = {"
+Ou
+Gs
+YA
+VD
+St
+Ff
+gj
+gj
+gj
+JD
+YA
+Wb
+Uy
+Jp
+qN
+WT
+Uy
+ug
+Iq
+LA
+jE
+hl
+Ni
+Vx
+bQ
+Pm
+wm
+rC
+sT
+Ou
+"}
+(21,1,1) = {"
+Ou
+Db
+YA
+Rv
+YA
+AV
+VD
+Jl
+YA
+OE
+VD
+if
+Uy
+MS
+Op
+cH
+oD
+Ep
+Lj
+Ni
+SR
+HR
+Wn
+Ni
+zK
+zD
+gU
+eC
+qk
+Ou
+"}
+(22,1,1) = {"
+Ou
+XI
+MK
+gT
+va
+vm
+ec
+wG
+Gr
+io
+YA
+Ws
+Uy
+vc
+OD
+CG
+oD
+BL
+jE
+gU
+nC
+tT
+oo
+wm
+zK
+Vx
+Pc
+Vx
+SY
+Ou
+"}
+(23,1,1) = {"
+Ou
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Uy
+Fu
+Oa
+Uy
+Uy
+WI
+by
+sO
+aw
+fA
+CN
+Hj
+eC
+ZP
+UZ
+nz
+Fv
+xl
+Zk
+KI
+gy
+Ou
+"}
+(24,1,1) = {"
+Ou
+ux
+cX
+vS
+Sq
+Hv
+we
+Uy
+kC
+Zh
+Mu
+fG
+Uy
+wA
+Ce
+Ze
+Uy
+CC
+QG
+tT
+bQ
+bX
+GA
+Xn
+Xn
+vZ
+QP
+vZ
+Xn
+Ou
+"}
+(25,1,1) = {"
+Ou
+hh
+ZZ
+xG
+ri
+AR
+LB
+Ai
+DC
+aH
+ep
+cL
+aw
+OY
+qS
+JO
+Uy
+mr
+bQ
+rA
+FS
+FM
+Vu
+Xn
+cW
+Ca
+Yd
+Se
+oZ
+Ou
+"}
+(26,1,1) = {"
+Ou
+eb
+GF
+Kz
+hh
+zq
+Cn
+Uy
+fl
+We
+TE
+Mu
+gf
+Fo
+NU
+wR
+Uy
+ev
+Vp
+zK
+tl
+wk
+jd
+vZ
+cW
+OR
+hq
+cW
+cW
+Ou
+"}
+(27,1,1) = {"
+Ou
+GF
+Ux
+zV
+Td
+KO
+TW
+aw
+Sj
+zx
+Kh
+db
+Uy
+eE
+qN
+QX
+Uy
+ty
+Vx
+zD
+So
+xo
+Ty
+vZ
+cW
+cW
+cW
+op
+cW
+Ou
+"}
+(28,1,1) = {"
+Ou
+Rf
+lX
+YL
+hh
+sL
+hh
+BH
+xq
+Fz
+PQ
+QL
+Uy
+vc
+Sa
+WT
+Uy
+gC
+bQ
+Zx
+tl
+zD
+CF
+vZ
+cW
+Ca
+cW
+Se
+cv
+Ou
+"}
+(29,1,1) = {"
+Ou
+cf
+Wt
+MB
+bC
+Tu
+fu
+Uy
+vX
+BW
+Xo
+BI
+Uy
+rZ
+vT
+CP
+Uy
+VS
+Ob
+Ax
+rj
+vG
+gb
+Xn
+cW
+TH
+pB
+Ca
+ji
+Ou
+"}
+(30,1,1) = {"
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+Ou
+"}

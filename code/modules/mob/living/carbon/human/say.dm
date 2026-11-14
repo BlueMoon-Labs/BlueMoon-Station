@@ -59,6 +59,9 @@
 
 // (ADD) Pe4henika Bluemoon -- start
 /mob/living/carbon/human/binarycheck()
+	if(has_status_effect(/datum/status_effect/malf_protocol_breach))
+		return TRUE
+
 	var/obj/item/organ/cyberimp/brain/ai_link/I = getorganslot("brain_ai_link")
 	if(istype(I) && I.linked_ai)
 		return TRUE
@@ -108,7 +111,7 @@
 
 /mob/living/carbon/human/get_alt_name()
 	if(name != GetVoice())
-		return " (as [get_id_name("Unknown")])"
+		return " (как [get_id_name("неизвестный")])"
 
 /mob/living/carbon/human/proc/forcesay(list/append) //this proc is at the bottom of the file because quote fuckery makes notepad++ cri
 	set waitfor = FALSE		// WINGET IS A SLEEP. DO. NOT. SLEEP.

@@ -21,6 +21,8 @@
 	var/mob_trait
 	/// should we immediately call on_spawn or add a timer to trigger
 	var/on_spawn_immediate = TRUE
+	// Разрешена ли выдача стартового снаряжения.
+	var/spawn_items = TRUE
 	/// Reference to the mob currently tied to this quirk datum. Quirks are not singletons.
 	var/mob/living/quirk_holder
 	var/processing_quirk = FALSE
@@ -31,11 +33,12 @@
 	// Отвечает за то не пишется-ли данный квирк на медсканерах и худах (FALSE = пишется)
 	var/flavor_quirk = FALSE
 
-/datum/quirk/New(mob/living/quirk_mob, spawn_effects)
+/datum/quirk/New(mob/living/quirk_mob, spawn_effects, give_spawn_items = TRUE)
 	if(!quirk_mob || (human_only && !ishuman(quirk_mob)) || quirk_mob.has_quirk(type))
 		qdel(src)
 		return
 	quirk_holder = quirk_mob
+	spawn_items = give_spawn_items
 	SSquirks.quirk_objects += src
 	if(gain_text)
 		to_chat(quirk_holder, gain_text)
@@ -94,7 +97,7 @@
 	on_process()
 
 //BLUEMOON CHANGE добавляем "укороченную" версию текста для медсканеров и делаем текстик медзаписей красиво
-/mob/living/proc/get_trait_string(medical, short) //helper string. gets a string of all the traits the mob has
+/mob/living/proc/get_trait_string(medical, short, empty_text = "Отсутствуют") //helper string. gets a string of all the traits the mob has
 	var/list/dat = list()
 	if(!medical)
 		for(var/V in roundstart_quirks)
@@ -103,7 +106,7 @@
 				continue
 			dat += T.name
 		if(!dat.len)
-			return "Отсутствуют"
+			return empty_text
 		var/list/dat_sorted = sort_list(dat)
 		return dat_sorted.Join(", ")
 	else

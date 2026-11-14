@@ -587,7 +587,6 @@
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
 /obj/item/clothing/head/helmet/riot/concord_riot_helmet
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Concord Riot Helmet"
 	desc = "Настоящий тактический комплекс, установленный в скромном корпусе. Не смотря на то, что шлем призван защищать голову, в первую очередь помогает избежать получения урона - встроенные системы этого шлема не только расширяют угол обзора владельца, но и заранее просчитывают траектории летящих предметов, и, в идеале - может сам нивелировать урон, используя внутреннюю систему физического противодействия, уменьшая урон по голове и следующие из него травмы шейных отделов позвонка. Вопреки укоренившемуся мнению, такой шлем почти не используется расой производителем, преимущественно уходя на экспорт."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
@@ -596,6 +595,7 @@
 	icon_state = "lapkee-helmet"
 	flags_inv = HIDEFACE|HIDESNOUT
 	visor_flags_inv = HIDEFACE|HIDESNOUT
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/head/helmet/riot/concord_riot_helmet)
 
 /obj/item/clothing/head/donator/bm/custom_helmet
     name = "Custom helmet"
@@ -765,7 +765,6 @@
 		. += pic2
 
 /obj/item/clothing/head/helmet/riot/melatonin_helmet
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Refurbished Concord Riot Helmet"
 	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
@@ -775,6 +774,7 @@
 	item_state = "melatonin_helmet"
 	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
 	visor_flags_inv = HIDEFACE|HIDESNOUT
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/head/helmet/riot/melatonin_helmet)
 
 /obj/item/modkit/melatonin_riot_kit
 	name = "Refurbished Concord Riot Helmet Kit"
@@ -785,7 +785,6 @@
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
 /obj/item/clothing/head/helmet/sec/tau
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Gugnir Helmet"
 	desc = " Gungnir helmet with a binocular module. Typically used in conjunction with the Jaeger combat exoskeleton. The protective plates are heavily damaged and offer reduced protection; plate replacement is recommended."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
@@ -793,6 +792,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "tau"
 	item_state = "tau"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/head/helmet/sec/tau)
 
 /obj/item/modkit/tau_helmet_kit
 	name = "Gugnir Helmet Kit"

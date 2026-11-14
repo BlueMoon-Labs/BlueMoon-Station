@@ -35,9 +35,9 @@
 	. += "В слоте [charging ? "находится \a [charging]" : "отсутствует батарея"]."
 	if(charging)
 		. += "Текущий заряд: [round(charging.percent(), 1)]%."
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("Статус-дисплей сообщает: \n\
-		- Скорость зарядки: <b>[recharge_coeff*100]%</b>.")
+
+/obj/machinery/cell_charger/examine_display_content(mob/user)
+	. += "– Скорость зарядки: <b>[recharge_coeff*100]%</b>."
 
 /obj/machinery/cell_charger/update_overlays()
 	. = ..()

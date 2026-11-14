@@ -1,6 +1,6 @@
 GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 
-/proc/get_uplink_items(uplink_flag, allow_sales = TRUE, allow_restricted = TRUE)
+/proc/get_uplink_items(uplink_flag, allow_sales = TRUE, allow_restricted = TRUE, ignore_player_minimum = FALSE)
 	var/list/filtered_uplink_items = list()
 	var/list/sale_items = list()
 
@@ -10,7 +10,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 			continue
 		if (!(I.purchasable_from & uplink_flag))
 			continue
-		if(I.player_minimum && I.player_minimum > GLOB.joined_player_list.len)
+		if(!ignore_player_minimum && I.player_minimum && I.player_minimum > GLOB.joined_player_list.len)
 			continue
 		if (I.restricted && !allow_restricted)
 			continue
@@ -117,6 +117,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/atom/uplink = U.parent
 	var/vr_text = is_vr_level(T.z) ? " in VR" : ""
 	log_uplink("[key_name(user)] purchased [A.name] for [cost] telecrystals from [uplink?.name][vr_text]")
+	user.playsound_local(get_turf(user), 'sound/effects/kaching.ogg', 50, FALSE)
 	if(!vr_text && !is_centcom_level(T.z) && GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		message_antigrif("[ADMIN_LOOKUPFLW(user)] purchased [A.name] at [ADMIN_VERBOSEJMP(T)].")
 	if(purchase_log_vis && U.purchase_log)

@@ -124,8 +124,7 @@
 	speak_chance = 30
 	speak = list("Я попал? Я попал, да?!", "Это там твои мозги вытекают?!", "Да куда я положил магазин, сука где он, где он?!", "Я буду убивать тебя медленно, отстреливая кусочек за кусочком~", "Нужно будет купить себе новые очки", "Да я тебя на сквозь вижу, ХАХ!", "Да я не бузумный стрелок. Я убийца!")
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/sniper_rifle = 5,
-		/obj/item/broken/sniper_rifle = 30,
+		/obj/item/broken/sniper_rifle = 35,
 		/obj/item/ammo_box/magazine/sniper_rounds = 10,
 		/obj/item/clothing/under/inteq = 15,
 		null = 40 // ничего не выпадает

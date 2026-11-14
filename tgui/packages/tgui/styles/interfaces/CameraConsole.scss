@@ -51,3 +51,50 @@ $background-color: rgba(0, 0, 0, 0.33) !default;
     margin-top: calc(50% - 2em);
   }
 }
+
+.CameraConsole__content .CameraConsole__toolbar {
+  right: 4em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.CameraConsole__overview {
+  .CameraConsole__left {
+    width: 50%;
+  }
+
+  .CameraConsole__right {
+    left: 50%;
+  }
+}
+
+.CameraConsole__overviewMap {
+  height: 100%;
+  padding: 0.5em;
+}
+
+.Button.CameraConsole__unavailableCamera {
+  color: #ff5c5c;
+}
+
+.CameraConsole__marker {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: #101820;
+  font-size: 11px;
+  cursor: pointer;
+  transform: translate(-50%, 50%);
+  z-index: 1;
+
+  &:hover,
+  &:focus-visible,
+  &--selected {
+    outline: 2px solid currentColor;
+    z-index: 2;
+  }
+}

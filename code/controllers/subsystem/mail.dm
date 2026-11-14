@@ -249,7 +249,7 @@ SUBSYSTEM_DEF(mail)
 
 	new_mail.name = "[initial(new_mail.name)] for [new_mail.recipient_name] ([new_mail.recipient_job])"
 
-	if(this_job.paycheck_department && new_mail.department_colors[this_job.paycheck_department])
+	if(this_job.paycheck_department && LAZYLEN(new_mail.department_colors) && new_mail.department_colors[this_job.paycheck_department])
 		new_mail.color = new_mail.department_colors[this_job.paycheck_department]
 
 	new_mail.pattern = pattern

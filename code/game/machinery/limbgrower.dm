@@ -2,7 +2,7 @@
 /// See [limbgrower_designs.dm] for everything we can make.
 /obj/machinery/limbgrower
 	name = "limb grower"
-	desc = "It grows new limbs using Synthflesh."
+	desc = "Биорепликатор, способный выращивать органы и конечности, используя синтплоть в качестве сырья."
 	icon = 'icons/obj/machines/limbgrower.dmi'
 	icon_state = "limbgrower_idleoff"
 	density = TRUE
@@ -274,6 +274,13 @@
 	var/obj/item/bodypart/limb
 	var/datum/species/selected = GLOB.species_datums[selected_category]
 	limb = new built_typepath(loc)
+	// У опорного хвоста собственный спрайт; заменять его настройками обычной ноги не нужно.
+	if(istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+		var/obj/item/bodypart/l_leg/naga_tail/tail = limb
+		// Без донора оба цветовых канала стандартной наги окрашиваются в белый.
+		tail.tail_item_color = rgb_construct_color_matrix(1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0)
+		limb.update_icon_dropped()
+		return
 	limb.base_bp_icon = selected.icon_limbs || DEFAULT_BODYPART_ICON_ORGANIC
 	limb.species_id = selected.limbs_id
 	limb.color_src = (MUTCOLORS in selected.species_traits ? MUTCOLORS : (selected.use_skintones ? SKINTONE : FALSE))
@@ -418,13 +425,14 @@
 /obj/machinery/limbgrower/examine(mob/user)
 	. = ..()
 	if(!panel_open)
-		. += "<span class='notice'>При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.</span>"
+		. += span_notice("При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.")
 	else
-		. += "<span class='notice'>Панель техобслуживания открыта.</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
-		- Затраты реагентов: <b>[production_coefficient * 100]%</b>.</span>"
+		. += span_notice("Панель техобслуживания открыта.")
+
+/obj/machinery/limbgrower/examine_display_content(mob/user)
+	. += "\
+	– Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
+	– Затраты реагентов: <b>[production_coefficient * 100]%</b>."
 
 /*
  * Checks our reagent list to see if a design can be built.

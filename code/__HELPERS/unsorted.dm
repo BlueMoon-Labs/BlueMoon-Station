@@ -226,7 +226,7 @@ Turf and target are separate in case you want to teleport some distance from a t
 /proc/active_ais(check_mind=0)
 	. = list()
 	for(var/mob/living/silicon/ai/A in GLOB.alive_mob_list)
-		if(A.stat == DEAD)
+		if(A.stat == DEAD || A.training_origin)
 			continue
 		if(A.control_disabled == 1)
 			continue
@@ -1208,7 +1208,7 @@ GLOBAL_REAL_VAR(list/stack_trace_storage)
 		. += CEILING(i * DELTA_CALC, 1)
 		sleep(i * world.tick_lag * DELTA_CALC)
 		i *= 2
-	while (TICK_USAGE > min(TICK_LIMIT_TO_RUN, Master.current_ticklimit))
+	while (TICK_CHECK_RESUME)
 #endif
 
 #undef DELTA_CALC
@@ -1473,7 +1473,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 /proc/servants_and_ghosts()
 	. = list()
 	for(var/V in GLOB.player_list)
-		if(is_servant_of_ratvar(V) || isobserver(V))
+		if((is_servant_of_ratvar(V) && !is_antag_training_atom(V)) || isobserver(V))
 			. += V
 
 #define VARSET_LIST_CALLBACK(target, var_name, var_value) CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(___callbackvarset), ##target, ##var_name, ##var_value)

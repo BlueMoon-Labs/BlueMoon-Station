@@ -1,0 +1,156 @@
+@use 'sass:color';
+
+@mixin accents($accent) {
+  --theme-accent: #{$accent};
+  --theme-label: #{color.scale($accent, $lightness: 45%)};
+  --theme-border: #{rgba($accent, 0.35)};
+  --theme-card: #{rgba($accent, 0.13)};
+  --theme-card-hover: #{rgba($accent, 0.22)};
+  --theme-card-selected: #{rgba($accent, 0.28)};
+  --theme-card-empty: #{rgba($accent, 0.055)};
+}
+
+@mixin department($accent, $background, $image) {
+  @include accents($accent);
+
+  .Window {
+    background-color: $background;
+    background-image: linear-gradient(
+      145deg,
+      color.mix($accent, $background, 9%),
+      $background 70%
+    );
+  }
+
+  .TitleBar {
+    background-color: color.mix($accent, $background, 22%);
+  }
+
+  .Layout__content {
+    background-image: url('../../assets/#{$image}.svg');
+    background-size: 58%;
+    background-position: right center;
+  }
+
+  .Section {
+    background-color: rgba(0, 0, 0, 0.24);
+  }
+
+  .Section__title {
+    border-bottom-color: rgba($accent, 0.45);
+  }
+
+  .Button--color--default:not(.Button--disabled) {
+    background-color: color.mix($accent, $background, 38%);
+    color: #fff;
+
+    &:hover,
+    &:focus {
+      background-color: color.mix($accent, $background, 55%);
+    }
+  }
+
+  .Button--selected:not(.Button--disabled) {
+    background-color: color.mix($accent, $background, 58%);
+  }
+
+  .Tabs {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .Tab--selected {
+    color: color.scale($accent, $lightness: 55%);
+    border-bottom-color: $accent;
+    background-color: rgba($accent, 0.14);
+  }
+
+  .ProgressBar {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .ProgressBar--color--default {
+    border-color: $accent;
+
+    .ProgressBar__fill {
+      background-color: $accent;
+    }
+  }
+
+  .Input,
+  .NumberInput {
+    border-color: rgba($accent, 0.6);
+  }
+
+  .Layout,
+  .Layout * {
+    scrollbar-color: color.mix($accent, $background, 35%) $background;
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-corner {
+      background: $background;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: color.mix($accent, $background, 35%);
+
+      &:hover {
+        background: color.mix($accent, $background, 55%);
+      }
+    }
+  }
+}
+
+.theme-medical {
+  @include department(#62baad, #14272b, 'bg-medical');
+}
+
+.theme-engineering {
+  @include department(#ed913c, #2d2117, 'bg-engineering');
+}
+
+.theme-mining {
+  @include department(#d5a04d, #29231a, 'bg-mining');
+}
+
+.theme-science {
+  @include department(#b294d3, #252032, 'bg-science');
+}
+
+.theme-security {
+  @include department(#cc6666, #301b20, 'bg-nanotrasen');
+
+  .Layout__content {
+    background-size: 70%;
+    background-position: center;
+  }
+}
+
+// Общие акценты готовых тем для карточек и других элементов интерфейса.
+.theme-syndicate {
+  @include accents(#d87272);
+}
+
+.theme-inteq {
+  @include accents(#dca04e);
+}
+
+.theme-pact {
+  @include accents(#899bd3);
+}
+
+.theme-neutral,
+.theme-clockcult {
+  @include accents(#d5ad62);
+}
+
+.theme-hotpink,
+.theme-ntos_synth {
+  @include accents(#d78dd1);
+}
+
+.theme-retro,
+.theme-hackerman,
+.theme-ntos_terminal,
+.theme-abductor {
+  @include accents(#91b875);
+}

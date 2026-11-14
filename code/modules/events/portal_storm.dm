@@ -210,7 +210,7 @@
 
 /datum/round_event/portal_storm/proc/do_announce()
 	set waitfor = FALSE
-	sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
+	announcement_sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
 	sleep(80)
 	var/announce_body
 	if(anchor_turf)
@@ -224,7 +224,7 @@
 		announce_body = "На [station_name()] зафиксирована крупная блюспейс-аномалия. Приготовьтесь к столкновению с угрозами."
 	priority_announce(announce_body, "Центральное Командование, Отдел Работы с Реальностью", triggersound)
 	sleep(20)
-	sound_to_playing_players('sound/magic/lightningbolt.ogg')
+	announcement_sound_to_playing_players('sound/magic/lightningbolt.ogg')
 
 /datum/round_event/portal_storm/tick()
 	var/do_hostile = spawn_hostile()

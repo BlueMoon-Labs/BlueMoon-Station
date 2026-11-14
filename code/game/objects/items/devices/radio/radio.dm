@@ -421,14 +421,14 @@
 	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
 		return
 	broadcasting = !broadcasting
-	user.balloon_alert(user, "Микрофон [broadcasting ? "включен" : "выключен"]")
+	balloon_alert(user, "Микрофон [broadcasting ? "включен" : "выключен"]")
 
 /obj/item/radio/CtrlClick(mob/user)
 	. = ..()
 	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
 		return
 	listening = !listening
-	user.balloon_alert(user, "Динамик [listening ? "включен" : "выключен"]")
+	balloon_alert(user, "Динамик [listening ? "включен" : "выключен"]")
 
 /obj/item/radio/emp_act(severity)
 	. = ..()

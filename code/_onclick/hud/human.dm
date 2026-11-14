@@ -2,7 +2,7 @@
 	icon = 'icons/mob/screen_midnight.dmi'
 
 /atom/movable/screen/human/toggle
-	name = "toggle"
+	name = "Инвентарь"
 	base_icon_state = "toggle"
 	icon_state = "toggle"
 	mouse_over_pointer = MOUSE_HAND_POINTER
@@ -46,7 +46,7 @@
 
 // Sandstorm edit
 /atom/movable/screen/human/toggle/extra
-	name = "toggle extra"
+	name = "Дополнительно"
 	base_icon_state = "toggle_extra"
 	icon_state = "toggle_extra"
 
@@ -75,7 +75,7 @@
 	return hud.extra_shown
 
 /atom/movable/screen/human/equip
-	name = "equip"
+	name = "Экипировать"
 	icon_state = "act_equip"
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
@@ -161,7 +161,7 @@
 	static_inventory += using
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "uniform"
+	inv_box.name = "Униформа"
 	inv_box.icon = ui_style
 	inv_box.slot_id = ITEM_SLOT_ICLOTHING
 	inv_box.icon_state = "uniform"
@@ -170,7 +170,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "suit"
+	inv_box.name = "Костюм"
 	inv_box.icon = ui_style
 	inv_box.slot_id = ITEM_SLOT_OCLOTHING
 	inv_box.icon_state = "suit"
@@ -193,7 +193,7 @@
 	static_inventory += using
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "id"
+	inv_box.name = "ID-карта"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "id"
 	inv_box.icon_full = "template_small"
@@ -202,7 +202,7 @@
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "mask"
+	inv_box.name = "Маска"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "mask"
 	inv_box.icon_full = "template"
@@ -211,7 +211,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "neck"
+	inv_box.name = "Шея"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "neck"
 	inv_box.icon_full = "template"
@@ -220,7 +220,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "back"
+	inv_box.name = "Спина"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "back"
 	inv_box.icon_full = "template"
@@ -229,7 +229,7 @@
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "left pocket"
+	inv_box.name = "Левый карман"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "pocket"
 	inv_box.icon_full = "template_small"
@@ -238,7 +238,7 @@
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "right pocket"
+	inv_box.name = "Правый карман"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "pocket"
 	inv_box.icon_full = "template_small"
@@ -247,7 +247,7 @@
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "suit storage"
+	inv_box.name = "Хранилище костюма"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "suit_storage"
 	inv_box.icon_full = "template"
@@ -277,7 +277,7 @@
 	static_inventory += using
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "gloves"
+	inv_box.name = "Перчатки"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "gloves"
 	inv_box.icon_full = "template"
@@ -286,7 +286,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "eyes"
+	inv_box.name = "Глаза"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "glasses"
 	inv_box.icon_full = "template"
@@ -295,7 +295,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "left ear" // Sandstorm edit
+	inv_box.name = "Левое ухо" // Sandstorm edit
 	inv_box.icon = ui_style
 	inv_box.icon_state = "ears"
 	inv_box.icon_full = "template"
@@ -304,7 +304,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "head"
+	inv_box.name = "Голова"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "head"
 	inv_box.icon_full = "template"
@@ -313,7 +313,7 @@
 	toggleable_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "shoes"
+	inv_box.name = "Обувь"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "shoes"
 	inv_box.icon_full = "template"
@@ -328,7 +328,7 @@
 	toggleable_inventory += using
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "underwear"
+	inv_box.name = "Нижнее бельё"
 	inv_box.icon = ui_style_modular(ui_style)
 	inv_box.icon_state = "underwear"
 	inv_box.icon_full = "template"
@@ -337,7 +337,7 @@
 	extra_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "socks"
+	inv_box.name = "Носки"
 	inv_box.icon = ui_style_modular(ui_style)
 	inv_box.icon_state = "socks"
 	inv_box.icon_full = "template"
@@ -346,7 +346,7 @@
 	extra_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "shirt"
+	inv_box.name = "Рубашка"
 	inv_box.icon = ui_style_modular(ui_style)
 	inv_box.icon_state = "shirt"
 	inv_box.icon_full = "template"
@@ -355,7 +355,7 @@
 	extra_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "right ear"
+	inv_box.name = "Правое ухо"
 	inv_box.icon = ui_style_modular(ui_style)
 	inv_box.icon_state = "ears_extra"
 	inv_box.icon_full = "template"
@@ -364,7 +364,7 @@
 	extra_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "wrists"
+	inv_box.name = "Запястья"
 	inv_box.icon = ui_style_modular(ui_style)
 	inv_box.icon_state = "wrists"
 	inv_box.icon_full = "template"
@@ -373,7 +373,7 @@
 	extra_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
-	inv_box.name = "belt"
+	inv_box.name = "Пояс"
 	inv_box.icon = ui_style
 	inv_box.icon_state = "belt"
 	inv_box.icon_full = "template_small"
@@ -515,7 +515,7 @@
 	var/datum/species/S = H.dna.species
 	for(var/atom/movable/screen/inventory/inv in (static_inventory + toggleable_inventory + extra_inventory)) // Sandstorm edit
 		if(inv.slot_id)
-			if(inv.slot_id in S.no_equip)
+			if((inv.slot_id in S.no_equip) || ((inv.slot_id == ITEM_SLOT_FEET || inv.slot_id == ITEM_SLOT_SOCKS) && HAS_TRAIT(H, TRAIT_NAGA_ANATOMY)))
 				inv.alpha = 128
 			else
 				inv.alpha = initial(inv.alpha)

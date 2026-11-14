@@ -1,6 +1,6 @@
 /obj/item/reactive_armour_shell
 	name = "reactive armour shell"
-	desc = "An experimental suit of armour, awaiting installation of an anomaly core."
+	desc = "Экспериментальный комплект брони, ожидающий установки аномального ядра."
 	icon_state = "reactiveoff"
 	icon = 'icons/obj/clothing/suits.dmi'
 	w_class = WEIGHT_CLASS_BULKY
@@ -14,6 +14,8 @@
 		/obj/effect/anomaly/dimensional 			= /obj/item/clothing/suit/armor/reactive/barricade,
 		/obj/effect/anomaly/ectoplasm 				= /obj/item/clothing/suit/armor/reactive/ectoplasm,
 		/obj/effect/anomaly/fog						= /obj/item/clothing/suit/armor/reactive/smoke,
+		/obj/effect/anomaly/pyro					= /obj/item/clothing/suit/armor/reactive/fire,
+		/obj/effect/anomaly/bhole					= /obj/item/clothing/suit/armor/reactive/stealth,
 		)
 
 	if(istype(I, /obj/item/assembly/signaler/anomaly))
@@ -21,7 +23,7 @@
 		var/armour_path = anomaly_armour_types[A.anomaly_type]
 		if(!armour_path)
 			armour_path = /obj/item/clothing/suit/armor/reactive/stealth //Lets not cheat the player if an anomaly type doesnt have its own armour coded
-		to_chat(user, "You insert [A] into the chest plate, and the armour gently hums to life.")
+		to_chat(user, "Вы вставляете [A] в нагрудную пластину. Броня тихо гудит, оживая.")
 		new armour_path(get_turf(src))
 		qdel(src)
 		qdel(A)
@@ -29,7 +31,7 @@
 //Reactive armor
 /obj/item/clothing/suit/armor/reactive
 	name = "reactive armor"
-	desc = "Doesn't seem to do much for some reason."
+	desc = "Не похоже, что оно хоть что-то делает."
 	var/active = 0
 	var/reactivearmor_cooldown_duration = 0 //cooldown specific to reactive armor
 	var/reactivearmor_cooldown = 0
@@ -46,11 +48,11 @@
 /obj/item/clothing/suit/armor/reactive/attack_self(mob/user)
 	active = !(active)
 	if(active)
-		to_chat(user, "<span class='notice'>[src] is now active.</span>")
+		to_chat(user, span_notice("[src] переходит в активный режим."))
 		icon_state = "reactive"
 		item_state = "reactive"
 	else
-		to_chat(user, "<span class='notice'>[src] is now inactive.</span>")
+		to_chat(user, span_notice("[src] переходит в пассивный режим."))
 		icon_state = "reactiveoff"
 		item_state = "reactiveoff"
 	add_fingerprint(user)
@@ -77,7 +79,7 @@
 //When the wearer gets hit, this armor will teleport the user a short distance away (to safety or to more danger, no one knows. That's the fun of it!)
 /obj/item/clothing/suit/armor/reactive/teleport
 	name = "reactive teleport armor"
-	desc = "Someone separated our Research Director from his own head!"
+	desc = "Кто-то разлучил нашего Директора Исследований с его головой!"
 	var/tele_range = 8
 	var/rad_amount = 60
 	var/rad_amount_before = 120
@@ -87,9 +89,9 @@
 	if(prob(hit_reaction_chance))
 		var/mob/living/carbon/human/H = owner
 		if(world.time < reactivearmor_cooldown)
-			owner.visible_message("<span class='danger'>The reactive teleport system is still recharging! It fails to teleport [H]!</span>")
+			owner.visible_message(span_danger("Система реактивной телепортации ещё перезаряжается! Она не может телепортировать [H]!"))
 			return
-		owner.visible_message("<span class='danger'>The reactive teleport system flings [H] clear of [attack_text], shutting itself off in the process!</span>")
+		owner.visible_message(span_danger("Система реактивной телепортации уводит [H] от [attack_text], отключаясь в процессе!"))
 		playsound(get_turf(owner), 'sound/magic/blink.ogg', 100, 1)
 		var/list/turfs = new
 		var/turf/old = get_turf(src)
@@ -118,14 +120,15 @@
 
 /obj/item/clothing/suit/armor/reactive/fire
 	name = "reactive incendiary armor"
-	desc = "An experimental suit of armor with a reactive sensor array rigged to a flame emitter. For the stylish pyromaniac."
+	desc = "Экспериментальный комплект брони с реактивной сенсорной матрицей, подключённой к эмиттеру пламени. Для пироманьяков со стилем."
+	reactivearmor_cooldown_duration = 15
 
 /obj/item/clothing/suit/armor/reactive/fire/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(prob(hit_reaction_chance))
 		if(world.time < reactivearmor_cooldown)
-			owner.visible_message("<span class='danger'>The reactive incendiary armor on [owner] activates, but fails to send out flames as it is still recharging its flame jets!</span>")
+			owner.visible_message(span_danger("Зажигательная броня на [owner] срабатывает, но не может выпустить пламя – её огненные сопла ещё перезаряжаются!"))
 			return
-		owner.visible_message("<span class='danger'>[src] blocks [attack_text], sending out jets of flame!</span>")
+		owner.visible_message(span_danger("[src] блокирует [attack_text], выпуская струи пламени!"))
 		playsound(get_turf(owner),'sound/magic/fireball.ogg', 100, 1)
 		for(var/mob/living/carbon/C in range(6, owner))
 			if(C != owner)
@@ -141,18 +144,18 @@
 /obj/item/clothing/suit/armor/reactive/stealth
 	name = "reactive stealth armor"
 	reactivearmor_cooldown_duration = 65
-	desc = "An experimental suit of armor that renders the wearer invisible on detection of imminent harm, and creates a decoy that runs away from the owner. You can't fight what you can't see."
+	desc = "Экспериментальный комплект брони, делающий владельца невидимым при обнаружении угрозы и создающий иллюзию, которая убегает от владельца. Нельзя биться с тем, кого не видишь, верно?"
 
 /obj/item/clothing/suit/armor/reactive/stealth/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(prob(hit_reaction_chance))
 		if(world.time < reactivearmor_cooldown)
-			owner.visible_message("<span class='danger'>The reactive stealth system on [owner] activates, but is still recharging its holographic emitters!</span>")
+			owner.visible_message(span_danger("Система невидимости на [owner] срабатывает, но её голографические излучатели ещё перезаряжаются!"))
 			return
 		var/mob/living/simple_animal/hostile/illusion/escape/E = new(owner.loc)
 		E.Copy_Parent(owner, 50)
 		E.GiveTarget(owner) //so it starts running right away: контроллер бежит сам
 		owner.alpha = 30
-		owner.visible_message("<span class='danger'>[owner] is hit by [attack_text] in the chest!</span>") //We pretend to be hit, since blocking it would stop the message otherwise
+		owner.visible_message(span_danger("[attack_text] попадает [owner] в грудь!")) //We pretend to be hit, since blocking it would stop the message otherwise
 		spawn(40)
 			owner.alpha = initial(owner.alpha)
 		reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
@@ -163,7 +166,7 @@
 
 /obj/item/clothing/suit/armor/reactive/tesla
 	name = "reactive tesla armor"
-	desc = "An experimental suit of armor with sensitive detectors hooked up to a huge capacitor grid, with emitters strutting out of it. Zap."
+	desc = "Экспериментальный комплект брони с чувствительными детекторами, подключёнными к огромной конденсаторной сетке, из которой торчат эмиттеры. Бзз!"
 	siemens_coefficient = -1
 	reactivearmor_cooldown_duration = 20
 	var/zap_power = 25000
@@ -188,9 +191,9 @@
 			var/datum/effect_system/spark_spread/sparks = new /datum/effect_system/spark_spread
 			sparks.set_up(1, 1, src)
 			sparks.start()
-			owner.visible_message("<span class='danger'>The tesla capacitors on [owner]'s reactive tesla armor are still recharging! The armor merely emits some sparks.</span>")
+			owner.visible_message(span_danger("Тесла-конденсаторы брони [owner] ещё перезаряжаются!"))
 			return
-		owner.visible_message("<span class='danger'>[src] blocks [attack_text], sending out arcs of lightning!</span>")
+		owner.visible_message(span_danger("[src] блокирует [attack_text], выпуская дуги молний!"))
 		if(!legacy)
 			tesla_zap(owner, zap_range, zap_power, zap_flags)
 		else
@@ -209,15 +212,15 @@
 /obj/item/clothing/suit/armor/reactive/repulse
 	name = "reactive repulse armor"
 	reactivearmor_cooldown_duration = 20
-	desc = "An experimental suit of armor that violently throws back attackers."
+	desc = "Экспериментальный комплект брони, разбрасывающий нападающих по сторонам."
 
 /obj/item/clothing/suit/armor/reactive/repulse/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(prob(hit_reaction_chance))
 		if(world.time < reactivearmor_cooldown)
-			owner.visible_message("<span class='danger'>The repulse generator is still recharging!</span>")
+			owner.visible_message(span_danger("Репульсионный генератор ещё перезаряжается!"))
 			return FALSE
 		playsound(get_turf(owner),'sound/magic/repulse.ogg', 100, 1)
-		owner.visible_message("<span class='danger'>[src] blocks [attack_text], converting the attack into a wave of force!</span>")
+		owner.visible_message(span_danger("[src] блокирует [attack_text], преобразуя атаку в волну силы!"))
 		var/turf/T = get_turf(owner)
 		var/list/cachedrange = range(T, 7) - owner
 		var/safety = 50
@@ -244,17 +247,17 @@
 /obj/item/clothing/suit/armor/reactive/table
 	name = "reactive table armor"
 	reactivearmor_cooldown_duration = 0
-	desc = "If you can't beat the memes, embrace them."
+	desc = "Если не можешь победить мемы – возглавь их."
 	var/tele_range = 10
 
 /obj/item/clothing/suit/armor/reactive/table/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(prob(hit_reaction_chance))
 		var/mob/living/carbon/human/H = owner
 		if(world.time < reactivearmor_cooldown)
-			owner.visible_message("<span class='danger'>The reactive table armor's fabricators are still on cooldown!</span>")
+			owner.visible_message(span_danger("Фабрикаторы реактивной стол-брони ещё перезаряжаются!"))
 			return
-		owner.visible_message("<span class='danger'>The reactive teleport system flings [H] clear of [attack_text] and slams [H.ru_na()] into a fabricated table!</span>")
-		owner.visible_message("<font color='red' size='3'>[H] GOES ON THE TABLE!!!</font>")
+		owner.visible_message(span_danger("Система реактивной телепортации уводит [H] от [attack_text] и впечатывает в созданный стол!"))
+		owner.visible_message("<font color='red' size='3'>[H] ОКАЗЫВАЕТСЯ НА СТОЛЕ!!!</font>")
 		owner.DefaultCombatKnockdown(40)
 		var/list/turfs = new/list()
 		for(var/turf/T in orange(tele_range, H))
@@ -282,12 +285,14 @@
 // When the wearer gets hit, this armor will push people nearby and spawn some blocking objects.
 /obj/item/clothing/suit/armor/reactive/barricade
 	name = "reactive barricade armor"
-	desc = "An experimental suit of armor that generates barriers from another world when it detects its bearer is in danger."
+	desc = "Экспериментальный комплект брони, создающий аномальные барьеры, когда обнаруживает опасность для своего владельца."
 	reactivearmor_cooldown_duration = 10 SECONDS
 
-/obj/item/clothing/suit/armor/reactive/barricade/block_action(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0)
+/obj/item/clothing/suit/armor/reactive/barricade/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(world.time < reactivearmor_cooldown)
+		return BLOCK_NONE
 	playsound(get_turf(owner),'sound/magic/repulse.ogg', 100, TRUE)
-	owner.visible_message(span_danger("The reactive armor interposes matter from another world between [src] and [attack_text]!"))
+	owner.visible_message(span_danger("Реактивная броня помещает аномальную материю между [src] и [attack_text]!"))
 	for (var/atom/movable/target in repulse_targets(owner))
 		repulse(target, owner)
 
@@ -296,7 +301,7 @@
 	qdel(theme)
 
 	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
-	return TRUE
+	return BLOCK_SUCCESS | BLOCK_PHYSICAL_INTERNAL
 
 /**
  * Returns a list of all atoms around the source which can be moved away from it.
@@ -328,45 +333,54 @@
 		return
 
 	if (isliving(victim))
-		to_chat(victim, span_userdanger("You're thrown back by a wave of pressure!"))
+		to_chat(victim, span_userdanger("Вас отбрасывает волной давления!"))
 	var/turf/throwtarget = get_edge_target_turf(source, get_dir(source, get_step_away(victim, source, 1)))
 	victim.safe_throw_at(throwtarget, 1, 1, source)
 
-/obj/item/clothing/suit/armor/reactive/barricade/emp_act(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0)
-	owner.visible_message(span_danger("The reactive armor shunts matter from an unstable dimension!"))
+/obj/item/clothing/suit/armor/reactive/barricade/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	visible_message(span_danger("Реактивная броня выталкивает материю из нестабильного измерения!"))
 	var/datum/armour_dimensional_theme/theme = new()
-	theme.apply_random(get_turf(owner), dangerous = TRUE)
+	theme.apply_random(get_turf(src), dangerous = TRUE)
 	qdel(theme)
-	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
-	return FALSE
 
 /obj/item/clothing/suit/armor/reactive/ectoplasm
 	name = "reactive possession armor"
-	desc = "An experimental suit of armor that animates nearby objects with a ghostly possession."
+	desc = "Экспериментальный комплект брони, делающий одержимыми находящиеся рядом предметы."
 	reactivearmor_cooldown_duration = 40 SECONDS
 
-/obj/item/clothing/suit/armor/reactive/ectoplasm/block_action(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0)
+/obj/item/clothing/suit/armor/reactive/ectoplasm/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(world.time < reactivearmor_cooldown)
+		return BLOCK_NONE
 	playsound(get_turf(owner),'sound/hallucinations/veryfar_noise.ogg', 100, TRUE)
-	owner.visible_message(span_danger("The [src] lets loose a burst of otherworldly energy!"))
+	owner.visible_message(span_danger("[src] высвобождает всплеск потусторонней энергии!"))
 
 	haunt_outburst(epicenter = get_turf(owner), range = 5, haunt_chance = 85, duration = 30 SECONDS)
 
 	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
-	return TRUE
+	return BLOCK_SUCCESS | BLOCK_PHYSICAL_INTERNAL
 
-/obj/item/clothing/suit/armor/reactive/ectoplasm/emp_act(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0)
+/obj/item/clothing/suit/armor/reactive/ectoplasm/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	var/mob/living/carbon/human/owner = loc
+	if(!istype(owner) || owner.get_item_by_slot(ITEM_SLOT_OCLOTHING) != src)
+		return
 	owner.reagents?.add_reagent(/datum/reagent/impure/helgrasp, 20)
 
 /obj/item/clothing/suit/armor/reactive/smoke
 	name = "reactive smoke armor"
-	desc = "An experimental suit of armor that leaks clouds of thick smoke."
+	desc = "Экспериментальный комплект брони, выпускающий облака густого дыма."
 	reactivearmor_cooldown_duration = 15 SECONDS
 
-/obj/item/clothing/suit/armor/reactive/smoke/block_action(mob/living/carbon/human/owner, atom/movable/hitby, attack_text, final_block_chance, damage)
+/obj/item/clothing/suit/armor/reactive/smoke/block_action(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(world.time < reactivearmor_cooldown)
-		return
+		return BLOCK_NONE
 	var/datum/effect_system/smoke_spread/smoke = new
 	smoke.set_up(5, src)
 	smoke.start()
 	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
-	return TRUE
+	return BLOCK_SUCCESS | BLOCK_PHYSICAL_INTERNAL

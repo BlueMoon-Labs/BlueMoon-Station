@@ -33,7 +33,7 @@ GLOBAL_VAR_INIT(nightshift_animate_until, 0)
 		return
 	if(choice != "Выбрать цвет")
 		return
-	var/new_color = input(src, "Выберите цвет освещения космоса:", "Цвет звёздного света", COLOR_STARLIGHT) as color|null
+	var/new_color = tgui_input_color(src, "Выберите цвет освещения космоса:", "Цвет звёздного света", COLOR_STARLIGHT)
 	if(!new_color)
 		return
 	SSnightshift.starlight_override = TRUE
@@ -188,8 +188,6 @@ SUBSYSTEM_DEF(lighting)
 	/// Кэш турфов уровня для фаз 1-2 и курсор по нему.
 	var/list/teardown_turfs
 	var/teardown_turf_index = 0
-	/// TRUE на время qdel объекта света сносом: объект уходит мимо очереди GC (см. LIGHTING_TEARDOWN_GC_SAMPLE).
-	var/teardown_skip_gc_queue = FALSE
 	/// Счётчики для итоговой строки в лог.
 	var/teardown_parked = 0
 	var/teardown_objects = 0
@@ -306,6 +304,8 @@ SUBSYSTEM_DEF(lighting)
 		var/k = 0
 		for(k in 1 to GLOB.lighting_starlight_queue.len)
 			var/turf/open/space/S = GLOB.lighting_starlight_queue[k]
+			if(S)
+				S.lighting_flags &= ~TURF_STARLIGHT_QUEUED
 			if(!QDELETED(S) && istype(S))
 				S.update_starlight()
 			if(init_tick_checks)
@@ -660,14 +660,16 @@ SUBSYSTEM_DEF(lighting)
 	// |= dedups numeric z values as list ELEMENTS (a numeric assoc key would index out of bounds in DM).
 	var/list/parked_z = GLOB.lighting_deferred_z_cache
 	if(isnull(parked_z))
+		// Пересборка уступает тик, поэтому кэш публикуется сразу: парковка во время сна допишет свой z сюда же.
 		parked_z = list()
+		GLOB.lighting_deferred_z_cache = parked_z
 		for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
 			if(QDELETED(deferred_atom))
 				continue
 			var/turf/atom_turf = get_turf(deferred_atom)
 			if(atom_turf)
 				parked_z |= atom_turf.z
-		GLOB.lighting_deferred_z_cache = parked_z
+			CHECK_TICK
 	// Recover only z-levels with a present occupant (see zlevel_has_occupant). A parked-but-empty reserved z stays
 	// deferred on purpose; force-initing it would defeat the deferral optimization.
 	for(var/z in parked_z)
@@ -863,11 +865,13 @@ SUBSYSTEM_DEF(lighting)
 		// update_starlight(), поэтому при обратном подъёме он вернётся сам.
 		var/turf/open/space/space_turf = source_atom
 		GLOB.starlight -= space_turf
+		space_turf.lighting_flags &= ~TURF_STARLIT
 		space_turf.set_light(l_range = 0)
 		return TRUE
 	if(!teardown_parked_lookup[source_atom])
 		teardown_parked_lookup[source_atom] = TRUE
 		GLOB.lighting_deferred_atoms += source_atom
+		source_atom.flags_1 |= LIGHTING_DEFERRED_PARKED_1
 		note_deferred_lighting_z(z)
 	if(source_atom.light == source)
 		QDEL_NULL(source_atom.light)
@@ -935,9 +939,7 @@ SUBSYSTEM_DEF(lighting)
 			var/turf/tile = teardown_turfs[teardown_turf_index++]
 			var/area/tile_area = tile.loc
 			if(tile.lighting_object && IS_DYNAMIC_LIGHTING(tile_area) && TURF_IS_DYNAMIC_LIGHTING(tile))
-				teardown_skip_gc_queue = (teardown_objects % LIGHTING_TEARDOWN_GC_SAMPLE) != 0
 				qdel(tile.lighting_object, force = TRUE)
-				teardown_skip_gc_queue = FALSE
 				tile.cached_lumcount = null
 				teardown_objects++
 			if(MC_TICK_CHECK)
@@ -1183,6 +1185,7 @@ SUBSYSTEM_DEF(lighting)
 				continue
 			var/turf/T = get_turf(A)
 			if(T?.z == z)
+				A.flags_1 &= ~LIGHTING_DEFERRED_PARKED_1
 				A.update_light()
 			else
 				remaining += A
@@ -1201,7 +1204,7 @@ SUBSYSTEM_DEF(lighting)
 		var/list/remaining_starlight = list()
 		for(var/turf/open/space/S in GLOB.lighting_deferred_starlight)
 			if(S.z == z)
-				GLOB.lighting_starlight_queue |= S
+				S.queue_starlight()
 			else
 				remaining_starlight[S] = TRUE
 			if(MC_TICK_CHECK)

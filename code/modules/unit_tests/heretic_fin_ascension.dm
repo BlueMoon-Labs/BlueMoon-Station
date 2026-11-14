@@ -22,6 +22,7 @@
 	var/mob/living/carbon/human/performer = allocate(/mob/living/carbon/human)
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big)
 	var/obj/effect/heretic_ritual_crescendo/crescendo = allocate(/obj/effect/heretic_ritual_crescendo, run_loc_floor_bottom_left, PATH_TIDE, 30 SECONDS, rune, performer)
+	TEST_ASSERT(!QDELETED(crescendo), "Обряд создаётся.")
 	var/list/heard = list()
 	for(var/stage in 2 to length(crescendo.stage_at))
 		var/sound_file = crescendo.stage_sound[stage]

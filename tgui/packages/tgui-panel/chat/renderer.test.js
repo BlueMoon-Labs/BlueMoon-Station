@@ -7,7 +7,7 @@ import {
   MAX_VISIBLE_MESSAGES,
 } from './constants';
 import { createMainPage, createPage } from './model';
-import { ChatRenderer } from './renderer';
+import { BG_LAYERS, ChatRenderer } from './renderer';
 
 // Mock Byond global used by logger
 if (typeof window.Byond === 'undefined') {
@@ -1074,6 +1074,87 @@ describe('ChatRenderer', () => {
     });
   });
 
+  describe('setTypeOverrides', () => {
+    test('setTypeOverrides writes a stylesheet', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTypeOverrides({ ooc: { border: '#123456' } });
+      expect(document.getElementById('cs-type-overrides').textContent)
+        .toContain('ChatMessage--type-ooc');
+      renderer.setTypeOverrides({});
+      expect(document.getElementById('cs-type-overrides')).toBeNull();
+    });
+
+    test('is reapplied from pending appearance', () => {
+      const renderer = new ChatRenderer();
+      renderer.setTypeOverrides({ radio: { border: '#654321' } });
+      document.getElementById('cs-type-overrides').remove();
+      renderer.applyPendingAppearance();
+      expect(document.getElementById('cs-type-overrides').textContent)
+        .toContain('#654321');
+      renderer.setTypeOverrides({});
+    });
+  });
+
+  describe('setGameEffects', () => {
+    test('setGameEffects toggles root classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.setGameEffects({ tremble: false, drunk: true }, true);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-tremble')).toBe(true);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-drunk')).toBe(false);
+      expect(renderer.rootNode.classList.contains('Chat--gameFxOff')).toBe(false);
+      renderer.setGameEffects({}, false);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-tremble')).toBe(false);
+      expect(renderer.rootNode.classList.contains('Chat--gameFxOff')).toBe(true);
+    });
+
+    test('keeps unrelated root classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.rootNode.classList.add('Chat', 'Chat--style-seccon');
+      renderer.setGameEffects({ yell: false }, true);
+      renderer.setGameEffects({}, true);
+      expect([...renderer.rootNode.classList])
+        .toEqual(['Chat', 'Chat--style-seccon']);
+    });
+
+    test('is applied once the root appears', () => {
+      const renderer = new ChatRenderer();
+      renderer.setGameEffects({ dizzy: false }, true);
+      renderer.rootNode = document.createElement('div');
+      renderer.applyPendingAppearance();
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-dizzy')).toBe(true);
+    });
+  });
+
+  describe('setSettleOld', () => {
+    test('toggles Chat--noSettle on the root', () => {
+      const renderer = createReadyRenderer();
+      renderer.setSettleOld(false);
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(true);
+      renderer.setSettleOld(true);
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(false);
+    });
+
+    test('is applied once the root appears', () => {
+      const renderer = new ChatRenderer();
+      renderer.setSettleOld(false);
+      renderer.rootNode = document.createElement('div');
+      renderer.applyPendingAppearance();
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(true);
+    });
+
+    test('tab switch wakes messages back in the fresh window', () => {
+      const renderer = createReadyRenderer();
+      for (let i = 0; i < 45; i++) {
+        renderer.processBatch([{ text: 'line ' + i }]);
+      }
+      const sixth = renderer.visibleMessages[5].node;
+      sixth.classList.add('ChatMessage--settled');
+      renderer.messages.splice(0, 5);
+      renderer.changePage(renderer.page);
+      expect(sixth.classList.contains('ChatMessage--settled')).toBe(false);
+    });
+  });
+
   // ---- Events ----
 
   describe('events', () => {
@@ -1121,5 +1202,638 @@ describe('ChatRenderer', () => {
       renderer.handleScroll();
       expect(listener).toHaveBeenCalledWith(true);
     });
+  });
+
+  describe('message classes', () => {
+    test('adds type class after detection', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ html: '<span class="ooc">hi</span>' }]);
+      const node = renderer.messages[0].node;
+      expect(node.classList.contains('ChatMessage--type-ooc')).toBe(true);
+    });
+    test('adds block fx class for yell', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ html: '<span class="say"><span class="yell">A!</span></span>' }]);
+      expect(renderer.messages[0].node.classList
+        .contains('ChatMessage--fx-shake')).toBe(true);
+    });
+    test('settles messages beyond the keep window', () => {
+      const renderer = createReadyRenderer();
+      for (let i = 0; i < 45; i++) {
+        renderer.processBatch([{ text: 'line ' + i }]);
+      }
+      expect(renderer.visibleMessages[0].node.classList
+        .contains('ChatMessage--settled')).toBe(true);
+      expect(renderer.visibleMessages[44].node.classList
+        .contains('ChatMessage--settled')).toBe(false);
+    });
+  });
+
+  describe('background layer', () => {
+    const msgTexts = root => Array.from(root.childNodes)
+      .filter(n => !n.classList.contains('ChatBg'))
+      .map(n => n.textContent);
+
+    test('sticks a viewport-sized node first in the chat', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ text: 'a' }, { text: 'b' }]);
+      renderer.setBgAnimation('cosmos', 0.5);
+      const bg = renderer.rootNode.firstChild;
+      expect(bg.classList.contains('ChatBg')).toBe(true);
+      expect(bg.querySelectorAll('.ChatBg__layer').length).toBe(BG_LAYERS);
+      expect(bg.style.getPropertyValue('--chat-view-h')).toBe('400px');
+      expect(renderer.rootNode.classList.contains('Chat--bgAnim-cosmos'))
+        .toBe(true);
+      expect(msgTexts(renderer.rootNode)).toEqual(['a', 'b']);
+    });
+
+    test('stays first through prepend, page change and rebuild', () => {
+      const renderer = createReadyRenderer();
+      renderer.setBgAnimation('rain', 0.5);
+      const bg = renderer.bgNode;
+      renderer.processBatch([{ text: 'live' }]);
+      renderer.processBatch([{ text: 'old', createdAt: Date.now() - 60000 }],
+        { prepend: true });
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+      renderer.changePage(renderer.page);
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+      renderer.rebuildChat();
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+    });
+
+    test('switching backgrounds keeps one node, none removes it', () => {
+      const renderer = createReadyRenderer();
+      renderer.setBgAnimation('cosmos', 0.5);
+      const bg = renderer.bgNode;
+      renderer.setBgAnimation('snow', 0.7);
+      expect(renderer.bgNode).toBe(bg);
+      expect(renderer.rootNode.querySelectorAll('.ChatBg').length).toBe(1);
+      expect(renderer.rootNode.classList.contains('Chat--bgAnim-cosmos'))
+        .toBe(false);
+      renderer.setBgAnimation('none', 0.7);
+      expect(renderer.bgNode).toBeNull();
+      expect(renderer.rootNode.querySelector('.ChatBg')).toBeNull();
+      expect(renderer.rootNode.className).not.toContain('Chat--bgAnim-');
+    });
+  });
+
+  describe('history restored after the chat is ready', () => {
+    const texts = list => list.map(m => m.text);
+    const domTexts = root => Array.from(root.childNodes)
+      .map(n => n.textContent);
+
+    test('prepended history keeps chronological order', () => {
+      const renderer = createReadyRenderer();
+      const old = Date.now() - 60000;
+      renderer.processBatch([{ text: 'live 1' }, { text: 'live 2' }]);
+      renderer.processBatch([
+        { text: 'old 1', createdAt: old },
+        { text: 'old 2', createdAt: old + 1 },
+      ], { prepend: true });
+      const expected = ['old 1', 'old 2', 'live 1', 'live 2'];
+      expect(texts(renderer.messages)).toEqual(expected);
+      expect(texts(renderer.visibleMessages)).toEqual(expected);
+      expect(domTexts(renderer.rootNode)).toEqual(expected);
+      renderer.changePage(renderer.page);
+      expect(domTexts(renderer.rootNode)).toEqual(expected);
+    });
+
+    test('pruning after a prepend drops the oldest messages', () => {
+      const renderer = createReadyRenderer();
+      const old = Date.now() - 600000;
+      const live = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        live.push({ text: 'live ' + i });
+      }
+      renderer.processBatch(live);
+      renderer.processBatch([{ text: 'old', createdAt: old }],
+        { prepend: true });
+      renderer.pruneMessages();
+      expect(renderer.visibleMessages[0].text).toBe('live 0');
+      expect(renderer.rootNode.firstChild.textContent).toBe('live 0');
+    });
+
+    test('prepended history does not merge into live messages', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ text: 'same' }]);
+      renderer.processBatch([{ text: 'same', createdAt: Date.now() - 1000 }],
+        { prepend: true });
+      expect(renderer.messages.length).toBe(2);
+      expect(renderer.messages[1].times).toBeUndefined();
+    });
+  });
+
+  describe('messagesVersion', () => {
+    test('changes on new, combined and pruned messages only', () => {
+      const renderer = createReadyRenderer();
+      const v0 = renderer.messagesVersion;
+      renderer.processBatch([{ text: 'x' }]);
+      const v1 = renderer.messagesVersion;
+      expect(v1).not.toBe(v0);
+      renderer.processBatch([{ text: 'x' }]);
+      const v2 = renderer.messagesVersion;
+      expect(v2).not.toBe(v1);
+      renderer.processBatch([]);
+      renderer.pruneMessages();
+      expect(renderer.messagesVersion).toBe(v2);
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        batch.push({ text: 'm' + i });
+      }
+      renderer.processBatch(batch);
+      const v3 = renderer.messagesVersion;
+      renderer.pruneMessages();
+      expect(renderer.messagesVersion).not.toBe(v3);
+    });
+  });
+
+  describe('time dividers', () => {
+    const isDivider = node => node.classList.contains('Chat__timeDivider');
+
+    test('survive a page change', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now();
+      renderer.processBatch([
+        { text: 'a', createdAt: t },
+        { text: 'b', createdAt: t + 2000 },
+        { text: 'c', createdAt: t + 4000 },
+      ]);
+      const before = Array.from(renderer.rootNode.childNodes)
+        .map(n => (isDivider(n) ? '|' : n.textContent));
+      expect(before).toEqual(['a', '|', 'b', '|', 'c']);
+      renderer.changePage(renderer.page);
+      const after = Array.from(renderer.rootNode.childNodes)
+        .map(n => (isDivider(n) ? '|' : n.textContent));
+      expect(after).toEqual(before);
+    });
+
+    test('are pruned together with their messages', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now() - 10000000;
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES + 100; i++) {
+        batch.push({ text: 'm' + i, createdAt: t + i * 600 });
+      }
+      renderer.processBatch(batch);
+      renderer.pruneMessages();
+      const nodes = Array.from(renderer.rootNode.childNodes);
+      const firstMessage = nodes.indexOf(renderer.visibleMessages[0].node);
+      expect(firstMessage).toBeLessThanOrEqual(1);
+      for (let i = 0; i < nodes.length - 1; i++) {
+        if (isDivider(nodes[i])) {
+          expect(isDivider(nodes[i + 1])).toBe(false);
+        }
+      }
+    });
+
+    const domOf = renderer => Array.from(renderer.rootNode.childNodes)
+      .map(n => (isDivider(n) ? '|' : n.textContent));
+
+    test('follow the messages shown on a custom tab', () => {
+      const renderer = createReadyRenderer();
+      const mainPage = renderer.page;
+      const localPage = createPage({ acceptedTypes: { localchat: true } });
+      renderer.page = localPage;
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now();
+      renderer.processBatch([
+        { type: 'localchat', text: 'a', createdAt: t },
+        { type: 'radio', text: 'b', createdAt: t + 2000 },
+        { type: 'localchat', text: 'c', createdAt: t + 2500 },
+      ]);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+      renderer.changePage(localPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+      renderer.changePage(mainPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'b', 'c']);
+      renderer.changePage(localPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+    });
+
+    test('of hidden messages do not pile up after prune', () => {
+      const renderer = createReadyRenderer();
+      renderer.page = createPage({ acceptedTypes: { localchat: true } });
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now() - 100000000;
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES + 200; i++) {
+        batch.push({ type: 'localchat', text: 'l' + i, createdAt: t + i * 3000 });
+        batch.push({ type: 'radio', text: 'r' + i,
+          createdAt: t + i * 3000 + 1500 });
+      }
+      renderer.processBatch(batch);
+      renderer.pruneMessages();
+      const nodes = domOf(renderer);
+      expect(nodes.indexOf('l200')).toBeLessThanOrEqual(1);
+      // Каждое видимое сообщение здесь старше соседа на 3 с.
+      expect(nodes.filter(n => n === '|').length)
+        .toBe(renderer.visibleMessages.length);
+    });
+  });
+
+  describe('new messages marker', () => {
+    const markers = root => root.querySelectorAll('.Chat__newMarker');
+    const scrolledUp = () => {
+      const renderer = createReadyRenderer();
+      renderer.setNewMessagesMarker(true);
+      renderer.processBatch([{ text: 'read 1' }, { text: 'read 2' }]);
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      return renderer;
+    };
+
+    test('marks the first message that arrives while scrolled up', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.processBatch([{ text: 'new 2' }]);
+      const found = markers(renderer.rootNode);
+      expect(found.length).toBe(1);
+      expect(found[0].nextSibling.textContent).toBe('new 1');
+    });
+
+    test('moves to the next unread block after returning to the bottom', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.scrollToBottom();
+      renderer.processBatch([{ text: 'seen' }]);
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      const found = markers(renderer.rootNode);
+      expect(found.length).toBe(1);
+      expect(found[0].nextSibling.textContent).toBe('new 2');
+    });
+
+    test('is not placed while following the bottom', () => {
+      const renderer = createReadyRenderer();
+      renderer.setNewMessagesMarker(true);
+      renderer.processBatch([{ text: 'a' }, { text: 'b' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('is not placed when disabled and is removed on disable', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.setNewMessagesMarker(false);
+      expect(markers(renderer.rootNode).length).toBe(0);
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('ignores restored history and internal messages', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ type: 'internal/reconnected' }]);
+      renderer.processBatch([{ text: 'old', createdAt: Date.now() - 60000 }],
+        { prepend: true });
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('does not come back in the same scroll-up session', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.rebuildChat();
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('goes away with its message on prune and page change', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        batch.push({ text: 'm' + i });
+      }
+      renderer.processBatch(batch);
+      renderer.scrollToBottom();
+      renderer.pruneMessages();
+      expect(markers(renderer.rootNode).length).toBe(0);
+
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(1);
+      renderer.changePage(renderer.page);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+  });
+});
+
+describe('ChatRenderer clear and limit', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const fill = (renderer, count) => {
+    const batch = [];
+    for (let i = 0; i < count; i++) {
+      batch.push({ type: 'localchat', html: `msg ${i}` });
+    }
+    renderer.processBatch(batch);
+  };
+
+  test('clearChat empties the screen and the message list', () => {
+    const renderer = createReadyRenderer();
+    fill(renderer, 5);
+    const version = renderer.messagesVersion;
+    renderer.clearChat();
+    expect(renderer.messages).toEqual([]);
+    expect(renderer.visibleMessages).toEqual([]);
+    expect(renderer.rootNode.querySelectorAll('.ChatMessage')).toHaveLength(0);
+    expect(renderer.messagesVersion).toBeGreaterThan(version);
+    fill(renderer, 1);
+    expect(renderer.visibleMessages).toHaveLength(1);
+  });
+
+  test('clearChat keeps the animated background', () => {
+    const renderer = createReadyRenderer();
+    renderer.setBgAnimation('snow', 0.5);
+    fill(renderer, 3);
+    renderer.clearChat();
+    expect(renderer.rootNode.firstChild).toBe(renderer.bgNode);
+  });
+
+  test('a lower message limit prunes the screen down to it', () => {
+    const renderer = createReadyRenderer();
+    fill(renderer, 40);
+    renderer.setVisibleLimit(10);
+    expect(renderer.visibleMessages).toHaveLength(10);
+    expect(renderer.visibleMessages[0].html).toBe('msg 30');
+    expect(renderer.rootNode.querySelectorAll('.ChatMessage')).toHaveLength(10);
+  });
+
+  test('history restored before the chat is ready is cut to the limit after the scroll down', async () => {
+    const renderer = createReadyRenderer();
+    renderer.loaded = false;
+    renderer.setVisibleLimit(10);
+    fill(renderer, 40);
+    const order = [];
+    const scroll = renderer.scrollToBottom.bind(renderer);
+    renderer.scrollToBottom = (...args) => {
+      order.push(`scroll ${renderer.visibleMessages.length}`);
+      return scroll(...args);
+    };
+    renderer.onStateLoaded();
+    expect(renderer.visibleMessages).toHaveLength(40);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(order[0]).toBe('scroll 40');
+    expect(renderer.visibleMessages).toHaveLength(10);
+    expect(renderer.visibleMessages.at(-1).html).toBe('msg 39');
+  });
+
+  test('overflow piled up while reading is cut once the chat is back at the bottom', async () => {
+    const renderer = createReadyRenderer();
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      scrollHeight: 5000, clientHeight: 400, scrollTop: 0,
+    });
+    renderer.scrollTracking = false;
+    renderer.setVisibleLimit(10);
+    fill(renderer, 40);
+    expect(renderer.visibleMessages).toHaveLength(40);
+    metrics.scrollTop = 4600;
+    renderer.updateScrollTracking();
+    await Promise.resolve();
+    expect(renderer.visibleMessages).toHaveLength(10);
+  });
+
+  describe('content changing under a chat pinned to the bottom', () => {
+    const pinned = () => {
+      const renderer = createReadyRenderer();
+      const metrics = setupScrollMetrics(renderer.scrollNode, {
+        scrollHeight: 5000, clientHeight: 400, scrollTop: 4600,
+      });
+      renderer.handleScroll();
+      return { renderer, metrics };
+    };
+
+    test('a late image or font growing the chat keeps it pinned', () => {
+      const { renderer, metrics } = pinned();
+      metrics.scrollHeight = 6077;
+      renderer.handleScroll();
+      expect(metrics.scrollTop).toBe(6077);
+      expect(renderer.scrollTracking).toBe(true);
+    });
+
+    test('the player scrolling up while messages arrive is left alone', () => {
+      const { renderer, metrics } = pinned();
+      renderer.handleUserScrollIntent();
+      metrics.scrollHeight = 5200;
+      metrics.scrollTop = 3000;
+      renderer.handleScroll();
+      expect(metrics.scrollTop).toBe(3000);
+      expect(renderer.scrollTracking).toBe(false);
+    });
+
+    test('scrolling up with unchanged content unpins as before', () => {
+      const { renderer, metrics } = pinned();
+      metrics.scrollTop = 3000;
+      renderer.handleScroll();
+      expect(renderer.scrollTracking).toBe(false);
+    });
+  });
+
+  test('a bad limit falls back to the default', () => {
+    const renderer = createReadyRenderer();
+    renderer.setVisibleLimit('junk');
+    expect(renderer.visibleLimit).toBe(MAX_VISIBLE_MESSAGES);
+  });
+});
+
+describe('ChatRenderer early history', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const LINE = 20;
+  const createScrolledRenderer = () => {
+    const renderer = createReadyRenderer();
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      clientHeight: 100,
+      scrollTop: 0,
+    });
+    Object.defineProperty(renderer.scrollNode, 'scrollHeight', {
+      configurable: true,
+      get: () => renderer.rootNode.childNodes.length * LINE,
+    });
+    renderer.processBatch([
+      { type: 'localchat', html: 'new 1' },
+      { type: 'localchat', html: 'new 2' },
+      { type: 'localchat', html: 'new 3' },
+      { type: 'localchat', html: 'new 4' },
+      { type: 'localchat', html: 'new 5' },
+      { type: 'localchat', html: 'new 6' },
+      { type: 'localchat', html: 'new 7' },
+      { type: 'localchat', html: 'new 8' },
+    ]);
+    metrics.scrollTop = 0;
+    renderer.scrollTracking = false;
+    return { renderer, metrics };
+  };
+
+  test('reports reaching the top of a scrolled-up chat', () => {
+    const { renderer } = createScrolledRenderer();
+    const listener = jest.fn();
+    renderer.events.on('atTopChanged', listener);
+    renderer.handleScroll();
+    expect(listener).toHaveBeenLastCalledWith(true);
+    expect(renderer.atTop).toBe(true);
+  });
+
+  test('prepends history above without moving what is on screen', () => {
+    const { renderer, metrics } = createScrolledRenderer();
+    renderer.prependHistory([
+      { type: 'localchat', html: 'old 1', logId: 1 },
+      { type: 'localchat', html: 'old 2', logId: 2 },
+      { type: 'localchat', html: 'old 3', logId: 3 },
+      { type: 'localchat', html: 'old 4', logId: 4 },
+    ]);
+    expect(renderer.messages.map(m => m.html).slice(0, 5))
+      .toEqual(['old 1', 'old 2', 'old 3', 'old 4', 'new 1']);
+    expect(renderer.rootNode.firstChild.textContent).toContain('old 1');
+    expect(metrics.scrollTop).toBe(4 * LINE);
+    expect(renderer.atTop).toBe(false);
+  });
+});
+
+describe('ChatRenderer smooth scroll to bottom', () => {
+  let frames;
+  let now;
+
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+    frames = [];
+    now = 0;
+    window.requestAnimationFrame = callback => frames.push(callback);
+    jest.spyOn(performance, 'now').mockImplementation(() => now);
+  });
+
+  afterEach(() => {
+    delete window.requestAnimationFrame;
+    jest.restoreAllMocks();
+  });
+
+  const runFrame = ms => {
+    now += ms;
+    const pending = frames;
+    frames = [];
+    for (const callback of pending) {
+      callback(now);
+    }
+  };
+
+  const createSmoothRenderer = ({ scrollHeight, scrollTop }) => {
+    const renderer = createReadyRenderer();
+    renderer.smoothScroll = true;
+    renderer.scrollTracking = false;
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      scrollHeight,
+      clientHeight: 400,
+      scrollTop,
+    });
+    // Как в браузере: scrollTop не выходит за низ.
+    Object.defineProperty(renderer.scrollNode, 'scrollTop', {
+      configurable: true,
+      get: () => metrics.scrollTop,
+      set: value => {
+        metrics.scrollTop = Math.max(0,
+          Math.min(value, metrics.scrollHeight - metrics.clientHeight));
+      },
+    });
+    return { renderer, metrics };
+  };
+
+  test('repeated calls keep one animation that ends at the current bottom', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.scrollToBottom();
+    runFrame(100);
+    const midway = metrics.scrollTop;
+    expect(midway).toBeGreaterThan(1000);
+    expect(midway).toBeLessThan(1600);
+    // Пришло сообщение: цель отодвинулась, а анимация не начинается заново.
+    metrics.scrollHeight = 2100;
+    renderer.scrollToBottom();
+    expect(frames).toHaveLength(1);
+    runFrame(100);
+    expect(metrics.scrollTop).toBeGreaterThan(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBe(1700);
+    expect(frames).toHaveLength(0);
+    expect(renderer.scrollTracking).toBe(true);
+  });
+
+  test('a far scroll starts with a jump to the last screens', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 50000,
+      scrollTop: 0,
+    });
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(50000 - 400 - 2 * 400);
+    runFrame(300);
+    expect(metrics.scrollTop).toBe(50000 - 400);
+  });
+
+  test('the button animates with smooth scroll off, and a message mid-way does not jerk it', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.smoothScroll = false;
+    renderer.scrollToBottom({ smooth: true });
+    runFrame(100);
+    const midway = metrics.scrollTop;
+    expect(midway).toBeLessThan(1600);
+    metrics.scrollHeight = 2100;
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBeGreaterThan(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBe(1700);
+  });
+
+  test('auto-scroll with smooth scroll off still jumps at once', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.smoothScroll = false;
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(1600);
+    expect(frames).toHaveLength(0);
+  });
+
+  test('the wheel takes the scroll back from the animation', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.mount(document.createElement('div'), renderer.scrollNode);
+    renderer.stopScrollAnimation();
+    frames = [];
+    renderer.scrollToBottom();
+    runFrame(50);
+    const stoppedAt = metrics.scrollTop;
+    renderer.scrollNode.dispatchEvent(new Event('wheel'));
+    runFrame(50);
+    expect(metrics.scrollTop).toBe(stoppedAt);
+    expect(frames).toHaveLength(0);
   });
 });

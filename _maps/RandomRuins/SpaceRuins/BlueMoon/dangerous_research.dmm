@@ -1549,7 +1549,7 @@
 /obj/machinery/atmospherics/components/unary/passive_vent{
 	dir = 1
 	},
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "DY" = (
 /obj/structure/table,
@@ -1704,7 +1704,7 @@
 /area/ruin/space/has_grav/Strange_Avanpost)
 "GZ" = (
 /obj/structure/lattice,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "Hj" = (
 /turf/closed/wall/rust,
@@ -1857,7 +1857,7 @@
 /area/ruin/space/has_grav/Strange_Avanpost)
 "Lc" = (
 /obj/structure/flora/rock/pile/icy,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "Lr" = (
 /obj/effect/decal/cleanable/glass,
@@ -2390,7 +2390,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "VD" = (
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "VL" = (
 /obj/effect/decal/cleanable/blood/gibs,

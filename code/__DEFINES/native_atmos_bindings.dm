@@ -53,6 +53,16 @@
 	var/list/temp_gated_needs_fuel
 	/// Lowest TEMP gate among temp_gated_reactions, for a single cheap precheck.
 	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
+	/// Температура, ниже которой смесь из одних O2 и N2 не соберёт ни одного кандидата: безгазовые реакции с топливом ждут горючего газа, а O2/N2 им не являются.
+	var/temp_gated_air_ceiling = ATMOS_NO_TEMPERATURE_GATE
+	/// Поколение индекса реакций: меняется при каждой перестройке, по нему react() сбрасывает мемо пустого вызова.
+	var/reaction_index_rev = 1
+	/// Газы-ключи индекса реакций (gas id -> 1) для гейта GAS_MIXTURE_REACT_IDLE. null - гейт выключен.
+	var/list/reaction_key_gas_indicator
+	/// Горючие газы, кроме O2 и N2 (gas id -> 1): без них безгазовые реакции молчат ниже temp_gated_air_ceiling.
+	var/list/reaction_fuel_gas_indicator
+	/// Газы, способные дать оверлей (gas id -> 1): гейт визуала в process_cell.
+	var/list/visible_gas_indicator
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -95,14 +105,20 @@
 	if(total_heat_capacity > 0)
 		target_temperature = max(total_thermal_energy / total_heat_capacity, TCMB)
 	var/inv_total_volume = 1 / total_volume
+	// Компоненты сети идут подряд и почти все одного объёма: доля считается раз на серию, смеси получают копию готового списка.
+	var/last_volume = -1
+	var/list/scaled
 	for(var/datum/gas_mixture/mix as anything in participating)
-		var/volume_ratio = max(mix.volume, 0) * inv_total_volume
-		var/list/mix_gases = mix.gases
-		mix_gases.Cut()
-		for(var/id, total_moles in total_gases)
-			var/moles = total_moles * volume_ratio
-			if(moles > 0)
-				mix_gases[id] = moles
+		var/mix_volume = max(mix.volume, 0)
+		if(mix_volume != last_volume)
+			last_volume = mix_volume
+			var/volume_ratio = mix_volume * inv_total_volume
+			scaled = list()
+			for(var/id, total_moles in total_gases)
+				var/moles = total_moles * volume_ratio
+				if(moles > 0)
+					scaled[id] = moles
+		mix.gases = scaled.Copy()
 		mix.temperature = target_temperature
 		mix.mutation_rev++
 	// Do not keep strong references to pipenet mixtures between calls.
@@ -264,7 +280,7 @@
 	// field: their firelocks still close one by one on the pressure drop.
 	if(!base || istype(base, /area/space) || base.outdoors)
 		return
-	queue_decompression_base(base)
+	queue_decompression_base(base, get_turf(source))
 
 /// Ареал, который через проём без файрлока кормит стравливаемый ареал, течёт вместе с ним: этаж над тоннелем, зал без дверей между зонами.
 /datum/controller/subsystem/air/proc/spread_decompression(turf/open/feeding, turf/open/drained)
@@ -276,24 +292,29 @@
 
 /// Леджерная часть постановки зоны в декомп-очередь, отдельно от гарда космоса
 /// выше: тестам нужна ровно она - зона юнит-тестовой резервации это /area/space.
-/datum/controller/subsystem/air/proc/queue_decompression_base(area/base)
+/datum/controller/subsystem/air/proc/queue_decompression_base(area/base, turf/open/source)
 	// A breach keeps its edge turfs above the queue threshold for many fires;
 	// the first handling already alarmed and pressure-stopped the compartment,
 	// so re-sweeping it every SSair fire is pure waste.
 	var/last_handled = decompression_handled_at[base]
 	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 		return
+	if(istype(source))
+		var/list/sources = decompression_seen[base]
+		if(!islist(sources))
+			sources = list()
+			decompression_seen[base] = sources
+		sources[source] = TRUE
+	else if(!decompression_seen[base])
+		decompression_seen[base] = TRUE
 	if(decompression_areas[base])
 		return
-	// Одиночный пшик - цикл наружного шлюза, мгновенно осушенный карман - не
-	// пробоина: настоящая утечка перевзводит зону каждый фаер, пока кромку
-	// кормят соседи. Тревога (полновесная пожарная тревога базового ареала,
-	// которую никто не сбрасывает автоматически) ставится только по перевзводу
-	// более поздним фаером внутри подтверждающего окна; протухший первый замер
-	// считается новым первым разом.
+	// Одиночный выброс воздуха не поднимает тревогу: нужен повторный замер
+	// более поздним фаером внутри подтверждающего окна.
 	var/first_seen = decompression_pending[base]
 	if(isnull(first_seen) || times_fired - first_seen > DECOMPRESSION_PENDING_WINDOW_FIRES)
 		decompression_pending[base] = times_fired
+		decompression_started_at[base] = world.time
 		return
 	if(first_seen == times_fired)
 		return
@@ -326,24 +347,75 @@
 			seen_firedoors[firedoor] = TRUE
 			firedoor.emergency_pressure_stop()
 
-/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
+/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed, slice_ms = DECOMPRESSION_CHECK_SLICE_MS)
+	var/started = TICK_USAGE_REAL
 	if(!resumed)
 		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
 		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
+		queue_decompression_seals()
+		// Если полный проход не подтвердил утечку, локальная защита уже справилась.
+		for(var/area/pending_area as anything in decompression_started_at.Copy())
+			if(!decompression_seen[pending_area] || (!(pending_area in decompression_pending) && !decompression_areas[pending_area]))
+				decompression_pending -= pending_area
+				decompression_started_at -= pending_area
+				decompression_areas -= pending_area
 		currentrun = decompression_areas.Copy()
-		decompression_areas.Cut()
+		for(var/area/base as anything in currentrun)
+			currentrun[base] = decompression_seen[base]
+		decompression_seen.Cut()
 		num_decompression_areas = 0
+		if(!length(currentrun))
+			decompression_context = null
+		else if(!decompression_context?.can_reuse(currentrun))
+			decompression_context = new(currentrun)
+		else
+			decompression_context.restarts = 0
+		decompression_check = null
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
+		// Проверяем бюджет и во время трёхсекундной задержки, и внутри одной большой зоны.
+		if(slice_ms && (TICK_USAGE_TO_MS(started) >= slice_ms || TICK_CHECK))
+			return TRUE
 		var/area/base = currentrun_copy[currentrun_copy.len]
-		currentrun_copy.len--
+		var/list/sources = currentrun_copy[base]
 		if(!base)
+			currentrun_copy.len--
 			continue
+		if(!decompression_check)
+			decompression_check = new(base, sources, decompression_context)
+		var/contained = decompression_check.advance(slice_ms, started)
+		if(isnull(contained))
+			return TRUE
+		currentrun_copy.len--
+		if(contained)
+			set_decompression_seals(base, decompression_check.sealing_doors, decompression_check.sources)
+			if(length(decompression_check.sealing_doors))
+				// Пока участок отсечён, не накапливаем задержку общей тревоги.
+				decompression_started_at[base] = world.time
+			else
+				// Источники больше не сообщаются с космосом: пробоины действительно закрыты.
+				decompression_pending -= base
+				decompression_started_at -= base
+				decompression_areas -= base
+			decompression_check = null
+			continue
+		decompression_check = null
+		var/started_at = decompression_started_at[base]
+		if(isnull(started_at))
+			started_at = world.time
+			decompression_started_at[base] = started_at
+		// Очередь сохраняется до истечения паузы, пока каждый полный проход видит утечку.
+		if(world.time < started_at + DECOMPRESSION_AREA_ALARM_DELAY)
+			continue
+		var/last_handled = decompression_handled_at[base]
+		if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
+			continue
+		decompression_areas -= base
+		decompression_started_at -= base
 		handle_decompression_area(base)
 		num_decompression_areas++
-		if(world.tick_usage > Master.current_ticklimit)
-			pause()
-			return TRUE
+	if(decompression_context?.has_open_firelocks)
+		decompression_context = null
 	return FALSE
 
 /datum/controller/subsystem/air/proc/process_turfs_auxtools(remaining)
@@ -373,7 +445,9 @@
 		T.process_cell(fire_count)
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
-		maybe_sleep_low_pressure_turf(T)
+		// Снятый с актива турф усыплять уже некуда.
+		if(!T.excited_group && T.excited)
+			maybe_sleep_low_pressure_turf(T)
 		// Only pause while there is still work left. Pausing on an emptied
 		// runlist made the next fire see `!length(currentrun)` and re-Copy the
 		// whole active list, running a second full turf pass inside what the
@@ -501,7 +575,8 @@
 			T.excited_group.garbage_collect()
 
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE, reset_stall = TRUE)
-	if(!istype(T) || T.blocks_air || !T.air)
+	// Космос не симулируется: его process_cell только снимает его с очереди, а затравкой обхода зоны он гонял пустой обход.
+	if(!istype(T) || T.blocks_air || !T.air || isspaceturf(T))
 		return
 	// `excited` doubles as the membership flag of active_turfs: every path that
 	// drops a turf out of the list clears it, and nothing marks a turf excited
@@ -605,6 +680,8 @@
 	var/list/temp_gated = list()
 	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuel_gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	var/fuelless_gate_floor = ATMOS_NO_TEMPERATURE_GATE
 	// Позиция ПОСЛЕДНЕЙ реакции бакета. Пол бакета читается на сборе кандидатов,
 	// до цикла реакций, поэтому он верен только пока никакая реакция того же
 	// вызова не может поднять газ над порогом. Пара freonformation (приоритет 33,
@@ -612,6 +689,8 @@
 	// такая: производитель идёт РАНЬШЕ потребителя, и пол отложил бы горение на
 	// один фаер SSair.
 	var/list/bucket_last_index = list()
+	// Гейт react() считает ключевой газ с нулём молей отсутствующим, это верно, только пока каждая реакция требует его положительное количество.
+	var/key_gate_exact = TRUE
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
 		index++
@@ -639,6 +718,8 @@
 			var/reaction_floor = reqs[key_gas]
 			if(isnull(reaction_floor))
 				reaction_floor = 0
+			if(reaction_floor <= 0)
+				key_gate_exact = FALSE
 			var/bucket_floor = floors[key_gas]
 			floors[key_gas] = isnull(bucket_floor) ? reaction_floor : min(bucket_floor, reaction_floor)
 			bucket_last_index[key_gas] = index
@@ -654,6 +735,9 @@
 			// пропускать, а не отсекать по отсутствию горячего газа.
 			if(reqs["FIRE_REAGENTS"] > 0)
 				needs_fuel[reaction] = TRUE
+				fuel_gate_floor = min(fuel_gate_floor, temp_gate)
+			else
+				fuelless_gate_floor = min(fuelless_gate_floor, temp_gate)
 	// Газ, который кто-то производит РАНЬШЕ, чем отработает последняя реакция его
 	// бакета, требует двух поблажек сразу, и снятого пола мало.
 	//
@@ -682,6 +766,33 @@
 	temp_gated_reactions = temp_gated
 	temp_gated_needs_fuel = needs_fuel
 	temp_gated_min_temp = gate_floor
+	var/list/fuel_temps = GLOB.gas_data?.fire_temperatures
+	var/air_fuel_temp = ATMOS_NO_TEMPERATURE_GATE
+	for(var/air_gas in list(GAS_O2, GAS_N2))
+		var/air_gas_fire_temp = fuel_temps?[air_gas]
+		if(air_gas_fire_temp)
+			air_fuel_temp = min(air_fuel_temp, air_gas_fire_temp)
+	temp_gated_air_ceiling = min(fuelless_gate_floor, max(fuel_gate_floor, air_fuel_temp))
+	var/list/key_indicator
+	if(key_gate_exact)
+		key_indicator = list()
+		for(var/key_id in by_gas)
+			key_indicator[key_id] = 1
+	reaction_key_gas_indicator = key_indicator
+	var/list/fuel_indicator = list()
+	for(var/fuel_id in fuel_temps)
+		if(fuel_temps[fuel_id] && fuel_id != GAS_O2 && fuel_id != GAS_N2)
+			fuel_indicator[fuel_id] = 1
+	reaction_fuel_gas_indicator = fuel_indicator
+	// Индекс перестраивается и при регистрации нового газа (auxgm), поэтому индикатор видимых газов живёт здесь же.
+	var/list/visibility = GLOB.gas_data?.visibility
+	var/list/no_overlay_gases = typecache_of_gases_with_no_overlays()
+	var/list/visible_indicator = list()
+	for(var/gas_id in visibility)
+		if(visibility[gas_id] && !no_overlay_gases[gas_id])
+			visible_indicator[gas_id] = 1
+	visible_gas_indicator = visible_indicator
+	reaction_index_rev++
 
 /proc/auxtools_atmos_init(gas_data)
 	return TRUE
@@ -711,8 +822,7 @@
 	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
 	// fresh stall budget. A door cycling next to a settled room used to hand its
 	// whole neighborhood a new rest window every time it opened.
-	ATMOS_BENCH_WAKE(open_turf, "adjacency")
-	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	SSair.wake_if_gradient(open_turf, "adjacency")
 
 /turf/proc/update_air_ref(flag)
 	if(!SSair)
@@ -750,11 +860,15 @@
 	// Замапленные градиенты у планетарных границ (устье пещеры, пролом руины)
 	// на роундстарте находит адресный проход в SSair.setup_allturfs() - по
 	// расхождению строк initial_gas_mix соседей, без холостого хвоста.
-	if(SSair.initialized && !SSair.map_loading)
-		// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
-		// турфу нужен, свежее окно отдыха - нет.
-		ATMOS_BENCH_WAKE(open_turf, "air_ref")
-		SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	if(!SSair.initialized)
+		return
+	if(SSair.map_loading)
+		SSair.defer_air_ref_wake(open_turf)
+		return
+	// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
+	// турфу нужен, свежее окно отдыха - нет.
+	ATMOS_BENCH_WAKE(open_turf, "air_ref")
+	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /proc/_dm_atmos_should_process_pair(turf/open/source, turf/open/target)
 	if(!source || !target || source == target)
@@ -883,17 +997,7 @@
 	return TRUE
 
 /datum/gas_mixture/proc/archive()
-	temperature_archived = temperature
-	// Копия списка - аллокация на турф на цикл. Если с прошлого снимка смесь не
-	// правили, прежний архив побайтово равен тому, что дал бы Copy() сейчас, и
-	// пересниматься незачем. Температура пишется безусловно: она в архив входит
-	// отдельным полем и от списка не зависит.
-	if(gas_archive && archive_mutation_rev == mutation_rev)
-		return TRUE
-	gas_archive = gases.Copy()
-	archive_mutation_rev = mutation_rev
-	// Инвалидация мемо архивной теплоёмкости: она считается по gas_archive.
-	archive_gen++
+	GAS_MIXTURE_ARCHIVE(src)
 	return TRUE
 
 /datum/gas_mixture/proc/get_gases()
@@ -1148,6 +1252,7 @@
 		set_temperature(temperature + heat / cap)
 	return TRUE
 
+/// Пара внутри одной excited-группы в process_cell сравнивается копией этого тела без вызова прока: правка здесь - правка и там.
 /datum/gas_mixture/proc/compare(datum/gas_mixture/other)
 	if(!other)
 		return "invalid"
@@ -1156,21 +1261,27 @@
 	var/list/cached_gases = gases
 	var/list/other_gases = other.gases
 	var/our_moles = 0
+	// Равная длина и ни одного промаха ниже значат равные наборы ключей: второй проход тогда не нужен.
+	var/same_keys = length(other_gases) == length(cached_gases)
 	for(var/id, iter_moles in cached_gases)
 		var/gas_moles = iter_moles || 0
 		our_moles += gas_moles
-		var/delta = abs(gas_moles - (other_gases[id] || 0))
+		var/other_moles = other_gases[id]
+		if(isnull(other_moles))
+			same_keys = FALSE
+		var/delta = abs(gas_moles - (other_moles || 0))
 		if(delta > MINIMUM_MOLES_DELTA_TO_MOVE)
 			if(delta > gas_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 				return id
-	for(var/id, other_moles in other_gases)
-		// Key presence, O(1), same semantics as `in`: a key holding exactly zero
-		// was already compared above and must not be re-tested here.
-		if(!isnull(cached_gases[id]))
-			continue
-		// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
-		if(abs(other_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
-			return id
+	if(!same_keys)
+		for(var/id, other_moles in other_gases)
+			// Key presence, O(1), same semantics as `in`: a key holding exactly zero
+			// was already compared above and must not be re-tested here.
+			if(!isnull(cached_gases[id]))
+				continue
+			// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
+			if(abs(other_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
+				return id
 	if(our_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 		if(abs(temperature - other.temperature) > MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
 			return "temp"
@@ -1351,16 +1462,21 @@
 	// кандидатов). Глобальное чтение SSair - не бесплатное, а прок зовут на каждый
 	// активный турф, каждый пайпнет и каждый переносной баллон каждый фаер.
 	var/datum/controller/subsystem/air/air_controller = SSair
+	if(react_idle_rev == mutation_rev && react_idle_index == air_controller.reaction_index_rev)
+		if(length(reaction_results))
+			reaction_results.Cut()
+		return
 	var/list/reaction_index = air_controller.reactions_by_key_gas
 	var/gated_min_temp = air_controller.temp_gated_min_temp
-	// The overwhelming turf case is cool O2/N2 air. The reaction index is
-	// authoritative, so only skip when neither common gas owns a candidate and
-	// no temperature-only reaction can be eligible.
-	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < gated_min_temp)
-		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
-			if(length(reaction_results))
-				reaction_results.Cut()
-			return
+	// Подавляющее большинство вызовов - воздух без единого газа-ключа (O2, N2, CO2 от дыхания):
+	// сбор ниже не заведёт ни один бакет, а безгазовые реакции отсекаются порогом TEMP и
+	// отсутствием горючего газа. Тот же гейт process_cell проверяет без вызова прока.
+	if(GAS_MIXTURE_REACT_IDLE(src, air_controller))
+		if(length(reaction_results))
+			reaction_results.Cut()
+		react_idle_rev = mutation_rev
+		react_idle_index = air_controller.reaction_index_rev
+		return
 	// Gather candidates through the key-gas index instead of scanning every
 	// registered reaction: a reaction can only fire if its key gas is present.
 	// This runs for every active turf, pipenet and portable every SSair fire,
@@ -1490,6 +1606,8 @@
 	if(!length(candidates))
 		if(length(reaction_results))
 			reaction_results.Cut()
+		react_idle_rev = mutation_rev
+		react_idle_index = air_controller.reaction_index_rev
 		return
 
 	// Через мемоизированный прок, а не своим циклом: на этом же фаере сумму уже

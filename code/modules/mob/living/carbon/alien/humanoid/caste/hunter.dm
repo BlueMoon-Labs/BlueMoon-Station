@@ -10,6 +10,14 @@
 	meleeSlashSAPower = 45
 	var/atom/movable/screen/leap_icon = null
 
+/datum/movespeed_modifier/alien_hunter_speed
+	multiplicative_slowdown = -0.3
+
+/mob/living/carbon/alien/humanoid/hunter/Initialize(mapload)
+	. = ..()
+	add_movespeed_modifier(/datum/movespeed_modifier/alien_hunter_speed)
+	return
+
 /mob/living/carbon/alien/humanoid/hunter/create_internal_organs()
 	internal_organs += new /obj/item/organ/alien/plasmavessel/small
 	..()

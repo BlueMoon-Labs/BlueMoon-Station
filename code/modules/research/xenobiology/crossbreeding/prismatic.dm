@@ -114,7 +114,7 @@ Prismatic extracts:
 	colour = "rainbow"
 
 /obj/item/slimecross/prismatic/rainbow/attack_self(mob/user)
-	var/newcolor = input(user, "Choose the slime color:", "Color change",paintcolor) as color|null
+	var/newcolor = tgui_input_color(user, "Choose the slime color:", "Color change",paintcolor)
 	if ((user.get_active_held_item() != src || user.stat || user.restrained()))
 		return
 	if(!newcolor)

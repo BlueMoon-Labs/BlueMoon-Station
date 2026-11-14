@@ -1,4 +1,4 @@
-import { Button, Dropdown, Input, NumberInput, Stack } from '../../components';
+import { Button, ColorPicker, Dropdown, Input, NumberInput, Stack } from '../../components';
 import { BasicInput } from './BasicInput';
 import { formatPortLiveValue } from './portValueFormat';
 
@@ -13,9 +13,6 @@ const IE_DIR_OPTIONS = [
   [6, 'SE (6)'],
   [10, 'SW (10)'],
 ];
-
-// Debounce timers for the color picker, keyed by the input element.
-const colorCommitTimers = new WeakMap();
 
 export const FUNDAMENTAL_DATA_TYPES = {
   'string': (props) => {
@@ -91,30 +88,12 @@ export const FUNDAMENTAL_DATA_TYPES = {
       <BasicInput name={name} setValue={setValue} value={value} defaultValue="#FFFFFF">
         <Stack>
           <Stack.Item>
-            <input
-              type="color"
+            <ColorPicker
               value={hex}
-              title={name}
-              onChange={(e) => {
-                // React's onChange fires continuously while dragging
-                // inside the color dialog; debounce so we do not flood
-                // the server with act() messages.
-                const input = e.target;
-                const next = input.value.toUpperCase();
-                clearTimeout(colorCommitTimers.get(input));
-                colorCommitTimers.set(
-                  input,
-                  setTimeout(() => setValue(next), 250),
-                );
-              }}
-              style={{
-                width: '28px',
-                height: '22px',
-                padding: 0,
-                border: 'none',
-                cursor: 'pointer',
-                verticalAlign: 'middle',
-              }}
+              tooltip={name}
+              width="28px"
+              height="22px"
+              onCommit={setValue}
             />
           </Stack.Item>
           <Stack.Item>

@@ -55,18 +55,31 @@
 	var/list/saved_handled
 	var/list/saved_pending
 	var/list/saved_areas
+	var/list/saved_started
+	var/list/saved_seen
+	var/list/saved_seals
 	var/list/saved_currentrun
 	var/saved_count
+	var/datum/decompression_context/saved_context
+	var/datum/decompression_check/saved_check
 
 /datum/unit_test/decompression_native_pruning/Run()
 	saved_handled = SSair.decompression_handled_at
 	saved_pending = SSair.decompression_pending
 	saved_areas = SSair.decompression_areas
+	saved_started = SSair.decompression_started_at
+	saved_seen = SSair.decompression_seen
+	saved_seals = SSair.decompression_seals
 	saved_currentrun = SSair.currentrun
 	saved_count = SSair.num_decompression_areas
+	saved_context = SSair.decompression_context
+	saved_check = SSair.decompression_check
 	SSair.decompression_handled_at = list()
 	SSair.decompression_pending = list()
 	SSair.decompression_areas = list()
+	SSair.decompression_started_at = list()
+	SSair.decompression_seen = list()
+	SSair.decompression_seals = list()
 	var/area/byond_pruning_probe/expired = new
 	var/area/byond_pruning_probe/boundary = new
 	var/area/byond_pruning_probe/recent = new
@@ -76,12 +89,14 @@
 /datum/unit_test/decompression_native_pruning/proc/check_pruning(area/expired, area/boundary, area/recent)
 	var/baseline = refcount(expired)
 	populate_logs(expired, boundary, recent)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(length(SSair.decompression_handled_at), 1, "Кулдаун должен истекать включительно")
 	TEST_ASSERT(recent in SSair.decompression_handled_at, "Свежий кулдаун удалён")
 	TEST_ASSERT_EQUAL(length(SSair.decompression_pending), 2, "Граница окна подтверждения должна сохраняться")
 	TEST_ASSERT(boundary in SSair.decompression_pending, "Граничный замер удалён")
 	TEST_ASSERT(recent in SSair.decompression_pending, "Свежий замер удалён")
+	TEST_ASSERT(!length(SSair.decompression_started_at), "Истёкшая зона сохранила отсчёт задержки")
+	TEST_ASSERT(!length(SSair.decompression_seen), "Обработанный проход сохранил замеры утечки")
 	TEST_ASSERT_EQUAL(refcount(expired), baseline, "Журналы удерживают истёкшую зону")
 
 /datum/unit_test/decompression_native_pruning/proc/populate_logs(area/expired, area/boundary, area/recent)
@@ -93,15 +108,25 @@
 	SSair.decompression_pending[expired] = pending_cutoff - 1
 	SSair.decompression_pending[boundary] = pending_cutoff
 	SSair.decompression_pending[recent] = pending_cutoff + 1
+	SSair.decompression_started_at[expired] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
+	SSair.decompression_seen[expired] = TRUE
 
 /datum/unit_test/decompression_native_pruning/Destroy()
 	SSair.decompression_handled_at = saved_handled
 	SSair.decompression_pending = saved_pending
 	SSair.decompression_areas = saved_areas
+	SSair.decompression_started_at = saved_started
+	SSair.decompression_seen = saved_seen
+	SSair.decompression_seals = saved_seals
 	SSair.currentrun = saved_currentrun
 	SSair.num_decompression_areas = saved_count
+	SSair.decompression_context = saved_context
+	SSair.decompression_check = saved_check
 	saved_handled = null
 	saved_pending = null
 	saved_areas = null
+	saved_started = null
+	saved_seen = null
+	saved_seals = null
 	saved_currentrun = null
 	return ..()

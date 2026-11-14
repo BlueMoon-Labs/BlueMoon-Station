@@ -4,7 +4,7 @@
 # cycles and collects data/atmos_headless_bench_*.jsonl. The server shuts itself
 # down when done (see atmos_benchmark.dm, ATMOS_HEADLESS_BENCH section).
 #
-# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor]
+# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale] [dismantle-cycles]
 #   tag        label for the result file (e.g. baseline, fix1)
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
@@ -34,16 +34,24 @@
 #   rest-cycles quiet fires a grouped turf sits out before resting individually
 #              (SSair default 6). The one lever that moves the NUMBER of active
 #              turfs rather than the cost of one.
+#   wake-scale multiple of the gas-move threshold a pair share needs to keep a
+#              turf awake (SSair default ATMOS_WAKE_THRESHOLD_SCALE)
+#   dismantle-cycles quiet cycles before an excited group dismantles
+#              (SSair default EXCITED_GROUP_DISMANTLE_CYCLES)
 #   reaction-floor pass "0" to drop the react() candidate floor index, i.e. run
 #              the pre-gate behaviour on the SAME build. Use it for an A/B of the
 #              gate without comparing two dmb files against each other.
 #
 # Result: tools/atmos_bench/results/<timestamp>_<tag>.jsonl
 # Analyze: python tools/atmos_bench/analyze.py <file> [file2 ...]
+#
+# DreamDaemon from other checkouts (dm-test worlds in parallel worktrees) may keep
+# running: the bench takes a random port (ATMOS_BENCH_PORT overrides it), refuses
+# only a second bench in this same checkout and kills nothing but its own server.
 set -u
 cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
 
-TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] - see header for what each does}"
+TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] [wake-scale] [dismantle-cycles] - see header for what each does}"
 MAP="${2:-icemoonstation}"
 SKIP_BUILD="${3:-}"
 CYCLES="${4:-}"
@@ -57,10 +65,15 @@ DEEP_PROFILE="${11:-}"
 EDGE_QUIET="${12:-}"
 REST_CYCLES="${13:-}"
 REACTION_FLOOR="${14:-}"
+WAKE_SCALE="${15:-}"
+DISMANTLE_CYCLES="${16:-}"
 DD_EXE="${BYOND_DD:-/d/Program Files (x86)/BYOND/bin/dd.exe}"
 TIMEOUT_SECONDS=2700
 NEXT_MAP_BACKUP=""
+NEXT_MAP_CREATED=""
 DD_PID=""
+BENCH_PORT="${ATMOS_BENCH_PORT:-$((20000 + RANDOM % 10000))}"
+BENCH_LOCK="data/atmos_headless_bench.lock"
 
 # Git Bash exposes D: as /d, while WSL exposes it as /mnt/d. Keep the existing
 # override for custom installs, but make the repository's documented runner
@@ -77,9 +90,10 @@ terminate_benchmark() {
     if [ -z "$DD_PID" ] || ! kill -0 "$DD_PID" 2>/dev/null; then
         return
     fi
-    WIN_PID=$(tasklist //FI "IMAGENAME eq dd.exe" //FO CSV 2>/dev/null | tail -1 | cut -d, -f2 | tr -d '"')
+    # Only our own server: any other dd.exe on the machine belongs to someone else.
+    WIN_PID=$(cat "/proc/$DD_PID/winpid" 2>/dev/null)
     if [ -n "$WIN_PID" ]; then
-        taskkill //F //PID "$WIN_PID" >/dev/null 2>&1 || true
+        taskkill //F //T //PID "$WIN_PID" >/dev/null 2>&1 || true
     fi
     kill "$DD_PID" 2>/dev/null || true
 }
@@ -89,20 +103,28 @@ restore_next_map() {
         cp "$NEXT_MAP_BACKUP" data/next_map.json
         rm -f "$NEXT_MAP_BACKUP"
         NEXT_MAP_BACKUP=""
+    elif [ -n "$NEXT_MAP_CREATED" ]; then
+        rm -f data/next_map.json
+        NEXT_MAP_CREATED=""
     fi
 }
 
 cleanup() {
     terminate_benchmark
     restore_next_map
+    if [ -f "$BENCH_LOCK" ] && [ "$(cat "$BENCH_LOCK" 2>/dev/null)" = "$$" ]; then
+        rm -f "$BENCH_LOCK"
+    fi
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
-if tasklist //FI "IMAGENAME eq dd.exe" 2>/dev/null | grep -q dd.exe; then
-    echo "ERROR: dd.exe already running, refusing to start a second server" >&2
+mkdir -p data
+if [ -f "$BENCH_LOCK" ] && kill -0 "$(cat "$BENCH_LOCK" 2>/dev/null)" 2>/dev/null; then
+    echo "ERROR: another benchmark is running in this checkout (pid $(cat "$BENCH_LOCK")), refusing to start a second one" >&2
     exit 1
 fi
+echo "$$" > "$BENCH_LOCK"
 
 if [ "$SKIP_BUILD" != "skip-build" ]; then
     echo "=== building with ATMOS_HEADLESS_BENCH ==="
@@ -117,6 +139,8 @@ fi
 if [ -f data/next_map.json ]; then
     NEXT_MAP_BACKUP="$(mktemp)"
     cp data/next_map.json "$NEXT_MAP_BACKUP"
+else
+    NEXT_MAP_CREATED=1
 fi
 if ! cp "_maps/${MAP}.json" data/next_map.json; then
     echo "ERROR: could not copy _maps/${MAP}.json to data/next_map.json" >&2
@@ -125,7 +149,7 @@ fi
 echo '{"data":"GRACEFULLY_ENDED"}' > data/GracefulEnding.json
 rm -f data/atmos_headless_bench_*.jsonl
 
-echo "=== launching DreamDaemon (map=$MAP, cycles=${CYCLES:-default}, scenario=${SCENARIO:-map}) ==="
+echo "=== launching DreamDaemon (map=$MAP, port=$BENCH_PORT, cycles=${CYCLES:-default}, scenario=${SCENARIO:-map}) ==="
 DD_PARAMS=()
 PARAM_STRING=""
 append_param() {
@@ -165,13 +189,19 @@ fi
 if [ -n "$REST_CYCLES" ]; then
     append_param "atmos-bench-rest-cycles=$REST_CYCLES"
 fi
+if [ -n "$DISMANTLE_CYCLES" ]; then
+    append_param "atmos-bench-dismantle-cycles=$DISMANTLE_CYCLES"
+fi
+if [ -n "$WAKE_SCALE" ]; then
+    append_param "atmos-bench-wake-scale=$WAKE_SCALE"
+fi
 if [ -n "$REACTION_FLOOR" ]; then
     append_param "atmos-bench-reaction-floor=$REACTION_FLOOR"
 fi
 if [ -n "$PARAM_STRING" ]; then
     DD_PARAMS=(-params "$PARAM_STRING")
 fi
-"$DD_EXE" tgstation.dmb 1337 -trusted -logself "${DD_PARAMS[@]}" >/dev/null 2>&1 &
+"$DD_EXE" tgstation.dmb "$BENCH_PORT" -trusted -logself "${DD_PARAMS[@]}" >/dev/null 2>&1 &
 DD_PID=$!
 
 ELAPSED=0

@@ -1,0 +1,795 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"bH" = (
+/obj/item/stack/sheet/metal,
+/turf/open/space/basic,
+/area/template_noop)
+"bZ" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"cH" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"cL" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/closet/crate/science,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stack/cable_coil,
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"dP" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"dX" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/cable_coil,
+/obj/machinery/light/small/broken{
+	dir = 1
+	},
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/micro_laser,
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"dY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/plasteel/twenty,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/cell/high,
+/obj/item/stack/rods,
+/obj/item/stack/sheet/metal,
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"eI" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"eW" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/turf_decal/stripes/yellow{
+	dir = 1
+	},
+/obj/structure/sign/plaques/kiddie{
+	name = "debris plaque";
+	desc = "Обломок в космосе: за шлюзом вакуум и невесомость, обломки грузового бота. Наденьте скафандр из шкафа, шлюз пропускает по очереди.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"fc" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"gn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"hw" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/frame/machine,
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"jh" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"jC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/landmark/antag_training/side{
+	side = "wreck"
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"jD" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"ka" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/item/stack/rods,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"lR" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"my" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/template_noop)
+"mE" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"nT" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"ov" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/emcloset,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/flashlight,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ox" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"rw" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/turf_decal/stripes/yellow{
+	dir = 1
+	},
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"rx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"rC" = (
+/obj/machinery/door/airlock/external{
+	name = "Debris Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"rP" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/antag_training_eva,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"sH" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"vD" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"vN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"yr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/template_noop)
+"yW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/grille/broken,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"AU" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/girder/displaced,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"Bd" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"Bp" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/light/small/broken{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"Bv" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Cp" = (
+/turf/open/space/basic,
+/area/template_noop)
+"Cv" = (
+/obj/item/stack/rods,
+/turf/open/space/basic,
+/area/template_noop)
+"Dw" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"Ea" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light_switch/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Ex" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"Fc" = (
+/turf/open/floor/plating/airless,
+/area/template_noop)
+"FH" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"FZ" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/cell/high,
+/obj/item/stack/rods,
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"JF" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"Ke" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"Kg" = (
+/obj/machinery/door/airlock/external{
+	name = "Debris Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/turf/open/floor/plating,
+/area/template_noop)
+"Ks" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"KC" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"LN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"Mr" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"MH" = (
+/obj/effect/turf_decal/stripes/red/box,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/template_noop)
+"MO" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/space/basic,
+/area/template_noop)
+"Qe" = (
+/turf/closed/wall,
+/area/template_noop)
+"Rh" = (
+/obj/structure/lattice/catwalk,
+/turf/open/space/basic,
+/area/template_noop)
+"Rm" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"SA" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/power/apc/auto_name/south,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/table/reinforced,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/radio{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"TC" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/landmark/antag_training/side{
+	side = "vestibule"
+	},
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"XE" = (
+/obj/effect/turf_decal/stripes/yellow,
+/obj/effect/decal/cleanable/generic,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/airless,
+/area/template_noop)
+"Yj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/flashlight,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/crowbar,
+/obj/item/paper{
+	name = "salvage log";
+	default_raw_text = "Журнал бота: груз списан, рубку вскрыло обломком. Скафандры в шкафах шлюза, обратно - по мосткам."
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"YY" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/antag_training_eva,
+/obj/item/paper/antag_training_eva,
+/turf/open/floor/plasteel/dark,
+/area/template_noop)
+"ZB" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/generic,
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/titanium/blue/airless,
+/area/template_noop)
+"ZE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/secure,
+/obj/item/stack/spacecash/c500,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/item/stack/spacecash/c500,
+/obj/item/stack/sheet/mineral/silver,
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+"ZF" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow/airless,
+/area/template_noop)
+
+(1,1,1) = {"
+my
+MO
+Cp
+my
+Cp
+Cp
+my
+Cp
+Cp
+my
+Cp
+Cp
+Qe
+Qe
+Qe
+"}
+(2,1,1) = {"
+Cp
+Rm
+Rm
+Rm
+Rm
+Rm
+my
+my
+Cp
+Cp
+Cp
+my
+Qe
+Qe
+Qe
+"}
+(3,1,1) = {"
+Cp
+Rm
+Ex
+Bp
+jD
+Yj
+Rm
+Cp
+Cp
+Cp
+Cp
+Cp
+Qe
+Qe
+Qe
+"}
+(4,1,1) = {"
+my
+Rm
+Ex
+Bd
+cH
+jD
+Rm
+Cp
+Cp
+Cp
+Cp
+Qe
+Qe
+Qe
+Qe
+"}
+(5,1,1) = {"
+Cp
+Rm
+AU
+vN
+ZB
+nT
+Rm
+my
+Cp
+Cp
+Cp
+Qe
+YY
+dP
+Ke
+"}
+(6,1,1) = {"
+bH
+Rm
+Rm
+Rm
+yr
+Rm
+Rm
+my
+Cp
+Cp
+Cp
+Qe
+rP
+gn
+SA
+"}
+(7,1,1) = {"
+Cp
+Cp
+cL
+LN
+Mr
+mE
+Rm
+my
+Cp
+lR
+lR
+Qe
+eW
+TC
+eI
+"}
+(8,1,1) = {"
+Cp
+Cp
+bu
+bZ
+Mr
+rx
+Fc
+Rh
+Rh
+Kg
+MH
+rC
+fc
+gn
+eI
+"}
+(9,1,1) = {"
+Cp
+Rm
+jh
+vD
+KC
+XE
+Rm
+my
+Cp
+lR
+lR
+Qe
+rw
+TC
+eI
+"}
+(10,1,1) = {"
+my
+Rm
+hw
+ox
+jC
+FH
+Rm
+my
+Cp
+Cp
+Cp
+Qe
+rP
+gn
+Ea
+"}
+(11,1,1) = {"
+Cp
+Rm
+FZ
+Dw
+sH
+yW
+Rm
+my
+Cp
+Cv
+Cp
+Qe
+ov
+Ks
+Bv
+"}
+(12,1,1) = {"
+my
+Rm
+dX
+JF
+ZF
+FH
+Rm
+my
+Cp
+Cp
+Cp
+Qe
+Qe
+Qe
+Qe
+"}
+(13,1,1) = {"
+Cp
+Rm
+dY
+JF
+ka
+ZE
+Rm
+my
+Cp
+Cp
+Cp
+Cp
+Qe
+Qe
+Qe
+"}
+(14,1,1) = {"
+Cp
+Rm
+Rm
+Cp
+Cp
+Rm
+Rm
+Cp
+Cp
+my
+Cp
+Cp
+Qe
+Qe
+Qe
+"}
+(15,1,1) = {"
+my
+Cp
+Cp
+my
+Cp
+Cp
+Cp
+Cp
+Cp
+Cp
+Cp
+Cp
+Qe
+Qe
+Qe
+"}

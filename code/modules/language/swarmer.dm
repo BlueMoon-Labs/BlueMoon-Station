@@ -1,6 +1,6 @@
 /datum/language/swarmer
 	name = "Swarmer"
-	desc = "A language only consisting of musical notes."
+	desc = "Язык, целиком сложенный из музыкальных нот."
 	speech_verb = "tones"
 	ask_verb = "tones inquisitively"
 	exclaim_verb = "tones loudly"

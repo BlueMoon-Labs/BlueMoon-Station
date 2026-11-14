@@ -123,10 +123,16 @@
 	viewer.file_size = 50 * 1024 * 1024
 	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 256 * 1024, "фиксированный размер страницы не зависит от размера файла")
 	viewer.page_bytes = 0
-	viewer.file_size = 5 * 1024 * 1024
-	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 5 * 1024 * 1024, "режим всего файла должен покрывать файл целиком")
+	viewer.file_size = 700 * 1024
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 700 * 1024, "режим всего файла должен покрывать файл целиком")
 	viewer.file_size = 50 * 1024 * 1024
-	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 8 * 1024 * 1024, "режим всего файла должен упираться в кап 8 МиБ")
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 1024 * 1024, "режим всего файла должен упираться в кап 1 МиБ")
 	viewer.file_size = 0
 	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 256 * 1024, "пустой файл не должен давать нулевую страницу")
+	// Текст страницы уходит статикой при смене страницы, а не с каждым обновлением окна
+	viewer.current_file = "game.log"
+	viewer.page_content = "строка лога"
+	var/list/file_data = viewer.ui_data(null)["file"]
+	TEST_ASSERT(!("content" in file_data), "обычное обновление окна не должно нести текст страницы")
+	TEST_ASSERT_EQUAL(viewer.ui_static_data(null)["fileContent"], "строка лога", "текст страницы должен приходить статикой")
 	qdel(viewer)

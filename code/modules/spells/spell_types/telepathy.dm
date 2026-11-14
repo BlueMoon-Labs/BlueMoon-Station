@@ -28,7 +28,7 @@
 			SEND_SOUND(M, sound('sound/effects/ghost2.ogg'))
 			to_chat(M, "<span class='[boldnotice]'>You hear something behind you talking...</span> <span class='[notice]'>[msg]</span>")
 		for(var/mob/observer in GLOB.dead_mob_list)
-			if(!observer.client || !isobserver(observer))
+			if(!observer.client || !isobserver(observer) || !antag_training_observer_hears(observer, user))
 				continue
 			if(get_dist(observer, user) > 7 || observer.z != user.z)
 				if(!(observer.client.prefs.chat_toggles & CHAT_GHOSTEARS)) //they're talking normally and we have hearing at any range off

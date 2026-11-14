@@ -31,6 +31,12 @@
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	planetary_atmos = TRUE
 
+/// Для космических руин: планетарный камень у космоса качал бы морозный воздух в пустоту.
+/turf/open/floor/plating/asteroid/layenia/airless
+	baseturfs = /turf/open/floor/plating/asteroid/layenia/airless
+	initial_gas_mix = AIRLESS_ATMOS
+	planetary_atmos = FALSE
+
 /proc/set_layenia_light(turf/open/floor/B)
 	switch(B.icon_state)
 		if("layenia3", "layenia4")

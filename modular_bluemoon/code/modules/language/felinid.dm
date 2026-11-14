@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/felinid
 	name = "Felinid"
-	desc = "The natural language of felinids. Full of soft meows, purrs and hisses. Structured and informative for felinids, but for others it's just a meaningless chaotic set of cat sounds. Nya~"
+	desc = "Естественный язык фелинидов: полно мягкого мурлыканья, мяуканья и шипения. Для фелинидов он строен и информативен, а для всех остальных - лишь бессмысленный хаотичный набор кошачьих звуков. Ня~"
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	speech_verb = "meows"
 	ask_verb = "mrowls"

@@ -2,6 +2,7 @@ import {
   addChatPage,
   changeChatPage,
   changeScrollTracking,
+  clearChat,
   loadChat,
   removeChatPage,
   toggleAcceptedType,
@@ -206,6 +207,25 @@ describe('chatReducer', () => {
       // that accept it should not get unread (line 80)
       expect(next.pageById[state.currentPageId].unreadCount).toBe(2);
     });
+
+    test('keeps the same state object when no counter changes', () => {
+      const state = setupTwoPages(true);
+      const next = chatReducer(
+        state,
+        updateMessageCount({ localchat: 3, radio: 1 }),
+      );
+      expect(next).toBe(state);
+    });
+
+    test('keeps untouched pages by reference', () => {
+      const state = setupTwoPages(false);
+      const next = chatReducer(
+        state,
+        updateMessageCount({ localchat: 1 }),
+      );
+      expect(next).not.toBe(state);
+      expect(next.pageById['radio-only']).toBe(state.pageById['radio-only']);
+    });
   });
 
   describe('addChatPage', () => {
@@ -369,4 +389,19 @@ describe('chatReducer', () => {
       expect(state).toBe(initialState);
     });
   });
+});
+
+test('clearing the chat resets unread counters on every tab', () => {
+  const page = createPage({ id: 'p1', acceptedTypes: { ooc: true } });
+  const state = {
+    ...initialState,
+    pages: [...initialState.pages, 'p1'],
+    pageById: {
+      ...initialState.pageById,
+      p1: { ...page, unreadCount: 7 },
+    },
+  };
+  const next = chatReducer(state, clearChat());
+  expect(next.pageById.p1.unreadCount).toBe(0);
+  expect(next.pageById.p1.acceptedTypes).toEqual({ ooc: true });
 });

@@ -85,6 +85,26 @@
 	result = /obj/item/reagent_containers/food/snacks/raisincookie
 	subcategory = CAT_PASTRY
 
+/datum/crafting_recipe/food/pawcookie_raw_right
+	name = "Raw PawCookie (right)"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/doughslice = 1,
+		/datum/reagent/consumable/sugar = 5,
+		/obj/item/bodypart/r_leg = 1
+	)
+	result = /obj/item/reagent_containers/food/snacks/pawcookie_raw
+	subcategory = CAT_PASTRY
+
+/datum/crafting_recipe/food/pawcookie_raw_left
+	name = "Raw PawCookie (left)"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/doughslice = 1,
+		/datum/reagent/consumable/sugar = 5,
+		/obj/item/bodypart/l_leg = 1
+	)
+	result = /obj/item/reagent_containers/food/snacks/pawcookie_raw
+	subcategory = CAT_PASTRY	
+
 /datum/crafting_recipe/food/oatmealcookie
 	name = "Oatmeal cookie"
 	reqs = list(

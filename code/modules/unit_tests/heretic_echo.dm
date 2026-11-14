@@ -1787,7 +1787,7 @@
 	. = ..()
 	enable_client_mobs_in_contents()
 
-/mob/living/carbon/human/heretic_sound_probe/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo)
+/mob/living/carbon/human/heretic_sound_probe/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo, list/excluded_listeners)
 	heard_sounds += list(list("file" = "[soundin]", "volume" = vol, "turf" = turf_source))
 
 /mob/living/carbon/human/heretic_sound_probe/Destroy()

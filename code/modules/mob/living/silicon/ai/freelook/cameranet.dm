@@ -56,9 +56,8 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 		SET_PLANE_W_SCALAR(static_image, CAMERA_STATIC_PLANE, GET_Z_PLANE_OFFSET(target.z))
 	return static_image
 
-/// Сбросить кэш сетей камер. Зовётся из хуков жизненного цикла камеры:
-/// Initialize/Destroy, EMP (сеть обнуляется и восстанавливается),
-/// connect_to_shuttle (переименование сети), сборка камеры (network+c_tag).
+// Сбросить кэш сетей камер при создании, удалении и изменении сети или метки.
+// EMP не меняет принадлежность к сети: недоступность определяется через can_use().
 /datum/cameranet/proc/invalidate_camera_cache()
 	camera_lookup_by_network = null
 

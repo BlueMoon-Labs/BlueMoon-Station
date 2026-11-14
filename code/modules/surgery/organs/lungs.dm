@@ -1,4 +1,5 @@
 #define LUNGS_MAX_HEALTH 300
+#define NITROUS_SLEEP_DURATION (30 SECONDS)
 
 /obj/item/organ/lungs
 	name = "lungs"
@@ -275,14 +276,16 @@
 		var/SA_pp = PP(breath, GAS_NITROUS)
 		if(SA_pp > SA_para_min) // Enough to make us stunned for a bit
 			H.Unconscious(6 SECONDS) // 60 gives them one second to wake up and run away a bit!
-			if(SA_pp > SA_sleep_min && H.AmountSleeping() < 100 SECONDS) // Enough to make us sleep as well
-				H.AdjustSleeping(20 SECONDS) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400))
+			if(SA_pp > SA_sleep_min) // Enough to make us sleep as well
+				H.voluntary_sleep_until = 0 // Наркоз заменяет добровольный сон.
+				// Запас сна перекрывает интервал вдохов, в том числе 16 секунд без клиента, и не накапливается.
+				H.Sleeping(NITROUS_SLEEP_DURATION)
 		else if(SA_pp > 0.25)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
 			if(prob(20))
 				H.emote(pick("giggle", "laugh"))
 				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "chemical_euphoria", /datum/mood_event/chemical_euphoria)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "chemical_euphoria")
+			owner.clear_mood_event_if_set("chemical_euphoria")
 
 	// BZ
 
@@ -459,7 +462,7 @@
 					owner.adjust_disgust(0.1 * miasma_pp)
 			breath.adjust_moles(GAS_MIASMA, -gas_breathed)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
+			owner.clear_mood_event_if_set("smell")
 
 		handle_breath_temperature(breath, H)
 	return TRUE
@@ -760,3 +763,4 @@
 
 #undef PP
 #undef PP_MOLES
+#undef NITROUS_SLEEP_DURATION

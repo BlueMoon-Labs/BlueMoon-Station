@@ -130,6 +130,10 @@ require only minor tweaks.
 #ifdef ABSOLUTE_MINIMUM_MODE
 #define DEFAULT_MAP_TRAITS list(\
 	DECLARE_LEVEL("CentCom", ZTRAITS_CENTCOM))
+#elif defined(UNIT_TEST_PROFILE_HERMETIC)
+// CentCom_hermetic.dmm - только z1, уровней событий над ним нет.
+#define DEFAULT_MAP_TRAITS list(\
+	DECLARE_LEVEL("CentCom", list(ZTRAIT_CENTCOM = TRUE, ZTRAIT_NO_PLANE_STACK = TRUE)))
 #else
 #define DEFAULT_MAP_TRAITS list(\
 	DECLARE_LEVEL("CentCom", ZTRAITS_CENTCOM),\

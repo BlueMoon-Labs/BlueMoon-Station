@@ -78,10 +78,9 @@
 		max_create_amount_multiplier *= multiplier
 	// BLUEMOON ADD END
 
-/obj/machinery/chem_master/examine(mob/user)
-	. = ..()
-	. += span_notice("Статус-дисплей сообщает: \n\
-		- Множитель выдачи лекарств: <b>х[max_create_amount_multiplier]</b>.")
+/obj/machinery/chem_master/examine_display_content(mob/user)
+	. += "\
+	– Множитель количества упаковок: <b>х[max_create_amount_multiplier]</b>."
 
 /obj/machinery/chem_master/ex_act(severity, target, origin)
 	if(severity < 3)
@@ -131,7 +130,7 @@
 	if(istype(I, /obj/item/reagent_containers) && !(I.item_flags & ABSTRACT) && I.is_open_container() || is_type_in_list(I, CLOSED_CONTAINERS_OPERABLE))
 		. = TRUE // no afterattack
 		if(panel_open)
-			to_chat(user, "<span class='warning'>Вы не можете работать с [src.name], пока открыт люк техобслуживания!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете работать с [src.name], пока открыта панель техобслуживания!</span>")
 			return
 		var/obj/item/reagent_containers/B = I
 		if(!user.transferItemToLoc(B, src))
@@ -143,7 +142,7 @@
 	else if(!condi && istype(I, /obj/item/storage/pill_bottle))
 		. = TRUE // no afterattack
 		if(panel_open)
-			to_chat(user, "<span class='warning'>Вы не можете работать с [src.name], пока открыт люк техобслуживания!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете работать с [src.name], пока открыта панель техобслуживания!</span>")
 			return
 		if(!user.transferItemToLoc(I, src))
 			return

@@ -124,7 +124,7 @@
 	item_state = "plaguedoc_hood"
 	flags_inv = HIDEHAIR|HIDEEARS
 ///////////////////////////////////////////////
-obj/item/clothing/suit/donator/bm/cerberus_suit/armored/inkvd
+/obj/item/clothing/suit/donator/bm/cerberus_suit/armored/inkvd
 	name = "inquisitor's overcoat"
 	desc = "Large overcoat with red embroidery on the sleeves. It also has a cross stitch on it."
 	icon = 'modular_bluemoon/krashly/icons/obj/clothing/suits.dmi'

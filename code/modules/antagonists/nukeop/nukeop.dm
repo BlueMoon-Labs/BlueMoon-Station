@@ -163,7 +163,7 @@
 /datum/antagonist/nukeop/proc/admin_tell_code(mob/admin)
 	var/code
 	for(var/obj/machinery/nuclearbomb/bombue in GLOB.machines)
-		if(length(bombue.r_code) <= 5 && bombue.r_code != initial(bombue.r_code))
+		if(!is_antag_training_atom(bombue) && length(bombue.r_code) <= 5 && bombue.r_code != initial(bombue.r_code))
 			code = bombue.r_code
 			break
 	if(code)

@@ -39,8 +39,10 @@
 		if(!silent)
 			playsound(user, 'sound/effects/blobattack.ogg', 30, 1)
 			user.visible_message("<span class='warning'>With a sickening crunch, [user] reforms [user.ru_ego()] [weapon_name_simple] into an arm!</span>", "<span class='notice'>We assimilate the [weapon_name_simple] back into our body.</span>", "<span class='italics>You hear organic matter ripping and tearing!</span>")
-		var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
-		changeling.chem_recharge_slowdown -= recharge_slowdown
+		// Тело удаляют и без разума (выход с полигона): оружие всё равно убирается
+		var/datum/antagonist/changeling/changeling = user.mind?.has_antag_datum(/datum/antagonist/changeling)
+		if(changeling)
+			changeling.chem_recharge_slowdown -= recharge_slowdown
 		user.update_inv_hands()
 		return TRUE
 
@@ -93,7 +95,7 @@
 
 //checks if we already have an organic suit and casts it off.
 /datum/action/changeling/suit/proc/check_suit(mob/user)
-	var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
+	var/datum/antagonist/changeling/changeling = user.mind?.has_antag_datum(/datum/antagonist/changeling)
 	if(!ishuman(user) || !changeling)
 		return TRUE
 	var/mob/living/carbon/human/H = user

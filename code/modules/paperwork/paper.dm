@@ -447,8 +447,7 @@
 	user.visible_message(ignition_message)
 	add_fingerprint(user)
 	var/turf/T = get_turf(src)
-	message_admins("Paper ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
-	log_admin("Paper ignited by [key_name(user)] in [AREACOORD(T)]")
+	antag_training_admin_log(src, "Paper ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]", "Paper ignited by [key_name(user)] in [AREACOORD(T)]")
 	fire_act(attacking_item.get_temperature())
 	return TRUE
 

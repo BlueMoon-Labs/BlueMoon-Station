@@ -47,11 +47,20 @@ export const backendSuspendSuccess = () => ({
   },
 });
 
+/**
+ * Большая нагрузка, которая уходит серверу по чанкам. acked - сколько чанков сервер
+ * подтвердил; следующим едет chunks[acked] с номером acked + 1.
+ */
+type OutgoingPayloadQueue = {
+  chunks: string[];
+  acked: number;
+};
+
 const initialState = {
   config: {},
   data: {},
   shared: {},
-  outgoingPayloadQueues: {} as Record<string, string[]>,
+  outgoingPayloadQueues: {} as Record<string, OutgoingPayloadQueue>,
   // Start as suspended
   suspended: Date.now(),
   suspending: false,
@@ -136,22 +145,30 @@ export const backendReducer = (state = initialState, action) => {
       ...state,
       outgoingPayloadQueues: {
         ...outgoingPayloadQueues,
-        [id]: chunks,
+        [id]: { chunks, acked: 0 },
       },
     };
   }
 
   if (type === 'backend/dequeuePayloadQueue') {
-    const { id } = payload;
-    const { outgoingPayloadQueues } = state;
-    const { [id]: targetQueue, ...otherQueues } = outgoingPayloadQueues;
-    const [_, ...rest] = targetQueue;
+    // Подтверждение идёт по номеру чанка, поэтому повтор того же подтверждения
+    // ничего не снимает. Раньше каждое снимало голову очереди, и лишнее применение
+    // теряло чанк, а сервер так и не собирал сообщение.
+    const { id, index } = payload;
+    const { [id]: queue, ...otherQueues } = state.outgoingPayloadQueues;
+    if (!queue) {
+      return state;
+    }
+    const acked = typeof index === 'number' ? index : queue.acked + 1;
+    if (acked !== queue.acked + 1) {
+      return state;
+    }
     return {
       ...state,
-      outgoingPayloadQueues: rest.length
+      outgoingPayloadQueues: acked < queue.chunks.length
         ? {
             ...otherQueues,
-            [id]: rest,
+            [id]: { ...queue, acked },
           }
         : otherQueues,
     };
@@ -160,6 +177,9 @@ export const backendReducer = (state = initialState, action) => {
   if (type === 'backend/removePayloadQueue') {
     const { id } = payload;
     const { outgoingPayloadQueues } = state;
+    if (!outgoingPayloadQueues[id]) {
+      return state;
+    }
     const { [id]: _, ...otherQueues } = outgoingPayloadQueues;
     return {
       ...state,
@@ -178,9 +198,7 @@ export const backendMiddleware = store => {
   let suspendInterval;
 
   return next => action => {
-    const { suspended, outgoingPayloadQueues } = selectBackend(
-      store.getState(),
-    );
+    const { suspended } = selectBackend(store.getState());
     const { type, payload } = action;
 
     if (type === 'update') {
@@ -295,19 +313,30 @@ export const backendMiddleware = store => {
     }
 
     if (type === 'acknowlegePayloadChunk') {
+      const { id } = payload;
+      const ackedBefore = selectBackend(store.getState())
+        .outgoingPayloadQueues[id]?.acked;
       store.dispatch(backendDequeuePayloadQueue(payload));
-      store.dispatch(nextPayloadChunk(payload));
+      // Следующий чанк - только если подтверждение продвинуло очередь, иначе
+      // повторное подтверждение отправило бы тот же чанк ещё раз.
+      const queue = selectBackend(store.getState()).outgoingPayloadQueues[id];
+      if (queue && queue.acked !== ackedBefore) {
+        store.dispatch(nextPayloadChunk(payload));
+      }
     }
 
     if (type === 'nextPayloadChunk') {
       const { id } = payload;
       // Always read fresh state after any prior dispatches to get the updated queue
-      const { outgoingPayloadQueues: freshQueues } = selectBackend(store.getState());
-      if (freshQueues[id]?.length) {
-        const chunk = freshQueues[id][0];
+      const queue = selectBackend(store.getState()).outgoingPayloadQueues[id];
+      if (queue && queue.acked < queue.chunks.length) {
         sendMessage({
           type: 'payloadChunk',
-          payload: { id, chunk },
+          payload: {
+            id,
+            chunk: queue.chunks[queue.acked],
+            index: queue.acked + 1,
+          },
         });
       }
     }
@@ -490,7 +519,7 @@ type BackendState<TData> = {
   },
   data: TData,
   shared: Record<string, any>,
-  outgoingPayloadQueues: Record<string, any[]>,
+  outgoingPayloadQueues: Record<string, OutgoingPayloadQueue>,
   suspending: boolean,
   suspended: boolean,
 }

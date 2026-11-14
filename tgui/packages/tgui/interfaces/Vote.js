@@ -13,10 +13,41 @@ const MODE_META = {
   custom: { icon: 'vote-yea', color: 'purple', label: 'Кастомное' },
 };
 
-const BAR_RANGES = {
-  red: [0, 0.34],
-  orange: [0.34, 0.67],
-  good: [0.67, 1],
+const SYSTEM_HINTS = {
+  PLURALITY: 'Выберите один вариант, голос можно поменять.',
+  APPROVAL: 'Можно выбрать несколько вариантов.',
+  SCHULZE: 'Нажимайте варианты по порядку предпочтения, повторное нажатие убирает из рейтинга.',
+  IRV: 'Нажимайте варианты по порядку предпочтения, повторное нажатие убирает из рейтинга.',
+  SCORE: 'Оцените каждый вариант.',
+  HIGHEST_MEDIAN: 'Оцените каждый вариант, побеждает лучшая медиана оценок.',
+};
+
+// Служебные английские варианты голосований сервера
+const CHOICE_LABELS = {
+  'Restart Round': 'Перезапустить раунд',
+  'Continue Playing': 'Продолжить игру',
+  'Initiate Crew Transfer': 'Закончить смену',
+};
+
+const choiceLabel = (name) => CHOICE_LABELS[name] || name;
+
+const formatTime = (seconds) => {
+  const total = Math.max(0, seconds || 0);
+  const minutes = Math.floor(total / 60);
+  const rest = String(total % 60).padStart(2, '0');
+  return `${minutes}:${rest}`;
+};
+
+const pluralVoters = (count) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    return 'игрок';
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return 'игрока';
+  }
+  return 'игроков';
 };
 
 export const Vote = (props) => {
@@ -25,17 +56,16 @@ export const Vote = (props) => {
 
   const meta = MODE_META[mode] || MODE_META.custom;
   const title = mode ? (question || meta.label) : 'Голосование';
-  const canManage = lower_admin || allow_vote_restart || allow_vote_mode;
+  // Во время голосования новое не начать: игроку блок не нужен, админу остаются тумблеры
+  const canManage = mode ? !!data.upper_admin : (lower_admin || allow_vote_restart || allow_vote_mode);
 
   return (
     <Window resizable title={title} width={460} height={650}>
-      <Window.Content scrollable>
+      <Window.Content scrollable={!!(lower_admin && custom_setup && custom_setup.active)}>
         <Stack fill vertical>
           {!!canManage && (
             <Stack.Item>
-              <Section title="Управление голосованием">
-                <VoteOptions />
-              </Section>
+              <VoteOptions />
             </Stack.Item>
           )}
           {!!(lower_admin && custom_setup && custom_setup.active) && (
@@ -46,85 +76,94 @@ export const Vote = (props) => {
           <Stack.Item grow>
             <ChoicesPanel />
           </Stack.Item>
-          {!!mode && <TimePanel />}
+          {!!mode && (
+            <Stack.Item>
+              <TimePanel />
+            </Stack.Item>
+          )}
         </Stack>
       </Window.Content>
     </Window>
   );
 };
 
-const VoteOptions = (props) => {
-  const { act, data } = useBackend();
-  const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin } = data;
-
-  const startButton = (label, icon, color, onClick, disabled) => (
+const StartButton = (props) => {
+  const { label, icon, color, action, disabled, tooltip } = props;
+  const { act } = useBackend();
+  return (
     <Button
       fluid
       icon={icon}
       color={color}
       disabled={disabled}
-      onClick={onClick}>
+      tooltip={tooltip}
+      tooltipPosition="bottom"
+      textAlign="center"
+      onClick={() => act(action)}>
       {label}
     </Button>
   );
+};
+
+const VoteOptions = (props) => {
+  const { act, data } = useBackend();
+  const { mode, allow_vote_restart, allow_vote_mode, lower_admin, upper_admin, roundtype_vote_block, vote_start_block } = data;
+
+  const modeDisabled = !!vote_start_block || !!roundtype_vote_block || (!allow_vote_mode && !lower_admin);
+  const modeTooltip = vote_start_block || roundtype_vote_block
+    || (!allow_vote_mode && !lower_admin ? 'Администрация не открыла это голосование игрокам.' : null);
+  const restartDisabled = !!vote_start_block || (!allow_vote_restart && !lower_admin);
+  const restartTooltip = vote_start_block
+    || (!allow_vote_restart && !lower_admin ? 'Администрация не открыла это голосование игрокам.' : null);
+
+  const toggles = !!upper_admin && (
+    <Stack mt={mode ? 0 : 0.75} align="center">
+      <Stack.Item color="label">
+        <Icon name="user-check" mr={0.5} />
+        Игрокам доступно:
+      </Stack.Item>
+      <Stack.Item>
+        <Button.Checkbox compact checked={!!allow_vote_mode} onClick={() => act('toggle_gamemode')}>
+          Режим игры
+        </Button.Checkbox>
+      </Stack.Item>
+      <Stack.Item>
+        <Button.Checkbox compact checked={!!allow_vote_restart} onClick={() => act('toggle_restart')}>
+          Рестарт
+        </Button.Checkbox>
+      </Stack.Item>
+    </Stack>
+  );
+
+  if (mode) {
+    return <Section>{toggles}</Section>;
+  }
 
   return (
-    <Stack wrap spacing={1}>
-      <Stack.Item basis="47%" grow>
-        <Stack vertical spacing={0.5}>
-          <Stack.Item>
-            {startButton(
-              'Режим игры',
-              'dice',
-              'blue',
-              () => act('gamemode'),
-              !allow_vote_mode && !lower_admin
-            )}
-          </Stack.Item>
-          <Stack.Item>
-            {startButton(
-              'Рестарт',
-              'sync-alt',
-              'red',
-              () => act('restart'),
-              !allow_vote_restart && !lower_admin
-            )}
-          </Stack.Item>
-        </Stack>
-      </Stack.Item>
-      <Stack.Item basis="47%" grow>
-        <Stack vertical spacing={0.5}>
-          {!!lower_admin && (
-            <Stack.Item>
-              {startButton('Карта', 'map', 'green', () => act('map'))}
-            </Stack.Item>
-          )}
-          {!!lower_admin && (
-            <Stack.Item>
-              {startButton('Кастомное', 'vote-yea', 'purple', () => act('custom'))}
-            </Stack.Item>
-          )}
-        </Stack>
-      </Stack.Item>
-      {!!upper_admin && (
-        <Stack.Item mt={0.5}>
-          <Stack spacing={1}>
-            <Button.Checkbox
-              checked={!!allow_vote_mode}
-              color="red"
-              onClick={() => act('toggle_gamemode')}>
-              Режим игры
-            </Button.Checkbox>
-            <Button.Checkbox
-              checked={!!allow_vote_restart}
-              color="red"
-              onClick={() => act('toggle_restart')}>
-              Рестарт
-            </Button.Checkbox>
-          </Stack>
+    <Section title="Начать голосование">
+      <Stack>
+        <Stack.Item grow basis={0}>
+          <StartButton label="Режим игры" icon="dice" color="blue" action="gamemode"
+            disabled={modeDisabled} tooltip={modeTooltip} />
         </Stack.Item>
+        <Stack.Item grow basis={0}>
+          <StartButton label="Рестарт" icon="sync-alt" color="red" action="restart"
+            disabled={restartDisabled} tooltip={restartTooltip} />
+        </Stack.Item>
+      </Stack>
+      {!!lower_admin && (
+        <Stack mt={0.5}>
+          <Stack.Item grow basis={0}>
+            <StartButton label="Карта" icon="map" color="green" action="map"
+              disabled={!!vote_start_block} tooltip={vote_start_block} />
+          </Stack.Item>
+          <Stack.Item grow basis={0}>
+            <StartButton label="Кастомное" icon="vote-yea" color="purple" action="custom" />
+          </Stack.Item>
+        </Stack>
       )}
-    </Stack>
+      {toggles}
+    </Section>
   );
 };
 
@@ -272,6 +311,19 @@ const CustomVoteSetup = (props) => {
   );
 };
 
+
+const InfoLine = (props) => {
+  const { icon, color = 'label', children } = props;
+  return (
+    <Stack mb={0.5} color={color} fontSize="0.9em">
+      <Stack.Item width="1.2em" textAlign="center">
+        <Icon name={icon} />
+      </Stack.Item>
+      <Stack.Item grow>{children}</Stack.Item>
+    </Stack>
+  );
+};
+
 const ChoicesPanel = (props) => {
   const { act, data } = useBackend();
   const {
@@ -286,29 +338,51 @@ const ChoicesPanel = (props) => {
     rotation_applies,
     mode,
     roundtype_descs,
+    vote_start_block,
   } = data;
 
   if (!mode) {
     return (
-      <Section fill title="Варианты">
-        <NoticeBox info>Нет активного голосования.</NoticeBox>
+      <Section fill title="Голосование">
+        <Stack fill vertical align="center" justify="center" textAlign="center">
+          <Stack.Item>
+            <Icon name="vote-yea" size={3} color="label" />
+          </Stack.Item>
+          <Stack.Item mt={1} color="label">
+            Сейчас голосования нет.
+          </Stack.Item>
+          {!!vote_start_block && (
+            <Stack.Item mt={0.5} color="average" fontSize="0.9em">
+              <Icon name="clock" mr={0.5} />
+              {vote_start_block}
+            </Stack.Item>
+          )}
+        </Stack>
       </Section>
     );
   }
 
   const meta = MODE_META[mode] || MODE_META.custom;
-  const systemHints = {
-    APPROVAL: 'Можно выбрать несколько вариантов.',
-    SCHULZE: 'Нажмите чтобы добавить в рейтинг. Повторное нажатие — убрать.',
-    IRV: 'Нажмите чтобы добавить в рейтинг. Повторное нажатие — убрать.',
-    SCORE: 'Оцените каждый вариант.',
-    HIGHEST_MEDIAN: 'Оцените каждый вариант (медиана оценок).',
-  };
-
   const isRanked = vote_system === 'SCHULZE' || vote_system === 'IRV';
-  const totalVotes = choices.reduce((sum, choice) => (
-    choice.votes !== -1 ? sum + choice.votes : sum
-  ), 0);
+  const isScore = vote_system === 'SCORE' || vote_system === 'HIGHEST_MEDIAN';
+  const voted = choices.some((c) => c.user_selected || c.user_approved || c.user_rank > 0);
+  const totalVotes = choices.reduce((sum, c) => (c.votes > 0 ? sum + c.votes : sum), 0);
+  const leaderVotes = Math.max(0, ...choices.map((c) => c.votes));
+
+  let headerButton = null;
+  if (voted && (vote_system === 'PLURALITY' || vote_system === 'APPROVAL')) {
+    headerButton = (
+      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset')}>
+        Отозвать голос
+      </Button>
+    );
+  } else if (voted && isRanked) {
+    headerButton = (
+      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset')}>
+        Сбросить рейтинг
+      </Button>
+    );
+  }
 
   return (
     <Section
@@ -316,130 +390,203 @@ const ChoicesPanel = (props) => {
       scrollable
       title={
         <Box inline>
-          <Icon name={meta.icon} mr={0.5} color={meta.color} />
+          <Icon name={meta.icon} mr={0.75} color={meta.color} />
           {meta.label}
         </Box>
-      }>
-      {!!(last_modes) && (
-        <Box mb={1} color="label" fontSize="0.85em">
-          Последние засчитанные режимы: <b>{last_modes}</b>
-          {!!(combo_threshold) && ` (форс при ${combo_threshold} подряд, если онлайн ≥${rotation_min_players} и не ночь (${rotation_night_start}:00-${rotation_night_end}:00 МСК))`}
-        </Box>
+      }
+      buttons={headerButton}>
+      {!!SYSTEM_HINTS[vote_system] && (
+        <InfoLine icon="info-circle">{SYSTEM_HINTS[vote_system]}</InfoLine>
       )}
-      {mode === 'roundtype' && !!(combo_threshold) && (
-        <Box mb={1} color={rotation_applies ? 'good' : 'average'} fontSize="0.85em">
+      {!!last_modes && (
+        <InfoLine icon="history">
+          Последние режимы: <b>{last_modes}</b>
+        </InfoLine>
+      )}
+      {mode === 'roundtype' && !!combo_threshold && (
+        <InfoLine
+          icon={rotation_applies ? 'check-circle' : 'moon'}
+          color={rotation_applies ? 'good' : 'average'}>
           {rotation_applies
-            ? 'Серия учитывается: раунд засчитается в ротацию режимов.'
-            : 'Серия не учитывается: онлайн ниже порога или ночь, раунд не засчитается в ротацию режимов.'}
-        </Box>
+            ? `Раунд засчитается в ротацию: при ${combo_threshold} одинаковых режимах подряд следующий будет другим.`
+            : `Раунд не засчитается в ротацию: онлайн ниже ${rotation_min_players} или ночь (${rotation_night_start}:00–${rotation_night_end}:00 МСК).`}
+        </InfoLine>
       )}
       {!!(roundtype_descs && roundtype_descs.length) && (
-        <Collapsible title="Описание режимов" mb={1}>
+        <Collapsible title="Описание режимов" mb={0.5}>
           {roundtype_descs.map((rd) => (
-            <Box key={rd.name} mb={0.5}>
+            <Box key={rd.name} mb={0.5} fontSize="0.9em">
               <Box inline bold>{rd.name}:</Box>{' '}{rd.desc}
             </Box>
           ))}
         </Collapsible>
       )}
-      {!!(systemHints[vote_system]) && (
-        <Box mb={1} color="average" italic>{systemHints[vote_system]}</Box>
-      )}
-      {choices.length === 0 ? (
-        <NoticeBox info>Нет вариантов.</NoticeBox>
-      ) : (
-        <ChoicesList
-          choices={choices}
-          vote_system={vote_system}
-          score_options={score_options}
-          totalVotes={totalVotes}
-          act={act}
-        />
-      )}
-      {isRanked && (
-        <Box mt={1}>
-          <Button compact color="red" icon="undo" onClick={() => act('vote_reset')}>
-            Сбросить рейтинг
-          </Button>
-        </Box>
-      )}
+      <Box mt={1}>
+        {choices.length === 0 && <NoticeBox info>Нет вариантов.</NoticeBox>}
+        {isRanked && <RankedChoices choices={choices} />}
+        {isScore && <ScoreChoices choices={choices} score_options={score_options} />}
+        {!isRanked && !isScore && choices.map((choice) => (
+          <ChoiceRow
+            key={choice.id}
+            choice={choice}
+            multi={vote_system === 'APPROVAL'}
+            totalVotes={totalVotes}
+            leaderVotes={leaderVotes}
+          />
+        ))}
+      </Box>
     </Section>
   );
 };
 
-const ChoicesList = (props) => {
-  const { choices, vote_system, score_options, totalVotes, act } = props;
-
-  if (vote_system === 'APPROVAL') {
-    return (
-      <Stack vertical spacing={0.5}>
-        {choices.map((choice) => (
-          <Stack.Item key={choice.id}>
-            <Button.Checkbox
-              fluid
-              checked={!!choice.user_approved}
-              onClick={() => act('vote', { index: choice.id })}>
-              {choice.name}
-              {choice.votes !== -1 && (
-                <Box inline ml={1} color="label">({choice.votes})</Box>
-              )}
-            </Button.Checkbox>
-            <VoteBar choice={choice} totalVotes={totalVotes} />
+// Строка варианта: длинный текст переносится, голоса остаются справа
+const ChoiceButton = (props) => {
+  const { selected, lead, leadWidth = '1.6em', side, fill, fillColor, tooltip, onClick, children } = props;
+  return (
+    <Button
+      fluid
+      fontSize="1.2em"
+      px={0.75}
+      py={0.4}
+      selected={selected}
+      tooltip={tooltip}
+      style={{ whiteSpace: 'normal', position: 'relative', overflow: 'hidden' }}
+      onClick={onClick}>
+      {fill > 0 && (
+        <Box
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            height: '3px',
+            width: `${fill}%`,
+            background: fillColor,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      <Stack align="center" style={{ position: 'relative' }}>
+        <Stack.Item width={leadWidth} textAlign="center" style={{ flexShrink: 0 }}>
+          {lead}
+        </Stack.Item>
+        <Stack.Item grow basis={0} lineHeight={1.35} style={{ wordBreak: 'break-word' }}>
+          {children}
+        </Stack.Item>
+        {!!side && (
+          <Stack.Item style={{ whiteSpace: 'nowrap' }}>
+            {side}
           </Stack.Item>
-        ))}
+        )}
       </Stack>
-    );
+    </Button>
+  );
+};
+
+const ChoiceRow = (props) => {
+  const { choice, multi, totalVotes, leaderVotes } = props;
+  const { act } = useBackend();
+  const mine = multi ? !!choice.user_approved : !!choice.user_selected;
+  const hidden = choice.votes === -1;
+  const percent = !hidden && totalVotes ? Math.round((choice.votes / totalVotes) * 100) : 0;
+  const isLeader = !hidden && choice.votes > 0 && choice.votes === leaderVotes;
+  let icon = mine ? 'dot-circle-o' : 'circle-o';
+  if (multi) {
+    icon = mine ? 'check-square-o' : 'square-o';
   }
 
-  if (vote_system === 'SCHULZE' || vote_system === 'IRV') {
-    const ranked = choices.filter((c) => c.user_rank > 0).sort((a, b) => a.user_rank - b.user_rank);
-    const unranked = choices.filter((c) => !c.user_rank);
-    return (
-      <LabeledList>
-        {ranked.map((choice) => (
-          <LabeledList.Item
-            key={choice.id}
-            label={
-              <Box inline bold color="good">
-                <Icon name="arrow-up" mr={0.5} />
-                {choice.name}
-              </Box>
-            }
-            buttons={
-              <Button compact color="red" onClick={() => act('vote', { index: choice.id })}>
-                − Убрать
-              </Button>
-            }>
-            <Box color="good">№{choice.user_rank}</Box>
-          </LabeledList.Item>
-        ))}
-        {ranked.length > 0 && unranked.length > 0 && <LabeledList.Divider />}
-        {unranked.map((choice) => (
-          <LabeledList.Item
-            key={choice.id}
-            label={choice.name}
-            buttons={
-              <Button compact onClick={() => act('vote', { index: choice.id })}>
-                + В рейтинг
-              </Button>
-            }>
-            {choice.votes !== -1 ? `${choice.votes} бал.` : ''}
-          </LabeledList.Item>
-        ))}
-      </LabeledList>
-    );
-  }
+  const side = hidden ? (
+    <Box opacity={0.6}>
+      <Icon name="eye-slash" mr={0.5} />
+      скрыто
+    </Box>
+  ) : (
+    <Box>
+      {isLeader && <Icon name="crown" color="yellow" mr={0.5} />}
+      {choice.votes}
+      <Box inline opacity={0.6} ml={0.5} minWidth="2.6em" textAlign="right">{percent}%</Box>
+    </Box>
+  );
 
-  if (vote_system === 'SCORE' || vote_system === 'HIGHEST_MEDIAN') {
-    return (
-      <LabeledList>
-        {choices.map((choice) => (
-          <LabeledList.Item key={choice.id} label={choice.name}>
-            <Stack wrap>
+  return (
+    <Box mb={0.5}>
+      <ChoiceButton
+        selected={mine}
+        lead={<Icon name={icon} />}
+        side={side}
+        fill={percent}
+        fillColor={mine ? '#b6f08c' : isLeader ? '#7fc4ff' : 'rgba(255, 255, 255, 0.45)'}
+        tooltip={mine && !multi ? 'Ваш голос' : null}
+        onClick={() => act('vote', { index: choice.id })}>
+        <Box bold={mine}>{choiceLabel(choice.name)}</Box>
+      </ChoiceButton>
+    </Box>
+  );
+};
+
+const RankedChoices = (props) => {
+  const { choices } = props;
+  const { act } = useBackend();
+  const ranked = choices.filter((c) => c.user_rank > 0).sort((a, b) => a.user_rank - b.user_rank);
+  const unranked = choices.filter((c) => !c.user_rank);
+
+  return (
+    <>
+      {[...ranked, ...unranked].map((choice) => (
+        <Box key={choice.id} mb={0.5}>
+          <ChoiceButton
+            selected={choice.user_rank > 0}
+            leadWidth="2.2em"
+            lead={choice.user_rank > 0
+              ? <Box bold>№{choice.user_rank}</Box>
+              : <Icon name="plus" opacity={0.5} />}
+            tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
+            onClick={() => act('vote', { index: choice.id })}>
+            {choiceLabel(choice.name)}
+          </ChoiceButton>
+        </Box>
+      ))}
+    </>
+  );
+};
+
+const ScoreChoices = (props) => {
+  const { choices, score_options } = props;
+  const { act } = useBackend();
+
+  return (
+    <>
+      {choices.map((choice) => {
+        const rated = choice.user_score !== null && choice.user_score !== undefined;
+        return (
+          <Box
+            key={choice.id}
+            mb={1}
+            px={0.75}
+            py={0.6}
+            style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderLeft: `3px solid ${rated ? '#5baa27' : 'rgba(255, 255, 255, 0.15)'}`,
+              borderRadius: '2px',
+            }}>
+            <Stack align="flex-start" mb={0.6}>
+              <Stack.Item grow basis={0} fontSize="1.15em" lineHeight={1.35} style={{ wordBreak: 'break-word' }}>
+                {choiceLabel(choice.name)}
+              </Stack.Item>
+              <Stack.Item>
+                <Icon
+                  name={rated ? 'check-circle' : 'circle-o'}
+                  color={rated ? 'good' : 'label'}
+                  mt={0.25}
+                />
+              </Stack.Item>
+            </Stack>
+            <Stack>
               {score_options.map((opt) => (
-                <Stack.Item key={opt.value}>
+                <Stack.Item key={opt.value} grow basis={0}>
                   <Button
-                    compact
+                    fluid
+                    lineHeight={1.8}
+                    textAlign="center"
                     selected={choice.user_score === opt.value}
                     onClick={() => act('vote', { index: choice.id, score: opt.value })}>
                     {opt.label}
@@ -447,86 +594,54 @@ const ChoicesList = (props) => {
                 </Stack.Item>
               ))}
             </Stack>
-          </LabeledList.Item>
-        ))}
-      </LabeledList>
-    );
-  }
-
-  return (
-    <Stack vertical spacing={0.8}>
-      {choices.map((choice) => (
-        <Stack.Item key={choice.id}>
-          <Stack align="center" spacing={1}>
-            <Stack.Item grow>
-              <Box bold>
-                {choice.name}
-                {!!choice.user_selected && (
-                  <Icon name="check" ml={0.5} color="good" />
-                )}
-              </Box>
-            </Stack.Item>
-            <Stack.Item>
-              <Box color={choice.user_selected ? 'good' : 'label'}>
-                {choice.votes === -1 ? '???' : `${choice.votes} гол.`}
-              </Box>
-            </Stack.Item>
-            <Stack.Item>
-              <Button
-                disabled={!!choice.user_selected}
-                color={choice.user_selected ? 'good' : 'default'}
-                icon={choice.user_selected ? 'check' : 'vote-yea'}
-                onClick={() => act('vote', { index: choice.id })}>
-                {choice.user_selected ? 'Выбрано' : 'Голосовать'}
-              </Button>
-            </Stack.Item>
-          </Stack>
-          <VoteBar choice={choice} totalVotes={totalVotes} />
-        </Stack.Item>
-      ))}
-    </Stack>
-  );
-};
-
-const VoteBar = ({ choice, totalVotes }) => {
-  if (choice.votes === -1 || !totalVotes) {
-    return null;
-  }
-  const percent = Math.round((choice.votes / totalVotes) * 100);
-  return (
-    <ProgressBar
-      value={percent / 100}
-      ranges={BAR_RANGES}
-      mt={0.2}
-      mb={0.2}>
-      {percent}%
-    </ProgressBar>
+          </Box>
+        );
+      })}
+    </>
   );
 };
 
 const TimePanel = (props) => {
   const { act, data } = useBackend();
-  const { lower_admin, time_remaining } = data;
+  const { lower_admin, time_remaining = 0, time_total = 0, initiator, voters_count = 0 } = data;
+  const ending = time_remaining <= 30;
 
   return (
-    <Stack.Item mt={0.5}>
-      <Section>
-        <Stack align="center" justify="space-between">
-          <Stack.Item>
-            <Box fontSize={1.5} bold>
-              <Icon name="hourglass-half" mr={1} color="label" />
-              {time_remaining || 0}с
+    <Section>
+      <Stack align="center">
+        <Stack.Item>
+          <Box fontSize={1.6} bold color={ending ? 'average' : null}>
+            <Icon name="hourglass-half" mr={0.75} color={ending ? 'average' : 'label'} />
+            {formatTime(time_remaining)}
+          </Box>
+        </Stack.Item>
+        <Stack.Item grow textAlign="right" color="label" fontSize="0.9em">
+          {!!initiator && (
+            <Box>
+              <Icon name="user" mr={0.5} />
+              {initiator}
             </Box>
-          </Stack.Item>
-          {!!lower_admin && (
-            <Stack.Item>
-              <Button color="red" icon="ban" onClick={() => act('cancel')}>
-                Отменить
-              </Button>
-            </Stack.Item>
           )}
-        </Stack>
-      </Section>
-    </Stack.Item>
+          <Box>
+            <Icon name="users" mr={0.5} />
+            {voters_count} {pluralVoters(voters_count)}
+          </Box>
+        </Stack.Item>
+        {!!lower_admin && (
+          <Stack.Item>
+            <Button color="red" icon="ban" tooltip="Отменить голосование" onClick={() => act('cancel')} />
+          </Stack.Item>
+        )}
+      </Stack>
+      {time_total > 0 && (
+        <ProgressBar
+          mt={0.5}
+          height="0.4em"
+          value={time_remaining / time_total}
+          color={ending ? 'average' : 'blue'}>
+          {' '}
+        </ProgressBar>
+      )}
+    </Section>
   );
 };

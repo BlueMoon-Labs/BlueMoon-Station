@@ -10,13 +10,19 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	if(!isatom(parent))
 		return COMPONENT_INCOMPATIBLE
 	gpstag = _gpstag
+	join_signal_lists()
+
+/datum/component/gps/Destroy()
+	leave_signal_lists()
+	return ..()
+
+/datum/component/gps/proc/join_signal_lists()
 	GLOB.GPS_list += src
 	GLOB.poi_list |= parent
 
-/datum/component/gps/Destroy()
+/datum/component/gps/proc/leave_signal_lists()
 	GLOB.GPS_list -= src
 	GLOB.poi_list -= parent
-	return ..()
 
 ///GPS component subtype. Only gps/item's can be used to open the UI.
 /datum/component/gps/item
@@ -25,6 +31,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	/// UI state of GPS, altering when it can be used.
 	var/datum/ui_state/state = null
 	var/need_use_overlay
+	var/rename_parent = TRUE
 
 /datum/component/gps/item/Initialize(_gpstag = "COM0", emp_proof = FALSE, starton = TRUE, state = null, overlay_state = "working", not_use_overlay = FALSE)
 	. = ..()
@@ -43,7 +50,8 @@ GLOBAL_LIST_EMPTY(GPS_list)
 			A.add_overlay(overlay_state)
 	else
 		tracking = FALSE
-	A.name = "[initial(A.name)] ([gpstag])"
+	if(rename_parent)
+		A.name = "[initial(A.name)] ([gpstag])"
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact))
 	if(!emp_proof)
 		RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp_act))
@@ -71,7 +79,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 )
 	SIGNAL_HANDLER
 
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, tracking ? "Turn off" : "Turn on")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, tracking ? "Выключить" : "Включить")
 	return CONTEXTUAL_SCREENTIP_SET
 
 ///Called on COMSIG_ATOM_EMP_ACT
@@ -133,6 +141,10 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /datum/component/gps/item/ui_state(mob/user)
 	return state
 
+///Components whose signals this GPS lists.
+/datum/component/gps/item/proc/signal_sources()
+	return GLOB.GPS_list
+
 /datum/component/gps/item/ui_data(mob/user)
 	var/list/data = list()
 	data["power"] = tracking
@@ -149,7 +161,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	var/list/signals = list()
 	data["signals"] = list()
 
-	for(var/gps in GLOB.GPS_list)
+	for(var/gps in signal_sources())
 		var/datum/component/gps/G = gps
 		if(G.emped || !G.tracking || G == src)
 			continue
@@ -182,7 +194,8 @@ GLOBAL_LIST_EMPTY(GPS_list)
 
 			gpstag = a
 			. = TRUE
-			parentasatom.name = "global positioning system ([gpstag])"
+			if(rename_parent)
+				parentasatom.name = "global positioning system ([gpstag])"
 
 		if("power")
 			toggletracking(usr)
@@ -193,3 +206,6 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		if("globalmode")
 			global_mode = !global_mode
 			. = TRUE
+
+/datum/component/gps/item/modsuit
+	rename_parent = FALSE

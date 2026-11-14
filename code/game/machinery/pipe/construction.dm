@@ -66,7 +66,7 @@ Buildable meters
 /obj/item/pipe/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(held_item?.tool_behaviour == TOOL_WRENCH)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Fasten")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Закрепить")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/pipe/proc/make_from_existing(obj/machinery/atmospherics/make_from)

@@ -102,19 +102,6 @@
 	magic = 0
 	wound = 0
 
-/datum/armor/alt
-	melee = 15
-	bullet = 60
-	laser = 10
-	energy = 10
-	bomb = 40
-	bio = 0
-	rad = 0
-	fire = 50
-	acid = 50
-	magic = 0
-	wound = 20
-
 /datum/armor/biker
 	melee = 40
 	bullet = 25
@@ -283,19 +270,6 @@
 	acid = 60
 	magic = 0
 	wound = 0
-
-/datum/armor/head_riot
-	melee = 45
-	bullet = 15
-	laser = 5
-	energy = 5
-	bomb = 5
-	bio = 2
-	rad = 0
-	fire = 50
-	acid = 50
-	magic = 0
-	wound = 30
 
 /datum/armor/roman
 	melee = 25

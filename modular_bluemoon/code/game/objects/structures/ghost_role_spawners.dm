@@ -90,7 +90,7 @@
 	name  = "HECU lost grunt"
 
 
-mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
+/mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	var/static/list/buttons = list(
 		/datum/action/toggle_dead_chat_mob,
 		/datum/action/disguise,

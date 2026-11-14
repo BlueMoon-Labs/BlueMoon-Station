@@ -42,7 +42,13 @@
 		hud_used.show_hud(hud_used.hud_version)
 		hud_used.update_ui_style(ui_style2icon(client.prefs?.UI_style)) // клиент может быть в разборке: ui_style2icon(null) отдаёт стиль по умолчанию
 
-	. = ..()
+	// Встроенный Login ищет мобу без места свободную клетку возле (1,1,1) обходом карты:
+	// вход HK-47, которого сажают в капсулу уже после ключа, стоил 3.6 с стоп-кадра (раунд 10618).
+	if(loc)
+		. = ..()
+	else
+		client.statobj = src
+		. = TRUE
 
 	if(!client)
 		return FALSE
@@ -75,6 +81,7 @@
 	update_client_colour()
 	update_mouse_pointer()
 	if(client)
+		client.update_right_click_mode()
 		client.view_size?.resetToDefault()
 		if(client.player_details && istype(client.player_details))
 			if(client.player_details.player_actions.len)

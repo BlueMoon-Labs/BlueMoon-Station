@@ -118,6 +118,11 @@
 	if(P.damage_type == STAMINA && HAS_TRAIT(src, TRAIT_DISABLER_RESISTANCE))
 		totaldamage = -totaldamage
 
+	var/pain_emote_source
+	if(iscarbon(src) && P.damage_type == STAMINA)
+		pain_emote_source = REF(P)
+		ADD_TRAIT(src, TRAIT_SUPPRESS_PAIN_EMOTES, pain_emote_source)
+
 	if(!P.nodamage)
 		// BLUEMOON ADD START - GAMMA two-bucket damage formula with randomization
 		// Bucket 1: BR% — стандартная броня с рандомом ±10%
@@ -228,7 +233,9 @@
 		final_percent += armor_block_portion + brc_block_portion
 		// BLUEMOON EDIT END
 
-	return P.on_hit(src, final_percent, def_zone) ? BULLET_ACT_HIT : BULLET_ACT_BLOCK
+	. = P.on_hit(src, final_percent, def_zone) ? BULLET_ACT_HIT : BULLET_ACT_BLOCK
+	if(pain_emote_source)
+		REMOVE_TRAIT(src, TRAIT_SUPPRESS_PAIN_EMOTES, pain_emote_source)
 
 
 /mob/living/proc/check_projectile_dismemberment(obj/item/projectile/P, def_zone)
@@ -243,6 +250,8 @@
 				return FALSE
 
 /mob/living/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
+	if(HAS_TRAIT(src, TRAIT_NO_THROW_HITPUSH))
+		hitpush = FALSE
 	var/zone = ran_zone(BODY_ZONE_CHEST, 65)//Hits a random part of the body, geared towards the chest
 	if(!isitem(AM))
 		// Filled with made up numbers for non-items.

@@ -20,7 +20,7 @@
 		to_chat(usr, "<span class='danger'>Hypnosis New() skipped due to try/catch incompatibility with admin proccalling.</span>")
 		qdel(src)
 	try
-		target_phrase = new("(\\b[REGEX_QUOTE(hypnotic_phrase)]\\b)","ig")
+		target_phrase = whole_word_regex("([REGEX_QUOTE(hypnotic_phrase)])", "ig")
 	catch(var/exception/e)
 		stack_trace("[e] on [e.file]:[e.line]")
 		qdel(src)
@@ -65,7 +65,10 @@
 			if(1)
 				to_chat(owner, "<span class='hypnophrase'><i>...[lowertext(hypnotic_phrase)]...</i></span>")
 			if(2)
-				new /datum/hallucination/chat(owner, TRUE, FALSE, "<span class='hypnophrase'>[hypnotic_phrase]</span>")
+				new /datum/hallucination/chat(owner, TRUE, FALSE, hypnotic_phrase)
 
 /datum/brain_trauma/hypnosis/handle_hearing(datum/source, list/hearing_args)
+	mark_heard_text(hearing_args)
+
+/datum/brain_trauma/hypnosis/mark_heard_text(list/hearing_args)
 	hearing_args[HEARING_RAW_MESSAGE] = target_phrase.Replace(hearing_args[HEARING_RAW_MESSAGE], "<span class='hypnophrase'>$1</span>")

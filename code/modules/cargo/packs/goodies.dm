@@ -113,3 +113,9 @@
 	desc = "Для тех кому совсем нечего делать в долгую смену"
 	cost = 300
 	contains = list(/obj/item/gun/ballistic/revolver/russian)
+
+/datum/supply_pack/goody/drilling
+	name = "Drilling rifle Single-Pack"
+	desc = "Винтовка для охоты на среднюю дичь"
+	cost = 1500
+	contains = list(/obj/item/gun/ballistic/revolver/drilling)

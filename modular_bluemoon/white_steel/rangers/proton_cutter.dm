@@ -68,7 +68,7 @@
 		if(last_activation + recharge < world.time)
 			icon_state = "proton-on"
 			item_state = "proton-on"
-			light_range = 3
+			light_range = 5
 			playsound(user, 'modular_bluemoon/white/Feline/sounds/proton_cutter.ogg', 100, TRUE)
 			user.visible_message(span_warning("Протонный резак в руках [user] выплескивает шквал искр!"), span_notice("Форсирую генератор гамма излучения. Протонный резак выплескивает шквал искр!"))
 			sparks.start()
@@ -124,7 +124,7 @@
 // 	Киборги
 	if(iscyborg(M))
 		if(amplification)
-			force = 30
+			force = 25
 			M.Paralyze(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
@@ -135,7 +135,7 @@
 // 	Космонавтики
 	if(iscarbon(M) && !isalien(M))
 		if(amplification)
-			force = 25
+			force = 20
 			M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter)
 			addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 			proton_off()
@@ -172,7 +172,7 @@
 	..(M, user, attackchain_flags, damage_multiplier)
 
 /obj/item/melee/sabre/proton_cutter/get_damage_to_obj(obj/O, mob/living/user)
-	return 60
+	return 40
 
 /obj/item/storage/belt/avangard_belt
 	name = "Vanguard belt"

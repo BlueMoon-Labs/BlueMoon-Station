@@ -96,6 +96,8 @@
 
 /mob/living/simple_animal/revenant/Login()
 	..()
+	if(training_origin)
+		return
 	var/revenant_greet
 	revenant_greet += "<span class='deadsay'><span class='big bold'>You are a revenant.</span></span>"
 	revenant_greet += "<b>Your formerly mundane spirit has been infused with alien energies and empowered into a revenant.</b>"
@@ -165,8 +167,9 @@
 	var/rendered = "<span class='revennotice'><b>[src]</b> says, \"[message]\"</span>"
 	for(var/mob/M in GLOB.mob_list)
 		if(isrevenant(M))
-			to_chat(M, rendered)
-		else if(isobserver(M))
+			if(M.training_origin == training_origin)
+				to_chat(M, rendered)
+		else if(isobserver(M) && antag_training_observer_hears(M, src))
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [rendered]")
 	return

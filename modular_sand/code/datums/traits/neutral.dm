@@ -25,7 +25,7 @@
 
 /datum/quirk/estrous_detection
 	name = "Обнаружение Эструса"
-	desc = "Вы обладаете особым чувством, чтобы определить, находится ли кто-то в эстральном цикле."
+	desc = "Вы чувствуете, находится ли кто-то в эстральном цикле, и можете определить точную степень возбуждения существ рядом."
 	value = 0
 	mob_trait = TRAIT_ESTROUS_DETECT
 	flavor_quirk = TRUE
@@ -46,8 +46,6 @@
 	var/heat_type = "нахождение в эстральном цикле"
 
 /datum/quirk/estrous_active/add()
-	// Add examine hook
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_estrous_active))
 	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_ADD, PROC_REF(update_heat_type))
 	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_REMOVE, PROC_REF(update_heat_type))
 
@@ -64,7 +62,6 @@
 	UnregisterSignal(quirk_holder, list(
 		COMSIG_MOB_ORGAN_ADD,
 		COMSIG_MOB_ORGAN_REMOVE,
-		COMSIG_PARENT_EXAMINE,
 		COMSIG_PREGNANCY_STARTED,
 		COMSIG_PREGNANCY_ENDED,
 		COMSIG_MOB_CLIMAX, // добавим в п. B
@@ -106,7 +103,7 @@
 /datum/quirk/estrous_active/remove()
 	if(!QDELETED(quirk_holder))
 		STOP_PROCESSING(SSfastprocess, src)
-	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE, COMSIG_PARENT_EXAMINE))
+	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE))
 
 // Основной цикл
 /datum/quirk/estrous_active/process()
@@ -137,23 +134,8 @@
 
 
 /datum/quirk/estrous_active/proc/update_heat_type()
-	// Define temporary list of heat phrases
-	var/list/heat_phrases = list()
-
-	// Check for male hormonal organ
-	if(quirk_holder.has_balls())
-		heat_phrases += "пахнет сильным мускусом"
-
-	// Check for female hormonal organ
-	if(quirk_holder.getorganslot(ORGAN_SLOT_WOMB))
-		heat_phrases += "пахнет течкой и секретами"
-
-	// Check for synthetic
-	if(isrobotic(quirk_holder))
-		heat_phrases += "множество ошибок в гормональной программе"
-
-	// Build English list
-	heat_type = english_list(heat_phrases, nothing_text = "пахнет переизбытком феромонных гормонов")
+	SIGNAL_HANDLER
+	heat_type = HAS_TRAIT(quirk_holder, TRAIT_PREGNANT) ? "беременн[quirk_holder.ru_aya()]" : "пахнет переизбытком феромонных гормонов"
 
 /datum/quirk/estrous_active/proc/_on_climax_reset(datum/source, datum/reagents/R, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anon)
 	SIGNAL_HANDLER
@@ -166,20 +148,6 @@
 	current_stage = 0
 	time_bonus = 0
 
-/datum/quirk/estrous_active/proc/quirk_examine_estrous_active(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	SIGNAL_HANDLER
-
-	// Check if human examiner exists
-	if(!istype(examiner))
-		return
-
-	// Check if examiner lacks the trait, or is self examining
-	if(!HAS_TRAIT(examiner, TRAIT_ESTROUS_DETECT) || (examiner == quirk_holder))
-		return
-
-	// Add quirk message
-	examine_list += span_love("<b>[quirk_holder.ru_who(TRUE)]</b> [heat_type].")
-
 // === НОВЫЕ ПРОЦЕДУРЫ ДЛЯ БЕРЕМЕННОСТИ ===
 
 /datum/quirk/estrous_active/proc/on_pregnancy_started(datum/source)
@@ -191,13 +159,13 @@
 	var/mob/living/L = quirk_holder
 
 	// Если уже беременна — не дублируем сообщение
-	if(HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременность")
+	if(HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременн[L.ru_aya()]") // да, не учитываем edge case в виде смены гендера во вермя родов (ужасно)
 		return
 
 	to_chat(L, span_love("Вы ощущаете, как внутри вас зарождается новая жизнь... ваш эстральный цикл стихает."))
 	current_stage = 0
 	time_bonus = 0
-	heat_type = "беременность"
+	heat_type = "беременн[L.ru_aya()]"
 
 
 /datum/quirk/estrous_active/proc/on_pregnancy_ended(datum/source)
@@ -209,7 +177,7 @@
 	var/mob/living/L = quirk_holder
 
 	// Проверяем, что действительно была беременна
-	if(!HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременность")
+	if(!HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременн[L.ru_aya()]") // да, не учитываем edge case в виде смены гендера во вермя родов (ужасно)
 		to_chat(L, span_love("Ваш организм приходит в себя после родов, и вы чувствуете, как гормоны вновь начинают бурлить..."))
 		update_heat_type()
 		current_stage = 0

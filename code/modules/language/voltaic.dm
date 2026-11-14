@@ -1,7 +1,7 @@
 // One of these languages will actually work, I'm certain of it.
 /datum/language/voltaic
 	name = "Voltaic"
-	desc = "A sparky language made by manipulating electrical discharge."
+	desc = "Искрящийся язык, созданный управлением электрическим разрядом."
 	key = "v"
 	space_chance = 20
 	syllables = list(

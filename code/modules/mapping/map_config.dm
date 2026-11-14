@@ -175,6 +175,9 @@
 		for (var/level in traits)
 			if (!(ZTRAIT_STATION in level))
 				level[ZTRAIT_STATION] = TRUE
+			// Верхний этаж станции видит нижний сквозь космос, как space/openspace у tg; отказ - "Transparent Space": false
+			if (level[ZTRAIT_DOWN] && !(ZTRAIT_TRANSPARENT_SPACE in level))
+				level[ZTRAIT_TRANSPARENT_SPACE] = TRUE
 	// "traits": null or absent -> default
 	else if (!isnull(traits))
 		log_world("map_config traits is not a list!")

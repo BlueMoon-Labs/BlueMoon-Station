@@ -148,3 +148,16 @@
 /datum/unit_test/atom_hud_z_group_index/Destroy()
 	QDEL_NULL(hud)
 	return ..()
+
+/// Госту медицинский худ не раздаёт значки шахтёрской фауны: на IceBox это ~600 значков у каждого (раунд 10617).
+/datum/unit_test/atom_hud_observer_skips_mining_fauna
+
+/datum/unit_test/atom_hud_observer_skips_mining_fauna/Run()
+	var/datum/atom_hud/medical = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/mob/living/carbon/human/medic = allocate(/mob/living/carbon/human)
+	var/mob/living/simple_animal/hostile/asteroid/fauna = allocate(/mob/living/simple_animal/hostile/asteroid/wolf)
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(!medical.should_show_to(ghost, fauna), "Гост не должен получать значки шахтёрской фауны")
+	TEST_ASSERT(medical.should_show_to(ghost, patient), "Гост по-прежнему видит экипаж")
+	TEST_ASSERT(medical.should_show_to(medic, fauna), "Живой с медицинским худом видит фауну как раньше")

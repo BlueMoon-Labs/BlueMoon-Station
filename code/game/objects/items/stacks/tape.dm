@@ -101,7 +101,7 @@
 	icon_state = "tape_b"
 
 GLOBAL_LIST_INIT(tape_recipes, list ( \
-	new/datum/stack_recipe("Black Sticky Tape Top", /obj/item/clothing/underwear/shirt/top/black_tape, 1), \
+	new/datum/stack_recipe("Black Sticky Tape Top", /obj/item/clothing/underwear/shirt/adjustable/toggle/black_tape, 1), \
 	new/datum/stack_recipe("Black Sticky Tape Groin", /obj/item/clothing/underwear/briefs/black_tape, 1), \
 	))
 

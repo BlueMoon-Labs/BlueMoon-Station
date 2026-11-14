@@ -46,6 +46,15 @@
 	build_path = /obj/item/bodypart/r_leg
 	category = list("initial","human","lizard","fly","insect","plasmaman","mammal","xeno","shadekin","teshari","vox")
 
+/datum/design/supporting_tail
+	name = "Supporting Tail"
+	desc = "Опорный хвост для пересадки вместо обеих ног через доступ в области паха."
+	id = "supporting_tail"
+	build_type = LIMBGROWER
+	reagents_list = list(/datum/reagent/medicine/synthflesh = 50)
+	build_path = /obj/item/bodypart/l_leg/naga_tail
+	category = list("initial","human","lizard","fly","insect","plasmaman","mammal","xeno","shadekin","teshari","vox")
+
 /datum/design/armblade
 	name = "Arm Blade"
 	id = "armblade"

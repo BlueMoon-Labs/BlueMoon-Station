@@ -9,7 +9,7 @@
 
 /obj/machinery/computer/med_data //TODO:SANITY
 	name = "Medical Records Console"
-	desc = "This can be used to check medical records."
+	desc = "Терминал просмотра и записи медицинских данных экипажа."
 	icon_keyboard = "med_key"
 	icon_screen = "medcomp"
 	req_one_access = list(ACCESS_MEDICAL, ACCESS_FORENSICS_LOCKERS)
@@ -52,9 +52,9 @@
 	)
 	field_edit_choices = list(
 		// General
-		"gender" = list("Male", "Female", "Other"),
-		"p_stat" = list("*Deceased*", "*SSD*", "Active", "Physically Unfit", "Disabled"),
-		"m_stat" = list("*Insane*", "*Unstable*", "*Watch*", "Stable"),
+		"gender" = list("Мужской", "Женский", "Другой"),
+		"p_stat" = GLOB.med_record_status_ph,
+		"m_stat" = GLOB.med_record_status_m,
 		// Medical
 		"blood_type" = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"),
 	)
@@ -80,7 +80,7 @@
 	if(..())
 		return
 	if(is_away_level(z))
-		to_chat(user, span_danger("Unable to establish a connection") + ": You're too far away from the station!")
+		to_chat(user, span_danger("Невозможно установить соединение") + ": вы слишком далеко от станции!")
 		return
 	add_fingerprint(user)
 	ui_interact(user)
@@ -270,17 +270,17 @@
 					R.fields["name"] = active1.fields["name"]
 					R.fields["id"] = active1.fields["id"]
 					R.name = "Medical Record #[R.fields["id"]]"
-					R.fields["blood_type"] = "Unknown"
-					R.fields["b_dna"] = "Unknown"
-					R.fields["mi_dis"] = "None"
-					R.fields["mi_dis_d"] = "No minor disabilities have been declared."
-					R.fields["ma_dis"] = "None"
-					R.fields["ma_dis_d"] = "No major disabilities have been diagnosed."
-					R.fields["alg"] = "None"
-					R.fields["alg_d"] = "No allergies have been detected in this patient."
-					R.fields["cdi"] = "None"
-					R.fields["cdi_d"] = "No diseases have been diagnosed at the moment."
-					R.fields["notes"] = "No notes."
+					R.fields["blood_type"] = "Неизвестно"
+					R.fields["b_dna"] = "Неизвестно"
+					R.fields["mi_dis"] = "Отсутствуют"
+					R.fields["mi_dis_d"] = "Незначительных ограничений не вменялось."
+					R.fields["ma_dis"] = "Отсутствуют"
+					R.fields["ma_dis_d"] = "Значительных ограничений не диагностировалось."
+					R.fields["alg"] = "Отсутствуют"
+					R.fields["alg_d"] = "Аллергии не были обнаружены на момент записи."
+					R.fields["cdi"] = "Отсутствуют"
+					R.fields["cdi_d"] = "Болезни не диагностировались на момент записи."
+					R.fields["notes"] = "Записи отсутствуют."
 					GLOB.data_core.medical += R
 					GLOB.data_core.register_record(R, "medical")
 					active2 = R
@@ -481,15 +481,15 @@
 				if(1)
 					R.fields["name"] = pick("[pick(GLOB.first_names_male)] [pick(GLOB.last_names)]", "[pick(GLOB.first_names_female)] [pick(GLOB.last_names_female)]")
 				if(2)
-					R.fields["gender"] = pick("Male", "Female", "Other")
+					R.fields["gender"] = pick("Мужской", "Женский", "Другой", "Клоун")
 				if(3)
 					R.fields["age"] = rand(5, 85)
 				if(4)
 					R.fields["blood_type"] = pick("A-", "B-", "AB-", "O-", "A+", "B+", "AB+", "O+")
 				if(5)
-					R.fields["p_stat"] = pick("*SSD*", "Active", "Physically Unfit", "Disabled")
+					R.fields["p_stat"] = pick(GLOB.med_record_status_ph)
 				if(6)
-					R.fields["m_stat"] = pick("*Insane*", "*Unstable*", "*Watch*", "Stable")
+					R.fields["m_stat"] = pick(GLOB.med_record_status_m)
 			continue
 
 		else if(prob(1))
@@ -505,7 +505,7 @@
 
 /obj/machinery/computer/med_data/laptop
 	name = "medical laptop"
-	desc = "Cheap Nanotrasen laptop."
+	desc = "Дешёвый, тормозящий ноутбук бренда Nanotrasen."
 	icon_state = "laptop"
 	icon_keyboard = "laptop_key"
 	icon_screen = "medlaptop"

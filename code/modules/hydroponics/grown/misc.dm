@@ -183,11 +183,25 @@
 	name = "gatfruit"
 	desc = "It smells like burning."
 	icon_state = "gatfruit"
-	trash = /obj/item/gun/ballistic/revolver
+	trash = /obj/item/gun/ballistic/revolver/gatfruit
 	bitesize_mod = 2
 	foodtype = FRUIT
 	tastes = list("gunpowder" = 1)
 	wine_power = 90 //It burns going down, too.
+
+/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit/make_leave_trash()
+	if(trash)
+		AddElement(/datum/element/food_trash, trash, FOOD_TRASH_OPENABLE, TYPE_PROC_REF(/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit, generate_trash))
+
+// Чем ниже потенция плода, тем выше шанс, что вместо обычного револьвера вырастет испорченный.
+/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit/proc/get_bad_gun_chance(potency)
+	return clamp(110 - potency, 10, 100)
+
+/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit/generate_trash(atom/location)
+	var/gun_type = /obj/item/gun/ballistic/revolver/gatfruit
+	if(seed && prob(get_bad_gun_chance(seed.potency)))
+		gun_type = /obj/item/gun/ballistic/revolver/gatfruit/bad
+	return new gun_type(get_turf(src))
 
 //Cherry Bombs
 /obj/item/seeds/cherry/bomb

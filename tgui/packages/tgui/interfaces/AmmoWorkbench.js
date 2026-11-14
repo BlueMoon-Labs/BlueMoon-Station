@@ -1,3 +1,4 @@
+import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
@@ -13,21 +14,22 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+const plurallists = (n) => plural(n, 'лист', 'листа', 'листов');
 
 export const AmmoWorkbench = () => {
   const [tab, setTab] = useState(1);
   return (
-    <Window width={600} height={600} theme="hackerman" title="Ammunitions Workbench">
+    <Window width={600} height={600} theme="hackerman" title="Патронный станок">
       <Window.Content scrollable>
         <Tabs>
           <Tabs.Tab selected={tab === 1} onClick={() => setTab(1)}>
-            Ammunitions
+            Боеприпасы
           </Tabs.Tab>
           <Tabs.Tab selected={tab === 2} onClick={() => setTab(2)}>
-            Materials
+            Сырьё
           </Tabs.Tab>
           <Tabs.Tab selected={tab === 3} onClick={() => setTab(3)}>
-            Datadisks
+            Диски данных
           </Tabs.Tab>
         </Tabs>
         {tab === 1 && <AmmunitionsTab />}
@@ -62,21 +64,26 @@ const AmmunitionsTab = () => {
           {error}
         </NoticeBox>
       )}
-      <Section title="Machine Settings">
-        <Box inline mr={4}>
-          Current Efficiency: {efficiency.toFixed(1)}x
-        </Box>
-        <Box>Time Per Round: {time} seconds</Box>
-        <Button.Checkbox
-          textAlign="right"
-          checked={turboBoost}
-          onClick={() => act('turboBoost')}
+      <Section
+        title="Параметры станка"
+        buttons={
+          <Button.Checkbox
+              textAlign="right"
+              content="Турбо-режим"
+              tooltip="Повышает скорость работы станка за счёт повышения трат сырья"
+              tooltipPosition="left"
+              checked={turboBoost}
+              onClick={() => act('turboBoost')}
+            />
+        }
         >
-          Turbo Boost
-        </Button.Checkbox>
+        <Box inline mr={4}>
+          Текущая эффективность: {efficiency.toFixed(1)}x
+        </Box>
+        <Box>Времязатраты на патрон: {time} сек.</Box>
       </Section>
       <Section
-        title="Loaded Magazine"
+        title="Слот магазина"
         buttons={
           <>
             {!!mag_loaded && (
@@ -90,7 +97,7 @@ const AmmunitionsTab = () => {
             )}
             <Button
               icon="eject"
-              content="Eject"
+              content="Извлечь"
               disabled={!mag_loaded}
               onClick={() => act('EjectMag')}
             />
@@ -104,7 +111,7 @@ const AmmunitionsTab = () => {
           </Box>
         )}
       </Section>
-      <Section title="Available Ammunition Types">
+      <Section title="Доступные виды боеприпасов">
         {!!mag_loaded && (
           <Flex.Item grow={1} basis={0}>
             {available_rounds.map((available_round) => (
@@ -134,9 +141,9 @@ const AmmunitionsTab = () => {
       </Section>
       {!!hacked && (
         <NoticeBox textAlign="center" color="bad">
-          !WARNING! - ARMADYNE SAFETY PROTOCOLS ARE NOT ENGAGED! MISUSE IS NOT
-          COVERED UNDER WARRANTY. SOME MUNITION TYPES MAY CONSTITUTE A WAR CRIME
-          IN YOUR AREA. PLEASE CONTACT AN ARMADYNE ADMINISTRATOR IMMEDIATELY.
+          !ВНИМАНИЕ! – ПРОТОКОЛЫ БЕЗОПАСНОСТИ ARMADYNE НЕ ЗАДЕЙСТВОВАНЫ! ИСПОЛЬЗОВАНИЕ
+          НЕ ПОКРЫВАЕТСЯ ГАРАНТИЕЙ. ИСПОЛЬЗОВАНИЕ НЕКОТОРЫХ ТИПОВ БОЕПРИПАСОВ МОЖЕТ ЯВЛЯТЬСЯ
+          ВОЕННЫМ ПРЕСТУПЛЕНИЕМ В ВАШЕЙ ЗОНЕ. СВЯЖИТЕСЬ С АДМИНИСТРАТОРОМ ARMADYNE НЕМЕДЛЕННО.
         </NoticeBox>
       )}
     </>
@@ -148,7 +155,7 @@ const MaterialsTab = () => {
   const { materials = [] } = data;
 
   return (
-    <Section title="Materials">
+    <Section title="Сырьё">
       <Table>
         {materials.map((material) => (
           <MaterialRow
@@ -186,18 +193,18 @@ const DatadiskTab = () => {
         </NoticeBox>
       )}
       <Section
-        title="Datadisk"
+        title="Диски с данными"
         buttons={
           <>
             <Button
               icon="save"
-              content="Load Disk"
+              content="Загрузить данные"
               disabled={!datadisk_loaded}
               onClick={() => act('ReadDisk')}
             />
             <Button
               icon="eject"
-              content="Eject"
+              content="Извлечь"
               disabled={!datadisk_loaded}
               onClick={() => act('EjectDisk')}
             />
@@ -206,18 +213,20 @@ const DatadiskTab = () => {
       >
         {!!datadisk_loaded && (
           <Box>
-            Inserted Datadisk: {datadisk_name}
-            <Box>Description: {datadisk_desc}</Box>
+            Вставленный диск данных: {datadisk_name}
+            <Box textAlign="right">
+              Описание: {datadisk_desc}
+            </Box>
           </Box>
         )}
       </Section>
-      <Section title="Loaded Datadisks">
+      <Section title="Загруженные данные">
         <Table>
           {loaded_datadisks.map((loaded_datadisk) => (
             <Box key={loaded_datadisk.loaded_disk_name}>
               {loaded_datadisk.loaded_disk_name}
               <Box textAlign="right">
-                Description: {loaded_datadisk.loaded_disk_desc}
+                Описание: {loaded_datadisk.loaded_disk_desc}
               </Box>
             </Box>
           ))}
@@ -237,7 +246,7 @@ const MaterialRow = (props) => {
       <Table.Cell>{toTitleCase(material.name)}</Table.Cell>
       <Table.Cell collapsing textAlign="right">
         <Box mr={2} color="label" inline>
-          {amountAvailable} sheets
+          {amountAvailable} {plurallists(amountAvailable)}
         </Box>
       </Table.Cell>
       <Table.Cell collapsing>
@@ -252,7 +261,7 @@ const MaterialRow = (props) => {
         />
         <Button
           disabled={amountAvailable < 1}
-          content="Release"
+          content="Извлечь"
           onClick={() => onRelease(amount)}
         />
       </Table.Cell>

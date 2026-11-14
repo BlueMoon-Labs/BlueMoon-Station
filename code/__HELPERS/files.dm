@@ -52,7 +52,12 @@
 /proc/md5asfile(file)
 	var/static/notch = 0
 	// md5filepath теперь на rust-g (hash_file): вызов по-прежнему синхронный и блокирующий, не спящий - просто заметно короче нативного md5(file()).
+#ifdef UNIT_TESTS
+	// Параллельные тестовые миры стартуют в одну десятую секунды, и имена совпадали бы.
+	var/filename = "tmp/[unit_test_shard_subdir()]md5asfile.[world.realtime].[world.timeofday].[world.time].[world.tick_usage].[notch]"
+#else
 	var/filename = "tmp/md5asfile.[world.realtime].[world.timeofday].[world.time].[world.tick_usage].[notch]"
+#endif
 	notch = WRAP(notch+1, 0, 2^15)
 	fcopy(file, filename)
 	. = md5filepath(filename)

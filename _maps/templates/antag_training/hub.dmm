@@ -1,0 +1,6903 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ap" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/under/color/grey{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"aG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/left{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"bf" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-15"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"bu" = (
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"bH" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"bK" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/newspaper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"bQ" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Wardrobe"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"bZ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"cq" = (
+/obj/effect/turf_decal/siding/brown,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"cu" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"cE" = (
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"cG" = (
+/obj/structure/chair/sofa/right{
+	dir = 4
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"cH" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"cL" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_wardrobe/security,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"cS" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/item/kirbyplants/training{
+	icon_state = "plant-03"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"cY" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/map/right{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"db" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"dj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/antag_training_board/hub,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"dv" = (
+/obj/structure/sign/antag_training_board/hub,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"dz" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/cigarette,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"dN" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"dP" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"dS" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-21"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"dY" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/middle{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"ef" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_gate/atmos,
+/obj/structure/sign/plaques/kiddie{
+	name = "atmos gate sign";
+	desc = "Врата: Пневма. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"ep" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/item/kirbyplants/training{
+	icon_state = "plant-05"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"eD" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "Mini-station border";
+	desc = "Граница мини-станции: за барьером урон включён, двери открываются по ID должности.";
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"eI" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"eS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/antag_training_board/hub,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"eW" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"fc" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "Gate hall sign";
+	desc = "Зал врат: шесть платформ переходов в сектора. Табличка над каждой платформой называет сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"fv" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"fS" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"fX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"gc" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"gi" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/machinery/camera/training{
+	c_tag = "Хаб: трибуна";
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"gm" = (
+/obj/structure/chair/sofa/right{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"gn" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/hooded/wintercoat{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"gq" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-14"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"gr" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"gF" = (
+/turf/closed/wall,
+/area/antag_training/hub/lobby)
+"gJ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"gO" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-02"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"gV" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"hv" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/service,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"hw" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"hC" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/regular{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"hE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-20"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"hG" = (
+/obj/structure/chair/sofa/middle{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"hK" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/west,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"hR" = (
+/obj/effect/turf_decal/stripes/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"hS" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/supply,
+/obj/machinery/light/directional/west,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"ic" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"ih" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/camera/training{
+	c_tag = "Хаб: галерея";
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"iv" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"iY" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/cups{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/snacks/chips{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"jh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"jC" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"jD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-04"
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"jX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/middle{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"ka" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/right{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"kk" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-03"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"km" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/cigbutt,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"kx" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-21"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"kG" = (
+/obj/structure/chair/sofa/middle{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"kN" = (
+/obj/structure/table/wood,
+/obj/item/storage/box/cups{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/condiment/sugar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/cigbutt{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"kY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/middle{
+	dir = 4
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"lc" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"lj" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"lz" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"lD" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/antag_training_pad_panel/one{
+	pixel_y = 28
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"lR" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"mf" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"mi" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/science,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"mo" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/cola/random,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"my" = (
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"mE" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/table/wood,
+/obj/item/storage/backpack{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/backpack/satchel{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"mG" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"mP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"nw" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"nx" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-10"
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"nD" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"nT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"op" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/cigarettes{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/newspaper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"ov" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Wardrobe"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"oz" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"oA" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/antag_training_pad_panel/four{
+	pixel_y = 28
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"pN" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"pT" = (
+/obj/effect/turf_decal/stripes/white,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"pX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/middle{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"qB" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"qJ" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"qR" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-18"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"rb" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"rf" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/obj/structure/rack,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"rh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"rp" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/backpack/satchel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"rw" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"rx" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"rC" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"rF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"rJ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/cola/random,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"rP" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"rV" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-15"
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"sz" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/west,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"sA" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/landmark/antag_training/hub_arrival,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"sB" = (
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"sE" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-11"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"sG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"sH" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/medical,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"sT" = (
+/turf/closed/wall,
+/area/antag_training/hub)
+"sZ" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"tc" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/blue{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder/blue{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/sign/plaques/kiddie{
+	name = "Hub cafe sign";
+	desc = "Кафе вестибюля: кофе и пончики за счёт полигона. Посуду - на стол у автоматов.";
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"tA" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/north,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"tU" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/machinery/light/directional/south,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"tV" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"ua" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"up" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"uH" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "Training hub plaque";
+	desc = "Хаб тренировочного полигона: раздевалка, врата шести секторов, трибуна и площадки. За барьером в зале врат - мини-станция, где работают двери по ID и включён урон.";
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"uU" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/cigarettes{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/lighter{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"uZ" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/snack/random,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"vd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"vD" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-05"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"vN" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/backpack/satchel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/sign/poster/official/random{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"vQ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/antag_training_pad_panel/two{
+	pixel_y = 28
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"wB" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_gate/station,
+/obj/structure/sign/plaques/kiddie{
+	name = "station gate sign";
+	desc = "Врата: Эхо-7. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"wL" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"wV" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-05"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"wX" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/reagent_dispensers/water_cooler,
+/obj/machinery/light/directional/east,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"xj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/crate/bin,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"xu" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"xF" = (
+/turf/open/floor/carpet/red,
+/area/antag_training/hub/lobby)
+"xH" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/snacks/donut{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"xR" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"xU" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-14"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"ye" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"yr" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"yt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"yQ" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/antag_training_gate/engineering,
+/obj/structure/sign/plaques/kiddie{
+	name = "engineering gate sign";
+	desc = "Врата: Гефест. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"yV" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/item/kirbyplants/training{
+	icon_state = "plant-05"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"yW" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"yY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"zj" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/middle{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"zD" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-21"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Ax" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-05"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Ay" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"AT" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"AU" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"AV" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Bd" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/command,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Bi" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-14"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Bp" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/camera/training{
+	c_tag = "Хаб: зал врат";
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Bv" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/plaques/kiddie{
+	name = "Wardrobe sign";
+	desc = "Раздевалка: шкафы отделов меняют должность, снаряжение и доступ ID.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Cp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Cv" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/directional/south,
+/obj/structure/rack,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"CI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"CK" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"CS" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"CW" = (
+/obj/structure/chair/sofa/left{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"CZ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Dg" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-22"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Du" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-14"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Dw" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/antag_training_gate/dark,
+/obj/structure/sign/plaques/kiddie{
+	name = "dark gate sign";
+	desc = "Врата: Тёмный сектор. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"DA" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"DL" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Ea" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/poster/official/random{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Ex" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/left{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"EB" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-04"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"EH" = (
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder/blue{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"Fb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Fc" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Fe" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/antag_training_pad_panel/three{
+	pixel_y = 28
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Fi" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Fx" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"FH" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-22"
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"FX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"FZ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/storage/box/gloves{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/regular{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/regular{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Gi" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Gj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/newspaper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stamp{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"GB" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/item/kirbyplants/training{
+	icon_state = "plant-16"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"GO" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/cola/random,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Ha" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"HB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/right{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"HI" = (
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Iq" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_wardrobe/engineering,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"IA" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"Jb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Ji" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/cups{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/cups{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Jj" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Jv" = (
+/obj/effect/turf_decal/stripes/red/box,
+/obj/structure/antag_training_barrier/hub/pad,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"JF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"JP" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"JR" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/coffee,
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Ka" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Ke" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/camera/training{
+	c_tag = "Хаб: прибытие";
+	dir = 8
+	},
+/obj/machinery/vending/snack/random,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Kg" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Kk" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Kr" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Ks" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"KC" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/under/color/grey{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"KI" = (
+/turf/closed/indestructible,
+/area/antag_training/hub)
+"KM" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"KV" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/landmark/antag_training/hub_tribune,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Lh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Li" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Ls" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/donut_box{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"Lu" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"LN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Me" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"Mk" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Mu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/red,
+/area/antag_training/hub/lobby)
+"ME" = (
+/turf/template_noop,
+/area/template_noop)
+"MH" = (
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"MO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"MP" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"MR" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"MS" = (
+/obj/effect/turf_decal/stripes/white,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Nk" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-13"
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"No" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-03"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Nv" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-15"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"NB" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"NU" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-15"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Oz" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/map/left{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"OQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/mirror{
+	pixel_y = 28
+	},
+/obj/structure/rack,
+/obj/item/clothing/head/soft/grey{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/fingerless{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"OW" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/machinery/vending/cola/random,
+/obj/machinery/light/directional/west,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"OY" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Pk" = (
+/obj/structure/chair/sofa/middle{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Po" = (
+/obj/effect/turf_decal/siding/brown,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"PV" = (
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"Qh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/head/soft/grey{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/backpack/satchel{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Qv" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"QF" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-02"
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"QM" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/closet/crate/bin,
+/obj/item/cigbutt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"QV" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"QX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-22"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Rh" = (
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Rm" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Rt" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/jacket{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/soft/grey{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Ry" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-11"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"RK" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Sm" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Sv" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"SA" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/effect/landmark/antag_training/hub_board,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"SI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/middle{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"SN" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-08"
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"SU" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/sign/plaques/kiddie{
+	name = "Wardrobe rules";
+	desc = "Шкаф отдела выдаёт форму, снаряжение и ID с доступом должности. Программа и выданные вещи сохраняются. Синтетики - в последнем шкафу.";
+	pixel_x = 32
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Ta" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/vending/snack/random,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Tl" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/hub/lobby)
+"TC" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/antag_training_gate/eva,
+/obj/structure/sign/plaques/kiddie{
+	name = "eva gate sign";
+	desc = "Врата: Поле обломков. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"TE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/middle{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"TI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/right{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"TJ" = (
+/obj/structure/chair/sofa/right{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Um" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"Us" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"UC" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "hub welcome";
+	default_raw_text = "Добро пожаловать в хаб! Шкафы раздевалки меняют должность, врата ведут в сектора, а за барьером - мини-станция.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"UK" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"UY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Vr" = (
+/obj/structure/chair/sofa/right{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Vy" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Vz" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"Wa" = (
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/snack/random,
+/turf/open/floor/carpet,
+/area/antag_training/hub/lobby)
+"Wq" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Wr" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder/blue{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"WW" = (
+/obj/effect/turf_decal/stripes/red/box,
+/obj/structure/antag_training_barrier/hub,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Xb" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Xc" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-06"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"Xy" = (
+/obj/structure/chair/sofa/left{
+	dir = 4
+	},
+/turf/open/floor/carpet/blue,
+/area/antag_training/hub/lobby)
+"XE" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/item/kirbyplants/training{
+	icon_state = "plant-20"
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"XJ" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"Yw" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/antag_training_wardrobe/silicon,
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"YP" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/office/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"YY" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"Zo" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/coffee,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/hub/lobby)
+"Zp" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/hub/lobby)
+"ZB" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"ZE" = (
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+"ZF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/mirror{
+	pixel_y = 28
+	},
+/turf/open/floor/wood,
+/area/antag_training/hub/lobby)
+"ZG" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"ZP" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/antag_training/hub/lobby)
+"ZZ" = (
+/obj/effect/turf_decal/box/white,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/antag_training_gate/robotics,
+/obj/structure/sign/plaques/kiddie{
+	name = "robotics gate sign";
+	desc = "Врата: Механикус. Шаг на платформу переносит в сектор.";
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/hub/lobby)
+
+(1,1,1) = {"
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+"}
+(2,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+yt
+Xc
+gF
+yV
+gi
+sz
+UK
+OW
+ep
+rb
+UK
+rV
+gF
+gn
+ap
+hK
+Yw
+hv
+hS
+mi
+tV
+Iq
+sH
+cL
+Bd
+KC
+rC
+gF
+eI
+lz
+xu
+Nk
+lz
+gq
+lz
+Gi
+Ax
+iv
+KI
+"}
+(3,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+AV
+ye
+gF
+cS
+Jb
+Jb
+Jb
+Jb
+sB
+Jb
+Jb
+lj
+gF
+jD
+LN
+LN
+Rh
+LN
+Rh
+Rh
+Rh
+Rh
+LN
+Rh
+Rh
+Rh
+lR
+gF
+Ea
+JP
+xj
+PV
+CI
+PV
+CI
+PV
+mP
+JR
+KI
+"}
+(4,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+ye
+gF
+Ka
+sB
+sB
+CW
+sB
+CW
+sB
+aV
+Po
+gF
+OQ
+Rh
+LN
+LN
+LN
+Rh
+Rh
+LN
+Rh
+Rh
+Rh
+Rh
+Rh
+MH
+gF
+lc
+mP
+mP
+PV
+Xy
+kY
+cG
+PV
+JP
+Ta
+KI
+"}
+(5,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+SI
+mf
+gF
+Ka
+Jb
+sB
+jX
+Jb
+kG
+Jb
+jX
+OY
+gF
+jC
+LN
+Rh
+LN
+HB
+pX
+FX
+LN
+Vr
+Pk
+bu
+LN
+LN
+Cv
+gF
+Bv
+mP
+mP
+CI
+PV
+EH
+PV
+PV
+mP
+mo
+KI
+"}
+(6,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+DL
+ye
+gF
+Ka
+Jb
+Jb
+kG
+sB
+jX
+sB
+jX
+Po
+gF
+ZF
+LN
+LN
+Rh
+LN
+Rh
+Rh
+Rh
+Rh
+Rh
+LN
+Rh
+LN
+Rh
+ov
+JP
+mP
+Kg
+PV
+CI
+PV
+PV
+PV
+mP
+GO
+KI
+"}
+(7,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+Vy
+cu
+gF
+Ka
+Jb
+Jb
+jX
+sB
+jX
+sB
+kG
+cq
+gF
+vN
+xF
+Mu
+Mu
+Mu
+xF
+xF
+Mu
+xF
+xF
+xF
+xF
+Mu
+Rm
+gF
+lc
+JP
+Gj
+mP
+mP
+JP
+JP
+JP
+mP
+UC
+KI
+"}
+(8,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+ye
+gF
+tA
+sB
+Jb
+jX
+sB
+jX
+sB
+kG
+Po
+gF
+ZF
+xF
+xF
+Mu
+Mu
+Mu
+Mu
+xF
+xF
+Mu
+xF
+Mu
+Mu
+Fc
+gF
+dP
+mP
+rh
+JP
+mP
+AT
+mP
+xj
+JP
+YP
+KI
+"}
+(9,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+lD
+dS
+gF
+xR
+Rh
+sB
+kG
+sB
+kG
+Jb
+kG
+cq
+gF
+FZ
+Rh
+Rh
+Rh
+LN
+Rh
+Rh
+LN
+LN
+Rh
+Rh
+Rh
+LN
+mE
+gF
+Ks
+JP
+mP
+JP
+JP
+JP
+JP
+QF
+mP
+Bi
+KI
+"}
+(10,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Jv
+nw
+ye
+gF
+qJ
+Rh
+Jb
+TJ
+sB
+TI
+Jb
+TJ
+cq
+gF
+JF
+hC
+Sm
+rf
+Vz
+nx
+SU
+Rh
+Qh
+Sm
+jh
+rp
+Rt
+rx
+gF
+lc
+mP
+JP
+JP
+JP
+JP
+JP
+JP
+JP
+NB
+KI
+"}
+(11,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+up
+ye
+gF
+xR
+Rh
+Jb
+Jb
+sB
+Jb
+Jb
+sB
+cq
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+bQ
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+YY
+CK
+CK
+mP
+CK
+CK
+JP
+JP
+Kr
+uH
+KI
+"}
+(12,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+ic
+gF
+KV
+Rh
+Jb
+Jb
+sB
+sB
+sB
+Jb
+tU
+gF
+Dw
+hR
+fX
+hw
+oz
+bf
+oz
+Li
+oz
+fX
+hw
+Ex
+ka
+XE
+gF
+rP
+mP
+JP
+dj
+JP
+JP
+sA
+JP
+Kr
+Oz
+KI
+"}
+(13,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+up
+km
+gF
+xR
+Rh
+sB
+Jb
+Jb
+Jb
+Jb
+Jb
+Po
+gF
+gJ
+Li
+Li
+Li
+Li
+Li
+Li
+Li
+Li
+vd
+vd
+vd
+Li
+FH
+gF
+eW
+mG
+mG
+JP
+Ha
+Ha
+JP
+JP
+Kr
+cY
+KI
+"}
+(14,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+yY
+ye
+gF
+xR
+LN
+sB
+CW
+Jb
+aV
+sB
+CW
+Po
+gF
+TC
+MS
+vd
+vd
+Li
+Li
+vd
+vd
+vd
+Li
+Li
+Li
+Li
+yW
+gF
+lc
+JP
+mP
+mP
+JP
+JP
+JP
+JP
+JP
+Ay
+KI
+"}
+(15,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+SI
+Qv
+gF
+qJ
+Rh
+sB
+jX
+Jb
+kG
+sB
+jX
+cq
+gF
+UY
+vd
+vd
+Li
+Wr
+Li
+vd
+Li
+vd
+vd
+bH
+Li
+Li
+ZE
+gF
+fc
+mP
+Kg
+NU
+JP
+JP
+fv
+JP
+mP
+Dg
+KI
+"}
+(16,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+ye
+gF
+Ka
+sB
+Jb
+kG
+Jb
+kG
+sB
+kG
+Po
+gF
+yQ
+MS
+vd
+Li
+Fb
+Li
+vd
+Li
+Li
+vd
+dY
+vd
+vd
+vd
+Cp
+mP
+mP
+op
+mP
+JP
+uU
+JP
+QM
+mP
+Mk
+KI
+"}
+(17,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+DL
+mf
+gF
+tA
+sB
+Jb
+kG
+sB
+kG
+sB
+kG
+cq
+gF
+CZ
+Li
+vd
+vd
+Li
+Li
+Li
+Li
+Li
+Li
+MO
+vd
+Li
+Li
+my
+mP
+mP
+ZP
+mP
+JP
+JP
+JP
+Um
+kN
+tc
+KI
+"}
+(18,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+Vy
+fS
+gF
+Ka
+Jb
+sB
+kG
+Jb
+kG
+sB
+jX
+cq
+gF
+wB
+pT
+vd
+Li
+Li
+eS
+Li
+vd
+vd
+Li
+Li
+Li
+vd
+cH
+gF
+dP
+mP
+JP
+CI
+CI
+CI
+CI
+pN
+Um
+uZ
+KI
+"}
+(19,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+gV
+ye
+gF
+Ka
+Jb
+Jb
+jX
+sB
+kG
+Jb
+kG
+qB
+gF
+nT
+vd
+vd
+vd
+Li
+vd
+Li
+vd
+vd
+Li
+Lh
+Li
+vd
+Jj
+gF
+dP
+JP
+JP
+PV
+CI
+Ls
+PV
+xH
+Um
+gr
+KI
+"}
+(20,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Zp
+EB
+gF
+DA
+sB
+sB
+TJ
+sB
+TI
+sB
+TJ
+Po
+gF
+ef
+MS
+Li
+Li
+vd
+Li
+Li
+Li
+Li
+vd
+dY
+Li
+Li
+yr
+gF
+lc
+SA
+JP
+PV
+gm
+hG
+Us
+IA
+dv
+gr
+KI
+"}
+(21,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+ye
+gF
+Nv
+sB
+sB
+sB
+sB
+sB
+sB
+Jb
+Po
+gF
+CZ
+Li
+vd
+vd
+Li
+vd
+Li
+Li
+Li
+Li
+MO
+Li
+Li
+ZB
+gF
+lc
+JP
+JP
+CI
+PV
+PV
+CI
+pN
+Um
+dz
+KI
+"}
+(22,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+gV
+nw
+HI
+sB
+sB
+iY
+sB
+sB
+sB
+Jb
+Jb
+No
+gF
+ZZ
+MS
+Li
+Li
+Li
+vd
+vd
+vd
+vd
+Li
+Li
+Li
+vd
+zD
+gF
+rP
+JP
+JP
+JP
+JP
+JP
+mP
+bK
+cE
+ZG
+KI
+"}
+(23,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+sG
+rF
+HI
+Wa
+Lu
+wL
+gc
+SN
+wX
+GB
+Ji
+gc
+sB
+db
+QX
+hE
+bZ
+rJ
+eD
+RK
+XJ
+XJ
+CS
+Wq
+AU
+Bp
+vD
+gF
+rw
+MP
+Ke
+wV
+Sv
+Du
+sZ
+Me
+Zo
+dN
+KI
+"}
+(24,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+up
+ye
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+WW
+WW
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+gF
+KI
+"}
+(25,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+vQ
+Ry
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(26,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Jv
+nw
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(27,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+up
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(28,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+kk
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(29,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+Vy
+MR
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(30,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+QV
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(31,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+TE
+Qv
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(32,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(33,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Xb
+mf
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(34,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+up
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(35,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+gV
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(36,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Zp
+dS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(37,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+up
+ua
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(38,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+aG
+KM
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(39,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+sG
+cu
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(40,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(41,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Fe
+qR
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(42,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Jv
+nw
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(43,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(44,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+up
+gO
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(45,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+nD
+mf
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(46,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+QV
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(47,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+cu
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(48,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+SI
+ua
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(49,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+DL
+mf
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(50,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+Fi
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(51,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+gV
+KM
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(52,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Zp
+dS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(53,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Fi
+ua
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(54,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+aG
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(55,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+Zp
+cu
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(56,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(57,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+oA
+kx
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(58,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Jv
+nw
+ye
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(59,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Vy
+fS
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(60,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Fi
+xU
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(61,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+Tl
+Vy
+cu
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(62,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+QV
+ua
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(63,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+Kk
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(64,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+zj
+sE
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(65,1,1) = {"
+KI
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+gF
+Fx
+ih
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(66,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+gF
+gF
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(67,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+gF
+gF
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(68,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+gF
+gF
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(69,1,1) = {"
+KI
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+sT
+gF
+gF
+gF
+gF
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+ME
+KI
+"}
+(70,1,1) = {"
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+KI
+"}

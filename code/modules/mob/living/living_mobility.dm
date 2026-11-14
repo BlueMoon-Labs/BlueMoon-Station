@@ -79,7 +79,7 @@
 	var/conscious = !IsUnconscious() && stat_conscious && !HAS_TRAIT(src, TRAIT_DEATHCOMA)
 
 	var/has_arms = get_num_arms()
-	var/has_legs = get_num_legs()
+	var/has_legs = get_num_supporting_limbs()
 	var/ignore_legs = get_leg_ignore()
 	var/stun = IsStun()
 	var/paralyze = IsParalyzed()
@@ -112,6 +112,9 @@
 	if(buckled)
 		if(buckled.buckle_lying != -1)
 			should_be_lying = buckled.buckle_lying
+
+	if(HAS_TRAIT(src, TRAIT_FORCED_STANDING))
+		should_be_lying = FALSE
 
 	if(should_be_lying)
 		set_body_position(LYING_DOWN)
@@ -150,7 +153,7 @@
 	else
 		mobility_flags |= MOBILITY_UI|MOBILITY_PULL
 
-	var/canitem_general = !paralyze && !stun && conscious && !(stat_softcrit) && !chokehold && !restrained && has_arms && !(combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
+	var/canitem_general = !paralyze && !stun && conscious && !(stat_softcrit) && !chokehold && !restrained && has_arms && !HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) && !(combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
 	if(canitem_general)
 		mobility_flags |= (MOBILITY_USE | MOBILITY_PICKUP | MOBILITY_STORAGE | MOBILITY_HOLD)
 	else
@@ -181,13 +184,20 @@
 
 	//Handle lying down, voluntary or involuntary
 	update_density()
+	var/old_layer = layer
 	if(lying)
 		set_resting(TRUE, TRUE, FALSE)
-		if(layer == initial(layer)) //to avoid special cases like hiding larvas.
+		if(get_unshifted_layer() == initial(layer)) //to avoid special cases like hiding larvas.
 			layer = LYING_MOB_LAYER //so mob lying always appear behind standing mobs
 	else
-		if(layer == LYING_MOB_LAYER)
+		if(get_unshifted_layer() == LYING_MOB_LAYER)
 			layer = initial(layer)
+	if(layer != old_layer)
+		if(isliving(pulledby))
+			var/mob/living/puller = pulledby
+			puller.update_pull_layer(src)
+		if(isliving(pulling))
+			update_pull_layer(pulling)
 	update_transform()
 	lying_prev = lying
 

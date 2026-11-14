@@ -145,6 +145,10 @@ GLOBAL_LIST_INIT(bibleitemstates, list("bible", "koran", "scrapbook", "bible",  
 	if (!heal_mode)
 		return ..()
 
+	if(brother_sever_rite_possible(user, M))
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(brother_sever_rite), user, M)
+		return
+
 	var/smack = 1
 
 	if (M.stat != DEAD)
