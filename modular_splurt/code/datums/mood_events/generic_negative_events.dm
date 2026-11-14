@@ -20,10 +20,6 @@
 	description = span_warning("Мне не очень комфортно носить это.\n")
 	mood_change = -4
 
-/datum/mood_event/public_nudity_shame
-	description = span_warning("Я обнажён на виду у других, это ужасно стыдно!\n")
-	mood_change = -6
-
 /datum/mood_event/dorsualiphobic_mood_negative
 	description = span_warning("Не могу позволить окружающим узнать, ношу я рюкзак или нет!\n")
 	mood_change = -4

@@ -38,28 +38,6 @@
 	var/name_phase = client ? times_fired : times_fired + life_periodic_phase
 	if(name_phase % 4 == 0)
 		name = get_visible_name()
-		check_public_nudity_shame()
-
-/mob/living/carbon/human/proc/check_public_nudity_shame()
-	if(HAS_TRAIT(src, TRAIT_NUDIST))
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "public_nudity_shame")
-		return
-	if(!is_groin_exposed())
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "public_nudity_shame")
-		return
-	var/clothed = 0
-	var/naked_others = 0
-	for(var/mob/living/carbon/human/H in view(7, src))
-		if(H == src)
-			continue
-		if(H.is_groin_exposed())
-			naked_others++
-		else
-			clothed++
-	if(clothed > 2 && naked_others == 0)
-		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "public_nudity_shame", /datum/mood_event/public_nudity_shame)
-	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "public_nudity_shame")
 
 /mob/living/carbon/human/calculate_affecting_pressure(pressure)
 	var/headless = !get_bodypart(BODY_ZONE_HEAD) //should the mob be perennially headless (see dullahans), we only take the suit into account, so they can into space.
