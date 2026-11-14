@@ -59,6 +59,8 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
+	// Гост из лобби получает клиента только после stoplag(); с нулём автокрио удалял его в этом окне как SSD с начала раунда.
+	lastclienttime = world.time
 	set_invisibility(GLOB.observer_default_invisibility)
 
 	add_verb(src, GLOB.ghost_verbs)

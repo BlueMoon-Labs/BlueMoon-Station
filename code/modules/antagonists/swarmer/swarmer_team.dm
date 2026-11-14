@@ -191,7 +191,8 @@ GLOBAL_DATUM(active_swarmer_team, /datum/team/swarmer_team)
 	for(var/analyzer_uid in swarmer_objects[/obj/structure/swarmer/organic_analyzer])
 		var/obj/structure/swarmer/organic_analyzer/analyzer = locateUID(analyzer_uid)
 		if(analyzer?.try_load_mob(target, gib_on_end))
-			LAZYADDASSOC(analyzer_mob_list, target_uid, 1)
+			LAZYINITLIST(analyzer_mob_list)
+			analyzer_mob_list[target_uid] += 1
 			return SWARMER_ANALYZE_FOUND
 
 	return SWARMER_ANALYZE_BUSY

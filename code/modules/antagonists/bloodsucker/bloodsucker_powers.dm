@@ -150,7 +150,15 @@
 	StartCooldown()
 
 /datum/action/cooldown/bloodsucker/proc/ContinueActive(mob/living/user, mob/living/target) // Used by loops to make sure this power can stay active.
-	return active && user && (!warn_constant_cost || user.blood_volume > 0)
+	return active && user && user == owner && !QDELETED(user) && (!warn_constant_cost || user.blood_volume > 0)
+
+/// Цикл активной силы спит в ActivatePower(): без выключения здесь он переживал снятие силы и тянул кровь с удалённого антага.
+/datum/action/cooldown/bloodsucker/Remove(mob/remove_from)
+	if(active)
+		if(remove_from && !QDELETED(remove_from))
+			DeactivatePower(remove_from)
+		active = FALSE
+	return ..()
 
 /datum/action/cooldown/bloodsucker/proc/RemoveAfterUse()
 	// Un-Learn Me! (GO HOME
@@ -212,6 +220,11 @@
 	// Don't run ..(), we don't want to engage the cooldown until we USE this power!
 	active = FALSE
 	UpdateButtons()
+
+/datum/action/cooldown/bloodsucker/targeted/Remove(mob/remove_from)
+	if(active)
+		DeactivateRangedAbility()
+	return ..()
 
 /datum/action/cooldown/bloodsucker/targeted/proc/DeactivateRangedAbility()
 	// Only Turned off when CLICK is disabled...aka, when you successfully clicked (or

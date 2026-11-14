@@ -852,7 +852,7 @@
 	schedule_auto_reopen()
 
 /obj/machinery/door/firedoor/proc/schedule_auto_reopen()
-	if(!auto_closed)
+	if(!auto_closed || QDELETED(src))
 		return
 	// Одноразовый таймер с самоперевзводом: TIMER_LOOP тут не годится, из него
 	// нельзя сняться собственным deltimer. Джиттер разводит двери, закрытые
@@ -922,7 +922,8 @@
 	qdel(src)
 
 /obj/machinery/door/firedoor/proc/latetoggle()
-	if(operating || machine_stat & NOPOWER || !nextstate)
+	// Анимация open()/close() спит, дверь могли удалить посреди неё.
+	if(QDELETED(src) || operating || machine_stat & NOPOWER || !nextstate)
 		return
 	switch(nextstate)
 		if(FIREDOOR_OPEN, FIREDOOR_OPEN_MANUAL)

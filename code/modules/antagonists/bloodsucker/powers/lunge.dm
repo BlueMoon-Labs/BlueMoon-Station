@@ -29,7 +29,7 @@
 	active = TRUE
 	user.toggle_throw_mode()
 	RegisterSignal(user, COMSIG_CARBON_TACKLED, PROC_REF(DelayedDeactivatePower))
-	while(B && ContinueActive(user))
+	while(!QDELETED(B) && ContinueActive(user))
 		B.AddBloodVolume(-0.1)
 		sleep(5)
 

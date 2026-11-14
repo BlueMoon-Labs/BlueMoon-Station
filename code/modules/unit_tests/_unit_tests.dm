@@ -494,6 +494,7 @@
 #include "roundtype_rotation.dm"
 #include "runechat_measure_refs.dm"
 #include "runechat_sanity.dm"
+#include "runtime_floods_2026_11.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
 #include "say_input_encoding.dm"

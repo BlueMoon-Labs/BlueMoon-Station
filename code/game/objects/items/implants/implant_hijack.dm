@@ -44,6 +44,11 @@
 /obj/item/implant/hijack/removed(mob/living/source, silent = FALSE, special = 0)
 	if(..())
 		REMOVE_TRAIT(source, TRAIT_HIJACKER, "implant")
+		if(toggled)
+			toggled = FALSE
+			if(source.click_intercept == src)
+				source.click_intercept = null
+			source.siliconaccesstoggle = FALSE
 		for (var/area/area in source.siliconaccessareas)
 			source.toggleSiliconAccessArea(area)
 			var/obj/machinery/power/apc/apc = area.get_apc()
@@ -54,7 +59,10 @@
 		if (ishuman(source))
 			var/mob/living/carbon/human/H = source
 			H.left_eye_color = left_eye_color
-			H.right_eye_color = left_eye_color
+			H.right_eye_color = right_eye_color
+			H.dna.update_ui_block(DNA_LEFT_EYE_COLOR_BLOCK)
+			H.dna.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
+			H.update_body()
 		return TRUE
 
 /obj/item/implant/hijack/proc/InterceptClickOn(mob/living/user,params,atom/object)
