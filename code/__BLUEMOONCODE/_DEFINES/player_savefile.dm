@@ -17,7 +17,10 @@
 #define PREF_JOURNAL_BLOCK_BEGIN "#single_prefs_block"
 /// Строка, которой заканчивается каждый дописанный блок журнала: блок без неё оборван и не читается.
 #define PREF_JOURNAL_BLOCK_END "#end_of_single_prefs_block"
-/// Ключ блока журнала с поколением: блок чужого поколения уже лежит в savefile.
+/// Ключ поколения в блоках журнала прошлого формата: при чтении пропускается.
 #define PREF_JOURNAL_EPOCH_KEY "__journal_epoch"
-/// Ключ savefile с поколением журнала.
+/// Ключ savefile со счётчиком слияний журнала: его подъём наверняка меняет отпечаток файла.
 #define PREF_JOURNAL_EPOCH_SAVE_KEY "journal_epoch"
+/// Ключ savefile с отпечатком файла до начатого слияния журнала: слияние, оборванное падением,
+/// доводит следующий мир.
+#define PREF_JOURNAL_MERGING_SAVE_KEY "journal_merging"

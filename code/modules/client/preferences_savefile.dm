@@ -1121,8 +1121,6 @@ GLOBAL_LIST_EMPTY(held_player_savefiles)
 GLOBAL_LIST_EMPTY(held_player_savefile_used)
 /// Таймер, который закрывает простаивающие savefile.
 GLOBAL_VAR(held_player_savefile_timer)
-/// Путь savefile -> поколение его журнала одиночных ключей; пути нет, пока файл не открывался.
-GLOBAL_LIST_EMPTY(player_savefile_journal_epochs)
 /// Путь savefile -> отпечаток файла, поверх которого этот мир пишет текущий журнал.
 GLOBAL_LIST_EMPTY(player_savefile_journal_bases)
 /// Путь savefile -> world.time первого блока текущего журнала.
@@ -1175,7 +1173,8 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	if(blocking_kind && !isnull(merged_keys))
 		blocking_call_finish(blocking_started_ms, "savefile (слияние журнала)", "ключей [merged_keys] [who]")
 	if(hold && CONFIG_GET(flag/player_savefile_hold))
-		hold_player_savefile(path, opened)
+		// Без blocking_kind открытие меряет вызывающий, и закрытие вытесненного файла уже в его замере.
+		hold_player_savefile(path, opened, !!blocking_kind)
 	return opened
 
 /datum/preferences/proc/open_savefile(blocking_kind)
@@ -1196,7 +1195,7 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
  * PLAYER_SAVEFILE_HOLD_IDLE без обращений. Этого хватает на пачки: вход (префы и персонаж),
  * переключение слотов в редакторе, спавн, конец раунда.
  */
-/proc/hold_player_savefile(path, savefile/opened)
+/proc/hold_player_savefile(path, savefile/opened, measure_evictions = TRUE)
 	GLOB.held_player_savefiles[path] = opened
 	GLOB.held_player_savefile_used[path] = world.time
 	while(length(GLOB.held_player_savefiles) > PLAYER_SAVEFILE_HOLD_MAX)
@@ -1210,19 +1209,20 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 		if(!oldest_path)
 			break
 		GLOB.player_savefile_evictions++
-		release_player_savefile(oldest_path, "вытеснение")
+		release_player_savefile(oldest_path, "вытеснение", measure_evictions)
 	if(!GLOB.held_player_savefile_timer)
 		GLOB.held_player_savefile_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(prune_held_player_savefiles)), PLAYER_SAVEFILE_HOLD_IDLE, TIMER_STOPPABLE)
 
-/// Закрывает удерживаемый savefile. Закрытие дописывает файл, поэтому идёт в учёт блокирующих вызовов.
-/proc/release_player_savefile(path, reason)
+/// Закрывает удерживаемый savefile. Закрытие дописывает файл, поэтому идёт в учёт блокирующих вызовов,
+/// если его не меряет вызывающий (measured = FALSE).
+/proc/release_player_savefile(path, reason, measured = TRUE)
 	if(!path)
 		return
 	GLOB.held_player_savefile_used -= path
 	var/savefile/held = GLOB.held_player_savefiles[path]
 	if(!held)
 		return
-	var/blocking_started_ms = blocking_call_start()
+	var/blocking_started_ms = measured ? blocking_call_start() : null
 	GLOB.held_player_savefiles -= path
 	// Последняя ссылка уходит здесь, и файл закрывается внутри замера.
 	held = null
@@ -1269,18 +1269,14 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
  *
  * Блок журнала - ExportText временного savefile: временный файл диска не ждёт (на линуксе
  * 30-60 мкс на блок), а ImportText возвращает значения в точности, вместе с типами и большими
- * числами, которые json_encode округлил бы до шести знаков. Блок помечен поколением журнала и
- * отпечатком savefile на момент первого блока (см. merge_player_savefile_journal). Журнал
+ * числами, которые json_encode округлил бы до шести знаков. Блок помечен отпечатком savefile на
+ * момент первого блока (см. merge_player_savefile_journal). Журнал
  * сливается в savefile при любом открытии файла и на ребуте, а начатый больше PREF_JOURNAL_MAX_AGE
  * назад не дописывается.
  *
  * Возвращает FALSE, если журнал сейчас не годится - тогда буфер пишется в сам savefile.
  */
 /datum/preferences/proc/journal_single_prefs()
-	// Поколение известно, только если этот мир открывал файл и уже слил в него прежний журнал.
-	var/epoch = GLOB.player_savefile_journal_epochs[path]
-	if(!isnum(epoch))
-		return FALSE
 	var/journal = single_pref_journal_path()
 	var/journal_exists = fexists(journal)
 	var/base = GLOB.player_savefile_journal_bases[path]
@@ -1302,7 +1298,6 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	for(var/key in pending)
 		var/value = pending[key]
 		WRITE_FILE(block[key], value)
-	WRITE_FILE(block[PREF_JOURNAL_EPOCH_KEY], epoch)
 	WRITE_FILE(block[PREF_JOURNAL_BASE_KEY], base)
 	if(!text2file("[PREF_JOURNAL_BLOCK_BEGIN]\n[block.ExportText("/")]\n[PREF_JOURNAL_BLOCK_END]\n", journal))
 		blocking_call_finish(blocking_started_ms, "savefile (журнал)", "не записан [parent?.ckey || "?"]")
@@ -1320,10 +1315,10 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 /proc/player_savefile_fingerprint(path)
 	return rustg_hash_file(RUSTG_HASH_XXH64, path)
 
-/// Значения журнала, записанного поверх именно этого состояния savefile (base - его отпечаток) и
-/// этого поколения; поздний блок перекрывает ранний. Блок читается от последней метки начала до
-/// метки конца: оборванный хвост и обрывок перед следующим блоком пропускаются.
-/proc/read_single_pref_journal(journal, epoch, base)
+/// Значения журнала, записанного поверх именно этого состояния savefile: base - его отпечаток сейчас,
+/// merging_base - отпечаток до оборванного слияния. Поздний блок перекрывает ранний. Блок читается от
+/// последней метки начала до метки конца: оборванный хвост и обрывок перед следующим блоком пропускаются.
+/proc/read_single_pref_journal(journal, base, merging_base)
 	var/list/values = list()
 	var/raw = file2text(journal)
 	if(!length(raw))
@@ -1340,15 +1335,13 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 		catch
 			continue
 		block.cd = "/"
-		var/block_epoch
 		var/block_base
-		READ_FILE(block[PREF_JOURNAL_EPOCH_KEY], block_epoch)
 		READ_FILE(block[PREF_JOURNAL_BASE_KEY], block_base)
-		if(block_epoch != epoch || !base || block_base != base)
+		if(!block_base || (block_base != base && block_base != merging_base))
 			GLOB.player_savefile_journal_stale_blocks++
 			continue
 		for(var/key in block.dir)
-			if(key == PREF_JOURNAL_EPOCH_KEY || key == PREF_JOURNAL_BASE_KEY)
+			if(key == PREF_JOURNAL_BASE_KEY || key == PREF_JOURNAL_EPOCH_KEY)
 				continue
 			var/value
 			READ_FILE(block[key], value)
@@ -1356,40 +1349,54 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	return values
 
 /**
- * Сливает журнал одиночных ключей в открытый savefile и снимает его. Без журнала только запоминает
- * поколение файла и возвращает null, иначе - число слитых ключей.
+ * Сливает журнал одиночных ключей в открытый savefile и снимает его. Возвращает число слитых ключей
+ * или null, если журнала нет или он оставлен до следующего открытия.
  *
  * Блок ложится в файл, только если файл с начала журнала не менялся: отпечаток файла совпадает с
  * записанным в блок. Так журнал, переживший падение сервера, не откатывает правки сборки, которая о
  * журнале не знает (откат или тест-мерж между раундами): она пишет в файл напрямую, и отпечаток
- * расходится. Сам этот мир пишет в файл только после слияния (см. open_player_savefile).
+ * расходится. Сам этот мир пишет в файл только после слияния (см. open_player_savefile). Без
+ * отпечатка (сбой хэша) свой журнал от устаревшего не отличить, и журнал не трогается.
  *
- * Порядок держит данные при падении на любом шаге: сначала значения журнала ложатся в savefile,
- * потом savefile получает следующее поколение (с этой записи блоки журнала считаются слитыми) и
- * только потом журнал удаляется.
+ * Порядок держит данные при падении на любом шаге. Сначала в savefile ложится метка с отпечатком до
+ * слияния: первая же запись меняет отпечаток, и по метке следующий мир узнаёт блоки оборванного
+ * слияния и доводит его. Потом значения журнала, потом подъём счётчика слияний вместе со снятием
+ * метки: новое значение счётчика наверняка меняет отпечаток, и блоки журнала с этой записи
+ * устарели. Только потом журнал удаляется.
  */
-/proc/merge_player_savefile_journal(path, savefile/target)
-	target.cd = "/"
-	var/epoch
-	READ_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
-	if(!isnum(epoch))
-		epoch = 0
-	GLOB.player_savefile_journal_epochs[path] = epoch
+/proc/merge_player_savefile_journal(path, savefile/target, fingerprint)
 	var/journal = "[path].journal"
 	if(!fexists(journal))
 		return null
+	// Журнал, начатый этим миром, дальше не дописывается: его разбирает это слияние.
 	GLOB.player_savefile_journal_bases -= path
 	GLOB.player_savefile_journal_started -= path
-	var/list/values = read_single_pref_journal(journal, epoch, player_savefile_fingerprint(path))
-	for(var/key in values)
-		var/value = values[key]
-		WRITE_FILE(target[key], value)
-	epoch++
-	WRITE_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], epoch)
-	GLOB.player_savefile_journal_epochs[path] = epoch
-	// Записи открытого файла и так переживают kill -9, но служебную часть файла BYOND дописывает
-	// на Flush или закрытии: журнал удаляем, когда файл дописан целиком (7 мкс на линуксе).
-	target.Flush()
+	if(isnull(fingerprint))
+		fingerprint = player_savefile_fingerprint(path)
+	if(!fingerprint)
+		log_world("Сейвы: нет отпечатка [path], журнал оставлен до следующего открытия")
+		return null
+	target.cd = "/"
+	var/merging_base
+	READ_FILE(target[PREF_JOURNAL_MERGING_SAVE_KEY], merging_base)
+	var/stale_before = GLOB.player_savefile_journal_stale_blocks
+	var/list/values = read_single_pref_journal(journal, fingerprint, merging_base)
+	var/stale_blocks = GLOB.player_savefile_journal_stale_blocks - stale_before
+	if(stale_blocks)
+		log_world("Сейвы: [journal] - отброшено устаревших блоков [stale_blocks], savefile менялся мимо журнала")
+	if(length(values) || merging_base)
+		if(!merging_base)
+			WRITE_FILE(target[PREF_JOURNAL_MERGING_SAVE_KEY], fingerprint)
+		for(var/key in values)
+			var/value = values[key]
+			WRITE_FILE(target[key], value)
+		var/merges
+		READ_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], merges)
+		WRITE_FILE(target[PREF_JOURNAL_EPOCH_SAVE_KEY], (isnum(merges) ? merges : 0) + 1)
+		target.dir -= PREF_JOURNAL_MERGING_SAVE_KEY
+		// Записи открытого файла и так переживают kill -9, но служебную часть файла BYOND дописывает
+		// на Flush или закрытии: журнал удаляем, когда файл дописан целиком (7 мкс на линуксе).
+		target.Flush()
 	fdel(journal)
 	GLOB.player_savefile_journal_merges++
 	return length(values)

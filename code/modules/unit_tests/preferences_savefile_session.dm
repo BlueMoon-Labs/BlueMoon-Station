@@ -50,7 +50,6 @@
 	release_player_savefile(test_path, "тест")
 	prefs.path = null
 	qdel(prefs)
-	GLOB.player_savefile_journal_epochs -= test_path
 	GLOB.player_savefile_journal_bases -= test_path
 	GLOB.player_savefile_journal_started -= test_path
 
@@ -397,6 +396,160 @@
 	TEST_ASSERT_EQUAL(stale_blocks, 1, "отброшенный блок журнала не посчитан")
 	TEST_ASSERT_EQUAL(merges_measured, 1, "слияние журнала на входе не попало в учёт блокирующих вызовов")
 	TEST_ASSERT(findtext(summary, "отброшено устаревших блоков [GLOB.player_savefile_journal_stale_blocks]"), "итог раунда не называет отброшенные блоки журнала")
+
+/// Падение посреди слияния журнала не теряет его остаток: следующий вход доводит слияние по метке.
+/datum/unit_test/preferences_single_pref_journal_survives_torn_merge
+
+/datum/unit_test/preferences_single_pref_journal_survives_torn_merge/Run()
+	var/test_path = savefile_session_test_path("journal_torn_merge")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	prefs.max_chat_length = 77
+	prefs.save_pref_var("max_chat_length")
+	prefs.flush_single_prefs()
+	var/journal_written = fexists("[test_path].journal")
+	savefile_session_test_crash(prefs)
+	// Слияние успело поставить метку и записать первое значение, второе - нет.
+	var/base = player_savefile_fingerprint(test_path)
+	var/savefile/torn = new /savefile(test_path)
+	torn.cd = "/"
+	WRITE_FILE(torn[PREF_JOURNAL_MERGING_SAVE_KEY], base)
+	WRITE_FILE(torn["tgui_panel_theme"], "light")
+	torn = null
+
+	var/stale_before = GLOB.player_savefile_journal_stale_blocks
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	var/reader_length = reader.max_chat_length
+	var/reader_theme = reader.tgui_panel_theme
+	qdel(reader)
+	var/on_disk_length = savefile_session_test_read(test_path, "max_chat_length")
+	var/marker_left = savefile_session_test_read(test_path, PREF_JOURNAL_MERGING_SAVE_KEY)
+	var/journal_left = fexists("[test_path].journal")
+	var/stale_blocks = GLOB.player_savefile_journal_stale_blocks - stale_before
+	fdel(test_path)
+	fdel("[test_path].journal")
+
+	TEST_ASSERT(journal_written, "сброс не записал журнал")
+	TEST_ASSERT_EQUAL(reader_length, 77, "остаток журнала после оборванного слияния не доехал до следующего входа")
+	TEST_ASSERT_EQUAL(on_disk_length, 77, "остаток журнала после оборванного слияния не лёг в savefile")
+	TEST_ASSERT_EQUAL(reader_theme, "light", "значение, слитое до обрыва, потерялось")
+	TEST_ASSERT_EQUAL(stale_blocks, 0, "блоки оборванного слияния сочтены устаревшими")
+	TEST_ASSERT_NULL(marker_left, "метка слияния осталась в savefile")
+	TEST_ASSERT(!journal_left, "доведённый журнал не удалён")
+
+/// Журнал, слитый другим процессом BYOND, не делает устаревшими блоки, которые этот мир пишет после.
+/datum/unit_test/preferences_single_pref_journal_survives_foreign_merge
+
+/datum/unit_test/preferences_single_pref_journal_survives_foreign_merge/Run()
+	var/test_path = savefile_session_test_path("journal_foreign_merge")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	prefs.flush_single_prefs()
+	// Другой процесс сливает журнал: значение в файле, счётчик слияний поднят, журнал снят.
+	var/savefile/other = new /savefile(test_path)
+	other.cd = "/"
+	var/other_epoch
+	READ_FILE(other[PREF_JOURNAL_EPOCH_SAVE_KEY], other_epoch)
+	WRITE_FILE(other["tgui_panel_theme"], "light")
+	WRITE_FILE(other[PREF_JOURNAL_EPOCH_SAVE_KEY], (isnum(other_epoch) ? other_epoch : 0) + 1)
+	other = null
+	fdel("[test_path].journal")
+
+	prefs.max_chat_length = 55
+	prefs.save_pref_var("max_chat_length")
+	prefs.flush_single_prefs()
+	var/journal_rewritten = fexists("[test_path].journal")
+	savefile_session_test_crash(prefs)
+
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	var/reader_length = reader.max_chat_length
+	var/reader_theme = reader.tgui_panel_theme
+	qdel(reader)
+	fdel(test_path)
+	fdel("[test_path].journal")
+
+	TEST_ASSERT(journal_rewritten, "сброс после чужого слияния не записал журнал")
+	TEST_ASSERT_EQUAL(reader_length, 55, "блок, записанный после чужого слияния, отброшен")
+	TEST_ASSERT_EQUAL(reader_theme, "light", "значение, слитое другим процессом, потерялось")
+
+/// Без отпечатка savefile (сбой хэша) журнал не трогается и доезжает со следующим открытием.
+/datum/unit_test/preferences_single_pref_journal_kept_without_fingerprint
+
+/datum/unit_test/preferences_single_pref_journal_kept_without_fingerprint/Run()
+	var/test_path = savefile_session_test_path("journal_no_fingerprint")
+	var/datum/preferences/savefile_session_test/prefs = new(test_path)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	prefs.release_savefile()
+
+	prefs.tgui_panel_theme = "light"
+	prefs.save_single_pref("tgui_panel_theme", "light")
+	prefs.flush_single_prefs()
+	savefile_session_test_crash(prefs)
+
+	var/stale_before = GLOB.player_savefile_journal_stale_blocks
+	var/savefile/opened = new /savefile(test_path)
+	var/merged = merge_player_savefile_journal(test_path, opened, "")
+	opened = null
+	var/journal_kept = fexists("[test_path].journal")
+	var/stale_blocks = GLOB.player_savefile_journal_stale_blocks - stale_before
+	var/datum/preferences/reader = savefile_session_test_reader(test_path)
+	var/reader_theme = reader.tgui_panel_theme
+	qdel(reader)
+	var/journal_left = fexists("[test_path].journal")
+	fdel(test_path)
+	fdel("[test_path].journal")
+
+	TEST_ASSERT_NULL(merged, "слияние без отпечатка что-то записало")
+	TEST_ASSERT(journal_kept, "журнал удалён, хотя отпечатка savefile не было")
+	TEST_ASSERT_EQUAL(stale_blocks, 0, "блоки без отпечатка сочтены устаревшими")
+	TEST_ASSERT_EQUAL(reader_theme, "light", "журнал не доехал со следующим открытием")
+	TEST_ASSERT(!journal_left, "журнал не слит со следующим открытием")
+
+/// Закрытие при вытеснении учитывается один раз: внутри замера записи - в записи, за замеренным открытием чтения - отдельно.
+/datum/unit_test/preferences_savefile_eviction_measured_once
+
+/datum/unit_test/preferences_savefile_eviction_measured_once/Run()
+	var/list/sessions = list()
+	for(var/index in 1 to PLAYER_SAVEFILE_HOLD_MAX)
+		var/datum/preferences/savefile_session_test/filler = new(savefile_session_test_path("evict_[index]"))
+		filler.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+		sessions += filler
+	var/datum/preferences/savefile_session_test/writer = new(savefile_session_test_path("evict_writer"))
+	sessions += writer
+	var/datum/preferences/savefile_session_test/reader = new(savefile_session_test_path("evict_reader"))
+	sessions += reader
+	reader.session_savefile = FALSE
+	reader.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	reader.session_savefile = TRUE
+
+	var/evictions_before = GLOB.player_savefile_evictions
+	var/closes_before = savefile_session_test_blocking_count("savefile (закрытие)")
+	var/writes_before = savefile_session_test_blocking_count("savefile (полные префы)")
+	writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/write_evictions = GLOB.player_savefile_evictions - evictions_before
+	var/write_closes = savefile_session_test_blocking_count("savefile (закрытие)") - closes_before
+	var/writes_measured = savefile_session_test_blocking_count("savefile (полные префы)") - writes_before
+
+	evictions_before = GLOB.player_savefile_evictions
+	closes_before = savefile_session_test_blocking_count("savefile (закрытие)")
+	reader.load_preferences(bypass_cooldown = TRUE)
+	var/read_evictions = GLOB.player_savefile_evictions - evictions_before
+	var/read_closes = savefile_session_test_blocking_count("savefile (закрытие)") - closes_before
+	QDEL_LIST(sessions)
+
+	TEST_ASSERT_EQUAL(write_evictions, 1, "запись сверх предела вытеснила не один файл")
+	TEST_ASSERT_EQUAL(writes_measured, 1, "полная запись не попала в учёт")
+	TEST_ASSERT_EQUAL(write_closes, 0, "закрытие при вытеснении посчитано и в записи, и отдельно")
+	TEST_ASSERT_EQUAL(read_evictions, 1, "чтение сверх предела вытеснило не один файл")
+	TEST_ASSERT_EQUAL(read_closes, 1, "закрытие при вытеснении за чтением не попало в учёт")
 
 /// Журнал, начатый больше PREF_JOURNAL_MAX_AGE назад, не дописывается: сброс уходит в savefile и сливает его.
 /datum/unit_test/preferences_single_pref_journal_age_limit
