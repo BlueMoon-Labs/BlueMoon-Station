@@ -595,12 +595,43 @@
 /mob/living/proc/cure_nearsighted(source)
 	REMOVE_TRAIT(src, TRAIT_NEARSIGHT, source)
 	if(!HAS_TRAIT(src, TRAIT_NEARSIGHT))
-		clear_fullscreen("nearsighted")
+		update_nearsighted_effect(toggle = FALSE)
 
 /mob/living/proc/become_nearsighted(source)
 	if(!HAS_TRAIT(src, TRAIT_NEARSIGHT))
-		overlay_fullscreen("nearsighted", /atom/movable/screen/fullscreen/scaled/impaired, 1)
+		update_nearsighted_effect(toggle = TRUE)
 	ADD_TRAIT(src, TRAIT_NEARSIGHT, source)
+
+/mob/living/proc/update_nearsighted_effect(severity = 2, toggle)
+	var/nearsigh_darkening = client?.prefs?.nearsigh_darkening
+	var/atom/movable/plane_master_controller/game_plane_master_controller
+	if(!hud_used)
+		nearsigh_darkening = TRUE
+	else
+		game_plane_master_controller = hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
+
+	if(isnull(toggle)) // переключение разных видов близорукости без изменений
+		if(fullscreens["nearsighted"])
+			toggle = TRUE
+		else if(hud_used)
+			var/list/filters = game_plane_master_controller.get_filters("nearsighted")
+			for(var/i in filters)
+				if(isnull(i)) // я сам поражаюсь, что оно выкидывает лист из нулей который ещё нужно проверить не дай бог и вправду есть то, что нужно
+					continue
+				toggle = TRUE
+				break
+
+	if(game_plane_master_controller)
+		game_plane_master_controller.remove_filter("nearsighted")
+	clear_fullscreen("nearsighted")
+
+	if(!toggle)
+		return
+
+	if(nearsigh_darkening)
+		overlay_fullscreen("nearsighted", /atom/movable/screen/fullscreen/scaled/impaired, severity)
+	else
+		game_plane_master_controller.add_filter("nearsighted", 1, radial_blur_filter(severity * 0.01, offset = 96))
 
 /mob/living/proc/cure_husk(source)
 	// Снятие хаска с не-хаска обязано быть no-op. Иначе всё, что зовёт cure_husk()

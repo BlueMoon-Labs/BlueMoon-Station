@@ -522,6 +522,7 @@
 					dirty_var = "nearsigh_darkening"
 					if(isliving(user))
 						var/mob/living/L = user
+						L.update_nearsighted_effect()
 				if("shift_invites")
 					shift_invites = !shift_invites
 					dirty_var = "shift_invites"
