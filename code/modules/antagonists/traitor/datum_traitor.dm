@@ -85,6 +85,10 @@
 		set_traitor_kind(get_random_traitor_kind())
 	SSticker.mode.traitors += owner
 
+/datum/antagonist/traitor/team_based/assign_traitor_kind()
+	set_traitor_kind(/datum/traitor_class/human/hijack/team_based)
+	SSticker.mode.traitors += owner
+
 /datum/antagonist/traitor/on_removal()
 	if(!silent && owner.current)
 		to_chat(owner.current,span_userdanger("You are no longer the [job_rank]!"))

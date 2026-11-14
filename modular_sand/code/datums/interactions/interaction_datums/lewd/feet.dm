@@ -54,9 +54,9 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry2.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
-						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	partner.handle_post_sex(LOW_LUST, null, user)
+						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	partner.handle_post_sex(LOW_LUST, null, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/grindmouth
 	description = "Ножки. Углубиться в ротик."
@@ -117,9 +117,9 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg',
-						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	partner.handle_post_sex(LOW_LUST, null, user)
+						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	partner.handle_post_sex(LOW_LUST, null, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/footjob
 	description = "Ножки. Подрочить одной ногой."
@@ -154,10 +154,10 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(partner.can_penetrating_genital_cum())
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/footjob/double
 	description = "Ножки. Подрочить двумя ногами."
@@ -189,10 +189,10 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(partner.can_penetrating_genital_cum())
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/footjob/vagina
 	description = "Ножка. Потереть киску."
@@ -225,6 +225,6 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_VAGINA) //SPLURT edit
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden) //SPLURT edit

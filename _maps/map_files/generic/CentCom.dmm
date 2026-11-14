@@ -26339,6 +26339,10 @@
 "qWG" = (
 /turf/open/indestructible/boss/air,
 /area/horny_antags/qareen)
+"rQn" = (
+/obj/effect/mob_spawn/rat_queen,
+/turf/open/indestructible/boss/air,
+/area/horny_antags/qareen)
 "qXC" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/floor/grass,
@@ -49217,7 +49221,7 @@ wIy
 puU
 qWG
 eyk
-qWG
+rQn
 con
 wIy
 aaa

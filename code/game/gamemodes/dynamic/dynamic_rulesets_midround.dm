@@ -321,12 +321,23 @@
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
+	if(!M.mind.add_antag_datum(antag_datum))
+		execution_failure_reason = "не удалось выдать роль предателя"
+		return FALSE
 	assigned += M.mind // mind, не моб: по assigned директор считает вклад в intensity
-	var/datum/antagonist/traitor/newTraitor = new
-	M.mind.add_antag_datum(newTraitor)
 	message_admins("[ADMIN_LOOKUPFLW(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	log_game("DYNAMIC: [key_name(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	return TRUE
+
+/datum/dynamic_ruleset/midround/autotraitor/team_based
+	name = "InteQ Evacuation Saboteur"
+	antag_datum = /datum/antagonist/traitor/team_based
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
+	weight = 1
+	earliest_start = 30 MINUTES
+	min_players = 25
+	max_occurrences = 1
+	repeatable = FALSE
 
 //////////////////////////////////////////////
 //                                          //
@@ -383,6 +394,63 @@
 	message_admins("[ADMIN_LOOKUPFLW(picked)] was selected by the [name] ruleset.")
 	log_game("DYNAMIC: [key_name(picked)] was selected by the [name] ruleset.")
 	return TRUE
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution
+	name = "Revolutionary Uprising"
+	antag_datum = /datum/antagonist/rev/head
+	antag_flag = "rev head mid"
+	antag_flag_override = ROLE_REV
+	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Bridge Officer")
+	required_candidates = 2
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
+	team_based_hourly = TRUE
+	weight = 3
+	cost = 20
+	intensity = 45
+	antag_heavy = TRUE
+	flags = HIGH_IMPACT_RULESET
+	persistent = TRUE
+	repeatable = FALSE
+	blocking_rules = list(/datum/dynamic_ruleset/roundstart/revs, /datum/dynamic_ruleset/latejoin/provocateur)
+	var/datum/team/revolution/revolution
+	var/finished
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution/can_convert(mob/living/player)
+	var/turf/player_turf = get_turf(player)
+	return ..() && player.mind && !player.mind.unconvertable && !(player.mind.assigned_role in GLOB.command_positions) \
+		&& player_turf && is_station_level(player_turf.z) && !HAS_TRAIT(player, TRAIT_MINDSHIELD)
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution/ready(forced = FALSE)
+	if(!length(SSjob.get_living_heads()))
+		ready_failure_reason = "нет глав для целей революции"
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution/execute()
+	trim_candidates()
+	if(!ready())
+		execution_failure_reason = ready_failure_reason
+		return FALSE
+	revolution = new
+	for(var/i in 1 to required_candidates)
+		var/mob/living/founder = pick_n_take(living_players)
+		if(revolution.equip_founder(founder.mind))
+			founder.mind.special_role = ROLE_REV_HEAD
+			assigned += founder.mind
+	if(!length(assigned))
+		execution_failure_reason = "не удалось выдать роли глав революции"
+		QDEL_NULL(revolution)
+		return FALSE
+	revolution.start_revolution()
+	return TRUE
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution/rule_process()
+	finished = revolution.process_victory(20)
+	if(!isnull(finished))
+		return RULESET_STOP_PROCESSING
+
+/datum/dynamic_ruleset/midround/crew_conversion/revolution/round_result()
+	revolution.round_result(finished)
 
 /// Ересь среди экипажа: мидраунд-зеркало латеджойн-контрабандиста для уже играющих.
 /datum/dynamic_ruleset/midround/crew_conversion/heretic
@@ -658,6 +726,7 @@
 	earliest_start = 35 MINUTES
 	cost = 25
 	antag_heavy = TRUE
+	team_based_hourly = TRUE
 	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
@@ -689,11 +758,10 @@
 	new_character.mind.special_role = "Nuclear Operative"
 	new_character.mind.assigned_role = "Nuclear Operative"
 	if (index == 1) // Our first guy is the leader
-		var/datum/antagonist/nukeop/leader/new_role = new
-		nuke_team = new_role.nuke_team
-		new_character.mind.add_antag_datum(new_role)
+		var/datum/antagonist/nukeop/leader/new_role = new_character.mind.add_antag_datum(/datum/antagonist/nukeop/leader)
+		nuke_team = new_role?.nuke_team
 	else
-		return ..()
+		new_character.mind.add_antag_datum(antag_datum, nuke_team)
 
 //////////////////////////////////////////////
 //                                          //
@@ -717,6 +785,7 @@
 	weight = 3
 	cost = 20
 	antag_heavy = TRUE
+	team_based_hourly = TRUE
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/clock_cap = list(1,1,1,2,3,4,5,5,5,5)
@@ -727,15 +796,21 @@
 	/// Сколько обращаемых культ пытается взять при достатке (цель clock_cap); execute берёт
 	/// столько, сколько есть, но не меньше required_candidates и не больше цели.
 	var/target_candidates = 0
+	var/datum/team/clockcult/main_clockcult
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/acceptable(population=0, threat=0)
-	if (locate(/datum/dynamic_ruleset/roundstart/clockcult) in mode.executed_rules)
+	if(GLOB.round_type != ROUNDTYPE_DYNAMIC_TEAMBASED && (locate(/datum/dynamic_ruleset/roundstart/clockcult) in mode.executed_rules))
 		return FALSE // Unavailable if clockies exist at round start
 	indice_pop = min(clock_cap.len, round(population/5)+1)
 	target_candidates = clock_cap[indice_pop]
 	required_candidates = min(target_candidates, minimum_candidates)
 	return ..()
+
+/datum/dynamic_ruleset/midround/ratvar_awakening/hourly_reinforcement_team()
+	var/datum/dynamic_ruleset/roundstart/clockcult/roundstart_cult = locate() in mode.executed_rules
+	var/datum/dynamic_ruleset/roundstart/cultwar/cultwar = locate() in mode.executed_rules
+	return main_clockcult || roundstart_cult?.main_clockcult || cultwar?.main_clockcult
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/director_preflight()
 	return director_preflight_candidates()
@@ -749,7 +824,7 @@
 /datum/dynamic_ruleset/midround/ratvar_awakening/trim_candidates()
 	..()
 	candidates = living_players
-	for(var/mob/living/player as anything in candidates)
+	for(var/mob/living/player as anything in candidates.Copy())
 		var/turf/player_turf = get_turf(player)
 		if(!player_turf || !is_station_level(player_turf.z))
 			candidates -= player //no ghost roles
@@ -763,28 +838,33 @@
 			candidates -= player //no double dipping
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/execute()
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
-	prune_stale_living_players()
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+	if(!load_reebe())
+		execution_failure_reason = "не удалось загрузить Риб"
 		return FALSE
-	// BLUEMOON ADD END
-	// Цель - target_candidates (полный clock_cap), но берём сколько есть сверх минимума.
-	var/to_convert = max(target_candidates, required_candidates)
-	for(var/i = 0; i < to_convert; i++)
-		if(!candidates.len)
-			break
+	trim_candidates()
+	var/minimum = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? required_candidates : 1
+	if(length(candidates) < minimum)
+		execution_failure_reason = "кандидаты культа Ратвара выбыли перед выдачей ролей"
+		return FALSE
+	var/datum/team/clockcult/team = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? hourly_reinforcement_team() : null
+	var/assigned_before = length(assigned)
+	var/to_convert = min(length(candidates), max(target_candidates, required_candidates))
+	for(var/i in 1 to to_convert)
 		var/mob/living/clock_antag = pick_n_take(candidates)
+		var/datum/antagonist/clockcult/servant = add_servant_of_ratvar(clock_antag, team = team)
+		if(!servant)
+			continue
+		team = servant.clock_team
 		assigned += clock_antag.mind
-	for(var/datum/mind/M in assigned) //add them to the clockwork team
-		add_servant_of_ratvar(M.current)
-		SSticker.mode.equip_servant(M.current)
-		SSticker.mode.greet_servant(M.current)
-		message_admins("[ADMIN_LOOKUPFLW(M.current)] was selected by the [name] ruleset and has been made into a midround clock cultist.")
-		log_game("DYNAMIC: [key_name(M.current)] was selected by the [name] ruleset and has been made into a midround clock cultist.")
-	load_reebe()
-	return ..()
+		mode.equip_servant(clock_antag)
+		mode.greet_servant(clock_antag)
+		message_admins("[ADMIN_LOOKUPFLW(clock_antag)] was selected by the [name] ruleset and has been made into a midround clock cultist.")
+		log_game("DYNAMIC: [key_name(clock_antag)] was selected by the [name] ruleset and has been made into a midround clock cultist.")
+	if(length(assigned) == assigned_before)
+		execution_failure_reason = "не удалось выдать роли культа Ратвара"
+		return FALSE
+	main_clockcult = team
+	return TRUE
 
 //////////////////////////////////////////////
 //                                          //
@@ -808,6 +888,7 @@
 	weight = 3
 	cost = 20
 	antag_heavy = TRUE
+	team_based_hourly = TRUE
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/blood_cap = list(1,1,2,3,4,5,6,6,6,6)
@@ -820,12 +901,17 @@
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/midround/narsie_awakening/acceptable(population=0, threat=0)
-	if (locate(/datum/dynamic_ruleset/roundstart/bloodcult) in mode.executed_rules)
+	if(GLOB.round_type != ROUNDTYPE_DYNAMIC_TEAMBASED && (locate(/datum/dynamic_ruleset/roundstart/bloodcult) in mode.executed_rules))
 		return FALSE
 	indice_pop = min(blood_cap.len, round(population/5)+1)
 	target_candidates = blood_cap[indice_pop]
 	required_candidates = min(target_candidates, minimum_candidates)
 	return ..()
+
+/datum/dynamic_ruleset/midround/narsie_awakening/hourly_reinforcement_team()
+	var/datum/dynamic_ruleset/roundstart/bloodcult/roundstart_cult = locate() in mode.executed_rules
+	var/datum/dynamic_ruleset/roundstart/cultwar/cultwar = locate() in mode.executed_rules
+	return main_cult || roundstart_cult?.main_cult || cultwar?.main_cult
 
 /datum/dynamic_ruleset/midround/narsie_awakening/director_preflight()
 	return director_preflight_candidates()
@@ -839,13 +925,14 @@
 /datum/dynamic_ruleset/midround/narsie_awakening/trim_candidates()
 	..()
 	candidates = living_players
-	for(var/mob/living/player as anything in candidates)
+	var/datum/team/cult/team = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? hourly_reinforcement_team() : null
+	for(var/mob/living/player as anything in candidates.Copy())
 		var/turf/player_turf = get_turf(player)
 		if(!player_turf || !is_station_level(player_turf.z))
 			candidates -= player //no ghost roles
 			continue
 
-		if(!is_eligible_servant(player))
+		if(!is_convertable_to_cult(player, team))
 			candidates -= player
 			continue
 
@@ -853,30 +940,41 @@
 			candidates -= player //no double dipping
 
 /datum/dynamic_ruleset/midround/narsie_awakening/execute()
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
-	prune_stale_living_players()
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+	trim_candidates()
+	var/minimum = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? required_candidates : 1
+	if(length(candidates) < minimum)
+		execution_failure_reason = "кандидаты культа Нар'Си выбыли перед выдачей ролей"
 		return FALSE
-	// BLUEMOON ADD END
-	// Цель - target_candidates (полный blood_cap), но берём сколько есть сверх минимума.
-	var/to_convert = max(target_candidates, required_candidates)
-	for(var/i = 0; i < to_convert; i++)
-		if(!candidates.len)
-			break
+	var/datum/team/cult/team = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? hourly_reinforcement_team() : null
+	var/new_team = !team
+	if(new_team)
+		team = new
+	var/assigned_before = length(assigned)
+	var/to_convert = min(length(candidates), max(target_candidates, required_candidates))
+	for(var/i in 1 to to_convert)
 		var/mob/living/blood_antag = pick_n_take(candidates)
-		assigned += blood_antag.mind
-	main_cult = new
-	for(var/datum/mind/M in assigned) //add them to the clockwork team
 		var/datum/antagonist/cult/new_cultist = new antag_datum()
-		new_cultist.cult_team = main_cult
+		new_cultist.cult_team = team
 		new_cultist.give_equipment = TRUE
-		M.add_antag_datum(new_cultist)
-		message_admins("[ADMIN_LOOKUPFLW(M.current)] was selected by the [name] ruleset and has been made into a midround blood cultist.")
-		log_game("DYNAMIC: [key_name(M.current)] was selected by the [name] ruleset and has been made into a midround blood cultist.")
-	main_cult.setup_objectives()
-	return ..()
+		if(!blood_antag.mind.add_antag_datum(new_cultist, team))
+			continue
+		assigned += blood_antag.mind
+		message_admins("[ADMIN_LOOKUPFLW(blood_antag)] was selected by the [name] ruleset and has been made into a midround blood cultist.")
+		log_game("DYNAMIC: [key_name(blood_antag)] was selected by the [name] ruleset and has been made into a midround blood cultist.")
+	if(length(assigned) == assigned_before)
+		if(new_team)
+			qdel(team)
+		execution_failure_reason = "не удалось выдать роли культа Нар'Си"
+		return FALSE
+	main_cult = team
+	if(new_team)
+		team.setup_objectives()
+		for(var/i in (assigned_before + 1) to length(assigned))
+			var/datum/mind/cultist_mind = assigned[i]
+			var/datum/antagonist/cult/cultist = cultist_mind.has_antag_datum(antag_datum)
+			cultist.add_objectives()
+			cultist_mind.announce_objectives()
+	return TRUE
 
 //////////////////////////////////////////////
 //                                          //
@@ -1367,19 +1465,9 @@
 	repeatable = TRUE
 
 /datum/dynamic_ruleset/midround/swarmers/execute()
-	var/list/spawn_locs = list()
-	for(var/x in GLOB.xeno_spawn)
-		var/turf/spawn_turf = x
-		var/light_amount = spawn_turf.get_lumcount()
-		if(light_amount < SHADOW_SPECIES_LIGHT_THRESHOLD)
-			spawn_locs += spawn_turf
-	if(!spawn_locs.len)
-		message_admins("No valid spawn locations found in GLOB.xeno_spawn, aborting swarmer spawning...")
-		return MAP_ERROR
-	var/obj/effect/mob_spawn/swarmer/spawner = new(get_turf(GLOB.the_gateway))
-	spawner.director_source_action = src
-	spawner.director_refund_cost = director_pending_cost
-	log_game("A Swarmer was spawned via Dynamic Mode.")
+	var/result = launch_swarmer_pod(src, director_pending_cost)
+	if(result != SUCCESSFUL_SPAWN)
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/swarmers/director_execution_detail(assigned_this_attempt)
@@ -1399,7 +1487,7 @@
 	antag_flag_override = ROLE_NINJA
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(0,0,0,0,5,5,4,4,3,0) //BLUEMOON CHANGES
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10

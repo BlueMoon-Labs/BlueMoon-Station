@@ -10,12 +10,12 @@ import { useState } from 'react';
 import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Icon, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea, Tooltip } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
-import { rebuildChat, saveChatToDisk } from '../chat/actions';
+import { clearChat, rebuildChat, saveChatToDisk } from '../chat/actions';
 import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
 import { decodeAppearance, encodeAppearance } from './appearanceCode';
 import { ChatPreview } from './ChatPreview';
-import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
+import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_LIMITS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 import { SettingsChannels } from './SettingsChannels';
 import { SettingsEffects } from './SettingsEffects';
@@ -198,6 +198,7 @@ export const SettingsGeneral = (props) => {
     enableTimeDividers,
     timeDividerInterval,
     newMessagesMarker,
+    visibleMessageLimit,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
   const [freeFont, setFreeFont] = useState(false);
@@ -205,6 +206,8 @@ export const SettingsGeneral = (props) => {
     f => f.id === timestampFormat);
   const selectedDivInterval = TIME_DIVIDER_INTERVALS.find(
     i => i.id === timeDividerInterval);
+  const selectedLimit = MESSAGE_LIMITS.find(
+    l => l.id === visibleMessageLimit) || MESSAGE_LIMITS.at(-1);
   return (
     <Section>
       <LabeledList>
@@ -274,6 +277,19 @@ export const SettingsGeneral = (props) => {
             onDrag={(e, value) => dispatch(updateSettings({
               lineHeight: value,
             }))} />
+        </LabeledList.Item>
+        <LabeledList.Item label="Лимит чата">
+          <Tooltip
+            content={'Сколько последних сообщений держать на экране.'
+              + ' Если чат тормозит, поставьте меньше.'}>
+            <Dropdown
+              selected={selectedLimit.name}
+              options={MESSAGE_LIMITS.map(l => l.name)}
+              onSelected={value => dispatch(updateSettings({
+                visibleMessageLimit: MESSAGE_LIMITS.find(
+                  l => l.name === value).id,
+              }))} />
+          </Tooltip>
         </LabeledList.Item>
       </LabeledList>
       <Divider />
@@ -417,6 +433,13 @@ export const SettingsGeneral = (props) => {
         onClick={() => dispatch(saveChatToDisk())}>
         Сохранить лог чата
       </Button>
+      <Button.Confirm
+        icon="trash"
+        content="Очистить чат"
+        confirmContent="Точно очистить?"
+        tooltip={'Убирает все сообщения из чата и сохранённой истории,'
+          + ' после перезахода они не вернутся.'}
+        onClick={() => dispatch(clearChat())} />
     </Section>
   );
 };

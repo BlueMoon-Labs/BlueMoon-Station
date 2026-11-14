@@ -148,6 +148,12 @@
 	if(iscarbon(M))
 		flash_carbon(M, user, 20, 1)
 		return TRUE
+	else if(isswarmer(M))
+		log_combat(user, M, "flashed", src)
+		M.flash_act(affect_silicon = TRUE, override_protection = TRUE)
+		M.Stun(SWARMER_FLASH_ATTACK_STUN, ignore_canstun = TRUE)
+		user.visible_message(span_danger("[user] перегружает сенсоры [M] флешером!"))
+		return TRUE
 	else if(issilicon(M))
 		var/mob/living/silicon/robot/R = M
 		if(!R.flash_protect)

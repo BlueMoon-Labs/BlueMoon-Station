@@ -233,3 +233,128 @@
 	TEST_ASSERT_EQUAL(length(new_queue), 2, "Merging into an empty queue should copy the new icons")
 	new_queue += third_item
 	TEST_ASSERT_EQUAL(length(source), 2, "Merging into an empty queue should return a copy instead of mutating the source list")
+
+/// Блокер клика сверху прячет вещь из списка и тогда, когда список собирается без IsObscured() на каждую вещь.
+/datum/unit_test/statpanel_listedturf_obscured_fast_path/Run()
+	var/turf/test_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/obj/item/below = allocate(/obj/item/clothing/mask/gas, test_turf)
+	var/obj/item/shifted = allocate(/obj/item/clothing/mask/gas, test_turf)
+	shifted.pixel_x = 5
+	shifted.pixel_y = -7
+	var/obj/item/above = allocate(/obj/item/clothing/mask/gas, test_turf)
+	var/obj/item/blocker = allocate(/obj/item, test_turf)
+	blocker.density = TRUE
+	blocker.flags_1 |= PREVENT_CLICK_UNDER_1
+	blocker.layer = below.layer + 1
+	shifted.layer = below.layer
+	above.layer = blocker.layer + 1
+
+	var/list/snapshot = SSstatpanels.build_listedturf_snapshot(test_turf, SEE_INVISIBLE_LIVING)
+	var/list/listed = list()
+	for(var/list/row as anything in snapshot["entries"])
+		listed[row[2]] = TRUE
+	for(var/atom/movable/thing as anything in list(below, shifted, above, blocker))
+		TEST_ASSERT_EQUAL(!!listed[REF(thing)], !thing.IsObscured(), "[thing] (слой [thing.layer], сдвиг [thing.pixel_x],[thing.pixel_y]): список панели расходится с IsObscured()")
+	TEST_ASSERT(!listed[REF(below)], "Вещь под блокером клика не должна попадать в список")
+	TEST_ASSERT(listed[REF(above)], "Вещь над блокером клика должна остаться в списке")
+
+/// Иконки панели осмотренного турфа рисует IconForge в своём потоке: DM-рисование (icon2html,
+/// getFlatIcon) шло одним куском на 30-270 мс и было главным источником длинных фаеров Stat Panels.
+/datum/unit_test/statpanel_icons_off_main_thread/Run()
+	var/mob/viewer = allocate(/mob/living/simple_animal/pet/dog/corgi)
+	var/obj/item/plain = allocate(/obj/item/clothing/mask/gas)
+	var/mob/living/carbon/monkey/flat_mob = allocate(/mob/living/carbon/monkey)
+	var/obj/item/layered = allocate(/obj/item/clothing/mask/gas)
+	for(var/i in 1 to 5)
+		var/mutable_appearance/extra = mutable_appearance('icons/obj/clothing/masks.dmi', "gas_alt")
+		extra.pixel_x = i
+		layered.add_overlay(extra)
+	var/list/subjects = list(plain, flat_mob, layered)
+
+	var/icons_before = GLOB.nondatum_ledger[NONDATUM_LEDGER_ICONS]
+	for(var/atom/subject as anything in subjects)
+		SSstatpanels.request_statpanel_icon(viewer, subject)
+	// Готовые задания забирает фаер подсистемы - тот же путь, что в игре.
+	var/waited = 0
+	while(length(SSstatpanels.icon_jobs) && waited < 100)
+		sleep(1)
+		waited++
+	TEST_ASSERT_EQUAL(length(SSstatpanels.icon_jobs), 0, "Задания IconForge не закончились за 10 секунд")
+
+	for(var/atom/subject as anything in subjects)
+		var/url = SSstatpanels.request_statpanel_icon(viewer, subject)
+		TEST_ASSERT(istext(url) && length(url), "[subject]: после задания иконка должна отдаваться готовым ассетом, получено [url]")
+	TEST_ASSERT_EQUAL(GLOB.nondatum_ledger[NONDATUM_LEDGER_ICONS] - icons_before, 0, "Иконки панели турфа рисовались в DM вместо IconForge")
+
+/// Описание для IconForge рисует то же, что старый DM-путь: icon2html() для базового стейта и
+/// getFlatIcon() для мобов и вещей с оверлеями.
+/datum/unit_test/statpanel_icon_spec_matches_dm/Run()
+	var/obj/item/plain = allocate(/obj/item/clothing/mask/gas)
+	var/mob/living/carbon/monkey/flat_mob = allocate(/mob/living/carbon/monkey)
+	flat_mob.setDir(EAST)
+	var/obj/item/layered = allocate(/obj/item/clothing/mask/gas)
+	layered.color = "#80ff80"
+	for(var/i in 1 to 4)
+		var/mutable_appearance/extra = mutable_appearance('icons/obj/clothing/masks.dmi', "gas_alt")
+		extra.pixel_x = i * 3
+		extra.pixel_y = -i
+		layered.add_overlay(extra)
+	var/mutable_appearance/glow = mutable_appearance('icons/obj/clothing/masks.dmi', "gas_alt")
+	glow.appearance_flags |= RESET_COLOR
+	glow.pixel_y = 20
+	layered.add_overlay(glow)
+
+	for(var/atom/subject as anything in list(plain, flat_mob, layered))
+		var/list/spec = SSstatpanels.statpanel_icon_spec(subject)
+		TEST_ASSERT(islist(spec), "[subject]: для файловой иконки должно строиться описание IconForge")
+		var/png_path = "data/statpanel_spec_test_[REF(subject)].png"
+		fdel(png_path)
+		var/list/result = rustg_iconforge_generate_headless(png_path, json_encode(list("s" = spec)), TRUE)
+		TEST_ASSERT(fexists(png_path), "[subject]: IconForge не нарисовал иконку ([json_encode(result)])")
+		var/icon/from_rust = icon(file(png_path))
+		var/icon/from_dm
+		var/overlay_count = length(subject.overlays)
+		if(ismob(subject) || overlay_count > 4)
+			from_dm = icon(getFlatIcon(subject, no_anim = TRUE), "", SOUTH, 1)
+		else
+			from_dm = icon(subject.icon, subject.icon_state, SOUTH, 1)
+		fdel(png_path)
+		TEST_ASSERT_EQUAL(from_rust.Width(), from_dm.Width(), "[subject]: ширина иконки")
+		TEST_ASSERT_EQUAL(from_rust.Height(), from_dm.Height(), "[subject]: высота иконки")
+		var/mismatches = 0
+		var/first_mismatch
+		for(var/x in 1 to from_dm.Width())
+			for(var/y in 1 to from_dm.Height())
+				if(!statpanel_test_pixels_close(from_rust.GetPixel(x, y), from_dm.GetPixel(x, y)))
+					mismatches++
+					first_mismatch ||= "([x],[y]) rust [from_rust.GetPixel(x, y)] dm [from_dm.GetPixel(x, y)]"
+		TEST_ASSERT_EQUAL(mismatches, 0, "[subject]: пиксели IconForge расходятся с DM, первый [first_mismatch]")
+
+/// Пиксели совпадают с точностью до округления смешивания.
+/// Кровь на предмете - оверлей из рантайм-иконки, IconForge его не нарисует: такую вещь целиком рисует DM.
+/datum/unit_test/statpanel_icon_runtime_overlay_uses_dm/Run()
+	var/mob/viewer = allocate(/mob/living/simple_animal/pet/dog/corgi)
+	var/obj/item/gun/energy/e_gun/clean = allocate(/obj/item/gun/energy/e_gun)
+	var/obj/item/gun/energy/e_gun/bloody = allocate(/obj/item/gun/energy/e_gun)
+	bloody.add_blood_DNA(list("UNKNOWN DNA" = "O+"))
+	TEST_ASSERT(length(bloody.overlays) > length(clean.overlays), "test premise: кровь должна лечь оверлеем")
+	TEST_ASSERT(islist(SSstatpanels.statpanel_icon_spec(clean)), "Чистая вещь с оверлеями из DMI должна идти через IconForge")
+	TEST_ASSERT_NULL(SSstatpanels.statpanel_icon_spec(bloody), "Вещь с кровью ушла в IconForge, который рисует её без пятна")
+	var/jobs_before = length(SSstatpanels.icon_jobs)
+	var/url = SSstatpanels.request_statpanel_icon(viewer, bloody)
+	TEST_ASSERT(istext(url) && length(url), "Вещь с кровью должна сразу получить иконку старым путём, получено [url]")
+	TEST_ASSERT_EQUAL(length(SSstatpanels.icon_jobs), jobs_before, "Для вещи с кровью запущено задание IconForge")
+
+/proc/statpanel_test_pixels_close(a, b)
+	var/list/rgba_a = a ? rgb2num(a) : list(0, 0, 0, 0)
+	var/list/rgba_b = b ? rgb2num(b) : list(0, 0, 0, 0)
+	if(length(rgba_a) < 4)
+		rgba_a += 255
+	if(length(rgba_b) < 4)
+		rgba_b += 255
+	if(!rgba_a[4] && !rgba_b[4])
+		return TRUE
+	for(var/i in 1 to 4)
+		if(abs(rgba_a[i] - rgba_b[i]) > 2)
+			return FALSE
+	return TRUE

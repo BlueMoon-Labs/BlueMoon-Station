@@ -140,6 +140,8 @@
 			else
 				for(var/obj/item/organ/O in organs)
 					organs -= O
+					if(current_type == TYPE_EXTRACT && O.organ_flags & ORGAN_UNREMOVABLE)
+						continue
 					if(current_type == TYPE_HEAL)
 						var/allowed_organ = FALSE
 						for(var/path in heal_allowed_organs)

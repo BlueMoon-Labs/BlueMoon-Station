@@ -179,12 +179,12 @@
 	general.fields["name"] = record_name
 	general.fields["rank"] = rank
 	general.fields["real_rank"] = rank
-	general.fields["gender"] = "Male"
+	general.fields["gender"] = GLOB.gender_to_string[MALE]
 	general.fields["age"] = "Unknown"
 	general.fields["species"] = "HK"
 	general.fields["fingerprint"] = "Нет: дроид"
-	general.fields["p_stat"] = "Active"
-	general.fields["m_stat"] = "Stable"
+	general.fields["p_stat"] = MED_RECORD_STATUS_PH_HEALTHY
+	general.fields["m_stat"] = MED_RECORD_STATUS_M_STABLE
 	if(ishuman(droid))
 		general.photo_source = new /datum/record_photo_source(droid, null, null)
 	GLOB.data_core.general += general
@@ -432,7 +432,10 @@
 	add_fingerprint(user)
 	user.visible_message(span_notice("[user] предъявляет [icon2html(src, viewers(user))] [name]. [license_text()]"), span_notice("Вы предъявляете лицензию. [license_text()]"))
 
-/obj/item/card/id/hk47_license/bank_examine(mob/user)
+/obj/item/card/id/hk47_license/examine_basic_info(mob/user)
+	return list()
+
+/obj/item/card/id/hk47_license/examine_banking_info(mob/user)
 	return list()
 
 /obj/item/card/id/hk47_license/bodyguard

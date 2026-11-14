@@ -61,6 +61,11 @@
 	return update_needed
 
 /datum/species/proc/grant_of_remove_coiling_action(mob/living/carbon/human/H, datum/action/found_action, var/tauric)
+	if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !H.get_bodypart(BODY_ZONE_L_LEG))
+		// Destroy снимет действие; повторная отрисовка при отмене обвивания не должна снять его снова.
+		if(!QDELETED(found_action))
+			qdel(found_action)
+		return
 	if(found_action && (!tauric || (H.dna.features["taur"] != "Naga" && H.dna.features["taur"] != "Naga (coiled)")))
 		found_action.Remove(H)
 

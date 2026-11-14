@@ -56,6 +56,26 @@
 	},
 /turf/open/floor/wood,
 /area/maintenance/bar)
+"aae" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 6
+	},
+/obj/machinery/pipedispenser,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"aaf" = (
+/obj/machinery/atmospherics/components/binary/valve{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel,
+/area/maintenance/department/crew_quarters/dorms)
+"aag" = (
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
 "aaj" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/computer/aifixer{
@@ -234868,11 +234888,11 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dPU
-dPU
-dPU
-dPU
+sdJ
+sdJ
+sdJ
+sdJ
+sdJ
 qYi
 hlY
 mIV
@@ -235125,7 +235145,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 lFa
 nwd
 xrX
@@ -235382,7 +235402,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 xrX
 kzj
 hnH
@@ -235639,7 +235659,7 @@ ssT
 ssT
 ssT
 ssT
-dPU
+sdJ
 mwC
 hLv
 mTi
@@ -235895,8 +235915,8 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dPU
+sdJ
+sdJ
 ior
 ior
 ior
@@ -236152,8 +236172,8 @@ ssT
 ssT
 ssT
 ssT
-dPU
-tRt
+sdJ
+aae
 cDP
 mlf
 cDP
@@ -236409,9 +236429,9 @@ ssT
 ssT
 ssT
 ssT
-dPU
-dFg
-tPC
+sdJ
+sIr
+aaf
 xzG
 rtg
 sIr
@@ -236666,9 +236686,9 @@ ssT
 ssT
 ssT
 ssT
-dPU
-ixt
-hFH
+sdJ
+ngy
+aag
 hTt
 kgV
 ngy

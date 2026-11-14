@@ -31,7 +31,7 @@
 	var/captured_envdry
 	var/turf/captured_virtual_hearer
 
-/mob/living/round_sound_listener/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo)
+/mob/living/round_sound_listener/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo, list/excluded_listeners)
 	captured_pressure = source_pressure
 	captured_echo = source_echo
 	captured_envwet = envwet

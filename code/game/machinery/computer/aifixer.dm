@@ -53,7 +53,7 @@
 
 	switch(action)
 		if("PRG_beginReconstruction")
-			if(occupier?.health < 100)
+			if(occupier && (occupier.health < 100 || occupier.stat == DEAD))
 				to_chat(usr, "<span class='notice'>Reconstruction in progress. This will take several minutes.</span>")
 				playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 25, FALSE)
 				active = TRUE
@@ -68,8 +68,7 @@
 
 	occupier.updatehealth()
 	if(occupier.health >= 0 && occupier.stat == DEAD)
-		occupier.revive(full_heal = FALSE, admin_revive = FALSE)
-		if(!occupier.radio_enabled)
+		if(occupier.revive(full_heal = FALSE, admin_revive = FALSE, medical_revive = TRUE) && !occupier.radio_enabled)
 			occupier.radio_enabled = TRUE
 			to_chat(occupier, span_warning("Your Subspace Transceiver has been enabled!"))
 	return occupier.health < 100
@@ -79,7 +78,7 @@
 		if(active)
 			var/oldstat = occupier.stat
 			active = Fix()
-			if(oldstat != occupier.stat)
+			if(oldstat != occupier.stat || !active)
 				update_icon()
 
 /obj/machinery/computer/aifixer/update_overlays()

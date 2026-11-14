@@ -327,7 +327,7 @@
 /datum/gear/donator/bm/noonarlong
 	name = "A long syndicate jacket."
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/toggle/noonarlong
+	path = /obj/item/clothing/suit/toggle/noonar/long
 	ckeywhitelist = list("noonar", "dasani2879")
 
 
@@ -653,7 +653,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/accessory/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska", "lander231", "exkessa")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska", "lander231", "exkessa", "vlonger")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -2660,10 +2660,10 @@
 	ckeywhitelist = list("rockymed")
 
 /datum/gear/donator/bm/kumikoshouko_case
-	name = "Kumiko Weapon Case"
+	name = "Supply Case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
-	ckeywhitelist = list("kumikoshouko", "ottasuka")
+	ckeywhitelist = list("kumikoshouko", "ottasuka", "foxrtotlimda", "1hollowknight1")
 
 /datum/gear/donator/bm/skull_half_mask
 	name = "Skull Gaiter"
@@ -2773,12 +2773,6 @@
 	path = /obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
 	ckeywhitelist = list("hartty", "meowonty")
 
-/datum/gear/donator/bm/kumiko_ncr_case
-	name = "NCR ranger clothes case"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
-
 /datum/gear/donator/bm/xeno_waller
 	name = "Xeno Wallet"
 	slot = ITEM_SLOT_BACKPACK
@@ -2832,6 +2826,12 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/crimson_dress
 	ckeywhitelist = list("sawwarrr", "angelnedemon", "hartty")
+
+/datum/gear/donator/bm/pumpkin_bag
+	name = "Pumpkin Bag"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/spooky
+	ckeywhitelist = list("kumikoshouko")
 
 /datum/gear/donator/bm/br_pilotsuit_mk1
 	name = "BLACKROSE© Mark.I Pilot Suit"

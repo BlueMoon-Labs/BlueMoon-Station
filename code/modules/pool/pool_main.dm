@@ -5,8 +5,9 @@
 	icon_state = "pool_tile"
 	// BLUEMOON: pools are sunken basins. This blocks walking out (see
 	// /turf/open/CanPass in the liquids module) and makes falling in a real drop,
-	// so the only way out is climbing/dragging yourself up.
+	// so the only way out is climbing/dragging yourself up. You can still jump out.
 	turf_height = -30
+	pass_flags_self = PASSJUMP
 	heat_capacity = INFINITY
 	footstep = FOOTSTEP_WATER
 	barefootstep = FOOTSTEP_WATER

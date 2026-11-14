@@ -160,8 +160,8 @@
 		return
 	robotic_healing_in_process = TRUE
 	if(user == H)
-		user.visible_message("<span class='notice'>[user] starts to fix some of the dents on [H]'s [affecting.name].</span>",
-			"<span class='notice'>You start fixing some of the dents on [H]'s [affecting.name].</span>")
+		user.visible_message(span_notice("[user] начинает устранять вмятины: [affecting.ru_name] персонажа [H]."),
+			span_notice("Вы начинаете устранять вмятины: [affecting.ru_name] персонажа [H]."))
 		if(!do_mob(user, H, 20))
 			robotic_healing_in_process = FALSE
 			return
@@ -173,7 +173,7 @@
 	if(affecting.threshhold_brute_passed)
 		heal_amount = min(heal_amount, damage - affecting.threshhold_passed_mindamage)
 		if(!heal_amount)
-			to_chat(user, span_notice("[user == H ? "Ваша [affecting.ru_name]" : "[affecting.ru_name_capital] [H]"] подверглась сильным внутренним повреждениям. Требуется углубленный ремонт с хирургической точностью."))
+			to_chat(user, span_notice("Обнаружены сильные внутренние повреждения: [affecting.ru_name] персонажа [H]. Требуется углублённый ремонт с хирургической точностью."))
 			robotic_healing_in_process = FALSE
 			return
 	if(item_heal_robotic(H, user, heal_amount, 0))

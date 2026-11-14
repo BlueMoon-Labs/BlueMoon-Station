@@ -99,7 +99,7 @@
 
 ///Ударов до разрушения преграды по реальной формуле attack_animal -> take_damage; 0 - урона не будет.
 /datum/obstacle_policy/proc/get_smash_hits_needed(mob/living/simple_animal/simple_pawn, obj/blocker)
-	if(blocker.obj_integrity <= 0)
+	if(!simple_pawn.can_damage_objects || blocker.obj_integrity <= 0)
 		return 0
 	var/attack_damage = simple_pawn.obj_damage || simple_pawn.melee_damage_upper
 	var/hit_damage = blocker.run_obj_armor(attack_damage, simple_pawn.melee_damage_type, MELEE, null, simple_pawn.armour_penetration)

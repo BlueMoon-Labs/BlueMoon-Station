@@ -438,7 +438,7 @@
 
 /obj/effect/mob_spawn/human/ghostcafeVR/special(mob/living/carbon/human/new_spawn)
 	if(new_spawn.client)
-		new_spawn.client.prefs.copy_to(new_spawn)
+		new_spawn.client.prefs.copy_to(new_spawn, initial_spawn = TRUE)
 		var/datum/outfit/O = new /datum/outfit/ghostcafeVR()
 		O.equip(new_spawn, FALSE, new_spawn.client)
 		SSjob.equip_loadout(null, new_spawn)

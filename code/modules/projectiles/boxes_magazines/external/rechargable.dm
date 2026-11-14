@@ -5,10 +5,21 @@
 	ammo_type = /obj/item/ammo_casing/caseless/laser
 	caliber = LASER
 	max_ammo = 20
+	/// Заряд батареи на один выстрел, когда магазин заряжают индуктором.
+	var/charge_per_round = 100
 
 /obj/item/ammo_box/magazine/recharge/Initialize(mapload)
 	. = ..()
 	update_icon()
+
+/// Досоздаёт до amount выстрелов, не выше max_ammo. Возвращает, сколько добавлено.
+/obj/item/ammo_box/magazine/recharge/proc/add_charged_rounds(amount = 1)
+	. = 0
+	while(. < amount && stored_ammo.len < max_ammo)
+		stored_ammo += new ammo_type(src)
+		.++
+	if(.)
+		update_icon()
 
 /obj/item/ammo_box/magazine/recharge/update_icon_state()
 	icon_state = "[initial(icon_state)]-[round(ammo_count(),4)]"

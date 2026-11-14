@@ -13,6 +13,8 @@
 
 	/// Самый глубокий построенный этаж.
 	var/built_depth = -1
+	/// Стопка на экране владельца: только тогда новые мастера и их реле сразу уходят клиенту.
+	var/shown = FALSE
 
 /datum/plane_master_group/New(key, map = "")
 	. = ..()
@@ -34,12 +36,13 @@
 	build_plane_masters(built_depth + 1, depth)
 	if(!our_hud)
 		return
-	for(var/plane_key in plane_masters)
-		if(before[plane_key])
-			continue
-		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
-		plane.set_new_hud(our_hud)
-		plane.show_to(our_hud.mymob)
+	//Худ мастера получили в конструкторе, а не показанную стопку покажет show_hud().
+	if(shown)
+		for(var/plane_key in plane_masters)
+			if(before[plane_key])
+				continue
+			var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
+			plane.show_to(our_hud.mymob)
 	for(var/controller_key in our_hud.plane_master_controllers)
 		var/atom/movable/plane_master_controller/controller = our_hud.plane_master_controllers[controller_key]
 		controller.adopt_plane_masters()
@@ -54,7 +57,8 @@
 	QDEL_LIST_ASSOC_VAL(plane_masters)
 	return ..()
 
-/datum/plane_master_group/proc/attach_to(datum/hud/viewing_hud)
+/// show = FALSE: стопку покажет первый show_hud() худа, иначе вход в моба показывал бы её дважды.
+/datum/plane_master_group/proc/attach_to(datum/hud/viewing_hud, show = TRUE)
 	if(viewing_hud.master_groups[key])
 		stack_trace("Группа plane master'ов с ключом [key] уже есть на худе [viewing_hud.mymob]")
 		return
@@ -64,7 +68,8 @@
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
 		plane.set_new_hud(viewing_hud)
-	show_hud()
+	if(show)
+		show_hud()
 	our_hud.eye_z_changed(force = TRUE)
 
 /datum/plane_master_group/proc/refresh_hud()
@@ -73,11 +78,13 @@
 	our_hud?.eye_z_changed(force = TRUE)
 
 /datum/plane_master_group/proc/hide_hud()
+	shown = FALSE
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
 		plane.hide_from(our_hud?.mymob)
 
 /datum/plane_master_group/proc/show_hud()
+	shown = TRUE
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
 		plane.show_to(our_hud?.mymob)
@@ -126,7 +133,8 @@
 		wanted_depth = min(wanted_depth, new_offset + depth_limit)
 	ensure_depth(wanted_depth)
 
-	var/mob/our_mob = our_hud?.mymob
+	//Реле не показанной стопки клиенту не отдаются: их выставит show_hud() по force_hidden.
+	var/mob/our_mob = shown ? our_hud?.mymob : null
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
 		//До решения о скрытии: плита по этажу глаза выбирает, рисоваться или уехать наверх.

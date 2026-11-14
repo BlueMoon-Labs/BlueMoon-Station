@@ -887,7 +887,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/pistol/enforcer/ded
 
 /obj/item/gun/energy/e_gun/hos/Anabel
 	name = "\improper Anabel"
-	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode to fire a taser shot with a cooldown.</span>"
+	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode, or use the action menu, to fire a taser shot with a cooldown.</span>"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "Anabel"
 	ammo_x_offset = 0
@@ -1849,7 +1849,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stuncutlass)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/storage/box/kumikoshouko_case
-	name = "Kumiko weapon case"
+	name = "Old case"
 	desc = "A military-grade weapon case issued to a single collector. The engraving on the lid reads: 'One box to rule them all'. Contains a complete set of personal weapon modification kits."
 	icon_state = "ammobox"
 
@@ -1867,6 +1867,17 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stuncutlass)
 	new /obj/item/modkit/stuncutlass_kit(src)
 	new /obj/item/modkit/trenchknife_kit(src)
 	new /obj/item/modkit/bowie_kit(src)
+	new /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster(src)
+	new	/obj/item/modkit/kumiko_ncr_riot(src)
+	new	/obj/item/modkit/kumiko_ncr_bulletproof(src)
+	new	/obj/item/modkit/kumiko_ncr_armor_vest(src)
+	new	/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet(src)
+	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
+	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)
+	new /obj/item/modkit/snub(src)
+	new /obj/item/modkit/anathema(src)
+	new /obj/item/modkit/irae(src)
+	new /obj/item/modkit/apostle(src)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2031,3 +2042,50 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/black_hole)
 	icon_state = "supershort-shotgun_kit"
 	product = /obj/item/gun/ballistic/shotgun/shorty/black_hole
 	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
+
+/obj/item/gun/ballistic/revolver/Apostle/old
+	name = "Old revolver"
+	desc = "Pretty old revolver"
+	icon_state = "old"
+
+/obj/item/gun/ballistic/revolver/Dies_Irae/old
+	name = "Old riffle loaded revolver"
+	desc = "Old but powerful revolver"
+	icon_state = "old dies"
+
+/obj/item/gun/ballistic/revolver/anathema/old
+	name = "Cowboy revolver"
+	desc = "Old and almost ancient relic of rhe past, pretty hard"
+	icon_state = "old anathema"
+
+/obj/item/gun/ballistic/revolver/Apostle/snub/old
+	name = "Old snub revolver"
+	desc = "Old and small"
+	icon_state = "old snub"
+
+/obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem
+	name = "Requiem Arms \'Crying Lightning\'"
+	desc = "Крупнокалиберный на вид револьвер из крайне ограниченной серии производства Requiem Arms. Обладает массивным серебристым корпусом с удлинённым стволом и рукояткой, украшенной изящной гравировкой в виде расправленных крыльев. Несмотря на внушительные габариты, рассчитан под патрон .41 калибра. Вес револьвера заметно превышает ожидания от подобного боеприпаса, а его конструкция отличается излишней громоздкостью и непростым обслуживанием. Выстрел сопровождается оглушительным грохотом. Тем не менее, добротная отделка, необычный силуэт и редкость выпуска делают Crying Lightning весьма примечательным экземпляром."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "requiem-melatonin"
+	item_state = "requiem-melatonin"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_shoot.ogg"
+	load_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg"
+	load_empty_sound = "modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg"
+	unique_reskin = list()
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem)
+
+/obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	load_sound = pick('modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_one.ogg', 'modular_bluemoon/fluffs/sound/weapon/crying_lightning_reload_two.ogg')
+	load_empty_sound = load_sound
+	return ..()
+
+/obj/item/modkit/melatonin_requiem_kit
+	name = "Requiem Arms \'Crying Lightning\' Kit"
+	desc = "A modkit for making an Apostle into a Requiem Arms \'Crying Lightning\'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/gun/ballistic/revolver/Apostle/melatonin_requiem
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle)

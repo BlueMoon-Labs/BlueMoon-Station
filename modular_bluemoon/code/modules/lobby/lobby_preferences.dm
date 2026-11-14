@@ -36,7 +36,7 @@
 	WRITE_FILE(.["bm_disclaimer_accepted"], bm_disclaimer_accepted)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/load_preferences_data(savefile/S)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE

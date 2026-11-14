@@ -159,8 +159,7 @@
 
 		if(istype(charging, /obj/item/ammo_box/magazine/recharge))
 			var/obj/item/ammo_box/magazine/recharge/R = charging
-			if(R.stored_ammo.len < R.max_ammo)
-				R.stored_ammo += new R.ammo_type(R)
+			if(R.add_charged_rounds(1))
 				use_power(1000 * recharge_coeff)
 				using_power = TRUE
 			update_appearance()

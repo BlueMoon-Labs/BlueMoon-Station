@@ -97,6 +97,7 @@
 	apc.ui_act("breaker", list(), ui)
 	usr = null
 	TEST_ASSERT(apc.operating && sector_area.powered(LIGHT), "Рубильник возвращает питание.")
+	run_deferred_light_power_changes(TRUE)
 	for(var/obj/machinery/light/lamp as anything in working_lamps)
 		if(lamp.status == LIGHT_OK)
 			TEST_ASSERT(lamp.on, "Лампа [AREACOORD(lamp)] снова светит.")

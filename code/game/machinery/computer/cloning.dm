@@ -106,7 +106,7 @@
 		if(pod.occupant)
 			continue	//how though?
 
-		if(pod.growclone(R.fields["ckey"], R.fields["name"], R.fields["UI"], R.fields["SE"], R.fields["mind"], R.fields["blood_type"], R.fields["mrace"], R.fields["features"], R.fields["factions"], R.fields["quirks"], R.fields["bank_account"], R.fields["traumas"]))
+		if(pod.growclone(R.fields["ckey"], R.fields["name"], R.fields["UI"], R.fields["SE"], R.fields["mind"], R.fields["blood_type"], R.fields["mrace"], R.fields["features"], R.fields["factions"], R.fields["quirks"], R.fields["bank_account"], R.fields["traumas"], R.fields["UE"], R.fields["nameless"]))
 			SetCloningMessage("[R.fields["name"]] => Цикл клонирования в процессе...", "warning")
 			records -= R
 
@@ -267,7 +267,7 @@
 			SetCloningMessage("Ошибка: невозможно начать цикл клонирования.","danger")
 		else if(pod.occupant)
 			SetCloningMessage("Warning: цикл клонирования уже в процессе.","info")
-		else if(pod.growclone(C.fields["ckey"], C.fields["name"], C.fields["UI"], C.fields["SE"], C.fields["mind"], C.fields["blood_type"], C.fields["mrace"], C.fields["features"], C.fields["factions"], C.fields["quirks"], C.fields["bank_account"], C.fields["traumas"]))
+		else if(pod.growclone(C.fields["ckey"], C.fields["name"], C.fields["UI"], C.fields["SE"], C.fields["mind"], C.fields["blood_type"], C.fields["mrace"], C.fields["features"], C.fields["factions"], C.fields["quirks"], C.fields["bank_account"], C.fields["traumas"], C.fields["UE"], C.fields["nameless"]))
 			SetCloningMessage("[C.fields["name"]] => цикл клонирования был начат...","success")
 			sound = 'sound/machines/terminal_prompt_confirm.ogg'
 			records.Remove(C)
@@ -445,6 +445,7 @@
 	R.fields["ckey"] = mob_occupant.ckey
 	R.fields["name"] = mob_occupant.real_name
 	R.fields["id"] = copytext_char(md5(mob_occupant.real_name), 2, 6)
+	R.fields["nameless"] = dna.nameless
 	R.fields["UE"] = dna.unique_enzymes
 	R.fields["UI"] = dna.uni_identity
 	R.fields["SE"] = dna.mutation_index
@@ -515,7 +516,7 @@
 		SetCloningMessage("Цикл клонирования уже в процессе.","info")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 	else
-		pod.growclone(null, mob_occupant.real_name, dna.uni_identity, dna.mutation_index, null, dna.blood_type, clone_species, dna.features, mob_occupant.faction)
+		pod.growclone(null, mob_occupant.real_name, dna.uni_identity, dna.mutation_index, null, dna.blood_type, clone_species, dna.features, mob_occupant.faction, unique_enzymes = dna.unique_enzymes, nameless = dna.nameless)
 		SetCloningMessage("[mob_occupant.real_name] => данные клонирования отправлена к капсуле.","success")
 		playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 

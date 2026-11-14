@@ -12,6 +12,7 @@
 	var/brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони
 	var/brc_worn = FALSE  // BLUEMOON ADD - был ли бонус фактически применён при надевании
 	var/blood_overlay_type = "suit"
+	/// Существительное части одежды, которую мы toggle'им, например: "Кнопки", "Рукава"
 	var/togglename = null
 	var/suittoggled = FALSE
 	limb_integrity = 0 // disabled for most exo-suits

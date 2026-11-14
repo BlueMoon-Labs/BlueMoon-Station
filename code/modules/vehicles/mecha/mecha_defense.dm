@@ -42,7 +42,8 @@
 
 	if(attack_dir)
 		var/facing_modifier = get_armour_facing(abs(dir2angle(dir) - dir2angle(attack_dir)))
-		booster_damage_modifier /= facing_modifier
+		// Атака со спины не усиливает урон, но снижает шанс отражения.
+		booster_damage_modifier /= max(facing_modifier, 1)
 		booster_deflection_modifier *= facing_modifier
 	if(prob(deflect_chance * booster_deflection_modifier))
 		visible_message(span_danger("Броня [src] отражает атаку!"))
@@ -51,9 +52,8 @@
 	if(.)
 		. *= booster_damage_modifier
 
-/obj/vehicle/sealed/mecha/attack_hand(mob/living/user)
-	. = ..()
-	if(.)
+/obj/vehicle/sealed/mecha/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
+	if(..())
 		return
 	user.do_attack_animation(src, ATTACK_EFFECT_PUNCH)
 	playsound(loc, 'sound/weapons/tap.ogg', 40, TRUE, -1)
@@ -64,13 +64,21 @@
 	return attack_hand(user)
 
 /obj/vehicle/sealed/mecha/attack_alien(mob/living/user)
+	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
+		return
+	var/mob/living/carbon/alien/humanoid/X = user
 	log_message("Атака ксеноморфа. Нападавший: [user].", LOG_MECHA, color="red")
 	playsound(src.loc, 'sound/weapons/slash.ogg', 100, TRUE)
-	attack_generic(user, 15, BRUTE, MELEE, 0)
+	attack_generic(user, X.meleeSlashSAPower, BRUTE, MELEE, 10)
 
 /obj/vehicle/sealed/mecha/attack_animal(mob/living/simple_animal/user)
+	if(!user.can_damage_objects)
+		return FALSE
+	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
+		return
 	log_message("Атака животного. Нападавший: [user].", LOG_MECHA, color="red")
 	if(!user.melee_damage_upper && !user.obj_damage)
+		user.DelayNextAction(CLICK_CD_MELEE, flush = !user.client)
 		user.emote("custom", message = "[user.friendly_verb_continuous] [src].")
 		return FALSE
 	else
@@ -287,7 +295,8 @@
 
 /obj/vehicle/sealed/mecha/crowbar_act(mob/living/user, obj/item/I)
 	..()
-	if(user.a_intent == INTENT_HARM)
+	// Оборудование меха устанавливается через attackby, даже если оно работает как лом.
+	if(user.a_intent == INTENT_HARM || istype(I, /obj/item/mecha_parts))
 		return
 	. = TRUE
 	if(construction_state != MECHA_LOOSE_BOLTS && construction_state != MECHA_OPEN_HATCH)

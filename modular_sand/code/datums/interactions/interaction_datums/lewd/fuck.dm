@@ -42,18 +42,18 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_VAGINA, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_VAGINA, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
-		try_apply_knot(user, partner, CUM_TARGET_VAGINA) // Проверка на узлирование.
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
+		try_apply_knot(user, partner, CUM_TARGET_VAGINA, is_hidden = is_hidden) // Проверка на узлирование.
 
 	if(prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
 		switch(partner.a_intent)
@@ -61,16 +61,16 @@
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> подрагивает от удовольствия."),
 						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> стонет, выгибаясь навстречу."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			if(INTENT_HARM)
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
 						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> кусает <b>[user]</b> за плечо."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> злится, пытаясь прекратить происходящее.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> злится, пытаясь прекратить происходящее.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			else
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 /datum/interaction/lewd/fuck/anal
 	description = "Член. Проникнуть в задницу."
@@ -112,11 +112,11 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
-		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
+		try_apply_knot(user, partner, CUM_TARGET_ANUS, is_hidden = is_hidden) // Проверка на узлирование.
 
 	if(prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
 		switch(partner.a_intent)
@@ -124,24 +124,24 @@
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> подрагивает от удовольствия."),
 						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> стонет, выгибаясь навстречу."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			if(INTENT_HARM)
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
 						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> кусает <b>[user]</b> за плечо."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> злится, пытаясь прекратить происходящее.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> злится, пытаясь прекратить происходящее.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			else
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	// BLUEMOON EDIT START
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_ANUS, null, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_ANUS, null, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
-		partner.handle_post_sex(NORMAL_LUST, null, user, CUM_TARGET_ANUS) //SPLURT edit
-		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
+		partner.handle_post_sex(NORMAL_LUST, null, user, CUM_TARGET_ANUS, is_hidden = is_hidden) //SPLURT edit
+		try_apply_knot(user, partner, CUM_TARGET_ANUS, is_hidden = is_hidden) // Проверка на узлирование.
 	// BLUEMOON EDIT END
 
 /datum/interaction/lewd/breastfuck
@@ -181,14 +181,14 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_BREASTS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_BREASTS, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden) //SPLURT edit
 	//BLUEMOON ADD START
 	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
-		partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_BREASTS)
+		partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_BREASTS, is_hidden = is_hidden)
 	//BLUEMOON ADD END
 
 /datum/interaction/lewd/footfuck
@@ -227,10 +227,10 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS) //SPLURT edit
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/footfuck/double
 	description = "Член. Потереться о ботинки."
@@ -265,10 +265,10 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS) //SPLURT edit
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/footfuck/vag
 	description = "Вагина. Потереться о ботинок."
@@ -302,9 +302,9 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(),vision_distance = distance)
-	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, ORGAN_SLOT_VAGINA) //SPLURT edit
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(),vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, ORGAN_SLOT_VAGINA, is_hidden = is_hidden) //SPLURT edit
 
 /datum/interaction/lewd/double_penetration
 	description = "Члены. Двойное проникновение"
@@ -342,27 +342,28 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
 		ignored_mobs = user.get_unconsenting(),
-		vision_distance = distance
+		vision_distance = distance,
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
 	// Эффекты возбуждения и оргазма
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
-		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 
-	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
-	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus")
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus", is_hidden = is_hidden)
 
-	try_apply_knot(user, partner, CUM_TARGET_VAGINA)
-	try_apply_knot(user, partner, CUM_TARGET_ANUS)
+	try_apply_knot(user, partner, CUM_TARGET_VAGINA, is_hidden = is_hidden)
+	try_apply_knot(user, partner, CUM_TARGET_ANUS, is_hidden = is_hidden)
 
 	if(prob(10))
-		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> выгибается от переполняющих ощущений, не выдерживая двойного проникновения!"), vision_distance = distance)
+		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> выгибается от переполняющих ощущений, не выдерживая двойного проникновения!"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 /datum/interaction/lewd/double_vaginal
 	description = "Члены. Двойное вагинальное проникновение"
@@ -398,22 +399,23 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
 		ignored_mobs = user.get_unconsenting(),
 		vision_distance = distance,
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
-	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
 
-	try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+	try_apply_knot(user, partner, CUM_TARGET_VAGINA, is_hidden = is_hidden)
 
 	if(prob(10))
-		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> стонет, чувствуя, как оба члена растягивают [partner.ru_ego()] влагалище!"), vision_distance = distance)
+		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> стонет, чувствуя, как оба члена растягивают [partner.ru_ego()] влагалище!"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 /datum/interaction/lewd/double_anal
 	description = "Члены. Двойной анал."
@@ -448,22 +450,23 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/bang1.ogg',
-		'modular_sand/sound/interactions/bang2.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/bang2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
 		ignored_mobs = user.get_unconsenting(),
 		vision_distance = distance,
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 	)
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
-	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus")
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus", is_hidden = is_hidden)
 
-	try_apply_knot(user, partner, CUM_TARGET_ANUS)
+	try_apply_knot(user, partner, CUM_TARGET_ANUS, is_hidden = is_hidden)
 
 	if(prob(10))
-		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> вскрикивает, не выдерживая давления двух членов в заднице!"), vision_distance = distance)
+		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> вскрикивает, не выдерживая давления двух членов в заднице!"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 /datum/interaction/lewd/knot_fuck
 	description = "Член. Проникнуть в вагину с узлированием"
@@ -499,16 +502,16 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA, is_hidden = is_hidden)
 
 	//  ГАРАНТИРОВАННОЕ узлирование
-		try_apply_knot(user, partner, CUM_TARGET_VAGINA, force_knot = TRUE)
+		try_apply_knot(user, partner, CUM_TARGET_VAGINA, force_knot = TRUE, is_hidden = is_hidden)
 
 /datum/interaction/lewd/knot_anal_fuck
 	description = "Член. Анал с узлированием."
@@ -543,13 +546,13 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
+		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus")
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus", is_hidden = is_hidden)
 
-		try_apply_knot(user, partner, CUM_TARGET_ANUS, force_knot = TRUE)
+		try_apply_knot(user, partner, CUM_TARGET_ANUS, force_knot = TRUE, is_hidden = is_hidden)
 

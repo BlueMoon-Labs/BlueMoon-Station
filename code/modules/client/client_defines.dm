@@ -194,6 +194,8 @@
 	var/list/seen_messages
 	/// viewsize datum for holding our view size
 	var/datum/view_data/view_size
+	/// Очередь подгонки вьюпорта, см. queue_fit_viewport()
+	var/datum/viewport_fit_queue/viewport_fit_queue
 
 	/// our current tab
 	var/stat_tab
@@ -281,11 +283,6 @@
 
 	///Are we locking our movement input?
 	var/movement_locked = FALSE
-
-	// null - Not used at this moment
-	var/show_popup_menus_before_disable
-	// Не даёт обработчику наведения вернуть контекстное меню до выхода из меха.
-	var/mecha_popup_menus_disabled = FALSE
 
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)

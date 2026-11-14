@@ -1021,7 +1021,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 	. = ..()
 	bot_reset()
 
-/mob/living/simple_animal/bot/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+/mob/living/simple_animal/bot/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..())
 		update_icon()
 		. = 1

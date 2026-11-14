@@ -21,12 +21,8 @@
 	var/list/standby_apcs
 	/// SMES charging from this net this cycle; they take the leftover in reset().
 	var/list/smes_inputs
-	/// world.time создания: отложенные auto_propogate_cut_cable по нему понимают,
-	/// что их фрагмент уже перестроил другой колбек этого же тика (см. cable.dm)
-	var/created_at = 0
 
 /datum/powernet/New()
-	created_at = world.time
 	SSmachines.powernets += src
 
 /datum/powernet/Destroy()

@@ -22,9 +22,10 @@
 /proc/sanitize_num_clamp(number, min=0, max=1, default=0, quantize=0)
 	if(!isnum(number))
 		return default
-	. = clamp(number, min, max)
-	if(quantize)
-		. = round(number, quantize)
+	var/clamped = clamp(number, min, max)
+	if(!quantize)
+		return clamped
+	return clamp(round(clamped / quantize + 0.5) * quantize, min, max)
 
 /proc/sanitize_text(text, default="")
 	if(istext(text))

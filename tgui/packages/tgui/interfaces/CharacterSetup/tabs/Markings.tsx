@@ -184,7 +184,7 @@ const MarkingLimbCard = (props: { limb: MarkingLimb; total: number }) => {
     >
       <Stack align="center" mb={1}>
         <Stack.Item grow>
-          <Box bold>{limb.label}</Box>
+          <Box bold className="CharacterSetup__limb-title">{limb.label}</Box>
         </Stack.Item>
         <Stack.Item>
           <Button.Confirm
@@ -211,13 +211,19 @@ const MarkingLimbCard = (props: { limb: MarkingLimb; total: number }) => {
         />
       </Box>
 
-      {!hasMarkings ? (
-        <Box color="label">На этой части тела нет разметок.</Box>
-      ) : (
-        limb.markings.map((row) => (
-          <MarkingRowView key={row.index} row={row} total={total} limb={limb.name} />
-        ))
-      )}
+      <Box
+        className="CharacterSetup__limb-markings"
+        height="280px"
+        overflowY="auto"
+      >
+        {!hasMarkings ? (
+          <Box color="label">На этой части тела нет разметок.</Box>
+        ) : (
+          limb.markings.map((row) => (
+            <MarkingRowView key={row.index} row={row} total={total} limb={limb.name} />
+          ))
+        )}
+      </Box>
     </Box>
   );
 };

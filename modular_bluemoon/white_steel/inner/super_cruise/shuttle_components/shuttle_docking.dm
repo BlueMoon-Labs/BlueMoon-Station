@@ -53,25 +53,52 @@
 	GLOB.navigation_computers -= src
 
 /obj/machinery/computer/shuttle_flight/proc/GrantActions(mob/living/user)
-	if(off_action)
-		off_action.target = user
-		off_action.Grant(user)
-		actions += off_action
+	if(QDELETED(off_action))
+		off_action = new
+	if(QDELETED(rotate_action))
+		rotate_action = new
+	if(QDELETED(place_action))
+		place_action = new
+	if(QDELETED(docker_action))
+		docker_action = new
+	for(var/datum/action/granted as anything in list(off_action, rotate_action, place_action, docker_action))
+		granted.target = user
+		granted.Grant(user)
+		actions += granted
+		// Кнопка удаляется вместе с телом оператора, а переменная консоли держала бы её
+		RegisterSignal(granted, COMSIG_PARENT_QDELETING, PROC_REF(forget_action), override = TRUE)
 
-	if(rotate_action)
-		rotate_action.target = user
-		rotate_action.Grant(user)
-		actions += rotate_action
+/obj/machinery/computer/shuttle_flight/proc/forget_action(datum/action/source)
+	SIGNAL_HANDLER
+	actions -= source
+	if(off_action == source)
+		off_action = null
+	if(rotate_action == source)
+		rotate_action = null
+	if(place_action == source)
+		place_action = null
+	if(docker_action == source)
+		docker_action = null
 
-	if(place_action)
-		place_action.target = user
-		place_action.Grant(user)
-		actions += place_action
+/obj/machinery/computer/shuttle_flight/proc/forget_port(datum/source)
+	SIGNAL_HANDLER
+	if(my_port == source)
+		my_port = null
 
-	if(docker_action)
-		docker_action.target = user
-		docker_action.Grant(user)
-		actions += docker_action
+// У шаттла и станции две консоли с одним shuttlePortId. После защиты портов от
+// z-clear старый порт больше не исчезает вместе с руиной, поэтому перед стыковкой
+// убираем дубликаты: иначе getDock() возвращает самый старый порт на прошлой руине.
+/obj/machinery/computer/shuttle_flight/proc/clear_stale_custom_ports()
+	for(var/obj/docking_port/stationary/stale_port in SSshuttle.stationary.Copy())
+		if(stale_port == my_port || stale_port.shuttle_id != shuttlePortId)
+			continue
+		stale_port.delete_after = TRUE
+		stale_port.shuttle_id = null
+		stale_port.name = "Старый [stale_port.name]"
+		// Занятый порт удалится при отлёте пристыкованного шаттла. Свободный можно
+		// удалить сразу; его Destroy() сам очистит previous/destination у шаттлов.
+		if(!stale_port.get_docked())
+			qdel(stale_port, TRUE)
 
 /obj/machinery/computer/shuttle_flight/proc/CreateEye()
 	shuttle_port = SSshuttle.getShuttle(shuttleId)
@@ -207,6 +234,7 @@
 
 	///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
 	if(my_port)
+		UnregisterSignal(my_port, COMSIG_PARENT_QDELETING)
 		my_port.delete_after = TRUE
 		my_port.shuttle_id = null
 		my_port.name = "Старый [my_port.name]"
@@ -224,8 +252,10 @@
 		my_port.dwidth = shuttle_port.dwidth
 		my_port.hidden = shuttle_port.hidden
 		my_port.register(TRUE)
+		RegisterSignal(my_port, COMSIG_PARENT_QDELETING, PROC_REF(forget_port))
 	my_port.setDir(the_eye.dir)
 	my_port.forceMove(locate(eyeobj.x, eyeobj.y, eyeobj.z))
+	clear_stale_custom_ports()
 
 	if(current_user.client)
 		current_user.client.images -= the_eye.placed_images

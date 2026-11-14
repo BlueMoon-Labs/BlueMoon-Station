@@ -17,4 +17,5 @@
 		SI._resolveCmpKind()
 
 		SI.binarySort(fromIndex, toIndex, fromIndex)
+		SI.L = null
 	return L

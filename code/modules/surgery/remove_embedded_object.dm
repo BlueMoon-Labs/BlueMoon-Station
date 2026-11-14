@@ -1,8 +1,8 @@
 /datum/surgery/embedded_removal
 	name = "Удаление застрявших объектов"
-	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/remove_object)
-	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD)
 	icon_state = "embeddedobject"
+	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/remove_object)
+	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD,BODY_ZONE_PRECISE_GROIN)
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
 	ignore_clothes = TRUE
 
@@ -10,30 +10,43 @@
 	requires_bodypart_type = BODYPART_ROBOTIC
 	steps = list(/datum/surgery_step/mechanic_open, /datum/surgery_step/open_hatch, /datum/surgery_step/remove_object)
 
+/datum/surgery/embedded_removal/get_target_bodypart(mob/living/patient, zone)
+	if(zone == BODY_ZONE_PRECISE_GROIN && HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY))
+		return patient.get_bodypart(BODY_ZONE_L_LEG)
+	return ..()
+
+/datum/surgery/embedded_removal/New(surgery_target, surgery_location, surgery_bodypart)
+	if(surgery_target)
+		surgery_bodypart = get_target_bodypart(surgery_target, surgery_location)
+	return ..()
+
 /datum/surgery/embedded_removal/can_start(mob/user, mob/living/patient, obj/item/tool)
 	. = ..()
 	if(!.)
 		return .
-	var/obj/item/bodypart/BP = patient.get_bodypart(user.zone_selected)
-	if(!BP || !BP?.embedded_objects.len)
+	// У обычного тела пах остаётся отдельным доступом без этой операции.
+	if(user.zone_selected == BODY_ZONE_PRECISE_GROIN && !HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY))
+		return FALSE
+	var/obj/item/bodypart/BP = get_target_bodypart(patient, user.zone_selected)
+	if(!length(BP?.embedded_objects))
 		. = FALSE
 
 /datum/surgery_step/remove_object
 	name = "Удалить застрявшие объекты"
 	time = 32
 	accept_hand = 1
-	var/obj/item/bodypart/L = null
 
 /datum/surgery_step/remove_object/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	L = surgery.operated_bodypart
+	var/obj/item/bodypart/L = surgery.operated_bodypart
 	if(L)
-		display_results(user, target, "<span class='notice'>You look for objects embedded in [target]'s [parse_zone(user.zone_selected)]...</span>",
-			"[user] looks for objects embedded in [target]'s [parse_zone(user.zone_selected)].",
-			"[user] looks for something in [target]'s [parse_zone(user.zone_selected)].")
+		display_results(user, target, span_notice("Вы ищете застрявшие предметы в части тела [target]: [L.ru_name]..."),
+			"[user] ищет застрявшие предметы в части тела [target]: [L.ru_name].",
+			"[user] ищет что-то в части тела [target]: [L.ru_name].")
 	else
-		user.visible_message("[user] looks for [target]'s [parse_zone(user.zone_selected)].", "<span class='notice'>You look for [target]'s [parse_zone(user.zone_selected)]...</span>")
+		user.visible_message("[user] ищет часть тела [target]: [ru_parse_zone(target_zone)].", span_notice("Вы ищете часть тела [target]: [ru_parse_zone(target_zone)]..."))
 
 /datum/surgery_step/remove_object/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	var/obj/item/bodypart/L = surgery.operated_bodypart
 	if(L)
 		if(ishuman(target))
 			var/mob/living/carbon/human/H = target
@@ -43,12 +56,12 @@
 				H.remove_embedded_object(I)
 
 			if(objects > 0)
-				display_results(user, target, "<span class='notice'>You successfully remove [objects] objects from [H]'s [L.name].</span>",
-					"[user] successfully removes [objects] objects from [H]'s [L]!",
-					"[user] successfully removes [objects] objects from [H]'s [L]!")
+				display_results(user, target, span_notice("Вы извлекаете застрявшие предметы ([objects]) из части тела [H]: [L.ru_name]."),
+					"[user] извлекает застрявшие предметы из части тела [H]: [L.ru_name].",
+					"[user] извлекает застрявшие предметы из части тела [H]: [L.ru_name].")
 			else
-				to_chat(user, "<span class='warning'>You find no objects embedded in [H]'s [L]!</span>")
+				to_chat(user, span_warning("В части тела [H] ([L.ru_name]) нет застрявших предметов!"))
 
 	else
-		to_chat(user, "<span class='warning'>You can't find [target]'s [parse_zone(user.zone_selected)], let alone any objects embedded in it!</span>")
+		to_chat(user, span_warning("Не удаётся найти часть тела [target] ([ru_parse_zone(target_zone)]) и застрявшие в ней предметы!"))
 	return TRUE

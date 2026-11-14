@@ -21,6 +21,9 @@
 		return
 	. = ..()
 
+/obj/item/gps/off
+	starton = FALSE
+
 /obj/item/gps/embed_gps
 	name = "Tracking bug"
 	desc = "Грубо обрезанная, маленькая версия обычного ГПС с очень слабой батарейкой и слоем клея на множестве сторон."
@@ -68,13 +71,22 @@
 	icon_state = "gps-s"
 	gpstag = "SCI0"
 
+/obj/item/gps/science/off
+	starton = FALSE
+
 /obj/item/gps/engineering
 	icon_state = "gps-e"
 	gpstag = "ENG0"
 
+/obj/item/gps/engineering/off
+	starton = FALSE
+
 /obj/item/gps/medical
 	icon_state = "gps-med"
 	gpstag = "MED0"
+
+/obj/item/gps/medical/off
+	starton = FALSE
 
 /obj/item/gps/mining
 	icon_state = "gps-m"

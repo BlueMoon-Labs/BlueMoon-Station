@@ -160,7 +160,7 @@
 		if(!isnull(GLOB.data_core.general))
 			for(var/datum/data/record/R in GLOB.data_core.general)
 				if(R.fields["name"] == gamer.name)
-					R.fields["m_stat"] = "*Unstable*"
+					R.fields["m_stat"] = MED_RECORD_STATUS_M_UNSTABLE
 					return
 
 /obj/machinery/computer/arcade/orion_trail/ui_interact(mob/user, datum/tgui/ui)

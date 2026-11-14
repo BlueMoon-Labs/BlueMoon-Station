@@ -12,7 +12,7 @@
 	icon_state = "uniform_parade"
 	item_state = "uniform_parade"
 	body_parts_covered = CHEST|ARMS
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/garland_suit
@@ -56,7 +56,7 @@
 	icon_state = "rainbow_warm_poncho"
 	cold_protection = CHEST
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	togglename = "style"
+	togglename = "края"
 
 /obj/item/clothing/suit/toggle/warm_poncho/green
 	name = "warm green poncho"
@@ -82,7 +82,7 @@
 	item_state = "polysuitjacket"
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/polyrobes
@@ -105,7 +105,7 @@
 	item_state = "poly_labcoat"
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/hospitaller

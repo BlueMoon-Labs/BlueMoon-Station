@@ -33,7 +33,7 @@
 	display_name = "Advanced Non-Standard Ballistics"
 	description = "Ballistic ammunition for non-standard firearms. Usually the ones you don't have nor want to be involved with."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
-	design_ids = list("10mm","10mmap","10mminc","10mmhp", /*"sl357","sl357ap", "sl357dumdum",*/ "m45","bolt_clip","m10apbox","m10firebox","m10hpbox", "10mm_large", "10mm_large_soporific", "combatinducer")
+	design_ids = list("10mm","10mmap","10mminc","10mmhp", /*"sl357","sl357ap", "sl357dumdum",*/ "m45","bolt_clip","m10apbox","m10firebox","m10hpbox", "10mm_large", "10mm_large_soporific", "combatinducer", "mod_mind_transfer")
 	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 25000) //This gives sec lethal mags/clips for guns from traitors, space, or anything in between.
 

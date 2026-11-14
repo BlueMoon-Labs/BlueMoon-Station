@@ -25,6 +25,7 @@
 		new /datum/data/mining_equipment("Explorer's Webbing",			/obj/item/storage/belt/mining,										500,			"Equipment"),
 		new /datum/data/mining_equipment("Larger Ore Bag",				/obj/item/storage/bag/ore/large,									500,			"Equipment"),
 		new /datum/data/mining_equipment("Mining Conscription Kit",		/obj/item/storage/backpack/duffelbag/mining/conscript,				1000,			"Equipment"),
+		new /datum/data/mining_equipment("Шахтёрский MOD",				/obj/item/mod/control/pre_equipped/mining,							1800,			"Equipment"),
 		new /datum/data/mining_equipment("Spare Suit Voucher",			/obj/item/suit_voucher,												2000,			"Equipment"),
 		new /datum/data/mining_equipment("Mining Hardsuit",				/obj/item/clothing/suit/space/hardsuit/mining,						2000,			"Equipment"),
 		new /datum/data/mining_equipment("Jump Boots",					/obj/item/clothing/shoes/bhop,										2500,			"Equipment"),

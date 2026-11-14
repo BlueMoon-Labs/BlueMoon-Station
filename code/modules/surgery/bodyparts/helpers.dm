@@ -7,6 +7,8 @@
 
 	if(!zone)
 		zone = BODY_ZONE_CHEST
+	if(zone == BODY_ZONE_R_LEG && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		zone = BODY_ZONE_L_LEG
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/L = X
 		if(L.body_zone == zone)
@@ -70,6 +72,8 @@
 	return TRUE
 
 /mob/living/carbon/has_left_leg()
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		return FALSE
 	var/obj/item/bodypart/l_leg = get_bodypart(BODY_ZONE_L_LEG)
 	if(l_leg)
 		return TRUE
@@ -80,6 +84,8 @@
 	return TRUE
 
 /mob/living/carbon/has_right_leg()
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		return FALSE
 	var/obj/item/bodypart/r_leg = get_bodypart(BODY_ZONE_R_LEG)
 	if(r_leg)
 		return TRUE
@@ -114,6 +120,8 @@
 	return 2
 
 /mob/living/carbon/get_num_legs(check_disabled = TRUE)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		return 0
 	. = 0
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/affecting = X
@@ -123,6 +131,20 @@
 		if(affecting.body_part == LEG_LEFT)
 			if(!check_disabled || !affecting.disabled)
 				.++
+
+// Нормированная опора для движения отделена от наличия ног и ступней.
+/mob/proc/get_num_supporting_limbs(check_disabled = TRUE)
+	return get_num_legs(check_disabled)
+
+/mob/living/carbon/get_num_supporting_limbs(check_disabled = TRUE)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		if(check_disabled && mind && !HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+			return 0
+		var/obj/item/bodypart/tail = get_bodypart(BODY_ZONE_L_LEG)
+		return (tail && (!check_disabled || !tail.disabled)) ? 2 : 0
+	if(check_disabled && ishuman(src) && HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+		return 0
+	return ..()
 
 //sometimes we want to ignore that we don't have the required amount of legs.
 /mob/proc/get_leg_ignore()
@@ -141,6 +163,8 @@
 
 /mob/living/carbon/get_missing_limbs(exclude_head = FALSE)
 	var/list/full = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		full -= BODY_ZONE_R_LEG
 	for(var/zone in full)
 		if(exclude_head && zone == BODY_ZONE_HEAD) //this is needed in case we don't care for the lack of a dullahan's head or something.
 			full -= zone
@@ -164,6 +188,8 @@
 
 /mob/living/carbon/get_disabled_limbs()
 	var/list/full = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		full -= BODY_ZONE_R_LEG
 	var/list/disabled = list()
 	for(var/zone in full)
 		var/obj/item/bodypart/affecting = get_bodypart(zone)

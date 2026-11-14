@@ -59,6 +59,9 @@
 
 // (ADD) Pe4henika Bluemoon -- start
 /mob/living/carbon/human/binarycheck()
+	if(has_status_effect(/datum/status_effect/malf_protocol_breach))
+		return TRUE
+
 	var/obj/item/organ/cyberimp/brain/ai_link/I = getorganslot("brain_ai_link")
 	if(istype(I) && I.linked_ai)
 		return TRUE

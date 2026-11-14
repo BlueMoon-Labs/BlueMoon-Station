@@ -921,6 +921,7 @@
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
 	fire_delay = 3
+	projectile_damage_multiplier = 0.8
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	item_state = "apostle"
@@ -952,3 +953,151 @@
 		),"M29" = list(
 			"icon_state" = "apostle m29 snub"
 		))
+
+/obj/item/gun/ballistic/revolver/Mea_culpa
+	name = "\improper Mea Culpa"
+	desc = "True penance is a relentless process. This light-framed weapon delivers a swift rain of low-caliber judgements, forcing heretics to confess through rapid retribution. But for the unrepentant, 'Mea Culpa' holds a darker truth. With a flick of a switch, it shifts to its secondary mode—unleashing a single, roaring shotgun blast that tears the ultimate confession straight from the sinner's chest."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "Mea_culpa"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/mea_culpa
+	
+	var/obj/item/gun/ballistic/underbarrel
+	
+	projectile_damage_multiplier = 1.1
+	dual_wield_spread = 25
+	fire_delay = 1
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/Initialize(mapload)
+	. = ..()
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/attackby(obj/item/A, mob/user, params)
+	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
+		return underbarrel.attackby(A, user, params)
+		
+	return ..()
+
+/obj/item/gun/ballistic/revolver/Misericordia 
+	name = "\improper Misericordia "
+	desc = "Once a modest .410 gauge implement, this weapon has undergone a violent rebirth to deliver the ultimate act of grace. Now chambered in the crushing power of the 12-gauge, 'Misericordia' is a monstrous, stock-fitted revolver-shotgun designed to grant absolute absolution. It is called mercy not because it spares the wicked, but because it leaves nothing left of them to suffer. The long, heavy barrel directs a roaring blast of holy fire that tears through flesh, bone, and sinew in a single heartbeat. A beautiful, catastrophic end for those who are beyond saving"
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "Misericordia"
+	item_state = "308"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
+	dual_wield_spread = 100
+	fire_delay = 10
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+
+/obj/item/gun/ballistic/revolver/Sanctum_Officium 
+	name = "\improper Sanctum Officium "
+	desc = "The bureaucracy of the Holy Inquisition is vast, cold, and absolute. This long-barreled carbine conversion embodies that very rigidity. Fitted with a heavy, unyielding shoulder stock and an extended, cold-forged barrel, 'Sanctum Officium' turns a simple sidearm into a calculated instrument of long-range execution. It eliminates the chaotic sway of human hands, ensuring that the Bureau's decree is delivered with mathematical, distant precision. When this weapon speaks, it is not a declaration of anger-it is the final, unappealable signature on a heretic's death warrant."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "Sanctum_Officium"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	dual_wield_spread = 100
+	fire_delay = 10
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Sanctum_Officium/optic
+	name = "\improper Sanctum Officium sniper"
+	desc = "The bureaucracy of the Holy Inquisition is vast, cold, and absolute. This long-barreled carbine conversion embodies that very rigidity. Fitted with a heavy, unyielding shoulder stock and an extended, cold-forged barrel, 'Sanctum Officium' turns a simple sidearm into a calculated instrument of long-range execution. It eliminates the chaotic sway of human hands, ensuring that the Bureau's decree is delivered with mathematical, distant precision. When this weapon speaks, it is not a declaration of anger-it is the final, unappealable signature on a heretic's death warrant."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "Sanctum_Officium scope"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	dual_wield_spread = 100
+	fire_delay = 10
+	zoomable = TRUE
+	zoom_amt = 10
+	zoom_out_amt = 5
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/drilling
+	name = "\improper Священный Трибунал"
+	desc = "Суд на месте, не требующий присяжных. Две высокоточные карающие доктрины калибра .308 выносят приговор на дистанции, а тяжелый патрон 12-го калибра приводит его в исполнение в упор. Когда говорят все три ствола, дело считается закрытым навсегда."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "drilling"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/drilling
+	
+	var/obj/item/gun/ballistic/underbarrel
+	
+	projectile_damage_multiplier = 1.1
+	dual_wield_spread = 25
+	fire_delay = 5
+	w_class = WEIGHT_CLASS_BULKY
+	recoil = 10
+
+/obj/item/gun/ballistic/revolver/drilling/Initialize(mapload)
+	. = ..()
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+
+/obj/item/gun/ballistic/revolver/drilling/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
+/obj/item/gun/ballistic/revolver/drilling/attackby(obj/item/A, mob/user, params)
+	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
+		return underbarrel.attackby(A, user, params)
+		
+	return ..()
+
+/obj/item/gun/ballistic/revolver/drilling/Destroy()
+	QDEL_NULL(underbarrel)
+	return ..()
+
+/obj/item/gun/ballistic/revolver/drilling/sawed
+	name = "\improper Заочный приговор"
+	fire_delay = 10
+	recoil = 20
+	desc = "Модификация Трибунала для тех, у кого нет времени на долгие разбирательства. Отпиленные стволы заставляют винтовочные пули .308 свистеть с непредсказуемой траекторией, а 12-й калибр превратился в огненное дыхание преисподней. Оружие ближнего боя, где каждый выстрел это автоматическое признание вины"
+	icon_state = "drilling sawed"
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/gun/ballistic/revolver/drilling/sawed/Initialize(mapload)
+	. = ..()
+	underbarrel.recoil = recoil
+	underbarrel.fire_delay = fire_delay
+
+/obj/item/gun/ballistic/revolver/drilling/sawed/hatchet
+	name = "\improper Палач Трибунала"
+	desc = "Финальная, кровавая стадия правосудия. Под укороченные стволы намертво вварено тяжелое стальное лезвие. Два патрона .308 калибра ломают кости врага на подходе, 12-й калибр разрывает его плоть, а топор ставит жирную, неоспоримую точку. В этом оружии больше нет святости только чистая, механическая неизбежность наказания"
+	icon_state = "drilling sawed hatchet"
+	force = 15
+	sharpness = SHARP_EDGED

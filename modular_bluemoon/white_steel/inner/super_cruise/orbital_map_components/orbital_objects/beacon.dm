@@ -84,6 +84,13 @@
 		linked_objective = null
 	. = ..()
 
+/datum/orbital_object/z_linked/beacon/Destroy()
+	if(ruin_event)
+		SSorbits.ruin_events -= ruin_event
+		ruin_event.linked_z = null
+		ruin_event = null
+	return ..()
+
 /datum/orbital_object/z_linked/beacon/ruin/finish_z_level_assignment(datum/space_level/assigned_space_level)
 	. = ..()
 	generate_space_ruin(world.maxx / 2, world.maxy / 2, assigned_space_level.z_value, 100, 100, linked_objective, planned_generator, ruin_event)

@@ -130,6 +130,9 @@
 				threat = D.severity
 	return threat
 
+/// С какого процента здоровья медхуд считает его полным: ближайшая ступень 100, а не 93.75.
+#define HUD_FULL_HEALTH_PERCENT 96.875
+
 //helper for getting the appropriate health status
 /proc/RoundHealth(mob/living/M)
 	if(M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH)))
@@ -138,10 +141,11 @@
 	if(iscarbon(M) && M.health < 0)
 		maxi_health = 100 //so crit shows up right for aliens and other high-health carbon mobs; noncarbons don't have crit.
 	var/resulthealth = (M.health / round(maxi_health, DAMAGE_PRECISION)) * 100
+	// Ступень берётся ближайшая, как у всех остальных: иначе сотые доли урона висят на худе отметкой 93.75.
+	if(resulthealth >= HUD_FULL_HEALTH_PERCENT)
+		return
 	switch(resulthealth)
-		if(100 to INFINITY)
-			return
-		if(90.625 to 100)
+		if(90.625 to HUD_FULL_HEALTH_PERCENT)
 			return "health93.75"
 		if(84.375 to 90.625)
 			return "health87.5"
@@ -179,6 +183,8 @@
 			return "health-85"
 		else
 			return "health-100"
+
+#undef HUD_FULL_HEALTH_PERCENT
 
 //HOOKS
 
@@ -648,7 +654,7 @@
 
 /// Helper function to add a "comment" to a data record. Used for medical or security records.
 /mob/living/carbon/human/proc/add_comment(mob/commenter, comment_kind, comment_text)
-	var/perpname = get_visible_name(TRUE) //gets the name of the perp, works if they have an id or if their face is uncovered
+	var/perpname = get_face_name(get_id_name("")) // Та же личность, что используется при чтении записи через HUD.
 	if(!perpname)
 		return
 	var/datum/data/record/R

@@ -281,7 +281,7 @@
   */
 /datum/wound/proc/try_treating(obj/item/I, mob/user)
 	// first we weed out if we're not dealing with our wound's bodypart, or if it might be an attack
-	if(!I || limb.body_zone != user.zone_selected || (I.force && user.a_intent != INTENT_HELP))
+	if(!I || victim.get_bodypart(user.zone_selected) != limb || (I.force && user.a_intent != INTENT_HELP))
 		return FALSE
 
 	var/allowed = FALSE
@@ -421,9 +421,10 @@
   *
   * Arguments:
   * * mob/user: The user examining the wound's owner, if that matters
+  * * anonymous: Use masculine pronouns without revealing the owner's gender.
   */
-/datum/wound/proc/get_examine_description(mob/user)
-	. = "[victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
+/datum/wound/proc/get_examine_description(mob/user, anonymous = FALSE)
+	. = "[anonymous ? "Его" : victim.ru_ego(TRUE)] [limb.ru_name] [examine_desc]"
 	. = severity <= WOUND_SEVERITY_MODERATE ? "[.]." : "<B>[.]!</B>"
 
 /datum/wound/proc/get_scanner_description(mob/user)

@@ -36,6 +36,10 @@
 	card_throw_speed = sourceobj.card_throw_speed
 	card_throw_range = sourceobj.card_throw_range
 	card_attack_verb = sourceobj.card_attack_verb
+	var/obj/item/toy/cards/deck/root_deck = parentdeck
+	var/datum/component/nif_construct/construct = root_deck?.GetComponent(/datum/component/nif_construct)
+	if(construct)
+		construct.track_child(src)
 
 /obj/item/toy/cards/Adjacent(atom/neighbor, recurse = 1)
 	if(isturf(src.loc) && locate(/obj/structure/table) in src.loc)
@@ -67,7 +71,7 @@
  * * card type - the type of singlecard, that will be created and returned.
 **/
 /obj/item/toy/cards/proc/draw(mob/living/user, card, card_type = /obj/item/toy/cards/singlecard)
-	if(!isliving(user) || !user.canUseTopic(src, TRUE, TRUE, TRUE))
+	if(!isliving(user) || !user.canUseTopic(src, FALSE, TRUE, TRUE) || !Adjacent(user))
 		return
 	if(count_cards() == 0)
 		to_chat(user, span_warning("There are no more cards to draw!"))

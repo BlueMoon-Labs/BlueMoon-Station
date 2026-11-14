@@ -198,7 +198,7 @@
 			Use a [EXAMINE_HINT("multitool")] to connect it to a neighboring machine.</span>"
 		return
 
-	if(isnull(patient) || user.is_blind())
+	if(isnull(patient) || !user.can_read_medical_display())
 		return
 
 	if(machine_stat & EMPED)
@@ -207,21 +207,21 @@
 
 	if(!issilicon(user) && !isobserver(user) && get_dist(src, user) > 2)
 		. += "<span class='notice'><i>You are too far away to read the display.</i></span>"
-	else if(HAS_TRAIT(user, TRAIT_DUMB) || !user.can_read(src))
+	else if(HAS_TRAIT(user, TRAIT_DUMB) || HAS_TRAIT(user, TRAIT_ILLITERATE) || (!user.can_read(src) && !user.is_blind()))
 		. += "<span class='warning'>You try to comprehend the display, but it's too complex for you to understand.</span>"
 	else
 		healthscan(user, patient, advanced = advanced_scan, include_chemistry = chemscan_enabled)
 
 /obj/machinery/vitals_reader/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(held_item?.tool_behaviour == TOOL_WRENCH)
-		context[SCREENTIP_CONTEXT_LMB] = "Detach"
+		context[SCREENTIP_CONTEXT_LMB] = "Снять"
 		. = CONTEXTUAL_SCREENTIP_SET
 	if(is_operational)
 		if(isnull(connected) && held_item?.tool_behaviour == TOOL_MULTITOOL)
-			context[SCREENTIP_CONTEXT_LMB] = "Connect to nearby machine"
+			context[SCREENTIP_CONTEXT_LMB] = "Подключить к машине рядом"
 			. = CONTEXTUAL_SCREENTIP_SET
 		if(!isnull(patient))
-			context[SCREENTIP_CONTEXT_SHIFT_LMB] = "Examine vitals"
+			context[SCREENTIP_CONTEXT_SHIFT_LMB] = "Осмотреть показатели"
 			. = CONTEXTUAL_SCREENTIP_SET
 	return .
 

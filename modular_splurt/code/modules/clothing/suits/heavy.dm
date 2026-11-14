@@ -1,6 +1,6 @@
 //CBRN gear
 
-/obj/item/clothing/suit/cbrn
+/obj/item/clothing/suit/hooded/cbrn
 	name = "civilian CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has civilian colors."
 	icon_state = "cbrnsuitciv"
@@ -13,7 +13,15 @@
 	permeability_coefficient = 0.5
 	clothing_flags = THICKMATERIAL
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/tank/internals/emergency_nitrogen_ext)
+	allowed = list(
+		/obj/item/flashlight,
+		/obj/item/tank/internals/doubleoxygen,
+		/obj/item/tank/internals/oxygen,
+		/obj/item/tank/internals/emergency_oxygen,
+		/obj/item/tank/internals/plasmaman,
+		/obj/item/geiger_counter,
+		/obj/item/tank/internals/emergency_nitrogen_ext
+		)
 	slowdown = 0.6
 	armor_type = /datum/armor/cbrn
 	strip_delay = 60
@@ -23,20 +31,22 @@
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	brc_mitigation_bonus = 0  // BLUEMOON ADD
+	hoodtype = /obj/item/clothing/head/helmet/cbrn
+	no_t = TRUE
 
-/obj/item/clothing/suit/cbrn/equipped(mob/user, slot)  // BLUEMOON ADD
+/obj/item/clothing/suit/hooded/cbrn/equipped(mob/user, slot)  // BLUEMOON ADD
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
 		brc_worn = TRUE
 
-/obj/item/clothing/suit/cbrn/dropped(mob/user)  // BLUEMOON ADD
+/obj/item/clothing/suit/hooded/cbrn/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
 	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 		brc_worn = FALSE
 
-/obj/item/clothing/suit/cbrn/engineering
+/obj/item/clothing/suit/hooded/cbrn/engineering
 	name = "engineering CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has engineering colors and protects from fire."
 	armor_type = /datum/armor/cbrn_engineering
@@ -45,8 +55,9 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	slowdown = 0.4
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/eng
 
-/obj/item/clothing/suit/cbrn/security
+/obj/item/clothing/suit/hooded/cbrn/security
 	name = "security CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has security colors and protects a little bit better."
 	armor_type = /datum/armor/suit_security
@@ -54,41 +65,46 @@
 	icon_state = "cbrnsuitsec"
 	item_state = "cbrnsuitsec"
 	slowdown = 0.3
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/sec
 
-/obj/item/clothing/suit/cbrn/medical
+/obj/item/clothing/suit/hooded/cbrn/medical
 	name = "medical CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has medical colors and almost not slows it's wearer."
 	icon_state = "cbrnsuitmed"
 	item_state = "cbrnsuitmed"
 	slowdown = 0.25
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/tank/internals/emergency_nitrogen_ext, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid, /obj/item/analyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray)
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/med
 
-/obj/item/clothing/suit/cbrn/cargo
+/obj/item/clothing/suit/hooded/cbrn/cargo
 	name = "cargo CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has cargo colors and slows the wearer less and defend a bit."
 	icon_state = "cbrnsuitcargo"
 	item_state = "cbrnsuitcargo"
 	armor_type = /datum/armor/cargo
 	slowdown = 0.3
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/cargo
 
-/obj/item/clothing/suit/cbrn/science
+/obj/item/clothing/suit/hooded/cbrn/science
 	name = "science CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has science colors and has soft padding."
 	armor_type = /datum/armor/science
 	icon_state = "cbrnsuitsci"
 	item_state = "cbrnsuitsci"
 	slowdown = 0.4
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/sci
 
-/obj/item/clothing/suit/cbrn/service
+/obj/item/clothing/suit/hooded/cbrn/service
 	name = "service CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has service colors and slows the wearer less."
 	icon_state = "cbrnsuitserv"
 	item_state = "cbrnsuitserv"
 	slowdown = 0.5
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/serv
 
 //MOPP gear and Advance MOPP gear
 
-/obj/item/clothing/suit/cbrn/mopp
+/obj/item/clothing/suit/hooded/cbrn/mopp
 	name = "MOPP suit"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. It has armor sowed into it."
 	icon_state = "moppsuit"
@@ -107,34 +123,36 @@
 		"Duty" = list("icon_state" = "moppsuitaltd"),
 		"Volya" = list("icon_state" = "moppsuitaltv")
 	)
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/mopp
 
-/obj/item/clothing/suit/cbrn/mopp/advance
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance
 	name = "advance MOPP suit"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for Non-ERT Central Command Staff."
 	slowdown = 0 // This is suppose to be advance, hopefully not too OP
 	armor_type = /datum/armor/suit_advance //Scale with standard MOPP suits as this effects all ERT suits
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
+	hoodtype = /obj/item/clothing/head/helmet/cbrn/mopp/advance
 
-/obj/item/clothing/suit/cbrn/mopp/advance/commander
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance/commander
 	name = "advance MOPP suit 'Commander'"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for ERT Commanders."
 	icon_state = "moppsuitertcom"
 	item_state = "moppsuitertcom"
 
-/obj/item/clothing/suit/cbrn/mopp/advance/security
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance/security
 	name = "advance MOPP suit 'Security'"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for ERT Security members."
 	icon_state = "moppsuitertsec"
 	item_state = "moppsuitertsec"
 
-/obj/item/clothing/suit/cbrn/mopp/advance/medical
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance/medical
 	name = "advance MOPP suit 'Medical'"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for ERT Medical members."
 	icon_state = "moppsuitertmed"
 	item_state = "moppsuitertmed"
 	allowed = list(/obj/item/flashlight, /obj/item/gun/ballistic/revolver, /obj/item/gun/ballistic/automatic, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/energy, /obj/item/gun/ballistic/shotgun,  /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid, /obj/item/analyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray)
 
-/obj/item/clothing/suit/cbrn/mopp/advance/engi
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance/engi
 	name = "advance MOPP suit 'Engineer'"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for ERT Engineering members."
 	icon_state = "moppsuiterteng"
@@ -200,7 +218,7 @@
 	id = "cbrn_civi"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 500, /datum/material/uranium = 100, /datum/material/iron = 600)
-	build_path = /obj/item/clothing/suit/cbrn
+	build_path = /obj/item/clothing/suit/hooded/cbrn
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
@@ -210,7 +228,7 @@
 	id = "cbrn_sec"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600, /datum/material/titanium = 500)
-	build_path = /obj/item/clothing/suit/cbrn/security
+	build_path = /obj/item/clothing/suit/hooded/cbrn/security
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
@@ -220,7 +238,7 @@
 	id = "cbrn_engi"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600, /datum/material/plasma = 500)
-	build_path = /obj/item/clothing/suit/cbrn/engineering
+	build_path = /obj/item/clothing/suit/hooded/cbrn/engineering
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
@@ -230,7 +248,7 @@
 	id = "cbrn_serv"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600)
-	build_path = /obj/item/clothing/suit/cbrn/service
+	build_path = /obj/item/clothing/suit/hooded/cbrn/service
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
@@ -240,7 +258,7 @@
 	id = "cbrn_cargo"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600)
-	build_path = /obj/item/clothing/suit/cbrn/cargo
+	build_path = /obj/item/clothing/suit/hooded/cbrn/cargo
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
@@ -250,7 +268,7 @@
 	id = "cbrn_sci"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600)
-	build_path = /obj/item/clothing/suit/cbrn/science
+	build_path = /obj/item/clothing/suit/hooded/cbrn/science
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
@@ -260,7 +278,7 @@
 	id = "cbrn_med"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 2000, /datum/material/uranium = 500, /datum/material/iron = 600, /datum/material/silver = 400)
-	build_path = /obj/item/clothing/suit/cbrn/medical
+	build_path = /obj/item/clothing/suit/hooded/cbrn/medical
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
@@ -270,7 +288,7 @@
 	id = "mopp_suit"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 4000, /datum/material/uranium = 1500, /datum/material/iron = 2000, /datum/material/titanium = 1000)
-	build_path = /obj/item/clothing/suit/cbrn/mopp
+	build_path = /obj/item/clothing/suit/hooded/cbrn/mopp
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
@@ -309,7 +327,7 @@
 	display_name = "CBRN gear"
 	description = "Chemical, Biological, Radiological and Nuclear protective gear"
 	prereq_ids = list("engineering")
-	design_ids = list("cbrn_civi", "cbrn_sec", "cbrn_engi", "cbrn_serv", "cbrn_cargo", "cbrn_sci", "cbrn_med", "cbrn_mask", "cbrn_boots", "cbrn_gloves", "cbrn_glovesengi", "cbrn_glovesmed", "cbrn_hood", "cbrn_hood_eng", "cbrn_hood_cargo","cbrn_hood_sec","cbrn_hood_sci", "cbrn_hood_med", "cbrn_hood_serv", "cbrn_oxy", "cbrn_plasma","cbrn_nitrogen") // BLUEMOON ADD cbrn_glovesmed
+	design_ids = list("cbrn_civi", "cbrn_sec", "cbrn_engi", "cbrn_serv", "cbrn_cargo", "cbrn_sci", "cbrn_med", "cbrn_mask", "cbrn_boots", "cbrn_gloves", "cbrn_glovesengi", "cbrn_glovesmed", "cbrn_oxy", "cbrn_plasma","cbrn_nitrogen") // BLUEMOON ADD cbrn_glovesmed
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
 
 /datum/techweb_node/mopp
@@ -317,5 +335,5 @@
 	display_name = "MOPP gear"
 	description = "Mission Oriented Protective Posture gear, meant for sec."
 	prereq_ids = list("cbrn")
-	design_ids = list("mopp_suit", "mopp_mask", "mopp_boots", "mopp_gloves", "mopp_hood")
+	design_ids = list("mopp_suit", "mopp_mask", "mopp_boots", "mopp_gloves")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)

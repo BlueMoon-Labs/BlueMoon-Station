@@ -152,6 +152,9 @@
 		H.update_body()
 
 	else if (select_alteration == "Tail")
+		if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+			to_chat(H, span_warning("Опорный хвост нельзя заменить декоративным. Выберите другой вариант тела Naga."))
+			return
 		var/list/snowflake_tails_list = list("Normal" = null)
 		for(var/path in GLOB.mam_tails_list)
 			var/datum/sprite_accessory/tails/mam_tails/instance = GLOB.mam_tails_list[path]
@@ -161,6 +164,8 @@
 					snowflake_tails_list[S.name] = path
 		var/new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
 		if(new_tail)
+			if(QDELETED(H) || HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+				return
 			H.dna.features["mam_tail"] = new_tail
 			if(new_tail != "None")
 				H.dna.features["taur"] = "None"
@@ -168,16 +173,22 @@
 
 	else if (select_alteration == "Taur body")
 		var/list/snowflake_taur_list = list("Normal" = null)
+		if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+			snowflake_taur_list = list()
 		for(var/path in GLOB.taur_list)
 			var/datum/sprite_accessory/taur/instance = GLOB.taur_list[path]
+			if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !istype(instance, /datum/sprite_accessory/taur/naga))
+				continue
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
 				if(S.ignore)
 					continue
 				if(S.is_allowed_for(H.client.key))
 					snowflake_taur_list[S.name] = path
-		var/new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
+		var/new_taur = tgui_input_list(owner, "Выберите вариант таврического тела:", "Изменение тела", snowflake_taur_list)
 		if(new_taur)
+			if(QDELETED(H) || (HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !istype(GLOB.taur_list[new_taur], /datum/sprite_accessory/taur/naga)))
+				return
 			H.dna.features["taur"] = new_taur
 			if(new_taur != "None")
 				H.dna.features["mam_tail"] = "None"

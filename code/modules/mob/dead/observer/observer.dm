@@ -74,7 +74,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	ghostimage_simple.override = TRUE
 	GLOB.ghost_images_simple |= ghostimage_simple
 
-	updateallghostimages()
+	show_ghost_image_to_observers()
 
 	if(body)
 		gender = body.gender
@@ -137,8 +137,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/datum/action/join_shift/join_action = new(src)
 	join_action.Grant(src)
 	grant_all_languages()
-	show_data_huds()
-	data_huds_on = 1
 
 /mob/dead/observer/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
 	if(!delta_y || !modifiers[SHIFT_CLICK])
@@ -208,21 +206,23 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	// the departing images are removed from GLOB.ghost_images_* they would stay in
 	// other observer client.images unless we explicitly remove them first.
 	if(departing_default || departing_simple)
+		// Клиенту выдан только набор его lastsetting, а каждое снятие - проход по всему client.images.
 		for(var/mob/dead/observer/O in GLOB.player_list)
 			if(!O.client)
 				continue
-			if(departing_default)
-				O.client.images -= departing_default
-			if(departing_simple)
-				O.client.images -= departing_simple
+			switch(O.lastsetting)
+				if(GHOST_OTHERS_DEFAULT_SPRITE)
+					if(departing_default)
+						O.client.images -= departing_default
+				if(GHOST_OTHERS_SIMPLE)
+					if(departing_simple)
+						O.client.images -= departing_simple
 
 	GLOB.ghost_images_default -= ghostimage_default
 	QDEL_NULL(ghostimage_default)
 
 	GLOB.ghost_images_simple -= ghostimage_simple
 	QDEL_NULL(ghostimage_simple)
-
-	updateallghostimages()
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
@@ -510,6 +510,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return
 
 	can_reenter_corpse = FALSE
+	mind?.current?.loc?.on_log(FALSE)
 	client.prefs?.dnr_triggered = TRUE
 	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
@@ -754,12 +755,23 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	updateghostimages()
 	..()
 
-/proc/updateallghostimages()
-	listclearnulls(GLOB.ghost_images_default)
-	listclearnulls(GLOB.ghost_images_simple)
-
-	for (var/mob/dead/observer/O in GLOB.player_list)
-		O.updateghostimages()
+/// Новый гост добавляет свою картинку тем, кто уже смотрит на гостов, вместо пересборки картинок у всех: та стоила O(гостов * картинок клиента) на каждое появление.
+/mob/dead/observer/proc/show_ghost_image_to_observers()
+	for(var/mob/dead/observer/O in GLOB.player_list)
+		if(O == src || !O.client)
+			continue
+		// Режим сменили мимо update_sight() - полная пересборка у этого госта, наша картинка уже в глобальных списках.
+		if(isnull(O.lastsetting) || O.lastsetting != O.client.prefs.ghost_others)
+			O.updateghostimages()
+			continue
+		if(!O.ghostvision)
+			continue
+		// Картинка создана только что и ни у кого её ещё нет: проверка |= прошла бы весь client.images впустую.
+		switch(O.lastsetting)
+			if(GHOST_OTHERS_DEFAULT_SPRITE)
+				O.client.images += ghostimage_default
+			if(GHOST_OTHERS_SIMPLE)
+				O.client.images += ghostimage_simple
 
 /mob/dead/observer/proc/updateghostimages()
 	if (!client)
@@ -884,6 +896,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/mind_initialize()
 	return
 
+/// Худ до входа клиента: Login() застанет его готовым и только покажет
+/mob/dead/observer/proc/prebuild_hud()
+	if(hud_used)
+		return
+	set_hud_used(new hud_type(src))
+	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
+
 /mob/dead/observer/proc/show_data_huds()
 	for(var/hudtype in datahuds)
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
@@ -894,19 +913,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
 		H.remove_hud_from(src)
 
+/// Включает или снимает дата-худы по настройке клиента.
+/mob/dead/observer/proc/sync_data_huds()
+	var/wanted = !!(client?.prefs?.chat_toggles & CHAT_GHOSTHUDS)
+	if(wanted == !!data_huds_on)
+		return
+	if(wanted)
+		show_data_huds()
+	else
+		remove_data_huds()
+	data_huds_on = wanted
+
 /mob/dead/observer/verb/toggle_data_huds()
 	set name = "Toggle Sec/Med/Diag HUD"
-	set desc = "Toggles whether you see medical/security/diagnostic HUDs"
+	set desc = "Показывать мед/СБ/диаг-худы призраку. Выбор запоминается для следующих раз."
 	set category = "Ghost"
 
-	if(data_huds_on) //remove old huds
-		remove_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs disabled.</span>")
-		data_huds_on = 0
-	else
-		show_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs enabled.</span>")
-		data_huds_on = 1
+	if(!client?.prefs)
+		return
+	client.prefs.chat_toggles ^= CHAT_GHOSTHUDS
+	client.prefs.save_pref_var("chat_toggles")
+	sync_data_huds()
+	to_chat(src, span_notice("Дата-худы призрака [data_huds_on ? "включены" : "выключены"]."))
 
 /mob/dead/observer/verb/toggle_health_scan()
 	set name = "Toggle Health Scan"

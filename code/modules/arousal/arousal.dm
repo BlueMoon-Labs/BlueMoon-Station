@@ -78,23 +78,29 @@
 	if(!. && !silent)
 		to_chat(H, "<span class='warning'>Твой [name] не в состоянии производить собственную жидкость, ведь у него отсутствуют органы для этого.</span>")
 
-/mob/living/carbon/human/proc/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill = TRUE, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE)
+/mob/living/carbon/human/proc/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill = TRUE, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE, is_hidden = FALSE)
 	if(!sender)
 		return
 	if(!target || !R)
 		return
-	var/turfing = isturf(target)
-	var/condomning
-	if(istype(sender, /obj/item/organ/genital/penis))
-		var/obj/item/organ/genital/penis/P = sender
-		condomning = locate(/obj/item/genital_equipment/condom) in P.contents
-	sender.generate_fluid(R)
+	var/fluid_blocked = !!sender.get_urethral_obstruction()
+	if(!fluid_blocked)
+		sender.generate_fluid(R)
 	last_climax = world.time // BLUEMOON ADD
 	sender.last_orgasmed = world.time
 	sender.linked_organ?.last_orgasmed = sender.last_orgasmed
 	log_message("Кончает [sender] благодаря [target]", LOG_EMOTE)
 
 	client?.plug13.send_emote(PLUG13_EMOTE_GROIN, PLUG13_STRENGTH_MAX, PLUG13_DURATION_ORGASM)
+
+	if(fluid_blocked)
+		return
+
+	var/turfing = isturf(target)
+	var/condomning
+	if(istype(sender, /obj/item/organ/genital/penis))
+		var/obj/item/organ/genital/penis/P = sender
+		condomning = locate(/obj/item/genital_equipment/condom) in P.contents
 
 	if(condomning)
 		to_chat(src, "<span class='userlove'>Ты чувствуешь, как презерватив наполняется изнутри твоей спермой!</span>")
@@ -122,7 +128,7 @@
 			if(!istype(cummed_on)) // not human
 				R.trans_to(target, amount_to_transfer, log = TRUE)
 				if(R.total_volume > 0 && cummed_on.is_open_container())
-					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол.</b>"))
+					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол[HIDDEN_REACTION_SUFFIX(is_hidden)].</b>"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 					// к сожалению готовые решения генерации капель расплескавшихся жидкостей есть далеко не для всех реагентов, но это уже совсем другая история.
 					R.reaction(get_turf(target), show_message = FALSE)
 					for(var/obj/effect/decal/cleanable/c in get_turf(target))
@@ -189,14 +195,15 @@
 
 				if(!it_a_portal && (!last_genital || last_genital.type == sender.type)) // some lewd interactions are broken, so we checking type
 					if(istype(receiver, /obj/item/organ/stomach))	//in mouth
+						var/self_oral = cummed_on == src && !spill
 						switch(sender.type)
 							if(/obj/item/organ/genital/penis)
-								if(src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_PENIS && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH)	//panel user is sender
+								if(self_oral || (src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_PENIS && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH))
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 								else if(cummed_on.last_lewd_datum?.required_from_user == INTERACTION_REQUIRE_MOUTH && cummed_on.last_lewd_datum?.required_from_target_exposed == INTERACTION_REQUIRE_PENIS)	//panel user is receiver
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 							if(/obj/item/organ/genital/vagina)
-								if(src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_VAGINA && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH)
+								if(self_oral || (src.last_lewd_datum?.required_from_user_exposed == INTERACTION_REQUIRE_VAGINA && src.last_lewd_datum?.required_from_target == INTERACTION_REQUIRE_MOUTH))
 									R.trans_to(target, amount_to_transfer, log = TRUE)
 								else if(cummed_on.last_lewd_datum?.required_from_user == INTERACTION_REQUIRE_MOUTH && cummed_on.last_lewd_datum?.required_from_target_exposed == INTERACTION_REQUIRE_VAGINA)
 									R.trans_to(target, amount_to_transfer, log = TRUE)
@@ -218,7 +225,7 @@
 		newtonian_move(turn(dir, 180))
 	//
 
-/mob/living/carbon/human/proc/mob_climax_outside(obj/item/organ/genital/G, mb_time = 30) //This is used for forced orgasms and other hands-free climaxes
+/mob/living/carbon/human/proc/mob_climax_outside(obj/item/organ/genital/G, mb_time = 30, is_hidden = FALSE)
 	var/datum/reagents/fluid_source = G.climaxable(src, TRUE)
 	if(!fluid_source)
 		to_chat(src,"<span class='userdanger'>Твой [G.name] предательски сжимается, не имея возможности кончить...</span>")
@@ -227,10 +234,10 @@
 		to_chat(src,"<span class='userlove'>Вы чувствуете, что вот-вот достигнете оргазма!</span>")
 		if(!do_after(src, mb_time, target = src) || !G.climaxable(src, TRUE))
 			return
-	to_chat(src,"<span class='userlove'>Вы оргазмируете[isturf(loc) ? ", обливая пространство под собой" : ""]!</span>")
-	do_climax(fluid_source, loc, G)
+	to_chat(src, span_userlove("Вы оргазмируете[isturf(loc) && !G.get_urethral_obstruction() ? ", обливая пространство под собой" : ""][HIDDEN_REACTION_SUFFIX(is_hidden)]!"))
+	do_climax(fluid_source, loc, G, is_hidden = is_hidden)
 
-/mob/living/carbon/human/proc/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE)
+/mob/living/carbon/human/proc/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	var/datum/reagents/fluid_source = G.climaxable(src)
 	if(!fluid_source)
 		return
@@ -238,9 +245,9 @@
 		if(!do_after(src, mb_time, target = src) || !in_range(src, L) || !G.climaxable(src, TRUE))
 			return
 	SEND_SIGNAL(L, COMSIG_ADD_MOOD_EVENT, "orgasm", /datum/mood_event/orgasm)
-	do_climax(fluid_source, spillage ? loc : L, G, spillage, FALSE, Lgen, anonymous)
+	do_climax(fluid_source, spillage ? loc : L, G, spillage, FALSE, Lgen, anonymous, is_hidden)
 
-/mob/living/carbon/human/proc/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30) //For beaker-filling, beware the bartender
+/mob/living/carbon/human/proc/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30, obj/item/sucking_machine/M, is_hidden = FALSE)
 	var/datum/reagents/fluid_source = G.climaxable(src)
 	if(!fluid_source)
 		return
@@ -251,7 +258,7 @@
 	to_chat(src,"<span class='userlove'>[G.ru_name_capital] стимулируется вашими же усилиями, вы пытаетесь наполнить <b>[container]</b>.</span>")
 	message_admins("[ADMIN_LOOKUPFLW(src)] использует [ru_ego()] [G.name], чтобы наполнить <b>[container]</b> [G.get_fluid_name()].")
 	log_consent("[key_name(src)] использует [ru_ego()] [G.name], чтобы наполнить <b>[container]</b> [G.get_fluid_name()].")
-	do_climax(fluid_source, container, G, FALSE, cover = TRUE)
+	do_climax(fluid_source, container, G, FALSE, cover = TRUE, is_hidden = is_hidden)
 
 /mob/living/carbon/human/proc/pick_climax_genitals(silent = FALSE)
 	var/list/genitals_list
@@ -353,7 +360,7 @@
 
 //Here's the main proc itself
 //skyrat edit - forced partner and spillage
-/mob/living/carbon/human/proc/mob_climax(forced_climax = FALSE, cause = "", var/mob/living/forced_partner = null, var/forced_spillage = TRUE, var/obj/item/organ/genital/forced_receiving_genital = null, anonymous = FALSE)
+/mob/living/carbon/human/proc/mob_climax(forced_climax = FALSE, cause = "", var/mob/living/forced_partner = null, var/forced_spillage = TRUE, var/obj/item/organ/genital/forced_receiving_genital = null, anonymous = FALSE, is_hidden = FALSE)
 	set waitfor = FALSE
 
 	if(!(client?.prefs.arousable || !ckey) || !has_dna())
@@ -406,11 +413,11 @@
 				//
 				if(partner) //Did they pass the clothing checks?
 					//skyrat edit
-					mob_climax_partner(G, partner, forced_spillage, 0, forced_receiving_genital, forced_climax, anonymous) //Instant climax due to forced
+					mob_climax_partner(G, partner, forced_spillage, 0, forced_receiving_genital, forced_climax, anonymous, is_hidden)
 					//
 					continue //You've climaxed once with this organ, continue on
 			//not exposed OR if no partner was found while exposed, climax alone
-			mob_climax_outside(G, mb_time = 0) //removed climax timer for sudden, forced orgasms
+			mob_climax_outside(G, mb_time = 0, is_hidden = is_hidden)
 		//Now all genitals that could climax, have.
 		//Since this was a forced climax, we do not need to continue with the other stuff
 		return

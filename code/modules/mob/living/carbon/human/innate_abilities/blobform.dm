@@ -18,8 +18,11 @@
 	var/puddle_state_alt = "puddle_alt"
 	var/mutable_appearance/tracked_overlay
 	var/datum/component/squeak/squeak
+	var/obj/effect/temp_visual/transformation_effect
 	var/transforming = FALSE
 	var/last_use
+	var/transformation_cycle = 0
+	var/had_passmob = FALSE
 
 /datum/action/innate/ability/slime_blobform/IsAvailable()
 	if(!transforming)
@@ -28,8 +31,7 @@
 		return FALSE
 
 /datum/action/innate/ability/slime_blobform/Remove(mob/M)
-	if(is_puddle)
-		detransform()
+	reset_form()
 	return ..()
 
 /datum/action/innate/ability/slime_blobform/Activate()
@@ -41,10 +43,13 @@
 			return
 	if(IsAvailable())
 		UpdateButtons()
-		var/mutcolor = owner.get_ability_property(INNATE_ABILITY_SLIME_BLOBFORM, PROPERTY_BLOBFORM_COLOR) || ("#" + H.dna.features["mcolor"])
+		var/mutcolor = get_puddle_color(H)
 		if(!is_puddle)
 			if(CHECK_MOBILITY(H, MOBILITY_USE)) //if we can use items, we can turn into a puddle
 				transforming = TRUE
+				var/cycle = ++transformation_cycle
+				had_passmob = !!(H.pass_flags & PASSMOB)
+				ADD_TRAIT(H, TRAIT_IMMOBILIZED, SLIMEPUDDLE_TRAIT)
 				is_puddle = TRUE //so we know which transformation to use when its used
 				ADD_TRAIT(H, TRAIT_HUMAN_NO_RENDER, SLIMEPUDDLE_TRAIT)
 				owner.cut_overlays() //we dont show our normal sprite, we show a puddle sprite
@@ -54,6 +59,7 @@
 					puddle_effect = new puddle_into_effect_alt(get_turf(owner), owner.dir)
 				puddle_effect.color = mutcolor
 				puddle_effect.transform = H.transform //copy mob size for consistent meltdown appearance
+				transformation_effect = puddle_effect
 				H.Stun(in_transformation_duration, ignore_canstun = TRUE) //cant move while transforming
 
 				//series of traits that make up the puddle behaviour
@@ -72,12 +78,18 @@
 				//if the user is a changeling, retract their sting
 				H.unset_sting()
 
-				sleep(in_transformation_duration) //wait for animation to end
+				sleep(in_transformation_duration)
+				if(QDELETED(src) || QDELETED(H) || owner != H || transformation_cycle != cycle || !is_puddle)
+					return
+
+				QDEL_NULL(transformation_effect)
+				REMOVE_TRAIT(H, TRAIT_IMMOBILIZED, SLIMEPUDDLE_TRAIT)
 
 				//set the puddle overlay up
-				var/mutable_appearance/puddle_overlay = mutable_appearance(icon = puddle_icon, icon_state = puddle_state)
+				var/puddle_sprite = get_puddle_icon()
+				var/mutable_appearance/puddle_overlay = mutable_appearance(icon = puddle_sprite, icon_state = puddle_state)
 				if (H.dna.features["puddle_slime_fea"] == TRUE)
-					puddle_overlay = mutable_appearance(icon = puddle_icon, icon_state = puddle_state_alt)
+					puddle_overlay = mutable_appearance(icon = puddle_sprite, icon_state = puddle_state_alt)
 				puddle_overlay.color = mutcolor
 				tracked_overlay = puddle_overlay
 				owner.add_overlay(puddle_overlay)
@@ -91,16 +103,46 @@
 
 /datum/action/innate/ability/slime_blobform/proc/detransform()
 	var/mob/living/carbon/human/H = owner
+	if(!H || !is_puddle || transforming)
+		return
+	transforming = TRUE
+	ADD_TRAIT(H, TRAIT_IMMOBILIZED, SLIMEPUDDLE_TRAIT)
+	var/cycle = ++transformation_cycle
 	//like the above, but reverse everything done!
 	H.cut_overlay(tracked_overlay)
 	var/obj/effect/puddle_effect = new puddle_from_effect(get_turf(owner), owner.dir)
 	if (H.dna.features["puddle_slime_fea"] == TRUE) // Блаамп
 		qdel(puddle_effect)
 		puddle_effect = new puddle_from_effect_alt(get_turf(owner), owner.dir)
-	puddle_effect.color = tracked_overlay.color
+	puddle_effect.color = tracked_overlay?.color
 	puddle_effect.transform = H.transform //copy mob size for consistent transform size
+	transformation_effect = puddle_effect
 	H.Stun(out_transformation_duration, ignore_canstun = TRUE)
 	sleep(out_transformation_duration)
+	if(QDELETED(src) || QDELETED(H) || owner != H || transformation_cycle != cycle)
+		return
+	reset_form()
+
+/datum/action/innate/ability/slime_blobform/proc/get_puddle_color(mob/living/carbon/human/human)
+	return human.get_ability_property(INNATE_ABILITY_SLIME_BLOBFORM, PROPERTY_BLOBFORM_COLOR) || ("#" + human.dna.features["mcolor"])
+
+/datum/action/innate/ability/slime_blobform/proc/get_puddle_icon()
+	return puddle_icon
+
+/datum/action/innate/ability/slime_blobform/proc/reset_form()
+	transformation_cycle++
+	QDEL_NULL(transformation_effect)
+	var/mob/living/carbon/human/H = owner
+	if(H)
+		REMOVE_TRAIT(H, TRAIT_IMMOBILIZED, SLIMEPUDDLE_TRAIT)
+	if(!H || !is_puddle)
+		tracked_overlay = null
+		transforming = FALSE
+		is_puddle = FALSE
+		QDEL_NULL(squeak)
+		return
+	H.cut_overlay(tracked_overlay)
+	tracked_overlay = null
 	REMOVE_TRAIT(H, TRAIT_PARALYSIS_L_ARM, SLIMEPUDDLE_TRAIT)
 	REMOVE_TRAIT(H, TRAIT_PARALYSIS_R_ARM, SLIMEPUDDLE_TRAIT)
 	REMOVE_TRAIT(H, TRAIT_MOBILITY_NOPICKUP, SLIMEPUDDLE_TRAIT)
@@ -111,10 +153,15 @@
 	REMOVE_TRAIT(H, TRAIT_HUMAN_NO_RENDER, SLIMEPUDDLE_TRAIT)
 	H.update_disabled_bodyparts(silent = TRUE)
 	H.remove_movespeed_modifier(/datum/movespeed_modifier/slime_puddle)
-	H.pass_flags &= ~(PASSMOB)
+	if(!had_passmob)
+		H.pass_flags &= ~PASSMOB
+	had_passmob = FALSE
 	is_puddle = FALSE
-	if(squeak)
-		squeak.RemoveComponent()
+	QDEL_NULL(squeak)
 	H.regenerate_icons()
 	transforming = FALSE
 	UpdateButtons()
+
+/datum/action/innate/ability/slime_blobform/Destroy()
+	reset_form()
+	return ..()

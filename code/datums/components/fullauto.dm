@@ -274,14 +274,24 @@
 	if(!can_shoot())
 		shoot_with_empty_chamber(shooter)
 		return NONE
-	var/obj/item/gun/akimbo_gun = shooter.get_inactive_held_item()
-	var/bonus_spread = 0
-	if(istype(akimbo_gun) && weapon_weight < WEAPON_MEDIUM)
-		if(akimbo_gun.weapon_weight < WEAPON_MEDIUM && akimbo_gun.can_trigger_gun(shooter))
-			bonus_spread = dual_wield_spread
-			addtimer(CALLBACK(akimbo_gun, TYPE_PROC_REF(/obj/item/gun, process_fire), target, shooter, TRUE, params, null, bonus_spread), 1)
-	process_fire(target, shooter, TRUE, params, null, bonus_spread)
-	return COMPONENT_AUTOFIRE_SHOT_SUCCESS //All is well, we can continue shooting.
 
+	// BLUEMOON EDIT: разброс при автоматичсекой стрельбе больше чем с одной пушки
+	var/bonus_spread = 0
+	if(ishuman(shooter) && shooter.a_intent == INTENT_HARM && weapon_weight <= WEAPON_LIGHT && !HAS_TRAIT(shooter, TRAIT_MOD_NO_AKIMBO))
+		var/mob/living/carbon/human/H = shooter
+		var/loop_counter = 0
+		for(var/obj/item/gun/G in H.held_items)
+			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
+				continue
+			else if(G.can_trigger_gun(shooter) && G.can_shoot())
+				loop_counter++
+				if(loop_counter == 1)
+					bonus_spread += src.dual_wield_spread
+				bonus_spread += G.dual_wield_spread * (1 + AKIMBO_PENALTY_SCALING * (loop_counter + 1))
+				var/stam_cost = G.getstamcost(shooter)
+				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, shooter, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
+	var/stam_cost = getstamcost(shooter)
+	process_fire(target, shooter, TRUE, params, null, bonus_spread, stam_cost)
+	return COMPONENT_AUTOFIRE_SHOT_SUCCESS //All is well, we can continue shooting.
 #undef AUTOFIRE_MOUSEUP
 #undef AUTOFIRE_MOUSEDOWN

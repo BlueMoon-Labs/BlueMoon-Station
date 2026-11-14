@@ -8,7 +8,7 @@
 "bF" = (
 /obj/effect/turf_decal/tile/yellow/half,
 /obj/machinery/light/directional/south,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "eL" = (
 /turf/open/floor/engine/air,
@@ -26,13 +26,13 @@
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "gU" = (
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "hj" = (
 /turf/open/floor/engine/o2,
@@ -53,11 +53,11 @@
 	default_raw_text = "Ever since I set up those miners, they've all been making a strange clunking noise, especially the Carbon Dioxide miner. I swear, it's just been getting louder and louder these past couple hours. I just hope I set it up right."
 	},
 /obj/item/storage/toolbox/mechanical,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "iu" = (
 /obj/effect/turf_decal/tile/yellow/half,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "iD" = (
 /turf/open/floor/engine/plasma,
@@ -70,7 +70,7 @@
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "jM" = (
 /obj/structure/cable,
@@ -78,14 +78,14 @@
 	dir = 1
 	},
 /obj/machinery/light/directional/north,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "jP" = (
 /obj/machinery/door/airlock/atmos/glass,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "ky" = (
 /obj/machinery/light/small/directional/east,
@@ -95,31 +95,31 @@
 /obj/machinery/atmospherics/components/trinary/mixer/airmix/inverse{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "lx" = (
 /obj/item/tank/internals/emergency_oxygen/double,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "mA" = (
 /obj/item/shard/plasma,
 /obj/effect/turf_decal/tile/yellow/anticorner,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "mC" = (
 /obj/item/construction/rcd,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "mI" = (
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/turf_decal/delivery/white,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "ni" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "nz" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector{
@@ -135,14 +135,14 @@
 /area/ruin/space/has_grav/AtmosAsteroid)
 "oz" = (
 /obj/structure/extinguisher_cabinet/directional/north,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "oZ" = (
 /obj/effect/turf_decal/tile/yellow/anticorner{
 	dir = 1
 	},
 /obj/structure/closet/firecloset/full,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "pU" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber,
@@ -157,7 +157,7 @@
 /obj/effect/turf_decal/tile/yellow/anticorner{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "sH" = (
 /obj/item/analyzer/ranged,
@@ -165,7 +165,7 @@
 	dir = 4
 	},
 /obj/machinery/light/broken/directional/east,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "tL" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector{
@@ -183,19 +183,19 @@
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "vG" = (
 /turf/open/floor/engine/n2,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "vT" = (
 /obj/machinery/atmospherics/components/unary/thermomachine,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "xr" = (
 /obj/machinery/light/small/directional/south,
 /obj/item/clothing/glasses/meson/engine,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "zw" = (
 /obj/machinery/atmospherics/miner/nitrogen,
@@ -203,7 +203,7 @@
 /turf/open/floor/engine/n2,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "zH" = (
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "zL" = (
 /obj/machinery/light/small/directional/east,
@@ -215,7 +215,7 @@
 /area/ruin/space/has_grav/AtmosAsteroid)
 "AZ" = (
 /mob/living/simple_animal/hostile/asteroid/basilisk,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "By" = (
 /obj/machinery/atmospherics/miner/carbon_dioxide,
@@ -226,14 +226,14 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Co" = (
 /turf/open/floor/engine/airless,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Cz" = (
 /obj/item/pipe_dispenser,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "DN" = (
 /obj/machinery/door/airlock/external/glass/ruin{
@@ -245,14 +245,14 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Fj" = (
 /obj/machinery/airalarm/directional/north,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Ft" = (
 /obj/effect/decal/cleanable/blood/gibs/core{
@@ -266,13 +266,13 @@
 /obj/effect/decal/cleanable/blood/gibs/down{
 	pixel_y = -6
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "HF" = (
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "HW" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon{
@@ -282,7 +282,7 @@
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Ju" = (
 /obj/item/clothing/mask/gas/atmos,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Kg" = (
 /obj/machinery/atmospherics/miner/n2o,
@@ -293,32 +293,32 @@
 	dir = 1
 	},
 /obj/machinery/light/directional/north,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "LJ" = (
 /obj/effect/turf_decal/tile/yellow/anticorner{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "LP" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Mt" = (
 /obj/effect/decal/cleanable/blood/gibs/core,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Mz" = (
 /obj/effect/turf_decal/tile/yellow/half,
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "MG" = (
 /obj/machinery/suit_storage_unit,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "MI" = (
 /obj/structure/grille/broken,
@@ -327,7 +327,7 @@
 "MT" = (
 /obj/effect/turf_decal/tile/yellow/full,
 /obj/machinery/portable_atmospherics/scrubber/huge/movable,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Ny" = (
 /turf/closed/wall/r_wall,
@@ -342,28 +342,28 @@
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Oe" = (
 /obj/item/pickaxe,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "Oz" = (
 /obj/effect/turf_decal/delivery/red,
 /obj/machinery/light/directional/east,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "OY" = (
 /obj/effect/turf_decal/box,
 /obj/machinery/light/directional/west,
 /obj/machinery/electrolyzer,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "QA" = (
 /obj/effect/turf_decal/tile/yellow/half,
 /obj/structure/extinguisher_cabinet/directional/south,
 /obj/machinery/light/directional/south,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "QI" = (
 /obj/machinery/atmospherics/miner/oxygen,
@@ -390,28 +390,28 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
 	dir = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "RJ" = (
 /obj/item/stack/rods,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "So" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/plating/asteroid/layenia,
+/turf/open/floor/plating/asteroid/layenia/airless,
 /area/space)
 "Sy" = (
 /obj/effect/decal/cleanable/blood/gibs{
 	pixel_y = 8;
 	pixel_x = -6
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "SO" = (
 /obj/machinery/light/small/broken/directional/east,
@@ -426,10 +426,10 @@
 "Ub" = (
 /obj/structure/reagent_dispensers/foamtank,
 /obj/effect/turf_decal/delivery/white,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Ue" = (
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Up" = (
 /turf/template_noop,
@@ -438,29 +438,29 @@
 /obj/effect/turf_decal/tile/yellow/anticorner{
 	dir = 8
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "UL" = (
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
 /obj/structure/extinguisher_cabinet/directional/north,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "VH" = (
 /obj/structure/tank_holder/extinguisher/advanced{
 	anchored = 1
 	},
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "Ws" = (
 /obj/item/shard/plasma,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "ZN" = (
 /obj/machinery/atmospherics/components/unary/thermomachine,
 /obj/effect/turf_decal/tile/yellow/half,
-/turf/open/floor/festive/trainplatform,
+/turf/open/floor/festive/trainplatform/safe,
 /area/ruin/space/has_grav/AtmosAsteroid)
 
 (1,1,1) = {"

@@ -1,4 +1,5 @@
 /datum/action/item_action/mod
+	required_mobility_flags = NONE
 	background_icon_state = "bg_tech_blue"
 	icon_icon = 'icons/mob/actions/actions_mod.dmi'
 	check_flags = AB_CHECK_CONSCIOUS
@@ -46,7 +47,6 @@
 	name = "Deploy MODsuit"
 	desc = "Развернуть/Скрыть часть MOD-костюма. На правую кнопку мыши будут развернуты/свернуты все части костюма."
 	button_icon_state = "deploy"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/deploy/Trigger(trigger_flags)
 	if(!IsAvailable())
@@ -63,13 +63,12 @@
 	name = "Activate MODsuit"
 	desc = "Активировать/Деактивировать MOD-костюм. На правую кнопку мыши будут развернуты/свернуты все части костюма."
 	button_icon_state = "activate"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/activate/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
 	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
-		mod.quick_toggle_parts(mod.wearer)
+		return mod.quick_toggle_parts(mod.wearer)
 	mod.toggle_activate(usr)
 	return TRUE
 
@@ -80,7 +79,6 @@
 	name = "Toggle Module"
 	desc = "Переключить модуль MOD-костюма."
 	button_icon_state = "module"
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/item_action/mod/module/Trigger(trigger_flags)
 	if(!IsAvailable())
@@ -109,7 +107,6 @@
 
 /datum/action/cooldown/module_action
 	name = "Generic MODsuit Module Action"
-	button_block_right_click_context_menu = TRUE
 	icon_icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	button_icon = 'icons/mob/actions/backgrounds.dmi'
 	background_icon_state = "bg_tech_blue"
@@ -120,15 +117,23 @@
 	name = Target?.name
 	cooldown_time = Target?.cooldown_time
 	button_icon_state = Target?.icon_state
+	icon_icon = Target?.icon
+	if(Target?.hands_free_use)
+		required_mobility_flags = NONE
+	if(Target?.allowed_incapacitated)
+		check_flags = NONE
 
 /datum/action/cooldown/module_action/Trigger(trigger_flags, atom/target)
-	. = ..()
 	var/obj/item/mod/module/target_module = src.target
-	if(!target_module?.mod)
+	if(QDELETED(target_module) || QDELETED(target_module.mod) || (target_module.mod.wearer != owner && target_module.mod.ai != owner))
 		to_chat(owner, span_danger("Модуль изъят!"))
 		return qdel(src)
 	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
 		to_chat(owner, span_danger("Способность удалена с хотбара!"))
-		return Remove(owner) //удаляет тут, в remove есть qdel
-	target_module?.on_select()
-	StartCooldown(target_module.cooldown_time)
+		qdel(src)
+		return TRUE
+	if(!IsAvailable())
+		return FALSE
+	target_module.on_select()
+	StartCooldown(COOLDOWN_TIMELEFT(target_module, cooldown_current_timer))
+	return TRUE

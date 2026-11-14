@@ -190,6 +190,8 @@
 		else if(!compact_mode)
 			if(istype(poi, /obj/item/deactivated_swarmer) || istype(poi, /obj/effect/mob_spawn/swarmer))
 				continue
+			if(istype(poi, /obj/effect/dummy/floorcluwne_orbit))
+				continue // Клоун показывается среди NPC: см. отдельный проход ниже.
 			misc += list(serialized)
 
 	for (var/atom/A as anything in GLOB.poi_list)
@@ -204,6 +206,22 @@
 		serialized["assignment"] = "swarmer"
 		serialized["antag"] = "Swarmer"
 		antagonists += list(serialized)
+
+	// Подплиточный клоун прячется под полом и сам по себе в списке не виден: гости
+	// следуют за его служебной меткой. Показываем её среди NPC даже в компактном режиме -
+	// появление клоуна это событие раунда, а не шум.
+	for (var/atom/A as anything in GLOB.poi_list)
+		if(!istype(A, /obj/effect/dummy/floorcluwne_orbit))
+			continue
+		// Метка лежит в мобе-клоуне, поэтому её позиция берётся через него.
+		var/turf/poi_turf = get_turf(A)
+		if(!poi_turf)
+			continue
+		var/list/serialized = list()
+		var/area/area = get_area(poi_turf)
+		serialized["name"] = area ? "[A.name] \[[area.name]\]" : A.name
+		serialized["ref"] = orbit_poi_ref(A)
+		npcs += list(serialized)
 
 	data["alive"] = alive
 	data["antagonists"] = antagonists

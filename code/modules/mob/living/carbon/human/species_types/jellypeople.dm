@@ -93,16 +93,19 @@
 	return FALSE // to let living/handle_blood know that the species is handling blood instead
 
 /datum/species/jelly/proc/Cannibalize_Body(mob/living/carbon/human/H)
-	var/list/limbs_to_consume = list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG) - H.get_missing_limbs()
+	var/list/limbs_to_consume = list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+		limbs_to_consume -= BODY_ZONE_R_LEG
+	limbs_to_consume -= H.get_missing_limbs()
 	var/obj/item/bodypart/consumed_limb
 	if(!length(limbs_to_consume))
 		H.losebreath++
 		return
-	if(H.get_num_legs(FALSE)) //Legs go before arms
+	if(H.get_num_supporting_limbs(FALSE)) // Сначала расходуется нижняя опора, включая опорный хвост, затем руки.
 		limbs_to_consume -= list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM)
 	consumed_limb = H.get_bodypart(pick(limbs_to_consume))
 	consumed_limb.drop_limb()
-	to_chat(H, span_userdanger("Your [consumed_limb] is drawn back into your body, unable to maintain its shape!"))
+	to_chat(H, span_userdanger("Ваш[HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && consumed_limb.body_zone == BODY_ZONE_L_LEG ? " опорный хвост втягивается" : "а [consumed_limb.ru_name] втягивается"] в тело, не в силах сохранять форму!"))
 	qdel(consumed_limb)
 	H.blood_volume += 20
 

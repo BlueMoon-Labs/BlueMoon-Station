@@ -269,6 +269,22 @@
 	name = "speed loader (.41 FMJ)"
 	ammo_type = /obj/item/ammo_casing/cal41/fmj
 
+/obj/item/ammo_box/cal41/taser
+	name = "speed loader (.41 taser)"
+	ammo_type = /obj/item/ammo_casing/cal41/taser
+
+/obj/item/ammo_box/cal41/ion
+	name = "speed loader (.41 ion)"
+	ammo_type = /obj/item/ammo_casing/cal41/ion
+
+/obj/item/ammo_box/cal41/ricochet
+	name = "speed loader (.41 ric)"
+	ammo_type = /obj/item/ammo_casing/cal41/ricochet
+
+/obj/item/ammo_box/cal41/ratshot
+	name = "speed loader (.41 ratshot)"
+	ammo_type = /obj/item/ammo_casing/cal41/ratshot
+
 //взрывной
 
 /obj/item/ammo_box/magnum44

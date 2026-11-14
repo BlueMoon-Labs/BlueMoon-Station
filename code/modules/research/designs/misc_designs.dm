@@ -938,3 +938,124 @@
 	build_path = /obj/item/encryptionkey/headset_service
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
+/datum/design/bag_holding
+	name = "Inert Bag of Holding"
+	desc = "Металлическая заготовка для создания блюспейс-рюкзака с помощью ядра блюспейс-аномалии."
+	id = "bag_holding"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/gold = 3000, /datum/material/diamond = 1500, /datum/material/uranium = 250, /datum/material/bluespace = 2000)
+	build_path = /obj/item/BoH_inert/bag
+	category = list("Equipment")
+	dangerous_construction = TRUE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/satchel_holding
+	name = "Inert Satchel of Holding"
+	desc = "Металлическая заготовка для создания блюспейс-сумки с помощью ядра блюспейс-аномалии."
+	id = "satchel_holding"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/gold = 3000, /datum/material/diamond = 1500, /datum/material/uranium = 250, /datum/material/bluespace = 2000)
+	build_path = /obj/item/BoH_inert/satchel
+	category = list("Equipment")
+	dangerous_construction = TRUE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/duffelbag_holding
+	name = "Inert Duffel Bag of Holding"
+	desc = "Металлическая заготовка для создания блюспейс-вещмешка с помощью ядра блюспейс-аномалии."
+	id = "duffelbag_holding"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/gold = 3000, /datum/material/diamond = 1500, /datum/material/uranium = 250, /datum/material/bluespace = 2000)
+	build_path = /obj/item/BoH_inert/duffel
+	category = list("Equipment")
+	dangerous_construction = TRUE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/biobag_holding
+	name = "Bio Bag of Holding"
+	desc = "Блюспейс-сумка для хранения биологических образцов. В основном используется в ксенобиологии."
+	id = "biobag_holding"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/gold = 1500, /datum/material/diamond = 750, /datum/material/uranium = 250, /datum/material/bluespace = 1000)
+	build_path = /obj/item/storage/bag/bio/holding
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/bluespace_tray
+	name = "Bluespace Tray"
+	desc = "Поднос, вмещающий больше еды благодаря блюспейс-технологиям."
+	id = "bluespace_tray"
+	build_type = PROTOLATHE
+	build_path = /obj/item/storage/bag/tray/bluespace
+	materials = list(/datum/material/iron = 2000, /datum/material/bluespace = 500)
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
+/datum/design/wallet_holding
+	name = "Wallet of Holding"
+	desc = "Кошелёк с небольшим блюспейс-карманом."
+	id = "wallet_holding"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/gold = 300, /datum/material/diamond = 100, /datum/material/bluespace = 200)
+	build_path = /obj/item/storage/wallet/bluespace
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/beacon
+	name = "Tracking Beacon"
+	desc = "Блюспейс-маяк для отслеживания местоположения."
+	id = "beacon"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 150, /datum/material/glass = 100)
+	build_path = /obj/item/beacon
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/telesci_gps
+	name = "GPS Device"
+	desc = "Небольшое устройство, которое постоянно отслеживает своё местоположение."
+	id = "telesci_gps"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 500, /datum/material/glass = 1000)
+	build_path = /obj/item/gps/off
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SERVICE
+
+/datum/design/telesci_gps/science
+	name = "Science GPS Device"
+	desc = "ГПС научного отдела. Печатается выключенным."
+	id = "telesci_gps_science"
+	build_path = /obj/item/gps/science/off
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/telesci_gps/engineering
+	name = "Engineering GPS Device"
+	desc = "ГПС инженерного отдела. Печатается выключенным."
+	id = "telesci_gps_engineering"
+	build_path = /obj/item/gps/engineering/off
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/telesci_gps/medical
+	name = "Medical GPS Device"
+	desc = "ГПС медицинского отдела. Печатается выключенным."
+	id = "telesci_gps_medical"
+	build_path = /obj/item/gps/medical/off
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/telesci_gps/mining
+	name = "Mining GPS Device"
+	desc = "Шахтёрский ГПС для отдела снабжения. Печатается выключенным."
+	id = "telesci_gps_mining"
+	build_path = /obj/item/gps/mining/off
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+
+/datum/design/swapper // Перенесено с TG, автор XDTM.
+	name = "Quantum Spin Inverter"
+	desc = "Экспериментальное устройство, меняющее местами два объекта за счёт изменения спина их частиц. Для работы требуется связь со вторым устройством."
+	id = "swapper"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 500, /datum/material/diamond = 1500, /datum/material/glass = 1000, /datum/material/bluespace = 2000, /datum/material/silver=1000)
+	build_path = /obj/item/swapper
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

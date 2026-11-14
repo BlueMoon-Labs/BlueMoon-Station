@@ -211,6 +211,15 @@ export const TIMESTAMP_FORMATS = [
   { id: 'hms', name: 'ЧЧ:ММ:СС' },
 ];
 
+// Сколько сообщений держать на экране чата
+export const MESSAGE_LIMITS = [
+  { id: 300, name: '300' },
+  { id: 500, name: '500' },
+  { id: 750, name: '750 (обычно)' },
+  { id: 1000, name: '1000' },
+  { id: 2500, name: '2500' },
+];
+
 export const TIME_DIVIDER_INTERVALS = [
   { id: 60000, name: '1 мин' },
   { id: 300000, name: '5 мин' },

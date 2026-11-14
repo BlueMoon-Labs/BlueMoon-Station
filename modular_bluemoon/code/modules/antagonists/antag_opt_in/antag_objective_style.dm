@@ -23,7 +23,7 @@ GLOBAL_LIST_INIT(antag_objective_style_descriptions, list(
 		return
 	WRITE_FILE(.["antag_objective_style"], antag_objective_style)
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/load_preferences_data(savefile/S)
 	. = ..()
 	if(!istype(., /savefile))
 		return

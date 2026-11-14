@@ -12,17 +12,21 @@
 	create_bodyparts()
 
 	setup_human_dna()
+	physiology = new()
 
 	if(dna.species)
 		set_species(dna.species.type)
 
 	//initialise organs
 	create_internal_organs() //most of it is done in set_species now, this is only for parent call
-	physiology = new()
 
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)
 	. = ..()
+	if(em_block)
+		// Силуэт закрывает свечение позади персонажа, но рисуется под его собственным свечением.
+		em_block.vis_flags |= VIS_INHERIT_LAYER | VIS_UNDERLAY
+		em_block.appearance_flags |= RESET_ALPHA | RESET_COLOR
 
 	if(CONFIG_GET(flag/disable_stambuffer))
 		enable_intentional_sprint_mode()
@@ -53,6 +57,7 @@
 	AddElement(/datum/element/strippable, GLOB.strippable_human_items, TYPE_PROC_REF(/mob/living/carbon/human, should_strip))
 
 /mob/living/carbon/human/Destroy()
+	applied_innate_features = null
 	QDEL_NULL(profile)
 	QDEL_NULL(physiology)
 	QDEL_NULL(mob_panel)
@@ -191,9 +196,7 @@
 				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(href_list["photo_front"] || href_list["photo_side"])
 					if(R)
-						if(!H.canUseHUD())
-							return
-						else if(!istype(H.glasses, /obj/item/clothing/glasses/hud) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/medical))
+						if(!H.canUseHUD() || !(has_medical_examine_hud(H) || hasHUD(H, DATA_HUD_SECURITY_ADVANCED)))
 							return
 						// Клик по ссылке в ХУД-осмотре - такой же первый просмотр записи, как карточка.
 						var/obj/item/photo/P = null
@@ -210,7 +213,7 @@
 						// Checks the user has security clearence before allowing them to change arrest status via hud, comment out to enable all access
 						var/allowed_access = null
 						var/obj/item/clothing/glasses/G = H.glasses
-						if (!(G.obj_flags & EMAGGED))
+						if (!(G?.obj_flags & EMAGGED))
 							if(H.wear_id)
 								var/list/access = H.wear_id.GetAccess()
 								if(ACCESS_SEC_DOORS in access)
@@ -218,7 +221,7 @@
 						else
 							allowed_access = "@%&ERROR_%$*"
 						if(!allowed_access)
-							to_chat(H, "<span class='warning'>ERROR: Invalid Access</span>")
+							to_chat(H, span_warning("ОШИБКА: в доступе отказано"))
 							return
 						if(perpname)
 							R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
@@ -227,7 +230,7 @@
 									if(R.locked_security_reason)
 										to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
 										return
-									var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
+									var/setcriminal = input(usr, "Уточните новый статус данной личности.", "СБ-HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
 									if(setcriminal != "Отмена")
 										if(R)
 											if(H.canUseHUD())
@@ -246,27 +249,21 @@
 											return
 										else if(!istype(H.glasses, /obj/item/clothing/glasses/hud/security) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
 											return
-										to_chat(usr, "<b>Name:</b> [R.fields["name"]]	<b>Criminal Status:</b> [R.fields["criminal"]]")
-										to_chat(usr, "<b>Minor Crimes:</b>")
+										var/list/minor_entries = list()
 										for(var/datum/data/crime/c in R.fields["mi_crim"])
-											to_chat(usr, "<b>Crime:</b> [c.crimeName]")
-											to_chat(usr, "<b>Details:</b> [c.crimeDetails]")
-											to_chat(usr, "Added by [c.author] at [c.time]")
-											to_chat(usr, "----------")
-										to_chat(usr, "<b>Major Crimes:</b>")
+											minor_entries += "<b>[c.crimeName]</b><br>[c.crimeDetails]<br><span class='examine_meta'>Добавившее лицо: [c.author]. Время: [c.time]</span>"
+										var/list/major_entries = list()
 										for(var/datum/data/crime/c in R.fields["ma_crim"])
-											to_chat(usr, "<b>Crime:</b> [c.crimeName]")
-											to_chat(usr, "<b>Details:</b> [c.crimeDetails]")
-											to_chat(usr, "Added by [c.author] at [c.time]")
-											to_chat(usr, "----------")
-										to_chat(usr, "<b>Notes:</b> [R.fields["notes"]]")
+											major_entries += "<b>[c.crimeName]</b><br>[c.crimeDetails]<br><span class='examine_meta'>Добавившее лицо: [c.author]. Время: [c.time]</span>"
+										var/list/sec_rows = list("Статус" = R.fields["criminal"], "Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+										to_chat(usr, examine_box("Записи СБ: [R.fields["name"]]", examine_table(sec_rows) + examine_box("Малые правонарушения", examine_entries(minor_entries, "Нет записей."), FALSE) + examine_box("Крупные правонарушения", examine_entries(major_entries, "Нет записей."), FALSE)))
 									return
 								if(href_list["add_crime"])
-									switch(alert("What crime would you like to add?","Security HUD","Minor Crime","Major Crime","Cancel"))
-										if("Minor Crime")
+									switch(alert("Какое правонарушение будет добавлено?","HUD, СБ","Малое","Крупное","Отмена"))
+										if("Малое")
 											if(R)
-												var/t1 = stripped_input("Please input minor crime names:", "Security HUD", "", null)
-												var/t2 = stripped_multiline_input("Please input minor crime details:", "Security HUD", "", null)
+												var/t1 = stripped_input("Введите номер малого правонарушения:", "HUD, СБ", "", null)
+												var/t2 = stripped_multiline_input("Введите детали преступления:", "HUD, СБ", "", null)
 												if(R)
 													if (!t1 || !t2 || !allowed_access)
 														return
@@ -277,12 +274,12 @@
 													var/crime = GLOB.data_core.createCrimeEntry(t1, t2, allowed_access, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time))
 													GLOB.data_core.addMinorCrime(R.fields["id"], crime)
 													investigate_log("New Minor Crime: <strong>[t1]</strong>: [t2] | Added to [R.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
-													to_chat(usr, "<span class='notice'>Successfully added a minor crime.</span>")
+													to_chat(usr, span_notice("Малое правонарушение успешно записано."))
 													return
-										if("Major Crime")
+										if("Крупное")
 											if(R)
-												var/t1 = stripped_input("Please input major crime names:", "Security HUD", "", null)
-												var/t2 = stripped_multiline_input("Please input major crime details:", "Security HUD", "", null)
+												var/t1 = stripped_input("Введите номер крупного правонарушения:", "HUD, СБ", "", null)
+												var/t2 = stripped_multiline_input("Введите детали преступления:", "HUD, СБ", "", null)
 												if(R)
 													if (!t1 || !t2 || !allowed_access)
 														return
@@ -293,7 +290,7 @@
 													var/crime = GLOB.data_core.createCrimeEntry(t1, t2, allowed_access, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time))
 													GLOB.data_core.addMajorCrime(R.fields["id"], crime)
 													investigate_log("New Major Crime: <strong>[t1]</strong>: [t2] | Added to [R.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
-													to_chat(usr, "<span class='notice'>Successfully added a major crime.</span>")
+													to_chat(usr, span_notice("Крупное правонарушение успешно записано."))
 									return
 								if(href_list["view_comment"])
 									if(R)
@@ -301,16 +298,16 @@
 											return
 										else if(!istype(H.glasses, /obj/item/clothing/glasses/hud/security) && !istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
 											return
-										to_chat(usr, "<b>Comments/Log:</b>")
+										var/list/comment_entries = list()
 										var/counter = 1
 										while(R.fields[text("com_[]", counter)])
-											to_chat(usr, R.fields[text("com_[]", counter)])
-											to_chat(usr, "----------")
+											comment_entries += R.fields[text("com_[]", counter)]
 											counter++
+										to_chat(usr, examine_box("Комментарии СБ: [R.fields["name"]]", examine_entries(comment_entries, "Комментариев нет.")))
 										return
 								if(href_list["add_comment"])
 									if(R)
-										var/t1 = stripped_multiline_input("Add Comment:", "Secure. records", null, null)
+										var/t1 = stripped_multiline_input("Добавить комментарий:", "Записи Службы Безопасности", null, null)
 										if(R)
 											if (!t1 || !allowed_access)
 												return
@@ -321,10 +318,10 @@
 											var/counter = 1
 											while(R.fields[text("com_[]", counter)])
 												counter++
-											R.fields["com_[counter]"] = "Made by [allowed_access] on [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] [time2text(world.realtime, "MMM DD")], [GLOB.year_integer]<BR>[t1]"
-											to_chat(usr, "<span class='notice'>Successfully added comment.</span>")
+											R.fields["com_[counter]"] = "Добавившее лицо: [allowed_access]. Время: [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] [time2text(world.realtime, "MMM DD")], [GLOB.year_integer]<BR>[t1]"
+											to_chat(usr, span_notice("Комментарий добавлен."))
 											return
-							to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+							to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
 
 	if(href_list["medical"])
 		if(is_antag_training_atom(src))
@@ -332,25 +329,31 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/modified = 0
-			var/perpname = get_visible_name(TRUE)
+			// Одна запись по имени: ровно та, что показал осмотр. Раньше циклы по всему data_core спрашивали статус для каждого дубликата записи.
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/med_choices = GLOB.med_record_status_ph + list("Отменить")
+			var/setmedical = input(usr, "Уточните новый статус пациента", "Мед-HUD", R.fields["p_stat"]) in med_choices
+			if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC) && !usr.incapacitated() && setmedical != "Отменить")
+				R.fields["p_stat"] = setmedical
+				sec_hud_set_security_status()
 
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.general)
-						if(R.fields["id"] == E.fields["id"])
-							var/setmedical = input(usr, "Specify a new medical status for this person.", "Medical HUD", R.fields["p_stat"]) in list("Идеальное Здоровье", "*Космическое Расстройство Сна (ССД)*", "*Мёртв*", "Физически Непригодный", "Инвалид", "Присматривать", "Нестабильный", "Безумный", "Отменить")
-
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								if(setmedical != "Отменить")
-									R.fields["p_stat"] = setmedical
-									modified = 1
-
-									spawn()
-										sec_hud_set_security_status()
-
-			if(!modified)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+	if(href_list["medical_mental"])
+		if(is_antag_training_atom(src))
+			return
+		if(has_medical_examine_hud(usr))
+			if(usr.incapacitated())
+				return
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/med_choices = GLOB.med_record_status_m + list("Отменить")
+			var/setmental = input(usr, "Уточните псих. статус данной личности.", "Мед-HUD", R.fields["m_stat"]) in med_choices
+			if(has_medical_examine_hud(usr) && !usr.incapacitated() && setmental != "Отменить")
+				R.fields["m_stat"] = setmental
 
 	if(href_list["medrecord"])
 		if(is_antag_training_atom(src))
@@ -358,26 +361,18 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/read = 0
-			var/perpname = get_visible_name(TRUE)
-
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.medical)
-						if(R.fields["id"] == E.fields["id"])
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								to_chat(usr, "<b>Name:</b> [R.fields["name"]]	<b>Blood Type:</b> [R.fields["b_type"]]")
-								to_chat(usr, "<b>DNA:</b> [R.fields["b_dna"]]")
-								to_chat(usr, "<b>Minor Disabilities:</b> [R.fields["mi_dis"]]")
-								to_chat(usr, "<b>Details:</b> [R.fields["mi_dis_d"]]")
-								to_chat(usr, "<b>Major Disabilities:</b> [R.fields["ma_dis"]]")
-								to_chat(usr, "<b>Details:</b> [R.fields["ma_dis_d"]]")
-								to_chat(usr, "<b>Notes:</b> [R.fields["notes"]]")
-								to_chat(usr, "<a href='?src=[UID()];medrecordComment=`'>\[View Comment Log\]</a>")
-								read = 1
-
-			if(!read)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.medical_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/record_rows = list(
+				"Имя" = R.fields["name"],
+				"Группа крови" = R.fields["blood_type"],
+				"ДНК" = R.fields["b_dna"],
+				"Незнач. ограничения" = "[R.fields["mi_dis"]]<br><span class='examine_meta'>[R.fields["mi_dis_d"]]</span>",
+				"Серьёзные ограничения" = "[R.fields["ma_dis"]]<br><span class='examine_meta'>[R.fields["ma_dis_d"]]</span>",
+				"Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+			to_chat(usr, examine_box("Медицинская запись", "<div class='examine_medical_record'>[examine_table(record_rows)]</div><div class='examine_record_actions'><a href='?src=[UID()];medrecordComment=`'>\[Просмотреть комментарии\]</a></div>"))
 
 	if(href_list["medrecordComment"])
 		if(is_antag_training_atom(src))
@@ -385,29 +380,20 @@
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
-			var/perpname = get_visible_name(TRUE)
-			var/read = FALSE
-
-			for(var/datum/data/record/E in GLOB.data_core.general)
-				if(E.fields["name"] == perpname)
-					for(var/datum/data/record/R in GLOB.data_core.medical)
-						if(R.fields["id"] == E.fields["id"])
-							if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
-								read = TRUE
-								if(LAZYLEN(R.fields["comments"]))
-									for(var/c in R.fields["comments"])
-										to_chat(usr, c)
-								else
-									to_chat(usr, "<span class='warning'>No comment found</span>")
-								to_chat(usr, "<a href='?src=[UID()];medrecordadd=`'>\[Add comment\]</a>")
-
-			if(!read)
-				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
+			var/datum/data/record/R = antag_training_station_record(GLOB.data_core.medical_by_name, get_face_name(get_id_name("")), src)
+			if(!R)
+				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
+				return
+			var/list/comment_entries = list()
+			if(LAZYLEN(R.fields["comments"]))
+				for(var/c in R.fields["comments"])
+					comment_entries += c
+			to_chat(usr, examine_box("Медицинские комментарии", examine_entries(comment_entries, "Комментарии не найдены") + "<div class='examine_record_actions'><a href='?src=[UID()];medrecordadd=`'>\[Добавить комментарий\]</a></div>"))
 
 	if(href_list["medrecordadd"])
 		if(usr.incapacitated() || !hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			return
-		var/raw_input = input("Add Comment:", "Medical records", null, null) as message
+		var/raw_input = input("Добавить комментарий:", "Медицинские записи", null, null) as message
 		var/sanitized = copytext(trim(sanitize(raw_input)), 1, MAX_MESSAGE_LEN)
 		if(!sanitized || usr.stat || usr.restrained() || !hasHUD(usr,  DATA_HUD_MEDICAL_BASIC))
 			return
@@ -420,13 +406,31 @@
 		if(I.loc in view(4))
 			examinate(I)
 		else
-			to_chat(usr, "<span class='warning'>You need to get closer to examine that!</span>")
+			to_chat(usr, span_warning("Вам нужно подойти ближе, чтобы осмотреть!"))
+
+	if(href_list["examine_traits"])
+		examine_traits_topic(usr, href_list["examine_traits"])
+		return
+	if(href_list["examine_accessories"])
+		examine_accessories_topic(usr)
+		return
+	if(href_list["examine_accessory"])
+		examine_accessories_topic(usr, href_list["examine_accessory"])
+		return
 
 /mob/living/carbon/human/proc/canUseHUD()
 	return CHECK_MOBILITY(src, MOBILITY_UI)
 
 /mob/living/carbon/human/proc/is_zone_covered_by_clothing(target_zone)
-	var/covered_part = zone2body_parts_covered_complicated(target_zone)
+	var/covered_part
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG || target_zone == BODY_ZONE_PRECISE_GROIN))
+		covered_part = NAGA_TAIL_COVERAGE
+	else if(target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG)
+		var/obj/item/bodypart/limb = get_bodypart(target_zone)
+		if(limb)
+			target_zone = limb.get_clothing_zone()
+	if(!covered_part)
+		covered_part = zone2body_parts_covered_complicated(target_zone)
 	if(!covered_part)
 		if(above_neck(target_zone))
 			covered_part = HEAD
@@ -462,6 +466,9 @@
 					. = 0
 		else
 			var/obj/item/bodypart/BP = get_bodypart(target_zone)
+			if(target_zone == BODY_ZONE_PRECISE_GROIN && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+				// Доступ к основанию хвоста существует и перед пересадкой, когда самого хвоста нет.
+				BP = get_bodypart(BODY_ZONE_L_LEG) || get_bodypart(BODY_ZONE_CHEST)
 			var/obj/item/clothing/CS = get_bodypart_protecting_clothing_by_coverage(src, BP)
 			if(CS && (CS.clothing_flags & THICKMATERIAL))
 				. = 0
@@ -532,7 +539,7 @@
 
 	//Check for ID
 	var/obj/item/card/id/idcard = get_idcard(FALSE)
-	if( (judgement_criteria & JUDGE_IDCHECK) && !idcard && name=="Unknown")
+	if((judgement_criteria & JUDGE_IDCHECK) && !idcard && (name in list("Unknown", "Неизвестный")))
 		threatcount += 4
 
 	//Check for weapons
@@ -689,9 +696,9 @@
 			to_chat(C, "<span class='unconscious'>Вы ощущаете поток свежего воздуха... неизвестно, откуда...</span>")
 
 /mob/living/carbon/human/cuff_resist(obj/item/I)
-	if(dna && dna.check_mutation(HULK) || istype(mind?.martial_art, /datum/martial_art/nanosuit))
+	if(is_hulk() || istype(mind?.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
-		if(..(I, cuff_break = FAST_CUFFBREAK))
+		if(..(I, cuff_break = INSTANT_CUFFBREAK))
 			dropItemToGround(I)
 	else if(HAS_TRAIT(src, TRAIT_HERETIC_ASCENDED))
 		visible_message(span_warning("[src] начинает рвать путы, будто их тянет сама завеса!"))
@@ -868,7 +875,7 @@
 	var/list/limb_states = list()
 	for(var/obj/item/bodypart/limb as anything in bodyparts)
 		limb_states += "[limb.body_zone][hide_damage ? 0 : limb.get_healthdoll_state()][limb.disabled ? "!" : ""]"
-	return "[ui_style]|[jointext(limb_states, "/")]"
+	return "[ui_style]|[HAS_TRAIT(src, TRAIT_NAGA_ANATOMY)]|[jointext(limb_states, "/")]"
 
 /// Builds the doll's overlay list for the given HUD style.
 /mob/living/carbon/human/proc/build_healthdoll_overlays(ui_style)
@@ -877,11 +884,17 @@
 	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
 	for(var/obj/item/bodypart/limb as anything in bodyparts)
 		var/icon_num = hide_damage ? 0 : limb.get_healthdoll_state()
+		if(istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+			continue
 		if(icon_num)
 			. += get_healthdoll_appearance(doll_icons, "[limb.body_zone][icon_num]")
 	for(var/zone in get_missing_limbs())
+		if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+			continue
 		. += get_healthdoll_appearance(doll_icons, "[zone]6")
 	for(var/zone in get_disabled_limbs())
+		if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+			continue
 		. += get_healthdoll_appearance(doll_icons, "[zone]7")
 
 /mob/living/carbon/human/update_health_hud()
@@ -925,11 +938,22 @@
 				doll.doll_cache_key = doll_key
 				doll.cut_overlays()
 				if(stat != DEAD)
+					if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+						var/obj/item/bodypart/tail = get_bodypart(BODY_ZONE_L_LEG)
+						var/tail_state = tail ? ((hal_screwyhud == SCREWYHUD_HEALTHY) ? 0 : tail.get_healthdoll_state()) : 6
+						if(tail?.disabled)
+							tail_state = 7
+						doll.icon = NAGA_DOLL_ICON
+						if(tail_state)
+							doll.add_overlay(get_healthdoll_appearance(NAGA_DOLL_ICON, "tail[tail_state]"))
+					else
+						doll.icon = ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_OVERLAY"
 					var/list/doll_overlays = build_healthdoll_overlays(hud_used.ui_style)
 					if(length(doll_overlays))
 						doll.add_overlay(doll_overlays)
 				else
+					doll.icon = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? NAGA_DOLL_ICON : ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_DEAD"
 
 		hud_used.staminas?.update_icon_state()
@@ -937,6 +961,7 @@
 
 /mob/living/carbon/human/fully_heal(admin_revive = FALSE)
 	if(admin_revive)
+		restore_naga_anatomy_from_mind()
 		regenerate_limbs()
 		regenerate_organs()
 	remove_all_embedded_objects()
@@ -1107,6 +1132,15 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		admin_ticket_log(src, span_notice("[key_name_admin(usr, FALSE)] has [change_text]")) // In case they complained in an ahelp, we'll let them know anything happened
 
 /mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
+	if(istype(target, /mob/living/simple_animal/mouse))
+		SEND_SIGNAL(target, COMSIG_CLICK_ALT, user)
+		return
+	if(istype(target, /mob/living/simple_animal))
+		var/mob/living/simple_animal/rideable = target
+		if(rideable.can_buckle && rideable.tame && rideable != src && !src.buckled)
+			rideable.prepare_riding()
+			if(rideable.mouse_buckle_handling(src, user))
+				return
 	var/GS_needed = istype(target, /mob/living/silicon/pai)? GRAB_PASSIVE : GRAB_AGGRESSIVE
 	if(pulling == target && grab_state >= GS_needed && stat == CONSCIOUS)
 		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback
@@ -1248,13 +1282,13 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 #undef PIGGYBACK_DELAYADD_HEAVY
 #undef PIGGYBACK_DELAYADD_HEAVY_SUPER
 
-/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
+/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE, is_hidden = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
 	if(!istype(target))
 		return FALSE
 	if(!is_type_in_typecache(target, can_ride_typecache))
-		target.visible_message(span_warning("[target] действительно не может забраться на [src]..."))
+		target.visible_message(span_warning("[target] действительно не может забраться на [src]..."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		return
 	if(target.has_buckled_mobs())
 		return FALSE
@@ -1269,7 +1303,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 			if(!(H.dna?.features["taur"] in list(null, "None")))
 				var/datum/sprite_accessory/taur/T = GLOB.taur_list[H.dna.features["taur"]]
 				if(T && T.taur_mode != STYLE_SNEK_TAURIC)
-					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."))
+					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 					return
 
 		// Переносчик, проверка, что он 4х лапый, а не змея
@@ -1320,12 +1354,14 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 	if(hands_needed || target_hands_needed)
 		if(hands_needed && !equipped_hands_self)
-			src.visible_message(span_warning("[src] can't get a grip on [target] because their hands are full!"),
-				span_warning("You can't get a grip on [target] because your hands are full!"))
+			visible_message(span_warning("[src] не может ухватить [target], потому что руки заняты!"),
+				span_warning("Твои руки заняты. Не получается ухватить [target]!"),
+				vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			return
 		else if(target_hands_needed && !equipped_hands_target)
-			target.visible_message(span_warning("[target] can't get a grip on [src] because their hands are full!"),
-				span_warning("You can't get a grip on [src] because your hands are full!"))
+			target.visible_message(span_warning("[target] не может ухватить [src], потому что руки заняты!"),
+				span_warning("Твои руки заняты. Не получается ухватить [src]!"),
+				vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			return
 
 	stop_pulling()
@@ -1335,11 +1371,13 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		riding_datum.belly_harness = belt
 	. = ..(target, force, check_loc)
 	if(!.)
-		visible_message(span_warning("[src] не смог(ла) поднять [target]."))
+		visible_message(span_warning("[src] не смог(ла) поднять [target]."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		riding_datum.unequip_buckle_inhands(src)
 		riding_datum.unequip_buckle_inhands(target)
 
 /mob/living/carbon/human/proc/is_shove_knockdown_blocked() //If you want to add more things that block shove knockdown, extend this
+	if(HAS_TRAIT(src, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED))
+		return TRUE
 	for(var/obj/item/clothing/C in get_equipped_items()) //doesn't include pockets
 		if(C.blocks_shove_knockdown)
 			return TRUE

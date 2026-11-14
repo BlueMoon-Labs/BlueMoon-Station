@@ -25,21 +25,26 @@
 	var/image_popup
 
 /datum/emote/New()
-	if (ispath(mob_type_allowed_typecache))
-		switch (mob_type_allowed_typecache)
-			if (/mob)
-				mob_type_allowed_typecache = GLOB.typecache_mob
-			if (/mob/living)
-				mob_type_allowed_typecache = GLOB.typecache_living
-			else
-				mob_type_allowed_typecache = typecacheof(mob_type_allowed_typecache)
-	else
-		mob_type_allowed_typecache = typecacheof(mob_type_allowed_typecache)
-	mob_type_blacklist_typecache = typecacheof(mob_type_blacklist_typecache)
-	mob_type_ignore_stat_typecache = typecacheof(mob_type_ignore_stat_typecache)
+	mob_type_allowed_typecache = shared_typecache(mob_type_allowed_typecache)
+	mob_type_blacklist_typecache = shared_typecache(mob_type_blacklist_typecache)
+	mob_type_ignore_stat_typecache = shared_typecache(mob_type_ignore_stat_typecache)
 
 	if(!name)
 		name = key
+
+/// Hundreds of emotes name the same few roots, and typesof(/mob/living) alone is thousands of paths.
+/// Emote typecaches are read-only, so equal type lists share one cache.
+/datum/emote/proc/shared_typecache(types)
+	var/static/list/typecaches
+	if(isnull(types))
+		return null
+	if(!typecaches)
+		typecaches = list("[/mob]" = GLOB.typecache_mob, "[/mob/living]" = GLOB.typecache_living)
+	var/key = islist(types) ? jointext(types, ",") : "[types]"
+	. = typecaches[key]
+	if(isnull(.))
+		. = typecacheof(types)
+		typecaches[key] = .
 
 /// Makes the mob to run the specified emote.
 /// * `user` - our mob.

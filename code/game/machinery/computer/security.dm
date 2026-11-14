@@ -270,14 +270,14 @@
 			G.fields["name"] = "New Record"
 			G.fields["id"] = "[num2hex(rand(1, 1.6777215E7), 6)]"
 			G.fields["rank"] = "Unassigned"
-			G.fields["gender"] = "Male"
+			G.fields["gender"] = GLOB.gender_to_string[MALE]
 			G.fields["age"] = "Unknown"
 			G.fields["species"] = "Human"
 			G.fields["photo_front"] = new /icon()
 			G.fields["photo_side"] = new /icon()
 			G.fields["fingerprint"] = "?????"
-			G.fields["p_stat"] = "Active"
-			G.fields["m_stat"] = "Stable"
+			G.fields["p_stat"] = MED_RECORD_STATUS_PH_HEALTHY
+			G.fields["m_stat"] = MED_RECORD_STATUS_M_STABLE
 			GLOB.data_core.general += G
 			GLOB.data_core.register_record(G, "general")
 			active1 = G
@@ -303,15 +303,15 @@
 			M.fields["name"] = active1.fields["name"]
 			M.fields["blood_type"] = "?"
 			M.fields["b_dna"] = "?????"
-			M.fields["mi_dis"] = "None"
-			M.fields["mi_dis_d"] = "No minor disabilities have been declared."
-			M.fields["ma_dis"] = "None"
-			M.fields["ma_dis_d"] = "No major disabilities have been diagnosed."
-			M.fields["alg"] = "None"
-			M.fields["alg_d"] = "No allergies have been detected in this patient."
-			M.fields["cdi"] = "None"
-			M.fields["cdi_d"] = "No diseases have been diagnosed at the moment."
-			M.fields["notes"] = "No notes."
+			M.fields["mi_dis"] = "Отсутствуют"
+			M.fields["mi_dis_d"] = "Незначительных ограничений не вменялось."
+			M.fields["ma_dis"] = "Отсутствуют"
+			M.fields["ma_dis_d"] = "Значительных ограничений не диагностировалось."
+			M.fields["alg"] = "Отсутствуют"
+			M.fields["alg_d"] = "Аллергии не были обнаружены на момент записи."
+			M.fields["cdi"] = "Отсутствуют"
+			M.fields["cdi_d"] = "Болезни не диагностировались на момент записи."
+			M.fields["notes"] = "Записи не обнаружены."
 			GLOB.data_core.medical += M
 			GLOB.data_core.register_record(M, "medical")
 
@@ -469,12 +469,12 @@
 					if(!active1)
 						return
 					var/old_val = active1.fields["gender"]
-					if(old_val == "Male")
-						active1.fields["gender"] = "Female"
-					else if(old_val == "Female")
-						active1.fields["gender"] = "Other"
+					if(old_val == GLOB.gender_to_string[MALE] || old_val == "Male")
+						active1.fields["gender"] = GLOB.gender_to_string[FEMALE]
+					else if(old_val == GLOB.gender_to_string[FEMALE] || old_val == "Female")
+						active1.fields["gender"] = "Другой"
 					else
-						active1.fields["gender"] = "Male"
+						active1.fields["gender"] = GLOB.gender_to_string[MALE]
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"гендер\" с [old_val] на [active1.fields["gender"]]", login_state.name, login_state.rank)
 				if("age")
 					if(!active1)
@@ -529,7 +529,7 @@
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
 			var/crime = GLOB.data_core.createCrimeEntry(cname, cdetails, login_state.name, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), centcom_authority)
 			GLOB.data_core.addMinorCrime(active1.fields["id"], crime)
-			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% записал некрупное преступление: <b>[cname]</b>, [cdetails]", login_state.name, login_state.rank)
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% записал малое преступление: <b>[cname]</b>, [cdetails]", login_state.name, login_state.rank)
 			investigate_log("New Minor Crime: <strong>[cname]</strong>: [cdetails] | Added to [active1.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
 		if("ma_crim_add")
 			if(!logged_in || !active1 || !active2)
@@ -553,7 +553,7 @@
 				return
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
 			GLOB.data_core.removeMinorCrime(active1.fields["id"], cdataid, centcom_authority)
-			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% удалил некрупное преступление №[cdataid]", login_state.name, login_state.rank)
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% удалил малое преступление №[cdataid]", login_state.name, login_state.rank)
 		if("ma_crim_delete")
 			if(!logged_in || !active1 || !active2)
 				return
@@ -1008,15 +1008,15 @@
 					else
 						R.fields["name"] = "[pick(pick(GLOB.first_names_male), pick(GLOB.first_names_female))] [pick(GLOB.last_names)]"
 				if(2)
-					R.fields["gender"] = pick("Male", "Female", "Other")
+					R.fields["gender"] = pick(GLOB.gender_to_string[MALE], GLOB.gender_to_string[FEMALE], "Другой")
 				if(3)
 					R.fields["age"] = rand(5, 85)
 				if(4)
 					R.set_security_status(pick(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DISCHARGED))
 				if(5)
-					R.fields["p_stat"] = pick("*Unconscious*", "Active", "Physically Unfit")
+					R.fields["p_stat"] = pick(GLOB.med_record_status_ph)
 				if(6)
-					R.fields["m_stat"] = pick("*Insane*", "*Unstable*", "*Watch*", "Stable")
+					R.fields["m_stat"] = pick(GLOB.med_record_status_m)
 				if(7)
 					R.fields["species"] = pick(GLOB.roundstart_races)
 				if(8)

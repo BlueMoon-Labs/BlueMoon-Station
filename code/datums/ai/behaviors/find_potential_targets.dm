@@ -84,8 +84,9 @@
 	//Редкие search_objects-мобы (watcher bait, gutlunch food и т.п.) по
 	//легаси-семантике ищут и объекты. Дорогой локальный обзор остаётся строго
 	//гейтнут этим флагом; обычные hostile используют только spatial grid.
+	var/datum/ai_pack_scan/pack_scan = ai_pack_scan_for(hostile_mob, targeting_strategy)
 	if(istype(hostile_mob) && hostile_mob.search_objects && length(hostile_mob.wanted_objects))
-		potential_targets |= typecache_filter_list(oview(target_scan_range, hostile_mob.targets_from), hostile_mob.wanted_objects)
+		potential_targets |= find_wanted_objects(hostile_mob, target_scan_range, pack_scan)
 
 	//враждебные машины: сразу только текущий z-бакет вместо глобального скана
 	var/turf/perception_turf = get_turf(perception)
@@ -111,14 +112,7 @@
 		impervious_ref = controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF]
 	var/atom/impervious_target = impervious_ref?.resolve()
 
-	var/list/filtered_targets = list()
-	for(var/atom/pot_target as anything in potential_targets)
-		AI_METRIC_INC(candidates_examined)
-		if(pot_target == impervious_target)
-			continue
-		if(!candidate_passes(living_mob, pot_target, targeting_strategy, aggro_range, FALSE))
-			continue
-		filtered_targets += pot_target
+	var/list/filtered_targets = filter_candidates(living_mob, perception, potential_targets, targeting_strategy, aggro_range, impervious_target, current_target_valid ? current_target : null, pack_scan)
 
 	if(!length(filtered_targets))
 		schedule_target_refresh(controller, controller.is_combat_alert())
@@ -280,6 +274,49 @@
 		return TRUE
 	AI_METRIC_INC(los_checks)
 	return can_see(perception, candidate, aggro_range)
+
+///candidate_passes() без LOS для всего пула. Развёрнута в цикл: в орде кандидатов сотня,
+///и вызовы на каждого стоили дороже самих проверок. Отказы can_attack делятся со стаей
+///(pack_scan), уже проверенная в этом проходе текущая цель не перепроверяется.
+/datum/ai_behavior/find_potential_targets/proc/filter_candidates(mob/living/living_mob, atom/perception, list/candidates, datum/targeting_strategy/targeting_strategy, aggro_range, atom/impervious_target, atom/validated_target, datum/ai_pack_scan/pack_scan)
+	. = list()
+	var/turf/perception_turf = get_turf(perception)
+	if(!perception_turf)
+		return
+	var/alist/pack_rejected = pack_scan?.rejected
+	var/hunter_ref = pack_scan ? REF(living_mob) : null
+	for(var/atom/candidate as anything in candidates)
+		AI_METRIC_INC(candidates_examined)
+		if(candidate == impervious_target || QDELETED(candidate))
+			continue
+		if(candidate == validated_target)
+			. += candidate
+			continue
+		if(ismob(candidate) && istype(candidate.loc, /obj/vehicle/sealed))
+			continue
+		if(get_dist(perception, candidate) > aggro_range)
+			continue
+		var/turf/candidate_turf = get_turf(candidate)
+		if(!candidate_turf || candidate_turf.z != perception_turf.z)
+			continue
+		if(pack_rejected && pack_rejected[candidate])
+			continue
+		if(!targeting_strategy.can_attack(living_mob, candidate, aggro_range))
+			pack_scan?.note_rejection(candidate, hunter_ref)
+			continue
+		. += candidate
+
+///Объекты wanted_objects в обзоре. Сородич, только что смотревший почти с той же точки на ту же
+///дальность, отдаёт свой результат: oview на 25-30 клеток - самая дорогая часть скана.
+/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects(mob/living/simple_animal/hostile/hostile_mob, scan_range, datum/ai_pack_scan/pack_scan)
+	var/turf/origin = get_turf(hostile_mob.targets_from)
+	if(origin && pack_scan)
+		var/list/shared = pack_scan.shared_objects(origin, scan_range)
+		if(shared)
+			return shared
+	. = typecache_filter_list(oview(scan_range, hostile_mob.targets_from), hostile_mob.wanted_objects)
+	if(origin && pack_scan)
+		pack_scan.store_objects(origin, scan_range, .)
 
 ///Обновить память о ПОДТВЕРЖДЁННОЙ позиции цели (зовётся только пока цель видима)
 /datum/ai_behavior/find_potential_targets/proc/remember_target_position(datum/ai_controller/controller, atom/target)

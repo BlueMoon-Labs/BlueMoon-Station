@@ -18,6 +18,6 @@
 		return
 	var/mob/living/carbon/C = target
 	if(istype(C.handcuffed, /obj/item/restraints/bondage_rope))
-		C.clear_cuffs(C.handcuffed, 0)
+		C.clear_cuffs(C.handcuffed, 0, is_hidden)
 	else if(istype(C.legcuffed, /obj/item/restraints/bondage_rope))
-		C.clear_cuffs(C.legcuffed, 0)
+		C.clear_cuffs(C.legcuffed, 0, is_hidden)

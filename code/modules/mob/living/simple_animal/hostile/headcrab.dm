@@ -12,6 +12,9 @@
 	ranged = 1
 	ranged_message = "leaps"
 	ranged_cooldown_time = 40
+	obj_damage = 0
+	environment_smash = ENVIRONMENT_SMASH_NONE
+	can_damage_objects = FALSE
 	var/jumpdistance = 4
 	var/jumpspeed = 1
 	attack_verb_continuous = "грызёт"

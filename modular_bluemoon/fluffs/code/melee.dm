@@ -490,7 +490,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/restraints/legcuffs/bola/energy/melatonin)
 	icon_state = "melatonin_bola[isturf(loc) ? "_flying" : ""]"
 
 /obj/item/restraints/legcuffs/bola/energy/melatonin/ensnare(mob/living/carbon/C) // оверрайд для изменения звука, более ничего не изменено
-	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+	if(can_apply_to_legs(C) && !C.legcuffed && C.get_num_legs(FALSE) >= 2)
 		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
 		C.legcuffed = src
 		forceMove(C)

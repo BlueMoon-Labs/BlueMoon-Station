@@ -282,7 +282,7 @@
 
 /datum/director_profile/teambased
 	round_type = ROUNDTYPE_DYNAMIC_TEAMBASED
-	desc = "Одна большая война вместо парада одиночек: антаг-пулы забирают крупную долю капли, события служат фоном конфликта."
+	desc = "Кровавые братья и почасовые командные волны. События служат фоном конфликта."
 	base_drip = 0.8
 	antag_drip = 1.1
 	latejoin_spacing = 6 MINUTES

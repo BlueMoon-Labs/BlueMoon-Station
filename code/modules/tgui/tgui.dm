@@ -37,6 +37,8 @@
 	var/datum/ui_state/state = null
 	/// If the window should update
 	var/needs_update = FALSE
+	/// md5 последнего частичного обновления: такое же повторно клиенту не шлём.
+	var/last_update_digest
 	/// Rate limit client refreshes to prevent DoS.
 	COOLDOWN_DECLARE(refresh_cooldown)
 	/// The Parent UI
@@ -185,7 +187,7 @@
 		if(!QDELETED(src))
 			close(can_be_suspended = FALSE)
 		return FALSE
-	window.send_message("update", payload)
+	send_full_payload(payload)
 	SStgui.on_open(src)
 
 	return TRUE
@@ -307,7 +309,7 @@
 	//нагрузка приехала бы уже чужому интерфейсу
 	if(!payload || !can_send_update())
 		return
-	window.send_message("update", payload)
+	send_full_payload(payload)
 	COOLDOWN_START(src, refresh_cooldown, TGUI_REFRESH_FULL_UPDATE_COOLDOWN)
 
 /**
@@ -329,7 +331,24 @@
 	//могло уйти в пул к другому интерфейсу
 	if(!payload || !can_send_update())
 		return
+	send_partial_update(payload)
+
+/// Полное обновление несёт свои данные: следующее частичное, даже равное прошлому частичному, уже не повтор.
+/datum/tgui/proc/send_full_payload(list/payload)
+	last_update_digest = null
 	window.send_message("update", payload)
+
+/// Частичное обновление без static_data. Повтор уже отправленного не уходит: фронтенд сливает данные поверх прежних,
+/// и та же нагрузка ничего бы не поменяла. TRUE, если сообщение ушло.
+/datum/tgui/proc/send_partial_update(list/payload)
+	var/message = TGUI_CREATE_MESSAGE("update", payload)
+	var/digest = md5(message)
+	if(digest == last_update_digest)
+		note_tgui_traffic("[interface]/update", length(message), skipped = TRUE)
+		return FALSE
+	last_update_digest = digest
+	window.send_built_message("update", payload, message)
+	return TRUE
 
 /**
  * private
@@ -446,7 +465,7 @@
 		var/list/payload = get_payload()
 		if(!payload || !can_send_update())
 			return
-		window.send_message("update", payload)
+		send_partial_update(payload)
 
 /**
  * private
@@ -484,6 +503,7 @@
 		return FALSE
 	switch(type)
 		if("ready")
+			last_update_digest = null
 			// Send a full update when the user manually refreshes the UI
 			if(initialized)
 				send_full_update()

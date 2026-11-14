@@ -619,6 +619,8 @@
  * * arg2 - update_color, if enabled, will adjust the behavior of the proc to change the color of the light if it is already on.
  */
 /mob/living/silicon/robot/proc/toggle_headlamp(turn_off = FALSE, update_color = FALSE)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		turn_off = TRUE
 	//if both lamp is enabled AND the update_color flag is on, keep the lamp on. Otherwise, if anything listed is true, disable the lamp.
 	if(!(update_color && lamp_enabled) && (turn_off || lamp_enabled || update_color || !lamp_functional || stat || low_power_mode))
 		set_light((lamp_functional && stat != DEAD && lamp_doom) ? lamp_intensity : 0, l_color = COLOR_RED)
@@ -991,7 +993,7 @@
 	update_health_hud()
 	..()
 
-/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..()) //successfully ressuscitated from death
 		if(!QDELETED(builtInCamera) && !wires.is_cut(WIRE_CAMERA))
 			builtInCamera.toggle_cam(src,0)

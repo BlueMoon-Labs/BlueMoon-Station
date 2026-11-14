@@ -4,5 +4,5 @@
  *
 */
 #define COMSIG_MOB_PRE_CAME "mob_pre_came"
-/// From /mob/living/cum(): (mob/source, mob/living/partner, target_orifice)
+/// From /mob/living/cum(): (mob/source, target_orifice, mob/living/partner, cumin, obj/item/organ/last_genital, is_hidden)
 #define COMSIG_MOB_POST_CAME "mob_post_came"

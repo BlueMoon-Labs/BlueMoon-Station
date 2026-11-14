@@ -57,7 +57,7 @@
 /obj/item/spear/rightclick_attack_self(mob/user)
 	if(explosive)
 		explosive.attack_self(user)
-		return
+		return TRUE
 	. = ..()
 
 /obj/item/spear/update_icon_state()
@@ -81,7 +81,7 @@
 	. = ..()
 	if(explosive)
 		. += "<span class='notice'>Alt-click to set your war cry.</span>"
-		. += "<span class='notice'>Right-click in combat mode to activate the attached explosive.</span>"
+		. += "<span class='notice'>ПКМ - активировать прикреплённую взрывчатку.</span>"
 
 /obj/item/spear/afterattack(atom/movable/AM, mob/user, proximity)
 	. = ..()

@@ -115,6 +115,8 @@
 /// затевалось, в раунде 10121 были по 8-53 МБ, и полусекундной сетки хватает, чтобы
 /// каждая легла в свой сэмпл целиком, а кольца контекста (5 секунд) её накрыли.
 #define TICK_SPIKES_MEMORY_SAMPLE_TICKS 5
+/// Фоновый снимок /proc - восемь чтений файлов и их разбор, поэтому реже сетки памяти: раз в 2 с.
+#define TICK_SPIKES_SCHED_PROBE_TICKS 40
 /// Порог скачка VmSize (МБ), с которого пишется блок. В раунде 10121 семнадцать ступеней
 /// >= 8 МБ дали 81% всего роста раунда, а 184 сэмпла из 290 не росли вообще: порог 8
 /// ловит весь вклад и молчит на фоне.
@@ -277,6 +279,17 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// Сколько блоков уже написано - бюджет TICK_SPIKES_MAX_MEMORY_EVENTS
 	var/memory_events_written = 0
 
+	// --- Счётчики планировщика из /proc (process_sched_probe.dm) ---
+	/// FALSE после первого промаха: на Windows /proc нет
+	var/sched_probe_available = TRUE
+	var/sched_probe_countdown = 0
+	/// Последний снимок до спайка: блок спайка сравнивает с ним свежий
+	var/list/sched_probe_last
+	/// Разности последнего окна без спайков - фоновая скорость счётчиков
+	var/list/sched_probe_background
+	/// В окне от sched_probe_last был спайк, фоном это окно не годится
+	var/sched_probe_window_dirty = FALSE
+
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
 	var/last_ms = 0
@@ -314,6 +327,12 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// Числовой хвост к последней классификации (cpu/map_cpu). Живёт отдельно от строки
 	/// класса, потому что класс сравнивается на точное равенство при решении об авто-дампе.
 	var/last_classify_detail = ""
+	/// Класс с хвостом последнего полного блока: его читает SSping_diag, время - в last_spike_world.
+	var/last_spike_class
+	/// Самая тяжёлая подсистема класса МК последнего полного блока, иначе null: ключ источника в SSping_diag.
+	var/last_spike_heaviest_name
+	/// Самая тяжёлая подсистема в тиках спайка из последней классификации класса МК.
+	var/last_classify_heaviest
 	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
 	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
 	var/profile_dump_seq = 0
@@ -396,6 +415,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	memory_jump_threshold_mb = SStick_spikes.memory_jump_threshold_mb
 	memory_sample_ticks = SStick_spikes.memory_sample_ticks
 	memory_probe_available = SStick_spikes.memory_probe_available
+	sched_probe_available = SStick_spikes.sched_probe_available
 
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
@@ -440,6 +460,10 @@ SUBSYSTEM_DEF(tick_spikes)
 	biggest_memory_jump_mb = 0
 	biggest_memory_jump_at = 0
 	memory_events_written = 0
+	sched_probe_countdown = 0
+	sched_probe_last = null
+	sched_probe_background = null
+	sched_probe_window_dirty = FALSE
 	has_baseline = FALSE
 	last_ms = 0
 	last_world = 0
@@ -450,6 +474,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	drift_histogram = list(0, 0, 0, 0, 0)
 	last_spike_iteration = 0
 	last_spike_world = 0
+	last_spike_class = null
+	last_spike_heaviest_name = null
 	last_sendmaps_value = 0
 	last_sendmaps_calls = 0
 	spike_events = list()
@@ -463,6 +489,7 @@ SUBSYSTEM_DEF(tick_spikes)
 /datum/controller/subsystem/tick_spikes/fire()
 	sample_tick(rustg_time_milliseconds(TICK_SPIKES_CLOCK), world.time, TICK_USAGE, world.cpu, MAPTICK_LAST_INTERNAL_TICK_USAGE)
 	sample_memory()
+	sample_sched_probe()
 	if(capture_until && world.time > capture_until)
 		stop_capture(automatic = TRUE)
 	maybe_dump_periodic_profile()
@@ -566,6 +593,36 @@ SUBSYSTEM_DEF(tick_spikes)
 	if(jump < memory_jump_threshold_mb)
 		return
 	register_memory_jump(jump, vsz, instances - previous_instances, world.time - previous_world, previous_ledger)
+
+/// Фоновый снимок счётчиков /proc: блоку спайка нужен снимок до столла.
+/datum/controller/subsystem/tick_spikes/proc/sample_sched_probe()
+	if(!sched_probe_available)
+		return
+	if(--sched_probe_countdown > 0)
+		return
+	sched_probe_countdown = TICK_SPIKES_SCHED_PROBE_TICKS
+	var/list/snapshot = read_sched_probe(now_ms())
+	if(!snapshot)
+		sched_probe_available = FALSE
+		return
+	remember_sched_snapshot(snapshot)
+
+/datum/controller/subsystem/tick_spikes/proc/remember_sched_snapshot(list/snapshot)
+	if(sched_probe_last && !sched_probe_window_dirty)
+		sched_probe_background = sched_probe_delta(sched_probe_last, snapshot)
+	sched_probe_last = snapshot
+	sched_probe_window_dirty = FALSE
+
+/// Строки /proc для полного блока: свежий снимок против последнего до столла.
+/datum/controller/subsystem/tick_spikes/proc/build_sched_probe_lines(drift, list/now_snapshot)
+	if(!now_snapshot || !sched_probe_last)
+		return list()
+	var/list/lines = sched_probe_lines(sched_probe_delta(sched_probe_last, now_snapshot), drift, sched_probe_background)
+	// Окно столла фоном не станет, следующее окно уже спокойное
+	sched_probe_last = now_snapshot
+	sched_probe_window_dirty = FALSE
+	sched_probe_countdown = TICK_SPIKES_SCHED_PROBE_TICKS
+	return lines
 
 /**
  * Кто заплатил за скачок: датумы или что-то ещё.
@@ -902,17 +959,22 @@ SUBSYSTEM_DEF(tick_spikes)
  */
 /datum/controller/subsystem/tick_spikes/proc/classify_spike(now_world, drift)
 	last_classify_detail = ""
+	last_classify_heaviest = null
 	if(world.time < self_inflicted_until)
 		return TICK_SPIKE_CLASS_SELF
 	var/tight_window_start = now_world - (TICK_SPIKES_CLASSIFY_WINDOW_TICKS * world.tick_lag)
 	var/list/culprits = list()
 	var/culprits_ms = 0
+	var/heaviest_usage = 0
 	for(var/i in heavy_ring_chronological())
 		var/run_time = heavy_time[i]
 		if(isnull(run_time) || run_time < tight_window_start)
 			continue
 		culprits += "[heavy_name[i]] ([round(heavy_usage[i], 0.1)]% тика)"
 		culprits_ms += heavy_usage[i] * world.tick_lag
+		if(heavy_usage[i] > heaviest_usage)
+			heaviest_usage = heavy_usage[i]
+			last_classify_heaviest = heavy_name[i]
 	if(length(culprits))
 		. = "[TICK_SPIKE_CLASS_MC]: [culprits.Join(", ")]"
 		// Названные прогоны могут не покрывать дрифт: тогда основная потеря вне МК
@@ -1124,6 +1186,7 @@ SUBSYSTEM_DEF(tick_spikes)
 /datum/controller/subsystem/tick_spikes/proc/register_spike(drift, now_ms, now_world)
 	session_spike_count++
 	total_spike_drift_ms += drift
+	sched_probe_window_dirty = TRUE
 	if(drift > worst_drift_ms)
 		worst_drift_ms = drift
 		worst_drift_at = now_world
@@ -1146,6 +1209,8 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	var/list/heavy_lines = collect_heavy_runs(now_world - TICK_SPIKES_HEAVY_WINDOW)
 	var/spike_class = classify_spike(now_world, drift)
+	last_spike_class = "[spike_class][last_classify_detail]"
+	last_spike_heaviest_name = last_classify_heaviest
 
 	var/list/event = list()
 	event += "=== СПАЙК #[session_spike_count][tag_line] [time_stamp_from_world(now_world)] (wt [now_world]) ==="
@@ -1166,6 +1231,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/sendmaps_line = build_sendmaps_line()
 	if(sendmaps_line)
 		event += sendmaps_line
+	if(sched_probe_available)
+		event += build_sched_probe_lines(drift, read_sched_probe(now_ms()))
 
 	if(length(heavy_lines))
 		event += "тяжёлые прогоны подсистем за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (wall-time: столл во время слота подсистемы выглядит как её прогон, сверяй с профайлером):"
@@ -1422,6 +1489,7 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_MAX_PERIODIC_DUMPS
 #undef TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR
 #undef TICK_SPIKES_MEMORY_SAMPLE_TICKS
+#undef TICK_SPIKES_SCHED_PROBE_TICKS
 #undef TICK_SPIKES_MEMORY_JUMP_MB
 #undef TICK_SPIKES_MAX_MEMORY_EVENTS
 #undef TICK_SPIKES_MEMORY_BYTES_PER_INSTANCE_CEILING

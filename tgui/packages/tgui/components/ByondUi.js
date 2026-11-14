@@ -111,8 +111,8 @@ export class ByondUi extends Component {
   componentDidMount() {
     this.mounted = true;
     window.addEventListener('resize', this.handleResize);
-    // Подписка нужна картам, которые подгоняют содержимое под фактическую область контрола.
-    if (this.props.onResize && typeof ResizeObserver !== 'undefined') {
+    // Размер нативного контрола должен следовать за контейнером и при смене раскладки.
+    if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(this.handleResize);
       this.resizeObserver.observe(this.containerRef.current);
     }

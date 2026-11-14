@@ -1,5 +1,7 @@
 /mob/dead/observer/Login()
 	..()
+	// Пересчитываем индикатор морга при подключении призрака к лежащему внутри телу.
+	mind?.current?.loc?.on_log(TRUE)
 
 	if(!client?.prefs)
 		return
@@ -20,5 +22,6 @@
 		update_z(T.z)
 
 	update_icon(null, preferred_form)
+	sync_data_huds()
 	// Применяем выбранное зрение после завершения входа и настройки экранных плоскостей.
 	update_sight()

@@ -11,3 +11,9 @@
 		"tgui-panel.bundle.js" = file("tgui/public/tgui-panel.bundle.js"),
 		"tgui-panel.bundle.css" = file("tgui/public/tgui-panel.bundle.css"),
 	)
+
+/datum/asset/simple/examine_placeholders
+	assets = list(
+		"noheadshot_dark.png" = 'html/noheadshot_dark.png',
+		"noheadshot_light.png" = 'html/noheadshot_light.png',
+	)

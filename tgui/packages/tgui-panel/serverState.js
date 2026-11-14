@@ -8,7 +8,12 @@
  * @license MIT
  */
 
-import { backendCreatePayloadQueue, sendMessage } from 'tgui/backend';
+import {
+  backendCreatePayloadQueue,
+  backendRemovePayloadQueue,
+  selectBackend,
+  sendMessage,
+} from 'tgui/backend';
 
 import { selectChat } from './chat/selectors';
 import { selectSettings } from './settings/selectors';
@@ -27,6 +32,16 @@ const DIRECT_TOPIC_URL_LIMIT = 2048;
 // поэтому 512 давали реальный URL около 840 при лимите 2048 - половина бюджета простаивала,
 // а раундтрипов (каждый ждёт подтверждения сервера) было вдвое больше нужного.
 const CHUNK_ENCODED_SIZE = 900;
+const PAYLOAD_ID_PREFIX = 'panel-state-';
+// Сервер бросает передачу через 30 с без чанков и теперь об этом сообщает; этот срок
+// страхует потерянный запрос, на который сервер не ответит вовсе.
+const IN_FLIGHT_STALE_MS = 35000;
+const MAX_SAVE_RETRIES = 3;
+// Передача по чанкам, которая ещё едет: { id, startedAt }. Пока она не кончилась, новое
+// сохранение ждёт - иначе передачи копились на сервере, упирались в его лимит в три
+// одновременные, и всё следующее он отвергал.
+let inFlight = null;
+let failedSaves = 0;
 
 const splitIntoChunks = (str) => {
   const charSeq = Array.from(str);
@@ -70,11 +85,11 @@ const sendStateDirectly = (stateJson) => {
 };
 
 const sendStateInChunks = (store, stateJson) => {
-  const payload = JSON.stringify({
-    state: stateJson,
-  });
-  const chunks = splitIntoChunks(payload);
-  const id = `panel-state-${Date.now()}-${saveCounter}`;
+  // Состояние уже JSON - чанки везут его как есть. Обёртка {state: "..."} экранировала
+  // каждую кавычку, и чанков выходило заметно больше.
+  const chunks = splitIntoChunks(stateJson);
+  const id = `${PAYLOAD_ID_PREFIX}${Date.now()}-${saveCounter}`;
+  inFlight = { id, startedAt: Date.now() };
   store.dispatch(backendCreatePayloadQueue({
     id,
     chunks,
@@ -103,6 +118,25 @@ export const getLastSavedAt = () => saveCounter;
  */
 export const forgetSentState = () => {
   lastSentBody = null;
+};
+
+const isTransferPending = store => {
+  if (!inFlight) {
+    return false;
+  }
+  const queues = selectBackend(store.getState()).outgoingPayloadQueues;
+  if (!queues?.[inFlight.id]) {
+    inFlight = null;
+    return false;
+  }
+  if (Date.now() - inFlight.startedAt > IN_FLIGHT_STALE_MS) {
+    store.dispatch(backendRemovePayloadQueue({ id: inFlight.id }));
+    inFlight = null;
+    // Брошенная передача не доехала: то же состояние нужно отправить заново.
+    lastSentBody = null;
+    return false;
+  }
+  return true;
 };
 
 /**
@@ -178,6 +212,10 @@ const buildStateJson = (store) => {
  * Sends the current panel state to the server immediately.
  */
 const doSaveToServer = (store) => {
+  if (isTransferPending(store)) {
+    queueSave(store);
+    return;
+  }
   // buildStateJson marks the body as sent before the transport actually runs. If the
   // transport throws, that bookkeeping has to come back or the identical state is
   // suppressed as a duplicate forever and never reaches the server.
@@ -214,11 +252,7 @@ const doSaveToServer = (store) => {
   }
 };
 
-/**
- * Schedules a debounced save of panel state to the server.
- * Multiple calls within DEBOUNCE_MS collapse into one.
- */
-export const scheduleSaveToServer = (store) => {
+const queueSave = store => {
   lastStore = store;
   if (saveTimer) {
     clearTimeout(saveTimer);
@@ -227,6 +261,15 @@ export const scheduleSaveToServer = (store) => {
     saveTimer = null;
     doSaveToServer(store);
   }, DEBOUNCE_MS);
+};
+
+/**
+ * Schedules a debounced save of panel state to the server.
+ * Multiple calls within DEBOUNCE_MS collapse into one.
+ */
+export const scheduleSaveToServer = (store) => {
+  failedSaves = 0;
+  queueSave(store);
 };
 
 /**
@@ -242,4 +285,29 @@ export const flushSaveToServer = (store) => {
   if (targetStore) {
     doSaveToServer(targetStore);
   }
+};
+
+/**
+ * Сервер отверг или бросил сохранение панели. Тело уже помечено отправленным, и без
+ * повтора последние изменения не доезжали до сервера, пока игрок не поменяет что-то ещё.
+ */
+export const serverStateMiddleware = store => next => action => {
+  const { type, payload } = action;
+  // Срок считается от последнего подтверждённого чанка, а не от начала передачи.
+  if (type === 'acknowlegePayloadChunk' && inFlight?.id === payload?.id) {
+    inFlight.startedAt = Date.now();
+  }
+  const rejected = (type === 'oversizePayloadResponse' && !payload?.allow)
+    || type === 'payloadDropped';
+  if (rejected && String(payload?.id).startsWith(PAYLOAD_ID_PREFIX)) {
+    if (inFlight?.id === payload.id) {
+      inFlight = null;
+    }
+    lastSentBody = null;
+    failedSaves += 1;
+    if (failedSaves <= MAX_SAVE_RETRIES) {
+      queueSave(store);
+    }
+  }
+  return next(action);
 };

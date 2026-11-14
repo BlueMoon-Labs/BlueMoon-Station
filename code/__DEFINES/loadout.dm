@@ -109,6 +109,11 @@
 #define LOADOUT_CHAR_TAB		5
 #define QUIRKS_CHAR_TAB			6
 #define MODIFICATIONS_CHAR_TAB	7
+#define INNATE_CHAR_TAB 8
+#define INNATE_NAGA_TAIL "naga_tail"
+#define TRAIT_NAGA_ANATOMY "naga_anatomy"
+#define TRAIT_NAGA_LOCOMOTION "naga_locomotion"
+#define NAGA_TAIL_COVERAGE (CHEST | GROIN)
 
 //subtabs for preferences tab
 #define GAME_PREFS_TAB			0

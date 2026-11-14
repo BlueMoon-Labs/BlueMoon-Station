@@ -635,7 +635,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	if (Master?.subsystems)
 		for (var/datum/controller/subsystem/SS in Master.subsystems)
 			for (var/ssvar in SS.vars)
-				if (ssvar == "vars" || ssvar == "vis_locs")
+				if (ssvar == "vars" || ssvar == "vis_locs" || (SS == SSgarbage && ssvar == "queue_refs"))
 					continue
 				var/ssval = SS.vars[ssvar]
 				if (ssval == D)
@@ -805,7 +805,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			continue // already covered by the world loop above
 		scan_count++
 		for (var/tvar in thing.vars)
-			if (tvar == "vars" || tvar == "vis_locs")
+			if (tvar == "vars" || tvar == "vis_locs" || (thing == SSgarbage && tvar == "queue_refs"))
 				continue
 			var/tval = thing.vars[tvar]
 			if (tval == D)

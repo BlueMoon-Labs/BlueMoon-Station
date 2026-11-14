@@ -29,7 +29,7 @@
 	. = ..()
 	if(istype(held_item, /obj/item/mop))
 		. = CONTEXTUAL_SCREENTIP_SET
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить|Положить швабру")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить или положить швабру")
 		if(is_refillable())
 			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Отжать швабру")
 			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Отжать швабру")

@@ -19,12 +19,16 @@
 	var/bumpoff = TRUE
 	/// The alpha applied when the cloak is on.
 	var/stealth_alpha = 50
+	var/passive_cloak = FALSE
 	mod_module_flags = MOD_MODULE_SECURITY // BLUEMOON ADD
 
 /obj/item/mod/module/stealth/on_activation()
 	. = ..()
-	if(!.)
+	if(!. || passive_cloak)
 		return
+	enable_cloak()
+
+/obj/item/mod/module/stealth/proc/enable_cloak()
 	if(bumpoff)
 		RegisterSignal(mod.wearer, COMSIG_LIVING_MOB_BUMP, PROC_REF(unstealth))
 	RegisterSignal(mod.wearer, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
@@ -36,13 +40,20 @@
 
 /obj/item/mod/module/stealth/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
-	if(!.)
+	if(!. || passive_cloak)
+		return
+	disable_cloak()
+
+/obj/item/mod/module/stealth/proc/disable_cloak(mob/living/carbon/human/user)
+	if(!user)
+		user = mod?.wearer
+	if(!user)
 		return
 	if(bumpoff)
-		UnregisterSignal(mod.wearer, COMSIG_LIVING_MOB_BUMP)
-	UnregisterSignal(mod.wearer, list(COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ITEM_ATTACK, COMSIG_PARENT_ATTACKBY, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_HULK_ATTACK, COMSIG_ATOM_ATTACK_PAW))
-	REMOVE_TRAIT(mod.wearer, TRAIT_STRONG_INVISIBILITY, MOD_TRAIT)
-	animate(mod.wearer, alpha = 255, time = 1.5 SECONDS)
+		UnregisterSignal(user, COMSIG_LIVING_MOB_BUMP)
+	UnregisterSignal(user, list(COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ITEM_ATTACK, COMSIG_PARENT_ATTACKBY, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_HULK_ATTACK, COMSIG_ATOM_ATTACK_PAW))
+	REMOVE_TRAIT(user, TRAIT_STRONG_INVISIBILITY, MOD_TRAIT)
+	animate(user, alpha = 255, time = 1.5 SECONDS)
 
 /obj/item/mod/module/stealth/proc/unstealth(datum/source)
 	SIGNAL_HANDLER
@@ -71,15 +82,14 @@
 	name = "MOD magnetic harness module"
 	desc = "Основано на старых комплектах подвесок TerraGov, эта магнитная система автоматически возвращает упавшее оружие к носителю."
 	icon_state = "mag_harness"
-	complexity = 1
+	complexity = 2
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/magnetic_harness)
+	required_modpart_index = MOD_PART_CHEST
 	/// Time before we activate the magnet.
 	var/magnet_delay = 0.5 SECONDS
 	/// The typecache of all guns we allow.
 	var/static/list/guns_typecache
-	/// The guns already allowed by the modsuit chestplate.
-	var/list/already_allowed_guns = list()
 	mod_module_flags = MOD_MODULE_SECURITY // BLUEMOON ADD
 
 /obj/item/mod/module/magnetic_harness/Initialize(mapload)
@@ -88,18 +98,19 @@
 		guns_typecache = typecacheof(list(/obj/item/gun/ballistic, /obj/item/gun/energy, /obj/item/gun/grenadelauncher, /obj/item/gun/chem, /obj/item/gun/syringe))
 
 /obj/item/mod/module/magnetic_harness/on_install()
-	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
-	already_allowed_guns = guns_typecache & chestplate.allowed
-	chestplate.allowed = chestplate.allowed += guns_typecache
+	. = ..()
+	mod.update_storage_allowed()
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
-	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
-	if(deleting)
-		return
-	chestplate.allowed -= (guns_typecache - already_allowed_guns)
+	mod.update_storage_allowed()
+	return ..()
+
+/obj/item/mod/module/magnetic_harness/get_storage_allowed()
+	return guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_suit_activation()
-	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(check_dropped_item))
+	if(check_required_modpart())
+		RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(check_dropped_item), override = TRUE)
 
 /obj/item/mod/module/magnetic_harness/on_suit_deactivation(deleting = FALSE)
 	UnregisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM)
@@ -111,11 +122,15 @@
 		return
 	if(new_location != get_turf(mod))
 		return
-	addtimer(CALLBACK(src, PROC_REF(pick_up_item), dropped_item), magnet_delay)
+	addtimer(CALLBACK(src, PROC_REF(pick_up_item), WEAKREF(dropped_item), WEAKREF(mod.wearer)), magnet_delay)
 
-/obj/item/mod/module/magnetic_harness/proc/pick_up_item(obj/item/item)
-	if(!isturf(item.loc) || !item.Adjacent(mod.wearer))
-		return
+/obj/item/mod/module/magnetic_harness/proc/pick_up_item(datum/weakref/item_ref, datum/weakref/wearer_ref)
+	var/obj/item/item = item_ref.resolve()
+	var/mob/living/carbon/human/user = wearer_ref.resolve()
+	if(!item || !user || mod?.wearer != user || !check_required_modpart() || !check_power(use_power_cost))
+		return FALSE
+	if(!isturf(item.loc) || !item.Adjacent(user))
+		return FALSE
 	if(!mod.wearer.equip_to_slot_if_possible(item, ITEM_SLOT_SUITSTORE, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return
 	playsound(mod, 'sound/items/modsuit/magnetic_harness.ogg', 50, TRUE)
@@ -133,7 +148,7 @@
 		некоторые представители правопорядка предпочитают, чтобы кобура выдвигалась из бедра."
 	icon_state = "holster"
 	module_type = MODULE_USABLE
-	complexity = 1
+	complexity = 2
 	incompatible_modules = list(/obj/item/mod/module/holster)
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
@@ -147,7 +162,7 @@
 		return
 	if(!holstered)
 		var/obj/item/gun/holding = mod.wearer.get_active_held_item()
-		if(!holding)
+		if(!istype(holding) || holding.w_class >= WEIGHT_CLASS_HUGE)
 			mod.balloon_alert(mod.wearer, "nothing to holster!")
 			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
@@ -161,8 +176,9 @@
 		mod.balloon_alert(mod.wearer, "holster full!")
 
 /obj/item/mod/module/holster/on_uninstall(deleting = FALSE)
+	. = ..()
 	if(holstered)
-		holstered.forceMove(drop_location())
+		holstered.forceMove(mod.drop_location())
 
 /obj/item/mod/module/holster/Exited(atom/movable/gone, direction)
 	. = ..()
@@ -170,7 +186,9 @@
 		holstered = null
 
 /obj/item/mod/module/holster/Destroy()
-	QDEL_NULL(holstered)
+	if(holstered)
+		holstered.forceMove(mod ? mod.drop_location() : drop_location())
+	holstered = null
 	return ..()
 
 ///Megaphone - Lets you speak loud.
@@ -214,7 +232,7 @@
 	Более старшие модели, обычно, имеют встроенный реактор, способный компенсировать перепады напряжения, однако, \
 	это крайне дефицитная деталь, поэтому энергополе будет отключено как только заряд батареи упадёт ниже 50%."
 	icon_state = "bad_energy_shield"
-	complexity = 5
+	complexity = 3
 	module_type = MODULE_TOGGLE
 	need_full_deploy = TRUE
 	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD
@@ -248,14 +266,13 @@
 /obj/item/mod/module/energy_shield/proc/calculate_cell_drain(mob/living/source, real_attack, object, damage, attack_text, attack_type, armour_penetration, attacker, def_zone, return_list)
 	if(!need_drain_power)
 		return
-	var/obj/item/stock_parts/cell/mod_cell = mod.get_cell()
 	// Шкала AP ближнего боя сжата до 0/15/25/50, поэтому для melee домножаем,
 	// иначе элитный клинок почти не тратил бы ячейку (см. MOD_SHIELD_MELEE_AP_MULTIPLIER).
 	var/ap_for_drain = armour_penetration
 	if(attack_type & ATTACK_TYPE_MELEE)
 		ap_for_drain *= MOD_SHIELD_MELEE_AP_MULTIPLIER
 	var/charge_drain = (damage * ap_for_drain) * used_modificator
-	mod_cell.use(charge_drain, FALSE)
+	mod.subtract_charge(charge_drain)
 
 /obj/item/mod/module/energy_shield/on_activation()
 	. = ..()
@@ -291,7 +308,6 @@
 	device = /obj/item/shield/adamantineshield/mod_lesser
 	required_modpart_index = MOD_PART_GLOVES
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
-	removable = FALSE
 
 /obj/item/shield/adamantineshield/mod_lesser
 	name = "MOD Energy Shield"

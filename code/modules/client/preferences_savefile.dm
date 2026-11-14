@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	87
+#define SAVEFILE_VERSION_MAX	88
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -191,6 +191,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 86 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_BROTHER in be_special))
 		be_special[ROLE_BROTHER] = ANTAG_PRIORITY_HIGH
+
+	if(current_version < 88)
+		dynamic_window_size = initial(dynamic_window_size)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -558,6 +561,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
+// Модульные загрузчики дополняют этот прок: все настройки нужны до записи обновлённого сейвфайла.
+/datum/preferences/proc/load_preferences_data(savefile/S)
+	return S
+
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
@@ -626,6 +633,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["windowflash"] 			>> windowflashing
 	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
+	S["examine_headshots"]		>> examine_headshots
 	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
@@ -697,6 +705,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
 	S["long_strip_menu"] >> long_strip_menu
+	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
+	S["right_click_mode"] >> right_click_choice
+	S["right_click_notice_seen"] >> right_click_notice_seen
+	S["shift_right_click_mode"] >> shift_right_click_choice
+	S["context_menu_style"] >> context_menu_style
 	S["pixel_size"]	    	>> pixel_size
 	S["scaling_method"]	    >> scaling_method
 	S["hud_toggle_flash"] >> hud_toggle_flash
@@ -762,6 +775,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(ispath(path)) //whatever typepath fails this check probably doesn't exist anymore
 			parsed_favs += path
 	favorite_outfits = uniqueList(parsed_favs)
+
+	// Загрузка через переопределения load_preferences после ..() выполнялась уже после миграции
+	// и её save_preferences: непрочитанные избранное и множители перезаписывались значениями по умолчанию.
+	load_preferences_data(S)
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -835,6 +852,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -873,6 +891,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
+	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
+	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		right_click_choice = null
+	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
+	if(!(shift_right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		shift_right_click_choice = null
+	context_menu_style = sanitize_context_menu_style(context_menu_style)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1113,10 +1138,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 ///
 /// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
 /// честный результат записи прямо сейчас.
-/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+///
+/// lazy = TRUE не заводит своего сброса: ключ уедет с ближайшей записью, логаутом или ребутом.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE, lazy = FALSE)
 	if(!path || !key)
 		return FALSE
-	buffer_single_pref(key, value)
+	buffer_single_pref(key, value, lazy && !immediate)
 	if(immediate)
 		return flush_single_prefs()
 	return TRUE
@@ -1127,11 +1154,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
  * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
  */
-/datum/preferences/proc/buffer_single_pref(key, value)
+/datum/preferences/proc/buffer_single_pref(key, value, lazy = FALSE)
 	if(!key)
 		return FALSE
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
+	if(lazy)
+		return TRUE
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
 	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.
@@ -1388,6 +1417,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
+	WRITE_FILE(S["right_click_mode"], right_click_choice)
+	WRITE_FILE(S["right_click_notice_seen"], right_click_notice_seen)
+	WRITE_FILE(S["shift_right_click_mode"], shift_right_click_choice)
+	WRITE_FILE(S["context_menu_style"], context_menu_style)
 	WRITE_FILE(S["autostand"], autostand)
 	WRITE_FILE(S["cit_toggles"], cit_toggles)
 	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)
@@ -1423,6 +1456,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
+	WRITE_FILE(S["examine_headshots"], examine_headshots)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)
@@ -1644,6 +1678,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["gender"] 							>> gender
 	S["body_model"] 						>> features["body_model"]
 	S["body_size"] 							>> features["body_size"]
+	S["normalized_size"] 					>> features["normalized_size"]
 	S["feature_fuzzy"] 						>> features["fuzzy"]
 	S["age"] 								>> age
 	S["hair_color"] 						>> hair_color
@@ -1782,6 +1817,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	S["all_quirks"] >> all_quirks
+	S["innate_features"] >> innate_features
+	sanitize_innate_features()
 
 	S["language"] >> language
 
@@ -1933,12 +1970,19 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			belly_prefs = json_from_file["belly_prefs"]
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
-	//gear loadout
-	if(istext(S["loadout"]))
-		loadout_data = safe_json_decode(S["loadout"])
-		if(!islist(loadout_data))
-			loadout_data = list()
-
+	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
+	var/saved_loadout = S["loadout"]
+	loadout_data = istext(saved_loadout) ? safe_json_decode(saved_loadout) : list()
+	if(!islist(loadout_data))
+		loadout_data = list()
+	var/preset_slot_key = "SAVE_[LOADOUT_PRESET_SLOT]"
+	var/list/working_preset_loadout = loadout_data[preset_slot_key]
+	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
+	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !S["preset_loadout_initialized"])
+	// Старый deepCopyList записывал массив предметов как JSON-объект с ключом "/list".
+	if(islist(working_preset_loadout) && length(working_preset_loadout) == 1 && working_preset_loadout[1] == "/list")
+		restore_preset_loadout = TRUE
+	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
@@ -2129,7 +2173,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/static/size_max
 	if(!size_max)
 		size_max = CONFIG_GET(number/body_size_max)
-	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.01)
+	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.0001)
+	features["normalized_size"] = sanitize_num_clamp(features["normalized_size"], max(size_min, 0.81), min(size_max, 1.2), RESIZE_NORMAL, 0.0001)
 
 	var/static/list/B_sizes
 	if(!B_sizes)
@@ -2322,7 +2367,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2340,7 +2384,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!(bgstate in bgstate_options))
 		bgstate = initial(bgstate)
 
-	sand_character_pref_load(S)
+	sand_character_pref_load(S, needs_update)
 
 	splurt_character_pref_load(S)
 
@@ -2348,6 +2392,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
 	migrate_legacy_body_mods()
 	sanitize_character_presets()
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, active_character_preset ? LOADOUT_PRESET_SLOT : initial(loadout_slot), TRUE)
+	if(restore_preset_loadout && active_character_preset)
+		var/list/active_preset = character_presets[active_character_preset]
+		var/list/restored_preset = list("loadout" = deepCopyList(active_preset["loadout"]))
+		clean_character_preset_loadout(restored_preset)
+		loadout_data[preset_slot_key] = restored_preset["loadout"]
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2481,8 +2531,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
 		return FALSE
+	var/list/kept_slot_names
+	var/list/kept_slot_custom_names
 	if(!export)
 		S.cd = "/character[default_slot]"
+		kept_slot_names = slot_names_cache
+		kept_slot_custom_names = slot_custom_names_cache
 		slot_names_cache = null
 		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
 		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
@@ -2500,6 +2554,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["gender"]								, gender)
 	WRITE_FILE(S["body_model"]							, features["body_model"])
 	WRITE_FILE(S["body_size"]							, features["body_size"])
+	WRITE_FILE(S["normalized_size"]						, features["normalized_size"])
 	WRITE_FILE(S["feature_fuzzy"]						, features["fuzzy"])
 	WRITE_FILE(S["age"]									, age)
 	WRITE_FILE(S["hair_color"]							, hair_color)
@@ -2710,6 +2765,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	WRITE_FILE(S["all_quirks"]			, all_quirks)
+	WRITE_FILE(S["innate_features"], innate_features)
 	//SKYRAT ADDITION - additional language
 	WRITE_FILE(S["language"]			, language)
 	//
@@ -2760,6 +2816,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["preset_loadout_initialized"], islist(loadout_data?["SAVE_[LOADOUT_PRESET_SLOT]"]))
 	WRITE_FILE(S["character_presets"], character_presets)
 	WRITE_FILE(S["active_character_preset"], active_character_preset)
 	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
@@ -2795,8 +2852,21 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Персонаж сохранён!"))
 
+	// Файл уже открыт: буфер одиночных ключей (и ленивые среди них) уезжает в корень без своего открытия.
+	if(!export && length(pending_single_prefs))
+		S.cd = "/"
+		var/root_version
+		READ_FILE(S["version"], root_version)
+		if(isnum(root_version) && root_version >= SAVEFILE_VERSION_MAX)
+			write_pending_single_prefs(S)
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	if(!export)
+		// Запись меняет имя только своего слота: смена слота сразу после неё не перечитывает весь сейвфайл.
+		if(length(kept_slot_names) == max_save_slots && length(kept_slot_custom_names) == max_save_slots)
+			kept_slot_names[default_slot] = real_name
+			kept_slot_custom_names[default_slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(character_slot_name))), 1, MAX_NAME_LEN + 1)
+			slot_names_cache = kept_slot_names
+			slot_custom_names_cache = kept_slot_custom_names
 		character_setup_ui?.record_saved_state()
 	return S
 

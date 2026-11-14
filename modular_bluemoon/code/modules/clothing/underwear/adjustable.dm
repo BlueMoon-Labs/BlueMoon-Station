@@ -66,6 +66,7 @@
 //-----------------------------------------------------------//
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle
+	/// Существительное части одежды, которую мы toggle'им, например: "Кнопки", "Рукава"
 	var/togglename = null
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/AltClick(mob/user)
@@ -76,7 +77,7 @@
 	return TRUE
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/proc/on_toggle(mob/user)
-	to_chat(user, "<span class='notice'>You toggle [src]'s [togglename].</span>")
+	to_chat(user, span_notice("Вы изменили [togglename] на [src]."))
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/ui_action_click()
 	suit_toggle(usr)
@@ -98,7 +99,7 @@
 /obj/item/clothing/underwear/shirt/adjustable/toggle/examine(mob/user)
 	. = ..()
 	if(togglename)
-		. += "Alt-click on [src] to toggle the [togglename]."
+		. += "Alt-клик, чтобы изменить [togglename] на [src]."
 
 //-----------------------------------------------------------//
 
@@ -108,7 +109,7 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/adjustable_shirt.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/obj/clothing/adjustable_shirt.dmi'
 	icon_state = "adjustableshirt"
-	togglename = "buttons"
+	togglename = "пуговицы"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/underwear/shirt/adjustable/bra

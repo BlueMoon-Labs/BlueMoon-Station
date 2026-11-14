@@ -2,6 +2,12 @@
     category = "MOD"
     surplus = 0
 
+/datum/uplink_item/mod/wraith
+	name = "MOD Wraith cloaking module"
+	desc = "Пассивная маскировка и излучатель, перегружающий свет и электронику для зарядки MOD. Несовместим с бронеплитами и оптической системой Синдиката."
+	item = /obj/item/mod/module/stealth/wraith
+	cost = 2
+
 /datum/uplink_item/mod/core //
 	name = "InteQ MOD"
 	desc = "Высокотехнологичный боевой костюм в зловещих тёмно-синих тонах, изготовленный для наёмников спецопераций. Конструкция представляет собой обтекаемую многослойную структуру из формованного пласталя и композитной керамики, а подкладка выполнена из лёгкого кевлара и гибридного дюратриплетения. На бирке написано: Произведено совместно Fox и Ghost inc. Все права защищены, вмешательство в конструкцию костюма приведёт к его немедленному уничтожению."
@@ -90,7 +96,7 @@
 	Покупать больше одной штуки смысла не имеет, они не складываются."
 	item = /obj/item/mod/module/storage_upgrader
 	cost = 2
-	purchasable_from = (UPLINK_SYNDICATE_PACT_CREW)
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/mod/syndie_shield
 	name = "MOD Syndie Energy Shield"
@@ -100,3 +106,59 @@
 	item = /obj/item/mod/module/energy_shield/syndie
 	cost = 4
 	purchasable_from = (UPLINK_SYNDICATE)
+
+/datum/uplink_item/mod/launch_kick
+	name = "MOD Launch Kick Module"
+	desc = "Модуль удара ногой с прыжка: разгоняет носителя в направлении цели."
+	item = /obj/item/mod/module/launch_kick
+	cost = 3
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/mod/emp_pulse
+	name = "MOD EMP pulse module"
+	desc = "Создаёт электромагнитный импульс вокруг носителя, защищая его от собственного разряда."
+	item = /obj/item/mod/module/emp_shield/pulse
+	cost = 2
+	purchasable_from = ALL
+
+/datum/uplink_item/mod/flamethrower
+	name = "MOD flamethrower module"
+	desc = "Выдвижной огнемёт с питанием от MOD. Активируйте модуль и стреляйте оружием в руке."
+	item = /obj/item/mod/module/flamethrower
+	cost = 3
+	purchasable_from = ALL
+
+/datum/uplink_item/mod/jaeger_sprint
+	name = "MOD Jaeger sprint module"
+	desc = "Усиленные приводы временно повышают скорость движения носителя."
+	item = /obj/item/mod/module/jaeger_sprint
+	cost = 5
+	purchasable_from = ALL
+
+/datum/uplink_item/mod/plate_compression
+	name = "MOD Plate Compression Module"
+	desc = "Сжимает костюм до обычного размера. Несовместим с модулем хранилища."
+	item = /obj/item/mod/module/plate_compression
+	cost = 1
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_TRAITORS | UPLINK_NUKE_OPS
+
+/datum/uplink_item/mod/medbeam
+	name = "MOD Medical Beamgun Module"
+	desc = "Встроенный медицинский луч для лечения союзников."
+	item = /obj/item/mod/module/medbeam
+	cost = 15
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS
+
+/datum/uplink_item/mod/chameleon
+	name = "MOD Chameleon Module"
+	desc = "Маскирует выключенный MOD под рюкзак или пояс. Внешний вид выбирается в настройках модуля."
+	item = /obj/item/mod/module/chameleon
+	cost = 1
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS
+
+/datum/uplink_item/mod/shock_absorber
+	name = "MOD Shock Absorber Module"
+	desc = "Защищает носителя включённого MOD от оглушающих ударов дубинкой, расходуя энергию."
+	item = /obj/item/mod/module/shock_absorber
+	cost = 1
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS

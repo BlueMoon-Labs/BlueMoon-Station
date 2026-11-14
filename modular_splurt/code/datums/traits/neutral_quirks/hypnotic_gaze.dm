@@ -18,9 +18,6 @@
 	var/datum/action/cooldown/hypnotize/act_hypno = new
 	act_hypno.Grant(quirk_mob)
 
-	// Add examine text
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
-
 /datum/quirk/Hypnotic_gaze/remove()
 	// Define quirk mob
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
@@ -32,13 +29,6 @@
 	var/datum/action/cooldown/hypnotize/act_hypno = locate(/datum/action/cooldown/hypnotize) in quirk_mob.actions
 	if(act_hypno)
 		act_hypno.Remove(quirk_mob)
-
-	// Remove examine text
-	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
-
-// Quirk examine text
-/datum/quirk/Hypnotic_gaze/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "[quirk_holder.ru_ego(TRUE)] глаза необычайно сверкают..."
 
 //
 // Quirk actions: Hypnotic Gaze

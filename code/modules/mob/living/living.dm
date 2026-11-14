@@ -491,12 +491,16 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	M.setDir(get_dir(M, src))
-	var/dir_filter = M.dir
+	// На одной клетке направления нет: прежний dir оставлял тело сдвинутым к месту, где тянущий был раньше
+	var/dir_filter = get_dir(M, src)
+	if(dir_filter)
+		M.setDir(dir_filter)
+	update_pull_layer(M)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
-	var/target_x = 0
-	var/target_y = 0
+	// От исходного смещения спрайта: у крупных мобов оно ненулевое
+	var/target_x = M.get_standard_pixel_x_offset()
+	var/target_y = M.get_standard_pixel_y_offset()
 	switch(dir_filter)
 		if(NORTH)
 			target_y += offset
@@ -514,13 +518,46 @@
 				M.update_transform(FALSE)
 				M.lying_prev = M.lying
 			target_x -= offset
-	if(target_x || target_y)
+	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
+/// Сдвинутый к тянущему спрайт перекрывает его: тот, кто южнее, рисуется поверх. Сбоку и на одной клетке тащимый под тянущим.
+/// Дальше по цепочке слой каждого считается от нового слоя предыдущего.
+/mob/living/proc/update_pull_layer(mob/living/M)
+	var/mob/living/puller = src
+	var/list/chain = list(src)
+	while(isliving(M) && !(M in chain))
+		chain += M
+		var/base = M.get_unshifted_layer()
+		var/target = base
+		// Лежачий и так под стоящими, ручной сдвиг слоя тоже не трогаем
+		if(base == puller.get_unshifted_layer())
+			target = puller.layer + ((get_dir(M, puller) & NORTH) ? PULL_LAYER_STEP : -PULL_LAYER_STEP)
+		if(M.layer == target)
+			return
+		M.pull_layer_base = base
+		M.pull_layer_applied = target
+		M.layer = target
+		puller = M
+		M = M.pulling
+
+/mob/living/proc/get_unshifted_layer()
+	return (!isnull(pull_layer_applied) && layer == pull_layer_applied) ? pull_layer_base : layer
+
+/mob/living/proc/reset_pull_layer()
+	if(!isnull(pull_layer_applied) && layer == pull_layer_applied)
+		layer = pull_layer_base
+	pull_layer_base = null
+	pull_layer_applied = null
+	if(isliving(pulling))
+		update_pull_layer(pulling)
+
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
+	if(isliving(M))
+		M.reset_pull_layer()
 	if(!override && M.buckled)
 		return
-	animate(M, pixel_x = 0, pixel_y = 0, time = 3, flags = ANIMATION_PARALLEL)
+	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)
 
 //mob verbs are a lot faster than object verbs
 //for more info on why this is not atom/pull, see examinate() in mob.dm
@@ -741,7 +778,9 @@
 		clear_fullscreen("brute")
 
 //Proc used to resuscitate a mob, for full_heal see fully_heal()
-/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE)
+/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
+	if(stat == DEAD && medical_revive && !can_be_medically_revived())
+		return FALSE
 	SEND_SIGNAL(src, COMSIG_LIVING_REVIVE, full_heal, admin_revive)
 	if(excess_healing)
 		adjustOxyLoss(-excess_healing, updating_health = FALSE)
@@ -807,8 +846,10 @@
 	cure_nearsighted()
 	cure_blind()
 	cure_husk()
+	if(admin_revive)
+		cure_fakedeath(/datum/reagent/toxin/zombiepowder)
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -821,8 +862,35 @@
 				var/obj/item/organ/O = organ
 				O.organ_flags &= ~ORGAN_SYNTHETIC_EMP // BLUEMOON ADD
 				O.setOrganDamage(0)
+	// Пересчёт обязателен и без повреждений конечностей: OXY, TOX и CLONE обнулены без обновления.
+	updatehealth()
 
-//proc called by revive(), to check if we can actually ressuscitate the mob (we don't want to revive him and have him instantly die again)
+// Проверяет доступность сознания для медицинского оживления независимо от повреждений тела.
+/mob/living/proc/can_be_medically_revived(require_player = TRUE)
+	if(suiciding || hellbound || !owns_soul())
+		return FALSE
+	// Запрет клонирования после поглощения не запрещает восстановить и реанимировать тело.
+	if(HAS_TRAIT_NOT_FROM(src, TRAIT_NOCLONE, CHANGELING_DRAIN))
+		return FALSE
+	if(client || is_antag_training_patient())
+		return TRUE
+	// Сохраняем штатное лечение животных-НПС, у которых никогда не было игрока.
+	if(!mind && !ckey && (isanimal(src) || ismonkey(src)))
+		return TRUE
+	// Пустая оболочка ИИ не имеет собственной личности: её ремонтируют перед подключением ядра.
+	if(!mind && !ckey && iscyborg(src))
+		var/mob/living/silicon/robot/robot = src
+		if(robot.shell && !robot.deployed)
+			return TRUE
+	if(!mind || mind.current != src)
+		return FALSE
+	var/mob/dead/observer/ghost = get_ghost(even_if_they_cant_reenter = TRUE)
+	if(ghost && !ghost.can_reenter_corpse)
+		return FALSE
+	// Для диагностики отделяем временное отсутствие игрока от запрета возвращения.
+	return !require_player || !!ghost?.client
+
+// Проверяет, сможет ли восстановленное тело поддерживать жизнь.
 /mob/living/proc/can_be_revived()
 	. = 1
 	if(health <= HEALTH_THRESHOLD_DEAD)
@@ -1050,18 +1118,19 @@
 
 /mob/living/update_gravity(has_gravity,override = 0)
 	. = ..()
+	update_gravity_inversion(has_gravity)
 	if(!SSticker.HasRoundStarted())
 		return
-	if(has_gravity)
-		if(has_gravity == 1)
-			clear_alert("gravity")
-		else
-			if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
-				throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
-			else
-				throw_alert("gravity", /atom/movable/screen/alert/highgravity)
-	else
+	if(has_gravity <= NEGATIVE_GRAVITY)
+		throw_alert("gravity", /atom/movable/screen/alert/negative)
+	else if(!has_gravity)
 		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+	else if(has_gravity <= STANDARD_GRAVITY)
+		clear_alert("gravity")
+	else if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
+		throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
+	else
+		throw_alert("gravity", /atom/movable/screen/alert/highgravity)
 	if(!override && !is_flying())
 		float(!has_gravity)
 
@@ -1285,7 +1354,7 @@
 		return TRUE
 	return FALSE
 
-/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, quickstart = TRUE)
+/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE)
 	stop_pulling()
 	. = ..()
 
@@ -1566,6 +1635,8 @@
  * It uses the healing amount on brute/fire damage, and then uses the excess healing for revive
  */
 /mob/living/proc/do_strange_reagent_revival(healing_amount)
+	if(!can_be_medically_revived())
+		return
 	var/brute_loss = getBruteLoss()
 	if(brute_loss)
 		var/brute_healing = min(healing_amount * 0.5, brute_loss) // 50% of the healing goes to brute
@@ -1578,7 +1649,7 @@
 		setFireLoss(round(fire_loss - fire_healing, DAMAGE_PRECISION), updating_health=TRUE, forced=TRUE)
 		healing_amount = max(0, healing_amount - fire_healing)
 
-	if(revive(FALSE, FALSE, excess_healing=max(healing_amount, 0)))
+	if(revive(FALSE, FALSE, excess_healing=max(healing_amount, 0), medical_revive = TRUE))
 		grab_ghost()
 		mind?.forget_death(DEATH_FORGETFULNESS_REASON_STRANGE_REAGENT)
 		mind?.revival_handle_memory("strange reagent")

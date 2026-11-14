@@ -238,4 +238,55 @@
 	TEST_ASSERT(!(net in SSair.networks), "Destroy() left the pipenet in the network registry")
 	TEST_ASSERT_EQUAL(SSair.count_orphan_dirty_pipenets(), orphans_baseline, "a deleted pipenet was still counted as an orphan")
 
+/// Струйка ниже порога пробуждения доходит до спящего члена группы, но не будит его; поток выше порога будит.
+///
+/// Прод 1-4.11.2026: из 1000-3000 активных турфов газ за проход двигали 10-30%, остальных держали бодрыми струйки в десятую моля.
+/datum/unit_test/atmos_trickle_keeps_member_resting/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	TEST_ASSERT(SSair.wake_threshold_scale > 1, "wake_threshold_scale [SSair.wake_threshold_scale] does not separate a trickle from a flow")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/source = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/member = locate(origin.x + 2, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(source) && istype(member), "test locations are not open turfs")
+	TEST_ASSERT(member in source.atmos_adjacent_turfs, "test turfs do not share air")
+
+	var/share_coeff = 1 / (length(source.atmos_adjacent_turfs) + 1)
+	// Между порогом движения и порогом пробуждения, затем вдвое выше порога пробуждения.
+	var/list/shares = list(MINIMUM_MOLES_DELTA_TO_MOVE * (1 + SSair.wake_threshold_scale) / 2, MINIMUM_MOLES_DELTA_TO_MOVE * SSair.wake_threshold_scale * 2)
+	var/list/expect_wake = list(FALSE, TRUE)
+	for(var/index in 1 to length(shares))
+		var/list/area_turfs = list(source, member) | source.atmos_adjacent_turfs | member.atmos_adjacent_turfs
+		for(var/turf/open/T as anything in area_turfs)
+			if(T.excited_group)
+				T.excited_group.garbage_collect()
+			SSair.remove_from_active(T)
+			T.air.copy_from_turf(T)
+			T.air.set_temperature(T20C)
+			T.atmos_cooldown = 0
+		var/datum/excited_group/group = new
+		group.add_turf(source)
+		group.add_turf(member)
+		SSair.sleep_active_turf(member)
+		member.atmos_cooldown = 3
+		source.air.adjust_moles(GAS_O2, shares[index] / share_coeff)
+		var/member_o2_before = member.air.get_moles(GAS_O2)
+
+		var/fire = max(source.current_cycle, member.current_cycle) + 1
+		source.process_cell(fire)
+
+		TEST_ASSERT(member.air.get_moles(GAS_O2) > member_o2_before + TEST_CHURN_EPSILON, "case [index]: no gas reached the resting member")
+		if(expect_wake[index])
+			TEST_ASSERT(member.excited, "case [index]: a [shares[index]] mol flow did not wake the resting member")
+			TEST_ASSERT_EQUAL(member.atmos_cooldown, 0, "case [index]: a flow did not reset the member's stall counter")
+		else
+			TEST_ASSERT(!member.excited, "case [index]: a [shares[index]] mol trickle woke the resting member")
+			TEST_ASSERT_EQUAL(member.atmos_cooldown, 3, "case [index]: a trickle reset the member's stall counter")
+
+	for(var/turf/open/T as anything in list(source, member) | source.atmos_adjacent_turfs | member.atmos_adjacent_turfs)
+		if(T.excited_group)
+			T.excited_group.garbage_collect()
+		SSair.remove_from_active(T)
+		T.air.copy_from_turf(T)
+		T.atmos_cooldown = 0
+
 #undef TEST_CHURN_EPSILON

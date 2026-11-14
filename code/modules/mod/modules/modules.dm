@@ -7,7 +7,6 @@
 		при поддержке полной замены обычного охлаждающего агента костюма святой водой. \
 		Заклинания будут отскакивать от этого поля, хотя это никак не поможет другим поверить вам во всё это."
 	icon_state = "magic_nullifier"
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/anti_magic)
 
 /obj/item/mod/module/anti_magic/on_suit_activation()
@@ -29,7 +28,6 @@
 	module_type = MODULE_TOGGLE
 	complexity = 3
 	active_power_cost = DEFAULT_CHARGE_DRAIN*2
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/kinesis)
 	cooldown_time = 0.5 SECONDS
 	var/has_tk = FALSE
@@ -59,7 +57,6 @@
 		они. Эта система использует ряд крошечных движущихся краскораспылителей для нанесения и удаления различных \
 		цветовых узоров на костюм."
 	icon_state = "insignia"
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/insignia)
 	overlay_state_inactive = "insignia"
 
@@ -92,11 +89,9 @@
 
 /obj/item/mod/module/noslip
 	name = "MOD anti slip module"
-	desc = "Это модифицированный вариант стандартных магнитных ботинок, использующий пьезоэлектрические кристаллы на подошвах. \
-		Две пластины на дне ботинок автоматически выдвигаются и намагничиваются при шаге пользователя; \
-		притяжение слишком слабое, чтобы позволить им прикрепиться к корпусу, но достаточно сильное, \
-		чтобы защитить от того факта, что вы не прочитали знак мокрого пола. Honk Co. неоднократно выступала \
-		против легализации этих модулей."
+	desc = "Пьезоэлектрическая система стабилизации MOD-костюма защищает носителя от скольжения на мокром полу. \
+		Работает через покрытие тела, включая опорный хвост, и не требует ботинок. \
+		Притяжение слишком слабое для удержания на обшивке в невесомости."
 	icon_state = "noslip"
 	complexity = 1
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.1

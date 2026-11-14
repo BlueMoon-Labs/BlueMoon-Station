@@ -4,7 +4,7 @@ import { useLocalState } from '../../backend';
 import { Box, Button, NoticeBox, Slider, Stack } from '../../components';
 
 export const StationMap = (props) => {
-  const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, controls, hint } = props;
+  const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, controls, hint, onToggleDepartments } = props;
   const [selectedZ, setSelectedZ] = useLocalState(`${statePrefix}Z`, initialZ);
   const [savedZoom, setSavedZoom] = useLocalState(`${statePrefix}Zoom`, 1);
   const [zoom, setZoom] = useState(savedZoom);
@@ -20,7 +20,8 @@ export const StationMap = (props) => {
     drag.current = null;
     setOffset(currentOffset.current);
   };
-  const [showDepartments, setShowDepartments] = useLocalState(`${statePrefix}Departments`, false);
+  const [savedDepartments, setSavedDepartments] = useLocalState(`${statePrefix}Departments`, false);
+  const showDepartments = props.showDepartments ?? savedDepartments;
   const floor = maps.find(map => map.z === selectedZ)
     || maps.find(map => map.z === initialZ) || maps[0];
   if (!floor) {
@@ -75,7 +76,8 @@ export const StationMap = (props) => {
           <Stack.Item>
             <Button.Checkbox
               checked={showDepartments}
-              onClick={() => setShowDepartments(!showDepartments)}>
+              onClick={() => onToggleDepartments
+                ? onToggleDepartments() : setSavedDepartments(!showDepartments)}>
               Отделы
             </Button.Checkbox>
           </Stack.Item>

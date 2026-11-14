@@ -110,7 +110,7 @@
 		else
 			target.visible_message(span_lewd("[user] начинает намывать туловище [target] [tongue ? "своим языком" : "при помощи [name]"], беря в учёт и интимные части тела."), span_lewd("[user] начинает намывать вашу грудь [tongue ? "своим языком" : "при помощи [name]"]... Как и заодно интимные части тела."))
 	else
-		target.visible_message(span_notice("[user] начинает намывать [affected.ru_name_y] [target] [tongue ? "своим языком" : "при помощи [name]"]!"), span_notice("[user] начинает намывать вышу [affected.ru_name_y] [tongue ? "своим языком" : "при помощи [name]"]!"))
+		target.visible_message(span_notice("[user] начинает намывать [affected.ru_name_y] [target] [tongue ? "своим языком" : "при помощи [name]"]!"), span_notice("[user] начинает намывать вашу [affected.ru_name_y] [tongue ? "своим языком" : "при помощи [name]"]!"))
 
 	if(do_after(user, 4 SECONDS, target))
 		target.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)

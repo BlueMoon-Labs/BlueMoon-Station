@@ -36,5 +36,8 @@ SUBSYSTEM_DEF(assets)
 			load_asset_datum(type)
 
 	transport.Initialize(cache)
+#ifndef UNIT_TESTS
+	probe_client_resource_hosts()
+#endif
 
 	..()

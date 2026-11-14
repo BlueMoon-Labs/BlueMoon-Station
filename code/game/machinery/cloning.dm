@@ -113,7 +113,7 @@
 	return examine(user)
 
 //Start growing a human clone in the pod!
-/obj/machinery/clonepod/proc/growclone(ckey, clonename, ui, mutation_index, mindref, blood_type, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas)
+/obj/machinery/clonepod/proc/growclone(ckey, clonename, ui, mutation_index, mindref, blood_type, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas, unique_enzymes, nameless = FALSE)
 	if(panel_open)
 		return FALSE
 	if(mess || attempting)
@@ -129,13 +129,16 @@
 				return FALSE
 			if(AmBloodsucker(clonemind.current)) //If the mind is a bloodsucker
 				return FALSE
-		if(clonemind.active)	//somebody is using that mind
+			// Старый снимок не обходит запрет клонирования после поглощения; улучшенный сканер сохраняет своё исключение.
+			if(HAS_TRAIT_FROM(clonemind.current, TRAIT_NOCLONE, CHANGELING_DRAIN) && (!connected?.scanner || connected.scanner.scan_level < 2))
+				return FALSE
+		if(!QDELETED(clonemind.current) && clonemind.current.client)
 			if( ckey(clonemind.key)!=ckey )
 				return FALSE
 		else
 			// get_ghost() will fail if they're unable to reenter their body
 			var/mob/dead/observer/G = clonemind.get_ghost()
-			if(!G)
+			if(!G?.client)
 				return FALSE
 			if(G.suiciding) // The ghost came from a body that is suiciding.
 				return FALSE
@@ -144,22 +147,27 @@
 			mess = TRUE
 			update_icon()
 			return FALSE
+		if(!QDELETED(clonemind.current) && !clonemind.current.can_be_medically_revived())
+			return FALSE
 	current_insurance = insurance
 	attempting = TRUE //One at a time!!
 	countdown.start()
 
 	var/mob/living/carbon/human/H = new /mob/living/carbon/human(src)
 
-	H.hardset_dna(ui, mutation_index, H.real_name, blood_type, mrace, features)
+	if(!clonename)
+		clonename = "clone ([rand(1,999)])"
+	H.hardset_dna(ui, mutation_index, clonename, blood_type, mrace, features)
+	H.name = clonename
+	H.nameless = nameless
+	H.dna.nameless = nameless
+	if(unique_enzymes)
+		H.dna.unique_enzymes = unique_enzymes
 
 	H.easy_randmut(NEGATIVE+MINOR_NEGATIVE) //100% bad mutation. Can be cured with mutadone.
 
 	H.silent = 20 //Prevents an extreme edge case where clones could speak if they said something at exactly the right moment.
 	occupant = H
-
-	if(!clonename)	//to prevent null names
-		clonename = "clone ([rand(1,999)])"
-	H.real_name = clonename
 
 	//Get the clone body ready
 	maim_clone(H)

@@ -250,6 +250,8 @@
 
 /obj/item/storage/box/donator/bm/armolex_box/PopulateContents()
 	var/static/items_inside = list(
+		/obj/item/modsuit_modkit/armolex,
+		/obj/item/modsuit_modkit/armolex_so,
 		/obj/item/modkit/rsh_future,
 		/obj/item/modkit/razorsong_kit,
 		/obj/item/modkit/mpl21,
@@ -366,26 +368,6 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/lapkee_bel
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
 	force = 11
 
-
-/obj/item/storage/box/kumiko_ncr_case
-	name = "NCR ranger case"
-	desc = "Old NCR ranger case issued to a single ranger. The engraving on the lid reads: 'Patrolling the Mojave almost makes you wish for a nuclear winter.'"
-	icon_state = "ammobox"
-
-/obj/item/storage/box/kumiko_ncr_case/ComponentInitialize()
-	. = ..()
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_combined_w_class = 21
-
-/obj/item/storage/box/kumiko_ncr_case/PopulateContents()
-	new /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster(src)
-	new	/obj/item/modkit/kumiko_ncr_riot(src)
-	new	/obj/item/modkit/kumiko_ncr_bulletproof(src)
-	new	/obj/item/modkit/kumiko_ncr_armor_vest(src)
-	new	/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet(src)
-	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
-	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)
-
 /obj/item/storage/wallet/xeno
 	name = "Xeno Wallet"
 	desc = "Плюшевый ксеноморф, в рот можно вставить карты и безделушки"
@@ -430,15 +412,16 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/melatonin_
 	illustration = null
 
 /obj/item/storage/box/melatonin_kit/PopulateContents()
-	new /obj/item/modkit/melatonin_belt_kit(src)
-	new /obj/item/modkit/melatonin_shotgun_kit(src)
-	new /obj/item/modkit/melatonin_enforcer_kit(src)
-	new /obj/item/modkit/melatonin_gasmask_kit(src)
-	new /obj/item/modkit/melatonin_riot_kit(src)
-	new /obj/item/modkit/melatonin_stunsword_kit(src)
-	new /obj/item/modkit/melatonin_carrier_kit(src)
-	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)
-	new /obj/item/modsuit_modkit/melatonin(src)
+	new /obj/item/modkit/melatonin_belt_kit(src) // пояс
+	new /obj/item/modkit/melatonin_shotgun_kit(src) // дробаш
+	new /obj/item/modkit/melatonin_enforcer_kit(src) // энфорсер
+	new /obj/item/modkit/melatonin_gasmask_kit(src) // противогаз
+	new /obj/item/modkit/melatonin_riot_kit(src) // riot шлем
+	new /obj/item/modkit/melatonin_stunsword_kit(src) // стан-меч
+	new /obj/item/modkit/melatonin_carrier_kit(src) // плитка
+	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src) // супершорт шотган
+	new /obj/item/modsuit_modkit/melatonin(src) // модсьют
+	new /obj/item/modkit/melatonin_requiem_kit(src) // револьвер Апостол
 
 /obj/item/storage/box/tau_box
 	name = "Tau modkits box"

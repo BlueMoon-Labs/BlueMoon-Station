@@ -29,6 +29,7 @@
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+	attack_hand_is_action = TRUE
 
 	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
 	var/turn_delay = 0.4 SECONDS
@@ -710,7 +711,16 @@
 	if(inertia_moving)
 		return
 	if(stepsound)
-		playsound(src, stepsound, 40, TRUE)
+		play_step_audio(stepsound, 40)
+
+/obj/vehicle/sealed/mecha/proc/play_step_audio(step_sound, volume)
+	var/turf/source = get_turf(src)
+	if(!source)
+		return
+	var/sound_file = get_sfx(step_sound)
+	playsound(src, sound_file, volume, TRUE, excluded_listeners = occupants)
+	for(var/mob/occupant as anything in occupants)
+		occupant.playsound_local(source, sound_file, volume * 0.3, TRUE, max_distance = SOUND_RANGE)
 
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
@@ -1404,7 +1414,6 @@
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
-	restore_occupant_popup_menus(M)
 	SStgui.close_user_uis(M, src)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
@@ -1417,26 +1426,20 @@
 	. = ..()
 	update_icon()
 	M.update_mouse_pointer()
+	// только здесь мех уже не считает его пилотом
+	restore_occupant_popup_menus(M)
 
+/// ПКМ пилота - кликом по карте даже у ИИ, у которого обычно на ПКМ меню BYOND
 /obj/vehicle/sealed/mecha/proc/disable_occupant_popup_menus(mob/pilot)
 	SIGNAL_HANDLER
-	var/client/pilot_client = pilot.client
-	if(!pilot_client)
-		return
-	if(isnull(pilot_client.show_popup_menus_before_disable))
-		pilot_client.show_popup_menus_before_disable = pilot_client.show_popup_menus
-	pilot_client.mecha_popup_menus_disabled = TRUE
-	pilot_client.show_popup_menus = FALSE
+	if(pilot.client)
+		winset(pilot.client, "mapwindow.map", "right-click=true")
+		pilot.client.show_popup_menus = FALSE
 
 /obj/vehicle/sealed/mecha/proc/restore_occupant_popup_menus(mob/pilot, client/pilot_client)
 	SIGNAL_HANDLER
 	pilot_client ||= pilot.client
-	if(!pilot_client)
-		return
-	pilot_client.mecha_popup_menus_disabled = FALSE
-	if(!isnull(pilot_client.show_popup_menus_before_disable))
-		pilot_client.show_popup_menus = pilot_client.show_popup_menus_before_disable
-		pilot_client.show_popup_menus_before_disable = null
+	pilot_client?.update_right_click_mode()
 
 /////////////////////////
 ////// Access stuff /////

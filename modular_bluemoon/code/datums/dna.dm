@@ -82,6 +82,11 @@
 		if(HSize >= 1)		head.max_damage = initial(head.max_damage) + (HSize - 1) * 100
 		else				head.max_damage = initial(head.max_damage) - (1 - HSize) * 100
 
+	//При уменьшении снимаем урон, добавленный ростом, в доле отыгранного роста с бонусом
+	var/target_max_health = max(NewHMaxHealth, MINIMAL_SIZE_HEALTH)
+	if(target_max_health < HMaxHealth && C.size_bonus_growth > 0)
+		C.shrink_size_damage_bonus(HMaxHealth - target_max_health)
+
 	//Если персонаж так мал, что его ХП должно быть ниже MINIMAL_SIZE_HEALTH после всех формул, то оно выставляется таким
 	if(NewHMaxHealth < MINIMAL_SIZE_HEALTH)
 		holder.maxHealth = MINIMAL_SIZE_HEALTH
@@ -92,22 +97,81 @@
 	var/damage_formula = (NewHMaxHealth / HMaxHealth) //Разница между новым и старым хп
 	if(C.health < HMaxHealth * 0.9 && damage_formula > 1) //если хп меньше 90% и персонажа увеличивается хп
 		holder.visible_message(span_danger("[holder] body damage is getting worse from sudden expansion!"), span_danger("Your body damage is getting worse from sudden expansion!"))
+		C.size_bonus_growth += NewHMaxHealth - HMaxHealth
 
 		//BRUTE & BURN
-		for(var/X in C.bodyparts)
-			var/obj/item/bodypart/BP = X
-			BP.brute_dam *= damage_formula
-			BP.burn_dam *= damage_formula
+		// Не выше max_damage конечности: иначе цикл роста и уменьшения копит урон сверх предела.
+		for(var/obj/item/bodypart/BP as anything in C.bodyparts)
+			var/limb_damage = BP.brute_dam + BP.burn_dam
+			if(!limb_damage)
+				continue
+			var/limb_formula = max(1, min(damage_formula, BP.max_damage / limb_damage))
+			var/old_brute = BP.brute_dam
+			var/old_burn = BP.burn_dam
+			BP.brute_dam = round(BP.brute_dam * limb_formula, DAMAGE_PRECISION)
+			BP.burn_dam = round(BP.burn_dam * limb_formula, DAMAGE_PRECISION)
+			BP.size_brute_bonus += BP.brute_dam - old_brute
+			BP.size_burn_bonus += BP.burn_dam - old_burn
 
 		//TOX
-		if(C.getToxLoss())
-			C.setToxLoss(C.getToxLoss()* damage_formula, FALSE)
+		var/old_tox = C.getToxLoss()
+		if(old_tox)
+			C.setToxLoss(old_tox * damage_formula, FALSE)
+			C.size_tox_bonus += C.getToxLoss() - old_tox
 
 		//CLONE
-		if(C.getCloneLoss())
-			C.setCloneLoss(C.getCloneLoss() * damage_formula, FALSE)
+		var/old_clone = C.getCloneLoss()
+		if(old_clone)
+			C.setCloneLoss(old_clone * damage_formula, FALSE)
+			C.size_clone_bonus += C.getCloneLoss() - old_clone
+	else if(damage_formula > 1 && C.size_bonus_growth > 0)
+		C.size_free_growth += NewHMaxHealth - HMaxHealth
 
 	holder.maxHealth = NewHMaxHealth
 	C.updatehealth()
 
 	#undef MINIMAL_SIZE_HEALTH
+
+/mob/living/carbon
+	/// Прирост maxHealth, при котором рост усилил урон; 0 - прибавки от роста нет.
+	var/size_bonus_growth = 0
+	/// Прирост maxHealth без усиления урона (персонаж был почти здоров), набранный поверх бонусного.
+	var/size_free_growth = 0
+	var/size_tox_bonus = 0
+	var/size_clone_bonus = 0
+
+/obj/item/bodypart
+	var/size_brute_bonus = 0
+	var/size_burn_bonus = 0
+
+/// Уменьшение сперва отыгрывает рост без бонуса, затем бонусный - и снимает его долю урона.
+/mob/living/carbon/proc/shrink_size_damage_bonus(shrunk_health)
+	var/free_undone = min(shrunk_health, size_free_growth)
+	size_free_growth -= free_undone
+	var/bonus_undone = min(shrunk_health - free_undone, size_bonus_growth)
+	if(bonus_undone <= 0)
+		return
+	var/share = bonus_undone / size_bonus_growth
+	size_bonus_growth -= bonus_undone
+	remove_size_damage_bonus(share)
+
+/// Снимает долю урона, добавленного ростом. Уже вылеченное не возвращается, лишнего не снимается.
+/mob/living/carbon/proc/remove_size_damage_bonus(share)
+	for(var/obj/item/bodypart/BP as anything in bodyparts)
+		var/brute_back = share >= 1 ? BP.size_brute_bonus : round(BP.size_brute_bonus * share, DAMAGE_PRECISION)
+		var/burn_back = share >= 1 ? BP.size_burn_bonus : round(BP.size_burn_bonus * share, DAMAGE_PRECISION)
+		BP.size_brute_bonus -= brute_back
+		BP.size_burn_bonus -= burn_back
+		BP.brute_dam = max(0, round(BP.brute_dam - brute_back, DAMAGE_PRECISION))
+		BP.burn_dam = max(0, round(BP.burn_dam - burn_back, DAMAGE_PRECISION))
+	var/tox_back = share >= 1 ? size_tox_bonus : size_tox_bonus * share
+	var/clone_back = share >= 1 ? size_clone_bonus : size_clone_bonus * share
+	size_tox_bonus -= tox_back
+	size_clone_bonus -= clone_back
+	if(tox_back && getToxLoss())
+		setToxLoss(max(0, getToxLoss() - tox_back), FALSE)
+	if(clone_back && getCloneLoss())
+		setCloneLoss(max(0, getCloneLoss() - clone_back), FALSE)
+	if(share >= 1)
+		size_bonus_growth = 0
+		size_free_growth = 0

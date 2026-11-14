@@ -87,10 +87,10 @@ Possible to do for anyone motivated enough:
 /obj/machinery/holopad/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(isAI(user) && on_network)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Project yourself")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Спроецировать себя")
 		if(LAZYLEN(masters) && masters[user])
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Stop projecting")
-			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Stop projecting")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Прекратить проекцию")
+			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Прекратить проекцию")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/holopad/secure

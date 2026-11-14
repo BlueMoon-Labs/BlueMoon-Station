@@ -24,6 +24,7 @@
 	T.range = 4
 	T.speed = 0.8
 	T.skill_mod = 5 //Monstrous tackling
+	T.max_roll = INFINITY
 	T.min_distance = 2
 	active = TRUE
 	user.toggle_throw_mode()

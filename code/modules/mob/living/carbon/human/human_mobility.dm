@@ -1,6 +1,19 @@
 /mob/living/carbon/human/resist_a_rest(automatic = FALSE, ignoretimer = FALSE)
 	if(!resting || stat || (combat_flags & COMBAT_FLAG_RESISTING_REST))
 		return FALSE
+	// Бесполезная попытка встать не должна запускать do_after и показывать прогресс.
+	if(lying && !get_leg_ignore() && !get_num_supporting_limbs())
+		if(!automatic)
+			if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+				if(mind && !HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+					to_chat(src, span_warning("Вы не можете встать: вы не умеете пользоваться опорным хвостом этого тела."))
+				else
+					to_chat(src, span_warning("Вы не можете встать: ваш опорный хвост отсутствует или не может служить опорой."))
+			else if(HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+				to_chat(src, span_warning("Вы не можете встать: вы умеете передвигаться только опорным хвостом и не умеете пользоваться ногами этого тела."))
+			else
+				to_chat(src, span_warning("Вы не можете встать: ни одна из ваших ног не может служить опорой."))
+		return FALSE
 	if(ignoretimer)
 		set_resting(FALSE, FALSE)
 		return TRUE

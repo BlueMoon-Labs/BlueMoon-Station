@@ -154,7 +154,8 @@
 
 /datum/antag_training_exercise/systems/cable/proc/room_lit(datum/antag_training_sector/place)
 	for(var/obj/machinery/light/lamp in room(place))
-		if(lamp.status == LIGHT_OK && lamp.on)
+		// Питание уже дошло, а лампа в полный тик загорится следующим: шаг проверяется только по смене питания.
+		if(lamp.status == LIGHT_OK && (lamp.on || lamp.has_power()))
 			return TRUE
 	return FALSE
 

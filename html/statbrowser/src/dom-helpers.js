@@ -39,5 +39,10 @@ var g_ping = {};
 	pingBarGlobal.appendChild(g_ping.spacer);
 	pingBarGlobal.appendChild(g_ping.tidiText);
 	pingBarGlobal.appendChild(g_ping.tidiAvg);
+	pingBarGlobal.style.cursor = "pointer";
+	pingBarGlobal.title = "Подробнее о пинге";
+	pingBarGlobal.addEventListener("click", function() {
+		send_byond_command("Ping-Diagnostics");
+	});
 	pingBarGlobal.style.display = "none";
 })();

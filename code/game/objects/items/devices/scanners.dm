@@ -64,6 +64,9 @@ GENETICS SCANNER
 	if(t_ray_images.len)
 		flick_overlay(t_ray_images, list(viewer.client), flick_time)
 
+/mob/proc/can_read_medical_display()
+	return !is_blind() || HAS_MIND_TRAIT(src, TRAIT_MEDICAL_DEVICE_INTERFACE)
+
 /obj/item/healthanalyzer
 	name = "health analyzer"
 	desc = "Ручной сканер тела с функцией анализа показателей здоровья пациента."
@@ -125,11 +128,14 @@ GENETICS SCANNER
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE) || !user.client?.prefs)
 		return
 	user.client.prefs.health_analyzer_chat = !user.client.prefs.health_analyzer_chat
-	user.client.prefs.save_preferences()
+	user.client.prefs.save_pref_var("health_analyzer_chat")
 	to_chat(user, span_notice("Все ваши анализаторы теперь [user.client.prefs.health_analyzer_chat ? "выдают текстовый медицинский отчёт" : "показывают результаты на медицинском дисплее"]."))
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
+	if(!user.can_read_medical_display())
+		to_chat(user, span_warning("Вы не можете прочитать результаты анализатора, пока ничего не видите."))
+		return
 	if(GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat)
 		var/report = get_report(user)
 		if(advanced)
@@ -141,8 +147,13 @@ GENETICS SCANNER
 /obj/item/healthanalyzer/ui_state(mob/user)
 	return GLOB.hands_state
 
+/obj/item/healthanalyzer/ui_status(mob/user, datum/ui_state/state)
+	if(!user.can_read_medical_display())
+		return UI_CLOSE
+	return ..()
+
 /obj/item/healthanalyzer/ui_interact(mob/user, datum/tgui/ui)
-	if(!user.client)
+	if(!user.client || !user.can_read_medical_display())
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -151,12 +162,15 @@ GENETICS SCANNER
 		ui.open()
 
 /obj/item/healthanalyzer/ui_data(mob/user)
+	if(!user.can_read_medical_display())
+		return list()
 	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number)
 	return data
 
 /obj/item/healthanalyzer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	if(..())
-		return
+	. = ..()
+	if(. || usr.is_blind())
+		return TRUE
 	switch(action)
 		if("clear")
 			scan_data = null
@@ -196,7 +210,7 @@ GENETICS SCANNER
 	show_results(user)
 
 /obj/item/healthanalyzer/attack(mob/living/M, mob/living/carbon/human/user)
-	if(user.incapacitated() || user.eye_blind)
+	if(user.incapacitated())
 		return
 	flick("[icon_state]-scan", src)
 
@@ -248,7 +262,7 @@ GENETICS SCANNER
 
 // Общий сбор показателей для анализатора, КПК, имплантов и медицинских машин.
 /proc/healthscan(mob/user, mob/living/M, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null, datum/live_source = null, include_chemistry = FALSE)
-	if(isliving(user) && (user.incapacitated() || user.eye_blind))
+	if(isliving(user) && user.incapacitated())
 		return
 	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = include_chemistry || !isnull(connected_analyzer))
 	var/report = data["report"]
@@ -262,6 +276,10 @@ GENETICS SCANNER
 // Общий дисплей для медицинских инструментов и встроенных систем; чат остаётся доступен по префу.
 /proc/show_medical_scan(mob/user, list/data, mob/living/patient, datum/live_source = null, scan_kind = "Medical", advanced = FALSE, include_chemistry = FALSE)
 	if(!length(data))
+		return
+	// Без зрения доступны только показания подтверждённой встроенной системы.
+	if(!user.can_read_medical_display() && (QDELETED(live_source) || !live_source.can_monitor_medical_scan(user, patient, scan_kind)))
+		to_chat(user, span_warning("Вы не можете прочитать показания внешнего сканера, пока ничего не видите."))
 		return
 	if(!user.client || (GLOB.health_analyzer_allow_chat_mode && user.client.prefs.health_analyzer_chat))
 		var/report = data["report"]
@@ -347,8 +365,10 @@ GENETICS SCANNER
 	if(source_ref)
 		var/datum/source = source_ref.resolve()
 		var/mob/living/patient = patient_ref?.resolve()
-		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || user.eye_blind || !source.can_monitor_medical_scan(user, patient, scan_kind))
+		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || !source.can_monitor_medical_scan(user, patient, scan_kind))
 			return UI_CLOSE
+	else if(!user.can_read_medical_display())
+		return UI_CLOSE
 	return ..()
 
 /datum/component/medical_scan_display/ui_interact(mob/user, datum/tgui/ui)
@@ -386,7 +406,7 @@ GENETICS SCANNER
 	last_report = ""
 
 /proc/medical_scan_results(mob/user, mob/living/M, advanced = FALSE, include_chemistry = FALSE)
-	if(isliving(user) && (user.incapacitated() || user.eye_blind))
+	if(isliving(user) && user.incapacitated())
 		return
 	// Показатели повреждений с учётом маскировки смерти.
 	var/oxy_loss = round(M.getOxyLoss(), 0.001)
@@ -418,6 +438,25 @@ GENETICS SCANNER
 		"report" = "",
 	)
 	var/msg = ""
+
+	var/list/innate_features = list()
+	var/list/innate_feature_names = list()
+	data["innateFeatures"] = innate_features
+	if(ishuman(M))
+		var/mob/living/carbon/human/patient = M
+		for(var/feature_id in patient.applied_innate_features)
+			var/datum/innate_feature/feature = GLOB.innate_features[feature_id]
+			if(!feature)
+				continue
+			var/feature_name = feature.display_name || feature.name
+			innate_features += list(list("id" = feature.id, "name" = feature_name, "tooltip" = feature.medical_tooltip))
+			innate_feature_names += html_encode(feature_name)
+		if(HAS_MIND_TRAIT(patient, TRAIT_NAGA_LOCOMOTION) && !HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY))
+			innate_features += list(list("id" = TRAIT_NAGA_LOCOMOTION, "name" = "Хвостовая моторика", "tooltip" = "Пациент умеет передвигаться только опорным хвостом. Ноги этого тела не дают ему возможности ходить. Для восстановления ходьбы ампутируйте обе ноги, затем пересадите опорный хвост через доступ в паху."))
+			innate_feature_names += "Хвостовая моторика"
+		else if(patient.mind && HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY) && !HAS_MIND_TRAIT(patient, TRAIT_NAGA_LOCOMOTION))
+			innate_features += list(list("id" = TRAIT_NAGA_LOCOMOTION, "name" = "Ножная моторика", "tooltip" = "Пациент умеет ходить только на ногах и не умеет пользоваться опорным хвостом этого тела. Возможно лишь ползание на руках. Для привычного передвижения требуется тело с ногами."))
+			innate_feature_names += "Ножная моторика"
 
 	if(brute_loss > 10)
 		msg += "\n" + span_alert("Травмы: [brute_loss > 50 ? "серьёзные" : "незначительные"]")
@@ -455,9 +494,13 @@ GENETICS SCANNER
 	var/limb_details = ""
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
+		var/naga_anatomy = HAS_TRAIT(C, TRAIT_NAGA_ANATOMY)
 		for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+			if(naga_anatomy && zone == BODY_ZONE_R_LEG)
+				continue
 			var/obj/item/bodypart/limb = C.get_bodypart(zone)
-			var/list/entry = list("name" = capitalize(ru_parse_zone(zone)), "missing" = isnull(limb), "wounds" = list(), "embeds" = list())
+			var/is_tail = naga_anatomy && zone == BODY_ZONE_L_LEG
+			var/list/entry = list("name" = is_tail ? "Опорный хвост" : capitalize(ru_parse_zone(zone)), "missing" = isnull(limb), "wounds" = list(), "embeds" = list())
 			var/list/wounds = entry["wounds"]
 			var/list/embeds = entry["embeds"]
 			if(limb)
@@ -471,13 +514,14 @@ GENETICS SCANNER
 				continue
 			limbs += list(entry)
 			if(!limb)
+				entry["missingText"] = is_tail ? "оторван" : "отсутствует"
 				switch(zone)
 					if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
 						entry["missingIcon"] = "handshake-slash"
 					if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 						entry["missingIcon"] = "crutch"
 				var/missing_icon = entry["missingIcon"] ? "<i class='fas fa-[entry["missingIcon"]]'></i> " : ""
-				limb_details += "<tr><td colspan='5'>[span_bolddanger("[missing_icon][html_encode(entry["name"])] отсутствует")]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_bolddanger("[missing_icon][html_encode(entry["name"])] [entry["missingText"]]")]</td></tr>"
 			else
 				limb_details += "<tr><td>[html_encode(entry["name"])]</td><td>[span_danger("[entry["brute"]]")]</td><td>[span_orange("[entry["burn"]]")]</td></tr>"
 			for(var/embedded_name in embeds)
@@ -740,6 +784,10 @@ GENETICS SCANNER
 
 	if(advanced)
 		general_diagnosis += "\n[msg]"
+	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
+		general_diagnosis += "\n" + span_info("<b>Обнаружены наниты</b>")
+	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
+		general_diagnosis += "\n" + span_info("<b>Обнаружено действие Nanite Protector.</b>")
 	data["diagnosis"] = medical_scan_lines(general_diagnosis)
 	var/diagnosis_report = jointext(splittext(trim(general_diagnosis), "\n") - "", " · ")
 	msg = ""
@@ -813,6 +861,8 @@ GENETICS SCANNER
 	msg = ""
 	// Объём крови с учётом размера тела и поступающего переливания.
 	var/blood_report = ""
+	var/list/implants = list()
+	data["implants"] = implants
 	if(M.has_dna())
 		var/mob/living/carbon/C = M
 		var/blood_typepath = C.get_blood_id()
@@ -837,19 +887,10 @@ GENETICS SCANNER
 			else
 				blood_report += span_info("[HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "Показатель уровня гидравлической жидкости" : "Показатель уровня крови"] [blood_percent] %, [blood_volume] cl[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [integrating_blood] cl " : ""]. группа: [blood_type]") + "\n"
 
-		var/cyberimp_detect
 		for(var/obj/item/organ/cyberimp/CI in C.internal_organs)
 			if(CI.status == ORGAN_ROBOTIC && !CI.syndicate_implant)
-				cyberimp_detect += "[capitalize(CI.ru_name || CI.name)]<br>"
-		if(cyberimp_detect)
-			msg += span_notice("Обнаружены кибернетические модификации:") + "\n"
-			msg += span_notice("[cyberimp_detect]") + "\n"
+				implants += capitalize(CI.ru_name || CI.name)
 
-	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
-		msg += span_info("<b>Обнаружены наниты</b>")
-	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
-		msg += span_info("<b>Обнаружено действие Nanite Protector.</b>\n")
-	medical_scan_section(data, "Импланты и наниты", msg)
 	if(include_chemistry)
 		var/list/chemical_data = chemical_scan_results(M)
 		data["reagents"] = chemical_data["reagents"]
@@ -870,8 +911,11 @@ GENETICS SCANNER
 	header += replacetext(blood_report, "\n", "<br>")
 	if(diagnosis_report)
 		header += "[diagnosis_report]<br>"
+	if(length(implants))
+		header += "[span_info("Импланты:")] [html_encode(jointext(implants, ", "))]<br>"
 	if(length(quirk_report))
 		header += "[span_info("Особенности:")] [jointext(quirk_report, ", ")]<br>"
+	header += "[span_info("Врожденное:")] [length(innate_feature_names) ? jointext(innate_feature_names, ", ") : "Нет"]<br>"
 	var/report = "[header][data["report"]]<hr>[span_info("Снимок от [scan_time]")]"
 	data["report"] = report
 	return data
@@ -997,7 +1041,7 @@ GENETICS SCANNER
 
 // Подробное описание ран остаётся доступным у всех вызывающих этот прок инструментов.
 /proc/woundscan(mob/user, mob/living/carbon/patient, obj/item/healthanalyzer/scanner, datum/live_source = null)
-	if(!istype(patient) || (isliving(user) && (user.incapacitated() || user.eye_blind)))
+	if(!istype(patient) || (isliving(user) && user.incapacitated()))
 		return
 	var/list/data = wound_scan_results(user, patient)
 	if(!length(patient.get_wounded_bodyparts()) && istype(scanner, /obj/item/healthanalyzer/wound))

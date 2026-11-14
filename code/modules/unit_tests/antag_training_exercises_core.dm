@@ -299,3 +299,10 @@
 	patient.adjustOrganLoss(ORGAN_SLOT_BRAIN, BRAIN_DAMAGE_DEATH)
 	TEST_ASSERT(wait_for_var(run, "ended", TRUE, 5 SECONDS), "Погибший мозг заканчивает упражнение.")
 	TEST_ASSERT(!run.success && findtext(run.result_text, "мозг погиб"), "Провал называет причину: [run.result_text]")
+
+	var/mob/living/carbon/human/station_body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	station_body.mind_initialize()
+	station_body.death()
+	var/station_revivable = station_body.can_be_medically_revived()
+	QDEL_NULL(station_body.mind)
+	TEST_ASSERT(!station_revivable, "Тело станции без игрока медицина по-прежнему не оживляет.")

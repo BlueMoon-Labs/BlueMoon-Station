@@ -515,6 +515,10 @@
 	TEST_ASSERT(blocker.density, "Sanity: the blocking mob must be dense")
 	loop.movement_path = list(blocker_turf)
 
+	//первый упор - ждём шаг, как прямой режим: в толчее союзник обычно уходит сам
+	mover.post_move_jps(loop, FALSE)
+	TEST_ASSERT_NULL(loop.avoid, "The first mob-blocked step must wait instead of rerouting")
+	TEST_ASSERT_EQUAL(length(loop.movement_path), 1, "Waiting for the ally must keep the route")
 	mover.post_move_jps(loop, FALSE)
 	TEST_ASSERT_EQUAL(loop.avoid, blocker_turf, "A mob-blocked next step must become the temporary JPS avoidance turf")
 
@@ -933,12 +937,12 @@
 	TEST_ASSERT(!policy.try_smash(crab, controller, smes), "Хедкраб не должен бить SMES")
 	TEST_ASSERT_EQUAL(smes.obj_integrity, smes_integrity, "SMES должен остаться целым")
 	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, nest), "Своё гнездо не преграда пути")
-	TEST_ASSERT(policy.can_smash_blocker(crab, controller, grille), "Решётка остаётся законной преградой")
+	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, grille), "Хедкраб не должен повреждать решётки")
 
 	crab.faction = list("unit_test_outsider")
-	TEST_ASSERT(policy.can_smash_blocker(crab, controller, nest), "Чужое гнездо ломать можно")
+	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, nest), "Хедкраб не должен повреждать и чужие гнёзда")
 	crab.environment_smash |= ENVIRONMENT_SMASH_RWALLS
-	TEST_ASSERT(policy.can_smash_blocker(crab, controller, smes), "Моб уровня босса пробивает и машинерию")
+	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, smes), "Разрешение ломать стены не должно отменять запрет урона объектам")
 	qdel(controller)
 
 ///Раунд 10466: медведь Миша с фракцией экипажа выламывал дверь и шкафы офиса ГСБ и дверь оружейной.

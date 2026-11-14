@@ -142,12 +142,13 @@
 		//как легаси PickTarget ниже ставил его первым в списке
 		ai_controller?.note_attacker(A)
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/moan()
+/mob/living/simple_animal/hostile/deathclaw/funclaw/moan(is_hidden = FALSE)
+	var/hidden_suffix = HIDDEN_REACTION_SUFFIX(is_hidden)
 	var/message_to_display = pick("рычит%S%", "рычит%S% от удовольствия")
-	visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")]."),
-		span_lewd("Вы [replacetext(message_to_display, "%S%", "е")]."),
-		span_lewd("Вы слышите наполненный удовольствием рык."),
-		ignored_mobs = get_unconsenting(), omni = TRUE)
+	visible_message(span_lewd("<b>\The [src]</b> [replacetext(message_to_display, "%S%", "")][hidden_suffix]."),
+		span_lewd("Вы [replacetext(message_to_display, "%S%", "е")][hidden_suffix]."),
+		span_lewd("Кто-то рычит от удовольствия[hidden_suffix]."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = get_unconsenting(), omni = TRUE, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	var/static/list/moans = list('modular_splurt/sound/lewd/deathclaw_grunt1.ogg',
 					'modular_splurt/sound/lewd/deathclaw_grunt2.ogg',
@@ -163,7 +164,7 @@
 	if (lastmoan == sound)
 		sound = pick(LAZYCOPY(moans) - lastmoan)
 
-	playlewdinteractionsound(get_turf(src), sound, 80, 1, -1)
+	playlewdinteractionsound(get_turf(src), sound, 80, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 	lastmoan = sound
 
 //BLUEMOON ADD END
@@ -298,7 +299,7 @@
 				I = SSinteractions.interactions["/datum/interaction/lewd/facefuck"] //Changed so they don't crit you anymore - Gardelin0
 				I.display_interaction(src, M)
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/cum(mob/living/M, target_orifice, cum_inside = FALSE, anonymous = FALSE)
+/mob/living/simple_animal/hostile/deathclaw/funclaw/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE, is_hidden = FALSE)
 
 	if(get_refraction_dif() > 0)
 		return
@@ -306,51 +307,51 @@
 	var/message
 	var/obj/item/organ/genital/target_gen = null
 
-	if(!istype(M))
+	if(!istype(partner))
 		chosen_hole = null
 
 	switch(chosen_hole)
 		if(CUM_TARGET_THROAT)
-			if(M.has_mouth() && M.mouth_is_free())
+			if(partner.has_mouth() && partner.mouth_is_free())
 	// BLUEMOON EDIT START
-				message = "засовывает свой толстый ящерский член глубоко в глотку \the [M] и кончает!"
-				target_gen = M.getorganslot(ORGAN_SLOT_STOMACH)
+				message = "засовывает свой толстый ящерский член глубоко в глотку \the [partner] и кончает!"
+				target_gen = partner.getorganslot(ORGAN_SLOT_STOMACH)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 			else
-				message = "кончает на лицо \the [M]!"
+				message = "кончает на лицо \the [partner]!"
 		if(CUM_TARGET_VAGINA)
-			if(M.is_bottomless() && M.has_vagina())
-				message = "засовывает свой мясистый член в киску \the [M] и наполняет ее спермой!"
-				target_gen = M.getorganslot(ORGAN_SLOT_WOMB)
+			if(partner.is_bottomless() && partner.has_vagina())
+				message = "засовывает свой мясистый член в киску \the [partner] и наполняет ее спермой!"
+				target_gen = partner.getorganslot(ORGAN_SLOT_WOMB)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
-				M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+				partner.impregnate(src, partner.getorganslot(ORGAN_SLOT_WOMB), src.type)
 			else
-				message = "кончает на живот \the [M]!"
+				message = "кончает на живот \the [partner]!"
 		if(CUM_TARGET_ANUS)
-			if(M.is_bottomless() && M.has_anus())
-				message = "[pick("вгоняет","вонзает")] свой узловатый член в задницу \the [M] и наполняет ее своей спермой!"
-				target_gen = M.getorganslot(ORGAN_SLOT_ANUS)
+			if(partner.is_bottomless() && partner.has_anus())
+				message = "[pick("вгоняет","вонзает")] свой узловатый член в задницу \the [partner] и наполняет ее своей спермой!"
+				target_gen = partner.getorganslot(ORGAN_SLOT_ANUS)
 				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 			else
-				message = "кончает на спину \the [M]!"
+				message = "кончает на спину \the [partner]!"
 		else
 			message = "кончает, заливая пространство под собой!"
 
-	if(deathclaw_mode == "abomination" && M.client?.prefs.unholypref == "Yes")
-		message = "покрывает все тело \the [M] спермой!"
+	if(deathclaw_mode == "abomination" && partner.client?.prefs.unholypref == "Yes")
+		message = "покрывает все тело \the [partner] спермой!"
 	// BLUEMOON EDIT END
 
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 80, 1, -1) // BLUEMOON EDIT
-	visible_message(span_userlove("<b>\The [src]</b> [message]")) // BLUEMOON EDIT
-	shake_camera(M, 6, 1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 80, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden) // BLUEMOON EDIT
+	visible_message(span_userlove("<b>\The [src]</b> [add_hidden_reaction_suffix(message, is_hidden)]"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)) // BLUEMOON EDIT
+	shake_camera(partner, 6, 1)
 	set_is_fucking(null ,null)
 
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15)
+	addtimer(CALLBACK(src, PROC_REF(slap), partner), 15)
 
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/proc/slap(mob/living/M)

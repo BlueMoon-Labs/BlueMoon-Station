@@ -9,6 +9,9 @@
 /// Used in show_hud(); Please ensure this is the same as the maximum index.
 #define HUD_VERSIONS 3
 
+// Основа куклы здоровья наги и состояния хвоста хранятся в общем атласе.
+#define NAGA_DOLL_ICON 'icons/mob/naga_healthdoll.dmi'
+
 // Consider these images/atoms as part of the UI/HUD (apart of the appearance_flags)
 /// Used for progress bars and chat messages
 #define APPEARANCE_UI_IGNORE_ALPHA (RESET_COLOR|RESET_TRANSFORM|NO_CLIENT_COLOR|RESET_ALPHA|PIXEL_SCALE)
@@ -101,6 +104,7 @@
 #define ui_palette_scroll_offset(north_offset) ("WEST+1:8,NORTH-[6+north_offset]:28")
 
 //Middle right (status indicators)
+#define ui_swarmer_core "EAST-1:28,CENTER-3:15"
 #define ui_healthdoll "EAST-1:28,CENTER-2:17"
 #define ui_health "EAST-1:28,CENTER-1:19"
 #define ui_internal "EAST-1:28,CENTER+1:21" // RIP, although nobody will remember this, unsmart coders have used this for other stuff. DO NOT REMOVE UNLESS RENAMING OR REPLACING.

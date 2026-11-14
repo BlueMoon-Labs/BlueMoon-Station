@@ -1113,7 +1113,7 @@
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
 	return TRUE
 
-/mob/living/silicon/ai/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+/mob/living/silicon/ai/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	. = ..()
 	if(.) //successfully ressuscitated from death
 		set_eyeobj_visible(TRUE)

@@ -6,7 +6,7 @@
 	required_from_target = INTERACTION_REQUIRE_HANDS
 	hearts_effect = FALSE
 
-/datum/interaction/lewd/tear_of_clothing/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/tear_of_clothing/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = FALSE
 	var/mob/living/carbon/human/partner_human = target
 	if(!istype(partner_human) || INTERACTING_WITH(user, partner_human))
@@ -43,16 +43,16 @@
 
 	var/obj/item/item_in_hand = user.get_active_held_item()
 	partner_human.visible_message(span_danger("[user] начинает рвать одежду [partner_human][item_in_hand ? " при помощи [item_in_hand.name]" : null]."),\
-								target = partner_human, target_message = span_userdanger("[user] начинает рвать вашу одежду[item_in_hand ? " при помощи [item_in_hand.name]" : null]."))
+								vision_distance = distance, target = partner_human, target_message = span_userdanger("[user] начинает рвать вашу одежду[item_in_hand ? " при помощи [item_in_hand.name]" : null]."), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	
 	var/obj/item/clothing/target_uniform = partner_human.w_uniform
 	if(!do_after(user, 4 SECONDS, partner_human) || QDELETED(target_uniform) || partner_human.w_uniform != target_uniform)
 		return
 
-	target_uniform.obj_destruction(MELEE)
+	target_uniform.shred_clothing(is_hidden ? HIDDEN_INTERACTION_RANGE : COMBAT_MESSAGE_RANGE, INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	if(HAS_TRAIT(partner_human, TRAIT_MASO))
-		partner_human.handle_post_sex(NORMAL_LUST, null, user)
+		partner_human.handle_post_sex(NORMAL_LUST, null, user, is_hidden = is_hidden)
 
 	var/message = "[is_hidden ? picked_hidden : null]<b>[user]</b> рвёт одежду <b>[partner_human]</b>[item_in_hand ? " при помощи своего [item_in_hand.name]" : null]."
 	if(user.a_intent == INTENT_HARM)
@@ -60,4 +60,4 @@
 		partner_human.apply_damage(rand(1, 5), BRUTE, BODY_ZONE_CHEST, partner_human.run_armor_check(BODY_ZONE_CHEST, MELEE), wound_bonus = CANT_WOUND)
 
 	user.visible_message(span_danger(message), "Вы рвёте одежду на [partner_human], превращая её в клочья.", ignored_mobs = user.get_unconsenting(), vision_distance = distance,\
-						target = partner_human, target_message = span_userdanger("[user] рвет на вас одежду, превращая её в клочья!"))
+						target = partner_human, target_message = span_userdanger("[user] рвет на вас одежду, превращая её в клочья!"), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))

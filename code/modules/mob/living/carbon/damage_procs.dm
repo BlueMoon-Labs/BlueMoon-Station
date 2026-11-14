@@ -125,6 +125,8 @@
 /mob/living/carbon/adjustStaminaLoss(amount, updating_health = TRUE, forced = FALSE)
 	if(!forced && (status_flags & GODMODE))
 		return FALSE
+	if(!forced && HAS_TRAIT(src, TRAIT_STAMINA_IMMUNE))
+		return FALSE
 	if(amount > 0)
 		take_overall_damage(0, 0, amount, updating_health)
 	else
@@ -218,8 +220,11 @@
 	if(!parts.len)
 		return
 	var/obj/item/bodypart/picked = pick(parts)
+	var/damage_before = picked.brute_dam + picked.burn_dam + picked.stamina_dam
 	if(picked.heal_damage(brute, burn, stamina, only_robotic, only_organic))
 		update_damage_overlays()
+	// TRUE, если часть реально зажила: по нему вызывающий решает, нужен ли пересчёт моба.
+	return picked.brute_dam + picked.burn_dam + picked.stamina_dam != damage_before
 
 //Damages ONE bodypart randomly selected from damagable ones.
 //It automatically updates damage overlays if necessary

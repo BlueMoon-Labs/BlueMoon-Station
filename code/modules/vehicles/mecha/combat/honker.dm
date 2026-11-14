@@ -25,7 +25,7 @@
 	if(inertia_moving)
 		return
 	if(squeak)
-		playsound(src, "clownstep", 70, 1)
+		play_step_audio("clownstep", 70)
 	squeak = !squeak
 
 /obj/vehicle/sealed/mecha/combat/honker/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

@@ -24,14 +24,7 @@ export const ColorInputModal = () => {
   return (
     <Window title={title} width={820} height={460}>
       {!!timeout && <Loader value={timeout} />}
-      <Window.Content
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            act('cancel');
-          }
-        }}
-      >
+      <Window.Content>
         <ColorPickerPanel
           className="ColorPicker--input"
           value={init_value}

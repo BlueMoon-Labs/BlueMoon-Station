@@ -164,13 +164,13 @@
 		action_owner.Digitigrade_Leg_Swap(FALSE)
 		action_owner.dna.species.mutant_bodyparts["mam_snouts"] = "Sergal"
 		action_owner.dna.features["mam_ears"] = "Jackal"
-		action_owner.dna.features["mam_tail"] = "Otusian"
+		action_owner.dna.features["mam_tail"] = HAS_TRAIT(action_owner, TRAIT_NAGA_ANATOMY) ? "None" : "Otusian"
 		action_owner.dna.features["mam_snouts"] = "Sergal"
 		action_owner.dna.features["legs"] = "Digitigrade"
 		action_owner.dna.features["insect_fluff"] = "Hyena"
 		action_owner.update_size(clamp(get_size(action_owner) + 0.5, RESIZE_MICRO, RESIZE_MACRO))
 		action_owner.set_bark("bark")
-		if(old_features["taur"] != "None")
+		if(old_features["taur"] != "None" && !HAS_TRAIT(action_owner, TRAIT_NAGA_ANATOMY))
 			action_owner.dna.features["taur"] = "Canine"
 		if(!(action_owner.dna.species.species_traits.Find(DIGITIGRADE)))
 			action_owner.dna.species.species_traits += DIGITIGRADE

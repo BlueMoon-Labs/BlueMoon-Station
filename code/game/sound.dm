@@ -40,11 +40,12 @@ channel - The channel the sound is played at
 pressure_affected - Whether or not difference in pressure affects the sound (E.g. if you can hear in space)
 ignore_walls - Whether or not the sound can pass through walls.
 falloff_distance - Distance at which falloff begins. Sound is at peak volume (in regards to falloff) aslong as it is in this range.
+excluded_listeners - Список мобов, которым не отправляется этот звук.
 
 */
 
 /proc/playsound(atom/source, soundin, vol as num, vary, extrarange as num, falloff_exponent = SOUND_FALLOFF_EXPONENT, frequency = null, channel = 0, pressure_affected = TRUE, ignore_walls = TRUE,
-	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, envwet = -10000, envdry = 0, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, distance_multiplier_min_range = SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE)
+	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, envwet = -10000, envdry = 0, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, distance_multiplier_min_range = SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE, list/excluded_listeners, local_only = FALSE)
 	if(isarea(source))
 		CRASH("playsound(): source is an area")
 
@@ -55,8 +56,8 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
-	var/turf/above_turf = SSmapping.get_turf_above(turf_source)
-	var/turf/below_turf = SSmapping.get_turf_below(turf_source)
+	var/turf/above_turf = local_only ? null : SSmapping.get_turf_above(turf_source)
+	var/turf/below_turf = local_only ? null : SSmapping.get_turf_below(turf_source)
 
 	var/list/listeners
 	// Extra listener lists to iterate separately when we can avoid Copy()
@@ -137,21 +138,21 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	for(var/mob/M as anything in listeners)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo, excluded_listeners)
 	for(var/mob/M as anything in extra_listeners_1)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo, excluded_listeners)
 	for(var/mob/M as anything in extra_listeners_2)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo, excluded_listeners)
 	for(var/mob/M as anything in extra_dead_listeners)
 		if(M in listeners) //уже получил звук из канала CLIENTS (был в поле зрения)
 			continue
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo, excluded_listeners)
 
 /*! playsound
 
@@ -203,12 +204,12 @@ GLOBAL_LIST_EMPTY(sound_echo_cache)
 	return built
 
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance,
-	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer, source_pressure, list/source_echo)
-	if(QDELETED(src))
+	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer, source_pressure, list/source_echo, list/excluded_listeners)
+	if(QDELETED(src) || (excluded_listeners && (src in excluded_listeners)))
 		return
 	if(audiovisual_redirect)
 		virtual_hearer = get_turf(src)
-		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer, source_pressure)
+		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer, source_pressure, excluded_listeners = excluded_listeners)
 		//No return here, as we want to deliberately support the possibility of shenanigans in which mobs with clients can have active AV redirects to completely different players
 	if(!client)
 		return

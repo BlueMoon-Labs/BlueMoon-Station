@@ -89,6 +89,17 @@
 	key = "tail"
 	message = "начинает двигать своим хвостом."
 
+/datum/emote/sound/human/carbon/tailslap
+	name = "Tail Slap"
+	key = "tailslap"
+	key_third_person = "tailslaps"
+	message = "ударяет хвостом по полу."
+	sound = 'sound/effects/tail_slap.ogg'
+	muzzle_ignore = TRUE
+
+/datum/emote/sound/human/carbon/tailslap/can_run_emote(mob/user, status_check = TRUE, intentional = FALSE)
+	return ..() && user.has_tail()
+
 /datum/emote/sound/human/carbon/wink
 	name = "Подмигнуть"
 	key = "wink"

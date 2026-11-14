@@ -182,7 +182,8 @@
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
+	var/local_only = visible_message_flags & LOCAL_ONLY_MESSAGE
+	var/list/hearers = get_hearers_in_view(vision_distance, src, include_relays = !local_only)
 	if(!length(hearers))
 		return
 
@@ -192,7 +193,7 @@
 
 	hearers -= ignored_mobs
 
-	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect))
+	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect) && (!local_only || (target in hearers)))
 		hearers -= target
 		if(omni || !blind_message)
 			target.show_message(target_message)
@@ -234,7 +235,7 @@
 		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
-/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
+/mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags = NONE, separation = " ")
 	. = ..()
 	if(self_message && target != src)
 		if(omni || !blind_message)
@@ -257,11 +258,11 @@
   * * runechat_popup (optional) if TRUE, will display a runechat popup using rune_msg if set otherwise it will use message and self_message accordingly.
   * * rune_msg (optional) is the message to display in the runechat popup.
   */
-/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, ignored_mobs, runechat_popup, rune_msg) //SKYRAT CHANGE
+/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, ignored_mobs, runechat_popup, rune_msg, local_only = FALSE)
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	var/list/hearers = get_hearers_in_view(hearing_distance, src)
+	var/list/hearers = get_hearers_in_view(hearing_distance, src, include_relays = !local_only)
 	if(!length(hearers))
 		return
 	hearers -= ignored_mobs
@@ -284,7 +285,7 @@
   * * hearing_distance (optional) is the range, how many tiles away the message can be heard.
   * * ignored_mobs (optional) doesn't show any message to any given mob in the list.
   */
-/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, list/ignored_mobs, runechat_popup, rune_msg) //SKYRAT CHANGE
+/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, list/ignored_mobs, runechat_popup, rune_msg, local_only = FALSE)
 	. = ..()
 	if(self_message)
 		if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE

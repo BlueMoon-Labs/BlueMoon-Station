@@ -128,11 +128,11 @@
 /datum/component/blood_oath_seam/proc/heal()
 	qdel(src)
 
-/datum/component/blood_oath_seam/proc/on_examine(mob/living/carbon/source, mob/user, list/examine_list)
+/datum/component/blood_oath_seam/proc/on_examine(mob/living/carbon/source, mob/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 	if(!blood_oath_palm_organic(source) || source.get_item_by_slot(ITEM_SLOT_GLOVES) || (ITEM_SLOT_GLOVES in source.check_obscured_slots()))
 		return
-	examine_list += span_warning("Поперёк [source.ru_ego()] ладони - свежий [burned ? "ожог" : "шов"].")
+	examine_list += span_warning("Поперёк [anonymous ? "его" : source.ru_ego()] ладони - свежий [burned ? "ожог" : "шов"].")
 
 /obj/item/storage/book/bible/examine(mob/user)
 	. = ..()

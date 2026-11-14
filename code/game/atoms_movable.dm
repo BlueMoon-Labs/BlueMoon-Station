@@ -174,7 +174,7 @@
 		if(EMISSIVE_BLOCK_UNIQUE)
 			render_target = ref(src)
 			em_block = new(src, render_target)
-			vis_contents += em_block
+			add_vis_on_floor(em_block)
 	switch(light_system)
 		if(OVERLAY_LIGHT)
 			AddComponent(/datum/component/overlay_lighting)
@@ -212,7 +212,9 @@
 	QDEL_NULL(proximity_monitor)
 	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
-	QDEL_NULL(em_block)
+	if(em_block)
+		vis_contents -= em_block
+		QDEL_NULL(em_block)
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null

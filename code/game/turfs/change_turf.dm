@@ -16,14 +16,14 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/turf/newT = ChangeTurf(turf_type, baseturf_type, flags)
 		CALCULATE_ADJACENT_TURFS(newT)
 
-/turf/proc/copyTurf(turf/T, copy_air = FALSE)
+/turf/proc/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	if(T.type != type)
 		var/had_underlays = length(underlays)
 		var/old_appearance
 		// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
 		if(had_underlays && !isclosedturf(T))
 			old_appearance = T.appearance
-		T.ChangeTurf(type, null, copy_air ? CHANGETURF_IGNORE_AIR : NONE)
+		T.ChangeTurf(type, null, changeturf_flags | (copy_air ? CHANGETURF_IGNORE_AIR : NONE))
 		if(had_underlays)
 			T.underlays.Cut()
 			if(old_appearance)
@@ -39,7 +39,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		T.setDir(dir)
 	return T
 
-/turf/open/copyTurf(turf/T, copy_air = FALSE)
+/turf/open/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	. = ..()
 	if (isopenturf(T))
 		var/datum/component/wet_floor/slip = GetComponent(/datum/component/wet_floor)
@@ -194,8 +194,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
 		lighting_object = old_lighting_object
-		if(lighting_object)
-			vis_contents += lighting_object
 		lc_topright = old_lc_topright
 		lc_topleft = old_lc_topleft
 		lc_bottomright = old_lc_bottomright
@@ -370,7 +368,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 // Copy an existing turf and put it on top
 // Returns the new turf
-/turf/proc/CopyOnTop(turf/copytarget, ignore_bottom=1, depth=INFINITY, copy_air = FALSE)
+/turf/proc/CopyOnTop(turf/copytarget, ignore_bottom=1, depth=INFINITY, copy_air = FALSE, changeturf_flags = NONE)
 	var/list/new_baseturfs = list()
 	new_baseturfs += baseturfs
 	new_baseturfs += type
@@ -387,17 +385,18 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			target_baseturfs -= new_baseturfs & GLOB.blacklisted_automated_baseturfs
 			new_baseturfs += target_baseturfs
 
-	var/turf/newT = copytarget.copyTurf(src, copy_air)
+	var/turf/newT = copytarget.copyTurf(src, copy_air, changeturf_flags)
 	newT.baseturfs = new_baseturfs
 	return newT
 
 
 //If you modify this function, ensure it works correctly with lateloaded map templates.
 /turf/proc/AfterChange(flags) //called after a turf has been replaced in ChangeTurf()
-	if(flags & CHANGETURF_RECALC_ADJACENT)
-		ImmediateCalculateAdjacentTurfs()
-	else
-		CALCULATE_ADJACENT_TURFS(src)
+	if(!(flags & CHANGETURF_SKIP_ADJACENCY))
+		if(flags & CHANGETURF_RECALC_ADJACENT)
+			ImmediateCalculateAdjacentTurfs()
+		else
+			CALCULATE_ADJACENT_TURFS(src)
 
 	//update firedoor adjacency
 	for(var/direction in GLOB.cardinals)

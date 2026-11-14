@@ -25,7 +25,7 @@
 /mob/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(user.GetComponent(/datum/component/interaction_menu_granter))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, "Interact with")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, "Взаимодействовать")
 		return CONTEXTUAL_SCREENTIP_SET
 
 ///Adjust the thirst of a mob

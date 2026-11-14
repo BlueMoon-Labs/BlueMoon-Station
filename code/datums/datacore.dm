@@ -230,14 +230,14 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		general_record.fields = list(
 			"id" = record_id,
 			"name" = subject_name,
-			"rank" = subject.assigned_role || "Unknown",
-			"real_rank" = subject.assigned_role || "Unknown",
-			"gender" = "Unknown",
-			"age" = "Unknown",
-			"species" = "Unknown",
-			"fingerprint" = "Unknown",
-			"p_stat" = "Active",
-			"m_stat" = "Stable",
+			"rank" = subject.assigned_role || "Неизвестно",
+			"real_rank" = subject.assigned_role || "Неизвестно",
+			"gender" = "Неизвестно",
+			"age" = "Неизвестен",
+			"species" = "Неизвестен",
+			"fingerprint" = "Неизвестно",
+			"p_stat" = MED_RECORD_STATUS_PH_HEALTHY,
+			"m_stat" = MED_RECORD_STATUS_M_STABLE,
 		)
 		if(ishuman(subject.current))
 			var/mob/living/carbon/human/person = subject.current
@@ -839,14 +839,9 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		G.fields["age"]			= H.age
 		G.fields["species"]		= H.dna.species.name
 		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
-		G.fields["p_stat"]		= "Active"
-		G.fields["m_stat"]		= "Stable"
-		if(H.gender == MALE)
-			G.fields["gender"]  = "Male"
-		else if(H.gender == FEMALE)
-			G.fields["gender"]  = "Female"
-		else
-			G.fields["gender"]  = "Other"
+		G.fields["p_stat"]		= MED_RECORD_STATUS_PH_HEALTHY
+		G.fields["m_stat"]		= MED_RECORD_STATUS_M_STABLE
+		G.fields["gender"] 		= GLOB.gender_to_string["[H.gender]"] || "Другой"
 		G.photo_source			= photo_source
 		general += G
 		general_by_name[H.real_name] = G
@@ -858,14 +853,14 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		M.fields["name"]		= H.real_name
 		M.fields["blood_type"]	= H.dna.blood_type
 		M.fields["b_dna"]		= H.dna.unique_enzymes
-		M.fields["mi_dis"]		= "None"
-		M.fields["mi_dis_d"]	= "No minor disabilities have been declared."
-		M.fields["ma_dis"]		= "None"
-		M.fields["ma_dis_d"]	= "No major disabilities have been diagnosed."
-		M.fields["alg"]			= "None"
-		M.fields["alg_d"]		= "No allergies have been detected in this patient."
-		M.fields["cdi"]			= "None"
-		M.fields["cdi_d"]		= "No diseases have been diagnosed at the moment."
+		M.fields["mi_dis"]		= "Отсутствуют"
+		M.fields["mi_dis_d"]	= "Незначительных ограничений не вменялось."
+		M.fields["ma_dis"]		= "Отсутствуют"
+		M.fields["ma_dis_d"]	= "Значительных ограничений не диагностировалось."
+		M.fields["alg"]			= "Отсутствуют"
+		M.fields["alg_d"]		= "Аллергии не были обнаружены на момент записи."
+		M.fields["cdi"]			= "Отсутствуют"
+		M.fields["cdi_d"]		= "Болезни не диагностировались на момент записи."
 		M.fields["notes"]		= "[prefs.medical_records]"
 		medical += M
 		medical_by_name[H.real_name] = M
@@ -908,12 +903,7 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		L.fields["rank"] 		= assignment
 		L.fields["real_rank"]	= GetJobName(real_rank)
 		L.fields["age"]			= H.age
-		if(H.gender == MALE)
-			G.fields["gender"]  = "Male"
-		else if(H.gender == FEMALE)
-			G.fields["gender"]  = "Female"
-		else
-			G.fields["gender"]  = "Other"
+		G.fields["gender"] 		= GLOB.gender_to_string["[H.gender]"] || "Другой"
 		L.fields["blood_type"]	= H.dna.blood_type
 		L.fields["b_dna"]		= H.dna.unique_enzymes
 		L.fields["identity"]	= H.dna.uni_identity

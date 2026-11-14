@@ -5,13 +5,13 @@
 /datum/keybinding/mob/stop_pulling
 	hotkey_keys = list("H", "Delete")
 	name = "stop_pulling"
-	full_name = "Stop pulling"
+	full_name = "Перестать тянуть"
 	description = ""
 
 /datum/keybinding/mob/stop_pulling/down(client/user)
 	var/mob/M = user.mob
 	if(!M.pulling)
-		to_chat(user, "<span class='notice'>You are not pulling anything.</span>")
+		to_chat(user, span_notice("Вы ничего не тянете."))
 	else
 		M.stop_pulling()
 	return TRUE
@@ -19,7 +19,7 @@
 /datum/keybinding/mob/cycle_intent_right
 	hotkey_keys = list("Unbound")
 	name = "cycle_intent_right"
-	full_name = "Cycle Action Intent Right"
+	full_name = "Следующий интент по часовой стрелке"
 	description = ""
 
 /datum/keybinding/mob/cycle_intent_right/down(client/user)
@@ -30,7 +30,7 @@
 /datum/keybinding/mob/cycle_intent_left
 	hotkey_keys = list("Unbound")
 	name = "cycle_intent_left"
-	full_name = "Cycle Action Intent Left"
+	full_name = "Следующий интент против часовой стрелки"
 	description = ""
 
 /datum/keybinding/mob/cycle_intent_left/down(client/user)
@@ -41,7 +41,7 @@
 /datum/keybinding/mob/swap_hands
 	hotkey_keys = list("X", "Northeast") // PAGEUP
 	name = "swap_hands"
-	full_name = "Swap hands"
+	full_name = "Поменять выбранную руку"
 	description = ""
 
 /datum/keybinding/mob/swap_hands/down(client/user)
@@ -52,8 +52,8 @@
 /datum/keybinding/mob/activate_inhand
 	hotkey_keys = list("Z", "Southeast") // PAGEDOWN
 	name = "activate_inhand"
-	full_name = "Activate in-hand"
-	description = "Uses whatever item you have inhand"
+	full_name = "Использовать в руке"
+	description = "Использовать предмет в вашей руке"
 
 /datum/keybinding/mob/activate_inhand/down(client/user)
 	var/mob/M = user.mob
@@ -63,8 +63,8 @@
 /datum/keybinding/mob/drop_item
 	hotkey_keys = list("Q")
 	name = "drop_item"
-	full_name = "Drop Item"
-	description = ""
+	full_name = "Бросить предмет"
+	description = "Опустить предмет на пол"
 
 /datum/keybinding/mob/drop_item/down(client/user)
 	if(iscyborg(user.mob)) //cyborgs can't drop items
@@ -74,7 +74,7 @@
 		return TRUE
 	var/obj/item/I = M.get_active_held_item()
 	if(!I)
-		to_chat(user, "<span class='warning'>You have nothing to drop in your hand!</span>")
+		to_chat(user, span_warning("В вашей руке ничего нет!"))
 	else
 		// Мы делаем именно тут, т.к. dropItemToGround от дизарма и по кнопке, ничем не отличаются
 		if(iscarbon(M))
@@ -90,8 +90,8 @@
 	hotkey_keys = list()
 	classic_keys = list()
 	name = "examine_immediate"
-	full_name = "Examine (Immediate)"
-	description = "Immediately examine anything you're hovering your mouse over."
+	full_name = "Осмотреть (Мгновенно)"
+	description = "Мгновенно осмотреть то, на что наведён курсор."
 
 /datum/keybinding/mob/examine_immediate/down(client/user)
 	var/atom/A = user.mouse_object_ref?.resolve()

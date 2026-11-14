@@ -12,6 +12,9 @@
 	lose_text = "<span class='notice'>You feel more grounded.</span>"
 
 /datum/brain_trauma/mild/hallucinations/on_life()
+	if(HAS_TRAIT(owner, TRAIT_RDS_SUPPRESSED))
+		owner.hallucination = max(0, owner.hallucination - PROTEAN_HALLUCINATION_RECOVERY)
+		return
 	owner.hallucination = min(owner.hallucination + 10, 50)
 	..()
 

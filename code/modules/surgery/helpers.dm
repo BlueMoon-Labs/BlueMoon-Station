@@ -1,16 +1,19 @@
 #define SURGERY_VOLUNTARY_SLEEP_DURATION (6 SECONDS)
 
+// Две зоны ног ламии обозначают один хирургический доступ к опорному хвосту.
+/proc/get_surgery_zone(mob/living/patient, zone)
+	if(zone == BODY_ZONE_R_LEG && iscarbon(patient) && HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY))
+		return BODY_ZONE_L_LEG
+	return zone
+
 /// Операции, которые можно начать этим инструментом на выбранной зоне пациента: имя -> операция.
 /proc/get_available_surgeries(obj/item/tool, mob/living/patient, mob/user, selected_zone)
 	. = list()
-	var/obj/item/bodypart/affecting
-	if(iscarbon(patient))
-		var/mob/living/carbon/carbon_patient = patient
-		affecting = carbon_patient.get_bodypart(check_zone(selected_zone))
-
+	selected_zone = get_surgery_zone(patient, selected_zone)
 	for(var/datum/surgery/surgery as anything in GLOB.surgeries_list)
 		if(!surgery.possible_locs.Find(selected_zone))
 			continue
+		var/obj/item/bodypart/affecting = surgery.get_target_bodypart(patient, selected_zone)
 		if(affecting)
 			if(!surgery.requires_bodypart)
 				continue
@@ -44,7 +47,7 @@
 
 	var/mob/living/carbon/C
 	var/obj/item/bodypart/affecting
-	var/selected_zone = user.zone_selected
+	var/selected_zone = get_surgery_zone(M, user.zone_selected)
 
 	if(iscarbon(M))
 		C = M
@@ -57,9 +60,12 @@
 			current_surgery = S
 
 	if(!current_surgery)
+		if(HAS_TRAIT(M, TRAIT_NAGA_ANATOMY) && (user.zone_selected == BODY_ZONE_L_LEG || user.zone_selected == BODY_ZONE_R_LEG))
+			to_chat(user, span_warning("У [M] нет ног: вместо них опорный хвост. Его основание находится в области паха. Для удаления или пришивания хвоста выберите пах на кукле прицеливания."))
+			. = TRUE
 		var/list/available_surgeries = get_available_surgeries(I, M, user, selected_zone)
 		if(!available_surgeries.len)
-			return
+			return .
 		// BLUEMOON ADD START
 		. = TRUE // cancel = don't try to attack
 		var/P
@@ -125,14 +131,17 @@
 
 		if(user && user.Adjacent(M) && (I in user))
 			var/datum/surgery/S = available_surgeries[P]
+			if(C)
+				affecting = S.get_target_bodypart(C, selected_zone)
 
 			for(var/datum/surgery/other in M.surgeries)
-				if(other.location == S.location)
-					return //during the input() another surgery was started at the same location.
+				if(other.location == selected_zone || (istype(affecting, /obj/item/bodypart/l_leg/naga_tail) && other.operated_bodypart == affecting))
+					// За время выбора могла начаться другая операция на том же доступе или хвосте.
+					return
 
 			//we check that the surgery is still doable after the input() wait.
 			if(C)
-				affecting = C.get_bodypart(check_zone(selected_zone))
+				affecting = S.get_target_bodypart(C, selected_zone)
 			if(affecting)
 				if(!S.requires_bodypart)
 					return
@@ -229,19 +238,30 @@
 	var/covered_locations = 0	//based on body_parts_covered
 	var/face_covered = 0	//based on flags_inv
 	var/eyesmouth_covered = 0	//based on flags_cover
+	var/required_coverage = NONE
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
+		if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (location == BODY_ZONE_PRECISE_GROIN || location == BODY_ZONE_L_LEG || location == BODY_ZONE_R_LEG))
+			required_coverage = NAGA_TAIL_COVERAGE
+			location = BODY_ZONE_CHEST
+		if(location == BODY_ZONE_L_LEG || location == BODY_ZONE_R_LEG)
+			var/obj/item/bodypart/limb = C.get_bodypart(location)
+			if(limb)
+				location = limb.get_clothing_zone()
 		for(var/obj/item/clothing/I in list(C.back, C.wear_mask, C.head))
 			covered_locations |= I.body_parts_covered
 			face_covered |= I.flags_inv
 			eyesmouth_covered |= I.flags_cover
 		if(ishuman(C))
 			var/mob/living/carbon/human/H = C
-			for(var/obj/item/I in list(H.wear_suit, H.w_uniform, H.w_underwear, H.w_socks, H.w_shirt, H.shoes, H.belt, H.gloves, H.wrists, H.glasses, H.ears, H.ears_extra)) //skyrat edit
+			// Нижнее бельё, майка, носки и часы не мешают хирургическому доступу.
+			for(var/obj/item/I in list(H.wear_suit, H.w_uniform, H.shoes, H.belt, H.gloves, H.glasses, H.ears, H.ears_extra))
 				covered_locations |= I.body_parts_covered
 				face_covered |= I.flags_inv
 				eyesmouth_covered |= I.flags_cover
 
+	if(covered_locations & required_coverage)
+		return FALSE
 	switch(location)
 		if(BODY_ZONE_HEAD)
 			if(covered_locations & HEAD)

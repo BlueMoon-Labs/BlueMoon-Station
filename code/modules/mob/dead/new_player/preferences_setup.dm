@@ -1,3 +1,4 @@
+#define PREVIEW_RENDER_DEFER_TRAIT "preview_render_defer"
 
 	//The mob should have a gender you want before running this proc. Will run fine without H
 /datum/preferences/proc/random_character(gender_override)
@@ -52,7 +53,11 @@
 	try
 		// Новый манекен и взятый из пула начинают с одинаково очищенного состояния.
 		mannequin.wipe_state()
+		// Одежда надевается без поштучной перерисовки, внешность собирается один раз при снятии признака.
+		ADD_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
 		copy_to(mannequin, icon_updates = FALSE, initial_spawn = TRUE)
+		if(!preview_build_yield(mannequin))
+			return null
 
 		switch(preview_mode)
 			if(PREVIEW_PREF_JOB)
@@ -62,6 +67,8 @@
 			if(PREVIEW_PREF_LOADOUT)
 				SSjob.equip_loadout(parent?.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE, preferences_source = src)
 				SSjob.post_equip_loadout(parent?.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE, preferences_source = src)
+		if(!preview_build_yield(mannequin))
+			return null
 
 		// Органы манекена переиспользуются: каждый кадр явно задаёт выбранную позу,
 		// независимо от прошлого превью и игровых ограничений возбуждения.
@@ -70,16 +77,31 @@
 				genital.aroused_state = aroused_preview
 				genital.update_appearance()
 
-		mannequin.regenerate_icons()
+		REMOVE_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
 
 		result = new /mutable_appearance(mannequin)
 		// Конструктор mutable_appearance сбрасывает plane: сохраняем настоящую плоскость манекена.
 		result.plane = mannequin.plane
+		// Сброс манекена в пуле снимает всю одежду - ещё ~8 мс, тоже отдельным тиком.
+		if(!preview_build_yield(mannequin))
+			return result
 	catch(var/exception/error)
-		unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+		if(!QDELETED(mannequin))
+			REMOVE_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
+		release_preview_mannequin(mannequin)
 		throw error
-	unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+	release_preview_mannequin(mannequin)
 	return result
+
+/// Сборка манекена одним куском стоила 30-50 мс, то есть целый тик сервера (прод 10645/10646: Timer 70-98% тика). Между этапами отдаём тик; FALSE - манекен удалили, пока ждали.
+/datum/preferences/proc/preview_build_yield(mob/living/carbon/human/dummy/mannequin)
+	stoplag()
+	return !QDELETED(mannequin)
+
+/// Пока сборка спала, слот мог получить новый манекен, занятый другой сборкой: освобождаем только свой.
+/datum/preferences/proc/release_preview_mannequin(mob/living/carbon/human/dummy/mannequin)
+	if(GLOB.human_dummy_list[DUMMY_HUMAN_SLOT_PREFERENCES] == mannequin)
+		unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
 
 /datum/preferences/proc/get_highest_job(list/priorities)
 	if(isnull(priorities))
@@ -91,3 +113,5 @@
 			highest_job = SSjob.GetJob(job)
 			highest_pref = priorities["[job]"]
 	return highest_job
+
+#undef PREVIEW_RENDER_DEFER_TRAIT

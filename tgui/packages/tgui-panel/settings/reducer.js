@@ -54,6 +54,8 @@ const initialState = {
   showRadioJobs: true,
   // Линия "Новые сообщения" и счётчик на кнопке прокрутки вниз
   newMessagesMarker: true,
+  // Сообщений на экране: меньше - легче чат на слабом компьютере
+  visibleMessageLimit: 750,
   // Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела,
   // свои цвета { [id из radioJobs.js]: '#hex' }
   ...RADIO_JOB_DEFAULTS,

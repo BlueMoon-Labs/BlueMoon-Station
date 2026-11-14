@@ -200,8 +200,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 /obj/item/clothing/proc/take_damage_zone(def_zone, damage_amount, damage_type, armour_penetration)
 	if(!def_zone || !limb_integrity || (initial(body_parts_covered) in GLOB.bitflags)) // the second check sees if we only cover one bodypart anyway and don't need to bother with this
 		return
-	var/list/covered_limbs = body_parts_covered2organ_names(body_parts_covered) // what do we actually cover?
-	if(!(def_zone in covered_limbs))
+	if(def_zone == BODY_ZONE_PRECISE_GROIN ? !(body_parts_covered & GROIN) : !(def_zone in body_parts_covered2organ_names(body_parts_covered)))
 		return
 
 	var/damage_dealt = take_damage(damage_amount * 0.1, damage_type, armour_penetration, FALSE) * 10 // only deal 10% of the damage to the general integrity damage, then multiply it by 10 so we know how much to deal to limb
@@ -222,8 +221,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
   * * damage_type: Only really relevant for the verb for describing the breaking, and maybe obj_destruction()
   */
 /obj/item/clothing/proc/disable_zone(def_zone, damage_type)
-	var/list/covered_limbs = body_parts_covered2organ_names(body_parts_covered)
-	if(!(def_zone in covered_limbs))
+	if(def_zone == BODY_ZONE_PRECISE_GROIN ? !(body_parts_covered & GROIN) : !(def_zone in body_parts_covered2organ_names(body_parts_covered)))
 		return
 
 	var/zone_name = parse_zone(def_zone)
@@ -548,15 +546,18 @@ BLIND     // can't see anything
 			Shreds.desc = "The sad remains of what used to be [name]."
 		deconstruct(FALSE)
 	else if(!(damage_flag in list(ACID, FIRE)))
-		damaged_clothes = CLOTHING_SHREDDED
-		body_parts_covered = NONE
-		name = "shredded [initial(name)]"
-		update_clothes_damaged_state(CLOTHING_SHREDDED)
-		if(ismob(loc))
-			var/mob/M = loc
-			M.visible_message("<span class='danger'>[M]'s [src.name] is completely shredded!</span>", "<span class='userdanger'>Your [src.name] is completely shredded!</span>", vision_distance = COMBAT_MESSAGE_RANGE)
+		shred_clothing()
 	else
 		..()
+
+/obj/item/clothing/proc/shred_clothing(vision_distance = COMBAT_MESSAGE_RANGE, visible_message_flags = NONE)
+	damaged_clothes = CLOTHING_SHREDDED
+	body_parts_covered = NONE
+	name = "shredded [initial(name)]"
+	update_clothes_damaged_state(CLOTHING_SHREDDED)
+	if(ismob(loc))
+		var/mob/wearer = loc
+		wearer.visible_message(span_danger("Одежда на [wearer] разрывается в клочья!"), span_userdanger("Твоя одежда разрывается в клочья!"), vision_distance = vision_distance, visible_message_flags = visible_message_flags)
 
 //Species-restricted clothing check. - Thanks Oraclestation, BS13, /vg/station etc.
 /obj/item/clothing/mob_can_equip(M, equipper, slot, disable_warning = TRUE, bypass_equip_delay_self)

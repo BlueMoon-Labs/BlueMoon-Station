@@ -11,7 +11,7 @@ import { IS_DEVELOPMENT } from 'tgui/env';
 import { Pane } from 'tgui/layouts';
 
 import { NowPlayingWidget, useAudio } from './audio';
-import { ChatPanel, ChatScrollButton, ChatSearchBar, ChatTabs } from './chat';
+import { ChatHistoryButton, ChatPanel, ChatScrollButton, ChatSearchBar, ChatTabs } from './chat';
 import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
@@ -112,6 +112,7 @@ export const Panel = (props) => {
             <Pane.Content scrollable>
               <ChatPanel lineHeight={settings.lineHeight} />
             </Pane.Content>
+            <ChatHistoryButton />
             <ChatScrollButton />
             <Notifications>
               {game.connectionLostAt && (

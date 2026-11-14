@@ -291,3 +291,29 @@
 	qdel(stale_target)
 	SSspatial_grid.enter_cell(stale_target, run_loc_floor_bottom_left)
 	TEST_ASSERT(QDELETED(stale_target), "The stale spatial-grid target must remain deleted")
+
+/// Слышащий предмет, удалённый вне карты, не стоит полного обхода грида и не остаётся в ячейках.
+/datum/unit_test/spatial_grid_offmap_destroy_skips_full_scan/Run()
+	var/scans_before = SSspatial_grid.hanging_ref_scans
+	var/list/offmap_radios = list()
+	for(var/i in 1 to 10)
+		var/obj/item/radio/radio = new(null)
+		TEST_ASSERT(radio.spatial_grid_key, "premise: a radio must be grid-aware")
+		offmap_radios += radio
+	QDEL_LIST(offmap_radios)
+	TEST_ASSERT(SSspatial_grid.hanging_ref_scans - scans_before <= 1, "Ten off-map radio deletions ran [SSspatial_grid.hanging_ref_scans - scans_before] full grid scans")
+
+	var/mob/living/carbon/human/owner = new(run_loc_floor_bottom_left)
+	var/obj/item/storage/backpack/pack = new(run_loc_floor_bottom_left)
+	owner.equip_to_slot_or_del(pack, ITEM_SLOT_BACK)
+	var/obj/item/radio/packed = new(pack)
+	var/obj/item/radio/headset/worn = new(owner)
+	owner.equip_to_slot_or_del(worn, ITEM_SLOT_EARS_LEFT)
+	var/datum/spatial_grid_cell/cell = SSspatial_grid.get_cell_of(owner)
+	TEST_ASSERT(packed in cell.hearing_contents, "premise: a radio in a worn backpack must hear in the owner's cell")
+	TEST_ASSERT(worn in cell.hearing_contents, "premise: a worn headset must hear in the owner's cell")
+	qdel(owner)
+	TEST_ASSERT(QDELETED(packed) && QDELETED(worn), "premise: the owner's items must be deleted with them")
+	TEST_ASSERT_EQUAL(length(SSspatial_grid.find_hanging_cell_refs_for_movable(packed, FALSE)), 0, "A packed radio of a deleted mob stayed in the grid")
+	TEST_ASSERT_EQUAL(length(SSspatial_grid.find_hanging_cell_refs_for_movable(worn, FALSE)), 0, "A worn headset of a deleted mob stayed in the grid")
+	TEST_ASSERT_EQUAL(length(SSspatial_grid.find_hanging_cell_refs_for_movable(owner, FALSE)), 0, "A deleted mob stayed in the grid")

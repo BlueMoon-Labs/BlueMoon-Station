@@ -125,9 +125,7 @@
 	if(!(. & EMP_PROTECT_SELF))
 		if(prob(severity/0.7))
 			update_icon()
-			var/list/previous_network = network
-			network = list()
-			GLOB.cameranet.invalidate_camera_cache()
+			// Камера остаётся в списке своей сети; изображение блокирует флаг EMPED.
 			GLOB.cameranet.removeCamera(src)
 			set_machine_stat(machine_stat | EMPED)
 			set_light(0)
@@ -138,8 +136,6 @@
 				if(loc) //qdel limbo
 					triggerCameraAlarm() //camera alarm triggers even if multiple EMPs are in effect.
 					if(emped == thisemp) //Only fix it if the camera hasn't been EMP'd again
-						network = previous_network
-						GLOB.cameranet.invalidate_camera_cache()
 						set_machine_stat(machine_stat & ~EMPED)
 						update_icon()
 						if(can_use())
@@ -269,7 +265,7 @@
 				var/mob/living/silicon/ai/AI = O
 				if(AI.control_disabled || (AI.stat == DEAD))
 					return
-				if(U.name == "Unknown")
+				if(U.name in list("Unknown", "Неизвестный"))
 					to_chat(AI, "<b>[U]</b> holds <a href='?_src_=usr;show_paper=1;'>\a [itemname]</a> up to one of your cameras ...")
 				else
 					to_chat(AI, "<b><a href='?src=[REF(AI)];track=[html_encode(U.name)]'>[U]</a></b> holds <a href='?_src_=usr;show_paper=1;'>\a [itemname]</a> up to one of your cameras ...")
@@ -373,6 +369,8 @@
 	alarm_manager?.clear_alarm(ALARM_CAMERA)
 
 /obj/machinery/camera/proc/can_use()
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		return FALSE
 	if(!status)
 		return FALSE
 	if(machine_stat & EMPED)

@@ -412,8 +412,12 @@ SUBSYSTEM_DEF(research)
 
 /datum/controller/subsystem/research/proc/get_rnd_network_for(atom/target, network_id, techweb_type = /datum/techweb/isolated)
 	if(network_id == RND_NETWORK_AUTO)
-		if(target && is_station_level(target.z))
+		var/turf/target_turf = get_turf(target)
+		if(target_turf && is_station_level(target_turf.z))
 			return science_tech
+		var/datum/techweb/base_web = find_nearest_rnd_techweb(target, RND_AUTO_LINK_RANGE)
+		if(base_web)
+			return base_web
 		return new techweb_type
 	if(!network_id)
 		return new techweb_type

@@ -132,7 +132,7 @@
 	spot.empty(/turf/open/floor/plating)
 	TEST_ASSERT(!QDELETED(overlay), "empty() с заменой турфа удалил объект света")
 	TEST_ASSERT_EQUAL(spot.lighting_object, overlay, "Объект света не перешёл на новый турф")
-	TEST_ASSERT(overlay in spot.vis_contents, "Объект света не в vis_contents нового турфа")
+	TEST_ASSERT_EQUAL(overlay.loc, spot, "Объект света не лежит на новом турфе")
 
 /// Открытый турф, заменённый на открытый, получает свою начальную смесь, а не смесь соседей, и знает соседей.
 /datum/unit_test/changeturf_open_takes_initial_air/Run()

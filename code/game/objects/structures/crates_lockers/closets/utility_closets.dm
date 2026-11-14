@@ -22,6 +22,8 @@
 
 /obj/structure/closet/emcloset/PopulateContents()
 	..()
+	if(prob(5))
+		new /obj/item/mod/control/pre_equipped/holographic(src)
 	new /obj/item/clothing/head/helmet/space/ervos(src)
 	new /obj/item/clothing/suit/space/ervos(src)
 	switch(rand(1, 100))

@@ -52,7 +52,9 @@ const api = async (method, url, body) => {
     body: body && JSON.stringify(body),
   });
   if (!response.ok) {
-    throw new Error(`${method} ${url}: ${response.status} ${await response.text()}`);
+    const error = new Error(`${method} ${url}: ${response.status} ${await response.text()}`);
+    error.status = response.status;
+    throw error;
   }
   return response.status === 204 ? null : response.json();
 };
@@ -132,7 +134,15 @@ if (!dryRun) {
     await api('GET', `/labels/${encodeURIComponent(LABEL)}`);
   }
   catch {
-    await api('POST', '/labels', { name: LABEL, color: 'b60205', description: 'Конфликтует с master' });
+    try {
+      await api('POST', '/labels', { name: LABEL, color: 'b60205', description: 'Конфликтует с master' });
+    }
+    catch (error) {
+      // 422: the label already exists, the lookup above failed for another reason
+      if (error.status !== 422) {
+        throw error;
+      }
+    }
   }
 }
 

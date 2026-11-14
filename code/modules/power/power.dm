@@ -269,8 +269,6 @@
 
 		if(istype(P, /obj/structure/cable))
 			var/obj/structure/cable/C = P
-			if(C.powernet != PN) //add it to the powernet, if it isn't already there
-				PN.add_cable(C)
 			for(var/obj/connection as anything in C.get_connections()) //get adjacents power objects, with or without a powernet
 				if(!worklist[connection])
 					worklist[connection] = TRUE
@@ -278,13 +276,158 @@
 		else if(P.anchored && istype(P, /obj/machinery/power))
 			found_machines[P] = TRUE //we wait until the powernet is fully propagates to connect the machines
 
-		else
-			continue
+	var/list/cables = list()
+	for(var/obj/structure/cable/C in worklist)
+		cables += C
+	move_cables_to_powernet(cables, PN)
 
 	//now that the powernet is set, connect found machines to it
 	for(var/obj/machinery/power/PM as anything in found_machines)
 		if(!PM.connect_to_network()) //couldn't find a node on its turf...
 			PM.disconnect_from_network() //... so disconnect if already on a powernet
+	drop_emptied_powernets()
+
+/// Переносит кабели в сеть PN. Старые сети чистятся одним фильтром в конце, а не `cables -= C`
+/// на каждый кабель: тот искал и сдвигал хвост списка станционной сети на каждом шаге.
+/// Опустевшие старые сети уходят в drop_emptied_powernets() после переподключения машин.
+/proc/move_cables_to_powernet(list/cables, datum/powernet/PN)
+	var/list/moved_from = list()
+	for(var/obj/structure/cable/C as anything in cables)
+		var/datum/powernet/old = C.powernet
+		if(old == PN)
+			continue
+		C.powernet = PN
+		PN.cables += C
+		if(!old)
+			continue
+		var/list/from_old = moved_from[old]
+		if(!from_old)
+			moved_from[old] = from_old = list()
+		from_old += C
+	for(var/datum/powernet/old as anything in moved_from)
+		var/list/from_old = moved_from[old]
+		// пара кабелей из большой сети - поштучно, крупный кусок - одним фильтром
+		if(length(from_old) * 16 < length(old.cables))
+			old.cables -= from_old
+		else
+			var/list/kept = list()
+			for(var/obj/structure/cable/C as anything in old.cables)
+				if(C.powernet == old)
+					kept += C
+			old.cables = kept
+		GLOB.emptied_powernets[old] = TRUE
+
+GLOBAL_LIST_EMPTY(emptied_powernets)
+
+/proc/drop_emptied_powernets()
+	var/list/candidates = GLOB.emptied_powernets
+	GLOB.emptied_powernets = list()
+	for(var/datum/powernet/net as anything in candidates)
+		if(!QDELETED(net) && net.is_empty())
+			qdel(net)
+
+/// Разрез сети: обход в ширину идёт сразу от всех концов, встретившиеся обходы сливаются.
+/// Кусок, обойдённый до конца, уезжает в новую сеть; последний недообойдённый остаётся в старой.
+/// Цена - размер меньших кусков, а не всей станционной сети; если концы связаны, сеть не меняется.
+/proc/split_powernet_at(datum/powernet/net, list/cut_ends)
+	var/alist/owner = alist()
+	var/list/parent = list()
+	var/list/queues = list()
+	var/list/heads = list()
+	var/list/machines = list()
+	var/groups = 0
+	for(var/obj/structure/cable/cut_end as anything in cut_ends)
+		if(owner[cut_end])
+			continue
+		groups++
+		owner[cut_end] = groups
+		parent += groups
+		queues += list(list(cut_end))
+		heads += 1
+		machines += list(list())
+	if(groups < 2)
+		return
+
+	var/roots = groups
+	var/open_roots = groups
+	while(roots > 1 && open_roots > 1)
+		open_roots = 0
+		for(var/group in 1 to groups)
+			if(parent[group] != group)
+				continue
+			var/current = group
+			var/list/queue = queues[current]
+			var/head = heads[current]
+			if(head > length(queue))
+				continue
+			var/obj/structure/cable/cable = queue[head]
+			heads[current] = head + 1
+			for(var/obj/connection as anything in cable.get_connections())
+				var/other = owner[connection]
+				if(!other)
+					owner[connection] = current
+					if(istype(connection, /obj/structure/cable))
+						queue += connection
+					else if(connection.anchored && istype(connection, /obj/machinery/power))
+						var/list/group_machines = machines[current]
+						group_machines += connection
+					continue
+				if(!istype(connection, /obj/structure/cable))
+					continue
+				while(parent[other] != other)
+					other = parent[other]
+				if(other == current)
+					continue
+				// меньший обход вливается в больший, недообойдённый хвост продолжает обход
+				var/keep = current
+				var/absorb = other
+				if(length(queues[absorb]) > length(queues[keep]))
+					keep = other
+					absorb = current
+				parent[absorb] = keep
+				var/list/keep_queue = queues[keep]
+				var/list/absorb_queue = queues[absorb]
+				var/absorb_head = heads[absorb]
+				var/keep_head = heads[keep]
+				// сделанная часть вставляется перед головой: в ней делать нечего, хвост ещё обходится
+				keep_queue.Insert(keep_head, absorb_queue.Copy(1, absorb_head))
+				heads[keep] = keep_head + absorb_head - 1
+				keep_queue += absorb_queue.Copy(absorb_head)
+				var/list/keep_machines = machines[keep]
+				keep_machines += machines[absorb]
+				queues[absorb] = null
+				machines[absorb] = null
+				roots--
+				current = keep
+				queue = keep_queue
+				if(roots < 2)
+					break
+			if(roots < 2)
+				break
+			if(heads[current] <= length(queues[current]))
+				open_roots++
+	if(roots < 2)
+		return
+
+	// Остаётся недообойдённый кусок, а если обойдены все - самый большой.
+	var/stay = 0
+	for(var/group in 1 to groups)
+		if(parent[group] != group)
+			continue
+		if(heads[group] <= length(queues[group]))
+			stay = group
+			break
+		if(!stay || length(queues[group]) > length(queues[stay]))
+			stay = group
+	for(var/group in 1 to groups)
+		if(parent[group] != group || group == stay)
+			continue
+		var/datum/powernet/new_net = new()
+		move_cables_to_powernet(queues[group], new_net)
+		for(var/obj/machinery/power/machine as anything in machines[group])
+			if(!machine.connect_to_network())
+				machine.disconnect_from_network()
+	drop_emptied_powernets()
 
 
 //Merge two powernets, the bigger (in cable length term) absorbing the other

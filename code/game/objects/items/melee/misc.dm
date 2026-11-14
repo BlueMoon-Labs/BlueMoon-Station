@@ -470,6 +470,7 @@
 				if(check_martial_counter(H, user))
 					return
 			if(HAS_TRAIT(target, TRAIT_BATON_RESISTANCE))
+				SEND_SIGNAL(target, COMSIG_MOD_BATON_RESISTED)
 				target.visible_message(span_warning("[target] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
 				playsound(target, 'sound/weapons/genhit.ogg', 50, 1)
 				return

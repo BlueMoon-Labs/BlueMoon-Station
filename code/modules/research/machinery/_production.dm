@@ -17,7 +17,7 @@
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
-	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — персональная изолированная сеть
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — сеть сервера рядом, без него персональная изолированная
 	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети
 	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
 
