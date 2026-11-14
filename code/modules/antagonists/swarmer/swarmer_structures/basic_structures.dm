@@ -22,7 +22,7 @@
 	if(!anchored)
 		return
 
-	if(!isliving(arrived) || isswarmer(arrived))
+	if(!isliving(arrived) || isswarmer(arrived) || swarmer_actions_blocked(src))
 		return
 
 	playsound(loc, 'sound/effects/snap.ogg', 50, TRUE)

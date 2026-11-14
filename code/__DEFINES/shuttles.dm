@@ -13,6 +13,8 @@
 #define EMERGENCY_IDLE_OR_RECALLED (SSshuttle.emergency && ((SSshuttle.emergency.mode == SHUTTLE_IDLE) || (SSshuttle.emergency.mode == SHUTTLE_RECALL)))
 #define EMERGENCY_ESCAPED_OR_ENDGAMED (SSshuttle.emergency && ((SSshuttle.emergency.mode == SHUTTLE_ESCAPE) || (SSshuttle.emergency.mode == SHUTTLE_ENDGAME)))
 #define EMERGENCY_AT_LEAST_DOCKED (SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_IDLE && SSshuttle.emergency.mode != SHUTTLE_RECALL && SSshuttle.emergency.mode != SHUTTLE_CALL)
+#define EMERGENCY_BOARDING_TIME(shuttle) ((shuttle).swarmer_evacuation ? SWARMER_EVAC_BOARDING_TIME : SSshuttle.emergencyDockTime)
+#define EMERGENCY_RETURN_FLIGHT_TIME(shuttle) ((shuttle).swarmer_evacuation ? SWARMER_EVAC_RETURN_TIME : SSshuttle.emergencyEscapeTime * (shuttle).engine_coeff)
 
 // Shuttle return values
 #define SHUTTLE_CAN_DOCK "can_dock"

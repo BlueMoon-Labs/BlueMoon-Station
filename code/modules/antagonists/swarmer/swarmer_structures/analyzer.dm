@@ -6,15 +6,15 @@
 #define SWARMER_ANALYZE_HOSTILE_GAIN (rand(15, 30))
 #define SWARMER_ANALYZE_LIVING_GAIN (rand(10, 20))
 #define SWARMER_ANALYZE_MACHINE_GAIN (rand(50, 75))
-#define SWARMER_ANALYZE_ROBOTIC_ORGAN_GAIN 10
-
-#define SWARMER_ANALYZE_FINISH_EXTERNAL_BODYPART_TAKE_MAX 1
-#define SWARMER_ANALYZE_ORGAN_REMOVE_CHANCE 20
-#define SWARMER_ANALYZE_FINISH_EXTERNAL_BODYPART_FRACTURE_CHANCE 33
+#define SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN 10
+#define SWARMER_ANALYZE_IMPLANT_GAIN 10
+#define SWARMER_ANALYZE_AMPUTATION_CHANCE 10
+#define SWARMER_ANALYZE_FRACTURE_CHANCE 33
+#define SWARMER_ANALYZE_IMPLANT_CHANCE 40
 
 /obj/structure/swarmer/organic_analyzer
 	name = "swarmer organic analyzer"
-	desc = "Устройство \"Свармеров\", которое вырабатывает ресурсы, извлекая из живых существ некритически важные органы и части тела."
+	desc = "Устройство свармеров, получающее ресурсы при анализе живых существ. Анализ может привести к перелому, потере конечности или извлечению импланта."
 	swarmer_examine = "Анализирует живых существ. Не делает этого в открученном состоянии. Загрузка в эту машину происходит ПКМ по существу."
 	icon_state = "bio_analyzer"
 	max_integrity = 150
@@ -24,15 +24,6 @@
 	var/datum/gas_mixture/air_contents = null
 	var/datum/effect_system/spark_spread/spark_system
 	var/datum/looping_sound/swarmer_analyzer/sound_loop
-	var/static/list/organs_blacklist = typecacheof(list(
-		/obj/item/organ/brain,
-		/obj/item/organ/heart,
-		/obj/item/organ/lungs,
-		/obj/item/organ/liver,
-		/obj/item/organ/eyes,
-		/obj/item/bodypart/chest,
-				/obj/item/bodypart/head,
-	))
 
 /obj/structure/swarmer/organic_analyzer/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
@@ -56,8 +47,8 @@
 	return ..()
 
 /obj/structure/swarmer/organic_analyzer/emp_act(severity)
-	..()
-	if(!occupant)
+	. = ..()
+	if(QDELETED(src) || (. & EMP_PROTECT_SELF) || !occupant)
 		return
 
 	sound_loop.stop()
@@ -111,6 +102,13 @@
 	if(QDELETED(occupant) || !(occupant in contents))
 		set_occupant(null)
 		return
+	if(swarmer_actions_blocked(src))
+		var/mob/living/patient = occupant
+		set_occupant(null)
+		patient.SetParalyzed(0)
+		patient.SetSleeping(0)
+		patient.forceMove(drop_location())
+		return
 
 	balloon_alert_to_viewers("обработано!")
 	refresh_air()
@@ -123,7 +121,10 @@
 		set_occupant(null)
 		return
 
-	take_random_organs()
+	if(iscarbon(occupant))
+		var/mob/living/carbon/patient = occupant
+		injure_random_limb(patient)
+		extract_random_implant(patient)
 	teleport_to_safe()
 	if(iscarbon(occupant))
 		var/mob/living/carbon/target = occupant
@@ -143,27 +144,71 @@
 	if(isliving(occupant))
 		return team?.adjust_organic(SWARMER_ANALYZE_LIVING_GAIN)
 
-/obj/structure/swarmer/organic_analyzer/proc/take_random_organs()
-	if(!ishuman(occupant))
+/obj/structure/swarmer/organic_analyzer/proc/extract_random_implant(mob/living/carbon/patient)
+	if(!prob(SWARMER_ANALYZE_IMPLANT_CHANCE))
 		return
 
-	var/mob/living/carbon/human/target = occupant
-	for(var/obj/item/organ/organ as anything in target.internal_organs.Copy())
-		if(is_type_in_typecache(organ, organs_blacklist) || !prob(SWARMER_ANALYZE_ORGAN_REMOVE_CHANCE))
+	var/list/eligible_implants = list()
+	for(var/obj/item/organ/implant as anything in patient.internal_organs)
+		if(implant.owner != patient || (implant.organ_flags & ORGAN_UNREMOVABLE) || istype(implant, /obj/item/organ/cyberimp/arm/power_cord))
 			continue
-		if(organ.status == ORGAN_ROBOTIC)
-			team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_ORGAN_GAIN)
-		organ.Remove()
-		qdel(organ)
+		if(istype(implant, /obj/item/organ/cyberimp) || istype(implant, /obj/item/organ/organic_implants))
+			eligible_implants += implant
 
-	for(var/obj/item/bodypart/bodypart as anything in shuffle(target.bodyparts))
-		if(is_type_in_typecache(bodypart, organs_blacklist) || !prob(SWARMER_ANALYZE_FINISH_EXTERNAL_BODYPART_FRACTURE_CHANCE))
+	if(!length(eligible_implants))
+		return
+	var/obj/item/organ/chosen_implant = pick(eligible_implants)
+	chosen_implant.Remove()
+	qdel(chosen_implant)
+	team?.adjust_metal(SWARMER_ANALYZE_IMPLANT_GAIN)
+
+/obj/structure/swarmer/organic_analyzer/proc/injure_random_limb(mob/living/carbon/patient)
+	var/naga_anatomy = HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY)
+	var/list/eligible_limbs = list()
+	for(var/obj/item/bodypart/limb as anything in patient.bodyparts)
+		if(limb.body_zone == BODY_ZONE_HEAD || limb.body_zone == BODY_ZONE_CHEST)
 			continue
-		if(bodypart.status == BODYPART_ROBOTIC)
-			team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_ORGAN_GAIN)
+		if(naga_anatomy && (limb.body_zone == BODY_ZONE_L_LEG || limb.body_zone == BODY_ZONE_R_LEG) && !istype(limb, /obj/item/bodypart/l_leg/naga_tail))
+			continue
+		eligible_limbs += limb
+
+	if(prob(SWARMER_ANALYZE_AMPUTATION_CHANCE) && amputate_random_limb(patient, eligible_limbs))
+		return
+	if(!ishuman(patient))
+		return
+	for(var/obj/item/bodypart/limb as anything in shuffle(eligible_limbs))
+		if(!prob(SWARMER_ANALYZE_FRACTURE_CHANCE))
+			continue
 		var/datum/wound/blunt/severe/fracture = new
-		fracture.apply_wound(bodypart)
+		fracture.apply_wound(limb)
+		if(!QDELETED(fracture) && limb.status == BODYPART_ROBOTIC)
+			team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN)
 		break
+
+/obj/structure/swarmer/organic_analyzer/proc/amputate_random_limb(mob/living/carbon/patient, list/eligible_limbs)
+	// При отсечении руки имплант ушёл бы вместе с ней, поэтому защищаем и саму руку.
+	var/obj/item/organ/cyberimp/arm/power_cord/power_cord = locate() in patient.internal_organs
+	var/protected_zone = power_cord ? check_zone(power_cord.zone) : null
+	var/list/amputation_candidates = list()
+	for(var/obj/item/bodypart/limb as anything in eligible_limbs)
+		if(limb.dismemberable && limb.body_zone != protected_zone)
+			amputation_candidates += limb
+	if(!length(amputation_candidates))
+		return FALSE
+
+	var/obj/item/bodypart/chosen_limb = pick(amputation_candidates)
+	var/is_robotic = chosen_limb.status == BODYPART_ROBOTIC
+	if(!chosen_limb.dismember())
+		return FALSE
+
+	if(!QDELETED(chosen_limb))
+		var/turf/limb_turf = get_turf(chosen_limb)
+		for(var/obj/item/organ/organ in chosen_limb)
+			organ.forceMove(limb_turf)
+		qdel(chosen_limb)
+	if(is_robotic)
+		team?.adjust_metal(SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN)
+	return TRUE
 
 /obj/structure/swarmer/organic_analyzer/proc/teleport_to_safe()
 	var/mob/living/target = occupant
@@ -202,7 +247,8 @@
 #undef SWARMER_ANALYZE_HOSTILE_GAIN
 #undef SWARMER_ANALYZE_LIVING_GAIN
 #undef SWARMER_ANALYZE_MACHINE_GAIN
-#undef SWARMER_ANALYZE_ROBOTIC_ORGAN_GAIN
-#undef SWARMER_ANALYZE_FINISH_EXTERNAL_BODYPART_TAKE_MAX
-#undef SWARMER_ANALYZE_ORGAN_REMOVE_CHANCE
-#undef SWARMER_ANALYZE_FINISH_EXTERNAL_BODYPART_FRACTURE_CHANCE
+#undef SWARMER_ANALYZE_ROBOTIC_LIMB_GAIN
+#undef SWARMER_ANALYZE_IMPLANT_GAIN
+#undef SWARMER_ANALYZE_AMPUTATION_CHANCE
+#undef SWARMER_ANALYZE_FRACTURE_CHANCE
+#undef SWARMER_ANALYZE_IMPLANT_CHANCE

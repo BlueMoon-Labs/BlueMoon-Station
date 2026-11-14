@@ -69,6 +69,3 @@
 
 /obj/machinery/chem_dispenser/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
 	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_LIVING
-
-/obj/machinery/droneDispenser/swarmer/swarmer_act(mob/living/simple_animal/hostile/swarmer/user)
-	return SWARMER_ACT_IMPOSSIBLE | SWARMER_ACT_IMPOSSIBLE_REASON_LIVING

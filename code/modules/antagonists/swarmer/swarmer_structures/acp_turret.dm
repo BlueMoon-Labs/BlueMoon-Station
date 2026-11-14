@@ -20,6 +20,9 @@
 	var/metabolization_block_duration = 10 SECONDS
 	var/list/processing_targets = list()
 
+// Встроенная установка мегасвармера учитывается отдельно от стационарных построек.
+/obj/structure/swarmer/acp_turret/mounted
+
 /obj/structure/swarmer/acp_turret/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
 	if(!strike_overlay)
@@ -34,8 +37,9 @@
 	return ..()
 
 /obj/structure/swarmer/acp_turret/emp_act(severity)
-	..()
-	COOLDOWN_START(src, cooldown, cooldown_after_strike)
+	. = ..()
+	if(!QDELETED(src) && !(. & EMP_PROTECT_SELF))
+		COOLDOWN_START(src, cooldown, cooldown_after_strike)
 
 /obj/structure/swarmer/acp_turret/HasProximity(atom/movable/AM)
 	handle_interloper(AM)
@@ -44,7 +48,7 @@
 	if(entity.invisibility > SEE_INVISIBLE_LIVING)
 		return
 
-	if(!isliving(entity) || isswarmer(entity))
+	if(!isliving(entity) || isswarmer(entity) || swarmer_actions_blocked(src))
 		return
 
 	processing_targets[entity] = TRUE
@@ -53,6 +57,9 @@
 
 /obj/structure/swarmer/acp_turret/process(seconds_per_tick)
 	if(!length(processing_targets))
+		return PROCESS_KILL
+	if(swarmer_actions_blocked(src))
+		processing_targets.Cut()
 		return PROCESS_KILL
 
 	var/turf/our_turf = get_turf(src)

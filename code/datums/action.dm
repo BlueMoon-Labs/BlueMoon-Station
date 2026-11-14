@@ -961,15 +961,6 @@
 	// Shares cooldowns with other cooldown abilities of the same value, not active if null
 	var/shared_cooldown
 
-/datum/action/cooldown/CreateButton()
-	var/atom/movable/screen/movable/action_button/button = ..()
-	button.maptext = ""
-	button.maptext_x = 8
-	button.maptext_y = 0
-	button.maptext_width = 24
-	button.maptext_height = 12
-	return button
-
 /datum/action/cooldown/IsAvailable()
 	return ..() && (next_use_time <= world.time)
 
@@ -1038,10 +1029,20 @@
 	if(!button)
 		return
 	var/time_left = max(next_use_time - world.time, 0)
-	if(text_cooldown)
-		button.maptext = MAPTEXT("<b>[round(time_left/10, 0.1)]</b>")
-	if(!owner || time_left == 0)
-		button.maptext = ""
+	if(button.cooldown_maptext)
+		button.cut_overlay(button.cooldown_maptext)
+		button.cooldown_maptext = null
+	if(owner && text_cooldown && time_left)
+		var/mutable_appearance/counter = new
+		// Счётчик рисуется поверх иконки и остаётся белым при затемнении кнопки.
+		counter.appearance_flags = RESET_COLOR | RESET_ALPHA
+		counter.layer = FLOAT_LAYER
+		counter.maptext_x = 8
+		counter.maptext_width = 24
+		counter.maptext_height = 16
+		counter.maptext = MAPTEXT("<b>[round(time_left / (1 SECONDS), 0.1)]</b>")
+		button.cooldown_maptext = counter
+		button.add_overlay(counter)
 	if(IsAvailable() && owner.click_intercept == src)
 		button.color = COLOR_GREEN
 

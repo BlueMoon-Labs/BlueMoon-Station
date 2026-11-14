@@ -69,7 +69,7 @@
 		return
 
 	swarmer.balloon_alert_to_viewers("чинит...", "починка...")
-	if(!do_after(swarmer, SWARMER_REPAIR_DELAY(swarmer), src))
+	if(!do_after(swarmer, SWARMER_REPAIR_DELAY(swarmer), src) || swarmer_actions_blocked(swarmer))
 		swarmer.balloon_alert(swarmer, "сбито!")
 		return
 	if(!team?.adjust_metal(-SWARMER_REPAIR_COST(swarmer)))
@@ -90,7 +90,7 @@
 
 	var/message = anchored ? "открепляем..." : "прикрепляем..."
 	swarmer.balloon_alert(swarmer, message)
-	if(!do_after(swarmer, 3 SECONDS, src))
+	if(!do_after(swarmer, 3 SECONDS, src) || swarmer_actions_blocked(swarmer))
 		swarmer.balloon_alert(swarmer, "сбито!")
 		return FALSE
 
@@ -109,10 +109,10 @@
 	if(!is_builderswarmer(swarmer))
 		return FALSE
 	var/confirm = tgui_alert(swarmer, "Вы уверены, что хотите РАЗОБРАТЬ [name]?", "Разбор структуры", list("Да", "Нет"))
-	if(confirm != "Да")
+	if(confirm != "Да" || swarmer_actions_blocked(swarmer))
 		return
 	swarmer.balloon_alert(swarmer, "уничтожаем...")
-	if(!do_after(swarmer, 5 SECONDS, src))
+	if(!do_after(swarmer, 5 SECONDS, src) || swarmer_actions_blocked(swarmer))
 		swarmer.balloon_alert(swarmer, "сбито!")
 		return FALSE
 	swarmer.balloon_alert(swarmer, "уничтожено!")
@@ -128,8 +128,9 @@
 		return TRUE
 
 /obj/structure/swarmer/emp_act(severity)
-	..()
-	take_damage(SWARMER_EMP_DAMAGE(severity))
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		take_damage(SWARMER_EMP_DAMAGE(severity))
 
 /obj/structure/swarmer/examine(mob/user)
 	. = ..()

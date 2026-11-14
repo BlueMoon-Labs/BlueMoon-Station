@@ -10,8 +10,8 @@
 	icon_living = "swarmer_starter"
 	melee_damage_lower = 20 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 20 * SWARMER_STAMINA_SCALE
-	health = 90
-	maxHealth = 90
+	health = SWARMER_DRONE_HEALTH
+	maxHealth = SWARMER_DRONE_HEALTH
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	pass_flags = PASSTABLE | PASSMOB
@@ -30,8 +30,8 @@
 	icon_living = "swarmer_general"
 	melee_damage_lower = 25 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 25 * SWARMER_STAMINA_SCALE
-	health = 240
-	maxHealth = 240
+	health = SWARMER_GENERALIST_HEALTH
+	maxHealth = SWARMER_GENERALIST_HEALTH
 	speed = 0
 	ranged = TRUE
 	projectiletype = /obj/item/projectile/beam/disabler/swarmer/generalist
@@ -50,8 +50,8 @@
 	icon_living = "swarmer_rover"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 150
-	maxHealth = 150
+	health = SWARMER_ROVER_HEALTH
+	maxHealth = SWARMER_ROVER_HEALTH
 	speed = -0.25
 	swap_resource_cost = ROVER_SWAP_COST
 	can_swap_to = TRUE
@@ -98,8 +98,8 @@
 	icon_living = "swarmer_combat"
 	melee_damage_lower = 30 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 30 * SWARMER_STAMINA_SCALE
-	health = 300
-	maxHealth = 300
+	health = SWARMER_COMBAT_BUILDER_HEALTH
+	maxHealth = SWARMER_COMBAT_BUILDER_HEALTH
 	dismantle_speed = SLOW_SWARMER_DISMANTLE_DELAY
 	speed = 0.25
 	ranged = TRUE
@@ -174,8 +174,8 @@
 	icon_living = "swarmer_builder"
 	melee_damage_lower = 40 * SWARMER_STAMINA_SCALE
 	melee_damage_upper = 40 * SWARMER_STAMINA_SCALE
-	health = 300
-	maxHealth = 300
+	health = SWARMER_COMBAT_BUILDER_HEALTH
+	maxHealth = SWARMER_COMBAT_BUILDER_HEALTH
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swap_resource_cost = BUILDER_SWAP_COST
 	can_swap_to = TRUE
@@ -204,8 +204,8 @@
 	projectilesound = 'sound/weapons/taser2.ogg'
 	rapid = 6
 	rapid_fire_delay = 0.1 SECONDS
-	health = 1500
-	maxHealth = 1500
+	health = SWARMER_MEGA_HEALTH
+	maxHealth = SWARMER_MEGA_HEALTH
 	dismantle_speed = FAST_SWARMER_DISMANTLE_DELAY
 	swarmer_class_info = "Вы — финальная боевая единица \"Свармеров\", оснащённая миниганом, встроенной ACP турелью, а также защитными пластинами.\n\
 		Ваша цель — окончательно захватить станцию под ваш контроль."
@@ -216,11 +216,17 @@
 
 /mob/living/simple_animal/hostile/swarmer/mega/Initialize(mapload, datum/team/swarmer_team/swarm_team)
 	. = ..()
-	acp = new(src, team)
+	acp = new /obj/structure/swarmer/acp_turret/mounted(src, team)
 	configure_acp()
 
 /mob/living/simple_animal/hostile/swarmer/mega/Destroy(force)
 	QDEL_NULL(acp)
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/mega/attack_ghost(mob/user)
+	var/obj/effect/mob_spawn/swarmer_mega/spawner = locate() in contents
+	if(spawner?.ghost_usable)
+		return spawner.attack_ghost(user)
 	return ..()
 
 /mob/living/simple_animal/hostile/swarmer/mega/AttackingTarget()
@@ -232,7 +238,7 @@
 	living_target.Knockdown(knockdown_time)
 
 /mob/living/simple_animal/hostile/swarmer/mega/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
-	if(!is_energy_reflectable_projectile(P) || !prob(reflection_chance))
+	if(swarmer_actions_blocked(src) || !is_energy_reflectable_projectile(P) || !prob(reflection_chance))
 		return ..()
 	if(P.damage_type == BRUTE || P.damage_type == BURN)
 		var/armor = run_armor_check(def_zone, P.flag, armour_penetration = P.armour_penetration, silent = TRUE)
@@ -248,7 +254,7 @@
 	HasProximity(src)
 
 /mob/living/simple_animal/hostile/swarmer/mega/HasProximity(atom/movable/AM)
-	if(QDELETED(acp))
+	if(QDELETED(acp) || swarmer_actions_blocked(src))
 		return
 	if(AM != src)
 		acp.handle_interloper(AM)

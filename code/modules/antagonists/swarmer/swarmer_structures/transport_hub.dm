@@ -26,8 +26,8 @@
 	update_icon(UPDATE_ICON_STATE)
 
 /obj/structure/swarmer/transport_hub/emp_act(severity)
-	..()
-	if(!enabled)
+	. = ..()
+	if(QDELETED(src) || (. & EMP_PROTECT_SELF) || !enabled)
 		return
 	toggle_enabled()
 	addtimer(CALLBACK(src, PROC_REF(toggle_enabled)), SWARMER_STRUCTURE_EMP_DURATION * severity, TIMER_DELETE_ME)
@@ -53,11 +53,11 @@
 
 	var/input_hub_key = tgui_input_list(swarmer, "Выберите хаб для телепорта.", "Выбор хаба", potential_hubs)
 	var/obj/structure/swarmer/transport_hub/actual_selected_hub = potential_hubs[input_hub_key]
-	if(QDELETED(src) || QDELETED(actual_selected_hub) || !Adjacent(swarmer) || !enabled || !actual_selected_hub.enabled || !actual_selected_hub.anchored)
+	if(QDELETED(src) || QDELETED(actual_selected_hub) || !Adjacent(swarmer) || !enabled || !actual_selected_hub.enabled || !actual_selected_hub.anchored || swarmer_actions_blocked(swarmer))
 		return
 
 	playsound(swarmer, 'sound/swarmer/swarmer_teleport.ogg', 100, TRUE)
-	if(!do_after(swarmer, SWARMER_TELEPORT_DELAY(swarmer), src) || QDELETED(actual_selected_hub) || !enabled || !actual_selected_hub.enabled || !actual_selected_hub.anchored)
+	if(!do_after(swarmer, SWARMER_TELEPORT_DELAY(swarmer), src) || QDELETED(actual_selected_hub) || !enabled || !actual_selected_hub.enabled || !actual_selected_hub.anchored || swarmer_actions_blocked(swarmer))
 		swarmer.balloon_alert(swarmer, "нельзя двигаться!")
 		return
 	var/turf/target_turf = get_turf(actual_selected_hub)

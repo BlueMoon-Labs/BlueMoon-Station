@@ -13,7 +13,7 @@
 	balloon_alert(src, "вас чинят!")
 	user.balloon_alert(user, "починка!")
 
-	if(!do_after(user, SWARMER_REPAIR_DELAY(user), src))
+	if(!do_after(user, SWARMER_REPAIR_DELAY(user), src) || swarmer_actions_blocked(user))
 		return
 
 	if(!user.team?.adjust_metal(-SWARMER_REPAIR_COST(user)))
