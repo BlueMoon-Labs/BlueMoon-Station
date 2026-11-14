@@ -35,6 +35,8 @@
 	var/cooldown_static = FALSE			// Feed, Masquerade, and One-Shot powers don't improve their cooldown.
 	//var/not_bloodsucker = FALSE		// This goes to Vassals or Hunters, but NOT bloodsuckers.
 	var/must_be_concious = TRUE			//Can't use this ability while unconcious.
+	/// Выключение из Remove(): без реплик и эффектов возврата, о потере сил говорит farewell() антага.
+	var/deactivating_on_removal = FALSE
 
 /datum/action/cooldown/bloodsucker/New()
 	if(bloodcost > 0)
@@ -67,7 +69,8 @@
 	ActivatePower()  // NOTE: ActivatePower() freezes this power in place until it ends.
 	if(active) // Did we not manually disable? Handle it here.
 		DeactivatePower()
-	if(amSingleUse)
+	// Пока ActivatePower() спал, силу могли снять вместе с антагом.
+	if(amSingleUse && owner)
 		RemoveAfterUse()
 
 /datum/action/cooldown/bloodsucker/proc/CheckCanPayCost(display_error)
@@ -156,13 +159,15 @@
 /datum/action/cooldown/bloodsucker/Remove(mob/remove_from)
 	if(active)
 		if(remove_from && !QDELETED(remove_from))
+			deactivating_on_removal = TRUE
 			DeactivatePower(remove_from)
+			deactivating_on_removal = FALSE
 		active = FALSE
 	return ..()
 
 /datum/action/cooldown/bloodsucker/proc/RemoveAfterUse()
 	// Un-Learn Me! (GO HOME
-	var/datum/antagonist/bloodsucker/bloodsuckerdatum = owner.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
+	var/datum/antagonist/bloodsucker/bloodsuckerdatum = owner.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
 	if (istype(bloodsuckerdatum))
 		bloodsuckerdatum.powers -= src
 	Remove(owner)

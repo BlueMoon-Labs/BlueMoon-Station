@@ -155,7 +155,8 @@
 		H.update_body(TRUE) // Outfit and underwear, also body and privates.
 		H.update_hair()
 		H.update_body_parts()	// Body itself, maybe skin color?
-		cast_effect() // POOF
+		if(!deactivating_on_removal)
+			cast_effect() // POOF
 
 	// CAST EFFECT //	// General effect (poof, splat, etc) when you cast. Doesn't happen automatically!
 /datum/action/cooldown/bloodsucker/veil/proc/cast_effect()

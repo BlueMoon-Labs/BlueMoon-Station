@@ -746,6 +746,9 @@
 	return emergency_close_timer - world.time <= FIRELOCK_MANUAL_OVERRIDE_GRACE
 
 /obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
+	// Зовётся и после спящей анимации open(), дверь к тому моменту могли удалить.
+	if(QDELETED(src))
+		return
 	emergency_close_timer = max(emergency_close_timer, world.time + duration)
 	nextstate = null
 	// Уже закрытая автоматикой дверь должна сохранять возможность открыться сама.
