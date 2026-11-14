@@ -180,8 +180,10 @@
  *
  * Called on a UI's object when the UI is closed, not to be confused with
  * client/verb/uiclose(), which closes the ui window
+ *
+ * ui - the closing /datum/tgui: in Logout user.client is already null, ui.window.client is not
  */
-/datum/proc/ui_close(mob/user)
+/datum/proc/ui_close(mob/user, datum/tgui/ui)
 	SIGNAL_HANDLER
 
 /**

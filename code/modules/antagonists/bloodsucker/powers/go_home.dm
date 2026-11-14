@@ -42,8 +42,12 @@
 	// STEP ONE: Flicker Lights
 	flicker_lights(3, 20)
 	sleep(50)
+	if(!owner)
+		return
 	flicker_lights(4, 40)
 	sleep(50)
+	if(!owner)
+		return
 	flicker_lights(4, 60)
 	for(var/obj/machinery/light/L in view(6, get_turf(owner)))
 		L.flicker(5)

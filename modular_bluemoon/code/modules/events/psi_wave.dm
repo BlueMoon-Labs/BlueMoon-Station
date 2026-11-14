@@ -134,7 +134,7 @@
 			continue
 		if(!victim.getorgan(/obj/item/organ/brain))
 			continue
-		if(HAS_TRAIT(victim, TRAIT_ANTIMAGIC))
+		if(HAS_TRAIT(victim, TRAIT_ANTIMAGIC) || HAS_TRAIT(victim, TRAIT_ANTIMAGIC_NO_SELFBLOCK))
 			continue
 		var/resisted = HAS_TRAIT(victim, TRAIT_MINDSHIELD)
 		if(!resisted && !prob(hit_chance))

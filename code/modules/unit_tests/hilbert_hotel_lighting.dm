@@ -6,14 +6,17 @@
 /// Тест зеркалит сценарий с рециклингом и проверяет инварианты: у каждого динамического
 /// турфа комнаты есть lighting_object, корнеры АКТИВНЫ и РАЗДЕЛЕНЫ с соседями (один
 /// датум на стык - иначе свет рвётся на квадратные секции), лампы не запаркованы,
-/// после дренажа очередей комната светится.
+/// после дренажа очередей комната светится. Угла может не быть вовсе: до которого не
+/// достаёт ни один источник, сносится сам (self_destruct_if_idle) и рисуется тёмной
+/// заглушкой, а первый же дотянувшийся источник досоздаёт его.
 /datum/unit_test/hilbert_hotel_lighting
 	priority = TEST_LONGER
 
-/datum/unit_test/hilbert_hotel_lighting/proc/audit_room(area/hilbertshotel/room_area, cycle_tag)
+/datum/unit_test/hilbert_hotel_lighting/proc/audit_room(area/hilbertshotel/room_area, cycle_tag, expect_lit = TRUE)
 	var/total_dynamic = 0
 	var/missing_objects = 0
 	var/inactive_corner_turfs = 0
+	var/missing_corners = 0
 	var/shared_corner_breaks = 0
 	var/ghost_objects = 0
 	var/lit_turfs = 0
@@ -35,7 +38,8 @@
 			if(bad_desc.len < 12)
 				bad_desc += "no_obj:[T.type] ([T.x],[T.y],[T.z])"
 			continue
-		if(!T.lc_topright || !T.lc_topright.active || !T.lc_bottomleft || !T.lc_bottomleft.active)
+		missing_corners += !T.lc_topright + !T.lc_bottomright + !T.lc_bottomleft + !T.lc_topleft
+		if((T.lc_topright && !T.lc_topright.active) || (T.lc_bottomright && !T.lc_bottomright.active) || (T.lc_bottomleft && !T.lc_bottomleft.active) || (T.lc_topleft && !T.lc_topleft.active))
 			inactive_corner_turfs++
 			if(bad_desc.len < 12)
 				bad_desc += "inactive:[T.type] ([T.x],[T.y],[T.z])"
@@ -66,14 +70,14 @@
 		if(L in GLOB.lighting_deferred_atoms)
 			lamps_parked++
 
-	var/diag = "[cycle_tag]: турфов=[total_dynamic], без объекта=[missing_objects], призраков=[ghost_objects], неактивные корнеры=[inactive_corner_turfs], швы шаринга=[shared_corner_breaks], светится=[lit_turfs], ламп=[lamps] (src=[lamps_with_source], park=[lamps_parked]); [bad_desc.Join("; ")]"
+	var/diag = "[cycle_tag]: турфов=[total_dynamic], без объекта=[missing_objects], призраков=[ghost_objects], неактивные корнеры=[inactive_corner_turfs], снесённых углов=[missing_corners], швы шаринга=[shared_corner_breaks], светится=[lit_turfs], ламп=[lamps] (src=[lamps_with_source], park=[lamps_parked]); [bad_desc.Join("; ")]"
 
 	TEST_ASSERT(total_dynamic, "в комнате нет динамических турфов - шаблон изменился? [diag]")
 	TEST_ASSERT_EQUAL(missing_objects, 0, "у части турфов нет lighting_object: [diag]")
 	TEST_ASSERT_EQUAL(ghost_objects, 0, "на тайлах комнаты лежат чужие lighting_object-призраки: [diag]")
 	TEST_ASSERT_EQUAL(inactive_corner_turfs, 0, "у части турфов неактивные корнеры: [diag]")
 	TEST_ASSERT_EQUAL(shared_corner_breaks, 0, "порван шаринг корнеров между соседями: [diag]")
-	if(lamps)
+	if(lamps && expect_lit)
 		TEST_ASSERT_EQUAL(lamps_parked, 0, "источники ламп запаркованы на инициализированном z: [diag]")
 		TEST_ASSERT(lamps_with_source, "ни у одной лампы нет light-датума: [diag]")
 		TEST_ASSERT(lit_turfs, "после дренажа ни один турф комнаты не светится: [diag]")
@@ -154,6 +158,38 @@
 	TEST_ASSERT(istype(room_area), "гость не в области отеля (цикл 2), а в [room_area ? room_area.type : "null"]")
 	drain_lighting_queues_snapshot()
 	audit_room(room_area, "цикл 2 (restore)")
+
+	// Цикл 3: лампы гаснут - углы, которые светили только они, сносятся, и комната с дырами в углах
+	// обязана пройти аудит; новые лампы на тех же местах досоздают углы и светят те же клетки
+	var/list/lit_before = list()
+	for(var/turf/T in room_area)
+		if(TURF_IS_DYNAMIC_LIGHTING(T) && T.luminosity)
+			lit_before += T
+	var/list/room_lamps = list()
+	for(var/obj/machinery/light/L in room_area)
+		if(L.light)
+			room_lamps += L
+	for(var/obj/machinery/light/L as anything in room_lamps)
+		L.break_light_tube(TRUE)
+	drain_lighting_queues_snapshot()
+	var/gone_corners = 0
+	for(var/turf/T in room_area)
+		if(TURF_IS_DYNAMIC_LIGHTING(T))
+			gone_corners += !T.lc_topright + !T.lc_bottomright + !T.lc_bottomleft + !T.lc_topleft
+	TEST_ASSERT(gone_corners, "погасшие лампы не снесли ни одного угла: сценарий сноса не воспроизведён")
+	audit_room(room_area, "цикл 3 (лампы разбиты)", expect_lit = FALSE)
+	// Замена без fix(): тот зовёт update() с шансом перегорания
+	for(var/obj/machinery/light/L as anything in room_lamps)
+		L.status = initial(L.status)
+		L.on = L.has_power()
+		L.update(FALSE, TRUE)
+	drain_lighting_queues_snapshot()
+	audit_room(room_area, "цикл 3 (лампы заменены)")
+	var/list/went_dark = list()
+	for(var/turf/T as anything in lit_before)
+		if(!T.luminosity)
+			went_dark += "[T.x],[T.y]"
+	TEST_ASSERT(!length(went_dark), "после замены ламп не светятся клетки, светившие до поломки: [went_dark.Join("; ")]")
 
 	// Вывод гостя до teardown
 	sphere.MobTransfer(guest, home)

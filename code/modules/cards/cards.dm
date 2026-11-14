@@ -71,7 +71,7 @@
  * * card type - the type of singlecard, that will be created and returned.
 **/
 /obj/item/toy/cards/proc/draw(mob/living/user, card, card_type = /obj/item/toy/cards/singlecard)
-	if(!isliving(user) || !user.canUseTopic(src, TRUE, TRUE, TRUE))
+	if(!isliving(user) || !user.canUseTopic(src, FALSE, TRUE, TRUE) || !Adjacent(user))
 		return
 	if(count_cards() == 0)
 		to_chat(user, span_warning("There are no more cards to draw!"))

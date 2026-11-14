@@ -94,15 +94,17 @@
 	duration = 35
 	pixel_x = -224
 	pixel_y = -224
-	var/list/client/buried_ore_images
+	/// weakref клиента -> его картинка руды
+	var/list/buried_ore_images
 
 /obj/effect/temp_visual/mining_overlay/Initialize(mapload)
 	. = ..()
 	animate(src, alpha = 0, time = duration, easing = EASE_IN)
 
 /obj/effect/temp_visual/mining_overlay/Destroy()
-	for(var/client/C in buried_ore_images)
-		C.images -= buried_ore_images[C]
+	for(var/datum/weakref/client_ref as anything in buried_ore_images)
+		var/client/C = client_ref.resolve()
+		C?.images -= buried_ore_images[client_ref]
 	buried_ore_images = null
 	return ..()
 
@@ -129,6 +131,6 @@
 		I.layer = layer
 		I.plane = plane
 		L.client.images += I
-		LAZYSET(buried_ore_images, L.client, I)
+		LAZYSET(buried_ore_images, WEAKREF(L.client), I)
 		animate(I, alpha = 0, time = duration, easing = EASE_IN)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, L.client), duration, TIMER_CLIENT_TIME)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, WEAKREF(L.client)), duration, TIMER_CLIENT_TIME)

@@ -1,3 +1,7 @@
+/// Держать savefile живого игрока открытым на пачку обращений (preferences_savefile.dm, open_player_savefile)
+/datum/config_entry/flag/player_savefile_hold
+	default = TRUE
+
 /// Whether or not to use the persistence system for cleanable objects
 /datum/config_entry/flag/persistent_debris
 	default = FALSE

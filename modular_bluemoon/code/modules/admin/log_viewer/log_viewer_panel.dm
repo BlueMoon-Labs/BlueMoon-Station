@@ -59,7 +59,20 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 
 /datum/admin_log_viewer/New(client/new_owner)
 	..()
+	set_owner(new_owner)
+
+/// Панель живёт в холдере админа между заходами: ушедший клиент в owner стоил бы обхода мира на логауте.
+/datum/admin_log_viewer/proc/set_owner(client/new_owner)
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
 	owner = new_owner
+	if(owner)
+		RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted))
+
+/datum/admin_log_viewer/proc/on_owner_deleted(client/source)
+	SIGNAL_HANDLER
+	stop_tail()
+	owner = null
 
 /datum/admin_log_viewer/Destroy()
 	stop_tail()
@@ -607,7 +620,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(isnull(holder.log_viewer))
 		holder.log_viewer = new /datum/admin_log_viewer(src)
 	// Холдер переживает реконнект, а BYOND обнуляет ссылку на умерший клиент - переподвязываем всегда
-	holder.log_viewer.owner = src
+	holder.log_viewer.set_owner(src)
 	if(islist(segments))
 		holder.log_viewer.jump_to(segments)
 	holder.log_viewer.ui_interact(mob)

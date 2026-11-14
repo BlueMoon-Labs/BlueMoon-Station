@@ -62,11 +62,12 @@
 	// Налёт ИнтеКью направлен на эвакуационный шаттл — увеличиваем его таймер на 120 секунд.
 	// Берём emergency shuttle напрямую (надёжнее, чем через port события), с фоллбэком на
 	// поиск через область порта на случай, если SSshuttle.emergency ещё не назначен.
-	var/obj/docking_port/mobile/S = SSshuttle.emergency
+	var/obj/docking_port/mobile/emergency/emergency = SSshuttle.emergency
+	var/obj/docking_port/mobile/S = emergency
 	if(!S && port)
 		var/area/A = get_area(port)
 		S = A ? SSshuttle.get_containing_shuttle(A) : null
-	if(S)
+	if(S && !emergency?.swarmer_evacuation)
 		S.setTimer(S.timeLeft(1) + 120 SECONDS)
 	priority_announce(
 		"Перехвачен сигнал: к аварийному шаттлу сближается десант ИнтеКью. Зафиксирована попытка угона - шаттл пытаются украсть.",

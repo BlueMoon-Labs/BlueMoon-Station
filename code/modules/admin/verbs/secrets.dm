@@ -28,6 +28,9 @@
 	return GLOB.admin_state
 
 /datum/secrets_menu/ui_close()
+	// Живого клиента не трогаем: ui_act может спать на подтверждении и потом читать holder.
+	if(!(holder in GLOB.clients))
+		holder = null
 	qdel(src)
 
 /datum/secrets_menu/ui_interact(mob/user, datum/tgui/ui)

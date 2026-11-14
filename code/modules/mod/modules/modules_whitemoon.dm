@@ -1666,7 +1666,7 @@
 		return INITIALIZE_HINT_QDEL
 	viewer?.images += ping_image
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
-	RegisterSignal(user, list(COMSIG_MOB_LOGOUT, COMSIG_PARENT_QDELETING), PROC_REF(end_ping))
+	RegisterSignal(user, list(COMSIG_MOB_CLIENT_LOGOUT, COMSIG_PARENT_QDELETING), PROC_REF(end_ping))
 	RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(end_ping))
 	if(follow_target)
 		RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
@@ -1697,7 +1697,7 @@
 	var/mob/living/user = user_ref?.resolve()
 	var/mob/living/target = target_ref?.resolve()
 	if(user)
-		UnregisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_LOGOUT, COMSIG_PARENT_QDELETING))
+		UnregisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT, COMSIG_PARENT_QDELETING))
 	if(target)
 		UnregisterSignal(target, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 	viewer?.images -= ping_image
