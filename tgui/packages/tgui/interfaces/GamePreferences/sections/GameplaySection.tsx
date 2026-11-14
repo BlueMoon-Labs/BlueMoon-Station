@@ -18,6 +18,7 @@ type GameplayData = {
   autostand: boolean;
   long_strip_menu: boolean;
   shift_invites: boolean;
+  nearsigh_darkening: boolean;
 };
 
 const DAMAGE_SHAKE_OPTIONS = [
@@ -39,6 +40,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
   { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
   { key: 'shift_invites', label: 'Приглашения в смену', flag: 'shift_invites', tooltip: 'Если на станции не осталось ни одного сотрудника СБ, медика или инженера, наблюдатели, гости гост-кафе и игроки в лобби получают приглашение со ссылкой "Войти в смену". Вход в пустой отдел приносит 3 М$ в конце раунда, если продержаться в смене 30 минут или до эвакуации' },
+  { key: 'nearsigh_darkening', label: 'Замена эффекта близорукости', flag: 'nearsigh_darkening', tooltip: 'Включение данного параметра заменяет эффект близорукости из блюра в затемнение' },
 ];
 
 export const GameplaySection = (props) => {
