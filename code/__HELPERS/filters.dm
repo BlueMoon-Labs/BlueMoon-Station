@@ -153,7 +153,7 @@ GLOBAL_LIST_INIT(master_filter_info, list(
 	if(!isnull(flags))
 		.["flags"] = flags
 
-/proc/angular_blur_filter(x, y, size)
+/proc/angular_blur_filter(x, y, size, offset)
 	. = list("type" = "angular_blur")
 	if(!isnull(x))
 		.["x"] = x
@@ -161,6 +161,8 @@ GLOBAL_LIST_INIT(master_filter_info, list(
 		.["y"] = y
 	if(!isnull(size))
 		.["size"] = size
+	if(!isnull(offset))
+		.["offset"] = offset
 
 /proc/color_matrix_filter(matrix/in_matrix, space)
 	. = list("type" = "color")
@@ -234,7 +236,7 @@ GLOBAL_LIST_INIT(master_filter_info, list(
 	if(!isnull(flags))
 		.["flags"] = flags
 
-/proc/radial_blur_filter(size, x, y)
+/proc/radial_blur_filter(size, x, y, offset)
 	. = list("type" = "radial_blur")
 	if(!isnull(size))
 		.["size"] = size
@@ -242,6 +244,8 @@ GLOBAL_LIST_INIT(master_filter_info, list(
 		.["x"] = x
 	if(!isnull(y))
 		.["y"] = y
+	if(!isnull(offset))
+		.["offset"] = offset
 
 /proc/rays_filter(size, color, offset, density, threshold, factor, x, y, flags)
 	. = list("type" = "rays")
