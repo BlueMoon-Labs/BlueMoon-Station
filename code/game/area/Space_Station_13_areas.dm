@@ -714,6 +714,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	sound_environment = SOUND_AREA_SMALL_SOFTFLOOR
 	light_temperature = LIGHT_TEMP_WARM
 
+/area/commons/fishing_nook
+	name = "Fishing Nook"
+
 /area/commons/arcade
 	name = "Arcade"
 	icon_state = "abandoned_g_den"
