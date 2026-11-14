@@ -14043,10 +14043,8 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "caD" = (
-/obj/structure/closet/emcloset,
-/obj/effect/turf_decal/tile/yellow,
-/turf/open/floor/plasteel,
-/area/hallway/primary/port)
+/turf/closed/wall,
+/area/commons/fishing_nook)
 "caE" = (
 /turf/closed/wall,
 /area/maintenance/port)
@@ -14274,27 +14272,19 @@
 /turf/open/floor/plasteel/dark,
 /area/security/office)
 "cck" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/closet/firecloset,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
+/obj/machinery/fishing_portal,
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 5
 	},
-/obj/effect/turf_decal/tile/neutral{
+/turf/open/floor/plasteel/textured/large,
+/area/commons/fishing_nook)
+"ccm" = (
+/obj/machinery/light{
 	dir = 4
 	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/port)
-"ccm" = (
-/obj/structure/closet/crate,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 3;
-	name = "3maintenance loot spawner"
-	},
-/turf/open/floor/plating,
-/area/maintenance/port)
+/obj/machinery/fish_market,
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "ccD" = (
 /obj/structure/cable/white{
 	icon_state = "2-4"
@@ -15529,24 +15519,37 @@
 /turf/open/floor/plating,
 /area/maintenance/port)
 "chK" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/landmark/event_spawn,
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 10
 	},
-/turf/open/floor/plasteel,
-/area/maintenance/port)
-"chL" = (
-/obj/effect/landmark/blobstart,
-/obj/effect/turf_decal/tile/neutral{
+/obj/structure/chair/stool{
 	dir = 1
 	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
+/obj/effect/turf_decal/loading_area{
+	dir = 1;
+	icon_state = "drain";
+	name = "drain"
 	},
-/turf/open/floor/plasteel,
-/area/maintenance/port)
+/turf/open/floor/plasteel/textured/large,
+/area/commons/fishing_nook)
+"chL" = (
+/obj/structure/fish_mount{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/fishing_rod,
+/obj/item/toy/plush/snakeplushie{
+	layer = 3.41;
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "chO" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 8
@@ -47702,6 +47705,13 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
+"gJI" = (
+/obj/machinery/fishing_portal,
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 9
+	},
+/turf/open/floor/plasteel/textured/large,
+/area/commons/fishing_nook)
 "gJZ" = (
 /obj/structure/table/reinforced,
 /obj/machinery/status_display/evac{
@@ -47728,6 +47738,18 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/aft)
+"gKd" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 10
+	},
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "gKi" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
@@ -50578,6 +50600,26 @@
 	heat_capacity = 1e+006
 	},
 /area/maintenance/port)
+"htR" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/structure/fish_mount{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/obj/item/toy/plush/carpplushie{
+	pixel_x = 0;
+	pixel_y = -32;
+	layer = 3.41
+	},
+/obj/structure/table/wood,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "htZ" = (
 /obj/structure/table/reinforced,
 /obj/item/paper_bin,
@@ -53548,19 +53590,17 @@
 /area/engineering/storage)
 "ico" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
-	dir = 1
-	},
 /obj/effect/turf_decal/delivery,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
-	dir = 1
-	},
 /obj/structure/cable/white{
 	icon_state = "2-8"
 	},
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/maintenance/port)
 "icp" = (
@@ -53737,18 +53777,14 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "iep" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
 	},
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 5
-	},
-/turf/open/floor/plating,
-/area/maintenance/port)
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "ieB" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/neutral{
@@ -62333,20 +62369,14 @@
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
 "jQU" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/effect/turf_decal/tile/neutral{
+/obj/effect/turf_decal/loading_area{
+	icon_state = "half_stairs_wood";
+	name = "wood steps";
 	dir = 1
 	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/port)
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "jRc" = (
 /obj/machinery/status_display/evac{
 	pixel_x = -32
@@ -69992,6 +70022,10 @@
 	},
 /turf/open/floor/wood,
 /area/service/lawoffice)
+"lAr" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "lAt" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -74068,6 +74102,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
+"mqF" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/vending/fishing,
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "mqG" = (
 /obj/effect/turf_decal/tile/dark_red/half{
 	dir = 4
@@ -94909,6 +94953,20 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
+"qQu" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/effect/turf_decal/loading_area{
+	dir = 1;
+	icon_state = "drain";
+	name = "drain"
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 6
+	},
+/turf/open/floor/plasteel/textured/large,
+/area/commons/fishing_nook)
 "qQv" = (
 /obj/machinery/holopad,
 /obj/effect/landmark/start/lawyer,
@@ -95435,6 +95493,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
+"qWA" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "qWG" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -97040,6 +97108,11 @@
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plating,
 /area/maintenance/port)
 "roS" = (
@@ -97579,6 +97652,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/commons/dorms)
+"rtu" = (
+/obj/structure/sign/poster/official/ue_no{
+	pixel_x = 32;
+	pixel_y = 0
+	},
+/obj/structure/cable/white{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "rtx" = (
 /obj/structure/table/wood,
 /obj/item/storage/briefcase{
@@ -101346,6 +101429,19 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/checkpoint/medical)
+"siq" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/maintenance/abandoned{
+	req_access_txt = "12"
+	},
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/commons/fishing_nook)
 "siz" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/atmos/air_input{
 	dir = 8
@@ -108612,14 +108708,9 @@
 /turf/open/space,
 /area/solars/port/aft)
 "tJH" = (
-/obj/machinery/door/firedoor,
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/plasteel,
-/area/medical/medbay/central)
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/commons/fishing_nook)
 "tJL" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -110228,7 +110319,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/maintenance/port)
 "tXx" = (
@@ -114506,17 +114596,12 @@
 /turf/open/floor/plasteel,
 /area/commons/dorms)
 "uPJ" = (
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Maintenance Hatch";
-	req_access_txt = "12"
+/obj/machinery/door/airlock{
+	name = "Fishing Nook"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/port)
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "uPL" = (
 /obj/machinery/air_sensor/atmos/oxygen_tank,
 /turf/open/floor/engine/o2,
@@ -126796,6 +126881,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
+"xEE" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/obj/structure/cable/white{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/apc/auto_name/west,
+/turf/open/floor/wood/wood_large,
+/area/commons/fishing_nook)
 "xEJ" = (
 /obj/structure/cable/white{
 	icon_state = "1-2"
@@ -127108,6 +127203,13 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"xJd" = (
+/obj/machinery/airalarm{
+	dir = 8;
+	pixel_x = 23
+	},
+/turf/open/floor/wood/wood_diagonal,
+/area/commons/fishing_nook)
 "xJi" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Chapel Office";
@@ -158382,11 +158484,11 @@ qtz
 bWB
 fOH
 caD
-caE
-cea
-cfT
-chK
-cea
+caD
+caD
+caD
+caD
+caD
 cjq
 hiX
 cnI
@@ -158638,12 +158740,12 @@ fVz
 ylx
 bWC
 kch
-caE
-caE
-ceb
-cea
-caE
-cjp
+tJH
+gJI
+chK
+xEE
+mqF
+caD
 cea
 hiX
 cnI
@@ -158895,12 +158997,12 @@ vGr
 vge
 bWD
 dJl
-caE
+tJH
 cck
-cea
-cfU
+qQu
+iep
 chL
-ceb
+caD
 cea
 rUA
 cnI
@@ -159153,13 +159255,13 @@ lWE
 bWD
 pQa
 uPJ
-ucQ
+lAr
 jQU
-ucQ
-ucQ
-ucQ
+qWA
+htR
+caD
 tXj
-iep
+rUA
 cfU
 cea
 cea
@@ -159409,12 +159511,12 @@ vGr
 lWE
 eyO
 xxF
-caE
+caD
 ccm
-ced
-cea
-ced
-cjq
+xJd
+rtu
+gKd
+siq
 roP
 ico
 tsx
@@ -159666,12 +159768,12 @@ uly
 nNl
 eTL
 uBH
-uhj
-uhj
-uhj
-uhj
-uhj
-uhj
+caD
+caD
+caD
+caD
+caD
+caD
 uhj
 opt
 uhj
@@ -172027,7 +172129,7 @@ rek
 ewh
 bqU
 bLT
-tJH
+kZD
 aFK
 dri
 iXZ

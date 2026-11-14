@@ -334,7 +334,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 
 /datum/eldritch_knowledge/base_blade
 	grasp_visual = /obj/effect/temp_visual/heretic_grasp/blade
-	grasp_sound = 'modular_bluemoon/sound/heretic/blade_grasp.ogg'
+	grasp_sound = 'sound/items/weapons/bladeslice.ogg'
 	grasp_catchphrase = "A'SMUO NE'KLYSTA"
 
 /datum/eldritch_knowledge/base_moon

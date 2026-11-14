@@ -28,6 +28,12 @@
 			if(deets)
 				. += list(deets)
 
+/datum/achievement_data/proc/copy_award_value(value)
+	if(islist(value))
+		var/list/list_value = value
+		return list_value.Copy()
+	return value
+
 /datum/achievement_data/proc/load_all_achievements()
 	set waitfor = FALSE
 
@@ -41,7 +47,7 @@
 		return
 	while(Query.NextRow())
 		var/key = Query.item[1]
-		var/value = text2num(Query.item[2])
+		var/value = Query.item[2]
 		kv[key] = value
 	qdel(Query)
 
@@ -51,7 +57,7 @@
 			continue
 		if(!data[T])
 			data[T] = A.parse_value(kv[A.database_id])
-			original_cached_data[T] = data[T]
+			original_cached_data[T] = copy_award_value(data[T])
 
 ///Updates local cache with db data for the given achievement type if it wasn't loaded yet.
 /datum/achievement_data/proc/get_data(achievement_type)
@@ -60,7 +66,7 @@
 		return FALSE
 	if(!data[achievement_type])
 		data[achievement_type] = A.load(owner_ckey)
-		original_cached_data[achievement_type] = data[achievement_type]
+		original_cached_data[achievement_type] = copy_award_value(data[achievement_type])
 
 ///Unlocks an achievement of a specific type. achievement type is a typepath to the award, user is the mob getting the award, and value is an optional value to be used for defining a score to add to the leaderboard
 /datum/achievement_data/proc/unlock(achievement_type, mob/user, value = 1)
@@ -82,12 +88,24 @@
 				var/datum/award/score/S = A
 				if(S.track_high_scores)
 					S.high_scores[owner_ckey] = value
+		else if(istype(A, /datum/award/score/progress/fish))
+			if(!islist(data[achievement_type]))
+				data[achievement_type] = list()
+			if(!(value in data[achievement_type]))
+				data[achievement_type] += value
 		else
 			data[achievement_type] += value
 
 ///Getter for the status/score of an achievement
 /datum/achievement_data/proc/get_achievement_status(achievement_type)
 	return data[achievement_type]
+
+/// Устанавливаем статус ачивки.
+/datum/achievement_data/proc/set_achievement_status(achievement_type, value)
+	if(!SSachievements.achievements_enabled)
+		return FALSE
+	data[achievement_type] = value
+	return TRUE
 
 ///Resets an achievement to default values.
 /datum/achievement_data/proc/reset(achievement_type)
@@ -97,6 +115,8 @@
 	get_data(achievement_type)
 	if(istype(A, /datum/award/achievement))
 		data[achievement_type] = FALSE
+	else if(istype(A, /datum/award/score/progress/fish))
+		data[achievement_type] = list()
 	else if(istype(A, /datum/award/score))
 		data[achievement_type] = 0
 

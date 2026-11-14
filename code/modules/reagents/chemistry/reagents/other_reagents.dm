@@ -657,6 +657,11 @@
 	var/lube_kind = TURF_WET_LUBE ///What kind of slipperiness gets added to turfs.
 	var/min_turf_volume = 1
 
+/datum/reagent/lube/used_on_fish(obj/item/fish/fish)
+	ADD_TRAIT(fish, TRAIT_FISH_FED_LUBE, type)
+	addtimer(CALLBACK(fish, TYPE_PROC_REF(/obj/item/fish, clear_fed_lube), type), fish.feeding_frequency, TIMER_UNIQUE|TIMER_OVERRIDE)
+	return TRUE
+
 /datum/reagent/lube/reaction_turf(turf/open/T, reac_volume)
 	..()
 	if (!istype(T))

@@ -16,6 +16,12 @@
 	var/beam_type = /obj/effect/ebeam //must be subtype
 	var/timing_id = null
 	var/recalculating = FALSE
+	var/beam_color
+	/// Оффсет для экстра пикселей
+	var/override_origin_pixel_x = 0
+	var/override_origin_pixel_y = 0
+	var/override_target_pixel_x = 0
+	var/override_target_pixel_y = 0
 
 /datum/beam/New(beam_origin,beam_target,beam_icon='icons/effects/beam.dmi',beam_icon_state="b_beam",time=50,maxdistance=10,btype = /obj/effect/ebeam,beam_sleep_time=3)
 	endtime = world.time+time
@@ -113,8 +119,8 @@
 	rot_matrix.Turn(Angle)
 
 	//Translation vector for origin and target
-	var/DX = (32*target_oldloc.x+target_oldloc.pixel_x)-(32*origin_oldloc.x+origin_oldloc.pixel_x)
-	var/DY = (32*target_oldloc.y+target_oldloc.pixel_y)-(32*origin_oldloc.y+origin_oldloc.pixel_y)
+	var/DX = (32*target_oldloc.x+target_oldloc.pixel_x+override_target_pixel_x)-(32*origin_oldloc.x+origin_oldloc.pixel_x+override_origin_pixel_x)
+	var/DY = (32*target_oldloc.y+target_oldloc.pixel_y+override_target_pixel_y)-(32*origin_oldloc.y+origin_oldloc.pixel_y+override_origin_pixel_y)
 	var/N = 0
 	var/length = round(sqrt((DX)**2+(DY)**2)) //hypotenuse of the triangle formed by target and origin's displacement
 
@@ -123,6 +129,7 @@
 			break
 		var/obj/effect/ebeam/X = new beam_type(origin_oldloc)
 		X.owner = src
+		X.color = beam_color
 		elements += X
 
 		//Assign icon, for main segments it's base_icon, for the end, it's icon+icon_state
