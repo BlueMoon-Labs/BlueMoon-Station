@@ -229,8 +229,9 @@
 	TEST_ASSERT(!unconscious_line, "HK-47 без сознания говорит по каналу HK")
 
 	var/datum/antagonist/hk50_servant/servitude = servant.mind.has_antag_datum(/datum/antagonist/hk50_servant)
-	SEND_SIGNAL(servant, COMSIG_MOB_LOGOUT)
+	servant.Logout()
 	TEST_ASSERT_NOTNULL(servitude.away_timer, "Уход игрока не завёл таймер замены")
+	// Login() без клиента выходит сразу, вход шлём сами
 	SEND_SIGNAL(servant, COMSIG_MOB_LOGIN)
 	TEST_ASSERT_NULL(servitude.away_timer, "Возвращение игрока не сняло таймер замены")
 

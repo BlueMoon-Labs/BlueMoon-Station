@@ -417,6 +417,7 @@
 #include "minor_incidents_paperwork.dm"
 #include "minor_incidents_service.dm"
 #include "mob_elements.dm"
+#include "mob_logout_signal.dm"
 #include "multiz_ai_floor_controls.dm"
 #include "multiz_camera_console_floors.dm"
 #include "multiz_camera_popup_lighting.dm"

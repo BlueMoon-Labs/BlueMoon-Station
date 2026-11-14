@@ -8,6 +8,7 @@
 /mob/Logout()
 	var/logout_started = TICK_USAGE_REAL
 	SEND_SIGNAL(src, COMSIG_MOB_CLIENT_LOGOUT, client)
+	SEND_SIGNAL(src, COMSIG_MOB_LOGOUT)
 	log_message("[key_name(src)] is no longer owning mob [src]([src.type])", LOG_OWNERSHIP)
 	SStgui.on_logout(src)
 	unset_machine()
