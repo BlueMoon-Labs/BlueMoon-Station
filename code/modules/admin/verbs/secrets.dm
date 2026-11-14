@@ -28,6 +28,7 @@
 	return GLOB.admin_state
 
 /datum/secrets_menu/ui_close()
+	holder = null
 	qdel(src)
 
 /datum/secrets_menu/ui_interact(mob/user, datum/tgui/ui)

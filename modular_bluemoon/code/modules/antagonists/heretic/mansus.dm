@@ -517,6 +517,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	timers += addtimer(CALLBACK(src, PROC_REF(whisper), 3), HERETIC_MANSUS_DURATION - 15 SECONDS, TIMER_STOPPABLE)
 	music_channel = SSsounds.reserve_sound_channel(src)
 	music_listener = victim.client
+	if(music_listener)
+		RegisterSignal(music_listener, COMSIG_PARENT_QDELETING, PROC_REF(on_music_listener_deleted))
 	if(music_channel && victim.client?.prefs.toggles & SOUND_AMBIENCE)
 		var/sound/ambience = sound(theme["ambience"], repeat = TRUE, channel = music_channel, volume = 45)
 		ambience.status = SOUND_STREAM
@@ -1056,6 +1058,11 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	SIGNAL_HANDLER
 	finish()
 
+/// Визит идёт минуты: жертва, закрывшая игру, не держится здесь до конца визита и не стоит обхода мира на логауте.
+/datum/heretic_mansus_visit/proc/on_music_listener_deleted(client/source)
+	SIGNAL_HANDLER
+	music_listener = null
+
 /datum/heretic_mansus_visit/proc/on_soul_changed(datum/source, mob/new_body)
 	SIGNAL_HANDLER
 	// При удалении разума второй аргумент сигнала — force, а не новое тело.
@@ -1121,6 +1128,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			SEND_SOUND(music_listener, sound(null, channel = music_channel))
 		SSsounds.free_sound_channel(music_channel)
 		music_channel = null
+	if(music_listener)
+		UnregisterSignal(music_listener, COMSIG_PARENT_QDELETING)
 	music_listener = null
 	if(soul)
 		UnregisterSignal(soul, list(COMSIG_MIND_TRANSFER, COMSIG_PARENT_QDELETING))

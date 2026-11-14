@@ -77,6 +77,15 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(QDELETED(C) || !C?.client)
 		target = null
 		qdel(src)
+		return
+	RegisterSignal(C, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_target_logout))
+
+/// Игрок закрыл игру посреди галлюцинации: его удалённый клиент не держится здесь до её конца (иначе BYOND искал бы его обходом мира).
+/// При смене тела клиент жив и остаётся в owner_client - Destroy() снимет с него картинки.
+/datum/hallucination/proc/on_target_logout(mob/source)
+	SIGNAL_HANDLER
+	if(owner_client && !(owner_client in GLOB.clients))
+		owner_client = null
 
 /datum/hallucination/proc/wake_and_restore()
 	target.set_screwyhud(SCREWYHUD_NONE)
@@ -180,6 +189,13 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(target.client)
 		owner_client = target.client
 		owner_client.images |= current_image
+	RegisterSignal(target, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_target_logout))
+
+/// То же, что у /datum/hallucination: удалённый клиент не держится до конца галлюцинации.
+/obj/effect/hallucination/simple/proc/on_target_logout(mob/source)
+	SIGNAL_HANDLER
+	if(owner_client && !(owner_client in GLOB.clients))
+		owner_client = null
 
 /obj/effect/hallucination/simple/proc/GetImage()
 	var/image/I = image(image_icon,src,image_state,image_layer,dir=src.dir)

@@ -40,3 +40,137 @@
 
 	TEST_ASSERT(!(viewer in group.registered_clients), "Удалённый клиент должен уйти из стопки попапа")
 	qdel(group)
+
+/// Клиент с экраном, картинками и мобом: держатели кладут ему оверлеи и снимают их сами.
+/datum/client_interface/holder_viewer
+	var/list/images = list()
+	var/list/screen = list()
+	var/mob/mob
+	var/datum/parallax_holder/parallax_holder
+
+/// Пузырь речи и прочие flick_overlay: таймер не держит клиента, иначе каждый ушедший в 3 с после чужой реплики стоил бы обхода мира
+/datum/unit_test/flick_overlay_timer_holds_no_client
+
+/datum/unit_test/flick_overlay_timer_holds_no_client/Run()
+	var/datum/client_interface/holder_viewer/viewer = new
+	var/image/flash = image('icons/blanks/32x32.dmi', run_loc_floor_bottom_left, "nothing")
+	var/refs_before = refcount(viewer)
+	flick_to(viewer, flash)
+	var/refs_after = refcount(viewer)
+
+	TEST_ASSERT(flash in viewer.images, "flick_overlay должен показать картинку клиенту")
+	TEST_ASSERT(refs_after == refs_before, "Таймер flick_overlay держит клиента: ссылок было [refs_before], стало [refs_after]")
+	remove_image_from_client(flash, WEAKREF(viewer))
+	TEST_ASSERT(!(flash in viewer.images), "remove_image_from_client должен снимать картинку по weakref клиента")
+
+/// Отдельный кадр: чтения через viewer в Run() держат его во временных слотах и сбивают refcount.
+/datum/unit_test/flick_overlay_timer_holds_no_client/proc/flick_to(datum/client_interface/holder_viewer/viewer, image/flash)
+	var/list/show_to = list(viewer)
+	flick_overlay(flash, show_to, 10 SECONDS)
+
+/// Небо вознёсшегося еретика звучит до конца раунда: ушедший слушатель уходит из listeners
+/datum/unit_test/heretic_sky_voice_drops_deleted_listener
+
+/datum/unit_test/heretic_sky_voice_drops_deleted_listener/Run()
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/final = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	var/datum/heretic_sky_voice/voice = GLOB.heretic_sky.begin(final, heretic_sky_test_station_turf(), 30 SECONDS)
+	var/datum/client_interface/holder_viewer/viewer = new
+	voice.start_for(viewer, voice.path().sky_loop)
+	var/listened = (viewer in voice.listeners)
+
+	SEND_SIGNAL(viewer, COMSIG_PARENT_QDELETING, FALSE)
+	var/kept = (viewer in voice.listeners)
+	heretic_sky_test_clear()
+
+	TEST_ASSERT(listened, "Голос неба должен запомнить слушателя")
+	TEST_ASSERT(!kept, "Удалённый клиент должен уйти из слушателей неба")
+
+/// Разлом живёт весь раунд: удалённый клиент еретика уходит из visible_clients
+/datum/unit_test/reality_smash_drops_deleted_viewer
+
+/datum/unit_test/reality_smash_drops_deleted_viewer/Run()
+	var/obj/effect/reality_smash/smash = allocate(/obj/effect/reality_smash, run_loc_floor_bottom_left)
+	var/datum/mind/heretic = new("holder_test_heretic")
+	var/datum/client_interface/holder_viewer/viewer = new
+	smash.show_to_viewer(heretic, viewer)
+	TEST_ASSERT(smash.visible_clients[heretic] == viewer, "Разлом должен запомнить клиента еретика")
+
+	SEND_SIGNAL(viewer, COMSIG_PARENT_QDELETING, FALSE)
+
+	TEST_ASSERT(!(heretic in smash.visible_clients), "Удалённый клиент еретика должен уйти из разлома")
+
+/// Метка крови культа: удалённый клиент культиста уходит из получателей картинки
+/datum/unit_test/cult_blood_mark_drops_deleted_recipient
+
+/datum/unit_test/cult_blood_mark_drops_deleted_recipient/Run()
+	var/datum/team/cult/team = new
+	var/datum/client_interface/holder_viewer/viewer = new
+	team.track_blood_target_recipient(viewer)
+	var/tracked = (viewer in team.blood_target_image_recipients)
+
+	SEND_SIGNAL(viewer, COMSIG_PARENT_QDELETING, FALSE)
+	var/kept = (viewer in team.blood_target_image_recipients)
+	qdel(team)
+
+	TEST_ASSERT(tracked, "Культ должен запомнить получателя метки")
+	TEST_ASSERT(!kept, "Удалённый клиент должен уйти из получателей метки")
+
+/// Сияние и кометный пояс держат оверлеи по клиенту: ушедший уходит из всех списков, параллакс в префах возвращается
+/datum/unit_test/sky_events_drop_deleted_client
+
+/datum/unit_test/sky_events_drop_deleted_client/Run()
+	var/datum/round_event/aurora_caelus/aurora = new(FALSE)
+	SSdirector.running -= aurora
+	var/datum/client_interface/holder_viewer/aurora_viewer = new
+	aurora.add_ion_overlay(aurora_viewer)
+	var/aurora_tracked = !!aurora.ion_overlays[aurora_viewer]
+	SEND_SIGNAL(aurora_viewer, COMSIG_PARENT_QDELETING, FALSE)
+	var/aurora_kept = (aurora_viewer in aurora.ion_overlays)
+	qdel(aurora)
+
+	var/datum/round_event/comet_belt/comet = new(FALSE)
+	SSdirector.running -= comet
+	var/datum/client_interface/holder_viewer/comet_viewer = new
+	comet_viewer.mob = allocate(/mob/living/carbon/human)
+	comet_viewer.prefs = new
+	comet_viewer.prefs.parallax = PARALLAX_LOW
+	comet.setup_client(comet_viewer)
+	var/comet_tracked = !!comet.comet_overlays[comet_viewer]
+	SEND_SIGNAL(comet_viewer, COMSIG_PARENT_QDELETING, FALSE)
+	var/comet_kept = (comet_viewer in comet.comet_overlays) || (comet_viewer in comet.glow_overlays) || (comet_viewer in comet.saved_parallax)
+	var/restored_parallax = comet_viewer.prefs.parallax
+	QDEL_LIST(comet.all_overlay_objects)
+	qdel(comet)
+
+	TEST_ASSERT(aurora_tracked, "Сияние должно выдать клиенту оверлей")
+	TEST_ASSERT(!aurora_kept, "Удалённый клиент должен уйти из оверлеев сияния")
+	TEST_ASSERT(comet_tracked, "Кометный пояс должен выдать клиенту оверлеи")
+	TEST_ASSERT(!comet_kept, "Удалённый клиент должен уйти из списков кометного пояса")
+	TEST_ASSERT_EQUAL(restored_parallax, PARALLAX_LOW, "Префы ушедшего должны получить свой параллакс назад")
+
+/// Галлюцинация: удалённый клиент цели не держится до её конца, а живой (смена тела) остаётся для снятия картинок
+/datum/unit_test/hallucination_drops_deleted_client
+
+/datum/unit_test/hallucination_drops_deleted_client/Run()
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human)
+	var/obj/effect/hallucination/simple/vision = allocate(/obj/effect/hallucination/simple, run_loc_floor_bottom_left, target)
+	var/datum/client_interface/holder_viewer/viewer = new
+
+	vision.owner_client = viewer
+	GLOB.clients += viewer
+	SEND_SIGNAL(target, COMSIG_MOB_CLIENT_LOGOUT, null)
+	GLOB.clients -= viewer
+	var/kept_live = (vision.owner_client == viewer)
+	SEND_SIGNAL(target, COMSIG_MOB_CLIENT_LOGOUT, null)
+
+	TEST_ASSERT(kept_live, "Живой клиент после смены тела должен остаться, чтобы с него сняли картинку")
+	TEST_ASSERT(isnull(vision.owner_client), "Удалённый клиент не должен держаться в галлюцинации")
+
+/// Админская панель, удаляемая при закрытии, не оставляет клиента в очереди SSgarbage
+/datum/unit_test/closed_admin_panel_drops_client
+
+/datum/unit_test/closed_admin_panel_drops_client/Run()
+	var/datum/outfit_manager/panel = new(null)
+	panel.owner = new /datum/client_interface/holder_viewer
+	panel.ui_close(null)
+	TEST_ASSERT(isnull(panel.owner), "Закрытая панель снаряжения держит клиента")

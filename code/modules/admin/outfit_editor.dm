@@ -33,6 +33,7 @@
 
 /datum/outfit_editor/ui_close(mob/user)
 	clear_human_dummy(dummy_key)
+	owner = null
 	qdel(src)
 
 /datum/outfit_editor/proc/init_dummy()
