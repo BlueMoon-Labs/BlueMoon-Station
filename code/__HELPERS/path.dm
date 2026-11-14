@@ -50,7 +50,7 @@
 		return list()
 	AI_METRIC_INC(jps_requests)
 
-	var/l = SSpathfinder.mobs.getfree(path_owner)
+	var/datum/pathfinder_lease/l = SSpathfinder.mobs.getfree(path_owner)
 	while(!l)
 		stoplag(3)
 		if(!path_owner || (cancel_source && QDELETED(cancel_source)))
@@ -65,7 +65,14 @@
 
 	var/list/path
 	var/datum/pathfind/pathfind_datum = new(path_owner, start_turf, end_turf, id, max_distance, mintargetdist, simulated_only, exclude, cancel_source)
+	l.search = pathfind_datum
+	var/started_at = world.time
 	path = pathfind_datum.search()
+	AI_METRIC_INC(jps_searches)
+	if(world.time != started_at && GLOB.ai_metrics)
+		var/ticks_taken = round((world.time - started_at) / world.tick_lag)
+		GLOB.ai_metrics.jps_search_ticks += ticks_taken
+		GLOB.ai_metrics.jps_search_ticks_max = max(GLOB.ai_metrics.jps_search_ticks_max, ticks_taken)
 	if(search_status)
 		search_status[JPS_SEARCH_EXHAUSTED] = pathfind_datum.exhausted_search
 	qdel(pathfind_datum)
@@ -97,6 +104,8 @@
 #define JPS_CLEAR(T) (T && ((turf_facts[T] || get_turf_facts(T)) & JPS_TURF_CLEAR))
 ///Скан проверяет тик раз в столько шагов (маска), чтобы одно раскрытие узла не съедало тик целиком
 #define JPS_YIELD_STEP_MASK 7
+///Сколько % тика поиск работает с пробуждения, прежде чем уступить: при выбранном бюджете вне МК поиск без этого шёл по восемь клеток за тик
+#define JPS_MIN_SLICE_USAGE 2
 
 ///Порядок сканов к цели, предел боковых сканов, быстрые открытые клетки и уступка тика внутри сканов; бенч (--define=AI_HORDE_BENCH) переключает на лету
 #ifdef AI_HORDE_BENCH
@@ -183,6 +192,11 @@
 	var/aborted = FALSE
 	///Сканы идут к цели первыми, боковые сканы обрезаны бюджетом длины, тик уступается внутри сканов
 	var/scan_savings = FALSE
+	///Сколько раз поиск уступил тик
+	var/yields = 0
+	///TICK_USAGE начала текущего куска работы и сколько % тика кусок держит при занятом тике
+	var/slice_started = 0
+	var/min_slice_usage = JPS_MIN_SLICE_USAGE
 
 	// general pathfinding vars/args
 	/// An ID card representing what access we have and what doors we can open. Its location relative to the pathing atom is irrelevant
@@ -300,13 +314,23 @@
 
 ///Уступить тик; после сна поиск продолжается с того же шага, если путник ещё жив. TRUE - поиск надо бросить
 /datum/pathfind/proc/yield_search()
+	yields++
+	AI_METRIC_INC(jps_yields)
+	#ifdef AI_HORDE_BENCH
+	GLOB.jps_bench_slice_max = max(GLOB.jps_bench_slice_max, TICK_USAGE - slice_started)
+	#endif
 	stoplag()
+	slice_started = TICK_USAGE
 	#ifdef AI_HORDE_BENCH
 	GLOB.jps_bench_last_check = TICK_USAGE
 	#endif
 	if(search_cancelled())
 		aborted = TRUE
 	return aborted
+
+///Кусок с пробуждения отработан, или тик занят так, что ждать нельзя
+/datum/pathfind/proc/slice_spent()
+	return TICK_USAGE - slice_started >= min_slice_usage || TICK_USAGE > TICK_LIMIT_TO_RUN
 
 ///Восемь направлений сканов, ближайшие к цели первыми: найденный путь обрывает раскрытие узла, и сканы в сторону от цели обычно не нужны
 /proc/jps_scan_order(goal_dir)
@@ -345,6 +369,7 @@
 	var/datum/jps_node/current_processed_node = new (start, -1, 0, end)
 	open.insert(current_processed_node)
 	sources[start] = start // i'm sure this is fine
+	slice_started = TICK_USAGE
 	#ifdef UNIT_TESTS
 	var/test_checkpoint_sent = FALSE
 	#endif
@@ -368,7 +393,7 @@
 				break
 
 		JPS_BENCH_CHECKPOINT
-		if(!aborted && TICK_CHECK)
+		if(!aborted && TICK_CHECK && slice_spent())
 			yield_search()
 		#ifdef UNIT_TESTS
 		if(!test_checkpoint_sent)
@@ -378,6 +403,7 @@
 
 	//we're done! reverse the path to get it from start to finish
 	if(aborted)
+		AI_METRIC_INC(jps_aborted)
 		path = null
 	else if(path)
 		for(var/i = 1 to round(0.5 * length(path)))
@@ -496,7 +522,7 @@
 
 		if(fast && !(steps_taken & JPS_YIELD_STEP_MASK))
 			JPS_BENCH_CHECKPOINT
-			if(TICK_CHECK && yield_search())
+			if(TICK_CHECK && slice_spent() && yield_search())
 				return
 
 /**
@@ -615,7 +641,7 @@
 
 		if(fast)
 			JPS_BENCH_CHECKPOINT
-			if(TICK_CHECK && yield_search())
+			if(TICK_CHECK && slice_spent() && yield_search())
 				return
 
 /**
@@ -694,5 +720,6 @@
 #undef JPS_TURF_CLEAR
 #undef JPS_CLEAR
 #undef JPS_YIELD_STEP_MASK
+#undef JPS_MIN_SLICE_USAGE
 #undef JPS_SCAN_SAVINGS
 #undef JPS_BENCH_CHECKPOINT

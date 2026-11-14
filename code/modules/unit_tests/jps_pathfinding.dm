@@ -4,6 +4,13 @@
 #define JPS_TEST_SEED 1114
 ///Предел тика ниже нуля: любая проверка тика в поиске уступает
 #define JPS_TEST_FORCE_YIELD -1
+///Срок, после которого пасфайндер отбирает у поиска слот
+#define JPS_TEST_SLOT_TIME (15 SECONDS)
+///Сколько тиков тест ждёт поиск при выбранном бюджете и сколько ему можно идти
+#define JPS_TEST_SPENT_BUDGET_WAIT 400
+#define JPS_TEST_SPENT_BUDGET_TICKS 60
+///Сколько тиков бенч ждёт один поиск
+#define JPS_BENCH_CONTENDED_CAP 400
 
 ///Зал-полигон для поиска пути: стены по краю, планировка по имени, путник-предмет без своего ИИ
 /datum/unit_test/jps_arena
@@ -162,9 +169,10 @@
 	var/turf/goal = arena_turf(arena_size - 6, arena_size - 2)
 	walker.forceMove(start)
 	var/datum/pathfind/finder = new(walker, start, goal, null, 0, 0, TRUE, null)
+	finder.min_slice_usage = 0
 	var/previous_ticklimit = Master.current_ticklimit
 	Master.current_ticklimit = JPS_TEST_FORCE_YIELD
-	INVOKE_ASYNC(src, PROC_REF(run_search), finder)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/unit_test/jps_scan_yields_mid_expansion, run_search), finder)
 	Master.current_ticklimit = previous_ticklimit
 	TEST_ASSERT(!async_done && !finder.path, "Поиск дошёл до цели, ни разу не уступив тик внутри скана")
 	TEST_ASSERT(length(finder.sources) < 100, "До первой уступки тика поиск обошёл [length(finder.sources)] клеток одним куском")
@@ -195,6 +203,7 @@
 	var/turf/goal = arena_turf(arena_size - 6, arena_size - 2)
 	walker.forceMove(start)
 	var/datum/pathfind/finder = new(walker, start, goal, null, 0, 0, TRUE, null, owner)
+	finder.min_slice_usage = 0
 	var/previous_ticklimit = Master.current_ticklimit
 	Master.current_ticklimit = JPS_TEST_FORCE_YIELD
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/unit_test/jps_scan_yields_mid_expansion, run_search), finder)
@@ -210,6 +219,168 @@
 	TEST_ASSERT(!length(async_result), "Отменённый поиск вернул путь")
 	TEST_ASSERT(!finder.exhausted_search, "Отменённый поиск объявил цель недостижимой")
 	qdel(finder)
+
+///Пока running, в каждом тике выбирает бюджет вне МК раньше уснувшего поиска: так тик видит поиск на занятом сервере
+/datum/jps_budget_burner
+	var/running = TRUE
+
+/datum/jps_budget_burner/proc/burn()
+	set waitfor = FALSE
+	while(running)
+		while(!TICK_CHECK && TICK_USAGE_REAL < TICK_LIMIT_TO_RUN)
+			continue
+		sleep(world.tick_lag)
+
+///Клетка зала, обнесённая стенами: пути к ней нет, поиск обходит всё, до чего дотянется
+/datum/unit_test/jps_arena/proc/sealed_goal(x, y)
+	var/turf/goal = arena_turf(x, y)
+	for(var/direction in GLOB.alldirs)
+		var/turf/ring = get_step(goal, direction)
+		for(var/obj/item/paper/sheet in ring)
+			clutter -= sheet
+			qdel(sheet)
+		ring.ChangeTurf(/turf/closed/indestructible/wall)
+	return goal
+
+/datum/unit_test/jps_scan_yields_mid_expansion/proc/run_path_to(atom/movable/walker, turf/goal, list/search_status)
+	async_result = get_path_to(walker, goal, 0, 0, null, TRUE, null, TRUE, null, search_status)
+	async_done = TRUE
+
+///Поиск, который просыпается в тик с уже выбранным бюджетом вне МК, всё равно делает за пробуждение кусок работы и обходит зал задолго до того, как у него отберут слот; счётчики пасфайндера видят уступки и длительность
+/datum/unit_test/jps_search_progresses_on_spent_budget
+	parent_type = /datum/unit_test/jps_scan_yields_mid_expansion
+
+/datum/unit_test/jps_search_progresses_on_spent_budget/Run()
+	build_arena("open")
+	var/obj/item/crowbar/walker = allocate(/obj/item/crowbar)
+	var/turf/start = arena_turf(3, 3)
+	var/turf/goal = sealed_goal(arena_size - 5, arena_size - 5)
+	walker.forceMove(start)
+	allocate(/datum/outside_mc_probe_guard)
+	Master.outside_tick_limit = TICK_LIMIT_OUTSIDE_MC_DEFAULT
+	Master.pacing_forced = TRUE
+	var/list/metrics_before = GLOB.ai_metrics.snapshot()
+	var/datum/jps_budget_burner/burner = new
+	burner.burn()
+	var/list/search_status = list()
+	var/started_at = world.time
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/unit_test/jps_scan_yields_mid_expansion, run_path_to), walker, goal, search_status)
+	var/waited = 0
+	while(!async_done && waited < JPS_TEST_SPENT_BUDGET_WAIT)
+		sleep(world.tick_lag)
+		waited++
+	burner.running = FALSE
+	var/ticks = round((world.time - started_at) / world.tick_lag)
+	var/list/metrics = GLOB.ai_metrics.delta_since(metrics_before)
+	log_test("\tПоиск по залу [arena_size]x[arena_size] до замкнутой клетки при выбранном бюджете: [ticks] тиков, уступок [metrics["jps_yields"]]")
+	TEST_ASSERT(async_done, "Поиск не закончился за [JPS_TEST_SPENT_BUDGET_WAIT] тиков при выбранном бюджете вне МК")
+	TEST_ASSERT(search_status[JPS_SEARCH_EXHAUSTED], "Поиск до замкнутой клетки не доказал, что пути нет")
+	TEST_ASSERT(ticks <= JPS_TEST_SPENT_BUDGET_TICKS, "Поиск по залу шёл [ticks] тиков: пробуждение при выбранном бюджете делает слишком мало")
+	TEST_ASSERT_EQUAL(metrics["jps_searches"], 1, "Счётчик поисков пути не учёл поиск")
+	TEST_ASSERT(metrics["jps_yields"] >= 1, "Счётчик уступок не учёл уступки поиска")
+	TEST_ASSERT(metrics["jps_search_ticks"] >= 1, "Счётчик тиков поиска не учёл уснувший поиск")
+	TEST_ASSERT(GLOB.ai_metrics.jps_search_ticks_max >= metrics["jps_search_ticks"], "Максимум тиков поиска меньше длительности этого поиска")
+
+///Строка о слишком долгом поиске называет радиус и число уступок
+/datum/unit_test/jps_toolong_message/Run()
+	var/obj/item/crowbar/walker = allocate(/obj/item/crowbar, run_loc_floor_bottom_left)
+	var/datum/pathfind/finder = new(walker, run_loc_floor_bottom_left, run_loc_floor_top_right, null, 77, 0, TRUE, null)
+	finder.yields = 13
+	var/datum/pathfinder_lease/lease = new
+	lease.owner = walker
+	lease.search = finder
+	var/message = SSpathfinder.mobs.toolong_message(lease)
+	qdel(lease)
+	qdel(finder)
+	TEST_ASSERT(findtext(message, "radius 77"), "В строке нет радиуса поиска: [message]")
+	TEST_ASSERT(findtext(message, "yields 13"), "В строке нет числа уступок: [message]")
+
+///Обезьяна не начинает второй поиск пути, пока идёт первый: handle_combat зовёт поиск асинхронно каждый Life
+/datum/unit_test/monkey_single_path_search/Run()
+	var/mob/living/carbon/monkey/walker = allocate(/mob/living/carbon/monkey, run_loc_floor_bottom_left)
+	var/datum/flowcache/cache = SSpathfinder.mobs
+	var/saved_run = cache.run
+	var/requests_before = GLOB.ai_metrics.jps_requests
+	cache.run = cache.lcount
+	INVOKE_ASYNC(walker, TYPE_PROC_REF(/mob/living/carbon/monkey, walk2derpless), run_loc_floor_top_right)
+	INVOKE_ASYNC(walker, TYPE_PROC_REF(/mob/living/carbon/monkey, walk2derpless), run_loc_floor_top_right)
+	var/requests = GLOB.ai_metrics.jps_requests - requests_before
+	cache.run = saved_run
+	var/waited = 0
+	while(walker.path_search_until && waited < 5 SECONDS)
+		sleep(world.tick_lag)
+		waited += world.tick_lag
+	walk(walker, 0)
+	TEST_ASSERT_EQUAL(requests, 1, "Пока поиск пути обезьяны ждёт слот, второй вызов начал ещё один поиск")
+	TEST_ASSERT(!walker.path_search_until, "Поиск пути обезьяны не закончился и не снял отметку")
+
+#ifdef AI_HORDE_BENCH
+GLOBAL_VAR_INIT(jps_bench_slice_max, 0)
+
+///Долгие поиски ботов и обезьян (радиус 120-250) при бюджете вне МК, выбранном к их пробуждению: тики до ответа с уступкой на узел, по восьми клеткам и по куску времени
+/datum/unit_test/jps_contended_bench
+	parent_type = /datum/unit_test/jps_scan_yields_mid_expansion
+	priority = TEST_LONGER
+	arena_size = 150
+
+/datum/unit_test/jps_contended_bench/Run()
+	build_arena("station")
+	var/obj/item/crowbar/walker = allocate(/obj/item/crowbar)
+	var/list/searches = list()
+	var/turf/sealed_near = sealed_goal(arena_size - 40, arena_size - 40)
+	var/turf/sealed_far = sealed_goal(arena_size - 20, arena_size - 25)
+	var/list/tiles = open_tiles()
+	rand_seed(JPS_TEST_SEED + 3)
+	var/list/radii = list(120, 150, 200, 250)
+	while(length(searches) < length(radii))
+		var/turf/start = pick(tiles)
+		var/turf/goal = pick(tiles)
+		var/distance = get_dist(start, goal)
+		if(distance >= 60 && distance <= 110)
+			searches += list(list(start, goal, radii[length(searches) + 1]))
+	searches += list(list(arena_turf(4, 4), sealed_near, 120))
+	searches += list(list(arena_turf(4, 4), sealed_far, 250))
+
+	allocate(/datum/outside_mc_probe_guard)
+	Master.outside_tick_limit = TICK_LIMIT_OUTSIDE_MC_DEFAULT
+	Master.pacing_forced = TRUE
+	var/datum/jps_budget_burner/burner = new
+	burner.burn()
+	for(var/mode in list("node", "steps", "slice"))
+		var/list/parts = list()
+		var/total_ticks = 0
+		var/max_ticks = 0
+		var/over_slot = 0
+		for(var/list/search as anything in searches)
+			walker.forceMove(search[1])
+			var/datum/pathfind/finder = new(walker, search[1], search[2], null, search[3], 0, TRUE, null)
+			finder.scan_savings = mode != "node"
+			if(mode != "slice")
+				finder.min_slice_usage = 0
+			async_done = FALSE
+			async_result = null
+			GLOB.jps_bench_slice_max = 0
+			var/started_at = world.time
+			INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/unit_test/jps_scan_yields_mid_expansion, run_search), finder)
+			var/waited = 0
+			while(!async_done && waited < JPS_BENCH_CONTENDED_CAP)
+				sleep(world.tick_lag)
+				waited++
+			var/ticks = round((world.time - started_at) / world.tick_lag)
+			var/finished = async_done
+			if(!finished)
+				finder.aborted = TRUE
+				while(!async_done)
+					sleep(world.tick_lag)
+			total_ticks += ticks
+			max_ticks = max(max_ticks, ticks)
+			if(ticks * world.tick_lag > JPS_TEST_SLOT_TIME)
+				over_slot++
+			parts += "r[search[3]] [ticks]т[finished ? "" : " (не дошёл)"] уст [finder.yields] кусок макс [round(TICK_DELTA_TO_MS(GLOB.jps_bench_slice_max), 0.01)]мс [length(async_result) ? "путь" : "нет пути"]"
+			qdel(finder)
+		log_world("JPS CONTENDED [mode]: тиков ср [round(total_ticks / length(searches), 0.1)] макс [max_ticks], дольше слота [over_slot]/[length(searches)] | [jointext(parts, " | ")]")
+	burner.running = FALSE
+#endif
 
 #ifdef AI_HORDE_BENCH
 
@@ -328,3 +499,7 @@ GLOBAL_VAR_INIT(jps_bench_last_check, 0)
 #undef JPS_TEST_ARENA_SIZE
 #undef JPS_TEST_SEED
 #undef JPS_TEST_FORCE_YIELD
+#undef JPS_TEST_SLOT_TIME
+#undef JPS_TEST_SPENT_BUDGET_WAIT
+#undef JPS_TEST_SPENT_BUDGET_TICKS
+#undef JPS_BENCH_CONTENDED_CAP

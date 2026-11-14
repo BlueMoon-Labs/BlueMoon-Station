@@ -1,4 +1,6 @@
 #define MAX_RANGE_FIND 32
+///Дольше этого поиск пути обезьяны не считается идущим: рантайм внутри поиска не запрёт её навсегда
+#define MONKEY_PATH_SEARCH_TIMEOUT (30 SECONDS)
 
 /mob/living/carbon/monkey
 	var/aggressive=0 // set to 1 using VV for an angry monkey
@@ -10,6 +12,8 @@
 	var/obj/item/pickupTargetSignalTarget
 	var/mode = MONKEY_IDLE
 	var/list/myPath = list()
+	///До какого world.time идёт начатый поиск пути: handle_combat зовёт walk2derpless асинхронно каждый Life, а поиск спит, уступая тик
+	var/path_search_until = 0
 	var/list/blacklistItems = list()
 	/// Предметы, на удаление которых подписана обезьяна. Подписка одна на предмет,
 	/// причин у неё две - цель подбора и чёрный список.
@@ -155,7 +159,11 @@
 		return FALSE
 
 	if(myPath.len <= 0)
+		if(world.time < path_search_until)
+			return FALSE
+		path_search_until = world.time + MONKEY_PATH_SEARCH_TIMEOUT
 		var/list/new_path = get_path_to(src, target, 250, 1, cancel_source = src)
+		path_search_until = 0
 		if(QDELETED(src) || QDELETED(target))
 			return FALSE
 		myPath = new_path
@@ -573,3 +581,4 @@
 			return TRUE
 
 #undef MAX_RANGE_FIND
+#undef MONKEY_PATH_SEARCH_TIMEOUT
