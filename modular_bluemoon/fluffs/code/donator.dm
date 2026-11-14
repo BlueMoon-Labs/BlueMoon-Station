@@ -683,7 +683,7 @@
 	name = "Black coat"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/h_soul_coat
-	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda", "hartty", "dalphy12", "sawwarrr")
+	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda", "hartty", "dalphy12", "sawwarrr", "tecouwu")
 
 /datum/gear/donator/bm/tricorne
 	name = "Tricorne"
@@ -2843,4 +2843,4 @@
 	name = "BLACKROSE© Pilot Jacket Series V"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul, angelnedemon")
