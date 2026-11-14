@@ -231,7 +231,8 @@
 	var/list/fresh = list()
 	for(var/i in 1 to 21)
 		chain += ping_diag_string_tree_probe(held[length(held)])
-		fresh += ping_diag_string_tree_probe("ping_probe_fresh_[rand(100000, 999999)]")
+		// Префикс сортируется до ветки: "ping_probe_fresh_" лёг бы сразу за ней, на её дно.
+		fresh += ping_diag_string_tree_probe("ping_probe_a_[rand(100000, 999999)]")
 	var/chain_us = ping_diag_median(chain)
 	var/fresh_us = ping_diag_median(fresh)
 	TEST_ASSERT(chain_us > fresh_us + 1, "проба за веткой [chain_us] мкс, на пустом месте [fresh_us] мкс")

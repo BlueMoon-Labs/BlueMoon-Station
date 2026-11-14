@@ -387,9 +387,11 @@ SUBSYSTEM_DEF(ping_diag)
 		rows_step = PING_DIAG_ROWS_WRITE_SUMMARY
 		return
 	rows_step = PING_DIAG_ROWS_CLIENTS
+	// Пробы вне замера строк: перестройка дерева строк на пробе - стопор движка, а не цена диагностики. Метка - та же проба: она первая новая строка этой секунды.
+	rustg_time_reset(PING_DIAG_PROBE_TIMER)
 	rows_stamp = time2text(world.timeofday, "hh:mm:ss")
-	// Пробы вне замера строк: перестройка дерева строк на пробе - стопор движка, а не цена диагностики.
-	minute_probe_time_us = ping_diag_string_tree_probe(rows_stamp)
+	var/stamp_us = rustg_time_microseconds(PING_DIAG_PROBE_TIMER)
+	minute_probe_time_us = max(stamp_us, ping_diag_string_tree_probe(rows_stamp))
 	minute_probe_sqltime_us = ping_diag_string_tree_probe(SQLtime())
 	rustg_time_reset(PING_DIAG_ROWS_TIMER)
 	rows_now = REALTIMEOFDAY
