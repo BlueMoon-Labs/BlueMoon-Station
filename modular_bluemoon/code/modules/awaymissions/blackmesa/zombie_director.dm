@@ -2,7 +2,7 @@
 	var/wave_timer = 1800
 	var/min_wave_interval = 1800
 	var/max_wave_interval = 6000
-	var/max_zombies_per_wave = 30
+	var/max_zombies_per_wave = 40
 	var/horde_size_multiplier = 1.0
 	var/special_infected_interval = 10 MINUTES
 	var/next_special_infected_time = 0

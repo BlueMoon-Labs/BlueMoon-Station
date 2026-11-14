@@ -3961,6 +3961,7 @@
 	},
 /obj/machinery/power/floodlight/lamppost/one,
 /obj/structure/marker_beacon/bronze,
+/mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
 "bnN" = (
@@ -4379,9 +4380,12 @@
 	},
 /area/space)
 "buv" = (
-/obj/structure/barricade/wooden,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/big_offices)
 "buE" = (
 /obj/structure/flora/junglebush,
 /turf/open/floor/plating/ironsand{
@@ -8206,13 +8210,12 @@
 	},
 /area/awaymission/ihategordon/rocks)
 "cEg" = (
-/obj/effect/turf_decal/stripes/asteroid{
-	dir = 1
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
 	},
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/barricade/wooden,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa/bombardment)
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/big_offices)
 "cEm" = (
 /obj/effect/turf_decal/trimline/brown/filled/warning{
 	dir = 4
@@ -15054,11 +15057,15 @@
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
 "eIV" = (
-/obj/structure/lattice,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
 	},
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+/obj/structure/rockpilemesa{
+	icon_state = "silver3_depleted"
+	},
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/big_offices)
 "eIZ" = (
 /mob/living/simple_animal/hostile/headcrab/mesa,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -40548,6 +40555,7 @@
 /obj/structure/rockpilemesa{
 	icon_state = "stone1_depleted"
 	},
+/mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
 "mEJ" = (
@@ -42621,6 +42629,7 @@
 	icon_state = "silver3_depleted"
 	},
 /obj/structure/tubes,
+/mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/big_offices)
 "nnK" = (
@@ -42881,6 +42890,14 @@
 	pixel_y = 0
 	},
 /turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/big_offices)
+"nrz" = (
+/obj/effect/turf_decal/trimline/brown/filled/warning{
+	dir = 8
+	},
+/obj/structure/marker_beacon/burgundy,
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
 "nrA" = (
 /turf/open/floor/plating{
@@ -57835,6 +57852,7 @@
 /obj/structure/flora/rock/pile{
 	color = "#f79668"
 	},
+/mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/big_offices)
 "sjb" = (
@@ -58356,10 +58374,13 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "ssa" = (
-/obj/structure/barricade/wooden,
-/obj/structure/barricade/wooden/crude,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
+/obj/effect/turf_decal/trimline/brown/filled/warning{
+	dir = 4
+	},
+/obj/structure/marker_beacon/bronze,
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/big_offices)
 "ssb" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/effect/festive/street/streetlinesouth,
@@ -61676,18 +61697,6 @@
 	dir = 4
 	},
 /obj/structure/rack/shelf,
-/obj/item/ammo_box/magazine/mp5{
-	pixel_x = 4;
-	pixel_y = -4
-	},
-/obj/item/ammo_box/magazine/mp5{
-	pixel_x = 13;
-	pixel_y = -5
-	},
-/obj/item/ammo_box/magazine/mp5{
-	pixel_x = -6;
-	pixel_y = -4
-	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "ttS" = (
@@ -62335,6 +62344,7 @@
 /obj/structure/rockpilemesa{
 	icon_state = "silver3_depleted"
 	},
+/mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/big_offices)
 "tDb" = (
@@ -63345,8 +63355,7 @@
 	dir = 1
 	},
 /obj/effect/festive/street/streetlinenorth,
-/obj/structure/barricade/wooden,
-/obj/structure/barricade/wooden/crude,
+/obj/structure/barricade/wooden/reinforced,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "tWK" = (
@@ -63551,11 +63560,12 @@
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/rocks)
 "tZG" = (
-/obj/structure/barricade/wooden,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
 	},
-/area/awaymission/ihategordon/rocks)
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/big_offices)
 "tZK" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -70645,6 +70655,7 @@
 	pixel_y = 0
 	},
 /obj/effect/festive/street/streetlinenorth,
+/obj/structure/barricade/wooden/reinforced,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "wvj" = (
@@ -71112,10 +71123,12 @@
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "wDT" = (
-/obj/structure/barricade/wooden,
-/obj/structure/barricade/wooden/crude,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/infected,
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/big_offices)
 "wEg" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -79210,9 +79223,9 @@ jbv
 ekH
 jIU
 die
-yap
-hVL
-yap
+buv
+tZG
+buv
 hVL
 vFV
 hVL
@@ -79467,11 +79480,11 @@ orW
 iEu
 jIU
 die
-jZU
-jZU
-jZU
-jZU
-jZU
+eRk
+eRk
+eRk
+eRk
+eRk
 jZU
 aIw
 aIw
@@ -79725,11 +79738,11 @@ iEu
 jIU
 die
 tCU
-wTC
+wDT
 siS
-wTC
-bTf
-wTC
+wDT
+cEg
+wDT
 dUz
 wcc
 dUz
@@ -81009,7 +81022,7 @@ jvr
 tQg
 jIU
 die
-jZU
+eRk
 jZU
 jZU
 jZU
@@ -81268,7 +81281,7 @@ jIU
 die
 bTf
 wTC
-bTf
+cEg
 wTC
 bTf
 wTC
@@ -82040,7 +82053,7 @@ die
 alL
 ssu
 alL
-eKt
+ssa
 alL
 hvW
 cEm
@@ -82553,8 +82566,8 @@ jIU
 die
 jZU
 jZU
-jZU
-jZU
+eRk
+eRk
 jZU
 jZU
 aIw
@@ -84095,8 +84108,8 @@ jIU
 die
 jZU
 jZU
-jZU
-jZU
+eRk
+eRk
 jZU
 jZU
 aIw
@@ -84354,7 +84367,7 @@ bTf
 bTf
 wTC
 bTf
-wTC
+wDT
 bTf
 wcc
 dUz
@@ -85378,10 +85391,10 @@ wiz
 iEu
 jIU
 die
-yap
+buv
 hKP
 hVL
-yap
+buv
 hVL
 yap
 xRz
@@ -85640,7 +85653,7 @@ jZU
 jZU
 jZU
 jZU
-jZU
+eRk
 aIw
 aIw
 aIw
@@ -85894,7 +85907,7 @@ jIU
 die
 bTf
 bTf
-wTC
+wDT
 bTf
 wTC
 bTf
@@ -86921,7 +86934,7 @@ iEu
 jIU
 die
 yap
-hKP
+eIV
 hVL
 yap
 hVL
@@ -87178,9 +87191,9 @@ iEu
 jIU
 die
 jZU
-jZU
-jZU
-jZU
+eRk
+eRk
+eRk
 jZU
 jZU
 aIw
@@ -87438,8 +87451,8 @@ bTf
 bTf
 wTC
 bTf
-wTC
-bTf
+wDT
+cEg
 wcc
 dUz
 wcc
@@ -87696,7 +87709,7 @@ myn
 uzu
 vhh
 dkT
-gxD
+nrz
 uKl
 mze
 sYX
@@ -88462,11 +88475,11 @@ orW
 iEu
 jIU
 die
-yap
-hKP
-hVL
-yap
-hVL
+buv
+eIV
+tZG
+buv
+tZG
 yap
 xRz
 osg
@@ -88719,12 +88732,12 @@ orW
 iEu
 jIU
 die
-jZU
-jZU
-jZU
-jZU
-jZU
-jZU
+eRk
+eRk
+eRk
+eRk
+eRk
+eRk
 aIw
 aIw
 aIw
@@ -88977,10 +88990,10 @@ wZC
 cce
 die
 bTf
-bTf
-wTC
-bTf
-wTC
+cEg
+wDT
+cEg
+wDT
 bTf
 wcc
 dUz
@@ -90004,11 +90017,11 @@ rCg
 iEu
 jIU
 die
-yap
-yap
-hVL
-yap
-hVL
+buv
+buv
+tZG
+buv
+tZG
 yap
 xRz
 osg
@@ -90261,10 +90274,10 @@ orW
 iEu
 jIU
 die
-jZU
-jZU
-jZU
-jZU
+eRk
+eRk
+eRk
+eRk
 jZU
 jZU
 aIw
@@ -90519,10 +90532,10 @@ vjw
 jIU
 die
 nnD
-dYh
-tIJ
-dYh
-tIJ
+uXt
+acq
+uXt
+acq
 dYh
 pJI
 drY
@@ -142970,14 +142983,14 @@ lDz
 kSn
 vPV
 vPV
-eIV
+mkn
 kAj
 kAj
 jEd
 owu
 tbJ
 blC
-eIV
+mkn
 gEM
 tfl
 kAj
@@ -143231,14 +143244,14 @@ mkn
 owu
 blC
 gyl
-eIV
+mkn
 jEd
 tfl
 cTH
 gyl
 sfk
 jEd
-eIV
+mkn
 ljj
 blC
 laO
@@ -143484,7 +143497,7 @@ xNF
 kSn
 vPV
 vPV
-eIV
+mkn
 cTH
 blC
 mbo
@@ -144260,7 +144273,7 @@ tfl
 ceN
 ljj
 gyl
-eIV
+mkn
 arQ
 hmt
 dov
@@ -144513,8 +144526,8 @@ kSn
 vPV
 jCo
 gyl
-eIV
-eIV
+mkn
+mkn
 ljj
 mbo
 axC
@@ -144769,7 +144782,7 @@ lDz
 kSn
 jCo
 vPV
-eIV
+mkn
 tqv
 jEd
 owu
@@ -145029,14 +145042,14 @@ jCo
 fdW
 blC
 gyl
-eIV
+mkn
 blC
 blC
 nML
 jFT
 owu
 jEd
-eIV
+mkn
 hmt
 blC
 ljj
@@ -145286,7 +145299,7 @@ vPV
 fdW
 blC
 gyl
-eIV
+mkn
 blC
 hmt
 lFu
@@ -145549,7 +145562,7 @@ tYR
 owu
 jEd
 gyl
-eIV
+mkn
 gEM
 owu
 jEd
@@ -145628,7 +145641,7 @@ leu
 leu
 leu
 xNk
-eIV
+mkn
 leu
 wUl
 mNH
@@ -146061,12 +146074,12 @@ owu
 ddO
 ddO
 gyl
-eIV
+mkn
 xJd
 gyl
-eIV
+mkn
 gyl
-eIV
+mkn
 ljj
 laO
 rNP
@@ -146571,7 +146584,7 @@ vPV
 leu
 tbJ
 fdW
-eIV
+mkn
 xNk
 tbJ
 hac
@@ -155493,11 +155506,11 @@ xPN
 xPN
 udz
 rSm
-eIV
+mkn
 fgT
 fSr
 aWO
-eIV
+mkn
 mIk
 eel
 eNx
@@ -156780,7 +156793,7 @@ udz
 rSm
 npi
 uSa
-eIV
+mkn
 npi
 fqr
 mIk
@@ -158323,7 +158336,7 @@ rSm
 aWO
 fgT
 npi
-eIV
+mkn
 uoR
 mIk
 eel
@@ -179021,7 +179034,7 @@ rny
 xUZ
 roa
 yaS
-ssa
+bDD
 sWP
 kRw
 kVH
@@ -179275,10 +179288,10 @@ aDz
 aDz
 xCA
 knP
-wDT
-buv
 bDD
-tZG
+kCQ
+bDD
+yaS
 uUE
 kRw
 gje
@@ -180887,7 +180900,7 @@ dAN
 oLb
 mdC
 amk
-cEg
+tWB
 dAN
 dAN
 dAN
@@ -181332,7 +181345,7 @@ sEP
 lIE
 bVK
 kCQ
-ssa
+bDD
 qFD
 bVK
 nsz
@@ -181587,9 +181600,9 @@ syN
 aDz
 aDz
 bKr
-buv
+kCQ
 knP
-buv
+kCQ
 bDD
 bDD
 sWP
@@ -183678,7 +183691,7 @@ kzI
 aGW
 sFP
 job
-ssa
+bDD
 rhu
 iRL
 uac

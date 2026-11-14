@@ -262,6 +262,19 @@
 	heli_update_hull_icon()
 	return .
 
+// Same as simple_animal/bullet_act but without simple_mob_damage_multiplier:
+// Mesa guns tuned to one-shot zombies (e.g. M16 3.5x) would melt the gunship.
+/mob/living/simple_animal/hostile/megafauna/helicopter/bullet_act(obj/item/projectile/Proj, def_zone, piercing_hit = FALSE)
+	if(!Proj)
+		return
+	SEND_SIGNAL(src, COMSIG_ATOM_BULLET_ACT, Proj, def_zone)
+	var/blocked = piercing_hit
+	if(simple_mob_flags & SIMPLE_MOB_PROJECTILE_ARMOR)
+		blocked = max(blocked, run_armor_check(def_zone, Proj.flag, armour_penetration = Proj.armour_penetration, silent = TRUE))
+	apply_damage(Proj.damage, Proj.damage_type, 0, blocked)
+	Proj.on_hit(src)
+	return BULLET_ACT_HIT
+
 // Hull damage icon states, same pattern as the combat drone:
 // apache -> apachedam1 -> apachedam2, refreshed on every health change.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_hull_icon()
