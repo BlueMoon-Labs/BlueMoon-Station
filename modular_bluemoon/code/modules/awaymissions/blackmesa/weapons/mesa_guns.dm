@@ -1808,7 +1808,9 @@
 		to_chat(user, span_warning("The transceiver only responds to HECU personnel."))
 		return
 	var/mob/living/L = user
-	if(!istype(get_area(L), /area/awaymission/ihategordon))
+	var/turf/UT = get_turf(L)
+	var/list/mission_zs = SSblackmesa_events ? SSblackmesa_events.mesa_mission_zlevels() : null
+	if(!UT || (!istype(get_area(L), /area/awaymission/ihategordon) && !(mission_zs && (UT.z in mission_zs))))
 		to_chat(L, span_warning("The transceiver only works inside the Sector H gate."))
 		return
 

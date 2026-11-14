@@ -193,6 +193,20 @@
 	faction = list(FACTION_HECU)
 	restricted_species = "human"
 
+// Пятиминутный кулдаун после смерти для всех HECU-спавнеров. Дезертир
+// (/hecu/lost, faction = null) и Black Ops (/hecu/blackops, FACTION_BLACKOPS)
+// наследуют этот proc, но проверка по FACTION_HECU их пропускает.
+// Проверка стоит в attack_ghost, а не в allow_spawn: ветка black_mesa/attack_ghost
+// для чужой расы вызывает create() напрямую, минуя allow_spawn.
+/obj/effect/mob_spawn/human/black_mesa/hecu/attack_ghost(mob/user, latejoinercalling)
+	if(user?.ckey && faction && (FACTION_HECU in faction) && SSblackmesa_events)
+		var/cooldown = SSblackmesa_events.mesa_hecu_death_cooldown(user.ckey)
+		if(cooldown > 0)
+			var/secs = ceil(cooldown / 10)
+			to_chat(user, span_warning("Вы недавно погибли - вход в гост-роли HECU будет доступен через [secs] сек."))
+			return
+	return ..()
+
 /obj/effect/mob_spawn/human/black_mesa/hecu/special(mob/living/carbon/human/spawned_human)
 	. = ..()
 	if(!spawned_human)

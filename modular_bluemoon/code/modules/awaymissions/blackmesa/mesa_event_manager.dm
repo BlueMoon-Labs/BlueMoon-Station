@@ -1,5 +1,7 @@
 GLOBAL_VAR_INIT(zombie_director, null)
 
+#define HECU_SLEEPER_DEATH_COOLDOWN 5 MINUTES
+
 // =============================================================================
 // FORWARD DECLARATIONS (ПРОТОТИПЫ)
 // =============================================================================
@@ -28,6 +30,11 @@ SUBSYSTEM_DEF(blackmesa_events)
 		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader,
 	)
 	var/list/cached_mission_areas = null
+	var/list/cached_mission_zlevels = null
+	// ckey -> world.time последней смерти игрока (в любой роли). Нужен для
+	// кулдауна входа в гост-роли HECU: недавно погибший не может сразу
+	// переродиться sleeper'ом.
+	var/list/recent_player_deaths = list()
 
 /datum/controller/subsystem/blackmesa_events/Initialize(time, zlevel)
 	if(SSticker)
@@ -44,9 +51,18 @@ SUBSYSTEM_DEF(blackmesa_events)
 	initialize_zombie_director()
 	zombie_director_ref = GLOB.zombie_director
 	deploy_hecu_role_landmarks()
+	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH, PROC_REF(on_player_death))
 	return ..()
 
 /datum/controller/subsystem/blackmesa_events/fire(resumed = FALSE)
+	// Подчистка протухших записей о смертях - assoc иначе растёт весь раунд.
+	var/list/stale_deaths = list()
+	for(var/dead_ckey in recent_player_deaths)
+		if(world.time - recent_player_deaths[dead_ckey] > HECU_SLEEPER_DEATH_COOLDOWN)
+			stale_deaths += dead_ckey
+	for(var/dead_ckey in stale_deaths)
+		recent_player_deaths -= dead_ckey
+
 	// Mission load check - areas are static per round, cache the scan.
 	if(isnull(cached_mission_areas))
 		cached_mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
@@ -90,6 +106,22 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(selected)
 		selected.runEvent(random = TRUE)
 
+// Z-levels that contain any ihategordon area. Players standing on
+// /area/space turfs (airlock exteriors, open void) are not inside an
+// ihategordon area, so area checks alone would skip them - the mission
+// z-levels catch everyone physically on the Black Mesa map.
+/datum/controller/subsystem/blackmesa_events/proc/mesa_mission_zlevels()
+	if(isnull(cached_mission_zlevels))
+		cached_mission_zlevels = list()
+		for(var/V in GLOB.sortedAreas)
+			var/area/A = V
+			if(!istype(A, /area/awaymission/ihategordon))
+				continue
+			for(var/turf/T in A)
+				if(T.z && !(T.z in cached_mission_zlevels))
+					cached_mission_zlevels += T.z
+	return cached_mission_zlevels
+
 /datum/controller/subsystem/blackmesa_events/proc/mesa_announce(text, title = "", sound = null, excluded_faction = null)
 	if(!text)
 		return
@@ -99,6 +131,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	announcement += "<br>[span_alert("[html_encode(text)]")]<br>"
 
 	var/s = sound ? sound(sound) : null
+	var/list/mission_zs = mesa_mission_zlevels()
 	var/players_notified = 0
 	for(var/mob/M in GLOB.player_list)
 		if(!M)
@@ -108,15 +141,19 @@ SUBSYSTEM_DEF(blackmesa_events)
 		var/area/A = get_area(M)
 		if(!A)
 			continue
-		if(istype(A, /area/awaymission/ihategordon))
-			if(excluded_faction && isliving(M))
-				var/mob/living/living_mob = M
-				if(excluded_faction in living_mob.faction)
-					continue
-			to_chat(M, announcement)
-			players_notified++
-			if(s && M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
-				SEND_SOUND(M, s)
+		var/turf/MT = get_turf(M)
+		if(!MT)
+			continue
+		if(!istype(A, /area/awaymission/ihategordon) && !(MT.z in mission_zs))
+			continue
+		if(excluded_faction && isliving(M))
+			var/mob/living/living_mob = M
+			if(excluded_faction in living_mob.faction)
+				continue
+		to_chat(M, announcement)
+		players_notified++
+		if(s && M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
+			SEND_SOUND(M, s)
 
 	log_world("mesa_announce: '[title]' - notified [players_notified] players in Black Mesa area")
 
@@ -182,10 +219,14 @@ SUBSYSTEM_DEF(blackmesa_events)
 	return TRUE
 
 /datum/controller/subsystem/blackmesa_events/proc/issue_hecu_orders(message, objective_text)
+	var/list/mission_zs = mesa_mission_zlevels()
 	for(var/mob/living/hecu in GLOB.player_list)
 		if(!hecu.client || hecu.stat == DEAD || !(FACTION_HECU in hecu.faction))
 			continue
-		if(!istype(get_area(hecu), /area/awaymission/ihategordon))
+		var/turf/HT = get_turf(hecu)
+		if(!HT)
+			continue
+		if(!istype(get_area(hecu), /area/awaymission/ihategordon) && !(HT.z in mission_zs))
 			continue
 		to_chat(hecu, span_warning(message))
 		add_scenario_objective(hecu, objective_text)
@@ -319,6 +360,24 @@ SUBSYSTEM_DEF(blackmesa_events)
 		else
 			text = "Напоминание: HECU объявило войну Сектору H. Вы находитесь в зоне боевых действий - действуйте осторожно."
 	to_chat(L, span_warning(text))
+
+// Records the moment a player-controlled mob dies, regardless of the role it
+// died in. Used by the HECU sleeper respawn cooldown.
+/datum/controller/subsystem/blackmesa_events/proc/on_player_death(datum/source, mob/M, gibbed)
+	SIGNAL_HANDLER
+	if(!M || QDELETED(M) || !M.ckey || !M.mind || M.training_origin || M.voluntary_ghosted)
+		return
+	recent_player_deaths[M.ckey] = world.time
+
+// Ticks remaining before the player may take a HECU sleeper ghost role.
+// 0 means no cooldown is active.
+/datum/controller/subsystem/blackmesa_events/proc/mesa_hecu_death_cooldown(ckey)
+	if(!ckey)
+		return 0
+	var/death_time = recent_player_deaths[ckey]
+	if(!death_time)
+		return 0
+	return max(0, (death_time + HECU_SLEEPER_DEATH_COOLDOWN) - world.time)
 
 /datum/controller/subsystem/blackmesa_events/proc/set_maximum_difficulty()
 	if(!GLOB.zombie_director)

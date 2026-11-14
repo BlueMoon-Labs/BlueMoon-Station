@@ -61,6 +61,15 @@
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
+// Negotiations rift: single-end entrance spawned by the helicopter radio
+// once the Colin Grey dialogue seals the arena gates. The exit end is not
+// mapped - the portal's hard_target is resolved to the boss arena interior.
+/obj/effect/landmark/awaymission/blackmesa/mesa_rift
+	name = "Mesa Rift Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
 // Osprey transport hover point for troop-insertion runs.
 /obj/effect/landmark/awaymission/blackmesa/osprey_pad
 	name = "Osprey Pad Landmark"
@@ -386,7 +395,7 @@
 		return
 	// No pads mapped: scatter fallback pads across the mission area once.
 	var/list/mesa_areas = heli_mesa_areas()
-	if(!mesa_areas)
+	if(!mesa_areas || !mesa_areas.len)
 		return
 	var/attempts = 0
 	while(heli_pads.len < 6 && attempts < 60)
@@ -410,6 +419,8 @@
 	return areas
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_random_mesa_turf(list/mesa_areas)
+	if(!mesa_areas || !mesa_areas.len)
+		return null
 	for(var/i in 1 to 10)
 		var/area/A = pick(mesa_areas)
 		var/list/turfs = get_area_turfs(A)
@@ -1430,6 +1441,7 @@
 	// takes a missile shot at the target pad, then starts attacking
 	spawn_helicopter_boss()
 	close_blastdoors()
+	activate_mesa_rift()
 
 // ID-based lockdown: same matching rules as open_blastdoors() in
 // mesanpc.dm (poddoor/brigdoor by .id, airlock by .id_tag) but closes.
@@ -1451,6 +1463,33 @@
 			doors_closed++
 	if(doors_closed)
 		visible_message("<span class='boldwarning'>Blast doors seal the sector - there is no way out!</span>")
+
+// One-ended rift opened by the negotiations dialogue: the mapped
+// mesa_rift landmark is the entrance (outside the sealed arena), the exit
+// is resolved in code to the boss arena interior - helicopter_center pad,
+// then the death-rift entrance, then the radio's own turf as a last resort.
+// Same force_teleport portal as the Apache death rift, so the NOTELEPORT
+// area flag does not block the jump in either direction it can be used.
+/obj/machinery/negotiations_radio/helicopter/proc/activate_mesa_rift()
+	if(!src)
+		return
+	var/turf/A = heli_landmark_turf(/obj/effect/landmark/awaymission/blackmesa/mesa_rift)
+	if(!istype(A))
+		return
+	var/turf/B = heli_landmark_turf(/obj/effect/landmark/awaymission/blackmesa/helicopter_center)
+	if(!istype(B) || B.z != A.z || B == A)
+		B = heli_landmark_turf(/obj/effect/landmark/awaymission/blackmesa/helicopter_rift_in)
+	if(!istype(B) || B.z != A.z || B == A)
+		B = get_turf(src)
+	if(!istype(B) || B.z != A.z || B == A)
+		return
+	var/obj/effect/portal/mesa_rift/P = new(A)
+	if(!istype(P))
+		return
+	P.hard_target = B
+	P.hardlinked = FALSE
+	playsound(A, 'sound/effects/space_wind.ogg', 90, TRUE, -4)
+	visible_message("<span class='boldwarning'>A rift tears open by the sealed gates - the boss arena is reachable through it!</span>")
 
 // Finds the first mapped landmark of `type` on the radio's z-level.
 /obj/machinery/negotiations_radio/helicopter/proc/heli_landmark_turf(type)
