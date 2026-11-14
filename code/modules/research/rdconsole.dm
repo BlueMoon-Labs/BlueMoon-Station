@@ -174,6 +174,11 @@ Nothing else in the console has ID requirements.
 	else if(!(linked_destroy && linked_destroy.busy) && !(linked_lathe && linked_lathe.busy) && !(linked_imprinter && linked_imprinter.busy))
 		. = ..()
 
+/obj/machinery/computer/rdconsole/examine(mob/user)
+	. = ..()
+	if(stored_research?.pays_research_bounty)
+		. += span_notice("Nanotrasen оплачивает бюджету науки каждое исследование с этой консоли: [SSeconomy.settings.work_prices[WORK_SCI_NODE]] кр. за [ECON_NODE_POINTS_UNIT] очков стоимости узла.")
+
 /obj/machinery/computer/rdconsole/proc/research_node(id, mob/user)
 	if(!stored_research)	//BLUEMOON ADD: консоль без подключённой сети
 		say("База данных исследований не подключена! Подключите консоль мультитулом от РнД-сервера.")
@@ -190,8 +195,11 @@ Nothing else in the console has ID requirements.
 		investigate_log("[key_name(user)] researched [id]([json_encode(price)]) on techweb id [stored_research.id].", INVESTIGATE_RESEARCH)
 		if(stored_research == SSresearch.science_tech)
 			SSblackbox.record_feedback("associative", "science_techweb_unlock", 1, list("id" = "[id]", "name" = TN.display_name, "price" = "[json_encode(price)]", "time" = SQLtime()))
+		var/node_points = econ_node_points(TN, stored_research)
 		if(stored_research.research_node_id(id))
 			SSresearch.on_node_researched(id, stored_research)	// Отправка id на упаковку
+			if(stored_research.pays_research_bounty)
+				SSeconomy.record_work(ACCOUNT_SCI, WORK_SCI_NODE, node_points / ECON_NODE_POINTS_UNIT, user, memo = "Исследование: [TN.display_name]")
 			SEND_GLOBAL_SIGNAL(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, id)	// Запрос синхронизации печатной машинерии с облаком
 			say("Successfully researched [TN.display_name].")
 			var/logname = "Unknown"

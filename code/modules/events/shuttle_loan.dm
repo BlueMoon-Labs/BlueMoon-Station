@@ -73,8 +73,7 @@
 
 	dispatched = 1
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(D)
-		D.adjust_money(bonus_points)
+	D?.credit(bonus_points, ECON_EVENT, memo = "Аренда грузового шаттла")
 	end_when = activeFor + 1
 
 	SSshuttle.supply.mode = SHUTTLE_CALL
@@ -109,9 +108,10 @@
 			end_when = activeFor + 1
 
 /datum/round_event/shuttle_loan/end()
-	if(SSshuttle.shuttle_loan && SSshuttle.shuttle_loan.dispatched)
-		//make sure the shuttle was dispatched in time
-		SSshuttle.shuttle_loan = null
+	if(SSshuttle.shuttle_loan != src)
+		return
+	SSshuttle.shuttle_loan = null
+	if(dispatched)
 
 		var/list/empty_shuttle_turfs = list()
 		var/list/area/shuttle/shuttle_areas = SSshuttle.supply.shuttle_areas

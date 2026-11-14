@@ -1,10 +1,12 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Divider, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const BrigAssistantConsole = (props) => {
   const { act, data } = useBackend();
-  const { has_id, id_name, id_balance, scanning, scan_progress, scan_time_left, fines = [], fines_total, fines_paid, fines_count, wanted = [], remove = [], pay_cd, pay_cd_seconds } = data;
+  const { has_id, id_name, id_balance, scanning, scan_progress, scan_time_left, fines = [], fines_total, fines_paid, fines_count, wanted = [], remove = [], pay_cd, pay_cd_seconds, can_court_fee } = data;
   const [tab, setTab] = useLocalState('brigTab', 0); // 0 = fines, 1 = wanted
 
   return (
@@ -110,6 +112,7 @@ export const BrigAssistantConsole = (props) => {
                 </Box>
               </Section>
             ) : null}
+            {!!has_id && !scanning && !!can_court_fee ? <CourtFee /> : null}
           </>
         )}
 
@@ -178,6 +181,54 @@ export const BrigAssistantConsole = (props) => {
         )}
       </Window.Content>
     </Window>
+  );
+};
+
+/** Сумма и основание пошлины свои у каждой вставленной карты. */
+export const CourtFee = (props) => {
+  const { data } = useBackend();
+  return <CourtFeeSection key={data.id_name} />;
+};
+
+const CourtFeeSection = (props) => {
+  const { act, data } = useBackend();
+  const { id_name, court_fee_max = 0 } = data;
+  const [amount, setAmount] = useState(Math.min(100, court_fee_max));
+  const [reason, setReason] = useState('');
+  const valid = amount >= 1 && amount <= court_fee_max;
+  return (
+    <Section title="Судебная пошлина" level={2}>
+      <Box color="label" mb={1}>
+        Пошлина по решению суда назначается владельцу вставленной карты (<b>{id_name}</b>) записью СБ, как штраф.
+        Он оплачивает её здесь же; деньги идут в бюджет СБ. Не больше {court_fee_max} кр.
+      </Box>
+      <Flex align="center">
+        <Flex.Item>
+          <Input
+            width="80px"
+            type="number"
+            value={amount}
+            onChange={(e, v) => setAmount(Math.max(1, Math.min(court_fee_max, parseInt(v, 10) || 1)))} />
+          <Box as="span" color="label"> кр.</Box>
+        </Flex.Item>
+        <Flex.Item grow={1} ml={1}>
+          <Input
+            fluid
+            placeholder="Основание (решение суда)"
+            value={reason}
+            onChange={(e, v) => setReason(v)} />
+        </Flex.Item>
+        <Flex.Item ml={1}>
+          <Button
+            icon="gavel"
+            content="Назначить"
+            color="bad"
+            disabled={!valid}
+            tooltip={valid ? `Назначить пошлину ${amount} кр.` : `Пошлина - от 1 до ${court_fee_max} кр.`}
+            onClick={() => act('court_fee', { amount: amount, reason: reason })} />
+        </Flex.Item>
+      </Flex>
+    </Section>
   );
 };
 

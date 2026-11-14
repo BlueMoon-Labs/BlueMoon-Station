@@ -96,7 +96,7 @@
 
 /obj/structure/closet/crate/secure/owned/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>It's locked with a privacy lock, and can only be unlocked by the buyer's ID.</span>"
+	. += span_notice("Заперт именным замком: откроет только ID-карта того, на чей счёт заказ, - покупателя или получателя подарка.")
 
 /obj/structure/closet/crate/secure/owned/Initialize(mapload, datum/bank_account/_buyer_account)
 	. = ..()
@@ -115,16 +115,15 @@
 						if(iscarbon(user))
 							add_fingerprint(user)
 						locked = !locked
-						user.visible_message("<span class='notice'>[user] unlocks [src]'s privacy lock.</span>",
-										"<span class='notice'>You unlock [src]'s privacy lock.</span>")
+						user.visible_message(span_notice("[user] отпирает именной замок [src]."), span_notice("Вы отпираете именной замок [src]."))
 						privacy_lock = FALSE
 						update_icon()
 					else if(!silent)
-						to_chat(user, "<span class='notice'>Bank account does not match with buyer!</span>")
+						to_chat(user, span_warning("[src] заперт на счёт [buyer_account?.account_holder || "другого человека"]: ваша карта его не откроет."))
 				else if(!silent)
-					to_chat(user, "<span class='notice'>No linked bank account detected!</span>")
+					to_chat(user, span_warning("К вашей ID-карте не привязан банковский счёт."))
 			else if(!silent)
-				to_chat(user, "<span class='notice'>No ID detected!</span>")
+				to_chat(user, span_warning("Нужна ID-карта: возьмите её в руку или наденьте."))
 		else if(!silent)
-			to_chat(user, "<span class='warning'>[src] is broken!</span>")
+			to_chat(user, span_warning("Замок [src] сломан."))
 	else ..()

@@ -20,6 +20,7 @@
 	var/list/wave_type
 	var/wave_name = "normal"
 	var/direction
+	var/market_notified = FALSE
 
 /datum/round_event/meteor_wave/setup()
 	announce_when = 1
@@ -61,7 +62,16 @@
 			WARNING("Wave name of [wave_name] not recognised.")
 			kill()
 
+/// Биржа узнаёт о настоящей волне вместе с экипажем: при объявлении или, если его не было, при начале.
+/datum/round_event/meteor_wave/proc/notify_market()
+	if(market_notified)
+		return
+	market_notified = TRUE
+	SSmarket?.station_event("meteors")
+
 /datum/round_event/meteor_wave/announce(fake)
+	if(!fake)
+		notify_market()
 	priority_announce(generateMeteorString(start_when,TRUE,direction), "BНИМАНИЕ: МЕТЕОРЫ", "meteors", has_important_message = TRUE)
 	if(wave_name == "threatening" || wave_name == "catastrophic")
 		INVOKE_ASYNC(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, minimum_security_level), SEC_LEVEL_ORANGE, FALSE)
@@ -78,6 +88,9 @@
 		if(WEST)
 			directionstring = " с западной стороны"
 	return "Метеоры были обнаружены на пути столкновения со станцией - [directionstring]. Время до столкновения: [round((start_when * SSdirector.wait) / 10, 0.1)] секунд.[GLOB.singularity_counter && syndiealert ? " Предупреждение: Обнаружен аномальный гравитационный импульс, возможно вмешательство технологии Синдиката." : ""]"
+
+/datum/round_event/meteor_wave/start()
+	notify_market()
 
 /datum/round_event/meteor_wave/tick()
 	if(ISMULTIPLE(activeFor, 3))

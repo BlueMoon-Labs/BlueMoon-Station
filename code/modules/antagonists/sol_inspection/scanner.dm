@@ -89,9 +89,8 @@
 		confiscate_target(target)
 		return TRUE
 
-	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/fine_amount = get_fine_amount(target)
-	if(!cargo?.assess_sol_inspection_fine(fine_amount, inspector.inspection_team.account, reason))
+	if(!sol_inspection_charge_fine(fine_amount, inspector.inspection_team.account, reason))
 		to_chat(user, span_warning("Не удалось взыскать штраф с бюджета Карго."))
 		return TRUE
 

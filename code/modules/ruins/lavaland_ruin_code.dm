@@ -141,6 +141,7 @@
 /obj/effect/mob_spawn/human/lavaland_syndicate/special(mob/living/new_spawn)
 	. = ..()
 	new_spawn.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	econ_offstation_income_hint(new_spawn, ACCOUNT_DS)
 
 /datum/outfit/lavaland_syndicate
 	name = "Off-station Syndicate Agent"

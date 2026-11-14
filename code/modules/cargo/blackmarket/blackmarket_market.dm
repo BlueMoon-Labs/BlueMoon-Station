@@ -24,18 +24,20 @@
 	for(var/datum/blackmarket_item/I in available_items[category])
 		if(I.type != item)
 			continue
-		var/price
-		if(usr.mind.has_antag_datum(/datum/antagonist/rev/head))
-			price = I.price/100 + shipping[method] // скидка хедревам
-		else
-			price = I.price + shipping[method]
+		var/price = item_price(I, user) + shipping[method]
 		if(uplink.money < price) // I can't get the price of the item and shipping in a clean way to the UI, so I have to do this.
-			to_chat("<span class='warning'>You don't have enough credits in [uplink] for [I] with [method] shipping.</span>")
+			to_chat(user, "<span class='warning'>You don't have enough credits in [uplink] for [I] with [method] shipping.</span>")
 			return FALSE
-		if(I.buy(uplink, user, method))
+		if(I.buy(uplink, user, method, price))
 			uplink.money -= price
 			return TRUE
 		return FALSE
+
+/// Цена лота без доставки: по рынку контрабанды сектора.
+/datum/blackmarket_market/proc/item_price(datum/blackmarket_item/listing, mob/user)
+	. = econ_blackmarket_price(listing.price)
+	if(user?.mind?.has_antag_datum(/datum/antagonist/rev/head))
+		. = round(. / 100, 1) // скидка хедревам
 //
 /datum/blackmarket_market/blackmarket
 	name = "Black Market"

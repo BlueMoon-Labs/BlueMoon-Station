@@ -150,6 +150,7 @@
 		if(do_after(user, src.cleanspeed, target = target))
 			to_chat(user, "<span class='notice'>You scrub \the [target.name] out.</span>")
 			qdel(target)
+			econ_note_cleaning(user)
 	else if(ishuman(target))
 		clean_human(target, user)
 	else if(istype(target, /obj/structure/window))
@@ -164,6 +165,8 @@
 		if(do_after(user, src.cleanspeed, target = target))
 			to_chat(user, "<span class='notice'>You clean \the [target.name].</span>")
 			var/obj/effect/decal/cleanable/C = locate() in target
+			if(C)
+				econ_note_cleaning(user)
 			qdel(C)
 			target.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 			target.clean_blood()

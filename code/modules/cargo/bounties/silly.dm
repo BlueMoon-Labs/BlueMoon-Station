@@ -64,3 +64,4 @@
 	description = "Nanotrasen has secured a contract in a reenactment of a famous movie, but we only have lethal energy based swords. Send us some convincing replicas so we save on medical costs."
 	reward = 5200
 	required_count = 3
+	wanted_types = list(/obj/item/toy/sword)

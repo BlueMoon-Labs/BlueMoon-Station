@@ -42,8 +42,8 @@
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/board/bountypad
-	name = "Machine Design (Civilian Bounty Pad)"
-	desc = "The circuit board for a Civilian Bounty Pad."
+	name = "Machine Design (Contract Pad)"
+	desc = "Плата пада пункта подработки."
 	id = "bounty_pad"
 	build_path = /obj/item/circuitboard/machine/bountypad
 	category = list ("Cargo Machinery")

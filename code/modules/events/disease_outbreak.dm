@@ -22,12 +22,16 @@
 
 /datum/round_event/disease_outbreak/announce(fake)
 	priority_announce("Подтвержденная вспышка вирусной биологической опасности уровня 7 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая тревога", "outbreak7", type = "outbreak7")
+	if(!fake)
+		SSmarket?.station_event("disease_outbreak")
 
 /datum/round_event/disease_outbreak/setup()
 	announce_when = rand(15, 30)
 
 
 /datum/round_event/disease_outbreak/start()
+	if(announce_chance <= 0)
+		SSmarket?.station_event("disease_outbreak")
 	var/advanced_virus = FALSE
 	var/player_count = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
 	max_severity = 1 + max(FLOOR((world.time - control.earliest_start)/6000, 1),0) //3 symptoms at 20 minutes, plus 1 per 10 minutes

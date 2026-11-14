@@ -16402,6 +16402,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
+/obj/machinery/computer/account_database,
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "aRs" = (
@@ -26430,13 +26431,13 @@
 	dir = 8;
 	alpha = 150
 	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
 /obj/structure/sign/poster/contraband/power{
 	desc = "Lord Singuloth must feed. Annoyingly, it's really easy for people to sabotage containment and let Lord Singuloth eat the entire  station.. For this reason, Nanotrasen prefers Supermatter reactors.";
 	pixel_x = -32;
 	poster_item_desc = "This poster depicts Lord Singuloth. Nanotrasen doesn't approve. Nanotrasen wants Supermatter over Singularities, as they are usually much safer."
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
@@ -32984,6 +32985,9 @@
 	dir = 8;
 	name = "scrubbers"
 	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/cargo/qm)
 "bRX" = (
@@ -33571,6 +33575,7 @@
 	dir = 8;
 	alpha = 80
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "bTU" = (
@@ -33662,6 +33667,9 @@
 	},
 /obj/machinery/autolathe/secure{
 	name = "public autolathe"
+	},
+/obj/structure/sign/ticker_board{
+	pixel_y = -32
 	},
 /turf/open/floor/plasteel,
 /area/cargo/office)
@@ -37762,6 +37770,9 @@
 	name = "Medbay Desk";
 	req_access_txt = "5"
 	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "cen" = (
@@ -41386,7 +41397,6 @@
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "csv" = (
-/obj/item/kirbyplants/photosynthetic,
 /obj/machinery/power/apc/auto_name/north,
 /obj/structure/cable{
 	icon_state = "0-8"
@@ -41395,6 +41405,9 @@
 	c_tag = "Chief Engineer's Office";
 	dir = 8;
 	pixel_y = -22
+	},
+/obj/machinery/computer/department_budget/engineering{
+	dir = 8
 	},
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
@@ -45521,6 +45534,9 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/science{
+	dir = 1
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/rd)
@@ -64086,7 +64102,7 @@
 /area/hallway/primary/central)
 "ijD" = (
 /obj/structure/cable{
-	icon_state = "4-8"
+	icon_state = "2-4"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -64106,6 +64122,9 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4;
 	alpha = 80
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
@@ -64259,6 +64278,7 @@
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "ilY" = (
+/obj/item/kirbyplants/photosynthetic,
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
 "ima" = (
@@ -67729,6 +67749,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	alpha = 80
 	},
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/cargo/office)
 "jyj" = (
@@ -69013,6 +69034,21 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
+"jYN" = (
+/obj/effect/turf_decal/tile/blue{
+	alpha = 200;
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	alpha = 200;
+	dir = 1
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/computer/department_budget/medical,
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/central)
 "jZc" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 10;
@@ -72816,6 +72852,13 @@
 /obj/structure/chair,
 /turf/open/floor/plasteel,
 /area/security/office)
+"lsB" = (
+/obj/structure/table/wood/fancy,
+/obj/machinery/cash_register/bar{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/service/bar)
 "lsP" = (
 /obj/machinery/rnd/production/techfab/department/service,
 /turf/open/floor/wood,
@@ -81060,6 +81103,7 @@
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "okI" = (
@@ -84119,6 +84163,9 @@
 /area/security/prison/cells)
 "plV" = (
 /obj/machinery/light_switch/directional/east,
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "pmj" = (
@@ -92284,6 +92331,9 @@
 	alpha = 170;
 	color = "#CD2929"
 	},
+/obj/machinery/computer/department_budget/security{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/security/office)
 "srd" = (
@@ -93912,6 +93962,9 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4;
 	alpha = 80
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
@@ -98326,6 +98379,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
+/obj/machinery/computer/department_budget,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "uxu" = (
@@ -99147,6 +99201,18 @@
 	},
 /turf/open/floor/grass,
 /area/medical/medbay/central)
+"uLg" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8;
+	alpha = 80
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1;
+	alpha = 80
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "uLi" = (
 /obj/machinery/airalarm{
 	dir = 4;
@@ -101125,6 +101191,7 @@
 	name = "Library Desk Window";
 	req_access_txt = "37"
 	},
+/obj/machinery/cash_register,
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -104914,6 +104981,17 @@
 	icon_state = "chapel"
 	},
 /area/service/chapel/main)
+"wWc" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchencountershutters";
+	name = "kitchen shutters"
+	},
+/obj/machinery/cash_register/kitchen{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/service/kitchen)
 "wWs" = (
 /obj/machinery/doppler_array/research/science{
 	dir = 8
@@ -105824,6 +105902,10 @@
 	c_tag = "Engineering Foyer";
 	dir = 1
 	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "xkZ" = (
@@ -136082,7 +136164,7 @@ rxU
 sJQ
 bSB
 bTT
-sJQ
+uLg
 oCQ
 gPH
 kQr
@@ -137913,7 +137995,7 @@ czg
 czt
 cPS
 czD
-cEZ
+jYN
 cqW
 bWD
 uNo
@@ -146048,7 +146130,7 @@ mUi
 wRV
 wOz
 szj
-szj
+lsB
 vVW
 szj
 azm
@@ -147326,7 +147408,7 @@ aiU
 afZ
 afK
 oyr
-oyr
+wWc
 afK
 aqm
 xKO

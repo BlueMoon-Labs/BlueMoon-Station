@@ -207,7 +207,7 @@
 	playsound(src, 'sound/machines/terminal_success.ogg', 40, FALSE)
 	var/datum/bank_account/account = card.registered_account
 	if(account)
-		account.adjust_money(CARD_RECALL_REWARD, "ЦК: компенсация за отзыв ID-карты")
+		account.credit(CARD_RECALL_REWARD, ECON_WORK, memo = "ЦК: компенсация за отзыв ID-карты")
 		account.bank_card_talk("Компенсация за замену чипа ID-карты: [CARD_RECALL_REWARD] кр.")
 		compensation_paid += CARD_RECALL_REWARD
 	var/hop_paid = pay_hop_fee(card, user)
@@ -225,7 +225,7 @@
 	var/obj/item/card/id/own_card = user.get_idcard(FALSE)
 	if(!own_card || own_card == card || !own_card.registered_account)
 		return FALSE
-	own_card.registered_account.adjust_money(CARD_RECALL_HOP_FEE, "ЦК: обслуживание отзыва ID-карт")
+	own_card.registered_account.credit(CARD_RECALL_HOP_FEE, ECON_WORK, memo = "ЦК: обслуживание отзыва ID-карт")
 	hop_fees_paid += CARD_RECALL_HOP_FEE
 	return TRUE
 

@@ -35,6 +35,7 @@
 
 	var/obj/item/mecha_parts/chassis/parent_chassis = parent
 	M.CheckParts(parent_chassis.contents)
+	econ_mark_mech_assembled(M, parent_chassis)
 	record_sol_inspection_builder(M, user)
 
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)
@@ -149,6 +150,7 @@
 		var/atom/parent_atom = parent
 		user.visible_message("<span class='notice'>[user] connects [I] to [parent].</span>", "<span class='notice'>You connect [I] to [parent].</span>")
 		parent_atom.add_overlay(I.icon_state+"+o")
+		econ_add_part_value(parent_atom, I)
 		qdel(I)
 
 /datum/component/construction/unordered/mecha_chassis/spawn_result(mob/living/user)

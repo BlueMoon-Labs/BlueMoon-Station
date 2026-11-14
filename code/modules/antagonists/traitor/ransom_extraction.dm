@@ -175,8 +175,8 @@
 		mob_captured.confused += 20
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/pay_points = cargo ? clamp(cargo.account_balance, 0, ransom_credits) : 0
-	if(cargo)
-		cargo.adjust_money(min(pay_points, ransom_credits))
+	if(cargo && !cargo.debit(pay_points, ECON_EVENT_RANSOM, memo = "Выкуп похищенного сотрудника"))
+		pay_points = 0
 	priority_announce("Один из членов экипажа был захвачен корпорацией конкурентов - нам пришлось заплатить выкуп, чтобы вернуть его обратно. \
 		Согласно нашей политике, мы взяли часть средств со счетов станции, чтобы компенсировать расходы.", null, "attention", null, "Отдел Защиты Активов Nanotrasen")
 	sleep(3 SECONDS)
@@ -186,8 +186,7 @@
 		if(ishuman(contract.contract?.owner?.current))
 			human_c = contract.contract.owner.current
 			id_card = human_c.get_idcard(TRUE)
-		if(id_card?.registered_account)
-			id_card.registered_account.adjust_money(pay_points * 0.35)
+		if(id_card?.registered_account?.credit(pay_points * 0.35, ECON_EVENT_RANSOM, human_c, "Доля выкупа"))
 			id_card.registered_account.bank_card_talk("Выкуп проведён, агент. Ваша доля зачислена. Текущий баланс: \
 			[id_card.registered_account.account_balance] кр.", TRUE)
 	pay_out_pirate_gang()

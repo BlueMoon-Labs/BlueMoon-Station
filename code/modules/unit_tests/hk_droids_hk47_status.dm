@@ -300,13 +300,16 @@
 /datum/unit_test/hk47_second_reveal/Run()
 	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
 	var/mob/living/droid = hunter.owner.current
-	var/list/bounties_before = GLOB.bounties_list.Copy()
+	var/list/contracts_before = SSeconomy.all_contracts()
 	hunter.escalate()
 	allocate_hk47_records(hunter)
 	TEST_ASSERT_NULL(locate(/obj/item/pinpointer/hk47) in get_turf(droid), "no tracker after the first reveal")
 	hunter.escalate()
-	var/datum/bounty/item/hk47_core/bounty = locate() in GLOB.bounties_list
-	GLOB.bounties_list = bounties_before
+	var/datum/bounty/item/hk47_core/bounty
+	for(var/datum/econ_contract/delivery/contract in SSeconomy.all_contracts())
+		if(istype(contract.bounty, /datum/bounty/item/hk47_core))
+			bounty = contract.bounty
+	econ_test_drop_new_contracts(contracts_before)
 	TEST_ASSERT_NOTNULL(bounty, "cargo gets the core bounty")
 	TEST_ASSERT(bounty.high_priority, "the core bounty is high priority")
 	TEST_ASSERT_EQUAL(length(hunter.test_announcements), HK47_TRACKER_REVEAL, "both reveals are announced")
@@ -489,10 +492,10 @@
 /datum/unit_test/hk47_third_reveal/Run()
 	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
 	var/mob/living/droid = hunter.owner.current
-	var/list/bounties_before = GLOB.bounties_list.Copy()
+	var/list/contracts_before = SSeconomy.all_contracts()
 	for(var/reveal in 1 to HK47_EXECUTE_REVEAL)
 		hunter.escalate()
-	GLOB.bounties_list = bounties_before
+	econ_test_drop_new_contracts(contracts_before)
 	allocate_hk47_records(hunter)
 	var/obj/item/pinpointer/hk47/tracker = locate() in get_turf(droid)
 	if(tracker)
@@ -518,10 +521,10 @@
 	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
 	var/mob/living/droid = hunter.owner.current
 	hunter.add_crew(src, "Assistant", ANTAG_OPT_IN_KILL)
-	var/list/bounties_before = GLOB.bounties_list.Copy()
+	var/list/contracts_before = SSeconomy.all_contracts()
 	hunter.escalate()
 	hunter.escalate()
-	GLOB.bounties_list = bounties_before
+	econ_test_drop_new_contracts(contracts_before)
 	allocate_hk47_records(hunter)
 	var/obj/item/pinpointer/hk47/tracker = locate() in get_turf(droid)
 	TEST_ASSERT_NOTNULL(tracker, "the tracker is in the brig")
@@ -645,7 +648,7 @@
 	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
 	var/mob/living/droid = hunter.owner.current
 	var/turf/brig = get_turf(droid)
-	var/list/bounties_before = GLOB.bounties_list.Copy()
+	var/list/contracts_before = SSeconomy.all_contracts()
 	for(var/reveal in 1 to HK47_EXECUTE_REVEAL)
 		hunter.escalate()
 	allocate_hk47_records(hunter)
@@ -657,7 +660,7 @@
 	TEST_ASSERT_EQUAL(record.fields["criminal"], SEC_RECORD_STATUS_ARREST, "the execute order follows the open cases")
 	var/announced = length(hunter.test_announcements)
 	hunter.escalate()
-	GLOB.bounties_list = bounties_before
+	econ_test_drop_new_contracts(contracts_before)
 	allocate_hk47_deliveries(brig)
 	TEST_ASSERT_EQUAL(record.fields["criminal"], SEC_RECORD_STATUS_EXECUTE, "a new reveal brings the execute order back")
 	TEST_ASSERT_EQUAL(length(hunter.test_announcements), announced + 1, "the station hears the order again")

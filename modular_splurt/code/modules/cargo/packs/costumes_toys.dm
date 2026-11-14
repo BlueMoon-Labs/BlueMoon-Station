@@ -16,6 +16,8 @@
 
 /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_vr
 	name = "Teshari cloaks"
+	desc = "Три случайных плаща, скроенных под тешари: цветные с серым, белый, оранжевый или радужный."
+	crate_name = "teshari cloaks crate"
 	contains = list(
 			/obj/item/clothing/neck/cloak/teshari/standard/white,
 			/obj/item/clothing/neck/cloak/teshari/standard/white_grey,
@@ -30,10 +32,12 @@
 			/obj/item/clothing/neck/cloak/teshari/standard/rainbow,
 			/obj/item/clothing/neck/cloak/teshari/standard/orange
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_cloaks_b_vr
 	name = "Teshari cloaks (black)"
+	desc = "Три случайных чёрных плаща под тешари с цветной отделкой - может попасться и светящийся."
+	crate_name = "teshari black cloaks crate"
 	contains = list(
 			/obj/item/clothing/neck/cloak/teshari,
 			/obj/item/clothing/neck/cloak/teshari/standard/black_red,
@@ -49,10 +53,12 @@
 			/obj/item/clothing/neck/cloak/teshari/standard/black_glow,
 			/obj/item/clothing/neck/cloak/teshari/standard/dark_retrowave
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_vr
 	name = "Teshari cloaks (belted)"
+	desc = "Три случайных плаща с поясом под тешари: цветные с серым, оранжевый или радужный."
+	crate_name = "teshari belted cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/orange_grey,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/rainbow,
@@ -67,10 +73,12 @@
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/pink_grey,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/brown_grey
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_b_vr
 	name = "Teshari cloaks (belted, black)"
+	desc = "Три случайных чёрных плаща с поясом под тешари, с цветной отделкой."
+	crate_name = "teshari black belted cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/beltcloak,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_orange,
@@ -87,10 +95,12 @@
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_pink,
 			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_brown
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_vr
 	name = "Teshari cloaks (hooded)"
+	desc = "Три случайных плаща с капюшоном под тешари: цветные с серым или оранжевый."
+	crate_name = "teshari hooded cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari/standard/orange_grey,
 			/obj/item/clothing/suit/hooded/teshari/standard/lightgrey_grey,
@@ -104,10 +114,12 @@
 			/obj/item/clothing/suit/hooded/teshari/standard/pink_grey,
 			/obj/item/clothing/suit/hooded/teshari/standard/brown_grey
 			)
-	cost = 40
+	cost = 700
 
 /datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_b_vr
 	name = "Teshari cloaks (hooded, black)"
+	desc = "Три случайных чёрных плаща с капюшоном под тешари, с цветной отделкой."
+	crate_name = "teshari black hooded cloaks crate"
 	contains = list(
 			/obj/item/clothing/suit/hooded/teshari,
 			/obj/item/clothing/suit/hooded/teshari/standard/black_orange,
@@ -124,4 +136,4 @@
 			/obj/item/clothing/suit/hooded/teshari/standard/black_pink,
 			/obj/item/clothing/suit/hooded/teshari/standard/black_brown
 			)
-	cost = 40
+	cost = 700

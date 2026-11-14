@@ -194,7 +194,9 @@ const PageBuyingShuttle = (props) => {
           key={shuttle.ref}
           buttons={(
             <Button
-              content={`${shuttle.creditCost.toLocaleString()} кредитов`}
+              content={shuttle.creditCost < 0
+                ? `Доплата NT: ${(-shuttle.creditCost).toLocaleString()} кредитов`
+                : `${shuttle.creditCost.toLocaleString()} кредитов`}
               disabled={data.budget < shuttle.creditCost}
               onClick={() => act("purchaseShuttle", {
                 shuttle: shuttle.ref,

@@ -30,7 +30,7 @@
 /datum/round_event_control/station_incident/service/restless_spirit/New()
 	. = ..()
 	incident_message = "Зарегистрирована паранормальная активность низкого класса: гаснут свечи, а в описи появился реликварий, которого там не было. Страховка такие случаи не покрывает. Священнику поручено успокоить источник Библией, нулевым жезлом или святой водой. Наверняка это получается обрядом: реликварий на алтаре или столе часовни и не меньше [SPIRIT_RITUAL_CANDLES] горящих свечей рядом. Неуспокоенный дух каждые [DisplayTimeText(SPIRIT_WANDER_TIME)] перебирается в соседний отсек; вредит он только репутации."
-	description = "В часовне (без неё - в морге) появляется старый реликварий с неспокойным духом: до [DisplayTimeText(SPIRIT_DURATION)] гаснут свечи, мигает свет, сдвигаются мелочи и слышен шёпот, а каждые [DisplayTimeText(SPIRIT_WANDER_TIME)] проявления перебираются в соседний отсек. Дух успокаивают Библией, нулевым жезлом или святой водой: без обряда у священника выходит в [SPIRIT_HOLY_CHANCE]% случаев, у остальных - в [SPIRIT_LAY_CHANCE]%; на алтаре с [SPIRIT_RITUAL_CANDLES] горящими свечами рядом - наверняка. Успокоенный реликварий продаётся через карго за [SPIRIT_ANTIQUE_PRICE] кредитов."
+	description = "В часовне (без неё - в морге) появляется старый реликварий с неспокойным духом: до [DisplayTimeText(SPIRIT_DURATION)] гаснут свечи, мигает свет, сдвигаются мелочи и слышен шёпот, а каждые [DisplayTimeText(SPIRIT_WANDER_TIME)] проявления перебираются в соседний отсек. Дух успокаивают Библией, нулевым жезлом или святой водой: без обряда у священника выходит в [SPIRIT_HOLY_CHANCE]% случаев, у остальных - в [SPIRIT_LAY_CHANCE]%; на алтаре с [SPIRIT_RITUAL_CANDLES] горящими свечами рядом - наверняка. Успокоенный реликварий продаётся через карго примерно за [SPIRIT_ANTIQUE_PRICE] кредитов по рынку культуры."
 
 /datum/round_event/station_incident/service/restless_spirit
 
@@ -379,7 +379,6 @@
 
 /datum/export/minor_reliquary
 	cost = SPIRIT_ANTIQUE_PRICE
-	k_elasticity = 0
 	unit_name = "antique reliquary"
 	export_types = list(/obj/item/minor_reliquary)
 

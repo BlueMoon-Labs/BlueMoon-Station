@@ -11,7 +11,7 @@
 
 /datum/supply_pack/costumes_toys/randomised/fill(obj/structure/closet/crate/C)
 	var/list/L = contains.Copy()
-	for(var/i in 1 to num_contained)
+	for(var/i in 1 to min(num_contained, length(L)))
 		var/item = pick_n_take(L)
 		new item(C)
 
@@ -79,7 +79,7 @@
 /datum/supply_pack/costumes_toys/foamforce
 	name = "Foam Force Crate"
 	desc = "Похвастайся большой пушкой с помощью восьми дробовиков Foam Force!"
-	cost = 1000
+	cost = 1850
 	contains = list(/obj/item/gun/ballistic/shotgun/toy,
 					/obj/item/gun/ballistic/shotgun/toy,
 					/obj/item/gun/ballistic/shotgun/toy,
@@ -343,10 +343,11 @@
 
 /datum/supply_pack/costumes_toys/randomised/tcg
 	name = "Big-Ass Booster Pack Pack"
-	desc = "A bumper load of NT TCG Booster Packs of varying series. Collect them all!"
+	desc = "Целая гора бустеров карточной игры NT TCG разных серий. Соберите их все!"
 	cost = 3000
 	contains = list()
 	crate_name = "booster pack pack"
+	var/booster_count = 10
 
 /datum/supply_pack/costumes_toys/randomised/tcg/generate()
 	. = ..()
@@ -356,6 +357,6 @@
 		if(pack.illegal)
 			cardtypes.Remove(cardtype)
 		qdel(pack)
-	for(var/i in 1 to 10)
+	for(var/i in 1 to booster_count)
 		var/cardpacktype = pick(cardtypes)
 		new cardpacktype(.)

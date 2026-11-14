@@ -220,6 +220,12 @@
 			var/list/parts = del_reqs(R, a)
 			var/atom/movable/I = new R.result (get_turf(a.loc))
 			I.CheckParts(parts, R)
+			if(isitem(I) && IS_EDIBLE(I) && ismob(a))
+				var/mob/crafter = a
+				var/obj/item/dish = I
+				if(crafter.mind)
+					ADD_TRAIT(dish, TRAIT_FOOD_CHEF_MADE, REF(crafter.mind))
+					dish.econ_complexity = length(R.reqs)
 			if(send_feedback)
 				SSblackbox.record_feedback("tally", "object_crafted", 1, I.type)
 			return I //Send the item back to whatever called this proc so it can handle whatever it wants to do with the new item

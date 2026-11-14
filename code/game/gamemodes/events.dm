@@ -1,4 +1,5 @@
 /proc/power_failure()
+	SSmarket?.station_event("power_failure")
 	priority_announce("Abnormal activity detected in [station_name()]'s powernet. As a precautionary measure, the station's power will be shut off for an indeterminate duration.", "Critical Power Failure", "poweroff")
 	for(var/obj/machinery/power/smes/S in GLOB.machines)
 		if(istype(get_area(S), /area/ai_monitored/turret_protected) || !is_station_level(S.z))

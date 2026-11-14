@@ -15,7 +15,7 @@
 	var/static/list/datum/computer_file/head_programs = list(
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/robocontrol,
-		/datum/computer_file/program/budgetorders,
+		/datum/computer_file/program/department_budget,
 		/datum/computer_file/program/wiki,
 	)
 
@@ -34,6 +34,10 @@
 	name = "captain PDA"
 	icon_state = "pda-captain"
 	inserted_item = /obj/item/pen/fountain/captain
+	starting_programs = list(
+		/datum/computer_file/program/treasury,
+		/datum/computer_file/program/financial_audit,
+	)
 
 /obj/item/modular_computer/pda/heads/captain/Initialize(mapload)
 	. = ..()
@@ -50,6 +54,8 @@
 	icon_state = "pda-hop"
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/treasury,
+		/datum/computer_file/program/financial_audit,
 		/datum/computer_file/program/wiki,
 	)
 
@@ -59,6 +65,7 @@
 	inserted_item = /obj/item/pen/red
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/financial_audit,
 		/datum/computer_file/program/wiki,
 	)
 
@@ -95,7 +102,7 @@
 	stored_paper = 20
 	starting_programs = list(
 		/datum/computer_file/program/shipping,
-		/datum/computer_file/program/budgetorders,
+		/datum/computer_file/program/cargo_orders,
 	)
 
 // =====================
@@ -118,6 +125,7 @@
 	inserted_item = /obj/item/pen/red
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/financial_audit,
 		/datum/computer_file/program/robocontrol,
 		/datum/computer_file/program/wiki,
 	)
@@ -234,7 +242,7 @@
 	stored_paper = 20
 	starting_programs = list(
 		/datum/computer_file/program/shipping,
-		/datum/computer_file/program/budgetorders,
+		/datum/computer_file/program/cargo_orders,
 		/datum/computer_file/program/robocontrol,
 	)
 

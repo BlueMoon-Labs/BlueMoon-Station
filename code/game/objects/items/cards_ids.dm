@@ -153,12 +153,9 @@
 			. += "На балансе [vocabulary_to_ru(GLOB.budget_ru_genitive, D.account_holder)] находится [D.account_balance] [ru_plural(D.account_balance, "кредит", "кредита", "кредитов")]."
 		if(registered_account.account_holder == user.real_name)
 			. += span_notice("В случае утери этой ID-карты, вы можете привязать свой аккаунт через <b>alt-клик</b> по карте без аккаунта.")
-		if(registered_account.civilian_bounty)
-			. += span_info("<hr><b>Есть активное гражданское баунти:</b>\n")
-			. += "<i>[registered_account.bounty_text()]</i>"
-			. += "Количество: [registered_account.bounty_num()]"
-			var/bounty_reward = registered_account.bounty_value()
-			. += "Награда: [bounty_reward] [ru_plural(bounty_reward, "кредит", "кредита", "кредитов")]"
+	for(var/datum/econ_contract/contract as anything in SSeconomy.contracts_taken_by(registered_account))
+		var/reward = contract.payout()
+		. += span_info("Взятый контракт NT: <b>[contract.title]</b>, прогресс [contract.progress_text() || "-"], награда [reward] [ru_plural(reward, "кредит", "кредита", "кредитов")].")
 
 /obj/item/card/emag/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/emagrecharge))
@@ -323,24 +320,16 @@
 	if(!cash_money)
 		to_chat(user, span_warning("[I] не кажется стоящим что-либо!"))
 		return
-	registered_account.adjust_money(cash_money)
+	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, cash_money, ECON_CASH_IN, user, "Внесение: [I.name]"))
+		to_chat(user, span_warning("[src] не принимает [I]."))
+		return
 	if(istype(I, /obj/item/stack/spacecash) || istype(I, /obj/item/coin))
 		to_chat(user, span_notice("Вы приставляете [I] в [src]. Они исчезают в облаке блюспейса, добавляя [cash_money] \
 		[ru_plural(cash_money, "кредит", "кредита", "кредитов")] на связанный счёт."))
 	else
 		to_chat(user, span_notice("Вы вставляете [I] в [src], добавляя [cash_money] [ru_plural(cash_money, "кредит", "кредита", "кредитов")] на связанный счёт."))
-	// после успешного зачисления:
-	if(registered_account)
-		registered_account.makeTransactionLog(
-			cash_money,
-			"Deposit via [I.name]",
-			"[src.name]",
-			user ? user.real_name : "Unknown depositor",
-			FALSE
-		)
-
 	var/account_current_balance = registered_account.account_balance
-	to_chat(user, span_notice("Привязанный аккаунт докладывает о балансе в [account_current_balance] [ru_plural(account_current_balance, "кредит", "кредита", "кредитов")]"))
+	to_chat(user, span_notice("Привязанный аккаунт докладывает о балансе в [account_current_balance] [ru_plural(account_current_balance, "кредит", "кредита", "кредитов")]."))
 	qdel(I)
 
 /obj/item/card/id/proc/mass_insert_money(list/money, mob/user)
@@ -357,15 +346,8 @@
 		total += physical_money.get_item_credit_value()
 		CHECK_TICK
 
-	registered_account.adjust_money(total)
-	if(registered_account && total > 0)
-		registered_account.makeTransactionLog(
-			total,
-			"Deposit via money bag",
-			"[src.name]",
-			user ? user.real_name : "Unknown depositor",
-			FALSE
-		)
+	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных"))
+		return FALSE
 
 	QDEL_LIST(money)
 
@@ -478,19 +460,13 @@
 	if(!alt_click_can_use_id(user))
 		return
 	amount_to_remove = FLOOR(clamp(amount_to_remove, 0, max(0, registered_account.account_balance)), 1)
-	if(amount_to_remove && registered_account.adjust_money(-amount_to_remove))
+	if(amount_to_remove && SSeconomy.move(registered_account, SSeconomy.cash_account, amount_to_remove, ECON_CASH_OUT, user))
 		var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
 		user.put_in_hands(holochip)
 		to_chat(user, span_notice("Вы сняли [amount_to_remove] [ru_plural(amount_to_remove, "кредит", "кредита", "кредитов")] в форме голочипа."))
-
-		// 🧾 Добавляем запись о снятии в историю транзакций
-		registered_account.makeTransactionLog(
-			-amount_to_remove,
-			"Withdrawal via ID Card",
-			"[src.name]",
-			user ? user.real_name : "Unknown user",
-			FALSE
-		)
+		return
+	if(registered_account.state == ACCOUNT_FROZEN)
+		registered_account.bank_card_talk(span_warning("ОШИБКА: Счёт заморожен финансовым аудитом, снятие наличных закрыто."), TRUE)
 		return
 	registered_account.bank_card_talk(span_warning("ОШИБКА: У привязанного аккаунта недостаточно средств для выполнения этой операции."), TRUE)
 

@@ -14,7 +14,7 @@
 /datum/round_event_control/station_incident/service/rare_manuscript/New()
 	. = ..()
 	incident_message = "При разборе архива списанной станции нашлась опечатанная рукопись без описи, её отправили в библиотеку. Библиотекарю поручено расшифровать текст, Архивная служба заплатит переводчику [MANUSCRIPT_TRANSLATOR_FEE] кредитов. Готовый перевод можно поставить на полку библиотеки, где его прочтут, или продать коллекционерам через карго. Просим не ставить на рукопись кружки: она старше большинства экипажа."
-	description = "В библиотеку капсулой прибывает опечатанная старинная рукопись. Расшифровка идёт в [MANUSCRIPT_STAGES] этапа по [DisplayTimeText(MANUSCRIPT_STAGE_TIME)] (библиотекарю вдвое быстрее), каждый открывает фрагмент истории; к последнему приложена опись тайника смотрителя в техтоннелях (консервы, игрушка, немного наличных). Переводчик получает [MANUSCRIPT_TRANSLATOR_FEE] кредитов, перевод можно поставить на полку библиотеки (прочитавшие получают хорошее настроение) или продать через карго за [MANUSCRIPT_PRICE] кредитов."
+	description = "В библиотеку капсулой прибывает опечатанная старинная рукопись. Расшифровка идёт в [MANUSCRIPT_STAGES] этапа по [DisplayTimeText(MANUSCRIPT_STAGE_TIME)] (библиотекарю вдвое быстрее), каждый открывает фрагмент истории; к последнему приложена опись тайника смотрителя в техтоннелях (консервы, игрушка, немного наличных). Переводчик получает [MANUSCRIPT_TRANSLATOR_FEE] кредитов, перевод можно поставить на полку библиотеки (прочитавшие получают хорошее настроение) или продать через карго примерно за [MANUSCRIPT_PRICE] кредитов по рынку культуры."
 
 /datum/round_event/station_incident/service/rare_manuscript
 
@@ -141,7 +141,7 @@
 	translation.update_appearance()
 	var/datum/bank_account/account = minor_service_account_of(user)
 	if(account)
-		account.adjust_money(MANUSCRIPT_TRANSLATOR_FEE, "Архивная служба NanoTrasen: оплата перевода")
+		account.credit(MANUSCRIPT_TRANSLATOR_FEE, ECON_WORK, memo = "Архивная служба NanoTrasen: оплата перевода")
 		account.bank_card_talk("Получено [MANUSCRIPT_TRANSLATOR_FEE] кр. за перевод рукописи.")
 	if(user)
 		user.put_in_hands(translation)
@@ -163,7 +163,6 @@
 
 /datum/export/minor_manuscript
 	cost = MANUSCRIPT_PRICE
-	k_elasticity = 0
 	unit_name = "transcribed manuscript"
 	export_types = list(/obj/item/book/minor_manuscript)
 

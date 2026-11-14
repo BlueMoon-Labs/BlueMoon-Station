@@ -3,22 +3,24 @@
 // (почта, парковка, космоцвета, конденсат) покрываются штатными контрактными
 // тестами директора и create_and_destroy.
 
-/// Обвал рынка: множитель влияет на inflation_value(), kill() гарантированно
+/// Обвал рынка: множитель влияет на price_index(), kill() гарантированно
 /// откатывает цены даже в обход end() (админ снял событие).
 /datum/unit_test/market_crash_price_surge/Run()
 	var/old_mult = SSeconomy.price_surge_mult
+	var/list/saved_market = econ_test_swap_market()
 	SSeconomy.price_surge_mult = 1
-	var/base_inflation = SSeconomy.inflation_value()
+	var/base_inflation = SSeconomy.price_index()
 
 	var/datum/round_event/market_crash/crash = new(FALSE)
 	crash.start()
 	TEST_ASSERT(SSeconomy.price_surge_mult >= 2, "Market crash start() must raise the price surge multiplier (got [SSeconomy.price_surge_mult])")
-	TEST_ASSERT(SSeconomy.inflation_value() >= base_inflation * 2, "Inflation value must reflect the surge multiplier (base [base_inflation], surged [SSeconomy.inflation_value()])")
+	TEST_ASSERT(SSeconomy.price_index() >= base_inflation * 2, "Inflation value must reflect the surge multiplier (base [base_inflation], surged [SSeconomy.price_index()])")
 
 	crash.kill()
 	TEST_ASSERT_EQUAL(SSeconomy.price_surge_mult, 1, "Market crash kill() must reset the price surge multiplier")
 	qdel(crash)
 	SSeconomy.price_surge_mult = old_mult
+	econ_test_restore_market(saved_market)
 
 /// Ошибка отгрузки: start() ставит ровно один валидный заказ в очередь карго.
 /datum/unit_test/shipping_error_queues_order/Run()
@@ -56,7 +58,7 @@
 	TEST_ASSERT_EQUAL(SSshuttle.shuttle_purchased, old_purchased, "Insured catastrophe must not consume the shuttle purchase slot")
 	if(cargo_account)
 		TEST_ASSERT(cargo_account.account_balance > old_balance, "Insured catastrophe must award a cargo bonus")
-		cargo_account.adjust_money(old_balance - cargo_account.account_balance)
+		econ_test_set_balance(cargo_account, old_balance)
 
 	catastrophe.kill()
 	qdel(catastrophe)

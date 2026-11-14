@@ -30,7 +30,7 @@
 	var/list/datum/supply_pack/candidates = list()
 	for(var/pack_type in SSshuttle.supply_packs)
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
-		if(pack.hidden || pack.contraband || pack.special || pack.DropPodOnly)
+		if(pack.hidden || pack.contraband || pack.special || pack.DropPodOnly || pack.department_catalog)
 			continue
 		if(pack.goody != PACK_GOODY_NONE)
 			continue

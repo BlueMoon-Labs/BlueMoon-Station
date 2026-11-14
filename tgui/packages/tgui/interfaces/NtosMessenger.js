@@ -381,6 +381,18 @@ const SendToAllSection = (props) => {
   );
 };
 
+export const CreditsTransferNote = () => {
+  const { data } = useBackend();
+  const { credits_transfer_max = 0, credits_transfer_cooldown = 0 } = data;
+  return (
+    <Box mt={0.5} color="label" fontSize={0.9}>
+      Только с личного счёта на личный, без налога: до {credits_transfer_max}{' '}
+      кр. за раз, не чаще раза в {credits_transfer_cooldown} с. Деньги уходят на
+      счёт владельца КПК по имени.
+    </Box>
+  );
+};
+
 const ChatScreen = (props) => {
   const { act, data } = useBackend();
   const {
@@ -690,6 +702,7 @@ const ChatScreen = (props) => {
               />
             </Stack.Item>
           </Stack>
+          {transferCurrency === 'credits' && <CreditsTransferNote />}
         </Section>
       )}
 

@@ -32,7 +32,7 @@
 /datum/supply_pack/security/armory/e45ammo
 	name = "Enforcer Non-lethal Ammo Crate"
 	desc = "Contains 10 8-round magazines for the Mk. 58 Enforcer. Requires Armory access to open."
-	cost = 900
+	cost = 1750
 	contains = list(/obj/item/ammo_box/magazine/e45,
 					/obj/item/ammo_box/magazine/e45/taser,
 					/obj/item/ammo_box/magazine/e45/trac,
@@ -48,7 +48,7 @@
 /datum/supply_pack/security/armory/e45ammolethal
 	name = "Enforcer Lethal Ammo Crate"
 	desc = "Contains 10 8-round magazines for the Mk. 58 Enforcer. Requires Armory access to open."
-	cost = 1200
+	cost = 2100
 	contains = list(/obj/item/ammo_box/magazine/e45/lethal,
 					/obj/item/ammo_box/magazine/e45/hydra,
 					/obj/item/ammo_box/magazine/e45/hotshot,

@@ -1,11 +1,11 @@
 /datum/export/material
-	k_elasticity = 1/200 //BLUEMOON CHANGE
 	cost = 5 // Cost per MINERAL_MATERIAL_AMOUNT, which is 2000cm3 as of April 2016.
 	message = "cm3 of developer's tears. Please, report this on github"
 	var/material_id = null
 	export_types = list(
 		/obj/item/stack/sheet/mineral, /obj/item/stack/tile/mineral,
 		/obj/item/stack/ore, /obj/item/coin)
+	exclude_types = list(/obj/item/stack/sheet/mineral/plastitanium)
 // Yes, it's a base type containing export_types.
 // But it has no material_id, so any applies_to check will return false, and these types reduce amount of copypasta a lot
 

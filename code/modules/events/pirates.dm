@@ -13,7 +13,8 @@
 	intensity = 15
 	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
-	description = "The crew will either pay up, or face a pirate assault."
+	econ_state_weights = list(ECON_STATE_RICH = 2)
+	description = "The crew will either pay a ransom from the station treasury, or face a pirate assault."
 
 #define PIRATES_ROGUES "Rogues"
 // #define PIRATES_SILVERSCALES "Silverscales"
@@ -35,8 +36,7 @@
 /datum/round_event/pirates/proc/send_pirate_threat()
 	var/pirate_type = PIRATES_ROGUES //pick(PIRATES_ROGUES, PIRATES_SILVERSCALES, PIRATES_DUTCHMAN)
 	var/datum/comm_message/threat_msg = new
-	var/payoff = 0
-	var/payoff_min = 25000 //documented this time
+	var/payoff = econ_ransom_demand(SSeconomy.settings.event_ransom_min, SSeconomy.settings.event_ransom_share)
 	var/ship_template
 	var/ship_name = "Space Privateers Association"
 	var/initial_send_time = world.time
@@ -46,16 +46,11 @@
 			ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
 
 	priority_announce("Входящая подпространственная передача данных. Открыт защищенный канал связи на всех коммуникационных консолях.", "Предложение о Защите Сектора", SSstation.announcer.get_rand_report_sound(), has_important_message = TRUE)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(D)
-		payoff = max(payoff_min, FLOOR(D.account_balance * 0.80, 1000))
-	else
-		payoff = payoff_min
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_template = /datum/map_template/shuttle/pirate/default
 			threat_msg.title = "Предложение о Защите Сектора"
-			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт. У вас есть ровно пять минут с момента получения сообщения."
+			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов из казны станции или на вас наверняка кто-то нападёт. Деньги снимаются с казны в момент ответа: если там окажется меньше, сделки не будет. У вас есть ровно пять минут с момента получения сообщения."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
@@ -68,13 +63,12 @@
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
-		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D && D.adjust_money(-payoff))
+		if(pirates_pay_ransom(payoff, ship_name))
 			resolve_threat_peacefully()
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
 			return
-		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
+		priority_announce("В вашей казне нет [payoff] кредитов. Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	else
@@ -232,8 +226,8 @@
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			if(D)
 				var/siphoned = clamp(D.account_balance, 0, siphon_per_tick)
-				D.adjust_money(-siphoned)
-				credits_stored += siphoned
+				if(SSeconomy.move(D, SSeconomy.cash_account, siphoned, ECON_EVENT, memo = "Несанкционированное списание"))
+					credits_stored += siphoned
 			interrupt_research()
 		else
 			return
@@ -562,7 +556,7 @@
 	for(var/atom/movable/AM in get_turf(pad))
 		if(AM == pad)
 			continue
-		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, dry_run = TRUE, external_report = ex)
+		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, dry_run = TRUE, external_report = ex, apply_caps = TRUE)
 
 	for(var/datum/export/E in ex.total_amount)
 		status_report += E.total_printout(ex,notes = FALSE)
@@ -595,7 +589,7 @@
 				sequence.start_for_pirate(held, get_turf(pad), 100 * rand(18, 45), earn, src)
 				queued_pirate_ransom += earn
 				continue
-		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, delete_unsold = FALSE, external_report = ex)
+		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, delete_unsold = FALSE, external_report = ex, apply_caps = TRUE)
 
 	status_report = "Sold: "
 	var/value = 0

@@ -60,14 +60,14 @@ SUBSYSTEM_DEF(blackmarket)
 				if (!targetturf) // This shouldn't happen.
 					continue
 				to_chat(recursive_loc_check(purchase.uplink.loc, /mob), "<span class='notice'>[purchase.uplink] flashes a message noting that the order is being teleported to [get_area(targetturf)] in 60 seconds.</span>")
-				addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/controller/subsystem/blackmarket, fake_teleport), purchase.entry.spawn_item(), targetturf), 60 SECONDS) // do_teleport does not want to teleport items from nullspace, so it just forceMoves and does sparks.
+				addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/controller/subsystem/blackmarket, fake_teleport), purchase.deliver(), targetturf), 60 SECONDS) // do_teleport does not want to teleport items from nullspace, so it just forceMoves and does sparks.
 				queued_purchases -= purchase
 				qdel(purchase)
 			if(SHIPPING_METHOD_LAUNCH) // Get the current location of the uplink if it exists, then throws the item from space at the station from a random direction.
 				var/startSide = pick(GLOB.cardinals)
 				var/turf/T = get_turf(purchase.uplink)
 				var/pickedloc = spaceDebrisStartLoc(startSide, T.z)
-				var/atom/movable/item = purchase.entry.spawn_item(pickedloc)
+				var/atom/movable/item = purchase.deliver(pickedloc)
 				item.throw_at(purchase.uplink, 3, 3, spin = FALSE)
 				to_chat(recursive_loc_check(purchase.uplink.loc, /mob), "<span class='notice'>[purchase.uplink] flashes a message noting the order is being launched at the station from [dir2text(startSide)].</span>")
 				queued_purchases -= purchase

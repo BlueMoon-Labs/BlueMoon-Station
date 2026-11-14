@@ -30,7 +30,7 @@
 		other_hand = active_hand_index-1 //finding the matching "left" limb
 	else
 		other_hand = active_hand_index+1 //finding the matching "right" limb
-	if(other_hand < 0 || other_hand > held_items.len)
+	if(other_hand < 0 || other_hand > length(held_items))
 		other_hand = 0
 	return other_hand
 

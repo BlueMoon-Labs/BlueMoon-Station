@@ -22,7 +22,7 @@
 	return outside_find_hull_space(DERELICT_SATELLITE_MIN_DIST, DERELICT_SATELLITE_MAX_DIST, first_only)
 
 /datum/round_event_control/minor_outside/derelict_satellite/get_announcement_text()
-	return "Списанный спутник связи КС-3 сошёл с утилизационной орбиты и завис у корпуса станции, метка в GPS «[DERELICT_SATELLITE_GPS_TAG]». Разберите его на месте: снимите кожух гаечным ключом и срежьте раму сваркой. Утилизационная премия за ядро данных - [SATELLITE_DATA_CORE_POINTS] очков исследований через деструктивный анализатор или [DERELICT_SATELLITE_EXPORT_VALUE] кредитов через экспорт снабжения. Металлолом оставьте себе: на балансе он уже списан."
+	return "Списанный спутник связи КС-3 сошёл с утилизационной орбиты и завис у корпуса станции, метка в GPS \"[DERELICT_SATELLITE_GPS_TAG]\". Разберите его на месте: снимите кожух гаечным ключом и срежьте раму сваркой. Утилизационная премия за ядро данных - [SATELLITE_DATA_CORE_POINTS] очков исследований через деструктивный анализатор или около [DERELICT_SATELLITE_EXPORT_VALUE] кредитов через экспорт снабжения, по текущему рынку электроники. Металлолом оставьте себе: на балансе он уже списан."
 
 /datum/round_event/minor_outside/derelict_satellite/spawn_at(turf/site)
 	return new /obj/structure/derelict_satellite(site)
@@ -130,11 +130,10 @@
 
 /obj/item/satellite_data_core/examine(mob/user)
 	. = ..()
-	. += span_notice("Научный отдел извлечёт из него [SATELLITE_DATA_CORE_POINTS] очков исследований в деструктивном анализаторе. Снабжение может отправить его на экспорт за [DERELICT_SATELLITE_EXPORT_VALUE] кредитов.")
+	. += span_notice("Научный отдел извлечёт из него [SATELLITE_DATA_CORE_POINTS] очков исследований в деструктивном анализаторе. Снабжение может отправить его на экспорт: около [DERELICT_SATELLITE_EXPORT_VALUE] кредитов, цена идёт по рынку электроники.")
 
 /datum/export/satellite_data_core
 	cost = DERELICT_SATELLITE_EXPORT_VALUE
-	k_elasticity = 0
 	unit_name = "satellite data core"
 	export_types = list(/obj/item/satellite_data_core)
 

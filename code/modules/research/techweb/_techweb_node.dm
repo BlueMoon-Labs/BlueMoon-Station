@@ -87,6 +87,7 @@
 	if(host)
 		var/list/actual_costs = research_costs
 		if(host.boosted_nodes[id])
+			actual_costs = research_costs.Copy()
 			var/list/L = host.boosted_nodes[id]
 			for(var/i in L)
 				if(actual_costs[i])

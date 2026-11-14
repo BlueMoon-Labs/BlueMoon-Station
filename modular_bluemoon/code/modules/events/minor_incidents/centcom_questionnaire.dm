@@ -182,7 +182,7 @@
 		deltimer(deadline_timer)
 		deadline_timer = null
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(ACCOUNT_CIV)
-	budget?.adjust_money(QUESTIONNAIRE_REWARD, "ЦК: премия за анкету КС-7")
+	budget?.credit(QUESTIONNAIRE_REWARD, ECON_WORK, memo = "ЦК: премия за анкету КС-7")
 	send_fax(make_letter("Благодарность за анкету КС-7", "Отдел изучения удовлетворённости персонала благодарит командование станции за подробные ответы. Гражданскому бюджету начислено [QUESTIONNAIRE_REWARD] кр, итоги опроса опубликованы в ленте новостей.[commend_note] Ваше мнение очень важно для нас и уже подшито в папку."))
 	if(commended)
 		commend(commended)
@@ -209,10 +209,10 @@
 	var/datum/bank_account/account = paperwork_account_of(crew)
 	if(!account)
 		for(var/datum/bank_account/candidate as anything in SSeconomy.bank_accounts)
-			if(candidate.account_holder == crew.real_name)
+			if(candidate.owner_ref && candidate.account_holder == crew.real_name)
 				account = candidate
 				break
-	account?.adjust_money(QUESTIONNAIRE_COMMEND_REWARD, "ЦК: благодарность по итогам анкеты КС-7")
+	account?.credit(QUESTIONNAIRE_COMMEND_REWARD, ECON_WORK, memo = "ЦК: благодарность по итогам анкеты КС-7")
 	SEND_SIGNAL(crew, COMSIG_ADD_MOOD_EVENT, "centcom_commendation", /datum/mood_event/centcom_commendation)
 	crew.playsound_local(get_turf(crew), 'sound/misc/notice2.ogg', 40, FALSE)
 	to_chat(crew, span_nicegreen("Командование станции отметило вас в анкете ЦК. Центральное командование NanoTrasen объявляет вам благодарность[account ? " и начисляет на ваш счёт [QUESTIONNAIRE_COMMEND_REWARD] кр" : ""]. Грамота придёт на факс командования."))

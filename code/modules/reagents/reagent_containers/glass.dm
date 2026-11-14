@@ -107,6 +107,8 @@
 			return
 
 		var/trans = reagents.trans_to(target, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack transfer to")
+		if(trans)
+			econ_note_pour(target, user)
 		to_chat(user, "<span class='notice'>Вы перелили [trans] u веществ в [target].</span>")
 
 	else if(target.is_drainable()) //A dispenser. Transfer FROM it TO us.
@@ -119,6 +121,8 @@
 			return
 
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack fill from")
+		if(trans)
+			econ_note_pour(src, user)
 		to_chat(user, "<span class='notice'>Вы заполнили [src] на [trans] u содержимого [target].</span>")
 
 	else if(reagents.total_volume && is_drainable() && spillable)

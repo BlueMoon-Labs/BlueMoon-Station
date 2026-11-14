@@ -227,8 +227,9 @@
 /datum/contractor_item/blackout/handle_purchase(var/datum/contractor_hub/hub)
 	. = ..()
 	if (.)
+		SSmarket?.station_event("power_failure")
 		power_fail(35, 50)
-	priority_announce("Обнаружена аномальная активность в энергосети [station_name()]. В качестве меры предосторожности электропитание станции будет отключено на неопределенный срок.", "Критический Сбой Питания", ANNOUNCER_POWEROFF)
+		priority_announce("Обнаружена аномальная активность в энергосети [station_name()]. В качестве меры предосторожности электропитание станции будет отключено на неопределенный срок.", "Критический Сбой Питания", ANNOUNCER_POWEROFF)
 
 // Subtract cost, and spawn if it's an item.
 /datum/contractor_item/proc/handle_purchase(var/datum/contractor_hub/hub, mob/living/user)

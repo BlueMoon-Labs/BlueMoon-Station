@@ -62,7 +62,7 @@
 		return
 	if(insurance_message && insurance_message.answered == 1)
 		var/datum/bank_account/station_balance = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(!station_balance?.adjust_money(-insurance_evaluation))
+		if(!station_balance?.debit(insurance_evaluation, ECON_EVENT, memo = "Страховка шаттла"))
 			priority_announce("Вы прислали недостаточно денег за страховку. На языке космических юристов это называется мошенничеством. Деньги мы, разумеется, оставим себе, мошенники!", sender_override = ship_name)
 			return
 		priority_announce("Благодарим за оформление страховки шаттла! Летайте спокойно.", sender_override = ship_name)

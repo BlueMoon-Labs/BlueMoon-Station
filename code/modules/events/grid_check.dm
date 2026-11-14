@@ -20,4 +20,5 @@
 			priority_announce("Сегодня на Аванпосту Центрального Командования отмечается праздник «Приведи Своего Отца». В электропитание [station_name()] обнаружено вмешательство. Приносим свои извинения за доставленные неудобства.", "Критический Сбой Питания", 'sound/announcer/intern/poweroff_boomer.ogg')
 
 /datum/round_event/grid_check/start()
+	SSmarket?.station_event("power_failure")
 	power_fail(30, 120)

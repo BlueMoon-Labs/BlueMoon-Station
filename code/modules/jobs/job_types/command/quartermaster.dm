@@ -74,7 +74,7 @@
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_hand = /obj/item/clipboard
 	id = /obj/item/card/id/silver
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/paper/guides/economy = 1)
 	box = /obj/item/storage/box/survival/command
 	chameleon_extras = /obj/item/stamp/qm
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)

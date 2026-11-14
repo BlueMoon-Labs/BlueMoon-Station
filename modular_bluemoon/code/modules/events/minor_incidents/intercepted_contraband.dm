@@ -370,7 +370,7 @@
 	else
 		cash_line = "Наличные из тайника не сданы: по журналу в шкатулке оставалось [CONTRABAND_STASH_CASH] кр[handed_cash ? ", при журнале только [handed_cash] кр" : ""]."
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(ACCOUNT_SEC)
-	budget?.adjust_money(payout, "ЦК: вознаграждение за журнал контрабандиста")
+	budget?.credit(payout, ECON_WORK, memo = "ЦК: вознаграждение за журнал контрабандиста")
 	playsound(console, 'sound/machines/terminal_success.ogg', 40, FALSE)
 	console.say("Журнал контрабандиста зарегистрирован как улика. Бюджету службы безопасности начислено [payout] кр.[cash_complete ? "" : " Наличные из тайника не сданы."]")
 	paperwork_print(console.drop_location(), "paper - 'Evidence Receipt'", "<center><b>СЛУЖБА БЕЗОПАСНОСТИ</b><br>Акт приёма улик</center><br>Журнал контрабандиста [smuggler_name || "без имени"] зарегистрирован как улика. Принял: [user.real_name].<br>[cash_line]<br>Бюджету службы безопасности начислено [payout] кр.")

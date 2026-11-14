@@ -130,6 +130,7 @@ SUBSYSTEM_DEF(mapping)
 			to_chat(world, "<span class='boldannounce'>Unable to load next or default map config, defaulting to Box Station</span>")
 			config = old_config
 	GLOB.year_integer += config.year_offset
+	GLOB.current_date_string = "[time2text(world.timeofday, "DD Month")], [GLOB.year_integer]"
 	initialize_biomes()
 	loadWorld()
 	repopulate_sorted_areas()
