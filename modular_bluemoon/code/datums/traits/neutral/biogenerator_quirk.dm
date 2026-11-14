@@ -48,8 +48,12 @@
 	if(gen)
 		gen.Remove()
 		qdel(gen)
-	var/obj/item/organ/stomach/ipc/stomach = new()
-	stomach.Insert(H, 0, FALSE)
+	if(!H.getorganslot(ORGAN_SLOT_STOMACH))
+		var/stomach_type = H.dna.species.mutantstomach
+		if(!stomach_type)
+			stomach_type = /obj/item/organ/stomach/ipc
+		var/obj/item/organ/stomach/new_stomach = new stomach_type()
+		new_stomach.Insert(H, 0, FALSE)
 	var/obj/item/organ/cyberimp/arm/power_cord/cord = new()
 	cord.Insert(H, 0, FALSE)
 	ADD_TRAIT(H, TRAIT_NO_PROCESS_FOOD, SPECIES_TRAIT)
