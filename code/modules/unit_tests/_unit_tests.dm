@@ -396,6 +396,7 @@
 #include "cleanable_decals_tracking.dm"
 #include "clockwork_power.dm"
 #include "login_path_async_audit.dm"
+#include "logout_client_holders.dm"
 #include "logs1006_fixes.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
