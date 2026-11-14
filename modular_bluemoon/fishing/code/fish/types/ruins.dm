@@ -115,7 +115,7 @@
 	qdel(src)
 
 /obj/item/fish/soul/proc/soul_attack(mob/user, iteration)
-	var/obj/item/storage/toolbox/mechanical/old/soulbox = pick(/obj/item/storage/toolbox/mechanical/old, /obj/item/storage/toolbox/mechanical/old/cleaner)
+	var/obj/item/storage/toolbox/mechanical/old/soulbox = pick(/obj/item/storage/toolbox/mechanical/old, /obj/item/storage/toolbox/mechanical/old/clean)
 	soulbox = new soulbox(get_turf(user))
 	var/yeet_direction = pick(GLOB.alldirs)
 	var/yeet_distance = rand(1, 7)

@@ -18,6 +18,29 @@
 	result = /obj/structure/curtain
 	category = CAT_FURNITURE
 
+/datum/crafting_recipe/aquarium
+	name = "Aquarium"
+	result = /obj/item/aquarium_kit
+	time = 150
+	reqs = list(
+		/obj/item/stack/sheet/metal = 5,
+		/obj/item/stack/sheet/glass = 10,
+	)
+	tools = list(TOOL_SCREWDRIVER)
+	category = CAT_FURNITURE
+
+/datum/crafting_recipe/fish_market
+	name = "Fish Market"
+	result = /obj/machinery/fish_market
+	time = 200
+	reqs = list(
+		/obj/item/stack/sheet/metal = 10,
+		/obj/item/stack/sheet/glass = 5,
+		/obj/item/stack/cable_coil = 5,
+	)
+	tools = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
+	category = CAT_FURNITURE
+
 /datum/crafting_recipe/guillotine
 	name = "Guillotine"
 	result = /obj/structure/guillotine

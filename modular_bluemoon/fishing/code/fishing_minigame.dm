@@ -396,6 +396,9 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 			experience_multiplier /= (1 + extra_exp_malus * EXPERIENCE_MALUS_MULT)
 		experience_multiplier *= used_rod.experience_multiplier
 		user.mind.auto_gain_experience(/datum/skill/level/fishing, round(seconds_spent * FISHING_SKILL_EXP_PER_SECOND * experience_multiplier * 100, 1))
+		if(user.client)
+			var/fishing_xp = user.mind.get_skill_value(/datum/skill/level/fishing, FALSE)
+			user.client.give_award(/datum/award/score/highscore/fishing_skill, user, fishing_xp)
 		if(user.mind.get_skill_level(/datum/skill/level/fishing) >= STD_MAX_LVL)
 			user.client?.give_award(/datum/award/achievement/skill/legendary_fisher, user)
 
@@ -408,21 +411,6 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 
 	if(reward_path != FISHING_DUD)
 		playsound(location, 'modular_bluemoon/fishing/sound/effects/bigsplash.ogg', 100)
-
-	var/valid_achievement_catch = FALSE
-	if(ispath(reward_path, /obj/item/fish))
-		valid_achievement_catch = TRUE
-	else if(isfish(reward_path))
-		var/obj/item/fish/fishy_individual = reward_path
-		if(!HAS_TRAIT(fishy_individual, TRAIT_NO_FISHING_ACHIEVEMENT) && fishy_individual.status == FISH_ALIVE)
-			valid_achievement_catch = TRUE
-
-	if(valid_achievement_catch)
-		var/obj/item/fish/fish_reward = reward_path
-		var/obj/item/fish/path_to_use = initial(fish_reward.fish_id_redirect_path) || fish_reward
-		var/fish_id = initial(path_to_use.fish_id)
-		if(fish_id)
-			award_fish_caught(user, fish_id, initial(path_to_use.name))
 
 	if(user)
 		SEND_SIGNAL(user, COMSIG_MOB_COMPLETE_FISHING, src, TRUE)

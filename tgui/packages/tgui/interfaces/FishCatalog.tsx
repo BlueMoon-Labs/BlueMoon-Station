@@ -2,7 +2,7 @@ import { capitalize } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Button, LabeledList, Section, Stack } from '../components';
+import { Box, Button, LabeledList, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 type FishInfo = {
@@ -15,6 +15,16 @@ type FishInfo = {
   source: string;
   icon: string;
   discovered: number;
+  max_weight: number;
+};
+
+const formatWeight = (weight: number) => {
+  if (!weight) {
+    return 'нет данных';
+  }
+  return weight >= 1000
+    ? `${(weight / 1000).toFixed(2)} кг`
+    : `${Math.round(weight)} г`;
 };
 
 export const FishCatalog = (props) => {
@@ -24,22 +34,31 @@ export const FishCatalog = (props) => {
     discovered_count: number;
   }>();
   const { fish_info, sponsored_by, discovered_count } = data;
-  const fish_by_name = (fish_info || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const fish_by_name = (fish_info || [])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
   const [currentFish, setCurrentFish] = useState<FishInfo | null>(null);
   return (
-    <Window width={500} height={400}>
+    <Window width={620} height={520}>
       <Window.Content>
         <Stack fill>
-          <Stack.Item width="140px">
-            <Section fill scrollable>
-              {fish_by_name.map((f) => (
+          <Stack.Item width="210px">
+            <Section fill scrollable title="Виды">
+              {fish_by_name.map((fish) => (
                 <Button
-                  key={f.name}
+                  key={fish.name}
                   fluid
                   color="transparent"
-                  selected={f === currentFish}
-                  onClick={() => setCurrentFish(f)}>
-                  {(f.discovered ? '✓ ' : '? ') + f.name}
+                  selected={fish === currentFish}
+                  onClick={() => setCurrentFish(fish)}>
+                  <Box bold={fish === currentFish}>
+                    {(fish.discovered ? '✓ ' : '? ') + fish.name}
+                  </Box>
+                  {fish.discovered && fish.max_weight > 0 && (
+                    <Box fontSize="11px" color="label">
+                      рекорд: {formatWeight(fish.max_weight)}
+                    </Box>
+                  )}
                 </Button>
               ))}
             </Section>
@@ -51,29 +70,67 @@ export const FishCatalog = (props) => {
               title={
                 currentFish
                   ? capitalize(currentFish.name)
-                  : sponsored_by + ' — рыбный справочник (изучено: ' + discovered_count + ')'
+                  : `${sponsored_by} — рыбный справочник`
               }>
+              {!currentFish && (
+                <Stack vertical>
+                  <Stack.Item>
+                    <Box fontSize="15px" bold>
+                      Изучено видов: {discovered_count}
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Box color="label">
+                      Выберите рыбу слева, чтобы посмотреть описание, условия
+                      содержания и личный рекорд веса.
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Box color="label">
+                      Отмечайте новые виды анализатором рыбы. Пойманная рыба
+                      автоматически попадает в справочник.
+                    </Box>
+                  </Stack.Item>
+                </Stack>
+              )}
               {currentFish && (
-                <LabeledList>
-                  <LabeledList.Item label="Статус">
-                    {currentFish.discovered ? 'Вид изучен' : 'Не просканирован'}
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Описание">
-                    {currentFish.desc}
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Тип воды">
-                    {currentFish.fluid}
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Температура">
-                    от {currentFish.temp_min} до {currentFish.temp_max} °C
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Корм">
-                    {currentFish.feed}
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Где ловить">
-                    {currentFish.source}
-                  </LabeledList.Item>
-                </LabeledList>
+                <Stack vertical>
+                  <Stack.Item>
+                    <Box
+                      bold
+                      color={currentFish.discovered ? 'good' : 'label'}>
+                      {currentFish.discovered
+                        ? 'Вид изучен'
+                        : 'Вид ещё не изучен'}
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <LabeledList>
+                      <LabeledList.Item label="Личный рекорд">
+                        {currentFish.max_weight > 0
+                          ? formatWeight(currentFish.max_weight)
+                          : currentFish.discovered
+                            ? 'вес не записан'
+                            : 'пока не поймана'}
+                      </LabeledList.Item>
+                      <LabeledList.Item label="Описание">
+                        {currentFish.desc}
+                      </LabeledList.Item>
+                      <LabeledList.Item label="Тип воды">
+                        {currentFish.fluid}
+                      </LabeledList.Item>
+                      <LabeledList.Item label="Температура">
+                        от {currentFish.temp_min} до {currentFish.temp_max} °C
+                      </LabeledList.Item>
+                      <LabeledList.Item label="Корм">
+                        {currentFish.feed}
+                      </LabeledList.Item>
+                      <LabeledList.Item label="Где ловить">
+                        {currentFish.source}
+                      </LabeledList.Item>
+                    </LabeledList>
+                  </Stack.Item>
+                </Stack>
               )}
             </Section>
           </Stack.Item>

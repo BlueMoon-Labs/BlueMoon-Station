@@ -185,6 +185,12 @@
 
 /obj/structure/aquarium/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	. = ..()
+	if(ismob(arrived))
+		arrived.forceMove(drop_location())
+		return
+	if(istype(arrived, /obj/item/clothing/head/mob_holder))
+		arrived.forceMove(drop_location())
+		return
 	if(istype(arrived, /obj/item/fish) && !(arrived in tracked_fish))
 		if(length(tracked_fish) >= get_fish_capacity())
 			var/obj/item/fish/fish = arrived
@@ -192,6 +198,9 @@
 			return
 		add_fish(arrived)
 	else if(isitem(arrived) && !prop_visuals[arrived])
+		if(!is_valid_decoration(arrived))
+			arrived.forceMove(drop_location())
+			return
 		add_prop_visual(arrived)
 
 /obj/structure/aquarium/Exited(atom/movable/gone, direction)
@@ -261,9 +270,17 @@
 	vis_contents -= visual
 	qdel(visual)
 
+/// Проверяет, что предмет можно показывать как декор, а не живое существо или его переноску.
+/obj/structure/aquarium/proc/is_valid_decoration(atom/movable/prop)
+	if(!isitem(prop) || istype(prop, /obj/item/clothing/head/mob_holder))
+		return FALSE
+	for(var/mob/living/inside in prop.contents)
+		return FALSE
+	return TRUE
+
 /// Добавляет статичный визуал декору, который перетащили в аквариум.
 /obj/structure/aquarium/proc/add_prop_visual(atom/movable/prop)
-	if(!isitem(prop) || prop_visuals[prop])
+	if(!is_valid_decoration(prop) || prop_visuals[prop])
 		return
 	var/obj/item/item = prop
 	var/obj/effect/aquarium_prop/visual = new
@@ -515,8 +532,17 @@
 
 /// Декор в аквариуме. При желании сюда можно засунуть почти что угодно.
 /obj/structure/aquarium/MouseDrop_T(atom/dropping, mob/user)
+	if(ismob(dropping))
+		to_chat(user, span_warning("You can't use living creatures as decoration."))
+		return
+	if(istype(dropping, /obj/item/clothing/head/mob_holder))
+		to_chat(user, span_warning("Release the creature from [dropping] first."))
+		return
 	if(!istype(dropping, /obj/item) || istype(dropping, /obj/item/fish) || istype(dropping, /obj/item/reagent_containers/cup/fish_feed))
 		return ..()
+	if(!is_valid_decoration(dropping))
+		to_chat(user, span_warning("Это нельзя использовать как декорацию."))
+		return
 	if(!user.Adjacent(src))
 		return
 	var/obj/item/item = dropping
@@ -658,8 +684,11 @@
 /obj/item/aquarium_kit/attack_self(mob/user)
 	. = ..()
 	var/turf/target = get_step(user, user.dir)
-	if(!target || target.density)
+	if(!is_valid_fishing_placement(target))
 		target = get_turf(user)
+	if(!is_valid_fishing_placement(target))
+		to_chat(user, span_warning("You need a clear floor tile to place the aquarium."))
+		return
 	if(locate(/obj/structure/aquarium) in target)
 		to_chat(user, span_warning("There's already an aquarium there."))
 		return

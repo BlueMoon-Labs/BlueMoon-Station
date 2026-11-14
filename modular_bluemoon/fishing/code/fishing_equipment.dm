@@ -185,13 +185,14 @@
 /obj/item/bait/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, bait_quality, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
 	if(istype(src, /obj/item/fishing_lure))
 		return
 	create_reagents(20, INJECTABLE)
 	if(list_reagents)
 		reagents.add_reagent_list(list_reagents)
 
-/obj/item/bait/proc/check_bait(obj/item/fish/fish)
+/obj/item/proc/check_bait(obj/item/fish/fish)
 	if(HAS_TRAIT(src, TRAIT_OMNI_BAIT))
 		return 1.5
 	var/multiplier = 1
@@ -279,19 +280,46 @@
 /obj/item/food/bait/doughball/synthetic/super
 	parent_type = /obj/item/bait/doughball/synthetic/super
 
-/proc/is_matching_bait(obj/item/bait/bait_item, bait_identifier)
+/proc/is_matching_bait(obj/item/bait_item, bait_identifier)
 	if(ispath(bait_identifier))
 		return istype(bait_item, bait_identifier)
 	if(!islist(bait_identifier))
 		return FALSE
 	switch(bait_identifier[FISH_BAIT_TYPE])
 		if(FISH_BAIT_FOODTYPE)
-			return bait_item.bait_foodtypes & bait_identifier[FISH_BAIT_VALUE]
+			var/foodtypes = NONE
+			if(istype(bait_item, /obj/item/bait))
+				var/obj/item/bait/bait = bait_item
+				foodtypes = bait.bait_foodtypes
+			else if(istype(bait_item, /obj/item/reagent_containers/food))
+				var/obj/item/reagent_containers/food/food = bait_item
+				foodtypes = food.foodtype
+			return foodtypes & bait_identifier[FISH_BAIT_VALUE]
 		if(FISH_BAIT_REAGENT)
 			return bait_item.reagents?.has_reagent(bait_identifier[FISH_BAIT_VALUE], bait_identifier[FISH_BAIT_AMOUNT] || -1)
 		if(FISH_BAIT_TYPE)
 			return istype(bait_item, bait_identifier[FISH_BAIT_VALUE])
 	return FALSE
+
+/obj/item/stock_parts/cell/lead/Initialize(mapload)
+	. = ..()
+	add_traits(list(TRAIT_FISHING_BAIT, TRAIT_POISONOUS_BAIT), INNATE_TRAIT)
+
+/obj/item/stack/sheet/mineral/gold/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
+
+/obj/item/stack/sheet/mineral/diamond/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
+
+/obj/item/stack/ore/bluespace_crystal/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
+
+/obj/item/organ/ears/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
 
 
 // ---- Блёсны и искусственные приманки ----

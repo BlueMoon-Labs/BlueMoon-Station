@@ -19,6 +19,7 @@
 
 /obj/item/reagent_containers/food/Initialize(mapload)
 	. = ..()
+	ADD_TRAIT(src, TRAIT_FISHING_BAIT, INNATE_TRAIT)
 	if(!mapload)
 		randomize_pixel_position()
 

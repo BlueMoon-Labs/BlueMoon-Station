@@ -14,7 +14,18 @@
 	throwforce = 11
 	throw_range = 8
 	throw_speed = 4
-	embed_type = /datum/embedding/chrystarfish
+	embedding = list(
+		"embed_chance" = 85,
+		"fall_chance" = 1.5,
+		"pain_chance" = 9,
+		"pain_mult" = 1,
+		"impact_pain_mult" = 1,
+		"remove_pain_mult" = 2,
+		"rip_time" = 1.5 SECONDS,
+		"ignore_throwspeed_threshold" = TRUE,
+		"jostle_chance" = 15,
+		"jostle_pain_mult" = 1,
+	)
 	attack_verb_continuous = list("stabs", "jabs")
 	attack_verb_simple = list("stab", "jab")
 	hitsound = SFX_SHATTER
@@ -43,22 +54,9 @@
 	// бьётся током на блюспейс-энергии
 	electrogenesis_power = 9 MEGA JOULES
 
-// По сути сюрикен - часто застревает и телепортирует, если не остановиться и не вытащить. Зато урона совсем немного.
-/datum/embedding/chrystarfish
-	pain_mult = 1
-	embed_chance = 85
-	fall_chance = 1.5
-	pain_chance = 9
-	impact_pain_mult = 1
-	remove_pain_mult = 2
-	rip_time = 1.5 SECONDS
-	ignore_throwspeed_threshold = TRUE // формой вышел сюрикен
-	jostle_chance = 15
-	jostle_pain_mult = 1
-
-/datum/embedding/chrystarfish/jostle_effects()
-	do_teleport(owner, get_turf(owner), 3, asoundin = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
-	owner.visible_message(span_danger("[owner] teleports as [parent] jostles inside of [owner.p_them()]!"))
+/obj/item/fish/starfish/chrystarfish/Initialize(mapload, apply_qualities = TRUE)
+	. = ..()
+	updateEmbedding()
 
 /obj/item/fish/starfish/chrystarfish/set_status(new_status, silent)
 	. = ..()
@@ -725,7 +723,6 @@
 
 /obj/item/organ/ears/babbelfish/Initialize(mapload)
 	. = ..()
-	AddElement(/datum/element/noticable_organ, "%PRONOUN_They %PRONOUN_have weird, deep-rooted obsidian tubes sticking out of where their ears should be.")
 	RegisterSignal(src, COMSIG_ORGAN_INSERTED, PROC_REF(on_organ_inserted))
 	RegisterSignal(src, COMSIG_ORGAN_REMOVED, PROC_REF(on_organ_removed))
 	babbel_overlay = new()
@@ -769,11 +766,11 @@
 /obj/item/organ/ears/babbelfish/on_mob_insert(mob/living/carbon/organ_owner, special, movement_flags)
 	bound_component = organ_owner.AddComponent(
 		/datum/component/anti_magic, \
-		antimagic_flags = MAGIC_RESISTANCE_MIND, \
-		inventory_flags = null, \
-		charges = maxHealth * 0.1, \
-		block_magic = CALLBACK(src, PROC_REF(on_drain_magic)), \
-		expiration = CALLBACK(src, PROC_REF(on_expire)), \
+		_magic = TRUE, \
+		_psychic = TRUE, \
+		_charges = maxHealth * 0.1, \
+		_reaction = CALLBACK(src, PROC_REF(on_drain_magic)), \
+		_expire = CALLBACK(src, PROC_REF(on_expire)), \
 	)
 
 	if(HAS_MIND_TRAIT(organ_owner, TRAIT_TOWER_OF_BABEL))

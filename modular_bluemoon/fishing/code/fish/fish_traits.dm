@@ -83,7 +83,17 @@ GLOBAL_LIST_EMPTY(spontaneous_fish_traits)
 	var/obj/item/fishing_rod/rod = fisherman?.get_active_held_item()
 	if(!istype(rod) || !rod.bait)
 		return 0.35
-	return 1.4
+	var/list/fish_properties = SSfishing.fish_properties[ispath(fish_type) ? fish_type : fish_type.type]
+	if(fish_properties)
+		for(var/bait_identifier in fish_properties[FISH_PROPERTIES_FAV_BAIT])
+			if(is_matching_bait(rod.bait, bait_identifier))
+				return 1.4
+		for(var/bait_identifier in fish_properties[FISH_PROPERTIES_BAD_BAIT])
+			if(is_matching_bait(rod.bait, bait_identifier))
+				return 0
+	if(HAS_TRAIT(rod.bait, TRAIT_GOOD_QUALITY_BAIT) || HAS_TRAIT(rod.bait, TRAIT_GREAT_QUALITY_BAIT))
+		return 1
+	return 0.35
 
 /datum/fish_trait/nocturnal
 	name = "Nocturnal"
@@ -113,7 +123,15 @@ GLOBAL_LIST_EMPTY(spontaneous_fish_traits)
 
 /datum/fish_trait/carnivore/catch_weight_mod(datum/fish_source/source, mob/fisherman, atom/location, obj/item/fish/fish_type)
 	var/obj/item/fishing_rod/rod = fisherman?.get_active_held_item()
-	if(istype(rod) && istype(rod.bait, /obj/item/bait))
+	if(!istype(rod) || !rod.bait)
+		return 1
+	if(HAS_TRAIT(rod.bait, TRAIT_OMNI_BAIT))
+		return 1.35
+	var/list/bait_identifier = list(
+		FISH_BAIT_TYPE = FISH_BAIT_FOODTYPE,
+		FISH_BAIT_VALUE = MEAT|SEAFOOD|BUGS,
+	)
+	if(is_matching_bait(rod.bait, bait_identifier))
 		return 1.35
 	return 1
 
@@ -123,7 +141,15 @@ GLOBAL_LIST_EMPTY(spontaneous_fish_traits)
 
 /datum/fish_trait/vegan/catch_weight_mod(datum/fish_source/source, mob/fisherman, atom/location, obj/item/fish/fish_type)
 	var/obj/item/fishing_rod/rod = fisherman?.get_active_held_item()
-	if(istype(rod) && istype(rod.bait, /obj/item/seeds))
+	if(!istype(rod) || !rod.bait)
+		return 1
+	if(HAS_TRAIT(rod.bait, TRAIT_OMNI_BAIT))
+		return 1.35
+	var/list/bait_identifier = list(
+		FISH_BAIT_TYPE = FISH_BAIT_FOODTYPE,
+		FISH_BAIT_VALUE = VEGETABLES,
+	)
+	if(is_matching_bait(rod.bait, bait_identifier))
 		return 1.35
 	return 1
 

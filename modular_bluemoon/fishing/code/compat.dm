@@ -9,7 +9,6 @@
 	var/drag_slowdown = 0
 	var/base_pixel_w = 0
 	var/base_pixel_z = 0
-	var/embed_type
 	var/block_sound
 
 // Общие помощники на все случаи
@@ -19,6 +18,10 @@
 
 /proc/isfish(atom/A)
 	return istype(A, /obj/item/fish)
+
+/// Проверяет, что на тайле действительно можно ставить аквариум или портал.
+/proc/is_valid_fishing_placement(turf/target)
+	return target && isfloorturf(target) && !target.is_blocked_turf(exclude_mobs = TRUE)
 
 /proc/bitfield_to_list(bitfield)
 	var/list/result = list()
@@ -106,7 +109,7 @@
 	dizziness = max(dizziness, amount)
 
 /mob/living/proc/adjust_staggered(amount)
-	dizziness = max(dizziness, amount)
+	AdjustStaggered(amount)
 
 /mob/living/proc/adjust_jitter(amount)
 	jitteriness = max(jitteriness, amount)
@@ -176,12 +179,10 @@
 
 /obj/item/bodypart/arm
 
-/obj/item/organ/ears/babbelfish
 /obj/item/organ/eyes/snail
-
-/obj/effect/spawner/random/frog
-
-/obj/effect/mob_spawn/corpse/human/skeleton
+	name = "snail eyes"
+	desc = "Выпученные глаза улитки, которые смотрят в разные стороны."
+	icon_state = "eyeballs"
 
 /datum/holodeck_program
 	var/list/spawned_atoms = list()
@@ -230,37 +231,6 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 	name = "Flumpuline"
 	taste_description = "slime"
 	description = "A strange ocular medicine."
-
-// Пустышки типов данных
-/datum/embedding
-	var/mob/living/owner
-	var/obj/item/parent
-	var/pain_mult = 1
-	var/embed_chance = 100
-	var/fall_chance = 0
-	var/pain_chance = 0
-	var/impact_pain_mult = 1
-	var/remove_pain_mult = 1
-	var/rip_time = 1 SECONDS
-	var/ignore_throwspeed_threshold = FALSE
-	var/jostle_chance = 0
-	var/jostle_pain_mult = 1
-
-/datum/embedding/proc/jostle_effects()
-	return
-
-/datum/mood_event/inked
-/datum/memory/witnessed_inking
-/datum/memory/caught_fish
-
-/datum/status_effect/go_away/deletes_mob
-/datum/status_effect/grouped/hooked
-/datum/status_effect/grouped/hooked/jaws
-
-/datum/ai_controller/basic_controller/lobstrosity/juvenile/calm
-/datum/ai_controller/basic_controller/lobstrosity/juvenile/capricious
-
-/datum/bodypart_overlay/texture/checkered
 
 // Пустышки компонентов
 /datum/component/fish_growth
@@ -459,48 +429,6 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 		wearer.cut_overlay(ink_overlay)
 	return ..()
 
-/datum/component/omen/Initialize()
-	if(!ismob(parent))
-		return COMPONENT_INCOMPATIBLE
-	RegisterSignal(parent, COMSIG_LIVING_LIFE, PROC_REF(on_life))
-	if(ismob(parent))
-		to_chat(parent, span_warning("На вас ложится тяжёлое зловещее проклятие..."))
-
-/datum/component/omen/proc/on_life(datum/source, seconds_per_tick, times_fired)
-	SIGNAL_HANDLER
-	if(!prob(2))
-		return
-	var/mob/living/cursed = parent
-	switch(rand(1, 4))
-		if(1)
-			cursed.adjustBruteLoss(2)
-			to_chat(cursed, span_warning("Что-то царапает вас изнутри."))
-		if(2)
-			cursed.adjust_hallucinations(10)
-			to_chat(cursed, span_warning("Тени шевелятся в углах зрения."))
-		if(3)
-			cursed.adjust_jitter(10)
-			to_chat(cursed, span_warning("Вас передёргивает от чужого взгляда."))
-		if(4)
-			cursed.adjust_stutter(10)
-			to_chat(cursed, span_warning("Слова путаются сами собой."))
-
-/datum/component/anti_magic
-/datum/component/anti_magic/Initialize(antimagic_flags, inventory_flags, charges, block_magic, expiration)
-	var/protects_magic = !!(antimagic_flags & MAGIC_RESISTANCE_MIND)
-	return ..(_magic = protects_magic, _psychic = protects_magic, _charges = charges, _reaction = block_magic, _expire = expiration)
-
-/datum/component/two_handed
-/datum/component/grillable
-/datum/component/infective
-/datum/component/germ_sensitive
-/datum/component/aquarium_content
-
-// Пустышки элементов
-/datum/element/noticable_organ
-/datum/element/noticable_organ/Attach(datum/target, description)
-	return ..()
-
 /datum/element/lube_walking
 /datum/element/lube_walking/Attach(datum/target)
 	. = ..()
@@ -518,25 +446,6 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 		return
 	source.slip(8, get_turf(source), SLIDE|GALOSHES_DONT_HELP)
 
-/datum/element/raptor_food
-/datum/element/raptor_food/Attach(datum/target, attack_modifier = 1, growth_modifier = 0)
-	return ..()
-
-/datum/element/haunted
-/datum/element/haunted/Attach(datum/target, haunt_color = null)
-	return ..()
-
-/datum/element/squish
-/datum/element/squish/Attach(datum/target, duration)
-	return ..()
-
-/datum/element/bane
-/datum/element/bane/Attach(datum/target, target_type, damage_multiplier = 1)
-	return ..()
-
-/datum/element/quality_food_ingredient
-/datum/element/quality_food_ingredient/Attach(datum/target, complexity)
-	return ..()
 
 // Пустышки мобов, которых используют сразу несколько рыб
 /mob/living/basic
@@ -560,26 +469,10 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 	parent_type = /mob/living/simple_animal/hostile/asteroid/lobstrosity/lava
 /mob/living/basic/mining/lobstrosity/juvenile/lava
 	parent_type = /mob/living/simple_animal/hostile/asteroid/lobstrosity/lava
-/mob/living/basic/axolotl
-/mob/living/basic/skeleton
-/mob/living/basic/stickman
-/mob/living/basic/spaceman
 /mob/living/basic/spaceman/soulman
 	parent_type = /mob/living/carbon/human
 
-// Пустышки предметов
-/obj/item/food/meat/slab/rawcrab
-/obj/item/food/meat/slab/human/mutant/zombie
-/obj/item/food/meat/slab/human/mutant/slime
-/obj/item/food/meat/cutlet/plain/human
-/obj/item/food/nugget/fish
-/obj/item/food/badrecipe
-/obj/item/food/badrecipe/moldy/bacteria
-/obj/item/stock_parts/power_store/cell/lead
-/obj/item/aquarium_prop
-/obj/item/storage/toolbox/mechanical/old/cleaner
-/obj/item/organ/ears/babbelfish
-/obj/item/organ/eyes/snail
+// Около заглушка
 /obj/item/reagent_containers/cup/fish_feed
 	name = "fish feed"
 	desc = "Дозатор питательных рыбьих хлопьев."

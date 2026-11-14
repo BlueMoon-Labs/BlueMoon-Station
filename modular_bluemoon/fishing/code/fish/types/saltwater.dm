@@ -81,7 +81,7 @@
 	average_size = 30
 	average_weight = 500
 	stable_population = 3
-	disliked_bait = list(/obj/item/food/bait/worm, /obj/item/food/bait/doughball)
+	disliked_bait = list(/obj/item/bait/worm, /obj/item/bait/doughball)
 	fish_movement_type = /datum/fish_movement/zippy
 	required_temperature_min = MIN_AQUARIUM_TEMP+23
 	required_temperature_max = MIN_AQUARIUM_TEMP+28
@@ -265,8 +265,6 @@
 	user.visible_message(span_warning("[user] is inked by [src]!"), span_userdanger("You've been inked by [src]!"))
 	user.AddComponent(/datum/component/face_decal/splat, \
 		color = COLOR_NEARLY_ALL_BLACK, \
-		memory_type = /datum/memory/witnessed_inking, \
-		mood_event_type = /datum/mood_event/inked, \
 	)
 	playsound(user, SFX_DESECRATION, 50, TRUE)
 

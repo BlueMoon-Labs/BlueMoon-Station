@@ -176,6 +176,8 @@
 	icon = 'icons/obj/vending.dmi'
 	icon_state = "seeds"
 	density = TRUE
+	anchored = TRUE
+	use_power = NO_POWER_USE
 	var/total_payout = 0
 
 /obj/machinery/fish_market/attackby(obj/item/item, mob/living/user, params)
@@ -186,9 +188,12 @@
 	if(price <= 0)
 		to_chat(user, span_warning("[src] refuses [fish]."))
 		return TRUE
-	var/datum/bank_account/account = SSeconomy.get_dep_account(ACCOUNT_SRV)
-	if(account)
-		account.adjust_money(price)
+	var/datum/bank_account/account = user.get_bank_account()
+	if(!account)
+		to_chat(user, span_warning("Для продажи нужна ID-карта с привязанным банковским счётом."))
+		return TRUE
+	account.adjust_money(price)
+	account.bank_card_talk("Продажа рыбы: [fish.name] за [price] кредитов.")
 	total_payout += price
 	to_chat(user, span_nicegreen("[src] buys [fish] for [price] credits."))
 	qdel(fish)
@@ -251,15 +256,28 @@
 /obj/item/fish_catalog/ui_data(mob/user)
 	var/list/data = list()
 	data["sponsored_by"] = AQUARIUM_COMPANY
-	data["discovered_count"] = SSfishing.get_discovered_count()
+	var/list/player_records = get_player_fish_records(user)
+	var/list/discovered_ids = list()
+	for(var/record_id in player_records)
+		discovered_ids[record_id] = TRUE
+	for(var/record_id in SSfishing.discovered_fish)
+		discovered_ids[record_id] = TRUE
+	data["discovered_count"] = length(discovered_ids)
 	var/list/fish_info = list()
 	for(var/obj/item/fish/fish_path as anything in subtypesof(/obj/item/fish))
 		if(fish_path == /obj/item/fish)
 			continue
 		if(!initial(fish_path.show_in_catalog) || !(initial(fish_path.fish_flags) & FISH_FLAG_SHOW_IN_CATALOG))
 			continue
-		if(!initial(fish_path.fish_id))
+		var/fish_id = initial(fish_path.fish_id)
+		if(!fish_id)
 			continue
+		var/list/source_names = list()
+		for(var/source_type in GLOB.preset_fish_sources)
+			var/datum/fish_source/source = GLOB.preset_fish_sources[source_type]
+			if(!source || !source.fish_table || !source.fish_table[fish_path])
+				continue
+			source_names += source.catalog_description || source.radial_name || "Рыбалка"
 		var/list/fish_data = list(
 			"name" = initial(fish_path.name),
 			"desc" = initial(fish_path.desc),
@@ -267,9 +285,10 @@
 			"temp_min" = round(initial(fish_path.required_temperature_min) - T0C, 0.1),
 			"temp_max" = round(initial(fish_path.required_temperature_max) - T0C, 0.1),
 			"feed" = initial(fish_path.food),
-			"source" = "Ловится на рыбалке",
+			"source" = length(source_names) ? english_list(source_names) : "Редкий улов или особое событие",
 			"icon" = sanitize_css_class_name("[initial(fish_path.icon)][initial(fish_path.icon_state)]"),
-			"discovered" = SSfishing.discovered_fish[initial(fish_path.fish_id)] ? 1 : 0,
+			"discovered" = discovered_ids[fish_id] ? 1 : 0,
+			"max_weight" = player_records[fish_id] || 0,
 		)
 		fish_info += list(fish_data)
 	data["fish_info"] = fish_info

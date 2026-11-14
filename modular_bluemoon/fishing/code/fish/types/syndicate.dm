@@ -57,7 +57,7 @@
 	random_case_rarity = FISH_RARITY_GOOD_LUCK_FINDING_THIS
 	required_temperature_min = MIN_AQUARIUM_TEMP+10
 	required_temperature_max = MIN_AQUARIUM_TEMP+30
-	favorite_bait = list(/obj/item/stock_parts/power_store/cell/lead)
+	favorite_bait = list(/obj/item/stock_parts/cell/lead)
 	fish_traits = list(
 		/datum/fish_trait/parthenogenesis,
 		/datum/fish_trait/mixotroph,

@@ -83,7 +83,8 @@
 
 	if(HAS_TRAIT(loc, TRAIT_STOP_FISH_REPRODUCTION_AND_GROWTH)) //в аквариуме размножение и рост отключены
 		return COMPONENT_DONT_GROW
-	if(!locate(/obj/item/aquarium_prop) in loc) //декора маловато, крабу скучно
+	var/obj/structure/aquarium/tank = loc
+	if(!istype(tank) || !length(tank.prop_visuals)) //декора маловато, крабу скучно
 		anger += growth * 0.25
 	var/fish_count = length(get_aquarium_fishes())
 	if(!ISINRANGE(fish_count, 3, AQUARIUM_MAX_BREEDING_POPULATION * 0.5)) //слишком пусто или слишком тесно
@@ -204,7 +205,6 @@
 		sound_on_success = 'sound/items/weapons/parry.ogg',\
 		effect_on_success = /obj/effect/temp_visual/guardian/phase,\
 	)
-	AddElement(/datum/element/raptor_food, attack_modifier = 1.5, growth_modifier = -0.075)
 
 /obj/item/fish/lavaloop/get_fish_taste()
 	return list("chewy fish" = 2)

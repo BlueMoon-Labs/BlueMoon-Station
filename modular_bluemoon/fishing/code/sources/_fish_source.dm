@@ -112,12 +112,12 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 	if(!fish_properties)
 		return
 	if(rod?.bait)
-		var/obj/item/bait = rod.bait
+		var/obj/item/bait_item = rod.bait
 		for(var/bait_identifier in fish_properties[FISH_PROPERTIES_FAV_BAIT])
-			if(is_matching_bait(bait, bait_identifier))
+			if(is_matching_bait(bait_item, bait_identifier))
 				. += FAV_BAIT_DIFFICULTY_MOD
 		for(var/bait_identifier in fish_properties[FISH_PROPERTIES_BAD_BAIT])
-			if(is_matching_bait(bait, bait_identifier))
+			if(is_matching_bait(bait_item, bait_identifier))
 				. += DISLIKED_BAIT_DIFFICULTY_MOD
 	var/list/fish_traits = is_fish_instance ? caught_fish.fish_traits : fish_properties[FISH_PROPERTIES_TRAITS]
 	var/additive_mod = 0
@@ -154,6 +154,13 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 	var/atom/movable/reward = dispense_reward(challenge.reward_path, user, challenge.location, challenge.used_rod)
 	SEND_SIGNAL(challenge.used_rod, COMSIG_FISHING_ROD_CAUGHT_FISH, reward, user)
 	challenge.used_rod?.on_reward_caught(reward, user)
+	if(isfish(reward))
+		var/obj/item/fish/caught = reward
+		if(!HAS_TRAIT(caught, TRAIT_NO_FISHING_ACHIEVEMENT) && caught.status == FISH_ALIVE)
+			var/obj/item/fish/path_to_use = initial(caught.fish_id_redirect_path) || caught.type
+			var/fish_id = initial(path_to_use.fish_id)
+			if(fish_id)
+				award_fish_caught(user, fish_id, initial(path_to_use.name), caught.weight)
 	if(reward)
 		REMOVE_TRAIT(reward, TRAIT_FISH_JUST_SPAWNED, TRAIT_GENERIC)
 
@@ -168,8 +175,6 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 		fisherman.balloon_alert(fisherman, "что-то поймано!")
 		return
 	fisherman.balloon_alert(fisherman, "поймано: [reward]!")
-	if(isfish(reward))
-		ADD_TRAIT(reward, TRAIT_NO_FISHING_ACHIEVEMENT, TRAIT_GENERIC)
 	return reward
 
 /datum/fish_source/proc/simple_dispense_reward(reward_path, atom/spawn_location, atom/fishing_spot)
@@ -222,7 +227,7 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 	return table
 
 /datum/fish_source/proc/get_modified_fish_table(obj/item/fishing_rod/rod, mob/fisherman, atom/location)
-	var/obj/item/bait/bait_item = rod?.bait
+	var/obj/item/bait_item = rod?.bait
 	var/list/final_table = get_fish_table(location)
 	if(rod && HAS_TRAIT(rod, TRAIT_ROD_REMOVE_FISHING_DUD))
 		final_table -= FISHING_DUD

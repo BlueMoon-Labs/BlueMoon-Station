@@ -48,6 +48,12 @@
 	default_value = list()
 	track_high_scores = FALSE
 
+/datum/award/score/highscore/fishing_skill
+	name = "Fishing Skill XP"
+	desc = "Опыт рыбалки, перенесённый между раундами."
+	database_id = "Fishing Skill XP"
+	track_high_scores = FALSE
+
 /datum/award/score/progress/fish/parse_value(raw_value)
 	if(islist(raw_value))
 		var/list/raw_list = raw_value
@@ -68,11 +74,53 @@
 	. = ..()
 	.["achievement_type"] = "score"
 
-/proc/award_fish_caught(mob/user, fish_id, fish_name)
+/proc/apply_persistent_fishing_skill(mob/living/carbon/human/player)
+	if(!player?.mind || !player.client)
+		return
+	var/skill_xp = player.client.get_award_status(/datum/award/score/highscore/fishing_skill)
+	if(!isnum(skill_xp) || skill_xp <= 0)
+		return
+	player.mind.set_skill_value(/datum/skill/level/fishing, skill_xp, silent = TRUE)
+
+/proc/get_player_fish_records(mob/user)
+	var/list/records = list()
+	if(!user?.client)
+		return records
+	var/list/raw_records = user.client.get_award_status(/datum/award/score/progress/fish)
+	if(!islist(raw_records))
+		return records
+	for(var/entry in raw_records)
+		var/list/parts = splittext("[entry]", "=")
+		var/fish_id = parts[1]
+		if(!fish_id)
+			continue
+		var/fish_weight = length(parts) > 1 ? (text2num(parts[2]) || 0) : 0
+		records[fish_id] = max(records[fish_id] || 0, fish_weight)
+	return records
+
+/proc/award_fish_caught(mob/user, fish_id, fish_name, fish_weight = 0)
 	if(!user?.client || !fish_id)
 		return
-	var/list/already_caught = user.client.get_award_status(/datum/award/score/progress/fish)
-	if(islist(already_caught) && (fish_id in already_caught))
+	var/list/records = user.client.get_award_status(/datum/award/score/progress/fish)
+	if(!islist(records))
+		records = list()
+	else
+		records = records.Copy()
+	var/record_index = 0
+	var/old_weight = 0
+	for(var/i in 1 to length(records))
+		var/list/parts = splittext("[records[i]]", "=")
+		if(parts[1] != fish_id)
+			continue
+		record_index = i
+		old_weight = length(parts) > 1 ? (text2num(parts[2]) || 0) : 0
+		break
+	if(record_index && fish_weight <= old_weight)
 		return
-	user.client.give_award(/datum/award/score/progress/fish, user, fish_id)
-	to_chat(user, span_nicegreen("This is the first time you've caught a <b>[fish_name || fish_id]</b>!"))
+	if(record_index)
+		records[record_index] = "[fish_id]=[fish_weight]"
+		to_chat(user, span_nicegreen("Новый рекорд веса для <b>[fish_name || fish_id]</b>: [fish_weight] г."))
+	else
+		records += "[fish_id]=[fish_weight]"
+		to_chat(user, span_nicegreen("This is the first time you've caught a <b>[fish_name || fish_id]</b>!"))
+	user.client.set_award_status(/datum/award/score/progress/fish, records)

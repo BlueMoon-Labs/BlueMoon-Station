@@ -201,6 +201,41 @@
 		/obj/item/stack/spacecash/c50 = 3,
 	)
 
+/datum/fish_source/space
+	catalog_description = "Открытый космос"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 10
+	background = "background_space"
+	fish_table = list(
+		FISHING_DUD = 12,
+		/obj/item/fish/starfish = 16,
+		/obj/item/fish/baby_carp = 14,
+		/obj/item/fish/sand_surfer = 6,
+		/obj/item/fish/sand_crab = 6,
+		/obj/item/fish/bumpy = 5,
+		/obj/item/stack/ore/bluespace_crystal = 2,
+	)
+	associated_safe_turfs = list(/turf/open/space)
+
+/datum/fish_source/lava
+	catalog_description = "Лавовые потоки"
+	fishing_difficulty = FISHING_DEFAULT_DIFFICULTY + 20
+	background = "background_lavaland"
+	fish_table = list(
+		FISHING_DUD = 8,
+		/obj/item/fish/chasm_crab = 18,
+		/obj/item/fish/lavaloop = 14,
+		/obj/item/fish/boned = 6,
+		/obj/item/stack/sheet/bone = 8,
+		/obj/item/stack/ore/slag = 6,
+		/obj/item/stack/sheet/mineral/runite = 1,
+	)
+	associated_safe_turfs = list(/turf/open/lava)
+
+/datum/fish_source/lava/reason_we_cant_fish(obj/item/fishing_rod/rod, mob/fisherman, atom/parent)
+	if(!istype(rod) || !rod.line || !(rod.line.resistance_flags & LAVA_PROOF))
+		return "Для рыбалки в лаве нужна укреплённая или огнеупорная леска."
+	return ..()
+
 
 /// Датум, который вытаскивает всё, что свалилось в пропасть.
 /datum/chasm_detritus
@@ -210,7 +245,7 @@
 	var/static/list/default_contents = list(
 		/obj/item/stack/sheet/bone = 6,
 		/obj/item/stack/ore/slag = 4,
-		/obj/effect/mob_spawn/corpse/human/skeleton = 2,
+		/obj/effect/mob_spawn/human/skeleton = 2,
 	)
 
 /datum/chasm_detritus/proc/dispense_detritus(atom/spawn_location, atom/fishing_spot)

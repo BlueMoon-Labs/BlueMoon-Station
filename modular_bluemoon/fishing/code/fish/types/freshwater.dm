@@ -11,7 +11,7 @@
 	average_size = 20
 	average_weight = 200
 	weight_size_deviation = 0.35
-	favorite_bait = list(/obj/item/food/bait/worm)
+	favorite_bait = list(/obj/item/bait/worm)
 	required_temperature_min = MIN_AQUARIUM_TEMP+18
 	required_temperature_max = MIN_AQUARIUM_TEMP+26
 	evolution_types = list(/datum/fish_evolution/three_eyes, /datum/fish_evolution/chainsawfish)
@@ -150,7 +150,7 @@
 	average_size = 30
 	average_weight = 500
 	random_case_rarity = FISH_RARITY_VERY_RARE
-	favorite_bait = list(/obj/item/stock_parts/power_store/cell/lead)
+	favorite_bait = list(/obj/item/stock_parts/cell/lead)
 	required_temperature_min = MIN_AQUARIUM_TEMP+18
 	required_temperature_max = MIN_AQUARIUM_TEMP+26
 	fish_traits = list(
@@ -253,7 +253,8 @@
 	if(QDELETED(user) || QDELETED(src))
 		return
 	user.visible_message(span_suicide("Живая лягушка вырывается из [user]!"))
-	new /obj/effect/spawner/random/frog(user.drop_location())
+	var/frog_type = prob(99) ? /mob/living/basic/frog : /mob/living/basic/frog/rare
+	new frog_type(user.drop_location())
 
 	var/obj/item/bodypart/chest = user.get_bodypart(BODY_ZONE_CHEST)
 

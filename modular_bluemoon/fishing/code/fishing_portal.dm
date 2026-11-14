@@ -391,8 +391,11 @@
 /obj/item/fishing_portal_kit/attack_self(mob/user)
 	. = ..()
 	var/turf/target = get_step(user, user.dir)
-	if(!target || target.density)
+	if(!is_valid_fishing_placement(target))
 		target = get_turf(user)
+	if(!is_valid_fishing_placement(target))
+		to_chat(user, span_warning("Здесь нужна свободная площадка на полу."))
+		return
 	if(locate(/obj/machinery/fishing_portal) in target)
 		to_chat(user, span_warning("Здесь уже есть рыбный портал."))
 		return

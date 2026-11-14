@@ -88,7 +88,7 @@
 
 /obj/item/fish/gunner_jellyfish/Initialize(mapload, apply_qualities = TRUE)
 	. = ..()
-	AddElement(/datum/element/quality_food_ingredient, FOOD_COMPLEXITY_2)
+	add_traits(list(TRAIT_FISHING_BAIT, TRAIT_GOOD_QUALITY_BAIT), INNATE_TRAIT)
 
 /obj/item/fish/gunner_jellyfish/get_fish_taste()
 	return list("cold jelly" = 2)

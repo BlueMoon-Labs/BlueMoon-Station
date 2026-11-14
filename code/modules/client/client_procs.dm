@@ -1929,6 +1929,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /client/proc/get_award_status(achievement_type, mob/user, value = 1)
 	return	player_details.achievements.get_achievement_status(achievement_type)
 
+/// Перенеправляем ачивку в статус
+/client/proc/set_award_status(achievement_type, value)
+	return	player_details.achievements.set_achievement_status(achievement_type, value)
+
 ///Redirect proc that makes it easier to get the status of an achievement. Achievement type is the typepath to the award.
 /client/proc/award_heart(heart_reason)
 	to_chat(src, "<span class='nicegreen'>Someone awarded you a heart![heart_reason ? " They said: [heart_reason]!" : ""]</span>")

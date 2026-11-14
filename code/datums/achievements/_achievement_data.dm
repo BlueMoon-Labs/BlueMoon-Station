@@ -100,6 +100,13 @@
 /datum/achievement_data/proc/get_achievement_status(achievement_type)
 	return data[achievement_type]
 
+/// Устанавливаем статус ачивки.
+/datum/achievement_data/proc/set_achievement_status(achievement_type, value)
+	if(!SSachievements.achievements_enabled)
+		return FALSE
+	data[achievement_type] = value
+	return TRUE
+
 ///Resets an achievement to default values.
 /datum/achievement_data/proc/reset(achievement_type)
 	if(!SSachievements.achievements_enabled)

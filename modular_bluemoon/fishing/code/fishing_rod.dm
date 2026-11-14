@@ -12,7 +12,9 @@
 	inhand_icon_state = "rod"
 	inhand_x_dimension = 64
 	inhand_y_dimension = 64
-	force = 8
+	force = 0
+	throwforce = 0
+	item_flags = NOBLUDGEON
 	w_class = WEIGHT_CLASS_HUGE
 
 	var/cast_range = 3
@@ -51,6 +53,7 @@
 /obj/item/fishing_rod/Initialize(mapload)
 	. = ..()
 	base_icon_state = icon_state
+	ADD_TRAIT(src, TRAIT_FISH_SAFE_STORAGE, REF(src))
 	if(ispath(bait))
 		set_slot(new bait(src), ROD_SLOT_BAIT)
 	if(ispath(hook))
@@ -157,7 +160,7 @@
 		. += span_info("Вы можете забросить удочку на расстояние до [get_cast_range(user)] клеток.")
 
 /obj/item/fishing_rod/attackby(obj/item/item, mob/user, params)
-	if(istype(item, /obj/item/bait))
+	if(istype(item, /obj/item/bait) || HAS_TRAIT(item, TRAIT_FISHING_BAIT))
 		if(ismob(item.loc))
 			user.transferItemToLoc(item, src)
 		if(bait)
@@ -223,6 +226,10 @@
 		var/turf/target_turf = get_turf(target)
 		if(target_turf?.liquids?.reagent_list[/datum/reagent/water])
 			target.AddComponent(/datum/component/fishing_spot, GLOB.preset_fish_sources[/datum/fish_source/water/any])
+		else if(isspaceturf(target_turf))
+			target.AddComponent(/datum/component/fishing_spot, GLOB.preset_fish_sources[/datum/fish_source/space])
+		else if(istype(target_turf, /turf/open/lava))
+			target.AddComponent(/datum/component/fishing_spot, GLOB.preset_fish_sources[/datum/fish_source/lava])
 	if(SEND_SIGNAL(target, COMSIG_FISHING_ROD_CAST, src, user) & FISHING_ROD_CAST_HANDLED)
 		return
 	hook_item(user, target)
@@ -343,7 +350,13 @@
 				break
 		if(kill_fish)
 			caught_fish.set_status(FISH_DEAD, silent = TRUE)
-	qdel(bait)
+	if(istype(bait, /obj/item/stack))
+		var/obj/item/stack/bait_stack = bait
+		bait_stack.use(1)
+		if(!QDELETED(bait_stack) && bait_stack.amount > 0)
+			return
+	else
+		qdel(bait)
 	bait = null
 	update_icon()
 
