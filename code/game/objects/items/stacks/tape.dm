@@ -21,6 +21,8 @@
 
 	var/endless = FALSE
 	var/apply_time = 30
+	var/self_delay = 50
+	var/other_delay = 20
 	absorption_capacity = 3
 	absorption_rate = 0.2
 	var/gauze_prefix = "gauze"
@@ -130,15 +132,15 @@ GLOBAL_LIST_INIT(tape_recipes, list ( \
 // BLUEMOON ADD - скотч как бинт/герметик: заклейка протечек, в т.ч. у синтетиков
 /obj/item/stack/sticky_tape/proc/try_bandage(mob/living/M, mob/living/user)
 	var/obj/item/bodypart/limb = M.get_bodypart(check_zone(user.zone_selected))
-	if(!limb)
-		to_chat(user, "<span class='notice'>Нечего заклеивать!</span>")
+	if(!limb || !limb.is_robotic_limb())
+		to_chat(user, "<span class='notice'>Изолентой можно заклеивать только синтетические конечности!</span>")
 		return
 	var/has_wound = FALSE
 	for(var/datum/wound/W as anything in limb.wounds)
 		if(W.wound_flags & ACCEPTS_GAUZE)
 			has_wound = TRUE
 			break
-	if(!has_wound && !limb.get_bleed_rate() && !limb.generic_bleedstacks && !limb.is_robotic_limb())
+	if(!has_wound && !limb.get_bleed_rate() && !limb.generic_bleedstacks)
 		to_chat(user, "<span class='notice'>На [limb.ru_name_v] нет ран, требующих заклейки!</span>")
 		return
 	if(limb.current_gauze)
