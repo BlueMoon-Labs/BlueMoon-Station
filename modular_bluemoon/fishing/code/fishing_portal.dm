@@ -439,8 +439,8 @@
 
 /obj/machinery/fishing_portal/examine(mob/user)
 	. = ..()
-	. += span_notice("Просканировано видов рыб: [SSfishing.get_discovered_count()].")
-	. += span_info("Сканируйте новых рыб анализатором, чтобы открывать новые измерения.")
+	. += span_notice("Изучено видов рыб: [SSfishing.get_discovered_count(user)].")
+	. += span_info("Сканируйте новых рыб анализатором или ловите их, чтобы открывать новые измерения.")
 	if(active && !QDELETED(active) && active.fish_source)
 		. += span_notice("Сейчас открыт портал: [active.fish_source.radial_name].")
 
@@ -469,7 +469,7 @@
 			continue
 		if(istype(source, /datum/fish_source/portal/syndicate) && !(obj_flags & EMAGGED))
 			continue
-		if(!all_destinations && source.unlock_requirement > SSfishing.get_discovered_count())
+		if(!all_destinations && source.unlock_requirement > SSfishing.get_discovered_count(user))
 			continue
 		available[source.radial_name] = source
 

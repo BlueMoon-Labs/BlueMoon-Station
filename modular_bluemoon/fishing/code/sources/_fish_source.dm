@@ -162,6 +162,7 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 			var/obj/item/fish/path_to_use = initial(caught.fish_id_redirect_path) || caught.type
 			var/fish_id = initial(path_to_use.fish_id)
 			if(fish_id)
+				SSfishing.discover_fish_id(fish_id)
 				award_fish_caught(user, fish_id, initial(path_to_use.name), caught.weight)
 	if(reward)
 		REMOVE_TRAIT(reward, TRAIT_FISH_JUST_SPAWNED, TRAIT_GENERIC)

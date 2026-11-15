@@ -33,14 +33,23 @@ SUBSYSTEM_DEF(fishing)
 /datum/controller/subsystem/fishing/proc/discover_fish(obj/item/fish/fish)
 	if(!fish)
 		return FALSE
-	var/fish_id = fish.fish_id || "[fish.type]"
-	if(discovered_fish[fish_id])
+	var/obj/item/fish/path_to_use = initial(fish.fish_id_redirect_path) || fish.type
+	var/fish_id = initial(path_to_use.fish_id) || "[path_to_use]"
+	return discover_fish_id(fish_id)
+
+/datum/controller/subsystem/fishing/proc/discover_fish_id(fish_id)
+	if(!fish_id || discovered_fish[fish_id])
 		return FALSE
 	discovered_fish[fish_id] = TRUE
 	return TRUE
 
-/datum/controller/subsystem/fishing/proc/get_discovered_count()
-	return length(discovered_fish)
+/datum/controller/subsystem/fishing/proc/get_discovered_count(mob/user)
+	if(!user?.client)
+		return length(discovered_fish)
+	var/list/ids = discovered_fish.Copy()
+	for(var/record_id in get_player_fish_records(user))
+		ids[record_id] = TRUE
+	return length(ids)
 
 /datum/controller/subsystem/fishing/fire(resumed = FALSE)
 	var/seconds_per_tick = wait * 0.1

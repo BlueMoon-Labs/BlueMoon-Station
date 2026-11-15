@@ -252,13 +252,18 @@
 				trait_names += GLOB.fish_traits[trait]?.name
 			to_chat(user, span_notice("Traits: [english_list(trait_names)]."))
 		if(new_discovery)
-			to_chat(user, span_notice("Новый вид записан в рыбный каталог. Открыто видов: [SSfishing.get_discovered_count()]."))
+			to_chat(user, span_notice("Новый вид записан в рыбный каталог. Изучено видов: [SSfishing.get_discovered_count(user)]."))
 		return
 	if(istype(target, /obj/structure/aquarium))
 		var/obj/structure/aquarium/aquarium = target
 		to_chat(user, span_notice("Water: [aquarium.fluid_type], temperature [round(aquarium.fluid_temp - T0C, 0.1)] C, beauty [aquarium.beauty], [length(aquarium.tracked_fish)] fish."))
+		var/new_discoveries = 0
 		for(var/obj/item/fish/fish in aquarium.tracked_fish)
+			if(SSfishing.discover_fish(fish))
+				new_discoveries++
 			to_chat(user, span_notice("- [fish]: health [round(fish.get_health_percentage() * 100, 1)]%, hunger [round(fish.get_hunger() * 100, 1)]%, [fish.status]."))
+		if(new_discoveries)
+			to_chat(user, span_notice("Новые виды записаны в рыбный каталог: [new_discoveries]. Изучено видов: [SSfishing.get_discovered_count(user)]."))
 		return
 	return ..()
 
