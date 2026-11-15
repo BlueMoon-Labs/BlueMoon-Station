@@ -1034,7 +1034,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set name = "Observe"
 	set category = "OOC"
 
-	var/list/creatures = getpois()
+	var/list/creatures = getpois(mobs_only = TRUE)
 
 	reset_perspective(null)
 
@@ -1045,7 +1045,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if (!eye_name)
 		return
 
-	do_observe(creatures[eye_name])
+	var/mob/mob_eye = creatures[eye_name]
+	if(ismob(mob_eye) && mob_eye != src && !QDELETED(mob_eye))
+		observe_with_orbit(mob_eye)
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
 	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,

@@ -241,3 +241,128 @@
 	TEST_ASSERT_EQUAL(summary["ghost"]["abandon_kinds"]["item"], 1, "Вид брошенного меню призрака не посчитан")
 	qdel(stats)
 	qdel(prefs)
+
+/// Пункты, выбранные в меню призрака, считаются в своей таблице: «Следовать» не попадает к пунктам живых
+/datum/unit_test/context_menu_ghost_stats_entries
+
+/datum/unit_test/context_menu_ghost_stats_entries/Run()
+	var/datum/context_menu_stats/stats = new
+	stats.count_entry("click", "Осмотреть", FALSE)
+	stats.count_entry("ghost_follow", "Следовать", TRUE)
+	stats.count_entry("click", "Осмотреть", TRUE)
+	var/list/snapshot = json_decode(json_encode(stats.snapshot()))
+	TEST_ASSERT_NULL(snapshot["entries"]["Следовать"], "Пункт призрака попал в общие пункты")
+	TEST_ASSERT_EQUAL(snapshot["entries"]["Осмотреть"], 1, "Осмотр призрака посчитан у живых")
+	TEST_ASSERT_EQUAL(snapshot["ghost_entries"]["Следовать"], 1, "Пункт призрака не посчитан")
+	TEST_ASSERT_EQUAL(snapshot["ghost_entries"]["Осмотреть"], 1, "Осмотр в меню призрака не посчитан")
+	qdel(stats)
+
+/// Клики, которые повторяет меню, мимо точного режима панели спавна: «Осмотреть» осматривает, а не копирует
+/datum/unit_test/context_menu_spawnpanel_menu_clicks
+
+/datum/unit_test/context_menu_spawnpanel_menu_clicks/Run()
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.forceMove(run_loc_floor_bottom_left)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, get_step(ghost, NORTH))
+	var/datum/spawnpanel/panel = new(ghost)
+	panel.selected_atom = "[/obj/item/pen/fountain]"
+	panel.precise_mode = PRECISE_MODE_COPY
+	ghost.click_intercept = panel
+
+	var/datum/context_menu/menu = ghost.open_context_menu(pen, "right=1")
+	var/datum/context_menu_entry/examine = find_context_entry(menu, "Осмотреть")
+	TEST_ASSERT_NOTNULL(examine, "В меню призрака по ручке нет «Осмотреть»")
+	menu.choose(examine)
+	TEST_ASSERT(ghost.examined, "«Осмотреть» из меню при точном режиме не осмотрел")
+	TEST_ASSERT_EQUAL(panel.selected_atom, "[/obj/item/pen/fountain]", "«Осмотреть» из меню скопировал тип в панель спавна")
+	TEST_ASSERT(!panel.InterceptClickOn(ghost, "left=1;context_menu=1", pen), "Клик из меню перехвачен панелью спавна")
+
+	ghost.click_intercept = null
+	qdel(panel)
+
+/// Пусковая капсул: ПКМ открывает меню, клики из меню не выбирают точку и не запускают капсулу
+/datum/unit_test/context_menu_podlauncher_clicks
+
+/datum/unit_test/context_menu_podlauncher_clicks/Run()
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.forceMove(run_loc_floor_bottom_left)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, get_step(ghost, NORTH))
+	var/datum/centcom_podlauncher/launcher = new
+	launcher.picking_dropoff_turf = TRUE
+	ghost.click_intercept = launcher
+
+	TEST_ASSERT(!launcher.InterceptClickOn(ghost, "right=1", pen), "ПКМ съеден пусковой капсул")
+	TEST_ASSERT(!launcher.InterceptClickOn(ghost, "shift=1;left=1;context_menu=1", pen), "Клик из меню перехвачен пусковой капсул")
+	ghost.CommonClickOn(pen, "right=1")
+	TEST_ASSERT_NOTNULL(ghost.active_context_menu, "ПКМ при пусковой капсул не открыл меню")
+	ghost.close_context_menu()
+	TEST_ASSERT(!launcher.customDropoff, "Клик из меню выбрал точку высадки")
+	launcher.picking_dropoff_turf = FALSE
+	launcher.launcherActivated = TRUE
+	TEST_ASSERT(!launcher.InterceptClickOn(ghost, "left=1;context_menu=1", pen), "Клик из меню в режиме запуска перехвачен")
+
+	ghost.click_intercept = null
+	launcher.launcherActivated = FALSE
+	qdel(launcher)
+
+/// Смена орбиты: цель орбиты - новая, а не пустая; иначе «наблюдать» в окне орбиты не на кого
+/datum/unit_test/orbit_switch_keeps_target
+
+/datum/unit_test/orbit_switch_keeps_target/Run()
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.forceMove(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/first = allocate(/mob/living/carbon/human/dummy/consistent, get_step(ghost, EAST))
+	var/mob/living/carbon/human/second = allocate(/mob/living/carbon/human/dummy/consistent, get_step(ghost, NORTH))
+
+	ghost.ManualFollow(first)
+	TEST_ASSERT_EQUAL(ghost.orbit_target, first, "Цель первой орбиты")
+	ghost.ManualFollow(second)
+	TEST_ASSERT_EQUAL(ghost.orbiting?.parent, second, "Призрак не перешёл на орбиту второй цели")
+	TEST_ASSERT_EQUAL(ghost.orbit_target, second, "После смены орбиты цель пуста или старая")
+	ghost.ManualFollow(second)
+	TEST_ASSERT_EQUAL(ghost.orbit_target, second, "Повторная орбита той же цели потеряла цель")
+	ghost.orbiting.end_orbit(ghost)
+	TEST_ASSERT_NULL(ghost.orbit_target, "Конец орбиты не снял цель")
+
+	var/obj/effect/wisp/wisp = allocate(/obj/effect/wisp, run_loc_floor_bottom_left)
+	wisp.orbit(first)
+	wisp.orbit(second)
+	TEST_ASSERT(!HAS_TRAIT_FROM(first, TRAIT_THERMAL_VISION, REF(wisp)), "Огонёк ушёл к другому, а термовизор у первого остался")
+	TEST_ASSERT(HAS_TRAIT_FROM(second, TRAIT_THERMAL_VISION, REF(wisp)), "Огонёк не дал термовизор новой цели")
+	wisp.orbiting.end_orbit(wisp)
+
+/// Наблюдение через верб и меню - на орбите: телепорт в сторону рвёт орбиту и возвращает камеру; цель вне мира не наблюдается
+/datum/unit_test/context_menu_ghost_observe_teleport
+
+/datum/unit_test/context_menu_ghost_observe_teleport/Run()
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.forceMove(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(ghost, EAST))
+	var/mob/living/carbon/human/nowhere = allocate(/mob/living/carbon/human/dummy/consistent)
+	nowhere.moveToNullspace()
+
+	ghost.observe_with_orbit(target)
+	TEST_ASSERT_EQUAL(ghost.observetarget, target, "Наблюдение не включилось")
+	ghost.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT_NULL(ghost.orbiting, "Телепорт не снял орбиту")
+	TEST_ASSERT_NULL(ghost.observetarget, "Телепорт оставил камеру на цели")
+
+	ghost.observe_with_orbit(nowhere)
+	TEST_ASSERT_NULL(ghost.observetarget, "Наблюдение за целью вне мира без орбиты - из него не выйти шагом")
+
+/// Подпись ЛКМ у паука Ужаса - только когда ЛКМ правда вселит: не в выездной миссии, не у неуправляемого типа и не у вымирающего
+/datum/unit_test/context_menu_ghost_terror_spider_label
+
+/datum/unit_test/context_menu_ghost_terror_spider_label/Run()
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight/spider = allocate(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight)
+	spider.spider_awaymission = FALSE
+	TEST_ASSERT_EQUAL(spider.ghost_click_label(ghost), "Вселиться", "Свободный паук не зовёт вселиться")
+	spider.spider_awaymission = TRUE
+	TEST_ASSERT_NULL(spider.ghost_click_label(ghost), "Паук выездной миссии зовёт вселиться")
+	spider.spider_awaymission = FALSE
+	spider.ai_playercontrol_allowtype = 0
+	TEST_ASSERT_NULL(spider.ghost_click_label(ghost), "Неуправляемый тип паука зовёт вселиться")
+	spider.ai_playercontrol_allowtype = 1
+	spider.degenerate = TRUE
+	TEST_ASSERT_NULL(spider.ghost_click_label(ghost), "Вымирающий паук зовёт вселиться")

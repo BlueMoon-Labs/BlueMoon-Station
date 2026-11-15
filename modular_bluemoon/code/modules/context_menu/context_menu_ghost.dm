@@ -20,6 +20,9 @@
 /// Смотреть глазами цели, как из окна орбиты: призрак на её орбите, и любой шаг сходит с орбиты и возвращает камеру
 /mob/dead/observer/proc/observe_with_orbit(mob/target)
 	ManualFollow(target)
+	// без орбиты из наблюдения не выйти шагом
+	if(orbiting?.parent != target)
+		return
 	reset_perspective(null)
 	do_observe(target)
 	to_chat(src, span_notice("Теперь вы видите то же, что и [target]. Чтобы вернуться, сделайте шаг или выберите в меню «Перестать смотреть [target.ru_ego()] глазами»."))
@@ -84,7 +87,9 @@
 	return key ? null : "Вселиться"
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/ghost_click_label(mob/dead/observer/ghost)
-	return key || stat == DEAD ? null : "Вселиться"
+	if(key || stat == DEAD || spider_awaymission || !ai_playercontrol_allowtype || degenerate || (ghost.ckey in GLOB.ts_ckey_blacklist))
+		return null
+	return "Вселиться"
 
 /mob/living/simple_animal/hostile/swarmer/mega/ghost_click_label(mob/dead/observer/ghost)
 	var/obj/effect/mob_spawn/swarmer_mega/spawner = locate() in contents

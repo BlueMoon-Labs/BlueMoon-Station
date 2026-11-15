@@ -7,7 +7,7 @@
  * и сколько закрывающих кликов пришлось по тому же, по чему открыто меню, - по причинам.
  * Меню призрака считается отдельно, в ghost игрока и в summary.ghost: у него свои пункты, его открытия не смешиваются с живыми.
  * changes: кто, когда и что поменял в раскладке и виде - видно, от каких дефолтов уходят.
- * entries: сколько раз выбран каждый пункт меню по всем игрокам.
+ * entries: сколько раз выбран каждый пункт меню по всем игрокам, ghost_entries - то же в меню призрака.
  */
 GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 
@@ -15,6 +15,7 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	var/list/players = list()
 	var/list/changes = list()
 	var/list/entries = list()
+	var/list/ghost_entries = list()
 	/// Выгрузка уже запланирована
 	var/export_queued = FALSE
 
@@ -98,15 +99,16 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	record["choices"]++
 	var/list/kinds = record["choice_kinds"]
 	kinds[kind]++
-	count_entry(kind, name)
+	count_entry(kind, name, isobserver(user))
 	queue_export()
 
 /// Счёт пункта по имени. Имена предметов в списке клетки и шапка с именем цели уникальны и раздувают таблицу, считаются только действия
-/datum/context_menu_stats/proc/count_entry(kind, name)
+/datum/context_menu_stats/proc/count_entry(kind, name, ghost)
 	if(!name || (kind in list("pick", "pick_group", "mode_choice")))
 		return
-	if(entries[name] || length(entries) < CONTEXT_MENU_STATS_MAX_ENTRIES)
-		entries[name]++
+	var/list/table = ghost ? ghost_entries : entries
+	if(table[name] || length(table) < CONTEXT_MENU_STATS_MAX_ENTRIES)
+		table[name]++
 
 /// Меню закрыто без выбора; reason - чем: click (клик мимо), reopen (новое меню), escape, moved, auto_close, settings, lost, target.
 /// kind - по чему было открыто, seconds - сколько было открыто, on_target - закрыто кликом по тому же
@@ -192,6 +194,7 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 		"players" = players,
 		"changes" = changes,
 		"entries" = entries,
+		"ghost_entries" = ghost_entries,
 	)
 
 /proc/context_menu_sum_counters(list/summary, list/record, list/counters)
