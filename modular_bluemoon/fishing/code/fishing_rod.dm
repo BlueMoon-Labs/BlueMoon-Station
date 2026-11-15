@@ -129,10 +129,11 @@
 		. += line_overlay
 		. += mutable_appearance(icon, hook.rod_overlay_icon_state || "hook_overlay")
 	// Наживка цепляется к кончику, поэтому её оверлей кладём поверх крючка.
-	var/obj/item/bait/used_bait = bait
-	if(used_bait?.rod_overlay_icon_state)
-		var/mutable_appearance/bait_overlay = mutable_appearance(icon, used_bait.rod_overlay_icon_state)
-		. += bait_overlay
+	if(istype(bait, /obj/item/bait))
+		var/obj/item/bait/used_bait = bait
+		if(used_bait.rod_overlay_icon_state)
+			var/mutable_appearance/bait_overlay = mutable_appearance(icon, used_bait.rod_overlay_icon_state)
+			. += bait_overlay
 
 /// Рисует катушку, свисающую леску и крючок на спрайтах в руках.
 /// Направление не задаём, оверлеи сами поворачиваются вместе с персонажем.
