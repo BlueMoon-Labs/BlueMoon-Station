@@ -9,6 +9,7 @@ import * as keycodes from 'common/keycodes';
 import { globalEvents, KeyEvent } from './events';
 import { keyToByond } from './keyToByond';
 import { createLogger } from './logging';
+import { setupMouseButtonPassthrough } from './mouseButtons';
 import { setupOrphanedKeyUpForwarding } from './orphanedKeyUp';
 
 const logger = createLogger('hotkeys');
@@ -164,4 +165,5 @@ export const setupHotKeys = () => {
     handlePassthrough(key);
   });
   setupOrphanedKeyUpForwarding();
+  setupMouseButtonPassthrough();
 };
