@@ -60,8 +60,10 @@
 	var/trial_active = FALSE
 	var/obj/structure/xen_pylon/nihilanth/trial_pylon
 	var/turf/trial_site
+	var/turf/trial_pylon_turf
 	var/turf/boss_home
 	var/list/used_pylons = list()
+	var/list/used_sites = list()
 	var/list/trial_thresholds = list(0.75, 0.50, 0.30)
 	var/list/trial_done = list(FALSE, FALSE, FALSE)
 
@@ -129,7 +131,7 @@
 	for(var/mob/living/V in victims)
 		if(QDELETED(V) || V.stat == DEAD)
 			continue
-		if(istype(get_turf(V)))
+		if(get_turf(V))
 			src.Beam(V, icon_state = "red_lightning", time = 15, maxdistance = 12)
 		V.apply_damage(25, BURN)
 		V.DefaultCombatKnockdown(20)
@@ -178,6 +180,7 @@
 		return
 	var/turf/site = site_and_pylon[1]
 	trial_pylon = site_and_pylon[2]
+	used_sites += site
 	trial_pylon.used = TRUE
 	trial_pylon.trial_active = TRUE
 	trial_pylon.nihilanth_boss = src
@@ -185,6 +188,7 @@
 
 	trial_active = TRUE
 	trial_site = site
+	trial_pylon_turf = get_turf(trial_pylon)
 	boss_home = home
 	cancel_rapid_fire_sequence()
 	cancel_rapid_melee_sequence()
@@ -197,14 +201,16 @@
 	visible_message("<span class='boldannounce'>[src] вспыхивает невыносимым светом! Оно неуязвимо - разлом на арене ведёт к источнику его силы!</span>")
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/nihilanth/nihilanth_iamthelast01.ogg', 100, FALSE)
 
-// Выбирает случайную свободную точку испытания: лендмарк nihilanth_pylon_site,
-// рядом с которым стоит особый пилон /obj/structure/xen_pylon/nihilanth.
-// Фолбэк - любой неиспользованный особый пилон на карте.
+// Выбирает случайную свободную точку испытания: лендмарк nihilanth_pylon_site
+// - это точка ПРИБЫТИЯ (портал падает сюда), а особый пилон может стоять
+// где угодно на том же z-уровне - игроки идут от точки прибытия до пилона.
+// Фолбэк - любой неиспользованный особый пилон на карте (лендмарк не нужен,
+// точкой прибытия станет турф самого пилона).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/pick_trial_site()
 	var/list/options = list()
 	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in GLOB.landmarks_list)
 		var/turf/T = get_turf(L)
-		if(!istype(T))
+		if(!istype(T) || !isopenturf(T) || (T in used_sites))
 			continue
 		var/obj/structure/xen_pylon/nihilanth/P = find_trial_pylon(T)
 		if(istype(P))
@@ -221,8 +227,11 @@
 	return pick(options)
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/find_trial_pylon(turf/T)
-	for(var/obj/structure/xen_pylon/nihilanth/P in view(6, T))
-		if(!P.used)
+	for(var/obj/structure/xen_pylon/nihilanth/P in world)
+		if(P.used)
+			continue
+		var/turf/PT = get_turf(P)
+		if(istype(PT) && PT.z == T.z)
 			return P
 	return null
 
@@ -233,16 +242,22 @@
 		return
 	trial_active = FALSE
 	var/turf/site = trial_site
+	var/turf/return_turf = trial_pylon_turf
 	var/turf/home = boss_home
 	trial_site = null
 	trial_pylon = null
+	trial_pylon_turf = null
 	boss_home = null
-	if(istype(site) && isopenturf(site) && istype(home))
-		var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(site)
+	// Обратный разлом ставим у уничтоженного пилона (точка Б) - игроки
+	// возвращаются сразу после его разрушения, без возврата к точке А.
+	if(!istype(return_turf) || !isopenturf(return_turf))
+		return_turf = site
+	if(istype(return_turf) && isopenturf(return_turf) && istype(home))
+		var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(return_turf)
 		if(istype(R))
 			R.hard_target = home
 			R.hardlinked = FALSE
-			playsound(site, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
+			playsound(return_turf, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
 	visible_message("<span class='boldwarning'>Пилон разрушен! Разлом у его останков ведёт обратно на арену [src]!</span>")
 	check_trial_thresholds()
 
@@ -365,7 +380,7 @@
 			if(AM.density)
 				T = null
 				break
-	for(var/try in 1 to 5)
+	for(var/attempt in 1 to 5)
 		if(istype(T) && !(T in used_turfs))
 			break
 		T = free_turf_near(near_turf, 3)

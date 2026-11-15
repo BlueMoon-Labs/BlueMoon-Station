@@ -8907,6 +8907,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/rocks)
+"cLP" = (
+/obj/machinery/power/floodlight/urbanismlight/mesamisc{
+	light_color = "#5e737e";
+	light_range = 20
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking)
 "cMi" = (
 /turf/closed/wall/mineral/iron,
 /area/awaymission/ihategordon/rocks)
@@ -19304,6 +19313,14 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"fNK" = (
+/obj/effect/landmark/portal_exit{
+	id = "nih"
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking)
 "fNT" = (
 /obj/effect/baseturf_helper/black_mesa,
 /turf/closed/mineral/mesarock{
@@ -22859,6 +22876,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"gUX" = (
+/obj/structure/xen_pylon/nihilanth,
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking)
 "gUY" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/trimline/dark/filled/line,
@@ -34562,6 +34585,15 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/rocks)
+"kAE" = (
+/obj/effect/portal/permanent/one_way{
+	color = "#FF0000";
+	id = "nih"
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#ad91b5"
+	},
+/area/awaymission/ihategordon/custom_walking)
 "kAH" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -53565,6 +53597,12 @@
 /obj/structure/barricade/wooden,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"qvs" = (
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth,
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking)
 "qvt" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
 	dir = 4
@@ -111203,7 +111241,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
+gUX
 bQq
 bQq
 bQq
@@ -115871,6 +115909,7 @@ bQq
 bQq
 bQq
 bQq
+cLP
 bQq
 bQq
 bQq
@@ -115884,8 +115923,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
-bQq
+cLP
 bQq
 bQq
 bQq
@@ -117927,6 +117965,7 @@ bQq
 bQq
 bQq
 bQq
+qvs
 bQq
 bQq
 bQq
@@ -117938,8 +117977,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
-bQq
+fNK
 bQq
 bQq
 bQq
@@ -119996,7 +120034,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
+cLP
 bQq
 bQq
 bQq
@@ -120240,7 +120278,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
+cLP
 bQq
 bQq
 bQq
@@ -125387,11 +125425,11 @@ sAb
 sAb
 sAb
 bjQ
-sAb
-bjQ
-bjQ
-bjQ
-bjQ
+gUz
+gUz
+gUz
+gUz
+gUz
 bjQ
 ufH
 ufH
@@ -125643,13 +125681,13 @@ nRL
 sAb
 sAb
 sAb
-bjQ
-bjQ
-bjQ
-bjQ
-ufH
-ufH
-ufH
+gUz
+gUz
+gUz
+gUz
+aze
+gUz
+gUz
 ufH
 ufH
 ufH
@@ -125900,13 +125938,13 @@ nRL
 sAb
 sAb
 sAb
-sAb
-bjQ
-bjQ
-aAx
-aAx
-suH
-aAx
+gUz
+gUz
+aze
+gUz
+gUz
+dwM
+gUz
 aAx
 aAx
 aAx
@@ -126157,10 +126195,10 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
-aAx
-jtt
+gUz
+gUz
+gUz
+ubh
 osF
 gUz
 gUz
@@ -126414,8 +126452,8 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
+gUz
+gUz
 gUz
 gUz
 gUz
@@ -126671,10 +126709,10 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
 gUz
-aAx
+gUz
+kAE
+gUz
 gUz
 ubh
 gUz
@@ -126928,13 +126966,13 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
 gUz
-ijb
-aAx
-jIV
-aAx
+gUz
+gUz
+aze
+gUz
+osF
+gUz
 gUz
 osF
 gUz
@@ -127150,7 +127188,7 @@ bQq
 bQq
 bQq
 bQq
-bQq
+gUX
 bQq
 bQq
 bQq
@@ -127185,13 +127223,13 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
-suH
-aAx
-aAx
-aAx
-aAx
+gUz
+gUz
+dwM
+gUz
+gUz
+gUz
+gUz
 aAx
 suH
 aAx
@@ -127442,13 +127480,13 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
-ufH
-ufH
-ufH
-ufH
-ufH
+gUz
+gUz
+gUz
+gUz
+gUz
+gUz
+gUz
 ufH
 ufH
 ufH
@@ -127699,13 +127737,13 @@ nRL
 nRL
 nRL
 sAb
-bjQ
-bjQ
-bjQ
-ufH
-ufH
-ufH
-ufH
+gUz
+gUz
+aze
+gUz
+gUz
+gUz
+gUz
 ufH
 ufH
 ufH
@@ -127957,12 +127995,12 @@ sAb
 sAb
 sAb
 bjQ
+gUz
+gUz
+gUz
+gUz
+gUz
 bjQ
-bjQ
-bjQ
-ufH
-ufH
-ufH
 ufH
 bjQ
 bjQ
