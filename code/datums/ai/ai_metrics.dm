@@ -22,6 +22,19 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 	var/targets_acquired = 0
 	///вызовов hearers() из поиска целей hostile-мобов
 	var/hearers_calls = 0
+	///собственных oview по wanted_objects (без взятых у сородича)
+	var/object_scans = 0
+	///пересборок окна ячеек грида на шаге пауна
+	var/cell_windows = 0
+	///уступок тика поиском пути
+	var/jps_yields = 0
+	///поисков пути, брошенных после сна: путник или владелец отмены удалён
+	var/jps_aborted = 0
+	///поисков пути, получивших слот, и сколько тиков они шли от слота до ответа
+	var/jps_searches = 0
+	var/jps_search_ticks = 0
+	///самый долгий поиск пути в тиках; в снимок не входит, разность максимумов ничего не значит
+	var/jps_search_ticks_max = 0
 
 /// Снимок всех счётчиков одним ассоц-списком (для JSON бенчмарка)
 /datum/ai_metrics/proc/snapshot()
@@ -35,6 +48,12 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 		"successful_moves" = successful_moves,
 		"targets_acquired" = targets_acquired,
 		"hearers_calls" = hearers_calls,
+		"object_scans" = object_scans,
+		"cell_windows" = cell_windows,
+		"jps_yields" = jps_yields,
+		"jps_aborted" = jps_aborted,
+		"jps_searches" = jps_searches,
+		"jps_search_ticks" = jps_search_ticks,
 	)
 
 /datum/ai_metrics/proc/reset()
@@ -47,6 +66,13 @@ GLOBAL_DATUM_INIT(ai_metrics, /datum/ai_metrics, new)
 	successful_moves = 0
 	targets_acquired = 0
 	hearers_calls = 0
+	object_scans = 0
+	cell_windows = 0
+	jps_yields = 0
+	jps_aborted = 0
+	jps_searches = 0
+	jps_search_ticks = 0
+	jps_search_ticks_max = 0
 
 /// Разница между текущим состоянием и ранее взятым снимком
 /datum/ai_metrics/proc/delta_since(list/base_snapshot)

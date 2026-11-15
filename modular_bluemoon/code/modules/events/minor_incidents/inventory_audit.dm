@@ -197,7 +197,7 @@
 		new /obj/item/holochip(drop_location(), AUDIT_ITEM_REWARD)
 		to_chat(user, span_notice("Ящик принимает [item] и выдаёт голочип на [AUDIT_ITEM_REWARD] кр: ID-карты со счётом при вас нет."))
 		return user
-	account.adjust_money(AUDIT_ITEM_REWARD, "ЦК: возврат имущества по аудиту")
+	account.credit(AUDIT_ITEM_REWARD, ECON_WORK, memo = "ЦК: возврат имущества по аудиту")
 	if(payee == user)
 		to_chat(user, span_notice("Ящик принимает [item] и пищит: на ваш счёт зачислено [AUDIT_ITEM_REWARD] кр."))
 	else
@@ -210,7 +210,7 @@
 		return FALSE
 	bonus_paid = TRUE
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	budget?.adjust_money(AUDIT_FULL_BONUS, "ЦК: полный возврат имущества по аудиту")
+	budget?.credit(AUDIT_FULL_BONUS, ECON_WORK, memo = "ЦК: полный возврат имущества по аудиту")
 	visible_message(span_notice("[src] звенит дважды: опись закрыта полностью."))
 	playsound(src, 'sound/machines/ding.ogg', 40, FALSE)
 	log_game("DIRECTOR: Inventory Audit, опись закрыта полностью в [AREACOORD(src)], бюджету снабжения начислено [AUDIT_FULL_BONUS] кр.")

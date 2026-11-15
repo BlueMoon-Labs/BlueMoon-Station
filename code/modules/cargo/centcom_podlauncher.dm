@@ -813,6 +813,8 @@
 		QDEL_NULL(cam_screen)
 	QDEL_NULL(cam_plane_group)
 	QDEL_NULL(cam_background)
+	if(!(holder in GLOB.clients))
+		holder = null
 	. = ..()
 
 /datum/centcom_podlauncher/proc/supplypod_punish_log(list/whoDyin)

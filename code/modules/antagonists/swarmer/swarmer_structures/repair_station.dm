@@ -28,8 +28,8 @@
 	return ..()
 
 /obj/structure/swarmer/repair_station/emp_act(severity)
-	..()
-	if(severity <= 1)
+	. = ..()
+	if(!QDELETED(src) && !(. & EMP_PROTECT_SELF) && severity <= 1)
 		stop_repair()
 
 /obj/structure/swarmer/repair_station/update_icon_state()

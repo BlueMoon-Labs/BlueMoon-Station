@@ -34,6 +34,12 @@
 	holder.click_intercept = src
 	holder.refresh_popup_menus()
 	mode.enter_mode(src)
+	RegisterSignal(holder, COMSIG_PARENT_QDELETING, PROC_REF(on_holder_deleted))
+
+/// Админ вышел из игры: режим стройки держал бы его удалённого клиента (обход мира на логауте), а после входа звал бы его через post_login.
+/datum/buildmode/proc/on_holder_deleted(client/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /datum/buildmode/proc/quit()
 	mode.exit_mode(src)

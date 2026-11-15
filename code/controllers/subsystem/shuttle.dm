@@ -450,9 +450,10 @@ SUBSYSTEM_DEF(shuttle)
 		priority_announce("На станции обнаружено особо враждебное присутствие. Отлет отложен на неопределенный срок до разрешения конфликта.", null, 'sound/misc/notice1.ogg', "Priority")
 	if(!emergencyNoEscape && (emergency.mode == SHUTTLE_STRANDED))
 		emergency.mode = SHUTTLE_DOCKED
-		emergency.setTimer(emergencyDockTime)
+		var/boarding_time = EMERGENCY_BOARDING_TIME(emergency)
+		emergency.setTimer(boarding_time)
 		priority_announce("Враждебное присутствие искоренено. \
-			У вас есть три минуты, чтобы взойти на борт шаттла.",
+			Время на посадку: [DisplayTimeText(boarding_time)].",
 			null, "shuttledock", "Priority")
 #endif
 
@@ -1081,7 +1082,7 @@ SUBSYSTEM_DEF(shuttle)
 					to_chat(user, span_warning("Эвакуационный шаттл не в транзите (гиперпространство)."))
 					return
 				var/obj/docking_port/mobile/emergency/eshut = M
-				var/evac_duration = emergencyEscapeTime * eshut.engine_coeff
+				var/evac_duration = EMERGENCY_RETURN_FLIGHT_TIME(eshut)
 				var/datum/shuttle_event/new_event = eshut.add_shuttle_event(event_type)
 				new_event?.start_up_event(evac_duration, TRUE)
 				message_admins("[key_name_admin(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")

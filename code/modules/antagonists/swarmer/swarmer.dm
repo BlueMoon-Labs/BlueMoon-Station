@@ -6,8 +6,8 @@
 	icon = 'icons/mob/swarmer.dmi'
 	icon_state = "swarmer_old"
 	icon_living = "swarmer_old"
-	health = 105
-	maxHealth = 105
+	health = SWARMER_BASE_HEALTH
+	maxHealth = SWARMER_BASE_HEALTH
 	status_flags = CANPUSH
 	speak_emote = list("гудит")
 	bubble_icon = "swarmer"
@@ -42,6 +42,11 @@
 	ranged_ignores_vision = TRUE
 	ranged_pixel_aim = TRUE
 	blood_volume = 0
+	initial_language_holder = /datum/language_holder/swarmer
+	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/swarmer
+	vocal_bark_id = "synth"
+	vocal_pitch = 1.3
+	vocal_pitch_range = 0.1
 	var/swarmer_class_info = "Вы не должны это видеть."
 	var/dismantle_speed = NORMAL_SWARMER_DISMANTLE_DELAY
 	var/stack_extract_amount = 3
@@ -65,7 +70,6 @@
 	spark_system = new
 	spark_system.set_up(5, 0, src)
 	spark_system.attach(src)
-	grant_language(/datum/language/swarmer)
 	ADD_TRAIT(src, TRAIT_NEGATES_GRAVITY, INNATE_TRAIT)
 
 	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
@@ -178,10 +182,19 @@
 	. += "Органика в ядре: [round(team?.organic_resources || 0, 0.01)]"
 	if(team?.swarmer_core)
 		. += "Здоровье ядра: [team.swarmer_core.obj_integrity]/[team.swarmer_core.max_integrity]"
+	if(team)
+		var/living_body_count = team.count_living_bodies()
+		. += "Штурмовые турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/turret, living_body_count)]"
+		. += "Снайперские турели: [team.get_structure_limit_status(/obj/machinery/porta_turret/swarmer/sniper, living_body_count)]"
+		. += "Установки ACP: [team.get_structure_limit_status(/obj/structure/swarmer/acp_turret, living_body_count)]"
+		. += "Ремонтные станции: [team.get_structure_limit_status(/obj/structure/swarmer/repair_station, living_body_count)]"
 
 /mob/living/simple_animal/hostile/swarmer/emp_act(severity)
 	..()
 	adjustHealth(SWARMER_MOB_EMP_DAMAGE(severity), forced = TRUE)
+
+/mob/living/simple_animal/hostile/swarmer/could_speak_language(language)
+	return language == /datum/language/swarmer
 
 /mob/living/simple_animal/hostile/swarmer/electrocute_act(shock_damage, atom/source, siemens_coeff = 1, flags = NONE, jitter_time = 10 SECONDS, stutter_time = 6 SECONDS, stun_duration = 4 SECONDS)
 	if(!(flags & SHOCK_TESLA))
@@ -204,7 +217,15 @@
 	if(is_swarmerprojectile(mover))
 		return TRUE
 
+/proc/swarmer_actions_blocked(atom/source)
+	if(SSticker.current_state != GAME_STATE_FINISHED)
+		return FALSE
+	var/turf/source_turf = get_turf(source)
+	return source_turf && is_centcom_level(source_turf.z)
+
 /mob/living/simple_animal/hostile/swarmer/AttackingTarget()
+	if(swarmer_actions_blocked(src))
+		return FALSE
 	active_tile_attack?.stop()
 	if(isswarmer(target))
 		return FALSE
@@ -222,6 +243,8 @@
 	difficult_target.apply_damage(damage, BURN, blocked = difficult_target.getarmor(null, MELEE))
 
 /mob/living/simple_animal/hostile/swarmer/UnarmedAttack(atom/A, proximity, intent = a_intent, flags = NONE)
+	if(swarmer_actions_blocked(src))
+		return
 	if(proximity && isopenturf(A) && A != loc)
 		for(var/mob/living/victim in A)
 			if(victim.stat == DEAD || isswarmer(victim) || victim.invisibility > see_invisible || victim.IsObscured() || !Adjacent(victim))
@@ -243,7 +266,7 @@
 	return use_swarmer_secondary_interaction(A, proximity_flag)
 
 /mob/living/simple_animal/hostile/swarmer/proc/use_swarmer_secondary_interaction(atom/A, proximity_flag)
-	if(!proximity_flag || !team?.swarmer_core || !CheckActionCooldown(immediate = TRUE))
+	if(!proximity_flag || !team?.swarmer_core || swarmer_actions_blocked(src) || !CheckActionCooldown(immediate = TRUE))
 		return TRUE
 	if(training_origin && isliving(A) && A != src && !isswarmer(A))
 		training_disperse(A)
@@ -273,7 +296,20 @@
 /mob/living/simple_animal/hostile/swarmer/proc/fire_secondary_weapon(atom/targeted_atom, params)
 	return
 
+/mob/living/simple_animal/hostile/swarmer/fire_ranged_projectiles(atom/A, params)
+	if(swarmer_actions_blocked(src))
+		return FALSE
+	return ..()
+
+/mob/living/simple_animal/hostile/swarmer/run_rapid_fire_shot()
+	if(swarmer_actions_blocked(src))
+		cancel_rapid_fire_sequence()
+		return
+	return ..()
+
 /mob/living/simple_animal/hostile/swarmer/shoot_with_projectile(atom/targeted_atom, projectile_type, params)
+	if(swarmer_actions_blocked(src))
+		return
 	. = ..()
 	if(.)
 		active_tile_attack?.stop()
@@ -391,7 +427,7 @@
 	var/obj/machinery/hydroponics/tray = target
 	var/is_tray = istype(tray)
 	balloon_alert(src, is_tray ? "отправка растения..." : "отправка...")
-	if(!do_after(src, SWARMER_SEND_ORGANIC_DELAY, target, extra_checks = extra_checks) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
+	if(!do_after(src, SWARMER_SEND_ORGANIC_DELAY, target, extra_checks = extra_checks) || swarmer_actions_blocked(src) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
 		if(!extra_checks)
 			balloon_alert(src, "сбито!")
 		return FALSE
@@ -416,7 +452,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/proc/try_analyze(mob/living/target)
 	balloon_alert(src, "отправка...")
-	if(!do_after(src, SWARMER_SEND_ANALYZER_DELAY, target))
+	if(!do_after(src, SWARMER_SEND_ANALYZER_DELAY, target) || swarmer_actions_blocked(src))
 		balloon_alert(src, "сбито!")
 		return
 
@@ -460,7 +496,7 @@
 		balloon_alert(src, "не имеет разума!")
 		return
 	balloon_alert(src, "пересобираем...")
-	if(!do_after(src, 15 SECONDS, target))
+	if(!do_after(src, 15 SECONDS, target) || swarmer_actions_blocked(src))
 		balloon_alert(src, "сбито!")
 		return
 	if(QDELETED(target) || target.shell || !target.mind || !team?.swarmer_core)
@@ -549,7 +585,7 @@
 /mob/living/simple_animal/hostile/swarmer/proc/repeat_object_attack()
 	object_attack_timer = null
 	var/atom/attack_target = object_attack_target?.resolve()
-	if(!attack_target || !client || incapacitated() || !isturf(loc) || !CanReach(attack_target) || attack_target.IsObscured() || !can_disassemble(attack_target))
+	if(!attack_target || !client || incapacitated() || !isturf(loc) || swarmer_actions_blocked(src) || !CanReach(attack_target) || attack_target.IsObscured() || !can_disassemble(attack_target))
 		stop_object_attack()
 		return
 	if(CheckActionCooldown(immediate = TRUE))
@@ -589,11 +625,13 @@
 	do_attack_animation(target, no_effect = TRUE)
 	var/obj/effect/temp_visual/swarmer/dismantle/dismantle_effect = new(get_turf(target))
 	dismantle_effect.adjust_size(target)
-	if(!do_after(src, dismantle_speed, target, extra_checks = extra_checks) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
+	if(!do_after(src, dismantle_speed, target, extra_checks = extra_checks) || swarmer_actions_blocked(src) || QDELETED(target) || (extra_checks && !extra_checks.Invoke(TRUE)))
 		return
 	target.deconstruct(TRUE)
 
 /mob/living/simple_animal/hostile/swarmer/proc/toggle_light()
+	if(swarmer_actions_blocked(src))
+		return
 	if(!light_on && is_type_in_typecache(loc, GLOB.ventcrawl_machinery))
 		to_chat(src, span_warning("Нельзя переключить свет в вентиляции!"))
 		return
@@ -617,7 +655,7 @@
 
 /mob/living/simple_animal/hostile/swarmer/proc/construct_catwalk(turf/target_turf)
 	balloon_alert(src, "постройка...")
-	if(!do_after(src, 3 SECONDS))
+	if(!do_after(src, 3 SECONDS) || swarmer_actions_blocked(src))
 		balloon_alert(src, "провал!")
 		return
 
@@ -627,7 +665,6 @@
 		balloon_alert(src, "недостаточно ресурсов!")
 		return
 
-	balloon_alert(src, "успех!")
 	new /obj/structure/lattice/catwalk/swarmer_catwalk(target_turf)
 
 #undef SWARMER_CARBON_MOB_TELEPORT_REWARD
@@ -674,6 +711,11 @@
 	icon_state = "swarmer_catwalk"
 	resistance_flags = FIRE_PROOF | LAVA_PROOF
 	armor_type = /datum/armor/lattice/swarmer
+
+/obj/structure/lattice/catwalk/swarmer_catwalk/emp_act(severity)
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		take_damage(SWARMER_EMP_DAMAGE(severity))
 
 /datum/armor/lattice/swarmer
 	bullet = SWARMER_BULLET_ARMOR_BONUS

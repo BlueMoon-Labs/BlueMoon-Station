@@ -62,6 +62,7 @@
 		M.visible_message("<span class='danger'><b>[user]</b> feeds the contents of <b>[src]</b> to [M].</span>", "<span class='userdanger'><b>[user]</b> feeds the contents of <b>[src]</b> to [M].</span>")
 		log_combat(user, M, "fed", reagents.log_list())
 
+	econ_drink_consumed(src, M)
 	var/fraction = min(gulp_amount/reagents.total_volume, 1)
 	checkLiked(fraction, M)
 	reagents.reaction(M, INGEST, fraction)
@@ -89,6 +90,8 @@
 
 		var/refill = reagents.get_master_reagent_id()
 		var/trans = src.reagents.trans_to(target, amount_per_transfer_from_this, log = TRUE)
+		if(trans)
+			econ_note_pour(target, user)
 		to_chat(user, "<span class='notice'>You transfer [trans] units of the solution to <b>[target]</b>.</span>")
 
 		if(iscyborg(user)) //Cyborg modules that include drinks automatically refill themselves, but drain the borg's cell
@@ -110,6 +113,8 @@
 			return
 
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
+		if(trans)
+			econ_note_pour(src, user)
 		to_chat(user, "<span class='notice'>You fill <b>[src]</b> with [trans] units of the contents of <b>[target]</b>.</span>")
 
 	else if(reagents.total_volume && is_drainable() && spillable)

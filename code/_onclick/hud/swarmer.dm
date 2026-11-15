@@ -47,6 +47,7 @@
 	var/atom/movable/screen/swarmer/core_arrow/core_arrow
 	var/core_angle
 	var/atom/movable/screen/swarmer/core_stats/core_stats
+	var/core_tracking = FALSE
 
 /datum/hud/swarmer/New(mob/owner)
 	..()
@@ -79,16 +80,26 @@
 	core_stats = null
 	return ..()
 
+/// Вход и выход клиента уже слушает базовый HUD; своя подписка на те же сигналы затирала его обработчики.
 /datum/hud/swarmer/proc/attach_core_tracking()
-	RegisterSignal(mymob, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(start_core_tracking))
-	RegisterSignal(mymob, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(stop_core_tracking))
+	core_tracking = TRUE
 	if(mymob.client)
 		start_core_tracking(mymob)
 
 /datum/hud/swarmer/proc/detach_core_tracking()
+	core_tracking = FALSE
 	if(mymob)
 		stop_core_tracking(mymob, mymob.client)
-		UnregisterSignal(mymob, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+
+/datum/hud/swarmer/on_client_login(datum/source, client/new_client)
+	. = ..()
+	if(core_tracking)
+		start_core_tracking(source)
+
+/datum/hud/swarmer/on_client_logout(datum/source, client/old_client)
+	. = ..()
+	if(core_tracking)
+		stop_core_tracking(source, old_client)
 
 /datum/hud/swarmer/proc/start_core_tracking(mob/source)
 	SIGNAL_HANDLER

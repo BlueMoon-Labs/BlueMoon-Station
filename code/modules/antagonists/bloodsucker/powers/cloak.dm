@@ -30,7 +30,7 @@
 
 	moveintent_was_run = (user.m_intent == MOVE_INTENT_RUN)
 
-	while(bloodsuckerdatum && ContinueActive(user))
+	while(!QDELETED(bloodsuckerdatum) && ContinueActive(user))
 		// Pay Blood Toll (if awake)
 		owner.alpha = max(35, owner.alpha - min(75, 10 + 5 * level_current))
 		bloodsuckerdatum.AddBloodVolume(-0.2)

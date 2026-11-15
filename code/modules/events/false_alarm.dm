@@ -31,12 +31,11 @@
 	if(fake) //What are you doing
 		return
 
-	var/events_list = gather_false_events()
-	var/datum/round_event_control/event_control
-	if(forced_type)
-		event_control = forced_type
-	else
-		event_control = pick(events_list)
+	var/datum/round_event_control/event_control = forced_type
+	if(!event_control)
+		var/list/events_list = gather_false_events()
+		if(length(events_list))
+			event_control = pick(events_list)
 	if(event_control)
 		var/datum/round_event/Event = new event_control.typepath()
 		message_admins("False Alarm: [Event]")

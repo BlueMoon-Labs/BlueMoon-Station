@@ -33,6 +33,8 @@
 
 /datum/outfit_editor/ui_close(mob/user)
 	clear_human_dummy(dummy_key)
+	if(!(owner in GLOB.clients))
+		owner = null
 	qdel(src)
 
 /datum/outfit_editor/proc/init_dummy()

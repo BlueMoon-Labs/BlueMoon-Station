@@ -360,6 +360,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
  */
 /datum/context_menu
 	var/mob/user
+	/// Клиент, которому показано меню: в Logout у моба клиента уже нет, а экран и окно снять надо
+	var/client/shown_client
 	/// Атом, чьи действия показаны. null - список объектов клетки.
 	var/atom/target
 	/// Клетка клика, если на ней есть из чего выбирать
@@ -468,6 +470,9 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_user_moved))
 	RegisterSignal(user, list(COMSIG_MOB_DEATH, COMSIG_MOB_LOGOUT), PROC_REF(on_user_lost))
 	RegisterSignal(user, COMSIG_MOB_KEYDOWN, PROC_REF(on_key_down))
+	shown_client = user.client
+	if(shown_client)
+		RegisterSignal(shown_client, COMSIG_PARENT_QDELETING, PROC_REF(on_user_lost))
 	// гладкий шрифт рисуется под зум карты; окно могли растянуть с прошлого раза
 	if(user.client && user.client.prefs?.context_menu_option("font") != "pixel")
 		INVOKE_ASYNC(user.client, TYPE_PROC_REF(/client, refresh_context_menu_zoom))
@@ -493,6 +498,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		return
 	render()
 
+/datum/context_menu/proc/menu_client()
+	RETURN_TYPE(/client)
+	return user?.client || shown_client
+
 /// Есть что выбрать, кроме «Осмотреть» и «Указать», которые есть у всего
 /datum/context_menu/proc/has_actions()
 	for(var/datum/context_menu_entry/entry as anything in entries)
@@ -507,11 +516,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(user)
 		if(user.active_context_menu == src)
 			user.active_context_menu = null
-		user.client?.screen -= screen_objects
+	menu_client()?.screen -= screen_objects
 	hide_hint()
 	hide_html()
 	QDEL_LIST(screen_objects)
 	user = null
+	shown_client = null
 	target = null
 	tile = null
 	clicked = null

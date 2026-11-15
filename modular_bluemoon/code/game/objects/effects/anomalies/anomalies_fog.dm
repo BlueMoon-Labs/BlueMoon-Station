@@ -133,6 +133,12 @@
 		return
 	L.client.images |= anomaly_image
 	clients_see_anomaly |= L.client
+	RegisterSignal(L.client, COMSIG_PARENT_QDELETING, PROC_REF(on_viewer_deleted), override = TRUE)
+
+/// Закрывший игру в тумане не держится в списке до конца аномалии и не стоит обхода мира на логауте.
+/obj/effect/anomaly/fog/proc/on_viewer_deleted(client/source)
+	SIGNAL_HANDLER
+	clients_see_anomaly -= source
 
 /obj/effect/anomaly/fog/proc/mob_is_not_nearby(atom/source, mob/living/L)
 	SIGNAL_HANDLER

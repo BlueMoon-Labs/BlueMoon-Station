@@ -12,20 +12,66 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	family = "swarmers"
 	description = "Высаживает капсулу с ядром и оболочками свармеров на станции."
+	admin_setup = list(/datum/event_admin_setup/swarmer_landing)
 
 /datum/round_event/spawn_swarmer
+	var/turf/landing_turf
 
 /datum/round_event/spawn_swarmer/start()
-	return launch_swarmer_pod(control, triggered_randomly ? control.cost : 0)
+	return launch_swarmer_pod(control, triggered_randomly ? control.cost : 0, landing_turf)
 
-/proc/launch_swarmer_pod(datum/director_action/source_action, refund_cost)
+/datum/event_admin_setup/swarmer_landing
+	var/turf/landing_turf
+
+/datum/event_admin_setup/swarmer_landing/prompt_admins()
+	var/selection = select_swarmer_pod_landing(usr)
+	if(selection == ADMIN_CANCEL_EVENT)
+		return ADMIN_CANCEL_EVENT
+	landing_turf = selection
+
+/datum/event_admin_setup/swarmer_landing/apply_to_event(datum/round_event/spawn_swarmer/event)
+	event.landing_turf = landing_turf
+	landing_turf = null
+
+/proc/select_swarmer_pod_landing(mob/admin)
+	switch(tgui_alert(admin, "Куда сбросить капсулу свармеров?", "Высадка свармеров", list("Текущая клетка", "Случайная точка", "Отмена")))
+		if("Текущая клетка")
+			var/turf/landing_turf = get_turf(admin)
+			if(is_swarmer_pod_landing_turf(landing_turf))
+				return landing_turf
+			to_chat(admin, span_warning("Для высадки выберите свободную клетку пола на станции."))
+		if("Случайная точка")
+			return null
+	return ADMIN_CANCEL_EVENT
+
+/proc/is_swarmer_pod_landing_turf(turf/landing_turf)
+	return isfloorturf(landing_turf) && is_station_level(landing_turf.z) && !landing_turf.is_blocked_turf(exclude_mobs = TRUE)
+
+/proc/launch_swarmer_pod(datum/director_action/source_action, refund_cost, turf/landing_turf)
 	if(GLOB.active_swarmer_team)
 		return FALSE
 
+	if(landing_turf && !is_swarmer_pod_landing_turf(landing_turf))
+		message_admins("Выбранная точка высадки свармеров больше недоступна.")
+		return MAP_ERROR
+	if(!landing_turf)
+		landing_turf = pick_swarmer_pod_landing_turf()
+	if(!landing_turf)
+		message_admins("Для капсулы свармеров не нашлось подходящей точки высадки.")
+		return MAP_ERROR
+
+	var/datum/team/swarmer_team/team = new
+	GLOB.active_swarmer_team = team
+	var/obj/structure/closet/supplypod/swarmer/pod = new(null, team, source_action, refund_cost)
+	new /obj/effect/pod_landingzone(landing_turf, pod)
+	team.swarmer_core?.recruit_initial_swarmers()
+	return SUCCESSFUL_SPAWN
+
+/proc/pick_swarmer_pod_landing_turf()
 	var/list/landing_turfs = list()
 	var/list/fallback_turfs = list()
 	for(var/turf/open/floor/landing_turf in GLOB.blobstart)
-		if(!is_station_level(landing_turf.z) || landing_turf.is_blocked_turf(exclude_mobs = TRUE))
+		if(!is_swarmer_pod_landing_turf(landing_turf))
 			continue
 		var/datum/gas_mixture/air = landing_turf.return_air()
 		var/oxygen = air?.get_moles(GAS_O2)
@@ -35,18 +81,10 @@
 			fallback_turfs += landing_turf
 		else
 			landing_turfs += landing_turf
-	if(!length(landing_turfs))
-		landing_turfs = fallback_turfs
-	if(!length(landing_turfs))
-		message_admins("Для капсулы свармеров не нашлось подходящей точки высадки.")
-		return MAP_ERROR
-
-	var/datum/team/swarmer_team/team = new
-	GLOB.active_swarmer_team = team
-	var/obj/structure/closet/supplypod/swarmer/pod = new(null, team, source_action, refund_cost)
-	new /obj/effect/pod_landingzone(pick(landing_turfs), pod)
-	team.swarmer_core?.recruit_initial_swarmers()
-	return SUCCESSFUL_SPAWN
+	if(length(landing_turfs))
+		return pick(landing_turfs)
+	if(length(fallback_turfs))
+		return pick(fallback_turfs)
 
 /obj/structure/closet/supplypod/swarmer
 	name = "Swarmer deploy pod"

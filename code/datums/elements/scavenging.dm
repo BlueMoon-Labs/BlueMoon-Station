@@ -56,18 +56,21 @@
 	. = ..()
 	loot_left_per_atom -= target
 	progress_per_atom -= target
-	if(maximum_loot_per_player == LOOT_RESTRICTION_MIND_PILE || maximum_loot_per_player == LOOT_RESTRICTION_CKEY_PILE)
-		maximum_loot_per_player -= target
+	if(loot_restriction == LOOT_RESTRICTION_MIND_PILE || loot_restriction == LOOT_RESTRICTION_CKEY_PILE)
+		LAZYREMOVE(scavenger_restriction_list, target)
 	UnregisterSignal(target, list(COMSIG_ATOM_ATTACK_HAND, COMSIG_PARENT_ATTACKBY, COMSIG_PARENT_EXAMINE))
 
 /datum/element/scavenging/proc/on_examine(atom/source, mob/user, list/examine_list)
-	var/methods = tool_types.Copy()
+	var/static/list/tool_names = list(TOOL_SHOVEL = "лопатой", TOOL_CROWBAR = "ломом", TOOL_WELDER = "сваркой", TOOL_WRENCH = "гаечным ключом")
+	var/list/methods = list()
+	// Инструменты у элемента необязательны: Attach() принимает tools = null.
+	for(var/tool in tool_types)
+		methods += tool_names[tool] || tool
 	if(can_use_hands)
-		methods += list("bare handed")
+		methods += "голыми руками"
 	if(!length(methods))
 		return
-	var/text = english_list(methods, "", " or ")
-	examine_list += "<span class='notice'>Looks like [source.ru_who()] can be scavenged [length(tool_types) ? "with" : ""][length(methods == 1) ? "" : "either "][length(tool_types) ? "a " : ""][text]</span>"
+	examine_list += span_notice("Можно обыскать: [english_list(methods, "", " или ")].")
 
 /datum/element/scavenging/proc/scavenge_barehanded(atom/source, mob/user)
 	scavenge(source, user, 1)

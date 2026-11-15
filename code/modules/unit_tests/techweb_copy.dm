@@ -1,11 +1,8 @@
-/// Tests for /datum/techweb/proc/copy_research_to delta-sync behavior.
-/// Every researched node re-applied by a sync pays SSeconomy.techweb_bounty into the science
-/// budget (see research_node), so a repeat sync of an already up-to-date receiver must be a no-op:
-/// no bounty payments, no state changes. Fabricators auto-sync on every node unlock, which made
-/// the old full re-research loop both a CPU hotspot and a money printer.
+/// Tests for /datum/techweb/proc/copy_research_to delta-sync behavior: a repeat sync of an
+/// up-to-date receiver is a no-op, and no sync pays the science budget (only console research does).
 /datum/unit_test/techweb_copy_delta/Run()
 	var/datum/techweb/source = new
-	var/datum/techweb/receiver = new
+	var/datum/techweb/receiver = new /datum/techweb/science
 	allocated += source
 	allocated += receiver
 
@@ -20,8 +17,13 @@
 			break
 	TEST_ASSERT(researched_extra >= 1, "Could not research any node on the source web, test cannot proceed")
 
+	var/datum/bank_account/sci_budget = SSeconomy.get_dep_account(ACCOUNT_SCI)
+	TEST_ASSERT_NOTNULL(sci_budget, "Science department account not found, bounty observable unavailable")
+	var/balance_before = sci_budget.account_balance
+
 	// First sync: receiver must get every researched node and design
 	source.copy_research_to(receiver)
+	TEST_ASSERT_EQUAL(sci_budget.account_balance, balance_before, "First copy_research_to paid the science budget")
 	for(var/node_id in source.researched_nodes)
 		TEST_ASSERT(receiver.researched_nodes[node_id], "Receiver is missing node [node_id] after copy_research_to")
 	for(var/design_id in source.researched_designs)
@@ -31,15 +33,11 @@
 	var/list/designs_snapshot = receiver.researched_designs.Copy()
 	var/list/hidden_snapshot = receiver.hidden_nodes.Copy()
 
-	var/datum/bank_account/sci_budget = SSeconomy.get_dep_account(ACCOUNT_SCI)
-	TEST_ASSERT_NOTNULL(sci_budget, "Science department account not found, bounty observable unavailable")
-	var/balance_before = sci_budget.account_balance
-
 	// Repeat sync with zero delta: must not re-research anything
 	source.copy_research_to(receiver)
 
 	TEST_ASSERT_EQUAL(sci_budget.account_balance, balance_before, \
-		"Repeat copy_research_to re-researched already-synced nodes and paid techweb_bounty for each")
+		"Repeat copy_research_to re-researched already-synced nodes and paid the research payout for each")
 	TEST_ASSERT_EQUAL(length(receiver.researched_nodes), length(nodes_snapshot), "Repeat sync changed receiver researched_nodes")
 	TEST_ASSERT_EQUAL(length(receiver.researched_designs), length(designs_snapshot), "Repeat sync changed receiver researched_designs")
 	TEST_ASSERT_EQUAL(length(receiver.hidden_nodes), length(hidden_snapshot), "Repeat sync changed receiver hidden_nodes")
@@ -55,6 +53,7 @@
 		return // techweb too small to have a remaining frontier, delta part not testable
 	source.research_node_id(new_node_id, TRUE, FALSE)
 	source.copy_research_to(receiver)
+	TEST_ASSERT_EQUAL(sci_budget.account_balance, balance_before, "Delta copy_research_to paid the science budget")
 	TEST_ASSERT(receiver.researched_nodes[new_node_id], "Delta sync did not deliver newly researched node [new_node_id] to the receiver")
 	for(var/design_id in source.researched_designs)
 		TEST_ASSERT(receiver.researched_designs[design_id], "Receiver is missing design [design_id] after delta sync")

@@ -33,7 +33,7 @@
 	was_running = (user.m_intent == MOVE_INTENT_RUN)
 	if(was_running)
 		user.toggle_move_intent()
-	while(B && ContinueActive(user) || user.m_intent == MOVE_INTENT_RUN)
+	while(!QDELETED(B) && ContinueActive(user))
 		if(istype(user.buckled, /obj/vehicle)) //We dont want people using fortitude being able to use vehicles
 			var/obj/vehicle/V = user.buckled
 			var/datum/component/riding/VRD = V.GetComponent(/datum/component/riding)

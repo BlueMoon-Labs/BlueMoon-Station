@@ -1445,6 +1445,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/list/lines = list()
 	lines += "блокирующие вызовы, ожидание прока (усыпляют вызывающего, миру НЕ мешают - МК крутится дальше, дрифту не соответствуют): [blocking_sleeping_calls] на [round(blocking_sleeping_ms)]мс[sleeping_tail]"
 	lines += "блокирующие вызовы, синхронные (морозят весь процесс): [blocking_sync_calls] на [round(blocking_sync_ms)]мс[share][sync_tail]"
+	lines += player_savefile_summary()
 	return lines
 
 /// Тот же итог одной строкой (для отчёта верба и для юнит-теста)

@@ -138,6 +138,7 @@
 	.["context_menu_presets"] = menu_presets
 	.["context_menu_preset"] = current_context_menu_preset()
 	.["shift_invites"] = shift_invites
+	.["nearsigh_darkening"] = nearsigh_darkening
 
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
@@ -516,6 +517,12 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("nearsigh_darkening")
+					nearsigh_darkening = !nearsigh_darkening
+					dirty_var = "nearsigh_darkening"
+					if(isliving(user))
+						var/mob/living/L = user
+						L.update_nearsighted_effect()
 				if("shift_invites")
 					shift_invites = !shift_invites
 					dirty_var = "shift_invites"
