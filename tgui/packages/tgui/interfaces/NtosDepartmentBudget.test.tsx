@@ -20,6 +20,7 @@ const base: BudgetData = {
   grace_minutes: 15,
   goal_minutes: 30,
   goal_cooldown_minutes: 30,
+  goal_collect_minutes: 60,
   economy_minutes: 5,
   wage_minutes: 10,
   owed_cap: 6,
@@ -243,6 +244,7 @@ describe('NtosDepartmentBudget', () => {
       },
     });
     expect(text(container)).toContain('Surgical Kit, 1 200 кр., набрано, заказать за 25 мин.');
+    expect(text(container)).toContain('1 200 кр. из 1 200 кр.');
     expect(text(container)).toContain('500 кр. недавних поступлений пока не считаются излишком');
     expect(text(container)).toContain('Цель уже выбрана: чтобы выбрать другую, снимите эту в каталоге.');
     expect(text(container)).not.toContain('Красный код');
@@ -252,12 +254,14 @@ describe('NtosDepartmentBudget', () => {
     expect(sent(topic, 'clear_goal')).toHaveLength(1);
   });
 
-  test('цель без срока, пока бюджет копит; при красном коде излишек не забирают', () => {
-    const goal = { id: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', amount: 12000, minutes_left: null };
+  test('цель без срока, пока бюджет копит, но со сроком на сбор; при красном коде излишек не забирают', () => {
+    const goal = { id: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', amount: 12000, minutes_left: null, collect_minutes_left: 40 };
     const { container } = setup({
       department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, threshold: 9000, return_due: 0, goal, emergency: 1 },
     });
-    expect(text(container)).toContain('Surgical Kit, 12 000 кр., копим: срок на заказ пойдёт, когда бюджет наберёт цену');
+    expect(text(container)).toContain('Surgical Kit, 12 000 кр., копим: набрать за 40 мин., иначе цель снимется; срок на заказ пойдёт, когда бюджет наберёт цену');
+    expect(text(container)).toContain('4 000 кр. из 12 000 кр.');
+    expect(text(container)).toContain('(ставится в каталоге; набрать её цену нужно за 60 мин., иначе цель снимется; набрали - 30 мин. на заказ;');
     expect(text(container)).toContain('Красный код: пока его не снимут, NT не забирает излишек бюджета.');
   });
 
@@ -296,7 +300,8 @@ describe('NtosDepartmentBudget', () => {
   test('цель снабжения на ОБР: срок на вызов, снимается из каталога; у других отделов раздела нет', () => {
     const goal = { id: 'ert:1', name: 'Доставщики Питцы', amount: 25000, is_ert: 1, minutes_left: 20 };
     const { container, getByText, topic, unmount } = setup({ ...cargo, department: { ...cargo.department!, goal } });
-    expect(text(container)).toContain('Доставщики Питцы, 25 000 кр., набрано, вызвать с консоли связи за 20 мин.');
+    expect(text(container)).toContain('Доставщики Питцы, 25 000 кр., набрано, отряд вызывает капитан с консоли связи, осталось 20 мин.');
+    expect(text(container)).toContain('или на отряд ОБР, его вызывает капитан с консоли связи; набрать её цену');
     fireEvent.click(getByText('Каталог'));
     fireEvent.click(getByText('Цель'));
     expect(sent(topic, 'clear_goal')).toHaveLength(1);
@@ -304,6 +309,12 @@ describe('NtosDepartmentBudget', () => {
     const medical = setup();
     fireEvent.click(medical.getByText('Каталог'));
     expect(medical.container.textContent).not.toContain('Копить на дорогое');
+  });
+
+  test('цель снабжения на пак вне каталога: отгрузить шаттлом или заказать с экспресс-консоли', () => {
+    const goal = { id: '/datum/supply_pack/security/armory/pact_ninja_case', name: 'PACT Ninja Case', amount: 31000, off_catalog: 1, minutes_left: 10 };
+    const { container } = setup({ ...cargo, department: { ...cargo.department!, goal } });
+    expect(text(container)).toContain('PACT Ninja Case, 31 000 кр., набрано, отгрузите шаттлом снабжения или закажите с экспресс-консоли за 10 мин.');
   });
 
   test('сотрудник: без одобрения и премий, заявка с причиной', () => {

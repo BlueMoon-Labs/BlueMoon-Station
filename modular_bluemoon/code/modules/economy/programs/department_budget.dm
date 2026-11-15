@@ -129,6 +129,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"grace_minutes" = settings.budget_cap_grace_ticks * round(SSeconomy.wait / (1 MINUTES), 1),
 		"goal_minutes" = settings.saving_goal_minutes,
 		"goal_cooldown_minutes" = settings.saving_goal_cooldown_minutes,
+		"goal_collect_minutes" = settings.saving_goal_collect_minutes,
 		"economy_minutes" = round(SSeconomy.wait / (1 MINUTES), 1),
 		"wage_minutes" = round(settings.payroll_interval_ticks * SSeconomy.wait / (1 MINUTES), 1),
 		"owed_cap" = settings.owed_wages_cap_paychecks,
@@ -191,7 +192,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
 		"express_ready_in" = CEILING(department.express_ready_in() / (1 SECONDS), 1),
-		"goal" = department.saving_goal_amount() ? list("id" = department.saving_goal_ert ? "ert:[department.saving_goal_ert]" : "[department.saving_goal.type]", "name" = department.saving_goal_name(), "amount" = department.saving_goal_amount(), "is_ert" = !!department.saving_goal_ert, "minutes_left" = department.saving_goal_until ? CEILING((department.saving_goal_until - world.time) / (1 MINUTES), 1) : null) : null,
+		"goal" = econ_budget_goal_entry(department, packs),
 		"emergency" = econ_emergency_active(),
 	)
 	var/list/prices = list()
@@ -270,6 +271,22 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	if(!pack || !(pack in department.catalog()))
 		return null
 	return pack
+
+/// Цель накопления отдела для окна: сколько набрать, сколько осталось на сбор и на заказ; null - цели нет.
+/proc/econ_budget_goal_entry(datum/economy_department/department, list/packs)
+	var/amount = department.saving_goal_amount()
+	if(!amount)
+		return null
+	var/until = department.saving_goal_until
+	return list(
+		"id" = department.saving_goal_ert ? "ert:[department.saving_goal_ert]" : "[department.saving_goal.type]",
+		"name" = department.saving_goal_name(),
+		"amount" = amount,
+		"is_ert" = !!department.saving_goal_ert,
+		"off_catalog" = !department.saving_goal_ert && !(department.saving_goal in packs),
+		"minutes_left" = until ? CEILING((until - world.time) / (1 MINUTES), 1) : null,
+		"collect_minutes_left" = until ? null : max(CEILING((department.saving_goal_collect_deadline() - world.time) / (1 MINUTES), 1), 0),
+	)
 
 /// Пак, на который отдел может копить: из каталога, а у снабжения - и заказываемый за его бюджет.
 /datum/computer_file/program/department_budget/proc/goal_pack(datum/economy_department/department, pack_text)
@@ -363,7 +380,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
 			else if(ert_id ? cargo.set_saving_goal_ert(ert_id, user) : department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрали - [SSeconomy.settings.saving_goal_minutes] мин. на [ert_id ? "вызов отряда с консоли связи" : "заказ"]."
+				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
 			else if(department.saving_goal_amount())
 				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal_name()]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())

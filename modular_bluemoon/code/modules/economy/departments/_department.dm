@@ -23,6 +23,8 @@
 	/// Номер отряда в GLOB.payed_ert, на который копит снабжение вместо пака; 0 - нет
 	var/saving_goal_ert = 0
 	var/saving_goal_until = 0
+	/// Когда глава поставил цель: не набранная за saving_goal_collect_minutes снимается
+	var/saving_goal_set_at = 0
 	/// До этого world.time новую цель не поставить
 	var/saving_goal_cooldown_until = 0
 	var/saving_goal_cache
@@ -179,7 +181,7 @@
 		last = max(last, entry[2])
 	return max(last - SSeconomy.fire_count, 0) * round(SSeconomy.wait / (1 MINUTES), 1)
 
-/// Сумма цели накопления; цена пересчитывается раз в тик экономики. Пока бюджет не набрал цену, срока нет; набрал - saving_goal_minutes на заказ. Истёкшая цель снимается с перерывом.
+/// Сумма цели накопления; цена пересчитывается раз в тик экономики. Пока бюджет не набрал цену, срок на заказ не идёт, но набрать её надо за saving_goal_collect_minutes; набрал - saving_goal_minutes на заказ. Истёкшая цель снимается с перерывом.
 /datum/economy_department/proc/saving_goal_amount()
 	if(!saving_goal && !saving_goal_ert)
 		return 0
@@ -192,10 +194,38 @@
 	if(saving_goal_cache_tick != SSeconomy.fire_count || isnull(saving_goal_cache))
 		saving_goal_cache = saving_goal_price()
 		saving_goal_cache_tick = SSeconomy.fire_count
-	if(!saving_goal_until && account.account_balance >= saving_goal_cache)
-		saving_goal_until = world.time + SSeconomy.settings.saving_goal_minutes MINUTES
-		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal_name()]\": [saving_goal_ert ? "вызовите отряд с консоли связи" : "закажите её"] за [SSeconomy.settings.saving_goal_minutes] мин., потом её цена снова станет излишком.")
+	if(saving_goal_until)
+		return saving_goal_cache
+	if(account.account_balance >= saving_goal_cache)
+		var/minutes = SSeconomy.settings.saving_goal_minutes
+		saving_goal_until = world.time + minutes MINUTES
+		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal_name()]\": [saving_goal_order_hint(minutes)], потом её цена снова станет излишком.")
+		saving_goal_reached(minutes)
+		return saving_goal_cache
+	if(world.time >= saving_goal_collect_deadline())
+		lapse_uncollected_goal()
+		return 0
 	return saving_goal_cache
+
+/// До этого world.time бюджет должен набрать цену цели.
+/datum/economy_department/proc/saving_goal_collect_deadline()
+	return saving_goal_set_at + SSeconomy.settings.saving_goal_collect_minutes MINUTES
+
+/// Бюджет не набрал цену цели вовремя: цель снимается как истёкшая, с перерывом.
+/datum/economy_department/proc/lapse_uncollected_goal()
+	var/collect_minutes = SSeconomy.settings.saving_goal_collect_minutes
+	var/goal_name = saving_goal_name()
+	log_econ("Цель накопления [name] \"[goal_name]\" не набрана за [collect_minutes] мин. и снята")
+	lapse_saving_goal(saving_goal_collect_deadline())
+	account.bank_card_talk("[capitalize(budget_name)] не набрал цель накопления \"[goal_name]\" за [collect_minutes] мин.: цель снята, новую можно поставить через [saving_goal_cooldown_minutes()] мин.")
+
+/// Как распорядиться набранной целью за minutes минут: для сообщений карты и окна бюджета.
+/datum/economy_department/proc/saving_goal_order_hint(minutes)
+	return "закажите её за [minutes] мин."
+
+/// Бюджет только что набрал цену цели.
+/datum/economy_department/proc/saving_goal_reached(minutes)
+	return
 
 /// Цена пака-цели, но не выше самого дорогого пака каталога в наличии.
 /datum/economy_department/proc/saving_goal_price()
@@ -249,6 +279,7 @@
 	saving_goal = pack
 	saving_goal_ert = 0
 	saving_goal_until = 0
+	saving_goal_set_at = world.time
 	saving_goal_cache = null
 	log_econ("[key_name(user)] назначил цель накопления [name]: [pack.name]")
 	return TRUE

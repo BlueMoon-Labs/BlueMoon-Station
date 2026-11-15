@@ -220,6 +220,8 @@
 #define ECON_CONTRACT_ACTIVITY_CHANCE 35
 /// Не чаще этого бюджет сообщает картам о возврате излишка NT
 #define ECON_BUDGET_RETURN_NOTICE_COOLDOWN (10 MINUTES)
+/// Возврат денег за не прилетевший отряд ОБР оставляет цели накопления на него хотя бы столько, один раз на цель
+#define ECON_ERT_REFUND_GOAL_GRACE (10 MINUTES)
 /// Шаг округления награды контракта деятельности
 #define ECON_CONTRACT_REWARD_STEP 50
 /// Начатый, но никем не взятый контракт снимается через столько возрастов ротации

@@ -2,7 +2,7 @@ import { BooleanLike } from 'common/react';
 import { useEffect, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, Input, LabeledList, NoticeBox, RestrictedInput, Stack, Table } from '../components';
+import { AnimatedNumber, Box, Button, Input, LabeledList, NoticeBox, ProgressBar, RestrictedInput, Stack, Table } from '../components';
 import { NtosWindow, Window } from '../layouts';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, RequestEntry, RequestStatus, TreasuryRequestEntry } from './common/Economy';
@@ -22,7 +22,15 @@ type DepartmentInfo = {
   shielded?: number;
   goal_cooldown?: number;
   express_ready_in?: number;
-  goal?: { id: string; name: string; amount: number; is_ert?: BooleanLike; minutes_left?: number | null } | null;
+  goal?: {
+    id: string;
+    name: string;
+    amount: number;
+    is_ert?: BooleanLike;
+    off_catalog?: BooleanLike;
+    minutes_left?: number | null;
+    collect_minutes_left?: number | null;
+  } | null;
   emergency?: BooleanLike;
 };
 
@@ -88,6 +96,7 @@ export type BudgetData = {
   grace_minutes?: number;
   goal_minutes?: number;
   goal_cooldown_minutes?: number;
+  goal_collect_minutes?: number;
   goal_packs?: GoalPack[];
   goal_max?: number;
   express_markup?: number;
@@ -269,6 +278,38 @@ const BudgetGauge = (props: { balance: number; threshold: number }) => {
   );
 };
 
+type SavingGoal = NonNullable<DepartmentInfo['goal']>;
+
+/** Как распорядиться набранной целью: пак каталога заказывают, пак консоли снабжения отгружают, отряд ОБР вызывает капитан. */
+const goalOrderHint = (goal: SavingGoal, minutes: number) => {
+  if (goal.is_ert) {
+    return `отряд вызывает капитан с консоли связи, осталось ${minutes} мин.`;
+  }
+  if (goal.off_catalog) {
+    return `отгрузите шаттлом снабжения или закажите с экспресс-консоли за ${minutes} мин.`;
+  }
+  return `заказать за ${minutes} мин.`;
+};
+
+const GoalLine = (props: { goal: SavingGoal; balance: number }) => {
+  const { goal, balance } = props;
+  const collected = Math.min(Math.max(balance, 0), goal.amount);
+  const collectLeft = goal.collect_minutes_left;
+  return (
+    <>
+      <NtLine label="Цель накопления">
+        {goal.name}, {formatCredits(goal.amount)},{' '}
+        {goal.minutes_left
+          ? `набрано, ${goalOrderHint(goal, goal.minutes_left)}`
+          : `копим${collectLeft !== null && collectLeft !== undefined ? `: набрать за ${collectLeft} мин., иначе цель снимется` : ''}; срок на ${goal.is_ert ? 'вызов' : 'заказ'} пойдёт, когда бюджет наберёт цену`}
+      </NtLine>
+      <ProgressBar value={goal.amount > 0 ? collected / goal.amount : 1} color={goal.minutes_left ? 'good' : 'average'} mb={0.5}>
+        {formatCredits(collected)} из {formatCredits(goal.amount)}
+      </ProgressBar>
+    </>
+  );
+};
+
 const OverviewTab = () => {
   const { data } = useBackend<BudgetData>();
   const department = data.department as DepartmentInfo;
@@ -297,14 +338,7 @@ const OverviewTab = () => {
             {formatCredits(department.owed)}
           </NtLine>
         )}
-        {!!department.goal && (
-          <NtLine label="Цель накопления">
-            {department.goal.name}, {formatCredits(department.goal.amount)},{' '}
-            {department.goal.minutes_left
-              ? `набрано, ${department.goal.is_ert ? 'вызвать с консоли связи' : 'заказать'} за ${department.goal.minutes_left} мин.`
-              : `копим: срок на ${department.goal.is_ert ? 'вызов' : 'заказ'} пойдёт, когда бюджет наберёт цену`}
-          </NtLine>
-        )}
+        {!!department.goal && <GoalLine goal={department.goal} balance={department.balance} />}
         {(!!department.shielded || !!department.goal || !!department.goal_cooldown) && (
           <Box className="NtTerm__hint" mt={0.5}>
             {!!department.shielded && <Box>{formatCredits(department.shielded)} недавних поступлений пока не считаются излишком.</Box>}
@@ -342,9 +376,13 @@ const BudgetHelp = () => {
           Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
           ниже <Credits amount={department.threshold_floor ?? 0} />. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
           Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
-          {data.grace_minutes} мин., а также цена пака - цели накопления (ставится в каталоге{data.goal_erts ? ', у снабжения - и на любой пак, который оно заказывает за свой бюджет, или на отряд ОБР' : ''}; пока бюджет её не набрал, срока
-          нет, после - {data.goal_minutes} мин. на заказ; после её истечения или снятия новая - через {data.goal_cooldown_minutes}{' '}
-          мин.). При красном коде и выше NT излишек не забирает.
+          {data.grace_minutes} мин., а также цена пака - цели накопления (ставится в каталоге
+          {data.goal_erts
+            ? ', у снабжения - и на любой пак, который оно заказывает за свой бюджет, или на отряд ОБР, его вызывает капитан с консоли связи'
+            : ''}
+          ; набрать её цену нужно за {data.goal_collect_minutes} мин., иначе цель снимется; набрали - {data.goal_minutes} мин. на
+          заказ; после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.). При красном коде и выше NT
+          излишек не забирает.
         </Box>
         <Box>
           Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел платит
@@ -678,9 +716,10 @@ const CargoGoalSection = () => {
         Копить на дорогое
       </Box>
       <Box className="NtTerm__hint" mb={1}>
-        Снабжение может копить на отряд ОБР, которого вызывают с консоли связи за его бюджет, или на любой пак, который
-        оно заказывает за свой бюджет, до {formatCredits(data.goal_max ?? 0)}. Цель снимется, когда пак отгрузят за бюджет
-        снабжения или вызовут отряд. Цены паков - на момент открытия окна.
+        Снабжение может копить на отряд ОБР (его вызывает капитан с консоли связи за бюджет снабжения) или на любой пак,
+        который оно заказывает за свой бюджет, до {formatCredits(data.goal_max ?? 0)}. Цель снимется, когда пак отгрузят
+        шаттлом снабжения или закажут с экспресс-консоли за бюджет снабжения либо капитан вызовет отряд. Цены паков - на
+        момент открытия окна.
       </Box>
       <Table>
         {(data.goal_erts || []).map((ert) => (
@@ -688,7 +727,7 @@ const CargoGoalSection = () => {
             <Table.Cell>
               <Box bold>{ert.name}</Box>
               <Box italic color="label">
-                Отряд ОБР, вызов с консоли связи
+                Отряд ОБР, вызывает капитан с консоли связи
               </Box>
             </Table.Cell>
             <Table.Cell collapsing>

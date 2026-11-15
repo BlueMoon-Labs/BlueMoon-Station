@@ -3,9 +3,10 @@
 	name = "Снабжение"
 	budget_name = "бюджет снабжения"
 	head_access = list(ACCESS_QM)
-	/// Отряд, вызов которого закрыл цель накопления, и её срок: возврат денег за не прилетевший отряд возвращает и цель
-	var/ert_goal_paid_id = 0
-	var/ert_goal_paid_until = 0
+	/// Оплаченные отряды, которые ещё могут не прилететь: "номер" -> list("shield" = потраченная защита, "goal_until" = срок закрытой вызовом цели или 0, "extended" = срок уже продлевался)
+	var/list/ert_paid = list()
+	/// Срок текущей цели на отряд уже продлевался возвратом денег за не прилетевший отряд
+	var/saving_goal_extended = FALSE
 
 /datum/economy_department/cargo/budget_floor()
 	return max(..(), SSeconomy.settings.budget_cap_floor_cargo)
@@ -48,6 +49,21 @@
 /datum/economy_department/cargo/saving_goal_scope()
 	return " (пак снабжения или отряд ОБР)"
 
+/datum/economy_department/cargo/saving_goal_order_hint(minutes)
+	if(saving_goal_ert)
+		return "отряд вызывает капитан с консоли связи, на это [minutes] мин."
+	if(saving_goal && !(saving_goal in catalog()))
+		return "отгрузите шаттлом снабжения или закажите с экспресс-консоли за [minutes] мин."
+	return ..()
+
+/// Командование узнаёт, что отряд можно вызывать: вызывает его капитан, а не снабжение.
+/datum/economy_department/cargo/saving_goal_reached(minutes)
+	if(!saving_goal_ert)
+		return
+	var/message = "Бюджет снабжения набрал на отряд ОБР \"[saving_goal_name()]\": капитан может вызвать его с консоли связи в ближайшие [minutes] мин."
+	paperwork_radio(message, RADIO_CHANNEL_COMMAND)
+	paperwork_radio(message, RADIO_CHANNEL_SUPPLY)
+
 /datum/economy_department/cargo/proc/set_saving_goal_ert(ert_id, mob/living/user)
 	var/list/ert = econ_payed_ert(ert_id)
 	if(!ert || !ert["available"] || !can_start_saving_goal(user))
@@ -55,34 +71,52 @@
 	saving_goal = null
 	saving_goal_ert = ert_id
 	saving_goal_until = 0
+	saving_goal_set_at = world.time
+	saving_goal_extended = FALSE
 	saving_goal_cache = null
 	log_econ("[key_name(user)] назначил цель накопления [name]: отряд [ert["name"]]")
 	return TRUE
 
-/// Вызов отряда ОБР за бюджет снабжения; снимает цель накопления на этот отряд.
+/// Вызов отряда ОБР за бюджет снабжения; снимает цель накопления на этот отряд. Потраченная защита и закрытая цель хранятся до прилёта отряда.
 /datum/economy_department/cargo/proc/pay_ert(ert_id, mob/user)
 	var/list/ert = econ_payed_ert(ert_id)
 	if(!ert || !ert["available"] || account.account_balance < ert["price"] || !account.debit(ert["price"], ECON_PURCHASE, user, "Вызов: [ert["name"]]"))
 		return FALSE
 	ert["available"] = FALSE
+	var/list/paid = list("shield" = account.department_shield_spent, "goal_until" = 0, "extended" = FALSE)
 	if(saving_goal_ert == ert_id)
-		ert_goal_paid_id = ert_id
-		ert_goal_paid_until = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
+		paid["goal_until"] = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
+		paid["extended"] = saving_goal_extended
 		clear_saving_goal(ordered = TRUE)
-	else if(ert_goal_paid_id == ert_id)
-		ert_goal_paid_id = 0
+	ert_paid["[ert_id]"] = paid
 	return TRUE
 
-/// Отряд не прилетел: деньги и отряд возвращаются, вместе с целью, если вызов её закрыл.
+/// Отряд прилетел: возвращать за него больше нечего.
+/datum/economy_department/cargo/proc/ert_arrived(ert_id)
+	ert_paid -= "[ert_id]"
+
+/// Отряд не прилетел: деньги, защита разовых поступлений и отряд возвращаются, вместе с целью, если вызов её закрыл. Срок цели - не меньше ECON_ERT_REFUND_GOAL_GRACE, продлевается один раз.
 /datum/economy_department/cargo/proc/refund_ert(ert_id, memo)
 	var/list/ert = econ_payed_ert(ert_id)
 	if(!ert)
 		return
 	ert["available"] = TRUE
-	account.credit(ert["price"], ECON_REFUND, memo = memo)
-	if(ert_goal_paid_id == ert_id)
-		ert_goal_paid_id = 0
-		restore_saving_goal(null, ert_goal_paid_until, ert_id)
+	var/list/paid = ert_paid["[ert_id]"]
+	ert_paid -= "[ert_id]"
+	if(!account.credit(ert["price"], ECON_REFUND, memo = memo) || !paid)
+		return
+	restore_shield(paid["shield"])
+	var/until = paid["goal_until"]
+	if(!until)
+		return
+	var/extended = paid["extended"]
+	if(!extended && until < world.time + ECON_ERT_REFUND_GOAL_GRACE)
+		until = world.time + ECON_ERT_REFUND_GOAL_GRACE
+		extended = TRUE
+	var/restored = !saving_goal && !saving_goal_ert
+	restore_saving_goal(null, until, ert_id)
+	if(restored && saving_goal_ert == ert_id)
+		saving_goal_extended = extended
 
 /// Руда платит на станции и на шахтёрских уровнях, кроме руин и чужих шаттлов.
 /datum/economy_department/cargo/proc/pays_ore_at(atom/source)
