@@ -406,6 +406,7 @@
 #include "heretic_onboarding.dm"
 #include "inducer_magazine.dm"
 #include "integrated_circuit_list_refs.dm"
+#include "interaction_contained_mobs.dm"
 #include "interaction_menu_payload.dm"
 #include "necropolis_curse.dm"
 #include "heretic_visuals.dm"

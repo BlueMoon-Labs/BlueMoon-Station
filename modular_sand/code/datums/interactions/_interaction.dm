@@ -12,6 +12,21 @@
 
 GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 
+/// Что стоит на тайле за мобом, которого несут: сумка в руке, pAI в MOD или карте. Из шкафа, машины или живота - сам моб.
+/proc/get_interaction_anchor(atom/movable/thing)
+	var/atom/movable/anchor = thing
+	while(!isturf(anchor.loc))
+		if(!isitem(anchor.loc) && !(ismob(anchor.loc) && isitem(anchor)))
+			return thing
+		anchor = anchor.loc
+	return anchor
+
+/// Касание как у стоящих на полу: моба в сумке или MOD меряют от того, кто его несёт.
+/proc/interaction_in_reach(mob/living/user, mob/living/target)
+	var/atom/movable/user_anchor = get_interaction_anchor(user)
+	var/atom/movable/target_anchor = get_interaction_anchor(target)
+	return user_anchor.Adjacent(target_anchor) && target_anchor.Adjacent(user_anchor)
+
 	/// The base of all interactions
 /datum/interaction
 	var/description
@@ -114,7 +129,7 @@ GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 	if(get_dist(user, target) > max_distance && !is_lewd_portal_relay_interaction(user, target))
 		to_chat(user, span_warning("Слишком далеко."))
 		return FALSE
-	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target))) // BLUEMOON EDIT can interact if in belly / portal relay
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(interaction_in_reach(user, target) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target)))
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
 	if(!evaluate_user(user, silent = FALSE, apply_cooldown = apply_cooldown))
