@@ -550,7 +550,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	set_target(null)
 	tile_list_shown = TRUE
 	var/client/viewer = user.client
-	if(viewer && pile_click == "take" && !viewer.context_menu_pile_hint_shown)
+	if(viewer && pile_click == "take" && isliving(user) && !viewer.context_menu_pile_hint_shown)
 		viewer.context_menu_pile_hint_shown = TRUE
 		to_chat(viewer, span_notice("В списке клетки ЛКМ по вещи берёт её (занята рука - берёт вторая), ПКМ по строке - её действия. Можно вернуть, чтобы ЛКМ открывал действия, - настройки игры, раздел «Меню ПКМ»."))
 	header_text = null
@@ -742,6 +742,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Подсказка строки объекта: что сделают клики с модификаторами прямо по ней
 /datum/context_menu/proc/pick_hint(atom/thing)
 	var/list/parts = list()
+	if(!isliving(user))
+		return "Shift - осмотреть"
 	if(pile_click == "take" && isitem(thing))
 		parts += "ЛКМ - взять, ПКМ - действия"
 	if(ismovable(thing))
@@ -753,7 +755,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /// Вещь можно взять: рядом, не прикручена, не своя, и есть свободная рука - активная или вторая
 /proc/context_menu_can_take(mob/user, obj/item/item)
-	if(item.anchored || item.loc == user || !user.CanReach(item))
+	if(!isliving(user) || item.anchored || item.loc == user || !user.CanReach(item))
 		return FALSE
 	if(!user.get_active_held_item())
 		return TRUE

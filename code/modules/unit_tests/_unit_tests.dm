@@ -234,6 +234,7 @@
 // #include "confusion.dm"
 // #include "crayons.dm"
 #include "context_menu.dm"
+#include "context_menu_ghost.dm"
 #include "create_and_destroy.dm"
 #include "crew_manifest_heads.dm"
 #include "cryo_objective_reselect.dm"

@@ -5266,6 +5266,7 @@
 #include "modular_bluemoon\code\modules\context_menu\context_menu.dm"
 #include "modular_bluemoon\code\modules\context_menu\context_menu_build.dm"
 #include "modular_bluemoon\code\modules\context_menu\context_menu_entry.dm"
+#include "modular_bluemoon\code\modules\context_menu\context_menu_ghost.dm"
 #include "modular_bluemoon\code\modules\context_menu\context_menu_html.dm"
 #include "modular_bluemoon\code\modules\context_menu\context_menu_screen.dm"
 #include "modular_bluemoon\code\modules\context_menu\context_menu_stats.dm"

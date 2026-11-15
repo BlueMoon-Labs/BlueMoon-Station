@@ -29,7 +29,10 @@
 		else
 			MiddleClickOn(A)
 		return
-	if(modifiers["shift"])
+	if(right_click_opens_menu(modifiers, A))
+		open_context_menu(A, params)
+		return
+	if(shift_click_examines(modifiers))
 		ShiftClickOn(A)
 		return
 	if(modifiers["alt"])
@@ -37,6 +40,9 @@
 		return
 	if(modifiers["ctrl"])
 		CtrlClickOn(A)
+		return
+	if(modifiers["right"])
+		ghost_right_click(A)
 		return
 
 	if(!CheckActionCooldown())

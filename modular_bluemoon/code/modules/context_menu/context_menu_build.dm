@@ -82,6 +82,10 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		var/entry_name = tile_list_shown ? "Назад" : "Другие на клетке ([length(get_tile_candidates(tile) - A)])"
 		result += new /datum/context_menu_entry/pick(entry_name, null, CONTEXT_ENTRY_SERVICE, null)
 	add_basic_entries(A, result, shown_clicks, style)
+	if(isobserver(user))
+		add_ghost_entries(A, result, shown_clicks)
+		add_admin_entry(A, result, style)
+		return result
 	// подписи скринтипа точнее общих названий интентов, поэтому собираются раньше них
 	var/list/main_clicks = list()
 	var/list/other_clicks = list()
@@ -98,18 +102,22 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 			result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
 	add_verb_entries(A, result)
 	add_mob_entries(A, result)
-	var/admin_pos = context_menu_style_option(style, "admin_pos")
-	if(admin_pos != "hidden" && user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
-		var/datum/context_menu_entry/admin_list/admin_entry = new("Админ…", null, CONTEXT_ENTRY_ADMIN)
-		if(admin_pos == "top")
-			// под «Другие на клетке», если он есть
-			result.Insert(tile ? 2 : 1, admin_entry)
-		else
-			result += admin_entry
+	add_admin_entry(A, result, style)
 	SEND_SIGNAL(A, COMSIG_ATOM_CONTEXT_MENU, user, result)
 	if(context_menu_style_option(style, "danger_order") == "bottom")
 		context_menu_danger_last(result)
 	return result
+
+/datum/context_menu/proc/add_admin_entry(atom/A, list/result, list/style)
+	var/admin_pos = context_menu_style_option(style, "admin_pos")
+	if(admin_pos == "hidden" || !user.client?.holder || !length(context_menu_admin_verbs_for(A, user.client.verbs)))
+		return
+	var/datum/context_menu_entry/admin_list/admin_entry = new("Админ…", null, CONTEXT_ENTRY_ADMIN)
+	if(admin_pos == "top")
+		// под «Другие на клетке», если он есть
+		result.Insert(tile ? 2 : 1, admin_entry)
+	else
+		result += admin_entry
 
 /// Агрессивные пункты - после остальных действий, перед служебными: случайный клик по верху меню не бьёт
 /proc/context_menu_danger_last(list/entries)
