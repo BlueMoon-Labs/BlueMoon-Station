@@ -308,6 +308,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		if(!viewmob && version)
 			hud_version = version > HUD_VERSIONS ? HUD_STYLE_STANDARD : version
 			hud_shown = (hud_version == HUD_STYLE_STANDARD)
+			for(var/M in mymob.observers)
+				show_hud(hud_version, M)
 		return FALSE
 
 	if(screenmob == mymob)
