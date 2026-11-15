@@ -573,6 +573,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "No area available.")
 		return
 	usr.forceMove(pick(L))
+	leave_observed_view()
 
 /mob/dead/observer/proc/view_gas()
 	set category = "Ghost"
@@ -653,6 +654,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 			if(T && isturf(T))	//Make sure the turf exists, then move the source to that destination.
 				A.forceMove(T)
+				leave_observed_view()
 			else
 				to_chat(A, "This mob is not located in the game world.")
 

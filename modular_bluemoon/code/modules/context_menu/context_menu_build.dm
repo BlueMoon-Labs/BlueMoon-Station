@@ -22,6 +22,7 @@ GLOBAL_LIST_INIT(context_menu_admin_verbs, list(
 	/client/proc/sendmob = /mob,
 	/client/proc/cmd_admin_subtle_message = /mob,
 	/datum/admins/proc/show_traitor_panel = /mob,
+	/datum/admins/proc/open_borgopanel = /mob/living/silicon/robot,
 	/client/proc/cmd_admin_check_contents = /mob/living,
 	/client/proc/cmd_select_equipment = /mob,
 	/client/proc/cmd_admin_rejuvenate = /mob/living,

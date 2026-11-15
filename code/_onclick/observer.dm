@@ -1,4 +1,6 @@
 /mob/dead/observer/DblClickOn(var/atom/A, var/params)
+	if(mouse_event_is_right_button(params))
+		return
 	if(can_reenter_corpse && mind && mind.current)
 		if(A == mind.current || (mind.current in A)) // double click your corpse or whatever holds it
 			reenter_corpse()						// (cloning scanner, body bag, closet, mech, etc)
@@ -11,6 +13,7 @@
 	// Otherwise jump
 	else if(A.loc)
 		forceMove(get_turf(A))
+	leave_observed_view()
 
 /mob/dead/observer/ClickOn(var/atom/A, var/params)
 	if(check_click_intercept(params,A))

@@ -196,6 +196,10 @@
 	SStgui.update_uis(src)
 
 /datum/spawnpanel/proc/InterceptClickOn(mob/clicker, params, atom/target)
+	// ПКМ - меню действий, спавнит и копирует только ЛКМ
+	var/list/modifiers = params2list(params)
+	if(modifiers["right"] && modifiers["button"] != "left")
+		return FALSE
 	if(!check_rights_for(clicker.client, R_SPAWN))
 		toggle_precise_mode(PRECISE_MODE_OFF, clicker)
 		return TRUE
