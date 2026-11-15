@@ -212,7 +212,7 @@
 			else
 				to_chat(owner, span_warning("Вас начинает уже тошнить от одиночества, кажется ещё немного и вас вырвет!"))
 				owner.adjust_disgust(45)
-		if(2)
+		if(2, 3)
 			if(!high_stress)
 				to_chat(owner, span_warning("Вы не можете перстать трястись..."))
 				owner.dizziness += 20
@@ -225,7 +225,7 @@
 				owner.Jitter(20)
 				owner.adjustStaminaLoss(50)
 
-		if(3, 4)
+		if(4)
 			if(!high_stress)
 				to_chat(owner, span_warning("Вы ощущаете себя очень одиноко..."))
 			else
