@@ -59,6 +59,8 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
+	// Гост из лобби получает клиента только после stoplag(); с нулём автокрио удалял его в этом окне как SSD с начала раунда.
+	lastclienttime = world.time
 	set_invisibility(GLOB.observer_default_invisibility)
 
 	add_verb(src, GLOB.ghost_verbs)
@@ -351,6 +353,11 @@ Works together with spawning an observer, noted above.
 			P.respawn_did_cryo = cryo
 	transfer_ckey(ghost, FALSE)
 	ghost.client?.init_verbs()
+	// Гост SSD-игрока продолжает его отсчёт автокрио, а не начинает новый от смерти тела.
+	if(!ghost.client && isliving(src))
+		var/mob/living/body = src
+		if(body.lastclienttime)
+			ghost.lastclienttime = body.lastclienttime
 	if(penalize)
 		var/penalty = CONFIG_GET(number/suicide_reenter_round_timer) MINUTES
 		var/roundstart_quit_limit = CONFIG_GET(number/roundstart_suicide_time_limit) MINUTES

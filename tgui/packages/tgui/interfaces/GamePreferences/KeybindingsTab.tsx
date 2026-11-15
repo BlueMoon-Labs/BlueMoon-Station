@@ -3,6 +3,7 @@ import { Component, createRef, type KeyboardEvent } from 'react';
 import { useBackend } from '../../backend';
 import { Box, Button, NoticeBox, Section, Stack, Tooltip } from '../../components';
 import { keyToByond } from '../../keyToByond';
+import { mouseButtonToByond } from '../../mouseButtons';
 
 type KeybindingInfo = {
   name: string;
@@ -32,15 +33,50 @@ type KeybindingsData = {
 
 const MAX_KEYS = 4;
 
+type CaptureModifiers = { altKey: boolean; ctrlKey: boolean; shiftKey: boolean };
+
+/**
+ * Modifiers sent with a captured key. Bindings without modifiers are looked up
+ * by the bare key, so a held Shift must not end up in them.
+ */
+export const captureModifiers = (independent: boolean, event: CaptureModifiers) => ({
+  alt: !independent && event.altKey ? 1 : 0,
+  ctrl: !independent && event.ctrlKey ? 1 : 0,
+  shift: !independent && event.shiftKey ? 1 : 0,
+});
+
 class KeyCaptureOverlay extends Component<{
   capture: KbCapture;
   onCancel: () => void;
   onKey: (event: KeyboardEvent<HTMLDivElement>) => void;
+  onMouseButton: (key: string, event: MouseEvent) => void;
 }> {
   focusRef = createRef<HTMLDivElement>();
 
+  // Side buttons are caught anywhere in the window, before the passthrough sends them to the game.
+  handleMouse = (event: MouseEvent) => {
+    const key = mouseButtonToByond(event.button);
+    if (!key) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.type === 'mousedown') {
+      this.props.onMouseButton(key, event);
+    }
+  };
+
   componentDidMount() {
     this.focusRef.current?.focus();
+    for (const type of ['mousedown', 'mouseup', 'auxclick']) {
+      document.addEventListener(type, this.handleMouse, true);
+    }
+  }
+
+  componentWillUnmount() {
+    for (const type of ['mousedown', 'mouseup', 'auxclick']) {
+      document.removeEventListener(type, this.handleMouse, true);
+    }
   }
 
   componentDidUpdate() {
@@ -82,7 +118,7 @@ class KeyCaptureOverlay extends Component<{
               Заменяется: <b>{capture.old_key || 'Не назначено'}</b>
             </Stack.Item>
             <Stack.Item>
-              Нажмите клавишу — <b>Esc</b> очистит привязку
+              Нажмите клавишу или боковую кнопку мыши — <b>Esc</b> очистит привязку
             </Stack.Item>
             <Stack.Item>
               <Button icon="times" onClick={onCancel}>
@@ -126,12 +162,15 @@ export const KeybindingsTab = (props) => {
   }
   const categoryKeys = Object.keys(categories).sort();
 
-  const submitCapture = (event: KeyboardEvent<HTMLDivElement>) => {
+  const sendCapture = (
+    byondKey: string | undefined,
+    clearKey: number,
+    event: CaptureModifiers,
+    numpad: boolean,
+  ) => {
     if (!kb_capture) {
       return;
     }
-    const clearKey = event.key === 'Escape' ? 1 : 0;
-    const byondKey = keyToByond(event);
     if (!clearKey && !byondKey) {
       return;
     }
@@ -141,11 +180,18 @@ export const KeybindingsTab = (props) => {
       independent: kb_capture.independent ? 1 : 0,
       clear_key: clearKey,
       key: byondKey || '',
-      alt: event.altKey ? 1 : 0,
-      ctrl: event.ctrlKey ? 1 : 0,
-      shift: event.shiftKey ? 1 : 0,
-      numpad: /^Numpad/.test(event.code) ? 1 : 0,
+      ...captureModifiers(!!kb_capture.independent, event),
+      numpad: numpad ? 1 : 0,
     });
+  };
+
+  const submitCapture = (event: KeyboardEvent<HTMLDivElement>) => {
+    sendCapture(
+      keyToByond(event),
+      event.key === 'Escape' ? 1 : 0,
+      event,
+      /^Numpad/.test(event.code),
+    );
   };
 
   const startCapture = (
@@ -181,6 +227,7 @@ export const KeybindingsTab = (props) => {
             capture={kb_capture}
             onCancel={() => act('keybinding_cancel')}
             onKey={submitCapture}
+            onMouseButton={(key, event) => sendCapture(key, 0, event, false)}
           />
         </Stack.Item>
       )}

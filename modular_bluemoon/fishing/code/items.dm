@@ -220,7 +220,7 @@
 	if(!account)
 		to_chat(user, span_warning("Для продажи нужна ID-карта с привязанным банковским счётом."))
 		return TRUE
-	account.adjust_money(price)
+	account.credit(price, ECON_EXPORT, user, "Продажа рыбы: [fish.name]")
 	account.bank_card_talk("Продажа рыбы: [fish.name] за [price] кредитов.")
 	total_payout += price
 	to_chat(user, span_nicegreen("[src] buys [fish] for [price] credits."))

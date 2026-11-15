@@ -77,6 +77,7 @@
 
 /datum/select_equipment/ui_close(mob/user)
 	clear_human_dummy(dummy_key)
+	src.user = null
 	qdel(src)
 
 /datum/select_equipment/proc/init_dummy()

@@ -29,6 +29,8 @@
 	add_cog_to_user()
 
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_user_delete))
+	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_user_logout))
+	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(on_user_login))
 
 
 /datum/cogbar/Destroy()
@@ -92,6 +94,21 @@
 	SIGNAL_HANDLER
 
 	qdel(src)
+
+/// Игрок вышел посреди действия: ссылка на ушедшего клиента пережила бы логаут, и BYOND искал бы её обходом мира.
+/datum/cogbar/proc/on_user_logout(datum/source)
+	SIGNAL_HANDLER
+
+	user_client?.images -= blank
+	user_client = null
+
+/datum/cogbar/proc/on_user_login(datum/source)
+	SIGNAL_HANDLER
+
+	if(user_client || !blank || !user.client)
+		return
+	user_client = user.client
+	user_client.images += blank
 
 
 #undef COGBAR_ANIMATION_TIME

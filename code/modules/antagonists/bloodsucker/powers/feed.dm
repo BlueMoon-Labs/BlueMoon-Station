@@ -183,8 +183,8 @@
 						 	 vision_distance = notice_range, ignored_mobs = target) // Only people who AREN'T the target will notice this action.
 		// Warn Feeder about Witnesses...
 		var/was_unnoticed = TRUE
-		for(var/mob/living/M in fov_viewers(notice_range, owner) - owner - target)
-			if(M.client && !M.silicon_privileges && !M.eye_blind && !M.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER))
+		for(var/mob/living/M in fov_viewers(notice_range, user) - user - target)
+			if(M.client && !M.silicon_privileges && !M.eye_blind && !M.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER))
 				was_unnoticed = FALSE
 				break
 		if(was_unnoticed)
@@ -302,7 +302,7 @@
 			break
 
 		// Blood Gulp Sound
-		owner.playsound_local(null, 'sound/effects/singlebeat.ogg', 40, TRUE)
+		user.playsound_local(null, 'sound/effects/singlebeat.ogg', 40, TRUE)
 		if(!amSilent)
 			target.playsound_local(null, 'sound/effects/singlebeat.ogg', 40, TRUE)
 	// DONE!
@@ -314,7 +314,7 @@
 							 "<span class='warning'>Вы втягиваете свои клыки и отпускаете [target] от своего укуса.</span>")
 
 	// /proc/log_combat(atom/user, atom/target, what_done, atom/object=null, addition=null)
-	log_combat(owner, target, "fed on blood", addition="(and took [amount_taken] blood)")
+	log_combat(user, target, "fed on blood", addition="(and took [amount_taken] blood)")
 
 	// Killed Target?
 	if(was_alive)
@@ -325,7 +325,9 @@
 	// Bad Bloodsucker. You shouldn't do that.
 	if(target && target.stat >= DEAD && ishuman(target))
 		// BLUEMOON ADD START
-		var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
+		var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
+		if(!bloodsuckerdatum)
+			return
 		switch(bloodsuckerdatum.bloodsucker_level)
 			if(-INFINITY to 2)
 				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "drankkilled", /datum/mood_event/drankkilled) // BAD // in bloodsucker_life.dm
@@ -352,12 +354,12 @@
 
 /datum/action/cooldown/bloodsucker/feed/DeactivatePower(mob/living/user = owner, mob/living/target)
 	..() // activate = FALSE
-	var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
+	var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
 	// No longer Feeding
 	if(bloodsuckerdatum)
 		bloodsuckerdatum.poweron_feed = FALSE
 	feed_target = null
 	// My mouth is no longer full
-	REMOVE_TRAIT(owner, TRAIT_MUTE, "bloodsucker_feed")
+	REMOVE_TRAIT(user, TRAIT_MUTE, "bloodsucker_feed")
 	// Let me move immediately
 	user.update_mobility()

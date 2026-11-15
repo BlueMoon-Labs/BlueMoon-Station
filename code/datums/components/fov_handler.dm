@@ -12,6 +12,8 @@
 	var/atom/movable/screen/fov_blocker/blocker_mask
 	/// The shadow mask applied to a client's screen
 	var/atom/movable/screen/fov_shadow/visual_shadow
+	/// Клиент, на чьём экране маски: в Logout у моба клиента уже нет
+	var/client/mask_client
 
 /datum/component/fov_handler/Initialize(fov_type = FOV_180_DEGREES)
 	if(!isliving(parent))
@@ -89,10 +91,11 @@
 
 /datum/component/fov_handler/proc/remove_mask()
 	var/mob/parent_mob = parent
-	var/client/parent_client = parent_mob.client
+	var/client/parent_client = mask_client || parent_mob.client
 	if(!parent_client) //Love client volatility!!
 		return
 	applied_mask = FALSE
+	mask_client = null
 	parent_client.screen -= blocker_mask
 	parent_client.screen -= visual_shadow
 
@@ -102,6 +105,7 @@
 	if(!parent_client) //Love client volatility!!
 		return
 	applied_mask = TRUE
+	mask_client = parent_client
 	parent_client.screen += blocker_mask
 	parent_client.screen += visual_shadow
 
@@ -127,4 +131,4 @@
 
 /datum/component/fov_handler/UnregisterFromParent()
 	. = ..()
-	UnregisterSignal(parent, list(COMSIG_MOB_RESET_PERSPECTIVE, COMSIG_ATOM_DIR_CHANGE, COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_MOB_LOGOUT))
+	UnregisterSignal(parent, list(COMSIG_MOB_RESET_PERSPECTIVE, COMSIG_ATOM_DIR_CHANGE, COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_MOB_CLIENT_CHANGE_VIEW, COMSIG_MOB_LOGOUT))

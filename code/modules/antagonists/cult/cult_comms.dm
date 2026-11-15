@@ -293,7 +293,7 @@
 				to_chat(B.current, "<span class='cultlarge'><b>[ranged_ability_user] has marked [C.cult_team.blood_target] in the [A.name] as the cult's top priority, get there immediately!</b></span>")
 				SEND_SOUND(B.current, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 				B.current.client.images += C.cult_team.blood_target_image
-				C.cult_team.blood_target_image_recipients |= B.current.client // BLUEMOON FIX: track recipient
+				C.cult_team.track_blood_target_recipient(B.current.client)
 		attached_action.owner.update_action_buttons_icon()
 		remove_ranged_ability("<span class='cult'>The marking rite is complete! It will last for 90 seconds.</span>")
 		C.cult_team.blood_target_reset_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(reset_blood_target),C.cult_team), 900, TIMER_STOPPABLE)
@@ -383,13 +383,13 @@
 	C.cult_team.blood_target_image.pixel_y = -C.cult_team.blood_target.pixel_y
 	SEND_SOUND(owner, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 	owner.client.images += C.cult_team.blood_target_image
-	C.cult_team.blood_target_image_recipients |= owner.client // BLUEMOON FIX: track recipient
+	C.cult_team.track_blood_target_recipient(owner.client)
 	for(var/datum/mind/B in SSticker.mode.cult)
 		if(B.current && B.current.stat != DEAD && B.current.client)
 			to_chat(B.current, "<span class='cultlarge'><b>[owner] has marked [C.cult_team.blood_target] in the [A.name] as the cult's top priority, get there immediately!</b></span>")
 			SEND_SOUND(B.current, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 			B.current.client.images += C.cult_team.blood_target_image
-			C.cult_team.blood_target_image_recipients |= B.current.client // BLUEMOON FIX: track recipient
+			C.cult_team.track_blood_target_recipient(B.current.client)
 	to_chat(owner,"<span class='cultbold'>You have marked the [target] for the cult! It will last for [DisplayTimeText(base_cooldown)].</span>")
 	name = "Clear the Blood Mark"
 	desc = "Remove the Blood Mark you previously set."

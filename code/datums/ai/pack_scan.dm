@@ -14,8 +14,11 @@
 #define AI_PACK_OBJECT_WINDOW (2 SECONDS)
 ///С какого расстояния до точки чужого oview можно взять его найденные объекты
 #define AI_PACK_OBJECT_SHARE_DIST 3
+///Дальний обзор делится шире, на четверть дальности: видимость и дальность взятой вещи финдер
+///проверяет сам, чужой скан лишь на окно прячет вещь, видную только с нашей точки
+#define AI_PACK_OBJECT_SHARE_RANGE_DIVISOR 4
 ///Сколько последних oview стаи держится для соседей
-#define AI_PACK_OBJECT_SCANS_MAX 8
+#define AI_PACK_OBJECT_SCANS_MAX 16
 
 ///Ключ стаи -> /datum/ai_pack_scan текущего окна
 GLOBAL_LIST_EMPTY(ai_pack_scans)
@@ -63,8 +66,9 @@ GLOBAL_LIST_INIT(ai_pack_scan_excluded, typecacheof(list(
 
 ///Найденные сородичем объекты, если он смотрел с той же дальности почти с той же точки
 /datum/ai_pack_scan/proc/shared_objects(turf/origin, range)
+	var/share_dist = AI_CROWD_SAVINGS ? max(AI_PACK_OBJECT_SHARE_DIST, round(range / AI_PACK_OBJECT_SHARE_RANGE_DIVISOR)) : AI_PACK_OBJECT_SHARE_DIST
 	for(var/datum/ai_pack_object_scan/object_scan as anything in GLOB.ai_pack_object_scans[key])
-		if(object_scan.range == range && object_scan.origin.z == origin.z && get_dist(object_scan.origin, origin) <= AI_PACK_OBJECT_SHARE_DIST)
+		if(object_scan.range == range && object_scan.origin.z == origin.z && get_dist(object_scan.origin, origin) <= share_dist)
 			return object_scan.hits
 	return null
 
@@ -157,5 +161,6 @@ GLOBAL_VAR_INIT(ai_approach_tile_memo_time, -1)
 
 #undef AI_PACK_OBJECT_SCANS_MAX
 #undef AI_PACK_OBJECT_SHARE_DIST
+#undef AI_PACK_OBJECT_SHARE_RANGE_DIVISOR
 #undef AI_PACK_OBJECT_WINDOW
 #undef AI_PACK_SCAN_WINDOW

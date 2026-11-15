@@ -73,9 +73,15 @@
 		if(kb.can_use(src))
 			kb.down(src)
 			keycount++
+	var/mouse_button = keybind_is_mouse_button(full_key)
 	for(var/kb_name in prefs.key_bindings[full_key])
 		keycount++
 		var/datum/keybinding/kb = GLOB.keybindings_by_name[kb_name]
+		if(mouse_button)
+			var/clientside_command = keybinding_clientside_command(kb)
+			if(clientside_command)
+				winset(src, null, "command=[url_encode(clientside_command)]")
+				continue
 		if(kb.can_use(src) && kb.down(src) && keycount >= MAX_COMMANDS_PER_KEY)
 			break
 
@@ -98,6 +104,20 @@
 	keys_held[_key] = world.time
 	if(movement_keys[_key])
 		last_movement_key_repeat = world.time
+
+/// Боковая кнопка в событии мыши как клавиша биндов, или null. Dream Seeker 516 шлёт её в MouseDown/MouseUp/Click карты как button=xbutton1/xbutton2.
+/proc/mouse_event_side_button_key(params)
+	if(findtext(params, "button=xbutton1"))
+		return MOUSE_SIDE_BUTTON_BACK
+	if(findtext(params, "button=xbutton2"))
+		return MOUSE_SIDE_BUTTON_FORWARD
+	return null
+
+/// Нажатие мыши всегда новое: если отпускание потерялось за пределами карты, кнопка не залипает.
+/client/proc/mouse_side_button_down(key)
+	if(key in keys_held)
+		keyUp(key)
+	keyDown(key)
 
 /// Keyup's all keys held down, including modifier keys.
 /client/proc/ForceAllKeysUp()

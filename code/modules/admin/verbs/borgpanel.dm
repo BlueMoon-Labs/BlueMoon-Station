@@ -93,6 +93,7 @@
 				"module_type" = upgrade.module_type,
 				"maximum_of_type" = modkit ? modkit.maximum_of_type : null,
 				"denied_type" = modkit ? modkit.denied_type : null,
+				"incompatible_modkits" = modkit ? modkit.incompatible_modkits : null,
 				"cost" = modkit ? modkit.cost : null
 				)
 			)
