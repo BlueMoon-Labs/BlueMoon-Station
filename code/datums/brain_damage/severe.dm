@@ -153,22 +153,34 @@
 	gain_text = ""
 	lose_text = "<span class='notice'>You feel like you could be safe on your own.</span>"
 	var/stress = 0
+	COOLDOWN_DECLARE(effect_timer)
+	var/last_chance = TRUE // даём последний шанс чтобы принять Psicodine или найти хоть кого-то чтобы снять стресс
 
 /datum/brain_trauma/severe/monophobia/on_gain()
 	..()
 	if(check_alone())
-		to_chat(owner, "<span class='warning'>You feel really lonely...</span>")
+		to_chat(owner, span_warning("Вы ощущаете себя очень одиноко..."))
 	else
-		to_chat(owner, "<span class='notice'>You feel safe, as long as you have people around you.</span>")
+		to_chat(owner, span_notice("Вы чувствуете себя в безопасности, пока рядом с вами есть хоть кто-то."))
 
 /datum/brain_trauma/severe/monophobia/on_life()
 	..()
-	if(check_alone())
-		stress = min(stress + 0.25, 100)
-		if(stress > 10 && (prob(5)))
-			stress_reaction()
-	else
+	if(HAS_TRAIT(owner, TRAIT_FEARLESS)) // трейт от Psicodine
+		if(check_alone())
+			stress = max(stress - 0.25, 0) // в разы меньше чем от настоящей компании
+		else
+			stress = max(stress - 4.5, 0) // химия в 2 раза эффективнее при наличии компании
+		last_chance = TRUE
+		return
+
+	if(!check_alone())
 		stress = max(stress - 4, 0)
+		return
+
+	stress = min(stress + 0.25, 100)
+	if(stress > 10 && prob(5) && COOLDOWN_FINISHED(src, effect_timer))
+		COOLDOWN_START(src, effect_timer, rand(2, 5) MINUTES)
+		stress_reaction()
 
 /datum/brain_trauma/severe/monophobia/proc/check_alone()
 	var/check_radius = 7
@@ -193,21 +205,21 @@
 		return
 
 	var/high_stress = (stress > 60) //things get psychosomatic from here on
-	switch(rand(1,6))
+	switch(rand(1,5))
 		if(1)
 			if(!high_stress)
-				to_chat(owner, "<span class='warning'>You feel sick...</span>")
+				to_chat(owner, span_warning("Вы ощущаете себя очень плохо..."))
 			else
-				to_chat(owner, "<span class='warning'>You feel really sick at the thought of being alone!</span>")
-			addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob/living/carbon, vomit), high_stress), 50) //blood vomit if high stress
+				to_chat(owner, span_warning("Вас начинает уже тошнить от одиночества, кажется ещё немного и вас вырвет!"))
+				owner.adjust_disgust(45)
 		if(2)
 			if(!high_stress)
-				to_chat(owner, "<span class='warning'>You can't stop shaking...</span>")
+				to_chat(owner, span_warning("Вы не можете перстать трястись..."))
 				owner.dizziness += 20
 				owner.confused += 20
 				owner.Jitter(20)
 			else
-				to_chat(owner, "<span class='warning'>You feel weak and scared! If only you weren't alone...</span>")
+				to_chat(owner, span_warning("Вы ощущаете себя ослабшим и напуганным. Если кто был только рядом..."))
 				owner.dizziness += 20
 				owner.confused += 20
 				owner.Jitter(20)
@@ -215,24 +227,28 @@
 
 		if(3, 4)
 			if(!high_stress)
-				to_chat(owner, "<span class='warning'>You feel really lonely...</span>")
+				to_chat(owner, span_warning("Вы ощущаете себя очень одиноко..."))
 			else
-				to_chat(owner, "<span class='warning'>You're going mad with loneliness!</span>")
+				to_chat(owner, span_warning("Вы уже начинаете сходит с ума от одиночества!"))
 				owner.hallucination += 30
 
 		if(5)
 			if(!high_stress)
-				to_chat(owner, "<span class='warning'>Your heart skips a beat.</span>")
+				to_chat(owner, span_warning("Ваше сердце замирает на мгновение."))
 				owner.adjustOxyLoss(8)
 			else
-				if(prob(15) && ishuman(owner))
+				if(prob(50) && ishuman(owner))
 					var/mob/living/carbon/human/H = owner
+					if(last_chance)
+						last_chance = FALSE
+						H.emote("cry")
+						to_chat(H, span_userdanger("Вы ощущаете как ваше сердце разрывается от боли. Ещё немного и кажется оно лопнет из-за этого!"))
+						return
 					H.set_heartattack(TRUE)
-					to_chat(H, "<span class='userdanger'>You feel a stabbing pain in your heart!</span>")
+					to_chat(H, span_userdanger("Вы ощущаете колющую боль в сердце!"))
 				else
-					to_chat(owner, "<span class='userdanger'>You feel your heart lurching in your chest...</span>")
+					to_chat(owner, span_userdanger("Вы чувствуете, как ваше сердце бешено колотится в груди..."))
 					owner.adjustOxyLoss(8)
-		else
 
 /datum/brain_trauma/severe/discoordination
 	name = "Discoordination"
