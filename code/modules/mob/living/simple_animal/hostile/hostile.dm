@@ -488,6 +488,9 @@
 			return TRUE
 
 		if(ismecha(the_target))
+			//милишка без environment_smash меха не царапает (урон режется до 0) - не цель, иначе моб прилипает к броне навсегда
+			if(!environment_smash && !ranged)
+				return FALSE
 			var/obj/vehicle/sealed/mecha/M = the_target
 			for(var/occupant in M.occupants)
 				if(CanAttack(occupant))
@@ -973,8 +976,8 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		if(CanSmashTurfs(T))
 			T.attack_animal(src)
 		for(var/obj/O in T)
-			//цель бьёт AttackingTarget со своими гейтами, снос окружения её не трогает
-			if(O == target)
+			//цель бьёт AttackingTarget со своими гейтами, снос окружения её и транспорт с седоком не трогает
+			if(O == target || ai_vehicle_has_living_occupant(O))
 				continue
 			if(O.density && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
 				O.attack_animal(src)

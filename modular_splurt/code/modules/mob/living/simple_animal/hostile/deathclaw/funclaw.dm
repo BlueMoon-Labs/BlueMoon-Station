@@ -170,7 +170,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/AttackingTarget()
-
+	if(!isliving(target))
+		return ..()
 	if(!CanRape(target))
 		..() // Attack target to death
 		return

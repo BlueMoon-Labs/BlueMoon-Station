@@ -49,6 +49,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -277,6 +279,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -506,6 +510,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -735,6 +741,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE

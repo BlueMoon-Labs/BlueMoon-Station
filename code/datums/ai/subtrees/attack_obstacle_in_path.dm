@@ -36,13 +36,34 @@
 
 ///Шаг на клетку цели, до которой уже достаёт удар. Цель там бьёт милишка через AttackingTarget
 ///со всеми гейтами моба; снос "преграды" бил бы её второй раз в обход пикирования и отдыха.
+///Предикат тот же, что у милишки: цель в шкафу не Adjacent, и шкаф остаётся преградой.
 /proc/ai_step_reaches_target(mob/living/pawn, atom/target, turf/next_step)
-	return next_step && next_step == get_turf(target) && next_step.Adjacent(pawn)
+	if(!next_step || next_step != get_turf(target))
+		return FALSE
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	var/atom/attack_origin = (istype(hostile_pawn) && hostile_pawn.targets_from) || pawn
+	return target.Adjacent(attack_origin)
 
-///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж): путь он тогда и не расчищает
+///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж), или отдых мегафауны
+///после спецатаки: путь моб тогда не расчищает
 /proc/ai_pawn_path_paused(mob/living/pawn)
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
-	return istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move()
+	if(!istype(hostile_pawn))
+		return FALSE
+	if(!hostile_pawn.can_ai_controller_move())
+		return TRUE
+	var/mob/living/simple_animal/hostile/megafauna/boss = pawn
+	return istype(boss) && boss.recovery_time >= world.time
+
+///Транспорт с живым седоком - не преграда и не окружение: его бьют только как цель обычной атакой
+/proc/ai_vehicle_has_living_occupant(obj/thing)
+	var/obj/vehicle/vehicle = thing
+	if(!istype(vehicle))
+		return FALSE
+	for(var/mob/living/occupant as anything in vehicle.occupants)
+		if(isliving(occupant) && occupant.stat != DEAD)
+			return TRUE
+	return FALSE
 
 ///next_step, если он заблокирован преградой (не мобом), иначе null
 /proc/ai_blocked_step_turf(mob/living/pawn, turf/next_step)

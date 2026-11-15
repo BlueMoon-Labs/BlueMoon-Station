@@ -133,6 +133,12 @@
 		else
 			devour(L)
 
+///Во время отдыха после спецатаки мегафауна не бьёт и окружение: иначе снос шёл в обход AttackingTarget
+/mob/living/simple_animal/hostile/megafauna/DestroySurroundings()
+	if(recovery_time >= world.time)
+		return
+	return ..()
+
 /mob/living/simple_animal/hostile/megafauna/proc/devour(mob/living/L)
 	if(!L)
 		return

@@ -82,6 +82,8 @@
 /datum/obstacle_policy/proc/can_smash_blocker(mob/living/pawn, datum/ai_controller/controller, obj/blocker)
 	if(!smashes_structures || !blocker?.density || blocker.IsObscured() || (blocker.resistance_flags & INDESTRUCTIBLE))
 		return FALSE
+	if(ai_vehicle_has_living_occupant(blocker))
+		return FALSE
 	if(pawn.see_invisible < blocker.invisibility)
 		return FALSE
 	var/list/whitelist = controller.blackboard[BB_AI_OBSTACLE_WHITELIST]

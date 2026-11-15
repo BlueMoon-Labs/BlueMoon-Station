@@ -75,6 +75,110 @@
 	TEST_ASSERT(taken < 20 * drake.environment_smash, "Удар дрейка по меху не режется бронёй: [taken]")
 	drake.ai_controller.CancelActions()
 
+/// Цель в шкафу милишке недосягаема: шкаф остаётся преградой пути, и дрейк его ломает.
+/datum/unit_test/megafauna_drake_mech/closet
+
+/datum/unit_test/megafauna_drake_mech/closet/Run()
+	drake = allocate(/mob/living/simple_animal/hostile/megafauna/dragon, run_loc_floor_bottom_left)
+	drake.toggle_ai(AI_OFF)
+	drake.recovery_time = 0
+	var/turf/closet_turf = get_step(run_loc_floor_bottom_left, EAST)
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet, closet_turf)
+	var/mob/living/carbon/human/hider = allocate(/mob/living/carbon/human, closet_turf)
+	hider.forceMove(closet)
+	drake.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, hider)
+	drake.GiveTarget(hider)
+	TEST_ASSERT(!ai_step_reaches_target(drake, hider, closet_turf), "Цель в шкафу считается досягаемой для удара")
+
+	var/datum/ai_planning_subtree/attack_obstacle_in_path/subtree = GLOB.ai_subtrees[/datum/ai_planning_subtree/attack_obstacle_in_path]
+	subtree.SelectBehaviors(drake.ai_controller, 0.5)
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions) in drake.ai_controller.current_behaviors, "Шкаф с целью внутри не считается преградой пути")
+
+	var/integrity_before = closet.obj_integrity
+	var/datum/ai_behavior/attack_obstructions/obstruction = GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions)
+	obstruction.perform(0.5, drake.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(QDELETED(closet) || closet.obj_integrity < integrity_before, "Дрейк не ломает шкаф, в котором сидит цель")
+	drake.ai_controller.CancelActions()
+
+/// Мех с живым пилотом не окружение и не преграда: его бьют только как цель. Пустой мех - преграда.
+/datum/unit_test/megafauna_drake_mech/occupied_vehicle
+
+/datum/unit_test/megafauna_drake_mech/occupied_vehicle/Run()
+	setup_scene()
+	drake.toggle_ai(AI_OFF)
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
+	drake.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	drake.GiveTarget(prey)
+	var/integrity_before = mech.obj_integrity
+
+	var/datum/ai_behavior/destroy_surroundings/surroundings = GET_AI_BEHAVIOR(/datum/ai_behavior/destroy_surroundings)
+	surroundings.perform(0.5, drake.ai_controller)
+	TEST_ASSERT_EQUAL(mech.obj_integrity, integrity_before, "Снос окружения бьёт меха с пилотом, который не цель")
+	var/datum/ai_behavior/attack_obstructions/obstruction = GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions)
+	obstruction.perform(0.5, drake.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT_EQUAL(mech.obj_integrity, integrity_before, "Мех с пилотом сносится как преграда пути к пешему")
+
+	var/obj/vehicle/sealed/mecha/combat/gygax/empty_mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, get_step(start, NORTH))
+	empty_mech.deflect_chance = 0
+	var/mob/living/carbon/human/far_prey = allocate(/mob/living/carbon/human, locate(start.x, start.y + 2, start.z))
+	drake.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, far_prey)
+	drake.GiveTarget(far_prey)
+	var/empty_before = empty_mech.obj_integrity
+	obstruction.perform(0.5, drake.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(empty_mech.obj_integrity < empty_before, "Пустой мех на пути перестал быть преградой")
+	drake.ai_controller.CancelActions()
+
+/// Мегафауна в отдыхе после спецатаки не ломает ни окружение, ни преграды пути.
+/datum/unit_test/megafauna_recovery_spares_surroundings
+
+/datum/unit_test/megafauna_recovery_spares_surroundings/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/miner = allocate(/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner, start)
+	miner.toggle_ai(AI_OFF)
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_step(start, EAST))
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x, start.y + 2, start.z))
+	miner.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	miner.GiveTarget(prey)
+	miner.recovery_time = world.time + 10 SECONDS
+	TEST_ASSERT(ai_pawn_path_paused(miner), "Отдых мегафауны не ставит расчистку пути на паузу")
+
+	var/integrity_before = closet.obj_integrity
+	var/datum/ai_behavior/destroy_surroundings/surroundings = GET_AI_BEHAVIOR(/datum/ai_behavior/destroy_surroundings)
+	surroundings.perform(0.5, miner.ai_controller)
+	TEST_ASSERT(!QDELETED(closet) && closet.obj_integrity == integrity_before, "Ледяной шахтёр ломает окружение во время отдыха")
+
+	miner.recovery_time = 0
+	TEST_ASSERT(!ai_pawn_path_paused(miner), "Расчистка пути осталась на паузе после отдыха")
+	surroundings.perform(0.5, miner.ai_controller)
+	TEST_ASSERT(QDELETED(closet) || closet.obj_integrity < integrity_before, "Санити: после отдыха шахтёр не ломает окружение")
+
+/// Моб, чей удар меха не царапает, не держит его целью; стрелок - держит.
+/datum/unit_test/ai_harmless_melee_ignores_mecha
+
+/datum/unit_test/ai_harmless_melee_ignores_mecha/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	var/turf/mech_turf = locate(start_turf.x + 3, start_turf.y, start_turf.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, mech_turf)
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	TEST_ASSERT(pawn.CanAttack(mech), "Санити: мех с пилотом атакуем для обычного моба")
+
+	pawn.environment_smash = ENVIRONMENT_SMASH_NONE
+	pawn.ranged = FALSE
+	TEST_ASSERT(!pawn.CanAttack(mech), "Моб без сноса окружения считает меха целью, хотя не наносит ему урона")
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, mech)
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_NOTEQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], mech, "Безвредный для меха моб удержал его целью")
+	qdel(controller)
+
+	pawn.ranged = TRUE
+	TEST_ASSERT(pawn.CanAttack(mech), "Стрелок без сноса окружения перестал считать меха целью")
+
 /// Пули не берут дрейка только в воздухе; после посадки он снова получает урон.
 /datum/unit_test/megafauna_drake_bullets_after_landing
 
@@ -99,3 +203,34 @@
 	var/health_before = drake.health
 	drake.bullet_act(landed_shot)
 	TEST_ASSERT(drake.health < health_before, "Севший дрейк не получает урон от пуль")
+
+/// Похотливые мобы бьют меха-цель обычной атакой, а не лезут в поля моба на объекте.
+/datum/unit_test/lewd_mobs_attack_mecha
+
+/datum/unit_test/lewd_mobs_attack_mecha/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/mech_turf = get_step(start, EAST)
+	var/list/attacker_types = list(
+		/mob/living/simple_animal/hostile/deathclaw/funclaw,
+		/mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw,
+		/mob/living/simple_animal/hostile/werewolf/funwolf,
+		/mob/living/simple_animal/hostile/ice_wolf/funwolf,
+		/mob/living/simple_animal/hostile/hellhound/funwolf,
+		/mob/living/simple_animal/hostile/the_mosley/funwolf,
+	)
+	for(var/attacker_type in attacker_types)
+		var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+		mech.deflect_chance = 0
+		var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, mech_turf)
+		pilot.forceMove(mech)
+		mech.add_occupant(pilot)
+		var/mob/living/simple_animal/hostile/attacker = allocate(attacker_type, start)
+		attacker.toggle_ai(AI_OFF)
+		attacker.target = mech
+		var/integrity_before = mech.obj_integrity
+		attacker.AttackingTarget()
+		TEST_ASSERT(mech.obj_integrity < integrity_before, "[attacker_type] не бьёт меха-цель обычной атакой")
+		TEST_ASSERT_NULL(attacker.pulling, "[attacker_type] схватил меха вместо удара")
+		attacker.target = null
+		qdel(attacker)
+		qdel(mech)
