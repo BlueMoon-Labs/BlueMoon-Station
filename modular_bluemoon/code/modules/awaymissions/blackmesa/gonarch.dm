@@ -31,8 +31,8 @@
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	attack_verb_continuous = "beats down on"
 	attack_verb_simple = "beat down on"
-	attack_sound = 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_attack.ogg'
-	death_sound = 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_die.ogg'
+	attack_sound = 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchattack.ogg'
+	death_sound = 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg'
 	throw_message = "does nothing to the plated hide of the"
 	speed = 2
 	move_to_delay = 5
@@ -72,7 +72,7 @@
 /datum/action/innate/elite_attack/gonarch_spawn_children
 	name = "Spawn Children"
 	button_icon_state = "spawn_children"
-	chosen_message = span_boldwarning("You will spawn two children at your location to assist you in combat. You can have up to 8.")
+	chosen_message = span_boldwarning("You will spawn six children at your location to assist you in combat. You can have up to 8.")
 	chosen_attack_num = GONARCH_SPAWN_CHILDREN
 
 /datum/action/innate/elite_attack/gonarch_rage
@@ -175,7 +175,7 @@
 	if(!T)
 		charging = FALSE
 		return
-	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_pain.ogg', 75, FALSE)
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchpain.ogg', 75, FALSE)
 	visible_message(span_boldwarning("[src] prepares to charge!"))
 	addtimer(CALLBACK(src, PROC_REF(legionnaire_charge_2), dir_to_target, 0), 4)
 
@@ -243,7 +243,7 @@
 	var/turf/target_turf = get_turf(target)
 	if(!startloc || !target_turf)
 		return
-	playsound(startloc, 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_attack.ogg', 20, FALSE)
+	playsound(startloc, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchacidmortar.ogg', 20, FALSE)
 	icon_state = "gonarch_attack"
 	charging = TRUE
 	var/angle_to_target = get_projectile_angle(src, target_turf)
@@ -257,7 +257,7 @@
 	if(stat != DEAD)
 		icon_state = "gonarch"
 
-/// Spawns up to two mesa headcrabs near the gonarch, capped at 8 children.
+/// Spawns up to six mesa headcrabs near the gonarch, capped at 8 children.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/spawn_children(atom/target = null)
 	ranged_cooldown = world.time + 12 SECONDS
 	if(QDELETED(src) || stat == DEAD)
@@ -266,8 +266,8 @@
 	if(!home)
 		return
 	visible_message(span_boldwarning("[src] strains as it gives birth!"))
-	playsound(home, 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_birth.ogg', 20, TRUE)
-	for(var/i in 1 to 2)
+	playsound(home, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchbirth.ogg', 20, FALSE)
+	for(var/i in 1 to 6)
 		if(children_list.len >= 8)
 			break
 		var/turf/spawn_turf = get_free_adjacent_turf(home)
@@ -312,7 +312,7 @@
 	if(QDELETED(src) || stat == DEAD)
 		return
 	ranged_cooldown = world.time + 25 SECONDS
-	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/hl13_sound_creatures_gonarch_rage.ogg', 75, FALSE)
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
 	visible_message(span_warning("[src] starts picking up speed!"))
 	if(!rage_tint)
 		rage_tint = image(icon, icon_state = "gonarch")
