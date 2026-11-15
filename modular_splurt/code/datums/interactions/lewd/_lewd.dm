@@ -234,16 +234,6 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	return TRUE
 
-/mob/living/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
-	for(var/mob/M in get_interaction_witnesses())
-		if(M.client)
-			var/client/cli = M.client
-			if(unholy && (cli.prefs.unholypref == "No"))
-				LAZYADD(ignored_mobs, M)
-			if(unholy_hard && (cli.prefs.unholyhardpref == "No"))
-				LAZYADD(ignored_mobs, M)
-	. = ..()
-
 /mob/living/proc/has_legs(nintendo = REQUIRE_ANY)
 	var/legs = has_left_leg() + has_right_leg()
 	if(legs)

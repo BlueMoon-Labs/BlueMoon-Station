@@ -104,6 +104,70 @@
 		TEST_ASSERT(!interaction.do_action(near, inside, apply_cooldown = FALSE), "[label]: снаружи до сидящего внутри не достать.")
 		TEST_ASSERT(findtext(interaction_reach_refusal(inside, near), "выберись"), "[label]: отказ просит сначала выбраться.")
 
+/// Из запертого лок-бокса и сейфа, блюспейс-кармана импланта и полости груди наружу не достать; открытый лок-бокс - как сумка.
+/datum/unit_test/interaction_contained_closed
+
+/datum/unit_test/interaction_contained_closed/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/near_turf = get_step(origin, EAST)
+	var/mob/living/interaction_privacy_probe/near = allocate(/mob/living/interaction_privacy_probe, near_turf)
+	var/datum/interaction/interaction = allocate(/datum/interaction/contained_reach_test)
+
+	var/obj/item/storage/lockbox/lockbox = allocate(/obj/item/storage/lockbox, origin)
+	TEST_ASSERT(SEND_SIGNAL(lockbox, COMSIG_IS_STORAGE_LOCKED), "Лок-бокс заперт с самого начала.")
+	TEST_ASSERT(!is_interaction_carrier(lockbox), "Запертый лок-бокс не носитель.")
+	var/mob/living/simple_animal/mouse/boxed = allocate(/mob/living/simple_animal/mouse)
+	boxed.forceMove(lockbox)
+	TEST_ASSERT(!interaction.do_action(boxed, near, apply_cooldown = FALSE), "Из запертого лок-бокса взаимодействие не достаёт.")
+	TEST_ASSERT(!interaction.do_action(near, boxed, apply_cooldown = FALSE), "До сидящего в запертом лок-боксе не достать.")
+	SEND_SIGNAL(lockbox, COMSIG_TRY_STORAGE_SET_LOCKSTATE, FALSE)
+	TEST_ASSERT(is_interaction_carrier(lockbox), "Открытый лок-бокс - носитель, как сумка.")
+	TEST_ASSERT(interaction.do_action(boxed, near, apply_cooldown = FALSE), "Из открытого лок-бокса взаимодействие достаёт.")
+
+	var/obj/item/storage/secure/safe/safe = allocate(/obj/item/storage/secure/safe, origin)
+	SEND_SIGNAL(safe, COMSIG_TRY_STORAGE_SET_LOCKSTATE, TRUE)
+	TEST_ASSERT(!is_interaction_carrier(safe), "Запертый сейф не носитель.")
+	TEST_ASSERT(!is_interaction_carrier(allocate(/obj/item/storage/bluespace_pocket)), "Блюспейс-карман импланта не носитель.")
+
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, origin)
+	var/mob/living/silicon/pai/pai = allocate(/mob/living/silicon/pai, origin)
+	var/obj/item/paicard/card = pai.card
+	allocated += card
+	var/obj/item/bodypart/chest/chest = host.get_bodypart(BODY_ZONE_CHEST)
+	card.forceMove(host)
+	chest.cavity_item = card
+	TEST_ASSERT(is_interaction_carrier(card), "pAI-карта сама по себе носитель.")
+	TEST_ASSERT(!interaction.do_action(pai, near, apply_cooldown = FALSE), "Из полости груди наружу не достать.")
+	TEST_ASSERT(!interaction.do_action(near, pai, apply_cooldown = FALSE), "До pAI в полости груди не достать.")
+	chest.cavity_item = null
+	card.forceMove(origin)
+	TEST_ASSERT(host.put_in_hands(card), "pAI-карта должна попасть в руку.")
+	TEST_ASSERT(interaction.do_action(pai, near, apply_cooldown = FALSE), "Из карты в руке взаимодействие достаёт.")
+
+/// Отказ называет пользователю ближайший закрытый контейнер, а про цель контейнер не выдаёт.
+/datum/unit_test/interaction_contained_refusal_text
+
+/datum/unit_test/interaction_contained_refusal_text/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/near_turf = get_step(origin, EAST)
+	var/mob/living/interaction_privacy_probe/near = allocate(/mob/living/interaction_privacy_probe, near_turf)
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet, origin)
+	var/mob/living/simple_animal/mouse/held = allocate(/mob/living/simple_animal/mouse)
+	held.name = "мышонок"
+	closet.name = "шкафчик"
+	var/obj/item/clothing/head/mob_holder/holder = new(closet, held)
+	allocated += holder
+	TEST_ASSERT(held.loc == holder && holder.loc == closet, "Мышь в холдере в шкафу.")
+	TEST_ASSERT_EQUAL(get_interaction_blocker(held), closet, "Ближайший закрытый контейнер - шкаф, а не холдер.")
+
+	var/user_refusal = interaction_reach_refusal(held, near)
+	TEST_ASSERT(findtext(user_refusal, closet.name), "Отказ пользователю называет шкаф: [user_refusal]")
+	TEST_ASSERT(!findtext(user_refusal, held.name), "Отказ пользователю не называет холдер: [user_refusal]")
+	var/target_refusal = interaction_reach_refusal(near, held)
+	TEST_ASSERT(findtext(target_refusal, held.name), "Отказ про цель называет цель: [target_refusal]")
+	TEST_ASSERT(!findtext(target_refusal, closet.name), "Отказ про цель не выдаёт, где она сидит: [target_refusal]")
+	TEST_ASSERT(!findtext(user_refusal, "the ") && !findtext(target_refusal, "the "), "В русском отказе нет английского артикля: [user_refusal] / [target_refusal]")
+
 /datum/interaction/contained_reach_test/carrier_walks_away
 	var/mob/living/walker
 	var/turf/walk_destination
@@ -206,7 +270,8 @@
 /datum/unit_test/interaction_contained_subtler/Run()
 	var/turf/origin = run_loc_floor_bottom_left
 	var/turf/near_turf = get_step(origin, EAST)
-	allocate(/obj/structure/table, get_step(origin, NORTH))
+	var/turf/table_turf = get_step(origin, NORTH)
+	allocate(/obj/structure/table, table_turf)
 	var/obj/item/storage/backpack/floor_bag = allocate(/obj/item/storage/backpack, origin)
 	var/mob/living/interaction_privacy_probe/sender = allocate(/mob/living/interaction_privacy_probe)
 	sender.forceMove(floor_bag)
@@ -215,11 +280,19 @@
 	near_bag.forceMove(near)
 	var/mob/living/interaction_privacy_probe/nested = allocate(/mob/living/interaction_privacy_probe)
 	nested.forceMove(near_bag)
+	var/obj/item/storage/backpack/near_floor_bag = allocate(/obj/item/storage/backpack, near_turf)
+	var/mob/living/interaction_privacy_probe/floor_nested = allocate(/mob/living/interaction_privacy_probe)
+	floor_nested.forceMove(near_floor_bag)
+	var/obj/item/paicard/table_card = allocate(/obj/item/paicard, table_turf)
+	var/mob/living/interaction_privacy_probe/on_table = allocate(/mob/living/interaction_privacy_probe)
+	on_table.forceMove(table_card)
 
 	sender.emote("subtler_table", message = "стучит по столу")
 	TEST_ASSERT_EQUAL(length(sender.received_messages), 1, "Отправитель из сумки видит своё subtler_table.")
 	TEST_ASSERT_EQUAL(length(near.received_messages), 1, "subtler_table видит стоящий у стола.")
 	TEST_ASSERT_EQUAL(length(nested.received_messages), 1, "subtler_table видит и сидящий в сумке у стоящего у стола.")
+	TEST_ASSERT_EQUAL(length(floor_nested.received_messages), 1, "subtler_table видит сидящий в сумке на полу у стола.")
+	TEST_ASSERT_EQUAL(length(on_table.received_messages), 1, "subtler_table видит сидящий в карте на столе.")
 
 /// Цели subtler_target из сумки находятся и в темноте.
 /datum/unit_test/interaction_contained_subtler_dark

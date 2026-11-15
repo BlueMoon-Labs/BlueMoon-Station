@@ -358,8 +358,8 @@
 			continue
 		for(var/obj/structure/table/T2 in T.connected_floodfill(25))
 			processed[T2] = TRUE
-			for(var/mob/living/L in range(T2, 1))
-				show_to |= L.GetAllContents(/mob/living)
+			for(var/mob/living/L in get_hearers_in_range(1, T2))
+				show_to |= L
 
 	for(var/i in show_to)
 		var/mob/M = i
@@ -441,7 +441,7 @@
 				to_chat(user, span_warning("No target around."))
 				return FALSE
 
-			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, get_interaction_anchor(user), possible_target, radius = 40)
+			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, get_atom_on_turf(user), possible_target, radius = 40)
 
 		if(QDELETED(target))
 			to_chat(user, span_warning("Target is now unavailable."))

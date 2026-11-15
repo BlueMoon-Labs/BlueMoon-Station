@@ -1031,25 +1031,23 @@ GLOBAL_LIST_INIT(hidden_reaction_suffixes, list(", незаметно", ", ти�
 /mob/living/proc/get_interaction_witnesses()
 	var/const/witness_range = 7
 	. = list()
-	var/turf/source_turf = get_turf(src)
-	if(!source_turf)
-		return
-	for(var/mob/witness in range(witness_range, source_turf))
-		. += witness
-	for(var/mob/witness in get_hearers_in_view(witness_range, source_turf))
+	for(var/mob/witness in get_hearers_in_view(witness_range, src))
 		. |= witness
 
 /mob/living/proc/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
 	var/list/nope = list()
 	nope += ignored_mobs
-	for(var/mob/M in get_interaction_witnesses())
-		if(M.client)
-			var/client/cli = M.client
-			if(!(cli.prefs.toggles & VERB_CONSENT)) //Note: This probably could do with a specific preference
-				nope += M
-			else if(interaction_flags & INTERACTION_FLAG_EXTREME_CONTENT && (cli.prefs.extremepref == "No"))
-				nope += M
-		else
+	for(var/mob/M as anything in get_interaction_witnesses())
+		var/client/cli = M.client
+		if(!cli)
+			nope += M
+		else if(!(cli.prefs.toggles & VERB_CONSENT)) //Note: This probably could do with a specific preference
+			nope += M
+		else if(interaction_flags & INTERACTION_FLAG_EXTREME_CONTENT && (cli.prefs.extremepref == "No"))
+			nope += M
+		else if(unholy && cli.prefs.unholypref == "No")
+			nope += M
+		else if(unholy_hard && cli.prefs.unholyhardpref == "No")
 			nope += M
 	return nope
 

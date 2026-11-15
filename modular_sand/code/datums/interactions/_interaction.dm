@@ -12,22 +12,44 @@
 
 GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 
-/// Предмет, из которого сидящий внутри достаёт наружу: сумка, рюкзак, моб на руках, pAI-карта, MOD.
+/// Предмет, из которого сидящий внутри достаёт наружу: незапертая сумка или рюкзак, моб на руках, pAI-карта, MOD. Блюспейс-карман импланта закрыт.
 /proc/is_interaction_carrier(atom/container)
-	if(!isitem(container))
+	if(!isitem(container) || istype(container, /obj/item/storage/bluespace_pocket))
 		return FALSE
 	if(istype(container, /obj/item/clothing/head/mob_holder) || istype(container, /obj/item/paicard) || istype(container, /obj/item/mod/control))
 		return TRUE
-	return !!container.GetComponent(/datum/component/storage)
+	if(!container.GetComponent(/datum/component/storage))
+		return FALSE
+	return !SEND_SIGNAL(container, COMSIG_IS_STORAGE_LOCKED)
+
+/// Достаёт ли thing наружу из своего loc: из носителя или с моба, кроме полости в груди.
+/proc/interaction_reaches_out_of_loc(atom/movable/thing)
+	if(!ismob(thing.loc))
+		return is_interaction_carrier(thing.loc)
+	if(!isitem(thing))
+		return FALSE
+	if(!iscarbon(thing.loc))
+		return TRUE
+	var/mob/living/carbon/holder = thing.loc
+	var/obj/item/bodypart/chest/chest = holder.get_bodypart(BODY_ZONE_CHEST)
+	return chest?.cavity_item != thing
 
 /// Что стоит на тайле за мобом, которого несут: сумка в руке, pAI в MOD или карте. Из шкафа, переноски, машины или живота - сам моб.
 /proc/get_interaction_anchor(atom/movable/thing)
 	var/atom/movable/anchor = thing
 	while(!isturf(anchor.loc))
-		if(ismob(anchor.loc) ? !isitem(anchor) : !is_interaction_carrier(anchor.loc))
+		if(!interaction_reaches_out_of_loc(anchor))
 			return thing
 		anchor = anchor.loc
 	return anchor
+
+/// Ближайший контейнер, из которого thing наружу не достаёт, или null.
+/proc/get_interaction_blocker(atom/movable/thing)
+	var/atom/movable/inner = thing
+	while(!isturf(inner.loc))
+		if(!interaction_reaches_out_of_loc(inner))
+			return inner.loc
+		inner = inner.loc
 
 /// Касание как у стоящих на полу: моба в сумке или MOD меряют от того, кто его несёт.
 /proc/interaction_in_reach(mob/living/user, mob/living/target)
@@ -37,10 +59,11 @@ GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 
 /// Почему не дотянуться: изнутри шкафа, меха или переноски сначала надо выбраться.
 /proc/interaction_reach_refusal(mob/living/user, mob/living/target)
-	if(!isturf(user.loc) && get_interaction_anchor(user) == user)
-		return "Сначала выберись из [user.loc]."
-	if(!isturf(target.loc) && get_interaction_anchor(target) == target)
-		return "[target] внутри [target.loc], отсюда не достать."
+	var/atom/user_blocker = get_interaction_blocker(user)
+	if(user_blocker)
+		return "Сначала выберись из [user_blocker.name]."
+	if(get_interaction_blocker(target))
+		return "До [target.name] сейчас не достать."
 	return "Ты не достаёшь."
 
 	/// The base of all interactions
