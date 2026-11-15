@@ -15,7 +15,7 @@ type FishInfo = {
   source: string;
   icon: string;
   discovered: number;
-  max_weight: number;
+  max_weight: number | null;
 };
 
 const formatWeight = (weight: number) => {
@@ -54,7 +54,7 @@ export const FishCatalog = (props) => {
                   <Box bold={fish === currentFish}>
                     {(fish.discovered ? '✓ ' : '? ') + fish.name}
                   </Box>
-                  {fish.discovered && fish.max_weight > 0 && (
+                  {!!fish.discovered && fish.max_weight > 0 && (
                     <Box fontSize="11px" color="label">
                       рекорд: {formatWeight(fish.max_weight)}
                     </Box>

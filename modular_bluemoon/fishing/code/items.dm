@@ -318,7 +318,7 @@
 			"source" = length(source_names) ? english_list(source_names) : "Редкий улов или особое событие",
 			"icon" = sanitize_css_class_name("[initial(fish_path.icon)][initial(fish_path.icon_state)]"),
 			"discovered" = discovered_ids[fish_id] ? 1 : 0,
-			"max_weight" = player_records[fish_id] || 0,
+			"max_weight" = player_records[fish_id] || null,
 		)
 		fish_info += list(fish_data)
 	data["fish_info"] = fish_info
