@@ -107,7 +107,7 @@
 	if(!account)
 		return 0
 	var/tip = paid_guests * MIXER_DRINK_TIP
-	account.adjust_money(tip, "NanoTrasen: премия за напитки на корпоративе")
+	account.credit(tip, ECON_WORK, memo = "NanoTrasen: премия за напитки на корпоративе")
 	account.bank_card_talk("Получено [tip] кр. за напитки на корпоративе.")
 	bartender_name = bartender.real_name
 	return tip

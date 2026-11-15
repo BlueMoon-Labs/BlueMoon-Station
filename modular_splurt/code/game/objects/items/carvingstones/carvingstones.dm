@@ -61,7 +61,7 @@
 /datum/supply_pack/costumes_toys/carvingstones
 	name = "Carving Stones Crate"
 	desc = "Let your friends and foes know what you think about them, via stone-to-face communication!"
-	cost = 400
+	cost = 600
 	contains = list(/obj/item/toy/carvingstone,
 	/obj/item/toy/carvingstone,
 	/obj/item/toy/carvingstone/helpme,

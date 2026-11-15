@@ -55,6 +55,9 @@
 /obj/machinery/mineral/ore_redemption/examine(mob/user)
 	. = ..()
 	. += span_notice("Мультитулом можно задать направление приёма/выдачи руды.")
+	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	if(cargo?.pays_ore_at(src))
+		. += span_notice("Каждое очко переработанной здесь руды приносит отделу снабжения [round(SSeconomy.settings.work_prices[WORK_MINING_ORE] * econ_sale_factor(COMMODITY_METALS), 0.01)] кр. по текущему рынку металлов.")
 
 /obj/machinery/mineral/ore_redemption/examine_display_content(mob/user)
 	. += "– Плавится <b>[ore_multiplier]</b> шт. листов сырья за единицу руды.\n\
@@ -89,6 +92,8 @@
 		var/amount = O.amount
 		mat_container.insert_item(O, ore_multiplier) //insert it
 		materials.silo_log(src, "smelted", amount, "ores", mats)
+		var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+		cargo?.note_ore(O, amount, src)
 		qdel(O)
 		balloon_alert_to_viewers("руда принята")
 
@@ -365,7 +370,9 @@
 				to_chat(usr, "<span class='warning'>Недостаточно кредитов на личном счёте. Требуется: [total_cost], доступно: [bank_acc.account_balance].</span>")
 				return TRUE
 
-			bank_acc.adjust_money(-total_cost, "Ore redemption: withdrawal of [sheets_to_remove]x [mat.name]")
+			if(!bank_acc.debit(total_cost, ECON_PURCHASE, usr, "Выдача листов: [sheets_to_remove]x [mat.name]"))
+				to_chat(usr, "<span class='warning'>Списание со счёта отклонено.</span>")
+				return TRUE
 			var/count = mat_container.retrieve_sheets(sheets_to_remove, mat, get_step(src, output_dir))
 			var/list/mats_list = list()
 			mats_list[mat] = MINERAL_MATERIAL_AMOUNT * count

@@ -712,8 +712,15 @@
 /// Проверяет применение config/director.json к профилю: известные ключи (в т.ч. минутные) применяются,
 /// неизвестный ключ фиксируется в config_error, а не рантаймит.
 /datum/unit_test/director_config_apply
+	var/datum/director_profile/saved_profile
+
+/datum/unit_test/director_config_apply/Destroy()
+	SSdirector.profile = saved_profile
+	saved_profile = null
+	return ..()
 
 /datum/unit_test/director_config_apply/Run()
+	saved_profile = SSdirector.profile
 	var/datum/director_profile/profile = new /datum/director_profile/medium
 	SSdirector.profile = profile
 	SSdirector.apply_profile_config(profile, list("base_drip" = 2.5, "max_quiet_time" = 5, "repeat_penalty" = 0.7, "global_spacing" = 4, "family_spacing" = 20))
@@ -739,7 +746,6 @@
 	SSdirector.apply_action_config(action, list("no_such_key" = 1))
 	TEST_ASSERT_NOTNULL(SSdirector.config_error, "Неизвестный ключ действия должен фиксироваться как ошибка")
 	SSdirector.config_error = null
-	SSdirector.profile = null
 
 /// Проверяет тегирование severity/cost/intensity у всех действий директора.
 /// Цикл 1 проходит живой SSdirector.actions: в этом тестовом мире Box Station реально стартует

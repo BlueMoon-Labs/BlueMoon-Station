@@ -272,14 +272,17 @@
 				return
 			var/list/shuttles = flatten_list(SSmapping.shuttle_templates)
 			var/datum/map_template/shuttle/shuttle = locate(params["shuttle"]) in shuttles
-			if (!istype(shuttle))
+			if (!istype(shuttle) || !shuttle.can_be_bought || shuttle.credit_cost == INFINITY)
 				return
 			if (!shuttle.prerequisites_met())
 				to_chat(usr, span_alert("Требования для покупки этого шаттла - не выполнены!"))
 				return
-			var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			if (bank_account.account_balance < shuttle.credit_cost)
+			var/datum/bank_account/department/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
+			var/price = max(shuttle.credit_cost, 0)
+			if (price && !bank_account.debit(price, ECON_PURCHASE, usr, "Покупка шаттла: [shuttle.name]"))
+				to_chat(usr, span_alert("В бюджете снабжения не хватает средств на этот шаттл."))
 				return
+			var/list/shield_spent = price ? bank_account.department_shield_spent : null
 			SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASED
 			SSshuttle.unload_preview()
 			SSshuttle.existing_shuttle = SSshuttle.emergency
@@ -287,10 +290,15 @@
 			if(!purchased_shuttle)
 				SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE
 				SSshuttle.existing_shuttle = null
-				to_chat(usr, span_alert("Не удалось загрузить шаттл. Попробуйте позже."))
+				if (price && bank_account.credit(price, ECON_REFUND, usr, "Возврат: шаттл [shuttle.name] не загрузился"))
+					bank_account.department.restore_shield(shield_spent)
+				to_chat(usr, span_alert("Не удалось загрузить шаттл[price ? ", деньги возвращены в бюджет снабжения" : ""]. Попробуйте позже."))
 				return
-			bank_account.adjust_money(-shuttle.credit_cost)
-			minor_announce("[usr.real_name] купил шаттл [shuttle.name] за [shuttle.credit_cost] кредитов.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
+			var/payout = max(-shuttle.credit_cost, 0)
+			if (payout)
+				bank_account.credit(payout, ECON_EVENT, usr, "Доплата NT за шаттл: [shuttle.name]")
+			var/deal = payout ? "выбрал шаттл [shuttle.name], NT доплатил снабжению [payout] кредитов" : "купил шаттл [shuttle.name] за [price] кредитов"
+			minor_announce("[usr.real_name] [deal].[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
 			message_admins("[ADMIN_LOOKUPFLW(usr)] purchased [shuttle.name].")
 			log_shuttle("[key_name(usr)] has purchased [shuttle.name].")
 			SSblackbox.record_feedback("text", "shuttle_purchase", 1, shuttle.name)
@@ -300,8 +308,9 @@
 			var/list/data = GLOB.payed_ert[id]
 			var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			if (data && data["available"] && bank_account.account_balance >= data["price"])
+				if(!bank_account.debit(data["price"], ECON_PURCHASE, usr, "Вызов: [data["name"]]"))
+					return
 				GLOB.payed_ert[id]["available"] = FALSE
-				bank_account.adjust_money(-data["price"])
 
 				minor_announce("[usr.real_name] вызвал [data["name"]] за [data["price"]] кредитов")
 				message_admins("[ADMIN_LOOKUPFLW(usr)] purchased ERT: [data["name"]].")
@@ -500,7 +509,7 @@
 						if(C.bought)
 							var/announce_message = "Станция отменяет плату [GLOB.slavers_team_name] в [C.price] кредитов за [M.real_name]."
 							var/slaver_message = "Станция отказалась платить [GLOB.slavers_team_name] за [C.loc.name]."
-							bank.adjust_money(C.price)
+							bank.credit(C.price, ECON_MISC, usr, "Отмена выкупа: [M.real_name]")
 							C.setBought(FALSE)
 							C.nextboughtChance = world.time + 5 MINUTES
 
@@ -511,7 +520,8 @@
 						else
 							var/announce_message = "Станция оплачивает возвращение [M.real_name] у [GLOB.slavers_team_name] за [C.price] кредитов."
 							var/slaver_message = "Станция заплатила выкуп [GLOB.slavers_team_name] за [C.loc.name]."
-							bank.adjust_money(-C.price)
+							if(!bank.debit(C.price, ECON_MISC, usr, "Выкуп: [M.real_name]"))
+								break
 							C.setBought(TRUE)
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
@@ -827,7 +837,7 @@
 		priority_announce("[station_name()], мы не можем выслать [ertemplate.polldesc] ввиду занятости всех действующих оперативников. Средства были возвращены.", "Отряд Быстрого Реагирования недоступен", 'modular_bluemoon/sound/ert/ert_no.ogg') //BlueMoon sound
 		var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		GLOB.payed_ert[id]["available"] = TRUE
-		bank_account.adjust_money(GLOB.payed_ert[id]["price"])
+		bank_account.credit(GLOB.payed_ert[id]["price"], ECON_REFUND, memo = "Возврат за [ertemplate.polldesc]")
 		return FALSE
 
 	message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
