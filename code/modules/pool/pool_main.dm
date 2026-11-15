@@ -158,9 +158,13 @@
 	. = ..()
 	if(!(. & (FLYING|FLOATING)) || (movement_type & (FLYING|FLOATING)))
 		return
-	var/turf/open/pool/pool = loc
-	if(istype(pool))
+	if(istype(loc, /turf/open/pool))
+		var/turf/open/pool/pool = loc
 		pool.mob_landed(src)
+		return
+	var/turf/landing_spot = loc
+	if(isturf(landing_spot) && landing_spot.liquids)
+		landing_spot.liquids.movable_entered(landing_spot, src)
 
 /turf/open/pool/MouseDrop_T(atom/from, mob/user)
 	// Handle the drag-in BEFORE the base /turf/open/MouseDrop_T generic height
