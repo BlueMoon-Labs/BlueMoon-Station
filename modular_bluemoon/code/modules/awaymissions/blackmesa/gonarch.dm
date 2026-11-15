@@ -129,6 +129,10 @@
 		return
 	var/obj/item/keycard/hevstorage/K = new /obj/item/keycard/hevstorage(drop_turf)
 	K.desc = "Кажется, кому-то очень неповезло быть сожранным этой тварью. Но ключ целый! Открывает проход дальше"
+	var/client/killer_client = GLOB.directory[lastattackerckey]
+	if(killer_client)
+		to_chat(killer_client, span_boldwarning("Из гонарча вывалилась ключ карта!"))
+	visible_message(span_boldwarning("[lastattacker || "Кто-то"] вырвал из туши гонарча ключ карту!"))
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/OpenFire(atom/fire_target)
 	if(client)
