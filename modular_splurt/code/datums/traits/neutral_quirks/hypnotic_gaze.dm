@@ -250,8 +250,8 @@
 		return
 
 	// Check for anti-magic
-	// This does not include TRAIT_HOLY
-	if(action_target.anti_magic_check())
+	// This does not include TRAIT_HOLY, but does include tinfoil
+	if(action_target.anti_magic_check(TRUE, FALSE, TRUE))
 		// Warn the users, then return
 		to_chat(action_owner, span_warning("You stare deeply into [action_target]'s eyes. They stare back at you as if nothing had happened."))
 		to_chat(action_target, span_notice("[action_owner] stares intensely into your eyes for a moment. You sense nothing out of the ordinary from them."))

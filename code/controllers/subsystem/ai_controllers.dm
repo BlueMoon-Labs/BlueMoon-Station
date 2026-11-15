@@ -33,12 +33,16 @@ SUBSYSTEM_DEF(ai_controllers)
 		GLOB.ai_subtrees[subtree_type] = subtree
 
 /datum/controller/subsystem/ai_controllers/fire(resumed)
+	var/slice_start_usage = TICK_USAGE
 	if(!resumed)
 		var/list/active_controllers = GLOB.ai_controllers_by_status[AI_STATUS_ON]
 		src.currentrun = active_controllers.Copy()
+		current_pass_cost_ms = 0
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
+	//дорогой проход планирования раскладывается по парам контроллер@паун в tick_spikes.log: один контроллер водит десятки разных мобов
+	var/profiling = profile_armed
 	while(length(currentrun))
 		var/datum/ai_controller/ai_controller = currentrun[currentrun.len]
 		currentrun.len--
@@ -49,9 +53,16 @@ SUBSYSTEM_DEF(ai_controllers)
 			continue
 
 		AI_METRIC_INC(planning_cycles)
+		var/item_start_usage = profiling ? TICK_USAGE : 0
 		ai_controller.SelectBehaviors(wait * 0.1)
 		if(!LAZYLEN(ai_controller.current_behaviors)) //Still no plan
 			ai_controller.planning_failed()
+		if(profiling)
+			profile_note("[ai_controller.type]@[ai_controller.pawn?.type]", max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)), ai_controller.pawn)
 
 		if(MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
+
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(GLOB.ai_controllers_by_status[AI_STATUS_ON]))

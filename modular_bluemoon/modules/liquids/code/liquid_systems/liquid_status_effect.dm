@@ -30,6 +30,8 @@
 		qdel(src)
 		return
 	calculate_water_slow()
+	if(owner.movement_type & (FLYING|FLOATING))
+		return ..()
 	//Make the reagents touch the person
 	var/fraction = SUBMERGEMENT_PERCENT(owner, T.liquids)
 	var/datum/reagents/tempr = T.liquids.simulate_reagents_flat(SUBMERGEMENT_REAGENTS_TOUCH_AMOUNT*fraction)

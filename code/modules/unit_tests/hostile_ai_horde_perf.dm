@@ -29,7 +29,7 @@
 
 /mob/living/simple_animal/hostile/unit_test_horde/infected_like/Initialize(mapload)
 	. = ..()
-	wanted_objects = typecacheof(list(/obj/structure/reagent_dispensers/fueltank), TRUE)
+	wanted_objects = typecacheof(list(/obj/structure/reagent_dispensers/fueltank))
 
 ///Эталон фильтра пула без общей памяти: candidate_passes() на каждого кандидата
 /proc/horde_reference_filter(mob/living/simple_animal/hostile/hunter, list/pool)
@@ -107,7 +107,7 @@
 /datum/unit_test/hostile_ai_horde_shared_object_scan/Run()
 	ai_pack_scans_reset()
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
-	allocate(/obj/structure/reagent_dispensers/fueltank, run_loc_floor_top_right)
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, run_loc_floor_top_right)
 	var/turf/first_spot = run_loc_floor_bottom_left
 	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/first = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, first_spot)
 	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/neighbour = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, get_step(first_spot, NORTH))
@@ -116,12 +116,143 @@
 	TEST_ASSERT_NOTNULL(pack_scan, "Object hunters of one type must share a pack scan")
 
 	var/list/first_hits = finder.find_wanted_objects(first, 25, pack_scan)
-	TEST_ASSERT(finder.find_wanted_objects(neighbour, 25, pack_scan) == first_hits, "A packmate one tile away must reuse the stored object scan")
+	TEST_ASSERT(length(first_hits) == 1 && first_hits[1] == tank, "Sanity: the first scan must find the fuel tank, found [length(first_hits)] objects")
+	var/scans_before = GLOB.ai_metrics.object_scans
+	var/list/neighbour_hits = finder.find_wanted_objects(neighbour, 25, pack_scan)
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.object_scans, scans_before, "A packmate one tile away must not run its own oview")
+	TEST_ASSERT(neighbour_hits == first_hits && (tank in neighbour_hits), "A packmate one tile away must reuse the stored object scan")
 	TEST_ASSERT(finder.find_wanted_objects(neighbour, 9, pack_scan) != first_hits, "Another scan range must not reuse the stored object scan")
-	TEST_ASSERT(finder.find_wanted_objects(far, 25, pack_scan) != first_hits, "A packmate four tiles away must look for itself")
+	//дальний обзор делится на четверть дальности, ближний - на три клетки
+	TEST_ASSERT(finder.find_wanted_objects(far, 25, pack_scan) == first_hits, "A packmate four tiles away must reuse a long-range object scan")
+	var/turf/seven_away = locate(first_spot.x + 7, first_spot.y, first_spot.z)
+	TEST_ASSERT_NULL(pack_scan.shared_objects(seven_away, 25), "A packmate seven tiles away must look for itself")
+	var/list/short_hits = finder.find_wanted_objects(first, 9, pack_scan)
+	TEST_ASSERT(tank in short_hits, "Sanity: the short scan must find the fuel tank")
+	TEST_ASSERT(pack_scan.shared_objects(get_turf(neighbour), 9) == short_hits, "Sanity: a short scan is shared one tile away")
+	TEST_ASSERT_NULL(pack_scan.shared_objects(get_turf(far), 9), "A short scan must not be shared four tiles away")
 	ai_pack_scans_reset()
 	ai_pack_object_scans_reset()
 	TEST_ASSERT(!length(GLOB.ai_pack_object_scans), "The object window reset must drop every stored scan")
+
+///Смэшер, ведущий цель без LOS, не берёт вещь из обзора сородича по ту сторону стены: видимость вещи ему потом никто не проверит
+/datum/unit_test/hostile_ai_horde_ignore_sight_skips_shared_objects/Run()
+	ai_pack_scans_reset()
+	ai_pack_object_scans_reset()
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	var/turf/corner = run_loc_floor_bottom_left
+	var/list/walls = list()
+	for(var/offset in 0 to 4)
+		var/turf/wall_turf = locate(corner.x + 2, corner.y + offset, corner.z)
+		walls[wall_turf] = wall_turf.type
+		wall_turf.ChangeTurf(/turf/closed/wall)
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, locate(corner.x + 4, corner.y, corner.z))
+	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/seer = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, locate(corner.x + 3, corner.y + 1, corner.z))
+	var/mob/living/simple_animal/hostile/unit_test_horde/infected_like/smasher = allocate(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, locate(corner.x + 1, corner.y + 1, corner.z))
+	var/obj/item/paper/old_target = allocate(/obj/item/paper, locate(corner.x, corner.y + 4, corner.z))
+	for(var/mob/living/simple_animal/hostile/hunter as anything in list(seer, smasher))
+		hunter.wanted_objects = typecacheof(/obj/structure/reagent_dispensers/fueltank)
+		hunter.ai_controller.set_blackboard_key(BB_AI_TARGETING_STRATEGY, /datum/targeting_strategy/hostile_legacy/ignore_sight)
+	var/datum/ai_controller/smasher_controller = smasher.ai_controller
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/hostile_legacy/ignore_sight)
+	smasher.target = old_target
+
+	finder.perform(0.5, seer.ai_controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	var/seer_target = seer.ai_controller.blackboard[BB_AI_CURRENT_TARGET]
+	var/sanity_pack = horde_pack_scan(smasher) == horde_pack_scan(seer)
+	var/sanity_ignores = strategy.ignores_sight(smasher)
+	finder.perform(0.5, smasher_controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	var/smasher_target = smasher_controller.blackboard[BB_AI_CURRENT_TARGET]
+
+	smasher.target = null
+	for(var/turf/wall_turf as anything in walls)
+		wall_turf.ChangeTurf(walls[wall_turf])
+	ai_pack_scans_reset()
+	ai_pack_object_scans_reset()
+	TEST_ASSERT(seer_target == tank, "Sanity: the packmate with a clear view must take the fuel tank")
+	TEST_ASSERT(sanity_pack, "Sanity: both smashers must share one pack scan")
+	TEST_ASSERT(sanity_ignores, "Sanity: an engaged smasher must ignore sight")
+	TEST_ASSERT(smasher_target != tank, "An engaged smasher took a fuel tank behind a wall from its packmate's view")
+
+///Окно ячеек грида не пересобирается шагом внутри тех же ячеек, но пересобирается при выходе из них
+/datum/unit_test/hostile_ai_horde_cell_window_skip/Run()
+	var/mob/living/simple_animal/hostile/unit_test_horde/walker = allocate(/mob/living/simple_animal/hostile/unit_test_horde, run_loc_floor_bottom_left)
+	var/datum/cell_tracker/tracker = walker.ai_controller.our_cells
+	TEST_ASSERT_NOTNULL(tracker, "Sanity: a hostile controller must track grid cells")
+	var/turf/from_turf
+	var/turf/to_turf
+	for(var/offset in 0 to 3)
+		var/turf/candidate_from = locate(run_loc_floor_bottom_left.x + offset, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+		var/turf/candidate_to = get_step(candidate_from, EAST)
+		var/list/from_cells = SSspatial_grid.get_cells_in_bounds(candidate_from, tracker.outer_window_x_radius, tracker.outer_window_y_radius)
+		var/list/to_cells = SSspatial_grid.get_cells_in_bounds(candidate_to, tracker.outer_window_x_radius, tracker.outer_window_y_radius)
+		if(from_cells ~= to_cells)
+			from_turf = candidate_from
+			to_turf = candidate_to
+			break
+	TEST_ASSERT_NOTNULL(from_turf, "Sanity: the floor must have a step inside the same grid cells")
+	walker.forceMove(from_turf)
+	var/list/cells_before = tracker.member_cells.Copy()
+	var/windows_before = GLOB.ai_metrics.cell_windows
+	walker.forceMove(to_turf)
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.cell_windows, windows_before, "A step inside the same grid cells must not rebuild the cell window")
+	TEST_ASSERT(tracker.member_cells ~= cells_before, "A step inside the same grid cells must keep the tracked cells")
+
+	var/turf/far_turf = locate(to_turf.x + SPATIAL_GRID_CELLSIZE * 3, to_turf.y, to_turf.z)
+	walker.forceMove(far_turf)
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.cell_windows, windows_before + 1, "Leaving the grid cells must rebuild the cell window")
+	var/list/far_cells = SSspatial_grid.get_cells_in_bounds(far_turf, tracker.outer_window_x_radius, tracker.outer_window_y_radius)
+	TEST_ASSERT(tracker.member_cells ~= far_cells, "The rebuilt window must track the cells around the new spot")
+	walker.forceMove(to_turf)
+
+///Взведённый профиль тикера планирования раскладывает проход по парам контроллер@паун и снимается в конце прохода
+/datum/unit_test/hostile_ai_controller_ticker_profile/Run()
+	var/mob/living/simple_animal/hostile/unit_test_horde/planner = allocate(/mob/living/simple_animal/hostile/unit_test_horde, run_loc_floor_bottom_left)
+	var/datum/ai_controller/controller = planner.ai_controller
+	var/saved_can_fire = detach_subsystem(SSai_controllers)
+	var/saved_limit = Master.current_ticklimit
+	var/saved_cooldown = SSai_controllers.profile_cooldown_until
+	var/alist/counts = alist()
+	SSai_controllers.profile_armed = TRUE
+	SSai_controllers.profile_cost_by_type = alist()
+	SSai_controllers.profile_count_by_type = counts
+	SSai_controllers.profile_max_by_type = alist()
+	SSai_controllers.profile_worst_by_type = alist()
+	SSai_controllers.profile_sleepers_by_type = alist()
+	SSai_controllers.state = SS_RUNNING
+	Master.current_ticklimit = INFINITY
+	SSai_controllers.currentrun = list(controller)
+	SSai_controllers.fire(TRUE)
+	Master.current_ticklimit = saved_limit
+	release_subsystem(SSai_controllers, saved_can_fire)
+	var/armed_after = SSai_controllers.profile_armed
+	var/counts_after = SSai_controllers.profile_count_by_type
+	SSai_controllers.profile_cooldown_until = saved_cooldown
+	TEST_ASSERT_EQUAL(counts["[controller.type]@[planner.type]"], 1, "An armed planning pass must note the planned controller under its type and the pawn type")
+	TEST_ASSERT_NULL(counts[controller.type], "A shared controller type alone must not hide which mobs it drives")
+	TEST_ASSERT(!armed_after, "The finished pass must disarm the profile")
+	TEST_ASSERT_NULL(counts_after, "The finished pass must drop its profile lists")
+
+///Пропуск пересчёта окна безопасен: где трекер говорит "то же окно", пересчёт ничего бы не поменял
+/datum/unit_test/hostile_ai_horde_cell_window_invariant/Run()
+	var/datum/cell_tracker/tracker = new(9, 9, 2)
+	var/turf/start = run_loc_floor_bottom_left
+	tracker.recalculate_cells(start)
+	var/skipped = 0
+	var/rebuilt = 0
+	for(var/index in 1 to SPATIAL_GRID_CELLSIZE * 3)
+		var/turf/center = locate(start.x + index, start.y + round(index / 2), start.z)
+		if(tracker.window_unchanged(center))
+			skipped++
+			var/list/changes = tracker.recalculate_cells(center)
+			TEST_ASSERT(!length(changes[1]) && !length(changes[2]), "An unchanged window must not gain or lose cells, step [index]")
+			continue
+		rebuilt++
+		tracker.recalculate_cells(center)
+	TEST_ASSERT(skipped > rebuilt, "Most steps must stay inside the same window ([skipped] skipped, [rebuilt] rebuilt)")
+	TEST_ASSERT(rebuilt > 0, "Crossing grid cells must rebuild the window")
+	tracker.forget_cells()
+	TEST_ASSERT(!tracker.window_unchanged(start), "A forgotten window must be rebuilt")
+	qdel(tracker, TRUE)
 
 ///Клетки вокруг цели стая проверяет один раз за тик, ответ совпадает с прямой проверкой
 /datum/unit_test/hostile_ai_horde_approach_tile_memo/Run()
@@ -455,6 +586,233 @@ GLOBAL_LIST_INIT(horde_bench_procs, list(
 
 /datum/unit_test/hostile_ai_path_bench/Run()
 	return ..()
+
+#define BRAWL_ARENA_SIZE 60
+#define BRAWL_HORDE_COUNT 200
+#define BRAWL_FOE_COUNT 80
+#define BRAWL_WARMUP (3 SECONDS)
+#define BRAWL_SEGMENTS 8
+#define BRAWL_SEGMENT_TIME (3 SECONDS)
+#define BRAWL_TOP_PROCS 30
+
+GLOBAL_VAR_INIT(ai_crowd_savings, TRUE)
+///Что бенч драки суммирует из профиля по режимам
+GLOBAL_LIST_INIT(brawl_bench_procs, list(
+	"/datum/ai_controller/hostile_adapter/SelectBehaviors" = "plan",
+	"/datum/ai_controller/process" = "behaviors",
+	"/datum/controller/subsystem/movement/fire" = "movement",
+	"/datum/ai_behavior/find_potential_targets/perform" = "finder",
+	"/datum/ai_behavior/find_potential_targets/proc/filter_candidates" = "filter",
+	"/datum/ai_behavior/find_potential_targets/proc/find_wanted_objects" = "objects",
+	"/datum/ai_controller/proc/update_grid" = "grid",
+))
+
+///Противник орды из другой фракции, отвечает ей тем же
+/mob/living/simple_animal/hostile/unit_test_horde/brawl_foe
+	faction = list("unit_test_brawl_foe")
+
+///Орда заражённых (200) против отряда (80) на открытом месте и в коридорах: цена тикеров ИИ и топ проков
+/datum/unit_test/hostile_ai_horde_brawl_bench
+	priority = TEST_LONGER
+	var/datum/turf_reservation/arena
+	var/mob/dead/observer/watcher
+	var/list/clutter = list()
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/arena_turf(x, y)
+	return locate(arena.bottom_left_coords[1] + x - 1, arena.bottom_left_coords[2] + y - 1, arena.bottom_left_coords[3])
+
+///Коридоры шириной 3: поперечные через 12 клеток, продольные через 20
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/is_corridor(x, y)
+	return ((y - 2) % 12) < 3 || ((x - 2) % 20) < 3
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/build_layout(layout)
+	for(var/x in 1 to BRAWL_ARENA_SIZE)
+		for(var/y in 1 to BRAWL_ARENA_SIZE)
+			var/turf/tile = arena_turf(x, y)
+			var/wall = x == 1 || y == 1 || x == BRAWL_ARENA_SIZE || y == BRAWL_ARENA_SIZE
+			if(!wall && layout == "corridors")
+				wall = !is_corridor(x, y)
+			tile.ChangeTurf(wall ? /turf/closed/indestructible/wall : /turf/open/indestructible/boss/air)
+			//станционная клетка не пуста: обзор и шаги платят за её содержимое
+			if(!wall)
+				clutter += new /obj/item/paper(tile)
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/open_tiles(min_x, max_x)
+	. = list()
+	for(var/x in min_x to max_x)
+		for(var/y in 2 to BRAWL_ARENA_SIZE - 1)
+			var/turf/tile = arena_turf(x, y)
+			if(!tile.density)
+				. += tile
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/spawn_side(mob_type, count, list/tiles)
+	. = list()
+	for(var/index in 1 to count)
+		var/turf/spot = tiles[((index * 37) % length(tiles)) + 1]
+		var/mob/living/simple_animal/hostile/brawler = new mob_type(spot)
+		brawler.ai_controller.can_idle = FALSE
+		brawler.ai_controller.set_ai_status(AI_STATUS_ON)
+		. += brawler
+
+/proc/brawl_probe_oview(turf/origin, list/wanted)
+	return typecache_filter_list(oview(25, origin), wanted)
+
+/proc/brawl_probe_range(turf/origin, list/wanted)
+	return typecache_filter_list(range(25, origin), wanted)
+
+/proc/brawl_probe_range_obj(turf/origin, list/wanted)
+	. = list()
+	for(var/obj/thing in range(25, origin))
+		if(wanted[thing.type])
+			. += thing
+
+///Цена обзора объектов на дальность заражённого: oview против range
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/probe_object_scans()
+	var/list/wanted = typecacheof(list(/obj/structure/reagent_dispensers/fueltank))
+	world.Profile(PROFILE_CLEAR)
+	world.Profile(PROFILE_START)
+	for(var/i in 1 to 30)
+		var/turf/origin = arena_turf(10 + i, 30)
+		brawl_probe_oview(origin, wanted)
+		brawl_probe_range(origin, wanted)
+		brawl_probe_range_obj(origin, wanted)
+		CHECK_TICK
+	var/profile_data = world.Profile(PROFILE_REFRESH, format = "json")
+	world.Profile(PROFILE_STOP)
+	world.Profile(PROFILE_CLEAR)
+	for(var/list/entry as anything in json_decode(profile_data))
+		if(findtext(entry["name"], "brawl_probe"))
+			log_world("BRAWL probe: [entry["name"]] [round(entry["total"] * 1000 / max(entry["calls"], 1), 0.01)]ms per call, [entry["calls"]] calls")
+
+///Прогоны тикеров ИИ от 40% тика из кольца детектора спайков: имя -> list(число, максимум)
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/note_heavy_runs(list/heavy, since)
+	if(!SStick_spikes?.heavy_time)
+		return
+	for(var/index in 1 to length(SStick_spikes.heavy_time))
+		var/run_time = SStick_spikes.heavy_time[index]
+		var/name = SStick_spikes.heavy_name[index]
+		if(isnull(run_time) || run_time < since || !findtext(name, "AI"))
+			continue
+		var/list/runs = heavy[name]
+		if(!runs)
+			runs = list(0, 0)
+			heavy[name] = runs
+		runs[1]++
+		runs[2] = max(runs[2], SStick_spikes.heavy_usage[index])
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/Run()
+	arena = SSmapping.RequestBlockReservation(BRAWL_ARENA_SIZE, BRAWL_ARENA_SIZE)
+	TEST_ASSERT_NOTNULL(arena, "Failed to reserve the brawl arena")
+	var/arena_z = arena_turf(1, 1).z
+	if(!islist(SSmobs.clients_by_zlevel) || arena_z > length(SSmobs.clients_by_zlevel))
+		SSmobs.MaxZChanged()
+	//резерв лежит в космической зоне без гравитации: орда парила бы и платила за невесомость
+	var/area/space_area = get_area(arena_turf(1, 1))
+	var/area/arena_area = new /area/start
+	var/list/arena_turfs = block(arena_turf(1, 1), arena_turf(BRAWL_ARENA_SIZE, BRAWL_ARENA_SIZE))
+	arena_area.contents.Add(arena_turfs)
+	watcher = new(arena_turf(30, 30))
+	SSmobs.clients_by_zlevel[arena_z] |= watcher
+
+	for(var/layout in list("open", "corridors", "open paced"))
+		QDEL_LIST(clutter)
+		build_layout(layout == "corridors" ? layout : "open")
+		var/obj/structure/reagent_dispensers/fueltank/bait = new(arena_turf(32, 3))
+		if(layout == "open")
+			probe_object_scans()
+		Master.pacing_forced = layout == "open paced"
+		run_brawl(layout)
+		Master.pacing_forced = FALSE
+		qdel(bait)
+	QDEL_LIST(clutter)
+
+	SSmobs.clients_by_zlevel[arena_z] -= watcher
+	QDEL_NULL(watcher)
+	space_area.contents.Add(arena_turfs)
+	qdel(arena_area)
+	QDEL_NULL(arena)
+
+/datum/unit_test/hostile_ai_horde_brawl_bench/proc/run_brawl(layout)
+	var/list/mobs = spawn_side(/mob/living/simple_animal/hostile/unit_test_horde/infected_like, BRAWL_HORDE_COUNT, open_tiles(2, 24))
+	mobs += spawn_side(/mob/living/simple_animal/hostile/unit_test_horde/brawl_foe, BRAWL_FOE_COUNT, open_tiles(37, BRAWL_ARENA_SIZE - 1))
+	sleep(BRAWL_WARMUP)
+	//с экономией и без в одном мире, порядок ABBA гасит дрейф чужой нагрузки на машине
+	var/list/modes = list("on" = list(), "off" = list())
+	var/list/self_ms = list()
+	var/list/total_ms = list()
+	var/list/calls = list()
+	var/list/heavy = list()
+	for(var/segment in 1 to BRAWL_SEGMENTS)
+		var/mode = (segment % 4 < 2) ? "on" : "off"
+		GLOB.ai_crowd_savings = mode == "on"
+		var/list/mode_totals = modes[mode]
+		ai_pack_scans_reset()
+		ai_pack_object_scans_reset()
+		var/list/metrics_before = GLOB.ai_metrics.snapshot()
+		world.Profile(PROFILE_CLEAR)
+		world.Profile(PROFILE_START)
+		var/real_start = world.timeofday
+		var/world_start = world.time
+		sleep(BRAWL_SEGMENT_TIME)
+		mode_totals["drift"] += ((world.timeofday - real_start) - (world.time - world_start)) * 100
+		var/profile_data = world.Profile(PROFILE_REFRESH, format = "json")
+		world.Profile(PROFILE_STOP)
+		world.Profile(PROFILE_CLEAR)
+		var/list/metrics = GLOB.ai_metrics.delta_since(metrics_before)
+		mode_totals["oviews"] += metrics["object_scans"]
+		mode_totals["windows"] += metrics["cell_windows"]
+		mode_totals["candidates"] += metrics["candidates_examined"]
+		if(mode == "on")
+			note_heavy_runs(heavy, world_start)
+		for(var/list/entry as anything in json_decode(profile_data))
+			var/name = entry["name"]
+			var/short_name = GLOB.brawl_bench_procs[name]
+			if(short_name)
+				mode_totals[short_name] += entry["total"] * 1000
+			if(mode != "on")
+				continue
+			self_ms[name] += entry["self"] * 1000
+			total_ms[name] += entry["total"] * 1000
+			calls[name] += entry["calls"]
+	GLOB.ai_crowd_savings = TRUE
+	var/seconds = BRAWL_SEGMENTS * BRAWL_SEGMENT_TIME / 20
+	var/list/mode_lines = list()
+	for(var/mode in modes)
+		var/list/mode_totals = modes[mode]
+		var/list/parts = list()
+		for(var/short_name in mode_totals)
+			parts += "[short_name]=[round(mode_totals[short_name] / seconds, 0.1)]"
+		mode_lines += "[mode]: [jointext(parts, " ")]"
+	var/list/on = modes["on"]
+	var/list/off = modes["off"]
+	var/ai_on = on["plan"] + on["behaviors"] + on["movement"]
+	var/ai_off = off["plan"] + off["behaviors"] + off["movement"]
+	log_world("BRAWL [layout]: [BRAWL_HORDE_COUNT] infected vs [BRAWL_FOE_COUNT] foes, [seconds]s per mode, per second | [jointext(mode_lines, " | ")] | AI off/on [round(ai_off / seconds)]/[round(ai_on / seconds)] = [round(ai_off / max(ai_on, 1), 0.01)]x")
+	for(var/name in heavy)
+		var/list/runs = heavy[name]
+		log_world("BRAWL [layout] heavy runs (on): [name] [runs[1]] runs >= 40% tick, max [round(runs[2], 0.1)]% tick")
+	sortTim(self_ms, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	var/shown = 0
+	for(var/name in self_ms)
+		if(++shown > BRAWL_TOP_PROCS)
+			break
+		log_world("BRAWL [layout] self (on): [name] self [round(self_ms[name] / seconds, 0.1)]ms/s total [round(total_ms[name] / seconds, 0.1)]ms/s calls [round(calls[name] / seconds)]/s")
+	sortTim(total_ms, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	shown = 0
+	for(var/name in total_ms)
+		if(++shown > BRAWL_TOP_PROCS)
+			break
+		log_world("BRAWL [layout] total (on): [name] total [round(total_ms[name] / seconds, 0.1)]ms/s self [round(self_ms[name] / seconds, 0.1)]ms/s calls [round(calls[name] / seconds)]/s")
+	QDEL_LIST(mobs)
+	sleep(1 SECONDS)
+
+#undef BRAWL_ARENA_SIZE
+#undef BRAWL_HORDE_COUNT
+#undef BRAWL_FOE_COUNT
+#undef BRAWL_WARMUP
+#undef BRAWL_SEGMENTS
+#undef BRAWL_SEGMENT_TIME
+#undef BRAWL_TOP_PROCS
 
 #undef HORDE_ARENA_SIZE
 #undef HORDE_MOB_COUNT

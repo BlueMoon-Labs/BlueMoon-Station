@@ -44,6 +44,11 @@
 /obj/item/implant/hijack/removed(mob/living/source, silent = FALSE, special = 0)
 	if(..())
 		REMOVE_TRAIT(source, TRAIT_HIJACKER, "implant")
+		if(toggled)
+			toggled = FALSE
+			if(source.click_intercept == src)
+				source.click_intercept = null
+			source.siliconaccesstoggle = FALSE
 		for (var/area/area in source.siliconaccessareas)
 			source.toggleSiliconAccessArea(area)
 			var/obj/machinery/power/apc/apc = area.get_apc()
@@ -54,7 +59,10 @@
 		if (ishuman(source))
 			var/mob/living/carbon/human/H = source
 			H.left_eye_color = left_eye_color
-			H.right_eye_color = left_eye_color
+			H.right_eye_color = right_eye_color
+			H.dna.update_ui_block(DNA_LEFT_EYE_COLOR_BLOCK)
+			H.dna.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
+			H.update_body()
 		return TRUE
 
 /obj/item/implant/hijack/proc/InterceptClickOn(mob/living/user,params,atom/object)
@@ -93,42 +101,46 @@
 	if (apc.hijacker || hijacking)
 		return FALSE //can't remotely hijack an already hijacked APC
 
+	// do_after спит до 25 секунд: имплант успевают извлечь, носителя - удалить.
+	var/mob/living/user = imp_in
 	if(apc.being_hijacked)
-		to_chat(imp_in, "<span class='warning'>This APC is already being hijacked!</span>")
+		to_chat(user, "<span class='warning'>This APC is already being hijacked!</span>")
 		return FALSE
 
 	apc.being_hijacked = TRUE
 	hijacking = TRUE
-	to_chat(imp_in, "<span class='notice'>Establishing remote connection with APC.</span>")
-	if (!do_after(imp_in, 4 SECONDS,target=apc))
-		to_chat(imp_in, "<span class='warning'>Aborting.</span>")
+	to_chat(user, "<span class='notice'>Establishing remote connection with APC.</span>")
+	if (!do_after(user, 4 SECONDS,target=apc) || imp_in != user)
+		to_chat(user, "<span class='warning'>Aborting.</span>")
 		apc.being_hijacked = FALSE
 		hijacking = FALSE
 		return TRUE
-	if (LAZYLEN(imp_in.siliconaccessareas) >= HIJACK_APC_MAX_AMOUNT)
-		to_chat(src,"<span class='warning'>You are connected to too many APCs! Too many more will fry your brain.</span>")
+	if (LAZYLEN(user.siliconaccessareas) >= HIJACK_APC_MAX_AMOUNT)
+		to_chat(user,"<span class='warning'>You are connected to too many APCs! Too many more will fry your brain.</span>")
+		apc.being_hijacked = FALSE
 		hijacking = FALSE
 		return TRUE
-	imp_in.light_power = 2
-	imp_in.light_range = 2
-	imp_in.light_color = COLOR_YELLOW
-	imp_in.update_light()
-	imp_in.visible_message("<span class='warning'>[imp_in] starts glowing a with a hollow yellow light!</span>")
-	to_chat(imp_in, "<span class='notice'>Beginning hijack of APC.</span>")
-	if (do_after(imp_in, 21 SECONDS,target=apc))
-		apc.hijacker = imp_in
+	user.light_power = 2
+	user.light_range = 2
+	user.light_color = COLOR_YELLOW
+	user.update_light()
+	user.visible_message("<span class='warning'>[user] starts glowing a with a hollow yellow light!</span>")
+	to_chat(user, "<span class='notice'>Beginning hijack of APC.</span>")
+	if (do_after(user, 21 SECONDS,target=apc) && imp_in == user && !QDELETED(apc))
+		apc.hijacker = user
 		stealthmode = FALSE
 		apc.set_hijacked_lighting()
-		imp_in.toggleSiliconAccessArea(apc.area)
+		user.toggleSiliconAccessArea(apc.area)
 		apc.update_icon()
 		stealthcooldown = world.time + 1 MINUTES + 30 SECONDS
 		toggle_eyes()
 	else
-		to_chat(imp_in, "<span class='warning'>Aborting.</span>")
+		to_chat(user, "<span class='warning'>Aborting.</span>")
 	apc.being_hijacked = FALSE
 	hijacking = FALSE
-	imp_in.light_power = 0
-	imp_in.light_range = 0
-	imp_in.light_color = COLOR_YELLOW
-	imp_in.update_light()
+	if(!QDELETED(user))
+		user.light_power = 0
+		user.light_range = 0
+		user.light_color = COLOR_YELLOW
+		user.update_light()
 	return TRUE

@@ -88,8 +88,6 @@
 
 /datum/config_entry/flag/disable_peaceborg
 
-/datum/config_entry/flag/economy	//money money money money money money money money money money money money
-
 /datum/config_entry/flag/reactionary_explosions	//If we use reactionary explosions, explosions that react to walls and doors
 
 /datum/config_entry/flag/enforce_human_authority	//If non-human species are barred from joining as a head of staff

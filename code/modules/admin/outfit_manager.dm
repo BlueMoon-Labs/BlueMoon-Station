@@ -18,6 +18,8 @@
 	return GLOB.admin_state
 
 /datum/outfit_manager/ui_close(mob/user)
+	if(!(owner in GLOB.clients))
+		owner = null
 	qdel(src)
 
 /datum/outfit_manager/ui_interact(mob/user, datum/tgui/ui)

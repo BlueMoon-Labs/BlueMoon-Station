@@ -431,13 +431,14 @@
 			if(!account)
 				to_chat(usr, span_notice("[potential_acc] не имеет зарегистрированного аккаунта!"))
 				return
-			if(!account.has_money(sale_price))
+			var/payment_problem = SSeconomy.personal_account_problem(account, TRUE) || SSeconomy.personal_account_problem(payments_acc, FALSE)
+			if(payment_problem)
+				to_chat(usr, span_warning(payment_problem))
+				return TRUE
+			if(!SSeconomy.move(account, payments_acc, sale_price, ECON_PURCHASE, usr, "Покупка: [showpiece]"))
 				to_chat(usr, span_notice("У меня нет средств, чтобы купить это. Нужно больше золота."))
 				return TRUE
 			else
-				account.adjust_money(-sale_price)
-				if(payments_acc)
-					payments_acc.adjust_money(sale_price)
 				usr.put_in_hands(showpiece)
 				to_chat(usr, span_notice("Покупаю [showpiece] по цене в [sale_price] кредит[get_num_string(sale_price)]."))
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
@@ -544,6 +545,7 @@
 	. = ..()
 	if(showpiece && !open)
 		. += span_notice("[showpiece] is for sale for [sale_price] credits.")
+	. += span_notice("Платить можно только с личного счёта, бюджетные карты отделов не принимаются.")
 	if(broken)
 		. += span_notice("[src] is sparking and the hover field generator seems to be overloaded. Use a multitool to fix it.")
 

@@ -31,6 +31,13 @@
 	var/datum/supply_pack/pack
 	var/datum/bank_account/paying_account
 	var/obj/item/coupon/applied_coupon
+	/// Сумма, уже списанная с бюджета отдела при заказе из каталога; при отмене возвращается
+	var/prepaid = 0
+	var/department_id
+	/// Заказан со взломанной консоли: поставщиком может быть контрабандный партнёр
+	var/contraband_supply = FALSE
+	/// Партнёр, выбранный при заказе; если к отгрузке он не может везти, везёт самый дешёвый
+	var/partner_id
 
 /datum/supply_order/New(datum/supply_pack/pack, orderer, orderer_rank, orderer_ckey, reason, paying_account, coupon)
 	id = SSshuttle.ordernum++
@@ -64,6 +71,9 @@
 
 /datum/supply_order/proc/generateManifest(obj/container, owner, packname, cost) //generates-the-manifests.
 	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest_paper = new(null, id, cost)
+	var/static/list/owned_parcels = typecacheof(list(/obj/structure/closet/crate/secure/owned, /obj/structure/closet/secure_closet/cargo/owned, /obj/item/storage/lockbox/order))
+	if(is_type_in_typecache(container, owned_parcels))
+		manifest_paper.errors &= ~MANIFEST_ERROR_ITEM
 
 	var/station_name = (manifest_paper.errors & MANIFEST_ERROR_NAME) ? new_station_name() : station_name()
 
@@ -114,17 +124,20 @@
 	return manifest_paper
 
 /datum/supply_order/proc/generate(atom/A)
+	var/datum/bank_account/owner = delivery_account()
 	var/account_holder
-	if(paying_account)
-		account_holder = paying_account.account_holder
+	if(owner)
+		account_holder = owner.account_holder
 	else
 		account_holder = "Cargo"
-	var/obj/structure/closet/crate/C = pack.generate(A, paying_account)
+	var/obj/structure/closet/crate/C = pack.generate(A, owner)
+	econ_mark_imported(C)
 	generateManifest(C, account_holder, pack)
 	return C
 
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents)
 	for (var/I in misc_contents)
 		new I(miscbox)
+	econ_mark_imported(miscbox)
 	generateManifest(miscbox, misc_own, "")
 	return

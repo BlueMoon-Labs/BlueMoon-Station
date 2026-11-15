@@ -107,7 +107,7 @@
 
 	// Wait here until we deactivate power or go unconscious
 	var/datum/antagonist/bloodsucker/bloodsuckerdatum = owner.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
-	while (ContinueActive(owner) && istype(bloodsuckerdatum))//active && owner && owner.stat == CONSCIOUS)
+	while (ContinueActive(owner) && !QDELETED(bloodsuckerdatum))//active && owner && owner.stat == CONSCIOUS)
 		bloodsuckerdatum.AddBloodVolume(-0.2)
 		sleep(10)
 
@@ -155,7 +155,8 @@
 		H.update_body(TRUE) // Outfit and underwear, also body and privates.
 		H.update_hair()
 		H.update_body_parts()	// Body itself, maybe skin color?
-		cast_effect() // POOF
+		if(!deactivating_on_removal)
+			cast_effect() // POOF
 
 	// CAST EFFECT //	// General effect (poof, splat, etc) when you cast. Doesn't happen automatically!
 /datum/action/cooldown/bloodsucker/veil/proc/cast_effect()

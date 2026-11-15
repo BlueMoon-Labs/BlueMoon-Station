@@ -98,12 +98,12 @@
 	release_examine_screen(viewer, in_use)
 	TEST_ASSERT(QDELETED(in_use), "экран удалённого пула вернулся в пул")
 
-/// Смена слота: запись прежнего слота не сбрасывает кэш имён, номер нового слота уже на диске, полная запись префов уходит таймером.
-/datum/unit_test/character_switch_slot_defers_full_save
+/// Смена слота: запись прежнего слота не сбрасывает кэш имён, номер нового слота уже на диске, полной записи префов нет.
+/datum/unit_test/character_switch_slot_skips_full_save
 	var/datum/preferences/prefs
 	var/datum/character_setup/setup
 
-/datum/unit_test/character_switch_slot_defers_full_save/Destroy()
+/datum/unit_test/character_switch_slot_skips_full_save/Destroy()
 	QDEL_NULL(setup)
 	if(prefs)
 		if(prefs.pref_queue)
@@ -114,7 +114,7 @@
 		QDEL_NULL(prefs)
 	return ..()
 
-/datum/unit_test/character_switch_slot_defers_full_save/Run()
+/datum/unit_test/character_switch_slot_skips_full_save/Run()
 	prefs = new
 	prefs.load_path("unit_test_switch_slot_defer")
 	if(fexists(prefs.path))
@@ -157,7 +157,7 @@
 	qdel(setup_ui)
 	TEST_ASSERT_EQUAL(prefs.default_slot, 2, "слот не сменился")
 	TEST_ASSERT_EQUAL(prefs.real_name, "Слот Два", "загружен не тот персонаж")
-	TEST_ASSERT_NOTNULL(prefs.pref_queue, "полная запись префов не отложена")
+	TEST_ASSERT_NULL(prefs.pref_queue, "смена слота поставила полную запись префов, хотя номер слота уже записал load_character")
 	var/savefile/stored_file = new(prefs.path)
 	stored_file.cd = "/"
 	var/stored_slot

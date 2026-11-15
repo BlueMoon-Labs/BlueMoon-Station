@@ -129,80 +129,127 @@
 
 /obj/item/xenoarch/help/cargo
 	name = "dimensional cargo scanner"
-	desc = "teleports items to be sold."
+	desc = "Телепортирует предметы на продажу. Выручка за находки ксеноархеологии идёт бюджету науки, за всё остальное - карго."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
+	/// Бюджет аванпоста, в который продаёт сканер; у станционного - нет
+	var/budget_id
 
 /obj/item/xenoarch/help/cargo/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 300, target=target))
 		to_chat(user,"You need to stand still to export items.")
 		return
-	export_item_and_contents(target, export_categories , dry_run = FALSE, external_report = ex)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	export_target(target, user)
+
+/obj/item/xenoarch/help/cargo/proc/export_target(obj/item/target, mob/user, apply_elastic = TRUE)
+	var/datum/export_report/ex = new
+	export_item_and_contents(target, EXPORT_CARGO, apply_elastic, dry_run = FALSE, external_report = ex)
+	ex.settle_market()
+	var/export_value = 0
+	var/artifact_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
-		D.adjust_money(ex.total_value[E])
+		if(istype(E, /datum/export/artifacts))
+			artifact_value += ex.total_value[E]
+		else
+			export_value += ex.total_value[E]
+	if(artifact_value)
+		SSeconomy.record_work(ACCOUNT_SCI, WORK_SCI_ARTIFACT, artifact_value, user, memo = "Артефакт: [target]")
+	if(export_value)
+		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+		D?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target]")
 	to_chat(user,"The [target] disappears!")
 
 //Bluemoon edit start:
 
 /obj/item/xenoarch/help/cargo/ds
 	name = "Syndicate cargo scanner"
-	desc = "Teleports items into local blackmarket to be sold."
+	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Deep Space. Подходящее под открытый спецзаказ партнёра засчитывается в спецзаказ."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
+	budget_id = ACCOUNT_DS
 
 /obj/item/xenoarch/help/cargo/ds/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 30, target=target))
-		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
+		to_chat(user, "Тебе нужно стоять на месте, чтобы телепортировать предмет.")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
+	sell_offstation(target, user, budget_id)
+
+/obj/item/xenoarch/help/cargo/examine(mob/user)
+	. = ..()
+	. += span_notice("Продаёт по ценам рынка сектора: чем больше одного товара уже продано, тем дешевле его берут, спрос возвращается со временем.")
+	if(!budget_id)
+		return
+	var/datum/bank_account/budget = SSeconomy.get_dep_account(budget_id)
+	. += span_notice("Предмет под открытый спецзаказ партнёра сканер сдаёт в спецзаказ: оплата за штуки и маржа за них при выполнении - в [econ_budget_name(budget)], тебе лично [SSeconomy.settings.contract_team_share]% оплаты. Первая сдача берёт спецзаказ и запускает срок [SSmarket.offer_deadline_minutes] мин., не успеешь - маржи не будет. Купленное не засчитывается.")
+	var/list/offers = list()
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(offer.pad_open())
+			var/time_text = offer.accepted ? "взят, осталось [offer.time_left_text()]." : "до снятия [offer.time_left_text()], после первой сдачи срок станет [SSmarket.offer_deadline_minutes] мин."
+			offers += "[offer.partner_name()]: [offer.requirement_text()], принято [offer.delivered] из [offer.quantity], [offer.unit_price] кр. за штуку сразу и [offer.unit_reward() - offer.unit_price] кр. за штуку при выполнении; [time_text]"
+	. += span_notice(length(offers) ? "Открытые спецзаказы:<br>[jointext(offers, "<br>")]" : "Открытых спецзаказов партнёров сейчас нет.")
+
+/// Продажа с аванпоста в бюджет account_id: сначала открытые спецзаказы партнёров, остальное - на тот же рынок сектора, что у снабжения станции, цена падает от объёма продаж. Возвращает выручку рынка.
+/obj/item/xenoarch/help/cargo/proc/sell_offstation(obj/item/target, mob/user, account_id)
+	if(QDELETED(target))
+		return 0
+	var/target_name = "[target]"
+	var/datum/bank_account/budget = SSeconomy.get_dep_account(account_id)
+	var/offer_units = budget ? econ_offers_ship(target, user, budget) : 0
+	var/offer_text = offer_units ? " По спецзаказам партнёров принято [offer_units] шт., оплата - в [econ_budget_name(budget)]." : ""
+	if(QDELETED(target))
+		to_chat(user, "Ух ты, [target_name] пропало![offer_text]")
+		return 0
+	var/datum/export_report/ex = new
+	export_item_and_contents(target, EXPORT_CARGO, dry_run = FALSE, external_report = ex)
+	ex.settle_market()
+	var/export_value = 0
 	for(var/datum/export/E in ex.total_amount)
 		var/export_text = E.total_printout(ex)
 		if(!export_text)
 			continue
-		D.adjust_money(ex.total_value[E])
-	to_chat(user,"Ух ты, [target] пропало!")
+		export_value += ex.total_value[E]
+	budget?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target_name]")
+	to_chat(user, "Ух ты, [target_name] пропало![offer_text] [export_value ? "Выручка рынка: [round(export_value)] кр." : "Покупателя на рынке не нашлось, выручки нет."]")
+	return export_value
+
+/// Строка приветствия гост-роли аванпоста о доходе бюджета account_id; только если у бюджета есть экспресс-консоль на уровне спавна.
+/proc/econ_offstation_income_hint(mob/living/new_spawn, account_id)
+	var/turf/spawn_turf = get_turf(new_spawn)
+	if(!spawn_turf)
+		return FALSE
+	for(var/obj/machinery/computer/cargo/express/console in GLOB.machines)
+		if(console.department_account == account_id && console.z == spawn_turf.z)
+			to_chat(new_spawn, span_notice("[capitalize(econ_budget_name(SSeconomy.get_dep_account(account_id)))] пополняется продажей находок и сдачей спецзаказов партнёров сканером продажи (осмотри его - там открытые спецзаказы), а тратится заказами с экспресс-консоли."))
+			return TRUE
+	return FALSE
 
 /obj/item/xenoarch/help/cargo/tarkoff
 	name = "Experimental cargo scanner"
-	desc = "Teleports items into local blackmarket to be sold."
+	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Тарков Индастриз. Подходящее под открытый спецзаказ партнёра засчитывается в спецзаказ."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
+	budget_id = ACCOUNT_TAR
 
 /obj/item/xenoarch/help/cargo/tarkoff/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
 		return
-	var/export_categories = EXPORT_CARGO
 	if(!istype(target,/obj/item))
 		return
-	var/datum/export_report/ex = new
 	if(!do_after(user, 45, target=target))
-		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
+		to_chat(user, "Тебе нужно стоять на месте, чтобы телепортировать предмет.")
 		return
-	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
-	for(var/datum/export/E in ex.total_amount)
-		var/export_text = E.total_printout(ex)
-		if(!export_text)
-			continue
-		D.adjust_money(ex.total_value[E])
-	to_chat(user,"Ух ты, [target] пропало!")
+	sell_offstation(target, user, budget_id)
 
 //Bluemoon edit end.
 

@@ -536,18 +536,27 @@
 	O.screen_loc = screen_loc
 	return O
 
-/// Removes an image from a client's `.images`. Useful as a callback.
-/proc/remove_image_from_client(image/image, client/remove_from)
+/// Removes an image from a client's `.images`. Useful as a callback: pass WEAKREF(client), a client in timer arguments outlives its logout.
+/proc/remove_image_from_client(image/image, datum/weakref/client_ref)
+	var/client/remove_from = isweakref(client_ref) ? client_ref.resolve() : client_ref
 	remove_from?.images -= image
 
-/proc/remove_images_from_clients(image/I, list/show_to)
-	for(var/client/C in show_to)
-		C.images -= I
+/proc/remove_images_from_clients(image/I, list/client_refs)
+	for(var/datum/weakref/client_ref as anything in client_refs)
+		var/client/C = client_ref.resolve()
+		C?.images -= I
 
 /proc/flick_overlay(image/I, list/show_to, duration)
-	for(var/client/C in show_to)
+	// Таймер держит только weakref: пузырь речи висит 3 с у всех слышавших, и клиента, ушедшего в это окно, BYOND искал бы обходом мира.
+	var/list/client_refs = list()
+	// Мобы в списке - ошибка вызывателя (мех раньше слал слышащих вперемешку с клиентами): пропускаем, а не рантайм на каждую реплику.
+	for(var/viewer in show_to)
+		if(!istype(viewer, /client) && !istype(viewer, /datum/client_interface))
+			continue
+		var/client/C = viewer
 		C.images += I
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_images_from_clients), I, show_to), duration, TIMER_CLIENT_TIME)
+		client_refs += WEAKREF(C)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_images_from_clients), I, client_refs), duration, TIMER_CLIENT_TIME)
 
 /proc/flick_overlay_view_global(image/I, atom/target, duration) //wrapper for the above, flicks to everyone who can see the target atom
 	var/list/viewing = list()

@@ -2,11 +2,9 @@
 
 /datum/export/robotics
 	include_subtypes = FALSE
-	k_elasticity = 1/200
 
 /datum/export/implant
 	include_subtypes = FALSE
-	k_elasticity = 1/200
 
 /datum/export/organs
 	include_subtypes = TRUE
@@ -35,7 +33,6 @@
 
 /datum/export/implant/breathtube
 	cost = 175
-	k_elasticity = 1/350 //Large before depleating
 	unit_name = "breath implant"
 	export_types = list(/obj/item/organ/cyberimp/mouth/breathing_tube)
 
@@ -168,7 +165,6 @@
 
 /datum/export/robotics/mech_blue_space
 	cost = 750
-	k_elasticity = 1/10
 	unit_name = "mech bluespace tech"
 	export_types = list(/obj/item/mecha_parts/mecha_equipment/teleporter, /obj/item/mecha_parts/mecha_equipment/wormhole_generator, /obj/item/mecha_parts/mecha_equipment/gravcatapult)
 

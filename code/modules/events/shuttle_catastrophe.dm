@@ -46,7 +46,7 @@
 /datum/round_event/shuttle_catastrophe/start()
 	if(SSshuttle.shuttle_insurance)
 		var/datum/bank_account/station_balance = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		station_balance?.adjust_money(8000)
+		station_balance?.credit(8000, ECON_EVENT, memo = "Страховая выплата за шаттл")
 		return
 	SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_FORCED
 	SSshuttle.unload_preview()

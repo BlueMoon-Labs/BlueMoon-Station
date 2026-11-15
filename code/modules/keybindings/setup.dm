@@ -192,6 +192,8 @@
 	if(!macroset || !movement_keys)
 		return
 	for(var/key as anything in movement_keys)
+		if(keybind_is_mouse_button(key))
+			continue
 		var/keydown_command = "\"KeyDown [key]\""
 		var/existing_command = macroset[key]
 		if(existing_command && existing_command != keydown_command)
@@ -252,12 +254,24 @@
 				if("South")
 					movement_keys[key] = SOUTH
 				else
-					var/datum/keybinding/KB = GLOB.keybindings_by_name[kb_name]
-					var/clientside_verb = (prefs && !(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
+					// у кнопок мыши нет макросов, их клиентские вербы зовёт keyDown()
+					if(keybind_is_mouse_button(key))
+						continue
+					var/clientside_verb = keybinding_clientside_command(GLOB.keybindings_by_name[kb_name])
 					if(!clientside_verb)
 						continue
-					clientside_verb = replacetext_char(clientside_verb, " ", "-")
 					.[key] = clientside_verb
+
+/// Команда клиентского верба бинда в виде, в котором её принимают макросы и winset, или null.
+/client/proc/keybinding_clientside_command(datum/keybinding/KB)
+	var/clientside_verb = (prefs && !(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB?.clientside_byond) || KB?.clientside
+	if(!clientside_verb)
+		return null
+	return replacetext_char(clientside_verb, " ", "-")
+
+/// Бинд на боковую кнопку мыши, с модификаторами или без.
+/proc/keybind_is_mouse_button(full_key)
+	return findtext(full_key, MOUSE_SIDE_BUTTON_BACK) || findtext(full_key, MOUSE_SIDE_BUTTON_FORWARD)
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()

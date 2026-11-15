@@ -71,6 +71,8 @@
 				qdel(O)
 		if(cleaned_something && user && user.client)
 			user.client.increment_progress("janitor", 1)
+		if(cleaned_something)
+			econ_note_cleaning(user)
 	reagents.reaction(A, TOUCH, 10)	//Needed for proper floor wetting.
 	reagents.remove_any(1)			//reaction() doesn't use up the reagents
 
@@ -179,6 +181,8 @@
 	. = MOP_AFTER_LIQUID_CONTINUE_ANIMATE
 	if(liquids.fire_state)
 		return MOP_AFTER_LIQUID_STOP
+	if(istype(liquids.my_turf, /turf/open/pool))
+		return MOP_AFTER_LIQUID_CONTINUE
 
 	liquids.liquid_simple_delete_flat(liquids.total_reagents)
 

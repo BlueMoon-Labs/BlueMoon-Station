@@ -218,6 +218,13 @@
 	)
 	return cells.Join(",")
 
+/// Цена одной новой строки сразу за всеми строками, начатыми с prefix, мкс: столько стоит дно ветки дерева строк.
+/proc/ping_diag_string_tree_probe(prefix)
+	rustg_time_reset(PING_DIAG_PROBE_TIMER)
+	var/probe = "[prefix]~"
+	var/spent = rustg_time_microseconds(PING_DIAG_PROBE_TIMER)
+	return length(probe) ? spent : 0
+
 /// Микросекунды в ячейку CSV: миллисекунды до десятой, без экспоненты.
 /proc/ping_diag_us_to_ms(us)
 	return num2text(round((us || 0) / 1000, 0.1), 7)

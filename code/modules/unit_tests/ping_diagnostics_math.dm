@@ -221,3 +221,18 @@
 
 	var/line = ping_diag_event_line(list("time" = "12:00:00", "world_time" = 1234567, "type" = PING_EVENT_HOST_NETWORK, "clients" = 40, "fraction" = 0.9, "extra_ms" = 150, "stall_ms" = 0, "host_retrans_pct" = 2.5, "source" = ""))
 	TEST_ASSERT_EQUAL(line, "12:00:00 wt=1234567 тип=host_network клиентов=40 доля=0.9 прибавка=150мс простой=0мс повторы_хоста=2.5% источник=-", "формат строки события")
+
+/// Проба дерева строк видит ветку: за 900 удержанными строками подряд новая строка дороже, чем на пустом месте.
+/datum/unit_test/ping_diag_string_tree_probe/Run()
+	var/list/held = list()
+	for(var/i in 1 to 900)
+		held += "ping_probe_chain_[100000 + i]"
+	var/list/chain = list()
+	var/list/fresh = list()
+	for(var/i in 1 to 21)
+		chain += ping_diag_string_tree_probe(held[length(held)])
+		// Префикс сортируется до ветки: "ping_probe_fresh_" лёг бы сразу за ней, на её дно.
+		fresh += ping_diag_string_tree_probe("ping_probe_a_[rand(100000, 999999)]")
+	var/chain_us = ping_diag_median(chain)
+	var/fresh_us = ping_diag_median(fresh)
+	TEST_ASSERT(chain_us > fresh_us + 1, "проба за веткой [chain_us] мкс, на пустом месте [fresh_us] мкс")

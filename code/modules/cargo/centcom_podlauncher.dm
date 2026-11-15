@@ -607,6 +607,9 @@
 
 /datum/centcom_podlauncher/proc/InterceptClickOn(user,params,atom/target) //Click Intercept so we know where to send pods where the user clicks
 	var/list/pa = params2list(params)
+	// ПКМ - меню действий, а клики из меню - его пункты, а не запуск капсулы
+	if((pa["right"] && pa["button"] != "left") || pa["context_menu"])
+		return FALSE
 	var/left_click = pa.Find("left")
 	if (launcherActivated)
 		//Clicking on UI elements shouldn't launch a pod
@@ -813,6 +816,8 @@
 		QDEL_NULL(cam_screen)
 	QDEL_NULL(cam_plane_group)
 	QDEL_NULL(cam_background)
+	if(!(holder in GLOB.clients))
+		holder = null
 	. = ..()
 
 /datum/centcom_podlauncher/proc/supplypod_punish_log(list/whoDyin)

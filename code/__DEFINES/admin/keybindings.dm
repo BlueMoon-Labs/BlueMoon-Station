@@ -12,6 +12,10 @@
 /// How long movement may remain held without a +REP keepalive before it is treated as a lost KeyUp.
 #define MOVEMENT_KEY_REPEAT_TIMEOUT (0.5 SECONDS)
 
+/// Боковые кнопки мыши в биндах: "назад" и "вперёд"
+#define MOUSE_SIDE_BUTTON_BACK "Mouse4"
+#define MOUSE_SIDE_BUTTON_FORWARD "Mouse5"
+
 /// Macroset name of hotkeys/keybind only/modern mode
 #define SKIN_MACROSET_HOTKEYS "hotkeys"
 /// Macroset name of classic hotkey mode

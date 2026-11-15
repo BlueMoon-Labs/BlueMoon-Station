@@ -18,6 +18,12 @@
 	var/outer_window_x_radius
 	///радиус внешнего окна по y
 	var/outer_window_y_radius
+	///Индексы ячеек окон прошлого пересчёта (внутреннее * 64 + внешнее) и его z; 0 - пересчёта не было
+	var/last_z = 0
+	var/last_min_x
+	var/last_max_x
+	var/last_min_y
+	var/last_max_y
 
 /datum/cell_tracker/New(width, height, inner_outer_ratio)
 	set_bounds(width, height, inner_outer_ratio)
@@ -37,6 +43,7 @@
 	var/y_radius = CEILING(height, 2)
 	inner_window_x_radius = x_radius
 	inner_window_y_radius = y_radius
+	last_z = 0
 
 	outer_window_x_radius = x_radius * ratio
 	outer_window_y_radius = y_radius * ratio
@@ -56,7 +63,33 @@
 	member_cells -= old_cells
 	member_cells += new_cells
 
+	remember_window(center)
 	return list(new_cells, old_cells)
+
+///Индексы ячеек окна по одной оси: внутреннее * 64 + внешнее
+#define CELL_TRACKER_BOUND(coord, inner, outer) (GET_SPATIAL_INDEX(coord + inner) * 64 + GET_SPATIAL_INDEX(coord + outer))
+
+/datum/cell_tracker/proc/remember_window(turf/center)
+	last_z = center.z <= length(SSspatial_grid.grids_by_z_level) ? center.z : 0
+	last_min_x = CELL_TRACKER_BOUND(center.x, -inner_window_x_radius, -outer_window_x_radius)
+	last_max_x = CELL_TRACKER_BOUND(center.x, inner_window_x_radius, outer_window_x_radius)
+	last_min_y = CELL_TRACKER_BOUND(center.y, -inner_window_y_radius, -outer_window_y_radius)
+	last_max_y = CELL_TRACKER_BOUND(center.y, inner_window_y_radius, outer_window_y_radius)
+
+///TRUE, если окна от center покрывают те же ячейки, что при прошлом пересчёте: он ничего бы не поменял
+/datum/cell_tracker/proc/window_unchanged(turf/center)
+	if(!last_z || center.z != last_z)
+		return FALSE
+	if(last_min_x != CELL_TRACKER_BOUND(center.x, -inner_window_x_radius, -outer_window_x_radius) || last_max_x != CELL_TRACKER_BOUND(center.x, inner_window_x_radius, outer_window_x_radius))
+		return FALSE
+	return last_min_y == CELL_TRACKER_BOUND(center.y, -inner_window_y_radius, -outer_window_y_radius) && last_max_y == CELL_TRACKER_BOUND(center.y, inner_window_y_radius, outer_window_y_radius)
+
+#undef CELL_TRACKER_BOUND
+
+///Бросить членство: следующий пересчёт соберёт окно заново
+/datum/cell_tracker/proc/forget_cells()
+	member_cells.Cut()
+	last_z = 0
 
 ///Вернуть содержимое канала type из новых и ушедших ячеек: list(новые, бывшие)
 /datum/cell_tracker/proc/recalculate_type_members(turf/center, type)

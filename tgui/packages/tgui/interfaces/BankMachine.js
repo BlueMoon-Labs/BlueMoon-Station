@@ -16,23 +16,23 @@ export const BankMachine = (props) => {
       height={155}>
       <Window.Content>
         <NoticeBox danger>
-          Authorized personnel only
+          Только для уполномоченного персонала
         </NoticeBox>
-        <Section title={station_name + ' Vault'}>
+        <Section title={'Хранилище ' + station_name}>
           <LabeledList>
             <LabeledList.Item
-              label="Current Balance"
+              label="Бюджет снабжения"
               buttons={(
                 <Button
                   icon={siphoning ? 'times' : 'sync'}
-                  content={siphoning ? 'Stop Siphoning' : 'Siphon Credits'}
+                  content={siphoning ? 'Остановить' : 'Выкачать кредиты'}
                   selected={siphoning}
                   onClick={() => act(siphoning ? 'halt' : 'siphon')} />
               )}>
               <AnimatedNumber
                 value={current_balance}
                 format={value => formatMoney(value)} />
-              {' cr'}
+              {' кр.'}
             </LabeledList.Item>
           </LabeledList>
         </Section>

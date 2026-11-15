@@ -1208,15 +1208,20 @@
 			if(get_malf_status(usr))
 				malfhack(usr)
 		if("drain")
+			var/obj/item/implant/hijack/H = hijack_ability_implant(usr, 85)
+			if(!H)
+				return
 			cell.use(cell.charge)
 			hijacker.toggleSiliconAccessArea(area)
 			hijacker = null
 			set_hijacked_lighting()
 			update_appearance()
-			var/obj/item/implant/hijack/H = usr.getImplant(/obj/item/implant/hijack)
 			H.stealthcooldown = world.time + 2 MINUTES
 			energy_fail(30 SECONDS * (cell.charge / cell.maxcharge))
 		if("lockdown")
+			var/obj/item/implant/hijack/H = hijack_ability_implant(usr, 35)
+			if(!H)
+				return
 			var/celluse = rand(20,35)
 			celluse = celluse /100
 			if(!cell.use(cell.maxcharge*celluse))
@@ -1225,7 +1230,6 @@
 				if (get_area(D) == area)
 					INVOKE_ASYNC(D,TYPE_PROC_REF(/obj/machinery/door, hostile_lockdown),usr, FALSE)
 					addtimer(CALLBACK(D,TYPE_PROC_REF(/obj/machinery/door, disable_lockdown), FALSE), 30 SECONDS)
-			var/obj/item/implant/hijack/H = usr.getImplant(/obj/item/implant/hijack)
 			H.stealthcooldown = world.time + 3 MINUTES
 		if("occupy")
 			if(get_malf_status(usr))
@@ -1256,47 +1260,46 @@
 	update()
 	update_appearance()
 
+/// Имплант взломщика этого APC, если ему сейчас доступна способность с таким запасом заряда ячейки.
+/obj/machinery/power/apc/proc/hijack_ability_implant(mob/user, min_cell_percent)
+	if(!user || user != hijacker || !cell || cell.percent() < min_cell_percent)
+		return null
+	var/obj/item/implant/hijack/H = user.getImplant(/obj/item/implant/hijack)
+	if(!H || H.stealthmode || !H.toggled)
+		return null
+	return H
+
 /obj/machinery/power/apc/proc/hijack(mob/living/L)
 	if (!istype(L))
+		return
+	var/obj/item/implant/hijack/H = L.getImplant(/obj/item/implant/hijack)
+	if (!H)
 		return
 	if(being_hijacked)
 		to_chat(L, "<span class='warning'>This APC is already being hijacked!</span>")
 		return
-	if (hijacker && hijacker != L)
-		var/obj/item/implant/hijack/H = L.getImplant(/obj/item/implant/hijack)
+	var/counter_hijack = hijacker && hijacker != L
+	if (counter_hijack)
 		to_chat(L, "<span class='warning'>Someone already has control of this APC. Beginning counter-hijack.</span>")
-		H.hijacking = TRUE
-		being_hijacked = TRUE
-		if (do_after(L,20 SECONDS,target=src))
-			hijacker.toggleSiliconAccessArea(area)
-			if (L.toggleSiliconAccessArea(area))
-				hijacker = L
-				update_appearance()
-				set_hijacked_lighting()
-			H.hijacking = FALSE
-			being_hijacked = FALSE
-			return
-		else
-			to_chat(L, "<span class='warning'>Aborting.</span>")
-			H.hijacking = FALSE
-			being_hijacked = FALSE
-			return
-	to_chat(L, "<span class='notice'>Beginning hijack of APC.</span>")
-	var/obj/item/implant/hijack/H = L.getImplant(/obj/item/implant/hijack)
+	else
+		to_chat(L, "<span class='notice'>Beginning hijack of APC.</span>")
 	H.hijacking = TRUE
 	being_hijacked = TRUE
-	if (do_after(L,H.stealthmode ? 12 SECONDS : 5 SECONDS,target=src))
+	var/delay = counter_hijack ? 20 SECONDS : (H.stealthmode ? 12 SECONDS : 5 SECONDS)
+	// За время взлома прежний владелец мог отпустить APC, а имплант - быть извлечён.
+	if (!do_after(L, delay, target = src) || QDELETED(H) || H.imp_in != L)
+		to_chat(L, "<span class='warning'>Aborting.</span>")
+	else if (LAZYLEN(L.siliconaccessareas) >= HIJACK_APC_MAX_AMOUNT)
+		to_chat(L, "<span class='warning'>You are connected to too many APCs! Too many more will fry your brain.</span>")
+	else
+		if (hijacker && (area in hijacker.siliconaccessareas))
+			hijacker.toggleSiliconAccessArea(area)
 		if (L.toggleSiliconAccessArea(area))
 			hijacker = L
 			update_appearance()
 			set_hijacked_lighting()
-			H.hijacking = FALSE
-			being_hijacked = FALSE
-	else
-		to_chat(L, "<span class='warning'>Aborting.</span>")
-		H.hijacking = FALSE
-		being_hijacked = FALSE
-		return
+	H.hijacking = FALSE
+	being_hijacked = FALSE
 
 /obj/machinery/power/apc/proc/malfhack(mob/living/silicon/ai/malf)
 	if(!istype(malf))

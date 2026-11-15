@@ -20,10 +20,18 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 #define BRIG_FINE_SCAN_TIME (3 SECONDS)
 #define BRIG_FINE_PAY_COOLDOWN (30 SECONDS)
 #define BRIG_FINE_MIN_PAY 50
+/// Пошлину назначает магистрат: оба доступа есть только у него и капитана
+#define BRIG_COURT_FEE_ACCESS list(ACCESS_LAWYER, ACCESS_HOS)
+#define BRIG_COURT_FEE_REASON_LEN 128
+#define BRIG_COURT_FEE_DURATION FINE_PRESET_30
+
+/datum/data/crime
+	/// Назначена магистратом: оплата идёт в бюджет СБ как судебная пошлина
+	var/court_fee = FALSE
 
 /obj/machinery/computer/brig_assistant_console
 	name = "Консоль заданий брига"
-	desc = "Консоль для выдачи заданий и оплаты штрафов. Вставьте ID-карту для проверки задолженности."
+	desc = "Консоль для выдачи заданий и оплаты штрафов. Вставьте ID-карту для проверки задолженности. Магистрат через неё же назначает владельцу вставленной карты судебную пошлину; оплачивается она здесь же, как штраф, и идёт в бюджет СБ."
 	icon_screen = "security"
 	icon_keyboard = "security_key"
 	circuit = /obj/item/circuitboard/computer/brig_assistant_console
@@ -177,6 +185,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 							"overdue" = overdue,
 							"display_time_left" = DisplayTimeText(time_left, 1),
 							"display_duration" = DisplayTimeText(c.fine_duration, 1),
+							"court_fee" = c.court_fee,
 						))
 						fines_total += c.fine + c.paid
 						fines_paid += c.paid
@@ -191,6 +200,8 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			pay_cd = max(0, last + BRIG_FINE_PAY_COOLDOWN - world.time)
 	data["pay_cd"] = pay_cd
 	data["pay_cd_seconds"] = round(pay_cd / 10)
+	data["can_court_fee"] = can_assign_court_fee(user)
+	data["court_fee_max"] = SSeconomy.settings.court_fee_max
 
 	var/list/wanted_list = list()
 	for(var/datum/data/record/S in GLOB.data_core.security)
@@ -340,11 +351,10 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
 				say("Недостаточно средств. Требуется [amount] кр.")
 				return
-			// Списываем
-			account.adjust_money(-amount, "Оплата штрафа: [fine.crimeName]")
-			var/datum/bank_account/sec_account = SSeconomy.get_dep_account(ACCOUNT_SEC)
-			if(sec_account)
-				sec_account.adjust_money(amount, "Поступление штрафа от [holder]")
+			if(!SSeconomy.move(account, SSeconomy.get_dep_account(ACCOUNT_SEC), amount, fine.court_fee ? ECON_COURT_FEE : ECON_FINE, user, "[fine.court_fee ? "Оплата судебной пошлины" : "Оплата штрафа"]: [fine.crimeName]"))
+				to_chat(user, span_warning("Списание со счёта отклонено."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
 			GLOB.data_core.payFine(sec.fields["id"], cdataid, amount)
 			// логи
 			GLOB.data_core.append_sec_logs(sec.fields["id"], "%%GEN_AUTH%% оплатил [amount] кр. по штрафу \"[fine.crimeName]\" (остаток [fine.fine] кр.) через консоль брига", holder, "Сотрудник")
@@ -398,10 +408,10 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				to_chat(user, span_warning("Недостаточно средств."))
 				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
 				return
-			account.adjust_money(-amount, "Оплата штрафа: [fine.crimeName]")
-			var/datum/bank_account/sec_account = SSeconomy.get_dep_account(ACCOUNT_SEC)
-			if(sec_account)
-				sec_account.adjust_money(amount, "Поступление штрафа от [holder]")
+			if(!SSeconomy.move(account, SSeconomy.get_dep_account(ACCOUNT_SEC), amount, fine.court_fee ? ECON_COURT_FEE : ECON_FINE, user, "[fine.court_fee ? "Оплата судебной пошлины" : "Оплата штрафа"]: [fine.crimeName]"))
+				to_chat(user, span_warning("Списание со счёта отклонено."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
 			GLOB.data_core.payFine(sec.fields["id"], cdataid, amount)
 			GLOB.data_core.append_sec_logs(sec.fields["id"], "%%GEN_AUTH%% полностью оплатил штраф \"[fine.crimeName]\" ([amount] кр.) через консоль брига", holder, "Сотрудник")
 			say("Штраф полностью оплачен.")
@@ -413,6 +423,43 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			fine.alert_fine_owner(user, src, holder, msg_full2)
 			if(ckey2)
 				brig_fine_pay_cooldowns[ckey2] = world.time
+			SStgui.update_uis(src)
+			return TRUE
+		if("court_fee")
+			if(!can_assign_court_fee(user))
+				to_chat(user, span_warning("Судебную пошлину назначает только магистрат."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			if(!inserted_id || scanning)
+				to_chat(user, span_warning("Вставьте карту того, кому назначается пошлина, и дождитесь сканирования."))
+				return
+			var/fee_max = SSeconomy.settings.court_fee_max
+			var/amount = text2num("[params["amount"]]")
+			if(!isnum(amount) || amount < 1 || amount > fee_max)
+				to_chat(user, span_warning("Судебная пошлина - от 1 до [fee_max] кр."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			amount = round(amount)
+			var/reason = istext(params["reason"]) ? sanitize(trim(params["reason"], BRIG_COURT_FEE_REASON_LEN)) : ""
+			var/holder = inserted_id.registered_name || inserted_id.registered_account?.account_holder
+			var/datum/data/record/sec = GLOB.data_core.security_by_name[holder]
+			if(!sec && inserted_id.registered_account)
+				sec = GLOB.data_core.security_by_name[inserted_id.registered_account.account_holder]
+			if(!sec)
+				to_chat(user, span_warning("У владельца карты нет записи СБ - пошлину назначить некому."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			var/details = reason || "Решение суда"
+			var/datum/data/crime/fee = GLOB.data_core.createFineEntry("Судебная пошлина", details, user.name, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), amount, BRIG_COURT_FEE_DURATION)
+			fee.court_fee = TRUE
+			GLOB.data_core.addFine(sec.fields["id"], fee)
+			GLOB.data_core.append_sec_logs(sec.fields["id"], "%%GEN_AUTH%% назначил судебную пошлину [amount] кр. - [details]", user.name, "Магистрат")
+			log_game("[key_name(user)] назначил судебную пошлину [amount] кр. ([details]) [sec.fields["name"]] в [AREACOORD(src)]")
+			fee.alert_fine_owner(user, src, sec.fields["name"], "Вам назначена судебная пошлина №[fee.dataId]: [details]. Сумма: [amount] кр. Срок оплаты: [DisplayTimeText(BRIG_COURT_FEE_DURATION)] (до [STATION_TIME_TIMESTAMP("hh:mm:ss", fee.fine_deadline)]). Назначил: [user.name]. Оплата через консоль заданий брига (вставьте ID-карту). При неуплате - автоматический розыск по ст. 303.")
+			say("Судебная пошлина [amount] кр. назначена: [holder].")
+			playsound(src, 'sound/machines/terminal_success.ogg', 50, FALSE)
+			if(security_radio)
+				security_radio.talk_into(src, "[holder] назначена судебная пошлина [amount] кр. Назначил: [user.name].")
 			SStgui.update_uis(src)
 			return TRUE
 		if("take_task")
@@ -511,6 +558,16 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			return TRUE
 	return FALSE
 
+/obj/machinery/computer/brig_assistant_console/proc/can_assign_court_fee(mob/user)
+	var/obj/item/card/id/judge_card = user?.get_idcard(TRUE)
+	var/list/judge_access = judge_card?.GetAccess()
+	if(!length(judge_access))
+		return FALSE
+	for(var/required_access in BRIG_COURT_FEE_ACCESS)
+		if(!(required_access in judge_access))
+			return FALSE
+	return TRUE
+
 /obj/machinery/computer/brig_assistant_console/proc/print_fine_receipt(datum/data/record/sec, datum/data/crime/fine, amount, holder)
 	var/obj/item/paper/P = new /obj/item/paper(drop_location())
 	var/status_text = fine.fine > 0 ? "ЧАСТИЧНО ОПЛАЧЕН (остаток [fine.fine] кр.)" : "ПОЛНОСТЬЮ ОПЛАЧЕН"
@@ -557,3 +614,6 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 #undef BRIG_FINE_SCAN_TIME
 #undef BRIG_FINE_PAY_COOLDOWN
 #undef BRIG_FINE_MIN_PAY
+#undef BRIG_COURT_FEE_ACCESS
+#undef BRIG_COURT_FEE_REASON_LEN
+#undef BRIG_COURT_FEE_DURATION

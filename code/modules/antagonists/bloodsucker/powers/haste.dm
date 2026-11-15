@@ -59,7 +59,7 @@
 	var/safety = get_dist(user, T) * 3 + 1
 	var/consequetive_failures = 0
 	var/speed = isnull(speed_override)? world.tick_lag : speed_override
-	while(--safety && (get_turf(user) != T))
+	while(--safety && (get_turf(user) != T) && owner == user)
 		var/success = step_towards(user, T)		//This does not try to go around obstacles.
 		if(!success)
 			success = step_to(user, T)			//this does
@@ -74,7 +74,7 @@
 			break
 		if(success)		//don't sleep if we failed to move.
 			sleep(speed)
-	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
 	hit = null
 	user.update_mobility()
 
