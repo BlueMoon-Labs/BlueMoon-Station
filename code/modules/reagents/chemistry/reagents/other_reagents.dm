@@ -2208,7 +2208,7 @@
 	if(method != TOUCH || reac_volume < NAIL_POLISH_ACETONE_VOLUME || !ishuman(M))
 		return
 	var/mob/living/carbon/human/H = M
-	if(!H.nail_polish_hands_covered() && H.remove_nail_polish())
+	if(H.get_num_arms(FALSE) && !H.nail_polish_hands_covered() && H.remove_nail_polish())
 		to_chat(H, span_notice("Ацетон растворяет лак на ваших ногтях."))
 
 /datum/reagent/acetone/define_gas()

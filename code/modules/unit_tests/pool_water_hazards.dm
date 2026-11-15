@@ -117,6 +117,12 @@
 	TEST_ASSERT(is_in_water(synth), "севший в бассейн синтетик не в воде")
 	TEST_ASSERT(HAS_TRAIT(synth, TRAIT_BLUEMOON_WATER_EXPOSED), "севшего в воду синтетика не замкнуло")
 
+	synth.setMovetype(synth.movement_type | FLYING)
+	synth_water_damage_tick(synth)
+	TEST_ASSERT(!HAS_TRAIT(synth, TRAIT_BLUEMOON_WATER_EXPOSED), "взлетевшего из воды синтетика продолжает замыкать")
+	synth.setMovetype(synth.movement_type & ~FLYING)
+	TEST_ASSERT(HAS_TRAIT(synth, TRAIT_BLUEMOON_WATER_EXPOSED), "плававший синтетик после посадки обратно в воду не замыкает")
+
 /// Севший в затопленную комнату намокает сразу, не дожидаясь шага.
 /datum/unit_test/pool_water/landing_in_flood_wets
 

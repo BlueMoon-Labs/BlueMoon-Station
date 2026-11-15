@@ -146,9 +146,10 @@
 
 /// Севший с полёта или вернувшийся под гравитацию опускается в воду без удара о неё.
 /turf/open/pool/proc/mob_landed(mob/living/lander)
-	if(!lander.has_gravity(src) || HAS_TRAIT(lander, TRAIT_SWIMMING))
+	if(!lander.has_gravity(src) || !liquids || liquids.liquid_state < LIQUID_STATE_ANKLES)
 		return
-	if(!liquids || liquids.liquid_state < LIQUID_STATE_ANKLES)
+	if(HAS_TRAIT(lander, TRAIT_SWIMMING))
+		liquids.movable_entered(src, lander)
 		return
 	lander.AddElement(/datum/element/swimming)
 	liquids.movable_entered(src, lander)

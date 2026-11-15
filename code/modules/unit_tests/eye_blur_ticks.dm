@@ -1,4 +1,4 @@
-/// Укус ядовитого хедкраба размывает зрение на задуманные секунды, а не в двадцать раз дольше, и не копит выше потолка.
+/// Укус ядовитого хедкраба освежает размытие до задуманных секунд, а не в двадцать раз дольше, и не копит его.
 /datum/unit_test/poison_headcrab_bite_blur
 
 /datum/unit_test/poison_headcrab_bite_blur/Run()
@@ -11,7 +11,7 @@
 	TEST_ASSERT_EQUAL(victim.eye_blurry, BLUR_TICKS(crab.bite_blur), "Один укус хедкраба даёт не то размытие.")
 	for(var/bite in 1 to 20)
 		crab.AttackingTarget()
-	TEST_ASSERT_EQUAL(victim.eye_blurry, BLUR_TICKS(crab.bite_blur_cap), "Укусы хедкраба копят размытие мимо потолка.")
+	TEST_ASSERT_EQUAL(victim.eye_blurry, BLUR_TICKS(crab.bite_blur), "Укусы хедкраба копят размытие.")
 
 /// Бумажный самолётик в глаз размывает зрение на задуманные секунды и не копит выше потолка.
 /datum/unit_test/paperplane_eye_hit_blur

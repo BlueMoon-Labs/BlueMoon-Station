@@ -111,4 +111,6 @@
 
 /obj/item/projectile/terrorspider/queen/empress
 	damage = 90
+	damage_type = BRUTE
+	stamina = 0
 
