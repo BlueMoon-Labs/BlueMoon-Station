@@ -179,7 +179,7 @@
 
 	stress = min(stress + 0.25, 100)
 	if(stress > 10 && prob(5) && COOLDOWN_FINISHED(src, effect_timer))
-		COOLDOWN_START(src, effect_timer, rand(2, 5) MINUTES)
+		COOLDOWN_START(src, effect_timer, rand(2, 7) MINUTES)
 		stress_reaction()
 
 /datum/brain_trauma/severe/monophobia/proc/check_alone()
