@@ -66,7 +66,6 @@
 
 /datum/export/alienartifact
 	cost = 12500
-	k_elasticity = 0
 	unit_name = "alien artifact"
 	export_types = list(/obj/item/alienartifact)
 

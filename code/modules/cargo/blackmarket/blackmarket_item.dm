@@ -24,13 +24,14 @@
 /datum/blackmarket_item/proc/spawn_item(loc) // Used for spawning the wanted item, override if you need to do something special with the item.
 	return new item(loc)
 
-/datum/blackmarket_item/proc/buy(obj/item/blackmarket_uplink/uplink, mob/buyer, shipping_method) // Buys the item and makes SSblackmarket handle it.
+/datum/blackmarket_item/proc/buy(obj/item/blackmarket_uplink/uplink, mob/buyer, shipping_method, paid = 0) // Buys the item and makes SSblackmarket handle it.
 	// Sanity
 	if(!istype(uplink) || !istype(buyer))
 		return FALSE
 	if(!item || stock <= 0) // This shouldn't be able to happen unless there was some manipulation or admin fuckery.
 		return FALSE
 	var/datum/blackmarket_purchase/purchase = new(src, uplink, shipping_method) // Alright, the item has been purchased.
+	purchase.paid = paid
 	if(SSblackmarket.queue_item(purchase)) // SSblackmarket takes care of the shipping.
 		stock--
 		log_game("[key_name(buyer)] has succesfully purchased [name] using [shipping_method] for shipping.")
@@ -42,6 +43,8 @@
 	var/item // Instance of the item being sent.
 	var/obj/item/blackmarket_uplink/uplink 	// The uplink where this purchase was done from.
 	var/method 	// Shipping method used to buy this item.
+	/// Сколько заплачено вместе с доставкой
+	var/paid = 0
 
 /datum/blackmarket_purchase/New(_entry, _uplink, _method)
 	entry = _entry
@@ -49,3 +52,10 @@
 		item = entry.item
 	uplink = _uplink
 	method = _method
+
+/// Создаёт купленный товар: NT выкупает его, как купленное, не дороже доли уплаченного.
+/datum/blackmarket_purchase/proc/deliver(loc)
+	var/atom/movable/product = entry.spawn_item(loc)
+	if(istype(product))
+		econ_mark_vended(product, paid)
+	return product

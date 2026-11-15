@@ -326,7 +326,7 @@
 	var/mob/living/sealer = sealer_ref?.resolve()
 	var/datum/bank_account/account = minor_service_account_of(sealer)
 	if(account)
-		account.adjust_money(TASTING_PERSONAL_REWARD, "[order_client]: чаевые за дегустационный заказ")
+		account.credit(TASTING_PERSONAL_REWARD, ECON_WORK, memo = "[order_client]: чаевые за дегустационный заказ")
 		account.bank_card_talk("Получено [TASTING_PERSONAL_REWARD] кр. чаевых за дегустационный заказ.")
 	minor_announce("Заказ доставлен. Отзыв заказчика ([order_client]): «[pick("Подача безупречная, курьер просил добавки.", "Дегустаторы спорят, кому достался последний кусок.", "Передайте мастеру наше почтение и попросите рецепт.", "Ровно то, что нужно после долгого перелёта.")]» Бюджет сервиса получает [TASTING_BUDGET_REWARD] кредитов.", "Служба корпоративного питания NanoTrasen")
 	log_game("DIRECTOR: Tasting Request, заказ [order_name] доставлен, бюджету сервиса [TASTING_BUDGET_REWARD] кр., [key_name(sealer)] [account ? "получил [TASTING_PERSONAL_REWARD] кр." : "без счёта"].")

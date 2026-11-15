@@ -69,6 +69,7 @@
 	cost = 5
 	unit_name = "power cell"
 	export_types = list(/obj/item/stock_parts/cell)
+	exclude_types = list(/obj/item/stock_parts/cell/upgraded, /obj/item/stock_parts/cell/high, /obj/item/stock_parts/cell/super, /obj/item/stock_parts/cell/hyper, /obj/item/stock_parts/cell/bluespace)
 	include_subtypes = TRUE
 
 /datum/export/cellupgraded
@@ -80,6 +81,7 @@
 	cost = 15
 	unit_name = "high power cell"
 	export_types = list(/obj/item/stock_parts/cell/high, /obj/item/stock_parts/cell/high/plus)
+	exclude_types = list(/obj/item/stock_parts/cell/high/slime)
 
 /datum/export/cellhyper
 	cost = 20
@@ -95,6 +97,7 @@
 	cost = 200
 	unit_name = "slime power cell"
 	export_types = list(/obj/item/stock_parts/cell/high/slime)
+	exclude_types = list(/obj/item/stock_parts/cell/high/slime/hypercharged)
 
 /datum/export/cellyellowhyper
 	cost = 1200 //Takes a lot to make and is really good

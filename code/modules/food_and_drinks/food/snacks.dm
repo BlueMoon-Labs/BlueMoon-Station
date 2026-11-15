@@ -204,6 +204,7 @@ All foods are distributed among various categories. Use common sense.
 			playsound(M.loc, consume_sound, rand(10,50), 1)
 			if(reagents.total_volume)
 				SEND_SIGNAL(src, COMSIG_FOOD_EATEN, M, user)
+				econ_food_eaten(src, M)
 				var/fraction = min(bitesize / reagents.total_volume, 1)
 				reagents.reaction(M, INGEST, fraction)
 				reagents.trans_to(M, bitesize, log = TRUE)

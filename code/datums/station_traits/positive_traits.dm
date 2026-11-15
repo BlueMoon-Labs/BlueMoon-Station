@@ -51,7 +51,7 @@
 
 /datum/station_trait/galactic_grant/on_round_start()
 	var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	cargo_bank.adjust_money(rand(10000, 20000))
+	cargo_bank.credit(rand(10000, 20000), ECON_GRANT)
 
 /datum/station_trait/premium_internals_box
 	name = "Premium internals boxes"

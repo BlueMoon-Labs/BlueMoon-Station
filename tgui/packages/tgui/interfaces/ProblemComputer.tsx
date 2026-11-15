@@ -683,7 +683,7 @@ const SignalGame = (props) => {
 // Result Screen
 const ResultScreen = (props) => {
   const { data, act } = useBackend<ProblemComputerData>();
-  const { lastResult, lastPoints, lastMessage } = data;
+  const { lastResult, lastPoints, lastMessage, rewardType } = data;
   const isCorrect = lastResult === 'correct';
 
   return (
@@ -725,7 +725,8 @@ const ResultScreen = (props) => {
         </Stack.Item>
         <Stack.Item mt={1}>
           <Box textAlign="center" bold fontSize={1.3}>
-            {isCorrect ? '+' : '-'}{lastPoints} очков
+            {isCorrect ? '+' : '-'}
+            {lastPoints} {rewardType === 'Cargo' ? 'кр.' : 'очков'}
           </Box>
         </Stack.Item>
         <Stack.Item mt={2}>
