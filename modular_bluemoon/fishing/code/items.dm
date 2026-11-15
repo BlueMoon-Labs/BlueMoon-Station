@@ -432,6 +432,7 @@
 	new /obj/item/fishing_lure/minnow(src)
 	new /obj/item/fish_catalog(src)
 	new /obj/item/bait/doughball(src)
+	new /obj/item/stock_parts/cell/lead(src)
 	new /obj/item/storage/fish_case(src)
 	new /obj/item/storage/fish_case/random(src)
 
