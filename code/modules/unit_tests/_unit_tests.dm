@@ -465,6 +465,7 @@
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
 #include "mc_state.dm"
 #include "medical_wounds.dm"
+#include "megafauna_drake_mech.dm"
 #include "megafauna_multiz.dm"
 #include "merge_type.dm"
 // #include "metabolizing.dm"

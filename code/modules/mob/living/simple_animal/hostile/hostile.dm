@@ -973,6 +973,9 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		if(CanSmashTurfs(T))
 			T.attack_animal(src)
 		for(var/obj/O in T)
+			//цель бьёт AttackingTarget со своими гейтами, снос окружения её не трогает
+			if(O == target)
+				continue
 			if(O.density && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
 				O.attack_animal(src)
 				return

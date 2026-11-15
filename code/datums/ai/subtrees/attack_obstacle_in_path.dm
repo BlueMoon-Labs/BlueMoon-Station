@@ -29,7 +29,20 @@
 
 ///Реальный заблокированный следующий турф маршрута к цели, либо null
 /proc/ai_get_blocked_path_turf(mob/living/pawn, atom/target)
-	return ai_blocked_step_turf(pawn, ai_next_path_step(pawn, target))
+	var/turf/next_step = ai_next_path_step(pawn, target)
+	if(ai_step_reaches_target(pawn, target, next_step))
+		return null
+	return ai_blocked_step_turf(pawn, next_step)
+
+///Шаг на клетку цели, до которой уже достаёт удар. Цель там бьёт милишка через AttackingTarget
+///со всеми гейтами моба; снос "преграды" бил бы её второй раз в обход пикирования и отдыха.
+/proc/ai_step_reaches_target(mob/living/pawn, atom/target, turf/next_step)
+	return next_step && next_step == get_turf(target) && next_step.Adjacent(pawn)
+
+///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж): путь он тогда и не расчищает
+/proc/ai_pawn_path_paused(mob/living/pawn)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	return istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move()
 
 ///next_step, если он заблокирован преградой (не мобом), иначе null
 /proc/ai_blocked_step_turf(mob/living/pawn, turf/next_step)
@@ -116,6 +129,8 @@
 	if(QDELETED(target))
 		return
 	var/mob/living/pawn = controller.pawn
+	if(ai_pawn_path_paused(pawn))
+		return
 	//шаг пути и его смежность считаются один раз на план, а не в каждой из трёх проверок
 	var/turf/next_step = ai_next_path_step(pawn, target)
 	var/turf/adjacent_step = next_step?.Adjacent(pawn) ? next_step : null
@@ -145,7 +160,7 @@
 	if(isitem(target))
 		return
 
-	if(!ai_blocked_step_turf(pawn, next_step))
+	if(ai_step_reaches_target(pawn, target, adjacent_step) || !ai_blocked_step_turf(pawn, next_step))
 		return
 
 	controller.queue_behavior(attack_behaviour, target_key)
@@ -166,6 +181,8 @@
 
 	if(QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(ai_pawn_path_paused(living_pawn))
+		return AI_BEHAVIOR_DELAY
 
 	var/turf/blocked_turf = ai_get_blocked_path_turf(living_pawn, target)
 	if(!blocked_turf)
@@ -215,6 +232,8 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(!isliving(living_pawn) || QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(ai_pawn_path_paused(living_pawn))
+		return AI_BEHAVIOR_DELAY
 	var/mob/living/blocker = ai_path_blocker_mob(living_pawn, target)
 	if(QDELETED(blocker))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED //путь чист - блокера больше нет

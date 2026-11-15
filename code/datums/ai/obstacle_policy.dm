@@ -280,7 +280,10 @@
 	for(var/obj/machinery/door/firedoor/border_only/fire_lock in from_turf)
 		if(ai_pressure_barrier_blocks_step(fire_lock, from_turf, to_turf) && try_handle(pawn, controller, fire_lock))
 			return TRUE
+	var/atom/target = controller.blackboard[BB_AI_CURRENT_TARGET]
 	for(var/obj/blocker in to_turf)
+		if(blocker == target)
+			continue
 		if(blocker.density && try_handle(pawn, controller, blocker))
 			return TRUE
 	return try_turf(pawn, to_turf)
