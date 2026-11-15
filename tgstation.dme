@@ -5816,6 +5816,7 @@
 #include "modular_bluemoon\fishing\code\fishing_minigame.dm"
 #include "modular_bluemoon\fishing\code\fishing_portal.dm"
 #include "modular_bluemoon\fishing\code\fishing_rod.dm"
+#include "modular_bluemoon\fishing\code\shrimp_boat.dm"
 #include "modular_bluemoon\fishing\code\food.dm"
 #include "modular_bluemoon\fishing\code\items.dm"
 #include "modular_bluemoon\fishing\code\subsystem.dm"

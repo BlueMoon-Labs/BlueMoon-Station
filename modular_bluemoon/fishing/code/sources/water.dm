@@ -241,6 +241,7 @@
 		/obj/item/trash/plate = 3,
 		/obj/item/soap = 2,
 		/obj/item/reagent_containers/food/snacks/badrecipe = 2,
+		/obj/item/shrimp_boat_ticket = 0.2,
 	)
 	fish_counts = list(
 		/obj/item/fish/donkfish = 2,
