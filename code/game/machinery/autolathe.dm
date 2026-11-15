@@ -351,6 +351,7 @@
 					var/datum/material/M = x
 					if(!istype(M, /datum/material/glass) && !istype(M, /datum/material/iron))
 						user.client.give_award(/datum/award/achievement/misc/getting_an_upgrade, user)
+			econ_mark_station_made(new_item, being_built.materials)
 
 
 	icon_state = "autolathe"

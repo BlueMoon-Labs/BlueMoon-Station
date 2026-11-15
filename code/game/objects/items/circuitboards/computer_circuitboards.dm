@@ -310,7 +310,7 @@
 	build_path = /obj/machinery/computer/shuttle/snow_taxi
 
 /obj/item/circuitboard/computer/bountypad
-	name = "Bounty Pad (Computer Board)"
+	name = "Contract Terminal (Computer Board)"
 	build_path = /obj/machinery/computer/piratepad_control/civilian
 
 /obj/item/circuitboard/computer/security/shuttle
@@ -558,6 +558,8 @@
 	machine.contraband = contraband
 	if (obj_flags & EMAGGED)
 		machine.obj_flags |= EMAGGED
+		if(machine.shows_contraband())
+			SSmarket.open_contraband_partners(usr)
 	else
 		machine.obj_flags &= ~EMAGGED
 
@@ -588,7 +590,7 @@
 	build_path = /obj/machinery/computer/cargo/request
 
 /obj/item/circuitboard/computer/bounty
-	name = "Nanotrasen Bounty Console (Computer Board)"
+	name = "Nanotrasen Contract Console (Computer Board)"
 	build_path = /obj/machinery/computer/bounty
 
 /obj/item/circuitboard/computer/ferry

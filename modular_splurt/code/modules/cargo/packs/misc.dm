@@ -179,7 +179,7 @@
 
 /datum/supply_pack/misc/carpet_exotic
 	name = "Exotic Carpet Crate"
-	desc = "Exotic carpets straight from Space Russia, for all your decorating needs. Contains 100 tiles each of 10 different flooring patterns."
+	desc = "Экзотические ковры прямиком из Космической России, чтобы обставить жильё по вкусу. Внутри по 100 плиток ковра десяти разных узоров."
 	cost = 7000
 	contains = list(/obj/item/stack/tile/carpet/blue/fifty,
 					/obj/item/stack/tile/carpet/blue/fifty,
@@ -217,7 +217,7 @@
 
 /datum/supply_pack/misc/microbricks
 	name = "Microbricks Crate"
-	desc = "Extremely bored? Recreate a downscale city and get upset when it all comes crumbling down!"
+	desc = "Совсем скучно? Постройте город в миниатюре и расстраивайтесь, когда он рассыплется!"
 	cost = 1500
 	contains = list(/obj/item/stack/sheet/micro_bricks/fifty)
 	crate_name = "microbricks crate"
@@ -244,7 +244,7 @@
 
 /datum/supply_pack/misc/wedding
 	name = "Small Wedding Crate"
-	desc = "Almost everything you need to host a wedding! Don't forget a ring!"
+	desc = "Почти всё для свадьбы: платье, смокинг, пояс, три букета и шампанское. Кольцо не забудьте!"
 	cost = 1500
 	contains = list(/obj/item/clothing/under/dress/wedding,
 					/obj/item/clothing/under/suit/tuxedo,
@@ -597,121 +597,3 @@
 	/obj/item/cane/plague
 	)
 	crate_name = "plague doctor crate"
-
-/datum/supply_pack/costumes_toys/randomised/tesh_cloaks_vr
-	name = "Teshari cloaks"
-
-	contains = list(
-			/obj/item/clothing/neck/cloak/teshari/standard/white,
-			/obj/item/clothing/neck/cloak/teshari/standard/white_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/red_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/orange_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/yellow_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/green_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/blue_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/purple_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/pink_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/brown_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/rainbow,
-			/obj/item/clothing/neck/cloak/teshari/standard/orange
-			)
-	cost = 40
-
-/datum/supply_pack/costumes_toys/randomised/tesh_cloaks_b_vr
-	name = "Teshari cloaks (black)"
-
-	contains = list(
-			/obj/item/clothing/neck/cloak/teshari,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_red,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_orange,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_yellow,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_green,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_blue,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_purple,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_pink,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_brown,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_grey,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_white,
-			/obj/item/clothing/neck/cloak/teshari/standard/black_glow,
-			/obj/item/clothing/neck/cloak/teshari/standard/dark_retrowave
-			)
-	cost = 40
-
-/datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_vr
-	name = "Teshari cloaks (belted)"
-
-	contains = list(
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/orange_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/rainbow,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/lightgrey_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/white_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/red_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/orange,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/yellow_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/green_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/blue_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/purple_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/pink_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/brown_grey
-			)
-	cost = 40
-
-/datum/supply_pack/costumes_toys/randomised/tesh_beltcloaks_b_vr
-	name = "Teshari cloaks (belted, black)"
-
-	contains = list(
-			/obj/item/clothing/suit/hooded/teshari/beltcloak,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_orange,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_grey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_midgrey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_lightgrey,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_white,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_red,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_yellow,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_green,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_blue,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_purple,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_pink,
-			/obj/item/clothing/suit/hooded/teshari/beltcloak/standard/black_brown
-			)
-	cost = 40
-
-/datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_vr
-	name = "Teshari cloaks (hooded)"
-
-	contains = list(
-			/obj/item/clothing/suit/hooded/teshari/standard/orange_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/lightgrey_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/white_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/red_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/orange,
-			/obj/item/clothing/suit/hooded/teshari/standard/yellow_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/green_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/blue_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/purple_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/pink_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/brown_grey
-			)
-	cost = 40
-
-/datum/supply_pack/costumes_toys/randomised/tesh_hoodcloaks_b_vr
-	name = "Teshari cloaks (hooded, black)"
-
-	contains = list(
-			/obj/item/clothing/suit/hooded/teshari,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_orange,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_grey,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_midgrey,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_lightgrey,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_white,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_red,
-			/obj/item/clothing/suit/hooded/teshari/standard/black,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_yellow,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_green,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_blue,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_purple,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_pink,
-			/obj/item/clothing/suit/hooded/teshari/standard/black_brown
-			)
-	cost = 40

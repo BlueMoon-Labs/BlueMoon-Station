@@ -111,7 +111,9 @@
 	if(!account.has_money(deposit_value))
 		say("You do not possess enough credits.")
 		return
-	account.adjust_money(-deposit_value) //The money vanishes, not paid to any accounts.
+	if(!account.debit(deposit_value, ECON_PURCHASE, usr, "Вклад в B.E.P.I.S."))
+		say("Transaction declined.")
+		return
 	SSblackbox.record_feedback("amount", "BEPIS_credits_spent", deposit_value)
 	log_econ("[deposit_value] credits were inserted into [src] by [key_name(usr)] (account: [account.account_holder])")
 	banked_cash += deposit_value

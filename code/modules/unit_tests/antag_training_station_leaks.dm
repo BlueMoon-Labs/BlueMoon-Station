@@ -110,7 +110,7 @@
 	var/obj/item/card/id/payer_card = allocate(/obj/item/card/id)
 	payer_card.registered_name = "Station Payer"
 	var/datum/bank_account/payer_account = allocate(/datum/bank_account, "Station Payer")
-	payer_account.adjust_money(ANTAG_TRAINING_LEAK_BALANCE)
+	econ_test_set_balance(payer_account, ANTAG_TRAINING_LEAK_BALANCE)
 	payer_card.registered_account = payer_account
 	station_pda.InsertID(payer_card)
 	payer.put_in_hands(station_pda)
@@ -132,7 +132,7 @@
 	add_messenger(station_messenger)
 	add_messenger(neighbour_messenger)
 	var/datum/bank_account/officer_account = allocate(/datum/bank_account, officer.real_name)
-	officer_account.adjust_money(ANTAG_TRAINING_LEAK_BALANCE)
+	econ_test_set_balance(officer_account, ANTAG_TRAINING_LEAK_BALANCE)
 	officer_card.registered_account = officer_account
 	arena_messenger.transfer_money_to_chat(officer, REF(station_messenger), ANTAG_TRAINING_LEAK_TRANSFER)
 	officer_card.registered_account = null

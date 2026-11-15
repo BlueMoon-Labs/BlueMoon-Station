@@ -358,7 +358,7 @@
 		manips++
 	print_cost_coeff = STANDARD_PART_LEVEL_LATHE_COEFFICIENT(total_manip_rating / (manips? manips : 1))
 
-/obj/machinery/rnd/production/proc/do_print(path, amount, list/matlist, notify_admins, mob/user)
+/obj/machinery/rnd/production/proc/do_print(path, amount, list/matlist, notify_admins, mob/user, datum/design/design)
 	if(notify_admins)
 		message_admins("[ADMIN_LOOKUPFLW(user)] has built [amount] of [path] at a [src]([type]).")
 	for(var/i in 1 to amount)
@@ -366,6 +366,7 @@
 		if(efficient_with(O.type))
 			O.set_custom_materials(matlist)
 			O.rnd_crafted(src)
+		econ_mark_station_made(O, design?.materials)
 	playsound(src, 'sound/machines/prod_done.ogg', 50)
 	SSblackbox.record_feedback("nested tally", "item_printed", amount, list("[type]", "[path]"))
 	investigate_log("[key_name(user)] built [amount] of [path] at [src]([type]).", INVESTIGATE_RESEARCH)
@@ -464,7 +465,7 @@
 		flick(production_animation, src)
 	var/timecoeff = D.lathe_time_factor * print_cost_coeff
 	addtimer(CALLBACK(src, PROC_REF(reset_busy)), (20 * timecoeff * amount) ** 0.5)
-	addtimer(CALLBACK(src, PROC_REF(do_print), D.build_path, amount, efficient_mats, D.dangerous_construction, usr), (20 * timecoeff * amount) ** lathe_prod_time)
+	addtimer(CALLBACK(src, PROC_REF(do_print), D.build_path, amount, efficient_mats, D.dangerous_construction, usr, D), (20 * timecoeff * amount) ** lathe_prod_time)
 	playsound(src, 'sound/machines/prod.ogg', 50)
 	return TRUE
 

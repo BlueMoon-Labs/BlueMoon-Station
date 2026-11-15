@@ -71,6 +71,8 @@
 				qdel(O)
 		if(cleaned_something && user && user.client)
 			user.client.increment_progress("janitor", 1)
+		if(cleaned_something)
+			econ_note_cleaning(user)
 	reagents.reaction(A, TOUCH, 10)	//Needed for proper floor wetting.
 	reagents.remove_any(1)			//reaction() doesn't use up the reagents
 
