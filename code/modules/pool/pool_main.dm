@@ -63,6 +63,9 @@
 		return ..()
 	if(!AM.has_gravity(src))
 		return ..()
+	// Летящий проходит над водой, а в бассейн попадает, когда сядет (mob_landed).
+	if(isliving(AM) && (AM.movement_type & (FLYING|FLOATING)))
+		return ..()
 	if(isliving(AM))
 		var/mob/living/victim = AM
 		// Synthetics with the water-vulnerability quirk short out in water (below),
@@ -140,6 +143,24 @@
 				victim.adjustStaminaLoss(1)
 			playsound(src, "water_wade", 20, TRUE)
 	return ..()
+
+/// Севший с полёта или вернувшийся под гравитацию опускается в воду без удара о неё.
+/turf/open/pool/proc/mob_landed(mob/living/lander)
+	if(!lander.has_gravity(src) || HAS_TRAIT(lander, TRAIT_SWIMMING))
+		return
+	if(!liquids || liquids.liquid_state < LIQUID_STATE_ANKLES)
+		return
+	lander.AddElement(/datum/element/swimming)
+	liquids.movable_entered(src, lander)
+	lander.visible_message(span_notice("[lander] опускается в воду."), span_notice("Вы опускаетесь в воду."))
+
+/mob/living/setMovetype(newval)
+	. = ..()
+	if(!(. & (FLYING|FLOATING)) || (movement_type & (FLYING|FLOATING)))
+		return
+	var/turf/open/pool/pool = loc
+	if(istype(pool))
+		pool.mob_landed(src)
 
 /turf/open/pool/MouseDrop_T(atom/from, mob/user)
 	// Handle the drag-in BEFORE the base /turf/open/MouseDrop_T generic height

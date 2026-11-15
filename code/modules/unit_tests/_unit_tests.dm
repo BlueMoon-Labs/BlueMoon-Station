@@ -512,6 +512,7 @@
 #include "player_report_regressions.dm"
 #include "plumbing_ducts.dm"
 #include "pool_tile_placement.dm"
+#include "pool_water_hazards.dm"
 #include "portal_toys_cleanup.dm"
 #include "preferences_preview_yield.dm"
 #include "preferences_savefile_cost.dm"

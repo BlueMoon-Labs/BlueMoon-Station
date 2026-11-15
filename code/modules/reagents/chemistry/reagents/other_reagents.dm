@@ -1463,7 +1463,8 @@
 	for(var/mob/living/simple_animal/slime/M in T)
 		M.adjustToxLoss(rand(5,10))
 
-	if(T.liquids && !T.liquids.immutable)
+	// Вода бассейна - не разлив: пена ивента и уборщик её не смывают.
+	if(T.liquids && !T.liquids.immutable && !istype(T, /turf/open/pool))
 		T.liquids.liquid_simple_delete_flat(max(2, reac_volume) * 0.5 * max(LIQUID_ANKLES_LEVEL_HEIGHT * ONE_LIQUIDS_HEIGHT, T.liquids.total_reagents * 0.5))
 
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит

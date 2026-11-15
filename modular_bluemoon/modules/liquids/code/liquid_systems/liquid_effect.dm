@@ -113,7 +113,7 @@
 
 /obj/effect/abstract/liquid_turf/proc/dry()
 	SIGNAL_HANDLER
-	if(immutable)
+	if(immutable || istype(my_turf, /turf/open/pool))
 		return
 	qdel(src, TRUE)
 
@@ -693,7 +693,7 @@
 				'sound/effects/water_wade4.ogg'
 				))
 			playsound(T, sound_to_play, 50, 0)
-		if(iscarbon(AM))
+		if(iscarbon(AM) && !(AM.movement_type & (FLYING|FLOATING)))
 			var/mob/living/carbon/C = AM
 			C.apply_status_effect(/datum/status_effect/water_affected)
 			if(liquid_state >= LIQUID_STATE_WAIST)
