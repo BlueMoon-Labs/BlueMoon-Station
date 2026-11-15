@@ -494,6 +494,7 @@
 #include "multiz_station_transparent_space.dm"
 #include "multiz_ventcrawl.dm"
 #include "mod_suit_fixes.dm"
+#include "nail_polish.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
 #include "nightshift.dm"
 #include "northstar.dm"

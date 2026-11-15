@@ -2203,6 +2203,14 @@
 	color = "#e6e6e6"
 	boiling_point = 329.2
 
+/datum/reagent/acetone/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart = 0)
+	. = ..()
+	if(method != TOUCH || reac_volume < NAIL_POLISH_ACETONE_VOLUME || !ishuman(M))
+		return
+	var/mob/living/carbon/human/H = M
+	if(!H.nail_polish_hands_covered() && H.remove_nail_polish())
+		to_chat(H, span_notice("Ацетон растворяет лак на ваших ногтях."))
+
 /datum/reagent/acetone/define_gas()
 	var/datum/gas/G = ..()
 	G.fire_burn_rate = 1 / 4
