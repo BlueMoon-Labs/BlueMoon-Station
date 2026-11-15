@@ -305,13 +305,9 @@
 			state = STATE_MAIN
 		if ("purchaseERT")
 			var/id = params["ert"]
-			var/list/data = GLOB.payed_ert[id]
-			var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			if (data && data["available"] && bank_account.account_balance >= data["price"])
-				if(!bank_account.debit(data["price"], ECON_PURCHASE, usr, "Вызов: [data["name"]]"))
-					return
-				GLOB.payed_ert[id]["available"] = FALSE
-
+			var/list/data = econ_payed_ert(id)
+			var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+			if (data && cargo?.pay_ert(id, usr))
 				minor_announce("[usr.real_name] вызвал [data["name"]] за [data["price"]] кредитов")
 				message_admins("[ADMIN_LOOKUPFLW(usr)] purchased ERT: [data["name"]].")
 				SSblackbox.record_feedback("text", "ert_purchase", 1, data["name"])
@@ -835,9 +831,8 @@
 
 	if(!length(candidates) || !length(ertemplate.spawn_members(candidates)))
 		priority_announce("[station_name()], мы не можем выслать [ertemplate.polldesc] ввиду занятости всех действующих оперативников. Средства были возвращены.", "Отряд Быстрого Реагирования недоступен", 'modular_bluemoon/sound/ert/ert_no.ogg') //BlueMoon sound
-		var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		GLOB.payed_ert[id]["available"] = TRUE
-		bank_account.credit(GLOB.payed_ert[id]["price"], ECON_REFUND, memo = "Возврат за [ertemplate.polldesc]")
+		var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+		cargo?.refund_ert(id, "Возврат за [ertemplate.polldesc]")
 		return FALSE
 
 	message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")

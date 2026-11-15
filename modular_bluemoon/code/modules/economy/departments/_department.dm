@@ -20,6 +20,8 @@
 	var/list/shield = list()
 	/// Пак, на который копит глава, и до какого world.time его цена не считается излишком; 0 - бюджет ещё не набрал цену, срок не идёт
 	var/datum/supply_pack/saving_goal
+	/// Номер отряда в GLOB.payed_ert, на который копит снабжение вместо пака; 0 - нет
+	var/saving_goal_ert = 0
 	var/saving_goal_until = 0
 	/// До этого world.time новую цель не поставить
 	var/saving_goal_cooldown_until = 0
@@ -127,7 +129,7 @@
 		return
 	if(COOLDOWN_FINISHED(src, return_notice_cooldown))
 		COOLDOWN_START(src, return_notice_cooldown, ECON_BUDGET_RETURN_NOTICE_COOLDOWN)
-		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления в \"Бюджете отдела\".")
+		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления[saving_goal_scope()] в \"Бюджете отдела\".")
 
 /// Отменённая закупка не считается ни закупкой, ни стоком отдела.
 /datum/economy_department/proc/ledger_cancel_purchase(amount)
@@ -179,31 +181,57 @@
 
 /// Сумма цели накопления; цена пересчитывается раз в тик экономики. Пока бюджет не набрал цену, срока нет; набрал - saving_goal_minutes на заказ. Истёкшая цель снимается с перерывом.
 /datum/economy_department/proc/saving_goal_amount()
-	if(!saving_goal)
+	if(!saving_goal && !saving_goal_ert)
 		return 0
 	if(saving_goal_until && world.time >= saving_goal_until)
 		lapse_saving_goal(saving_goal_until)
 		return 0
+	if(!saving_goal_valid())
+		clear_saving_goal(ordered = TRUE)
+		return 0
 	if(saving_goal_cache_tick != SSeconomy.fire_count || isnull(saving_goal_cache))
-		var/top = 0
-		var/list/packs = catalog()
-		var/list/offers = SSmarket.best_offers(packs)
-		for(var/datum/supply_pack/pack as anything in packs)
-			var/list/offer = offers[pack]
-			if(offer)
-				top = max(top, offer[2])
-			else if(!econ_pack_traded(pack))
-				top = max(top, pack.market_cost())
-		saving_goal_cache = min(round(econ_pack_price(saving_goal)), top)
+		saving_goal_cache = saving_goal_price()
 		saving_goal_cache_tick = SSeconomy.fire_count
 	if(!saving_goal_until && account.account_balance >= saving_goal_cache)
 		saving_goal_until = world.time + SSeconomy.settings.saving_goal_minutes MINUTES
-		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal.name]\": закажите её за [SSeconomy.settings.saving_goal_minutes] мин., потом её цена снова станет излишком.")
+		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal_name()]\": [saving_goal_ert ? "вызовите отряд с консоли связи" : "закажите её"] за [SSeconomy.settings.saving_goal_minutes] мин., потом её цена снова станет излишком.")
 	return saving_goal_cache
+
+/// Цена пака-цели, но не выше самого дорогого пака каталога в наличии.
+/datum/economy_department/proc/saving_goal_price()
+	var/top = 0
+	var/list/packs = catalog()
+	var/list/offers = SSmarket.best_offers(packs)
+	for(var/datum/supply_pack/pack as anything in packs)
+		var/list/offer = offers[pack]
+		if(offer)
+			top = max(top, offer[2])
+		else if(!econ_pack_traded(pack))
+			top = max(top, pack.market_cost())
+	return min(round(econ_pack_price(saving_goal)), top)
+
+/// На что копить можно: пак каталога отдела.
+/datum/economy_department/proc/can_save_for(datum/supply_pack/pack)
+	return pack && (pack in catalog())
+
+/// Цель всё ещё есть что купить; иначе снимается без перерыва.
+/datum/economy_department/proc/saving_goal_valid()
+	return TRUE
+
+/// Уточнение для подсказок, на что ещё отдел может копить.
+/datum/economy_department/proc/saving_goal_scope()
+	return ""
+
+/datum/economy_department/proc/saving_goal_name()
+	if(saving_goal_ert)
+		var/list/ert = econ_payed_ert(saving_goal_ert)
+		return ert?["name"]
+	return saving_goal?.name
 
 /// Цель снята без заказа: новую можно поставить через saving_goal_cooldown_minutes.
 /datum/economy_department/proc/lapse_saving_goal(since = world.time)
 	saving_goal = null
+	saving_goal_ert = 0
 	saving_goal_until = 0
 	saving_goal_cache = null
 	saving_goal_cooldown_until = max(saving_goal_cooldown_until, since + SSeconomy.settings.saving_goal_cooldown_minutes MINUTES)
@@ -211,10 +239,15 @@
 /datum/economy_department/proc/saving_goal_cooldown_minutes()
 	return max(CEILING((saving_goal_cooldown_until - world.time) / (1 MINUTES), 1), 0)
 
+/// Новую цель можно ставить: глава, нет перерыва и не стоит неистёкшая цель.
+/datum/economy_department/proc/can_start_saving_goal(mob/living/user)
+	return can_manage(user) && world.time >= saving_goal_cooldown_until && !((saving_goal || saving_goal_ert) && (!saving_goal_until || world.time < saving_goal_until))
+
 /datum/economy_department/proc/set_saving_goal(datum/supply_pack/pack, mob/living/user)
-	if(!can_manage(user) || !pack || !(pack in catalog()) || world.time < saving_goal_cooldown_until || (saving_goal && (!saving_goal_until || world.time < saving_goal_until)))
+	if(!can_start_saving_goal(user) || !can_save_for(pack))
 		return FALSE
 	saving_goal = pack
+	saving_goal_ert = 0
 	saving_goal_until = 0
 	saving_goal_cache = null
 	log_econ("[key_name(user)] назначил цель накопления [name]: [pack.name]")
@@ -224,23 +257,34 @@
 /datum/economy_department/proc/clear_saving_goal(mob/living/user, ordered = FALSE)
 	if(user && !can_manage(user))
 		return FALSE
-	if(!saving_goal)
+	if(!saving_goal && !saving_goal_ert)
 		return TRUE
 	if(ordered)
 		saving_goal = null
+		saving_goal_ert = 0
 		saving_goal_until = 0
 		saving_goal_cache = null
 	else
 		lapse_saving_goal()
 	return TRUE
 
+/// Пак куплен за бюджет мимо заказа отдела (отгрузка снабжения, экспресс-консоль): цель на него снимается без перерыва.
+/datum/economy_department/proc/goal_bought(datum/supply_pack/pack)
+	if(pack && pack == saving_goal)
+		clear_saving_goal(ordered = TRUE)
+
+/proc/econ_budget_goal_bought(datum/bank_account/department/account, datum/supply_pack/pack)
+	if(istype(account))
+		account.department?.goal_bought(pack)
+
 /// Снят заказ, закрывший цель: цель возвращается с прежним сроком; поставленная на её место живёт не дольше него.
-/datum/economy_department/proc/restore_saving_goal(datum/supply_pack/pack, until)
-	if(saving_goal)
+/datum/economy_department/proc/restore_saving_goal(datum/supply_pack/pack, until, ert_id = 0)
+	if(saving_goal || saving_goal_ert)
 		if(!saving_goal_until || until < saving_goal_until)
 			saving_goal_until = until
 	else
 		saving_goal = pack
+		saving_goal_ert = ert_id
 		saving_goal_until = until
 	saving_goal_cache = null
 	if(world.time >= saving_goal_until)

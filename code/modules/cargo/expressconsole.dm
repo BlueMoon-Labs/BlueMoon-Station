@@ -352,6 +352,7 @@ i'd be right happy to */
 							say("Оплата не прошла.")
 							return
 						supplier?.note_purchase(SO.pack, express_cost, station_budget())
+						econ_budget_goal_bought(payer, SO.pack)
 						say("Заказ принят: [express_cost] кр. списано, плательщик - [econ_budget_name(payer)].")
 						// BLUEMOON EDIT END
 						if(pack.special_pod)
@@ -388,6 +389,7 @@ i'd be right happy to */
 						if(!payer.debit(total_cost, ECON_IMPORT, usr, "Экспресс-заказ: [SO.pack.name]"))
 							say("Оплата не прошла.")
 							return
+						econ_budget_goal_bought(payer, SO.pack)
 						// BLUEMOON EDIT END
 						SO.generateRequisition(get_turf(src))
 						for(var/i in 1 to MAX_EMAG_ROCKETS)

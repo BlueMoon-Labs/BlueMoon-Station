@@ -792,6 +792,100 @@
 	qdel(order)
 	TEST_ASSERT(medical.saving_goal == pack, "Отмена заказа не вернула цель")
 
+/datum/unit_test/economy_budget_cap/proc/cargo_budget_app()
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/head_card = allocate(/obj/item/card/id)
+	head_card.access = list(ACCESS_QM)
+	head.put_in_active_hand(head_card)
+	var/datum/computer_file/program/department_budget/program = new
+	allocated += program
+	program.fixed_department = ACCOUNT_CAR
+	return list(head, program)
+
+/// Снабжение копит на пак дороже своего порога, который заказывает за свой бюджет с консоли: цена пака не уходит NT, отгрузка пака снимает цель.
+/datum/unit_test/economy_budget_cap/cargo_goal_pack/Run()
+	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/list/app = cargo_budget_app()
+	var/mob/living/carbon/human/head = app[1]
+	var/datum/computer_file/program/department_budget/program = app[2]
+	var/threshold = cargo.budget_threshold()
+	var/datum/supply_pack/goal_pack
+	var/price = 0
+	for(var/pack_type in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		if(pack.department_catalog || pack.hidden || pack.contraband || pack.admin_spawned || pack.DropPodOnly || pack.exclusive_consoles || pack.goody == PACK_GOODY_PRIVATE || pack.special || econ_pack_unavailable(pack))
+			continue
+		var/pack_price = round(econ_pack_price(pack))
+		if(pack_price > threshold && pack_price <= 100000 && pack_price > price)
+			goal_pack = pack
+			price = pack_price
+	TEST_ASSERT_NOTNULL(goal_pack, "Нет пака снабжения дороже порога [threshold] кр.")
+	econ_test_set_balance(cargo.account, threshold + price - 1)
+	TEST_ASSERT(cargo.budget_return_due() > 0, "Без цели излишек не возвращается")
+	program.budget_act(head, "set_goal", list("pack" = "[goal_pack.type]"))
+	TEST_ASSERT(cargo.saving_goal == goal_pack, "Цель на пак снабжения не поставлена: [program.messages[REF(head)]]")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), price, "Цель - цена пака у самого дешёвого партнёра")
+	TEST_ASSERT_EQUAL(cargo.budget_return_due(), 0, "Цель не держит деньги снабжения от возврата")
+	var/datum/supply_pack/hidden_pack
+	for(var/pack_type in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		if(pack.contraband && !pack.department_catalog)
+			hidden_pack = pack
+			break
+	TEST_ASSERT(!cargo.can_save_for(hidden_pack), "На контрабанду копить нельзя")
+	econ_budget_goal_bought(cargo.account, goal_pack)
+	TEST_ASSERT_NULL(cargo.saving_goal, "Отгрузка пака за бюджет снабжения не сняла цель")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_cooldown_minutes(), 0, "Заказ цели дал перерыв")
+
+/// Снабжение копит на отряд ОБР: его цена не уходит NT; вызов отряда снимает цель, а возврат денег за не прилетевший отряд возвращает её.
+/datum/unit_test/economy_budget_cap/cargo_goal_ert
+	var/list/saved_ert_available = list()
+
+/datum/unit_test/economy_budget_cap/cargo_goal_ert/New()
+	. = ..()
+	for(var/list/ert as anything in GLOB.payed_ert)
+		saved_ert_available += ert["available"]
+
+/datum/unit_test/economy_budget_cap/cargo_goal_ert/Destroy()
+	for(var/i in 1 to length(saved_ert_available))
+		GLOB.payed_ert[i]["available"] = saved_ert_available[i]
+	return ..()
+
+/datum/unit_test/economy_budget_cap/cargo_goal_ert/Run()
+	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/list/app = cargo_budget_app()
+	var/mob/living/carbon/human/head = app[1]
+	var/datum/computer_file/program/department_budget/program = app[2]
+	var/ert_id = length(GLOB.payed_ert)
+	TEST_ASSERT(ert_id > 0, "Нет платных отрядов ОБР")
+	var/list/ert = GLOB.payed_ert[ert_id]
+	ert["available"] = TRUE
+	var/price = ert["price"]
+	var/threshold = cargo.budget_threshold()
+	TEST_ASSERT(price > threshold, "Отряд дешевле порога снабжения")
+	econ_test_set_balance(cargo.account, threshold + price - 1)
+	program.budget_act(head, "set_goal", list("ert" = ert_id))
+	TEST_ASSERT_EQUAL(cargo.saving_goal_ert, ert_id, "Цель на отряд ОБР не поставлена: [program.messages[REF(head)]]")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), price, "Цель - цена отряда")
+	TEST_ASSERT_EQUAL(cargo.budget_return_due(), 0, "Цель на ОБР не держит деньги от возврата")
+	var/list/goal_entry = program.budget_data(head)["department"]["goal"]
+	TEST_ASSERT(goal_entry && goal_entry["name"] == ert["name"], "Окно не показывает цель на ОБР")
+	econ_test_set_balance(cargo.account, threshold + price)
+	TEST_ASSERT(cargo.saving_goal_amount() && cargo.saving_goal_until, "Набранная цель на ОБР не дала срок на вызов")
+	var/until = cargo.saving_goal_until
+	TEST_ASSERT(cargo.pay_ert(ert_id), "Отряд не вызван")
+	TEST_ASSERT(!ert["available"], "Вызванный отряд остался доступным")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_ert, 0, "Вызов отряда не снял цель")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), 0, "После вызова цель держит деньги")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_cooldown_minutes(), 0, "Вызов цели дал перерыв")
+	cargo.refund_ert(ert_id, "Тест")
+	TEST_ASSERT(ert["available"], "Возврат не вернул отряд в список")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_ert, ert_id, "Возврат денег за отряд не вернул цель")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_until, until, "Цель вернулась с новым сроком")
+	ert["available"] = FALSE
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), 0, "Цель на недоступный отряд держит деньги")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_ert, 0, "Цель на недоступный отряд не снята")
+
 /// Красный код и выше - ЧС: NT не забирает излишек, чтобы отделу было на что чинить станцию.
 /datum/unit_test/economy_budget_cap/emergency_pauses_return/Run()
 	var/datum/economy_department/medical = staff_medical()

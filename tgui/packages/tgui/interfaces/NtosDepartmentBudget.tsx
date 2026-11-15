@@ -22,7 +22,7 @@ type DepartmentInfo = {
   shielded?: number;
   goal_cooldown?: number;
   express_ready_in?: number;
-  goal?: { id: string; name: string; amount: number; minutes_left?: number | null } | null;
+  goal?: { id: string; name: string; amount: number; is_ert?: BooleanLike; minutes_left?: number | null } | null;
   emergency?: BooleanLike;
 };
 
@@ -44,6 +44,21 @@ type CatalogEntry = {
 };
 
 type PriceEntry = {
+  price: number;
+  available: BooleanLike;
+};
+
+type GoalPack = {
+  type: string;
+  name: string;
+  group: string;
+  price: number;
+  available: BooleanLike;
+};
+
+type GoalErt = {
+  id: number;
+  name: string;
   price: number;
   available: BooleanLike;
 };
@@ -73,6 +88,8 @@ export type BudgetData = {
   grace_minutes?: number;
   goal_minutes?: number;
   goal_cooldown_minutes?: number;
+  goal_packs?: GoalPack[];
+  goal_max?: number;
   express_markup?: number;
   express_cooldown?: number;
   economy_minutes: number;
@@ -106,6 +123,7 @@ export type BudgetData = {
   is_staff?: BooleanLike;
   department?: DepartmentInfo;
   prices?: Record<string, PriceEntry>;
+  goal_erts?: GoalErt[];
   requests?: RequestEntry[];
   treasury_requests?: TreasuryRequestEntry[];
   contracts?: ContractEntry[];
@@ -282,7 +300,9 @@ const OverviewTab = () => {
         {!!department.goal && (
           <NtLine label="Цель накопления">
             {department.goal.name}, {formatCredits(department.goal.amount)},{' '}
-            {department.goal.minutes_left ? `набрано, заказать за ${department.goal.minutes_left} мин.` : 'копим: срок на заказ пойдёт, когда бюджет наберёт цену'}
+            {department.goal.minutes_left
+              ? `набрано, ${department.goal.is_ert ? 'вызвать с консоли связи' : 'заказать'} за ${department.goal.minutes_left} мин.`
+              : `копим: срок на ${department.goal.is_ert ? 'вызов' : 'заказ'} пойдёт, когда бюджет наберёт цену`}
           </NtLine>
         )}
         {(!!department.shielded || !!department.goal || !!department.goal_cooldown) && (
@@ -322,7 +342,7 @@ const BudgetHelp = () => {
           Порог бюджета <Credits amount={department.threshold ?? 0} />: {data.cap_paydays} окладов сотрудников на смене, не
           ниже <Credits amount={department.threshold_floor ?? 0} />. Раз в {data.economy_minutes} мин. {data.cap_share}% излишка сверх порога возвращается NT.
           Излишком не считаются долги и следующая зарплата сотрудникам, переводы из казны, события и доля контрактов первые{' '}
-          {data.grace_minutes} мин., а также цена пака - цели накопления (ставится в каталоге; пока бюджет её не набрал, срока
+          {data.grace_minutes} мин., а также цена пака - цели накопления (ставится в каталоге{data.goal_erts ? ', у снабжения - и на любой пак, который оно заказывает за свой бюджет, или на отряд ОБР' : ''}; пока бюджет её не набрал, срока
           нет, после - {data.goal_minutes} мин. на заказ; после её истечения или снятия новая - через {data.goal_cooldown_minutes}{' '}
           мин.). При красном коде и выше NT излишек не забирает.
         </Box>
@@ -621,7 +641,85 @@ const CatalogTab = () => {
       ) : (
         <Box color="label">У отдела нет своего каталога.</Box>
       )}
+      {canOrder && !!data.goal_erts && <CargoGoalSection />}
     </NtFrame>
+  );
+};
+
+const GOAL_PACKS_SHOWN = 12;
+
+/** Цели снабжения вне каталога: отряды ОБР с консоли связи и паки, которые снабжение заказывает за свой бюджет. */
+const CargoGoalSection = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const [search, setSearch] = useState('');
+  const goal = data.department?.goal;
+  const locked = !!goal || !!data.department?.goal_cooldown;
+  const query = search.trim().toLowerCase();
+  const packs = (data.goal_packs || [])
+    .filter((pack) => !query || pack.name.toLowerCase().includes(query) || pack.group.toLowerCase().includes(query))
+    .sort((a, b) => b.price - a.price);
+  const shown = packs.slice(0, GOAL_PACKS_SHOWN);
+  const goalButton = (id: string, available: boolean, params: Record<string, string | number>) =>
+    goal?.id === id ? (
+      <Button selected onClick={() => act('clear_goal')}>
+        Цель
+      </Button>
+    ) : (
+      <Button
+        disabled={!available || locked}
+        tooltip={goal ? 'Цель уже выбрана: снимите её, чтобы выбрать другую' : 'Эта сумма не будет считаться излишком бюджета'}
+        onClick={() => act('set_goal', params)}>
+        Копить
+      </Button>
+    );
+  return (
+    <Box mt={1.5}>
+      <Box bold mb={0.5}>
+        Копить на дорогое
+      </Box>
+      <Box className="NtTerm__hint" mb={1}>
+        Снабжение может копить на отряд ОБР, которого вызывают с консоли связи за его бюджет, или на любой пак, который
+        оно заказывает за свой бюджет, до {formatCredits(data.goal_max ?? 0)}. Цель снимется, когда пак отгрузят за бюджет
+        снабжения или вызовут отряд. Цены паков - на момент открытия окна.
+      </Box>
+      <Table>
+        {(data.goal_erts || []).map((ert) => (
+          <Table.Row key={`ert:${ert.id}`} className="candystripe">
+            <Table.Cell>
+              <Box bold>{ert.name}</Box>
+              <Box italic color="label">
+                Отряд ОБР, вызов с консоли связи
+              </Box>
+            </Table.Cell>
+            <Table.Cell collapsing>
+              {ert.available ? <Credits amount={ert.price} /> : <Box color="bad">уже вызван</Box>}
+            </Table.Cell>
+            <Table.Cell collapsing>{goalButton(`ert:${ert.id}`, !!ert.available, { ert: ert.id })}</Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Input fluid my={1} value={search} placeholder="Найти пак снабжения" onInput={(_, value) => setSearch(value)} />
+      <Table>
+        {shown.map((pack) => (
+          <Table.Row key={pack.type} className="candystripe">
+            <Table.Cell>
+              <Box bold>{pack.name}</Box>
+              <Box italic color="label">
+                {pack.group}
+              </Box>
+            </Table.Cell>
+            <Table.Cell collapsing>
+              {pack.available ? <Credits amount={pack.price} /> : <Box color="bad">нет в наличии</Box>}
+            </Table.Cell>
+            <Table.Cell collapsing>{goalButton(pack.type, !!pack.available, { pack: pack.type })}</Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      {packs.length > shown.length && (
+        <Box className="NtTerm__hint">Ещё {packs.length - shown.length}: уточните поиск.</Box>
+      )}
+      {!packs.length && <Box color="label">Ничего не нашлось.</Box>}
+    </Box>
   );
 };
 

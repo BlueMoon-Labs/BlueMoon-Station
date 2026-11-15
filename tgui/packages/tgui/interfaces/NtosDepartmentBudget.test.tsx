@@ -261,6 +261,51 @@ describe('NtosDepartmentBudget', () => {
     expect(text(container)).toContain('Красный код: пока его не снимут, NT не забирает излишек бюджета.');
   });
 
+  const cargo: Partial<BudgetData> = {
+    catalog: [{ type: '/datum/supply_pack/department/cargo_mining_kit', name: 'Mining Expedition Kit', desc: 'Бур' }],
+    prices: { '/datum/supply_pack/department/cargo_mining_kit': { price: 1800, available: 1 } },
+    department: { id: 'CAR', name: 'Снабжение', balance: 40000, owed: 0, staff_on_shift: 3, grant: 400, threshold: 30000, return_due: 0 },
+    goal_max: 200000,
+    goal_erts: [
+      { id: 1, name: 'Доставщики Питцы', price: 25000, available: 1 },
+      { id: 6, name: 'Отряд Быстрого Реагирования', price: 200000, available: 0 },
+    ],
+    goal_packs: [
+      { type: '/datum/supply_pack/security/armory/pact_ninja_case', name: 'PACT Ninja Case', group: 'Armory', price: 31000, available: 1 },
+      { type: '/datum/supply_pack/misc/paper', name: 'Bureaucracy Crate', group: 'Miscellaneous', price: 900, available: 1 },
+    ],
+  };
+
+  test('снабжение копит на отряд ОБР и пак вне каталога, поиск по пакам', () => {
+    const { container, getByText, getAllByText, getByPlaceholderText, queryByText, topic } = setup(cargo);
+    fireEvent.click(getByText('Каталог'));
+    expect(text(container)).toContain('или на любой пак, который оно заказывает за свой бюджет, до 200 000 кр.');
+    expect(text(container)).toContain('уже вызван');
+    const buttons = getAllByText('Копить');
+    expect(buttons).toHaveLength(5);
+    expect(buttons[2].closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.click(buttons[1]);
+    expect(sent(topic, 'set_goal')).toEqual([{ ert: 1 }]);
+    expect(container.textContent!.indexOf('PACT Ninja Case')).toBeLessThan(container.textContent!.indexOf('Bureaucracy Crate'));
+    fireEvent.input(getByPlaceholderText('Найти пак снабжения'), { target: { value: 'ninja' } });
+    expect(queryByText('Bureaucracy Crate')).toBeNull();
+    fireEvent.click(getAllByText('Копить')[3]);
+    expect(sent(topic, 'set_goal')).toEqual([{ ert: 1 }, { pack: '/datum/supply_pack/security/armory/pact_ninja_case' }]);
+  });
+
+  test('цель снабжения на ОБР: срок на вызов, снимается из каталога; у других отделов раздела нет', () => {
+    const goal = { id: 'ert:1', name: 'Доставщики Питцы', amount: 25000, is_ert: 1, minutes_left: 20 };
+    const { container, getByText, topic, unmount } = setup({ ...cargo, department: { ...cargo.department!, goal } });
+    expect(text(container)).toContain('Доставщики Питцы, 25 000 кр., набрано, вызвать с консоли связи за 20 мин.');
+    fireEvent.click(getByText('Каталог'));
+    fireEvent.click(getByText('Цель'));
+    expect(sent(topic, 'clear_goal')).toHaveLength(1);
+    unmount();
+    const medical = setup();
+    fireEvent.click(medical.getByText('Каталог'));
+    expect(medical.container.textContent).not.toContain('Копить на дорогое');
+  });
+
   test('сотрудник: без одобрения и премий, заявка с причиной', () => {
     const { container, getByText, queryByText, getByPlaceholderText, topic } = setup({ can_manage: 0, staff: [] });
     expect(queryByText('Премия')).toBeNull();
