@@ -424,6 +424,7 @@
 // #include "keybinding_init.dm"
 #include "join_render_cost.dm"
 #include "jps_pathfinding.dm"
+#include "keybindings_mouse_buttons.dm"
 #include "keybindings_stuck_keys.dm"
 #include "kinetic_accelerator_modkits.dm"
 // #include "language_transfer.dm"

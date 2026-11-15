@@ -1704,6 +1704,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		ip_intel = res.intel
 
 /client/Click(atom/object, atom/location, control, params, ignore_spam = FALSE, extra_info, ignore_last_click = FALSE)
+	// боковые кнопки мыши - это бинды из MouseDown, а не ЛКМ
+	if(mouse_event_side_button_key(params))
+		return
 	if(!ignore_last_click && last_click > world.time - world.tick_lag)
 		return
 	last_activity = world.time
@@ -1774,6 +1777,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	SEND_SIGNAL(src, COMSIG_CLIENT_CLICK, object, location, control, params, usr)
 
 	..()
+
+/client/DblClick(object, location, control, params)
+	if(mouse_event_side_button_key(params))
+		return
+	return ..()
 
 /client/proc/add_verbs_from_config()
 	if(CONFIG_GET(flag/see_own_notes))
