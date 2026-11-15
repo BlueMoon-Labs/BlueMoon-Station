@@ -88,6 +88,11 @@
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 
+	// То же смещение плоскостей, что и у /turf/open/space/ihategordon -
+	// чазм меняет тип турфа на месте, терять его нельзя.
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
+
 	var/area/A = loc
 	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
@@ -186,6 +191,13 @@
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 
+	// У космоса свой Initialize без вызова родителя, поэтому блоки
+	// /turf/open/space/Initialize повторяем вручную. Без смещения плоскостей
+	// на нижнем этаже связанного стека (ненулевой plane offset) турф
+	// рисуется не на той плоскости - чёрный тайл вместо космоса.
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
+
 	var/area/A = loc
 	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
@@ -202,6 +214,9 @@
 	T = SSmapping.get_turf_below(src)
 	if(T)
 		T.multiz_turf_new(src, UP)
+
+	if(SSmapping.level_trait(z, ZTRAIT_TRANSPARENT_SPACE))
+		make_space_transparent()
 
 	// Регистрируем сигнал для обработки входа на тайл
 	RegisterSignal(src, COMSIG_ATOM_ENTERED, PROC_REF(on_entered))
@@ -453,7 +468,12 @@
 /datum/controller/subsystem/parallax/proc/check_ihategordon_z(z)
 	// Z-levels containing ihategordon space turfs are static per round -
 	// scan world once and cache instead of rescanning per z-level.
-	if(isnull(ihategordon_zlevels))
+	// An empty result is NOT cached permanently: pick_profile_for_z runs for
+	// every z a client looks at (lobby, station), and if the first call lands
+	// before the away-mission map is loaded the empty scan would blacklist
+	// the ihategordon profile for the whole round. pick_profile_for_z itself
+	// is cached per-z, so rescanning while empty stays cheap.
+	if(isnull(ihategordon_zlevels) || !length(ihategordon_zlevels))
 		ihategordon_zlevels = list()
 		for(var/turf/open/space/ihategordon/T in world)
 			ihategordon_zlevels["[T.z]"] = TRUE

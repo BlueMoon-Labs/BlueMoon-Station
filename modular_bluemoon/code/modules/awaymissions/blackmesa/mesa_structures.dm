@@ -134,9 +134,11 @@
 	var/shield_range = 5
 	/// A list of mobs we are currently shielding with attached beams.
 	var/list/shielded_mobs = list()
+	var/next_shield_check = 0
 
 /obj/structure/xen_pylon/Initialize(mapload)
 	. = ..()
+	START_PROCESSING(SSobj, src)
 	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob in range(shield_range, src))
 		if(!iterating_mob.can_be_shielded)
 			continue
@@ -182,7 +184,48 @@
 			shielded_mobs[iterating_mob] = null
 			shielded_mobs -= iterating_mob
 
+// Щит держится только пока моб в радиусе и на линии видимости - как medbeam,
+// который перестаёт лечить при потере цели. Без этой проверки моб уходил за
+// стену, а луч и неуязвимость оставались навсегда.
+/obj/structure/xen_pylon/process(seconds_per_tick)
+	if(!shielded_mobs || !shielded_mobs.len)
+		return
+	if(world.time < next_shield_check)
+		return
+	next_shield_check = world.time + 10
+	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs)
+		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
+			remove_shield(iterating_mob)
+
+/obj/structure/xen_pylon/proc/remove_shield(mob/living/simple_animal/hostile/blackmesa/xen/mob_to_unshield)
+	if(!(mob_to_unshield in shielded_mobs))
+		return
+	var/datum/beam/beam = shielded_mobs[mob_to_unshield]
+	QDEL_NULL(beam)
+	shielded_mobs[mob_to_unshield] = null
+	shielded_mobs -= mob_to_unshield
+	if(istype(mob_to_unshield) && !QDELETED(mob_to_unshield))
+		mob_to_unshield.lose_shield()
+
+/obj/structure/xen_pylon/proc/shield_los(atom/movable/A)
+	var/turf/T1 = get_turf(src)
+	var/turf/T2 = get_turf(A)
+	if(!istype(T1) || !istype(T2) || T1.z != T2.z)
+		return FALSE
+	for(var/turf/T in getline(T1, T2))
+		if(T == T1 || T == T2)
+			continue
+		if(T.opacity || T.density)
+			return FALSE
+		for(var/atom/movable/AM in T)
+			if(AM == src || AM == A || AM.invisibility > SEE_INVISIBLE_LIVING)
+				continue
+			if(AM.opacity || AM.density)
+				return FALSE
+	return TRUE
+
 /obj/structure/xen_pylon/Destroy()
+	STOP_PROCESSING(SSobj, src)
 	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs)
 		iterating_mob.lose_shield()
 		var/datum/beam/beam = shielded_mobs[iterating_mob]
@@ -297,5 +340,143 @@
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	invisibility = INVISIBILITY_ABSTRACT
 
+
+// =============================================================================
+// MESA RIFT PORTALS - постоянные порталы для карты. force_teleport унаследован
+// от /obj/effect/portal/permanent и пробивает NOTELEPORT-зоны Black Mesa
+// (как рифт смерти гантшипа). Двусторонний вариант: ставим два портала с
+// одинаковым `id`. Односторонний: один портал + /obj/effect/landmark/portal_exit
+// с тем же `id` в точке выхода - вернуться через портал нельзя.
+// =============================================================================
+
+/obj/effect/portal/permanent/mesa_rift
+	name = "Black Mesa rift"
+	desc = "Разрыв в реальности, мерцающий ксеновской энергией."
+	mech_sized = TRUE
+
+/obj/effect/portal/permanent/one_way/mesa_rift
+	name = "Black Mesa rift"
+	desc = "Односторонний разрыв в реальности. Обратного пути через него нет."
+	mech_sized = TRUE
+
+// =============================================================================
+// NIHILANTH - боссовые разломы и точки испытания
+// =============================================================================
+
+// Рантайм-разлом Нихиланта: односторонний (hard_target + hardlinked = FALSE),
+// force_teleport/mech_sized унаследованы от /obj/effect/portal/mesa_rift -
+// пробивает NOTELEPORT-зоны Black Mesa.
+/obj/effect/portal/mesa_rift/nihilanth_rift
+	name = "nihilanth rift"
+	desc = "Разлом, разорванный силой Нихиланта."
+
+// Лендмарки для карты: место особого пилона (испытание), выход из комплекса
+// и точка в другой части комплекса - оба односторонние, без пути обратно.
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site
+	name = "Nihilanth Pylon Site Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_exit
+	name = "Nihilanth Exit Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_complex
+	name = "Nihilanth Complex Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
+// Особый подвид ксено-пилона: aegis-щит для ЛЮБОГО живого существа в радиусе
+// (игроки получают xen_aegis, блокирующий apply_damage), а не только для ксеномобов.
+// Используется в испытаниях Нихиланта: пока пилон жив - щит держится, как у
+// medbeam, и слетает при потере дистанции/линии видимости.
+/obj/structure/xen_pylon/nihilanth
+	name = "xen aegis pylon"
+	desc = "Ксено-пилон особого типа: его поле окутывает щитом любого существа рядом."
+	var/list/aegis_mobs = list()
+	var/next_aegis_check = 0
+	/// Босс, для которого этот пилон - цель испытания.
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/nihilanth_boss
+	var/trial_active = FALSE
+	/// Пилон уже отработал в испытании - повторно не выбирается.
+	var/used = FALSE
+
+/obj/structure/xen_pylon/nihilanth/Initialize(mapload)
+	. = ..()
+	// Родительский цикл регистрирует только ксеномобов через register_mob -
+	// для остальных живых существ в радиусе делаем свой проход.
+	for(var/mob/living/M in range(shield_range, src))
+		if(isxenmob(M))
+			continue
+		register_aegis(M)
+
+/obj/structure/xen_pylon/nihilanth/mob_entered_range(datum/source, atom/movable/entered_atom)
+	// SIGNAL_HANDLER наследуется от родителя - повторный set линтер запрещает.
+	if(!isliving(entered_atom))
+		return
+	var/mob/living/entered_mob = entered_atom
+	if(entered_mob.stat == DEAD)
+		return
+	register_aegis(entered_mob)
+
+/obj/structure/xen_pylon/nihilanth/register_mob(mob/living/mob_to_register)
+	// Родительский Initialize зовёт этот прок для ксеномобов в радиусе -
+	// подвид переводит всех на aegis-систему.
+	register_aegis(mob_to_register)
+
+/obj/structure/xen_pylon/nihilanth/proc/register_aegis(mob/living/M)
+	if(QDELETED(M) || M.stat == DEAD || (M in aegis_mobs))
+		return
+	M.xen_aegis++
+	var/datum/beam/created_beam = src.Beam(M, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1))
+	aegis_mobs[M] = created_beam
+	RegisterSignal(created_beam, COMSIG_QDELETING, PROC_REF(aegis_beam_died), override = TRUE)
+	RegisterSignal(M, COMSIG_QDELETING, PROC_REF(aegis_mob_died), override = TRUE)
+
+/obj/structure/xen_pylon/nihilanth/proc/remove_aegis(mob/living/M)
+	if(!(M in aegis_mobs))
+		return
+	var/datum/beam/beam = aegis_mobs[M]
+	QDEL_NULL(beam)
+	aegis_mobs[M] = null
+	aegis_mobs -= M
+	if(istype(M) && !QDELETED(M))
+		M.xen_aegis = max(M.xen_aegis - 1, 0)
+
+/obj/structure/xen_pylon/nihilanth/proc/aegis_mob_died(atom/movable/source, force)
+	SIGNAL_HANDLER
+	remove_aegis(source)
+
+/obj/structure/xen_pylon/nihilanth/proc/aegis_beam_died(datum/beam/beam_to_kill)
+	SIGNAL_HANDLER
+	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+		if(aegis_mobs[iterating_mob] == beam_to_kill)
+			remove_aegis(iterating_mob)
+
+/obj/structure/xen_pylon/nihilanth/process(seconds_per_tick)
+	if(!aegis_mobs || !aegis_mobs.len)
+		return
+	if(world.time < next_aegis_check)
+		return
+	next_aegis_check = world.time + 10
+	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
+			remove_aegis(iterating_mob)
+
+/obj/structure/xen_pylon/nihilanth/Destroy()
+	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+		remove_aegis(iterating_mob)
+	aegis_mobs = null
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/boss = nihilanth_boss
+	nihilanth_boss = null
+	var/was_trial = trial_active
+	trial_active = FALSE
+	. = ..()
+	if(was_trial && istype(boss) && !QDELETED(boss) && boss.stat != DEAD)
+		boss.end_trial()
 
 #undef COMSIG_QDELETING
