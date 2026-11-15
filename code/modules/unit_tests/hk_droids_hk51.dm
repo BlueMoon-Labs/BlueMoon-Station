@@ -6,6 +6,7 @@
 	var/turf/factory_spot = run_loc_floor_top_right
 	var/obj/structure/closet/stash = allocate(/obj/structure/closet/secure_closet, factory_spot)
 	var/list/containers = list(stash)
+	allocate(/datum/hk_factory_test_floor, run_loc_floor_bottom_left, /area/ruin/lavaland/powered/graveyard_shuttle)
 	for(var/i in 1 to 2)
 		containers += allocate(/obj/structure/closet)
 	var/list/placed = scatter.scatter(containers, factory_spot)
@@ -176,7 +177,14 @@
 		var/turf/container_turf = get_turf(container)
 		TEST_ASSERT(scatter.is_scatter_level(container_turf.z), "[container] собран с уровня [container_turf.z]")
 		TEST_ASSERT(scatter.is_scatter_spot(container_turf), "[container] собран из безымянной зоны или руины с гост-ролями")
-	TEST_ASSERT(station_parts <= 1 || length(collected) <= ruin_parts, "На станции [station_parts] части, хотя ящики руин оставались свободны")
+	var/obj/effect/landmark/hk51_part_spot/factory/factory_mark = locate() in GLOB.landmarks_list
+	var/factory_group = factory_mark ? hk51_place_group(get_turf(factory_mark)) : null
+	var/list/ruin_groups = list()
+	for(var/obj/structure/closet/container as anything in collected)
+		var/group = hk51_place_group(get_turf(container))
+		if(group != factory_group)
+			ruin_groups[group] = TRUE
+	TEST_ASSERT(station_parts <= 1 || length(ruin_groups) <= ruin_parts, "На станции [station_parts] части, хотя свободные руины оставались")
 
 /// Части кладутся только в руины с названием: не в «Unexplored Location» и не на базы гост-ролей - ни в зону спавнера, ни в соседние зоны той же базы, ни в рамку её шаблона.
 /datum/unit_test/hk51_scatter_named_ruins
@@ -229,7 +237,9 @@
 	var/list/spawner_turfs = scatter.ghost_spawner_turfs()
 	TEST_ASSERT(shell_spot in spawner_turfs, "Оболочка дрона не считается гост-ролью")
 	TEST_ASSERT(dispenser_spot in spawner_turfs, "Раздатчик оболочек дронов не считается гост-ролью")
-	scatter.find_ghost_bases()
+	scatter.find_ghost_bases(list())
+	TEST_ASSERT(scatter.is_scatter_spot(base_spot), "Руина без оболочки дрона закрыта для частей")
+	scatter.find_ghost_bases(spawner_turfs & list(shell_spot, dispenser_spot))
 	TEST_ASSERT(!scatter.is_scatter_spot(base_spot), "Часть годится в руину с оболочкой дрона")
 	qdel(scatter)
 
@@ -320,6 +330,113 @@
 		for(var/obj/item/hk51_part/part in container)
 			qdel(part)
 
+/// Зоны-сёстры под безымянным предком - одна руина по рамке шаблона: вторая часть уходит в другую руину, а бирка называет шаблон.
+/datum/unit_test/hk51_scatter_ruin_frame
+
+/datum/unit_test/hk51_scatter_ruin_frame/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/turf/bridge_spot = run_loc_floor_bottom_left
+	var/turf/hallway_spot = get_step(bridge_spot, EAST)
+	var/turf/other_spot = locate(bridge_spot.x + 3, bridge_spot.y, bridge_spot.z)
+	var/turf/maint_spot = locate(bridge_spot.x, bridge_spot.y + 2, bridge_spot.z)
+	allocate(/datum/hk_factory_test_floor, bridge_spot, /area/ruin/space/has_grav/onehalf/bridge)
+	allocate(/datum/hk_factory_test_floor, hallway_spot, /area/ruin/space/has_grav/onehalf/hallway)
+	allocate(/datum/hk_factory_test_floor, other_spot, /area/ruin/lavaland/powered/graveyard_shuttle)
+	allocate(/datum/hk_factory_test_floor, maint_spot, /area/maintenance/fore)
+	var/datum/map_template/ruin/template = allocate(/datum/map_template/ruin)
+	template.name = "Test Excavator"
+	template.width = 3
+	template.height = 1
+	allocate(/obj/effect/landmark/ruin, hallway_spot, template)
+	TEST_ASSERT(hk51_place_group(bridge_spot) == hk51_place_group(hallway_spot), "Зоны-сёстры в рамке одного шаблона считаются разными руинами")
+	TEST_ASSERT(hk51_place_group(other_spot) != hk51_place_group(bridge_spot), "Руина вне рамки слилась с шаблоном")
+	TEST_ASSERT_EQUAL(hk51_area_label(bridge_spot), "Test Excavator: Bridge", "Бирка не называет шаблон руины")
+
+	var/list/frame_closets = list(allocate(/obj/structure/closet, bridge_spot), allocate(/obj/structure/closet, hallway_spot))
+	var/obj/structure/closet/other_closet = allocate(/obj/structure/closet, other_spot)
+	var/obj/structure/closet/maint_closet = allocate(/obj/structure/closet, maint_spot)
+	var/list/placed = scatter.scatter(frame_closets + other_closet, run_loc_floor_top_right, list(maint_closet))
+	var/frame_parts = 0
+	var/other_parts = 0
+	for(var/part_type in placed)
+		var/place = placed[part_type]
+		if(place in frame_closets)
+			frame_parts++
+			TEST_ASSERT(findtext(hk51_place_hint(place), "Test Excavator: "), "Бирка места в рамке без имени шаблона: [hk51_place_hint(place)]")
+		else if(place == other_closet)
+			other_parts++
+	TEST_ASSERT_EQUAL(frame_parts, 1, "В рамку одного шаблона легла не одна часть")
+	TEST_ASSERT_EQUAL(other_parts, 1, "Вторая руина осталась без части")
+	qdel(scatter)
+	for(var/obj/structure/closet/container as anything in frame_closets + other_closet + maint_closet)
+		for(var/obj/item/hk51_part/part in container)
+			qdel(part)
+	for(var/obj/item/hk51_part/part in run_loc_floor_top_right)
+		qdel(part)
+
+/// Свободные руины кончились - следующие части идут в шкафы других зон техтоннелей и только потом второй раз в руину.
+/datum/unit_test/hk51_scatter_maint_before_repeat
+
+/datum/unit_test/hk51_scatter_maint_before_repeat/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/turf/ruin_spot = run_loc_floor_bottom_left
+	var/turf/fore_spot = get_step(ruin_spot, NORTH)
+	var/turf/aft_spot = get_step(fore_spot, NORTH)
+	allocate(/datum/hk_factory_test_floor, ruin_spot, /area/ruin/lavaland/powered/graveyard_shuttle)
+	allocate(/datum/hk_factory_test_floor, fore_spot, /area/maintenance/fore)
+	allocate(/datum/hk_factory_test_floor, aft_spot, /area/maintenance/aft)
+	var/list/ruin_closets = list()
+	for(var/i in 1 to 3)
+		ruin_closets += allocate(/obj/structure/closet, ruin_spot)
+	var/list/maint_closets = list(allocate(/obj/structure/closet, fore_spot), allocate(/obj/structure/closet, fore_spot), allocate(/obj/structure/closet, aft_spot))
+	var/list/placed = scatter.scatter(ruin_closets, null, maint_closets)
+	var/ruin_parts = 0
+	var/list/maint_areas = list()
+	for(var/part_type in placed)
+		var/place = placed[part_type]
+		if(place in ruin_closets)
+			ruin_parts++
+		else if(place in maint_closets)
+			var/area/maint_area = get_area(place)
+			TEST_ASSERT(!maint_areas[maint_area.type], "Две части легли в одну зону техтоннелей [maint_area.type]")
+			maint_areas[maint_area.type] = TRUE
+	TEST_ASSERT_EQUAL(length(maint_areas), 2, "Часть легла второй раз в руину, хотя зона техтоннелей оставалась свободной")
+	TEST_ASSERT_EQUAL(ruin_parts, 2, "Недобор частей не добран повтором руины после техтоннелей")
+	qdel(scatter)
+	for(var/obj/structure/closet/container as anything in ruin_closets + maint_closets)
+		for(var/obj/item/hk51_part/part in container)
+			qdel(part)
+
+/// В руину фабрики, включая соседние зоны её рамки, кроме мотиватора ничего не кладётся, даже если других мест нет.
+/datum/unit_test/hk51_scatter_factory_no_repeat
+
+/datum/unit_test/hk51_scatter_factory_no_repeat/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/turf/factory_spot = run_loc_floor_bottom_left
+	var/turf/hallway_spot = get_step(factory_spot, EAST)
+	allocate(/datum/hk_factory_test_floor, factory_spot, /area/ruin/space/has_grav/onehalf/bridge)
+	allocate(/datum/hk_factory_test_floor, hallway_spot, /area/ruin/space/has_grav/onehalf/hallway)
+	var/datum/map_template/ruin/template = allocate(/datum/map_template/ruin)
+	template.width = 3
+	template.height = 1
+	allocate(/obj/effect/landmark/ruin, hallway_spot, template)
+	var/obj/structure/closet/stash = allocate(/obj/structure/closet, factory_spot)
+	var/list/containers = list(stash, allocate(/obj/structure/closet, factory_spot), allocate(/obj/structure/closet, hallway_spot))
+	var/list/placed = scatter.scatter(containers, factory_spot)
+	var/market_count = 0
+	for(var/part_type in placed)
+		var/place = placed[part_type]
+		if(place == HK51_PLACE_BLACK_MARKET)
+			market_count++
+		else if(part_type != /obj/item/hk51_part/motivator)
+			TEST_ASSERT(!(place in containers), "[part_type] лёг в руину фабрики: [get_area(place)]")
+	TEST_ASSERT_EQUAL(placed[/obj/item/hk51_part/motivator], stash, "Мотиватор лёг не в шкаф фабрики")
+	TEST_ASSERT_EQUAL(market_count, HK51_PART_COUNT - 1, "Без других мест не все части кроме мотиватора ушли на рынок")
+	qdel(scatter)
+	for(var/obj/structure/closet/container as anything in containers)
+		for(var/obj/item/hk51_part/part in container)
+			qdel(part)
+
 /// Бирка называет руину, если у зоны общее имя вроде «Storage», и не повторяет имя, если оно уже в названии зоны; станционный уровень всегда «станция».
 /datum/unit_test/hk51_place_hint_names
 
@@ -344,6 +461,7 @@
 	else
 		station_level.traits[ZTRAIT_MINING] = had_mining
 	TEST_ASSERT_EQUAL(sector, "станция", "Станционный уровень с шахтёрским признаком назван не станцией")
+	TEST_ASSERT_EQUAL(hk51_sector_name(run_loc_floor_bottom_left.z), "вне зоны связи", "Резервный уровень назван не «вне зоны связи»")
 
 /// Частям без ящика руины достаются другие шкафы техтоннелей станции; на рынке остаётся только плановая часть.
 /datum/unit_test/hk51_scatter_station_fallback
