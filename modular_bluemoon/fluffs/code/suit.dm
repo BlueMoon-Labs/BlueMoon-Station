@@ -1175,7 +1175,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/hos/platecarrier/melato
 	else
 		to_chat(user, span_warning("You can't modify [target] with this kit!"))
 	return TRUE
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/lapkee_carrier_kit
 	name = "Modified concord armored coat Kit"
 	desc = "A modkit for making a plate carrier into a Modified concord armored coat."
@@ -1228,7 +1228,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/hos/platecarrier/lapkee
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
-
+*/
 /obj/item/clothing/suit/armor/vest/alt/tau
 	name = "Jaeger Combat Exoskeleton MK.1"
 	desc = "Jaeger Combat Exoskeleton MK.1. Designed to accommodate various modular armor components and support systems. This model comes equipped with EOD pauldrons, a Mjolnir torso, and Hell Diver knee guards. The light and storage module appears to be broken, and the armor plates are heavily damaged, offering reduced protection compared to their original state. The armor also features an empty slot for an armor module compatible with all TerraGov armor modules."

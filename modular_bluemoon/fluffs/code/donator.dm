@@ -2213,7 +2213,7 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/inteq_sledgehammer/toy
 	ckeywhitelist = list("freakowo", "belf0r")
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /datum/gear/donator/bm/invisible_ac
 	name = "Invisible Armored Coat"
 	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible
@@ -2221,7 +2221,7 @@
 	restricted_desc = "Head of Security, Warden, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Blueshield")
 	ckeywhitelist = list("lapkee")
-
+*/
 /datum/gear/donator/bm/kladmenuwu_sweater
 	name = "Worm Sweater"
 	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
@@ -2457,13 +2457,13 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/anti_armor
 	ckeywhitelist = list("angrylaska")
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /datum/gear/donator/bm/lapkee_kit
 	name = "Nebula Box"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/lapkee_kit
 	ckeywhitelist = list("lapkee")
-
+*/
 /datum/gear/donator/backpack/lipstick/heartboom
 	name = "Heartboom Lipstick"
 	path = /obj/item/lipstick/heartboom

@@ -87,7 +87,7 @@
 	item_state = "black_sneakers"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/formal_concord_boots_kit
 	name = "Formal concord boots Kit"
 	desc = "A modkit for making a MOPP boots into a Formal concord boots."
@@ -104,3 +104,4 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
 DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/shoes/jackboots/cbrn/mopp/formal_concord_boots)
+*/

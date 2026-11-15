@@ -393,7 +393,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stunsword/melatonin)
 	icon_state = "melatonin_modkit"
 	product = /obj/item/melee/baton/stunsword/melatonin
 	fromitem = list(/obj/item/melee/baton/stunsword)
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
@@ -467,7 +467,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stunsword/stunkatana)
 		set_light(0)
 
 #undef STUNKATANA_BASE_STATE
-
+*/
 /obj/item/restraints/legcuffs/bola/energy/melatonin
 	name = "Entangling Bola"
 	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."

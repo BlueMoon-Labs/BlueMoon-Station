@@ -950,7 +950,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/wt550/stg56)
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
 ///////////////////////////////////////////////
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/nebular_kit
 	name = "Nebular Gun Kit"
 	desc = "A modkit for making a Enforcer Gun into a Nebular .75 (M. P-45)."
@@ -989,6 +989,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/pistol/enforcer/neb
 	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
 	var/fill_level = round(total / magazine.max_ammo * 7)
 	. += "Nebular-9-ammo-[fill_level]"
+*/
 
 /obj/item/modkit/p226_syndicate
 	name = "P226 'Syndicate' Kit"
@@ -1009,7 +1010,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/pistol/enforcer/p22
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate/get_worn_belt_overlay(icon_file)
 	return null
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
 	desc = "A modkit for making a hybrid taser into a Nebular-T."
@@ -1113,7 +1114,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/automatic/combat/supe
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-
+*/
 /obj/item/modkit/casull_kit
 	name = "Casull Gun Kit"
 	desc = "A modkit for making a Enforcer Gun into a Casull."
@@ -1421,7 +1422,7 @@ CZ75_PROCS(/obj/item/gun/ballistic/automatic/pistol/enforcerred/cz_75_auto)
 
 #undef CZ75_COMMON
 #undef CZ75_PROCS
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/quasar_kit
 	name = "Quasar Kit"
 	desc = "A modkit for making a advanced energy gun into a Quasar."
@@ -1603,7 +1604,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/riot/pulsar)
 	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
 	if(fill_level < 6)
 		. += "pulsar-[fill_level]"
-
+*/
 ///////////////////////////////////////////////
 /obj/item/modkit/warder_9r
 	name = "9R Warder kit"
@@ -2010,7 +2011,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/melatonin)
 	icon_state = "melatonin_modkit"
 	product = /obj/item/gun/ballistic/shotgun/shorty/melatonin
 	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/gun/ballistic/shotgun/shorty/black_hole
 	name = "\"Black hole\" type one-hand short platform, modification \"P\""
 	desc = "Один из немногих коммерчески распространяемых оружий за авторством малоизвестной компании \"Nebula Workshop\". Чёрная дыра - жемчужина среди малогабаритных оружий, отличающаяся от одноклассников лёгкой кастомизацией - не только внутренностей, таких как встроенный баллистический калькулятор и подстраивающийся под него голоприцел с автопоправками на окружение, но и из за запатентованной технологии изменяемого ствола, что в зависимости от условий может работать с почти всеми распространёнными в галактике калибрами, и даже исполнять роль ручного однозарядного гранатомёта. Смена происходит на боковой панели через интерфейс, который у конкретно этого блэкхола намертво закрыт металлической пломбой с выдавленной буквой \"P\""
@@ -2042,6 +2043,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/shotgun/shorty/black_hole)
 	icon_state = "supershort-shotgun_kit"
 	product = /obj/item/gun/ballistic/shotgun/shorty/black_hole
 	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
+*/
 
 /obj/item/gun/ballistic/revolver/Apostle/old
 	name = "Old revolver"

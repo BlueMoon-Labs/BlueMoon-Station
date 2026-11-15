@@ -96,7 +96,7 @@
 /obj/item/clothing/neck/donator/bm/antique_cape/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#777777", "#FFFFCC", "#66FFFF"), 3)
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/clothing/neck/donator/bm/concord_cloak
 	name = "Concord cloak kit"
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
@@ -167,6 +167,7 @@
 	wearer.update_inv_neck()
 	wearer.update_body()
 	wearer.update_hair()
+*/
 
 /obj/item/clothing/neck/donator/bm/baron
 	name = "terrifying cloak"

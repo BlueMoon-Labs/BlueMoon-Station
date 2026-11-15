@@ -69,7 +69,7 @@
 	name = "AC Casual Skirt"
 	desc= "Casual skirt for special operations for Mercenaries in Adamas Cattus."
 	icon_state = "ac_uni_skirt"
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible
 	name = "Invisible Armored Coat"
 	desc = "Кто-то очень сильно хотел светить своими телесами, даже через броню. Специально для такого случая - модифицированный хамелеон-плащ для всех 50-ти оттенков эгсбиционистов в рядах командования и силовых структур."
@@ -122,3 +122,4 @@
 		icon_state = "concord_armored_coat_[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
+*/

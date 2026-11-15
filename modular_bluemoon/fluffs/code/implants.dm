@@ -1,3 +1,4 @@
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/lapkee_arm_shield_kit
 	name = "Holographic shield Kit"
 	desc = "A modkit for making a arm-mounted riot shield into a Holographic shield."
@@ -16,3 +17,4 @@
 	item_state = "lapkee_riot_shield"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+*/

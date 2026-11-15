@@ -419,7 +419,7 @@
 		),
 )
 //////////////////////////////////////////////////////////
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modsuit_modkit/lapkee
 	name = "Concord MODsuit theme Kit"
 	icon_state = "lapkee_modkit"
@@ -460,7 +460,7 @@
 			),
 		),
 )
-
+*/
 /obj/item/modsuit_modkit/melatonin
 	name = "Fairweather MODsuit theme Kit"
 	icon_state = "melatonin_modkit"

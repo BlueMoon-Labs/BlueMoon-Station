@@ -106,7 +106,7 @@
 	icon_state = "winter_mask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_worn_layer = GLASSES_LAYER
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/clothing/mask/gas/sechailer/star_dust
 	name = "\"Star dust\" rebriser mask"
 	desc = "Сильно модифицированный внутри и лишь незначительно внешне противогаз, превращённый в маску с установленным фильтром и аккумулирующим кислород вместо пользователя мотором. Сверх того, имеет внутри встроенные системы оповещения и некоторой фильтрации изображения. Тактика как она есть."
@@ -144,7 +144,7 @@
 	icon_state = "gas-mask_kit"
 	product = /obj/item/clothing/mask/gas/sechailer/star_dust
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
-
+*/
 /obj/item/clothing/mask/gas/krieg
 	name = "Противогаз Крига"
 	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."

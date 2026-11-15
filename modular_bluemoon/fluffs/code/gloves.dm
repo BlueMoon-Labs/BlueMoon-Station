@@ -99,7 +99,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
 	icon_state = "transparent_gloves"
 	item_state = "transparent_gloves"
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/hardlight_gloves_kit
 	name = "Fingerless hardlight gloves Kit"
 	desc = "A modkit for making a gripper gloves into a Fingerless hardlight gloves."
@@ -143,3 +143,4 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/gloves/tackler/hardlight_gloves)
 	icon_state = "hardlight_gloves"
 	item_state = "hardlight_gloves"
 DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/gloves/tackler/combat/insulated/hardlight_gloves)
+*/

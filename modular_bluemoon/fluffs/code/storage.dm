@@ -259,7 +259,7 @@
 		/obj/item/modkit/m3predator,
 	)
 	generate_items_inside(items_inside, src)
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/storage/box/lapkee_kit
 	name = "Nebula Box"
 	desc = "Прочный кейс для всякой всячины, включает в себя снаряжение всё снаряжение расы Касари, которое только можно добыть окольными путями - через чёрный рынок и непотребства в высоких кабинетах."
@@ -292,7 +292,7 @@
 	new /obj/item/modkit/pulsar_knife_kit(src) // ножик-режик
 	new /obj/item/modkit/lapkee_arm_shield_kit(src) // имплант щита
 //////////////////////////////////////////////////
-
+*/
 /obj/item/storage/backpack/satchel/sport_abibas_bag
 	name = "Sport 'ABIBAS' satchel"
 	desc = "Спортивная сумка, выглядит удобно."
@@ -300,7 +300,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
 	icon_state = "abibas_back"
 	item_state = "abibas_back"
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/white_belt_kit
 	name = "White security belt Kit"
 	desc = "A modkit for making a brig officer webbing into a White security belt."
@@ -316,25 +316,25 @@
 	item_state = "lapkee_belt"
 	content_overlays = TRUE
 DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/lapkee_belt)
-
+*/
 /obj/item/melee/baton/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "lapkee_baton")
+	/*if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt)) Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "lapkee_baton")*/
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "melatonin_baton")
 	return ..()
 
 /obj/item/melee/baton/stunsword/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
+	/*if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt)) Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")*/
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
 
 	return ..()
 
 /obj/item/melee/baton/stunsword/stunkatana/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
+	/*if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt)) Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")*/
 
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")

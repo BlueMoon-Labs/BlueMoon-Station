@@ -578,7 +578,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "stupid_cap"
 	item_state = "stupid_cap"
-
+/* Коммент вещей Лапки. Не возвращать без её разрешения и не переводить в кладбище пепла. Дискорд - lapkee
 /obj/item/modkit/concord_riot_helmet_kit
 	name = "Concord Riot Helmet Kit"
 	desc = "A modkit for making a riot helmet into a Concord Riot Helmet."
@@ -596,7 +596,7 @@
 	flags_inv = HIDEFACE|HIDESNOUT
 	visor_flags_inv = HIDEFACE|HIDESNOUT
 DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/head/helmet/riot/concord_riot_helmet)
-
+*/
 /obj/item/clothing/head/donator/bm/custom_helmet
     name = "Custom helmet"
     desc = "An old helmet, well-built by an enthusiast. It looks like the real thing, but feels like a model because of how light it is. The plates have been removed, as has the electronics."
