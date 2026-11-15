@@ -165,7 +165,7 @@
 
 /datum/brain_trauma/severe/monophobia/on_life()
 	..()
-	if(HAS_TRAIT(owner, TRAIT_FEARLESS)) // трейт от Psicodine
+	if(HAS_TRAIT(owner, TRAIT_FEARLESS)) // трейт от Psicodine или Happiness
 		if(check_alone())
 			stress = max(stress - 0.25, 0) // в разы меньше чем от настоящей компании
 		else
