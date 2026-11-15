@@ -2843,4 +2843,4 @@
 	name = "BLACKROSE© Pilot Jacket Series V"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
-	ckeywhitelist = list("hateredsoul, angelnedemon")
+	ckeywhitelist = list("hateredsoul", "angelnedemon")
