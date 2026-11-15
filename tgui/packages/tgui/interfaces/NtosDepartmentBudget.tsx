@@ -132,7 +132,7 @@ export type BudgetData = {
   is_staff?: BooleanLike;
   department?: DepartmentInfo;
   prices?: Record<string, PriceEntry>;
-  goal_erts?: GoalErt[];
+  goal_erts?: GoalErt[] | null;
   requests?: RequestEntry[];
   treasury_requests?: TreasuryRequestEntry[];
   contracts?: ContractEntry[];
@@ -714,6 +714,11 @@ const CargoGoalSection = () => {
     <Box mt={1.5}>
       <Box bold mb={0.5}>
         Копить на дорогое
+        {!!goal && (
+          <Button ml={1} icon="times" onClick={() => act('clear_goal')}>
+            Снять цель
+          </Button>
+        )}
       </Box>
       <Box className="NtTerm__hint" mb={1}>
         Снабжение может копить на отряд ОБР (его вызывает капитан с консоли связи за бюджет снабжения) или на любой пак,

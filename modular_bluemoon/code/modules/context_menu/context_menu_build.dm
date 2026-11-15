@@ -103,10 +103,10 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 			result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
 	add_verb_entries(A, result)
 	add_mob_entries(A, result)
-	add_admin_entry(A, result, style)
 	SEND_SIGNAL(A, COMSIG_ATOM_CONTEXT_MENU, user, result)
 	if(context_menu_style_option(style, "danger_order") == "bottom")
 		context_menu_danger_last(result)
+	add_admin_entry(A, result, style)
 	return result
 
 /datum/context_menu/proc/add_admin_entry(atom/A, list/result, list/style)

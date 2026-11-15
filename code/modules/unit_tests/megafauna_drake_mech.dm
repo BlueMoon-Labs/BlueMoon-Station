@@ -259,7 +259,10 @@
 	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 3, start.y, start.z))
 
 	INVOKE_ASYNC(drake, TYPE_PROC_REF(/mob/living/simple_animal/hostile/megafauna/dragon, swoop_attack), FALSE, prey, 10)
-	sleep(5)
+	var/list/budget = new_wait_budget(2 SECONDS, "дрейк взлетает")
+	while(!(drake.swooping & SWOOP_INVULNERABLE))
+		if(!wait_budget_tick(budget))
+			break
 	TEST_ASSERT(drake.swooping & SWOOP_INVULNERABLE, "Санити: дрейк обязан быть в воздухе")
 	var/obj/item/projectile/airborne_shot = allocate(/obj/item/projectile, drake.loc)
 	TEST_ASSERT(!airborne_shot.can_hit_target(drake, FALSE, TRUE), "Пуля попадает в дрейка в воздухе")

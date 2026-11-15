@@ -196,15 +196,14 @@
 		saving_goal_cache_tick = SSeconomy.fire_count
 	if(saving_goal_until)
 		return saving_goal_cache
+	if(world.time >= saving_goal_collect_deadline())
+		lapse_uncollected_goal()
+		return 0
 	if(account.account_balance >= saving_goal_cache)
 		var/minutes = SSeconomy.settings.saving_goal_minutes
 		saving_goal_until = world.time + minutes MINUTES
 		account.bank_card_talk("[capitalize(budget_name)] набрал цель накопления \"[saving_goal_name()]\": [saving_goal_order_hint(minutes)], потом её цена снова станет излишком.")
 		saving_goal_reached(minutes)
-		return saving_goal_cache
-	if(world.time >= saving_goal_collect_deadline())
-		lapse_uncollected_goal()
-		return 0
 	return saving_goal_cache
 
 /// До этого world.time бюджет должен набрать цену цели.

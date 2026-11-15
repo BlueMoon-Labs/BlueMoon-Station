@@ -207,6 +207,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			var/list/ert = GLOB.payed_ert[ert_id]
 			goal_erts += list(list("id" = ert_id, "name" = ert["name"], "price" = ert["price"], "available" = !!ert["available"]))
 		data["goal_erts"] = goal_erts
+	else
+		data["goal_erts"] = null
 	var/list/requests = list()
 	for(var/datum/econ_request/request as anything in department.requests)
 		requests += list(request.ui_entry())

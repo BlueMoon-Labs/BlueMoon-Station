@@ -346,6 +346,12 @@
 		emote_type = type_override
 	if(!can_run_emote(user))
 		return FALSE
+	// пока вводили текст, могли отойти от стола
+	table_reach = get_interaction_anchor(user)
+	if(!locate(/obj/structure/table) in range(1, table_reach))
+		to_chat(user, message)
+		to_chat(user, "There are no tables around you.")
+		return FALSE
 	. = TRUE
 
 	user.log_message("[message] (TABLE-WRAPPING)", LOG_SUBTLER)

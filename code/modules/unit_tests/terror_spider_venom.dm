@@ -112,7 +112,7 @@
 	window.bullet_act(queen_spit)
 	TEST_ASSERT(QDELETED(window) || window.obj_integrity < window.max_integrity, "Окно не замечает плевка королевы.")
 
-/// Плевок Императрицы - паучий снаряд: пролетает сквозь своих пауков и не ранит их.
+/// Плевок Императрицы - паучий снаряд: пролетает сквозь своих пауков, а попав в своего, гаснет, не раня.
 /datum/unit_test/terror_empress_spit_spares_spiders
 
 /datum/unit_test/terror_empress_spit_spares_spiders/Run()

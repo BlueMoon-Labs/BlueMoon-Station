@@ -64,20 +64,21 @@
 
 // BLUEMOON ADD START - введено мытье отдельных частей тела, чтобы смывать с них надписи
 /obj/item/soap/proc/clean_human(mob/living/carbon/human/target, mob/living/user, tongue)
-	var/target_limb = zone2body_parts_covered_complicated(user.zone_selected)
+	var/scrub_zone = user.zone_selected
+	var/target_limb = zone2body_parts_covered_complicated(scrub_zone)
 	if(!target_limb)
 		to_chat(user, span_warning("Вы должны выбрать часть тела чтобы её намыть!"))
 		return FALSE
 
 	var/list/items_on_target = list()
 	items_on_target = target.get_equipped_items()
-	var/scrub_nails = !tongue && can_scrub_nail_polish(target, user.zone_selected)
+	var/scrub_nails = !tongue && can_scrub_nail_polish(target, scrub_zone)
 
 	for(var/A in items_on_target)
 		var/obj/item/worn_clothes = A
 		if(worn_clothes.body_parts_covered & target_limb)
 			if(scrub_nails)
-				return scrub_nail_polish(target, user)
+				return scrub_nail_polish(target, user, scrub_zone)
 			to_chat(user, span_warning("Часть тела, что вы пытались намылить на [target], сейчас закрыта одеждой."))
 			return FALSE
 
@@ -124,7 +125,7 @@
 		target.wash_cum()
 		if(affected)
 			affected.writtentext = ""
-		if(scrub_nails && can_scrub_nail_polish(target, user.zone_selected) && target.remove_nail_polish())
+		if(scrub_nails && can_scrub_nail_polish(target, scrub_zone) && target.remove_nail_polish())
 			target.visible_message(span_notice("[user] оттирает лак с ногтей [target]."), span_notice("С ваших ногтей оттёрт лак."))
 		if(try_to_clean_genitals)
 			for(var/obj/item/organ/genital/G in target.internal_organs)
@@ -152,11 +153,11 @@
 			return !target.nail_polish_hands_covered(HAND_RIGHT)
 	return FALSE
 
-/obj/item/soap/proc/scrub_nail_polish(mob/living/carbon/human/target, mob/living/user)
+/obj/item/soap/proc/scrub_nail_polish(mob/living/carbon/human/target, mob/living/user, zone)
 	target.visible_message(span_notice("[user] начинает оттирать лак с ногтей [target] при помощи [name]."), span_notice("[user] начинает оттирать лак с ваших ногтей при помощи [name]."))
 	if(!do_after(user, NAIL_POLISH_SCRUB_TIME, target))
 		return FALSE
-	if(!can_scrub_nail_polish(target, user.zone_selected) || !target.remove_nail_polish())
+	if(!can_scrub_nail_polish(target, zone) || !target.remove_nail_polish())
 		return FALSE
 	target.visible_message(span_notice("[user] оттирает лак с ногтей [target]."), span_notice("С ваших ногтей оттёрт лак."))
 	return TRUE
