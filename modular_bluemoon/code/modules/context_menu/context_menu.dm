@@ -280,11 +280,11 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/text
 	switch(right_click_mode())
 		if(RIGHT_CLICK_MODE_MENU)
-			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие, в дизарме ПКМ по человеку рядом - сразу толчок."
+			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие, в дизарме ПКМ по человеку рядом - сразу толчок. У призрака второе действие - следовать за целью или перейти на клетку."
 		if(RIGHT_CLICK_MODE_NATIVE)
 			text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
 		else
-			text = "ПКМ сразу делает второе действие (толкнуть, открыть сумку не снимая, постучать), меню действий - на Shift+ПКМ."
+			text = "ПКМ сразу делает второе действие (толкнуть, открыть сумку не снимая, постучать), меню действий - на Shift+ПКМ. У призрака второе действие - следовать за целью или перейти на клетку."
 	to_chat(parent, examine_block(span_notice("<b>Новое на ПКМ.</b> [text]<br>Вернуть меню BYOND, как раньше, или разложить по-своему (например, ПКМ - действие, Shift+ПКМ - меню BYOND) - клик по шапке меню, верб «Режим ПКМ» во вкладке OOC или настройки игры, раздел «Меню ПКМ». Там же шрифт, размер и прозрачность меню.")))
 
 /mob/dead/new_player/Login()
@@ -298,7 +298,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/list/options = GLOB.right_click_mode_names.Copy()
 	options += CONTEXT_MENU_SETTINGS_CHOICE
 	var/current = right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())
-	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
+	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. У призрака второе действие - следовать за целью или перейти на клетку. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
 	if(!choice || QDELETED(src))
 		return
 	if(choice == CONTEXT_MENU_SETTINGS_CHOICE)
@@ -550,7 +550,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	set_target(null)
 	tile_list_shown = TRUE
 	var/client/viewer = user.client
-	if(viewer && pile_click == "take" && !viewer.context_menu_pile_hint_shown)
+	if(viewer && pile_click == "take" && isliving(user) && !viewer.context_menu_pile_hint_shown)
 		viewer.context_menu_pile_hint_shown = TRUE
 		to_chat(viewer, span_notice("В списке клетки ЛКМ по вещи берёт её (занята рука - берёт вторая), ПКМ по строке - её действия. Можно вернуть, чтобы ЛКМ открывал действия, - настройки игры, раздел «Меню ПКМ»."))
 	header_text = null
@@ -742,6 +742,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Подсказка строки объекта: что сделают клики с модификаторами прямо по ней
 /datum/context_menu/proc/pick_hint(atom/thing)
 	var/list/parts = list()
+	if(!isliving(user))
+		return "Shift - осмотреть"
 	if(pile_click == "take" && isitem(thing))
 		parts += "ЛКМ - взять, ПКМ - действия"
 	if(ismovable(thing))
@@ -753,7 +755,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /// Вещь можно взять: рядом, не прикручена, не своя, и есть свободная рука - активная или вторая
 /proc/context_menu_can_take(mob/user, obj/item/item)
-	if(item.anchored || item.loc == user || !user.CanReach(item))
+	if(!isliving(user) || item.anchored || item.loc == user || !user.CanReach(item))
 		return FALSE
 	if(!user.get_active_held_item())
 		return TRUE

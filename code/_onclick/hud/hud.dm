@@ -304,6 +304,12 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		return FALSE
 	var/mob/screenmob = viewmob || mymob
 	if(!screenmob.client)
+		// Без клиента стиль запоминается: его покажет следующий вход в моба
+		if(!viewmob && version)
+			hud_version = version > HUD_VERSIONS ? HUD_STYLE_STANDARD : version
+			hud_shown = (hud_version == HUD_STYLE_STANDARD)
+			for(var/M in mymob.observers)
+				show_hud(hud_version, M)
 		return FALSE
 
 	if(screenmob == mymob)

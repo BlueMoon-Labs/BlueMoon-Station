@@ -4,6 +4,18 @@ import { useBackend } from '../../backend';
 import { Box, Button, Input, NoticeBox } from '../../components';
 import { ContractEntry, ContractRank, CrewRequestRules, formatCredits, OfferEntry } from './Economy';
 
+/** Доска отдела, которую зритель как глава может сбросить. */
+type BoardReset = {
+  id: string;
+  name: string;
+  left: number;
+  minutes: number;
+  /** Сколько контрактов снимет сброс сейчас и сколько из них взяты. */
+  remove: number;
+  remove_taken: number;
+  grace_minutes: number;
+};
+
 type ContractBoardData = {
   contracts?: ContractEntry[];
   my_account?: number | null;
@@ -12,6 +24,7 @@ type ContractBoardData = {
   drop_cooldown?: number;
   rank?: ContractRank | null;
   reroll_left?: number;
+  board_resets?: BoardReset[];
   crew_request?: CrewRequestRules;
   partner_offers?: OfferEntry[];
 };
@@ -326,6 +339,35 @@ const RankLine = (props: { rank: ContractRank }) => {
   );
 };
 
+const resetTooltip = (board: BoardReset) => {
+  if (board.left > 0) {
+    return `Снова можно через ${formatTimeLeft(board.left)}`;
+  }
+  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
+  return board.remove > 0 ? rules : `Сейчас снимать нечего. ${rules}`;
+};
+
+/** Сброс доски отдела главой: неначатые контракты сменятся новыми, кроме своего и недавно взятых. */
+const BoardResets = (props: { resets: BoardReset[] }) => {
+  const { act } = useBackend<ContractBoardData>();
+  const { resets } = props;
+  return (
+    <Box mb={1}>
+      {resets.map((board) => (
+        <Button.Confirm
+          key={board.id}
+          icon="redo"
+          disabled={board.left > 0 || board.remove <= 0}
+          content={resets.length > 1 ? `Сбросить: ${board.name}` : 'Сбросить доску отдела'}
+          confirmContent={`Снимется ${board.remove}${board.remove_taken > 0 ? `, из них взятых ${board.remove_taken}` : ''}. Сбросить?`}
+          tooltip={resetTooltip(board)}
+          onClick={() => act('board_reset', { department: board.id })}
+        />
+      ))}
+    </Box>
+  );
+};
+
 /** Форма объявления экипажа: награда сразу уходит в депозит. */
 const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void }) => {
   const { act } = useBackend<ContractBoardData>();
@@ -376,7 +418,7 @@ const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void })
 export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }) => {
   const { showShare = true, readOnly = false } = props;
   const { act, data } = useBackend<ContractBoardData>();
-  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, crew_request, partner_offers = [] } = data;
+  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, board_resets = [], crew_request, partner_offers = [] } = data;
   const [filter, setFilter] = useState<Filter>('all');
   const [posting, setPosting] = useState(false);
   const canAct = !readOnly && !!my_account && !!rank;
@@ -441,6 +483,7 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
           )}
         </Box>
       )}
+      {!readOnly && board_resets.length > 0 && <BoardResets resets={board_resets} />}
       {canAct && posting && !!crew_request && <CrewRequestForm rules={crew_request} onDone={() => setPosting(false)} />}
       {!readOnly && crewFree > 0 && filter !== 'crew' && (
         <NoticeBox info>

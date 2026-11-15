@@ -488,6 +488,9 @@
 			return TRUE
 
 		if(ismecha(the_target))
+			//без сноса окружения и без снаряда меха не поцарапать (урон режется до 0) - не цель, иначе моб прилипает к броне навсегда
+			if(!environment_smash && !(projectiletype || casingtype))
+				return FALSE
 			var/obj/vehicle/sealed/mecha/M = the_target
 			for(var/occupant in M.occupants)
 				if(CanAttack(occupant))
@@ -973,6 +976,9 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		if(CanSmashTurfs(T))
 			T.attack_animal(src)
 		for(var/obj/O in T)
+			//цель бьёт AttackingTarget со своими гейтами, снос окружения её и атакуемый транспорт с седоком не трогает
+			if(O == target || ai_smash_spares_vehicle(src, O))
+				continue
 			if(O.density && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
 				O.attack_animal(src)
 				return

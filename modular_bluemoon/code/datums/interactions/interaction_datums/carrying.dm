@@ -12,6 +12,10 @@
 	if(user.incapacitated())
 		to_chat(user, span_warning("Ты сейчас не можешь это сделать."))
 		return FALSE
+	if(!isturf(user.loc))
+		var/atom/blocker = get_interaction_blocker(user)
+		to_chat(user, span_warning((blocker ? "Сначала выберись из [blocker.name]." : "Сначала выберись наружу.")))
+		return FALSE
 	if(user.get_active_held_item())
 		to_chat(user, span_warning("Нужна свободная рука."))
 		return FALSE
@@ -20,6 +24,9 @@
 	. = ..()
 	if(!.)
 		return
+	if(!isturf(target.loc))
+		to_chat(user, span_warning("До [target.name] сейчас не достать."))
+		return FALSE
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(!is_type_in_typecache(target, H.can_ride_typecache))

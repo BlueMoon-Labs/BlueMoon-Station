@@ -142,6 +142,37 @@ test('личные заказы обновляются кнопкой, на ку
   expect(sent(waiting.topic, 'reroll')).toHaveLength(0);
 });
 
+test('глава сбрасывает доску отдела с подтверждением, на паузе и без снимаемых кнопка молчит', () => {
+  const board = { id: 'CAR', name: 'Снабжение', left: 0, minutes: 10, grace_minutes: 5, remove: 3, remove_taken: 1 };
+  const ready = setup({ board_resets: [board] });
+  fireEvent.click(ready.getByText('Сбросить доску отдела'));
+  expect(sent(ready.topic, 'board_reset')).toEqual([]);
+  fireEvent.click(ready.getByText('Снимется 3, из них взятых 1. Сбросить?'));
+  expect(sent(ready.topic, 'board_reset')).toEqual([{ department: 'CAR' }]);
+  ready.unmount();
+  const untaken = setup({ board_resets: [{ ...board, remove_taken: 0 }] });
+  fireEvent.click(untaken.getByText('Сбросить доску отдела'));
+  expect(untaken.getByText('Снимется 3. Сбросить?')).toBeTruthy();
+  untaken.unmount();
+  const waiting = setup({ board_resets: [{ ...board, left: 300 }] });
+  fireEvent.click(waiting.getByText('Сбросить доску отдела'));
+  expect(waiting.queryByText(/Сбросить[?]/)).toBeNull();
+  expect(sent(waiting.topic, 'board_reset')).toEqual([]);
+  waiting.unmount();
+  const empty = setup({ board_resets: [{ ...board, remove: 0, remove_taken: 0 }] });
+  fireEvent.click(empty.getByText('Сбросить доску отдела'));
+  expect(empty.queryByText(/Сбросить[?]/)).toBeNull();
+  expect(sent(empty.topic, 'board_reset')).toEqual([]);
+  empty.unmount();
+  const several = setup({ board_resets: [board, { ...board, id: 'MED', name: 'Медицина' }] });
+  expect(several.getByText('Сбросить: Медицина')).toBeTruthy();
+  several.unmount();
+  const viewer = setup({ board_resets: [board] }, true);
+  expect(viewer.queryByText('Сбросить доску отдела')).toBeNull();
+  viewer.unmount();
+  expect(setup().queryByText('Сбросить доску отдела')).toBeNull();
+});
+
 test('объявление экипажа: исполнитель сдаёт работу, заказчик принимает или отклоняет', () => {
   const crew = (uid, extra = {}) => contract(uid, { kind: 'crew', department_name: 'Экипаж', poster: 'Заказчик', poster_id: 333, ...extra });
   const performer = setup({ rank, crew_request: crewRules, contracts: [crew(20, { taken_by: 'Тест Тестов', taker_id: 111 })] });

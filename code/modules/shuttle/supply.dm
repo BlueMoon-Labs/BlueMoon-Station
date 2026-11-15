@@ -173,6 +173,8 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				continue
 			else if(ispath(SO.pack.crate_type, /obj/structure/closet/secure_closet/cargo))
 				LAZYADD(lockers_by_buyer[SO.gift_to || D], SO)
+			if(!SO.prepaid && !SO.paying_account)
+				econ_budget_goal_bought(D, SO.pack)
 
 
 		if(SO.paying_account)

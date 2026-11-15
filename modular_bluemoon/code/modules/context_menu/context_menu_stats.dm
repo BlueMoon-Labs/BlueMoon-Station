@@ -5,8 +5,9 @@
  * players: ckey -> раскладка ПКМ, набор, вид (только то, что не по умолчанию), зум карты, открытия, выборы, брошенные меню и почему их закрыли.
  * По чему открывали и бросали (mob, item, structure, turf, tile - список клетки), через сколько секунд бросили
  * и сколько закрывающих кликов пришлось по тому же, по чему открыто меню, - по причинам.
+ * Меню призрака считается отдельно, в ghost игрока и в summary.ghost: у него свои пункты, его открытия не смешиваются с живыми.
  * changes: кто, когда и что поменял в раскладке и виде - видно, от каких дефолтов уходят.
- * entries: сколько раз выбран каждый пункт меню по всем игрокам.
+ * entries: сколько раз выбран каждый пункт меню по всем игрокам, ghost_entries - то же в меню призрака.
  */
 GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 
@@ -14,6 +15,7 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	var/list/players = list()
 	var/list/changes = list()
 	var/list/entries = list()
+	var/list/ghost_entries = list()
 	/// Выгрузка уже запланирована
 	var/export_queued = FALSE
 
@@ -50,12 +52,35 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	record["zoom"] = zoom
 	return record
 
-/datum/context_menu_stats/proc/record_open(mob/user, list/modifiers, kind)
+/// Куда считать меню этого моба: призрак - в отдельную часть записи игрока
+/datum/context_menu_stats/proc/counters_for(mob/user)
 	var/list/record = player_record(user?.client)
+	if(!record || !isobserver(user))
+		return record
+	return ghost_counters(record)
+
+/datum/context_menu_stats/proc/ghost_counters(list/record)
+	if(!record["ghost"])
+		record["ghost"] = list(
+			"opens" = 0,
+			"opens_shift" = 0,
+			"choices" = 0,
+			"abandoned" = 0,
+			"choice_kinds" = list(),
+			"abandon_reasons" = list(),
+			"open_kinds" = list(),
+			"abandon_kinds" = list(),
+			"abandon_after" = list(),
+			"on_target" = list(),
+		)
+	return record["ghost"]
+
+/datum/context_menu_stats/proc/record_open(mob/user, list/modifiers, kind)
+	var/list/record = counters_for(user)
 	if(!record)
 		return
 	record_open_in(record, modifiers, kind)
-	if(user.right_click_needs_clicks())
+	if(!isobserver(user) && user.right_click_needs_clicks())
 		record["opens_combat"]++
 	queue_export()
 
@@ -68,26 +93,27 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 
 /// Выбор пункта: kind - тип пункта (click, verb_call, pick, page...), name - текст пункта
 /datum/context_menu_stats/proc/record_choice(mob/user, kind, name)
-	var/list/record = player_record(user?.client)
+	var/list/record = counters_for(user)
 	if(!record)
 		return
 	record["choices"]++
 	var/list/kinds = record["choice_kinds"]
 	kinds[kind]++
-	count_entry(kind, name)
+	count_entry(kind, name, isobserver(user))
 	queue_export()
 
 /// Счёт пункта по имени. Имена предметов в списке клетки и шапка с именем цели уникальны и раздувают таблицу, считаются только действия
-/datum/context_menu_stats/proc/count_entry(kind, name)
+/datum/context_menu_stats/proc/count_entry(kind, name, ghost)
 	if(!name || (kind in list("pick", "pick_group", "mode_choice")))
 		return
-	if(entries[name] || length(entries) < CONTEXT_MENU_STATS_MAX_ENTRIES)
-		entries[name]++
+	var/list/table = ghost ? ghost_entries : entries
+	if(table[name] || length(table) < CONTEXT_MENU_STATS_MAX_ENTRIES)
+		table[name]++
 
 /// Меню закрыто без выбора; reason - чем: click (клик мимо), reopen (новое меню), escape, moved, auto_close, settings, lost, target.
 /// kind - по чему было открыто, seconds - сколько было открыто, on_target - закрыто кликом по тому же
 /datum/context_menu_stats/proc/record_abandon(mob/user, reason, kind, seconds, on_target)
-	var/list/record = player_record(user?.client)
+	var/list/record = counters_for(user)
 	if(!record)
 		return
 	record_abandon_in(record, reason, kind, seconds, on_target)
@@ -139,15 +165,19 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 /datum/context_menu_stats/proc/snapshot()
 	var/list/counters = list("abandon_reasons", "open_kinds", "abandon_kinds", "abandon_after", "on_target")
 	var/list/summary = list("right_click" = list(), "shift_right_click" = list(), "preset" = list(), "style" = list())
+	var/list/ghost_summary = list("opens" = 0, "choices" = 0, "abandoned" = 0)
+	summary["ghost"] = ghost_summary
 	for(var/counter in counters)
 		summary[counter] = list()
+		ghost_summary[counter] = list()
 	for(var/ckey in players)
 		var/list/record = players[ckey]
-		for(var/counter in counters)
-			var/list/total = summary[counter]
-			var/list/own = record[counter]
-			for(var/key in own)
-				total[key] += own[key]
+		context_menu_sum_counters(summary, record, counters)
+		var/list/ghost_record = record["ghost"]
+		if(ghost_record)
+			context_menu_sum_counters(ghost_summary, ghost_record, counters)
+			for(var/key in list("opens", "choices", "abandoned"))
+				ghost_summary[key] += ghost_record[key]
 		for(var/key in list("right_click", "shift_right_click", "preset"))
 			var/list/counts = summary[key]
 			counts["[record[key]]"]++
@@ -164,7 +194,15 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 		"players" = players,
 		"changes" = changes,
 		"entries" = entries,
+		"ghost_entries" = ghost_entries,
 	)
+
+/proc/context_menu_sum_counters(list/summary, list/record, list/counters)
+	for(var/counter in counters)
+		var/list/total = summary[counter]
+		var/list/own = record[counter]
+		for(var/key in own)
+			total[key] += own[key]
 
 /// Корзина времени, которое меню было открыто, в секундах
 /proc/context_menu_time_bucket(seconds)
