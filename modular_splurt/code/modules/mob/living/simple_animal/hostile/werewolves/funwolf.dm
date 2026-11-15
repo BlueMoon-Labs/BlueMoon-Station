@@ -34,6 +34,10 @@
 	if(!.)
 		return .
 
+	//мягкому нужен только партнёр, мех ему не цель
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
 	if(!isliving(the_target))
 		return .
 
@@ -265,9 +269,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE
@@ -496,9 +504,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE
@@ -727,9 +739,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE

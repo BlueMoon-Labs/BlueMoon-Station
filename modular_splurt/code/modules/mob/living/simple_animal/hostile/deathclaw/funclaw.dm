@@ -29,6 +29,10 @@
 	if(!.)
 		return .
 
+	//мягкому нужен только партнёр, мех ему не цель
+	if(ismecha(the_target) && deathclaw_mode == "gentle")
+		return FALSE
+
 	if(!isliving(the_target))
 		return .
 

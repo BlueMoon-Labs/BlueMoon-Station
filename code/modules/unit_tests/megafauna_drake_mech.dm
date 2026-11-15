@@ -129,31 +129,96 @@
 	TEST_ASSERT(empty_mech.obj_integrity < empty_before, "Пустой мех на пути перестал быть преградой")
 	drake.ai_controller.CancelActions()
 
-/// Мегафауна в отдыхе после спецатаки не ломает ни окружение, ни преграды пути.
-/datum/unit_test/megafauna_recovery_spares_surroundings
+/// Занятую технику, которую моб целью не берёт (клоун-кар), он ломает как обычную преграду.
+/datum/unit_test/megafauna_drake_mech/untargetable_vehicle
 
-/datum/unit_test/megafauna_recovery_spares_surroundings/Run()
+/datum/unit_test/megafauna_drake_mech/untargetable_vehicle/proc/occupied_car(turf/car_turf)
+	var/obj/vehicle/sealed/car/clowncar/car = allocate(/obj/vehicle/sealed/car/clowncar, car_turf)
+	var/mob/living/carbon/human/driver = allocate(/mob/living/carbon/human, car_turf)
+	driver.forceMove(car)
+	car.add_occupant(driver)
+	return car
+
+/datum/unit_test/megafauna_drake_mech/untargetable_vehicle/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	drake = allocate(/mob/living/simple_animal/hostile/megafauna/dragon, start)
+	drake.toggle_ai(AI_OFF)
+	drake.recovery_time = 0
+
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
+	drake.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	drake.GiveTarget(prey)
+
+	var/obj/vehicle/sealed/car/clowncar/side_car = occupied_car(get_step(start, NORTH))
+	TEST_ASSERT(ai_vehicle_has_living_occupant(side_car), "Санити: в клоун-каре нет живого седока")
+	TEST_ASSERT(!drake.CanAttack(side_car), "Санити: дрейк берёт клоун-кар целью")
+	var/side_before = side_car.obj_integrity
+	drake.DestroySurroundings()
+	TEST_ASSERT(QDELETED(side_car) || side_car.obj_integrity < side_before, "Снос окружения не трогает занятый клоун-кар")
+
+	//удар выше взял кулдаун атаки
+	drake.next_action = 0
+	drake.next_action_immediate = 0
+	drake.last_action = 0
+	var/obj/vehicle/sealed/car/clowncar/path_car = occupied_car(get_step(start, EAST))
+	var/path_before = path_car.obj_integrity
+	var/datum/ai_behavior/attack_obstructions/obstruction = GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions)
+	obstruction.perform(0.5, drake.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(QDELETED(path_car) || path_car.obj_integrity < path_before, "Занятый клоун-кар на пути - неразрушимая стена")
+	drake.ai_controller.CancelActions()
+
+/// Отдых мегафауны после спецатаки бережёт только живых на пути, а не окружение.
+/datum/unit_test/megafauna_recovery_spares_blocker
+
+/datum/unit_test/megafauna_recovery_spares_blocker/Run()
 	var/turf/start = run_loc_floor_bottom_left
 	var/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/miner = allocate(/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner, start)
 	miner.toggle_ai(AI_OFF)
-	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_step(start, EAST))
+	var/mob/living/carbon/human/blocker = allocate(/mob/living/carbon/human, get_step(start, NORTH))
 	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x, start.y + 2, start.z))
 	miner.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
 	miner.GiveTarget(prey)
 	miner.recovery_time = world.time + 10 SECONDS
-	TEST_ASSERT(ai_pawn_path_paused(miner), "Отдых мегафауны не ставит расчистку пути на паузу")
+	TEST_ASSERT(!ai_pawn_path_paused(miner), "Отдых мегафауны ставит на паузу всю расчистку пути")
 
-	var/integrity_before = closet.obj_integrity
-	var/datum/ai_behavior/destroy_surroundings/surroundings = GET_AI_BEHAVIOR(/datum/ai_behavior/destroy_surroundings)
-	surroundings.perform(0.5, miner.ai_controller)
-	TEST_ASSERT(!QDELETED(closet) && closet.obj_integrity == integrity_before, "Ледяной шахтёр ломает окружение во время отдыха")
+	var/blocker_health = blocker.health
+	var/datum/ai_behavior/attack_path_blocker/body_block = GET_AI_BEHAVIOR(/datum/ai_behavior/attack_path_blocker)
+	body_block.perform(0.5, miner.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT_EQUAL(blocker.health, blocker_health, "Ледяной шахтёр бьёт пешего на пути во время отдыха")
 
 	miner.recovery_time = 0
-	TEST_ASSERT(!ai_pawn_path_paused(miner), "Расчистка пути осталась на паузе после отдыха")
-	surroundings.perform(0.5, miner.ai_controller)
-	TEST_ASSERT(QDELETED(closet) || closet.obj_integrity < integrity_before, "Санити: после отдыха шахтёр не ломает окружение")
+	body_block.perform(0.5, miner.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(blocker.health < blocker_health, "Санити: после отдыха шахтёр не бьёт пешего на пути")
+	miner.ai_controller.CancelActions()
 
-/// Моб, чей удар меха не царапает, не держит его целью; стрелок - держит.
+/// Ледяной шахтёр почти весь бой отдыхает: в отдыхе он всё равно копает породу и ломает мебель на пути.
+/datum/unit_test/megafauna_recovery_still_digs
+
+/datum/unit_test/megafauna_recovery_still_digs/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/miner = allocate(/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner, start)
+	miner.toggle_ai(AI_OFF)
+	miner.recovery_time = world.time + 10 SECONDS
+	var/datum/ai_behavior/attack_obstructions/obstruction = GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions)
+
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_step(start, EAST))
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
+	miner.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	miner.GiveTarget(prey)
+	var/closet_before = closet.obj_integrity
+	obstruction.perform(0.5, miner.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(QDELETED(closet) || closet.obj_integrity < closet_before, "Отдыхающий шахтёр не ломает шкаф на пути")
+
+	var/turf/rock = get_step(start, NORTH)
+	rock = rock.ChangeTurf(/turf/closed/mineral)
+	var/mob/living/carbon/human/far_prey = allocate(/mob/living/carbon/human, locate(start.x, start.y + 2, start.z))
+	miner.ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, far_prey)
+	miner.GiveTarget(far_prey)
+	obstruction.perform(0.5, miner.ai_controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT(!ismineralturf(rock), "Отдыхающий шахтёр не копает породу на пути")
+	miner.ai_controller.CancelActions()
+
+/// Моб, чей удар меха не царапает, не держит его целью; стрелок со снарядом - держит.
 /datum/unit_test/ai_harmless_melee_ignores_mecha
 
 /datum/unit_test/ai_harmless_melee_ignores_mecha/Run()
@@ -177,7 +242,12 @@
 	qdel(controller)
 
 	pawn.ranged = TRUE
+	TEST_ASSERT(!pawn.CanAttack(mech), "Моб с ranged без снаряда (элитка, хайвлорд) считает меха целью")
+	pawn.projectiletype = /obj/item/projectile
 	TEST_ASSERT(pawn.CanAttack(mech), "Стрелок без сноса окружения перестал считать меха целью")
+	pawn.projectiletype = null
+	pawn.casingtype = /obj/item/ammo_casing
+	TEST_ASSERT(pawn.CanAttack(mech), "Стрелок с гильзой без сноса окружения перестал считать меха целью")
 
 /// Пули не берут дрейка только в воздухе; после посадки он снова получает урон.
 /datum/unit_test/megafauna_drake_bullets_after_landing
@@ -234,3 +304,36 @@
 		attacker.target = null
 		qdel(attacker)
 		qdel(mech)
+
+/// Мягкие похотливые мобы меха целью не берут: им нужен партнёр, а не броня. Агрессивные - берут.
+/datum/unit_test/lewd_gentle_mobs_ignore_mecha
+
+/datum/unit_test/lewd_gentle_mobs_ignore_mecha/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/mech_turf = locate(start.x + 2, start.y, start.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, mech_turf)
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+
+	var/mob/living/simple_animal/hostile/deathclaw/funclaw/rough = allocate(/mob/living/simple_animal/hostile/deathclaw/funclaw, start)
+	rough.toggle_ai(AI_OFF)
+	rough.enemies += pilot
+	TEST_ASSERT(rough.CanAttack(mech), "Агрессивный фанклав перестал брать целью меха с обидчиком внутри")
+	rough.enemies -= pilot
+
+	var/list/gentle_types = list(
+		/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle,
+		/mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw,
+		/mob/living/simple_animal/hostile/werewolf/funwolf/gentle,
+		/mob/living/simple_animal/hostile/ice_wolf/funwolf/gentle,
+		/mob/living/simple_animal/hostile/hellhound/funwolf/gentle,
+		/mob/living/simple_animal/hostile/the_mosley/funwolf/gentle,
+	)
+	for(var/gentle_type in gentle_types)
+		var/mob/living/simple_animal/hostile/gentle = allocate(gentle_type, start)
+		gentle.toggle_ai(AI_OFF)
+		gentle.enemies += pilot
+		TEST_ASSERT(!gentle.CanAttack(mech), "[gentle_type] в мягком режиме берёт меха целью")
+		gentle.enemies -= pilot
+		qdel(gentle)

@@ -44,18 +44,22 @@
 	var/atom/attack_origin = (istype(hostile_pawn) && hostile_pawn.targets_from) || pawn
 	return target.Adjacent(attack_origin)
 
-///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж), или отдых мегафауны
-///после спецатаки: путь моб тогда не расчищает
+///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж): путь моб тогда не расчищает
 /proc/ai_pawn_path_paused(mob/living/pawn)
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
-	if(!istype(hostile_pawn))
-		return FALSE
-	if(!hostile_pawn.can_ai_controller_move())
-		return TRUE
+	return istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move()
+
+///Отдых мегафауны после спецатаки: живых она не бьёт, а породу и мебель на пути ломать может
+/proc/ai_pawn_resting(mob/living/pawn)
 	var/mob/living/simple_animal/hostile/megafauna/boss = pawn
 	return istype(boss) && boss.recovery_time >= world.time
 
-///Транспорт с живым седоком - не преграда и не окружение: его бьют только как цель обычной атакой
+///Транспорт с седоком, которого моб может атаковать: его бьют только как цель обычной атакой,
+///а не сносом преград и окружения. Технику, которую моб целью не берёт, он ломает как мебель.
+/proc/ai_smash_spares_vehicle(mob/living/pawn, obj/thing)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	return istype(hostile_pawn) && ai_vehicle_has_living_occupant(thing) && hostile_pawn.CanAttack(thing)
+
 /proc/ai_vehicle_has_living_occupant(obj/thing)
 	var/obj/vehicle/vehicle = thing
 	if(!istype(vehicle))
@@ -253,7 +257,7 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(!isliving(living_pawn) || QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	if(ai_pawn_path_paused(living_pawn))
+	if(ai_pawn_path_paused(living_pawn) || ai_pawn_resting(living_pawn))
 		return AI_BEHAVIOR_DELAY
 	var/mob/living/blocker = ai_path_blocker_mob(living_pawn, target)
 	if(QDELETED(blocker))
