@@ -72,7 +72,7 @@
 	display_name = "Basic Cybernetic Organs"
 	description = "We have the techinology to force him to live a disgusting halflife."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
-	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach")
+	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach", "shawarma_spit_implant")
 
 /datum/techweb_node/cyber_organs
 	id = "cyber_organs"

@@ -93,3 +93,16 @@
 		TEST_ASSERT_NULL(pump.chem_list[/datum/reagent/medicine/charcoal], "[pump_type] не должен больше содержать уголь")
 	var/obj/item/organ/cyberimp/chest/blood_pump/antag/antag_pump = allocate(/obj/item/organ/cyberimp/chest/blood_pump/antag)
 	TEST_ASSERT_NULL(antag_pump.chem_list[/datum/reagent/medicine/pen_acid], "Антагонистическая помпа должна сохранить собственный состав")
+
+/// Вертел шаурмы доступен в стартовой технологии и печатается только на сервисном протолате.
+/datum/unit_test/shawarma_spit_service_protolathe/Run()
+	var/datum/design/shawarma_spit_implant/design = SSresearch.techweb_design_by_id("shawarma_spit_implant")
+	TEST_ASSERT_NOTNULL(design, "Дизайн вертела шаурмы должен быть зарегистрирован")
+	TEST_ASSERT_EQUAL(design.build_type, PROTOLATHE, "Вертел шаурмы должен печататься на протолате, а не на автолате")
+	TEST_ASSERT_EQUAL(design.departmental_flags, DEPARTMENTAL_FLAG_SERVICE, "Вертел шаурмы должен быть доступен только сервисному протолату")
+	TEST_ASSERT_EQUAL(design.build_path, /obj/item/organ/cyberimp/chest/shawarma_spit, "Дизайн должен создавать имплант вертела шаурмы")
+	TEST_ASSERT("Organs" in design.category, "Дизайн должен отображаться в категории органов протолата")
+	var/datum/techweb_node/basic_cyber_organs/node = SSresearch.techweb_node_by_id("basic_cyber_organs")
+	TEST_ASSERT_NOTNULL(node, "Технология базовых киберорганов должна быть зарегистрирована")
+	TEST_ASSERT(node.starting_node, "Базовые киберорганы должны оставаться стартовой технологией")
+	TEST_ASSERT(design.id in node.design_ids, "Вертел шаурмы должен входить в стартовую технологию базовых киберорганов")
