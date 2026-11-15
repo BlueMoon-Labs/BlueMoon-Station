@@ -322,7 +322,7 @@
 	var/last_use_time = 0
 	var/last_charge_time = 0
 	var/health_threshold = 60
-	var/list/chem_list = list(/datum/reagent/medicine/synthflesh = 100, /datum/reagent/medicine/charcoal = 5)
+	var/list/chem_list = list(/datum/reagent/medicine/synthflesh = 100, /datum/reagent/medicine/pen_acid = 3)
 	var/between_use_cooldown = 150
 	var/ready = TRUE
 

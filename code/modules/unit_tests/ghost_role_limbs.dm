@@ -417,3 +417,57 @@
 
 	qdel(P)
 	qdel(human_prefs)
+
+/// Ампутация в редакторе даёт очки квирков, поэтому пришитая обратно конечность
+/// не должна снова заработать: паралич висит на мобе и переживает пересадку.
+/datum/unit_test/editor_amputated_limb_stays_disabled
+
+/datum/unit_test/editor_amputated_limb_stays_disabled/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_AMPUTATED))
+
+	P.apply_prefs_modified_limbs(H)
+
+	TEST_ASSERT_NULL(H.get_bodypart(BODY_ZONE_R_ARM), "Правая рука должна быть ампутирована")
+	TEST_ASSERT(HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Ампутация из редактора должна вешать паралич на руку")
+	TEST_ASSERT_EQUAL(P.quirk_balance(), 2, "Ампутация должна давать очки квирков")
+
+	// Симулируем пришивание конечности в раунде: паралич должен остаться.
+	var/obj/item/bodypart/r_arm/reattached = new(H)
+	reattached.replace_limb(H)
+	var/obj/item/bodypart/r_arm/current = H.get_bodypart(BODY_ZONE_R_ARM)
+	TEST_ASSERT_NOTNULL(current, "Пришитая рука должна быть на месте")
+	TEST_ASSERT_EQUAL(current.is_disabled(), BODYPART_DISABLED_PARALYSIS, "Пришитая рука должна остаться нерабочей")
+
+	// Замена на протез тоже не должна обходить штраф.
+	var/obj/item/bodypart/r_arm/robot/prosthetic = new(H)
+	prosthetic.replace_limb(H)
+	TEST_ASSERT_EQUAL(H.get_bodypart(BODY_ZONE_R_ARM).is_disabled(), BODYPART_DISABLED_PARALYSIS, "Протез не должен обходить паралич редакторской ампутации")
+
+	// Остальные конечности остаются рабочими.
+	TEST_ASSERT(H.get_bodypart(BODY_ZONE_L_ARM).is_disabled() != BODYPART_DISABLED_PARALYSIS, "Здоровая рука не должна быть парализована")
+
+	// Повторное применение префов не копит трейты и не снимает паралич.
+	P.apply_prefs_modified_limbs(H)
+	TEST_ASSERT(HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Повторный спавн должен сохранять паралич ампутированной конечности")
+
+	qdel(P)
+
+/// Ампутация у желе не даёт очков, поэтому и паралича быть не должно.
+/datum/unit_test/editor_amputation_jelly_no_paralysis
+
+/datum/unit_test/editor_amputation_jelly_no_paralysis/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.set_species(/datum/species/jelly)
+	var/datum/preferences/P = new
+	P.pref_species = H.dna.species
+	P.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_AMPUTATED))
+
+	P.apply_prefs_modified_limbs(H)
+
+	TEST_ASSERT(!HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Желе не должно получать паралич за ампутацию без очков")
+	TEST_ASSERT_EQUAL(P.quirk_balance(), 0, "Ампутация у желе не должна давать очков")
+
+	qdel(P)

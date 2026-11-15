@@ -259,7 +259,7 @@
 	implant_color = "#00FFFF"
 	actions_types = list(/datum/action/item_action/organ_action/use/sandevistan)
 	var/active = FALSE
-	var/duration = 4 SECONDS
+	var/duration = 10 SECONDS
 	var/cooldown = 15 SECONDS
 	var/movespeed_mod = /datum/movespeed_modifier/sandevistan
 	var/movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/weak
@@ -299,6 +299,9 @@
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/activate_sandevistan()
 	if(!owner)
+		return
+	// У корпоративной версии активация доступна только с красного кода.
+	if(!activate_allowed(user = owner))
 		return
 	if(active)
 		to_chat(owner, span_warning("Sandevistan is already active."))
@@ -484,7 +487,7 @@
 	implant_overlay = "brain_implant_overlay"
 	implant_color = "#FF3333"
 	syndicate_implant = TRUE
-	duration = 6 SECONDS
+	duration = 15 SECONDS
 	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
 	movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/military/weak
@@ -501,8 +504,8 @@
 	icon_state = "qian-ti_sandevistan"
 	implant_overlay = "brain_implant_overlay"
 	implant_color = "#ab6509"
-	active_security_level = CNS_REBOOTER_SEC_LEVEL
-	duration = 4 SECONDS
+	active_security_level = SEC_LEVEL_RED
+	duration = 10 SECONDS
 	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan
 

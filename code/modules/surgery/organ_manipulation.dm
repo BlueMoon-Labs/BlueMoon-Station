@@ -176,6 +176,8 @@
 						display_results(user, target, span_notice("Вы начинаете извлекать [I] из [parse_zone(target_zone)] [target]..."),
 							"[user] начинает извлекать [I] из [parse_zone(target_zone)] [target].",
 							"[user] начинает извлекать что-то из [parse_zone(target_zone)] [target].")
+						// Нестабильный базовый киберорган может рвануть уже при попытке извлечения.
+						I.try_basic_cybernetic_detonation(25, target)
 					else
 						display_results(user, target, span_notice("Вы пытаетесь исцелить [I], нанося [tool] на повреждения..."),
 							"[user] начинает наносить [tool], пытаясь исцелить [I] [target].",

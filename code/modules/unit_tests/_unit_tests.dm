@@ -238,6 +238,7 @@
 #include "crew_manifest_heads.dm"
 #include "custom_emote_panel.dm"
 #include "custom_portal_station.dm"
+#include "cybernetic_implants_balance.dm"
 // #include "designs.dm"
 #include "director.dm"
 #include "door_timer_airlock.dm"

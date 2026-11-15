@@ -422,6 +422,30 @@
 	new newtype(loc)
 	return INITIALIZE_HINT_QDEL
 
+/// Только базовые киберорганы нестабильны. Проверка точного типа нужна,
+/// чтобы tier2/tier3 не унаследовали риск взрыва от базового органа.
+/obj/item/organ/proc/is_volatile_basic_cybernetic()
+	var/static/list/volatile_types = list(
+		/obj/item/organ/heart/cybernetic,
+		/obj/item/organ/liver/cybernetic,
+		/obj/item/organ/lungs/cybernetic,
+		/obj/item/organ/stomach/cybernetic,
+	)
+	return (type in volatile_types)
+
+/// Малый взрыв поражает только тайл носителя/органа, без heavy/devastation-зон.
+/obj/item/organ/proc/try_basic_cybernetic_detonation(chance, atom/epicenter)
+	if(!is_volatile_basic_cybernetic() || !prob(chance))
+		return FALSE
+	var/turf/blast_turf = get_turf(epicenter || owner || src)
+	if(!blast_turf)
+		return FALSE
+	if(owner && !QDELETED(owner))
+		owner.visible_message(span_danger("[owner]'s [name] overloads and explodes!"), \
+			span_userdanger("Your [name] overloads and explodes!"))
+	explosion(blast_turf, 0, 0, 1, 0, 0, 0, 0)
+	return TRUE
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// ПРОКИ ДЛЯ РЕГУЛИРОВАНИЯ ACTIONS У КИБЕРОРГАНОВ/ИМПЛАНТОВ //////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1531,6 +1531,33 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 				new_limb.icon = file("icons/mob/augmentation/cosmetic_prosthetic/[prosthetic_type].dmi")
 			new_limb.replace_limb(character)
 		qdel(old_part)
+	apply_amputation_paralysis(character)
+
+/// Ампутация в редакторе даёт очки квирков, поэтому пришитая в раунде конечность
+/// не должна снова заработать. Вешаем несъёмный паралич (как у квирка "Парализованный"):
+/// трейт живёт на мобе и переживает пересадку или замену конечности.
+/datum/preferences/proc/apply_amputation_paralysis(mob/living/carbon/human/character)
+	var/static/list/paralysis_traits = list(
+		BODY_ZONE_L_ARM = TRAIT_PARALYSIS_L_ARM,
+		BODY_ZONE_R_ARM = TRAIT_PARALYSIS_R_ARM,
+		BODY_ZONE_L_LEG = TRAIT_PARALYSIS_L_LEG,
+		BODY_ZONE_R_LEG = TRAIT_PARALYSIS_R_LEG,
+	)
+	for(var/zone in paralysis_traits)
+		REMOVE_TRAIT(character, paralysis_traits[zone], "character_setup_amputation")
+	// Желе отращивает конечности и за ампутацию очков не получает — паралич ей не нужен.
+	if(!isjellyperson(character))
+		for(var/zone in modified_limbs)
+			if(modified_limbs[zone][1] != LOADOUT_LIMB_AMPUTATED)
+				continue
+			// Наге ноги в редакторе не ампутируют, поэтому и паралича на них быть не должно.
+			if(HAS_TRAIT(character, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+				continue
+			var/trait = paralysis_traits[zone]
+			if(!trait)
+				continue
+			ADD_TRAIT(character, trait, "character_setup_amputation")
+	character.update_disabled_bodyparts()
 
 /datum/preferences/proc/post_copy_to(mob/living/carbon/human/character)
 	apply_combat_implant_permits(character)

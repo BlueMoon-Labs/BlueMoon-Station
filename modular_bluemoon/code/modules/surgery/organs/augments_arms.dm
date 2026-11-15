@@ -482,7 +482,8 @@
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
 	sharpness = SHARP_POINTY
-	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+	// Клинки всех вариантов тратят вдвое меньше стамины на атаку.
+	total_mass = TOTAL_MASS_HAND_REPLACEMENT * 0.5
 	attack_verb = list("slashed", "cut")
 	item_flags = NEEDS_PERMIT //Beepers gets angry if you get caught with this.
 	hitsound = 'sound/weapons/bladeslice.ogg'
@@ -522,8 +523,8 @@
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
 	reach = 2 // +1 тайл, как у копья
 	attack_verb = list("sliced", "severed")
-	/// Между ударами струны проходит 3 секунды.
-	attack_speed = 3 SECONDS
+	/// Между ударами струны проходит 1 секунда.
+	attack_speed = 1 SECONDS
 	item_flags = NEEDS_PERMIT
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	/// Жертва, которую сейчас душат этой струной.
@@ -779,7 +780,7 @@
 /obj/item/projectile/bullet/implanthandgun
 	name = "explosive charge"
 	icon_state = "missile"
-	damage = 50
+	damage = 35
 	range = 15
 	knockdown = 0
 	stun = 0

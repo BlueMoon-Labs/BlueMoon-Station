@@ -230,3 +230,59 @@
 /datum/uplink_item/implants/blood_pump/syndie
 	purchasable_from = UPLINK_SYNDICATE
 	item = /obj/item/autosurgeon/syndicate/blood_pump
+
+/datum/uplink_item/implants/berserker
+	name = "Militech Berserker Implant"
+	desc = "A military combat implant that greatly enhances melee combat while temporarily disabling ranged weapon use."
+	item = /obj/item/autosurgeon/syndicate/berserker
+	cost = 10
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/ballistic_processor
+	name = "Ballistic Processor Implant"
+	desc = "A neural-linked ballistic processor that lets bullets ricochet off surfaces and home towards nearby targets."
+	item = /obj/item/autosurgeon/syndicate/ballistic_processor
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/reinforced_skeleton
+	name = "Reinforced Skeleton Implant"
+	desc = "A carbon-composite endoskeleton that raises the amount of trauma the body can take before collapsing."
+	item = /obj/item/autosurgeon/syndicate/reinforced_skeleton
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/subdermal_armor
+	name = "Subdermal Armor Implant"
+	desc = "Composite plates woven beneath the skin that absorb part of incoming melee, bullet and laser damage."
+	item = /obj/item/autosurgeon/syndicate/subdermal_armor
+	cost = 3
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/reinforced_tendons
+	name = "Reinforced Tendons Implant"
+	desc = "Synthetic tendon bundles for both legs that allow a second jump in mid-air."
+	item = /obj/item/autosurgeon/syndicate/reinforced_tendons
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/fortified_ankles
+	name = "Fortified Ankles Implant"
+	desc = "Hydraulic pistons for both ankles that provide a powerful forward dash."
+	item = /obj/item/autosurgeon/syndicate/fortified_ankles
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/lynx_paws
+	name = "Lynx Paws Implant"
+	desc = "Sound-dampening pads and artificial nerves for both feet that make footsteps completely silent."
+	item = /obj/item/autosurgeon/syndicate/lynx_paws
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/datum/uplink_item/implants/militech_optics
+	name = "Militech Optical Suite"
+	desc = "A high-precision optical implant with flash protection and a sniper scope-like zoom."
+	item = /obj/item/autosurgeon/syndicate/militech_optics
+	cost = 2
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
