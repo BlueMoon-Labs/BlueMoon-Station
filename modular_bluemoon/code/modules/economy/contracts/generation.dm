@@ -149,16 +149,38 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	if(!COOLDOWN_FINISHED(src, contract_reset_cooldown))
 		return "Доску отдела \"[name]\" можно сбросить через [DisplayTimeText(COOLDOWN_TIMELEFT(src, contract_reset_cooldown), 1)]."
 
-/// Глава снимает неначатые контракты отдела, взятые тоже, и выставляет новые. Взявшие не теряют репутацию и берут новый контракт сразу. Возвращает list(удалось ли, ответ игроку).
+/// Взявший в игре: тело живо и с клиентом. Без него контракт только держит слот.
+/datum/econ_contract/proc/taker_in_game()
+	var/datum/mind/taker_mind = taker?.owner_mind_ref?.resolve()
+	var/mob/living/body = isliving(taker_mind?.current) ? taker_mind.current : taker?.owner_ref?.resolve()
+	return !!body && body.stat != DEAD && !!GET_CLIENT(body)
+
+/// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
+/datum/econ_contract/proc/board_reset_removes(datum/bank_account/head_account)
+	if(pinned || completed || is_expired() || has_progress())
+		return FALSE
+	if(!taker)
+		return TRUE
+	if(taker == head_account)
+		return FALSE
+	return world.time - taken_at >= ECON_CONTRACT_BOARD_RESET_GRACE || !taker_in_game()
+
+/// Контракты доски, которые сбросит user.
+/datum/economy_department/proc/contracts_to_reset(mob/living/user)
+	. = list()
+	var/datum/bank_account/head_account = econ_account_of(user)
+	for(var/datum/econ_contract/contract as anything in contracts)
+		if(contract.board_reset_removes(head_account))
+			. += contract
+
+/// Глава снимает неначатые контракты отдела и выставляет новые; свой контракт и недавно взятые игроками в игре остаются. Взявшие не теряют репутацию и берут новый контракт сразу. Возвращает list(удалось ли, ответ игроку).
 /datum/economy_department/proc/reset_contracts(mob/living/user)
 	var/refusal = contract_reset_refusal(user)
 	if(refusal)
 		return list(FALSE, refusal)
 	var/list/removed_types = list()
 	var/freed = 0
-	for(var/datum/econ_contract/contract as anything in contracts.Copy())
-		if(contract.pinned || contract.completed || contract.is_expired() || contract.has_progress())
-			continue
+	for(var/datum/econ_contract/contract as anything in contracts_to_reset(user))
 		var/datum/econ_contract/delivery/delivery = contract
 		removed_types += istype(delivery) ? delivery.bounty.type : contract.type
 		if(contract.taker)
@@ -166,13 +188,13 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 			contract.taker.bank_card_talk("Глава отдела сбросил доску: контракт \"[contract.title]\" снят. Репутация не пострадала, новый контракт можно взять сразу.")
 		qdel(contract)
 	if(!length(removed_types))
-		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые контракты и заказы ЦК.")
+		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
 	COOLDOWN_START(src, contract_reset_cooldown, ECON_CONTRACT_BOARD_RESET_COOLDOWN)
 	SSeconomy.fill_department_contracts(src, removed_types)
 	log_econ("[key_name(user)] сбросил доску контрактов отдела [id]: снято [length(removed_types)], из них взятых [freed]")
-	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые и заказы ЦК остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
+	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
 
-/// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса и минуты между сбросами.
+/// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса, минуты между сбросами и сколько контрактов (из них взятых) снимет сброс сейчас.
 /proc/econ_contract_resets_ui(mob/user, list/departments)
 	. = list()
 	if(!isliving(user) || !SSeconomy.contracts_started)
@@ -184,11 +206,19 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	for(var/datum/economy_department/department as anything in departments)
 		if(department.id == ACCOUNT_CMD || !department.can_manage(user))
 			continue
+		var/list/removable = department.contracts_to_reset(user)
+		var/removable_taken = 0
+		for(var/datum/econ_contract/contract as anything in removable)
+			if(contract.taker)
+				removable_taken++
 		. += list(list(
 			"id" = department.id,
 			"name" = department.name,
 			"left" = CEILING(COOLDOWN_TIMELEFT(department, contract_reset_cooldown) / (1 SECONDS), 1),
 			"minutes" = round(ECON_CONTRACT_BOARD_RESET_COOLDOWN / (1 MINUTES)),
+			"grace_minutes" = round(ECON_CONTRACT_BOARD_RESET_GRACE / (1 MINUTES)),
+			"remove" = length(removable),
+			"remove_taken" = removable_taken,
 		))
 
 /proc/econ_contract_reset_act(mob/user, department_id)

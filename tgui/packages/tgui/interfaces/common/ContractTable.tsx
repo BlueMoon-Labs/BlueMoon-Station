@@ -10,6 +10,10 @@ type BoardReset = {
   name: string;
   left: number;
   minutes: number;
+  /** Сколько контрактов снимет сброс сейчас и сколько из них взяты. */
+  remove: number;
+  remove_taken: number;
+  grace_minutes: number;
 };
 
 type ContractBoardData = {
@@ -335,7 +339,15 @@ const RankLine = (props: { rank: ContractRank }) => {
   );
 };
 
-/** Сброс доски отдела главой: неначатые контракты, даже взятые, сменятся новыми. */
+const resetTooltip = (board: BoardReset) => {
+  if (board.left > 0) {
+    return `Снова можно через ${formatTimeLeft(board.left)}`;
+  }
+  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
+  return board.remove > 0 ? rules : `Сейчас снимать нечего. ${rules}`;
+};
+
+/** Сброс доски отдела главой: неначатые контракты сменятся новыми, кроме своего и недавно взятых. */
 const BoardResets = (props: { resets: BoardReset[] }) => {
   const { act } = useBackend<ContractBoardData>();
   const { resets } = props;
@@ -345,14 +357,10 @@ const BoardResets = (props: { resets: BoardReset[] }) => {
         <Button.Confirm
           key={board.id}
           icon="redo"
-          disabled={board.left > 0}
+          disabled={board.left > 0 || board.remove <= 0}
           content={resets.length > 1 ? `Сбросить: ${board.name}` : 'Сбросить доску отдела'}
-          confirmContent={`Сбросить доску «${board.name}»?`}
-          tooltip={
-            board.left > 0
-              ? `Снова можно через ${formatTimeLeft(board.left)}`
-              : `Неначатые контракты отдела, даже взятые, сменятся новыми. Взявшим - без штрафа репутации и без паузы на взятие. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`
-          }
+          confirmContent={`Снимется ${board.remove}${board.remove_taken > 0 ? `, из них взятых ${board.remove_taken}` : ''}. Сбросить?`}
+          tooltip={resetTooltip(board)}
           onClick={() => act('board_reset', { department: board.id })}
         />
       ))}

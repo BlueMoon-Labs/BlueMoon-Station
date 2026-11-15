@@ -196,6 +196,8 @@
 #define ECON_CONTRACT_REROLL_COOLDOWN (10 MINUTES)
 /// Глава отдела сбрасывает доску контрактов своего отдела не чаще этого
 #define ECON_CONTRACT_BOARD_RESET_COOLDOWN (10 MINUTES)
+/// Взятый недавно контракт игрока в игре сброс доски не снимает
+#define ECON_CONTRACT_BOARD_RESET_GRACE (5 MINUTES)
 /// Этапов в серии поставок
 #define ECON_CONTRACT_CHAIN_STAGES 3
 /// Объявлений экипажа от одного счёта одновременно

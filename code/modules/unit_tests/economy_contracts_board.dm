@@ -145,21 +145,41 @@
 	for(var/datum/econ_contract/orphan as anything in orphans)
 		TEST_ASSERT(QDELETED(orphan), "Личный заказ пережил счёт владельца")
 
-/// Глава сбрасывает доску отдела: неначатые контракты, взятые тоже, сменяются новыми без штрафа взявшим; начатые и заказы ЦК остаются; не чаще паузы и только главой.
+/datum/unit_test/economy_contract_machines/board/head_reset
+	var/saved_per_department
+	var/mob/living/carbon/human/present
+
+/// Глава сбрасывает доску отдела: неначатые контракты сменяются новыми без штрафа взявшим; начатые, заказы ЦК, свой контракт главы и недавно взятые игроком в игре остаются; не чаще паузы и только главой.
 /datum/unit_test/economy_contract_machines/board/head_reset/Run()
 	setup()
+	saved_per_department = SSeconomy.settings.contracts_per_department
+	SSeconomy.settings.contracts_per_department = 5
 	var/datum/econ_contract/delivery/free = post_scooter_contract()
 	var/datum/econ_contract/delivery/taken = post_contract(/datum/bounty/item/assistant/soap)
 	var/datum/econ_contract/delivery/started = post_contract(/datum/bounty/item/assistant/toolbox)
 	var/datum/econ_contract/delivery/special = post_contract(/datum/bounty/item/assistant/cheesiehonkers)
+	var/datum/econ_contract/delivery/own = post_contract(/datum/bounty/item/assistant/skateboard)
+	var/datum/econ_contract/delivery/recent = post_contract(/datum/bounty/item/assistant/briefcase)
+	var/datum/econ_contract/delivery/old = post_contract(/datum/bounty/item/assistant/soap)
 	special.pinned = TRUE
 	special.takeable = FALSE
 	taker_account.contract_rep = 5
+	taker_account.bind_owner(user)
 	TEST_ASSERT(taken.take(taker_account), "Контракт не взят")
 	TEST_ASSERT(started.take(helper_account), "Начатый контракт не взят")
 	var/datum/bounty/item/started_bounty = started.bounty
 	started_bounty.shipped_count = 1
 	TEST_ASSERT(started.has_progress(), "Поставка не начата")
+	present = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/present_account = new("econ_test_present")
+	allocated += present_account
+	present.account_id = present_account.account_id
+	present_account.bind_owner(present)
+	present.mock_client = new /datum/client_interface()
+	present_account.contract_rep = 3
+	TEST_ASSERT(recent.take(present_account), "Недавний контракт не взят")
+	TEST_ASSERT(old.take(present_account), "Давний контракт не взят")
+	old.taken_at = world.time - ECON_CONTRACT_BOARD_RESET_GRACE - 1
 
 	var/list/result = civilian.reset_contracts(user)
 	TEST_ASSERT(!result[1], "Доску сбросил не глава")
@@ -174,14 +194,29 @@
 	var/datum/job/hop/hop_job = /datum/job/hop
 	head.mind.assigned_role = initial(hop_job.title)
 	TEST_ASSERT(civilian.can_manage(head), "ГП не управляет гражданскими")
+	var/datum/bank_account/head_account = new("econ_test_head")
+	allocated += head_account
+	head.account_id = head_account.account_id
+	TEST_ASSERT(own.take(head_account), "Глава не взял свой контракт")
+	var/list/preview
+	for(var/list/entry as anything in econ_contracts_ui_data(head)["board_resets"])
+		if(entry["id"] == ACCOUNT_CIV)
+			preview = entry
+	TEST_ASSERT(preview, "Главе не показана кнопка сброса")
+	TEST_ASSERT_EQUAL(preview["remove"], 3, "Подтверждение сброса считает не те контракты")
+	TEST_ASSERT_EQUAL(preview["remove_taken"], 2, "Подтверждение сброса считает не те взятые")
 
 	result = civilian.reset_contracts(head)
 	TEST_ASSERT(result[1], "Глава не сбросил доску: [result[2]]")
 	TEST_ASSERT(QDELETED(free), "Невзятый контракт пережил сброс")
-	TEST_ASSERT(QDELETED(taken), "Взятый неначатый контракт пережил сброс")
+	TEST_ASSERT(QDELETED(taken), "Контракт взявшего без клиента пережил сброс")
+	TEST_ASSERT(QDELETED(old), "Давно взятый контракт пережил сброс")
+	TEST_ASSERT((own in civilian.contracts) && own.taker == head_account, "Сброс снял свой контракт главы")
+	TEST_ASSERT((recent in civilian.contracts) && recent.taker == present_account, "Сброс снял недавно взятый контракт игрока в игре")
 	TEST_ASSERT(started in civilian.contracts, "Начатый контракт снят сбросом")
 	TEST_ASSERT(started.taker == helper_account, "Начатый контракт потерял исполнителя")
 	TEST_ASSERT(special in civilian.contracts, "Заказ ЦК снят сбросом")
+	TEST_ASSERT_EQUAL(present_account.contract_rep, 3, "Сброс снизил репутацию взявшего в игре")
 	TEST_ASSERT_EQUAL(taker_account.contract_rep, 5, "Сброс снизил репутацию взявшего")
 	TEST_ASSERT(COOLDOWN_FINISHED(taker_account, contract_drop_cooldown), "Сброс поставил взявшему паузу на взятие")
 	TEST_ASSERT_EQUAL(length(SSeconomy.contracts_taken_by(taker_account)), 0, "Слот взявшего не освободился")
@@ -194,7 +229,7 @@
 		var/datum/econ_contract/delivery/delivery = contract
 		if(contract != started && istype(delivery))
 			TEST_ASSERT(!(delivery.bounty.type in list(/datum/bounty/item/assistant/scooter, /datum/bounty/item/assistant/soap)), "Сброс вернул снятый заказ [delivery.bounty.type]")
-		if(contract != started && contract.takeable)
+		if(!contract.taker && contract.takeable)
 			fresh = contract
 	TEST_ASSERT_EQUAL(regular, SSeconomy.settings.contracts_per_department, "Доска не добрана новыми контрактами")
 	TEST_ASSERT(fresh?.take(taker_account), "Освобождённый не взял новый контракт сразу")
@@ -215,6 +250,11 @@
 /datum/unit_test/economy_contract_machines/board/head_reset/Destroy()
 	if(civilian)
 		COOLDOWN_RESET(civilian, contract_reset_cooldown)
+	if(!isnull(saved_per_department))
+		SSeconomy.settings.contracts_per_department = saved_per_department
+	if(present)
+		present.mock_client = null
+		present = null
 	return ..()
 
 /// Серия: этап платит сразу и сменяет заказ, последний платит с премией, генерация без запаса заказов даёт обычную поставку.
