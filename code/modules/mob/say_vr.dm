@@ -351,7 +351,7 @@
 	user.log_message("[message] (TABLE-WRAPPING)", LOG_SUBTLER)
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
 
-	var/list/show_to = list()
+	var/list/show_to = list(user)
 	var/list/processed = list()
 	for(var/obj/structure/table/T in range(1, table_reach))
 		if(processed[T])
@@ -359,7 +359,7 @@
 		for(var/obj/structure/table/T2 in T.connected_floodfill(25))
 			processed[T2] = TRUE
 			for(var/mob/living/L in range(T2, 1))
-				show_to |= L
+				show_to |= L.GetAllContents(/mob/living)
 
 	for(var/i in show_to)
 		var/mob/M = i
@@ -384,8 +384,13 @@
 	. = list()
 	// из сумки или MOD oview() видит только содержимое контейнера
 	var/atom/movable/viewpoint = get_interaction_anchor(user)
-	for(var/mob/living/visible in (viewpoint == user ? oview(work_distance, user) : view(work_distance, get_turf(viewpoint))))
-		. += visible
+	if(viewpoint == user)
+		for(var/mob/living/visible in oview(work_distance, user))
+			. += visible
+	else
+		FOR_DVIEW(var/mob/living/visible, work_distance, get_turf(viewpoint), user.see_invisible)
+			. += visible
+		FOR_DVIEW_END
 	. |= user.get_all_recursive_loc(/mob/living)
 	. |= user.GetAllContents(/mob/living)
 	. -= user
@@ -436,7 +441,7 @@
 				to_chat(user, span_warning("No target around."))
 				return FALSE
 
-			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, user, possible_target, radius = 40)
+			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, get_interaction_anchor(user), possible_target, radius = 40)
 
 		if(QDELETED(target))
 			to_chat(user, span_warning("Target is now unavailable."))

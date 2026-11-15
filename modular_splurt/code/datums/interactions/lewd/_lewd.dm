@@ -235,7 +235,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	return TRUE
 
 /mob/living/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
-	for(var/mob/M in range(7, src))
+	for(var/mob/M in get_interaction_witnesses())
 		if(M.client)
 			var/client/cli = M.client
 			if(unholy && (cli.prefs.unholypref == "No"))

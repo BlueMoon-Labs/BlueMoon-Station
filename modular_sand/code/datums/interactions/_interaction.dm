@@ -12,11 +12,19 @@
 
 GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 
-/// Что стоит на тайле за мобом, которого несут: сумка в руке, pAI в MOD или карте. Из шкафа, машины или живота - сам моб.
+/// Предмет, из которого сидящий внутри достаёт наружу: сумка, рюкзак, моб на руках, pAI-карта, MOD.
+/proc/is_interaction_carrier(atom/container)
+	if(!isitem(container))
+		return FALSE
+	if(istype(container, /obj/item/clothing/head/mob_holder) || istype(container, /obj/item/paicard) || istype(container, /obj/item/mod/control))
+		return TRUE
+	return !!container.GetComponent(/datum/component/storage)
+
+/// Что стоит на тайле за мобом, которого несут: сумка в руке, pAI в MOD или карте. Из шкафа, переноски, машины или живота - сам моб.
 /proc/get_interaction_anchor(atom/movable/thing)
 	var/atom/movable/anchor = thing
 	while(!isturf(anchor.loc))
-		if(!isitem(anchor.loc) && !(ismob(anchor.loc) && isitem(anchor)))
+		if(ismob(anchor.loc) ? !isitem(anchor) : !is_interaction_carrier(anchor.loc))
 			return thing
 		anchor = anchor.loc
 	return anchor
@@ -26,6 +34,14 @@ GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 	var/atom/movable/user_anchor = get_interaction_anchor(user)
 	var/atom/movable/target_anchor = get_interaction_anchor(target)
 	return user_anchor.Adjacent(target_anchor) && target_anchor.Adjacent(user_anchor)
+
+/// Почему не дотянуться: изнутри шкафа, меха или переноски сначала надо выбраться.
+/proc/interaction_reach_refusal(mob/living/user, mob/living/target)
+	if(!isturf(user.loc) && get_interaction_anchor(user) == user)
+		return "Сначала выберись из [user.loc]."
+	if(!isturf(target.loc) && get_interaction_anchor(target) == target)
+		return "[target] внутри [target.loc], отсюда не достать."
+	return "Ты не достаёшь."
 
 	/// The base of all interactions
 /datum/interaction
@@ -118,6 +134,25 @@ GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 
 	return TRUE
 
+/datum/interaction/proc/can_reach_target(mob/living/user, mob/living/target)
+	if(QDELETED(user) || QDELETED(target))
+		return FALSE
+	if(is_lewd_portal_relay_interaction(user, target))
+		return TRUE
+	if(get_dist(user, target) > max_distance)
+		to_chat(user, span_warning("Слишком далеко."))
+		return FALSE
+	if(!(interaction_flags & INTERACTION_FLAG_ADJACENT) || interaction_in_reach(user, target))
+		return TRUE
+	var/obj/belly/user_belly = user.loc
+	if(isbelly(user_belly) && user_belly.owner == target)
+		return TRUE
+	var/obj/belly/target_belly = target.loc
+	if(isbelly(target_belly) && target_belly.owner == user)
+		return TRUE
+	to_chat(user, span_warning(interaction_reach_refusal(user, target)))
+	return FALSE
+
 /// Actually doing the action, has a few checks to see if it's valid, usually overwritten to be make things actually happen and what-not
 /datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE , is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target))
@@ -126,23 +161,20 @@ GLOBAL_LIST_INIT(hidden_interaction_additional, HIDDEN_INTERACTION_ADDITIONAL)
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
 			return FALSE
-	if(get_dist(user, target) > max_distance && !is_lewd_portal_relay_interaction(user, target))
-		to_chat(user, span_warning("Слишком далеко."))
-		return FALSE
-	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(interaction_in_reach(user, target) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target)))
-		to_chat(user, span_warning("Ты не достаёшь."))
+	if(!can_reach_target(user, target))
 		return FALSE
 	if(!evaluate_user(user, silent = FALSE, apply_cooldown = apply_cooldown))
 		return FALSE
 	if(!evaluate_target(user, target, silent = FALSE))
 		return FALSE
 
-	// BLUEMOON ADD START - специальные проверки от БМ
 	if(!special_check(user, target, is_hidden))
 		return
-	// BLUEMOON ADD END
 
 	if(QDELETED(user) || QDELETED(target))
+		return FALSE
+	// special_check мог ждать do_after или ввода, за это время носитель уходит
+	if(!can_reach_target(user, target))
 		return FALSE
 
 	if(write_log_user)

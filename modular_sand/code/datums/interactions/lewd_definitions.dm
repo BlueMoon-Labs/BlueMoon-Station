@@ -1027,10 +1027,22 @@ GLOBAL_LIST_INIT(hidden_reaction_suffixes, list(", незаметно", ", ти�
 				return TRUE
 	return FALSE
 
+/// Все, до кого дойдут сообщение и звук взаимодействия, считая от тайла: и из сумки, и сидящих в сумках рядом.
+/mob/living/proc/get_interaction_witnesses()
+	var/const/witness_range = 7
+	. = list()
+	var/turf/source_turf = get_turf(src)
+	if(!source_turf)
+		return
+	for(var/mob/witness in range(witness_range, source_turf))
+		. += witness
+	for(var/mob/witness in get_hearers_in_view(witness_range, source_turf))
+		. |= witness
+
 /mob/living/proc/get_unconsenting(interaction_flags, list/ignored_mobs, unholy, unholy_hard)
 	var/list/nope = list()
 	nope += ignored_mobs
-	for(var/mob/M in range(7, src))
+	for(var/mob/M in get_interaction_witnesses())
 		if(M.client)
 			var/client/cli = M.client
 			if(!(cli.prefs.toggles & VERB_CONSENT)) //Note: This probably could do with a specific preference
