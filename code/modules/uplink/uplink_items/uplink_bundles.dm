@@ -101,7 +101,7 @@
 			В наборе два шредера, запасные патроны, элитный скафандр и разгрузка."
 	item = /obj/item/storage/backpack/duffelbag/syndie/shredderbundle
 	cost = 30 // normally 41
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/sniper
 	name = "Sniper bundle"
