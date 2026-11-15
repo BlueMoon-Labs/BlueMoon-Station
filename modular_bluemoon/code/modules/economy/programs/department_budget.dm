@@ -210,6 +210,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	for(var/datum/econ_contract/contract as anything in department.contracts)
 		contracts += list(contract.ui_entry())
 	data["contracts"] = contracts
+	data["board_resets"] = econ_contract_resets_ui(user, list(department))
 	data["work_log"] = department.work_log
 	data["register_share"] = department.register_cashier_share
 	var/owed_total = 0
@@ -414,6 +415,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			messages[user_ref] = result[2]
 		if("drop")
 			var/list/result = econ_try_drop_contract(user, params["uid"])
+			messages[user_ref] = result[2]
+		if("board_reset")
+			var/list/result = department.reset_contracts(user)
 			messages[user_ref] = result[2]
 		else
 			return FALSE

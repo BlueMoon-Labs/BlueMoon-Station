@@ -142,6 +142,28 @@ test('личные заказы обновляются кнопкой, на ку
   expect(sent(waiting.topic, 'reroll')).toHaveLength(0);
 });
 
+test('глава сбрасывает доску отдела с подтверждением, на паузе кнопка молчит', () => {
+  const board = { id: 'CAR', name: 'Снабжение', left: 0, minutes: 10 };
+  const ready = setup({ board_resets: [board] });
+  fireEvent.click(ready.getByText('Сбросить доску отдела'));
+  expect(sent(ready.topic, 'board_reset')).toEqual([]);
+  fireEvent.click(ready.getByText('Сбросить доску «Снабжение»?'));
+  expect(sent(ready.topic, 'board_reset')).toEqual([{ department: 'CAR' }]);
+  ready.unmount();
+  const waiting = setup({ board_resets: [{ ...board, left: 300 }] });
+  fireEvent.click(waiting.getByText('Сбросить доску отдела'));
+  expect(waiting.queryByText('Сбросить доску «Снабжение»?')).toBeNull();
+  expect(sent(waiting.topic, 'board_reset')).toEqual([]);
+  waiting.unmount();
+  const several = setup({ board_resets: [board, { ...board, id: 'MED', name: 'Медицина' }] });
+  expect(several.getByText('Сбросить: Медицина')).toBeTruthy();
+  several.unmount();
+  const viewer = setup({ board_resets: [board] }, true);
+  expect(viewer.queryByText('Сбросить доску отдела')).toBeNull();
+  viewer.unmount();
+  expect(setup().queryByText('Сбросить доску отдела')).toBeNull();
+});
+
 test('объявление экипажа: исполнитель сдаёт работу, заказчик принимает или отклоняет', () => {
   const crew = (uid, extra = {}) => contract(uid, { kind: 'crew', department_name: 'Экипаж', poster: 'Заказчик', poster_id: 333, ...extra });
   const performer = setup({ rank, crew_request: crewRules, contracts: [crew(20, { taken_by: 'Тест Тестов', taker_id: 111 })] });

@@ -107,25 +107,95 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		if(id == ACCOUNT_CMD)
 			continue
 		var/datum/economy_department/department = departments[id]
-		var/regular = 0
 		for(var/datum/econ_contract/contract as anything in department.contracts.Copy())
 			if(contract.is_expired())
 				contract.expire()
 			else if(contract_rotates(contract, force))
 				qdel(contract)
-			else if(!contract.pinned)
-				regular++
-		while(regular < settings.contracts_per_department)
-			var/datum/econ_contract/fresh = generate_contract(id)
-			if(!fresh)
-				break
-			department.contracts += fresh
-			regular++
+		fill_department_contracts(department)
 	for(var/datum/econ_contract/contract as anything in loose_contracts.Copy())
 		if(contract.is_expired())
 			contract.expire()
 		else if(contract_rotates(contract, force))
 			qdel(contract)
+
+/// Добирает доску отдела до contracts_per_department обычных контрактов; заказы из avoid выдаются, только если других не осталось.
+/datum/controller/subsystem/economy/proc/fill_department_contracts(datum/economy_department/department, list/avoid)
+	var/regular = 0
+	for(var/datum/econ_contract/contract as anything in department.contracts)
+		if(!contract.pinned)
+			regular++
+	while(regular < settings.contracts_per_department)
+		var/datum/econ_contract/fresh = generate_contract(department.id, avoid)
+		if(!fresh && length(avoid))
+			avoid = null
+			continue
+		if(!fresh)
+			break
+		department.contracts += fresh
+		regular++
+
+/datum/economy_department
+	COOLDOWN_DECLARE(contract_reset_cooldown)
+
+/// Почему user не может сбросить доску контрактов отдела, или null.
+/datum/economy_department/proc/contract_reset_refusal(mob/living/user)
+	if(id == ACCOUNT_CMD)
+		return "У командования нет своей доски контрактов."
+	if(!SSeconomy.contracts_started)
+		return "Доска контрактов откроется с началом смены."
+	if(!can_manage(user))
+		return "Сбросить доску отдела может только его глава, ГП или капитан."
+	if(!COOLDOWN_FINISHED(src, contract_reset_cooldown))
+		return "Доску отдела \"[name]\" можно сбросить через [DisplayTimeText(COOLDOWN_TIMELEFT(src, contract_reset_cooldown), 1)]."
+
+/// Глава снимает неначатые контракты отдела, взятые тоже, и выставляет новые. Взявшие не теряют репутацию и берут новый контракт сразу. Возвращает list(удалось ли, ответ игроку).
+/datum/economy_department/proc/reset_contracts(mob/living/user)
+	var/refusal = contract_reset_refusal(user)
+	if(refusal)
+		return list(FALSE, refusal)
+	var/list/removed_types = list()
+	var/freed = 0
+	for(var/datum/econ_contract/contract as anything in contracts.Copy())
+		if(contract.pinned || contract.completed || contract.is_expired() || contract.has_progress())
+			continue
+		var/datum/econ_contract/delivery/delivery = contract
+		removed_types += istype(delivery) ? delivery.bounty.type : contract.type
+		if(contract.taker)
+			freed++
+			contract.taker.bank_card_talk("Глава отдела сбросил доску: контракт \"[contract.title]\" снят. Репутация не пострадала, новый контракт можно взять сразу.")
+		qdel(contract)
+	if(!length(removed_types))
+		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые контракты и заказы ЦК.")
+	COOLDOWN_START(src, contract_reset_cooldown, ECON_CONTRACT_BOARD_RESET_COOLDOWN)
+	SSeconomy.fill_department_contracts(src, removed_types)
+	log_econ("[key_name(user)] сбросил доску контрактов отдела [id]: снято [length(removed_types)], из них взятых [freed]")
+	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые и заказы ЦК остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
+
+/// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса и минуты между сбросами.
+/proc/econ_contract_resets_ui(mob/user, list/departments)
+	. = list()
+	if(!isliving(user) || !SSeconomy.contracts_started)
+		return
+	if(!departments)
+		departments = list()
+		for(var/id in SSeconomy.departments)
+			departments += SSeconomy.departments[id]
+	for(var/datum/economy_department/department as anything in departments)
+		if(department.id == ACCOUNT_CMD || !department.can_manage(user))
+			continue
+		. += list(list(
+			"id" = department.id,
+			"name" = department.name,
+			"left" = CEILING(COOLDOWN_TIMELEFT(department, contract_reset_cooldown) / (1 SECONDS), 1),
+			"minutes" = round(ECON_CONTRACT_BOARD_RESET_COOLDOWN / (1 MINUTES)),
+		))
+
+/proc/econ_contract_reset_act(mob/user, department_id)
+	var/datum/economy_department/department = istext(department_id) ? SSeconomy.get_department(department_id) : null
+	if(!department)
+		return list(FALSE, "Нет такого отдела.")
+	return department.reset_contracts(user)
 
 /datum/controller/subsystem/economy/proc/contract_rotates(datum/econ_contract/contract, force)
 	var/due = contract.rotation_due_at()
@@ -133,9 +203,9 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		return FALSE
 	return world.time >= due || (force && !contract.has_progress())
 
-/datum/controller/subsystem/economy/proc/generate_contract(department_id)
+/datum/controller/subsystem/economy/proc/generate_contract(department_id, list/avoid)
 	var/datum/economy_department/department = get_department(department_id)
-	var/list/present = list()
+	var/list/present = LAZYCOPY(avoid)
 	for(var/datum/econ_contract/existing as anything in department?.contracts)
 		var/datum/econ_contract/delivery/delivery = existing
 		present += istype(delivery) ? delivery.bounty.type : existing.type

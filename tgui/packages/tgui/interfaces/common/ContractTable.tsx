@@ -4,6 +4,14 @@ import { useBackend } from '../../backend';
 import { Box, Button, Input, NoticeBox } from '../../components';
 import { ContractEntry, ContractRank, CrewRequestRules, formatCredits, OfferEntry } from './Economy';
 
+/** Доска отдела, которую зритель как глава может сбросить. */
+type BoardReset = {
+  id: string;
+  name: string;
+  left: number;
+  minutes: number;
+};
+
 type ContractBoardData = {
   contracts?: ContractEntry[];
   my_account?: number | null;
@@ -12,6 +20,7 @@ type ContractBoardData = {
   drop_cooldown?: number;
   rank?: ContractRank | null;
   reroll_left?: number;
+  board_resets?: BoardReset[];
   crew_request?: CrewRequestRules;
   partner_offers?: OfferEntry[];
 };
@@ -326,6 +335,31 @@ const RankLine = (props: { rank: ContractRank }) => {
   );
 };
 
+/** Сброс доски отдела главой: неначатые контракты, даже взятые, сменятся новыми. */
+const BoardResets = (props: { resets: BoardReset[] }) => {
+  const { act } = useBackend<ContractBoardData>();
+  const { resets } = props;
+  return (
+    <Box mb={1}>
+      {resets.map((board) => (
+        <Button.Confirm
+          key={board.id}
+          icon="redo"
+          disabled={board.left > 0}
+          content={resets.length > 1 ? `Сбросить: ${board.name}` : 'Сбросить доску отдела'}
+          confirmContent={`Сбросить доску «${board.name}»?`}
+          tooltip={
+            board.left > 0
+              ? `Снова можно через ${formatTimeLeft(board.left)}`
+              : `Неначатые контракты отдела, даже взятые, сменятся новыми. Взявшим - без штрафа репутации и без паузы на взятие. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`
+          }
+          onClick={() => act('board_reset', { department: board.id })}
+        />
+      ))}
+    </Box>
+  );
+};
+
 /** Форма объявления экипажа: награда сразу уходит в депозит. */
 const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void }) => {
   const { act } = useBackend<ContractBoardData>();
@@ -376,7 +410,7 @@ const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void })
 export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }) => {
   const { showShare = true, readOnly = false } = props;
   const { act, data } = useBackend<ContractBoardData>();
-  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, crew_request, partner_offers = [] } = data;
+  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, board_resets = [], crew_request, partner_offers = [] } = data;
   const [filter, setFilter] = useState<Filter>('all');
   const [posting, setPosting] = useState(false);
   const canAct = !readOnly && !!my_account && !!rank;
@@ -441,6 +475,7 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
           )}
         </Box>
       )}
+      {!readOnly && board_resets.length > 0 && <BoardResets resets={board_resets} />}
       {canAct && posting && !!crew_request && <CrewRequestForm rules={crew_request} onDone={() => setPosting(false)} />}
       {!readOnly && crewFree > 0 && filter !== 'crew' && (
         <NoticeBox info>

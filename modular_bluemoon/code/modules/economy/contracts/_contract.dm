@@ -267,6 +267,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		"drop_cooldown" = round(ECON_CONTRACT_DROP_COOLDOWN / (1 MINUTES)),
 		"rank" = account?.contract_rank_data(),
 		"reroll_left" = account ? CEILING(COOLDOWN_TIMELEFT(account, contract_reroll_cooldown) / (1 SECONDS), 1) : 0,
+		"board_resets" = econ_contract_resets_ui(user),
 		"crew_request" = list(
 			"min" = settings.crew_request_min,
 			"max" = settings.crew_request_max,
@@ -318,6 +319,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 			return econ_try_drop_contract(user, params["uid"], account)
 		if("reroll")
 			return SSeconomy.reroll_personal_offers(account)
+		if("board_reset")
+			return econ_contract_reset_act(user, params["department"])
 		if("crew_post")
 			return econ_post_crew_request(user, account, params["title"], params["desc"], params["reward"])
 		if("crew_report", "crew_accept", "crew_reject", "crew_cancel")
@@ -366,6 +369,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	. += list(list("title" = "Спрос и смена доски", "icon" = "sync", "lines" = list(
 		"Каждая сдача одного и того же заказа снижает его награду на [settings.contract_repeat_step]%, но не ниже [settings.contract_repeat_floor]%. За [rotation_minutes] мин. спрос возвращается на шаг.",
 		"Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин. Отгруженное по снятому контракту не возвращается.",
+		"Глава отдела (у снабжения - квартирмейстер), ГП или капитан раз в [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)] может сбросить доску отдела: неначатые контракты, даже взятые, сменятся новыми. Взявшим ничего не будет - репутация цела, новый контракт можно взять сразу. Начатые и заказы ЦК остаются.",
 	)))
 	var/list/reputation_lines = list("Репутация подрядчика растёт за закрытые контракты и падает за отказы и сорванные сроки.")
 	reputation_lines += econ_contract_rank_lines()

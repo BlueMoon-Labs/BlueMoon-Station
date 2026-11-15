@@ -145,6 +145,78 @@
 	for(var/datum/econ_contract/orphan as anything in orphans)
 		TEST_ASSERT(QDELETED(orphan), "Личный заказ пережил счёт владельца")
 
+/// Глава сбрасывает доску отдела: неначатые контракты, взятые тоже, сменяются новыми без штрафа взявшим; начатые и заказы ЦК остаются; не чаще паузы и только главой.
+/datum/unit_test/economy_contract_machines/board/head_reset/Run()
+	setup()
+	var/datum/econ_contract/delivery/free = post_scooter_contract()
+	var/datum/econ_contract/delivery/taken = post_contract(/datum/bounty/item/assistant/soap)
+	var/datum/econ_contract/delivery/started = post_contract(/datum/bounty/item/assistant/toolbox)
+	var/datum/econ_contract/delivery/special = post_contract(/datum/bounty/item/assistant/cheesiehonkers)
+	special.pinned = TRUE
+	special.takeable = FALSE
+	taker_account.contract_rep = 5
+	TEST_ASSERT(taken.take(taker_account), "Контракт не взят")
+	TEST_ASSERT(started.take(helper_account), "Начатый контракт не взят")
+	var/datum/bounty/item/started_bounty = started.bounty
+	started_bounty.shipped_count = 1
+	TEST_ASSERT(started.has_progress(), "Поставка не начата")
+
+	var/list/result = civilian.reset_contracts(user)
+	TEST_ASSERT(!result[1], "Доску сбросил не глава")
+	TEST_ASSERT(!QDELETED(free) && !QDELETED(taken), "Попытка не главы сняла контракты")
+	TEST_ASSERT_EQUAL(length(econ_contracts_ui_data(user)["board_resets"]), 0, "Не главе показана кнопка сброса")
+
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.access = list(ACCESS_HOP)
+	head.put_in_hands(card)
+	head.mind_initialize()
+	var/datum/job/hop/hop_job = /datum/job/hop
+	head.mind.assigned_role = initial(hop_job.title)
+	TEST_ASSERT(civilian.can_manage(head), "ГП не управляет гражданскими")
+
+	result = civilian.reset_contracts(head)
+	TEST_ASSERT(result[1], "Глава не сбросил доску: [result[2]]")
+	TEST_ASSERT(QDELETED(free), "Невзятый контракт пережил сброс")
+	TEST_ASSERT(QDELETED(taken), "Взятый неначатый контракт пережил сброс")
+	TEST_ASSERT(started in civilian.contracts, "Начатый контракт снят сбросом")
+	TEST_ASSERT(started.taker == helper_account, "Начатый контракт потерял исполнителя")
+	TEST_ASSERT(special in civilian.contracts, "Заказ ЦК снят сбросом")
+	TEST_ASSERT_EQUAL(taker_account.contract_rep, 5, "Сброс снизил репутацию взявшего")
+	TEST_ASSERT(COOLDOWN_FINISHED(taker_account, contract_drop_cooldown), "Сброс поставил взявшему паузу на взятие")
+	TEST_ASSERT_EQUAL(length(SSeconomy.contracts_taken_by(taker_account)), 0, "Слот взявшего не освободился")
+	var/regular = 0
+	var/datum/econ_contract/fresh
+	for(var/datum/econ_contract/contract as anything in civilian.contracts)
+		if(contract.pinned)
+			continue
+		regular++
+		var/datum/econ_contract/delivery/delivery = contract
+		if(contract != started && istype(delivery))
+			TEST_ASSERT(!(delivery.bounty.type in list(/datum/bounty/item/assistant/scooter, /datum/bounty/item/assistant/soap)), "Сброс вернул снятый заказ [delivery.bounty.type]")
+		if(contract != started && contract.takeable)
+			fresh = contract
+	TEST_ASSERT_EQUAL(regular, SSeconomy.settings.contracts_per_department, "Доска не добрана новыми контрактами")
+	TEST_ASSERT(fresh?.take(taker_account), "Освобождённый не взял новый контракт сразу")
+
+	result = civilian.reset_contracts(head)
+	TEST_ASSERT(!result[1], "Доска сброшена второй раз без паузы")
+	var/list/shown
+	for(var/list/entry as anything in econ_contracts_ui_data(head)["board_resets"])
+		if(entry["id"] == ACCOUNT_CIV)
+			shown = entry
+	TEST_ASSERT(shown, "Главе не показана кнопка сброса")
+	TEST_ASSERT(shown["left"] > 0, "Окно не показывает паузу сброса")
+	COOLDOWN_RESET(civilian, contract_reset_cooldown)
+	result = econ_contract_act(head, "board_reset", list("department" = ACCOUNT_CIV))
+	TEST_ASSERT(result[1], "Сброс с доски после паузы не прошёл: [result[2]]")
+	TEST_ASSERT(QDELETED(fresh), "Повторный сброс не снял взятый неначатый контракт")
+
+/datum/unit_test/economy_contract_machines/board/head_reset/Destroy()
+	if(civilian)
+		COOLDOWN_RESET(civilian, contract_reset_cooldown)
+	return ..()
+
 /// Серия: этап платит сразу и сменяет заказ, последний платит с премией, генерация без запаса заказов даёт обычную поставку.
 /datum/unit_test/economy_contract_machines/board/chain/Run()
 	setup()
