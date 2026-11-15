@@ -18,7 +18,8 @@
 	if(isnull(last_repeat) || now < last_repeat + timeout || !keys_held || !movement_keys)
 		return
 	for(var/key as anything in keys_held)
-		if(movement_keys[key])
+		// мышь не повторяет нажатие, её отпускание приходит само
+		if(movement_keys[key] && !keybind_is_mouse_button(key))
 			. += key
 
 /// Calculates the movement direction from a client's held keys and pending movement buffers.
