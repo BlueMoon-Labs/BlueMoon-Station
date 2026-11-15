@@ -102,6 +102,9 @@
 	if(H.nail_style)
 		to_chat(user, span_warning("На ногтях уже есть лак. Сначала его нужно смыть мылом или ацетоном."))
 		return FALSE
+	if(!H.get_num_arms(FALSE))
+		to_chat(user, span_warning("Нет рук - нет и ногтей."))
+		return FALSE
 	if(H.nail_polish_hands_covered())
 		to_chat(user, span_warning("Ногти закрыты, сначала снимите перчатки."))
 		return FALSE
@@ -109,8 +112,8 @@
 
 /// Закрыты ли кисти одеждой: лак под ней не красят и не смывают.
 /mob/living/carbon/human/proc/nail_polish_hands_covered(hand_bits = HANDS)
-	for(var/obj/item/worn as anything in get_equipped_items())
-		if(worn.body_parts_covered & hand_bits)
+	for(var/obj/item/worn as anything in list(gloves, wear_suit, w_uniform, wrists, w_shirt))
+		if(worn?.body_parts_covered & hand_bits)
 			return TRUE
 	return FALSE
 

@@ -92,3 +92,83 @@
 	remover.reaction(painted, TOUCH)
 	qdel(remover)
 	TEST_ASSERT_NULL(painted.nail_style, "плеснутый на руки ацетон должен растворить лак")
+
+/proc/nail_polish_overlay_drawn(mob/living/carbon/human/painted)
+	for(var/image/overlay as anything in painted.overlays)
+		if(overlay.icon == 'modular_splurt/icons/mobs/nails.dmi' && PLANE_TO_TRUE(overlay.plane) != EMISSIVE_PLANE)
+			return TRUE
+	return FALSE
+
+/// Вещи в карманах не закрывают ни ногти, ни другие части тела.
+/datum/unit_test/nail_polish_pocket_items_do_not_cover
+
+/datum/unit_test/nail_polish_pocket_items_do_not_cover/Run()
+	var/mob/living/carbon/human/painted = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	TEST_ASSERT(painted.equip_to_slot_if_possible(allocate(/obj/item/clothing/under/color/grey), ITEM_SLOT_ICLOTHING, disable_warning = TRUE), "test premise: униформа должна надеться")
+	TEST_ASSERT(painted.equip_to_slot_if_possible(allocate(/obj/item/clothing/gloves/color/black), ITEM_SLOT_LPOCKET, disable_warning = TRUE), "test premise: перчатки должны лечь в карман")
+	TEST_ASSERT(painted.equip_to_slot_if_possible(allocate(/obj/item/clothing/mask/surgical), ITEM_SLOT_RPOCKET, disable_warning = TRUE), "test premise: маска должна лечь в карман")
+
+	var/obj/item/nailpolish/red/polish = allocate(/obj/item/nailpolish/red)
+	polish.attack(painted, painted)
+	TEST_ASSERT_EQUAL(painted.nail_style, "nails", "перчатки в кармане не должны мешать красить ногти")
+
+	var/obj/item/soap/soap = allocate(/obj/item/soap)
+	painted.zone_selected = BODY_ZONE_R_ARM
+	TEST_ASSERT(soap.clean_human(painted, painted), "перчатки в кармане не должны мешать оттирать лак")
+	TEST_ASSERT_NULL(painted.nail_style, "мыло должно снять лак, когда перчатки лежат в кармане")
+
+	polish.attack(painted, painted)
+	var/datum/reagents/remover = new(100)
+	remover.add_reagent(/datum/reagent/acetone, NAIL_POLISH_ACETONE_VOLUME)
+	remover.reaction(painted, TOUCH)
+	qdel(remover)
+	TEST_ASSERT_NULL(painted.nail_style, "ацетон должен снять лак, когда перчатки лежат в кармане")
+
+	painted.zone_selected = BODY_ZONE_HEAD
+	TEST_ASSERT(soap.clean_human(painted, painted), "маска в кармане не должна закрывать голову от мыла")
+
+/// Перчатки, надетые посреди мытья руки, закрывают ногти: лак остаётся.
+/datum/unit_test/nail_polish_gloves_on_mid_scrub
+
+/datum/unit_test/nail_polish_gloves_on_mid_scrub/Run()
+	var/mob/living/carbon/human/painted = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/nailpolish/red/polish = allocate(/obj/item/nailpolish/red)
+	polish.attack(painted, painted)
+	TEST_ASSERT_EQUAL(painted.nail_style, "nails", "test premise: лак должен лечь на ногти")
+	var/obj/item/bodypart/arm = painted.get_bodypart(BODY_ZONE_L_ARM)
+	arm.writtentext = "метка"
+
+	var/obj/item/soap/soap = allocate(/obj/item/soap)
+	painted.zone_selected = BODY_ZONE_L_ARM
+	INVOKE_ASYNC(soap, TYPE_PROC_REF(/obj/item/soap, clean_human), painted, painted)
+	TEST_ASSERT(LAZYLEN(painted.do_afters), "test premise: мытьё руки должно начаться")
+	TEST_ASSERT(painted.equip_to_slot_if_possible(allocate(/obj/item/clothing/gloves/color/black), ITEM_SLOT_GLOVES, disable_warning = TRUE), "test premise: перчатки должны надеться")
+	var/deadline = world.time + NAIL_POLISH_SCRUB_TIME * 3
+	UNTIL(!LAZYLEN(painted.do_afters) || world.time > deadline)
+	TEST_ASSERT_EQUAL(arm.writtentext, "", "test premise: мытьё руки должно завершиться")
+	TEST_ASSERT_EQUAL(painted.nail_style, "nails", "мыло не должно оттирать лак сквозь надетые по ходу перчатки")
+
+/// Без рук ногтей нет: лак не наносится и не рисуется.
+/datum/unit_test/nail_polish_needs_arms
+
+/datum/unit_test/nail_polish_needs_arms/Run()
+	var/mob/living/carbon/human/armless = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM))
+		var/obj/item/bodypart/arm = armless.get_bodypart(zone)
+		arm.drop_limb()
+		qdel(arm)
+	var/obj/item/nailpolish/red/polish = allocate(/obj/item/nailpolish/red)
+	polish.attack(armless, armless)
+	TEST_ASSERT_NULL(armless.nail_style, "без рук лак не должен наноситься")
+
+	var/mob/living/carbon/human/painted = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	polish.attack(painted, painted)
+	TEST_ASSERT(nail_polish_overlay_drawn(painted), "test premise: лак должен быть виден")
+	var/obj/item/bodypart/left_arm = painted.get_bodypart(BODY_ZONE_L_ARM)
+	left_arm.drop_limb()
+	qdel(left_arm)
+	TEST_ASSERT(nail_polish_overlay_drawn(painted), "с одной рукой лак должен остаться виден")
+	var/obj/item/bodypart/right_arm = painted.get_bodypart(BODY_ZONE_R_ARM)
+	right_arm.drop_limb()
+	qdel(right_arm)
+	TEST_ASSERT(!nail_polish_overlay_drawn(painted), "без обеих рук лак не должен рисоваться")

@@ -124,7 +124,7 @@
 		target.wash_cum()
 		if(affected)
 			affected.writtentext = ""
-		if(scrub_nails && target.remove_nail_polish())
+		if(scrub_nails && can_scrub_nail_polish(target, user.zone_selected) && target.remove_nail_polish())
 			target.visible_message(span_notice("[user] оттирает лак с ногтей [target]."), span_notice("С ваших ногтей оттёрт лак."))
 		if(try_to_clean_genitals)
 			for(var/obj/item/organ/genital/G in target.internal_organs)
