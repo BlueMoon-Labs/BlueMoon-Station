@@ -5809,6 +5809,7 @@
 #include "modular_bluemoon\diona\code\diona_organs.dm"
 #include "modular_bluemoon\diona\code\diona_species.dm"
 #include "modular_bluemoon\fishing\code\aquarium.dm"
+#include "modular_bluemoon\fishing\code\cargo.dm"
 #include "modular_bluemoon\fishing\code\clothing.dm"
 #include "modular_bluemoon\fishing\code\compat.dm"
 #include "modular_bluemoon\fishing\code\core.dm"

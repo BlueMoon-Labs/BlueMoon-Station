@@ -335,6 +335,8 @@
 	name = "\improper Angler's Friend"
 	desc = "Всё, что нужно космическому рыбаку: от червей до аквариумов."
 	icon_state = "seeds"
+	circuit = /obj/item/circuitboard/machine/vendor/fishing
+	refill_canister = /obj/item/vending_refill/fishing
 	product_slogans = "Gone fishing!;The fish are biting today!;Don't forget your bait!;A bad day fishing beats a good day working!"
 	vend_reply = "Tight lines!"
 	product_categories = list(
@@ -419,7 +421,6 @@
 		/obj/item/storage/fish_case/bluespace = 2,
 		/obj/item/aquarium_kit/filled = 1,
 	)
-	refill_canister = null
 	default_price = PRICE_NORMAL
 	extra_price = PRICE_ABOVE_NORMAL
 	payment_department = ACCOUNT_SRV
