@@ -491,6 +491,7 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	damage = 0
 	icon_state = "toxin"
 	damage_type = TOX
+	flag = ACID
 
 /obj/item/projectile/terrorspider/process_hit(turf/T, atom/target, atom/bumped, hit_something = FALSE)
 	if(istype(target, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider))

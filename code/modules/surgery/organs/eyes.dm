@@ -43,6 +43,8 @@
 	. = ..()
 	if(!.)
 		return
+	if(!special)
+		M.set_blurriness(0)
 	switch(eye_damaged)
 		if(BLURRY_VISION_ONE, BLURRY_VISION_TWO)
 			owner.overlay_fullscreen("eye_damage", /atom/movable/screen/fullscreen/scaled/impaired, eye_damaged)

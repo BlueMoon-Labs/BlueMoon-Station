@@ -601,6 +601,7 @@
 #include "synthcorrupt_emitter.dm"
 #include "tank_idle_sleep.dm"
 #include "teleporters.dm"
+#include "terror_spider_venom.dm"
 #include "tgui_create_message.dm"
 #include "tgui_dev_asset_url.dm"
 #include "tgui_input_open_failure.dm"
