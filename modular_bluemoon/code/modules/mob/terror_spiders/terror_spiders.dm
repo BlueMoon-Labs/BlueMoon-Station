@@ -155,11 +155,13 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/update_sight(forced = TRUE)
 	. = ..()
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
 		sight |= SEE_MOBS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+	// Тепловизор ложится после базы: поля поверх зрения (таймстоп) должны сработать последними
+	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 	sync_lighting_plane_alpha()
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/get_status_tab_items()

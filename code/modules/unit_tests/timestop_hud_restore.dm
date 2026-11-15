@@ -174,14 +174,27 @@
 	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	corpse.set_hud_used(new /datum/hud/human(corpse))
 	corpse.death()
+	// Login после сигнала зовёт reset_perspective() -> update_sight(): у каждого вида свой оверрайд
+	var/list/mob/living/viewers = list(
+		victim,
+		allocate(/mob/living/silicon/robot, run_loc_floor_bottom_left),
+		allocate(/mob/living/simple_animal/hostile/carp, run_loc_floor_bottom_left),
+		allocate(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight, run_loc_floor_bottom_left),
+	)
+	for(var/mob/living/viewer as anything in viewers)
+		viewer.mock_client = new /datum/client_interface
 	var/obj/effect/timestop/field = make_timestop_field(victim)
 	TEST_ASSERT(field.chronofield.frozen_mobs.Find(corpse), "Sanity: труп в радиусе поля тоже замерзает")
 	TEST_ASSERT(!has_sepia_colour(victim), "Sanity: тело без клиента не красится до входа")
 
-	SEND_SIGNAL(victim, COMSIG_MOB_LOGIN)
+	for(var/mob/living/viewer as anything in viewers)
+		TEST_ASSERT(field.chronofield.frozen_mobs.Find(viewer), "Sanity: [viewer.type] в радиусе поля обязан замёрзнуть")
+		SEND_SIGNAL(viewer, COMSIG_MOB_LOGIN)
+		viewer.update_sight()
+		TEST_ASSERT(viewer.sight & BLIND, "Вошедший в замороженное тело [viewer.type] прозрел после пересчёта зрения")
+		TEST_ASSERT(!(viewer.sight & SEE_MOBS), "Вошедший в замороженное тело [viewer.type] видит мобов сквозь слепоту поля")
 	TEST_ASSERT(has_sepia_colour(victim), "Вошедший в замороженное тело видит живой мир без сепии")
 	TEST_ASSERT_EQUAL(victim.hud_used.hud_version, HUD_STYLE_NOHUD, "Вошедший в замороженное тело получил HUD")
-	TEST_ASSERT(victim.sight & BLIND, "Вошедший в замороженное тело не ослеп")
 
 	SEND_SIGNAL(corpse, COMSIG_MOB_LOGIN)
 	TEST_ASSERT(!has_sepia_colour(corpse), "Вошедшему в труп показали застывший мир")
@@ -190,9 +203,37 @@
 	qdel(field)
 	TEST_ASSERT(!has_sepia_colour(victim), "После поля на вошедшем осталась сепия")
 	TEST_ASSERT_EQUAL(victim.hud_used.hud_version, HUD_STYLE_STANDARD, "После поля вошедший остался без HUD")
+	for(var/mob/living/viewer as anything in viewers)
+		TEST_ASSERT(!(viewer.sight & BLIND), "После поля [viewer.type] остался слепым")
+		viewer.mock_client = null
 	// Предсмертный вздох трупа зовёт view(), а кэш его результата держит обоих до следующего вызова
 	qdel(victim)
 	qdel(corpse)
+	pass(view(0, run_loc_floor_top_right))
+
+/// Оживлённый внутри поля (дефибриллятор, лечение) застаёт застывший мир, как и замёрзший живым
+/datum/unit_test/timestop_revive_inside_field_shows_frozen_world
+
+/datum/unit_test/timestop_revive_inside_field_shows_frozen_world/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	victim.mock_client = new /datum/client_interface
+	victim.set_hud_used(new /datum/hud/human(victim))
+	victim.death()
+	var/obj/effect/timestop/field = make_timestop_field(victim)
+	TEST_ASSERT(!has_sepia_colour(victim), "Sanity: трупу в поле не показывают застывший мир")
+
+	victim.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT(victim.stat != DEAD, "Sanity: тело обязано ожить")
+	TEST_ASSERT(has_sepia_colour(victim), "Оживлённый в поле видит живой мир без сепии")
+	TEST_ASSERT_EQUAL(victim.hud_used.hud_version, HUD_STYLE_NOHUD, "Оживлённый в поле получил HUD")
+	TEST_ASSERT(victim.sight & BLIND, "Оживлённый в поле не ослеп")
+
+	qdel(field)
+	TEST_ASSERT(!has_sepia_colour(victim), "После поля на оживлённом осталась сепия")
+	TEST_ASSERT_EQUAL(victim.hud_used.hud_version, HUD_STYLE_STANDARD, "После поля оживлённый остался без HUD")
+	TEST_ASSERT(!(victim.sight & BLIND), "После поля оживлённый остался слепым")
+	victim.mock_client = null
+	qdel(victim)
 	pass(view(0, run_loc_floor_top_right))
 
 /// Очки и шлем пересчитывают зрение, но слепота застывшего мира держится до конца поля

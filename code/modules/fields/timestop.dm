@@ -194,6 +194,7 @@
 	walk(L, 0) //stops them mid pathing even if they're stunimmune
 	RegisterSignal(L, COMSIG_LIVING_DEATH, PROC_REF(on_frozen_death))
 	RegisterSignal(L, COMSIG_MOB_LOGIN, PROC_REF(on_frozen_login))
+	RegisterSignal(L, COMSIG_MOB_STATCHANGE, PROC_REF(on_frozen_stat_change))
 	if(L.client && L.stat != DEAD)
 		show_frozen_world(L)
 	if(isanimal(L))
@@ -213,7 +214,7 @@
 /datum/proximity_monitor/advanced/timestop/proc/unfreeze_mob(mob/living/L)
 	L.AdjustStun(-20, ignore_canstun = TRUE)
 	REMOVE_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
-	UnregisterSignal(L, list(COMSIG_LIVING_DEATH, COMSIG_MOB_LOGIN))
+	UnregisterSignal(L, list(COMSIG_LIVING_DEATH, COMSIG_MOB_LOGIN, COMSIG_MOB_STATCHANGE))
 	restore_live_world(L)
 	frozen_mobs -= L
 	if(isanimal(L))
@@ -279,6 +280,13 @@
 /datum/proximity_monitor/advanced/timestop/proc/on_frozen_login(mob/living/source)
 	SIGNAL_HANDLER
 	if(source.stat == DEAD)
+		return
+	show_frozen_world(source)
+
+/// Оживлённый в поле (труп в нём лежал или умер уже замороженным) снова видит застывший мир
+/datum/proximity_monitor/advanced/timestop/proc/on_frozen_stat_change(mob/living/source, new_stat, old_stat)
+	SIGNAL_HANDLER
+	if(old_stat != DEAD || new_stat == DEAD || !GET_CLIENT(source))
 		return
 	show_frozen_world(source)
 
