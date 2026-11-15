@@ -129,7 +129,7 @@
 		for(var/obj/item/hk51_part/part in container)
 			qdel(part)
 
-/// Раскладка раунда сработала на старте и не берёт контейнеры центкома и резерва; на станции - не больше одной части и только в техтоннелях.
+/// Раскладка раунда сработала на старте, разложила полный комплект и не берёт контейнеры центкома и резерва; на станции части только в техтоннелях, и больше одной - только когда не хватило ящиков руин.
 /datum/unit_test/hk51_scatter_off_station
 
 /datum/unit_test/hk51_scatter_off_station/Run()
@@ -140,14 +140,24 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT(scatter.scattered, "Раскладка не сработала на старте раунда")
 	TEST_ASSERT(length(scatter.market_listings) >= 1, "Раскладка раунда не выставила часть на рынок")
+	var/market_stock = 0
+	for(var/datum/blackmarket_item/listing as anything in scatter.market_listings)
+		market_stock += listing.stock
+	TEST_ASSERT_EQUAL(length(scatter.spawned_parts) + market_stock, HK51_PART_COUNT, "Раскладка раунда дала неполный комплект")
 	var/station_parts = 0
+	var/ruin_parts = 0
 	for(var/obj/item/hk51_part/part as anything in scatter.spawned_parts)
 		var/turf/part_turf = get_turf(part)
-		if(!is_station_level(part_turf.z))
+		TEST_ASSERT_NOTNULL(part_turf, "[part] лежит вне карты")
+		var/area/part_area = get_area(part)
+		if(is_station_level(part_turf.z))
+			station_parts++
+			TEST_ASSERT(istype(part_area, /area/maintenance), "[part] лежит на станции вне техтоннелей")
 			continue
-		station_parts++
-		TEST_ASSERT(istype(get_area(part), /area/maintenance), "[part] лежит на станции вне техтоннелей")
-	TEST_ASSERT(station_parts <= 1, "На станции больше одной части: [station_parts]")
+		TEST_ASSERT(hk51_named_ruin_area(part_area), "[part] лежит в безымянной зоне [part_area.type]")
+		if(!istype(part, /obj/item/hk51_part/motivator))
+			ruin_parts++
+			TEST_ASSERT(scatter.is_scatter_spot(part_turf), "[part] лежит в руине с гост-ролями: [part_area.type]")
 
 	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		TEST_ASSERT(!scatter.is_scatter_level(station_z), "Уровень станции [station_z] годится для частей")
@@ -165,7 +175,69 @@
 	for(var/obj/structure/closet/container as anything in collected)
 		var/turf/container_turf = get_turf(container)
 		TEST_ASSERT(scatter.is_scatter_level(container_turf.z), "[container] собран с уровня [container_turf.z]")
-		TEST_ASSERT(istype(get_area(container), /area/ruin), "[container] собран вне руин")
+		TEST_ASSERT(scatter.is_scatter_spot(container_turf), "[container] собран из безымянной зоны или руины с гост-ролями")
+	TEST_ASSERT(station_parts <= 1 || length(collected) <= ruin_parts, "На станции [station_parts] части, хотя ящики руин оставались свободны")
+
+/// Части кладутся только в руины с названием: не в «Unexplored Location» и не на базы гост-ролей - ни в зону спавнера, ни в соседние зоны той же базы, ни в рамку её шаблона.
+/datum/unit_test/hk51_scatter_named_ruins
+
+/datum/unit_test/hk51_scatter_named_ruins/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/turf/unnamed_spot = run_loc_floor_bottom_left
+	var/turf/spawner_spot = get_step(unnamed_spot, EAST)
+	var/turf/base_spot = get_step(spawner_spot, EAST)
+	var/turf/neighbour_spot = get_step(base_spot, EAST)
+	allocate(/datum/hk_factory_test_floor, unnamed_spot, /area/ruin)
+	allocate(/datum/hk_factory_test_floor, spawner_spot, /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge)
+	allocate(/datum/hk_factory_test_floor, base_spot, /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
+	allocate(/datum/hk_factory_test_floor, neighbour_spot, /area/ruin/lavaland/powered/graveyard_shuttle)
+
+	scatter.find_ghost_bases(list())
+	TEST_ASSERT(!scatter.is_scatter_spot(unnamed_spot), "Часть годится в безымянную зону руины")
+	TEST_ASSERT(scatter.is_scatter_spot(base_spot), "Часть не годится в названную руину без гост-ролей")
+	TEST_ASSERT(scatter.is_scatter_spot(neighbour_spot), "Часть не годится в названную руину без гост-ролей")
+
+	scatter.find_ghost_bases(list(spawner_spot))
+	TEST_ASSERT(!scatter.is_scatter_spot(spawner_spot), "Часть годится в зону гост-спавнера")
+	TEST_ASSERT(!scatter.is_scatter_spot(base_spot), "Часть годится в соседнюю зону той же базы гост-ролей")
+	TEST_ASSERT(scatter.is_scatter_spot(neighbour_spot), "Гост-спавнер закрыл чужую руину без общего шаблона")
+
+	var/datum/map_template/ruin/template = allocate(/datum/map_template/ruin)
+	template.width = 5
+	template.height = 1
+	allocate(/obj/effect/landmark/ruin, base_spot, template)
+	scatter.find_ghost_bases(list(spawner_spot))
+	TEST_ASSERT(!scatter.is_scatter_spot(neighbour_spot), "Часть годится в зону внутри шаблона руины с гост-спавнером")
+	qdel(scatter)
+
+/// Частям без ящика руины достаются другие шкафы техтоннелей станции; на рынке остаётся только плановая часть.
+/datum/unit_test/hk51_scatter_station_fallback
+
+/datum/unit_test/hk51_scatter_station_fallback/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/obj/structure/closet/ruin_crate = allocate(/obj/structure/closet)
+	var/list/maint_closets = list()
+	for(var/i in 1 to 4)
+		maint_closets += allocate(/obj/structure/closet)
+	var/list/placed = scatter.scatter(list(ruin_crate), null, maint_closets)
+	TEST_ASSERT_EQUAL(length(placed), HK51_PART_COUNT, "Раскладка разложила не пять частей")
+	var/market_count = 0
+	var/list/used = list()
+	for(var/part_type in placed)
+		var/place = placed[part_type]
+		if(place == HK51_PLACE_BLACK_MARKET)
+			market_count++
+			continue
+		TEST_ASSERT(!(place in used), "Две части легли в один контейнер")
+		used += place
+		TEST_ASSERT_NOTNULL(locate(part_type) in place, "[part_type] не лежит в своём контейнере")
+	TEST_ASSERT_EQUAL(market_count, 1, "Части без ящика руины ушли на рынок, хотя шкафы техтоннелей оставались")
+	TEST_ASSERT(ruin_crate in used, "Ящик руины остался пустым")
+	TEST_ASSERT_EQUAL(length(scatter.spawned_parts), HK51_PART_COUNT - 1, "Раскладчик помнит не все созданные части")
+	qdel(scatter)
+	for(var/obj/structure/closet/container as anything in maint_closets + ruin_crate)
+		for(var/obj/item/hk51_part/part in container)
+			qdel(part)
 
 /// Найденные части называют место следующей, а лот рынка - место одной из разложенных.
 /datum/unit_test/hk51_scatter_trail

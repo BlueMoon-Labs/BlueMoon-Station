@@ -76,6 +76,8 @@
 #define HK51_PLACE_BLACK_MARKET "black_market"
 /// Контейнеры руин, в которые части HK-51 не кладутся: тайник может взорваться или улететь.
 #define HK51_EXCLUDED_CONTAINERS list(/obj/structure/closet/crate/secure/loot, /obj/structure/closet/supplypod)
+/// Уровни, где части HK-51 лежат в руинах: космос у станции, лаваленд и ледяная луна.
+#define HK51_SCATTER_LEVEL_TRAITS list(ZTRAIT_SPACE_RUINS, ZTRAIT_LAVA_RUINS, ZTRAIT_LAVA_JUNGLE_RUINS, ZTRAIT_ICE_RUINS, ZTRAIT_ICE_RUINS_UNDERGROUND, ZTRAIT_MINING)
 #define HK51_NAME "HK-51"
 #define HK51_ASSIGNMENT "HK-51 Assassin Droid"
 #define HK51_PART_COUNT 5

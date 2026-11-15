@@ -1,6 +1,6 @@
 GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 
-/// Раскладывает части HK-51 на старте раунда: мотиватор на фабрику HK, одну часть на чёрный рынок, одну в шкаф техтоннелей станции, остальные по ящикам руин вне станции.
+/// Раскладывает части HK-51 на старте раунда: мотиватор на фабрику HK, одну часть на чёрный рынок, одну в шкаф техтоннелей станции, остальные по ящикам названных руин без гост-ролей; не хватит ящиков - в другие шкафы техтоннелей.
 /datum/hk51_part_scatter
 	/// Части на учёте раскладчика: разложенные и купленные на рынке. Пропавшая снова выставляется на рынок.
 	var/list/obj/item/hk51_part/spawned_parts = list()
@@ -8,6 +8,10 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	var/list/datum/blackmarket_item/market_listings = list()
 	/// Раскладка раунда закончена.
 	var/scattered = FALSE
+	/// Семейства зон руин с гост-ролями: туда части не кладутся.
+	var/list/ghost_families = list()
+	/// Рамки шаблонов руин с гост-ролями: list(x1, y1, x2, y2, z).
+	var/list/ghost_frames = list()
 
 /datum/hk51_part_scatter/New()
 	. = ..()
@@ -32,8 +36,10 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 
 /datum/hk51_part_scatter/proc/scatter_round_parts()
 	var/list/containers = collect_containers()
+	var/list/station_containers = collect_station_containers()
 	var/obj/effect/landmark/hk51_part_spot/factory/factory_landmark = locate() in GLOB.landmarks_list
-	var/list/placed = scatter(containers, get_turf(factory_landmark), collect_station_containers())
+	log_game("Раскладка HK-51: ящиков в руинах [length(containers)], шкафов техтоннелей [length(station_containers)], фабрика [factory_landmark ? "есть" : "не загружена"].")
+	var/list/placed = scatter(containers, get_turf(factory_landmark), station_containers)
 	for(var/obj/item/hk51_part/part_type as anything in placed)
 		var/atom/place = placed[part_type]
 		if(place == HK51_PLACE_BLACK_MARKET)
@@ -44,11 +50,12 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 			log_game("Раскладка HK-51: [initial(part_type.name)] не разложен - чёрного рынка нет.")
 	scattered = TRUE
 
-/// Раскладывает пять частей и возвращает тип части -> контейнер, турф или HK51_PLACE_BLACK_MARKET. Мотиватор - в шкаф на точке фабрики, без шкафа - на пол.
+/// Раскладывает пять частей и возвращает тип части -> контейнер, турф или HK51_PLACE_BLACK_MARKET. Мотиватор - в шкаф на точке фабрики, без шкафа - на пол. Частям без ящика руины достаются другие шкафы техтоннелей, рынок - только если и их нет.
 /datum/hk51_part_scatter/proc/scatter(list/containers, turf/factory_spot, list/station_containers)
 	var/list/placed = list()
 	var/list/parts = list()
 	var/list/remaining = shuffle(subtypesof(/obj/item/hk51_part))
+	station_containers = length(station_containers) ? shuffle(station_containers) : list()
 	if(factory_spot)
 		var/obj/structure/closet/stash = locate() in factory_spot
 		containers = containers - stash
@@ -62,16 +69,22 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	if(length(station_containers))
 		var/station_part = pick(remaining - /obj/item/hk51_part/motivator)
 		remaining -= station_part
-		var/obj/structure/closet/station_container = pick(station_containers)
+		var/obj/structure/closet/station_container = station_containers[1]
+		station_containers.Cut(1, 2)
 		parts[station_part] = spawn_part(station_part, station_container)
 		placed[station_part] = station_container
 	var/list/targets = spread_over_levels(containers, length(remaining))
 	for(var/part_type in remaining)
-		if(!length(targets))
+		var/obj/structure/closet/container
+		if(length(targets))
+			container = targets[1]
+			targets.Cut(1, 2)
+		else if(length(station_containers))
+			container = station_containers[1]
+			station_containers.Cut(1, 2)
+		if(!container)
 			placed[part_type] = list_on_market(part_type)
 			continue
-		var/obj/structure/closet/container = targets[1]
-		targets.Cut(1, 2)
 		parts[part_type] = spawn_part(part_type, container)
 		placed[part_type] = container
 	lay_trail(placed, parts)
@@ -183,10 +196,13 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	market_listings += listing
 	return listing
 
-/// Все закрытые шкафы и ящики руин вне станции, центкома и резерва.
+/// Все закрытые шкафы и ящики названных руин в космосе, на лаваленде и ледяной луне, кроме руин с гост-ролями.
 /datum/hk51_part_scatter/proc/collect_containers()
+	find_ghost_bases()
 	var/list/containers = list()
 	for(var/area/ruin/ruin_area in GLOB.all_areas)
+		if(!hk51_named_ruin_area(ruin_area) || ghost_families[hk51_ruin_family(ruin_area.type)])
+			continue
 		for(var/obj/structure/closet/container in ruin_area)
 			if(is_valid_container(container))
 				containers += container
@@ -197,9 +213,46 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	if(container.opened || is_type_in_list(container, HK51_EXCLUDED_CONTAINERS))
 		return FALSE
 	var/turf/container_turf = container.loc
-	if(!isturf(container_turf) || !istype(container_turf.loc, /area/ruin))
+	return isturf(container_turf) && is_scatter_level(container_turf.z) && is_scatter_spot(container_turf)
+
+/// Турф в зоне руины с названием, вне руин с гост-ролями.
+/datum/hk51_part_scatter/proc/is_scatter_spot(turf/spot)
+	var/area/ruin/ruin_area = spot.loc
+	if(!hk51_named_ruin_area(ruin_area) || ghost_families[hk51_ruin_family(ruin_area.type)])
 		return FALSE
-	return is_scatter_level(container_turf.z)
+	for(var/list/frame as anything in ghost_frames)
+		if(spot.z == frame[5] && spot.x >= frame[1] && spot.x <= frame[3] && spot.y >= frame[2] && spot.y <= frame[4])
+			return FALSE
+	return TRUE
+
+/// Запоминает руины с гост-ролями: семейство зоны каждого спавнера и рамку шаблона руины, в которой он стоит.
+/datum/hk51_part_scatter/proc/find_ghost_bases(list/spawner_turfs = ghost_spawner_turfs())
+	ghost_families = list()
+	ghost_frames = list()
+	for(var/turf/spawner_turf as anything in spawner_turfs)
+		var/area/ruin/ruin_area = spawner_turf.loc
+		if(!istype(ruin_area))
+			continue
+		ghost_families[hk51_ruin_family(ruin_area.type)] = TRUE
+		for(var/obj/effect/landmark/ruin/ruin_mark as anything in GLOB.ruin_landmarks)
+			var/datum/map_template/ruin/template = ruin_mark.ruin_template
+			if(!template || ruin_mark.z != spawner_turf.z)
+				continue
+			var/x1 = ruin_mark.x - round(template.width / 2)
+			var/y1 = ruin_mark.y - round(template.height / 2)
+			var/x2 = x1 + template.width - 1
+			var/y2 = y1 + template.height - 1
+			if(spawner_turf.x >= x1 && spawner_turf.x <= x2 && spawner_turf.y >= y1 && spawner_turf.y <= y2)
+				ghost_frames += list(list(x1, y1, x2, y2, ruin_mark.z))
+
+/datum/hk51_part_scatter/proc/ghost_spawner_turfs()
+	var/list/turfs = list()
+	for(var/role in GLOB.mob_spawners)
+		for(var/atom/spawner as anything in GLOB.mob_spawners[role])
+			var/turf/spawner_turf = get_turf(spawner)
+			if(spawner_turf)
+				turfs |= spawner_turf
+	return turfs
 
 /// Закрытые шкафы техтоннелей станции: с найденной там части начинается след к остальным.
 /datum/hk51_part_scatter/proc/collect_station_containers()
@@ -218,7 +271,22 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	return isturf(container_turf) && istype(container_turf.loc, /area/maintenance) && is_station_level(container_turf.z)
 
 /datum/hk51_part_scatter/proc/is_scatter_level(z)
-	return !is_station_level(z) && !is_centcom_level(z) && !is_reserved_level(z)
+	if(is_station_level(z) || is_centcom_level(z) || is_reserved_level(z))
+		return FALSE
+	return SSmapping.level_has_any_trait(z, HK51_SCATTER_LEVEL_TRAITS)
+
+/// Безымянная зона руины - «Unexplored Location»: по такому названию место не найти.
+/proc/hk51_named_ruin_area(area/ruin/ruin_area)
+	return istype(ruin_area) && ruin_area.name != /area/ruin::name
+
+/// Верхний предок зоны руины со своим названием: зоны одной базы делят семейство.
+/proc/hk51_ruin_family(area/ruin/ruin_type)
+	var/family = ruin_type
+	var/area/ruin/parent = type2parent(ruin_type)
+	while(parent != /area/ruin && ispath(parent, /area/ruin) && initial(parent.name) != /area/ruin::name)
+		family = parent
+		parent = type2parent(parent)
+	return family
 
 /// Подсказка о месте части: зона и сектор, либо чёрный рынок.
 /proc/hk51_place_hint(place)
