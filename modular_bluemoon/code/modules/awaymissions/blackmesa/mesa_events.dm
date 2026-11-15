@@ -186,6 +186,11 @@
 	category = EVENT_CATEGORY_INVASION
 	min_difficulty_level = 1
 
+/datum/round_event/blackmesa/power_outage
+	var/list/pending_areas = list()
+	var/list/restore_areas = list()
+	var/list/outage_lights = list()
+
 /datum/round_event/blackmesa/power_outage/start()
 	var/list/areas = get_mesa_areas()
 	if(!areas.len)
@@ -194,44 +199,67 @@
 	if(SSblackmesa_events)
 		SSblackmesa_events.mesa_announce("Внимание! Зафиксирован критический сбой в энергосети Сектора H. Ожидаемое время восстановления: 60 секунд.", "Power Grid Failure", 'modular_bluemoon/sound/ambience/mesa/lightoff.ogg')
 
-	for(var/area/A in areas)
-		A.power_light = FALSE
-		A.power_equip = FALSE
-		A.power_environ = FALSE
-		A.lightswitch = FALSE
-		A.power_change()
-		addtimer(CALLBACK(src, PROC_REF(restore_power), A), 600)
+	// Гасим по одной зоне за тик: power_change() рассылает COMSIG_AREA_POWER_CHANGE
+	// всем машинам области, и все области Сектора H разом - это 60+ мс в одном тике.
+	pending_areas = areas
+	restore_areas = areas.Copy()
+	collect_outage_lights(areas)
+	power_outage_step()
 
-	addtimer(CALLBACK(src, PROC_REF(restore_all_light_charges)), 600)
 	addtimer(CALLBACK(src, PROC_REF(announce_restoration)), 600)
 
-/datum/round_event/blackmesa/power_outage/proc/announce_restoration()
-	if(SSblackmesa_events)
-		SSblackmesa_events.mesa_announce("Внимание! Энергоснабжение Сектора H восстановлено. Все системы функционируют в штатном режиме.", "Power Restored", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
-
-/datum/round_event/blackmesa/power_outage/proc/restore_power(area/A)
-	if(!A)
+/datum/round_event/blackmesa/power_outage/proc/power_outage_step()
+	if(!pending_areas.len)
 		return
+	var/area/A = pending_areas[1]
+	pending_areas -= A
+	A.power_light = FALSE
+	A.power_equip = FALSE
+	A.power_environ = FALSE
+	A.lightswitch = FALSE
+	A.power_change()
+	if(pending_areas.len)
+		addtimer(CALLBACK(src, PROC_REF(power_outage_step)), 1)
+	else
+		addtimer(CALLBACK(src, PROC_REF(restore_power_step)), 600)
+
+/datum/round_event/blackmesa/power_outage/proc/restore_power_step()
+	if(!restore_areas.len)
+		return
+	var/area/A = restore_areas[1]
+	restore_areas -= A
 	A.power_light = TRUE
 	A.power_equip = TRUE
 	A.power_environ = TRUE
 	A.lightswitch = TRUE
 	A.power_change()
+	if(restore_areas.len)
+		addtimer(CALLBACK(src, PROC_REF(restore_power_step)), 1)
+	else
+		restore_all_light_charges()
 
-// Recharge all Mesa light fixtures in a single GLOB.machines pass instead of
-// iterating every turf x contents of every Mesa area per area.
-/datum/round_event/blackmesa/power_outage/proc/restore_all_light_charges()
-	if(!GLOB.machines)
-		return
+/datum/round_event/blackmesa/power_outage/proc/announce_restoration()
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("Внимание! Энергоснабжение Сектора H восстановлено. Все системы функционируют в штатном режиме.", "Power Restored", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
+
+// Светильники собираем одним проходом по machines_by_type - только
+// /obj/machinery/light и подтипы, вместо скана всех 35к машин станции в GLOB.machines.
+/datum/round_event/blackmesa/power_outage/proc/collect_outage_lights(list/areas)
 	var/lookup = alist()
-	for(var/area/A in get_mesa_areas())
+	for(var/area/A in areas)
 		lookup[A] = TRUE
-	for(var/obj/machinery/light/L in GLOB.machines)
-		if(!L.cell || !L.cell.maxcharge)
+	for(var/obj/machinery/light/L in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/light))
+		if(QDELETED(L) || !L.cell || !L.cell.maxcharge)
 			continue
 		var/area/LA = get_area(L)
 		if(LA && lookup[LA])
+			outage_lights += L
+
+/datum/round_event/blackmesa/power_outage/proc/restore_all_light_charges()
+	for(var/obj/machinery/light/L as anything in outage_lights)
+		if(!QDELETED(L) && L.cell && L.cell.maxcharge)
 			L.cell.charge = L.cell.maxcharge
+	outage_lights.Cut()
 
 // Event 2: Sandstorm (Cosmetic)
 /datum/round_event_control/blackmesa/sandstorm
@@ -261,6 +289,7 @@
 
 /datum/round_event/blackmesa/lockdown
 	var/list/locked_doors = list()
+	var/list/pending_doors = list()
 	var/lockdown_duration = 0
 
 /datum/round_event/blackmesa/lockdown/start()
@@ -272,25 +301,44 @@
 	if(!areas.len)
 		return
 
-	// Scan GLOB.machines/GLOB.airlocks once instead of iterating every turf
-	// and its contents across the whole mission.
+	// Шлюзы берём из SSmachines по типу: один проход по machines_by_type
+	// вместо скана GLOB.machines + GLOB.airlocks (десятки тысяч машин станции).
+	// /obj/machinery/door/poddoor - не подтип airlock, "поддвери" в выборку
+	// не попадают и не трогаются.
 	var/lookup = alist()
 	for(var/area/A in areas)
 		lookup[A] = TRUE
-	for(var/list/machine_list in list(GLOB.machines, GLOB.airlocks))
-		for(var/obj/machinery/door/D in machine_list)
-			if(!D || QDELETED(D) || D.locked)
-				continue
-			var/area/A = get_area(D)
-			if(!A || !lookup[A])
-				continue
-			D.locked = TRUE
-			D.update_icon()
-			locked_doors += D
+	for(var/obj/machinery/door/airlock/D in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock))
+		if(QDELETED(D) || D.locked)
+			continue
+		var/area/A = get_area(D)
+		if(A && lookup[A])
+			pending_doors += D
 
+	bolt_doors_step()
 	addtimer(CALLBACK(src, PROC_REF(end_lockdown)), lockdown_duration)
 
+// Болтим пачками по таймеру, как spawn_wave_step у зомби-директора - не вешаем
+// update_icon() сотен дверей в один тик.
+/datum/round_event/blackmesa/lockdown/proc/bolt_doors_step()
+	if(!pending_doors.len)
+		return
+	var/batch = min(rand(10, 20), pending_doors.len)
+	for(var/i in 1 to batch)
+		var/obj/machinery/door/airlock/D = pending_doors[1]
+		pending_doors -= D
+		if(QDELETED(D) || D.locked)
+			continue
+		D.locked = TRUE
+		D.update_icon()
+		locked_doors += D
+	if(pending_doors.len)
+		addtimer(CALLBACK(src, PROC_REF(bolt_doors_step)), 1)
+
 /datum/round_event/blackmesa/lockdown/proc/end_lockdown()
+	// Если локдаун кончился раньше, чем долетела очередь болтов - не даём
+	// запоздавшим шагам закрыть двери после "Lockdown Ended".
+	pending_doors.Cut()
 	for(var/obj/machinery/door/D in locked_doors)
 		if(!QDELETED(D))
 			D.locked = FALSE

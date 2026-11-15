@@ -11,7 +11,20 @@
 
 /turf/closed/mineral/mesarock/Initialize(mapload)
 	. = ..()
-	RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
+	// Сердцевина скалы (все 8 соседей - та же mesarock) никогда не видна
+	// и не доступна: убираем TURF_DYNAMIC_LIGHTING, чтобы на ней не создавался
+	// lighting_object (17к штук на мёртвой скале жрали ~130 МБ), и не вешаем
+	// сигнал телепорта - NOTELEPORT зоны гейта и так режет телепортацию в мезу.
+	// Краевая скала (есть не-скальный сосед) свет и сигнал сохраняет.
+	var/edge_rock = FALSE
+	for(var/dir in GLOB.alldirs)
+		if(!istype(get_step(src, dir), /turf/closed/mineral/mesarock))
+			edge_rock = TRUE
+			break
+	if(edge_rock)
+		RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
+	else
+		turf_flags &= ~TURF_DYNAMIC_LIGHTING
 
 /turf/closed/mineral/mesarock/proc/block_teleport(datum/source, channel, turf/origin, turf/destination)
 	SIGNAL_HANDLER

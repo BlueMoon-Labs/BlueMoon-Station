@@ -390,6 +390,10 @@
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
+// Все особые ксено-пилоны саморегистрируются здесь - испытаниям Нихиланта
+// не нужен проход по world (сотни тысяч атомов) ради горстки пилонов.
+GLOBAL_VAR_INIT(nihilanth_pylons, list())
+
 // Особый подвид ксено-пилона: aegis-щит для ЛЮБОГО живого существа в радиусе
 // (игроки получают xen_aegis, блокирующий apply_damage), а не только для ксеномобов.
 // Используется в испытаниях Нихиланта: пока пилон жив - щит держится, как у
@@ -407,6 +411,7 @@
 
 /obj/structure/xen_pylon/nihilanth/Initialize(mapload)
 	. = ..()
+	GLOB.nihilanth_pylons += src
 	// Родительский цикл регистрирует только ксеномобов через register_mob -
 	// для остальных живых существ в радиусе делаем свой проход.
 	for(var/mob/living/M in range(shield_range, src))
@@ -468,6 +473,7 @@
 			remove_aegis(iterating_mob)
 
 /obj/structure/xen_pylon/nihilanth/Destroy()
+	GLOB.nihilanth_pylons -= src
 	for(var/mob/living/iterating_mob as anything in aegis_mobs)
 		remove_aegis(iterating_mob)
 	aegis_mobs = null

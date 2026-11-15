@@ -70,6 +70,11 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(!mission_areas || !mission_areas.len)
 		return
 
+	// Не крутим события на пустую мезу: без живых игроков в гейте любой
+	// ивент (локаутдаун, блэкаут, орды) - это таймеры и сканы машин впустую.
+	if(!mesa_has_living_players())
+		return
+
 	if(!length(event_controls))
 		return
 
@@ -121,6 +126,24 @@ SUBSYSTEM_DEF(blackmesa_events)
 				if(T.z && !(T.z in cached_mission_zlevels))
 					cached_mission_zlevels += T.z
 	return cached_mission_zlevels
+
+// Есть ли живой игрок на месе: внутри area/awaymission/ihategordon или на
+// любом z-уровне миссии (на /area/space турфах - тамбур, скалы - ивентовые
+// area не покрывают, поэтому z-фолбэк как в mesa_announce).
+/datum/controller/subsystem/blackmesa_events/proc/mesa_has_living_players()
+	var/list/mission_zs = mesa_mission_zlevels()
+	for(var/mob/M in GLOB.player_list)
+		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD)
+			continue
+		var/area/A = get_area(M)
+		if(!A)
+			continue
+		var/turf/MT = get_turf(M)
+		if(!MT)
+			continue
+		if(istype(A, /area/awaymission/ihategordon) || (MT.z in mission_zs))
+			return TRUE
+	return FALSE
 
 /datum/controller/subsystem/blackmesa_events/proc/mesa_announce(text, title = "", sound = null, excluded_faction = null)
 	if(!text)

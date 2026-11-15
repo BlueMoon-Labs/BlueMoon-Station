@@ -174,12 +174,16 @@
 		return
 	// Сначала ищем площадку - без неё испытание не начинаем,
 	// иначе босс застрял бы в неуязвимости навсегда.
-	var/list/site_and_pylon = pick_trial_site()
-	if(!site_and_pylon)
+	var/site_and_pylon = pick_trial_site()
+	if(!islist(site_and_pylon) || length(site_and_pylon) < 2)
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return
-	var/turf/site = site_and_pylon[1]
-	trial_pylon = site_and_pylon[2]
+	var/site = site_and_pylon[1]
+	var/pylon = site_and_pylon[2]
+	if(!istype(site, /turf) || !istype(pylon, /obj/structure/xen_pylon/nihilanth))
+		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
+		return
+	trial_pylon = pylon
 	used_sites += site
 	trial_pylon.used = TRUE
 	trial_pylon.trial_active = TRUE
@@ -207,33 +211,33 @@
 // Фолбэк - любой неиспользованный особый пилон на карте (лендмарк не нужен,
 // точкой прибытия станет турф самого пилона).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/pick_trial_site()
+	// Свободные пилоны берём из реестра GLOB.nihilanth_pylons (пилоны
+	// саморегистрируются в Initialize) - без прохода по world.
+	var/list/free_pylons = list()
+	for(var/obj/structure/xen_pylon/nihilanth/P in GLOB.nihilanth_pylons)
+		if(P && !QDELETED(P) && !P.used)
+			free_pylons += P
 	var/list/options = list()
 	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in GLOB.landmarks_list)
 		var/turf/T = get_turf(L)
 		if(!istype(T) || !isopenturf(T) || (T in used_sites))
 			continue
-		var/obj/structure/xen_pylon/nihilanth/P = find_trial_pylon(T)
-		if(istype(P))
-			options += list(T, P)
+		for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
+			var/turf/PT = get_turf(P)
+			if(istype(PT) && PT.z == T.z)
+				// += для списков - конкатенация: list(T, P) лег бы в options
+				// как два отдельных атома, и pick() возвращал турф/пилон вместо
+				// пары (runtime "list index out of bounds" в start_trial).
+				options["[options.len + 1]"] = list(T, P)
+				break
 	if(!options.len)
-		for(var/obj/structure/xen_pylon/nihilanth/P in world)
-			if(P.used)
-				continue
+		for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
 			var/turf/T = get_turf(P)
 			if(istype(T))
-				options += list(T, P)
+				options["[options.len + 1]"] = list(T, P)
 	if(!options.len)
 		return null
 	return pick(options)
-
-/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/find_trial_pylon(turf/T)
-	for(var/obj/structure/xen_pylon/nihilanth/P in world)
-		if(P.used)
-			continue
-		var/turf/PT = get_turf(P)
-		if(istype(PT) && PT.z == T.z)
-			return P
-	return null
 
 // Вызывается особым пилоном при своём Destroy: открывает обратный разлом
 // на арене босса и возвращает ему уязвимость.

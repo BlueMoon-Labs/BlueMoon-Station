@@ -84,9 +84,9 @@
 	vis_contents.Cut()
 	visibilityChanged()
 
-	if(flags_1 & INITIALIZED_1)
-		stack_trace("Warning: [src]([type]) initialized multiple times!")
-	flags_1 |= INITIALIZED_1
+	// Проверку INITIALIZED_1 делает родительский /turf/Initialize - свой
+	// флаг здесь уже поднят ею, поэтому локальная проверка врала бы
+	// "initialized multiple times" на каждом создании чазма.
 
 	// То же смещение плоскостей, что и у /turf/open/space/ihategordon -
 	// чазм меняет тип турфа на месте, терять его нельзя.
@@ -126,6 +126,12 @@
 	ComponentInitialize()
 
 	return INITIALIZE_HINT_NORMAL
+
+// ChangeTurf на этот тип может оставить атом в очереди SSobj - process()
+// у чазма нет, заглушка гасит вызов вместо undefined proc.
+/turf/open/chasm/ihategordon_invisible/process()
+	STOP_PROCESSING(SSobj, src)
+	return
 
 /turf/open/chasm/ihategordon_invisible/proc/block_teleport(datum/source, channel, turf/origin, turf/destination)
 	SIGNAL_HANDLER
