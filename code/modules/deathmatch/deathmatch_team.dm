@@ -9,7 +9,7 @@
 //
 // The kits are team aware: each round hands out one pair of loadouts, one per
 // side, so both teams get the same weapon family but each gets its own version
-// of it. Nobody picks; the rotation picks for them.
+// of it. Nobody picks; the random preset pool picks for them.
 //
 // The map template selects it through /datum/map_template/deathmatch/lobby_type.
 
@@ -42,32 +42,67 @@
 	var/team_two_score = 0
 	var/team_one_name = "Terrorists"
 	var/team_two_name = "Counter-Terrorists"
-	/// Kits are handed out automatically, one pair per round, in this order.
-	/// Each entry is a pair: the first path goes to TDM_TEAM_ALPHA, the second to
-	/// TDM_TEAM_BRAVO. Rounds cycle through the list, so a match that goes the
-	/// full five rounds shows every entry exactly once.
-	var/list/loadout_rotation = list(
-		list(
-			/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_terror,
-			/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_counter,
+	/// Minimum number of fighters each side needs before a match may start. One
+	/// is enough for a duel, but a team with nobody on it is not a match, so a
+	/// lone player waiting in the lobby cannot start it alone.
+	var/min_team_size = 1
+	/// The five round presets. Each pair contains the Terrorist kit first and the
+	/// Counter-Terrorist kit second, so the two sides can be equipped separately.
+	var/list/loadout_presets = list(
+		"Knives" = list(
+			/datum/outfit/vr/deathmatch_loadout/tdm_knives_terror,
+			/datum/outfit/vr/deathmatch_loadout/tdm_knives_counter,
 		),
-		list(
-			/datum/outfit/vr/deathmatch_loadout/tdm_pistol_terror,
-			/datum/outfit/vr/deathmatch_loadout/tdm_pistol_counter,
-		),
-		list(
-			/datum/outfit/vr/deathmatch_loadout/tdm_deagle,
-			/datum/outfit/vr/deathmatch_loadout/tdm_deagle,
-		),
-		list(
+		"Sniper rifles" = list(
 			/datum/outfit/vr/deathmatch_loadout/tdm_sniper_terror,
 			/datum/outfit/vr/deathmatch_loadout/tdm_sniper_counter,
 		),
-		list(
-			/datum/outfit/vr/deathmatch_loadout/tdm_knives,
-			/datum/outfit/vr/deathmatch_loadout/tdm_knives,
+		"Pump shotguns" = list(
+			/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_terror,
+			/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_counter,
+		),
+		"Pistols" = list(
+			/datum/outfit/vr/deathmatch_loadout/tdm_pistol_terror,
+			/datum/outfit/vr/deathmatch_loadout/tdm_pistol_counter,
+		),
+		"Assault rifles" = list(
+			/datum/outfit/vr/deathmatch_loadout/tdm_assault_terror,
+			/datum/outfit/vr/deathmatch_loadout/tdm_assault_counter,
 		),
 	)
+	/// Presets which have not been drawn yet this match. Drawing a preset removes
+	/// it from this list, so no weapon family can appear twice in one match.
+	var/list/remaining_loadout_presets = list()
+	/// Names of presets already used, kept for diagnostics.
+	var/list/played_loadout_presets = list()
+	/// The preset equipping the current round, or the upcoming one while waiting.
+	var/current_loadout_preset
+	var/next_loadout_preset
+
+	/// The single C4 issued to a random Terrorist each round.
+	var/obj/item/deathmatch_c4/round_bomb
+	var/bomb_planted = FALSE
+	var/bomb_site
+
+/datum/deathmatch_lobby/team_deathmatch/New(...)
+	. = ..()
+	reset_loadout_presets()
+
+/// Builds a fresh random-without-replacement pool for a new lobby.
+/datum/deathmatch_lobby/team_deathmatch/proc/reset_loadout_presets()
+	remaining_loadout_presets = loadout_presets.Copy()
+	played_loadout_presets = list()
+	current_loadout_preset = null
+	next_loadout_preset = draw_loadout_preset()
+
+/// Removes and returns one random remaining preset name, or null when all five
+/// have already been drawn. Removed presets are never returned to the pool.
+/datum/deathmatch_lobby/team_deathmatch/proc/draw_loadout_preset()
+	if(!length(remaining_loadout_presets))
+		return null
+	var/picked = pick(remaining_loadout_presets)
+	remaining_loadout_presets -= picked
+	return picked
 
 /datum/deathmatch_lobby/team_deathmatch/to_string()
 	return "Team Deathmatch lobby (host [host_key], [player_count()] player(s), round [round_number])"
@@ -93,6 +128,20 @@
 		if(player.team == team)
 			count++
 	return count
+
+/**
+ * The TDM override of the base requirement.
+ *
+ * The base lobby only counts bodies, so two players sitting on the same side
+ * would satisfy it. TDM additionally requires min_team_size fighters on each
+ * side, which with the default of one means a duel at minimum and a full side
+ * for anybody who joins later.
+ */
+/datum/deathmatch_lobby/team_deathmatch/players_needed()
+	var/short = 0
+	for(var/team in list(TDM_TEAM_ALPHA, TDM_TEAM_BRAVO))
+		short += max(0, min_team_size - team_member_count(team))
+	return max(short, ..())
 
 /// Fighters on a team who are still standing in the current round.
 /datum/deathmatch_lobby/team_deathmatch/proc/team_alive_count(team)
@@ -141,29 +190,23 @@
 // Round start and loadouts.
 //
 
-/// The pair of kits for a 1-based round number. Rounds cycle through
-/// loadout_rotation, so the same pair comes back around if a match outlives the
-/// list.
-/datum/deathmatch_lobby/team_deathmatch/proc/get_round_kits(round = null)
-	if(!length(loadout_rotation))
+/// The kit pair for the live round, or the already drawn upcoming pair while
+/// the lobby is waiting or between rounds. The upcoming pair is drawn only once,
+/// so repeated TGUI refreshes cannot reroll it.
+/datum/deathmatch_lobby/team_deathmatch/proc/get_round_kits()
+	var/preset = round_live ? current_loadout_preset : next_loadout_preset
+	if(isnull(preset))
 		return null
-	var/wanted_round = isnull(round) ? (round_live ? round_number : round_number + 1) : round
-	wanted_round = max(wanted_round, 1)
-	return loadout_rotation[(wanted_round - 1) % length(loadout_rotation) + 1]
+	return loadout_presets[preset]
 
 /**
- * The kit one team gets for a round.
+ * The kit one team gets for the current or upcoming round.
  *
- * `round` defaults to the round that is running, or the next one if none is, so
- * the roster before the first round and the announcement when a round starts
- * both agree on what is coming. `team` defaults to the Terrorist side.
- *
- * A rotation entry is a pair of paths. A lone path is also accepted, which is
- * what a hand-written rotation or a map-specific override would look like, and
- * is handed to both teams.
+ * A preset entry is a pair of paths: Terrorists first, Counter-Terrorists
+ * second. A lone path is also accepted for custom presets and is given to both.
  */
-/datum/deathmatch_lobby/team_deathmatch/proc/get_round_loadout(round = null, team = TDM_TEAM_ALPHA)
-	var/list/kits = get_round_kits(round)
+/datum/deathmatch_lobby/team_deathmatch/proc/get_round_loadout(team = TDM_TEAM_ALPHA)
+	var/list/kits = get_round_kits()
 	if(!islist(kits))
 		return template?.loadout
 	if(length(kits) == 1)
@@ -181,8 +224,8 @@
 	return kits
 
 /datum/deathmatch_lobby/team_deathmatch/ui_act(action, list/params, ui_obj, datum/ui_state/tgui_state)
-	// Kits are handed out by the round rotation. Letting somebody pick one here
-	// would only last until the round starts.
+	// Kits are handed out by the random round preset. Letting somebody pick one
+	// here would only last until the round starts.
 	if(action == "select_loadout")
 		return FALSE
 	return ..()
@@ -288,6 +331,19 @@
 	if(isnull(arena) || !arena.is_loaded())
 		log_game("Deathmatch: [to_string()] cannot start round [round_number + 1]: arena is not loaded.")
 		return FALSE
+	if(isnull(next_loadout_preset))
+		// Five presets means at most five rounds, including draws. Never refill
+		// the pool mid-match: that would make a repeated weapon family possible.
+		if(round_number > 0)
+			finish_match()
+		return FALSE
+
+	clear_round_bomb()
+	current_loadout_preset = next_loadout_preset
+	played_loadout_presets += current_loadout_preset
+	// Draw the following round now, so the intermission roster shows a stable
+	// preview and this preset is already out of the random pool.
+	next_loadout_preset = draw_loadout_preset()
 
 	round_number++
 	round_live = TRUE
@@ -315,6 +371,7 @@
 			log_game("Deathmatch: [to_string()] could not seat its host for round 1.")
 			return FALSE
 
+	give_round_bomb()
 	announce_to_players(span_boldnotice("Round [round_number] of [rounds_to_win * 2 - 1] begins. Kits: [round_kits_label()]."))
 	announce_to_players(span_notice("Both teams can slip bullets mid-jump and recover stamina quickly."))
 	announce_to_players(span_notice("[team_one_name] [team_one_score] - [team_two_score] [team_two_name]"))
@@ -346,6 +403,109 @@
 	qdel(vr_body)
 	return TRUE
 
+//
+// C4.
+//
+
+/// Removes the previous round's bomb, including a planted one and its timer.
+/datum/deathmatch_lobby/team_deathmatch/proc/clear_round_bomb()
+	bomb_planted = FALSE
+	bomb_site = null
+	if(isnull(round_bomb))
+		return
+	var/obj/item/deathmatch_c4/bomb = round_bomb
+	round_bomb = null
+	if(!QDELETED(bomb))
+		qdel(bomb)
+
+/// Gives the round's only C4 to one living Terrorist, chosen independently of
+/// the kit preset. If both hands are occupied it is dropped at their feet.
+/datum/deathmatch_lobby/team_deathmatch/proc/give_round_bomb()
+	var/list/possible_carriers = list()
+	for(var/datum/deathmatch_player/player as anything in players)
+		if(isnull(player) || player.is_observer || player.is_eliminated)
+			continue
+		if(player.team != TDM_TEAM_ALPHA)
+			continue
+		if(isnull(player.vr_body) || QDELETED(player.vr_body) || player.vr_body.stat == DEAD)
+			continue
+		possible_carriers += player
+	if(!length(possible_carriers))
+		return FALSE
+
+	var/datum/deathmatch_player/carrier = pick(possible_carriers)
+	var/mob/living/body = carrier.vr_body
+	var/obj/item/deathmatch_c4/bomb = new(get_turf(body))
+	bomb.lobby = src
+	round_bomb = bomb
+	if(body.put_in_hands(bomb))
+		to_chat(body, span_boldnotice("Вам выдана C4. Используйте её в руке на точке plant_a или plant_b, чтобы начать закладку."))
+	else
+		to_chat(body, span_boldnotice("Вам выдана C4, но руки заняты: она лежит у ваших ног."))
+	log_game("Deathmatch: [to_string()] gave C4 to [carrier.ckey || "unknown"] for round [round_number].")
+	return TRUE
+
+/// Only a living Terrorist avatar from this lobby may plant the round's bomb.
+/datum/deathmatch_lobby/team_deathmatch/proc/can_plant_bomb(mob/living/user)
+	if(is_finished() || !round_live || bomb_planted || isnull(user))
+		return FALSE
+	var/datum/deathmatch_player/player = player_of(user.ckey)
+	if(isnull(player) || player.is_observer || player.is_eliminated || player.team != TDM_TEAM_ALPHA)
+		return FALSE
+	return player.vr_body == user && user.stat != DEAD && !user.incapacitated()
+
+/// Only a living Counter-Terrorist avatar may defuse an active planted bomb.
+/datum/deathmatch_lobby/team_deathmatch/proc/can_defuse_bomb(mob/living/user)
+	if(is_finished() || !round_live || !bomb_planted || isnull(user))
+		return FALSE
+	var/datum/deathmatch_player/player = player_of(user.ckey)
+	if(isnull(player) || player.is_observer || player.is_eliminated || player.team != TDM_TEAM_BRAVO)
+		return FALSE
+	return player.vr_body == user && user.stat != DEAD && !user.incapacitated()
+
+/datum/deathmatch_lobby/team_deathmatch/proc/on_bomb_planted(obj/item/deathmatch_c4/bomb, site)
+	if(is_finished() || !round_live || bomb != round_bomb)
+		return FALSE
+	bomb_planted = TRUE
+	bomb_site = site
+	to_chat(world, span_userdanger("<big>C4 УСТАНОВЛЕНА НА ТОЧКЕ [site]! До взрыва [DisplayTimeText(bomb.fuse_time)]!</big>"))
+	announce_to_players(span_boldnotice("Counter-Terrorists: подойдите к C4 и нажмите по ней пустой рукой, чтобы обезвредить её."))
+	log_game("Deathmatch: [to_string()] planted C4 at site [site] in round [round_number].")
+	return TRUE
+
+/datum/deathmatch_lobby/team_deathmatch/proc/on_bomb_defused(obj/item/deathmatch_c4/bomb, mob/living/user)
+	if(is_finished() || !round_live || bomb != round_bomb || !bomb_planted)
+		return FALSE
+	bomb_planted = FALSE
+	to_chat(world, span_boldnotice("<big>[user.name] обезвредил C4. Counter-Terrorists выигрывают раунд!</big>"))
+	end_round(TDM_TEAM_BRAVO, "[team_two_name] defused the bomb")
+	return TRUE
+
+/datum/deathmatch_lobby/team_deathmatch/proc/on_bomb_detonated(obj/item/deathmatch_c4/bomb)
+	if(is_finished() || !round_live || bomb != round_bomb || !bomb_planted)
+		return FALSE
+	bomb_planted = FALSE
+	end_round(TDM_TEAM_ALPHA, "the bomb exploded")
+	return TRUE
+
+/// Last-resort cleanup for an active bomb deleted outside defusal/detonation.
+/// C4 is indestructible, so this is mainly for admin deletion and future code.
+/datum/deathmatch_lobby/team_deathmatch/proc/on_bomb_deleted(obj/item/deathmatch_c4/bomb)
+	if(bomb != round_bomb)
+		return
+	round_bomb = null
+	var/was_planted = bomb_planted
+	bomb_planted = FALSE
+	bomb_site = null
+	if(!was_planted || is_finished() || !round_live)
+		return
+	if(check_round_end())
+		return
+	// If the ordinary clock already expired while the bomb was active, its timer
+	// deliberately did nothing. Re-run that decision now that resolution is back.
+	if(world.time >= round_started_at + round_time)
+		round_timer_callback(round_token)
+
 /datum/deathmatch_lobby/team_deathmatch/get_player_spawn_point(datum/deathmatch_player/player)
 	// Each team spawns on its own side of the map. A map with only untyped
 	// spawns falls through to any of them, so TDM still works on an old arena.
@@ -362,6 +522,10 @@
 
 /datum/deathmatch_lobby/team_deathmatch/proc/round_timer_callback(token)
 	if(is_finished() || !round_live || token != round_token)
+		return
+	// Once C4 is planted its own fuse decides the round. The normal round clock
+	// must not award a survivors win while that countdown is still running.
+	if(bomb_planted)
 		return
 	var/alpha_alive = team_alive_count(TDM_TEAM_ALPHA)
 	var/bravo_alive = team_alive_count(TDM_TEAM_BRAVO)
@@ -384,6 +548,13 @@
 	if(!alpha_total && !bravo_total)
 		end_round(0, "nobody was left to fight")
 		return TRUE
+	// Eliminating the Terrorists does not end a round after they have planted:
+	// the Counter-Terrorists still have to defuse C4 or let it explode.
+	if(bomb_planted)
+		if(bravo_alive <= 0)
+			end_round(TDM_TEAM_ALPHA, "[team_one_name] eliminated [team_two_name]")
+			return TRUE
+		return FALSE
 	if(alpha_alive <= 0 && bravo_alive <= 0)
 		end_round(0, "both teams were wiped out")
 		return TRUE
@@ -405,6 +576,9 @@
 	round_live = FALSE
 	// Invalidates the round timer that is still sitting on the timer queue.
 	round_token++
+	if(!isnull(round_bomb) && !QDELETED(round_bomb))
+		round_bomb.deactivate()
+	bomb_planted = FALSE
 
 	if(winner_team == TDM_TEAM_ALPHA)
 		team_one_score++
@@ -418,11 +592,15 @@
 		announce_to_players(span_notice("No point awarded. [team_one_name] [team_one_score] - [team_two_score] [team_two_name]"))
 	refresh_uis()
 
-	if(team_one_score >= rounds_to_win || team_two_score >= rounds_to_win || team_one_score + team_two_score >= rounds_to_win * 2 - 1)
+	if(team_one_score >= rounds_to_win || team_two_score >= rounds_to_win || team_one_score + team_two_score >= rounds_to_win * 2 - 1 || isnull(next_loadout_preset))
 		addtimer(CALLBACK(src, PROC_REF(finish_match)), intermission_time)
 	else
 		addtimer(CALLBACK(src, PROC_REF(start_round)), intermission_time)
 	return TRUE
+
+/datum/deathmatch_lobby/team_deathmatch/end_lobby(delete_arena = TRUE, reason = "")
+	clear_round_bomb()
+	return ..()
 
 /// The match is over: announce the winner, pay the pot to their team, tear the
 /// lobby down.

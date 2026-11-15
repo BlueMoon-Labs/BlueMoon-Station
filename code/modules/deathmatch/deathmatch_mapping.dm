@@ -49,6 +49,20 @@
 /area/deathmatch/tdm
 	name = "Team Deathmatch"
 
+/// The whole de_dust2 arena. The current map paints every non-plant tile with
+/// this one area, so the per-callout subtypes below are only used by older
+/// revisions of the .dmm and are kept as convenient landing spots.
+/area/deathmatch/tdm/de_dust2
+	name = "de_dust2"
+
+/// C4 may only be planted inside these two areas. Paint them over the desired
+/// bomb sites on a TDM map; de_dust2 uses them for its A and B sites.
+/area/deathmatch/tdm/plant_a
+	name = "Bomb Plant Zone A"
+
+/area/deathmatch/tdm/plant_b
+	name = "Bomb Plant Zone B"
+
 /area/deathmatch/tdm/de_dust2/t_spawn
 	name = "de_dust2 - T Spawn"
 
@@ -108,3 +122,18 @@
 /obj/effect/landmark/deathmatch_player_spawn/Destroy()
 	GLOB.deathmatch_player_spawns -= src
 	return ..()
+
+/// Team spawn landmarks. They exist so a map can be set up in the map editor by
+/// placing the landmark itself, without hand-typing `team = 1` or `team = 2`
+/// into the variable list.
+///
+/// The literal 1/2 (instead of TDM_TEAM_ALPHA/TDM_TEAM_BRAVO) is deliberate:
+/// deathmatch_mapping.dm is included before deathmatch_team.dm, so those macros
+/// are not defined yet at this point in the file.
+/obj/effect/landmark/deathmatch_player_spawn/terrorist
+	name = "Deathmatch Terrorist Spawner"
+	team = 1
+
+/obj/effect/landmark/deathmatch_player_spawn/counter_terrorist
+	name = "Deathmatch Counter-Terrorist Spawner"
+	team = 2

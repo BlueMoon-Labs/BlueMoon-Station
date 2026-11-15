@@ -252,16 +252,16 @@ proc/get_deathmatch_loadout(path)
 		/datum/outfit/vr/deathmatch_loadout/brawler,
 	)
 
-// Team Deathmatch on a three-level recreation of de_dust2.
+// Team Deathmatch on a two-level recreation of de_dust2.
 //
-// The map is a full 200x200 .dmm with the surface (T spawn, long A, mid, A and
-// B sites, tunnels) on its first z-level and two tunnel networks underneath.
-// Because it is deeper than one z-level the arena stacks three reservations
-// over the same rectangle; see /datum/deathmatch_arena/load_arena().
+// The .dmm is a 75x75 map with the ground level and an upper level connected by
+// ladders at four points, plus team spawners and the A/B plant zones on the
+// upper level. Because it is deeper than one z-level the arena stacks two
+// reservations over the same rectangle; see /datum/deathmatch_arena/load_arena().
 /datum/map_template/deathmatch/de_dust2
 	name = "TDM - de_dust2"
 	display_name = "Team Deathmatch: de_dust2"
-	description = "Two five-player teams, a fresh pair of kits every round, on a three-level de_dust2. First team to three rounds takes the match."
+	description = "Two five-player teams, a fresh pair of kits every round, on a two-level de_dust2. First team to three rounds takes the match."
 	mappath = "_maps/TDM/de_dust2/de_dust2.dmm"
 	min_players = 2
 	max_players = 10

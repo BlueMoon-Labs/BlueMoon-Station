@@ -431,8 +431,8 @@
 //
 // Team Deathmatch kits.
 //
-// /datum/deathmatch_lobby/team_deathmatch hands these out on a fixed rotation,
-// one pair of kits per round: both teams get the same weapon family, but each
+// /datum/deathmatch_lobby/team_deathmatch draws these randomly without
+// replacement, one pair of kits per round: both teams get the same weapon family, but each
 // side gets its own version of it. They are all tdm_only so the free-for-all
 // picker does not offer one side's half of a pair.
 //
@@ -664,12 +664,48 @@
 	l_pocket = /obj/item/ammo_box/magazine/sniper_rounds
 	r_pocket = /obj/item/kitchen/knife/combat
 
-/// The knife round. Both teams get the same blade; nothing else at all.
-/datum/outfit/vr/deathmatch_loadout/tdm_knives
-	name = "TDM Knives"
-	display_name = "Knives"
+/// The Terrorist knife kit. Kept separate from the Counter-Terrorist kit so the
+/// two sides can be equipped independently.
+/datum/outfit/vr/deathmatch_loadout/tdm_knives_terror
+	name = "TDM Knives (Terrorist)"
+	display_name = "Terrorist Knives"
 	desc = "One knife: thirty damage, an instant kill from behind and half again the normal speed while it is in your hand. Nothing else."
 	tdm_only = TRUE
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	r_hand = /obj/item/kitchen/knife/combat/deathmatch
+
+/// The Counter-Terrorist knife kit. Equipment can be changed independently of
+/// the Terrorist half of the preset.
+/datum/outfit/vr/deathmatch_loadout/tdm_knives_counter
+	name = "TDM Knives (Counter-Terrorist)"
+	display_name = "Counter-Terrorist Knives"
+	desc = "One knife: thirty damage, an instant kill from behind and half again the normal speed while it is in your hand. Nothing else."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/kitchen/knife/combat/deathmatch
+
+/// Assault rifle preset, Terrorist side. Weapon, ammunition and any additional
+/// equipment are intentionally left for the loadout author to fill in.
+/datum/outfit/vr/deathmatch_loadout/tdm_assault_terror
+	name = "TDM Assault Rifles (Terrorist)"
+	display_name = "Terrorist Assault Rifles"
+	desc = "The Terrorist assault rifle kit."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	// r_hand = Terrorist assault rifle goes here.
+	// l_pocket = Spare ammunition goes here.
+
+/// Assault rifle preset, Counter-Terrorist side. Its equipment is independent
+/// of the Terrorist kit above and is intentionally left to the loadout author.
+/datum/outfit/vr/deathmatch_loadout/tdm_assault_counter
+	name = "TDM Assault Rifles (Counter-Terrorist)"
+	display_name = "Counter-Terrorist Assault Rifles"
+	desc = "The Counter-Terrorist assault rifle kit."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	// r_hand = Counter-Terrorist assault rifle goes here.
+	// l_pocket = Spare ammunition goes here.
