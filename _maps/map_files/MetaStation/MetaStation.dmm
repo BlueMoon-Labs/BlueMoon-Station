@@ -7951,11 +7951,15 @@
 /area/maintenance/starboard/fore)
 "aAs" = (
 /obj/structure/cable/white{
-	icon_state = "4-8"
+	icon_state = "0-4"
+	},
+/obj/structure/cable/white{
+	icon_state = "0-8"
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "aAA" = (
@@ -13555,6 +13559,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/computer/stock_terminal,
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "bds" = (
@@ -23730,6 +23735,14 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/item/reagent_containers/glass/bottle/epinephrine{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 6;
+	pixel_y = -5
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "caj" = (
@@ -26032,6 +26045,18 @@
 	},
 /obj/machinery/door/window/eastright{
 	req_access_txt = "5"
+	},
+/obj/item/folder/white{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/item/folder/white{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/item/pen{
+	pixel_x = -6;
+	pixel_y = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
@@ -34355,18 +34380,7 @@
 /area/science/mixing)
 "czE" = (
 /obj/structure/table/reinforced,
-/obj/item/folder/white{
-	pixel_x = 4;
-	pixel_y = -3
-	},
-/obj/item/folder/white{
-	pixel_x = 4;
-	pixel_y = -3
-	},
 /obj/machinery/door/firedoor,
-/obj/item/reagent_containers/glass/bottle/epinephrine,
-/obj/item/reagent_containers/syringe,
-/obj/item/pen,
 /obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
@@ -34379,6 +34393,9 @@
 	},
 /obj/machinery/door/window/eastleft{
 	req_access_txt = "5"
+	},
+/obj/machinery/cash_register/clinic{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
@@ -56755,6 +56772,7 @@
 /obj/effect/turf_decal/tile/red/opposingcorners{
 	dir = 1
 	},
+/obj/machinery/cash_register/kitchen,
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "hLH" = (
@@ -62157,6 +62175,13 @@
 	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain/private)
+"kmq" = (
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/computer/department_budget/service{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/service/bar)
 "kmr" = (
 /obj/effect/landmark/start/botanist,
 /obj/machinery/holopad,
@@ -64535,6 +64560,10 @@
 /obj/effect/landmark/start/station_engineer,
 /turf/open/floor/plasteel,
 /area/engineering/main)
+"lpb" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall,
+/area/maintenance/starboard/fore)
 "lpm" = (
 /obj/machinery/firealarm{
 	dir = 4;
@@ -65862,6 +65891,9 @@
 	},
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
+	},
+/obj/machinery/computer/department_budget/cargo{
+	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/cargo/office)
@@ -67895,6 +67927,7 @@
 	id = "magaz_counter";
 	name = "Shop Counter Shutters"
 	},
+/obj/machinery/cash_register,
 /turf/open/floor/wood,
 /area/service/shop)
 "mNr" = (
@@ -67997,6 +68030,7 @@
 "mPv" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/cash_register/bar,
 /turf/open/floor/plasteel,
 /area/service/bar)
 "mPQ" = (
@@ -70502,6 +70536,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/computer/department_budget/engineering,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "oaj" = (
@@ -72399,6 +72434,10 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel,
 /area/cargo/office)
+"oSI" = (
+/obj/machinery/computer/department_budget,
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "oSK" = (
 /obj/machinery/holopad,
 /obj/structure/cable/yellow{
@@ -74486,6 +74525,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/computer/department_budget/security{
+	dir = 1
 	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
@@ -81197,6 +81239,9 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/medical{
+	dir = 4
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/cmo)
 "sHf" = (
@@ -84390,6 +84435,16 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port)
+"udY" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/central)
 "uew" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
@@ -87582,6 +87637,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
 "vGM" = (
@@ -89683,6 +89739,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel,
 /area/security/office)
 "wDJ" = (
@@ -117607,7 +117664,7 @@ dIY
 rKe
 bTI
 aYX
-bWj
+udY
 bXL
 bXL
 cae
@@ -118121,7 +118178,7 @@ lVH
 sqh
 bTJ
 aYX
-bWj
+udY
 bXL
 nVB
 cag
@@ -120154,7 +120211,7 @@ aaf
 myk
 dtO
 hYY
-sIL
+oSI
 uZH
 ruc
 kBg
@@ -128132,7 +128189,7 @@ oBB
 sZJ
 pIJ
 seD
-iuF
+kmq
 kPZ
 bJT
 wep
@@ -129660,7 +129717,7 @@ dnh
 dnh
 dni
 dnh
-dnh
+lpb
 bhK
 bju
 bkZ

@@ -704,6 +704,7 @@
 						// уже накопленный урон мозга: берём максимум с текущим.
 						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(H.getOrganLoss(ORGAN_SLOT_BRAIN), max(0, min(BRAIN_DAMAGE_SEVERE - 1, ((tlimit - tplus) / tlimit * 100)))))
 					log_combat(user, H, "revived", defib)
+					econ_record_revive(user, H)
 					if(req_defib)
 						if(defib.healdisk)
 							H.heal_overall_damage(25, 25)

@@ -261,7 +261,7 @@
 		var/obj/item/card/id/ID = I
 		var/datum/bank_account/account = ID.registered_account
 		var/target_credits = total_price - credits
-		if(!account.adjust_money(-target_credits))
+		if(!account?.debit(target_credits, ECON_PURCHASE, user, "Покупка компьютера"))
 			say("Insufficient credits on card to purchase!")
 			return
 		credits += target_credits

@@ -17,7 +17,7 @@
 	ghost_alert_string = "Налёт оперативников InteQ у эвакуационного шаттла. Я подсяду?"
 	spawning_list = list(/mob/living/carbon/human = 3)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
-	event_probability = 20
+	event_probability = 10
 	spawn_probability_per_process = 5
 	activation_fraction = 0.2
 	spawn_anyway_if_no_player = FALSE

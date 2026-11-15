@@ -19,7 +19,8 @@
 	var/list/research_logs = list()								//IC logs.
 	var/largest_values = list()
 	var/organization = "Third-Party"							//Organization name, used for display.
-	var/pays_research_bounty = TRUE
+	/// Исследования с консоли этой сети оплачиваются бюджету науки
+	var/pays_research_bounty = FALSE
 	var/list/next_income = list()								//To be applied on the next passive techweb income
 	var/list/last_bitcoins = list()								//Current per-second production, used for display only.
 	var/list/discovered_mutations = list()                           //Mutations discovered by genetics, this way they are shared and cant be destroyed by destroying a single console
@@ -68,7 +69,6 @@
 /datum/techweb/admin
 	id = "ADMIN"
 	organization = "CentCom"
-	pays_research_bounty = FALSE
 
 /datum/techweb/admin/New()	//All unlocked.
 	. = ..()
@@ -136,6 +136,7 @@
 /datum/techweb/science	//Global science techweb for RND consoles.
 	id = "SCIENCE"
 	organization = "Nanotrasen"
+	pays_research_bounty = TRUE
 
 /datum/techweb/bepis	//Should contain only 1 BEPIS tech selected at random.
 	id = "EXPERIMENTAL"
@@ -235,7 +236,7 @@
 					receiver.update_node_status(unhide_node, autoupdate_consoles=FALSE)
 	for(var/i in researched_nodes)
 		CHECK_TICK
-		if(receiver.researched_nodes[i])	// already synced - re-researching would redo all node status work and re-pay the science bounty
+		if(receiver.researched_nodes[i])	// already synced - re-researching would redo all node status work
 			continue
 		receiver.research_node_id(i, TRUE, FALSE)
 	for(var/i in researched_designs)
@@ -389,10 +390,6 @@
 	for(var/id in node.design_ids)
 		add_design_by_id(id)
 	update_node_status(node)
-	if(pays_research_bounty)
-		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_SCI)
-		if(D)
-			D.adjust_money(SSeconomy.techweb_bounty)
 	return TRUE
 
 /datum/techweb/proc/unresearch_node_id(id)

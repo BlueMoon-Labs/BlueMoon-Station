@@ -1,6 +1,6 @@
 /datum/mood_event/masked_mook_incomplete
 	description = span_warning("Без противогаза я ощущаю себя неполноценно...\n")
-	mood_change = -4
+	mood_change = -8
 
 /datum/mood_event/creampie/cheesed
 	description = span_warning("Меня обдало сыром!\n") // Честно говоря, не совсем продумал варианты перевода для фразы "I've been cheesed". Возможно вернусь к ней позже.

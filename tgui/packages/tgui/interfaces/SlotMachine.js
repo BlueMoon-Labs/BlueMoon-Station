@@ -22,6 +22,7 @@ const ALL_SYMBOLS = Object.keys(SYMBOL_MAP);
 
 const BET_OPTIONS = [5, 10, 25, 50, 100];
 const AUTO_SPIN_OPTIONS = [5, 10, 25];
+const DEPOSIT_OPTIONS = [50, 100, 500];
 
 // How many paylines each bet unlocks
 const BET_LINES = {
@@ -135,7 +136,14 @@ export const SlotMachine = (props) => {
     reels,
     result_message,
     result_type,
-    paymode,
+    prize_bank,
+    house_edge,
+    jackpot_share,
+    bank_share,
+    deposit_max,
+    prize_big,
+    prize_small,
+    jackpot_sevens,
     bonus_multiplier,
     bonus_active,
     win_streak,
@@ -168,13 +176,13 @@ export const SlotMachine = (props) => {
             <div className="SlotMachine__intro-machine">🎰</div>
             <div className="SlotMachine__intro-title">SLOT MACHINE</div>
             <div className="SlotMachine__intro-subtitle">
-              Gambling for the antisocial
+              Игровой автомат
             </div>
             <div className="SlotMachine__intro-symbols">
               🍒 🍌 🍓 🍇 💎 ⭐ 🍉 💰 🃏 💫
             </div>
             <div className="SlotMachine__intro-click">
-              ▶ Click anywhere to play ◀
+              ▶ Нажмите, чтобы играть ◀
             </div>
           </div>
         </Window.Content>
@@ -196,19 +204,25 @@ export const SlotMachine = (props) => {
           <Stack.Item>
             <div className="SlotMachine__header">
               <div className="SlotMachine__header-text">
-                ★ JACKPOT ★
+                ДЖЕКПОТ СЕКТОРА
               </div>
               <div className="SlotMachine__header-amount">
-                💰 {money} cr
+                💰 {money} кр.
               </div>
             </div>
+            <Box textAlign="center" fontSize="11px" color="label">
+              Банк выигрышей: {prize_bank} кр. С каждой ставки {house_edge}%
+              забирает NT, {jackpot_share}% идёт в джекпот, {bank_share}% - в
+              банк. Выигрыш не больше банка. Джекпот общий для всех автоматов
+              сектора и переходит в следующую смену.
+            </Box>
           </Stack.Item>
 
           {/* Bonus indicator */}
           {!!bonus_active && !working && (
             <Stack.Item>
               <div className="SlotMachine__bonus-banner">
-                ⚡ BONUS x{bonus_multiplier}! ⚡
+                ⚡ БОНУС x{bonus_multiplier}! ⚡
               </div>
             </Stack.Item>
           )}
@@ -217,7 +231,7 @@ export const SlotMachine = (props) => {
           {win_streak >= 2 && (
             <Stack.Item>
               <div className="SlotMachine__streak-banner">
-                🔥 Win Streak: {win_streak}!
+                🔥 Серия побед: {win_streak}!
               </div>
             </Stack.Item>
           )}
@@ -317,7 +331,7 @@ export const SlotMachine = (props) => {
                 fontWeight: 'bold',
                 fontSize: '14px',
               }}>
-                🎰 FREE SPINS: {free_spins_remaining} remaining!
+                🎰 Бесплатных вращений: {free_spins_remaining}
               </div>
             </Stack.Item>
           )}
@@ -334,7 +348,7 @@ export const SlotMachine = (props) => {
                 'color': '#fa3',
                 fontSize: '12px',
               }}>
-                🔥 HOT MACHINE — {loss_streak} losses in a row! Enhanced bonus chance!
+                🔥 Автомат разогрет: {loss_streak} проигрышей подряд, шанс бонуса выше!
               </div>
             </Stack.Item>
           )}
@@ -343,7 +357,7 @@ export const SlotMachine = (props) => {
           {!!gamble_available && !working && (
             <Stack.Item>
               <Section
-                title={'🎲 Gamble - Risk ' + gamble_amount + ' cr?'}
+                title={'🎲 Удвоить ' + gamble_amount + ' кр.?'}
                 className="SlotMachine__gamble">
                 <Stack align="center" justify="center">
                   <Stack.Item grow>
@@ -355,12 +369,12 @@ export const SlotMachine = (props) => {
                       color="red"
                       className="SlotMachine__gamble-btn--red"
                       onClick={() => act('gamble', { choice: 'red' })}>
-                      ♥ RED
+                      ♥ КРАСНОЕ
                     </Button>
                   </Stack.Item>
                   <Stack.Item>
                     <Box bold textAlign="center" px="8px" color="label">
-                      or
+                      или
                     </Box>
                   </Stack.Item>
                   <Stack.Item grow>
@@ -371,7 +385,7 @@ export const SlotMachine = (props) => {
                       fontSize="14px"
                       className="SlotMachine__gamble-btn--black"
                       onClick={() => act('gamble', { choice: 'black' })}>
-                      ♠ BLACK
+                      ♠ ЧЁРНОЕ
                     </Button>
                   </Stack.Item>
                   <Stack.Item>
@@ -384,7 +398,7 @@ export const SlotMachine = (props) => {
                       textAlign="center"
                       color="green"
                       onClick={() => act('collect')}>
-                      💰 Collect
+                      💰 Забрать
                     </Button>
                   </Stack.Item>
                 </Stack>
@@ -394,7 +408,7 @@ export const SlotMachine = (props) => {
 
           {/* Bet Selection */}
           <Stack.Item>
-            <Section title="Bet Amount">
+            <Section title="Ставка">
               <Stack align="center">
                 {BET_OPTIONS.map((amount) => (
                   <Stack.Item key={amount} grow>
@@ -406,10 +420,10 @@ export const SlotMachine = (props) => {
                       disabled={working}
                       color={bet_amount === amount ? 'green' : 'default'}
                       onClick={() => act('set_bet', { amount })}>
-                      {amount} cr
+                      {amount} кр.
                       <br />
                       <span style={{ fontSize: '9px', 'opacity': 0.7 }}>
-                        {BET_LINES[amount] || 1} line{(BET_LINES[amount] || 1) > 1 ? 's' : ''}
+                        линий: {BET_LINES[amount] || 1}
                       </span>
                     </Button>
                   </Stack.Item>
@@ -424,20 +438,32 @@ export const SlotMachine = (props) => {
               <Stack>
                 {/* Balance */}
                 <Stack.Item grow basis={0}>
-                  <Box color="label" fontSize="11px">Balance</Box>
+                  <Box color="label" fontSize="11px">Баланс</Box>
                   <Box fontSize="16px" bold color="good">
-                    💵 <AnimatedNumber value={balance} /> cr
+                    💵 <AnimatedNumber value={balance} /> кр.
                   </Box>
                   {session_winnings !== 0 && (
                     <Box
                       fontSize="11px"
                       color={session_winnings > 0 ? 'good' : 'bad'}>
-                      Session: {session_winnings > 0 ? '+' : ''}{session_winnings} cr
+                      За сессию: {session_winnings > 0 ? '+' : ''}{session_winnings} кр.
                     </Box>
                   )}
                   <Box color="label" fontSize="10px" mt="4px">
-                    {paymode === 1 ? '💳 Holochips' : '🪙 Coins'}
+                    С карты (до {deposit_max} кр.):
                   </Box>
+                  <Stack>
+                    {DEPOSIT_OPTIONS.map((amount) => (
+                      <Stack.Item key={amount}>
+                        <Button
+                          disabled={working}
+                          tooltip={'Внести ' + amount + ' кр. с ID-карты'}
+                          onClick={() => act('card_deposit', { amount })}>
+                          {amount}
+                        </Button>
+                      </Stack.Item>
+                    ))}
+                  </Stack>
                 </Stack.Item>
 
                 {/* Spin Button */}
@@ -455,10 +481,10 @@ export const SlotMachine = (props) => {
                         className="SlotMachine__spin-button"
                         onClick={() => act('spin')}>
                         {working
-                          ? (auto_spin ? 'AUTO...' : 'SPINNING...')
+                          ? (auto_spin ? 'АВТО...' : 'КРУТИТСЯ...')
                           : (free_spins_remaining > 0
-                            ? ('🎰 FREE SPIN!')
-                            : ('SPIN ' + bet_amount + ' cr'))}
+                            ? ('🎰 БЕСПЛАТНО!')
+                            : ('КРУТИТЬ ' + bet_amount + ' кр.'))}
                       </Button>
                     </Stack.Item>
                     <Stack.Item>
@@ -471,7 +497,7 @@ export const SlotMachine = (props) => {
                               icon="stop"
                               color="bad"
                               onClick={() => act('stop_auto')}>
-                              Stop ({auto_spin_remaining})
+                              Стоп ({auto_spin_remaining})
                             </Button>
                           </Stack.Item>
                         ) : (
@@ -480,7 +506,7 @@ export const SlotMachine = (props) => {
                               <Button
                                 icon="redo"
                                 disabled={working || balance < bet_amount}
-                                tooltip={'Auto-spin ' + count + ' times'}
+                                tooltip={'Автовращение ' + count + ' раз'}
                                 onClick={() => act('auto_spin', { count })}>
                                 x{count}
                               </Button>
@@ -497,7 +523,7 @@ export const SlotMachine = (props) => {
                           icon="eject"
                           color="caution"
                           onClick={() => act('refund')}>
-                          Cash Out
+                          Забрать деньги
                         </Button>
                       </Stack.Item>
                     )}
@@ -507,17 +533,17 @@ export const SlotMachine = (props) => {
                 {/* Stats */}
                 <Stack.Item grow basis={0}>
                   <Box color="label" fontSize="11px" textAlign="right">
-                    Statistics
+                    Статистика
                   </Box>
                   <Box fontSize="11px" textAlign="right">
-                    🎲 Players today: {plays}
+                    🎲 Вращений: {plays}
                   </Box>
                   <Box fontSize="11px" textAlign="right">
-                    🏆 Jackpots: {jackpots}
+                    🏆 Джекпотов: {jackpots}
                   </Box>
                   {win_streak > 0 && (
                     <Box fontSize="11px" textAlign="right" color="good">
-                      🔥 Streak: {win_streak}
+                      🔥 Серия: {win_streak}
                     </Box>
                   )}
                 </Stack.Item>
@@ -528,7 +554,7 @@ export const SlotMachine = (props) => {
           {/* Spin History */}
           {spin_history && spin_history.length > 0 && (
             <Stack.Item>
-              <Section title="Recent Spins">
+              <Section title="Последние вращения">
                 <Stack>
                   {spin_history.slice().reverse().map((entry, i) => (
                     <Stack.Item key={i} grow basis={0}>
@@ -552,79 +578,79 @@ export const SlotMachine = (props) => {
 
           {/* Paytable */}
           <Stack.Item>
-            <Section title="Paytable">
+            <Section title="Выигрыши">
               <Stack fill>
                 <Stack.Item grow basis={0}>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      5× 💰
+                      {jackpot_sevens}× 💰/🃏 в центре, 🃏 не больше одного
                     </span>
                     <span className="SlotMachine__paytable-prize SlotMachine__paytable-prize--jackpot">
-                      JACKPOT!
+                      ДЖЕКПОТ
                     </span>
                   </Box>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      5 in a row
+                      5 в линию
                     </span>
                     <span className="SlotMachine__paytable-prize">
-                      {500 * (bet_amount / 5)} cr
+                      {prize_big} кр.
                     </span>
                   </Box>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      4 in a row
+                      4 в линию
                     </span>
                     <span className="SlotMachine__paytable-prize">
-                      {50 * (bet_amount / 5)} cr
+                      {prize_small} кр.
                     </span>
                   </Box>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      3 in a row
+                      3 в линию
                     </span>
                     <span className="SlotMachine__paytable-prize">
-                      1 free spin
+                      1-3 бесплатных
                     </span>
                   </Box>
                 </Stack.Item>
                 <Stack.Item grow basis={0}>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      🃏 Wild
+                      🃏 Джокер
                     </span>
                     <span className="SlotMachine__paytable-prize SlotMachine__paytable-prize--wild">
-                      = Any symbol
+                      = любой символ
                     </span>
                   </Box>
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      💫 Scatter ×3+
+                      💫 Скаттер ×3+
                     </span>
                     <span className="SlotMachine__paytable-prize SlotMachine__paytable-prize--bonus">
-                      Bonus payout!
+                      Выплата за каждый
                     </span>
                   </Box>
                   <Divider />
                   <Box className="SlotMachine__paytable-row">
                     <span className="SlotMachine__paytable-symbols">
-                      ⚡ Bonus
+                      ⚡ Бонус
                     </span>
                     <span className="SlotMachine__paytable-prize SlotMachine__paytable-prize--bonus">
-                      x2-x5 mult!
+                      x2-x5
                     </span>
                   </Box>
                   <Box fontSize="10px" color="label" mt="2px">
-                    2+ matching = bonus chance
+                    2+ одинаковых - шанс бонуса
                   </Box>
                   <Divider />
                   <Box fontSize="10px" color="label">
-                    <b>Lines:</b> 5cr=1 | 10cr=2 | 25cr+=3
+                    <b>Линии:</b> 5 кр.=1 | 10 кр.=2 | 25 кр.+=3
                   </Box>
                   <Box fontSize="9px" color="label">
-                    <span style={{ 'color': '#ffd700' }}>L1</span> mid{' '}
-                    <span style={{ 'color': '#ff4444' }}>L2</span> top{' '}
-                    <span style={{ 'color': '#4488ff' }}>L3</span> bot{' '}
+                    <span style={{ 'color': '#ffd700' }}>L1</span> центр{' '}
+                    <span style={{ 'color': '#ff4444' }}>L2</span> верх{' '}
+                    <span style={{ 'color': '#4488ff' }}>L3</span> низ{' '}
                     <span style={{ 'color': '#00ff88' }}>L4</span> V{' '}
                     <span style={{ 'color': '#ff6eff' }}>L5</span> ^
                   </Box>

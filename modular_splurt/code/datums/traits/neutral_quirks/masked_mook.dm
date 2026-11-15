@@ -8,14 +8,21 @@
 	flavor_quirk = TRUE
 	medical_record_text = "Пациент чувствует себя более безопасно при ношении противогаза."
 	processing_quirk = TRUE
+	COOLDOWN_DECLARE(cough_timer)
 
 /datum/quirk/masked_mook/on_process()
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/mask/gas/gasmask = H.get_item_by_slot(ITEM_SLOT_MASK)
 	if(istype(gasmask))
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, QMOOD_MASKED_MOOK, /datum/mood_event/masked_mook)
-	else
-		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, QMOOD_MASKED_MOOK, /datum/mood_event/masked_mook_incomplete)
+		return
+
+	SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, QMOOD_MASKED_MOOK, /datum/mood_event/masked_mook_incomplete)
+	if(!H.stat && prob(5) && !H.insanelycomfy && COOLDOWN_FINISHED(src, cough_timer))
+		COOLDOWN_START(src, cough_timer, 1 MINUTES)
+		to_chat(H, span_warning("Ваше дыхание на мгновение сбилось."))
+		H.emote(pick("cough", "gasp"))
+		H.Dizzy(5)
 
 /datum/quirk/masked_mook/on_spawn()
 	. = ..()
