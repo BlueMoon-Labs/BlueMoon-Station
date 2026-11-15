@@ -32,6 +32,7 @@
 #include "code\__BLUEMOONCODE\_DEFINES\custom_emote_panel.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\death.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\economy.dm"
+#include "code\__BLUEMOONCODE\_DEFINES\eye_blur.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\faction.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\gamemode.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\heretic_mansus.dm"

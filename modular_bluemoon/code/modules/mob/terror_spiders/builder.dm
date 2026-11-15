@@ -34,7 +34,7 @@
 	projectiletype = /obj/item/projectile/terrorspider/builder
 	web_type = /obj/structure/spider/terrorweb/queen/builder
 	can_wrap = FALSE
-	spider_intro_text = "Будучи Дроном Ужаса, ваша задача - постройка и защита гнезда. Плетите паутину, используйте свои замедляющие кислотные плевки и замораживающие укусы для защиты яиц и гнезда. Помните, вы не регенерируете и двигаетесь медленно вне паутины!."
+	spider_intro_text = "Будучи Дроном Ужаса, ваша задача - постройка и защита гнезда. Плетите паутину, используйте свои замедляющие кислотные плевки и замораживающие укусы для защиты яиц и гнезда. Помните, вы не регенерируете и двигаетесь медленно вне паутины!"
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/builder/spider_specialattack(mob/living/carbon/human/L, poisonable)
 	L.Slowed(4 SECONDS)
@@ -73,6 +73,7 @@
 	icon_state = "toxin2"
 	damage = 15
 	damage_type = BURN
+	flag = ACID
 	stamina = 15
 
 /obj/item/projectile/terrorspider/builder/on_hit(atom/target, blocked = 0, hit_zone)

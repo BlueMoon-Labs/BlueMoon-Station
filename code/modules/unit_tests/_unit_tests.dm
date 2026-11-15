@@ -302,6 +302,7 @@
 // #include "emoting.dm"
 #include "event_ports.dm"
 #include "eye_blur_filters.dm"
+#include "eye_blur_ticks.dm"
 #include "families.dm"
 #include "flamethrower_fuel.dm"
 #include "flat_icon_static.dm"

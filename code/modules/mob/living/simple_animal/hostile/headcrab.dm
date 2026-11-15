@@ -209,6 +209,9 @@
 	melee_damage_upper = 20
 	attack_sound = 'sound/creatures/ph_scream1.ogg'
 	speak_emote = list("screech")
+	/// Сколько размытия добавляет укус и выше какого потолка не копит.
+	var/bite_blur = 20 SECONDS
+	var/bite_blur_cap = 2 MINUTES
 
 /mob/living/simple_animal/hostile/headcrab/poison/update_icons()
 	. = ..()
@@ -229,6 +232,7 @@
 		var/inject_target = pick("chest", "head")
 		var/mob/living/carbon/C = target
 		if(C.IsStun() || C.can_inject(null, FALSE, inject_target, FALSE))
-			if(C.eye_blurry < 120 SECONDS)
-				C.eye_blurry = 20 SECONDS
+			var/blur_cap = BLUR_TICKS(bite_blur_cap)
+			if(C.eye_blurry < blur_cap)
+				C.set_blurriness(min(C.eye_blurry + BLUR_TICKS(bite_blur), blur_cap))
 				visible_message("<span class='danger'>[src] buries its fangs deep into the [inject_target] of [target]!</span>")

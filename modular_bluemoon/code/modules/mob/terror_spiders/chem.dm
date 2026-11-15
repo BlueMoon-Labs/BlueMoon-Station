@@ -3,10 +3,10 @@
 
 /// Размывает зрение жертвы на duration, не поднимая размытие выше cap.
 /proc/terror_spider_blur(mob/living/victim, duration, cap = duration)
-	var/limit = TERROR_BLUR_TICKS(cap)
+	var/limit = BLUR_TICKS(cap)
 	if(victim.eye_blurry >= limit)
 		return
-	victim.set_blurriness(min(victim.eye_blurry + TERROR_BLUR_TICKS(duration), limit))
+	victim.set_blurriness(min(victim.eye_blurry + BLUR_TICKS(duration), limit))
 
 /datum/reagent/terror_black_toxin
 	name = "Black Terror venom"
