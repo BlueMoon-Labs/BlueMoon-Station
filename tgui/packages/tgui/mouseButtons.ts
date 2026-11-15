@@ -49,13 +49,15 @@ export const setupMouseButtonPassthrough = (
     command(`KeyDown "${key}"`);
   };
 
+  // The press may have started outside this window: the server ignores a release of a key it does not hold.
   const handleUp = (event: MouseEvent) => {
     const key = mouseButtonToByond(event.button);
     if (!key) {
       return;
     }
     event.preventDefault();
-    release(key);
+    held[key] = false;
+    command(`KeyUp "${key}"`);
   };
 
   const swallow = (event: MouseEvent) => {

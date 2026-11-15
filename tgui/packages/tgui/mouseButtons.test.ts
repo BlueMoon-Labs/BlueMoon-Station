@@ -68,9 +68,19 @@ describe('setupMouseButtonPassthrough', () => {
     ]);
   });
 
-  test('release without a press here sends nothing', () => {
+  test('release of a press made outside this window is still sent', () => {
     document.dispatchEvent(mouse('mouseup', 4));
-    expect(command).not.toHaveBeenCalled();
+    expect(command.mock.calls).toEqual([['KeyUp "Mouse5"']]);
+  });
+
+  test('a release is sent once', () => {
+    document.dispatchEvent(mouse('mousedown', 3));
+    document.dispatchEvent(mouse('mouseup', 3));
+    window.dispatchEvent(new Event('blur'));
+    expect(command.mock.calls).toEqual([
+      ['KeyDown "Mouse4"'],
+      ['KeyUp "Mouse4"'],
+    ]);
   });
 
   test('window blur releases held side buttons', () => {

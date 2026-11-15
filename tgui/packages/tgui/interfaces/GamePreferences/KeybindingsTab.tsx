@@ -33,6 +33,18 @@ type KeybindingsData = {
 
 const MAX_KEYS = 4;
 
+type CaptureModifiers = { altKey: boolean; ctrlKey: boolean; shiftKey: boolean };
+
+/**
+ * Modifiers sent with a captured key. Bindings without modifiers are looked up
+ * by the bare key, so a held Shift must not end up in them.
+ */
+export const captureModifiers = (independent: boolean, event: CaptureModifiers) => ({
+  alt: !independent && event.altKey ? 1 : 0,
+  ctrl: !independent && event.ctrlKey ? 1 : 0,
+  shift: !independent && event.shiftKey ? 1 : 0,
+});
+
 class KeyCaptureOverlay extends Component<{
   capture: KbCapture;
   onCancel: () => void;
@@ -153,7 +165,7 @@ export const KeybindingsTab = (props) => {
   const sendCapture = (
     byondKey: string | undefined,
     clearKey: number,
-    event: { altKey: boolean; ctrlKey: boolean; shiftKey: boolean },
+    event: CaptureModifiers,
     numpad: boolean,
   ) => {
     if (!kb_capture) {
@@ -168,9 +180,7 @@ export const KeybindingsTab = (props) => {
       independent: kb_capture.independent ? 1 : 0,
       clear_key: clearKey,
       key: byondKey || '',
-      alt: event.altKey ? 1 : 0,
-      ctrl: event.ctrlKey ? 1 : 0,
-      shift: event.shiftKey ? 1 : 0,
+      ...captureModifiers(!!kb_capture.independent, event),
       numpad: numpad ? 1 : 0,
     });
   };
