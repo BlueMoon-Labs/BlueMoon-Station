@@ -1541,6 +1541,10 @@
 /area/mine/laborcamp/mining)
 "aXw" = (
 /obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/textured/edge{
 	dir = 1
 	},
@@ -1553,6 +1557,10 @@
 	c_tag = "Mining Post - North";
 	network = list("mine", "ss13");
 	dir = 9
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = 26
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/lobby)
@@ -6397,6 +6405,10 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/textured,
 /area/mine/common/upper)
 "dWQ" = (
@@ -6610,11 +6622,29 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 8
 	},
+/obj/machinery/light{
+	dir = 4;
+	light_color = "#e8eaff"
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/mine/storage)
 "ecP" = (
 /turf/closed/wall/r_wall/syndicate,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"edH" = (
+/obj/effect/turf_decal/tile/bar/opposingcorners{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = -26
+	},
+/turf/open/floor/plasteel/textured,
+/area/mine/common/atrium)
 "edQ" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
 /obj/structure/cable{
@@ -8214,6 +8244,21 @@
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"fcW" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = -26
+	},
+/turf/open/floor/plasteel/textured/edge{
+	dir = 4
+	},
+/area/mine/common/upper)
 "fcZ" = (
 /obj/machinery/light/floor,
 /obj/effect/turf_decal/siding/dark{
@@ -9039,6 +9084,21 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/mine/common/upper)
+"fAJ" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = -26
+	},
+/turf/open/floor/plasteel/dark/textured/edge{
+	dir = 4
+	},
+/area/mine/laborcamp/mining)
 "fBB" = (
 /obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 4
@@ -11022,6 +11082,10 @@
 "gGE" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
+	},
+/obj/machinery/light_switch{
+	pixel_x = -22;
+	pixel_y = 24
 	},
 /turf/open/floor/carpet/black,
 /area/mine/common/dorm1)
@@ -16274,6 +16338,9 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 5
 	},
+/obj/machinery/light{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 5
 	},
@@ -16925,8 +16992,9 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/light{
-	dir = 1
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = 26
 	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 1
@@ -17477,6 +17545,7 @@
 "kuu" = (
 /obj/effect/spawner/lootdrop/maintenance,
 /obj/structure/rack,
+/obj/item/vending_refill/fishing,
 /turf/open/floor/plating,
 /area/mine/common/maintenance/north)
 "kuM" = (
@@ -18236,6 +18305,9 @@
 "kPX" = (
 /obj/effect/spawner/lootdrop/syndicate_present,
 /obj/effect/turf_decal/lunar_sand/plating,
+/obj/machinery/conveyor/inverted{
+	dir = 9
+	},
 /obj/machinery/conveyor/inverted{
 	dir = 9
 	},
@@ -23678,7 +23750,7 @@
 	},
 /obj/structure/disposalpipe/segment,
 /obj/machinery/light_switch{
-	pixel_x = 27
+	pixel_x = 24
 	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 8
@@ -26097,6 +26169,10 @@
 "pet" = (
 /obj/effect/turf_decal/siding/blue{
 	dir = 9
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = 26
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/mine/common/pool)
@@ -29835,6 +29911,18 @@
 	initial_gas_mix = "LAVALAND_ATMOS"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"roi" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 4
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = 28
+	},
+/turf/open/floor/plasteel/dark/textured/edge{
+	dir = 8
+	},
+/area/mine/laborcamp/security)
 "rpp" = (
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
@@ -30053,6 +30141,10 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/effect/decal/cleanable/ash,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/textured,
 /area/mine/laborcamp)
 "ryA" = (
@@ -30088,6 +30180,10 @@
 "rzV" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
 /obj/machinery/light,
+/obj/machinery/light_switch{
+	pixel_x = -22;
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
 	},
@@ -32579,6 +32675,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
 	},
@@ -34903,8 +35003,9 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
-/obj/machinery/light{
-	dir = 1
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = 26
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
 /area/mine/storage)
@@ -35040,6 +35141,21 @@
 	},
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"usm" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/yellow/auto,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = -26
+	},
+/turf/open/floor/plasteel/dark/textured/edge{
+	dir = 4
+	},
+/area/mine/laborcamp/security)
 "usL" = (
 /obj/structure/chair/sofa/corp,
 /obj/structure/sign/poster/contraband/syndiemoth{
@@ -41136,6 +41252,13 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/mine/cafeteria)
+"xXN" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/machinery/light_switch{
+	pixel_y = 24
+	},
+/turf/open/floor/plating,
+/area/mine/common/upper)
 "xYE" = (
 /obj/structure/sink/kitchen{
 	dir = 8;
@@ -65937,7 +66060,7 @@ jos
 fVl
 wTt
 qOl
-qOl
+fAJ
 vfs
 qOl
 frj
@@ -75697,7 +75820,7 @@ gdj
 uNO
 qQM
 qsd
-rwr
+edH
 bOK
 eLx
 niN
@@ -79296,9 +79419,9 @@ kGR
 jPl
 jPl
 gdj
+gdj
 gIl
-vAU
-gIl
+gdj
 bDt
 bDt
 vpm
@@ -79551,8 +79674,8 @@ jPl
 luL
 luL
 jPl
-gIl
-vAU
+gdj
+gdj
 vAU
 vAU
 vAU
@@ -137120,7 +137243,7 @@ sZJ
 ogu
 sZJ
 iCC
-iCC
+usm
 sZJ
 ogu
 evw
@@ -137371,7 +137494,7 @@ vAU
 gIl
 lUl
 tMS
-rQz
+roi
 rQz
 ftc
 cUn
@@ -143302,7 +143425,7 @@ xuU
 djU
 hEn
 bex
-fak
+fcW
 bZH
 sWQ
 bZH
@@ -144838,7 +144961,7 @@ fZB
 qOQ
 lTc
 fZB
-otZ
+xXN
 otZ
 bVf
 hzK

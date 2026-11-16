@@ -14129,6 +14129,13 @@
 	pixel_y = 0
 	},
 /obj/structure/chair/stool,
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 5
+	},
+/obj/effect/turf_decal/loading_area{
+	icon_state = "drain";
+	name = "drain"
+	},
 /turf/open/floor/plasteel/textured/large,
 /area/commons/fishing_nook)
 "bgU" = (
@@ -32260,16 +32267,7 @@
 	dir = 4;
 	network = list("ss13","medbay")
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/purple/fourcorners,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cvy" = (
@@ -32277,23 +32275,14 @@
 	dir = 8
 	},
 /obj/effect/landmark/start/geneticist,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cvz" = (
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
@@ -32305,11 +32294,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/landmark/start/geneticist,
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white,
@@ -32318,16 +32303,7 @@
 /obj/machinery/computer/scan_consolenew{
 	dir = 8
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/purple/fourcorners,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cvD" = (
@@ -32646,23 +32622,11 @@
 /obj/machinery/light_switch{
 	pixel_x = -23
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/purple/fourcorners,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cwz" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white,
@@ -32675,24 +32639,14 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cwC" = (
 /obj/machinery/dna_scannernew,
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/purple/fourcorners,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cwD" = (
@@ -32986,14 +32940,8 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
@@ -33002,7 +32950,7 @@
 	dir = 4
 	},
 /obj/effect/landmark/event_spawn,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple{
 	dir = 1
 	},
 /turf/open/floor/plasteel/white,
@@ -33018,11 +32966,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
@@ -33030,11 +32978,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 8
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white,
@@ -33368,7 +33312,7 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/research/glass{
 	name = "Genetics Lab";
-	req_access_txt = "5; 9; 68"
+	req_access_txt = "9; 68"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -33379,14 +33323,10 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 4
 	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white,
@@ -33398,10 +33338,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white,
@@ -33433,16 +33370,15 @@
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cyh" = (
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
 /obj/structure/sink{
 	dir = 4;
 	pixel_x = 11
 	},
 /obj/structure/mirror{
 	pixel_x = 28
+	},
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
@@ -33469,19 +33405,10 @@
 	name = "Genetics Access";
 	req_access_txt = "9"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/effect/turf_decal/tile/purple/fourcorners,
 /turf/open/floor/plasteel,
 /area/medical/genetics)
 "cyn" = (
@@ -33826,42 +33753,23 @@
 /turf/open/floor/plasteel/white,
 /area/medical/genetics/cloning)
 "cyY" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cyZ" = (
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/purple/half/contrasted,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "cza" = (
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "czb" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 10
 	},
@@ -33869,6 +33777,9 @@
 	c_tag = "Genetics Lab Hall";
 	dir = 6;
 	network = list("ss13","medbay")
+	},
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/medical/genetics)
@@ -46057,12 +45968,14 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "doF" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 6
+/obj/machinery/camera{
+	c_tag = "Fishing Nook";
+	dir = 9
 	},
+/obj/item/kirbyplants/random,
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "doJ" = (
@@ -54962,10 +54875,16 @@
 /turf/open/floor/engine,
 /area/engineering/main)
 "hdB" = (
-/obj/effect/turf_decal/siding/wood/corner{
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/machinery/airalarm{
+	dir = 8;
+	pixel_x = 23
+	},
+/obj/structure/chair{
 	dir = 8
 	},
-/obj/machinery/vending/fishing,
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "hdR" = (
@@ -59218,8 +59137,7 @@
 /area/service/hydroponics)
 "iZR" = (
 /obj/machinery/fishing_portal,
-/obj/machinery/camera{
-	c_tag = "Fishing Nook";
+/obj/effect/turf_decal/siding/wideplating_new{
 	dir = 10
 	},
 /turf/open/floor/plasteel/textured/large,
@@ -63104,6 +63022,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
+"kHK" = (
+/obj/structure/lattice,
+/turf/closed/wall,
+/area/commons/fishing_nook)
 "kIk" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock{
@@ -63478,8 +63400,12 @@
 /area/engineering/main)
 "kRM" = (
 /obj/structure/chair/stool,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/effect/turf_decal/siding/wideplating_new{
 	dir = 9
+	},
+/obj/effect/turf_decal/loading_area{
+	icon_state = "drain";
+	name = "drain"
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/commons/fishing_nook)
@@ -63829,18 +63755,6 @@
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/commons/locker)
-"kZc" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/maintenance/port)
 "kZm" = (
 /obj/structure/table/wood,
 /obj/machinery/requests_console{
@@ -65444,7 +65358,13 @@
 /obj/machinery/door/airlock{
 	name = "Fishing Nook"
 	},
-/turf/open/floor/wood/wood_diagonal,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/plasteel/white/corner{
+	dir = 1
+	},
 /area/commons/fishing_nook)
 "lOi" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -65555,13 +65475,12 @@
 /area/engineering/main)
 "lPZ" = (
 /obj/structure/cable/yellow{
-	icon_state = "1-4"
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/power/apc/auto_name/west,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "lQi" = (
@@ -66179,6 +66098,20 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
+"mde" = (
+/obj/structure/fish_mount{
+	pixel_x = -32;
+	pixel_y = 0
+	},
+/obj/item/toy/plush/bm/shark{
+	pixel_x = -32;
+	pixel_y = 0;
+	layer = 3.41
+	},
+/obj/machinery/vending/fishing,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/textured,
+/area/commons/fishing_nook)
 "mdq" = (
 /obj/machinery/chem_dispenser/drinks{
 	dir = 1
@@ -68634,7 +68567,7 @@
 /area/commons/dorms)
 "njK" = (
 /obj/structure/table,
-/turf/open/floor/plasteel/textured/large,
+/turf/open/floor/plasteel/textured,
 /area/commons/fishing_nook)
 "njS" = (
 /obj/machinery/door/airlock/maintenance/external{
@@ -69074,10 +69007,12 @@
 	},
 /area/maintenance/starboard/fore)
 "ntY" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 1
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
 	},
-/obj/machinery/fish_market,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "nvr" = (
@@ -71027,6 +70962,9 @@
 /area/security/office)
 "okQ" = (
 /obj/effect/turf_decal/siding/wood,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "okX" = (
@@ -71824,9 +71762,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/storage/satellite)
 "oEe" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/maintenance/port)
@@ -77783,13 +77723,10 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "reM" = (
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 5
 	},
+/obj/effect/turf_decal/tile/purple/half/contrasted,
 /turf/open/floor/plasteel/white,
 /area/medical/genetics)
 "rfm" = (
@@ -81645,6 +81582,22 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/ce)
+"sSH" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/structure/transmitter/mounted{
+	pixel_x = -25
+	},
+/turf/open/floor/plasteel,
+/area/security/prison/cells)
 "sSJ" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 4
@@ -81832,6 +81785,18 @@
 	icon_state = "floor"
 	},
 /area/science/research)
+"sWj" = (
+/obj/machinery/door/airlock/maintenance{
+	req_one_access_txt = "12;27;76"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/maintenance/port)
 "sWZ" = (
 /obj/machinery/atmospherics/pipe/manifold4w/cyan/visible,
 /turf/open/floor/plasteel,
@@ -83609,16 +83574,16 @@
 	},
 /area/science/circuit)
 "tNy" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/structure/fish_mount{
-	pixel_x = -32;
-	pixel_y = 0
-	},
-/obj/item/toy/plush/bm/shark{
-	pixel_x = -32;
-	pixel_y = 0;
-	layer = 3.41
-	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "tNF" = (
@@ -83669,21 +83634,16 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/aisat/exterior)
 "tOp" = (
-/obj/effect/turf_decal/loading_area{
-	icon_state = "half_stairs_wood";
-	name = "wood steps";
-	dir = 1
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
 	},
-/obj/structure/fish_mount{
-	pixel_x = -32;
-	pixel_y = 0
+/obj/machinery/power/apc/auto_name/west,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
-/obj/item/toy/plush/bm/catshark{
-	pixel_x = -32;
-	pixel_y = 0;
-	layer = 3.41
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "tOA" = (
@@ -86268,6 +86228,12 @@
 /turf/open/floor/plasteel/dark,
 /area/service/barbershop)
 "uXq" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "uXM" = (
@@ -86940,18 +86906,6 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
-"vkC" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
-/obj/machinery/door/airlock/maintenance{
-	req_one_access_txt = "12;27;76"
-	},
-/turf/open/floor/plating,
-/area/maintenance/port)
 "vkY" = (
 /obj/machinery/requests_console{
 	announcementConsole = 1;
@@ -88277,6 +88231,11 @@
 /obj/effect/spawner/structure/window,
 /turf/open/floor/wood,
 /area/service/library)
+"vWK" = (
+/obj/machinery/fish_market,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/textured,
+/area/commons/fishing_nook)
 "vWO" = (
 /turf/closed/wall,
 /area/service/kitchen)
@@ -88343,8 +88302,8 @@
 /turf/open/floor/carpet,
 /area/service/library)
 "vXH" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
@@ -91881,9 +91840,8 @@
 /area/commons/fitness/recreation)
 "xwa" = (
 /obj/machinery/fishing_portal,
-/obj/machinery/airalarm{
-	dir = 8;
-	pixel_x = 23
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 6
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/commons/fishing_nook)
@@ -93498,10 +93456,7 @@
 "ydh" = (
 /obj/structure/table,
 /obj/item/fishing_rod,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
-	dir = 4
-	},
-/turf/open/floor/plasteel/textured/large,
+/turf/open/floor/plasteel/textured,
 /area/commons/fishing_nook)
 "ydn" = (
 /obj/structure/table,
@@ -106209,9 +106164,9 @@ aaf
 aRA
 bCS
 dVL
-aRA
-aaa
-aaf
+duy
+duy
+kHK
 duy
 lIb
 lIb
@@ -106467,8 +106422,8 @@ aRA
 oYU
 cZe
 duy
-duy
-duy
+vWK
+mde
 duy
 ydh
 njK
@@ -107495,8 +107450,8 @@ wVI
 wVI
 wVI
 wVI
-vkC
 alK
+sWj
 alK
 bTn
 vdw
@@ -107752,7 +107707,7 @@ hVl
 bJq
 bJq
 dPr
-kZc
+bzC
 oEe
 bSn
 bTo
@@ -116944,7 +116899,7 @@ adR
 qES
 agI
 afL
-agI
+sSH
 afW
 dve
 ajm
