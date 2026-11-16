@@ -78,10 +78,10 @@
 		return
 	if(!beholder.mind)
 		return
-	if(HAS_TRAIT(beholder, TRAIT_FEARLESS))
-		return
 	if(IS_INTEQ(beholder))
 		SEND_SIGNAL(beholder, COMSIG_ADD_MOOD_EVENT, "inteq_propagand_happy", /datum/mood_event/inteq_happy)
+		return
+	if(HAS_TRAIT(beholder, TRAIT_FEARLESS))
 		return
 	if(beholder.mind.antag_datums) // все антажки
 		return
