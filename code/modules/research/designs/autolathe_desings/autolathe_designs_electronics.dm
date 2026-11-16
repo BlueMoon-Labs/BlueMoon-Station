@@ -76,6 +76,14 @@
 	build_path = /obj/item/stock_parts/cell/emergency_light
 	category = list("initial", "Electronics")
 
+/datum/design/lead_acid_battery
+	name = "Lead-Acid Battery"
+	id = "lead_acid_battery"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 100)
+	build_path = /obj/item/stock_parts/cell/lead
+	category = list("initial", "Electronics")
+
 /datum/design/electrochromatic_control
 	name = "Electrochromatic Control Circuit"
 	id = "electrochromatic_control_circuit"

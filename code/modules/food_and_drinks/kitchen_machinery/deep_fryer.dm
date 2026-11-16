@@ -64,6 +64,7 @@ God bless America.
 	RefreshParts()
 	fry_loop = new(src, FALSE)
 	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, PROC_REF(on_cleaned))
+	AddComponent(/datum/component/fishing_spot, GLOB.preset_fish_sources[/datum/fish_source/deepfryer])
 
 /obj/machinery/deepfryer/Destroy()
 	QDEL_NULL(fry_loop)
