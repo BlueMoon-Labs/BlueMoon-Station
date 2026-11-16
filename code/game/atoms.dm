@@ -949,7 +949,11 @@
 			try
 				var/icon/splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
 				splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
-				splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
+				// Маска крови теперь накладывается правильно на предметы больше чем 32 на 32
+				var/icon/blood_mask = icon('icons/effects/blood.dmi', "itemblood")
+				for(var/blood_x = 0, blood_x < splatter.Width(), blood_x += blood_mask.Width())
+					for(var/blood_y = 0, blood_y < splatter.Height(), blood_y += blood_mask.Height())
+						splatter.Blend(blood_mask, ICON_MULTIPLY, blood_x, blood_y)
 				splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
 				cached_splatter = fcopy_rsc(splatter)
 			catch(var/exception/icon_error)

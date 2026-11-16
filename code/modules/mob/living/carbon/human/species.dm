@@ -958,8 +958,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					standing += emissive_copy(left_eye, offset_spokesman = H)
 					standing += emissive_copy(right_eye, offset_spokesman = H)
 
-	if(H.nail_style)
-		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
+	if(H.nail_style && H.get_num_arms(FALSE))
+		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -NAIL_POLISH_LAYER)
 		nail_overlay.color = H.nail_color
 		standing += nail_overlay
 

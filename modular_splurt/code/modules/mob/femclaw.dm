@@ -77,7 +77,8 @@
 	gib()
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw/AttackingTarget()
-
+	if(!isliving(target))
+		return ..()
 	if(!CanRape(target))
 		..() // Attack target to death
 		return

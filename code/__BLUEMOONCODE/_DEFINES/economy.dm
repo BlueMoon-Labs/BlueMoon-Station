@@ -194,6 +194,10 @@
 #define ECON_CONTRACT_REP_EXPIRED 1
 /// Подборку личных заказов обновляют не чаще этого
 #define ECON_CONTRACT_REROLL_COOLDOWN (10 MINUTES)
+/// Глава отдела сбрасывает доску контрактов своего отдела не чаще этого
+#define ECON_CONTRACT_BOARD_RESET_COOLDOWN (10 MINUTES)
+/// Взятый недавно контракт игрока в игре сброс доски не снимает
+#define ECON_CONTRACT_BOARD_RESET_GRACE (5 MINUTES)
 /// Этапов в серии поставок
 #define ECON_CONTRACT_CHAIN_STAGES 3
 /// Объявлений экипажа от одного счёта одновременно
@@ -216,6 +220,8 @@
 #define ECON_CONTRACT_ACTIVITY_CHANCE 35
 /// Не чаще этого бюджет сообщает картам о возврате излишка NT
 #define ECON_BUDGET_RETURN_NOTICE_COOLDOWN (10 MINUTES)
+/// Возврат денег за не прилетевший отряд ОБР оставляет цели накопления на него хотя бы столько, один раз на цель
+#define ECON_ERT_REFUND_GOAL_GRACE (10 MINUTES)
 /// Шаг округления награды контракта деятельности
 #define ECON_CONTRACT_REWARD_STEP 50
 /// Начатый, но никем не взятый контракт снимается через столько возрастов ротации

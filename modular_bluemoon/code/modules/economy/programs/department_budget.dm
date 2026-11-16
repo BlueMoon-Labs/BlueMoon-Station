@@ -114,7 +114,10 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/list/works = GLOB.econ_department_work[department.id]
 		for(var/work_type in works)
 			work_prices += list(list("name" = econ_work_name(work_type), "price" = settings.work_prices[work_type], "unit" = works[work_type]))
+	var/list/goal_packs = istype(department, /datum/economy_department/cargo) ? econ_cargo_goal_packs(department) : list()
 	return list(
+		"goal_packs" = goal_packs,
+		"goal_max" = econ_cargo_goal_max(),
 		"departments" = departments,
 		"catalog" = catalog,
 		"work_prices" = work_prices,
@@ -126,6 +129,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"grace_minutes" = settings.budget_cap_grace_ticks * round(SSeconomy.wait / (1 MINUTES), 1),
 		"goal_minutes" = settings.saving_goal_minutes,
 		"goal_cooldown_minutes" = settings.saving_goal_cooldown_minutes,
+		"goal_collect_minutes" = settings.saving_goal_collect_minutes,
 		"economy_minutes" = round(SSeconomy.wait / (1 MINUTES), 1),
 		"wage_minutes" = round(settings.payroll_interval_ticks * SSeconomy.wait / (1 MINUTES), 1),
 		"owed_cap" = settings.owed_wages_cap_paychecks,
@@ -188,7 +192,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
 		"express_ready_in" = CEILING(department.express_ready_in() / (1 SECONDS), 1),
-		"goal" = department.saving_goal_amount() ? list("id" = "[department.saving_goal.type]", "name" = department.saving_goal.name, "amount" = department.saving_goal_amount(), "minutes_left" = department.saving_goal_until ? CEILING((department.saving_goal_until - world.time) / (1 MINUTES), 1) : null) : null,
+		"goal" = econ_budget_goal_entry(department, packs),
 		"emergency" = econ_emergency_active(),
 	)
 	var/list/prices = list()
@@ -197,6 +201,14 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/list/row = econ_cargo_price_row(pack, offers[pack])
 		prices["[pack.type]"] = list("price" = row["cost"], "available" = row["in_stock"])
 	data["prices"] = prices
+	if(istype(department, /datum/economy_department/cargo))
+		var/list/goal_erts = list()
+		for(var/ert_id in 1 to length(GLOB.payed_ert))
+			var/list/ert = GLOB.payed_ert[ert_id]
+			goal_erts += list(list("id" = ert_id, "name" = ert["name"], "price" = ert["price"], "available" = !!ert["available"]))
+		data["goal_erts"] = goal_erts
+	else
+		data["goal_erts"] = null
 	var/list/requests = list()
 	for(var/datum/econ_request/request as anything in department.requests)
 		requests += list(request.ui_entry())
@@ -210,6 +222,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	for(var/datum/econ_contract/contract as anything in department.contracts)
 		contracts += list(contract.ui_entry())
 	data["contracts"] = contracts
+	data["board_resets"] = econ_contract_resets_ui(user, list(department))
 	data["work_log"] = department.work_log
 	data["register_share"] = department.register_cashier_share
 	var/owed_total = 0
@@ -260,6 +273,48 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	if(!pack || !(pack in department.catalog()))
 		return null
 	return pack
+
+/// Цель накопления отдела для окна: сколько набрать, сколько осталось на сбор и на заказ; null - цели нет.
+/proc/econ_budget_goal_entry(datum/economy_department/department, list/packs)
+	var/amount = department.saving_goal_amount()
+	if(!amount)
+		return null
+	var/until = department.saving_goal_until
+	return list(
+		"id" = department.saving_goal_ert ? "ert:[department.saving_goal_ert]" : "[department.saving_goal.type]",
+		"name" = department.saving_goal_name(),
+		"amount" = amount,
+		"is_ert" = !!department.saving_goal_ert,
+		"off_catalog" = !department.saving_goal_ert && !(department.saving_goal in packs),
+		"minutes_left" = until ? CEILING((until - world.time) / (1 MINUTES), 1) : null,
+		"collect_minutes_left" = until ? null : max(CEILING((department.saving_goal_collect_deadline() - world.time) / (1 MINUTES), 1), 0),
+	)
+
+/// Пак, на который отдел может копить: из каталога, а у снабжения - и заказываемый за его бюджет.
+/datum/computer_file/program/department_budget/proc/goal_pack(datum/economy_department/department, pack_text)
+	if(!istext(pack_text))
+		return null
+	var/pack_path = text2path(pack_text)
+	if(!ispath(pack_path, /datum/supply_pack))
+		return null
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_path]
+	return department.can_save_for(pack) ? pack : null
+
+/// Паки снабжения вне его каталога, на которые оно может копить, с ценой из общей таблицы окон снабжения.
+/proc/econ_cargo_goal_packs(datum/economy_department/cargo/cargo)
+	. = list()
+	GLOB.econ_cargo_prices.refresh()
+	var/list/own = cargo.catalog()
+	var/goal_max = econ_cargo_goal_max()
+	for(var/pack_type in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		if((pack in own) || !econ_cargo_budget_pack(pack))
+			continue
+		var/list/row = GLOB.econ_cargo_prices.table[pack_type]
+		var/price = round(row ? row["cost"] : econ_pack_price(pack))
+		if(price > goal_max)
+			continue
+		. += list(list("type" = "[pack_type]", "name" = pack.name, "group" = pack.group, "price" = price, "available" = row ? !!row["in_stock"] : !econ_pack_unavailable(pack)))
 
 /datum/computer_file/program/department_budget/proc/find_request(datum/economy_department/department, uid)
 	uid = econ_ui_number(uid)
@@ -318,20 +373,24 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else
 				messages[user_ref] = department.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение." : order_refusal(department, request.pack)
 		if("set_goal", "clear_goal")
-			var/datum/supply_pack/pack = catalog_pack(department, params["pack"])
+			var/datum/supply_pack/pack = goal_pack(department, params["pack"])
+			var/datum/economy_department/cargo/cargo = department
+			var/ert_id = istype(cargo) && !isnull(params["ert"]) ? econ_ui_number(params["ert"]) : null
 			if(!can_manage)
 				messages[user_ref] = manage_refusal
 			else if(action == "clear_goal")
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
-			else if(department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: \"[pack.name]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрали - [SSeconomy.settings.saving_goal_minutes] мин. на заказ."
+			else if(ert_id ? cargo.set_saving_goal_ert(ert_id, user) : department.set_saving_goal(pack, user))
+				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
 			else if(department.saving_goal_amount())
-				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal.name]\". Снимите её, чтобы выбрать другую."
+				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal_name()]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())
 				messages[user_ref] = "Новую цель можно поставить через [department.saving_goal_cooldown_minutes()] мин."
+			else if(ert_id)
+				messages[user_ref] = "Этот отряд сейчас не вызвать."
 			else
-				messages[user_ref] = "Этого нет в каталоге отдела."
+				messages[user_ref] = istype(cargo) ? "Копить можно на пак каталога, пак, который снабжение заказывает за свой бюджет, не дороже [econ_cargo_goal_max()] кр., или на отряд ОБР." : "Этого нет в каталоге отдела."
 		if("express")
 			var/datum/supply_pack/pack = catalog_pack(department, params["pack"])
 			if(!pack)
@@ -414,6 +473,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			messages[user_ref] = result[2]
 		if("drop")
 			var/list/result = econ_try_drop_contract(user, params["uid"])
+			messages[user_ref] = result[2]
+		if("board_reset")
+			var/list/result = department.reset_contracts(user)
 			messages[user_ref] = result[2]
 		else
 			return FALSE
