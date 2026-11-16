@@ -8,6 +8,7 @@ NPC-AI; полный список таких типов находится в `p
 | Тип | Почему контроллер не нужен | Проверка |
 |---|---|---|
 | Player swarmer | Оболочками и мегасвармерами управляют игроки. Все классы наследуют `AIStatus = AI_OFF`. | Спавнеры роя передают управление гостям, а ядро позволяет менять корпус. |
+| Factory combat drone | Дроном управляет игрок; он наследует `AIStatus = AI_OFF` и не может включить NPC-AI. | `ai_adapter_respects_initial_ai_off` |
 | Eldritch demons | Гост-вессели с `AIStatus = AI_OFF`; сегменты armsy двигаются сигналами головы | `ai_eldritch_stays_player_vessel` |
 | Guardians | Игровые духи с `AIStatus = AI_OFF`, создаваемые для владельца | `ai_guardian_stays_player_shell` |
 | Herald mirror | Марионетка хозяина с `AIStatus = AI_OFF`; атаки вызываются боссовыми обёртками хозяина | `ai_herald_mirror_stays_marionette` |
