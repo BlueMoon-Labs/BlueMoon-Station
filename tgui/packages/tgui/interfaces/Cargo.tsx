@@ -471,14 +471,14 @@ const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
   const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
   const deciders = budget.id === 'SEC' ? 'глава отдела, ГП или капитан' : 'глава отдела, ГП, капитан или ИИ';
-  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`;
+  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама, кроме расходников.`;
   if (budget.manager) {
     text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
   } else if (!budget.approver) {
-    text = `Начальства отдела${budget.id === 'SEC' ? '' : ' и ИИ'} на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)} оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
+    text = `Начальства отдела${budget.id === 'SEC' ? '' : ' и ИИ'} на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)}, кроме расходников, оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
   }
   if (!budget.manager && budget.staple_left !== undefined) {
-    text += ` Расходники своего отдела вы заказываете без одобрения, осталось ${formatCredits(budget.staple_left)} в этом часе.`;
+    text += ` Расходники своего отдела вы заказываете без одобрения, по своему часовому лимиту, осталось ${formatCredits(budget.staple_left)} Сверх остатка расходник ждёт решения${budget.approver ? '' : ' или уходит заявкой снабжению'}, сам он не одобряется.`;
   }
   return (
     <NoticeBox info>

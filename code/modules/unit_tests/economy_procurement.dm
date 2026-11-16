@@ -83,6 +83,7 @@
 	var/datum/econ_request/poor = engineering.submit_request(glass, engineer, "Без денег")
 	TEST_ASSERT_EQUAL(poor.status, ECON_REQUEST_PENDING, "Без денег расходник ждёт")
 	TEST_ASSERT(findtext(engineering.request_outlook(poor), "закажется сам, когда хватит денег"), "Окно объясняет ожидание расходника: [engineering.request_outlook(poor)]")
+	engineering.staple_spent["[engineer_account.account_id]"] = list(world.time, 0)
 	econ_test_set_balance(engineering.account, price)
 	engineering.approve_stale_requests()
 	TEST_ASSERT_EQUAL(poor.status, ECON_REQUEST_APPROVED, "Деньги пришли - расходник заказан на тике")

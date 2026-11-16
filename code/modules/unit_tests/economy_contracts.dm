@@ -326,6 +326,26 @@
 	TEST_ASSERT(QDELETED(tank), "Полный баллон ушёл ЦК: [console.status_report]")
 	TEST_ASSERT(contract.completed, "Контракт на газ выполнен")
 
+/// Контракт на другой газ впереди на доске не прячет пояснение к газу, который в баллоне есть.
+/datum/unit_test/economy_contract_machines/gas_shortfall_other_gas_first/Run()
+	setup()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/computer/piratepad_control/civilian/console = build_pad(station_turf)
+	var/obj/machinery/piratepad/pad = console.linked_pad()
+	var/datum/econ_contract/delivery/tritium = post_contract(/datum/bounty/item/engineering/gas/tritium_tank)
+	var/datum/econ_contract/delivery/bz = post_contract(/datum/bounty/item/engineering/gas/bz_tank)
+	var/list/contracts = econ_delivery_contracts_for(null)
+	TEST_ASSERT(contracts.Find(bz) < contracts.Find(tritium), "Контракт на BZ идёт раньше контракта на тритий")
+	var/obj/item/tank/internals/oxygen/empty/tank = allocate(/obj/item/tank/internals/oxygen/empty, get_turf(pad))
+	tank.air_contents.set_moles(GAS_TRITIUM, 8)
+	click(console, "recalc")
+	TEST_ASSERT(findtext(console.status_report, "трития 8 из"), "Пульт называет тритий в баллоне: [console.status_report]")
+	TEST_ASSERT(!findtext(console.status_report, "BZ 0 из"), "Пульт не подменяет тритий пустым BZ: [console.status_report]")
+	tank.air_contents.set_moles(GAS_TRITIUM, 0)
+	click(console, "recalc")
+	TEST_ASSERT(findtext(console.status_report, "Не хватает"), "Для пустого баллона пульт всё равно поясняет, чего ждут: [console.status_report]")
+
 /// Пад подработки вне станции ничего не засчитывает.
 /datum/unit_test/economy_contract_machines/pad_off_station/Run()
 	setup()

@@ -130,20 +130,32 @@
 /datum/bounty/proc/econ_shortfall(atom/movable/thing)
 	return null
 
-/// Пояснения к недотянувшим предметам на паде: не больше max штук, без повторов.
+/// Есть ли в предмете хоть часть того, что просит контракт (газа в баллоне больше нуля): такие пояснения важнее пустых.
+/datum/bounty/proc/econ_shortfall_partial(atom/movable/thing)
+	return FALSE
+
+/// Пояснения к недотянувшим предметам на паде: не больше max штук, без повторов. Если в предмете есть часть нужного одному из контрактов, пояснения других контрактов к нему не показываются.
 /proc/econ_contracts_shortfalls(atom/movable/thing, max = 3)
 	. = list()
 	var/list/contracts = econ_delivery_contracts_for(null)
 	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
+		var/list/partial = list()
+		var/list/empty = list()
 		for(var/datum/econ_contract/delivery/contract as anything in contracts)
 			if(contract.completed || contract.is_expired())
 				continue
 			var/note = contract.bounty.econ_shortfall(item)
-			if(note)
-				. |= "[note] (контракт \"[contract.title]\")"
-				break
-		if(length(.) >= max)
-			return
+			if(!note)
+				continue
+			note = "[note] (контракт \"[contract.title]\")"
+			if(contract.bounty.econ_shortfall_partial(item))
+				partial |= note
+			else
+				empty |= note
+		for(var/note in (length(partial) ? partial : empty))
+			. |= note
+			if(length(.) >= max)
+				return
 
 /// Контракты поставки в порядке, в котором им достаются предметы: свои взятые, ничьи, чужие взятые.
 /proc/econ_delivery_contracts_for(datum/bank_account/shipper)

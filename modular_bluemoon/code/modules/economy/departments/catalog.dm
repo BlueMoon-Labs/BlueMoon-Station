@@ -163,8 +163,11 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	if(department.can_manage(user) || department.auto_approvable(pack) || department.has_decider_on_shift() || department.staple_allowed(user, pack))
 		return department
 	if(speaker)
-		log_econ("[key_name(user)]: заявка на [pack.name] ([round(econ_pack_price(pack))] кр.) ушла снабжению - в отделе [department.name] на смене некому одобрить дороже [SSeconomy.settings.auto_approve_limit] кр.")
-		speaker.say("Начальства отдела [department.name][department.ai_decides() ? " и ИИ" : ""] на смене нет, а пак дороже [SSeconomy.settings.auto_approve_limit] кр.: заявку рассмотрит снабжение за свой бюджет.")
+		var/staple = econ_pack_staple(pack)
+		var/why_log = staple ? "часовой лимит расходников сотрудника исчерпан" : "дороже [SSeconomy.settings.auto_approve_limit] кр."
+		var/why_say = staple ? "ваш часовой лимит расходников без одобрения исчерпан" : "пак дороже [SSeconomy.settings.auto_approve_limit] кр."
+		log_econ("[key_name(user)]: заявка на [pack.name] ([round(econ_pack_price(pack))] кр.) ушла снабжению - в отделе [department.name] на смене некому одобрить, [why_log]")
+		speaker.say("Начальства отдела [department.name][department.ai_decides() ? " и ИИ" : ""] на смене нет, а [why_say]: заявку рассмотрит снабжение за свой бюджет.")
 	return null
 
 /datum/economy_department/proc/accepts_request(mob/living/user)

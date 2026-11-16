@@ -28,6 +28,10 @@
 		return null
 	return "[tank.name]: [gas_name] [round(tank.air_contents.get_moles(gas_type), 0.1)] из [moles_required] моль"
 
+/datum/bounty/item/engineering/gas/econ_shortfall_partial(atom/movable/thing)
+	var/obj/item/tank/tank = thing
+	return istype(tank) && tank.air_contents?.get_moles(gas_type) > 0
+
 //datum/bounty/item/engineering/gas/nitryl_tank
 //	name = "Full Tank of Nitryl"
 //	description = "The non-human staff of Station 88 has been volunteered to test performance enhancing drugs. Ship them a tank full of Nitryl so they can get started."
