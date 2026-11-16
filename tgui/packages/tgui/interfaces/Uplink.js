@@ -8,6 +8,23 @@ import { Window } from '../layouts';
 
 const MAX_SEARCH_RESULTS = 25;
 
+const ItemIcon = (props) => {
+  const { icon } = props;
+  if (!icon) {
+    return null;
+  }
+  return (
+    <img
+      src={icon}
+      width="32px"
+      height="32px"
+      style={{
+        display: 'inline-block',
+        imageRendering: 'pixelated',
+      }} />
+  );
+};
+
 export const Uplink = (props, context) => {
   const { data } = useBackend(context);
   const { telecrystals, uplink_type } = data;
@@ -156,7 +173,10 @@ const ItemList = (props) => {
           <Table.Row
             key={item.name}
             className="candystripe">
-            <Table.Cell bold>
+            <Table.Cell collapsing verticalAlign="middle">
+              <ItemIcon icon={item.icon} />
+            </Table.Cell>
+            <Table.Cell bold verticalAlign="middle">
               {decodeHtmlEntities(item.name)}
             </Table.Cell>
             <Table.Cell collapsing textAlign="right">
@@ -192,7 +212,24 @@ const ItemList = (props) => {
             name: item.name,
           })} />
       )}>
-      {decodeHtmlEntities(item.desc)}
+      <Flex>
+        <Flex.Item mr={1}>
+          {item.icon ? (
+            <ItemIcon icon={item.icon} />
+          ) : (
+            <Box
+              width="32px"
+              height="32px"
+              opacity={0.3}
+              style={{ textAlign: 'center' }}>
+              —
+            </Box>
+          )}
+        </Flex.Item>
+        <Flex.Item grow>
+          {decodeHtmlEntities(item.desc)}
+        </Flex.Item>
+      </Flex>
     </Section>
   ));
 };
