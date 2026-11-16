@@ -219,6 +219,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 		var/budget = econ_pack_catalog_department(pack)
 		if(budget)
 			entry["budget"] = budget
+			entry["staple"] = econ_pack_staple(pack)
 		supplies[pack.group]["packs"] += list(entry)
 	supplies[ECON_PERSONAL_CATALOG_GROUP] = econ_personal_catalog_group(show_contraband_partners)
 	return supplies
