@@ -4754,6 +4754,7 @@
 #include "modular_bluemoon\code\datums\traits\good\restorative_nanobots_quirk.dm"
 #include "modular_bluemoon\code\datums\traits\good\shriek_trait.dm"
 #include "modular_bluemoon\code\datums\traits\good\syscleaner_quirk.dm"
+#include "modular_bluemoon\code\datums\traits\negative\depression.dm"
 #include "modular_bluemoon\code\datums\traits\negative\emp_vulnerability.dm"
 #include "modular_bluemoon\code\datums\traits\negative\maintenance_quirk.dm"
 #include "modular_bluemoon\code\datums\traits\negative\nt_debt_quirk.dm"
