@@ -198,7 +198,9 @@
 				I = tool
 			user.temporarilyRemoveItemFromInventory(I, TRUE)
 			I.prepare_insert(target, target_zone)
-			I.Insert(target)
+			// drop_if_replaced = TRUE: заменённый орган всегда выбрасывается на пол,
+			// даже если у его типа по умолчанию стоит qdel (например, глаза).
+			I.Insert(target, FALSE, TRUE)
 			display_results(user, target, span_notice("Вы трансплантируете [tool] в [parse_zone(target_zone)] [target]."),
 				"[user] трансплантирует [tool] в [parse_zone(target_zone)] [target]!",
 				"[user] трансплантирует что-то в [parse_zone(target_zone)] [target]!")
