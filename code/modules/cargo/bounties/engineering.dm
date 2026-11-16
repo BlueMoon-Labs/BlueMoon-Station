@@ -1,16 +1,32 @@
 /datum/bounty/item/engineering/gas
 	name = "Full Tank of Pluoxium"
-	description = "CentCom RnD is researching extra compact internals. Ship us a tank full of Pluoxium and you'll be compensated."
+	description = "Исследовательский отдел ЦК испытывает компактные дыхательные баллоны: пришлите баллон плюоксия."
 	reward = 20000
 	wanted_types = list(/obj/item/tank)
 	var/moles_required = 20 // A full tank is 28 moles, but CentCom ignores that fact.
 	var/gas_type = GAS_PLUOXIUM
+	/// Газ в родительном падеже: "не меньше 20 моль трития"
+	var/gas_name = "плюоксия"
+
+/datum/bounty/item/engineering/gas/New()
+	..()
+	var/obj/item/tank/standard = /obj/item/tank
+	var/volume = initial(standard.volume)
+	var/pressure = CEILING(moles_required * R_IDEAL_GAS_EQUATION * T20C / volume, 50)
+	description += " Нужно не меньше [moles_required] моль [gas_name] в одном газовом баллоне, не в канистре: это стандартный баллон на [volume] л, накачанный примерно до [pressure] кПа при комнатной температуре. Аварийный баллончик столько не вместит."
 
 /datum/bounty/item/engineering/gas/applies_to(obj/O)
 	if(!..())
 		return FALSE
 	var/obj/item/tank/T = O
 	return T.air_contents.get_moles(gas_type) >= moles_required
+
+/// Баллон на паде, в котором нужного газа меньше, чем просит контракт.
+/datum/bounty/item/engineering/gas/econ_shortfall(atom/movable/thing)
+	var/obj/item/tank/tank = thing
+	if(!istype(tank) || !tank.air_contents || applies_to(tank) || shipped_count >= required_count)
+		return null
+	return "[tank.name]: [gas_name] [round(tank.air_contents.get_moles(gas_type), 0.1)] из [moles_required] моль"
 
 //datum/bounty/item/engineering/gas/nitryl_tank
 //	name = "Full Tank of Nitryl"
@@ -19,14 +35,16 @@
 
 /datum/bounty/item/engineering/gas/tritium_tank
 	name = "Full Tank of Tritium"
-	description = "Station 49 is looking to kickstart their research program. Ship them a tank full of Tritium."
+	description = "Станция 49 запускает исследовательскую программу: пришлите им баллон трития."
 	gas_type = GAS_TRITIUM
+	gas_name = "трития"
 
 /datum/bounty/item/engineering/gas/bz_tank
 	name = "Full Tank of BZ gas"
 	reward = 20000
-	description = "Station 69 is in need of sleep gas for their xenobiology division. Place full tank of BZ gas."
+	description = "Ксенобиологам станции 69 нужен усыпляющий газ: пришлите баллон BZ."
 	gas_type = GAS_BZ
+	gas_name = "BZ"
 
 /datum/bounty/item/engineering/pacman
 	name = "P.A.C.M.A.N.-type port. generator"

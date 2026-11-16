@@ -126,6 +126,25 @@
 				.++
 				break
 
+/// Почему предмет почти подходит под контракт, но не принят: "баллон: трития 8 из 20 моль". null - не о чем сказать.
+/datum/bounty/proc/econ_shortfall(atom/movable/thing)
+	return null
+
+/// Пояснения к недотянувшим предметам на паде: не больше max штук, без повторов.
+/proc/econ_contracts_shortfalls(atom/movable/thing, max = 3)
+	. = list()
+	var/list/contracts = econ_delivery_contracts_for(null)
+	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
+		for(var/datum/econ_contract/delivery/contract as anything in contracts)
+			if(contract.completed || contract.is_expired())
+				continue
+			var/note = contract.bounty.econ_shortfall(item)
+			if(note)
+				. |= "[note] (контракт \"[contract.title]\")"
+				break
+		if(length(.) >= max)
+			return
+
 /// Контракты поставки в порядке, в котором им достаются предметы: свои взятые, ничьи, чужие взятые.
 /proc/econ_delivery_contracts_for(datum/bank_account/shipper)
 	var/list/own = list()

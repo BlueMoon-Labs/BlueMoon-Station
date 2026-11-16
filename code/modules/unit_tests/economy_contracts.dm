@@ -304,6 +304,28 @@
 	TEST_ASSERT_EQUAL(taker_account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Доля взявшего за вычетом налога")
 	TEST_ASSERT_EQUAL(civilian.account.account_balance - civilian_before, reward - share, "Остальное отделу")
 
+/// Контракт на баллон газа говорит, сколько газа нужно; баллон с недобором пад не отправляет и пишет, сколько газа в нём есть из нужного; полный уходит.
+/datum/unit_test/economy_contract_machines/gas_tank_shortfall/Run()
+	setup()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/computer/piratepad_control/civilian/console = build_pad(station_turf)
+	var/obj/machinery/piratepad/pad = console.linked_pad()
+	var/datum/econ_contract/delivery/contract = post_contract(/datum/bounty/item/engineering/gas/tritium_tank)
+	var/datum/bounty/item/engineering/gas/bounty = contract.bounty
+	TEST_ASSERT(findtext(contract.desc, "[bounty.moles_required] моль трития") && findtext(contract.desc, "кПа"), "Описание называет, сколько газа нужно: [contract.desc]")
+	var/obj/item/tank/internals/oxygen/empty/tank = allocate(/obj/item/tank/internals/oxygen/empty, get_turf(pad))
+	tank.air_contents.set_moles(GAS_TRITIUM, 8)
+	click(console, "recalc")
+	TEST_ASSERT(findtext(console.status_report, "трития 8 из [bounty.moles_required] моль"), "Пульт говорит, сколько газа в баллоне: [console.status_report]")
+	click(console, "send")
+	TEST_ASSERT(!QDELETED(tank) && !contract.completed, "Баллон с недобором остался на паде")
+	TEST_ASSERT(findtext(console.status_report, "Не хватает"), "После отправки пульт объясняет отказ: [console.status_report]")
+	tank.air_contents.set_moles(GAS_TRITIUM, bounty.moles_required + 1)
+	click(console, "send")
+	TEST_ASSERT(QDELETED(tank), "Полный баллон ушёл ЦК: [console.status_report]")
+	TEST_ASSERT(contract.completed, "Контракт на газ выполнен")
+
 /// Пад подработки вне станции ничего не засчитывает.
 /datum/unit_test/economy_contract_machines/pad_off_station/Run()
 	setup()
