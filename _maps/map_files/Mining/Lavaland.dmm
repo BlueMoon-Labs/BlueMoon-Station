@@ -7410,7 +7410,6 @@
 	dir = 1
 	},
 /obj/structure/window/reinforced/survival_pod,
-/obj/structure/window/reinforced/survival_pod,
 /obj/structure/window/reinforced/survival_pod{
 	dir = 8
 	},
@@ -9096,7 +9095,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/obj/structure/table/glass,
 /obj/structure/table/glass,
 /obj/item/slime_extract/grey{
 	pixel_y = 4
@@ -20584,14 +20582,6 @@
 /turf/open/floor/circuit/telecomms,
 /area/mine/engineering/telecomms_floor2)
 "our" = (
-/obj/structure/table/reinforced{
-	color = "#777777";
-	layer = 2.7
-	},
-/obj/structure/window/reinforced/survival_pod{
-	dir = 2
-	},
-/obj/machinery/door/firedoor/border_only,
 /turf/closed/wall/mineral/plastitanium{
 	layer = 2.8
 	},
@@ -21942,7 +21932,6 @@
 	id = "ds1armory";
 	name = "Armory Shutters"
 	},
-/obj/machinery/door/firedoor,
 /obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/mineral/plastitanium,
@@ -29556,10 +29545,6 @@
 	name = "Slime Euthanization Chamber";
 	req_access_txt = "150"
 	},
-/obj/machinery/door/window/survival_pod{
-	name = "Slime Euthanization Chamber";
-	req_access_txt = "150"
-	},
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "uNO" = (
@@ -31525,7 +31510,6 @@
 	},
 /area/mine/common/medical)
 "wea" = (
-/obj/structure/table/reinforced/plastitaniumglass,
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4
