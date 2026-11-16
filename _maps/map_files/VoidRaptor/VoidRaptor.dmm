@@ -94068,6 +94068,9 @@
 /area/engineering/atmos)
 "vkr" = (
 /obj/effect/turf_decal/tile/red/diagonal_centre,
+/obj/structure/reagent_dispensers/peppertank{
+	pixel_y = 29
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/hallway/secondary/exit/departure_lounge)
 "vku" = (
