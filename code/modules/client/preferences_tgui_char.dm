@@ -529,6 +529,7 @@
 
 	fields += list(ff("has_cock", "Иметь пенис", FEATURE_BOOL))
 	fields += list(color_ff("cock_color", "Цвет пениса", FEATURE_COLOR_LIMITED))
+	fields += list(ff("cock_dynamic_size", "Динамический размер", FEATURE_BOOL))
 	fields += list(num_ff("cock_length", "Длина пениса, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
 	var/list/cock_max_field = num_ff("cock_max_length", "Максимальная длина, см", 0, CONFIG_GET(number/penis_max_inches_prefs))
 	cock_max_field["deletable"] = TRUE
@@ -543,6 +544,14 @@
 	var/list/cock_ratio_field = num_ff("cock_diameter_ratio", "Коэффициент диаметра", CONFIG_GET(number/diameter_ratio_min_size_prefs), CONFIG_GET(number/diameter_ratio_max_size_prefs), FEATURE_SCOPE_FEATURE, FEATURE_SPRITE_SCALE_HINT)
 	cock_ratio_field["step"] = 0.01
 	fields += list(cock_ratio_field)
+	fields += list(num_ff("cock_flaccid_length", "Длина в спокойном состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_flaccid_width_field = num_ff("cock_flaccid_width", "Ширина в спокойном состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_flaccid_width_field["step"] = 0.1
+	fields += list(cock_flaccid_width_field)
+	fields += list(num_ff("cock_erect_length", "Длина в возбуждённом состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_erect_width_field = num_ff("cock_erect_width", "Ширина в возбуждённом состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_erect_width_field["step"] = 0.1
+	fields += list(cock_erect_width_field)
 	fields += list(list_ff("cock_visibility", "Видимость пениса", visibility_options))
 	fields += list(ff("cock_accessible", "Пенис всегда доступен", FEATURE_BOOL))
 	fields += list(ff("cock_stuffing", "Игрушки и пополнение", FEATURE_BOOL))
@@ -911,8 +920,9 @@
 
 	var/list/parts = list()
 	parts += list(genital_part_block("penis", "has_cock", "Пенис", list(
-		"cock_color", "cock_shape", "cock_length", "cock_max_length", "cock_min_length",
-		"cock_diameter_ratio", "cock_visibility", "cock_accessible", "cock_stuffing",
+		"cock_color", "cock_shape", "cock_dynamic_size", "cock_length", "cock_max_length", "cock_min_length",
+		"cock_diameter_ratio", "cock_flaccid_length", "cock_flaccid_width",
+		"cock_erect_length", "cock_erect_width", "cock_visibility", "cock_accessible", "cock_stuffing",
 	)))
 	parts += list(genital_part_block("testicles", "has_balls", "Яички", list(
 		"balls_color", "balls_shape", "balls_size", "balls_visibility",
@@ -979,6 +989,10 @@
 			return feats["breasts_sprite_variant"] != "Old"
 		if("breasts_fluid")
 			return !!feats["breasts_producing"]
+		if("cock_length", "cock_max_length", "cock_min_length", "cock_diameter_ratio")
+			return !feats["cock_dynamic_size"]
+		if("cock_flaccid_length", "cock_flaccid_width", "cock_erect_length", "cock_erect_width")
+			return !!feats["cock_dynamic_size"]
 	return TRUE
 
 /datum/character_setup/proc/markings_type()

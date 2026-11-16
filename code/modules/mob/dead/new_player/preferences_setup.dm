@@ -75,6 +75,10 @@
 		for(var/obj/item/organ/genital/genital in mannequin.internal_organs)
 			if(CHECK_BITFIELD(genital.genital_flags, GENITAL_CAN_AROUSE))
 				genital.aroused_state = aroused_preview
+				if(istype(genital, /obj/item/organ/genital/penis))
+					var/obj/item/organ/genital/penis/penis = genital
+					if(penis.dynamic_size)
+						penis.apply_dynamic_size()
 				genital.update_appearance()
 
 		REMOVE_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
