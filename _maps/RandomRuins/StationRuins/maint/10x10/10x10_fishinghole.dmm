@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"fz" = (
+/obj/machinery/vending/fishing,
+/turf/open/floor/plasteel/checker,
+/area/template_noop)
+"fq" = (
+/obj/structure/closet/crate/fishing,
+/turf/open/floor/plasteel/checker,
+/area/template_noop)
 "ag" = (
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -420,7 +428,7 @@ ag
 Cj
 FV
 sb
-Ou
+fz
 of
 of
 tw
@@ -475,7 +483,7 @@ Og
 "}
 (7,1,1) = {"
 Ei
-Ou
+fq
 Pj
 li
 li

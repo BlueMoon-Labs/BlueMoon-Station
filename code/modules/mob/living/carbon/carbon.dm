@@ -856,6 +856,7 @@
 	if(client?.eye && client.eye != src)
 		var/atom/A = client.eye
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
+			SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 			return
 
 	if(glasses && istype(glasses, /obj/item/clothing/glasses))

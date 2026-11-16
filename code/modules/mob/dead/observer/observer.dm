@@ -573,6 +573,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "No area available.")
 		return
 	usr.forceMove(pick(L))
+	leave_observed_view()
 
 /mob/dead/observer/proc/view_gas()
 	set category = "Ghost"
@@ -653,6 +654,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 			if(T && isturf(T))	//Make sure the turf exists, then move the source to that destination.
 				A.forceMove(T)
+				leave_observed_view()
 			else
 				to_chat(A, "This mob is not located in the game world.")
 
@@ -1032,7 +1034,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set name = "Observe"
 	set category = "OOC"
 
-	var/list/creatures = getpois()
+	var/list/creatures = getpois(mobs_only = TRUE)
 
 	reset_perspective(null)
 
@@ -1043,7 +1045,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if (!eye_name)
 		return
 
-	do_observe(creatures[eye_name])
+	var/mob/mob_eye = creatures[eye_name]
+	if(ismob(mob_eye) && mob_eye != src && !QDELETED(mob_eye))
+		observe_with_orbit(mob_eye)
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
 	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,

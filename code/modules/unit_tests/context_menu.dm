@@ -121,7 +121,7 @@
 	TEST_ASSERT(initial(human_type.right_click_actions), "У человека ПКМ должен быть действием")
 	TEST_ASSERT(initial(robot_type.right_click_actions), "У киборга ПКМ должен быть действием")
 	TEST_ASSERT(!initial(ai_type.right_click_actions), "У ИИ ПКМ должен открывать меню BYOND")
-	TEST_ASSERT(!initial(ghost_type.right_click_actions), "У призрака ПКМ должен открывать меню BYOND")
+	TEST_ASSERT(initial(ghost_type.right_click_actions), "У призрака ПКМ должен работать по его режиму, как у живого")
 
 /// Меню по человеку: осмотр, текущий интент помечен, остальные интенты - в подменю «Интенты…»; шапка открывает выбор режима
 /datum/unit_test/context_menu_human_entries
@@ -904,7 +904,8 @@
 /datum/unit_test/context_menu_buildmode_popup
 
 /datum/unit_test/context_menu_buildmode_popup/Run()
-	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.click_mode = RIGHT_CLICK_MODE_NATIVE
 	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
 	user.click_mode = RIGHT_CLICK_MODE_NATIVE
 	var/datum/buildmode/context_menu_stub/buildmode = new

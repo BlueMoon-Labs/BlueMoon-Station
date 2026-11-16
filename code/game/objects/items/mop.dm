@@ -181,6 +181,8 @@
 	. = MOP_AFTER_LIQUID_CONTINUE_ANIMATE
 	if(liquids.fire_state)
 		return MOP_AFTER_LIQUID_STOP
+	if(istype(liquids.my_turf, /turf/open/pool))
+		return MOP_AFTER_LIQUID_CONTINUE
 
 	liquids.liquid_simple_delete_flat(liquids.total_reagents)
 

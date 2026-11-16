@@ -29,7 +29,45 @@
 
 ///Реальный заблокированный следующий турф маршрута к цели, либо null
 /proc/ai_get_blocked_path_turf(mob/living/pawn, atom/target)
-	return ai_blocked_step_turf(pawn, ai_next_path_step(pawn, target))
+	var/turf/next_step = ai_next_path_step(pawn, target)
+	if(ai_step_reaches_target(pawn, target, next_step))
+		return null
+	return ai_blocked_step_turf(pawn, next_step)
+
+///Шаг на клетку цели, до которой уже достаёт удар. Цель там бьёт милишка через AttackingTarget
+///со всеми гейтами моба; снос "преграды" бил бы её второй раз в обход пикирования и отдыха.
+///Предикат тот же, что у милишки: цель в шкафу не Adjacent, и шкаф остаётся преградой.
+/proc/ai_step_reaches_target(mob/living/pawn, atom/target, turf/next_step)
+	if(!next_step || next_step != get_turf(target))
+		return FALSE
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	var/atom/attack_origin = (istype(hostile_pawn) && hostile_pawn.targets_from) || pawn
+	return target.Adjacent(attack_origin)
+
+///Спецфаза, в которой контроллер моба не ведёт (пикирование, чардж): путь моб тогда не расчищает
+/proc/ai_pawn_path_paused(mob/living/pawn)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	return istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move()
+
+///Отдых мегафауны после спецатаки: живых она не бьёт, а породу и мебель на пути ломать может
+/proc/ai_pawn_resting(mob/living/pawn)
+	var/mob/living/simple_animal/hostile/megafauna/boss = pawn
+	return istype(boss) && boss.recovery_time >= world.time
+
+///Транспорт с седоком, которого моб может атаковать: его бьют только как цель обычной атакой,
+///а не сносом преград и окружения. Технику, которую моб целью не берёт, он ломает как мебель.
+/proc/ai_smash_spares_vehicle(mob/living/pawn, obj/thing)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	return istype(hostile_pawn) && ai_vehicle_has_living_occupant(thing) && hostile_pawn.CanAttack(thing)
+
+/proc/ai_vehicle_has_living_occupant(obj/thing)
+	var/obj/vehicle/vehicle = thing
+	if(!istype(vehicle))
+		return FALSE
+	for(var/mob/living/occupant as anything in vehicle.occupants)
+		if(isliving(occupant) && occupant.stat != DEAD)
+			return TRUE
+	return FALSE
 
 ///next_step, если он заблокирован преградой (не мобом), иначе null
 /proc/ai_blocked_step_turf(mob/living/pawn, turf/next_step)
@@ -116,6 +154,8 @@
 	if(QDELETED(target))
 		return
 	var/mob/living/pawn = controller.pawn
+	if(ai_pawn_path_paused(pawn))
+		return
 	//шаг пути и его смежность считаются один раз на план, а не в каждой из трёх проверок
 	var/turf/next_step = ai_next_path_step(pawn, target)
 	var/turf/adjacent_step = next_step?.Adjacent(pawn) ? next_step : null
@@ -145,7 +185,7 @@
 	if(isitem(target))
 		return
 
-	if(!ai_blocked_step_turf(pawn, next_step))
+	if(ai_step_reaches_target(pawn, target, adjacent_step) || !ai_blocked_step_turf(pawn, next_step))
 		return
 
 	controller.queue_behavior(attack_behaviour, target_key)
@@ -166,6 +206,8 @@
 
 	if(QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(ai_pawn_path_paused(living_pawn))
+		return AI_BEHAVIOR_DELAY
 
 	var/turf/blocked_turf = ai_get_blocked_path_turf(living_pawn, target)
 	if(!blocked_turf)
@@ -215,6 +257,8 @@
 	var/atom/target = controller.blackboard[target_key]
 	if(!isliving(living_pawn) || QDELETED(target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(ai_pawn_path_paused(living_pawn) || ai_pawn_resting(living_pawn))
+		return AI_BEHAVIOR_DELAY
 	var/mob/living/blocker = ai_path_blocker_mob(living_pawn, target)
 	if(QDELETED(blocker))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED //путь чист - блокера больше нет
