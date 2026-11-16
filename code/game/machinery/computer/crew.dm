@@ -85,15 +85,15 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	// Medical
 	jobs["Chief Medical Officer"] = 20
 	jobs["Chemist"] = 21
-	jobs["Geneticist"] = 22
-	jobs["Virologist"] = 23
-	jobs["Medical Doctor"] = 24
-	jobs["Paramedic"] = 25
+	jobs["Virologist"] = 22
+	jobs["Medical Doctor"] = 23
+	jobs["Paramedic"] = 24
 	// Science
 	jobs["Research Director"] = 30
 	jobs["Scientist"] = 31
 	jobs["Roboticist"] = 32
 	jobs["Vanguard Operative"] = 33 //BlueMoon edit
+	jobs["Geneticist"] = 34
 	// Engineering
 	jobs["Chief Engineer"] = 40
 	jobs["Station Engineer"] = 41

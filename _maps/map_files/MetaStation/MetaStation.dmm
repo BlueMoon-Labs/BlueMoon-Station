@@ -14124,10 +14124,6 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "bgT" = (
-/obj/structure/sign/poster/official/ue_no{
-	pixel_x = 32;
-	pixel_y = 0
-	},
 /obj/structure/chair/stool,
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 5
@@ -14135,6 +14131,10 @@
 /obj/effect/turf_decal/loading_area{
 	icon_state = "drain";
 	name = "drain"
+	},
+/obj/machinery/airalarm{
+	dir = 8;
+	pixel_x = 23
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/commons/fishing_nook)
@@ -45976,6 +45976,10 @@
 	dir = 9
 	},
 /obj/item/kirbyplants/random,
+/obj/structure/sign/poster/official/ue_no{
+	pixel_x = 32;
+	pixel_y = 0
+	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
 "doJ" = (
@@ -54878,12 +54882,11 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 6
 	},
-/obj/machinery/airalarm{
-	dir = 8;
-	pixel_x = 23
-	},
 /obj/structure/chair{
 	dir = 8
+	},
+/obj/machinery/light{
+	dir = 4
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/commons/fishing_nook)
