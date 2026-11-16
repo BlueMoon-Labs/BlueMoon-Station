@@ -18308,9 +18308,6 @@
 /obj/machinery/conveyor/inverted{
 	dir = 9
 	},
-/obj/machinery/conveyor/inverted{
-	dir = 9
-	},
 /turf/open/floor/plating,
 /area/mine/engineering/recycling)
 "kQX" = (

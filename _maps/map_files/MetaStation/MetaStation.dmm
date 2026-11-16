@@ -4206,10 +4206,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/security/brig)
-"aok" = (
-/obj/structure/lattice,
-/turf/closed/wall,
-/area/maintenance/port/aft)
 "aor" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 4
@@ -50076,10 +50072,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/engineering/main)
-"eQs" = (
-/obj/structure/lattice,
-/turf/closed/wall,
-/area/commons/cryopod)
 "eQv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -63025,10 +63017,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
-"kHK" = (
-/obj/structure/lattice,
-/turf/closed/wall,
-/area/commons/fishing_nook)
 "kIk" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock{
@@ -104071,7 +104059,7 @@ dne
 nIZ
 jpS
 doJ
-qZC
+aDb
 tlS
 aDb
 doJ
@@ -106169,7 +106157,7 @@ bCS
 dVL
 duy
 duy
-kHK
+duy
 duy
 lIb
 lIb
@@ -113654,7 +113642,7 @@ nho
 dux
 dux
 dux
-aok
+dux
 dux
 dux
 rmj
@@ -126660,7 +126648,7 @@ wKI
 uQN
 edG
 edG
-eQs
+edG
 edG
 edG
 kPw

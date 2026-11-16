@@ -851,7 +851,7 @@
 			"/obj/machinery/smartfridge/organ/preloaded": 1
 		},
 		"wall_stacking": {
-			"/turf/closed/wall": 4,
+			"/turf/closed/wall": 1,
 			"/turf/closed/wall/r_wall": 107
 		}
 	},
