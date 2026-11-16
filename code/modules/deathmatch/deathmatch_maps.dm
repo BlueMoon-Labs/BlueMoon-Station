@@ -261,7 +261,7 @@ proc/get_deathmatch_loadout(path)
 /datum/map_template/deathmatch/de_dust2
 	name = "TDM - de_dust2"
 	display_name = "Team Deathmatch: de_dust2"
-	description = "Two five-player teams, a fresh pair of kits every round, on a two-level de_dust2. First team to three rounds takes the match."
+	description = "Two five-player teams, a fresh pair of kits every round, on a two-level de_dust2. First team to five round wins takes the match."
 	mappath = "_maps/TDM/de_dust2/de_dust2.dmm"
 	min_players = 2
 	max_players = 10

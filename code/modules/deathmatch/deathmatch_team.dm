@@ -9,7 +9,8 @@
 //
 // The kits are team aware: each round hands out one pair of loadouts, one per
 // side, so both teams get the same weapon family but each gets its own version
-// of it. Nobody picks; the random preset pool picks for them.
+// of it. Nobody picks; the random preset pool picks for them, and the same
+// preset never arms two rounds in a row.
 //
 // The map template selects it through /datum/map_template/deathmatch/lobby_type.
 
@@ -30,14 +31,15 @@
 	var/round_time = 2 MINUTES
 	/// The pause between rounds, used to show the score and rebuild bodies.
 	var/intermission_time = 8 SECONDS
-	/// The outer match clock. A match is three to five two minute rounds plus
-	/// intermissions, so this leaves room for a fifth round to run long and is
-	/// only the backstop for a match that somehow never reaches its win
-	/// condition.
-	game_time = 15 MINUTES
-	/// Rounds a team has to take to win the match. With the round cap below
-	/// (rounds_to_win * 2 - 1) this makes a match three to five rounds long.
-	var/rounds_to_win = 3
+	/// The outer match clock. A match is first to five round wins, so nine to
+	/// eleven two minute rounds plus intermissions is roughly 24 minutes. This
+	/// is only the backstop for a game that never gets there, such as an endless
+	/// run of drawn rounds.
+	game_time = 30 MINUTES
+	/// Round wins a team needs to take the match. There is no round cap: a draw
+	/// awards no point, so a 4 - 4 game simply keeps playing rounds until one
+	/// side takes its fifth win.
+	var/rounds_to_win = 5
 	var/team_one_score = 0
 	var/team_two_score = 0
 	var/team_one_name = "Terrorists"
@@ -70,10 +72,8 @@
 			/datum/outfit/vr/deathmatch_loadout/tdm_assault_counter,
 		),
 	)
-	/// Presets which have not been drawn yet this match. Drawing a preset removes
-	/// it from this list, so no weapon family can appear twice in one match.
-	var/list/remaining_loadout_presets = list()
-	/// Names of presets already used, kept for diagnostics.
+	/// Names of the presets already played, oldest first. Used for diagnostics
+	/// and to keep the next draw from repeating the previous round.
 	var/list/played_loadout_presets = list()
 	/// The preset equipping the current round, or the upcoming one while waiting.
 	var/current_loadout_preset
@@ -88,21 +88,32 @@
 	. = ..()
 	reset_loadout_presets()
 
-/// Builds a fresh random-without-replacement pool for a new lobby.
+/// Clears the match history and draws the first round's preset.
 /datum/deathmatch_lobby/team_deathmatch/proc/reset_loadout_presets()
-	remaining_loadout_presets = loadout_presets.Copy()
 	played_loadout_presets = list()
 	current_loadout_preset = null
 	next_loadout_preset = draw_loadout_preset()
 
-/// Removes and returns one random remaining preset name, or null when all five
-/// have already been drawn. Removed presets are never returned to the pool.
+/**
+ * Returns a random preset name, never the one the previous round just used.
+ *
+ * A match now runs to five round wins, which is more rounds than there are
+ * presets, so the five of them are reused rather than drawn without
+ * replacement. Skipping only the most recent one is what keeps the repetition
+ * from being felt: the same weapons can never arm two rounds in a row, while
+ * any preset may come back once another round has been played in between.
+ */
 /datum/deathmatch_lobby/team_deathmatch/proc/draw_loadout_preset()
-	if(!length(remaining_loadout_presets))
+	var/list/candidates = loadout_presets.Copy()
+	if(length(played_loadout_presets))
+		candidates -= played_loadout_presets[length(played_loadout_presets)]
+	if(!length(candidates))
+		// A custom config with a single preset has nothing else to alternate
+		// with, so repeating it is better than stalling the match.
+		candidates = loadout_presets.Copy()
+	if(!length(candidates))
 		return null
-	var/picked = pick(remaining_loadout_presets)
-	remaining_loadout_presets -= picked
-	return picked
+	return pick(candidates)
 
 /datum/deathmatch_lobby/team_deathmatch/to_string()
 	return "Team Deathmatch lobby (host [host_key], [player_count()] player(s), round [round_number])"
@@ -332,8 +343,9 @@
 		log_game("Deathmatch: [to_string()] cannot start round [round_number + 1]: arena is not loaded.")
 		return FALSE
 	if(isnull(next_loadout_preset))
-		// Five presets means at most five rounds, including draws. Never refill
-		// the pool mid-match: that would make a repeated weapon family possible.
+		// Only reachable when loadout_presets itself is empty: the draw reuses
+		// presets, so it always has a candidate otherwise and never runs dry.
+		log_game("Deathmatch: [to_string()] has no loadout preset for round [round_number + 1].")
 		if(round_number > 0)
 			finish_match()
 		return FALSE
@@ -342,7 +354,8 @@
 	current_loadout_preset = next_loadout_preset
 	played_loadout_presets += current_loadout_preset
 	// Draw the following round now, so the intermission roster shows a stable
-	// preview and this preset is already out of the random pool.
+	// preview. The history already holds this round's preset, which is exactly
+	// what the draw excludes.
 	next_loadout_preset = draw_loadout_preset()
 
 	round_number++
@@ -372,7 +385,7 @@
 			return FALSE
 
 	give_round_bomb()
-	announce_to_players(span_boldnotice("Round [round_number] of [rounds_to_win * 2 - 1] begins. Kits: [round_kits_label()]."))
+	announce_to_players(span_boldnotice("Round [round_number] begins. First to [rounds_to_win] round wins takes the match. Kits: [round_kits_label()]."))
 	announce_to_players(span_notice("Both teams can slip bullets mid-jump and recover stamina quickly."))
 	announce_to_players(span_notice("[team_one_name] [team_one_score] - [team_two_score] [team_two_name]"))
 	addtimer(CALLBACK(src, PROC_REF(round_timer_callback), round_token), round_time)
@@ -592,7 +605,10 @@
 		announce_to_players(span_notice("No point awarded. [team_one_name] [team_one_score] - [team_two_score] [team_two_name]"))
 	refresh_uis()
 
-	if(team_one_score >= rounds_to_win || team_two_score >= rounds_to_win || team_one_score + team_two_score >= rounds_to_win * 2 - 1 || isnull(next_loadout_preset))
+	// Only the score decides the match. No round cap and no preset exhaustion:
+	// a drawn round awards no point, so play simply continues until one side
+	// reaches rounds_to_win (or the outer match clock fires).
+	if(team_one_score >= rounds_to_win || team_two_score >= rounds_to_win)
 		addtimer(CALLBACK(src, PROC_REF(finish_match)), intermission_time)
 	else
 		addtimer(CALLBACK(src, PROC_REF(start_round)), intermission_time)

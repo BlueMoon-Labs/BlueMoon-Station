@@ -158,7 +158,7 @@ export function DeathmatchLobby(props) {
                     </Box>
                     <Box inline ml={2} color="average">
                       {tdm.round > 0
-                        ? `Round ${tdm.round}/${tdm.rounds_to_win * 2 - 1}`
+                        ? `Round ${tdm.round}`
                         : 'First round next'}
                       {tdm.round_live
                         ? ` \u2014 ${tdm.round_time_left}`
@@ -527,8 +527,10 @@ function SideColumn(props) {
               {tdm.score_two}
             </LabeledList.Item>
             <LabeledList.Item label="Round">
-              {tdm.round > 0 ? tdm.round : 'not started'} /{' '}
-              {tdm.rounds_to_win * 2 - 1}
+              {tdm.round > 0 ? tdm.round : 'not started'}
+            </LabeledList.Item>
+            <LabeledList.Item label="Wins needed">
+              {tdm.rounds_to_win}
             </LabeledList.Item>
             <LabeledList.Item label="Your team">
               {tdm.your_team === 1

@@ -431,9 +431,10 @@
 //
 // Team Deathmatch kits.
 //
-// /datum/deathmatch_lobby/team_deathmatch draws these randomly without
-// replacement, one pair of kits per round: both teams get the same weapon family, but each
-// side gets its own version of it. They are all tdm_only so the free-for-all
+// /datum/deathmatch_lobby/team_deathmatch draws these randomly, one pair of
+// kits per round: both teams get the same weapon family, but each side gets its
+// own version of it. Presets are reused across a match, but never in two
+// consecutive rounds. They are all tdm_only so the free-for-all
 // picker does not offer one side's half of a pair.
 //
 // The kits assume the map is an open arena where a fight lasts a round, not a
