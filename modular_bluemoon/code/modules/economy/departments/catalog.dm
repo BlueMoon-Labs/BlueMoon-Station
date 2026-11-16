@@ -152,7 +152,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	return econ_catalog_pack_allowed(pack) ? econ_pack_department(pack) : null
 
 /// Отдел, чей бюджет оплатит заявку user на пак с окна снабжения: пак из каталога отдела, а user - его сотрудник, глава, ГП или капитан. Иначе null - заявка уходит снабжению.
-/// Дорогой пак, когда на смене некому решить (ни начальства, ни ИИ) и это не расходник в лимите сотрудника, тоже уходит снабжению. С speaker это окончательный маршрут - он пишется в лог, а speaker объясняет его подавшему.
+/// Дорогой пак или расходник сверх часового лимита сотрудника, когда на смене некому решить (ни начальства, ни ИИ), тоже уходит снабжению. С speaker это окончательный маршрут - он пишется в лог, а speaker объясняет его подавшему.
 /proc/econ_request_department(mob/living/user, datum/supply_pack/pack, atom/movable/speaker)
 	var/department_id = econ_pack_catalog_department(pack)
 	if(!department_id || department_id == ACCOUNT_CMD)
@@ -160,7 +160,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	if(!department?.accepts_request(user))
 		return null
-	if(department.can_manage(user) || econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit || department.has_decider_on_shift() || department.staple_allowed(user, pack))
+	if(department.can_manage(user) || department.auto_approvable(pack) || department.has_decider_on_shift() || department.staple_allowed(user, pack))
 		return department
 	if(speaker)
 		log_econ("[key_name(user)]: заявка на [pack.name] ([round(econ_pack_price(pack))] кр.) ушла снабжению - в отделе [department.name] на смене некому одобрить дороже [SSeconomy.settings.auto_approve_limit] кр.")
@@ -226,11 +226,12 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	if(has_approver_on_shift())
 		return "[verb_wait] решения главы, оплатит бюджет отдела"
 	var/datum/economy_settings/settings = SSeconomy.settings
-	if(econ_pack_price(pack) > settings.auto_approve_limit)
+	if(!auto_approvable(pack))
 		if(ai_decides() && econ_ai_on_shift())
 			return "[verb_wait] решения ИИ: начальства отдела на смене нет, оплатит бюджет отдела"
 		var/handoff = hands_off_requests() && settings.request_handoff_minutes > 0 ? "; через [settings.request_handoff_minutes] мин. её сможет решить и начальник снабжения" : ""
-		return "[verb_wait] главу, ГП или капитана[ai_decides() ? " либо ИИ" : ""]: никого из них на смене нет, а дороже [settings.auto_approve_limit] кр. заявка сама не одобряется[handoff]"
+		var/why = econ_pack_staple(pack) ? "часовой лимит расходников без одобрения исчерпан" : "дороже [settings.auto_approve_limit] кр. заявка сама не одобряется"
+		return "[verb_wait] главу, ГП или капитана[ai_decides() ? " либо ИИ" : ""]: никого из них на смене нет, а [why][handoff]"
 	if(settings.auto_approve_wait_minutes > 0)
 		return "[verb_wait]: начальства отдела на смене нет, [count > 1 ? "одобрятся сами" : "одобрится сама"] через [settings.auto_approve_wait_minutes] мин."
 	return "[verb_wait]: начальства отдела на смене нет, решит глава, когда выйдет на смену"
@@ -341,7 +342,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	log_econ("[key_name(user)] подал заявку [request.uid] отделу [name]: [pack.name] ([econ_pack_price(pack)] кр.), причина: [reason]")
 	if(can_manage(user))
 		approve(request, user)
-	else if(!approve_staple(request) && account_id && econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit && !has_approver_on_shift() && world.time >= auto_approve_after["[account_id]"])
+	else if(!approve_staple(request) && account_id && auto_approvable(pack) && !has_approver_on_shift() && world.time >= auto_approve_after["[account_id]"])
 		if(approve(request, null, TRUE))
 			auto_approve_after["[account_id]"] = world.time + SSeconomy.settings.auto_approve_cooldown_minutes MINUTES
 	if(announce && request.status == ECON_REQUEST_PENDING)
@@ -354,8 +355,12 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	for(var/datum/econ_request/request as anything in requests.Copy())
 		if(request.status != ECON_REQUEST_PENDING || approve_staple(request))
 			continue
-		if(settings.auto_approve_wait_minutes > 0 && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && econ_pack_price(request.pack) <= settings.auto_approve_limit)
+		if(settings.auto_approve_wait_minutes > 0 && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && auto_approvable(request.pack))
 			approve(request, null, TRUE)
+
+/// Пак одобряется сам по обычному пути: не дороже auto_approve_limit и не расходник - расходники одобряются сами только в часовом лимите сотрудника.
+/datum/economy_department/proc/auto_approvable(datum/supply_pack/pack)
+	return !econ_pack_staple(pack) && econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit
 
 /// Оставляет в списке заявок все ожидающие и ECON_REQUESTS_KEPT последних решённых.
 /proc/econ_trim_resolved(list/requests)

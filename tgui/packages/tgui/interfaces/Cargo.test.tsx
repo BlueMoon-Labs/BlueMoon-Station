@@ -384,6 +384,20 @@ test('консоль заявок: дорогой расходник без на
   ui.unmount();
   const spent = setup({ requestonly: 1, can_send: 0, supplies, prices, budget_request: { ...budget, staple_left: 1000 } });
   expect(spent.queryAllByText('бюджет отдела')).toHaveLength(0);
+  spent.unmount();
+  const cheap = { ...prices, '/datum/supply_pack/medical/surgery': [900, 'prospectors', 1, [['prospectors', 900]]] };
+  const cheapSpent = setup({ requestonly: 1, can_send: 0, supplies, prices: cheap, budget_request: { ...budget, staple_left: 0 } });
+  expect(cheapSpent.queryAllByText('бюджет отдела')).toHaveLength(0);
+});
+
+test('консоль заявок СБ при начальстве на смене не предлагает ИИ', () => {
+  const budget = { id: 'SEC', name: 'Служба безопасности', balance: 9000, manager: 0, any: 0, approver: 1, auto_limit: 2000 };
+  const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
+  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе/)).toBeTruthy();
+  expect(ui.queryByText(/или ИИ/)).toBeNull();
+  ui.unmount();
+  const medical = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: { ...budget, id: 'MED', name: 'Медицина' } });
+  expect(medical.getByText(/Заявку одобряет глава отдела, ГП, капитан или ИИ в программе/)).toBeTruthy();
 });
 
 test('приложение NtosCargo открывает окно снабжения', () => {

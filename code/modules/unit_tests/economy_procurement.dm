@@ -15,6 +15,39 @@
 		if(econ_pack_staple(pack) && !econ_pack_unavailable(pack) && econ_pack_price(pack) > SSeconomy.settings.auto_approve_limit)
 			return pack
 
+/datum/unit_test/economy_catalog/proc/cheap_staple_of(datum/economy_department/department)
+	for(var/datum/supply_pack/pack as anything in department.catalog())
+		if(econ_pack_staple(pack) && !econ_pack_unavailable(pack) && econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit)
+			return pack
+
+/// Недорогой расходник при исчерпанном часовом лимите (и при лимите 0) не одобряется ни сразу, ни на тике по сроку ожидания: решает глава, ИИ или снабжение.
+/datum/unit_test/economy_catalog/staple_cap_blocks_auto_approve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/drip = cheap_staple_of(medical)
+	TEST_ASSERT_NOTNULL(drip, "В каталоге медицины есть расходник дешевле лимита автоодобрения")
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	var/price = round(econ_pack_price(drip))
+	econ_test_set_balance(medical.account, price * 4)
+	TEST_ASSERT(!medical.has_approver_on_shift(), "Начальства на смене нет")
+	medical.staple_spent["[doctor_account.account_id]"] = list(world.time, SSeconomy.settings.staple_self_order_cap_hour)
+	var/datum/econ_request/request = medical.submit_request(drip, doctor, "Капельницы")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Расходник сверх лимита без начальства сразу не одобрен")
+	request.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	medical.approve_stale_requests()
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Расходник сверх лимита не одобрен и по сроку ожидания")
+	TEST_ASSERT(findtext(medical.pending_text(drip, doctor, 1), "лимит расходников"), "Подавшему сказано про лимит: [medical.pending_text(drip, doctor, 1)]")
+	TEST_ASSERT(!findtext(medical.request_outlook(request), "одобрится сама"), "Окно не обещает автоодобрение: [medical.request_outlook(request)]")
+	TEST_ASSERT_NULL(econ_request_department(doctor, drip), "Без решающих расходник сверх лимита с консоли - снабжению")
+	var/saved_cap = SSeconomy.settings.staple_self_order_cap_hour
+	SSeconomy.settings.staple_self_order_cap_hour = 0
+	medical.staple_spent = list()
+	var/datum/econ_request/zero = medical.submit_request(drip, doctor, "Ещё")
+	medical.approve_stale_requests()
+	SSeconomy.settings.staple_self_order_cap_hour = saved_cap
+	TEST_ASSERT_EQUAL(zero.status, ECON_REQUEST_PENDING, "При лимите 0 расходник сам не одобряется")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Заказов нет")
+
 /// Окно бюджета отдела для user: программа без КПК, ответ на действие - из её сообщений.
 /datum/unit_test/economy_catalog/proc/budget_press(datum/computer_file/program/department_budget/app, mob/living/user, action, list/params = list())
 	app.budget_act(user, action, params)

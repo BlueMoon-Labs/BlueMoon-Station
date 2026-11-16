@@ -188,7 +188,7 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		return capitalize(jointext(parts, "; ")) + "."
 	var/who = deciders_text(request)
 	parts += who ? "решает [who]" : "сейчас решить некому: на смене нет начальства отдела[ai_decides() ? " и ИИ" : ""]"
-	if(price <= settings.auto_approve_limit && settings.auto_approve_wait_minutes > 0)
+	if(auto_approvable(request.pack) && settings.auto_approve_wait_minutes > 0)
 		var/left = settings.auto_approve_wait_minutes - request.waited_minutes()
 		parts += left > 0 ? "без ответа одобрится сама через [left] мин." : "одобрится сама на ближайшем цикле экономики"
 	else if(request.handed_off)

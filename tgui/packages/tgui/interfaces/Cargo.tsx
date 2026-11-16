@@ -455,19 +455,23 @@ const packTags = (pack: Pack) => {
   return tags;
 };
 
-/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. Когда на смене некому решить, пак дороже лимита автоодобрения уходит снабжению, кроме расходника в пределах часового лимита. */
+/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. Когда на смене некому решить, пак дороже лимита автоодобрения уходит снабжению; расходник - только сверх часового лимита. */
 const paidByBudget = (pack: Pack, budget?: BudgetRequest | null) => {
   if (!budget || !pack.budget || (!budget.any && pack.budget !== budget.id)) {
     return false;
   }
   const cost = pack.cost || 0;
-  return !!budget.manager || !!budget.approver || cost <= budget.auto_limit || (!!pack.staple && cost <= (budget.staple_left || 0));
+  if (pack.staple) {
+    return !!budget.manager || !!budget.approver || cost <= (budget.staple_left || 0);
+  }
+  return !!budget.manager || !!budget.approver || cost <= budget.auto_limit;
 };
 
 const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
   const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
-  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет глава отдела, ГП, капитан или ИИ в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`;
+  const deciders = budget.id === 'SEC' ? 'глава отдела, ГП или капитан' : 'глава отдела, ГП, капитан или ИИ';
+  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`;
   if (budget.manager) {
     text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
   } else if (!budget.approver) {
