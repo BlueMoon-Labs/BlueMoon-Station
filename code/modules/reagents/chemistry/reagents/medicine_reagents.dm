@@ -1908,6 +1908,7 @@
 /datum/reagent/medicine/psicodine/on_mob_add(mob/living/L)
 	..()
 	ADD_TRAIT(L, TRAIT_FEARLESS, type)
+	SEND_SIGNAL(L, COMSIG_CLEAR_MOOD_EVENT, "inteq_propagand_scared")
 
 /datum/reagent/medicine/psicodine/on_mob_delete(mob/living/L)
 	REMOVE_TRAIT(L, TRAIT_FEARLESS, type)
