@@ -1,26 +1,14 @@
-// =============================================================================
-// BLACK MESA - HELICOPTER BOSS (Gunship)
-//
-// Boss-aviation unit: hovers over the arena and runs a phase cycle of
-// Hover -> Attack series -> Landmark jump, inspired by the Ash Drake.
-// It never pathfinds tile-by-tile; it relocates between pre-placed
-// /obj/effect/landmark/awaymission/blackmesa/helicopter_pad markers.
-// =============================================================================
+#define HELI_TICK_DS 10
+#define HELI_ENGAGE_RANGE 30
+#define HELI_OVERHEAT_DS 50
+#define HELI_OVERHEAT_DAMAGE_MULT 1.5
+#define HELI_STRAFE_WARN_DS 15
+#define HELI_STRAFE_STEP_DS 2
+#define HELI_STRAFE_MAX_LEN 20
+#define HELI_LOCKON_DS 20
+#define HELI_RELOCATE_WARN_DS 8
+#define HELI_ROTOR_RANGE 14
 
-#define HELI_TICK_DS 10                  // main logic tick, deciseconds (1s)
-#define HELI_ENGAGE_RANGE 30             // tiles, max target distance
-#define HELI_OVERHEAT_DS 50              // 5 seconds of cooling after missile barrage
-#define HELI_OVERHEAT_DAMAGE_MULT 1.5    // damage taken multiplier while overheated
-#define HELI_STRAFE_WARN_DS 15           // 1.5s warning strip before strafing run
-#define HELI_STRAFE_STEP_DS 2            // flight step during strafing run
-#define HELI_STRAFE_MAX_LEN 20          // max tiles of a single strafing run window
-#define HELI_LOCKON_DS 20                // 2s missile lock-on beeping
-#define HELI_RELOCATE_WARN_DS 8          // quick reposition windup
-#define HELI_ROTOR_RANGE 14              // tiles, rotor loop is re-sent to viewers inside this range
-
-// =============================================================================
-// LANDMARKS
-// =============================================================================
 /obj/effect/landmark/awaymission/blackmesa/helicopter_pad
 	name = "Helicopter Pad Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
@@ -33,60 +21,48 @@
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Landing site for the intro aircraft (Colin Grey transmission).
 /obj/effect/landmark/awaymission/blackmesa/helicopter_cinematic_pad
 	name = "Helicopter Landing Zone Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Pre-aimed strike point for the intro missile shot.
 /obj/effect/landmark/awaymission/blackmesa/helicopter_target_pad
 	name = "Helicopter Target Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Death rift: portal entrance spawns here when the gunship is destroyed.
 /obj/effect/landmark/awaymission/blackmesa/helicopter_rift_in
 	name = "Helicopter Rift Landmark (Entrance)"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Death rift: portal destination - players/hostiles step out here.
 /obj/effect/landmark/awaymission/blackmesa/helicopter_rift_out
 	name = "Helicopter Rift Landmark (Exit)"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Negotiations rift: single-end entrance spawned by the helicopter radio
-// once the Colin Grey dialogue seals the arena gates. The exit end is not
-// mapped - the portal's hard_target is resolved to the boss arena interior.
 /obj/effect/landmark/awaymission/blackmesa/mesa_rift
 	name = "Mesa Rift Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Osprey transport hover point for troop-insertion runs.
 /obj/effect/landmark/awaymission/blackmesa/osprey_pad
 	name = "Osprey Pad Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// Rope-drop zone: blackops operatives rappel down on this landmark.
 /obj/effect/landmark/awaymission/blackmesa/osprey_drop
 	name = "Osprey Drop Zone Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-// =============================================================================
-// TEMP VISUALS (missile impact only - no targeting markers)
-// =============================================================================
 /obj/effect/temp_visual/helicopter_missile_boom
 	name = "missile impact"
 	icon = 'icons/effects/effects.dmi'
@@ -95,9 +71,6 @@
 	duration = 8
 	randomdir = FALSE
 
-// =============================================================================
-// PROJECTILE - autocannon shell
-// =============================================================================
 /obj/item/projectile/bullet/helicopter_autocannon
 	name = "autocannon shell"
 	icon = 'icons/obj/projectiles.dmi'
@@ -112,8 +85,6 @@
 	flag = BULLET
 	hitsound_wall = "ricochet"
 
-// Unguided rocket fired from the gunship itself during the missile barrage.
-// Child of the HE rocket so impacts detonate like the drone's salvo.
 /obj/item/projectile/bullet/a84mm/helicopter_rocket
 	name = "unguided rocket"
 	icon_state = "missile"
@@ -121,7 +92,6 @@
 	pixels_per_second = TILES_TO_PIXELS(45)
 	range = 45
 
-// Apache rockets keep the parent's blast but must never flash-blind players.
 /obj/item/projectile/bullet/a84mm/helicopter_rocket/do_boom(atom/target, random_crit_gib = FALSE)
 	if(!isliving(target))
 		explosion(target, heavy_impact_range = 1, light_impact_range = 2, flame_range = 3, flash_range = 0)
@@ -132,11 +102,6 @@
 			new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
 			gibbed_dude.gib(FALSE, FALSE, FALSE)
 
-// =============================================================================
-// OSPREY - unkillable troop-transport helicopter for insertion runs.
-// Hovers above the drop zone on ABOVE_ALL_MOB_LAYER with density off, so
-// players can literally walk underneath it while it kicks out operatives.
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/osprey
 	name = "Osprey"
 	desc = "An armored transport helicopter on a troop-insertion run. Small arms cannot scratch it."
@@ -148,28 +113,26 @@
 	maptext_width = 64
 	health = 50000
 	maxHealth = 50000
-	// shares FACTION_BLACKOPS so the gunship's own drop team doesn't
-	// treat the transport as hostile (faction_check_mob => same side)
+
 	faction = list("hostile", FACTION_XEN, FACTION_BLACKOPS)
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stat_attack = CONSCIOUS
 	mob_biotypes = MOB_ROBOTIC|MOB_EPIC
 	damage_coeff = list(BRUTE = 0, BURN = 0, TOX = 0, CLONE = 0, STAMINA = 0, OXY = 0)
 	weather_immunities = list(TRAIT_LAVA_IMMUNE, TRAIT_ASHSTORM_IMMUNE, TRAIT_TOXIMMUNE)
-	ai_profile_type = null //no AI at all - it only hovers and leaves
+	ai_profile_type = null
 	AIStatus = AI_OFF
-	density = FALSE                    // players walk underneath
-	layer = ABOVE_ALL_MOB_LAYER        // drawn above everything mob-side
-	pixel_z = 80                       // hover height above head level
+	density = FALSE
+	layer = ABOVE_ALL_MOB_LAYER
+	pixel_z = 80
 
 /mob/living/simple_animal/hostile/megafauna/osprey/Initialize(mapload)
 	. = ..()
 	if(mapload)
-		// transport is spawned by the Apache's drop sequence only
+
 		qdel(src)
 		return
 
-// Unkillable by design: every damage path funnels into adjustHealth.
 /mob/living/simple_animal/hostile/megafauna/osprey/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	return FALSE
 
@@ -179,9 +142,6 @@
 /mob/living/simple_animal/hostile/megafauna/osprey/handle_automated_action()
 	return
 
-// =============================================================================
-// THE BOSS
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter
 	name = "Apache"
 	desc = "An aviation unit circling the sector. Its autocannon and rocket pods do not forgive mistakes."
@@ -193,48 +153,45 @@
 	maptext_width = 64
 	health = 5000
 	maxHealth = 5000
-	// FACTION_BLACKOPS: the Apache and its blackops drop team are on the
-	// same side - no targeting, no instant retaliation for stray splash
+
 	faction = list("hostile", FACTION_XEN, FACTION_BLACKOPS)
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stat_attack = CONSCIOUS
 	mob_biotypes = MOB_ROBOTIC|MOB_EPIC
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, CLONE = 0, STAMINA = 0, OXY = 0)
 	weather_immunities = list(TRAIT_LAVA_IMMUNE, TRAIT_ASHSTORM_IMMUNE, TRAIT_TOXIMMUNE)
-	ai_profile_type = null //custom phase AI, no controller pathfinding
+	ai_profile_type = null
 	AIStatus = AI_OFF
 	projectiletype = /obj/item/projectile/bullet/helicopter_autocannon
 	light_range = 4
 	deathmessage = "crashes in a fireball, scattering burning debris across the sector."
 	death_sound = 'sound/effects/Explosion2.ogg'
 
-	// ---- runtime state ----
-	var/heli_busy = FALSE                 // an attack/reposition sequence is running
-	var/heli_tick_timer                   // stoppable logic loop
-	var/heli_rotor_channel                // dedicated rotor loop channel
-	var/list/heli_rotor_listeners = list() // mobs currently hearing the rotor loop
-	var/list/heli_pads = list()           // landmark objs (pads)
+	var/heli_busy = FALSE
+	var/heli_tick_timer
+	var/heli_rotor_channel
+	var/list/heli_rotor_listeners = list()
+	var/list/heli_pads = list()
 	var/obj/effect/landmark/awaymission/blackmesa/helicopter_center/heli_center
-	var/list/heli_bounds = null           // list(minx, maxx, miny, maxy, z)
-	var/attacks_until_relocate = 3        // attacks left before next landmark jump
-	var/overheated_until = 0              // world.time when cooling ends
+	var/list/heli_bounds = null
+	var/attacks_until_relocate = 3
+	var/overheated_until = 0
 	var/overheat_visual_active = FALSE
-	var/list/heli_drop_thresholds = list(75, 50, 35, 10) // HP% that trigger an osprey insertion
-	var/list/heli_drops_done = list()     // thresholds already fired
+	var/list/heli_drop_thresholds = list(75, 50, 35, 10)
+	var/list/heli_drops_done = list()
 	var/heli_died = FALSE
-	var/heli_cutscene = FALSE               // intro cinematic: invulnerable, weapons offline
-	var/heli_airborne = FALSE               // flew off for an osprey insertion: no rotor loop
-	var/heli_critical = FALSE               // <30% HP alarm state
-	var/heli_crit_channel                  // dedicated critical-beep channel
-	var/heli_crit_beep_next = 0            // world.time of next beep burst
-	var/heli_theme_channel                  // boss theme sound channel
+	var/heli_cutscene = FALSE
+	var/heli_airborne = FALSE
+	var/heli_critical = FALSE
+	var/heli_crit_channel
+	var/heli_crit_beep_next = 0
+	var/heli_theme_channel
 	var/list/heli_theme_listeners = list()
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/Initialize(mapload)
 	. = ..()
 	if(mapload)
-		// The gunship must spawn via the Colin Grey radio sequence - a
-		// map-placed copy has no intro and just attacks from round start.
+
 		qdel(src)
 		return
 	ensure_landmarks()
@@ -244,8 +201,7 @@
 	heli_theme_channel = SSsounds.reserve_sound_channel(src)
 	heli_rotor_channel = SSsounds.reserve_sound_channel(src)
 	heli_crit_channel = SSsounds.reserve_sound_channel(src)
-	// The gunship is spawned by the Colin Grey radio after its transmission;
-	// it is never placed on the map directly.
+
 	heli_update_hull_icon()
 	heli_update_rotor_sound()
 	visible_message("<span class='boldannounce'>[src] enters the arena airspace!</span>")
@@ -271,8 +227,6 @@
 	heli_update_hull_icon()
 	return .
 
-// Same as simple_animal/bullet_act but without simple_mob_damage_multiplier:
-// Mesa guns tuned to one-shot zombies (e.g. M16 3.5x) would melt the gunship.
 /mob/living/simple_animal/hostile/megafauna/helicopter/bullet_act(obj/item/projectile/Proj, def_zone, piercing_hit = FALSE)
 	if(!Proj)
 		return
@@ -284,8 +238,6 @@
 	Proj.on_hit(src)
 	return BULLET_ACT_HIT
 
-// Hull damage icon states, same pattern as the combat drone:
-// apache -> apachedam1 -> apachedam2, refreshed on every health change.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_hull_icon()
 	var/hull_state = "apache"
 	if(health <= maxHealth * 0.4)
@@ -296,7 +248,7 @@
 		icon_state = hull_state
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags = NONE, separation = " ")
-	if(heli_cutscene) //suppress "got hit" spam while the landing cinematic plays
+	if(heli_cutscene)
 		return
 	return ..()
 
@@ -307,17 +259,10 @@
 		new /datum/helicopter_death_fx(get_turf(src))
 		heli_spawn_death_portal()
 	. = ..(gibbed, force_grant)
-	// The gunship always explodes into gibs, even on a plain killing blow.
-	// If death() was reached through gib() itself (gibbed = TRUE) the outer
-	// call already handles gibs and qdel - don't double it.
+
 	if(!gibbed && !QDELETED(src) && stat == DEAD)
 		gib()
 
-// On death the wreck tears a rift between two dedicated landmarks:
-// helicopter_rift_in (entrance) -> helicopter_rift_out (exit).
-// Uses force_teleport so the NOTELEPORT area flag on the Black Mesa zone
-// does not block it. Falls back to crash-site -> center pad if the rift
-// landmarks are not mapped.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_spawn_death_portal()
 	var/turf/A = null
 	var/turf/B = null
@@ -346,15 +291,13 @@
 				break
 	if(!istype(B))
 		return
-	// one-way rift: a single portal at A with a hard target at B - there is
-	// deliberately no return portal.
+
 	var/obj/effect/portal/mesa_rift/P = new(A)
 	if(!istype(P))
 		return
 	P.hard_target = B
 	P.hardlinked = FALSE
 
-// Death cinematic runs on its own datum so it survives gibbing/qdel of the mob.
 /datum/helicopter_death_fx
 	var/turf/T
 
@@ -384,16 +327,13 @@
 		shake_camera(L, 8, 1)
 	qdel(src)
 
-// =============================================================================
-// LANDMARK MANAGEMENT
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/ensure_landmarks()
 	for(var/obj/effect/landmark/awaymission/blackmesa/helicopter_pad/P in GLOB.landmarks_list)
 		heli_pads += P
 	heli_center = locate(/obj/effect/landmark/awaymission/blackmesa/helicopter_center) in GLOB.landmarks_list
 	if(heli_pads.len >= 2)
 		return
-	// No pads mapped: scatter fallback pads across the mission area once.
+
 	var/list/mesa_areas = heli_mesa_areas()
 	if(!mesa_areas || !mesa_areas.len)
 		return
@@ -448,7 +388,7 @@
 		if(PT.y < min_y) min_y = PT.y
 		if(PT.y > max_y) max_y = PT.y
 	if(min_x == INFINITY)
-		// fallback: box around the boss
+
 		var/turf/ST = get_turf(src)
 		if(!ST)
 			return
@@ -456,9 +396,6 @@
 		min_y = ST.y - 8; max_y = ST.y + 8
 	heli_bounds = list(min_x, max_x, min_y, max_y, bounds_z)
 
-// =============================================================================
-// TARGETING
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/get_mesa_targets() as list
 	. = list()
 	var/turf/ST = get_turf(src)
@@ -472,10 +409,10 @@
 			continue
 		if(get_dist(ST, LT) > HELI_ENGAGE_RANGE)
 			continue
-		// skip players tucked inside containers/lockers
+
 		if(!isturf(L.loc))
 			continue
-		// only engage targets inside the ihategordon gate area
+
 		if(!istype(get_area(L), /area/awaymission/ihategordon))
 			continue
 		. += L
@@ -501,9 +438,6 @@
 			. = A
 	return .
 
-// =============================================================================
-// MAIN TICK / PHASE MACHINE
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_tick()
 	if(QDELETED(src))
 		return
@@ -511,26 +445,25 @@
 	heli_update_theme_sound()
 	if(stat != CONSCIOUS || heli_busy || heli_cutscene)
 		return
-	// overheat state visuals
+
 	var/overheated = world.time < overheated_until
 	if(overheated != overheat_visual_active)
 		overheat_visual_active = overheated
 		if(overheated)
 			visible_message("<span class='boldwarning'>[src]'s weapons are overheating - it is vulnerable!</span>")
-	// critical hull state: alarm beep + one-time warning
+
 	var/critical = health <= maxHealth * 0.3
 	if(critical != heli_critical)
 		heli_critical = critical
 		if(critical)
 			visible_message("<span class='boldwarning'>[src] is critically damaged - its systems are failing!</span>")
-	// critical hull state: ~5s beep burst, then silence - no per-tick spam
+
 	if(critical && world.time >= heli_crit_beep_next)
-		heli_crit_beep_next = world.time + 100 // 5s beep + ~5s quiet cycle
+		heli_crit_beep_next = world.time + 100
 		INVOKE_ASYNC(src, PROC_REF(heli_critical_beep_burst))
 	if(overheated)
 		return
-	// troop insertion runs at fixed HP thresholds - each fires once,
-	// queued naturally because heli_busy blocks the tick while one runs
+
 	var/hp_percent = round((health / maxHealth) * 100)
 	for(var/threshold in heli_drop_thresholds)
 		if(hp_percent <= threshold && !(threshold in heli_drops_done))
@@ -564,12 +497,9 @@
 		return
 	attacks_until_relocate--
 	heli_busy = FALSE
-	// strafing runs tilt the sprite sideways - level it back out on stop
+
 	dir = SOUTH
 
-// =============================================================================
-// ATTACK 1 - AUTOCANNON BURST (5-8 heavy shots)
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/start_autocannon()
 	heli_busy = TRUE
 	INVOKE_ASYNC(src, PROC_REF(autocannon_seq))
@@ -611,11 +541,8 @@
 	P.preparePixelProjectile(targeted_atom, src)
 	P.fire()
 
-// =============================================================================
-// ATTACK 2 - STRAFING RUN
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_plan_strafe()
-	// returns list(horizontal, fixed_coord, start_coord, end_coord, step_dir, z) or null
+
 	. = null
 	if(!heli_bounds)
 		return .
@@ -629,9 +556,6 @@
 	. = plan
 	return .
 
-// One strafing axis: a window of at most HELI_STRAFE_MAX_LEN tiles centered on
-// the players (or the boss), flown along `fixed_coord`. Tries several lane
-// offsets before giving up - a single wall used to kill the whole attack.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_strafe_lane(horizontal, turf/ST)
 	var/min_x = heli_bounds[1]
 	var/max_x = heli_bounds[2]
@@ -646,7 +570,7 @@
 	if(span < 4)
 		return null
 	var/win_len = min(span, HELI_STRAFE_MAX_LEN)
-	// anchor the window on the players so the run actually crosses the fight
+
 	var/anchor = horizontal ? ST.x : ST.y
 	var/cross_anchor = horizontal ? ST.y : ST.x
 	var/list/targets = get_mesa_targets()
@@ -666,7 +590,7 @@
 			cross_anchor = round(csum / n)
 	var/win_start = clamp(anchor - round(win_len / 2), low, high - win_len)
 	var/win_end = win_start + win_len
-	// lane offset lives on the cross axis, so it clamps to the cross bounds
+
 	var/cross_low = horizontal ? min_y : min_x
 	var/cross_high = horizontal ? max_y : max_x
 	var/list/candidates = list(
@@ -713,14 +637,14 @@
 	var/end_coord = plan[4]
 	var/step_dir = plan[5]
 	var/z = plan[6]
-	// take the edge position
+
 	var/turf/start_turf = horizontal ? locate(start_coord, fixed_coord, z) : locate(fixed_coord, start_coord, z)
 	if(!start_turf)
 		heli_attack_done()
 		return
 	forceMove(start_turf)
 	setDir(horizontal ? (step_dir > 0 ? EAST : WEST) : (step_dir > 0 ? NORTH : SOUTH))
-	// engine roar audio telegraph only - no ground markers
+
 	playsound(src, 'sound/vehicles/high_eng.ogg', 85, TRUE, -4)
 	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 70, TRUE, -4)
 	visible_message("<span class='boldwarning'>[src] begins a strafing run!</span>")
@@ -728,13 +652,12 @@
 	if(QDELETED(src) || stat != CONSCIOUS)
 		heli_busy = FALSE
 		return
-	// fly across the arena, firing continuously
+
 	while(TRUE)
 		var/coord = horizontal ? x : y
 		if(coord == end_coord)
 			break
-		// external displacement may have pushed us past the end tile -
-		// without this the run would never terminate and cross the map
+
 		if((coord - end_coord) * step_dir > 0)
 			break
 		if(QDELETED(src) || stat != CONSCIOUS)
@@ -752,11 +675,6 @@
 		sleep(HELI_STRAFE_STEP_DS)
 	heli_attack_done()
 
-// =============================================================================
-// ATTACK 3 - ROCKET VOLLEY + OVERHEAT WINDOW
-// Detection whine -> 3s stall (the gunship cannot act, like the tank's
-// recovery) -> volley of rockets fired from the gunship itself.
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/start_missiles()
 	heli_busy = TRUE
 	INVOKE_ASYNC(src, PROC_REF(missiles_seq))
@@ -766,7 +684,7 @@
 		heli_attack_done()
 		return
 	visible_message("<span class='boldwarning'>[src] is spooling its rocket pods - incoming fire!</span>")
-	// detection beeping, then the 3s stall before the volley
+
 	for(var/i in 1 to 3)
 		if(QDELETED(src) || stat != CONSCIOUS)
 			heli_busy = FALSE
@@ -783,7 +701,7 @@
 			break
 		heli_fire_rocket(pick(targets))
 		sleep(rand(2, 4))
-	// overheat window
+
 	overheated_until = world.time + HELI_OVERHEAT_DS
 	heli_attack_done()
 
@@ -801,11 +719,6 @@
 	P.preparePixelProjectile(targeted_atom, src)
 	P.fire()
 
-// =============================================================================
-// ATTACK 4 - SCAN BURST
-// Paints a target with a scanning marker for ~1.5s (drone-style telegraph),
-// then puts a short autocannon burst into it.
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/start_scan_burst()
 	heli_busy = TRUE
 	INVOKE_ASYNC(src, PROC_REF(scan_burst_seq))
@@ -844,9 +757,6 @@
 		sleep(4)
 	heli_attack_done()
 
-// =============================================================================
-// REPOSITION - landmark jump with rotor gust
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/start_relocate()
 	heli_busy = TRUE
 	INVOKE_ASYNC(src, PROC_REF(relocate_seq))
@@ -872,8 +782,7 @@
 	if(QDELETED(src) || stat != CONSCIOUS)
 		heli_busy = FALSE
 		return
-	// ash drake style jump: climb + shrink/fade, blink to the landmark,
-	// then descend back to full size - reads as a single hop, not a teleport
+
 	playsound(src, 'sound/vehicles/high_eng.ogg', 85, TRUE, -4)
 	animate(src, pixel_z = 160, transform = matrix()*0.7, alpha = 160, time = 6, easing = SINE_EASING)
 	sleep(6)
@@ -883,7 +792,7 @@
 		heli_busy = FALSE
 		return
 	if(!forceMove(dest))
-		// pad turf got blocked between planning and landing - snap back
+
 		animate(src, pixel_z = 0, transform = matrix(), alpha = 255, time = 0, flags = ANIMATION_END_NOW)
 		heli_busy = FALSE
 		return
@@ -892,7 +801,7 @@
 	sleep(8)
 	if(QDELETED(src) || stat == DEAD)
 		return
-	// rotor blast pushes everyone nearby away
+
 	playsound(src, 'sound/effects/space_wind.ogg', 95, TRUE, -3)
 	playsound(src, 'sound/vehicles/norm_eng.ogg', 80, TRUE, -3)
 	heli_rotor_push(2)
@@ -926,12 +835,6 @@
 		throw_target = next_t
 	L.throw_at(throw_target, dist, 4, src)
 
-// =============================================================================
-// INTRO CINEMATIC - triggered by the Colin Grey radio
-// Plane lands on helicopter_cinematic_pad, AI offline ~5s, then a single
-// lock-on missile strikes helicopter_target_pad. Boss becomes damageable
-// and starts attacking only after the strike.
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_start_cinematic()
 	if(heli_died || heli_cutscene || stat != CONSCIOUS)
 		return
@@ -939,7 +842,7 @@
 	INVOKE_ASYNC(src, PROC_REF(heli_cinematic_seq))
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_landmark_turf(type)
-	// first mapped landmark of `type` on our z-level, or null
+
 	for(var/obj/effect/landmark/awaymission/blackmesa/L in GLOB.landmarks_list)
 		if(!istype(L, type))
 			continue
@@ -979,9 +882,7 @@
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_cinematic_seq()
 	var/turf/land_t = heli_cinematic_pad_turf()
 	var/turf/target_t = heli_target_pad_turf()
-	// Inbound landing: the sprite starts high via pixel_z and descends
-	// onto the pad - reads as a real touchdown, not a phase-in.
-	// (turf.visible_message - the mob override mutes chat during cutscene)
+
 	if(land_t)
 		land_t.visible_message("<span class='boldwarning'>[src] is inbound on the LZ!</span>")
 	playsound(src, 'sound/vehicles/high_eng.ogg', 85, TRUE, -3)
@@ -990,21 +891,21 @@
 	sleep(20)
 	if(QDELETED(src))
 		return
-	// touchdown: dust ring + heavy thud, then the AI-offline window
+
 	if(land_t)
 		heli_smoke(land_t, 6)
 	playsound(src, 'sound/effects/meteorimpact.ogg', 90, TRUE, -4)
 	playsound(src, 'sound/vehicles/norm_eng.ogg', 80, TRUE, -3)
-	sleep(30) // ~3s settle / AI offline window
+	sleep(30)
 	if(QDELETED(src))
 		return
 	if(stat == CONSCIOUS && land_t)
 		heli_smoke(land_t, 3)
 		playsound(land_t, 'sound/effects/space_wind.ogg', 90, TRUE, -3)
-	// AI offline window (~5s total), then 2s of inactivity
+
 	sleep(20)
 	sleep(20)
-	// lock-on beeping, then a single rocket shot onto the second landmark
+
 	for(var/i in 1 to 2)
 		if(QDELETED(src))
 			return
@@ -1033,15 +934,9 @@
 	if(!istype(target_t))
 		return
 	playsound(target_t, 'sound/weapons/rocketlaunch.ogg', 90, TRUE, -4)
-	// one lock-on shot onto the landmark, same rocket as the combat barrage
+
 	heli_fire_rocket(target_t, TRUE)
 
-// =============================================================================
-// TROOP INSERTION - osprey transport + rope drop at HP thresholds
-// The Osprey hovers over osprey_pad (or the boss turf as fallback), three
-// blackops rappel down at osprey_drop (or the mission centre pad), then it
-// peels off and leaves. Unkillable - it is scenery, not a target.
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/start_osprey_drop()
 	heli_busy = TRUE
 	INVOKE_ASYNC(src, PROC_REF(osprey_drop_seq))
@@ -1063,21 +958,20 @@
 	if(!O || QDELETED(O))
 		heli_attack_done()
 		return
-	// Apache peels off for the whole insertion - it is "away" (invulnerable,
-	// weapons offline, rotor loop cut) until the Osprey has left.
+
 	heli_airborne = TRUE
 	heli_cutscene = TRUE
 	animate(src, pixel_z = 300, alpha = 0, time = 10, easing = SINE_EASING)
 	playsound(O, 'sound/vehicles/high_eng.ogg', 85, TRUE, -3)
 	playsound(O, 'sound/vehicles/norm_eng.ogg', 75, TRUE, -3)
-	sleep(15) // ~1.5s hover-in before the drop
+	sleep(15)
 	if(QDELETED(src) || QDELETED(O) || stat != CONSCIOUS)
 		if(!QDELETED(O))
 			qdel(O)
 		if(!QDELETED(src))
 			heli_return_from_drop()
 		return
-	// three operatives fast-rope down at the drop landmark
+
 	var/dropped = 0
 	for(var/i in 1 to 3)
 		var/turf/drop_t = heli_spawn_turf_near(dt, 2)
@@ -1093,7 +987,7 @@
 		dt.visible_message("<span class='boldwarning'>[src] inserts a special ops team!</span>")
 		if(SSblackmesa_events)
 			SSblackmesa_events.mesa_announce("Зафиксирована тактическая высадка чёрных оперативников! Ожидайте пехотный десант!", "Troop deployment", 'sound/vehicles/rocketlaunch.ogg')
-	// peel off and leave
+
 	if(!QDELETED(O))
 		animate(O, pixel_z = 300, alpha = 0, time = 15, easing = SINE_EASING)
 		sleep(15)
@@ -1103,8 +997,6 @@
 		return
 	heli_return_from_drop()
 
-// Apache flies back in after the Osprey is gone: restores its sprite,
-// re-enables the fight and clears heli_busy once it has "landed".
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_return_from_drop()
 	if(QDELETED(src))
 		return
@@ -1162,9 +1054,6 @@
 			return .
 	return .
 
-// =============================================================================
-// SMOKE HELPER
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_smoke(turf/T, lifetime = 3)
 	if(!istype(T) || !istype(T, /turf/open))
 		return
@@ -1173,23 +1062,12 @@
 	S.lifetime = lifetime
 	S.set_opacity(TRUE)
 
-// =============================================================================
-// NO-OP LEGACY AI HOOKS (paranoia: AIStatus is AI_OFF, but keep handlers inert)
-// =============================================================================
 /mob/living/simple_animal/hostile/megafauna/helicopter/handle_automated_movement()
 	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/handle_automated_action()
 	return
 
-// =============================================================================
-// ROTOR LOOP - one repeat sound on a reserved channel per listener, re-synced
-// every tick. A looping_sound datum used to replay a ~20s file every few
-// seconds and could not be cut on death; the channel stop is instant.
-// =============================================================================
-// Critical-hull alarm: loops the damage beep for ~5 seconds, then cuts it.
-// Tracked per-listener so the loop cannot outlive its burst or follow
-// players who left the area mid-beep.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_critical_beep_burst()
 	if(QDELETED(src) || stat == DEAD || heli_died || !heli_crit_channel || heli_airborne)
 		return
@@ -1205,7 +1083,7 @@
 		hearers += L
 	if(!hearers.len)
 		return
-	sleep(50) // ~5 seconds of warning beeps
+	sleep(50)
 	for(var/mob/listener in hearers)
 		if(!QDELETED(listener))
 			listener.stop_sound_channel(heli_crit_channel)
@@ -1214,7 +1092,7 @@
 	if(!heli_rotor_channel || heli_died || stat == DEAD)
 		return
 	if(heli_airborne)
-		// Apache is away on an insertion run - cut the loop for everyone
+
 		for(var/mob/listener in heli_rotor_listeners.Copy())
 			if(!QDELETED(listener))
 				listener.stop_sound_channel(heli_rotor_channel)
@@ -1223,8 +1101,7 @@
 	var/turf/ST = get_turf(src)
 	if(!ST)
 		return
-	// one viewers() snapshot drives both removal and addition, so the two
-	// sides can never disagree on range metrics and churn listeners
+
 	var/list/viewers_list = viewers(HELI_ROTOR_RANGE, src)
 	for(var/mob/listener in heli_rotor_listeners.Copy())
 		var/turf/LT = QDELETED(listener) ? null : get_turf(listener)
@@ -1244,13 +1121,6 @@
 		SEND_SOUND(L, sound('modular_bluemoon/sound/creatures/mesa/apache/apacheflyloop.ogg', repeat = TRUE, volume = 65, channel = heli_rotor_channel))
 		heli_rotor_listeners += L
 
-// =============================================================================
-// BOSS THEME - same pattern as the infected tank's tanktheme.ogg
-// =============================================================================
-// Theme listeners are re-synced every tick: anyone who leaves the
-// ihategordon area (or dies) loses the loop, and players inside the zone
-// get it regardless of how far they are from the gunship - the track is
-// zone ambience, not a positional sound.
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_theme_sound()
 	if(!heli_theme_channel || heli_died || stat == DEAD)
 		return
@@ -1258,8 +1128,7 @@
 		if(QDELETED(listener) || listener.stat == DEAD || !istype(get_area(listener), /area/awaymission/ihategordon))
 			stop_theme_listener_sound(listener)
 			unregister_theme_listener(listener)
-	// no new listeners while the intro cinematic or an osprey insertion
-	// has the gunship "away" - same gate the old one-shot version had
+
 	if(heli_cutscene || stat != CONSCIOUS)
 		return
 	for(var/mob/living/nearby_mob in GLOB.player_list)
@@ -1275,7 +1144,7 @@
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/register_theme_listener(mob/listener)
 	if(!listener || !istype(listener))
 		return
-	// idempotent: same stale-callback guard as the tank theme
+
 	unregister_theme_listener(listener)
 	heli_theme_listeners += listener
 	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_theme_listener_death), override = TRUE)
@@ -1338,10 +1207,6 @@
 		listener.stop_sound_channel(heli_rotor_channel)
 	heli_theme_listeners.Cut()
 
-// =============================================================================
-// DEATH RIFT PORTAL - the gunship's wreck leaves a linked portal pair that
-// ignores the Black Mesa NOTELEPORT area flag (force_teleport = TRUE).
-// =============================================================================
 /obj/effect/portal/mesa_rift
 	name = "Black Mesa rift"
 	desc = "A crackling tear in reality left behind by the destroyed gunship."
@@ -1349,21 +1214,15 @@
 	mech_sized = TRUE
 	anchored = TRUE
 
-// =============================================================================
-// COLIN GREY RADIO - plays the intro transmission, then triggers the
-// helicopter landing cinematic. Place one inside the Black Mesa arena.
-// =============================================================================
 /obj/machinery/negotiations_radio/helicopter
 	name = "distress radio"
 	desc = "A crackling field radio. Someone is begging for help on the other end."
 	icon_state = "radiohecu"
 	detection_range = 12
-	// Breakable field radio: keeps environmental immunity but loses
-	// INDESTRUCTIBLE, so small arms/explosions can silence Colin for good.
+
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	max_integrity = 100
-	// Sealed once Colin's transmission ends: every door/airlock whose id
-	// matches blastdoor_id slams shut for the gunship fight.
+
 	blastdoor_id = "helicopter"
 	var/colin_sequence_active = FALSE
 	var/colin_sequence_done = FALSE
@@ -1377,10 +1236,10 @@
 
 /obj/machinery/negotiations_radio/helicopter/Initialize(mapload)
 	. = ..()
-	next_detection_time = 0 //detect players immediately, no warmup cooldown
+	next_detection_time = 0
 
 /obj/machinery/negotiations_radio/helicopter/process()
-	// same as parent but without the random HECU chatter loop
+
 	if(dialogue_active && dialogue_should_end())
 		end_dialogue()
 	if(dialogue_active || dialogue_completed)
@@ -1398,8 +1257,7 @@
 	INVOKE_ASYNC(src, PROC_REF(colin_sequence))
 
 /obj/machinery/negotiations_radio/helicopter/attack_hand(mob/user)
-	// The gunship may ONLY spawn after a player actually uses the radio.
-	// Proximity detection (play_alert_phrase) must never start the sequence.
+
 	if(!user || !src)
 		return
 	if(colin_sequence_done)
@@ -1411,8 +1269,7 @@
 	start_colin_sequence()
 
 /obj/machinery/negotiations_radio/helicopter/play_alert_phrase()
-	// Just a proximity hint (icon + chime). The Colin Grey transmission -
-	// and the helicopter spawn at its end - waits for attack_hand().
+
 	if(colin_sequence_done || colin_sequence_active)
 		return
 	icon_state = "radiohecu_talking"
@@ -1421,8 +1278,7 @@
 
 /obj/machinery/negotiations_radio/helicopter/proc/colin_sequence()
 	icon_state = "radiohecu_talking"
-	// say() with a language crashes inside lang_treat if the language subsystem
-	// has not spawned the instance yet (e.g. triggered during map load).
+
 	var/datum/language/lang = null
 	if(/datum/language/modular_sand/solcommon in GLOB.language_datum_instances)
 		lang = /datum/language/modular_sand/solcommon
@@ -1437,14 +1293,11 @@
 	colin_sequence_active = FALSE
 	colin_sequence_done = TRUE
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 10)
-	// hand off to the gunship: spawn it on the cinematic pad, it lands,
-	// takes a missile shot at the target pad, then starts attacking
+
 	spawn_helicopter_boss()
 	close_blastdoors()
 	activate_mesa_rift()
 
-// ID-based lockdown: same matching rules as open_blastdoors() in
-// mesanpc.dm (poddoor/brigdoor by .id, airlock by .id_tag) but closes.
 /obj/machinery/negotiations_radio/helicopter/proc/close_blastdoors()
 	if(!src || !blastdoor_id)
 		return
@@ -1464,12 +1317,6 @@
 	if(doors_closed)
 		visible_message("<span class='boldwarning'>Blast doors seal the sector - there is no way out!</span>")
 
-// One-ended rift opened by the negotiations dialogue: the mapped
-// mesa_rift landmark is the entrance (outside the sealed arena), the exit
-// is resolved in code to the boss arena interior - helicopter_center pad,
-// then the death-rift entrance, then the radio's own turf as a last resort.
-// Same force_teleport portal as the Apache death rift, so the NOTELEPORT
-// area flag does not block the jump in either direction it can be used.
 /obj/machinery/negotiations_radio/helicopter/proc/activate_mesa_rift()
 	if(!src)
 		return
@@ -1491,7 +1338,6 @@
 	playsound(A, 'sound/effects/space_wind.ogg', 90, TRUE, -4)
 	visible_message("<span class='boldwarning'>A rift tears open by the sealed gates - the boss arena is reachable through it!</span>")
 
-// Finds the first mapped landmark of `type` on the radio's z-level.
 /obj/machinery/negotiations_radio/helicopter/proc/heli_landmark_turf(type)
 	var/turf/my_t = get_turf(src)
 	if(!my_t)
@@ -1521,7 +1367,7 @@
 		spawn_t = get_turf(src)
 	if(!istype(spawn_t))
 		return
-	// never drop the boss onto a blocked tile - step to a free neighbour
+
 	if(is_blocked_turf(spawn_t, TRUE))
 		for(var/dir in GLOB.alldirs)
 			var/turf/N = get_step(spawn_t, dir)

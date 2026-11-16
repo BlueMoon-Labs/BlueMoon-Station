@@ -1,21 +1,15 @@
-// =============================================================================
-// IHATEGORDON CUSTOM SPACE
-// Кастомный космос для гейта ihategordon с невесомостью, но нормальной атмосферой
-// =============================================================================
-
-// Кастомный турф космоса с нормальной температурой и давлением
 /turf/open/space/ihategordon
 	name = "Ihategordon Void"
 	desc = "Странное космическое пространство. Здесь есть воздух и нормальная температура, но гравитации нет."
 
-	// Нормальная температура (20°C = 293.15K)
 	initial_temperature = T20C
+
+	temperature = T20C
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	wave_explosion_multiply = EXPLOSION_DAMPEN_SPACE
 	wave_explosion_block = EXPLOSION_BLOCK_SPACE
 
-	// Свойства космоса для правильного рендеринга
 	plane = PLANE_SPACE
 	layer = SPACE_LAYER
 	light_power = STARLIGHT_POWER_NIGHT
@@ -24,13 +18,10 @@
 	bullet_bounce_sound = null
 	vis_flags = VIS_INHERIT_ID
 
-	// Создаём нормальную атмосферу вместо вакуума
 	var/static/datum/gas_mixture/immutable/ihategordon/ihategordon_atmos
 
-	// Для процессинга стамины
 	var/list/mobs_on_turf = list()
 
-// Кастомная immutable газовая смесь для ihategordon
 /datum/gas_mixture/immutable/ihategordon
 	initial_temperature = T20C
 
@@ -40,6 +31,7 @@
 	temperature = T20C
 
 /turf/open/proc/remove_air_from_immutable(amount, proportional = FALSE)
+	RETURN_TYPE(/datum/gas_mixture)
 	var/datum/gas_mixture/source_air = return_air()
 	if(!source_air || amount <= 0)
 		return null
@@ -57,7 +49,6 @@
 	qdel(working_air)
 	return removed_air
 
-// Невидимый чазм для ihategordon - сохраняет спрайт космоса
 /turf/open/chasm/ihategordon_invisible
 	name = "Ihategordon Void"
 	desc = "Странное космическое пространство. Здесь есть воздух и нормальная температура, но гравитации нет."
@@ -75,7 +66,6 @@
 	thermal_conductivity = 0
 	heat_capacity = 700000
 
-	// Создаём нормальную атмосферу вместо вакуума
 	var/static/datum/gas_mixture/immutable/ihategordon/ihategordon_atmos
 
 /turf/open/chasm/ihategordon_invisible/Initialize(mapload)
@@ -84,12 +74,6 @@
 	vis_contents.Cut()
 	visibilityChanged()
 
-	// Проверку INITIALIZED_1 делает родительский /turf/Initialize - свой
-	// флаг здесь уже поднят ею, поэтому локальная проверка врала бы
-	// "initialized multiple times" на каждом создании чазма.
-
-	// То же смещение плоскостей, что и у /turf/open/space/ihategordon -
-	// чазм меняет тип турфа на месте, терять его нельзя.
 	if(SSmapping.max_plane_offset)
 		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
 
@@ -110,25 +94,22 @@
 	if(T)
 		T.multiz_turf_new(src, UP)
 
-	// Создаём нормальную атмосферу если ещё не создана
 	if(!ihategordon_atmos)
 		ihategordon_atmos = new /datum/gas_mixture/immutable/ihategordon
-		// Принудительно вызываем populate для инициализации газов
+
 		ihategordon_atmos.populate()
-		// Устанавливаем температуру
+
 		ihategordon_atmos.temperature = T20C
 
 	air = ihategordon_atmos
 	update_air_ref(0)
-	// Блокируем телепортацию в зону ihategordon
+
 	RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
 
 	ComponentInitialize()
 
 	return INITIALIZE_HINT_NORMAL
 
-// ChangeTurf на этот тип может оставить атом в очереди SSobj - process()
-// у чазма нет, заглушка гасит вызов вместо undefined proc.
 /turf/open/chasm/ihategordon_invisible/process()
 	STOP_PROCESSING(SSobj, src)
 	return
@@ -137,70 +118,71 @@
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_TELEPORT
 
-// Переопределяем методы чтобы атмосфера работала нормально
 /turf/open/chasm/ihategordon_invisible/Initalize_Atmos(times_fired)
-	// Не инициализируем атмосферу как вакуум, у нас уже есть кастомная атмосфера
+
 	return
 
 /turf/open/chasm/ihategordon_invisible/TakeTemperature(temp)
-	// Не меняем температуру, она должна быть нормальной
+
 	return
 
 /turf/open/chasm/ihategordon_invisible/Assimilate_Air()
-	// Не ассимилируем атмосферу, сохраняем кастомную
+
 	return
 
 /turf/open/chasm/ihategordon_invisible/remove_air(amount)
+	RETURN_TYPE(/datum/gas_mixture)
 	return remove_air_from_immutable(amount)
 
 /turf/open/chasm/ihategordon_invisible/remove_air_ratio(amount)
+	RETURN_TYPE(/datum/gas_mixture)
 	return remove_air_from_immutable(amount, TRUE)
 
 /turf/open/chasm/ihategordon_invisible/return_air()
-	// Возвращаем нашу кастомную атмосферу
+	RETURN_TYPE(/datum/gas_mixture)
+
+	if(ihategordon_void_z(z))
+		return ihategordon_void_air()
 	return air
 
 /turf/open/chasm/ihategordon_invisible/return_analyzable_air()
-	// Возвращаем нашу кастомную атмосферу для анализа
+	RETURN_TYPE(/datum/gas_mixture)
+
+	if(ihategordon_void_z(z))
+		return ihategordon_void_air()
 	return air
 
 /turf/open/chasm/ihategordon_invisible/assume_air(datum/gas_mixture/giver)
-	// Не принимаем воздух из других тайлов
+
 	return
 
 /turf/open/chasm/ihategordon_invisible/update_air_ref()
-	// Не обновляем ссылку на воздух, сохраняем нашу кастомную атмосферу
+
 	return
 
 /turf/open/chasm/ihategordon_invisible/air_update_turf()
 	return
 
-// Переопределяем инициализацию для создания нормальной атмосферы
 /turf/open/space/ihategordon/Initialize(mapload)
 	SHOULD_CALL_PARENT(FALSE)
 	icon_state = SPACE_ICON_STATE
 
-	// Создаём нормальную атмосферу если ещё не создана
 	if(!ihategordon_atmos)
 		ihategordon_atmos = new /datum/gas_mixture/immutable/ihategordon
-		// Принудительно вызываем populate для инициализации газов
+
 		ihategordon_atmos.populate()
-		// Устанавливаем температуру
+
 		ihategordon_atmos.temperature = T20C
 
 	air = ihategordon_atmos
 	update_air_ref(0)
-	vis_contents.Cut() //removes inherited overlays
+	vis_contents.Cut()
 	visibilityChanged()
 
 	if(flags_1 & INITIALIZED_1)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 
-	// У космоса свой Initialize без вызова родителя, поэтому блоки
-	// /turf/open/space/Initialize повторяем вручную. Без смещения плоскостей
-	// на нижнем этаже связанного стека (ненулевой plane offset) турф
-	// рисуется не на той плоскости - чёрный тайл вместо космоса.
 	if(SSmapping.max_plane_offset)
 		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
 
@@ -224,22 +206,18 @@
 	if(SSmapping.level_trait(z, ZTRAIT_TRANSPARENT_SPACE))
 		make_space_transparent()
 
-	// Регистрируем сигнал для обработки входа на тайл
 	RegisterSignal(src, COMSIG_ATOM_ENTERED, PROC_REF(on_entered))
 	RegisterSignal(src, COMSIG_MOVABLE_CROSSED, PROC_REF(on_entered))
 
-	// Блокируем телепортацию в зону ihategordon
 	RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
 
 	ComponentInitialize()
 
 	return INITIALIZE_HINT_NORMAL
 
-// Обработка входа на тайл
 /turf/open/space/ihategordon/proc/on_entered(datum/source, atom/movable/AM)
 	SIGNAL_HANDLER
-	// After drop_into_chasm this atom is a /turf/open/chasm - the registered
-	// signal survives ChangeTurf, but mobs_on_turf no longer exists on it.
+
 	if(!istype(src, /turf/open/space/ihategordon))
 		return
 	if(!isliving(AM))
@@ -247,29 +225,26 @@
 	var/mob/living/L = AM
 	if(!L)
 		return
-	// Добавляем в список мобов на тайле
+
 	mobs_on_turf |= L
-	// Запускаем процессинг только пока на тайле есть живые мобы
+
 	if(!(datum_flags & DF_ISPROCESSING))
 		START_PROCESSING(SSobj, src)
-	// Убираем инерцию космоса
+
 	L.inertia_dir = 0
-	// Проверяем есть ли джетпак
+
 	if(has_jetpack(L))
 		return
-	// Отнимаем стамину при входе
+
 	L.adjustStaminaLoss(30)
-	// Проверяем на стамина крит
+
 	if(IS_STAMCRIT(L))
-		// Превращаем в невидимый чазм и удаляем игрока
+
 		to_chat(L, "<span class='userdanger'>Ваши силы покинули вас! Вы проваливаетесь в бездну!</span>")
 		INVOKE_ASYNC(src, PROC_REF(drop_into_chasm), L)
 
-// Асинхронный сброс в чазм
 /turf/open/space/ihategordon/proc/drop_into_chasm(mob/living/L)
-	// ChangeTurf swaps this atom to the chasm type in place: kill the stamina
-	// loop and drop the mob list first, or process() keeps firing on a turf
-	// that no longer has mobs_on_turf (undefined var runtime every tick).
+
 	STOP_PROCESSING(SSobj, src)
 	if(istype(src, /turf/open/space/ihategordon))
 		mobs_on_turf.Cut()
@@ -277,9 +252,8 @@
 	if(istype(C))
 		C.drop(L)
 
-// Асинхронная телепортация в безопасное место
 /turf/open/space/ihategordon/proc/teleport_to_safe(mob/living/L)
-	// Ищем ближайший безопасный тайл (не космос)
+
 	var/turf/safe_turf = null
 	var/min_dist = 100
 	for(var/turf/T in range(10, src))
@@ -290,10 +264,10 @@
 				safe_turf = T
 	if(safe_turf)
 		L.forceMove(safe_turf)
-		L.adjustStaminaLoss(-50) // Восстанавливаем немного стамины
+		L.adjustStaminaLoss(-50)
 		to_chat(L, "<span class='notice'>Вы телепортировались в безопасное место.</span>")
 	else
-		// Если безопасного тайла нет, телепортируем в точку входа миссии
+
 		for(var/area/awaymission/ihategordon/entrance/E in world)
 			var/list/turfs = get_area_turfs(E)
 			if(turfs.len)
@@ -317,16 +291,12 @@
 				return TRUE
 	return FALSE
 
-// Блокировка телепортации
 /turf/open/space/ihategordon/proc/block_teleport(datum/source, channel, turf/origin, turf/destination)
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_TELEPORT
 
-// Процессинг стамины - работает только пока на тайле есть мобы
 /turf/open/space/ihategordon/process()
-	// The atom can be re-typed to /turf/open/chasm/ihategordon_invisible by
-	// drop_into_chasm while a processing callback is still queued - bail out
-	// before touching mobs_on_turf, which only exists on the space type.
+
 	if(!istype(src, /turf/open/space/ihategordon) || !mobs_on_turf || !mobs_on_turf.len)
 		STOP_PROCESSING(SSobj, src)
 		return
@@ -335,16 +305,16 @@
 		if(!L || QDELETED(L) || L.stat == DEAD || get_turf(L) != src)
 			departed += L
 			continue
-		// Убираем инерцию космоса
+
 		L.inertia_dir = 0
-		// Проверяем есть ли джетпак
+
 		if(has_jetpack(L))
 			continue
-		// Отнимаем стамину каждый тик
+
 		L.adjustStaminaLoss(15)
-		// Проверяем на стамина крит
+
 		if(IS_STAMCRIT(L))
-			// Превращаем в невидимый чазм и удаляем игрока
+
 			to_chat(L, "<span class='userdanger'>Ваши силы покинули вас! Вы проваливаетесь в бездну!</span>")
 			INVOKE_ASYNC(src, PROC_REF(drop_into_chasm), L)
 			departed += L
@@ -353,60 +323,145 @@
 	if(!mobs_on_turf.len)
 		STOP_PROCESSING(SSobj, src)
 
-// Останавливаем процессинг при удалении
+GLOBAL_VAR_INIT(ihategordon_zlevels, alist())
+GLOBAL_VAR_INIT(ihategordon_void_atmos, null)
+GLOBAL_VAR_INIT(ihategordon_starlight_done, alist())
+
+#define IHATEGORDON_STARLIGHT_GRID 4
+#define IHATEGORDON_STARLIGHT_RANGE 6
+
+/proc/ihategordon_void_z(z)
+	if(!GLOB.ihategordon_zlevels)
+		return FALSE
+	return GLOB.ihategordon_zlevels["[z]"]
+
+/proc/ihategordon_void_air()
+	RETURN_TYPE(/datum/gas_mixture/immutable/ihategordon)
+	var/datum/gas_mixture/immutable/ihategordon/A = GLOB.ihategordon_void_atmos
+	if(!A)
+		A = new /datum/gas_mixture/immutable/ihategordon
+		A.populate()
+		GLOB.ihategordon_void_atmos = A
+	return A
+
+/datum/map_template/on_map_loaded(z, list/bounds)
+	. = ..()
+	if(findtext(src.mappath || "", "ihategordon"))
+		for(var/zz in z to z + max(src.zdepth, 1) - 1)
+			GLOB.ihategordon_zlevels["[zz]"] = TRUE
+
+/turf/open/space/return_air()
+	RETURN_TYPE(/datum/gas_mixture)
+	if(ihategordon_void_z(z))
+		return ihategordon_void_air()
+	return ..()
+
+/turf/open/space/assume_air(datum/gas_mixture/giver)
+
+	if(ihategordon_void_z(z))
+		return
+	return ..()
+
+/turf/open/space/basic/remove_air(amount)
+	RETURN_TYPE(/datum/gas_mixture)
+	if(ihategordon_void_z(z))
+		return remove_air_from_immutable(amount)
+	return ..()
+
+/turf/open/space/basic/remove_air_ratio(amount)
+	RETURN_TYPE(/datum/gas_mixture)
+	if(ihategordon_void_z(z))
+		return remove_air_from_immutable(amount, TRUE)
+	return ..()
+
+/proc/ihategordon_void_queue_starlight(z)
+	if(GLOB.ihategordon_starlight_done["[z]"])
+		return
+	GLOB.ihategordon_starlight_done["[z]"] = TRUE
+	for(var/turf/open/space/T as anything in Z_TURFS(z))
+		if(QDELETED(T))
+			continue
+		if(!(T.x % IHATEGORDON_STARLIGHT_GRID) && !(T.y % IHATEGORDON_STARLIGHT_GRID))
+			T.queue_starlight()
+		CHECK_TICK
+
+/proc/ihategordon_void_starlight(turf/open/space/T)
+	if(!CONFIG_GET(flag/starlight))
+		return
+	var/is_source = !(T.x % IHATEGORDON_STARLIGHT_GRID) && !(T.y % IHATEGORDON_STARLIGHT_GRID)
+	if(!is_source)
+		if(T.lighting_flags & TURF_STARLIT)
+			T.lighting_flags &= ~TURF_STARLIT
+			GLOB.starlight -= T
+		if(T.light_range)
+			T.set_light(l_range = 0)
+		return
+	var/use_color = GLOB.current_starlight_color || T.light_color
+	var/use_power = GLOB.current_starlight_power || T.light_power
+	if(T.light_range != IHATEGORDON_STARLIGHT_RANGE || T.light_power != use_power || T.light_color != use_color)
+		T.set_light(l_range = IHATEGORDON_STARLIGHT_RANGE, l_power = use_power, l_color = use_color)
+	if(!(T.lighting_flags & TURF_STARLIT))
+		T.lighting_flags |= TURF_STARLIT
+		GLOB.starlight |= T
+
+/turf/open/space/ihategordon/update_starlight()
+	ihategordon_void_starlight(src)
+
+/turf/open/space/basic/update_starlight()
+	if(ihategordon_void_z(z))
+		ihategordon_void_starlight(src)
+	else
+		..()
+
 /turf/open/space/ihategordon/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	mobs_on_turf.Cut()
 	return ..()
 
-// Переопределяем методы чтобы атмосфера работала нормально
 /turf/open/space/ihategordon/Initalize_Atmos(times_fired)
-	// Не инициализируем атмосферу как вакуум, у нас уже есть кастомная атмосфера
+
 	return
 
 /turf/open/space/ihategordon/TakeTemperature(temp)
-	// Не меняем температуру космоса, она должна быть нормальной
+
 	return
 
 /turf/open/space/ihategordon/Assimilate_Air()
-	// Не ассимилируем атмосферу, сохраняем кастомную
+
 	return
 
 /turf/open/space/ihategordon/remove_air(amount)
+	RETURN_TYPE(/datum/gas_mixture)
 	return remove_air_from_immutable(amount)
 
 /turf/open/space/ihategordon/remove_air_ratio(amount)
+	RETURN_TYPE(/datum/gas_mixture)
 	return remove_air_from_immutable(amount, TRUE)
 
 /turf/open/space/ihategordon/return_air()
-	// Возвращаем нашу кастомную атмосферу
+	RETURN_TYPE(/datum/gas_mixture)
+
 	return air
 
 /turf/open/space/ihategordon/return_analyzable_air()
-	// Возвращаем нашу кастомную атмосферу для анализа
+	RETURN_TYPE(/datum/gas_mixture)
+
 	return air
 
 /turf/open/space/ihategordon/assume_air(datum/gas_mixture/giver)
-	// Не принимаем воздух из других тайлов
+
 	return
 
 /turf/open/space/ihategordon/update_air_ref()
-	// Не обновляем ссылку на воздух, сохраняем нашу кастомную атмосферу
+
 	return
 
 /turf/open/space/ihategordon/air_update_turf()
 	return
 
-// =============================================================================
-// IHATEGORDON CUSTOM PARALLAX LAYERS
-// Кастомные слои параллакса для гейта ihategordon
-// =============================================================================
-
-// Базовый класс для ihategordon параллакса
 /atom/movable/screen/parallax_layer/ihategordon
 	icon = 'modular_bluemoon/icons/effects/mesaparallax.dmi'
 
-// Базовые слои параллакса - статичный фон без тайлинга для небесшовных спрайтов
 /atom/movable/screen/parallax_layer/ihategordon/layer_1
 	icon_state = "layer1"
 	speed = 0.6
@@ -427,8 +482,8 @@
 	layer = 3
 	parallax_intensity = PARALLAX_HIGH
 	layer_mode = PARALLAX_MODE_STATIC
-	center_x = 3872 // 121 * 32
-	center_y = 6848 // 214 * 32
+	center_x = 3872
+	center_y = 6848
 	environment_flags = PARALLAX_ENV_SPACE_RUINS
 
 /atom/movable/screen/parallax_layer/ihategordon/random/space_gas
@@ -439,11 +494,6 @@
 	parallax_intensity = PARALLAX_INSANE
 	layer_mode = PARALLAX_MODE_TILED
 	palette_tinted = TRUE
-
-// =============================================================================
-// IHATEGORDON PARALLAX PROFILE
-// Профиль параллакса для гейта ihategordon
-// =============================================================================
 
 /datum/parallax_profile/ihategordon
 	id = "ihategordon"
@@ -460,36 +510,19 @@
 	)
 	palette = list(COLOR_TEAL, COLOR_GREEN, COLOR_YELLOW, COLOR_CYAN, COLOR_ORANGE, COLOR_PURPLE)
 	min_quality = PARALLAX_LOW
-	weight = 0 // Только для ручного применения
+	weight = 0
 	source = "BlueMoon Station - Mesa Mission"
 
-// =============================================================================
-// IHATEGORDON PARALLAX SUBSYSTEM HOOK
-// Перехватываем выбор параллакса для z-уровней с ihategordon тайлами
-// =============================================================================
-
-/datum/controller/subsystem/parallax
-	var/list/ihategordon_zlevels = null
-
 /datum/controller/subsystem/parallax/proc/check_ihategordon_z(z)
-	// Z-levels containing ihategordon space turfs are static per round -
-	// scan world once and cache instead of rescanning per z-level.
-	// An empty result is NOT cached permanently: pick_profile_for_z runs for
-	// every z a client looks at (lobby, station), and if the first call lands
-	// before the away-mission map is loaded the empty scan would blacklist
-	// the ihategordon profile for the whole round. pick_profile_for_z itself
-	// is cached per-z, so rescanning while empty stays cheap.
-	if(isnull(ihategordon_zlevels) || !length(ihategordon_zlevels))
-		ihategordon_zlevels = list()
-		for(var/turf/open/space/ihategordon/T in world)
-			ihategordon_zlevels["[T.z]"] = TRUE
-	return ihategordon_zlevels["[z]"]
 
-// Переопределяем get_parallax_type для ihategordon z-уровней
+	return ihategordon_void_z(z)
+
 /datum/controller/subsystem/parallax/pick_profile_for_z(z)
 	. = ..()
-	// Если на этом z-уровне есть ihategordon space, используем его профиль
+
 	if(check_ihategordon_z(z))
+
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ihategordon_void_queue_starlight), z), 0)
 		var/datum/parallax_profile/ihategordon/ihategordon_profile = resolve_profile("ihategordon")
 		if(ihategordon_profile)
 			return ihategordon_profile

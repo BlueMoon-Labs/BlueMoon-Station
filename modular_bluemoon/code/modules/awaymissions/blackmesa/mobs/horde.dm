@@ -1,8 +1,3 @@
-// =============================================================================
-// BLACK MESA ZOMBIE HORDE SYSTEM
-// AI Director controlled zombie waves for ihategordon mission
-// =============================================================================
-
 /datum/movespeed_modifier/status_effect/mesa_horde_slow
 	multiplicative_slowdown = 1
 
@@ -21,10 +16,6 @@
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/status_effect/mesa_horde_slow)
 	return ..()
 
-// =============================================================================
-// ACID OOZE POOL
-// =============================================================================
-
 /obj/effect/decal/cleanable/acid_ooze
 	name = "acid ooze"
 	desc = "A bubbling pool of acidic sludge that burns on contact."
@@ -35,12 +26,12 @@
 	anchored = TRUE
 	density = FALSE
 	var/damage_per_tick = 5
-	var/duration = 100 // 10 seconds (100 deciseconds)
+	var/duration = 100
 	var/processing = FALSE
 
 /obj/effect/decal/cleanable/acid_ooze/Initialize(mapload)
 	. = ..()
-	// Start processing immediately and check for mobs already on the turf
+
 	start_processing()
 	QDEL_IN(src, duration)
 
@@ -71,7 +62,7 @@
 		if(L.stat == DEAD)
 			return FALSE
 		if(istype(L, /mob/living/simple_animal/hostile/infected))
-			return FALSE // Infected are immune
+			return FALSE
 	return TRUE
 
 /obj/effect/decal/cleanable/acid_ooze/proc/burn_stuff()
@@ -87,17 +78,13 @@
 	if(QDELETED(target))
 		return
 	if(isobj(target))
-		return // Don't damage objects, only living mobs
+		return
 	else if(isliving(target))
 		var/mob/living/L = target
-		// Direct damage without causing nausea
+
 		L.adjustFireLoss(damage_per_tick)
 		if(L.client)
 			to_chat(L, span_warning("The acid ooze burns you!"))
-
-// =============================================================================
-// ACID SPIT PROJECTILE
-// =============================================================================
 
 /obj/item/projectile/neurotox/acid_spit
 	name = "acid spit"
@@ -190,16 +177,13 @@
 	var/distance = get_dist(tank, target)
 	if(distance < minimum_range || distance > AI_RANGED_MAX_FIRE_RANGE || !can_see(tank, target, AI_RANGED_MAX_FIRE_RANGE))
 		return
-	//can_see смотрит только opacity, а Shoot() стреляет только по чистой
-	//баллистической линии: без этой проверки танк вставал в телеграф сквозь
-	//стол/труп в кресле и молча отменял бросок уже после остановки.
+
 	if(tank.CheckRangedFireLane(target))
 		return
 	tank.target = target
 	tank.telegraphed_open_fire(target)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
-// Parent infected mob type
 /mob/living/simple_animal/hostile/infected
 	name = "infected"
 	desc = "A horrific creature that was once human."
@@ -209,10 +193,10 @@
 	icon_dead = "zombie_dead"
 	mob_biotypes = list(MOB_ORGANIC, MOB_HUMANOID)
 	faction = list(FACTION_XEN)
-	turns_per_move = 0 // Instant reaction time
+	turns_per_move = 0
 	maxHealth = 40
 	health = 40
-	speed = 0 // Instant movement
+	speed = 0
 	melee_damage_lower = 10
 	melee_damage_upper = 15
 	attack_verb_continuous = "slashes"
@@ -225,29 +209,29 @@
 	robust_searching = 1
 	search_objects = 1
 	wanted_objects = list(/obj/structure/urbanism_generator)
-	environment_smash = ENVIRONMENT_SMASH_NONE // Disable structure smashing to prevent attacking fences
+	environment_smash = ENVIRONMENT_SMASH_NONE
 	gold_core_spawnable = NO_SPAWN
 	density = TRUE
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
-	vision_range = 25 // Increased pursuit distance
-	aggro_vision_range = 30 // Increased aggro range when attacked
+	vision_range = 25
+	aggro_vision_range = 30
 	var/is_runner = FALSE
 	var/corpse_cleanup_time = 5 MINUTES
-	// Allow zombies to climb tables and pass through fences
+
 	pass_flags = PASSTABLE | PASSFENCE
 	pass_flags_self = NONE
-	sight = SEE_MOBS | SEE_TURFS // Битовая маска: видит мобов и турфы (дальность задаётся vision_range/aggro_vision_range)
-	move_on_shuttle = TRUE // Allow movement during shuttle transit (helps with pathfinding)
-	stop_automated_movement = 0 // Don't stop automated movement
-	// Disable fractures and dislocations completely
+	sight = SEE_MOBS | SEE_TURFS
+	move_on_shuttle = TRUE
+	stop_automated_movement = 0
+
 	wound_bonus = 0
 	bare_wound_bonus = 0
-	sharpness = SHARP_NONE // Prevent cutting wounds
+	sharpness = SHARP_NONE
 
 /mob/living/simple_animal/hostile/infected/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
-	// Initialize wanted_objects typecache at runtime to avoid constant-expression compile errors
+
 	wanted_objects = typecacheof(wanted_objects, TRUE)
 
 /mob/living/simple_animal/hostile/infected/Move(atom/newloc, dir, step_x, step_y)
@@ -259,8 +243,7 @@
 	if(!the_target)
 		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator/fuel))
-		// The fuel generator must never become a zombie target while players
-		// feed it batteries - it would pull the whole horde off the players.
+
 		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator))
 		var/obj/structure/urbanism_generator/G = the_target
@@ -301,8 +284,7 @@
 		target_message = "<span class='danger'>\The [src] [attack_verb_continuous] you!</span>",
 	)
 	log_combat(src, victim, "attacked")
-	// Regular infected and runners chip for 2 HP; bruisers always land a
-	// guaranteed 3 BRUTE hit that ignores armor and stamina block.
+
 	var/damage_amount = istype(src, /mob/living/simple_animal/hostile/infected/bruiser) ? 3 : 2
 	victim.apply_damage(damage_amount, BRUTE, null, forced = TRUE)
 	victim.apply_status_effect(/datum/status_effect/mesa_horde_slow)
@@ -312,8 +294,7 @@
 	. = ..(gibbed)
 	if(!ckey)
 		toggle_ai(AI_OFF)
-	// Corpse cleanup: waves leave dozens of dead mobs behind and vanilla never
-	// removes them. Weakref timer - safe if the body is moved or deleted early.
+
 	QDEL_IN(src, corpse_cleanup_time)
 
 /mob/living/simple_animal/hostile/infected/Destroy()
@@ -328,7 +309,6 @@
 	if(speak && speak.len && prob(30))
 		playsound(src, pick(speak), 70, TRUE)
 
-// Shared fence movement logic for all infected types
 /mob/living/simple_animal/hostile/infected/proc/handle_fence_movement(atom/newloc)
 	if(newloc)
 		for(var/obj/structure/fence/nocut/F in newloc)
@@ -337,10 +317,6 @@
 				return TRUE
 	return FALSE
 
-// =============================================================================
-// TIER 1: RUNNER ZOMBIE (DEPRECATED - No longer spawned)
-// Fast, low HP, high sight, dense-stacking, can climb fences
-// =============================================================================
 /mob/living/simple_animal/hostile/infected/runner
 	name = "runner infected"
 	desc = "A fast-moving infected creature. It moves with terrifying speed."
@@ -356,10 +332,6 @@
 	robust_searching = 1
 	is_runner = TRUE
 
-// =============================================================================
-// TIER 2: BRUISER ZOMBIE
-// Slower, high HP, standard sight, normal movement
-// =============================================================================
 /mob/living/simple_animal/hostile/infected/bruiser
 	name = "bruiser infected"
 	desc = "A heavily built infected creature with thick muscle mass. It can take a lot of punishment."
@@ -369,19 +341,19 @@
 	icon_dead = "former_dead"
 	maxHealth = 60
 	health = 60
-	speed = 2 // Slightly faster
-	turns_per_move = 0 // Faster reaction
+	speed = 2
+	turns_per_move = 0
 	melee_damage_lower = 15
 	melee_damage_upper = 25
-	sight = SEE_MOBS | SEE_TURFS // Битовая маска: видит мобов и турфы (дальность задаётся vision_range/aggro_vision_range)
+	sight = SEE_MOBS | SEE_TURFS
 	robust_searching = 1
-	environment_smash = ENVIRONMENT_SMASH_NONE // Disable structure smashing to prevent attacking fences
+	environment_smash = ENVIRONMENT_SMASH_NONE
 	harm_intent_damage = 20
 	obj_damage = 40
-	// Disable fractures and dislocations completely
+
 	wound_bonus = 0
 	bare_wound_bonus = 0
-	sharpness = SHARP_NONE // Prevent cutting wounds
+	sharpness = SHARP_NONE
 
 /mob/living/simple_animal/hostile/infected/bruiser/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
@@ -397,11 +369,6 @@
 	icon_state = "former_gonome_alt"
 	icon_living = "former_gonome_alt"
 
-// =============================================================================
-// TIER 3: ACID SPITTER ZOMBIE
-// Bruiser HP, acid spit attack, explodes into acid pool on death
-// Only spawns after trigger4 (difficulty level 4+)
-// =============================================================================
 /mob/living/simple_animal/hostile/infected/acid_spitter
 	name = "acid spitter infected"
 	desc = "A heavily built infected creature with swollen acid glands. It can spit corrosive acid and explodes into a toxic pool when killed."
@@ -421,14 +388,14 @@
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	harm_intent_damage = 20
 	obj_damage = 40
-	// Ranged attack settings
+
 	ranged = TRUE
-	ranged_cooldown_time = 40 // 4 seconds between acid spits
+	ranged_cooldown_time = 40
 	retreat_distance = 4
 	minimum_distance = 3
 	projectiletype = /obj/item/projectile/neurotox/acid_spit
 	projectilesound = 'sound/effects/blobattack.ogg'
-	// Disable fractures and dislocations completely
+
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	sharpness = SHARP_NONE
@@ -462,12 +429,6 @@
 	if(!ckey)
 		toggle_ai(AI_OFF)
 
-// =============================================================================
-// TIER 4: CHARGER ZOMBIE
-// Charge attack mechanic based on bubblegum/guardian charger
-// Maintains distance, then charges. If hits player - drags to wall. If misses - stuns.
-// Only spawns after trigger4 (difficulty level 4+)
-// =============================================================================
 /datum/ai_controller/hostile_adapter/blackmesa_charger
 	ai_pack_role = AI_ROLE_TANK
 	planning_subtrees = list(
@@ -500,12 +461,12 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	sharpness = SHARP_NONE
-	// Use built-in charge system from hostile.dm
+
 	charger = TRUE
-	charge_distance = 25 // Long charge distance
-	charge_frequency = 4 SECONDS // 4 seconds cooldown
-	knockdown_time = 2 SECONDS // 2 seconds knockdown on hit
-	minimum_distance = 3 // Allow getting closer before charging
+	charge_distance = 25
+	charge_frequency = 4 SECONDS
+	knockdown_time = 2 SECONDS
+	minimum_distance = 3
 	retreat_distance = 5
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_charger
 	speak = list('modular_bluemoon/sound/creatures/mesa/charger/alert_01.ogg', 'modular_bluemoon/sound/creatures/mesa/charger/alert_02.ogg')
@@ -521,7 +482,7 @@
 	. = ..()
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
-	// Start with cooldown ready
+
 	COOLDOWN_START(src, charge_cooldown, 0)
 
 /mob/living/simple_animal/hostile/infected/charger/Move(atom/newloc, dir, step_x, step_y)
@@ -540,7 +501,6 @@
 	if(speak && speak.len && prob(40))
 		playsound(src, pick(speak), 80, TRUE)
 
-// Override throw_impact for custom charge logic
 /mob/living/simple_animal/hostile/infected/charger/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(!charge_state)
 		return ..()
@@ -568,10 +528,9 @@
 	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
 		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/charger/attacksound.ogg', 100, TRUE)
-		Stun(40) // 4 seconds stun on miss
+		Stun(40)
 	charge_end()
 
-// Add a warning effect, then use the base charge windup and target validation.
 /mob/living/simple_animal/hostile/infected/charger/enter_charge(var/atom/target)
 	if(!target || QDELETED(target) || charge_recovering)
 		return FALSE
@@ -585,7 +544,6 @@
 		animate(telegraph, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 15)
 	return ..()
 
-// Override charge_end for retreat logic after hit
 /mob/living/simple_animal/hostile/infected/charger/charge_end()
 	if(!charge_state)
 		return
@@ -606,7 +564,7 @@
 
 /mob/living/simple_animal/hostile/infected/charger/AttackingTarget(atom/target)
 	. = ..()
-	// Disable normal melee attacks - charger should only use charge
+
 	return
 
 /mob/living/simple_animal/hostile/infected/charger/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = FALSE, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE)
@@ -624,10 +582,6 @@
 	if(!ckey)
 		toggle_ai(AI_OFF)
 
-// =============================================================================
-// TIER 4: HUNTER ZOMBIE
-// Stealthy, high damage, isolates players, drags victims to darkness
-// =============================================================================
 /datum/ai_planning_subtree/ranged_skirmish/blackmesa_hunter
 	max_range = 12
 
@@ -655,7 +609,7 @@
 	maxHealth = 70
 	health = 70
 	speed = -1
-	turns_per_move = 0 // instant reaction - hunters are fast
+	turns_per_move = 0
 	melee_damage_lower = 25
 	melee_damage_upper = 35
 	attack_verb_continuous = "mauls"
@@ -683,26 +637,26 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	sharpness = SHARP_NONE
-	// Hunter-specific variables
+
 	var/is_stealthed = FALSE
 	var/stealth_alpha = 60
 	var/leap_damage = 35
 	var/miss_stun_duration = 1.5 SECONDS
 	var/last_light_check = 0
-	var/light_check_interval = 20 // was 5 - locate() in range(10) scans 441 turfs
-	// AI configuration - use ranged attack for leap (like headcrab)
+	var/light_check_interval = 20
+
 	ranged = TRUE
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_hunter
 	ranged_message = "leaps"
-	ranged_cooldown_time = 25 // 2.5 seconds in deciseconds
+	ranged_cooldown_time = 25
 	var/jumpdistance = 12
 	var/jumpspeed = 2
 	var/is_leaping = FALSE
 	var/leap_cooldown = 0
 	var/next_vocalization = 0
-	// Dodging configuration - higher dodge chance for evasive movement
+
 	dodge_prob = 60
-	// Distance keeping behavior
+
 	retreat_distance = 5
 	minimum_distance = 3
 
@@ -710,8 +664,7 @@
 	. = ..()
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
-	// Hunters spawn stealthed - the gate has no real darkness, so the stealth
-	// only breaks under bright light (lamps, flashlights) or when it attacks.
+
 	is_stealthed = TRUE
 	animate(src, alpha = stealth_alpha, time = 0)
 
@@ -719,9 +672,8 @@
 	if(handle_fence_movement(newloc))
 		return TRUE
 
-	// Erratic movement when not in combat
 	if(!target && !is_leaping && prob(15))
-		// Occasionally move in a slightly random direction
+
 		var/random_offset = pick(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST)
 		if(random_offset && random_offset != dir)
 			var/turf/random_turf = get_step(src, random_offset)
@@ -748,16 +700,13 @@
 	animate(src, alpha = 255, time = 3)
 
 /mob/living/simple_animal/hostile/infected/hunter/proc/handle_stealth()
-	// Once revealed the hunter stays visible - the gate has no dark corners
-	// to fall back into, so there is nothing left to check.
+
 	if(!is_stealthed)
 		return
 	if(world.time < last_light_check + light_check_interval)
 		return
 	last_light_check = world.time
 
-	// Bright light sources - lit machinery and mobs carrying bright items
-	// (flashlights etc.) - force the hunter out of stealth.
 	for(var/obj/machinery/light/L in view(8, src))
 		if(L && L.on)
 			exit_stealth()
@@ -771,16 +720,15 @@
 	if(!the_target)
 		return FALSE
 
-	// Implement straggler targeting - prefer isolated targets
 	if(isliving(the_target))
 		var/mob/living/L = the_target
 		if(L)
-			// Count nearby allies of the target
+
 			var/ally_count = 0
 			for(var/mob/living/M in view(7, L))
 				if(M != L && M != src && faction_check_mob(L, M))
 					ally_count++
-			// If target has many allies nearby, avoid unless no other options
+
 			if(ally_count >= 3 && prob(70))
 				return FALSE
 
@@ -794,7 +742,7 @@
 	if(isliving(attack_target))
 		var/mob/living/L = attack_target
 		if(L && L.client && L.stat != DEAD)
-			// Apply screen shake to victim on melee hit
+
 			shake_camera(L, 2, 2)
 
 /mob/living/simple_animal/hostile/infected/hunter/OpenFire(atom/A)
@@ -808,7 +756,6 @@
 				if(faction_check_mob(L) && !attack_same)
 					return
 
-	// Only leap if target is at appropriate distance
 	var/distance = get_dist(src, A)
 	if(distance < 3 || distance > jumpdistance || !A.has_gravity())
 		return
@@ -863,18 +810,14 @@
 /mob/living/simple_animal/hostile/infected/hunter/Destroy()
 	. = ..()
 
-// =============================================================================
-// ZOMBIE SPAWN LANDMARK
-// Invisible landmark that randomly spawns infected or bruiser zombies
-// =============================================================================
 /obj/effect/landmark/zombie_spawn
 	name = "zombie spawn"
 	icon_state = "x"
-	invisibility = INVISIBILITY_ABSTRACT // Completely invisible
+	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
 
-	var/spawn_chance = 30 // 30% chance to spawn on round start
+	var/spawn_chance = 30
 	var/spawn_mob_types = list(
 		/mob/living/simple_animal/hostile/infected = 70,
 		/mob/living/simple_animal/hostile/infected/bruiser = 30
@@ -905,7 +848,6 @@
 	if(!spawn_turf)
 		return
 
-	// Check if spawn location is valid (not blocked)
 	if(spawn_turf.density)
 		return
 
@@ -913,7 +855,6 @@
 		if(A.density)
 			return
 
-	// Choose mob type based on weights and difficulty level
 	var/list/current_spawn_types = spawn_mob_types
 	if(GLOB.zombie_director)
 		var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
@@ -928,19 +869,15 @@
 
 	var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
 	if(Z)
-		// Apply HP multiplier from zombie director if available
+
 		if(GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
 			if(D && D.zombie_hp_multiplier > 1.0)
 				Z.maxHealth = round(Z.maxHealth * D.zombie_hp_multiplier)
 				Z.health = Z.maxHealth
-			// Add to active zombies list for tracking
+
 			D.active_zombies += Z
 
-// =============================================================================
-// TIER 5: TANK
-// Slow, durable infected that knocks targets back and pauses after each hit.
-// =============================================================================
 /mob/living/simple_animal/hostile/infected/tank
 	name = "tank infected"
 	desc = "A massive infected creature whose heavy blows send its victims flying."
@@ -992,8 +929,7 @@
 /mob/living/simple_animal/hostile/infected/tank/BiologicalLife(seconds, times_fired)
 	if(!(. = ..()))
 		return
-	// Periodic theme maintenance: picks up players who entered the area after
-	// aggro and covers target acquisition paths that skip Aggro().
+
 	update_theme_listeners()
 	if(target || stat == DEAD || world.time < next_idle_sound)
 		return
@@ -1071,14 +1007,12 @@
 /mob/living/simple_animal/hostile/infected/tank/proc/update_theme_listeners()
 	if(stat == DEAD || QDELETED(src))
 		return
-	// The theme only makes sense while the tank has a living target - this also
-	// covers aggro paths that bypass Aggro() (direct target assignment).
+
 	if(!isliving(target))
 		return
 	if(!tank_theme_playing)
 		tank_theme_playing = TRUE
-	// Area-based like the helicopter theme: every player inside the gate hears
-	// it, not just viewers() within 10 tiles at the moment of aggro.
+
 	for(var/mob/living/player in GLOB.player_list)
 		if(!player || QDELETED(player) || !player.client)
 			continue
@@ -1094,11 +1028,7 @@
 /mob/living/simple_animal/hostile/infected/tank/proc/register_theme_listener(mob/listener)
 	if(!listener || !istype(listener))
 		return
-	// Registration must be idempotent: tank_theme_listeners can lose track of a
-	// listener while its signals stay registered (unregister_theme_listener
-	// removes the list entry even when UnregisterSignal no-ops on a dropped
-	// comp_lookup). Re-registering then hits "parent_qdeleting overridden"
-	// warnings and leaks the stale callback, so clear it first.
+
 	unregister_theme_listener(listener)
 	tank_theme_listeners += listener
 	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_theme_listener_death), override = TRUE)
