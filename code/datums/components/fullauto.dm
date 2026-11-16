@@ -255,10 +255,10 @@
 	if(!can_shoot(shooter) || !can_trigger_gun(shooter) || semicd)
 		return FALSE
 	var/obj/item/bodypart/other_hand = shooter.has_hand_for_held_index(shooter.get_inactive_hand_index())
-	//if (!(HAS_TRAIT(shooter, TRAIT_AKIMBO))) // BLUEMOON EDIT: отключено
-	if(weapon_weight == WEAPON_HEAVY && (shooter.get_inactive_held_item() || !other_hand))
-		to_chat(shooter, "<span class='warning'>You need two hands to fire [src]!</span>")
-		return FALSE
+	if (!(HAS_TRAIT(shooter, TRAIT_AKIMBO)))
+		if(weapon_weight == WEAPON_HEAVY && (shooter.get_inactive_held_item() || !other_hand))
+			to_chat(shooter, "<span class='warning'>Для стрельбы из [src] нужны обе руки!</span>")
+			return FALSE
 	return TRUE
 
 

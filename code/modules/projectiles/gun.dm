@@ -431,10 +431,10 @@
 				user.dropItemToGround(src, TRUE)
 				return
 
-	//if (!(HAS_TRAIT(user, TRAIT_AKIMBO))) // BLUEMOON EDIT: отключено
-	if(weapon_weight == WEAPON_HEAVY && user.get_inactive_held_item())
-		to_chat(user, "<span class='userdanger'>Вам нужно обе руки для стрельбы из [src]!</span>")
-		return
+	if (!(HAS_TRAIT(user, TRAIT_AKIMBO)))
+		if(weapon_weight == WEAPON_HEAVY && user.get_inactive_held_item())
+			to_chat(user, "<span class='userdanger'>Вам нужно обе руки для стрельбы из [src]!</span>")
+			return
 	if(HAS_TRAIT(user, TRAIT_DOUBLE_TAP))
 		user.SetNextAction(CLICK_CD_RAPID)
 	else
