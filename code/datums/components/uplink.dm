@@ -218,6 +218,14 @@ GLOBAL_LIST_EMPTY(uplinks)
 		ui.set_autoupdate(FALSE)
 		ui.open()
 
+/// bluemonn add: Возвращает URL ассета иконки товара и отправляет сам файл клиенту.
+/// Файл кэшируется на диске клиента, JSON несёт только короткую ссылку.
+/// sourceonly = TRUE просит icon2html вернуть голый URL вместо тега <img>.
+/datum/component/uplink/proc/get_item_icon(atom/item_atom, mob/user)
+	if(!item_atom || !user?.client)
+		return null
+	return icon2html(item_atom, user.client, sourceonly = TRUE)
+
 /datum/component/uplink/ui_data(mob/user)
 	if(!user.mind)
 		return
@@ -243,6 +251,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 				"name" = I.name,
 				"cost" = get_purchase_cost(I),
 				"desc" = I.desc,
+				"icon" = get_item_icon(I.item, user),
 			))
 		out += list(cat)
 	return out
