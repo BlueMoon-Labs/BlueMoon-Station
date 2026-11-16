@@ -1142,7 +1142,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			qdel(new_implant)
 
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
-	var/bal = 0
+	var/bal = BASE_QUIRK_BALANCE
 	for(var/V in selected_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
 		if(T)
