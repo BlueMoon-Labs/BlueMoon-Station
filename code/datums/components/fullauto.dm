@@ -251,16 +251,15 @@
 	return FALSE
 
 // Gun procs.
-
 /obj/item/gun/proc/on_autofire_start(mob/living/shooter)
 	if(!can_shoot(shooter) || !can_trigger_gun(shooter) || semicd)
 		return FALSE
 	var/obj/item/bodypart/other_hand = shooter.has_hand_for_held_index(shooter.get_inactive_hand_index())
-	if (!(HAS_TRAIT(shooter, TRAIT_AKIMBO)))
-		if(weapon_weight == WEAPON_HEAVY && (shooter.get_inactive_held_item() || !other_hand))
-			to_chat(shooter, "<span class='warning'>You need two hands to fire [src]!</span>")
-			return FALSE
-		return TRUE
+	//if (!(HAS_TRAIT(shooter, TRAIT_AKIMBO))) // BLUEMOON EDIT: отключено
+	if(weapon_weight == WEAPON_HEAVY && (shooter.get_inactive_held_item() || !other_hand))
+		to_chat(shooter, "<span class='warning'>You need two hands to fire [src]!</span>")
+		return FALSE
+	return TRUE
 
 
 /obj/item/gun/proc/autofire_bypass_check(datum/source, client/clicker, atom/target, turf/location, control, params)
@@ -274,24 +273,16 @@
 	if(!can_shoot())
 		shoot_with_empty_chamber(shooter)
 		return NONE
-
-	// BLUEMOON EDIT: разброс при автоматичсекой стрельбе больше чем с одной пушки
+	var/obj/item/gun/akimbo_gun = shooter.get_inactive_held_item()
 	var/bonus_spread = 0
-	if(ishuman(shooter) && shooter.a_intent == INTENT_HARM && weapon_weight <= WEAPON_LIGHT && !HAS_TRAIT(shooter, TRAIT_MOD_NO_AKIMBO))
-		var/mob/living/carbon/human/H = shooter
-		var/loop_counter = 0
-		for(var/obj/item/gun/G in H.held_items)
-			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
-				continue
-			else if(G.can_trigger_gun(shooter) && G.can_shoot())
-				loop_counter++
-				if(loop_counter == 1)
-					bonus_spread += src.dual_wield_spread
-				bonus_spread += G.dual_wield_spread * (1 + AKIMBO_PENALTY_SCALING * (loop_counter + 1))
-				var/stam_cost = G.getstamcost(shooter)
-				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, shooter, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
-	var/stam_cost = getstamcost(shooter)
-	process_fire(target, shooter, TRUE, params, null, bonus_spread, stam_cost)
+	if(istype(akimbo_gun) && weapon_weight < WEAPON_MEDIUM && shooter.a_intent == INTENT_HARM && !HAS_TRAIT(shooter, TRAIT_MOD_NO_AKIMBO))
+		if(akimbo_gun.weapon_weight < WEAPON_MEDIUM && akimbo_gun.can_trigger_gun(shooter))
+			if(HAS_TRAIT(shooter, TRAIT_AKIMBO))
+				bonus_spread = 20
+			else
+				bonus_spread = dual_wield_spread
+			addtimer(CALLBACK(akimbo_gun, TYPE_PROC_REF(/obj/item/gun, process_fire), target, shooter, TRUE, params, null, bonus_spread), 1)
+	process_fire(target, shooter, TRUE, params, null, bonus_spread)
 	return COMPONENT_AUTOFIRE_SHOT_SUCCESS //All is well, we can continue shooting.
 #undef AUTOFIRE_MOUSEUP
 #undef AUTOFIRE_MOUSEDOWN
