@@ -34,6 +34,10 @@
 	if(!.)
 		return .
 
+	//мягкому нужен только партнёр, мех ему не цель
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
 	if(!isliving(the_target))
 		return .
 
@@ -49,6 +53,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -263,9 +269,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE
@@ -277,6 +287,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -492,9 +504,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE
@@ -506,6 +522,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE
@@ -721,9 +739,13 @@
 	if(!.)
 		return .
 
-	var/mob/living/M = the_target
-	if(!M)
+	if(ismecha(the_target) && werewolf_mode == "gentle")
+		return FALSE
+
+	if(!isliving(the_target))
 		return .
+
+	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
 		return FALSE
@@ -735,6 +757,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE

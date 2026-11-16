@@ -278,6 +278,7 @@
 /obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
 	dir = 8
 	},
+/obj/machinery/computer/department_budget/medical,
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
 "aaF" = (
@@ -5775,6 +5776,9 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
+	},
+/obj/machinery/computer/department_budget/security{
+	dir = 4
 	},
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/hos)
@@ -14861,6 +14865,7 @@
 /obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/science,
 /turf/open/floor/plasteel/showroomfloor,
 /area/command/heads_quarters/rd)
 "aCG" = (
@@ -21079,11 +21084,6 @@
 	id = "emmd";
 	name = "Emergency Medical Lockdown Shutters"
 	},
-/obj/item/paper_bin{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/pen,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -21092,9 +21092,8 @@
 	req_access_txt = "5";
 	dir = 1
 	},
-/obj/item/toy/figure/paramedic{
-	pixel_y = -3;
-	pixel_x = 5
+/obj/machinery/cash_register/clinic{
+	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
@@ -22486,6 +22485,14 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = -3
+	},
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
 "aSy" = (
@@ -32932,6 +32939,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget/cargo,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "bom" = (
@@ -39054,6 +39062,7 @@
 	},
 /obj/effect/turf_decal/delivery,
 /obj/effect/decal/cleanable/blood/old,
+/obj/machinery/cash_register,
 /turf/open/floor/plating,
 /area/commons/vacant_room/commissary)
 "bAW" = (
@@ -42006,6 +42015,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/machinery/vending/custom,
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "bGO" = (
@@ -59416,6 +59426,7 @@
 /area/maintenance/port/lesser)
 "coF" = (
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/machinery/evidence_locker,
 /turf/open/floor/plasteel/showroomfloor,
 /area/security/warden)
 "coG" = (
@@ -67470,11 +67481,15 @@
 "cKz" = (
 /obj/effect/landmark/event_spawn,
 /obj/structure/cable/yellow{
-	icon_state = "4-8"
+	icon_state = "0-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /obj/effect/turf_decal/siding/yellow,
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /obj/effect/turf_decal/tile/red,
+/obj/machinery/power/export_node,
 /turf/open/floor/plasteel,
 /area/engineering/storage_shared)
 "cKC" = (
@@ -69535,13 +69550,13 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/service/chapel/dock)
 "dxa" = (
-/obj/item/kirbyplants{
-	icon_state = "plant-05"
-	},
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow,
+/obj/machinery/computer/stock_terminal{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "dxq" = (
@@ -71742,6 +71757,9 @@
 	dir = 8;
 	name = "bar sorting disposal pipe";
 	sortType = 19
+	},
+/obj/machinery/cash_register/bar{
+	dir = 8
 	},
 /turf/open/floor/wood,
 /area/service/bar)
@@ -76549,6 +76567,28 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/chemistry)
+"jes" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/machinery/vending/custom,
+/turf/open/floor/plasteel,
+/area/hallway/primary/starboard)
 "jeL" = (
 /turf/closed/wall/r_wall/rust,
 /area/service/chapel/dock)
@@ -77607,6 +77647,10 @@
 /obj/machinery/computer/med_data/laptop{
 	dir = 8;
 	pixel_y = 3
+	},
+/obj/item/toy/figure/paramedic{
+	pixel_x = 8;
+	pixel_y = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
@@ -79468,6 +79512,7 @@
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/computer/department_budget/engineering,
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
 "lmQ" = (
@@ -80152,6 +80197,9 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/siding/wood,
+/obj/machinery/computer/department_budget/service{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "mae" = (
@@ -80716,6 +80764,14 @@
 	dir = 8;
 	id = "kitchenshutters";
 	name = "Kitchen Shutters"
+	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = 2;
+	pixel_y = -7
 	},
 /turf/open/floor/plasteel,
 /area/service/kitchen)
@@ -82060,11 +82116,8 @@
 	id = "kitchenshutters";
 	name = "Kitchen Shutters"
 	},
-/obj/item/reagent_containers/food/condiment/peppermill{
-	pixel_x = 3
-	},
-/obj/item/reagent_containers/food/condiment/saltshaker{
-	pixel_x = -3
+/obj/machinery/cash_register/kitchen{
+	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/service/kitchen)
@@ -89613,6 +89666,9 @@
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
 	},
+/obj/machinery/computer/department_budget{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/command/bridge)
 "tQE" = (
@@ -91176,6 +91232,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningdock/abandoned)
+"uVw" = (
+/obj/structure/sign/ticker_board,
+/turf/closed/wall/rust,
+/area/cargo/sorting)
 "uWB" = (
 /obj/structure/table/wood/fancy,
 /obj/item/storage/fancy/candle_box,
@@ -92237,6 +92297,9 @@
 "vZC" = (
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
+	},
+/obj/item/kirbyplants{
+	icon_state = "plant-05"
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
@@ -132447,7 +132510,7 @@ bma
 bhL
 mFS
 bjX
-bGP
+jes
 car
 bJg
 bSw
@@ -132960,7 +133023,7 @@ bjW
 bjW
 keX
 mFS
-iAn
+uVw
 bGP
 bLY
 hMq

@@ -113,7 +113,7 @@
 
 /obj/effect/abstract/liquid_turf/proc/dry()
 	SIGNAL_HANDLER
-	if(immutable)
+	if(immutable || istype(my_turf, /turf/open/pool))
 		return
 	qdel(src, TRUE)
 
@@ -682,7 +682,7 @@
 	var/turf/T = source
 	if(isobserver(AM))
 		return //ghosts, camera eyes, etc. don't make water splashy splashy
-	if(isrobotic(AM) && HAS_TRAIT(AM, TRAIT_BLUEMOON_WATER_VULNERABILITY))
+	if(isrobotic(AM) && HAS_TRAIT(AM, TRAIT_BLUEMOON_WATER_VULNERABILITY) && !(AM.movement_type & (FLYING|FLOATING)))
 		INVOKE_ASYNC(GLOBAL_PROC, /proc/synth_water_damage_start, AM)
 	if(liquid_state >= LIQUID_STATE_ANKLES)
 		if(prob(30))
@@ -693,7 +693,7 @@
 				'sound/effects/water_wade4.ogg'
 				))
 			playsound(T, sound_to_play, 50, 0)
-		if(iscarbon(AM))
+		if(iscarbon(AM) && !(AM.movement_type & (FLYING|FLOATING)))
 			var/mob/living/carbon/C = AM
 			C.apply_status_effect(/datum/status_effect/water_affected)
 			if(liquid_state >= LIQUID_STATE_WAIST)

@@ -1,5 +1,4 @@
 /datum/export/tool
-	k_elasticity = 1/500 //Tool selling almost always find a target
 
 /datum/export/tool/toolbox
 	cost = 6
@@ -15,7 +14,6 @@
 
 /datum/export/gear/powerdrill
 	cost = 25
-	k_elasticity = 1/80 //Market can only take so much
 	unit_name = "power tool"
 	export_types = list(/obj/item/crowbar/power, /obj/item/screwdriver/power, \
 						/obj/item/weldingtool/experimental, /obj/item/wirecutters/power, /obj/item/wrench/power)
@@ -23,7 +21,6 @@
 
 /datum/export/gear/advtool
 	cost = 175
-	k_elasticity = 0 //Only known to be made by 2 station, market is hungery for it
 	unit_name = "adv tool"
 	export_types = list(/obj/item/crowbar/advanced, /obj/item/crowbar/abductor, /obj/item/screwdriver/abductor, /obj/item/screwdriver/advanced, \
 						/obj/item/weldingtool/abductor, /obj/item/weldingtool/advanced, /obj/item/wirecutters/abductor, /obj/item/wirecutters/advanced, \

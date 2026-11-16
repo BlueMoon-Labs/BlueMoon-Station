@@ -186,6 +186,8 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	var/default_price = 25
 	///Default price of premium items if not overridden
 	var/extra_price = 50
+	/// Индекс цен сектора, по которому посчитаны текущие цены
+	var/last_price_index = 1
 	///Whether our age check is currently functional
 	var/age_restrictions = TRUE
 	///cost multiplier per department or access
@@ -386,8 +388,9 @@ GLOBAL_LIST_EMPTY(vending_products)
  * * startempty - should we set vending_product record amount from the product list (so it's prefilled at roundstart)
  */
 /obj/machinery/vending/proc/build_inventory(list/productlist, list/recordlist, list/categories, start_empty = FALSE)
-	default_price = round(initial(default_price) * SSeconomy.inflation_value())
-	extra_price = round(initial(extra_price) * SSeconomy.inflation_value())
+	last_price_index = SSeconomy.price_index()
+	default_price = round(initial(default_price) * last_price_index)
+	extra_price = round(initial(extra_price) * last_price_index)
 
 	var/list/product_to_category = list()
 	for (var/list/category as anything in categories)
@@ -409,8 +412,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 			R.amount = amount
 		R.max_amount = amount
 		///Prices of vending machines are all increased uniformly.
-		R.custom_price = round(initial(temp.custom_price) * SSeconomy.inflation_value())
-		R.custom_premium_price = round(initial(temp.custom_premium_price) * SSeconomy.inflation_value())
+		R.custom_price = round(initial(temp.custom_price) * last_price_index)
+		R.custom_premium_price = round(initial(temp.custom_premium_price) * last_price_index)
 		//R.age_restricted = initial(temp.age_restricted)
 		R.category = product_to_category[typepath]
 		recordlist += R
@@ -438,8 +441,12 @@ GLOBAL_LIST_EMPTY(vending_products)
 		for (var/product_key in category_products)
 			products[product_key] += category_products[product_key]
 
+/// Пересчёт всех цен автомата по текущему индексу цен сектора.
+/obj/machinery/vending/proc/refresh_prices()
+	reset_prices(product_records, coin_records + hidden_records)
+
 /**
- * Reassign the prices of the vending machine as a result of the inflation value, as provided by SSeconomy
+ * Reassign the prices of the vending machine from the sector price index, as provided by SSeconomy
  *
  * This rebuilds both /datum/data/vending_products lists for premium and standard products based on their most relevant pricing values.
  * Arguments:
@@ -447,21 +454,20 @@ GLOBAL_LIST_EMPTY(vending_products)
  * * premiumlist - the list of premium product datums in the vendor to refresh their prices.
  */
 /obj/machinery/vending/proc/reset_prices(list/recordlist, list/premiumlist)
-	default_price = round(initial(default_price) * SSeconomy.inflation_value())
-	extra_price = round(initial(extra_price) * SSeconomy.inflation_value())
-	for(var/R in recordlist)
-		var/datum/data/vending_product/record = R
+	last_price_index = SSeconomy.price_index()
+	default_price = round(initial(default_price) * last_price_index)
+	extra_price = round(initial(extra_price) * last_price_index)
+	for(var/datum/data/vending_product/record as anything in recordlist)
 		var/obj/item/potential_product = record.product_path
-		record.custom_price = round(initial(potential_product.custom_price) * SSeconomy.inflation_value())
-	for(var/R in premiumlist)
-		var/datum/data/vending_product/record = R
+		record.custom_price = round(initial(potential_product.custom_price) * last_price_index)
+	for(var/datum/data/vending_product/record as anything in premiumlist)
 		var/obj/item/potential_product = record.product_path
 		var/premium_sanity = round(initial(potential_product.custom_premium_price))
 		if(premium_sanity)
-			record.custom_premium_price = round(premium_sanity * SSeconomy.inflation_value())
+			record.custom_premium_price = round(premium_sanity * last_price_index)
 			continue
 		//For some ungodly reason, some premium only items only have a custom_price
-		record.custom_premium_price = round(extra_price + (initial(potential_product.custom_price) * (SSeconomy.inflation_value() - 1)))
+		record.custom_premium_price = round(extra_price + (initial(potential_product.custom_price) * (last_price_index - 1)))
 
 /**
  * Refill a vending machine from a refill canister
@@ -1193,28 +1199,25 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 		if(account?.account_job && account?.account_job.paycheck_department == payment_department)
 			price_to_use = max(round(price_to_use * DEPARTMENT_DISCOUNT), 1) //No longer free, but signifigantly cheaper.
-		if(coin_records.Find(R) || hidden_records.Find(R))
+		var/premium = coin_records.Find(R) || hidden_records.Find(R)
+		if(premium)
 			price_to_use = R.custom_premium_price ? R.custom_premium_price : extra_price
 		if(LAZYLEN(R.returned_products))
 			price_to_use = 0 //returned items are free
 
-		if(price_to_use && silicon_customer)
-			if(!account.adjust_money(-price_to_use))
-				say("Недостаточно средств для покупки [R.name].")
+		if(price_to_use)
+			if(!account?.has_money(price_to_use) || account.state == ACCOUNT_FROZEN)
+				say(account?.state == ACCOUNT_FROZEN ? "Счёт заморожен финансовым аудитом, покупка невозможна." : "Недостаточно средств для покупки [R.name].")
 				flick(icon_deny,src)
 				vend_ready = TRUE
 				return
-			var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-			if(D)
-				D.adjust_money(price_to_use)
-		else if(price_to_use && !account?.adjust_money(-price_to_use, "Vending: [R.name]"))
-			say("Недостаточно средств для покупки [R.name].")
-			flick(icon_deny,src)
-			vend_ready = TRUE
-			return
-		var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-		if(D)
-			D.adjust_money(price_to_use)
+			var/datum/bank_account/owner = SSeconomy.get_dep_account(payment_department)
+			var/sink_share = premium ? SSeconomy.settings.vend_premium_sink_share : SSeconomy.settings.vend_wholesale_share
+			var/wholesale = owner ? round(price_to_use * sink_share / 100) : price_to_use
+			var/memo = "Покупка: [R.name]"
+			if(owner && owner != account)
+				SSeconomy.move(account, owner, price_to_use - wholesale, ECON_VEND, usr, memo)
+			account.debit(wholesale, ECON_VEND_WHOLESALE, usr, memo)
 			SSblackbox.record_feedback("amount", "vending_spent", price_to_use)
 			//SSeconomy.track_purchase(account, price_to_use, name)
 			log_econ("[price_to_use] credits were inserted into [src] by [account?.account_holder] to buy [R].")
@@ -1230,6 +1233,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	var/obj/item/vended_item
 	if(!LAZYLEN(R.returned_products)) //always give out free returned stuff first, e.g. to avoid walling a traitor objective in a bag behind paid items
 		vended_item = new R.product_path(get_turf(src))
+		econ_mark_vended(vended_item, price_to_use)
 	else
 		vended_item = LAZYACCESS(R.returned_products, LAZYLEN(R.returned_products)) //first in, last out
 		R.untrack_returned_product(vended_item)
@@ -1410,6 +1414,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 	refill_canister = /obj/item/vending_refill/custom
 	/// where the money is sent
 	var/datum/bank_account/linked_account
+	/// world.time конца аренды; после него прилавок не продаёт, пока аренду не продлят
+	var/rented_until = 0
 	/// max number of items that the custom vendor can hold
 	var/max_loaded_items = CUSTOM_VENDOR_MAX_ITEMS
 	/// Base64 cache of custom icons.
@@ -1418,7 +1424,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/custom/examine(mob/user)
 	. = ..()
-	. += span_notice("Владелец может изменить имя, рекламу и слоган используя ручку.")
+	. += rent_examine()
+	. += span_notice("[rentable ? "Арендатор" : "Владелец"] может изменить имя, рекламу и слоган ручкой.")
 
 /obj/machinery/vending/custom/compartmentLoadAccessCheck(mob/user)
 	. = FALSE
@@ -1445,7 +1452,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/custom/ui_interact(mob/user)
 	if(!linked_account)
-		balloon_alert(user, "нет зарегистрированного владельца")
+		balloon_alert(user, rentable ? "прилавок не арендован" : "автомат ни к кому не привязан")
 		return FALSE
 	return ..()
 
@@ -1487,19 +1494,17 @@ GLOBAL_LIST_EMPTY(vending_products)
 			return TRUE
 
 /obj/machinery/vending/custom/attackby(obj/item/I, mob/user, params)
-	if(!linked_account && isliving(user))
-		var/obj/item/card/id/C = user.get_idcard(TRUE)
-		if(istype(C) && C.registered_account)
-			linked_account = C.registered_account
-			say("\The [src] был подключён к [C].")
+	var/obj/item/card/id/swiped = I.GetID()
+	if(swiped && isliving(user) && user.a_intent != INTENT_HARM)
+		stall_swipe(user, swiped)
+		return
 
 	if(!linked_account)
-		say("Автомат не имеет владельца, пожалуйста привяжите аккаунт.")
-
-	if(isidcard(I))
-		var/obj/item/card/id/C = I
-		if(C.registered_account) // Не нужно продавать карты с аккаунтами
-			return
+		var/obj/item/card/id/held_card = (!rentable && isliving(user)) ? user.get_idcard(TRUE) : null
+		if(held_card)
+			claim_free(held_card.registered_account)
+		else
+			say(rentable ? "Прилавок не арендован: проведите по нему ID-картой, чтобы арендовать." : "Автомат ни к кому не привязан: проведите по нему ID-картой с личным счётом.")
 
 	if(compartmentLoadAccessCheck(user))
 		if(istype(I, /obj/item/pen))
@@ -1569,6 +1574,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 	if(T)
 		for(var/obj/item/I in contents)
 			I.forceMove(T)
+	set_renter(null, 0)
+	GLOB.econ_rental_stalls -= src
 	return ..()
 
 /**
@@ -1595,12 +1602,23 @@ GLOBAL_LIST_EMPTY(vending_products)
 		return FALSE
 	/// Charges the user if its not the owner
 	if(!compartmentLoadAccessCheck(user))
-		if(!payee.has_money(dispensed_item.custom_price))
+		if(!can_sell())
+			say("Аренда прилавка закончилась, продажи закрыты.")
+			flick(icon_deny, src)
+			return TRUE
+		var/payment_problem = SSeconomy.personal_account_problem(payee, TRUE)
+		if(payment_problem)
+			to_chat(user, span_warning(payment_problem))
+			flick(icon_deny, src)
+			return TRUE
+		payment_problem = SSeconomy.personal_account_problem(linked_account, FALSE)
+		if(payment_problem)
+			say("Продажа невозможна. [payment_problem]")
+			flick(icon_deny, src)
+			return TRUE
+		if(!SSeconomy.move(payee, linked_account, dispensed_item.custom_price, ECON_PURCHASE, user, "Покупка: [dispensed_item]"))
 			balloon_alert(user, "Недостаточно средств")
 			return TRUE
-		/// Make the transaction
-		payee.adjust_money(-dispensed_item.custom_price, , "Vending: [dispensed_item]")
-		linked_account.adjust_money(dispensed_item.custom_price, "Vending: [dispensed_item] Bought")
 		//linked_account.bank_talk("[payee.account_holder] made a [dispensed_item.custom_price]cr purchase at your custom vendor.")
 		/// Log the transaction
 		SSblackbox.record_feedback("amount", "vending_spent", dispensed_item.custom_price)

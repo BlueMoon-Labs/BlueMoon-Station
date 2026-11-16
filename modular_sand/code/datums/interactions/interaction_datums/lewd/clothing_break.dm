@@ -48,6 +48,8 @@
 	var/obj/item/clothing/target_uniform = partner_human.w_uniform
 	if(!do_after(user, 4 SECONDS, partner_human) || QDELETED(target_uniform) || partner_human.w_uniform != target_uniform)
 		return
+	if(!can_reach_target(user, partner_human))
+		return
 
 	target_uniform.shred_clothing(is_hidden ? HIDDEN_INTERACTION_RANGE : COMBAT_MESSAGE_RANGE, INTERACTION_MESSAGE_FLAGS(is_hidden))
 

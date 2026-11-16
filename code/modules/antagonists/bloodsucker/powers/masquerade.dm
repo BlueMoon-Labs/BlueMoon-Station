@@ -61,7 +61,7 @@
 
 	// WE ARE ALIVE! //
 	bloodsuckerdatum.poweron_masquerade = TRUE
-	while(bloodsuckerdatum && ContinueActive(user))
+	while(!QDELETED(bloodsuckerdatum) && ContinueActive(user))
 
 		// HEART
 		if(istype(H))
@@ -89,8 +89,9 @@
 /datum/action/cooldown/bloodsucker/masquerade/DeactivatePower(mob/living/user = owner, mob/living/target)
 	..() // activate = FALSE
 
-	var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
-	bloodsuckerdatum.poweron_masquerade = FALSE
+	var/datum/antagonist/bloodsucker/bloodsuckerdatum = user.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
+	if(bloodsuckerdatum)
+		bloodsuckerdatum.poweron_masquerade = FALSE
 
 	ADD_TRAIT(user, TRAIT_COLDBLOODED, "bloodsucker")
 	ADD_TRAIT(user, TRAIT_NOHARDCRIT, "bloodsucker")
@@ -101,8 +102,10 @@
 	// HEART
 	var/obj/item/organ/heart/H = user.getorganslot(ORGAN_SLOT_HEART)
 	var/obj/item/organ/eyes/vassal/bloodsucker/E = user.getorganslot(ORGAN_SLOT_EYES)
-	H.Stop()
+	H?.Stop()
 
-	E.flash_protect = 2
+	if(E)
+		E.flash_protect = 2
 
-	to_chat(user, "<span class='notice'>Твое сердце бьется в последний раз, в то время как твоя кожа высыхает и к тебе возвращается ледяная бледность.</span>")
+	if(!deactivating_on_removal)
+		to_chat(user, "<span class='notice'>Твое сердце бьется в последний раз, в то время как твоя кожа высыхает и к тебе возвращается ледяная бледность.</span>")

@@ -14,8 +14,11 @@
 	if(dumped)
 		to_chat(user, "<span class='warning'>You already activated Protocol CRAB-17.</span>")
 		return FALSE
+	if(isolated_from_station(user))
+		to_chat(user, span_warning("Телефон не ловит сеть станции: отсюда рынок не обрушить."))
+		return FALSE
 	if(alert(user, "Are you sure you want to crash this market with no survivors?", "Protocol CRAB-17", "Yes", "No") == "Yes")
-		if(dumped || QDELETED(src)) //Prevents fuckers from cheesing alert
+		if(dumped || QDELETED(src) || isolated_from_station(user)) //Prevents fuckers from cheesing alert
 			return FALSE
 		var/turf/targetturf = get_safe_random_station_turf()
 		if (!targetturf)
@@ -24,6 +27,13 @@
 		log_admin("[key_name(user)] активировал КРАБ-17.")
 		new /obj/effect/dumpeetTarget(targetturf, user)
 		dumped = TRUE
+
+/// VR и полигон отрезаны от станции, вызов машины оттуда - грифер-ивент без риска.
+/obj/item/suspiciousphone/proc/isolated_from_station(mob/user)
+	if(user.GetComponent(/datum/component/virtual_reality))
+		return TRUE
+	var/area/user_area = get_area(user)
+	return istype(user_area, /area/awaymission/vr) || istype(user_area, /area/antag_training)
 
 /obj/structure/checkoutmachine
 	name = "\improper Nanotrasen Space-Coin Market"
@@ -37,6 +47,8 @@
 	max_integrity = 5000
 	var/list/accounts_to_rob
 	var/mob/living/carbon/human/bogdanoff
+	/// Счёт активатора, куда уходят деньги; запоминается на старте, чтобы слив шёл и после удаления его тела
+	var/datum/bank_account/payee
 	var/canwalk = FALSE
 
 /obj/structure/checkoutmachine/examine(mob/living/user)
@@ -77,14 +89,23 @@
 /obj/structure/checkoutmachine/Initialize(mapload, mob/living/user)
 	. = ..()
 	bogdanoff = user
+	if(bogdanoff)
+		RegisterSignal(bogdanoff, COMSIG_PARENT_QDELETING, PROC_REF(on_bogdanoff_deleted))
 	add_overlay("flaps")
 	add_overlay("hatch")
 	add_overlay("legs_retracted")
 	addtimer(CALLBACK(src, PROC_REF(startUp)), 50)
 	QDEL_IN(src, 8 MINUTES) //Self destruct after 8 min
 
-/obj/structure/checkoutmachine/Destroy()
+/obj/structure/checkoutmachine/proc/on_bogdanoff_deleted(datum/source)
+	SIGNAL_HANDLER
 	bogdanoff = null
+
+/obj/structure/checkoutmachine/Destroy()
+	if(bogdanoff)
+		UnregisterSignal(bogdanoff, COMSIG_PARENT_QDELETING)
+	bogdanoff = null
+	payee = null
 	stop_dumping()
 	STOP_PROCESSING(SSfastprocess, src)
 	priority_announce("КРАБ-Терминал на территории [get_area(src)] был уничтожен. Средства экипажа больше не находятся под угрозой!", sender_override = "КРАБ-17")
@@ -160,22 +181,25 @@
 	for(var/datum/bank_account/account as anything in SSeconomy.bank_accounts)
 		if(!account.offstation)
 			accounts_to_rob += account
-	accounts_to_rob -= bogdanoff.get_bank_account()
+	payee = bogdanoff?.get_bank_account()
+	if(payee)
+		accounts_to_rob -= payee
 	for(var/i in accounts_to_rob)
 		var/datum/bank_account/B = i
 		B.dumpeet()
 	dump()
 
 /obj/structure/checkoutmachine/proc/dump()
+	if(QDELETED(src))
+		return
 	var/percentage_lost = (rand(5, 15) / 100)
+	var/datum/bank_account/account = QDELETED(payee) ? null : payee
 	for(var/i in accounts_to_rob)
 		var/datum/bank_account/B = i
 		if(!B.being_dumped)
 			continue
 		var/amount = B.account_balance * percentage_lost
-		var/datum/bank_account/account = bogdanoff.get_bank_account()
-		if (account) // get_bank_account() may return FALSE
-			account.transfer_money(B, amount)
+		if (account && B.transferable && SSeconomy.move(B, account, amount, ECON_SKIM, bogdanoff))
 			B.bank_card_talk("You have lost [percentage_lost * 100]% of your funds! A spacecoin credit deposit machine is located at: [get_area(src)].")
 	addtimer(CALLBACK(src, PROC_REF(dump)), 150) //Drain every 15 seconds
 

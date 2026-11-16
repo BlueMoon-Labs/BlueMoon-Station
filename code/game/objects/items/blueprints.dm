@@ -122,6 +122,8 @@
 		if(viewing)
 			clear_viewer()
 		viewing = user.client
+		// Чертежи лежат на карте с самого старта: ссылка из них на ушедшего клиента стоила бы полного обхода мира.
+		RegisterSignal(viewing, COMSIG_PARENT_QDELETING, PROC_REF(on_viewer_deleted))
 		showing = get_images(get_turf(user), viewing.view)
 		viewing.images |= showing
 		if(message)
@@ -129,11 +131,16 @@
 
 /obj/item/areaeditor/blueprints/proc/clear_viewer(mob/user, message = "")
 	if(viewing)
+		UnregisterSignal(viewing, COMSIG_PARENT_QDELETING)
 		viewing.images -= showing
 		viewing = null
 	showing.Cut()
 	if(message)
 		to_chat(user, message)
+
+/obj/item/areaeditor/blueprints/proc/on_viewer_deleted(client/source)
+	SIGNAL_HANDLER
+	clear_viewer()
 
 /obj/item/areaeditor/blueprints/dropped(mob/user)
 	..()

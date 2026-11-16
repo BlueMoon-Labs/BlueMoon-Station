@@ -65,3 +65,43 @@
 	TEST_ASSERT(REF(neighbour_messenger) in station_sees, "Предпосылка: станционный КПК видит соседа.")
 	TEST_ASSERT(!(REF(cafe_messenger) in station_sees), "Станционный КПК видит КПК гостя Призрачного Кафе.")
 	TEST_ASSERT(!(cafe_pda in get_viewable_pdas()), "КПК гостя Призрачного Кафе виден ИИ.")
+
+/// Телефон CRAB-17 из VR не вызывает машину на станцию.
+/datum/unit_test/crab17_refuses_in_vr
+
+/datum/unit_test/crab17_refuses_in_vr/Run()
+	var/obj/item/suspiciousphone/phone = allocate(/obj/item/suspiciousphone)
+	var/mob/living/carbon/human/crew = allocate_minded_human()
+	TEST_ASSERT(!phone.isolated_from_station(crew), "Предпосылка: на станции телефон работает.")
+	var/mob/living/carbon/human/avatar = allocate_minded_human()
+	avatar.AddComponent(/datum/component/virtual_reality)
+	TEST_ASSERT(phone.isolated_from_station(avatar), "VR-аватар считается на станции.")
+	avatar.put_in_hands(phone)
+	var/targets_before = length(get_all_of_type(/obj/effect/dumpeetTarget))
+	phone.attack_self(avatar)
+	TEST_ASSERT(!phone.dumped, "VR-аватар активировал CRAB-17.")
+	TEST_ASSERT_EQUAL(length(get_all_of_type(/obj/effect/dumpeetTarget)), targets_before, "Из VR на станцию вызвана машина CRAB-17.")
+
+/// Машина CRAB-17 продолжает слив на счёт активатора и после удаления его тела, без рантаймов.
+/datum/unit_test/crab17_dump_after_activator_deleted
+
+/datum/unit_test/crab17_dump_after_activator_deleted/Run()
+	var/mob/living/carbon/human/activator = allocate(/mob/living/carbon/human)
+	var/obj/structure/checkoutmachine/machine = allocate(/obj/structure/checkoutmachine, run_loc_floor_bottom_left, activator)
+	var/datum/bank_account/payee = new("econ_test_crab_payee")
+	var/datum/bank_account/victim = new("econ_test_crab_victim")
+	victim.credit(1000, ECON_ADMIN)
+	victim.being_dumped = TRUE
+	machine.payee = payee
+	machine.accounts_to_rob = list(victim)
+	qdel(activator)
+	TEST_ASSERT_NULL(machine.bogdanoff, "Машина держит ссылку на удалённое тело активатора.")
+	machine.dump()
+	var/stolen = payee.account_balance
+	var/left = victim.account_balance
+	victim.being_dumped = FALSE
+	qdel(machine)
+	qdel(payee)
+	qdel(victim)
+	TEST_ASSERT(stolen > 0, "После удаления тела активатора слив не идёт.")
+	TEST_ASSERT_EQUAL(stolen + left, 1000, "Слив потерял или создал деньги.")

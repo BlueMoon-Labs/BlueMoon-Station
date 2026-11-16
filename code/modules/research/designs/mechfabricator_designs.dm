@@ -55,6 +55,17 @@
 	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
+/datum/design/ipc_biogenerator
+	name = "IPC biogenerator"
+	desc = "Биогенератор, перерабатывающий пищу в энергию для синтетика."
+	id = "ipc_biogenerator"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
+	build_path = /obj/item/organ/stomach/ipc/biogenerator
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/ipc_heart
 	name = "IPC hydraulic pump"
 	desc = "Экранированный гидравлический насос, поддерживающий давление по всему корпусу IPC."

@@ -96,7 +96,7 @@
 
 	if(see_override)
 		see_invisible = see_override
-	sync_lighting_plane_alpha()
+	return ..()
 
 
 /mob/living/silicon/ai/proc/start_RestorePowerRoutine()

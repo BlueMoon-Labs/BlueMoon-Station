@@ -1,6 +1,5 @@
 /datum/export/stack
 	unit_name = "sheet"
-	k_elasticity = 1/200 //BLUEMOON CHANGE
 
 /datum/export/stack/get_amount(obj/O)
 	var/obj/item/stack/S = O
@@ -68,28 +67,37 @@
 // For base materials, see materials.dm
 
 /datum/export/stack/plasteel
-	cost = 105 // 2000u of plasma + 2000u of metal.
+	cost = 103 // 2000u of plasma + 2000u of metal.
 	message = "of plasteel"
 	export_types = list(/obj/item/stack/sheet/plasteel)
 
-/datum/export/material/plastitanium
-	cost = 165 // plasma + titanium costs
-	export_types = list(/obj/item/stack/sheet/mineral/plastitanium)
-	message = "of plastitanium"
+/// Стекло-сплавы стоят как их материалы, рынок - по самому дорогому материалу.
+/datum/export/stack/glass_alloy
+	cost = 1
+	unit_name = "alloy glass sheet"
+	message = "of alloy glass"
 
-/datum/export/material/plastitanium_glass
-	cost = 168 // plasma + titanium + glass costs
-	export_types = list(/obj/item/stack/sheet/plastitaniumglass)
-	message = "of plastitanium glass"
+/datum/export/stack/glass_alloy/plasma
+	export_types = list(/obj/item/stack/sheet/plasmaglass, /obj/item/stack/sheet/plasmarglass, /obj/item/stack/sheet/plastitaniumglass)
+
+/datum/export/stack/glass_alloy/titanium
+	export_types = list(/obj/item/stack/sheet/titaniumglass)
+
+/datum/export/stack/glass_alloy/get_cost(obj/O, allowed_categories = NONE, apply_elastic = TRUE)
+	var/list/value = econ_materials_value(O.custom_materials)
+	. = 0
+	for(var/commodity_id in value)
+		. += value[commodity_id]
+	. = round(.)
 
 // 1 glass + 0.5 metal, cost is rounded up.
 /datum/export/stack/rglass
-	cost = 6
+	cost = 4
 	message = "of reinforced glass"
 	export_types = list(/obj/item/stack/sheet/rglass)
 
 /datum/export/stack/plastitanium
-	cost = 165 // plasma + titanium costs
+	cost = 160 // plasma + titanium costs
 	message = "of plastitanium"
 	export_types = list(/obj/item/stack/sheet/mineral/plastitanium)
 
@@ -121,14 +129,12 @@
 
 /datum/export/stack/cloth
 	cost = 20
-	k_elasticity = 1/200 //BLUEMOON CHANGE "Anti-floods"
 	unit_name = "sheets"
 	message = "of cloth"
 	export_types = list(/obj/item/stack/sheet/cloth)
 
 /datum/export/stack/duracloth
 	cost = 40
-	k_elasticity = 1/200 //BLUEMOON CHANGE "Anti-floods"
 	unit_name = "sheets"
 	message = "of duracloth"
 	export_types = list(/obj/item/stack/sheet/durathread)
@@ -136,7 +142,7 @@
 // Weird Stuff
 
 /datum/export/stack/abductor
-	cost = 400
+	cost = 150
 	message = "of alien alloy"
 	export_types = list(/obj/item/stack/sheet/mineral/abductor)
 
@@ -153,7 +159,7 @@
 
 /datum/export/stack/brass
 	unit_name = "tiles"
-	cost = 50
+	cost = 3
 	message = "of brass"
 	export_types = list(/obj/item/stack/tile/brass)
 

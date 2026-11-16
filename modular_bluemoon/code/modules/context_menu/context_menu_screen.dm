@@ -469,7 +469,7 @@
 	hint_row = null
 	if(!length(hint_objects))
 		return
-	user?.client?.screen -= hint_objects
+	menu_client()?.screen -= hint_objects
 	QDEL_LIST(hint_objects)
 
 /datum/context_menu/proc/add_row(datum/context_menu_entry/entry, text, x, y, background, hint, atom/icon_source, height)

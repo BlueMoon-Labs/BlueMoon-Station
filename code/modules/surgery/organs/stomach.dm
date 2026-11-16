@@ -126,6 +126,8 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
+	// У базовой модели риск малого взрыва растёт с силой ЭМИ: 50% при severity 100.
+	try_basic_cybernetic_detonation(severity * 0.5)
 	if(!COOLDOWN_FINISHED(src, severe_cooldown)) //So we cant just spam emp to kill people.
 		owner.vomit(stun = FALSE)
 		COOLDOWN_START(src, severe_cooldown, 10 SECONDS)
@@ -136,6 +138,26 @@
 	name = "ipc cell"
 	icon_state = "stomach-ipc"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
+
+/obj/item/organ/stomach/ipc/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
+	. = ..()
+	if(owner)
+		RegisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(charge))
+
+/obj/item/organ/stomach/ipc/Remove(mob/living/carbon/M, special = 0)
+	UnregisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT)
+	. = ..()
+
+/obj/item/organ/stomach/ipc/proc/charge(datum/source, amount, repairs)
+	SIGNAL_HANDLER
+	if(owner)
+		owner.adjust_nutrition(amount / 10, NUTRITION_LEVEL_WELL_FED)
+
+/obj/item/organ/stomach/ipc/biogenerator
+	name = "biogenerator"
+	desc = "Биогенератор, перерабатывающий пищу в энергию для синтетика."
+	icon_state = "stomach-ipc"
+	organ_flags = ORGAN_SYNTHETIC
 
 /obj/item/organ/stomach/ipc/on_life()
 	. = ..()

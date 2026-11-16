@@ -227,15 +227,22 @@
 	if(!target)
 		return
 	registered_clients |= target
+	// Консоли камер снимают клиента в ui_close() через user.client, а в Logout он уже null.
+	RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_client_deleted), override = TRUE)
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
 		target.register_map_obj(plane)
 		for(var/atom/movable/screen/render_plane_relay/relay as anything in plane.relays)
 			target.register_map_obj(relay)
 
+/datum/plane_master_group/popup/proc/on_client_deleted(client/source)
+	SIGNAL_HANDLER
+	registered_clients -= source
+
 /datum/plane_master_group/popup/proc/unregister_from_client(client/target)
 	if(!target)
 		return
+	UnregisterSignal(target, COMSIG_PARENT_QDELETING)
 	registered_clients -= target
 	for(var/plane_key in plane_masters)
 		var/atom/movable/screen/plane_master/plane = plane_masters[plane_key]
