@@ -539,15 +539,6 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	var/mob/living/carbon/human/H = quirk_holder
 	H?.cure_trauma_type(/datum/brain_trauma/severe/monophobia, TRAUMA_RESILIENCE_ABSOLUTE)
 
-/datum/quirk/no_smell
-	name = "Аносмия"
-	desc = "Вы не ощущаете запахи! Вы не сможете обнаружать определенные бесцветные газы."
-	value = -1
-	mob_trait = TRAIT_ANOSMIA
-	gain_text = "<span class='notice'>Вы не чувствуете запахов!</span>"
-	lose_text = "<span class='notice'>Вы снова чувствуете запахи!</span>"
-	medical_record_text = "Пациент страдает от аносмии и не может различать запахи газов и частиц."
-
 /datum/quirk/paper_skin
 	name = "Бумажная Кожа"
 	desc = "Вы слабы плотью, порезаться становится гораздо легче."
