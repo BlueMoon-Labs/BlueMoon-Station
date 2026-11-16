@@ -408,6 +408,14 @@
 	qdel(produced_drone)
 	TEST_ASSERT(is_scout, "The factory must produce a scout drone, never a combat drone.")
 
+/datum/unit_test/malf_drone_moves_faster_without_gravity/Run()
+	var/mob/living/simple_animal/hostile/malf_drone/drone = allocate(/mob/living/simple_animal/hostile/malf_drone)
+	var/initial_speed = initial(drone.speed)
+	drone.update_gravity(0)
+	TEST_ASSERT_EQUAL(drone.speed, initial_speed / 1.5, "A combat drone's movement slowdown must be reduced to two-thirds without gravity.")
+	drone.update_gravity(STANDARD_GRAVITY)
+	TEST_ASSERT_EQUAL(drone.speed, initial_speed, "A combat drone's normal speed must be restored when gravity returns.")
+
 ///Старый сабтиповый код получает фактический статус контроллера.
 /datum/unit_test/ai_adapter_effective_status/Run()
 	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile)
