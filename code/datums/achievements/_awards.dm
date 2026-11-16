@@ -53,7 +53,7 @@
 		return FALSE
 	var/result = 0
 	if(Q.NextRow())
-		result = text2num(Q.item[1])
+		result = Q.item[1]
 	qdel(Q)
 	return result
 
@@ -74,7 +74,7 @@
 	.["achievement_type"] = "achievement"
 
 /datum/award/achievement/parse_value(raw_value)
-	return raw_value > 0
+	return text2num(raw_value) > 0
 
 /datum/award/achievement/on_unlock(mob/user)
 	. = ..()
@@ -114,7 +114,8 @@
 		qdel(Q)
 
 /datum/award/score/parse_value(raw_value)
-	return isnum(raw_value) ? raw_value : 0
+	var/numeric = text2num(raw_value)
+	return isnum(numeric) ? numeric : 0
 
 // Хайскоры тетриса
 /datum/award/score/highscore
