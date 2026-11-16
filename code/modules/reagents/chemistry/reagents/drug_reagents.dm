@@ -407,6 +407,7 @@
 	..()
 	ADD_TRAIT(L, TRAIT_FEARLESS, type)
 	SEND_SIGNAL(L, COMSIG_ADD_MOOD_EVENT, "happiness_drug", /datum/mood_event/happiness_drug)
+	SEND_SIGNAL(L, COMSIG_CLEAR_MOOD_EVENT, "inteq_propagand_scared")
 
 /datum/reagent/drug/happiness/on_mob_delete(mob/living/L)
 	REMOVE_TRAIT(L, TRAIT_FEARLESS, type)

@@ -1892,6 +1892,11 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 "cock_shape" = DEF_COCK_SHAPE,
 "cock_length" = COCK_SIZE_DEF,
 "cock_diameter_ratio" = COCK_DIAMETER_RATIO_DEF,
+"cock_dynamic_size" = FALSE,
+"cock_flaccid_length" = COCK_SIZE_DEF,
+"cock_flaccid_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
+"cock_erect_length" = COCK_SIZE_DEF,
+"cock_erect_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
 "cock_color" = "ffffff",
 "cock_taur" = FALSE,
 "has_balls" = FALSE,
@@ -2171,6 +2176,11 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	S["feature_cock_color"] >> features["cock_color"]
 	S["feature_cock_length"] >> features["cock_length"]
 	S["feature_cock_diameter_ratio"] >> features["cock_diameter_ratio"] //Why is this in the features but not a fucking option
+	S["feature_cock_dynamic_size"] >> features["cock_dynamic_size"]
+	S["feature_cock_flaccid_length"] >> features["cock_flaccid_length"]
+	S["feature_cock_flaccid_width"] >> features["cock_flaccid_width"]
+	S["feature_cock_erect_length"] >> features["cock_erect_length"]
+	S["feature_cock_erect_width"] >> features["cock_erect_width"]
 	S["feature_cock_diameter"] >> features["cock_diameter"]
 	S["feature_cock_taur"] >> features["cock_taur"]
 	S["feature_cock_visibility"] >> features["cock_visibility"]
@@ -2533,6 +2543,11 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	features["breasts_size"] = sanitize_inlist(features["breasts_size"], B_sizes, BREASTS_SIZE_DEF)
 	features["cock_length"] = sanitize_integer(features["cock_length"], min_D, max_D, COCK_SIZE_DEF)
 	features["cock_diameter_ratio"] = sanitize_num_clamp(features["cock_diameter_ratio"], min_diameter_ratio, max_diameter_ratio, COCK_DIAMETER_RATIO_DEF) // BLUEMOON EDIT - sanitize_integer заменён на sanitize_num_clamp, т.к. первый округляет значения, а по условиям округление не подходит
+	features["cock_dynamic_size"] = sanitize_integer(features["cock_dynamic_size"], 0, 1, FALSE)
+	features["cock_flaccid_length"] = sanitize_integer(features["cock_flaccid_length"], min_D, max_D, features["cock_length"])
+	features["cock_erect_length"] = sanitize_integer(features["cock_erect_length"], min_D, max_D, features["cock_length"])
+	features["cock_flaccid_width"] = sanitize_num_clamp(features["cock_flaccid_width"], 0.1, max_D, features["cock_length"] * features["cock_diameter_ratio"])
+	features["cock_erect_width"] = sanitize_num_clamp(features["cock_erect_width"], 0.1, max_D, features["cock_length"] * features["cock_diameter_ratio"])
 	features["butt_size"] = sanitize_integer(features["butt_size"], min_B, max_B, BUTT_SIZE_DEF)
 	features["belly_size"] = sanitize_integer(features["belly_size"], min_belly, max_belly, BELLY_SIZE_DEF)
 	features["breasts_shape"] = sanitize_inlist(features["breasts_shape"], GLOB.breasts_shapes_list, DEF_BREASTS_SHAPE)
@@ -2949,6 +2964,11 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	WRITE_FILE(S["feature_cock_color"], features["cock_color"])
 	WRITE_FILE(S["feature_cock_length"], features["cock_length"])
 	WRITE_FILE(S["feature_cock_diameter_ratio"], features["cock_diameter_ratio"])
+	WRITE_FILE(S["feature_cock_dynamic_size"], features["cock_dynamic_size"])
+	WRITE_FILE(S["feature_cock_flaccid_length"], features["cock_flaccid_length"])
+	WRITE_FILE(S["feature_cock_flaccid_width"], features["cock_flaccid_width"])
+	WRITE_FILE(S["feature_cock_erect_length"], features["cock_erect_length"])
+	WRITE_FILE(S["feature_cock_erect_width"], features["cock_erect_width"])
 	WRITE_FILE(S["feature_cock_taur"], features["cock_taur"])
 	WRITE_FILE(S["feature_cock_visibility"], features["cock_visibility"])
 	WRITE_FILE(S["feature_cock_accessible"], features["cock_accessible"])
