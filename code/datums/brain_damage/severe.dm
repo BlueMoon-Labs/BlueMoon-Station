@@ -191,12 +191,12 @@
 		return FALSE
 	if(istype(owner.loc, /obj/belly))
 		return FALSE
+	if(!owner.ckey || owner.stat)
+		return FALSE
 	if(HAS_TRAIT(owner, TRAIT_BLIND))
 		check_radius = 1
-	for(var/mob/M in oview(owner, check_radius))
-		if(!isliving(M)) //ghosts ain't people
-			continue
-		if((istype(M, /mob/living/simple_animal/pet)) || M.ckey)
+	for(var/mob/living/L in oview(owner, check_radius))
+		if((istype(L, /mob/living/simple_animal/pet)) || L.ckey)
 			return FALSE
 	return TRUE
 
