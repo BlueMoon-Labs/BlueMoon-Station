@@ -15,7 +15,7 @@
 
 /datum/preferences/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context, update_active_preset = TRUE)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return
 	if(export)
 		return
@@ -29,11 +29,13 @@
 
 /datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	WRITE_FILE(.["bm_lobby_show_nsfw"], bm_lobby_show_nsfw)
-	WRITE_FILE(.["bm_lobby_show_admin_bg"], bm_lobby_show_admin_bg)
-	WRITE_FILE(.["bm_disclaimer_accepted"], bm_disclaimer_accepted)
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	WRITE_PLAYER_SAVE(S, document, "bm_lobby_show_nsfw", bm_lobby_show_nsfw)
+	WRITE_PLAYER_SAVE(S, document, "bm_lobby_show_admin_bg", bm_lobby_show_admin_bg)
+	WRITE_PLAYER_SAVE(S, document, "bm_disclaimer_accepted", bm_disclaimer_accepted)
 	return .
 
 /datum/preferences/read_preferences(bypass_cooldown = FALSE)

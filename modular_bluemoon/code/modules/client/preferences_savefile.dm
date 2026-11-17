@@ -46,21 +46,21 @@
 	custom_laugh = sanitize_inlist(custom_laugh, GLOB.mob_laughs, "Default")
 	antag_opt_in_level = sanitize_antag_opt_in_level(antag_opt_in_level)
 
-/datum/preferences/proc/bluemoon_character_pref_save(savefile/S) //TODO: modularize our other savefile edits... maybe?
-	WRITE_FILE(S["pda_style"], pda_style)
-	WRITE_FILE(S["pda_color"], pda_color)
-	WRITE_FILE(S["pda_skin"], pda_skin)
-	WRITE_FILE(S["pda_ringtone"], pda_ringtone)
-	WRITE_FILE(S["pda_theme"], pda_theme)
+/datum/preferences/proc/bluemoon_character_pref_save(savefile/S, datum/player_save_document/document) //TODO: modularize our other savefile edits... maybe?
+	WRITE_PLAYER_SAVE(S, document, "pda_style", pda_style)
+	WRITE_PLAYER_SAVE(S, document, "pda_color", pda_color)
+	WRITE_PLAYER_SAVE(S, document, "pda_skin", pda_skin)
+	WRITE_PLAYER_SAVE(S, document, "pda_ringtone", pda_ringtone)
+	WRITE_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	WRITE_FILE(S["silicon_lawset"], silicon_lawset)
-	WRITE_FILE(S["body_weight"], body_weight)
-	WRITE_FILE(S["normalized_size"], features["normalized_size"])
-	WRITE_FILE(S["custom_laugh"], custom_laugh)
-	WRITE_FILE(S["antag_opt_in_level"], antag_opt_in_level)
+	WRITE_PLAYER_SAVE(S, document, "silicon_lawset", silicon_lawset)
+	WRITE_PLAYER_SAVE(S, document, "body_weight", body_weight)
+	WRITE_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
+	WRITE_PLAYER_SAVE(S, document, "custom_laugh", custom_laugh)
+	WRITE_PLAYER_SAVE(S, document, "antag_opt_in_level", antag_opt_in_level)
 
-	WRITE_FILE(S["use_custom_moan_sounds"], use_custom_moan_sounds)
-	WRITE_FILE(S["custom_moan_sounds"], custom_moan_sounds)
+	WRITE_PLAYER_SAVE(S, document, "use_custom_moan_sounds", use_custom_moan_sounds)
+	WRITE_PLAYER_SAVE(S, document, "custom_moan_sounds", custom_moan_sounds)
 
 /datum/preferences/proc/sanitize_custom_moan_sounds(list/moan_sounds)
 	var/list/valid_moan_paths = GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi

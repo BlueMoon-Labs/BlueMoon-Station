@@ -35,31 +35,33 @@
 
 /datum/preferences/write_preferences(bypass_cooldown, silent, list/patch_context)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	WRITE_FILE(.["favorite_interactions"],	favorite_interactions)
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	WRITE_PLAYER_SAVE(S, document, "favorite_interactions", favorite_interactions)
 
-	WRITE_FILE(.["custom_verb_consent"], custom_verb_consent)
+	WRITE_PLAYER_SAVE(S, document, "custom_verb_consent", custom_verb_consent)
 
-	WRITE_FILE(.["show_heart_over_self"], show_heart_over_self)
-	WRITE_FILE(.["interaction_effect"], interaction_effect)
-	WRITE_FILE(.["block_partner_pixel_shift"], block_partner_pixel_shift)
-	WRITE_FILE(.["panel_tab_toggles"], panel_tab_toggles)
-	WRITE_FILE(.["dynamic_window_size"], dynamic_window_size)
-	WRITE_FILE(.["compact_custom_tab"], compact_custom_tab)
+	WRITE_PLAYER_SAVE(S, document, "show_heart_over_self", show_heart_over_self)
+	WRITE_PLAYER_SAVE(S, document, "interaction_effect", interaction_effect)
+	WRITE_PLAYER_SAVE(S, document, "block_partner_pixel_shift", block_partner_pixel_shift)
+	WRITE_PLAYER_SAVE(S, document, "panel_tab_toggles", panel_tab_toggles)
+	WRITE_PLAYER_SAVE(S, document, "dynamic_window_size", dynamic_window_size)
+	WRITE_PLAYER_SAVE(S, document, "compact_custom_tab", compact_custom_tab)
 
-	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
-	WRITE_FILE(.["arousal_multiplier"],		arousal_multiplier)
-	WRITE_FILE(.["use_moaning_multiplier"],	use_moaning_multiplier)
-	WRITE_FILE(.["moaning_multiplier"],		moaning_multiplier)
+	WRITE_PLAYER_SAVE(S, document, "use_arousal_multiplier", use_arousal_multiplier)
+	WRITE_PLAYER_SAVE(S, document, "arousal_multiplier", arousal_multiplier)
+	WRITE_PLAYER_SAVE(S, document, "use_moaning_multiplier", use_moaning_multiplier)
+	WRITE_PLAYER_SAVE(S, document, "moaning_multiplier", moaning_multiplier)
 	// Кастомные стоны сохраняются в слоте персонажа (character[slot]), см. bluemoon_character_pref_save.
 	// Bluemoon prefs root (must run last вЂ” СЃРј. modular_bluemoon/preferences_savefile.dm)
-	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
-	WRITE_FILE(.["favorite_hair_styles"], favorite_hair_styles)
-	WRITE_FILE(.["playlists"], playlists)
-	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
-	WRITE_FILE(.["metadollar_minute_pool"], metadollar_minute_pool)
-	WRITE_FILE(.["metadollar_pending_items"], metadollar_pending_items)
+	WRITE_PLAYER_SAVE(S, document, "favorite_tracks", favorite_tracks)
+	WRITE_PLAYER_SAVE(S, document, "favorite_hair_styles", favorite_hair_styles)
+	WRITE_PLAYER_SAVE(S, document, "playlists", playlists)
+	WRITE_PLAYER_SAVE(S, document, "favorite_paintings_md5", favorite_paintings_md5)
+	WRITE_PLAYER_SAVE(S, document, "metadollar_minute_pool", metadollar_minute_pool)
+	WRITE_PLAYER_SAVE(S, document, "metadollar_pending_items", metadollar_pending_items)
 	return .
 
 /datum/preferences/read_preferences(bypass_cooldown)
@@ -166,5 +168,5 @@
 			custom.requires_review = TRUE
 	return TRUE
 
-/datum/preferences/proc/sand_character_pref_save(savefile/S)
-	WRITE_FILE(S["custom_interactions"], custom_interactions)
+/datum/preferences/proc/sand_character_pref_save(savefile/S, datum/player_save_document/document)
+	WRITE_PLAYER_SAVE(S, document, "custom_interactions", custom_interactions)

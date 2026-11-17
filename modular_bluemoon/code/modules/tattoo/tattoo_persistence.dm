@@ -41,10 +41,10 @@
 	pending_tattoo_removals = islist(temp_pending_removals) ? temp_pending_removals : list()
 
 // Сохранение настроек татуировок
-/datum/preferences/proc/save_tattoo_prefs(savefile/S)
-	WRITE_FILE(S["persistent_tattoos"], persistent_tattoos)
-	WRITE_FILE(S["tattoos_string"], tattoos_string)
-	WRITE_FILE(S["pending_tattoo_removals"], pending_tattoo_removals)
+/datum/preferences/proc/save_tattoo_prefs(savefile/S, datum/player_save_document/document)
+	WRITE_PLAYER_SAVE(S, document, "persistent_tattoos", persistent_tattoos)
+	WRITE_PLAYER_SAVE(S, document, "tattoos_string", tattoos_string)
+	WRITE_PLAYER_SAVE(S, document, "pending_tattoo_removals", pending_tattoo_removals)
 
 // Экранирование разделителей в тексте татуировки для безопасного сохранения
 /proc/escape_tattoo_text(text)

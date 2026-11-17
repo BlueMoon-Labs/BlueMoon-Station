@@ -97,9 +97,11 @@ GLOBAL_DATUM_INIT(shift_invite_link, /datum/shift_invite_link, new)
 
 /datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	WRITE_FILE(.["shift_invites"], shift_invites)
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	WRITE_PLAYER_SAVE(S, document, "shift_invites", shift_invites)
 
 /datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()

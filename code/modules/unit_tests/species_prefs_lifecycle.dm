@@ -35,7 +35,7 @@
 	TEST_ASSERT_NOTNULL(default_species, "Свежий /datum/preferences обязан иметь вид по умолчанию")
 	TEST_ASSERT_EQUAL(default_species.type, /datum/species/human, "Вид по умолчанию в prefs - человек")
 
-	TEST_ASSERT(istype(prefs.save_character(bypass_cooldown = TRUE, silent = TRUE), /savefile), "Сейв фикстуры должен пройти")
+	TEST_ASSERT(prefs.save_character(bypass_cooldown = TRUE, silent = TRUE), "Сейв фикстуры должен пройти")
 	TEST_ASSERT(prefs.load_character(bypass_cooldown = TRUE), "Загрузка фикстуры должна пройти")
 	TEST_ASSERT(prefs.pref_species == default_species, "Загрузка того же вида не должна заводить второй датум вида")
 

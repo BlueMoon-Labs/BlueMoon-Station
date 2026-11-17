@@ -136,6 +136,8 @@
 /// Чтение текущего JSON без промежуточного savefile; старые версии и импорт используют адаптер.
 #define PLAYER_SAVE_VALUE(source, document, key) (document ? document.read(key) : source[key])
 #define READ_PLAYER_SAVE(source, document, key, target) if(document) { target = document.read(key); } else { source[key] >> target; }
+/// Запись в текущий JSON-документ; старые версии и экспорт пишут в savefile.
+#define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
 
 // Максимум вариантов профессий, квирков и экипировки у одного персонажа.
 #define MAX_CHARACTER_PRESETS 20

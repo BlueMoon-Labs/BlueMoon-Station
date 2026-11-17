@@ -19,9 +19,11 @@ GLOBAL_LIST_INIT(antag_objective_style_descriptions, list(
 
 /datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	WRITE_FILE(.["antag_objective_style"], antag_objective_style)
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	WRITE_PLAYER_SAVE(S, document, "antag_objective_style", antag_objective_style)
 
 /datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()

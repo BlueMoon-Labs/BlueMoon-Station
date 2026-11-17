@@ -281,16 +281,18 @@
 	var/datum/player_save_document/character
 	var/key
 
+/// source - savefile с полями раздела, если писатель не заполнил документ раздела сам.
 /datum/player_save_character_transaction/proc/commit(savefile/source)
 	var/datum/player_save_json/account/account = root.storage
 	if(account.error || root.revision != player_save_revision(account.json_path) || root.generation != account.generation)
 		account.error = "Аккаунт изменился во время подготовки персонажа"
 		return FALSE
-	var/original_directory = source.cd
+	var/original_directory = source?.cd
 	try
-		source.cd = "/[key]"
-		character.merge(source)
-		source.cd = original_directory
+		if(source)
+			source.cd = "/[key]"
+			character.merge(source)
+			source.cd = original_directory
 		if(!character.commit())
 			account.error = character.storage.error
 			return FALSE
@@ -301,7 +303,8 @@
 			root.dirty = TRUE
 		return root.commit()
 	catch(var/exception/failure)
-		source.cd = original_directory
+		if(source)
+			source.cd = original_directory
 		account.error = failure.name
 		return FALSE
 

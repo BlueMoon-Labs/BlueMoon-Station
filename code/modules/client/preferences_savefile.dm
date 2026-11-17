@@ -8,7 +8,6 @@
 #define SAVEFILE_VERSION_MAX	88
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
-#define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
 
 /*
 Версия относится к содержимому корня или слота и не зависит от версии JSON-контейнера.
@@ -1124,7 +1123,7 @@
  * пишет save_preferences. Возвращает число записанных ключей.
  */
 /datum/preferences/proc/write_pending_single_prefs(savefile/target, datum/player_save_document/document)
-	if(!target || !length(pending_single_prefs))
+	if((!target && !document) || !length(pending_single_prefs))
 		return 0
 	// Забираем список себе до записи: если по дороге кто-то положит ещё ключ, он обязан
 	// попасть в СЛЕДУЮЩИЙ сброс, а не потеряться в этом.
@@ -1209,7 +1208,7 @@
 	// постановка в очередь сверялась бы с протухшим крайним сроком.
 	pref_queue = null
 	pref_queue_deadline = 0
-	// Модульные писатели заполняют только свои поля; документ сохранит остальные.
+	// Текущий JSON пишется прямо в документ; модульные писатели получают его результатом.
 	var/savefile/S
 	var/datum/player_save_document/document
 	if(patch_context)
@@ -1217,13 +1216,12 @@
 		if(document)
 			if(islist(document.directories))
 				patch_context["document"] = document
-				S = new
 			else
 				document = null
 				S = open_player_save("/")
 	else
 		S = open_player_save("/")
-	if(!S)
+	if(!S && !document)
 		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
 		// заводил, полагаясь на неё (buffer_single_pref): без перезарядки он долежал бы
 		// до логаута. Возвращаем ему собственный сброс.
@@ -1235,6 +1233,8 @@
 		deltimer(single_pref_queue)
 	single_pref_queue = null
 	single_pref_queue_deadline = 0
+	if(S)
+		S.cd = "/"
 	write_pending_single_prefs(S, document)
 
 	WRITE_PLAYER_SAVE(S, document, "version" , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
@@ -1412,7 +1412,7 @@
 			H.set_antag_target_indicator() // Update consent HUD
 
 
-	return S
+	return document || S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
 	if(parent && !silent)
@@ -2529,18 +2529,18 @@
 				return FALSE
 			patch_context["transaction"] = transaction
 			document = transaction.character
-			S = new
 		else
 			S = open_player_save("/character[default_slot]")
 	else
 		S = open_player_save("/character[default_slot]")
-	if(!S)
+	if(!S && !document)
 		return FALSE
 	if(!export)
-		S.cd = "/character[default_slot]"
-		if(length(S.dir) && savefile_needs_update(S) == -2)
-			player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
-			return FALSE
+		if(S)
+			S.cd = "/character[default_slot]"
+			if(length(S.dir) && savefile_needs_update(S) == -2)
+				player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
+				return FALSE
 		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
 		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
 			character_presets[active_character_preset] = capture_character_preset()
@@ -2837,15 +2837,15 @@
 	WRITE_PLAYER_SAVE(S, document, "split_eye_colors", split_eye_colors)
 	WRITE_PLAYER_SAVE(S, document, "bgstate", bgstate)
 
-	cit_character_pref_save(S)
+	cit_character_pref_save(S, document)
 
-	sand_character_pref_save(S)
+	sand_character_pref_save(S, document)
 
-	splurt_character_pref_save(S)
+	splurt_character_pref_save(S, document)
 
-	bluemoon_character_pref_save(S)
+	bluemoon_character_pref_save(S, document)
 
-	save_tattoo_prefs(S) // BLUEMOON ADD - сохранение татуировок
+	save_tattoo_prefs(S, document) // BLUEMOON ADD - сохранение татуировок
 
 	if(parent)
 		if(ishuman(parent?.mob))
@@ -2853,7 +2853,7 @@
 			H.set_antag_target_indicator() // Update consent HUD
 
 
-	return S
+	return document || S
 
 /// Наносит на тело постоянные шрамы текущего набора и выкидывает из набора не загрузившиеся.
 /// Персонаж пишется на диск, только если набор от этого изменился.
@@ -2886,7 +2886,6 @@
 
 #undef SAVEFILE_VERSION_MAX
 #undef SAVEFILE_VERSION_MIN
-#undef WRITE_PLAYER_SAVE
 
 #ifdef TESTING
 //DEBUG

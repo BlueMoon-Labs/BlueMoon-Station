@@ -67,12 +67,12 @@
 		return FALSE
 	return TRUE
 
-/// Модульные расширения сначала дописывают общий снимок в памяти, затем идёт одна запись.
+/// Модульные расширения дописывают тот же документ в памяти, затем идёт одна запись.
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	var/blocking_started_ms = blocking_call_start()
 	var/list/pending_before_write = pending_single_prefs?.Copy()
 	var/list/patch_context = list()
-	var/savefile/result
+	var/result
 	try
 		result = write_preferences(bypass_cooldown, silent, patch_context)
 	catch(var/exception/preparation_failure)
@@ -80,14 +80,13 @@
 		player_save_error(preparation_failure.name)
 		blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "ошибка подготовки")
 		return FALSE
-	if(!istype(result))
+	if(!istype(result, /savefile) && !istype(result, /datum/player_save_document))
 		blocking_call_finish(blocking_started_ms, "JSON (запись)", "запись отложена или отменена")
 		return FALSE
 	var/datum/player_save_document/document = patch_context["document"]
 	var/saved = FALSE
 	if(document)
 		try
-			document.merge(result)
 			saved = document.commit()
 			if(!saved)
 				player_save_error(document.storage.error)
@@ -107,7 +106,7 @@
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, update_active_preset = TRUE)
 	var/blocking_started_ms = blocking_call_start()
 	var/list/patch_context = export ? null : list()
-	var/savefile/result
+	var/result
 	try
 		result = write_character(bypass_cooldown, silent, export, patch_context, update_active_preset)
 	catch(var/exception/failure)
@@ -116,7 +115,7 @@
 		player_save_error(failure.name)
 		blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка подготовки")
 		return FALSE
-	if(!istype(result))
+	if(!istype(result, /savefile) && !istype(result, /datum/player_save_document))
 		blocking_call_finish(blocking_started_ms, "JSON (запись)", "запись отложена или отменена")
 		return FALSE
 	if(!export)
@@ -128,7 +127,7 @@
 			pending_single_prefs = null
 			for(var/key in pending_before_write)
 				transaction.root.write(key, pending_before_write[key])
-		var/saved = transaction ? transaction.commit(result) : commit_player_save(result, "/character[default_slot]")
+		var/saved = transaction ? transaction.commit() : commit_player_save(result, "/character[default_slot]")
 		if(saved && pending_before_write && !length(pending_single_prefs) && single_pref_queue)
 			deltimer(single_pref_queue)
 			single_pref_queue = null
