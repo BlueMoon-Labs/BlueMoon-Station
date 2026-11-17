@@ -183,6 +183,7 @@
 
 /datum/uplink_item/implants/mantis_blade
 	name = "Gorlex Mantis Blade Implant"
+	desc = "An integrated blade implant designed to be installed into a persons arm. Stylish and deadly; Although, being caught with this without proper permits is sure to draw unwanted attention."
 	item = /obj/item/autosurgeon/syndicate/inteq/mantis_blade
 	cost = 8
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
@@ -234,6 +235,7 @@
 /datum/uplink_item/implants/blood_pump
 	name = "Cybersun blood pump"
 	cost = 8
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/blood_pump
 
