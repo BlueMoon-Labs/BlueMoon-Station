@@ -483,9 +483,9 @@
 			TEST_ASSERT(thing.econ_imported, "[thing] помечен закупкой")
 	var/datum/econ_contract/delivery/contract = new(ACCOUNT_ENG, new /datum/bounty/item/engineering/cablecoil)
 	engineering.contracts += contract
-	TEST_ASSERT(!econ_contracts_ship(delivered), "Купленное через каталог не засчитано")
+	TEST_ASSERT(econ_contracts_ship(delivered), "Купленное через каталог засчитано")
 	var/datum/bounty/item/bounty = contract.bounty
-	TEST_ASSERT_EQUAL(bounty.shipped_count, 0, "Контракт ничего не получил")
+	TEST_ASSERT(bounty.shipped_count > 0, "Контракт получил купленный кабель")
 
 /// Бридж-офицер с доступом ГП не управляет чужим отделом и не считается начальством на смене; ГП управляет по должности.
 /datum/unit_test/economy_catalog/bridge_officer/Run()

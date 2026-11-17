@@ -563,5 +563,4 @@
 	click(console, "reroll")
 	TEST_ASSERT(QDELETED(old_offer), "Подборка с консоли не обновилась")
 	var/list/by_department = econ_bounty_types_by_department()
-	for(var/department_id in by_department)
-		TEST_ASSERT(!(/datum/bounty/item/assistant/cheesiehonkers in by_department[department_id]), "Заказ без источника на станции попадает на доску [department_id]")
+	TEST_ASSERT((/datum/bounty/item/assistant/cheesiehonkers in by_department[ACCOUNT_CIV]), "Заказ из каталога снабжения попадает на доску")

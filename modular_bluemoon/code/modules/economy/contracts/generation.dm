@@ -40,11 +40,6 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	/datum/bounty/item/adamantine,
 ))
 
-/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают.
-GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
-	/datum/bounty/item/assistant/cheesiehonkers,
-)))
-
 /proc/econ_bounty_department_of(bounty_type)
 	for(var/current = bounty_type; current; current = type2parent(current))
 		var/department_id = GLOB.econ_bounty_department[current]
@@ -59,8 +54,6 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	by_department = list()
 	for(var/base in GLOB.econ_bounty_department)
 		for(var/bounty_type in subtypesof(base))
-			if(GLOB.econ_bounty_unobtainable[bounty_type])
-				continue
 			var/department_id = econ_bounty_department_of(bounty_type)
 			LAZYINITLIST(by_department[department_id])
 			by_department[department_id] |= bounty_type

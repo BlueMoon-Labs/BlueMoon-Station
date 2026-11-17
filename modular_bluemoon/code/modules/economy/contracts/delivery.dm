@@ -55,7 +55,7 @@
 /datum/econ_contract/delivery/proc/wants(atom/movable/thing)
 	if(owner && !taker)
 		return FALSE
-	return !completed && !is_expired() && !thing.econ_imported && bounty.applies_to(thing)
+	return !completed && !is_expired() && bounty.applies_to(thing)
 
 /datum/econ_contract/delivery/proc/ship(atom/movable/thing, mob/performer)
 	note_contribution(performer)
@@ -67,7 +67,7 @@
 	return bounty.completion_string()
 
 /atom/movable
-	/// Куплено через снабжение: контракты поставки такое не засчитывают
+	/// Куплено через снабжение или торговый автомат: влияет на потолок выкупа
 	var/econ_imported = FALSE
 
 /// Метит содержимое отгрузки; сама упаковка - залог и не метится.
@@ -94,7 +94,7 @@
 /obj/machinery/vending/examine(mob/user)
 	. = ..()
 	. += econ_price_examine()
-	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает, контракты и спецзаказы такое не засчитывают.")
+	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает.")
 
 /// Цены по индексу и куда уходит выручка; у кастомного автомата свои правила в rent_examine().
 /obj/machinery/vending/proc/econ_price_examine()
@@ -113,18 +113,6 @@
 
 /obj/machinery/vending/custom/econ_price_examine()
 	return list()
-
-/// Сколько вещей в thing подошло бы под контракт поставки, если бы не было куплено через снабжение.
-/proc/econ_contracts_imported_matches(atom/movable/thing)
-	. = 0
-	var/list/contracts = econ_delivery_contracts_for(null)
-	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
-		if(!item.econ_imported)
-			continue
-		for(var/datum/econ_contract/delivery/contract as anything in contracts)
-			if(!contract.completed && contract.bounty.applies_to(item))
-				.++
-				break
 
 /// Почему предмет почти подходит под контракт, но не принят: "баллон: трития 8 из 20 моль". null - не о чем сказать.
 /datum/bounty/proc/econ_shortfall(atom/movable/thing)

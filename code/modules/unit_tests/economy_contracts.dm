@@ -442,27 +442,27 @@
 	SSeconomy.refresh_contracts()
 	TEST_ASSERT(QDELETED(started), "Начатая ничья поставка снята через [ECON_CONTRACT_STALE_ROTATIONS] возраста ротации")
 
-/// Купленное через снабжение (ящик пака и сборный ящик мелочи) не засчитывается, такой же предмет из другого источника засчитывается.
-/datum/unit_test/economy_contract_machines/imported_refused/Run()
+/// Купленное через снабжение (ящик пака и сборный ящик мелочи) засчитывается: метка купленного не мешает контракту.
+/datum/unit_test/economy_contract_machines/imported_accepted/Run()
 	setup()
 	var/datum/econ_contract/delivery/contract = post_contract(/datum/bounty/item/assistant/toolbox)
 	var/obj/item/storage/toolbox/bought = buy_toolbox(run_loc_floor_bottom_left)
 	TEST_ASSERT_NOTNULL(bought, "В ящике пака есть ящик для инструментов")
 	TEST_ASSERT(bought.econ_imported, "Купленное помечено")
-	TEST_ASSERT(!econ_contracts_ship(bought.loc), "Ящик пака не засчитан")
-	TEST_ASSERT(!QDELETED(bought), "Купленное не удалено")
+	TEST_ASSERT(econ_contracts_ship(bought.loc), "Ящик пака засчитан")
+	TEST_ASSERT(QDELETED(bought), "Купленное отправлено")
 	var/obj/structure/closet/crate/combo = allocate(/obj/structure/closet/crate)
 	var/datum/supply_order/order = new(SSshuttle.supply_packs[/datum/supply_pack/goody/toolbox], "econ_test", "econ_test", "econ_test", "econ_test")
 	order.generateCombo(combo, "econ_test", list(/obj/item/storage/toolbox/mechanical))
 	qdel(order)
-	TEST_ASSERT(!econ_contracts_ship(combo), "Сборный ящик мелочи не засчитан")
+	TEST_ASSERT(econ_contracts_ship(combo), "Сборный ящик мелочи засчитан")
 	var/datum/bounty/item/bounty = contract.bounty
-	TEST_ASSERT_EQUAL(bounty.shipped_count, 0, "Ничего купленного не засчитано")
+	TEST_ASSERT_EQUAL(bounty.shipped_count, 2, "Засчитаны обе покупки")
 	var/obj/item/storage/toolbox/found = allocate(/obj/item/storage/toolbox/mechanical)
-	TEST_ASSERT(econ_contracts_ship(found), "Не купленный ящик засчитан")
-	TEST_ASSERT_EQUAL(bounty.shipped_count, 1, "Засчитан один")
+	TEST_ASSERT(econ_contracts_ship(found), "Не купленный ящик тоже засчитан")
+	TEST_ASSERT_EQUAL(bounty.shipped_count, 3, "Засчитаны три")
 
-/// Пад подработки объясняет, почему купленное через снабжение не ушло.
+/// Пад подработки отправляет купленное через снабжение по контракту.
 /datum/unit_test/economy_contract_machines/pad_imported/Run()
 	setup()
 	var/turf/station_turf = find_walkable_station_turf()
@@ -471,21 +471,17 @@
 	post_contract(/datum/bounty/item/assistant/toolbox)
 	var/obj/item/storage/toolbox/bought = buy_toolbox(station_turf)
 	click(console, "send")
-	TEST_ASSERT(!QDELETED(bought), "Купленное осталось на паде")
-	TEST_ASSERT(findtext(console.status_report, "через снабжение"), "Пульт объясняет отказ: [console.status_report]")
+	TEST_ASSERT(QDELETED(bought), "Купленное ушло с пада")
+	TEST_ASSERT(findtext(console.status_report, "Отправлено по контрактам: 1"), "Пульт считает отправку: [console.status_report]")
 
-/// Машина, собранная из платы, купленной через снабжение, помечена и не засчитывается; из своей платы - засчитывается.
+/// Машина, собранная из платы, купленной через снабжение, засчитывается по контракту.
 /datum/unit_test/economy_contract_machines/imported_board_machine/Run()
 	setup()
 	var/datum/econ_contract/delivery/contract = post_contract(/datum/bounty/item/engineering/pacman)
 	var/obj/machinery/power/port_gen/pacman/bought = assemble_pacman(TRUE)
 	TEST_ASSERT_NOTNULL(bought, "Машина из купленной платы собрана")
 	TEST_ASSERT(bought.econ_imported, "Машина унаследовала метку платы")
-	TEST_ASSERT(!econ_contracts_ship(bought), "Машина из купленной платы не засчитана")
-	var/obj/machinery/power/port_gen/pacman/crafted = assemble_pacman(FALSE)
-	TEST_ASSERT_NOTNULL(crafted, "Машина из своей платы собрана")
-	TEST_ASSERT(!crafted.econ_imported, "Своя машина не помечена")
-	TEST_ASSERT(econ_contracts_ship(crafted), "Машина из своей платы засчитана")
+	TEST_ASSERT(econ_contracts_ship(bought), "Машина из купленной платы засчитана")
 	TEST_ASSERT(contract.completed, "Контракт выполнен")
 
 /datum/unit_test/economy_contract_machines/imported_board_machine/proc/assemble_pacman(imported)
@@ -517,7 +513,7 @@
 	TEST_ASSERT(QDELETED(expired), "Просроченный снят по таймеру")
 	TEST_ASSERT(!(expired in civilian.contracts), "Снят с доски")
 
-/// Купленное в автомате пад не отправляет и говорит почему; такой же предмет не из автомата уходит.
+/// Купленное в автомате пад отправляет по контракту.
 /datum/unit_test/economy_contract_machines/pad_vended/Run()
 	setup()
 	var/turf/station_turf = find_walkable_station_turf()
@@ -532,12 +528,9 @@
 		vended += snack
 	click(console, "send")
 	for(var/obj/item/snack as anything in vended)
-		TEST_ASSERT(!QDELETED(snack), "Купленное в автомате осталось на паде")
-	TEST_ASSERT(findtext(console.status_report, "в автоматах"), "Пульт объясняет отказ: [console.status_report]")
-	for(var/i in 1 to 3)
-		allocate(/obj/item/reagent_containers/food/snacks/cheesiehonkers, get_turf(pad))
-	click(console, "send")
-	TEST_ASSERT(contract.completed, "Найденные снеки засчитаны")
+		TEST_ASSERT(QDELETED(snack), "Купленное в автомате осталось на паде")
+	TEST_ASSERT(contract.completed, "Купленные в автомате снеки не завершили контракт")
+	TEST_ASSERT(findtext(console.status_report, "Отправлено по контрактам: 3"), "Пульт считает отправку: [console.status_report]")
 
 /// Отказ от взятого контракта: неначатый уходит с доски, начатый снова свободен без срока взятия, у срочного срок остаётся; чужой не снять, новый - после паузы.
 /datum/unit_test/economy_contract_machines/drop/Run()

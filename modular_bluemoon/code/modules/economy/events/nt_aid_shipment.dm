@@ -55,7 +55,7 @@
 	crate.econ_imported = TRUE
 	pod_ref = WEAKREF(pod)
 	new /obj/effect/pod_landingzone(landing, pod)
-	priority_announce("Нанотрейзен направляет станции гуманитарную поставку: [pack.name]. Капсула приземлится в отсеке снабжения, платить за неё не нужно. Помощь не для перепродажи: NT выкупает её как купленное, контракты и спецзаказы её не засчитывают.", "Отдел снабжения NT")
+	priority_announce("Нанотрейзен направляет станции гуманитарную поставку: [pack.name]. Капсула приземлится в отсеке снабжения, платить за неё не нужно. Помощь не для перепродажи: NT выкупает её как купленное.", "Отдел снабжения NT")
 	log_game("EVENT: NT Aid Shipment отправил [pack.name] в [AREACOORD(landing)]")
 
 /proc/econ_aid_pack()

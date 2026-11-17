@@ -126,7 +126,7 @@
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "принято 10 шт. \"тест\" (10 из 10), 1000 кр.") && findtext(SSshuttle.centcom_message, "маржа снабжению 1000 кр."), "Сообщение ЦК не описывает спецзаказ: [SSshuttle.centcom_message]")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "Выручка: [gain] кр."), "Выручка в сообщении ЦК не сходится: [SSshuttle.centcom_message]")
 
-/// Купленное через снабжение не засчитывается и продаётся по потолку выкупа; частичная поставка платит базу, маржа - при выполнении; напечатанное оплачивается по потолку материалов.
+/// Купленное через снабжение закрывает спецзаказ, лишнее продаётся обычным порядком; напечатанное оплачивается по потолку материалов.
 /datum/unit_test/economy_offers/imported_and_printed/Run()
 	var/datum/market_offer/metal_offer = add_offer("nt_logistics", /obj/item/stack/sheet/metal, 20, 2, 5)
 	TEST_ASSERT(metal_offer.accept(), "Спецзаказ на металл взят")
@@ -135,25 +135,15 @@
 	var/obj/item/stack/sheet/metal/imported = new(box, 10)
 	econ_mark_imported(crate)
 	TEST_ASSERT(imported.econ_imported, "Металл помечен купленным")
-	var/imported_value = sale_value(box)
 	new /obj/item/stack/sheet/metal(crate, 15)
 	print_offer_manifest(metal_offer, crate)
 	var/cargo_before = cargo.account_balance
 	SSshuttle.supply.sell()
-	TEST_ASSERT_EQUAL(metal_offer.delivered, 15, "Засчитано не своё или не всё своё")
-	TEST_ASSERT(!QDELETED(metal_offer), "Неполная поставка закрыла спецзаказ")
+	TEST_ASSERT(QDELETED(metal_offer), "Спецзаказ не закрыт купленным и своим металлом")
 	var/deposit = econ_packaging_value(/obj/structure/closet/crate)
 	var/gain = cargo.account_balance - cargo_before
-	TEST_ASSERT(abs(gain - (15 * 5 + imported_value + deposit)) <= 1, "Карго получило [gain]: база спецзаказа 75, коробка купленного металла по выкупу [imported_value], ящик [deposit]")
-	TEST_ASSERT(findtext(SSshuttle.centcom_message, "(15 из 20)"), "Сообщение ЦК о частичной поставке: [SSshuttle.centcom_message]")
-	crate = shuttle_crate()
-	new /obj/item/stack/sheet/metal(crate, 10)
-	print_offer_manifest(metal_offer, crate)
-	cargo_before = cargo.account_balance
-	SSshuttle.supply.sell()
-	TEST_ASSERT(QDELETED(metal_offer), "Остаток поставки не закрыл спецзаказ")
-	var/rest_value = cargo.account_balance - cargo_before - 5 * 5 - 20 * 5 - deposit
-	TEST_ASSERT(rest_value >= 0, "Маржа за весь спецзаказ не выплачена при выполнении: [cargo.account_balance - cargo_before]")
+	TEST_ASSERT(gain >= 20 * 5 + 20 * 5 + deposit, "Карго получило [gain]: база и маржа спецзаказа [20 * 5 + 20 * 5] кр., ящик [deposit]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "(20 из 20)"), "Сообщение ЦК о поставке: [SSshuttle.centcom_message]")
 	var/datum/market_offer/shovel_offer = add_offer("nt_logistics", /obj/item/shovel, 2, 2, 50)
 	shovel_offer.accept()
 	var/obj/machinery/autolathe/lathe = allocate(/obj/machinery/autolathe)
@@ -252,7 +242,7 @@
 	TEST_ASSERT_EQUAL(second.delivered, 0, "Второй спецзаказ в ящике засчитан")
 	TEST_ASSERT(findtext(SSshuttle.centcom_message, "В ящике учитывается только один спецзаказ"), "Сообщение ЦК о второй накладной: [SSshuttle.centcom_message]")
 
-/// Спецзаказ сдаётся на паде подработки: первая сдача берёт его, база за штуки - отделу сдавшего (сбор снабжению, доля лично), маржа при выполнении - тому же отделу; контрабандный и купленное - не принимаются.
+/// Спецзаказ сдаётся на паде подработки: первая сдача берёт его, база за штуки - отделу сдавшего (сбор снабжению, доля лично), маржа при выполнении - тому же отделу; контрабандный не принимается.
 /datum/unit_test/economy_offers/pad_delivery
 	var/saved_tax_rate
 
@@ -285,11 +275,6 @@
 	var/obj/item/stack/sheet/bone/bones = allocate(/obj/item/stack/sheet/bone, station_turf, 5)
 	TEST_ASSERT_EQUAL(econ_offers_ship(bones, doctor), 0, "Контрабандный спецзаказ принят с пада")
 	TEST_ASSERT(!smuggled.accepted, "Контрабандный спецзаказ взят с пада")
-	var/obj/item/stack/sheet/mineral/plasma/bought = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
-	bought.econ_imported = TRUE
-	TEST_ASSERT_EQUAL(econ_offers_ship(bought, doctor), 0, "Купленное через снабжение принято с пада")
-	qdel(bought)
-
 	var/medical_before = medical.account.account_balance
 	var/cargo_before = cargo.account_balance
 	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 6)
@@ -311,6 +296,21 @@
 	share = round(400 * settings.contract_team_share / 100)
 	fee = round((400 - share) * settings.cargo_handling_fee / 100)
 	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 400 - share - fee + 1000, "Маржа выполнения - отделу сдавшего")
+
+/// Купленное через снабжение принимается спецзаказом с пада подработки.
+/datum/unit_test/economy_offers/pad_imported/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_pad_imported")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	var/obj/item/stack/sheet/mineral/plasma/bought = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
+	bought.econ_imported = TRUE
+	TEST_ASSERT_EQUAL(econ_offers_ship(bought, doctor), 3, "Купленное через снабжение принято с пада")
+	TEST_ASSERT(offer.accepted && offer.delivered == 3, "Спецзаказ взял купленное")
 
 /// Пульт пункта подработки отправляет с пада и спецзаказы партнёров.
 /datum/unit_test/economy_offers/pad_console/Run()
@@ -493,7 +493,7 @@
 	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 300, "Медицине маржа за 3 штуки пада")
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 + 400, "Таркову база и маржа за свои 4 штуки")
 
-/// Купленное в автомате спецзаказ не засчитывает, а NT выкупает не дороже доли уплаченного.
+/// Купленное в автомате спецзаказ засчитывает, а NT выкупает не дороже доли уплаченного.
 /datum/unit_test/economy_offers/vended_goods/Run()
 	var/obj/machinery/vending/snack/machine = allocate(/obj/machinery/vending/snack)
 	var/datum/data/vending_product/record = machine.product_records[1]
@@ -520,7 +520,7 @@
 	TEST_ASSERT(bought.econ_vended && bought.econ_imported, "Товар автомата не помечен купленным")
 	TEST_ASSERT(sale_value(bought) <= round(price * econ_import_resale_factor()), "Товар автомата выкуплен за [sale_value(bought)] при цене [price]")
 	var/datum/market_offer/offer = add_offer("agrarian", record.product_path, 1, 2, 50)
-	TEST_ASSERT(!offer.matches(bought), "Спецзаказ засчитал товар автомата")
+	TEST_ASSERT(offer.matches(bought), "Спецзаказ не засчитал товар автомата")
 	qdel(offer)
 	TEST_ASSERT(findtext(jointext(machine.examine(buyer), "\n"), "уплаченного"), "Осмотр автомата не объясняет выкуп")
 

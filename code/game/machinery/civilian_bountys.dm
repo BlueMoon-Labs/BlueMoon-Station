@@ -59,12 +59,10 @@
 		if(offer.pad_open())
 			offers += offer
 	var/matched = 0
-	var/imported = 0
 	var/list/short = list()
 	for(var/atom/movable/thing in get_turf(linked))
 		if(thing == linked)
 			continue
-		imported += econ_contracts_imported_matches(thing)
 		short |= econ_contracts_shortfalls(thing)
 		for(var/atom/movable/item as anything in econ_contract_candidates(thing))
 			var/wanted = FALSE
@@ -79,10 +77,10 @@
 			if(wanted)
 				matched++
 	if(!matched)
-		status_report = "На паде нет ничего по контрактам поставки и спецзаказам партнёров.[imported_note(imported)][shortfall_note(short)]"
+		status_report = "На паде нет ничего по контрактам поставки и спецзаказам партнёров.[shortfall_note(short)]"
 		playsound(loc, 'sound/machines/synth_no.ogg', 30, TRUE)
 		return FALSE
-	status_report = "Подходит под контракты и спецзаказы: [matched] шт.[imported_note(imported)]"
+	status_report = "Подходит под контракты и спецзаказы: [matched] шт."
 	playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	return TRUE
 
@@ -103,7 +101,6 @@
 		return
 	var/shipped = 0
 	var/offer_units = 0
-	var/imported = 0
 	var/list/short = list()
 	for(var/atom/movable/thing in get_turf(linked))
 		if(thing == linked || QDELETED(thing))
@@ -113,13 +110,11 @@
 			shipped++
 		if(!QDELETED(thing))
 			offer_units += econ_offers_ship(thing, sender)
-		if(!QDELETED(thing))
-			imported += econ_contracts_imported_matches(thing)
 	if(!shipped && !offer_units)
-		status_report = "На паде нет ничего по контрактам поставки и спецзаказам партнёров. Отправка отменена.[imported_note(imported)][shortfall_note(short)]"
+		status_report = "На паде нет ничего по контрактам поставки и спецзаказам партнёров. Отправка отменена.[shortfall_note(short)]"
 		playsound(loc, 'sound/machines/synth_no.ogg', 30, TRUE)
 		return
-	status_report = "Отправлено по контрактам: [shipped], по спецзаказам партнёров: [offer_units] шт.[imported_note(imported)]"
+	status_report = "Отправлено по контрактам: [shipped], по спецзаказам партнёров: [offer_units] шт."
 	linked.visible_message(span_notice("[linked] срабатывает!"))
 	flick(linked.sending_state, linked)
 	playsound(loc, 'sound/machines/wewewew.ogg', 70, TRUE)
@@ -128,9 +123,6 @@
 /// Что на паде почти подошло: сколько не хватает до условия контракта.
 /obj/machinery/computer/piratepad_control/civilian/proc/shortfall_note(list/short)
 	return length(short) ? " Не хватает: [jointext(short, "; ")]." : ""
-
-/obj/machinery/computer/piratepad_control/civilian/proc/imported_note(imported)
-	return imported ? " Купленное в автоматах и через снабжение по контрактам и спецзаказам не засчитывается: [imported] шт. осталось на паде." : ""
 
 /obj/machinery/computer/piratepad_control/civilian/withdraw_points(mob/living/user)
 	to_chat(user, span_notice("У пульта подработки нет своей кассы: награды по контрактам сразу приходят на счета."))

@@ -307,7 +307,7 @@ const PartnerOffers = (props: { offers: OfferEntry[] }) => {
       <div className="NtTerm__contractTitle">Спецзаказы партнёров снабжения</div>
       <Box className="NtTerm__hint" mb={0.5}>
         Положите товар на пад подработки и отправьте: оплата за штуки уйдёт вашему отделу, вам лично - доля участника. Купленное через
-        снабжение и в автоматах не засчитывается.
+        снабжение и в автоматах тоже засчитывается.
       </Box>
       {offers.map((offer) => (
         <PartnerOfferRow key={offer.uid} offer={offer} />

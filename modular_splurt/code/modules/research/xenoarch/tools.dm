@@ -191,7 +191,7 @@
 	if(!budget_id)
 		return
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(budget_id)
-	. += span_notice("Предмет под открытый спецзаказ партнёра сканер сдаёт в спецзаказ: оплата за штуки и маржа за них при выполнении - в [econ_budget_name(budget)], тебе лично [SSeconomy.settings.contract_team_share]% оплаты. Первая сдача берёт спецзаказ и запускает срок [SSmarket.offer_deadline_minutes] мин., не успеешь - маржи не будет. Купленное не засчитывается.")
+	. += span_notice("Предмет под открытый спецзаказ партнёра сканер сдаёт в спецзаказ: оплата за штуки и маржа за них при выполнении - в [econ_budget_name(budget)], тебе лично [SSeconomy.settings.contract_team_share]% оплаты. Первая сдача берёт спецзаказ и запускает срок [SSmarket.offer_deadline_minutes] мин., не успеешь - маржи не будет.")
 	var/list/offers = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
 		if(offer.pad_open())

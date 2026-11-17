@@ -97,9 +97,9 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	var/left = max(deadline - world.time, 0)
 	return left < 1 MINUTES ? "меньше минуты" : DisplayTimeText(left, 60)
 
-/// Предмет подходит: нужного типа, не куплен через снабжение, с нужным реагентом не из лейта.
+/// Предмет подходит: нужного типа, с нужным реагентом не из лейта.
 /datum/market_offer/proc/matches(atom/movable/thing)
-	if(thing.econ_imported || !istype(thing, wanted_type))
+	if(!istype(thing, wanted_type))
 		return FALSE
 	if(!wanted_subtypes)
 		var/obj/item/stack/stack = thing
@@ -327,7 +327,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 
 /// Описание для осмотра накладной спецзаказа.
 /datum/market_offer/proc/manifest_text()
-	return "Спецзаказ партнёра [partner_name()]: [requirement_text()], принято [delivered] из [quantity], [unit_price] кр. за штуку при отгрузке и [unit_reward() - unit_price] кр. за штуку маржи снабжению при выполнении, осталось [DisplayTimeText(max(deadline - world.time, 0))]. Купленное через снабжение не засчитывается, собранное на станции оплачивается не дороже его материалов. Накладная отдела в том же ящике делит оплату за штуки, как выручку ящика. Спецзаказ не контрабандного партнёра можно сдать и на паде подработки."
+	return "Спецзаказ партнёра [partner_name()]: [requirement_text()], принято [delivered] из [quantity], [unit_price] кр. за штуку при отгрузке и [unit_reward() - unit_price] кр. за штуку маржи снабжению при выполнении, осталось [DisplayTimeText(max(deadline - world.time, 0))]. Собранное на станции оплачивается не дороже его материалов. Накладная отдела в том же ящике делит оплату за штуки, как выручку ящика. Спецзаказ не контрабандного партнёра можно сдать и на паде подработки."
 
 /// Накладная спецзаказа: печатает консоль снабжения для взятого спецзаказа.
 /proc/print_offer_manifest(datum/market_offer/offer, atom/where)
