@@ -484,7 +484,7 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
-		. += span_warning("Минимальный уровень тревоги для активации в секторе станции: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>. Вне сектора станции, а также на ксеноархеологической экспедиции (z6) и Лаваленде (z7), ограничение не действует.")
+		. += span_warning("Минимальный уровень тревоги для активации в секторе станции: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>. Вне сектора станции ограничение не действует.")
 
 /obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
 	SIGNAL_HANDLER
@@ -501,8 +501,6 @@
 	. = FALSE
 	if(!isnull(active_security_level) && GLOB.security_level < active_security_level)
 		var/turf/owner_turf = get_turf(owner)
-		if(owner_turf && (owner_turf.z == 6 || owner_turf.z == 7))
-			return TRUE
 		if(owner_turf && !(is_station_level(owner_turf.z) || is_mining_level(owner_turf.z) || is_hilbert_hotel_zlevel(owner_turf.z)))
 			return TRUE
 		if(!silent)
