@@ -300,7 +300,7 @@
 	minimum_required_age = 0 // BLUEMOON EDIT
 	restricted_roles = list("Head of Security","Bridge Officer", "Captain") // Just to be sure that a nukie getting picked won't ever imply a Captain or HoS not getting drafted
 	required_candidates = 5
-	weight = 3 //BLUEMOON CHANGES
+	weight = 2 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
@@ -762,9 +762,10 @@ BLUEMOON REMOVAL END*/
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	weight = 3
-	cost = 0
+	cost = 15
 	intensity = 15
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	flags = LONE_RULESET
 	var/players_per_carrier = 30
 	var/monkeys_to_win = 1
