@@ -39,8 +39,10 @@
 		miny = y1
 		maxx = x2
 		maxy = y2
-		add_map_features(x1, y1, x2, y2, source_tiles)
-		var/icon/door_layer = build_door_layer(x1, y1, x2, y2, source_tiles)
+		// Повторяющиеся подряд декали, окна и двери не собираются заново; кэш живёт до конца построения.
+		var/list/feature_icons = list()
+		add_map_features(x1, y1, x2, y2, source_tiles, feature_icons)
+		var/icon/door_layer = build_door_layer(x1, y1, x2, y2, source_tiles, feature_icons)
 		var/icon/plain_map = icon(map_icon)
 		plain_map.Blend(door_layer, ICON_OVERLAY)
 		if(area_colors)
@@ -124,8 +126,47 @@
 	if(autocrop)
 		finalize(minx, miny, maxx, maxy)
 
+// Ключ повторяет всё, что читает getFlatIcon(): одинаковый ключ - одинаковая картинка.
+/proc/flat_icon_cache_key(image/source)
+	var/icon_key = isfile(source.icon) && length("[source.icon]") ? "[source.icon]" : text_ref(source.icon)
+	var/color_key = islist(source.color) ? jointext(source.color, ",") : source.color
+	var/list/parts = list(icon_key, source.icon_state, source.dir, source.blend_mode, color_key, source.alpha, source.layer, source.plane, source.pixel_x, source.pixel_y, source.appearance_flags, "u")
+	for(var/image/underlay as anything in source.underlays)
+		parts += "([flat_icon_cache_key(underlay)])"
+	parts += "o"
+	for(var/image/overlay as anything in source.overlays)
+		parts += "([flat_icon_cache_key(overlay)])"
+	return jointext(parts, "|")
+
+// BYOND заново достаёт иконку, давно не бывшую в работе, дольше, чем её собрать: держим только последние.
+#define MINIMAP_FEATURE_ICON_CACHE 8
+
+/datum/minimap/proc/scaled_flat_icon(source, key, list/feature_icons, tile_width, tile_height, whole_tile)
+	key = "[whole_tile]|[key]"
+	var/icon/scaled = feature_icons[key]
+	if(!isnull(scaled))
+		feature_icons -= key
+		feature_icons[key] = scaled
+		return scaled
+	if(isatom(source))
+		var/atom/feature = source
+		scaled = feature.get_minimap_icon()
+	else
+		scaled = getFlatIcon(source, no_anim = TRUE)
+	if(scaled)
+		if(whole_tile)
+			scaled.Scale(tile_width, tile_height)
+		else
+			scaled.Scale(scaled.Width() * tile_width / world.icon_size, scaled.Height() * tile_height / world.icon_size)
+	feature_icons[key] = scaled || FALSE
+	if(length(feature_icons) > MINIMAP_FEATURE_ICON_CACHE)
+		feature_icons.Cut(1, 2)
+	return scaled
+
+#undef MINIMAP_FEATURE_ICON_CACHE
+
 // NanoMap не видит итоговые камни генератора и отфильтровывает обычные оконные объекты.
-/datum/minimap/proc/add_map_features(x1, y1, x2, y2, list/source_tiles)
+/datum/minimap/proc/add_map_features(x1, y1, x2, y2, list/source_tiles, list/feature_icons)
 	var/tile_width = map_icon.Width() / (x2 - x1 + 1)
 	var/tile_height = map_icon.Height() / (y2 - y1 + 1)
 	var/list/turf_icons = list()
@@ -156,11 +197,10 @@
 			var/image/decal_image = image(attributes["icon"] || initial(decal_type.icon), icon_state = attributes["icon_state"] || initial(decal_type.icon_state), dir = attributes["dir"] || initial(decal_type.dir))
 			decal_image.color = ("color" in attributes) ? attributes["color"] : initial(decal_type.color)
 			decal_image.alpha = ("alpha" in attributes) ? attributes["alpha"] : initial(decal_type.alpha)
-			var/icon/decal_icon = getFlatIcon(decal_image, no_anim = TRUE)
+			var/icon/decal_icon = scaled_flat_icon(decal_image, flat_icon_cache_key(decal_image), feature_icons, tile_width, tile_height, FALSE)
 			// Некоторые служебные декали не имеют готового состояния в DMI.
 			if(!decal_icon)
 				continue
-			decal_icon.Scale(decal_icon.Width() * tile_width / world.icon_size, decal_icon.Height() * tile_height / world.icon_size)
 			var/offset_x = ("pixel_x" in attributes) ? attributes["pixel_x"] : initial(decal_type.pixel_x)
 			var/offset_y = ("pixel_y" in attributes) ? attributes["pixel_y"] : initial(decal_type.pixel_y)
 			map_icon.Blend(decal_icon, ICON_OVERLAY, (map_tile.x - x1) * tile_width + 1 + offset_x * tile_width / world.icon_size, (map_tile.y - y1) * tile_height + 1 + offset_y * tile_height / world.icon_size)
@@ -171,13 +211,14 @@
 			if(window.fulltile)
 				features += window
 		for(var/atom/feature as anything in features)
-			var/icon/feature_icon = feature.get_minimap_icon()
-			feature_icon.Scale(tile_width, tile_height)
+			var/icon/feature_icon = scaled_flat_icon(feature, feature.get_minimap_icon_key(), feature_icons, tile_width, tile_height, TRUE)
+			if(!feature_icon)
+				continue
 			map_icon.Blend(feature_icon, ICON_OVERLAY, (map_tile.x - x1) * tile_width + 1, (map_tile.y - y1) * tile_height + 1)
 		CHECK_TICK
 
 // Двери идут отдельным слоем поверх раскраски и сохраняют исходные цвета.
-/datum/minimap/proc/build_door_layer(x1, y1, x2, y2, list/source_tiles)
+/datum/minimap/proc/build_door_layer(x1, y1, x2, y2, list/source_tiles, list/feature_icons)
 	var/icon/doors = new('html/blank.png')
 	doors.Scale(map_icon.Width(), map_icon.Height())
 	var/tile_width = map_icon.Width() / (x2 - x1 + 1)
@@ -205,8 +246,9 @@
 				continue
 			if(door.invisibility || !door.alpha)
 				continue
-			var/icon/door_icon = door.get_minimap_icon()
-			door_icon.Scale(door_icon.Width() * tile_width / world.icon_size, door_icon.Height() * tile_height / world.icon_size)
+			var/icon/door_icon = scaled_flat_icon(door, door.get_minimap_icon_key(), feature_icons, tile_width, tile_height, FALSE)
+			if(!door_icon)
+				continue
 			doors.Blend(door_icon, ICON_OVERLAY, (map_tile.x - x1) * tile_width + 1, (map_tile.y - y1) * tile_height + 1)
 		CHECK_TICK
 	return doors
