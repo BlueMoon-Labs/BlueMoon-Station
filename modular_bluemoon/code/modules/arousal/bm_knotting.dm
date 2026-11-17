@@ -18,6 +18,13 @@
 #define KNOT_DISTANCE_CHECK_INTERVAL 5 SECONDS
 #define KNOT_AROUSAL_TICK_INTERVAL 5 SECONDS
 #define KNOT_MOVEMENT_CHECK_COOLDOWN 10 // 1 second
+#define KNOT_STRAIN_COOLDOWN 5 SECONDS
+
+// Separate from /datum/movespeed_modifier/leash; no interference with leashes.
+/datum/movespeed_modifier/knotting
+	id = "BLUEMOON_KNOTTING"
+	multiplicative_slowdown = 1
+
 
 // ============================================================
 // MOB VARIABLES
@@ -25,6 +32,8 @@
 /mob/living
 	var/tmp/knot_resist_cd_until = 0
 	var/tmp/in_knot_check = FALSE
+	/// Active connection is an organ pointer; shared by both participants.
+	var/tmp/obj/item/organ/genital/penis/active_knot = null
 
 /obj/item/organ/genital
 	var/is_knotted = FALSE
@@ -40,9 +49,17 @@
 	var/knot_state = 0
 	var/mob/living/knot_partner = null
 	var/obj/item/organ/genital/knotted_genital = null
+	/// All receiver organs occupied by one knot (two zones for hemiknot forms).
+	var/list/knotted_genitals = null
+	var/list/knot_zones = null
+	var/last_knot_strain = 0
 	var/last_knot_check = 0
 	var/last_tug_time = 0
 
+	var/tmp/knot_is_hidden = FALSE
+	var/tmp/knot_arousal_timer
+	var/tmp/knot_release_timer
+	var/tmp/knot_distance_timer
 /obj/item/organ/genital/penis/Initialize(mapload)
 	. = ..()
 	update_knotting_from_shape()
@@ -52,25 +69,27 @@
 	update_knotting_from_shape()
 
 /obj/item/organ/genital/penis/Destroy()
-	if(knot_locked && !QDELETED(knot_partner))
-		release_knot(owner, knot_partner, knot_state, TRUE)
+	// Surgical Remove() already calls cleanup. Destruction is a technical cleanup,
+	// not a forceful pull (which would hurt deleted / absent participants).
+	if(knot_locked)
+		cleanup_knot_state(owner, knot_partner)
 	return ..()
 
 /obj/item/organ/genital/penis/proc/update_knotting_from_shape()
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
 	var/state = lowertext(S ? S.icon_state : "[shape]")
-
 	var/tauric_shape = FALSE
-	var/datum/sprite_accessory/taur/T = GLOB.taur_list[src.owner?.dna.features["taur"]]
+	var/datum/sprite_accessory/taur/T = GLOB.taur_list[owner?.dna.features["taur"]]
 	if(istype(T) && S)
-		tauric_shape = T.taur_mode && S.accepted_taurs
+		tauric_shape = !!(T.taur_mode & S.accepted_taurs)
 
-	if(tauric_shape || state == "hemiknot" || state == "barbedhemiknot")
+	if(tauric_shape || state == "hemiknot" || state == "bhemiknot" || state == "barbedhemiknot")
 		knot_size = 2
-	else if(state == "knotted" || state == "barbknot")
+	else if(state == "knotted" || state == "barbknot" || state == "pede_knotted")
 		knot_size = 1
 	else
 		knot_size = 0
+	// A character changing their shape should not silently break an existing connection.
 
 /obj/item/organ/genital/penis/proc/can_pull_out()
 	return !knot_locked
@@ -78,47 +97,58 @@
 // ============================================================
 // MAIN KNOTTING LOGIC (REFACTORED)
 // ============================================================
-/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE)
-	if(!validate_knotting_conditions(user, partner))
+/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE, is_hidden = FALSE)
+	if(!validate_knotting_conditions(user, partner, target_zone))
 		return FALSE
 
-	var/knot_chance = calculate_knot_chance(user, partner, target_zone)
+	// A double-knotted shape is still ONE organ in BlueMoon. Allow it to occupy
+	// both vagina and anus of the SAME partner without duplicating timers/signals.
+	if(knot_locked)
+		if(knot_size < 2 || partner != knot_partner || !(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)))
+			return FALSE
+		if(target_zone in knot_zones || length(knot_zones) >= 2)
+			return FALSE
+		if(!force_success && !prob(calculate_knot_chance(user, partner, target_zone)))
+			return FALSE
+		register_knot_zone(partner, target_zone)
+		to_chat(user, span_notice("Второй узел тоже зафиксировался."))
+		to_chat(partner, span_notice("Оба узла теперь удерживают вас вместе."))
+		return TRUE
 
-	if(!force_success && !prob(knot_chance))
+	// Only ONE probability roll; try_apply_knot must not repeat it.
+	if(!force_success && !prob(calculate_knot_chance(user, partner, target_zone)))
 		return FALSE
 
 	var/duration = calculate_knot_duration(target_zone)
-
-	activate_knot(user, partner, target_zone, duration)
+	activate_knot(user, partner, target_zone, duration, is_hidden)
 	setup_knot_signals(user, partner)
 	apply_knot_effects(user, partner, target_zone)
-
 	schedule_knot_processes(user, partner, target_zone, duration)
-
 	return TRUE
 
-// ============================================================
-// VALIDATION
-// ============================================================
-/obj/item/organ/genital/penis/proc/validate_knotting_conditions(mob/living/user, mob/living/partner)
-	if(!knot_size || knot_locked || !user || !partner)
+/obj/item/organ/genital/penis/proc/validate_knotting_conditions(mob/living/user, mob/living/partner, target_zone)
+	if(!knot_size || QDELETED(user) || QDELETED(partner) || !ishuman(user) || !ishuman(partner) || user == partner)
 		return FALSE
-
-	if(QDELETED(user) || QDELETED(partner))
-		return FALSE
-
-	if(!ishuman(user))
-		return FALSE
-
 	var/mob/living/carbon/human/HU = user
-	if(!HU.lust || HU.lust < 60)
+	if(owner != user || HU.getorganslot(ORGAN_SLOT_PENIS) != src)
 		return FALSE
-
+	if(get_turf(user) == null || get_turf(partner) == null || user.z != partner.z || get_dist(user, partner) > 1)
+		return FALSE
+	if(!(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)))
+		return FALSE
+	if(calculate_zone_modifier(partner, target_zone) <= -100)
+		return FALSE
+	// A character may belong to one connection, with up to two occupied zones.
+	if(user.active_knot && user.active_knot != src)
+		return FALSE
+	if(partner.active_knot && partner.active_knot != src)
+		return FALSE
+	if(knot_locked && knot_partner != partner)
+		return FALSE
+	// Preferences are checked in try_apply_knot(). The explicit admin override
+	// is intentionally only available there, not via the public interaction datums.
 	return TRUE
 
-// ============================================================
-// CHANCE CALCULATION
-// ============================================================
 /obj/item/organ/genital/penis/proc/calculate_knot_chance(mob/living/user, mob/living/partner, target_zone)
 	var/chance = KNOT_BASE_CHANCE + (knot_size * KNOT_SIZE_MULTIPLIER) + (knot_strength * KNOT_STRENGTH_MULTIPLIER)
 
@@ -162,7 +192,7 @@
 			if(!partner.has_anus())
 				return -100
 			return -KNOT_ANAL_PENALTY
-		if(CUM_TARGET_MOUTH)
+		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
 			if(!partner.has_mouth())
 				return -100
 			return -KNOT_ORAL_PENALTY
@@ -174,19 +204,20 @@
 	return 0
 
 /obj/item/organ/genital/penis/proc/calculate_existing_knot_penalty(mob/living/partner, target_zone)
+	if(partner.active_knot && partner.active_knot != src)
+		return 100
 	if(!ishuman(partner))
 		return 0
-
-	var/mob/living/carbon/human/Hp = partner
-	for(var/obj/item/organ/genital/penis/otherP in Hp.internal_organs)
-		if(otherP.knot_locked && otherP.knot_state == target_zone)
-			return 100 // Block completely
-
+	var/obj/item/organ/genital/receiver
+	switch(target_zone)
+		if(CUM_TARGET_VAGINA)
+			receiver = partner.getorganslot(ORGAN_SLOT_VAGINA)
+		if(CUM_TARGET_ANUS)
+			receiver = partner.getorganslot(ORGAN_SLOT_ANUS)
+	if(receiver?.is_knotted && !(target_zone in knot_zones))
+		return 100
 	return 0
 
-// ============================================================
-// DURATION CALCULATION
-// ============================================================
 /obj/item/organ/genital/penis/proc/calculate_knot_duration(target_zone)
 	var/duration_min = 600 SECONDS
 	var/duration_max = 900 SECONDS
@@ -204,18 +235,44 @@
 // ============================================================
 // KNOT ACTIVATION
 // ============================================================
-/obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration)
+/obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration, is_hidden = FALSE)
+	if(knot_locked)
+		cleanup_knot_state(owner, knot_partner)
+	knot_is_hidden = is_hidden
 	knot_locked = TRUE
 	knot_partner = partner
 	knot_state = target_zone
+	knot_zones = list(target_zone)
+	knotted_genitals = list()
+	knotted_genital = null
 	knot_until = world.time + duration
+	last_knot_check = 0
+	last_knot_strain = 0
+	user.active_knot = src
+	partner.active_knot = src
+
+/obj/item/organ/genital/penis/proc/register_knot_zone(mob/living/partner, target_zone)
+	if(!(target_zone in knot_zones))
+		knot_zones += target_zone
+	var/obj/item/organ/genital/receiver
+	switch(target_zone)
+		if(CUM_TARGET_VAGINA)
+			receiver = partner.getorganslot(ORGAN_SLOT_VAGINA)
+		if(CUM_TARGET_ANUS)
+			receiver = partner.getorganslot(ORGAN_SLOT_ANUS)
+	if(receiver && !QDELETED(receiver))
+		receiver.is_knotted = TRUE
+		if(!(receiver in knotted_genitals))
+			knotted_genitals += receiver
+		if(!knotted_genital)
+			knotted_genital = receiver
 
 /obj/item/organ/genital/penis/proc/setup_knot_signals(mob/living/user, mob/living/partner)
 	if(!istype(partner, /mob/living))
 		return
 
-	if(!partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
-		partner.add_movespeed_modifier(/datum/movespeed_modifier/leash)
+	if(!partner.has_movespeed_modifier(/datum/movespeed_modifier/knotting))
+		partner.add_movespeed_modifier(/datum/movespeed_modifier/knotting)
 
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
 	RegisterSignal(partner, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
@@ -230,12 +287,7 @@
 	apply_mood_effects(user, partner, TRUE)
 	apply_aphrodisiac_effects(user, partner)
 	handle_post_knot_arousal(user, partner)
-	switch(target_zone)
-		if(CUM_TARGET_VAGINA)
-			knotted_genital = partner.getorganslot(ORGAN_SLOT_VAGINA)
-		if(CUM_TARGET_ANUS)
-			knotted_genital = partner.getorganslot(ORGAN_SLOT_ANUS)
-	knotted_genital?.is_knotted = TRUE
+	register_knot_zone(partner, target_zone)
 
 /obj/item/organ/genital/penis/proc/send_knot_messages(mob/living/user, mob/living/partner, zone_text)
 	visible_message(list(user, partner),
@@ -393,35 +445,54 @@
 /obj/item/organ/genital/penis/proc/release_knot(mob/living/user, mob/living/partner, target_zone, forceful = FALSE)
 	if(!knot_locked)
 		return
-
-	var/mob/living/Luser = user
-	var/mob/living/Lpartner = partner
-
+	// Never trust stale callback arguments: use the currently stored participants.
+	var/mob/living/Luser = owner
+	var/mob/living/Lpartner = knot_partner
+	var/hidden = knot_is_hidden
+	var/zone_text = get_zone_text(knot_state)
+	if(length(knot_zones) > 1)
+		zone_text = "влагалища и ануса"
 	cleanup_knot_state(Luser, Lpartner)
-
-	var/zone_text = get_zone_text(target_zone)
-
+	if(QDELETED(Luser) || QDELETED(Lpartner))
+		return
 	if(forceful)
-		apply_forceful_release(Luser, Lpartner, zone_text)
+		apply_mood_effects(Luser, Lpartner, FALSE)
+		apply_forceful_release(Luser, Lpartner, zone_text, hidden)
 	else
-		apply_gentle_release(Luser, Lpartner, zone_text)
+		apply_gentle_release(Luser, Lpartner, zone_text, hidden)
 
 /obj/item/organ/genital/penis/proc/cleanup_knot_state(mob/living/user, mob/living/partner)
+	deltimer(knot_arousal_timer)
+	deltimer(knot_release_timer)
+	deltimer(knot_distance_timer)
+	knot_arousal_timer = null
+	knot_release_timer = null
+	knot_distance_timer = null
+	if(islist(knotted_genitals))
+		for(var/obj/item/organ/genital/G in knotted_genitals)
+			if(!QDELETED(G))
+				G.is_knotted = FALSE
+	else if(!QDELETED(knotted_genital))
+		knotted_genital.is_knotted = FALSE
+	knotted_genitals = null
+	knotted_genital = null
+	knot_zones = null
 	knot_locked = FALSE
+	knot_is_hidden = FALSE
 	knot_state = 0
 	knot_partner = null
 	knot_until = 0
-	if(!QDELETED(knotted_genital))
-		knotted_genital.is_knotted = FALSE
-	knotted_genital = null
-
-	if(istype(user, /mob/living))
-		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-
-	if(istype(partner, /mob/living))
-		UnregisterSignal(partner, COMSIG_MOVABLE_MOVED)
-		if(partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
-			partner.remove_movespeed_modifier(/datum/movespeed_modifier/leash)
+	if(!QDELETED(user))
+		if(user.active_knot == src)
+			user.active_knot = null
+		UnregisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+	if(!QDELETED(partner))
+		if(partner.active_knot == src)
+			partner.active_knot = null
+		if(partner != user)
+			UnregisterSignal(partner, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		if(partner.has_movespeed_modifier(/datum/movespeed_modifier/knotting))
+			partner.remove_movespeed_modifier(/datum/movespeed_modifier/knotting)
 
 /obj/item/organ/genital/penis/proc/get_zone_text(target_zone)
 	switch(target_zone)
@@ -482,21 +553,27 @@
 		addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), who), KNOT_DISTANCE_CHECK_INTERVAL)
 
 /obj/item/organ/genital/penis/proc/check_knot_distance_safe(mob/living/user)
-	if(QDELETED(user) || QDELETED(knot_partner))
+	if(!knot_locked)
 		return
-
+	if(QDELETED(user) || QDELETED(knot_partner) || owner != user)
+		cleanup_knot_state(user, knot_partner)
+		return
+	if(!get_turf(user) || !get_turf(knot_partner) || user.z != knot_partner.z)
+		cleanup_knot_state(user, knot_partner)
+		return
 	var/dist = get_dist(user, knot_partner)
 	if(dist <= 1)
 		return
-
 	var/zone_text = get_zone_text(knot_state)
-
 	if(dist == 2)
 		handle_knot_strain(user, knot_partner, zone_text)
 	else
 		handle_knot_break(user, knot_partner, zone_text)
 
 /obj/item/organ/genital/penis/proc/handle_knot_strain(mob/living/user, mob/living/partner, zone_text)
+	if(world.time < last_knot_strain + KNOT_STRAIN_COOLDOWN)
+		return
+	last_knot_strain = world.time
 	to_chat(user, span_warning("Узел натягивается между тобой и [partner]!"))
 	to_chat(partner, span_danger("Ты чувствуешь, как узел внутри натягивается и причиняет боль!"))
 
@@ -658,100 +735,39 @@
 	set name = "Resist Knot"
 	set category = "IC"
 	set desc = "Попытаться освободиться от узла (если застрял)."
-
-	resist()
-
-/mob/living/carbon/human/resist()
-	var/obj/item/organ/genital/penis/P = getorganslot(ORGAN_SLOT_PENIS)
-	if(P && P.knot_locked)
-		to_chat(src, span_love("Ты пытаешься освободиться от узла..."))
-		P.start_resist_attempt(src)
+	if(!active_knot || QDELETED(active_knot) || !active_knot.knot_locked)
+		to_chat(src, span_notice("Вы не связаны узлом."))
 		return
+	active_knot.start_resist_attempt(src)
 
-	for(var/mob/living/carbon/human/other in view(1, src))
-		if(other == src)
-			continue
-		var/obj/item/organ/genital/penis/P2 = other.getorganslot(ORGAN_SLOT_PENIS)
-		if(P2 && P2.knot_locked && P2.knot_partner == src)
-			to_chat(src, span_love("Ты пытаешься вырваться из узла [other]!"))
-			P2.start_resist_attempt(src)
-			return
-
-	return ..()
-
-// ============================================================
-// GLOBAL HELPER PROC
-// ============================================================
-/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE)
-	if(!ishuman(user) || !ishuman(partner))
-		return
-
+/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE, is_hidden = FALSE)
+	if(!ishuman(user) || !ishuman(partner) || QDELETED(user) || QDELETED(partner))
+		return FALSE
 	if(!force_override)
-		if(!user?.client?.prefs?.sexknotting || !partner?.client?.prefs?.sexknotting)
-			return
+		if(!user.client?.prefs?.sexknotting || !partner.client?.prefs?.sexknotting)
+			return FALSE
+	if(!(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)))
+		return FALSE
 
-	var/static/list/valid_orifices = list(
-		CUM_TARGET_VAGINA,
-		CUM_TARGET_ANUS,
-		CUM_TARGET_MOUTH,
-		CUM_TARGET_THROAT
-	)
-
-	if(!(target_zone in valid_orifices))
-		return
-
-	var/mob/living/carbon/human/initiator = user
-	var/mob/living/carbon/human/receiver = partner
-	var/obj/item/organ/genital/penis/P = null
-
-	// FIX: правильная проверка типа last_genital
-	if(initiator.last_genital)
-		var/obj/item/organ/genital/temp_organ = initiator.last_genital
-		if(istype(temp_organ, /obj/item/organ/genital/penis))
-			if(!QDELETED(temp_organ))
-				P = temp_organ
-
-	// Если не нашли у initiator, проверяем receiver
-	if(!P && receiver.last_genital)
-		var/obj/item/organ/genital/temp_organ2 = receiver.last_genital
-		if(istype(temp_organ2, /obj/item/organ/genital/penis))
-			if(!QDELETED(temp_organ2))
-				P = temp_organ2
-				// Меняем местами
-				var/mob/living/carbon/human/swap_temp = initiator
-				initiator = receiver
-				receiver = swap_temp
-
-	if(!P)
-		return
-
-	if(!P.knot_size || P.knot_locked)
-		return
-
-	var/effective_lust = 0
-	if(ishuman(initiator))
-		var/mob/living/carbon/human/H = initiator
-		if(hascall(H, "get_lust") && hascall(H, "get_climax_threshold"))
-			var/threshold = H.get_climax_threshold()
-			if(threshold > 0)
-				effective_lust = (H.get_lust() / threshold) * 100
-
+	// The first argument is always the penetrating actor for built-in calls,
+	// including reversed roles in mount.dm. Never guess from last_genital:
+	// that field is mutable and overwritten by unrelated custom ERP verbs.
+	var/mob/living/carbon/human/HU = user
+	var/obj/item/organ/genital/penis/P = HU.getorganslot(ORGAN_SLOT_PENIS)
+	if(!P || QDELETED(P) || P.owner != user || !P.knot_size)
+		return FALSE
+	var/threshold = HU.get_climax_threshold()
+	if(threshold <= 0)
+		return FALSE
+	var/effective_lust = (HU.get_lust() / threshold) * 100
 	if(effective_lust < 65 && !force_knot)
-		return
+		return FALSE
 
-	var/chance = 10 + (P.knot_size * 10)
-	if(effective_lust >= 80)
-		chance += 10
-	if(HAS_TRAIT(receiver, TRAIT_ESTROUS_ACTIVE))
-		chance += 5
-
-	chance = clamp(chance, 5, 60)
-
-	if(force_knot)
-		chance = 100
-
-	if(force_knot || prob(chance))
-		if(P.do_knotting(initiator, receiver, target_zone, force_knot))
-			to_chat(initiator, span_love("Ты чувствуешь, как узел набухает внутри [receiver]!"))
-			to_chat(receiver, span_love("Ты ощущаешь, как узел [initiator] застревает внутри!"))
+	var/was_active = P.knot_locked
+	if(P.do_knotting(user, partner, target_zone, force_knot, is_hidden))
+		// One stat increment per new connection, not per occupied orifice.
+		if(!was_active)
 			GLOB.knottings++
+		return TRUE
+	return FALSE
+

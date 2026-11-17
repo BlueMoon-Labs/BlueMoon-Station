@@ -64,10 +64,8 @@
 
 		var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
 		var/milktype = milkers?.fluid_id
-		if(milkers.climaxable(user, TRUE))
-			if(milkers && milktype)
-				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
+		if(milkers && milktype && milkers.transfer_fluid(liquid_container.reagents, rand(1, 3 * milkers.get_lactation_amount_modifier())) > 0)
+			playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 		else
 			message += ", но дойка не дает результатов..."
 			playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch3.ogg', volume, 1, extrarange)
@@ -104,14 +102,10 @@
 	if(!milkers || !milktype)
 		return
 
-	if(milkers.climaxable(user, TRUE))
+	if(milkers.transfer_fluid(user.reagents, rand(1, 3 * milkers.get_lactation_amount_modifier()) * user.get_fluid_mod(milkers)) > 0)
 		var/datum/reagent/milk = find_reagent_object_from_type(milktype)
-
-		var/milktext = milk.name
-
-		if(milkers && milktype)
-			user.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()) * user.get_fluid_mod(milkers))
-			lines = list(
+		var/milktext = milk?.name || "жидкость"
+		lines = list(
 				"подносит соски своих собственных ёмкостей для молока ко рту и начинает их посасывать.",
 				"делает большой глоток свежего <b>'[lowertext(milktext)]'</b> и громко выдыхает после такого.",
 				"хватается губами за свой сосок и полностью заполняет свою ротовую полость <b>'[lowertext(milktext)]'</b>."

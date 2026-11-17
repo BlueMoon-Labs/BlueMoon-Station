@@ -39,4 +39,4 @@
 	RemoveElement(/datum/element/strippable, GLOB.strippable_corgi_items)
 	RemoveElement(/datum/element/mob_holder, held_icon)
 	AddElement(/datum/element/wuv, "mothin'!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "buzzes!", EMOTE_AUDIBLE)
-	AddElement(/datum/element/mob_holder, held_icon, inv_slots = ITEM_SLOT_HEAD)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = ITEM_SLOT_HEAD | ITEM_SLOT_NECK)

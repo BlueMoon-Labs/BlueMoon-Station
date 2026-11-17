@@ -34,7 +34,7 @@
 
 /mob/living/simple_animal/pet/plushie/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/mob_holder, "plushie")
+	AddElement(/datum/element/mob_holder, "plushie", inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 
 //shell that lets people turn into the plush or poll for ghosts
 /obj/item/toy/plushie_shell

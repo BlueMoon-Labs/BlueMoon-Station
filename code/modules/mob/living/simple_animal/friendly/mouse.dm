@@ -41,7 +41,7 @@
 	AddComponent(/datum/component/squeak, list('sound/effects/mousesqueek.ogg'=1), 100)
 	if(!body_color)
 		body_color = pick(list("brown","gray","white"))
-	AddElement(/datum/element/mob_holder, "mouse_[body_color]")
+	AddElement(/datum/element/mob_holder, "mouse_[body_color]", inv_slots = ITEM_SLOT_HEAD | ITEM_SLOT_NECK)
 	icon_state = "mouse_[body_color]"
 	icon_living = "mouse_[body_color]"
 	icon_dead = "mouse_[body_color]_dead"

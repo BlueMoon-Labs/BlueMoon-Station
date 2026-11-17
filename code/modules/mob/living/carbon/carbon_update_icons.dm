@@ -200,7 +200,7 @@
 		inv.update_icon()
 
 	if(wear_neck)
-		if(!(head && (head.flags_inv & HIDENECK)))
+		if(!(head && (head.flags_inv & HIDENECK)) || istype(wear_neck, /obj/item/clothing/head/mob_holder))
 			var/chosen_icon = 'icons/mob/clothing/neck.dmi'
 			if(dna.species.icon_neck)
 				chosen_icon = dna.species.icon_neck

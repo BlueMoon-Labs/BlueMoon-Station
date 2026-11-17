@@ -43,18 +43,16 @@
 							span_lewd("[is_hidden ? (picked_hidden) : null]<b>[user]</b> с силой втягивает в свой рот [pick("сосок", "соски")] <b>[target]</b>"),
 							span_lewd("[is_hidden ? (picked_hidden) : null]<b>[user]</b> крепко держит грудь <b>[target]</b> и обсасывает [pick("сосок", "соски")]"))
 			target.handle_post_sex(LOW_LUST*1.5, null, user, ORGAN_SLOT_BREASTS) //BLUEMOON ADD
-	user.visible_message(user_message, vision_distance = distance)
 	var/has_breasts = target.has_breasts()
 	if(has_breasts == TRUE || has_breasts == HAS_EXPOSED_GENITAL)
 		var/obj/item/organ/genital/breasts/B = target.getorganslot(ORGAN_SLOT_BREASTS)
 		var/modifier = B?.get_lactation_amount_modifier() || 1
-		if(B?.fluid_id && B?.climaxable(target, TRUE))
-			var/milktype = B?.fluid_id
-			var/datum/reagent/milk = find_reagent_object_from_type(milktype)
-			var/milktext = milk.name //So you know what are you drinking. - Gardelin0
-			user.reagents.add_reagent(B.fluid_id, rand(1,amount_high * modifier) * user.get_fluid_mod(B))
+		if(B?.fluid_id && B.transfer_fluid(user.reagents, rand(1, amount_high * modifier) * user.get_fluid_mod(B)) > 0)
+			var/datum/reagent/milk = find_reagent_object_from_type(B.fluid_id)
+			var/milktext = milk?.name || "жидкость"
 			user_message += ", вытягивая <b>'[lowertext(milktext)]'</b>."
 
+	user.visible_message(user_message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(prob(target.get_lust() / target.get_climax_threshold() * 50)) // 50%
 		switch(target.a_intent)
 			if(INTENT_HELP)
