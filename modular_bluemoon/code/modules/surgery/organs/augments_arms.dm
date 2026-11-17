@@ -308,7 +308,7 @@
 	/// Угол самонаведения в градусах
 	var/homing_angle = 180 //короче я проебался. Изначальный угол рикошета был 330 градусов, триторская повязка. поставлю для начала 180 для импланта - посмотрим что будет
 	/// Дальность поиска цели
-	var/homing_range = 7
+	var/homing_range = 12
 
 /obj/item/organ/cyberimp/arm/ballistic_processor/l
 	zone = BODY_ZONE_L_ARM
