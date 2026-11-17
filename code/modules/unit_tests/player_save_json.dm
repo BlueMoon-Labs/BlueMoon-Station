@@ -13,7 +13,7 @@
 
 /datum/unit_test/player_save_json/proc/prepare()
 	test_path = "data/player_save_tests/[md5("[type]")].sav"
-	for(var/suffix in list("", ".json", ".json.recovery", ".json.import"))
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.import", ".json.legacy", ".journal"))
 		fdel("[test_path][suffix]")
 	fdel("[test_path].json.d/")
 	storage = new(test_path)
@@ -24,7 +24,7 @@
 		GLOB.roundstart_race_names = saved_roundstart_race_names
 	if(owned_preferences)
 		owned_preferences.path = null
-	for(var/suffix in list("", ".json", ".json.recovery", ".json.import"))
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.import", ".json.legacy", ".journal"))
 		fdel("[test_path][suffix]")
 	fdel("[test_path].json.d/")
 	storage = null
@@ -1720,6 +1720,51 @@
 	restored = decoded[1]
 	TEST_ASSERT_EQUAL(restored.name, "Старое действие", "действие старой схемы не принято")
 	TEST_ASSERT(restored.requires_review, "действие старой схемы не отправлено на проверку")
+
+/// JSON, после переноса которого старая сборка снова писала .sav, откладывается, и сейв переносится заново.
+/datum/unit_test/player_save_json/stale_json_after_legacy_write/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["marker"] << "до переноса"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	var/datum/player_save_json/account/account = new(test_path)
+	var/datum/player_save_document/document = account.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв не прочитан: [account.error]")
+	document.write("marker", "в JSON")
+	TEST_ASSERT(document.commit(), "перенос не записан: [account.error]")
+	TEST_ASSERT(fexists("[test_path].json.legacy"), "перенос не запомнил отпечаток старого сейва")
+
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "в JSON", "JSON отложен без изменения старого сейва")
+
+	legacy = new(test_path)
+	legacy["marker"] << "после отката"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "после отката", "устаревший JSON перекрыл свежий старый сейв")
+	TEST_ASSERT(!fexists("[test_path].json"), "устаревший JSON остался на месте")
+	var/archive
+	var/prefix = "[md5("[type]")].sav.json.stale-"
+	for(var/name as anything in flist("data/player_save_tests/"))
+		if(findtext(name, prefix) == 1)
+			archive = "data/player_save_tests/[name]"
+	TEST_ASSERT_NOTNULL(archive, "устаревший JSON не сохранён в архив")
+	var/list/archived = json_decode(file2text("[archive][md5("[type]")].sav.json"))
+	fdel(archive)
+	TEST_ASSERT_EQUAL(archived?["format"], "bluemoon-player-save", "в архиве нет устаревшего JSON")
+	TEST_ASSERT(document.commit(), "повторный перенос не записан: [account.error]")
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "после отката", "повторный перенос не запомнил новый отпечаток")
 
 /datum/client_interface/player_save_json_test
 	var/ckey = "playersavejsontest"

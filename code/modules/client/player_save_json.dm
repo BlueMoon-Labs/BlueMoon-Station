@@ -639,6 +639,7 @@
 /datum/player_save_json/proc/commit_tree(list/tree, list/encoded_nodes)
 	if(!tree || !check_revision())
 		return FALSE
+	var/first_publish = !active_path
 	var/destination = active_path == json_path ? "[json_path].recovery" : json_path
 	var/next_content
 	if(!encoded_nodes)
@@ -666,7 +667,13 @@
 	open_revision = player_save_revision(json_path, TRUE)
 	loaded_tree = tree
 	node_json = encoded_nodes
+	if(first_publish)
+		on_first_publish()
 	return TRUE
+
+/// Первая запись JSON на диск, в том числе после переноса старого сейва.
+/datum/player_save_json/proc/on_first_publish()
+	return
 
 /datum/player_save_json/proc/commit_snapshot(datum/player_save_document/document)
 	if(error || document.storage != src || document.revision != player_save_revision(json_path) || document.generation != generation)

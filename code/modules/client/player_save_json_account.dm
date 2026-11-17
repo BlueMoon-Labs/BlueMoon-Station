@@ -79,7 +79,56 @@
 
 /datum/player_save_json/account/load_tree(required_generation, validate = TRUE)
 	cached_root = null
+	if(!required_generation && !set_aside_stale_json())
+		return null
 	return ..()
+
+/// Отпечаток .sav, из которого перенесён JSON. Новые сборки .sav не пишут, так что другой
+/// отпечаток значит, что после переноса играли на старой сборке и JSON устарел.
+/datum/player_save_json/account/proc/legacy_marker_path()
+	return "[json_path].legacy"
+
+/datum/player_save_json/account/on_first_publish()
+	if(!fexists(legacy_path))
+		return
+	var/fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, legacy_path)
+	if(fingerprint)
+		fdel(legacy_marker_path())
+		text2file(fingerprint, legacy_marker_path())
+
+/// Устаревший JSON уходит в отдельный каталог, и сейв заново переносится из .sav.
+/// FALSE - отложить JSON не удалось, чтение блокируется до разбора вручную.
+/datum/player_save_json/account/proc/set_aside_stale_json()
+	if(!fexists(legacy_path) || !(fexists(json_path) || fexists("[json_path].recovery")))
+		return TRUE
+	var/fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, legacy_path)
+	if(!fingerprint)
+		return TRUE
+	var/marker = legacy_marker_path()
+	if(!fexists(marker))
+		// JSON сборки без отметки: принимаем его как есть и отмечаем текущий .sav.
+		text2file(fingerprint, marker)
+		return TRUE
+	if(trimtext(file2text(marker)) == fingerprint)
+		return TRUE
+	var/archive = "[json_path].stale-[time2text(world.realtime, "YYYYMMDD-hhmmss")]-[rand(1000, 9999)]/"
+	var/list/moved = list(json_path, "[json_path].recovery", marker)
+	for(var/source in moved)
+		if(fexists(source) && !fcopy(source, "[archive][copytext(source, findlasttext(source, "/") + 1)]"))
+			error = "Старый сейв изменён после переноса, но устаревший JSON не удалось отложить"
+			return FALSE
+	if(fexists("[json_path].d/") && !fcopy("[json_path].d/", "[archive]d/"))
+		error = "Старый сейв изменён после переноса, но разделы устаревшего JSON не удалось отложить"
+		return FALSE
+	for(var/source in moved)
+		fdel(source)
+	fdel("[json_path].d/")
+	branches = list()
+	cached_names = list()
+	cached_name_generations = list()
+	player_save_revision(json_path, TRUE)
+	log_game("Сохранения: [legacy_path] изменён после переноса в JSON, устаревший JSON отложен в [archive], сейв перенесён заново.")
+	return TRUE
 
 /datum/player_save_json/account/snapshot(required_generation, use_cache = TRUE)
 	var/datum/player_save_document/document = ..()
