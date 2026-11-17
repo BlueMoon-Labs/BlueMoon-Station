@@ -14,3 +14,7 @@
 
 // Bluemoon added. Дефайт для аплинка синдистанции. В нём только разрешенная по НРП зелёная КБшка, плюс пару не контрабандных плюшек.
 #define UPLINK_SYNDICATE_PACT_CREW (1 << 4)
+
+/// Typepath used for uplink items which don't actually produce an item (essentially just a placeholder)
+/// Future todo: Make this not necessary / make uplink items support item-less items natively
+#define ABSTRACT_UPLINK_ITEM /obj/effect/spawner/lootdrop

@@ -2,17 +2,7 @@ import { createSearch, decodeHtmlEntities } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import {
-  Box,
-  Button,
-  Icon,
-  Input,
-  NoticeBox,
-  Section,
-  Stack,
-  Tabs,
-  Tooltip,
-} from '../components';
+import { Box, Button, Icon, Input, NoticeBox, Section, Stack, Tabs, Tooltip } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
 
@@ -120,6 +110,8 @@ export const GenericUplink = (props) => {
                   fluid
                   lineHeight={2}
                   color={currencyAmount > 0 ? 'good' : 'bad'}
+                  tooltip="Buy raw TC"
+                  onClick={() => act('buy_raw_tc')}
                   style={{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
