@@ -649,7 +649,7 @@
 	/// Доступна ли пушка для выстрела
 	var/ready_to_fire = TRUE
 	/// Время перезарядки
-	var/reload_time = 20 SECONDS
+	var/reload_time = 25 SECONDS
 	/// Время зарядки перед выстрелом
 	var/charge_time = 1.5 SECONDS
 	/// Модификатор разброса при стрельбе с двух рук
