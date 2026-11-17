@@ -311,6 +311,7 @@
 #include "eye_blur_filters.dm"
 #include "eye_blur_ticks.dm"
 #include "families.dm"
+#include "fishing_throwbonus_windup.dm"
 #include "flamethrower_fuel.dm"
 #include "flat_icon_static.dm"
 #include "foam_performance.dm"
