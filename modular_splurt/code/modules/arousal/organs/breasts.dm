@@ -40,7 +40,10 @@
 	if(stored_fluid >= 0)
 		stored_fluid = min(stored_fluid, fluid_max_volume)
 
-/obj/item/organ/genital/breasts/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen)
+/obj/item/organ/genital/breasts/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
+	if(source_gen?.get_urethral_obstruction())
+		return
+
 	if(!(owner.client?.prefs.cit_toggles & BREAST_ENLARGEMENT))
 		return
 
@@ -59,7 +62,7 @@
 		var/previous = size
 		modify_size(climax_fluids.total_volume / (fluid_max_volume * GENITAL_INFLATION_THRESHOLD))
 		if(size != previous)
-			owner.visible_message("<span class='lewd'>\The <b>[owner]</b>'s [pick(GLOB.breast_nouns)] разбухают от прилива [lowertext(source_gen.get_fluid_name())] из \the <b>[partner]</b>'s [source_gen.name]", ignored_mobs = owner.get_unconsenting())
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]У <b>[owner]</b> разбухают [pick(GLOB.breast_nouns)] от прилива [lowertext(source_gen.get_fluid_name())] из органа <b>[partner]</b>."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		climax_fluids.clear_reagents()
 

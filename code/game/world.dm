@@ -57,6 +57,10 @@ GLOBAL_LIST(topic_status_cache)
 	SSdbcore.SetRoundID()
 	SetupLogs()
 
+	var/verb_scan_started = REALTIMEOFDAY
+	GLOB.max_verb_proc_id = scan_verb_proc_ids()
+	log_world("Вербы: самый большой id проца [GLOB.max_verb_proc_id] из [MAX_VERB_PROC_ID], не вызываются: [length(GLOB.uncallable_verbs)], обход [(REALTIMEOFDAY - verb_scan_started) * 100] мс")
+
 #ifndef USE_CUSTOM_ERROR_HANDLER
 	world.log = file("[GLOB.log_directory]/dd.log")
 #else

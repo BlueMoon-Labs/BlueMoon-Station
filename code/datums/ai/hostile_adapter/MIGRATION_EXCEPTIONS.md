@@ -7,7 +7,7 @@ NPC-AI; полный список таких типов находится в `p
 
 | Тип | Почему контроллер не нужен | Проверка |
 |---|---|---|
-| Player swarmer | Гост-роль с `AIStatus = AI_OFF`; NPC-подтипы `/swarmer/ai` используют специализированные профили | `ai_swarmer_forage_cycle`, `ai_swarmer_combat_subtypes` проверяют NPC-ветку |
+| Player swarmer | Оболочками и мегасвармерами управляют игроки. Все классы наследуют `AIStatus = AI_OFF`. | Спавнеры роя передают управление гостям, а ядро позволяет менять корпус. |
 | Eldritch demons | Гост-вессели с `AIStatus = AI_OFF`; сегменты armsy двигаются сигналами головы | `ai_eldritch_stays_player_vessel` |
 | Guardians | Игровые духи с `AIStatus = AI_OFF`, создаваемые для владельца | `ai_guardian_stays_player_shell` |
 | Herald mirror | Марионетка хозяина с `AIStatus = AI_OFF`; атаки вызываются боссовыми обёртками хозяина | `ai_herald_mirror_stays_marionette` |

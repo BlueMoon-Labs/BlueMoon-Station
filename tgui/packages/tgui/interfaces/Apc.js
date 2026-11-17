@@ -222,12 +222,12 @@ const ApcContent = (props) => {
                   <Button
                     icon="lock"
                     content="Lockdown"
-                    isabled={!data.lockdownavail && data.hijacked === 1}
+                    disabled={!data.lockdownavail || !data.hijacker}
                     onClick={() => act('lockdown')} />
                   <Button
                     icon="lightbulb-o"
                     content="Drain"
-                    disabled={!data.drainavail && data.hijacked === 1}
+                    disabled={!data.drainavail || !data.hijacker}
                     onClick={() => act('drain')} />
                 </>
               )} />

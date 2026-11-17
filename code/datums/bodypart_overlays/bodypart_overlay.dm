@@ -147,7 +147,7 @@
 
 /datum/bodypart_overlay/augment/icon_render_key(obj/item/bodypart/limb)
 	. = ..()
-	. += implant.get_overlay_state()
+	. += implant.get_overlay_state(null, limb)
 
 /datum/bodypart_overlay/augment/get_overlay(obj/item/bodypart/limb, layer_index, layer_real)
 	// Delegate image creation to the implant, which knows its exact icon/state.

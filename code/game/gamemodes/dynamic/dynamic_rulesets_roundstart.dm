@@ -160,41 +160,68 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
-	// BLUEMOON ADD - раундстартовый маг доступен и в Тим-Базе: его Summon Events глушат обычные
-	// события, так что тяжёлая смена идёт силами антаг-капли, а не разнобоем ивентов.
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
+	var/datum/team/wizard/ritual_coven/ritual_coven
+	var/static/list/ritual_roles = list(
+		/datum/antagonist/wizard/ritualist,
+		/datum/antagonist/wizard/ritualist/battle_mage,
+		/datum/antagonist/wizard/ritualist/support_mage,
+	)
 
 /datum/dynamic_ruleset/roundstart/wizard/acceptable(population=0, threat=0)
 	if(GLOB.wizardstart.len == 0)
 		log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		return FALSE
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED && !wizard_ritual_departments_available())
+		return FALSE
 	return ..()
 
-/datum/dynamic_ruleset/roundstart/wizard/pre_execute()
-	. = ..()
-	if(GLOB.wizardstart.len == 0)
+/datum/dynamic_ruleset/roundstart/wizard/ready(population, forced = FALSE)
+	required_candidates = GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED ? length(ritual_roles) : initial(required_candidates)
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/wizard/pre_execute(population)
+	if(!length(GLOB.wizardstart) || !ready(population))
 		return FALSE
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-		return FALSE
-	// BLUEMOON ADD END
-	var/mob/M = pick_n_take(candidates)
-	if (M)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_TEAMBASED)
+		ritual_coven = new
+		if(!ritual_coven.prepare_ritual())
+			QDEL_NULL(ritual_coven)
+			return FALSE
+	for(var/i in 1 to required_candidates)
+		var/mob/M = pick_n_take(candidates)
 		assigned += M.mind
 		M.mind.assigned_role = ROLE_WIZARD
 		M.mind.special_role = ROLE_WIZARD
-
 	return TRUE
 
 /datum/dynamic_ruleset/roundstart/wizard/execute()
+	if(ritual_coven)
+		var/turf/lair_spawn = get_turf(pick(GLOB.wizardstart))
+		if(!lair_spawn || length(assigned) != length(ritual_roles))
+			return FALSE
+		for(var/datum/mind/member as anything in assigned)
+			if(!ishuman(member.current))
+				return FALSE
+		for(var/i in 1 to length(ritual_roles))
+			var/datum/mind/member = assigned[i]
+			var/role_type = ritual_roles[i]
+			var/datum/antagonist/wizard/ritualist/role = new role_type
+			role.move_to_lair = FALSE
+			member.current.forceMove(lair_spawn)
+			member.add_antag_datum(role, ritual_coven)
+		return TRUE
 	for(var/datum/mind/M in assigned)
 		M.current.forceMove(pick(GLOB.wizardstart))
-		M.add_antag_datum(new antag_datum())
+		M.add_antag_datum(antag_datum)
 	return TRUE
+
+/datum/dynamic_ruleset/roundstart/wizard/clean_up()
+	QDEL_NULL(ritual_coven)
+	return ..()
 
 //////////////////////////////////////////////
 //                                          //
@@ -273,7 +300,7 @@
 	minimum_required_age = 0 // BLUEMOON EDIT
 	restricted_roles = list("Head of Security","Bridge Officer", "Captain") // Just to be sure that a nukie getting picked won't ever imply a Captain or HoS not getting drafted
 	required_candidates = 5
-	weight = 3 //BLUEMOON CHANGES
+	weight = 2 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
@@ -400,18 +427,12 @@
 	revolution = new()
 	for(var/datum/mind/M in assigned)
 		if(check_eligible(M))
-			var/datum/antagonist/rev/head/new_head = new antag_datum()
-			new_head.give_flash = TRUE
-			new_head.give_hud = TRUE
-			new_head.remove_clumsy = TRUE
-			M.add_antag_datum(new_head,revolution)
+			revolution.equip_founder(M)
 		else
 			assigned -= M
 			log_game("DYNAMIC: [ruletype] [name] discarded [M.name] from head revolutionary due to ineligibility.")
 	if(revolution.members.len)
-		revolution.update_objectives()
-		revolution.update_heads()
-		SSshuttle.registerHostileEnvironment(revolution)
+		revolution.start_revolution()
 		return TRUE
 	log_game("DYNAMIC: [ruletype] [name] failed to get any eligible headrevs. Refunding [cost] threat.")
 	return FALSE
@@ -741,9 +762,10 @@ BLUEMOON REMOVAL END*/
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	weight = 3
-	cost = 0
+	cost = 15
 	intensity = 15
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	flags = LONE_RULESET
 	var/players_per_carrier = 30
 	var/monkeys_to_win = 1
@@ -1321,6 +1343,66 @@ BLUEMOON REMOVAL END*/
 		SEND_SOUND(new_morph, sound('sound/magic/mutate.ogg'))
 		message_admins("[ADMIN_LOOKUPFLW(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
 		log_game("DYNAMIC: [key_name(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
+	return TRUE
+
+//////////////////////////////////////////////////////////
+//														//
+//              HIDDEN ZOMBIES              			//
+//                                          			//
+// 	Половина игроков заражаются спящим зомби-			//
+// 	вирусом от ромерола. Они							//
+// 	остаются обычными людьми до смерти, после			//
+// 	чего встают зомби. Скрытые крупные антагонисты.   	//
+//////////////////////////////////////////////////////////
+
+/datum/dynamic_ruleset/roundstart/hidden_zombies
+	name = "Hidden Zombies"
+	antag_flag = null
+	force_antag_preference = TRUE // заражение без согласия игрока
+	antag_datum = null // не выдаётся заранее — спящий вирус активируется только после смерти
+	minimum_required_age = 0
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = 2
+	weight = 2
+	cost = 10
+	intensity = 15 // спящие антаги, активны только после смерти
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES
+	antag_cap = list("denominator" = 2) // половина экипажа
+
+/datum/dynamic_ruleset/roundstart/hidden_zombies/pre_execute(population)
+	. = ..()
+	if(candidates.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
+	var/list/human_pool = list()
+	for(var/mob/M in candidates)
+		if(ishuman(M))
+			human_pool += M
+	var/half = round(length(human_pool) / 2)
+	if(half < 1)
+		half = 1
+	if(length(human_pool) < half)
+		message_admins("Рулсет [name] не был активирован: недостаточно человеческих кандидатов ([length(human_pool)] из [half]).")
+		return FALSE
+	for(var/i = 1 to half)
+		var/mob/M = pick_n_take(human_pool)
+		candidates -= M
+		assigned += M.mind
+		M.mind.special_role = "Скрытый Зомби"
+		M.mind.restricted_roles = restricted_roles
+	return TRUE
+
+/// Внедряет спящий зомби-орган (как после введения ромерола) в живые тела заражённых.
+/// Антаг-датум не выдаётся заранее — игрок скрыт до вставания после смерти.
+/datum/dynamic_ruleset/roundstart/hidden_zombies/execute()
+	for(var/datum/mind/M in assigned)
+		var/mob/living/carbon/C = M.current
+		if(C && ishuman(C) && !C.getorganslot(ORGAN_SLOT_ZOMBIE))
+			var/obj/item/organ/zombie_infection/nodamage/ZI = new()
+			ZI.Insert(C)
+			message_admins("[ADMIN_LOOKUPFLW(C)] заражён спящим зомби-вирусом правилом [name].")
+			log_game("DYNAMIC: [key_name(C)] заражён спящим зомби-вирусом правилом [name].")
 	return TRUE
 
 #undef MORPH_ROUNDSTART_COUNT

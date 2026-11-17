@@ -14,12 +14,15 @@
 /datum/interaction/lewd/slap/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(iscatperson(target))
-		target.emote(pick("nya","meow")) //W-what are you doing S-senpai? >///<
+		if(is_hidden)
+			target.audible_message(span_notice("<b>[target]</b> мяукает."), hearing_distance = HIDDEN_INTERACTION_RANGE, local_only = is_hidden)
+		else
+			target.emote(pick("nya", "meow"))
 
 	if(isclownjob(target))
 		if(prob(50))
-			target.visible_message("<span class='lewd'>Задница <b>[target]</b> смешно хонкает!</span>")
-		playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
+			target.visible_message(span_lewd("Задница <b>[target]</b> смешно хонкает!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
+		playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 //BLUEMOON ADD END
 
 /datum/interaction/lewd/grope_ass

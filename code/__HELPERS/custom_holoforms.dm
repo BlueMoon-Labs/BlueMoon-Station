@@ -78,15 +78,13 @@
 	var/datum/preferences/target_prefs = C.prefs
 	if(target_prefs.path)
 		var/list/characters = list()
-		var/savefile/S = new /savefile(target_prefs.path)
-		if(S)
-			var/name
-			var/max_save_slots = C.prefs.max_save_slots
-			for(var/i=1, i<=max_save_slots, i++)
-				S.cd = "/character[i]"
-				S["real_name"] >> name
+		// Имена слотов из кэша префов: свой savefile, открытый на время input(), держал бы файл игрока.
+		var/list/slot_names = target_prefs.get_slot_names()
+		if(slot_names)
+			for(var/slot in 1 to length(slot_names))
+				var/name = slot_names[slot]
 				if(name)
-					characters[name] = i
+					characters[name] = slot
 			var/chosen_name = input(C, "Which character do you wish to use as your appearance.") as anything in characters
 			if(chosen_name)
 				if(C.prefs.last_custom_holoform > world.time - CUSTOM_HOLOFORM_DELAY)

@@ -354,7 +354,7 @@
 	name = "Cloak Hood"
 	desc = "A hood attached to a teshari cloak."
 	icon = 'modular_splurt/icons/mob/clothing/species/teshari/tesh_items.dmi'
-	//default_worn_icon = 'icons/inventory/suit/mob_teshari.dmi'
+	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/species/teshari/suit.dmi'
 	icon_state = "tesh_hood_bo"
 
 

@@ -107,6 +107,11 @@ export const BorgPanel = (props) => {
                     = active_upgrades.filter(installed_upgrade =>
                       installed_upgrade.type === upgrade.type).length;
                   const isInstalled = installedCount > 0;
+                  // Modkits that cannot coexist with an already installed one.
+                  const hasConflict = (upgrade.incompatible_modkits || [])
+                    .some(banned => active_upgrades.some(installed_upgrade =>
+                      installed_upgrade.type === banned
+                      || installed_upgrade.type.startsWith(`${banned}/`)));
                   return (
                     <>
                       <Button
@@ -129,6 +134,7 @@ export const BorgPanel = (props) => {
                               <Button
                                 content={<Icon name="plus" />}
                                 disabled={ka_remaining_capacity < upgrade.cost
+                                || hasConflict
                                 || (upgrade.denied_type
                               && (installedCount === upgrade.maximum_of_type))}
                                 onClick={() => act('add_upgrade', {

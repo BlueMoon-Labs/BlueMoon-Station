@@ -17,7 +17,9 @@ Paradise@6323ddd65be9.
   вход/выход клиентов из ячеек вокруг пауна радиусом
   `max(vision_range, aggro_vision_range)`. Клиент вошёл - контроллер
   проснулся синхронно; ушёл - уснул. Спящий (`AI_STATUS_IDLE`) контроллер
-  не состоит ни в одной очереди обработки.
+  не состоит ни в одной очереди обработки. Клиент, выпавший из канала рядом
+  с пауном (смерть, SSD), и пробуждение уроном ставят `idle_recheck_due`:
+  первый шаг пауна перепроверяет сон и внутри тех же ячеек.
 - **Другие пути пробуждения**: урон (`note_attacker`, `adjustHealth`),
   новая обида (`add_enemy`), доклад союзника о контакте
   (`report_contact_to_allies` -> `receive_combat_contact`: передаётся точка
@@ -28,6 +30,19 @@ Paradise@6323ddd65be9.
 - **Поиск целей** (`behaviors/find_potential_targets.dm`): грубый пул из
   ячеек грида + реестр `GLOB.hostile_machines` -> точная дистанция ->
   стратегия -> LOS последним. Никаких hearers()/view().
+- **Экономия орды** (`pack_scan.dm`): сородичи одного типа и фракции делят
+  отказы can_attack (окно 0.5 с; отвергнутый сородичем кандидат отсекается первой
+  проверкой фильтра), oview по wanted_objects (2 с, соседу в пределах 3 клеток, а при
+  дальнем обзоре - четверти дальности: видимость взятой вещи финдер проверяет сам;
+  охотник, который сейчас ведёт цель без LOS (`ignores_sight`), чужой обзор не берёт)
+  и проверку клеток вокруг цели (тик). Шаг внутри тех же ячеек грида не пересобирает
+  окно ячеек контроллера. Застрявший в толпе моб в ENGAGE
+  пропускает неизменный план (не два подряд, боссы никогда); сабтри, решающее по
+  таймеру самого моба, ставит `gated_by_pawn_timer` и `pawn_timer_ready()`, чтобы
+  истёкший кулдаун способности отменял пропуск. Подход к далёкой цели не
+  перепроверяется чаще раза в 0.5 с. Живой замер с экономией и без в одном мире -
+  `hostile_ai_horde_bench`, драка 200 заражённых против 80 на открытом месте и в
+  коридорах - `hostile_ai_horde_brawl_bench` (оба `--define=AI_HORDE_BENCH`).
 - **Стратегии** (`targeting/_targeting_strategy.dm`): `hostile_legacy`
   делегирует `mob.CanAttack()` (все сабтиповые переопределения работают);
   варианты: `ignore_sight` (смэшеры), `retaliate` (только обидчики),
@@ -74,6 +89,12 @@ Paradise@6323ddd65be9.
   и кулдауном перепрокладки `controller.repath_delay` (1.5с). Временная
   пробка из мобов остаётся на дешёвом direct-loop; JPS бюджетируется
   lease-семафором SSpathfinder.
+  В JPS-режиме союзник на маршруте обходится шагом в соседнюю клетку, от которой
+  маршрут продолжается; нет такой - шаг ждём, на втором упоре подряд короткий поиск
+  до клетки маршрута на `AI_JPS_REPAIR_SPAN` впереди, и только потом полный обход.
+  Новая цель движения у конца живого маршрута (тайл подхода у той же жертвы) берёт
+  этот маршрут, а не новый прямой луп. Поиск читает объекты и воздух клетки раз за
+  поиск, а не на каждое ребро. Замер - `hostile_ai_path_bench` (`--define=AI_HORDE_BENCH`).
 - **Препятствия** (`obstacle_policy.dm`, `subtrees/attack_obstacle_in_path.dm`):
   политика открыть/форсить/поддеть/сломать/сдаться; атакуется реальный
   следующий турф кэшированного JPS-пути, а не догадка по направлению.
@@ -160,7 +181,8 @@ MoveToTarget/Goto удалена вместе с SSchunks. SSnpcpool/SSidlenpcpo
   (не чаще `AI_TRACE_THROTTLE_TIME` на контроллер).
 - `GLOB.ai_metrics` - счётчики (planning_cycles, candidates_examined,
   targets_acquired, los_checks, jps_requests/repaths, failed_moves,
-  successful_moves, hearers_calls).
+  successful_moves, hearers_calls, jps_yields/aborted, длительность поиска
+  пути в тиках). Сводка поиска пути - в строке SSpathfinder вкладки MC.
 - Бенчмарк - `/datum/unit_test/ai_benchmark_baseline`
   (`data/mob_benchmark_v3.json`): SSmobs Life, idle-пулы мирных NPC,
   controller AI, spatial targeting, obstacle/JPS routing и boss selector.

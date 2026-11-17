@@ -125,3 +125,34 @@
 	if(loading_opened)
 		SSair.StopLoadingMap()
 	return ..()
+
+/// Турф, ставший планетарным посреди загрузки шаблона с воздухом прежнего пола, просыпается по её концу: пробуждение не теряется.
+/datum/unit_test/atmos_template_load_keeps_planetary_wake
+	var/loading_opened = FALSE
+	var/turf/open/changed
+
+/datum/unit_test/atmos_template_load_keeps_planetary_wake/Run()
+	var/turf/base = run_loc_floor_bottom_left
+	var/turf/open/center = locate(base.x + 2, base.y + 2, base.z)
+	TEST_ASSERT(istype(center), "premise: test zone center is not open floor")
+	atmos_test_level_zone(base, center)
+
+	SSair.StartLoadingMap()
+	loading_opened = TRUE
+	changed = center.ChangeTurf(/turf/open/floor/grass/snow, null, CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(changed.planetary_atmos, "premise: snow is not planetary")
+	TEST_ASSERT(!changed.excited, "турф проснулся посреди загрузки шаблона")
+	SSair.StopLoadingMap()
+	loading_opened = FALSE
+
+	TEST_ASSERT(changed.excited, "планетарный турф с воздухом станции не проснулся после загрузки шаблона")
+
+/datum/unit_test/atmos_template_load_keeps_planetary_wake/Destroy()
+	if(loading_opened)
+		SSair.StopLoadingMap()
+	if(changed)
+		SSair.remove_from_active(changed)
+		changed.ChangeTurf(/turf/open/floor/plasteel)
+		SSair.remove_from_active(changed)
+		changed = null
+	return ..()

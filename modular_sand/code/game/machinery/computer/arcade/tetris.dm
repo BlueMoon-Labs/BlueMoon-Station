@@ -22,6 +22,15 @@
 	var/mob/active_game_player = null
 	/// Время старта игры
 	var/game_start_time = 0
+	/// Саундтрек, по одному файлу на мелодию
+	var/static/list/music_tracks = list(
+		'modular_bluemoon/sound/machines/tetris/03.ogg',
+		'modular_bluemoon/sound/machines/tetris/04.ogg',
+		'modular_bluemoon/sound/machines/tetris/06.ogg',
+		'modular_bluemoon/sound/machines/tetris/16.ogg',
+		'modular_bluemoon/sound/machines/tetris/19.ogg',
+		'modular_bluemoon/sound/machines/tetris/34.ogg',
+	)
 
 /obj/machinery/computer/arcade/tetris/ui_interact(mob/user, datum/tgui/ui)
 	if(!isliving(user))
@@ -44,16 +53,7 @@
 	if(!user?.client)
 		return
 	current_player = user
-	var/track = pick(
-		'modular_bluemoon/sound/machines/tetris/03.ogg',
-		'modular_bluemoon/sound/machines/tetris/04.ogg',
-		'modular_bluemoon/sound/machines/tetris/06.ogg',
-		'modular_bluemoon/sound/machines/tetris/16.ogg',
-		'modular_bluemoon/sound/machines/tetris/19.ogg',
-		'modular_bluemoon/sound/machines/tetris/21.mp3',
-		'modular_bluemoon/sound/machines/tetris/33.ogg',
-		'modular_bluemoon/sound/machines/tetris/34.ogg')
-	var/sound/S = sound(track, repeat = TRUE, wait = FALSE, volume = 40, channel = CHANNEL_TETRIS_MUSIC)
+	var/sound/S = sound(pick(music_tracks), repeat = TRUE, wait = FALSE, volume = 40, channel = CHANNEL_TETRIS_MUSIC)
 	SEND_SOUND(user, S)
 
 /// Останавливаем музыку

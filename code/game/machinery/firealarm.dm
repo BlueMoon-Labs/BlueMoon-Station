@@ -275,12 +275,17 @@
 	myarea?.refresh_fire_detect()
 
 /obj/machinery/firealarm/proc/alarm(mob/user)
-	if(buildstage != 2 || !is_operational() || !COOLDOWN_FINISHED(src, last_alarm))
+	if(buildstage != 2 || !is_operational())
 		return
-	COOLDOWN_START(src, last_alarm, FIREALARM_COOLDOWN)
+	// Кулдаун сдерживает сирену и автоматику, но не ручное нажатие сразу после сброса.
+	var/siren_ready = COOLDOWN_FINISHED(src, last_alarm)
+	if(!siren_ready && !user)
+		return
 	var/area/A = get_base_area(src)
 	A.firealert(src, manual = !!user)
-	playsound(loc, 'goon/sound/machinery/FireAlarm.ogg', 75)
+	if(siren_ready)
+		COOLDOWN_START(src, last_alarm, FIREALARM_COOLDOWN)
+		playsound(loc, 'goon/sound/machinery/FireAlarm.ogg', 75)
 	if(user)
 		log_game("[user] triggered a fire alarm at [COORD(src)]")
 

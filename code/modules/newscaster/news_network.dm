@@ -42,6 +42,18 @@ GLOBAL_DATUM_INIT(news_network, /datum/news_network, new)
 /// SubmitArticle зовётся синхронно из неспящих контекстов (priority_announce из
 /// Initialize/Life), а CHECK_TICK спит. Копия списка снаружи: снесённый во время
 /// сна аппарат сломал бы итерацию по живому GLOB.allCasters.
+/// Приводит текст новостной ленты к обычному тексту для tgui: теги markdown/font убираем,
+/// переводы строк сохраняем, HTML-entities декодируем.
+/proc/tgui_news_text(text)
+	if(!text)
+		return ""
+	var/result = text
+	result = replacetext(result, "<br>", "\n")
+	result = replacetext(result, "<BR>", "\n")
+	result = replacetext(result, "</p>", "\n")
+	result = strip_html_tags(result)
+	return html_decode(result)
+
 /proc/newscaster_alert_wave(list/casters, channel_name)
 	set waitfor = FALSE
 	for(var/obj/machinery/newscaster/NEWSCASTER as anything in casters)

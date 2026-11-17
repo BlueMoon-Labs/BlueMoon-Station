@@ -141,6 +141,7 @@
 	RegisterSignal(host_mob, COMSIG_MOB_PRE_PLAYER_CHANGE, PROC_REF(on_mob_key_change))
 	// Реконнект клиента к телу: мобовый сигнал, клиентский COMSIG_CLIENT_MOB_LOGIN на мобе не приходит
 	RegisterSignal(host_mob, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(on_client_reconnect))
+	RegisterSignal(host_mob, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_client_logout))
 
 	RegisterSignal(host_mob, COMSIG_NEURAL_INTERFACE_ADD_SOURCE, PROC_REF(on_add_source))
 	RegisterSignal(host_mob, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, PROC_REF(on_remove_source))
@@ -161,6 +162,7 @@
 		COMSIG_MOB_KEY_CHANGE,
 		COMSIG_MOB_PRE_PLAYER_CHANGE,
 		COMSIG_MOB_CLIENT_LOGIN,
+		COMSIG_MOB_CLIENT_LOGOUT,
 		COMSIG_NEURAL_INTERFACE_ADD_SOURCE,
 		COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE,
 		COMSIG_NEURAL_INTERFACE_WRITE_LOG,
@@ -210,6 +212,13 @@
 
 	if(!host_mob)
 		return
+
+	attached_client = null
+	is_client_attached = FALSE
+
+/// Игрок вышел из игры: ссылка на ушедшего клиента пережила бы логаут, и BYOND искал бы её обходом мира. Реконнект подключит заново.
+/datum/component/neural_interface/proc/on_client_logout(mob/source)
+	SIGNAL_HANDLER
 
 	attached_client = null
 	is_client_attached = FALSE

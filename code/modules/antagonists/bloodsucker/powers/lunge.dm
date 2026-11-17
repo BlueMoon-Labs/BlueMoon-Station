@@ -29,7 +29,7 @@
 	active = TRUE
 	user.toggle_throw_mode()
 	RegisterSignal(user, COMSIG_CARBON_TACKLED, PROC_REF(DelayedDeactivatePower))
-	while(B && ContinueActive(user))
+	while(!QDELETED(B) && ContinueActive(user))
 		B.AddBloodVolume(-0.1)
 		sleep(5)
 
@@ -39,5 +39,8 @@
 
 /datum/action/cooldown/bloodsucker/lunge/DeactivatePower(mob/living/user = owner)
 	. = ..()
+	// Отложенное выключение после рывка приходит и к силе, уже снятой с роли.
+	if(!user)
+		return
 	qdel(user.GetComponent(/datum/component/tackler))
 	UnregisterSignal(user, COMSIG_CARBON_TACKLED)

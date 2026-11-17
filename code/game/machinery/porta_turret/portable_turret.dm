@@ -49,6 +49,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	base_icon_state = "standard"
 	/// Scan range of the turret for locating targets
 	var/scan_range = 7
+	var/projectiles_per_shot = 1
 	/// For turrets inside other objects
 	var/atom/base = null
 	/// If the turret cover is "open" and the turret is raised
@@ -497,7 +498,8 @@ DEFINE_BITFIELD(turret_flags, list(
 /// process() reuses the cached result instead of calling this.
 /obj/machinery/porta_turret/proc/scan_for_targets()
 	var/list/targets = list()
-	for(var/mob/A in view(scan_range, base))
+	var/list/visible_atoms = view(scan_range, base)
+	for(var/mob/A in visible_atoms)
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
 			continue
 
@@ -552,6 +554,15 @@ DEFINE_BITFIELD(turret_flags, list(
 				if(!in_faction(C))
 					targets += C
 
+	add_mech_targets(targets, visible_atoms)
+
+	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
+		for(var/obj/structure/blob/B in visible_atoms)
+			targets += B
+
+	return targets
+
+/obj/machinery/porta_turret/proc/add_mech_targets(list/targets, list/visible_atoms)
 	for(var/A in GLOB.mechas_list)
 		if((get_dist(A, base) < scan_range) && can_see(base, A, scan_range))
 			var/obj/vehicle/sealed/mecha/mech = A
@@ -565,12 +576,6 @@ DEFINE_BITFIELD(turret_flags, list(
 						targets += mech
 				else if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)
 					targets += mech
-
-	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
-		for(var/obj/structure/blob/B in view(scan_range, base))
-			targets += B
-
-	return targets
 
 /obj/machinery/porta_turret/proc/randomize_shot_stagger()
 	shot_stagger = rand(0, min(2 SECONDS, round(shot_delay/3, world.tick_lag)))
@@ -740,7 +745,14 @@ DEFINE_BITFIELD(turret_flags, list(
 	A.preparePixelProjectile(target, T)
 	A.firer = src
 	A.fired_from = src
+	var/projectile_type = A.type
 	A.fire()
+	for(var/index in 2 to projectiles_per_shot)
+		var/obj/item/projectile/additional_shot = new projectile_type(T)
+		additional_shot.preparePixelProjectile(target, T)
+		additional_shot.firer = src
+		additional_shot.fired_from = src
+		additional_shot.fire()
 	return A
 
 /obj/machinery/porta_turret/proc/setState(on, mode, shoot_cyborgs)

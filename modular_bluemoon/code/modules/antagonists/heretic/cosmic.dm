@@ -2093,9 +2093,9 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	moving_time = 0
 	INVOKE_ASYNC(cosmic, TYPE_PROC_REF(/datum/eldritch_knowledge/base_cosmic, trail_star), source)
 
-/datum/component/heretic_cosmic_wake/proc/on_examine(mob/living/source, mob/user, list/examine_list)
+/datum/component/heretic_cosmic_wake/proc/on_examine(mob/living/source, mob/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
-	examine_list += span_warning("Под [source.ru_ego()] шагами загораются звёзды: за каждые 4 секунды движения новая, не больше пяти сразу, и нити между ними жгут. Звёзды можно разбить, нулевой жезл гасит их касанием. Космос [source.ru_ego()] не сносит, а рядом может парить Звездочёт - его берёт только летальное оружие, и его можно убить отдельно.")
+	examine_list += span_warning("Под [anonymous ? "его" : source.ru_ego()] шагами загораются звёзды: за каждые 4 секунды движения новая, не больше пяти сразу, и нити между ними жгут. Звёзды можно разбить, нулевой жезл гасит их касанием. Космос [anonymous ? "его" : source.ru_ego()] не сносит, а рядом может парить Звездочёт - его берёт только летальное оружие, и его можно убить отдельно.")
 
 #undef HERETIC_STAR_RANGE
 #undef HERETIC_STAR_LIFETIME

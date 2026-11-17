@@ -147,7 +147,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	hand_slots = list()
 
 	var/datum/plane_master_group/main/main_group = new(PLANE_GROUP_MAIN)
-	main_group.attach_to(src)
+	main_group.attach_to(src, show = FALSE)
 	plane_masters = main_group.plane_masters
 
 	RegisterSignal(SSmapping, COMSIG_PLANE_OFFSET_INCREASE, PROC_REF(on_plane_increase))
@@ -304,6 +304,12 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		return FALSE
 	var/mob/screenmob = viewmob || mymob
 	if(!screenmob.client)
+		// Без клиента стиль запоминается: его покажет следующий вход в моба
+		if(!viewmob && version)
+			hud_version = version > HUD_VERSIONS ? HUD_STYLE_STANDARD : version
+			hud_shown = (hud_version == HUD_STYLE_STANDARD)
+			for(var/M in mymob.observers)
+				show_hud(hud_version, M)
 		return FALSE
 
 	if(screenmob == mymob)

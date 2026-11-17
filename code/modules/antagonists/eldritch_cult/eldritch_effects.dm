@@ -876,10 +876,21 @@
 	var/datum/antagonist/heretic/heretic_datum = heretic?.has_antag_datum(/datum/antagonist/heretic)
 	if(!heretic_datum || heretic_datum.influences_harvested >= HERETIC_INFLUENCE_LIMIT || (heretic in harvested_minds))
 		return
-	var/client/current_client = heretic.current?.client
-	if(current_client)
-		current_client.images |= img
-		visible_clients[heretic] = current_client
+	show_to_viewer(heretic, heretic.current?.client)
+
+/// Разломы живут весь раунд: ушедший клиент еретика в visible_clients стоил бы обхода мира на его логауте.
+/obj/effect/reality_smash/proc/show_to_viewer(datum/mind/heretic, client/viewer)
+	if(!viewer)
+		return
+	viewer.images |= img
+	visible_clients[heretic] = viewer
+	RegisterSignal(viewer, COMSIG_PARENT_QDELETING, PROC_REF(on_viewer_deleted), override = TRUE)
+
+/obj/effect/reality_smash/proc/on_viewer_deleted(client/source)
+	SIGNAL_HANDLER
+	for(var/datum/mind/heretic as anything in visible_clients.Copy())
+		if(visible_clients[heretic] == source)
+			visible_clients -= heretic
 
 /obj/effect/reality_smash/proc/RemoveMind(datum/mind/heretic)
 	var/client/old_client = visible_clients[heretic]

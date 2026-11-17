@@ -27,6 +27,8 @@
 	/// Moved()-обработчиком, дёргал area/Exited() у ещё пустой комнаты, storeRoom()
 	/// сносил резервацию, и хозяина следом ставило на голый космос.
 	var/area/transfer_target
+	/// Области комнат, которым сфера проставила parentSphere: область живёт дольше резервации и иначе держит удалённую сферу.
+	var/list/area/hilbertshotel/linked_room_areas = list()
 	light_color = "#5692d6"
 	light_range = 5
 	light_power = 3
@@ -51,6 +53,10 @@
 	SShilbertshotel.all_hilbert_spheres -= src
 	transfer_target = null // жёсткая ссылка на область, если сферу снесли посреди переноса
 	ejectRooms()
+	for(var/area/hilbertshotel/room_area as anything in linked_room_areas)
+		if(room_area.parentSphere == src)
+			room_area.parentSphere = null
+	linked_room_areas.Cut()
 	return ..()
 
 /obj/item/hilbertshotel/attack(mob/living/M, mob/living/user)
@@ -302,6 +308,30 @@
 /obj/item/hilbertshotel/proc/room_op_end(roomNumber)
 	rooms_in_flight -= "[roomNumber]"
 
+/// Загрузка комнаты спит десятки тиков: за это время сферу могли удалить, а гость - отойти, упасть или исчезнуть.
+/obj/item/hilbertshotel/proc/room_load_still_wanted(mob/user)
+	if(QDELETED(user))
+		return FALSE
+	if(QDELETED(src) || !user.CanReach(src) || user.incapacitated())
+		to_chat(user, span_warning("Пока сфера готовила комнату, вы потеряли с ней связь. Попробуйте ещё раз."))
+		return FALSE
+	return TRUE
+
+/// Бросает недогруженную комнату: номер свободен, а резервация и мебель шаблона не остаются висеть в пустоте.
+/obj/item/hilbertshotel/proc/abort_room_load(roomNumber, datum/turf_reservation/roomReservation)
+	room_op_end(roomNumber)
+	for(var/turf/room_turf as anything in roomReservation.reserved_turfs)
+		for(var/atom/movable/leftover in room_turf)
+			if(istype(leftover, /atom/movable/lighting_object))
+				continue
+			// Мобы шаблона (гондола, труп из спавнера) уходят вместе с мебелью, иначе остаются на свободных клетках резервации. Игроков и наблюдателей не трогаем.
+			if(ismob(leftover))
+				var/mob/leftover_mob = leftover
+				if(!isliving(leftover_mob) || leftover_mob.key || leftover_mob.mind || leftover_mob.client)
+					continue
+			qdel(leftover)
+	qdel(roomReservation)
+
 /// Общий гвард телепорта: зона приземления обязана быть комнатой отеля.
 /// Любой сбой загрузки шаблона раньше молча отправлял игрока в пустой резервный космос.
 /obj/item/hilbertshotel/proc/room_landing_valid(datum/turf_reservation/roomReservation, datum/map_template/hilbertshotel/mapTemplate, mob/user)
@@ -400,11 +430,10 @@
 		room_op_end(roomNumber)
 		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
 		return FALSE
-	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
-	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
-	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
-		room_op_end(roomNumber)
-		qdel(roomReservation)
+	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!load_ok || !room_load_still_wanted(user) || !room_landing_valid(roomReservation, mapTemplate, user))
+		abort_room_load(roomNumber, roomReservation)
 		return FALSE
 
 	// Clear all movable atoms from the loaded room template
@@ -563,11 +592,10 @@
 		room_op_end(roomNumber)
 		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
 		return FALSE
-	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
-	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
-	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
-		room_op_end(roomNumber)
-		qdel(roomReservation)
+	// Загрузка спит между кусками; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load_room(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!load_ok || !room_load_still_wanted(user) || !room_landing_valid(roomReservation, mapTemplate, user))
+		abort_room_load(roomNumber, roomReservation)
 		return FALSE
 	activeRooms["[roomNumber]"] = roomReservation
 
@@ -595,6 +623,7 @@
 	var/area/hilbertshotel/currentArea = get_area(locate(currentReservation.bottom_left_coords[1], currentReservation.bottom_left_coords[2], currentReservation.bottom_left_coords[3]))
 	currentArea.name = "Hilbert's Hotel Room [currentRoomnumber]"
 	currentArea.parentSphere = src
+	linked_room_areas |= currentArea
 	currentArea.storageTurf = SShilbertshotel.storageTurf
 	currentArea.roomnumber = currentRoomnumber
 	currentArea.reservation = currentReservation
@@ -821,6 +850,11 @@
 
 /area/hilbertshotel/illuminated
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
+
+/area/hilbertshotel/Destroy()
+	parentSphere?.linked_room_areas -= src
+	parentSphere = null
+	return ..()
 
 /area/hilbertshotel/Entered(atom/movable/AM)
 	. = ..()

@@ -180,8 +180,8 @@
 /obj/structure/safe{
 	pixel_x = 3
 	},
-/obj/item/gun/ballistic/revolver/mateba,
-/obj/item/ammo_box/a357,
+/obj/item/gun/ballistic/automatic/pistol/APS,
+/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/item/clothing/head/bearpelt,
 /obj/item/reagent_containers/food/drinks/bottle/vodka/badminka,
 /turf/open/floor/noslip,

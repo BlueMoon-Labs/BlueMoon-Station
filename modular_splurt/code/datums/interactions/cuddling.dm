@@ -19,7 +19,6 @@
 	var/distance = 7
 	if(is_hidden)
 		distance = 1
-	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> обнимает <b>TARGET</b>.",
 		"<b>USER</b> страстно обнимает <b>TARGET</b>.",
@@ -35,7 +34,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[HIDDEN_INTERACTION_PREFIX(is_hidden)][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 // BlueMoon Add
 /datum/interaction/scratch
@@ -63,7 +62,6 @@
 	var/distance = 7
 	if(is_hidden)
 		distance = 1
-	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет спинку <b>TARGET</b>.",
 		"<b>USER</b> расчёсывает спинку <b>TARGET</b>.",
@@ -73,7 +71,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[HIDDEN_INTERACTION_PREFIX(is_hidden)][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/neckscratch
@@ -102,7 +100,6 @@
 	var/distance = 7
 	if(is_hidden)
 		distance = 1
-	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет шею <b>TARGET</b>.",
 		"<b>USER</b> расчёсывает шейку у <b>TARGET</b>.",
@@ -112,7 +109,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[HIDDEN_INTERACTION_PREFIX(is_hidden)][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/earscratch
@@ -141,7 +138,6 @@
 	var/distance = 7
 	if(is_hidden)
 		distance = 1
-	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет за ушком <b>TARGET</b>.",
 		"<b>USER</b> расчёсывает за ушком у <b>TARGET</b>.",
@@ -151,5 +147,5 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[HIDDEN_INTERACTION_PREFIX(is_hidden)][capitalize(use_message)]</span>", vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 

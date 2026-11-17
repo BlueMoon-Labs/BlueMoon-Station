@@ -326,12 +326,14 @@
 /datum/tgui_window/proc/send_message(type, payload, force)
 	if(!client)
 		return
-	var/message = TGUI_CREATE_MESSAGE(type, payload)
+	send_built_message(type, payload, TGUI_CREATE_MESSAGE(type, payload), force)
+
+/// Отправка уже собранного сообщения type. payload нужен только для предупреждения о размере.
+/datum/tgui_window/proc/send_built_message(type, payload, message, force)
+	if(!client)
+		return
 	var/message_length = length(message)
-	// Книга недатумных аллокаций: собранное сообщение живёт в памяти сразу в трёх видах
-	// (json, url_encode, склейка), и ни один из них не датум. Порог предупреждения ниже
-	// ловит только чудовищ - в книгу идёт КАЖДОЕ сообщение, иначе сумма за окно врёт.
-	note_nondatum_alloc(NONDATUM_LEDGER_TGUI_BYTES, message_length)
+	note_tgui_traffic("[locked_by?.interface || id]/[type]", message_length)
 	warn_on_oversized_payload(type, payload, message_length)
 	// Place into queue if window is still loading
 	if(!force && status != TGUI_WINDOW_READY)

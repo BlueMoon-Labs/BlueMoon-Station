@@ -6,6 +6,8 @@
 #define STATPANEL_AFK_INACTIVITY (5 MINUTES)
 /// MC subsystem rows: each fire reuses cached payload until this many fires have elapsed.
 #define MC_DATA_REFRESH_FIRES 6
+/// Сколько замеров держат спарклайны MC-вкладки. Замер берётся раз в MC_DATA_REFRESH_FIRES фаеров, пока вкладку кто-то смотрит.
+#define MC_HISTORY_LEN 60
 /// Full-cycle gate for slow global data (vote, server section).
 #define STATPANEL_FULL_CYCLE_FIRES 3
 /// Refresh slow server section every Nth full cycle.
@@ -17,13 +19,28 @@
 /// Индексы записи statpanel_sent_icons: сам URL и слабая ссылка на атом, которому он принадлежит.
 #define STATPANEL_ICON_ENTRY_URL 1
 #define STATPANEL_ICON_ENTRY_OWNER 2
-/// Атомам с большим числом оверлеев иконку не флаттеним: один getFlatIcon одетого человека
-/// (30-80 оверлеев) блокирует тик на 150-250мс Blend'ов. Таким отдаётся базовая иконка.
+/// Атомам с большим числом оверлеев иконку не флаттеним (одетый человек - 30-80 оверлеев),
+/// им отдаётся базовая иконка. Граница осталась с тех пор, как флаттен шёл в DM.
 #define STATPANEL_MAX_FLAT_OVERLAYS 12
+/// Иконки осмотренного турфа рисует IconForge в своём потоке; сюда он складывает png до регистрации ассетом.
+#define STATPANEL_ICON_DIR "data/statpanel_icons/"
+/// Сколько заданий IconForge может считаться одновременно; остальные иконки ждут следующего фаера.
+#define STATPANEL_ICON_JOBS_MAX 16
+/// Задание, не вернувшееся за это время, считается упавшим, иконка рисуется по-старому.
+#define STATPANEL_ICON_JOB_TIMEOUT (10 SECONDS)
+/// Сколько готовых иконок (описание -> ассет) помнить.
+#define STATPANEL_ICON_CACHE_MAX 2048
+/// statpanel_icon_spec(): рисовать нечего (как пустой результат icon2html).
+#define STATPANEL_ICON_NOTHING "nothing"
+/// request_statpanel_icon(): все слоты заданий заняты, иконку надо запросить позже.
+#define STATPANEL_ICON_BUSY "busy"
+/// Индексы statpanel_dmi_info().
+#define STATPANEL_DMI_SIZE 1
+#define STATPANEL_DMI_STATES 2
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 3
+#define STATBROWSER_PROTOCOL_VERSION 4
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"
@@ -57,9 +74,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/cached_vote_encoded
 	var/cached_readyplayers_encoded
 	var/readyplayers_cache_time = 0
-	var/list/perf_history_cpu = list()
-	var/list/perf_history_tidi = list()
-	var/list/perf_history_ping = list()
+	/// Истории спарклайнов MC-вкладки: ключ -> последние MC_HISTORY_LEN замеров.
+	var/list/mc_history = list()
 	var/encoded_tidi
 	var/tidi_counter = 0
 	var/is_full_cycle = FALSE
@@ -71,8 +87,30 @@ SUBSYSTEM_DEF(statpanels)
 	var/client_stats_refresh_counter = 0
 	var/list/ping_run = list()
 	var/list/icon_run = list()
+	/// "путь DMI" -> метаданные из statpanel_dmi_info(); пустой список - файл не читается.
+	var/list/dmi_info_cache = list()
+	/// md5 описания иконки -> /datum/statpanel_icon_job, который её сейчас считает.
+	var/list/icon_jobs = list()
+	/// md5 описания иконки -> имя готового ассета.
+	var/list/icon_assets = list()
+	/// Были задания с последней чистки кэша DMI в rust.
+	var/icon_cache_dirty = FALSE
+
+/// Иконка, которую IconForge считает в своём потоке, и клиенты, которые её ждут.
+/datum/statpanel_icon_job
+	var/key
+	var/job_id
+	var/started_at
+	/// list(list(клиент, weakref атома), ...)
+	var/list/waiters = list()
+
+/datum/statpanel_icon_job/New(key, job_id)
+	src.key = key
+	src.job_id = job_id
+	started_at = world.time
 
 /datum/controller/subsystem/statpanels/Initialize(start_timeofday)
+	fdel(STATPANEL_ICON_DIR)
 	build_global_slow_payload()
 	..()
 
@@ -188,11 +226,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
 					vote_base[++vote_base.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
 				else
- //BLUEMOON ADDITION START
-					var/time_left = SSticker.timeLeft
-					if(SSvote.mode == "roundtype")
-						time_left = max(time_left - ROUNDTYPE_VOTE_END_PENALTY, 0)
- //BLUEMOON ADDITION END
+					var/time_left = SSvote.get_time_remaining()
 					vote_base[++vote_base.len] += list("Time Left:", " [DisplayTimeText(time_left)]")
 					vote_base[++vote_base.len] += list("Choices:", "")
 				cached_vote_base = vote_base
@@ -404,6 +438,8 @@ SUBSYSTEM_DEF(statpanels)
 			return
 
 	// --- Progressive icon generation (resumable via icon_run) ---
+	if(poll_icon_jobs())
+		return
 	var/queued_clients = length(icon_run)
 	var/per_client_budget = queued_clients ? max(round(icon_budget_per_tick / queued_clients), 1) : icon_budget_per_tick
 	while(length(icon_run))
@@ -426,26 +462,17 @@ SUBSYSTEM_DEF(statpanels)
 			var/ref = REF(A)
 			if(statpanel_icon_already_sent(C.statpanel_sent_icons, ref, A))
 				continue
-			var/icon_url
-			var/overlay_count = length(A.overlays)
-			if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
-				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
-			else
-				icon_url = icon2html(A, C, sourceonly=TRUE)
+			var/icon_url = request_statpanel_icon(C, A)
+			if(icon_url == STATPANEL_ICON_BUSY)
+				pending += A
+				break
 			if(icon_url)
 				cache_sent_icon(C, ref, icon_url, A)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
-			// Бюджет в штуках не ограничивает время: тик-чек после каждой сгенерированной иконки,
-			// иначе пачка дорогих флаттенов складывается в сотни мс одним тиком
 			if(MC_TICK_CHECK)
 				break
-		if(length(batch))
-			var/batch_payload = json_encode(batch)
-			// Книга недатумных аллокаций: пачка иконок осмотренного турфа - самая толстая
-			// разовая нагрузка статбраузера, и в ней сидят base64 самих иконок.
-			note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(batch_payload))
-			C << output("[url_encode(batch_payload)];", "statbrowser:update_turf_icons")
+		send_turf_icon_batch(C, batch)
 		if(!length(pending))
 			icon_queue -= C
 		if(MC_TICK_CHECK)
@@ -481,6 +508,117 @@ SUBSYSTEM_DEF(statpanels)
 	if(overflow > 0)
 		C.statpanel_sent_icons.Cut(1, overflow + 1)
 
+/datum/controller/subsystem/statpanels/proc/send_turf_icon_batch(client/C, list/batch)
+	if(!length(batch))
+		return
+	var/batch_payload = json_encode(batch)
+	// Книга недатумных аллокаций: пачка иконок осмотренного турфа - самая толстая
+	// разовая нагрузка статбраузера, и в ней сидят base64 самих иконок.
+	note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(batch_payload))
+	C << output("[url_encode(batch_payload)];", "statbrowser:update_turf_icons")
+
+/**
+ * URL иконки атома для панели осмотренного турфа.
+ *
+ * Готовая иконка отдаётся сразу. Новую считает IconForge в своём потоке, и тогда возвращается
+ * null: картинку клиенту отправит poll_icon_jobs(), когда задание закончится. STATPANEL_ICON_BUSY -
+ * все слоты заданий заняты.
+ */
+/datum/controller/subsystem/statpanels/proc/request_statpanel_icon(client/C, atom/A)
+	var/spec = statpanel_icon_spec(A)
+	if(isnull(spec))
+		return legacy_statpanel_icon(C, A)
+	if(spec == STATPANEL_ICON_NOTHING)
+		return null
+	var/key = md5(json_encode(spec))
+	var/asset_name = icon_assets[key]
+	if(asset_name && SSassets.cache[asset_name])
+		SSassets.transport.send_assets(C, asset_name)
+		return SSassets.transport.get_asset_url(asset_name)
+	var/datum/statpanel_icon_job/job = icon_jobs[key]
+	if(!job)
+		if(length(icon_jobs) >= STATPANEL_ICON_JOBS_MAX)
+			return STATPANEL_ICON_BUSY
+		job = new(key, rustg_iconforge_generate_async(STATPANEL_ICON_DIR, "sp_[key]", json_encode(list("s" = spec)), FALSE, FALSE, TRUE))
+		icon_jobs[key] = job
+		icon_cache_dirty = TRUE
+	job.waiters += list(list(C, WEAKREF(A)))
+	return null
+
+/// Старый путь - иконку рисует DM. Только для рантайм-иконок, которых нет в DMI на диске, и для
+/// упавших заданий IconForge.
+/datum/controller/subsystem/statpanels/proc/legacy_statpanel_icon(client/C, atom/A)
+	var/overlay_count = length(A.overlays)
+	if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
+		return costly_icon2html(A, C, sourceonly = TRUE)
+	return icon2html(A, C, sourceonly = TRUE)
+
+/// Забирает готовые задания IconForge и рассылает иконки ждущим клиентам. TRUE - фаер на паузе.
+/datum/controller/subsystem/statpanels/proc/poll_icon_jobs()
+	for(var/key in icon_jobs)
+		var/datum/statpanel_icon_job/job = icon_jobs[key]
+		var/result = rustg_iconforge_check(job.job_id)
+		if(result == RUSTG_JOB_NO_RESULTS_YET)
+			if(world.time - job.started_at < STATPANEL_ICON_JOB_TIMEOUT)
+				continue
+			result = null
+		icon_jobs -= key
+		finish_icon_job(job, result)
+		if(MC_TICK_CHECK)
+			return TRUE
+	// Кэш разобранных DMI в rust общий на процесс и сам не пустеет: отдаём его, когда ничего не считается.
+	if(icon_cache_dirty && !length(icon_jobs) && !SSasset_loading.sheets_realizing && !SSasset_loading.assets_generating)
+		icon_cache_dirty = FALSE
+		rustg_iconforge_cleanup()
+	return FALSE
+
+/datum/controller/subsystem/statpanels/proc/finish_icon_job(datum/statpanel_icon_job/job, result)
+	var/asset_name = register_icon_job_asset(job.key, result)
+	var/list/batches = list()
+	for(var/list/waiter as anything in job.waiters)
+		var/client/C = waiter[1]
+		var/datum/weakref/atom_ref = waiter[2]
+		var/atom/A = atom_ref.resolve()
+		if(!istype(C) || !C.statbrowser_ready || QDELETED(A))
+			continue
+		var/url
+		if(asset_name)
+			SSassets.transport.send_assets(C, asset_name)
+			url = SSassets.transport.get_asset_url(asset_name)
+		else
+			url = legacy_statpanel_icon(C, A)
+		if(!url)
+			continue
+		var/ref = REF(A)
+		cache_sent_icon(C, ref, url, A)
+		var/list/batch = batches[C]
+		if(!batch)
+			batch = list()
+			batches[C] = batch
+		batch[++batch.len] = list(ref, url)
+	for(var/client/C as anything in batches)
+		send_turf_icon_batch(C, batches[C])
+
+/// Регистрирует png задания ассетом. Имя ассета, либо null, если rust ничего не нарисовал.
+/datum/controller/subsystem/statpanels/proc/register_icon_job_asset(key, result)
+	if(!istext(result) || !findtext(result, "{", 1, 2))
+		return null
+	var/list/generated = safe_json_decode(result, null)
+	var/list/sizes = generated?["sizes"]
+	if(!length(sizes))
+		return null
+	var/png_path = "[STATPANEL_ICON_DIR]sp_[key]_[sizes[1]].png"
+	if(!fexists(png_path))
+		return null
+	var/asset_name = "statpanel_[key].png"
+	if(!SSassets.cache[asset_name])
+		SSassets.transport.register_asset(asset_name, fcopy_rsc(file(png_path)), rustg_hash_file(RUSTG_HASH_MD5, png_path))
+	fdel(png_path)
+	icon_assets[key] = asset_name
+	if(length(icon_assets) > STATPANEL_ICON_CACHE_MAX)
+		icon_assets.Cut(1, (STATPANEL_ICON_CACHE_MAX / 4) + 1)
+	return asset_name
+
 /datum/controller/subsystem/statpanels/proc/get_listedturf_overrides(client/target, turf/listed)
 	if(!target || !listed || !length(target.images))
 		return null
@@ -501,6 +639,10 @@ SUBSYSTEM_DEF(statpanels)
 	turfitems[++turfitems.len] = list("[listed]", listed_ref)
 	if(!statpanel_icon_already_sent(sent_icons, listed_ref, listed))
 		needs_icons += listed
+	var/top_obscurer_layer = null
+	for(var/atom/movable/blocker as anything in listed)
+		if((blocker.flags_1 & PREVENT_CLICK_UNDER_1) && blocker.density && (isnull(top_obscurer_layer) || blocker.layer > top_obscurer_layer))
+			top_obscurer_layer = blocker.layer
 	for(var/tc in listed)
 		var/atom/movable/turf_content = tc
 		if(QDELETED(turf_content))
@@ -511,7 +653,7 @@ SUBSYSTEM_DEF(statpanels)
 			continue
 		if(overrides && (turf_content in overrides))
 			continue
-		if(turf_content.IsObscured())
+		if(listed_content_obscured(turf_content, top_obscurer_layer))
 			continue
 		var/ref = REF(turf_content)
 		turfitems[++turfitems.len] = list("[turf_content.name]", ref)
@@ -522,6 +664,254 @@ SUBSYSTEM_DEF(statpanels)
 		"encoded" = url_encode(json_encode(turfitems)),
 		"needs_icons" = needs_icons,
 	)
+
+/// IsObscured() для вещи на осматриваемом турфе. Оригинал перебирает весь турф на каждую вещь
+/// и зовёт get_turf_pixel(), то есть icon() - холодный разбор DMI посреди фаера. Если вещь по
+/// пиксельному сдвигу заведомо остаётся на своём турфе, ответ даёт верхний слой блокеров клика.
+/datum/controller/subsystem/statpanels/proc/listed_content_obscured(atom/movable/thing, top_obscurer_layer)
+	var/list/frame = statpanel_icon_frame_size(thing.icon)
+	if(!frame)
+		return thing.IsObscured()
+	var/matrix/shift = thing.transform
+	var/offset_x = thing.pixel_x + shift.c + ((frame[1] / world.icon_size) - 1) * (world.icon_size * 0.5)
+	var/offset_y = thing.pixel_y + shift.f + ((frame[2] / world.icon_size) - 1) * (world.icon_size * 0.5)
+	if(abs(offset_x) >= world.icon_size * 0.5 || abs(offset_y) >= world.icon_size * 0.5)
+		return thing.IsObscured()
+	return !isnull(top_obscurer_layer) && top_obscurer_layer > thing.layer
+
+/// Размер кадра DMI, list(ширина, высота). null - рантайм-иконка или нечитаемый файл.
+/datum/controller/subsystem/statpanels/proc/statpanel_icon_frame_size(icon_file)
+	if(!icon_file)
+		return list(world.icon_size, world.icon_size)
+	var/list/info = statpanel_dmi_info(icon_file)
+	return info?[STATPANEL_DMI_SIZE]
+
+/**
+ * Метаданные DMI без разбора иконки в DM: rust читает заголовок файла, ответ кэшируется на файл.
+ *
+ * list(list(ширина, высота), list(стейт = число направлений)) либо null для рантайм-иконок,
+ * которые печатаются не путём к .dmi, и для файлов, которые rust не прочитал.
+ */
+/datum/controller/subsystem/statpanels/proc/statpanel_dmi_info(icon_file)
+	if(!isfile(icon_file))
+		return null
+	var/key = "[icon_file]"
+	if(copytext(key, -4) != ".dmi")
+		return null
+	var/list/cached = dmi_info_cache[key]
+	if(cached)
+		return cached.len ? cached : null
+	cached = list()
+	var/list/metadata = safe_json_decode(RUSTG_CALL(RUST_G, "dmi_read_metadata")(key), null)
+	if(islist(metadata) && isnum(metadata["width"]) && isnum(metadata["height"]) && islist(metadata["states"]))
+		var/list/state_dirs = list()
+		for(var/list/state as anything in metadata["states"])
+			if(!islist(state))
+				continue
+			var/state_name = "[state["name"]]"
+			if(!state_dirs[state_name])
+				state_dirs[state_name] = max(text2num("[state["dirs"]]"), 1)
+		cached = list(list(metadata["width"], metadata["height"]), state_dirs)
+	dmi_info_cache[key] = cached
+	return cached.len ? cached : null
+
+/**
+ * Описание иконки атома для IconForge - та же картинка, что раньше рисовали в DM icon2html()
+ * (базовый стейт) и costly_icon2html() (getFlatIcon с оверлеями). Сами пиксели считает rust в
+ * своём потоке: в DM холодный разбор DMI и Blend'ы флаттена шли одним куском на 30-270 мс.
+ *
+ * Возвращает описание спрайта, STATPANEL_ICON_NOTHING (рисовать нечего) или null - в иконке есть
+ * рантайм-/icon, и её рисует старый DM-путь.
+ */
+/datum/controller/subsystem/statpanels/proc/statpanel_icon_spec(atom/A)
+	var/overlay_count = length(A.overlays)
+	if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
+		var/list/flat = flat_icon_spec(A, A.dir, A.icon, A.icon_state, A.blend_mode)
+		if(!flat)
+			return null
+		return flat[1] || STATPANEL_ICON_NOTHING
+	if(!A.icon)
+		return STATPANEL_ICON_NOTHING
+	var/list/info = statpanel_dmi_info(A.icon)
+	if(!info)
+		return null
+	var/list/states = info[STATPANEL_DMI_STATES]
+	var/state = A.icon_state
+	if(!(state in states))
+		state = initial(A.icon_state)
+	if(!(state in states))
+		if(!("" in states))
+			return STATPANEL_ICON_NOTHING
+		state = ""
+	return list("icon_file" = "[A.icon]", "icon_state" = "[state]", "dir" = SOUTH, "frame" = 1, "transform" = list())
+
+/// Порт getFlatIcon(no_anim = TRUE) в описание для IconForge. Возвращает list(описание или null,
+/// ширина, высота); null вместо всего списка - у самого слоя рантайм-иконка.
+/datum/controller/subsystem/statpanels/proc/flat_icon_spec(image/A, defdir, deficon, defstate, defblend)
+	if(A.alpha <= 0)
+		return list(blank_icon_spec(), world.icon_size, world.icon_size)
+	var/curicon = A.icon || deficon
+	var/curstate = A.icon_state || defstate
+	var/no_icon = !curicon
+	var/list/info
+	var/list/states
+	if(!no_icon)
+		info = statpanel_dmi_info(curicon)
+		if(!info)
+			return null
+		states = info[STATPANEL_DMI_STATES]
+		if(!(curstate in states))
+			if("" in states)
+				curstate = ""
+			else
+				no_icon = TRUE
+	var/curdir = (!A.dir || A.dir == SOUTH) ? defdir : A.dir
+	var/base_icon_dir = curdir
+	if(!no_icon)
+		var/state_dirs = states["[curstate]"]
+		if(state_dirs < 2)
+			base_icon_dir = SOUTH
+		else if(state_dirs < 8 && (base_icon_dir & (NORTH|SOUTH)) && (base_icon_dir & (EAST|WEST)))
+			base_icon_dir &= (EAST|WEST)
+	var/curblend = A.blend_mode || defblend
+
+	if(!length(A.overlays) && !length(A.underlays))
+		if(no_icon)
+			return list(null, 0, 0)
+		var/list/self_spec = list("icon_file" = "[curicon]", "icon_state" = "[curstate]", "dir" = base_icon_dir, "frame" = 1, "transform" = list())
+		if(A.alpha < 255)
+			self_spec["transform"] += list(statpanel_alpha_transform(A.alpha))
+		self_spec["transform"] += statpanel_color_transforms(A.color)
+		var/list/self_size = info[STATPANEL_DMI_SIZE]
+		return list(self_spec, self_size[1], self_size[2])
+
+	// Слои в порядке отрисовки, как в getFlatIcon: запись - list(внешний вид или null для самого атома, слой).
+	var/list/layers = list()
+	if(!no_icon)
+		layers += list(list(null, A.layer))
+	for(var/process_set in 0 to 1)
+		var/list/process = process_set ? A.overlays : A.underlays
+		for(var/i in 1 to length(process))
+			var/image/current = process[i]
+			if(!current)
+				continue
+			if(current.plane != FLOAT_PLANE && current.plane != A.plane)
+				continue
+			var/current_layer = current.layer
+			if(current_layer < 0)
+				if(current_layer <= -1000)
+					return list(blank_icon_spec(), world.icon_size, world.icon_size)
+				current_layer = process_set + A.layer + current_layer / 1000
+			var/inserted = FALSE
+			for(var/p in 1 to length(layers))
+				var/list/existing = layers[p]
+				if(current_layer < existing[2])
+					layers.Insert(p, list(list(current, current_layer)))
+					inserted = TRUE
+					break
+			if(!inserted)
+				layers += list(list(current, current_layer))
+
+	var/x1 = 1
+	var/x2 = world.icon_size
+	var/y1 = 1
+	var/y2 = world.icon_size
+	var/list/blends = list()
+	var/list/reset_color_blends = list()
+	for(var/list/entry as anything in layers)
+		var/image/I = entry[1]
+		var/list/add_spec
+		var/add_width
+		var/add_height
+		var/shift_x = 0
+		var/shift_y = 0
+		if(!I)
+			curblend = BLEND_OVERLAY
+			add_spec = list("icon_file" = "[curicon]", "icon_state" = "[curstate]", "dir" = base_icon_dir, "frame" = 1, "transform" = list())
+			var/list/self_size = info[STATPANEL_DMI_SIZE]
+			add_width = self_size[1]
+			add_height = self_size[2]
+		else
+			if(I.alpha == 0)
+				continue
+			var/list/added = flat_icon_spec(I, curdir, curicon, curstate, curblend)
+			// Оверлей с рантайм-иконкой (кровь на предмете) IconForge не нарисует: такой атом целиком рисует DM.
+			if(!added)
+				return null
+			add_spec = added[1]
+			if(!add_spec)
+				continue
+			add_width = added[2]
+			add_height = added[3]
+			shift_x = I.pixel_x
+			shift_y = I.pixel_y
+		x1 = min(x1, shift_x + 1)
+		x2 = max(x2, shift_x + add_width)
+		y1 = min(y1, shift_y + 1)
+		y2 = max(y2, shift_y + add_height)
+		var/list/blend = list(add_spec, blendMode2iconMode(curblend), shift_x, shift_y)
+		if(I && (I.appearance_flags & RESET_COLOR))
+			reset_color_blends += list(blend)
+		else
+			blends += list(blend)
+
+	var/list/canvas = blank_icon_spec()
+	var/list/transforms = canvas["transform"]
+	var/width = x2 - x1 + 1
+	var/height = y2 - y1 + 1
+	if(width != world.icon_size || height != world.icon_size)
+		transforms += list(list("type" = RUSTG_ICONFORGE_SCALE, "width" = width, "height" = height))
+	for(var/list/blend as anything in blends)
+		transforms += list(list("type" = RUSTG_ICONFORGE_BLEND_ICON, "icon" = blend[1], "blend_mode" = blend[2], "x" = blend[3] + 2 - x1, "y" = blend[4] + 2 - y1))
+	transforms += statpanel_color_transforms(A.color)
+	if(A.alpha < 255)
+		transforms += list(statpanel_alpha_transform(A.alpha))
+	for(var/list/blend as anything in reset_color_blends)
+		transforms += list(list("type" = RUSTG_ICONFORGE_BLEND_ICON, "icon" = blend[1], "blend_mode" = blend[2], "x" = blend[3] + 2 - x1, "y" = blend[4] + 2 - y1))
+	return list(canvas, width, height)
+
+/// Прозрачная заготовка 32x32 - та же, с которой начинает getFlatIcon.
+/datum/controller/subsystem/statpanels/proc/blank_icon_spec()
+	return list("icon_file" = "icons/effects/effects.dmi", "icon_state" = "nothing", "dir" = SOUTH, "frame" = 1, "transform" = list())
+
+/datum/controller/subsystem/statpanels/proc/statpanel_alpha_transform(alpha)
+	return list("type" = RUSTG_ICONFORGE_BLEND_COLOR, "color" = "#ffffff[num2hex(alpha, 2)]", "blend_mode" = ICON_MULTIPLY)
+
+/// Цвет атома операциями IconForge: строка - умножение, матрица - MapColors, как в getFlatIcon.
+/datum/controller/subsystem/statpanels/proc/statpanel_color_transforms(color)
+	if(!color)
+		return list()
+	if(istext(color))
+		if(uppertext(color) == "#FFFFFF" || uppertext(color) == "#FFFFFFFF")
+			return list()
+		return list(list("type" = RUSTG_ICONFORGE_BLEND_COLOR, "color" = color, "blend_mode" = ICON_MULTIPLY))
+	if(!islist(color))
+		return list()
+	var/list/matrix = color
+	for(var/value in matrix)
+		if(!isnum(value))
+			return list()
+	var/list/rows
+	switch(length(matrix))
+		if(9)
+			rows = list(matrix[1], matrix[2], matrix[3], 0, matrix[4], matrix[5], matrix[6], 0, matrix[7], matrix[8], matrix[9], 0, 0, 0, 0, 1, 0, 0, 0, 0)
+		if(12)
+			rows = list(matrix[1], matrix[2], matrix[3], 0, matrix[4], matrix[5], matrix[6], 0, matrix[7], matrix[8], matrix[9], 0, 0, 0, 0, 1, matrix[10], matrix[11], matrix[12], 0)
+		if(16)
+			rows = matrix.Copy()
+			rows += list(0, 0, 0, 0)
+		if(20)
+			rows = matrix.Copy()
+		else
+			return list()
+	return list(list(
+		"type" = RUSTG_ICONFORGE_MAP_COLORS,
+		"rr" = rows[1], "rg" = rows[2], "rb" = rows[3], "ra" = rows[4],
+		"gr" = rows[5], "gg" = rows[6], "gb" = rows[7], "ga" = rows[8],
+		"br" = rows[9], "bg" = rows[10], "bb" = rows[11], "ba" = rows[12],
+		"ar" = rows[13], "ag" = rows[14], "ab" = rows[15], "aa" = rows[16],
+		"r0" = rows[17], "g0" = rows[18], "b0" = rows[19], "a0" = rows[20],
+	))
 
 /datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_dirty_at = 0, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
 	// Dirty signals coalesce: a busy turf that fires entered/exited every tick is rate-limited so
@@ -591,204 +981,38 @@ SUBSYSTEM_DEF(statpanels)
 	queue_listedturf_icons(target, snapshot["needs_icons"])
 
 
+/// Средняя доля КАЖДОГО тика, которую съедает подсистема, %. tick_usage - цена целого прохода,
+/// а проход повторяется раз в интервал (или реже, если сам тянется дольше интервала): дорогая,
+/// но редкая подсистема грузит сервер меньше дешёвой, которая бежит каждый тик.
+/proc/mc_subsystem_tick_load(tick_usage, wait, ticks, ticker, tick_lag)
+	var/interval_ticks = ticker ? wait : wait / tick_lag
+	return tick_usage / max(interval_ticks, ticks, 1)
+
+/// Дописывает замер в историю спарклайна, держа не больше MC_HISTORY_LEN последних.
+/datum/controller/subsystem/statpanels/proc/push_mc_history(key, value)
+	var/list/series = mc_history[key]
+	if(!series)
+		series = list()
+		mc_history[key] = series
+	series += value
+	if(length(series) > MC_HISTORY_LEN)
+		series.Cut(1, length(series) - MC_HISTORY_LEN + 1)
+
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
-	var/list/server_info = list()
-	server_info["cpu"] = world.cpu
-	server_info["instances"] = world.contents.len
-	server_info["world_time"] = world.time
-	server_info["fps"] = world.fps
-	server_info["tick_count"] = round(world.time / world.tick_lag)
-	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
-	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / world.tick_lag, 1)) * 100, 0.1)
-	server_info["internal_tick_usage"] = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
-	// MC state — iteration is the natural per-tick counter; JS uses it to dedupe identical payloads.
-	server_info["iteration"] = Master.iteration
-	server_info["mc_tick_rate"] = Master.processing
-	server_info["mc_iteration"] = Master.iteration
-	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
-	server_info["mc_stat"] = Master.stat_entry()
-	server_info["failsafe_stat"] = Failsafe.stat_entry()
-	// Ping RTT
-	server_info["ping_samples"] = SStime_track.ping_samples
-	server_info["ping_rtt_avg"] = round(SStime_track.ping_rtt_last_avg, 1)
-	server_info["ping_rtt_max"] = round(SStime_track.ping_rtt_last_max, 1)
-	server_info["ping_rtt_avg_avg"] = round(SStime_track.ping_rtt_avg_avg, 1)
-	// Ping tick/server
-	server_info["ping_tick_avg"] = round(SStime_track.ping_tick_last_avg, 1)
-	server_info["ping_tick_max"] = round(SStime_track.ping_tick_last_max, 1)
-	server_info["ping_server_avg"] = round(SStime_track.ping_server_last_avg, 1)
-	server_info["ping_server_max"] = round(SStime_track.ping_server_last_max, 1)
-	// Movement jitter
-	server_info["raw_mult"] = round(SStime_track.raw_multiplier_last, 4)
-	server_info["jitter_last"] = round(SStime_track.raw_multiplier_jitter_abs_last, 2)
-	server_info["jitter_avg"] = round(SStime_track.raw_multiplier_jitter_abs_avg, 2)
-	server_info["jitter_max_wnd"] = round(SStime_track.raw_multiplier_jitter_abs_max_window, 2)
-	server_info["glide_mult"] = round(SStime_track.glide_size_multiplier_current, 4)
-	// Server maintenance
-	server_info["cleanup_last"] = round(SSserver_maint.cleanup_last_ms, 3)
-	server_info["cleanup_avg"] = round(SSserver_maint.cleanup_avg_ms, 3)
-	server_info["cleanup_target"] = SSserver_maint.cleanup_target_last
-	// Time dilation
-	server_info["tidi_current"] = round(SStime_track.time_dilation_current, 0.1)
-	server_info["tidi_avg_fast"] = round(SStime_track.time_dilation_avg_fast, 0.1)
-	server_info["tidi_avg"] = round(SStime_track.time_dilation_avg, 0.1)
-	server_info["tidi_avg_slow"] = round(SStime_track.time_dilation_avg_slow, 0.1)
-	// VV refs
-	server_info["ref_glob"] = "\ref[GLOB]"
-	server_info["ref_config"] = "\ref[config]"
-	server_info["ref_master"] = "\ref[Master]"
-	server_info["ref_failsafe"] = "\ref[Failsafe]"
-	server_info["ref_cameranet"] = "\ref[GLOB.cameranet]"
-	// Camera net
-	server_info["camera_count"] = GLOB.cameranet.cameras.len
-	server_info["camera_chunks"] = GLOB.cameranet.chunks.len
+	var/tick_lag = world.tick_lag
+	var/maptick = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
 
-	perf_history_cpu += world.cpu
-	if(length(perf_history_cpu) > 30)
-		perf_history_cpu.Cut(1, length(perf_history_cpu) - 29)
-	perf_history_tidi += round(SStime_track.time_dilation_current, 0.1)
-	if(length(perf_history_tidi) > 30)
-		perf_history_tidi.Cut(1, length(perf_history_tidi) - 29)
-	perf_history_ping += round(SStime_track.ping_rtt_last_avg, 1)
-	if(length(perf_history_ping) > 30)
-		perf_history_ping.Cut(1, length(perf_history_ping) - 29)
-	server_info["history"] = list(
-		"cpu" = perf_history_cpu.Copy(),
-		"tidi" = perf_history_tidi.Copy(),
-		"ping" = perf_history_ping.Copy()
-	)
-
-	var/list/key_ss = list()
-	// Atmospherics
-	key_ss["Atmospherics"] = list(
-		list("Высокое давление", round(SSair.cost_highpressure, 0.1)),
-		list("Горение", round(SSair.cost_hotspots, 0.1)),
-		list("Сверхпроводимость", round(SSair.cost_superconductivity, 0.1)),
-		list("Трубопроводы", round(SSair.cost_pipenets, 0.1)),
-		list("Атмос. машины", round(SSair.cost_atmos_machinery, 0.1)),
-		list("Активные тайлы", round(SSair.cost_turfs, 0.1)),
-		list("Очаги", SSair.hotspots.len),
-		list("Сети", SSair.networks.len),
-		list("Выс давл. тайлы", SSair.high_pressure_turfs),
-		list("Низк давл. тайлы", SSair.low_pressure_turfs),
-		list("Газовые смеси", SSair.gas_mixes_count)
-	)
-	// Garbage Collector
-	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
-	var/list/gc_queue_counts = list()
-	for (var/i in 1 to GC_QUEUE_COUNT)
-		gc_queue_counts += SSgarbage.GetQueueDepth(i)
-	key_ss["Garbage"] = list(
-		list("Очереди", gc_queue_counts.Join(", ")),
-		list("Del/тик", SSgarbage.delslasttick),
-		list("GC/тик", SSgarbage.gcedlasttick),
-		list("Всего Del", SSgarbage.totaldels),
-		list("Всего GC", SSgarbage.totalgcs),
-		list("GC %", gc_ratio)
-	)
-	// Machines
-	key_ss["Machines"] = list(
-		list("Всего машин", SSmachines.get_machine_count()),
-		list("Типов", SSmachines.get_machine_type_count()),
-		list("Обработка", length(SSmachines.processing)),
-		list("Энергосети", length(SSmachines.powernets))
-	)
-	// Mobs
-	key_ss["Mobs"] = list(
-		list("Живых мобов", length(GLOB.mob_living_list))
-	)
-	// Timer
-	key_ss["Timer"] = list(
-		list("Бакеты", SStimer.bucket_count),
-		list("Очередь", length(SStimer.second_queue)),
-		list("Хэши", length(SStimer.hashes)),
-		list("Клиент таймеры", length(SStimer.clienttime_timers)),
-		list("Всего ID", length(SStimer.timer_id_dict))
-	)
-	// Objects (processing subsystem)
-	key_ss["Objects"] = list(
-		list("Обработка", length(SSobj.processing))
-	)
-	// Lighting
-	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
-	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
-	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
-	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
-	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
-	key_ss["Lighting"] = list(
-		list("Очередь источ.", length(GLOB.lighting_update_lights)),
-		list("Очередь углов", length(GLOB.lighting_update_corners)),
-		list("Очередь объект.", length(GLOB.lighting_update_objects)),
-		list("Кэп источников", SSlighting.sources_cap),
-		list("Фаза: Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
-		list("Фаза: Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
-		list("Фаза: Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
-		list("Среднее/источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
-		list("Пик: Ист./Угл./Объ.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
-		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
-		list("Кэш таблиц", length(GLOB.lighting_sheets)),
-		list("Звёздные тайлы", length(GLOB.starlight))
-	)
-	// Clients performance aggregate — cached separately, refreshed every 3rd MC data call
-	client_stats_refresh_counter++
-	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
-		client_stats_refresh_counter = 0
-		var/total_clients = length(GLOB.clients)
-		if(total_clients)
-			var/sum_ping = 0
-			var/min_ping = INFINITY
-			var/max_ping = 0
-			var/sum_server_delay = 0
-			var/list/fps_counts = list()
-			var/list/version_counts = list()
-			var/valid_clients = total_clients
-			for(var/client/C as anything in GLOB.clients)
-				var/p = C.avgping_rtt || C.avgping
-				if(!p)
-					valid_clients--
-					continue
-				sum_ping += p
-				if(p < min_ping) min_ping = p
-				if(p > max_ping) max_ping = p
-				sum_server_delay += (C.avgping_server || 0)
-				var/fps_key = "[C.fps || world.fps]"
-				fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
-				var/ver_key = "[C.byond_version].[C.byond_build]"
-				version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
-			var/list/fps_parts = list()
-			for(var/fps_val in fps_counts)
-				fps_parts += "[fps_val]: [fps_counts[fps_val]]"
-			var/list/ver_parts = list()
-			var/ver_shown = 0
-			for(var/ver in version_counts)
-				if(ver_shown >= 3)
-					break
-				ver_parts += "[ver] ([version_counts[ver]])"
-				ver_shown++
-			var/avg_ping = valid_clients ? round(sum_ping / valid_clients, 1) : 0
-			var/avg_delay = valid_clients ? round(sum_server_delay / valid_clients, 1) : 0
-			var/ping_minmax = valid_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
-			cached_client_stats = list(
-				list("Подключено", length(GLOB.clients)),
-				list("Ping средний", "[avg_ping]ms"),
-				list("Ping мин/макс", ping_minmax),
-				list("Задержка сервера", "[avg_delay]ms"),
-				list("FPS настройки", jointext(fps_parts, ", ")),
-				list("BYOND версии", jointext(ver_parts, ", "))
-			)
-		else
-			cached_client_stats = null
-	if(cached_client_stats)
-		key_ss["Clients"] = cached_client_stats
-	server_info["key_ss"] = key_ss
-
-	mc_data_encoded = url_encode(json_encode(server_info))
-
-	// Subsystem rows: [name, state, cost, tick_usage, tick_overrun, ticks, times_fired, can_fire, is_bg, ref, stat_extra]
+	// Строки подсистем: [name, state, cost, tick_usage, overrun, ticks, fired, can_fire, is_bg, ref, extra,
+	// load, wait_ds, priority, flags, next_fire_in, last_fire_ago, postponed, paused_ticks, init_order, initialized]
 	var/list/ss_data = list()
+	var/mc_load = 0
 	for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
 		var/is_active = (SS.can_fire && !(SS.flags & SS_NO_FIRE)) ? 1 : 0
-		// Extract subsystem-specific stat data (part after \t in stat_entry)
+		var/ticker = SS.flags & SS_TICKER
+		var/load = 0
+		if(is_active)
+			load = mc_subsystem_tick_load(SS.tick_usage, SS.wait, SS.ticks, ticker, tick_lag)
+			mc_load += load
 		var/stat_text = SS.stat_entry()
 		var/stat_extra = ""
 		var/tab_pos = findtext(stat_text, "\t")
@@ -805,9 +1029,221 @@ SUBSYSTEM_DEF(statpanels)
 			is_active,
 			(SS.flags & SS_BACKGROUND) ? 1 : 0,
 			"\ref[SS]",
-			stat_extra
+			stat_extra,
+			round(load, 0.01),
+			ticker ? SS.wait * tick_lag : SS.wait,
+			SS.priority,
+			SS.flags,
+			is_active ? round(SS.next_fire - world.time, 0.1) : null,
+			SS.last_fire ? round(world.time - SS.last_fire, 0.1) : null,
+			SS.postponed_fires,
+			SS.paused_ticks,
+			SS.init_order,
+			SS.initialized ? 1 : 0
 		)
 	mc_ss_data_encoded = url_encode(json_encode(ss_data))
+	mc_load = round(mc_load, 0.1)
+
+	var/list/server_info = list()
+	// Сводка
+	server_info["cpu"] = round(world.cpu, 0.1)
+	server_info["maptick"] = maptick
+	server_info["mc_load"] = mc_load
+	server_info["tidi_current"] = round(SStime_track.time_dilation_current, 0.1)
+	server_info["tidi_avg_fast"] = round(SStime_track.time_dilation_avg_fast, 0.1)
+	server_info["tidi_avg"] = round(SStime_track.time_dilation_avg, 0.1)
+	server_info["tidi_avg_slow"] = round(SStime_track.time_dilation_avg_slow, 0.1)
+	server_info["players"] = length(GLOB.clients)
+	server_info["round_time"] = SSticker.round_start_time ? time2text(world.time - SSticker.round_start_time, "hh:mm:ss", 0) : null
+	server_info["mem_vsz"] = round(SStime_track.memory_last_vsz_mb)
+	server_info["mem_ceiling"] = SStime_track.process_address_ceiling_mb || 0
+	server_info["mem_growth"] = round(SStime_track.memory_growth_mb_per_minute, 0.1)
+	server_info["instances"] = length(world.contents)
+
+	// Бюджет тика
+	server_info["tick_limit_running"] = round(TICK_LIMIT_RUNNING, 0.1)
+	server_info["tick_byond_reserve"] = TICK_BYOND_RESERVE
+	server_info["outside_tick_limit"] = Master.outside_tick_limit
+	server_info["background_tick_budget"] = Master.background_tick_budget
+	server_info["pace_passes"] = Master.pace_passes ? 1 : 0
+
+	// Контроллер
+	var/queue_length = 0
+	var/datum/controller/subsystem/queue_node = Master.queue_head
+	while(queue_node && queue_length < 1000)
+		queue_length++
+		queue_node = queue_node.queue_next
+	var/static/list/runlevel_names = list("Лобби", "Подготовка", "Игра", "После раунда")
+	var/runlevel = Master.current_runlevel
+	server_info["mc_processing"] = Master.processing
+	server_info["mc_iteration"] = Master.iteration
+	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
+	server_info["mc_sleep_delta"] = round(Master.sleep_delta, 0.01)
+	server_info["mc_skip_ticks"] = Master.skip_ticks
+	server_info["mc_queue"] = queue_length
+	server_info["mc_runlevel"] = (runlevel && runlevel <= length(runlevel_names)) ? runlevel_names[runlevel] : "Инициализация"
+	server_info["mc_restarts"] = Master.restart_count
+	server_info["mc_map_loading"] = Master.map_loading ? 1 : 0
+	server_info["mc_last_ss"] = Master.last_type_processed ? "[Master.last_type_processed]" : null
+	server_info["failsafe_defcon"] = Failsafe?.defcon
+	server_info["failsafe_stat"] = Failsafe?.stat_entry()
+	server_info["fps"] = world.fps
+	server_info["tick_lag"] = tick_lag
+	server_info["tick_count"] = round(world.time / tick_lag)
+	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
+	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / tick_lag, 1)) * 100, 0.1)
+	server_info["camera_count"] = length(GLOB.cameranet.cameras)
+	server_info["camera_chunks"] = length(GLOB.cameranet.chunks)
+	server_info["cleanup_last"] = round(SSserver_maint.cleanup_last_ms, 0.01)
+	server_info["cleanup_avg"] = round(SSserver_maint.cleanup_avg_ms, 0.01)
+	server_info["cleanup_target"] = SSserver_maint.cleanup_target_last
+	server_info["ref_glob"] = "\ref[GLOB]"
+	server_info["ref_config"] = "\ref[config]"
+	server_info["ref_master"] = "\ref[Master]"
+	server_info["ref_failsafe"] = Failsafe ? "\ref[Failsafe]" : null
+	server_info["ref_cameranet"] = "\ref[GLOB.cameranet]"
+
+	// Сеть
+	server_info["ping_samples"] = SStime_track.ping_samples
+	server_info["ping_rtt_median"] = round(SStime_track.ping_rtt_last_median, 1)
+	server_info["ping_rtt_avg"] = round(SStime_track.ping_rtt_last_avg, 1)
+	server_info["ping_rtt_max"] = round(SStime_track.ping_rtt_last_max, 1)
+	server_info["ping_rtt_avg_avg"] = round(SStime_track.ping_rtt_avg_avg, 1)
+	server_info["ping_tick_avg"] = round(SStime_track.ping_tick_last_avg, 1)
+	server_info["ping_tick_max"] = round(SStime_track.ping_tick_last_max, 1)
+	server_info["ping_server_avg"] = round(SStime_track.ping_server_last_avg, 1)
+	server_info["ping_server_max"] = round(SStime_track.ping_server_last_max, 1)
+	server_info["ping_server_avg_avg"] = round(SStime_track.ping_server_avg_avg, 1)
+	server_info["raw_mult"] = round(SStime_track.raw_multiplier_last, 0.0001)
+	server_info["jitter_last"] = round(SStime_track.raw_multiplier_jitter_abs_last, 0.01)
+	server_info["jitter_avg"] = round(SStime_track.raw_multiplier_jitter_abs_avg, 0.01)
+	server_info["jitter_max_wnd"] = round(SStime_track.raw_multiplier_jitter_abs_max_window, 0.01)
+	server_info["glide_mult"] = round(SStime_track.glide_size_multiplier_current, 0.0001)
+
+	push_mc_history("cpu", server_info["cpu"])
+	push_mc_history("tidi", server_info["tidi_current"])
+	push_mc_history("maptick", maptick)
+	push_mc_history("mc", mc_load)
+	push_mc_history("ping", server_info["ping_rtt_median"])
+	var/list/history = list()
+	for(var/key in mc_history)
+		var/list/series = mc_history[key]
+		history[key] = series.Copy()
+	server_info["history"] = history
+
+	var/list/key_ss = list()
+	key_ss["Atmospherics"] = list(
+		list("Высокое давление", "[round(SSair.cost_highpressure, 0.1)]ms"),
+		list("Горение", "[round(SSair.cost_hotspots, 0.1)]ms"),
+		list("Сверхпроводимость", "[round(SSair.cost_superconductivity, 0.1)]ms"),
+		list("Трубопроводы", "[round(SSair.cost_pipenets, 0.1)]ms"),
+		list("Атмос. машины", "[round(SSair.cost_atmos_machinery, 0.1)]ms"),
+		list("Активные тайлы", "[round(SSair.cost_turfs, 0.1)]ms"),
+		list("Очаги", length(SSair.hotspots)),
+		list("Сети", length(SSair.networks)),
+		list("Тайлы выс./низк. давл.", "[SSair.high_pressure_turfs] / [SSair.low_pressure_turfs]"),
+		list("Газовые смеси", SSair.gas_mixes_count)
+	)
+	var/gc_total = SSgarbage.totaldels + SSgarbage.totalgcs
+	var/list/gc_queue_counts = list()
+	for(var/i in 1 to GC_QUEUE_COUNT)
+		gc_queue_counts += SSgarbage.GetQueueDepth(i)
+	key_ss["Garbage"] = list(
+		list("Очереди", gc_queue_counts.Join(" / ")),
+		list("Del / GC за тик", "[SSgarbage.delslasttick] / [SSgarbage.gcedlasttick]"),
+		list("Всего Del / GC", "[SSgarbage.totaldels] / [SSgarbage.totalgcs]"),
+		list("Ушло мягко", gc_total ? "[round(SSgarbage.totalgcs / gc_total * 100, 0.1)]%" : "n/a")
+	)
+	key_ss["Machines"] = list(
+		list("Машин / типов", "[SSmachines.get_machine_count()] / [SSmachines.get_machine_type_count()]"),
+		list("В обработке", length(SSmachines.processing)),
+		list("Энергосети", length(SSmachines.powernets))
+	)
+	key_ss["Mobs"] = list(
+		list("Живых мобов", length(GLOB.mob_living_list))
+	)
+	key_ss["Timer"] = list(
+		list("Бакеты", SStimer.bucket_count),
+		list("Вторая очередь", length(SStimer.second_queue)),
+		list("Хэши", length(SStimer.hashes)),
+		list("Клиентские", length(SStimer.clienttime_timers)),
+		list("С ID", length(SStimer.timer_id_dict))
+	)
+	key_ss["Objects"] = list(
+		list("В обработке", length(SSobj.processing))
+	)
+	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
+	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
+	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
+	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
+	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
+	key_ss["Lighting"] = list(
+		list("Очередь ист./угл./объ.", "[length(GLOB.lighting_update_lights)] / [length(GLOB.lighting_update_corners)] / [length(GLOB.lighting_update_objects)]"),
+		list("Кэп источников", SSlighting.sources_cap),
+		list("Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
+		list("Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
+		list("Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
+		list("На источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
+		list("Пик ист./угл./объ.", "[SSlighting.peak_sources] / [SSlighting.peak_corners] / [SSlighting.peak_objects]"),
+		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
+		list("Кэш таблиц / звёздные", "[length(GLOB.lighting_sheets)] / [length(GLOB.starlight)]")
+	)
+	// Сводка по клиентам дорогая (обход всех клиентов), пересобирается раз в 3 вызова
+	client_stats_refresh_counter++
+	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
+		client_stats_refresh_counter = 0
+		cached_client_stats = build_mc_client_stats()
+	if(cached_client_stats)
+		key_ss["Clients"] = cached_client_stats
+	server_info["key_ss"] = key_ss
+
+	mc_data_encoded = url_encode(json_encode(server_info))
+
+/// Карточка "Clients" MC-вкладки: пинг, задержка сервера, FPS и версии BYOND по всем клиентам.
+/datum/controller/subsystem/statpanels/proc/build_mc_client_stats()
+	var/total_clients = length(GLOB.clients)
+	if(!total_clients)
+		return null
+	var/sum_ping = 0
+	var/min_ping = INFINITY
+	var/max_ping = 0
+	var/sum_server_delay = 0
+	var/list/fps_counts = list()
+	var/list/version_counts = list()
+	var/valid_clients = 0
+	for(var/client/C as anything in GLOB.clients)
+		var/fps_key = "[C.fps || world.fps]"
+		fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
+		var/ver_key = "[C.byond_version].[C.byond_build]"
+		version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
+		var/p = C.avgping_rtt || C.avgping
+		if(!p)
+			continue
+		valid_clients++
+		sum_ping += p
+		min_ping = min(min_ping, p)
+		max_ping = max(max_ping, p)
+		sum_server_delay += C.avgping_server || 0
+	var/list/fps_parts = list()
+	for(var/fps_val in fps_counts)
+		fps_parts += "[fps_val]: [fps_counts[fps_val]]"
+	// Самые частые версии первыми
+	var/list/ver_parts = list()
+	for(var/i in 1 to min(3, length(version_counts)))
+		var/best_ver
+		for(var/ver in version_counts)
+			if(!best_ver || version_counts[ver] > version_counts[best_ver])
+				best_ver = ver
+		ver_parts += "[best_ver] ([version_counts[best_ver]])"
+		version_counts -= best_ver
+	return list(
+		list("Подключено", total_clients),
+		list("Пинг средний", valid_clients ? "[round(sum_ping / valid_clients, 1)]ms" : "n/a"),
+		list("Пинг мин/макс", valid_clients ? "[round(min_ping, 1)] / [round(max_ping, 1)]ms" : "n/a"),
+		list("Задержка сервера", valid_clients ? "[round(sum_server_delay / valid_clients, 1)]ms" : "n/a"),
+		list("FPS клиентов", jointext(fps_parts, ", ")),
+		list("Версии BYOND", jointext(ver_parts, ", "))
+	)
 
 /// verbs that send information from the browser UI
 /client/verb/set_tab(tab as text|null)
@@ -862,6 +1298,7 @@ SUBSYSTEM_DEF(statpanels)
 #undef LISTED_TURF_DIRTY_MIN_INTERVAL
 #undef STATPANEL_AFK_INACTIVITY
 #undef MC_DATA_REFRESH_FIRES
+#undef MC_HISTORY_LEN
 #undef STATPANEL_FULL_CYCLE_FIRES
 #undef STATPANEL_SLOW_CYCLE_FULLS
 #undef STATPANEL_STAGGER_GROUPS
@@ -869,6 +1306,14 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_ICON_ENTRY_URL
 #undef STATPANEL_ICON_ENTRY_OWNER
 #undef STATPANEL_MAX_FLAT_OVERLAYS
+#undef STATPANEL_ICON_DIR
+#undef STATPANEL_ICON_JOBS_MAX
+#undef STATPANEL_ICON_JOB_TIMEOUT
+#undef STATPANEL_ICON_CACHE_MAX
+#undef STATPANEL_ICON_NOTHING
+#undef STATPANEL_ICON_BUSY
+#undef STATPANEL_DMI_SIZE
+#undef STATPANEL_DMI_STATES
 #undef STATPANEL_TIDI_INTERVAL
 #undef STATBROWSER_PROTOCOL_VERSION
 #undef STATPANEL_CHANNEL_STATUS

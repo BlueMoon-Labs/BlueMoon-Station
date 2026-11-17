@@ -3,6 +3,7 @@ SUBSYSTEM_DEF(machines)
 	init_order = INIT_ORDER_MACHINES
 	flags = SS_KEEP_TIMING
 	wait = 2 SECONDS
+	paced = TRUE
 
 	/// Assosciative list of all machines that exist.
 	VAR_PRIVATE/list/machines_by_type = list()

@@ -93,6 +93,11 @@
 
 ///Выбрать лучшую доступную атаку и поставить исполнение
 /datum/ai_planning_subtree/boss_ability_selection
+	gated_by_pawn_timer = TRUE
+
+/datum/ai_planning_subtree/boss_ability_selection/pawn_timer_ready(datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/boss = controller.pawn
+	return istype(boss) && boss.ranged_cooldown <= world.time
 
 /datum/ai_planning_subtree/boss_ability_selection/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()
@@ -130,6 +135,11 @@
 ///Боссы без новой таблицы сохраняют легаси-ветку MoveToTarget -> OpenFire.
 ///Вплотную стрелять не надо: там hostile_melee вызовет их AttackingTarget().
 /datum/ai_planning_subtree/boss_legacy_ranged
+	gated_by_pawn_timer = TRUE
+
+/datum/ai_planning_subtree/boss_legacy_ranged/pawn_timer_ready(datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/boss = controller.pawn
+	return istype(boss) && boss.ranged_cooldown <= world.time
 
 /datum/ai_planning_subtree/boss_legacy_ranged/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()

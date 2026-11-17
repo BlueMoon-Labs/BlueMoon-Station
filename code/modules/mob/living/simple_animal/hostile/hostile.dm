@@ -103,6 +103,8 @@
 	var/ranged_telegraph_duration = 0
 	///At most one ranged telegraph may be waiting to fire.
 	var/ranged_telegraph_timer_id
+	var/ranged_pixel_aim = FALSE
+	var/rapid_fire_params
 
 /mob/living/simple_animal/hostile/Initialize(mapload)
 	. = ..()
@@ -486,6 +488,9 @@
 			return TRUE
 
 		if(ismecha(the_target))
+			//без сноса окружения и без снаряда меха не поцарапать (урон режется до 0) - не цель, иначе моб прилипает к броне навсегда
+			if(!environment_smash && !(projectiletype || casingtype))
+				return FALSE
 			var/obj/vehicle/sealed/mecha/M = the_target
 			for(var/occupant in M.occupants)
 				if(CanAttack(occupant))
@@ -845,16 +850,21 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		return AI_FIRE_LANE_BLOCKED
 
 /mob/living/simple_animal/hostile/proc/OpenFire(atom/A)
+	return fire_ranged_projectiles(A)
+
+/mob/living/simple_animal/hostile/proc/fire_ranged_projectiles(atom/A, params)
 	if(ai_controller && !client)
 		if(CheckRangedFireLane(A))
 			return FALSE
 	else if(CheckFriendlyFire(A))
 		return FALSE
-	visible_message("<span class='danger'><b>[src]</b> [ranged_message] at [A]!</span>")
-
+	if(ranged_message)
+		visible_message(span_danger("<b>[src]</b> [ranged_message] at [A]!"))
 
 	if(rapid > 1)
-		start_rapid_fire_sequence(A)
+		start_rapid_fire_sequence(A, params)
+	else if(params)
+		shoot_with_projectile(A, projectiletype, params)
 	else
 		Shoot(A)
 	ranged_cooldown = world.time + ranged_cooldown_time
@@ -862,11 +872,12 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 
 /// Queue one shot at a time. The previous fan-out created N timer datums and
 /// shared one callback datum between them for every ranged mob in a volley.
-/mob/living/simple_animal/hostile/proc/start_rapid_fire_sequence(atom/volley_target)
+/mob/living/simple_animal/hostile/proc/start_rapid_fire_sequence(atom/volley_target, params)
 	if(rapid_fire_timer_id || rapid_fire_shots_left > 0 || QDELETED(volley_target))
 		return
 	rapid_fire_target = volley_target
 	rapid_fire_shots_left = rapid
+	rapid_fire_params = params
 	queue_next_rapid_fire_shot(world.tick_lag)
 
 /mob/living/simple_animal/hostile/proc/queue_next_rapid_fire_shot(delay)
@@ -885,7 +896,7 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	if(rapid_fire_shots_left > 0 && !QDELETED(rapid_fire_target))
 		queue_next_rapid_fire_shot(rapid_fire_delay)
 	else
-		rapid_fire_target = null
+		cancel_rapid_fire_sequence()
 
 /mob/living/simple_animal/hostile/proc/cancel_rapid_fire_sequence()
 	if(rapid_fire_timer_id)
@@ -893,9 +904,13 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	rapid_fire_timer_id = null
 	rapid_fire_shots_left = 0
 	rapid_fire_target = null
+	rapid_fire_params = null
 
 
 /mob/living/simple_animal/hostile/proc/Shoot(atom/targeted_atom)
+	return shoot_with_projectile(targeted_atom, projectiletype, targeted_atom == rapid_fire_target ? rapid_fire_params : null)
+
+/mob/living/simple_animal/hostile/proc/shoot_with_projectile(atom/targeted_atom, projectile_type, params)
 	if(QDELETED(src) || QDELETED(targeted_atom) || targeted_atom == targets_from?.loc || targeted_atom == targets_from)
 		return
 	//Rapid volleys are queued with timers. Recheck every projectile because an
@@ -910,12 +925,14 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	if(!ranged_ignores_vision && !can_see(targets_from || src, targeted_atom, vision_range))
 		return
 	var/turf/startloc = get_turf(targets_from)
+	if(!client)
+		params = null
 	if(casingtype)
 		var/obj/item/ammo_casing/casing = new casingtype(startloc)
 		playsound(src, projectilesound, 100, 1)
-		casing.fire_casing(targeted_atom, src, null, null, null, ran_zone(), 0, src)
-	else if(projectiletype)
-		var/obj/item/projectile/P = new projectiletype(startloc)
+		casing.fire_casing(targeted_atom, src, params, null, null, ran_zone(), 0, src)
+	else if(projectile_type)
+		var/obj/item/projectile/P = new projectile_type(startloc)
 		playsound(src, projectilesound, 100, 1)
 		P.starting = startloc
 		P.firer = src
@@ -925,7 +942,7 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		if(get_effective_ai_status() != AI_ON)//Don't want mindless mobs to have their movement screwed up firing in space
 			newtonian_move(get_dir(targeted_atom, targets_from))
 		P.original = targeted_atom
-		P.preparePixelProjectile(targeted_atom, src)
+		P.preparePixelProjectile(targeted_atom, src, params)
 		P.fire()
 		return P
 
@@ -959,6 +976,9 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 		if(CanSmashTurfs(T))
 			T.attack_animal(src)
 		for(var/obj/O in T)
+			//цель бьёт AttackingTarget со своими гейтами, снос окружения её и атакуемый транспорт с седоком не трогает
+			if(O == target || ai_smash_spares_vehicle(src, O))
+				continue
 			if(O.density && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
 				O.attack_animal(src)
 				return
@@ -1007,7 +1027,10 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 /mob/living/simple_animal/hostile/RangedAttack(atom/A, params) //Player firing
 	if(ranged && ranged_cooldown <= world.time)
 		target = A
-		OpenFire(A)
+		if(ranged_pixel_aim && params)
+			fire_ranged_projectiles(A, params)
+		else
+			OpenFire(A)
 		DelayNextAction()
 	. = ..()
 	return TRUE

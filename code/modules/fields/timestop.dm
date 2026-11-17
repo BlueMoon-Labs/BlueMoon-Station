@@ -1,5 +1,6 @@
 #define TIMESTOP_ILLUSION_RANGE 10
 #define TIMESTOP_ILLUSION_MAX_ATOMS 1500
+#define TIMESTOP_FROZEN_SIGHT (BLIND | SEE_SELF | SEE_TURFS)
 
 /obj/effect/timestop
 	anchored = TRUE
@@ -177,6 +178,8 @@
 /datum/proximity_monitor/advanced/timestop
 	/// Замороженный моб -> картинки, выданные его клиенту
 	var/list/mirage_images_by_mob = list()
+	/// Моб, которому показали застывший мир -> list(sight, версия HUD) до заморозки
+	var/list/hidden_view_by_mob = list()
 
 /datum/proximity_monitor/advanced/timestop/proc/freeze_projectile(obj/item/projectile/P)
 	P.paused = TRUE
@@ -189,22 +192,11 @@
 	L.Stun(20, ignore_canstun = TRUE)
 	ADD_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
 	walk(L, 0) //stops them mid pathing even if they're stunimmune
-	if(L.client)
-		L.hud_used?.show_hud(HUD_STYLE_NOHUD) //полное скрытие
-		L.sight = (BLIND | SEE_SELF | SEE_TURFS)
-		L.add_client_colour(/datum/client_colour/sepia)
-
-		var/list/images_to_add = build_illusion_images(oview(TIMESTOP_ILLUSION_RANGE, L.loc))
-		var/image/fullview_timestop_effect = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
-		var/image/timestop_effect_with_plane = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
-		set_timestop_image(fullview_timestop_effect)
-		set_timestop_image(timestop_effect_with_plane, resize = 3, use_plane = TRUE)
-		images_to_add += fullview_timestop_effect
-		images_to_add += timestop_effect_with_plane
-
-		L.client.images += images_to_add
-		mirage_images_by_mob[L] = images_to_add
-
+	RegisterSignal(L, COMSIG_LIVING_DEATH, PROC_REF(on_frozen_death))
+	RegisterSignal(L, COMSIG_MOB_LOGIN, PROC_REF(on_frozen_login))
+	RegisterSignal(L, COMSIG_MOB_STATCHANGE, PROC_REF(on_frozen_stat_change))
+	if(L.client && L.stat != DEAD)
+		show_frozen_world(L)
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(AI_OFF)
@@ -222,18 +214,81 @@
 /datum/proximity_monitor/advanced/timestop/proc/unfreeze_mob(mob/living/L)
 	L.AdjustStun(-20, ignore_canstun = TRUE)
 	REMOVE_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
-	if(L.client)
-		L.hud_used?.show_hud(HUD_STYLE_STANDARD)// полностью показать
-		L.remove_client_colour(/datum/client_colour/sepia)
-		L.sight = NONE
-		var/list/given_images = mirage_images_by_mob[L]
-		if(given_images)
-			L.client.images -= given_images
+	UnregisterSignal(L, list(COMSIG_LIVING_DEATH, COMSIG_MOB_LOGIN, COMSIG_MOB_STATCHANGE))
+	restore_live_world(L)
 	frozen_mobs -= L
-	mirage_images_by_mob -= L
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(initial(S.AIStatus))
+
+/// Сепия, слепота и скрытый HUD висят на самом мобе, а не на клиенте: снимать их надо, даже если клиент уже ушёл из тела (смерть, вторая личность)
+/datum/proximity_monitor/advanced/timestop/proc/show_frozen_world(mob/living/L)
+	if(!hidden_view_by_mob[L])
+		hidden_view_by_mob[L] = list(L.sight, L.hud_used?.hud_version)
+		L.add_client_colour(/datum/client_colour/sepia)
+		RegisterSignal(L, COMSIG_MOB_UPDATE_SIGHT, PROC_REF(keep_frozen_sight))
+	L.hud_used?.show_hud(HUD_STYLE_NOHUD)
+	L.sight = TIMESTOP_FROZEN_SIGHT
+	if(!L.client)
+		return
+
+	var/list/old_images = mirage_images_by_mob[L]
+	if(old_images)
+		L.client.images -= old_images
+	var/list/images_to_add = build_illusion_images(oview(TIMESTOP_ILLUSION_RANGE, L.loc))
+	var/image/fullview_timestop_effect = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
+	var/image/timestop_effect_with_plane = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
+	set_timestop_image(fullview_timestop_effect)
+	set_timestop_image(timestop_effect_with_plane, resize = 3, use_plane = TRUE)
+	images_to_add += fullview_timestop_effect
+	images_to_add += timestop_effect_with_plane
+
+	L.client.images += images_to_add
+	mirage_images_by_mob[L] = images_to_add
+
+/datum/proximity_monitor/advanced/timestop/proc/restore_live_world(mob/living/L)
+	var/list/given_images = mirage_images_by_mob[L]
+	mirage_images_by_mob -= L
+	if(given_images && L.client)
+		L.client.images -= given_images
+	var/list/hidden_view = hidden_view_by_mob[L]
+	hidden_view_by_mob -= L
+	if(!hidden_view)
+		return
+	UnregisterSignal(L, COMSIG_MOB_UPDATE_SIGHT)
+	if(QDELETED(L))
+		return
+	L.remove_client_colour(/datum/client_colour/sepia)
+	// Что сменили за время заморозки (наркотик вернул HUD, вид пересчитал зрение), остаётся как есть
+	if(L.sight == TIMESTOP_FROZEN_SIGHT)
+		L.sight = hidden_view[1]
+	L.update_sight()
+	if(L.hud_used?.hud_version == HUD_STYLE_NOHUD)
+		L.hud_used.show_hud(isnull(hidden_view[2]) ? HUD_STYLE_STANDARD : hidden_view[2])
+
+/// Глаза и шлем пересчитывают зрение заново: застывший мир обязан остаться слепым
+/datum/proximity_monitor/advanced/timestop/proc/keep_frozen_sight(mob/living/source)
+	SIGNAL_HANDLER
+	source.sight = TIMESTOP_FROZEN_SIGHT
+
+/// Убитый в поле остаётся застывшим телом, но его клиент видит живой мир
+/datum/proximity_monitor/advanced/timestop/proc/on_frozen_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	restore_live_world(source)
+
+/// Вернувшийся из SSD, вторая личность или вошедший призрак застаёт поле как все замороженные
+/datum/proximity_monitor/advanced/timestop/proc/on_frozen_login(mob/living/source)
+	SIGNAL_HANDLER
+	if(source.stat == DEAD)
+		return
+	show_frozen_world(source)
+
+/// Оживлённый в поле (труп в нём лежал или умер уже замороженным) снова видит застывший мир
+/datum/proximity_monitor/advanced/timestop/proc/on_frozen_stat_change(mob/living/source, new_stat, old_stat)
+	SIGNAL_HANDLER
+	if(old_stat != DEAD || new_stat == DEAD || !GET_CLIENT(source))
+		return
+	show_frozen_world(source)
 
 /// Застывшие копии видимых атомов: клиент замороженного видит их вместо живого мира.
 /datum/proximity_monitor/advanced/timestop/proc/build_illusion_images(list/candidates)
@@ -258,3 +313,4 @@
 
 #undef TIMESTOP_ILLUSION_RANGE
 #undef TIMESTOP_ILLUSION_MAX_ATOMS
+#undef TIMESTOP_FROZEN_SIGHT

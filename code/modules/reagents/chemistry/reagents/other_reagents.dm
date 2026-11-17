@@ -657,6 +657,11 @@
 	var/lube_kind = TURF_WET_LUBE ///What kind of slipperiness gets added to turfs.
 	var/min_turf_volume = 1
 
+/datum/reagent/lube/used_on_fish(obj/item/fish/fish)
+	ADD_TRAIT(fish, TRAIT_FISH_FED_LUBE, type)
+	addtimer(CALLBACK(fish, TYPE_PROC_REF(/obj/item/fish, clear_fed_lube), type), fish.feeding_frequency, TIMER_UNIQUE|TIMER_OVERRIDE)
+	return TRUE
+
 /datum/reagent/lube/reaction_turf(turf/open/T, reac_volume)
 	..()
 	if (!istype(T))
@@ -1463,7 +1468,8 @@
 	for(var/mob/living/simple_animal/slime/M in T)
 		M.adjustToxLoss(rand(5,10))
 
-	if(T.liquids && !T.liquids.immutable)
+	// Вода бассейна - не разлив: пена ивента и уборщик её не смывают.
+	if(T.liquids && !T.liquids.immutable && !istype(T, /turf/open/pool))
 		T.liquids.liquid_simple_delete_flat(max(2, reac_volume) * 0.5 * max(LIQUID_ANKLES_LEVEL_HEIGHT * ONE_LIQUIDS_HEIGHT, T.liquids.total_reagents * 0.5))
 
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
@@ -2201,6 +2207,14 @@
 	taste_description = "solvent"//It's neutral though..?
 	color = "#e6e6e6"
 	boiling_point = 329.2
+
+/datum/reagent/acetone/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart = 0)
+	. = ..()
+	if(method != TOUCH || reac_volume < NAIL_POLISH_ACETONE_VOLUME || !ishuman(M))
+		return
+	var/mob/living/carbon/human/H = M
+	if(H.get_num_arms(FALSE) && !H.nail_polish_hands_covered() && H.remove_nail_polish())
+		to_chat(H, span_notice("Ацетон растворяет лак на ваших ногтях."))
 
 /datum/reagent/acetone/define_gas()
 	var/datum/gas/G = ..()

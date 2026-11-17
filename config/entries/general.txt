@@ -485,9 +485,6 @@ MONKEYCAP 64
 ## A cap on how many mice can be bred via cheese wedges
 RATCAP 64
 
-## Enable the capitalist agenda on your server.
-ECONOMY
-
 ## Uncomment to use TG-style combat
 #DISABLE_STAMBUFFER
 
@@ -530,6 +527,14 @@ PAI_CUSTOM_HOLOFORMS
 
 ## Once a typepath causes overrun from hard deletes this many times, stop hard deleting it on garbage collection failures. (set to 0 to disable)
 #HARD_DELETES_OVERRUN_LIMIT 0
+
+## Утечку при игроках не удаляем через del(), а перепроверяем каждые 15 секунд, если харддел её типа в этом раунде ещё не мерили
+## или хоть раз он был дороже стольких мс: держатель часто отпускает сам, а del() стоит до 400 мс фриза. Без клиентов, в лобби
+## и при переполнении очереди удаляем как обычно. 0 - выключить.
+#GC_HARDDEL_DEFER_MIN_MS 50
+
+## Сколько таких отложенных хардделов может ждать одновременно; сверх этого удаляем обычным путём.
+#GC_HARDDEL_DEFER_MAX 200
 
 ## Enables monstermos/"equalization" step in atmos.
 # ATMOS_EQUALIZE_ENABLED

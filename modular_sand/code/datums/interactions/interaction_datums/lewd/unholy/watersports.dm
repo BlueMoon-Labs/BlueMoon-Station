@@ -64,11 +64,11 @@
 /datum/interaction/lewd/unholy/piss/proc/get_partner_lust_level(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return 0
 
-/datum/interaction/lewd/unholy/piss/proc/user_lust_grant(mob/living/user, mob/living/partner, is_fucking = TRUE)
-	return user.handle_post_sex(get_user_lust_level(user, partner, is_fucking), user_cum_in, partner, user_organ)
+/datum/interaction/lewd/unholy/piss/proc/user_lust_grant(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = FALSE)
+	return user.handle_post_sex(get_user_lust_level(user, partner, is_fucking), user_cum_in, partner, user_organ, is_hidden = is_hidden)
 
-/datum/interaction/lewd/unholy/piss/proc/partner_lust_grant(mob/living/user, mob/living/partner, is_fucking = TRUE)
-	return partner.handle_post_sex(get_partner_lust_level(user, partner, is_fucking), target_cum_in, user, target_organ)
+/datum/interaction/lewd/unholy/piss/proc/partner_lust_grant(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = FALSE)
+	return partner.handle_post_sex(get_partner_lust_level(user, partner, is_fucking), target_cum_in, user, target_organ, is_hidden = is_hidden)
 
 // Для доп. звуков интеракций
 /datum/interaction/lewd/unholy/piss/proc/audio_effects(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = FALSE)
@@ -85,15 +85,15 @@
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(user_organ))
 
-	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance)
+	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	audio_effects(user, partner, is_fucking, is_hidden)
-	user_lust_grant(user, partner, is_fucking)
+	user_lust_grant(user, partner, is_fucking, is_hidden)
 	if(user != partner)
-		partner_lust_grant(user, partner, is_fucking)
+		partner_lust_grant(user, partner, is_fucking, is_hidden)
 
 	var/partner_message = pick_partner_message(user, partner, is_fucking)
 	if(partner_message)
-		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance)
+		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 	post_reaction(user, partner, is_fucking, is_hidden)
 
@@ -427,7 +427,7 @@
 /datum/interaction/lewd/unholy/piss/penis/inside
 	description = null
 
-/datum/interaction/lewd/unholy/piss/penis/inside/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/unholy/piss/penis/inside/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	return !!(. && user_organ && target_organ)
 
@@ -440,13 +440,13 @@
 	else // Если у user страпон, он получает только эстетическое удовлетворение
 		return ..()
 
-/datum/interaction/lewd/unholy/piss/penis/inside/partner_lust_grant(mob/living/user, mob/living/partner, is_fucking)
+/datum/interaction/lewd/unholy/piss/penis/inside/partner_lust_grant(mob/living/user, mob/living/partner, is_fucking, is_hidden)
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, target_cum_in, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, target_cum_in, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
 		..()
-		try_apply_knot(user, partner, target_organ)
+		try_apply_knot(user, partner, target_organ, is_hidden = is_hidden)
 
 //////////////////////// 	IN MOUTH	///////////////////////////
 
@@ -516,13 +516,13 @@
 		"USER поглубже заглатывает свой [shape_desc], выпивая свою мочу",
 		"USER отсасывает свой [shape_desc], вытягивая капли тёплой жидкости себе в рот")
 
-/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/user_lust_grant(mob/living/user, mob/living/partner, is_fucking)
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/user_lust_grant(mob/living/user, mob/living/partner, is_fucking, is_hidden)
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, target_cum_in, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, target_cum_in, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
 		..()
-		try_apply_knot(user, partner, target_organ)
+		try_apply_knot(user, partner, target_organ, is_hidden = is_hidden)
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
 	return

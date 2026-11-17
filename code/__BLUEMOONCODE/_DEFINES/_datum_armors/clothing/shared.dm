@@ -379,7 +379,7 @@
 	melee = 20
 	bullet = 40
 	laser = 40
-	energy = 40
+	energy = 50
 	bomb = 25
 	bio = 0
 	rad = 0

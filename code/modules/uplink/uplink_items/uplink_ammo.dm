@@ -285,7 +285,7 @@
 			Бронебойные флешетты почти игнорируют броню, но слабо действуют по плоти."
 	item = /obj/item/ammo_box/magazine/flechette
 	cost = 2
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/flechettes
 	name = "Serrated Flechette Magazine"
@@ -294,7 +294,7 @@
 			С высокой вероятностью рассекают артерии и даже отрубают конечности."
 	item = /obj/item/ammo_box/magazine/flechette/s
 	cost = 2
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/toydarts
 	name = "Box of Riot Darts"

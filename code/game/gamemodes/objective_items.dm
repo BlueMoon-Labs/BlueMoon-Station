@@ -332,6 +332,8 @@
 	if(istype(worn_briefs) && worn_briefs.worn_by_captain)
 		return TRUE
 	for(var/obj/item/clothing/underwear/briefs/B in world)
+		if(QDELETED(B))
+			continue
 		if(B.worn_by_captain)
 			return TRUE
 

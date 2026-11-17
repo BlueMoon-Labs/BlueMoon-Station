@@ -14,6 +14,7 @@ type ThemeColors = Record<string, string>;
 
 type ContextMenuStyle = {
   renderer: string;
+  layer: string;
   layout: string;
   weight: string;
   width: string;
@@ -85,6 +86,11 @@ const RIGHT_CLICK_MODE_OPTIONS: Option<number>[] = [
 const RENDERER_OPTIONS: Option<string>[] = [
   { value: 'html', label: 'Окном, чёткий текст' },
   { value: 'map', label: 'На карте' },
+];
+
+const LAYER_OPTIONS: Option<string>[] = [
+  { value: 'top', label: 'Поверх других окон' },
+  { value: 'game', label: 'Внутри окна игры' },
 ];
 
 const THEME_OPTIONS: Option<string>[] = [
@@ -591,7 +597,7 @@ export const ContextMenuSection = (props) => {
       <GroupTitle title="Кнопки" />
       <DropdownRow
         label="ПКМ"
-        hint="Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. Быстро переключить - верб «Режим ПКМ» во вкладке OOC или клик по шапке меню"
+        hint="Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. У призрака второе действие - следовать за целью или перейти на клетку. Быстро переключить - верб «Режим ПКМ» во вкладке OOC или клик по шапке меню"
         options={RIGHT_CLICK_MODE_OPTIONS}
         value={rightClickMode}
         onSelect={(value) => act('set_right_click_mode', { value })}
@@ -652,6 +658,15 @@ export const ContextMenuSection = (props) => {
         value={style.renderer}
         onSelect={(value) => setStyle('renderer', value)}
       />
+      {style.renderer === 'html' && (
+        <DropdownRow
+          label="Слой окна"
+          hint="Поверх - меню не прячется под окнами переменных, настроек и прочими. Внутри окна игры - как раньше, другие окна его перекрывают"
+          options={LAYER_OPTIONS}
+          value={style.layer}
+          onSelect={(value) => setStyle('layer', value)}
+        />
+      )}
       <DropdownRow
         label="Формат"
         hint="Две колонки и плашки - только окном; хоткеи там во всплывающей подсказке"

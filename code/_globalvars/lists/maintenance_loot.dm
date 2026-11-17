@@ -88,6 +88,7 @@ GLOBAL_LIST_INIT(maintenance_loot, list(
 	/obj/item/reagent_containers/spray/pestspray = 1,
 	/obj/item/reagent_containers/rag = 3,
 	/obj/item/stock_parts/cell = 3,
+	/obj/item/stock_parts/cell/lead = 1,
 	/obj/item/storage/belt/utility = 2,
 	/obj/item/storage/box = 2,
 	/obj/item/storage/box/cups = 1,

@@ -19,6 +19,7 @@
 
 	update_damage_hud()
 	update_health_hud()
+	update_fov_client()
 
 	var/turf/T = get_turf(src)
 	if (isturf(T))

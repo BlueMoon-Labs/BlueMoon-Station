@@ -928,7 +928,7 @@
 	previous_health = health
 
 /mob/living/silicon/robot/update_sight(forced = TRUE)
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(stat == DEAD)
 		sight = (SEE_TURFS|SEE_MOBS|SEE_OBJS)
@@ -941,9 +941,10 @@
 	sight = initial(sight)
 	lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
 
-	if(client.eye != src)
+	if(client?.eye && client.eye != src)
 		var/atom/A = client.eye
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
+			SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 			return
 
 	if(sight_mode & BORGMESON)
@@ -972,7 +973,7 @@
 	var/turf/mob_turf = get_turf(src)
 	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		sight = initial(sight)
-	sync_lighting_plane_alpha()
+	return ..()
 
 /mob/living/silicon/robot/update_stat()
 	if(status_flags & GODMODE)
@@ -993,7 +994,7 @@
 	update_health_hud()
 	..()
 
-/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/silicon/robot/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..()) //successfully ressuscitated from death
 		if(!QDELETED(builtInCamera) && !wires.is_cut(WIRE_CAMERA))
 			builtInCamera.toggle_cam(src,0)

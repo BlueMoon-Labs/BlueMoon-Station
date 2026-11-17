@@ -102,6 +102,7 @@
 #define TRAIT_BLIND 			"blind"
 #define TRAIT_MUTE				"mute"
 #define TRAIT_EMOTEMUTE			"emotemute"
+#define TRAIT_SUPPRESS_PAIN_EMOTES "suppress_pain_emotes"
 #define TRAIT_LOOC_MUTE			"looc_mute" //Just like unconsciousness, it disables LOOC salt.
 #define TRAIT_AOOC_MUTE			"aooc_mute" //Same as above but for AOOC.
 #define TRAIT_DEAF				"deaf"
@@ -125,6 +126,7 @@
 #define TRAIT_TASED_RESISTANCE	"tased_resistance" //prevents you from suffering most of the effects of being tased
 #define TRAIT_BATON_RESISTANCE	"baton_resistance" //prevents you from suffering most of the effects of being batoned
 #define TRAIT_DISABLER_RESISTANCE "disabler_resistance" //prevents you from suffering stamina damage from disablers
+#define TRAIT_STAMINA_IMMUNE		"stamina_immune" //prevents all stamina damage (e.g. superhuman hulk)
 #define TRAIT_SLEEPIMMUNE		"sleep_immunity"
 #define TRAIT_PUSHIMMUNE		"push_immunity"
 #define TRAIT_SHOCKIMMUNE		"shock_immunity"
@@ -188,6 +190,11 @@
 #define TRAIT_QUICKER_CARRY		"quicker-carry"
 #define TRAIT_QUICK_BUILD		"quick-build"
 #define TRAIT_STRONG_GRABBER	"strong_grabber"
+/// Полностью отключает отдачу (тряску экрана) при стрельбе. Выдаётся имплантом рук-горилл.
+#define TRAIT_NO_RECOIL		"no_recoil"
+#define TRAIT_BALLISTIC_PROCESSOR "ballistic_processor"
+/// Blocks all incoming stamina damage (Sandevistan overdrive).
+#define TRAIT_NO_STAMINA_DAMAGE "no_stamina_damage"
 #define TRAIT_CALCIUM_HEALER	"calcium_healer"
 #define TRAIT_MAGIC_CHOKE		"magic_choke"
 #define TRAIT_CAPTAIN_METABOLISM "captain-metabolism"

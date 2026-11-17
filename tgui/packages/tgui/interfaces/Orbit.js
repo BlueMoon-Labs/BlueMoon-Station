@@ -289,17 +289,17 @@ export const Orbit = (props) => {
           searchText={searchText}
         />
 
+        <BasicSection
+          title="NPCs"
+          source={npcs}
+          searchText={searchText}
+        />
+
         {!compact_mode && (
           <>
           <BasicSection
             title="Dead"
             source={dead}
-            searchText={searchText}
-          />
-
-          <BasicSection
-            title="NPCs"
-            source={npcs}
             searchText={searchText}
           />
 

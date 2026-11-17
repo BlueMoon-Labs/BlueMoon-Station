@@ -40,21 +40,6 @@
 		if(right_blood_type) // || right_blood_reagent)
 			mail_goodies += blood_bag
 
-/datum/quirk/depression
-	name = "Депрессия"
-	desc = "Иногда вы просто ненавидите жизнь."
-	mob_trait = TRAIT_DEPRESSION
-	value = -1
-	gain_text = "<span class='danger'>У вас начинается депрессия.</span>"
-	medical_record_text = "У пациента наблюдаются серьёзные перепады настроения, вызывающие острые периоды депрессии."
-	lose_text = "<span class='notice'>У вас больше нет депрессии.</span>" //if only it were that easy!
-	mood_quirk = TRUE
-	processing_quirk = TRUE
-
-/datum/quirk/depression/on_process()
-	if(prob(0.05))
-		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "depression", /datum/mood_event/depression)
-
 /datum/quirk/family_heirloom
 	name = "Семейная реликвия"
 	desc = "Вы владелец реликвии, передающейся из поколения в поколение. Её нужно беречь!"
@@ -509,8 +494,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	quirk_holder.cure_blind(ROUNDSTART_TRAIT)
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
-/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "<span class='warning'>[quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
+/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += "<span class='warning'>[anonymous ? "Его" : quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 /datum/quirk/coldblooded
 	name = "Холоднокровие"

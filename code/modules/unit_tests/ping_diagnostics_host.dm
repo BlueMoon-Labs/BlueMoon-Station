@@ -81,13 +81,13 @@
 	var/list/header = splittext(PING_DIAG_HOST_CSV_HEADER, ",")
 	var/lines_before = ping_diag_test_lines(SSping_diag.host_log)
 	SSping_diag.next_csv_at = 0
-	SSping_diag.fire(FALSE)
+	ping_diag_finish_minute()
 	TEST_ASSERT_EQUAL(SSping_diag.minute_fires, 1, "фаер посчитан в новой минуте")
 	TEST_ASSERT(SSping_diag.minute_fire_us > 0, "время фаера замерено")
 	TEST_ASSERT_EQUAL(SSping_diag.minute_fire_max_us, SSping_diag.minute_fire_us, "один фаер - он же самый долгий")
 	TEST_ASSERT(SSping_diag.minute_log_us > 0, "запись строки ping-host ушла в цену следующей минуты")
 	SSping_diag.next_csv_at = 0
-	SSping_diag.fire(FALSE)
+	ping_diag_finish_minute()
 	var/list/lines = splittext(trim(file2text(SSping_diag.host_log)), "\n")
 	TEST_ASSERT_EQUAL(length(lines), lines_before + 2, "две минутные строки")
 	var/list/cells = splittext(lines[length(lines)], ",")

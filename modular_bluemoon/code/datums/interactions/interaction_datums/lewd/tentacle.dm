@@ -44,11 +44,11 @@
 		message = "вводят свои тентакли в промежность <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/tentacle/female_double
 	required_from_user_exposed = INTERACTION_REQUIRE_VAGINA | INTERACTION_REQUIRE_ANUS
@@ -83,11 +83,11 @@
 		message = "вводят свои тентакли в отверстия <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/tentacle/male
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -119,11 +119,11 @@
 			"сильно извиваются вокруг \the <b>[partner]</b>, стимулируя член.")]"
 		user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/tentacle/male_double
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS | INTERACTION_REQUIRE_PENIS
@@ -159,11 +159,11 @@
 			"сильно извиваются и погружаются внутрь сфинктера \the <b>[partner]</b>, стимулируя член.")]"
 		user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, is_hidden = is_hidden)
 
 /datum/interaction/lewd/tentacle/anus
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -206,9 +206,9 @@
 // ⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⡄⢻⣿⣿⣿⠄⣿⣿⡀⣾⣿⣿⣿⣿⣛⠛⠁⠄⠄
 // ⠄⠄⠄⠄⠈⠛⢿⣿⣿⣿⠁⠞⢿⣿⣿⡄⢿⣿⡇⣸⣿⣿⠿⠛⠁⠄⠄
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, extrarange, local_only = is_hidden)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner)
-	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, is_hidden = is_hidden)
+	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, is_hidden = is_hidden)
 

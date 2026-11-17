@@ -41,10 +41,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		UnregisterSignal(M, COMSIG_ATOM_UPDATED_ICON)
 	host = null
 	for(var/mob/viewer as anything in viewer_screens)
-		var/atom/movable/screen/map_view/viewer_screen = viewer_screens[viewer]
-		if(viewer_screen)
-			viewer_screen.hide_from(viewer)
-			qdel(viewer_screen)
+		release_examine_screen(viewer, viewer_screens[viewer])
 	viewer_screens = null
 	formatted_text_cache = null
 	return ..()
@@ -66,11 +63,85 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	return GLOB.always_state
 
 /datum/description_profile/ui_close(mob/user)
-	var/atom/movable/screen/map_view/viewer_screen = LAZYACCESS(viewer_screens, user)
+	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	LAZYREMOVE(viewer_screens, user)
-	if(viewer_screen)
-		viewer_screen.hide_from(user)
-		qdel(viewer_screen)
+	release_examine_screen(user, viewer_screen)
+
+#define EXAMINE_SCREEN_POOL_MAX 2
+
+/// Экраны осмотра одного клиента. Стопка из ~30 plane master'ов стоила ~1 мс на сборку и столько же на снос при каждом открытии окна.
+/datum/examine_screen_pool
+	var/client/owner
+	/// Все экраны пула, и свободные, и открытые: имена их карт уникальны только внутри пула.
+	var/list/atom/movable/screen/map_view/examine_panel_screen/screens = list()
+	var/list/atom/movable/screen/map_view/examine_panel_screen/idle = list()
+	var/serial = 0
+
+/datum/examine_screen_pool/New(client/owner)
+	. = ..()
+	if(owner)
+		src.owner = owner
+		RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted))
+
+/datum/examine_screen_pool/Destroy()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
+		if(owner.examine_screens == src)
+			owner.examine_screens = null
+		owner = null
+	for(var/atom/movable/screen/map_view/examine_panel_screen/screen as anything in screens)
+		screen.home_pool = null
+	screens = null
+	QDEL_LIST(idle)
+	return ..()
+
+/datum/examine_screen_pool/proc/on_owner_deleted(client/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/examine_screen_pool/proc/take()
+	var/atom/movable/screen/map_view/examine_panel_screen/screen
+	if(length(idle))
+		screen = idle[length(idle)]
+		idle.len--
+		return screen
+	screen = new
+	screen.generate_view("examine_panel_[++serial]_map")
+	screen.home_pool = src
+	screens += screen
+	return screen
+
+/datum/examine_screen_pool/proc/release(atom/movable/screen/map_view/examine_panel_screen/screen)
+	if(QDELETED(screen))
+		return
+	if(screen.home_pool != src || length(idle) >= EXAMINE_SCREEN_POOL_MAX)
+		qdel(screen)
+		return
+	screen.reset_for_pool()
+	idle |= screen
+
+#undef EXAMINE_SCREEN_POOL_MAX
+
+/client/var/datum/examine_screen_pool/examine_screens
+
+/proc/take_examine_screen(client/viewer)
+	if(!viewer)
+		var/atom/movable/screen/map_view/examine_panel_screen/screen = new
+		screen.generate_view("examine_panel_[REF(screen)]_map")
+		return screen
+	if(!viewer.examine_screens)
+		viewer.examine_screens = new(viewer)
+	return viewer.examine_screens.take()
+
+/proc/release_examine_screen(mob/viewer, atom/movable/screen/map_view/examine_panel_screen/screen)
+	if(QDELETED(screen))
+		return
+	screen.hide_from(viewer)
+	var/datum/examine_screen_pool/pool = screen.home_pool
+	if(QDELETED(pool))
+		qdel(screen)
+		return
+	pool.release(screen)
 
 /atom/movable/screen/map_view/examine_panel_screen
 	name = "description profile screen"
@@ -79,6 +150,10 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/cached_target_appearance
 	/// Этаж, на плоскостях которого нарисована показанная внешность.
 	var/shown_offset = 0
+	/// Пул клиента, которому принадлежит имя карты экрана.
+	var/datum/examine_screen_pool/home_pool
+	/// Окно, чьего показа ждёт экран: в пул он уходит без этой подписки.
+	var/datum/tgui_window/awaited_window
 
 /atom/movable/screen/map_view/examine_panel_screen/ensure_plane_group()
 	if(!popup_plane_group)
@@ -87,8 +162,27 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	return popup_plane_group
 
 /atom/movable/screen/map_view/examine_panel_screen/Destroy()
+	if(home_pool)
+		home_pool.screens -= src
+		home_pool.idle -= src
+		home_pool = null
 	cached_target_appearance = null
+	awaited_window = null
 	return ..()
+
+/atom/movable/screen/map_view/examine_panel_screen/display_to(mob/show_to, datum/tgui_window/window)
+	if(window && !window.visible)
+		awaited_window = window
+	return ..()
+
+/atom/movable/screen/map_view/examine_panel_screen/proc/reset_for_pool()
+	if(awaited_window)
+		UnregisterSignal(awaited_window, COMSIG_TGUI_WINDOW_VISIBLE)
+		awaited_window = null
+	cut_overlays()
+	cached_target_appearance = null
+	setDir(initial(dir))
+	icon_state = initial(icon_state)
 
 /atom/movable/screen/map_view/examine_panel_screen/proc/update_character(mob/target)
 	var/target_appearance = target.appearance
@@ -182,6 +276,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/data[0]
 	var/mob/living/M = host.resolve()
 	var/unknown = FALSE
+	var/profile_name = M.get_visible_name()
 
 	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	data["character_ref"] = viewer_screen?.assigned_map
@@ -189,6 +284,9 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	if (iscarbon(M))
 		var/mob/living/carbon/C = M
 		unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEFACE) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEFACE) && !isobserver(user))
+		if(ishuman(C))
+			var/mob/living/carbon/human/H = C
+			unknown = H.examine_identity_hidden(user, check_prosopagnosia = FALSE)
 		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
@@ -200,28 +298,13 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			var/can_see_naked = TRUE
-			if(!H.force_naked_flavor)
-				var/list/obj/item/clothings = list(
-					H.wear_suit,
-					H.w_uniform,
-					H.belt,
-					H.w_underwear,
-					H.w_socks,
-					H.w_shirt,
-					H.wrists,
-					H.wear_neck
-				)
-				removeNullsFromList(clothings)
-				for (var/obj/item/clothing/clothpiece in clothings)
-					if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
-						can_see_naked = FALSE
-						break
+			var/can_see_naked = !unknown && H.can_show_naked_flavor()
 			data["flavortext_naked"] = can_see_naked ? format_text("flavortext_naked", C.dna?.naked_flavor_text) : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END
 
 	data["is_unknown"] = unknown
+	data["profile_name"] = unknown ? "Неизвестный" : profile_name
 
 	return data
 
@@ -248,8 +331,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	if(isnull(viewer_screen))
-		viewer_screen = new
-		viewer_screen.generate_view("examine_panel_[REF(M)]_[REF(user)]_map")
+		viewer_screen = take_examine_screen(user.client)
 		LAZYSET(viewer_screens, user, viewer_screen)
 
 	viewer_screen.icon_state = current_bg_state
@@ -257,7 +339,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
-		ui = new(user, src, "CharacterProfile", "Профиль персонажа [M]")
+		ui = new(user, src, "CharacterProfile", "Профиль персонажа")
 		ui.open()
 		viewer_screen.display_to(user, ui.window)
 

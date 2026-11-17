@@ -45,13 +45,12 @@
 	TEST_ASSERT(istype(replacement_turf, /turf/open/floor/plasteel/white), "Replacement turf had the wrong type ([replacement_turf.type])")
 	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Lighting object was not transferred to the replacement turf")
 	TEST_ASSERT_EQUAL(test_object.affected_turf, replacement_turf, "Lighting object still pointed at the old turf after ChangeTurf")
-	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the transferred lighting object in vis_contents")
+	TEST_ASSERT_EQUAL(test_object.loc, replacement_turf, "Lighting object left the tile on ChangeTurf")
 	qdel(test_object, force = TRUE)
 
 // Путь маплоадера (мид-раунд шаблоны: комнаты отеля Гильберта, авейки): ChangeTurf выполняется
-// при отложенном Initialize (map_loader_begin), привязывая lighting_object к vis_contents,
-// а затем initTemplateBounds() инициализирует турф, и vis_contents.Cut() в /turf/Initialize
-// не должен терять рендер света - иначе турф навсегда чёрный от backdrop'а lighting plane.
+// при отложенном Initialize (map_loader_begin), а затем initTemplateBounds() инициализирует турф.
+// Свет должен остаться на турфе - иначе турф навсегда чёрный от backdrop'а lighting plane.
 /datum/unit_test/lighting_object_survives_deferred_maploader_init/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
@@ -68,12 +67,12 @@
 
 	TEST_ASSERT(!(replacement_turf.flags_1 & INITIALIZED_1), "Turf was initialized inline despite map loader mode; test premise broken")
 	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Lighting object was not transferred to the replacement turf")
-	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Lighting object was not in vis_contents right after deferred-init ChangeTurf")
+	TEST_ASSERT_EQUAL(test_object.loc, replacement_turf, "Lighting object left the tile right after deferred-init ChangeTurf")
 
 	SSatoms.InitializeAtoms(list(replacement_turf))
 
 	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Deferred turf Initialize lost the lighting_object reference")
-	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Deferred turf Initialize (maploader path) dropped the lighting object from vis_contents")
+	TEST_ASSERT_EQUAL(test_object.loc, replacement_turf, "Deferred turf Initialize (maploader path) moved the lighting object off the tile")
 	qdel(test_object, force = TRUE)
 
 /datum/unit_test/forced_turf_destroy_cleans_lighting_object/Run()
@@ -209,8 +208,8 @@
 		corner.update_active()
 	return lo
 
-/// Helper: create a lighting_object the canonical way (new(turf) - loc на турфе, гибридный
-/// рендер loc+vis_contents) with end-of-test cleanup. allocate() itself can't be used - its
+/// Helper: create a lighting_object the canonical way (new(turf) - loc на турфе)
+/// with end-of-test cleanup. allocate() itself can't be used - its
 /// plain qdel teardown is ignored by lighting_object/Destroy(), so these go into the
 /// force-qdel cleanup list.
 /datum/unit_test/proc/allocate_lighting_object(turf/T)
@@ -495,7 +494,7 @@
 	// Verify light source survived the repair cycle
 	TEST_ASSERT(new_emitter.light, "Light source should still exist after repair cycle")
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_lo, "Lighting object should still be on the turf after repair")
-	TEST_ASSERT(test_lo in test_turf.vis_contents, "Lighting object should be in vis_contents after repair")
+	TEST_ASSERT_EQUAL(test_lo.loc, test_turf, "Lighting object should still sit on the turf after repair")
 	// Verify the lighting_object was queued for update (blend recalc happened): в однородной
 	// окрестности пересчёт обязан сбросить личный профиль обратно на зонный
 	TEST_ASSERT(!test_lo.blend_is_local, "Stale local blend should have been cleared by the repair cycle recalc")
@@ -627,10 +626,10 @@
 	test_turf.recalc_atom_opacity()
 	TEST_ASSERT(test_turf.shadow_weight_sum >= 0.49, "shadow_weight_sum should be updated after recalc (got [test_turf.shadow_weight_sum])")
 
-/// Гибридный рендер lighting_object: объект лежит на турфе (loc) И продублирован в
-/// vis_contents. loc-канал - доставка animate()/appearance клиентам (у nullspace-атома,
-/// видимого только через vis_contents, анимации до клиентов не доезжают - устаревшие
-/// "тёмные зоны" до пересинка view/реконнекта). vis_contents-канал сохранён (паритет master).
+/// lighting_object лежит на турфе (loc) и в vis_contents турфа не дублируется. loc - доставка
+/// animate()/appearance клиентам (у nullspace-атома, видимого только через vis_contents,
+/// анимации до клиентов не доезжают). Дубль в vis_contents SendMaps осматривал второй раз
+/// на каждом тайле обзора каждого клиента.
 /datum/unit_test/lighting_object_hybrid_render/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
@@ -643,11 +642,11 @@
 	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 	TEST_ASSERT_EQUAL(test_object.loc, test_turf, "Lighting object must sit on its turf (delivery channel), had loc [test_object.loc]")
-	TEST_ASSERT(test_object in test_turf.vis_contents, "Lighting object must also be referenced in turf vis_contents")
+	TEST_ASSERT(!(test_object in test_turf.vis_contents), "Lighting object must not be duplicated in turf vis_contents")
 
 	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white)
 	TEST_ASSERT_EQUAL(test_object.loc, replacement_turf, "Lighting object must stay on the tile after ChangeTurf, had loc [test_object.loc]")
-	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the lighting object in vis_contents")
+	TEST_ASSERT(!(test_object in replacement_turf.vis_contents), "ChangeTurf duplicated the lighting object into vis_contents")
 	qdel(test_object, force = TRUE)
 
 /// Оверлейный свет: компонент вешается по light_system, тумблер двигает маску в underlays

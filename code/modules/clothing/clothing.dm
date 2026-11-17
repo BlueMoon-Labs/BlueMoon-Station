@@ -546,15 +546,18 @@ BLIND     // can't see anything
 			Shreds.desc = "The sad remains of what used to be [name]."
 		deconstruct(FALSE)
 	else if(!(damage_flag in list(ACID, FIRE)))
-		damaged_clothes = CLOTHING_SHREDDED
-		body_parts_covered = NONE
-		name = "shredded [initial(name)]"
-		update_clothes_damaged_state(CLOTHING_SHREDDED)
-		if(ismob(loc))
-			var/mob/M = loc
-			M.visible_message("<span class='danger'>[M]'s [src.name] is completely shredded!</span>", "<span class='userdanger'>Your [src.name] is completely shredded!</span>", vision_distance = COMBAT_MESSAGE_RANGE)
+		shred_clothing()
 	else
 		..()
+
+/obj/item/clothing/proc/shred_clothing(vision_distance = COMBAT_MESSAGE_RANGE, visible_message_flags = NONE)
+	damaged_clothes = CLOTHING_SHREDDED
+	body_parts_covered = NONE
+	name = "shredded [initial(name)]"
+	update_clothes_damaged_state(CLOTHING_SHREDDED)
+	if(ismob(loc))
+		var/mob/wearer = loc
+		wearer.visible_message(span_danger("Одежда на [wearer] разрывается в клочья!"), span_userdanger("Твоя одежда разрывается в клочья!"), vision_distance = vision_distance, visible_message_flags = visible_message_flags)
 
 //Species-restricted clothing check. - Thanks Oraclestation, BS13, /vg/station etc.
 /obj/item/clothing/mob_can_equip(M, equipper, slot, disable_warning = TRUE, bypass_equip_delay_self)

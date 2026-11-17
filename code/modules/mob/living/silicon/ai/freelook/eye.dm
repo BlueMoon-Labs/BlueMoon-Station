@@ -190,13 +190,21 @@
 			var/list/static_images = chunk.static_images_for(use_static, build_missing = FALSE)
 			if(length(static_images))
 				static_client.images -= static_images
+		UnregisterSignal(static_client, COMSIG_PARENT_QDELETING)
 	static_client = viewer
+	if(viewer)
+		RegisterSignal(viewer, COMSIG_PARENT_QDELETING, PROC_REF(on_static_client_deleted))
 	if(!viewer || use_static == USE_STATIC_NONE)
 		return
 	for(var/datum/camerachunk/chunk as anything in visibleCameraChunks)
 		var/list/static_images = chunk.static_images_for(use_static)
 		if(length(static_images))
 			viewer.images += static_images
+
+/// ИИ закрыл игру, а глаз остался: клиент в static_client стоил бы обхода мира на логауте.
+/mob/camera/aiEye/proc/on_static_client_deleted(client/source)
+	SIGNAL_HANDLER
+	static_client = null
 
 // (EDIT) Pe4henika bluemoon -- start
 /mob/camera/aiEye/Destroy()

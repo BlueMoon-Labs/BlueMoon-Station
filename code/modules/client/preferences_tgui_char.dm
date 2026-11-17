@@ -529,6 +529,7 @@
 
 	fields += list(ff("has_cock", "Иметь пенис", FEATURE_BOOL))
 	fields += list(color_ff("cock_color", "Цвет пениса", FEATURE_COLOR_LIMITED))
+	fields += list(ff("cock_dynamic_size", "Динамический размер", FEATURE_BOOL))
 	fields += list(num_ff("cock_length", "Длина пениса, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
 	var/list/cock_max_field = num_ff("cock_max_length", "Максимальная длина, см", 0, CONFIG_GET(number/penis_max_inches_prefs))
 	cock_max_field["deletable"] = TRUE
@@ -543,6 +544,14 @@
 	var/list/cock_ratio_field = num_ff("cock_diameter_ratio", "Коэффициент диаметра", CONFIG_GET(number/diameter_ratio_min_size_prefs), CONFIG_GET(number/diameter_ratio_max_size_prefs), FEATURE_SCOPE_FEATURE, FEATURE_SPRITE_SCALE_HINT)
 	cock_ratio_field["step"] = 0.01
 	fields += list(cock_ratio_field)
+	fields += list(num_ff("cock_flaccid_length", "Длина в спокойном состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_flaccid_width_field = num_ff("cock_flaccid_width", "Ширина в спокойном состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_flaccid_width_field["step"] = 0.1
+	fields += list(cock_flaccid_width_field)
+	fields += list(num_ff("cock_erect_length", "Длина в возбуждённом состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_erect_width_field = num_ff("cock_erect_width", "Ширина в возбуждённом состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_erect_width_field["step"] = 0.1
+	fields += list(cock_erect_width_field)
 	fields += list(list_ff("cock_visibility", "Видимость пениса", visibility_options))
 	fields += list(ff("cock_accessible", "Пенис всегда доступен", FEATURE_BOOL))
 	fields += list(ff("cock_stuffing", "Игрушки и пополнение", FEATURE_BOOL))
@@ -911,8 +920,9 @@
 
 	var/list/parts = list()
 	parts += list(genital_part_block("penis", "has_cock", "Пенис", list(
-		"cock_color", "cock_shape", "cock_length", "cock_max_length", "cock_min_length",
-		"cock_diameter_ratio", "cock_visibility", "cock_accessible", "cock_stuffing",
+		"cock_color", "cock_shape", "cock_dynamic_size", "cock_length", "cock_max_length", "cock_min_length",
+		"cock_diameter_ratio", "cock_flaccid_length", "cock_flaccid_width",
+		"cock_erect_length", "cock_erect_width", "cock_visibility", "cock_accessible", "cock_stuffing",
 	)))
 	parts += list(genital_part_block("testicles", "has_balls", "Яички", list(
 		"balls_color", "balls_shape", "balls_size", "balls_visibility",
@@ -979,6 +989,10 @@
 			return feats["breasts_sprite_variant"] != "Old"
 		if("breasts_fluid")
 			return !!feats["breasts_producing"]
+		if("cock_length", "cock_max_length", "cock_min_length", "cock_diameter_ratio")
+			return !feats["cock_dynamic_size"]
+		if("cock_flaccid_length", "cock_flaccid_width", "cock_erect_length", "cock_erect_width")
+			return !!feats["cock_dynamic_size"]
 	return TRUE
 
 /datum/character_setup/proc/markings_type()
@@ -2873,12 +2887,31 @@
 		old_cost = old_option["cost"]
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
+		// Возврат к обычному органу снимает имплант, занимавший этот слот (например, оптику Кироши).
+		var/list/slot_implants = list()
+		for(var/implant_id in prefs.implant_mods)
+			var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+			if(implant_option && implant_option["organ_slot"] == slot)
+				slot_implants += implant_id
+		for(var/implant_id in slot_implants)
+			prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
+	// Импланты вроде оптики Кироши занимают тот же слот: выбор органа снимает их и возвращает очки.
+	var/implant_refund = 0
+	var/list/conflicting_implants = list()
+	for(var/implant_id in prefs.implant_mods)
+		var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+		if(implant_option && implant_option["organ_slot"] == slot)
+			if(!prefs.body_mod_implant_locked(implant_option))
+				implant_refund += implant_option["cost"]
+			conflicting_implants += implant_id
 	var/balance = quirk_balance()
-	if(balance + old_cost - option["cost"] < min(0, balance))
-		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
+	if(balance + old_cost + implant_refund - option["cost"] < min(0, balance))
+		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost - implant_refund] очков квирков."))
 		return
+	for(var/implant_id in conflicting_implants)
+		prefs.implant_mods -= implant_id
 	prefs.organ_mods[slot] = option["id"]
 	preview_dirty = TRUE
 
@@ -2898,9 +2931,23 @@
 		prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
-	if(balance - option["cost"] < min(0, balance))
+	if(prefs.body_mod_implant_locked(option))
+		to_chat(user, span_warning(prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет заменить этот орган."))
+		return
+	// Снятые конфликтующие импланты (другая рука/нога/глаза) возвращают свои очки.
+	var/refund = prefs.body_mod_implant_swap_refund(implant_id)
+	var/organ_slot = option["organ_slot"]
+	if(organ_slot)
+		var/list/organ_option = prefs.body_mod_organ_option(organ_slot, prefs.organ_mods[organ_slot])
+		if(organ_option)
+			refund += organ_option["cost"]
+	if(balance + refund - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
+	for(var/conflicting_id in prefs.body_mod_implant_conflicts(implant_id))
+		prefs.implant_mods -= conflicting_id
+	if(organ_slot)
+		prefs.organ_mods -= organ_slot
 	prefs.implant_mods[implant_id] = TRUE
 	preview_dirty = TRUE
 
@@ -3279,13 +3326,18 @@
 
 	var/list/implants = list()
 	for(var/list/option in GLOB.body_mod_implants)
-		implants += list(list(
+		var/locked = prefs.body_mod_implant_locked(option)
+		var/list/implant_row = list(
 			"id" = option["id"],
 			"label" = option["label"],
 			"desc" = option["desc"],
 			"cost" = option["cost"],
 			"selected" = !!prefs.implant_mods[option["id"]],
-		))
+			"locked" = locked,
+		)
+		if(locked)
+			implant_row["lockReason"] = prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет установить этот имплант."
+		implants += list(implant_row)
 	data["implants"] = implants
 	return data
 
@@ -3735,13 +3787,14 @@
 			var/list/slot_names = prefs.get_slot_names()
 			if(slot_names?[new_slot])
 				var/old_slot = prefs.default_slot
+				// Номер слота load_character записал в файл сам, полная запись префов тут не нужна.
 				if(!prefs.load_character(new_slot, bypass_cooldown = TRUE))
 					prefs.default_slot = old_slot
 					return
 			else
 				if(!prefs.create_character(new_slot))
 					return
-			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			prefs.parent?.tgui_panel?.emotes_send_list()
 			stop_sound_preview()
 			save_notice = save_previous ? "[previous_name]: сохранён автоматически при переключении." : null
@@ -4580,6 +4633,10 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 /atom/movable/screen/map_view/character_setup_screen/display_to_client(client/show_to)
 	. = ..()
 	apply_native_camera()
+
+/atom/movable/screen/map_view/character_setup_screen/hide_from(mob/hide_from)
+	. = ..()
+	prepared_for_client = null
 
 /atom/movable/screen/map_view/character_setup_screen/proc/apply_native_camera()
 	if(registered_client)

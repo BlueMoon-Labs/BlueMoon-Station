@@ -172,6 +172,7 @@
 	scale = context_menu_style_option(style, "scale") / 100
 	font_id = context_menu_style_option(style, "font")
 	use_html = context_menu_style_option(style, "renderer") == "html" && !!user?.client
+	html_control = context_menu_html_control(style)
 	// на карте сглажены только Calibri и Candara (см. context_menu_font_families): по умолчанию там Calibri,
 	// шрифт, для которого нет таблицы ширин, тоже заменяется им
 	if(!use_html && (!style?["font"] || !(font_id in GLOB.context_menu_map_fonts)))
@@ -468,7 +469,7 @@
 	hint_row = null
 	if(!length(hint_objects))
 		return
-	user?.client?.screen -= hint_objects
+	menu_client()?.screen -= hint_objects
 	QDEL_LIST(hint_objects)
 
 /datum/context_menu/proc/add_row(datum/context_menu_entry/entry, text, x, y, background, hint, atom/icon_source, height)

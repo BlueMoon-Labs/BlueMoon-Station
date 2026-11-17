@@ -374,24 +374,35 @@
 		return FALSE
 	return summary["shared_known"] >= PING_DIAG_SHARED_KNOWN_MIN
 
-/// Сырые замеры новее after для пересчёта порогов офлайн: "dt/rtt/stall[p][f]", p - ускоренный замер, f - пришёл под потоком чата.
+/**
+ * Сырые замеры окна новее after и не новее now для пересчёта порогов офлайн: "dt/rtt/stall[p][f]", p - ускоренный замер, f - пришёл под потоком чата.
+ * Кольцо идёт от нового к старому до первого уже выгруженного: старые замеры окна не перебираются.
+ */
 /datum/ping_diagnostics/proc/raw_since(now, after)
-	var/list/parts = list()
-	var/first
-	var/previous
+	var/window_start = now - PING_DIAG_WINDOW_DS
+	var/list/slots = list()
+	var/slot = next_slot
+	for(var/i in 1 to sample_count)
+		slot = slot > 1 ? slot - 1 : capacity
+		var/time = sample_time[slot]
+		if(time > now)
+			continue
+		if(time <= after || time < window_start)
+			break
+		slots += slot
+	var/count = length(slots)
+	if(!count)
+		return list("t0" = null, "last" = null, "text" = "")
+	var/list/parts = new /list(count)
+	var/first = sample_time[slots[count]]
 	// dt - разность округлённых смещений от t0: сумма dt не уплывает от реального времени.
 	var/previous_offset = 0
-	for(var/slot in window_slots(now))
-		var/time = sample_time[slot]
-		if(time <= after)
-			continue
-		if(isnull(first))
-			first = time
-		var/offset = round(time - first, 1)
-		parts += "[offset - previous_offset]/[round(sample_rtt[slot], 1)]/[round(sample_stall[slot], 1)][sample_batch[slot] ? "" : "p"][sample_flood[slot] ? "f" : ""]"
+	for(var/i in 1 to count)
+		slot = slots[count - i + 1]
+		var/offset = round(sample_time[slot] - first, 1)
+		parts[i] = "[offset - previous_offset]/[round(sample_rtt[slot], 1)]/[round(sample_stall[slot], 1)][sample_batch[slot] ? "" : "p"][sample_flood[slot] ? "f" : ""]"
 		previous_offset = offset
-		previous = time
-	return list("t0" = first, "last" = previous, "text" = parts.Join(" "))
+	return list("t0" = first, "last" = sample_time[slots[1]], "text" = parts.Join(" "))
 
 /// Точки графика за окно. В корзине прореживания берётся замер с наибольшим RTT, чтобы спайки не терялись.
 /datum/ping_diagnostics/proc/graph_points(now)

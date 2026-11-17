@@ -113,8 +113,19 @@
 	///If the object being hit can pass ths damage on to something else, it should not do it for this bullet
 	var/force_hit = FALSE
 
+	// Ballistic processor
+	/// Снаряд настроен имплантом владельца при выстреле.
+	var/ballistic_processor = FALSE
+	var/ballistic_processor_ricochet_chance = 70
+	var/ballistic_processor_max_ricochets = 2
+	var/ballistic_processor_homing_angle = 15
+	var/ballistic_processor_homing_range = 7
+	var/ballistic_processor_ricochets_done = 0
+
 	//Hitscan
 	var/hitscan = FALSE		//Whether this is hitscan. If it is, speed is basically ignored.
+	/// Подшаги луча внутри одного тайла считаются на месте, без вызовов траектории. FALSE - старый пошаговый проход, эталон для тестов.
+	var/hitscan_substep_skip = TRUE
 	var/list/beam_segments	//assoc list of datum/point or datum/point/vector, start = end. Used for hitscan effect generation.
 	var/datum/point/beam_index
 	/// Used in generate_hitscan_tracers to determine which "cycle" we're on.
@@ -202,6 +213,9 @@
 	var/hit_incapacitated_targets = FALSE
 
 /obj/item/projectile/Initialize(mapload)
+	// A hitscan shot finishes within the tick and is never drawn: its tracers carry the light.
+	if(hitscan)
+		light_range = 0
 	. = ..()
 	decayedRange = range
 	if(embedding)
@@ -358,14 +372,18 @@
 		return 50 //if the projectile doesn't do damage, play its hitsound at 50% volume
 
 /obj/item/projectile/proc/on_ricochet(atom/A)
-	if(!ricochet_auto_aim_angle || !ricochet_auto_aim_range)
+	// Лазеры и прочие небаллистические снаряды сохраняют собственные настройки наведения.
+	var/use_processor_homing = ballistic_processor && flag == BULLET
+	var/auto_aim_angle = use_processor_homing ? ballistic_processor_homing_angle : ricochet_auto_aim_angle
+	var/auto_aim_range = use_processor_homing ? ballistic_processor_homing_range : ricochet_auto_aim_range
+	if(!auto_aim_angle || !auto_aim_range)
 		return
 
 	var/mob/living/unlucky_sob
-	var/best_angle = ricochet_auto_aim_angle
+	var/best_angle = auto_aim_angle
 	if(firer && HAS_TRAIT(firer, TRAIT_NICE_SHOT))
 		best_angle += NICE_SHOT_RICOCHET_BONUS
-	for(var/mob/living/L in range(ricochet_auto_aim_range, src.loc))
+	for(var/mob/living/L in range(auto_aim_range, src.loc))
 		if(L.stat == DEAD || !isInSight(src, L))
 			continue
 		var/our_angle = abs(closer_angle_difference(Angle, get_projectile_angle(src.loc, L.loc)))
@@ -405,19 +423,35 @@
 	if(impacted[A]) // NEVER doublehit - Silly-Cons
 		return FALSE
 	var/turf/T = get_turf(A)
-	if(check_ricochet_flag(A) && check_ricochet(A)) //if you can ricochet, attempt to ricochet off the object
-		ricochets++
-		if(A.handle_ricochet(src))
-			on_ricochet(A) //if allowed, use autoaim to ricochet into someone, otherwise default to ricocheting off the object from above
-			impacted = list() // Shoot a x-ray laser at a pair of mirrors I dare you
-			ignore_source_check = TRUE // Firer is no longer immune
-			decayedRange = max(0, decayedRange - reflect_range_decrease)
-			ricochet_chance *= ricochet_decay_chance
-			damage *= ricochet_decay_damage
-			range = decayedRange
-			if(hitscan)
-				store_hitscan_collision(trajectory.copy_to())
-			return TRUE
+	if(check_ricochet_flag(A))
+		var/processor_ricochet = flag == BULLET && firer && HAS_TRAIT(firer, TRAIT_BALLISTIC_PROCESSOR) && ballistic_processor_ricochets_done < ballistic_processor_max_ricochets
+		if(processor_ricochet && prob(ballistic_processor_ricochet_chance))
+			ballistic_processor_ricochets_done++
+			ricochets++
+			if(A.handle_ricochet(src))
+				on_ricochet(A)
+				impacted = list()
+				ignore_source_check = TRUE
+				decayedRange = max(0, decayedRange - reflect_range_decrease)
+				ricochet_chance *= ricochet_decay_chance
+				damage *= ricochet_decay_damage
+				range = decayedRange
+				if(hitscan)
+					store_hitscan_collision(trajectory.copy_to())
+				return TRUE
+		if(check_ricochet(A))
+			ricochets++
+			if(A.handle_ricochet(src))
+				on_ricochet(A) //if allowed, use autoaim to ricochet into someone, otherwise default to ricocheting off the object from above
+				impacted = list() // Shoot a x-ray laser at a pair of mirrors I dare you
+				ignore_source_check = TRUE // Firer is no longer immune
+				decayedRange = max(0, decayedRange - reflect_range_decrease)
+				ricochet_chance *= ricochet_decay_chance
+				damage *= ricochet_decay_damage
+				range = decayedRange
+				if(hitscan)
+					store_hitscan_collision(trajectory.copy_to())
+				return TRUE
 
 	var/distance = get_dist(T, starting) // Get the distance between the turf shot from and the mob we hit and use that for the calculations.
 	if(def_zone && check_zone(def_zone) != BODY_ZONE_CHEST)
@@ -802,10 +836,11 @@
 	var/use_fired_range = fired_light_range || light_range
 	var/use_fired_power = fired_light_intensity || light_power || 1
 	var/use_fired_color = fired_light_color || light_color
-	if(use_fired_range > 0)
-		set_light(use_fired_range, use_fired_power, use_fired_color)
-	else
-		set_light(fired_light_range, fired_light_intensity, fired_light_color)
+	if(!hitscan)
+		if(use_fired_range > 0)
+			set_light(use_fired_range, use_fired_power, use_fired_color)
+		else
+			set_light(fired_light_range, fired_light_intensity, fired_light_color)
 	trajectory_ignore_forcemove = FALSE
 	if(isnull(pixel_increment_amount))
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
@@ -925,7 +960,7 @@
 		pixel_move(ttm, TRUE, hitscan_movement_decisecond_equivalency)
 		// Hitscans still resolve asynchronously in one logical shot, but yield
 		// instead of monopolizing a lagged world tick across their full range.
-		if(TICK_CHECK)
+		if(TICK_CHECK_RESUME)
 			stoplag(1)
 
 /**
@@ -944,7 +979,61 @@
 	var/old_px = pixel_x
 	var/old_py = pixel_y
 	var/start_speed = pixels_per_second
-	for(var/i in 1 to times)
+	var/skip_substeps = hitscanning && hitscan_substep_skip
+	var/i = 0
+	while(i < times)
+		i++
+		// Подшаг, который не выводит из тайла и не тратит дальность, меняет только траекторию:
+		// проходим такие подряд на локальных числах теми же сложениями, что и increment().
+		if(skip_substeps && !homing_target && isturf(loc))
+			var/turf/here = loc
+			var/step_x = trajectory.mpx * trajectory_multiplier
+			var/step_y = trajectory.mpy * trajectory_multiplier
+			var/range_step = pixel_increment_amount * trajectory_multiplier
+			var/min_x = (here.x - 1) * world.icon_size
+			var/max_x = here.x * world.icon_size
+			var/min_y = (here.y - 1) * world.icon_size
+			var/max_y = here.y * world.icon_size
+			var/next_x = trajectory.x
+			var/next_y = trajectory.y
+			var/next_leftover = pixels_range_leftover
+			var/skipped = 0
+			// Луч вдоль оси по целым пикселям (эмиттер): все такие подшаги - одним сложением, оно здесь точное.
+			var/jump
+			if(range_step > 0 && round(range_step) == range_step && round(next_leftover) == next_leftover)
+				var/frozen_x = next_x + step_x == next_x
+				var/frozen_y = next_y + step_y == next_y
+				var/jump_x = frozen_x ? ((next_x > min_x && next_x <= max_x) ? INFINITY : 0) : hitscan_axis_inert_steps(next_x, step_x, min_x, max_x)
+				var/jump_y = frozen_y ? ((next_y > min_y && next_y <= max_y) ? INFINITY : 0) : hitscan_axis_inert_steps(next_y, step_y, min_y, max_y)
+				if(!isnull(jump_x) && !isnull(jump_y))
+					jump = min(times - i + 1, jump_x, jump_y, CEILING((world.icon_size - next_leftover) / range_step, 1) - 1)
+					if(jump > 0)
+						if(!frozen_x)
+							next_x += jump * step_x
+						if(!frozen_y)
+							next_y += jump * step_y
+						next_leftover += jump * range_step
+						skipped = jump
+						i += jump
+			while(isnull(jump) && i <= times)
+				var/probe_x = next_x + step_x
+				var/probe_y = next_y + step_y
+				var/probe_leftover = next_leftover + range_step
+				if(probe_x <= min_x || probe_x > max_x || probe_y <= min_y || probe_y > max_y || probe_leftover >= world.icon_size)
+					break
+				next_x = probe_x
+				next_y = probe_y
+				next_leftover = probe_leftover
+				skipped++
+				i++
+			if(skipped)
+				trajectory.x = next_x
+				trajectory.y = next_y
+				trajectory.iteration += skipped
+				pixels_range_leftover = next_leftover
+				. += skipped
+				if(i > times)
+					break
 		// HOMING START - Too expensive to proccall at this point.
 		if(homing_target)
 			// No datum/points, too expensive.
@@ -1003,6 +1092,14 @@
 		else
 			pixel_x = traj_px
 			pixel_y = traj_py
+
+/// Сколько подшагов ось луча остаётся в (low, high], если k сложений шага точно равны сложению k * шаг. null - не равны.
+/proc/hitscan_axis_inert_steps(position, step, low, high)
+	if(round(step) != step || round(position) != position)
+		return null
+	if(step > 0)
+		return (position + step <= low) ? 0 : round((high - position) / step)
+	return (position + step > high) ? 0 : CEILING((position - low) / -step, 1) - 1
 
 /obj/item/projectile/proc/set_homing_target(atom/A)
 	if(!A || (!isturf(A) && !isturf(A.loc)))
@@ -1123,10 +1220,19 @@
 	if(!length(beam_segments))
 		return
 	. = list()
+	// Everything that lives for duration goes away on one timer per shot.
+	var/list/expiring = list()
 	if(tracer_type)
 		var/list/turfs = list()
 		for(var/datum/point/p in beam_segments)
-			. += generate_tracer_between_points(p, beam_segments[p], tracer_type, color, duration, hitscan_light_range, hitscan_light_color_override, hitscan_light_intensity, turfs)
+			. += generate_tracer_between_points(p, beam_segments[p], tracer_type, color, 0, hitscan_light_range, hitscan_light_color_override, hitscan_light_intensity, turfs)
+		if(duration > 0)
+			expiring += .
+		var/list/lights = generate_tracer_lighting(turfs, isnull(hitscan_light_color_override) ? color : hitscan_light_color_override, hitscan_light_range, hitscan_light_intensity)
+		if(duration > 0)
+			expiring += lights
+		else if(length(lights))
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(______qdel_list_wrapper), lights), 5)
 	if(muzzle_type && duration > 0)
 		var/datum/point/p = beam_segments[1]
 		var/atom/movable/thing = new muzzle_type
@@ -1137,7 +1243,7 @@
 		thing.transform = M
 		thing.color = color
 		thing.set_light(muzzle_flash_range, muzzle_flash_intensity, muzzle_flash_color_override? muzzle_flash_color_override : color)
-		QDEL_IN(thing, duration)
+		expiring += thing
 	if(impacting && impact_type && duration > 0)
 		var/datum/point/p = beam_segments[beam_segments[beam_segments.len]]
 		var/atom/movable/thing = new impact_type
@@ -1148,7 +1254,9 @@
 		thing.transform = M
 		thing.color = color
 		thing.set_light(impact_light_range, impact_light_intensity, impact_light_color_override? impact_light_color_override : color)
-		QDEL_IN(thing, duration)
+		expiring += thing
+	if(length(expiring))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(______qdel_list_wrapper), expiring), duration)
 	if(cleanup)
 		cleanup_beam_segments()
 

@@ -258,7 +258,7 @@
 		if("release")
 			var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			if (collar.bought && bank) // If the slave was paid for by the station, but we removed their slave collar for some reason, we return the money to the station.
-				bank.adjust_money(collar.price)
+				bank.credit(collar.price, ECON_MISC, usr, "Возврат выкупа")
 			qdel(collar)
 
 		if("compact_toggle")

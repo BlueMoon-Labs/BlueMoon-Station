@@ -486,10 +486,18 @@ GLOBAL_LIST_INIT(heretic_sky_anchors, list(
 	loop.status = SOUND_STREAM
 	SEND_SOUND(listener, loop)
 	listeners[listener] = 0
+	// Небо звучит до конца раунда: ушедший слушатель в списке стоил бы обхода мира на его логауте.
+	RegisterSignal(listener, COMSIG_PARENT_QDELETING, PROC_REF(on_listener_deleted), override = TRUE)
 
 /datum/heretic_sky_voice/proc/stop_for(client/listener)
 	listeners -= listener
+	if(listener)
+		UnregisterSignal(listener, COMSIG_PARENT_QDELETING)
 	listener?.mob?.stop_sound_channel(channel)
+
+/datum/heretic_sky_voice/proc/on_listener_deleted(client/source)
+	SIGNAL_HANDLER
+	listeners -= source
 
 /datum/heretic_sky_voice/proc/silence()
 	for(var/client/listener as anything in listeners.Copy())

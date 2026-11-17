@@ -609,11 +609,9 @@
 	var/list/mob_states = list()
 
 /datum/proximity_monitor/advanced/timestop/mod_channel/freeze_mob(mob/living/user)
-	var/list/state = list("sight" = user.sight, "hud" = user.hud_used?.hud_version)
 	if(isanimal(user))
 		var/mob/living/simple_animal/animal = user
-		state["ai"] = animal.AIStatus
-	mob_states[user] = state
+		mob_states[user] = list("ai" = animal.AIStatus)
 	return ..()
 
 /datum/proximity_monitor/advanced/timestop/mod_channel/unfreeze_mob(mob/living/user)
@@ -621,9 +619,6 @@
 	. = ..()
 	if(!state)
 		return
-	user.sight = state["sight"]
-	if(user.client && !isnull(state["hud"]))
-		user.hud_used?.show_hud(state["hud"])
 	if(isanimal(user))
 		var/mob/living/simple_animal/animal = user
 		animal.toggle_ai(state["ai"])

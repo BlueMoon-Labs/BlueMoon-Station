@@ -10,3 +10,4 @@
 	. = ..()
 	if(test_path)
 		fdel(test_path)
+		fdel("[test_path].journal")

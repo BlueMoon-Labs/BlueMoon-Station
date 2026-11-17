@@ -254,7 +254,7 @@
 	if(!iscarbon(host_mob)) //nonstandard biology
 		return FALSE
 	var/mob/living/carbon/C = host_mob
-	if(C.get_ghost())
+	if(!C.client)
 		return FALSE
 	return C.can_revive()
 
@@ -271,7 +271,7 @@
 		if(C.health < HEALTH_THRESHOLD_FULLCRIT && oxydamage)
 			var/diff = C.health - HEALTH_THRESHOLD_FULLCRIT
 			C.adjustOxyLoss(diff)	//Heal their oxydamage up to hardcrit (or if less, as much as they have, since the proc has sanity)
-		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE)
+		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE, medical_revive = TRUE)
 		if(breathless)
 			C.emote("twitch")
 		else
@@ -305,7 +305,7 @@
 	var/mob/living/carbon/target = host_mob
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive())
+	if(target.revive(medical_revive = TRUE))
 		target.visible_message("...[target]'s posibrain flickers to life once again!")
 		target.emote("ping")
 		// BLUEMOON EDIT START - изменение памяти после смерти

@@ -13,4 +13,4 @@
 	TEST_ASSERT(survivor in live, "живая цель пропала из кэша")
 	live = null
 	// Кроме переменной теста ссылок быть не должно.
-	TEST_ASSERT_EQUAL(refcount(target), 1, "кэш турели держит удалённую цель")
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(target), 0, "кэш турели держит удалённую цель")

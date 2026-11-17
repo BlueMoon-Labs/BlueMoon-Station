@@ -22,4 +22,5 @@
 	//sound not longer matches the text, but an audible warning is probably good
 
 /datum/round_event/radiation_storm/start()
+	SSmarket?.station_event("radiation_storm")
 	SSweather.run_weather(/datum/weather/rad_storm)

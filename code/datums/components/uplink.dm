@@ -33,6 +33,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/unlock_text
 	var/is_syndicate = FALSE
 	var/list/previous_attempts
+	/// Позиции, заблокированные предыдущими покупками именно в этом аплинке.
+	var/list/blocked_uplink_items = list()
 
 /datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT, syndicate = FALSE)
 	is_syndicate = syndicate
@@ -123,7 +125,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 
 /// Те же условия, что и для строки в каталоге (hijack_only, blocked_round_types, роль, вид). Нужен для Random Item и защиты покупки.
 /datum/component/uplink/proc/is_uplink_item_visible_to_user(mob/user, datum/uplink_item/I)
-	if(!I || I.limited_stock == 0)
+	if(!I || I.limited_stock == 0 || (I.type in blocked_uplink_items))
 		return FALSE
 	if(I.hijack_only && !can_access_hijack_uplink_items(user))
 		return FALSE
@@ -288,6 +290,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 	if(!istype(U))
 		return
 	if (!user || user.incapacitated())
+		return
+	if(U.type in blocked_uplink_items)
+		to_chat(user, span_warning("[U.name] is incompatible with previous purchases from this uplink."))
 		return
 	if(!is_uplink_item_visible_to_user(user, U))
 		return

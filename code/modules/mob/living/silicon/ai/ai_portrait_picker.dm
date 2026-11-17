@@ -29,6 +29,7 @@
 		ui.open()
 
 /datum/portrait_picker/ui_close()
+	holder = null
 	qdel(src)
 
 /datum/portrait_picker/ui_state(mob/user)
