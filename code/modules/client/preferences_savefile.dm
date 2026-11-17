@@ -1102,7 +1102,7 @@
 			deltimer(single_pref_queue)
 	// Одноразовый таймер, а не TIMER_LOOP: deltimer() из колбека лупа - no-op, и перенос
 	// сброса перестал бы работать с первой же правки.
-	single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
+	single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs), TRUE), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 	return TRUE
 
 /// Кладёт в буфер склейки один корневой ключ префов, беря значение из одноимённой переменной
@@ -1144,9 +1144,31 @@
 		if(length(prefs.pending_single_prefs))
 			prefs.flush_single_prefs()
 
+/// Префы, чей старый .sav ждёт переноса в JSON.
+GLOBAL_LIST_EMPTY(player_save_migration_queue)
+GLOBAL_VAR(player_save_migration_timer)
+
+/datum/preferences/proc/queue_player_save_migration()
+	GLOB.player_save_migration_queue |= src
+	if(!GLOB.player_save_migration_timer)
+		GLOB.player_save_migration_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_player_save_migration_queue)), PLAYER_SAVE_MIGRATION_INTERVAL, TIMER_STOPPABLE)
+
+/proc/process_player_save_migration_queue()
+	GLOB.player_save_migration_timer = null
+	while(length(GLOB.player_save_migration_queue))
+		var/datum/preferences/prefs = GLOB.player_save_migration_queue[1]
+		GLOB.player_save_migration_queue.Cut(1, 2)
+		if(QDELETED(prefs))
+			continue
+		prefs.flush_single_prefs()
+		break
+	if(length(GLOB.player_save_migration_queue))
+		GLOB.player_save_migration_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_player_save_migration_queue)), PLAYER_SAVE_MIGRATION_INTERVAL, TIMER_STOPPABLE)
+
 /// Сбрасывает буфер склейки одной записью JSON. Зовут таймер buffer_single_pref,
 /// разлогин клиента, Destroy датума и ребут мира (flush_pending_single_prefs).
-/datum/preferences/proc/flush_single_prefs()
+/// allow_defer - перенос старого .sav уходит в очередь, а буфер ждёт его.
+/datum/preferences/proc/flush_single_prefs(allow_defer = FALSE)
 	if(single_pref_queue)
 		deltimer(single_pref_queue)
 	// Обнуляем явно: сработавший one-shot оставляет непустой id, и следующая постановка
@@ -1175,6 +1197,11 @@
 		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "неподдерживаемая версия")
 		return FALSE
 	if(file_version < SAVEFILE_VERSION_MAX || isnull(document.directories))
+		// Перенос пишет весь аккаунт за раз, а после рестарта мира заходят все сразу.
+		if(allow_defer)
+			blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "перенос в очереди [parent?.ckey || "?"]")
+			queue_player_save_migration()
+			return FALSE
 		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	var/list/pending_before_write = pending_single_prefs?.Copy()
@@ -1227,7 +1254,7 @@
 		// до логаута. Возвращаем ему собственный сброс.
 		if(length(pending_single_prefs) && !single_pref_queue)
 			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
-			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
+			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs), TRUE), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
 	if(single_pref_queue)
 		deltimer(single_pref_queue)

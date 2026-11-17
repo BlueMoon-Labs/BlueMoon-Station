@@ -1808,6 +1808,51 @@
 	TEST_ASSERT_EQUAL(slot_after_borrow, 1, "временные префы перезаписали выбранный игроком слот")
 	TEST_ASSERT_EQUAL(after_owner?.read("default_slot"), 2, "префы игрока не запомнили выбранный слот")
 
+/// Перенос старого сейва из сброса одиночных ключей идёт очередью, а не в том же тике.
+/datum/unit_test/player_save_json/deferred_migration/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy.cd = "/character1"
+	legacy["version"] << 80
+	legacy["real_name"] << "Старый Персонаж"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	var/list/queue_before = GLOB.player_save_migration_queue.Copy()
+	GLOB.player_save_migration_queue.Cut()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.buffer_single_pref("default_slot", 1, TRUE)
+
+	prefs.flush_single_prefs(TRUE)
+	var/deferred_json = fexists("[test_path].json")
+	var/queued = (prefs in GLOB.player_save_migration_queue)
+	var/kept = ("default_slot" in prefs.pending_single_prefs)
+
+	process_player_save_migration_queue()
+	var/migrated_json = fexists("[test_path].json")
+	var/left_in_queue = (prefs in GLOB.player_save_migration_queue)
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/document = reader.snapshot(null, FALSE)
+	var/list/names = reader.character_names(1)
+
+	prefs.buffer_single_pref("default_slot", 2, TRUE)
+	prefs.queue_player_save_migration()
+	qdel(prefs)
+	owned_preferences = null
+	var/dropped = !(prefs in GLOB.player_save_migration_queue)
+	GLOB.player_save_migration_queue = queue_before
+
+	TEST_ASSERT(!deferred_json, "перенос выполнен в тике сброса")
+	TEST_ASSERT(queued, "перенос не поставлен в очередь")
+	TEST_ASSERT(kept, "ключ потерян до переноса")
+	TEST_ASSERT(migrated_json, "очередь не перенесла сейв")
+	TEST_ASSERT(!left_in_queue, "перенесённые префы остались в очереди")
+	TEST_ASSERT_EQUAL(document?.read("default_slot"), 1, "ключ из буфера не доехал с переносом")
+	TEST_ASSERT_EQUAL(names?["character1"], "Старый Персонаж", "перенос потерял слот")
+	TEST_ASSERT(dropped, "удалённые префы остались в очереди")
+
 #ifdef PLAYER_SAVE_BENCHMARK
 /// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.
 /datum/unit_test/player_save_json/benchmark/Run()

@@ -1188,7 +1188,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// их сейчас: датум префов переживёт логаут и таймер бы отработал, но настройка,
 	// изменённая в последние секунды, иначе доедет до диска только если сервер доживёт до
 	// срабатывания.
-	prefs?.flush_single_prefs()
+	prefs?.flush_single_prefs(TRUE)
 	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
 	if(listed_turf_watched || mob?.listed_turf)
 		clear_listed_turf(send_output = FALSE)

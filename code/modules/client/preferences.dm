@@ -659,6 +659,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
 	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
 	flush_single_prefs()
+	GLOB.player_save_migration_queue -= src
 	if(pref_queue)
 		deltimer(pref_queue)
 		pref_queue = null

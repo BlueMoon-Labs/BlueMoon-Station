@@ -1,5 +1,7 @@
 /// Максимальная глубина вложенности JSON-сейва игрока.
 #define PLAYER_SAVE_JSON_DEPTH 64
+/// Перенос старых сейвов в JSON - не чаще одного аккаунта за этот промежуток.
+#define PLAYER_SAVE_MIGRATION_INTERVAL (1 SECONDS)
 
 //Preference toggles
 #define SOUND_ADMINHELP		        (1<<0)

@@ -92,13 +92,28 @@
 				player_save_error(document.storage.error)
 		catch(var/exception/failure)
 			player_save_error(failure.name)
-	else
+	var/slots = 0
+	var/datum/player_save_json/storage = get_player_save_storage()
+	var/migrating = !document && storage && !fexists(storage.json_path) && fexists(storage.legacy_path)
+	if(!document)
+		if(migrating)
+			var/savefile/source = result
+			var/original_directory = source.cd
+			source.cd = "/"
+			for(var/key in source.dir)
+				if(copytext(key, 1, 10) == "character")
+					slots++
+			source.cd = original_directory
 		saved = commit_player_save(result, "/")
+	var/blocking_kind = migrating ? "JSON (перенос)" : "JSON (полные префы)"
 	if(!saved)
 		pending_single_prefs = pending_before_write
-		blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "ошибка записи")
+		blocking_call_finish(blocking_started_ms, blocking_kind, "ошибка записи")
 		return FALSE
-	blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "настройки")
+	if(migrating)
+		var/cost_ms = isnull(blocking_started_ms) ? null : SStick_spikes?.now_ms() - blocking_started_ms
+		log_game("Сохранения: [parent?.ckey || path] перенесены в JSON[isnull(cost_ms) ? "" : " за [round(cost_ms)] мс"], слотов [slots].")
+	blocking_call_finish(blocking_started_ms, blocking_kind, migrating ? "[parent?.ckey || "?"], слотов [slots]" : "настройки")
 	if(parent && !silent)
 		to_chat(parent, span_notice("Настройки сохранены!"))
 	return result
