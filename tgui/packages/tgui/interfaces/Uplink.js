@@ -2,26 +2,55 @@ import { createSearch, decodeHtmlEntities } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Flex, Input, NoticeBox, Section, Table, Tabs } from '../components';
+import {
+  Box,
+  Button,
+  Icon,
+  Input,
+  NoticeBox,
+  Section,
+  Stack,
+  Tabs,
+  Tooltip,
+} from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
 
 const MAX_SEARCH_RESULTS = 25;
 
 const ItemIcon = (props) => {
-  const { icon } = props;
+  const { icon, size = 64 } = props;
   if (!icon) {
     return null;
   }
+  const scale = size / 32;
   return (
-    <img
-      src={icon}
-      width="32px"
-      height="32px"
-      style={{
-        display: 'inline-block',
-        imageRendering: 'pixelated',
-      }} />
+    <Box
+      width={size + 'px'}
+      height={size + 'px'}
+      style={{ overflow: 'hidden' }}>
+      <span
+        style={{
+          display: 'inline-block',
+          imageRendering: 'pixelated',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+        }}
+        dangerouslySetInnerHTML={{ __html: icon }} />
+    </Box>
+  );
+};
+
+const ItemPlaceholder = (props) => {
+  const { size } = props;
+  return (
+    <Box
+      width={size}
+      height={size}
+      opacity={0.3}
+      style={{ textAlign: 'center' }}>
+      —
+    </Box>
   );
 };
 
@@ -80,66 +109,91 @@ export const GenericUplink = (props) => {
     // If none of that results in a list, return an empty list
     || [];
   return (
-    <Section
-      title={(
-        <Box
-          inline
-          color={currencyAmount > 0 ? 'good' : 'bad'}>
-          {formatMoney(currencyAmount)} {currencySymbol}
-        </Box>
-      )}
-      buttons={(
-        <>
-          Search
-          <Input
-            autoFocus
-            value={searchText}
-            onInput={(e, value) => setSearchText(value)}
-            mx={1} />
-          <Button
-            icon={compactMode ? 'list' : 'info'}
-            content={compactMode ? 'Compact' : 'Detailed'}
-            onClick={() => act('compact_toggle')} />
-          {!!lockable && (
-            <Button
-              icon="lock"
-              content="Lock"
-              onClick={() => act('lock')} />
-          )}
-        </>
-      )}>
-      <Flex>
-        {searchText.length === 0 && (
-          <Flex.Item>
-            <Tabs vertical>
+    <Stack fill>
+      <Stack.Item width="160px">
+        <Stack vertical fill>
+          <Stack.Item>
+            <Stack>
+              <Stack.Item grow>
+                <Button
+                  bold
+                  fluid
+                  lineHeight={2}
+                  color={currencyAmount > 0 ? 'good' : 'bad'}
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    textAlign: 'center',
+                  }}
+                  content={formatMoney(currencyAmount) + ' ' + currencySymbol} />
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  fluid
+                  lineHeight={2}
+                  icon={compactMode ? 'maximize' : 'minimize'}
+                  tooltip={compactMode ? 'Detailed view' : 'Compact view'}
+                  onClick={() => act('compact_toggle')} />
+              </Stack.Item>
+              {!!lockable && (
+                <Stack.Item>
+                  <Button
+                    fluid
+                    lineHeight={2}
+                    icon="lock"
+                    tooltip="Lock"
+                    onClick={() => act('lock')} />
+                </Stack.Item>
+              )}
+            </Stack>
+          </Stack.Item>
+          <Stack.Item>
+            <Input
+              autoFocus
+              value={searchText}
+              placeholder="Search..."
+              onInput={(e, value) => setSearchText(value)}
+              fluid />
+          </Stack.Item>
+          <Stack.Item grow>
+            <Tabs vertical fill>
               {categories.map(category => (
                 <Tabs.Tab
-                  mr={2}
+                  py={0.8}
                   key={category.name}
                   selected={category.name === selectedCategory}
-                  onClick={() => setSelectedCategory(category.name)}>
-                  {category.name} ({category.items?.length || 0})
+                  onClick={() => {
+                    setSelectedCategory(category.name);
+                    if (searchText.length > 0) {
+                      setSearchText('');
+                    }
+                  }}>
+                  {category.name}
                 </Tabs.Tab>
               ))}
             </Tabs>
-          </Flex.Item>
-        )}
-        <Flex.Item grow={1} basis={0}>
-          {items.length === 0 && (
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+      <Stack.Item grow>
+        <Box height="100%" pr={1} mr={-1}>
+          {items.length === 0 ? (
             <NoticeBox>
               {searchText.length === 0
                 ? 'No items in this category.'
                 : 'No results found.'}
             </NoticeBox>
+          ) : (
+            <ItemList
+              compactMode={searchText.length > 0 || compactMode}
+              currencyAmount={currencyAmount}
+              currencySymbol={currencySymbol}
+              items={items} />
           )}
-          <ItemList
-            compactMode={searchText.length > 0 || compactMode}
-            currencyAmount={currencyAmount}
-            currencySymbol={currencySymbol}
-            items={items} />
-        </Flex.Item>
-      </Flex>
-    </Section>
+        </Box>
+      </Stack.Item>
+    </Stack>
   );
 };
 
@@ -166,70 +220,97 @@ const ItemList = (props) => {
       disabled,
     };
   });
+  const buyButton = (item) => (
+    <Button
+      width="50px"
+      textAlign="center"
+      content={formatMoney(item.cost) + ' ' + currencySymbol}
+      disabled={item.disabled}
+      tooltip={item.desc}
+      tooltipPosition="left"
+      onMouseOver={() => setHoveredItem(item)}
+      onMouseOut={() => setHoveredItem({})}
+      onClick={() => act('buy', {
+        name: item.name,
+      })} />
+  );
   if (compactMode) {
     return (
-      <Table>
-        {items.map(item => (
-          <Table.Row
-            key={item.name}
-            className="candystripe">
-            <Table.Cell collapsing verticalAlign="middle">
-              <ItemIcon icon={item.icon} />
-            </Table.Cell>
-            <Table.Cell bold verticalAlign="middle">
-              {decodeHtmlEntities(item.name)}
-            </Table.Cell>
-            <Table.Cell collapsing textAlign="right">
-              <Button
-                fluid
-                content={formatMoney(item.cost) + ' ' + currencySymbol}
-                disabled={item.disabled}
-                tooltip={item.desc}
-                tooltipPosition="left"
-                onMouseOver={() => setHoveredItem(item)}
-                onMouseOut={() => setHoveredItem({})}
-                onClick={() => act('buy', {
-                  name: item.name,
-                })} />
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table>
+      <Section fill scrollable>
+        <Stack vertical>
+          {items.map(item => (
+            <Stack.Item key={item.name} mt={0.5}>
+              <Section fitted>
+                <Stack align="center">
+                  <Stack.Item>
+                    <Box width="32px" height="32px" m="2px" mr={1}>
+                      {item.icon ? (
+                        <ItemIcon icon={item.icon} size={32} />
+                      ) : (
+                        <ItemPlaceholder size="32px" />
+                      )}
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item
+                    bold
+                    grow
+                    lineHeight="36px"
+                    style={{
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                    }}>
+                    {decodeHtmlEntities(item.name)}
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Tooltip content={item.desc}>
+                      <Box lineHeight="36px">
+                        <Icon name="info-circle" />
+                      </Box>
+                    </Tooltip>
+                  </Stack.Item>
+                  <Stack.Item>
+                    {buyButton(item)}
+                  </Stack.Item>
+                </Stack>
+              </Section>
+            </Stack.Item>
+          ))}
+        </Stack>
+      </Section>
     );
   }
-  return items.map(item => (
-    <Section
-      key={item.name}
-      title={item.name}
-      level={2}
-      buttons={(
-        <Button
-          content={item.cost + ' ' + currencySymbol}
-          disabled={item.disabled}
-          onMouseOver={() => setHoveredItem(item)}
-          onMouseOut={() => setHoveredItem({})}
-          onClick={() => act('buy', {
-            name: item.name,
-          })} />
-      )}>
-      <Flex>
-        <Flex.Item mr={1}>
-          {item.icon ? (
-            <ItemIcon icon={item.icon} />
-          ) : (
-            <Box
-              width="32px"
-              height="32px"
-              opacity={0.3}
-              style={{ textAlign: 'center' }}>
-              —
-            </Box>
-          )}
-        </Flex.Item>
-        <Flex.Item grow>
-          {decodeHtmlEntities(item.desc)}
-        </Flex.Item>
-      </Flex>
+  return (
+    <Section fill scrollable>
+      <Stack vertical mt={-1}>
+        {items.map(item => (
+          <Stack.Item key={item.name} mt={1}>
+            <Section>
+              <Stack>
+                <Stack.Item>
+                  <Box width="64px" height="64px" mr={1}>
+                    {item.icon ? (
+                      <ItemIcon icon={item.icon} size={64} />
+                    ) : (
+                      <ItemPlaceholder size="64px" />
+                    )}
+                  </Box>
+                </Stack.Item>
+                <Stack.Item grow>
+                  <Section
+                    title={decodeHtmlEntities(item.name)}
+                    level={2}
+                    buttons={buyButton(item)}>
+                    <Box style={{ opacity: '0.75' }}>
+                      {decodeHtmlEntities(item.desc)}
+                    </Box>
+                  </Section>
+                </Stack.Item>
+              </Stack>
+            </Section>
+          </Stack.Item>
+        ))}
+      </Stack>
     </Section>
-  ));
+  );
 };
