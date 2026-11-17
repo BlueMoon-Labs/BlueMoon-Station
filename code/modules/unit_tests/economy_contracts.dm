@@ -143,6 +143,19 @@
 	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult), "Модификатор наград применяется к выплате")
 	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5), "Множитель contract_delivery_mult применяется к выплате")
 
+/// Пять искусственных блюспейс-кристаллов закрывают контракт Synthetic Bluespace Crystals.
+/datum/unit_test/economy_delivery_contract_artificial_crystals/Run()
+	var/datum/economy_department/science = SSeconomy.get_department(ACCOUNT_SCI)
+	var/datum/econ_contract/delivery/contract = new(ACCOUNT_SCI, new /datum/bounty/item/science/fakecrystals)
+	science.contracts.Insert(1, contract)
+	var/saved_balance = science.account.account_balance
+	SSeconomy.contract_demand.Cut()
+	var/obj/item/stack/ore/bluespace_crystal/artificial/crystals = allocate(/obj/item/stack/ore/bluespace_crystal/artificial, run_loc_floor_bottom_left, 5)
+	TEST_ASSERT(econ_contracts_ship(crystals), "Искусственные кристаллы не засчитаны")
+	TEST_ASSERT(contract.completed, "Контракт на пять кристаллов не выполнен")
+	econ_test_set_balance(science.account, saved_balance)
+	SSeconomy.contract_demand.Cut()
+
 /// Взятый срочный контракт, не выполненный к сроку, снимается при обновлении.
 /datum/unit_test/economy_contract_expiry/Run()
 	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)

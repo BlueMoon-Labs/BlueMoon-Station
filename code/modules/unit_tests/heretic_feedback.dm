@@ -21,6 +21,8 @@
 		TEST_ASSERT_EQUAL(indicator.icon_state, "sigil_[lowertext(path_id)]", "HUD показывает знак выбранного пути.")
 		TEST_ASSERT(knowledge.grasp_visual && knowledge.grasp_sound, "Каждому пути нужны собственные визуал и звук хватки.")
 		var/datum/sound_effect/grasp_set = istext(knowledge.grasp_sound) ? GLOB.sfx_datum_by_key[knowledge.grasp_sound] : null
+		if(istext(knowledge.grasp_sound))
+			TEST_ASSERT(grasp_set, "Набор звуков хватки пути [path_id] ([knowledge.grasp_sound]) не зарегистрирован.")
 		for(var/sound_file in grasp_set ? grasp_set.file_paths : list(knowledge.grasp_sound))
 			var/sound_key = "[sound_file]"
 			TEST_ASSERT(!grasp_owner_by_sound[sound_key], "Хватка пути [path_id] звучит своим звуком, а не звуком пути [grasp_owner_by_sound[sound_key]] ([sound_key]).")
