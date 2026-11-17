@@ -318,11 +318,22 @@
 	if(!.)
 		return
 	ADD_TRAIT(M, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
+	RegisterSignal(M, COMSIG_MOD_PROJECTILE_FIRE, PROC_REF(configure_projectile))
 
 /obj/item/organ/cyberimp/arm/ballistic_processor/Remove(special = FALSE)
 	if(owner)
 		REMOVE_TRAIT(owner, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
+		UnregisterSignal(owner, COMSIG_MOD_PROJECTILE_FIRE)
 	return ..()
+
+/// Настройки применяются только к снарядам владельца импланта.
+/obj/item/organ/cyberimp/arm/ballistic_processor/proc/configure_projectile(mob/source, obj/item/projectile/projectile)
+	SIGNAL_HANDLER
+	projectile.ballistic_processor = TRUE
+	projectile.ballistic_processor_ricochet_chance = ricochet_chance
+	projectile.ballistic_processor_max_ricochets = max_ricochets
+	projectile.ballistic_processor_homing_angle = homing_angle
+	projectile.ballistic_processor_homing_range = homing_range
 
 /obj/item/organ/cyberimp/brain/berserker
 	name = "Berserker implant"
