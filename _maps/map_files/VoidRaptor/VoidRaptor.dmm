@@ -1310,6 +1310,9 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
 	},
+/obj/structure/transmitter/mounted{
+	pixel_x = -25
+	},
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},
@@ -14283,6 +14286,9 @@
 /obj/machinery/door/poddoor/shutters/radiation/preopen{
 	id = "engsm";
 	name = "Radiation Chamber Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plating,
 /area/engineering/supermatter)
@@ -28132,6 +28138,9 @@
 	id = "engsm";
 	name = "Radiation Chamber Shutters"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /turf/open/floor/plating,
 /area/engineering/supermatter)
 "gpD" = (
@@ -38204,19 +38213,6 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/gateway)
-"iCy" = (
-/obj/structure/window/plasma/reinforced{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/manifold/cyan/visible{
-	dir = 4
-	},
-/obj/machinery/power/rad_collector/anchored,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/engine,
-/area/engineering/supermatter)
 "iCJ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -51473,6 +51469,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "lFq" = (
@@ -52226,6 +52225,9 @@
 /obj/machinery/door/poddoor/shutters/radiation/preopen{
 	id = "engsm";
 	name = "Radiation Chamber Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plating,
 /area/engineering/supermatter)
@@ -53035,12 +53037,6 @@
 	dir = 8
 	},
 /obj/machinery/power/rad_collector/anchored,
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
@@ -62583,6 +62579,9 @@
 /obj/machinery/camera{
 	dir = 6
 	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter)
 "obG" = (
@@ -65525,6 +65524,9 @@
 "oMW" = (
 /obj/machinery/camera{
 	dir = 2
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter)
@@ -71361,6 +71363,9 @@
 /obj/machinery/atmospherics/pipe/manifold/cyan/visible{
 	dir = 8
 	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "qfe" = (
@@ -76266,6 +76271,9 @@
 	id = "engsm";
 	name = "Radiation Chamber Shutters"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /turf/open/floor/plating,
 /area/engineering/supermatter)
 "rhC" = (
@@ -79747,12 +79755,6 @@
 	},
 /obj/machinery/power/rad_collector/anchored,
 /obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
 	icon_state = "0-4"
 	},
 /turf/open/floor/engine,
@@ -81476,7 +81478,10 @@
 	},
 /obj/machinery/power/rad_collector/anchored,
 /obj/structure/cable/yellow{
-	icon_state = "0-1"
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter)
@@ -90390,7 +90395,7 @@
 	},
 /obj/machinery/power/rad_collector/anchored,
 /obj/structure/cable/yellow{
-	icon_state = "0-1"
+	icon_state = "0-8"
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter)
@@ -94063,6 +94068,9 @@
 /area/engineering/atmos)
 "vkr" = (
 /obj/effect/turf_decal/tile/red/diagonal_centre,
+/obj/structure/reagent_dispensers/peppertank{
+	pixel_y = 29
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/hallway/secondary/exit/departure_lounge)
 "vku" = (
@@ -99167,6 +99175,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
@@ -104590,6 +104601,9 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/green/visible,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "xCB" = (
@@ -105116,19 +105130,6 @@
 /obj/effect/mapping_helpers/airlock/access/any/command/blueshield,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/blueshieldoffice)
-"xII" = (
-/obj/structure/window/plasma/reinforced{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/manifold/green/visible{
-	dir = 8
-	},
-/obj/machinery/power/rad_collector/anchored,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/engine,
-/area/engineering/supermatter)
 "xIM" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 1
@@ -140571,7 +140572,7 @@ bAE
 oWh
 oMW
 maB
-cRG
+maB
 oWh
 iay
 hWZ
@@ -140826,7 +140827,7 @@ tud
 oWh
 oWh
 xgu
-xII
+lWH
 lWH
 uva
 oWh
@@ -141854,7 +141855,7 @@ wps
 oWh
 oWh
 qNA
-iCy
+rYc
 rYc
 ssi
 oWh
@@ -142113,7 +142114,7 @@ cmN
 oWh
 obF
 maB
-cRG
+maB
 oWh
 uYz
 iih
