@@ -43,6 +43,12 @@
 			var/datum/bounty/item/item_bounty = bounty
 			if(istype(item_bounty) && !is_type_in_typecache(item_bounty, matched_by_properties))
 				TEST_ASSERT(length(item_bounty.wanted_types), "[bounty_type] ([bounty.name]) ничего не ищет: контракт не выполнить")
+				var/accepted_type
+				for(var/wanted_type in item_bounty.wanted_types)
+					if(!item_bounty.exclude_types?[wanted_type])
+						accepted_type = wanted_type
+						break
+				TEST_ASSERT(accepted_type, "[bounty_type] ([bounty.name]) исключает всё, что ищет: контракт не выполнить")
 			var/datum/bounty/reagent/reagent_bounty = bounty
 			if(istype(reagent_bounty))
 				TEST_ASSERT_NOTNULL(reagent_bounty.wanted_reagent, "[bounty_type] ([bounty.name]) без реагента: контракт не выполнить")
@@ -137,6 +143,19 @@
 	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult), "Модификатор наград применяется к выплате")
 	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5), "Множитель contract_delivery_mult применяется к выплате")
 
+/// Пять искусственных блюспейс-кристаллов закрывают контракт Synthetic Bluespace Crystals.
+/datum/unit_test/economy_delivery_contract_artificial_crystals/Run()
+	var/datum/economy_department/science = SSeconomy.get_department(ACCOUNT_SCI)
+	var/datum/econ_contract/delivery/contract = new(ACCOUNT_SCI, new /datum/bounty/item/science/fakecrystals)
+	science.contracts.Insert(1, contract)
+	var/saved_balance = science.account.account_balance
+	SSeconomy.contract_demand.Cut()
+	var/obj/item/stack/ore/bluespace_crystal/artificial/crystals = allocate(/obj/item/stack/ore/bluespace_crystal/artificial, run_loc_floor_bottom_left, 5)
+	TEST_ASSERT(econ_contracts_ship(crystals), "Искусственные кристаллы не засчитаны")
+	TEST_ASSERT(contract.completed, "Контракт на пять кристаллов не выполнен")
+	econ_test_set_balance(science.account, saved_balance)
+	SSeconomy.contract_demand.Cut()
+
 /// Взятый срочный контракт, не выполненный к сроку, снимается при обновлении.
 /datum/unit_test/economy_contract_expiry/Run()
 	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
@@ -156,8 +175,9 @@
 	civilian.contracts += first
 	var/datum/bank_account/account = new("econ_test_taker")
 	TEST_ASSERT_EQUAL(first.deadline, 0, "У невзятой поставки срока нет")
+	var/taken_from = world.time
 	TEST_ASSERT(first.take(account), "Первый взят")
-	TEST_ASSERT_EQUAL(round(first.deadline - world.time), ECON_CONTRACT_TAKEN_TIME, "Взятая поставка получила срок")
+	TEST_ASSERT(first.deadline >= taken_from + ECON_CONTRACT_TAKEN_TIME && first.deadline <= world.time + ECON_CONTRACT_TAKEN_TIME, "Взятая поставка получила срок [ECON_CONTRACT_TAKEN_TIME], а не [first.deadline - taken_from]")
 	TEST_ASSERT(!second.take(account), "Второй тем же счётом не взят")
 	TEST_ASSERT(!department_only.take(account), "Контракт отдела не берётся")
 	var/datum/bank_account/visitor = new("econ_test_visitor")

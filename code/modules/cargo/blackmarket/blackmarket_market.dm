@@ -37,7 +37,7 @@
 /datum/blackmarket_market/proc/item_price(datum/blackmarket_item/listing, mob/user)
 	. = econ_blackmarket_price(listing.price)
 	if(user?.mind?.has_antag_datum(/datum/antagonist/rev/head))
-		. = round(. / 100, 1) // скидка хедревам
+		. = round(. / BLACKMARKET_HEAD_REV_DISCOUNT, 1)
 //
 /datum/blackmarket_market/blackmarket
 	name = "Black Market"
