@@ -372,8 +372,10 @@
 		return 50 //if the projectile doesn't do damage, play its hitsound at 50% volume
 
 /obj/item/projectile/proc/on_ricochet(atom/A)
-	var/auto_aim_angle = ballistic_processor ? ballistic_processor_homing_angle : ricochet_auto_aim_angle
-	var/auto_aim_range = ballistic_processor ? ballistic_processor_homing_range : ricochet_auto_aim_range
+	// Лазеры и прочие небаллистические снаряды сохраняют собственные настройки наведения.
+	var/use_processor_homing = ballistic_processor && flag == BULLET
+	var/auto_aim_angle = use_processor_homing ? ballistic_processor_homing_angle : ricochet_auto_aim_angle
+	var/auto_aim_range = use_processor_homing ? ballistic_processor_homing_range : ricochet_auto_aim_range
 	if(!auto_aim_angle || !auto_aim_range)
 		return
 
