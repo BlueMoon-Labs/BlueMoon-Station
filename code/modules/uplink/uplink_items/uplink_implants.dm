@@ -193,6 +193,7 @@
 
 /datum/uplink_item/implants/hand_canon
 	name = "Gorlex hand canon"
+	desc = "A compact arm-integrated explosive launcher. No visible barrel until deployed."
 	cost = 6
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/hand_canon
@@ -204,6 +205,7 @@
 /datum/uplink_item/implants/monowire
 	name = "Cybersun monowire"
 	cost = 8
+	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/monowire
 
@@ -212,10 +214,18 @@
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/implants/gorila_hands
-	name = "D.P. gorila hands"
-	cost = 8
+	name = "D.P. gorilla hands"
+	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
+	cost = 12
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 	item = /obj/item/autosurgeon/syndicate/inteq/gorila_hands
+
+/datum/uplink_item/implants/gorila_hands/purchase(mob/user, datum/component/uplink/U, atom/source)
+	. = ..()
+	U.blocked_uplink_items |= list(
+		/datum/uplink_item/dangerous/maulergauntlets,
+		/datum/uplink_item/bundles_tc/northstar_bundle,
+	)
 
 /datum/uplink_item/implants/gorila_hands/syndie
 	purchasable_from = UPLINK_SYNDICATE
