@@ -1,3 +1,43 @@
+// Раньше оно было проками проверки и топиками отдельно для униформы, отдельно для перчаток,
+// отдельно для возможных будущих айтемов других слотов, что могли бы держать аксессуры. Сейчас унифицировано.
+/obj/item/clothing/proc/accessories_examine(mob/user)
+	if(!length(accessories_attached))
+		return ""
+	var/legacy_chat = user?.client?.use_legacy_chat
+	var/list/accessory_icons = list()
+	for(var/obj/item/clothing/accessory/accessory in accessories_attached)
+		var/secondary_link = legacy_chat ? "" : " data-secondary-href='?src=[REF(src)];remove_accessory=[REF(accessory)]'"
+		var/accessory_icon = replacetext(icon2html(accessory, user), "<img ", "<img style='height: 1.5em; min-height: 24px; width: auto;' ")
+		accessory_icons += "<a href='?src=[REF(src)];examine_accessory=[REF(accessory)]'[secondary_link]>[span_tooltip(html_encode(accessory.name), accessory_icon, "", "", "")]</a>"
+	var/hint = legacy_chat ? "ЛКМ по иконке – осмотреть, Alt-клик по одежде – снять аксессуар" : "ЛКМ по иконке – осмотреть, ПКМ – снять"
+	return span_notice("Вы видите [span_tooltip_warning(hint, "<u>аксессуары</u>")]: [accessory_icons.Join(" ")]")
+
+/obj/item/clothing/proc/accessories_topic(mob/user, list/href_list)
+	if(!href_list["examine_accessory"] && !href_list["remove_accessory"])
+		return FALSE
+	if(!user?.client)
+		return TRUE
+	if(href_list["examine_accessory"])
+		// Looking needs sight, not the ability to reach or manipulate the clothing.
+		if(!isobserver(user))
+			if(user.stat != CONSCIOUS || user.is_blind())
+				return TRUE
+			var/list/visible_atoms = view(user.client.view, user)
+			if(!(src in visible_atoms) && !(loc in visible_atoms))
+				return TRUE
+	else if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE) || !can_use(user))
+		return TRUE
+	var/accessory_ref = href_list["examine_accessory"] || href_list["remove_accessory"]
+	var/obj/item/clothing/accessory/accessory = locate(accessory_ref) in accessories_attached
+	if(!istype(accessory))
+		to_chat(user, span_warning("Этот аксессуар уже не прикреплён."))
+		return TRUE
+	if(href_list["examine_accessory"])
+		user.examinate(accessory)
+	else
+		remove_accessory(accessory, user)
+	return TRUE
+
 /obj/item/clothing/accessory //Ties moved to neck slot items, but as there are still things like medals and armbands, this accessory system is being kept as-is
 	name = "Accessory"
 	desc = "Something has gone wrong!"
@@ -130,14 +170,14 @@
 	if(istype(user) && user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		if(initial(above_suit))
 			above_suit = !above_suit
-			to_chat(user, "[src] will be worn [above_suit ? "above" : "below"] your suit.")
+			to_chat(user, "[src] будет носиться [above_suit ? "над" : "под"] вашим костюмом.")
 			return TRUE
 
 /obj/item/clothing/accessory/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>\The [src] can be attached to [istype(src, /obj/item/clothing/accessory/ring) ? "gloves" : "a uniform"]. Alt-click to remove it once attached.</span>"
+	. += span_notice("Можно прикрепить к [istype(src, /obj/item/clothing/accessory/ring) ? "перчаткам" : "униформе"].")
 	if(initial(above_suit))
-		. += "<span class='notice'>\The [src] can be worn above or below your suit. Ctrl-click to toggle.</span>"
+		. += span_notice("\The [src] можно [span_tooltip_warning("Ctrl-клик для переключения", "носить")] над или под костюмом.")
 
 //////////////
 //Waistcoats//

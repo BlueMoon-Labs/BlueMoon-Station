@@ -28,9 +28,6 @@
 	// Add quirk language
 	quirk_mob.grant_language(/datum/language/vampiric)
 
-	// Register examine text
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_bloodfledge))
-
 /datum/quirk/bloodfledge/post_add()
 	// Define quirk mob
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
@@ -145,60 +142,8 @@
 	// Remove quirk language
 	quirk_mob.remove_language(/datum/language/vampiric, source = LANGUAGE_BLOODSUCKER)
 
-	// Unregister examine text
-	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
-
 /datum/quirk/bloodfledge/on_spawn()
 	give_item(/obj/item/card_sticker/vampire/loadout, quirk_holder)
-
-/datum/quirk/bloodfledge/proc/quirk_examine_bloodfledge(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	SIGNAL_HANDLER
-
-	// Check if human examiner exists
-	if(!istype(examiner))
-		return
-
-	// Check if examiner is dumb
-	if(HAS_TRAIT(examiner, TRAIT_DUMB))
-		// Return with no effects
-		return
-
-	// Define quirk mob
-	var/mob/living/carbon/human/quirk_mob = quirk_holder
-
-	// Define hunger texts
-	var/examine_hunger_public
-	var/examine_hunger_secret
-
-	// Check hunger levels
-	switch(quirk_mob.nutrition)
-		// Hungry
-		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-			examine_hunger_secret = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] blood starved!"
-			examine_hunger_public = "[quirk_holder.p_they(TRUE)] seem[quirk_holder.p_s()] on edge from something."
-
-		// Starving
-		if(0 to NUTRITION_LEVEL_STARVING)
-			examine_hunger_secret = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] in dire need of blood!"
-			examine_hunger_public = "[quirk_holder.p_they(TRUE)] [quirk_holder.p_are()] radiating an aura of frenzied hunger!"
-
-		// Invalid hunger
-		else
-			// Return with no message
-			return
-
-	// Check if examiner shares the quirk
-	if(isbloodfledge(examiner))
-		// Add detection text
-		examine_list += span_info("[quirk_holder.p_their(TRUE)] hunger makes it easy to identify [quirk_holder.p_them()] as a fellow Bloodsucker Fledgling!")
-
-		// Add hunger text
-		examine_list += span_warning(examine_hunger_secret)
-
-	// Check if public hunger text exists
-	else
-		// Add hunger text
-		examine_list += span_warning(examine_hunger_public)
 
 //
 // Quirk actions: Bloodsucker Fledgling / Vampire

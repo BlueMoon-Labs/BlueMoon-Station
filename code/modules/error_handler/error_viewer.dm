@@ -23,6 +23,15 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 // Common vars and procs are kept at the error_viewer level
 /datum/error_viewer
 	var/name = ""
+	/// world.timeofday записи: метка печатается при показе, удерживаемые имена с меткой впереди тянули ветку дерева строк (string_tree_anchors.dm).
+	var/logged_at
+	var/bold_stamp = TRUE
+
+/datum/error_viewer/proc/display_name()
+	if(isnull(logged_at))
+		return name
+	var/stamp = "\[[time2text(logged_at, "hh:mm:ss")]]"
+	return bold_stamp ? "<b>[stamp]</b> [name]" : "[stamp] [name]"
 
 /datum/error_viewer/proc/browse_to(client/user, html)
 	var/datum/browser/browser = new(user.mob, "error_viewer", null, 600, 400)
@@ -63,7 +72,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 /datum/error_viewer/proc/make_link(linktext, datum/error_viewer/back_to, linear)
 	var/back_to_param = ""
 	if (!linktext)
-		linktext = name
+		linktext = display_name()
 
 	if (istype(back_to))
 		back_to_param = ";viewruntime_backto=[REF(back_to)]"
@@ -135,11 +144,13 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	var/next_message_at = 0
 
 /datum/error_viewer/error_source/New(exception/e)
+	logged_at = world.timeofday
 	if (!istype(e))
-		name = "\[[TIME_STAMP("hh:mm:ss", FALSE)]] Uncaught exceptions"
+		name = "Uncaught exceptions"
+		bold_stamp = FALSE
 		return
 
-	name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> Runtime in <b>[e.file]</b>, line <b>[e.line]</b>: <b>[html_encode(e.name)]</b>"
+	name = "Runtime in <b>[e.file]</b>, line <b>[e.line]</b>: <b>[html_encode(e.name)]</b>"
 
 /datum/error_viewer/error_source/show_to(user, datum/error_viewer/back_to, linear)
 	if (!istype(back_to))
@@ -160,16 +171,18 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	var/is_skip_count
 
 /datum/error_viewer/error_entry/New(exception/e, list/desclines, skip_count)
+	logged_at = world.timeofday
 	if (!istype(e))
-		name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> Uncaught exception: <b>[html_encode(e.name)]</b>"
+		name = "Uncaught exception: <b>[html_encode(e.name)]</b>"
 		return
 
 	if(skip_count)
-		name = "\[[TIME_STAMP("hh:mm:ss", FALSE)]] Skipped [skip_count] runtimes in [e.file],[e.line]."
+		name = "Skipped [skip_count] runtimes in [e.file],[e.line]."
+		bold_stamp = FALSE
 		is_skip_count = TRUE
 		return
 
-	name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> Runtime in <b>[e.file]</b>, line <b>[e.line]</b>: <b>[html_encode(e.name)]</b>"
+	name = "Runtime in <b>[e.file]</b>, line <b>[e.line]</b>: <b>[html_encode(e.name)]</b>"
 	exc = e
 	if (istype(desclines))
 		for (var/line in desclines)
@@ -185,7 +198,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 		back_to = error_source
 
 	var/html = build_header(back_to, linear)
-	html += "[name]<div class='runtime'>[desc]</div>"
+	html += "[display_name()]<div class='runtime'>[desc]</div>"
 	if (usr_ref)
 		html += "<br><b>usr</b>: <a href='?_src_=vars;[HrefToken()];Vars=[usr_ref]'>VV</a>"
 		html += " <a href='?_src_=holder;[HrefToken()];adminplayeropts=[usr_ref]'>PP</a>"
@@ -197,4 +210,4 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	browse_to(user, html)
 
 /datum/error_viewer/error_entry/make_link(linktext, datum/error_viewer/back_to, linear)
-	return is_skip_count ? name : ..()
+	return is_skip_count ? display_name() : ..()

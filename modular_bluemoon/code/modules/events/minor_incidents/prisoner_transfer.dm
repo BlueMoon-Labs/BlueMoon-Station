@@ -109,6 +109,9 @@
 	var/datum/mind/prisoner_mind = new /datum/mind(selected.key)
 	prisoner_mind.active = TRUE
 	prisoner_mind.transfer_to(prisoner)
+	if(prisoner.client?.prefs)
+		prisoner.client.prefs.apply_prefs_body_mods(prisoner)
+		prisoner.update_body()
 	register_prisoner(prisoner)
 	file_security_record(prisoner)
 	new /obj/effect/pod_landingzone(landing, pod)

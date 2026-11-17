@@ -39,8 +39,9 @@
 		full_macro_assert()
 	refresh_popup_menus()
 	// страница браузерного меню грузится заранее: иначе первый ПКМ за сессию ждёт её загрузки
-	if(!context_menu_page_sent_at && mob?.uses_context_menu() && prefs?.context_menu_option("renderer") == "html")
-		addtimer(CALLBACK(src, PROC_REF(send_context_menu_page)), CONTEXT_MENU_HTML_PAGE_GRACE * 2, TIMER_UNIQUE)
+	var/menu_control = context_menu_html_control(prefs?.context_menu_style)
+	if(!context_menu_page_sent_at?[menu_control] && mob?.uses_context_menu() && prefs?.context_menu_option("renderer") == "html")
+		addtimer(CALLBACK(src, PROC_REF(send_context_menu_page), menu_control), CONTEXT_MENU_HTML_PAGE_GRACE * 2, TIMER_UNIQUE)
 
 /// Хоть один из жестов ПКМ открывает меню действий
 /mob/proc/uses_context_menu()
@@ -279,11 +280,11 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/text
 	switch(right_click_mode())
 		if(RIGHT_CLICK_MODE_MENU)
-			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие, в дизарме ПКМ по человеку рядом - сразу толчок."
+			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие, в дизарме ПКМ по человеку рядом - сразу толчок. У призрака второе действие - следовать за целью или перейти на клетку."
 		if(RIGHT_CLICK_MODE_NATIVE)
 			text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
 		else
-			text = "ПКМ сразу делает второе действие (толкнуть, открыть сумку не снимая, постучать), меню действий - на Shift+ПКМ."
+			text = "ПКМ сразу делает второе действие (толкнуть, открыть сумку не снимая, постучать), меню действий - на Shift+ПКМ. У призрака второе действие - следовать за целью или перейти на клетку."
 	to_chat(parent, examine_block(span_notice("<b>Новое на ПКМ.</b> [text]<br>Вернуть меню BYOND, как раньше, или разложить по-своему (например, ПКМ - действие, Shift+ПКМ - меню BYOND) - клик по шапке меню, верб «Режим ПКМ» во вкладке OOC или настройки игры, раздел «Меню ПКМ». Там же шрифт, размер и прозрачность меню.")))
 
 /mob/dead/new_player/Login()
@@ -297,7 +298,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/list/options = GLOB.right_click_mode_names.Copy()
 	options += CONTEXT_MENU_SETTINGS_CHOICE
 	var/current = right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())
-	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
+	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. У призрака второе действие - следовать за целью или перейти на клетку. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
 	if(!choice || QDELETED(src))
 		return
 	if(choice == CONTEXT_MENU_SETTINGS_CHOICE)
@@ -359,6 +360,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
  */
 /datum/context_menu
 	var/mob/user
+	/// Клиент, которому показано меню: в Logout у моба клиента уже нет, а экран и окно снять надо
+	var/client/shown_client
 	/// Атом, чьи действия показаны. null - список объектов клетки.
 	var/atom/target
 	/// Клетка клика, если на ней есть из чего выбирать
@@ -404,6 +407,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/smooth_hover = TRUE
 	/// Рисовать браузером (чёткий текст), а не maptext на карте
 	var/use_html = TRUE
+	/// Элемент скина браузерного меню: своё окно поверх остальных или элемент главного окна
+	var/html_control = CONTEXT_MENU_HTML_POPUP_CONTROL
 	/// Множитель длительности анимаций
 	var/animation_speed = 1
 	var/show_stripe = FALSE
@@ -465,6 +470,9 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_user_moved))
 	RegisterSignal(user, list(COMSIG_MOB_DEATH, COMSIG_MOB_LOGOUT), PROC_REF(on_user_lost))
 	RegisterSignal(user, COMSIG_MOB_KEYDOWN, PROC_REF(on_key_down))
+	shown_client = user.client
+	if(shown_client)
+		RegisterSignal(shown_client, COMSIG_PARENT_QDELETING, PROC_REF(on_user_lost))
 	// гладкий шрифт рисуется под зум карты; окно могли растянуть с прошлого раза
 	if(user.client && user.client.prefs?.context_menu_option("font") != "pixel")
 		INVOKE_ASYNC(user.client, TYPE_PROC_REF(/client, refresh_context_menu_zoom))
@@ -490,6 +498,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		return
 	render()
 
+/datum/context_menu/proc/menu_client()
+	RETURN_TYPE(/client)
+	return user?.client || shown_client
+
 /// Есть что выбрать, кроме «Осмотреть» и «Указать», которые есть у всего
 /datum/context_menu/proc/has_actions()
 	for(var/datum/context_menu_entry/entry as anything in entries)
@@ -504,11 +516,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(user)
 		if(user.active_context_menu == src)
 			user.active_context_menu = null
-		user.client?.screen -= screen_objects
+	menu_client()?.screen -= screen_objects
 	hide_hint()
 	hide_html()
 	QDEL_LIST(screen_objects)
 	user = null
+	shown_client = null
 	target = null
 	tile = null
 	clicked = null
@@ -537,7 +550,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	set_target(null)
 	tile_list_shown = TRUE
 	var/client/viewer = user.client
-	if(viewer && pile_click == "take" && !viewer.context_menu_pile_hint_shown)
+	if(viewer && pile_click == "take" && isliving(user) && !viewer.context_menu_pile_hint_shown)
 		viewer.context_menu_pile_hint_shown = TRUE
 		to_chat(viewer, span_notice("В списке клетки ЛКМ по вещи берёт её (занята рука - берёт вторая), ПКМ по строке - её действия. Можно вернуть, чтобы ЛКМ открывал действия, - настройки игры, раздел «Меню ПКМ»."))
 	header_text = null
@@ -729,6 +742,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Подсказка строки объекта: что сделают клики с модификаторами прямо по ней
 /datum/context_menu/proc/pick_hint(atom/thing)
 	var/list/parts = list()
+	if(!isliving(user))
+		return "Shift - осмотреть"
 	if(pile_click == "take" && isitem(thing))
 		parts += "ЛКМ - взять, ПКМ - действия"
 	if(ismovable(thing))
@@ -740,7 +755,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /// Вещь можно взять: рядом, не прикручена, не своя, и есть свободная рука - активная или вторая
 /proc/context_menu_can_take(mob/user, obj/item/item)
-	if(item.anchored || item.loc == user || !user.CanReach(item))
+	if(!isliving(user) || item.anchored || item.loc == user || !user.CanReach(item))
 		return FALSE
 	if(!user.get_active_held_item())
 		return TRUE

@@ -530,17 +530,17 @@
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file)
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file)
 			if(lights && hasPower())
 
 				if(locked)
-					lights_overlay = get_airlock_overlay("lights_bolts", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_bolts", overlays_file)
 				else if(emergency)
-					lights_overlay = get_airlock_overlay("lights_emergency", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_emergency", overlays_file)
 				else
-					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file)
 					light_color = LIGHT_COLOR_BLUE
 					if(engineering_override || medical_override || security_override)
 						code_override_overlay = get_airlock_overlay("lights_code_override", overlays_file)
@@ -567,18 +567,18 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_closed", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file)
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file)
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
-			lights_overlay = get_airlock_overlay("lights_denied", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+			lights_overlay = get_airlock_overlay("lights_denied", overlays_file)
 			if(note)
 				note_overlay = get_airlock_overlay(notetype, note_overlay_file)
 
 		if(AIRLOCK_EMAG)
 			frame_overlay = get_airlock_overlay("closed", icon)
-			sparks_overlay = get_airlock_overlay("sparks", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+			sparks_overlay = get_airlock_overlay("sparks", overlays_file)
 			if(airlock_material)
 				filling_overlay = get_airlock_overlay("[airlock_material]_closed", overlays_file)
 			else
@@ -589,9 +589,9 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_closed", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file)
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file)
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
 			if(note)
@@ -604,7 +604,7 @@
 			else
 				filling_overlay = get_airlock_overlay("fill_closing", icon)
 			if(lights && hasPower())
-				lights_overlay = get_airlock_overlay("lights_closing", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				lights_overlay = get_airlock_overlay("lights_closing", overlays_file)
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_closing_protected", overlays_file)
@@ -621,11 +621,11 @@
 				filling_overlay = get_airlock_overlay("fill_open", icon)
 			if(lights && hasPower())
 				if(locked)
-					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file)
 				else if(emergency)
-					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file)
 				else
-					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file)
 					light_color = LIGHT_COLOR_BLUE
 					if(engineering_override || medical_override || security_override)
 						code_override_overlay = get_airlock_overlay("lights_code_override_open", overlays_file)
@@ -641,7 +641,7 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_open", overlays_file)
 			if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				damag_overlay = get_airlock_overlay("sparks_open", overlays_file)
 			if(note)
 				note_overlay = get_airlock_overlay("[notetype]_open", note_overlay_file)
 
@@ -652,7 +652,7 @@
 			else
 				filling_overlay = get_airlock_overlay("fill_opening", icon)
 			if(lights && hasPower())
-				lights_overlay = get_airlock_overlay("lights_opening", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
+				lights_overlay = get_airlock_overlay("lights_opening", overlays_file)
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_opening_protected", overlays_file)
@@ -666,17 +666,18 @@
 	add_overlay(filling_overlay)
 	if(lights_overlay)
 		add_overlay(lights_overlay)
-		var/mutable_appearance/lights_vis = mutable_appearance(lights_overlay.icon, lights_overlay.icon_state, color = lights_overlay.color)
-		add_overlay(lights_vis)
+		// Спрайты наследуют слой и плоскость шлюза, а маска сохраняет их свечение в темноте.
+		add_overlay(emissive_appearance(lights_overlay.icon, lights_overlay.icon_state, offset_spokesman = src))
 		if(code_override_overlay)
 			add_overlay(code_override_overlay)
 	add_overlay(panel_overlay)
 	add_overlay(weld_overlay)
-	add_overlay(sparks_overlay)
+	if(sparks_overlay)
+		add_overlay(sparks_overlay)
+		add_overlay(emissive_appearance(sparks_overlay.icon, sparks_overlay.icon_state, offset_spokesman = src))
 	if(damag_overlay)
 		add_overlay(damag_overlay)
-		var/mutable_appearance/damage_vis = mutable_appearance(damag_overlay.icon, damag_overlay.icon_state)
-		add_overlay(damage_vis)
+		add_overlay(emissive_appearance(damag_overlay.icon, damag_overlay.icon_state, offset_spokesman = src))
 	add_overlay(note_overlay)
 	check_unres()
 
@@ -684,7 +685,7 @@
 	var/obj/machinery/door/airlock/A
 	pass(A)	//suppress unused warning
 	var/list/airlock_overlays = A.airlock_overlays
-	//Плоскость обязана входить в ключ: у надсветовой свой мастер на каждый этаж стопки.
+	// Оверлеи с FLOAT_PLANE используют плоскость шлюза на любом этаже.
 	var/iconkey = "[icon_state][icon_file][targetplane]"
 	if((!(. = airlock_overlays[iconkey])))
 		. = airlock_overlays[iconkey] = mutable_appearance(icon_file, icon_state, targetlayer, targetplane)
@@ -692,25 +693,17 @@
 /obj/machinery/door/airlock/proc/check_unres() //unrestricted sides. This overlay indicates which directions the player can access even without an ID
 	if(hasPower() && unres_sides)
 		if(unres_sides & NORTH)
-			var/image/I = image(icon=overlays_file, icon_state="unres_n") //layer=src.layer+1
-			I.pixel_y = 32
+			add_overlay(mutable_appearance(overlays_file, "unres_n", pixel_y = 32))
 			set_light(l_range = 2, l_power = 1)
-			add_overlay(I)
 		if(unres_sides & SOUTH)
-			var/image/I = image(icon=overlays_file, icon_state="unres_s") //layer=src.layer+1
-			I.pixel_y = -32
+			add_overlay(mutable_appearance(overlays_file, "unres_s", pixel_y = -32))
 			set_light(l_range = 2, l_power = 1)
-			add_overlay(I)
 		if(unres_sides & EAST)
-			var/image/I = image(icon=overlays_file, icon_state="unres_e") //layer=src.layer+1
-			I.pixel_x = 32
+			add_overlay(mutable_appearance(overlays_file, "unres_e", pixel_x = 32))
 			set_light(l_range = 2, l_power = 1)
-			add_overlay(I)
 		if(unres_sides & WEST)
-			var/image/I = image(icon=overlays_file, icon_state="unres_w") //layer=src.layer+1
-			I.pixel_x = -32
+			add_overlay(mutable_appearance(overlays_file, "unres_w", pixel_x = -32))
 			set_light(l_range = 2, l_power = 1)
-			add_overlay(I)
 	else
 		if(lights && hasPower())
 			if(locked)

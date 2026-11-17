@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	87
+#define SAVEFILE_VERSION_MAX	88
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
 #define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
@@ -172,6 +172,9 @@
 
 	if(current_version < 86 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_BROTHER in be_special))
 		be_special[ROLE_BROTHER] = ANTAG_PRIORITY_HIGH
+
+	if(current_version < 88)
+		dynamic_window_size = initial(dynamic_window_size)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -608,6 +611,7 @@
 	READ_PLAYER_SAVE(S, document, "windowflash", windowflashing)
 	READ_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
 	READ_PLAYER_SAVE(S, document, "windownoise", windownoise)
+	READ_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
 	READ_PLAYER_SAVE(S, document, "mood_vignette", mood_vignette)
 	READ_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
 	READ_PLAYER_SAVE(S, document, "action_buttons_screen_locs", action_buttons_screen_locs)
@@ -675,6 +679,7 @@
 	READ_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	READ_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
 	READ_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
+	READ_PLAYER_SAVE(S, document, "nearsigh_darkening", nearsigh_darkening)
 	READ_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	READ_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
@@ -816,6 +821,7 @@
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -1061,10 +1067,11 @@
 /// Кладёт один ключ в буфер склейки, весь буфер уходит одной записью в flush_single_prefs.
 /// Швабра зовёт это на каждую отмытую плитку, поэтому здесь диск не трогается.
 /// immediate = TRUE записывает сразу, мимо склейки.
-/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+/// lazy = TRUE не заводит своего сброса: ключ уедет с ближайшей записью, логаутом или ребутом.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE, lazy = FALSE)
 	if(!path || !key)
 		return FALSE
-	buffer_single_pref(key, value)
+	buffer_single_pref(key, value, lazy && !immediate)
 	if(immediate)
 		return flush_single_prefs()
 	return TRUE
@@ -1075,11 +1082,13 @@
  * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
  * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
  */
-/datum/preferences/proc/buffer_single_pref(key, value)
+/datum/preferences/proc/buffer_single_pref(key, value, lazy = FALSE)
 	if(!key)
 		return FALSE
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
+	if(lazy)
+		return TRUE
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
 	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.
@@ -1131,9 +1140,10 @@
 /proc/flush_pending_single_prefs()
 	for(var/ckey in GLOB.preferences_datums)
 		var/datum/preferences/prefs = GLOB.preferences_datums[ckey]
-		if(!istype(prefs) || !length(prefs.pending_single_prefs))
+		if(!istype(prefs))
 			continue
-		prefs.flush_single_prefs()
+		if(length(prefs.pending_single_prefs))
+			prefs.flush_single_prefs()
 
 /// Сбрасывает буфер склейки одной записью JSON. Зовут таймер buffer_single_pref,
 /// разлогин клиента, Destroy датума и ребут мира (flush_pending_single_prefs).
@@ -1221,7 +1231,6 @@
 			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
-	S.cd = "/"
 	if(single_pref_queue)
 		deltimer(single_pref_queue)
 	single_pref_queue = null
@@ -1324,6 +1333,7 @@
 	WRITE_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	WRITE_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
 	WRITE_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
+	WRITE_PLAYER_SAVE(S, document, "nearsigh_darkening", nearsigh_darkening)
 	WRITE_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_color", hud_toggle_color)
@@ -1383,6 +1393,7 @@
 	WRITE_PLAYER_SAVE(S, document, "use_modern_translations", use_modern_translations)
 	WRITE_PLAYER_SAVE(S, document, "new_character_creator", new_character_creator)
 	WRITE_PLAYER_SAVE(S, document, "view_pixelshift", view_pixelshift)
+	WRITE_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_PLAYER_SAVE(S, document, "see_chat_emotes", see_chat_emotes)
@@ -1454,7 +1465,8 @@
 	slot = selected_slot
 	if(slot != default_slot)
 		default_slot = slot
-		if(!provided)
+		// Временные префы клиента (голоформа из чужого слота) выбор игрока не перезаписывают.
+		if(!provided && (!parent || parent.prefs == src))
 			buffer_single_pref("default_slot", slot)
 
 	if(S)
@@ -1506,6 +1518,11 @@
 "cock_shape" = DEF_COCK_SHAPE,
 "cock_length" = COCK_SIZE_DEF,
 "cock_diameter_ratio" = COCK_DIAMETER_RATIO_DEF,
+"cock_dynamic_size" = FALSE,
+"cock_flaccid_length" = COCK_SIZE_DEF,
+"cock_flaccid_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
+"cock_erect_length" = COCK_SIZE_DEF,
+"cock_erect_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
 "cock_color" = "ffffff",
 "cock_taur" = FALSE,
 "has_balls" = FALSE,
@@ -1785,6 +1802,11 @@
 	READ_PLAYER_SAVE(S, document, "feature_cock_color", features["cock_color"])
 	READ_PLAYER_SAVE(S, document, "feature_cock_length", features["cock_length"])
 	READ_PLAYER_SAVE(S, document, "feature_cock_diameter_ratio", features["cock_diameter_ratio"]) //Why is this in the features but not a fucking option
+	READ_PLAYER_SAVE(S, document, "feature_cock_dynamic_size", features["cock_dynamic_size"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_flaccid_length", features["cock_flaccid_length"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_flaccid_width", features["cock_flaccid_width"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_erect_length", features["cock_erect_length"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_erect_width", features["cock_erect_width"])
 	READ_PLAYER_SAVE(S, document, "feature_cock_diameter", features["cock_diameter"])
 	READ_PLAYER_SAVE(S, document, "feature_cock_taur", features["cock_taur"])
 	READ_PLAYER_SAVE(S, document, "feature_cock_visibility", features["cock_visibility"])
@@ -1928,6 +1950,9 @@
 	var/list/working_preset_loadout = loadout_data[preset_slot_key]
 	// Старый загрузчик превращал отсутствующий слот в пустой список и сохранял его на диск.
 	var/restore_preset_loadout = !islist(working_preset_loadout) || (!length(working_preset_loadout) && !PLAYER_SAVE_VALUE(S, document, "preset_loadout_initialized"))
+	// Старый deepCopyList записывал массив предметов как JSON-объект с ключом "/list".
+	if(islist(working_preset_loadout) && length(working_preset_loadout) == 1 && working_preset_loadout[1] == "/list")
+		restore_preset_loadout = TRUE
 	if(istext(saved_loadout))
 		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
@@ -2157,6 +2182,11 @@
 	features["breasts_size"] = sanitize_inlist(features["breasts_size"], B_sizes, BREASTS_SIZE_DEF)
 	features["cock_length"] = sanitize_integer(features["cock_length"], min_D, max_D, COCK_SIZE_DEF)
 	features["cock_diameter_ratio"] = sanitize_num_clamp(features["cock_diameter_ratio"], min_diameter_ratio, max_diameter_ratio, COCK_DIAMETER_RATIO_DEF) // BLUEMOON EDIT - sanitize_integer заменён на sanitize_num_clamp, т.к. первый округляет значения, а по условиям округление не подходит
+	features["cock_dynamic_size"] = sanitize_integer(features["cock_dynamic_size"], 0, 1, FALSE)
+	features["cock_flaccid_length"] = sanitize_integer(features["cock_flaccid_length"], min_D, max_D, features["cock_length"])
+	features["cock_erect_length"] = sanitize_integer(features["cock_erect_length"], min_D, max_D, features["cock_length"])
+	features["cock_flaccid_width"] = sanitize_num_clamp(features["cock_flaccid_width"], 0.1, max_D, features["cock_length"] * features["cock_diameter_ratio"])
+	features["cock_erect_width"] = sanitize_num_clamp(features["cock_erect_width"], 0.1, max_D, features["cock_length"] * features["cock_diameter_ratio"])
 	features["butt_size"] = sanitize_integer(features["butt_size"], min_B, max_B, BUTT_SIZE_DEF)
 	features["belly_size"] = sanitize_integer(features["belly_size"], min_belly, max_belly, BELLY_SIZE_DEF)
 	features["breasts_shape"] = sanitize_inlist(features["breasts_shape"], GLOB.breasts_shapes_list, DEF_BREASTS_SHAPE)
@@ -2330,7 +2360,7 @@
 	if(!(bgstate in bgstate_options))
 		bgstate = initial(bgstate)
 
-	if(!sand_character_pref_load(S, !provided, document))
+	if(!sand_character_pref_load(S, !provided, document, needs_update))
 		return FALSE
 
 	splurt_character_pref_load(S, document)
@@ -2600,6 +2630,11 @@
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_color", features["cock_color"])
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_length", features["cock_length"])
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_diameter_ratio", features["cock_diameter_ratio"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_dynamic_size", features["cock_dynamic_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_flaccid_length", features["cock_flaccid_length"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_flaccid_width", features["cock_flaccid_width"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_erect_length", features["cock_erect_length"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_erect_width", features["cock_erect_width"])
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_taur", features["cock_taur"])
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_visibility", features["cock_visibility"])
 	WRITE_PLAYER_SAVE(S, document, "feature_cock_accessible", features["cock_accessible"])
@@ -2819,6 +2854,23 @@
 
 
 	return S
+
+/// Наносит на тело постоянные шрамы текущего набора и выкидывает из набора не загрузившиеся.
+/// Персонаж пишется на диск, только если набор от этого изменился.
+/datum/preferences/proc/apply_persistent_scars(mob/living/carbon/human/target)
+	var/scar_key = "[scars_index]"
+	var/scar_string = scars_list[scar_key]
+	if(!persistent_scars || !scar_string)
+		return FALSE
+	var/valid_scars = ""
+	for(var/scar_line in splittext(scar_string, ";"))
+		if(target.load_scar(scar_line))
+			valid_scars += "[scar_line];"
+	if(valid_scars == scar_string)
+		return FALSE
+	scars_list[scar_key] = valid_scars
+	save_character()
+	return TRUE
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
 	if(parent && !silent)

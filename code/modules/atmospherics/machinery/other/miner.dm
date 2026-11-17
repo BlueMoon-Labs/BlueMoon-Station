@@ -26,6 +26,8 @@
 	var/power_draw_dynamic_kpa_coeff = 0.5
 	var/broken = FALSE
 	var/broken_message = "ERROR"
+	///check_operation() упёрся в давление или моли снаружи: до перемены газа на турфе майнеру делать нечего.
+	var/external_capped = FALSE
 	idle_power_usage = 150
 	active_power_usage = 2000
 
@@ -39,6 +41,7 @@
 		. += "Its debug output is printing \"[broken_message]\"."
 
 /obj/machinery/atmospherics/miner/proc/check_operation()
+	external_capped = FALSE
 	if(!active)
 		return FALSE
 	var/turf/T = get_turf(src)
@@ -59,10 +62,12 @@
 	if(G.return_pressure() > (max_ext_kpa - ((spawn_mol*spawn_temp*R_IDEAL_GAS_EQUATION)/(CELL_VOLUME))))
 		broken_message = "<span class='boldwarning'>EXTERNAL PRESSURE OVER THRESHOLD</span>"
 		set_broken(TRUE)
+		external_capped = TRUE
 		return FALSE
 	if(G.total_moles() > max_ext_mol)
 		broken_message = "<span class='boldwarning'>EXTERNAL AIR CONCENTRATION OVER THRESHOLD</span>"
 		set_broken(TRUE)
+		external_capped = TRUE
 		return FALSE
 	if(broken)
 		set_broken(FALSE)
@@ -132,7 +137,12 @@
 /obj/machinery/atmospherics/miner/process_atmos()
 	update_power()
 	check_operation()
-	if(active && !broken)
+	if(!active || external_capped)
+		// Выключенного будит power_change(), упёршегося в полный бак - газ на турфе.
+		atmos_consider_idle()
+		return
+	atmos_idle_streak = 0
+	if(!broken)
 		if(isnull(spawn_id))
 			return FALSE
 		if(do_use_power(active_power_usage))

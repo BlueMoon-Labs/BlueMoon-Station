@@ -120,6 +120,14 @@
 	ion_overlays[C] = overlay
 	C.screen += overlay
 	overlay.fade_in(30)
+	RegisterSignal(C, COMSIG_PARENT_QDELETING, PROC_REF(on_client_deleted), override = TRUE)
+
+/// Ушедший клиент не держится в ion_overlays: BYOND искал бы его обходом мира.
+/datum/round_event/aurora_caelus/proc/on_client_deleted(client/source)
+	SIGNAL_HANDLER
+	var/overlay = ion_overlays[source]
+	ion_overlays -= source
+	qdel(overlay)
 
 /datum/round_event/aurora_caelus/proc/lingering_ion_fadeout()
 	for(var/client/C in ion_overlays)
@@ -142,6 +150,7 @@
 			overlay.fade_out(50)
 			QDEL_IN(overlay, 60)
 		C?.screen -= overlay
+		UnregisterSignal(C, COMSIG_PARENT_QDELETING)
 	ion_overlays.Cut()
 
 /datum/round_event/aurora_caelus/proc/remove_all_ion_overlays()
@@ -151,6 +160,7 @@
 			overlay.fade_out(50)
 			C?.screen -= overlay
 			QDEL_IN(overlay, 60)
+		UnregisterSignal(C, COMSIG_PARENT_QDELETING)
 	ion_overlays.Cut()
 
 #undef TRAIT_SOURCE

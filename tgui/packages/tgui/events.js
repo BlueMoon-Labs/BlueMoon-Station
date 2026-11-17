@@ -52,7 +52,9 @@ let focusStolenBy = null;
 
 export const canStealFocus = node => {
   const tag = String(node.tagName).toLowerCase();
-  return tag === 'input' || tag === 'textarea';
+  // BLUEMOON EDIT: редактируемый текст (contentEditable) тоже держит фокус,
+  // иначе нажатия уходят в игру, а наведение мыши на прокрутку сбрасывает курсор.
+  return tag === 'input' || tag === 'textarea' || !!node.isContentEditable;
 };
 
 const stealFocus = node => {

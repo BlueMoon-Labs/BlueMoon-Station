@@ -16,6 +16,7 @@ export const NtosPortraitPrinter = (props) => {
     library_large_private,
     favorite_paintings_md5 = [],
     is_admin = false,
+    user_ckey = null,
   } = data;
 
   const allPortraits = [
@@ -62,14 +63,25 @@ export const NtosPortraitPrinter = (props) => {
     },
   ];
   const baseList = TABS[tabIndex].list || [];
+  // Скрытые картины видны только админам (чтобы они могли восстановить)
+  const displayList = is_admin ? baseList : baseList.filter(p => !p.hidden);
 
   const filteredList = !query
-    ? baseList
-    : baseList.filter(p =>
-      String(p.title)
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    );
+    ? displayList
+    : displayList.filter(p => {
+        // Админы могут искать по названию ИЛИ сикею
+        if (is_admin) {
+          return String(p.title).toLowerCase().includes(query.toLowerCase()) ||
+                 String(p.ckey).toLowerCase().includes(query.toLowerCase());
+        }
+        // Обычные игроки видят только свои картины при поиске по сикею и должны написать его полностью
+        const isCkeySearch = user_ckey && query.toLowerCase() === user_ckey.toLowerCase();
+        if (isCkeySearch) {
+          return p.ckey === user_ckey;
+        }
+        // По умолчанию поиск только по названию
+        return String(p.title).toLowerCase().includes(query.toLowerCase());
+      });
 
   const hasPortraits = filteredList.length > 0;
   const safeIndex = hasPortraits
@@ -85,7 +97,7 @@ export const NtosPortraitPrinter = (props) => {
 
   const current_portrait_title = currentPortrait
     ? currentPortrait.title
-    : 'No portraits found';
+    : 'Картин не найдено';
 
   const current_portrait_asset_prefix = currentPortrait
     ? (TABS[tabIndex].asset_prefix || currentPortrait.asset_prefix)
@@ -94,6 +106,9 @@ export const NtosPortraitPrinter = (props) => {
   const current_portrait_asset_name = currentPortrait
     ? current_portrait_asset_prefix + '_' + currentPortrait.md5
     : '';
+
+  const isAdminOrOwner = !!currentPortrait && (is_admin || user_ckey === currentPortrait.ckey);
+  const isOwner = !!currentPortrait && user_ckey === currentPortrait.ckey;
 
   return (
     <NtosWindow
@@ -125,7 +140,7 @@ export const NtosPortraitPrinter = (props) => {
                 <Stack.Item grow>
                   <Input
                     fluid
-                    placeholder="Search paintings..."
+                    placeholder="Поиск картин..."
                     value={query}
                     onInput={(_e, value) => {
                       if (query === "" && value !== "") {
@@ -146,16 +161,42 @@ export const NtosPortraitPrinter = (props) => {
                       })}
                     />
                   )}
-                  {hasPortraits && is_admin && (
+                  {hasPortraits && isAdminOrOwner && !currentPortrait.hidden && (
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip="Delete this painting from the database"
+                      tooltip={is_admin ? "Скрыть картину из галереи (админ)" : "Скрыть свою картину"}
                       tooltipPosition="bottom"
-                      confirmContent="Are you sure?"
-                      onClick={() => act('delete_painting', {
+                      confirmContent="Вы уверены?"
+                      onClick={() => act('hide_painting', {
                         md5: currentPortrait.md5,
                         asset_prefix: current_portrait_asset_prefix,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && is_admin && currentPortrait.hidden && (
+                    <Button.Confirm
+                      icon="undo"
+                      color="good"
+                      tooltip="Восстановить картину в галерее (админ)"
+                      tooltipPosition="bottom"
+                      confirmContent="Вы уверены?"
+                      onClick={() => act('unhide_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && isOwner && (
+                    <Button
+                      icon="pencil"
+                      color="transparent"
+                      tooltip="Переименовать картину"
+                      tooltipPosition="bottom"
+                      onClick={() => act('rename_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
+                        current_title: currentPortrait.title,
                       })}
                     />
                   )}
@@ -209,7 +250,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         icon="check"
                         disabled={!hasPortraits}
-                        content="Print Portrait"
+                        content="Распечатать картину"
                         onClick={() => act("select", {
                           md5: currentPortrait.md5,
                           asset_prefix: current_portrait_asset_prefix,

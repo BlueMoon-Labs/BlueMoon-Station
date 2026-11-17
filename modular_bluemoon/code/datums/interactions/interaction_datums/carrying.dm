@@ -12,6 +12,10 @@
 	if(user.incapacitated())
 		to_chat(user, span_warning("Ты сейчас не можешь это сделать."))
 		return FALSE
+	if(!isturf(user.loc))
+		var/atom/blocker = get_interaction_blocker(user)
+		to_chat(user, span_warning((blocker ? "Сначала выберись из [blocker.name]." : "Сначала выберись наружу.")))
+		return FALSE
 	if(user.get_active_held_item())
 		to_chat(user, span_warning("Нужна свободная рука."))
 		return FALSE
@@ -20,6 +24,9 @@
 	. = ..()
 	if(!.)
 		return
+	if(!isturf(target.loc))
+		to_chat(user, span_warning("До [target.name] сейчас не достать."))
+		return FALSE
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(!is_type_in_typecache(target, H.can_ride_typecache))
@@ -29,11 +36,11 @@
 		to_chat(user, span_warning("[target] слишком много весит."))
 		return FALSE
 
-/datum/interaction/carry/special_check(mob/living/user, mob/living/target)
+/datum/interaction/carry/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!.)
 		return
-	user.visible_message("[user] пытается поднять [target] к себе на руки...")
+	user.visible_message("[user] пытается поднять [target] к себе на руки...", vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	var/do_time = 5 SECONDS
 	if(HAS_TRAIT(user, TRAIT_QUICK_CARRY))
 		do_time = 4 SECONDS
@@ -50,7 +57,7 @@
 	. = ..()
 	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE)
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE, is_hidden = is_hidden)
 
 /datum/interaction/carry/princess
 	description = "Нести на руках как принцессу."
@@ -68,4 +75,4 @@
 	. = ..()
 	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PRINCESS, auto_by_type = TRUE)
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PRINCESS, auto_by_type = TRUE, is_hidden = is_hidden)

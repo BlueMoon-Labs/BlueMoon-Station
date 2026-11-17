@@ -24,7 +24,7 @@ export const Icon = props => {
     ...rest
   } = props;
   if (size) {
-    style['font-size'] = (size * 100) + '%';
+    style.fontSize = (size * 100) + '%';
   }
   if (typeof rotation === 'number') {
     style['transform'] = `rotate(${rotation}deg)`;

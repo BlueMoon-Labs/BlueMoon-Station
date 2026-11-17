@@ -146,6 +146,8 @@
 			targets |= F
 
 	for(var/obj/structure/closet/secure_closet/brig/C in world)
+		if(QDELETED(C))
+			continue
 		if(C.id == id)
 			targets |= C
 

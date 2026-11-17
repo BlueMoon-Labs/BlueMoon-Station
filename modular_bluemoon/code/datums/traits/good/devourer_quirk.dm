@@ -59,8 +59,8 @@
 		REMOVE_TRAIT(H,TRAIT_BLUEMOON_ANTI_NORMALIZER, ROUNDSTART_TRAIT)
 
 // Quirk examine text
-/datum/quirk/bluemoon_devourer/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "[quirk_holder.ru_ego(TRUE)] явно мучает голод."
+/datum/quirk/bluemoon_devourer/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += "[anonymous ? "Его" : quirk_holder.ru_ego(TRUE)] явно мучает голод."
 
 /datum/quirk/bluemoon_devourer/proc/check_mob_size()
 	if(!isliving(quirk_holder))

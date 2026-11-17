@@ -125,7 +125,7 @@
 	metadollar_pending_items = SANITIZE_LIST(metadollar_pending_items)
 	return .
 
-/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE, datum/player_save_document/document)
+/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE, datum/player_save_document/document, needs_update)
 	READ_PLAYER_SAVE(S, document, "custom_interactions", custom_interactions)
 	if(!document && isnull(custom_interactions))
 		// Legacy-данные лежали в корне сейвфайла — переносим их в текущий слот персонажа.
@@ -160,6 +160,10 @@
 	var/max_customs = get_custom_interaction_limit()
 	if(length(custom_interactions) > max_customs)
 		custom_interactions.Cut(max_customs + 1)
+
+	if(needs_update >= 0 && needs_update < 88)
+		for(var/datum/interaction/custom/custom as anything in custom_interactions)
+			custom.requires_review = TRUE
 	return TRUE
 
 /datum/preferences/proc/sand_character_pref_save(savefile/S)

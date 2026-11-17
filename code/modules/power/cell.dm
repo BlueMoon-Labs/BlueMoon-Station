@@ -472,4 +472,12 @@
 	rating = 1
 
 /obj/item/stock_parts/cell/lead
-	charging_icon = "lead_in"
+	name = "lead-acid battery"
+	desc = "Примитивная тяжёлая батарея. Электрические рыбы почему-то не против такого лакомства."
+	icon = 'icons/obj/maintenance_loot.dmi'
+	icon_state = "lead_battery"
+	force = 10
+	throwforce = 10
+	w_class = WEIGHT_CLASS_NORMAL
+	has_charge_overlay = FALSE
+	charging_icon = null

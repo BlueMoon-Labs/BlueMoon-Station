@@ -383,6 +383,7 @@
 #define EMISSIVE_DARKSIGHT_RANGE	8
 
 #define SILENCE_RANGED_MESSAGE	(1<<0)
+#define SIMPLE_MOB_PROJECTILE_ARMOR (1<<1)
 
 // Body position defines.
 /// Mob is standing up, usually associated with lying_angle value of 0.

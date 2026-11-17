@@ -71,7 +71,9 @@
 	icon_state = "[base_icon_state][area.lightswitch ? 1 : 0]"
 	if(!isemptylist(connected_lights))
 		var/obj/machinery/light/L = connected_lights[1]
-		icon_state = "[base_icon_state][L?.on ? 1 : 0]"
+		// Положение выключателя, а не горит ли лампа: в полный тик она загорается тиком позже.
+		var/position = isnull(L?.individual_switch_state) ? L?.on : L.individual_switch_state
+		icon_state = "[base_icon_state][position ? 1 : 0]"
 	return ..()
 
 /obj/machinery/light_switch/update_overlays()
@@ -92,10 +94,10 @@
 			if(QDELETED(L))
 				connected_lights -= L
 				continue
-			L.individual_switch_state = !L.on
+			L.individual_switch_state = !(isnull(L.individual_switch_state) ? L.on : L.individual_switch_state)
 			var/area/A = get_area(L)
 			A.update_appearance()
-			A.power_change()
+			L.power_change()
 		update_appearance()
 		return
 	if(!area)
@@ -115,7 +117,7 @@
 			L.individual_switch_state = null
 			var/area/A = get_area(L)
 			A.update_appearance()
-			A.power_change()
+			L.power_change()
 		connected_lights = list()
 		to_chat(user, "You disconnect all individual lights from [src].")
 	if(user.a_intent == INTENT_DISARM)
@@ -136,6 +138,10 @@
 		else
 			set_machine_stat(machine_stat | NOPOWER)
 	update_appearance()
+
+/// Выключатель смотрит на канал света, а не на свой, и рисует положение выключателя области
+/obj/machinery/light_switch/area_power_change_relevant()
+	return TRUE
 
 /obj/machinery/light_switch/emp_act(severity)
 	. = ..()

@@ -660,8 +660,7 @@
 /datum/antagonist/bloodsucker/proc/update_bloodsucker_icons_added(datum/mind/m)
 	var/datum/atom_hud/antag/vamphud = GLOB.huds[ANTAG_HUD_BLOODSUCKER]
 	vamphud.join_hud(owner.current)
-	set_antag_hud(owner.current, "bloodsucker") // "bloodsucker"
-	owner.current.hud_list[ANTAG_HUD].icon = image('icons/mob/hud.dmi', owner.current, "bloodsucker")	//Check prepare_huds in mob.dm to see why.
+	set_antag_hud(owner.current, "bloodsucker", vamphud)
 
 /datum/antagonist/bloodsucker/proc/update_bloodsucker_icons_removed(datum/mind/m)
 	var/datum/atom_hud/antag/vamphud = GLOB.huds[ANTAG_HUD_BLOODSUCKER]

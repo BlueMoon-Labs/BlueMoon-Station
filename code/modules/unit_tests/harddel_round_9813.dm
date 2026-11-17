@@ -45,9 +45,7 @@
 			return entry[5]
 	return "?"
 
-/// Цель обязана исчезнуть из мира. `locate()` по ref BYOND переиспользует, поэтому
-/// живой объект засчитывается провалом только если он ещё и в состоянии qdel -
-/// свежий датум, занявший тот же ref, тестом не считается.
+/// Цель обязана быть отпущена: собрана, её ref занял живой датум или её держит только очередь GC.
 /datum/unit_test/harddel_9813_base/proc/assert_soft_collected(list/target)
 	var/label = target["label"]
 	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(target["type_path"])
@@ -56,8 +54,7 @@
 	var/datum/qdel_item/recorded = target["qdel_item"]
 	var/hard_deleted = recorded.hard_deletes != target["hard_deletes"] || (item != recorded && item.hard_deletes)
 	TEST_ASSERT(!hard_deleted, "[label] собран через hard delete")
-	var/datum/still_alive = locate(target["ref"])
-	TEST_ASSERT(isnull(still_alive) || !QDELING(still_alive), "[label] пережил qdel и не собран (внешних держателей: [recorded_holders(target["type_path"])])")
+	TEST_ASSERT(gc_ref_released(target["ref"]), "[label] пережил qdel и не собран (внешних держателей: [recorded_holders(target["type_path"])])")
 
 /// ДИАГНОСТИКА: если цель пережила GC-прогон, пишет полный скан держателей
 /// в data/logs/<раунд>/harddels.log. Скан обходит весь мир, поэтому только на провале.

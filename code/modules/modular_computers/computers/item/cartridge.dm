@@ -165,8 +165,9 @@
 	if(access & CART_SECURITY)
 		programs += /datum/computer_file/program/secureye
 	if(access & CART_QUARTERMASTER)
-		programs += /datum/computer_file/program/budgetorders
+		programs += /datum/computer_file/program/department_budget
 		programs += /datum/computer_file/program/shipping
+		programs += /datum/computer_file/program/cargo_orders
 	if(access & CART_NEWSCASTER)
 		programs += /datum/computer_file/program/chatclient
 	if(access & CART_DRONEPHONE)

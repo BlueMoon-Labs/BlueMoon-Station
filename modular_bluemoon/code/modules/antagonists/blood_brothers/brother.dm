@@ -252,14 +252,14 @@
 
 /datum/antagonist/brother/proc/on_mindshield_trait(mob/living/source)
 	SIGNAL_HANDLER
-	set_antag_hud(source, hud_state_for(source))
+	set_antag_hud(source, hud_state_for(source), GLOB.huds[antag_hud_type])
 	on_mute_changed()
 
-/datum/antagonist/brother/proc/on_examine(mob/living/source, mob/user, list/examine_list)
+/datum/antagonist/brother/proc/on_examine(mob/living/source, mob/user, list/examine_list, anonymous = FALSE)
 	SIGNAL_HANDLER
 	if(!blood_oath_palm_organic(source) || source.get_item_by_slot(ITEM_SLOT_GLOVES) || (ITEM_SLOT_GLOVES in source.check_obscured_slots()))
 		return
-	examine_list += span_warning("Поперёк [source.ru_ego()] ладони тянется шрам от глубокого пореза.")
+	examine_list += span_warning("Поперёк [anonymous ? "его" : source.ru_ego()] ладони тянется шрам от глубокого пореза.")
 
 /// Удаление тела закрывает Схрон; из nullspace так уходит крио, не дожидаясь проверки команды
 /datum/antagonist/brother/proc/on_body_deleted(mob/living/source)

@@ -6,7 +6,6 @@
 	default_driver_move = FALSE
 	pass_flags_self = PASSTABLE
 	var/legs_required = 1
-	var/arms_required = 0	//why not?
 
 /obj/vehicle/ridden/Initialize(mapload)
 	. = ..()

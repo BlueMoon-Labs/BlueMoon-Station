@@ -1,3 +1,4 @@
+#define PREVIEW_RENDER_DEFER_TRAIT "preview_render_defer"
 
 	//The mob should have a gender you want before running this proc. Will run fine without H
 /datum/preferences/proc/random_character(gender_override)
@@ -52,6 +53,8 @@
 	try
 		// Новый манекен и взятый из пула начинают с одинаково очищенного состояния.
 		mannequin.wipe_state()
+		// Одежда надевается без поштучной перерисовки, внешность собирается один раз при снятии признака.
+		ADD_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
 		copy_to(mannequin, icon_updates = FALSE, initial_spawn = TRUE)
 		if(!preview_build_yield(mannequin))
 			return null
@@ -72,9 +75,13 @@
 		for(var/obj/item/organ/genital/genital in mannequin.internal_organs)
 			if(CHECK_BITFIELD(genital.genital_flags, GENITAL_CAN_AROUSE))
 				genital.aroused_state = aroused_preview
+				if(istype(genital, /obj/item/organ/genital/penis))
+					var/obj/item/organ/genital/penis/penis = genital
+					if(penis.dynamic_size)
+						penis.apply_dynamic_size()
 				genital.update_appearance()
 
-		mannequin.regenerate_icons()
+		REMOVE_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
 
 		result = new /mutable_appearance(mannequin)
 		// Конструктор mutable_appearance сбрасывает plane: сохраняем настоящую плоскость манекена.
@@ -83,6 +90,8 @@
 		if(!preview_build_yield(mannequin))
 			return result
 	catch(var/exception/error)
+		if(!QDELETED(mannequin))
+			REMOVE_TRAIT(mannequin, TRAIT_HUMAN_NO_RENDER, PREVIEW_RENDER_DEFER_TRAIT)
 		release_preview_mannequin(mannequin)
 		throw error
 	release_preview_mannequin(mannequin)
@@ -108,3 +117,5 @@
 			highest_job = SSjob.GetJob(job)
 			highest_pref = priorities["[job]"]
 	return highest_job
+
+#undef PREVIEW_RENDER_DEFER_TRAIT

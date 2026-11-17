@@ -211,19 +211,19 @@ const MarkingLimbCard = (props: { limb: MarkingLimb; total: number }) => {
         />
       </Box>
 
-      {!hasMarkings ? (
-        <Box color="label">На этой части тела нет разметок.</Box>
-      ) : (
-        <Box
-          className="CharacterSetup__limb-markings"
-          maxHeight="280px"
-          overflowY="auto"
-        >
-          {limb.markings.map((row) => (
+      <Box
+        className="CharacterSetup__limb-markings"
+        height="280px"
+        overflowY="auto"
+      >
+        {!hasMarkings ? (
+          <Box color="label">На этой части тела нет разметок.</Box>
+        ) : (
+          limb.markings.map((row) => (
             <MarkingRowView key={row.index} row={row} total={total} limb={limb.name} />
-          ))}
-        </Box>
-      )}
+          ))
+        )}
+      </Box>
     </Box>
   );
 };

@@ -1640,6 +1640,129 @@
 	SSmetadollars.metadollar_adjust(5, balance_ckey)
 	TEST_ASSERT(!fexists(balance_path), "начисление при нечитаемом сейве заменило старый баланс")
 
+/// Блок журнала одиночных ключей в формате, который писал прежний сброс префов.
+/datum/unit_test/player_save_json/proc/journal_block(base, list/values)
+	var/savefile/block = new /savefile()
+	block.cd = "/"
+	for(var/key in values)
+		var/value = values[key]
+		WRITE_FILE(block[key], value)
+	WRITE_FILE(block[PREF_JOURNAL_BASE_KEY], base)
+	return "[PREF_JOURNAL_BLOCK_BEGIN]\n[block.ExportText("/")]\n[PREF_JOURNAL_BLOCK_END]\n"
+
+/// Незалитый журнал старого сейва доезжает в JSON при переносе; .sav и журнал не меняются.
+/datum/unit_test/player_save_json/legacy_journal_migration/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["tgui_panel_state"] << "до журнала"
+	legacy["marker"] << 1
+	legacy.Flush()
+	legacy = null
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	var/fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, test_path)
+	var/list/layouts = list("/obj/machinery/vending/cola" = "list")
+	var/journal_text = journal_block(fingerprint, list("tgui_panel_state" = "Чат «главный» с \"кавычками\"", "vending_layouts" = layouts, "ticket_nickname" = null))
+	journal_text += journal_block("устаревший", list("marker" = 2))
+	journal_text += journal_block(fingerprint, list("tgui_panel_state" = "последнее"))
+	journal_text += "[PREF_JOURNAL_BLOCK_BEGIN]\ntorn = 1\n"
+	text2file(journal_text, journal)
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/journal_hash = rustg_hash_file(RUSTG_HASH_MD5, journal)
+
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв с журналом не прочитан: [storage.error]")
+	TEST_ASSERT_EQUAL(document.read("tgui_panel_state"), "последнее", "поздний блок журнала не перекрыл ранний")
+	TEST_ASSERT_EQUAL(json_encode(document.read("vending_layouts")), json_encode(layouts), "список из журнала изменился")
+	TEST_ASSERT_EQUAL(document.read("marker"), 1, "устаревший блок журнала перезаписал savefile")
+	TEST_ASSERT_NULL(document.read("torn"), "оборванный блок журнала прочитан")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил старый .sav")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, journal), journal_hash, "перенос изменил журнал")
+	fdel(journal)
+
+/// Слияние журнала, оборванное падением, доводится по метке в savefile, а сама метка в JSON не попадает.
+/datum/unit_test/player_save_json/legacy_journal_torn_merge/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["tgui_panel_theme"] << "light"
+	legacy[PREF_JOURNAL_MERGING_SAVE_KEY] << "отпечаток до слияния"
+	legacy.Flush()
+	legacy = null
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	text2file(journal_block("отпечаток до слияния", list("tgui_panel_theme" = "dark")), journal)
+
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв с оборванным слиянием не прочитан: [storage.error]")
+	TEST_ASSERT_EQUAL(document.read("tgui_panel_theme"), "dark", "блок оборванного слияния не применён")
+	TEST_ASSERT(!(PREF_JOURNAL_MERGING_SAVE_KEY in document.tree), "метка слияния журнала попала в JSON")
+	fdel(journal)
+
+/// Действия переносятся с раздельными требованиями себе и партнёру; файл старой схемы отправляет действие на проверку.
+/datum/unit_test/player_save_json/transfer_interaction_fields/Run()
+	prepare()
+	var/datum/interaction/custom/custom = new
+	custom.name = "Раздельное действие"
+	custom.message = "Сообщение."
+	custom.self_required_body_parts = INTERACTION_REQUIRE_HANDS
+	custom.partner_requires_tail = TRUE
+	var/encoded = player_transfer_encode_field("interactions", list(custom))
+	var/list/decoded = player_transfer_decode_field("custom_interactions", "interactions", encoded, list(10000))
+	var/datum/interaction/custom/restored = decoded[1]
+	TEST_ASSERT_EQUAL(restored.self_required_body_parts, INTERACTION_REQUIRE_HANDS, "не перенесены требования к себе")
+	TEST_ASSERT(restored.partner_requires_tail, "не перенесено требование хвоста у партнёра")
+	TEST_ASSERT(!restored.requires_review, "проверенное действие ушло на проверку")
+
+	var/list/legacy_entry = list("name" = "Старое действие", "message" = "Сообщение.", "required_body_parts" = INTERACTION_REQUIRE_HANDS, "requires_tail" = TRUE)
+	decoded = player_transfer_decode_field("custom_interactions", "interactions", player_save_encode_value(list(legacy_entry)), list(10000))
+	restored = decoded[1]
+	TEST_ASSERT_EQUAL(restored.name, "Старое действие", "действие старой схемы не принято")
+	TEST_ASSERT(restored.requires_review, "действие старой схемы не отправлено на проверку")
+
+/datum/client_interface/player_save_json_test
+	var/ckey = "playersavejsontest"
+
+/// Временные префы клиента (голоформа ИИ) читают чужой слот, не перезаписывая выбранный игроком.
+/datum/unit_test/player_save_json/temporary_prefs_keep_default_slot/Run()
+	prepare()
+	var/list/names = list("Хозяин Слота", "Голоформа Слота")
+	var/datum/preferences/owner = new_preferences()
+	TEST_ASSERT(owner.save_preferences(TRUE, TRUE), "не создан корень")
+	for(var/slot in 1 to length(names))
+		owner.default_slot = slot
+		owner.real_name = names[slot]
+		TEST_ASSERT(owner.save_character(TRUE, TRUE, update_active_preset = FALSE), "не записан слот [slot]")
+	owner.default_slot = 1
+	TEST_ASSERT(owner.save_preferences(TRUE, TRUE), "не записан выбранный слот")
+
+	var/datum/client_interface/player_save_json_test/fake_client = new
+	fake_client.prefs = owner
+	var/datum/preferences/borrowed = new
+	allocated += borrowed
+	borrowed.path = test_path
+	borrowed.parent = fake_client
+	TEST_ASSERT(borrowed.load_character(2, TRUE), "временные префы не прочитали слот")
+	var/borrowed_name = borrowed.real_name
+	borrowed.flush_single_prefs()
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/after_borrow = reader.snapshot(null, FALSE)
+	var/slot_after_borrow = after_borrow?.read("default_slot")
+	borrowed.parent = null
+	borrowed.path = null
+	fake_client.prefs = null
+	qdel(fake_client)
+
+	TEST_ASSERT(owner.load_character(2, TRUE), "префы игрока не прочитали слот")
+	TEST_ASSERT(owner.flush_single_prefs(), "выбор слота не записан")
+	reader = new(test_path)
+	var/datum/player_save_document/after_owner = reader.snapshot(null, FALSE)
+
+	TEST_ASSERT_EQUAL(borrowed_name, names[2], "временные префы прочитали не тот слот")
+	TEST_ASSERT_EQUAL(slot_after_borrow, 1, "временные префы перезаписали выбранный игроком слот")
+	TEST_ASSERT_EQUAL(after_owner?.read("default_slot"), 2, "префы игрока не запомнили выбранный слот")
+
 #ifdef PLAYER_SAVE_BENCHMARK
 /// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.
 /datum/unit_test/player_save_json/benchmark/Run()

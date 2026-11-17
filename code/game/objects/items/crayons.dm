@@ -305,8 +305,15 @@
 	return FALSE
 
 /obj/item/toy/crayon/proc/crayon_text_strip(text)
-	var/static/regex/crayon_r = new /regex(@"[^\w!?,.=%#&+\/\-]")
+	var/static/regex/crayon_r = new /regex(@"[^\wa-яёА-ЯЁ!?,.=%#&+\/\-]") //НАШИ буквы
 	return replacetext(lowertext(text), crayon_r, "")
+
+// BANDASTATION ADD START - Russian Crayons
+/obj/item/toy/crayon/proc/get_unicode_letter(letter)
+	var/char_code = text2ascii(letter)
+	if((char_code >= 1072 && char_code <= 1103) || char_code == 1105)
+		return "u[char_code]"
+// BANDASTATION ADD END - Russian Crayons
 
 /obj/item/toy/crayon/afterattack(atom/target, mob/user, proximity, params)
 	. = ..()
@@ -435,6 +442,10 @@
 
 	if(length(text_buffer))
 		drawing = text_buffer[1]
+		// BANDASTATION ADD START - Russian Crayons
+		if(length(drawing) != length_char(drawing))
+			drawing = get_unicode_letter(drawing)
+		// BANDASTATION ADD END - Russian Crayons
 
 
 	var/list/turf/affected_turfs = list()

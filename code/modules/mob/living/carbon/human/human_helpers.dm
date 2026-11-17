@@ -47,7 +47,7 @@
 		return face_name
 	if(id_name)
 		return id_name
-	return "Unknown"
+	return "Неизвестный"
 
 //Returns "Unknown" if facially disfigured and real_name if not. Useful for setting name when Fluacided or when updating a human's name variable
 /mob/living/carbon/human/proc/get_face_name(if_no_face="Unknown")
@@ -191,3 +191,18 @@
 	if(NOBLOOD in dna.species.species_traits) //Can't lose blood if your species doesn't have any
 		return
 	. = ..()
+
+/// Имя цели для заголовков, не раскрытое маской или прозопагнозией смотрящего.
+/mob/living/carbon/human/proc/examine_shown_name(mob/user)
+	var/shown_name = get_visible_name()
+	if((shown_name in list("Unknown", "Неизвестный")) || (isliving(user) && (HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA) || HAS_TRAIT(user, TRAIT_INVISIBLE_MAN))))
+		shown_name = "Неизвестный"
+	return shown_name
+
+/// Общая проверка личности для карточки экзамайна и полного профиля.
+/mob/living/carbon/human/proc/examine_identity_hidden(mob/user, check_prosopagnosia = TRUE)
+	if(isobserver(user))
+		return FALSE
+	if(isliving(user) && ((check_prosopagnosia && HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA)) || HAS_TRAIT(user, TRAIT_INVISIBLE_MAN)))
+		return TRUE
+	return (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE)) || (get_visible_name() in list("Unknown", "Неизвестный"))

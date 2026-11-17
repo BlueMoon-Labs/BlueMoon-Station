@@ -82,7 +82,14 @@
 		"host_log" = SSping_diag.host_log,
 		"samples_log" = SSping_diag.samples_log,
 		"summary_path" = SSping_diag.summary_path,
+		"rows_step" = SSping_diag.rows_step,
+		"rows_entries" = SSping_diag.rows_entries,
+		"rows_next" = SSping_diag.rows_next,
+		"rows_csv" = SSping_diag.rows_csv,
+		"rows_raw" = SSping_diag.rows_raw,
+		"rows_text" = SSping_diag.rows_text,
 	)
+	SSping_diag.rows_step = PING_DIAG_ROWS_IDLE
 	SSping_diag.open_batches = list()
 	SSping_diag.mass_batches = list()
 	SSping_diag.events = list()
@@ -98,6 +105,20 @@
 /proc/ping_diag_restore_state(list/saved)
 	for(var/name in saved)
 		SSping_diag.vars[name] = saved[name]
+
+/// Минутная запись до конца, как в живом МК: первый фаер плановый, дальше резюмнутые, тик не кончается. Возвращает число фаеров.
+/proc/ping_diag_finish_minute()
+	var/old_state = SSping_diag.state
+	var/old_limit = Master.current_ticklimit
+	Master.current_ticklimit = INFINITY
+	. = 0
+	do
+		SSping_diag.state = SS_RUNNING
+		SSping_diag.fire(. > 0)
+		.++
+	while(SSping_diag.rows_step != PING_DIAG_ROWS_IDLE && . < 1000)
+	SSping_diag.state = old_state
+	Master.current_ticklimit = old_limit
 
 /// Молчат почти все: одно общее событие, подвисаний у игроков нет, поздний ответ - общая доля.
 /datum/unit_test/ping_diag_subsystem_mass_freeze/Run()
@@ -281,7 +302,7 @@
 	SSping_diag.verdict_started_at = world.time
 	SSping_diag.ours_ms_total = 1200
 	SSping_diag.yours_ms_total = 0
-	SSping_diag.fire(FALSE)
+	ping_diag_finish_minute()
 	var/minutely = file2text(path)
 	SSping_diag.ours_ms_total = 3400
 	SSping_diag.Shutdown()

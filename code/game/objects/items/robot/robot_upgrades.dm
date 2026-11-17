@@ -89,6 +89,9 @@
 	one_use = TRUE
 
 /obj/item/borg/upgrade/restart/action(mob/living/silicon/robot/R, user = usr)
+	if(R.stat == DEAD && !R.can_be_medically_revived())
+		to_chat(user, span_warning("Сознание киборга недоступно для перезапуска."))
+		return FALSE
 	if(R.health < 0)
 		to_chat(user, "<span class='warning'>You have to repair the cyborg before using this module!</span>")
 		return FALSE
@@ -97,7 +100,7 @@
 		R.mind.grab_ghost()
 		playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
 
-	R.revive()
+	R.revive(medical_revive = TRUE)
 
 /obj/item/borg/upgrade/vtec
 	name = "cyborg VTEC module"

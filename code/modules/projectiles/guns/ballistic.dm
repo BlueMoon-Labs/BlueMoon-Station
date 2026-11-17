@@ -281,3 +281,23 @@
 /obj/item/suppressor/specialoffer
 	name = "cheap suppressor"
 	desc = "A foreign knock-off suppressor, it feels flimsy, cheap, and brittle. Still fits some weapons."
+
+
+/obj/item/gun/ballistic/proc/swarmer_unload(mob/living/victim)
+	if(!magazine)
+		return
+	if(!istype(magazine, /obj/item/ammo_box/magazine/internal))
+		var/obj/item/ammo_box/magazine/removed_magazine = magazine
+		magazine = null
+		removed_magazine.forceMove(get_turf(victim))
+	else
+		var/turf/drop_turf = get_turf(victim)
+		while(magazine.ammo_count())
+			var/obj/item/ammo_casing/round = magazine.get_round()
+			if(!round)
+				break
+			round.forceMove(drop_turf)
+	if(chambered)
+		chambered.forceMove(get_turf(victim))
+		chambered = null
+	update_icon()

@@ -121,7 +121,22 @@
 		return FALSE
 	if(!export)
 		var/datum/player_save_character_transaction/transaction = patch_context["transaction"]
+		// Корень всё равно переписывается ради имени слота: буфер одиночных ключей уезжает с ним.
+		var/list/pending_before_write
+		if(transaction && length(pending_single_prefs))
+			pending_before_write = pending_single_prefs
+			pending_single_prefs = null
+			for(var/key in pending_before_write)
+				transaction.root.write(key, pending_before_write[key])
 		var/saved = transaction ? transaction.commit(result) : commit_player_save(result, "/character[default_slot]")
+		if(saved && pending_before_write && !length(pending_single_prefs) && single_pref_queue)
+			deltimer(single_pref_queue)
+			single_pref_queue = null
+			single_pref_queue_deadline = 0
+		if(!saved && pending_before_write)
+			for(var/key in pending_single_prefs)
+				pending_before_write[key] = pending_single_prefs[key]
+			pending_single_prefs = pending_before_write
 		if(!saved)
 			if(transaction)
 				player_save_error(transaction.root.storage.error)

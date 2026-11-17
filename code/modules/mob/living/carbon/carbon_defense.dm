@@ -283,7 +283,7 @@
  * Прок наказания при интеракции с карбоном, у которого есть квирк "Отстранённый"
  * * punished – всегда моб/элайв/карбон, который потенциально получит сдачи за интеракт
  */
-/mob/living/carbon/proc/distant_punishment_interaction(mob/living/carbon/punished)
+/mob/living/carbon/proc/distant_punishment_interaction(mob/living/carbon/punished, is_hidden = FALSE)
 	if(HAS_TRAIT(src, TRAIT_PACIFISM) || HAS_TRAIT(punished, TRAIT_PACIFISM))
 		return FALSE
 
@@ -304,10 +304,12 @@
 			punished.visible_message(
 				span_warning("<b>[src]</b> внезапно выкручивает руку <b>[punished]</b>!"),
 				span_boldwarning("Ты чувствуешь, как <b>[src]</b> резко выкручивает тебе руку! Лучше не трогать [ru_ego()]!"),
+				vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
 				target = src,
-				target_message = span_warning("Ты ловко выкручиваешь руку <b>[punished]</b> за попытку прикоснуться к тебе.")
+				target_message = span_warning("Ты ловко выкручиваешь руку <b>[punished]</b> за попытку прикоснуться к тебе."),
+				visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 			)
-			if(!HAS_TRAIT(punished, TRAIT_ROBOTIC_ORGANISM)) // роботы не кричат от боли
+			if(!is_hidden && !HAS_TRAIT(punished, TRAIT_ROBOTIC_ORGANISM))
 				punished.emote(pick("realagony", "scream"))
 			punished.dropItemToGround(punished.get_active_held_item())
 			punished.apply_damage(50, STAMINA, hand)
@@ -328,22 +330,26 @@
 					span_warning("<b>[src]</b> внезапно делает подсечку <b>[punished]</b>!"),
 					span_boldwarning("Ты внезапно летишь на землю, как <b>[src]</b> резко делает по тебе подсечку! Лучше не трогать [ru_ego()]!"),
 					target = src,
-					target_message = span_warning("Ты даёшь <b>[punished]</b> мощную подсечку за попытку прикоснуться к тебе.")
+					target_message = span_warning("Ты даёшь <b>[punished]</b> мощную подсечку за попытку прикоснуться к тебе."),
+					vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+					visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 				)
 				punished.Paralyze(5 DECISECONDS)
 				punished.DefaultCombatKnockdown(1 SECONDS, override_hardstun = 1, override_stamdmg = 0)
-				playsound(get_turf(src), 'sound/effects/hit_kick.ogg', 50, 1, -1)
+				playsound(get_turf(src), 'sound/effects/hit_kick.ogg', 50, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 			else
 				punished.visible_message(
 					span_warning("<b>[src]</b> даёт мощнейший пинок в челюсть <b>[punished]</b>, нокаутируя [punished.ru_ego()]!"),
 					span_boldwarning("У тебя мутнеет в глазах после того, как <b>[src]</b> со всей силы заряжает тебе по челюсти после касаний!"),
 					target = src,
-					target_message = span_warning("Ты даёшь <b>[punished]</b> пинок со всей силы за попытку прикоснуться к тебе.")
+					target_message = span_warning("Ты даёшь <b>[punished]</b> пинок со всей силы за попытку прикоснуться к тебе."),
+					vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+					visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
 				)
 				punished.SetSleeping(4 SECONDS)
 				punished.apply_damage(12, BRUTE, BODY_ZONE_HEAD)
 				var/hit_sounds = pick('sound/effects/hit_crunchy1.ogg', 'sound/effects/hit_crunchy2.ogg', 'sound/effects/hit_crunchy3.ogg')
-				playsound(get_turf(src), hit_sounds, 50, 1, -1)
+				playsound(get_turf(src), hit_sounds, 50, 1, DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden), local_only = is_hidden)
 			return TRUE
 
 		else // Терпим

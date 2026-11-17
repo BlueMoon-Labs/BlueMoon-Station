@@ -21,12 +21,10 @@
 	var/list/standby_apcs
 	/// SMES charging from this net this cycle; they take the leftover in reset().
 	var/list/smes_inputs
-	/// world.time создания: отложенные auto_propogate_cut_cable по нему понимают,
-	/// что их фрагмент уже перестроил другой колбек этого же тика (см. cable.dm)
-	var/created_at = 0
+	/// Узлы экспорта энергии этого цикла: продают остаток после СМЕС в reset().
+	var/list/export_nodes
 
 /datum/powernet/New()
-	created_at = world.time
 	SSmachines.powernets += src
 
 /datum/powernet/Destroy()
@@ -103,6 +101,11 @@
 			if(!QDELETED(charging))
 				charging.charge_from_excess(src)
 		smes_inputs = null
+	if(export_nodes)
+		for(var/obj/machinery/power/export_node/node as anything in export_nodes)
+			if(!QDELETED(node))
+				node.sell_surplus(src)
+		export_nodes = null
 
 	//see if there's a surplus of power remaining in the powernet and stores unused power in the SMES
 	netexcess = avail - load

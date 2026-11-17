@@ -178,12 +178,11 @@
 /datum/antagonist/rev/proc/update_rev_icons_added(mob/living/M)
 	var/datum/atom_hud/antag/revhud = GLOB.huds[ANTAG_HUD_REV]
 	revhud.join_hud(M)
-	set_antag_hud(M,hud_type)
+	set_antag_hud(M, hud_type, revhud)
 
 /datum/antagonist/rev/proc/update_rev_icons_removed(mob/living/M)
 	var/datum/atom_hud/antag/revhud = GLOB.huds[ANTAG_HUD_REV]
 	revhud.leave_hud(M)
-	set_antag_hud(M, null)
 
 /datum/antagonist/rev/proc/can_be_converted(mob/living/candidate)
 	if(!candidate.mind)
@@ -426,6 +425,18 @@
 			if(ishuman(rev_mind.current))
 				return FALSE
 	return TRUE
+
+/datum/team/revolution/proc/equip_founder(datum/mind/founder)
+	var/datum/antagonist/rev/head/new_head = new
+	new_head.give_flash = TRUE
+	new_head.give_hud = TRUE
+	new_head.remove_clumsy = TRUE
+	return founder.add_antag_datum(new_head, src)
+
+/datum/team/revolution/proc/start_revolution()
+	update_objectives()
+	update_heads()
+	SSshuttle.registerHostileEnvironment(src)
 
 /// Updates the state of the world depending on if revs won or loss.
 /// Returns who won, at which case this method should no longer be called.

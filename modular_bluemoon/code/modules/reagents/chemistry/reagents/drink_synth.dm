@@ -438,34 +438,23 @@
 	value = REAGENT_VALUE_VERY_RARE
 	quality = DRINK_VERYGOOD
 
+// Сверяйте синхронизацию механик с /datum/reagent/consumable/ethanol/panty_dropper
 /datum/reagent/consumable/synthdrink/synthanol/database_dropper/synthetic_on_add(mob/living/carbon/human/M)
 	. = ..()
 	if(M.client?.prefs.erppref == "No" || M.client?.prefs.cit_toggles & NO_APHRO)
 		to_chat(M, "<span class='warning'>Вы зафиксировали попытку очень странного взлома, но она была остановлена вашим антивирусом.</span>")
 		return
 
-/datum/reagent/consumable/synthdrink/synthanol/database_dropper/synthetic_on_life(mob/living/carbon/human/M)
-	. = ..()
-	if(!M.client)
-		return
-	if(M.client.prefs.erppref == "No" || M.client.prefs.cit_toggles & NO_APHRO)
-		return
-	if (prob(30))
-		// Скопированная из clothing_burst() проверка на то, есть ли закрывающие части тела предметы одежды
-		// (чтобы не сильно спамить эмоутами)
-		var/needs_to_disrobe = FALSE
-		var/items = M.get_contents()
-		for(var/obj/item/item_worn in items)
-			if(!ismob(item_worn.loc))
-				continue
-			if(M.is_holding(item_worn))
-				continue
-			if(item_worn.body_parts_covered)
-				needs_to_disrobe = TRUE
-		// Проиграть эмоут и сбросить одежду
-		if (needs_to_disrobe)
-			if (HAS_TRAIT(M, TRAIT_MINDSHIELD) && prob(40))
-				to_chat(M, "<span class='warning'>Установленный вам имплант предотвратил попытку взлома, но это ненадолго...</span>")
-				return
-			M.emote("hack")
-			addtimer(CALLBACK(M, TYPE_PROC_REF(/mob/living/carbon, clothing_burst), TRUE), 9 SECONDS)
+	var/disrobed = FALSE
+	for(var/current_slot in list(ITEM_SLOT_UNDERWEAR, ITEM_SLOT_SOCKS, ITEM_SLOT_SHIRT))
+		var/obj/item/I = M.get_item_by_slot(current_slot)
+		if(isnull(I)) // спасибо, что dropItemToGround приравнивает null к успеху от чего происходят ложные срабатывания drop_success
+			continue
+		var/drop_success = M.dropItemToGround(I)
+		if(drop_success)
+			disrobed = TRUE
+
+	if(disrobed)
+		new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(M))
+		M.visible_message(span_userlove("[M] вырывается из своего нижнего белья!"), span_userlove("Ты вырываешься из своего нижнего белья!"))
+		playsound(M.loc, 'sound/items/poster_ripped.ogg', 50, 1)

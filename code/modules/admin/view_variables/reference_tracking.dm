@@ -201,6 +201,9 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 				// We do this after the varname check to avoid area contents (reading it incures a world loop's worth of cost)
 				if(!length(variable))
 					continue
+				// Слот очереди GC держит каждый qdel-нутый датум и держателем утечки не является.
+				if(datum_container == SSgarbage && varname == "queue_refs")
+					continue
 				DoSearchVar(variable, \
 					"[container_name] [datum_container.ref_search_details()] -> [varname] (list)", \
 					search_time, \

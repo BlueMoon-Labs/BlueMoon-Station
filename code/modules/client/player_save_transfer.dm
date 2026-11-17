@@ -270,7 +270,12 @@
 			throw EXCEPTION("Этот тип данных нельзя импортировать")
 
 /proc/player_transfer_interaction_fields()
-	var/static/list/fields = list("name", "message", "interaction_type", "arousal_level", "partner_arousal_level", "self_orgasm", "partner_orgasm", "scope", "required_body_parts", "requires_tail", "requires_telekinesis", "max_distance", "sound_keys")
+	var/static/list/fields = list("name", "message", "interaction_type", "arousal_level", "partner_arousal_level", "self_orgasm", "partner_orgasm", "scope", "self_required_body_parts", "partner_required_body_parts", "self_arousal_organ", "partner_arousal_organ", "self_orgasm_target", "partner_orgasm_target", "self_orgasm_organ", "partner_orgasm_organ", "self_requires_tail", "partner_requires_tail", "self_requires_telekinesis", "partner_requires_telekinesis", "max_distance", "sound_keys", "requires_review")
+	return fields
+
+/// Поля файлов обмена до разделения требований на себя и партнёра: принимаются, но действие уходит на проверку.
+/proc/player_transfer_legacy_interaction_fields()
+	var/static/list/fields = list("required_body_parts", "requires_tail", "requires_telekinesis")
 	return fields
 
 /proc/player_transfer_encode_field(mode, value)
@@ -370,7 +375,11 @@
 		for(var/list/entry as anything in value)
 			if(!islist(entry))
 				throw EXCEPTION("Некорректное пользовательское действие")
+			var/legacy_fields = FALSE
 			for(var/key_name in entry)
+				if(key_name in player_transfer_legacy_interaction_fields())
+					legacy_fields = TRUE
+					continue
 				if(!(key_name in player_transfer_interaction_fields()))
 					throw EXCEPTION("Недопустимое поле действия")
 				if(key_name == "sound_keys")
@@ -380,7 +389,9 @@
 					throw EXCEPTION("Некорректное значение действия")
 			var/datum/interaction/custom/custom = new
 			for(var/key_name in entry)
-				custom.vars[key_name] = entry[key_name]
+				if(key_name in player_transfer_interaction_fields())
+					custom.vars[key_name] = entry[key_name]
+			custom.requires_review = legacy_fields || !!custom.requires_review
 			custom.sanitize_values()
 			result += custom
 		return result

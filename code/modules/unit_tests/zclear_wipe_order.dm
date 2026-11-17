@@ -7,7 +7,9 @@
 	var/original_type = wiped.type
 	var/obj/item/leftover = allocate(/obj/item/toy/plush, wiped)
 	var/datum/zclear_data/data = new
-	data.zvalue = wiped.z
+	// На тестовом уровне стоит шаттл прибытия, а занятый уровень затирка бросает: номер уровня - заведомо свободный.
+	data.zvalue = world.maxz + 100
+	TEST_ASSERT(!SSzclear.is_z_level_in_use(data.zvalue), "свободный уровень считается занятым")
 	data.divided_turfs = list(list(wiped))
 	data.divided_atom_turfs = list(list(wiped))
 	data.process_num = 0

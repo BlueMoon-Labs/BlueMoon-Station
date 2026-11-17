@@ -51,7 +51,7 @@
 	if(fixture_preferences)
 		fixture_preferences.path = null
 	if(fixture_path)
-		for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
-			fdel("[fixture_path][suffix]")
+		// Весь каталог ckey: оставшийся каталог пересбор лидерборда metadollars принимал за игрока.
+		fdel(copytext(fixture_path, 1, findlasttext(fixture_path, "/") + 1))
 		fixture_path = null
 	return ..()

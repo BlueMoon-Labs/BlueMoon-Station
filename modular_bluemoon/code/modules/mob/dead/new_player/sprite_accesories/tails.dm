@@ -22,6 +22,7 @@
 	dimension_x = 64
 	dimension_y = 32
 	center = TRUE
+	matrixed_sections = MATRIX_ALL
 
 /datum/sprite_accessory/tails/human/bm_tails/large
 	icon = 'modular_bluemoon/icons/mob/tails64x32.dmi'

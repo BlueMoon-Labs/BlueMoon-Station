@@ -217,6 +217,14 @@
 	STOP_PROCESSING(SSfastprocess, src)
 	return ..()
 
+/obj/structure/destructible/cult/pylon/proc/z_has_viewers()
+	var/our_z = z
+	if(!our_z || !length(SSmobs.clients_by_zlevel))
+		return TRUE
+	if(our_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[our_z]))
+		return TRUE
+	return our_z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[our_z])
+
 // /obj/structure/destructible/cult/pylon/proc/heal_friends()
 // 	set waitfor = FALSE
 // 	for(var/mob/living/L in range(5, src))
@@ -271,7 +279,9 @@
 		else
 			var/turf/open/floor/engine/cult/F = safepick(cultturfs)
 			if(F)
-				new /obj/effect/temp_visual/cult/turf/floor(F)
+				// Idle glow is pure decoration: skip it while nobody is on the z-level.
+				if(z_has_viewers())
+					new /obj/effect/temp_visual/cult/turf/floor(F)
 			else
 				// Are we in space or something? No cult turfs or
 				// convertable turfs?

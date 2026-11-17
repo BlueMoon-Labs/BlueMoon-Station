@@ -60,7 +60,7 @@
 	var/randomspread = 1				//Set to 0 for shotguns. This is used for weapons that don't fire all their bullets at once.
 	var/inaccuracy_modifier = 1
 	var/semicd = 0 //cooldown handler
-	var/dual_wield_spread = 24 //additional spread when dual wielding
+	var/dual_wield_spread = 110 //additional spread when dual wielding
 
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
@@ -451,12 +451,14 @@
 		for(var/obj/item/gun/G in H.held_items)
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
-			else if(G.can_trigger_gun(user))
-				bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
+			else if(G.can_trigger_gun(user) && G.can_shoot())
+				if (HAS_TRAIT(H, TRAIT_AKIMBO))
+					bonus_spread = 20
+				else
+					bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
 				loop_counter++
 				var/stam_cost = G.getstamcost(user)
 				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, user, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
-
 	var/stam_cost = getstamcost(user)
 	process_fire(target, user, TRUE, params, null, bonus_spread, stam_cost)
 

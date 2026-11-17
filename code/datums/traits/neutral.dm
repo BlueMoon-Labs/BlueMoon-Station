@@ -378,8 +378,8 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
 // Quirk examine text.
-/datum/quirk/russian/proc/quirk_examine_russian(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "[quirk_holder.ru_who(TRUE)] излучает русский дух..."
+/datum/quirk/russian/proc/quirk_examine_russian(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += "[anonymous ? "Он" : quirk_holder.ru_who(TRUE)] излучает русский дух..."
 
 /datum/quirk/waddle
 	name = "Неуклюжесть"

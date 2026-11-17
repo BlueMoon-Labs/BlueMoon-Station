@@ -121,7 +121,7 @@
 	TEST_ASSERT(initial(human_type.right_click_actions), "У человека ПКМ должен быть действием")
 	TEST_ASSERT(initial(robot_type.right_click_actions), "У киборга ПКМ должен быть действием")
 	TEST_ASSERT(!initial(ai_type.right_click_actions), "У ИИ ПКМ должен открывать меню BYOND")
-	TEST_ASSERT(!initial(ghost_type.right_click_actions), "У призрака ПКМ должен открывать меню BYOND")
+	TEST_ASSERT(initial(ghost_type.right_click_actions), "У призрака ПКМ должен работать по его режиму, как у живого")
 
 /// Меню по человеку: осмотр, текущий интент помечен, остальные интенты - в подменю «Интенты…»; шапка открывает выбор режима
 /datum/unit_test/context_menu_human_entries
@@ -907,7 +907,8 @@
 /datum/unit_test/context_menu_buildmode_popup
 
 /datum/unit_test/context_menu_buildmode_popup/Run()
-	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/mob/dead/observer/context_menu_probe/ghost = allocate(/mob/dead/observer/context_menu_probe)
+	ghost.click_mode = RIGHT_CLICK_MODE_NATIVE
 	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
 	user.click_mode = RIGHT_CLICK_MODE_NATIVE
 	var/datum/buildmode/context_menu_stub/buildmode = new
@@ -1776,3 +1777,24 @@
 	user.CommonClickOn(pen, "icon-x=16;icon-y=16;right=1;ctrl=1;button=right")
 	TEST_ASSERT(pen.transform.b != before.b, "Ctrl+ПКМ пустой рукой не повернул вещь")
 	TEST_ASSERT_NULL(user.active_context_menu, "Ctrl+ПКМ открыл меню")
+
+/// Браузерное меню по умолчанию в своём окне поверх остальных; «Внутри окна игры» - элемент главного окна, набор вида слой не сбрасывает
+/datum/unit_test/context_menu_html_layer
+
+/datum/unit_test/context_menu_html_layer/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(user, EAST))
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_EQUAL(menu.html_control, CONTEXT_MENU_HTML_POPUP_CONTROL, "По умолчанию меню не в своём окне поверх остальных")
+	TEST_ASSERT_EQUAL(context_menu_html_window(menu.html_control), CONTEXT_MENU_HTML_POPUP_WINDOW, "Показывается не окно меню целиком")
+	qdel(menu)
+
+	user.style_prefs.context_menu_style = list("layer" = "game")
+	menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_EQUAL(menu.html_control, CONTEXT_MENU_HTML_CONTROL, "«Внутри окна игры» не вернул элемент главного окна")
+	TEST_ASSERT_EQUAL(context_menu_html_window(menu.html_control), CONTEXT_MENU_HTML_CONTROL, "Элемент главного окна показывается не сам")
+	qdel(menu)
+
+	TEST_ASSERT(user.style_prefs.apply_context_menu_preset("tiles"), "Набор не применился")
+	TEST_ASSERT_EQUAL(user.style_prefs.context_menu_option("layer"), "game", "Набор вида сбросил слой окна")

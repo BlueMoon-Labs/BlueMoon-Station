@@ -251,16 +251,15 @@
 	return FALSE
 
 // Gun procs.
-
 /obj/item/gun/proc/on_autofire_start(mob/living/shooter)
 	if(!can_shoot(shooter) || !can_trigger_gun(shooter) || semicd)
 		return FALSE
 	var/obj/item/bodypart/other_hand = shooter.has_hand_for_held_index(shooter.get_inactive_hand_index())
 	if (!(HAS_TRAIT(shooter, TRAIT_AKIMBO)))
 		if(weapon_weight == WEAPON_HEAVY && (shooter.get_inactive_held_item() || !other_hand))
-			to_chat(shooter, "<span class='warning'>You need two hands to fire [src]!</span>")
+			to_chat(shooter, "<span class='warning'>Для стрельбы из [src] нужны обе руки!</span>")
 			return FALSE
-		return TRUE
+	return TRUE
 
 
 /obj/item/gun/proc/autofire_bypass_check(datum/source, client/clicker, atom/target, turf/location, control, params)
@@ -276,12 +275,14 @@
 		return NONE
 	var/obj/item/gun/akimbo_gun = shooter.get_inactive_held_item()
 	var/bonus_spread = 0
-	if(istype(akimbo_gun) && weapon_weight < WEAPON_MEDIUM)
+	if(istype(akimbo_gun) && weapon_weight < WEAPON_MEDIUM && shooter.a_intent == INTENT_HARM && !HAS_TRAIT(shooter, TRAIT_MOD_NO_AKIMBO))
 		if(akimbo_gun.weapon_weight < WEAPON_MEDIUM && akimbo_gun.can_trigger_gun(shooter))
-			bonus_spread = dual_wield_spread
+			if(HAS_TRAIT(shooter, TRAIT_AKIMBO))
+				bonus_spread = 20
+			else
+				bonus_spread = dual_wield_spread
 			addtimer(CALLBACK(akimbo_gun, TYPE_PROC_REF(/obj/item/gun, process_fire), target, shooter, TRUE, params, null, bonus_spread), 1)
 	process_fire(target, shooter, TRUE, params, null, bonus_spread)
 	return COMPONENT_AUTOFIRE_SHOT_SUCCESS //All is well, we can continue shooting.
-
 #undef AUTOFIRE_MOUSEUP
 #undef AUTOFIRE_MOUSEDOWN

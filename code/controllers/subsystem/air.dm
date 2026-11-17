@@ -194,6 +194,10 @@ SUBSYSTEM_DEF(air)
 	/// стоимость фазы есть произведение их числа на цену одного, и правая
 	/// половина произведения к микрооптимизации оказалась невосприимчива.
 	var/individual_rest_cycles = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+	/// Во сколько раз шер должен превысить порог движения газа, чтобы держать пару бодрой. Рычаг на число активных турфов: струйки ниже него доводит усреднение группы.
+	var/wake_threshold_scale = ATMOS_WAKE_THRESHOLD_SCALE
+	/// Тихих циклов до расформирования группы, см. EXCITED_GROUP_DISMANTLE_CYCLES.
+	var/dismantle_cycles = EXCITED_GROUP_DISMANTLE_CYCLES
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
 	// go through set_heat_enabled() so the pass list cannot outlive the flag.
@@ -354,6 +358,10 @@ SUBSYSTEM_DEF(air)
 	var/clamped = max(1 / ATMOS_VALVE_SLOWEST_FACTOR, valve)
 	var/scale = max(ATMOS_SPEED_MULTIPLIER_MIN, atmos_speed * clamped)
 	return clamp(initial(wait) / scale, world.tick_lag, initial(wait) * ATMOS_CADENCE_SLOWEST_FACTOR)
+
+/// Клапаны растягивают wait: темп прохода считается от номинального интервала, иначе замедленный каденс сам держал бы насыщение.
+/datum/controller/subsystem/air/pace_interval()
+	return min(wait, cadence_for_valve(1))
 
 ///Проход дошёл до конца: закрываем счётчик процессорного времени и замеряем,
 ///сколько РЕАЛЬНОГО времени он занял. Клапан насыщения читает именно вторую
@@ -1623,6 +1631,11 @@ SUBSYSTEM_DEF(air)
 		return
 	ATMOS_BENCH_WAKE(T, reason)
 	add_to_active(T, FALSE, reset_stall = FALSE)
+
+/// Турф стал планетарным посреди загрузки шаблона (ChangeTurf): решает StopLoadingMap(). Турфы самого шаблона сюда не идут, их перепад найдёт пересчёт смежности.
+/datum/controller/subsystem/air/proc/defer_air_ref_wake(turf/open/T)
+	if(SSatoms.initialized != INITIALIZATION_INNEW_MAPLOAD)
+		queued_for_activation[T] = TRUE
 
 /datum/controller/subsystem/air/proc/setup_allturfs()
 	var/list/turfs_to_init = block(locate(1, 1, 1), locate(world.maxx, world.maxy, world.maxz))

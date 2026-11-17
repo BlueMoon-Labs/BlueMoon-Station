@@ -168,9 +168,8 @@
 	.["isTargetSelf"] = target == self // Why all of these?
 	.["user"] = self // Because people may have the same name
 	.["target"] = target // target == self can distinguish
-	.["selfAttributes"] = self.list_interaction_attributes(self)
 	.["lust"] = self.get_lust()
-	.["maxLust"] = self.get_climax_threshold() // BLUEMOON EDIT
+	.["maxLust"] = self.get_climax_threshold()
 	if(ishuman(self))
 		var/mob/living/carbon/human/H = self
 		.["force_naked_flavor"] = H.force_naked_flavor
@@ -313,7 +312,6 @@
 	.["user_num_feet"] = self.get_num_feet()
 
 	// Let's clear it in case the user goes directly from interacting with someone to themself
-	.["theirAttributes"] = null
 	.["target_has_active_player"] = null
 	.["max_distance"] = null
 	.["target_is_blacklisted"] = null
@@ -323,6 +321,7 @@
 	.["target_num_feet"] = null
 	.["theirPrefs"] = null
 	.["theirLust"] = null
+	.["theirMaxLust"] = null
 	.["theyAllowLewd"] = null
 	.["theyAllowRanged"] = null
 	.["theyAllowExtreme"] = null
@@ -336,7 +335,9 @@
 		.["required_from_target_unexposed"] = .["required_from_user_unexposed"]
 		.["target_num_feet"] = .["user_num_feet"]
 	else if(target)
-		.["theirAttributes"] = target.list_interaction_attributes(self)
+		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
+			.["theirLust"] = target.get_lust()
+			.["theirMaxLust"] = target.get_climax_threshold()
 
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it
 		.["target_has_active_player"] = target.ckey ? (target.client ? 2 : TRUE) : FALSE
@@ -476,9 +477,6 @@
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
 			.["theyAllowUnholyHard"] = !!pref_to_num(target.client.prefs.unholyhardpref)
 			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
-		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
-			.["theirLust"] = target.get_lust()
-			.["theirMaxLust"] = target.get_climax_threshold() // BLUEMOON EDIT
 		//SPLURT EDIT
 		.["theyHaveBondage"] = FALSE
 		if(iscarbon(target))
@@ -617,7 +615,8 @@
 		.["compact_custom_tab"] = 				prefs.compact_custom_tab
 
 	var/list/custom_interactions_sent = list()
-	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
+	var/custom_distance = target && target != self ? get_dist(self, target) : 0
+	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent) && custom_interaction_allows_distance(self, target, custom_distance))
 		var/list/customs_mob = list()
 		if(LAZYLEN(self.client.prefs.custom_interactions))
 			customs_mob[self] += self.client.prefs.custom_interactions
@@ -631,7 +630,7 @@
 				i++
 				if(!custom || !custom.name || !custom.message)
 					continue
-				if(!custom.pass_requirement_gate(customs_owner, target || customs_owner))
+				if(custom_distance > custom.max_distance || !custom.pass_requirement_gate(self, target || self, customs_owner))
 					continue
 				custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][customs_owner.ckey]:[i]", customs_owner.real_name))
 	.["custom_interactions_list"] = custom_interactions_sent
@@ -643,20 +642,30 @@
 			own_customs += list(list(
 				"key" = "[CUSTOM_INTERACTION_PREFIX][self.ckey]:[i]",
 				"name" = custom.name,
+				"requires_review" = custom.requires_review,
 				"message" = custom.message,
 				"interaction_type" = custom.interaction_type,
 				"type_label" = custom.get_type_label(),
 				"arousal_level" = custom.arousal_level,
 				"arousal_label" = custom.get_arousal_label(),
+				"self_arousal_organ" = custom.self_arousal_organ,
 				"partner_arousal_level" = custom.partner_arousal_level,
 				"partner_arousal_label" = custom.get_arousal_label(custom.partner_arousal_level),
+				"partner_arousal_organ" = custom.partner_arousal_organ,
 				"self_orgasm" = custom.self_orgasm,
 				"partner_orgasm" = custom.partner_orgasm,
+				"self_orgasm_target" = custom.self_orgasm_target,
+				"partner_orgasm_target" = custom.partner_orgasm_target,
+				"self_orgasm_organ" = custom.self_orgasm_organ,
+				"partner_orgasm_organ" = custom.partner_orgasm_organ,
 				"scope" = custom.scope,
 				"scope_label" = custom.get_scope_label(),
-				"required_body_parts" = custom.required_body_parts,
-				"requires_tail" = custom.requires_tail,
-				"requires_telekinesis" = custom.requires_telekinesis,
+				"self_required_body_parts" = custom.self_required_body_parts,
+				"partner_required_body_parts" = custom.partner_required_body_parts,
+				"self_requires_tail" = custom.self_requires_tail,
+				"partner_requires_tail" = custom.partner_requires_tail,
+				"self_requires_telekinesis" = custom.self_requires_telekinesis,
+				"partner_requires_telekinesis" = custom.partner_requires_telekinesis,
 				"max_distance" = custom.max_distance,
 				"sound_keys" = custom.sound_keys,
 				"sound_labels" = custom.get_sound_labels(),
@@ -666,6 +675,7 @@
 
 /datum/component/interaction_menu_granter/ui_static_data(mob/living/user)
 	. = ..()
+	.["antag_opt_in_levels"] = antag_opt_in_static_data()
 	.["moan_sound_catalogs"] = list(
 		"male" = build_interaction_moan_options(FALSE),
 		"female" = build_interaction_moan_options(TRUE),
@@ -724,6 +734,26 @@
 			"group" = sound_data["group"],
 		))
 	.["custom_interaction_sounds"] = custom_sound_options
+
+	var/list/body_parts = list()
+	for(var/flag in GLOB.custom_interaction_body_parts)
+		body_parts += list(list("flag" = text2num(flag), "label" = GLOB.custom_interaction_body_parts[flag]))
+	.["custom_interaction_body_parts"] = body_parts
+
+	.["custom_interaction_arousal_organs"] = build_custom_interaction_organ_options(GLOB.custom_interaction_arousal_organs, "Общее")
+	.["custom_interaction_orgasm_organs"] = build_custom_interaction_organ_options(GLOB.custom_interaction_orgasm_organs, "Автоматически")
+
+	var/list/orgasm_targets = list()
+	for(var/destination in GLOB.custom_interaction_orgasm_targets)
+		var/list/target_info = GLOB.custom_interaction_orgasm_targets[destination]
+		orgasm_targets += list(list("value" = destination, "displayText" = target_info["label"], "flag" = target_info["flag"]))
+	.["custom_interaction_orgasm_targets"] = orgasm_targets
+
+/proc/build_custom_interaction_organ_options(list/organs, default_label)
+	. = list()
+	for(var/organ in organs)
+		var/flag = organs[organ]
+		. += list(list("value" = organ, "displayText" = flag ? GLOB.custom_interaction_body_parts["[flag]"] : default_label, "flag" = flag))
 
 /proc/build_interaction_moan_options(feminine)
 	var/static/list/catalogs = list()
@@ -848,8 +878,8 @@
 				to_chat(parent_mob, span_notice("Включена автоматическая интеракция."))
 				return TRUE
 
-			o.do_action(parent_mob, target, TRUE, is_hidden)
-			if(!target?.client?.prefs?.block_partner_pixel_shift)
+			var/action_succeeded = o.do_action(parent_mob, target, TRUE, is_hidden)
+			if((action_succeeded || !istype(o, /datum/interaction/custom)) && !target?.client?.prefs?.block_partner_pixel_shift)
 				play_pixel_shift_animation(parent_mob)
 			return TRUE
 		if("interaction_pace")
@@ -1120,23 +1150,19 @@
 				prefs.save_pref_var(dirty_var)
 			return TRUE
 		if("genitals_menu")
+			var/mob/living/carbon/menu_target
 			switch(params["who"])
 				if("user")
-					if(iscarbon(parent_mob))
-						var/mob/living/carbon/C = parent_mob
-						C.genital_menu()
-						return TRUE
-					else
-						to_chat(parent_mob, span_warning("Unavailable for this mob."))
-						return FALSE
+					menu_target = parent_mob
 				if("target")
-					if(iscarbon(target))
-						var/mob/living/carbon/C = target
-						C.genital_menu()
-						return TRUE
-					else
-						to_chat(parent_mob, span_warning("Unavailable for this mob."))
-						return FALSE
+					menu_target = target
+				else
+					return FALSE
+			if(QDELETED(menu_target) || !istype(menu_target))
+				to_chat(parent_mob, span_warning("Меню гениталий недоступно для этого персонажа."))
+				return FALSE
+			menu_target.genital_menu()
+			return TRUE
 		if("force_naked_flavor")
 			if(ishuman(parent_mob))
 				var/mob/living/carbon/human/H = parent_mob
@@ -1228,12 +1254,18 @@
 	var/type_label = custom.get_type_label()
 	if(type_label != "Действие")
 		details += list(list("info" = "Тип: [type_label]", "icon" = "tag", "color" = "teal"))
-	if(custom.required_body_parts)
-		details += list(list("info" = "Требует: [custom.get_body_parts_label()]", "icon" = "person", "color" = "orange"))
-	if(custom.requires_tail)
-		details += list(list("info" = "Нужен хвост у кого-то из пары", "icon" = "paw", "color" = "purple"))
-	if(custom.requires_telekinesis)
-		details += list(list("info" = "Нужен телекинез у кого-то из пары", "icon" = "brain", "color" = "purple"))
+	var/self_parts = custom.get_required_body_parts()
+	if(self_parts)
+		details += list(list("info" = "Оголено у тебя: [custom.get_body_parts_label(self_parts)]", "icon" = "person", "color" = "orange"))
+	var/partner_parts = custom.get_required_body_parts(for_partner = TRUE)
+	if(partner_parts)
+		details += list(list("info" = "Оголено у партнёра: [custom.get_body_parts_label(partner_parts)]", "icon" = "person", "color" = "orange"))
+	if(custom.self_requires_tail || custom.partner_requires_tail)
+		var/holder = custom.self_requires_tail && custom.partner_requires_tail ? "у обоих" : (custom.self_requires_tail ? "у тебя" : "у партнёра")
+		details += list(list("info" = "Нужен хвост [holder]", "icon" = "paw", "color" = "purple"))
+	if(custom.self_requires_telekinesis || custom.partner_requires_telekinesis)
+		var/holder = custom.self_requires_telekinesis && custom.partner_requires_telekinesis ? "у обоих" : (custom.self_requires_telekinesis ? "у тебя" : "у партнёра")
+		details += list(list("info" = "Нужен телекинез [holder]", "icon" = "brain", "color" = "purple"))
 	if(length(custom.sound_keys))
 		details += list(list("info" = "Звук: [jointext(custom.get_sound_labels(), ", ")]", "icon" = "volume-up", "color" = "blue"))
 	interaction["additionalDetails"] = details
@@ -1248,26 +1280,13 @@
 	if(!name || !message)
 		to_chat(user, span_warning("Название и текст кастомного интеракта не могут быть пустыми."))
 		return FALSE
-	var/interaction_type = sanitize_inlist(params["interaction_type"], CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
 	var/max_customs = prefs.get_custom_interaction_limit()
 	if(length(prefs.custom_interactions) >= max_customs)
 		to_chat(user, span_warning("Достигнут лимит из [max_customs] кастомных интерактов."))
 		return FALSE
 	var/datum/interaction/custom/custom = new
-	custom.name = name
-	custom.message = message
-	custom.interaction_type = interaction_type
-	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
-	custom.partner_arousal_level = clamp(round(text2num(params["partner_arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
-	custom.self_orgasm = text2num(params["self_orgasm"]) ? TRUE : FALSE
-	custom.partner_orgasm = text2num(params["partner_orgasm"]) ? TRUE : FALSE
-	custom.scope = sanitize_inlist(params["scope"], CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
-	custom.required_body_parts = sanitize_integer(text2num(params["required_body_parts"]), 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
-	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
-	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
-	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
-	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
-	custom.sanitize_sound_keys()
+	custom.scope = CUSTOM_INTERACTION_SCOPE_OTHERS
+	custom.update_from_editor(name, message, params)
 	LAZYADD(prefs.custom_interactions, custom)
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "создал", custom)
@@ -1287,20 +1306,8 @@
 	if(!name || !message)
 		to_chat(user, span_warning("Название и текст кастомного интеракта не могут быть пустыми."))
 		return FALSE
-	custom.name = name
-	custom.message = message
-	custom.interaction_type = sanitize_inlist(params["interaction_type"], CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
-	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
-	custom.partner_arousal_level = clamp(round(text2num(params["partner_arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
-	custom.self_orgasm = text2num(params["self_orgasm"]) ? TRUE : FALSE
-	custom.partner_orgasm = text2num(params["partner_orgasm"]) ? TRUE : FALSE
-	custom.scope = sanitize_inlist(params["scope"], CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
-	custom.required_body_parts = sanitize_integer(text2num(params["required_body_parts"]), 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
-	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
-	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
-	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
-	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
-	custom.sanitize_sound_keys()
+	custom.update_from_editor(name, message, params)
+	custom.requires_review = FALSE
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	refresh_interaction_panels()

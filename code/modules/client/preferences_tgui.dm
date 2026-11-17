@@ -112,6 +112,7 @@
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
+	.["examine_headshots"] = examine_headshots
 	.["mood_vignette"] = mood_vignette
 
 	// Gameplay toggles
@@ -137,6 +138,7 @@
 	.["context_menu_presets"] = menu_presets
 	.["context_menu_preset"] = current_context_menu_preset()
 	.["shift_invites"] = shift_invites
+	.["nearsigh_darkening"] = nearsigh_darkening
 
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
@@ -473,6 +475,9 @@
 				if("windownoise")
 					windownoise = !windownoise
 					dirty_var = "windownoise"
+				if("examine_headshots")
+					examine_headshots = !examine_headshots
+					dirty_var = "examine_headshots"
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
 					dirty_var = "auto_capitalize_enabled"
@@ -512,6 +517,12 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("nearsigh_darkening")
+					nearsigh_darkening = !nearsigh_darkening
+					dirty_var = "nearsigh_darkening"
+					if(isliving(user))
+						var/mob/living/L = user
+						L.update_nearsighted_effect()
 				if("shift_invites")
 					shift_invites = !shift_invites
 					dirty_var = "shift_invites"
@@ -718,6 +729,9 @@
 					ghost_others = value
 					dirty_var = "ghost_others"
 			save_pref_var(dirty_var)
+			if(dirty_var == "ghost_others" && isobserver(parent?.mob))
+				var/mob/dead/observer/ghost = parent.mob
+				ghost.update_sight()
 
 		if("set_ooc_pref")
 			var/flag = params["flag"]

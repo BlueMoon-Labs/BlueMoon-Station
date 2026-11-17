@@ -25,6 +25,9 @@
 			adjustBruteLoss(damage_amount, forced = forced)
 		if(BURN)
 			adjustFireLoss(damage_amount, forced = forced)
+			// Энергетическое оружие (и любой ожог) выжигает кровь: 20 урона = 20 крови
+			if(damage_amount > 0 && iscarbon(src))
+				src.blood_volume = max(src.blood_volume - round(damage_amount * 1), 0)
 		if(TOX)
 			adjustToxLoss(damage_amount, forced = forced)
 		if(OXY)

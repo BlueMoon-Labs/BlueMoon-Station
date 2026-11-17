@@ -29,6 +29,8 @@ interface ImplantRow {
   desc: string;
   cost: number;
   selected: boolean;
+  locked: boolean;
+  lockReason?: string;
 }
 
 interface ModsData {
@@ -75,7 +77,9 @@ const limbKindLabel = (kind: string, mods: ModsData): string => {
       : `${label} (без очков)`;
   }
   if (kind === 'Amputated') {
-    return `${label} (+${mods.amputationBonus} оч.)`;
+    return mods.amputationBonus > 0
+      ? `${label} (+${mods.amputationBonus} оч.)`
+      : `${label} (без очков)`;
   }
   return label;
 };
@@ -136,6 +140,12 @@ export const ModificationsTab = () => {
             ? `Протез - дешёвая кибернетика: держит ${mods.prostheticMaxDamage} урона вместо ${mods.limbMaxDamage}, не лечится лекарствами (только сваркой и кабелем), ЭМИ его обжигает и оглушает, зато он не получает ран.`
             : `Конечности вашего вида уже роботизированы: протез лишь меняет одну механическую конечность на другую, поэтому очков не даёт. Учтите: протез держит ${mods.prostheticMaxDamage} урона вместо ${mods.limbMaxDamage} и отрывается раньше, зато не получает ран.`}
         </Box>
+        {mods.amputationBonus === 0 && (
+          <Box color="label" mb={1}>
+            Ваш вид способен отращивать конечности, поэтому ампутации не дают
+            очков особенностей.
+          </Box>
+        )}
         {mods.limbs.map((limb) => (
           <SelectRow
             key={limb.zone}
@@ -205,13 +215,19 @@ export const ModificationsTab = () => {
               </Box>
             </Stack.Item>
             <Stack.Item>
-              <Button
-                icon={implant.selected ? 'check' : 'plus'}
-                selected={implant.selected}
-                onClick={() => act('toggle_implant', { id: implant.id })}
-              >
-                {implant.selected ? 'Взято' : 'Взять'}
-              </Button>
+              {implant.locked ? (
+                <Button icon="lock" disabled tooltip={implant.lockReason}>
+                  Недоступно
+                </Button>
+              ) : (
+                <Button
+                  icon={implant.selected ? 'check' : 'plus'}
+                  selected={implant.selected}
+                  onClick={() => act('toggle_implant', { id: implant.id })}
+                >
+                  {implant.selected ? 'Взято' : 'Взять'}
+                </Button>
+              )}
             </Stack.Item>
           </Stack>
         ))}

@@ -44,13 +44,14 @@
 		to_chat(user, span_warning("[capitalize(target.name)] отстраняется от тебя, не желая таких прикосновений."))
 		to_chat(target, span_warning("Ты чувствуешь раздражение, когда [user] трогает тебя за голову."))
 		var/mob/living/carbon/carbon_target = astype(target, /mob/living/carbon)
-		if(carbon_target && carbon_target.distant_punishment_interaction(user))
+		if(carbon_target && carbon_target.distant_punishment_interaction(user, is_hidden))
 			return TRUE
 
 	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "lewd_headpat", /datum/mood_event/lewd_headpat)
-		target.handle_post_sex(5, null, target)
-		new /obj/effect/temp_visual/heart(target.loc)
+		target.handle_post_sex(5, null, target, is_hidden = is_hidden)
+		if(!is_hidden)
+			new /obj/effect/temp_visual/heart(target.loc)
 	else
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "headpat", /datum/mood_event/headpat)
 
@@ -65,7 +66,7 @@
 			span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но он[target.ru_a()] раздражённо отстраняется."),
 			span_warning("[is_hidden ? (picked_hidden) : null]Вы пытаетесь погладить <b>[target]</b> по голове, но он[target.ru_a()] отстраняется и выглядит недовольно."),
 			target_message = span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется к твоей голове, но ты раздражённо отстраняешься.")
-		, vision_distance = distance)
+		, vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 		return TRUE
 
 	if(!is_hidden && HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
@@ -122,9 +123,9 @@
 /datum/interaction/sniff/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
-		playsound(user, 'sound/voice/sniff_f1.ogg', 50, 1)
+		playsound(user, 'sound/voice/sniff_f1.ogg', 50, 1, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 	else
-		playsound(user, 'sound/voice/sniff_m1.ogg', 50, 1)
+		playsound(user, 'sound/voice/sniff_m1.ogg', 50, 1, INTERACTION_SOUND_EXTRARANGE(is_hidden, 0), local_only = is_hidden)
 
 	if(!user.get_smell_sensitivity())
 		return

@@ -58,6 +58,8 @@ multiple modular subtrees with behaviors
 	var/datum/idle_behavior/idle_behavior = null
 	///Окно ячеек грида вокруг пауна: по нему решаем сон/пробуждение
 	var/datum/cell_tracker/our_cells
+	///Сон надо перепроверить на ближайшем шаге даже внутри тех же ячеек: проснулись или клиент выпал из канала рядом
+	var/idle_recheck_due = FALSE
 
 	// Movement related things here
 	///Reference to the movement datum we use. Is a type on initialize but becomes a ref afterwards.
@@ -307,7 +309,11 @@ multiple modular subtrees with behaviors
 	if(isnull(our_turf))
 		clear_tracked_cells()
 		return
-
+	if(AI_CROWD_SAVINGS && our_cells.window_unchanged(our_turf))
+		if(idle_recheck_due)
+			recalculate_idle()
+		return
+	AI_METRIC_INC(cell_windows)
 	var/list/cell_collections = our_cells.recalculate_cells(our_turf)
 
 	for(var/datum/old_grid as anything in cell_collections[2])
@@ -325,7 +331,7 @@ multiple modular subtrees with behaviors
 		return
 	for(var/datum/spatial_grid_cell/cell as anything in our_cells.member_cells)
 		UnregisterSignal(cell, list(SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS), SPATIAL_GRID_CELL_EXITED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)))
-	our_cells.member_cells.Cut()
+	our_cells.forget_cells()
 
 ///TRUE, если в отслеживаемых ячейках нет живых клиентов и можно засыпать
 /datum/ai_controller/proc/should_idle()
@@ -353,8 +359,10 @@ multiple modular subtrees with behaviors
 		distance = get_dist(pawn, exited_atom)
 
 	if(distance <= interesting_dist) //ушедший всё ещё внутри окна интересности
+		idle_recheck_due = TRUE
 		return
 
+	idle_recheck_due = FALSE
 	if(should_idle())
 		set_ai_status(AI_STATUS_IDLE)
 
@@ -511,16 +519,10 @@ multiple modular subtrees with behaviors
 		UnpossessPawn(FALSE)
 		return
 	for(var/datum/ai_behavior/current_behavior as anything in current_behaviors)
-
-		// Convert the current behaviour action cooldown to realtime seconds from deciseconds
-		// Then pick the max of this and the delta_time passed to ai_controller.process()
-		// Action cooldowns cannot happen faster than delta_time, so delta_time should be the value used in this scenario.
-		var/action_delta_time = max(current_behavior.get_cooldown(src) * 0.1, delta_time)
-
 		if(!(current_behavior.behavior_flags & AI_BEHAVIOR_REQUIRE_MOVEMENT))
 			if(behavior_cooldowns[current_behavior] > world.time) //Still on cooldown
 				continue
-			ProcessBehavior(action_delta_time, current_behavior)
+			ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior)
 			return
 
 		if(isnull(current_movement_target))
@@ -536,7 +538,7 @@ multiple modular subtrees with behaviors
 
 			if(behavior_cooldowns[current_behavior] > world.time) //Still on cooldown
 				continue
-			ProcessBehavior(action_delta_time, current_behavior)
+			ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior)
 			return
 
 		if(ai_movement.moving_controllers[src] != current_movement_target) //We're too far, if we're not already moving start doing it.
@@ -550,9 +552,14 @@ multiple modular subtrees with behaviors
 			//раньше файндера, морил восприятие голодом на всю погоню: последняя
 			//подтверждённая позиция протухала, разжалование скрывшейся цели не
 			//наступало до самой адьяценси, перевыбор целей был мёртв.
-			if(ProcessBehavior(action_delta_time, current_behavior) == AI_BEHAVIOR_INSTANT)
+			if(ProcessBehavior(behavior_delta_time(current_behavior, delta_time), current_behavior) == AI_BEHAVIOR_INSTANT)
 				continue
 			return
+
+///Кулдаун поведения в секундах, но не меньше delta_time прохода: чаще delta_time действие не случается.
+///Считается только перед реальным исполнением - поведение на кулдауне за него не платит.
+/datum/ai_controller/proc/behavior_delta_time(datum/ai_behavior/behavior, delta_time)
+	return max(behavior.get_cooldown(src) * 0.1, delta_time)
 
 ///This is where you decide what actions are taken by the AI.
 /datum/ai_controller/proc/SelectBehaviors(delta_time)
@@ -563,7 +570,12 @@ multiple modular subtrees with behaviors
 		if(subtree.SelectBehaviors(src, delta_time) == SUBTREE_RETURN_FINISH_PLANNING)
 			break
 
-	for(var/datum/ai_behavior/forgotten_behavior as anything in current_behaviors - planned_behaviors)
+	//вычитание списков аллоцировало новый список каждый план, хотя забытых почти никогда нет
+	var/list/forgotten_behaviors
+	for(var/datum/ai_behavior/kept_behavior as anything in current_behaviors)
+		if(!planned_behaviors[kept_behavior])
+			LAZYADD(forgotten_behaviors, kept_behavior)
+	for(var/datum/ai_behavior/forgotten_behavior as anything in forgotten_behaviors)
 		var/list/arguments = list(src, FALSE)
 		var/list/stored_arguments = behavior_args[forgotten_behavior.type]
 		if(stored_arguments)
@@ -657,6 +669,8 @@ multiple modular subtrees with behaviors
 	stop_previous_processing()
 	ai_status = new_ai_status
 	GLOB.ai_controllers_by_status[new_ai_status] += src
+	if(new_ai_status == AI_STATUS_ON)
+		idle_recheck_due = TRUE
 	//проснувшийся с целью моб перестаёт быть "спокойным дальним" для троттла
 	//Life - снимаем бронь бакета SSmobs
 	if(new_ai_status == AI_STATUS_ON && isliving(pawn) && !isnull(blackboard[BB_AI_CURRENT_TARGET]))

@@ -18,9 +18,6 @@
 	var/datum/action/cooldown/hypnotize/act_hypno = new
 	act_hypno.Grant(quirk_mob)
 
-	// Add examine text
-	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
-
 /datum/quirk/Hypnotic_gaze/remove()
 	// Define quirk mob
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
@@ -32,13 +29,6 @@
 	var/datum/action/cooldown/hypnotize/act_hypno = locate(/datum/action/cooldown/hypnotize) in quirk_mob.actions
 	if(act_hypno)
 		act_hypno.Remove(quirk_mob)
-
-	// Remove examine text
-	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
-
-// Quirk examine text
-/datum/quirk/Hypnotic_gaze/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "[quirk_holder.ru_ego(TRUE)] глаза необычайно сверкают..."
 
 //
 // Quirk actions: Hypnotic Gaze
@@ -260,8 +250,8 @@
 		return
 
 	// Check for anti-magic
-	// This does not include TRAIT_HOLY
-	if(action_target.anti_magic_check())
+	// This does not include TRAIT_HOLY, but does include tinfoil
+	if(action_target.anti_magic_check(TRUE, FALSE, TRUE))
 		// Warn the users, then return
 		to_chat(action_owner, span_warning("You stare deeply into [action_target]'s eyes. They stare back at you as if nothing had happened."))
 		to_chat(action_target, span_notice("[action_owner] stares intensely into your eyes for a moment. You sense nothing out of the ordinary from them."))

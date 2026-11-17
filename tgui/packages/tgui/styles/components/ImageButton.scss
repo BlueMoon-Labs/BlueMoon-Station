@@ -92,6 +92,10 @@
     min-width: 0;
   }
 
+  &.ImageButton--centerImage .ImageButton__container {
+    justify-content: center;
+  }
+
   .ImageButton__image {
     margin: 0;
   }

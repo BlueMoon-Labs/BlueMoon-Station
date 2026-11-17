@@ -9,15 +9,16 @@
 	var/effective_prob = get_effective_assassin_prob(mode, T.owner)
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
-	if(prob(25))
-		return add_targeted_objective(T, new /datum/objective/assassinate/internal)
+	if(prob(25) && bm_traitor_violence_tier() == BM_TRAITOR_VIOLENCE_FULL)
+		if(add_targeted_objective(T, new /datum/objective/assassinate/internal))
+			return TRUE
 	return add_targeted_objective(T, new /datum/objective/assassinate/once)
 
 /datum/traitor_class/human/subterfuge/forge_single_objective(datum/antagonist/traitor/T)
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-	if(try_forge_assassinate_objective(T, mode))
+	if(try_forge_assassinate_objective(T, mode) || try_forge_economy_objective(T))
 		return TRUE
 	else
 		var/list/weights = list()

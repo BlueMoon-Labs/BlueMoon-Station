@@ -642,8 +642,7 @@
 /datum/unit_test/heretic_log_cleanup/Run()
 	var/book_ref = delete_book()
 	sleep(2 SECONDS)
-	var/datum/book = locate(book_ref)
-	TEST_ASSERT(!book || !QDELING(book), "Кодекс не должен удерживаться после удаления.")
+	TEST_ASSERT(gc_ref_released(book_ref), "Кодекс не должен удерживаться после удаления.")
 
 /datum/unit_test/heretic_log_cleanup/proc/delete_book()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

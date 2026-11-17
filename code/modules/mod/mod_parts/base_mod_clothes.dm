@@ -33,7 +33,7 @@
 	item_state = "[get_visual_skin()]-[initial(item_state)][sealed_suffix]"
 
 /obj/item/clothing/mod_part/proc/restore_normal_features()
-	return mod.wearer.get_item_by_slot(slot_flags)
+	return
 
 /obj/item/clothing/mod_part/proc/notify_user(conceal, user)
 	if(!user)

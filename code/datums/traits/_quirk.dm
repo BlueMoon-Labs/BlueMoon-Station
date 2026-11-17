@@ -97,7 +97,7 @@
 	on_process()
 
 //BLUEMOON CHANGE добавляем "укороченную" версию текста для медсканеров и делаем текстик медзаписей красиво
-/mob/living/proc/get_trait_string(medical, short) //helper string. gets a string of all the traits the mob has
+/mob/living/proc/get_trait_string(medical, short, empty_text = "Отсутствуют") //helper string. gets a string of all the traits the mob has
 	var/list/dat = list()
 	if(!medical)
 		for(var/V in roundstart_quirks)
@@ -106,7 +106,7 @@
 				continue
 			dat += T.name
 		if(!dat.len)
-			return "Отсутствуют"
+			return empty_text
 		var/list/dat_sorted = sort_list(dat)
 		return dat_sorted.Join(", ")
 	else

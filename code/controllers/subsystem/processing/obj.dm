@@ -3,6 +3,7 @@ PROCESSING_SUBSYSTEM_DEF(obj)
 	priority = FIRE_PRIORITY_OBJ
 	flags = SS_NO_INIT
 	wait = 2 SECONDS
+	paced = TRUE
 
 // if you need realy fast fucking machine
 PROCESSING_SUBSYSTEM_DEF(objlw)

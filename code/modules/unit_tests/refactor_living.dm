@@ -72,7 +72,7 @@
 		// view() держит атомы последнего результата до следующего вызова
 		pass(view(0, run_loc_floor_bottom_left))
 		sleep(1)
-		if(!locate(ref))
+		if(gc_ref_released(ref))
 			return
 	LAZYADD(failed_labels, label)
 

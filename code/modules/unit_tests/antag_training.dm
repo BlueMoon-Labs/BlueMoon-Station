@@ -519,8 +519,7 @@
 	qdel(session)
 	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Полигон со слугой очищается [training_close_budget()].")
 	sleep(1 SECONDS)
-	var/datum/mind/remaining_mind = locate(servant_mind_ref)
-	TEST_ASSERT(!remaining_mind || !QDELING(remaining_mind), "Разум удалённого слуги освобождается без hard delete.")
+	TEST_ASSERT(gc_ref_released(servant_mind_ref), "Разум удалённого слуги освобождается без hard delete.")
 
 /// Рабочие места дают девять разных ключей и позволяют завершить дело Духа оболами на трупах.
 /datum/unit_test/antag_training_deed/Run()

@@ -78,6 +78,7 @@
 	. = ..()
 	if(monkeys)
 		. += span_notice("There [monkeys == 1 ? "is" : "are"] [monkeys] monkey\s stored.")
+	. += span_notice("Обезьяны консоли выращены из кубиков: их органы NT не покупает.")
 	var/slime_amount = length(stored_slimes)
 	if(slime_amount)
 		. += span_notice("There [slime_amount == 1 ? "is" : "are"] [slime_amount] slime\s stored.")
@@ -205,6 +206,7 @@
 		if(X.monkeys >= 1)
 			var/mob/living/carbon/monkey/food = new /mob/living/carbon/monkey(remote_eye.loc, TRUE, owner)
 			if (!QDELETED(food))
+				econ_mark_cube_grown(food)
 				food.LAssailant = WEAKREF(owner)
 				X.monkeys--
 				X.monkeys = round(X.monkeys, 0.1)		//Prevents rounding errors
@@ -422,6 +424,7 @@
 		if(X.monkeys >= 1)
 			var/mob/living/carbon/monkey/food = new /mob/living/carbon/monkey(T, TRUE, user)
 			if (!QDELETED(food))
+				econ_mark_cube_grown(food)
 				food.LAssailant = WEAKREF(user)
 				X.monkeys--
 				X.monkeys = round(X.monkeys, 0.1)		//Prevents rounding errors

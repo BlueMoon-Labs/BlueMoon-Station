@@ -37,7 +37,11 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 /atom/movable/screen/map_view/proc/display_to_client(client/show_to)
 	if(!show_to)
 		return
+	if(registered_client && registered_client != show_to)
+		UnregisterSignal(registered_client, COMSIG_PARENT_QDELETING)
 	registered_client = show_to
+	// Окно, закрытое без ui_close (или ui_close в Logout, где user.client уже пуст), не оставит здесь ушедшего клиента.
+	RegisterSignal(show_to, COMSIG_PARENT_QDELETING, PROC_REF(on_registered_client_deleted), override = TRUE)
 	show_to.register_map_obj(src)
 	var/datum/plane_master_group/popup/group = ensure_plane_group()
 	group.register_to_client(show_to)
@@ -50,11 +54,17 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 
 /atom/movable/screen/map_view/proc/hide_from(mob/hide_from)
 	var/client/target_client = hide_from?.client || registered_client
+	if(registered_client)
+		UnregisterSignal(registered_client, COMSIG_PARENT_QDELETING)
 	registered_client = null
 	if(!target_client)
 		return
 	popup_plane_group?.unregister_from_client(target_client)
 	target_client.clear_map(assigned_map)
+
+/atom/movable/screen/map_view/proc/on_registered_client_deleted(client/source)
+	SIGNAL_HANDLER
+	hide_from()
 
 /**
  * A generic background object.

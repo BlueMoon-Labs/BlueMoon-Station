@@ -18,11 +18,13 @@ import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware } from './audio';
 import { chatMiddleware } from './chat';
+import { captureExamineImages } from './examineImages';
 import { gameMiddleware } from './game';
 import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
 import { pingMiddleware } from './ping';
 import { panelReducer } from './reducer';
+import { captureSecondaryLinks } from './secondaryLinks';
 import { serverStateMiddleware } from './serverState';
 import { settingsMiddleware } from './settings';
 import { telemetryMiddleware } from './telemetry';
@@ -66,6 +68,9 @@ const setupApp = () => {
   });
   setupPanelFocusHacks();
   captureExternalLinks();
+
+  captureSecondaryLinks();
+  captureExamineImages();
 
   if (process.env.NODE_ENV !== 'production') {
     setupHotReloading();

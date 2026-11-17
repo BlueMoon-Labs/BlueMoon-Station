@@ -397,6 +397,62 @@
 		parts[++index] = encoded
 	return "{[jointext(parts, ",")]}"
 
+/// Значения из журнала одиночных ключей старого сейва: блоки с отпечатком savefile base или
+/// merging_base, поздние перекрывают ранние. Оборванные и устаревшие блоки пропускаются.
+/proc/read_single_pref_journal(journal, base, merging_base)
+	var/list/values = list()
+	var/raw = file2text(journal)
+	if(!length(raw))
+		return values
+	var/list/blocks = splittext(raw, PREF_JOURNAL_BLOCK_END)
+	var/stale_blocks = 0
+	for(var/block_index in 1 to length(blocks) - 1)
+		var/chunk = blocks[block_index]
+		var/begin_at = findlasttext(chunk, PREF_JOURNAL_BLOCK_BEGIN)
+		if(!begin_at)
+			continue
+		var/savefile/block = new /savefile()
+		try
+			block.ImportText("/", copytext(chunk, begin_at + length(PREF_JOURNAL_BLOCK_BEGIN)))
+		catch
+			continue
+		block.cd = "/"
+		var/block_base
+		READ_FILE(block[PREF_JOURNAL_BASE_KEY], block_base)
+		if(!block_base || (block_base != base && block_base != merging_base))
+			stale_blocks++
+			continue
+		for(var/key in block.dir)
+			if(key == PREF_JOURNAL_BASE_KEY || key == PREF_JOURNAL_EPOCH_KEY)
+				continue
+			var/value
+			READ_FILE(block[key], value)
+			values[key] = value
+	if(stale_blocks)
+		log_world("Журнал: [journal] - устаревших блоков [stale_blocks], savefile менялся мимо журнала")
+	return values
+
+/// Дописывает в копию старого сейва незалитый журнал одиночных ключей. Сам журнал и исходный
+/// .sav не трогаются: после переноса их перекрывает JSON. TRUE, если копия изменилась.
+/proc/player_save_apply_legacy_journal(savefile/target, legacy_path)
+	var/journal = "[legacy_path].journal"
+	if(!fexists(journal))
+		return FALSE
+	var/fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, legacy_path)
+	if(!fingerprint)
+		throw EXCEPTION("Нет отпечатка старого сохранения для журнала одиночных настроек")
+	target.cd = "/"
+	var/merging_base
+	READ_FILE(target[PREF_JOURNAL_MERGING_SAVE_KEY], merging_base)
+	var/list/values = read_single_pref_journal(journal, fingerprint, merging_base)
+	if(!length(values) && !merging_base)
+		return FALSE
+	for(var/key in values)
+		var/value = values[key]
+		WRITE_FILE(target[key], value)
+	target.dir -= PREF_JOURNAL_MERGING_SAVE_KEY
+	return TRUE
+
 /datum/player_save_json/proc/load_tree(required_generation, validate = TRUE)
 	error = null
 	directories = null
@@ -481,6 +537,8 @@
 				legacy.Flush()
 				if(fexists("[import_prefix]_bad_000.sav") || rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
 					throw EXCEPTION("BYOND обнаружил повреждение старого файла; требуется проверка резервной копии")
+				if(player_save_apply_legacy_journal(legacy, legacy_path))
+					tree = player_save_encode_tree(legacy)
 			catch(var/exception/failure)
 				legacy = null
 				fdel(import_path)

@@ -335,7 +335,10 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 /datum/language_holder/swarmer
 	understood_languages = list(/datum/language/swarmer = list(LANGUAGE_ATOM))
 	spoken_languages = list(/datum/language/swarmer = list(LANGUAGE_ATOM))
-	//blocked_languages = list(/datum/language/common = list(LANGUAGE_ATOM)) //SPLURT EDIT: No blocking languages for nonhuman mobs
+
+/datum/language_holder/swarmer/New(atom/new_owner)
+	grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
+	return ..()
 
 /datum/language_holder/sylvan
 	understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM),

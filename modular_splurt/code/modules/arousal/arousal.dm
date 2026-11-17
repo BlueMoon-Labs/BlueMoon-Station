@@ -1,13 +1,14 @@
-/mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE)
+/mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	. = ..()
-	L.receive_climax(src, Lgen, G, spillage, forced = forced)
+	if(!G.get_urethral_obstruction())
+		L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
 	if(iswendigo(L))
 		var/mob/living/carbon/wendigo/W = L
 		if(W.pulling == src)
 			W.slaves |= src
 			to_chat(src, "<font color='red'> You are now [W]'s slave! Serve your master properly! </font>")
 
-/mob/living/proc/receive_climax(mob/living/partner, obj/item/organ/genital/receiver, obj/item/organ/genital/source, spill, forced)
+/mob/living/proc/receive_climax(mob/living/partner, obj/item/organ/genital/receiver, obj/item/organ/genital/source, spill, forced, is_hidden = FALSE)
 
 	if (istype(receiver, /obj/item/organ/genital/penis) || istype(receiver, /obj/item/organ/genital/vagina))
 		partner.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, PLUG13_STRENGTH_LOW, PLUG13_DURATION_MEDIUM)
@@ -26,7 +27,7 @@
 	if(!receiver || spill || forced)
 		return
 
-	receiver.climax_modify_size(partner, source)
+	receiver.climax_modify_size(partner, source, is_hidden = is_hidden)
 
 //handles impregnation, also prefs
 /mob/living/proc/impregnate(mob/living/partner, obj/item/organ/W, baby_type = /mob/living/carbon/human)
@@ -72,13 +73,26 @@
 			eggo.forceMove(container)
 			eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
 
-/mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE)
+/mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE, is_hidden = FALSE)
 	if(!sender)
 		return
 	if(!target || !R)
 		return
-	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, R, target, sender, receiver, spill, anonymous))
+	var/obj/item/genital_equipment/obstruction = sender.get_urethral_obstruction()
+	if(istype(obstruction, /obj/item/genital_equipment/sounding) && !(sender.genital_flags & (GENITAL_CHASTENED | GENITAL_IMPOTENT | GENITAL_DISAPPOINTING)) && prob(5))
+		var/turf/drop_turf = get_turf(src)
+		if(drop_turf && obstruction.forceMove(drop_turf))
+			if(obstruction.equipment?.holder_genital == sender)
+				obstruction.equipment.holder_genital = null
+			obstruction = null
+			to_chat(src, span_userlove("Ты чувствуешь, как стержень выскальзывает из уретры!"))
+	if(SEND_SIGNAL(src, COMSIG_MOB_CLIMAX, obstruction ? null : R, target, sender, receiver, spill, anonymous, is_hidden))
 		return
+
+	if(obstruction)
+		var/message = "Вставленный предмет удерживает жидкость, и ты чувствуешь давление в уретре."
+		to_chat(src, HAS_TRAIT(src, TRAIT_MASO) ? span_userlove(message) : span_alertwarning(message))
+		return ..()
 
 	var/cached_fluid
 	if(isliving(target) && !spill)
@@ -88,46 +102,6 @@
 			cached_fluid = sender.get_fluid_id()
 			var/default = sender.get_default_fluid()
 			sender.set_fluid_id(default)
-
-	if(istype(sender, /obj/item/organ/genital/penis))
-		var/obj/item/genital_equipment/sounding/sounding_rod = locate(/obj/item/genital_equipment/sounding) in sender.contents
-		if(sounding_rod)
-			var/message = ""
-			if(locate(/obj/item/genital_equipment/chastity_cage) in sender.contents)
-				message = "Ты ощущаешь, как стержень упирается в клетку и не может выйти, поток жидкости обтекает его, раздувая твой член и вызывая болезненную пульсацию!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else
-				spill = TRUE
-				message = span_userlove("Ты чувствуешь, как стержень выталкивается из твоей уретры вместе со струей оргазменной жидкости!")
-				sounding_rod.forceMove(get_turf(src))
-			to_chat(src, message)
-
-	if(istype(sender, /obj/item/organ/genital/vagina))
-		var/obj/item/genital_equipment/urethral_plug/plug = locate(/obj/item/genital_equipment/urethral_plug) in sender.contents
-		if(plug)
-			var/message = "Ты чувствуешь, как уретра сжимается и толкает пробку наружу "
-			var/obj/item/clothing/underwear/chastity_belt/belt = get_item_by_slot(ITEM_SLOT_UNDERWEAR)
-			if(prob(90)) // the flow of liquid is not that strong, so we'll add a chance
-				message += ", но пробка не поддалась! Твоя уретра распирается от давления, ты чувствуешь тяжёлую болезненную пульсацию, отдающую в клитор!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else if(belt && istype(belt.bepis, /obj/item/organ/genital/vagina))
-				message += "но пробка упирается в пояс и не может выйти, поток жидкости обтекает её, раздувая уретру и вызывая болезненную пульсацию, отдающую в клитор!"
-				if(HAS_TRAIT(src, TRAIT_MASO))
-					message = span_userlove(message)
-				else
-					message = span_alertwarning(message)
-			else
-				spill = TRUE
-				message += "выбрасывая её под напором жидкости!"
-				message = span_userlove(message)
-				plug.forceMove(get_turf(src))
-			to_chat(src, message)
 
 	if(cover == TRUE)
 		if(istype(sender, /obj/item/organ/genital/penis) || HAS_TRAIT(src, TRAIT_MESSY))
@@ -141,7 +115,7 @@
 	if(cached_fluid)
 		sender.set_fluid_id(cached_fluid)
 
-/mob/living/carbon/human/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time, obj/item/sucking_machine/M)
+/mob/living/carbon/human/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30, obj/item/sucking_machine/M, is_hidden = FALSE)
 	if(!M)
 		return ..()
 
@@ -150,16 +124,27 @@
 		return
 	var/main_fluid = lowertext(G.get_fluid_name())
 	if(mb_time)
-		visible_message("<span class='love'>You hear a strong suction sound coming from the [M.name] on [src]'s [G.name].</span>", \
-							"<span class='userlove'>The [M.name] pumps faster, trying to get you over the edge.</span>", \
-							"<span class='userlove'>Something vacuums your [G.name] with a quiet but powerfull vrrrr.</span>")
+		visible_message(
+			span_love("Слышно, как работает насос [M] на органе [src]."),
+			span_userlove("[M] работает быстрее, приближая тебя к оргазму."),
+			span_userlove("Ты чувствуешь, как насос тянет твой [G.name]."),
+			vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+			visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
+		)
 		if(!do_after(src, mb_time, target = src, timed_action_flags = (IGNORE_HELD_ITEM|IGNORE_INCAPACITATED)) || !in_range(src, container) || !G.climaxable(src, TRUE))
 			return
-	visible_message("<span class='love'>[src] twitches as [ru_ego()] [main_fluid] trickles into <b>[container]</b>.</span>", \
-								"<span class='userlove'>[M] sucks out all the [main_fluid] you had been saving up into <b>[container]</b>.</span>", \
-								"<span class='userlove'>You feel a vacuum sucking on your [G.name] as you climax!</span>")
-	do_climax(fluid_source, container, G, FALSE, cover = TRUE)
-	emote("moan")
+	visible_message(
+		span_love("[src] вздрагивает, пока [main_fluid] стекает в <b>[container]</b>[HIDDEN_REACTION_SUFFIX(is_hidden)]."),
+		span_userlove("[M] откачивает накопившуюся жидкость в <b>[container]</b>."),
+		span_userlove("Во время оргазма ты чувствуешь, как насос тянет твой [G.name]."),
+		vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden),
+		visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden)
+	)
+	do_climax(fluid_source, container, G, FALSE, cover = TRUE, is_hidden = is_hidden)
+	if(is_hidden)
+		moan(TRUE)
+	else
+		emote("moan")
 
 /mob/living/carbon/human/proc/mob_climax_over(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30)
 	var/datum/reagents/fluid_source = G.climaxable(src)

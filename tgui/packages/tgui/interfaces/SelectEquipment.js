@@ -103,7 +103,14 @@ export const SelectEquipment = (props) => {
                   title={name}
                   textAlign="center">
                   <PixelArtImage
-                    src={`data:image/png;base64,${icon64}`} />
+                    src={`data:image/png;base64,${icon64}`}
+                    fit="contain"
+                    containerStyle={{
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }} />
                 </Section>
               </Stack.Item>
             </Stack>

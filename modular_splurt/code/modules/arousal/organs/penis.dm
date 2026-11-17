@@ -5,6 +5,8 @@
 	RegisterSignal(owner, COMSIG_MOB_POST_CAME, PROC_REF(splash_cum))
 
 /obj/item/organ/genital/penis/Remove(special)
+	if(knot_locked)
+		cleanup_knot_state(owner, knot_partner)
 	. = ..()
 	var/mob/living/carbon/human/C = .
 	if(!QDELETED(C))
@@ -14,7 +16,10 @@
 	. = ..()
 	original_fluid_id = fluid_id
 
-/obj/item/organ/genital/penis/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen)
+/obj/item/organ/genital/penis/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
+	if(source_gen?.get_urethral_obstruction())
+		return
+
 	if(!(owner.client?.prefs.cit_toggles & PENIS_ENLARGEMENT))
 		return
 
@@ -41,7 +46,7 @@
 		var/previous = size
 		modify_size(target.total_volume / (fluid_max_volume * GENITAL_INFLATION_THRESHOLD))
 		if(size != previous)
-			owner.visible_message("<span class='lewd'>\The <b>[owner]</b>'s [pick(GLOB.dick_nouns)][linked_organ ? " и [pick(list("орехи", "яйца", "яички", "семенники", "мешочек"))]" : ""] набухают и увеличиваются в размерах по мере того, как они наполняются \the <b>[partner]</b>'s [lowertext(source_gen.get_fluid_name())]!</span>", ignored_mobs = owner.get_unconsenting())
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]У <b>[owner]</b> набухает [pick(GLOB.dick_nouns)][linked_organ ? ", а вместе с ним и [pick("орехи", "яйца", "яички", "семенники", "мешочки")]" : ""], наполняясь [lowertext(source_gen.get_fluid_name())] от <b>[partner]</b>!"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			if(linked_organ)
 				linked_organ.fluid_id = source_gen.get_fluid_id()
 		target.clear_reagents()

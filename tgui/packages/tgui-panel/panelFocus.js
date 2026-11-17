@@ -11,6 +11,7 @@ import { defer } from 'common/defer';
 import { vecLength, vecSubtract } from 'common/vector';
 import { canStealFocus, globalEvents } from 'tgui/events';
 import { focusMap } from 'tgui/focus';
+import { setupMouseButtonPassthrough } from 'tgui/mouseButtons';
 import { setupOrphanedKeyUpForwarding } from 'tgui/orphanedKeyUp';
 
 // Empyrically determined number for the smallest possible
@@ -48,4 +49,5 @@ export const setupPanelFocusHacks = () => {
   });
 
   setupOrphanedKeyUpForwarding();
+  setupMouseButtonPassthrough();
 };

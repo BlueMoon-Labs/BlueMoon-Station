@@ -17,7 +17,7 @@
 	ghost_alert_string = "Налёт оперативников InteQ у эвакуационного шаттла. Я подсяду?"
 	spawning_list = list(/mob/living/carbon/human = 3)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
-	event_probability = 20
+	event_probability = 10
 	spawn_probability_per_process = 5
 	activation_fraction = 0.2
 	spawn_anyway_if_no_player = FALSE
@@ -59,11 +59,16 @@
 	. = ..()
 	if(!.)
 		return
-	if(port)
+	// Налёт ИнтеКью направлен на эвакуационный шаттл — увеличиваем его таймер на 120 секунд.
+	// Берём emergency shuttle напрямую (надёжнее, чем через port события), с фоллбэком на
+	// поиск через область порта на случай, если SSshuttle.emergency ещё не назначен.
+	var/obj/docking_port/mobile/emergency/emergency = SSshuttle.emergency
+	var/obj/docking_port/mobile/S = emergency
+	if(!S && port)
 		var/area/A = get_area(port)
-		var/obj/docking_port/mobile/S = A ? SSshuttle.get_containing_shuttle(A) : null
-		if(S)
-			S.setTimer(S.timeLeft(1) + 120 SECONDS)
+		S = A ? SSshuttle.get_containing_shuttle(A) : null
+	if(S && !emergency?.swarmer_evacuation)
+		S.setTimer(S.timeLeft(1) + 120 SECONDS)
 	priority_announce(
 		"Перехвачен сигнал: к аварийному шаттлу сближается десант ИнтеКью. Зафиксирована попытка угона - шаттл пытаются украсть.",
 		null,

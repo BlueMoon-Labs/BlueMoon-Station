@@ -72,7 +72,7 @@
 	display_name = "Basic Cybernetic Organs"
 	description = "We have the techinology to force him to live a disgusting halflife."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
-	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach")
+	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach", "shawarma_spit_implant")
 
 /datum/techweb_node/cyber_organs
 	id = "cyber_organs"
@@ -107,7 +107,7 @@
 	description = "Upgraded and more powerful cybernetic implants."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming", "cyber_implants","integrated_HUDs")
-	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding")
+	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles", "ci-monostring", "ci-monostring-hack", "ci-gorilla-arms", "ci-gorilla-arms-hack", "ci-handcannon", "ci-handcannon-hack", "ci-ballistic-processor", "ci-leg-lynx-paws", "ci-kiroshi-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/combat_cyber_implants
@@ -116,7 +116,7 @@
 	description = "Military grade combat implants to improve performance."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_cyber_implants","weaponry","NVGtech","high_efficiency")
-	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack")
+	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack", "ci-sandevistan-corp", "ci-berserker-corp", "ci-militech-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /////////////////////////Advanced Surgery/////////////////////////

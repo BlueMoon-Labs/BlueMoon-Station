@@ -100,6 +100,10 @@
 		to_chat(user, span_warning("Я вешу слишком мало, чтобы наступить на [target]!"))
 		return FALSE
 
+	if(user.is_weightless_over(target))
+		to_chat(user, span_warning("Без опоры под ногами мне не раздавить [target]!"))
+		return FALSE
+
 	if(target.mind?.martial_art?.id && target.mind.martial_art.can_use(target)) // нельзя давить тех, кто обучен и может применять боевые искусства
 	// У людей по умолчанию есть плейсходерное боевое искусство, но у него нет ID. Потому проверка на него, т.к. любое другое ID изменяет
 		if(target.a_intent != INTENT_HELP)
