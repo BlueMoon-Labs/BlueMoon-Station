@@ -157,6 +157,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 	TC.use(amt)
 	var/atom/uplink = parent
 	log_uplink("[key_name(user)] loaded [amt] telecrystals into [uplink?.name]")
+	SStgui.update_uis(src)
 
 /datum/component/uplink/proc/OnAttackBy(datum/source, obj/item/I, mob/user)
 	SIGNAL_HANDLER
@@ -173,6 +174,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 			hidden_uplink.telecrystals -= amt
 			src.telecrystals += amt
 			to_chat(user, "<span class='notice'>You connect the [I] to your uplink, siphoning [amt] telecrystals before quickly undoing the connection.")
+			SStgui.update_uis(src)
+			SStgui.update_uis(hidden_uplink)
 		else
 			return
 	for(var/category in uplink_items)
@@ -188,6 +191,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 					purchase_log.total_spent -= cost
 				to_chat(user, span_notice("[I] refunded."))
 				qdel(I)
+				SStgui.update_uis(src)
 				return
 
 /datum/component/uplink/proc/interact(datum/source, mob/user)
@@ -283,6 +287,14 @@ GLOBAL_LIST_EMPTY(uplinks)
 	if(!active)
 		return
 	switch(action)
+		if("buy_raw_tc")
+			if(telecrystals <= 0)
+				return
+			var/desired_amount = tgui_input_number(usr, "How many raw telecrystals to buy?", "Buy Raw TC", default = telecrystals, max_value = telecrystals)
+			if(!desired_amount || desired_amount < 1 || isnan(desired_amount) || !isnum(desired_amount))
+				return
+			purchase_raw_tc(usr, desired_amount)
+			return TRUE
 		if("buy")
 			var/item_name = params["name"]
 			var/list/buyable_items = list()
@@ -472,3 +484,14 @@ GLOBAL_LIST_EMPTY(uplinks)
 	log_game("[key_name(user)] triggered an uplink failsafe explosion. The owner of the uplink was [key_name(owner)].")
 	explosion(parent, devastation_range = 1, heavy_impact_range = 2, light_impact_range = 3)
 	qdel(parent) //Alternatively could brick the uplink.
+
+/datum/component/uplink/proc/purchase_raw_tc(mob/user, amount)
+	if(amount <= 0 || amount > telecrystals)
+		return FALSE
+	telecrystals -= amount
+	var/tc_type = is_syndicate ? /obj/item/stack/telecrystal : /obj/item/stack/telecrystal/inteq
+	var/tcs = new tc_type(get_turf(user), amount)
+	user.put_in_hands(tcs)
+	log_uplink("[key_name(user)] purchased [amount] raw telecrystals from [parent]'s uplink")
+	return TRUE
+
