@@ -19,6 +19,8 @@ type DepartmentInfo = {
   threshold?: number;
   threshold_floor?: number;
   return_due?: number;
+  /** Через сколько минут ближайший цикл экономики, на котором NT заберёт излишек */
+  return_in?: number;
   shielded?: number;
   goal_cooldown?: number;
   express_ready_in?: number;
@@ -49,6 +51,8 @@ type CatalogEntry = {
   type: string;
   name: string;
   desc: string;
+  /** Расходник: сотрудник заказывает без одобрения в пределах часового лимита */
+  staple?: BooleanLike;
 };
 
 type PriceEntry = {
@@ -114,6 +118,8 @@ export type BudgetData = {
   auto_approve_limit: number;
   auto_approve_cooldown: number;
   auto_approve_wait: number;
+  staple_cap?: number;
+  handoff_minutes?: number;
   pending_per_requester: number;
   handling_fee: number;
   work_share: number;
@@ -130,6 +136,15 @@ export type BudgetData = {
   manifest_department: string | null;
   can_manage?: BooleanLike;
   is_staff?: BooleanLike;
+  /** Зритель - ИИ: решает заявки, кроме заявок СБ */
+  is_ai?: BooleanLike;
+  ai_decides?: BooleanLike;
+  /** Сколько расходников зритель ещё закажет без одобрения в этом часе; null - не сотрудник отдела */
+  staple_left?: number | null;
+  /** Кто сейчас на смене решает заявки отдела; null - никто */
+  deciders?: string | null;
+  /** Заявки других отделов, переданные снабжению: начальнику снабжения */
+  handoff_requests?: RequestEntry[] | null;
   department?: DepartmentInfo;
   prices?: Record<string, PriceEntry>;
   goal_erts?: GoalErt[] | null;
@@ -248,7 +263,11 @@ const DepartmentSwitch = () => {
           </span>
         ))}
       </div>
-      <Box className="NtTerm__hint">ГП и капитан открывают бюджет любого отдела и управляют им, как глава.</Box>
+      <Box className="NtTerm__hint">
+        {data.is_ai
+          ? 'ИИ открывает бюджет любого отдела и решает заявки сотрудников, кроме заявок СБ. Заказывать самому, выписывать премии и тратить бюджет иначе ИИ не может.'
+          : 'ГП и капитан открывают бюджет любого отдела и управляют им, как глава.'}
+      </Box>
     </Box>
   );
 };
@@ -322,8 +341,9 @@ const OverviewTab = () => {
         )}
         {!!department.return_due && (
           <NoticeBox warning>
-            Бюджет выше порога: через несколько минут NT заберёт <Credits amount={department.return_due} /> Потратьте
-            излишек на закупки или назначьте цель накопления в каталоге.
+            Бюджет выше порога: через {department.return_in ? `${department.return_in} мин.` : 'несколько минут'} NT заберёт{' '}
+            <Credits amount={department.return_due} /> Потратьте излишек на закупки, одобрите ждущие заявки или назначьте цель
+            накопления в каталоге.
           </NoticeBox>
         )}
         <NtLine label="На смене">{department.staff_on_shift} чел.</NtLine>
@@ -590,11 +610,15 @@ const CatalogTab = () => {
                       '"Копить" ставит цель накопления: цена пака не считается излишком бюджета.',
                     ]
                   : [
-                      'Заявку одобряет глава отдела, ГП или капитан - тогда цена спишется из бюджета.',
+                      `Заявку одобряет глава отдела, ГП или капитан${data.ai_decides ? ', а ещё ИИ' : ''} - тогда цена спишется из бюджета.`,
+                      `Расходник (пометка "расходник") вы заказываете сами, без одобрения: до ${formatCredits(data.staple_cap ?? 0)} за час${data.staple_left !== null && data.staple_left !== undefined ? `, осталось ${formatCredits(data.staple_left)}` : ''}. Дороже остатка - обычная заявка.`,
                       'Пак каталога можно подать и с консоли заявок снабжения: такую заявку тоже оплатит бюджет отдела. Если одобрить некому, пак дороже лимита с консоли уходит заявкой снабжению.',
                       `Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`,
                       ...(data.auto_approve_wait > 0
                         ? [`Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.`]
+                        : []),
+                      ...(data.handoff_minutes && data.department?.id !== 'SEC' && data.department?.id !== 'CAR'
+                        ? [`Заявку без решения ${data.handoff_minutes} мин. может решить и начальник снабжения, оплатит бюджет отдела.`]
                         : []),
                       `Решения могут ждать до ${data.pending_per_requester} ваших заявок.`,
                     ]),
@@ -604,7 +628,13 @@ const CatalogTab = () => {
           ]}
         />
       }>
-      {!canRequest && <NoticeBox>Заявки подают только сотрудники отдела.</NoticeBox>}
+      {!canRequest && (
+        <NoticeBox>
+          {data.is_ai
+            ? 'Заявки подают сотрудники отдела, ИИ решает их во вкладке "Заявки".'
+            : 'Заявки подают только сотрудники отдела.'}
+        </NoticeBox>
+      )}
       {canRequest && !canOrder && (
         <Input
           fluid
@@ -620,10 +650,18 @@ const CatalogTab = () => {
           {data.catalog.map((pack) => {
             const price = prices[pack.type];
             const available = !!price?.available;
+            const selfOrder = !canOrder && canRequest && !!pack.staple && (price?.price || 0) <= (data.staple_left ?? 0);
             return (
               <Table.Row key={pack.type} className="candystripe">
                 <Table.Cell>
-                  <Box bold>{pack.name}</Box>
+                  <Box bold>
+                    {pack.name}
+                    {!!pack.staple && (
+                      <span className="NtTerm__tag" style={{ marginLeft: '6px' }}>
+                        расходник
+                      </span>
+                    )}
+                  </Box>
                   <Box italic color="label">
                     {pack.desc}
                   </Box>
@@ -667,8 +705,11 @@ const CatalogTab = () => {
                       </Button>
                     ))}
                   {canRequest && !canOrder && (
-                    <Button disabled={!available} onClick={() => act('request', { pack: pack.type, reason })}>
-                      Заявка
+                    <Button
+                      disabled={!available}
+                      tooltip={selfOrder ? 'Расходник: бюджет отдела оплатит сразу, без одобрения' : undefined}
+                      onClick={() => act('request', { pack: pack.type, reason })}>
+                      {selfOrder ? 'Заказать' : 'Заявка'}
                     </Button>
                   )}
                 </Table.Cell>
@@ -767,54 +808,125 @@ const CargoGoalSection = () => {
   );
 };
 
-const RequestsTab = () => {
+/** Решить заявку может зритель: поле с сервера, у старых данных - по правам главы. */
+const canDecide = (request: RequestEntry, canManage?: BooleanLike) =>
+  request.status === 'pending' && !!(request.can_decide ?? canManage);
+
+const RequestRow = (props: { request: RequestEntry; balance?: number; foreign?: boolean }) => {
   const { act, data } = useBackend<BudgetData>();
-  const requests = [...(data.requests || [])].reverse();
+  const { request, balance, foreign } = props;
+  const department = data.department;
+  const params = foreign ? { uid: request.uid, department: request.department_id } : { uid: request.uid };
+  const savable =
+    !foreign &&
+    !!data.can_manage &&
+    request.status === 'pending' &&
+    !!request.pack_type &&
+    balance !== undefined &&
+    balance < request.price &&
+    !department?.goal &&
+    !department?.goal_cooldown;
   return (
-    <NtFrame title="Заявки" help="Заявки сотрудников приходят отсюда, с консоли заявок снабжения и из приложения «Заказы снабжения». О новой ждущей заявке, откуда бы её ни подали, слышат канал отдела и карты начальства на смене.">
-      {requests.length ? (
-        <Table>
-          <Table.Row header>
-            <Table.Cell>№</Table.Cell>
-            <Table.Cell>Пак</Table.Cell>
-            <Table.Cell>Цена</Table.Cell>
-            <Table.Cell>Кто и зачем</Table.Cell>
-            <Table.Cell>Статус</Table.Cell>
-          </Table.Row>
-          {requests.map((request) => (
-            <Table.Row key={request.uid} className="candystripe">
-              <Table.Cell>{request.uid}</Table.Cell>
-              <Table.Cell>{request.pack}</Table.Cell>
-              <Table.Cell>
-                <Credits amount={request.price} />
-              </Table.Cell>
-              <Table.Cell>
-                {request.requester}
-                <Box italic color="label">
-                  {request.reason || 'без причины'}
-                </Box>
-              </Table.Cell>
-              <Table.Cell>
-                {request.status === 'pending' && !!data.can_manage ? (
-                  <>
-                    <Button color="good" onClick={() => act('approve', { uid: request.uid })}>
-                      Одобрить
-                    </Button>
-                    <Button color="bad" onClick={() => act('deny', { uid: request.uid })}>
-                      Отклонить
-                    </Button>
-                  </>
-                ) : (
-                  <Box color={STATUS_COLORS[request.status]}>{STATUS_NAMES[request.status]}</Box>
-                )}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table>
-      ) : (
-        <Box color="label">Заявок нет.</Box>
+    <Table.Row className="candystripe">
+      <Table.Cell>{request.uid}</Table.Cell>
+      <Table.Cell>
+        {request.pack}
+        {!!foreign && (
+          <Box italic color="label">
+            {request.department}, в бюджете {formatCredits(request.balance ?? 0)}
+          </Box>
+        )}
+      </Table.Cell>
+      <Table.Cell>
+        <Credits amount={request.price} />
+      </Table.Cell>
+      <Table.Cell>
+        {request.requester}
+        <Box italic color="label">
+          {request.reason || 'без причины'}
+        </Box>
+        {request.status === 'pending' && (
+          <Box className="NtTerm__hint">
+            {request.waited !== undefined && `Ждёт ${request.waited} мин. `}
+            {request.outlook}
+          </Box>
+        )}
+      </Table.Cell>
+      <Table.Cell>
+        {canDecide(request, data.can_manage) ? (
+          <>
+            <Button color="good" onClick={() => act('approve', params)}>
+              Одобрить
+            </Button>
+            <Button color="bad" onClick={() => act('deny', params)}>
+              Отклонить
+            </Button>
+            {savable && (
+              <Button
+                tooltip="Денег не хватает: цена пака не будет считаться излишком, пока бюджет её копит"
+                onClick={() => act('set_goal', { pack: request.pack_type })}>
+                Копить
+              </Button>
+            )}
+          </>
+        ) : (
+          <Box color={STATUS_COLORS[request.status]}>{STATUS_NAMES[request.status]}</Box>
+        )}
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const RequestsHeader = () => (
+  <Table.Row header>
+    <Table.Cell>№</Table.Cell>
+    <Table.Cell>Пак</Table.Cell>
+    <Table.Cell>Цена</Table.Cell>
+    <Table.Cell>Кто и зачем</Table.Cell>
+    <Table.Cell>Статус</Table.Cell>
+  </Table.Row>
+);
+
+const RequestsTab = () => {
+  const { data } = useBackend<BudgetData>();
+  const requests = [...(data.requests || [])].reverse();
+  const handoff = data.handoff_requests || [];
+  return (
+    <>
+      <NtFrame
+        title="Заявки"
+        help={`Заявки сотрудников приходят отсюда, с консоли заявок снабжения и из приложения «Заказы снабжения». О новой ждущей заявке, откуда бы её ни подали, слышат канал отдела и карты начальства на смене. Решают глава отдела, ГП и капитан${data.ai_decides ? ', а ещё ИИ' : ''}${data.handoff_minutes && data.department?.id !== 'SEC' && data.department?.id !== 'CAR' ? `; заявку без решения ${data.handoff_minutes} мин. может решить и начальник снабжения` : ''}.`}>
+        <NtLine label="Решает сейчас" tone={data.deciders ? undefined : 'warn'}>
+          {data.deciders || 'никого нет на смене'}
+        </NtLine>
+        {requests.length ? (
+          <Table>
+            <RequestsHeader />
+            {requests.map((request) => (
+              <RequestRow key={request.uid} request={request} balance={data.department?.balance} />
+            ))}
+          </Table>
+        ) : (
+          <Box color="label">Заявок нет.</Box>
+        )}
+      </NtFrame>
+      {!!data.handoff_requests && (
+        <NtFrame
+          title="Заявки отделов, переданные снабжению"
+          help={`Заявки других отделов, кроме СБ, которые ждут решения дольше ${data.handoff_minutes} мин. Одобренную оплатит бюджет отдела заявки, не снабжения.`}>
+          {handoff.length ? (
+            <Table>
+              <RequestsHeader />
+              {handoff.map((request) => (
+                <RequestRow key={`${request.department_id}:${request.uid}`} request={request} foreign />
+              ))}
+            </Table>
+          ) : (
+            <Box color="label">Переданных заявок нет.</Box>
+          )}
+        </NtFrame>
       )}
-    </NtFrame>
+    </>
   );
 };
 

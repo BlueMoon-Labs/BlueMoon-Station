@@ -280,6 +280,7 @@
 #include "economy_partners.dm"
 #include "economy_payroll.dm"
 #include "economy_perf.dm"
+#include "economy_procurement.dm"
 #include "economy_persistence.dm"
 #include "economy_personal.dm"
 #include "economy_register.dm"

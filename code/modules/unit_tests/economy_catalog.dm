@@ -14,6 +14,8 @@
 	var/list/saved_requestlist
 	var/list/saved_announce = list()
 	var/list/saved_supply_notice = list()
+	var/list/saved_staple_spent = list()
+	var/list/saved_handoff_announce = list()
 	/// Мобы, добавленные в GLOB.player_list как игроки на смене
 	var/list/fake_players = list()
 
@@ -31,6 +33,10 @@
 		department.request_announce_cooldown = 0
 		saved_supply_notice[id] = department.supply_notice_cooldown
 		department.supply_notice_cooldown = 0
+		saved_staple_spent[id] = department.staple_spent
+		department.staple_spent = list()
+		saved_handoff_announce[id] = department.handoff_announce_cooldown
+		department.handoff_announce_cooldown = 0
 	saved_shoppinglist = SSshuttle.shoppinglist.Copy()
 	SSshuttle.shoppinglist.Cut()
 	saved_requestlist = SSshuttle.requestlist.Copy()
@@ -48,6 +54,8 @@
 		department.auto_approve_after = saved_auto_approve[id]
 		department.request_announce_cooldown = saved_announce[id]
 		department.supply_notice_cooldown = saved_supply_notice[id]
+		department.staple_spent = saved_staple_spent[id]
+		department.handoff_announce_cooldown = saved_handoff_announce[id]
 	for(var/datum/supply_order/order as anything in SSshuttle.shoppinglist)
 		qdel(order)
 	SSshuttle.shoppinglist.Cut()
@@ -82,9 +90,10 @@
 			if(istype(crate, crate_type) && !(crate in before))
 				. += crate
 
+/// Пак каталога дороже лимита автоодобрения, не расходник: такой ждёт решения.
 /datum/unit_test/economy_catalog/proc/pack_above_auto_limit(datum/economy_department/department)
 	for(var/datum/supply_pack/pack as anything in department.catalog())
-		if(econ_pack_price(pack) > SSeconomy.settings.auto_approve_limit)
+		if(!econ_pack_staple(pack) && econ_pack_price(pack) > SSeconomy.settings.auto_approve_limit)
 			return pack
 
 /datum/unit_test/economy_catalog/proc/click_cargo(datum/console, mob/living/user, action, list/params = list())
@@ -126,10 +135,10 @@
 	GLOB.player_list += player
 	fake_players += player
 
-/// Пак каталога отдела, который видно в окне снабжения и есть у партнёров: дешевле лимита автоодобрения или дороже.
+/// Пак каталога отдела, который видно в окне снабжения и есть у партнёров, не расходник: дешевле лимита автоодобрения или дороже.
 /datum/unit_test/economy_catalog/proc/window_pack(datum/economy_department/department, cheap)
 	for(var/datum/supply_pack/pack as anything in department.catalog())
-		if(pack.department_catalog || econ_pack_unavailable(pack))
+		if(pack.department_catalog || econ_pack_unavailable(pack) || econ_pack_staple(pack))
 			continue
 		if(cheap == (econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit))
 			return pack
@@ -366,7 +375,7 @@
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
 	var/datum/supply_pack/cheap
 	for(var/datum/supply_pack/pack as anything in medical.catalog())
-		if(econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit)
+		if(!econ_pack_staple(pack) && econ_pack_price(pack) <= SSeconomy.settings.auto_approve_limit)
 			cheap = pack
 			break
 	TEST_ASSERT_NOTNULL(cheap, "Есть пак дешевле лимита автоодобрения")
@@ -386,6 +395,8 @@
 	var/datum/supply_pack/cheap
 	var/datum/supply_pack/expensive
 	for(var/datum/supply_pack/pack as anything in medical.catalog())
+		if(econ_pack_staple(pack))
+			continue
 		var/price = econ_pack_price(pack)
 		if(!cheap && price <= SSeconomy.settings.auto_approve_limit)
 			cheap = pack

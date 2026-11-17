@@ -107,8 +107,10 @@ const auctionPad = {
 
 test('аукцион экипажа: выбранная вещь, цена, срок и скрытое имя уходят в auction_list, запрещённое объяснено', () => {
   const ui = setup({ auction: auctionPad });
+  expect(ui.queryByText('Аукцион экипажа')).toBeNull();
+  fireEvent.click(ui.getByText('Аукцион'));
   expect(ui.getByText('Оружие, боеприпасы и снаряжение СБ на аукцион не принимаются.')).toBeTruthy();
-  expect(ui.getByText('Ваших лотов 0 из 2, на аукционе 1 из 6.')).toBeTruthy();
+  expect(ui.getByText('ваших 0 из 2, на аукционе 1 из 6', { exact: false })).toBeTruthy();
   expect(ui.getByText('Выставить: гитара')).toBeTruthy();
   fireEvent.click(ui.getByText('лазер'));
   expect(ui.getByText('Выставить: гитара')).toBeTruthy();
@@ -126,6 +128,7 @@ test('аукцион экипажа: выбранная вещь, цена, ср
 test('аукцион экипажа: цена «купить сразу» уходит в auction_list, надпись на вещи видна, после снятия лота пауза', () => {
   const items = [{ ref: '[0x1]', name: 'гитара', problem: null, inscription: 'Гитара Вована' }];
   const ui = setup({ auction: { ...auctionPad, items } });
+  fireEvent.click(ui.getByText('Аукцион'));
   expect(ui.getByText('Гитара Вована', { exact: false })).toBeTruthy();
   fireEvent.click(ui.getByText('Можно купить сразу за'));
   const inputs = ui.container.querySelectorAll('input');
@@ -137,6 +140,8 @@ test('аукцион экипажа: цена «купить сразу» ухо
   expect(sent(ui.topic, 'auction_list')).toEqual([{ ref: '[0x1]', price: 100, minutes: 5, anonymous: false, buyout: 600 }]);
   document.body.innerHTML = '';
   const waiting = setup({ auction: { ...auctionPad, relist_left: 95 } });
+  fireEvent.click(waiting.getByText('Аукцион'));
+  expect(waiting.getByText('Вы недавно сняли свой лот: новый можно выставить через 1:35.')).toBeTruthy();
   expect(waiting.getByText('Выставить: гитара').closest('.Button')?.className).toContain('Button--disabled');
   fireEvent.click(waiting.getByText('Выставить: гитара'));
   expect(sent(waiting.topic, 'auction_list')).toEqual([]);
@@ -144,15 +149,17 @@ test('аукцион экипажа: цена «купить сразу» ухо
 
 test('аукцион экипажа: у предела лотов не выставить, пустой пад подсказывает', () => {
   const ui = setup({ auction: { ...auctionPad, mine: 2 } });
+  fireEvent.click(ui.getByText('Аукцион'));
   expect(ui.getByText('Выставить: гитара').closest('.Button')?.className).toContain('Button--disabled');
   fireEvent.click(ui.getByText('Выставить: гитара'));
   expect(sent(ui.topic, 'auction_list')).toEqual([]);
   document.body.innerHTML = '';
   const empty = setup({ auction: { ...auctionPad, items: [] } });
+  fireEvent.click(empty.getByText('Аукцион'));
   expect(empty.getByText('Положите на пад вещь, которую хотите продать экипажу.')).toBeTruthy();
   expect(empty.queryByText('Аукцион экипажа')).toBeTruthy();
   document.body.innerHTML = '';
-  expect(setup({ mode: 'console', auction: auctionPad }).queryByText('Аукцион экипажа')).toBeNull();
+  expect(setup({ mode: 'console', auction: auctionPad }).queryByText('Аукцион')).toBeNull();
 });
 
 test('справка о контрактах и пустая доска без счёта', () => {
@@ -164,4 +171,81 @@ test('справка о контрактах и пустая доска без �
   expect(ui.getByText('Как выполнить')).toBeTruthy();
   expect(ui.getByText('Контрактов сейчас нет.')).toBeTruthy();
   expect(ui.getByText('Банковский счёт не найден: контракт не взять.')).toBeTruthy();
+});
+
+const rank = { name: 'Подрядчик', rep: 30, done: 4, slots: 3, used: 1, bonus: 5, next_name: 'Мастер', next_rep: 50 };
+
+test('вкладки: доска без объявлений экипажа, мои с репутацией, счётчики дел на вкладках', () => {
+  const contracts = [
+    ...backend.contracts,
+    contract(4, { kind: 'crew', poster: 'Повар', poster_id: 222, department_name: 'Экипаж', title: 'Помыть кухню' }),
+    contract(5, { kind: 'crew', poster: 'Тест Тестов', poster_id: 111, department_name: 'Экипаж', title: 'Моё объявление' }),
+  ];
+  const ui = setup({ contracts, rank });
+  const menu = ui.container.querySelector('.NtTerm__menu') as HTMLElement;
+  expect(menu.textContent).toContain('Мои2');
+  expect(menu.textContent).toContain('Экипаж1');
+  expect(ui.queryByText('Помыть кухню')).toBeNull();
+  expect(ui.getByText('Все (3)')).toBeTruthy();
+  fireEvent.click(ui.getByText('Свободные (1)'));
+  expect(ui.queryByText('Ваш контракт')).toBeNull();
+  expect(ui.getByText('Взять')).toBeTruthy();
+  fireEvent.click(ui.getByText('Мои'));
+  expect(ui.container.querySelector('.NtTerm__rankName')?.textContent).toBe('Подрядчик');
+  expect(ui.getByText('До ранга «Мастер»: ещё 20')).toBeTruthy();
+  expect(ui.getByText('взято 1 из 3, выполнено 4')).toBeTruthy();
+  expect(ui.getByText('Ваш контракт')).toBeTruthy();
+  expect(ui.getByText('Ваше объявление')).toBeTruthy();
+  expect(ui.queryByText('Взять')).toBeNull();
+});
+
+test('экипаж: объявления и форма своего уходят в crew_post', () => {
+  const contracts = [contract(4, { kind: 'crew', poster: 'Повар', poster_id: 222, department_name: 'Экипаж', title: 'Помыть кухню' })];
+  const crew_request = { min: 100, max: 5000, title_max: 60, desc_max: 300, minutes: 30, accept_minutes: 10 };
+  const ui = setup({ contracts, rank, crew_request });
+  fireEvent.click(ui.getByText('Экипаж'));
+  expect(ui.getByText('Помыть кухню')).toBeTruthy();
+  fireEvent.click(ui.getByText('Взять'));
+  expect(sent(ui.topic, 'take')).toEqual([{ uid: 4 }]);
+  fireEvent.click(ui.getByText('Дать объявление'));
+  fireEvent.input(ui.getByPlaceholderText('Что нужно сделать'), { target: { value: 'Починить окно' } });
+  fireEvent.input(ui.getByPlaceholderText('Подробности: что, куда, к какому сроку'), { target: { value: 'В баре' } });
+  fireEvent.click(ui.getByText('Разместить'));
+  expect(sent(ui.topic, 'crew_post')).toEqual([{ title: 'Починить окно', desc: 'В баре', reward: 100 }]);
+});
+
+test('спецзаказы партнёров и фильтр доски по отделу', () => {
+  const offer = {
+    uid: 9,
+    partner: 'Коллекционеры',
+    partner_id: 'collectors',
+    item: 'Редкая монета',
+    requirement: 'монета',
+    quantity: 2,
+    delivered: 1,
+    unit_price: 300,
+    unit_reward: 400,
+    premium: 0,
+    reward: 800,
+    paid: 0,
+    accepted: 0,
+    contraband: 0,
+    time_left: 600,
+  };
+  const contracts = [contract(1), contract(6, { department: 'MED', department_name: 'Медицина', title: 'Лечить' })];
+  const ui = setup({ contracts, partner_offers: [offer] });
+  fireEvent.click(ui.getAllByText('Медицина').find((node) => node.className.includes('NtTerm__chip')) as HTMLElement);
+  expect(ui.getByText('Лечить')).toBeTruthy();
+  expect(ui.queryByText('Контракт 1')).toBeNull();
+  fireEvent.click(ui.getByText('Спецзаказы'));
+  expect(ui.getByText('Редкая монета')).toBeTruthy();
+  expect(ui.getByText('1 из 2', { exact: false })).toBeTruthy();
+});
+
+test('без контрактов на вкладках пусто, но понятно', () => {
+  const ui = setup({ contracts: [], rank });
+  fireEvent.click(ui.getByText('Мои'));
+  expect(ui.getByText('Вы ничего не взяли. Свободные контракты - на вкладке «Доска».')).toBeTruthy();
+  fireEvent.click(ui.getByText('Спецзаказы'));
+  expect(ui.getByText('Спецзаказов сейчас нет.')).toBeTruthy();
 });

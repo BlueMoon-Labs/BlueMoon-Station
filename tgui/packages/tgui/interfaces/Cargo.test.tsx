@@ -360,13 +360,44 @@ test('консоль заявок: без начальства на смене �
     prices,
     budget_request: { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 0, auto_limit: 2000 },
   });
-  expect(ui.getByText(/Начальства отдела на смене нет: пак своего каталога до 2 000 кр\. оплатит бюджет отдела "Медицина"/)).toBeTruthy();
+  expect(ui.getByText(/Начальства отдела и ИИ на смене нет: пак своего каталога до 2 000 кр\., кроме расходников, оплатит бюджет отдела "Медицина"/)).toBeTruthy();
   expect(ui.getByText(/Пак дороже уйдёт заявкой снабжению/)).toBeTruthy();
   expect(ui.getAllByText('бюджет отдела')).toHaveLength(1);
   fireEvent.click(ui.getByText('Surgery Kit'));
   expect(ui.getByText('бюджет снабжения, если снабжение одобрит заявку')).toBeTruthy();
   fireEvent.click(ui.getByText('Medical Supplies'));
   expect(ui.getByText('бюджет отдела "Медицина"')).toBeTruthy();
+});
+
+test('консоль заявок: дорогой расходник без начальства оплатит отдел, пока хватает часового лимита', () => {
+  const supplies = {
+    Medical: {
+      name: 'Medical',
+      packs: [{ name: 'Surgery Kit', id: '/datum/supply_pack/medical/surgery', goody: 0, budget: 'MED', staple: 1 }],
+    },
+  };
+  const prices = { ...medicalPrices, '/datum/supply_pack/medical/surgery': [2500, 'prospectors', 1, [['prospectors', 2500]]] };
+  const budget = { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 0, auto_limit: 2000 };
+  const ui = setup({ requestonly: 1, can_send: 0, supplies, prices, budget_request: { ...budget, staple_left: 6000 } });
+  expect(ui.getByText(/Расходники своего отдела вы заказываете без одобрения, по своему часовому лимиту, осталось 6\s000\sкр\. Сверх остатка расходник ждёт решения или уходит заявкой снабжению, сам он не одобряется/)).toBeTruthy();
+  expect(ui.getAllByText('бюджет отдела')).toHaveLength(1);
+  ui.unmount();
+  const spent = setup({ requestonly: 1, can_send: 0, supplies, prices, budget_request: { ...budget, staple_left: 1000 } });
+  expect(spent.queryAllByText('бюджет отдела')).toHaveLength(0);
+  spent.unmount();
+  const cheap = { ...prices, '/datum/supply_pack/medical/surgery': [900, 'prospectors', 1, [['prospectors', 900]]] };
+  const cheapSpent = setup({ requestonly: 1, can_send: 0, supplies, prices: cheap, budget_request: { ...budget, staple_left: 0 } });
+  expect(cheapSpent.queryAllByText('бюджет отдела')).toHaveLength(0);
+});
+
+test('консоль заявок СБ при начальстве на смене не предлагает ИИ', () => {
+  const budget = { id: 'SEC', name: 'Служба безопасности', balance: 9000, manager: 0, any: 0, approver: 1, auto_limit: 2000 };
+  const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
+  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе .*одобряется сама, кроме расходников\./)).toBeTruthy();
+  expect(ui.queryByText(/или ИИ/)).toBeNull();
+  ui.unmount();
+  const medical = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: { ...budget, id: 'MED', name: 'Медицина' } });
+  expect(medical.getByText(/Заявку одобряет глава отдела, ГП, капитан или ИИ в программе/)).toBeTruthy();
 });
 
 test('приложение NtosCargo открывает окно снабжения', () => {
