@@ -25,25 +25,6 @@
 	alt_covers_chest = TRUE
 	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 
-/obj/item/clothing/under/rank/medical/geneticist
-	desc = "It's made of a special fiber that gives special protection against biohazards. It has a genetics rank stripe on it."
-	name = "geneticist's jumpsuit"
-	icon_state = "genetics"
-	item_state = "w_suit"
-	permeability_coefficient = 0.5
-	armor_type = /datum/armor/bio10_wound5
-
-/obj/item/clothing/under/rank/medical/geneticist/skirt
-	name = "geneticist's jumpskirt"
-	desc = "It's made of a special fiber that gives special protection against biohazards. It has a genetics rank stripe on it."
-	icon_state = "genetics_skirt"
-	item_state = "w_suit"
-	body_parts_covered = CHEST|GROIN|ARMS
-	can_adjust = FALSE
-	fitted = FEMALE_UNIFORM_TOP
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	alternate_worn_layer = DRESS_LAYER
-
 /obj/item/clothing/under/rank/medical/virologist
 	desc = "It's made of a special fiber that gives special protection against biohazards. It has a virologist rank stripe on it."
 	name = "virologist's jumpsuit"

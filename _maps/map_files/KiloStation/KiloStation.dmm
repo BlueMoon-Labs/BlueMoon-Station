@@ -30074,12 +30074,12 @@
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "bhv" = (
-/obj/machinery/vending/hydronutrients,
 /obj/effect/turf_decal/delivery,
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 4
 	},
+/obj/machinery/fish_market,
 /turf/open/floor/plasteel/dark,
 /area/service/hydroponics)
 "bhw" = (
@@ -30624,13 +30624,11 @@
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "biP" = (
-/obj/machinery/vending/hydroseeds{
-	slogan_delay = 700
-	},
 /obj/effect/turf_decal/delivery,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 4
 	},
+/obj/machinery/vending/fishing,
 /turf/open/floor/plasteel/dark,
 /area/service/hydroponics)
 "biQ" = (
@@ -82523,6 +82521,9 @@
 	c_tag = "Prison Labor";
 	network = list("ss13","prison");
 	dir = 2
+	},
+/obj/structure/transmitter/mounted{
+	pixel_y = 30
 	},
 /turf/open/floor/plating,
 /area/security/prison)
