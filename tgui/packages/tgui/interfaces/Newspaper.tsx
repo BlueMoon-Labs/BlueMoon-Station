@@ -101,7 +101,7 @@ const ChannelView = () => {
         </Box>
       )}
       <Stack vertical>
-        {messages.map((message, index) => (
+        {!channel.censored && messages.map((message, index) => (
           <Stack.Item key={index} mb={1}>
             <Box preserveWhitespace>{message.body}</Box>
             {!!message.image && (

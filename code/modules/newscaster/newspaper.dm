@@ -55,7 +55,7 @@
 	var/index = 0
 	for(var/datum/news/feed_channel/NP in news_content)
 		index++
-		contents += list("name" = NP.channel_name, "page" = index)
+		contents += list(list("name" = NP.channel_name, "page" = index))
 	data["contents"] = contents
 
 	var/list/channel = null
@@ -68,15 +68,17 @@
 		)
 		var/list/messages = list()
 		var/stories = 0
-		for(var/datum/news/feed_message/MESSAGE in C.messages)
+		// D-Notice: статьи канала не попадают в газету при печати.
+		var/list/printed_messages = notContent(C.DclassCensorTime) ? list() : C.messages
+		for(var/datum/news/feed_message/MESSAGE in printed_messages)
 			if(MESSAGE.creationTime > creationTime)
 				break
 			stories++
-			messages += list(
+			messages += list(list(
 				"body" = tgui_news_text(MESSAGE.returnBody(notContent(MESSAGE.bodyCensorTime))),
 				"author" = MESSAGE.returnAuthor(notContent(MESSAGE.authorCensorTime)),
 				"image" = MESSAGE.img ? "data:image/png;base64,[icon2base64(MESSAGE.img)]" : null,
-			)
+			))
 		channel["messages"] = messages
 		channel["empty"] = !stories
 	data["channel"] = channel

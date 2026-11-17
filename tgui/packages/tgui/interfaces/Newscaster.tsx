@@ -341,9 +341,9 @@ const ViewChannel = () => {
         Создатель: {viewing?.author || 'неизвестно'}
       </Box>
       {!!viewing?.censored && <NoticeBox danger>Канал помечен распоряжением D-Notice.</NoticeBox>}
-      {!messages.length && <NoticeBox info>В канале нет сообщений.</NoticeBox>}
+      {!viewing?.censored && !messages.length && <NoticeBox info>В канале нет сообщений.</NoticeBox>}
       <Stack vertical>
-        {messages.map((message) => {
+        {!viewing?.censored && messages.map((message) => {
           const comments = Array.isArray(message.comments) ? message.comments : [];
           return (
             <Stack.Item key={message.ref}>

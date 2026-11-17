@@ -45,14 +45,14 @@
 
 	var/list/channels = list()
 	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
-		channels += list(
+		channels += list(list(
 			"ref" = REF(FC),
 			"name" = FC.channel_name,
 			"messages" = length(FC.messages),
 			"locked" = !!FC.locked,
 			"censored" = !!FC.censored,
 			"admin" = !!FC.is_admin_channel,
-		)
+		))
 	data["channels"] = channels
 	data["selected"] = channel ? REF(channel) : null
 
@@ -64,11 +64,11 @@
 		for(var/datum/news/feed_message/FM in channel.messages)
 			var/list/comments = list()
 			for(var/datum/news/feed_comment/comment in FM.comments)
-				comments += list(
+				comments += list(list(
 					"body" = comment.body,
 					"author" = comment.author,
 					"time" = comment.time_stamp,
-				)
+				))
 			var/image_data = null
 			if(FM.img)
 				var/key = REF(FM)
@@ -78,7 +78,7 @@
 					base64_cache[key] = encoded
 				if(encoded)
 					image_data = "data:image/png;base64,[encoded]"
-			messages += list(
+			messages += list(list(
 				"body" = tgui_news_text(FM.returnBody(-1)),
 				"author" = FM.returnAuthor(-1),
 				"time" = FM.time_stamp,
@@ -86,7 +86,7 @@
 				"caption" = FM.caption,
 				"comments" = comments,
 				"locked" = !!FM.locked,
-			)
+			))
 	data["messages"] = messages
 	return data
 

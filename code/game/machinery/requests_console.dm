@@ -181,7 +181,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		for(var/dpt in source)
 			if(dpt == department)
 				continue
-			departments += list("name" = dpt, "ckey" = ckey(dpt))
+			departments += list(list("name" = dpt, "ckey" = ckey(dpt)))
 	data["departments"] = departments
 	data["messages"] = messages
 	return data
@@ -380,7 +380,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 	if(radio_freq)
 		Radio.talk_into(src, "[alert]: <i>[message]</i>", radio_freq)
 
-	messages += list(
+	messages += list(list(
 		"outgoing" = TRUE,
 		"title" = title,
 		"from" = department,
@@ -389,7 +389,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		"priority" = priority,
 		"verified" = msgVerified,
 		"stamped" = msgStamped,
-	)
+	))
 	return TRUE
 
 
@@ -433,7 +433,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 			if(!silent)
 				playsound(src, 'sound/machines/twobeep.ogg', 50, 1)
 				say(message_title)
-	messages += list(
+	messages += list(list(
 		"outgoing" = FALSE,
 		"title" = message_title,
 		"from" = sender_name,
@@ -441,7 +441,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		"priority" = priority,
 		"verified" = verified,
 		"stamped" = stamped,
-	)
+	))
 
 /obj/machinery/requests_console/attackby(obj/item/O, mob/user, params)
 	if(O.tool_behaviour == TOOL_CROWBAR)

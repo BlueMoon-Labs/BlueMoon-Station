@@ -137,7 +137,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 
 	var/list/channels = list()
 	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
-		channels += list(
+		channels += list(list(
 			"ref" = REF(FC),
 			"name" = FC.channel_name,
 			"author" = FC.author,
@@ -145,7 +145,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 			"censored" = !!FC.censored,
 			"admin" = !!FC.is_admin_channel,
 			"messages" = length(FC.messages),
-		)
+		))
 	data["channels"] = channels
 
 	var/list/viewing = null
@@ -159,16 +159,19 @@ GLOBAL_LIST_EMPTY(allCasters)
 			"authorCensor" = !!viewing_channel.authorCensor,
 		)
 		var/list/messages = list()
-		for(var/datum/news/feed_message/FM in viewing_channel.messages)
+		// D-Notice скрывает статьи канала при обычном просмотре (экран 9),
+		// как и в старом интерфейсе. Экран цензуры (12) видит их по-прежнему.
+		var/list/visible_messages = (screen == 9 && viewing_channel.censored) ? list() : viewing_channel.messages
+		for(var/datum/news/feed_message/FM in visible_messages)
 			var/list/comments = list()
 			for(var/datum/news/feed_comment/comment in FM.comments)
-				comments += list(
+				comments += list(list(
 					"ref" = REF(comment),
 					"body" = comment.body,
 					"author" = comment.author,
 					"time" = comment.time_stamp,
-				)
-			messages += list(
+				))
+			messages += list(list(
 				"ref" = REF(FM),
 				"body" = tgui_news_text(FM.returnBody(-1)),
 				"author" = FM.returnAuthor(-1),
@@ -180,7 +183,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 				"bodyCensor" = !!FM.bodyCensor,
 				"authorCensor" = !!FM.authorCensor,
 				"admin" = !!FM.is_admin_message,
-			)
+			))
 		viewing["messages"] = messages
 	data["viewingChannel"] = viewing
 	return data
@@ -205,9 +208,22 @@ GLOBAL_LIST_EMPTY(allCasters)
 	scan_user(usr)
 	add_fingerprint(usr)
 
+	// Скрытие пунктов меню в tgui — не защита: действия проверяются на сервере.
+	var/static/list/security_actions = list(
+		"menuWanted", "setWantedName", "setWantedDesc", "submitWanted", "cancelWanted",
+		"pickCensorChannel", "pickDNotice", "censorChannelAuthor", "censorStoryAuthor",
+		"censorStoryBody", "toggleDNotice", "delComment", "lockComment",
+	)
+	if(action in security_actions)
+		if(!securityCaster)
+			return
+
 	switch(action)
 		if("navigate")
-			set_screen(text2num(params["screen"]))
+			var/new_screen = text2num(params["screen"])
+			if((new_screen in list(10, 11, 12, 13, 14)) && !securityCaster)
+				return
+			set_screen(new_screen)
 			. = TRUE
 		if("refresh")
 			scan_user(usr)
@@ -271,11 +287,20 @@ GLOBAL_LIST_EMPTY(allCasters)
 		if("submitWanted")
 			. = submit_wanted(text2num(params["mode"]))
 		if("cancelWanted")
-			if(GLOB.news_network.wanted_issue.isAdminMsg)
+			var/datum/news/wanted_message/wanted = GLOB.news_network.wanted_issue
+			if(!wanted.active || wanted.isAdminMsg)
 				tgui_alert(usr, "Объявление распространено руководством Nanotrasen. Вы не можете снять его.", "Розыск", list("Ок"))
 				return
+			var/wanted_criminal = wanted.criminal
+			var/wanted_body = wanted.body
+			var/wanted_author = wanted.scannedUser
+			var/wanted_img = wanted.img
 			var/choice = tgui_alert(usr, "Подтвердите снятие объявления", "Розыск", list("Да", "Отмена"))
 			if(choice == "Да")
+				// Пока шло подтверждение, объявление могли заменить или изменить.
+				wanted = GLOB.news_network.wanted_issue
+				if(!wanted.active || wanted.isAdminMsg || wanted.criminal != wanted_criminal || wanted.body != wanted_body || wanted.scannedUser != wanted_author || wanted.img != wanted_img)
+					return
 				GLOB.news_network.deleteWanted()
 				screen = 17
 			. = TRUE
@@ -361,28 +386,42 @@ GLOBAL_LIST_EMPTY(allCasters)
 		viewing_channel = null
 
 /obj/machinery/newscaster/proc/submit_new_channel()
-	var/list/existing_authors = list()
-	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
-		existing_authors += FC.authorCensor ? GLOB.news_network.redactedText : FC.author
-	var/check = FALSE
-	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
-		if(FC.channel_name == channel_name)
-			check = TRUE
-			break
-	if(channel_name == "" || channel_name == "\[REDACTED\]" || scanned_user == "Unknown" || check || (scanned_user in existing_authors))
+	if(channel_name_taken())
 		screen = 7
 		return TRUE
 	var/choice = tgui_alert(usr, "Подтвердите создание канала", "Новостник", list("Да", "Отмена"))
 	if(choice != "Да")
 		return TRUE
 	scan_user(usr)
+	// Пока ждали подтверждения, другой терминал мог занять это название или автора.
+	if(channel_name_taken())
+		screen = 7
+		return TRUE
 	GLOB.news_network.CreateFeedChannel(channel_name, scanned_user, c_locked)
 	SSblackbox.record_feedback("text", "newscaster_channels", 1, "[channel_name]")
 	screen = 5
 	return TRUE
 
+/// Проверяет, что название канала или его автор уже заняты в новостной сети.
+/obj/machinery/newscaster/proc/channel_name_taken()
+	var/list/existing_authors = list()
+	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
+		existing_authors += (FC.authorCensor ? GLOB.news_network.redactedText : FC.author)
+		if(FC.channel_name == channel_name)
+			return TRUE
+	return channel_name == "" || channel_name == "\[REDACTED\]" || scanned_user == "Unknown" || (scanned_user in existing_authors)
+
 /obj/machinery/newscaster/proc/submit_new_message()
 	if(msg == "" || msg == "\[REDACTED\]" || scanned_user == "Unknown" || channel_name == "")
+		screen = 6
+		return TRUE
+	// Не полагаемся на список из CreateStory: канал мог получить D-Notice или быть locked.
+	var/datum/news/feed_channel/target
+	for(var/datum/news/feed_channel/FC in GLOB.news_network.network_channels)
+		if(FC.channel_name == channel_name)
+			target = FC
+			break
+	if(!target || target.censored || (target.locked && target.author != scanned_user))
 		screen = 6
 		return TRUE
 	GLOB.news_network.SubmitArticle("<font face=\"[PEN_FONT]\">[parsemarkdown(msg, usr)]</font>", scanned_user, channel_name, picture, 0, allow_comments)
@@ -399,12 +438,15 @@ GLOBAL_LIST_EMPTY(allCasters)
 	if(choice != "Да")
 		return TRUE
 	scan_user(usr)
+	// Защита административного объявления проверяется до выбора режима:
+	// клиентский mode = 1 не должен позволять заменить его.
+	var/datum/news/wanted_message/wanted = GLOB.news_network.wanted_issue
+	if(wanted.active && wanted.isAdminMsg)
+		tgui_alert(usr, "Объявление распространено руководством Nanotrasen. Вы не можете его редактировать.", "Розыск", list("Ок"))
+		return TRUE
 	if(mode == 1)
 		GLOB.news_network.submitWanted(channel_name, msg, scanned_user, picture, 0, 1)
 		screen = 15
-		return TRUE
-	if(GLOB.news_network.wanted_issue.isAdminMsg)
-		tgui_alert(usr, "Объявление распространено руководством Nanotrasen. Вы не можете его редактировать.", "Розыск", list("Ок"))
 		return TRUE
 	GLOB.news_network.submitWanted(channel_name, msg, scanned_user, picture)
 	screen = 19
