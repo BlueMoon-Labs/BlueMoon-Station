@@ -454,3 +454,14 @@
 	TEST_ASSERT(QDELETED(agent_card), "Карта не продана с шаттла с допуском")
 	var/message = console.ui_data(technician)["message"]
 	TEST_ASSERT(findtext(message, traders.name), "Консоль с допуском контрабанды не видит свою сделку с Вольными торговцами: [message]")
+
+/// Любой доступный лот чёрного рынка по карману главе революции: с его скидкой при обычном рынке контрабанды не дороже 20000 кр.
+/datum/unit_test/blackmarket_lots_affordable_for_head_rev/Run()
+	var/list/too_expensive = list()
+	for(var/datum/blackmarket_item/listing as anything in subtypesof(/datum/blackmarket_item))
+		if(!initial(listing.availability_prob) || !initial(listing.item))
+			continue
+		var/top_price = (initial(listing.price) || initial(listing.price_max)) / BLACKMARKET_HEAD_REV_DISCOUNT
+		if(top_price > 20000)
+			too_expensive += "[initial(listing.name)] - [top_price] кр."
+	TEST_ASSERT(!length(too_expensive), "Главе революции не по карману: [jointext(too_expensive, "; ")]")

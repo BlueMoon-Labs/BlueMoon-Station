@@ -15,8 +15,8 @@
 	name = "combat medical kit"
 	desc = "I hope you've got insurance."
 	item = /obj/item/storage/firstaid/tactical
-	price_min = 500000
-	price_max = 600000
+	price_min = 50000
+	price_max = 60000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 55
@@ -25,8 +25,8 @@
 	name = "improved combat medical kit"
 	desc = "I hope you've got insurance."
 	item = /obj/item/storage/firstaid/tactical/nukeop
-	price_min = 700000
-	price_max = 800000
+	price_min = 70000
+	price_max = 80000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 35
@@ -35,8 +35,8 @@
 	name = "advanced combat medical kit"
 	desc = "I hope you've got insurance."
 	item = /obj/item/storage/firstaid/tactical/slaver
-	price_min = 900000
-	price_max = 1000000
+	price_min = 90000
+	price_max = 100000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 35

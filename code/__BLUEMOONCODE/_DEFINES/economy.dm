@@ -1,5 +1,7 @@
 //What should vending machines charge when you buy something in-department.
 #define DEPARTMENT_DISCOUNT 0.2
+/// Во столько раз чёрный рынок дешевле для главы революции
+#define BLACKMARKET_HEAD_REV_DISCOUNT 100
 
 //Civilian bounties
 #define CIV_JOB_CMO 17
