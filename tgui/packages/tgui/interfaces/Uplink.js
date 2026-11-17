@@ -20,7 +20,7 @@ const ItemIcon = (props) => {
       height={size + 'px'}
       style={{ overflow: 'hidden', position: 'relative' }}>
       <span
-        className={icon} // icon_class_name уже возвращает полное имя класса
+        className={icon}
         style={{
           display: 'block',
           position: 'absolute',
@@ -115,7 +115,7 @@ export const GenericUplink = (props) => {
                   fluid
                   lineHeight={2}
                   color={currencyAmount > 0 ? 'good' : 'bad'}
-                  tooltip="Buy raw TC"
+                  tooltip="Снять валюту"
                   onClick={() => act('buy_raw_tc')}
                   style={{
                     overflow: 'hidden',

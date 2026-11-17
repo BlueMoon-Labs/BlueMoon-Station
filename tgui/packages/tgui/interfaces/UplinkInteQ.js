@@ -9,8 +9,8 @@ import { Window } from '../layouts';
 const MAX_SEARCH_RESULTS = 25;
 
 const ItemIcon = (props) => {
-  const { iconid, size = 64 } = props;
-  if (!iconid) {
+  const { icon, size = 64 } = props;
+  if (!icon) {
     return <ItemPlaceholder size={size} />;
   }
   const scale = size / 32;
@@ -20,7 +20,7 @@ const ItemIcon = (props) => {
       height={size + 'px'}
       style={{ overflow: 'hidden', position: 'relative' }}>
       <span
-        className={iconid} // icon_class_name уже возвращает полное имя класса
+        className={icon}
         style={{
           display: 'block',
           position: 'absolute',
@@ -112,7 +112,7 @@ export const GenericUplinkInteQ = (props) => {
                   fluid
                   lineHeight={2}
                   color={currencyAmount > 0 ? 'good' : 'bad'}
-                  tooltip="Buy raw TC"
+                  tooltip="Снять валюту"
                   onClick={() => act('buy_raw_tc')}
                   style={{
                     overflow: 'hidden',
