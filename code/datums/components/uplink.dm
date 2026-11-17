@@ -222,18 +222,16 @@ GLOBAL_LIST_EMPTY(uplinks)
 		ui.set_autoupdate(FALSE)
 		ui.open()
 
-/// возвращает HTML-тег иконки предмета для аплинка
-/// если item не путь к атому, а list - null
+/// возвращает имя CSS-класса спрайта предмета для аплинка
 /datum/component/uplink/proc/get_item_icon(atom/item)
 	if(!ispath(item, /atom))
 		return null
-	/// ищет предмет в карте иконок и возвращает готовый HTML-тег со спрайтом
-	/// нет предмета - null
 	var/static/datum/asset/spritesheet_batched/uplink/sheet = get_asset_datum(/datum/asset/spritesheet_batched/uplink)
 	var/imgid = GLOB.uplink_icon_map["[item]"]
 	if(!imgid || !sheet.sprites[imgid])
 		return null
-	return sheet.icon_tag(imgid)
+	return sheet.icon_class_name(imgid)
+
 
 /datum/component/uplink/ui_assets(mob/user)
 	return list(get_asset_datum(/datum/asset/spritesheet_batched/uplink))
@@ -264,7 +262,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 				"name" = I.name,
 				"cost" = get_purchase_cost(I),
 				"desc" = I.desc,
-				"icon" = get_item_icon(I.item),
+				"icon" = get_item_icon(I.icon_state_override || I.item),
 			))
 		out += list(cat)
 	return out

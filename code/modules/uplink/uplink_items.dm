@@ -107,6 +107,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/list/required_round_types
 	/// If nonempty, never offered when `GLOB.round_type` is one of these (Bluemoon; e.g. `ROUNDTYPE_DYNAMIC_LIGHT`).
 	var/list/blocked_round_types
+	var/icon_state_override
 
 /datum/uplink_item/proc/get_discount()
 	return pick(4;0.75,2;0.5,1;0.25)

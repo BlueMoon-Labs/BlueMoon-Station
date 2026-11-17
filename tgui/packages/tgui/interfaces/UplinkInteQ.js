@@ -9,24 +9,29 @@ import { Window } from '../layouts';
 const MAX_SEARCH_RESULTS = 25;
 
 const ItemIcon = (props) => {
-  const { icon, size = 64 } = props;
-  if (!icon) {
-    return null;
+  const { iconid, size = 64 } = props;
+  if (!iconid) {
+    return <ItemPlaceholder size={size} />;
   }
   const scale = size / 32;
   return (
     <Box
       width={size + 'px'}
       height={size + 'px'}
-      style={{ overflow: 'hidden' }}>
+      style={{ overflow: 'hidden', position: 'relative' }}>
       <span
+        className={iconid} // icon_class_name уже возвращает полное имя класса
         style={{
-          display: 'inline-block',
-          imageRendering: 'pixelated',
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '32px',
+          height: '32px',
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
-        }}
-        dangerouslySetInnerHTML={{ __html: icon }} />
+          imageRendering: 'pixelated',
+        }} />
     </Box>
   );
 };
