@@ -232,10 +232,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return null
 	return sheet.icon_class_name(imgid)
 
-
 /datum/component/uplink/ui_assets(mob/user)
 	return list(get_asset_datum(/datum/asset/spritesheet_batched/uplink))
-
 
 /datum/component/uplink/ui_data(mob/user)
 	if(!user.mind)
@@ -288,7 +286,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 		if("buy_raw_tc")
 			if(telecrystals <= 0)
 				return
-			var/desired_amount = tgui_input_number(usr, "How many raw telecrystals to buy?", "Buy Raw TC", default = telecrystals, max_value = telecrystals)
+			var/desired_amount = tgui_input_number(usr, "Сколько валюты снять?", "Снятие ТК-валюты", default = telecrystals, max_value = telecrystals)
 			if(!desired_amount || desired_amount < 1 || isnan(desired_amount) || !isnum(desired_amount))
 				return
 			purchase_raw_tc(usr, desired_amount)
