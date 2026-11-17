@@ -49,10 +49,23 @@
 						accepted_type = wanted_type
 						break
 				TEST_ASSERT(accepted_type, "[bounty_type] ([bounty.name]) исключает всё, что ищет: контракт не выполнить")
+				for(var/wanted_type in item_bounty.wanted_types)
+					TEST_ASSERT(ispath(wanted_type, /atom/movable), "[bounty_type] ([bounty.name]) ищет [wanted_type], а такого предмета нет: контракт не выполнить")
 			var/datum/bounty/reagent/reagent_bounty = bounty
 			if(istype(reagent_bounty))
 				TEST_ASSERT_NOTNULL(reagent_bounty.wanted_reagent, "[bounty_type] ([bounty.name]) без реагента: контракт не выполнить")
 		qdel(bounty)
+
+/// Заказы, которые на станции можно только купить, не попадают ни на доски отделов и в личные подборки, ни в особые заказы ЦК.
+/datum/unit_test/economy_contracts_unobtainable_filtered/Run()
+	TEST_ASSERT(GLOB.econ_bounty_unobtainable[/datum/bounty/item/assistant/condom], "Заказ на презервативы не считается невыполнимым")
+	var/list/by_department = econ_bounty_types_by_department()
+	for(var/department_id in by_department)
+		for(var/bounty_type in by_department[department_id])
+			TEST_ASSERT(!GLOB.econ_bounty_unobtainable[bounty_type], "Невыполнимый заказ [bounty_type] попадает на доску [department_id]")
+	var/datum/bounty/condoms = new /datum/bounty/item/assistant/condom
+	TEST_ASSERT(!try_add_bounty(condoms), "Невыполнимый заказ выставлен особым заказом ЦК")
+	qdel(condoms)
 
 /// Контракт деятельности засчитывается по записям работы взявшего и платит отделу и исполнителю.
 /datum/unit_test/economy_work/activity_contract/Run()
