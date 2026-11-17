@@ -359,6 +359,7 @@
 
 /obj/item/organ/cyberimp/brain/berserker/sec_level
 	name = "Corporate Berserker implant"
+	active_security_level = SEC_LEVEL_AMBER
 	armor_mult = 0.4
 	attack_speed_mult = 0.5
 	cooldown_time = 60 SECONDS
@@ -469,6 +470,11 @@
 		else
 			H.action_cooldown_mod /= attack_speed_mult
 		to_chat(H, "<span class='warning'>Berserker mode subsides...</span>")
+
+/obj/item/organ/cyberimp/brain/berserker/deactivate(removing)
+	. = ..()
+	if(active)
+		deactivate_berserk()
 
 /obj/item/organ/cyberimp/brain/berserker/Remove(special = FALSE)
 	if(active)
