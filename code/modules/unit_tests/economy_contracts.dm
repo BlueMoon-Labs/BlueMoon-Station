@@ -43,6 +43,12 @@
 			var/datum/bounty/item/item_bounty = bounty
 			if(istype(item_bounty) && !is_type_in_typecache(item_bounty, matched_by_properties))
 				TEST_ASSERT(length(item_bounty.wanted_types), "[bounty_type] ([bounty.name]) ничего не ищет: контракт не выполнить")
+				var/accepted_type
+				for(var/wanted_type in item_bounty.wanted_types)
+					if(!item_bounty.exclude_types?[wanted_type])
+						accepted_type = wanted_type
+						break
+				TEST_ASSERT(accepted_type, "[bounty_type] ([bounty.name]) исключает всё, что ищет: контракт не выполнить")
 			var/datum/bounty/reagent/reagent_bounty = bounty
 			if(istype(reagent_bounty))
 				TEST_ASSERT_NOTNULL(reagent_bounty.wanted_reagent, "[bounty_type] ([bounty.name]) без реагента: контракт не выполнить")
@@ -156,8 +162,9 @@
 	civilian.contracts += first
 	var/datum/bank_account/account = new("econ_test_taker")
 	TEST_ASSERT_EQUAL(first.deadline, 0, "У невзятой поставки срока нет")
+	var/taken_from = world.time
 	TEST_ASSERT(first.take(account), "Первый взят")
-	TEST_ASSERT_EQUAL(round(first.deadline - world.time), ECON_CONTRACT_TAKEN_TIME, "Взятая поставка получила срок")
+	TEST_ASSERT(first.deadline >= taken_from + ECON_CONTRACT_TAKEN_TIME && first.deadline <= world.time + ECON_CONTRACT_TAKEN_TIME, "Взятая поставка получила срок [ECON_CONTRACT_TAKEN_TIME], а не [first.deadline - taken_from]")
 	TEST_ASSERT(!second.take(account), "Второй тем же счётом не взят")
 	TEST_ASSERT(!department_only.take(account), "Контракт отдела не берётся")
 	var/datum/bank_account/visitor = new("econ_test_visitor")
