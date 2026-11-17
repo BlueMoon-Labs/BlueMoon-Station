@@ -328,7 +328,7 @@
 	var/datum/ai_movement/mover = controller.ai_movement
 	TEST_ASSERT_NOTNULL(mover, "Sanity: a migrated controller must hold a movement datum instance")
 	mover.start_moving_towards(controller, prey, 1)
-	TEST_ASSERT_EQUAL(mover.moving_controllers[controller], prey, "Sanity: starting a move must record the target on the movement singleton")
+	TEST_ASSERT(mover.is_moving_towards(controller, prey), "Sanity: starting a move must record the target on the movement singleton")
 
 	qdel(prey)
 
@@ -348,7 +348,7 @@
 	controller.set_movement_target(type, prey)
 	var/datum/ai_movement/original_mover = controller.ai_movement
 	original_mover.start_moving_towards(controller, prey, 1)
-	TEST_ASSERT_EQUAL(original_mover.moving_controllers[controller], prey, "Sanity: starting a move must record the target on the movement singleton")
+	TEST_ASSERT(original_mover.is_moving_towards(controller, prey), "Sanity: starting a move must record the target on the movement singleton")
 
 	controller.change_ai_movement_type(/datum/ai_movement/jps)
 

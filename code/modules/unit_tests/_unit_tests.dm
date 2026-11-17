@@ -76,6 +76,7 @@
 
 #include "action_button_positions.dm"
 #include "advanced_locator.dm"
+#include "ai_controller_gc.dm"
 #include "ai_path_savings.dm"
 #include "anchored_mobs.dm"
 #include "antag_frame_objective.dm"
@@ -477,6 +478,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "militech_optics_node.dm"
+#include "minimap_feature_cache.dm"
 #include "minor_incidents_crew.dm"
 #include "minor_incidents_engineering.dm"
 #include "minor_incidents_outside.dm"
