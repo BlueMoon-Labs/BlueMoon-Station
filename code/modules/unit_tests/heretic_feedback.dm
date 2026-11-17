@@ -1,5 +1,6 @@
 /// Индикатор появляется после выбора любого пути и берёт данные из его реального запаса.
 /datum/unit_test/heretic_resource_hud_paths/Run()
+	var/list/grasp_owner_by_sound = list()
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/antagonist/heretic/heretic = allocate_heretic()
 		var/mob/living/body = heretic.owner.current
@@ -21,7 +22,9 @@
 		TEST_ASSERT(knowledge.grasp_visual && knowledge.grasp_sound, "Каждому пути нужны собственные визуал и звук хватки.")
 		var/datum/sound_effect/grasp_set = istext(knowledge.grasp_sound) ? GLOB.sfx_datum_by_key[knowledge.grasp_sound] : null
 		for(var/sound_file in grasp_set ? grasp_set.file_paths : list(knowledge.grasp_sound))
-			TEST_ASSERT(findtext("[sound_file]", "modular_bluemoon/sound/heretic/") == 1, "Хватка пути [path_id] звучит своим звуком, а не [sound_file].")
+			var/sound_key = "[sound_file]"
+			TEST_ASSERT(!grasp_owner_by_sound[sound_key], "Хватка пути [path_id] звучит своим звуком, а не звуком пути [grasp_owner_by_sound[sound_key]] ([sound_key]).")
+			grasp_owner_by_sound[sound_key] = path_id
 		qdel(heretic)
 		TEST_ASSERT_NULL(body.alerts["heretic_path_resource"], "Удалённая роль не оставляет индикатор.")
 

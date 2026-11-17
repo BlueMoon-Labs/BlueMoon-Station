@@ -5,12 +5,12 @@
 		var/obj/item/melee/implantarmblade/blade = allocate(blade_type)
 		TEST_ASSERT_EQUAL(blade.total_mass, expected_mass, "[blade_type] должен иметь вдвое меньшую стоимость атаки по стамине")
 
-/// Длительность всех сандевистанов увеличена вдвое.
+/// Длительность сандевистанов.
 /datum/unit_test/sandevistan_duration_balance/Run()
 	var/list/expected_durations = list(
-		/obj/item/organ/cyberimp/brain/sandevistan = 8 SECONDS,
-		/obj/item/organ/cyberimp/brain/sandevistan/military = 12 SECONDS,
-		/obj/item/organ/cyberimp/brain/sandevistan/sec_level = 8 SECONDS,
+		/obj/item/organ/cyberimp/brain/sandevistan = 10 SECONDS,
+		/obj/item/organ/cyberimp/brain/sandevistan/military = 15 SECONDS,
+		/obj/item/organ/cyberimp/brain/sandevistan/sec_level = 10 SECONDS,
 	)
 	for(var/implant_type in expected_durations)
 		var/obj/item/organ/cyberimp/brain/sandevistan/implant = allocate(implant_type)
