@@ -167,7 +167,7 @@
 	active_security_level = SEC_LEVEL_BLUE
 
 /obj/item/organ/cyberimp/arm/gorilla/syndie
-	name = "Agent Gorilla arms implant"
+	name = "Donck Pocket Gorilla arms implant"
 	icon_state = "implant_gorilla_arms"
 	punch_bonus = 12
 	punch_wound_bonus = 12
@@ -302,13 +302,13 @@
 	actions_types = list()
 	zone = BODY_ZONE_R_ARM
 	/// Шанс рикошета
-	var/ricochet_chance = 70
+	var/ricochet_chance = 50
 	/// Максимальное количество рикошетов
 	var/max_ricochets = 2
 	/// Угол самонаведения в градусах
-	var/homing_angle = 15
+	var/homing_angle = 180 //короче я проебался. Изначальный угол рикошета был 330 градусов, триторская повязка. поставлю для начала 180 для импланта - посмотрим что будет
 	/// Дальность поиска цели
-	var/homing_range = 7
+	var/homing_range = 12
 
 /obj/item/organ/cyberimp/arm/ballistic_processor/l
 	zone = BODY_ZONE_L_ARM
@@ -318,11 +318,22 @@
 	if(!.)
 		return
 	ADD_TRAIT(M, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
+	RegisterSignal(M, COMSIG_MOD_PROJECTILE_FIRE, PROC_REF(configure_projectile))
 
 /obj/item/organ/cyberimp/arm/ballistic_processor/Remove(special = FALSE)
 	if(owner)
 		REMOVE_TRAIT(owner, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
+		UnregisterSignal(owner, COMSIG_MOD_PROJECTILE_FIRE)
 	return ..()
+
+/// Настройки применяются только к снарядам владельца импланта.
+/obj/item/organ/cyberimp/arm/ballistic_processor/proc/configure_projectile(mob/source, obj/item/projectile/projectile)
+	SIGNAL_HANDLER
+	projectile.ballistic_processor = TRUE
+	projectile.ballistic_processor_ricochet_chance = ricochet_chance
+	projectile.ballistic_processor_max_ricochets = max_ricochets
+	projectile.ballistic_processor_homing_angle = homing_angle
+	projectile.ballistic_processor_homing_range = homing_range
 
 /obj/item/organ/cyberimp/brain/berserker
 	name = "Berserker implant"
@@ -348,6 +359,7 @@
 
 /obj/item/organ/cyberimp/brain/berserker/sec_level
 	name = "Corporate Berserker implant"
+	active_security_level = SEC_LEVEL_AMBER
 	armor_mult = 0.4
 	attack_speed_mult = 0.5
 	cooldown_time = 60 SECONDS
@@ -459,6 +471,11 @@
 			H.action_cooldown_mod /= attack_speed_mult
 		to_chat(H, "<span class='warning'>Berserker mode subsides...</span>")
 
+/obj/item/organ/cyberimp/brain/berserker/deactivate(removing)
+	. = ..()
+	if(active)
+		deactivate_berserk()
+
 /obj/item/organ/cyberimp/brain/berserker/Remove(special = FALSE)
 	if(active)
 		deactivate_berserk()
@@ -515,7 +532,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	icon_state = "implant_mono_wire_sec"
 	item_state = "mono_wire"
-	force = 13
+	force = 20
 	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
@@ -524,7 +541,7 @@
 	reach = 2 // +1 тайл, как у копья
 	attack_verb = list("sliced", "severed")
 	/// Между ударами струны проходит 1 секунда.
-	attack_speed = 1 SECONDS
+	attack_speed = 0.5 SECONDS
 	item_flags = NEEDS_PERMIT
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	/// Жертва, которую сейчас душат этой струной.
@@ -607,11 +624,11 @@
 /obj/item/melee/implantmonostring/syndie
 	name = "Agent Monowire"
 	icon_state = "implant_mono_wire"
-	force = 15
+	force =25
 	armour_penetration = MELEE_AP_ANTAGONIST
 	reach = 3 // +2 тайла
 	/// Шанс разряда тока по цели при ударе.
-	var/shock_chance = 100
+	var/shock_chance = 25
 
 /obj/item/melee/implantmonostring/syndie/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	// Разряд не должен проходить сквозь щит, даже если сам удар поглощён.
@@ -649,7 +666,7 @@
 	/// Доступна ли пушка для выстрела
 	var/ready_to_fire = TRUE
 	/// Время перезарядки
-	var/reload_time = 30 SECONDS
+	var/reload_time = 25 SECONDS
 	/// Время зарядки перед выстрелом
 	var/charge_time = 1.5 SECONDS
 	/// Модификатор разброса при стрельбе с двух рук
@@ -749,7 +766,7 @@
 	name = "Militech Integrated hand cannon"
 	icon_state = "implant_projectile_launcher_laser"
 	ammo_type = list(/obj/item/ammo_casing/energy/implanthandgun/burst)
-	reload_time = 10 SECONDS
+	reload_time = 15 SECONDS
 	dual_wield_spread = 12
 	inaccuracy_modifier = 0.7
 	// Агентская версия стреляет не веером, а очередью: 3 выстрела с паузой 0.5 с.
