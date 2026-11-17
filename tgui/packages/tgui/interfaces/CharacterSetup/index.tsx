@@ -509,60 +509,55 @@ const SlotTools = () => {
   return (
     <Box mt={1}>
       <Button
+        fluid
         icon={open ? 'chevron-down' : 'chevron-right'}
         content="Передача слота"
         selected={open}
         onClick={() => setOpen(!open)}
       />
       {open && (
-        <Stack mt={1} align="center" wrap>
-          <Stack.Item>
-            <Button
-              icon="download"
-              content="Скачать JSON"
-              tooltip="Сохранить файл персонажа на компьютер для переноса или обмена."
-              onClick={() => act('slot_export')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button
-              icon="upload"
-              content="Загрузить JSON"
-              tooltip="Загрузить персонажа в выбранный слот. Перед заменой появится подтверждение."
-              onClick={() => act('slot_import')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button.Confirm
-              icon="share-alt"
-              color={offerActive ? 'bad' : undefined}
-              content={offerActive ? 'Отменить передачу' : 'Предложить слот'}
-              confirmContent={
-                offerActive
-                  ? 'Отменить предложение?'
-                  : 'Вывести слот на передачу?'
-              }
-              onClick={() => act('slot_give')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button
-              icon="key"
-              content="Получить по коду"
-              onClick={() => act('slot_retrieve')}
-            />
-          </Stack.Item>
+        <Box mt={0.5}>
+          <Button
+            fluid
+            icon="download"
+            content="Скачать JSON"
+            tooltip="Сохранить файл персонажа на компьютер для переноса или обмена."
+            onClick={() => act('slot_export')}
+          />
+          <Button
+            fluid
+            icon="upload"
+            content="Загрузить JSON"
+            tooltip="Загрузить персонажа в выбранный слот. Перед заменой появится подтверждение."
+            onClick={() => act('slot_import')}
+          />
+          <Button.Confirm
+            fluid
+            icon="share-alt"
+            color={offerActive ? 'bad' : undefined}
+            content={offerActive ? 'Отменить передачу' : 'Предложить слот'}
+            confirmContent={
+              offerActive
+                ? 'Отменить предложение?'
+                : 'Вывести слот на передачу?'
+            }
+            onClick={() => act('slot_give')}
+          />
+          <Button
+            fluid
+            icon="key"
+            content="Получить по коду"
+            onClick={() => act('slot_retrieve')}
+          />
           {offerActive && !!data.redemptionCode && (
-            <Stack.Item>
-              <Box>
-                Код передачи:{' '}
-                <Box inline bold>
-                  {data.redemptionCode}
-                </Box>
+            <Box mt={0.5}>
+              Код передачи:{' '}
+              <Box inline bold>
+                {data.redemptionCode}
               </Box>
-            </Stack.Item>
+            </Box>
           )}
-        </Stack>
+        </Box>
       )}
     </Box>
   );
