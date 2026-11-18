@@ -8,6 +8,28 @@ import { Window } from '../layouts';
 
 const MAX_SEARCH_RESULTS = 25;
 
+export const Uplink = () => {
+  const { data } = useBackend();
+  const {
+    theme,
+    telecrystals,
+    currencySymbol,
+  } = data;
+
+  return (
+    <Window
+      width={620}
+      height={580}
+      theme={theme || 'syndicate'}>
+      <Window.Content overflow="auto">
+        <GenericUplink
+          currencyAmount={telecrystals}
+          currencySymbol={currencySymbol || 'TC'} />
+      </Window.Content>
+    </Window>
+  );
+};
+
 const ItemIcon = (props) => {
   const { icon, size = 64 } = props;
   if (!icon) {
@@ -46,26 +68,6 @@ const ItemPlaceholder = (props) => {
       style={{ textAlign: 'center' }}>
       —
     </Box>
-  );
-};
-
-export const Uplink = (props, context) => {
-  const { data } = useBackend(context);
-  const { telecrystals, uplink_type } = data;
-
-  const theme = uplink_type === 'PACT Uplink' ? 'pact' : 'syndicate';
-
-  return (
-    <Window
-      width={620}
-      height={580}
-      theme={theme}>
-      <Window.Content overflow="auto">
-        <GenericUplink
-          currencyAmount={telecrystals}
-          currencySymbol="TC" />
-      </Window.Content>
-    </Window>
   );
 };
 
@@ -154,22 +156,33 @@ export const GenericUplink = (props) => {
               fluid />
           </Stack.Item>
           <Stack.Item grow>
-            <Tabs vertical fill>
-              {categories.map(category => (
-                <Tabs.Tab
-                  py={0.8}
-                  key={category.name}
-                  selected={category.name === selectedCategory}
-                  onClick={() => {
-                    setSelectedCategory(category.name);
-                    if (searchText.length > 0) {
-                      setSearchText('');
-                    }
-                  }}>
-                  {category.name}
-                </Tabs.Tab>
-              ))}
-            </Tabs>
+            <Stack vertical fill>
+              {categories.map(category => {
+                const selected = category.name === selectedCategory;
+                return (
+                  <Stack.Item key={category.name} mt={0}>
+                    <Button
+                      fluid
+                      color={selected ? 'red' : 'default'}
+                      onClick={() => {
+                        setSelectedCategory(category.name);
+                        if (searchText.length > 0) {
+                          setSearchText('');
+                        }
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        lineHeight: '1.4',
+                        minHeight: 'unset',
+                        borderRadius: '3px',
+                        marginBottom: '3px',
+                      }}>
+                      {category.name}
+                    </Button>
+                  </Stack.Item>
+                );
+              })}
+            </Stack>
           </Stack.Item>
         </Stack>
       </Stack.Item>
@@ -219,7 +232,7 @@ const ItemList = (props) => {
   });
   const buyButton = (item) => (
     <Button
-      width="50px"
+      width="55px"
       textAlign="center"
       content={formatMoney(item.cost) + ' ' + currencySymbol}
       disabled={item.disabled}
@@ -241,23 +254,28 @@ const ItemList = (props) => {
                 <Stack align="center">
                   <Stack.Item>
                     <Box width="32px" height="32px" m="2px" mr={1}>
-                      {item.icon ? (
-                        <ItemIcon icon={item.icon} size={32} />
-                      ) : (
-                        <ItemPlaceholder size="32px" />
-                      )}
+                      <ItemIcon icon={item.icon} size={32} />
                     </Box>
                   </Stack.Item>
                   <Stack.Item
                     bold
-                    grow
                     lineHeight="36px"
                     style={{
                       overflow: 'hidden',
                       whiteSpace: 'nowrap',
                       textOverflow: 'ellipsis',
+                      flexShrink: 1,
+                      minWidth: '70px',
                     }}>
                     {decodeHtmlEntities(item.name)}
+                  </Stack.Item>
+                  <Stack.Item grow>
+                    <Box
+                      style={{
+                        width: '100%',
+                        borderBottom: '2px dotted rgba(255, 255, 255, 0.25)',
+                        marginBottom: '4px',
+                      }} />
                   </Stack.Item>
                   <Stack.Item>
                     <Tooltip content={item.desc}>
@@ -278,26 +296,44 @@ const ItemList = (props) => {
     );
   }
   return (
-    <Section fill scrollable>
-      <Stack vertical mt={-1}>
+    <Section
+      fill
+      scrollable
+      style={{
+        background: 'transparent',
+      }}>
+      <Stack
+        vertical
+        mt={-1}
+        style={{
+          paddingRight: '4px',
+        }}>
         {items.map(item => (
-          <Stack.Item key={item.name} mt={1}>
-            <Section>
-              <Stack>
+          <Stack.Item key={item.name}>
+            <Section
+              style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                border: 'none',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                padding: '2px',
+                marginBottom: '3px',
+              }}>
+              <Stack align="center">
                 <Stack.Item>
                   <Box width="64px" height="64px" mr={1}>
-                    {item.icon ? (
-                      <ItemIcon icon={item.icon} size={64} />
-                    ) : (
-                      <ItemPlaceholder size="64px" />
-                    )}
+                    <ItemIcon icon={item.icon} size={64} />
                   </Box>
                 </Stack.Item>
                 <Stack.Item grow>
                   <Section
                     title={decodeHtmlEntities(item.name)}
                     level={2}
-                    buttons={buyButton(item)}>
+                    buttons={buyButton(item)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                    }}>
                     <Box style={{ opacity: '0.75' }}>
                       {decodeHtmlEntities(item.desc)}
                     </Box>

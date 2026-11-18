@@ -33,6 +33,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/unlock_text
 	var/is_syndicate = FALSE
 	var/list/previous_attempts
+	var/uplink_theme = null
 
 /datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT, syndicate = FALSE)
 	is_syndicate = syndicate
@@ -214,7 +215,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 	active = TRUE
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "UplinkInteQ", name)
+		ui = new(user, src, "Uplink", name)
 		// This UI is only ever opened by one person,
 		// and never is updated outside of user input.
 		ui.set_autoupdate(FALSE)
@@ -224,7 +225,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 /datum/component/uplink/proc/get_item_icon(atom/item)
 	if(!ispath(item, /atom))
 		return null
-	var/static/datum/asset/spritesheet_batched/uplink/sheet = get_asset_datum(/datum/asset/spritesheet_batched/uplink)
+	var/static/datum/asset/spritesheet_batched/uplink/sheet
+	sheet ||= get_asset_datum(/datum/asset/spritesheet_batched/uplink)
 	var/imgid = GLOB.uplink_icon_map["[item]"]
 	if(!imgid || !sheet.sprites[imgid])
 		return null
@@ -240,6 +242,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 	data["telecrystals"] = telecrystals
 	data["lockable"] = lockable
 	data["compactMode"] = compact_mode
+	/// data["uplink_type"] = name
+	data["theme"] = uplink_theme || (is_syndicate ? "syndicate" : "inteq")
+	data["currencySymbol"] = is_syndicate ? "TC" : "CR"
 	data["categories"] = build_uplink_shop_categories(user)
 	return data
 
