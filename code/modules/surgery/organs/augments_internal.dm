@@ -281,9 +281,29 @@
 	/// Цвет следа в воздухе; null - след повторяет внешность персонажа без окраски.
 	var/trail_color
 	/// Интервал спавна следа в децисекундах (меньше = плотнее след).
-	var/afterimage_interval = 1
+	var/afterimage_interval = 0.2
 	/// Шанс в процентах уклониться от любого проджектайла, пока имплант активен.
 	var/projectile_dodge_chance = 45
+	/// Во сколько раз ускоряются времязатратные действия владельца (4 = в четыре раза быстрее).
+	var/action_speed_mult = SANDEVISTAN_ACTION_SPEED_MULT
+	/// Полупрозрачность владельца и его следов во время действия.
+	var/sandevistan_alpha = 160
+	/// Пули владельца, замороженные на время действия импланта.
+	var/list/frozen_projectiles
+	/// Следы в воздухе, которые живут до конца действия импланта.
+	var/list/active_afterimages
+	/// Отложенные удары ближнего боя: наносят урон разом после окончания действия.
+	var/list/deferred_attacks
+	/// Исходная альфа владельца до активации.
+	var/owner_old_alpha
+	/// Исходный цвет владельца до активации.
+	var/owner_old_color
+	/// Исходный модификатор задержки действий владельца до активации.
+	var/owner_old_action_cooldown_mod
+	/// Звук включения и работы импланта (длится почти весь эффект). Обычная и корпоративная версии.
+	var/start_sound = 'sound/effects/sandevistan/sandevistan_start_and_go_1.ogg'
+	/// Звук окончания действия импланта.
+	var/end_sound = 'sound/effects/sandevistan/sandevistan_ends.ogg'
 
 /datum/action/item_action/organ_action/use/sandevistan
 	name = "Activate Sandevistan"
@@ -318,13 +338,25 @@
 	active = TRUE
 	next_use = world.time + cooldown
 	to_chat(owner, span_notice("Your vision sharpens as time seems to slow around you."))
-	owner.playsound_local(owner, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+	owner.playsound_local(owner, start_sound, 50, FALSE)
 	// Все активации дают сниженную скорость (как раньше первая); различается только длительность.
 	active_movespeed_mod = movespeed_mod_weak
 	owner.add_movespeed_modifier(movespeed_mod_weak)
 	ADD_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
-	if(owner.client)
-		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = outline_color, "alpha" = 80, "size" = 1))
+	ADD_TRAIT(owner, TRAIT_SANDEVISTAN_ACTIVE, REF(src))
+	// Времязатратные действия ускорены: перезарядки КД в 4 раза, do_after/do_mob почти мгновенные.
+	owner.add_actionspeed_modifier(/datum/actionspeed_modifier/sandevistan)
+	owner_old_action_cooldown_mod = owner.action_cooldown_mod
+	owner.action_cooldown_mod /= action_speed_mult
+	// Владелец становится неотличимым от своего следа: та же альфа и тот же цвет.
+	owner_old_alpha = owner.alpha
+	owner_old_color = owner.color
+	owner.alpha = sandevistan_alpha
+	if(trail_color)
+		owner.color = trail_color
+	frozen_projectiles = null
+	active_afterimages = null
+	deferred_attacks = null
 	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
 		if(overload_count > 2)
 			apply_overload_effects()
@@ -345,12 +377,84 @@
 	if(!. || !owner)
 		return
 	overload_reset_timer = addtimer(CALLBACK(src, PROC_REF(reset_overload)), overload_reset_interval, TIMER_LOOP|TIMER_STOPPABLE)
+	RegisterSignal(owner, COMSIG_MOD_PROJECTILE_FIRE, PROC_REF(on_projectile_fired))
 
 /obj/item/organ/cyberimp/brain/sandevistan/Remove(special = FALSE)
+	if(owner)
+		UnregisterSignal(owner, COMSIG_MOD_PROJECTILE_FIRE)
 	if(overload_reset_timer)
 		deltimer(overload_reset_timer)
 		overload_reset_timer = null
 	return ..()
+
+/// Находит активный сандевистан у владельца; используется точками входа в ядре игры.
+/proc/get_active_sandevistan(mob/living/user)
+	if(!iscarbon(user))
+		return null
+	var/obj/item/organ/cyberimp/brain/sandevistan/S = user.getorganslot(ORGAN_SLOT_BRAIN_SANDEVISTAN)
+	if(istype(S) && S.active)
+		return S
+	return null
+
+/// Отложенная атака ближнего боя, которая наносит урон после окончания сандевистана.
+/datum/sandevistan_deferred_attack
+	var/obj/item/weapon
+	var/datum/species/species
+	var/mob/living/user
+	var/mob/living/target
+	var/datum/martial_art/style
+	var/attackchain_flags
+	var/damage_multiplier = 1
+
+/// Откладывает удар оружием: урон нанесётся в конце действия импланта.
+/obj/item/organ/cyberimp/brain/sandevistan/proc/queue_item_attack(obj/item/weapon, mob/living/target, mob/living/user, attackchain_flags, damage_multiplier)
+	if(!active || QDELETED(weapon) || QDELETED(target) || QDELETED(user))
+		return FALSE
+	var/datum/sandevistan_deferred_attack/attack = new()
+	attack.weapon = weapon
+	attack.target = target
+	attack.user = user
+	attack.attackchain_flags = attackchain_flags
+	attack.damage_multiplier = damage_multiplier
+	LAZYADD(deferred_attacks, attack)
+	return TRUE
+
+/// Откладывает безоружный удар: в конце повторяем саму процедуру урона.
+/obj/item/organ/cyberimp/brain/sandevistan/proc/queue_unarmed_attack(datum/species/species, mob/living/user, mob/living/target, datum/martial_art/style, attackchain_flags)
+	if(!active || QDELETED(species) || QDELETED(user) || QDELETED(target))
+		return FALSE
+	var/datum/sandevistan_deferred_attack/attack = new()
+	attack.species = species
+	attack.user = user
+	attack.target = target
+	attack.style = style
+	attack.attackchain_flags = attackchain_flags
+	LAZYADD(deferred_attacks, attack)
+	return TRUE
+
+/// Все накопленные удары разом наносят урон, когда действие импланта закончилось.
+/obj/item/organ/cyberimp/brain/sandevistan/proc/release_deferred_attacks()
+	if(!deferred_attacks)
+		return
+	var/list/attacks = deferred_attacks
+	deferred_attacks = null
+	for(var/datum/sandevistan_deferred_attack/attack as anything in attacks)
+		if(QDELETED(attack) || QDELETED(attack.user) || QDELETED(attack.target))
+			continue
+		if(attack.weapon)
+			if(!QDELETED(attack.weapon))
+				attack.weapon.attack(attack.target, attack.user, attack.attackchain_flags, attack.damage_multiplier)
+		else if(attack.species && !QDELETED(attack.species))
+			attack.species.harm(attack.user, attack.target, attack.style, attack.attackchain_flags)
+		qdel(attack)
+
+/// Все снаряды, выпущенные владельцем во время действия, замирают до его окончания.
+/obj/item/organ/cyberimp/brain/sandevistan/proc/on_projectile_fired(mob/source, obj/item/projectile/projectile)
+	SIGNAL_HANDLER
+	if(!active || !projectile)
+		return
+	projectile.paused = TRUE
+	LAZYADD(frozen_projectiles, projectile)
 
 /// Сбрасывает накопленный перегруз, чтобы он не копился всю смену у базовой и корпоративной версий.
 /obj/item/organ/cyberimp/brain/sandevistan/proc/reset_overload()
@@ -408,23 +512,43 @@
 	if(!current_turf || current_turf == last_afterimage_turf)
 		return
 	last_afterimage_turf = current_turf
-	new /obj/effect/temp_visual/sandevistan_afterimage(current_turf, owner, trail_color)
+	var/obj/effect/temp_visual/sandevistan_afterimage/afterimage = new(current_turf, owner, trail_color, sandevistan_alpha)
+	LAZYADD(active_afterimages, afterimage)
 
 /obj/item/organ/cyberimp/brain/sandevistan/proc/deactivate_sandevistan()
 	if(!owner || !active)
 		return
 	active = FALSE
 	to_chat(owner, span_warning("The world snaps back into focus as your Sandevistan powers down."))
-	owner.playsound_local(owner, 'sound/machines/terminal_prompt_deny.ogg', 30, FALSE)
+	owner.playsound_local(owner, end_sound, 50, FALSE)
 	owner.remove_movespeed_modifier(active_movespeed_mod || movespeed_mod)
 	active_movespeed_mod = null
 	REMOVE_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
+	REMOVE_TRAIT(owner, TRAIT_SANDEVISTAN_ACTIVE, REF(src))
+	owner.remove_actionspeed_modifier(/datum/actionspeed_modifier/sandevistan)
+	if(!isnull(owner_old_action_cooldown_mod))
+		owner.action_cooldown_mod = owner_old_action_cooldown_mod
+		owner_old_action_cooldown_mod = null
+	if(!isnull(owner_old_alpha))
+		owner.alpha = owner_old_alpha
+		owner_old_alpha = null
+	// color по умолчанию равен null, поэтому проверять isnull здесь нельзя — иначе окраска останется навсегда.
+	owner.color = owner_old_color
+	owner_old_color = null
 	if(afterimage_timer)
 		deltimer(afterimage_timer)
 		afterimage_timer = null
 	last_afterimage_turf = null
-	if(owner.client)
-		owner.remove_filter("sandevistan")
+	// Замороженные пули продолжают полёт, следы исчезают.
+	for(var/obj/item/projectile/projectile in frozen_projectiles)
+		if(!QDELETED(projectile))
+			projectile.paused = FALSE
+	frozen_projectiles = null
+	for(var/obj/effect/temp_visual/sandevistan_afterimage/afterimage in active_afterimages)
+		qdel(afterimage)
+	active_afterimages = null
+	// Все удары, сделанные во время действия, наносят урон одновременно с его окончанием.
+	release_deferred_attacks()
 	var/deadly = FALSE
 	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
 		deadly = (overload_count >= 5) // 4 безопасных + 1 смертельный
@@ -462,12 +586,13 @@
 
 /obj/effect/temp_visual/sandevistan_afterimage
 	name = ""
-	duration = 3
+	/// След живёт до конца действия импланта и удаляется им вручную.
+	duration = 600
 	alpha = 160
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = MOB_LAYER - 0.02
 
-/obj/effect/temp_visual/sandevistan_afterimage/Initialize(mapload, mob/living/source, trail_color)
+/obj/effect/temp_visual/sandevistan_afterimage/Initialize(mapload, mob/living/source, trail_color, sustain_alpha = 160)
 	. = ..()
 	if(!source)
 		return
@@ -475,10 +600,14 @@
 	dir = source.dir
 	plane = source.plane
 	layer = source.layer - 0.02
-	alpha = 160
+	alpha = sustain_alpha
 	if(trail_color)
 		color = trail_color
-	animate(src, alpha = 0, time = duration)
+	// Намеренно без затухания: след стоит на месте, пока имплант активен.
+
+/// Ускорение времязатратных действий: базовый модификатор 1 + (-0.95) даёт сеть 0.05, то есть ~20x (почти мгновенно).
+/datum/actionspeed_modifier/sandevistan
+	multiplicative_slowdown = -0.95
 
 /obj/item/organ/cyberimp/brain/sandevistan/military
 	name = "Cybersun Sandevistan"
@@ -491,10 +620,12 @@
 	cooldown = 15 SECONDS
 	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
 	movespeed_mod_weak = /datum/movespeed_modifier/sandevistan/military/weak
-	// Предательская версия: тёмно-розовый контур и след, след спавнится в пять раз чаще.
+	// Предательская версия: тёмно-розовый контур и след, след ещё плотнее.
 	outline_color = "#C2185B"
 	trail_color = "#C2185B"
-	afterimage_interval = 0.2
+	afterimage_interval = 0.04
+	// Агентская версия использует свой звук включения/работы.
+	start_sound = 'sound/effects/sandevistan/sandevistan_start_and_go_2.ogg'
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
 

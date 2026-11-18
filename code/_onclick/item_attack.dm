@@ -88,6 +88,12 @@
 /obj/item/proc/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK, M, user, damage_multiplier) & COMPONENT_ITEM_NO_ATTACK)
 		return
+	// Активный сандевистан откладывает урон до конца действия, но замах остаётся видимым.
+	if(HAS_TRAIT(user, TRAIT_SANDEVISTAN_ACTIVE))
+		var/obj/item/organ/cyberimp/brain/sandevistan/S = get_active_sandevistan(user)
+		if(S && S.queue_item_attack(src, M, user, attackchain_flags, damage_multiplier))
+			user.do_attack_animation(M)
+			return
 	SEND_SIGNAL(user, COMSIG_MOB_ITEM_ATTACK, M, user)
 	if(item_flags & NOBLUDGEON)
 		return

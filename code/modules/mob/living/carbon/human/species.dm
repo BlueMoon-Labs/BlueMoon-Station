@@ -1822,6 +1822,12 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		return TRUE
 
 /datum/species/proc/harm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style, attackchain_flags = NONE)
+	// Активный сандевистан откладывает урон безоружного удара до конца действия, но замах виден.
+	if(HAS_TRAIT(user, TRAIT_SANDEVISTAN_ACTIVE))
+		var/obj/item/organ/cyberimp/brain/sandevistan/S = get_active_sandevistan(user)
+		if(S && S.queue_unarmed_attack(src, user, target, attacker_style, attackchain_flags))
+			user.do_attack_animation(target)
+			return
 	if(!attacker_style && HAS_TRAIT(user, TRAIT_PACIFISM))
 		to_chat(user, "<span class='warning'>You don't want to harm [target]!</span>")
 		return FALSE
