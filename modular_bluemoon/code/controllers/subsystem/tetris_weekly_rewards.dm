@@ -21,7 +21,10 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	. = ..()
 	load_state()
 	load_progress()
-	if(!next_reset_realtime)
+	if(!isnum(next_reset_realtime) || next_reset_realtime <= 0)
+		next_reset_realtime = next_monday_midnight()
+		save_state()
+	else if(next_reset_realtime < world.realtime - TETRIS_WEEKLY_REWARD_INTERVAL * 2)
 		next_reset_realtime = next_monday_midnight()
 		save_state()
 	if(length(current_entries))
@@ -100,6 +103,8 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	current_cycle_started = world.realtime
 	leaderboard_reset_done = FALSE
 	processing_rewards = TRUE
+	next_reset_realtime = next_monday_midnight()
+	save_state()
 	save_progress()
 	continue_reward_cycle()
 
@@ -214,18 +219,22 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	return TRUE
 
 /datum/controller/subsystem/tetris_weekly_rewards/proc/advance_next_reset()
-	next_reset_realtime = next_monday_midnight()
-	save_state()
+	if(next_reset_realtime <= world.realtime)
+		next_reset_realtime = next_monday_midnight()
+		save_state()
 
 /datum/controller/subsystem/tetris_weekly_rewards/proc/next_monday_midnight()
-	var/realtime_seconds = round(world.realtime / 10)
-	var/days_since_epoch = round(realtime_seconds / 86400)
+	var/realtime_seconds = floor(world.realtime / 10)
+	var/days_since_epoch = floor(realtime_seconds / 86400)
 	var/dow = (days_since_epoch + 5) % 7
 	var/days_until_monday = (7 - dow) % 7
 	if(days_until_monday == 0)
 		days_until_monday = 7
 	var/next_monday_seconds = (days_since_epoch + days_until_monday) * 86400
-	return next_monday_seconds * 10
+	var/next_reset = next_monday_seconds * 10
+	while(next_reset <= world.realtime)
+		next_reset += 7 * 24 * 3600 * 10
+	return next_reset
 
 #undef TETRIS_WEEKLY_REWARD_INTERVAL
 #undef TETRIS_WEEKLY_REWARD_CHECK_INTERVAL

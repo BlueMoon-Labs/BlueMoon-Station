@@ -4505,7 +4505,10 @@
 			return TRUE
 
 		if("set_puddle_slime")
-			prefs.features["puddle_slime_fea"] = params["value"] ? TRUE : FALSE
+			if("value" in params)
+				prefs.features["puddle_slime_fea"] = params["value"] ? TRUE : FALSE
+			else
+				prefs.features["puddle_slime_fea"] = !prefs.features["puddle_slime_fea"]
 			preview_dirty = TRUE
 			return TRUE
 

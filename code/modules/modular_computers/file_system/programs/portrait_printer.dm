@@ -25,18 +25,22 @@
 	// BLUEMOON EDIT START
 	var/static/list/categorys = list("library", "library_secure", "library_private", "library_large", "library_large_private")
 	var/is_admin = check_rights_for(user?.client, R_DEBUG)
+	var/list/paintings_store = islist(SSpersistence.paintings) ? SSpersistence.paintings : null
 	for(var/category_name in categorys)
-		var/list/paintings = SSpersistence.paintings[category_name]
-		if(paintings)
+		var/list/paintings = paintings_store?[category_name]
+		if(islist(paintings))
 			var/list/filtered = list()
-			for(var/list/entry in paintings)
+			for(var/entry in paintings)
+				if(!islist(entry))
+					continue
 				// Скрытые картины видны только админам (чтобы они могли восстановить)
 				if(!entry["hidden"] || is_admin)
 					filtered += entry
 			data[category_name] = filtered
 		else
 			data[category_name] = list()
-	data["favorite_paintings_md5"] = user?.client?.prefs?.favorite_paintings_md5
+	var/list/favorites = user?.client?.prefs?.favorite_paintings_md5
+	data["favorite_paintings_md5"] = islist(favorites) ? favorites : list()
 	data["is_admin"] = is_admin
 	data["user_ckey"] = user?.ckey
 	// BLUEMOON EDIT END
@@ -65,6 +69,8 @@
 			if(!md5)
 				return
 
+			if(!islist(L.client.prefs.favorite_paintings_md5))
+				L.client.prefs.favorite_paintings_md5 = list()
 			var/list/favorite_paintings_md5 = L.client.prefs.favorite_paintings_md5
 			if(md5 in favorite_paintings_md5)
 				favorite_paintings_md5 -= md5
