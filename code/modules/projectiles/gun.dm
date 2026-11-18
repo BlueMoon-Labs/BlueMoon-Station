@@ -515,24 +515,13 @@
 		return FALSE
 	add_fingerprint(user)
 
-	// Сандевистан ускоряет стрельбу в четыре раза, не меняя базовые задержки оружия.
-	var/old_fire_delay = fire_delay
-	var/old_burst_shot_delay = burst_shot_delay
-	if(user && HAS_TRAIT(user, TRAIT_SANDEVISTAN_ACTIVE))
-		fire_delay /= SANDEVISTAN_ACTION_SPEED_MULT
-		burst_shot_delay /= SANDEVISTAN_ACTION_SPEED_MULT
-
 	if(on_cooldown())
-		fire_delay = old_fire_delay
-		burst_shot_delay = old_burst_shot_delay
 		return
 	if(user && HAS_TRAIT(user, TRAIT_HERETIC_LUNATIC))
 		bonus_spread += HERETIC_MOON_LUNATIC_SPREAD
 	firing = TRUE
 	. = do_fire(target, user, message, params, zone_override, bonus_spread, stam_cost)
 	firing = FALSE
-	fire_delay = old_fire_delay
-	burst_shot_delay = old_burst_shot_delay
 	last_fire = world.time
 
 	if(user)

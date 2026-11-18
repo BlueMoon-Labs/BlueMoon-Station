@@ -195,12 +195,6 @@
 #define TRAIT_BALLISTIC_PROCESSOR "ballistic_processor"
 /// Blocks all incoming stamina damage (Sandevistan overdrive).
 #define TRAIT_NO_STAMINA_DAMAGE "no_stamina_damage"
-/// Sandevistan is running: timed actions are accelerated and bullets are frozen.
-#define TRAIT_SANDEVISTAN_ACTIVE "sandevistan_active"
-/// Во сколько раз сандевистан ускоряет времязатратные действия.
-#define SANDEVISTAN_ACTION_SPEED_MULT 4
-/// Множитель времени для совместных действий (раздевание и т.п.) под сандевистаном — почти мгновенно.
-#define SANDEVISTAN_DO_MOB_MULT 0.05
 #define TRAIT_CALCIUM_HEALER	"calcium_healer"
 #define TRAIT_MAGIC_CHOKE		"magic_choke"
 #define TRAIT_CAPTAIN_METABOLISM "captain-metabolism"

@@ -21,9 +21,6 @@
 	var/datum/actionspeed_modifier/drought = user.has_actionspeed_modifier(/datum/actionspeed_modifier/heretic_sand_drought)
 	if(drought)
 		time *= 1 + drought.multiplicative_slowdown
-	// Сандевистан делает любые совместные действия (например, раздевание) почти мгновенными.
-	if(HAS_TRAIT(user, TRAIT_SANDEVISTAN_ACTIVE))
-		time = max(1, time * SANDEVISTAN_DO_MOB_MULT)
 
 	var/datum/progressbar/progbar
 	if (progress)
