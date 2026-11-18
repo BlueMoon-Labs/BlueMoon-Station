@@ -5,6 +5,29 @@ import { useBackend } from '../backend';
 import { Button, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
+// Названия категорий приходят из DM; переводим только отображение,
+// чтобы не менять ключи, по которым работает фильтрация тревог.
+const alarmCategoryTitles = {
+  Fire: 'Пожарные тревоги',
+  Atmosphere: 'Атмосферные тревоги',
+  Power: 'Тревоги энергоснабжения',
+  Burglar: 'Тревоги взлома',
+  Motion: 'Обнаружение движения',
+  Camera: 'Камеры наблюдения',
+};
+
+const plural = (count, one, few, many) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    return one;
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return few;
+  }
+  return many;
+};
+
 export const StationAlertConsole = (props) => {
   const { data } = useBackend();
   const {
@@ -43,11 +66,13 @@ export const StationAlertConsoleContent = (props) => {
   return (
     <>
       {sortedAlarms.map(category => (
-        <Section key={category.name} title={category.name + " Alarms"}>
+        <Section
+          key={category.name}
+          title={alarmCategoryTitles[category.name] || `${category.name} Alarms`}>
           <ul>
             {category.alerts?.length === 0 && (
               <li className="color-good">
-                Systems Nominal
+                Системы в норме
               </li>
             )}
             {category.alerts.map(alert => (
@@ -58,7 +83,9 @@ export const StationAlertConsoleContent = (props) => {
                 <Stack.Item grow>
                   <li className="color-average">
                     {alert.name} {!!cameraView && alert?.sources > 1
-                      ? " (" + alert.sources + " sources)" : ""}
+                      ? ` (${alert.sources} ${plural(
+                        alert.sources, 'источник', 'источника', 'источников'
+                      )})` : ""}
                   </li>
                 </Stack.Item>
                 {!!cameraView && (
@@ -69,8 +96,10 @@ export const StationAlertConsoleContent = (props) => {
                       icon={alert.cameras ? "video" : ""}
                       disabled={!alert.cameras}
                       content={alert.cameras === 1
-                        ? alert.cameras + " Camera" : alert.cameras > 1
-                          ? alert.cameras + " Cameras" : "No Camera"}
+                        ? alert.cameras + " камера" : alert.cameras > 1
+                          ? alert.cameras + " " + plural(
+                            alert.cameras, 'камера', 'камеры', 'камер'
+                          ) : "Нет камеры"}
                       onClick={() => act('select_camera', {
                         alert: alert.ref,
                       })} />
