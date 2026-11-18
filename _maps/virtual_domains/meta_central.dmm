@@ -299,7 +299,6 @@
 "cr" = (
 /obj/effect/turf_decal/tile/neutral,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plasteel,
 /area/virtual_domain)
 "cw" = (
@@ -1446,7 +1445,6 @@
 /area/virtual_domain)
 "lT" = (
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/virtual_domain)
 "lU" = (
@@ -2428,7 +2426,6 @@
 "uk" = (
 /obj/structure/marker_beacon/bronze,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/virtual_domain)
 "ul" = (
@@ -3131,7 +3128,6 @@
 /area/virtual_domain)
 "AC" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/virtual_domain)
@@ -4007,7 +4003,6 @@
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /obj/effect/mapping_helpers/airlock/access/all/command/ai_upload,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /obj/structure/barricade/wooden/crude,
@@ -4696,7 +4691,6 @@
 /obj/structure/chair/office{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain)
@@ -5519,7 +5513,6 @@
 /turf/open/floor/plasteel,
 /area/virtual_domain)
 "Ux" = (
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/virtual_domain)

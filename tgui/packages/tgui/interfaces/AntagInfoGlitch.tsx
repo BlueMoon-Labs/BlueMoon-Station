@@ -1,5 +1,5 @@
-import { Section, Stack } from '../components';
 import { useBackend } from '../backend';
+import { Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 type Data = {
@@ -29,7 +29,7 @@ export const AntagInfoGlitch = (props) => {
             <Stack.Divider />
             <Stack.Item>
               <span style={{ opacity: 0.6 }}>
-                // {objectives[0]?.explanation}
+                {`// ${objectives[0]?.explanation ?? ''}`}
               </span>
             </Stack.Item>
             <Stack.Item>

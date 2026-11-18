@@ -301,7 +301,6 @@
 	pixel_y = 6
 	},
 /obj/item/phone{
-	base_pixel_w = 4;
 	pixel_x = -6
 	},
 /turf/open/floor/plasteel/cafeteria,

@@ -247,9 +247,6 @@
 /obj/machinery/atmospherics/pipe{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/virtual_domain)
 "ja" = (
@@ -285,9 +282,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe{
 	dir = 4
 	},
@@ -534,9 +528,6 @@
 /obj/machinery/atmospherics/pipe{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
 "uP" = (
@@ -620,9 +611,6 @@
 /area/virtual_domain)
 "yR" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe{
 	dir = 4
 	},
@@ -758,9 +746,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/virtual_domain)
 "FN" = (
-/obj/machinery/atmospherics/pipe{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe{
 	dir = 4
 	},

@@ -1,4 +1,7 @@
 import { Fragment, useState } from 'react';
+
+import { createSearch } from '../../common/string';
+import { useBackend } from '../backend';
 import {
   Button,
   Divider,
@@ -8,9 +11,6 @@ import {
   Stack,
   Tabs,
 } from '../components';
-import { createSearch } from '../../common/string';
-
-import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 type Data = {

@@ -1,6 +1,5 @@
-import { Box, Icon, Section, Stack } from '../components';
-
 import { useBackend } from '../backend';
+import { Box, Icon, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 type Data = {

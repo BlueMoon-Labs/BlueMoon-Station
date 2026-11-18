@@ -58,13 +58,6 @@
 	if(tgui_alert(living_owner, "Безопасно отключиться?", "Сообщение сервера", list("Выйти", "Остаться"), 10 SECONDS) == "Выйти")
 		SEND_SIGNAL(living_owner, COMSIG_BITRUNNER_ALERT_SEVER)
 
-/area/station/cargo/bitrunning
-	name = "Bitrunning"
-
-/area/station/cargo/bitrunning/den
-	name = "Bitrunning Den"
-	desc = "Офис битраннеров, здесь хранится их снаряжение."
-
 /area/virtual_domain
 	name = "Virtual Domain Ruins"
 	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS

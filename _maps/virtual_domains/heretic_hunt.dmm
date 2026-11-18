@@ -3,13 +3,11 @@
 /obj/effect/mapping_helpers,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
 "aR" = (
 /obj/structure/grille/broken,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
@@ -60,7 +58,6 @@
 "dh" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
@@ -293,7 +290,6 @@
 /area/virtual_domain)
 "kQ" = (
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /obj/effect/spawner/structure,
 /turf/open/floor/plating,
 /area/virtual_domain)
@@ -477,13 +473,11 @@
 /obj/structure/destructible/clockwork/trap/steam_vent,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
 "sy" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
@@ -525,7 +519,6 @@
 "uj" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plasteel,
 /area/virtual_domain)
 "uz" = (
@@ -538,7 +531,6 @@
 "uS" = (
 /obj/machinery/door/airlock/maintenance_hatch,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
@@ -591,7 +583,6 @@
 /area/virtual_domain)
 "vR" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plasteel,
 /area/virtual_domain)
@@ -844,7 +835,6 @@
 "Gj" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
 "Gt" = (
@@ -987,7 +977,6 @@
 "JG" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating,
 /area/virtual_domain)
 "JP" = (
@@ -1106,7 +1095,6 @@
 /obj/effect/mapping_helpers,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
 "NN" = (
@@ -1127,7 +1115,6 @@
 "Ot" = (
 /obj/machinery/light/small/broken/directional/east,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
@@ -1161,7 +1148,6 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/mapping_helpers,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
@@ -1327,7 +1313,6 @@
 /obj/machinery/light/small/red/dim/directional/south,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe,
-/obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)
 "VW" = (
@@ -1366,7 +1351,6 @@
 /obj/effect/spawner/lootdrop/trashbin,
 /obj/structure/grille/broken,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe,
 /obj/machinery/atmospherics/pipe,
 /turf/open/floor/plating/heretic_rust,
 /area/virtual_domain)

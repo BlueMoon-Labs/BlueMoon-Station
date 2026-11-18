@@ -172,7 +172,7 @@ function AccessView(props) {
                   Случайный домен
                 </Button>
               </Tooltip>
-              {!!is_admin ? (
+              {is_admin ? (
                 <Button
                   color="pink"
                   icon="star"
