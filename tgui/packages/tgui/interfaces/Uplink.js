@@ -2,7 +2,7 @@ import { createSearch, decodeHtmlEntities } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Icon, Input, NoticeBox, Section, Stack, Tabs, Tooltip } from '../components';
+import { Box, Button, Icon, Input, NoticeBox, Section, Stack, Tooltip } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
 
