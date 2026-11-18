@@ -1272,7 +1272,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		character.equip_to_slot_or_del(permit, ITEM_SLOT_BACKPACK, TRUE)
 
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
-	var/bal = 0
+	var/bal = BASE_QUIRK_BALANCE
 	for(var/V in selected_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
 		if(T)
