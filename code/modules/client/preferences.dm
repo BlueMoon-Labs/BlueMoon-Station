@@ -944,10 +944,6 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 4, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
-	list("id" = "corp_mantis_blades", "label" = "Корпоративные клинки богомола", "desc" = "Пара выдвижных клинков в предплечьях, активируются по коду тревоги. Занимают обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
-	list("id" = "corp_monowire", "label" = "Корпоративная моно-струна", "desc" = "Мономолекулярная струна в предплечье: гаррота с большой дальностью и ударом током. Занимает обе руки.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/monostring/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
-	list("id" = "corp_hand_cannon", "label" = "Корпоративная ручная пушка", "desc" = "Встроенная в руку энергетическая пушка с режимом очереди. Занимает одну руку.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/handgun/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
-	list("id" = "corp_gorilla_arms", "label" = "Корпоративные руки гориллы", "desc" = "Усиленные миомеры обеих рук: мощные удары, вскрытие шлюзов и полное подавление отдачи.", "cost" = 6, "path" = /obj/item/organ/cyberimp/arm/gorilla/sec_level, "organ" = TRUE, "group" = "arm_augments", "combat_permit" = TRUE),
 	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Выдвижные когти из лёгкого сплава. Занимают одну руку.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "organ" = TRUE, "group" = "arm_augments"),
 	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
 	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
@@ -1276,7 +1272,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		character.equip_to_slot_or_del(permit, ITEM_SLOT_BACKPACK, TRUE)
 
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
-	var/bal = 0
+	var/bal = BASE_QUIRK_BALANCE
 	for(var/V in selected_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
 		if(T)

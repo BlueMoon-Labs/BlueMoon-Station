@@ -57,3 +57,7 @@
 	response_help_continuous = "respects the authority of"
 	response_help_simple = "respect the authority of"
 	gold_core_spawnable = FRIENDLY_SPAWN
+
+/mob/living/simple_animal/hostile/retaliate/bat/secbat/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

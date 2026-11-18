@@ -511,6 +511,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 /datum/interaction/custom/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target) || !name || !message)
 		return FALSE
+	if(apply_cooldown && !COOLDOWN_FINISHED(user, last_interaction_time))
+		return FALSE
 	if(!check_requirements(user, target, silent = FALSE))
 		return FALSE
 	var/distance = get_dist(user, target)
