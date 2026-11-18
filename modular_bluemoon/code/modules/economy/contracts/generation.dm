@@ -44,6 +44,7 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	/datum/bounty/item/assistant/cheesiehonkers,
 	/datum/bounty/item/assistant/condom,
+	/datum/bounty/item/assistant/shadyjims,
 )))
 
 /proc/econ_bounty_department_of(bounty_type)
@@ -271,14 +272,25 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		var/picked = pickweight(weights)
 		bounty_types -= picked
 		var/datum/bounty/bounty = new picked
-		if(bounty.name && bounty.description)
+		if(bounty.name && bounty.description && bounty.econ_available())
 			return bounty
 		qdel(bounty)
 	return null
 
+/// Выполним ли заказ на этой карте. Сюда - то, что зависит от карты, а не от правила про купленное.
+/datum/bounty/proc/econ_available()
+	return TRUE
+
+/// Номера штампует только пресс, а его плату не напечатать.
+/datum/bounty/item/security/plates/econ_available()
+	for(var/obj/machinery/plate_press/press in GLOB.machines)
+		if(is_station_level(press.z))
+			return TRUE
+	return FALSE
+
 /// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя.
 /datum/controller/subsystem/economy/proc/post_special_contract(datum/bounty/bounty)
-	if(!bounty?.name || !bounty.description || GLOB.econ_bounty_unobtainable[bounty.type])
+	if(!bounty?.name || !bounty.description || GLOB.econ_bounty_unobtainable[bounty.type] || !bounty.econ_available())
 		return null
 	for(var/datum/econ_contract/delivery/existing in all_contracts())
 		if(!existing.bounty.compatible_with(bounty) || !bounty.compatible_with(existing.bounty))
