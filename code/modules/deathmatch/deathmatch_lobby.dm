@@ -925,7 +925,7 @@
  * wants the opposite: a running game's roster is the most interesting thing on the
  * panel, and joining it is a separate button that says so.
  */
-proc/get_open_deathmatch_lobby(mode)
+/proc/get_open_deathmatch_lobby(mode)
 	if(!mode)
 		return null
 	for(var/lobby_ref as anything in GLOB.deathmatch_lobbies)
@@ -1014,7 +1014,7 @@ proc/get_open_deathmatch_lobby(mode)
 /// standing at, and /datum/deathmatch_browser, which is how a guest in the afterlife
 /// opens it - so both have to be shut, or the stale one stays on top and the player
 /// keeps clicking a Join button for a window that is no longer the live one.
-proc/close_sleeper_panels(mob/user)
+/proc/close_sleeper_panels(mob/user)
 	if(isnull(user))
 		return
 	// Standing next to a machine. A fixed radius, because that is what they can click

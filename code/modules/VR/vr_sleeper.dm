@@ -279,7 +279,7 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
  * player does not necessarily own: hand-building a UI here would leave a window that
  * outlives the lobby and one that the state proc then refuses to talk to.
  */
-proc/open_lobby_window(mob/user, datum/deathmatch_lobby/lobby)
+/proc/open_lobby_window(mob/user, datum/deathmatch_lobby/lobby)
 	if(isnull(user) || isnull(lobby) || lobby.is_finished())
 		return
 	lobby.ui_interact(user)
@@ -290,7 +290,7 @@ proc/open_lobby_window(mob/user, datum/deathmatch_lobby/lobby)
  * Kept as a name callers already use, but it no longer goes looking for a machine:
  * the window it opens is /datum/deathmatch_browser, which is not tied to a tile.
  */
-proc/open_sleeper_browser(mob/user)
+/proc/open_sleeper_browser(mob/user)
 	return open_deathmatch_browser(user)
 
 /**

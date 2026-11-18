@@ -46,7 +46,7 @@
  * of a dropdown, and a dropdown that reorders itself every time somebody adds a
  * kit is unusable.
  */
-proc/get_deathmatch_loadout_paths()
+/proc/get_deathmatch_loadout_paths()
 	var/list/paths = list()
 	for(var/item in subtypesof(/datum/outfit/vr/deathmatch_loadout))
 		if(item == /datum/outfit/vr/deathmatch_loadout)
@@ -63,7 +63,7 @@ proc/get_deathmatch_loadout_paths()
 /// Display name for a loadout type path, for sorting a list of them. Both sides
 /// are compared on the name the player sees, not on the path, or the picker would be
 /// ordered by /datum/outfit/vr/deathmatch_loadout/brawler rather than by "Brawler".
-proc/cmp_deathmatch_loadout_path(path_a, path_b)
+/proc/cmp_deathmatch_loadout_path(path_a, path_b)
 	var/datum/outfit/vr/deathmatch_loadout/kit_a = get_deathmatch_loadout(path_a)
 	var/datum/outfit/vr/deathmatch_loadout/kit_b = get_deathmatch_loadout(path_b)
 	var/name_a = isnull(kit_a) ? "zzzz" : kit_a.get_display_name()
@@ -84,7 +84,7 @@ proc/cmp_deathmatch_loadout_path(path_a, path_b)
  * and instantiating it would hand build_virtual_character() an outfit with
  * nothing in it.
  */
-proc/get_deathmatch_loadout(path)
+/proc/get_deathmatch_loadout(path)
 	if(!ispath(path))
 		return null
 	if(path == /datum/outfit/vr/deathmatch_loadout)
@@ -124,31 +124,31 @@ proc/get_deathmatch_loadout(path)
 	/// /datum/deathmatch_lobby; team and round based modes use a subtype.
 	var/lobby_type = /datum/deathmatch_lobby
 
-	/**
-	 * The loadouts this mode offers, in picker order, as datums.
-	 *
-	 * The map's default kit first, then loadout_options, with the default
-	 * dropped from the tail if a map lists it redundantly. Resolved through
-	 * get_deathmatch_loadout(), so an option naming a path that does not exist is
-	 * skipped instead of handing the outfit code a null to equip.
-	 */
-	proc/get_loadouts()
-		var/list/result = list()
-		var/datum/outfit/vr/deathmatch_loadout/default = get_deathmatch_loadout(loadout)
-		if(!isnull(default))
-			result += default
-		for(var/option_path in loadout_options)
-			var/datum/outfit/vr/deathmatch_loadout/option = get_deathmatch_loadout(option_path)
-			if(isnull(option) || (option in result))
-				continue
-			result += option
-		return result
+/**
+ * The loadouts this mode offers, in picker order, as datums.
+ *
+ * The map's default kit first, then loadout_options, with the default
+ * dropped from the tail if a map lists it redundantly. Resolved through
+ * get_deathmatch_loadout(), so an option naming a path that does not exist is
+ * skipped instead of handing the outfit code a null to equip.
+ */
+/datum/map_template/deathmatch/proc/get_loadouts()
+	var/list/result = list()
+	var/datum/outfit/vr/deathmatch_loadout/default = get_deathmatch_loadout(loadout)
+	if(!isnull(default))
+		result += default
+	for(var/option_path in loadout_options)
+		var/datum/outfit/vr/deathmatch_loadout/option = get_deathmatch_loadout(option_path)
+		if(isnull(option) || (option in result))
+			continue
+		result += option
+	return result
 
-	/// The map is complete by the time this runs, so the freshly loaded bounds
-	/// can be walked turfs and lit.
-	on_map_loaded(z, list/bounds)
-		. = ..()
-		turn_on_the_lights(bounds)
+/// The map is complete by the time this runs, so the freshly loaded bounds
+/// can be walked turfs and lit.
+/datum/map_template/deathmatch/on_map_loaded(z, list/bounds)
+	. = ..()
+	turn_on_the_lights(bounds)
 
 /datum/map_template/deathmatch/proc/turn_on_the_lights(list/bounds)
 	/// BlueMoon dropped area level fullbright (the 516 lighting rework removed

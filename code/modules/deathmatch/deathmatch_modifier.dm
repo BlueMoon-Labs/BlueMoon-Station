@@ -19,7 +19,7 @@ GLOBAL_LIST_INIT(deathmatch_modifiers, list())
  * Populated lazily rather than by hand so that adding a subtype to this file is
  * the only step between writing a modifier and being able to select it in the UI.
  */
-proc/get_deathmatch_modifiers()
+/proc/get_deathmatch_modifiers()
 	if(length(GLOB.deathmatch_modifiers))
 		return GLOB.deathmatch_modifiers
 	for(var/item in subtypesof(/datum/deathmatch_modifier))
@@ -36,7 +36,7 @@ proc/get_deathmatch_modifiers()
  * So the path is resolved with text2path() and instantiated by hand; only a real
  * instance ever leaves here.
  */
-proc/get_deathmatch_modifier_instance(modifier_path)
+/proc/get_deathmatch_modifier_instance(modifier_path)
 	var/modifier_type = ispath(modifier_path) ? modifier_path : text2path(modifier_path)
 	if(!(modifier_type in subtypesof(/datum/deathmatch_modifier)))
 		return null
@@ -68,7 +68,7 @@ proc/get_deathmatch_modifier_instance(modifier_path)
  * /datum/deathmatch_modifier/....selectable()".
  */
 /datum/deathmatch_modifier/proc/selectable(datum/deathmatch_lobby/lobby)
-	if(length(blacklisted_maps) && lobby?.template in blacklisted_maps)
+	if(length(blacklisted_maps) && (lobby?.template in blacklisted_maps))
 		return FALSE
 	return TRUE
 
