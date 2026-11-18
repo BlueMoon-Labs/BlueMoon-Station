@@ -277,6 +277,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/mob/living/M = host.resolve()
 	var/unknown = FALSE
 	var/profile_name = M.get_visible_name()
+	var/unknown_name = "Неизвестный"
 
 	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
 	data["character_ref"] = viewer_screen?.assigned_map
@@ -287,6 +288,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		if(ishuman(C))
 			var/mob/living/carbon/human/H = C
 			unknown = H.examine_identity_hidden(user, check_prosopagnosia = FALSE)
+			unknown_name = H.examine_unknown_name(user)
 		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
@@ -304,7 +306,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	// BLUEMOON EDIT END
 
 	data["is_unknown"] = unknown
-	data["profile_name"] = unknown ? "Неизвестный" : profile_name
+	data["profile_name"] = unknown ? unknown_name : profile_name
 
 	return data
 
