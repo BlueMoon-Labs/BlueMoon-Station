@@ -59,7 +59,7 @@ export const PowerMonitorContent = (props) => {
         <Flex.Item mx={0.5} width="200px">
           <Section>
             <LabeledList>
-              <LabeledList.Item label="Генерация">
+              <LabeledList.Item label="Доступно">
                 <ProgressBar
                   value={supply}
                   minValue={0}

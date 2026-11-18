@@ -68,7 +68,7 @@ export const StationAlertConsoleContent = (props) => {
       {sortedAlarms.map(category => (
         <Section
           key={category.name}
-          title={alarmCategoryTitles[category.name] || `${category.name} Alarms`}>
+          title={alarmCategoryTitles[category.name] || `Тревоги: ${category.name}`}>
           <ul>
             {category.alerts?.length === 0 && (
               <li className="color-good">
