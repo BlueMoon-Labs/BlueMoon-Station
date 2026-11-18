@@ -62,3 +62,7 @@
 
 /mob/living/simple_animal/cockroach/ex_act(severity, target, origin) //Explosions are a terrible way to handle a cockroach.
 	return
+
+/mob/living/simple_animal/cockroach/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

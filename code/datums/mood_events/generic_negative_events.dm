@@ -77,9 +77,8 @@
 	timeout = 4 MINUTES
 
 /datum/mood_event/depression
-	description = span_warning("Мне грустно безо всякой причины.\n")
-	mood_change = -9
-	timeout = 2 MINUTES
+	description = span_warning("Мне грустно без всякой причины.\n")
+	mood_change = -6
 
 /datum/mood_event/shameful_suicide //suicide_acts that return SHAME, like sord
 	description = span_boldwarning("Я даже не могу нормально закончить всё это!\n")

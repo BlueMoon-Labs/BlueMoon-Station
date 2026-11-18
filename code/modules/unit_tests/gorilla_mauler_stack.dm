@@ -10,14 +10,12 @@
 	user.dna.species.punchdamagehigh = 10
 	user.dna.species.punchwoundbonus = 0
 
-	// Синди-руки гориллы добавляют +12 к урону кулаков.
 	var/obj/item/organ/cyberimp/arm/gorilla/syndie/implant = allocate(/obj/item/organ/cyberimp/arm/gorilla/syndie)
 	implant.Insert(user)
 	TEST_ASSERT_EQUAL(user.dna.species.punchdamagelow, 22, "Синди-руки гориллы должны поднять нижнюю границу урона до 22")
 	TEST_ASSERT_EQUAL(user.dna.species.punchdamagehigh, 22, "Синди-руки гориллы должны поднять верхнюю границу урона до 22")
 	TEST_ASSERT_EQUAL(user.dna.species.punchwoundbonus, 12, "Синди-руки гориллы должны добавить бонус к ранам")
 
-	// Маулер-перчатки добавляют ещё +16 и выдают TRAIT_MAULER.
 	var/obj/item/clothing/gloves/fingerless/pugilist/mauler/gauntlets = allocate(/obj/item/clothing/gloves/fingerless/pugilist/mauler)
 	TEST_ASSERT(user.equip_to_slot_or_del(gauntlets, ITEM_SLOT_GLOVES), "Маулер-перчатки должны надеться")
 	TEST_ASSERT(HAS_TRAIT(user, TRAIT_MAULER), "Маулер-перчатки должны выдать TRAIT_MAULER")
@@ -25,10 +23,6 @@
 	TEST_ASSERT_EQUAL(user.dna.species.punchdamagehigh, 38, "Маулер-перчатки должны сложиться с руками гориллы (10 + 12 + 16)")
 	TEST_ASSERT_EQUAL(user.dna.species.punchwoundbonus, 28, "Бонус к ранам тоже должен сложиться (12 + 16)")
 
-	// Удар с TRAIT_MAULER наносит 1.2x урона и не трогает стамину цели.
-	// Раны добавляют свой брут к результату, поэтому для проверки множителя их отключаем.
-	// Нулевой бонус не отменяет бросок раны: тяжёлый перелом груди вызывает харканье кровью,
-	// которое добивает брут сверху и делает тест флаки. CANT_WOUND выключает бросок полностью.
 	user.dna.species.punchwoundbonus = CANT_WOUND
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human)
 	user.zone_selected = BODY_ZONE_CHEST

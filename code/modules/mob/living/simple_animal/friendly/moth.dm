@@ -1,4 +1,5 @@
 /mob/living/simple_animal/pet/dog/corgi/moth
+	held_icon = "moth"
 	name = "Moth"
 	real_name = "moth"
 	desc = "Становится понятно, куда пропали шубы, перевозимые СССП."

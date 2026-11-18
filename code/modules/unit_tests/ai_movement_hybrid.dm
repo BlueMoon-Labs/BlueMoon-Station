@@ -410,7 +410,7 @@
 	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
 	mover.start_moving_towards(controller, prey, 1)
 	TEST_ASSERT_NOTNULL(SSmove_manager.processing_on(pawn, SSai_movement), "Sanity: an active chase must have a move loop")
-	TEST_ASSERT_EQUAL(mover.moving_controllers[controller], prey, "Sanity: the mover must track the chase target")
+	TEST_ASSERT(mover.is_moving_towards(controller, prey), "Sanity: the mover must track the chase target")
 
 	//Игрок берёт моба: контроллер уходит в OFF (как в on_sentience_gained). Запланированного
 	//движ-поведения нет, поэтому CancelActions() луп не тронет - его обязан снять сам переход.

@@ -188,6 +188,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/restart_controller,
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
+	/client/proc/force_knot,
 	/client/proc/toggle_ntnet_debug,
 	/client/proc/set_parallax_profile,
 	/client/proc/show_parallax_state,

@@ -113,6 +113,10 @@
 	if(right_hand)
 		righthand_file = right_hand
 	slot_flags = slots
+	// On the neck, render the pet slightly above hats without changing other neck items.
+	// build_worn_icon() uses negative layer values, hence HEAD_LAYER - 0.05.
+	if(slots & ITEM_SLOT_NECK)
+		alternate_worn_layer = HEAD_LAYER - 0.05
 
 /obj/item/clothing/head/mob_holder/proc/assimilate(mob/living/target)
 	target.setDir(SOUTH)

@@ -78,3 +78,7 @@
 		return
 	blackboard[BB_AI_TARGETING_STRATEGY] = /datum/targeting_strategy/hostile_legacy/retaliate/small_prey
 	blackboard[BB_AI_TARGET_SCORER] = /datum/target_scorer/small_prey_first
+
+/mob/living/simple_animal/hostile/retaliate/poison/snake/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

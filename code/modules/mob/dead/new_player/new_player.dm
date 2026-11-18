@@ -323,7 +323,7 @@
 
 	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
-	var/this_is_like_playing_right = alert(src,"Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.","Наблюдение","Да","Нет")
+	var/this_is_like_playing_right = tgui_alert(src, "Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.", "Наблюдение", list("Да", "Нет"))
 
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Да")
 		ready = PLAYER_NOT_READY

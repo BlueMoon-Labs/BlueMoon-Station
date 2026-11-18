@@ -40,21 +40,6 @@
 		if(right_blood_type) // || right_blood_reagent)
 			mail_goodies += blood_bag
 
-/datum/quirk/depression
-	name = "Депрессия"
-	desc = "Иногда вы просто ненавидите жизнь."
-	mob_trait = TRAIT_DEPRESSION
-	value = -1
-	gain_text = "<span class='danger'>У вас начинается депрессия.</span>"
-	medical_record_text = "У пациента наблюдаются серьёзные перепады настроения, вызывающие острые периоды депрессии."
-	lose_text = "<span class='notice'>У вас больше нет депрессии.</span>" //if only it were that easy!
-	mood_quirk = TRUE
-	processing_quirk = TRUE
-
-/datum/quirk/depression/on_process()
-	if(prob(0.05))
-		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "depression", /datum/mood_event/depression)
-
 /datum/quirk/family_heirloom
 	name = "Семейная реликвия"
 	desc = "Вы владелец реликвии, передающейся из поколения в поколение. Её нужно беречь!"
@@ -538,15 +523,6 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	. = ..()
 	var/mob/living/carbon/human/H = quirk_holder
 	H?.cure_trauma_type(/datum/brain_trauma/severe/monophobia, TRAUMA_RESILIENCE_ABSOLUTE)
-
-/datum/quirk/no_smell
-	name = "Аносмия"
-	desc = "Вы не ощущаете запахи! Вы не сможете обнаружать определенные бесцветные газы."
-	value = -1
-	mob_trait = TRAIT_ANOSMIA
-	gain_text = "<span class='notice'>Вы не чувствуете запахов!</span>"
-	lose_text = "<span class='notice'>Вы снова чувствуете запахи!</span>"
-	medical_record_text = "Пациент страдает от аносмии и не может различать запахи газов и частиц."
 
 /datum/quirk/paper_skin
 	name = "Бумажная Кожа"
