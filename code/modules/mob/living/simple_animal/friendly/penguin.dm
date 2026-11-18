@@ -49,3 +49,7 @@
 	density = FALSE
 	pass_flags = PASSMOB
 	mob_size = MOB_SIZE_SMALL
+
+/mob/living/simple_animal/pet/penguin/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

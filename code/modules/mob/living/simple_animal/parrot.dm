@@ -135,6 +135,7 @@
 
 /mob/living/simple_animal/parrot/ComponentInitialize()
 	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = "parrot_fly", inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 	AddElement(/datum/element/strippable, GLOB.strippable_parrot_items)
 
 /mob/living/simple_animal/parrot/examine(mob/user)

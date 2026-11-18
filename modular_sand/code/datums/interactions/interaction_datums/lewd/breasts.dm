@@ -30,7 +30,7 @@
 	if(!milkers || !milktype)
 		return
 
-	if(milkers.climaxable(target, TRUE))
+	if(milkers.transfer_fluid(target.reagents, rand(1, 3 * milkers.get_lactation_amount_modifier())) > 0)
 		var/datum/reagent/milk = find_reagent_object_from_type(milktype)
 
 		var/milktext = milk.name
@@ -48,7 +48,7 @@
 							'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange, local_only = is_hidden)
 
 		//у цели без химического холдера (симпл-мобы, силиконы) глотать нечем
-		target.reagents?.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
+		// Already transferred above; avoid duplicate fluid transfer.
 	else
 		lines = list(
 			"прижимает свою грудь ко рту <b>[target]</b>, позволяя пососать свой сосок",
@@ -98,8 +98,7 @@
 		var/milktype = milkers?.fluid_id
 
 		if(milkers && milktype)
-			if(milkers.climaxable(target, TRUE))
-				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
+			if(milkers.transfer_fluid(liquid_container.reagents, rand(1, 3 * milkers.get_lactation_amount_modifier())) > 0)
 				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS, is_hidden = is_hidden)
 				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange, local_only = is_hidden)

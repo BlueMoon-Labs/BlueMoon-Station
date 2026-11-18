@@ -36,3 +36,7 @@
 
 /mob/living/simple_animal/butterfly/bee_friendly()
 	return TRUE //treaty signed at the Beeneeva convention
+
+/mob/living/simple_animal/butterfly/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
