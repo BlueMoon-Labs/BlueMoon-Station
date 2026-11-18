@@ -131,42 +131,6 @@
 /obj/item/autosurgeon/syndicate/corp_arm_shied
 	starting_organ = /obj/item/organ/cyberimp/arm/shield/sec_level
 
-// /datum/uplink_item/implants/anti_stun
-// 	name = "Corporate CNS Rebooter"
-// 	desc = "This implant will automatically give you back control over your central nervous system, reducing downtime when stunned."
-// 	item = /obj/item/autosurgeon/syndicate/corp_anti_stun
-// 	cost = 3
-
-/obj/item/autosurgeon/syndicate/corp_anti_stun
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
-
-// /datum/uplink_item/implants/thermals
-// 	name = "Corporate Thermals"
-// 	desc = "These cybernetic eye implants will give you thermal vision. Vertical slit pupil included."
-// 	item = /obj/item/autosurgeon/syndicate/corp_thermals
-// 	cost = 4
-
-/obj/item/autosurgeon/syndicate/corp_thermals
-	starting_organ = /obj/item/organ/eyes/robotic/toggled/thermals/sec_level
-
-// /datum/uplink_item/implants/anti_drop
-// 	name = "Corporate Anti drop implant"
-// 	desc = "This cybernetic brain implant will allow you to force your hand muscles to contract, preventing item dropping. Twitch ear to toggle"
-// 	item = /obj/item/autosurgeon/syndicate/corp_antidrop
-// 	cost = 5
-
-/obj/item/autosurgeon/syndicate/corp_antidrop
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
-
-// /datum/uplink_item/implants/arm_blade
-// 	name = "Corporate Blade implant"
-// 	desc = "An integrated blade implant designed to be installed into a persons arm. Stylish and deadly; Although, being caught with this without proper permits is sure to draw unwanted attention"
-// 	item = /obj/item/autosurgeon/syndicate/corp_arm_blade
-// 	cost = 4
-
-/obj/item/autosurgeon/syndicate/corp_arm_blade
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
-
 /datum/uplink_item/implants/nutriment_pump
 	name = "Extreme Nutriment Pump"
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are hungry. This version of the pump also provides a proper water supply."
@@ -197,16 +161,6 @@
 /obj/item/autosurgeon/syndicate/thrusters
 	starting_organ = /obj/item/organ/cyberimp/chest/thrusters
 
-/datum/uplink_item/implants/binocular_lenses
-	name = "Binocular Lenses"
-	desc = "A pair of binocular lenses, that can be attached to the eyes."
-	item = /obj/item/autosurgeon/syndicate/binocular_lenses
-	cost = 2
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
-
-/obj/item/autosurgeon/syndicate/binocular_lenses
-	starting_organ = /obj/item/organ/cyberimp/arm/lenses
-
 /datum/uplink_item/implants/arm_taser
 	name = "Arm-mounted Taser Implant"
 	desc = "A variant of the arm cannon implant that fires electrodes and disabler shots. The cannon emerges from the subject's arm and remains inside when not in use."
@@ -226,6 +180,36 @@
 
 /obj/item/autosurgeon/syndicate/high_intensity_photon_projector
 	starting_organ = /obj/item/organ/cyberimp/arm/flash
+
+/datum/uplink_item/implants/sandevistan
+	name = "Sandevistan"
+	desc = "A neural implant that allows you to briefly overclock your nervous system, greatly increasing your speed and reaction time. Comes with a long cooldown."
+	item = /obj/item/autosurgeon/syndicate/sandevistan
+	cost = 12
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
+
+/obj/item/autosurgeon/syndicate/sandevistan
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan
+
+/datum/uplink_item/implants/sandevistan_military
+	name = "Cybersun Sandevistan"
+	desc = "A military-grade neural overclocking implant. While active, it grants a burst of speed and lets you dodge incoming projectiles with a 45% chance. Comes with a long cooldown."
+	item = /obj/item/autosurgeon/syndicate/sandevistan_military
+	cost = 10
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_NUKE_OPS | UPLINK_TRAITORS
+
+/obj/item/autosurgeon/syndicate/sandevistan_military
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan/military
+
+/datum/uplink_item/implants/sandevistan_corp
+	name = "Corporate Sandevistan"
+	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
+	item = /obj/item/autosurgeon/syndicate/sandevistan_corp
+	cost = 10
+	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+
+/obj/item/autosurgeon/syndicate/sandevistan_corp
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
 
 /datum/uplink_item/stealthy_weapons/telescopic_baton
 	name = "Telescopic Baton"

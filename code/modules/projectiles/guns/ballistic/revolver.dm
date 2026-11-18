@@ -604,7 +604,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
-	dual_wield_spread = 1
+	dual_wield_spread = 10
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
@@ -619,7 +619,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
-	dual_wield_spread = 1
+	dual_wield_spread = 10
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
@@ -722,7 +722,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
-	dual_wield_spread = 25
+
 	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
@@ -745,7 +745,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
-	dual_wield_spread = 25
 	fire_delay = 15
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 5
@@ -768,7 +767,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/liturgy
-	dual_wield_spread = 25
 	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
@@ -790,7 +788,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/passing_bell
-	dual_wield_spread = 25
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 3
 	slot_flags = ITEM_SLOT_BELT
@@ -805,7 +802,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist
-	dual_wield_spread = 25
 	fire_delay = 10
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM //чтоб не стреляли с 2 рук, но не требовал вторую руку
@@ -942,7 +938,6 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
 	projectile_damage_multiplier = 0.8
-	dual_wield_spread = 25
 	fire_delay = 3
 	w_class = WEIGHT_CLASS_SMALL
 	recoil = 0.5
@@ -964,11 +959,10 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/mea_culpa
-	
+
 	var/obj/item/gun/ballistic/underbarrel
-	
+
 	projectile_damage_multiplier = 1.1
-	dual_wield_spread = 25
 	fire_delay = 1
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
@@ -976,7 +970,7 @@
 
 /obj/item/gun/ballistic/revolver/Mea_culpa/Initialize(mapload)
 	. = ..()
-	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src)
 
 /obj/item/gun/ballistic/revolver/Mea_culpa/altafterattack(atom/target, mob/living/user, proximity_flag, params)
 	if(!underbarrel || !istype(user))
@@ -987,10 +981,9 @@
 /obj/item/gun/ballistic/revolver/Mea_culpa/attackby(obj/item/A, mob/user, params)
 	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
 		return underbarrel.attackby(A, user, params)
-		
 	return ..()
 
-/obj/item/gun/ballistic/revolver/Misericordia 
+/obj/item/gun/ballistic/revolver/Misericordia
 	name = "\improper Misericordia "
 	desc = "Once a modest .410 gauge implement, this weapon has undergone a violent rebirth to deliver the ultimate act of grace. Now chambered in the crushing power of the 12-gauge, 'Misericordia' is a monstrous, stock-fitted revolver-shotgun designed to grant absolute absolution. It is called mercy not because it spares the wicked, but because it leaves nothing left of them to suffer. The long, heavy barrel directs a roaring blast of holy fire that tears through flesh, bone, and sinew in a single heartbeat. A beautiful, catastrophic end for those who are beyond saving"
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
@@ -1000,13 +993,13 @@
 	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
-	dual_wield_spread = 100
+
 	fire_delay = 10
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 5
 
-/obj/item/gun/ballistic/revolver/Sanctum_Officium 
+/obj/item/gun/ballistic/revolver/Sanctum_Officium
 	name = "\improper Sanctum Officium "
 	desc = "The bureaucracy of the Holy Inquisition is vast, cold, and absolute. This long-barreled carbine conversion embodies that very rigidity. Fitted with a heavy, unyielding shoulder stock and an extended, cold-forged barrel, 'Sanctum Officium' turns a simple sidearm into a calculated instrument of long-range execution. It eliminates the chaotic sway of human hands, ensuring that the Bureau's decree is delivered with mathematical, distant precision. When this weapon speaks, it is not a declaration of anger-it is the final, unappealable signature on a heretic's death warrant."
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
@@ -1033,7 +1026,6 @@
 	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
-	dual_wield_spread = 100
 	fire_delay = 10
 	zoomable = TRUE
 	zoom_amt = 10
@@ -1053,18 +1045,17 @@
 	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/drilling
-	
+
 	var/obj/item/gun/ballistic/underbarrel
-	
+
 	projectile_damage_multiplier = 1.1
-	dual_wield_spread = 25
 	fire_delay = 5
 	w_class = WEIGHT_CLASS_BULKY
 	recoil = 10
 
 /obj/item/gun/ballistic/revolver/drilling/Initialize(mapload)
 	. = ..()
-	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src)
 
 /obj/item/gun/ballistic/revolver/drilling/altafterattack(atom/target, mob/living/user, proximity_flag, params)
 	if(!underbarrel || !istype(user))
@@ -1075,7 +1066,6 @@
 /obj/item/gun/ballistic/revolver/drilling/attackby(obj/item/A, mob/user, params)
 	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
 		return underbarrel.attackby(A, user, params)
-		
 	return ..()
 
 /obj/item/gun/ballistic/revolver/drilling/Destroy()

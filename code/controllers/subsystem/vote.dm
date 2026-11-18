@@ -971,7 +971,8 @@ SUBSYSTEM_DEF(vote)
 	return GLOB.always_state
 
 /datum/controller/subsystem/vote/ui_close(mob/user, datum/tgui/ui)
-	voting -= user?.client
+	// В Logout при смене моба user.client уже пуст, а клиент жив: его знает окно.
+	voting -= user?.client || ui?.window?.client
 
 /datum/controller/subsystem/vote/ui_static_data(mob/user)
 	var/list/data = list()

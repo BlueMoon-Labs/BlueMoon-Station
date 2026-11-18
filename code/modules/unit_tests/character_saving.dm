@@ -28,6 +28,10 @@
 	catch(var/exception/e)
 		TEST_FAIL("Failed to save and load character due to exception [e.file]:[e.line], [e.name]")
 
+/datum/unit_test/character_saving/Destroy()
+	fdel("data/player_saves/t/test/")
+	return ..()
+
 #undef UNIT_TEST_SAVING_FLAVOR_TEXT
 #undef UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT
 #undef UNIT_TEST_SAVING_OOC_NOTES

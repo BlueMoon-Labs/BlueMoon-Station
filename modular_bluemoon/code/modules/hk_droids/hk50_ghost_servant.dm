@@ -115,7 +115,7 @@
 	to_chat(owner.current, span_warning("Вы - серийный дроид-ассасин HK-50, присланный на подмогу HK-47. Исполняйте его приказы и прикрывайте его в бою. Терминала и улучшений у вас нет, зато в правой руке встроен лазер - выдвиньте его кнопкой импланта. С HK-47 вас связывает закрытый канал HK - кнопка «HK link»."))
 	to_chat(owner.current, span_warning("Если HK-47 погибнет или его перепрошьют, вы останетесь без хозяина и будете выживать сами. Обездвиженного HK можно перепрошить операцией на голове: хозяином станет хирург, и вы перейдёте на его сторону."))
 	to_chat(owner.current, span_notice("Шасси HK-50: корпус гасит [HK50_ARMOR]% любого урона, вспышки не слепят, конечности не отрываются. Комбинезон, броня и шлем не надеваются. Радиаторы работают и в вакууме: в космосе вы не перегреваетесь, но огонь и горячий газ греют как обычно. ЭМИ отключает шасси на [HK_EMP_HEAVY_STUN / (1 SECONDS)] с, слабый импульс - на [HK_EMP_LIGHT_STUN / (1 SECONDS)] с, повторно - не раньше чем через [HK_EMP_STUN_COOLDOWN / (1 SECONDS)] с."))
-	to_chat(owner.current, span_notice("Если вы выйдете из игры больше чем на [DisplayTimeText(HK50_GHOST_SERVANT_AWAY_TIME)] при живом HK-47, ваше тело предложат другому призраку."))
+	to_chat(owner.current, span_notice("Если вы выйдете из игры больше чем на [DisplayTimeText(HK50_GHOST_SERVANT_AWAY_TIME)] при живом HK-47, ваше тело предложат другому призраку. Если замены не найдётся, корпус самоуничтожится. VR-капсула и выход духом, которому можно вернуться в тело, уходом не считаются."))
 	owner.announce_objectives()
 
 /datum/antagonist/hk50_servant/proc/watch_master(mob/living/master)
@@ -154,8 +154,30 @@
 
 /datum/antagonist/hk50_servant/proc/on_logout(mob/living/source)
 	SIGNAL_HANDLER
+	arm_away_timer()
+
+/datum/antagonist/hk50_servant/proc/arm_away_timer()
 	deltimer(away_timer)
 	away_timer = addtimer(CALLBACK(src, PROC_REF(player_away)), HK50_GHOST_SERVANT_AWAY_TIME, TIMER_STOPPABLE)
+
+/// Игрок на сервере и вернётся в тело сам: дух с правом возврата (админ-призрак, руна астрала, шар прорицания) или VR-аватар этого разума.
+/// Ушедший насовсем (призрак без возврата, новое тело гост-роли) или отключившийся тело не держит, в том числе админ, отключившийся из админ-призрака: ключ "@" на теле остаётся.
+/datum/antagonist/hk50_servant/proc/player_holds_body(mob/living/body)
+	if(!owner?.key)
+		return FALSE
+	var/client/player = GLOB.directory[ckey(owner.key)]
+	var/mob/elsewhere = player?.mob
+	if(!elsewhere || elsewhere == body)
+		return FALSE
+	if(isobserver(elsewhere))
+		var/mob/dead/observer/spirit = elsewhere
+		return spirit.can_reenter_corpse && spirit.mind == owner
+	var/datum/component/virtual_reality/session = elsewhere.GetComponent(/datum/component/virtual_reality)
+	while(session)
+		if(session.mastermind == owner)
+			return TRUE
+		session = session.level_above
+	return FALSE
 
 /datum/antagonist/hk50_servant/proc/on_login(mob/living/source)
 	SIGNAL_HANDLER
@@ -170,6 +192,9 @@
 	var/mob/living/master = hunter?.owner?.current
 	if(replacing || !body || body.client || body.stat == DEAD || !master || master.stat == DEAD)
 		return FALSE
+	if(player_holds_body(body))
+		arm_away_timer()
+		return FALSE
 	INVOKE_ASYNC(src, PROC_REF(replace_player), body, hunter)
 	return TRUE
 
@@ -182,6 +207,9 @@
 	replacing = FALSE
 	if(QDELETED(src) || QDELETED(body) || body.client || body.stat == DEAD)
 		return FALSE
+	if(player_holds_body(body))
+		arm_away_timer()
+		return FALSE
 	for(var/mob/candidate as anything in candidates)
 		if(!candidate.client)
 			continue
@@ -193,7 +221,8 @@
 		return TRUE
 	if(!QDELETED(hunter))
 		hunter.refund_upgrade(GLOB.hk47_upgrades["ghost_servant"], "Утверждение: игрок HK-50 вышел, замены не нашлось. Корпус самоуничтожен, очки возвращены, но второго HK-50 с разумом не будет.", keep_purchase = TRUE)
-	log_game("HK-50 [body.real_name] самоуничтожен: игрок вышел, замены не нашлось.")
+	message_admins("HK-50 [ADMIN_LOOKUPFLW(body)] ([key_name_admin(owner)]) самоуничтожен: игрок вышел, замены не нашлось.")
+	log_game("HK-50 [key_name(owner)] [body.real_name] самоуничтожен: игрок вышел, замены не нашлось.")
 	body.visible_message(span_warning("[body] пищит, искрит и рассыпается: блок лояльности не нашёл оператора."))
 	do_sparks(5, FALSE, body)
 	body.dust(TRUE, TRUE)

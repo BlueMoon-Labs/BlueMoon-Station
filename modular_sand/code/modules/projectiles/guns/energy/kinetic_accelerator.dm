@@ -253,6 +253,10 @@
 	denied_type = /obj/item/borg/upgrade/modkit/aoe
 	cost = 40
 	modifier = 3
+	// Несовместим с "decrease pressure penalty": два таких модуля снимают штраф давления полностью,
+	// и вместе с тройным выстрелом КА убивает сотрудника станции с одного попадания.
+	// Подробности - в /obj/item/borg/upgrade/modkit/indoors
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/indoors)
 
 /obj/item/borg/upgrade/modkit/shotgun/modify_projectile(obj/item/projectile/kinetic/K)
 	..()

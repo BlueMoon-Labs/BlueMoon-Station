@@ -282,6 +282,9 @@
 	module_flags = BORG_MODULE_MINER
 	var/denied_type = null
 	var/maximum_of_type = 1
+	/// Типы модулей, несовместимых с этим. Такой модуль нельзя поставить в КА, где уже стоит любой из них (и наоборот).
+	/// В отличие от denied_type не ограничивает количество - это именно запрет на совместную установку.
+	var/list/incompatible_modkits = list()
 	var/cost = 30
 	var/modifier = 1 //For use in any mod kit that has numerical modifiers
 	var/minebot_upgrade = TRUE
@@ -321,6 +324,10 @@
 			if(number_of_denied >= maximum_of_type)
 				. = FALSE
 				break
+	var/obj/item/borg/upgrade/modkit/conflicting_modkit = get_conflicting_modkit(KA)
+	if(conflicting_modkit)
+		to_chat(user, span_notice("The [conflicting_modkit] conflicts with the [src]. Use a crowbar to remove the conflicting modkit."))
+		return FALSE
 	if(KA.get_remaining_mod_capacity() >= cost)
 		if(.)
 			if(transfer_to_loc && !user.transferItemToLoc(src, KA))
@@ -339,6 +346,15 @@
 	if (.)
 		for(var/obj/item/gun/energy/kinetic_accelerator/KA in R.module.modules)
 			uninstall(KA)
+
+/// Возвращает уже установленный в КА модуль, с которым этот модуль несовместим, либо null, если конфликтов нет.
+/// Проверка симметрична: достаточно объявить несовместимость с любой из сторон.
+/obj/item/borg/upgrade/modkit/proc/get_conflicting_modkit(obj/item/gun/energy/kinetic_accelerator/KA)
+	for(var/A in KA.modkits)
+		var/obj/item/borg/upgrade/modkit/M = A
+		if(is_type_in_list(M, incompatible_modkits) || is_type_in_list(src, M.incompatible_modkits))
+			return M
+	return null
 
 /obj/item/borg/upgrade/modkit/proc/uninstall(obj/item/gun/energy/kinetic_accelerator/KA)
 	KA.modkits -= src
@@ -570,6 +586,9 @@
 	denied_type = /obj/item/borg/upgrade/modkit/indoors
 	maximum_of_type = 2
 	cost = 35
+	// Два таких модуля полностью снимают штраф давления, а "shotgun" превращает один выстрел в три снаряда.
+	// Вместе они дают КА, убивающий обычного сотрудника станции с одного выстрела, поэтому модули несовместимы.
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/shotgun)
 
 /obj/item/borg/upgrade/modkit/indoors/modify_projectile(obj/item/projectile/kinetic/K)
 	K.pressure_decrease *= modifier

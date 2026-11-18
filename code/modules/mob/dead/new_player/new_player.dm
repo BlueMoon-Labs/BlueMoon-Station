@@ -323,7 +323,7 @@
 
 	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
-	var/this_is_like_playing_right = alert(src,"Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.","Наблюдение","Да","Нет")
+	var/this_is_like_playing_right = tgui_alert(src, "Точно уйти в наблюдатели? Зайти в раунд персонажем можно будет только через [round(mintime / 600, 0.1)] мин.", "Наблюдение", list("Да", "Нет"))
 
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Да")
 		ready = PLAYER_NOT_READY
@@ -559,16 +559,7 @@
 	if(frn)
 		client.prefs.random_character()
 		client.prefs.real_name = client.prefs.pref_species.random_name(gender,1)
-	var/cur_scar_index = client.prefs.scars_index
-	if(client.prefs.persistent_scars && client.prefs.scars_list["[cur_scar_index]"])
-		var/scar_string = client.prefs.scars_list["[cur_scar_index]"]
-		var/valid_scars = ""
-		for(var/scar_line in splittext(scar_string, ";"))
-			if(H.load_scar(scar_line))
-				valid_scars += "[scar_line];"
-
-		client.prefs.scars_list["[cur_scar_index]"] = valid_scars
-		client.prefs.save_character()
+	client.prefs.apply_persistent_scars(H)
 
 	client.prefs.copy_to(H, initial_spawn = TRUE)
 

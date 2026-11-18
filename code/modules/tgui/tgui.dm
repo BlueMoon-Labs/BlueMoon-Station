@@ -222,7 +222,7 @@
 		//src_object мог быть qdel-нут - именно по этому пути сюда и приходят из
 		//process(), заметив пропажу владельца. Звать проки трупу нечего
 		if(!QDELETED(src_object))
-			src_object.ui_close(user)
+			src_object.ui_close(user, src)
 		SStgui.on_close(src)
 		if(user?.client)
 			terminate_byondui_elements()

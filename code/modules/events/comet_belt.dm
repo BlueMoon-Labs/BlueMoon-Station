@@ -249,9 +249,21 @@
 			C.parallax_holder.Remove()
 			C.parallax_holder.Apply()
 	add_comet_overlays(C)
+	RegisterSignal(C, COMSIG_PARENT_QDELETING, PROC_REF(on_client_deleted), override = TRUE)
 	pacif_mobs |= C.mob
 	ADD_TRAIT(C.mob, TRAIT_PACIFISM, TRAIT_SOURCE)
 	apply_current_state_to_client(C)
+
+/// Ушедший клиент не держится в списках события (иначе BYOND искал бы его обходом мира), а префы получают свой параллакс назад.
+/datum/round_event/comet_belt/proc/on_client_deleted(client/source)
+	SIGNAL_HANDLER
+	if(source.prefs && !isnull(saved_parallax[source]))
+		source.prefs.parallax = saved_parallax[source]
+	var/flash = flash_overlays[source]
+	if(flash && !(flash in all_overlay_objects))
+		qdel(flash)
+	for(var/list/per_client as anything in list(comet_overlays, trails_overlays, dust_overlays, belt_stream_overlays, glow_overlays, flash_overlays, saved_parallax, saved_ambience_clients))
+		per_client -= source
 
 /datum/round_event/comet_belt/proc/apply_current_state_to_client(client/C)
 	if(!C)
@@ -457,9 +469,11 @@
 		flash_overlays[C] = flash
 		C.screen += flash
 		flash.do_flash()
-		addtimer(CALLBACK(src, PROC_REF(remove_flash), C), 60)
+		addtimer(CALLBACK(src, PROC_REF(remove_flash), WEAKREF(C)), 60)
 
-/datum/round_event/comet_belt/proc/remove_flash(client/C)
+/// Ушедшего клиента вспышка уже снята в on_client_deleted().
+/datum/round_event/comet_belt/proc/remove_flash(datum/weakref/client_ref)
+	var/client/C = client_ref?.resolve()
 	if(!C)
 		return
 	var/atom/movable/screen/comet_flash/flash = flash_overlays[C]
@@ -574,6 +588,7 @@
 	// Снять оверлеи с экранов живых клиентов
 	for(var/client/C in comet_overlays)
 		C.screen -= comet_overlays[C]
+		UnregisterSignal(C, COMSIG_PARENT_QDELETING)
 	for(var/client/C in trails_overlays)
 		C.screen -= trails_overlays[C]
 	for(var/client/C in dust_overlays)

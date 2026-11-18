@@ -16,7 +16,7 @@
 
 	//NIGHTMARE
 	var/datum/component/mood/mood = src.GetComponent(/datum/component/mood)
-	if(prob(mood.sanity-100)&&(mood.sanity < 60)||prob(5))
+	if(mood && (prob(mood.sanity-100)&&(mood.sanity < 60)||prob(5)))
 		var/safefeel
 		for(var/obj/item/bedsheet/sheet in loc)
 			safefeel++

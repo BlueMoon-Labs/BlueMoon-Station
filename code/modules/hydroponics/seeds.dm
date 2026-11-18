@@ -226,6 +226,8 @@
 		product_name = parent.myseed.plantname
 	if(getYield() >= 1)
 		SSblackbox.record_feedback("tally", "food_harvested", getYield(), product_name)
+	if(length(result))
+		econ_note_harvest(src, user)
 	parent.update_tray(user)
 
 	return result

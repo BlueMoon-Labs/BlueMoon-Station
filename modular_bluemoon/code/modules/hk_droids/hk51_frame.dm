@@ -92,8 +92,9 @@
 		var/static/list/band_names = list("pinondirect" = "вплотную", "pinonclose" = "рядом", "pinonmedium" = "близко", "pinonfar" = "далеко")
 		return "[nearest.name] - [band_names[hk_tracker_pointer(nearest_distance)]], [dir2text_ru(get_dir(here, get_turf(nearest)))]."
 	if(elsewhere)
-		var/relation = hk51_deck_relation(here, get_turf(elsewhere))
-		return relation ? "сигнал недостающей части идёт [relation]." : "сигнал недостающей части идёт из другого сектора."
+		var/turf/far_turf = get_turf(elsewhere)
+		var/relation = hk51_deck_relation(here, far_turf)
+		return relation ? "сигнал недостающей части идёт [relation]." : "сигнал недостающей части идёт из другого сектора ([hk51_sector_name(far_turf.z)])."
 	if(missing_on_market())
 		return "сигнал недостающей части идёт с чёрного рынка."
 	return "сигнала нет: недостающих частей не нашлось."

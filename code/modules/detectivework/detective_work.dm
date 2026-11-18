@@ -42,6 +42,8 @@
 			suit_fibers += "Material from a pair of [M.gloves.name]."
 
 
+#define HIDDEN_PRINT_LAST_SEPARATOR " | "
+
 /atom/proc/add_hiddenprint(mob/living/M)
 	if(!M || !M.key)
 		return
@@ -57,14 +59,20 @@
 
 	var/current_time = TIME_STAMP("hh:mm:ss", FALSE)
 	if(!fingerprintshidden[M.key])
-		fingerprintshidden[M.key] = "First: [M.real_name]\[[current_time]\][hasgloves]. Ckey: [M.ckey]"
+		fingerprintshidden[M.key] = hidden_print_text("First", current_time, M.real_name, hasgloves, M.ckey)
 	else
-		var/laststamppos = findtext(fingerprintshidden[M.key], " Last: ")
+		var/laststamppos = findtext(fingerprintshidden[M.key], HIDDEN_PRINT_LAST_SEPARATOR)
 		if(laststamppos)
 			fingerprintshidden[M.key] = copytext(fingerprintshidden[M.key], 1, laststamppos)
-		fingerprintshidden[M.key] += " Last: [M.real_name]\[[current_time]\][hasgloves]. Ckey: [M.ckey]"
+		fingerprintshidden[M.key] += "[HIDDEN_PRINT_LAST_SEPARATOR][hidden_print_text("Last", current_time, M.real_name, hasgloves, M.ckey)]"
 
 	fingerprintslast = M.ckey
+
+/// Метка времени первой: её минута - якорь дерева строк (string_tree_anchors.dm), и записи одного персонажа подряд по секундам не тянут ветку.
+/proc/hidden_print_text(label, stamp, real_name, hasgloves, ckey)
+	return "[stamp] [label]: [real_name][hasgloves]. Ckey: [ckey]"
+
+#undef HIDDEN_PRINT_LAST_SEPARATOR
 
 //Set ignoregloves to add prints irrespective of the mob having gloves on.
 /atom/proc/add_fingerprint(mob/living/M, ignoregloves = FALSE)

@@ -229,8 +229,9 @@
 	TEST_ASSERT(!unconscious_line, "HK-47 без сознания говорит по каналу HK")
 
 	var/datum/antagonist/hk50_servant/servitude = servant.mind.has_antag_datum(/datum/antagonist/hk50_servant)
-	SEND_SIGNAL(servant, COMSIG_MOB_LOGOUT)
+	servant.Logout()
 	TEST_ASSERT_NOTNULL(servitude.away_timer, "Уход игрока не завёл таймер замены")
+	// Login() без клиента выходит сразу, вход шлём сами
 	SEND_SIGNAL(servant, COMSIG_MOB_LOGIN)
 	TEST_ASSERT_NULL(servitude.away_timer, "Возвращение игрока не сняло таймер замены")
 
@@ -249,3 +250,61 @@
 	TEST_ASSERT(QDELETED(abandoned) || abandoned.stat == DEAD, "Брошенный корпус HK-50 не самоуничтожился")
 	TEST_ASSERT_EQUAL(hunter.upgrades[ghost_upgrade.id], 1, "Возврат очков за ушедшего игрока снял разовую покупку")
 	TEST_ASSERT_NOTNULL(ghost_upgrade.refusal(hunter), "После возврата HK-50 с разумом можно купить снова")
+
+/// Игрок HK-50, ушедший из тела, но оставшийся на сервере.
+/datum/client_interface/hk50_away_player
+	var/mob/mob
+
+/// Выход в VR-капсулу, духом с правом возврата или админ-призраком - не уход: тело не отдают другому и не распыляют. Призрак без возврата тело не держит.
+/datum/unit_test/hk50_ghost_servant_player_still_here
+
+/datum/unit_test/hk50_ghost_servant_player_still_here/Run()
+	var/datum/antagonist/hk47/contract_fixture/hunter = allocate_hk47_hunter()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	body.set_species(/datum/species/ipc/hk/hk50)
+	body.mind_initialize()
+	allocated += body.mind
+	var/datum/antagonist/hk50_servant/test_fixture/servitude = new
+	servitude.hunter_ref = WEAKREF(hunter)
+	body.mind.add_antag_datum(servitude)
+	var/player_ckey = "hk50awayplayertest"
+	body.mind.key = player_ckey
+
+	var/mob/living/carbon/human/avatar = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	avatar.mind_initialize()
+	allocated += avatar.mind
+	var/datum/component/virtual_reality/session = avatar.AddComponent(/datum/component/virtual_reality)
+	session.mastermind = body.mind
+	var/datum/client_interface/hk50_away_player/player = new
+	player.mob = avatar
+	GLOB.directory[player_ckey] = player
+
+	body.Logout()
+	var/armed = !!servitude.away_timer
+	var/replaced_from_vr = servitude.player_away()
+	var/rearmed = !!servitude.away_timer
+	var/points_before = hunter.points
+	var/replaced_after_poll = servitude.replace_player(body, hunter)
+	var/body_kept = !QDELETED(body) && body.stat != DEAD
+
+	var/mob/dead/observer/spirit = allocate(/mob/dead/observer)
+	spirit.mind = body.mind
+	player.mob = spirit
+	spirit.can_reenter_corpse = TRUE
+	var/holds_as_spirit = servitude.player_holds_body(body)
+	spirit.can_reenter_corpse = FALSE
+	var/holds_as_abandoned = servitude.player_holds_body(body)
+	spirit.mind = null
+	GLOB.directory -= player_ckey
+	var/holds_disconnected = servitude.player_holds_body(body)
+	deltimer(servitude.away_timer)
+
+	TEST_ASSERT(armed, "Уход игрока в VR не завёл таймер ухода")
+	TEST_ASSERT(!replaced_from_vr, "Тело HK-50 отдают другому, пока игрок в VR-капсуле")
+	TEST_ASSERT(rearmed, "Таймер ухода не перезавёлся: вышедший из VR и отключившийся игрок не будет заменён")
+	TEST_ASSERT(!replaced_after_poll, "После опроса тело HK-50 занято, хотя игрок в VR")
+	TEST_ASSERT(body_kept, "Корпус HK-50 самоуничтожился, пока игрок в VR")
+	TEST_ASSERT_EQUAL(hunter.points, points_before, "HK-47 получил очки за HK-50, игрок которого в VR")
+	TEST_ASSERT(holds_as_spirit, "Дух с правом возврата не держит тело HK-50")
+	TEST_ASSERT(!holds_as_abandoned, "Призрак без права возврата держит тело HK-50")
+	TEST_ASSERT(!holds_disconnected, "Отключившийся игрок держит тело HK-50")

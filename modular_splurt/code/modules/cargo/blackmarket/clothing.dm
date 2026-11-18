@@ -30,7 +30,7 @@
 	name = "Tactical turtleneck"
 	desc = "A non-descript and slightly suspicious looking turtleneck with digital camouflage cargo pants."
 	item = /obj/item/clothing/under/syndicate
-	price = 500000
+	price = 50000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 75
@@ -39,7 +39,7 @@
 	name = "Tactical skirtleneck"
 	desc = "A non-descript and slightly suspicious looking skirtleneck."
 	item = /obj/item/clothing/under/syndicate/tacticool
-	price = 500000
+	price = 50000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 75
@@ -48,7 +48,7 @@
 	name = "Combat uniform"
 	desc = "With a suit lined with this many pockets, you are ready to operate."
 	item = /obj/item/clothing/under/syndicate/combat
-	price = 500000
+	price = 50000
 	stock_min = 1
 	stock_max = 10
 	availability_prob = 50
@@ -57,7 +57,7 @@
 	name = "Red Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box
-	price = 750000
+	price = 75000
 	stock_min = 1
 	stock_max = 2
 	availability_prob = 30
@@ -75,7 +75,7 @@
 	name = "Green Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box
-	price = 750000
+	price = 75000
 	stock_min = 1
 	stock_max = 2
 	availability_prob = 30
@@ -92,7 +92,7 @@
 	name = "Dark Green Spacesuit Box"
 	desc = "A boxed Syndicate space suit"
 	item = /obj/item/storage/box
-	price = 750000
+	price = 75000
 	stock_min = 1
 	stock_max = 2
 	availability_prob = 30

@@ -54,6 +54,8 @@
 /datum/component/orbiter/PostTransfer()
 	if(!isatom(parent) || isarea(parent) || !get_turf(parent))
 		return COMPONENT_INCOMPATIBLE
+	for(var/atom/movable/orbiter as anything in orbiters)
+		orbiter.orbit_target = parent
 	move_react()
 
 /datum/component/orbiter/proc/begin_orbit(atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
@@ -65,6 +67,8 @@
 			orbiter.orbiting.end_orbit(orbiter)
 	orbiters[orbiter] = TRUE
 	orbiter.orbiting = src
+	// после end_orbit прошлой орбиты: её stop_orbit обнуляет цель
+	orbiter.orbit_target = parent
 	RegisterSignal(orbiter, COMSIG_MOVABLE_MOVED, PROC_REF(orbiter_move_react))
 
 	var/matrix/initial_transform = matrix(orbiter.transform)
@@ -151,7 +155,6 @@
 	if(!istype(A) || !get_turf(A) || A == src)
 		return
 
-	orbit_target = A
 	return A.AddComponent(/datum/component/orbiter, src, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 
 /atom/movable/proc/stop_orbit(datum/component/orbiter/orbits)

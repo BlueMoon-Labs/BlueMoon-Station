@@ -213,7 +213,7 @@
 	if(here && there)
 		if(here.z != there.z)
 			var/relation = hk51_deck_relation(here, there)
-			text = relation ? "Хозяин [body.real_name] [relation]." : "Хозяин [body.real_name] в другом секторе."
+			text = relation ? "Хозяин [body.real_name] [relation]." : "Хозяин [body.real_name] в другом секторе ([hk51_sector_name(there.z)])."
 		else
 			var/static/list/pointer_names = list("pinondirect" = "вплотную", "pinonclose" = "рядом", "pinonmedium" = "близко", "pinonfar" = "далеко")
 			var/distance = here == there ? 0 : get_dist(here, there)

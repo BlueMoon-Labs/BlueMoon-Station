@@ -90,6 +90,7 @@
 /datum/supply_pack/science/protean_organs
 	name = "Protean Organs"
 	desc = "Two refactories and two orchestrator modules for Protean crewmembers."
+	cost = CARGO_CRATE_VALUE * 6
 	contains = list(/obj/item/organ/stomach/protean, /obj/item/organ/stomach/protean, /obj/item/organ/heart/protean, /obj/item/organ/heart/protean)
 	crate_name = "protean organs"
 	access = ACCESS_ROBOTICS

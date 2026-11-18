@@ -23,6 +23,9 @@
 	/// Does it get deleted when hitting anything or landing?
 	var/delete_on_impact = FALSE
 	// SKYRAT EDIT END
+	/// Сколько размытия даёт попадание в глаз и выше какого потолка не копит.
+	var/impact_blur = 12 SECONDS
+	var/impact_blur_cap = 30 SECONDS
 
 /obj/item/paperplane/syndicate
 	desc = "Paper, masterfully folded in the shape of a plane."
@@ -70,11 +73,16 @@
 	var/obj/item/organ/eyes/eyes = user.getorganslot(ORGAN_SLOT_EYES)
 	user.Stun(200)
 	user.visible_message(span_suicide("[user] jams [src] in [user.p_their()] nose. It looks like [user.p_theyre()] trying to commit suicide!"))
-	user.adjust_blurriness(12 SECONDS)
+	blur_eyes_of(user)
 	if(eyes)
 		eyes.applyOrganDamage(rand(impact_eye_damage_lower, impact_eye_damage_higher)) // SKYRAT EDIT START - Better paper planes
 	sleep(1 SECONDS)
 	return BRUTELOSS
+
+/obj/item/paperplane/proc/blur_eyes_of(mob/living/victim)
+	var/blur_cap = BLUR_TICKS(impact_blur_cap)
+	if(victim.eye_blurry < blur_cap)
+		victim.set_blurriness(min(victim.eye_blurry + BLUR_TICKS(impact_blur), blur_cap))
 
 /obj/item/paperplane/update_overlays()
 	. = ..()
@@ -136,7 +144,7 @@
 			// SKYRAT EDIT END
 			return
 		visible_message(span_danger("\The [src] hits [H] in the eye[eyes ? "" : " socket"]!"))
-		H.adjust_blurriness(12 SECONDS)
+		blur_eyes_of(H)
 		eyes?.applyOrganDamage(rand(impact_eye_damage_lower, impact_eye_damage_higher))
 		H.Paralyze(paralyze_duration) //BLUEMOON CHANGE Сменил время на время паралича.
 		H.emote("realagony")

@@ -1310,7 +1310,7 @@
 	// "Cyborg stack created outside of a robot module"). На конечность кладём
 	// обычный аналог того же типа.
 	var/gauze_type = gauze.is_cyborg ? type2parent(gauze.type) : gauze.type
-	if(!ispath(gauze_type, /obj/item/stack/medical))
+	if(!ispath(gauze_type, /obj/item/stack/medical) && !ispath(gauze_type, /obj/item/stack/sticky_tape))
 		return
 	QDEL_NULL(current_gauze)
 	current_gauze = new gauze_type(src, 1)

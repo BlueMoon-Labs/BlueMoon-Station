@@ -20,7 +20,7 @@
 	ai_playercontrol_allowtype = 0
 	canlay = 800
 	spider_tier = TS_TIER_5
-	projectiletype = /obj/item/projectile/terrorqueenspit/empress
+	projectiletype = /obj/item/projectile/terrorspider/queen/empress
 	icon = 'icons/mob/terrorspider64.dmi'
 	pixel_x = -16
 	move_resist = MOVE_FORCE_STRONG // no more pushing a several hundred if not thousand pound spider
@@ -109,6 +109,8 @@
 			qdel(T)
 	to_chat(src, "<span class='userdanger'>All Terror Spiders, except yourself, will die off shortly.</span>")
 
-/obj/item/projectile/terrorqueenspit/empress
+/obj/item/projectile/terrorspider/queen/empress
 	damage = 90
+	damage_type = BRUTE
+	stamina = 0
 

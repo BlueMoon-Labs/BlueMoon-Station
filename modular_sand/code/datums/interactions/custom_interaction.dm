@@ -511,6 +511,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 /datum/interaction/custom/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target) || !name || !message)
 		return FALSE
+	if(apply_cooldown && !COOLDOWN_FINISHED(user, last_interaction_time))
+		return FALSE
 	if(!check_requirements(user, target, silent = FALSE))
 		return FALSE
 	var/distance = get_dist(user, target)
@@ -520,8 +522,8 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	if(!custom_interaction_allows_distance(user, target, distance))
 		to_chat(user, span_warning("Для кастомной интеракции на расстоянии нужно согласие обоих участников."))
 		return FALSE
-	if(max_distance == 1 && !(user.Adjacent(target) && target.Adjacent(user)))
-		to_chat(user, span_warning("Ты не достаёшь."))
+	if(max_distance == 1 && !interaction_in_reach(user, target))
+		to_chat(user, span_warning(interaction_reach_refusal(user, target)))
 		return FALSE
 	var/vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden)
 	var/hidden_message = HIDDEN_INTERACTION_PREFIX(is_hidden)

@@ -230,7 +230,7 @@
 	item = /obj/item/gun/ballistic/automatic/flechette
 	cost = 12
 	surplus = 30
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/rapid
 	name = "Bands of the North Star"

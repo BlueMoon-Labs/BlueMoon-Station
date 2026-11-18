@@ -58,7 +58,7 @@
 	var/icon_base = "bee"
 	var/static/beehometypecache = typecacheof(/obj/structure/beebox)
 	var/static/hydroponicstypecache = typecacheof(/obj/machinery/hydroponics)
-	var/held_icon = "" // bees are small and have no held icon (aka the coder doesn't know how to sprite it)
+	var/held_icon = "bee" // Optional sprite state: add "bee" to icons/mob/animals_held.dmi
 
 /mob/living/simple_animal/hostile/poison/bees/Initialize(mapload)
 	. = ..()
@@ -67,7 +67,7 @@
 
 /mob/living/simple_animal/hostile/poison/bees/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/mob_holder, held_icon, escape_on_find = TRUE)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE, escape_on_find = TRUE)
 
 /mob/living/simple_animal/hostile/poison/bees/Destroy()
 	if(beehome)

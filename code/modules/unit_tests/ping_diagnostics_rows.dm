@@ -112,6 +112,8 @@
 	TEST_ASSERT_EQUAL(host[host_header.Find("clients")], "100", "клиентов на момент среза")
 	TEST_ASSERT_EQUAL(host[host_header.Find("ss_rows_slices")], "[fires]", "сколько фаеров заняла запись")
 	TEST_ASSERT(text2num(host[host_header.Find("ss_rows_raw_ms")]) > 0, "выборка сырых замеров замерена")
+	for(var/probe in list("str_probe_time_us", "str_probe_sqltime_us"))
+		TEST_ASSERT(text2num(host[host_header.Find(probe)]) >= 0, "[probe] числом: [host[host_header.Find(probe)]]")
 	TEST_ASSERT_EQUAL(SSping_diag.rows_step, PING_DIAG_ROWS_IDLE, "запись закончена")
 	TEST_ASSERT_NULL(SSping_diag.rows_entries, "срез отпущен")
 

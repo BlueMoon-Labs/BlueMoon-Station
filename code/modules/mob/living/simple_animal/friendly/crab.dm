@@ -81,3 +81,7 @@
 	icon_living = "evilkreb"
 	icon_dead = "evilkreb_dead"
 	gold_core_spawnable = NO_SPAWN
+
+/mob/living/simple_animal/crab/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

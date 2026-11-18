@@ -310,7 +310,8 @@
 
 /datum/emote/sound/human/subtler_table/run_emote(mob/user, params, type_override = null)
 	message = null
-	if(!locate(/obj/structure/table) in range(user, 1))
+	var/atom/movable/table_reach = get_interaction_anchor(user)
+	if(!locate(/obj/structure/table) in range(1, table_reach))
 		if(istext(params))
 			to_chat(user, params)
 		to_chat(user, "There are no tables around you.")
@@ -345,19 +346,25 @@
 		emote_type = type_override
 	if(!can_run_emote(user))
 		return FALSE
+	// пока вводили текст, могли отойти от стола
+	table_reach = get_interaction_anchor(user)
+	if(!locate(/obj/structure/table) in range(1, table_reach))
+		to_chat(user, message)
+		to_chat(user, "There are no tables around you.")
+		return FALSE
 	. = TRUE
 
 	user.log_message("[message] (TABLE-WRAPPING)", LOG_SUBTLER)
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
 
-	var/list/show_to = list()
+	var/list/show_to = list(user)
 	var/list/processed = list()
-	for(var/obj/structure/table/T in range(user, 1))
+	for(var/obj/structure/table/T in range(1, table_reach))
 		if(processed[T])
 			continue
 		for(var/obj/structure/table/T2 in T.connected_floodfill(25))
 			processed[T2] = TRUE
-			for(var/mob/living/L in range(T2, 1))
+			for(var/mob/living/L in get_hearers_in_range(1, T2))
 				show_to |= L
 
 	for(var/i in show_to)
@@ -378,6 +385,21 @@
 		to_chat(user, "<span class='danger'>Invalid emote.</span>")
 		return TRUE
 	return FALSE
+
+/datum/emote/sound/human/subtler_target/proc/get_possible_targets(mob/user, work_distance)
+	. = list()
+	// из сумки или MOD oview() видит только содержимое контейнера
+	var/atom/movable/viewpoint = get_interaction_anchor(user)
+	if(viewpoint == user)
+		for(var/mob/living/visible in oview(work_distance, user))
+			. += visible
+	else
+		FOR_DVIEW(var/mob/living/visible, work_distance, get_turf(viewpoint), user.see_invisible)
+			. += visible
+		FOR_DVIEW_END
+	. |= user.get_all_recursive_loc(/mob/living)
+	. |= user.GetAllContents(/mob/living)
+	. -= user
 
 /datum/emote/sound/human/subtler_target/run_emote(mob/user, params, type_override = null)
 	var/const/work_distance = 5
@@ -413,15 +435,7 @@
 	if(parameters["target"])
 		target = parameters["target"]
 	else
-		var/list/possible_target = list()
-		for(var/mob/living/L in oview(work_distance, user))
-			possible_target += L
-
-		// Все мобы в loc цепочке
-		possible_target |= user.get_all_recursive_loc(/mob/living)
-		// Все мобы внутри нас
-		possible_target |= user.GetAllContents(/mob/living) - user
-
+		var/list/possible_target = get_possible_targets(user, work_distance)
 		if(possible_target.len > 13) // Много целей, TGUI с поиском
 			target = tgui_input_list(user, "Выберете персонажа, который увидит ваши действия", "Выбор персонажа", possible_target)
 		else // Радиальное меню
@@ -433,7 +447,7 @@
 				to_chat(user, span_warning("No target around."))
 				return FALSE
 
-			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, user, possible_target, radius = 40)
+			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, get_atom_on_turf(user), possible_target, radius = 40)
 
 		if(QDELETED(target))
 			to_chat(user, span_warning("Target is now unavailable."))
