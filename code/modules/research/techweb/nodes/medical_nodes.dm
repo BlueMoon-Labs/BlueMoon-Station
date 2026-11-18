@@ -116,7 +116,7 @@
 	description = "Military grade combat implants to improve performance."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_cyber_implants","weaponry","NVGtech","high_efficiency")
-	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack", "ci-sandevistan-corp", "ci-berserker-corp", "ci-militech-optics")
+	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack", "ci-sandevistan-corp", "ci-sandevistan-hack", "ci-berserker-corp", "ci-berserker-hack",  "ci-militech-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /////////////////////////Advanced Surgery/////////////////////////
