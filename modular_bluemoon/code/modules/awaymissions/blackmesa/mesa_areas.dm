@@ -187,7 +187,6 @@
 	requires_power = FALSE
 	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
 	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
-	has_gravity = FALSE
 	var/ignore_mesa_events = TRUE
 
 /area/awaymission/ihategordon/custom_walking

@@ -58,12 +58,11 @@
 
 	// --- Фазовые испытания (пороги HP) ---
 	var/trial_active = FALSE
+	var/last_trial_attempt = 0
 	var/obj/structure/xen_pylon/nihilanth/trial_pylon
 	var/turf/trial_site
 	var/turf/trial_pylon_turf
 	var/turf/boss_home
-	var/list/used_pylons = list()
-	var/list/used_sites = list()
 	var/list/trial_thresholds = list(0.75, 0.50, 0.30)
 	var/list/trial_done = list(FALSE, FALSE, FALSE)
 
@@ -87,55 +86,18 @@
 // АТАКИ
 // =============================================================================
 
+// Две атаки по очереди: "meteor" - залп xen blast (копия benrey-метеорита),
+// "tesla" - разряд xen shock, который на попадании бьёт током несколько целей.
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/OpenFire(atom/A)
 	if(trial_active || stat == DEAD || QDELETED(A))
 		return FALSE
-	if(attack_style == "tesla")
-		attack_style = "meteor"
-		ranged_cooldown = world.time + ranged_cooldown_time
-		visible_message("<span class='danger'><b>[src]</b> releases a crackling arc of portal energy at [A]!</span>")
-		tesla_row_attack(A)
-		return TRUE
-	attack_style = "tesla"
+	var/is_tesla = (attack_style == "tesla")
+	projectiletype = is_tesla ? /obj/item/projectile/energy/tesla/xen_shock : /obj/item/projectile/bullet/shotgun_meteorslug/xen_blast
+	projectilesound = is_tesla ? 'sound/magic/lightningbolt.ogg' : 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
+	ranged_message = is_tesla ? "discharges a xen shock" : "hurls xen blasts"
+	rapid = is_tesla ? 1 : 3
+	attack_style = is_tesla ? "meteor" : "tesla"
 	return ..()
-
-// Разряд идёт ровной линией от босса к цели и бьёт всех не-союзников на ней -
-// как shock plant, но управляемый: жертвы собираются по турфам направления.
-/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/tesla_row_attack(atom/A)
-	var/turf/start = get_turf(src)
-	var/turf/target_turf = get_turf(A)
-	if(!istype(start) || !istype(target_turf) || start.z != target_turf.z)
-		return
-	var/dir = get_dir(start, target_turf)
-	if(!dir)
-		return
-	var/list/victims = list()
-	var/turf/T = start
-	for(var/i in 1 to 8)
-		T = get_step(T, dir)
-		if(!istype(T))
-			break
-		for(var/mob/living/L in T)
-			if(L == src || L.stat == DEAD || (L in victims))
-				continue
-			if(faction_check_mob(L))
-				continue
-			victims += L
-			if(victims.len >= 6)
-				break
-		if(victims.len >= 6)
-			break
-	if(!victims.len)
-		return
-	playsound(start, 'sound/magic/lightningbolt.ogg', 80, FALSE)
-	for(var/mob/living/V in victims)
-		if(QDELETED(V) || V.stat == DEAD)
-			continue
-		if(get_turf(V))
-			src.Beam(V, icon_state = "red_lightning", time = 15, maxdistance = 12)
-		V.apply_damage(25, BURN)
-		V.DefaultCombatKnockdown(20)
-		V.adjustStaminaLoss(10)
 
 // Во время испытания босс не атакует - ни в ближнем, ни в дальнем бою.
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/AttackingTarget()
@@ -160,35 +122,54 @@
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/check_trial_thresholds()
 	if(trial_active || stat == DEAD)
 		return
+	// Неудачная попытка (пилоны кончились) не сжигает порог - ретрайм
+	// с кулдауном, иначе каждый тычок регенил бы спам видимым сообщением.
+	if(world.time - last_trial_attempt < 30 SECONDS)
+		return
 	var/frac = health / maxHealth
 	for(var/i in 1 to trial_thresholds.len)
 		if(trial_done[i] || frac > trial_thresholds[i])
 			continue
-		trial_done[i] = TRUE
-		start_trial()
+		last_trial_attempt = world.time
+		if(start_trial())
+			trial_done[i] = TRUE
 		return
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/start_trial()
 	var/turf/home = get_turf(src)
 	if(!istype(home))
-		return
+		return FALSE
 	// Сначала ищем площадку - без неё испытание не начинаем,
 	// иначе босс застрял бы в неуязвимости навсегда.
 	var/site_and_pylon = pick_trial_site()
 	if(!islist(site_and_pylon) || length(site_and_pylon) < 2)
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
-		return
+		return FALSE
 	var/site = site_and_pylon[1]
 	var/pylon = site_and_pylon[2]
+	var/site_landmark = length(site_and_pylon) >= 3 ? site_and_pylon[3] : null
 	if(!istype(site, /turf) || !istype(pylon, /obj/structure/xen_pylon/nihilanth))
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
-		return
+		return FALSE
+	// Портал ставим ДО включения неуязвимости: если он не встанет, босс
+	// остался бы в trial_active без единого пути к пилону - softlock.
+	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(home)
+	if(!istype(P))
+		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
+		return FALSE
+	P.hard_target = site
+	P.hardlinked = FALSE
+	var/turf/pylon_turf = get_turf(pylon)
+	log_world("[NIHILANTH] start_trial portal=([home.x],[home.y],[home.z]) hard_target=([site.x],[site.y],[site.z]) pylon=([pylon_turf.x],[pylon_turf.y],[pylon_turf.z])")
+
 	trial_pylon = pylon
-	used_sites += site
 	trial_pylon.used = TRUE
 	trial_pylon.trial_active = TRUE
 	trial_pylon.nihilanth_boss = src
-	used_pylons += trial_pylon
+	trial_pylon.trial_home = home
+	// Привязка лендмарка к пилону: при уничтожении пилона лендмарк
+	// деактивируется (site_used) и больше не выбирается как точка прибытия.
+	trial_pylon.linked_site = istype(site_landmark, /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site) ? site_landmark : null
 
 	trial_active = TRUE
 	trial_site = site
@@ -197,19 +178,17 @@
 	cancel_rapid_fire_sequence()
 	cancel_rapid_melee_sequence()
 
-	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(home)
-	if(istype(P))
-		P.hard_target = site
-		P.hardlinked = FALSE
 	playsound(home, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
 	visible_message("<span class='boldannounce'>[src] вспыхивает невыносимым светом! Оно неуязвимо - разлом на арене ведёт к источнику его силы!</span>")
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/nihilanth/nihilanth_iamthelast01.ogg', 100, FALSE)
+	return TRUE
 
-// Выбирает случайную свободную точку испытания: лендмарк nihilanth_pylon_site
-// - это точка ПРИБЫТИЯ (портал падает сюда), а особый пилон может стоять
-// где угодно на том же z-уровне - игроки идут от точки прибытия до пилона.
-// Фолбэк - любой неиспользованный особый пилон на карте (лендмарк не нужен,
-// точкой прибытия станет турф самого пилона).
+// Выбирает случайную свободную пару испытания: лендмарк nihilanth_pylon_site
+// (точка ПРИБЫТИЯ портала) + особый пилон (цель). Пара связывается по ID
+// (site_id) или авто-привязкой к ближайшему свободному лендмарку на том же
+// z-уровне. При уничтожении пилона его лендмарк деактивируется (site_used =
+// TRUE) и больше не выбирается - следующий разлом ведёт к остальным парам.
+// Возвращает list(турф прибытия, пилон, лендмарк|null).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/pick_trial_site()
 	// Свободные пилоны берём из реестра GLOB.nihilanth_pylons (пилоны
 	// саморегистрируются в Initialize) - без прохода по world.
@@ -217,27 +196,89 @@
 	for(var/obj/structure/xen_pylon/nihilanth/P in GLOB.nihilanth_pylons)
 		if(P && !QDELETED(P) && !P.used)
 			free_pylons += P
-	var/list/options = list()
+	// Активные лендмарки: не деактивированные и стоящие на валидном турфе.
+	var/list/site_landmarks = list()
 	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in GLOB.landmarks_list)
-		var/turf/T = get_turf(L)
-		if(!istype(T) || !isopenturf(T) || (T in used_sites))
+		if(!L.site_used && istype(get_turf(L)))
+			site_landmarks += L
+	var/list/options = list()
+	var/list/claimed = list()
+	var/branch = "site+pylon"
+	for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
+		var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L = find_site_for_pylon(P, site_landmarks, claimed)
+		if(!istype(L))
 			continue
-		for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
-			var/turf/PT = get_turf(P)
-			if(istype(PT) && PT.z == T.z)
-				// += для списков - конкатенация: list(T, P) лег бы в options
-				// как два отдельных атома, и pick() возвращал турф/пилон вместо
-				// пары (runtime "list index out of bounds" в start_trial).
-				options["[options.len + 1]"] = list(T, P)
-				break
+		var/turf/T = get_turf(L)
+		if(!istype(T) || !isopenturf(T))
+			continue
+		claimed += L
+		options += list(list(T, P, L))
 	if(!options.len)
+		branch = "pylon-only"
 		for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
 			var/turf/T = get_turf(P)
 			if(istype(T))
-				options["[options.len + 1]"] = list(T, P)
+				options += list(list(T, P, null))
 	if(!options.len)
+		// Особых пилонов на карте меньше, чем HP-порогов - ставим новый
+		// рядом с точкой испытания, иначе третий разлом никогда не откроется.
+		branch = "landmark+new-pylon"
+		for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
+			var/turf/T = get_turf(L)
+			if(!istype(T) || !isopenturf(T))
+				continue
+			var/turf/PT = free_turf_near(T, 6)
+			if(!istype(PT))
+				continue
+			var/obj/structure/xen_pylon/nihilanth/P = new /obj/structure/xen_pylon/nihilanth(PT)
+			if(istype(P) && !QDELETED(P))
+				options += list(list(T, P, L))
+				break
+	if(!options.len)
+		// Совсем без лендмарков - пилон рядом с самим боссом.
+		branch = "near-boss"
+		var/turf/PT = free_turf_near(src, 8)
+		if(istype(PT))
+			var/obj/structure/xen_pylon/nihilanth/P = new /obj/structure/xen_pylon/nihilanth(PT)
+			if(istype(P) && !QDELETED(P))
+				options += list(list(PT, P, null))
+	if(!options.len)
+		log_world("[NIHILANTH] pick_trial_site: NO options. pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len] landmarks_total=[length(GLOB.landmarks_list)]")
 		return null
-	return pick(options)
+	var/picked = pick(options)
+	var/turf/s = islist(picked) && picked.len >= 1 ? picked[1] : null
+	var/atom/pylon_t = islist(picked) && picked.len >= 2 ? picked[2] : null
+	var/turf/pt = istype(pylon_t) ? get_turf(pylon_t) : null
+	var/site_str = s ? "([s.x],[s.y],[s.z])" : "null"
+	var/pylon_str = pt ? "([pt.x],[pt.y],[pt.z])" : "null"
+	log_world("[NIHILANTH] pick_trial_site branch=[branch] site=[site_str] pylon_turf=[pylon_str] pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len]")
+	return picked
+
+// Находит лендмарк, привязанный к пилону: по явному site_id, иначе -
+// ближайший свободный лендмарк на том же z-уровне. claimed не даёт двум
+// пилонам занять один и тот же лендмарк в рамках одного выбора.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/find_site_for_pylon(obj/structure/xen_pylon/nihilanth/P, list/site_landmarks, list/claimed)
+	if(P.site_id)
+		for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
+			if(L.site_id == P.site_id && !(L in claimed))
+				return L
+		return null
+	var/turf/PT = get_turf(P)
+	if(!istype(PT))
+		return null
+	var/best = null
+	var/best_dist = 999999
+	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
+		if(L in claimed)
+			continue
+		var/turf/T = get_turf(L)
+		if(!istype(T) || T.z != PT.z || !isopenturf(T))
+			continue
+		var/d = get_dist(T, PT)
+		if(d < best_dist)
+			best_dist = d
+			best = L
+	return best
 
 // Вызывается особым пилоном при своём Destroy: открывает обратный разлом
 // на арене босса и возвращает ему уязвимость.
@@ -303,10 +344,10 @@
 		playsound(get_turf(src), 'sound/magic/blink.ogg', 80, FALSE)
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/spawn_aegis_pylon()
-	var/turf/T = free_turf_near(src, 3)
+	var/turf/T = free_turf_near(src, 5)
 	if(!istype(T))
 		return
-	new /obj/structure/xen_pylon(T)
+	new /obj/structure/xen_pylon/nihilanth_add(T)
 	visible_message("<span class='warning'>[src] активирует ксено-пилон - его поле окутывает союзников щитом!</span>")
 	playsound(T, 'sound/magic/lightningbolt.ogg', 80, FALSE)
 
@@ -348,14 +389,21 @@
 		playsound(src, pick(voice_lines()), 80, FALSE)
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/death(gibbed)
+	// Точку смерти берём ДО родительского death(): при гибе моб удаляется
+	// вместе с привязкой к турфу, и get_turf(src) после ..() возвращал null -
+	// без boss_home (триала не было) spawn_death_portals просто выходил,
+	// и разломов на выход не появлялось.
+	var/turf/death_turf = get_turf(src)
 	. = ..()
-	spawn_death_portals()
+	spawn_death_portals(death_turf)
 
 // Два односторонних разлома под трупом: один к выходу из комплекса
 // (лендмарк nihilanth_exit), второй - в другую часть комплекса
 // (лендмарк nihilanth_complex). Обратного пути нет.
-/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/spawn_death_portals()
-	var/turf/T = get_turf(src)
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/spawn_death_portals(turf/death_turf = null)
+	var/turf/T = death_turf
+	if(!istype(T))
+		T = get_turf(src)
 	if(!istype(T))
 		T = boss_home
 	if(!istype(T))
@@ -373,7 +421,14 @@
 				dest = DT
 				break
 	if(!istype(dest))
+		log_world("[src] spawn_death_portal: landmark [landmark_type] not found in GLOB.landmarks_list")
 		visible_message("<span class='warning'>Разлом не смог стабилизироваться - точка назначения не найдена.</span>")
+		return
+	if(!isopenturf(dest))
+		dest = free_turf_near(dest, 4)
+	if(!istype(dest) || !isopenturf(dest))
+		log_world("[src] spawn_death_portal: landmark [landmark_type] has no open destination turf")
+		visible_message("<span class='warning'>Разлом не смог стабилизироваться - точка назначения недоступна.</span>")
 		return
 	var/turf/T = near_turf
 	if(T in used_turfs || !isopenturf(T))
@@ -384,16 +439,37 @@
 			if(AM.density)
 				T = null
 				break
-	for(var/attempt in 1 to 5)
+	for(var/attempt in 1 to 8)
 		if(istype(T) && !(T in used_turfs))
 			break
 		T = free_turf_near(near_turf, 3)
 	if(!istype(T) || (T in used_turfs))
+		log_world("[src] spawn_death_portal: no free turf near [near_turf] for [landmark_type]")
 		return
 	used_turfs += T
 	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(T)
 	if(!istype(P))
+		log_world("[src] spawn_death_portal: portal to [landmark_type] failed to place on [T]")
 		return
 	P.hard_target = dest
 	P.hardlinked = FALSE
 	playsound(T, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
+
+// =============================================================================
+// СНАРЯДЫ НИХИЛАНТА
+// =============================================================================
+
+// "xen blast" - копия benrey-метеорита (тот же урон/нокдаун/иконка), но со
+// своим именем; звук залпа задаётся мобом (sweet voice).
+/obj/item/projectile/bullet/shotgun_meteorslug/xen_blast
+	name = "xen blast"
+	desc = "A slug of condensed xen energy."
+
+// "xen shock" - разряд на манер удара xen shockplant: при попадании
+// tesla_zap прыгает на несколько целей вокруг точки удара.
+/obj/item/projectile/energy/tesla/xen_shock
+	name = "xen shock"
+	desc = "A bolt of raw xen energy that arcs between targets."
+	power = 30000
+	zap_range = 6
+	zap_flags = ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE | ZAP_MOB_STUN

@@ -172,13 +172,14 @@
 /obj/structure/xen_pylon/proc/mob_died(atom/movable/source, force)
 	SIGNAL_HANDLER
 	var/datum/beam/beam = shielded_mobs[source]
-	QDEL_NULL(beam)
 	shielded_mobs[source] = null
 	shielded_mobs -= source
+	if(!QDELETED(beam))
+		QDEL_NULL(beam)
 
 /obj/structure/xen_pylon/proc/beam_died(datum/beam/beam_to_kill)
 	SIGNAL_HANDLER
-	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs)
+	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
 		if(shielded_mobs[iterating_mob] == beam_to_kill)
 			iterating_mob.lose_shield()
 			shielded_mobs[iterating_mob] = null
@@ -193,7 +194,7 @@
 	if(world.time < next_shield_check)
 		return
 	next_shield_check = world.time + 10
-	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs)
+	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
 		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
 			remove_shield(iterating_mob)
 
@@ -201,9 +202,10 @@
 	if(!(mob_to_unshield in shielded_mobs))
 		return
 	var/datum/beam/beam = shielded_mobs[mob_to_unshield]
-	QDEL_NULL(beam)
 	shielded_mobs[mob_to_unshield] = null
 	shielded_mobs -= mob_to_unshield
+	if(!QDELETED(beam))
+		QDEL_NULL(beam)
 	if(istype(mob_to_unshield) && !QDELETED(mob_to_unshield))
 		mob_to_unshield.lose_shield()
 
@@ -226,16 +228,26 @@
 
 /obj/structure/xen_pylon/Destroy()
 	STOP_PROCESSING(SSobj, src)
-	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs)
-		iterating_mob.lose_shield()
+	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
+		if(!QDELETED(iterating_mob))
+			iterating_mob.lose_shield()
 		var/datum/beam/beam = shielded_mobs[iterating_mob]
-		QDEL_NULL(beam)
 		shielded_mobs[iterating_mob] = null
 		shielded_mobs -= iterating_mob
+		if(!QDELETED(beam))
+			QDEL_NULL(beam)
 	shielded_mobs = null
 	playsound(src, 'sound/magic/lightningbolt.ogg', 100, TRUE)
 	new /obj/item/grenade/xen_crystal(get_turf(src))
 	return ..()
+
+// Пилон, которого призывает сам Нихилант: заметно живучее и с большим
+// радиусом щита, чем обычный щитовой пилон на карте.
+/obj/structure/xen_pylon/nihilanth_add
+	name = "xen spire"
+	desc = "A hardened xen pylon torn from the rift by Nihilanth."
+	max_integrity = 250
+	shield_range = 8
 
 /obj/item/grenade/xen_crystal
 	name = "xen crystal"
@@ -370,6 +382,19 @@
 	name = "nihilanth rift"
 	desc = "Разлом, разорванный силой Нихиланта."
 
+// Сам босс не должен проваливаться в собственный разлом испытания: портал
+// стоит у него под ногами, а teleport() пропускает любого моба.
+/obj/effect/portal/mesa_rift/nihilanth_rift/teleport(atom/movable/M, force = FALSE)
+	if(istype(M, /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth))
+		return FALSE
+	var/turf/rt = get_link_target_turf()
+	var/turf/orig = get_turf(M)
+	var/rt_str = istype(rt) ? "([rt.x],[rt.y],[rt.z])" : "null"
+	var/ht_str = istype(hard_target) ? "([hard_target.x],[hard_target.y],[hard_target.z])" : "null"
+	var/orig_str = istype(orig) ? "([orig.x],[orig.y],[orig.z])" : "null"
+	log_world("[NIHILANTH-RIFT] teleport mob=[M] from=[orig_str] real_target=[rt_str] hard_target=[ht_str] linked=[istype(linked)] hardlinked=[hardlinked]")
+	return ..()
+
 // Лендмарки для карты: место особого пилона (испытание), выход из комплекса
 // и точка в другой части комплекса - оба односторонние, без пути обратно.
 /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site
@@ -377,6 +402,11 @@
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	layer = MID_LANDMARK_LAYER
+	/// ID испытания, с которым связан этот лендмарк. Совпадает с site_id
+	/// пилона /obj/structure/xen_pylon/nihilanth. null = авто-привязка по z.
+	var/site_id = null
+	/// Лендмарк исчерпан: связанный пилон уничтожен, точка больше не активна.
+	var/site_used = FALSE
 
 /obj/effect/landmark/awaymission/blackmesa/nihilanth_exit
 	name = "Nihilanth Exit Landmark"
@@ -405,9 +435,18 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	var/next_aegis_check = 0
 	/// Босс, для которого этот пилон - цель испытания.
 	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/nihilanth_boss
+	/// Турф арены босса на момент старта испытания - нужен для обратного
+	/// разлома, если босс будет удалён до end_trial().
+	var/turf/trial_home
 	var/trial_active = FALSE
 	/// Пилон уже отработал в испытании - повторно не выбирается.
 	var/used = FALSE
+	/// ID испытания, с которым связан этот пилон. Совпадает с site_id
+	/// лендмарка nihilanth_pylon_site. null = авто-привязка по z.
+	var/site_id = null
+	/// Лендмарк, к которому привязан пилон в текущем испытании -
+	/// при уничтожении пилона он деактивируется (site_used = TRUE).
+	var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/linked_site
 
 /obj/structure/xen_pylon/nihilanth/Initialize(mapload)
 	. = ..()
@@ -446,9 +485,14 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	if(!(M in aegis_mobs))
 		return
 	var/datum/beam/beam = aegis_mobs[M]
-	QDEL_NULL(beam)
 	aegis_mobs[M] = null
 	aegis_mobs -= M
+	// Запись из assoc убираем ДО qdel луча: beam шлёт COMSIG_QDELETING,
+	// aegis_beam_died находил моба всё ещё в списке и рекурсивно звал
+	// remove_aegis -> qdel уже умирающего beam ("destroy proc was called
+	// multiple times") и двойной декремент xen_aegis.
+	if(!QDELETED(beam))
+		QDEL_NULL(beam)
 	if(istype(M) && !QDELETED(M))
 		M.xen_aegis = max(M.xen_aegis - 1, 0)
 
@@ -458,7 +502,7 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 
 /obj/structure/xen_pylon/nihilanth/proc/aegis_beam_died(datum/beam/beam_to_kill)
 	SIGNAL_HANDLER
-	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
 		if(aegis_mobs[iterating_mob] == beam_to_kill)
 			remove_aegis(iterating_mob)
 
@@ -468,21 +512,39 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	if(world.time < next_aegis_check)
 		return
 	next_aegis_check = world.time + 10
-	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
 		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
 			remove_aegis(iterating_mob)
 
 /obj/structure/xen_pylon/nihilanth/Destroy()
 	GLOB.nihilanth_pylons -= src
-	for(var/mob/living/iterating_mob as anything in aegis_mobs)
+	var/turf/self_turf = get_turf(src)
+	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
 		remove_aegis(iterating_mob)
 	aegis_mobs = null
 	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/boss = nihilanth_boss
 	nihilanth_boss = null
 	var/was_trial = trial_active
+	var/turf/home_turf = trial_home
+	var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/site = linked_site
+	linked_site = null
 	trial_active = FALSE
+	trial_home = null
+	// Пилон уничтожен - связанный лендмарк деактивируется: точка прибытия
+	// больше не выбирается, следующий разлом ведёт к другим сайтам.
+	if(istype(site) && !QDELETED(site))
+		site.site_used = TRUE
 	. = ..()
-	if(was_trial && istype(boss) && !QDELETED(boss) && boss.stat != DEAD)
-		boss.end_trial()
+	if(was_trial)
+		if(istype(boss) && !QDELETED(boss))
+			boss.end_trial()
+		else if(istype(self_turf) && isopenturf(self_turf) && istype(home_turf))
+			// Босс уже удалён - end_trial() не вызвать, но игроки всё равно
+			// должны получить обратный разлом, иначе застрянут на точке испытания.
+			var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(self_turf)
+			if(istype(R))
+				R.hard_target = home_turf
+				R.hardlinked = FALSE
+				playsound(self_turf, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
 
 #undef COMSIG_QDELETING
