@@ -38,3 +38,7 @@
 	icon_living = "poppypossum"
 	icon_dead = "poppypossum_dead"
 	butcher_results = list(/obj/item/clothing/head/hardhat = 1)
+
+/mob/living/simple_animal/opossum/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = (istype(src, /mob/living/simple_animal/opossum/poppy) ? "possum_poppy" : icon_state), inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
