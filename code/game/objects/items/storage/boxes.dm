@@ -116,7 +116,7 @@
 
 /obj/item/storage/box/survival/PopulateContents()
 	// BLUEMOON ADD - у робототов особый набор для выживания
-	if(HAS_TRAIT(loc, TRAIT_ROBOTIC_ORGANISM))
+	if(ismob(loc) && HAS_TRAIT(loc, TRAIT_ROBOTIC_ORGANISM))
 		mask_type = null
 		internal_type = null
 		medipen_type = /obj/item/reagent_containers/hypospray/medipen/ferrocortex
