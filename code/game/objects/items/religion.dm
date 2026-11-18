@@ -85,7 +85,7 @@
 	name = "meditopia banner"
 	desc = "The banner of Meditopia, generous benefactors that cure wounds and shelter the weak."
 	icon_state = "banner_medical"
-	job_loyalties = list("Medical Doctor", "Chemist", "Geneticist", "Virologist", "Chief Medical Officer")
+	job_loyalties = list("Medical Doctor", "Chemist", "Virologist", "Chief Medical Officer")
 	warcry = "No wounds cannot be healed!"
 
 /obj/item/banner/medical/mundane
@@ -103,7 +103,7 @@
 	name = "sciencia banner"
 	desc = "The banner of Sciencia, bold and daring thaumaturges and researchers that take the path less traveled."
 	icon_state = "banner_science"
-	job_loyalties = list("Scientist", "Roboticist", "Research Director")
+	job_loyalties = list("Scientist", "Roboticist", "Geneticist", "Research Director")
 	warcry = "For Cuban Pete!"
 
 /obj/item/banner/science/mundane

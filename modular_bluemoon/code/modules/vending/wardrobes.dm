@@ -669,8 +669,8 @@
 	product_slogans = "Идеально подходит для безумного ученого!"
 	vend_reply = "Спасибо за использование GeneDrobe!"
 	products = list(
-		/obj/item/clothing/under/rank/medical/geneticist = 3,
-		/obj/item/clothing/under/rank/medical/geneticist/skirt = 3,
+		/obj/item/clothing/under/rank/rnd/geneticist = 3,
+		/obj/item/clothing/under/rank/rnd/geneticist/skirt = 3,
 		/obj/item/clothing/suit/hooded/wintercoat/genetics = 3,
 		/obj/item/clothing/shoes/sneakers/white = 3,
 		/obj/item/clothing/suit/toggle/labcoat/genetics = 3,

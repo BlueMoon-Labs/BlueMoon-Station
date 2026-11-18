@@ -64,7 +64,6 @@
 	ammo_x_offset = 1
 	obj_flags = UNIQUE_RENAME
 	w_class = WEIGHT_CLASS_NORMAL
-	dual_wield_spread = 5 //как задумано кодерами
 
 /obj/item/gun/energy/laser/thermal/Initialize(mapload)
 	. = ..()

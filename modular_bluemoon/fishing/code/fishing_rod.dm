@@ -470,6 +470,7 @@
 	desc = "Красивая удочка с золотой отделкой. Дорогая. Ловит быстрее."
 	icon_state = "fishing_rod_master"
 	custom_materials = list(/datum/material/gold = 2000)
+	custom_premium_price = PRICE_ALMOST_EXPENSIVE
 	material_fish_chance = 50
 	reel_overlay = "reel_master"
 	frame_state = "frame_master"
@@ -494,6 +495,7 @@
 	desc = "Розовая удочка. Небо знает, откуда у неё такой цвет."
 	icon_state = "fishing_rod_master"
 	custom_materials = list(/datum/material/silver = 2000)
+	custom_premium_price = PRICE_ALMOST_EXPENSIVE
 	material_fish_chance = 50
 	reel_overlay = "reel_master"
 	frame_state = "frame_master"
@@ -536,6 +538,7 @@
 	desc = "Точная удочка со встроенной катушкой."
 	icon_state = "fishing_rod_science"
 	custom_materials = list(/datum/material/silver = 1000, /datum/material/glass = 1000)
+	custom_premium_price = PRICE_ALMOST_EXPENSIVE
 	material_fish_chance = 50
 	baitless_fishing = TRUE
 	reel_overlay = "reel_science"

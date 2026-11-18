@@ -66,6 +66,7 @@
 	ammo_x_offset = 3
 	selfcharge = EGUN_SELFCHARGE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	ammo_type = list(/obj/item/ammo_casing/energy/laser/heavy)
 
 /obj/item/gun/energy/laser/carbine
 	name = "laser carbine"

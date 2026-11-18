@@ -273,8 +273,8 @@
 	icon_door = "white"
 
 /obj/structure/closet/wardrobe/genetics_white/PopulateContents()
-	new /obj/item/clothing/under/rank/medical/geneticist(src)
-	new /obj/item/clothing/under/rank/medical/geneticist(src)
+	new /obj/item/clothing/under/rank/rnd/geneticist(src)
+	new /obj/item/clothing/under/rank/rnd/geneticist(src)
 	new /obj/item/clothing/shoes/sneakers/white(src)
 	new /obj/item/clothing/shoes/sneakers/white(src)
 	new /obj/item/clothing/suit/toggle/labcoat/genetics(src)

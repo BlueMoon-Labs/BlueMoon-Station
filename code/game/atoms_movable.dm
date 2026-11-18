@@ -210,6 +210,8 @@
 			AA.remove_from_hud(src)
 
 	QDEL_NULL(proximity_monitor)
+	//контроллер на предмете (одержимые вещи) иначе живёт в ai_controllers_by_zlevel и держит нас в pawn
+	QDEL_NULL(ai_controller)
 	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
 	if(em_block)

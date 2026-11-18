@@ -78,16 +78,16 @@
 		return
 	if(!beholder.mind)
 		return
-	if(HAS_TRAIT(beholder, TRAIT_FEARLESS))
-		return
 	if(IS_INTEQ(beholder))
-		SEND_SIGNAL(beholder, COMSIG_ADD_MOOD_EVENT, "inteq_propagand", /datum/mood_event/inteq_happy)
+		SEND_SIGNAL(beholder, COMSIG_ADD_MOOD_EVENT, "inteq_propagand_happy", /datum/mood_event/inteq_happy)
+		return
+	if(HAS_TRAIT(beholder, TRAIT_FEARLESS))
 		return
 	if(beholder.mind.antag_datums) // все антажки
 		return
 	beholder.was_scared = world.time + 5 SECONDS
 	var/fear_level = get_fear_level(beholder)
-	SEND_SIGNAL(beholder, COMSIG_ADD_MOOD_EVENT, "inteq_propagand", /datum/mood_event/inteq_scared, fear_level)
+	SEND_SIGNAL(beholder, COMSIG_ADD_MOOD_EVENT, "inteq_propagand_scared", /datum/mood_event/inteq_scared, fear_level)
 	if(prob(50))
 		var/message = pick("крайне вас напрягает.", "напоминает вам, что вы тут не в безопасности.", "просто отвратительно!", "возмутительно!")
 		to_chat(beholder, "<span class='warning'>Судя по [host], наёмники из InteQ уже рядом! Это [message]</span>")

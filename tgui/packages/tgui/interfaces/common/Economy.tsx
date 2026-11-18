@@ -67,10 +67,23 @@ export type RequestStatus = 'pending' | 'approved' | 'denied';
 export type RequestEntry = {
   uid: number;
   pack: string;
+  pack_type?: string;
   price: number;
   requester: string;
   reason: string;
   status: RequestStatus;
+  /** Сколько минут заявка ждёт */
+  waited?: number;
+  /** Передана снабжению: решить может и его начальник */
+  handed_off?: BooleanLike;
+  /** Кто решит и что будет дальше, только у ждущей */
+  outlook?: string | null;
+  /** Зритель может одобрить или отклонить; без поля - решает глава */
+  can_decide?: BooleanLike;
+  department?: string;
+  department_id?: string;
+  /** Баланс бюджета отдела заявки: в списке переданных снабжению */
+  balance?: number;
 };
 
 export type TreasuryRequestEntry = {

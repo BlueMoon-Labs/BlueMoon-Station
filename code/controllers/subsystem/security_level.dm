@@ -246,6 +246,11 @@ SUBSYSTEM_DEF(security_level)
 	if(maint_access)
 		make_maint_all_access()
 
+/// Returns TRUE if the current station security level is at least min_level.
+/datum/controller/subsystem/security_level/proc/security_level_is_at_least(min_level)
+	var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
+	return current_level >= min_level
+
 /proc/set_stationwide_emergency_lighting()
 	for(var/mob/M in GLOB.player_list)
 		var/turf/T = get_turf(M)

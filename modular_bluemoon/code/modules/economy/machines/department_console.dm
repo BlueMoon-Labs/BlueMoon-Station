@@ -1,6 +1,6 @@
 /obj/machinery/computer/department_budget
 	name = "department budget console"
-	desc = "Консоль бюджета отдела: заявки на закупку из каталога, контракты и оплаченная работа отдела. Глава отдела одобряет заявки, выписывает премии и просит деньги из казны."
+	desc = "Консоль бюджета отдела: заявки на закупку из каталога, контракты и оплаченная работа отдела. Глава отдела одобряет заявки, выписывает премии и просит деньги из казны; ИИ с неё решает заявки сотрудников, кроме СБ."
 	icon_screen = null
 	circuit = /obj/item/circuitboard/computer/department_budget
 	light_color = LIGHT_COLOR_GREEN
@@ -43,7 +43,7 @@
 /obj/machinery/computer/department_budget/examine(mob/user)
 	. = ..()
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
-	. += span_notice((department ? "Привязана к отделу \"[department.name]\". Права главы проверяются как обычно: глав и капитана узнают по доступу ID-карты, ГП - по должности и доступу ГП на карте." : "Не привязана к отделу: показывает отдел того, кто за ней. Отдел выбирается мультитулом на плате."))
+	. += span_notice((department ? "Привязана к отделу \"[department.name]\". Права главы проверяются как обычно: глав и капитана узнают по доступу ID-карты, ГП - по должности и доступу ГП на карте.[department.ai_decides() ? " ИИ решает заявки сотрудников отдела." : " Заявки СБ ИИ не решает."]" : "Не привязана к отделу: показывает отдел того, кто за ней, а ГП, капитану и ИИ - выбранный. Отдел выбирается мультитулом на плате."))
 
 /obj/machinery/computer/department_budget/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

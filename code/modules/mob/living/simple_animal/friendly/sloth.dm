@@ -28,9 +28,9 @@
 	glide_size = 2
 	footstep_type = FOOTSTEP_MOB_CLAW
 
-/mob/living/simple_animal/pet/sloth/ComponentInitialize()
+/mob/living/simple_animal/sloth/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/mob_holder, "sloth") //finally oranges can be held
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE) //finally oranges can be held
 
 //Cargo Sloth
 /mob/living/simple_animal/sloth/paperwork

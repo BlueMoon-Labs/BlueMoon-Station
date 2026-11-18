@@ -10,6 +10,15 @@
 	lose_text = "<span class='notice'>Вы снова чувствуете вкус!</span>"
 	medical_record_text = "Пациент страдает от авгезии и не способен чувствовать вкус."
 
+/datum/quirk/no_smell
+	name = "Аносмия"
+	desc = "Вы не ощущаете запахи! Вы не сможете обнаружать определенные бесцветные газы."
+	value = 0
+	mob_trait = TRAIT_ANOSMIA
+	gain_text = "<span class='notice'>Вы не чувствуете запахов!</span>"
+	lose_text = "<span class='notice'>Вы снова чувствуете запахи!</span>"
+	medical_record_text = "Пациент страдает от аносмии и не может различать запахи газов и частиц."
+
 /datum/quirk/snob
 	name = "Сноб"
 	desc = "Вас волнуют вещи утонченные, если комната выглядит некрасиво, она просто не стоит того, верно?"

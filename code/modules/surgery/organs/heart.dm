@@ -266,12 +266,13 @@
 
 /obj/item/organ/heart/cybernetic/emp_act(severity)
 	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	// У базовой модели риск малого взрыва растёт с силой ЭМИ: 50% при severity 100.
+	try_basic_cybernetic_detonation(severity * 0.5)
 
 	// If the owner doesn't need a heart, we don't need to do anything with it.
 	if(!owner?.needs_heart())
-		return
-
-	if(. & EMP_PROTECT_SELF)
 		return
 	if(!COOLDOWN_FINISHED(src, severe_cooldown)) //So we cant just spam emp to kill people.
 		owner.Dizzy(10)
