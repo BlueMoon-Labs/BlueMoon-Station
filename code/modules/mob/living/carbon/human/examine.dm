@@ -1,7 +1,7 @@
 /mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
 	var/shown_name = examine_shown_name(user)
-	var/anonymous = shown_name == "Неизвестный" || is_gender_obscured()
+	var/anonymous = is_gender_obscured(user)
 	var/t_on = anonymous ? "Он" : ru_who(TRUE)
 	var/t_ego = anonymous ? "его" : ru_ego()
 	var/t_nego = anonymous ? "него" : ru_nego()

@@ -44,3 +44,32 @@
 	TEST_ASSERT_EQUAL(human.dna.real_name, human.real_name, "Hardset synchronizes the DNA name")
 	TEST_ASSERT_EQUAL(human.dna.unique_enzymes, md5(human.real_name), "Hardset saves generated enzymes")
 	TEST_ASSERT_EQUAL(human.dna.uni_identity, original_identity, "Changing only the name preserves fingerprints")
+
+/// Прозопагнозия и закрытое лицо скрывают личность независимо от видимого пола.
+/datum/unit_test/examine_identity_and_gender/Run()
+	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, get_step(viewer, EAST))
+	target.gender = FEMALE
+	target.real_name = "Examine Gender Test"
+	target.jitteriness = 150
+	ADD_TRAIT(viewer, TRAIT_PROSOPAGNOSIA, TRAIT_GENERIC)
+	TEST_ASSERT_EQUAL(target.examine_shown_name(viewer), "Неизвестный", "Прозопагнозия скрывает имя.")
+	TEST_ASSERT(target.examine_identity_hidden(viewer), "Прозопагнозия скрывает профиль личности.")
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Она дрожит."), "Прозопагнозия сохраняет видимый женский род.")
+	REMOVE_TRAIT(viewer, TRAIT_PROSOPAGNOSIA, TRAIT_GENERIC)
+
+	var/obj/item/clothing/mask/gas/mask = allocate(/obj/item/clothing/mask/gas)
+	target.equip_to_slot(mask, ITEM_SLOT_MASK)
+	TEST_ASSERT_EQUAL(target.examine_shown_name(viewer), "Неизвестный", "Закрытое лицо без ID скрывает имя.")
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Она дрожит."), "Одна маска не скрывает пол.")
+
+	var/obj/item/clothing/suit/suit = allocate(/obj/item/clothing/suit)
+	suit.flags_inv |= HIDEJUMPSUIT
+	target.equip_to_slot(suit, ITEM_SLOT_OCLOTHING)
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Он дрожит."), "Закрытые лицо и тело скрывают пол.")
+	qdel(mask)
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Она дрожит."), "Один закрывающий костюм не скрывает пол.")
+	ADD_TRAIT(viewer, TRAIT_PROSOPAGNOSIA, TRAIT_GENERIC)
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Он дрожит."), "При прозопагнозии закрывающий костюм скрывает пол даже с открытым лицом.")
+	REMOVE_TRAIT(viewer, TRAIT_PROSOPAGNOSIA, TRAIT_GENERIC)
+	TEST_ASSERT(findtext(jointext(target.examine(viewer, silent = TRUE), ""), "Она дрожит."), "Обычный наблюдатель по-прежнему различает пол по открытому лицу.")
