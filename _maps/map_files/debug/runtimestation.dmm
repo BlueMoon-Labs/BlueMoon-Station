@@ -3848,38 +3848,33 @@
 	circuit = /obj/item/circuitboard/machine/netpod/upgraded
 	},
 /turf/open/floor/plating,
-/area/construction
-)
+/area/construction)
 "cn" = (
 /obj/machinery/quantum_server{
 	circuit = /obj/item/circuitboard/machine/quantum_server/upgraded
 	},
 /turf/open/floor/plating,
-/area/construction
-)
+/area/construction)
 "cz" = (
 /obj/machinery/byteforge{
 	circuit = /obj/item/circuitboard/machine/byteforge/upgraded
 	},
 /turf/open/floor/plating,
-/area/construction
-)
+/area/construction)
 "dp" = (
 /obj/structure/table,
 /obj/item/disk/bitrunning/item/tier1,
 /obj/item/disk/bitrunning/item/tier2,
 /obj/item/disk/bitrunning/item/tier3,
 /turf/open/floor/plating,
-/area/construction
-)
+/area/construction)
 "ee" = (
 /obj/structure/table,
 /obj/item/disk/bitrunning/ability/tier1,
 /obj/item/disk/bitrunning/prefs,
 /obj/item/bitrunning_debug,
 /turf/open/floor/plating,
-/area/construction
-)
+/area/construction)
 
 (1,1,1) = {"
 aa

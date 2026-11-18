@@ -53,9 +53,6 @@
 #define COMSIG_LAZY_TEMPLATE_LOADED "lazy_template_loaded"
 
 // Слой совместимости со старой базой BlueMoon.
-#ifndef COMSIG_QDELETING
-#define COMSIG_QDELETING COMSIG_PARENT_QDELETING
-#endif
 #ifndef COMSIG_ATOM_EXAMINE
 #define COMSIG_ATOM_EXAMINE COMSIG_PARENT_EXAMINE
 #endif
