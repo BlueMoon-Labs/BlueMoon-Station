@@ -3464,6 +3464,18 @@
 	},
 /turf/open/floor/glass/reinforced,
 /area/security/warden)
+"aTa" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/trimline/brown/line,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/station/cargo/bitrunning/den)
 "aTi" = (
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 6
@@ -8956,8 +8968,9 @@
 	icon_state = "0-2"
 	},
 /obj/effect/turf_decal/box,
+/obj/machinery/byteforge,
 /turf/open/floor/plasteel/dark/smooth/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "cwY" = (
 /obj/machinery/firealarm/directional/west{
 	pixel_y = -3
@@ -12722,11 +12735,10 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 5
+	dir = 4
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "dAr" = (
 /obj/structure/fluff/tram_rail/floor{
 	dir = 1
@@ -14002,9 +14014,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "dUw" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 8
-	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
@@ -14013,8 +14022,11 @@
 	dir = 6
 	},
 /obj/effect/decal/cleanable/generic,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "dUK" = (
 /obj/machinery/button/door/directional/west{
 	name = "Privacy Bolts";
@@ -18240,7 +18252,7 @@
 	pixel_x = 6
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "ffj" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
@@ -24888,12 +24900,15 @@
 /turf/open/floor/plasteel,
 /area/maintenance/tram/left)
 "gZA" = (
-/obj/structure/railing{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
 	},
-/obj/machinery/vr_sleeper,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/station/cargo/bitrunning/den)
 "gZC" = (
 /turf/open/floor/plasteel/stairs/right,
 /area/command/gateway)
@@ -27558,15 +27573,15 @@
 /obj/machinery/firealarm/directional/south,
 /obj/effect/turf_decal/trimline/brown/line,
 /obj/effect/turf_decal/stripes,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
+/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "hMT" = (
 /obj/effect/landmark/event_spawn,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
@@ -34091,15 +34106,12 @@
 "jBj" = (
 /obj/effect/turf_decal/trimline/brown/line,
 /obj/effect/turf_decal/stripes,
-/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
-	dir = 1
-	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 9
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "jBk" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -34952,6 +34964,13 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/tram/right)
+"jMa" = (
+/obj/effect/turf_decal/bot/yellow/right,
+/obj/machinery/computer/order_console/bitrunning,
+/turf/open/floor/plasteel/dark/smooth/corner{
+	dir = 1
+	},
+/area/station/cargo/bitrunning/den)
 "jMe" = (
 /obj/machinery/suit_storage_unit/cmo,
 /obj/effect/turf_decal/bot,
@@ -36722,7 +36741,7 @@
 /area/ruin/space/has_grav/syndicate_outpost)
 "klm" = (
 /turf/closed/wall,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "klA" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
@@ -37612,15 +37631,15 @@
 "kwl" = (
 /obj/effect/turf_decal/trimline/brown/line,
 /obj/effect/turf_decal/stripes,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "kwD" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -38331,17 +38350,12 @@
 "kHI" = (
 /obj/effect/turf_decal/trimline/brown/line,
 /obj/effect/turf_decal/stripes,
+/obj/effect/decal/cleanable/oil/streak,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
 	},
-/obj/structure/extinguisher_cabinet/directional/west,
-/obj/effect/decal/cleanable/oil/streak,
-/obj/effect/landmark/start/cargo_technician,
-/obj/machinery/camera/autoname{
-	dir = 4
-	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "kHJ" = (
 /obj/structure/chair/stool/bar/directional/east,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
@@ -41433,12 +41447,12 @@
 /turf/open/floor/catwalk_floor,
 /area/maintenance/tram/right)
 "lwd" = (
-/obj/machinery/vr_sleeper,
+/obj/machinery/netpod,
 /obj/item/radio/intercom{
 	pixel_y = 27
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "lwh" = (
 /obj/structure/toilet{
 	dir = 8
@@ -44677,7 +44691,7 @@
 "mvt" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "mvz" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 6
@@ -64369,10 +64383,10 @@
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "rOD" = (
-/obj/machinery/vr_sleeper,
+/obj/machinery/netpod,
 /obj/machinery/airalarm/directional/north,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "rOF" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/lattice/catwalk,
@@ -75109,8 +75123,12 @@
 /area/security/prison/workout)
 "uFK" = (
 /obj/machinery/light/directional/south,
+/obj/machinery/computer/quantum_console{
+	connectable = 0;
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/smooth/corner,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "uFO" = (
 /obj/structure/bed{
 	dir = 4
@@ -78148,6 +78166,10 @@
 /obj/effect/turf_decal/stripes/white,
 /turf/open/floor/plasteel,
 /area/hallway/primary/tram/center)
+"vtR" = (
+/obj/machinery/netpod,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/station/cargo/bitrunning/den)
 "vtU" = (
 /obj/structure/table/reinforced,
 /obj/item/surgical_drapes,
@@ -81076,12 +81098,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
-/obj/machinery/door/airlock/mining/glass{
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "84";
 	name = "Bitrunning Den"
 	},
 /turf/open/floor/plasteel,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "wiI" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible,
 /turf/open/floor/circuit/telecomms,
@@ -84222,10 +84244,11 @@
 /area/science/research)
 "xae" = (
 /obj/effect/turf_decal/bot/yellow/left,
+/obj/machinery/quantum_server,
 /turf/open/floor/plasteel/dark/smooth/corner{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "xag" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/effect/turf_decal/stripes/asteroid/full,
@@ -86558,9 +86581,8 @@
 "xGk" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/directional/north,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/plasteel/dark/smooth/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "xGr" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -196582,11 +196604,11 @@ whD
 whD
 whD
 whD
-whD
-whD
-whD
-whD
-whD
+klm
+klm
+klm
+klm
+klm
 whD
 whD
 whD
@@ -196840,10 +196862,10 @@ whD
 whD
 whD
 klm
+vtR
+aTa
+jMa
 klm
-klm
-klm
-dnL
 dnL
 dnL
 dnL
@@ -197100,7 +197122,7 @@ klm
 rOD
 kHI
 uFK
-dnL
+klm
 wyi
 wyi
 wyi
@@ -197357,7 +197379,7 @@ klm
 lwd
 kwl
 xae
-dnL
+klm
 wyi
 wyi
 wyi

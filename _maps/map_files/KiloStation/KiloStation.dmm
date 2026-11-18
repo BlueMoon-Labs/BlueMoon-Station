@@ -38778,13 +38778,13 @@
 /turf/open/floor/engine,
 /area/ai_monitored/turret_protected/ai_upload)
 "bAv" = (
-/obj/machinery/vr_sleeper,
 /obj/structure/sign/poster/random{
 	pixel_y = 32
 	},
 /obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/machinery/netpod,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bAw" = (
 /obj/structure/chair/sofa/right/maroon{
 	dir = 4
@@ -39036,14 +39036,13 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/generic,
-/obj/effect/landmark/start/cargo_technician,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bAU" = (
 /obj/effect/turf_decal/stripes/yellow/corner,
 /obj/effect/turf_decal/tile/brown,
@@ -42616,8 +42615,9 @@
 /obj/item/radio/intercom{
 	pixel_y = -27
 	},
+/obj/machinery/byteforge,
 /turf/open/floor/plasteel/dark/smooth/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bIa" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 6
@@ -42642,7 +42642,7 @@
 	},
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/plasteel/dark/smooth/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bId" = (
 /obj/machinery/light/floor,
 /turf/open/floor/engine/n2o,
@@ -42671,7 +42671,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bIg" = (
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
@@ -46994,7 +46994,7 @@
 	},
 /obj/machinery/holopad,
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bQm" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
@@ -47018,15 +47018,15 @@
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
 "bQp" = (
-/obj/machinery/door/airlock/maintenance{
-	name = "Drone Bay Maintenance"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
+/obj/machinery/door/airlock/maintenance{
+	name = "Bitrunning Maintenance";
+	req_access_txt = "84"
+	},
 /turf/open/floor/plating,
-/area/maintenance/department/cargo)
+/area/station/cargo/bitrunning/den)
 "bQq" = (
 /obj/machinery/chem_dispenser,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
@@ -76693,9 +76693,9 @@
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningdock/abandoned)
 "jje" = (
-/obj/machinery/vr_sleeper,
+/obj/machinery/netpod,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "jjr" = (
 /obj/effect/turf_decal/tile/purple/opposingcorners{
 	dir = 8
@@ -81210,15 +81210,14 @@
 	dir = 9
 	},
 /obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/effect/landmark/start/cargo_technician,
 /obj/effect/decal/cleanable/oil,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "mLp" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -81464,12 +81463,12 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
-/obj/machinery/door/airlock/mining/glass{
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "84";
 	name = "Bitrunning Den"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "mYE" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/medical/glass{
@@ -83381,7 +83380,7 @@
 /area/engineering/atmos)
 "oIx" = (
 /turf/closed/wall/rust,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "oIZ" = (
 /obj/structure/chair/pew{
 	dir = 8
@@ -86417,7 +86416,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "rgL" = (
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/blood/old,
@@ -87795,10 +87794,11 @@
 "smo" = (
 /obj/effect/turf_decal/bot/yellow/left,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/quantum_server,
 /turf/open/floor/plasteel/dark/smooth/corner{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "snI" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
@@ -88827,11 +88827,11 @@
 /turf/open/floor/wood,
 /area/service/theater)
 "tjs" = (
-/obj/machinery/vr_sleeper,
 /obj/effect/decal/cleanable/robot_debris,
 /obj/machinery/airalarm/directional/east,
+/obj/machinery/netpod,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "tju" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
@@ -89339,7 +89339,7 @@
 /area/service/chapel)
 "twj" = (
 /turf/closed/wall,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "twN" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -91648,6 +91648,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
+/obj/machinery/computer/order_console/bitrunning,
 /turf/open/floor/plasteel/dark,
 /area/cargo/storage)
 "vyJ" = (
@@ -92417,8 +92418,11 @@
 /area/security/lockers)
 "wdw" = (
 /obj/structure/extinguisher_cabinet/directional/west,
+/obj/machinery/computer/quantum_console{
+	connectable = 0
+	},
 /turf/open/floor/plasteel/dark/smooth/corner,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "wec" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -134055,7 +134059,7 @@ twj
 twj
 twj
 oIx
-ith
+twj
 uDC
 ith
 bTk
@@ -134312,7 +134316,7 @@ twj
 wdw
 rfM
 bHZ
-ith
+twj
 bJL
 ith
 bMC
@@ -134569,7 +134573,7 @@ twj
 smo
 bQl
 bIc
-ith
+twj
 bJM
 umU
 bMF
@@ -135083,7 +135087,7 @@ twj
 bAv
 jje
 tjs
-ith
+twj
 fOL
 gJq
 bTk
