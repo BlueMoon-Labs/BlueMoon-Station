@@ -284,7 +284,11 @@ Turf and target are separate in case you want to teleport some distance from a t
 				continue
 		if(M.client?.holder?.fakekey && isobserver(M))
 			continue
-		var/name = avoid_assoc_duplicate_keys(M.name, namecounts)
+		// Старая хуйня которая вызывала Name (2) Name (3) в списках, заменена на Name (Bit Avatar). СОСИТЕ. СПЛЮРТЫ.
+		var/display_name = M.name
+		if(HAS_TRAIT(M, TRAIT_TEMPORARY_BODY))
+			display_name += " (Bit Avatar)"
+		var/name = avoid_assoc_duplicate_keys(display_name, namecounts)
 
 		if(M.real_name && M.real_name != M.name)
 			name += " \[[M.real_name]\]"

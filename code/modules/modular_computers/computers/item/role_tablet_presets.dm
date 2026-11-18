@@ -250,6 +250,13 @@
 	name = "shaft miner PDA"
 	icon_state = "pda-miner"
 
+/obj/item/modular_computer/pda/bitrunner
+	name = "bitrunner PDA"
+	icon_state = "pda-cargo"
+	starting_programs = list(
+		/datum/computer_file/program/arcade,
+	)
+
 // =====================
 // Service
 // =====================

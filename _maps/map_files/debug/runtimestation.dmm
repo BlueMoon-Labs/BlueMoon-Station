@@ -3791,6 +3791,95 @@
 	},
 /turf/open/floor/carpet/blackred,
 /area/service/bar)
+"al" = (
+/obj/machinery/netpod,
+/turf/open/floor/plating,
+/area/construction)
+"am" = (
+/obj/machinery/netpod,
+/turf/open/floor/plating,
+/area/construction)
+"an" = (
+/obj/machinery/quantum_server,
+/turf/open/floor/plating,
+/area/construction)
+"ao" = (
+/obj/machinery/computer/quantum_console,
+/turf/open/floor/plating,
+/area/construction)
+"as" = (
+/obj/machinery/byteforge,
+/turf/open/floor/plating,
+/area/construction)
+"at" = (
+/obj/machinery/computer/order_console/bitrunning,
+/turf/open/floor/plating,
+/area/construction)
+"bg" = (
+/obj/structure/closet/crate/secure/bitrunning/decrypted,
+/turf/open/floor/plating,
+/area/construction)
+"bj" = (
+/obj/item/disk/bitrunning/item/tier1,
+/turf/open/floor/plating,
+/area/construction)
+"bn" = (
+/obj/item/bitrunning_debug,
+/turf/open/floor/plating,
+/area/construction)
+"bt" = (
+/obj/item/disk/bitrunning/item/tier2,
+/turf/open/floor/plating,
+/area/construction)
+"bz" = (
+/obj/item/disk/bitrunning/item/tier3,
+/turf/open/floor/plating,
+/area/construction)
+"ce" = (
+/obj/item/disk/bitrunning/ability/tier1,
+/turf/open/floor/plating,
+/area/construction)
+"cj" = (
+/obj/item/disk/bitrunning/prefs,
+/turf/open/floor/plating,
+/area/construction)
+"ck" = (
+/obj/machinery/netpod{
+	circuit = /obj/item/circuitboard/machine/netpod/upgraded
+	},
+/turf/open/floor/plating,
+/area/construction
+)
+"cn" = (
+/obj/machinery/quantum_server{
+	circuit = /obj/item/circuitboard/machine/quantum_server/upgraded
+	},
+/turf/open/floor/plating,
+/area/construction
+)
+"cz" = (
+/obj/machinery/byteforge{
+	circuit = /obj/item/circuitboard/machine/byteforge/upgraded
+	},
+/turf/open/floor/plating,
+/area/construction
+)
+"dp" = (
+/obj/structure/table,
+/obj/item/disk/bitrunning/item/tier1,
+/obj/item/disk/bitrunning/item/tier2,
+/obj/item/disk/bitrunning/item/tier3,
+/turf/open/floor/plating,
+/area/construction
+)
+"ee" = (
+/obj/structure/table,
+/obj/item/disk/bitrunning/ability/tier1,
+/obj/item/disk/bitrunning/prefs,
+/obj/item/bitrunning_debug,
+/turf/open/floor/plating,
+/area/construction
+)
 
 (1,1,1) = {"
 aa
@@ -7137,8 +7226,8 @@ cN
 mJ
 dm
 dy
-dy
-dX
+dn
+cN
 dy
 dy
 gG
@@ -7230,7 +7319,7 @@ kO
 dn
 dn
 dn
-dn
+cN
 dn
 dn
 dn
@@ -7319,10 +7408,10 @@ bE
 pV
 RJ
 IF
+ck
+dp
 dn
-dn
-dn
-dn
+cN
 dn
 dn
 dn
@@ -7411,10 +7500,10 @@ bE
 bE
 cQ
 cY
+ck
+ee
 dn
-dn
-dn
-dn
+cN
 dn
 dn
 dn
@@ -7503,10 +7592,10 @@ bE
 bE
 cN
 dW
+cn
 dn
 dn
-dn
-dn
+cN
 dn
 dn
 dn
@@ -7595,10 +7684,10 @@ bE
 bE
 cR
 cY
+ao
+at
 dn
-dn
-dn
-dn
+cN
 dn
 dn
 dn
@@ -7687,10 +7776,10 @@ lX
 bE
 cR
 cY
+cz
+bg
 dn
-dn
-dn
-dn
+cN
 dn
 dn
 dn
@@ -7778,10 +7867,10 @@ dU
 bE
 bE
 cR
-cY
-dn
-dn
-dn
+cN
+cN
+cN
+cN
 dn
 dn
 dn

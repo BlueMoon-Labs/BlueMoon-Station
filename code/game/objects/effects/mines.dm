@@ -45,9 +45,10 @@
 	var/range_heavy = 1
 	var/range_light = 2
 	var/range_flash = 3
+	var/range_flame = 0
 
 /obj/effect/mine/explosive/mineEffect(mob/victim)
-	explosion(loc, range_devastation, range_heavy, range_light, range_flash)
+	explosion(loc, range_devastation, range_heavy, range_light, range_flash, flame_range = range_flame)
 
 
 /obj/effect/mine/stun
@@ -193,3 +194,15 @@
 	sleep(duration)
 	victim.remove_movespeed_modifier(/datum/movespeed_modifier/yellow_orb)
 	to_chat(victim, "<span class='notice'>You slow down.</span>")
+
+/obj/effect/mine/explosive/flame
+	name = "incendiary explosive mine"
+	range_heavy = 0
+	range_light = 1
+	range_flame = 3
+
+/obj/effect/mine/explosive/light
+	name = "low-yield explosive mine"
+	range_heavy = 0
+	range_light = 3
+	range_flash = 2

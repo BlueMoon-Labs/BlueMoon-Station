@@ -355,6 +355,11 @@
 	status = LIGHT_EMPTY
 	update(0)
 
+/obj/machinery/light/empty
+	icon_state = "tube-empty"
+	start_with_cell = FALSE
+	status = LIGHT_EMPTY
+
 
 
 // create a new lighting fixture
@@ -1673,24 +1678,6 @@ GLOBAL_VAR(parked_flicker_watchdog_id)
 	bulb_colour = LIGHT_COLOR_TUNGSTEN
 	nightshift_light_color = null
 
-/// Create directional subtypes for a path to simplify mapping.
-#define MAPPING_DIRECTIONAL_HELPERS(path, offset) ##path/directional/north {\
-	dir = NORTH; \
-	pixel_y = offset; \
-} \
-##path/directional/south {\
-	dir = SOUTH; \
-	pixel_y = -offset; \
-} \
-##path/directional/east {\
-	dir = EAST; \
-	pixel_x = offset; \
-} \
-##path/directional/west {\
-	dir = WEST; \
-	pixel_x = -offset; \
-}
-
 // -------- Directional presets
 // The directions are backwards on the lights we have now
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/light, 0)
@@ -1736,6 +1723,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/light/blacklight, 0)
 
 // ---- Dim tubes
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/light/dim, 0)
+
+// ---- Empty tubes
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/light/empty, 0)
 
 
 // -------- Bulb lights

@@ -16,6 +16,15 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_worn_layer = DRESS_LAYER
 
+/obj/item/clothing/under/rank/cargo/bitrunner
+	name = "bitrunner's jumpsuit"
+	desc = "It's a leathery jumpsuit worn by a bitrunner. Tacky, but comfortable to wear if sitting for prolonged periods of time."
+	icon_state = "bitrunner"
+	item_state = "w_suit"
+	adjusted = NORMAL_STYLE
+	mob_overlay_icon = 'icons/mob/clothing/uniform.dmi'
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
+
 /obj/item/clothing/under/rank/cargo/tech
 	name = "cargo technician's jumpsuit"
 	desc = "Shooooorts! They're comfy and easy to wear!"

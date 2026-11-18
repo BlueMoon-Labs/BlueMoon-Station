@@ -513,3 +513,10 @@
 /obj/structure/flora/rock/pile/largejungle/Initialize(mapload)
 	. = ..()
 	icon_state = "[initial(icon_state)][rand(1,3)]"
+
+/obj/structure/flora/coconuts
+	name = "coconuts"
+	desc = "Кучка кокосов, готовых к раскалыванию."
+	gender = PLURAL
+	icon = 'icons/misc/beach.dmi'
+	icon_state = "coconuts"

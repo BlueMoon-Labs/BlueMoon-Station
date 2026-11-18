@@ -67,6 +67,7 @@
 	checkLiked(fraction, M)
 	reagents.reaction(M, INGEST, fraction)
 	reagents.trans_to(M, gulp_amount, log = TRUE)
+	SEND_SIGNAL(src, COMSIG_GLASS_DRANK, M, user, gulp_amount)
 	playsound(M.loc,'sound/items/drink.ogg', rand(10,50), 1)
 	return TRUE
 

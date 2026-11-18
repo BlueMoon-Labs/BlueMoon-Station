@@ -466,6 +466,7 @@ GLOBAL_LIST_INIT(abductor_recipes, list ( \
 	icon_state = "slag"
 	singular_name = "coal lump"
 	merge_type = /obj/item/stack/sheet/mineral/coal
+	novariants = TRUE
 	grind_results = list(/datum/reagent/carbon = 20)
 
 /obj/item/stack/sheet/mineral/coal/attackby(obj/item/W, mob/user, params)
