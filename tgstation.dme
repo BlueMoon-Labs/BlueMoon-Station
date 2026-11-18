@@ -5135,6 +5135,7 @@
 #include "modular_bluemoon\code\modules\antagonists\inteq_ghostrole\forgottenship.dm"
 #include "modular_bluemoon\code\modules\antagonists\inteq_ghostrole\inteq_cards.dm"
 #include "modular_bluemoon\code\modules\antagonists\malf_custom\malf_custom.dm"
+#include "modular_bluemoon\code\modules\antagonists\malf_custom\malf_drone_factory.dm"
 #include "modular_bluemoon\code\modules\antagonists\qareen\qareen_abilities.dm"
 #include "modular_bluemoon\code\modules\antagonists\ships\solfed_ships.dm"
 #include "modular_bluemoon\code\modules\antagonists\ships\syndicate_ships.dm"

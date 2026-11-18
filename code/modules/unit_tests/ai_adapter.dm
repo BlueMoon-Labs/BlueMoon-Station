@@ -390,6 +390,32 @@
 	TEST_ASSERT_NULL(passive_carp.ai_controller, "An AI_OFF hostile must not receive a controller")
 	TEST_ASSERT_EQUAL(passive_carp.AIStatus, AI_OFF, "An inactive hostile must remain AI_OFF")
 
+	var/mob/living/simple_animal/hostile/malf_drone/factory/combat_drone = allocate(/mob/living/simple_animal/hostile/malf_drone/factory)
+	TEST_ASSERT_NULL(combat_drone.ai_controller, "A player-controlled factory combat drone must not receive a controller")
+	TEST_ASSERT_EQUAL(combat_drone.AIStatus, AI_OFF, "A player-controlled factory combat drone must remain AI_OFF")
+	TEST_ASSERT(!combat_drone.can_have_ai, "A factory combat drone must not be able to enable NPC AI")
+	TEST_ASSERT("silicon" in combat_drone.faction, "AI turrets must recognize combat drones as friendly silicon")
+
+	var/mob/living/simple_animal/hostile/viscerator/malf_scout/scout_drone = allocate(/mob/living/simple_animal/hostile/viscerator/malf_scout)
+	TEST_ASSERT("silicon" in scout_drone.faction, "AI turrets must recognize scout drones as friendly silicon")
+
+/datum/unit_test/malf_drone_factory_produces_scouts_only/Run()
+	var/obj/machinery/malf_drone_factory/factory = allocate(/obj/machinery/malf_drone_factory)
+	TEST_ASSERT(!(factory.interaction_flags_machine & INTERACT_MACHINE_ALLOW_SILICON), "The factory must not be interactable by the AI.")
+	factory.process()
+	var/mob/living/simple_animal/produced_drone = factory.produced_drones[1]
+	var/is_scout = istype(produced_drone, /mob/living/simple_animal/hostile/viscerator/malf_scout)
+	qdel(produced_drone)
+	TEST_ASSERT(is_scout, "The factory must produce a scout drone, never a combat drone.")
+
+/datum/unit_test/malf_drone_moves_faster_without_gravity/Run()
+	var/mob/living/simple_animal/hostile/malf_drone/drone = allocate(/mob/living/simple_animal/hostile/malf_drone)
+	var/initial_speed = initial(drone.speed)
+	drone.update_gravity(0)
+	TEST_ASSERT_EQUAL(drone.speed, initial_speed / 1.5, "A combat drone's movement slowdown must be reduced to two-thirds without gravity.")
+	drone.update_gravity(STANDARD_GRAVITY)
+	TEST_ASSERT_EQUAL(drone.speed, initial_speed, "A combat drone's normal speed must be restored when gravity returns.")
+
 ///Старый сабтиповый код получает фактический статус контроллера.
 /datum/unit_test/ai_adapter_effective_status/Run()
 	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile)
