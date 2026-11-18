@@ -85,7 +85,6 @@
 
 /datum/component/uplink/syndicate/pact
 	name = "PACT Uplink"
-	uplink_theme = "pact"
 
 /datum/component/uplink/syndicate/pact/ui_data(mob/user)
 	. = ..()

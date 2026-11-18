@@ -16,7 +16,7 @@
 	return null
 
 /datum/unit_test/proc/antag_training_uplink_buy(datum/component/uplink/uplink, mob/living/buyer, datum/uplink_item/item)
-	var/datum/tgui/shop = allocate(/datum/tgui, buyer, uplink, "Uplink")
+	var/datum/tgui/shop = allocate(/datum/tgui, buyer, uplink, "UplinkInteQ")
 	shop.status = UI_INTERACTIVE
 	usr = buyer
 	uplink.ui_act("buy", list("name" = item.name), shop)
