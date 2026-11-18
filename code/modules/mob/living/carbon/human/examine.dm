@@ -44,7 +44,11 @@
 		var/species_name = html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)
 		race_html = "<span class='examine_species' title='[species_name]'>[capitalize(t_ego)] вид – [spec_trait_examine_font()][species_name]</font></span>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
-		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
+		var/target_name = shown_name
+		if(shown_name == "Неизвестный")
+			target_name = "Неизвестного"
+		else if(shown_name == "Неизвестная")
+			target_name = "Неизвестную"
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 
