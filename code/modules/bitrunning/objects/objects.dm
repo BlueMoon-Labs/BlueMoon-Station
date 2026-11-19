@@ -1163,7 +1163,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	if(QDELETED(src) || isnull(delivery_turf))
 		return
 	var/datum/supply_order/order = build_delivery_order(ordered_paths, user)
-	var/obj/structure/closet/supplypod/pod = new()
+	var/obj/structure/closet/supplypod/bluespacepod/pod = new()
 	new /obj/effect/pod_landingzone(delivery_turf, pod, order)
 
 /obj/machinery/computer/order_console/bitrunning/proc/subtract_points(final_cost, obj/item/card/id/card)
