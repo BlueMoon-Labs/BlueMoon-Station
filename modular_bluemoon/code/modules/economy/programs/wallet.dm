@@ -114,6 +114,9 @@
 		"amount" = account.wage_amount(),
 		"floor_only" = (!account.pay_grade || !department) && account.nt_floor_crew(),
 		"tax_rate" = SSeconomy.tax_rate,
+		"tax_nt_share" = SSeconomy.tax_nt_share_now(),
+		"tax_mood_note" = SSeconomy.tax_mood_note(),
+		"tax_mood_progress" = SSeconomy.tax_mood_progress(),
 		"owed" = account.owed_wages,
 	)
 	data["history"] = account.ui_history()

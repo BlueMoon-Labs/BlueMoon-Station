@@ -175,6 +175,55 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		if(body.mind && body_turf && is_station_level(body_turf.z))
 			. += body
 
+/// Что о теле видит монитор экипажа: режим датчиков костюма SENSOR_*, у нанитов - всё, без датчиков - SENSOR_OFF.
+/proc/econ_sensor_level(mob/living/carbon/human/body)
+	if(body in SSnanites.nanite_monitored_mobs)
+		return SENSOR_COORDS
+	var/obj/item/clothing/under/uniform = body.w_uniform
+	if(!istype(uniform) || uniform.has_sensor <= 0)
+		return SENSOR_OFF
+	return uniform.sensor_mode
+
+/datum/economy_department
+	/// Паки "нужно сейчас" по датчикам, о которых канал отдела уже слышал; нужда прошла - пак уходит из списка
+	var/list/alerted_needs = list()
+	COOLDOWN_DECLARE(needs_alert_cooldown)
+
+/// Нужды по датчикам станции, тип пака -> почему: о новых канал отдела слышит на тике экономики.
+/datum/economy_department/proc/sensor_needs()
+	return list()
+
+/// Новая нужда по датчикам - строка в канал отдела, не чаще ECON_NEEDS_ALERT_COOLDOWN и только если в отделе кто-то на смене. Возвращает сообщение или null.
+/datum/economy_department/proc/announce_new_needs(list/stats)
+	var/list/sensed = sensor_needs()
+	if(!length(sensed))
+		alerted_needs.Cut()
+		return null
+	var/list/packs = catalog()
+	var/list/current = list()
+	for(var/pack_type in sensed)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		if(pack && (pack in packs))
+			current[pack_type] = sensed[pack_type]
+	for(var/pack_type in alerted_needs.Copy())
+		if(!current[pack_type])
+			alerted_needs -= pack_type
+	var/list/fresh = list()
+	for(var/pack_type in current)
+		if(!(pack_type in alerted_needs))
+			fresh += pack_type
+	var/channel = radio_channel()
+	if(!length(fresh) || !channel || !COOLDOWN_FINISHED(src, needs_alert_cooldown) || !staff_on_shift(stats))
+		return null
+	COOLDOWN_START(src, needs_alert_cooldown, ECON_NEEDS_ALERT_COOLDOWN)
+	alerted_needs |= fresh
+	var/list/lines = list()
+	for(var/pack_type in fresh)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		lines += "[pack.name] ([current[pack_type]])"
+	. = "Отдел \"[name]\", нужно сейчас: [jointext(lines, "; ")]. Заказать - в \"Бюджете отдела\" на КПК."
+	paperwork_radio(., channel)
+
 /// Заявки без решения дольше request_handoff_minutes передаются начальнику снабжения: оповещаются подавший, канал снабжения и карты тех, кто решит.
 /datum/economy_department/proc/hand_off_stale_requests()
 	var/minutes = SSeconomy.settings.request_handoff_minutes
@@ -236,12 +285,14 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 	var/list/parts = list()
 	if(account.account_balance < price)
 		parts += "в бюджете [account.account_balance] кр. из [price]"
+	else if(!keeps_wage_reserve(request.pack))
+		parts += "сама не закажется: [owed_to_staff()] кр. бюджета отложено на зарплату сотрудникам"
 	if(econ_pack_staple(request.pack) && request.requester_account_id && price <= staple_left(request.requester_account_id))
 		parts += "расходник: закажется сам, когда хватит денег"
 		return capitalize(jointext(parts, "; ")) + "."
 	var/who = deciders_text(request)
 	parts += who ? "решает [who]" : "сейчас решить некому: на смене нет начальства отдела[ai_decides() ? " и ИИ" : ""]"
-	if(auto_approvable(request.pack) && settings.auto_approve_wait_minutes > 0)
+	if(auto_approvable(request.pack) && settings.auto_approve_wait_minutes > 0 && instant_approval())
 		var/left = settings.auto_approve_wait_minutes - request.waited_minutes()
 		parts += left > 0 ? "без ответа одобрится сама через [left] мин." : "одобрится сама на ближайшем цикле экономики"
 	else if(request.handed_off)

@@ -21,6 +21,7 @@ const base: TreasuryData = {
   tax_nt_share: 50,
   tax_unrest_above: 20,
   tax_unrest_cut: 25,
+  tax_unrest_nt_share: 90,
   tax_goodwill_upto: 5,
   tax_goodwill_premium: 15,
   work_premium_base: 10,
@@ -151,10 +152,15 @@ describe('NtosTreasury', () => {
   test('налог с последствиями: правила, предупреждение и действующее недовольство', () => {
     const calm = setup();
     const rules = text(calm.container);
-    expect(rules).toContain('Экипаж замечает налог, который держится дольше 15 мин. Выше 20% - недовольство');
-    expect(rules).toContain('отделы получают за работу на 25% меньше');
+    expect(rules).toContain('Экипаж замечает налог, который держится дольше 15 мин.: время копится, и короткий сброс налога отсчёт не обнуляет. Выше 20% - недовольство');
+    expect(rules).toContain('отделы получают за работу на 25% меньше, премии за работу тоже ниже, а NT забирает 90% налога.');
     expect(rules).toContain('До 5% - довольство: премия за работу 15% вместо 10%');
+    expect(rules).toContain('Вернули налог в обычные пределы (от 6% до 20%) - настроение проходит сразу.');
     calm.unmount();
+    const flat = setup({ tax_goodwill_premium: 10 });
+    expect(text(flat.container)).not.toContain('- довольство');
+    expect(text(flat.container)).toContain('Вернули налог в обычные пределы (до 20%) - настроение проходит сразу.');
+    flat.unmount();
     const angry = setup({
       tax_rate: 30,
       tax_mood: 'unrest',

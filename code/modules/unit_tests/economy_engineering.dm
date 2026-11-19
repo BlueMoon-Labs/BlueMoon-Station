@@ -84,7 +84,7 @@
 	TEST_ASSERT(findtext(jointext(node.examine(engineer), "\n"), "Узел стоит вне станции"), "Осмотр не говорит, что узел вне станции")
 	TEST_ASSERT(!node.ui_data(engineer)["on_station"], "Окно считает узел станционным")
 
-/// Окно узла показывает, куда идут деньги: бюджет инженерии и его порог возврата NT, что из каталога инженерии на них купить; при недовольстве экипажа налогом цена МДж ниже.
+/// Окно узла показывает, куда идут деньги: бюджет инженерии, его порог и сумму возврата NT, что из каталога инженерии на них купить (один пак - один пример); при недовольстве экипажа налогом цена МДж ниже.
 /datum/unit_test/economy_engineering/power_export_money/Run()
 	save_state()
 	var/obj/machinery/power/export_node/node = allocate(/obj/machinery/power/export_node/econ_test_station)
@@ -98,6 +98,14 @@
 	TEST_ASSERT_EQUAL(length(examples), min(3, length(engineering.catalog())), "Примеры покупок: [json_encode(examples)]")
 	for(var/i in 2 to length(examples))
 		TEST_ASSERT(examples[i]["price"] >= examples[i - 1]["price"], "Примеры не по возрастанию цены: [json_encode(examples)]")
+	var/list/full_catalog = econ_department_packs(ACCOUNT_ENG)
+	GLOB.econ_department_packs[ACCOUNT_ENG] = list(engineering.catalog()[1])
+	var/list/single = node.ui_static_data(null)["pack_examples"]
+	GLOB.econ_department_packs[ACCOUNT_ENG] = full_catalog
+	TEST_ASSERT_EQUAL(length(single), 1, "Один пак каталога показан дважды: [json_encode(single)]")
+	econ_test_set_balance(budget, engineering.budget_threshold() + engineering.owed_to_staff() + engineering.shielded() + 100000)
+	TEST_ASSERT(engineering.budget_return_due() > 0, "Излишка к возврату нет")
+	TEST_ASSERT_EQUAL(node.ui_data(null)["return_due"], engineering.budget_return_due(), "Окно не показывает, сколько заберёт NT")
 	var/price = econ_power_export_price_per_mj()
 	var/saved_mood = SSeconomy.tax_mood
 	SSeconomy.tax_mood = TAX_MOOD_UNREST

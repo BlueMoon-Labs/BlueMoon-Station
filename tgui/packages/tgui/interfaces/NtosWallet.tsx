@@ -30,6 +30,12 @@ type Wage = {
   amount: number;
   floor_only?: BooleanLike;
   tax_rate: number;
+  /** Какую долю налога сейчас забирает NT: при недовольстве экипажа больше */
+  tax_nt_share?: number;
+  /** Действующее настроение экипажа от налога */
+  tax_mood_note?: string;
+  /** Сколько налог уже держится в полосе, которая ещё не сменила настроение */
+  tax_mood_progress?: string;
   owed: number;
 };
 
@@ -338,9 +344,19 @@ const WageSection = () => {
         )}
         <LabeledList.Item label="Налог">
           Налог {wage.tax_rate}% удерживается с зарплаты, премий (от главы и за работу) и доли контрактов,{' '}
-          {data.tax_nt_share ?? 0}% налога забирает NT, остальное получает казна. Без налога: доплата NT до минимума,
+          {wage.tax_nt_share ?? data.tax_nt_share ?? 0}% налога забирает NT, остальное получает казна. Без налога: доплата NT до минимума,
           переводы и чаевые. Казна - общий счёт станции: из неё капитан и ГП пополняют бюджеты отделов, из которых и
           платятся зарплаты, и закрывают расходы станции на чрезвычайные события.
+          {!!wage.tax_mood_note && (
+            <Box color="average" mt={0.5}>
+              {wage.tax_mood_note}
+            </Box>
+          )}
+          {!!wage.tax_mood_progress && (
+            <Box color="label" mt={0.5}>
+              {wage.tax_mood_progress}
+            </Box>
+          )}
         </LabeledList.Item>
         {wage.owed > 0 && (
           <LabeledList.Item label="Отдел должен" color="average">

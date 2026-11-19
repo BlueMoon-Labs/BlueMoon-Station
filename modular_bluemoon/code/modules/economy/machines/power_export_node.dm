@@ -226,9 +226,9 @@
 	sortTim(priced, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
 	var/list/examples = list()
 	var/count = length(priced)
-	for(var/index in (count >= 3 ? list(1, CEILING(count / 2, 1), count) : count ? list(1, count) : list()))
+	for(var/index in (count ? uniqueList(list(1, CEILING(count / 2, 1), count)) : list()))
 		var/datum/supply_pack/pack = priced[index]
-		examples |= list(list("name" = pack.name, "price" = priced[pack]))
+		examples += list(list("name" = pack.name, "price" = priced[pack]))
 	return list(
 		"pack_count" = count,
 		"pack_examples" = examples,
@@ -268,6 +268,7 @@
 		"unrest_cut" = SSeconomy.tax_mood == TAX_MOOD_UNREST ? settings.tax_unrest_work_cut : 0,
 		"budget" = engineering?.account.account_balance || 0,
 		"budget_cap" = engineering?.budget_threshold() || 0,
+		"return_due" = engineering?.budget_return_due() || 0,
 	)
 
 /obj/machinery/power/export_node/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

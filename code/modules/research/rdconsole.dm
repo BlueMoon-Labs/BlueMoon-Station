@@ -177,7 +177,7 @@ Nothing else in the console has ID requirements.
 /obj/machinery/computer/rdconsole/examine(mob/user)
 	. = ..()
 	if(stored_research?.pays_research_bounty)
-		. += span_notice("Nanotrasen оплачивает бюджету науки каждое исследование с этой консоли: [SSeconomy.settings.work_prices[WORK_SCI_NODE]] кр. за [ECON_NODE_POINTS_UNIT] очков стоимости узла.")
+		. += span_notice("Nanotrasen оплачивает бюджету науки каждое исследование с этой консоли: [econ_shown_work_price(WORK_SCI_NODE)] кр. за [ECON_NODE_POINTS_UNIT] очков стоимости узла.")
 		var/list/rising = list()
 		var/list/shares = SSmarket?.work_stocks[WORK_SCI_NODE]
 		for(var/ticker in shares)

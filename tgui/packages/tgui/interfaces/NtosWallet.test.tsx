@@ -114,6 +114,17 @@ describe('NtosWallet', () => {
     expect(graded).not.toContain('220 кр. раз в');
   });
 
+  test('строка налога показывает настроение экипажа и сколько налог уже держится', () => {
+    const angry = text(
+      setup({ wage: { ...base.wage!, tax_rate: 30, tax_nt_share: 90, tax_mood_note: 'Экипаж недоволен налогом выше 20%.', tax_mood_progress: '' } }).container,
+    );
+    expect(angry).toContain('90% налога забирает NT');
+    expect(angry).toContain('Экипаж недоволен налогом выше 20%.');
+    document.body.innerHTML = '';
+    const soon = text(setup({ wage: { ...base.wage!, tax_rate: 25, tax_mood_progress: 'Налог выше 20% держится 4 из 15 мин.: дальше экипаж станет недоволен.' } }).container);
+    expect(soon).toContain('держится 4 из 15 мин.');
+  });
+
   test('заморозка показывает, кто и почему', () => {
     const { container } = setup({
       state: 'frozen',

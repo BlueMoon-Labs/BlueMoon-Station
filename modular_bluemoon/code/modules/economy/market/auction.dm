@@ -284,7 +284,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		if(crew_lot.buyout)
 			buyout_text = ", купить сразу - [crew_lot.buyout] кр."
 	else
-		text = "Аукцион сектора: на торгах \"[lot.name]\"."
+		text = "Аукцион сектора: на торгах \"[lot.name]\"[length(lot.rivals) ? "" : ", других станций на торгах нет"]."
 	if(!paperwork_radio("[text] Старт [lot.start_price()] кр.[buyout_text], торги [minutes] мин. Ставки - в Кошельке на КПК, вкладка «Заказы».", RADIO_CHANNEL_COMMON))
 		return FALSE
 	auction_announce_ready_at = world.time + SSeconomy.settings.auction_announce_minutes MINUTES

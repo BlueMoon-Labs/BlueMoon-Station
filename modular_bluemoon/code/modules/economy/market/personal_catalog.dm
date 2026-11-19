@@ -313,6 +313,8 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 /obj/docking_port/mobile/supply
 	/// Личные заказы, которые шаттл везёт на станцию: weakref счёта, чья карта откроет посылку -> list("№id пак"); карта узнает о них, когда шаттл сядет
 	var/list/personal_arrivals = list()
+	/// Заказы по заявкам сотрудников, которые шаттл везёт на станцию: weakref счёта подавшего -> list("пак (заявка №uid)")
+	var/list/request_arrivals = list()
 
 /// Отгрузка личного заказа: владелец посылки узнает о нём по прибытии шаттла на станцию.
 /obj/docking_port/mobile/supply/proc/note_personal_shipment(datum/supply_order/order)
@@ -330,6 +332,32 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 		var/list/orders = personal_arrivals[owner_ref]
 		owner?.bank_card_talk("Шаттл снабжения привёз на станцию [length(orders) > 1 ? "ваши заказы" : "ваш заказ"] [jointext(orders, ", ")]: запертая посылка на ваше имя ждёт в отделе снабжения, откроет её ваша ID-карта.")
 	personal_arrivals.Cut()
+	notify_request_arrivals()
+
+/// Отгрузка заказа по заявке сотрудника: подавший узнает о нём по прибытии шаттла на станцию.
+/obj/docking_port/mobile/supply/proc/note_request_shipment(datum/supply_order/order)
+	if(!order.requester_account_id || !order.department_id || order.personal_prepaid())
+		return
+	var/datum/bank_account/requester = SSeconomy.find_account(order.requester_account_id)
+	var/datum/weakref/requester_ref = WEAKREF(requester)
+	if(!requester_ref)
+		return
+	if(!request_arrivals[requester_ref])
+		request_arrivals[requester_ref] = list()
+	request_arrivals[requester_ref] += "\"[order.pack.name]\" (заявка №[order.econ_request_uid])"
+
+/// Карта подавшего заявку сообщает, что заказ приехал; ушедшему со смены и мёртвому - ничего, без игрока карта молчит сама.
+/obj/docking_port/mobile/supply/proc/notify_request_arrivals()
+	for(var/datum/weakref/requester_ref as anything in request_arrivals)
+		var/datum/bank_account/requester = requester_ref.resolve()
+		if(!requester || requester.state != ACCOUNT_ACTIVE)
+			continue
+		var/mob/living/owner = requester.owner_ref?.resolve()
+		if(owner?.stat == DEAD)
+			continue
+		var/list/orders = request_arrivals[requester_ref]
+		requester.bank_card_talk("Шаттл снабжения привёз [length(orders) > 1 ? "заказы по вашим заявкам" : "заказ по вашей заявке"]: [jointext(orders, ", ")]. Ящик - в отделе снабжения.")
+	request_arrivals.Cut()
 
 /// Личные заказы account, которые шаттл уже везёт на станцию.
 /obj/docking_port/mobile/supply/proc/personal_in_transit(datum/bank_account/account)

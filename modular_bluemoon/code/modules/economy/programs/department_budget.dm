@@ -106,16 +106,12 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/datum/economy_department/listed = SSeconomy.departments[id]
 		departments += list(list("id" = id, "name" = listed.name))
 	var/list/catalog = list()
-	var/list/work_prices = list()
 	var/datum/economy_department/department = current_department(user)
 	if(department)
 		var/list/packs = department.catalog()
 		catalog_cache[department.id] = packs
 		for(var/datum/supply_pack/pack as anything in packs)
 			catalog += list(list("type" = "[pack.type]", "name" = pack.name, "desc" = pack.desc || pack.name, "staple" = econ_pack_staple(pack)))
-		var/list/works = GLOB.econ_department_work[department.id]
-		for(var/work_type in works)
-			work_prices += list(list("name" = econ_work_name(work_type), "price" = settings.work_prices[work_type], "unit" = works[work_type]))
 	var/list/goal_packs = istype(department, /datum/economy_department/cargo) ? econ_cargo_goal_packs(department) : list()
 	return list(
 		"goal_packs" = goal_packs,
@@ -123,7 +119,6 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"departments" = departments,
 		"catalog" = catalog,
 		"advice" = department?.spending_advice() || list(),
-		"work_prices" = work_prices,
 		"reason_max" = ECON_REQUEST_REASON_MAX,
 		"grant_base" = settings.grant_base,
 		"grant_payroll_share" = settings.grant_payroll_share,
@@ -152,7 +147,6 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"handoff_minutes" = settings.request_handoff_minutes,
 		"pending_per_requester" = settings.request_pending_per_requester,
 		"handling_fee" = settings.cargo_handling_fee,
-		"work_share" = settings.work_personal_share,
 		"work_cap" = settings.work_personal_cap_hour,
 		"performer_share" = settings.contract_performer_share,
 		"contracts_help_topics" = econ_contracts_help_topics(),
@@ -200,6 +194,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"threshold" = department.budget_threshold(staff_stats),
 		"threshold_floor" = department.budget_floor(),
 		"return_due" = department.budget_return_due(staff_stats),
+		"reserve" = department.owed_to_staff(staff_stats),
 		"return_in" = max(CEILING((SSeconomy.next_fire - world.time) / (1 MINUTES), 1), 1),
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
@@ -214,6 +209,13 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		prices["[pack.type]"] = list("price" = row["cost"], "available" = row["in_stock"])
 	data["prices"] = prices
 	data["needs"] = department.needs_ui()
+	data["head_on_shift"] = department.has_approver_on_shift()
+	data["work_share"] = SSeconomy.work_premium_share()
+	var/list/work_prices = list()
+	var/list/works = GLOB.econ_department_work[department.id]
+	for(var/work_type in works)
+		work_prices += list(list("name" = econ_work_name(work_type), "price" = round(SSeconomy.work_price(work_type), 0.01), "unit" = works[work_type]))
+	data["work_prices"] = work_prices
 	data["instant_approval"] = department.instant_approval()
 	data["auto_ready_in"] = own?.department_id == department.id ? max(CEILING((department.auto_approve_after["[own.account_id]"] - world.time) / (1 MINUTES), 1), 0) : null
 	if(istype(department, /datum/economy_department/cargo))
@@ -392,7 +394,15 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(request.status == ECON_REQUEST_APPROVED)
 				messages[user_ref] = "Заявка №[request.uid] одобрена, заказ ушёл в снабжение."
 			else
-				messages[user_ref] = "Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]."
+				var/list/parts = list(econ_sentence("Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]"))
+				var/money = department.money_note(pack)
+				if(money)
+					parts += money
+				var/datum/bank_account/requester_account = econ_account_of(user)
+				var/cooldown = department.cooldown_note(pack, requester_account?.account_id)
+				if(cooldown)
+					parts += cooldown
+				messages[user_ref] = jointext(parts, " ")
 		if("approve", "deny")
 			var/datum/economy_department/owner = department
 			if(istext(params["department"]) && params["department"] != department.id)

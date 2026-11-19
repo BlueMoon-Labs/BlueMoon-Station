@@ -75,6 +75,10 @@
 	if(damage["dark_apcs"])
 		.[/datum/supply_pack/engineering/power] = "Щитков без питания: [damage["dark_apcs"]]"
 
+/// Воздушные тревоги и щитки видны инженерам на консолях станции.
+/datum/economy_department/engineering/sensor_needs()
+	return situational_needs()
+
 /datum/economy_department/engineering/everyday_needs()
 	return list(
 		/datum/supply_pack/materials/metal50 = "Металл на ремонт и стройку",

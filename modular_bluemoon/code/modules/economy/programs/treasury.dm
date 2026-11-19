@@ -60,6 +60,7 @@
 		"tax_nt_share" = settings.tax_nt_share,
 		"tax_unrest_above" = settings.tax_unrest_above,
 		"tax_unrest_cut" = settings.tax_unrest_work_cut,
+		"tax_unrest_nt_share" = settings.tax_unrest_nt_share,
 		"tax_goodwill_upto" = settings.tax_goodwill_upto,
 		"tax_goodwill_premium" = settings.work_personal_share + settings.tax_goodwill_premium_bonus,
 		"work_premium_base" = settings.work_personal_share,
@@ -282,8 +283,7 @@
 			if(isnull(rate) || !SSeconomy.set_tax_rate(rate, user))
 				messages[user_ref] = "Неверная ставка."
 			else
-				var/hint = SSeconomy.tax_mood_hint()
-				messages[user_ref] = "Налог: [SSeconomy.tax_rate]%.[hint ? " [hint]" : ""]"
+				messages[user_ref] = "Налог: [SSeconomy.tax_rate]%."
 		if("fund")
 			var/datum/economy_department/target = budget_department(params["department"])
 			var/amount = econ_ui_number(params["amount"])

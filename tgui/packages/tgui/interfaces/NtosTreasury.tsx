@@ -96,6 +96,8 @@ export type TreasuryData = {
   tax_nt_share?: number;
   tax_unrest_above?: number;
   tax_unrest_cut?: number;
+  /** Какую долю налога NT забирает при недовольстве */
+  tax_unrest_nt_share?: number;
   tax_goodwill_upto?: number;
   tax_goodwill_premium?: number;
   work_premium_base?: number;
@@ -205,6 +207,7 @@ export const NtosTreasuryContent = () => {
 const TreasuryTab = () => {
   const { act, data } = useBackend<TreasuryData>();
   const [rate, setRate] = useState(data.tax_rate);
+  const goodwill = (data.tax_goodwill_premium ?? 0) > (data.work_premium_base ?? 0);
   return (
     <>
       <Section title="Казна станции">
@@ -235,10 +238,14 @@ const TreasuryTab = () => {
           выручка прилавков налогом не облагаются.
         </Box>
         <Box color="label" mt={1}>
-          Экипаж замечает налог, который держится дольше {data.tax_mood_minutes ?? 0} мин. Выше {data.tax_unrest_above ?? 0}% -
-          недовольство: отделы получают за работу на {data.tax_unrest_cut ?? 0}% меньше, премии за работу тоже ниже. До{' '}
-          {data.tax_goodwill_upto ?? 0}% - довольство: премия за работу {data.tax_goodwill_premium ?? 0}% вместо{' '}
-          {data.work_premium_base ?? 0}%, но казна получает меньше. Сменили налог - настроение проходит сразу.
+          Экипаж замечает налог, который держится дольше {data.tax_mood_minutes ?? 0} мин.: время копится, и короткий сброс налога
+          отсчёт не обнуляет. Выше {data.tax_unrest_above ?? 0}% - недовольство: отделы получают за работу на{' '}
+          {data.tax_unrest_cut ?? 0}% меньше, премии за работу тоже ниже, а NT забирает {data.tax_unrest_nt_share ?? 0}% налога.{' '}
+          {goodwill
+            ? `До ${data.tax_goodwill_upto ?? 0}% - довольство: премия за работу ${data.tax_goodwill_premium ?? 0}% вместо ${data.work_premium_base ?? 0}%, но казна получает меньше. `
+            : ''}
+          Вернули налог в обычные пределы ({goodwill ? `от ${(data.tax_goodwill_upto ?? 0) + 1}% ` : ''}до {data.tax_unrest_above ?? 0}%)
+          - настроение проходит сразу.
         </Box>
         {!!data.tax_mood_note && (
           <NoticeBox success={data.tax_mood === 'goodwill'} mt={1}>

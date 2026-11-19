@@ -3,7 +3,7 @@ import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
-import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent } from './NtosDepartmentBudget';
+import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent, ordersItself, requestTooltip } from './NtosDepartmentBudget';
 
 const base: BudgetData = {
   departments: [
@@ -333,7 +333,6 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(getByText('Каталог'));
     expect(queryByText('Заказать')).toBeNull();
     expect(text(container)).toContain('заявка до 1000 кр. одобряется сама');
-    expect(text(container)).toContain('Если ответа нет 10 мин., недорогая заявка одобряется сама и при начальстве на смене.');
     fireEvent.input(getByPlaceholderText('Причина заявки'), { target: { value: 'бинты' } });
     fireEvent.click(getByText('Заявка'));
     expect(sent(topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'бинты' }]);
@@ -345,6 +344,7 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(ready.getByText('Каталог'));
     expect(text(ready.container)).toContain('Заявка до 1 000 кр. одобряется сама сразу, не чаще раза в 10 мин. на сотрудника.');
     expect(text(ready.container)).not.toContain('Если на смене некому одобрить');
+    expect(text(ready.container)).toContain('Если ответа нет 10 мин., недорогая заявка одобряется сама и при начальстве на смене.');
     fireEvent.click(ready.getByText('Заказать'));
     expect(sent(ready.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: '' }]);
     ready.unmount();
@@ -357,6 +357,26 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(security.getByText('Каталог'));
     expect(security.queryByText('Заказать')).toBeNull();
     expect(text(security.container)).toContain('Если на смене некому одобрить, заявка до 1000 кр. одобряется сама');
+    expect(text(security.container)).not.toContain('Если ответа нет');
+  });
+
+  test('сотрудник: заказ без одобрения не трогает деньги на зарплату, подсказка объясняет, чего ждёт заявка', () => {
+    const cheap = { prices: { '/datum/supply_pack/medical/surgery': { price: 800, available: 1 } } };
+    const staffView = { ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 };
+    const reserved = setup({ ...staffView, department: { ...base.department!, balance: 1500, reserve: 800 } });
+    fireEvent.click(reserved.getByText('Каталог'));
+    expect(reserved.queryByText('Заказать')).toBeNull();
+    expect(text(reserved.container)).toContain('после заказа в бюджете останется на долги и следующую зарплату сотрудникам (сейчас 800 кр.)');
+    reserved.unmount();
+    const enough = setup({ ...staffView, department: { ...base.department!, balance: 1600, reserve: 800 } });
+    fireEvent.click(enough.getByText('Каталог'));
+    expect(enough.getByText('Заказать')).toBeTruthy();
+    enough.unmount();
+    const data = { ...base, ...staffView } as BudgetData;
+    expect(requestTooltip({ ...data, department: { ...base.department!, balance: 500 } }, 800).replace(/\u00a0/g, ' ')).toBe('В бюджете сейчас 500 кр., пак стоит 800 кр.: заявка подождёт денег');
+    expect(requestTooltip({ ...data, head_on_shift: 1 }, 800)).toBe('Заявка главе: ему придёт сообщение на карту');
+    expect(requestTooltip({ ...data, head_on_shift: 0 }, 800)).not.toContain('главе');
+    expect(ordersItself({ ...data, department: { ...base.department!, balance: 1500, reserve: 800 } }, { staple: 1 }, 800)).toBe(false);
   });
 
   test('на что тратить бюджет: советы и "нужно сейчас" с кнопкой', () => {

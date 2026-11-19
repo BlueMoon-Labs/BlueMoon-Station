@@ -1107,3 +1107,17 @@
 	TEST_ASSERT_NOTNULL(list_item(shy, allocate(/obj/item/toy/plush/lizardplushie, pad_turf), 100, anonymous = TRUE), "Третий лот выставлен")
 	TEST_ASSERT_EQUAL(length(spy.heard), 2, "После кулдауна лот прозвучал")
 	TEST_ASSERT(findtext(spy.heard[2], "аноним") && !findtext(spy.heard[2], "Econ Auction Shy"), "Анонимный продавец назван в канале: [spy.heard[2]]")
+
+/// Лот сектора без станций-соперников объявляется с пометкой, что торговаться не с кем; лот с соперниками - без неё.
+/datum/unit_test/economy_market/crew_auction/sector_radio_rivals/Run()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_radio()
+	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
+	lot.name = "Econ Test Lot"
+	lot.value = 1000
+	lot.rivals = list()
+	TEST_ASSERT(SSmarket.announce_auction_lot(lot, 5), "Лот без соперников объявлен")
+	TEST_ASSERT(findtext(spy.heard[1], "\"Econ Test Lot\", других станций на торгах нет."), "Нет пометки о лоте без соперников: [spy.heard[1]]")
+	SSmarket.auction_announce_ready_at = 0
+	lot.rivals = list("Станция Тест" = 1100)
+	TEST_ASSERT(SSmarket.announce_auction_lot(lot, 5), "Лот с соперниками объявлен")
+	TEST_ASSERT(!findtext(spy.heard[2], "других станций"), "Лот с соперниками объявлен как свободный: [spy.heard[2]]")

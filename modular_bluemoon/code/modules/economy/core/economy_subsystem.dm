@@ -59,7 +59,8 @@ SUBSYSTEM_DEF(economy)
 	market_account = SSeconomy.market_account
 	tax_rate = SSeconomy.tax_rate
 	tax_band = SSeconomy.tax_band
-	tax_band_since = SSeconomy.tax_band_since
+	tax_band_held = SSeconomy.tax_band_held
+	tax_band_checked = SSeconomy.tax_band_checked
 	tax_mood = SSeconomy.tax_mood
 	tax_mood_timer = SSeconomy.tax_mood_timer
 	fire_count = SSeconomy.fire_count
@@ -97,6 +98,7 @@ SUBSYSTEM_DEF(economy)
 		department.approve_stale_requests()
 		department.hand_off_stale_requests()
 		department.on_economy_tick()
+		department.announce_new_needs(staff_stats)
 		department.settle_owed()
 	if(contracts_started)
 		recover_contract_demand()

@@ -284,7 +284,7 @@
 	TEST_ASSERT(engineering.order_pack(pack, chief, "тест"), "Глава заказывает второй раз")
 	TEST_ASSERT(!length(spy.heard), "Второй заказ в кулдаун не объявлен: [jointext(spy.heard, "; ")]")
 
-/// О заявке, ждущей решения, отдел оповещает сам, откуда бы её ни подали: канал отдела через систему оповещения и карты начальства на смене, кроме мёртвых; кулдаун общий.
+/// О заявке, ждущей решения, отдел оповещает сам, откуда бы её ни подали: канал отдела через систему оповещения, не чаще кулдауна, и карты начальства на смене, кроме мёртвых, - о каждой заявке.
 /datum/unit_test/economy_catalog/request_pending_announce/Run()
 	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
@@ -315,10 +315,11 @@
 	var/datum/bank_account/econ_test_ear/offline_ear = econ_account_of(offline_captain)
 	TEST_ASSERT(!length(offline_ear.heard), "Капитану не на смене карта не сообщает")
 	spy.heard.Cut()
-	medical.submit_request(pack, doctor, "Ещё")
+	var/datum/econ_request/second = medical.submit_request(pack, doctor, "Ещё")
 	TEST_ASSERT(!length(spy.heard), "Вторая заявка в кулдаун не объявлена: [jointext(spy.heard, "; ")]")
 	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
-	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 1, "Вторая заявка в кулдаун не пишет на карту")
+	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 2, "Вторая заявка в кулдаун канала не пришла на карту главы")
+	TEST_ASSERT(findtext(cmo_ear.heard[2], "econ_request=[second.uid];econ_decide=approve"), "На второй заявке нет кнопок: [cmo_ear.heard[2]]")
 
 /// Заявка: глава одобряет - бюджет списан, заказ встал в очередь карго предоплаченным.
 /datum/unit_test/economy_catalog/request_approve/Run()
@@ -419,7 +420,7 @@
 	var/datum/econ_request/officer_request = security.submit_request(armory_cheap, officer, "тест")
 	TEST_ASSERT_EQUAL(officer_request.status, ECON_REQUEST_PENDING, "Заявка СБ ждёт главу")
 
-/// Сообщение карты главы несёт ссылки "Одобрить" и "Отклонить": глава решает заявку одним нажатием, сотрудник и мёртвый - нет.
+/// Карта главы сообщает о каждой ждущей заявке со ссылками "Одобрить" и "Отклонить", о пачке с консоли - одним сообщением со ссылками на каждую: глава решает заявку одним нажатием, сотрудник и мёртвый - нет.
 /datum/unit_test/economy_catalog/request_link_decide/Run()
 	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
 	var/datum/supply_pack/pack = pack_above_auto_limit(engineering)
@@ -431,9 +432,11 @@
 	var/datum/econ_request/second = engineering.submit_request(pack, engineer, "тест")
 	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Дорогая заявка ждёт главу")
 	var/datum/bank_account/econ_test_ear/ear = econ_account_of(chief)
-	TEST_ASSERT_EQUAL(length(ear.heard), 1, "Карта главы сообщила о заявке")
+	TEST_ASSERT_EQUAL(length(ear.heard), 2, "Карта главы сообщила не о каждой заявке: [jointext(ear.heard, "; ")]")
 	TEST_ASSERT(findtext(ear.heard[1], "src=[REF(engineering)];econ_request=[request.uid];econ_decide=approve"), "В сообщении ссылка одобрения: [ear.heard[1]]")
 	TEST_ASSERT(findtext(ear.heard[1], "econ_decide=deny"), "В сообщении ссылка отказа")
+	TEST_ASSERT(findtext(ear.heard[1], "Отклонить</a> - или в программе \"Бюджет отдела\" на КПК."), "Ссылки не ведут к программе: [ear.heard[1]]")
+	TEST_ASSERT(findtext(ear.heard[2], "econ_request=[second.uid];econ_decide=approve"), "У второй заявки нет своей ссылки: [ear.heard[2]]")
 	usr = engineer
 	engineering.Topic(null, list("econ_request" = "[request.uid]", "econ_decide" = "approve"))
 	usr = null
@@ -446,12 +449,108 @@
 	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_DENIED, "Глава отклонил по ссылке")
 	TEST_ASSERT_EQUAL(engineering.account.account_balance, 50, "Одобренная оплачена бюджетом")
 	TEST_ASSERT_EQUAL(engineering.decide_from_link(chief, request.uid, TRUE), "Заявка №[request.uid] уже решена.", "Повторное нажатие объяснено")
-	var/datum/econ_request/third = engineering.submit_request(pack, engineer, "тест")
+	ear.heard.Cut()
+	engineering.submit_window_requests(pack, engineer, "пачка", 2)
+	var/list/batch = engineering.requests.Copy(length(engineering.requests) - 1)
+	TEST_ASSERT_EQUAL(length(ear.heard), 1, "Пачка с консоли - одно сообщение: [jointext(ear.heard, "; ")]")
+	for(var/datum/econ_request/batched as anything in batch)
+		TEST_ASSERT(batched.status == ECON_REQUEST_PENDING && findtext(ear.heard[1], "econ_request=[batched.uid];econ_decide=approve"), "В сообщении о пачке нет ссылки на заявку №[batched.uid]: [ear.heard[1]]")
+	var/datum/econ_request/third = batch[1]
 	chief.death()
 	usr = chief
 	engineering.Topic(null, list("econ_request" = "[third.uid]", "econ_decide" = "approve"))
 	usr = null
 	TEST_ASSERT_EQUAL(third.status, ECON_REQUEST_PENDING, "Мёртвый глава по ссылке не решает")
+
+/// Заказ без одобрения не трогает деньги на долги и следующую зарплату сотрудникам: мгновенная заявка, расходник и залежавшаяся ждут главу, глава одобряет вручную.
+/datum/unit_test/economy_catalog/request_wage_reserve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/datum/supply_pack/staple = SSshuttle.supply_packs[/datum/supply_pack/medical/supplies]
+	TEST_ASSERT(cheap && econ_pack_staple(staple) && !econ_pack_unavailable(staple), "Есть недорогой пак и расходник медицины")
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	doctor_account.owed_wages = 500
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo)
+	var/reserve = medical.owed_to_staff()
+	TEST_ASSERT(reserve >= 500, "Долг отдела перед врачом в резерве: [reserve]")
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, reserve + price - 1)
+	var/datum/econ_request/instant = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(instant.status, ECON_REQUEST_PENDING, "Мгновенная заявка съела зарплату сотрудникам")
+	TEST_ASSERT(findtext(medical.money_note(cheap), "[reserve] кр. отложено на зарплату"), "Ответ не объясняет резерв: [medical.money_note(cheap)]")
+	TEST_ASSERT(findtext(medical.request_outlook(instant), "отложено на зарплату"), "Окно не объясняет резерв: [medical.request_outlook(instant)]")
+	var/staple_price = round(econ_pack_price(staple))
+	econ_test_set_balance(medical.account, reserve + staple_price - 1)
+	var/datum/econ_request/staple_request = medical.submit_request(staple, doctor, "тест")
+	TEST_ASSERT_EQUAL(staple_request.status, ECON_REQUEST_PENDING, "Расходник съел зарплату сотрудникам")
+	econ_test_set_balance(medical.account, reserve + price - 1)
+	instant.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	medical.approve_stale_requests()
+	TEST_ASSERT_EQUAL(instant.status, ECON_REQUEST_PENDING, "Залежавшаяся заявка съела зарплату сотрудникам")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Заказ без одобрения ушёл в снабжение")
+	on_shift(cmo)
+	TEST_ASSERT(medical.approve(instant, cmo), "Глава вручную резерв не держит")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, reserve - 1, "Одобренная главой оплачена бюджетом")
+
+/// О заказе без одобрения начальству на смене приходит тихая строка со ссылкой отмены: сотрудник ей не пользуется, глава снимает заказ и возвращает деньги, пока шаттл не улетел.
+/datum/unit_test/economy_catalog/request_auto_order_cancel/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED, account_type = /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo, /datum/bank_account/econ_test_ear)
+	on_shift(cmo)
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, price * 2)
+	var/datum/econ_request/request = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Недорогая заявка одобрена сама")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	TEST_ASSERT(order.econ_request_uid == request.uid && order.requester_account_id == request.requester_account_id, "Заказ помнит заявку и подавшего")
+	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
+	var/notice
+	for(var/line in cmo_ear.heard)
+		if(findtext(line, "без одобрения"))
+			notice = line
+	TEST_ASSERT(notice && findtext(notice, "заказал \"[cheap.name]\" за [price] кр."), "Главе не сказали о заказе без одобрения: [jointext(cmo_ear.heard, "; ")]")
+	TEST_ASSERT(findtext(notice, "src=[REF(medical)];econ_cancel_order=[order.id]"), "В строке нет ссылки отмены: [notice]")
+	usr = doctor
+	medical.Topic(null, list("econ_cancel_order" = "[order.id]"))
+	usr = null
+	TEST_ASSERT(order in SSshuttle.shoppinglist, "Сотрудник снял заказ по ссылке главы")
+	usr = cmo
+	medical.Topic(null, list("econ_cancel_order" = "[order.id]"))
+	usr = null
+	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Глава не снял заказ по ссылке")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price * 2, "Деньги не вернулись в бюджет")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_DENIED, "Отменённая заявка числится одобренной")
+	var/datum/bank_account/econ_test_ear/doctor_ear = econ_account_of(doctor)
+	TEST_ASSERT(findtext(doctor_ear.heard[length(doctor_ear.heard)], "отменил заказ"), "Подавшему не сказали об отмене: [jointext(doctor_ear.heard, "; ")]")
+	TEST_ASSERT_EQUAL(medical.cancel_from_link(cmo, order.id), "Заказ уже улетел шаттлом или снят с корзины: отменить его нельзя.", "Повторная отмена не объяснена")
+	qdel(order)
+
+/// Заявка СБ при главе СБ на смене не одобряется сама ни сразу, ни по истечении ожидания; без начальства залежавшаяся одобряется.
+/datum/unit_test/economy_catalog/request_security_waits_head/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/supply_pack/cheap
+	for(var/datum/supply_pack/pack as anything in security.catalog())
+		if(!econ_pack_unavailable(pack) && security.auto_approvable(pack))
+			cheap = pack
+			break
+	TEST_ASSERT_NOTNULL(cheap, "Есть недорогой пак СБ")
+	TEST_ASSERT(SSeconomy.settings.auto_approve_wait_minutes > 0, "Залежавшиеся заявки одобряются сами")
+	econ_test_set_balance(security.account, round(econ_pack_price(cheap)) * 3)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	on_shift(hos)
+	var/datum/econ_request/request = security.submit_request(cheap, officer, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Заявка СБ при главе на смене одобрилась сразу")
+	request.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	security.approve_stale_requests()
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Заявка СБ при главе на смене одобрилась по ожиданию")
+	TEST_ASSERT(!findtext(security.request_outlook(request), "одобрится сама"), "Окно обещает автоодобрение СБ при главе: [security.request_outlook(request)]")
+	GLOB.player_list -= hos
+	security.approve_stale_requests()
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Без начальства залежавшаяся заявка СБ не одобрилась")
 
 /// Недорогая заявка без ответа дольше auto_approve_wait_minutes одобряется на тике экономики, дорогая ждёт решения.
 /datum/unit_test/economy_catalog/request_stale_auto_approve/Run()
@@ -514,7 +613,7 @@
 	click_cargo(console, cargo_tech, "clear")
 	TEST_ASSERT_EQUAL(engineering.account.account_balance, before, "Очистка корзины возвращает деньги отделу")
 
-/// Доставка шаттлом: предоплаченный заказ никого не списывает повторно, содержимое помечено закупкой и не идёт в контракт.
+/// Доставка шаттлом: предоплаченный заказ никого не списывает повторно, содержимое помечено закупкой и не идёт в контракт; подавшему заявку карта говорит, что заказ приехал, ушедшему со смены и мёртвому - нет.
 /datum/unit_test/economy_catalog/shuttle_delivery/Run()
 	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/department/engineering_export_node]
@@ -522,12 +621,32 @@
 	engineering.account.credit(econ_pack_price(pack), ECON_ADMIN)
 	TEST_ASSERT(engineering.order_pack(pack, chief, "тест"), "Заказ оформлен")
 	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/requester = econ_account_of(engineer)
+	order.requester_account_id = requester.account_id
+	order.econ_request_uid = 77
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/cargo_before = cargo.account_balance
 	var/engineering_before = engineering.account.account_balance
 	var/list/crates_before = new_crates(list(), /obj/structure/closet)
 	SSshuttle.supply.buy()
 	SSshuttle.orderhistory -= order
+	TEST_ASSERT(!length(requester.heard), "Подавшему сказали о прибытии до посадки шаттла: [jointext(requester.heard, "; ")]")
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(length(requester.heard) == 1 && findtext(requester.heard[1], "привёз заказ по вашей заявке: \"[pack.name]\" (заявка №77)"), "Подавшему не сказали, что заказ приехал: [jointext(requester.heard, "; ")]")
+	var/mob/living/carbon/human/sleeper = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/sleeper_account = econ_account_of(sleeper)
+	sleeper_account.state = ACCOUNT_DORMANT
+	var/mob/living/carbon/human/corpse = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/corpse_account = econ_account_of(corpse)
+	corpse_account.bind_owner(corpse)
+	corpse.death()
+	for(var/datum/bank_account/silent as anything in list(sleeper_account, corpse_account))
+		order.requester_account_id = silent.account_id
+		SSshuttle.supply.note_request_shipment(order)
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(!length(sleeper_account.heard), "Ушедшему со смены сказали о прибытии")
+	TEST_ASSERT(!length(corpse_account.heard), "Мёртвому сказали о прибытии")
 	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Заказ отгружен")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Карго не платит за заказ отдела")
 	TEST_ASSERT_EQUAL(engineering.account.account_balance, engineering_before, "Отдел не платит второй раз")

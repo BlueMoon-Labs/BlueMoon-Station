@@ -25,6 +25,8 @@
 	/// Налог выше tax_unrest_above дольше tax_mood_minutes - экипаж недоволен: оплата работы отделам и премии за неё ниже на tax_unrest_work_cut процентов
 	var/tax_unrest_above = 20
 	var/tax_unrest_work_cut = 25
+	/// Какую долю налога NT забирает при недовольстве экипажа вместо tax_nt_share, проценты
+	var/tax_unrest_nt_share = 90
 	/// Налог не выше tax_goodwill_upto дольше tax_mood_minutes - экипаж доволен: премия за работу выше на tax_goodwill_premium_bonus процентных пунктов
 	var/tax_goodwill_upto = 5
 	var/tax_goodwill_premium_bonus = 5
@@ -391,7 +393,7 @@
 		return "меньше 1"
 	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes", "tax_mood_minutes")) && value < 1)
 		return "меньше 1"
-	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_goodwill_upto", "tax_goodwill_premium_bonus", "auction_rival_free_chance")) && (value < 0 || value > 100))
+	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_unrest_nt_share", "tax_goodwill_upto", "tax_goodwill_premium_bonus", "auction_rival_free_chance")) && (value < 0 || value > 100))
 		return "вне 0..100"
 	if((key in list("auction_rival_cap_min", "auction_rival_cap_max")) && (value < 1 || value > 1000))
 		return "вне 1..1000"

@@ -285,6 +285,8 @@
 #define ECON_NEEDS_MAX 5
 #define ECON_NEEDS_MIN 3
 #define ECON_NEEDS_REFRESH (1 MINUTES)
+/// Как часто канал отдела слышит о новой нужде по датчикам станции
+#define ECON_NEEDS_ALERT_COOLDOWN (10 MINUTES)
 /// С какого урона ушибами и ожогами член экипажа считается раненым для "нужно сейчас" медицины
 #define ECON_NEEDS_INJURED_DAMAGE 30
 #define REGISTER_MENU_MAX 20

@@ -84,8 +84,7 @@
 	return account?.department_id == ACCOUNT_MED
 
 /obj/item/healthanalyzer/proc/econ_discharge_examine()
-	var/list/prices = SSeconomy.settings.work_prices
-	return span_notice("Если медик просканирует пациента, вылеченного до [ECON_DISCHARGE_HEALTH_RATIO * 100]% здоровья в течение [ECON_INJURY_WINDOW / (1 MINUTES)] минут после травмы, пациент выписывается сам. Медицина получит [prices[WORK_MED_DISCHARGE_LIGHT]], [prices[WORK_MED_DISCHARGE_HEAVY]] или [prices[WORK_MED_DISCHARGE_CRIT]] кр. за лёгкую, тяжёлую или критическую травму. Травму, нанесённую самим медиком, выписка не оплачивает. Выписка, операции и реанимация оплачиваются только на станции.")
+	return span_notice("Если медик просканирует пациента, вылеченного до [ECON_DISCHARGE_HEALTH_RATIO * 100]% здоровья в течение [ECON_INJURY_WINDOW / (1 MINUTES)] минут после травмы, пациент выписывается сам. Медицина получит [econ_shown_work_price(WORK_MED_DISCHARGE_LIGHT)], [econ_shown_work_price(WORK_MED_DISCHARGE_HEAVY)] или [econ_shown_work_price(WORK_MED_DISCHARGE_CRIT)] кр. за лёгкую, тяжёлую или критическую травму. Травму, нанесённую самим медиком, выписка не оплачивает. Выписка, операции и реанимация оплачиваются только на станции.")
 
 /// Выписывает вылеченного пациента и платит медицине по тяжести травмы. Возвращает выплату отделу.
 /obj/item/healthanalyzer/proc/try_discharge(mob/user, mob/living/carbon/human/patient)

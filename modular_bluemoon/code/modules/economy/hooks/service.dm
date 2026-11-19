@@ -143,22 +143,22 @@ GLOBAL_LIST_EMPTY(econ_bar_stock_reagents)
 	if(!econ_on_station(src))
 		return
 	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
-	var/price = SSeconomy.settings.work_prices[WORK_SRV_DISH]
+	var/price = econ_shown_work_price(WORK_SRV_DISH)
 	var/obj/item/dish_of_the_day = service?.dish_of_the_day
 	. += span_notice("Сервис получает [price] кр., когда приготовленное поваром блюдо съедает другой член экипажа. Блюдо, собранное по рецепту крафта, приносит столько за каждый вид ингредиента, но не больше [price * SSeconomy.settings.dish_complexity_max] кр.[dish_of_the_day ? " Блюдо дня - [initial(dish_of_the_day.name)], за него платят [econ_times_text(SSeconomy.settings.dish_of_the_day_mult)] больше." : ""] Блюдо, отправленное в номер отеля подносом обслуживания номеров, оплачивается сразу при доставке.")
 
 /obj/item/reagent_containers/food/drinks/shaker/examine(mob/user)
 	. = ..()
 	if(econ_on_station(src))
-		. += span_notice("Сервис получает [SSeconomy.settings.work_prices[WORK_SRV_DRINK]] кр., когда другой член экипажа выпьет налитый вами коктейль. Пиво, вино, соки, газировка из раздатчиков и бутылки из Booze-O-Mat коктейлем не считаются. Коктейль, отправленный в номер отеля подносом обслуживания номеров, оплачивается сразу при доставке.")
+		. += span_notice("Сервис получает [econ_shown_work_price(WORK_SRV_DRINK)] кр., когда другой член экипажа выпьет налитый вами коктейль. Пиво, вино, соки, газировка из раздатчиков и бутылки из Booze-O-Mat коктейлем не считаются. Коктейль, отправленный в номер отеля подносом обслуживания номеров, оплачивается сразу при доставке.")
 
 /obj/machinery/hydroponics/examine(mob/user)
 	. = ..()
 	if(econ_on_station(src))
-		. += span_notice("Первый за смену урожай каждого вида или мутации приносит сервису [SSeconomy.settings.work_prices[WORK_SRV_NEW_PLANT]] кр.")
+		. += span_notice("Первый за смену урожай каждого вида или мутации приносит сервису [econ_shown_work_price(WORK_SRV_NEW_PLANT)] кр.")
 
 /proc/econ_cleaning_examine()
-	var/price = SSeconomy.settings.work_prices[WORK_SRV_CLEANING]
+	var/price = econ_shown_work_price(WORK_SRV_CLEANING)
 	return span_notice("Каждая отмытая от грязи плитка приносит сервису [price] кр., не больше [SSeconomy.settings.cleaning_cap_per_tick * price] кр. от одного уборщика за [SSeconomy.wait / (1 MINUTES)] мин.")
 
 /obj/item/mop/examine(mob/user)

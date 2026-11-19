@@ -31,6 +31,8 @@ export type PowerExportNodeData = {
   unrest_cut?: number;
   budget?: number;
   budget_cap?: number;
+  /** Сколько NT заберёт излишком на ближайшем цикле экономики */
+  return_due?: number;
   cap_share?: number;
   economy_minutes?: number;
   staple_cap?: number;
@@ -109,7 +111,7 @@ export const PowerExportNodeContent = () => {
           <LabeledList.Item label="Продаётся">{formatKw(export_w)}</LabeledList.Item>
           <LabeledList.Item label="Цена">
             {formatCredits(price_per_mj, { decimals: 2 })} за МДж ({formatCredits(base_price_per_mj, { decimals: 2 })}{' '}
-            × рынок энергии с учётом спроса {market_percent}%{unrest_cut ? ` − ${unrest_cut}% из-за недовольства экипажа налогом` : ''})
+            × рынок энергии с учётом спроса {market_percent}%{unrest_cut ? ` × ${100 - unrest_cut}% из-за недовольства экипажа налогом` : ''})
           </LabeledList.Item>
           <LabeledList.Item label="Спрос сектора">{demand_percent}%</LabeledList.Item>
           <LabeledList.Item label="Доход">~{formatCredits(income_per_minute)} в минуту в бюджет инженерии</LabeledList.Item>
@@ -143,9 +145,15 @@ const MoneySection = () => {
   return (
     <Section title="Куда идут деньги">
       <Box color="label">
-        Весь доход с продажи получает бюджет инженерии. Снабжению с неё не идёт ничего, инженерам лично - тоже: премии
-        выписывает глава инженерии из бюджета.
+        Весь доход с продажи получает бюджет инженерии. Снабжению с неё не идёт ничего, инженерам лично - только награда
+        контракта «Поставка энергии в сеть сектора» и премии от главы инженерии.
       </Box>
+      {(data.return_due ?? 0) > 0 && (
+        <NoticeBox warning mt={1}>
+          Через несколько минут NT заберёт {formatCredits(data.return_due ?? 0)} излишка - потратьте их или поставьте цель
+          накопления в «Бюджете отдела».
+        </NoticeBox>
+      )}
       <Box color="label" mt={1}>
         Сейчас в бюджете {formatCredits(data.budget ?? 0)}, а сверх {formatCredits(data.budget_cap ?? 0)} NT раз в{' '}
         {data.economy_minutes ?? 0} мин. забирает {data.cap_share ?? 0}% излишка: копить на дорогое можно только целью накопления в «Бюджете отдела».

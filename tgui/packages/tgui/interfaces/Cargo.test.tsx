@@ -301,7 +301,7 @@ test('консоль заявок: паки каталога отдела пом
     budget_request: { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 1, auto_limit: 2000 },
   });
   expect(ui.getByText(/оплатит бюджет отдела "Медицина" \(сейчас 4 500 кр\.\)/)).toBeTruthy();
-  expect(ui.getByText(/если ответа долго нет, заявка до 2 000 кр\. одобряется сама/)).toBeTruthy();
+  expect(ui.getByText(/или кнопкой в сообщении на карте, сама она не одобряется\./)).toBeTruthy();
   expect(ui.getByText('Каталог: заявка отделу или снабжению')).toBeTruthy();
   expect(ui.getByText('бюджет отдела')).toBeTruthy();
   fireEvent.click(ui.getByText('Medical Supplies'));
@@ -409,13 +409,13 @@ test('консоль заявок: дорогой расходник без на
 test('консоль заявок: недорогая заявка отделу одобряется сразу', () => {
   const budget = { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 1, auto_limit: 2000, instant: 1, auto_cooldown: 10 };
   const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
-  expect(ui.getByText(/Заявка до 2 000 кр\., кроме расходников, одобряется сама сразу, не чаще раза в 10 мин\.; дороже - одобряет глава отдела, ГП, капитан или ИИ, им приходит сообщение на карту\./)).toBeTruthy();
+  expect(ui.getByText(/Заявка до 2 000 кр\., кроме расходников, одобряется сама сразу, если после заказа в бюджете остаётся на зарплату сотрудникам, не чаще раза в 10 мин\.; дороже - одобряет глава отдела, ГП, капитан или ИИ, им приходит сообщение на карту\./)).toBeTruthy();
 });
 
 test('консоль заявок СБ при начальстве на смене не предлагает ИИ', () => {
   const budget = { id: 'SEC', name: 'Служба безопасности', balance: 9000, manager: 0, any: 0, approver: 1, auto_limit: 2000 };
   const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
-  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе .*одобряется сама, кроме расходников\./)).toBeTruthy();
+  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе .*сама она не одобряется\./)).toBeTruthy();
   expect(ui.queryByText(/или ИИ/)).toBeNull();
   ui.unmount();
   const medical = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: { ...budget, id: 'MED', name: 'Медицина' } });

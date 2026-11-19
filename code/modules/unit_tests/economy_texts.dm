@@ -66,7 +66,7 @@
 	TEST_ASSERT(findtext(budget_text, SSeconomy.audit_rights_text()), "Памятка главам не называет, кто ведёт аудит")
 	TEST_ASSERT(findtext(budget_text, "крупное внесение наличных"), "Памятка главам не называет внесение наличных поводом для аудита")
 	TEST_ASSERT(findtext(budget_text, "доливает бюджет") && findtext(budget_text, "не больше [settings.grant_payroll_share]% окладов"), "Памятка главам не объясняет грант числами из настроек")
-	TEST_ASSERT(findtext(budget_text, "Заявка до [settings.auto_approve_limit] кр. одобряется сразу"), "Памятка главам не называет порог заявки без одобрения")
+	TEST_ASSERT(findtext(budget_text, "Заявка до [settings.auto_approve_limit] кр. одобряется сама, если бюджету хватит на зарплату сотрудникам") && findtext(budget_text, "строка на карту с кнопкой отмены"), "Памятка главам не называет порог и резерв заявки без одобрения")
 	TEST_ASSERT(findtext(budget_text, "экспресс-консоли"), "Памятка главам не говорит о доске заказов аванпостов")
 
 	var/obj/item/export_manifest/manifest = allocate(/obj/item/export_manifest)

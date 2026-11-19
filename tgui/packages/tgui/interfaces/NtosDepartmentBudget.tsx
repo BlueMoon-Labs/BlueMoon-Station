@@ -22,6 +22,8 @@ type DepartmentInfo = {
   threshold?: number;
   threshold_floor?: number;
   return_due?: number;
+  /** Долги и следующая зарплата сотрудникам: заказ без одобрения их не трогает */
+  reserve?: number;
   /** Через сколько минут ближайший цикл экономики, на котором NT заберёт излишек */
   return_in?: number;
   shielded?: number;
@@ -103,7 +105,8 @@ export type BudgetData = {
   catalog: CatalogEntry[];
   /** На что отделу тратить бюджет: две-три строки */
   advice?: string[];
-  work_prices: WorkPrice[];
+  /** Прайс работы отдела с поправкой на настроение экипажа */
+  work_prices?: WorkPrice[];
   reason_max: number;
   grant_base: number;
   grant_payroll_share: number;
@@ -164,6 +167,8 @@ export type BudgetData = {
   needs?: NeedEntry[];
   /** Недорогая заявка сотрудника одобряется сразу: у всех, кроме СБ при начальстве на смене */
   instant_approval?: BooleanLike;
+  /** Глава отдела, ГП или капитан на смене */
+  head_on_shift?: BooleanLike;
   /** Через сколько минут недорогая заявка зрителя снова одобрится сама; null - зритель не сотрудник отдела */
   auto_ready_in?: number | null;
   goal_erts?: GoalErt[] | null;
@@ -643,9 +648,10 @@ const CatalogTab = () => {
                       ...(data.instant_approval
                         ? []
                         : [`Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`]),
-                      ...(data.auto_approve_wait > 0
+                      ...(data.auto_approve_wait > 0 && data.instant_approval
                         ? [`Если ответа нет ${data.auto_approve_wait} мин., недорогая заявка одобряется сама и при начальстве на смене.`]
                         : []),
+                      `Сама заявка одобряется, только если после заказа в бюджете останется на долги и следующую зарплату сотрудникам${data.department?.reserve ? ` (сейчас ${formatCredits(data.department.reserve)})` : ''}. Иначе её решает глава.`,
                       ...(data.handoff_minutes && data.department?.id !== 'SEC' && data.department?.id !== 'CAR'
                         ? [`Заявку без решения ${data.handoff_minutes} мин. может решить и начальник снабжения, оплатит бюджет отдела.`]
                         : []),
@@ -736,7 +742,13 @@ const CatalogTab = () => {
                   {canRequest && !canOrder && (
                     <Button
                       disabled={!available}
-                      tooltip={selfOrder ? 'Бюджет отдела оплатит сразу, без одобрения' : undefined}
+                      tooltip={
+                        !available
+                          ? undefined
+                          : selfOrder
+                            ? 'Бюджет отдела оплатит сразу, без одобрения'
+                            : requestTooltip(data, price?.price || 0)
+                      }
                       onClick={() => act('request', { pack: pack.type, reason })}>
                       {selfOrder ? 'Заказать' : 'Заявка'}
                     </Button>
@@ -754,12 +766,28 @@ const CatalogTab = () => {
   );
 };
 
-/** Пак сотрудник заказывает сам: расходник в часовом лимите или недорогой пак, когда заявка одобряется сразу и перерыв прошёл. */
-const ordersItself = (data: BudgetData, pack: { staple?: BooleanLike }, price: number) => {
+/** Пак сотрудник заказывает сам: расходник в часовом лимите или недорогой пак, когда заявка одобряется сразу и перерыв прошёл, - и после него в бюджете остаётся на зарплату. */
+export const ordersItself = (data: BudgetData, pack: { staple?: BooleanLike }, price: number) => {
+  const department = data.department;
+  if (!department || department.balance - price < (department.reserve ?? 0)) {
+    return false;
+  }
   if (pack.staple) {
     return price <= (data.staple_left ?? 0);
   }
   return !!data.instant_approval && data.auto_ready_in === 0 && price <= data.auto_approve_limit;
+};
+
+/** Подсказка кнопки заявки, которую сотрудник сам не оплатит: ждёт денег или главу. */
+export const requestTooltip = (data: BudgetData, price: number) => {
+  const balance = data.department?.balance ?? 0;
+  if (balance < price) {
+    return `В бюджете сейчас ${formatCredits(balance)}, пак стоит ${formatCredits(price)}: заявка подождёт денег`;
+  }
+  if (data.head_on_shift) {
+    return 'Заявка главе: ему придёт сообщение на карту';
+  }
+  return 'Начальства на смене нет: заявка подождёт, в программе видно, кто её решит';
 };
 
 /** На что тратить бюджет и паки "нужно сейчас" с кнопкой заказа: глава заказывает, сотрудник подаёт заявку. */
@@ -807,7 +835,13 @@ const SpendingSection = () => {
                     {canRequest && (
                       <Button
                         disabled={!available}
-                        tooltip={selfOrder ? 'Бюджет отдела оплатит сразу' : 'Заявка главе: ему придёт сообщение на карту'}
+                        tooltip={
+                          !available
+                            ? undefined
+                            : selfOrder
+                              ? 'Бюджет отдела оплатит сразу'
+                              : requestTooltip(data, price?.price || 0)
+                        }
                         onClick={() =>
                           canOrder ? act('order', { pack: need.type }) : act('request', { pack: need.type, reason: need.why })
                         }>
@@ -1050,7 +1084,7 @@ const WorkTab = () => {
         title="Оплата работы"
         help={`NT платит отделу за сделанную работу, а исполнитель получает ещё ${data.work_share}% сверху личной премией (до ${formatCredits(data.work_cap)} в час).`}>
         {!!data.tax_mood_note && <NoticeBox>{data.tax_mood_note}</NoticeBox>}
-        {data.work_prices.length ? (
+        {data.work_prices?.length ? (
           <Table>
             {data.work_prices.map((work) => (
               <Table.Row key={work.name}>

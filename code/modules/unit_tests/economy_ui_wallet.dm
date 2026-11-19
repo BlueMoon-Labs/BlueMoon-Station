@@ -65,6 +65,8 @@
 	var/list/wage = data["wage"]
 	TEST_ASSERT_EQUAL(wage["tax_rate"], 12, "Налог")
 	TEST_ASSERT_EQUAL(wage["owed"], 40, "Долг отдела")
+	TEST_ASSERT_EQUAL(wage["tax_nt_share"], SSeconomy.tax_nt_share_now(), "Доля NT в налоге")
+	TEST_ASSERT_EQUAL(wage["tax_mood_progress"], SSeconomy.tax_mood_progress(), "Сколько налог держится в полосе")
 	var/list/static_data = wallet.wallet_static_data()
 	TEST_ASSERT_EQUAL(static_data["transfer_max"], SSeconomy.settings.transfer_max, "Лимит перевода из настроек")
 	TEST_ASSERT_EQUAL(static_data["wage_floor"], SSeconomy.settings.wage_floor, "Гарантированный минимум")

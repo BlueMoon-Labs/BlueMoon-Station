@@ -107,6 +107,8 @@ test('куда идут деньги: весь доход инженерии, п
   const { container } = setup();
   const content = text(container);
   expect(content).toContain('Весь доход с продажи получает бюджет инженерии. Снабжению с неё не идёт ничего');
+  expect(content).toContain('инженерам лично - только награда контракта «Поставка энергии в сеть сектора» и премии от главы инженерии.');
+  expect(content).not.toContain('NT заберёт');
   expect(content).toContain('Сейчас в бюджете 4 200 кр., а сверх 10 000 кр. NT раз в 5 мин. забирает 80% излишка');
   expect(content).toContain('в каталоге инженерии 24 пака. Расходники');
   expect(content).toContain('Solar Panel Crate:2 500 кр.');
@@ -118,5 +120,10 @@ test('недовольство налогом снижает цену и окн�
   expect(text(calm.container)).not.toContain('недовольства экипажа');
   calm.unmount();
   const angry = setup({ unrest_cut: 25 });
-  expect(text(angry.container)).toContain('150% − 25% из-за недовольства экипажа налогом)');
+  expect(text(angry.container)).toContain('150% × 75% из-за недовольства экипажа налогом)');
+});
+
+test('излишек к возврату NT: окно предупреждает и называет сумму', () => {
+  const { container } = setup({ return_due: 1600 });
+  expect(text(container)).toContain('Через несколько минут NT заберёт 1 600 кр. излишка - потратьте их или поставьте цель накопления');
 });
