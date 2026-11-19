@@ -34,9 +34,9 @@
 	to_chat(user, span_warning("Нет доступа."))
 	locker_feedback("locker_locked", 'sound/economy/locker_clunk.ogg', TRUE)
 
-/// Кредитов бюджету СБ за кредит оценки улики: цена работы из настроек и рынок контрабанды.
+/// Кредитов бюджету СБ за кредит оценки улики: цена работы из настроек, рынок контрабанды и настроение экипажа.
 /proc/econ_evidence_rate()
-	return (SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND] || 0) * econ_sale_factor(COMMODITY_CONTRABAND)
+	return (SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND] || 0) * econ_sale_factor(COMMODITY_CONTRABAND) * SSeconomy.work_pay_mult()
 
 /obj/machinery/evidence_locker/examine(mob/user)
 	. = ..()
@@ -46,7 +46,7 @@
 		. += span_warning("Хранилище стоит вне станции: NT за переданные отсюда улики не платит.")
 		return
 	var/rate = econ_evidence_rate()
-	. += span_notice("За переданную NT контрабанду бюджет СБ получает по текущему рынку контрабанды [round(settings.contraband_value_per_tc * rate)] кр. за каждый телекристалл её цены в аплинке Синдиката ([round(settings.contraband_value_default * rate)] кр., если цены нет). Офицер, передавший улику, получает премию [settings.work_personal_share]% от суммы; вместе с премией выплата не превышает нынешнюю цену предмета на чёрном рынке, а за купленное там или в автомате - [round(econ_import_resale_factor() * 100)]% уплаченного.")
+	. += span_notice("За переданную NT контрабанду бюджет СБ получает по текущему рынку контрабанды [round(settings.contraband_value_per_tc * rate)] кр. за каждый телекристалл её цены в аплинке Синдиката ([round(settings.contraband_value_default * rate)] кр., если цены нет). Офицер, передавший улику, получает премию [SSeconomy.work_premium_share()]% от суммы; вместе с премией выплата не превышает нынешнюю цену предмета на чёрном рынке, а за купленное там или в автомате - [round(econ_import_resale_factor() * 100)]% уплаченного.")
 	. += span_notice("Переданные NT улики и изъятое таможней уходят с рынка сектора: цены контрабанды и чёрного рынка растут.")
 	. += span_notice("Предметы, которые экипаж получает и без Синдиката (фабрикаторы, карго, автоматы, призы, снаряжение должностей и лоадаут), контрабандой не считаются.")
 	. += span_notice("За час NT оплачивает изъятий не больше чем на [settings.contraband_cap_hour] кр., в этом часе осталось [SSeconomy.contraband_cap_left()] кр. Улика, на которую не хватает остатка, ждёт в хранилище; улику дороже часового лимита NT оплачивает по нему.")
@@ -161,7 +161,7 @@
 		"items" = items,
 		"per_tc" = round(settings.contraband_value_per_tc * rate),
 		"default_value" = round(settings.contraband_value_default * rate),
-		"premium_percent" = settings.work_personal_share,
+		"premium_percent" = SSeconomy.work_premium_share(),
 		"resale_percent" = round(econ_import_resale_factor() * 100),
 		"cap_hour" = settings.contraband_cap_hour,
 		"cap_left" = SSeconomy.contraband_cap_left(),

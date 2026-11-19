@@ -136,6 +136,8 @@ export type BudgetData = {
   handling_fee: number;
   work_share: number;
   work_cap: number;
+  /** Настроение экипажа от налога: строка о том, как оно меняет оплату работы. */
+  tax_mood_note?: string;
   performer_share: number;
   contracts_help_topics?: NtHelpTopic[];
   audit_rights: string;
@@ -1047,6 +1049,7 @@ const WorkTab = () => {
       <NtFrame
         title="Оплата работы"
         help={`NT платит отделу за сделанную работу, а исполнитель получает ещё ${data.work_share}% сверху личной премией (до ${formatCredits(data.work_cap)} в час).`}>
+        {!!data.tax_mood_note && <NoticeBox>{data.tax_mood_note}</NoticeBox>}
         {data.work_prices.length ? (
           <Table>
             {data.work_prices.map((work) => (

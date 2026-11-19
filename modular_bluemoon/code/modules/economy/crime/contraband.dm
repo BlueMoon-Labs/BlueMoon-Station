@@ -161,11 +161,10 @@ GLOBAL_LIST_INIT(econ_contraband_offstation_vendors, list(
 /proc/econ_contraband_credits(obj/item/thing, unit_price = 1)
 	if(!econ_is_contraband(thing))
 		return 0
-	var/datum/economy_settings/settings = SSeconomy.settings
 	var/value = econ_contraband_base_value(thing) * econ_sale_factor(COMMODITY_CONTRABAND)
 	var/limit = econ_contraband_limit(thing)
 	if(!isnull(limit))
-		value = min(value, limit * 100 / ((100 + settings.work_personal_share) * unit_price))
+		value = min(value, limit * 100 / ((100 + SSeconomy.work_premium_share()) * unit_price))
 	return max(round(value), 0)
 
 /// Оценка изъятия для оплаты работы СБ: кредиты оценки по прайсу WORK_SEC_CONTRABAND.

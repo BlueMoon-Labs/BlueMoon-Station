@@ -94,6 +94,12 @@ export type TreasuryData = {
   /** До этой суммы грант NT доливает казну */
   treasury_grant_level?: number;
   tax_nt_share?: number;
+  tax_unrest_above?: number;
+  tax_unrest_cut?: number;
+  tax_goodwill_upto?: number;
+  tax_goodwill_premium?: number;
+  work_premium_base?: number;
+  tax_mood_minutes?: number;
   treasury_cap?: number;
   treasury_return_due?: number;
   cap_share?: number;
@@ -110,6 +116,9 @@ export type TreasuryData = {
   can_manage: BooleanLike;
   treasury: number;
   tax_rate: number;
+  tax_mood?: '' | 'unrest' | 'goodwill';
+  tax_mood_note?: string;
+  tax_mood_hint?: string;
   ledger: { minted: number; burned: number; state: EconomyState; money_history: number[] };
   departments: DepartmentRow[];
   requests: (TreasuryRequestEntry & { department_name: string })[];
@@ -225,6 +234,22 @@ const TreasuryTab = () => {
           {data.tax_nt_share ?? 0}% налога забирает NT, остальное получает казна. Минимум NT, переводы, чаевые, касса и
           выручка прилавков налогом не облагаются.
         </Box>
+        <Box color="label" mt={1}>
+          Экипаж замечает налог, который держится дольше {data.tax_mood_minutes ?? 0} мин. Выше {data.tax_unrest_above ?? 0}% -
+          недовольство: отделы получают за работу на {data.tax_unrest_cut ?? 0}% меньше, премии за работу тоже ниже. До{' '}
+          {data.tax_goodwill_upto ?? 0}% - довольство: премия за работу {data.tax_goodwill_premium ?? 0}% вместо{' '}
+          {data.work_premium_base ?? 0}%, но казна получает меньше. Сменили налог - настроение проходит сразу.
+        </Box>
+        {!!data.tax_mood_note && (
+          <NoticeBox success={data.tax_mood === 'goodwill'} mt={1}>
+            {data.tax_mood_note}
+          </NoticeBox>
+        )}
+        {!!data.tax_mood_hint && (
+          <NoticeBox info mt={1}>
+            {data.tax_mood_hint}
+          </NoticeBox>
+        )}
         <Box color="label" mt={1}>
           Казна получает налог и аренду прилавков, а грант NT раз в {data.economy_minutes} мин. доливает её до{' '}
           <Credits amount={data.treasury_grant_level ?? 0} />, не больше <Credits amount={data.treasury_grant} /> за раз. Из казны пополняются бюджеты отделов и открываются счета. Акциями из казны

@@ -27,6 +27,11 @@
 #define ECON_STATE_NORMAL "normal"
 #define ECON_STATE_RICH "rich"
 
+/// Настроение экипажа от налога, который держится дольше tax_mood_minutes
+#define TAX_MOOD_NONE ""
+#define TAX_MOOD_UNREST "unrest"
+#define TAX_MOOD_GOODWILL "goodwill"
+
 #define PAY_GRADE_ASSISTANT "assistant"
 #define PAY_GRADE_MINIMAL "minimal"
 #define PAY_GRADE_EASY "easy"

@@ -197,7 +197,7 @@
 	var/after_garbage = SSeconomy.tax_rate
 	press(admin, panel, "set_tax", list("rate" = "5", "comment" = "проверка"))
 	var/set_rate = SSeconomy.tax_rate
-	SSeconomy.tax_rate = saved_rate
+	SSeconomy.set_tax_rate(saved_rate)
 	TEST_ASSERT_EQUAL(capped, SSeconomy.settings.tax_max, "Налог упирается в потолок конфига")
 	TEST_ASSERT_EQUAL(after_garbage, capped, "Мусор не меняет налог")
 	TEST_ASSERT_EQUAL(set_rate, 5, "Налог выставлен")

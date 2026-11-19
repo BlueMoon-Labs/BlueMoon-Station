@@ -170,6 +170,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"has_department" = !!department,
 		"my_account" = own?.account_id,
 		"manifest_department" = manifest_department?.name,
+		"tax_mood_note" = SSeconomy.tax_mood_note(),
 	)
 	if(!department)
 		return data

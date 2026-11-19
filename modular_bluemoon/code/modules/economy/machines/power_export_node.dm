@@ -30,10 +30,10 @@
 	power_export_paid_w += paid
 	return paid
 
-/// Цена МДж для бюджета инженерии: база настроек, рынок энергии и цена работы экспорта энергии.
+/// Цена МДж для бюджета инженерии: база настроек, рынок энергии, цена работы экспорта энергии и настроение экипажа.
 /proc/econ_power_export_price_per_mj()
 	var/datum/economy_settings/settings = SSeconomy.settings
-	return settings.power_export_credits_per_mj * (settings.work_prices[WORK_ENG_POWER_EXPORT] || 0) * econ_sale_factor(COMMODITY_ENERGY)
+	return settings.power_export_credits_per_mj * (settings.work_prices[WORK_ENG_POWER_EXPORT] || 0) * econ_sale_factor(COMMODITY_ENERGY) * SSeconomy.work_pay_mult()
 
 /obj/machinery/power/proc/accrue_power_export(credits)
 	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)

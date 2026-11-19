@@ -29,7 +29,88 @@
 		return FALSE
 	tax_rate = clamp(round(rate), 0, settings.tax_max)
 	log_econ("Налог установлен в [tax_rate]%[user ? " ([key_name(user)])" : ""]")
+	update_tax_mood()
 	return TRUE
+
+/datum/controller/subsystem/economy
+	/// TAX_MOOD_*, в чью сторону налог сейчас вышел за пороги, и с какого world.time он там держится
+	var/tax_band = TAX_MOOD_NONE
+	var/tax_band_since = 0
+	/// Действующее настроение экипажа, TAX_MOOD_*
+	var/tax_mood = TAX_MOOD_NONE
+	var/tax_mood_timer
+
+/datum/controller/subsystem/economy/proc/tax_band_of(rate)
+	if(rate > settings.tax_unrest_above)
+		return TAX_MOOD_UNREST
+	if(rate <= settings.tax_goodwill_upto)
+		return TAX_MOOD_GOODWILL
+	return TAX_MOOD_NONE
+
+/// Сверяет настроение экипажа с налогом: смена полосы сразу снимает прежнее настроение, полоса дольше tax_mood_minutes включает своё. Возвращает объявление, если настроение сменилось.
+/datum/controller/subsystem/economy/proc/update_tax_mood()
+	if(round_over())
+		return null
+	var/band = tax_band_of(tax_rate)
+	if(band != tax_band)
+		tax_band = band
+		tax_band_since = world.time
+		deltimer(tax_mood_timer)
+		tax_mood_timer = null
+		if(band != TAX_MOOD_NONE)
+			tax_mood_timer = addtimer(CALLBACK(src, PROC_REF(update_tax_mood)), settings.tax_mood_minutes MINUTES, TIMER_STOPPABLE)
+	var/mood = tax_band
+	if(mood != tax_mood && world.time - tax_band_since < settings.tax_mood_minutes MINUTES)
+		mood = TAX_MOOD_NONE
+	if(mood == tax_mood)
+		return null
+	var/old_mood = tax_mood
+	tax_mood = mood
+	. = tax_mood_text(old_mood)
+	log_econ("Настроение экипажа: [mood || "обычное"] (налог [tax_rate]%)")
+	minor_announce(., "Настроения экипажа")
+
+/datum/controller/subsystem/economy/proc/tax_mood_text(old_mood)
+	switch(tax_mood)
+		if(TAX_MOOD_UNREST)
+			return "Налог [tax_rate]% держится уже [settings.tax_mood_minutes] мин., экипаж недоволен и работает спустя рукава. Пока налог выше [settings.tax_unrest_above]%, отделы получают за работу на [settings.tax_unrest_work_cut]% меньше, и премии за работу тоже ниже."
+		if(TAX_MOOD_GOODWILL)
+			return "Налог [tax_rate]% держится уже [settings.tax_mood_minutes] мин., экипаж доволен. Пока налог не выше [settings.tax_goodwill_upto]%, премия за работу - [work_premium_share()]% вместо [settings.work_personal_share]%."
+	if(old_mood == TAX_MOOD_UNREST)
+		return "Налог снижен до [tax_rate]%, недовольство улеглось: отделы снова получают за работу полностью."
+	return "Налог поднят до [tax_rate]%: премия за работу снова [settings.work_personal_share]%."
+
+/// Множитель оплаты работы отделам: при недовольстве налогом она ниже.
+/datum/controller/subsystem/economy/proc/work_pay_mult()
+	return tax_mood == TAX_MOOD_UNREST ? (100 - settings.tax_unrest_work_cut) / 100 : 1
+
+/// Процент премии исполнителю от оплаты работы: при довольстве налогом выше.
+/datum/controller/subsystem/economy/proc/work_premium_share()
+	return settings.work_personal_share + (tax_mood == TAX_MOOD_GOODWILL ? settings.tax_goodwill_premium_bonus : 0)
+
+/// Строка для окон о действующем настроении экипажа; пусто, если его нет.
+/datum/controller/subsystem/economy/proc/tax_mood_note()
+	switch(tax_mood)
+		if(TAX_MOOD_UNREST)
+			return "Экипаж недоволен налогом выше [settings.tax_unrest_above]%: отделы получают за работу на [settings.tax_unrest_work_cut]% меньше, премии за работу тоже ниже."
+		if(TAX_MOOD_GOODWILL)
+			return "Экипаж доволен налогом до [settings.tax_goodwill_upto]%: премия за работу [work_premium_share()]% вместо [settings.work_personal_share]%."
+	return ""
+
+/// Через сколько минут налог в нынешней полосе сменит настроение экипажа; null - не сменит.
+/datum/controller/subsystem/economy/proc/tax_mood_minutes_left()
+	if(tax_band == TAX_MOOD_NONE || tax_band == tax_mood || tax_band != tax_band_of(tax_rate))
+		return null
+	return max(CEILING((tax_band_since + settings.tax_mood_minutes MINUTES - world.time) / (1 MINUTES), 1), 1)
+
+/// Предупреждение тому, кто ставит налог: что будет, если он продержится; пусто, если ничего не изменится.
+/datum/controller/subsystem/economy/proc/tax_mood_hint()
+	var/left = tax_mood_minutes_left()
+	if(!left)
+		return ""
+	if(tax_band == TAX_MOOD_UNREST)
+		return "Если налог продержится выше [settings.tax_unrest_above]% ещё [left] мин., экипаж станет недоволен: отделы будут получать за работу на [settings.tax_unrest_work_cut]% меньше."
+	return "Если налог продержится не выше [settings.tax_goodwill_upto]% ещё [left] мин., экипаж будет доволен: премия за работу вырастет до [settings.work_personal_share + settings.tax_goodwill_premium_bonus]%."
 
 /datum/controller/subsystem/economy/proc/treasury_transfer(datum/economy_department/target, amount, mob/user)
 	if(!target || target.id == ACCOUNT_CMD)

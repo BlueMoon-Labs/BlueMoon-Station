@@ -22,6 +22,13 @@
 	var/tax_max = 30
 	/// Какая доля налога уходит NT (сгорает), проценты; остальное - в казну
 	var/tax_nt_share = 75
+	/// Налог выше tax_unrest_above дольше tax_mood_minutes - экипаж недоволен: оплата работы отделам и премии за неё ниже на tax_unrest_work_cut процентов
+	var/tax_unrest_above = 20
+	var/tax_unrest_work_cut = 25
+	/// Налог не выше tax_goodwill_upto дольше tax_mood_minutes - экипаж доволен: премия за работу выше на tax_goodwill_premium_bonus процентных пунктов
+	var/tax_goodwill_upto = 5
+	var/tax_goodwill_premium_bonus = 5
+	var/tax_mood_minutes = 15
 	/// Порог бюджета отдела в окладах сотрудников на смене за выплату, но не ниже budget_cap_floor (у снабжения - budget_cap_floor_cargo); с излишка сверх порога, долгов и следующей зарплаты NT забирает budget_cap_return_share процентов за тик
 	var/budget_cap_paydays = 5
 	var/budget_cap_floor = 10000
@@ -300,6 +307,9 @@
 	if(slot_house_edge + slot_jackpot_share > 100)
 		. += "settings.slot_jackpot_share: вместе с slot_house_edge больше 100%"
 		slot_jackpot_share = 100 - slot_house_edge
+	if(tax_goodwill_upto >= tax_unrest_above)
+		. += "settings.tax_goodwill_upto: не ниже tax_unrest_above ([tax_unrest_above])"
+		tax_goodwill_upto = max(tax_unrest_above - 1, 0)
 	if(crew_request_min > crew_request_max)
 		. += "settings.crew_request_min: больше crew_request_max ([crew_request_max])"
 		crew_request_min = crew_request_max
@@ -353,8 +363,10 @@
 		return "вне 0..100"
 	if(key == "research_grant_price_per_point" && value <= 0)
 		return "нужно число больше 0"
-	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes")) && value < 1)
+	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes", "tax_mood_minutes")) && value < 1)
 		return "меньше 1"
+	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_goodwill_upto", "tax_goodwill_premium_bonus")) && (value < 0 || value > 100))
+		return "вне 0..100"
 	if(key == "auction_crew_fee" && (value < 0 || value > 100))
 		return "вне 0..100"
 	if(value < 0)

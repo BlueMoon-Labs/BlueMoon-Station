@@ -58,6 +58,10 @@ SUBSYSTEM_DEF(economy)
 	cash_account = SSeconomy.cash_account
 	market_account = SSeconomy.market_account
 	tax_rate = SSeconomy.tax_rate
+	tax_band = SSeconomy.tax_band
+	tax_band_since = SSeconomy.tax_band_since
+	tax_mood = SSeconomy.tax_mood
+	tax_mood_timer = SSeconomy.tax_mood_timer
 	fire_count = SSeconomy.fire_count
 	economy_state = SSeconomy.economy_state
 	price_surge_mult = SSeconomy.price_surge_mult
@@ -105,6 +109,7 @@ SUBSYSTEM_DEF(economy)
 		var/datum/economy_department/department = departments[id]
 		department.return_excess(staff_stats)
 	update_state()
+	update_tax_mood()
 	ledger.snapshot()
 
 /// Раунд закончен: зарплаты, гранты и оплата работы больше не начисляются, итог смены уже в econ.log.

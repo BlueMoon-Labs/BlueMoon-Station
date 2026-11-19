@@ -58,6 +58,12 @@
 		"wage_floor" = settings.wage_floor,
 		"owed_cap" = settings.owed_wages_cap_paychecks,
 		"tax_nt_share" = settings.tax_nt_share,
+		"tax_unrest_above" = settings.tax_unrest_above,
+		"tax_unrest_cut" = settings.tax_unrest_work_cut,
+		"tax_goodwill_upto" = settings.tax_goodwill_upto,
+		"tax_goodwill_premium" = settings.work_personal_share + settings.tax_goodwill_premium_bonus,
+		"work_premium_base" = settings.work_personal_share,
+		"tax_mood_minutes" = settings.tax_mood_minutes,
 		"cap_share" = settings.budget_cap_return_share,
 		"grace_minutes" = settings.budget_cap_grace_ticks * round(SSeconomy.wait / (1 MINUTES), 1),
 		"treasury_max" = settings.treasury_request_max,
@@ -101,6 +107,9 @@
 		"can_manage" = can_manage,
 		"treasury" = treasury?.account_balance || 0,
 		"tax_rate" = SSeconomy.tax_rate,
+		"tax_mood" = SSeconomy.tax_mood,
+		"tax_mood_note" = SSeconomy.tax_mood_note(),
+		"tax_mood_hint" = SSeconomy.tax_mood_hint(),
 		"treasury_grant" = command?.grant_amount(null, staff_stats),
 		"treasury_grant_level" = command?.grant_level(staff_stats),
 		"treasury_cap" = command?.budget_threshold(staff_stats),
@@ -273,7 +282,8 @@
 			if(isnull(rate) || !SSeconomy.set_tax_rate(rate, user))
 				messages[user_ref] = "Неверная ставка."
 			else
-				messages[user_ref] = "Налог: [SSeconomy.tax_rate]%."
+				var/hint = SSeconomy.tax_mood_hint()
+				messages[user_ref] = "Налог: [SSeconomy.tax_rate]%.[hint ? " [hint]" : ""]"
 		if("fund")
 			var/datum/economy_department/target = budget_department(params["department"])
 			var/amount = econ_ui_number(params["amount"])

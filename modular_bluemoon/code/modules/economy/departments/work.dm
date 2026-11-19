@@ -67,7 +67,7 @@ GLOBAL_LIST_INIT(econ_work_cooldown_groups, list(
 		return 0
 	if(subject && !work_subject_allowed(work_type, performer, subject))
 		return 0
-	var/exact = price * amount + (department.work_remainder[work_type] || 0)
+	var/exact = price * amount * work_pay_mult() + (department.work_remainder[work_type] || 0)
 	var/total = round(exact)
 	if(total > 0 && !department.account.credit(total, ECON_WORK, performer, memo || econ_work_name(work_type)))
 		return 0
@@ -123,7 +123,7 @@ GLOBAL_LIST_INIT(econ_work_cooldown_groups, list(
 	if(world.time - account.premium_window_start > WORK_PREMIUM_WINDOW)
 		account.premium_window_start = world.time
 		account.premium_in_window = 0
-	var/exact = total * settings.work_personal_share / 100 + account.premium_remainder
+	var/exact = total * work_premium_share() / 100 + account.premium_remainder
 	var/premium = min(round(exact), settings.work_personal_cap_hour - account.premium_in_window)
 	account.premium_remainder = exact - round(exact)
 	if(premium <= 0)
