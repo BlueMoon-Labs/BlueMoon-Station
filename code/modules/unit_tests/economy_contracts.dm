@@ -29,6 +29,30 @@
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
 	TEST_ASSERT_EQUAL(length(command.contracts), 0, "У командования контрактов нет")
 
+/// Номера выдаются, только если на станции стоит пресс.
+/datum/unit_test/economy_contracts_plates_need_press
+	var/list/hidden_presses = list()
+
+/datum/unit_test/economy_contracts_plates_need_press/Destroy()
+	for(var/obj/machinery/plate_press/press as anything in hidden_presses)
+		press.forceMove(hidden_presses[press])
+	hidden_presses = null
+	return ..()
+
+/datum/unit_test/economy_contracts_plates_need_press/Run()
+	for(var/obj/machinery/plate_press/press in GLOB.machines)
+		if(is_station_level(press.z))
+			hidden_presses[press] = press.loc
+			press.moveToNullspace()
+	var/datum/bounty/item/security/plates/plates = allocate(/datum/bounty/item/security/plates)
+	TEST_ASSERT(!plates.econ_available(), "Номера доступны без пресса на станции")
+	TEST_ASSERT(!SSeconomy.pick_bounty(list(/datum/bounty/item/security/plates)), "Доска выдала номера без пресса")
+	TEST_ASSERT(!try_add_bounty(plates), "Особый заказ на номера выставлен без пресса")
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "На станции нет свободной клетки")
+	allocate(/obj/machinery/plate_press, station_turf)
+	TEST_ASSERT(plates.econ_available(), "Номера недоступны при прессе на станции")
+
 /// Контракт деятельности засчитывается по записям работы взявшего и платит отделу и исполнителю.
 /datum/unit_test/economy_work/activity_contract/Run()
 	setup_pair()
