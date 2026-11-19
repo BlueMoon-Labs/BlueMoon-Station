@@ -20,22 +20,26 @@
 	. = ..() * SSeconomy.bounty_modifier * SSeconomy.settings.contract_delivery_mult
 	if(owner)
 		. *= SSeconomy.settings.contract_personal_reward / 100
-	if(!pinned && bounty)
+	if(counts_demand() && bounty)
 		. *= SSeconomy.contract_demand_mult(bounty.type)
 	return round(.)
+
+/// Сдачи этого заказа снижают награду повторов: особые заказы ЦК и заказы аванпостов спрос станции не трогают.
+/datum/econ_contract/delivery/proc/counts_demand()
+	return !pinned
 
 /datum/econ_contract/delivery/complete(mob/performer)
 	if(completed)
 		return
 	var/bounty_type = bounty.type
-	var/repeats = !pinned
+	var/repeats = counts_demand()
 	..()
 	if(repeats)
 		SSeconomy.note_contract_demand(bounty_type)
 
 /datum/econ_contract/delivery/ui_entry()
 	. = ..()
-	.["demand"] = pinned ? 100 : round(SSeconomy.contract_demand_mult(bounty.type) * 100)
+	.["demand"] = counts_demand() ? round(SSeconomy.contract_demand_mult(bounty.type) * 100) : 100
 
 /datum/econ_contract/delivery/has_progress()
 	var/datum/bounty/item/item_bounty = bounty

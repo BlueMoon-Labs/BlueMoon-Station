@@ -67,6 +67,8 @@ SUBSYSTEM_DEF(economy)
 	contracts_started = SSeconomy.contracts_started
 	loose_contracts = SSeconomy.loose_contracts
 	contract_demand = SSeconomy.contract_demand
+	outpost_contracts = SSeconomy.outpost_contracts
+	outpost_refill_at = SSeconomy.outpost_refill_at
 	escrow_account = SSeconomy.escrow_account
 	lottery = SSeconomy.lottery
 	treasury_requests = SSeconomy.treasury_requests
@@ -95,6 +97,7 @@ SUBSYSTEM_DEF(economy)
 		refresh_contracts()
 	else
 		start_contracts()
+	refresh_outpost_contracts()
 	if(!(fire_count % settings.payroll_interval_ticks))
 		run_payroll()
 	staff_stats = econ_staff_stats()

@@ -5289,6 +5289,7 @@
 #include "modular_bluemoon\code\modules\economy\contracts\delivery.dm"
 #include "modular_bluemoon\code\modules\economy\contracts\demand.dm"
 #include "modular_bluemoon\code\modules\economy\contracts\generation.dm"
+#include "modular_bluemoon\code\modules\economy\contracts\outpost.dm"
 #include "modular_bluemoon\code\modules\economy\contracts\personal.dm"
 #include "modular_bluemoon\code\modules\economy\contracts\reputation.dm"
 #include "modular_bluemoon\code\modules\economy\core\accounts.dm"

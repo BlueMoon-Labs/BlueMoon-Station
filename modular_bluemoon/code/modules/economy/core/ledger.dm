@@ -20,6 +20,8 @@
 	var/list/outpost_flows = list()
 	var/outpost_minted = 0
 	var/list/outpost_minted_by_reason = list()
+	/// id аванпоста -> reason -> его эмиссия, для строки итога смены
+	var/list/outpost_minted_by_id = list()
 	var/summary_logged = FALSE
 
 /datum/bank_account
@@ -90,6 +92,11 @@
 		if(!source)
 			outpost_minted += amount
 			outpost_minted_by_reason[reason] += amount
+			var/list/by_outpost = outpost_minted_by_id[target.department_id]
+			if(!by_outpost)
+				by_outpost = list()
+				outpost_minted_by_id[target.department_id] = by_outpost
+			by_outpost[reason] += amount
 	if(econ_is_outpost_budget(source))
 		outpost_flow(source.department_id)[target ? "spent" : "burned"] += amount
 
@@ -153,7 +160,8 @@
 		if(!econ_is_outpost_budget(outpost))
 			continue
 		var/list/flow = outpost_flows[outpost.department_id] || list("in" = 0, "spent" = 0, "burned" = 0)
-		parts += "[outpost.department_id] [num2text(flow["in"], 12)]/[num2text(flow["spent"], 12)]/[num2text(flow["burned"], 12)]/[num2text(outpost.account_balance, 12)]"
+		var/list/reasons = outpost_minted_by_id[outpost.department_id]
+		parts += "[outpost.department_id] [num2text(flow["in"], 12)]/[num2text(flow["spent"], 12)]/[num2text(flow["burned"], 12)]/[num2text(outpost.account_balance, 12)][length(reasons) ? " ([econ_reason_totals_text(reasons)])" : ""]"
 	if(length(parts))
 		. += "Итог смены по аванпостам (пришло/потрачено/сожжено/остаток): [jointext(parts, ", ")]"
 

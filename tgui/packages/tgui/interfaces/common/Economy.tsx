@@ -27,7 +27,7 @@ export type ContractEntry = {
   rotates_in: number | null;
   started: BooleanLike;
   progress: string;
-  kind?: 'department' | 'personal' | 'chain' | 'crew';
+  kind?: 'department' | 'personal' | 'chain' | 'crew' | 'outpost';
   /** Процент награды, который получает взявший контракт. */
   share?: number;
   /** Сколько счетов уже вложилось в контракт без исполнителя. */

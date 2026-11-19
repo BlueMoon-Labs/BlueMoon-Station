@@ -393,7 +393,7 @@
 	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Сдача сканером аванпоста попала в эмиссию станции")
 	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, 600, "Эмиссия аванпоста - вся оплата за штуки, доля сдавшего из неё")
 	var/share = round(600 * settings.contract_team_share / 100)
-	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
+	TEST_ASSERT_EQUAL(account.account_balance, share, "Сдавшему доля участника целиком: деньги аванпоста налогом станции не облагаются")
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
 
 	tarkov_before = tarkov.account_balance

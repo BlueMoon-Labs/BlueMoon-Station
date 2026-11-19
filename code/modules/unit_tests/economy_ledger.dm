@@ -230,8 +230,8 @@
 	var/text = jointext(SSeconomy.ledger.round_summary(), "\n")
 	TEST_ASSERT(findtext(text, "эмиссия станции 700 кр., аванпостов 5000 кр. (export 5000)"), "Эмиссия разделена: [text]")
 	TEST_ASSERT(findtext(text, "Итог смены по аванпостам (пришло/потрачено/сожжено/остаток): "), "Строка аванпостов: [text]")
-	TEST_ASSERT(findtext(text, "DS 5000/500/1000/[outpost.account_balance]"), "Deep Space в строке аванпостов: [text]")
-	TEST_ASSERT(findtext(text, "TAR 0/0/0/[other_outpost.account_balance]"), "Тарков в строке аванпостов без движений: [text]")
+	TEST_ASSERT(findtext(text, "DS 5000/500/1000/[outpost.account_balance] (export 5000)"), "Deep Space в строке аванпостов с эмиссией по причинам: [text]")
+	TEST_ASSERT(findtext(text, "TAR 0/0/0/[other_outpost.account_balance]") && !findtext(text, "TAR 0/0/0/[other_outpost.account_balance] ("), "Тарков в строке аванпостов без движений: [text]")
 
 /// После конца раунда тик экономики и оплата работы не начисляют, а итог смены пишется один раз.
 /datum/unit_test/economy_round_over_no_accrual

@@ -170,7 +170,7 @@
 
 /obj/item/xenoarch/help/cargo/ds
 	name = "Syndicate cargo scanner"
-	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Deep Space. Подходящее под открытый спецзаказ партнёра засчитывается в спецзаказ."
+	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Deep Space. Подходящее под заказ аванпоста или открытый спецзаказ партнёра засчитывается в него."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
 	budget_id = ACCOUNT_DS
@@ -191,6 +191,8 @@
 	if(!budget_id)
 		return
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(budget_id)
+	var/list/contracts = econ_outpost_contracts_examine(budget_id)
+	. += span_notice(length(contracts) ? "Заказы аванпоста, награда идёт в [econ_budget_name(budget)], сдавшим - [SSeconomy.settings.contract_team_share]% от неё:<br>[jointext(contracts, "<br>")]" : "Заказов аванпоста сейчас нет, новые появятся с ротацией доски.")
 	. += span_notice("Предмет под открытый спецзаказ партнёра сканер сдаёт в спецзаказ: оплата за штуки и маржа за них при выполнении - в [econ_budget_name(budget)], тебе лично [SSeconomy.settings.contract_team_share]% оплаты. Первая сдача берёт спецзаказ и запускает срок [SSmarket.offer_deadline_minutes] мин., не успеешь - маржи не будет. Купленное не засчитывается.")
 	var/list/offers = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
@@ -199,7 +201,7 @@
 			offers += "[offer.partner_name()]: [offer.requirement_text()], принято [offer.delivered] из [offer.quantity], [offer.unit_price] кр. за штуку сразу и [offer.unit_reward() - offer.unit_price] кр. за штуку при выполнении; [time_text]"
 	. += span_notice(length(offers) ? "Открытые спецзаказы:<br>[jointext(offers, "<br>")]" : "Открытых спецзаказов партнёров сейчас нет.")
 
-/// Продажа с аванпоста в бюджет account_id: сначала открытые спецзаказы партнёров, остальное - на тот же рынок сектора, что у снабжения станции, цена падает от объёма продаж. Возвращает выручку рынка.
+/// Продажа с аванпоста в бюджет account_id: сначала открытые спецзаказы партнёров, затем заказы аванпоста, остальное - на тот же рынок сектора, что у снабжения станции, цена падает от объёма продаж. Возвращает выручку рынка.
 /obj/item/xenoarch/help/cargo/proc/sell_offstation(obj/item/target, mob/user, account_id)
 	if(QDELETED(target))
 		return 0
@@ -207,6 +209,9 @@
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(account_id)
 	var/offer_units = budget ? econ_offers_ship(target, user, budget) : 0
 	var/offer_text = offer_units ? " По спецзаказам партнёров принято [offer_units] шт., оплата - в [econ_budget_name(budget)]." : ""
+	var/contract_units = (budget && !QDELETED(target)) ? econ_outpost_contracts_ship(target, user, account_id) : 0
+	if(contract_units)
+		offer_text += " По заказам аванпоста принято: [contract_units] шт."
 	if(QDELETED(target))
 		to_chat(user, "Ух ты, [target_name] пропало![offer_text]")
 		return 0
@@ -230,13 +235,13 @@
 		return FALSE
 	for(var/obj/machinery/computer/cargo/express/console in GLOB.machines)
 		if(console.department_account == account_id && console.z == spawn_turf.z)
-			to_chat(new_spawn, span_notice("[capitalize(econ_budget_name(SSeconomy.get_dep_account(account_id)))] пополняется продажей находок и сдачей спецзаказов партнёров сканером продажи (осмотри его - там открытые спецзаказы), а тратится заказами с экспресс-консоли."))
+			to_chat(new_spawn, span_notice("Деньги в [econ_budget_name(SSeconomy.get_dep_account(account_id))] приносит сканер продажи: находки он продаёт на рынок, а заказы аванпоста и спецзаказы партнёров сдаёт с долей награды лично тебе. Что сейчас просят - в окне экспресс-консоли аванпоста, с неё же бюджет тратится на заказы."))
 			return TRUE
 	return FALSE
 
 /obj/item/xenoarch/help/cargo/tarkoff
 	name = "Experimental cargo scanner"
-	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Тарков Индастриз. Подходящее под открытый спецзаказ партнёра засчитывается в спецзаказ."
+	desc = "Телепортирует предметы на рынок сектора, выручка идёт в бюджет Тарков Индастриз. Подходящее под заказ аванпоста или открытый спецзаказ партнёра засчитывается в него."
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
 	budget_id = ACCOUNT_TAR

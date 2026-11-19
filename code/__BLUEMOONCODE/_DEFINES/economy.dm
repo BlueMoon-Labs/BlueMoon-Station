@@ -236,6 +236,8 @@
 #define ECON_CONTRACT_REWARD_STEP 50
 /// Начатый, но никем не взятый контракт снимается через столько возрастов ротации
 #define ECON_CONTRACT_STALE_ROTATIONS 3
+/// Заказов на доске аванпоста; выполненные заменяются новыми только раз в возраст ротации
+#define ECON_OUTPOST_CONTRACTS 3
 #define ECON_REQUEST_PENDING "pending"
 #define ECON_REQUEST_APPROVED "approved"
 #define ECON_REQUEST_DENIED "denied"

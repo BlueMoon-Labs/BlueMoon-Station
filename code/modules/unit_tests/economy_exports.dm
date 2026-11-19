@@ -283,6 +283,101 @@
 	TEST_ASSERT(econ_offstation_income_hint(scavenger, ACCOUNT_TAR), "Нет подсказки о бюджете Таркова рядом с его консолью")
 	TEST_ASSERT(!econ_offstation_income_hint(scavenger, ACCOUNT_DS), "Подсказка о бюджете Deep Space у консоли Таркова")
 
+/// Доска аванпоста: заказы только из того, что аванпост делает сам, станция их не видит; сдача сканером платит бюджету аванпоста и сдавшему без налога казне, а выполненный заказ сменяется новым только с ротацией.
+/datum/unit_test/economy_exports/outpost_contracts
+	var/list/saved_boards
+	var/list/saved_refill
+	var/datum/bank_account/budget
+	var/saved_balance
+	var/datum/bank_account/treasury
+	var/saved_treasury
+	var/saved_tax_rate
+
+/datum/unit_test/economy_exports/outpost_contracts/New()
+	. = ..()
+	saved_boards = SSeconomy.outpost_contracts
+	saved_refill = SSeconomy.outpost_refill_at
+	SSeconomy.outpost_contracts = list()
+	SSeconomy.outpost_refill_at = list()
+	budget = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	saved_balance = budget.account_balance
+	treasury = SSeconomy.treasury()
+	saved_treasury = treasury.account_balance
+	saved_tax_rate = SSeconomy.tax_rate
+
+/datum/unit_test/economy_exports/outpost_contracts/Destroy()
+	for(var/id in SSeconomy.outpost_contracts)
+		var/list/board = SSeconomy.outpost_contracts[id]
+		QDEL_LIST(board)
+	SSeconomy.outpost_contracts = saved_boards
+	SSeconomy.outpost_refill_at = saved_refill
+	econ_test_set_balance(budget, saved_balance)
+	econ_test_set_balance(treasury, saved_treasury)
+	SSeconomy.tax_rate = saved_tax_rate
+	budget = null
+	treasury = null
+	return ..()
+
+/datum/unit_test/economy_exports/outpost_contracts/Run()
+	SSeconomy.tax_rate = 10
+	SSeconomy.refresh_outpost_contracts(force = TRUE)
+	var/list/station_contracts = SSeconomy.all_contracts()
+	for(var/id in list(ACCOUNT_TAR, ACCOUNT_DS))
+		var/list/board = SSeconomy.outpost_contracts[id]
+		TEST_ASSERT_EQUAL(length(board), ECON_OUTPOST_CONTRACTS, "Доска аванпоста [id] заполнена")
+		for(var/datum/econ_contract/delivery/outpost/contract as anything in board)
+			TEST_ASSERT(contract.bounty.type in econ_outpost_bounty_types(id), "Аванпосту [id] выпал чужой заказ [contract.bounty.type]")
+			TEST_ASSERT(!(contract in station_contracts), "Заказ аванпоста [id] на досках станции")
+			TEST_ASSERT(!contract.visible_to(null), "Заказ аванпоста [id] виден на КПК")
+	TEST_ASSERT(!(/datum/bounty/reagent/simple_drink in econ_outpost_bounty_types(ACCOUNT_TAR)), "Таркову заказывают напитки, а раздатчика напитков у него нет")
+	var/list/tarkov_board = SSeconomy.outpost_contracts[ACCOUNT_TAR]
+	QDEL_LIST(tarkov_board)
+	var/datum/econ_contract/delivery/outpost/contract = SSeconomy.add_outpost_contract(ACCOUNT_TAR, new /datum/bounty/item/chef/pie)
+	TEST_ASSERT(!(contract in econ_delivery_contracts_for(null)), "Пад подработки станции принимает заказ аванпоста")
+
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/account = new("econ_test_outpost_cook")
+	account.offstation = TRUE
+	scavenger.account_id = account.account_id
+	allocated += account
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	TEST_ASSERT(findtext(jointext(scanner.examine(scavenger), "\n"), contract.title), "Осмотр сканера не показывает заказ аванпоста")
+	var/obj/machinery/computer/cargo/express/tar/console = allocate(/obj/machinery/computer/cargo/express/tar)
+	var/list/data = console.ui_data(scavenger)
+	var/list/earnings = data["outpost"]
+	TEST_ASSERT_NOTNULL(earnings, "Окно консоли Таркова без заработка аванпоста")
+	TEST_ASSERT_EQUAL(length(earnings["contracts"]), 1, "Окно консоли Таркова показывает его заказы")
+	var/obj/machinery/computer/cargo/express/station_console = allocate(/obj/machinery/computer/cargo/express)
+	data = station_console.ui_data(scavenger)
+	TEST_ASSERT_NULL(data["outpost"], "Станционная консоль показывает заказы аванпоста")
+
+	var/obj/item/reagent_containers/food/snacks/pie/cream/bought = allocate(/obj/item/reagent_containers/food/snacks/pie/cream)
+	bought.econ_imported = TRUE
+	scanner.sell_offstation(bought, scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(!QDELETED(contract) && !contract.has_progress(), "Купленный пирог засчитан в заказ аванпоста")
+
+	var/reward = contract.payout()
+	var/share = round(reward * SSeconomy.settings.contract_team_share / 100)
+	var/datum/economy_ledger/ledger = SSeconomy.ledger
+	var/station_minted_before = ledger.minted - ledger.outpost_minted
+	var/outpost_minted_before = ledger.outpost_minted
+	var/budget_before = budget.account_balance
+	var/treasury_before = treasury.account_balance
+	var/obj/item/reagent_containers/food/snacks/pie/cream/pie = allocate(/obj/item/reagent_containers/food/snacks/pie/cream)
+	TEST_ASSERT_EQUAL(scanner.sell_offstation(pie, scavenger, ACCOUNT_TAR), 0, "Пирог по заказу ещё и продан на рынке")
+	TEST_ASSERT(QDELETED(contract), "Заказ аванпоста не выполнен сканером")
+	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, reward, "Награда заказа - эмиссия аванпоста")
+	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Заказ аванпоста попал в эмиссию станции")
+	TEST_ASSERT_EQUAL(budget.account_balance - budget_before, reward - share, "Бюджету Таркова награда без доли сдавшего")
+	TEST_ASSERT_EQUAL(account.account_balance, share, "Сдавшему доля участника целиком")
+	TEST_ASSERT_EQUAL(treasury.account_balance, treasury_before, "Налог с денег аванпоста ушёл в казну станции")
+
+	SSeconomy.refresh_outpost_contracts()
+	TEST_ASSERT_EQUAL(length(tarkov_board), 0, "Выполненный заказ аванпоста сменился новым до ротации")
+	SSeconomy.outpost_refill_at[ACCOUNT_TAR] = world.time - 1
+	SSeconomy.refresh_outpost_contracts()
+	TEST_ASSERT_EQUAL(length(tarkov_board), ECON_OUTPOST_CONTRACTS, "Доска аванпоста не добралась с ротацией")
+
 /// Пиратский пад продаёт купленное через снабжение не дороже потолка выкупа NT.
 /datum/unit_test/economy_exports/pirate_pad_caps/Run()
 	var/obj/machinery/piratepad/pad = allocate(/obj/machinery/piratepad, run_loc_floor_top_right)
