@@ -33,6 +33,7 @@ const base: CashRegisterData = {
   cashiers_max: 2,
   tip_max: 5000,
   transfer_cooldown: 5,
+  has_template: 0,
   cashiers: [ivan],
   is_cashier: 0,
   can_join: 0,
@@ -45,6 +46,7 @@ const base: CashRegisterData = {
   balance: 1000,
   cooldown_left: 0,
   receipt: 0,
+  just_paid: null,
 };
 
 const setup = (data: Partial<CashRegisterData> = {}) => {
@@ -67,6 +69,9 @@ const sent = (topic, action) =>
 const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
 
 const currentStep = (container: HTMLElement) => text(container.querySelector('[aria-current="step"]') as HTMLElement);
+
+const getLogout = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll('.Button')).find((button) => button.textContent === 'Отойти от кассы') as HTMLElement;
 
 const typeNumber = (input: HTMLInputElement, value: string) => {
   fireEvent.focus(input);
@@ -99,14 +104,55 @@ test('два кассира: у каждого свой счёт, чаевые -
   expect(sent(topic, 'tip')).toEqual([{ cashier: 222, amount: 10 }]);
 });
 
-test('клиенту по шагам: сначала заказ кассиру, после оплаты картой - чаевые и чек', () => {
+test('клиенту по шагам: сначала заказ кассиру, только что оплатившему - отдельная строка', () => {
   const { container } = setup({ cashiers: [anna] });
   expect(currentStep(container)).toContain('Скажите кассиру, что хотите');
   expect(container.querySelectorAll('.fa-check')).toHaveLength(0);
+  expect(container.querySelector('.NtTerm__paid')).toBeNull();
   cleanup();
-  const paid = setup({ cashiers: [anna], receipt: 1 });
-  expect(currentStep(paid.container)).toContain('чаевые кассиру и чек');
-  expect(paid.container.querySelectorAll('.fa-check')).toHaveLength(2);
+  const paid = setup({ cashiers: [anna], receipt: 1, just_paid: 230 });
+  expect(text(paid.container.querySelector('.NtTerm__paid') as HTMLElement)).toBe('Вы оплатили 230 кр. Чек и чаевые - ниже, по желанию.');
+  expect(currentStep(paid.container)).toContain('Скажите кассиру, что хотите');
+  expect(paid.container.querySelectorAll('.fa-check')).toHaveLength(0);
+  cleanup();
+  const ordered = setup({ receipt: 1, just_paid: 230 });
+  expect(ordered.container.querySelector('.NtTerm__paid')).toBeNull();
+  expect(currentStep(ordered.container)).toContain('Оплатите');
+});
+
+test('вернувшийся покупатель с давним нераспечатанным чеком начинает с заказа', () => {
+  const { container } = setup({ cashiers: [anna], receipt: 1, just_paid: null });
+  expect(currentStep(container)).toContain('Скажите кассиру, что хотите');
+  expect(container.querySelectorAll('.fa-check')).toHaveLength(0);
+  expect(container.querySelector('.NtTerm__paid')).toBeNull();
+  expect(text(container)).toContain('Распечатать чек');
+});
+
+test('без личного счёта свободная касса просит ID-карту, а не встать за неё', () => {
+  const { container } = setup({ cashiers: [], has_account: 0 });
+  expect(text(container)).toContain('Продаёте? Нужна ID-карта с личным счётом.');
+  expect(text(container)).not.toContain('Встаньте за кассу');
+});
+
+test('кассиру с пустым меню - типовое меню одной кнопкой, только если у корпуса оно есть', () => {
+  const { getByText, topic } = setup({ is_cashier: 1, has_template: 1, menu: [], cashiers: [{ ...anna, mine: 1 }] });
+  fireEvent.click(getByText('Типовое меню'));
+  expect(sent(topic, 'template')).toHaveLength(1);
+  cleanup();
+  const filled = setup({ is_cashier: 1, has_template: 1, cashiers: [{ ...anna, mine: 1 }] });
+  expect(filled.container.textContent).not.toContain('Типовое меню');
+  cleanup();
+  const universal = setup({ is_cashier: 1, has_template: 0, menu: [], cashiers: [{ ...anna, mine: 1 }] });
+  expect(universal.container.textContent).not.toContain('Типовое меню');
+  cleanup();
+  const customer = setup({ has_template: 1, menu: [], cashiers: [anna] });
+  expect(customer.container.textContent).not.toContain('Типовое меню');
+});
+
+test('кнопка ухода кассира предупреждает, что набранный счёт сбросится', () => {
+  const { container } = setup({ is_cashier: 1, cashiers: [{ ...ivan, mine: 1 }] });
+  fireEvent.mouseEnter(getLogout(container));
+  expect(text(document.querySelector('.Tooltip') as HTMLElement)).toBe('Набранный счёт на 230 кр. сбросится');
 });
 
 test('встать вторым кассиром предлагают как дело персонала, не покупателя', () => {

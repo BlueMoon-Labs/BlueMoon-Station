@@ -40,6 +40,7 @@ export type CashRegisterData = {
   cashiers_max: number;
   tip_max: number;
   transfer_cooldown: number;
+  has_template: BooleanLike;
   cashiers: Cashier[];
   is_cashier: BooleanLike;
   can_join: BooleanLike;
@@ -49,6 +50,8 @@ export type CashRegisterData = {
   balance: number;
   cooldown_left: number;
   receipt: BooleanLike;
+  /** Сумма своей оплаты картой за последние пару минут, пока чек не распечатан */
+  just_paid: number | null;
 };
 
 const shareText = (cashier: Cashier) =>
@@ -199,14 +202,17 @@ const Tips = () => {
 
 const CustomerView = () => {
   const { data } = useBackend<CashRegisterData>();
-  const { cashiers, menu, receipt, has_account } = data;
+  const { cashiers, menu, receipt, has_account, just_paid } = data;
   if (!cashiers.length) {
     return (
       <>
         <NtEmpty>За кассой никого.</NtEmpty>
         <div className="NtTerm__help">
           <div>
-            <b>Продаёте?</b> Встаньте за кассу кнопкой ниже или проведите по ней своей ID-картой или КПК.
+            <b>Продаёте?</b>{' '}
+            {has_account
+              ? 'Встаньте за кассу кнопкой ниже или проведите по ней своей ID-картой или КПК.'
+              : 'Нужна ID-карта с личным счётом.'}
           </div>
           <div>
             <b>Покупаете?</b> Дождитесь кассира или просто попросите, что хотите: касса необязательна.
@@ -228,12 +234,15 @@ const CustomerView = () => {
   const ordered = cashiers.some((cashier) => cashier.order.length > 0);
   return (
     <>
+      {just_paid !== null && !ordered && (
+        <div className="NtTerm__paid">Вы оплатили {formatCredits(just_paid)} Чек и чаевые - ниже, по желанию.</div>
+      )}
       <Steps
         steps={[
-          { text: 'Скажите кассиру, что хотите: он наберёт счёт, и сумма появится здесь.', done: ordered || !!receipt },
+          { text: 'Скажите кассиру, что хотите: он наберёт счёт, и сумма появится здесь.', done: ordered },
           {
             text: 'Оплатите: кнопкой «Оплатить картой», ID-картой или КПК по кассе или приложите к ней наличные, сдача голочипом.',
-            done: !ordered && !!receipt,
+            done: false,
           },
           { text: 'По желанию: чаевые кассиру и чек.', done: false },
         ]}
@@ -351,7 +360,17 @@ const MenuEditor = (props: { cashier: Cashier }) => {
     <NtFrame
       title={`Меню ${menu.length}/${menu_max}`}
       help={`Меню общее для обоих кассиров: убранная позиция пропадает и из всех счетов. Цена от 1 до ${formatCredits(price_max)}, до ${count_max} шт. одной позиции в счёте.`}>
-      {menu.length === 0 && <NtEmpty>Меню пустое: добавьте первую позицию.</NtEmpty>}
+      {menu.length === 0 && (
+        <NtEmpty>
+          Меню пустое: добавьте первую позицию
+          {data.has_template ? ' или возьмите типовое меню: лишнее потом уберёте.' : '.'}
+        </NtEmpty>
+      )}
+      {menu.length === 0 && !!data.has_template && (
+        <Box textAlign="center" mb={1}>
+          <Button icon="list" content="Типовое меню" tooltip={`Обычные позиции для корпуса «${data.skin_name}» с ценами`} onClick={() => act('template')} />
+        </Box>
+      )}
       {menu.map((item) => (
         <Stack key={item.id} align="center" className="NtTerm__line">
           <Stack.Item grow>{item.name}</Stack.Item>
@@ -413,7 +432,12 @@ const CashierView = () => {
           </Stack.Item>
         )}
         <Stack.Item>
-          <Button icon="sign-out-alt" content="Отойти от кассы" onClick={() => act('logout')} />
+          <Button
+            icon="sign-out-alt"
+            content="Отойти от кассы"
+            tooltip={mine.order.length > 0 ? `Набранный счёт на ${formatCredits(mine.total)} сбросится` : undefined}
+            onClick={() => act('logout')}
+          />
         </Stack.Item>
       </Stack>
       <Steps
