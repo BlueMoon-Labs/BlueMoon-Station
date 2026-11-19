@@ -446,18 +446,21 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 // Подключение игрока к аватару.
 /obj/machinery/netpod/proc/enter_matrix()
 	var/mob/living/carbon/human/neo = occupant
-	if(!ishuman(neo) || neo.stat == DEAD || isnull(neo.mind))
+	if(!ishuman(neo) || neo.stat != CONSCIOUS || isnull(neo.mind))
 		balloon_alert(neo, "неподходящий пользователь.")
+		open_machine()
 		return
 
 	var/obj/machinery/quantum_server/server = find_server()
 	if(isnull(server))
 		balloon_alert(neo, "нет подключения к серверу!")
+		open_machine()
 		return
 
 	var/datum/lazy_template/virtual_domain/generated_domain = server.generated_domain
 	if(isnull(generated_domain) || !server.is_ready)
 		balloon_alert(neo, "ничего не загружено!")
+		open_machine()
 		return
 
 	balloon_alert(neo, "установка соединения...")
@@ -477,6 +480,7 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 		current_avatar = server.start_new_connection(neo, netsuit)
 		if(isnull(current_avatar))
 			balloon_alert(neo, "недостаточно пропускной способности!")
+			open_machine()
 			return
 
 	neo.set_blurriness(4)

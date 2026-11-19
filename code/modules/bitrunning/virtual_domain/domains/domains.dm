@@ -701,6 +701,11 @@
 	map_name = "hierophant"
 	reward_points = BITRUNNER_REWARD_HIGH
 
+/datum/lazy_template/virtual_domain/hierophant/setup_domain(list/created_atoms)
+	for(var/mob/living/simple_animal/hostile/megafauna/hierophant/zealot in created_atoms)
+		zealot.maxHealth = 1500
+		zealot.health = 1500
+
 /datum/lazy_template/virtual_domain/island_brawl
 	name = "Island Brawl"
 	announce_to_ghosts = TRUE
@@ -712,6 +717,7 @@
 	key = "island_brawl"
 	map_name = "island_brawl"
 	reward_points = BITRUNNER_REWARD_HIGH
+	domain_flags = DOMAIN_NO_LINKED_DAMAGE
 	secondary_loot = list(
 		/obj/item/toy/beach_ball = 2,
 		/obj/item/clothing/shoes/sandal = 1,
@@ -954,7 +960,12 @@
 	announce_to_ghosts = TRUE
 	cost = BITRUNNER_COST_HIGH
 	desc = "Воссоздайте события давно минувшей «горячей» части Пограничной войны в роли ударной группы Солариан, зачищающей базы CIN; при поддержке энтузиастов-реконструкторов SolFed. Многопользовательское прохождение и тщательная подготовка настоятельно рекомендуются."
-	completion_loot = list(/obj/item/stack/spacecash/c200 = 3)
+	completion_loot = list(
+		/obj/item/stack/spacecash/c500 = 4,
+		/obj/item/storage/firstaid/regular = 2,
+		/obj/item/clothing/suit/armor/vest = 2,
+		/obj/item/gun/ballistic/automatic/pistol = 2,
+	)
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	help_text = "Последняя часть домена может оказаться весьма PvP-ориентированной. Лучше не ходить одному и пронести с собой диски способностей и снаряжения."
 	forced_outfit = /datum/outfit/solfed_bitrun
@@ -963,8 +974,13 @@
 	reward_points = BITRUNNER_REWARD_HIGH
 	mob_modules = list(/datum/modular_mob_segment/cin_mobs)
 	secondary_loot = list(
-		/obj/item/stack/spacecash/c100 = 12,
+		/obj/item/stack/spacecash/c500 = 3,
 		/obj/item/disk/bitrunning/item/ancient_milsim = 3,
+		/obj/item/choice_beacon/ancient_milsim = 2,
+		/obj/item/gun/ballistic/automatic/pistol = 2,
+		/obj/item/storage/firstaid/regular = 2,
+		/obj/item/grenade/empgrenade = 2,
+		/obj/item/clothing/suit/armor/vest = 2,
 	)
 
 /datum/outfit/solfed_bitrun

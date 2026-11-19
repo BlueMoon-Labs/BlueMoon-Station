@@ -5,6 +5,7 @@
 	var/datum/weakref/server_ref
 	var/datum/weakref/netpod_ref
 	var/nohit = TRUE
+	var/disconnecting = FALSE
 
 /datum/component/avatar_connection/Initialize(
 	datum/mind/old_mind,
@@ -49,6 +50,10 @@
 		var/datum/action/avatar_domain_info/action = new(help_datum)
 		action.Grant(avatar)
 
+	if(!locate(/datum/action/bitrunning_emergency_disconnect) in avatar.actions)
+		var/datum/action/bitrunning_emergency_disconnect/emergency_action = new()
+		emergency_action.Grant(avatar)
+
 	if(copy_body && ishuman(avatar) && ishuman(old_body))
 		var/mob/living/carbon/human/human_avatar = avatar
 		var/mob/living/carbon/human/human_old_body = old_body
@@ -76,7 +81,8 @@
 	ADD_TRAIT(parent, TRAIT_TEMPORARY_BODY, REF(src))
 	RegisterSignals(parent, list(COMSIG_BITRUNNER_ALERT_SEVER, COMSIG_BITRUNNER_CACHE_SEVER, COMSIG_BITRUNNER_LADDER_SEVER), PROC_REF(on_safe_disconnect))
 	RegisterSignal(parent, COMSIG_LIVING_PILL_CONSUMED, PROC_REF(disconnect_if_red_pill))
-	RegisterSignals(parent, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_sever_connection))
+	RegisterSignal(parent, COMSIG_LIVING_DEATH, PROC_REF(on_avatar_death))
+	RegisterSignal(parent, COMSIG_QDELETING, PROC_REF(on_sever_connection))
 	RegisterSignal(parent, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_linked_damage))
 	RegisterSignal(parent, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
 
@@ -114,6 +120,10 @@
 		our_id.registered_account.account_holder = avatar.real_name
 
 /datum/component/avatar_connection/proc/full_avatar_disconnect(cause_damage = FALSE, datum/source)
+	if(disconnecting)
+		return
+	disconnecting = TRUE
+
 #ifndef UNIT_TESTS
 	return_to_old_body()
 #endif
@@ -128,6 +138,17 @@
 	server?.avatar_connection_refs.Remove(WEAKREF(src))
 
 	qdel(src)
+
+/// Аварийный перезапуск: аватар умирает, носитель получает brain damage.
+/datum/component/avatar_connection/proc/emergency_disconnect()
+	if(disconnecting)
+		return
+
+	var/mob/living/avatar = parent
+	if(isliving(avatar) && avatar.stat != DEAD)
+		avatar.death()
+	else
+		full_avatar_disconnect(cause_damage = TRUE)
 
 /datum/component/avatar_connection/proc/on_domain_completed(datum/source, atom/entered)
 	SIGNAL_HANDLER
@@ -145,6 +166,10 @@
 
 	var/mob/living/carbon/old_body = old_body_ref?.resolve()
 	if(isnull(old_body) || damage_type == STAMINA || damage_type == OXYLOSS)
+		return
+
+	if(domain_has_no_linked_damage())
+		nohit = FALSE
 		return
 
 	if(damage >= (old_body.health + old_body.maxHealth))
@@ -173,6 +198,13 @@
 	var/datum/action/avatar_domain_info/action = locate() in previous_body.actions
 	if(action)
 		action.Grant(source.current)
+
+	var/mob/living/new_body = source.current
+	var/area/new_area = isliving(new_body) ? get_area(new_body) : null
+	if((new_area?.area_flags & VIRTUAL_AREA) && !HAS_TRAIT(new_body, TRAIT_MIND_TEMPORARILY_GONE))
+		var/datum/action/bitrunning_emergency_disconnect/emergency_action = locate() in previous_body.actions
+		if(emergency_action)
+			emergency_action.Grant(new_body)
 
 	source.current.TakeComponent(src)
 
@@ -211,10 +243,20 @@
 
 	full_avatar_disconnect()
 
+/datum/component/avatar_connection/proc/on_avatar_death(datum/source)
+	SIGNAL_HANDLER
+
+	full_avatar_disconnect(cause_damage = TRUE, source = source)
+
 /datum/component/avatar_connection/proc/on_sever_connection(datum/source)
 	SIGNAL_HANDLER
 
 	full_avatar_disconnect(cause_damage = TRUE, source = source)
+
+/datum/component/avatar_connection/proc/domain_has_no_linked_damage()
+	var/obj/machinery/quantum_server/server = server_ref?.resolve()
+	var/datum/lazy_template/virtual_domain/domain = server?.generated_domain
+	return !isnull(domain) && (domain.domain_flags & DOMAIN_NO_LINKED_DAMAGE)
 
 /datum/component/avatar_connection/proc/on_shutting_down(datum/source, mob/living/hackerman)
 	SIGNAL_HANDLER
@@ -274,6 +316,7 @@
 		old_mind.transfer_to(old_body, force_key_move = TRUE)
 	else
 		old_mind.set_current(old_body)
+		ghost.forceMove(get_turf(old_body))
 
 	REMOVE_TRAIT(old_body, TRAIT_MIND_TEMPORARILY_GONE, REF(src))
 

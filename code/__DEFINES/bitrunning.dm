@@ -35,6 +35,8 @@
 #define DOMAIN_NO_NOHIT_BONUS (1<<2)
 /// Тестовый домен, не загружается обычным способом.
 #define DOMAIN_TEST_ONLY (1<<3)
+/// Смерть аватара в домене не калечит носителя.
+#define DOMAIN_NO_LINKED_DAMAGE (1<<4)
 
 /// Запрещает любую внешнюю загрузку на аватар.
 #define DOMAIN_FORBIDS_ALL ALL

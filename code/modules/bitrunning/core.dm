@@ -35,6 +35,26 @@
 
 	target.ui_interact(owner)
 
+/datum/action/bitrunning_emergency_disconnect
+	name = "Emergency Disconnect"
+	icon_icon = 'icons/mob/actions/actions.dmi'
+	button_icon_state = "mech_eject"
+
+/datum/action/bitrunning_emergency_disconnect/Trigger(mob/clicker, trigger_flags)
+	. = ..()
+	if(!.)
+		return
+
+	var/mob/living/avatar = owner
+	if(!isliving(avatar) || !HAS_TRAIT(avatar, TRAIT_TEMPORARY_BODY))
+		return
+
+	if(tgui_alert(avatar, "Экстренно прервать сеанс? Аватар будет отключён, носитель получит повреждение мозга.", "Экстренное отключение", list("Отключиться", "Отмена"), 0) != "Отключиться")
+		return
+
+	var/datum/component/avatar_connection/connection = avatar.GetComponent(/datum/component/avatar_connection)
+	connection?.emergency_disconnect()
+
 /atom/movable/screen/alert/bitrunning
 	name = "Generic Bitrunning Alert"
 	icon_state = "template"

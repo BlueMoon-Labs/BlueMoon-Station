@@ -300,7 +300,7 @@
 /turf/template_noop,
 /area/virtual_domain/safehouse)
 "li" = (
-/obj/structure/transit_tube/station{
+/obj/structure/transit_tube/station/dispenser/reverse{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -1111,7 +1111,7 @@
 /turf/closed/wall/r_wall,
 /area/virtual_domain)
 "Vq" = (
-/obj/structure/transit_tube/station{
+/obj/structure/transit_tube/station/dispenser/reverse{
 	dir = 8
 	},
 /turf/template_noop,
