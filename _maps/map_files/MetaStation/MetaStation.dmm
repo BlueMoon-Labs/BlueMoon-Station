@@ -4595,7 +4595,6 @@
 /area/security/brig)
 "apC" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/structure/disposalpipe/segment,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -4607,6 +4606,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/white,
 /area/security/brig)
 "apE" = (
@@ -4951,11 +4951,11 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "aqU" = (
-/obj/structure/disposalpipe/segment,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/disposalpipe/segment,
 /obj/machinery/door/airlock/maintenance{
 	name = "Brig Maintenance";
 	req_one_access_txt = "63;12";
@@ -5626,8 +5626,8 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/mining{
-	name = "Cargo Warehouse";
-	req_access_txt = "31"
+	name = "Bitrunning Maintenance";
+	req_access_txt = "84"
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/maintenance/port/fore)
@@ -7384,20 +7384,21 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/effect/turf_decal/siding/dark/end,
 /obj/machinery/door/airlock/mining{
-	name = "Mining Office";
-	req_access_txt = "48"
+	name = "Bitrunning Den";
+	req_access_txt = "84"
 	},
+/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/dark/textured,
 /area/cargo/miningoffice)
 "aym" = (
-/obj/machinery/door/airlock/maintenance{
-	name = "Cargo Bay Warehouse Maintenance";
-	req_one_access_txt = "48;50"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/door/airlock/maintenance{
+	name = "Cargo Bay Warehouse Maintenance";
+	req_one_access_txt = "48;50"
+	},
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "ayq" = (
@@ -58939,6 +58940,10 @@
 	circuit = /obj/item/circuitboard/machine/quantum_server/upgraded
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/camera{
+	c_tag = "Mining Office";
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/station/cargo/bitrunning)
 "iRr" = (

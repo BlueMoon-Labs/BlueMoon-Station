@@ -20675,10 +20675,10 @@
 /turf/open/floor/plasteel,
 /area/maintenance/starboard/aft)
 "cRu" = (
-/obj/effect/turf_decal/bot/yellow,
 /obj/machinery/quantum_server{
 	circuit = /obj/item/circuitboard/machine/quantum_server/upgraded
 	},
+/obj/effect/turf_decal/box/yellow,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/station/cargo/bitrunning)
 "cRC" = (
@@ -43174,6 +43174,9 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 5
 	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark/textured/corner{
 	dir = 8
 	},
@@ -46722,6 +46725,9 @@
 /obj/effect/turf_decal/bot,
 /obj/machinery/newscaster{
 	pixel_y = -32
+	},
+/obj/machinery/camera/autoname{
+	dir = 1
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
@@ -111074,9 +111080,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/door/airlock/mining/glass{
-	name = "Mining Office"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
@@ -111085,6 +111088,10 @@
 	},
 /obj/structure/cable/white{
 	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Office";
+	req_one_access_txt = "48;50"
 	},
 /turf/open/floor/plasteel,
 /area/station/cargo/bitrunning)
@@ -121573,10 +121580,10 @@
 /turf/open/floor/plating,
 /area/service/abandoned_gambling_den)
 "wvu" = (
-/obj/effect/turf_decal/bot/yellow,
 /obj/machinery/computer/quantum_console{
 	connectable = 0
 	},
+/obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/station/cargo/bitrunning)
 "wvC" = (

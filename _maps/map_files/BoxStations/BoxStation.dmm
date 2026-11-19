@@ -24344,12 +24344,11 @@
 /area/engineering/atmos)
 "bXd" = (
 /obj/structure/displaycase/captain,
-/obj/machinery/light_switch{
-	pixel_y = 24;
-	pixel_x = 10
-	},
 /obj/effect/turf_decal/siding/wood/thin{
 	dir = 5
+	},
+/obj/machinery/light_switch{
+	pixel_y = 24
 	},
 /turf/open/floor/carpet/royalblue,
 /area/command/heads_quarters/captain)
@@ -37846,6 +37845,9 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
 /turf/open/floor/plasteel/rivets/corner{
 	dir = 1
 	},
@@ -39605,13 +39607,11 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/command/gateway)
 "eFK" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/door/poddoor/shutters{
-	id = "contr_area_shutters";
-	name = "Auxillary Base Shutters"
+/obj/machinery/light_switch{
+	pixel_y = 26
 	},
-/turf/open/floor/plating,
-/area/station/cargo/bitrunning/den)
+/turf/closed/wall/r_wall,
+/area/command/heads_quarters/captain)
 "eGr" = (
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
@@ -46795,7 +46795,7 @@
 	pixel_x = 10
 	},
 /obj/machinery/button/door{
-	id = "contr_area_shutters";
+	id = "bitrunners_shutters";
 	name = "Bitrunning Den Shutters";
 	pixel_y = 25
 	},
@@ -56122,9 +56122,7 @@
 	icon_state = "0-2"
 	},
 /obj/structure/closet/secure_closet/warden,
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/textured/large,
 /area/security/warden)
 "lcK" = (
@@ -56510,6 +56508,9 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
 	},
 /turf/open/floor/plasteel/rivets/corner{
 	dir = 4
@@ -65192,9 +65193,7 @@
 /obj/item/clothing/head/helmet/sec,
 /obj/item/clothing/suit/armor/brigdoc,
 /obj/item/defibrillator,
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /obj/machinery/light{
 	dir = 8;
 	light_color = "#e8eaff"
@@ -69706,9 +69705,7 @@
 /obj/item/clothing/head/helmet/sec,
 /obj/item/clothing/suit/armor/brigdoc,
 /obj/item/defibrillator,
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/security/brig/brig_medical)
 "qDm" = (
@@ -74320,9 +74317,7 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/textured/large,
 /area/security/office)
 "szy" = (
@@ -76123,9 +76118,7 @@
 	pixel_x = -32
 	},
 /obj/item/gavelhammer,
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/textured/large,
 /area/security/courtroom)
 "tmR" = (
@@ -76697,9 +76690,7 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/textured/large,
 /area/security/office)
 "twY" = (
@@ -87992,9 +87983,7 @@
 /area/maintenance/starboard/aft)
 "xWE" = (
 /obj/structure/closet/secure_closet/genpop,
-/obj/effect/turf_decal/delivery/white{
-	color = "#915416"
-	},
+/obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel/textured/large,
 /area/security/prison)
 "xWF" = (
@@ -110979,7 +110968,7 @@ gCH
 wFO
 hAS
 buP
-eFK
+naJ
 naJ
 buP
 buP
@@ -118927,7 +118916,7 @@ sfq
 iBb
 aPU
 aZV
-aZV
+eFK
 bXd
 awm
 aIX
