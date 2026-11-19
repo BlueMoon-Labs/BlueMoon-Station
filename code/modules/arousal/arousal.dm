@@ -245,7 +245,11 @@
 		if(!do_after(src, mb_time, target = src) || !in_range(src, L) || !G.climaxable(src, TRUE))
 			return
 	SEND_SIGNAL(L, COMSIG_ADD_MOOD_EVENT, "orgasm", /datum/mood_event/orgasm)
+	// Impregnation is evaluated only after the action actually completed.
+	if(!G.get_urethral_obstruction())
+		L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
 	do_climax(fluid_source, spillage ? loc : L, G, spillage, FALSE, Lgen, anonymous, is_hidden)
+	return TRUE
 
 /mob/living/carbon/human/proc/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30, obj/item/sucking_machine/M, is_hidden = FALSE)
 	var/datum/reagents/fluid_source = G.climaxable(src)

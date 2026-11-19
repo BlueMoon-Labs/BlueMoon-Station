@@ -26,6 +26,8 @@
 	/// Lazy fluid bookkeeping: -1 means not initialized.
 	var/stored_fluid = -1
 	var/last_fluid_update = 0
+	/// Snapshot used for conservative nutrition-aware lazy regeneration.
+	var/last_nutrition_factor = 1
 	var/applied_volume_bonus = 0
 	var/applied_rate_bonus = 0
 
@@ -145,8 +147,16 @@
 		return
 	var/elapsed = max(0, world.time - last_fluid_update)
 	last_fluid_update = world.time
+	var/nutrition_factor = 1
+	if(owner.nutrition <= NUTRITION_LEVEL_STARVING)
+		nutrition_factor = 0.15
+	else if(owner.nutrition <= NUTRITION_LEVEL_HUNGRY)
+		nutrition_factor = 0.5
+	// A meal must not retroactively regenerate milk for a starving interval.
+	// Conservative lower bound if nutrition changed since last access.
 	if(elapsed && owner && owner.stat != DEAD && (genital_flags & GENITAL_FUID_PRODUCTION))
-		stored_fluid += max(0, fluid_rate * fluid_mult) * elapsed / (10 SECONDS)
+		stored_fluid += max(0, fluid_rate * fluid_mult) * elapsed / (10 SECONDS) * min(last_nutrition_factor, nutrition_factor)
+	last_nutrition_factor = nutrition_factor
 	stored_fluid = clamp(stored_fluid, 0, max(0, fluid_max_volume))
 
 /obj/item/organ/genital/breasts/get_fluid()

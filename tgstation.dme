@@ -5145,6 +5145,7 @@
 #include "modular_bluemoon\code\modules\apc_arcing\apc.dm"
 #include "modular_bluemoon\code\modules\arousal\arousal_robot.dm"
 #include "modular_bluemoon\code\modules\arousal\bm_knotting.dm"
+#include "modular_bluemoon\code\modules\arousal\pregnancy_coordinator.dm"
 #include "modular_bluemoon\code\modules\arousal\bm_knotting_debug.dm"
 #include "modular_bluemoon\code\modules\arousal\centipede_genitals.dm"
 #include "modular_bluemoon\code\modules\arousal\structure\dildo_machine.dm"

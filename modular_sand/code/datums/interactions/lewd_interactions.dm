@@ -31,6 +31,23 @@
 
 
 
+	// Validate special constructions for BOTH carbon anatomy and synthetic profiles.
+	// These flags were previously declared but never enforced in evaluate_user().
+	if(required_from_user & (INTERACTION_REQUIRE_KNOT | INTERACTION_REQUIRE_DOUBLE_PENIS))
+		var/knot_capability = 0
+		if(iscyborg(user))
+			var/mob/living/silicon/robot/R = user
+			if(R.synthetic_profile_selected)
+				knot_capability = R.synthetic_knot_style
+		else if(iscarbon(user))
+			var/mob/living/carbon/C = user
+			var/obj/item/organ/genital/penis/P = C.getorganslot(ORGAN_SLOT_PENIS)
+			if(P && !QDELETED(P))
+				knot_capability = P.knot_size
+		if((required_from_user & INTERACTION_REQUIRE_KNOT) && knot_capability < 1)
+			return FALSE
+		if((required_from_user & INTERACTION_REQUIRE_DOUBLE_PENIS) && knot_capability < 2)
+			return FALSE
 	var/has_penis = user.has_penis(TRUE) || user.has_strapon()
 	var/penis_is_exposed = has_penis == TRUE || has_penis == HAS_EXPOSED_GENITAL
 
