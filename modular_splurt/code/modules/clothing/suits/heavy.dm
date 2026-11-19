@@ -325,7 +325,7 @@
 /datum/techweb_node/cbrn
 	id = "cbrn"
 	display_name = "CBRN gear"
-	description = "Chemical, Biological, Radiological and Nuclear protective gear"
+	description = "Средства защиты от химических, биологических, радиологических и ядерных угроз"
 	prereq_ids = list("engineering")
 	design_ids = list("cbrn_civi", "cbrn_sec", "cbrn_engi", "cbrn_serv", "cbrn_cargo", "cbrn_sci", "cbrn_med", "cbrn_mask", "cbrn_boots", "cbrn_gloves", "cbrn_glovesengi", "cbrn_glovesmed", "cbrn_oxy", "cbrn_plasma","cbrn_nitrogen") // BLUEMOON ADD cbrn_glovesmed
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
@@ -333,7 +333,7 @@
 /datum/techweb_node/mopp
 	id = "mopp"
 	display_name = "MOPP gear"
-	description = "Mission Oriented Protective Posture gear, meant for sec."
+	description = "Снаряжение MOPP для защиты в опасных условиях, предназначено для охраны."
 	prereq_ids = list("cbrn")
 	design_ids = list("mopp_suit", "mopp_mask", "mopp_boots", "mopp_gloves")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)

@@ -4,7 +4,7 @@
 /datum/techweb_node/military_ammo
 	id = "military_ammo"
 	display_name = "Military Ammunition"
-	description = "Big guns were authorized."
+	description = "Крупнокалиберное оружие одобрено."
 	prereq_ids = list("adv_weaponry", "ballistic_weapons")
 	design_ids = list("mag_acr5", "mag_acr5_empty", "box_acr5_ap", "box_acr5_hp", "box_acr5_hs")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
@@ -12,7 +12,7 @@
 /datum/techweb_node/e45_drum
 	id = "e45_drum"
 	display_name = "Enlarged ammunition storage"
-	description = "When situation requires more then 12 shots."
+	description = "Когда ситуация требует более 12 выстрелов."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("advc45_ammo")
 	design_ids = list("e45_drum", "e45_drum_empty", "e45_drum_taser", "e45_drum_lethal", "e45_drum_hydra", "e45_drum_ion", "e45_drum_stun", "e45_drum_laser", "e45_drum_hot", /*"e45_drum_trac"*/)
@@ -75,7 +75,7 @@
 /datum/techweb_node/jager
 	id = "jager"
 	display_name = "Improved CQB tactics."
-	description = "Kill some maintcrowlers with that bad boy!."
+	description = "Убейте парой таких тварей с этой штукой!"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("jager", "jaeger_mag")
 	prereq_ids = list("advanced_weaponry")

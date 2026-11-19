@@ -3,7 +3,7 @@
 /datum/techweb_node/comptech
 	id = "comptech"
 	display_name = "Computer Consoles"
-	description = "Computers and how they work."
+	description = "Компьютеры и как они работают."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("datatheory")
 	design_ids = list("cargo", "cargorequest", "bounty", "libraryconsole", "mining", "miningshuttle", "crewconsole", "rdcamera", /*"comconsole", "idcardconsole",*/ "seccamera")/*Bluemoon Edit*/
@@ -12,7 +12,7 @@
 /datum/techweb_node/computer_hardware_basic				//Modular computers are shitty and nearly useless so until someone makes them actually useful this can be easy to get.
 	id = "computer_hardware_basic"
 	display_name = "Computer Hardware"
-	description = "How computer hardware are made."
+	description = "Как создаётся компьютерное оборудование."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("comptech")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)  //they are really shitty
@@ -23,7 +23,7 @@
 /datum/techweb_node/comp_recordkeeping
 	id = "comp_recordkeeping"
 	display_name = "Computerized Recordkeeping"
-	description = "Organized record databases and how they're used."
+	description = "Организованные базы данных записей и способы их использования."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("comptech")
 	design_ids = list("secdata", "med_data", "prisonmanage", "brig_assistant_console", "automated_announcement", "pdapainter")
@@ -32,7 +32,7 @@
 /datum/techweb_node/telecomms
 	id = "telecomms"
 	display_name = "Telecommunications Technology"
-	description = "Subspace transmission technology for near-instant communications devices."
+	description = "Технология субпространственной передачи для устройств связи с почти мгновенной передачей."
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("comptech", "bluespace_basic")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
@@ -42,7 +42,7 @@
 /datum/techweb_node/integrated_HUDs
 	id = "integrated_HUDs"
 	display_name = "Integrated HUDs"
-	description = "The usefulness of computerized records, projected straight onto your eyepiece!"
+	description = "Полезность компьютерных записей, проецируемых прямо на окуляр!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_SERVICE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("comp_recordkeeping", "emp_basic")
 	design_ids = list("health_hud", "security_hud", "diagnostic_hud", "skills_hud", "scigoggles")
@@ -51,7 +51,7 @@
 /datum/techweb_node/NVGtech
 	id = "NVGtech"
 	display_name = "Night Vision Technology"
-	description = "Allows seeing in the dark without actual light!"
+	description = "Позволяет видеть в темноте без реального света!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("integrated_HUDs", "adv_engi", "emp_adv")
 	design_ids = list("health_hud_night", "security_hud_night", "diagnostic_hud_night", "night_vision_goggles", "nvgmesons")
@@ -60,7 +60,7 @@
 /datum/techweb_node/computer_board_gaming
 	id = "computer_board_gaming"
 	display_name = "Games and Toys"
-	description = "For the slackers on the station."
+	description = "Для лентяев на станции."
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("comptech")
 	design_ids = list("arcade_battle", "arcade_orion", "slotmachine", "autoylathe")

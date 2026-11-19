@@ -2,7 +2,7 @@
 /datum/techweb_node/superior_robotics
 	id = "sup_robotics"
 	display_name = "Superior Robotics"
-	description = "Glory to Omnissiah!"
+	description = "Слава Омниссии!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech", "adv_bluespace", "adv_robotics")
 	design_ids = list("roboliq")
@@ -11,7 +11,7 @@
 /datum/techweb_node/synthcooler_adv
 	id = "cooler_adv"
 	display_name = "Advanced PCU"
-	description = "Now with uranium elements for your needs."
+	description = "Теперь с урановыми элементами для ваших нужд."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_power", "adv_robotics")
 	design_ids = list("cooler_advanced")
@@ -27,7 +27,7 @@
 /datum/techweb_node/cyborg_upg_advmedtools
 	id = "cyborg_upg_advmedtools"
 	display_name = "Cyborg Upgrades: Advanced Surgery Tools"
-	description = "We can advance their techonology while re-managing modules for space saving."
+	description = "Мы можем развивать их технологии, перераспределяя модули для экономии места."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("advance_surgerytools", "cyborg_upg_med")
 	design_ids = list("borg_upgrade_advmedtools")
@@ -36,7 +36,7 @@
 /datum/techweb_node/cyborg_upg_alien_combi_med_tools
 	id = "cyborg_upg_alien_combi_med_tools"
 	display_name = "Cyborg Upgrades: Alien Combi Surgery Tools"
-	description = "We can advance alien techonology while re-managing modules for fastest space saving."
+	description = "Мы можем развивать инопланетные технологии, перераспределяя модули для максимальной экономии места."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("cyborg_upg_advmedtools", "alien_combi_tools")
 	design_ids = list("borg_upgrade_alien_combi_med_tools")
@@ -45,7 +45,7 @@
 /datum/techweb_node/cyborg_upg_syndircd
 	id = "cyborg_upg_syndircd"
 	display_name = "Cyborg Upgrades: Advanced RCD"
-	description = "Utilizing Syndicate sabotaging technology, the RCD module of our engineering cyborgs can be improved."
+	description = "Используя технологию диверсий Синдиката, можно улучшить модуль RCD наших инженерных киборгов."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("cyborg_upg_util", "exp_tools", "syndicate_basic")
 	design_ids = list("borg_upgrade_syndircd")
@@ -54,7 +54,7 @@
 /datum/techweb_node/borg_upgrade_advgasanalyzer
 	id = "borg_upgrade_advgasanalyzer"
 	display_name = "Cyborg Upgrades: Advanced Gas Analyzer Module"
-	description = "Atmospheric analyzer would implement efficiency into cyborg duty with ability to range-scan gas properties."
+	description = "Анализатор атмосферы повысит эффективность работы киборгов, добавив возможность дистанционного сканирования свойств газов."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("cyborg_upg_util", "exp_tools")
 	design_ids = list("borg_upgrade_advgasanalyzer")
