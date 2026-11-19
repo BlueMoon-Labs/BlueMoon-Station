@@ -36,6 +36,8 @@
 	var/obj/item/mecha_parts/chassis/parent_chassis = parent
 	M.CheckParts(parent_chassis.contents)
 	econ_mark_mech_assembled(M, parent_chassis)
+	if(econ_on_station(M))
+		SSeconomy.record_work(ACCOUNT_SCI, WORK_SCI_MECH, 1, user, memo = "Сборка меха: [M.name]")
 	record_sol_inspection_builder(M, user)
 
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)

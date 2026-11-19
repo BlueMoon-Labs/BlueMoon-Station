@@ -109,14 +109,21 @@
 	var/halved = contract.payout()
 	SSeconomy.settings.contract_delivery_mult = saved_mult
 	SSeconomy.bounty_modifier = saved_modifier
+	var/civilian_mult = SSeconomy.settings.contract_civilian_mult
+	var/datum/econ_contract/delivery/security_order = new(ACCOUNT_SEC, new /datum/bounty/item/assistant/scooter)
+	var/security_payout = security_order.payout()
+	qdel(security_order)
 	TEST_ASSERT(econ_contracts_ship(thing), "Предмет засчитан")
 	TEST_ASSERT(contract.completed, "Выполнен (самокат нужен один)")
 	TEST_ASSERT(QDELETED(thing), "Засчитанный предмет уходит")
 	TEST_ASSERT_EQUAL(civilian.account.account_balance - before, expected, "Без взявшего вся награда отделу")
 	econ_test_set_balance(civilian.account, before)
 	SSeconomy.contract_demand.Cut()
-	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult), "Модификатор наград применяется к выплате")
-	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5), "Множитель contract_delivery_mult применяется к выплате")
+	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult * civilian_mult), "Модификатор наград применяется к выплате")
+	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5 * civilian_mult), "Множитель contract_delivery_mult применяется к выплате")
+	TEST_ASSERT(civilian_mult < 1, "Гражданские поделки не дешевле остальных заказов по умолчанию")
+	TEST_ASSERT_EQUAL(expected, round(contract.reward * saved_mult * civilian_mult), "Гражданский заказ без множителя поделок")
+	TEST_ASSERT_EQUAL(security_payout, round(contract.reward * saved_mult), "Множитель поделок задел заказ не гражданского отдела")
 
 /// Пять искусственных блюспейс-кристаллов закрывают контракт Synthetic Bluespace Crystals.
 /datum/unit_test/economy_delivery_contract_artificial_crystals/Run()
@@ -208,6 +215,177 @@
 	TEST_ASSERT_EQUAL(settings.contract_urgent_mult, 2, "Множитель срочности из JSON")
 	TEST_ASSERT_EQUAL(settings.contracts_per_department, 2, "Число контрактов из JSON")
 
+/datum/unit_test/economy_contract_incident
+	var/list/stashed_contracts
+	var/saved_started
+	var/saved_budget
+	var/list/saved_baseline
+	var/list/saved_ready
+	/// Щиток -> его operating до теста
+	var/list/darkened = list()
+
+/datum/unit_test/economy_contract_incident/New()
+	. = ..()
+	stashed_contracts = econ_test_stash_contracts()
+	saved_started = SSeconomy.contracts_started
+	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	saved_budget = engineering.account.account_balance
+	saved_baseline = engineering.incident_baseline
+	saved_ready = engineering.incident_ready_at
+	engineering.incident_baseline = list()
+	engineering.incident_ready_at = list()
+
+/datum/unit_test/economy_contract_incident/Destroy()
+	for(var/obj/machinery/power/apc/apc as anything in darkened)
+		apc.operating = darkened[apc]
+	darkened = null
+	econ_test_restore_contracts(stashed_contracts)
+	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	engineering.incident_baseline = saved_baseline
+	engineering.incident_ready_at = saved_ready
+	econ_test_set_balance(engineering.account, saved_budget)
+	SSeconomy.contracts_started = saved_started
+	return ..()
+
+/// Авария питания: тик экономики с заметно большим числом тёмных щитков выставляет инженерии срочный контракт, он закрывается сам, когда щитки снова под питанием, и платит отделу; мелкая поломка и пауза после аварии нового не дают.
+/datum/unit_test/economy_contract_incident/Run()
+	SSeconomy.contracts_started = TRUE
+	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/list/working = list()
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(is_station_level(apc.z) && apc.operating && apc.cell?.charge > 0 && !(apc.machine_stat & (BROKEN|MAINT)))
+			working += apc
+	var/list/damage = engineering.station_damage()
+	var/normal = damage["dark_apcs"]
+	engineering.check_incidents(damage)
+	TEST_ASSERT_EQUAL(engineering.incident_baseline[ECON_INCIDENT_POWER], normal, "Первый тик не запомнил обычное число тёмных щитков")
+	var/threshold = max(ECON_INCIDENT_POWER_MIN, round(damage["apcs"] * ECON_INCIDENT_MIN_SHARE))
+	var/list/minor = damage.Copy()
+	minor["dark_apcs"] = normal + threshold - 1
+	engineering.check_incidents(minor)
+	TEST_ASSERT_NULL(engineering.active_incident(ECON_INCIDENT_POWER), "Мелкая поломка выставила аварию")
+	var/list/outage = damage.Copy()
+	outage["dark_apcs"] = normal + threshold
+	engineering.check_incidents(outage)
+	var/datum/econ_contract/incident/incident = engineering.active_incident(ECON_INCIDENT_POWER)
+	TEST_ASSERT_NOTNULL(incident, "Авария питания не выставлена")
+	TEST_ASSERT(incident in engineering.contracts, "Авария не на доске инженерии")
+	TEST_ASSERT(incident.urgent && incident.deadline > world.time && !incident.takeable, "Авария не срочная, без срока или берётся")
+	TEST_ASSERT(!incident.occupies_slot(), "Авария заняла место обычного контракта")
+	TEST_ASSERT_EQUAL(incident.reward, round(incident.needed() * SSeconomy.settings.contract_incident_unit_reward, ECON_CONTRACT_REWARD_STEP), "Награда аварии - за каждую поломку")
+	var/to_darken = incident.limit() - normal + 1
+	TEST_ASSERT(length(working) >= to_darken, "На станции [length(working)] исправных щитков, нужно [to_darken]")
+	for(var/number in 1 to to_darken)
+		var/obj/machinery/power/apc/apc = working[number]
+		darkened[apc] = apc.operating
+		apc.operating = FALSE
+	incident.check()
+	TEST_ASSERT(!incident.completed, "Авария закрылась, пока щитки без питания")
+	TEST_ASSERT_EQUAL(incident.current, normal + to_darken, "Проверка не увидела тёмные щитки")
+	for(var/obj/machinery/power/apc/apc as anything in darkened)
+		apc.operating = darkened[apc]
+	darkened.Cut()
+	var/budget_before = engineering.account.account_balance
+	incident.check()
+	TEST_ASSERT(incident.completed, "Свет вернулся, а авария не закрыта")
+	TEST_ASSERT(!(incident in engineering.contracts), "Закрытая авария осталась на доске")
+	TEST_ASSERT(engineering.account.account_balance > budget_before, "Бюджет инженерии не получил награду аварии")
+	TEST_ASSERT_EQUAL(engineering.incident_baseline[ECON_INCIDENT_POWER], normal, "Норма после аварии - не то, что осталось")
+	engineering.check_incidents(outage)
+	TEST_ASSERT_NULL(engineering.active_incident(ECON_INCIDENT_POWER), "Новая авария выставлена сразу после прошлой")
+
+/datum/unit_test/economy_contract_patrol
+	var/list/stashed_contracts
+	var/saved_security
+
+/datum/unit_test/economy_contract_patrol/New()
+	. = ..()
+	stashed_contracts = econ_test_stash_contracts()
+	var/datum/bank_account/security = SSeconomy.get_dep_account(ACCOUNT_SEC)
+	saved_security = security.account_balance
+
+/datum/unit_test/economy_contract_patrol/Destroy()
+	econ_test_restore_contracts(stashed_contracts)
+	econ_test_set_balance(SSeconomy.get_dep_account(ACCOUNT_SEC), saved_security)
+	return ..()
+
+/// Обход берёт только сотрудник СБ; засчитывается отсек, где он побывал в сознании, а пройдя все - контракт выполнен и оплачен. Отказ сбрасывает пройденное.
+/datum/unit_test/economy_contract_patrol/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/econ_contract/patrol/patrol = new(ACCOUNT_SEC)
+	security.contracts += patrol
+	TEST_ASSERT(patrol.postable(), "На станции нет общих отсеков для обхода")
+	var/mob/living/carbon/human/officer = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/officer_account = new("econ_test_officer")
+	allocated += officer_account
+	officer_account.department_id = ACCOUNT_SEC
+	officer.account_id = officer_account.account_id
+	officer_account.bind_owner(officer)
+	var/datum/bank_account/stranger = new("econ_test_stranger")
+	allocated += stranger
+	stranger.department_id = ACCOUNT_CIV
+	TEST_ASSERT(findtext(patrol.take_refusal(stranger), "службы безопасности"), "Обход взял не сотрудник СБ")
+	TEST_ASSERT(patrol.take(officer_account), "Сотрудник СБ не взял обход: [patrol.take_refusal(officer_account)]")
+	var/list/route = patrol.route.Copy()
+	var/area/first = route[1]
+	officer.forceMove(locate(/turf/open) in first)
+	officer.set_stat(UNCONSCIOUS)
+	patrol.check()
+	TEST_ASSERT_EQUAL(patrol.visited(), 0, "Засчитан отсек, где обходчик без сознания")
+	officer.set_stat(CONSCIOUS)
+	patrol.check()
+	TEST_ASSERT_EQUAL(patrol.visited(), 1, "Отсек обхода не засчитан")
+	TEST_ASSERT(!findtext(patrol.desc, first.name), "Пройденный отсек остался в задании")
+	TEST_ASSERT(patrol.drop(officer_account), "Отказ от начатого обхода")
+	TEST_ASSERT(QDELETED(patrol), "После отказа пройденное не сбросилось и обход остался")
+	COOLDOWN_RESET(officer_account, contract_drop_cooldown)
+	var/datum/econ_contract/patrol/second = new(ACCOUNT_SEC)
+	security.contracts += second
+	TEST_ASSERT(second.take(officer_account), "Второй обход не взят")
+	var/reward = second.payout()
+	var/budget_before = security.account.account_balance
+	for(var/area/hall as anything in second.route.Copy())
+		officer.forceMove(locate(/turf/open) in hall)
+		second.check()
+	TEST_ASSERT(second.completed, "Обход всех отсеков не закрыл контракт ([second.progress_text()])")
+	TEST_ASSERT(officer_account.account_balance > 0, "Обходчику ничего не пришло")
+	TEST_ASSERT_EQUAL(security.account.account_balance - budget_before, reward - round(reward * second.performer_share() / 100), "Остальное - бюджету СБ")
+
+/datum/unit_test/economy_alien_organs_printed
+	var/list/stashed_contracts
+	var/saved_science
+
+/datum/unit_test/economy_alien_organs_printed/New()
+	. = ..()
+	stashed_contracts = econ_test_stash_contracts()
+	var/datum/bank_account/science = SSeconomy.get_dep_account(ACCOUNT_SCI)
+	saved_science = science.account_balance
+
+/datum/unit_test/economy_alien_organs_printed/Destroy()
+	econ_test_restore_contracts(stashed_contracts)
+	econ_test_set_balance(SSeconomy.get_dep_account(ACCOUNT_SCI), saved_science)
+	return ..()
+
+/// Заказ ЦК на органы ксеноморфов не закрыть органом из биопринтера станции, а пад объясняет почему; орган из тела засчитывается.
+/datum/unit_test/economy_alien_organs_printed/Run()
+	var/datum/economy_department/science = SSeconomy.get_department(ACCOUNT_SCI)
+	var/datum/bounty/item/alien_organs/bounty = new
+	bounty.required_count = 1
+	var/datum/econ_contract/delivery/contract = new(ACCOUNT_SCI, bounty)
+	science.contracts += contract
+	var/datum/design/design = SSresearch.techweb_design_by_id("plasmavessel_alt")
+	TEST_ASSERT_NOTNULL(design, "Нет чертежа плазменного мешка биопринтера")
+	var/obj/item/organ/printed = allocate(design.build_path)
+	// Так do_print() метит всё, что печатают лейты и биопринтер
+	econ_mark_station_made(printed, design.materials)
+	TEST_ASSERT(!econ_contracts_ship(printed), "Напечатанный орган ксеноморфа засчитан")
+	TEST_ASSERT(!contract.completed, "Заказ закрыт напечатанным органом")
+	var/list/notes = econ_contracts_shortfalls(printed)
+	TEST_ASSERT(length(notes) && findtext(notes[1], "напечатан"), "Пад не объясняет, почему орган не принят: [jointext(notes, "; ")]")
+	var/obj/item/organ/alien/plasmavessel/harvested = allocate(/obj/item/organ/alien/plasmavessel)
+	TEST_ASSERT(econ_contracts_ship(harvested), "Орган из тела не засчитан")
+	TEST_ASSERT(contract.completed, "Заказ на органы не закрыт органом из тела")
+
 /datum/unit_test/economy_contract_machines
 	abstract_type = /datum/unit_test/economy_contract_machines
 	var/datum/economy_department/civilian
@@ -216,10 +394,14 @@
 	var/mob/living/carbon/human/user
 	var/list/contracts_before
 	var/list/stashed_contracts
+	var/saved_repeat_limit
 
+/// Тесты пульта сдают один и тот же самокат много раз: лимит повторов на человека проверяет свой тест.
 /datum/unit_test/economy_contract_machines/New()
 	. = ..()
 	stashed_contracts = econ_test_stash_contracts()
+	saved_repeat_limit = SSeconomy.settings.contract_repeat_per_person
+	SSeconomy.settings.contract_repeat_per_person = 0
 
 /datum/unit_test/economy_contract_machines/proc/setup()
 	civilian = SSeconomy.get_department(ACCOUNT_CIV)
@@ -230,6 +412,7 @@
 	user.account_id = taker_account.account_id
 
 /datum/unit_test/economy_contract_machines/Destroy()
+	SSeconomy.settings.contract_repeat_per_person = saved_repeat_limit
 	econ_test_drop_new_contracts(contracts_before)
 	econ_test_restore_contracts(stashed_contracts)
 	if(civilian)

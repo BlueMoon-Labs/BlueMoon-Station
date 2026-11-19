@@ -7,6 +7,8 @@ export const Objective = (props) => {
   const {
     possible_objectives = [],
     selected_objective = null,
+    shift_cap = 0,
+    shift_left = null,
   } = data;
   return (
     <Window
@@ -23,6 +25,13 @@ export const Objective = (props) => {
             content="Отказаться"
             disabled={!selected_objective}
             onClick={() => act('remove')} />
+          {!!shift_cap && (
+            <Box mt={1} color={shift_left > 0 ? 'label' : 'average'}>
+              {shift_left > 0
+                ? `NT оплачивает задания до ${shift_cap} кр. за смену, осталось ${shift_left} кр.`
+                : `Лимит оплаты заданий на смену (${shift_cap} кр.) исчерпан: дальше только очки Авангарда.`}
+            </Box>
+          )}
         </Section>
         {!selected_objective || <SelectedObjective
           objective={selected_objective} />}
@@ -31,7 +40,7 @@ export const Objective = (props) => {
             title={objective.name}
             key={objective.id}>
             <Box mb={1}>
-              Payout: {objective.payout}
+              Награда: {objective.payout}
             </Box>
             <Box mb={1}>
               {objective.description}

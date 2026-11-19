@@ -75,6 +75,7 @@
 #define WORK_SCI_NODE "sci_node"
 #define WORK_SCI_SLIME_DISCOVERY "sci_slime_discovery"
 #define WORK_SCI_ARTIFACT "sci_artifact"
+#define WORK_SCI_MECH "sci_mech"
 /// Цена WORK_SCI_NODE платится за каждые столько очков стоимости узла
 #define ECON_NODE_POINTS_UNIT 1000
 #define WORK_MINING_ORE "mining_ore"
@@ -217,6 +218,25 @@
 #define ECON_CONTRACT_BOARD_RESET_GRACE (5 MINUTES)
 /// Этапов в серии поставок
 #define ECON_CONTRACT_CHAIN_STAGES 3
+/// Авария для срочного контракта инженерии: новых поломок сверх обычного не меньше MIN и не меньше доли MIN_SHARE от всех щитков или тревог
+#define ECON_INCIDENT_POWER "power"
+#define ECON_INCIDENT_AIR "air"
+#define ECON_INCIDENT_POWER_MIN 4
+#define ECON_INCIDENT_AIR_MIN 3
+#define ECON_INCIDENT_MIN_SHARE 0.08
+/// Авария устранена, когда из новых поломок осталось не больше этой доли
+#define ECON_INCIDENT_LEFT_SHARE 0.25
+/// Больше стольких поломок одна авария не оплачивает
+#define ECON_INCIDENT_UNITS_MAX 30
+#define ECON_INCIDENT_TIME (30 MINUTES)
+#define ECON_INCIDENT_CHECK_INTERVAL (20 SECONDS)
+/// После аварии того же вида новый срочный контракт не выставляется столько
+#define ECON_INCIDENT_COOLDOWN (20 MINUTES)
+/// Обход СБ: сколько общих отсеков, срок после взятия, награда и как часто проверяется, где обходчик
+#define ECON_PATROL_AREAS 4
+#define ECON_PATROL_TIME (20 MINUTES)
+#define ECON_PATROL_REWARD 600
+#define ECON_PATROL_CHECK_INTERVAL (5 SECONDS)
 /// Объявлений экипажа от одного счёта одновременно
 #define ECON_CREW_REQUESTS_PER_POSTER 2
 /// Срок объявления экипажа

@@ -27,7 +27,7 @@ export type ContractEntry = {
   rotates_in: number | null;
   started: BooleanLike;
   progress: string;
-  kind?: 'department' | 'personal' | 'chain' | 'crew' | 'outpost';
+  kind?: 'department' | 'personal' | 'chain' | 'relay' | 'incident' | 'crew' | 'outpost';
   /** Процент награды, который получает взявший контракт. */
   share?: number;
   /** Сколько счетов уже вложилось в контракт без исполнителя. */
@@ -37,6 +37,14 @@ export type ContractEntry = {
   stage?: number;
   stages?: number;
   chain_bonus?: number;
+  /** Потолок общей награды серии или эстафеты, 0 - без потолка. */
+  chain_cap?: number;
+  /** Эстафета отделов: её название, кто делает нынешний этап и кто следующие. */
+  relay_title?: string;
+  relay_label?: string;
+  relay_next?: string;
+  /** Зритель уже выполнил этот заказ за смену столько раз, сколько можно одному человеку. */
+  repeat_capped?: BooleanLike;
   poster?: string | null;
   poster_id?: number | null;
   reported?: BooleanLike;

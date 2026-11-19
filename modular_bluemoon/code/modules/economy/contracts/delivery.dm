@@ -15,14 +15,19 @@
 	QDEL_NULL(bounty)
 	return ..()
 
-/// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют.
+/// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют. Гражданские поделки дешевле: их сдают чаще всего.
 /datum/econ_contract/delivery/payout()
 	. = ..() * SSeconomy.bounty_modifier * SSeconomy.settings.contract_delivery_mult
 	if(owner)
 		. *= SSeconomy.settings.contract_personal_reward / 100
+	if(department_id == ACCOUNT_CIV)
+		. *= SSeconomy.settings.contract_civilian_mult
 	if(counts_demand() && bounty)
 		. *= SSeconomy.contract_demand_mult(bounty.type)
 	return round(.)
+
+/datum/econ_contract/delivery/repeat_key()
+	return bounty?.type
 
 /// Сдачи этого заказа снижают награду повторов: особые заказы ЦК и заказы аванпостов спрос станции не трогают.
 /datum/econ_contract/delivery/proc/counts_demand()
@@ -102,7 +107,7 @@
 /obj/machinery/vending/examine(mob/user)
 	. = ..()
 	. += econ_price_examine()
-	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает, контракты и спецзаказы такое не засчитывают. Пустую тару отсюда контракт примет, если наполнили её вы: стакан со своим коктейлем, шприц со своей кровью.")
+	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает, контракты и спецзаказы такое не засчитывают. Пустую тару отсюда контракт и спецзаказ примут, если наполнили её вы: стакан со своим коктейлем, шприц со своей кровью.")
 
 /// Цены по индексу и куда уходит выручка; у кастомного автомата свои правила в rent_examine().
 /obj/machinery/vending/proc/econ_price_examine()

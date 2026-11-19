@@ -22,6 +22,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/datum/bank_account/owner
 	/// Номер счёта -> вклад в контракт, пока у него нет исполнителя
 	var/list/contributions
+	/// Эстафета отделов, этапом которой выставлен контракт
+	var/datum/econ_relay/relay
 
 /datum/econ_contract/New(department_id)
 	uid = ++GLOB.econ_contract_uid
@@ -29,6 +31,10 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	created = world.time
 
 /datum/econ_contract/Destroy()
+	if(relay)
+		var/datum/econ_relay/lost = relay
+		relay = null
+		lost.stage_lost(src)
 	release_taker()
 	set_owner(null)
 	SSeconomy.loose_contracts -= src
@@ -39,9 +45,33 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/payout()
 	return round(reward * (urgent ? SSeconomy.settings.contract_urgent_mult : 1))
 
-/// "department", "personal", "chain" или "crew": как контракт показан на доске.
+/// Что контракт заплатит при выполнении: этап эстафеты - с её премией и в пределах потолка.
+/datum/econ_contract/proc/final_payout()
+	return relay ? relay.stage_payout(src) : payout()
+
+/// "department", "personal", "chain", "relay", "incident" или "crew": как контракт показан на доске.
 /datum/econ_contract/proc/kind()
+	if(relay)
+		return "relay"
 	return owner ? "personal" : "department"
+
+/// Занимает ли контракт одно из мест доски отдела: особые заказы ЦК и аварии - сверх них.
+/datum/econ_contract/proc/occupies_slot()
+	return !pinned
+
+/// Ключ лимита повторов: один и тот же заказ одному человеку за смену. null - без лимита.
+/datum/econ_contract/proc/repeat_key()
+	return type
+
+/// Счёт уже выполнил этот заказ столько раз за смену, сколько позволяет contract_repeat_per_person.
+/datum/econ_contract/proc/repeats_exhausted(datum/bank_account/account)
+	var/limit = SSeconomy.settings.contract_repeat_per_person
+	var/key = repeat_key()
+	return !!(limit && key && account?.contract_repeats?[key] >= limit)
+
+/// Контракт начат: у него есть прогресс или он - не первый этап эстафеты. Начатый живёт дольше и не снимается сбросом доски.
+/datum/econ_contract/proc/started()
+	return has_progress() || (relay && relay.stage > 1)
 
 /datum/econ_contract/proc/visible_to(datum/bank_account/account)
 	return !owner || owner == account
@@ -75,6 +105,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		return "Это чужой личный заказ."
 	if(taker)
 		return "Контракт уже взят."
+	if(repeats_exhausted(account))
+		return "Этот заказ вы за смену уже выполнили столько раз, сколько можно одному человеку ([SSeconomy.settings.contract_repeat_per_person]). Возьмите другой."
 	var/slots = account.contract_slots()
 	if(length(SSeconomy.contracts_taken_by(account)) >= slots)
 		return "У вас уже взято контрактов: [slots] из [slots]. Больше одновременно позволяет репутация подрядчика."
@@ -109,7 +141,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/after_drop()
 	if(!urgent)
 		deadline = 0
-	if(!has_progress())
+	if(!started())
 		qdel(src)
 
 /datum/econ_contract/proc/release_taker()
@@ -131,7 +163,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/rotation_due_at()
 	if(taker || pinned)
 		return null
-	return created + SSeconomy.contract_rotation_age() * (has_progress() ? ECON_CONTRACT_STALE_ROTATIONS : 1)
+	return created + SSeconomy.contract_rotation_age() * (started() ? ECON_CONTRACT_STALE_ROTATIONS : 1)
 
 /datum/econ_contract/proc/is_expired()
 	return deadline && world.time > deadline
@@ -214,10 +246,12 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	if(completed)
 		return
 	completed = TRUE
-	var/total = payout()
+	var/total = final_payout()
 	var/to_people = pay_reward(total, performer)
 	taker?.contract_done(rep_value())
+	taker?.note_contract_repeat(repeat_key())
 	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people][people_only ? ", бюджету ничего: работа уже оплачена" : ""]")
+	relay?.stage_done(src, total)
 	qdel(src)
 
 /datum/econ_contract/proc/progress_text()
@@ -226,14 +260,14 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/ui_entry()
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	var/due = rotation_due_at()
-	return list(
+	. = list(
 		"uid" = uid,
 		"kind" = kind(),
 		"department" = department_id,
 		"department_name" = department?.name || department_id,
 		"title" = title,
 		"desc" = desc,
-		"reward" = payout(),
+		"reward" = final_payout(),
 		"share" = performer_share(),
 		"urgent" = urgent,
 		"time_left" = deadline ? max(round((deadline - world.time) / (1 SECONDS)), 0) : null,
@@ -243,17 +277,29 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		"people_only" = people_only,
 		"special" = pinned,
 		"rotates_in" = isnull(due) ? null : max(round((due - world.time) / (1 SECONDS)), 0),
-		"started" = has_progress(),
+		"started" = started(),
 		"progress" = progress_text(),
 		"contributors" = taker ? 0 : length(contributions),
 	)
+	if(relay)
+		.["stage"] = relay.stage
+		.["stages"] = length(relay.stages)
+		.["relay_title"] = relay.title
+		.["relay_label"] = relay.stage_label(relay.stage)
+		.["relay_next"] = relay.next_labels()
+		.["chain_bonus"] = SSeconomy.settings.contract_chain_bonus
+		.["chain_cap"] = SSeconomy.settings.contract_chain_reward_cap
 
-/// Контракты, которые видит счёт: доски отделов, объявления экипажа и свои личные заказы.
+/// Контракты, которые видит счёт: доски отделов, объявления экипажа и свои личные заказы. Свободный заказ, который счёт уже выполнил до лимита, помечен.
 /proc/econ_contract_entries(datum/bank_account/account)
 	. = list()
 	for(var/datum/econ_contract/contract as anything in SSeconomy.all_contracts())
-		if(contract.visible_to(account))
-			. += list(contract.ui_entry())
+		if(!contract.visible_to(account))
+			continue
+		var/list/entry = contract.ui_entry()
+		if(!contract.taker && contract.repeats_exhausted(account))
+			entry["repeat_capped"] = TRUE
+		. += list(entry)
 
 /proc/econ_contracts_ui_data(mob/user, datum/bank_account/account)
 	if(!account)
@@ -267,6 +313,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		"my_name" = account?.account_holder,
 		"performer_share" = settings.contract_performer_share,
 		"team_share" = settings.contract_team_share,
+		"repeat_limit" = settings.contract_repeat_per_person,
 		"drop_cooldown" = round(ECON_CONTRACT_DROP_COOLDOWN / (1 MINUTES)),
 		"rank" = account?.contract_rank_data(),
 		"reroll_left" = account ? CEILING(COOLDOWN_TIMELEFT(account, contract_reroll_cooldown) / (1 SECONDS), 1) : 0,
@@ -350,7 +397,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 
 /// Строка осмотра пульта и пада: подробности - в справке окна, а не стеной в чат.
 /proc/econ_contracts_examine_note()
-	return "Контракты, их награды и спецзаказы партнёров - в окне. Как всё устроено - кнопка \"?\" у раздела \"Контракты NT\"."
+	return "Контракты, их награды, объявления экипажа и спецзаказы партнёров - в окне; там же можно попросить экипаж о помощи. Как всё устроено - кнопка \"?\" у раздела \"Контракты NT\"."
 
 /// Справка контрактов по темам: list(title, icon, lines), по одной мысли в пункте.
 /proc/econ_contracts_help_topics()
@@ -360,17 +407,25 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	. += list(list("title" = "Как выполнить", "icon" = "clipboard-check", "lines" = list(
 		"Поставка: положите нужное на пад подработки на станции и отправьте с пульта или отгрузите шаттлом снабжения.",
 		"Деятельность: наберите работу отдела до срока. Награда - сверх обычной оплаты этой работы, [settings.contract_work_mult * 100]% её цены по прайсу.",
+		"Авария: после пробоя, пожара, метеоров или обесточки инженерии выставляется срочный контракт. Брать его не нужно - он закроется сам, когда отсеки снова будут в порядке.",
+		"Обход: сотрудник СБ берёт его и проходит по названным общим отсекам до срока.",
 		"Купленное в автоматах и через снабжение не засчитывается. Исключение - пустая тара из автомата, которую наполнили вы: стакан со своим коктейлем, шприц со своей кровью, презерватив.",
 	)))
+	var/cap = settings.contract_chain_reward_cap
+	var/cap_text = cap ? ", а вся она - не больше [cap] кр." : "."
 	. += list(list("title" = "Кто сколько получает", "icon" = "coins", "lines" = list(
 		"Взявшему - [settings.contract_performer_share]% награды (с налогом), остальное - отделу.",
-		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Поставка энергии и норма переработки - общая работа отдела, бюджету она уже оплачена: награда за них считается с [settings.contract_team_share]% цены работы, и её поровну делят все в отделе на смене, бюджету ничего.",
+		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Поставка энергии и норма переработки - общая работа отдела, бюджету она уже оплачена: награда за них считается с [settings.contract_team_share]% цены работы, и её поровну делят все в отделе на смене, бюджету ничего. Награду аварии делят поровну: [settings.contract_team_share]% - инженерам на смене, остальное - бюджету.",
 		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
-		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов.",
+		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
+		"Эстафета - этапы для разных отделов по очереди: ботаника, кухня и бар, химия и медицина, шахта и наука. Каждый этап платит своему отделу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
+		"Гражданские поделки - ящики, самокаты, наручники и прочее - стоят [round(settings.contract_civilian_mult * 100)]% обычной награды.",
 		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",
 	)))
-	. += list(list("title" = "Спрос и смена доски", "icon" = "sync", "lines" = list(
-		"Каждая сдача одного и того же заказа снижает его награду на [settings.contract_repeat_step]%, но не ниже [settings.contract_repeat_floor]%. За [rotation_minutes] мин. спрос возвращается на шаг.",
+	var/list/demand_lines = list("Каждая сдача одного и того же заказа снижает его награду на [settings.contract_repeat_step]%, но не ниже [settings.contract_repeat_floor]%. За [rotation_minutes] мин. спрос возвращается на шаг.")
+	if(settings.contract_repeat_per_person)
+		demand_lines += "Лимит на человека: один и тот же заказ - [settings.contract_repeat_per_person] за смену, дальше его берут другие."
+	. += list(list("title" = "Спрос и смена доски", "icon" = "sync", "lines" = demand_lines + list(
 		"Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин. Отгруженное по снятому контракту не возвращается.",
 		"Глава отдела (у снабжения - квартирмейстер), ГП или капитан раз в [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)] может сбросить доску отдела: неначатые контракты сменятся новыми. Взятые тоже снимаются, взявшим ничего не будет - репутация цела, новый контракт можно взять сразу.",
 		"Сброс не трогает начатые контракты, заказы ЦК, свой контракт сбрасывающего и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад. Если взявший не в игре или мёртв, его контракт снимется всё равно.",
@@ -381,6 +436,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	. += list(list("title" = "Репутация и отказ", "icon" = "star", "lines" = reputation_lines))
 	. += list(list("title" = "Спецзаказы партнёров", "icon" = "truck-loading", "lines" = list(
 		"Сдаются на паде подработки, первая сдача берёт спецзаказ. Контрабандные - только шаттлом снабжения.",
+		"Купленное не засчитывается, как и у контрактов: пустую тару из автомата спецзаказ примет, если нужный реагент в неё налили вы.",
 		"Оплата за штуки - отделу сдавшего, снабжению сбор [settings.cargo_handling_fee]%, сдавшему лично [settings.contract_team_share]% с налогом. Маржа при выполнении - тому же отделу.",
 	)))
 	. += list(list("title" = "Объявления экипажа", "icon" = "bullhorn", "lines" = list(

@@ -106,8 +106,11 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 /datum/market_offer/proc/matches(atom/movable/thing)
 	return econ_offer_item_matches(thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
 
+/// Купленное не засчитывается, кроме тары из автомата, если нужный реагент в неё налили уже после покупки: правило контрактов поставки.
 /proc/econ_offer_item_matches(atom/movable/thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
-	if(thing.econ_imported || !istype(thing, wanted_type))
+	if(!istype(thing, wanted_type))
+		return FALSE
+	if(thing.econ_imported && !(wanted_reagent && thing.econ_vended && !thing.econ_print_reagents?[wanted_reagent]))
 		return FALSE
 	if(!wanted_subtypes)
 		var/obj/item/stack/stack = thing

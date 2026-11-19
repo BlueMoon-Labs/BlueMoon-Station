@@ -544,6 +544,30 @@
 	qdel(offer)
 	TEST_ASSERT(findtext(jointext(machine.examine(buyer), "\n"), "уплаченного"), "Осмотр автомата не объясняет выкуп")
 
+/// Тару из автомата спецзаказ на реагент принимает, если нужное в неё налили после покупки, как контракт поставки; купленное уже с реагентом, тару из снабжения и саму тару - нет.
+/datum/unit_test/economy_offers/vended_container/Run()
+	var/gintonic = /datum/reagent/consumable/ethanol/gintonic
+	var/glass_type = /obj/item/reagent_containers/food/drinks/drinkingglass
+	var/datum/market_offer/offer = add_offer("agrarian", glass_type, 2, 2, 50, gintonic, 10)
+	var/obj/item/reagent_containers/bottled = allocate(glass_type)
+	bottled.reagents.add_reagent(gintonic, 10)
+	econ_mark_vended(bottled, 30)
+	TEST_ASSERT(!offer.matches(bottled), "Спецзаказ засчитал напиток, купленный готовым")
+	var/obj/item/reagent_containers/glass = allocate(glass_type)
+	econ_mark_vended(glass, 5)
+	glass.reagents.add_reagent(gintonic, 10)
+	TEST_ASSERT(offer.matches(glass), "Спецзаказ не принял свой коктейль в стакане из автомата")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate)
+	var/obj/item/reagent_containers/crated = allocate(glass_type, crate)
+	crated.reagents.add_reagent(gintonic, 10)
+	econ_mark_imported(crate)
+	TEST_ASSERT(crated.econ_imported, "Стакан из ящика снабжения не помечен купленным")
+	TEST_ASSERT(!offer.matches(crated), "Спецзаказ засчитал стакан из снабжения")
+	var/datum/market_offer/plain = add_offer("agrarian", glass_type, 1, 2, 50)
+	TEST_ASSERT(!plain.matches(glass), "Спецзаказ на саму тару засчитал тару из автомата")
+	qdel(offer)
+	qdel(plain)
+
 /// Отломленный кусок стопки из автомата уносит свою долю потолка выкупа, а слитая с ним своя стопка получает потолок.
 /datum/unit_test/economy_offers/vended_stack_split/Run()
 	var/obj/machinery/vending/medical/machine = allocate(/obj/machinery/vending/medical)

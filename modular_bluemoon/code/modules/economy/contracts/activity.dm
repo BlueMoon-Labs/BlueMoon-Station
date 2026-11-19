@@ -100,6 +100,37 @@
 	work_type = WORK_SRV_CLEANING
 	target = 40
 
+/datum/econ_contract/activity/service_drinks
+	title = "Вечер в баре"
+	desc = "Смешать коктейли, которые выпьют другие члены экипажа."
+	work_type = WORK_SRV_DRINK
+	target = 10
+
+/datum/econ_contract/activity/service_plants
+	title = "Новые сорта"
+	desc = "Вырастить и собрать урожай сортов, которых в эту смену ещё не было."
+	work_type = WORK_SRV_NEW_PLANT
+	target = 2
+
+/datum/econ_contract/activity/science_extracts
+	title = "Новые экстракты"
+	desc = "Получить экстракты слаймов цветов, которых в эту смену ещё не было. Засчитываются все находки ксенобиологии."
+	work_type = WORK_SCI_SLIME_DISCOVERY
+	target = 2
+	work_units = 50
+	takeable = FALSE
+
+/// Новых цветов экстракта за смену конечное число: без двух неоткрытых контракт не выполнить.
+/datum/econ_contract/activity/science_extracts/postable()
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	return length(GLOB.econ_slime_extract_value) - length(science?.extracts_seen) >= target
+
+/datum/econ_contract/activity/science_mechs
+	title = "Заказ на технику"
+	desc = "Собрать на станции меха, любого."
+	work_type = WORK_SCI_MECH
+	target = 1
+
 /datum/econ_contract/activity/security_contraband
 	title = "Рейд на контрабанду"
 	desc = "Передать NT изъятую контрабанду."

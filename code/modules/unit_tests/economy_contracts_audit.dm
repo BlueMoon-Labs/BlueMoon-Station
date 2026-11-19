@@ -633,13 +633,18 @@ GLOBAL_LIST_INIT(econ_test_butchered_mobs, list(
 	var/list/stashed_contracts
 	var/list/saved_market
 	var/list/contract_moves = list()
+	var/saved_repeat_limit
 
+/// Один курьер сдаёт все варианты каждого заказа: лимит повторов на человека здесь не проверяется.
 /datum/unit_test/economy_contracts_deliverable/New()
 	. = ..()
 	stashed_contracts = econ_test_stash_contracts()
 	saved_market = econ_test_swap_market()
+	saved_repeat_limit = SSeconomy.settings.contract_repeat_per_person
+	SSeconomy.settings.contract_repeat_per_person = 0
 
 /datum/unit_test/economy_contracts_deliverable/Destroy()
+	SSeconomy.settings.contract_repeat_per_person = saved_repeat_limit
 	econ_test_restore_contracts(stashed_contracts)
 	econ_test_restore_market(saved_market)
 	UnregisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED)
@@ -888,6 +893,90 @@ GLOBAL_LIST_INIT(econ_test_butchered_mobs, list(
 	SSeconomy.contract_demand.Cut()
 	econ_test_set_balance(civilian.account, saved_budget)
 	qdel(obtainable)
+
+/datum/unit_test/economy_contracts_deliverable/relay
+
+/// Каждая эстафета отделов доходит до конца настоящей работой: этап закрывается записью работы или отправкой с пада, следующий выходит на доску своего отдела, последний платит премию, а вся эстафета - не больше потолка серий.
+/datum/unit_test/economy_contracts_deliverable/relay/Run()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/courier = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	var/datum/bank_account/helper = new("econ_test_relay")
+	allocated += helper
+	courier.account_id = helper.account_id
+	var/obj/machinery/computer/piratepad_control/civilian/console = econ_test_contract_pad(courier, station_turf, src)
+	var/turf/pad_turf = get_turf(console.linked_pad())
+	var/list/pad_turf_before = pad_turf.contents.Copy()
+	RegisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED, PROC_REF(on_moved))
+	var/list/saved_balances = list()
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		saved_balances[department] = department.account.account_balance
+	var/cap = SSeconomy.settings.contract_chain_reward_cap
+	for(var/list/template as anything in GLOB.econ_relay_templates)
+		var/title = template["title"]
+		var/list/stages = template["stages"]
+		SSeconomy.contract_demand.Cut()
+		contract_moves.Cut()
+		var/datum/econ_contract/first = SSeconomy.begin_relay(template)
+		if(!first)
+			TEST_FAIL("[title]: первый этап не выставлен")
+			continue
+		var/datum/econ_relay/relay = first.relay
+		var/paid = 0
+		for(var/number in 1 to length(stages))
+			var/list/spec = stages[number]
+			var/datum/econ_contract/current = relay.current
+			var/datum/economy_department/department = SSeconomy.get_department(spec["department"])
+			if(!(current in department?.contracts))
+				TEST_FAIL("[title]: этап [number] ([spec["label"]]) не на доске отдела [spec["department"]]")
+				break
+			var/reward = current.final_payout()
+			if(number == length(stages))
+				var/base = current.payout()
+				TEST_ASSERT_EQUAL(reward, econ_chain_capped(base + round((paid + base) * SSeconomy.settings.contract_chain_bonus / 100), paid), "[title]: последний этап без премии от суммы этапов")
+			var/problem
+			try
+				problem = econ_test_finish_stage(current, courier, console, pad_turf)
+			catch(var/exception/error)
+				problem = "ошибка [error] ([error.file]:[error.line])"
+			var/list/leftovers = pad_turf.contents - pad_turf_before
+			QDEL_LIST(leftovers)
+			if(problem)
+				TEST_FAIL("[title]: этап [number] ([spec["label"]]): [problem]")
+				break
+			paid += reward
+			if(number < length(stages))
+				TEST_ASSERT(!QDELETED(relay) && relay.stage == number + 1, "[title]: после этапа [number] эстафета не перешла к следующему")
+		TEST_ASSERT(QDELETED(relay), "[title]: эстафета не закрыта после последнего этапа")
+		var/moved = 0
+		for(var/datum/bank_account/account as anything in contract_moves)
+			moved += contract_moves[account]
+		TEST_ASSERT(moved > 0, "[title]: эстафета ничего не заплатила")
+		if(cap)
+			TEST_ASSERT(moved <= cap, "[title]: эстафета заплатила [moved] кр. при потолке [cap]")
+	SSeconomy.contract_demand.Cut()
+	for(var/datum/economy_department/department as anything in saved_balances)
+		econ_test_set_balance(department.account, saved_balances[department])
+
+/// Закрывает этап эстафеты настоящим путём: деятельность - записями работы курьера, поставку - образцом с пада. Возвращает, что пошло не так.
+/datum/unit_test/economy_contracts_deliverable/relay/proc/econ_test_finish_stage(datum/econ_contract/stage_contract, mob/living/courier, obj/machinery/computer/piratepad_control/civilian/console, turf/pad_turf)
+	var/datum/econ_contract/activity/activity = stage_contract
+	if(istype(activity))
+		var/price = SSeconomy.settings.work_prices[activity.work_type]
+		var/amount = activity.contract_units(1, 7) == 7 ? CEILING(activity.target / price, 1) : max(CEILING(1 / price, 1), 1)
+		for(var/attempt in 1 to activity.target + 1)
+			if(activity.completed)
+				break
+			SSeconomy.record_work(activity.department_id, activity.work_type, amount, courier)
+		return activity.completed ? null : "работа не закрыла этап ([activity.progress_text()])"
+	var/datum/econ_contract/delivery/delivery = stage_contract
+	if(!istype(delivery))
+		return "этап неизвестного вида [stage_contract.type]"
+	if(!length(delivery.bounty.econ_test_sample(pad_turf, null)))
+		return "не из чего собрать образец"
+	econ_test_click(courier, console, "send")
+	return delivery.completed ? null : "отправка не закрыла этап ([delivery.progress_text()]): [console.status_report]"
 
 /// Невыполнимые заказы не попадают ни в пул отделов, ни в особые заказы ЦК по событию.
 /datum/unit_test/economy_contracts_unobtainable_not_posted/Run()

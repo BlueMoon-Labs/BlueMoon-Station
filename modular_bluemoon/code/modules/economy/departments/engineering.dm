@@ -9,7 +9,9 @@
 
 /datum/economy_department/engineering/on_economy_tick()
 	pay_power_export()
-	SSeconomy.record_work(id, WORK_ENG_INTEGRITY, integrity_score())
+	var/list/damage = station_damage()
+	SSeconomy.record_work(id, WORK_ENG_INTEGRITY, integrity_score(damage))
+	check_incidents(damage)
 
 /// Копит доход экспорта энергии и платит его бюджету не чаще раза в ECON_POWER_EXPORT_PAYOUT_INTERVAL или крупной суммой. Проданное сразу сбивает спрос рынка энергии.
 /datum/economy_department/engineering/proc/accrue_power_export(credits)
@@ -32,8 +34,9 @@
 	SSeconomy.record_work(id, WORK_ENG_POWER_EXPORT, whole)
 
 /// 0..100: половина - доля APC станции под питанием, половина - доля исправных воздушных тревог без опасности вне техтоннелей.
-/datum/economy_department/engineering/proc/integrity_score()
-	var/list/damage = station_damage()
+/datum/economy_department/engineering/proc/integrity_score(list/damage)
+	if(!damage)
+		damage = station_damage()
 	var/apcs = damage["apcs"]
 	var/alarms = damage["alarms"]
 	return round((apcs ? (apcs - damage["dark_apcs"]) / apcs : 0) * 50 + (alarms ? (alarms - damage["bad_alarms"]) / alarms : 0) * 50)

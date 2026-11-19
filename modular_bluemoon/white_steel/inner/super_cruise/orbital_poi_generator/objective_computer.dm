@@ -28,6 +28,13 @@
 /obj/machinery/computer/objective/ui_close(mob/user, datum/tgui/tgui)
 	viewing_mobs -= user
 
+/// Сколько NT ещё оплатит за орбитальные задания в эту смену.
+/obj/machinery/computer/objective/ui_data(mob/user)
+	return list(
+		"shift_cap" = SSeconomy.settings.orbital_shift_cap,
+		"shift_left" = SSeconomy.orbital_payout_left(),
+	)
+
 /obj/machinery/computer/objective/ui_static_data(mob/user)
 	var/list/data = list()
 	data["possible_objectives"] = list()

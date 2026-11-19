@@ -9,6 +9,7 @@ GLOBAL_LIST_INIT(econ_work_names, list(
 	WORK_SCI_NODE = "Исследование",
 	WORK_SCI_SLIME_DISCOVERY = "Новый экстракт слайма",
 	WORK_SCI_ARTIFACT = "Артефакт",
+	WORK_SCI_MECH = "Сборка меха",
 	WORK_MINING_ORE = "Переработка руды",
 	WORK_CARGO_PAPERWORK = "Расчёты на проблемном компьютере",
 	WORK_SRV_DISH = "Блюдо",

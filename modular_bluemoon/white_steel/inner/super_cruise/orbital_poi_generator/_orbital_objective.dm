@@ -355,12 +355,28 @@
 			continue
 		expedition_crew_ckeys += H.ckey
 
+/datum/controller/subsystem/economy
+	/// Сколько наград орбитальных заданий NT оплатил за смену
+	var/orbital_paid = 0
+
+/// Какую часть награды payout NT ещё оплатит в эту смену: не больше orbital_shift_cap за все задания.
+/datum/controller/subsystem/economy/proc/claim_orbital_payout(payout)
+	var/cap = settings.orbital_shift_cap
+	. = cap ? clamp(cap - orbital_paid, 0, payout) : payout
+	orbital_paid += .
+
+/datum/controller/subsystem/economy/proc/orbital_payout_left()
+	var/cap = settings.orbital_shift_cap
+	return cap ? max(cap - orbital_paid, 0) : null
+
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)
 		//Delete
 		QDEL_NULL(SSorbits.current_objective)
 		return
 	completed = TRUE
+	var/paid = SSeconomy.claim_orbital_payout(payout)
+	var/cap_note = paid < payout ? " NT оплачивает орбитальные задания до [SSeconomy.settings.orbital_shift_cap] кр. за смену: за это - [paid] из [payout] кр." : ""
 	var/list/datum/bank_account/ranger_accounts = list()
 	var/list/datum/bank_account/crew_accounts = list()
 	for(var/datum/bank_account/payee_account as anything in SSeconomy.bank_accounts)
@@ -372,12 +388,14 @@
 			ranger_accounts += payee_account
 		else
 			crew_accounts += payee_account
-	var/ranger_share = length(ranger_accounts) ? round((payout / 2) / length(ranger_accounts)) : 0
+	var/ranger_share = length(ranger_accounts) ? round((paid / 2) / length(ranger_accounts)) : 0
 	for(var/datum/bank_account/payee_account as anything in ranger_accounts)
 		var/net = SSeconomy.pay_personal(null, payee_account, ranger_share, ECON_ORBITAL, memo = "Орбитальное задание")
 		if(net)
-			payee_account.bank_card_talk("Орбитальное задание: [ranger_share] кр. до налога, на руки [net] кр.", balloon = "задание +[net] кр")
-	var/crew_share = length(crew_accounts) ? round((payout / 2) / length(crew_accounts)) : 0
+			payee_account.bank_card_talk("Орбитальное задание: [ranger_share] кр. до налога, на руки [net] кр.[cap_note]", balloon = "задание +[net] кр")
+		else if(!paid)
+			payee_account.bank_card_talk("Орбитальное задание выполнено, но NT уже оплатил задания на [SSeconomy.settings.orbital_shift_cap] кр. за смену: денег за него не будет, очки Авангарда начислены.")
+	var/crew_share = length(crew_accounts) ? round((paid / 2) / length(crew_accounts)) : 0
 	for(var/datum/bank_account/payee_account as anything in crew_accounts)
 		var/net = SSeconomy.pay_personal(null, payee_account, crew_share, ECON_ORBITAL, memo = "Содействие орбитальному заданию")
 		if(net)
@@ -413,9 +431,9 @@
 		id_card.contraband_points += cargo_share * 2
 		to_chat(H, span_notice("Вы получили [cargo_share * 2] очков Авангарда за выполнение задания."))
 	var/datum/bank_account/department/cargo_dep = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	var/cargo_money = round(payout * SSeconomy.settings.orbital_cargo_mult)
+	var/cargo_money = round(paid * SSeconomy.settings.orbital_cargo_mult)
 	if(cargo_dep && cargo_money > 0)
 		cargo_dep.credit(cargo_money, ECON_ORBITAL, memo = "Орбитальное задание")
-	log_econ("Орбитальное задание \"[name]\" выполнено: награда [payout] кр., рейнджерам [length(ranger_accounts)] x [ranger_share], экипажу [length(crew_accounts)] x [crew_share], снабжению [cargo_dep ? cargo_money : 0]")
+	log_econ("Орбитальное задание \"[name]\" выполнено: награда [payout] кр., оплачено [paid] кр., рейнджерам [length(ranger_accounts)] x [ranger_share], экипажу [length(crew_accounts)] x [crew_share], снабжению [cargo_dep ? cargo_money : 0]")
 	//Delete
 	QDEL_NULL(SSorbits.current_objective)

@@ -27,10 +27,15 @@ GLOBAL_LIST_INIT(econ_bounty_department, list(
 GLOBAL_LIST_INIT(econ_activity_contracts, list(
 	ACCOUNT_MED = list(/datum/econ_contract/activity/medical_discharges, /datum/econ_contract/activity/medical_surgeries),
 	ACCOUNT_ENG = list(/datum/econ_contract/activity/engineering_export),
-	ACCOUNT_SCI = list(/datum/econ_contract/activity/science_nodes),
-	ACCOUNT_SRV = list(/datum/econ_contract/activity/service_dishes, /datum/econ_contract/activity/service_cleaning),
+	ACCOUNT_SCI = list(/datum/econ_contract/activity/science_nodes, /datum/econ_contract/activity/science_extracts, /datum/econ_contract/activity/science_mechs),
+	ACCOUNT_SRV = list(/datum/econ_contract/activity/service_dishes, /datum/econ_contract/activity/service_cleaning, /datum/econ_contract/activity/service_drinks, /datum/econ_contract/activity/service_plants),
 	ACCOUNT_SEC = list(/datum/econ_contract/activity/security_contraband),
 	ACCOUNT_CAR = list(/datum/econ_contract/activity/cargo_ore),
+))
+
+/// Работа без записи в журнал отдела: отдел -> типы контрактов. Выпадают вместе с деятельностью.
+GLOBAL_LIST_INIT(econ_task_contracts, list(
+	ACCOUNT_SEC = list(/datum/econ_contract/patrol),
 ))
 
 /// Особые заказы ЦК на всю смену, выставляются при старте экономики.
@@ -123,19 +128,23 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 
 /// Добирает доску отдела до contracts_per_department обычных контрактов; заказы из avoid выдаются, только если других не осталось.
 /datum/controller/subsystem/economy/proc/fill_department_contracts(datum/economy_department/department, list/avoid)
-	var/regular = 0
-	for(var/datum/econ_contract/contract as anything in department.contracts)
-		if(!contract.pinned)
-			regular++
-	while(regular < settings.contracts_per_department)
+	// Этап эстафеты снимает с доски такой же неначатый контракт, поэтому места пересчитываются каждый раз
+	for(var/attempt in 1 to settings.contracts_per_department * 3)
+		if(department.regular_contracts() >= settings.contracts_per_department)
+			return
 		var/datum/econ_contract/fresh = generate_contract(department.id, avoid)
 		if(!fresh && length(avoid))
 			avoid = null
 			continue
 		if(!fresh)
-			break
-		department.contracts += fresh
-		regular++
+			return
+		department.contracts |= fresh
+
+/datum/economy_department/proc/regular_contracts()
+	. = 0
+	for(var/datum/econ_contract/contract as anything in contracts)
+		if(contract.occupies_slot())
+			.++
 
 /datum/economy_department
 	COOLDOWN_DECLARE(contract_reset_cooldown)
@@ -151,15 +160,19 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	if(!COOLDOWN_FINISHED(src, contract_reset_cooldown))
 		return "Доску отдела \"[name]\" можно сбросить через [DisplayTimeText(COOLDOWN_TIMELEFT(src, contract_reset_cooldown), 1)]."
 
+/// Нынешнее тело взявшего: по разуму владельца счёта, а без него - по самому владельцу.
+/datum/econ_contract/proc/taker_body()
+	var/datum/mind/taker_mind = taker?.owner_mind_ref?.resolve()
+	return isliving(taker_mind?.current) ? taker_mind.current : taker?.owner_ref?.resolve()
+
 /// Взявший в игре: тело живо и с клиентом. Без него контракт только держит слот.
 /datum/econ_contract/proc/taker_in_game()
-	var/datum/mind/taker_mind = taker?.owner_mind_ref?.resolve()
-	var/mob/living/body = isliving(taker_mind?.current) ? taker_mind.current : taker?.owner_ref?.resolve()
+	var/mob/living/body = taker_body()
 	return !!body && body.stat != DEAD && !!GET_CLIENT(body)
 
 /// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
 /datum/econ_contract/proc/board_reset_removes(datum/bank_account/head_account)
-	if(pinned || completed || is_expired() || has_progress())
+	if(pinned || completed || is_expired() || started())
 		return FALSE
 	if(!taker)
 		return TRUE
@@ -233,24 +246,42 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	var/due = contract.rotation_due_at()
 	if(isnull(due))
 		return FALSE
-	return world.time >= due || (force && !contract.has_progress())
+	return world.time >= due || (force && !contract.started())
+
+/// Можно ли выставить контракт сейчас: у станции есть всё, чтобы его выполнить.
+/datum/econ_contract/proc/postable()
+	return TRUE
+
+/// Контракт деятельности или задача отдела из types, которые сейчас можно выполнить; выбранные типы из списка убираются.
+/datum/controller/subsystem/economy/proc/pick_activity(department_id, list/types)
+	while(length(types))
+		var/contract_type = pick_n_take(types)
+		var/datum/econ_contract/contract = new contract_type(department_id)
+		if(contract.postable())
+			return contract
+		qdel(contract)
 
 /datum/controller/subsystem/economy/proc/generate_contract(department_id, list/avoid)
+	if(prob(settings.contract_relay_chance))
+		var/datum/econ_contract/relay_stage = start_relay(department_id)
+		if(relay_stage)
+			return relay_stage
 	var/datum/economy_department/department = get_department(department_id)
 	var/list/present = LAZYCOPY(avoid)
 	for(var/datum/econ_contract/existing as anything in department?.contracts)
 		var/datum/econ_contract/delivery/delivery = existing
 		present += istype(delivery) ? delivery.bounty.type : existing.type
 	var/list/by_department = econ_bounty_types_by_department()
-	var/list/activity_types = GLOB.econ_activity_contracts[department_id]
+	var/list/activities = GLOB.econ_activity_contracts[department_id]
+	var/list/tasks = GLOB.econ_task_contracts[department_id]
+	var/list/activity_types = LAZYCOPY(activities) | LAZYCOPY(tasks)
 	var/list/bounty_types = by_department[department_id]
-	activity_types = LAZYCOPY(activity_types) - present
+	activity_types -= present
 	bounty_types = LAZYCOPY(bounty_types) - present
 	var/datum/econ_contract/contract
 	if(length(activity_types) && (!length(bounty_types) || prob(ECON_CONTRACT_ACTIVITY_CHANCE)))
-		var/activity_type = pick(activity_types)
-		contract = new activity_type(department_id)
-	else
+		contract = pick_activity(department_id, activity_types)
+	if(!contract)
 		var/datum/bounty/bounty = pick_bounty(bounty_types)
 		if(bounty && prob(settings.contract_chain_chance))
 			contract = generate_chain(department_id, bounty, bounty_types)

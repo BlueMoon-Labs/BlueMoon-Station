@@ -71,6 +71,8 @@ SUBSYSTEM_DEF(economy)
 	contracts_started = SSeconomy.contracts_started
 	loose_contracts = SSeconomy.loose_contracts
 	contract_demand = SSeconomy.contract_demand
+	relays = SSeconomy.relays
+	orbital_paid = SSeconomy.orbital_paid
 	outpost_contracts = SSeconomy.outpost_contracts
 	outpost_refill_at = SSeconomy.outpost_refill_at
 	escrow_account = SSeconomy.escrow_account
