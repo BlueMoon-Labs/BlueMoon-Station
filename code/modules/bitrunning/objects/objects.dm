@@ -202,7 +202,7 @@
 
 /obj/item/disk/bitrunning/ability
 	desc = "Диск с исходным кодом. Позволяет заранее загрузить способности в виртуальный домен. Повторяющиеся способности игнорируются."
-	var/granted_spell
+	var/obj/effect/proc_holder/spell/granted_spell
 	var/list/selectable_spells = list()
 
 /obj/item/disk/bitrunning/ability/load_onto_avatar(mob/living/carbon/human/neo, mob/living/carbon/human/avatar, domain_flags)
@@ -229,14 +229,14 @@
 		return
 
 	var/names = list()
-	for(var/thing as anything in selectable_spells)
+	for(var/obj/effect/proc_holder/spell/thing as anything in selectable_spells)
 		names += initial(thing.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите способность",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/thing as anything in selectable_spells)
+	for(var/obj/effect/proc_holder/spell/thing as anything in selectable_spells)
 		if(initial(thing.name) == choice)
 			granted_spell = thing
 
@@ -278,7 +278,7 @@
 
 /obj/item/disk/bitrunning/item
 	desc = "Диск с исходным кодом. Позволяет заранее загрузить предметы в виртуальный домен."
-	var/granted_item
+	var/obj/granted_item
 	var/list/selectable_items = list()
 
 /obj/item/disk/bitrunning/item/load_onto_avatar(mob/living/carbon/human/neo, mob/living/carbon/human/avatar, domain_flags)
@@ -299,14 +299,14 @@
 		return
 
 	var/names = list()
-	for(var/thing as anything in selectable_items)
+	for(var/obj/thing as anything in selectable_items)
 		names += initial(thing.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите способность",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/thing as anything in selectable_items)
+	for(var/obj/thing as anything in selectable_items)
 		if(initial(thing.name) == choice)
 			granted_item = thing
 
@@ -1196,14 +1196,14 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		return
 
 	var/names = list()
-	for(var/loadout as anything in selectable_loadouts)
+	for(var/datum/bitrunning_gimmick/loadout as anything in selectable_loadouts)
 		names += initial(loadout.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите гиммик-набор",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/loadout as anything in selectable_loadouts)
+	for(var/datum/bitrunning_gimmick/loadout as anything in selectable_loadouts)
 		if(initial(loadout.name) == choice)
 			granted_loadout = new loadout()
 
