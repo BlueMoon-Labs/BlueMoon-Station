@@ -13,7 +13,7 @@
 );
 @use '../base.scss' with (
   $color-bg: #151a36,
-  $color-bg-grad-spread: 20%,
+  $color-bg-grad-spread: 6%,
 );
 
 .theme-pact{
@@ -56,5 +56,6 @@
 
   .Layout__content {
     background-image: url('../../assets/bg-pact.svg');
+    background-position: calc(50% + 80px) center;
   }
 }
