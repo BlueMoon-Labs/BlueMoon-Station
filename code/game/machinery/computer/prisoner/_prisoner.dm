@@ -31,6 +31,7 @@
 							"<span class='notice'>You insert the ID card into the console.</span>")
 		playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 		updateUsrDialog()
+		SStgui.update_uis(src)
 
 /obj/machinery/computer/prisoner/proc/id_eject(mob/user)
 	if(!contained_id)
@@ -45,6 +46,7 @@
 							"<span class='notice'>You get the ID card from the console.</span>")
 		playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 		updateUsrDialog()
+		SStgui.update_uis(src)
 
 /obj/machinery/computer/prisoner/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/card/id/prisoner))
