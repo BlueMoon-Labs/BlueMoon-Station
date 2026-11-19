@@ -325,6 +325,23 @@
 	screen.forceMove(run_loc_floor_top_right)
 	TEST_ASSERT(QDELETED(screen), "экран номера, вынесенный из отеля, остался цел")
 
+/// Сфера удалена, пока номер в хранилище: вещи номера выбрасываются из хранилища, а терминал уходит и возвращает деньги за ждущий заказ.
+/datum/unit_test/economy_roomservice/stored_room_ejected/Run()
+	TEST_ASSERT_NOTNULL(open_room(6158, 1000), "в номере нет терминала")
+	hire_cook()
+	var/price = GLOB.room_service_menu["burger"]["price"]
+	act(guest, "order", list("id" = "burger", "count" = 1, "route" = "staff"))
+	TEST_ASSERT_EQUAL(guest_account.account_balance, 1000 - price, "заказ не оплачен")
+	var/obj/item/pen/keepsake = allocate(/obj/item/pen, get_turf(guest))
+	sphere.MobTransfer(guest, run_loc_floor_bottom_left)
+	TEST_ASSERT(sphere.storedRooms["6158"], "номер не ушёл в хранилище")
+	TEST_ASSERT(istype(keepsake.loc, /obj/item/abstracthotelstorage), "test premise: вещь не в хранилище номера, а в [keepsake.loc]")
+	qdel(sphere)
+	TEST_ASSERT(!QDELETED(keepsake) && isturf(keepsake.loc), "вещь сохранённого номера осталась в удалённом хранилище: [keepsake.loc]")
+	TEST_ASSERT(QDELETED(panel), "терминал сохранённого номера пережил сферу")
+	TEST_ASSERT_EQUAL(guest_account.account_balance, 1000, "деньги за ждущий заказ не вернулись")
+	TEST_ASSERT(!length(GLOB.room_service.open_orders()), "заказ удалённого номера остался открытым")
+
 /// Новые атомы обслуживания номеров создаются и удаляются без хвостов.
 /datum/unit_test/economy_roomservice_atoms
 
