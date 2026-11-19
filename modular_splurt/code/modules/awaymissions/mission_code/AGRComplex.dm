@@ -666,7 +666,7 @@
 /datum/techweb_node/clockworkcult
 	id = "clockwork"
 	display_name = "Clockwork Engineering"
-	description = "Designs ripped and modified from Ratvarian technology."
+	description = "Конструкции, выкраденные и доработанные из технологии ратварианцев."
 	prereq_ids = list("adv_engi", "adv_weaponry", "syndicate_basic")
 	design_ids = list("brass", "geis_capacitor", "vanguard_manipulator", "replicant_matterbin", "ansible_laser", "ocular_scanningmodule", "borg_clockwork_module", "tinder_trident", "sentinel_stim", "gear_suit", "clock_ingot")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12500)
@@ -987,7 +987,7 @@
 /datum/techweb_node/bloodcult
 	id = "blood"
 	display_name = "Occult Designs"
-	description = "Equipment and weaponry reverse-engineered from Narsian technology."
+	description = "Оборудование и оружие, скопированные с технологии нарсианцев."
 	prereq_ids = list("adv_engi", "adv_weaponry", "syndicate_basic")
 	design_ids = list("runed_metal", "construct_shell", "pure_shard", "eldritch_constructor", "flagellants_cuirass", "crystal_wire", "cult_ingot")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12500)
