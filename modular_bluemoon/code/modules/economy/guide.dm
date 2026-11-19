@@ -31,6 +31,7 @@
 		"<li>На аванпостах (Тарков, DS) своя доска заказов в экспресс-консоли, сдают сканером продажи: награда - бюджету аванпоста и сдавшим.</li></ul>",
 		"<h3>Кошелёк</h3><ul>",
 		"<li>\"Магазин\": одежда, игрушки, питомцы - капсулой сразу, себе или в подарок с открыткой. \"Заказы\": личный каталог, везёт шаттл снабжения.</li>",
+		"<li>В номере отеля Гильберта - терминал обслуживания: еда и напитки с кухни и бара станции с предоплатой (не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)] - деньги вернутся), без сервиса - кейтеринг NT [econ_times_text(ROOM_SERVICE_CATERING_MULT)] дороже; там же декор номера.</li>",
 		"<li>\"Перевод\": заплатить человеку рядом по его ID-карте или по имени и номеру счёта. Переводы и чаевые в \"Кошельке\" - до [settings.transfer_max] кр., чаевые на кассе - до [min(REGISTER_PRICE_MAX, settings.transfer_max)] кр.; не чаще раза в [settings.transfer_cooldown_seconds] с.</li>",
 		"<li>Цены автоматов - по индексу цен сектора (сейчас ×[round(SSeconomy.price_index(), 0.01)]): [settings.vend_wholesale_share]% выручки - NT, остальное - отделу-владельцу. Прилавок: аренда [settings.stall_rent_fee] кр. на [settings.stall_rent_minutes] мин.</li>",
 		"<li>Слот-машина: [settings.slot_house_edge]% ставки - NT, [settings.slot_jackpot_share]% - в джекпот сектора (от [settings.slot_jackpot_floor] кр.). Лотерея: билет [settings.lottery_ticket_price] кр., до [settings.lottery_tickets_per_account] на счёт, победителю [100 - settings.lottery_house_share]% продаж.</li></ul>",
