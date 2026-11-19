@@ -1715,18 +1715,23 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
  * здесь остаётся только проверка формата и длины.
  */
 /datum/preferences/proc/validate_headshot_link(user, usr_input)
-	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
-
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
-	if(!findtext(usr_input, link_regex))
+	var/link = sanitize_headshot_link(usr_input)
+	if(!link)
 		to_chat(user, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 		return ACTION_HEADSHOT_LINK_NOOP
+	return link
 
+/// Ссылка в том виде, в каком её сохраняет редактор, или null, если редактор бы её не принял.
+/proc/sanitize_headshot_link(link)
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
+	if(!istext(link) || length(link) > HEADSHOT_LINK_MAX_LENGTH || !findtext(link, link_regex))
+		return null
 	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
-	return sanitize(usr_input, repl_chars)
+	return sanitize(link, repl_chars)
 
 /proc/headshot_preview_html(link, width = 140, height = 140)
 	if(!link)

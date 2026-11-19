@@ -47,6 +47,7 @@
 		"feature_arachnid_legs" = "scalar",
 		"feature_arachnid_mandibles" = "scalar",
 		"feature_arachnid_spinneret" = "scalar",
+		"feature_ass_photo" = "photo",
 		"feature_balls_accessible" = "scalar",
 		"feature_balls_color" = "scalar",
 		"feature_balls_fluid" = "fluid",
@@ -129,6 +130,7 @@
 		"feature_naked_flavor_text" = "text",
 		"feature_neckfire" = "scalar",
 		"feature_neckfire_color" = "scalar",
+		"feature_ooc_notes" = "private_text",
 		"feature_puddle_slime_fea" = "scalar",
 		"feature_silicon_flavor_text" = "text",
 		"feature_taur" = "scalar",
@@ -226,6 +228,10 @@
 		dynamic_fields = list()
 		for(var/id in GLOB.preferences_custom_names)
 			dynamic_fields["[id]_name"] = "name"
+		for(var/i in 1 to MAX_HEADSHOTS)
+			dynamic_fields["headshot[i == 1 ? null : i - 1]"] = "photo"
+		for(var/i in 1 to MAX_HEADSHOTS_NAKED)
+			dynamic_fields["headshot_naked[i == 1 ? null : i - 1]"] = "photo"
 		// Только зарегистрированные аксессуары; список строится один раз, а не для каждого поля файла.
 		for(var/feature in GLOB.mutant_reference_list)
 			var/list/accessories = GLOB.mutant_reference_list[feature]
@@ -240,6 +246,11 @@
 					for(var/suffix in list("primary", "secondary", "tertiary"))
 						dynamic_fields["feature_[part]_[suffix]"] = "color"
 	return dynamic_fields[key]
+
+/// Эти поля уходят только в файл самого игрока, передача персонажа по коду их не отдаёт.
+/proc/player_transfer_private_modes()
+	var/static/list/modes = list("private_text", "photo")
+	return modes
 
 /// Проверяется всё дерево ДО вызова внутреннего декодера; byond/path/matrix не допускаются.
 /proc/player_transfer_validate_value(value, list/budget, depth = 0)
@@ -298,10 +309,13 @@
 	var/value = player_save_decode_value(encoded)
 	if(isnull(value))
 		return null
-	var/static/list/text_modes = list("text", "name", "encoded", "emote", "deathsound")
+	var/static/list/text_modes = list("text", "private_text", "photo", "name", "encoded", "emote", "deathsound")
 	if((mode in text_modes) && !istext(value))
 		throw EXCEPTION("Поле [key] должно быть строкой")
 	switch(mode)
+		// Ссылка, которую редактор не принял бы, просто не переносится.
+		if("photo")
+			return length(value) ? sanitize_headshot_link(html_decode(value)) : value
 		if("scalar")
 			if(!istext(value) && !isnum(value))
 				throw EXCEPTION("Поле [key] должно быть строкой или числом")
@@ -400,11 +414,13 @@
 
 /datum/preferences
 	var/tmp/player_transfer_error
+	/// Что импорт поправил сам: убранные вещи экипировки, сброшенные квирки.
+	var/tmp/list/player_transfer_notices
 	var/tmp/player_transfer_busy = FALSE
 	var/tmp/player_transfer_cooldown = 0
 
-/// Возвращает только публичные данные текущего персонажа, без чтения корня аккаунта.
-/datum/preferences/proc/export_character_json()
+/// Возвращает только данные текущего персонажа, без чтения корня аккаунта. OOC-заметки и картинки - только с include_private.
+/datum/preferences/proc/export_character_json(include_private = FALSE)
 	player_transfer_error = null
 	try
 		var/savefile/source = write_character(TRUE, TRUE, TRUE)
@@ -414,7 +430,7 @@
 		var/list/budget = list(PLAYER_TRANSFER_MAX_NODES)
 		for(var/key in source.dir)
 			var/mode = player_transfer_field_mode(key)
-			if(!mode)
+			if(!mode || (!include_private && (mode in player_transfer_private_modes())))
 				continue
 			var/value
 			source[key] >> value
@@ -454,6 +470,7 @@
 /// Пробная загрузка не касается живых prefs. Публикуется только разрешённая часть результата.
 /datum/preferences/proc/import_character_json(text)
 	player_transfer_error = null
+	player_transfer_notices = list()
 	var/datum/preferences/transfer_staging/staged
 	try
 		var/list/fields = player_transfer_parse(text)
@@ -502,7 +519,7 @@
 		return FALSE
 
 /datum/preferences/proc/download_character_json(mob/user)
-	var/text = export_character_json()
+	var/text = export_character_json(TRUE)
 	if(!text)
 		to_chat(user, span_warning("Экспорт не выполнен: [html_encode(player_transfer_error)]"))
 		return
@@ -537,14 +554,72 @@
 		to_chat(user, span_warning("Импорт отклонён: [html_encode(failure.name)]"))
 		player_transfer_busy = FALSE
 		return
-	var/confirmed = tgui_alert(user, "Заменить переносимые настройки слота [slot]? Валюта, коллекции и закрытые данные останутся прежними.", "Импорт персонажа", list("Импортировать", "Отмена"))
-	if(confirmed == "Импортировать" && user.client?.prefs == src && default_slot == slot)
-		if(import_character_json(text))
-			. = TRUE
-			to_chat(user, span_notice("Персонаж импортирован и сохранён в слот [slot]."))
-		else
-			to_chat(user, span_warning("Импорт не выполнен: [html_encode(player_transfer_error)]"))
+	. = confirm_character_import(user, text, slot)
 	player_transfer_busy = FALSE
+
+/// Старая копия из локального хранилища BYOND (client.Export до перехода на JSON-файл).
+/datum/preferences/proc/upload_legacy_character(mob/user)
+	if(player_transfer_busy || world.time < player_transfer_cooldown || !user?.client)
+		return
+	player_transfer_busy = TRUE
+	player_transfer_cooldown = world.time + 10 SECONDS
+	var/slot = default_slot
+	var/text = legacy_character_json(user.client.Import())
+	if(!text)
+		to_chat(user, span_warning("Старая копия не загружена: [html_encode(player_transfer_error)]"))
+	else if(user.client?.prefs == src && slot == default_slot)
+		. = confirm_character_import(user, text, slot)
+	player_transfer_busy = FALSE
+
+/datum/preferences/proc/confirm_character_import(mob/user, text, slot)
+	var/confirmed = tgui_alert(user, "Заменить переносимые настройки слота [slot]? Валюта, коллекции и закрытые данные останутся прежними.", "Импорт персонажа", list("Импортировать", "Отмена"))
+	if(confirmed != "Импортировать" || user.client?.prefs != src || default_slot != slot)
+		return FALSE
+	if(!import_character_json(text))
+		to_chat(user, span_warning("Импорт не выполнен: [html_encode(player_transfer_error)]"))
+		return FALSE
+	to_chat(user, span_notice("Персонаж импортирован и сохранён в слот [slot]."))
+	if(length(player_transfer_notices))
+		to_chat(user, span_warning("При импорте [html_encode(jointext(player_transfer_notices, "; "))]."))
+	return TRUE
+
+/**
+ * Старая копия - доверенный когда-то savefile, но приходит от клиента. Чтение объекта из savefile создаёт его,
+ * поэтому до чтения в тексте файла допускаются только объекты пользовательских действий.
+ * Дальше копия идёт тем же путём, что JSON-файл: загрузка в пробные prefs, экспорт и полная проверка импорта.
+ */
+/datum/preferences/proc/legacy_character_json(source_file)
+	player_transfer_error = null
+	var/datum/preferences/transfer_staging/staging
+	try
+		if(!source_file)
+			throw EXCEPTION("в этом клиенте нет старой копии персонажа")
+		if(length(source_file) > PLAYER_TRANSFER_MAX_BYTES)
+			throw EXCEPTION("старая копия больше 2 МиБ")
+		var/savefile/legacy = new(source_file)
+		player_transfer_check_legacy_objects(legacy.ExportText("/"))
+		staging = new
+		staging.interaction_limit = get_custom_interaction_limit()
+		if(!staging.load_character(null, TRUE, legacy))
+			throw EXCEPTION("старая копия не читается")
+		var/text = staging.export_character_json(TRUE)
+		if(!text)
+			throw EXCEPTION(staging.player_transfer_error || "не удалось подготовить персонажа")
+		qdel(staging)
+		return text
+	catch(var/exception/failure)
+		if(staging)
+			qdel(staging)
+		player_transfer_error = failure.name
+		return null
+
+/proc/player_transfer_check_legacy_objects(text)
+	if(!istext(text) || !length(text))
+		throw EXCEPTION("старая копия пуста")
+	var/static/regex/type_line = regex(@"^\s*type\s*=\s*(.*?)\s*$")
+	for(var/line in splittext(text, "\n"))
+		if(type_line.Find(line) && type_line.group[1] != "[/datum/interaction/custom]")
+			throw EXCEPTION("в старой копии недопустимые данные")
 
 
 /// Те же ограничения, что в редакторе: файл не выдаёт доступ к донатным предметам и обликам.
@@ -577,39 +652,53 @@
 		if(CONFIG_GET(number/max_languages) >= 0 && length(staged.language) > CONFIG_GET(number/max_languages))
 			throw EXCEPTION("Превышен лимит языков")
 	if(("all_quirks" in fields) || ("body_weight" in fields) || ("modified_limbs" in fields))
-		var/list/seen = list()
-		var/balance = -mob_size_name_to_quirk_cost(staged.body_weight)
+		var/list/known = list()
 		for(var/quirk in staged.all_quirks)
-			if(!istext(quirk) || !SSquirks.quirks[quirk] || (quirk in seen))
-				throw EXCEPTION("Неизвестный или повторяющийся квирк")
-			seen += quirk
-			balance -= SSquirks.quirk_points[quirk]
-		for(var/limb in staged.modified_limbs)
-			if(staged.modified_limbs[limb][1] == LOADOUT_LIMB_PROSTHETIC)
-				balance++
-		if(balance < 0 || staged.GetPositiveQuirkCount() > MAX_QUIRKS || SSquirks.check_blacklist_conflicts(staged.all_quirks))
-			throw EXCEPTION("Набор квирков не соответствует ограничениям редактора")
+			if(istext(quirk) && SSquirks.quirks[quirk] && !(quirk in known))
+				known += quirk
+		if(length(known) != length(staged.all_quirks))
+			player_transfer_notices += "убраны неизвестные квирки"
+			fields["all_quirks"] = known
+		staged.all_quirks = known
+		// Баланс считается так же, как в редакторе; файл с другим балансом не отклоняется, квирки сбрасываются, как при входе.
+		if(staged.quirk_balance() < 0 || staged.GetPositiveQuirkCount() > MAX_QUIRKS || SSquirks.check_blacklist_conflicts(staged.all_quirks))
+			staged.all_quirks = list()
+			fields["all_quirks"] = list()
+			player_transfer_notices += "квирки сброшены: набор не проходит ограничения редактора"
+		if(staged.quirk_balance() < 0)
+			throw EXCEPTION("Вес и модификации тела дороже доступного баланса квирков")
 	if("loadout" in fields)
 		var/points = CONFIG_GET(number/initial_gear_points)
 		if(recipient)
 			points += (IS_CKEY_DONATOR_GROUP(recipient, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0)
 			points += (IS_CKEY_DONATOR_GROUP(recipient, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
+		// Недоступное аккаунту и не влезающее в бюджет убирается из набора, а не отклоняет весь файл.
+		var/list/dropped = list()
 		for(var/slot in staged.loadout_data)
+			var/list/entries = staged.loadout_data[slot]
+			if(!islist(entries))
+				continue
+			var/list/kept = list()
 			var/list/seen = list()
 			var/remaining = points
-			for(var/list/entry as anything in staged.loadout_data[slot])
-				var/datum/gear/gear_type = text2path(entry[LOADOUT_ITEM])
-				var/list/categories = GLOB.loadout_items[initial(gear_type.category)]
-				var/list/subcategories = categories?[initial(gear_type.subcategory)]
-				var/datum/gear/gear = subcategories?[initial(gear_type.name)]
+			for(var/list/entry as anything in entries)
+				var/datum/gear/gear_type = istext(entry[LOADOUT_ITEM]) ? text2path(entry[LOADOUT_ITEM]) : entry[LOADOUT_ITEM]
+				var/datum/gear/gear
+				if(ispath(gear_type, /datum/gear))
+					var/list/categories = GLOB.loadout_items[initial(gear_type.category)]
+					var/list/subcategories = categories?[initial(gear_type.subcategory)]
+					gear = subcategories?[initial(gear_type.name)]
 				if(!gear || (gear_type in seen))
-					throw EXCEPTION("Неизвестный или повторяющийся предмет экипировки")
+					continue
 				seen += gear_type
-				if((gear.donoritem && (!recipient || !gear.donator_ckey_check(recipient))) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)))
-					throw EXCEPTION("Один из предметов экипировки ещё не открыт вашим аккаунтом")
+				if((gear.donoritem && (!recipient || !gear.donator_ckey_check(recipient))) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)) || gear.cost > remaining)
+					dropped |= gear.name
+					continue
 				remaining -= gear.cost
-			if(remaining < 0)
-				throw EXCEPTION("Превышен бюджет экипировки")
+				kept += list(entry)
+			staged.loadout_data[slot] = kept
+		if(length(dropped))
+			player_transfer_notices += "из экипировки убрано: [jointext(dropped, ", ")]"
 
 
 /proc/player_transfer_escape_list(value)

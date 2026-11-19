@@ -531,6 +531,13 @@ const SlotTools = () => {
             tooltip="Загрузить персонажа в выбранный слот. Перед заменой появится подтверждение."
             onClick={() => act('slot_import')}
           />
+          <Button
+            fluid
+            icon="history"
+            content="Загрузить старую копию"
+            tooltip="Персонаж, экспортированный старым редактором в локальное хранилище BYOND. Загрузится в выбранный слот после подтверждения."
+            onClick={() => act('slot_import_legacy')}
+          />
           <Button.Confirm
             fluid
             icon="share-alt"

@@ -710,6 +710,179 @@
 		rejected = TRUE
 	TEST_ASSERT(rejected, "принят набор за пределами слотов")
 
+/// Баланс квирков при импорте совпадает с редактором: базовые очки BASE_QUIRK_BALANCE тоже тратятся.
+/datum/unit_test/player_save_json/public_transfer_quirk_balance/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Quirk Balance"
+	var/picked
+	for(var/quirk_name in SSquirks.quirk_points)
+		var/value = SSquirks.quirk_points[quirk_name]
+		if(value < 1 || value > BASE_QUIRK_BALANCE)
+			continue
+		var/blacklisted = FALSE
+		for(var/list/pair in SSquirks.quirk_blacklist)
+			if(quirk_name in pair)
+				blacklisted = TRUE
+				break
+		if(!blacklisted)
+			picked = quirk_name
+			break
+	TEST_ASSERT_NOTNULL(picked, "нет положительного квирка в пределах базового баланса")
+	prefs.all_quirks = list(picked)
+	TEST_ASSERT(prefs.quirk_balance() >= 0, "фикстура не проходит редактор")
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	prefs.all_quirks = list()
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт отклонил набор квирков редактора: [prefs.player_transfer_error]")
+	TEST_ASSERT((picked in prefs.all_quirks), "импорт потерял квирк [picked]")
+	TEST_ASSERT(!length(prefs.player_transfer_notices), "импорт поправил допустимый набор: [jointext(prefs.player_transfer_notices, "; ")]")
+
+/// Экипировка дороже бюджета аккаунта не отклоняет файл: лишнее убирается, игроку сообщается.
+/datum/unit_test/player_save_json/public_transfer_loadout_over_budget/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Over Budget"
+	var/points = CONFIG_GET(number/initial_gear_points)
+	var/list/picked = list()
+	var/total = 0
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/name in items)
+				var/datum/gear/gear = items[name]
+				if(total > points || gear.donoritem || istype(gear, /datum/gear/unlockable) || gear.cost < 1)
+					continue
+				picked += list(list(LOADOUT_ITEM = gear.type))
+				total += gear.cost
+	TEST_ASSERT(total > points, "в фикстуре не набрать экипировку дороже [points] очков")
+	prefs.loadout_data = list("SAVE_1" = picked)
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "экипировка сверх бюджета отклонила файл: [prefs.player_transfer_error]")
+	var/list/kept = prefs.loadout_data["SAVE_1"]
+	TEST_ASSERT(length(kept) && length(kept) < length(picked), "импорт не срезал лишнее: [length(kept)] из [length(picked)]")
+	var/spent = 0
+	for(var/list/entry as anything in kept)
+		var/datum/gear/gear_type = istext(entry[LOADOUT_ITEM]) ? text2path(entry[LOADOUT_ITEM]) : entry[LOADOUT_ITEM]
+		spent += initial(gear_type.cost)
+	TEST_ASSERT(spent <= points, "после импорта экипировка дороже бюджета: [spent] из [points]")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранных вещах")
+
+/// Имя и текст действия хранятся закодированными один раз: загрузка и перенос не множат &amp;.
+/datum/unit_test/player_save_json/custom_interaction_ampersand/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/interaction/custom/custom = new
+	custom.name = "Tom &amp; Jerry"
+	custom.message = "hugs &amp;amp;amp; kisses"
+	custom.sanitize_values()
+	TEST_ASSERT_EQUAL(custom.name, "Tom &amp; Jerry", "повторная проверка закодировала имя ещё раз")
+	TEST_ASSERT_EQUAL(custom.message, "hugs &amp; kisses", "накопленное кодирование не снято")
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Ampersand"
+	prefs.custom_interactions = list(custom)
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт не выполнен: [prefs.player_transfer_error]")
+	var/datum/interaction/custom/imported = prefs.custom_interactions[1]
+	TEST_ASSERT_EQUAL(imported.name, "Tom &amp; Jerry", "перенос испортил & в имени действия")
+	TEST_ASSERT_EQUAL(imported.message, "hugs &amp; kisses", "перенос испортил & в тексте действия")
+
+/// OOC-заметки и картинки уходят в файл игрока, но не в передачу персонажа по коду.
+/datum/unit_test/player_save_json/public_transfer_private_fields/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Private Fields"
+	prefs.features["ooc_notes"] = "OOC & notes"
+	prefs.features["headshot_links"] = list(sanitize_headshot_link("https://example.com/a.png?x=1&y=2"))
+	prefs.features["headshot_naked_links"] = list("https://example.com/naked.jpg")
+	prefs.features["ass_photo"] = "https://example.com/photo.gif"
+	var/offered = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(offered, "экспорт передачи не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(!findtext(offered, "OOC & notes") && !findtext(offered, "example.com"), "передача по коду раскрыла OOC или картинки")
+	var/exported = prefs.export_character_json(TRUE)
+	TEST_ASSERT_NOTNULL(exported, "экспорт в файл не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/list/stored_headshots = prefs.features["headshot_links"]
+	var/stored_link = stored_headshots[1]
+	prefs.features["ooc_notes"] = ""
+	prefs.features["headshot_links"] = list()
+	prefs.features["headshot_naked_links"] = list()
+	prefs.features["ass_photo"] = ""
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не очищен слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт файла не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.features["ooc_notes"], "OOC & notes", "файл не перенёс OOC-заметки")
+	var/list/headshots = prefs.features["headshot_links"]
+	TEST_ASSERT_EQUAL(headshots[1], stored_link, "файл не перенёс картинку или изменил её ссылку")
+	var/list/naked = prefs.features["headshot_naked_links"]
+	TEST_ASSERT_EQUAL(naked[1], "https://example.com/naked.jpg", "файл не перенёс вторую картинку")
+	TEST_ASSERT_EQUAL(prefs.features["ass_photo"], "https://example.com/photo.gif", "файл не перенёс фото")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	fields["headshot"] = "javascript:alert(1)"
+	TEST_ASSERT(prefs.import_character_json(json_encode(document)), "неверная ссылка отклонила весь файл: [prefs.player_transfer_error]")
+	headshots = prefs.features["headshot_links"]
+	TEST_ASSERT(!headshots[1], "импорт принял ссылку, которую не принял бы редактор")
+
+/// Старая копия из локального хранилища BYOND загружается через ту же проверку, чужие объекты в ней отвергаются.
+/datum/unit_test/player_save_json/legacy_client_copy/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Legacy Copy"
+	var/datum/interaction/custom/custom = new
+	custom.name = "Old Action"
+	custom.message = "Old message."
+	prefs.custom_interactions = list(custom)
+	var/savefile/exported = prefs.write_character(TRUE, TRUE, TRUE)
+	TEST_ASSERT(istype(exported), "не подготовлена старая копия")
+	var/legacy_path = "[test_path].legacy_copy"
+	fdel(legacy_path)
+	var/savefile/legacy = new(legacy_path)
+	player_save_copy_tree(exported, legacy)
+	legacy["custom_interactions"] << list(custom)
+	legacy = null
+	sleep(1) // savefile пишется на диск только после сна мира
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	prefs.real_name = "Current Character"
+	prefs.custom_interactions = list()
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/text = prefs.legacy_character_json(file(legacy_path))
+	TEST_ASSERT_NOTNULL(text, "старая копия не прочитана: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.import_character_json(text), "старая копия не импортирована: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Legacy Copy", "старая копия не перенесла имя")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старая копия потеряла действие")
+	legacy = new(legacy_path)
+	legacy["evil"] << new /datum/unit_test_legacy_probe
+	legacy = null
+	sleep(1)
+	GLOB.unit_test_legacy_probe_loaded = FALSE
+	TEST_ASSERT_NULL(prefs.legacy_character_json(file(legacy_path)), "старая копия приняла объект чужого типа")
+	TEST_ASSERT(!GLOB.unit_test_legacy_probe_loaded, "объект чужого типа создан до проверки")
+	fdel(legacy_path)
+	TEST_ASSERT_NULL(prefs.legacy_character_json(null), "пустой клиент дал персонажа")
+
+GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
+
+/datum/unit_test_legacy_probe
+	var/payload = "probe"
+
+/datum/unit_test_legacy_probe/Read(savefile/F)
+	GLOB.unit_test_legacy_probe_loaded = TRUE
+	return ..()
+
 /datum/unit_test/player_save_json/public_transfer_rejects/Run()
 	var/list/forbidden = list("metadollars", "metadollar_pending_items", "tcg_cards", "unlockable_loadout", "default_slot", "version", "../character2", "headshot", "belly_prefs", "new_unreviewed_field")
 	for(var/key in forbidden)
@@ -849,8 +1022,9 @@
 	TEST_ASSERT(!prefs.import_character_json(rejected), "импорт открыл недоступный в редакторе вид")
 	TEST_ASSERT_EQUAL(prefs.player_transfer_error, "Этот вид недоступен в редакторе персонажа", "импорт отклонён не из-за ограничения вида")
 	TEST_ASSERT_EQUAL(prefs.pref_species.id, SPECIES_HUMAN, "отказ изменил вид персонажа")
-	rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("all_quirks" = player_save_encode_value(list("Nonexistent Quirk")))))
-	TEST_ASSERT(!prefs.import_character_json(rejected), "принят несуществующий квирк")
+	var/unknown_quirk = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("all_quirks" = player_save_encode_value(list("Nonexistent Quirk")))))
+	TEST_ASSERT(prefs.import_character_json(unknown_quirk), "неизвестный квирк отклонил весь файл: [prefs.player_transfer_error]")
+	TEST_ASSERT(!("Nonexistent Quirk" in prefs.all_quirks), "принят несуществующий квирк")
 	var/datum/gear/locked
 	for(var/category in GLOB.loadout_items)
 		var/list/subcategories = GLOB.loadout_items[category]
@@ -863,9 +1037,11 @@
 					break
 	TEST_ASSERT_NOTNULL(locked, "в фикстуре нет закрытого предмета")
 	var/list/loadout = list("SAVE_1" = list(list(LOADOUT_ITEM = "[locked.type]")))
-	rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(loadout))))
-	TEST_ASSERT(!prefs.import_character_json(rejected), "импорт открыл донатный предмет")
-	TEST_ASSERT_EQUAL(prefs.real_name, "Protected Character", "отказ изменил персонажа")
+	var/donor_loadout = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(loadout))))
+	TEST_ASSERT(prefs.import_character_json(donor_loadout), "донатный предмет отклонил весь файл: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_1"]), 0, "импорт открыл донатный предмет")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранном предмете")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Protected Character", "импорт экипировки изменил персонажа")
 	prefs.path = null
 
 

@@ -3438,6 +3438,16 @@
 	preview_dirty = TRUE
 	SStgui.update_uis(src)
 
+/datum/character_setup/proc/slot_import_legacy()
+	var/mob/user = prefs.parent?.mob
+	if(!user?.client)
+		return
+	if(!prefs.upload_legacy_character(user))
+		return
+	character_revision++
+	preview_dirty = TRUE
+	SStgui.update_uis(src)
+
 /datum/character_setup/proc/slot_give()
 	var/mob/user = prefs.parent?.mob
 	if(!user)
@@ -3496,6 +3506,8 @@
 	character_revision++
 	preview_dirty = TRUE
 	tgui_alert_async(user, "Персонаж получен и сохранён в слот [receiving_slot].")
+	if(length(prefs.player_transfer_notices))
+		to_chat(user, span_warning("При получении [html_encode(jointext(prefs.player_transfer_notices, "; "))]."))
 	qdel(offer_datum)
 
 /datum/character_setup/proc/format_help_text()
@@ -4326,6 +4338,10 @@
 
 		if("slot_import")
 			slot_import()
+			return TRUE
+
+		if("slot_import_legacy")
+			slot_import_legacy()
 			return TRUE
 
 		if("slot_give")
