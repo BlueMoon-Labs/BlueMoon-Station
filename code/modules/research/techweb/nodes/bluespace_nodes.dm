@@ -101,7 +101,7 @@
 /datum/techweb_node/shuttle_route_upgrade
 	id = "shuttle_route_upgrade"
 	display_name = "Route Optimisation Upgrade"
-	description = "Исследования блюспейс-туннелирования, позволяющие сократить время полёта до 20%!"
+	description = "Исследования блюспейс-туннелирования, позволяющие сократить время полёта на величину до 20%!"
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("basic_shuttle")
 	design_ids = list("disk_shuttle_route")
@@ -110,7 +110,7 @@
 /datum/techweb_node/shuttle_route_upgrade_hyper
 	id = "shuttle_route_upgrade_hyper"
 	display_name = "Hyperlane Optimisation Upgrade"
-	description = "Исследования блюспейс-гипертрассы, позволяющие сократить время полёта до 40%!"
+	description = "Исследования блюспейс-гипертрассы, позволяющие сократить время полёта на величину до 40%!"
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("shuttle_route_upgrade", "bluespace_warping")
 	design_ids = list("disk_shuttle_route_hyper")

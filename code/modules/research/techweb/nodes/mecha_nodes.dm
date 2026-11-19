@@ -97,7 +97,7 @@
 /datum/techweb_node/med_mech_tools
 	id = "med_mech_tools"
 	display_name = "Medical Exosuit Equipment"
-	description = "Инструменты для экзокостюмов высокого уровня"
+	description = "Медицинские инструменты для экзокостюмов высокого уровня"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech")
 	design_ids = list("mech_sleeper", "mech_syringe_gun", "mech_medi_beam", "mech_rescue_jaw")
@@ -106,7 +106,7 @@
 /datum/techweb_node/mech_modules
 	id = "adv_mecha_modules"
 	display_name = "Simple Exosuit Modules"
-	description = "Продвинутое оружие для меха"
+	description = "Модули экзокостюма: энергопередача, броня и ядерный генератор"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_mecha", "bluespace_power")
 	design_ids = list("mech_energy_relay", "mech_ccw_armor", "mech_proj_armor", "mech_generator_nuclear")
@@ -214,7 +214,7 @@
 /datum/techweb_node/mech_wormhole_gen
 	id = "mech_wormhole_gen"
 	display_name = "Exosuit Module (Localized Wormhole Generator)"
-	description = "Продвинутое оружие для меха"
+	description = "Модуль локального генератора червоточин для экзокостюма"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_bluespace")
 	design_ids = list("mech_wormhole_gen")

@@ -75,7 +75,7 @@
 /datum/techweb_node/jager
 	id = "jager"
 	display_name = "Improved CQB tactics."
-	description = "Убейте парой таких тварей с этой штукой!"
+	description = "Убейте нескольких обитателей техтоннелей этой штукой!"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("jager", "jaeger_mag")
 	prereq_ids = list("advanced_weaponry")
