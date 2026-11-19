@@ -332,7 +332,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 			to_chat(user, span_danger("You can't put [target] into [src]. [target.p_theyre(capitalized = TRUE)] conscious."))
 		return
 	else if(target.client) // mob has client
-		if(tgalert(target, "Would you like to [tele ? "be teleported out" : "enter cryosleep"]?", "Enter Cryopod?", "Yes", "No") != "Yes")
+		if(tgui_alert(target, "Хотите [tele ? "телепортироваться отсюда" : "погрузиться в криосон"]?", "Войти в криокапсулу?", list("Да", "Нет")) != "Да")
 			return
 
 	if(target == user && world.time - target.client.cryo_warned > 5 MINUTES)
