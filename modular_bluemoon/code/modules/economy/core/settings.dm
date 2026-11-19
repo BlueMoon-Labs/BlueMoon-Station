@@ -197,6 +197,8 @@
 	var/crew_request_personal_announce_minutes = 20
 	/// Сколько оплаченных с КПК личных заказов одного счёта может ждать шаттла
 	var/personal_order_limit = 5
+	/// Сколько минут подарок из магазина Кошелька ждёт, пока получатель его заберёт; потом деньги возвращаются дарителю
+	var/shop_gift_accept_minutes = 15
 	/// Спред биржи в процентах: покупка дороже цены, продажа дешевле
 	var/stock_spread = 1
 	/// Комиссия биржи в процентах от суммы сделки, уходит в сток
@@ -385,6 +387,8 @@
 		return "вне 0..100"
 	if(key == "research_grant_price_per_point" && value <= 0)
 		return "нужно число больше 0"
+	if(key == "shop_gift_accept_minutes" && value < 1)
+		return "меньше 1"
 	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes", "tax_mood_minutes")) && value < 1)
 		return "меньше 1"
 	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_goodwill_upto", "tax_goodwill_premium_bonus", "auction_rival_free_chance")) && (value < 0 || value > 100))

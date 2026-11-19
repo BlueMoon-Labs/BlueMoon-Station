@@ -62,6 +62,7 @@
 	SSshuttle.shoppinglist += saved_shoppinglist
 	QDEL_LIST(SSshuttle.requestlist)
 	SSshuttle.requestlist += saved_requestlist
+	QDEL_LIST(GLOB.econ_shop_gifts)
 	return ..()
 
 /datum/unit_test/economy_catalog/proc/make_staff(department_id, list/access, account_type = /datum/bank_account)
@@ -1191,7 +1192,11 @@
 	for(var/atom/movable/thing as anything in catch_shop_pods(center))
 		. += thing.type
 
-/// Магазин Кошелька: цена списывается сразу, вещь прилетает капсулой рядом с покупателем и помечена купленной, гравировка доплачивается и видна в описании, питомец летит в закрытой переноске. Вне станции, по старой цене, чаще кулдауна, без денег и чужой вещи - отказ без списания.
+/// Строка корзины магазина, как её шлёт окно: цена - та, что видит покупатель.
+/datum/unit_test/economy_catalog/proc/shop_line(item_type, text = "")
+	return list("id" = "[item_type]", "price" = econ_shop_entry(item_type)[1], "text" = text)
+
+/// Магазин Кошелька: корзина до ECON_SHOP_CART_MAX вещей летит одной тихой капсулой рядом с покупателем, цена с гравировками списывается сразу, вещи помечены купленными; гравировка видна при осмотре и не стирается сменой описания, на плакат её не сделать; питомец летит отдельно в закрытой переноске и получает кличку. Вне станции, по старой цене, чаще кулдауна, без денег, чужой вещи и сверх корзины - отказ без списания.
 /datum/unit_test/economy_catalog/personal_shop_order/Run()
 	var/turf/station_turf = find_walkable_station_turf()
 	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
@@ -1204,56 +1209,84 @@
 	TEST_ASSERT_EQUAL(length(first["items"]), ECON_SHOP_NOVELTIES, "Новинок смены не [ECON_SHOP_NOVELTIES]")
 	var/hat_type = /obj/item/clothing/head/fedora
 	var/hat_price = econ_shop_entry(hat_type)[1]
+	var/plush_type = /obj/item/toy/plush/carpplushie
+	var/plush_price = econ_shop_entry(plush_type)[1]
 
-	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price))
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type))))
 	TEST_ASSERT(findtext(wallet.message, "негде сесть"), "Вне станции капсула не отказала: [wallet.message]")
 	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказ вне станции списал деньги")
 	buyer.forceMove(station_turf)
-	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price - 1))
+	press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[hat_type]", "price" = hat_price - 1))))
 	TEST_ASSERT(findtext(wallet.message, "Цена изменилась") && findtext(wallet.message, "[hat_price] кр."), "Отказ не называет новую цену: [wallet.message]")
-	press_wallet(buyer, "shop_order", list("id" = "[/obj/item/gun/energy/laser]", "price" = 1))
+	press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[/obj/item/gun/energy/laser]", "price" = 1))))
 	TEST_ASSERT(findtext(wallet.message, "нет"), "Вещь не из магазина куплена: [wallet.message]")
+	var/list/too_many = list()
+	for(var/i in 1 to ECON_SHOP_CART_MAX + 1)
+		too_many += list(shop_line(plush_type))
+	press_wallet(buyer, "shop_order", list("items" = too_many))
+	TEST_ASSERT(findtext(wallet.message, "не больше [ECON_SHOP_CART_MAX]"), "Корзина больше [ECON_SHOP_CART_MAX] вещей не отказала: [wallet.message]")
+	var/pet_type = /mob/living/simple_animal/mouse/white
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type), shop_line(plush_type))))
+	TEST_ASSERT(findtext(wallet.message, "Питомец"), "Питомец с вещами в одной капсуле не отказал: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(/obj/item/poster/random_official, "Мой плакат"))))
+	TEST_ASSERT(findtext(wallet.message, "гравировку"), "Гравировка на плакат не отказала: [wallet.message]")
 	var/datum/bank_account/broke = new("Econ Shop Broke")
 	allocated += broke
-	TEST_ASSERT(!econ_shop_order(buyer, broke, hat_type, hat_price)[1], "Покупка без денег прошла")
+	TEST_ASSERT(!econ_shop_order(buyer, broke, list(shop_line(hat_type)))[1], "Покупка без денег прошла")
 	var/list/pool = econ_shop_novelty_pool()
 	var/list/outside_pool = pool - GLOB.econ_shop_novelties
 	if(length(outside_pool))
-		var/rested = outside_pool[1]
-		var/list/rested_entry = pool[rested]
-		press_wallet(buyer, "shop_order", list("id" = "[rested]", "price" = rested_entry[1]))
+		press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[outside_pool[1]]", "price" = pool[outside_pool[1]][1]))))
 		TEST_ASSERT(findtext(wallet.message, "нет"), "Новинка не этой смены куплена: [wallet.message]")
 	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказы списали деньги")
 	TEST_ASSERT_EQUAL(length(shop_pod_types(station_turf)), 0, "Отказ вызвал капсулу")
 
-	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price, "engraving" = "Для капитана"))
-	TEST_ASSERT_EQUAL(account.account_balance, 100000 - hat_price - ECON_SHOP_ENGRAVING_PRICE, "Списана не цена с гравировкой: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type, "Для капитана"), shop_line(plush_type, "Карпуша"), shop_line(plush_type))))
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - hat_price - plush_price * 2 - ECON_SHOP_ENGRAVING_PRICE * 2, "Списана не цена корзины с гравировками: [wallet.message]")
+	var/list/zones = list()
+	for(var/obj/effect/pod_landingzone/zone in range(ECON_EXPRESS_LANDING_RANGE, buyer))
+		zones += zone
+	TEST_ASSERT_EQUAL(length(zones), 1, "Корзина летит не одной капсулой")
+	var/obj/effect/pod_landingzone/first_zone = zones[1]
+	TEST_ASSERT(first_zone.pod.effectQuiet, "Капсула магазина не тихая")
+	TEST_ASSERT(!first_zone.pod.explosionSize[3] && !first_zone.pod.explosionSize[4], "Капсула магазина взрывается")
 	var/list/delivered = catch_shop_pods(get_turf(buyer))
 	var/obj/item/clothing/head/fedora/hat = locate() in delivered
 	TEST_ASSERT_NOTNULL(hat, "Капсула рядом с покупателем не везёт шляпу")
-	TEST_ASSERT(findtext(hat.desc, "Для капитана"), "Гравировки нет в описании: [hat.desc]")
+	var/list/plushes = list()
+	for(var/obj/item/toy/plush/carpplushie/plush in delivered)
+		plushes += plush
+	TEST_ASSERT_EQUAL(length(plushes), 2, "В капсуле не обе игрушки из корзины")
+	TEST_ASSERT(!findtext(hat.desc, "Для капитана"), "Гравировка записана в описание: [hat.desc]")
+	TEST_ASSERT(findtext(jointext(hat.examine(buyer), "\n"), "Для капитана"), "Гравировки не видно при осмотре")
 	TEST_ASSERT(hat.econ_imported && hat.econ_vended, "Шляпа из магазина не помечена купленной")
+	var/obj/item/toy/plush/engraved_plush
+	for(var/obj/item/toy/plush/plush as anything in plushes)
+		if(plush.GetComponent(/datum/component/econ_engraving))
+			engraved_plush = plush
+	TEST_ASSERT_NOTNULL(engraved_plush, "Гравировка не досталась игрушке")
+	engraved_plush.update_desc()
+	TEST_ASSERT(findtext(jointext(engraved_plush.examine(buyer), "\n"), "Карпуша"), "Смена описания игрушки стёрла гравировку")
 	var/balance = account.account_balance
-	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price))
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type))))
 	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Вторая капсула подряд не отказала: [wallet.message]")
 	TEST_ASSERT_EQUAL(account.account_balance, balance, "Отказ по кулдауну списал деньги")
 
 	COOLDOWN_RESET(account, personal_shop_cooldown)
-	var/pet_type = /mob/living/simple_animal/mouse/white
-	var/pet_price = econ_shop_entry(pet_type)[1]
-	press_wallet(buyer, "shop_order", list("id" = "[pet_type]", "price" = pet_price, "engraving" = "Пушок"))
-	TEST_ASSERT(findtext(wallet.message, "питомце"), "Гравировка на питомце не отказала: [wallet.message]")
-	press_wallet(buyer, "shop_order", list("id" = "[pet_type]", "price" = pet_price))
-	TEST_ASSERT_EQUAL(account.account_balance, balance - pet_price, "Питомец списал не свою цену: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type, "!!!"))))
+	TEST_ASSERT(findtext(wallet.message, "кличку"), "Негодная кличка не отказала: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type, "Пушок"))))
+	TEST_ASSERT_EQUAL(account.account_balance, balance - econ_shop_entry(pet_type)[1], "Питомец с кличкой списал не свою цену: [wallet.message]")
 	delivered = catch_shop_pods(get_turf(buyer))
 	var/obj/item/pet_carrier/carrier = locate() in delivered
 	TEST_ASSERT_NOTNULL(carrier, "Питомец прилетел не в переноске")
 	TEST_ASSERT(!carrier.open, "Переноска с питомцем открыта")
-	TEST_ASSERT(locate(pet_type) in delivered, "В переноске нет питомца")
+	var/mob/living/simple_animal/mouse/white/pet = locate() in delivered
+	TEST_ASSERT_NOTNULL(pet, "В переноске нет питомца")
+	TEST_ASSERT_EQUAL(pet.name, "Пушок", "Питомец не получил кличку")
 
 	COOLDOWN_RESET(account, personal_shop_cooldown)
-	var/plush_type = /obj/item/toy/plush/carpplushie
-	press_wallet(buyer, "shop_order", list("id" = "[plush_type]", "price" = econ_shop_entry(plush_type)[1]))
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(plush_type))))
 	var/obj/item/toy/plush/landed
 	for(var/i in 1 to 30)
 		for(var/obj/item/toy/plush/carpplushie/plush in range(ECON_EXPRESS_LANDING_RANGE, buyer))
@@ -1265,7 +1298,7 @@
 	allocated += landed
 	TEST_ASSERT_EQUAL(get_area(landed), get_area(buyer), "Игрушка села не в том помещении, где покупатель")
 
-/// Подарок из магазина: платит даритель, капсула садится рядом с получателем, в ней открытка с именем с карты дарителя, карта получателя узнаёт о подарке; имя скрывается по выбору. Получателю без тела, себе и чаще паузы подарок не оформить.
+/// Подарок из магазина: платит даритель, получатель узнаёт о нём по карте и забирает кнопкой в Кошельке - капсула садится рядом с ним, на открытке его имя с карты и имя с карты дарителя; жив ли он и где, до оплаты не раскрывается. Не забрал за срок - деньги дарителю без объяснения причины. Себе и чаще паузы подарок не оформить, чужой подарок не забрать.
 /datum/unit_test/economy_catalog/personal_shop_gift/Run()
 	var/turf/station_turf = find_walkable_station_turf()
 	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
@@ -1275,39 +1308,96 @@
 	pda.stored_id.registered_name = "Econ Card Alias"
 	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Shop Friend", 0)
 	var/datum/bank_account/econ_test_ear/receiver = pda_account(friend)
+	var/obj/item/modular_computer/pda/friend_pda = friend.get_active_held_item()
+	friend_pda.stored_id.registered_name = "Econ Friend Card"
 	var/plush_type = /obj/item/toy/plush/beeplushie
 	var/price = econ_shop_entry(plush_type)[1]
-	var/datum/computer_file/program/wallet/wallet = press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
-	TEST_ASSERT(findtext(wallet.message, "не может принять"), "Подарок получателю без тела не отказал: [wallet.message]")
-	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = payer.account_holder))
+	var/datum/computer_file/program/wallet/wallet = press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = payer.account_holder))
 	TEST_ASSERT(findtext(wallet.message, "Себе"), "Подарок себе не отказал: [wallet.message]")
-	TEST_ASSERT_EQUAL(payer.account_balance, 100000, "Отказы списали деньги")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000, "Отказ списал деньги")
 
-	receiver.bind_owner(friend)
-	friend.forceMove(station_turf)
-	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
-	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Подарок списан не с дарителя: [wallet.message]")
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Подарок получателю вне станции и без тела не оформлен или списан не с дарителя: [wallet.message]")
+	TEST_ASSERT(!findtext(wallet.message, "не может") && !findtext(wallet.message, "станци"), "Ответ дарителю раскрыл, где получатель: [wallet.message]")
 	TEST_ASSERT_EQUAL(receiver.account_balance, 0, "Подарок тронул счёт получателя")
+	TEST_ASSERT_EQUAL(length(catch_shop_pods(station_turf)), 0, "Подарок прилетел до того, как его забрали")
+	var/heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(heard, "Вам подарок от Econ Card Alias") && findtext(heard, "Получить"), "Получатель не узнал, кто дарит и как забрать: [heard]")
+	var/datum/computer_file/program/wallet/friend_wallet = pda_wallet(friend)
+	var/list/gifts = friend_wallet.wallet_data(friend)["shop_gifts"]
+	TEST_ASSERT_EQUAL(length(gifts), 1, "Подарок не ждёт в Кошельке получателя")
+	var/list/gift_entry = gifts[1]
+	TEST_ASSERT_EQUAL(gift_entry["from"], "Econ Card Alias", "Кошелёк получателя называет дарителя не по карте")
+	TEST_ASSERT(!length(wallet.wallet_data(giver)["shop_gifts"]), "Чужой подарок виден дарителю как свой")
+	press_wallet(giver, "shop_gift_accept", list("id" = gift_entry["id"]))
+	TEST_ASSERT(findtext(wallet.message, "нет"), "Даритель забрал подарок получателя: [wallet.message]")
+
+	press_wallet(friend, "shop_gift_accept", list("id" = gift_entry["id"]))
+	TEST_ASSERT(findtext(friend_wallet.message, "негде сесть"), "Подарок вне станции не отказал: [friend_wallet.message]")
+	TEST_ASSERT_EQUAL(length(friend_wallet.wallet_data(friend)["shop_gifts"]), 1, "Подарок пропал после неудачной попытки")
+	friend.forceMove(station_turf)
+	press_wallet(friend, "shop_gift_accept", list("id" = gift_entry["id"]))
 	var/list/delivered = catch_shop_pods(station_turf)
-	TEST_ASSERT(locate(plush_type) in delivered, "Капсула рядом с получателем не везёт подарок")
+	TEST_ASSERT(locate(plush_type) in delivered, "Капсула рядом с получателем не везёт подарок: [friend_wallet.message]")
 	var/obj/item/paper/card = locate() in delivered
 	TEST_ASSERT_NOTNULL(card, "К подарку нет открытки")
-	TEST_ASSERT(findtext(card.get_raw_text(), "Econ Card Alias"), "Открытка не называет дарителя по карте: [card.get_raw_text()]")
-	TEST_ASSERT(!findtext(card.get_raw_text(), payer.account_holder), "Открытка назвала владельца счёта вместо имени с карты")
-	var/heard = jointext(receiver.heard, "\n")
-	TEST_ASSERT(findtext(heard, "Вам подарок") && findtext(heard, "Econ Card Alias"), "Получатель не узнал, кто дарит: [heard]")
+	TEST_ASSERT(findtext(card.get_raw_text(), "Econ Card Alias") && findtext(card.get_raw_text(), "Econ Friend Card"), "Открытка не называет обоих по картам: [card.get_raw_text()]")
+	TEST_ASSERT(!findtext(card.get_raw_text(), payer.account_holder) && !findtext(card.get_raw_text(), receiver.account_holder), "Открытка назвала владельцев счетов вместо имён с карт")
+	TEST_ASSERT(!length(friend_wallet.wallet_data(friend)["shop_gifts"]), "Забранный подарок всё ещё ждёт")
+	TEST_ASSERT(findtext(jointext(payer.heard, "\n"), "получен"), "Даритель не узнал, что подарок забрали")
 
-	COOLDOWN_RESET(payer, personal_shop_cooldown)
-	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = "[receiver.account_id]"))
 	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Второй подарок подряд не отказал: [wallet.message]")
 	COOLDOWN_RESET(payer, personal_gift_cooldown)
 	receiver.heard.Cut()
-	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = receiver.account_holder, "hide_name" = TRUE))
-	delivered = catch_shop_pods(station_turf)
-	card = locate() in delivered
-	TEST_ASSERT(card && !findtext(card.get_raw_text(), "Econ Card Alias"), "Открытка подарка без имени называет дарителя")
+	payer.heard.Cut()
+	var/balance = payer.account_balance
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = receiver.account_holder, "hide_name" = TRUE))
+	TEST_ASSERT_EQUAL(payer.account_balance, balance - price, "Подарок без имени не оформлен: [wallet.message]")
 	heard = jointext(receiver.heard, "\n")
-	TEST_ASSERT(findtext(heard, "кто-то из экипажа") && !findtext(heard, "Econ Card Alias"), "Карта получателя назвала скрывшего имя дарителя: [heard]")
+	TEST_ASSERT(findtext(heard, "анонимного дарителя") && !findtext(heard, "Econ Card Alias"), "Карта получателя назвала скрывшего имя дарителя: [heard]")
+	var/datum/econ_shop_gift/gift = econ_shop_gifts_for(receiver)[1]
+	TEST_ASSERT_NULL(gift.giver_name, "Подарок без имени хранит имя дарителя")
+	gift.expire()
+	TEST_ASSERT(QDELETED(gift), "Просроченный подарок остался")
+	TEST_ASSERT_EQUAL(payer.account_balance, balance, "Не забранный подарок не вернул деньги дарителю")
+	var/refund_text = jointext(payer.heard, "\n")
+	TEST_ASSERT(findtext(refund_text, "вернулись") && !findtext(refund_text, "мёртв") && !findtext(refund_text, "станци") && !findtext(refund_text, "смен"), "Возврат не пришёл или раскрыл причину: [refund_text]")
+
+/// Капсула садится только туда, куда от адресата можно дойти за ECON_EXPRESS_LANDING_RANGE шагов: из клетки брига со стеклом вокруг - никуда, сквозь окно на краю клетки - нет, через открытую сторону - только за ней.
+/datum/unit_test/economy_catalog/express_landing_reachable/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	TEST_ASSERT(length(econ_landing_spots(center)), "test premise: на открытом полу капсуле есть где сесть")
+	var/list/walls = list()
+	for(var/direction in GLOB.alldirs)
+		walls["[direction]"] = allocate(/obj/structure/window/reinforced/fulltile, get_step(center, direction))
+	TEST_ASSERT(!length(econ_landing_spots(center)), "Капсула садится за стекло брига: [json_encode(econ_landing_spots(center))]")
+	qdel(walls["[NORTH]"])
+	allocate(/obj/structure/window/reinforced, center, NORTH)
+	TEST_ASSERT(!length(econ_landing_spots(center)), "Капсула садится за окно на краю клетки")
+	qdel(walls["[SOUTH]"])
+	var/list/spots = econ_landing_spots(center)
+	TEST_ASSERT(length(spots), "Капсула не садится в открытой стороне клетки")
+	for(var/turf/spot as anything in spots)
+		TEST_ASSERT(spot.y < center.y, "Капсула села не по ту сторону открытой стороны: [spot.x],[spot.y] от [center.x],[center.y]")
+
+/// Цыплёнок в переноске растёт в курицу в той же переноске: переноска знает курицу, а не удалённого цыплёнка, и выпускает её.
+/datum/unit_test/economy_catalog/chick_grows_in_carrier/Run()
+	var/obj/item/pet_carrier/carrier = allocate(/obj/item/pet_carrier)
+	var/mob/living/simple_animal/chick/chick = allocate(/mob/living/simple_animal/chick)
+	chick.name = "Цыпа"
+	carrier.add_occupant(chick)
+	TEST_ASSERT(chick in carrier.occupants, "test premise: цыплёнок в переноске")
+	var/mob/living/simple_animal/chicken/hen = chick.grow_up(/mob/living/simple_animal/chicken)
+	allocated += hen
+	TEST_ASSERT(QDELETED(chick), "Выросший цыплёнок не удалён")
+	TEST_ASSERT_EQUAL(hen.loc, carrier, "Курица выросла не в переноске")
+	TEST_ASSERT(hen in carrier.occupants, "Переноска не знает выросшую курицу")
+	TEST_ASSERT(!(chick in carrier.occupants), "Переноска держит удалённого цыплёнка")
+	TEST_ASSERT_EQUAL(carrier.occupant_weight, hen.mob_size, "Вес переноски не равен весу курицы")
+	TEST_ASSERT_EQUAL(hen.name, "Цыпа", "Курица потеряла кличку цыплёнка")
+	hen.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!(hen in carrier.occupants) && carrier.occupant_weight == 0, "Вышедшая из переноски курица осталась в ней по учёту")
 
 /// Сторож магазина: только вид и уют - без оружия, брони, лекарств, доступов и маскировки лица, у каждой вещи иконка; доставленное ни сдачей NT, ни переработкой в листы не окупает цену даже на пике рынка у лучшего покупателя, а спецзаказы его не берут.
 /datum/unit_test/economy_catalog/no_shop_farm
@@ -1357,7 +1447,7 @@
 		var/price = entry[1]
 		if(!econ_shop_icon_ok(initial(item_type.icon), initial(item_type.icon_state)))
 			problems += "[item_type]: нет иконки для витрины"
-		var/list/things = econ_shop_pack(item_type, run_loc_floor_bottom_left, price)
+		var/list/things = list(econ_shop_pack(item_type, run_loc_floor_bottom_left, price))
 		var/list/everything = list()
 		for(var/atom/movable/thing as anything in things)
 			everything += thing.GetAllContents()

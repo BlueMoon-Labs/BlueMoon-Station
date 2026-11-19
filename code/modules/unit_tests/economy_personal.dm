@@ -408,3 +408,30 @@
 	SSatoms.initialized = saved_mode
 	allocated += built
 	TEST_ASSERT(!built.rentable, "Построенный во время загрузки шаблона автомат бесплатный")
+
+/// Комментарий к переводу режется по тексту игрока, а не по экранированному: длинный комментарий с кавычками не рвёт HTML-сущность посередине. Без комментария история пишет просто перевод, с ним - обе стороны видят одно и то же.
+/datum/unit_test/economy_personal/transfer_memo/Run()
+	var/datum/bank_account/alice = make_account("Econ Memo Alice", 1000)
+	var/datum/bank_account/bob = make_account("Econ Memo Bob")
+	var/raw = ""
+	for(var/i in 1 to ECON_TRANSFER_MEMO_MAX + 6)
+		raw += "'"
+	TEST_ASSERT_NULL(SSeconomy.send_transfer(alice, bob, 10, null, raw), "Перевод с длинным комментарием проходит")
+	var/list/sent = alice.ui_history()[length(alice.ui_history())]
+	var/expected = "Перевод: [sanitize(copytext_char(raw, 1, ECON_TRANSFER_MEMO_MAX + 1))]"
+	TEST_ASSERT_EQUAL(sent["label"], expected, "Комментарий обрезан не по тексту игрока")
+	var/list/got = bob.ui_history()[length(bob.ui_history())]
+	TEST_ASSERT_EQUAL(got["label"], expected, "Получатель видит другой комментарий")
+
+/// Тело владельца счёта: нынешнее тело его разума после переселения, без разума - последнее привязанное тело.
+/datum/unit_test/economy_personal/owner_body/Run()
+	var/datum/bank_account/account = make_account("Econ Body Owner")
+	var/mob/living/carbon/human/first = allocate(/mob/living/carbon/human)
+	account.bind_owner(first)
+	TEST_ASSERT_EQUAL(account.owner_body(), first, "Без разума тело владельца - привязанное")
+	first.mind_initialize()
+	var/datum/mind/owner_mind = first.mind
+	account.bind_owner(first)
+	var/mob/living/carbon/human/second = allocate(/mob/living/carbon/human)
+	owner_mind.transfer_to(second)
+	TEST_ASSERT_EQUAL(account.owner_body(), second, "Тело владельца не нашлось по разуму после переселения")

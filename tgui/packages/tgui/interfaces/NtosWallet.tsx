@@ -69,8 +69,10 @@ type ShopItem = {
   name: string;
   note: string;
   price: number;
-  /** Питомец: летит в переноске, гравировки нет. */
+  /** Питомец: летит своей капсулой в переноске, вместо гравировки - кличка. */
   pet?: BooleanLike;
+  /** Гравировку можно сделать (не питомец и не плакат). */
+  engravable?: BooleanLike;
   /** CSS-класс иконки из листа econ_shop; null - лист ещё не собран. */
   icon?: string | null;
 };
@@ -86,6 +88,30 @@ type NearbyPerson = {
   /** Имя и должность с ID-карты. */
   name: string;
   job?: string | null;
+  /** У него можно попросить оплату: не SSD. */
+  requestable?: BooleanLike;
+};
+
+type PayRequest = {
+  id: number;
+  /** Имя просителя с его ID-карты. */
+  from: string;
+  amount: number;
+  reason: string;
+};
+
+type ShopGift = {
+  id: number;
+  /** Имя дарителя; null - аноним. */
+  from: string | null;
+  items: string;
+  /** Сколько минут подарок ещё ждёт. */
+  left: number;
+};
+
+type CartLine = {
+  item: ShopItem;
+  text: string;
 };
 
 type PersonalOrder = {
@@ -169,8 +195,13 @@ export type WalletData = {
   engraving_price?: number;
   engraving_max?: number;
   shop_cooldown?: number;
+  cart_max?: number;
+  gift_minutes?: number;
+  shop_gifts?: ShopGift[];
   nearby_range?: number;
   nearby?: NearbyPerson[];
+  pay_request_minutes?: number;
+  pay_requests?: PayRequest[];
   /** "тип пака" -> [цена для этого счёта, есть ли у партнёров]. */
   personal_prices?: Record<string, [number, BooleanLike]>;
   personal_orders?: PersonalOrder[];
@@ -209,12 +240,17 @@ export const NtosWalletContent = () => {
   const [tab, setTab] = useState<Tab>('account');
   const needsAccount = tab !== 'meta' && !data.has_account;
   const crewOpen = freeCrewRequests(data.contracts || [], data.my_account);
+  const waiting: Partial<Record<Tab, number>> = {
+    jobs: crewOpen,
+    shop: (data.shop_gifts || []).length,
+    transfer: (data.pay_requests || []).length,
+  };
   return (
     <>
       <Tabs>
         {TABS.map(([id, label, icon]) => (
           <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
-            {id === 'jobs' && crewOpen > 0 ? `${label} (${crewOpen})` : label}
+            {(waiting[id] || 0) > 0 ? `${label} (${waiting[id]})` : label}
           </Tabs.Tab>
         ))}
       </Tabs>
@@ -386,26 +422,89 @@ const AccountTab = () => {
   );
 };
 
+const PayRequestsSection = () => {
+  const { act, data } = useBackend<WalletData>();
+  const requests = data.pay_requests || [];
+  if (requests.length === 0) {
+    return null;
+  }
+  return (
+    <Section title="Вас просят заплатить">
+      <Table>
+        {requests.map((request) => (
+          <Table.Row key={request.id} className="candystripe">
+            <Table.Cell py={0.5}>
+              <b>{request.from}</b> просит <Credits amount={request.amount} /> за «{request.reason}»
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button.Confirm
+                icon="check"
+                color="good"
+                content="Оплатить"
+                confirmContent={`Оплатить ${formatCredits(request.amount)}?`}
+                confirmColor="good"
+                disabled={(data.cooldown_left || 0) > 0}
+                onClick={() => act('pay_request_answer', { id: request.id, answer: 'pay' })}
+              />
+              <Button icon="times" onClick={() => act('pay_request_answer', { id: request.id, answer: 'decline' })}>
+                Отклонить
+              </Button>
+              <Button.Confirm
+                icon="ban"
+                color="bad"
+                content="Не принимать от него"
+                confirmContent="Больше не принимать?"
+                tooltip="Отклонить и до конца смены не получать от этого человека запросы оплаты"
+                onClick={() => act('pay_request_answer', { id: request.id, answer: 'mute' })}
+              />
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        Запрос ждёт ответа {data.pay_request_minutes ?? 0} мин. Оплата - обычный перевод с тем же лимитом и паузой.
+      </Box>
+    </Section>
+  );
+};
+
 const NearbySection = () => {
   const { act, data } = useBackend<WalletData>();
   const people = data.nearby || [];
   const [chosen, setChosen] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
   const [amount, setAmount] = useState(10);
   const [memo, setMemo] = useState('');
-  const person = people.find((entry) => entry.ref === chosen);
+  const listed = asking ? people.filter((entry) => entry.requestable) : people;
+  const person = listed.find((entry) => entry.ref === chosen);
   return (
-    <Section title="Заплатить человеку рядом">
+    <Section title="Человек рядом">
       <Box color="label" mb={1}>
-        Номер счёта не нужен: здесь все в {data.nearby_range ?? 0} шагах от вас с ID-картой на личном счёте - имя и
-        должность как на карте. Это обычный перевод с тем же лимитом и кулдауном: получатель увидит сумму, имя с вашей
-        карты и комментарий.
+        Номер счёта не нужен: здесь все, кто в {data.nearby_range ?? 0} шагах от вас и носит ID-карту. Имя и должность -
+        как на карте. Лимит и пауза те же, что у перевода; получатель увидит сумму, имя с вашей карты и комментарий.
       </Box>
-      {people.length === 0 ? (
-        <Box color="label">Рядом никого с ID-картой: подойдите ближе.</Box>
+      <Box mb={1}>
+        <Button icon="hand-holding-usd" selected={!asking} onClick={() => setAsking(false)}>
+          Заплатить ему
+        </Button>
+        <Button icon="file-invoice-dollar" selected={asking} onClick={() => setAsking(true)}>
+          Попросить оплату
+        </Button>
+      </Box>
+      {asking && (
+        <Box color="label" mb={1}>
+          Человек увидит, сколько и за что вы просите, и оплатит или отклонит запрос в своём Кошельке. Запрос ждёт{' '}
+          {data.pay_request_minutes ?? 0} мин.
+        </Box>
+      )}
+      {listed.length === 0 ? (
+        <Box color="label">
+          {asking ? 'Рядом нет никого, у кого можно попросить оплату.' : 'Рядом никого с ID-картой: подойдите ближе.'}
+        </Box>
       ) : (
         <>
           <Box mb={1}>
-            {people.map((entry) => (
+            {listed.map((entry) => (
               <Button
                 key={entry.ref}
                 icon="user"
@@ -426,25 +525,34 @@ const NearbySection = () => {
                 />{' '}
                 кр.
               </LabeledList.Item>
-              <LabeledList.Item label="Комментарий">
+              <LabeledList.Item label={asking ? 'За что' : 'Комментарий'}>
                 <Input
                   fluid
                   value={memo}
                   maxLength={data.memo_max}
-                  placeholder="Необязательно: за что платите"
+                  placeholder={asking ? 'За что просите оплату' : 'Необязательно: за что платите'}
                   onInput={(_, value) => setMemo(value)}
                 />
               </LabeledList.Item>
               <LabeledList.Item>
-                <Button.Confirm
-                  icon="hand-holding-usd"
-                  color="good"
-                  content={`Заплатить: ${person.name}`}
-                  confirmContent={`Заплатить ${formatCredits(amount)}?`}
-                  confirmColor="good"
-                  disabled={amount < 1 || (data.cooldown_left || 0) > 0}
-                  onClick={() => act('pay_nearby', { ref: person.ref, amount, memo })}
-                />
+                {asking ? (
+                  <Button
+                    icon="file-invoice-dollar"
+                    disabled={amount < 1 || memo.trim().length === 0}
+                    onClick={() => act('request_payment', { ref: person.ref, amount, reason: memo.trim() })}>
+                    {`Попросить: ${person.name}`}
+                  </Button>
+                ) : (
+                  <Button.Confirm
+                    icon="hand-holding-usd"
+                    color="good"
+                    content={`Заплатить: ${person.name}`}
+                    confirmContent={`Заплатить ${formatCredits(amount)}?`}
+                    confirmColor="good"
+                    disabled={amount < 1 || (data.cooldown_left || 0) > 0}
+                    onClick={() => act('pay_nearby', { ref: person.ref, amount, memo })}
+                  />
+                )}
               </LabeledList.Item>
             </LabeledList>
           )}
@@ -464,6 +572,7 @@ const TransferTab = () => {
   return (
     <>
       <AccountNotices />
+      <PayRequestsSection />
       <NearbySection />
       <Section title="Перевод и чаевые по имени или номеру">
         <Box color="label" mb={1}>
@@ -950,20 +1059,31 @@ const ShopIcon = (props: { item: ShopItem }) => {
   );
 };
 
+/** Почему вещь не положить в корзину; null - можно. */
+const cartRefusal = (cart: CartLine[], item: ShopItem, cartMax: number) => {
+  if (cart.some((line) => line.item.pet)) {
+    return 'Питомец летит своей капсулой: сначала оформите его.';
+  }
+  if (item.pet && cart.length > 0) {
+    return 'Питомец летит своей капсулой: оформите корзину или очистите её.';
+  }
+  if (cart.length >= cartMax) {
+    return `В одну капсулу помещается не больше ${cartMax} вещей.`;
+  }
+  return null;
+};
+
+const lineTotal = (line: CartLine, engravingPrice: number) =>
+  line.item.price + (line.item.engravable && line.text.trim().length > 0 ? engravingPrice : 0);
+
 type ShopRowProps = {
   item: ShopItem;
-  recipient: string;
-  signed: boolean;
-  engraving: string;
+  refusal: string | null;
+  onAdd: () => void;
 };
 
 const ShopRow = (props: ShopRowProps) => {
-  const { act, data } = useBackend<WalletData>();
-  const { item, recipient, signed, engraving } = props;
-  const gift = recipient !== '';
-  const engraved = !item.pet && engraving.trim().length > 0;
-  const total = item.price + (engraved ? data.engraving_price || 0 : 0);
-  const refusal = (data.balance || 0) < total ? 'Не хватает денег на счёте.' : null;
+  const { item, refusal, onAdd } = props;
   return (
     <Table.Row className="candystripe">
       <Table.Cell collapsing py={0.5}>
@@ -977,28 +1097,160 @@ const ShopRow = (props: ShopRowProps) => {
         </Box>
       </Table.Cell>
       <Table.Cell collapsing py={0.5} textAlign="right">
-        <Credits amount={total} />
+        <Credits amount={item.price} />
       </Table.Cell>
       <Table.Cell collapsing py={0.5}>
+        <Button icon="cart-plus" disabled={!!refusal} tooltip={refusal} onClick={onAdd}>
+          В корзину
+        </Button>
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const ShopGifts = () => {
+  const { act, data } = useBackend<WalletData>();
+  const gifts = data.shop_gifts || [];
+  if (gifts.length === 0) {
+    return null;
+  }
+  return (
+    <Section title="Вам подарки">
+      <Table>
+        {gifts.map((gift) => (
+          <Table.Row key={gift.id} className="candystripe">
+            <Table.Cell py={0.5}>
+              <Box bold>От {gift.from || 'анонимного дарителя'}</Box>
+              <Box color="label">
+                {gift.items}. Ждёт ещё {gift.left} мин.
+              </Box>
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button icon="gift" color="good" onClick={() => act('shop_gift_accept', { id: gift.id })}>
+                Получить
+              </Button>
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        Капсула сядет на свободный пол рядом с вами, в том же помещении станции.
+      </Box>
+    </Section>
+  );
+};
+
+type ShopCartProps = {
+  cart: CartLine[];
+  setCart: (cart: CartLine[]) => void;
+};
+
+const ShopCart = (props: ShopCartProps) => {
+  const { act, data } = useBackend<WalletData>();
+  const { cart, setCart } = props;
+  const [recipient, setRecipient] = useState('');
+  const [signed, setSigned] = useState(true);
+  const gift = recipient !== '';
+  const engravingPrice = data.engraving_price || 0;
+  const total = cart.reduce((sum, line) => sum + lineTotal(line, engravingPrice), 0);
+  const crew = (data.crew || []).filter((name) => name !== data.holder);
+  const refusal = (data.balance || 0) < total ? 'Не хватает денег на счёте.' : null;
+  const setText = (index: number, text: string) =>
+    setCart(cart.map((line, at) => (at === index ? { ...line, text } : line)));
+  return (
+    <Section
+      title={`Корзина: ${cart.length} из ${data.cart_max ?? 0}`}
+      buttons={
+        <Button icon="trash" onClick={() => setCart([])}>
+          Очистить
+        </Button>
+      }>
+      <Table>
+        {cart.map((line, index) => (
+          <Table.Row key={index} className="candystripe">
+            <Table.Cell py={0.5}>
+              <Box bold>{line.item.name}</Box>
+              {line.item.pet || line.item.engravable ? (
+                <Input
+                  fluid
+                  value={line.text}
+                  maxLength={line.item.pet ? data.name_max : data.engraving_max}
+                  placeholder={
+                    line.item.pet
+                      ? 'Необязательно: кличка, бесплатно'
+                      : `Необязательно: гравировка за ${formatCredits(engravingPrice)}`
+                  }
+                  onInput={(_, value) => setText(index, value)}
+                />
+              ) : (
+                <Box color="label">Гравировку на эту вещь не сделать.</Box>
+              )}
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5} textAlign="right">
+              <Credits amount={lineTotal(line, engravingPrice)} />
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button icon="times" tooltip="Убрать" onClick={() => setCart(cart.filter((_, at) => at !== index))} />
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <LabeledList>
+        <LabeledList.Item label="Кому">
+          <Stack align="center">
+            <Stack.Item grow>
+              <Input
+                fluid
+                value={recipient}
+                maxLength={data.name_max}
+                placeholder="Себе, или имя либо номер счёта получателя"
+                onInput={(_, value) => setRecipient(value)}
+              />
+            </Stack.Item>
+            <Stack.Item>
+              <Dropdown
+                width="12em"
+                options={[{ value: '', displayText: 'Себе' }, ...crew]}
+                selected={recipient}
+                onSelected={(value: string) => setRecipient(value)}
+              />
+            </Stack.Item>
+            {gift && (
+              <Stack.Item>
+                <Button.Checkbox checked={signed} onClick={() => setSigned(!signed)}>
+                  Подписать моим именем
+                </Button.Checkbox>
+              </Stack.Item>
+            )}
+          </Stack>
+        </LabeledList.Item>
+      </LabeledList>
+      {gift && (
+        <Box color="label" mt={0.5}>
+          Подарок для {recipient}: платите вы, карта получателя скажет, что это подарок
+          {signed ? ' от вас' : ' без вашего имени'}, а забирает он его сам в своём Кошельке. Не заберёт за{' '}
+          {data.gift_minutes ?? 0} мин. - деньги вернутся.
+        </Box>
+      )}
+      <Box mt={1}>
         <Button.Confirm
           icon={gift ? 'gift' : 'shopping-cart'}
           color="good"
-          content={gift ? 'Подарить' : 'Купить'}
+          content={gift ? `Подарить за ${formatCredits(total)}` : `Оплатить ${formatCredits(total)}`}
           confirmContent={gift ? `Подарить за ${formatCredits(total)}?` : `Оплатить ${formatCredits(total)}?`}
           confirmColor="good"
           disabled={!!refusal}
           tooltip={refusal}
-          onClick={() =>
+          onClick={() => {
             act('shop_order', {
-              id: item.id,
-              price: item.price,
-              engraving: engraved ? engraving.trim() : '',
+              items: cart.map((line) => ({ id: line.item.id, price: line.item.price, text: line.text.trim() })),
               ...(gift ? { recipient, hide_name: !signed } : {}),
-            })
-          }
+            });
+            setCart([]);
+          }}
         />
-      </Table.Cell>
-    </Table.Row>
+      </Box>
+    </Section>
   );
 };
 
@@ -1006,66 +1258,22 @@ const ShopTab = () => {
   const { data } = useBackend<WalletData>();
   const sections = data.shop || [];
   const [shown, setShown] = useState<string | null>(null);
-  const [recipient, setRecipient] = useState('');
-  const [signed, setSigned] = useState(true);
-  const [engraving, setEngraving] = useState('');
-  const crew = (data.crew || []).filter((name) => name !== data.holder);
+  const [cart, setCart] = useState<CartLine[]>([]);
+  const cartMax = data.cart_max || 0;
   const visible = sections.filter((section) => !shown || section.name === shown);
   return (
     <>
       <AccountNotices />
+      <ShopGifts />
+      {cart.length > 0 && <ShopCart cart={cart} setCart={setCart} />}
       <Section title="Магазин">
         <Box color="label" mb={1}>
-          Одежда, шляпы, краски, игрушки, вещи для каюты и мелкие питомцы за свой счёт. Деньги списываются сразу, а
-          покупка через пару секунд прилетает блюспейс-капсулой на свободный пол рядом с вами - без шаттла и очереди.
-          Подарок прилетает к получателю, если он на станции, вместе с открыткой. Вещи с цветами на выбор красятся
+          Одежда, шляпы, краски, игрушки, вещи для каюты и мелкие питомцы за свой счёт. Соберите корзину до {cartMax}{' '}
+          вещей: деньги списываются сразу, а через пару секунд всё прилетает одной тихой блюспейс-капсулой на свободный
+          пол рядом с вами - без шаттла и очереди. Питомец летит отдельно, в закрытой переноске, и ему можно дать кличку.
+          Подарок получатель забирает сам в своём Кошельке, вместе с открыткой. Вещи с цветами на выбор красятся
           Alt+кликом. Капсулу можно вызывать раз в {data.shop_cooldown ?? 0} с, а новинки каждую смену свои.
         </Box>
-        <LabeledList>
-          <LabeledList.Item label="Кому">
-            <Stack align="center">
-              <Stack.Item grow>
-                <Input
-                  fluid
-                  value={recipient}
-                  maxLength={data.name_max}
-                  placeholder="Себе, или имя либо номер счёта получателя"
-                  onInput={(_, value) => setRecipient(value)}
-                />
-              </Stack.Item>
-              <Stack.Item>
-                <Dropdown
-                  width="12em"
-                  options={[{ value: '', displayText: 'Себе' }, ...crew]}
-                  selected={recipient}
-                  onSelected={(value: string) => setRecipient(value)}
-                />
-              </Stack.Item>
-              {!!recipient && (
-                <Stack.Item>
-                  <Button.Checkbox checked={signed} onClick={() => setSigned(!signed)}>
-                    Подписать моим именем
-                  </Button.Checkbox>
-                </Stack.Item>
-              )}
-            </Stack>
-          </LabeledList.Item>
-          <LabeledList.Item label="Гравировка">
-            <Input
-              fluid
-              value={engraving}
-              maxLength={data.engraving_max}
-              placeholder={`Необязательно: надпись на вещи за ${formatCredits(data.engraving_price || 0)}`}
-              onInput={(_, value) => setEngraving(value)}
-            />
-          </LabeledList.Item>
-        </LabeledList>
-        {!!recipient && (
-          <Box color="label" mt={0.5}>
-            Подарок для {recipient}: платите вы, капсула сядет рядом с получателем, а его карта скажет, что это подарок
-            {signed ? ' от вас' : ' - без вашего имени'}.
-          </Box>
-        )}
         <Box mt={1} mb={1}>
           <Button selected={!shown} onClick={() => setShown(null)}>
             Всё
@@ -1087,7 +1295,12 @@ const ShopTab = () => {
             </Box>
             <Table>
               {section.items.map((item) => (
-                <ShopRow key={item.id} item={item} recipient={recipient} signed={signed} engraving={engraving} />
+                <ShopRow
+                  key={item.id}
+                  item={item}
+                  refusal={cartRefusal(cart, item, cartMax)}
+                  onAdd={() => setCart([...cart, { item, text: '' }])}
+                />
               ))}
             </Table>
           </Box>

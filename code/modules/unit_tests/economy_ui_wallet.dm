@@ -11,6 +11,7 @@
 /datum/unit_test/economy_ui_wallet/Destroy()
 	econ_test_restore_contracts(stashed_contracts)
 	SSeconomy.tax_rate = saved_tax_rate
+	QDEL_LIST(GLOB.econ_pay_requests)
 	return ..()
 
 /datum/unit_test/economy_ui_wallet/proc/make_account(holder, balance = 0)
@@ -255,6 +256,8 @@
 	var/mob/living/carbon/human/waiter = make_bystander(waiter_account, "Econ Waiter Alias", 2, 0)
 	var/datum/bank_account/far_account = make_account("Econ Nearby Far")
 	make_bystander(far_account, "Econ Far Alias", 4, 4)
+	var/mob/living/carbon/human/ghostly = make_bystander(make_account("Econ Nearby Cloaked"), "Econ Cloaked Alias", 1, 0)
+	ghostly.alpha = ECON_NEARBY_MIN_ALPHA - 1
 	var/datum/computer_file/program/wallet/wallet = wallet_of(owner)
 	var/list/nearby = wallet.wallet_data(owner)["nearby"]
 	TEST_ASSERT_EQUAL(length(nearby), 1, "Кошелёк видит не только соседа: [json_encode(nearby)]")
@@ -280,6 +283,12 @@
 		if(line["amount"] == -150)
 			sent = line
 	TEST_ASSERT(sent && findtext(sent["label"], "за коктейль"), "Оплата рядом не записана переводом с комментарием")
+	TEST_ASSERT_EQUAL(sent["counterparty"], "Econ Waiter Alias", "История плательщика называет получателя не по карте или с номером счёта")
+	var/list/received
+	for(var/list/line as anything in waiter_account.ui_history())
+		if(line["amount"] == 150)
+			received = line
+	TEST_ASSERT_EQUAL(received?["counterparty"], "Econ Payer Alias", "История получателя называет плательщика не по карте или с номером счёта")
 
 	COOLDOWN_RESET(own, personal_payment_cooldown)
 	waiter.forceMove(locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
@@ -295,3 +304,69 @@
 	entry = nearby[1]
 	press(owner, "pay_nearby", list("ref" = entry["ref"], "amount" = 20))
 	TEST_ASSERT_EQUAL(anon.account_balance, 20, "Оплата на анонимный счёт с карты не дошла")
+
+/// Запрос оплаты у человека рядом: проситель выбирает его из списка рядом, у того в Кошельке и на карте «X просит N кр. за Y»; оплата - перевод с именами с карт в историях; SSD в список запросов не попадает; пауза просителя и пара, отказ и заглушка просителя.
+/datum/unit_test/economy_ui_wallet/pay_request/Run()
+	var/mob/living/carbon/human/seller = make_owner("Econ Request Seller Real", 0)
+	var/datum/bank_account/seller_account = account_of(seller)
+	var/obj/item/modular_computer/pda/seller_pda = seller.get_active_held_item()
+	seller_pda.stored_id.registered_name = "Econ Seller Alias"
+	var/mob/living/carbon/human/client_person = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/datum/bank_account/econ_test_ear/buyer_account = new("Econ Request Buyer Real")
+	allocated += buyer_account
+	econ_test_set_balance(buyer_account, 1000)
+	var/obj/item/card/id/buyer_card = allocate(/obj/item/card/id)
+	buyer_card.registered_name = "Econ Buyer Alias"
+	buyer_card.registered_account = buyer_account
+	var/obj/item/modular_computer/pda/buyer_pda = allocate(/obj/item/modular_computer/pda)
+	buyer_pda.InsertID(buyer_card)
+	client_person.put_in_active_hand(buyer_pda)
+	var/datum/computer_file/program/wallet/seller_wallet = wallet_of(seller)
+	var/list/entry = seller_wallet.wallet_data(seller)["nearby"][1]
+	TEST_ASSERT(!entry["requestable"], "SSD можно попросить оплату")
+	var/reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 120, "reason" = "за коктейль"))
+	TEST_ASSERT(findtext(reply, "нет рядом"), "Запрос к SSD не отказал: [reply]")
+	client_person.mock_client = new /datum/client_interface()
+	entry = seller_wallet.wallet_data(seller)["nearby"][1]
+	TEST_ASSERT(entry["requestable"], "Человека с клиентом нельзя попросить оплату")
+	reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 120, "reason" = ""))
+	TEST_ASSERT(findtext(reply, "за что"), "Запрос без причины не отказал: [reply]")
+	reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 120, "reason" = "за коктейль"))
+	TEST_ASSERT(findtext(reply, "отправлен"), "Запрос не отправлен: [reply]")
+	var/heard = jointext(buyer_account.heard, "\n")
+	TEST_ASSERT(findtext(heard, "Econ Seller Alias просит 120 кр.") && findtext(heard, "за коктейль"), "Карта плательщика не сказала, кто, сколько и за что просит: [heard]")
+	TEST_ASSERT(!findtext(heard, seller_account.account_holder), "Карта плательщика назвала владельца счёта просителя")
+	reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 50, "reason" = "ещё"))
+	TEST_ASSERT(findtext(reply, "не чаще"), "Второй запрос подряд не отказал: [reply]")
+	COOLDOWN_RESET(seller_account, personal_payment_cooldown)
+	COOLDOWN_RESET(seller_account, pay_request_cooldown)
+	reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 50, "reason" = "ещё"))
+	TEST_ASSERT(findtext(reply, "недавно"), "Запрос тому же человеку раньше паузы пары не отказал: [reply]")
+
+	var/datum/computer_file/program/wallet/buyer_wallet = wallet_of(client_person)
+	var/list/requests = buyer_wallet.wallet_data(client_person)["pay_requests"]
+	TEST_ASSERT_EQUAL(length(requests), 1, "Запрос не ждёт в Кошельке плательщика")
+	var/list/request = requests[1]
+	TEST_ASSERT_EQUAL(request["from"], "Econ Seller Alias", "Кошелёк называет просителя не по карте")
+	TEST_ASSERT_EQUAL(request["amount"], 120, "Кошелёк показывает не ту сумму")
+	press(client_person, "pay_request_answer", list("id" = request["id"], "answer" = "pay"))
+	TEST_ASSERT_EQUAL(seller_account.account_balance, 120, "Оплата запроса не дошла: [buyer_wallet.message]")
+	TEST_ASSERT_EQUAL(buyer_account.account_balance, 880, "С плательщика списана не сумма запроса")
+	TEST_ASSERT(!length(buyer_wallet.wallet_data(client_person)["pay_requests"]), "Оплаченный запрос всё ещё ждёт")
+	var/list/paid_line = buyer_account.ui_history()[length(buyer_account.ui_history())]
+	TEST_ASSERT_EQUAL(paid_line["counterparty"], "Econ Seller Alias", "История плательщика называет просителя не по карте")
+	var/list/got_line = seller_account.ui_history()[length(seller_account.ui_history())]
+	TEST_ASSERT_EQUAL(got_line["counterparty"], "Econ Buyer Alias", "История просителя называет плательщика не по карте")
+
+	COOLDOWN_RESET(seller_account, pay_request_cooldown)
+	seller_account.pay_request_pair_ready = null
+	press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 30, "reason" = "чаевые"))
+	request = buyer_wallet.wallet_data(client_person)["pay_requests"][1]
+	press(client_person, "pay_request_answer", list("id" = request["id"], "answer" = "mute"))
+	TEST_ASSERT_EQUAL(buyer_account.account_balance, 880, "Отклонённый запрос списал деньги")
+	TEST_ASSERT(!length(buyer_wallet.wallet_data(client_person)["pay_requests"]), "Отклонённый запрос всё ещё ждёт")
+	COOLDOWN_RESET(seller_account, pay_request_cooldown)
+	seller_account.pay_request_pair_ready = null
+	reply = press(seller, "request_payment", list("ref" = entry["ref"], "amount" = 30, "reason" = "чаевые"))
+	TEST_ASSERT(findtext(reply, "не принимает"), "Заглушённый проситель снова просит: [reply]")
+	client_person.mock_client = null

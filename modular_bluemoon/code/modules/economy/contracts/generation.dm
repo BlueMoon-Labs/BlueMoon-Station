@@ -162,8 +162,7 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 
 /// Нынешнее тело взявшего: по разуму владельца счёта, а без него - по самому владельцу.
 /datum/econ_contract/proc/taker_body()
-	var/datum/mind/taker_mind = taker?.owner_mind_ref?.resolve()
-	return isliving(taker_mind?.current) ? taker_mind.current : taker?.owner_ref?.resolve()
+	return taker?.owner_body()
 
 /// Взявший в игре: тело живо и с клиентом. Без него контракт только держит слот.
 /datum/econ_contract/proc/taker_in_game()

@@ -211,7 +211,7 @@
 	if(length(snapshots) > ECON_SNAPSHOT_MAX)
 		snapshots.Cut(1, 2)
 
-/datum/controller/subsystem/economy/proc/move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag)
+/datum/controller/subsystem/economy/proc/move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag, list/history_names)
 	if(isnull(amount))
 		return FALSE
 	if(!isnum(amount) || amount != amount || abs(amount) == INFINITY)
@@ -238,7 +238,7 @@
 		source.account_balance -= amount
 	if(target)
 		target.account_balance += amount
-	record_move(source, target, amount, reason, actor, memo, log_tag)
+	record_move(source, target, amount, reason, actor, memo, log_tag, history_names)
 	return TRUE
 
 /proc/econ_move_side(datum/bank_account/account, none_text)
@@ -254,12 +254,14 @@
 		return "Банк не принял [money_name]."
 	return "Банк не принял [money_name]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
-/// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога.
-/datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag)
+/// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога; history_names - list(плательщик, получатель): имена с ID-карт для историй сторон вместо владельцев счетов, без номеров. Журнал, аудит и лог - по настоящим счетам.
+/datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag, list/history_names)
 	ledger.record(source, target, amount, reason)
 	var/label = memo || econ_reason_name(reason)
-	source?.add_log_to_history(-amount, label, target ? target.account_holder : "Nanotrasen", reason, target?.account_id)
-	target?.add_log_to_history(amount, label, source ? source.account_holder : "Nanotrasen", reason, source?.account_id)
+	var/source_shown = history_names ? history_names[1] : (source ? source.account_holder : "Nanotrasen")
+	var/target_shown = history_names ? history_names[2] : (target ? target.account_holder : "Nanotrasen")
+	source?.add_log_to_history(-amount, label, target_shown, reason, history_names ? null : target?.account_id)
+	target?.add_log_to_history(amount, label, source_shown, reason, history_names ? null : source?.account_id)
 	audit_move(source, target, amount, reason, actor)
 	SEND_SIGNAL(src, COMSIG_ECONOMY_MOVED, source, target, amount, reason, actor)
 	log_econ("[num2text(amount, ECON_TEXT_DIGITS)] кр.: [econ_move_side(source, "эмиссия")] -> [econ_move_side(target, "сток")] ([reason][log_tag ? ", [log_tag]" : ""])[actor ? " by [key_name(actor)]" : ""]")

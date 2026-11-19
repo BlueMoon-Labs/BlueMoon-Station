@@ -334,10 +334,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 
 /// Владелец чужой карты стоит у кассы, в сознании и не SSD: без него кассир картой не платит.
 /obj/machinery/cash_register/proc/card_owner_nearby(datum/bank_account/account)
-	var/mob/living/owner = account?.owner_ref?.resolve()
-	var/datum/mind/owner_mind = account?.owner_mind_ref?.resolve()
-	if(isliving(owner_mind?.current))
-		owner = owner_mind.current
+	var/mob/living/owner = account?.owner_body()
 	var/turf/owner_turf = get_turf(owner)
 	var/turf/register_turf = get_turf(src)
 	if(!owner_turf || !register_turf || owner_turf.z != register_turf.z || owner.stat != CONSCIOUS || !GET_CLIENT(owner))

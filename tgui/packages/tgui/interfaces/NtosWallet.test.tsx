@@ -461,67 +461,106 @@ describe('NtosWallet', () => {
       {
         name: 'Новинки смены',
         novelty: 1,
-        items: [{ id: '/obj/item/toy/plush/deer', name: 'deer plushie', note: 'Плюшевый олень.', price: 350, icon: 'econ_shop32x32 deer' }],
+        items: [
+          {
+            id: '/obj/item/toy/plush/deer',
+            name: 'Плюшевый олень',
+            note: '',
+            price: 350,
+            engravable: 1,
+            icon: 'econ_shop32x32 deer',
+          },
+        ],
       },
       {
         name: 'Головные уборы',
-        items: [{ id: '/obj/item/clothing/head/fedora', name: 'fedora', note: 'Фетровая шляпа.', price: 500, icon: null }],
+        items: [
+          { id: '/obj/item/clothing/head/fedora', name: 'Фетровая шляпа', note: '', price: 500, engravable: 1, icon: null },
+          { id: '/obj/item/poster/random_official', name: 'Официальный плакат', note: 'Вешается на стену.', price: 150, engravable: 0 },
+        ],
       },
       {
         name: 'Питомцы',
-        items: [
-          { id: '/mob/living/simple_animal/pet/cat/kitten', name: 'kitten', note: 'Котёнок.', price: 4000, pet: 1 },
-        ],
+        items: [{ id: '/mob/living/simple_animal/pet/cat/kitten', name: 'Котёнок', note: '', price: 4000, pet: 1 }],
       },
     ],
     engraving_price: 300,
     engraving_max: 40,
-    shop_cooldown: 10,
+    shop_cooldown: 30,
+    cart_max: 2,
+    gift_minutes: 15,
   };
 
-  test('магазин: новинки первыми, разделы с иконками, покупка себе с гравировкой и без', () => {
-    const { container, getByText, getAllByText, getByPlaceholderText, topic } = setup({ ...shop, balance: 1000 });
+  test('магазин: новинки первыми, корзина одной капсулой, гравировка на вещь, без лишнего', () => {
+    const { container, getByText, getAllByText, getByPlaceholderText, queryByText, topic } = setup({
+      ...shop,
+      balance: 1500,
+    });
     fireEvent.click(getByText('Магазин'));
     const content = text(container);
-    expect(content).toContain('прилетает блюспейс-капсулой на свободный пол рядом с вами');
-    expect(content).toContain('Капсулу можно вызывать раз в 10 с');
-    expect(content.indexOf('deer plushie')).toBeLessThan(content.indexOf('fedora'));
+    expect(content).toContain('одной тихой блюспейс-капсулой');
+    expect(content).toContain('Капсулу можно вызывать раз в 30 с');
+    expect(content.indexOf('Плюшевый олень')).toBeLessThan(content.indexOf('Фетровая шляпа'));
     expect(container.querySelector('.econ_shop32x32.deer')).toBeTruthy();
     expect(content).toContain('Прилетит в закрытой переноске.');
-    expect(getAllByText('Купить')[2].closest('.Button')?.className).toContain('Button--disabled');
-    fireEvent.click(getAllByText('Купить')[1]);
-    fireEvent.click(getByText('Оплатить 500 кр.?'));
-    fireEvent.input(getByPlaceholderText('Необязательно: надпись на вещи за 300 кр.'), { target: { value: ' Для Кэт ' } });
-    expect(text(container)).toContain('800 кр.');
-    fireEvent.click(getAllByText('Купить')[1]);
-    fireEvent.click(getByText('Оплатить 800 кр.?'));
+    expect(queryByText(/Корзина:/)).toBeNull();
+    fireEvent.click(getAllByText('В корзину')[1]);
+    fireEvent.click(getAllByText('В корзину')[2]);
+    expect(text(container)).toContain('Корзина: 2 из 2');
+    expect(text(container)).toContain('Гравировку на эту вещь не сделать.');
+    expect(getAllByText('В корзину')[0].closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.input(getByPlaceholderText('Необязательно: гравировка за 300 кр.'), { target: { value: ' Для Кэт ' } });
+    expect(text(container)).toContain('Оплатить 950 кр.');
+    fireEvent.click(getByText('Оплатить 950 кр.'));
+    fireEvent.click(getByText('Оплатить 950 кр.?'));
     expect(sent(topic, 'shop_order')).toEqual([
-      { id: '/obj/item/clothing/head/fedora', price: 500, engraving: '' },
-      { id: '/obj/item/clothing/head/fedora', price: 500, engraving: 'Для Кэт' },
+      {
+        items: [
+          { id: '/obj/item/clothing/head/fedora', price: 500, text: 'Для Кэт' },
+          { id: '/obj/item/poster/random_official', price: 150, text: '' },
+        ],
+      },
     ]);
+    expect(queryByText(/Корзина:/)).toBeNull();
     fireEvent.click(getAllByText('Питомцы')[0]);
-    expect(text(container)).not.toContain('fedora');
-    expect(text(container)).toContain('kitten');
+    expect(text(container)).not.toContain('Фетровая шляпа');
+    expect(text(container)).toContain('Котёнок');
   });
 
-  test('магазин: подарок уходит с получателем и выбором подписи, питомцу гравировка не шлётся', () => {
+  test('магазин: питомец летит отдельно с кличкой, подарок уходит с получателем и выбором подписи', () => {
     const { container, getByText, getAllByText, getByPlaceholderText, topic } = setup({ ...shop, balance: 9000 });
     fireEvent.click(getByText('Магазин'));
-    fireEvent.input(getByPlaceholderText('Себе, или имя либо номер счёта получателя'), { target: { value: 'Анна Смирнова' } });
-    fireEvent.input(getByPlaceholderText('Необязательно: надпись на вещи за 300 кр.'), { target: { value: 'Мурка' } });
-    expect(text(container)).toContain('капсула сядет рядом с получателем');
+    fireEvent.click(getAllByText('В корзину')[3]);
+    expect(getAllByText('В корзину')[0].closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.input(getByPlaceholderText('Необязательно: кличка, бесплатно'), { target: { value: 'Мурка' } });
+    fireEvent.input(getByPlaceholderText('Себе, или имя либо номер счёта получателя'), {
+      target: { value: 'Анна Смирнова' },
+    });
+    expect(text(container)).toContain('забирает он его сам в своём Кошельке');
+    expect(text(container)).toContain('за 15 мин. - деньги вернутся');
     fireEvent.click(getByText('Подписать моим именем'));
-    fireEvent.click(getAllByText('Подарить')[2]);
+    fireEvent.click(getByText('Подарить за 4 000 кр.'));
     fireEvent.click(getByText('Подарить за 4 000 кр.?'));
     expect(sent(topic, 'shop_order')).toEqual([
       {
-        id: '/mob/living/simple_animal/pet/cat/kitten',
-        price: 4000,
-        engraving: '',
+        items: [{ id: '/mob/living/simple_animal/pet/cat/kitten', price: 4000, text: 'Мурка' }],
         recipient: 'Анна Смирнова',
         hide_name: true,
       },
     ]);
+  });
+
+  test('магазин: подарок ждёт получателя, он забирает его кнопкой, вкладка считает подарки', () => {
+    const { container, getByText, topic } = setup({
+      ...shop,
+      shop_gifts: [{ id: 4, from: null, items: 'Фетровая шляпа с гравировкой', left: 12 }],
+    });
+    expect(text(container)).toContain('Магазин (1)');
+    fireEvent.click(getByText('Магазин (1)'));
+    expect(text(container)).toContain('От анонимного дарителя');
+    expect(text(container)).toContain('Фетровая шляпа с гравировкой. Ждёт ещё 12 мин.');
+    fireEvent.click(getByText('Получить'));
+    expect(sent(topic, 'shop_gift_accept')).toEqual([{ id: 4 }]);
   });
 
   test('перевод: человеку рядом платят по имени с карты, с суммой и комментарием', () => {
@@ -531,15 +570,55 @@ describe('NtosWallet', () => {
     document.body.innerHTML = '';
     const { container, getByText, getByPlaceholderText, topic } = setup({
       nearby_range: 3,
-      nearby: [{ ref: '[0x2000abc]', name: 'Джон Доу', job: 'Bartender' }],
+      nearby: [{ ref: '[0x2000abc]', name: 'Джон Доу', job: 'Bartender', requestable: 1 }],
     });
     fireEvent.click(getByText('Перевод'));
-    expect(text(container)).toContain('в 3 шагах от вас');
+    expect(text(container)).toContain('здесь все, кто в 3 шагах от вас и носит ID-карту');
     fireEvent.click(getByText('Джон Доу, Bartender'));
     fireEvent.input(getByPlaceholderText('Необязательно: за что платите'), { target: { value: 'за коктейль' } });
     fireEvent.click(getByText('Заплатить: Джон Доу'));
     fireEvent.click(getByText('Заплатить 10 кр.?'));
     expect(sent(topic, 'pay_nearby')).toEqual([{ ref: '[0x2000abc]', amount: 10, memo: 'за коктейль' }]);
+  });
+
+  test('перевод: оплату просят только у тех, кто не SSD, и только с причиной', () => {
+    const { container, getByText, queryByText, getByPlaceholderText, topic } = setup({
+      nearby_range: 3,
+      pay_request_minutes: 5,
+      nearby: [
+        { ref: '[0x2000abc]', name: 'Джон Доу', job: 'Bartender', requestable: 1 },
+        { ref: '[0x2000def]', name: 'Спящий', job: null, requestable: 0 },
+      ],
+    });
+    fireEvent.click(getByText('Перевод'));
+    fireEvent.click(getByText('Попросить оплату'));
+    expect(queryByText('Спящий')).toBeNull();
+    expect(text(container)).toContain('Запрос ждёт 5 мин.');
+    fireEvent.click(getByText('Джон Доу, Bartender'));
+    expect(getByText('Попросить: Джон Доу').closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.input(getByPlaceholderText('За что просите оплату'), { target: { value: 'за коктейль' } });
+    fireEvent.click(getByText('Попросить: Джон Доу'));
+    expect(sent(topic, 'request_payment')).toEqual([{ ref: '[0x2000abc]', amount: 10, reason: 'за коктейль' }]);
+  });
+
+  test('перевод: входящий запрос оплачивается с подтверждением, отклоняется и глушится', () => {
+    const { container, getByText, topic } = setup({
+      pay_request_minutes: 5,
+      pay_requests: [{ id: 9, from: 'Джон Доу', amount: 120, reason: 'за коктейль' }],
+    });
+    expect(text(container)).toContain('Перевод (1)');
+    fireEvent.click(getByText('Перевод (1)'));
+    expect(text(container)).toContain('Джон Доу просит 120 кр. за «за коктейль»');
+    fireEvent.click(getByText('Оплатить'));
+    fireEvent.click(getByText('Оплатить 120 кр.?'));
+    fireEvent.click(getByText('Отклонить'));
+    fireEvent.click(getByText('Не принимать от него'));
+    fireEvent.click(getByText('Больше не принимать?'));
+    expect(sent(topic, 'pay_request_answer')).toEqual([
+      { id: 9, answer: 'pay' },
+      { id: 9, answer: 'decline' },
+      { id: 9, answer: 'mute' },
+    ]);
   });
 
   test('без лотереи раздела нет', () => {

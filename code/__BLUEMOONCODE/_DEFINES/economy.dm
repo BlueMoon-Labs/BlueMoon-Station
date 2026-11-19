@@ -248,7 +248,9 @@
 /// Как часто один счёт может оформить подарок с КПК: оформление и отмена шлют сообщения карте получателя
 #define ECON_PERSONAL_GIFT_COOLDOWN (1 MINUTES)
 /// Как часто один счёт вызывает капсулу из магазина Кошелька
-#define ECON_SHOP_ORDER_COOLDOWN (10 SECONDS)
+#define ECON_SHOP_ORDER_COOLDOWN (30 SECONDS)
+/// Сколько вещей летит одной капсулой магазина; питомец - всегда отдельно
+#define ECON_SHOP_CART_MAX 5
 /// Сколько вещей из пула новинок продаётся за смену
 #define ECON_SHOP_NOVELTIES 4
 #define ECON_SHOP_NOVELTY_SECTION "Новинки смены"
@@ -318,6 +320,13 @@
 #define ECON_TRANSFER_MEMO_MAX 64
 /// В скольких клетках от КПК кошелёк видит людей, которым можно заплатить без номера счёта
 #define ECON_NEARBY_PAY_RANGE 3
+/// Почти прозрачных (маскировка, невидимость) кошелёк в списке «рядом» не показывает
+#define ECON_NEARBY_MIN_ALPHA 100
+/// Запрос оплаты у человека рядом: пауза просителя, пауза на того же человека, срок запроса и сколько их может ждать у одного счёта
+#define ECON_PAY_REQUEST_COOLDOWN (15 SECONDS)
+#define ECON_PAY_REQUEST_PAIR_COOLDOWN (2 MINUTES)
+#define ECON_PAY_REQUEST_TTL (5 MINUTES)
+#define ECON_PAY_REQUESTS_PER_PAYER 3
 /// Наибольшая сумма одной админской корректировки счёта
 #define ECON_ADMIN_ADJUST_MAX 100000
 #define ECON_ADMIN_COMMENT_MAX 200

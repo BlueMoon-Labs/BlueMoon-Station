@@ -133,6 +133,13 @@
 		return TRUE
 	return !!user.mind && owner_mind_ref?.resolve() == user.mind
 
+/// Тело владельца: нынешнее тело его разума, иначе последнее известное.
+/datum/bank_account/proc/owner_body()
+	var/datum/mind/owner_mind = owner_mind_ref?.resolve()
+	if(isliving(owner_mind?.current))
+		return owner_mind.current
+	return owner_ref?.resolve()
+
 /// История операций для окон: time, label, amount, counterparty.
 /datum/bank_account/proc/ui_history()
 	. = list()
