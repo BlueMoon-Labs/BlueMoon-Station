@@ -134,6 +134,8 @@
 	usesound = 'sound/weapons/resonator_blast.ogg'
 	/// Бюджет аванпоста, в который продаёт сканер; у станционного - нет
 	var/budget_id
+	/// Сколько стоять на месте, пока сканер аванпоста телепортирует вещь
+	var/sell_delay = 0
 
 /obj/item/xenoarch/help/cargo/afterattack(atom/target, mob/user , proximity)
 	if(!proximity)
@@ -174,13 +176,17 @@
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
 	budget_id = ACCOUNT_DS
+	sell_delay = 3 SECONDS
 
 /obj/item/xenoarch/help/cargo/ds/afterattack(atom/target, mob/user , proximity)
-	if(!proximity)
+	scan_offstation(target, user, proximity)
+
+/// Сдача сканером аванпоста: сразу подсказывает, куда уйдёт вещь, и телепортирует её, если постоять на месте.
+/obj/item/xenoarch/help/cargo/proc/scan_offstation(atom/target, mob/user, proximity)
+	if(!proximity || !isitem(target))
 		return
-	if(!istype(target,/obj/item))
-		return
-	if(!do_after(user, 30, target=target))
+	target.balloon_alert(user, econ_outpost_scan_destination(target, budget_id))
+	if(!do_after(user, sell_delay, target = target))
 		to_chat(user, "Тебе нужно стоять на месте, чтобы телепортировать предмет.")
 		return
 	sell_offstation(target, user, budget_id)
@@ -192,6 +198,7 @@
 		return
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(budget_id)
 	var/list/contracts = econ_outpost_contracts_examine(budget_id)
+	. += span_notice("Перед телепортацией сканер подсказывает, куда уйдёт вещь: под заказ, под спецзаказ или на рынок. Экипаж станции платит со своей доли обычный налог.")
 	. += span_notice(length(contracts) ? "Заказы аванпоста, награда идёт в [econ_budget_name(budget)], сдавшим - [SSeconomy.settings.contract_team_share]% от неё:<br>[jointext(contracts, "<br>")]" : "Заказов аванпоста сейчас нет, новые появятся с ротацией доски.")
 	. += span_notice("Предмет под открытый спецзаказ партнёра сканер сдаёт в спецзаказ: оплата за штуки и маржа за них при выполнении - в [econ_budget_name(budget)], тебе лично [SSeconomy.settings.contract_team_share]% оплаты. Первая сдача берёт спецзаказ и запускает срок [SSmarket.offer_deadline_minutes] мин., не успеешь - маржи не будет. Купленное не засчитывается.")
 	var/list/offers = list()
@@ -207,11 +214,17 @@
 		return 0
 	var/target_name = "[target]"
 	var/datum/bank_account/budget = SSeconomy.get_dep_account(account_id)
-	var/offer_units = budget ? econ_offers_ship(target, user, budget) : 0
-	var/offer_text = offer_units ? " По спецзаказам партнёров принято [offer_units] шт., оплата - в [econ_budget_name(budget)]." : ""
-	var/contract_units = (budget && !QDELETED(target)) ? econ_outpost_contracts_ship(target, user, account_id) : 0
-	if(contract_units)
-		offer_text += " По заказам аванпоста принято: [contract_units] шт."
+	var/offer_text = ""
+	if(budget)
+		var/datum/economy_ledger/ledger = SSeconomy.ledger
+		var/income_before = ledger.outpost_flow(account_id)["in"]
+		var/offer_units = econ_offers_ship(target, user, budget)
+		ledger.note_outpost_income(account_id, "offers", ledger.outpost_flow(account_id)["in"] - income_before)
+		if(offer_units)
+			offer_text += " По спецзаказам партнёров принято [offer_units] шт., оплата - в [econ_budget_name(budget)]."
+		var/list/contract_lines = QDELETED(target) ? null : econ_outpost_contracts_ship(target, user, account_id)
+		if(length(contract_lines))
+			offer_text += " Заказы аванпоста: [jointext(contract_lines, "; ")]."
 	if(QDELETED(target))
 		to_chat(user, "Ух ты, [target_name] пропало![offer_text]")
 		return 0
@@ -224,7 +237,8 @@
 		if(!export_text)
 			continue
 		export_value += ex.total_value[E]
-	budget?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target_name]")
+	if(budget?.credit(export_value, ECON_EXPORT, user, "Экспорт находки: [target_name]"))
+		SSeconomy.ledger.note_outpost_income(account_id, "market", round(export_value))
 	to_chat(user, "Ух ты, [target_name] пропало![offer_text] [export_value ? "Выручка рынка: [round(export_value)] кр." : "Покупателя на рынке не нашлось, выручки нет."]")
 	return export_value
 
@@ -245,16 +259,10 @@
 	icon_state = "cargoscanner"
 	usesound = 'sound/weapons/resonator_blast.ogg'
 	budget_id = ACCOUNT_TAR
+	sell_delay = 4.5 SECONDS
 
 /obj/item/xenoarch/help/cargo/tarkoff/afterattack(atom/target, mob/user , proximity)
-	if(!proximity)
-		return
-	if(!istype(target,/obj/item))
-		return
-	if(!do_after(user, 45, target=target))
-		to_chat(user, "Тебе нужно стоять на месте, чтобы телепортировать предмет.")
-		return
-	sell_offstation(target, user, budget_id)
+	scan_offstation(target, user, proximity)
 
 //Bluemoon edit end.
 

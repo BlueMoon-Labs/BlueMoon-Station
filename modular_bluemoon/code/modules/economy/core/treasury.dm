@@ -2,11 +2,11 @@
 	var/datum/economy_department/command = departments[ACCOUNT_CMD]
 	return command?.account
 
-/// Выплата человеку с налогом; из бюджета аванпоста - без налога: его деньги не уходят в казну станции.
+/// Выплата человеку с налогом; из бюджета аванпоста внестанционному счёту - без налога: деньги аванпоста не уходят в казну станции, а станционный со сканером аванпоста платит как обычно.
 /datum/controller/subsystem/economy/proc/pay_personal(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo)
 	if(!move(source, target, amount, reason, actor, memo))
 		return 0
-	if(econ_is_outpost_budget(source))
+	if(econ_is_outpost_budget(source) && target.offstation)
 		return round(amount)
 	return collect_tax(target, round(amount), reason, actor)
 

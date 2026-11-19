@@ -341,21 +341,27 @@
 	TEST_ASSERT_EQUAL(offer.delivered, 3, "Спецзаказ засчитал отправку с пада")
 	TEST_ASSERT(findtext(console.status_report, "по спецзаказам партнёров: 3 шт."), "Отчёт пульта: [console.status_report]")
 
-/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке.
+/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке. Станционный счёт платит с доли налог в казну, внестанционный - нет.
 /datum/unit_test/economy_offers/outpost_scanner
 	var/datum/bank_account/tarkov
 	var/saved_tarkov
+	var/datum/bank_account/treasury
+	var/saved_treasury
 	var/saved_tax_rate
 
 /datum/unit_test/economy_offers/outpost_scanner/New()
 	. = ..()
 	tarkov = SSeconomy.get_dep_account(ACCOUNT_TAR)
 	saved_tarkov = tarkov.account_balance
+	treasury = SSeconomy.treasury()
+	saved_treasury = treasury.account_balance
 	saved_tax_rate = SSeconomy.tax_rate
 
 /datum/unit_test/economy_offers/outpost_scanner/Destroy()
 	econ_test_set_balance(tarkov, saved_tarkov)
+	econ_test_set_balance(treasury, saved_treasury)
 	tarkov = null
+	treasury = null
 	SSeconomy.tax_rate = saved_tax_rate
 	return ..()
 
@@ -386,6 +392,10 @@
 	var/datum/economy_ledger/ledger = SSeconomy.ledger
 	var/station_minted_before = ledger.minted - ledger.outpost_minted
 	var/outpost_minted_before = ledger.outpost_minted
+	var/treasury_before = treasury.account_balance
+	var/list/income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	var/offers_income_before = income ? income["offers"] : 0
+	var/market_income_before = income ? income["market"] : 0
 	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 6)
 	TEST_ASSERT_EQUAL(scanner.sell_offstation(first, scavenger, ACCOUNT_TAR), 0, "Принятое спецзаказом продано ещё и на рынке")
 	TEST_ASSERT(offer.accepted && offer.delivered == 6, "Сканер не засчитал 6 штук в спецзаказ: [offer.delivered]")
@@ -393,9 +403,14 @@
 	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Сдача сканером аванпоста попала в эмиссию станции")
 	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, 600, "Эмиссия аванпоста - вся оплата за штуки, доля сдавшего из неё")
 	var/share = round(600 * settings.contract_team_share / 100)
-	TEST_ASSERT_EQUAL(account.account_balance, share, "Сдавшему доля участника целиком: деньги аванпоста налогом станции не облагаются")
+	var/tax = round(share * SSeconomy.tax_rate / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - tax, "Станционному счёту доля за вычетом налога")
+	TEST_ASSERT_EQUAL(treasury.account_balance - treasury_before, tax - round(tax * settings.tax_nt_share / 100), "Налог со станционного счёта ушёл в казну")
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
 
+	account.offstation = TRUE
+	var/account_before = account.account_balance
+	treasury_before = treasury.account_balance
 	tarkov_before = tarkov.account_balance
 	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 15)
 	var/market = scanner.sell_offstation(second, scavenger, ACCOUNT_TAR)
@@ -405,6 +420,11 @@
 	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
 	share = round(400 * settings.contract_team_share / 100)
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 - share + 1000 + round(market), "Бюджету Таркова база, маржа выполнения и рынок")
+	TEST_ASSERT_EQUAL(account.account_balance - account_before, share, "Внестанционному счёту доля целиком")
+	income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	TEST_ASSERT_EQUAL(income["offers"] - offers_income_before, 600 + 400 + 1000, "Заработок Таркова по спецзаказам для итогов раунда - база и маржа")
+	TEST_ASSERT_EQUAL(income["market"] - market_income_before, round(market), "Заработок Таркова на рынке для итогов раунда")
+	TEST_ASSERT_EQUAL(treasury.account_balance, treasury_before, "С внестанционного счёта налог ушёл в казну станции")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение станции получило деньги со сканера аванпоста")
 	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Отдел станции получил деньги со сканера аванпоста")
 

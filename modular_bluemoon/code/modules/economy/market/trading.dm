@@ -477,6 +477,7 @@
 			best = account
 	. = list("<span class='header'>Экономика смены</span>")
 	. += "NT выпустило в оборот [num2text(SSeconomy.ledger.minted, ECON_TEXT_DIGITS)] кр., из оборота ушло [num2text(SSeconomy.ledger.burned, ECON_TEXT_DIGITS)] кр."
+	. += econ_outpost_income_report()
 	if(best)
 		. += "Лучший трейдер смены: <b>[best.account_holder]</b>, прибыль [num2text(best.realized_stock_profit, ECON_TEXT_DIGITS)] кр."
 	var/list/worked = list()
