@@ -600,6 +600,7 @@ test('аукцион: лот, ставки соперников и ставка 
       increment: 85,
       left: 45,
       rivals: 2,
+      rival_cap: 110,
       history: [
         { who: 'станция "Кило-7"', amount: 1700 },
         { who: 'Иван Петров', amount: 1600 },
@@ -611,6 +612,7 @@ test('аукцион: лот, ставки соперников и ставка 
   expect(ui.getByText('Лот: золотая скрипка')).toBeTruthy();
   expect(ui.getByText('осталось 0:45')).toBeTruthy();
   expect(ui.getByText('1 700 кр. - станция "Кило-7"')).toBeTruthy();
+  expect(ui.getByText('2 станции сектора, дороже 110% оценки не дают')).toBeTruthy();
   fireEvent.click(ui.getByText('Поставить 1 785 кр.'));
   fireEvent.click(ui.getByText('+2 шага'));
   fireEvent.click(ui.getByText('Поставить 1 955 кр.'));

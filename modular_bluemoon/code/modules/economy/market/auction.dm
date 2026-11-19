@@ -129,6 +129,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		"increment" = increment(),
 		"left" = seconds_left(),
 		"rivals" = length(rivals),
+		"rival_cap" = length(rivals) ? SSeconomy.settings.auction_rival_cap_max : null,
 		"history" = bids,
 	)
 
@@ -232,7 +233,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(world.time >= next_auction_at)
 		start_auction()
 
-/// Новый лот: случайный предмет, 2-3 соперника с потолком вокруг его цены.
+/// Новый лот: случайный предмет, 2-3 соперника с потолком вокруг его цены, у части лотов соперников нет.
 /datum/controller/subsystem/market/proc/start_auction(list/lot_entry)
 	if(auction)
 		return null
@@ -244,9 +245,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	lot.value = lot_entry["value"]
 	lot.ends_at = world.time + AUCTION_DURATION
 	lot.next_rival_at = world.time + rand(AUCTION_RIVAL_DELAY_MIN, AUCTION_RIVAL_DELAY_MAX)
-	var/list/names = GLOB.market_auction_rivals.Copy()
-	for(var/i in 1 to rand(2, 3))
-		lot.rivals[pick_n_take(names)] = round(lot.value * rand(AUCTION_RIVAL_MAX_MIN, AUCTION_RIVAL_MAX_MAX) / 100)
+	roll_auction_rivals(lot)
 	auction = lot
 	hook_auction_round_end()
 	publish("Аукцион сектора: на торги выставлен лот \"[lot.name]\", начальная цена [lot.start_price()] кр. Ставки - в Кошельке на КПК и в консоли снабжения, торги около [round(AUCTION_DURATION / (1 MINUTES))] мин.")
@@ -254,9 +253,19 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/list/rival_caps = list()
 	for(var/rival in lot.rivals)
 		rival_caps += "[rival] до [lot.rivals[rival]] кр."
-	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники: [jointext(rival_caps, ", ")]")
+	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники: [length(rival_caps) ? jointext(rival_caps, ", ") : "нет"]")
 	schedule_auction_step(lot)
 	return lot
+
+/// Соперники-станции лота с потолками в процентах оценки из настроек; с шансом auction_rival_free_chance лот идёт без них.
+/datum/controller/subsystem/market/proc/roll_auction_rivals(datum/auction_lot/lot)
+	var/datum/economy_settings/settings = SSeconomy.settings
+	lot.rivals = list()
+	if(prob(settings.auction_rival_free_chance))
+		return
+	var/list/names = GLOB.market_auction_rivals.Copy()
+	for(var/i in 1 to rand(2, 3))
+		lot.rivals[pick_n_take(names)] = round(lot.value * rand(settings.auction_rival_cap_min, settings.auction_rival_cap_max) / 100)
 
 /// Новый лот одной строкой по общему каналу, не чаще auction_announce_minutes на всю станцию. В строке только исходные имя и описание типа вещи, правки игрока в эфир не идут. TRUE, если прозвучал.
 /datum/controller/subsystem/market/proc/announce_auction_lot(datum/auction_lot/lot, minutes)

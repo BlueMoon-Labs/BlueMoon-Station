@@ -117,9 +117,6 @@
 #define AUCTION_INCREMENT_SHARE 0.05
 #define AUCTION_MIN_INCREMENT 25
 #define AUCTION_BID_MAX 100000
-/// Потолок соперника - процент цены лота
-#define AUCTION_RIVAL_MAX_MIN 70
-#define AUCTION_RIVAL_MAX_MAX 150
 /// Соперники отвечают через случайную паузу, в последнюю минуту - быстрее
 #define AUCTION_RIVAL_CHANCE 70
 #define AUCTION_RIVAL_DELAY_MIN (20 SECONDS)

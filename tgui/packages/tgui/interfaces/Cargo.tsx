@@ -162,6 +162,8 @@ type AuctionLot = {
   increment: number;
   left: number;
   rivals: number;
+  /** Дороже стольких процентов оценки станции-соперники не дают. */
+  rival_cap?: number | null;
   history: { who: string; amount: number }[];
   outbid?: BooleanLike;
   /** Лот экипажа: имя продавца или "аноним". */
@@ -1192,7 +1194,11 @@ const Auction = (props) => {
               {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
             </NtPulse>
           </NtLine>
-          <NtLine label="Торгуются ещё">{lot.rivals} станции сектора</NtLine>
+          <NtLine label="Соперники">
+            {lot.rivals
+              ? `${lot.rivals} ${plural(lot.rivals, 'станция', 'станции', 'станций')} сектора, дороже ${lot.rival_cap ?? 0}% оценки не дают`
+              : 'нет, торгуется только станция'}
+          </NtLine>
           <Stack align="center" mt={1.5} wrap>
             <Stack.Item>
               <RestrictedInput width="7em" value={bid} minValue={minBid} maxValue={100000} onChange={(_, value) => setAmount(value)} /> кр.

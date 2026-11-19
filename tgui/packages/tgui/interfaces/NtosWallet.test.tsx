@@ -333,7 +333,7 @@ describe('NtosWallet', () => {
   const auction = {
     auction_fee: 10,
     auction_lots_per_account: 2,
-    auction: { ...lot(1, { name: 'корона', value: 2500, rivals: 2, bid: 1200, bidder: 'станция "Кило-7"', min_bid: 1260 }), seller: undefined },
+    auction: { ...lot(1, { name: 'корона', value: 2500, rivals: 2, rival_cap: 110, bid: 1200, bidder: 'станция "Кило-7"', min_bid: 1260 }), seller: undefined },
     crew_lots: [
       lot(2, { name: 'гитара', seller: 'Анна Смирнова', bid: 150, bidder: 'Иван Петров', mine: 1, min_bid: 175 }),
       lot(3, {
@@ -384,7 +384,7 @@ describe('NtosWallet', () => {
     expect(text(container)).toContain('Описание лота.');
     expect(text(container)).toContain('Ставки: Анна Смирнова 300 кр., Иван Петров 250 кр.');
     fireEvent.click(getByText('корона'));
-    expect(text(container)).toContain('Оценка лота 2 500 кр., торгуются ещё 2 станции сектора.');
+    expect(text(container)).toContain('Оценка лота 2 500 кр., торгуются ещё 2 станции сектора, дороже 110% оценки они не дают.');
     fireEvent.click(getByText('Поставить 325 кр.'));
     expect(sent(topic, 'auction_bid')).toEqual([{ uid: 3, amount: 325 }]);
   });

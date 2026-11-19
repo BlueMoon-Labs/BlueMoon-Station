@@ -1,4 +1,5 @@
 import { BooleanLike } from 'common/react';
+import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
@@ -88,6 +89,8 @@ type AuctionLot = {
   increment: number;
   left: number;
   rivals?: number;
+  /** Дороже стольких процентов оценки станции-соперники не дают. */
+  rival_cap?: number | null;
   history: { who: string; amount: number }[];
   /** Лот экипажа: имя продавца или "аноним". */
   seller?: string | null;
@@ -559,7 +562,10 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
             {!!lot.buyout && <Box mt={0.5}>Купить сразу, без торгов: {formatCredits(lot.buyout)}.</Box>}
             {!crew && (
               <Box mt={0.5}>
-                Оценка лота <Credits amount={lot.value} />, торгуются ещё {lot.rivals} станции сектора.
+                Оценка лота <Credits amount={lot.value} />,{' '}
+                {lot.rivals
+                  ? `торгуются ещё ${lot.rivals} ${plural(lot.rivals, 'станция', 'станции', 'станций')} сектора, дороже ${lot.rival_cap ?? 0}% оценки они не дают.`
+                  : 'других станций на торгах нет.'}
               </Box>
             )}
             {lot.history.length > 0 && (

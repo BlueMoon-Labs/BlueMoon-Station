@@ -79,6 +79,10 @@
 	var/auction_crew_relist_minutes = 3
 	/// Новый лот аукциона звучит по общему каналу не чаще раза в столько минут на всю станцию
 	var/auction_announce_minutes = 3
+	/// Аукцион сектора: доля лотов без станций-соперников и потолок соперника в процентах оценки лота
+	var/auction_rival_free_chance = 25
+	var/auction_rival_cap_min = 50
+	var/auction_rival_cap_max = 110
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
@@ -310,6 +314,9 @@
 	if(tax_goodwill_upto >= tax_unrest_above)
 		. += "settings.tax_goodwill_upto: не ниже tax_unrest_above ([tax_unrest_above])"
 		tax_goodwill_upto = max(tax_unrest_above - 1, 0)
+	if(auction_rival_cap_min > auction_rival_cap_max)
+		. += "settings.auction_rival_cap_min: больше auction_rival_cap_max ([auction_rival_cap_max])"
+		auction_rival_cap_min = auction_rival_cap_max
 	if(crew_request_min > crew_request_max)
 		. += "settings.crew_request_min: больше crew_request_max ([crew_request_max])"
 		crew_request_min = crew_request_max
@@ -365,8 +372,10 @@
 		return "нужно число больше 0"
 	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes", "tax_mood_minutes")) && value < 1)
 		return "меньше 1"
-	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_goodwill_upto", "tax_goodwill_premium_bonus")) && (value < 0 || value > 100))
+	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_goodwill_upto", "tax_goodwill_premium_bonus", "auction_rival_free_chance")) && (value < 0 || value > 100))
 		return "вне 0..100"
+	if((key in list("auction_rival_cap_min", "auction_rival_cap_max")) && (value < 1 || value > 1000))
+		return "вне 1..1000"
 	if(key == "auction_crew_fee" && (value < 0 || value > 100))
 		return "вне 0..100"
 	if(value < 0)

@@ -393,6 +393,32 @@
 		var/list/history = entry["history"]
 		TEST_ASSERT_EQUAL(length(history), 2, "[entry["id"]]: после первого сдвига в окне две точки тренда")
 
+/// Лот сектора по силам игроку со средними деньгами: станции-соперники не дают дороже 110% оценки, примерно каждый четвёртый лот идёт без них; шанс лота без соперников берётся из настроек.
+/datum/unit_test/economy_market/sector_auction_rivals/Run()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/saved_chance = settings.auction_rival_free_chance
+	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
+	lot.value = 1000
+	var/free = 0
+	var/top_cap = 0
+	for(var/i in 1 to 100)
+		SSmarket.roll_auction_rivals(lot)
+		if(!length(lot.rivals))
+			free++
+		for(var/rival in lot.rivals)
+			top_cap = max(top_cap, lot.rivals[rival])
+	settings.auction_rival_free_chance = 0
+	SSmarket.roll_auction_rivals(lot)
+	var/contested = length(lot.rivals)
+	settings.auction_rival_free_chance = 100
+	SSmarket.roll_auction_rivals(lot)
+	var/uncontested = length(lot.rivals)
+	settings.auction_rival_free_chance = saved_chance
+	TEST_ASSERT(top_cap <= 1100, "Соперник готов дать [top_cap] кр. за лот в 1000 кр.")
+	TEST_ASSERT(free >= 10, "Без соперников только [free] лотов из 100")
+	TEST_ASSERT(contested >= 2 && contested <= 3, "Соперников [contested] при нулевом шансе свободного лота")
+	TEST_ASSERT_EQUAL(uncontested, 0, "Соперники есть при шансе свободного лота 100%")
+
 /// Аукцион экипажа на подменённом рынке: пад подработки на станции, посылки с итогом встают на него.
 /datum/unit_test/economy_market/crew_auction
 	abstract_type = /datum/unit_test/economy_market/crew_auction

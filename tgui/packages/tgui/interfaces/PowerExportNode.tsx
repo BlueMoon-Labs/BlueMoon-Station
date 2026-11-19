@@ -1,4 +1,5 @@
 import { BooleanLike } from 'common/react';
+import { plural } from 'common/ru/plural';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, Section } from '../components';
@@ -26,6 +27,15 @@ export type PowerExportNodeData = {
   demand_floor_percent: number;
   demand_recovery_percent: number;
   shift_minutes: number;
+  /** Недовольство экипажа налогом: на столько процентов меньше платят за работу. */
+  unrest_cut?: number;
+  budget?: number;
+  budget_cap?: number;
+  cap_share?: number;
+  economy_minutes?: number;
+  staple_cap?: number;
+  pack_count?: number;
+  pack_examples?: { name: string; price: number }[];
 };
 
 const WATTS_PER_KILOWATT = 1000;
@@ -56,6 +66,7 @@ export const PowerExportNodeContent = () => {
     demand_floor_percent,
     demand_recovery_percent,
     shift_minutes,
+    unrest_cut = 0,
   } = data;
   const overdraw = target_kw > 0 && target_kw * WATTS_PER_KILOWATT > surplus_w;
   const surplusKw = Math.min(Math.floor(surplus_w / WATTS_PER_KILOWATT / step_kw) * step_kw, max_kw);
@@ -98,7 +109,7 @@ export const PowerExportNodeContent = () => {
           <LabeledList.Item label="Продаётся">{formatKw(export_w)}</LabeledList.Item>
           <LabeledList.Item label="Цена">
             {formatCredits(price_per_mj, { decimals: 2 })} за МДж ({formatCredits(base_price_per_mj, { decimals: 2 })}{' '}
-            × рынок энергии с учётом спроса {market_percent}%)
+            × рынок энергии с учётом спроса {market_percent}%{unrest_cut ? ` − ${unrest_cut}% из-за недовольства экипажа налогом` : ''})
           </LabeledList.Item>
           <LabeledList.Item label="Спрос сектора">{demand_percent}%</LabeledList.Item>
           <LabeledList.Item label="Доход">~{formatCredits(income_per_minute)} в минуту в бюджет инженерии</LabeledList.Item>
@@ -120,13 +131,46 @@ export const PowerExportNodeContent = () => {
           {payout_minutes} мин., а при сумме от {formatCredits(payout_bulk)} - сразу.
         </Box>
       </Section>
+      <MoneySection />
     </>
+  );
+};
+
+/** Куда уходят деньги с продажи и на что инженерия их тратит. */
+const MoneySection = () => {
+  const { data } = useBackend<PowerExportNodeData>();
+  const examples = data.pack_examples || [];
+  return (
+    <Section title="Куда идут деньги">
+      <Box color="label">
+        Весь доход с продажи получает бюджет инженерии. Снабжению с неё не идёт ничего, инженерам лично - тоже: премии
+        выписывает глава инженерии из бюджета.
+      </Box>
+      <Box color="label" mt={1}>
+        Сейчас в бюджете {formatCredits(data.budget ?? 0)}, а сверх {formatCredits(data.budget_cap ?? 0)} NT раз в{' '}
+        {data.economy_minutes ?? 0} мин. забирает {data.cap_share ?? 0}% излишка: копить на дорогое можно только целью накопления в «Бюджете отдела».
+      </Box>
+      <Box color="label" mt={1}>
+        Тратит их глава инженерии в «Бюджете отдела» на КПК: в каталоге инженерии {data.pack_count ?? 0}{' '}
+        {plural(data.pack_count ?? 0, 'пак', 'пака', 'паков')}. Расходники инженеры заказывают сами, без одобрения, до{' '}
+        {formatCredits(data.staple_cap ?? 0)} в час.
+      </Box>
+      {examples.length > 0 && (
+        <LabeledList>
+          {examples.map((pack) => (
+            <LabeledList.Item key={pack.name} label={pack.name}>
+              {formatCredits(pack.price)}
+            </LabeledList.Item>
+          ))}
+        </LabeledList>
+      )}
+    </Section>
   );
 };
 
 export const PowerExportNode = () => {
   return (
-    <Window width={440} height={420}>
+    <Window width={440} height={560}>
       <Window.Content scrollable>
         <PowerExportNodeContent />
       </Window.Content>
