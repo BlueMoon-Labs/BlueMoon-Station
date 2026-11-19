@@ -147,8 +147,13 @@
 	TEST_ASSERT(QDELETED(shot), "луч эмиттера должен отработать за один вызов")
 	var/beam_damage = initial(beam_type.damage)
 	TEST_ASSERT(abs(target.getFireLoss() - beam_damage) < 1, "луч эмиттера должен нанести [beam_damage] ожогов, нанёс [target.getFireLoss()]")
-	TEST_ASSERT_EQUAL(length(beam_area_effects(area, /obj/effect/projectile/tracer/laser/emitter)), 1, "у луча один след")
-	TEST_ASSERT_EQUAL(length(beam_area_effects(area, /obj/effect/projectile/muzzle/laser/emitter)), 1, "у луча одна вспышка у ствола")
+	var/list/tracers = beam_area_effects(area, /obj/effect/projectile/tracer/laser/emitter)
+	TEST_ASSERT_EQUAL(length(tracers), 1, "у луча один след")
+	var/list/muzzles = beam_area_effects(area, /obj/effect/projectile/muzzle/laser/emitter)
+	TEST_ASSERT_EQUAL(length(muzzles), 1, "у луча одна вспышка у ствола")
+	var/obj/effect/projectile/tracer = tracers[1]
+	var/obj/effect/projectile/muzzle = muzzles[1]
+	TEST_ASSERT_EQUAL(tracer.plane, muzzle.plane, "след луча должен лежать на той же плоскости, что и вспышка, иначе его не видно")
 	var/list/impacts = beam_area_effects(area, /obj/effect/projectile/impact/laser/emitter)
 	TEST_ASSERT_EQUAL(length(impacts), 1, "у луча одна вспышка попадания")
 	var/obj/effect/projectile/impact/impact = impacts[1]

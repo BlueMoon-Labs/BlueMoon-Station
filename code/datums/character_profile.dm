@@ -9,6 +9,16 @@
 /mob/living/silicon/robot
 	var/datum/description_profile/robot/profile
 
+/proc/is_erp_antagonist_profile(mob/living/target)
+	if(iswendigo(target) || isqareen(target))
+		return TRUE
+	if(istype(target, /mob/living/simple_animal/hostile/regalrat/lust))
+		return TRUE
+	if(istype(target, /mob/living/simple_animal))
+		var/mob/living/simple_animal/animal = target
+		return animal.show_erp_profile
+	return FALSE
+
 /client/verb/regenerate_cached_character_appearance()
 	set name = "Regenerate Cached Profile Appearance"
 	set category = "OOC"
@@ -221,7 +231,11 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		var/datum/preferences/prefs = M.client?.prefs
 		var/list/features = prefs?.features
 		data["oocnotes"] = format_text("oocnotes", M.mind?.ooc_notes || (features ? features["ooc_notes"] : null))
-		data["flavortext"] = format_text("flavortext", M.mind?.flavor_text || (features ? features["flavor_text"] : null))
+		if(is_erp_antagonist_profile(M))
+			data["flavortext"] = ""
+			data["hide_body_description"] = TRUE
+		else
+			data["flavortext"] = format_text("flavortext", M.mind?.flavor_text || (features ? features["flavor_text"] : null))
 		data["species_name"] = "ЕРП-антагонист"
 		data["custom_species_lore"] = ""
 		if(prefs && (prefs.toggles & VERB_CONSENT))
@@ -289,7 +303,12 @@ GLOBAL_LIST_EMPTY(cached_previews)
 			var/mob/living/carbon/human/H = C
 			unknown = H.examine_identity_hidden(user, check_prosopagnosia = FALSE)
 			unknown_name = H.examine_unknown_name(user)
-		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
+		if(is_erp_antagonist_profile(C))
+			data["flavortext"] = ""
+			data["flavortext_naked"] = ""
+			data["hide_body_description"] = TRUE
+		else
+			data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
 		var/race_lore = C.dna?.custom_species_lore
@@ -300,7 +319,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			var/can_see_naked = !unknown && H.can_show_naked_flavor()
+			var/can_see_naked = !unknown && H.can_show_naked_flavor() && !is_erp_antagonist_profile(H)
 			data["flavortext_naked"] = can_see_naked ? format_text("flavortext_naked", C.dna?.naked_flavor_text) : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END
