@@ -486,9 +486,10 @@ SUBSYSTEM_DEF(bitrunning)
 
 	var/list/all_domains = list()
 
-/datum/controller/subsystem/bitrunning/Initialize()
+/datum/controller/subsystem/bitrunning/Initialize(start_timeofday)
+	. = ..(start_timeofday)
 	InitializeDomains()
-	return
+	return .
 
 /datum/controller/subsystem/bitrunning/proc/InitializeDomains()
 	for(var/path in subtypesof(/datum/lazy_template/virtual_domain))
