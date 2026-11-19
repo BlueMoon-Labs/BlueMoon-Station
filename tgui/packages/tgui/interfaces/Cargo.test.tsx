@@ -213,6 +213,22 @@ test('партнёр под эмбарго показывает оставшие
   expect(ui.getByText('Эмбарго: ещё 17 мин. партнёр не покупает и не продаёт.')).toBeTruthy();
 });
 
+test('партнёр, чьи спецзаказы не берут, помечен на карточке', () => {
+  const ui = setup({
+    partners: [{ ...backend.partners[0], offers_slowed: 1 }, backend.partners[1]],
+  });
+  openTab(ui, /^Партнёры$/);
+  expect(ui.getAllByText('Выставляет реже: спецзаказы не берут')).toHaveLength(1);
+});
+
+test('пустые спецзаказы и скупка объясняют, что партнёры выставляют реже, когда их не берут', () => {
+  const ui = setup({ special_offers: [], bundles: [] });
+  openTab(ui, /^Спецзаказы/);
+  expect(ui.getByText('Спецзаказов сейчас нет. Партнёры выставляют реже, когда их не берут.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.')).toBeTruthy();
+});
+
 test('спецзаказ: "Принять" шлёт accept_offer с uid, взятый печатает накладную', () => {
   const ui = setup();
   openTab(ui, /^Спецзаказы/);
@@ -742,6 +758,27 @@ test('скупка: пачка только целиком, цена со ски
   expect(ui.getByText('ещё 10:00')).toBeTruthy();
   fireEvent.click(ui.getByText('Купить пачкой'));
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
+test('пачку партнёра под эмбарго купить нельзя', () => {
+  const ui = setup({
+    bundles: [
+      {
+        uid: 9,
+        partner: 'Вей-Мед',
+        partner_id: 'vey_med',
+        items: ['бинт', 'шина', 'пакет крови'],
+        full_value: 2000,
+        price: 1400,
+        discount: 30,
+        left: 600,
+        embargoed: 1,
+      },
+    ],
+  });
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Эмбарго: пока не купить')).toBeTruthy();
+  expect(ui.queryByText('Купить пачкой')).toBeNull();
 });
 
 test('счётчики дел видны в навигации', () => {

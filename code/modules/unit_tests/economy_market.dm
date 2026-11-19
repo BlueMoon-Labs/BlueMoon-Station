@@ -28,6 +28,7 @@
 		"offers_board_max" = SSmarket.offers_board_max,
 		"offer_ignored_factor" = SSmarket.offer_ignored_factor,
 		"offer_ignored_chance_min" = SSmarket.offer_ignored_chance_min,
+		"offer_ignored_weight_min" = SSmarket.offer_ignored_weight_min,
 		"offer_delivered_weight" = SSmarket.offer_delivered_weight,
 		"offer_deadline_minutes" = SSmarket.offer_deadline_minutes,
 		"next_offers" = SSmarket.next_offers,

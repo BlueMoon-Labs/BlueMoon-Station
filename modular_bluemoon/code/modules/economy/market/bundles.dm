@@ -21,7 +21,7 @@
 	var/next_bundle_at = 0
 	var/bundle_uid = 0
 
-/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX; партнёр, чьи пачки не берут, выставляет реже.
+/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX; продавца выбирает вес bundle_spawn_chance(), и партнёр, чьи пачки не берут, выставляет реже.
 /datum/controller/subsystem/market/proc/tick_bundles()
 	for(var/datum/supply_pack/bundle/bundle as anything in bundles)
 		if(world.time >= bundle.expires_at)
@@ -37,12 +37,21 @@
 	next_bundle_at = world.time + rand(BUNDLE_GAP_MIN, BUNDLE_GAP_MAX)
 	if(length(bundles) >= BUNDLES_MAX)
 		return
-	var/list/sellers = bundle_sellers()
-	if(!length(sellers))
+	var/list/weights = list()
+	var/total = 0
+	for(var/datum/trade_partner/seller as anything in bundle_sellers())
+		weights[seller] = seller.bundle_spawn_chance()
+		total += weights[seller]
+	if(total <= 0)
 		return
-	var/datum/trade_partner/seller = pick(sellers)
-	if(prob(seller.bundle_spawn_chance()))
-		generate_bundle(seller)
+	var/roll = rand() * total
+	for(var/datum/trade_partner/seller as anything in weights)
+		if(!weights[seller])
+			continue
+		roll -= weights[seller]
+		if(roll <= 0)
+			generate_bundle(seller)
+			return
 
 /// Партнёры, у которых есть что сложить в пачку: открытые, не под эмбарго, не контрабандные.
 /datum/controller/subsystem/market/proc/bundle_sellers()
@@ -100,7 +109,12 @@
 		if(bundle.uid == uid)
 			return bundle
 
-/// Покупка пачки из окна снабжения: снабжение за бюджет или лично; заявкой скупку не взять. Пачка уходит в корзину и пропадает из скупки.
+/// Продавец пачки, если он сейчас может её продать: открыт и не под эмбарго; иначе null.
+/proc/econ_bundle_seller(datum/supply_pack/bundle/bundle)
+	var/datum/trade_partner/seller = SSmarket.get_partner(bundle.seller_id)
+	return (seller?.unlocked && !seller.embargoed()) ? seller : null
+
+/// Покупка пачки из окна снабжения: снабжение за бюджет или лично; заявкой скупку не взять, у партнёра под эмбарго - тоже. Пачка уходит в корзину и пропадает из скупки.
 /proc/econ_cargo_buy_bundle(mob/user, list/params, atom/movable/speaker, self_paid, can_buy_for_cargo, show_contraband = FALSE)
 	var/uid = params["uid"]
 	if(istext(uid))
@@ -108,6 +122,9 @@
 	var/datum/supply_pack/bundle/bundle = SSmarket.bundle_by_uid(uid)
 	if(!bundle)
 		speaker.say("Эту пачку уже забрали или сняли.")
+		return FALSE
+	if(!econ_bundle_seller(bundle))
+		speaker.say("Партнёр под эмбарго: пачку можно будет купить, когда его снимут.")
 		return FALSE
 	if(!self_paid && !can_buy_for_cargo)
 		speaker.say("За бюджет снабжения скупку берёт только снабжение; купить пачку можно лично.")
@@ -118,9 +135,6 @@
 		if(!account)
 			return FALSE
 	SSmarket.bundles -= bundle
-	var/datum/trade_partner/seller = SSmarket.get_partner(bundle.seller_id)
-	if(seller)
-		seller.bundles_ignored = 0
 	var/datum/supply_order/order = econ_cargo_new_order(user, bundle, "", account, FALSE)
 	order.partner_id = bundle.seller_id
 	order.contraband_supply = show_contraband
@@ -141,5 +155,6 @@
 			"full_value" = bundle.full_value,
 			"price" = bundle.price,
 			"discount" = bundle.discount,
+			"embargoed" = !econ_bundle_seller(bundle),
 			"left" = max(0, CEILING((bundle.expires_at - world.time) / (1 SECONDS), 1)),
 		))

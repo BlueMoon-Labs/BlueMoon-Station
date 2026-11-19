@@ -29,6 +29,8 @@ SUBSYSTEM_DEF(market)
 	var/offer_ignored_factor = 0.5
 	/// Ниже этого шанса в процентах невзятые его не опускают
 	var/offer_ignored_chance_min = 15
+	/// Ниже этого веса невзятые не опускают товар, чтобы он всё же выпадал
+	var/offer_ignored_weight_min = 0.25
 	/// Вес товара, который станция за смену уже сдавала партнёру, против 1 у остальных
 	var/offer_delivered_weight = 3
 	/// Срок выполнения взятого спецзаказа
@@ -86,6 +88,7 @@ SUBSYSTEM_DEF(market)
 	offers_board_max = SSmarket.offers_board_max
 	offer_ignored_factor = SSmarket.offer_ignored_factor
 	offer_ignored_chance_min = SSmarket.offer_ignored_chance_min
+	offer_ignored_weight_min = SSmarket.offer_ignored_weight_min
 	offer_delivered_weight = SSmarket.offer_delivered_weight
 	offer_deadline_minutes = SSmarket.offer_deadline_minutes
 	next_offers = SSmarket.next_offers
@@ -175,6 +178,7 @@ SUBSYSTEM_DEF(market)
 	offers_board_max = initial(offers_board_max)
 	offer_ignored_factor = initial(offer_ignored_factor)
 	offer_ignored_chance_min = initial(offer_ignored_chance_min)
+	offer_ignored_weight_min = initial(offer_ignored_weight_min)
 	offer_delivered_weight = initial(offer_delivered_weight)
 	offer_deadline_minutes = initial(offer_deadline_minutes)
 	company_event_chance = initial(company_event_chance)
@@ -250,10 +254,16 @@ SUBSYSTEM_DEF(market)
 			. += "market.offer_ignored_factor: нужно число 0..1"
 	var/ignored_chance_min = section["offer_ignored_chance_min"]
 	if(!isnull(ignored_chance_min))
-		if(isnum(ignored_chance_min) && ignored_chance_min >= 0 && ignored_chance_min <= 100)
+		if(isnum(ignored_chance_min) && ignored_chance_min >= 1 && ignored_chance_min <= 100)
 			offer_ignored_chance_min = ignored_chance_min
 		else
-			. += "market.offer_ignored_chance_min: нужно число 0..100"
+			. += "market.offer_ignored_chance_min: нужно число 1..100"
+	var/ignored_weight_min = section["offer_ignored_weight_min"]
+	if(!isnull(ignored_weight_min))
+		if(isnum(ignored_weight_min) && ignored_weight_min > 0 && ignored_weight_min <= 1)
+			offer_ignored_weight_min = ignored_weight_min
+		else
+			. += "market.offer_ignored_weight_min: нужно число больше 0 и не больше 1"
 	var/delivered_weight = section["offer_delivered_weight"]
 	if(!isnull(delivered_weight))
 		if(isnum(delivered_weight) && delivered_weight >= 1)
@@ -817,14 +827,21 @@ SUBSYSTEM_DEF(market)
 			best_multiplier = multiplier
 	return best
 
-/// Открытые партнёры со свободным местом выставляют по спецзаказу с шансом offer_spawn_chance(), пока на доске меньше offers_board_max невзятых; контрабандный партнёр места на доске не занимает.
+/// Открытые партнёры со свободным местом выставляют по спецзаказу с шансом offer_spawn_chance(), пока на доске меньше offers_board_max невзятых; первыми место получают партнёры без невзятых. Контрабандный партнёр и невзятые под эмбарго места не занимают.
 /datum/controller/subsystem/market/proc/generate_offers()
 	var/board = 0
 	for(var/datum/market_offer/offer as anything in all_offers())
-		if(!offer.accepted && !offer.contraband())
+		if(!offer.accepted && !offer.contraband() && offer.open())
 			board++
+	var/list/fresh = list()
+	var/list/ignored = list()
 	for(var/id in shuffle(partners))
 		var/datum/trade_partner/partner = partners[id]
+		if(partner.offers_ignored)
+			ignored += partner
+		else
+			fresh += partner
+	for(var/datum/trade_partner/partner as anything in fresh + ignored)
 		if(!partner.unlocked || partner.embargoed() || !length(partner.offer_items) || length(partner.offers) >= offers_max)
 			continue
 		if(!partner.contraband && board >= offers_board_max)

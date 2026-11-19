@@ -140,6 +140,8 @@ type Partner = {
   wealth: number;
   next_unlock: string | null;
   embargo_minutes?: number;
+  /** Спецзаказы партнёра снимаются невзятыми: новые он выставляет реже. */
+  offers_slowed?: BooleanLike;
   buys: string;
   sells: string;
 };
@@ -184,6 +186,7 @@ type BundleOffer = {
   price: number;
   discount: number;
   left: number;
+  embargoed?: BooleanLike;
 };
 
 type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
@@ -1024,7 +1027,7 @@ const SpecialOffers = (props) => {
           Брать спецзаказы и печатать накладные можно только на консоли снабжения станции.
         </Box>
       )}
-      {offers.length === 0 && <NtEmpty>Спецзаказов сейчас нет.</NtEmpty>}
+      {offers.length === 0 && <NtEmpty>Спецзаказов сейчас нет. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       <Stack vertical>
         {offers.map((offer) => (
           <Stack.Item key={offer.uid}>
@@ -1104,7 +1107,7 @@ const Bundles = (props) => {
   return (
     <NtFrame
       title="Скупка"
-      help="Партнёры распродают пачки разных предметов дешевле, чем по отдельности, но только целиком. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в 8-15 минут."
+      help="Партнёры распродают пачки разных предметов дешевле, чем по отдельности, но только целиком. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в 8-15 минут; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить."
       buttons={
         <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
           Купить лично
@@ -1115,7 +1118,7 @@ const Bundles = (props) => {
           За бюджет снабжения скупку берёт снабжение с консоли; вы можете купить пачку лично.
         </Box>
       )}
-      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают.</NtEmpty>}
+      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       {bundles.map((bundle) => {
         const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
         const canBuy = !!self_paid || forCargo;
@@ -1137,9 +1140,13 @@ const Bundles = (props) => {
               <Box className="NtTerm__contractReward">{formatCredits(price)}</Box>
               <Box className={bundle.left < 120 ? 'color-average' : 'NtTerm__hint'}>ещё {formatTime(bundle.left)}</Box>
               <Box mt={0.5}>
-                <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
-                  Купить пачкой
-                </Button>
+                {bundle.embargoed ? (
+                  <Box color="bad">Эмбарго: пока не купить</Box>
+                ) : (
+                  <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
+                    Купить пачкой
+                  </Button>
+                )}
               </Box>
             </Box>
           </Box>
@@ -1416,6 +1423,11 @@ const Partners = (props) => {
                 </Box>
                 {!!partner.embargo_minutes && (
                   <NoticeBox danger>Эмбарго: ещё {partner.embargo_minutes} мин. партнёр не покупает и не продаёт.</NoticeBox>
+                )}
+                {!!partner.offers_slowed && (
+                  <Box color="average" mb={1}>
+                    Выставляет реже: спецзаказы не берут
+                  </Box>
                 )}
                 {!!partner.next_unlock && <NoticeBox>{partner.next_unlock}</NoticeBox>}
                 {trades && (

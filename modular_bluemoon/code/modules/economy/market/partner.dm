@@ -267,14 +267,20 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 		return chance
 	return max(chance * SSmarket.offer_ignored_factor ** ignored, min(SSmarket.offer_ignored_chance_min, chance))
 
-/// Невзятый спецзаказ снят по сроку: партнёр выставляет реже, а этот товар просит реже. Под эмбарго взять было нельзя - не в счёт.
+/// Невзятый спецзаказ снят по сроку: партнёр выставляет реже, а этот товар просит реже. Если за срок спецзаказа партнёр был под эмбарго, взять его было нельзя - не в счёт.
 /datum/trade_partner/proc/note_offer_ignored(datum/market_offer/offer)
-	if(embargoed())
+	if(embargo_crossed(offer.posted_at))
 		return
 	offers_ignored++
-	var/key = offer_item_key(offer.wanted_type, offer.wanted_reagent)
-	offer_interest[key] = offer_item_weight(offer.wanted_type, offer.wanted_reagent) * SSmarket.offer_ignored_factor
-	log_econ("Спецзаказ #[offer.uid] партнёра [name] снят невзятым: [offers_ignored] подряд, шанс новых [offer_spawn_chance()]%")
+	var/weight = lower_offer_interest(offer)
+	log_econ("Спецзаказ #[offer.uid] партнёра [name] снят невзятым: [offers_ignored] подряд, шанс новых [offer_spawn_chance()]%, вес товара [weight]")
+
+/// Товар спецзаказа станция не взяла или не довезла: его вес умножается на offer_ignored_factor, но не ниже offer_ignored_weight_min. Возвращает новый вес.
+/datum/trade_partner/proc/lower_offer_interest(datum/market_offer/offer)
+	var/weight = offer_item_weight(offer.wanted_type, offer.wanted_reagent)
+	weight = max(weight * SSmarket.offer_ignored_factor, min(SSmarket.offer_ignored_weight_min, weight))
+	offer_interest[offer_item_key(offer.wanted_type, offer.wanted_reagent)] = weight
+	return weight
 
 /datum/trade_partner/proc/note_offer_accepted()
 	offers_ignored = 0
@@ -283,8 +289,22 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 /datum/trade_partner/proc/note_offer_delivery(datum/market_offer/offer)
 	offer_interest[offer_item_key(offer.wanted_type, offer.wanted_reagent)] = SSmarket.offer_delivered_weight
 
+/// Станция продала партнёру обычным порядком предмет из его offer_items: этот товар он будет просить чаще. Купленное через снабжение не в счёт.
+/datum/trade_partner/proc/note_export_interest(atom/movable/thing)
+	if(!thing || contraband || thing.econ_imported)
+		return
+	for(var/list/item_entry as anything in offer_items)
+		if(!econ_offer_item_matches(thing, item_entry["path"], item_entry["subtypes"], item_entry["reagent"], item_entry["volume"]))
+			continue
+		var/key = offer_item_key(item_entry["path"], item_entry["reagent"])
+		if(offer_item_weight(item_entry["path"], item_entry["reagent"]) < SSmarket.offer_delivered_weight)
+			offer_interest[key] = SSmarket.offer_delivered_weight
+			log_econ("Партнёр [name]: интерес к \"[item_entry["name"]]\" вырос от экспорта, вес [SSmarket.offer_delivered_weight]")
+		return
+
+/// Пачка скупки снята непроданной; если за время её продажи партнёр был под эмбарго, купить её было нельзя - не в счёт.
 /datum/trade_partner/proc/note_bundle_ignored(datum/supply_pack/bundle/bundle)
-	if(embargoed())
+	if(embargo_crossed(bundle.expires_at - BUNDLE_LIFETIME))
 		return
 	bundles_ignored++
 	log_econ("Скупка #[bundle.uid] у [name] снята непроданной: [bundles_ignored] подряд, шанс новых [bundle_spawn_chance()]%")
@@ -324,6 +344,10 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 /datum/trade_partner/proc/embargoed()
 	return embargo_until > world.time
 
+/// Партнёр был под эмбарго хоть раз с момента since.
+/datum/trade_partner/proc/embargo_crossed(since)
+	return embargo_until && embargo_until > since
+
 /datum/trade_partner/proc/stock_of(datum/supply_pack/pack)
 	if(isnull(stock[pack.type]))
 		stock[pack.type] = SSmarket.partner_stock_default
@@ -346,6 +370,8 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 	if(!(PARTNER_ANY in sells_groups))
 		stock[pack.type] = max(stock_of(pack) - 1, 0)
 	wealth += price
+	if(istype(pack, /datum/supply_pack/bundle))
+		bundles_ignored = 0
 	if(gives_reputation)
 		add_reputation(price * SSmarket.reputation_per_credit / 2)
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_TRADE, src, price, FALSE)

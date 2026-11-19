@@ -17,6 +17,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	var/unit_price
 	/// До взятия - когда спецзаказ снимут, после - срок выполнения
 	var/deadline = 0
+	/// world.time выставления
+	var/posted_at = 0
 	var/accepted = FALSE
 	/// Выплачено по базовой цене за принятые штуки
 	var/paid = 0
@@ -40,6 +42,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	src.wanted_reagent = wanted_reagent
 	src.wanted_volume = wanted_volume || 0
 	src.wanted_subtypes = wanted_subtypes
+	posted_at = world.time
 	deadline = world.time + SSmarket.offer_minutes * MARKET_OFFER_UNTAKEN_LIFETIME MINUTES
 
 /datum/market_offer/Destroy()
@@ -101,6 +104,9 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 
 /// Предмет подходит: нужного типа, не куплен через снабжение, с нужным реагентом не из лейта.
 /datum/market_offer/proc/matches(atom/movable/thing)
+	return econ_offer_item_matches(thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
+
+/proc/econ_offer_item_matches(atom/movable/thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
 	if(thing.econ_imported || !istype(thing, wanted_type))
 		return FALSE
 	if(!wanted_subtypes)
@@ -193,7 +199,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, TRUE)
 	qdel(src)
 
-/// Провал: без премии и с потерей репутации. Спецзаказ, который брали и сдавали только аванпосты, станцию не штрафует.
+/// Провал: без премии и с потерей репутации, а партнёр реже просит этот товар. Спецзаказ, который брали и сдавали только аванпосты, станцию не штрафует.
 /datum/market_offer/proc/fail()
 	var/datum/trade_partner/partner = get_partner()
 	if(!station_involved)
@@ -202,12 +208,13 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		qdel(src)
 		return
 	partner?.add_reputation(-MARKET_OFFER_REPUTATION_FAIL)
+	var/weight = partner?.lower_offer_interest(src)
 	var/notice = "Спецзаказ [partner?.name] \"[wanted_name]\" провален: срок вышел, принято [delivered] из [quantity], маржи не будет. Репутация у партнёра -[MARKET_OFFER_REPUTATION_FAIL][partner?.company ? ", оценка акций [partner.company] -[MARKET_OFFER_FAIL_STOCK_SHOCK * 100]%" : ""]."
 	if(contraband())
 		SSmarket.contraband_message = SSmarket.contraband_message ? "[SSmarket.contraband_message] [notice]" : notice
 	else
 		SSshuttle.centcom_message = SSshuttle.centcom_message ? "[SSshuttle.centcom_message] [notice]" : notice
-	log_econ("Спецзаказ #[uid] партнёра [partner?.name] провален: принято [delivered] из [quantity].")
+	log_econ("Спецзаказ #[uid] партнёра [partner?.name] провален: принято [delivered] из [quantity], вес товара [weight].")
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, FALSE)
 	qdel(src)
 

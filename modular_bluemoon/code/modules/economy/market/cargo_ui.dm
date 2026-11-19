@@ -302,6 +302,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 			"wealth" = round(partner.wealth),
 			"next_unlock" = econ_partner_unlock_text(partner),
 			"embargo_minutes" = partner.embargoed() ? CEILING((partner.embargo_until - world.time) / (1 MINUTES) - 0.001, 1) : 0,
+			"offers_slowed" = partner.offers_ignored > 0,
 			"buys" = jointext(buys, ", "),
 			"sells" = jointext(sells, ", "),
 		))
