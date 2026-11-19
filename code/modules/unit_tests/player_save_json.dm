@@ -678,6 +678,38 @@
 	TEST_ASSERT_EQUAL(prefs.medical_records, html_encode_readable("<i>x</i>"), "разметка в медзаписи не закодирована")
 	TEST_ASSERT(!findtext(prefs.summon_nickname, "<"), "прозвище обошло фильтр имён")
 
+/// Редактор хранит набор пресета SAVE_0 рядом с общими слотами, экспорт с ним импортируется обратно.
+/datum/unit_test/player_save_json/public_transfer_preset_loadout/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Preset Loadout"
+	prefs.loadout_data = list()
+	for(var/i in LOADOUT_PRESET_SLOT to MAXIMUM_LOADOUT_SAVES)
+		prefs.loadout_data["SAVE_[i]"] = list()
+	prefs.loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = list(list(LOADOUT_ITEM = /datum/gear/accessory/necklace))
+	prefs.loadout_data["SAVE_[MAXIMUM_LOADOUT_SAVES]"] = list(list(LOADOUT_ITEM = /datum/gear/accessory/necklace))
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	prefs.loadout_data = list()
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт со слотом пресета отклонён: [prefs.player_transfer_error]")
+	var/list/preset_gear = prefs.loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"]
+	TEST_ASSERT_EQUAL(length(preset_gear), 1, "потерян набор пресета")
+	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_[MAXIMUM_LOADOUT_SAVES]"]), 1, "потерян последний общий набор")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	var/list/overflow = json_decode(fields["loadout"])
+	overflow["SAVE_[MAXIMUM_LOADOUT_SAVES + 1]"] = list()
+	fields["loadout"] = json_encode(overflow)
+	var/rejected = FALSE
+	try
+		player_transfer_parse(json_encode(document))
+	catch
+		rejected = TRUE
+	TEST_ASSERT(rejected, "принят набор за пределами слотов")
+
 /datum/unit_test/player_save_json/public_transfer_rejects/Run()
 	var/list/forbidden = list("metadollars", "metadollar_pending_items", "tcg_cards", "unlockable_loadout", "default_slot", "version", "../character2", "headshot", "belly_prefs", "new_unreviewed_field")
 	for(var/key in forbidden)

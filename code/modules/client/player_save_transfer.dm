@@ -356,11 +356,12 @@
 				if(prosthetics > MAXIMUM_LOADOUT_PROSTHETICS)
 					throw EXCEPTION("Превышен лимит протезов")
 			if(mode == "loadout")
-				if(decoded.len > MAXIMUM_LOADOUT_SAVES)
+				// Слот пресета SAVE_0 редактор хранит рядом с общими SAVE_1..SAVE_N.
+				if(decoded.len > MAXIMUM_LOADOUT_SAVES - LOADOUT_PRESET_SLOT + 1)
 					throw EXCEPTION("Слишком много наборов экипировки")
 				for(var/slot in decoded)
 					var/slot_number = istext(slot) ? text2num(copytext(slot, 6)) : null
-					if(!slot_number || slot_number != round(slot_number) || slot_number < 1 || slot_number > MAXIMUM_LOADOUT_SAVES || slot != "SAVE_[slot_number]")
+					if(!isnum(slot_number) || slot_number != round(slot_number) || slot_number < LOADOUT_PRESET_SLOT || slot_number > MAXIMUM_LOADOUT_SAVES || slot != "SAVE_[slot_number]")
 						throw EXCEPTION("Неизвестный набор экипировки")
 					var/list/entries = decoded[slot]
 					if(!islist(entries) || entries.len > 100)
