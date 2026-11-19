@@ -11,6 +11,8 @@
 
 #define ECONOMY_CONFIG_PATH "config/economy.json"
 #define ECON_SNAPSHOT_MAX 48
+/// От этой суммы одного движения SSeconomy.move отказывает: вся эмиссия смены около миллиона, больше бывает только от бага
+#define ECON_MOVE_AMOUNT_MAX 100000000
 /// Значащих цифр в суммах для текста: без этого числа от миллиона печатаются как 1e+006
 #define ECON_TEXT_DIGITS 12
 
@@ -164,6 +166,8 @@
 #define AUDIT_FLAG_CRYPTOMINER "cryptominer"
 /// Сколько дел аудита хранит раунд; сверх этого вытесняются старые закрытые
 #define AUDIT_FLAGS_MAX 200
+/// Повторы в открытом деле пишутся в econ.log итогом не чаще этого, а не строкой на каждую операцию
+#define AUDIT_LOG_REPEAT_INTERVAL (5 MINUTES)
 #define AUDIT_REASON_MAX 64
 #define AUDIT_OWN_MOVES_REFUSAL "Вы сами двигали деньги по этому делу: его закрывает другой аудитор."
 /// Исходящие одному получателю складываются в корзины этой длины: память пары не зависит от числа операций

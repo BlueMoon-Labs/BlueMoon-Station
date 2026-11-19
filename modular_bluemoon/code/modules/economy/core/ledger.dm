@@ -14,7 +14,7 @@
 	var/department_burned = 0
 	var/department_paid_out = 0
 	var/department_received = 0
-	/// id отдела -> list("kept", "burned", "returned", "purchases", "purchase_amount") для панели калибровки
+	/// id отдела -> list("in", "out", "burned", "returned", "purchases", "purchase_amount") для панели калибровки; стартовый бюджет в "in" не входит
 	var/list/department_flows = list()
 	/// Бюджеты аванпостов (Deep Space, Тарков): id -> list("in", "spent", "burned"); их эмиссия отдельно от станционной
 	var/list/outpost_flows = list()
@@ -54,8 +54,8 @@
 	if(payee_budget && (reason in GLOB.econ_cap_shielded_reasons) && (!payer_budget || payer_budget.department_id == ACCOUNT_CMD))
 		payee_budget.department.add_shield(amount)
 	if(from_budget && to_budget)
-		department_flow(payer_budget.department_id)["kept"] -= amount
-		department_flow(payee_budget.department_id)["kept"] += amount
+		department_flow(payer_budget.department_id)["out"] += amount
+		department_flow(payee_budget.department_id)["in"] += amount
 		return
 	if(!from_budget && !to_budget)
 		return
@@ -66,14 +66,14 @@
 	var/datum/bank_account/department/station_budget = to_budget ? target : source
 	var/list/flow = department_flow(station_budget.department_id)
 	if(to_budget)
-		flow["kept"] += amount
+		flow["in"] += amount
 		if(source)
 			department_received += amount
 		else
 			department_minted += amount
 		return
 	if(target)
-		flow["kept"] -= amount
+		flow["out"] += amount
 		department_paid_out += amount
 		return
 	department_burned += amount
@@ -103,7 +103,7 @@
 /datum/economy_ledger/proc/department_flow(id)
 	var/list/flow = department_flows[id]
 	if(!flow)
-		flow = list("kept" = 0, "burned" = 0, "returned" = 0, "purchases" = 0, "purchase_amount" = 0)
+		flow = list("in" = 0, "out" = 0, "burned" = 0, "returned" = 0, "purchases" = 0, "purchase_amount" = 0)
 		department_flows[id] = flow
 	return flow
 
@@ -115,7 +115,7 @@
 		if(!with_command && id == ACCOUNT_CMD)
 			continue
 		var/list/flow = department_flows[id]
-		kept += flow["kept"]
+		kept += flow["in"] - flow["out"]
 		burned_sum += flow["burned"]
 		if(!with_return)
 			kept -= flow["returned"]
@@ -144,9 +144,10 @@
 	var/list/parts = list()
 	for(var/id in department_flows)
 		var/list/flow = department_flows[id]
-		parts += "[id] [num2text(flow["kept"], 12)]/[num2text(flow["burned"], 12)]/[num2text(flow["returned"], 12)]"
+		var/datum/bank_account/budget = SSeconomy.get_dep_account(id)
+		parts += "[id] [num2text(flow["in"], 12)]/[num2text(flow["out"], 12)]/[num2text(flow["burned"], 12)]/[num2text(flow["returned"], 12)]/[num2text(budget ? budget.account_balance : 0, 12)]"
 	if(length(parts))
-		. += "Итог смены по отделам (пришло/сожжено/возврат излишка): [jointext(parts, ", ")]"
+		. += "Итог смены по отделам (пришло за смену/выдано на счета и в другие отделы/сожжено/из него возврат излишка/остаток; стартовый бюджет в пришедшее не входит): [jointext(parts, ", ")]"
 	parts = list()
 	for(var/datum/bank_account/department/outpost as anything in SSeconomy.generated_accounts)
 		if(!econ_is_outpost_budget(outpost))
@@ -161,6 +162,7 @@
 	if(SSeconomy.ledger.summary_logged)
 		return FALSE
 	SSeconomy.ledger.summary_logged = TRUE
+	SSeconomy.flush_audit_logs()
 	for(var/line in SSeconomy.ledger.round_summary())
 		log_econ(line)
 	return TRUE
@@ -189,7 +191,12 @@
 		snapshots.Cut(1, 2)
 
 /datum/controller/subsystem/economy/proc/move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo)
-	if(!isnum(amount) || amount <= 0)
+	if(isnull(amount))
+		return FALSE
+	if(!isnum(amount) || !(amount < ECON_MOVE_AMOUNT_MAX))
+		stack_trace("SSeconomy.move: недопустимая сумма [amount] ([reason])")
+		return FALSE
+	if(amount <= 0)
 		return FALSE
 	amount = round(amount)
 	if(!amount || source == target || (!source && !target))
@@ -207,6 +214,16 @@
 		target.account_balance += amount
 	record_move(source, target, amount, reason, actor, memo)
 	return TRUE
+
+/// Сумма, которую SSeconomy.move примет: число больше нуля и меньше ECON_MOVE_AMOUNT_MAX.
+/proc/econ_amount_valid(amount)
+	return isnum(amount) && amount > 0 && amount < ECON_MOVE_AMOUNT_MAX
+
+/// Почему банк не зачислил наличные money.
+/proc/econ_cash_refusal_text(obj/item/money, amount)
+	if(econ_amount_valid(amount))
+		return "Банк не принял [money]."
+	return "Банк не принял [money]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
 /// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога.
 /datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag)

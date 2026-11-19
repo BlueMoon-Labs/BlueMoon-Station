@@ -321,7 +321,8 @@
 		to_chat(user, span_warning("[I] не кажется стоящим что-либо!"))
 		return
 	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, cash_money, ECON_CASH_IN, user, "Внесение: [I.name]"))
-		to_chat(user, span_warning("[src] не принимает [I]."))
+		var/refusal = econ_cash_refusal_text(I, cash_money)
+		to_chat(user, span_warning(refusal))
 		return
 	if(istype(I, /obj/item/stack/spacecash) || istype(I, /obj/item/coin))
 		to_chat(user, span_notice("Вы приставляете [I] в [src]. Они исчезают в облаке блюспейса, добавляя [cash_money] \
@@ -346,7 +347,11 @@
 		total += physical_money.get_item_credit_value()
 		CHECK_TICK
 
+	if(!total)
+		return FALSE
 	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных"))
+		var/refusal = econ_cash_refusal_text("содержимое мешка", total)
+		to_chat(user, span_warning(refusal))
 		return FALSE
 
 	QDEL_LIST(money)

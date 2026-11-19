@@ -1074,8 +1074,8 @@
 	econ_test_set_balance(cargo.account, 10000)
 	var/list/flow = SSeconomy.ledger.department_flow(ACCOUNT_CAR)
 	var/burned_before = flow["burned"]
-	var/kept_before = flow["kept"]
+	var/in_before = flow["in"]
 	cargo.account.debit(4000, ECON_PURCHASE)
 	cargo.account.credit(4000, ECON_REFUND)
 	TEST_ASSERT_EQUAL(flow["burned"], burned_before, "Возврат отменил сток покупки")
-	TEST_ASSERT_EQUAL(flow["kept"], kept_before, "Возврат не стал оставшимися у отдела деньгами")
+	TEST_ASSERT_EQUAL(flow["in"], in_before, "Возврат не стал оставшимися у отдела деньгами")

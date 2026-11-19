@@ -24,6 +24,10 @@
 	var/close_reason
 	/// ckey и REF разума тех, кто двигал деньги по делу: они его не закрывают
 	var/list/actors
+	/// Операции после последней строки дела в econ.log: пишутся итогом не чаще AUDIT_LOG_REPEAT_INTERVAL, при закрытии и в конце смены
+	var/unlogged_count = 0
+	var/unlogged_amount = 0
+	var/next_log_time = 0
 
 /// Ключи для flag.actors: ckey и REF разума.
 /proc/econ_audit_identities(mob/actor)
@@ -252,7 +256,8 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 /// account - откуда ушли деньги, counterparty - куда. Свежее открытое дело того же вида по той же паре пополняется.
 /datum/controller/subsystem/economy/proc/add_audit_flag(datum/bank_account/account, kind, text, amount, datum/bank_account/counterparty, mob/actor)
 	var/datum/econ_audit_flag/flag = open_audit_flag(kind, account, counterparty)
-	if(!flag)
+	var/opened = !flag
+	if(opened)
 		flag = new
 		flag.uid = ++audit_flag_uid
 		flag.account_number = account.account_id
@@ -278,10 +283,31 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		flag.actors |= identities
 	flag.amount += amount
 	flag.last_seen = world.time
-	log_econ("Аудит, дело [flag.uid]: [text], [amount] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
+	if(opened)
+		flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
+		log_econ("Аудит, дело [flag.uid]: [text], [amount] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
+		return flag
+	flag.unlogged_count++
+	flag.unlogged_amount += amount
+	if(world.time >= flag.next_log_time)
+		log_audit_repeats(flag)
 	return flag
 
+/// Итог операций дела с прошлой строки в econ.log.
+/datum/controller/subsystem/economy/proc/log_audit_repeats(datum/econ_audit_flag/flag)
+	flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
+	if(!flag.unlogged_count)
+		return
+	log_econ("Аудит, дело [flag.uid]: ещё операций: [flag.unlogged_count] на [flag.unlogged_amount] кр., всего по делу [flag.amount] кр.")
+	flag.unlogged_count = 0
+	flag.unlogged_amount = 0
+
+/datum/controller/subsystem/economy/proc/flush_audit_logs()
+	for(var/datum/econ_audit_flag/flag as anything in audit_flags)
+		log_audit_repeats(flag)
+
 /datum/controller/subsystem/economy/proc/close_audit_flag(datum/econ_audit_flag/flag)
+	log_audit_repeats(flag)
 	flag.closed = TRUE
 	var/datum/bank_account/source = find_account(flag.account_number)
 	var/key = flag.pooled ? AUDIT_WATCH_UNOWNED : "[flag.counterparty_number]"

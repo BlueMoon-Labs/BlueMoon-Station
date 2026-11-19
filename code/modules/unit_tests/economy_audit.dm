@@ -95,6 +95,53 @@
 	SSeconomy.move(cargo, inspection, 500, ECON_SKIM)
 	TEST_ASSERT_EQUAL(length(SSeconomy.flags_for(cargo)), 0, "Откуп из бюджета отдела не неопознанное устройство")
 
+/// Строки econ.log, дописанные после того, как лог был длиной from символов.
+/proc/econ_test_log_since(from)
+	var/text = file2text(GLOB.world_econ_log)
+	return splittext(copytext(text, from + 1), "\n")
+
+/proc/econ_test_log_length()
+	return length(file2text(GLOB.world_econ_log))
+
+/proc/econ_test_audit_lines(list/lines, datum/econ_audit_flag/flag)
+	. = list()
+	for(var/line in lines)
+		if(findtext(line, "Аудит, дело [flag.uid]:"))
+			. += line
+
+/// Дело пишется в econ.log при открытии, повторы - итогом раз в AUDIT_LOG_REPEAT_INTERVAL, при закрытии и в конце смены, а не строкой на каждое списание.
+/datum/unit_test/economy_audit/skim_log_lines/Run()
+	var/log_start = econ_test_log_length()
+	var/datum/bank_account/victim = make_account("Econ Audit Log Victim", 5000)
+	var/datum/bank_account/thief = make_account("Econ Audit Log Thief")
+	for(var/i in 1 to 5)
+		SSeconomy.move(victim, thief, 100, ECON_SKIM)
+	var/list/flags = flags_of_kind(victim, AUDIT_FLAG_UNKNOWN_DEVICE)
+	TEST_ASSERT_EQUAL(length(flags), 1, "Одно дело на пять списаний")
+	var/datum/econ_audit_flag/flag = flags[1]
+	var/list/lines = econ_test_audit_lines(econ_test_log_since(log_start), flag)
+	TEST_ASSERT_EQUAL(length(lines), 1, "Пять списаний - одна строка открытия дела: [jointext(lines, " | ")]")
+	TEST_ASSERT(findtext(lines[1], "100 кр. со счёта Econ Audit Log Victim"), "Строка открытия называет первое списание: [lines[1]]")
+	flag.next_log_time = world.time
+	SSeconomy.move(victim, thief, 100, ECON_SKIM)
+	lines = econ_test_audit_lines(econ_test_log_since(log_start), flag)
+	TEST_ASSERT_EQUAL(length(lines), 2, "По истечении интервала - итог повторов: [jointext(lines, " | ")]")
+	TEST_ASSERT(findtext(lines[2], "ещё операций: 5 на 500 кр., всего по делу 600 кр."), "Итог повторов: [lines[2]]")
+	SSeconomy.move(victim, thief, 100, ECON_SKIM)
+	SSeconomy.move(victim, thief, 100, ECON_SKIM)
+	TEST_ASSERT_EQUAL(length(econ_test_audit_lines(econ_test_log_since(log_start), flag)), 2, "Повторы внутри интервала не пишутся")
+	SSeconomy.close_audit_flag(flag)
+	lines = econ_test_audit_lines(econ_test_log_since(log_start), flag)
+	TEST_ASSERT_EQUAL(length(lines), 3, "Закрытие дописывает итог: [jointext(lines, " | ")]")
+	TEST_ASSERT(findtext(lines[3], "ещё операций: 2 на 200 кр., всего по делу 800 кр."), "Итог при закрытии: [lines[3]]")
+	var/datum/bank_account/second_victim = make_account("Econ Audit Log Second", 5000)
+	SSeconomy.move(second_victim, thief, 100, ECON_SKIM)
+	SSeconomy.move(second_victim, thief, 50, ECON_SKIM)
+	var/datum/econ_audit_flag/open_flag = flags_of_kind(second_victim, AUDIT_FLAG_UNKNOWN_DEVICE)[1]
+	SSeconomy.flush_audit_logs()
+	lines = econ_test_audit_lines(econ_test_log_since(log_start), open_flag)
+	TEST_ASSERT_EQUAL(length(lines), 2, "Конец смены дописывает итог открытых дел: [jointext(lines, " | ")]")
+
 /// Дробление: серия личных переводов одному получателю за окно; другим получателям не считается.
 /datum/unit_test/economy_audit/structuring/Run()
 	var/count = SSeconomy.settings.audit_structuring_count

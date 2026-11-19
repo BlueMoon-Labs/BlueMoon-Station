@@ -46,6 +46,62 @@
 	TEST_ASSERT_EQUAL(alpha_balance, 90, "Только возврат списан")
 	TEST_ASSERT_EQUAL(beta_balance, 10, "Только возврат зачислен")
 
+/datum/unit_test/economy_ledger_absurd_amount
+	allowed_runtime_patterns = list("SSeconomy.move: недопустимая сумма")
+
+/// Бесконечная, NaN, текстовая и запредельная сумма отвергаются, не трогая балансов и журнала; крупная законная проходит.
+/datum/unit_test/economy_ledger_absurd_amount/Run()
+	var/datum/bank_account/alpha = allocate(/datum/bank_account, "econ_test_alpha")
+	var/datum/bank_account/beta = allocate(/datum/bank_account, "econ_test_beta")
+	alpha.credit(100, ECON_ADMIN)
+	var/cash_before = SSeconomy.cash_account.account_balance
+	var/minted_before = SSeconomy.ledger.minted
+	var/huge = 1e30
+	var/infinite = huge * huge
+	var/not_a_number = infinite - infinite
+	TEST_ASSERT(isnum(not_a_number) && !(not_a_number == not_a_number), "Тест получил NaN: [not_a_number]")
+	TEST_ASSERT(!SSeconomy.move(SSeconomy.cash_account, alpha, INFINITY, ECON_CASH_IN), "INFINITY отвергнута")
+	TEST_ASSERT(!SSeconomy.move(SSeconomy.cash_account, alpha, infinite, ECON_CASH_IN), "Бесконечность отвергнута")
+	TEST_ASSERT(!SSeconomy.move(SSeconomy.cash_account, alpha, not_a_number, ECON_CASH_IN), "NaN отвергнут")
+	TEST_ASSERT(!SSeconomy.move(SSeconomy.cash_account, alpha, ECON_MOVE_AMOUNT_MAX, ECON_CASH_IN), "Сумма на пороге отвергнута")
+	TEST_ASSERT(!alpha.credit(1e34, ECON_ADMIN), "Эмиссия 1e34 отвергнута")
+	TEST_ASSERT(!SSeconomy.move(alpha, beta, "50", ECON_TRANSFER), "Текст вместо суммы отвергнут")
+	TEST_ASSERT_EQUAL(alpha.account_balance, 100, "Баланс не тронут")
+	TEST_ASSERT_EQUAL(SSeconomy.cash_account.account_balance, cash_before, "Наличные не ушли в минус")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Журнал эмиссии не тронут")
+	TEST_ASSERT(SSeconomy.move(SSeconomy.cash_account, alpha, 1000000, ECON_CASH_IN), "Миллион проходит")
+	SSeconomy.move(alpha, SSeconomy.cash_account, 1000000, ECON_CASH_OUT)
+
+/// Исполнитель желаний кладёт в тележку 500 тыс. наличными, а не пачки на бесконечность.
+/datum/unit_test/economy_wishgranter_cart/Run()
+	var/obj/structure/closet/crate/trashcart/moneywish/cart = allocate(/obj/structure/closet/crate/trashcart/moneywish)
+	var/total = 0
+	for(var/obj/item/stack/spacecash/bills in cart.contents)
+		total += bills.get_item_credit_value()
+	TEST_ASSERT_EQUAL(total, 500000, "Сумма в тележке")
+
+/datum/unit_test/economy_absurd_cash_deposit
+	allowed_runtime_patterns = list("SSeconomy.move: недопустимая сумма")
+
+/// Карта, мешок с деньгами и хранилище снабжения не принимают пачку на бесконечность и не съедают её.
+/datum/unit_test/economy_absurd_cash_deposit/Run()
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_depositor", 100)
+	var/obj/item/card/id/card = person.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	var/obj/item/stack/spacecash/c1000/bills = allocate(/obj/item/stack/spacecash/c1000)
+	bills.amount = bills.max_amount
+	card.insert_money(bills, person)
+	TEST_ASSERT(!QDELETED(bills), "Карта не съела пачку")
+	TEST_ASSERT_EQUAL(account.account_balance, 100, "На карту ничего не зачислено")
+	TEST_ASSERT(!card.mass_insert_money(list(bills), person), "Мешок не зачислен")
+	TEST_ASSERT(!QDELETED(bills), "Мешок не съел пачку")
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/cargo_before = cargo.account_balance
+	var/obj/machinery/computer/bank_machine/vault = allocate(/obj/machinery/computer/bank_machine)
+	vault.attackby(bills, person)
+	TEST_ASSERT(!QDELETED(bills), "Хранилище не съело пачку")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Бюджет снабжения не тронут")
+
 /// Номер счёта уникален, по нему находится счёт, после qdel - не находится.
 /datum/unit_test/economy_account_registry/Run()
 	var/datum/bank_account/alpha = new("econ_test_alpha")
@@ -129,6 +185,13 @@
 	TEST_ASSERT(findtext(text, "эмиссия 4000 кр. (contract 3000, grant 1000)"), "Эмиссия по причинам: [text]")
 	TEST_ASSERT(findtext(text, "сток 2300 кр. (import 1500, budget_return 600, purchase 200)"), "Сток по причинам: [text]")
 	TEST_ASSERT(findtext(text, "сток отделов 70%, без возврата излишка 62%"), "Доля стока отделов: [text]")
+	TEST_ASSERT(findtext(text, "ENG 4000/1000/2100/600/[budget.account_balance]"), "Отдел: пришло, выдано, сожжено, возврат и остаток отдельно: [text]")
+	var/datum/bank_account/department/security = SSeconomy.get_dep_account(ACCOUNT_SEC)
+	var/security_before = security.account_balance
+	TEST_ASSERT(SSeconomy.move(security, worker, 300, ECON_WAGE), "Выплата из бюджета СБ: на нём [security_before] кр.")
+	text = jointext(SSeconomy.ledger.round_summary(), "\n")
+	econ_test_set_balance(security, security_before)
+	TEST_ASSERT(findtext(text, "SEC 0/300/0/0/"), "Выплата из стартового бюджета не даёт отрицательного прихода: [text]")
 
 /// Бюджеты аванпостов идут в итоге смены своей строкой, а их эмиссия отделена от станционной.
 /datum/unit_test/economy_round_summary_outposts
