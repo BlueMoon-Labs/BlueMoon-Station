@@ -5339,6 +5339,7 @@
 #include "modular_bluemoon\code\modules\economy\machines\effects.dm"
 #include "modular_bluemoon\code\modules\economy\machines\evidence_locker.dm"
 #include "modular_bluemoon\code\modules\economy\machines\power_export_node.dm"
+#include "modular_bluemoon\code\modules\economy\machines\room_service.dm"
 #include "modular_bluemoon\code\modules\economy\machines\stall_rent.dm"
 #include "modular_bluemoon\code\modules\economy\machines\stock_terminal.dm"
 #include "modular_bluemoon\code\modules\economy\machines\ticker_board.dm"

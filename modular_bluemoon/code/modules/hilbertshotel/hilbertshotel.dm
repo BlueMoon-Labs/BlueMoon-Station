@@ -632,6 +632,7 @@
 		door.roomnumber = currentRoomnumber
 	for(var/turf/open/space/bluespace/BSturf in currentArea)
 		BSturf.parentSphere = src
+	currentArea.ensure_room_service_panel()
 
 /obj/item/hilbertshotel/proc/ejectRooms()
 	if(activeRooms.len)

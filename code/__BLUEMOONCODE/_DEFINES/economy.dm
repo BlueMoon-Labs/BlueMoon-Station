@@ -271,6 +271,20 @@
 #define REGISTER_CASHIERS_MAX 2
 /// Сколько штук одной позиции меню влезает в счёт
 #define REGISTER_ORDER_COUNT_MAX 20
+/// Заказ в номер отеля: срок доставки сервисом, после него деньги возвращаются и номеру открывается кейтеринг NT
+#define ROOM_SERVICE_STAFF_WAIT (15 MINUTES)
+/// Во сколько раз кейтеринг NT дороже заказа сервису
+#define ROOM_SERVICE_CATERING_MULT 2
+#define ROOM_SERVICE_COUNT_MAX 4
+/// Ждущих доставки заказов на один номер
+#define ROOM_SERVICE_ORDERS_PER_ROOM 3
+/// Сколько раз один набор декора можно купить в один номер
+#define ROOM_SERVICE_DECOR_PER_ROOM 2
+#define ROOM_SERVICE_ACT_COOLDOWN (3 SECONDS)
+/// Карты сервиса и канал сервиса слышат о заказах одного номера не чаще этого
+#define ROOM_SERVICE_NOTIFY_COOLDOWN (1 MINUTES)
+#define ROOM_SERVICE_FOOD "food"
+#define ROOM_SERVICE_DRINK "drink"
 /// Кассир дальше этого или на другом уровне считается ушедшим, его кассу может занять другой
 #define REGISTER_CASHIER_RANGE 7
 /// Свайп клиента сразу после смены позиции не платит: сумму нужно успеть увидеть
@@ -325,6 +339,7 @@
 #define ECON_VEND_WHOLESALE "vend_wholesale"
 #define ECON_PURCHASE "purchase"
 #define ECON_REGISTER "register"
+#define ECON_ROOM_SERVICE "room_service"
 #define ECON_RENT "rent"
 #define ECON_GAMBLING "gambling"
 #define ECON_GAMBLING_WIN "gambling_win"

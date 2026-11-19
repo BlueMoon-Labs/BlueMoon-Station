@@ -286,6 +286,7 @@
 #include "economy_persistence.dm"
 #include "economy_personal.dm"
 #include "economy_register.dm"
+#include "economy_roomservice.dm"
 #include "economy_science.dm"
 #include "economy_security.dm"
 #include "economy_service.dm"
