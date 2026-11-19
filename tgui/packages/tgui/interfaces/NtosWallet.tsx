@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Dropdown,
+  Icon,
   Input,
   LabeledList,
   NoticeBox,
@@ -61,6 +62,30 @@ type PersonalPack = {
 type PersonalSection = {
   name: string;
   packs: PersonalPack[];
+};
+
+type ShopItem = {
+  id: string;
+  name: string;
+  note: string;
+  price: number;
+  /** Питомец: летит в переноске, гравировки нет. */
+  pet?: BooleanLike;
+  /** CSS-класс иконки из листа econ_shop; null - лист ещё не собран. */
+  icon?: string | null;
+};
+
+type ShopSection = {
+  name: string;
+  novelty?: BooleanLike;
+  items: ShopItem[];
+};
+
+type NearbyPerson = {
+  ref: string;
+  /** Имя и должность с ID-карты. */
+  name: string;
+  job?: string | null;
 };
 
 type PersonalOrder = {
@@ -140,6 +165,12 @@ export type WalletData = {
   portfolio?: number;
   personal_catalog?: PersonalSection[];
   personal_order_limit?: number;
+  shop?: ShopSection[];
+  engraving_price?: number;
+  engraving_max?: number;
+  shop_cooldown?: number;
+  nearby_range?: number;
+  nearby?: NearbyPerson[];
   /** "тип пака" -> [цена для этого счёта, есть ли у партнёров]. */
   personal_prices?: Record<string, [number, BooleanLike]>;
   personal_orders?: PersonalOrder[];
@@ -153,10 +184,11 @@ export type WalletData = {
   auction_lots_per_account?: number;
 };
 
-type Tab = 'account' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
+type Tab = 'account' | 'shop' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
 
 const TABS: [Tab, string, string][] = [
   ['account', 'Счёт', 'wallet'],
+  ['shop', 'Магазин', 'store'],
   ['transfer', 'Перевод', 'paper-plane'],
   ['orders', 'Заказы', 'box-open'],
   ['jobs', 'Подработка', 'briefcase'],
@@ -192,6 +224,7 @@ export const NtosWalletContent = () => {
       ) : (
         <>
           {tab === 'account' && <AccountTab />}
+          {tab === 'shop' && <ShopTab />}
           {tab === 'transfer' && <TransferTab />}
           {tab === 'orders' && <OrdersTab />}
           {tab === 'jobs' && <JobsTab />}
@@ -353,6 +386,74 @@ const AccountTab = () => {
   );
 };
 
+const NearbySection = () => {
+  const { act, data } = useBackend<WalletData>();
+  const people = data.nearby || [];
+  const [chosen, setChosen] = useState<string | null>(null);
+  const [amount, setAmount] = useState(10);
+  const [memo, setMemo] = useState('');
+  const person = people.find((entry) => entry.ref === chosen);
+  return (
+    <Section title="Заплатить человеку рядом">
+      <Box color="label" mb={1}>
+        Номер счёта не нужен: здесь все в {data.nearby_range ?? 0} шагах от вас с ID-картой на личном счёте - имя и
+        должность как на карте. Это обычный перевод с тем же лимитом и кулдауном: получатель увидит сумму, имя с вашей
+        карты и комментарий.
+      </Box>
+      {people.length === 0 ? (
+        <Box color="label">Рядом никого с ID-картой: подойдите ближе.</Box>
+      ) : (
+        <>
+          <Box mb={1}>
+            {people.map((entry) => (
+              <Button
+                key={entry.ref}
+                icon="user"
+                selected={entry.ref === chosen}
+                onClick={() => setChosen(entry.ref)}>
+                {entry.job ? `${entry.name}, ${entry.job}` : entry.name}
+              </Button>
+            ))}
+          </Box>
+          {!!person && (
+            <LabeledList>
+              <LabeledList.Item label="Сумма">
+                <RestrictedInput
+                  value={amount}
+                  minValue={1}
+                  maxValue={data.transfer_max}
+                  onChange={(_, value) => setAmount(value)}
+                />{' '}
+                кр.
+              </LabeledList.Item>
+              <LabeledList.Item label="Комментарий">
+                <Input
+                  fluid
+                  value={memo}
+                  maxLength={data.memo_max}
+                  placeholder="Необязательно: за что платите"
+                  onInput={(_, value) => setMemo(value)}
+                />
+              </LabeledList.Item>
+              <LabeledList.Item>
+                <Button.Confirm
+                  icon="hand-holding-usd"
+                  color="good"
+                  content={`Заплатить: ${person.name}`}
+                  confirmContent={`Заплатить ${formatCredits(amount)}?`}
+                  confirmColor="good"
+                  disabled={amount < 1 || (data.cooldown_left || 0) > 0}
+                  onClick={() => act('pay_nearby', { ref: person.ref, amount, memo })}
+                />
+              </LabeledList.Item>
+            </LabeledList>
+          )}
+        </>
+      )}
+    </Section>
+  );
+};
+
 const TransferTab = () => {
   const { act, data } = useBackend<WalletData>();
   const [target, setTarget] = useState('');
@@ -363,7 +464,8 @@ const TransferTab = () => {
   return (
     <>
       <AccountNotices />
-      <Section title="Перевод и чаевые">
+      <NearbySection />
+      <Section title="Перевод и чаевые по имени или номеру">
         <Box color="label" mb={1}>
           Только с личного счёта на личный: бюджеты отделов и системные счета не принимают. Без налога, до{' '}
           <Credits amount={data.transfer_max} /> за раз, не чаще раза в {data.transfer_cooldown} с - переводы и чаевые
@@ -758,8 +860,9 @@ const OrdersTab = () => {
       <MyOrders />
       <Section title="Личный каталог">
         <Box color="label" mb={1}>
-          Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт - себе или в подарок. Цена партнёра без
-          наценки частного заказа списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на имя
+          Наборы шаттлом снабжения: питомцы, наряды, угощение для праздника, музыка и уют за свой счёт - себе или в
+          подарок. Одну шляпу, игрушку или котёнка быстрее купить во вкладке «Магазин»: там покупка прилетает капсулой
+          сразу. Цена партнёра без наценки частного заказа списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на имя
           получателя будет ждать в отделе снабжения, открыть её можно его ID-картой. Пока шаттл не вылетел, заказ можно
           отменить - деньги вернутся вам; если получатель уйдёт со смены раньше, заказ снимется сам. Ждать шаттла могут
           до {data.personal_order_limit} ваших заказов сразу.
@@ -825,6 +928,166 @@ const OrdersTab = () => {
             <Table>
               {section.packs.map((pack) => (
                 <CatalogRow key={pack.id} pack={pack} full={full} recipient={recipient} signed={signed} />
+              ))}
+            </Table>
+          </Box>
+        ))}
+      </Section>
+    </>
+  );
+};
+
+const ShopIcon = (props: { item: ShopItem }) => {
+  const { item } = props;
+  return (
+    <Box width="32px" height="32px" style={{ overflow: 'hidden', position: 'relative' }}>
+      {item.icon ? (
+        <span className={item.icon} style={{ display: 'block', imageRendering: 'pixelated' }} />
+      ) : (
+        <Icon name={item.pet ? 'paw' : 'gift'} size={1.5} color="label" mt={0.5} ml={0.5} />
+      )}
+    </Box>
+  );
+};
+
+type ShopRowProps = {
+  item: ShopItem;
+  recipient: string;
+  signed: boolean;
+  engraving: string;
+};
+
+const ShopRow = (props: ShopRowProps) => {
+  const { act, data } = useBackend<WalletData>();
+  const { item, recipient, signed, engraving } = props;
+  const gift = recipient !== '';
+  const engraved = !item.pet && engraving.trim().length > 0;
+  const total = item.price + (engraved ? data.engraving_price || 0 : 0);
+  const refusal = (data.balance || 0) < total ? 'Не хватает денег на счёте.' : null;
+  return (
+    <Table.Row className="candystripe">
+      <Table.Cell collapsing py={0.5}>
+        <ShopIcon item={item} />
+      </Table.Cell>
+      <Table.Cell py={0.5}>
+        <Box bold>{item.name}</Box>
+        <Box color="label">
+          {item.note}
+          {item.pet ? ' Прилетит в закрытой переноске.' : ''}
+        </Box>
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5} textAlign="right">
+        <Credits amount={total} />
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5}>
+        <Button.Confirm
+          icon={gift ? 'gift' : 'shopping-cart'}
+          color="good"
+          content={gift ? 'Подарить' : 'Купить'}
+          confirmContent={gift ? `Подарить за ${formatCredits(total)}?` : `Оплатить ${formatCredits(total)}?`}
+          confirmColor="good"
+          disabled={!!refusal}
+          tooltip={refusal}
+          onClick={() =>
+            act('shop_order', {
+              id: item.id,
+              price: item.price,
+              engraving: engraved ? engraving.trim() : '',
+              ...(gift ? { recipient, hide_name: !signed } : {}),
+            })
+          }
+        />
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const ShopTab = () => {
+  const { data } = useBackend<WalletData>();
+  const sections = data.shop || [];
+  const [shown, setShown] = useState<string | null>(null);
+  const [recipient, setRecipient] = useState('');
+  const [signed, setSigned] = useState(true);
+  const [engraving, setEngraving] = useState('');
+  const crew = (data.crew || []).filter((name) => name !== data.holder);
+  const visible = sections.filter((section) => !shown || section.name === shown);
+  return (
+    <>
+      <AccountNotices />
+      <Section title="Магазин">
+        <Box color="label" mb={1}>
+          Одежда, шляпы, краски, игрушки, вещи для каюты и мелкие питомцы за свой счёт. Деньги списываются сразу, а
+          покупка через пару секунд прилетает блюспейс-капсулой на свободный пол рядом с вами - без шаттла и очереди.
+          Подарок прилетает к получателю, если он на станции, вместе с открыткой. Вещи с цветами на выбор красятся
+          Alt+кликом. Капсулу можно вызывать раз в {data.shop_cooldown ?? 0} с, а новинки каждую смену свои.
+        </Box>
+        <LabeledList>
+          <LabeledList.Item label="Кому">
+            <Stack align="center">
+              <Stack.Item grow>
+                <Input
+                  fluid
+                  value={recipient}
+                  maxLength={data.name_max}
+                  placeholder="Себе, или имя либо номер счёта получателя"
+                  onInput={(_, value) => setRecipient(value)}
+                />
+              </Stack.Item>
+              <Stack.Item>
+                <Dropdown
+                  width="12em"
+                  options={[{ value: '', displayText: 'Себе' }, ...crew]}
+                  selected={recipient}
+                  onSelected={(value: string) => setRecipient(value)}
+                />
+              </Stack.Item>
+              {!!recipient && (
+                <Stack.Item>
+                  <Button.Checkbox checked={signed} onClick={() => setSigned(!signed)}>
+                    Подписать моим именем
+                  </Button.Checkbox>
+                </Stack.Item>
+              )}
+            </Stack>
+          </LabeledList.Item>
+          <LabeledList.Item label="Гравировка">
+            <Input
+              fluid
+              value={engraving}
+              maxLength={data.engraving_max}
+              placeholder={`Необязательно: надпись на вещи за ${formatCredits(data.engraving_price || 0)}`}
+              onInput={(_, value) => setEngraving(value)}
+            />
+          </LabeledList.Item>
+        </LabeledList>
+        {!!recipient && (
+          <Box color="label" mt={0.5}>
+            Подарок для {recipient}: платите вы, капсула сядет рядом с получателем, а его карта скажет, что это подарок
+            {signed ? ' от вас' : ' - без вашего имени'}.
+          </Box>
+        )}
+        <Box mt={1} mb={1}>
+          <Button selected={!shown} onClick={() => setShown(null)}>
+            Всё
+          </Button>
+          {sections.map((section) => (
+            <Button
+              key={section.name}
+              icon={section.novelty ? 'star' : undefined}
+              selected={shown === section.name}
+              onClick={() => setShown(section.name)}>
+              {section.name}
+            </Button>
+          ))}
+        </Box>
+        {visible.map((section) => (
+          <Box key={section.name} mb={1}>
+            <Box bold mb={0.5} color={section.novelty ? 'good' : undefined}>
+              {section.name}
+            </Box>
+            <Table>
+              {section.items.map((item) => (
+                <ShopRow key={item.id} item={item} recipient={recipient} signed={signed} engraving={engraving} />
               ))}
             </Table>
           </Box>

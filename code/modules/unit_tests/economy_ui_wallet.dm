@@ -232,3 +232,66 @@
 	var/datum/computer_file/program/wallet/wallet = wallet_of(owner)
 	var/list/data = wallet.wallet_data(owner)
 	TEST_ASSERT(!data["metadollars_available"], "Вкладка M$ знает, что связи нет")
+
+/// Человек в клетке dx, dy от левого нижнего угла пола, с ID-картой в руке и счётом account; card_name - имя на карте.
+/datum/unit_test/economy_ui_wallet/proc/make_bystander(datum/bank_account/account, card_name, dx, dy)
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/person = allocate(/mob/living/carbon/human, spot)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_name = card_name
+	card.assignment = "Bartender"
+	card.registered_account = account
+	person.put_in_hands(card)
+	return person
+
+/// Оплата человеку рядом: кошелёк видит людей в паре шагов по имени с их ID-карты, а не по имени владельца счёта; перевод доходит с комментарием, получатель видит имя с карты плательщика; дальний, ушедший и сумма выше лимита - отказ без списания; анонимный счёт на карте принимает оплату.
+/datum/unit_test/economy_ui_wallet/pay_nearby/Run()
+	var/mob/living/carbon/human/owner = make_owner("Econ Nearby Payer Real", 100000)
+	var/datum/bank_account/own = account_of(owner)
+	var/obj/item/modular_computer/pda/pda = owner.get_active_held_item()
+	pda.stored_id.registered_name = "Econ Payer Alias"
+	var/datum/bank_account/econ_test_ear/waiter_account = new("Econ Nearby Waiter Real")
+	allocated += waiter_account
+	var/mob/living/carbon/human/waiter = make_bystander(waiter_account, "Econ Waiter Alias", 2, 0)
+	var/datum/bank_account/far_account = make_account("Econ Nearby Far")
+	make_bystander(far_account, "Econ Far Alias", 4, 4)
+	var/datum/computer_file/program/wallet/wallet = wallet_of(owner)
+	var/list/nearby = wallet.wallet_data(owner)["nearby"]
+	TEST_ASSERT_EQUAL(length(nearby), 1, "Кошелёк видит не только соседа: [json_encode(nearby)]")
+	var/list/entry = nearby[1]
+	TEST_ASSERT_EQUAL(entry["name"], "Econ Waiter Alias", "Сосед назван не по ID-карте")
+	TEST_ASSERT(!findtext(json_encode(nearby), waiter_account.account_holder), "Окно выдало владельца счёта на чужой карте")
+
+	var/reply = press(owner, "pay_nearby", list("ref" = entry["ref"], "amount" = SSeconomy.settings.transfer_max + 1))
+	TEST_ASSERT(findtext(reply, "лимит"), "Сумма выше лимита не отказала: [reply]")
+	reply = press(owner, "pay_nearby", list("ref" = REF(far_account), "amount" = 10))
+	TEST_ASSERT(findtext(reply, "нет рядом"), "Оплата не соседу не отказала: [reply]")
+	TEST_ASSERT_EQUAL(own.account_balance, 100000, "Отказы списали деньги")
+
+	reply = press(owner, "pay_nearby", list("ref" = entry["ref"], "amount" = 150, "memo" = "за коктейль"))
+	TEST_ASSERT_EQUAL(waiter_account.account_balance, 150, "Оплата соседу не дошла: [reply]")
+	TEST_ASSERT_EQUAL(own.account_balance, 100000 - 150, "Списана не сумма оплаты")
+	TEST_ASSERT(findtext(reply, "Econ Waiter Alias"), "Ответ не называет получателя по карте: [reply]")
+	var/heard = jointext(waiter_account.heard, "\n")
+	TEST_ASSERT(findtext(heard, "Econ Payer Alias") && findtext(heard, "за коктейль"), "Получатель не увидел имя с карты плательщика и комментарий: [heard]")
+	TEST_ASSERT(!findtext(heard, own.account_holder), "Получатель узнал владельца счёта плательщика: [heard]")
+	var/list/sent
+	for(var/list/line as anything in wallet.wallet_data(owner)["history"])
+		if(line["amount"] == -150)
+			sent = line
+	TEST_ASSERT(sent && findtext(sent["label"], "за коктейль"), "Оплата рядом не записана переводом с комментарием")
+
+	COOLDOWN_RESET(own, personal_payment_cooldown)
+	waiter.forceMove(locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z))
+	reply = press(owner, "pay_nearby", list("ref" = entry["ref"], "amount" = 10))
+	TEST_ASSERT(findtext(reply, "нет рядом"), "Оплата ушедшему не отказала: [reply]")
+	TEST_ASSERT_EQUAL(waiter_account.account_balance, 150, "Ушедший получил деньги")
+
+	var/datum/bank_account/anonymous/anon = new
+	allocated += anon
+	make_bystander(anon, "Econ Masked Guest", 1, 1)
+	nearby = wallet.wallet_data(owner)["nearby"]
+	TEST_ASSERT_EQUAL(length(nearby), 1, "Кошелёк не видит соседа с анонимным счётом: [json_encode(nearby)]")
+	entry = nearby[1]
+	press(owner, "pay_nearby", list("ref" = entry["ref"], "amount" = 20))
+	TEST_ASSERT_EQUAL(anon.account_balance, 20, "Оплата на анонимный счёт с карты не дошла")

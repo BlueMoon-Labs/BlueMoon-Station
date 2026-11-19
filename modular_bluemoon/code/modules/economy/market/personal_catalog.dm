@@ -334,3 +334,256 @@ GLOBAL_LIST_INIT(econ_personal_catalog, econ_personal_catalog_typecache())
 	if(!account?.weak_reference)
 		return list()
 	return personal_arrivals[account.weak_reference] || list()
+
+/// Магазин Кошелька: раздел -> тип вещи или питомца -> list(цена, заметка). Только вид и уют: без брони, оружия, лекарств и доступов.
+/proc/econ_shop_sections()
+	var/static/list/sections
+	if(!sections)
+		sections = list(
+			"Головные уборы" = list(
+				/obj/item/clothing/head/flatcap = list(300, "Кепка."),
+				/obj/item/clothing/head/beanie/striped = list(300, "Полосатая вязаная шапка."),
+				/obj/item/clothing/head/beret/black = list(400, "Чёрный берет."),
+				/obj/item/clothing/head/fedora = list(500, "Фетровая шляпа."),
+				/obj/item/clothing/head/bowler = list(600, "Котелок."),
+				/obj/item/clothing/head/sombrero = list(600, "Сомбреро."),
+				/obj/item/clothing/head/kitty = list(700, "Кошачьи ушки."),
+				/obj/item/clothing/head/rabbitears = list(700, "Кроличьи ушки."),
+				/obj/item/clothing/head/that = list(900, "Цилиндр для торжественных случаев."),
+				/obj/item/clothing/head/cowboyhat = list(800, "Ковбойская шляпа."),
+			),
+			"Одежда" = list(
+				/obj/item/clothing/neck/tie/red = list(200, "Красный галстук."),
+				/obj/item/clothing/neck/scarf/red = list(250, "Красный шарф."),
+				/obj/item/clothing/neck/scarf/zebra = list(300, "Шарф в полоску."),
+				/obj/item/clothing/accessory/maidapron/polychromic = list(500, "Фартук горничной, цвета выбираете сами."),
+				/obj/item/clothing/shoes/sneakers/poly/polychromic = list(600, "Кеды, цвета выбираете сами."),
+				/obj/item/clothing/under/shorts/polychromic = list(700, "Шорты, цвета выбираете сами."),
+				/obj/item/clothing/glasses/monocle = list(800, "Монокль."),
+				/obj/item/clothing/under/costume/kilt/polychromic = list(1200, "Килт, цвета выбираете сами."),
+				/obj/item/clothing/under/dress/skirt/polychromic = list(1200, "Юбка, цвета выбираете сами."),
+				/obj/item/clothing/under/dress/skirt/polychromic/pleated = list(1200, "Плиссированная юбка, цвета выбираете сами."),
+				/obj/item/clothing/under/suit/black = list(1500, "Строгий чёрный костюм."),
+				/obj/item/clothing/under/suit/white = list(1500, "Белый костюм."),
+				/obj/item/clothing/suit/jacket/urbanjacket/polychromic = list(1800, "Городская куртка, цвета выбираете сами."),
+				/obj/item/clothing/suit/hooded/wintercoat/polychromic = list(2200, "Зимнее пальто с капюшоном, цвета выбираете сами."),
+				/obj/item/clothing/neck/cloak/polychromic = list(2500, "Плащ, цвета выбираете сами."),
+				/obj/item/clothing/under/dress/polychromic/evening = list(3000, "Вечернее платье, цвета выбираете сами."),
+			),
+			"Краски" = list(
+				/obj/item/storage/crayons = list(300, "Коробка мелков. Мелок в стиральной машине вместе с одеждой красит её в свой цвет."),
+				/obj/item/dyespray = list(500, "Краска для волос: цвет выбираете сами, красить можно себя и других."),
+			),
+			"Плюшевые и игрушки" = list(
+				/obj/item/toy/cards/deck = list(150, "Колода карт."),
+				/obj/item/toy/eightball = list(200, "Шар предсказаний."),
+				/obj/item/toy/plush/carpplushie = list(250, "Плюшевый космокарп."),
+				/obj/item/toy/plush/lizardplushie = list(250, "Плюшевая ящерица."),
+				/obj/item/toy/plush/snakeplushie = list(250, "Плюшевая змея."),
+				/obj/item/toy/plush/slimeplushie = list(250, "Плюшевый слайм."),
+				/obj/item/toy/plush/beeplushie = list(300, "Плюшевая пчела."),
+				/obj/item/toy/plush/mothplushie = list(300, "Плюшевая моль."),
+				/obj/item/toy/plush/bubbleplush = list(300, "Плюшевый пузырь."),
+				/obj/item/toy/plush/nukeplushie = list(400, "Плюшевый оперативник."),
+			),
+			"Уют для каюты" = list(
+				/obj/item/poster/random_official = list(150, "Плакат NT, какой - узнаете, развернув. Вешается на стену."),
+				/obj/item/canvas/twentythreeXtwentythree = list(150, "Холст: рисуйте мелками и вешайте на стену."),
+				/obj/item/storage/fancy/candle_box = list(250, "Коробка свечей."),
+				/obj/item/bedsheet/blue = list(300, "Синяя простыня."),
+				/obj/item/bedsheet/purple = list(300, "Фиолетовая простыня."),
+				/obj/item/bedsheet/rainbow = list(500, "Радужная простыня."),
+				/obj/item/instrument/harmonica = list(600, "Губная гармошка."),
+			),
+			"Питомцы" = list(
+				/mob/living/simple_animal/butterfly = list(400, "Бабочка."),
+				/mob/living/simple_animal/mouse/white = list(600, "Белая мышка."),
+				/mob/living/simple_animal/chick = list(800, "Цыплёнок."),
+				/mob/living/simple_animal/crab = list(1000, "Краб."),
+				/mob/living/simple_animal/hostile/lizard = list(1200, "Ящерка, ловит насекомых."),
+				/mob/living/simple_animal/pet/cat/kitten = list(4000, "Котёнок."),
+				/mob/living/simple_animal/pet/dog/corgi/puppy = list(5000, "Щенок корги."),
+			),
+		)
+	return sections
+
+/// Пул новинок: каждую смену из него продаётся ECON_SHOP_NOVELTIES случайных вещей.
+/proc/econ_shop_novelty_pool()
+	var/static/list/pool
+	if(!pool)
+		pool = list(
+			/obj/item/clothing/head/beanie/christmas = list(400, "Праздничная шапка."),
+			/obj/item/clothing/neck/scarf/christmas = list(400, "Праздничный шарф."),
+			/obj/item/clothing/head/maid = list(400, "Наколка горничной."),
+			/obj/item/toy/plush/teddybear = list(350, "Плюшевый мишка."),
+			/obj/item/toy/plush/deer = list(350, "Плюшевый олень."),
+			/obj/item/toy/plush/drake = list(450, "Плюшевый пепельный дракон."),
+			/obj/item/toy/plush/bird = list(350, "Плюшевая птица."),
+			/obj/item/toy/plush/crab = list(350, "Плюшевый краб."),
+			/obj/item/clothing/neck/cloak/alt/polychromic = list(2500, "Длинный плащ, цвета выбираете сами."),
+			/obj/item/clothing/neck/cloak/cancloak/polychromic = list(2500, "Плащ-накидка, цвета выбираете сами."),
+			/obj/item/clothing/under/performer/polychromic = list(2500, "Сценический костюм, цвета выбираете сами."),
+		)
+	return pool
+
+GLOBAL_LIST_INIT(econ_shop_novelties, econ_shop_pick_novelties())
+
+/proc/econ_shop_pick_novelties()
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/left = pool.Copy()
+	. = list()
+	for(var/i in 1 to min(ECON_SHOP_NOVELTIES, length(left)))
+		.[pick_n_take(left)] = TRUE
+
+/// Запись магазина, если вещь продаётся сейчас: list(цена, заметка, раздел); иначе null.
+/proc/econ_shop_entry(item_type)
+	if(!ispath(item_type, /atom/movable))
+		return null
+	var/list/sections = econ_shop_sections()
+	for(var/section in sections)
+		var/list/items = sections[section]
+		var/list/entry = items[item_type]
+		if(entry)
+			return list(entry[1], entry[2], section)
+	if(GLOB.econ_shop_novelties[item_type])
+		var/list/pool = econ_shop_novelty_pool()
+		var/list/entry = pool[item_type]
+		return list(entry[1], entry[2], ECON_SHOP_NOVELTY_SECTION)
+	return null
+
+/proc/econ_shop_sprite_id(item_type)
+	return replacetext(copytext("[item_type]", 2), "/", "-")
+
+/datum/asset/spritesheet_batched/econ_shop
+	name = "econ_shop"
+
+/datum/asset/spritesheet_batched/econ_shop/create_spritesheets()
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/types = pool.Copy()
+	var/list/sections = econ_shop_sections()
+	for(var/section in sections)
+		types |= sections[section]
+	for(var/atom/item_type as anything in types)
+		var/icon_file = initial(item_type.icon)
+		var/icon_state = initial(item_type.icon_state)
+		if(!econ_shop_icon_ok(icon_file, icon_state))
+			continue
+		insert_icon(econ_shop_sprite_id(item_type), uni_icon(icon_file, icon_state, SOUTH))
+
+/// Годится ли пара для листа иконок: IconForge читает только DMI, а пустой или отсутствующий стейт роняет весь шард.
+/proc/econ_shop_icon_ok(icon_file, icon_state)
+	return icon_file && copytext("[icon_file]", -4) == ".dmi" && istext(icon_state) && length(icon_state) && (icon_state in icon_states(icon_file))
+
+/// Магазин для окна кошелька: новинки смены, затем разделы; у вещи цена, заметка и CSS-класс иконки.
+/proc/econ_shop_ui()
+	var/datum/asset/spritesheet_batched/econ_shop/sheet = get_asset_datum(/datum/asset/spritesheet_batched/econ_shop)
+	. = list()
+	var/list/novelties = list()
+	var/list/pool = econ_shop_novelty_pool()
+	for(var/item_type in GLOB.econ_shop_novelties)
+		novelties += list(econ_shop_card(item_type, pool[item_type], sheet))
+	if(length(novelties))
+		. += list(list("name" = ECON_SHOP_NOVELTY_SECTION, "novelty" = TRUE, "items" = novelties))
+	var/list/sections = econ_shop_sections()
+	for(var/section in sections)
+		var/list/items = sections[section]
+		var/list/cards = list()
+		for(var/item_type in items)
+			cards += list(econ_shop_card(item_type, items[item_type], sheet))
+		. += list(list("name" = section, "items" = cards))
+
+/proc/econ_shop_card(item_type, list/entry, datum/asset/spritesheet_batched/econ_shop/sheet)
+	var/atom/movable/item_path = item_type
+	return list(
+		"id" = "[item_type]",
+		"name" = format_text(initial(item_path.name)),
+		"note" = entry[2],
+		"price" = entry[1],
+		"pet" = ispath(item_type, /mob/living),
+		"icon" = sheet?.icon_class_name(econ_shop_sprite_id(item_type)),
+	)
+
+/datum/bank_account
+	COOLDOWN_DECLARE(personal_shop_cooldown)
+
+/// Имя плательщика для получателя, как на кассе: имя на ID-карте, с которой платят, иначе владелец счёта.
+/proc/econ_payer_name(obj/item/card/id/card, datum/bank_account/account)
+	if(istype(card) && card.registered_account == account && length(card.registered_name))
+		return card.registered_name
+	return account?.account_holder
+
+/// Покупка в магазине Кошелька: цена списывается сразу, вещь прилетает блюспейс-капсулой рядом с покупателем, а подарок - рядом с получателем. shown_price - цена, которую видел покупатель; engraving - надпись на вещи за ECON_SHOP_ENGRAVING_PRICE. Возвращает list(куплено ли, ответ игроку).
+/proc/econ_shop_order(mob/living/user, datum/bank_account/account, item_type, shown_price, recipient_text, hide_name, engraving, payer_name)
+	if(istext(item_type))
+		item_type = text2path(item_type)
+	var/list/entry = econ_shop_entry(item_type)
+	if(!entry)
+		return list(FALSE, "Этого в магазине сейчас нет.")
+	var/atom/movable/item_path = item_type
+	var/item_name = format_text(initial(item_path.name))
+	var/problem = SSeconomy.personal_account_problem(account, TRUE)
+	if(problem)
+		return list(FALSE, problem)
+	if(!COOLDOWN_FINISHED(account, personal_shop_cooldown))
+		return list(FALSE, "Капсулу можно вызывать не чаще раза в [DisplayTimeText(ECON_SHOP_ORDER_COOLDOWN)]: подождите ещё [DisplayTimeText(COOLDOWN_TIMELEFT(account, personal_shop_cooldown))].")
+	engraving = istext(engraving) ? trim(copytext_char(sanitize(engraving), 1, ECON_SHOP_ENGRAVING_MAX + 1)) : ""
+	if(length(engraving) && ispath(item_type, /mob/living))
+		return list(FALSE, "На питомце ничего не выгравировать.")
+	var/datum/bank_account/recipient
+	var/mob/living/addressee = user
+	if(isnum(recipient_text) || (istext(recipient_text) && length(trim(recipient_text))))
+		var/list/found = econ_personal_gift_recipient(account, recipient_text)
+		recipient = found[1]
+		if(!recipient)
+			return list(FALSE, found[2])
+		if(!COOLDOWN_FINISHED(account, personal_gift_cooldown))
+			return list(FALSE, "Подарки можно оформлять не чаще раза в [DisplayTimeText(ECON_PERSONAL_GIFT_COOLDOWN)]: подождите ещё [DisplayTimeText(COOLDOWN_TIMELEFT(account, personal_gift_cooldown))].")
+		addressee = recipient.owner_ref?.resolve()
+		if(!isliving(addressee) || addressee.stat == DEAD)
+			return list(FALSE, "[recipient.account_holder] сейчас не может принять подарок.")
+	var/turf/landing = econ_express_landing(addressee)
+	if(!landing)
+		return list(FALSE, recipient ? "Капсуле негде сесть рядом с [recipient.account_holder]: подарок прилетает только на станцию, на свободный пол рядом с получателем." : "Капсуле негде сесть: нужен свободный пол рядом с вами, в том же помещении станции.")
+	var/price = entry[1]
+	if(istext(shown_price))
+		shown_price = text2num(shown_price)
+	if(shown_price != price)
+		return list(FALSE, "Цена изменилась: [item_name] теперь стоит [price] кр. Проверьте и купите снова.")
+	var/total = price + (length(engraving) ? ECON_SHOP_ENGRAVING_PRICE : 0)
+	if(!account.debit(total, ECON_PERSONAL_CATALOG, user, "[recipient ? "Подарок для [recipient.account_holder]" : "Магазин"]: [item_name]"))
+		return list(FALSE, "На счёте не хватает денег: [item_name][length(engraving) ? " с гравировкой" : ""] стоит [total] кр.")
+	COOLDOWN_START(account, personal_shop_cooldown, ECON_SHOP_ORDER_COOLDOWN)
+	var/giver_name = payer_name || account.account_holder
+	var/obj/structure/closet/supplypod/bluespacepod/pod = new(null)
+	econ_shop_pack(item_type, pod, total, engraving, recipient, hide_name ? null : giver_name)
+	new /obj/effect/pod_landingzone(landing, pod)
+	log_econ("[key_name(user)] купил в магазине Кошелька [item_name] ([item_type]) за [total] кр. со счёта [account.account_holder] ([account.account_id])[recipient ? " в подарок [recipient.account_holder] ([recipient.account_id])[hide_name ? " без имени дарителя" : ""]" : ""][length(engraving) ? ", гравировка \"[engraving]\"" : ""], капсула в [AREACOORD(landing)]")
+	if(!recipient)
+		return list(TRUE, "Оплачено [total] кр.: [item_name] уже летит, капсула сядет рядом с вами через пару секунд.")
+	COOLDOWN_START(account, personal_gift_cooldown, ECON_PERSONAL_GIFT_COOLDOWN)
+	recipient.bank_card_talk("Вам подарок: [hide_name ? "кто-то из экипажа" : giver_name] дарит вам [item_name]. Капсула сядет рядом с вами через пару секунд.", balloon = "вам подарок")
+	return list(TRUE, "Оплачено [total] кр.: [item_name] летит к [recipient.account_holder], капсула сядет рядом с получателем.")
+
+/// Покупка магазина в container: питомец - в закрытой переноске, к подарку открытка. Купленное помечено как из автомата: NT выкупает его не дороже доли цены.
+/proc/econ_shop_pack(item_type, atom/container, price, engraving, datum/bank_account/recipient, giver_name)
+	var/atom/movable/thing
+	if(ispath(item_type, /mob/living))
+		var/obj/item/pet_carrier/carrier = new(container)
+		carrier.add_occupant(new item_type(container))
+		carrier.open = FALSE
+		carrier.update_icon()
+		thing = carrier
+	else
+		thing = new item_type(container)
+		if(length(engraving))
+			thing.desc = "[thing.desc] На вещи выгравировано: «[engraving]»."
+	econ_mark_vended(thing, price)
+	. = list(thing)
+	if(!recipient)
+		return
+	var/obj/item/paper/card = new(container)
+	card.name = "gift card"
+	card.add_raw_text("Подарок для [recipient.account_holder][giver_name ? " от [giver_name]" : ""].")
+	card.update_appearance()
+	econ_mark_vended(card, 0)
+	. += card

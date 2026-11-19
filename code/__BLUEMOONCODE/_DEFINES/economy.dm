@@ -227,6 +227,13 @@
 #define ECON_CREW_REQUEST_ANNOUNCE_DELAY (45 SECONDS)
 /// Как часто один счёт может оформить подарок с КПК: оформление и отмена шлют сообщения карте получателя
 #define ECON_PERSONAL_GIFT_COOLDOWN (1 MINUTES)
+/// Как часто один счёт вызывает капсулу из магазина Кошелька
+#define ECON_SHOP_ORDER_COOLDOWN (10 SECONDS)
+/// Сколько вещей из пула новинок продаётся за смену
+#define ECON_SHOP_NOVELTIES 4
+#define ECON_SHOP_NOVELTY_SECTION "Новинки смены"
+#define ECON_SHOP_ENGRAVING_PRICE 300
+#define ECON_SHOP_ENGRAVING_MAX 40
 #define ECON_CREW_REQUEST_TITLE_MAX 60
 #define ECON_CREW_REQUEST_DESC_MAX 300
 /// Срок, который получает взятый контракт без своего срока
@@ -269,6 +276,8 @@
 /// Свайп клиента сразу после смены позиции не платит: сумму нужно успеть увидеть
 #define REGISTER_SELECT_GRACE (2 SECONDS)
 #define ECON_TRANSFER_MEMO_MAX 64
+/// В скольких клетках от КПК кошелёк видит людей, которым можно заплатить без номера счёта
+#define ECON_NEARBY_PAY_RANGE 3
 /// Наибольшая сумма одной админской корректировки счёта
 #define ECON_ADMIN_ADJUST_MAX 100000
 #define ECON_ADMIN_COMMENT_MAX 200

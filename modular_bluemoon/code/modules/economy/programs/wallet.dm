@@ -4,7 +4,7 @@
 	filedesc = "Кошелёк"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "wallet"
-	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, личные заказы и подарки экипажу из каталога с доставкой шаттлом снабжения, ставки на аукционе сектора и экипажа, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
+	extended_desc = "Личный счёт: баланс, история операций, переводы и чаевые, оплата человеку рядом по его ID-карте, магазин одежды, игрушек и питомцев с доставкой капсулой, личные заказы и подарки экипажу из каталога снабжения, ставки на аукционе сектора и экипажа, подработка по контрактам NT и объявлениям экипажа, акции, лотерея сектора и метадоллары."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
@@ -34,6 +34,9 @@
 /datum/computer_file/program/wallet/ui_static_data(mob/user)
 	return wallet_static_data()
 
+/datum/computer_file/program/wallet/ui_assets(mob/user)
+	return list(get_asset_datum(/datum/asset/spritesheet_batched/econ_shop))
+
 /datum/computer_file/program/wallet/ui_data(mob/user)
 	return get_header_data() + wallet_data(user)
 
@@ -55,6 +58,11 @@
 		"crew" = wallet_crew_names(),
 		"personal_catalog" = econ_personal_catalog_ui(),
 		"personal_order_limit" = settings.personal_order_limit,
+		"shop" = econ_shop_ui(),
+		"engraving_price" = ECON_SHOP_ENGRAVING_PRICE,
+		"engraving_max" = ECON_SHOP_ENGRAVING_MAX,
+		"shop_cooldown" = ECON_SHOP_ORDER_COOLDOWN / (1 SECONDS),
+		"nearby_range" = ECON_NEARBY_PAY_RANGE,
 	)
 
 /datum/computer_file/program/wallet/proc/wallet_data(mob/user)
@@ -85,6 +93,7 @@
 	data["freeze_source"] = account.state == ACCOUNT_FROZEN ? SSeconomy.freeze_source(account.frozen_by) : null
 	data["freeze_reason"] = account.freeze_reason
 	data["cooldown_left"] = CEILING(COOLDOWN_TIMELEFT(account, personal_payment_cooldown) / (1 SECONDS), 1)
+	data["nearby"] = wallet_nearby_data(user)
 	var/datum/economy_department/department = SSeconomy.get_department(account.department_id)
 	data["wage"] = list(
 		"grade" = account.pay_grade ? wallet_grade_name(account.pay_grade) : null,
@@ -164,6 +173,11 @@
 			message = econ_personal_order(user, wallet_account(user), params["id"], params["price"], params["recipient"], params["hide_name"])[2]
 			personal_prices_at = null
 			return TRUE
+		if("shop_order")
+			message = econ_shop_order(user, wallet_account(user), params["id"], params["price"], params["recipient"], params["hide_name"], params["engraving"], econ_payer_name(computer?.GetID(), wallet_account(user)))[2]
+			return TRUE
+		if("pay_nearby")
+			return wallet_pay_nearby(user, params)
 		if("personal_cancel")
 			message = econ_cancel_personal_order(user, wallet_account(user), params["id"])[2]
 			return TRUE
@@ -218,6 +232,49 @@
 		message = error
 		return TRUE
 	message = "[action == "tip" ? "Чаевые" : "Перевод"] [round(amount)] кр. → [target.account_holder] (№[target.account_id])."
+	return TRUE
+
+/// Люди в ECON_NEARBY_PAY_RANGE клетках от КПК, на виду, с ID-картой на личном счёте: REF человека -> карта.
+/datum/computer_file/program/wallet/proc/nearby_payees(mob/living/user)
+	. = list()
+	var/turf/center = get_turf(computer)
+	if(!center)
+		return
+	for(var/mob/living/carbon/human/person in range(ECON_NEARBY_PAY_RANGE, center))
+		if(person == user || person.stat == DEAD || person.invisibility > SEE_INVISIBLE_LIVING || !can_see(center, person, ECON_NEARBY_PAY_RANGE))
+			continue
+		var/obj/item/card/id/card = person.get_idcard(FALSE)
+		if(card && SSeconomy.is_personal_account(card.registered_account))
+			.[REF(person)] = card
+
+/// Кому рядом можно заплатить: имя и должность - как на ID-карте, а не как на самом деле.
+/datum/computer_file/program/wallet/proc/wallet_nearby_data(mob/living/user)
+	. = list()
+	var/list/payees = nearby_payees(user)
+	for(var/ref in payees)
+		var/obj/item/card/id/card = payees[ref]
+		. += list(list("ref" = ref, "name" = card.registered_name || "без имени", "job" = card.assignment))
+
+/// Оплата человеку рядом по его ID-карте, без номера счёта: обычный перевод, получатель видит имя с карты плательщика и комментарий.
+/datum/computer_file/program/wallet/proc/wallet_pay_nearby(mob/living/user, list/params)
+	var/datum/bank_account/account = wallet_account(user)
+	if(!account)
+		message = "Нет банковского счёта."
+		return TRUE
+	var/amount = params["amount"]
+	if(istext(amount))
+		amount = text2num(amount)
+	if(!isnum(amount) || !(amount >= 1))
+		message = "Неверная сумма."
+		return TRUE
+	var/list/payees = nearby_payees(user)
+	var/obj/item/card/id/card = istext(params["ref"]) ? payees[params["ref"]] : null
+	if(!card)
+		message = "Этого человека уже нет рядом, или на нём нет ID-карты со счётом."
+		return TRUE
+	var/payee_name = card.registered_name || "без имени"
+	var/error = SSeconomy.send_transfer(account, card.registered_account, amount, user, params["memo"], econ_payer_name(computer?.GetID(), account))
+	message = error || "Оплачено [round(amount)] кр. → [payee_name]."
 	return TRUE
 
 /datum/computer_file/program/wallet/proc/wallet_lottery(mob/living/user, count)

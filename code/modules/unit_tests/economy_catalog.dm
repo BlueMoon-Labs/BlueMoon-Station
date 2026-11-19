@@ -1170,3 +1170,245 @@
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Подарки не отгружены")
 	for(var/datum/bank_account/payer as anything in givers)
 		TEST_ASSERT_EQUAL(payer.account_balance, givers[payer], "С [payer.account_holder] при отгрузке списан сбор за чужие кейсы")
+
+/// Капсулы магазина, которые ещё не сели рядом с center: возвращает их содержимое и снимает сами капсулы, чтобы они не сели посреди следующих тестов.
+/datum/unit_test/economy_catalog/proc/catch_shop_pods(turf/center)
+	. = list()
+	for(var/obj/effect/pod_landingzone/zone in range(ECON_EXPRESS_LANDING_RANGE, center))
+		var/obj/structure/closet/supplypod/pod = zone.pod
+		var/list/inside = pod.GetAllContents() - pod
+		. += inside
+		allocated += inside
+		for(var/atom/movable/thing as anything in pod)
+			thing.moveToNullspace()
+		QDEL_NULL(zone.helper)
+		qdel(pod)
+		qdel(zone)
+
+/// Типы вещей, которые прилетели в капсулах рядом с center.
+/datum/unit_test/economy_catalog/proc/shop_pod_types(turf/center)
+	. = list()
+	for(var/atom/movable/thing as anything in catch_shop_pods(center))
+		. += thing.type
+
+/// Магазин Кошелька: цена списывается сразу, вещь прилетает капсулой рядом с покупателем и помечена купленной, гравировка доплачивается и видна в описании, питомец летит в закрытой переноске. Вне станции, по старой цене, чаще кулдауна, без денег и чужой вещи - отказ без списания.
+/datum/unit_test/economy_catalog/personal_shop_order/Run()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Shop Buyer", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/datum/computer_file/program/wallet/wallet = pda_wallet(buyer)
+	var/list/shop = wallet.wallet_static_data()["shop"]
+	var/list/first = shop[1]
+	TEST_ASSERT_EQUAL(first["name"], ECON_SHOP_NOVELTY_SECTION, "Новинки смены не первыми в магазине")
+	TEST_ASSERT_EQUAL(length(first["items"]), ECON_SHOP_NOVELTIES, "Новинок смены не [ECON_SHOP_NOVELTIES]")
+	var/hat_type = /obj/item/clothing/head/fedora
+	var/hat_price = econ_shop_entry(hat_type)[1]
+
+	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price))
+	TEST_ASSERT(findtext(wallet.message, "негде сесть"), "Вне станции капсула не отказала: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказ вне станции списал деньги")
+	buyer.forceMove(station_turf)
+	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price - 1))
+	TEST_ASSERT(findtext(wallet.message, "Цена изменилась") && findtext(wallet.message, "[hat_price] кр."), "Отказ не называет новую цену: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("id" = "[/obj/item/gun/energy/laser]", "price" = 1))
+	TEST_ASSERT(findtext(wallet.message, "нет"), "Вещь не из магазина куплена: [wallet.message]")
+	var/datum/bank_account/broke = new("Econ Shop Broke")
+	allocated += broke
+	TEST_ASSERT(!econ_shop_order(buyer, broke, hat_type, hat_price)[1], "Покупка без денег прошла")
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/outside_pool = pool - GLOB.econ_shop_novelties
+	if(length(outside_pool))
+		var/rested = outside_pool[1]
+		var/list/rested_entry = pool[rested]
+		press_wallet(buyer, "shop_order", list("id" = "[rested]", "price" = rested_entry[1]))
+		TEST_ASSERT(findtext(wallet.message, "нет"), "Новинка не этой смены куплена: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказы списали деньги")
+	TEST_ASSERT_EQUAL(length(shop_pod_types(station_turf)), 0, "Отказ вызвал капсулу")
+
+	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price, "engraving" = "Для капитана"))
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - hat_price - ECON_SHOP_ENGRAVING_PRICE, "Списана не цена с гравировкой: [wallet.message]")
+	var/list/delivered = catch_shop_pods(get_turf(buyer))
+	var/obj/item/clothing/head/fedora/hat = locate() in delivered
+	TEST_ASSERT_NOTNULL(hat, "Капсула рядом с покупателем не везёт шляпу")
+	TEST_ASSERT(findtext(hat.desc, "Для капитана"), "Гравировки нет в описании: [hat.desc]")
+	TEST_ASSERT(hat.econ_imported && hat.econ_vended, "Шляпа из магазина не помечена купленной")
+	var/balance = account.account_balance
+	press_wallet(buyer, "shop_order", list("id" = "[hat_type]", "price" = hat_price))
+	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Вторая капсула подряд не отказала: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "Отказ по кулдауну списал деньги")
+
+	COOLDOWN_RESET(account, personal_shop_cooldown)
+	var/pet_type = /mob/living/simple_animal/mouse/white
+	var/pet_price = econ_shop_entry(pet_type)[1]
+	press_wallet(buyer, "shop_order", list("id" = "[pet_type]", "price" = pet_price, "engraving" = "Пушок"))
+	TEST_ASSERT(findtext(wallet.message, "питомце"), "Гравировка на питомце не отказала: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("id" = "[pet_type]", "price" = pet_price))
+	TEST_ASSERT_EQUAL(account.account_balance, balance - pet_price, "Питомец списал не свою цену: [wallet.message]")
+	delivered = catch_shop_pods(get_turf(buyer))
+	var/obj/item/pet_carrier/carrier = locate() in delivered
+	TEST_ASSERT_NOTNULL(carrier, "Питомец прилетел не в переноске")
+	TEST_ASSERT(!carrier.open, "Переноска с питомцем открыта")
+	TEST_ASSERT(locate(pet_type) in delivered, "В переноске нет питомца")
+
+	COOLDOWN_RESET(account, personal_shop_cooldown)
+	var/plush_type = /obj/item/toy/plush/carpplushie
+	press_wallet(buyer, "shop_order", list("id" = "[plush_type]", "price" = econ_shop_entry(plush_type)[1]))
+	var/obj/item/toy/plush/landed
+	for(var/i in 1 to 30)
+		for(var/obj/item/toy/plush/carpplushie/plush in range(ECON_EXPRESS_LANDING_RANGE, buyer))
+			landed = plush
+		if(landed)
+			break
+		sleep(5)
+	TEST_ASSERT_NOTNULL(landed, "Капсула не высадила игрушку рядом с покупателем")
+	allocated += landed
+	TEST_ASSERT_EQUAL(get_area(landed), get_area(buyer), "Игрушка села не в том помещении, где покупатель")
+
+/// Подарок из магазина: платит даритель, капсула садится рядом с получателем, в ней открытка с именем с карты дарителя, карта получателя узнаёт о подарке; имя скрывается по выбору. Получателю без тела, себе и чаще паузы подарок не оформить.
+/datum/unit_test/economy_catalog/personal_shop_gift/Run()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
+	var/mob/living/carbon/human/giver = make_pda_buyer("Econ Shop Giver", 100000)
+	var/datum/bank_account/econ_test_ear/payer = pda_account(giver)
+	var/obj/item/modular_computer/pda/pda = giver.get_active_held_item()
+	pda.stored_id.registered_name = "Econ Card Alias"
+	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Shop Friend", 0)
+	var/datum/bank_account/econ_test_ear/receiver = pda_account(friend)
+	var/plush_type = /obj/item/toy/plush/beeplushie
+	var/price = econ_shop_entry(plush_type)[1]
+	var/datum/computer_file/program/wallet/wallet = press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT(findtext(wallet.message, "не может принять"), "Подарок получателю без тела не отказал: [wallet.message]")
+	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = payer.account_holder))
+	TEST_ASSERT(findtext(wallet.message, "Себе"), "Подарок себе не отказал: [wallet.message]")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000, "Отказы списали деньги")
+
+	receiver.bind_owner(friend)
+	friend.forceMove(station_turf)
+	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Подарок списан не с дарителя: [wallet.message]")
+	TEST_ASSERT_EQUAL(receiver.account_balance, 0, "Подарок тронул счёт получателя")
+	var/list/delivered = catch_shop_pods(station_turf)
+	TEST_ASSERT(locate(plush_type) in delivered, "Капсула рядом с получателем не везёт подарок")
+	var/obj/item/paper/card = locate() in delivered
+	TEST_ASSERT_NOTNULL(card, "К подарку нет открытки")
+	TEST_ASSERT(findtext(card.get_raw_text(), "Econ Card Alias"), "Открытка не называет дарителя по карте: [card.get_raw_text()]")
+	TEST_ASSERT(!findtext(card.get_raw_text(), payer.account_holder), "Открытка назвала владельца счёта вместо имени с карты")
+	var/heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(heard, "Вам подарок") && findtext(heard, "Econ Card Alias"), "Получатель не узнал, кто дарит: [heard]")
+
+	COOLDOWN_RESET(payer, personal_shop_cooldown)
+	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Второй подарок подряд не отказал: [wallet.message]")
+	COOLDOWN_RESET(payer, personal_gift_cooldown)
+	receiver.heard.Cut()
+	press_wallet(giver, "shop_order", list("id" = "[plush_type]", "price" = price, "recipient" = receiver.account_holder, "hide_name" = TRUE))
+	delivered = catch_shop_pods(station_turf)
+	card = locate() in delivered
+	TEST_ASSERT(card && !findtext(card.get_raw_text(), "Econ Card Alias"), "Открытка подарка без имени называет дарителя")
+	heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(heard, "кто-то из экипажа") && !findtext(heard, "Econ Card Alias"), "Карта получателя назвала скрывшего имя дарителя: [heard]")
+
+/// Сторож магазина: только вид и уют - без оружия, брони, лекарств, доступов и маскировки лица, у каждой вещи иконка; доставленное ни сдачей NT, ни переработкой в листы не окупает цену даже на пике рынка у лучшего покупателя, а спецзаказы его не берут.
+/datum/unit_test/economy_catalog/no_shop_farm
+	var/list/saved_market
+
+/datum/unit_test/economy_catalog/no_shop_farm/New()
+	. = ..()
+	saved_market = econ_test_swap_market()
+	if(!length(GLOB.exports_list))
+		setupExports()
+
+/datum/unit_test/economy_catalog/no_shop_farm/Destroy()
+	econ_test_restore_market(saved_market)
+	return ..()
+
+/datum/unit_test/economy_catalog/no_shop_farm/Run()
+	var/static/list/forbidden = typecacheof(list(
+		/obj/item/gun,
+		/obj/item/melee,
+		/obj/item/grenade,
+		/obj/item/implant,
+		/obj/item/implanter,
+		/obj/item/implantcase,
+		/obj/item/card,
+		/obj/item/organ,
+		/obj/item/reagent_containers,
+		/obj/item/stack/medical,
+		/obj/item/clothing/suit/armor,
+		/obj/item/clothing/head/helmet,
+		/obj/item/clothing/mask,
+		/obj/item/clothing/gloves,
+	))
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/items = pool.Copy()
+	var/list/sections = econ_shop_sections()
+	for(var/section in sections)
+		items |= sections[section]
+	econ_test_partner_extremes()
+	for(var/id in SSmarket.commodities)
+		var/datum/commodity/commodity = SSmarket.commodities[id]
+		commodity.price_factor = MARKET_PRICE_MAX
+		commodity.hot_mult = MARKET_HOT_MULT_MAX
+		commodity.demand = 1
+	var/list/problems = list()
+	for(var/atom/movable/item_type as anything in items)
+		var/list/entry = items[item_type]
+		var/price = entry[1]
+		if(!econ_shop_icon_ok(initial(item_type.icon), initial(item_type.icon_state)))
+			problems += "[item_type]: нет иконки для витрины"
+		var/list/things = econ_shop_pack(item_type, run_loc_floor_bottom_left, price)
+		var/list/everything = list()
+		for(var/atom/movable/thing as anything in things)
+			everything += thing.GetAllContents()
+		var/value = 0
+		var/recycled = 0
+		for(var/atom/movable/part as anything in everything)
+			var/problem = combat_problem(part, forbidden)
+			if(problem)
+				problems += "[item_type]: [part.type] [problem]"
+			if(!part.econ_imported)
+				problems += "[item_type]: [part.type] не помечен купленным, спецзаказы его возьмут"
+			for(var/datum/material/material as anything in part.custom_materials)
+				var/datum/export/export = econ_material_export(material)
+				if(export)
+					recycled += part.custom_materials[material] / MINERAL_MATERIAL_AMOUNT * export.init_cost * econ_sale_factor(export.commodity) * econ_buyer_factor(export.commodity)
+		for(var/atom/movable/thing as anything in things)
+			value += econ_export_report_value(export_item_and_contents(thing, EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, delete_unsold = FALSE, dry_run = TRUE))
+		if(value >= price)
+			problems += "[item_type]: сдаётся за [value] кр. при цене [price]"
+		if(recycled >= price)
+			problems += "[item_type]: переработка в листы даёт [round(recycled)] кр. при цене [price]"
+		for(var/atom/movable/part as anything in everything)
+			if(!QDELETED(part))
+				qdel(part)
+		econ_test_clear_turf(run_loc_floor_bottom_left)
+	TEST_ASSERT(!length(problems), "Магазин продаёт не косметику или окупаемое: [jointext(problems, "; ")]")
+
+/// Почему вещь из магазина даёт преимущество в бою, работе или маскировке; null - не даёт.
+/datum/unit_test/economy_catalog/no_shop_farm/proc/combat_problem(atom/movable/part, list/forbidden)
+	if(is_type_in_typecache(part, forbidden))
+		return "запрещённого вида"
+	if(isliving(part))
+		var/mob/living/simple_animal/pet = part
+		if(istype(pet) && pet.melee_damage_upper > 5)
+			return "кусается на [pet.melee_damage_upper]"
+		return null
+	var/obj/item/item = part
+	if(!istype(item))
+		return null
+	if(item.force > 5 || item.throwforce > 5)
+		return "бьёт на [max(item.force, item.throwforce)]"
+	var/obj/item/clothing/clothing = item
+	if(!istype(clothing))
+		return null
+	for(var/rating in list(MELEE, BULLET, LASER, ENERGY, BOMB))
+		if(clothing.armor?.getRating(rating) > 0)
+			return "с бронёй [rating] [clothing.armor.getRating(rating)]"
+	if(clothing.flash_protect > 0)
+		return "защищает от вспышек"
+	if(clothing.clothing_flags & (STOPSPRESSUREDAMAGE | THICKMATERIAL | NOSLIP | NOSLIP_ICE | NOSLIP_ALL))
+		return "с защитными флагами [clothing.clothing_flags]"
+	if(clothing.flags_inv & HIDEFACE)
+		return "прячет лицо"
+	return null

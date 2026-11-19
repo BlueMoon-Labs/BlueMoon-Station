@@ -81,14 +81,14 @@
 	COOLDOWN_START(source, personal_payment_cooldown, settings.transfer_cooldown_seconds SECONDS)
 	return null
 
-/// Личный перевод без налога. Возвращает null или текст отказа.
-/datum/controller/subsystem/economy/proc/send_transfer(datum/bank_account/source, datum/bank_account/target, amount, mob/user, memo)
+/// Личный перевод без налога; payer_name - кем назвать плательщика получателю вместо владельца счёта. Возвращает null или текст отказа.
+/datum/controller/subsystem/economy/proc/send_transfer(datum/bank_account/source, datum/bank_account/target, amount, mob/user, memo, payer_name)
 	if(istext(memo))
 		memo = copytext_char(trim(sanitize(memo)), 1, ECON_TRANSFER_MEMO_MAX + 1)
 	. = personal_payment(source, target, amount, ECON_TRANSFER, user, length(memo) ? "Перевод: [memo]" : null)
 	if(.)
 		return
-	target.bank_card_talk("Поступил перевод [round(amount)] кр. от [source.account_holder].", balloon = "перевод +[round(amount)] кр")
+	target.bank_card_talk("Поступил перевод [round(amount)] кр. от [payer_name || source.account_holder][length(memo) ? ": [memo]" : ""].", balloon = "перевод +[round(amount)] кр")
 
 /// Чаевые без налога. Возвращает null или текст отказа.
 /datum/controller/subsystem/economy/proc/send_tip(datum/bank_account/source, datum/bank_account/target, amount, mob/user)

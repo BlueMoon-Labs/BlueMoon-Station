@@ -456,6 +456,92 @@ describe('NtosWallet', () => {
     expect(getByText('Купить 5').closest('.Button')?.className).toContain('Button--disabled');
   });
 
+  const shop = {
+    shop: [
+      {
+        name: 'Новинки смены',
+        novelty: 1,
+        items: [{ id: '/obj/item/toy/plush/deer', name: 'deer plushie', note: 'Плюшевый олень.', price: 350, icon: 'econ_shop32x32 deer' }],
+      },
+      {
+        name: 'Головные уборы',
+        items: [{ id: '/obj/item/clothing/head/fedora', name: 'fedora', note: 'Фетровая шляпа.', price: 500, icon: null }],
+      },
+      {
+        name: 'Питомцы',
+        items: [
+          { id: '/mob/living/simple_animal/pet/cat/kitten', name: 'kitten', note: 'Котёнок.', price: 4000, pet: 1 },
+        ],
+      },
+    ],
+    engraving_price: 300,
+    engraving_max: 40,
+    shop_cooldown: 10,
+  };
+
+  test('магазин: новинки первыми, разделы с иконками, покупка себе с гравировкой и без', () => {
+    const { container, getByText, getAllByText, getByPlaceholderText, topic } = setup({ ...shop, balance: 1000 });
+    fireEvent.click(getByText('Магазин'));
+    const content = text(container);
+    expect(content).toContain('прилетает блюспейс-капсулой на свободный пол рядом с вами');
+    expect(content).toContain('Капсулу можно вызывать раз в 10 с');
+    expect(content.indexOf('deer plushie')).toBeLessThan(content.indexOf('fedora'));
+    expect(container.querySelector('.econ_shop32x32.deer')).toBeTruthy();
+    expect(content).toContain('Прилетит в закрытой переноске.');
+    expect(getAllByText('Купить')[2].closest('.Button')?.className).toContain('Button--disabled');
+    fireEvent.click(getAllByText('Купить')[1]);
+    fireEvent.click(getByText('Оплатить 500 кр.?'));
+    fireEvent.input(getByPlaceholderText('Необязательно: надпись на вещи за 300 кр.'), { target: { value: ' Для Кэт ' } });
+    expect(text(container)).toContain('800 кр.');
+    fireEvent.click(getAllByText('Купить')[1]);
+    fireEvent.click(getByText('Оплатить 800 кр.?'));
+    expect(sent(topic, 'shop_order')).toEqual([
+      { id: '/obj/item/clothing/head/fedora', price: 500, engraving: '' },
+      { id: '/obj/item/clothing/head/fedora', price: 500, engraving: 'Для Кэт' },
+    ]);
+    fireEvent.click(getAllByText('Питомцы')[0]);
+    expect(text(container)).not.toContain('fedora');
+    expect(text(container)).toContain('kitten');
+  });
+
+  test('магазин: подарок уходит с получателем и выбором подписи, питомцу гравировка не шлётся', () => {
+    const { container, getByText, getAllByText, getByPlaceholderText, topic } = setup({ ...shop, balance: 9000 });
+    fireEvent.click(getByText('Магазин'));
+    fireEvent.input(getByPlaceholderText('Себе, или имя либо номер счёта получателя'), { target: { value: 'Анна Смирнова' } });
+    fireEvent.input(getByPlaceholderText('Необязательно: надпись на вещи за 300 кр.'), { target: { value: 'Мурка' } });
+    expect(text(container)).toContain('капсула сядет рядом с получателем');
+    fireEvent.click(getByText('Подписать моим именем'));
+    fireEvent.click(getAllByText('Подарить')[2]);
+    fireEvent.click(getByText('Подарить за 4 000 кр.?'));
+    expect(sent(topic, 'shop_order')).toEqual([
+      {
+        id: '/mob/living/simple_animal/pet/cat/kitten',
+        price: 4000,
+        engraving: '',
+        recipient: 'Анна Смирнова',
+        hide_name: true,
+      },
+    ]);
+  });
+
+  test('перевод: человеку рядом платят по имени с карты, с суммой и комментарием', () => {
+    const empty = setup({ nearby_range: 3, nearby: [] });
+    fireEvent.click(empty.getByText('Перевод'));
+    expect(text(empty.container)).toContain('Рядом никого с ID-картой');
+    document.body.innerHTML = '';
+    const { container, getByText, getByPlaceholderText, topic } = setup({
+      nearby_range: 3,
+      nearby: [{ ref: '[0x2000abc]', name: 'Джон Доу', job: 'Bartender' }],
+    });
+    fireEvent.click(getByText('Перевод'));
+    expect(text(container)).toContain('в 3 шагах от вас');
+    fireEvent.click(getByText('Джон Доу, Bartender'));
+    fireEvent.input(getByPlaceholderText('Необязательно: за что платите'), { target: { value: 'за коктейль' } });
+    fireEvent.click(getByText('Заплатить: Джон Доу'));
+    fireEvent.click(getByText('Заплатить 10 кр.?'));
+    expect(sent(topic, 'pay_nearby')).toEqual([{ ref: '[0x2000abc]', amount: 10, memo: 'за коктейль' }]);
+  });
+
   test('без лотереи раздела нет', () => {
     const { container } = setup({ lottery: null });
     expect(text(container)).not.toContain('Лотерея сектора');
