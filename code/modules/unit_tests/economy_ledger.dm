@@ -197,6 +197,28 @@
 	TEST_ASSERT_EQUAL(account.account_balance, 850, "Клик по пачке тоже вносит всю кучу")
 	TEST_ASSERT(QDELETED(more_bills) && QDELETED(more_chip), "Вторая куча исчезла")
 
+/// Внесение кучи не засыпает между подсчётом и удалением: второй клик на занятом тике не вносит ту же кучу ещё раз, а удалённые деньги не считаются.
+/datum/unit_test/economy_cash_pile_no_double/Run()
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_pile_twice", 0)
+	var/obj/item/card/id/card = person.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	var/turf/floor = run_loc_floor_bottom_left
+	var/list/pile = list()
+	pile += allocate(/obj/item/holochip, floor, 300)
+	pile += allocate(/obj/item/holochip, floor, 200)
+	pile += allocate(/obj/item/stack/spacecash/c100, floor, 2)
+	var/saved_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = -1
+	INVOKE_ASYNC(card, TYPE_PROC_REF(/obj/item/card/id, mass_insert_money), pile.Copy(), person)
+	Master.current_ticklimit = saved_ticklimit
+	card.mass_insert_money(pile.Copy(), person)
+	sleep(5)
+	TEST_ASSERT_EQUAL(account.account_balance, 700, "Куча зачислена один раз")
+	for(var/obj/item/money as anything in pile)
+		TEST_ASSERT(QDELETED(money), "[money] не исчез")
+	TEST_ASSERT(!card.mass_insert_money(pile.Copy(), person), "Удалённые деньги внесены ещё раз")
+	TEST_ASSERT_EQUAL(account.account_balance, 700, "Удалённые деньги зачислены")
+
 /// Номер счёта уникален, по нему находится счёт, после qdel - не находится.
 /datum/unit_test/economy_account_registry/Run()
 	var/datum/bank_account/alpha = new("econ_test_alpha")
@@ -207,6 +229,18 @@
 	qdel(alpha)
 	qdel(beta)
 	TEST_ASSERT_NULL(SSeconomy.find_account(number), "После qdel номер свободен")
+
+/// Закрытый счёт отпускает все привязанные к нему карты: ID-карта и анонимная карта не держат удалённый счёт.
+/datum/unit_test/economy_account_close_unlinks_cards/Run()
+	var/obj/item/anon_account_card/anon = allocate(/obj/item/anon_account_card)
+	var/datum/bank_account/account = anon.account
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_account = account
+	account.bank_cards += card
+	qdel(account)
+	TEST_ASSERT_NULL(card.registered_account, "ID-карта держит закрытый счёт")
+	TEST_ASSERT_NULL(anon.account, "Анонимная карта держит закрытый счёт")
+	TEST_ASSERT(!length(account.bank_cards), "Закрытый счёт держит карты")
 
 /datum/unit_test/economy_cash_account
 	var/saved_cash

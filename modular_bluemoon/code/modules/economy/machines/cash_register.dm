@@ -574,13 +574,17 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	if(world.time < cashier.order_at + REGISTER_SELECT_GRACE)
 		to_chat(user, span_warning("Счёт только что изменился, проверьте сумму и проведите картой ещё раз."))
 		return
-	var/line = payment_line(cashier)
-	if(!charge(user, card.registered_account, cashier))
+	var/datum/bank_account/payer = card.registered_account
+	if(!payer)
+		to_chat(user, span_warning("Карта не платит: К карте не привязан счёт."))
 		return
-	if(card.registered_account == econ_account_of(user))
+	var/line = payment_line(cashier)
+	if(!charge(user, payer, cashier))
+		return
+	if(payer == econ_account_of(user))
 		to_chat(user, span_notice("Оплачено: [line]. Чек - кнопкой в окне кассы."))
 	else
-		to_chat(user, span_notice("Оплачено картой [card.registered_name || card.registered_account.account_holder]: [line]."))
+		to_chat(user, span_notice("Оплачено картой [card.registered_name || payer.account_holder]: [line]."))
 
 /// Карта, которой платят: сама ID-карта, карта в КПК или ноутбуке, лицевая карта кошелька. Чужие держатели карт (переноска с микро) не платят.
 /obj/machinery/cash_register/proc/payment_card(obj/item/thing)

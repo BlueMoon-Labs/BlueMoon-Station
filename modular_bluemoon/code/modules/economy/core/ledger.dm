@@ -177,10 +177,11 @@
 			open_amount += flag.amount
 	. += "Аудит за смену: открыто дел [audit_opened], закрыто возвратом [audit_closed_refunded] (возвращено [num2text(audit_refunded, ECON_TEXT_DIGITS)] кр.), закрыто без возврата [audit_closed_dismissed], осталось открытыми [open_count] на [num2text(open_amount, ECON_TEXT_DIGITS)] кр."
 
-/// Пишет итог смены в econ.log один раз за раунд. Возвращает TRUE, если записал.
+/// Пишет итог смены в econ.log один раз за раунд, после продажи непроданных акций: её комиссии входят в итог. Возвращает TRUE, если записал.
 /proc/econ_log_round_summary()
 	if(SSeconomy.ledger.summary_logged)
 		return FALSE
+	SSmarket.sell_off_shares()
 	SSeconomy.ledger.summary_logged = TRUE
 	SSeconomy.flush_audit_logs()
 	for(var/line in SSeconomy.ledger.round_summary())

@@ -341,22 +341,23 @@
 	if (!money || !money.len)
 		return FALSE
 
+	// Подсчёт, зачисление и удаление без сна: иначе второй клик на занятом тике внесёт ту же кучу ещё раз
 	var/total = 0
-	var/count = 0
-
+	var/list/taken = list()
 	for (var/obj/item/physical_money in money)
+		if(QDELETED(physical_money))
+			continue
 		total += physical_money.get_item_credit_value()
-		count++
-		CHECK_TICK
+		taken += physical_money
 
 	if(!total)
 		return FALSE
-	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных", "[count] предм."))
+	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных", "[length(taken)] предм."))
 		var/refusal = econ_cash_refusal_text(what, total)
 		to_chat(user, span_warning(refusal))
 		return FALSE
 
-	QDEL_LIST(money)
+	QDEL_LIST(taken)
 
 	return total
 

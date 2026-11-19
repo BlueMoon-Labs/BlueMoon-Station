@@ -739,7 +739,7 @@
 	qdel(fallback)
 	qdel(gold_open)
 
-/// Пачка скупки, снятая непроданной, снижает шанс следующей пачки её партнёра, если не была под эмбарго; продавца новой пачки выбирает этот шанс, без пустых слотов.
+/// Пачка скупки, снятая непроданной, снижает шанс следующей пачки её партнёра, если не была под эмбарго; продавца новой пачки выбирает этот шанс, и тот же шанс решает, выставит ли он её вообще.
 /datum/unit_test/economy_offers/ignored_bundles_slow/Run()
 	SSmarket.offer_ignored_factor = 0.5
 	SSmarket.offer_ignored_chance_min = 10
@@ -775,6 +775,19 @@
 		TEST_ASSERT_EQUAL(fresh.seller_id, "vey_med", "Пачку выставил партнёр с нулевым шансом")
 		SSmarket.bundles -= fresh
 		qdel(fresh)
+	SSmarket.offer_ignored_factor = 0.000001
+	vey.bundles_ignored = 1
+	var/spawned = 0
+	for(var/attempt in 1 to 20)
+		SSmarket.next_bundle_at = world.time
+		SSmarket.tick_bundles()
+		for(var/datum/supply_pack/bundle/fresh as anything in SSmarket.bundles.Copy())
+			spawned++
+			SSmarket.bundles -= fresh
+			qdel(fresh)
+	SSmarket.offer_ignored_factor = 0
+	vey.bundles_ignored = 0
+	TEST_ASSERT_EQUAL(spawned, 0, "Единственный продавец с почти нулевым шансом выставляет пачку каждый срок")
 	SSmarket.next_bundle_at = world.time + 1 HOURS
 
 /// Пачку партнёра под эмбарго не купить и не отгрузить; счётчик непроданных сбрасывает оплата пачки шаттлом, а не корзина.

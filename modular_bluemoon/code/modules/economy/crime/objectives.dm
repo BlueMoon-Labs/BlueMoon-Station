@@ -47,7 +47,7 @@
 /datum/objective/economy/proc/tool_unused(obj/item/tool)
 	var/obj/item/anon_account_card/card = tool
 	if(istype(card))
-		return !card.account || (card.account.account_balance <= 0 && !length(card.account.shares) && !card.account.realized_stock_profit)
+		return !card.account || (card.account.account_balance <= 0 && !length(card.account.shares) && !card.account.realized_stock_profit && length(card.account.bank_cards) <= 1)
 	var/obj/item/card_skimmer/skimmer = tool
 	if(istype(skimmer))
 		return !length(skimmer.stolen)
@@ -340,15 +340,18 @@
 	return "Выкачайте [target_amount] кр. с личного счёта [target?.name] ([target?.assigned_role]) и оставьте на нём к концу смены не больше [ECON_OBJECTIVE_DRAIN_LEFT] кр."
 
 /datum/objective/economy/drain_head/how_to_text()
-	return "Подойдут скиммер, украденная ID-карта или снятие наличных с неё. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Траты самого владельца, оплата на кассе и то, что вы вернёте на счёт, не засчитываются."
+	return "Подойдут скиммер, украденная ID-карта или снятие наличных с неё. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Деньги за его акции, которые биржа продаст в конце смены, в остаток не идут. Траты самого владельца, оплата на кассе и то, что вы вернёте на счёт, не засчитываются."
+
+/// Остаток на счёте главы без денег, зачисленных продажей его акций в конце смены.
+/datum/objective/economy/drain_head/proc/left_on_account()
+	var/datum/bank_account/account = SSeconomy.find_account(target_account_id)
+	return account ? account.account_balance - account.stock_autosold_credited : 0
 
 /datum/objective/economy/drain_head/progress_text()
-	var/datum/bank_account/account = SSeconomy.find_account(target_account_id)
-	return "выкачано [drained] из [target_amount] кр., на счёте [account ? account.account_balance : 0] кр."
+	return "выкачано [drained] из [target_amount] кр., на счёте [max(left_on_account(), 0)] кр."
 
 /datum/objective/economy/drain_head/is_done()
-	var/datum/bank_account/account = SSeconomy.find_account(target_account_id)
-	return account && drained >= target_amount && account.account_balance <= ECON_OBJECTIVE_DRAIN_LEFT
+	return SSeconomy.find_account(target_account_id) && drained >= target_amount && left_on_account() <= ECON_OBJECTIVE_DRAIN_LEFT
 
 /datum/objective/economy/hoard
 	name = "hoard"

@@ -123,6 +123,8 @@
 	var/stock_evac_wave = 0
 	/// Часть realized_stock_profit от продажи по рынку в конце смены: её не засчитывают цели предателя
 	var/stock_autosold_profit = 0
+	/// Сколько зачислено продажей по рынку в конце смены: выкачка счёта главы его не считает
+	var/stock_autosold_credited = 0
 
 /// Прибыль на бирже от своих сделок, без продажи по рынку в конце смены.
 /datum/bank_account/proc/traded_stock_profit()
@@ -243,6 +245,7 @@
 			account.shares -= ticker
 			account.cost_basis -= ticker
 			credited += amounts[1] - amounts[2]
+			account.stock_autosold_credited += amounts[1] - amounts[2]
 			total_profit += realized
 			sold += "[held] [ticker]"
 		if(!length(sold))

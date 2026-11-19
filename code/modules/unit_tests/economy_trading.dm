@@ -265,6 +265,30 @@
 			hooks += callback
 	TEST_ASSERT_EQUAL(length(hooks), 1, "Продажа акций один раз подписана на конец раунда")
 
+/// Итог смены пишется после продажи акций в конце смены: её комиссии входят в сток итога.
+/datum/unit_test/economy_trading/summary_after_sell_off/Run()
+	company.price = 50
+	var/datum/bank_account/holder = new_trader(0)
+	holder.shares = list("AGRO" = 40)
+	holder.cost_basis = list("AGRO" = 2000)
+	var/list/amounts = SSmarket.sale_amounts(company, 40)
+	var/datum/economy_ledger/saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
+	var/log_start = econ_test_log_length()
+	var/logged = econ_log_round_summary()
+	var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+	SSeconomy.ledger = saved_ledger
+	qdel(test_ledger)
+	TEST_ASSERT(amounts[2] > 0, "test premise: у продажи есть комиссия")
+	TEST_ASSERT(logged, "Итог смены записан")
+	TEST_ASSERT(!holder.shares["AGRO"], "Акции не проданы до итога смены")
+	var/summary = ""
+	for(var/line in econ_test_log_since(log_start))
+		if(findtext(line, "Итог смены: эмиссия") && findtext(line, "сток"))
+			summary = line
+			break
+	TEST_ASSERT(findtext(summary, "[ECON_STOCK_FEE] [amounts[2]]"), "Сток итога смены без комиссии автопродажи: [summary]")
+
 /// Лимит позиции считается по цене не ниже базовой: после обвала и усреднением вниз позиция не растёт сверх лимита по базе.
 /datum/unit_test/economy_trading/crash_cap/Run()
 	var/datum/bank_account/trader = new_trader(100000)

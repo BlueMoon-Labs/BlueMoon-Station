@@ -51,6 +51,13 @@
 		SSeconomy.move(null, src, -account_balance, ECON_ACCOUNT_CLOSED)
 	SSeconomy.unregister_account(src)
 	SSeconomy.bank_accounts -= src
+	for(var/obj/item/card/id/id_card in bank_cards)
+		if(id_card.registered_account == src)
+			id_card.registered_account = null
+	for(var/obj/item/anon_account_card/anon_card in bank_cards)
+		if(anon_card.account == src)
+			anon_card.account = null
+	bank_cards.Cut()
 	transaction_history.Cut()
 	return ..()
 

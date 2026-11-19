@@ -21,7 +21,7 @@
 	var/next_bundle_at = 0
 	var/bundle_uid = 0
 
-/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX; продавца выбирает вес bundle_spawn_chance(), и партнёр, чьи пачки не берут, выставляет реже.
+/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX; продавца выбирает вес bundle_spawn_chance(), и тот же шанс решает, выставит ли он пачку: партнёр, чьи пачки не берут, выставляет реже.
 /datum/controller/subsystem/market/proc/tick_bundles()
 	for(var/datum/supply_pack/bundle/bundle as anything in bundles)
 		if(world.time >= bundle.expires_at)
@@ -50,7 +50,8 @@
 			continue
 		roll -= weights[seller]
 		if(roll <= 0)
-			generate_bundle(seller)
+			if(prob(weights[seller]))
+				generate_bundle(seller)
 			return
 
 /// Партнёры, у которых есть что сложить в пачку: открытые, не под эмбарго, не контрабандные.

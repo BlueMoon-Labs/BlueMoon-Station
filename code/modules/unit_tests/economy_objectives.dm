@@ -577,6 +577,17 @@
 	qdel(hoard)
 	TEST_ASSERT(QDELETED(card) && QDELETED(card_account), "Неиспользованная карта осталась без задания")
 
+	var/datum/objective/economy/hoard/linked_hoard = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	var/obj/item/anon_account_card/linked = linked_hoard.give_tool()
+	allocated += linked
+	allocated += linked.account
+	var/obj/item/card/id/linked_id = allocate(/obj/item/card/id)
+	linked_id.registered_account = linked.account
+	linked.account.bank_cards += linked_id
+	qdel(linked_hoard)
+	TEST_ASSERT(!QDELETED(linked) && !QDELETED(linked.account), "Карта, к счёту которой привязали ID, удалена вместе с заданием")
+	TEST_ASSERT(linked_id.registered_account == linked.account, "ID-карта потеряла привязанный счёт")
+
 	var/datum/objective/economy/stock_profit/stocks = econ_objective_new(/datum/objective/economy/stock_profit, traitor.mind)
 	var/obj/item/anon_account_card/used = stocks.give_tool()
 	TEST_ASSERT(istype(used), "К бирже не выдана анонимная карта")
@@ -770,6 +781,26 @@
 	SSmarket.sell_off_shares()
 	TEST_ASSERT(!own.shares[ticker] && own.realized_stock_profit != realized_before, "Акции не проданы в конце смены")
 	TEST_ASSERT(findtext(objective.progress_text(), "прибыль [gain + loss] из"), "Продажа в конце смены засчитана в цель: [objective.progress_text()]")
+
+/// Продажа акций главы в конце смены пополняет его счёт, но выкачку не срывает: зачисленное автопродажей в остаток не идёт.
+/datum/unit_test/economy_trading/insider/econ_objective_drain_autosold/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestautodrain")
+	var/mob/living/carbon/human/head = econ_objective_traitor("econtestautohead")
+	var/datum/bank_account/head_account = econ_account_of(head)
+	var/datum/objective/economy/drain_head/objective = econ_objective_new(/datum/objective/economy/drain_head, traitor.mind)
+	objective.target = head.mind
+	objective.target_account_id = head_account.account_id
+	objective.target_amount = 1000
+	objective.drained = 1000
+	econ_test_set_balance(head_account, ECON_OBJECTIVE_DRAIN_LEFT / 2)
+	TEST_ASSERT(objective.check_completion(), "test premise: выкачка засчитана до конца смены")
+	company.price = 50
+	head_account.shares = list("AGRO" = 40)
+	head_account.cost_basis = list("AGRO" = 2000)
+	SSmarket.sell_off_shares()
+	TEST_ASSERT(head_account.account_balance > ECON_OBJECTIVE_DRAIN_LEFT, "test premise: автопродажа пополнила счёт главы: [head_account.account_balance]")
+	TEST_ASSERT(objective.check_completion(), "Продажа акций главы в конце смены сорвала выкачку")
+	TEST_ASSERT(findtext(objective.progress_text(), "на счёте [ECON_OBJECTIVE_DRAIN_LEFT / 2] кр."), "Прогресс считает деньги автопродажи: [objective.progress_text()]")
 
 /// Обвал засчитывается только пока действует своя плохая фальшивка: падение без неё, от чужой фальшивки и после опровержения не в счёт; чужую фальшивку о компании задания не пропускают, пока жив владелец.
 /datum/unit_test/economy_trading/insider/econ_objective_crash/Run()

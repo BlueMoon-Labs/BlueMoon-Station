@@ -314,6 +314,24 @@
 	TEST_ASSERT(!length(register.cashiers), "Кассир отошёл от кассы")
 	TEST_ASSERT_EQUAL(length(register.menu), 1, "Меню осталось после выхода")
 
+/// Карта без счёта не платит: касса отказывает и не списывает с личного счёта того, кто её провёл.
+/datum/unit_test/economy_register/unlinked_card/Run()
+	setup_register()
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/card/id/blank = allocate(/obj/item/card/id)
+	var/obj/item/card/id/own_card = customer.get_active_held_item()
+	customer.dropItemToGround(own_card)
+	customer.put_in_active_hand(blank)
+	GLOB.unit_test_chat_capture = list()
+	swipe(customer)
+	var/list/chat = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Пустая карта списала с личного счёта")
+	TEST_ASSERT_EQUAL(register.order_total(seller), 100, "Счёт ждёт оплаты")
+	TEST_ASSERT(findtext(econ_test_chat_to(chat, customer), "К карте не привязан счёт"), "Отказ не объясняет причину: [econ_test_chat_to(chat, customer)]")
+
 /// КПК с ID-картой внутри работает как сама карта: за кассу встают и платят им; КПК без карты ничего не делает.
 /datum/unit_test/economy_register/pda_swipe/Run()
 	setup_register()
