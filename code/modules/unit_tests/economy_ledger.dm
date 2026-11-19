@@ -70,7 +70,8 @@
 	TEST_ASSERT_EQUAL(SSeconomy.cash_account.account_balance, cash_before, "Наличные не ушли в минус")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted, minted_before, "Журнал эмиссии не тронут")
 	TEST_ASSERT(SSeconomy.move(SSeconomy.cash_account, alpha, 1000000, ECON_CASH_IN), "Миллион проходит")
-	SSeconomy.move(alpha, SSeconomy.cash_account, 1000000, ECON_CASH_OUT)
+	// Миллион пришёл эмиссией найденных наличных: сжечь его, а не вернуть в оборот, иначе следующие тесты видят богатую станцию
+	SSeconomy.move(alpha, null, 1000000, ECON_ADMIN)
 
 /// Конечная сумма от потолка - ввод игрока, а не баг: отказ без рантайма, строкой в econ.log с суммой, счетами, причиной и кто; суммы от миллиона пишутся цифрами.
 /datum/unit_test/economy_ledger_amount_cap_quiet/Run()

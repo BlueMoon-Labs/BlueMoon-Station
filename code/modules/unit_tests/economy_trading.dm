@@ -279,6 +279,8 @@
 	var/datum/economy_ledger/test_ledger = SSeconomy.ledger
 	SSeconomy.ledger = saved_ledger
 	qdel(test_ledger)
+	// Комиссия автопродажи сожжена, пока стоял временный журнал: без неё общий журнал не сходится с деньгами на счетах
+	saved_ledger.record(holder, null, amounts[2], ECON_STOCK_FEE)
 	TEST_ASSERT(amounts[2] > 0, "test premise: у продажи есть комиссия")
 	TEST_ASSERT(logged, "Итог смены записан")
 	TEST_ASSERT(!holder.shares["AGRO"], "Акции не проданы до итога смены")
