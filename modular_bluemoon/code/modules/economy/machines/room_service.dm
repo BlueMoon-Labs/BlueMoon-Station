@@ -5,6 +5,12 @@
 #define ROOM_SERVICE_PANEL_RANGE 2
 /// Экран ищет северную стену во всей комнате вокруг терминала
 #define ROOM_SERVICE_SCREEN_RANGE 20
+/// id позиции меню «Блюдо дня от шефа»
+#define ROOM_SERVICE_SPECIAL_ID "special"
+/// Блюдо дня от шефа дороже того же блюда меню во столько раз; нет его в меню - считается от ROOM_SERVICE_SPECIAL_BASE_PRICE
+#define ROOM_SERVICE_SPECIAL_MULT 1.5
+#define ROOM_SERVICE_SPECIAL_BASE_PRICE 80
+#define ROOM_SERVICE_PICK_TIMEOUT (30 SECONDS)
 
 /// Меню обслуживания номеров. Цена - заказу сервису станции, кейтеринг NT дороже в ROOM_SERVICE_CATERING_MULT раз.
 GLOBAL_LIST_INIT(room_service_menu, list(
@@ -31,10 +37,13 @@ GLOBAL_LIST_INIT(room_service_menu, list(
 /// Платный декор номера: появляется в номере и хранится с ним. "wall" - экран на стене, остальное - вещи у терминала.
 GLOBAL_LIST_INIT(room_service_decor, list(
 	"flowers" = list("name" = "Цветы", "desc" = "Два растения в горшках.", "price" = 400, "max" = ROOM_SERVICE_DECOR_PER_ROOM, "items" = list(/obj/item/kirbyplants/random = 2)),
-	"candles" = list("name" = "Свечи", "desc" = "Четыре вечные свечи: горят, пока их не задуют.", "price" = 400, "max" = ROOM_SERVICE_DECOR_PER_ROOM, "items" = list(/obj/item/candle/infinite = 4)),
+	"candles" = list("name" = "Свечи", "desc" = "Четыре вечные свечи: горят, пока их не задуют, и ничего не поджигают.", "price" = 400, "max" = ROOM_SERVICE_DECOR_PER_ROOM, "items" = list(/obj/item/candle/infinite/hugbox = 4)),
 	"lamps" = list("name" = "Тёплый свет", "desc" = "Две настольные лампы, белая и зелёная.", "price" = 500, "max" = ROOM_SERVICE_DECOR_PER_ROOM, "items" = list(/obj/item/flashlight/lamp = 1, /obj/item/flashlight/lamp/green = 1)),
-	"music" = list("name" = "Музыка", "desc" = "Экран Muz-TV на стене: играет только в этом номере и не снимается.", "price" = 3000, "max" = 1, "wall" = /obj/structure/sign/moniq/room_service),
+	"music" = list("name" = "Музыка", "desc" = "Экран Muz-TV на стене: треки бесплатно, играет только в этом номере и не снимается.", "price" = 3000, "max" = 1, "wall" = /obj/structure/sign/moniq/room_service),
 ))
+
+/// Чаевые, которые терминал предлагает оставить после доставки
+GLOBAL_LIST_INIT(room_service_tip_amounts, list(10, 25, 50))
 
 GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 
@@ -43,24 +52,47 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	var/datum/bank_account/system/escrow
 	var/list/datum/room_service_order/orders = list()
 	var/next_uid = 0
-	var/list/stats = list("staff" = 0, "delivered" = 0, "refunded" = 0, "catering" = 0, "decor" = 0)
+	var/list/stats = list("staff" = 0, "delivered" = 0, "refunded" = 0, "catering" = 0, "decor" = 0, "tips" = 0)
 	var/summary_hooked = FALSE
-	COOLDOWN_DECLARE(radio_cooldown)
+	/// Вид заказа -> когда канал сервиса снова можно позвать
+	var/list/radio_ready_at = list()
 
 /datum/room_service/proc/escrow_account()
 	if(!escrow)
 		escrow = new("Обслуживание номеров NT")
 	return escrow
 
-/datum/room_service/proc/note(stat)
-	stats[stat] += 1
+/datum/room_service/proc/note(stat, amount = 1)
+	stats[stat] += amount
 	if(summary_hooked)
 		return
 	summary_hooked = TRUE
 	SSticker.OnRoundend(CALLBACK(src, PROC_REF(log_summary)))
 
 /datum/room_service/proc/log_summary()
-	log_econ("Обслуживание номеров за смену: заказов сервису [stats["staff"]], доставлено [stats["delivered"]], возвратов [stats["refunded"]], кейтеринг NT [stats["catering"]], декор [stats["decor"]]")
+	log_econ("Обслуживание номеров за смену: заказов сервису [stats["staff"]], доставлено [stats["delivered"]], возвратов [stats["refunded"]], кейтеринг NT [stats["catering"]], декор [stats["decor"]], чаевых [stats["tips"]] кр.")
+
+/// Канал сервиса о заказе вида kind, не чаще ROOM_SERVICE_NOTIFY_COOLDOWN на вид.
+/datum/room_service/proc/radio(kind, text)
+	if(world.time < (radio_ready_at[kind] || 0))
+		return FALSE
+	if(!paperwork_radio(text, RADIO_CHANNEL_SERVICE))
+		return FALSE
+	radio_ready_at[kind] = world.time + ROOM_SERVICE_NOTIFY_COOLDOWN
+	return TRUE
+
+/datum/room_service/proc/open_orders()
+	. = list()
+	for(var/datum/room_service_order/order as anything in orders)
+		if(!order.settled)
+			. += order
+
+/datum/room_service/proc/order_by_uid(uid)
+	if(!isnum(uid))
+		return null
+	for(var/datum/room_service_order/order as anything in open_orders())
+		if(order.uid == uid)
+			return order
 
 /// Повара (food) или бармены (drink) на станции с игроком.
 /proc/room_service_staff(kind)
@@ -75,6 +107,35 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		return capital ? "Повар" : "повар"
 	return capital ? "Бармен" : "бармен"
 
+/// Взявший заказ всё ещё им занимается: жив, у клавиатуры и на станции.
+/proc/room_service_claimer_active(mob/living/staff)
+	return isliving(staff) && staff.stat != DEAD && staff.client && econ_on_station(staff)
+
+/// Почему sender не может работать с заказами в номера; null - может.
+/proc/room_service_sender_problem(mob/living/sender)
+	var/datum/bank_account/account = econ_account_of(sender)
+	if(!account || account.department_id != ACCOUNT_SRV || SSeconomy.personal_account_problem(account, FALSE))
+		return "Отправлять заказы в номера может только сотрудник сервиса со своей картой."
+	return null
+
+/// Блюдо дня сервиса как позиция меню; null - блюда дня нет. Только заказом повару и только это блюдо.
+/proc/room_service_special_entry()
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/obj/item/dish = service?.dish_of_the_day
+	if(!ispath(dish, /obj/item/reagent_containers/food/snacks))
+		return null
+	var/base = ROOM_SERVICE_SPECIAL_BASE_PRICE
+	for(var/id in GLOB.room_service_menu)
+		var/list/entry = GLOB.room_service_menu[id]
+		if(entry["path"] == dish)
+			base = entry["price"]
+	return list("name" = "Блюдо дня от шефа: [initial(dish.name)]", "path" = dish, "kind" = ROOM_SERVICE_FOOD, "price" = round(base * ROOM_SERVICE_SPECIAL_MULT), "exact" = TRUE)
+
+/proc/room_service_entry(item_id)
+	if(item_id == ROOM_SERVICE_SPECIAL_ID)
+		return room_service_special_entry()
+	return istext(item_id) ? GLOB.room_service_menu[item_id] : null
+
 /// Вид заказа, который закрывает предмет: блюдо или налитый напиток.
 /proc/room_service_item_kind(obj/item/thing)
 	if(istype(thing, /obj/item/reagent_containers/food/snacks))
@@ -83,11 +144,40 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		return ROOM_SERVICE_DRINK
 	return null
 
-/// Поднос отправляет только еду и напитки без вложенных вещей: это не телепорт для чего угодно.
+/// Сколько порций в предмете: стопка блинчиков считается по блинчикам.
+/proc/room_service_item_units(obj/item/thing)
+	if(istype(thing, /obj/item/reagent_containers/food/snacks/pancakes))
+		return 1 + length(thing.contents)
+	return 1
+
+/// Поднос отправляет только еду и напитки: это не телепорт для чего угодно. Внутри можно только то, что прошло бы само.
 /proc/room_service_item_allowed(obj/item/thing)
-	if(!istype(thing, /obj/item/reagent_containers/food) || length(thing.contents))
+	var/static/list/banned = typecacheof(list(
+		/obj/item/reagent_containers/food/snacks/cube,
+		/obj/item/reagent_containers/food/drinks/bottle/molotov,
+		/obj/item/reagent_containers/food/snacks/grown/cherry_bomb,
+		/obj/item/reagent_containers/food/snacks/grown/firelemon,
+	))
+	if(!istype(thing, /obj/item/reagent_containers/food) || is_type_in_typecache(thing, banned))
 		return FALSE
-	return !istype(thing, /obj/item/reagent_containers/food/snacks/cube) && !istype(thing, /obj/item/reagent_containers/food/drinks/bottle/molotov)
+	if(!length(thing.contents))
+		return TRUE
+	if(!istype(thing, /obj/item/reagent_containers/food/snacks/customizable) && !istype(thing, /obj/item/reagent_containers/food/snacks/pancakes))
+		return FALSE
+	for(var/atom/movable/inner as anything in thing.contents)
+		if(!isitem(inner) || !room_service_item_allowed(inner))
+			return FALSE
+	return TRUE
+
+/// Имена вещей через запятую, одинаковые - с числом.
+/proc/room_service_names(list/things)
+	var/list/counts = list()
+	for(var/atom/movable/thing as anything in things)
+		counts["[thing.name]"] += 1
+	var/list/parts = list()
+	for(var/name in counts)
+		parts += counts[name] > 1 ? "[name] x[counts[name]]" : name
+	return jointext(parts, ", ")
 
 /// Терминал и экран номера живут только в комнате отеля или в её хранилище.
 /proc/room_service_place_ok(atom/movable/thing)
@@ -106,35 +196,46 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	var/obj/machinery/room_service_panel/panel
 	var/deadline
 	var/timer_id
+	var/review_timer
+	var/remind_timer
+	/// Сотрудник, который взял заказ
+	var/datum/weakref/claimer
+	var/claimer_name
 	/// Деньги уже ушли сервису или вернулись заказчику
 	var/settled = FALSE
 
-/datum/room_service_order/New(obj/machinery/room_service_panel/panel, datum/bank_account/payer, mob/living/guest, item_id, count)
+/datum/room_service_order/New(obj/machinery/room_service_panel/panel, datum/bank_account/payer, mob/living/guest, item_id, list/entry, count)
 	src.panel = panel
 	src.payer = payer
 	payer_mob = WEAKREF(guest)
 	src.item_id = item_id
-	entry = GLOB.room_service_menu[item_id]
+	src.entry = entry
 	src.count = count
 	total = entry["price"] * count
 	room_number = panel.room_number
 	uid = ++GLOB.room_service.next_uid
 	deadline = world.time + ROOM_SERVICE_STAFF_WAIT
 	timer_id = addtimer(CALLBACK(src, PROC_REF(expire)), ROOM_SERVICE_STAFF_WAIT, TIMER_STOPPABLE)
+	remind_timer = addtimer(CALLBACK(src, PROC_REF(remind)), ROOM_SERVICE_STAFF_WAIT - ROOM_SERVICE_REMIND_BEFORE, TIMER_STOPPABLE)
+	schedule_review()
 	RegisterSignal(panel, COMSIG_PARENT_QDELETING, PROC_REF(on_panel_deleted))
 	RegisterSignal(payer, COMSIG_PARENT_QDELETING, PROC_REF(on_payer_deleted))
 	GLOB.room_service.orders += src
 
 /datum/room_service_order/Destroy()
 	refund("Заказ №[uid] отменён")
-	if(timer_id)
-		deltimer(timer_id)
-		timer_id = null
+	deltimer(timer_id)
+	deltimer(review_timer)
+	deltimer(remind_timer)
+	timer_id = null
+	review_timer = null
+	remind_timer = null
 	GLOB.room_service.orders -= src
 	if(payer)
 		UnregisterSignal(payer, COMSIG_PARENT_QDELETING)
 		payer = null
 	payer_mob = null
+	claimer = null
 	if(panel)
 		UnregisterSignal(panel, COMSIG_PARENT_QDELETING)
 		var/obj/machinery/room_service_panel/old_panel = panel
@@ -149,8 +250,20 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 /datum/room_service_order/proc/minutes_left()
 	return max(CEILING((deadline - world.time) / (1 MINUTES), 1), 0)
 
-/// Возврат предоплаты: ровно один раз на заказ, что бы его ни закрыло.
-/datum/room_service_order/proc/refund(why)
+/datum/room_service_order/proc/claimer_mob()
+	var/mob/living/staff = claimer?.resolve()
+	return isliving(staff) ? staff : null
+
+/// Строка заказа в списке подноса: без номера комнаты, он приватен.
+/datum/room_service_order/proc/tray_label()
+	return "Заказ №[uid]: [what()], осталось [minutes_left()] мин.[claimer ? " (взял [claimer_name])" : ""]"
+
+/// Текст заказа для карт и канала сервиса: без номера комнаты, доставка идёт по терминалу заказа.
+/datum/room_service_order/proc/staff_notice()
+	return "Обслуживание номеров: заказ №[uid] - [what()], [total] кр. Используйте пустой поднос обслуживания номеров (DinnerWare, Booze-O-Mat) в руке, чтобы взять заказ, потом положите заказ на поднос и используйте его ещё раз. Не взятый за [DisplayTimeText(ROOM_SERVICE_CLAIM_WAIT)] заказ отменяется, срок доставки - [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]."
+
+/// Возврат предоплаты: ровно один раз на заказ, что бы его ни закрыло. quiet - без сообщения на карту.
+/datum/room_service_order/proc/refund(why, quiet = FALSE)
 	if(settled)
 		return FALSE
 	settled = TRUE
@@ -159,20 +272,82 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		log_econ("Обслуживание номеров: возврат заказа №[uid] на [total] кр. не прошёл")
 		return FALSE
 	GLOB.room_service.note("refunded")
-	payer.bank_card_talk("[why]: [total] кр. вернулись на счёт.", balloon = "возврат +[total] кр")
+	if(!quiet)
+		payer.bank_card_talk("[why]: [total] кр. вернулись на счёт.", balloon = "возврат +[total] кр")
 	log_econ("Обслуживание номеров: заказ №[uid] ([what()], номер [room_number]) - [total] кр. вернулись [payer.account_holder] ([payer.account_id]): [why]")
 	return TRUE
 
-/// Сервис не успел: деньги назад, номеру открывается кейтеринг NT этого вида.
-/datum/room_service_order/proc/expire()
+/// Не успели или не взяли: деньги назад, а если гость в номере - номеру открывается кейтеринг NT этого вида.
+/datum/room_service_order/proc/expire(early = FALSE)
 	if(settled || QDELETED(src))
 		return
 	var/obj/machinery/room_service_panel/room_panel = panel
-	refund("Сервис не успел с заказом №[uid] ([what()]) за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]")
-	if(room_panel)
+	var/room_open = !!room_panel?.has_guest()
+	var/why
+	if(early)
+		why = "Никто из сервиса не взял заказ №[uid] ([what()]) за [DisplayTimeText(ROOM_SERVICE_CLAIM_WAIT)]"
+	else if(room_open)
+		why = "Сервис не успел с заказом №[uid] ([what()]) за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]"
+	else
+		why = "Заказ №[uid] не доставлен за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]"
+	refund(why)
+	if(room_open)
 		room_panel.catering_open |= entry["kind"]
-		room_panel.say("Заказ №[uid] не успели доставить, деньги вернулись. Теперь можно заказать готовое у NT.")
+		room_panel.say("Заказ №[uid] не [early ? "взяли" : "успели доставить"], деньги вернулись. Теперь можно заказать готовое у NT.")
 	qdel(src)
+
+/datum/room_service_order/proc/schedule_review()
+	deltimer(review_timer)
+	review_timer = null
+	if(world.time + ROOM_SERVICE_CLAIM_WAIT < deadline)
+		review_timer = addtimer(CALLBACK(src, PROC_REF(review)), ROOM_SERVICE_CLAIM_WAIT, TIMER_STOPPABLE)
+
+/// Раз в ROOM_SERVICE_CLAIM_WAIT: не взятый заказ возвращается, с ушедшего сотрудника отметка снимается.
+/datum/room_service_order/proc/review()
+	review_timer = null
+	if(settled || QDELETED(src))
+		return
+	if(!claimer)
+		expire(TRUE)
+		return
+	if(!room_service_claimer_active(claimer_mob()))
+		log_econ("Обслуживание номеров: [claimer_name] больше не занимается заказом №[uid]")
+		claimer = null
+		claimer_name = null
+		payer?.bank_card_talk("[room_service_staff_name(entry["kind"], TRUE)] больше не занимается заказом №[uid]. Если его не возьмут за [DisplayTimeText(ROOM_SERVICE_CLAIM_WAIT)], деньги вернутся.")
+		SStgui.update_uis(panel)
+	schedule_review()
+
+/// Сотрудник берёт заказ: гость видит, что им занимаются. Возвращает null или текст отказа.
+/datum/room_service_order/proc/claim(mob/living/staff)
+	if(settled || QDELETED(src))
+		return "Этот заказ уже закрыт."
+	if(econ_account_of(staff) == payer)
+		return "Свой заказ себе не отправляют."
+	var/mob/living/current = claimer_mob()
+	if(current == staff)
+		return "Заказ №[uid] уже за вами: положите его на поднос и используйте поднос ещё раз."
+	if(current && room_service_claimer_active(current))
+		return "Заказ №[uid] уже взял [claimer_name]."
+	claimer = WEAKREF(staff)
+	claimer_name = staff.name
+	schedule_review()
+	payer?.bank_card_talk("[room_service_staff_name(entry["kind"], TRUE)] принял заказ №[uid]: [what()].")
+	SStgui.update_uis(panel)
+	log_econ("Обслуживание номеров: [key_name(staff)] взял заказ №[uid] ([what()]) в номер [room_number]")
+	return null
+
+/// За ROOM_SERVICE_REMIND_BEFORE до срока - на карту взявшему, а если никто не взял - сервису этого вида. Возвращает, скольким напомнили.
+/datum/room_service_order/proc/remind()
+	remind_timer = null
+	. = 0
+	if(settled || QDELETED(src))
+		return
+	var/list/staff = room_service_claimer_active(claimer_mob()) ? list(claimer_mob()) : room_service_staff(entry["kind"])
+	for(var/mob/living/member as anything in staff)
+		var/datum/bank_account/member_account = econ_account_of(member)
+		member_account?.bank_card_talk("Заказ №[uid] ([what()]): до срока доставки [DisplayTimeText(ROOM_SERVICE_REMIND_BEFORE)].")
+		.++
 
 /datum/room_service_order/proc/on_panel_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -190,16 +365,16 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		return "Этот заказ уже закрыт."
 	if(!isliving(sender) || sender.incapacitated() || !sender.is_holding(tray))
 		return "Держите поднос в руке."
-	var/datum/bank_account/account = econ_account_of(sender)
-	if(!account || account.department_id != ACCOUNT_SRV || SSeconomy.personal_account_problem(account, FALSE))
-		return "Отправлять заказы в номера может только сотрудник сервиса со своей картой."
-	if(account == payer)
+	. = room_service_sender_problem(sender)
+	if(.)
+		return
+	if(econ_account_of(sender) == payer)
 		return "Свой заказ себе не отправляют."
 	if(!panel?.room_area())
-		return "В номере [room_number] сейчас никого нет, он закрыт. Заказ ждёт до [STATION_TIME_TIMESTAMP("hh:mm", deadline)]."
+		return "Заказчика заказа №[uid] сейчас нет в номере, номер закрыт. Заказ ждёт до [STATION_TIME_TIMESTAMP("hh:mm", deadline)]."
 	if(!panel.has_guest())
-		return "В номере [room_number] некому принять заказ."
-	return tray.contents_problem(entry["kind"], count)
+		return "В номере заказа №[uid] некому его принять."
+	return tray.contents_problem(entry, count)
 
 /// Отправка подноса: всё с него уходит в номер, предоплата - отправителю и бюджету сервиса, как на кассе. Возвращает null или текст отказа.
 /datum/room_service_order/proc/deliver(mob/living/sender, obj/item/storage/bag/tray/room_service/tray)
@@ -209,21 +384,36 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	settled = TRUE
 	GLOB.room_service.orders -= src
 	var/turf/drop = get_turf(panel)
-	tray.send_contents(drop)
+	var/dishes = 0
+	var/drinks = 0
+	for(var/obj/item/thing as anything in tray.contents)
+		if(istype(thing, /obj/item/reagent_containers/food/snacks))
+			dishes += econ_dish_work_units(thing)
+		else if(room_service_item_kind(thing) == ROOM_SERVICE_DRINK && econ_drink_work_ready(thing))
+			drinks++
+	var/list/sent = tray.send_contents(drop)
+	var/list/logged = list()
+	for(var/obj/item/thing as anything in sent)
+		logged += room_service_item_kind(thing) == ROOM_SERVICE_DRINK ? "[thing.name] ([thing.reagents.log_list()])" : thing.name
 	var/datum/bank_account/account = econ_account_of(sender)
 	var/share = pay_out(account, sender)
 	var/mob/living/guest = payer_mob?.resolve()
 	if(isliving(guest))
-		SSeconomy.record_work(ACCOUNT_SRV, entry["kind"] == ROOM_SERVICE_FOOD ? WORK_SRV_DISH : WORK_SRV_DRINK, count, sender, guest, "Обслуживание номеров: [what()]")
+		if(dishes)
+			SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DISH, dishes, sender, guest, "Обслуживание номеров: заказ №[uid]")
+		if(drinks)
+			SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DRINK, drinks, sender, guest, "Обслуживание номеров: заказ №[uid]")
 	GLOB.room_service.note("delivered")
 	do_sparks(2, FALSE, drop)
 	playsound(drop, 'sound/machines/ding.ogg', 50, TRUE)
-	panel.say("Заказ №[uid] доставлен: [what()]. Приятного аппетита!")
-	payer?.bank_card_talk("Заказ №[uid] доставлен в номер [room_number]: [what()].")
+	var/names = room_service_names(sent)
+	panel.say("Заказ №[uid] доставлен: [names]. Приятного аппетита!")
+	payer?.bank_card_talk("Заказ №[uid] доставлен в номер [room_number]: [names].")
+	panel.offer_tip(src, account, sender)
 	playsound(sender, 'sound/effects/phasein.ogg', 25, TRUE)
-	to_chat(sender, span_notice("Заказ №[uid] ушёл в номер [room_number]: [what()]. Ваша доля - [share] кр."))
-	log_econ("Обслуживание номеров: [key_name(sender)] доставил заказ №[uid] ([what()], [total] кр.) в номер [room_number], доля [share] кр.")
-	log_game("[key_name(sender)] доставил подносом заказ №[uid] ([what()]) в номер отеля [room_number]")
+	to_chat(sender, span_notice("Заказ №[uid] доставлен: [names]. Ваша доля - [share] кр."))
+	log_econ("Обслуживание номеров: [key_name(sender)] доставил заказ №[uid] ([what()], [total] кр.) в номер [room_number], доля [share] кр.: [jointext(logged, ", ")]")
+	log_game("[key_name(sender)] доставил подносом заказ №[uid] ([what()]) в номер отеля [room_number]: [jointext(logged, ", ")]")
 	qdel(src)
 	return null
 
@@ -239,12 +429,6 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	if(.)
 		account.bank_card_talk("Обслуживание номеров: заказ №[uid] доставлен, ваша доля [.] кр.", balloon = "номер +[.] кр")
 
-/datum/room_service/proc/open_orders()
-	. = list()
-	for(var/datum/room_service_order/order as anything in orders)
-		if(!order.settled)
-			. += order
-
 /// Терминал обслуживания номеров: сам появляется в каждой комнате отеля, кроме гост-кафе, и хранится вместе с ней.
 /obj/machinery/room_service_panel
 	name = "room service terminal"
@@ -259,17 +443,23 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	interaction_flags_machine = INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OFFLINE
 	var/room_number = 0
-	/// Виды заказов, по которым сервис не успел: номеру открыт кейтеринг NT, даже если повар или бармен на смене
+	/// Виды заказов, по которым сервис не успел, пока гость был в номере: открыт кейтеринг NT, пока номер не уберут в хранилище
 	var/list/catering_open = list()
 	/// id набора декора -> сколько раз куплен в этот номер
 	var/list/decor_bought = list()
+	/// "uid" доставленного заказа -> list(кто платил, кому чаевые, имя, что, до какого времени)
+	var/list/tip_offers = list()
 	COOLDOWN_DECLARE(act_cooldown)
-	COOLDOWN_DECLARE(notify_cooldown)
 
 /obj/machinery/room_service_panel/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	. = ..()
-	if(!QDELETED(src) && !room_service_place_ok(src))
+	if(QDELETED(src))
+		return
+	if(!room_service_place_ok(src))
 		qdel(src)
+		return
+	if(!isturf(loc))
+		catering_open.Cut()
 
 /obj/machinery/room_service_panel/update_icon_state()
 	icon_state = length(orders()) ? "dorm_inside" : "dorm_available"
@@ -334,8 +524,8 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 
 /obj/machinery/room_service_panel/examine(mob/user)
 	. = ..()
-	. += span_notice("Если повар или бармен на смене, заказ уходит ему: он готовит и отправляет его в номер подносом обслуживания номеров. Деньги списываются сразу, а если заказ не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)], вернутся, и номеру откроется кейтеринг NT.")
-	. += span_notice("Кейтеринг NT присылает готовое сразу, но [econ_times_text(ROOM_SERVICE_CATERING_MULT)] дороже. Декор, купленный здесь, остаётся в номере, пока номер хранится.")
+	. += span_notice("Если повар или бармен на смене, заказ уходит ему: он берёт заказ, готовит и отправляет его в номер подносом обслуживания номеров. Деньги списываются сразу; если заказ никто не возьмёт за [DisplayTimeText(ROOM_SERVICE_CLAIM_WAIT)] или не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)], они вернутся, а пока вы в номере, ему откроется кейтеринг NT.")
+	. += span_notice("Кейтеринг NT присылает готовое сразу, но [econ_times_text(ROOM_SERVICE_CATERING_MULT)] дороже. После доставки можно оставить чаевые тому, кто прислал заказ. Декор, купленный здесь, остаётся в номере, пока номер хранится.")
 	var/list/waiting = orders()
 	if(length(waiting))
 		. += span_notice("Ждут доставки: [length(waiting)].")
@@ -360,6 +550,8 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		"decor" = decor,
 		"catering_mult" = ROOM_SERVICE_CATERING_MULT,
 		"wait_minutes" = ROOM_SERVICE_STAFF_WAIT / (1 MINUTES),
+		"claim_minutes" = ROOM_SERVICE_CLAIM_WAIT / (1 MINUTES),
+		"tip_amounts" = GLOB.room_service_tip_amounts,
 		"count_max" = ROOM_SERVICE_COUNT_MAX,
 		"orders_max" = ROOM_SERVICE_ORDERS_PER_ROOM,
 	)
@@ -371,19 +563,31 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		rows += list(list(
 			"uid" = order.uid,
 			"name" = order.entry["name"],
+			"kind" = order.entry["kind"],
 			"count" = order.count,
 			"total" = order.total,
 			"minutes_left" = order.minutes_left(),
+			"taken" = !!order.claimer,
 			"mine" = order.payer == account,
 		))
+	var/list/tips = list()
+	for(var/uid in tip_offers)
+		var/list/offer = tip_offers[uid]
+		var/datum/weakref/payer_ref = offer["payer"]
+		if(account && payer_ref?.resolve() == account && world.time < offer["until"])
+			tips += list(list("uid" = text2num(uid), "name" = offer["what"], "staff" = offer["staff_name"]))
+	var/list/special = room_service_special_entry()
 	return list(
 		"room" = room_number,
 		"open" = !!room_area(),
 		"account_problem" = SSeconomy.personal_account_problem(account, TRUE),
+		"has_account" = !!account,
 		"balance" = account ? account.account_balance : 0,
 		"staff" = list(ROOM_SERVICE_FOOD = !!length(room_service_staff(ROOM_SERVICE_FOOD)), ROOM_SERVICE_DRINK = !!length(room_service_staff(ROOM_SERVICE_DRINK))),
 		"catering" = list(ROOM_SERVICE_FOOD = catering_allowed(ROOM_SERVICE_FOOD), ROOM_SERVICE_DRINK = catering_allowed(ROOM_SERVICE_DRINK)),
+		"special" = special ? list("id" = ROOM_SERVICE_SPECIAL_ID, "name" = special["name"], "kind" = special["kind"], "price" = special["price"]) : null,
 		"orders" = rows,
+		"tips" = tips,
 		"decor_bought" = decor_bought,
 	)
 
@@ -402,6 +606,8 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 			result = cancel_order(user, econ_ui_number(params["uid"]))
 		if("decor")
 			result = buy_decor(user, params["id"])
+		if("tip")
+			result = give_tip(user, econ_ui_number(params["uid"]), econ_ui_number(params["amount"]))
 		else
 			return FALSE
 	to_chat(user, result[1] ? span_notice(result[2]) : span_warning(result[2]))
@@ -422,7 +628,7 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 
 /// Заказ из меню: route "staff" - сервису станции с предоплатой, "catering" - сразу от NT дороже. Возвращает list(удалось ли, ответ).
 /obj/machinery/room_service_panel/proc/place_order(mob/living/user, item_id, count, route)
-	var/list/entry = istext(item_id) ? GLOB.room_service_menu[item_id] : null
+	var/list/entry = room_service_entry(item_id)
 	if(!entry || !isnum(count) || !(route in list("staff", "catering")))
 		return list(FALSE, "Неверный заказ.")
 	count = round(count)
@@ -431,6 +637,8 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	var/kind = entry["kind"]
 	var/datum/bank_account/account = econ_account_of(user)
 	if(route == "catering")
+		if(entry["exact"])
+			return list(FALSE, "Блюдо дня готовит только повар станции.")
 		return order_catering(user, account, entry, count)
 	if(!length(room_service_staff(kind)))
 		return list(FALSE, "[room_service_staff_name(kind, TRUE)] сейчас не на смене: закажите готовое у NT.")
@@ -444,19 +652,20 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	if(!SSeconomy.move(account, GLOB.room_service.escrow_account(), total, ECON_ROOM_SERVICE, user, "Обслуживание номеров: [what], предоплата"))
 		return list(FALSE, "Платёж отклонён.")
 	COOLDOWN_START(src, act_cooldown, ROOM_SERVICE_ACT_COOLDOWN)
-	var/datum/room_service_order/order = new(src, account, user, item_id, count)
+	var/datum/room_service_order/order = new(src, account, user, item_id, entry, count)
 	GLOB.room_service.note("staff")
 	update_appearance()
 	notify_staff(order)
 	log_econ("Обслуживание номеров: [key_name(user)] заказал №[order.uid] ([what], [total] кр.) в номер [room_number]")
 	log_game("[key_name(user)] заказал в номер отеля [room_number]: [what] за [total] кр. (заказ №[order.uid])")
-	return list(TRUE, "Заказ №[order.uid] принят: [what], [total] кр. списаны. Его приготовит и пришлёт [room_service_staff_name(kind)] станции; не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)] - деньги вернутся.")
+	return list(TRUE, "Заказ №[order.uid] принят: [what], [total] кр. списаны. Его приготовит и пришлёт [room_service_staff_name(kind)] станции; если никто не возьмёт заказ за [DisplayTimeText(ROOM_SERVICE_CLAIM_WAIT)] или не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)] - деньги вернутся.")
 
 /obj/machinery/room_service_panel/proc/order_catering(mob/living/user, datum/bank_account/account, list/entry, count)
 	var/kind = entry["kind"]
 	if(!catering_allowed(kind))
 		return list(FALSE, "[room_service_staff_name(kind, TRUE)] на смене: закажите у него. Кейтеринг NT откроется, если сервис не успеет с заказом.")
-	var/price = entry["price"] * ROOM_SERVICE_CATERING_MULT * count
+	var/unit_price = entry["price"] * ROOM_SERVICE_CATERING_MULT
+	var/price = unit_price * count
 	var/problem = purchase_problem(account, price)
 	if(problem)
 		return list(FALSE, problem)
@@ -467,7 +676,7 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	var/turf/drop = get_turf(src)
 	var/path = entry["path"]
 	for(var/i in 1 to count)
-		new path(drop)
+		econ_mark_vended(new path(drop), unit_price)
 	do_sparks(2, FALSE, drop)
 	playsound(drop, 'sound/machines/ding.ogg', 50, TRUE)
 	GLOB.room_service.note("catering")
@@ -481,11 +690,10 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 			continue
 		if(!account || order.payer != account)
 			return list(FALSE, "Отменить заказ может только тот, кто его оплатил.")
-		var/total = order.total
-		order.refund("Заказ №[uid] отменён")
+		order.refund("Заказ №[uid] отменён", quiet = TRUE)
 		qdel(order)
 		log_econ("Обслуживание номеров: [key_name(user)] отменил заказ №[uid] в номер [room_number]")
-		return list(TRUE, "Заказ №[uid] отменён, [total] кр. вернулись на счёт.")
+		return list(TRUE, "Заказ №[uid] отменён.")
 	return list(FALSE, "Этого заказа уже нет: его доставили или отменили.")
 
 /obj/machinery/room_service_panel/proc/buy_decor(mob/living/user, set_id)
@@ -514,28 +722,60 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		var/path = decor_set["wall"]
 		var/atom/movable/screen_sign = new path(wall_spot)
 		room_service_wall_offset(screen_sign, NORTH)
+		econ_mark_vended(screen_sign, price)
 	var/list/items = decor_set["items"]
+	var/pieces = 0
+	for(var/path in items)
+		pieces += items[path]
 	for(var/path in items)
 		for(var/i in 1 to items[path])
-			new path(drop)
+			econ_mark_vended(new path(drop), round(price / pieces))
 	do_sparks(2, FALSE, drop)
 	GLOB.room_service.note("decor")
 	log_econ("Обслуживание номеров: [key_name(user)] купил декор \"[decor_set["name"]]\" в номер [room_number] за [price] кр.")
 	return list(TRUE, "[decor_set["name"]] для номера: [price] кр. списаны. Вещи остаются в номере, пока номер хранится.")
 
-/// Сообщает поварам или барменам на смене и каналу сервиса о новом заказе, не чаще ROOM_SERVICE_NOTIFY_COOLDOWN с номера.
+/// После доставки заказчик ROOM_SERVICE_TIP_WINDOW может оставить чаевые тому, кто прислал заказ.
+/obj/machinery/room_service_panel/proc/offer_tip(datum/room_service_order/order, datum/bank_account/staff_account, mob/living/sender)
+	if(!order.payer || !staff_account)
+		return
+	var/key = "[order.uid]"
+	tip_offers[key] = list("payer" = WEAKREF(order.payer), "staff" = WEAKREF(staff_account), "staff_name" = sender.name, "what" = order.what(), "until" = world.time + ROOM_SERVICE_TIP_WINDOW)
+	addtimer(CALLBACK(src, PROC_REF(drop_tip), key), ROOM_SERVICE_TIP_WINDOW)
+
+/obj/machinery/room_service_panel/proc/drop_tip(key)
+	tip_offers -= key
+	SStgui.update_uis(src)
+
+/obj/machinery/room_service_panel/proc/give_tip(mob/living/user, uid, amount)
+	var/list/offer = isnum(uid) ? tip_offers["[uid]"] : null
+	if(!offer || world.time >= offer["until"])
+		return list(FALSE, "Чаевые за этот заказ уже не оставить.")
+	if(!(amount in GLOB.room_service_tip_amounts))
+		return list(FALSE, "Неверная сумма.")
+	var/datum/bank_account/account = econ_account_of(user)
+	var/datum/weakref/payer_ref = offer["payer"]
+	if(!account || payer_ref.resolve() != account)
+		return list(FALSE, "Чаевые оставляет тот, кто платил за заказ.")
+	var/datum/weakref/staff_ref = offer["staff"]
+	var/datum/bank_account/staff_account = staff_ref.resolve()
+	var/problem = SSeconomy.send_tip(account, staff_account, amount, user)
+	if(problem)
+		return list(FALSE, problem)
+	tip_offers -= "[uid]"
+	GLOB.room_service.note("tips", amount)
+	log_econ("Обслуживание номеров: [key_name(user)] оставил [amount] кр. чаевых за заказ №[uid] ([offer["staff_name"]])")
+	return list(TRUE, "Чаевые [amount] кр. за заказ №[uid] ушли: [offer["staff_name"]].")
+
+/// Сообщает поварам или барменам на смене о каждом заказе, каналу сервиса - не чаще ROOM_SERVICE_NOTIFY_COOLDOWN на вид. Возвращает, скольким сотрудникам ушло на карту.
 /obj/machinery/room_service_panel/proc/notify_staff(datum/room_service_order/order)
-	if(!COOLDOWN_FINISHED(src, notify_cooldown))
-		return FALSE
-	COOLDOWN_START(src, notify_cooldown, ROOM_SERVICE_NOTIFY_COOLDOWN)
-	var/how = "Положите заказ на поднос обслуживания номеров (DinnerWare, Booze-O-Mat) и используйте поднос в руке, срок [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]."
-	var/text = "Обслуживание номеров: заказ №[order.uid] в номер [order.room_number] - [order.what()], [order.total] кр. [how]"
+	. = 0
+	var/text = order.staff_notice()
 	for(var/mob/living/carbon/human/member as anything in room_service_staff(order.entry["kind"]))
 		var/datum/bank_account/member_account = econ_account_of(member)
 		member_account?.bank_card_talk(text)
-	if(COOLDOWN_FINISHED(GLOB.room_service, radio_cooldown) && paperwork_radio(text, RADIO_CHANNEL_SERVICE))
-		COOLDOWN_START(GLOB.room_service, radio_cooldown, ROOM_SERVICE_NOTIFY_COOLDOWN)
-	return TRUE
+		.++
+	GLOB.room_service.radio(order.entry["kind"], text)
 
 /// Комната отеля получает терминал при создании; при восстановлении из хранилища он возвращается сам, второй не ставится.
 /area/hilbertshotel/proc/ensure_room_service_panel()
@@ -556,7 +796,7 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 
 /obj/item/storage/bag/tray/room_service
 	name = "room service tray"
-	desc = "Поднос обслуживания номеров отеля Гильберта. Положите на него заказанные блюда или напитки и используйте поднос в руке: блюспейс-канал отправит их в номер заказчика, а сам поднос останется у вас. Отправляет только сотрудник сервиса, только еду и напитки и только по открытому заказу."
+	desc = "Поднос обслуживания номеров отеля Гильберта. Используйте пустой поднос в руке, чтобы взять заказ: гость увидит, что им занимаются. Потом положите на поднос заказанные блюда или напитки и используйте его ещё раз: блюспейс-канал отправит их в номер заказчика, а сам поднос останется у вас. Работает только у сотрудника сервиса, только с едой и напитками и только по открытому заказу."
 	icon_state = "bluespace_tray"
 	item_state = "pizzabox"
 	lefthand_file = 'icons/mob/inhands/misc/food_lefthand.dmi'
@@ -573,9 +813,19 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 	var/waiting = length(GLOB.room_service.open_orders())
 	. += span_notice((waiting ? "Ждут доставки заказов: [waiting]." : "Ждущих доставки заказов в номера нет."))
 
+/// Строка списка подноса -> uid заказа: после выбора заказ ищется заново, окно его не держит.
+/proc/room_service_order_choices(list/orders)
+	. = list()
+	for(var/datum/room_service_order/order as anything in orders)
+		.[order.tray_label()] = order.uid
+
 /obj/item/storage/bag/tray/room_service/attack_self(mob/user)
 	. = ..()
 	if(!isliving(user))
+		return
+	var/problem = room_service_sender_problem(user)
+	if(problem)
+		to_chat(user, span_warning(problem))
 		return
 	var/list/open = GLOB.room_service.open_orders()
 	if(!length(open))
@@ -583,55 +833,94 @@ GLOBAL_DATUM_INIT(room_service, /datum/room_service, new)
 		return
 	var/datum/room_service_order/order = open[1]
 	if(length(open) > 1)
-		var/list/choices = list()
-		for(var/datum/room_service_order/candidate as anything in open)
-			choices["№[candidate.uid], номер [candidate.room_number]: [candidate.what()] (осталось [candidate.minutes_left()] мин.)"] = candidate
-		var/choice = tgui_input_list(user, "Какой заказ отправить?", name, choices)
-		order = choice ? choices[choice] : null
+		var/list/choices = room_service_order_choices(open)
+		var/choice = tgui_input_list(user, "Какой заказ?", name, choices, timeout = ROOM_SERVICE_PICK_TIMEOUT)
+		order = choice ? GLOB.room_service.order_by_uid(choices[choice]) : null
 		if(!order || QDELETED(src))
 			return
-	var/problem = order.deliver(user, src)
+	problem = use_on_order(user, order)
 	if(problem)
 		to_chat(user, span_warning(problem))
 
-/// Почему содержимое подноса не закрывает заказ из count штук вида kind; null - закрывает.
-/obj/item/storage/bag/tray/room_service/proc/contents_problem(kind, count)
+/// Пустой поднос берёт заказ, с заказом на подносе - отправляет. Возвращает null или текст отказа.
+/obj/item/storage/bag/tray/room_service/proc/use_on_order(mob/living/user, datum/room_service_order/order)
+	if(length(contents) || order.claimer_mob() == user)
+		return order.deliver(user, src)
+	. = order.claim(user)
+	if(!.)
+		to_chat(user, span_notice("Вы взяли заказ №[order.uid]: [order.what()], осталось [order.minutes_left()] мин. Положите его на поднос и используйте поднос ещё раз."))
+
+/// Почему содержимое подноса не закрывает заказ из count штук позиции entry; null - закрывает.
+/obj/item/storage/bag/tray/room_service/proc/contents_problem(list/entry, count)
 	if(!length(contents))
 		return "Поднос пуст: положите на него заказ."
+	var/kind = entry["kind"]
 	var/matching = 0
 	for(var/obj/item/thing as anything in contents)
 		if(!room_service_item_allowed(thing))
-			return "[thing.name] в номер не отправить: только готовые блюда и напитки, без вложенных вещей."
-		if(room_service_item_kind(thing) == kind)
-			matching++
+			return "[thing.name] в номер не отправить: только готовые блюда и напитки, внутри - только еда."
+		if(room_service_item_kind(thing) == kind && (!entry["exact"] || istype(thing, entry["path"])))
+			matching += room_service_item_units(thing)
 	if(matching < count)
+		if(entry["exact"])
+			return "Заказано: [entry["name"]] x[count], на подносе: [matching]."
 		return "Заказано [kind == ROOM_SERVICE_FOOD ? "блюд" : "напитков"]: [count], на подносе: [matching]."
 	return null
 
-/// Всё с подноса уходит на drop; доставленное уже оплачено, при еде и питье работа сервиса второй раз не засчитывается.
+/// Всё с подноса уходит на drop и возвращается списком; доставленное уже оплачено, при еде и питье работа сервиса второй раз не засчитывается.
 /obj/item/storage/bag/tray/room_service/proc/send_contents(turf/drop)
+	. = list()
 	for(var/obj/item/thing as anything in contents)
 		SEND_SIGNAL(src, COMSIG_TRY_STORAGE_TAKE, thing, drop, TRUE)
-		thing.econ_paid = TRUE
-		if(thing.econ_dish)
-			thing.econ_dish.paid = TRUE
+		. += thing
+		for(var/obj/item/part as anything in thing.GetAllContents(/obj/item))
+			part.econ_paid = TRUE
+			if(part.econ_dish)
+				part.econ_dish.paid = TRUE
 		var/obj/item/reagent_containers/container = thing
 		if(istype(container))
 			container.econ_pourer = null
 	update_appearance()
 
-/// Экран Muz-TV номера: прикручен намертво, играет только в своём номере и исчезает, если его вынесут из отеля.
+/// Экран Muz-TV номера: прикручен намертво, играет только в своём номере, молчит в хранилище и исчезает, если его вынесут из отеля.
 /obj/structure/sign/moniq/room_service
-	desc = "Экран Muz-TV номера отеля: музыка слышна только в этом номере. Прикручен к стене намертво."
+	desc = "Экран Muz-TV номера отеля: нажмите на него, чтобы поставить музыку, треки бесплатные. Слышно только в этом номере; когда номер убирают в хранилище, музыка выключается. Снять со стены нельзя."
 	buildable_sign = FALSE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 /obj/structure/sign/moniq/room_service/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	. = ..()
-	if(!QDELETED(src) && !room_service_place_ok(src))
+	if(QDELETED(src))
+		return
+	if(!room_service_place_ok(src))
 		qdel(src)
+		return
+	if(!isturf(loc))
+		stop_music()
+
+/// Перетаскивание на себя только открывает выбор музыки: экран не снимается.
+/obj/structure/sign/moniq/room_service/MouseDrop(atom/over, src_location, over_location, src_control, over_control, params)
+	if(over && over == usr)
+		SEND_SIGNAL(src, COMSIG_MOUSEDROP_ONTO, over, usr)
+		return
+	return ..()
+
+/obj/structure/sign/moniq/room_service/proc/stop_music()
+	var/datum/component/jukebox/jukebox = GetComponent(/datum/component/jukebox)
+	if(!jukebox?.playing)
+		return
+	jukebox.active = FALSE
+	jukebox.stop = 0
+	jukebox.dance_over()
+	STOP_PROCESSING(SSobj, jukebox)
+	jukebox.playing = null
+	jukebox.on_music_toggle?.Invoke(FALSE)
 
 #undef ROOM_SERVICE_WALL_OFFSET
 #undef ROOM_SERVICE_WALL_MOUNTED
 #undef ROOM_SERVICE_PANEL_RANGE
 #undef ROOM_SERVICE_SCREEN_RANGE
+#undef ROOM_SERVICE_SPECIAL_ID
+#undef ROOM_SERVICE_SPECIAL_MULT
+#undef ROOM_SERVICE_SPECIAL_BASE_PRICE
+#undef ROOM_SERVICE_PICK_TIMEOUT

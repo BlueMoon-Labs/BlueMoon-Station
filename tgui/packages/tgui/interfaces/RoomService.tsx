@@ -27,10 +27,18 @@ type DecorSet = {
 type Order = {
   uid: number;
   name: string;
+  kind: Kind;
   count: number;
   total: number;
   minutes_left: number;
+  taken: BooleanLike;
   mine: BooleanLike;
+};
+
+type TipOffer = {
+  uid: number;
+  name: string;
+  staff: string;
 };
 
 export type RoomServiceData = {
@@ -38,15 +46,21 @@ export type RoomServiceData = {
   decor: DecorSet[];
   catering_mult: number;
   wait_minutes: number;
+  claim_minutes: number;
+  tip_amounts: number[];
   count_max: number;
   orders_max: number;
   room: number;
   open: BooleanLike;
   account_problem: string | null;
+  has_account: BooleanLike;
   balance: number;
   staff: Record<Kind, BooleanLike>;
   catering: Record<Kind, BooleanLike>;
+  /** Блюдо дня от шефа: только заказом повару */
+  special: MenuEntry | null;
   orders: Order[];
+  tips: TipOffer[];
   /** Пустой список приходит из DM массивом */
   decor_bought: Record<string, number> | [];
 };
@@ -69,7 +83,7 @@ const Orders = () => {
           <Stack.Item grow>
             №{order.uid}: {lineName(order.name, order.count)}
           </Stack.Item>
-          <Stack.Item className="NtTerm__hint">ещё {order.minutes_left} мин.</Stack.Item>
+          <Stack.Item className="NtTerm__hint">{order.taken ? `${STAFF[order.kind]} принял заказ, ` : 'ждёт сервис, '}ещё {order.minutes_left} мин.</Stack.Item>
           <Stack.Item shrink={0} width="5.5em" textAlign="right">
             {formatCredits(order.total)}
           </Stack.Item>
@@ -86,12 +100,37 @@ const Orders = () => {
   );
 };
 
+const Tips = () => {
+  const { act, data } = useBackend<RoomServiceData>();
+  if (!data.tips.length) {
+    return null;
+  }
+  return (
+    <NtFrame title="Чаевые за доставку">
+      {data.tips.map((tip) => (
+        <Stack key={tip.uid} align="center" className="NtTerm__line">
+          <Stack.Item grow>
+            №{tip.uid}: {tip.name}, доставка - {tip.staff}
+          </Stack.Item>
+          {data.tip_amounts.map((amount) => (
+            <Stack.Item key={amount}>
+              <Button icon="heart" disabled={!!data.account_problem} onClick={() => act('tip', { uid: tip.uid, amount })}>
+                {formatCredits(amount)}
+              </Button>
+            </Stack.Item>
+          ))}
+        </Stack>
+      ))}
+    </NtFrame>
+  );
+};
+
 const routeText = (data: RoomServiceData, kind: Kind) => {
   const staff = STAFF[kind];
   if (!data.staff[kind]) {
     return `${staff}а нет на смене: NT пришлёт готовое сразу, в ${data.catering_mult} раза дороже.`;
   }
-  const text = `${staff} на смене: заказ уйдёт ему, он приготовит и пришлёт его в номер. Деньги спишутся сразу и вернутся, если не доставят за ${data.wait_minutes} мин.`;
+  const text = `${staff} на смене: заказ уйдёт ему, он возьмёт его, приготовит и пришлёт в номер. Деньги спишутся сразу и вернутся, если заказ никто не возьмёт за ${data.claim_minutes} мин. или не доставят за ${data.wait_minutes} мин.`;
   return data.catering[kind] ? `${text} Сервис уже не успел с прошлым заказом, поэтому можно взять и готовое у NT, в ${data.catering_mult} раза дороже.` : text;
 };
 
@@ -103,6 +142,7 @@ const MenuTab = (props: { kind: Kind }) => {
   const catering = !!data.catering[kind];
   const full = data.orders.length >= data.orders_max;
   const blocked = !!data.account_problem;
+  const special = kind === 'food' && staff ? data.special : null;
   return (
     <>
       <div className="NtTerm__help">{routeText(data, kind)}</div>
@@ -121,6 +161,18 @@ const MenuTab = (props: { kind: Kind }) => {
           <Button icon="plus" disabled={count >= data.count_max} onClick={() => setCount(count + 1)} />
         </Stack.Item>
       </Stack>
+      {special && (
+        <Stack align="center" className="NtTerm__line">
+          <Stack.Item grow bold>
+            {lineName(special.name, count)}
+          </Stack.Item>
+          <Stack.Item>
+            <Button icon="star" disabled={blocked || full} onClick={() => act('order', { id: special.id, count, route: 'staff' })}>
+              {`Заказать за ${formatCredits(special.price * count)}`}
+            </Button>
+          </Stack.Item>
+        </Stack>
+      )}
       {data.menu
         .filter((entry) => entry.kind === kind)
         .map((entry) => (
@@ -178,9 +230,11 @@ const HELP = [
   {
     title: 'Еда и напитки',
     lines: [
-      'Если повар или бармен на смене, заказ уходит ему: он готовит и отправляет его в номер подносом обслуживания номеров.',
-      'Деньги списываются сразу. Не доставят вовремя - вернутся, и номеру откроется кейтеринг NT.',
+      'Если повар или бармен на смене, заказ уходит ему: он берёт заказ, готовит и отправляет его в номер подносом обслуживания номеров.',
+      'Деньги списываются сразу. Никто не взял заказ или не доставил вовремя - они вернутся, а пока вы в номере, ему откроется кейтеринг NT.',
       'Кейтеринг NT присылает готовое сразу, но дороже, и деньги уходят NT, а не сервису.',
+      'Блюдо дня от шефа готовит только повар станции, оно дороже обычного.',
+      'После доставки здесь можно оставить чаевые тому, кто прислал заказ.',
     ],
   },
   {
@@ -200,7 +254,7 @@ export const RoomServiceContent = () => {
       status={`Номер ${data.room}`}
       readout={
         <NtReadout label="Ваш счёт">
-          {data.account_problem ? 'нет счёта' : <AnimatedNumber value={data.balance} format={(value) => formatCredits(value)} />}
+          {data.account_problem ? data.has_account ? 'недоступен' : 'нет счёта' : <AnimatedNumber value={data.balance} format={(value) => formatCredits(value)} />}
         </NtReadout>
       }
       menu={
@@ -224,6 +278,7 @@ export const RoomServiceContent = () => {
             </Box>
           )}
           <Orders />
+          <Tips />
           {tab === 'decor' ? <DecorTab /> : <MenuTab key={tab} kind={tab} />}
         </NtFrame>
       )}

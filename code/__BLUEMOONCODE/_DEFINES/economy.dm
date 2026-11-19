@@ -291,7 +291,7 @@
 #define REGISTER_CASHIERS_MAX 2
 /// Сколько штук одной позиции меню влезает в счёт
 #define REGISTER_ORDER_COUNT_MAX 20
-/// Заказ в номер отеля: срок доставки сервисом, после него деньги возвращаются и номеру открывается кейтеринг NT
+/// Заказ в номер отеля: срок доставки сервисом, после него деньги возвращаются и номеру, пока гость в нём, открывается кейтеринг NT
 #define ROOM_SERVICE_STAFF_WAIT (15 MINUTES)
 /// Во сколько раз кейтеринг NT дороже заказа сервису
 #define ROOM_SERVICE_CATERING_MULT 2
@@ -301,8 +301,14 @@
 /// Сколько раз один набор декора можно купить в один номер
 #define ROOM_SERVICE_DECOR_PER_ROOM 2
 #define ROOM_SERVICE_ACT_COOLDOWN (3 SECONDS)
-/// Карты сервиса и канал сервиса слышат о заказах одного номера не чаще этого
+/// Канал сервиса слышит о заказах одного вида не чаще этого, карты сервиса - о каждом
 #define ROOM_SERVICE_NOTIFY_COOLDOWN (1 MINUTES)
+/// Не взятый за это время заказ возвращается досрочно; с умершего, ушедшего или SSD сотрудника отметка снимается через столько же
+#define ROOM_SERVICE_CLAIM_WAIT (5 MINUTES)
+/// За сколько до срока карты сервиса напоминают о заказе
+#define ROOM_SERVICE_REMIND_BEFORE (5 MINUTES)
+/// Сколько после доставки терминал предлагает оставить чаевые
+#define ROOM_SERVICE_TIP_WINDOW (2 MINUTES)
 #define ROOM_SERVICE_FOOD "food"
 #define ROOM_SERVICE_DRINK "drink"
 /// Кассир дальше этого или на другом уровне считается ушедшим, его кассу может занять другой
