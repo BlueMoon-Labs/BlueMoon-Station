@@ -829,7 +829,9 @@
 	var/list/objective_parts = list()
 	var/count = 1
 	for(var/datum/objective/objective in objectives)
-		if(objective.check_completion())
+		if(!objective.completable)
+			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text]"
+		else if(objective.check_completion())
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Успех!</span>"
 		else
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='redtext'>Провал.</span>"
