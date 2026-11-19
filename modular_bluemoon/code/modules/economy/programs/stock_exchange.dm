@@ -169,6 +169,9 @@
 			var/total = abs(account.account_balance - balance_before)
 			messages[user_ref] = "[is_buy ? "Куплено" : "Продано"] [round(count)] [ticker] [is_buy ? "за" : "на"] [total] кр. с учётом спреда и комиссии."
 			return TRUE
+		if("sell_all")
+			messages[user_ref] = SSmarket.sell_all_shares(trading_account(user), user)
+			return TRUE
 		if("add_order")
 			var/datum/bank_account/account = trading_account(user)
 			var/error = SSmarket.add_stock_order(account, params["ticker"], params["side"], params["count"], params["price"])

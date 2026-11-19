@@ -46,7 +46,7 @@
 		"<li>Слот-машина: [settings.slot_house_edge]% ставки берёт NT, [settings.slot_jackpot_share]% идёт в общий джекпот сектора (переходит между сменами, не меньше [settings.slot_jackpot_floor] кр.), остальное - в банк выигрышей.</li>",
 		"<li>Лотерея сектора: билет [settings.lottery_ticket_price] кр. в \"Кошельке\", до [settings.lottery_tickets_per_account] на счёт, победителю [100 - settings.lottery_house_share]% продаж.</li></ul>",
 		"<h3>Биржа</h3><ul>",
-		"<li>Спред [settings.stock_spread]%, комиссия [settings.stock_fee]%, позиция до [settings.stock_position_cap] кр. на компанию, сделка раз в [settings.stock_trade_cooldown_seconds] с. Цены, но не деньги и акции игроков, переходят в следующую смену со сдвигом [SSmarket.persist_decay]% к исходным.</li>",
+		"<li>Спред [settings.stock_spread]%, комиссия [settings.stock_fee]%, позиция до [settings.stock_position_cap] кр. на компанию, сделка раз в [settings.stock_trade_cooldown_seconds] с. Акции в конце смены продаются по рынку, цены переходят в следующую смену со сдвигом [SSmarket.persist_decay]% к базовым.</li>",
 		"<li>Работа отделов (до ±[SSmarket.work_stock_cap * 100]% за смену) и беды станции двигают акции связанных компаний. О скачке от [STOCK_HOLDER_ALERT_MIN * 100]% и остановке торгов держателю сообщает карта.</li>",
 		"<li>[settings.stock_dividend_share]% закупок станции у партнёра - дивиденды держателям его акций с каждой зарплатой. [STOCK_INDEX_TICKER] - индекс сектора. Заявки в \"Портфеле\" (до [STOCK_ORDERS_MAX]) торгуют сами по порогу цены.</li></ul>",
 		"<h3>Аукцион</h3><ul>",

@@ -58,7 +58,7 @@ GLOBAL_LIST_INIT(market_default_work_stocks, list(
 	WORK_MED_REVIVE = list("VYMD" = 0.1),
 	WORK_MED_SURGERY = list("BSHP" = 0.1, "VYMD" = 0.05),
 	WORK_ENG_POWER_EXPORT = list("NKMR" = 0.04),
-	WORK_SCI_NODE = list("EINS" = 0.3, "CYBS" = 0.1),
+	WORK_SCI_NODE = list("EINS" = 0.3, "CYBS" = 0.01),
 	WORK_SCI_SLIME_DISCOVERY = list("EINS" = 0.02),
 	WORK_SCI_ARTIFACT = list("SOLX" = 0.1),
 	WORK_MINING_ORE = list("PRSP" = 0.04),

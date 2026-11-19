@@ -106,7 +106,7 @@
 		var/mob/card_holder = recursive_loc_check(A, /mob)
 		if(ismob(card_holder)) //If on a mob
 			if(!card_talk_reaches(card_holder, force))
-				return
+				continue
 
 			if(!quiet)
 				card_holder.playsound_local(get_turf(card_holder), talk_sound, 50, TRUE)
@@ -116,7 +116,7 @@
 		else if(isturf(A.loc)) //If on the ground
 			for(var/mob/M in hearers(1,get_turf(A)))
 				if(M.client && !(M.client.prefs.chat_toggles & CHAT_BANKCARD) && !force)
-					return
+					break
 				if(!quiet)
 					playsound(A, talk_sound, 50, TRUE)
 				A.audible_message("[icon2html(icon_source, hearers(A))] <span class='[text_class]'>[message]</span>", null, 1)
@@ -124,7 +124,7 @@
 		else
 			for(var/mob/M in A.loc) //If inside a container with other mobs (e.g. locker)
 				if(!M.client || (!(M.client.prefs.chat_toggles & CHAT_BANKCARD) && !force))
-					return
+					continue
 				if(!quiet)
 					M.playsound_local(get_turf(M), talk_sound, 50, TRUE)
 				if(M.can_hear())

@@ -331,7 +331,7 @@
 	var/share = rand(ECON_OBJECTIVE_STOCK_MIN, ECON_OBJECTIVE_STOCK_MAX)
 	target_amount = max(round(SSeconomy.settings.audit_insider_threshold * share / 100, ECON_OBJECTIVE_STEP), ECON_OBJECTIVE_STEP)
 	for(var/datum/bank_account/account as anything in owner_accounts())
-		profit_baseline["[account.account_id]"] = account.realized_stock_profit
+		profit_baseline["[account.account_id]"] = account.traded_stock_profit()
 	return ..()
 
 /datum/objective/economy/stock_profit/proc/on_trade(datum/source, datum/bank_account/account, ticker, count, price, is_buy, realized, mob/user)
@@ -340,20 +340,20 @@
 	if(isnull(profit_baseline[key]))
 		if(!is_owner(user) && !(account in owner_accounts()))
 			return
-		profit_baseline[key] = account.realized_stock_profit - realized
-	profit_last[key] = account.realized_stock_profit - profit_baseline[key]
+		profit_baseline[key] = account.traded_stock_profit() - realized
+	profit_last[key] = account.traded_stock_profit() - profit_baseline[key]
 
 /datum/objective/economy/stock_profit/proc/profit()
 	. = 0
 	for(var/key in profit_baseline)
 		var/datum/bank_account/account = SSeconomy.find_account(key)
-		. += account ? account.realized_stock_profit - profit_baseline[key] : profit_last[key]
+		. += account ? account.traded_stock_profit() - profit_baseline[key] : profit_last[key]
 
 /datum/objective/economy/stock_profit/goal_text()
 	return "Заработайте на бирже [target_amount] кр. чистой прибыли."
 
 /datum/objective/economy/stock_profit/how_to_text()
-	return "Биржа - приложение «Биржа» на КПК: купите акции дешевле и продайте дороже. Считается прибыль с продаж после получения задания, со своего счёта и анонимных карт; убытки тоже считаются, даже если карта ушла из рук. Пейджер инсайдера из аплинка заранее показывает настоящие новости компаний."
+	return "Биржа - приложение «Биржа» на КПК: купите акции дешевле и продайте дороже. Считается прибыль с продаж после получения задания, со своего счёта и анонимных карт; убытки тоже считаются, даже если карта ушла из рук. Продажа непроданных акций в конце смены не считается. Пейджер инсайдера из аплинка заранее показывает настоящие новости компаний."
 
 /datum/objective/economy/stock_profit/progress_text()
 	return "прибыль [profit()] из [target_amount] кр."

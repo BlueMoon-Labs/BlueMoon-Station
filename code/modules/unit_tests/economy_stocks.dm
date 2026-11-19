@@ -417,7 +417,7 @@
 	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["power_failure"]], -10, "Сбой энергосети в сносках Накамуры")
 	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["gravity_lost"]], -10, "Отказ гравитации в сносках Накамуры")
 
-/// Встроенные привязки работы: Киберсан растёт от исследований сильнее, чем падает от изъятой контрабанды; сноски показывают рост и падение отдельно.
+/// Встроенные привязки работы: Киберсан понемногу растёт от исследований и падает от изъятой контрабанды; обычная наука смены не упирает его в потолок; сноски показывают рост и падение отдельно.
 /datum/unit_test/economy_stocks/cybersun_work
 
 /datum/unit_test/economy_stocks/cybersun_work/Destroy()
@@ -430,10 +430,12 @@
 	var/list/research = SSmarket.work_stocks[WORK_SCI_NODE]
 	var/list/seized = SSmarket.work_stocks[WORK_SEC_CONTRABAND]
 	TEST_ASSERT(research["CYBS"] > 0, "Исследования не поднимают Киберсан")
-	TEST_ASSERT(seized["CYBS"] < 0 && -seized["CYBS"] < research["CYBS"], "Изъятая контрабанда роняет Киберсан не слабее, чем растят исследования: [seized["CYBS"]] против [research["CYBS"]]")
+	TEST_ASSERT(seized["CYBS"] < 0, "Изъятая контрабанда не роняет Киберсан")
 	var/price_before = cybersun.price
 	SSmarket.apply_work(WORK_SCI_NODE, 500)
 	TEST_ASSERT(cybersun.price > price_before, "Оплаченные исследования не подняли Киберсан")
+	SSmarket.apply_work(WORK_SCI_NODE, 4500)
+	TEST_ASSERT(cybersun.work_boost < SSmarket.work_stock_cap / 2, "5000 кр. исследований довели Киберсан почти до потолка: [cybersun.work_boost]")
 	var/list/rising = work_driver_of(cybersun)
 	var/list/falling = work_driver_of(cybersun, TRUE)
 	var/research_name = market_work_driver_name(WORK_SCI_NODE)

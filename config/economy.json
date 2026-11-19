@@ -105,7 +105,7 @@
 			"med_revive": {"VYMD": 0.1},
 			"med_surgery": {"BSHP": 0.1, "VYMD": 0.05},
 			"eng_power_export": {"NKMR": 0.04},
-			"sci_node": {"EINS": 0.3, "CYBS": 0.1},
+			"sci_node": {"EINS": 0.3, "CYBS": 0.01},
 			"sci_slime_discovery": {"EINS": 0.02},
 			"sci_artifact": {"SOLX": 0.1},
 			"mining_ore": {"PRSP": 0.04},

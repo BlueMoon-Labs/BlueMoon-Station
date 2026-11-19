@@ -362,32 +362,89 @@
 /datum/bank_account/econ_test_evac_ear/bank_card_talk(message, force, talk_sound, balloon, quiet)
 	card_messages += message
 
-/datum/unit_test/economy_trading/evac_warning
+/// Счёт с настоящими сообщениями карты: без клиента они доходят только до listener; запоминает, кому показана всплывашка.
+/datum/bank_account/econ_test_card_ear
+	var/mob/listener
+	var/list/reached = list()
+
+/datum/bank_account/econ_test_card_ear/Destroy(force, ...)
+	listener = null
+	reached.Cut()
+	return ..()
+
+/datum/bank_account/econ_test_card_ear/card_talk_reaches(mob/holder, force)
+	return holder == listener || ..()
+
+/datum/bank_account/econ_test_card_ear/show_card_balloon(mob/holder, text)
+	reached += holder
+
+/// Счета с ID-картами на людях; карты отвязываются в Destroy().
+/datum/unit_test/economy_trading/card_holders
+	abstract_type = /datum/unit_test/economy_trading/card_holders
 	var/list/cards = list()
 
-/datum/unit_test/economy_trading/evac_warning/Destroy()
+/datum/unit_test/economy_trading/card_holders/Destroy()
 	for(var/obj/item/card/id/card as anything in cards)
 		card.registered_account?.bank_cards -= card
 		card.registered_account = null
 	cards.Cut()
 	return ..()
 
-/// Счёт с акциями shares и его ID-карта на человеке.
-/datum/unit_test/economy_trading/evac_warning/proc/new_holder(list/shares)
-	var/datum/bank_account/econ_test_evac_ear/account = new("econ_test_evac_[length(traders) + 1]")
-	traders += account
-	account.shares = shares
-	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human)
-	var/obj/item/card/id/card = econ_test_badge(holder, list())
+/// ID-карта счёта account на holder, с доступами access.
+/datum/unit_test/economy_trading/card_holders/proc/link_card(datum/bank_account/account, mob/living/carbon/human/holder, list/access = list())
+	var/obj/item/card/id/card = econ_test_badge(holder, access)
 	card.registered_account = account
 	account.bank_cards += card
 	cards += card
+	return card
+
+/// Счёт с акциями shares и его ID-карта на человеке.
+/datum/unit_test/economy_trading/card_holders/proc/new_holder(list/shares, list/access = list())
+	var/datum/bank_account/econ_test_evac_ear/account = new("econ_test_evac_[length(traders) + 1]")
+	traders += account
+	account.shares = shares
+	for(var/ticker in shares)
+		account.cost_basis[ticker] = 100
+	link_card(account, allocate(/mob/living/carbon/human), access)
 	return account
 
-/// Пока эвакуационный шаттл в пути, держатель акций один раз узнаёт с карты, что непроданные акции сгорят; без акций, до вызова, после отзыва и мёртвому карта молчит, ожившему напомнит.
-/datum/unit_test/economy_trading/evac_warning/Run()
+/// Сообщение карты доходит до держателя второй карты счёта, даже если первая - у того, кто его не услышит.
+/datum/unit_test/economy_trading/card_holders/card_talk/Run()
+	var/datum/bank_account/econ_test_card_ear/account = new("econ_test_card_ear")
+	traders += account
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human)
+	var/mob/living/carbon/human/listener = allocate(/mob/living/carbon/human)
+	link_card(account, sleeper)
+	link_card(account, listener)
+	account.listener = listener
+	account.bank_card_talk("Биржа: проверка второй карты.", balloon = "проверка")
+	TEST_ASSERT(length(account.reached) == 1 && account.reached[1] == listener, "Сообщение не дошло до второй карты: [length(account.reached)]")
+
+/// Во время эвакуации держатель акций узнаёт с карты, что в конце смены акции продадутся по рынку, и что даст продажа сейчас: раз за каждый вызов шаттла; без акций, до вызова, после отзыва и мёртвому карта молчит, ожившему напомнит. За казну узнаёт капитан.
+/datum/unit_test/economy_trading/card_holders/evac_warning
+	var/saved_wave
+	var/saved_underway
+	var/saved_treasury_wave
+
+/datum/unit_test/economy_trading/card_holders/evac_warning/New()
+	..()
+	saved_wave = SSmarket.evac_wave
+	saved_underway = SSmarket.evac_was_underway
+	var/datum/bank_account/treasury_account = SSeconomy.treasury()
+	saved_treasury_wave = treasury_account.stock_evac_wave
+
+/datum/unit_test/economy_trading/card_holders/evac_warning/Destroy()
+	SSmarket.evac_wave = saved_wave
+	SSmarket.evac_was_underway = saved_underway
+	var/datum/bank_account/treasury_account = SSeconomy.treasury()
+	treasury_account.stock_evac_wave = saved_treasury_wave
+	return ..()
+
+/datum/unit_test/economy_trading/card_holders/evac_warning/Run()
 	company.price = 50
 	var/datum/bank_account/econ_test_evac_ear/investor = new_holder(list("AGRO" = 4))
+	var/datum/bank_account/econ_test_evac_ear/loser = new_holder(list("AGRO" = 4))
+	loser.cost_basis["AGRO"] = 1000
 	var/datum/bank_account/econ_test_evac_ear/saver = new_holder(list())
 	var/datum/bank_account/econ_test_evac_ear/fallen = new_holder(list("AGRO" = 2))
 	var/obj/item/card/id/fallen_card = fallen.bank_cards[1]
@@ -396,21 +453,88 @@
 	SSmarket.warn_holders_before_evac(SHUTTLE_IDLE)
 	TEST_ASSERT(!length(investor.card_messages), "Предупреждение до вызова шаттла")
 	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
-	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Держатель не узнал, что акции сгорят")
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Держатель не узнал о продаже акций в конце смены")
 	var/warning = investor.card_messages[1]
-	TEST_ASSERT(findtext(warning, "сгорят") && findtext(warning, "[SSmarket.portfolio_value(investor)] кр."), "Предупреждение без сути или стоимости акций: [warning]")
+	var/list/amounts = SSmarket.sale_amounts(company, 4)
+	var/profit = amounts[1] - amounts[2] - 100
+	TEST_ASSERT(findtext(warning, "продадутся по рыночной цене") && findtext(warning, "[SSmarket.portfolio_value(investor)] кр."), "Предупреждение без сути или стоимости акций: [warning]")
+	TEST_ASSERT(findtext(warning, "зафиксируете +[profit] кр. прибыли"), "Предупреждение без прибыли от продажи сейчас ([profit] кр.): [warning]")
+	TEST_ASSERT(findtext(loser.card_messages[1], "зафиксируете [1000 - amounts[1] + amounts[2]] кр. убытка"), "Предупреждение без убытка: [loser.card_messages[1]]")
+	TEST_ASSERT(!findtext(warning, "сгор"), "Предупреждение обещает, что акции сгорят: [warning]")
 	TEST_ASSERT(!findtext(warning, investor.account_holder), "Предупреждение называет владельца счёта: [warning]")
 	TEST_ASSERT(!length(saver.card_messages), "Предупреждение счёту без акций")
 	TEST_ASSERT(!length(fallen.card_messages), "Предупреждение мёртвому держателю")
 	SSmarket.warn_holders_before_evac(SHUTTLE_DOCKED)
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Предупреждение повторилось, пока шаттл у станции")
 	SSmarket.warn_holders_before_evac(SHUTTLE_RECALL)
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Предупреждение после отзыва шаттла")
 	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
-	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Предупреждение повторилось после отзыва и нового вызова")
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 2, "Новый вызов шаттла после отзыва не предупредил")
 	fallen_body.revive(TRUE, TRUE)
-	SSmarket.warn_holders_before_evac(SHUTTLE_RECALL)
-	TEST_ASSERT(!length(fallen.card_messages), "Предупреждение после отзыва шаттла")
 	SSmarket.warn_holders_before_evac(SHUTTLE_ESCAPE)
 	TEST_ASSERT_EQUAL(length(fallen.card_messages), 1, "Ожившему держателю не напомнили")
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 2, "Шаттл улетел - тот же вызов, а предупреждение повторилось")
 	saver.shares["AGRO"] = 1
 	SSmarket.warn_holders_before_evac(SHUTTLE_ENDGAME)
 	TEST_ASSERT(!length(saver.card_messages), "Предупреждение после конца смены")
+
+/// Казна без карт: о её акциях во время эвакуации узнаёт капитан на личную карту, раз за вызов шаттла; без доступа капитана - нет.
+/datum/unit_test/economy_trading/card_holders/evac_warning/treasury/Run()
+	var/datum/bank_account/treasury_account = use_treasury(0)
+	company.price = 50
+	treasury_account.shares["AGRO"] = 6
+	treasury_account.cost_basis["AGRO"] = 100
+	var/datum/bank_account/econ_test_evac_ear/captain = new_holder(list(), list(ACCESS_CAPTAIN))
+	var/datum/bank_account/econ_test_evac_ear/clerk = new_holder(list(), list(ACCESS_HOP))
+	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
+	TEST_ASSERT_EQUAL(length(captain.card_messages), 1, "Капитан не узнал об акциях казны")
+	TEST_ASSERT(findtext(captain.card_messages[1], "акции казны") && findtext(captain.card_messages[1], "[SSmarket.portfolio_value(treasury_account)] кр."), "Предупреждение капитану не про казну: [captain.card_messages[1]]")
+	TEST_ASSERT(!length(clerk.card_messages), "Об акциях казны узнал не капитан")
+	SSmarket.warn_holders_before_evac(SHUTTLE_DOCKED)
+	TEST_ASSERT_EQUAL(length(captain.card_messages), 1, "Предупреждение за казну повторилось в тот же вызов")
+	SSmarket.warn_holders_before_evac(SHUTTLE_RECALL)
+	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
+	TEST_ASSERT_EQUAL(length(captain.card_messages), 2, "Новый вызов шаттла не напомнил капитану о казне")
+
+/// «Продать все акции» продаёт всё обычными сделками; остановленные торги и кулдаун пропускает с объяснением; пустой и замороженный счёт отказывают; из казны - только капитан в режиме казны.
+/datum/unit_test/economy_trading/ui/sell_all/Run()
+	var/mob/living/carbon/human/user = make_user(0)
+	var/datum/bank_account/own = econ_account_of(user)
+	var/datum/computer_file/program/stock_exchange/program = install_program(user)
+	company.price = 50
+	var/datum/stock_company/halted = SSmarket.get_company("CYBS")
+	own.shares = list("AGRO" = 4, "CYBS" = 2, "VYMD" = 3)
+	own.cost_basis = list("AGRO" = 100, "CYBS" = 100, "VYMD" = 100)
+	own.trade_cooldowns["VYMD"] = world.time
+	var/list/amounts = SSmarket.sale_amounts(company, 4)
+	var/net = amounts[1] - amounts[2]
+	own.state = ACCOUNT_FROZEN
+	press(user, program, "NtosStockExchange", "sell_all")
+	own.state = ACCOUNT_ACTIVE
+	TEST_ASSERT_EQUAL(message_of(program, user), "Счёт заморожен: продать нельзя.", "Замороженный счёт продал")
+	TEST_ASSERT_EQUAL(own.shares["AGRO"], 4, "Замороженный счёт продал AGRO")
+	halted.halted_until = world.time + STOCK_HALT_TIME
+	press(user, program, "NtosStockExchange", "sell_all")
+	halted.halted_until = 0
+	TEST_ASSERT_EQUAL(message_of(program, user), "Продано 4 AGRO на [net] кр. с учётом спреда и комиссии. Не продано: Торги CYBS остановлены. Слишком частые сделки по VYMD.", "Ответ на продажу всего")
+	TEST_ASSERT(!own.shares["AGRO"], "AGRO не продан")
+	TEST_ASSERT_EQUAL(own.shares["CYBS"], 2, "Остановленные торги продались")
+	TEST_ASSERT_EQUAL(own.shares["VYMD"], 3, "Продано в кулдаун")
+	TEST_ASSERT_EQUAL(own.account_balance, net, "Зачислено не как за обычную продажу")
+	TEST_ASSERT_EQUAL(own.realized_stock_profit, net - 100, "Прибыль продажи всего")
+
+	var/mob/living/carbon/human/empty = make_user(0)
+	var/datum/computer_file/program/stock_exchange/empty_program = install_program(empty)
+	press(empty, empty_program, "NtosStockExchange", "sell_all")
+	TEST_ASSERT_EQUAL(message_of(empty_program, empty), "Продавать нечего: акций на счёте нет.", "Ответ пустому счёту")
+
+	var/datum/bank_account/treasury_account = use_treasury(0)
+	treasury_account.shares["AGRO"] = 2
+	treasury_account.cost_basis["AGRO"] = 50
+	var/mob/living/carbon/human/captain = make_user(0, list(ACCESS_CAPTAIN))
+	var/datum/computer_file/program/stock_exchange/captain_program = install_program(captain)
+	press(captain, captain_program, "NtosStockExchange", "sell_all")
+	TEST_ASSERT_EQUAL(treasury_account.shares["AGRO"], 2, "Казна продала без режима казны")
+	press(captain, captain_program, "NtosStockExchange", "use_treasury", list("value" = TRUE))
+	press(captain, captain_program, "NtosStockExchange", "sell_all")
+	TEST_ASSERT(!treasury_account.shares["AGRO"], "Капитан в режиме казны не продал её акции")

@@ -115,6 +115,8 @@ SUBSYSTEM_DEF(market)
 	persist_decay = SSmarket.persist_decay
 	state_path = SSmarket.state_path
 	round_end_hooked = SSmarket.round_end_hooked
+	evac_wave = SSmarket.evac_wave
+	evac_was_underway = SSmarket.evac_was_underway
 	slot_jackpot = SSmarket.slot_jackpot
 	slot_jackpot_carried = SSmarket.slot_jackpot_carried
 	bundles = SSmarket.bundles

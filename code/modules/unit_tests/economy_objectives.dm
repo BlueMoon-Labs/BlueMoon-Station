@@ -538,7 +538,7 @@
 				var/listeners = subsystem.comp_lookup[signal]
 				TEST_ASSERT(listeners != objective && !(islist(listeners) && (objective in listeners)), "[objective_type] остался подписан на [signal]")
 
-/// Прибыль на бирже считается с выдачи цели по всем счетам, с которых владелец торговал: убыток выброшенной карты остаётся.
+/// Прибыль на бирже считается с выдачи цели по всем счетам, с которых владелец торговал: убыток выброшенной карты остаётся, продажа в конце смены не в счёт.
 /datum/unit_test/economy_trading/insider/econ_objective_profit/Run()
 	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtesttrader", 50000)
 	var/datum/bank_account/own = econ_account_of(traitor)
@@ -580,6 +580,14 @@
 	TEST_ASSERT(findtext(objective.explanation_text, "прибыль [gain + loss] из [gain] кр."), "Итог без прогресса: [objective.explanation_text]")
 	objective.target_amount = gain + loss
 	TEST_ASSERT(objective.check_completion(), "Прибыль с анонимной карты не засчитана")
+
+	expire_cooldown(own, ticker)
+	TEST_ASSERT_NULL(SSmarket.try_buy_shares(own, ticker, 10), "Покупка перед концом смены")
+	company.apply_shock(0.25)
+	var/realized_before = own.realized_stock_profit
+	SSmarket.sell_off_shares()
+	TEST_ASSERT(!own.shares[ticker] && own.realized_stock_profit != realized_before, "Акции не проданы в конце смены")
+	TEST_ASSERT(findtext(objective.progress_text(), "прибыль [gain + loss] из"), "Продажа в конце смены засчитана в цель: [objective.progress_text()]")
 
 /// Обвал засчитывается только пока действует своя плохая фальшивка: падение без неё, от чужой фальшивки и после опровержения не в счёт; чужую фальшивку о компании задания не пропускают, пока жив владелец.
 /datum/unit_test/economy_trading/insider/econ_objective_crash/Run()
