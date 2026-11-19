@@ -689,9 +689,9 @@
 		QDEL_LIST(bag.contents)
 
 		bag.contents += list(
-			new /obj/item/storage/box/survival,
-			new /obj/item/storage/firstaid/regular,
-			new /obj/item/flashlight,
+			new /obj/item/storage/box/survival(bag),
+			new /obj/item/storage/firstaid/regular(bag),
+			new /obj/item/flashlight(bag),
 		)
 
 	var/obj/item/card/id/outfit_id = avatar.wear_id
