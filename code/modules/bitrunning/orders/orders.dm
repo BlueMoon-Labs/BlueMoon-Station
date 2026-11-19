@@ -70,6 +70,16 @@
 	desc = "Отлично подходит после жарких игровых сессий."
 	cost_per_order = 500
 
+/datum/orderable_item/bitrunning_flair/medkit_o2
+	purchase_path = /obj/item/storage/firstaid/o2
+	desc = "Кислородный набор для тех, кто забыл, что в вакууме не дышат."
+	cost_per_order = 500
+
+/datum/orderable_item/bitrunning_flair/medkit_toxin
+	purchase_path = /obj/item/storage/firstaid/toxin
+	desc = "Антитоксинный набор. На случай, если виртуальная еда оказалась слишком реальной."
+	cost_per_order = 500
+
 /datum/orderable_item/bitrunning_flair/oval_sunglasses
 	purchase_path = /obj/item/clothing/glasses/sunglasses/oval
 	cost_per_order = 1000
@@ -81,6 +91,51 @@
 /datum/orderable_item/bitrunning_flair/jackboots
 	purchase_path = /obj/item/clothing/shoes/jackboots
 	cost_per_order = 1000
+
+/datum/orderable_item/bitrunning_flair/bitrunner_uniform
+	purchase_path = /obj/item/clothing/under/rank/cargo/bitrunner
+	cost_per_order = 600
+	desc = "Тот самый кожаный комбинезон битраннера. Пахнет озоном и энергетиками."
+
+/datum/orderable_item/bitrunning_flair/black_gloves
+	purchase_path = /obj/item/clothing/gloves/color/black
+	cost_per_order = 300
+	desc = "Тактильные перчатки для долгих сессий. Не оставляют отпечатков на клавишах."
+
+/datum/orderable_item/bitrunning_flair/black_beanie
+	purchase_path = /obj/item/clothing/head/beanie/black
+	cost_per_order = 300
+	desc = "Стандартный головной убор человека, который не видел солнца неделю."
+
+/datum/orderable_item/bitrunning_flair/black_scarf
+	purchase_path = /obj/item/clothing/neck/scarf/black
+	cost_per_order = 250
+	desc = "Уютный шарф для холодного серверного зала."
+
+/datum/orderable_item/bitrunning_flair/black_bandana
+	purchase_path = /obj/item/clothing/mask/bandana/black
+	cost_per_order = 250
+	desc = "Бандана киберковбоя. Скрывает лицо от камер и совести."
+
+/datum/orderable_item/bitrunning_flair/satchel
+	purchase_path = /obj/item/storage/backpack/satchel
+	cost_per_order = 500
+	desc = "Сумка для дисков, кабелей и прочего цифрового хлама."
+
+/datum/orderable_item/bitrunning_flair/lizard_plush
+	purchase_path = /obj/item/toy/plush/lizardplushie
+	cost_per_order = 400
+	desc = "Талисман удачи для опасных доменов. Не является официальным талисманом NexaCache."
+
+/datum/orderable_item/bitrunning_flair/health_hud
+	purchase_path = /obj/item/clothing/glasses/hud/health
+	cost_per_order = 800
+	desc = "Медицинский HUD. Позволяет видеть, насколько плохо всё у союзников."
+
+/datum/orderable_item/bitrunning_flair/diagnostic_hud
+	purchase_path = /obj/item/clothing/glasses/hud/diagnostic
+	cost_per_order = 800
+	desc = "Диагностический HUD. Показывает, что именно сломалось в вашем плане."
 
 /datum/orderable_item/bitrunning_tech
 	category_index = CATEGORY_BITRUNNING_TECH
@@ -149,3 +204,8 @@
 	purchase_path = /obj/item/disk/bitrunning/item/pkc_mods/premium
 	cost_per_order = 1600
 	desc = "Этот диск содержит программу, позволяющую устанавливать усиленные трофеи для протокинетического дробителя. Протокинетический дробитель не входит в комплект."
+
+/datum/orderable_item/bitrunning_tech/mini_uzi
+	purchase_path = /obj/item/disk/bitrunning/item/mini_uzi
+	cost_per_order = 2200
+	desc = "Этот диск содержит программу, позволяющую экипировать мини-Узи. Поставляется без патронов и без лицензии."

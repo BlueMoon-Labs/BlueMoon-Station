@@ -20,6 +20,7 @@ type OrderDatum = {
   cat: string;
   cost: number;
   desc: string;
+  icon: string;
   name: string;
   ref: string;
 };
@@ -98,6 +99,13 @@ const ShoppingTab = () => {
                 key={item.ref}
                 style={{ borderBottom: 'thin solid #333' }}
               >
+                <Table.Cell collapsing verticalAlign="middle">
+                  <Box
+                    width="32px"
+                    height="32px"
+                    dangerouslySetInnerHTML={{ __html: item.icon }}
+                  />
+                </Table.Cell>
                 <Table.Cell color="label" verticalAlign="middle">
                   {item.name}
                 </Table.Cell>

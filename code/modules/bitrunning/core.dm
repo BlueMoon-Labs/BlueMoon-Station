@@ -364,6 +364,11 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 /obj/effect/mob_spawn/human/virtual_domain/special(mob/living/spawned_mob)
 	. = ..()
 
+	if(ishuman(spawned_mob))
+		var/mob/living/carbon/human/spawned_human = spawned_mob
+		for(var/datum/quirk/quirk as anything in spawned_human.roundstart_quirks.Copy())
+			spawned_human.remove_quirk(quirk.type)
+
 	if(antag && spawned_mob.mind)
 		spawned_mob.mind.add_antag_datum(/datum/antagonist/domain_ghost_actor)
 		spawned_mob.mind.assigned_role = ROLE_GLITCH

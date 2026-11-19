@@ -78,6 +78,7 @@
 	RegisterSignal(parent, COMSIG_LIVING_PILL_CONSUMED, PROC_REF(disconnect_if_red_pill))
 	RegisterSignals(parent, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_sever_connection))
 	RegisterSignal(parent, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_linked_damage))
+	RegisterSignal(parent, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
 
 /datum/component/avatar_connection/UnregisterFromParent()
 	REMOVE_TRAIT(parent, TRAIT_TEMPORARY_BODY, REF(src))
@@ -89,7 +90,16 @@
 		COMSIG_LIVING_DEATH,
 		COMSIG_QDELETING,
 		COMSIG_MOB_APPLY_DAMAGE,
+		COMSIG_MOVABLE_PRE_MOVE,
 	))
+
+/datum/component/avatar_connection/proc/on_pre_move(atom/movable/source, atom/new_location)
+	SIGNAL_HANDLER
+
+	var/area/destination_area = get_area(new_location)
+	if(isnull(destination_area) || !(destination_area.area_flags & VIRTUAL_AREA))
+		source.balloon_alert(source, "за границами домена!")
+		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
 
 /datum/component/avatar_connection/proc/update_avatar_id()
 	var/mob/living/avatar = parent
@@ -279,19 +289,28 @@
 	src.load_callback = load_callback
 
 /datum/component/loads_avatar_gear/RegisterWithParent()
-	parent.AddElement(/datum/element/connect_loc, list(
-		COMSIG_ATOM_ENTERING = PROC_REF(on_entered_loc),
-	))
+	// Ловим перемещение самого диска: Entered() отправляет COMSIG_ATOM_ENTERING
+	// предмету, который только что оказался в чьих-то руках/сумке.
+	RegisterSignal(parent, COMSIG_ATOM_ENTERING, PROC_REF(on_entered_loc))
+	refresh_tracking()
 
 /datum/component/loads_avatar_gear/UnregisterFromParent()
-	parent.RemoveElement(/datum/element/connect_loc, list(
-		COMSIG_ATOM_ENTERING = PROC_REF(on_entered_loc),
-	))
+	UnregisterSignal(parent, COMSIG_ATOM_ENTERING)
+	switch_tracking(null)
 
 /datum/component/loads_avatar_gear/Destroy(force)
 	load_callback = null
 	tracked_human_ref = null
 	return ..()
+
+/datum/component/loads_avatar_gear/proc/refresh_tracking()
+	var/list/nested_locs = get_nested_locs(parent)
+	for(var/i in length(nested_locs) to 1 step -1)
+		var/atom/container = nested_locs[i]
+		if(ishuman(container))
+			switch_tracking(container)
+			return
+	switch_tracking(null)
 
 /datum/component/loads_avatar_gear/proc/on_entered_loc(datum/source, atom/destination, atom/old_loc, list/atom/old_locs)
 	SIGNAL_HANDLER
@@ -299,14 +318,7 @@
 	if(isturf(destination) && isturf(old_loc))
 		return
 
-	var/list/nested_locs = get_nested_locs(parent)
-	for(var/i in length(nested_locs) to 1 step -1)
-		var/atom/container = nested_locs[i]
-		if(ishuman(container))
-			switch_tracking(container)
-			return
-
-	switch_tracking(null)
+	refresh_tracking()
 
 /datum/component/loads_avatar_gear/proc/switch_tracking(mob/living/carbon/human/to_track)
 	var/mob/living/carbon/human/tracked_human = tracked_human_ref?.resolve()
@@ -451,10 +463,10 @@
 	var/mob/living/carbon/player = parent
 	ADD_TRAIT(player, TRAIT_STASIS, REF(src))
 
-	START_PROCESSING(SSmachines, src)
+	START_PROCESSING(SSprocessing, src)
 
 /datum/component/netpod_healing/Destroy(force)
-	STOP_PROCESSING(SSmachines, src)
+	STOP_PROCESSING(SSprocessing, src)
 
 	var/mob/living/carbon/player = parent
 	REMOVE_TRAIT(player, TRAIT_STASIS, REF(src))

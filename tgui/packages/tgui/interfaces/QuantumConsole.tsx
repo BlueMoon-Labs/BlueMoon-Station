@@ -299,18 +299,26 @@ function DomainEntry(props: DomainEntryProps) {
 
   const canView = name !== '???';
 
+  const deployButton = (
+    <Button
+      disabled={!!generated_domain || !ready || occupied || points < cost}
+      icon={buttonIcon}
+      onClick={() => act('set_domain', { id })}
+    >
+      {buttonName}
+    </Button>
+  );
+
   return (
     <Collapsible
       buttons={
-        <Tooltip content={!!generated_domain && 'Сначала остановите текущий домен.'}>
-          <Button
-            disabled={!!generated_domain || !ready || occupied || points < cost}
-            icon={buttonIcon}
-            onClick={() => act('set_domain', { id })}
-          >
-            {buttonName}
-          </Button>
-        </Tooltip>
+        generated_domain ? (
+          <Tooltip content="Сначала остановите текущий домен.">
+            {deployButton}
+          </Tooltip>
+        ) : (
+          deployButton
+        )
       }
       color={getColor(difficulty)}
       title={
@@ -322,8 +330,12 @@ function DomainEntry(props: DomainEntryProps) {
         </>
       }
     >
-      <Stack height={5}>
-        <Stack.Item color="label" grow={4}>
+      <Stack minHeight={5}>
+        <Stack.Item
+          color="label"
+          grow={4}
+          style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+        >
           {desc}
           {!!is_modular && ' (Модульный)'}
           {!!has_secondary_objectives && ' (Есть дополнительная цель)'}

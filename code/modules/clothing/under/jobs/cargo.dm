@@ -24,6 +24,7 @@
 	adjusted = NORMAL_STYLE
 	mob_overlay_icon = 'icons/mob/clothing/uniform.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/cargo/tech
 	name = "cargo technician's jumpsuit"

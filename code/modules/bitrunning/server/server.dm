@@ -657,11 +657,14 @@
 	new /obj/item/storage/lockbox/bitrunning/encrypted(chosen_turf)
 	return chosen_turf
 
-/obj/machinery/quantum_server/proc/generate_avatar(turf/destination, datum/outfit/netsuit, datum/preferences/prefs, load_loadout = FALSE)
+/obj/machinery/quantum_server/proc/generate_avatar(turf/destination, datum/outfit/netsuit, datum/preferences/prefs, load_loadout = FALSE, appearance_only = FALSE)
 	var/mob/living/carbon/human/avatar = new(destination)
 
 	if(!isnull(prefs))
-		prefs.copy_to(avatar)
+		if(appearance_only)
+			prefs.copy_appearance_to(avatar)
+		else
+			prefs.copy_to(avatar)
 	ADD_TRAIT(avatar, TRAIT_CANNOT_CRYSTALIZE, "Bitrunning")
 	var/outfit_path = generated_domain.forced_outfit || netsuit
 	var/datum/outfit/to_wear = new outfit_path()
@@ -694,7 +697,7 @@
 	var/obj/item/card/id/outfit_id = avatar.wear_id
 	if(outfit_id)
 		outfit_id.registered_account = new /datum/bank_account(avatar.real_name)
-		outfit_id.assignment = "Bitrunner"
+		outfit_id.assignment = "Bit Avatar"
 		outfit_id.update_label()
 
 	return avatar
@@ -744,7 +747,8 @@
 		to_chat(neo, span_warning("Этот домен запрещает использование [english_list(import_ban)]; внешне загруженные [english_list(disk_ban)] не будут выданы!"))
 
 	var/return_flags = NONE
-	return_flags = SEND_SIGNAL(neo, COMSIG_BITRUNNER_STOCKING_GEAR, avatar, domain_forbids_flags)
+	for(var/obj/item/disk/bitrunning/disk in neo.GetAllContents(/obj/item/disk/bitrunning))
+		return_flags |= disk.load_onto_avatar(neo, avatar, domain_forbids_flags)
 
 	if(return_flags & BITRUNNER_GEAR_LOAD_FAILED)
 		to_chat(neo, span_warning("Один из внешних источников данных не смог загрузиться. Проверьте пересекающиеся или неактивные диски."))
@@ -1132,12 +1136,13 @@
 		return
 	var/datum/preferences/pref
 	var/load_loadout = FALSE
+	var/appearance_only = FALSE
 	var/obj/item/disk/bitrunning/prefs/prefdisk = locate() in neo.get_contents()
 	if(prefdisk)
 		load_loadout = prefdisk.include_loadout
+		appearance_only = prefdisk.appearance_only
 		pref = prefdisk.loaded_preference
-	var/mob/living/carbon/new_avatar = generate_avatar(get_turf(entry_atom), netsuit, prefs = pref, load_loadout = load_loadout)
-	stock_gear(new_avatar, neo, generated_domain)
+	var/mob/living/carbon/new_avatar = generate_avatar(get_turf(entry_atom), netsuit, prefs = pref, load_loadout = load_loadout, appearance_only = appearance_only)
 
 	if(!length(generated_domain.custom_spawns))
 		return new_avatar

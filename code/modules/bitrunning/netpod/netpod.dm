@@ -1,6 +1,38 @@
 #define BASE_DISCONNECT_DAMAGE 40
 #define SCANNING_TOGGLE_COOLDOWN 5
 
+GLOBAL_LIST_INIT(netpod_outfit_sets, list(
+	"Basic" = list(
+		/datum/outfit/job/bitrunner,
+		/datum/outfit/job/assistant,
+		/datum/outfit/job/bartender,
+		/datum/outfit/job/janitor,
+		/datum/outfit/job/curator,
+	),
+	"Cargo" = list(
+		/datum/outfit/job/cargo_tech,
+		/datum/outfit/job/quartermaster,
+		/datum/outfit/job/miner,
+	),
+	"Engineering" = list(
+		/datum/outfit/job/engineer,
+		/datum/outfit/job/atmos,
+	),
+	"Medical" = list(
+		/datum/outfit/job/doctor,
+		/datum/outfit/job/paramedic,
+		/datum/outfit/job/chemist,
+	),
+	"Science" = list(
+		/datum/outfit/job/scientist,
+		/datum/outfit/job/roboticist,
+	),
+	"Security" = list(
+		/datum/outfit/job/security,
+		/datum/outfit/job/detective,
+	),
+))
+
 /obj/machinery/netpod
 	name = "netpod"
 
@@ -38,7 +70,7 @@
 /obj/machinery/netpod/Destroy()
 	. = ..()
 
-	QDEL_LIST(cached_outfits)
+	cached_outfits.Cut()
 
 /obj/machinery/netpod/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
@@ -165,9 +197,10 @@
 	open_machine()
 
 /obj/machinery/netpod/open_machine(drop = TRUE, density_to_set = FALSE)
-	playsound(src, 'sound/machines/AirlockOpen.ogg', 60, TRUE, frequency = 65000)
-	flick("[base_icon_state]_opening", src)
-	SEND_SIGNAL(src, COMSIG_BITRUNNER_NETPOD_OPENED)
+	if(!state_open)
+		playsound(src, 'sound/machines/AirlockOpen.ogg', 60, TRUE, frequency = 65000)
+		flick("[base_icon_state]_opening", src)
+		SEND_SIGNAL(src, COMSIG_BITRUNNER_NETPOD_OPENED)
 	use_power = IDLE_POWER_USE
 
 	return ..()
@@ -228,7 +261,7 @@
 		if(findtext(outfit_name, "(") != 0 || findtext(outfit_name, "-") != 0)
 			continue
 
-		collection["outfits"] += list(list("path" = outfit, "name" = outfit_name))
+		collection["outfits"] += list(list("path" = "[outfit]", "name" = outfit_name))
 
 	return list(collection)
 
@@ -239,7 +272,7 @@
 
 	for(var/wardrobe in cached_outfits)
 		for(var/outfit in wardrobe["outfits"])
-			if(path == outfit["path"])
+			if("[path]" == outfit["path"])
 				return path
 
 	message_admins("[usr]:[usr.ckey] попытался выбрать недоступную экипировку из нетпода")
@@ -328,7 +361,7 @@
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "NetpodЭкипировка")
+		ui = new(user, src, "NetpodOutfits")
 		ui.set_autoupdate(FALSE)
 		ui.open()
 
@@ -342,7 +375,8 @@
 	var/list/data = list()
 
 	if(!length(cached_outfits))
-		cached_outfits += make_outfit_collection("Jobs", subtypesof(/datum/outfit/job))
+		for(var/set_name in GLOB.netpod_outfit_sets)
+			cached_outfits += make_outfit_collection(set_name, GLOB.netpod_outfit_sets[set_name])
 
 	data["collections"] = cached_outfits
 
@@ -461,6 +495,8 @@
 		help_text = generated_domain.help_text, \
 		copy_body = copy_body, \
 	)
+
+	server.stock_gear(current_avatar, neo, generated_domain)
 
 	connected = TRUE
 

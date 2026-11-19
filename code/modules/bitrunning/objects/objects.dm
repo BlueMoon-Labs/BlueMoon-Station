@@ -94,7 +94,7 @@
 /obj/item/circuitboard/machine/netpod
 	name = "Netpod (Machine Board)"
 	desc = "Плата для нетпода."
-	icon_state = "cargo"
+	icon_state = "supply"
 	build_path = /obj/machinery/netpod
 	req_components = list(
 		/obj/item/stock_parts/manipulator = 1,
@@ -104,7 +104,7 @@
 /obj/item/circuitboard/machine/quantum_server
 	name = "Quantum Server (Machine Board)"
 	desc = "Плата для квантового сервера."
-	icon_state = "cargo"
+	icon_state = "supply"
 	build_path = /obj/machinery/quantum_server
 	req_components = list(
 		/obj/item/stock_parts/manipulator = 2,
@@ -115,7 +115,7 @@
 /obj/item/circuitboard/machine/byteforge
 	name = "Byteforge (Machine Board)"
 	desc = "Плата для байтфорджа."
-	icon_state = "cargo"
+	icon_state = "supply"
 	build_path = /obj/machinery/byteforge
 	req_components = list(
 		/obj/item/stock_parts/micro_laser = 1,
@@ -124,13 +124,13 @@
 /obj/item/circuitboard/computer/quantum_console
 	name = "Quantum Console (Computer Board)"
 	desc = "Плата для квантовой консоли."
-	icon_state = "cargo"
+	icon_state = "supply"
 	build_path = /obj/machinery/computer/quantum_console
 
 /obj/item/circuitboard/computer/order_console/bitrunning
 	name = "Bitrunning Vendor Console (Computer Board)"
 	desc = "Плата для автомата снабжения битраннеров."
-	icon_state = "cargo"
+	icon_state = "supply"
 	build_path = /obj/machinery/computer/order_console/bitrunning
 
 // Отладочные платы для тестового стенда Runtime Station: сразу с улучшенными компонентами.
@@ -186,10 +186,6 @@
 	icon_state = "[base_icon_state][rand(0, 6)]"
 	update_icon()
 
-	AddComponent(/datum/component/loads_avatar_gear, \
-		load_callback = CALLBACK(src, PROC_REF(load_onto_avatar)), \
-	)
-
 /obj/item/disk/bitrunning/examine(mob/user)
 	. = ..()
 	. += span_infoplain("Этот диск нужно взять с собой в нетпод, чтобы использовать.")
@@ -206,17 +202,21 @@
 
 /obj/item/disk/bitrunning/ability
 	desc = "Диск с исходным кодом. Позволяет заранее загрузить способности в виртуальный домен. Повторяющиеся способности игнорируются."
-	var/obj/effect/proc_holder/spell/granted_spell
-	var/list/obj/effect/proc_holder/spell/selectable_spells = list()
+	var/granted_spell
+	var/list/selectable_spells = list()
 
 /obj/item/disk/bitrunning/ability/load_onto_avatar(mob/living/carbon/human/neo, mob/living/carbon/human/avatar, domain_flags)
 	if(domain_flags & DOMAIN_FORBIDS_ABILITIES)
 		return BITRUNNER_GEAR_LOAD_BLOCKED
 
 	if(isnull(granted_spell))
+		to_chat(neo, span_warning("Диск «[name]» не настроен: активируйте его в руке и выберите способность."))
 		return BITRUNNER_GEAR_LOAD_FAILED
 
-	for(var/obj/effect/proc_holder/spell/existing as anything in avatar.mind?.spell_list)
+	var/list/existing_spells = avatar.mob_spell_list
+	if(!islist(existing_spells))
+		existing_spells = list()
+	for(var/obj/effect/proc_holder/spell/existing as anything in existing_spells)
 		if(existing.type == granted_spell)
 			return BITRUNNER_GEAR_LOAD_FAILED
 
@@ -229,14 +229,14 @@
 		return
 
 	var/names = list()
-	for(var/obj/effect/proc_holder/spell/thing as anything in selectable_spells)
+	for(var/thing as anything in selectable_spells)
 		names += initial(thing.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите способность",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/obj/effect/proc_holder/spell/thing as anything in selectable_spells)
+	for(var/thing as anything in selectable_spells)
 		if(initial(thing.name) == choice)
 			granted_spell = thing
 
@@ -278,14 +278,15 @@
 
 /obj/item/disk/bitrunning/item
 	desc = "Диск с исходным кодом. Позволяет заранее загрузить предметы в виртуальный домен."
-	var/obj/granted_item
-	var/list/obj/selectable_items = list()
+	var/granted_item
+	var/list/selectable_items = list()
 
 /obj/item/disk/bitrunning/item/load_onto_avatar(mob/living/carbon/human/neo, mob/living/carbon/human/avatar, domain_flags)
 	if(domain_flags & DOMAIN_FORBIDS_ITEMS)
 		return BITRUNNER_GEAR_LOAD_BLOCKED
 
 	if(isnull(granted_item))
+		to_chat(neo, span_warning("Диск «[name]» не настроен: активируйте его в руке и выберите снаряжение."))
 		return BITRUNNER_GEAR_LOAD_FAILED
 
 	avatar.put_in_hands(new granted_item())
@@ -298,14 +299,14 @@
 		return
 
 	var/names = list()
-	for(var/obj/thing as anything in selectable_items)
+	for(var/thing as anything in selectable_items)
 		names += initial(thing.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите способность",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/obj/thing as anything in selectable_items)
+	for(var/thing as anything in selectable_items)
 		if(initial(thing.name) == choice)
 			granted_item = thing
 
@@ -736,16 +737,23 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 
 	var/datum/preferences/loaded_preference
 	var/include_loadout = FALSE
+	var/appearance_only = TRUE
 
 /obj/item/disk/bitrunning/prefs/examine(mob/user)
 	. = ..()
 	if(!isnull(loaded_preference))
 		. += "Сейчас в нём загружен персонаж [loaded_preference.real_name]."
+		. += span_notice("Режим загрузки: [appearance_only ? "только внешность" : "полная копия"].")
 		. += span_notice("Ctrl-клик — изменить загрузку экипировки")
+		. += span_notice("Alt-клик — переключить режим внешности")
 
 /obj/item/disk/bitrunning/prefs/CtrlClick(mob/user)
 	include_loadout = !include_loadout
 	balloon_alert(user, include_loadout ? "загрузка экипировки включена" : "загрузка экипировки отключена")
+
+/obj/item/disk/bitrunning/prefs/AltClick(mob/user)
+	appearance_only = !appearance_only
+	balloon_alert(user, appearance_only ? "только внешность" : "полная копия")
 
 /obj/item/disk/bitrunning/prefs/attack_self(mob/user, modifiers)
 	. = ..()
@@ -753,13 +761,14 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	if(!user.client?.prefs)
 		return
 
-	var/response = tgui_alert(user, "Загрузить выбранного персонажа на этот диск?", "Настройки персонажа", list("Да", "Нет"))
-	if(isnull(response) || response == "Нет")
+	var/choice = tgui_input_list(user, "Что загрузить с выбранного персонажа?", "Настройки персонажа", list("Только внешность", "Полная копия", "Отмена"))
+	if(isnull(choice) || choice == "Отмена")
 		return
 
+	appearance_only = (choice == "Только внешность")
 	loaded_preference = user.client.prefs
 	balloon_alert(user, "персонаж установлен")
-	to_chat(user, span_notice("Персонаж [loaded_preference.real_name] успешно установлен!"))
+	to_chat(user, span_notice("Персонаж [loaded_preference.real_name] успешно установлен! Режим: [appearance_only ? "только внешность" : "полная копия"]."))
 
 /obj/machinery/computer/quantum_console
 	name = "quantum console"
@@ -926,7 +935,6 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	foodtype = GRAIN
 
 #define BITRUNNING_ORDER_MAX 20
-#define BITRUNNING_STANDARD_DELIVERY_DELAY (20 SECONDS)
 
 /obj/machinery/computer/order_console
 	name = "order console"
@@ -1004,6 +1012,15 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		return
 	return item_path
 
+/obj/machinery/computer/order_console/bitrunning/proc/get_item_icon(datum/orderable_item/item)
+	var/atom/prototype = initial(item.purchase_path)
+	if(!ispath(prototype) || !ispath(prototype, /atom/movable))
+		return ""
+	var/atom/movable/temp = new prototype()
+	var/icon_html = icon2html(temp, GLOB.clients)
+	qdel(temp)
+	return icon_html || ""
+
 /obj/machinery/computer/order_console/bitrunning/ui_static_data(mob/user)
 	var/list/data = list()
 	data["credit_type"] = credit_type
@@ -1022,6 +1039,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 				"cat" = category,
 				"ref" = "[item]",
 				"cost" = round(initial(item.cost_per_order) * cargo_cost_multiplier),
+				"icon" = get_item_icon(item),
 			))
 
 	return data
@@ -1106,20 +1124,47 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	playsound(src, 'sound/machines/chime.ogg', 35, TRUE)
 
 	if(express)
-		say("Спасибо за покупку!")
-		deliver_order(ordered_paths)
+		say("Спасибо за покупку! Капсула уже в пути.")
+		deliver_order(ordered_paths, user)
 	else
-		say("Заказ принят. Ожидайте доставки из карго.")
-		addtimer(CALLBACK(src, PROC_REF(deliver_order), ordered_paths), BITRUNNING_STANDARD_DELIVERY_DELAY)
+		say("Заказ принят и добавлен в очередь снабжения. Ожидайте доставки на карго-шаттле.")
+		queue_cargo_order(ordered_paths, user)
 
 	return TRUE
 
-/obj/machinery/computer/order_console/bitrunning/proc/deliver_order(list/ordered_paths)
+/obj/machinery/computer/order_console/bitrunning/proc/build_delivery_pack(list/ordered_paths)
+	var/datum/supply_pack/pack = new()
+	pack.name = "Bitrunner supply order"
+	pack.desc = "Заказ, оформленный через терминал NexaCache."
+	pack.contains = ordered_paths.Copy()
+	pack.cost = 0
+	pack.group = ""
+	pack.crate_name = "bitrunner supply crate"
+	return pack
+
+/obj/machinery/computer/order_console/bitrunning/proc/build_delivery_order(list/ordered_paths, mob/user)
+	var/orderer = user?.real_name || "Bitrunner"
+	var/rank = "Bitrunner"
+	if(ishuman(user))
+		var/mob/living/carbon/human/human_user = user
+		orderer = human_user.get_authentification_name() || orderer
+		rank = human_user.get_assignment(hand_first = TRUE) || rank
+	var/datum/supply_pack/pack = build_delivery_pack(ordered_paths)
+	return new /datum/supply_order(pack, orderer, rank, user?.ckey, "Заказ битраннера через NexaCache", null)
+
+/obj/machinery/computer/order_console/bitrunning/proc/queue_cargo_order(list/ordered_paths, mob/user)
+	if(isnull(SSshuttle))
+		return FALSE
+	SSshuttle.shoppinglist += build_delivery_order(ordered_paths, user)
+	return TRUE
+
+/obj/machinery/computer/order_console/bitrunning/proc/deliver_order(list/ordered_paths, mob/user)
 	var/turf/delivery_turf = get_turf(src)
-	if(QDELETED(src) || !delivery_turf)
+	if(QDELETED(src) || isnull(delivery_turf))
 		return
-	for(var/path in ordered_paths)
-		new path(delivery_turf)
+	var/datum/supply_order/order = build_delivery_order(ordered_paths, user)
+	var/obj/structure/closet/supplypod/pod = new()
+	new /obj/effect/pod_landingzone(delivery_turf, pod, order)
 
 /obj/machinery/computer/order_console/bitrunning/proc/subtract_points(final_cost, obj/item/card/id/card)
 	var/datum/bank_account/account = card?.registered_account
@@ -1132,7 +1177,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 /obj/item/disk/bitrunning/gimmick
 	desc = "Диск с исходным кодом. Его можно использовать для предзагрузки гиммик-наборов в виртуальный домен."
 	var/datum/bitrunning_gimmick/granted_loadout
-	var/list/datum/bitrunning_gimmick/selectable_loadouts
+	var/list/selectable_loadouts
 
 /obj/item/disk/bitrunning/gimmick/Destroy()
 	QDEL_NULL(granted_loadout)
@@ -1140,6 +1185,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 
 /obj/item/disk/bitrunning/gimmick/load_onto_avatar(mob/living/carbon/human/neo, mob/living/carbon/human/avatar, domain_flags)
 	if(isnull(granted_loadout))
+		to_chat(neo, span_warning("Диск «[name]» не настроен: активируйте его в руке и выберите гиммик-набор."))
 		return BITRUNNER_GEAR_LOAD_FAILED
 	return granted_loadout.grant_loadout(neo, avatar, domain_flags)
 
@@ -1150,14 +1196,14 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		return
 
 	var/names = list()
-	for(var/datum/bitrunning_gimmick/loadout as anything in selectable_loadouts)
+	for(var/loadout as anything in selectable_loadouts)
 		names += initial(loadout.name)
 
 	var/choice = tgui_input_list(user, message = "Выберите гиммик-набор",  title = "Программа битраннинга", items = names)
 	if(isnull(choice) || !user.is_holding(src))
 		return
 
-	for(var/datum/bitrunning_gimmick/loadout as anything in selectable_loadouts)
+	for(var/loadout as anything in selectable_loadouts)
 		if(initial(loadout.name) == choice)
 			granted_loadout = new loadout()
 

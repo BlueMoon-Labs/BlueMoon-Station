@@ -194,6 +194,21 @@
 	//легаси retreat_distance = 10: докуда убегаем от живых
 	blackboard[BB_AI_FLEE_DISTANCE] = 10
 
+/datum/ai_controller/hostile_adapter/skittish
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/flee_target/goldgrub,
+		/datum/ai_planning_subtree/hostile_fsm,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk
+
+/datum/ai_controller/hostile_adapter/skittish/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	blackboard -= BB_AI_RETREAT_HEALTH_FRAC
+	blackboard[BB_AI_FLEE_DISTANCE] = 8
+
 ///Охранник: держит территорию, leash к дому
 /datum/ai_controller/hostile_adapter/guard_defender
 	ai_pack_role = AI_ROLE_GUARD

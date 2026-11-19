@@ -165,10 +165,47 @@
 		/mob/living/simple_animal/hostile/alien/drone,
 	)
 
+/mob/living/simple_animal/hostile/deer
+	name = "doe"
+	desc = "Кроткое лесное животное. Как оно вообще попало в космос?"
+	icon_state = "deer-doe"
+	icon_living = "deer-doe"
+	icon_dead = "deer-doe-dead"
+	gender = FEMALE
+	mob_biotypes = MOB_ORGANIC|MOB_BEAST
+	speak = list("Weeeeeeee?","Weeee","WEOOOOOOOOOO")
+	speak_emote = list("grunts","grunts lowly")
+	emote_hear = list("brays.")
+	emote_see = list("shakes its head.")
+	speak_chance = 1
+	turns_per_move = 5
+	see_in_dark = 6
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 3)
+	response_help_continuous = "pets"
+	response_help_simple = "pet"
+	response_disarm_continuous = "gently nudges"
+	response_disarm_simple = "gently nudge"
+	response_harm_continuous = "kicks"
+	response_harm_simple = "kick"
+	faction = list(FACTION_NEUTRAL)
+	health = 75
+	maxHealth = 75
+	blood_volume = BLOOD_VOLUME_NORMAL
+	footstep_type = FOOTSTEP_MOB_SHOE
+	vocal_bark_id = "mutedc4"
+	harm_intent_damage = 0
+	obj_damage = 0
+	melee_damage_lower = 0
+	melee_damage_upper = 0
+	attack_verb_continuous = "bucks"
+	attack_verb_simple = "buck"
+	attack_sound = 'sound/weapons/punch1.ogg'
+	ai_profile_type = /datum/ai_controller/hostile_adapter/skittish
+
 /datum/modular_mob_segment/deer
 	max = 1
 	mobs = list(
-		/mob/living/simple_animal/deer,
+		/mob/living/simple_animal/hostile/deer,
 	)
 
 /datum/modular_mob_segment/revolutionary
