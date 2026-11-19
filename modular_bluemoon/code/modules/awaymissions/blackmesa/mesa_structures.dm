@@ -135,6 +135,10 @@
 	/// A list of mobs we are currently shielding with attached beams.
 	var/list/shielded_mobs = list()
 	var/next_shield_check = 0
+	/// Каденс повторного скана радиуса: beam щита живёт 10 минут и
+	/// самоудаляется - без ре-сscана моб терял неуязвимость, оставаясь
+	/// в радиусе живого пилона.
+	var/next_shield_scan = 0
 
 /obj/structure/xen_pylon/Initialize(mapload)
 	. = ..()
@@ -164,7 +168,7 @@
 	mob_to_register.shielded = TRUE
 	mob_to_register.shield_count++
 	mob_to_register.update_appearance()
-	var/datum/beam/created_beam = Beam(mob_to_register, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1))
+	var/datum/beam/created_beam = Beam(mob_to_register, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1), beam_sleep_time = 10)
 	shielded_mobs[mob_to_register] = created_beam
 	RegisterSignal(created_beam, COMSIG_QDELETING, PROC_REF(beam_died), override = TRUE)
 	RegisterSignal(mob_to_register, COMSIG_QDELETING, PROC_REF(mob_died), override = TRUE)
@@ -174,6 +178,9 @@
 	var/datum/beam/beam = shielded_mobs[source]
 	shielded_mobs[source] = null
 	shielded_mobs -= source
+	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	if(istype(beam))
+		UnregisterSignal(beam, COMSIG_QDELETING)
 	if(!QDELETED(beam))
 		QDEL_NULL(beam)
 
@@ -181,6 +188,9 @@
 	SIGNAL_HANDLER
 	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
 		if(shielded_mobs[iterating_mob] == beam_to_kill)
+			// Не зовём remove_shield: он QDEL'ит луч, а луч уже умирает -
+			// этот обработчик и есть его COMSIG_QDELETING.
+			UnregisterSignal(iterating_mob, COMSIG_PARENT_QDELETING)
 			iterating_mob.lose_shield()
 			shielded_mobs[iterating_mob] = null
 			shielded_mobs -= iterating_mob
@@ -189,14 +199,18 @@
 // который перестаёт лечить при потере цели. Без этой проверки моб уходил за
 // стену, а луч и неуязвимость оставались навсегда.
 /obj/structure/xen_pylon/process(seconds_per_tick)
-	if(!shielded_mobs || !shielded_mobs.len)
-		return
-	if(world.time < next_shield_check)
-		return
-	next_shield_check = world.time + 10
-	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
-		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
-			remove_shield(iterating_mob)
+	if(shielded_mobs && shielded_mobs.len && world.time >= next_shield_check)
+		next_shield_check = world.time + 10
+		for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
+			if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
+				remove_shield(iterating_mob)
+	// Ре-скан радиуса: ловит ксеномобов, у которых beam щита истёк
+	// (time = 10 MINUTES в register_mob) или сигнал входа был потерян.
+	if(world.time >= next_shield_scan)
+		next_shield_scan = world.time + 50
+		for(var/mob/living/simple_animal/hostile/blackmesa/xen/M in range(shield_range, src))
+			if(M.can_be_shielded && M.stat != DEAD && !(M in shielded_mobs) && shield_los(M))
+				register_mob(M)
 
 /obj/structure/xen_pylon/proc/remove_shield(mob/living/simple_animal/hostile/blackmesa/xen/mob_to_unshield)
 	if(!(mob_to_unshield in shielded_mobs))
@@ -204,6 +218,11 @@
 	var/datum/beam/beam = shielded_mobs[mob_to_unshield]
 	shielded_mobs[mob_to_unshield] = null
 	shielded_mobs -= mob_to_unshield
+	// Снимаем свои подписки: signal_procs пилона иначе держит сильные
+	// ссылки на каждого моба/луч, что когда-либо входил в радиус.
+	UnregisterSignal(mob_to_unshield, COMSIG_PARENT_QDELETING)
+	if(istype(beam))
+		UnregisterSignal(beam, COMSIG_QDELETING)
 	if(!QDELETED(beam))
 		QDEL_NULL(beam)
 	if(istype(mob_to_unshield) && !QDELETED(mob_to_unshield))
@@ -228,6 +247,12 @@
 
 /obj/structure/xen_pylon/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	// Снимаем подписки COMSIG_ATOM_ENTERED с турфов радиуса - иначе на
+	// каждом турфе остаётся PROC_REF на удалённый пилон.
+	var/turf/self_turf = get_turf(src)
+	if(istype(self_turf))
+		for(var/turf/T in RANGE_TURFS(shield_range, self_turf))
+			UnregisterSignal(T, COMSIG_ATOM_ENTERED)
 	for(var/mob/living/simple_animal/hostile/blackmesa/xen/iterating_mob as anything in shielded_mobs.Copy())
 		if(!QDELETED(iterating_mob))
 			iterating_mob.lose_shield()
@@ -392,7 +417,7 @@
 	var/rt_str = istype(rt) ? "([rt.x],[rt.y],[rt.z])" : "null"
 	var/ht_str = istype(hard_target) ? "([hard_target.x],[hard_target.y],[hard_target.z])" : "null"
 	var/orig_str = istype(orig) ? "([orig.x],[orig.y],[orig.z])" : "null"
-	log_world("[NIHILANTH-RIFT] teleport mob=[M] from=[orig_str] real_target=[rt_str] hard_target=[ht_str] linked=[istype(linked)] hardlinked=[hardlinked]")
+	log_world("NIHILANTH-RIFT: teleport mob=[M] from=[orig_str] real_target=[rt_str] hard_target=[ht_str] linked=[istype(linked)] hardlinked=[hardlinked]")
 	return ..()
 
 // Лендмарки для карты: место особого пилона (испытание), выход из комплекса
@@ -439,6 +464,12 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	/// разлома, если босс будет удалён до end_trial().
 	var/turf/trial_home
 	var/trial_active = FALSE
+	/// Триальный разлом босса: копия ссылки на случай, если босс будет
+	/// удалён без death() - end_trial() тогда не вызовется, а портал
+	/// обязан быть снят, иначе он продолжит телепортировать на старую точку.
+	var/obj/effect/portal/mesa_rift/nihilanth_rift/trial_portal
+	/// Каденс повторного скана радиуса для aegis-щита (см. parent process).
+	var/next_aegis_scan = 0
 	/// Пилон уже отработал в испытании - повторно не выбирается.
 	var/used = FALSE
 	/// ID испытания, с которым связан этот пилон. Совпадает с site_id
@@ -476,7 +507,7 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	if(QDELETED(M) || M.stat == DEAD || (M in aegis_mobs))
 		return
 	M.xen_aegis++
-	var/datum/beam/created_beam = src.Beam(M, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1))
+	var/datum/beam/created_beam = src.Beam(M, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1), beam_sleep_time = 10)
 	aegis_mobs[M] = created_beam
 	RegisterSignal(created_beam, COMSIG_QDELETING, PROC_REF(aegis_beam_died), override = TRUE)
 	RegisterSignal(M, COMSIG_QDELETING, PROC_REF(aegis_mob_died), override = TRUE)
@@ -487,6 +518,11 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	var/datum/beam/beam = aegis_mobs[M]
 	aegis_mobs[M] = null
 	aegis_mobs -= M
+	// Снимаем свои подписки: signal_procs пилона иначе держит сильные
+	// ссылки на каждого моба/луч, что когда-либо входил в радиус.
+	UnregisterSignal(M, COMSIG_PARENT_QDELETING)
+	if(istype(beam))
+		UnregisterSignal(beam, COMSIG_QDELETING)
 	// Запись из assoc убираем ДО qdel луча: beam шлёт COMSIG_QDELETING,
 	// aegis_beam_died находил моба всё ещё в списке и рекурсивно звал
 	// remove_aegis -> qdel уже умирающего beam ("destroy proc was called
@@ -504,20 +540,35 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	SIGNAL_HANDLER
 	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
 		if(aegis_mobs[iterating_mob] == beam_to_kill)
-			remove_aegis(iterating_mob)
+			// Не зовём remove_aegis: он QDEL'ит луч, а луч уже умирает -
+			// этот обработчик и есть его COMSIG_QDELETING.
+			aegis_mobs[iterating_mob] = null
+			aegis_mobs -= iterating_mob
+			UnregisterSignal(iterating_mob, COMSIG_PARENT_QDELETING)
+			if(!QDELETED(iterating_mob))
+				iterating_mob.xen_aegis = max(iterating_mob.xen_aegis - 1, 0)
 
 /obj/structure/xen_pylon/nihilanth/process(seconds_per_tick)
-	if(!aegis_mobs || !aegis_mobs.len)
-		return
-	if(world.time < next_aegis_check)
-		return
-	next_aegis_check = world.time + 10
-	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
-		if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
-			remove_aegis(iterating_mob)
+	if(aegis_mobs && aegis_mobs.len && world.time >= next_aegis_check)
+		next_aegis_check = world.time + 10
+		for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
+			if(QDELETED(iterating_mob) || iterating_mob.stat == DEAD || get_dist(src, iterating_mob) > shield_range || !shield_los(iterating_mob))
+				remove_aegis(iterating_mob)
+	// Ре-скан радиуса: beam aegis-щита живёт 10 минут и самоудаляется -
+	// без повторной регистрации моб терял xen_aegis, оставаясь в радиусе.
+	if(world.time >= next_aegis_scan)
+		next_aegis_scan = world.time + 50
+		for(var/mob/living/M in range(shield_range, src))
+			if(M.stat != DEAD && !(M in aegis_mobs) && shield_los(M))
+				register_aegis(M)
 
 /obj/structure/xen_pylon/nihilanth/Destroy()
 	GLOB.nihilanth_pylons -= src
+	// Если босс удалён без death(), end_trial() не вызовется - снимаем
+	// триальный разлом здесь, иначе он останется на арене навсегда.
+	if(istype(trial_portal) && !QDELETED(trial_portal))
+		qdel(trial_portal)
+	trial_portal = null
 	var/turf/self_turf = get_turf(src)
 	for(var/mob/living/iterating_mob as anything in aegis_mobs.Copy())
 		remove_aegis(iterating_mob)

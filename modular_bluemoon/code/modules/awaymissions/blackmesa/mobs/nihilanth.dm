@@ -63,6 +63,10 @@
 	var/turf/trial_site
 	var/turf/trial_pylon_turf
 	var/turf/boss_home
+	/// Активный триальный разлом у босса. Портал permanent и без явного
+	/// удаления наслаивался: обратный разлом вёл на турф, где всё ещё стоял
+	/// старый, и игрока перекидывало по цепочке чужих hard_target'ов.
+	var/obj/effect/portal/mesa_rift/nihilanth_rift/trial_portal
 	var/list/trial_thresholds = list(0.75, 0.50, 0.30)
 	var/list/trial_done = list(FALSE, FALSE, FALSE)
 
@@ -74,6 +78,10 @@
 	)
 	var/list/alive_minions = list()
 	var/max_minions = 8
+	/// Потолок спайренных Nihilanth'ом aegis-столбов - без капа каждый
+	/// minion_tick добавлял новый пилон и арена зарастала структурами.
+	var/list/spawned_add_pylons = list()
+	var/max_add_pylons = 5
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/Initialize(mapload)
 	. = ..()
@@ -137,7 +145,11 @@
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/start_trial()
 	var/turf/home = get_turf(src)
-	if(!istype(home))
+	// Босс летающий: его турф может оказаться стеной/плотным - портал
+	// встал бы в недостижимую точку, а босс остался бы неуязвимым.
+	if(!istype(home) || !isopenturf(home))
+		home = free_turf_near(src, 4)
+	if(!istype(home) || !isopenturf(home))
 		return FALSE
 	// Сначала ищем площадку - без неё испытание не начинаем,
 	// иначе босс застрял бы в неуязвимости навсегда.
@@ -159,8 +171,10 @@
 		return FALSE
 	P.hard_target = site
 	P.hardlinked = FALSE
+	trial_portal = P
+	pylon.trial_portal = P
 	var/turf/pylon_turf = get_turf(pylon)
-	log_world("[NIHILANTH] start_trial portal=([home.x],[home.y],[home.z]) hard_target=([site.x],[site.y],[site.z]) pylon=([pylon_turf.x],[pylon_turf.y],[pylon_turf.z])")
+	log_world("NIHILANTH: start_trial portal=([home.x],[home.y],[home.z]) hard_target=([site.x],[site.y],[site.z]) pylon=([pylon_turf.x],[pylon_turf.y],[pylon_turf.z])")
 
 	trial_pylon = pylon
 	trial_pylon.used = TRUE
@@ -243,7 +257,7 @@
 			if(istype(P) && !QDELETED(P))
 				options += list(list(PT, P, null))
 	if(!options.len)
-		log_world("[NIHILANTH] pick_trial_site: NO options. pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len] landmarks_total=[length(GLOB.landmarks_list)]")
+		log_world("NIHILANTH: pick_trial_site: NO options. pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len] landmarks_total=[length(GLOB.landmarks_list)]")
 		return null
 	var/picked = pick(options)
 	var/turf/s = islist(picked) && picked.len >= 1 ? picked[1] : null
@@ -251,7 +265,7 @@
 	var/turf/pt = istype(pylon_t) ? get_turf(pylon_t) : null
 	var/site_str = s ? "([s.x],[s.y],[s.z])" : "null"
 	var/pylon_str = pt ? "([pt.x],[pt.y],[pt.z])" : "null"
-	log_world("[NIHILANTH] pick_trial_site branch=[branch] site=[site_str] pylon_turf=[pylon_str] pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len]")
+	log_world("NIHILANTH: pick_trial_site branch=[branch] site=[site_str] pylon_turf=[pylon_str] pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len]")
 	return picked
 
 // Находит лендмарк, привязанный к пилону: по явному site_id, иначе -
@@ -293,11 +307,21 @@
 	trial_pylon = null
 	trial_pylon_turf = null
 	boss_home = null
+	// Триальный разлом permanent - снимаем его до возврата, иначе он
+	// остаётся на арене и следующая телепортация на его турф запускает
+	// цепочку чужих hard_target'ов.
+	if(istype(trial_portal) && !QDELETED(trial_portal))
+		qdel(trial_portal)
+	trial_portal = null
 	// Обратный разлом ставим у уничтоженного пилона (точка Б) - игроки
 	// возвращаются сразу после его разрушения, без возврата к точке А.
 	if(!istype(return_turf) || !isopenturf(return_turf))
 		return_turf = site
-	if(istype(return_turf) && isopenturf(return_turf) && istype(home))
+	// home мог быть стеной/плотным турфом на момент старта - валидируем,
+	// иначе обратный разлом телепортирует игроков внутрь геометрии.
+	if(!istype(home) || !isopenturf(home))
+		home = free_turf_near(home, 4)
+	if(istype(return_turf) && isopenturf(return_turf) && istype(home) && isopenturf(home))
 		var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(return_turf)
 		if(istype(R))
 			R.hard_target = home
@@ -316,6 +340,12 @@
 	addtimer(CALLBACK(src, PROC_REF(minion_tick)), rand(12, 20) SECONDS)
 	if(trial_active || !target || QDELETED(target))
 		return
+	// Список чистим свипом, а не только сигналом parent_qdeleting: если
+	// регистрацию на миньоне перезапишет чужая система, кап минионов
+	// навсегда встанет на мёртвых рефах.
+	for(var/mob/living/dead_minion as anything in alive_minions.Copy())
+		if(QDELETED(dead_minion) || dead_minion.stat == DEAD)
+			alive_minions -= dead_minion
 	if(prob(60))
 		spawn_xen_fauna()
 	else
@@ -344,10 +374,20 @@
 		playsound(get_turf(src), 'sound/magic/blink.ogg', 80, FALSE)
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/spawn_aegis_pylon()
+	// Кап на живые спайры: иначе каждый тик добавлял новый плотный
+	// anchored-пилон и за долгий бой арена зарастала структурами.
+	for(var/obj/structure/xen_pylon/nihilanth_add/P as anything in spawned_add_pylons.Copy())
+		if(QDELETED(P))
+			spawned_add_pylons -= P
+	if(spawned_add_pylons.len >= max_add_pylons)
+		return
 	var/turf/T = free_turf_near(src, 5)
 	if(!istype(T))
 		return
-	new /obj/structure/xen_pylon/nihilanth_add(T)
+	var/obj/structure/xen_pylon/nihilanth_add/new_pylon = new /obj/structure/xen_pylon/nihilanth_add(T)
+	if(!istype(new_pylon) || QDELETED(new_pylon))
+		return
+	spawned_add_pylons += new_pylon
 	visible_message("<span class='warning'>[src] активирует ксено-пилон - его поле окутывает союзников щитом!</span>")
 	playsound(T, 'sound/magic/lightningbolt.ogg', 80, FALSE)
 
@@ -394,8 +434,34 @@
 	// без boss_home (триала не было) spawn_death_portals просто выходил,
 	// и разломов на выход не появлялось.
 	var/turf/death_turf = get_turf(src)
+	// Триальный разлом не должен переживать босса - иначе он остаётся
+	// на арене и шлёт игроков на точку уже пройденного испытания.
+	if(istype(trial_portal) && !QDELETED(trial_portal))
+		qdel(trial_portal)
+	trial_portal = null
 	. = ..()
 	spawn_death_portals(death_turf)
+
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/Destroy()
+	if(istype(trial_portal) && !QDELETED(trial_portal))
+		qdel(trial_portal)
+	trial_portal = null
+	// Босс удалён посреди испытания без death() (рестарт/админка): игроки
+	// на точке испытания иначе останутся без обратного разлома - end_trial()
+	// уже не вызовется. Ставим разлом у турфа пилона обратно на арену.
+	if(trial_active)
+		var/turf/rt = trial_pylon_turf
+		var/turf/hm = boss_home
+		if(!istype(rt) || !isopenturf(rt))
+			rt = trial_site
+		if(istype(hm) && !isopenturf(hm))
+			hm = free_turf_near(hm, 4)
+		if(istype(rt) && isopenturf(rt) && istype(hm) && isopenturf(hm))
+			var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(rt)
+			if(istype(R))
+				R.hard_target = hm
+				R.hardlinked = FALSE
+	return ..()
 
 // Два односторонних разлома под трупом: один к выходу из комплекса
 // (лендмарк nihilanth_exit), второй - в другую часть комплекса
