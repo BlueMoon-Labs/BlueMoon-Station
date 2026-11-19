@@ -172,7 +172,7 @@
 	var/encoded = json_encode(data) + json_encode(static_data)
 	qdel(queued)
 	halted.halted_until = 0
-	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap", "orders")
+	var/static/list/data_keys = list("companies", "has_account", "account_name", "holdings", "cooldowns", "balance", "portfolio", "realized", "frozen", "can_treasury", "using_treasury", "message", "position_cap", "orders", "evac")
 	var/static/list/static_keys = list("history", "drivers", "moves", "work_cap", "common_drivers", "event_min", "event_max", "station_event_cooldown", "fee", "spread", "cooldown", "personal_cap", "treasury_cap_mult", "halt_ratio", "halt_minutes", "relist_ratio", "news_channel", "news_delay", "refute_minutes", "persist_decay", "dividend_share", "payroll_minutes", "orders_max")
 	var/static/list/company_keys = list("ticker", "name", "price", "change", "halted", "base_price", "max_buy", "index", "dividend_pool", "dividend_per_share")
 	var/mismatch = key_mismatch(data, data_keys)
@@ -351,3 +351,66 @@
 	press(user, program, "NtosStockExchange", "cancel_order", list("id" = order["id"]))
 	TEST_ASSERT_EQUAL(message_of(program, user), "Заявка снята.", "Ответ на снятие")
 	TEST_ASSERT(!length(own.stock_orders), "Заявка не снята")
+
+/// Счёт, до держателя которого карта достаёт и без клиента; запоминает сообщения карты.
+/datum/bank_account/econ_test_evac_ear
+	var/list/card_messages = list()
+
+/datum/bank_account/econ_test_evac_ear/card_talk_reaches(mob/holder, force)
+	return TRUE
+
+/datum/bank_account/econ_test_evac_ear/bank_card_talk(message, force, talk_sound, balloon, quiet)
+	card_messages += message
+
+/datum/unit_test/economy_trading/evac_warning
+	var/list/cards = list()
+
+/datum/unit_test/economy_trading/evac_warning/Destroy()
+	for(var/obj/item/card/id/card as anything in cards)
+		card.registered_account?.bank_cards -= card
+		card.registered_account = null
+	cards.Cut()
+	return ..()
+
+/// Счёт с акциями shares и его ID-карта на человеке.
+/datum/unit_test/economy_trading/evac_warning/proc/new_holder(list/shares)
+	var/datum/bank_account/econ_test_evac_ear/account = new("econ_test_evac_[length(traders) + 1]")
+	traders += account
+	account.shares = shares
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = econ_test_badge(holder, list())
+	card.registered_account = account
+	account.bank_cards += card
+	cards += card
+	return account
+
+/// Пока эвакуационный шаттл в пути, держатель акций один раз узнаёт с карты, что непроданные акции сгорят; без акций, до вызова, после отзыва и мёртвому карта молчит, ожившему напомнит.
+/datum/unit_test/economy_trading/evac_warning/Run()
+	company.price = 50
+	var/datum/bank_account/econ_test_evac_ear/investor = new_holder(list("AGRO" = 4))
+	var/datum/bank_account/econ_test_evac_ear/saver = new_holder(list())
+	var/datum/bank_account/econ_test_evac_ear/fallen = new_holder(list("AGRO" = 2))
+	var/obj/item/card/id/fallen_card = fallen.bank_cards[1]
+	var/mob/living/carbon/human/fallen_body = fallen_card.loc
+	fallen_body.death()
+	SSmarket.warn_holders_before_evac(SHUTTLE_IDLE)
+	TEST_ASSERT(!length(investor.card_messages), "Предупреждение до вызова шаттла")
+	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Держатель не узнал, что акции сгорят")
+	var/warning = investor.card_messages[1]
+	TEST_ASSERT(findtext(warning, "сгорят") && findtext(warning, "[SSmarket.portfolio_value(investor)] кр."), "Предупреждение без сути или стоимости акций: [warning]")
+	TEST_ASSERT(!findtext(warning, investor.account_holder), "Предупреждение называет владельца счёта: [warning]")
+	TEST_ASSERT(!length(saver.card_messages), "Предупреждение счёту без акций")
+	TEST_ASSERT(!length(fallen.card_messages), "Предупреждение мёртвому держателю")
+	SSmarket.warn_holders_before_evac(SHUTTLE_DOCKED)
+	SSmarket.warn_holders_before_evac(SHUTTLE_RECALL)
+	SSmarket.warn_holders_before_evac(SHUTTLE_CALL)
+	TEST_ASSERT_EQUAL(length(investor.card_messages), 1, "Предупреждение повторилось после отзыва и нового вызова")
+	fallen_body.revive(TRUE, TRUE)
+	SSmarket.warn_holders_before_evac(SHUTTLE_RECALL)
+	TEST_ASSERT(!length(fallen.card_messages), "Предупреждение после отзыва шаттла")
+	SSmarket.warn_holders_before_evac(SHUTTLE_ESCAPE)
+	TEST_ASSERT_EQUAL(length(fallen.card_messages), 1, "Ожившему держателю не напомнили")
+	saver.shares["AGRO"] = 1
+	SSmarket.warn_holders_before_evac(SHUTTLE_ENDGAME)
+	TEST_ASSERT(!length(saver.card_messages), "Предупреждение после конца смены")

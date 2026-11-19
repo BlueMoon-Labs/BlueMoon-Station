@@ -135,6 +135,7 @@
 		"message" = messages[REF(user)] || "",
 		"position_cap" = account ? SSmarket.position_cap(account) : SSeconomy.settings.stock_position_cap,
 		"orders" = account ? account.stock_orders.Copy() : list(),
+		"evac" = SSmarket.evac_underway(),
 	)
 
 /datum/computer_file/program/stock_exchange/proc/stocks_act(mob/living/user, action, list/params)

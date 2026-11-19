@@ -73,6 +73,7 @@ const base: StockExchangeData = {
   orders_max: 5,
   dividend_share: 5,
   payroll_minutes: 10,
+  evac: 0,
 };
 
 const setup = (data: Partial<StockExchangeData> = {}, component = <NtosStockExchangeContent />) => {
@@ -200,9 +201,23 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('по 20% базовой');
     expect(content).toContain('стоимость позиции сохраняется');
     expect(content).toContain('сдвигаясь на 20% к базовой');
+    expect(content).toContain('Акции на счетах смену не переживают: продайте их до отлёта эвакуационного шаттла, о вызове шаттла напомнит ID-карта.');
     expect(content).toContain('крупные сделки с акциями компании перед новостью о ней или до опровержения фальшивки');
     expect(content).not.toContain('2 000');
     expect(content).toContain('только капитан');
+  });
+
+  test('пока эвакуационный шаттл в пути, на любой странице видно, что акции сгорят с концом смены', () => {
+    const { container } = setup({ evac: 1 });
+    const warning = 'Эвакуация: смена скоро кончится, и непроданные акции сгорят вместе с ней. Продайте их, пока шаттл не улетел.';
+    expect(text(container)).toContain(warning);
+    openPage(container, 'Портфель');
+    expect(text(container)).toContain(warning);
+  });
+
+  test('без эвакуации предупреждения о сгорании акций нет', () => {
+    const { container } = setup();
+    expect(text(container)).not.toContain('Эвакуация');
   });
 
   test('сноски: у компании видно, что и насколько двигает её цену', () => {

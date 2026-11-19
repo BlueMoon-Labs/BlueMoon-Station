@@ -108,6 +108,39 @@
 		account.bank_card_talk("Биржа: торги \"[company.name]\" остановлены на [STOCK_HALT_TIME / (1 MINUTES)] мин. - цена упала ниже [STOCK_BANKRUPT_RATIO * 100]% базовой. Потом компания вернётся на биржу по [STOCK_RELIST_RATIO * 100]% базовой, а ваши [held] шт. обменяют на меньшее число новых по цене остановки.", balloon = "[company.ticker] торги встали")
 		.++
 
+/datum/bank_account
+	/// Держатель уже знает с карты, что непроданные акции сгорят с концом смены
+	var/stock_evac_warned = FALSE
+
+/// Эвакуация идёт: шаттл вызван, стоит у станции или улетает; продать акции ещё можно.
+/datum/controller/subsystem/market/proc/evac_underway(mode = SSshuttle.emergency?.mode)
+	var/static/list/evac_modes = list(SHUTTLE_CALL, SHUTTLE_DOCKED, SHUTTLE_IGNITING, SHUTTLE_STRANDED, SHUTTLE_ESCAPE)
+	return !SSeconomy.round_over() && (mode in evac_modes)
+
+/// Карту счёта держит живой, кто услышит её сообщение.
+/datum/bank_account/proc/card_holder_listening()
+	for(var/obj/card in bank_cards)
+		var/mob/holder = recursive_loc_check(card, /mob)
+		if(ismob(holder) && holder.stat != DEAD && holder.can_hear() && card_talk_reaches(holder))
+			return TRUE
+	return FALSE
+
+/// Пока идёт эвакуация, каждый держатель акций один раз за смену узнаёт с карты, что непроданные акции сгорят; кто сейчас не услышит, узнает позже. Возвращает число предупреждённых.
+/datum/controller/subsystem/market/proc/warn_holders_before_evac(mode = SSshuttle.emergency?.mode)
+	. = 0
+	if(!evac_underway(mode))
+		return
+	for(var/number in SSeconomy.accounts_by_number)
+		var/datum/bank_account/account = SSeconomy.accounts_by_number[number]
+		if(account.stock_evac_warned || !length(account.shares) || !account.card_holder_listening())
+			continue
+		account.stock_evac_warned = TRUE
+		var/whose = account == SSeconomy.treasury() ? "акции казны" : "ваши акции"
+		account.bank_card_talk("Биржа: эвакуационный шаттл в пути, смена скоро кончится. Непроданные акции сгорят вместе с ней, а [whose] сейчас стоят [portfolio_value(account)] кр. Продайте их на бирже, пока шаттл не улетел.", balloon = "акции сгорят")
+		.++
+	if(.)
+		log_econ("Эвакуация: [.] держателям акций напомнили, что акции сгорят с концом смены")
+
 /// Сколько акций можно купить одной сделкой: в пределах лимита позиции и денег на счёте со спредом и комиссией.
 /datum/controller/subsystem/market/proc/max_buy_count(datum/bank_account/account, datum/stock_company/company)
 	if(!account || !company || company.is_halted())

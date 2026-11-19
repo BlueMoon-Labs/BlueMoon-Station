@@ -137,6 +137,7 @@ SUBSYSTEM_DEF(market)
 
 /datum/controller/subsystem/market/fire(resumed)
 	tick_stocks()
+	warn_holders_before_evac()
 	tick_auction()
 	tick_bundles()
 	if(!next_restock)
