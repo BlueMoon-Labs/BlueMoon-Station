@@ -364,6 +364,36 @@
 	TEST_ASSERT_EQUAL(offer?.bounty.type, kept, "Личный заказ из исчерпанных")
 	TEST_ASSERT_NULL(SSeconomy.generate_personal_contract(taker_account), "Личный заказ сверх неисчерпанных")
 
+/// Лимит повторов касается и участия без взятия: каждая закрытая сдача пишется участнику, а сверх лимита его поставки и работа в свободный заказ не идут. Работу всего отдела лимит не трогает.
+/datum/unit_test/economy_contract_machines/board/repeat_contributions/Run()
+	setup()
+	SSeconomy.settings.contract_repeat_per_person = 2
+	econ_test_set_balance(helper_account, 0)
+	for(var/attempt in 1 to 2)
+		var/datum/econ_contract/delivery/done = post_scooter_contract()
+		TEST_ASSERT(econ_contracts_ship(single_item(done), helper), "Самокат [attempt] без взятия не засчитан")
+		TEST_ASSERT(done.completed, "Самокат [attempt] не выполнен")
+	TEST_ASSERT_EQUAL(helper_account.contract_repeats?[/datum/bounty/item/assistant/scooter], 2, "Сдачи без взятия не записаны в повторы")
+	var/paid = helper_account.account_balance
+	var/datum/econ_contract/delivery/third = post_scooter_contract()
+	var/obj/item = single_item(third)
+	TEST_ASSERT(!econ_contracts_ship(item, helper), "Третья сдача сверх лимита засчитана")
+	TEST_ASSERT(!third.completed && !QDELETED(item), "Третья сдача сверх лимита закрыла заказ")
+	TEST_ASSERT_EQUAL(helper_account.account_balance, paid, "Третья сдача сверх лимита заплатила")
+	TEST_ASSERT(econ_contracts_ship(item, user), "Другой человек не сдал тот же заказ")
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/datum/econ_contract/activity/service_cleaning/cleaning = new(ACCOUNT_SRV)
+	service.contracts += cleaning
+	LAZYSET(helper_account.contract_repeats, cleaning.type, 2)
+	var/saved_service = service.account.account_balance
+	SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_CLEANING, 1, helper)
+	TEST_ASSERT_EQUAL(cleaning.progress, 0, "Работа сверх лимита засчитана в свободный заказ")
+	var/datum/econ_contract/activity/engineering_export/shared = new(ACCOUNT_ENG)
+	LAZYSET(helper_account.contract_repeats, shared.type, 2)
+	TEST_ASSERT(!shared.repeats_exhausted(helper_account), "Лимит повторов закрыл работу всего отдела")
+	qdel(shared)
+	econ_test_set_balance(service.account, saved_service)
+
 /// Контракт без исполнителя делит долю участников по вкладу, остальное получает отдел.
 /datum/unit_test/economy_contract_machines/board/team_share/Run()
 	setup()

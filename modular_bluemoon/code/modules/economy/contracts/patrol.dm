@@ -1,13 +1,12 @@
-/// Общие отсеки, по которым ходит обход: без доступа, на любой карте.
+/// Общие отсеки, по которым ходит обход: без доступа, на любой карте. Бара нет: за стойку и в подсобку без доступа бара не пройти.
 GLOBAL_LIST_INIT(econ_patrol_area_types, typecacheof(list(
 	/area/hallway/primary,
 	/area/hallway/secondary/entry,
 	/area/hallway/secondary/exit,
-	/area/service/bar,
 	/area/service/cafeteria,
 )))
 
-/// Обход СБ: пройти по названным общим отсекам станции до срока. Берут только сотрудники СБ; засчитывается отсек, где взявший побывал живым и в сознании.
+/// Обход СБ: пройти по названным общим отсекам станции до срока. Берут только сотрудники СБ; засчитывается отсек, где взявший побывал в сознании и в игре.
 /datum/econ_contract/patrol
 	title = "Обход станции"
 	reward = ECON_PATROL_REWARD
@@ -83,11 +82,13 @@ GLOBAL_LIST_INIT(econ_patrol_area_types, typecacheof(list(
 	if(completed || QDELETED(src) || !taker || SSeconomy.round_over())
 		return
 	var/mob/living/body = taker_body()
-	var/area/here = body?.stat == CONSCIOUS ? get_area(body) : null
+	var/area/here = body?.stat == CONSCIOUS && GET_CLIENT(body) ? get_area(body) : null
 	if(here && (here in route) && !route[here])
 		route[here] = TRUE
 		update_desc()
-		if(visited() >= length(route))
+		var/left = length(route) - visited()
+		if(!left)
 			complete(body)
 			return
+		taker.bank_card_talk("Обход: [here.name] пройден, осталось [left].", balloon = "обход: осталось [left]")
 	check_timer = addtimer(CALLBACK(src, PROC_REF(check)), ECON_PATROL_CHECK_INTERVAL, TIMER_STOPPABLE)

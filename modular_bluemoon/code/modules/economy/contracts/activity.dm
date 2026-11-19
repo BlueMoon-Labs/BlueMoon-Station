@@ -20,7 +20,8 @@
 	SIGNAL_HANDLER
 	if(completed || paid <= 0 || work_department != department_id || !counts_work(recorded_type))
 		return
-	if(taker && econ_account_of(performer) != taker)
+	var/datum/bank_account/account = econ_account_of(performer)
+	if(taker ? account != taker : refuses_contribution(account))
 		return
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	if(!(src in department?.contracts))
@@ -127,7 +128,7 @@
 
 /datum/econ_contract/activity/science_mechs
 	title = "Заказ на технику"
-	desc = "Собрать на станции меха, любого."
+	desc = "Собрать на станции меха модели, которую в эту смену ещё не собирали."
 	work_type = WORK_SCI_MECH
 	target = 1
 

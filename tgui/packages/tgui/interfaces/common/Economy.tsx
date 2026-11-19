@@ -43,6 +43,9 @@ export type ContractEntry = {
   relay_title?: string;
   relay_label?: string;
   relay_next?: string;
+  /** Авария: кому достаётся доля людей и когда контракт закроется. */
+  incident_team?: string;
+  incident_note?: string;
   /** Зритель уже выполнил этот заказ за смену столько раз, сколько можно одному человеку. */
   repeat_capped?: BooleanLike;
   poster?: string | null;

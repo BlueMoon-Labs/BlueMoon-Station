@@ -453,7 +453,7 @@
 	SSeconomy.orbital_paid = saved_orbital_paid
 	return ..()
 
-/// Орбитальные задания NT оплачивает до orbital_shift_cap за смену: задание на границе платит остаток, следующее - без денег, а консоль заданий показывает остаток.
+/// Орбитальные задания вместе с долей снабжения выпускают за смену не больше orbital_shift_cap: задание на границе платит остаток, следующее - без денег, а консоль заданий показывает остаток и сколько оплатится за каждое задание.
 /datum/unit_test/economy_ui_treasury/orbital/shift_cap/Run()
 	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
 	var/datum/bank_account/crew = econ_account_of(hop)
@@ -461,21 +461,23 @@
 	var/obj/machinery/computer/objective/computer = allocate(/obj/machinery/computer/objective)
 	SSeconomy.tax_rate = 0
 	SSeconomy.settings.orbital_cargo_mult = 0.5
-	SSeconomy.settings.orbital_shift_cap = 1500
+	SSeconomy.settings.orbital_shift_cap = 2250
 	var/list/expected_cargo = list(500, 250, 0)
+	var/list/expected_payable = list(1000, 500, 0)
 	for(var/number in 1 to 3)
 		var/cargo_before = cargo.account_balance
 		var/crew_before = crew.account_balance
 		var/datum/orbital_objective/objective = new
 		objective.payout = 1000
 		SSorbits.current_objective = objective
+		TEST_ASSERT_EQUAL(computer.ui_data(hop)["payable"]["[objective.id]"], expected_payable[number], "Консоль заданий: сколько оплатится за задание [number]")
 		objective.complete_objective()
 		TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, expected_cargo[number], "Снабжению за задание [number]")
 		if(number < 3)
 			TEST_ASSERT(crew.account_balance > crew_before, "Экипажу доля за задание [number]")
 		else
 			TEST_ASSERT_EQUAL(crew.account_balance, crew_before, "Сверх потолка смены экипажу заплатили")
-	TEST_ASSERT_EQUAL(SSeconomy.orbital_paid, 1500, "Оплачено за смену")
+	TEST_ASSERT_EQUAL(SSeconomy.orbital_paid, 2250, "Выпущено за смену вместе с долей снабжения")
 	TEST_ASSERT_EQUAL(computer.ui_data(hop)["shift_left"], 0, "Консоль заданий не показывает исчерпанный потолок")
 
 /// Орбитальная доля, эмиссионная раздача всем счетам, не достаётся пустому счёту, открытому из казны.

@@ -221,8 +221,12 @@
 	var/saved_budget
 	var/list/saved_baseline
 	var/list/saved_ready
-	/// Щиток -> его operating до теста
+	/// Щиток -> заряд его батареи до теста
 	var/list/darkened = list()
+	/// Щиток -> его operating до теста
+	var/list/switched = list()
+	/// Щитки, которым тест устроил сбой сети
+	var/list/failed = list()
 
 /datum/unit_test/economy_contract_incident/New()
 	. = ..()
@@ -237,8 +241,16 @@
 
 /datum/unit_test/economy_contract_incident/Destroy()
 	for(var/obj/machinery/power/apc/apc as anything in darkened)
-		apc.operating = darkened[apc]
+		apc.cell?.charge = darkened[apc]
+	for(var/obj/machinery/power/apc/apc as anything in switched)
+		apc.operating = switched[apc]
+		apc.update()
+	for(var/obj/machinery/power/apc/apc as anything in failed)
+		apc.failure_timer = 0
+		apc.update()
 	darkened = null
+	switched = null
+	failed = null
 	econ_test_restore_contracts(stashed_contracts)
 	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
 	engineering.incident_baseline = saved_baseline
@@ -247,43 +259,57 @@
 	SSeconomy.contracts_started = saved_started
 	return ..()
 
-/// Авария питания: тик экономики с заметно большим числом тёмных щитков выставляет инженерии срочный контракт, он закрывается сам, когда щитки снова под питанием, и платит отделу; мелкая поломка и пауза после аварии нового не дают.
+/datum/unit_test/economy_contract_incident/proc/working_apcs()
+	. = list()
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(is_station_level(apc.z) && apc.operating && !apc.failure_timer && apc.cell?.charge > 0 && !(apc.machine_stat & (BROKEN|MAINT)))
+			. += apc
+
+/datum/unit_test/economy_contract_incident/proc/no_incidents(datum/economy_department/engineering/engineering, why)
+	for(var/kind in GLOB.econ_incident_kinds)
+		var/datum/econ_contract/incident/incident = engineering.active_incident(kind)
+		TEST_ASSERT_NULL(incident, "[why] выставили аварию \"[incident?.title]\": [incident?.desc]")
+
+/// Авария питания: тик экономики с заметно большим числом тёмных щитков выставляет инженерии контракт без надбавки срочности, он закрывается сам, когда щитки снова под питанием, и платит отделу; мелкая поломка и пауза после аварии нового не дают.
 /datum/unit_test/economy_contract_incident/Run()
 	SSeconomy.contracts_started = TRUE
 	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
-	var/list/working = list()
-	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
-		if(is_station_level(apc.z) && apc.operating && apc.cell?.charge > 0 && !(apc.machine_stat & (BROKEN|MAINT)))
-			working += apc
+	var/list/working = working_apcs()
 	var/list/damage = engineering.station_damage()
-	var/normal = damage["dark_apcs"]
+	var/normal = damage["outage_apcs"]
 	engineering.check_incidents(damage)
 	TEST_ASSERT_EQUAL(engineering.incident_baseline[ECON_INCIDENT_POWER], normal, "Первый тик не запомнил обычное число тёмных щитков")
 	var/threshold = max(ECON_INCIDENT_POWER_MIN, round(damage["apcs"] * ECON_INCIDENT_MIN_SHARE))
 	var/list/minor = damage.Copy()
-	minor["dark_apcs"] = normal + threshold - 1
+	minor["outage_apcs"] = normal + threshold - 1
 	engineering.check_incidents(minor)
 	TEST_ASSERT_NULL(engineering.active_incident(ECON_INCIDENT_POWER), "Мелкая поломка выставила аварию")
 	var/list/outage = damage.Copy()
-	outage["dark_apcs"] = normal + threshold
+	outage["outage_apcs"] = normal + threshold
+	outage["outage_areas"] = list("Мостик" = 1, "Бар" = 2, "Кухня" = 1, "Склад" = 1)
 	engineering.check_incidents(outage)
 	var/datum/econ_contract/incident/incident = engineering.active_incident(ECON_INCIDENT_POWER)
 	TEST_ASSERT_NOTNULL(incident, "Авария питания не выставлена")
 	TEST_ASSERT(incident in engineering.contracts, "Авария не на доске инженерии")
-	TEST_ASSERT(incident.urgent && incident.deadline > world.time && !incident.takeable, "Авария не срочная, без срока или берётся")
+	TEST_ASSERT(incident.deadline > world.time && !incident.takeable, "Авария без срока или берётся")
 	TEST_ASSERT(!incident.occupies_slot(), "Авария заняла место обычного контракта")
 	TEST_ASSERT_EQUAL(incident.reward, round(incident.needed() * SSeconomy.settings.contract_incident_unit_reward, ECON_CONTRACT_REWARD_STEP), "Награда аварии - за каждую поломку")
+	TEST_ASSERT_EQUAL(incident.payout(), incident.reward, "Аварии добавлена надбавка срочности")
+	TEST_ASSERT(findtext(incident.desc, "Хуже всего: Бар, "), "Худший отсек не первым в описании: [incident.desc]")
+	TEST_ASSERT_EQUAL(length(incident.worst_areas), ECON_INCIDENT_WORST_AREAS, "Названо не [ECON_INCIDENT_WORST_AREAS] худших отсека: [incident.desc]")
 	var/to_darken = incident.limit() - normal + 1
 	TEST_ASSERT(length(working) >= to_darken, "На станции [length(working)] исправных щитков, нужно [to_darken]")
 	for(var/number in 1 to to_darken)
 		var/obj/machinery/power/apc/apc = working[number]
-		darkened[apc] = apc.operating
-		apc.operating = FALSE
+		darkened[apc] = apc.cell.charge
+		apc.cell.charge = 0
 	incident.check()
 	TEST_ASSERT(!incident.completed, "Авария закрылась, пока щитки без питания")
 	TEST_ASSERT_EQUAL(incident.current, normal + to_darken, "Проверка не увидела тёмные щитки")
+	var/obj/machinery/power/apc/first_dark = working[1]
+	TEST_ASSERT(first_dark.area.name in incident.worst_areas, "Отсек тёмного щитка не назван: [incident.desc]")
 	for(var/obj/machinery/power/apc/apc as anything in darkened)
-		apc.operating = darkened[apc]
+		apc.cell.charge = darkened[apc]
 	darkened.Cut()
 	var/budget_before = engineering.account.account_balance
 	incident.check()
@@ -293,6 +319,237 @@
 	TEST_ASSERT_EQUAL(engineering.incident_baseline[ECON_INCIDENT_POWER], normal, "Норма после аварии - не то, что осталось")
 	engineering.check_incidents(outage)
 	TEST_ASSERT_NULL(engineering.active_incident(ECON_INCIDENT_POWER), "Новая авария выставлена сразу после прошлой")
+
+/// Сбой сети (Grid Check, блэкаут контрактора) и щитки, выключенные вручную, проходят сами и аварию не выставляют.
+/datum/unit_test/economy_contract_incident/not_damage/Run()
+	SSeconomy.contracts_started = TRUE
+	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/list/working = working_apcs()
+	var/list/damage = engineering.station_damage()
+	engineering.check_incidents(damage)
+	var/to_switch = max(ECON_INCIDENT_POWER_MIN, round(damage["apcs"] * ECON_INCIDENT_MIN_SHARE))
+	TEST_ASSERT(length(working) >= to_switch, "На станции [length(working)] исправных щитков, нужно [to_switch]")
+	for(var/number in 1 to to_switch)
+		var/obj/machinery/power/apc/apc = working[number]
+		switched[apc] = apc.operating
+		apc.operating = FALSE
+		apc.update()
+	engineering.check_incidents(engineering.station_damage())
+	no_incidents(engineering, "Выключатели на [to_switch] щитках")
+	for(var/obj/machinery/power/apc/apc as anything in switched)
+		apc.operating = switched[apc]
+		apc.update()
+	switched.Cut()
+	power_fail(30, 120)
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(apc.failure_timer)
+			failed += apc
+	TEST_ASSERT(length(failed) >= to_switch, "Сбой сети задел [length(failed)] щитков")
+	engineering.check_incidents(engineering.station_damage())
+	no_incidents(engineering, "Сбой сети")
+
+/datum/unit_test/economy_contract_incident/casualties
+	var/saved_medical
+	var/list/saved_medical_ready
+	var/list/victims = list()
+
+/datum/unit_test/economy_contract_incident/casualties/Destroy()
+	for(var/mob/living/carbon/human/victim as anything in victims)
+		victim.mock_client = null
+	victims = null
+	. = ..()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	if(!isnull(saved_medical))
+		econ_test_set_balance(medical.account, saved_medical)
+		medical.incident_ready_at = saved_medical_ready
+
+/datum/unit_test/economy_contract_incident/casualties/proc/victim(turf/where, has_client = TRUE, dead = FALSE, offstation = FALSE)
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, where)
+	var/datum/bank_account/account = new("econ_test_victim")
+	allocated += account
+	account.offstation = offstation
+	body.account_id = account.account_id
+	if(has_client)
+		body.mock_client = new /datum/client_interface()
+		victims += body
+	body.setOxyLoss(body.maxHealth + 10)
+	if(dead)
+		body.death()
+	return body
+
+/// Массовые пострадавшие: живые игроки экипажа в крите на станции выставляют медицине контракт без надбавки срочности, трупы, тела без игрока, гости и люди вне станции не в счёт; контракт закрывают выписки, долю получает выписавший медик, следующий - не раньше паузы.
+/datum/unit_test/economy_contract_incident/casualties/Run()
+	SSeconomy.contracts_started = TRUE
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	saved_medical = medical.account.account_balance
+	saved_medical_ready = medical.incident_ready_at
+	medical.incident_ready_at = list()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/before = econ_station_casualties()
+	victim(station_turf, dead = TRUE)
+	victim(station_turf, has_client = FALSE)
+	victim(station_turf, offstation = TRUE)
+	victim(run_loc_floor_bottom_left)
+	for(var/number in 1 to ECON_CASUALTIES_MIN - 1)
+		var/mob/living/carbon/human/body = victim(station_turf)
+		TEST_ASSERT(body.InCritical(), "Пострадавший не в крите: здоровье [body.health], состояние [body.stat]")
+	TEST_ASSERT_EQUAL(econ_station_casualties() - before, ECON_CASUALTIES_MIN - 1, "Посчитаны не только живые игроки экипажа в крите на станции")
+	medical.on_economy_tick()
+	TEST_ASSERT_NULL(medical.active_incident(ECON_INCIDENT_CASUALTIES), "Контракт выставлен ниже порога")
+	victim(station_turf)
+	medical.on_economy_tick()
+	var/datum/econ_contract/incident/casualties/incident = medical.active_incident(ECON_INCIDENT_CASUALTIES)
+	TEST_ASSERT_NOTNULL(incident, "Массовые пострадавшие не выставлены")
+	TEST_ASSERT(!incident.takeable && !incident.occupies_slot(), "Контракт берётся или занимает место на доске")
+	TEST_ASSERT_EQUAL(incident.payout(), incident.reward, "Надбавка срочности")
+	TEST_ASSERT_EQUAL(incident.reward, round(incident.needed() * SSeconomy.settings.contract_incident_unit_reward, ECON_CONTRACT_REWARD_STEP), "Награда - за каждого пострадавшего")
+	var/mob/living/carbon/human/medic = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/medic_account = new("econ_test_medic")
+	allocated += medic_account
+	medic_account.department_id = ACCOUNT_MED
+	medic.account_id = medic_account.account_id
+	econ_test_set_balance(medic_account, 0)
+	for(var/number in 1 to incident.needed() - 1)
+		SSeconomy.record_work(ACCOUNT_MED, WORK_MED_DISCHARGE_CRIT, 1, medic)
+	SSeconomy.record_work(ACCOUNT_MED, WORK_MED_SURGERY, 1, medic)
+	TEST_ASSERT(!incident.completed, "Контракт закрылся до последней выписки ([incident.progress_text()])")
+	var/balance_before = medic_account.account_balance
+	SSeconomy.record_work(ACCOUNT_MED, WORK_MED_DISCHARGE_LIGHT, 1, medic)
+	TEST_ASSERT(incident.completed, "Выписки не закрыли контракт ([incident.progress_text()])")
+	TEST_ASSERT(!(incident in medical.contracts), "Закрытый контракт остался на доске")
+	TEST_ASSERT(medic_account.account_balance - balance_before >= round(incident.reward * SSeconomy.settings.contract_team_share / 100 * (100 - SSeconomy.tax_rate) / 100) - 1, "Выписавший медик не получил долю")
+	medical.on_economy_tick()
+	TEST_ASSERT_NULL(medical.active_incident(ECON_INCIDENT_CASUALTIES), "Новый контракт сразу после прошлого")
+
+/datum/unit_test/economy_contract_relay_taken
+	var/list/stashed_contracts
+	var/saved_service
+	var/list/contract_moves = list()
+
+/datum/unit_test/economy_contract_relay_taken/New()
+	. = ..()
+	stashed_contracts = econ_test_stash_contracts()
+	var/datum/bank_account/service = SSeconomy.get_dep_account(ACCOUNT_SRV)
+	saved_service = service.account_balance
+
+/datum/unit_test/economy_contract_relay_taken/Destroy()
+	UnregisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED)
+	econ_test_restore_contracts(stashed_contracts)
+	econ_test_set_balance(SSeconomy.get_dep_account(ACCOUNT_SRV), saved_service)
+	return ..()
+
+/datum/unit_test/economy_contract_relay_taken/proc/on_moved(datum/source, datum/bank_account/from, datum/bank_account/target, amount, reason, mob/actor)
+	SIGNAL_HANDLER
+	if(reason == ECON_CONTRACT)
+		contract_moves[target] += 1
+
+/// Взятый "Банкет" не снять, поэтому этапом эстафеты становится он сам: второй такой же контракт не выставляется, одна работа - одна выплата.
+/datum/unit_test/economy_contract_relay_taken/Run()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/mob/living/carbon/human/cook = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/cook_account = new("econ_test_cook")
+	allocated += cook_account
+	cook_account.department_id = ACCOUNT_SRV
+	cook.account_id = cook_account.account_id
+	var/datum/econ_contract/activity/service_dishes/banquet = new(ACCOUNT_SRV)
+	service.contracts += banquet
+	TEST_ASSERT(banquet.take(cook_account), "Банкет не взят: [banquet.take_refusal(cook_account)]")
+	var/list/template
+	for(var/list/candidate as anything in GLOB.econ_relay_templates)
+		var/list/stages = candidate["stages"]
+		for(var/list/spec as anything in stages)
+			if(spec["contract"] == banquet.type)
+				template = candidate
+	TEST_ASSERT_NOTNULL(template, "Нет эстафеты с банкетом")
+	var/datum/econ_relay/relay = new(template)
+	SSeconomy.relays += relay
+	var/list/stages = template["stages"]
+	for(var/number in 1 to length(stages))
+		var/list/spec = stages[number]
+		if(spec["contract"] == banquet.type)
+			relay.stage = number - 1
+	var/datum/econ_contract/stage_contract = relay.advance()
+	TEST_ASSERT(stage_contract == banquet, "Этапом стал не взятый банкет, а [stage_contract?.type]")
+	TEST_ASSERT(banquet.relay == relay, "Банкет не знает о своей эстафете")
+	var/banquets = 0
+	for(var/datum/econ_contract/activity/service_dishes/same in service.contracts)
+		banquets++
+	TEST_ASSERT_EQUAL(banquets, 1, "На доске два банкета")
+	RegisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED, PROC_REF(on_moved))
+	for(var/attempt in 1 to banquet.target)
+		SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DISH, 1, cook)
+	TEST_ASSERT(banquet.completed, "Банкет не выполнен ([banquet.progress_text()])")
+	TEST_ASSERT_EQUAL(contract_moves[cook_account], 1, "Одна работа заплатила повару [contract_moves[cook_account]] раз")
+
+/datum/unit_test/economy_contract_mech_models
+	var/list/stashed_contracts
+	var/saved_science
+	var/list/saved_mechs
+
+/datum/unit_test/economy_contract_mech_models/New()
+	. = ..()
+	stashed_contracts = econ_test_stash_contracts()
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	saved_science = science.account.account_balance
+	saved_mechs = science.mechs_seen
+	science.mechs_seen = list()
+
+/datum/unit_test/economy_contract_mech_models/Destroy()
+	econ_test_restore_contracts(stashed_contracts)
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	econ_test_set_balance(science.account, saved_science)
+	science.mechs_seen = saved_mechs
+	return ..()
+
+/datum/unit_test/economy_contract_mech_models/proc/build_ripley(turf/where, mob/living/builder)
+	var/obj/item/mecha_parts/chassis/ripley/chassis = new(where)
+	var/datum/component/construction/mecha/ripley/construction = chassis.AddComponent(/datum/component/construction/mecha/ripley)
+	construction.spawn_result(builder)
+	var/obj/vehicle/sealed/mecha/working/ripley/mech = locate() in where
+	TEST_ASSERT_NOTNULL(mech, "Мех не собран")
+	allocated += mech
+	return mech
+
+/// Наука получает плату за первого собранного на станции меха каждой модели за смену: второй такой же не оплачивается и не двигает контракт на технику.
+/datum/unit_test/economy_contract_mech_models/Run()
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/roboticist = allocate(/mob/living/carbon/human, station_turf)
+	var/before = science.account.account_balance
+	var/obj/vehicle/sealed/mecha/first = build_ripley(station_turf, roboticist)
+	TEST_ASSERT(science.account.account_balance > before, "Первый Ripley не оплачен")
+	qdel(first)
+	var/datum/econ_contract/activity/science_mechs/order = new(ACCOUNT_SCI)
+	science.contracts += order
+	before = science.account.account_balance
+	var/obj/vehicle/sealed/mecha/second = build_ripley(station_turf, roboticist)
+	qdel(second)
+	TEST_ASSERT_EQUAL(science.account.account_balance, before, "Второй Ripley за смену оплачен")
+	TEST_ASSERT_EQUAL(order.progress, 0, "Второй Ripley засчитан в контракт на технику")
+
+/// Блюдо и коктейль, которые съело или выпило тело без игрока или труп, сервису не платят, а гость в номере без игрока не оплачивает поднос.
+/datum/unit_test/economy_work/service/consumer_needs_player/Run()
+	setup_service()
+	var/before = budget.account_balance
+	var/mob/living/carbon/human/sleeper = new_guest()
+	sleeper.mock_client = null
+	players -= sleeper
+	var/obj/item/reagent_containers/food/snacks/dish = chef_dish(/obj/item/reagent_containers/food/snacks/meat/steak, 1)
+	dish.attack(sleeper, sleeper)
+	var/obj/item/reagent_containers/food/drinks/drinkingglass/glass = glass_of(/datum/reagent/consumable/ethanol/screwdrivercocktail)
+	glass.attack(sleeper, sleeper)
+	TEST_ASSERT(sleeper.reagents.has_reagent(/datum/reagent/consumable/ethanol/screwdrivercocktail), "Тело без игрока не отпило")
+	var/mob/living/carbon/human/corpse = new_guest()
+	corpse.death()
+	econ_food_eaten(dish, corpse)
+	econ_drink_consumed(glass_of(/datum/reagent/consumable/ethanol/screwdrivercocktail), corpse)
+	TEST_ASSERT_EQUAL(budget.account_balance, before, "Сервису заплатили за тело без игрока или труп")
+	TEST_ASSERT(!dish.econ_paid, "Блюдо помечено оплаченным")
+	TEST_ASSERT(!econ_consumer_counts(sleeper) && !econ_consumer_counts(corpse), "Гость в номере без игрока или мёртвый оплачивает поднос")
+	econ_food_eaten(dish, patient)
+	TEST_ASSERT(budget.account_balance > before, "Живой игрок не оплатил блюдо")
 
 /datum/unit_test/economy_contract_patrol
 	var/list/stashed_contracts
@@ -309,7 +566,7 @@
 	econ_test_set_balance(SSeconomy.get_dep_account(ACCOUNT_SEC), saved_security)
 	return ..()
 
-/// Обход берёт только сотрудник СБ; засчитывается отсек, где он побывал в сознании, а пройдя все - контракт выполнен и оплачен. Отказ сбрасывает пройденное.
+/// Обход берёт только сотрудник СБ, бара в маршруте нет; засчитывается отсек, где он побывал в сознании и в игре, а пройдя все - контракт выполнен и оплачен. Отказ сбрасывает пройденное.
 /datum/unit_test/economy_contract_patrol/Run()
 	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
 	var/datum/econ_contract/patrol/patrol = new(ACCOUNT_SEC)
@@ -327,8 +584,13 @@
 	TEST_ASSERT(findtext(patrol.take_refusal(stranger), "службы безопасности"), "Обход взял не сотрудник СБ")
 	TEST_ASSERT(patrol.take(officer_account), "Сотрудник СБ не взял обход: [patrol.take_refusal(officer_account)]")
 	var/list/route = patrol.route.Copy()
+	for(var/area/hall as anything in route)
+		TEST_ASSERT(!istype(hall, /area/service/bar), "В обходе бар: [hall.name]")
 	var/area/first = route[1]
 	officer.forceMove(locate(/turf/open) in first)
+	patrol.check()
+	TEST_ASSERT_EQUAL(patrol.visited(), 0, "Засчитан отсек, где тело обходчика без игрока")
+	officer.mock_client = new /datum/client_interface()
 	officer.set_stat(UNCONSCIOUS)
 	patrol.check()
 	TEST_ASSERT_EQUAL(patrol.visited(), 0, "Засчитан отсек, где обходчик без сознания")
@@ -347,6 +609,7 @@
 	for(var/area/hall as anything in second.route.Copy())
 		officer.forceMove(locate(/turf/open) in hall)
 		second.check()
+	officer.mock_client = null
 	TEST_ASSERT(second.completed, "Обход всех отсеков не закрыл контракт ([second.progress_text()])")
 	TEST_ASSERT(officer_account.account_balance > 0, "Обходчику ничего не пришло")
 	TEST_ASSERT_EQUAL(security.account.account_balance - budget_before, reward - round(reward * second.performer_share() / 100), "Остальное - бюджету СБ")

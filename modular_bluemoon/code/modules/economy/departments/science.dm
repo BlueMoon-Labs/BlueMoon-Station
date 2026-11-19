@@ -31,6 +31,8 @@ GLOBAL_LIST_INIT(econ_slime_extract_value, list(
 	head_access = list(ACCESS_RD)
 	/// Цвета экстрактов, уже оплаченных в этом раунде
 	var/list/extracts_seen = list()
+	/// Модели мехов, сборка которых уже оплачена в этом раунде
+	var/list/mechs_seen = list()
 	/// world.time начала часового окна гранта на исследования
 	var/grant_window_start = 0
 	var/grant_points_in_window = 0
@@ -46,6 +48,13 @@ GLOBAL_LIST_INIT(econ_slime_extract_value, list(
 	var/value = GLOB.econ_slime_extract_value[colour]
 	if(value)
 		SSeconomy.record_work(id, WORK_SCI_SLIME_DISCOVERY, value, performer, memo = "Новый экстракт: [colour]")
+
+/// Первый за смену собранный на станции мех каждой модели оплачивается науке.
+/datum/economy_department/science/proc/note_mech(obj/vehicle/sealed/mecha/mech, mob/builder)
+	if(mechs_seen[mech.type] || !econ_on_station(mech))
+		return
+	if(SSeconomy.record_work(id, WORK_SCI_MECH, 1, builder, memo = "Сборка меха: [mech.name]"))
+		mechs_seen[mech.type] = TRUE
 
 /datum/economy_department/science/spending_advice()
 	return list(

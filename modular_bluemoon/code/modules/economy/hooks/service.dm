@@ -66,12 +66,16 @@
 	var/datum/reagent/main = glass.reagents?.get_master_reagent()
 	return main && econ_is_mixed_drink(main.type)
 
+/// Едок или гость, за которого сервису платят: живой игрок, а не тело без игрока.
+/proc/econ_consumer_counts(mob/living/consumer)
+	return isliving(consumer) && consumer.stat != DEAD && !!GET_CLIENT(consumer)
+
 /proc/econ_food_eaten(obj/item/food, mob/living/eater)
 	var/datum/econ_dish/dish = food.econ_dish
 	if(food.econ_paid || dish?.paid)
 		return
 	var/mob/living/chef = econ_mob_of_mind_ref(dish ? dish.chef_ref : econ_chef_ref(food))
-	if(!isliving(chef) || !econ_on_station(chef) || !econ_on_station(eater))
+	if(!isliving(chef) || !econ_on_station(chef) || !econ_on_station(eater) || !econ_consumer_counts(eater))
 		return
 	if(!SSeconomy.get_department(ACCOUNT_SRV))
 		return
@@ -122,7 +126,7 @@ GLOBAL_LIST_EMPTY(econ_bar_stock_reagents)
 
 /proc/econ_drink_consumed(obj/item/reagent_containers/glass, mob/living/drinker)
 	var/mob/living/pourer = glass.econ_pourer?.resolve()
-	if(!isliving(pourer) || !econ_on_station(pourer) || !econ_on_station(drinker))
+	if(!isliving(pourer) || !econ_on_station(pourer) || !econ_on_station(drinker) || !econ_consumer_counts(drinker))
 		return
 	var/datum/reagent/main = glass.reagents?.get_master_reagent()
 	if(!main || !econ_is_mixed_drink(main.type))

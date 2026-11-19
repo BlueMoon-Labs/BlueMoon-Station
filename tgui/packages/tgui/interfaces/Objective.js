@@ -9,6 +9,7 @@ export const Objective = (props) => {
     selected_objective = null,
     shift_cap = 0,
     shift_left = null,
+    payable = {},
   } = data;
   return (
     <Window
@@ -28,19 +29,22 @@ export const Objective = (props) => {
           {!!shift_cap && (
             <Box mt={1} color={shift_left > 0 ? 'label' : 'average'}>
               {shift_left > 0
-                ? `NT оплачивает задания до ${shift_cap} кр. за смену, осталось ${shift_left} кр.`
-                : `Лимит оплаты заданий на смену (${shift_cap} кр.) исчерпан: дальше только очки Авангарда.`}
+                ? `NT тратит на задания до ${shift_cap} кр. за смену вместе с долей снабжения, осталось ${shift_left} кр.`
+                : `Лимит оплаты заданий на смену (${shift_cap} кр.) исчерпан: дальше только очки Авангарда участникам вылета.`}
             </Box>
           )}
         </Section>
         {!selected_objective || <SelectedObjective
-          objective={selected_objective} />}
+          objective={selected_objective}
+          paid={shift_cap ? payable[selected_objective.id] : undefined} />}
         {possible_objectives.map(objective => (
           <Section
             title={objective.name}
             key={objective.id}>
             <Box mb={1}>
-              Награда: {objective.payout}
+              <Payout
+                payout={objective.payout}
+                paid={shift_cap ? payable[objective.id] : undefined} />
             </Box>
             <Box mb={1}>
               {objective.description}
@@ -59,16 +63,25 @@ export const Objective = (props) => {
   );
 };
 
+const Payout = (props) => {
+  const { payout, paid } = props;
+  if (paid === undefined || paid === null) {
+    return `Награда: ${payout}`;
+  }
+  return `Награда: ${payout}, оплатится ${paid} из ${payout} кр.`;
+};
+
 export const SelectedObjective = (props) => {
   const {
     objective = [],
+    paid,
   } = props;
   return (
     <>
       <Section
         title={objective.name}>
         <Box>
-          Награда: {objective.payout}
+          <Payout payout={objective.payout} paid={paid} />
         </Box>
         <Box>
           {objective.description}

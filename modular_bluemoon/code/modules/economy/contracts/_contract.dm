@@ -63,11 +63,27 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/repeat_key()
 	return type
 
-/// Счёт уже выполнил этот заказ столько раз за смену, сколько позволяет contract_repeat_per_person.
+/// Счёт уже выполнил этот заказ столько раз за смену, сколько позволяет contract_repeat_per_person. Работу всего отдела лимит не трогает.
 /datum/econ_contract/proc/repeats_exhausted(datum/bank_account/account)
 	var/limit = SSeconomy.settings.contract_repeat_per_person
 	var/key = repeat_key()
-	return !!(limit && key && account?.contract_repeats?[key] >= limit)
+	return !!(takeable && limit && key && account?.contract_repeats?[key] >= limit)
+
+/// Заказ выполнен: повтор пишется взявшему, а без него - каждому участнику.
+/datum/econ_contract/proc/note_repeats()
+	var/key = repeat_key()
+	if(!takeable || !key)
+		return
+	if(taker)
+		taker.note_contract_repeat(key)
+		return
+	for(var/number in contributions)
+		var/datum/bank_account/account = SSeconomy.find_account(text2num(number))
+		account?.note_contract_repeat(key)
+
+/// Вклад этого счёта в контракт без исполнителя не засчитывается: заказ он уже выполнил до лимита.
+/datum/econ_contract/proc/refuses_contribution(datum/bank_account/account)
+	return !taker && repeats_exhausted(account)
 
 /// Контракт начат: у него есть прогресс или он - не первый этап эстафеты. Начатый живёт дольше и не снимается сбросом доски.
 /datum/econ_contract/proc/started()
@@ -249,7 +265,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/total = final_payout()
 	var/to_people = pay_reward(total, performer)
 	taker?.contract_done(rep_value())
-	taker?.note_contract_repeat(repeat_key())
+	note_repeats()
 	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people][people_only ? ", бюджету ничего: работа уже оплачена" : ""]")
 	relay?.stage_done(src, total)
 	qdel(src)
@@ -407,7 +423,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	. += list(list("title" = "Как выполнить", "icon" = "clipboard-check", "lines" = list(
 		"Поставка: положите нужное на пад подработки на станции и отправьте с пульта или отгрузите шаттлом снабжения.",
 		"Деятельность: наберите работу отдела до срока. Награда - сверх обычной оплаты этой работы, [settings.contract_work_mult * 100]% её цены по прайсу.",
-		"Авария: после пробоя, пожара, метеоров или обесточки инженерии выставляется срочный контракт. Брать его не нужно - он закроется сам, когда отсеки снова будут в порядке.",
+		"Авария: после пробоя, пожара, метеоров или обесточки инженерии выставляется контракт. Брать его не нужно - он закроется сам, когда отсеки снова будут в порядке. Выключенный вручную щиток и временный сбой сети аварией не считаются.",
+		"Массовые пострадавшие: когда на станции в крите сразу [ECON_CASUALTIES_MIN] и больше человек, медицине выставляется контракт. Брать его не нужно - он закроется, когда медики выпишут пострадавших.",
 		"Обход: сотрудник СБ берёт его и проходит по названным общим отсекам до срока.",
 		"Купленное в автоматах и через снабжение не засчитывается. Исключение - пустая тара из автомата, которую наполнили вы: стакан со своим коктейлем, шприц со своей кровью, презерватив.",
 	)))
@@ -415,10 +432,10 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/cap_text = cap ? ", а вся она - не больше [cap] кр." : "."
 	. += list(list("title" = "Кто сколько получает", "icon" = "coins", "lines" = list(
 		"Взявшему - [settings.contract_performer_share]% награды (с налогом), остальное - отделу.",
-		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Поставка энергии и норма переработки - общая работа отдела, бюджету она уже оплачена: награда за них считается с [settings.contract_team_share]% цены работы, и её поровну делят все в отделе на смене, бюджету ничего. Награду аварии делят поровну: [settings.contract_team_share]% - инженерам на смене, остальное - бюджету.",
+		"Контракт без исполнителя: [settings.contract_team_share]% награды делят участники по вкладу. Поставка энергии и норма переработки - общая работа отдела, бюджету она уже оплачена: награда за них считается с [settings.contract_team_share]% цены работы, и её поровну делят все в отделе на смене, бюджету ничего. Авария платит [settings.contract_incident_unit_reward] кр. за каждую поломку или пострадавшего, без надбавки срочности: [settings.contract_team_share]% - инженерам на смене поровну или выписавшим медикам по вкладу, остальное - бюджету.",
 		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
 		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
-		"Эстафета - этапы для разных отделов по очереди: ботаника, кухня и бар, химия и медицина, шахта и наука. Каждый этап платит своему отделу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
+		"Эстафета - этапы для разных отделов по очереди: ботаника, кухня и бар, химия и медицина, шахта и наука. Каждый этап оплачивается сразу своему отделу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
 		"Гражданские поделки - ящики, самокаты, наручники и прочее - стоят [round(settings.contract_civilian_mult * 100)]% обычной награды.",
 		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",
 	)))

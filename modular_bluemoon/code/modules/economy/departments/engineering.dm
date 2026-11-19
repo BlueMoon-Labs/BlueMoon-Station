@@ -41,21 +41,51 @@
 	var/alarms = damage["alarms"]
 	return round((apcs ? (apcs - damage["dark_apcs"]) / apcs : 0) * 50 + (alarms ? (alarms - damage["bad_alarms"]) / alarms : 0) * 50)
 
-/// APC станции и сколько из них без питания; воздушные тревоги вне техтоннелей и сколько из них в опасности или сломаны.
+/// APC станции и сколько из них без питания; воздушные тревоги вне техтоннелей и сколько из них в опасности или сломаны. Для аварий - отдельно поломки, которые не уйдут сами: без выключенных вручную щитков, временного сбоя сети и тревог, у которых просто нет питания; отсек -> тяжесть.
 /datum/economy_department/engineering/proc/station_damage()
-	. = list("apcs" = 0, "dark_apcs" = 0, "alarms" = 0, "bad_alarms" = 0)
+	. = list("apcs" = 0, "dark_apcs" = 0, "alarms" = 0, "bad_alarms" = 0, "outage_apcs" = 0, "air_alarms" = 0)
+	var/list/outage_areas = list()
+	var/list/air_areas = list()
 	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
 		if(!is_station_level(apc.z))
 			continue
 		.["apcs"]++
-		if(!apc.operating || !apc.cell || apc.cell.charge <= 0 || (apc.machine_stat & (BROKEN|MAINT)))
+		var/broken = apc.machine_stat & (BROKEN|MAINT)
+		var/drained = !apc.cell || apc.cell.charge <= 0
+		if(!apc.operating || drained || broken)
 			.["dark_apcs"]++
+		if(broken || (drained && apc.operating && !apc.failure_timer))
+			.["outage_apcs"]++
+			econ_note_worst_area(outage_areas, apc.area, broken ? 2 : 1)
 	for(var/obj/machinery/airalarm/alarm as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/airalarm))
-		if(!is_station_level(alarm.z) || istype(get_area(alarm), /area/maintenance))
+		var/area/alarm_area = get_area(alarm)
+		if(!is_station_level(alarm.z) || istype(alarm_area, /area/maintenance))
 			continue
 		.["alarms"]++
 		if(alarm.danger_level || (alarm.machine_stat & (BROKEN|NOPOWER)))
 			.["bad_alarms"]++
+		var/broken = alarm.machine_stat & BROKEN
+		if(broken || (alarm.danger_level && !(alarm.machine_stat & NOPOWER)))
+			.["air_alarms"]++
+			econ_note_worst_area(air_areas, alarm_area, broken ? 2 : alarm.danger_level)
+	.["outage_areas"] = outage_areas
+	.["air_areas"] = air_areas
+
+/proc/econ_note_worst_area(list/areas, area/where, severity)
+	if(where)
+		areas[where.name] = max(areas[where.name] || 0, severity)
+
+/// До count названий отсеков из списка отсек -> тяжесть, самые тяжёлые первыми.
+/proc/econ_worst_area_names(list/areas, count = ECON_INCIDENT_WORST_AREAS)
+	. = list()
+	var/list/left = areas.Copy()
+	while(length(.) < count && length(left))
+		var/worst
+		for(var/name in left)
+			if(isnull(worst) || left[name] > left[worst])
+				worst = name
+		. += worst
+		left -= worst
 
 /datum/economy_department/engineering/spending_advice()
 	return list(

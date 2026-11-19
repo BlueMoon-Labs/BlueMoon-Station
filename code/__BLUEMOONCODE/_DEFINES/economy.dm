@@ -221,6 +221,7 @@
 /// Авария для срочного контракта инженерии: новых поломок сверх обычного не меньше MIN и не меньше доли MIN_SHARE от всех щитков или тревог
 #define ECON_INCIDENT_POWER "power"
 #define ECON_INCIDENT_AIR "air"
+#define ECON_INCIDENT_CASUALTIES "casualties"
 #define ECON_INCIDENT_POWER_MIN 4
 #define ECON_INCIDENT_AIR_MIN 3
 #define ECON_INCIDENT_MIN_SHARE 0.08
@@ -232,11 +233,15 @@
 #define ECON_INCIDENT_CHECK_INTERVAL (20 SECONDS)
 /// После аварии того же вида новый срочный контракт не выставляется столько
 #define ECON_INCIDENT_COOLDOWN (20 MINUTES)
+/// Сколько худших отсеков авария называет в описании и по радио
+#define ECON_INCIDENT_WORST_AREAS 3
+/// Массовые пострадавшие: столько людей в крите на станции сразу выставляют медицине срочный контракт
+#define ECON_CASUALTIES_MIN 3
 /// Обход СБ: сколько общих отсеков, срок после взятия, награда и как часто проверяется, где обходчик
 #define ECON_PATROL_AREAS 4
 #define ECON_PATROL_TIME (20 MINUTES)
 #define ECON_PATROL_REWARD 600
-#define ECON_PATROL_CHECK_INTERVAL (5 SECONDS)
+#define ECON_PATROL_CHECK_INTERVAL (2 SECONDS)
 /// Объявлений экипажа от одного счёта одновременно
 #define ECON_CREW_REQUESTS_PER_POSTER 2
 /// Срок объявления экипажа

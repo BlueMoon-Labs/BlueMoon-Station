@@ -223,12 +223,13 @@
 /// Засчитывает предмет и его содержимое по контрактам поставки и удаляет засчитанное. TRUE, если засчитано хоть что-то.
 /proc/econ_contracts_ship(atom/movable/thing, mob/shipper)
 	. = FALSE
-	var/list/contracts = econ_delivery_contracts_for(econ_account_of(shipper))
+	var/datum/bank_account/shipper_account = econ_account_of(shipper)
+	var/list/contracts = econ_delivery_contracts_for(shipper_account)
 	if(!length(contracts))
 		return
 	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
 		for(var/datum/econ_contract/delivery/contract as anything in contracts)
-			if(QDELETED(contract) || !contract.wants(item))
+			if(QDELETED(contract) || contract.refuses_contribution(shipper_account) || !contract.wants(item))
 				continue
 			contract.ship(item, shipper)
 			. = TRUE

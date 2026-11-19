@@ -738,11 +738,13 @@ GLOBAL_LIST_INIT(econ_test_butchered_mobs, list(
 	usr = null
 	qdel(window)
 
-/// Пад и пульт подработки, связанные мультитулом, на станционном турфе.
+/// Пад и пульт подработки, связанные мультитулом, на станционном турфе. Не горят: зажжённый костёр для заказа поджигает всё на турфе.
 /proc/econ_test_contract_pad(mob/user, turf/where, datum/unit_test/test)
 	var/obj/machinery/piratepad/civilian/pad = test.allocate(/obj/machinery/piratepad/civilian, where)
 	pad.warmup_time = 0
 	var/obj/machinery/computer/piratepad_control/civilian/console = test.allocate(/obj/machinery/computer/piratepad_control/civilian, where)
+	pad.resistance_flags |= FIRE_PROOF
+	console.resistance_flags |= FIRE_PROOF
 	var/obj/item/multitool/tool = test.allocate(/obj/item/multitool)
 	pad.multitool_act(user, tool)
 	console.multitool_act(user, tool)

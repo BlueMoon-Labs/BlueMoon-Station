@@ -15,7 +15,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		WORK_SCI_NODE = "за каждые [ECON_NODE_POINTS_UNIT] очков изученного узла",
 		WORK_SCI_SLIME_DISCOVERY = "за очко ценности нового цвета экстракта",
 		WORK_SCI_ARTIFACT = "за очко ценности артефакта",
-		WORK_SCI_MECH = "за собранного на станции меха",
+		WORK_SCI_MECH = "за первого за смену собранного на станции меха каждой модели",
 	),
 	ACCOUNT_CAR = list(
 		WORK_MINING_ORE = "за очко руды в переработке",

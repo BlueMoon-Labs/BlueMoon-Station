@@ -28,11 +28,16 @@
 /obj/machinery/computer/objective/ui_close(mob/user, datum/tgui/tgui)
 	viewing_mobs -= user
 
-/// Сколько NT ещё оплатит за орбитальные задания в эту смену.
+/// Сколько NT ещё потратит на орбитальные задания в эту смену и сколько оплатит за каждое из них.
 /obj/machinery/computer/objective/ui_data(mob/user)
+	var/list/payable = list()
+	for(var/datum/orbital_objective/objective as anything in SSorbits.possible_objectives + SSorbits.current_objective)
+		if(objective)
+			payable["[objective.id]"] = SSeconomy.orbital_payable(objective.payout)
 	return list(
 		"shift_cap" = SSeconomy.settings.orbital_shift_cap,
 		"shift_left" = SSeconomy.orbital_payout_left(),
+		"payable" = payable,
 	)
 
 /obj/machinery/computer/objective/ui_static_data(mob/user)

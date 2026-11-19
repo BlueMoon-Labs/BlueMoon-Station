@@ -204,7 +204,11 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
     );
   }
   if (contract.kind === 'incident') {
-    return <div className="NtTerm__hint">Инженерам на смене поровну {data.team_share}%, остальное - бюджету</div>;
+    return (
+      <div className="NtTerm__hint">
+        {contract.incident_team || 'Инженерам на смене поровну'} {data.team_share}%, остальное - бюджету
+      </div>
+    );
   }
   if (!contract.taken_by && !!contract.people_only) {
     return (
@@ -255,11 +259,13 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
           <div className="NtTerm__hint">
             «{contract.relay_title}»: сейчас {contract.relay_label}
             {contract.relay_next ? `, дальше - ${contract.relay_next}` : ', это последний этап'}.{' '}
-            {stagesNote(contract, 'Каждый этап платит своему отделу')}
+            {stagesNote(contract, 'Каждый этап оплачивается сразу своему отделу')}
           </div>
         )}
         {contract.kind === 'incident' && (
-          <div className="NtTerm__hint">Брать не нужно: контракт закроется сам, когда станция будет в порядке.</div>
+          <div className="NtTerm__hint">
+            {contract.incident_note || 'Брать не нужно: контракт закроется сам, когда станция будет в порядке.'}
+          </div>
         )}
         {lowDemand && <div className="NtTerm__hint">Этот заказ недавно сдавали: награда снижена, со временем спрос вернётся.</div>}
         {!!contract.progress && (

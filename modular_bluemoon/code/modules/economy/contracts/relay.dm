@@ -50,7 +50,11 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 /datum/controller/subsystem/economy/proc/begin_relay(list/template)
 	var/datum/econ_relay/relay = new(template)
 	relays += relay
-	return relay.advance()
+	var/datum/econ_contract/first = relay.advance()
+	var/channel = first && GLOB.econ_department_radio[first.department_id]
+	if(channel)
+		paperwork_radio("Эстафета «[relay.title]» началась: первой идёт [relay.stage_label(1)] - «[first.title]» на доске контрактов, дальше - [relay.next_labels()].", channel)
+	return first
 
 /// Эстафета отделов: этапы идут по одному, каждый платит своему отделу, за последний - премия от суммы этапов, всё вместе - не выше потолка серий.
 /datum/econ_relay
@@ -98,7 +102,11 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	var/list/spec = stages[stage]
 	var/department_id = spec["department"]
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
-	var/datum/econ_contract/contract
+	var/datum/econ_contract/contract = department && busy_same_activity(department, spec["contract"])
+	if(contract)
+		contract.relay = src
+		current = contract
+		return contract
 	if(department)
 		contract = make_stage(spec, department_id)
 	if(!contract)
@@ -107,12 +115,20 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 		return null
 	contract.relay = src
 	current = contract
-	// Одна и та же работа не платит дважды: обычный такой же контракт деятельности уступает место этапу.
+	// Одна и та же работа не платит дважды: свободный такой же контракт деятельности уступает место этапу, а взятый или начатый сам становится этапом.
 	for(var/datum/econ_contract/activity/existing in department.contracts.Copy())
-		if(existing.type == contract.type && !existing.taker && !existing.started() && !existing.pinned)
+		if(existing != contract && existing.type == contract.type && !existing.relay && !existing.taker && !existing.started() && !existing.pinned)
 			qdel(existing)
 	department.contracts |= contract
 	return contract
+
+/// Взятый или начатый такой же контракт деятельности на доске отдела: его не снять, этапом станет он.
+/datum/econ_relay/proc/busy_same_activity(datum/economy_department/department, contract_type)
+	if(!contract_type)
+		return null
+	for(var/datum/econ_contract/activity/existing in department.contracts)
+		if(existing.type == contract_type && !existing.relay && !existing.pinned && !existing.completed && (existing.taker || existing.started()))
+			return existing
 
 /datum/econ_relay/proc/make_stage(list/spec, department_id)
 	var/contract_type = spec["contract"]

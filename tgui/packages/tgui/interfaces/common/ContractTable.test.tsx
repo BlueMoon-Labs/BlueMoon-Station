@@ -227,7 +227,7 @@ test('свободные чужие объявления экипажа стоя
   expect(titles[1]).toContain('Контракт 1');
 });
 
-test('эстафета, серия с потолком и авария объяснены на доске, аварию не берут', () => {
+test('эстафета, серия с потолком, авария и массовые пострадавшие объяснены на доске, аварию не берут', () => {
   const ui = setup({
     team_share: 25,
     contracts: [
@@ -242,18 +242,28 @@ test('эстафета, серия с потолком и авария объя�
         chain_cap: 15000,
       }),
       contract(41, { kind: 'chain', stage: 3, stages: 3, chain_bonus: 50, chain_cap: 15000, taken_by: 'Другой', taker_id: 222 }),
-      contract(42, { kind: 'incident', takeable: 0, urgent: 1, title: 'Авария питания', progress: '2 / 6' }),
+      contract(42, { kind: 'incident', takeable: 0, title: 'Авария питания', progress: '2 / 6' }),
+      contract(43, {
+        kind: 'incident',
+        takeable: 0,
+        title: 'Массовые пострадавшие',
+        incident_team: 'Выписавшим медикам по вкладу',
+        incident_note: 'Брать не нужно: контракт закроется, когда медики выпишут пострадавших.',
+      }),
     ],
   });
   expect(ui.getByText('Эстафета: этап 1 из 3')).toBeTruthy();
   expect(ui.container.textContent).toContain('«От грядки до бокала»: сейчас ботаника, дальше - кухня, бар.');
   const text = (ui.container.textContent || '').replace(/\u00a0/g, ' ');
-  expect(text).toContain('Каждый этап платит своему отделу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
+  expect(text).toContain('Каждый этап оплачивается сразу своему отделу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
   expect(text).toContain('Каждый этап оплачивается сразу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
-  expect(ui.getByText('Авария')).toBeTruthy();
-  expect(ui.getByText('Брать не нужно')).toBeTruthy();
+  expect(ui.getAllByText('Авария')).toHaveLength(2);
+  expect(ui.getAllByText('Брать не нужно')).toHaveLength(2);
+  expect(ui.queryByText('Срочный')).toBeNull();
   expect(ui.getByText('Инженерам на смене поровну 25%, остальное - бюджету')).toBeTruthy();
   expect(ui.getByText('Брать не нужно: контракт закроется сам, когда станция будет в порядке.')).toBeTruthy();
+  expect(ui.getByText('Выписавшим медикам по вкладу 25%, остальное - бюджету')).toBeTruthy();
+  expect(ui.getByText('Брать не нужно: контракт закроется, когда медики выпишут пострадавших.')).toBeTruthy();
   fireEvent.click(ui.getByText('Взять'));
   expect(sent(ui.topic, 'take')).toEqual([{ uid: 40 }]);
 });

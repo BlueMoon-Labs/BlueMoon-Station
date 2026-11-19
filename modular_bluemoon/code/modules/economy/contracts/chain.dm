@@ -50,7 +50,7 @@
 	stages_paid += total
 	log_econ("Контракт #[uid] \"[title]\" отдела [department_id]: этап [stage] из [stages_total] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people]")
 	SSeconomy.note_contract_demand(bounty.type)
-	taker?.note_contract_repeat(repeat_key())
+	note_repeats()
 	var/next_type = next_stages[1]
 	next_stages.Cut(1, 2)
 	qdel(bounty)

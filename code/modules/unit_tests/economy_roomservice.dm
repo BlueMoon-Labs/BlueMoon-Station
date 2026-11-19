@@ -17,6 +17,8 @@
 	var/list/added_players = list()
 
 /datum/unit_test/economy_roomservice/Destroy()
+	if(guest)
+		guest.mock_client = null
 	GLOB.player_list -= added_players
 	added_players.Cut()
 	for(var/datum/room_service_order/order as anything in GLOB.room_service.orders.Copy())
@@ -49,6 +51,7 @@
 	econ_test_set_balance(guest_account, balance)
 	if(!sphere.sendToNewRoom(room_number, guest, "Hotel Room"))
 		return null
+	guest.mock_client = new /datum/client_interface()
 	panel = locate() in get_area(guest)
 	return panel
 
