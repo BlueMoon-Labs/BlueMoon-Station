@@ -66,6 +66,8 @@ const sent = (topic, action) =>
 
 const text = (container: HTMLElement) => (container.textContent || '').replace(/\u00a0/g, ' ');
 
+const currentStep = (container: HTMLElement) => text(container.querySelector('[aria-current="step"]') as HTMLElement);
+
 const typeNumber = (input: HTMLInputElement, value: string) => {
   fireEvent.focus(input);
   fireEvent.input(input, { target: { value } });
@@ -77,7 +79,7 @@ test('клиент видит счёт кассира, долю отдела, п
   expect(text(container)).toContain('Пиво x2');
   expect(text(container)).toContain('200 кр.');
   expect(text(container)).toContain('Получатель Иван Петров: 50% кассиру, остальное отделу "Сервис"');
-  expect(text(container)).toContain('Наличные приложите к кассе');
+  expect(currentStep(container)).toContain('Оплатите: кнопкой «Оплатить картой», ID-картой или КПК по кассе или приложите к ней наличные');
   fireEvent.click(getByText('Оплатить картой 230 кр.'));
   typeNumber(container.querySelector('input') as HTMLInputElement, '25');
   fireEvent.click(getByText('Оставить чаевые'));
@@ -95,6 +97,22 @@ test('два кассира: у каждого свой счёт, чаевые -
   fireEvent.click(getByText('Анна', { selector: '.NtTerm__chip' }));
   fireEvent.click(getByText('Оставить: Анна'));
   expect(sent(topic, 'tip')).toEqual([{ cashier: 222, amount: 10 }]);
+});
+
+test('клиенту по шагам: сначала заказ кассиру, после оплаты картой - чаевые и чек', () => {
+  const { container } = setup({ cashiers: [anna] });
+  expect(currentStep(container)).toContain('Скажите кассиру, что хотите');
+  expect(container.querySelectorAll('.fa-check')).toHaveLength(0);
+  cleanup();
+  const paid = setup({ cashiers: [anna], receipt: 1 });
+  expect(currentStep(paid.container)).toContain('чаевые кассиру и чек');
+  expect(paid.container.querySelectorAll('.fa-check')).toHaveLength(2);
+});
+
+test('встать вторым кассиром предлагают как дело персонала, не покупателя', () => {
+  const { getByText, topic } = setup({ can_join: 1 });
+  fireEvent.click(getByText('Встать вторым кассиром'));
+  expect(sent(topic, 'join')).toHaveLength(1);
 });
 
 test('клиенту объяснён отказ оплаты и идущий кулдаун', () => {
@@ -126,6 +144,8 @@ test('кассир ушёл - чек последней оплаты всё ра
 test('свободная касса предлагает встать за неё', () => {
   const { container, getByText, topic } = setup({ cashiers: [], can_join: 1 });
   expect(text(container)).toContain('Касса свободна');
+  expect(text(container)).toContain('Продаёте? Встаньте за кассу кнопкой ниже или проведите по ней своей ID-картой или КПК.');
+  expect(text(container)).toContain('Покупаете? Дождитесь кассира или просто попросите, что хотите: касса необязательна.');
   expect(container.textContent).not.toContain('Оплатить');
   fireEvent.click(getByText('Встать за кассу'));
   expect(sent(topic, 'join')).toHaveLength(1);
@@ -160,6 +180,19 @@ test('кассир набирает свой счёт по меню и прав�
   expect(sent(topic, 'remove_item')).toEqual([{ id: 4 }]);
   expect(sent(topic, 'logout')).toHaveLength(1);
   expect(container.textContent).not.toContain('Оплатить');
+});
+
+test('кассиру по шагам: меню, заказ в счёт, оплата покупателем', () => {
+  const { container } = setup({ is_cashier: 1, total_sales: 0, menu: [], cashiers: [{ ...anna, mine: 1 }] });
+  expect(currentStep(container)).toContain('Заведите позиции в меню');
+  expect(text(container)).toContain('Касса необязательна');
+  cleanup();
+  const menuReady = setup({ is_cashier: 1, total_sales: 0, cashiers: [{ ...anna, mine: 1 }] });
+  expect(currentStep(menuReady.container)).toContain('добавьте его в свой счёт кнопкой «В счёт»');
+  cleanup();
+  const ordered = setup({ is_cashier: 1, total_sales: 0, cashiers: [{ ...ivan, mine: 1 }] });
+  expect(currentStep(ordered.container)).toContain('Покупатель платит сам: картой или КПК по кассе');
+  expect(text(ordered.container)).toContain('С оплаты: 50% кассиру, остальное отделу "Сервис". Чаевые - вам целиком.');
 });
 
 test('плюс в счёт гаснет на пределе штук', () => {
