@@ -25,16 +25,18 @@
 	// BLUEMOON EDIT START
 	var/static/list/categorys = list("library", "library_secure", "library_private", "library_large", "library_large_private")
 	var/is_admin = check_rights_for(user?.client, R_DEBUG)
+	if(!islist(SSpersistence.paintings) || !length(SSpersistence.paintings))
+		SSpersistence.LoadPaintings()
 	var/list/paintings_store = islist(SSpersistence.paintings) ? SSpersistence.paintings : null
 	for(var/category_name in categorys)
 		var/list/paintings = paintings_store?[category_name]
 		if(islist(paintings))
 			var/list/filtered = list()
-			for(var/entry in paintings)
-				if(!islist(entry))
-					continue
+			for(var/list/entry in paintings)
+				var/hidden = entry["hidden"]
+				var/is_hidden = hidden && hidden != 0 && hidden != "0" && hidden != "false"
 				// Скрытые картины видны только админам (чтобы они могли восстановить)
-				if(!entry["hidden"] || is_admin)
+				if(!is_hidden || is_admin)
 					filtered += entry
 			data[category_name] = filtered
 		else

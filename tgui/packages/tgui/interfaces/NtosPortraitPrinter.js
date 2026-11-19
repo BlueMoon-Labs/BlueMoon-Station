@@ -7,7 +7,7 @@ export const NtosPortraitPrinter = (props) => {
   const { act, data } = useBackend();
   const [storedTabIndex, setTabIndex] = useSharedState(
     'ntosPortraitPrinterTab',
-    0
+    null
   );
   const [listIndex, setListIndex] = useSharedState(
     'ntosPortraitPrinterList',
@@ -79,10 +79,21 @@ export const NtosPortraitPrinter = (props) => {
       always: true, // показывать вкладку даже если пока пусто
     },
   ];
+  const firstPopulatedTabIndex = TABS.findIndex(
+    tab => tab.list && tab.list.length > 0
+  );
+  const requestedTabIndex = Number.isInteger(storedTabIndex)
+    ? storedTabIndex
+    : -1;
   const tabIndex =
-    Number.isInteger(storedTabIndex) && storedTabIndex >= 0 && storedTabIndex < TABS.length
-      ? storedTabIndex
-      : 0;
+    requestedTabIndex >= 0 &&
+    requestedTabIndex < TABS.length &&
+    TABS[requestedTabIndex].list &&
+    TABS[requestedTabIndex].list.length > 0
+      ? requestedTabIndex
+      : firstPopulatedTabIndex >= 0
+        ? firstPopulatedTabIndex
+        : 0;
   const baseList = TABS[tabIndex].list || [];
   // Скрытые картины видны только админам (чтобы они могли восстановить)
   const displayList = is_admin ? baseList : baseList.filter(p => !p.hidden);

@@ -8,7 +8,7 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	init_order = INIT_ORDER_ACHIEVEMENTS - 1
 	wait = TETRIS_WEEKLY_REWARD_CHECK_INTERVAL
 	flags = SS_BACKGROUND|SS_POST_FIRE_TIMING
-	var/next_reset_realtime = 0
+	var/next_reset_day = 0
 	var/processing_rewards = FALSE
 	var/current_index = 1
 	var/list/current_entries = list()
@@ -21,11 +21,8 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	. = ..()
 	load_state()
 	load_progress()
-	if(!isnum(next_reset_realtime) || next_reset_realtime <= 0)
-		next_reset_realtime = next_monday_midnight()
-		save_state()
-	else if(next_reset_realtime < world.realtime - TETRIS_WEEKLY_REWARD_INTERVAL * 2)
-		next_reset_realtime = next_monday_midnight()
+	if(next_reset_day <= 0)
+		next_reset_day = next_monday_day()
 		save_state()
 	if(length(current_entries))
 		processing_rewards = TRUE
@@ -34,7 +31,8 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	if(processing_rewards)
 		continue_reward_cycle()
 		return
-	if(world.realtime >= next_reset_realtime)
+	var/current_day = current_calendar_day()
+	if(current_day > 0 && next_reset_day > 0 && current_day >= next_reset_day)
 		begin_reward_cycle()
 
 /datum/controller/subsystem/tetris_weekly_rewards/proc/load_state()
@@ -44,11 +42,11 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	var/list/data = json_decode(json)
 	if(!islist(data))
 		return
-	next_reset_realtime = json_number(data["next_reset_realtime"]) || 0
+	next_reset_day = json_number(data["next_reset_day"]) || 0
 
 /datum/controller/subsystem/tetris_weekly_rewards/proc/save_state()
 	var/list/data = list()
-	data["next_reset_realtime"] = next_reset_realtime
+	data["next_reset_day"] = next_reset_day
 	fdel(TETRIS_WEEKLY_REWARD_STATE_FILE)
 	WRITE_FILE(file(TETRIS_WEEKLY_REWARD_STATE_FILE), json_encode(data))
 
@@ -103,7 +101,7 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	current_cycle_started = world.realtime
 	leaderboard_reset_done = FALSE
 	processing_rewards = TRUE
-	next_reset_realtime = next_monday_midnight()
+	next_reset_day = next_monday_day()
 	save_state()
 	save_progress()
 	continue_reward_cycle()
@@ -219,22 +217,51 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	return TRUE
 
 /datum/controller/subsystem/tetris_weekly_rewards/proc/advance_next_reset()
-	if(next_reset_realtime <= world.realtime)
-		next_reset_realtime = next_monday_midnight()
-		save_state()
+	next_reset_day = next_monday_day()
+	save_state()
 
-/datum/controller/subsystem/tetris_weekly_rewards/proc/next_monday_midnight()
-	var/realtime_seconds = floor(world.realtime / 10)
-	var/days_since_epoch = floor(realtime_seconds / 86400)
-	var/dow = (days_since_epoch + 5) % 7
-	var/days_until_monday = (7 - dow) % 7
-	if(days_until_monday == 0)
+/datum/controller/subsystem/tetris_weekly_rewards/proc/current_calendar_day()
+	var/list/parts = splittext(time2text(world.timeofday, "YYYY-MM-DD"), "-")
+	if(length(parts) != 3)
+		return 0
+	var/year = text2num(parts[1])
+	var/month = text2num(parts[2])
+	var/day = text2num(parts[3])
+	if(!year || !month || !day)
+		return 0
+	year -= (month <= 2)
+	var/era = floor(year / 400)
+	var/yoe = year - era * 400
+	var/doy = floor((153 * (month + (month > 2 ? -3 : 9)) + 2) / 5) + day - 1
+	var/doe = yoe * 365 + floor(yoe / 4) - floor(yoe / 100) + doy
+	return era * 146097 + doe - 719468
+
+/datum/controller/subsystem/tetris_weekly_rewards/proc/next_monday_day()
+	var/current_day = current_calendar_day()
+	if(!current_day)
+		return 0
+	var/weekday
+	switch(time2text(world.timeofday, "DDD"))
+		if("Mon")
+			weekday = 1
+		if("Tue")
+			weekday = 2
+		if("Wed")
+			weekday = 3
+		if("Thu")
+			weekday = 4
+		if("Fri")
+			weekday = 5
+		if("Sat")
+			weekday = 6
+		if("Sun")
+			weekday = 7
+		else
+			weekday = 1
+	var/days_until_monday = (8 - weekday) % 7
+	if(!days_until_monday)
 		days_until_monday = 7
-	var/next_monday_seconds = (days_since_epoch + days_until_monday) * 86400
-	var/next_reset = next_monday_seconds * 10
-	while(next_reset <= world.realtime)
-		next_reset += 7 * 24 * 3600 * 10
-	return next_reset
+	return current_day + days_until_monday
 
 #undef TETRIS_WEEKLY_REWARD_INTERVAL
 #undef TETRIS_WEEKLY_REWARD_CHECK_INTERVAL
