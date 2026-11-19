@@ -8,7 +8,6 @@
 	var/list/datum/component/pregnancy/pregnancies = list()
 	var/shared_revealed = FALSE
 	var/late_mood_applied = FALSE
-	var/obj/item/organ/genital/breasts/growth_organ
 	var/breast_size_applied = 0
 
 /datum/pregnancy_coordinator/New(mob/living/new_carrier)
@@ -98,10 +97,8 @@
 	var/obj/item/organ/genital/breasts/current = H.getorganslot(ORGAN_SLOT_BREASTS)
 	if(!current || QDELETED(current))
 		return
-	if(current != growth_organ)
-		// Growth to a replaced breast is not assigned retroactively.
-		growth_organ = current
-		breast_size_applied = 0
+	// Already-applied stage growth is not retroactively granted to a
+	// replaced organ. Reinsertions must not duplicate the same stage bonus.
 	if(target_size > breast_size_applied)
 		current.modify_size(target_size - breast_size_applied)
 		breast_size_applied = target_size
@@ -120,8 +117,13 @@
 	SIGNAL_HANDLER
 	var/list/datum/component/pregnancy/ready = list()
 	for(var/datum/component/pregnancy/P as anything in pregnancies)
-		if(!QDELETED(P) && P.carrier == carrier && P.oviposition && P.stage >= 2)
-			ready += P
+		if(QDELETED(P) || P.carrier != carrier || !P.oviposition || P.stage < 2)
+			continue
+		if(isgenital(P.container))
+			var/obj/item/organ/genital/stuff = P.container
+			if(stuff != sender && stuff.linked_organ != sender)
+				continue
+		ready += P
 	if(length(ready))
 		var/datum/component/pregnancy/chosen = pick(ready)
 		return chosen.on_climax(source, senders_cum, target, sender, receiver, spill)
@@ -129,7 +131,7 @@
 /datum/pregnancy_coordinator/proc/on_scan(datum/source, mob/user)
 	SIGNAL_HANDLER
 	if(length(pregnancies))
-		to_chat(user, span_notice("<b>Pregnancy detected!</b>"))
+		to_chat(user, span_notice("<b>Обнаружена беременность!</b>"))
 
 /datum/pregnancy_coordinator/proc/on_damage(datum/source, damage, damagetype, def_zone)
 	SIGNAL_HANDLER

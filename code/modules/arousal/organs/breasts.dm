@@ -139,6 +139,20 @@
 
 
 // Lazy reserves. No per-life processing, only O(1) time arithmetic on demand.
+/obj/item/organ/genital/breasts/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	// Parent Insert() emits organ signals; reset BEFORE their listeners run.
+	if(iscarbon(M) && owner != M)
+		last_fluid_update = world.time
+		last_nutrition_factor = 1
+	. = ..()
+
+/obj/item/organ/genital/breasts/Remove(special = FALSE)
+	if(owner)
+		update_fluid_reserve()
+	. = ..()
+	last_fluid_update = world.time
+	last_nutrition_factor = 1
+
 /obj/item/organ/genital/breasts/proc/update_fluid_reserve()
 	if(stored_fluid < 0)
 		// Preserve current game behaviour: the first available use starts full.
@@ -147,11 +161,16 @@
 		return
 	var/elapsed = max(0, world.time - last_fluid_update)
 	last_fluid_update = world.time
+	// Detached organs do not produce fluid or accrue elapsed regeneration.
+	if(!owner || QDELETED(owner))
+		last_nutrition_factor = 1
+		stored_fluid = clamp(stored_fluid, 0, max(0, fluid_max_volume))
+		return
 	var/nutrition_factor = 1
 	if(owner.nutrition <= NUTRITION_LEVEL_STARVING)
-		nutrition_factor = 0.15
+		nutrition_factor = GENITAL_MILK_STARVING_FACTOR
 	else if(owner.nutrition <= NUTRITION_LEVEL_HUNGRY)
-		nutrition_factor = 0.5
+		nutrition_factor = GENITAL_MILK_HUNGRY_FACTOR
 	// A meal must not retroactively regenerate milk for a starving interval.
 	// Conservative lower bound if nutrition changed since last access.
 	if(elapsed && owner && owner.stat != DEAD && (genital_flags & GENITAL_FUID_PRODUCTION))

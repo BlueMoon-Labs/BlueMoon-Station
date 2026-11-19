@@ -264,7 +264,7 @@
 
 /obj/item/organ/genital/penis/silicon_knot/update_knotting_from_shape()
 	// Real appearance data is not owned by this proxy object.
-	knot_size = silicon_owner?.synthetic_knot_style || 0
+	knot_size = silicon_owner?.synthetic_knot_style || SYNTHETIC_KNOT_NONE
 
 /obj/item/organ/genital/penis/silicon_knot/Destroy()
 	var/mob/living/silicon/robot/R = silicon_owner
@@ -275,7 +275,7 @@
 
 /mob/living/silicon/robot
 	/// 0 disables the synthetic extension; 1 single, 2 paired.
-	var/synthetic_knot_style = 0
+	var/synthetic_knot_style = SYNTHETIC_KNOT_NONE
 	/// 0 ordinary, 1 knotted, 2 double knotted.
 	var/synthetic_profile_selected = FALSE
 	/// These are explicit synthetic attachments, not carbon organ slots.
@@ -300,34 +300,41 @@
 	var/selection = tgui_input_list(src, "Конфигурация синтетического узла", "Synthetic Knot", list("Обычный", "С узлом", "Двойной с узлами"))
 	if(isnull(selection))
 		return
-	switch(selection)
-		if("Обычный")
-			synthetic_knot_style = 0
-			if(synthetic_knot_module)
-				qdel(synthetic_knot_module)
-		if("С узлом")
-			synthetic_knot_style = 1
-		if("Двойной с узлами")
-			synthetic_knot_style = 2
-	synthetic_profile_selected = TRUE
-	has_penis = TRUE
-	if(synthetic_knot_style)
-		get_synthetic_knot()
 	var/reception = tgui_input_list(src, "Какие синтетические принимающие интерфейсы установлены?", "Synthetic Slots", list("Нет", "Рот", "Влагалище", "Анус", "Влагалище и анус", "Все"))
-	if(isnull(reception) || active_knot?.knot_locked)
+	if(isnull(reception) || QDELETED(src) || active_knot?.knot_locked)
 		return
-	synthetic_knot_slots = list()
+	// Commit the two choices together; waiting in either dialog must not mutate
+	// a controller participating in a newly established connection.
+	var/new_style = SYNTHETIC_KNOT_NONE
+	switch(selection)
+		if("С узлом")
+			new_style = SYNTHETIC_KNOT_SINGLE
+		if("Двойной с узлами")
+			new_style = SYNTHETIC_KNOT_DOUBLE
+	var/list/new_slots = list()
 	switch(reception)
 		if("Рот")
-			synthetic_knot_slots += list(CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+			new_slots += list(CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
 		if("Влагалище")
-			synthetic_knot_slots += CUM_TARGET_VAGINA
+			new_slots += CUM_TARGET_VAGINA
 		if("Анус")
-			synthetic_knot_slots += CUM_TARGET_ANUS
+			new_slots += CUM_TARGET_ANUS
 		if("Влагалище и анус")
-			synthetic_knot_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)
+			new_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)
 		if("Все")
-			synthetic_knot_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+			new_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+	// No yields between this check and applying the new profile.
+	if(active_knot?.knot_locked)
+		return
+	synthetic_knot_style = new_style
+	synthetic_profile_selected = TRUE
+	has_penis = TRUE
+	synthetic_knot_slots = new_slots
+	if(synthetic_knot_style == SYNTHETIC_KNOT_NONE)
+		if(!QDELETED(synthetic_knot_module))
+			qdel(synthetic_knot_module)
+	else
+		get_synthetic_knot()
 	to_chat(src, span_notice("Синтетические интерфейсы настроены."))
 
 /mob/living/silicon/robot/verb/try_synthetic_knot()
@@ -348,7 +355,11 @@
 		to_chat(src, span_notice("Поблизости нет согласных участников."))
 		return
 	var/mob/living/partner = tgui_input_list(src, "Выберите участника", "Synthetic Knot", targets)
-	if(!partner || !(partner in targets))
+	if(QDELETED(src) || !partner || QDELETED(partner) || !(partner in targets))
+		return
+	// The user can reconfigure the synthetic module while the dialog is open.
+	P = get_synthetic_knot()
+	if(QDELETED(P) || active_knot?.knot_locked)
 		return
 	var/list/zones = list()
 	if(P.calculate_zone_modifier(partner, CUM_TARGET_VAGINA) > -100)
@@ -366,7 +377,10 @@
 	if(isnull(selected) || !(selected in zones))
 		return
 	var/consent = tgui_alert(partner, "[src] предлагает подключить синтетический узел. Согласны?", "Synthetic Knot", list("Да", "Нет"))
-	if(consent != "Да")
+	if(consent != "Да" || QDELETED(src) || QDELETED(partner))
+		return
+	P = get_synthetic_knot()
+	if(QDELETED(P) || active_knot?.knot_locked)
 		return
 	if(!try_apply_knot(src, partner, zones[selected]))
 		to_chat(src, span_notice("Подключение не удалось: проверьте расстояние, настройки и условия."))

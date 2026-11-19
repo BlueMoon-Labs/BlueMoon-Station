@@ -197,9 +197,9 @@
 		if(iscyborg(self))
 			var/mob/living/silicon/robot/R = self
 			if(R.synthetic_profile_selected)
-				if(R.synthetic_knot_style >= 1 && self.client?.prefs?.sexknotting && target?.client?.prefs?.sexknotting)
+				if(R.synthetic_knot_style >= SYNTHETIC_KNOT_SINGLE && self.client?.prefs?.sexknotting && target?.client?.prefs?.sexknotting)
 					required_from_user |= INTERACTION_REQUIRE_KNOT
-				if(R.synthetic_knot_style >= 2)
+				if(R.synthetic_knot_style >= SYNTHETIC_KNOT_DOUBLE)
 					required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
 		else
 			var/shape_desc = get_penis_shape_desc(self)
@@ -369,9 +369,9 @@
 			if(iscyborg(target))
 				var/mob/living/silicon/robot/R = target
 				if(R.synthetic_profile_selected)
-					if(R.synthetic_knot_style >= 1 && self.client?.prefs?.sexknotting && target.client?.prefs?.sexknotting)
+					if(R.synthetic_knot_style >= SYNTHETIC_KNOT_SINGLE && self.client?.prefs?.sexknotting && target.client?.prefs?.sexknotting)
 						required_from_target |= INTERACTION_REQUIRE_KNOT
-					if(R.synthetic_knot_style >= 2)
+					if(R.synthetic_knot_style >= SYNTHETIC_KNOT_DOUBLE)
 						required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
 			else
 				var/shape_desc = get_penis_shape_desc(target)

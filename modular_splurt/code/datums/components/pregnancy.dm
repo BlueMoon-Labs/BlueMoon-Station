@@ -24,6 +24,8 @@
 	var/max_stage = PREGNANCY_STAGES
 	COOLDOWN_DECLARE(stage_time)
 	COOLDOWN_DECLARE(hatch_request_cooldown)
+	/// Prevent multiple hatch() calls during the ghost poll/name dialog.
+	var/hatch_in_progress = FALSE
 
 	var/added_size = 0
 	/// this boolean is for identifying whether this preg is in the egg state or not
@@ -234,15 +236,18 @@
 	INVOKE_ASYNC(src, PROC_REF(hatch), source, I, user, params)
 
 /datum/component/pregnancy/proc/hatch(datum/source, obj/item/I, mob/user, params)
-	if(!COOLDOWN_FINISHED(src, hatch_request_cooldown))
+	if(hatch_in_progress || !COOLDOWN_FINISHED(src, hatch_request_cooldown))
 		return
-
+	hatch_in_progress = TRUE
 	COOLDOWN_START(src, hatch_request_cooldown, 30 SECONDS)
 
 	var/poll_message = "Do you want to play as [mother_name]'s offspring?[egg_name ? " Your name will be [egg_name]" : ""]"
 	var/list/mob/candidates = pollGhostCandidates(poll_message, ROLE_RESPAWN, null, FALSE, 30 SECONDS, POLL_IGNORE_EGG, priority_check = FALSE)
 
+	if(QDELETED(src) || QDELETED(parent))
+		return
 	if(!LAZYLEN(candidates))
+		hatch_in_progress = FALSE
 		to_chat(user, span_info("\The [parent] doesn't seems to hatch, try again later?"))
 		return
 

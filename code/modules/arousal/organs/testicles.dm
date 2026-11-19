@@ -117,6 +117,18 @@
 		toggle_accessibility(TRUE)
 // BLUEMOON INTEGRITY SUITE 2026-11
 
+/obj/item/organ/genital/testicles/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	// Prevent organ-add signal handlers from accruing time spent detached.
+	if(iscarbon(M) && owner != M)
+		last_fluid_update = world.time
+	. = ..()
+
+/obj/item/organ/genital/testicles/Remove(special = FALSE)
+	if(owner)
+		update_fluid_reserve()
+	. = ..()
+	last_fluid_update = world.time
+
 /obj/item/organ/genital/testicles/proc/update_fluid_reserve()
 	if(stored_fluid < 0)
 		stored_fluid = max(0, fluid_max_volume)
@@ -148,7 +160,7 @@
 	if(available <= 0)
 		return 0
 	// Keep most of the reservoir for later events; never make new liquid.
-	var/amount = min(available, max(1, fluid_max_volume * rand(15, 35) / 100))
+	var/amount = min(available, max(1, fluid_max_volume * rand(GENITAL_EJACULATION_MIN_PERCENT, GENITAL_EJACULATION_MAX_PERCENT) / 100))
 	stored_fluid -= amount
 	destination.add_reagent(fluid_id, amount, owner?.get_blood_data())
 	return amount

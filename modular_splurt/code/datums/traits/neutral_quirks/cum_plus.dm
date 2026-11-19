@@ -17,8 +17,8 @@
 	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE))
 	if(!QDELETED(modified_organ))
 		modified_organ.update_fluid_reserve()
-		modified_organ.fluid_mult -= 0.5
-		modified_organ.fluid_max_volume /= 1.75
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
 		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
 	modified_organ = null
 
@@ -32,11 +32,11 @@
 		return
 	if(!QDELETED(modified_organ))
 		modified_organ.update_fluid_reserve()
-		modified_organ.fluid_mult -= 0.5
-		modified_organ.fluid_max_volume /= 1.75
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
 		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
 	modified_organ = current
 	if(!QDELETED(current))
 		current.update_fluid_reserve()
-		current.fluid_mult += 0.5
-		current.fluid_max_volume *= 1.75
+		current.fluid_mult += GENITAL_FLUID_QUIRK_RATE_BONUS
+		current.fluid_max_volume *= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER

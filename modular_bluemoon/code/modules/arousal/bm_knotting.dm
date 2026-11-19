@@ -705,7 +705,9 @@
 	// Manhattan distance notices sideways separation that get_dist() hides.
 	var/old_separation = abs(previous.x - follower_tile.x) + abs(previous.y - follower_tile.y)
 	var/new_separation = abs(current.x - follower_tile.x) + abs(current.y - follower_tile.y)
-	if(new_separation > old_separation)
+	var/old_tile_distance = max(abs(previous.x - follower_tile.x), abs(previous.y - follower_tile.y))
+	var/new_tile_distance = max(abs(current.x - follower_tile.x), abs(current.y - follower_tile.y))
+	if(new_separation > old_separation || new_tile_distance > old_tile_distance)
 		// A new roll for EVERY outward step. No 1-second cooldown.
 		if(prob(KNOT_STEP_BREAK_CHANCE))
 			handle_knot_break(knot_user, knot_partner, get_zone_text(knot_state))

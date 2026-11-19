@@ -93,6 +93,7 @@
 		return
 	if(applied_organ && applied_organ != affected)
 		deflate_organ()
+		new_size = size
 	var/old_size = affected.size
 	affected.modify_size(new_size)
 	applied_organ = affected

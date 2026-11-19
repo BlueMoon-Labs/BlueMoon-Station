@@ -85,6 +85,8 @@
 		return
 	var/fluid_blocked = !!sender.get_urethral_obstruction()
 	if(!fluid_blocked)
+		// Never reuse reagent left behind by a previous climax when production fails.
+		R.clear_reagents()
 		sender.generate_fluid(R)
 	last_climax = world.time // BLUEMOON ADD
 	sender.last_orgasmed = world.time
@@ -96,6 +98,9 @@
 	if(fluid_blocked)
 		return
 
+	// The return value reports how much was really transferred to the target.
+	// It must not be derived from climaxable(), which may return an empty holder.
+	var/fluid_before_delivery = R.total_volume
 	var/turfing = isturf(target)
 	var/condomning
 	if(istype(sender, /obj/item/organ/genital/penis))
@@ -219,6 +224,7 @@
 						if(istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus))
 							if(copy.total_volume > 0)
 								cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
+	. = max(0, fluid_before_delivery - R.total_volume)
 	R.clear_reagents()
 	//sandstorm edit - gain momentum from dirty deeds.
 	if(!Process_Spacemove(turn(dir, 180)))
@@ -245,10 +251,11 @@
 		if(!do_after(src, mb_time, target = src) || !in_range(src, L) || !G.climaxable(src, TRUE))
 			return
 	SEND_SIGNAL(L, COMSIG_ADD_MOOD_EVENT, "orgasm", /datum/mood_event/orgasm)
-	// Impregnation is evaluated only after the action actually completed.
-	if(!G.get_urethral_obstruction())
+	var/fluid_transferred = do_climax(fluid_source, spillage ? loc : L, G, spillage, FALSE, Lgen, anonymous, is_hidden)
+	// The receiver can react only after climax. Pregnancy also needs a real
+	// non-spilling transfer, never merely an available reagent holder.
+	if(!G.get_urethral_obstruction() && (spillage || fluid_transferred > 0))
 		L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
-	do_climax(fluid_source, spillage ? loc : L, G, spillage, FALSE, Lgen, anonymous, is_hidden)
 	return TRUE
 
 /mob/living/carbon/human/proc/mob_fill_container(obj/item/organ/genital/G, obj/item/reagent_containers/container, mb_time = 30, obj/item/sucking_machine/M, is_hidden = FALSE)
