@@ -822,6 +822,7 @@
 
 		if(istype(thing, /obj/effect/mob_spawn/human/virtual_domain))
 			RegisterSignal(thing, COMSIG_BITRUNNER_SPAWNED, PROC_REF(on_threat_created))
+			RegisterSignal(thing, COMSIG_GHOSTROLE_SPAWNED, PROC_REF(on_domain_mob_spawned))
 			continue
 
 	UnregisterSignal(source, COMSIG_LAZY_TEMPLATE_LOADED)
@@ -832,6 +833,14 @@
 	SIGNAL_HANDLER
 
 	add_threats(threat)
+
+/obj/machinery/quantum_server/proc/on_domain_mob_spawned(datum/source, mob/living/spawned)
+	SIGNAL_HANDLER
+
+	if(QDELETED(spawned))
+		return
+
+	spawned.AddComponent(/datum/component/virtual_entity, src)
 
 /obj/machinery/quantum_server/proc/add_threats(mob/living/threat)
 	spawned_threat_refs.Add(WEAKREF(threat))

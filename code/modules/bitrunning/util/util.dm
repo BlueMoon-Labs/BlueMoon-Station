@@ -165,6 +165,12 @@
 	update_hair()
 
 // Боссы виртуальных доменов ослаблены для отладки.
+/proc/is_bitrunning_objective(atom/movable/thing)
+	return istype(thing, /obj/structure/closet/crate) || \
+		istype(thing, /obj/item/storage/lockbox) || \
+		istype(thing, /obj/item/card/id) || \
+		istype(thing, /obj/item/key)
+
 /mob/living/simple_animal/hostile/megafauna/proc/make_virtual_megafauna()
 	var/new_max = clamp(round(maxHealth * 0.25), 250, 650)
 	maxHealth = new_max

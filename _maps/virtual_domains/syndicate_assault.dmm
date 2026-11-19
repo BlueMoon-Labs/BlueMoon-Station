@@ -165,9 +165,9 @@
 /obj/item/clothing/under/syndicate/tacticool,
 /obj/item/clothing/under/syndicate/tacticool,
 /obj/item/clothing/under/syndicate/tacticool,
-/obj/item/card/id,
-/obj/item/card/id,
-/obj/item/card/id,
+/obj/item/card/id/syndicate/syndicate_command,
+/obj/item/card/id/syndicate/syndicate_command,
+/obj/item/card/id/syndicate/syndicate_command,
 /turf/open/floor/mineral/plastitanium,
 /area/virtual_domain/protected_space)
 "fd" = (

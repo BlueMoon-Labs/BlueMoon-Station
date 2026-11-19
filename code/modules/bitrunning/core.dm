@@ -80,47 +80,49 @@
 
 /area/virtual_domain
 	name = "Virtual Domain Ruins"
-	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS
+	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	requires_power = FALSE
 	has_gravity = STANDARD_GRAVITY
 
 /area/virtual_domain/fullbright
+	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 
 /area/virtual_domain/safehouse
 	name = "Virtual Domain Safehouse"
-	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | NO_ALERTS
+	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | RADIO_BLACKOUT | NO_ALERTS
 	requires_power = FALSE
 	sound_environment = SOUND_ENVIRONMENT_ROOM
 
 // Домены загружаются на отдельный z-уровень и не наследуют погоду Лаваленда.
 /area/lavaland/surface/outdoors/virtual_domain
 	name = "Virtual Domain Lava Ruins"
-	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS
+	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	outdoors = FALSE
 	has_gravity = STANDARD_GRAVITY
 	luminosity = 1
 
 /area/icemoon/underground/explored/virtual_domain
 	name = "Virtual Domain Ice Ruins"
-	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS
+	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	has_gravity = STANDARD_GRAVITY
 	luminosity = 1
 
 /area/ruin/space/virtual_domain
 	name = "Virtual Domain Unexplored Location"
-	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS
+	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	has_gravity = STANDARD_GRAVITY
 
 /area/space/virtual_domain
 	name = "Virtual Domain Space"
-	area_flags = VIRTUAL_AREA | HIDDEN_AREA | NO_ALERTS
+	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	has_gravity = STANDARD_GRAVITY
 
 /area/virtual_domain/protected_space
 	name = "Virtual Domain Safe Zone"
-	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | NO_ALERTS
+	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | RADIO_BLACKOUT | NO_ALERTS
 
 /area/virtual_domain/protected_space/fullbright
+	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 
 GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 
@@ -392,6 +394,8 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	if(antag && spawned_mob.mind)
 		spawned_mob.mind.add_antag_datum(/datum/antagonist/domain_ghost_actor)
 		spawned_mob.mind.assigned_role = ROLE_GLITCH
+
+	SEND_SIGNAL(src, COMSIG_GHOSTROLE_SPAWNED, spawned_mob)
 
 /obj/effect/mob_spawn/human/virtual_domain/proc/artificial_spawn(mob/living/runner)
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_SPAWNED, runner)

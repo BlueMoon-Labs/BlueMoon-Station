@@ -224,6 +224,8 @@
 	important_info = "В целом играйте честно. Допустимый вид — только люди."
 	outfit = /datum/outfit/cin_soldier_player
 	can_load_appearance = TRUE
+	uses = 1
+	permanent = FALSE
 
 /datum/outfit/cin_soldier_player
 	name = "Coalition Operative SNPC"
