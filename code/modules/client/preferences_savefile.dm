@@ -558,17 +558,33 @@
 	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
 	flush_single_prefs()
 
-	var/datum/player_save_document/document = open_player_document()
-	if(!document)
-		return FALSE
-	var/needs_update = player_save_version_status(document.read("version"))
+	var/datum/player_save_document/document
 	var/savefile/S
-	if(needs_update >= 0)
-		S = open_player_save("/")
+	var/needs_update
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	if(storage?.legacy_only())
+		// До переноса корень читается из копии .sav, как на старом формате, без разбора анкет.
+		S = storage.legacy_view("/")
 		if(!S)
+			player_save_error(storage.error)
 			return FALSE
-		document = null
 		needs_update = savefile_needs_update(S)
+		if(needs_update == -2 && length(S.dir) > 1)
+			player_save_error("Неподдерживаемая версия старого сохранения")
+		else if(needs_update >= 0)
+			// Обновление версии переписывает все анкеты - оно идёт по перенесённому JSON.
+			S = null
+	if(!S)
+		document = open_player_document()
+		if(!document)
+			return FALSE
+		needs_update = player_save_version_status(document.read("version"))
+		if(needs_update >= 0)
+			S = open_player_save("/")
+			if(!S)
+				return FALSE
+			document = null
+			needs_update = savefile_needs_update(S)
 	if(needs_update == -2)		//fatal, can't load any data
 		return FALSE
 
@@ -1143,6 +1159,9 @@
 			continue
 		if(length(prefs.pending_single_prefs))
 			prefs.flush_single_prefs()
+	// Незаконченный перенос без буфера не нужен до следующей правки: закрываем копии .sav.
+	for(var/datum/preferences/prefs as anything in GLOB.player_save_migration_queue)
+		prefs.player_save_storage?.abort_migration()
 
 /// Префы, чей старый .sav ждёт переноса в JSON.
 GLOBAL_LIST_EMPTY(player_save_migration_queue)
@@ -1153,15 +1172,26 @@ GLOBAL_VAR(player_save_migration_timer)
 	if(!GLOB.player_save_migration_timer)
 		GLOB.player_save_migration_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_player_save_migration_queue)), PLAYER_SAVE_MIGRATION_INTERVAL, TIMER_STOPPABLE)
 
+/// Перенос идёт по разделу анкеты в пределах PLAYER_SAVE_MIGRATION_BUDGET за срабатывание:
+/// после рестарта мира заходят все сразу, а большой аккаунт целиком морозил мир на секунды.
 /proc/process_player_save_migration_queue()
 	GLOB.player_save_migration_timer = null
+	var/started = TICK_USAGE_REAL
 	while(length(GLOB.player_save_migration_queue))
 		var/datum/preferences/prefs = GLOB.player_save_migration_queue[1]
-		GLOB.player_save_migration_queue.Cut(1, 2)
 		if(QDELETED(prefs))
+			GLOB.player_save_migration_queue.Cut(1, 2)
 			continue
-		prefs.flush_single_prefs()
-		break
+		var/budget_left = PLAYER_SAVE_MIGRATION_BUDGET - TICK_USAGE_TO_MS(started)
+		if(budget_left <= 0)
+			break
+		var/done = prefs.run_player_save_migration(budget_left)
+		if(!done && !prefs.player_save_blocked && prefs.player_save_storage?.migration_active())
+			break
+		GLOB.player_save_migration_queue.Cut(1, 2)
+		// Буфер ждал переноса; теперь это одна запись в документ.
+		if(done)
+			prefs.flush_single_prefs()
 	if(length(GLOB.player_save_migration_queue))
 		GLOB.player_save_migration_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(process_player_save_migration_queue)), PLAYER_SAVE_MIGRATION_INTERVAL, TIMER_STOPPABLE)
 
@@ -1185,6 +1215,11 @@ GLOBAL_VAR(player_save_migration_timer)
 		// (write_pending_single_prefs) и сохраняет его при ошибке.
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	var/keys_written = length(pending_single_prefs)
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	if(allow_defer && (storage?.migration_active() || storage?.legacy_only()))
+		// Перенос пишет весь аккаунт, а после рестарта мира заходят все сразу.
+		queue_player_save_migration()
+		return FALSE
 	var/blocking_started_ms = blocking_call_start()
 	var/datum/player_save_document/document = open_player_document()
 	if(!document)
@@ -1197,12 +1232,8 @@ GLOBAL_VAR(player_save_migration_timer)
 		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "неподдерживаемая версия")
 		return FALSE
 	if(file_version < SAVEFILE_VERSION_MAX || isnull(document.directories))
-		// Перенос пишет весь аккаунт за раз, а после рестарта мира заходят все сразу.
-		if(allow_defer)
-			blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "перенос в очереди [parent?.ckey || "?"]")
-			queue_player_save_migration()
-			return FALSE
-		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
+		// Корень старой версии обновляется полной записью настроек.
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "старая версия корня [player_save_ckey()]")
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	var/list/pending_before_write = pending_single_prefs?.Copy()
 	try
@@ -1454,6 +1485,24 @@ GLOBAL_VAR(player_save_migration_timer)
 		pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	pref_queue = addtimer(CALLBACK(src, PROC_REF(save_preferences), TRUE, silent), save_in, TIMER_STOPPABLE)
 
+/// Частичная копия .sav не записывается, а перенос старых взаимодействий из корня в слот
+/// (sand_character_pref_load) пишет сразу: такой слот грузится после переноса аккаунта в JSON.
+/datum/preferences/proc/legacy_view_needs_write(savefile/S, slot)
+	S.cd = "/character[slot]"
+	var/slot_interactions
+	if("custom_interactions" in S.dir)
+		S["custom_interactions"] >> slot_interactions
+	S.cd = "/"
+	if(!isnull(slot_interactions))
+		return FALSE
+	var/migrated
+	var/list/root_interactions
+	if("custom_interactions_migrated" in S.dir)
+		S["custom_interactions_migrated"] >> migrated
+	if("custom_interactions" in S.dir)
+		S["custom_interactions"] >> root_interactions
+	return !migrated && islist(root_interactions)
+
 /datum/preferences/proc/load_character(slot, bypass_cooldown = FALSE, savefile/provided)
 	if(!provided)
 		if(!path)
@@ -1470,6 +1519,16 @@ GLOBAL_VAR(player_save_migration_timer)
 	var/datum/player_save_document/document
 	var/selected_slot = sanitize_integer(slot || default_slot, 1, max_save_slots, initial(default_slot))
 	if(!provided)
+		var/datum/player_save_json/account/storage = get_player_save_storage()
+		if(storage?.legacy_only())
+			// До переноса слот читается из копии .sav без разбора остальных анкет.
+			S = storage.legacy_view("/character[selected_slot]")
+			if(!S)
+				player_save_error(storage.error)
+				return FALSE
+			if(legacy_view_needs_write(S, selected_slot))
+				S = null
+	if(!provided && !S)
 		var/datum/player_save_document/root = open_player_document()
 		if(!root)
 			return FALSE
@@ -2433,11 +2492,13 @@ GLOBAL_VAR(player_save_migration_timer)
 	if(!names)
 		return null
 	var/datum/player_save_json/account/storage = get_player_save_storage()
+	// Старый .sav читается одной копией на все слоты.
+	var/list/fields = storage.legacy_only() ? storage.character_fields(max_save_slots, "character_slot_name") : null
 	var/list/custom_slot_names = new /list(max_save_slots)
 	for(var/slot in 1 to max_save_slots)
 		if(!names[slot])
 			continue
-		var/custom_name = storage.character_field("character[slot]", "character_slot_name")
+		var/custom_name = fields ? fields["character[slot]"] : storage.character_field("character[slot]", "character_slot_name")
 		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(custom_name))), 1, MAX_NAME_LEN + 1)
 	slot_custom_names_cache = custom_slot_names
 	return custom_slot_names

@@ -1,7 +1,11 @@
 /// Максимальная глубина вложенности JSON-сейва игрока.
 #define PLAYER_SAVE_JSON_DEPTH 64
-/// Перенос старых сейвов в JSON - не чаще одного аккаунта за этот промежуток.
-#define PLAYER_SAVE_MIGRATION_INTERVAL (1 SECONDS)
+/// Очередь переноса старых сейвов в JSON работает раз в этот промежуток...
+#define PLAYER_SAVE_MIGRATION_INTERVAL (2 DECISECONDS)
+/// ...и тратит за раз не больше стольких мс (раздел анкеты переносится целиком, даже если дороже).
+#define PLAYER_SAVE_MIGRATION_BUDGET 20
+/// Метка частичной копии старого .sav, которую нельзя записывать.
+#define PLAYER_SAVE_LEGACY_VIEW_KEY "__legacy_view"
 
 //Preference toggles
 #define SOUND_ADMINHELP		        (1<<0)

@@ -8,9 +8,27 @@
 	var/cached_revision
 	var/list/cached_names = list()
 	var/list/cached_name_generations = list()
+	/// Поэтапный перенос старого .sav: открытая копия файла и ещё не записанные разделы.
+	var/savefile/migration_source
+	var/migration_prefix
+	var/migration_hash
+	var/list/migration_keys
+	var/list/migration_directories
+	var/migration_revision
+	var/migration_fingerprint
+	/// TRUE, когда последний перенос опубликовал корень JSON.
+	var/migration_published = FALSE
+	var/migration_slots = 0
+	var/migration_size_kb = 0
+	var/migration_steps = 0
+	var/migration_work_ms = 0
+	var/migration_worst_ms = 0
+	var/migration_started_at = 0
 
 /// Меню не загружает все анкеты заново после каждой смены вкладки или настройки корня.
 /datum/player_save_json/account/proc/character_names(limit)
+	if(legacy_only())
+		return legacy_character_fields(limit, "real_name")
 	var/datum/player_save_document/root = snapshot()
 	if(!root)
 		return null
@@ -233,6 +251,63 @@
 	source.cd = original_directory
 	return result
 
+/// Записывает раздел key из source, его поколение кладёт в next_directories.
+/datum/player_save_json/account/proc/commit_branch(savefile/source, key, list/previous_directories, list/next_directories)
+	var/datum/player_save_json/child = branch(key)
+	var/expected_generation = previous_directories ? previous_directories[key] : null
+	// Загруженный раздел уже проверен. После чужой записи или при другом
+	// поколении заново выбираем именно опубликованный корнем снимок.
+	if(!expected_generation || child.error || child.generation != expected_generation || child.open_revision != player_save_revision(child.json_path))
+		if(!child.open(null, expected_generation))
+			if(expected_generation)
+				throw EXCEPTION("Не удалось подготовить раздел сохранения: [child.error]")
+			// Корень на раздел не ссылается: остатки прерванного переноса не мешают записи.
+			child.empty_snapshot()
+	if(!child.commit(source, "/[key]"))
+		throw EXCEPTION("Не удалось записать раздел сохранения: [child.error]")
+	next_directories[key] = child.generation
+
+/// JSON ещё не опубликован: незаконченный перенос оставляет только файлы разделов без корня.
+/datum/player_save_json/account/proc/legacy_only()
+	return fexists(legacy_path) && !fexists(json_path) && !fexists("[json_path].recovery")
+
+/// Одно поле каждой анкеты старого .sav из одной копии файла, без разбора анкет целиком.
+/datum/player_save_json/account/proc/legacy_character_fields(limit, field)
+	error = null
+	var/list/result = list()
+	var/savefile/legacy
+	var/prefix
+	try
+		legacy = open_legacy_copy()
+		prefix = legacy_copy_prefix
+		for(var/slot in 1 to limit)
+			var/key = "character[slot]"
+			legacy.cd = "/"
+			if(!(key in legacy.dir))
+				continue
+			legacy.cd = "/[key]"
+			var/value
+			if(field in legacy.dir)
+				legacy[field] >> value
+			result[key] = value
+		legacy.cd = "/"
+		verify_legacy_copy(legacy, prefix)
+	catch(var/exception/failure)
+		error = "Не удалось прочитать старое сохранение: [failure.name]"
+		result = null
+	legacy = null
+	close_legacy_copy(prefix)
+	return result
+
+/// Поле анкеты по всем слотам: из старого .sav одной копией, из JSON - через опубликованные разделы.
+/datum/player_save_json/account/proc/character_fields(limit, field)
+	if(legacy_only())
+		return legacy_character_fields(limit, field)
+	var/list/result = list()
+	for(var/slot in 1 to limit)
+		result["character[slot]"] = character_field("character[slot]", field)
+	return result
+
 /datum/player_save_json/account/commit(savefile/source, scope)
 	// Проверяем корень до записи разделов, чтобы устаревший писатель не оставлял новое поколение.
 	if(!source || !check_revision())
@@ -245,6 +320,9 @@
 	var/full_snapshot = isnull(directories) || !scope
 	if(full_snapshot)
 		next_directories = list()
+	if(player_save_is_legacy_view(source))
+		error = "Частичная копия старого сохранения не записывается"
+		return FALSE
 	try
 		source.cd = "/"
 		var/list/keys = full_snapshot ? source.dir.Copy() : (scope == "/" ? list() : list(copytext(scope, 2)))
@@ -252,18 +330,10 @@
 			source.cd = "/[key]"
 			if(!length(source.dir))
 				continue
-			var/datum/player_save_json/child = branch(key)
-			var/expected_generation = previous_directories ? previous_directories[key] : null
-			// Загруженный раздел уже проверен. После чужой записи или при другом
-			// поколении заново выбираем именно опубликованный корнем снимок.
-			if(!expected_generation || child.error || child.generation != expected_generation || child.open_revision != player_save_revision(child.json_path))
-				if(!child.open(null, expected_generation))
-					throw EXCEPTION("Не удалось подготовить раздел сохранения: [child.error]")
-			if(!child.commit(source, "/[key]"))
-				throw EXCEPTION("Не удалось записать раздел сохранения: [child.error]")
-			next_directories[key] = child.generation
+			commit_branch(source, key, previous_directories, next_directories)
 			// Имя публикуется с тем же поколением, что и содержимое анкеты.
 			if(copytext(key, 1, 10) == "character")
+				source.cd = "/[key]"
 				var/name
 				source["real_name"] >> name
 				source.cd = "/"
@@ -284,6 +354,128 @@
 		return FALSE
 	cached_root = next_root
 	cached_revision = player_save_revision(json_path)
+	return TRUE
+
+/datum/player_save_json/account/proc/migration_active()
+	return !isnull(migration_source)
+
+/// Открывает копию старого .sav для переноса по разделам. FALSE с error - файл не прочитан,
+/// FALSE без error - переносить нечего.
+/datum/player_save_json/account/proc/begin_migration()
+	if(migration_source)
+		return TRUE
+	error = null
+	migration_published = FALSE
+	if(!legacy_only())
+		return FALSE
+	try
+		migration_fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, legacy_path)
+		migration_source = open_legacy_copy()
+		migration_prefix = legacy_copy_prefix
+		migration_hash = legacy_copy_hash
+	catch(var/exception/failure)
+		migration_source = null
+		close_legacy_copy(legacy_copy_prefix)
+		error = "Не удалось прочитать сохранение: [failure.name]"
+		return FALSE
+	migration_source.cd = "/"
+	var/root_version
+	if("version" in migration_source.dir)
+		migration_source["version"] >> root_version
+	if(length(migration_source.dir) && player_save_version_status(root_version) == -2)
+		abort_migration()
+		error = "Неподдерживаемая версия старого сохранения"
+		return FALSE
+	migration_keys = list()
+	migration_slots = 0
+	for(var/key in migration_source.dir)
+		migration_source.cd = "/[key]"
+		if(length(migration_source.dir))
+			migration_keys += key
+			if(player_save_is_slot_key(key))
+				migration_slots++
+		migration_source.cd = "/"
+	migration_directories = list()
+	migration_revision = player_save_revision(json_path)
+	migration_size_kb = round(length(file(legacy_path)) / 1024)
+	migration_steps = 0
+	migration_work_ms = 0
+	migration_worst_ms = 0
+	migration_started_at = world.time
+	return TRUE
+
+/// Обрывает перенос. Разделы без корня никто не читает, следующий перенос их перепишет.
+/datum/player_save_json/account/proc/abort_migration()
+	migration_source = null
+	close_legacy_copy(migration_prefix)
+	migration_prefix = null
+	migration_keys = null
+	migration_directories = null
+
+/datum/player_save_json/account/proc/migration_next_label()
+	return length(migration_keys) ? "раздел [migration_keys[1]]" : "корень"
+
+/datum/player_save_json/account/proc/note_migration_step(cost_ms)
+	migration_steps++
+	migration_work_ms += cost_ms
+	migration_worst_ms = max(migration_worst_ms, cost_ms)
+
+/// Один раздел или, когда разделы кончились, корень. TRUE - перенос закончен: опубликован
+/// (migration_published), упал (error) или прерван чужой записью.
+/datum/player_save_json/account/proc/migration_step()
+	if(!migration_source)
+		return TRUE
+	// Чужая полная запись уже опубликовала корень: наш снимок устарел и не нужен.
+	if(player_save_revision(json_path) != migration_revision || !legacy_only())
+		abort_migration()
+		return TRUE
+	if(length(migration_keys))
+		var/key = migration_keys[1]
+		migration_keys.Cut(1, 2)
+		try
+			commit_branch(migration_source, key, null, migration_directories)
+		catch(var/exception/failure)
+			abort_migration()
+			error = failure.name
+			return TRUE
+		return FALSE
+	return finish_migration()
+
+/// Корень публикуется последним: до него читатели видят только старый .sav.
+/datum/player_save_json/account/proc/finish_migration()
+	var/savefile/source = migration_source
+	var/list/previous_directories = directories
+	try
+		// .sav изменился после копии - снимок устарел, перенос начнётся заново.
+		if(rustg_hash_file(RUSTG_HASH_XXH64, legacy_path) != migration_fingerprint)
+			source = null
+			abort_migration()
+			return TRUE
+		// Чтения при входе открывают свои копии: сверяемся с хешем своей.
+		verify_legacy_copy(source, migration_prefix, migration_hash)
+		player_save_apply_legacy_journal(source, legacy_path)
+		var/savefile/next_root = root_snapshot(source)
+		for(var/key in migration_directories)
+			if(copytext(key, 1, 10) != "character")
+				continue
+			source.cd = "/[key]"
+			var/name
+			source["real_name"] >> name
+			next_root[key] << name
+		source.cd = "/"
+		directories = migration_directories
+		if(!commit_tree(player_save_encode_tree(next_root)))
+			throw EXCEPTION(error || "Не удалось записать корень сохранения")
+	catch(var/exception/failure)
+		directories = previous_directories
+		source = null
+		abort_migration()
+		error = error || failure.name
+		return TRUE
+	source = null
+	cached_root = null
+	migration_published = TRUE
+	abort_migration()
 	return TRUE
 
 #undef PLAYER_SAVE_BRANCH_CACHE_LIMIT

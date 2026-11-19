@@ -1853,6 +1853,161 @@
 	TEST_ASSERT_EQUAL(names?["character1"], "Старый Персонаж", "перенос потерял слот")
 	TEST_ASSERT(dropped, "удалённые префы остались в очереди")
 
+/// Текущая версия содержимого: SAVEFILE_VERSION_MAX снят #undef в файле загрузчика.
+/datum/unit_test/player_save_json/proc/current_save_version()
+	for(var/version in 1 to 1000)
+		if(player_save_version_status(version) == -1)
+			return version
+
+/// Старый .sav на три анкеты, скрытый слот с вложенным каталогом и неизвестное поле корня.
+/datum/unit_test/player_save_json/proc/write_legacy_account()
+	var/version = current_save_version()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << version
+	legacy["default_slot"] << 2
+	legacy["tgui_panel_state"] << "из файла"
+	legacy["unknown_root"] << "неизвестное поле"
+	for(var/slot in 1 to 3)
+		legacy.cd = "/character[slot]"
+		legacy["version"] << version
+		legacy["real_name"] << "Анкета [slot]"
+		legacy["character_slot_name"] << "Слот [slot]"
+	legacy.cd = "/character128/retired"
+	legacy["value"] << 1.23456789
+	legacy.cd = "/"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+
+/datum/unit_test/player_save_json/proc/import_copies_left()
+	var/prefix = "[md5("[type]")].sav.json."
+	var/list/found = list()
+	for(var/name as anything in flist("data/player_save_tests/"))
+		if(findtext(name, prefix) && findtext(name, ".import"))
+			found += name
+	return found
+
+/// Вход до переноса читает корень и выбранный слот из копии .sav и ничего не пишет.
+/datum/unit_test/player_save_json/legacy_login_reads_without_migration/Run()
+	prepare()
+	write_legacy_account()
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	text2file(journal_block(rustg_hash_file(RUSTG_HASH_XXH64, test_path), list("tgui_panel_state" = "из журнала")), journal)
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "настройки старого сейва не прочитаны")
+	TEST_ASSERT_EQUAL(prefs.tgui_panel_state, "из журнала", "журнал одиночных настроек не применён при входе")
+	TEST_ASSERT(prefs.load_character(2, TRUE), "слот старого сейва не прочитан")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Анкета 2", "прочитан не тот слот")
+	var/list/names = prefs.player_character_names()
+	TEST_ASSERT_EQUAL(names?["character3"], "Анкета 3", "имена слотов старого сейва не прочитаны")
+	var/list/custom_names = prefs.get_slot_custom_names()
+	TEST_ASSERT_EQUAL(custom_names?[1], "Слот 1", "названия слотов старого сейва не прочитаны")
+	TEST_ASSERT_EQUAL(bm_read_metadollars_from_savefile_path(test_path), 0, "баланс старого сейва не прочитан")
+	TEST_ASSERT(!prefs.player_save_blocked, "чтение старого сейва заблокировало запись")
+	TEST_ASSERT_NULL(prefs.player_save_storage.loaded_tree, "вход разобрал старый сейв целиком")
+	TEST_ASSERT(!fexists("[test_path].json"), "вход перенёс сейв синхронно")
+	TEST_ASSERT(!fexists("[test_path].json.d/"), "вход записал разделы")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "вход изменил старый .sav")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после входа остались копии .sav")
+	fdel(journal)
+
+/// Очередь переносит аккаунт по разделу за шаг; корень публикуется последним и ничего не теряет.
+/datum/unit_test/player_save_json/legacy_migration_in_steps/Run()
+	prepare()
+	write_legacy_account()
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "настройки старого сейва не прочитаны")
+	var/list/queue_before = GLOB.player_save_migration_queue.Copy()
+	GLOB.player_save_migration_queue.Cut()
+	prefs.buffer_single_pref("tgui_panel_state", "из буфера", TRUE)
+	prefs.flush_single_prefs(TRUE)
+	var/queued = (prefs in GLOB.player_save_migration_queue)
+	GLOB.player_save_migration_queue = queue_before
+	TEST_ASSERT(queued, "перенос не поставлен в очередь")
+	var/calls = 0
+	var/published_early = FALSE
+	// Нулевой бюджет - ровно один шаг за вызов.
+	while(!prefs.run_player_save_migration(0) && calls < 20)
+		calls++
+		if(fexists("[test_path].json"))
+			published_early = TRUE
+		TEST_ASSERT(!prefs.player_save_blocked, "перенос заблокировал запись")
+	TEST_ASSERT(calls >= 5, "перенос прошёл не по шагам: [calls]")
+	TEST_ASSERT(!published_early, "корень опубликован до записи всех разделов")
+	TEST_ASSERT(prefs.flush_single_prefs(), "буфер не записан после переноса")
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/savefile/readback = reader.open()
+	TEST_ASSERT_NOTNULL(readback, "перенесённый сейв не читается: [reader.error]")
+	var/value
+	readback["unknown_root"] >> value
+	TEST_ASSERT_EQUAL(value, "неизвестное поле", "перенос потерял неизвестный ключ корня")
+	readback["tgui_panel_state"] >> value
+	TEST_ASSERT_EQUAL(value, "из буфера", "буфер не дошёл до JSON")
+	readback.cd = "/character128/retired"
+	readback["value"] >> value
+	TEST_ASSERT_EQUAL(value, 1.23456789, "перенос потерял вложенный скрытый слот")
+	var/list/names = reader.character_names(3)
+	TEST_ASSERT_EQUAL(names?["character2"], "Анкета 2", "перенос потерял анкету")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "перенос изменил старый .sav")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после переноса остались копии .sav")
+
+/// Чужая полная запись посреди переноса выигрывает; перенос тихо закрывается.
+/datum/unit_test/player_save_json/legacy_migration_yields_to_writer/Run()
+	prepare()
+	write_legacy_account()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за один шаг")
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за два шага")
+	var/datum/player_save_json/account/writer = new(test_path)
+	var/savefile/source = writer.open()
+	source["writer_marker"] << "запись другого датума"
+	TEST_ASSERT(writer.commit(source), "полная запись не прошла")
+	TEST_ASSERT(prefs.run_player_save_migration(0), "перенос не уступил записи")
+	TEST_ASSERT(!prefs.player_save_blocked, "уступивший перенос заблокировал запись")
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/document = reader.snapshot()
+	TEST_ASSERT_EQUAL(document?.read("writer_marker"), "запись другого датума", "перенос затёр чужую запись")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после прерванного переноса остались копии .sav")
+
+/// Частичную копию .sav нельзя записать, а удалённые префы закрывают незаконченный перенос.
+/datum/unit_test/player_save_json/legacy_view_is_read_only/Run()
+	prepare()
+	write_legacy_account()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/view = account.legacy_view("/character1")
+	TEST_ASSERT_NOTNULL(view, "частичная копия не прочитана: [account.error]")
+	TEST_ASSERT(!account.commit(view, "/character1"), "частичная копия записана")
+	TEST_ASSERT(!fexists("[test_path].json"), "запись частичной копии опубликовала корень")
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за один шаг")
+	qdel(prefs)
+	owned_preferences = null
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "удалённые префы оставили копию .sav")
+	TEST_ASSERT(!fexists("[test_path].json"), "удалённые префы опубликовали незаконченный перенос")
+
+/// Старые взаимодействия корня переносятся в слот уже по JSON: частичная копия этого не может.
+/datum/unit_test/player_save_json/legacy_custom_interactions_migrate_first/Run()
+	prepare()
+	write_legacy_account()
+	var/savefile/legacy = new(test_path)
+	var/datum/interaction/custom/custom = new
+	custom.name = "Test Interaction"
+	custom.message = "Test message."
+	legacy["custom_interactions"] << list(custom)
+	legacy.Flush()
+	legacy = null
+	sleep(1)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_character(1, TRUE), "слот со старыми взаимодействиями не загружен")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старые взаимодействия не перенесены")
+	TEST_ASSERT(fexists("[test_path].json"), "перенос взаимодействий прошёл мимо JSON")
+	var/list/names = prefs.player_character_names()
+	TEST_ASSERT_EQUAL(names?["character3"], "Анкета 3", "перенос взаимодействий потерял другой слот")
+
 #ifdef PLAYER_SAVE_BENCHMARK
 /// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.
 /datum/unit_test/player_save_json/benchmark/Run()

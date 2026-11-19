@@ -1,5 +1,5 @@
 /datum/preferences
-	var/tmp/datum/player_save_json/player_save_storage
+	var/tmp/datum/player_save_json/account/player_save_storage
 	var/tmp/player_save_blocked = FALSE
 
 /datum/preferences/proc/player_save_error(message)
@@ -29,9 +29,74 @@
 		player_save_error(storage.error)
 	return names
 
+/// Ckey для логов: у префов без клиента он берётся из пути сейва.
+/datum/preferences/proc/player_save_ckey()
+	if(parent?.ckey)
+		return parent.ckey
+	var/list/parts = splittext(path, "/")
+	return length(parts) >= 2 ? parts[length(parts) - 1] : (path || "?")
+
+/// Шаги переноса старого .sav в JSON, пока не выйдет budget_ms (хотя бы один шаг).
+/// TRUE - аккаунт уже в JSON или переносить нечего; FALSE - перенос не закончен или запись заблокирована.
+/datum/preferences/proc/run_player_save_migration(budget_ms = INFINITY)
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	if(!storage || player_save_blocked)
+		return FALSE
+	var/started = TICK_USAGE_REAL
+	var/steps = 0
+	// Второй заход - если .sav поменялся по ходу переноса и копию пришлось снять заново.
+	for(var/attempt in 1 to 2)
+		if(!storage.migration_active())
+			if(!storage.legacy_only())
+				return TRUE
+			if(steps && TICK_USAGE_TO_MS(started) >= budget_ms)
+				return FALSE
+			var/begin_ms = blocking_call_start()
+			var/begin_usage = TICK_USAGE_REAL
+			var/opened = storage.begin_migration()
+			storage.note_migration_step(TICK_USAGE_TO_MS(begin_usage))
+			steps++
+			blocking_call_finish(begin_ms, "JSON (перенос)", "[player_save_ckey()]: копия .sav [storage.migration_size_kb] КБ")
+			if(!opened)
+				if(storage.error)
+					player_save_error(storage.error)
+					return FALSE
+				return !storage.legacy_only()
+		while(storage.migration_active())
+			if(steps && TICK_USAGE_TO_MS(started) >= budget_ms)
+				return FALSE
+			var/step_ms = blocking_call_start()
+			var/step_usage = TICK_USAGE_REAL
+			var/label = storage.migration_next_label()
+			storage.migration_step()
+			storage.note_migration_step(TICK_USAGE_TO_MS(step_usage))
+			steps++
+			blocking_call_finish(step_ms, "JSON (перенос)", "[player_save_ckey()]: [label]")
+		if(storage.error)
+			player_save_error(storage.error)
+			return FALSE
+		if(storage.migration_published)
+			storage.migration_published = FALSE
+			log_game("Сохранения: [player_save_ckey()] перенесены в JSON за [round(storage.migration_work_ms)] мс, слотов [storage.migration_slots], .sav [storage.migration_size_kb] КБ, шагов [storage.migration_steps], самый долгий [round(storage.migration_worst_ms)] мс, за [round((world.time - storage.migration_started_at) / 10, 0.1)] с.")
+			return TRUE
+		if(!storage.legacy_only())
+			return TRUE
+	return FALSE
+
+/// Запись и полное чтение работают с JSON: старый .sav сначала переносится целиком.
+/datum/preferences/proc/ensure_player_save_migrated()
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	if(!storage || player_save_blocked)
+		return FALSE
+	if(!storage.migration_active() && !storage.legacy_only())
+		return TRUE
+	return run_player_save_migration()
+
 /datum/preferences/proc/open_player_save(scope)
 	var/datum/player_save_json/storage = get_player_save_storage()
 	if(!storage || player_save_blocked)
+		return null
+	if(!ensure_player_save_migrated())
 		return null
 	var/savefile/result = storage.open(scope)
 	if(!result)
@@ -48,6 +113,8 @@
 /datum/preferences/proc/open_player_document()
 	var/datum/player_save_json/storage = get_player_save_storage()
 	if(!storage || player_save_blocked)
+		return null
+	if(!ensure_player_save_migrated())
 		return null
 	var/datum/player_save_document/result = storage.snapshot()
 	if(!result)
@@ -92,28 +159,13 @@
 				player_save_error(document.storage.error)
 		catch(var/exception/failure)
 			player_save_error(failure.name)
-	var/slots = 0
-	var/datum/player_save_json/storage = get_player_save_storage()
-	var/migrating = !document && storage && !fexists(storage.json_path) && fexists(storage.legacy_path)
 	if(!document)
-		if(migrating)
-			var/savefile/source = result
-			var/original_directory = source.cd
-			source.cd = "/"
-			for(var/key in source.dir)
-				if(copytext(key, 1, 10) == "character")
-					slots++
-			source.cd = original_directory
 		saved = commit_player_save(result, "/")
-	var/blocking_kind = migrating ? "JSON (перенос)" : "JSON (полные префы)"
 	if(!saved)
 		pending_single_prefs = pending_before_write
-		blocking_call_finish(blocking_started_ms, blocking_kind, "ошибка записи")
+		blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "ошибка записи")
 		return FALSE
-	if(migrating)
-		var/cost_ms = isnull(blocking_started_ms) ? null : SStick_spikes?.now_ms() - blocking_started_ms
-		log_game("Сохранения: [parent?.ckey || path] перенесены в JSON[isnull(cost_ms) ? "" : " за [round(cost_ms)] мс"], слотов [slots].")
-	blocking_call_finish(blocking_started_ms, blocking_kind, migrating ? "[parent?.ckey || "?"], слотов [slots]" : "настройки")
+	blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "настройки")
 	if(parent && !silent)
 		to_chat(parent, span_notice("Настройки сохранены!"))
 	return result

@@ -325,6 +325,9 @@
 	var/list/loaded_tree
 	/// JSON неизменяемых узлов используется повторно при сравнении и публикации снимка.
 	var/list/node_json
+	/// Имя и хеш последней открытой копии старого .sav.
+	var/legacy_copy_prefix
+	var/legacy_copy_hash
 
 /datum/player_save_json/New(source_path)
 	legacy_path = source_path
@@ -456,6 +459,79 @@
 	target.dir -= PREF_JOURNAL_MERGING_SAVE_KEY
 	return TRUE
 
+/// Узел анкеты в корне старого сейва: character1, character2...
+/proc/player_save_is_slot_key(key)
+	if(copytext(key, 1, 10) != "character")
+		return FALSE
+	var/slot = text2num(copytext(key, 10))
+	return slot && key == "character[slot]"
+
+/// Копия старого .sav: даже чтение отсутствующего ключа изменяет savefile BYOND. Вызывающий
+/// обнуляет savefile и только потом зовёт close_legacy_copy(): BYOND дописывает файл при удалении.
+/datum/player_save_json/proc/open_legacy_copy()
+	var/static/import_sequence = 0
+	var/import_id = md5("[world.realtime]-[world.timeofday]-[++import_sequence]")
+	legacy_copy_prefix = "[json_path].[import_id].import"
+	var/import_path = "[legacy_copy_prefix].sav"
+	if(!fcopy(legacy_path, import_path))
+		throw EXCEPTION("Не удалось скопировать старое сохранение")
+	legacy_copy_hash = rustg_hash_file(RUSTG_HASH_MD5, import_path)
+	var/savefile/legacy = new(import_path)
+	legacy.Flush()
+	if(rustg_hash_file(RUSTG_HASH_MD5, import_path) != legacy_copy_hash)
+		throw EXCEPTION("BYOND исправил повреждённый старый файл; требуется проверка резервной копии")
+	return legacy
+
+/// Звать после чтения и до любой записи в копию: BYOND замечает повреждение по ходу чтения.
+/datum/player_save_json/proc/verify_legacy_copy(savefile/legacy, prefix, expected_hash = legacy_copy_hash)
+	legacy.Flush()
+	if(fexists("[prefix]_bad_000.sav") || rustg_hash_file(RUSTG_HASH_MD5, "[prefix].sav") != expected_hash)
+		throw EXCEPTION("BYOND обнаружил повреждение старого файла; требуется проверка резервной копии")
+
+/datum/player_save_json/proc/close_legacy_copy(prefix)
+	if(!prefix)
+		return
+	fdel("[prefix].sav")
+	fdel("[prefix]_bad_000.sav")
+
+/// Корень и один раздел старого .sav без разбора остальных анкет: вход игрока до переноса.
+/// Только для чтения - полный снимок по такому savefile потерял бы остальные слоты, commit его отвергает.
+/datum/player_save_json/proc/legacy_view(scope)
+	error = null
+	var/wanted = scope ? copytext(scope, 2) : null
+	var/savefile/view = new
+	var/savefile/legacy
+	var/prefix
+	try
+		legacy = open_legacy_copy()
+		prefix = legacy_copy_prefix
+		legacy.cd = "/"
+		for(var/key in legacy.dir)
+			var/value
+			legacy[key] >> value
+			view[key] << value
+			if(key != wanted && player_save_is_slot_key(key))
+				continue
+			legacy.cd = "/[key]"
+			if(length(legacy.dir))
+				view.cd = "/[key]"
+				player_save_copy_tree(legacy, view)
+				view.cd = "/"
+			legacy.cd = "/"
+		verify_legacy_copy(legacy, prefix)
+		legacy = null
+		close_legacy_copy(prefix)
+		prefix = null
+		player_save_apply_legacy_journal(view, legacy_path)
+	catch(var/exception/failure)
+		legacy = null
+		close_legacy_copy(prefix)
+		error = "Не удалось прочитать старое сохранение: [failure.name]"
+		return null
+	view.cd = "/"
+	view[PLAYER_SAVE_LEGACY_VIEW_KEY] << TRUE
+	return view
+
 /datum/player_save_json/proc/load_tree(required_generation, validate = TRUE)
 	error = null
 	directories = null
@@ -522,34 +598,21 @@
 			content_json = best["content_json"]
 			node_json = best["node_json"]
 		else if(fexists(legacy_path))
-			// Открываем копию: даже чтение отсутствующего ключа изменяет savefile BYOND.
-			var/static/import_sequence = 0
-			var/import_id = md5("[world.realtime]-[world.timeofday]-[++import_sequence]")
-			var/import_prefix = "[json_path].[import_id].import"
-			var/import_path = "[import_prefix].sav"
 			var/savefile/legacy
+			var/import_prefix
 			try
-				if(!fcopy(legacy_path, import_path))
-					throw EXCEPTION("Не удалось скопировать старое сохранение")
-				var/before_open = rustg_hash_file(RUSTG_HASH_MD5, import_path)
-				legacy = new(import_path)
-				legacy.Flush()
-				if(rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
-					throw EXCEPTION("BYOND исправил повреждённый старый файл; требуется проверка резервной копии")
+				legacy = open_legacy_copy()
+				import_prefix = legacy_copy_prefix
 				tree = player_save_encode_tree(legacy)
-				legacy.Flush()
-				if(fexists("[import_prefix]_bad_000.sav") || rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
-					throw EXCEPTION("BYOND обнаружил повреждение старого файла; требуется проверка резервной копии")
+				verify_legacy_copy(legacy, import_prefix)
 				if(player_save_apply_legacy_journal(legacy, legacy_path))
 					tree = player_save_encode_tree(legacy)
 			catch(var/exception/failure)
 				legacy = null
-				fdel(import_path)
-				fdel("[import_prefix]_bad_000.sav")
+				close_legacy_copy(legacy_copy_prefix)
 				throw failure
 			legacy = null
-			fdel(import_path)
-			fdel("[import_prefix]_bad_000.sav")
+			close_legacy_copy(import_prefix)
 		if(!tree)
 			tree = list()
 		if(validate && !best)
@@ -623,8 +686,17 @@
 		throw EXCEPTION("Не удалось записать содержимое файла JSON")
 	return TRUE
 
+/proc/player_save_is_legacy_view(savefile/source)
+	var/original_directory = source.cd
+	source.cd = "/"
+	. = (PLAYER_SAVE_LEGACY_VIEW_KEY in source.dir)
+	source.cd = original_directory
+
 /datum/player_save_json/proc/commit(savefile/source, scope)
 	if(error || !source)
+		return FALSE
+	if(player_save_is_legacy_view(source))
+		error = "Частичная копия старого сохранения не записывается"
 		return FALSE
 	var/original_directory = source.cd
 	var/list/tree

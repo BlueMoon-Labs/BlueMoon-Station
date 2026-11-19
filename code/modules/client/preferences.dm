@@ -660,6 +660,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
 	flush_single_prefs()
 	GLOB.player_save_migration_queue -= src
+	// Перенос без буфера никому не нужен до следующей правки; копия .sav закрывается.
+	player_save_storage?.abort_migration()
 	if(pref_queue)
 		deltimer(pref_queue)
 		pref_queue = null

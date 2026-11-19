@@ -106,13 +106,21 @@ SUBSYSTEM_DEF(metadollars)
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
 	if(!prefs_path)
 		return 0
-	var/datum/player_save_json/storage = new /datum/player_save_json/account(prefs_path)
+	var/datum/player_save_json/account/storage = new(prefs_path)
 	if(!storage.exists())
 		return 0
-	var/datum/player_save_document/document = storage.snapshot()
-	if(!document)
-		return null
-	var/amount = document.read("metadollars")
+	var/amount
+	if(storage.legacy_only())
+		// Старый .sav читается без разбора анкет: нужен один ключ корня.
+		var/savefile/view = storage.legacy_view("/")
+		if(!view)
+			return null
+		view["metadollars"] >> amount
+	else
+		var/datum/player_save_document/document = storage.snapshot()
+		if(!document)
+			return null
+		amount = document.read("metadollars")
 	return isnum(amount) ? max(0, round(amount)) : 0
 
 /proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
