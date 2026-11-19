@@ -53,6 +53,43 @@
 	name = "HECU leader spawn landmark"
 	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/leader
 
+// Лендмарки для карты: место особого пилона (испытание Нихиланта), выход из
+// комплекса и точка в другой части комплекса - оба односторонние, без пути
+// обратно. Объявлены здесь, вместе с остальными blackmesa-лендмарками.
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site
+	name = "Nihilanth Pylon Site Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+	/// ID испытания, с которым связан этот лендмарк. Совпадает с site_id
+	/// пилона /obj/structure/xen_pylon/nihilanth. null = авто-привязка по z.
+	var/site_id = null
+	/// Лендмарк исчерпан: связанный пилон уничтожен, точка больше не активна.
+	var/site_used = FALSE
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/Initialize(mapload)
+	. = ..()
+	GLOB.nihilanth_sites += src
+	GLOB.nihilanth_site_ids[src] = site_id
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/Destroy()
+	GLOB.nihilanth_sites -= src
+	GLOB.nihilanth_site_ids -= src
+	GLOB.nihilanth_site_used -= src
+	..()
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_exit
+	name = "Nihilanth Exit Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
+/obj/effect/landmark/awaymission/blackmesa/nihilanth_complex
+	name = "Nihilanth Complex Landmark"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	layer = MID_LANDMARK_LAYER
+
 /datum/antagonist/ghost_role/mesa_hecu_war
 	name = "HECU War Reinforcements"
 

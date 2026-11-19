@@ -1698,7 +1698,13 @@
 	spread = no_bipod_spread
 	START_PROCESSING(SSobj, src)
 
+/// Моб, на котором сейчас висят сигнал-подписки сошек. Нужен, чтобы снять
+/// их в Destroy/dropped: без этого удаление ствола в руках или смерть
+/// носителя оставляли мёртвые PROC_REF'ы в comp_lookup моба.
+var/mob/living/bipod_signal_user
+
 /obj/item/gun/ballistic/automatic/m249/Destroy()
+	clear_bipod_signals()
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
@@ -1706,21 +1712,42 @@
 	process_heat_cooldown()
 	check_bipod_stability()
 
+/obj/item/gun/ballistic/automatic/m249/proc/clear_bipod_signals()
+	if(!istype(bipod_signal_user) || QDELETED(bipod_signal_user))
+		bipod_signal_user = null
+		return
+	UnregisterSignal(bipod_signal_user, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(bipod_signal_user, COMSIG_LIVING_RESTING)
+	UnregisterSignal(bipod_signal_user, COMSIG_PARENT_QDELETING)
+	bipod_signal_user = null
+
 /obj/item/gun/ballistic/automatic/m249/pickup(mob/user)
 	. = ..()
 	if(bipod_deployed)
 		collapse_bipod(user)
 	if(istype(user, /mob/living))
+		clear_bipod_signals()
+		bipod_signal_user = user
 		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_mob_move))
 		RegisterSignal(user, COMSIG_LIVING_RESTING, PROC_REF(on_mob_rest))
+		RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_signal_user_qdel), override = TRUE)
+
+/obj/item/gun/ballistic/automatic/m249/proc/on_signal_user_qdel(datum/source, forced)
+	SIGNAL_HANDLER
+	// Носитель умирает: comp_lookup умрёт вместе с ним, но записи в
+	// signal_procs самого ствола надо снять, иначе ключ на мёртвый моб
+	// останется в списке до уничтожения оружия.
+	if(istype(source, /mob/living))
+		UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(source, COMSIG_LIVING_RESTING)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	bipod_signal_user = null
 
 /obj/item/gun/ballistic/automatic/m249/dropped(mob/user)
 	. = ..()
 	if(bipod_deployed)
 		collapse_bipod(user)
-	if(istype(user, /mob/living))
-		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-		UnregisterSignal(user, COMSIG_LIVING_RESTING)
+	clear_bipod_signals()
 
 /obj/item/gun/ballistic/automatic/m249/proc/on_mob_move(atom/old_loc, dir)
 	SIGNAL_HANDLER

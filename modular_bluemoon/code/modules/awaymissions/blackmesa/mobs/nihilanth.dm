@@ -157,12 +157,14 @@
 	if(!islist(site_and_pylon) || length(site_and_pylon) < 2)
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return FALSE
-	var/site = site_and_pylon[1]
-	var/pylon = site_and_pylon[2]
-	var/site_landmark = length(site_and_pylon) >= 3 ? site_and_pylon[3] : null
-	if(!istype(site, /turf) || !istype(pylon, /obj/structure/xen_pylon/nihilanth))
+	var/site_raw = site_and_pylon[1]
+	var/pylon_raw = site_and_pylon[2]
+	var/site_landmark_raw = length(site_and_pylon) >= 3 ? site_and_pylon[3] : null
+	if(!istype(site_raw, /turf) || !istype(pylon_raw, /obj/structure/xen_pylon/nihilanth))
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return FALSE
+	var/turf/site = site_raw
+	var/obj/structure/xen_pylon/nihilanth/pylon = pylon_raw
 	// Портал ставим ДО включения неуязвимости: если он не встанет, босс
 	// остался бы в trial_active без единого пути к пилону - softlock.
 	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(home)
@@ -183,7 +185,8 @@
 	trial_pylon.trial_home = home
 	// Привязка лендмарка к пилону: при уничтожении пилона лендмарк
 	// деактивируется (site_used) и больше не выбирается как точка прибытия.
-	trial_pylon.linked_site = istype(site_landmark, /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site) ? site_landmark : null
+	// Тип лендмарка здесь не резолвится - проверка внутри set_linked_site.
+	trial_pylon.set_linked_site(site_landmark_raw)
 
 	trial_active = TRUE
 	trial_site = site
@@ -211,16 +214,19 @@
 		if(P && !QDELETED(P) && !P.used)
 			free_pylons += P
 	// Активные лендмарки: не деактивированные и стоящие на валидном турфе.
+	// Подтип nihilanth_pylon_site не резолвится как тип переменной в этом
+	// файле - site_used/site_id читаются из глобальных реестров.
 	var/list/site_landmarks = list()
-	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in GLOB.landmarks_list)
-		if(!L.site_used && istype(get_turf(L)))
-			site_landmarks += L
+	for(var/obj/effect/landmark/awaymission/blackmesa/L in GLOB.nihilanth_sites)
+		if(GLOB.nihilanth_site_used[L] || !get_turf(L))
+			continue
+		site_landmarks += L
 	var/list/options = list()
 	var/list/claimed = list()
 	var/branch = "site+pylon"
 	for(var/obj/structure/xen_pylon/nihilanth/P in free_pylons)
-		var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L = find_site_for_pylon(P, site_landmarks, claimed)
-		if(!istype(L))
+		var/obj/effect/landmark/L = find_site_for_pylon(P, site_landmarks, claimed)
+		if(!istype(L) || !get_turf(L))
 			continue
 		var/turf/T = get_turf(L)
 		if(!istype(T) || !isopenturf(T))
@@ -237,7 +243,7 @@
 		// Особых пилонов на карте меньше, чем HP-порогов - ставим новый
 		// рядом с точкой испытания, иначе третий разлом никогда не откроется.
 		branch = "landmark+new-pylon"
-		for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
+		for(var/obj/effect/landmark/awaymission/blackmesa/L in site_landmarks)
 			var/turf/T = get_turf(L)
 			if(!istype(T) || !isopenturf(T))
 				continue
@@ -259,7 +265,7 @@
 	if(!options.len)
 		log_world("NIHILANTH: pick_trial_site: NO options. pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len] landmarks_total=[length(GLOB.landmarks_list)]")
 		return null
-	var/picked = pick(options)
+	var/list/picked = pick(options)
 	var/turf/s = islist(picked) && picked.len >= 1 ? picked[1] : null
 	var/atom/pylon_t = islist(picked) && picked.len >= 2 ? picked[2] : null
 	var/turf/pt = istype(pylon_t) ? get_turf(pylon_t) : null
@@ -273,16 +279,16 @@
 // пилонам занять один и тот же лендмарк в рамках одного выбора.
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/find_site_for_pylon(obj/structure/xen_pylon/nihilanth/P, list/site_landmarks, list/claimed)
 	if(P.site_id)
-		for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
-			if(L.site_id == P.site_id && !(L in claimed))
+		for(var/obj/effect/landmark/awaymission/blackmesa/L in site_landmarks)
+			if(GLOB.nihilanth_site_ids[L] == P.site_id && !(L in claimed))
 				return L
 		return null
 	var/turf/PT = get_turf(P)
 	if(!istype(PT))
 		return null
-	var/best = null
+	var/obj/effect/landmark/best = null
 	var/best_dist = 999999
-	for(var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/L in site_landmarks)
+	for(var/obj/effect/landmark/awaymission/blackmesa/L in site_landmarks)
 		if(L in claimed)
 			continue
 		var/turf/T = get_turf(L)

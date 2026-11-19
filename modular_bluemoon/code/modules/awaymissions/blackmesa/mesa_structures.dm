@@ -406,6 +406,10 @@
 /obj/effect/portal/mesa_rift/nihilanth_rift
 	name = "nihilanth rift"
 	desc = "Разлом, разорванный силой Нихиланта."
+	// Канал червоточины: НЕ подхватывает GLOB.bluespace_teleport_noise -
+	// блюспейс-шторм не разбрасывает прибытие по соседним тайлам, игроки
+	// гарантированно встают ровно на тайл лендмарка испытания.
+	teleport_channel = TELEPORT_CHANNEL_WORMHOLE
 
 // Сам босс не должен проваливаться в собственный разлом испытания: портал
 // стоит у него под ногами, а teleport() пропускает любого моба.
@@ -420,34 +424,15 @@
 	log_world("NIHILANTH-RIFT: teleport mob=[M] from=[orig_str] real_target=[rt_str] hard_target=[ht_str] linked=[istype(linked)] hardlinked=[hardlinked]")
 	return ..()
 
-// Лендмарки для карты: место особого пилона (испытание), выход из комплекса
-// и точка в другой части комплекса - оба односторонние, без пути обратно.
-/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site
-	name = "Nihilanth Pylon Site Landmark"
-	invisibility = INVISIBILITY_ABSTRACT
-	anchored = TRUE
-	layer = MID_LANDMARK_LAYER
-	/// ID испытания, с которым связан этот лендмарк. Совпадает с site_id
-	/// пилона /obj/structure/xen_pylon/nihilanth. null = авто-привязка по z.
-	var/site_id = null
-	/// Лендмарк исчерпан: связанный пилон уничтожен, точка больше не активна.
-	var/site_used = FALSE
-
-/obj/effect/landmark/awaymission/blackmesa/nihilanth_exit
-	name = "Nihilanth Exit Landmark"
-	invisibility = INVISIBILITY_ABSTRACT
-	anchored = TRUE
-	layer = MID_LANDMARK_LAYER
-
-/obj/effect/landmark/awaymission/blackmesa/nihilanth_complex
-	name = "Nihilanth Complex Landmark"
-	invisibility = INVISIBILITY_ABSTRACT
-	anchored = TRUE
-	layer = MID_LANDMARK_LAYER
-
 // Все особые ксено-пилоны саморегистрируются здесь - испытаниям Нихиланта
 // не нужен проход по world (сотни тысяч атомов) ради горстки пилонов.
 GLOBAL_VAR_INIT(nihilanth_pylons, list())
+GLOBAL_VAR_INIT(nihilanth_sites, list())
+/// Ассоциативные реестры лендмарков испытаний: site_id по инстансу и
+/// список пройденных (site_used) - читаются из nihilanth.dm без
+/// типизированной ссылки на подтип лендмарка.
+GLOBAL_VAR_INIT(nihilanth_site_ids, list())
+GLOBAL_VAR_INIT(nihilanth_site_used, list())
 
 // Особый подвид ксено-пилона: aegis-щит для ЛЮБОГО живого существа в радиусе
 // (игроки получают xen_aegis, блокирующий apply_damage), а не только для ксеномобов.
@@ -478,6 +463,11 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	/// Лендмарк, к которому привязан пилон в текущем испытании -
 	/// при уничтожении пилона он деактивируется (site_used = TRUE).
 	var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/linked_site
+
+// Прокси-установка привязки: в nihilanth.dm тип лендмарка не резолвится,
+// поэтому сюда приходит anybody-ссылка, а типизация проверяется здесь.
+/obj/structure/xen_pylon/nihilanth/proc/set_linked_site(site)
+	linked_site = istype(site, /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site) ? site : null
 
 /obj/structure/xen_pylon/nihilanth/Initialize(mapload)
 	. = ..()
@@ -583,8 +573,11 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 	trial_home = null
 	// Пилон уничтожен - связанный лендмарк деактивируется: точка прибытия
 	// больше не выбирается, следующий разлом ведёт к другим сайтам.
+	// nihilanth.dm читает site_used из GLOB.nihilanth_site_used - тип
+	// лендмарка там как переменная не резолвится.
 	if(istype(site) && !QDELETED(site))
 		site.site_used = TRUE
+		GLOB.nihilanth_site_used[site] = TRUE
 	. = ..()
 	if(was_trial)
 		if(istype(boss) && !QDELETED(boss))
