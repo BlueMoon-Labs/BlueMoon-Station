@@ -21,11 +21,13 @@
 	var/next_bundle_at = 0
 	var/bundle_uid = 0
 
-/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX.
+/// Раз в минуту из fire(): просроченные пачки снимаются, новые выставляются, пока их меньше BUNDLES_MAX; партнёр, чьи пачки не берут, выставляет реже.
 /datum/controller/subsystem/market/proc/tick_bundles()
 	for(var/datum/supply_pack/bundle/bundle as anything in bundles)
 		if(world.time >= bundle.expires_at)
 			bundles -= bundle
+			var/datum/trade_partner/seller = get_partner(bundle.seller_id)
+			seller?.note_bundle_ignored(bundle)
 			qdel(bundle)
 	if(!next_bundle_at)
 		next_bundle_at = world.time + rand(BUNDLE_GAP_MIN, BUNDLE_GAP_MAX)
@@ -33,8 +35,14 @@
 	if(world.time < next_bundle_at)
 		return
 	next_bundle_at = world.time + rand(BUNDLE_GAP_MIN, BUNDLE_GAP_MAX)
-	if(length(bundles) < BUNDLES_MAX)
-		generate_bundle()
+	if(length(bundles) >= BUNDLES_MAX)
+		return
+	var/list/sellers = bundle_sellers()
+	if(!length(sellers))
+		return
+	var/datum/trade_partner/seller = pick(sellers)
+	if(prob(seller.bundle_spawn_chance()))
+		generate_bundle(seller)
 
 /// Партнёры, у которых есть что сложить в пачку: открытые, не под эмбарго, не контрабандные.
 /datum/controller/subsystem/market/proc/bundle_sellers()
@@ -110,6 +118,9 @@
 		if(!account)
 			return FALSE
 	SSmarket.bundles -= bundle
+	var/datum/trade_partner/seller = SSmarket.get_partner(bundle.seller_id)
+	if(seller)
+		seller.bundles_ignored = 0
 	var/datum/supply_order/order = econ_cargo_new_order(user, bundle, "", account, FALSE)
 	order.partner_id = bundle.seller_id
 	order.contraband_supply = show_contraband

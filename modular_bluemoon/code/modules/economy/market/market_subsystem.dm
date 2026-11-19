@@ -23,6 +23,14 @@ SUBSYSTEM_DEF(market)
 	var/offers_max = 2
 	/// Шанс в процентах, что партнёр со свободным местом выставит спецзаказ
 	var/offer_chance = 50
+	/// Сколько невзятых спецзаказов не контрабандных партнёров бывает на доске сразу
+	var/offers_board_max = 5
+	/// Во сколько раз падает шанс нового спецзаказа или пачки скупки партнёра за каждый снятый невзятым подряд, и вес этого товара
+	var/offer_ignored_factor = 0.5
+	/// Ниже этого шанса в процентах невзятые его не опускают
+	var/offer_ignored_chance_min = 15
+	/// Вес товара, который станция за смену уже сдавала партнёру, против 1 у остальных
+	var/offer_delivered_weight = 3
 	/// Срок выполнения взятого спецзаказа
 	var/offer_deadline_minutes = 30
 	var/next_offers = 0
@@ -75,6 +83,10 @@ SUBSYSTEM_DEF(market)
 	offer_minutes = SSmarket.offer_minutes
 	offers_max = SSmarket.offers_max
 	offer_chance = SSmarket.offer_chance
+	offers_board_max = SSmarket.offers_board_max
+	offer_ignored_factor = SSmarket.offer_ignored_factor
+	offer_ignored_chance_min = SSmarket.offer_ignored_chance_min
+	offer_delivered_weight = SSmarket.offer_delivered_weight
 	offer_deadline_minutes = SSmarket.offer_deadline_minutes
 	next_offers = SSmarket.next_offers
 	companies = SSmarket.companies
@@ -157,6 +169,10 @@ SUBSYSTEM_DEF(market)
 	offer_minutes = initial(offer_minutes)
 	offers_max = initial(offers_max)
 	offer_chance = initial(offer_chance)
+	offers_board_max = initial(offers_board_max)
+	offer_ignored_factor = initial(offer_ignored_factor)
+	offer_ignored_chance_min = initial(offer_ignored_chance_min)
+	offer_delivered_weight = initial(offer_delivered_weight)
 	offer_deadline_minutes = initial(offer_deadline_minutes)
 	company_event_chance = initial(company_event_chance)
 	work_stock_cap = initial(work_stock_cap)
@@ -217,6 +233,30 @@ SUBSYSTEM_DEF(market)
 			offer_chance = spawn_chance
 		else
 			. += "market.offer_chance: нужно число 0..100"
+	var/board_max = section["offers_board_max"]
+	if(!isnull(board_max))
+		if(isnum(board_max) && board_max >= 0 && round(board_max) == board_max)
+			offers_board_max = board_max
+		else
+			. += "market.offers_board_max: нужно целое не меньше 0"
+	var/ignored_factor = section["offer_ignored_factor"]
+	if(!isnull(ignored_factor))
+		if(isnum(ignored_factor) && ignored_factor >= 0 && ignored_factor <= 1)
+			offer_ignored_factor = ignored_factor
+		else
+			. += "market.offer_ignored_factor: нужно число 0..1"
+	var/ignored_chance_min = section["offer_ignored_chance_min"]
+	if(!isnull(ignored_chance_min))
+		if(isnum(ignored_chance_min) && ignored_chance_min >= 0 && ignored_chance_min <= 100)
+			offer_ignored_chance_min = ignored_chance_min
+		else
+			. += "market.offer_ignored_chance_min: нужно число 0..100"
+	var/delivered_weight = section["offer_delivered_weight"]
+	if(!isnull(delivered_weight))
+		if(isnum(delivered_weight) && delivered_weight >= 1)
+			offer_delivered_weight = delivered_weight
+		else
+			. += "market.offer_delivered_weight: нужно число не меньше 1"
 	var/deadline_minutes = section["offer_deadline_minutes"]
 	if(!isnull(deadline_minutes))
 		if(isnum(deadline_minutes) && deadline_minutes >= 1)
@@ -774,14 +814,22 @@ SUBSYSTEM_DEF(market)
 			best_multiplier = multiplier
 	return best
 
-/// Открытые партнёры со свободным местом с шансом offer_chance выставляют по спецзаказу.
+/// Открытые партнёры со свободным местом выставляют по спецзаказу с шансом offer_spawn_chance(), пока на доске меньше offers_board_max невзятых; контрабандный партнёр места на доске не занимает.
 /datum/controller/subsystem/market/proc/generate_offers()
-	for(var/id in partners)
+	var/board = 0
+	for(var/datum/market_offer/offer as anything in all_offers())
+		if(!offer.accepted && !offer.contraband())
+			board++
+	for(var/id in shuffle(partners))
 		var/datum/trade_partner/partner = partners[id]
-		if(partner.unlocked && !partner.embargoed() && length(partner.offer_items) && length(partner.offers) < offers_max && prob(offer_chance))
-			partner.new_offer()
+		if(!partner.unlocked || partner.embargoed() || !length(partner.offer_items) || length(partner.offers) >= offers_max)
+			continue
+		if(!partner.contraband && board >= offers_board_max)
+			continue
+		if(prob(partner.offer_spawn_chance()) && partner.new_offer() && !partner.contraband)
+			board++
 
-/// Просроченный взятый спецзаказ проваливается, невзятый снимается молча.
+/// Просроченный взятый спецзаказ проваливается, невзятый снимается без штрафа, но партнёр после него выставляет реже.
 /datum/controller/subsystem/market/proc/expire_offers()
 	for(var/datum/market_offer/offer as anything in all_offers())
 		if(world.time <= offer.deadline)
@@ -789,6 +837,8 @@ SUBSYSTEM_DEF(market)
 		if(offer.accepted)
 			offer.fail()
 		else
+			var/datum/trade_partner/partner = offer.get_partner()
+			partner?.note_offer_ignored(offer)
 			qdel(offer)
 
 /datum/controller/subsystem/market/proc/all_offers()

@@ -84,6 +84,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	if(!outpost)
 		station_involved = TRUE
 	deadline = world.time + SSmarket.offer_deadline_minutes MINUTES
+	var/datum/trade_partner/partner = get_partner()
+	partner.note_offer_accepted()
 	log_econ("[user ? key_name(user) : "Снабжение"] взял спецзаказ #[uid] партнёра [partner_name()][outpost ? " сканером аванпоста" : ""]: [quantity] x [wanted_name] по [unit_reward()] кр.")
 	return TRUE
 
@@ -151,6 +153,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	add_premium(SSeconomy.get_dep_account(ACCOUNT_CAR), premium)
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(.)
+	partner.note_offer_delivery(src)
 	log_econ("Спецзаказ #[uid] партнёра [partner.name]: принято [units] x [wanted_name] ([delivered]/[quantity]), выплата [.] кр., премия к выполнению [premium] кр.")
 	add_note(report, "Спецзаказ [partner.name]: принято [units] шт. \"[wanted_name]\" ([delivered] из [quantity]), [.] кр.")
 	if(delivered >= quantity)
@@ -233,6 +236,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	take(thing, units, thing.drop_location())
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(revenue)
+	partner.note_offer_delivery(src)
 	var/memo = "Спецзаказ: [partner.name]"
 	var/datum/bank_account/account = econ_account_of(shipper)
 	var/share = (account && account != budget) ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
