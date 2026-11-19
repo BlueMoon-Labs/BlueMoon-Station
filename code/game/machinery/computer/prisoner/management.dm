@@ -35,6 +35,15 @@
 	var/list/data = list()
 	data["logged_in"] = screen
 
+	if(!screen)
+		data["has_id"] = FALSE
+		data["id_name"] = null
+		data["id_points"] = 0
+		data["id_goal"] = 0
+		data["chem_implants"] = list()
+		data["tracking_implants"] = list()
+		return data
+
 	if(contained_id)
 		data["has_id"] = TRUE
 		data["id_name"] = "[contained_id]"

@@ -27,8 +27,8 @@
 		if(!user.transferItemToLoc(P, src))
 			return
 		contained_id = P
-		user.visible_message("<span class='notice'>[user] inserts an ID card into the console.</span>", \
-							"<span class='notice'>You insert the ID card into the console.</span>")
+		user.visible_message("<span class='notice'>[user] вставляет ID-карту в консоль.</span>", \
+							"<span class='notice'>Вы вставляете ID-карту в консоль.</span>")
 		playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 		updateUsrDialog()
 		SStgui.update_uis(src)
