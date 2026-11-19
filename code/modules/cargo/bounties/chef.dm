@@ -84,7 +84,7 @@
 	description = "Here at Nanotrasen we consider employees to be family. And you know what families love? Pancakes. Ship a baker's dozen."
 	reward = 7000
 	required_count = 13
-	wanted_types = list(/obj/item/reagent_containers/food/snacks/pancakes)
+	wanted_types = list(/datum/crafting_recipe/food/pancakes)
 
 /datum/bounty/item/chef/nuggies
 	name = "Chicken Nuggets"
@@ -133,7 +133,6 @@
 	wanted_types = list(/obj/item/reagent_containers/food/snacks/sugarcookie)
 
 /datum/bounty/item/chef/bbqribs
-	name = "BBQ Ribs"
 	description = "There's a debate around command as to weather or not ribs should be considered finger food, and we need a few delicious racks to process."
 	reward = 3000
 	required_count = 3

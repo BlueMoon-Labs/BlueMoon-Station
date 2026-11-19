@@ -16,7 +16,7 @@
 		bot.mode = BOT_IDLE
 	..()
 
-/datum/bounty/item/bot/cleanbot
+/datum/bounty/item/bot/floorbot
 	name = "Cleanbots"
 	description = "Your neighbor station is in need of cleaning duty and our ERT Janitors are busy. Send them a bot squad to eliminate filth."
 	reward = 7400

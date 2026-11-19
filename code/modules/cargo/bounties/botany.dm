@@ -135,12 +135,12 @@
 	multiplier = 4
 	foodtype = "sorbet"
 
-/datum/bounty/item/botany/icepepper
+/datum/bounty/item/botany/chili
 	name = "Ice Chili Peppers"
 	wanted_types = list(/obj/item/reagent_containers/food/snacks/grown/icepepper)
 	multiplier = 4
 
-/datum/bounty/item/botany/ghost_chili
+/datum/bounty/item/botany/chili
 	name = "Ghost Chili Peppers"
 	wanted_types = list(/obj/item/reagent_containers/food/snacks/grown/ghost_chili)
 	multiplier = 4
