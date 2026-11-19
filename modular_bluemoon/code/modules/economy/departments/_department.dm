@@ -88,12 +88,24 @@
 /datum/economy_department/proc/base_payroll(list/stats)
 	return staff_stat(stats, "payroll")
 
-/// Грант за тик; catalog_packs - уже собранный каталог отдела, чтобы не собирать его заново.
+/// Наибольший грант за тик; catalog_packs - уже собранный каталог отдела, чтобы не собирать его заново.
 /datum/economy_department/proc/grant_amount(list/catalog_packs, list/stats)
 	var/datum/economy_settings/settings = SSeconomy.settings
 	. = round(base_payroll(stats) * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks)
 	if(length(isnull(catalog_packs) ? catalog() : catalog_packs))
 		. += settings.grant_base
+
+/// До этой суммы NT доливает бюджет грантом: порог, долги и следующая зарплата сотрудникам и цель накопления. Выше неё грант ушёл бы возвратом излишка.
+/datum/economy_department/proc/grant_level(list/stats)
+	if(!stats)
+		stats = econ_staff_stats(id)
+	return budget_threshold(stats) + owed_to_staff(stats) + saving_goal_amount()
+
+/// Грант на ближайшем тике: недостающее до grant_level, не больше grant_amount.
+/datum/economy_department/proc/grant_due(list/catalog_packs, list/stats)
+	if(!stats)
+		stats = econ_staff_stats(id)
+	return clamp(grant_level(stats) - account.account_balance, 0, grant_amount(catalog_packs, stats))
 
 /// Ниже этого порог бюджета не опускается, сколько бы сотрудников ни было на смене.
 /datum/economy_department/proc/budget_floor()
@@ -321,7 +333,7 @@
 		lapse_saving_goal(saving_goal_until)
 
 /datum/economy_department/proc/grant(list/stats)
-	var/amount = grant_amount(null, stats)
+	var/amount = grant_due(null, stats)
 	if(amount > 0)
 		account.credit(amount, ECON_GRANT)
 

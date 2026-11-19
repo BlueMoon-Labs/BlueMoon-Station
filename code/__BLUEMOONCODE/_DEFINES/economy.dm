@@ -245,6 +245,12 @@
 #define ECON_REQUESTS_KEPT 20
 /// Наибольшая длина причины заявки или запроса в казну из окна бюджета отдела
 #define ECON_REQUEST_REASON_MAX 200
+/// Сколько паков "нужно сейчас" показывает окно бюджета отдела и как часто они пересчитываются по станции
+#define ECON_NEEDS_MAX 5
+#define ECON_NEEDS_MIN 3
+#define ECON_NEEDS_REFRESH (1 MINUTES)
+/// С какого урона ушибами и ожогами член экипажа считается раненым для "нужно сейчас" медицины
+#define ECON_NEEDS_INJURED_DAMAGE 30
 #define REGISTER_MENU_MAX 20
 #define REGISTER_PRICE_MAX 5000
 /// Сколько кассиров сразу стоит за одной кассой, у каждого свой счёт к оплате

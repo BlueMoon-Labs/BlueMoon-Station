@@ -389,6 +389,69 @@
 	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_PENDING, "Второе автоодобрение ждёт перерыва")
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второго заказа нет")
 
+/// При главе на смене недорогая заявка сотрудника одобряется сразу, не чаще перерыва; в СБ при начальстве она ждёт главу.
+/datum/unit_test/economy_catalog/request_instant_approve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	TEST_ASSERT_NOTNULL(cheap, "Есть недорогой пак медицины")
+	econ_test_set_balance(medical.account, round(econ_pack_price(cheap)) * 3)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	on_shift(make_with_job(/datum/job/cmo))
+	TEST_ASSERT(medical.has_approver_on_shift(), "Главврач на смене")
+	var/datum/econ_request/request = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Недорогая заявка одобрена сразу при главе на смене")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ в очереди")
+	var/datum/econ_request/second = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_PENDING, "Вторая ждёт перерыва или главу")
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/supply_pack/armory_cheap
+	for(var/datum/supply_pack/pack as anything in security.catalog())
+		if(!econ_pack_unavailable(pack) && security.auto_approvable(pack))
+			armory_cheap = pack
+			break
+	TEST_ASSERT_NOTNULL(armory_cheap, "Есть недорогой пак СБ")
+	econ_test_set_balance(security.account, round(econ_pack_price(armory_cheap)) * 2)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	TEST_ASSERT(security.instant_approval(), "Без начальства СБ недорогая заявка одобряется сама")
+	on_shift(make_with_job(/datum/job/hos))
+	TEST_ASSERT(!security.instant_approval(), "При главе СБ на смене сама не одобряется")
+	var/datum/econ_request/officer_request = security.submit_request(armory_cheap, officer, "тест")
+	TEST_ASSERT_EQUAL(officer_request.status, ECON_REQUEST_PENDING, "Заявка СБ ждёт главу")
+
+/// Сообщение карты главы несёт ссылки "Одобрить" и "Отклонить": глава решает заявку одним нажатием, сотрудник и мёртвый - нет.
+/datum/unit_test/economy_catalog/request_link_decide/Run()
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/datum/supply_pack/pack = pack_above_auto_limit(engineering)
+	econ_test_set_balance(engineering.account, round(econ_pack_price(pack)) + 50)
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG)
+	var/mob/living/carbon/human/chief = make_with_job(/datum/job/chief_engineer, /datum/bank_account/econ_test_ear)
+	on_shift(chief)
+	var/datum/econ_request/request = engineering.submit_request(pack, engineer, "тест")
+	var/datum/econ_request/second = engineering.submit_request(pack, engineer, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Дорогая заявка ждёт главу")
+	var/datum/bank_account/econ_test_ear/ear = econ_account_of(chief)
+	TEST_ASSERT_EQUAL(length(ear.heard), 1, "Карта главы сообщила о заявке")
+	TEST_ASSERT(findtext(ear.heard[1], "src=[REF(engineering)];econ_request=[request.uid];econ_decide=approve"), "В сообщении ссылка одобрения: [ear.heard[1]]")
+	TEST_ASSERT(findtext(ear.heard[1], "econ_decide=deny"), "В сообщении ссылка отказа")
+	usr = engineer
+	engineering.Topic(null, list("econ_request" = "[request.uid]", "econ_decide" = "approve"))
+	usr = null
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Сотрудник по ссылке не одобряет")
+	usr = chief
+	engineering.Topic(null, list("econ_request" = "[request.uid]", "econ_decide" = "approve"))
+	engineering.Topic(null, list("econ_request" = "[second.uid]", "econ_decide" = "deny"))
+	usr = null
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Глава одобрил по ссылке")
+	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_DENIED, "Глава отклонил по ссылке")
+	TEST_ASSERT_EQUAL(engineering.account.account_balance, 50, "Одобренная оплачена бюджетом")
+	TEST_ASSERT_EQUAL(engineering.decide_from_link(chief, request.uid, TRUE), "Заявка №[request.uid] уже решена.", "Повторное нажатие объяснено")
+	var/datum/econ_request/third = engineering.submit_request(pack, engineer, "тест")
+	chief.death()
+	usr = chief
+	engineering.Topic(null, list("econ_request" = "[third.uid]", "econ_decide" = "approve"))
+	usr = null
+	TEST_ASSERT_EQUAL(third.status, ECON_REQUEST_PENDING, "Мёртвый глава по ссылке не решает")
+
 /// Недорогая заявка без ответа дольше auto_approve_wait_minutes одобряется на тике экономики, дорогая ждёт решения.
 /datum/unit_test/economy_catalog/request_stale_auto_approve/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)

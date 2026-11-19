@@ -102,6 +102,7 @@
 		"treasury" = treasury?.account_balance || 0,
 		"tax_rate" = SSeconomy.tax_rate,
 		"treasury_grant" = command?.grant_amount(null, staff_stats),
+		"treasury_grant_level" = command?.grant_level(staff_stats),
 		"treasury_cap" = command?.budget_threshold(staff_stats),
 		"treasury_return_due" = command?.budget_return_due(staff_stats),
 		"ledger" = list(

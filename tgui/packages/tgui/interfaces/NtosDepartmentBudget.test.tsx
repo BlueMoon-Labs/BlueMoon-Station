@@ -54,7 +54,7 @@ const base: BudgetData = {
   manifest_department: 'Медицина',
   can_manage: 1,
   is_staff: 1,
-  department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, grant_has_base: 1, threshold: 9000, return_due: 0 },
+  department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, grant_max: 500, grant_level: 9600, grant_has_base: 1, threshold: 9000, return_due: 0 },
   prices: { '/datum/supply_pack/medical/surgery': { price: 2500, available: 1 } },
   requests: [
     { uid: 5, pack: 'Surgical Kit', price: 2500, requester: 'Анна', reason: 'Нет скальпелей', status: 'pending' },
@@ -125,7 +125,9 @@ describe('NtosDepartmentBudget', () => {
     const { container } = setup();
     const content = text(container);
     expect(content).toContain('4 000 кр.');
-    expect(content).toContain('раз в 5 мин.: 100% окладов сотрудников на смене и 100 кр. на закупки из каталога.');
+    expect(content).toContain('Грант NT доливает бюджет раз в 5 мин. до 9 600 кр.: порог бюджета, долги и следующая зарплата сотрудникам и цель накопления.');
+    expect(content).toContain('За цикл не больше 500 кр.: 100% окладов сотрудников на смене и 100 кр. на закупки из каталога.');
+    expect(content).toContain('400 кр. на ближайшем цикле');
     expect(content).toContain('не больше 6 базовых окладов');
     expect(content).toContain('долг гасится частями');
     expect(content).toContain('меньше 30 кр., NT доплачивает');
@@ -331,10 +333,57 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(getByText('Каталог'));
     expect(queryByText('Заказать')).toBeNull();
     expect(text(container)).toContain('заявка до 1000 кр. одобряется сама');
-    expect(text(container)).toContain('Если ответа нет 10 мин., такая заявка одобряется сама и при начальстве на смене.');
+    expect(text(container)).toContain('Если ответа нет 10 мин., недорогая заявка одобряется сама и при начальстве на смене.');
     fireEvent.input(getByPlaceholderText('Причина заявки'), { target: { value: 'бинты' } });
     fireEvent.click(getByText('Заявка'));
     expect(sent(topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'бинты' }]);
+  });
+
+  test('сотрудник: недорогой пак при мгновенном одобрении заказывается сразу, после заказа - перерыв', () => {
+    const cheap = { prices: { '/datum/supply_pack/medical/surgery': { price: 800, available: 1 } } };
+    const ready = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 });
+    fireEvent.click(ready.getByText('Каталог'));
+    expect(text(ready.container)).toContain('Заявка до 1 000 кр. одобряется сама сразу, не чаще раза в 10 мин. на сотрудника.');
+    expect(text(ready.container)).not.toContain('Если на смене некому одобрить');
+    fireEvent.click(ready.getByText('Заказать'));
+    expect(sent(ready.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: '' }]);
+    ready.unmount();
+    const waiting = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 7 });
+    fireEvent.click(waiting.getByText('Каталог'));
+    expect(waiting.queryByText('Заказать')).toBeNull();
+    expect(waiting.getByText('Заявка')).toBeTruthy();
+    waiting.unmount();
+    const security = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 0, auto_ready_in: 0 });
+    fireEvent.click(security.getByText('Каталог'));
+    expect(security.queryByText('Заказать')).toBeNull();
+    expect(text(security.container)).toContain('Если на смене некому одобрить, заявка до 1000 кр. одобряется сама');
+  });
+
+  test('на что тратить бюджет: советы и "нужно сейчас" с кнопкой', () => {
+    const needs = [{ type: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', why: 'Раненых на станции: 3' }];
+    const advice = ['Кровь, бинты и мази кончаются первыми.'];
+    const head = setup({ needs, advice });
+    expect(text(head.container)).toContain('На что тратить бюджет');
+    expect(text(head.container)).toContain('Кровь, бинты и мази кончаются первыми.');
+    expect(text(head.container)).toContain('Раненых на станции: 3');
+    fireEvent.click(head.getByText('Заказать'));
+    expect(sent(head.topic, 'order')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
+    head.unmount();
+    const staff = setup({ needs, advice, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 });
+    fireEvent.click(staff.getByText('Заявка'));
+    expect(sent(staff.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'Раненых на станции: 3' }]);
+    staff.unmount();
+    const outsider = setup({ needs, advice, can_manage: 0, is_staff: 0, staff: [] });
+    expect(text(outsider.container)).toContain('Раненых на станции: 3');
+    expect(outsider.queryByText('Заявка')).toBeNull();
+    outsider.unmount();
+    const empty = setup({ needs: [], advice: [] });
+    expect(text(empty.container)).not.toContain('На что тратить бюджет');
+  });
+
+  test('грант не нужен, когда бюджет на уровне', () => {
+    const { container } = setup({ department: { ...base.department!, grant: 0 } });
+    expect(text(container)).toContain('не нужен: бюджет не ниже 9 600 кр.');
   });
 
   test('чужой отдел у консоли: ни заявок, ни заказов', () => {

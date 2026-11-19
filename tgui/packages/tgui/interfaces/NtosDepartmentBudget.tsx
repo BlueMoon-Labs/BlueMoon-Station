@@ -14,7 +14,10 @@ type DepartmentInfo = {
   balance: number;
   owed: number;
   staff_on_shift: number;
+  /** Грант на ближайшем цикле: недостающее до grant_level, не больше grant_max */
   grant: number;
+  grant_max?: number;
+  grant_level?: number;
   grant_has_base?: BooleanLike;
   threshold?: number;
   threshold_floor?: number;
@@ -75,6 +78,13 @@ type GoalErt = {
   available: BooleanLike;
 };
 
+/** Пак "нужно сейчас": под то, что происходит на станции, или на каждый день. */
+type NeedEntry = {
+  type: string;
+  name: string;
+  why: string;
+};
+
 type WorkLogEntry = {
   time: string;
   type: string;
@@ -91,6 +101,8 @@ type WorkPrice = {
 export type BudgetData = {
   departments: { id: string; name: string }[];
   catalog: CatalogEntry[];
+  /** На что отделу тратить бюджет: две-три строки */
+  advice?: string[];
   work_prices: WorkPrice[];
   reason_max: number;
   grant_base: number;
@@ -147,6 +159,11 @@ export type BudgetData = {
   handoff_requests?: RequestEntry[] | null;
   department?: DepartmentInfo;
   prices?: Record<string, PriceEntry>;
+  needs?: NeedEntry[];
+  /** Недорогая заявка сотрудника одобряется сразу: у всех, кроме СБ при начальстве на смене */
+  instant_approval?: BooleanLike;
+  /** Через сколько минут недорогая заявка зрителя снова одобрится сама; null - зритель не сотрудник отдела */
+  auto_ready_in?: number | null;
   goal_erts?: GoalErt[] | null;
   requests?: RequestEntry[];
   treasury_requests?: TreasuryRequestEntry[];
@@ -348,7 +365,9 @@ const OverviewTab = () => {
         )}
         <NtLine label="На смене">{department.staff_on_shift} чел.</NtLine>
         <NtLine label="Грант NT">
-          {formatCredits(department.grant)} / {data.economy_minutes} мин.
+          {department.grant
+            ? `${formatCredits(department.grant)} на ближайшем цикле`
+            : `не нужен: бюджет не ниже ${formatCredits(department.grant_level ?? 0)}`}
         </NtLine>
         <NtLine label="Долг по зарплате" tone={data.owed_wages ? 'warn' : 'dim'}>
           {formatCredits(data.owed_wages ?? 0)}
@@ -368,6 +387,7 @@ const OverviewTab = () => {
         )}
         {!!data.manifest_department && <ManifestButton />}
       </NtFrame>
+      <SpendingSection />
       {!!data.can_manage && <StaffSection />}
       {!!data.can_manage && <TreasurySection />}
       {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
@@ -382,8 +402,10 @@ const BudgetHelp = () => {
   return (
     <>
       <Box>
-          Грант NT: <Credits amount={department.grant} /> раз в {data.economy_minutes} мин.: {data.grant_payroll_share}%
-          окладов сотрудников на смене
+          Грант NT доливает бюджет раз в {data.economy_minutes} мин. до <Credits amount={department.grant_level ?? 0} />: порог
+          бюджета, долги и следующая зарплата сотрудникам и цель накопления. Выше этого грант не идёт - NT забрал бы его
+          обратно излишком. За цикл не больше <Credits amount={department.grant_max ?? department.grant} />:{' '}
+          {data.grant_payroll_share}% окладов сотрудников на смене
           {department.grant_has_base ? (
             <>
               {' '}и <Credits amount={data.grant_base} /> на закупки из каталога.
@@ -610,12 +632,17 @@ const CatalogTab = () => {
                       '"Копить" ставит цель накопления: цена пака не считается излишком бюджета.',
                     ]
                   : [
-                      `Заявку одобряет глава отдела, ГП или капитан${data.ai_decides ? ', а ещё ИИ' : ''} - тогда цена спишется из бюджета.`,
+                      ...(data.instant_approval
+                        ? [`Заявка до ${formatCredits(data.auto_approve_limit)} одобряется сама сразу, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`]
+                        : []),
+                      `Дороже - одобряет глава отдела, ГП или капитан${data.ai_decides ? ', а ещё ИИ' : ''}: им приходит сообщение на карту, цена спишется из бюджета.`,
                       `Расходник (пометка "расходник") вы заказываете сами, без одобрения: до ${formatCredits(data.staple_cap ?? 0)} за час${data.staple_left !== null && data.staple_left !== undefined ? `, осталось ${formatCredits(data.staple_left)}` : ''}. Дороже остатка - обычная заявка.`,
                       'Пак каталога можно подать и с консоли заявок снабжения: такую заявку тоже оплатит бюджет отдела. Если одобрить некому, пак дороже лимита с консоли уходит заявкой снабжению.',
-                      `Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`,
+                      ...(data.instant_approval
+                        ? []
+                        : [`Если на смене некому одобрить, заявка до ${data.auto_approve_limit} кр. одобряется сама, не чаще раза в ${data.auto_approve_cooldown} мин. на сотрудника.`]),
                       ...(data.auto_approve_wait > 0
-                        ? [`Если ответа нет ${data.auto_approve_wait} мин., такая заявка одобряется сама и при начальстве на смене.`]
+                        ? [`Если ответа нет ${data.auto_approve_wait} мин., недорогая заявка одобряется сама и при начальстве на смене.`]
                         : []),
                       ...(data.handoff_minutes && data.department?.id !== 'SEC' && data.department?.id !== 'CAR'
                         ? [`Заявку без решения ${data.handoff_minutes} мин. может решить и начальник снабжения, оплатит бюджет отдела.`]
@@ -650,7 +677,7 @@ const CatalogTab = () => {
           {data.catalog.map((pack) => {
             const price = prices[pack.type];
             const available = !!price?.available;
-            const selfOrder = !canOrder && canRequest && !!pack.staple && (price?.price || 0) <= (data.staple_left ?? 0);
+            const selfOrder = !canOrder && canRequest && ordersItself(data, pack, price?.price || 0);
             return (
               <Table.Row key={pack.type} className="candystripe">
                 <Table.Cell>
@@ -707,7 +734,7 @@ const CatalogTab = () => {
                   {canRequest && !canOrder && (
                     <Button
                       disabled={!available}
-                      tooltip={selfOrder ? 'Расходник: бюджет отдела оплатит сразу, без одобрения' : undefined}
+                      tooltip={selfOrder ? 'Бюджет отдела оплатит сразу, без одобрения' : undefined}
                       onClick={() => act('request', { pack: pack.type, reason })}>
                       {selfOrder ? 'Заказать' : 'Заявка'}
                     </Button>
@@ -721,6 +748,77 @@ const CatalogTab = () => {
         <Box color="label">У отдела нет своего каталога.</Box>
       )}
       {canOrder && !!data.goal_erts && <CargoGoalSection />}
+    </NtFrame>
+  );
+};
+
+/** Пак сотрудник заказывает сам: расходник в часовом лимите или недорогой пак, когда заявка одобряется сразу и перерыв прошёл. */
+const ordersItself = (data: BudgetData, pack: { staple?: BooleanLike }, price: number) => {
+  if (pack.staple) {
+    return price <= (data.staple_left ?? 0);
+  }
+  return !!data.instant_approval && data.auto_ready_in === 0 && price <= data.auto_approve_limit;
+};
+
+/** На что тратить бюджет и паки "нужно сейчас" с кнопкой заказа: глава заказывает, сотрудник подаёт заявку. */
+const SpendingSection = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const advice = data.advice || [];
+  const needs = data.needs || [];
+  if (!advice.length && !needs.length) {
+    return null;
+  }
+  const prices = data.prices || {};
+  const canOrder = !!data.can_manage;
+  const canRequest = canOrder || !!data.is_staff;
+  const catalog = data.catalog || [];
+  return (
+    <NtFrame title="На что тратить бюджет">
+      {advice.map((line) => (
+        <Box key={line} className="NtTerm__hint" mb={0.5}>
+          {line}
+        </Box>
+      ))}
+      {needs.length > 0 && (
+        <>
+          <Box bold mt={1} mb={0.5}>
+            Нужно сейчас
+          </Box>
+          <Table>
+            {needs.map((need) => {
+              const price = prices[need.type];
+              const available = !!price?.available;
+              const pack = catalog.find((entry) => entry.type === need.type) || {};
+              const selfOrder = canOrder || ordersItself(data, pack, price?.price || 0);
+              return (
+                <Table.Row key={need.type} className="candystripe">
+                  <Table.Cell>
+                    <Box bold>{need.name}</Box>
+                    <Box italic color="label">
+                      {need.why}
+                    </Box>
+                  </Table.Cell>
+                  <Table.Cell collapsing>
+                    {available ? <Credits amount={price.price} /> : <Box color="bad">нет в наличии</Box>}
+                  </Table.Cell>
+                  <Table.Cell collapsing>
+                    {canRequest && (
+                      <Button
+                        disabled={!available}
+                        tooltip={selfOrder ? 'Бюджет отдела оплатит сразу' : 'Заявка главе: ему придёт сообщение на карту'}
+                        onClick={() =>
+                          canOrder ? act('order', { pack: need.type }) : act('request', { pack: need.type, reason: need.why })
+                        }>
+                        {selfOrder ? 'Заказать' : 'Заявка'}
+                      </Button>
+                    )}
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table>
+        </>
+      )}
     </NtFrame>
   );
 };

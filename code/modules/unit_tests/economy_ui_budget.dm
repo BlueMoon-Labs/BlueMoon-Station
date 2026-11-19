@@ -56,7 +56,7 @@
 		staff.put_in_hands(card)
 	return staff
 
-/// КПК в руке: у глав приложение стоит с завода, остальным его ставят как скачанное.
+/// КПК в руке с приложением бюджета: оно стоит с завода, у КПК без жёсткого диска его ставят как скачанное.
 /datum/unit_test/economy_ui_budget/proc/give_pda(mob/living/carbon/human/owner, pda_type = /obj/item/modular_computer/pda)
 	var/obj/item/modular_computer/pda/pda = allocate(pda_type)
 	owner.put_in_hands(pda)
@@ -198,6 +198,68 @@
 	own.owner_ref = null
 	TEST_ASSERT(!engineering.set_wage_bonus(own, 50, chief), "Надбавка на счёт, куда главе платят, прошла")
 
+/// "Нужно сейчас": раненые и обескровленные на станции поднимают кровь и медикаменты первыми, блюдо дня - продукты под его рецепт; не больше ECON_NEEDS_MAX паков каталога, пересчёт не чаще ECON_NEEDS_REFRESH; окно отдаёт их вместе с советами отдела.
+/datum/unit_test/economy_ui_budget/needs_now
+	var/saved_dish
+
+/datum/unit_test/economy_ui_budget/needs_now/New()
+	. = ..()
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	saved_dish = service.dish_of_the_day
+
+/datum/unit_test/economy_ui_budget/needs_now/Destroy()
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	service.dish_of_the_day = saved_dish
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		department.needs_cache_until = 0
+	return ..()
+
+/datum/unit_test/economy_ui_budget/needs_now/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		department.needs_cache_until = 0
+		var/list/needs = department.needs_now()
+		var/list/packs = department.catalog()
+		TEST_ASSERT(length(needs) <= ECON_NEEDS_MAX, "[id]: нужно сейчас больше [ECON_NEEDS_MAX]")
+		TEST_ASSERT(length(needs) >= min(ECON_NEEDS_MIN, length(packs)), "[id]: нужно сейчас меньше [ECON_NEEDS_MIN]: [length(needs)]")
+		for(var/pack_type in needs)
+			TEST_ASSERT(SSshuttle.supply_packs[pack_type] in packs, "[id]: [pack_type] не из каталога отдела")
+		if(length(packs))
+			TEST_ASSERT(length(department.spending_advice()), "[id]: нет совета, на что тратить бюджет")
+	var/list/before = medical.needs_now()
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, locate(3, 3, station_z))
+	patient.mind_initialize()
+	patient.adjustBruteLoss(ECON_NEEDS_INJURED_DAMAGE + 10)
+	patient.blood_volume = BLOOD_VOLUME_SAFE / 2
+	TEST_ASSERT(medical.needs_now() == before, "Пересчитано раньше ECON_NEEDS_REFRESH")
+	medical.needs_cache_until = 0
+	var/list/needs = medical.needs_now()
+	TEST_ASSERT(!econ_pack_unavailable(SSshuttle.supply_packs[/datum/supply_pack/medical/bloodpacks]), "Кровь есть у партнёров")
+	TEST_ASSERT_EQUAL(needs[1], /datum/supply_pack/medical/bloodpacks, "Кровь первой, когда у экипажа её мало: [json_encode(needs)]")
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/bloodpacks], "Мало крови у "), "Почему нужна кровь: [needs[/datum/supply_pack/medical/bloodpacks]]")
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/supplies], "Раненых на станции: "), "Почему нужны медикаменты: [needs[/datum/supply_pack/medical/supplies]]")
+	var/mob/living/carbon/human/cmo = make_staff(ACCOUNT_MED, list(ACCESS_CMO))
+	var/datum/computer_file/program/department_budget/app = give_pda(cmo, /obj/item/modular_computer/pda/heads/cmo)
+	var/list/shown = app.budget_data(cmo)["needs"]
+	var/list/first = shown[1]
+	TEST_ASSERT(first["type"] == "[/datum/supply_pack/medical/bloodpacks]" && first["why"] == needs[/datum/supply_pack/medical/bloodpacks], "Окно показывает нужное сейчас: [json_encode(shown)]")
+	TEST_ASSERT_EQUAL(json_encode(app.budget_static_data(cmo)["advice"]), json_encode(medical.spending_advice()), "Окно показывает советы отдела")
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/tomato = /obj/item/reagent_containers/food/snacks/grown/tomato
+	var/datum/crafting_recipe/food/tomato_dish
+	for(var/datum/crafting_recipe/food/recipe in GLOB.crafting_recipes)
+		if(recipe.always_availible && (tomato in recipe.reqs))
+			tomato_dish = recipe
+			break
+	TEST_ASSERT_NOTNULL(tomato_dish, "Есть блюдо с помидором")
+	service.dish_of_the_day = tomato_dish.result
+	service.needs_cache_until = 0
+	var/obj/item/dish = tomato_dish.result
+	TEST_ASSERT_EQUAL(service.situational_needs()[/datum/supply_pack/organic/randomized/vegetables], "Блюдо дня: [initial(dish.name)]", "Под блюдо дня с помидором - овощи")
+
 /// ГП и капитан переключают отдел, глава другого отдела - нет; грант на исследования покупает только наука.
 /datum/unit_test/economy_ui_budget/switch_and_grant
 	var/list/saved_points
@@ -305,7 +367,7 @@
 	built.on_construction()
 	TEST_ASSERT_EQUAL(built.program.fixed_department, ACCOUNT_SRV, "Собранная консоль берёт отдел с платы")
 
-/// Каждый глава получает приложение в КПК; окно отдаёт ровно ожидаемые поля правил, без порогов аудита.
+/// Приложение бюджета стоит в КПК каждого главы и сотрудника отдела; окно отдаёт ровно ожидаемые поля правил, без порогов аудита.
 /datum/unit_test/economy_ui_budget/presets/Run()
 	for(var/pda_type in list(
 		/obj/item/modular_computer/pda/heads/captain,
@@ -315,6 +377,9 @@
 		/obj/item/modular_computer/pda/heads/cmo,
 		/obj/item/modular_computer/pda/heads/rd,
 		/obj/item/modular_computer/pda/heads/quartermaster,
+		/obj/item/modular_computer/pda/medical,
+		/obj/item/modular_computer/pda/engineering,
+		/obj/item/modular_computer/pda/cook,
 	))
 		var/obj/item/modular_computer/pda/pda = allocate(pda_type)
 		TEST_ASSERT_NOTNULL(locate(/datum/computer_file/program/department_budget) in pda.get_all_files(), "[pda_type] без бюджета отдела")

@@ -91,6 +91,8 @@ export type TreasuryData = {
   wage_floor: number;
   owed_cap: number;
   treasury_grant: number;
+  /** До этой суммы грант NT доливает казну */
+  treasury_grant_level?: number;
   tax_nt_share?: number;
   treasury_cap?: number;
   treasury_return_due?: number;
@@ -224,8 +226,8 @@ const TreasuryTab = () => {
           выручка прилавков налогом не облагаются.
         </Box>
         <Box color="label" mt={1}>
-          Казна получает налог, аренду прилавков и грант NT <Credits amount={data.treasury_grant} /> раз в{' '}
-          {data.economy_minutes} мин. Из казны пополняются бюджеты отделов и открываются счета. Акциями из казны
+          Казна получает налог и аренду прилавков, а грант NT раз в {data.economy_minutes} мин. доливает её до{' '}
+          <Credits amount={data.treasury_grant_level ?? 0} />, не больше <Credits amount={data.treasury_grant} /> за раз. Из казны пополняются бюджеты отделов и открываются счета. Акциями из казны
           торгует только капитан в приложении биржи.
         </Box>
         <Box color="label" mt={1}>

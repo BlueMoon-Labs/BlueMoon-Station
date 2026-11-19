@@ -122,6 +122,59 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 	window[2] += price
 	return TRUE
 
+/datum/economy_department
+	/// Паки "нужно сейчас" для окна бюджета: тип пака -> почему; пересчитываются не чаще ECON_NEEDS_REFRESH
+	var/list/needs_cache
+	var/needs_cache_until = 0
+
+/// На что отделу тратить бюджет: две-три строки для окна бюджета.
+/datum/economy_department/proc/spending_advice()
+	return list()
+
+/// Паки под то, что сейчас происходит на станции, самые нужные первыми: тип пака -> почему.
+/datum/economy_department/proc/situational_needs()
+	return list()
+
+/// Паки на каждый день, которыми окно добирает "нужно сейчас" до ECON_NEEDS_MIN: тип пака -> почему.
+/datum/economy_department/proc/everyday_needs()
+	return list()
+
+/// До ECON_NEEDS_MAX паков каталога в наличии: сначала под то, что происходит на станции, затем на каждый день.
+/datum/economy_department/proc/needs_now()
+	if(needs_cache && world.time < needs_cache_until)
+		return needs_cache
+	needs_cache_until = world.time + ECON_NEEDS_REFRESH
+	needs_cache = list()
+	var/list/packs = catalog()
+	var/list/situational = situational_needs()
+	for(var/list/source as anything in list(situational, everyday_needs()))
+		var/limit = source == situational ? ECON_NEEDS_MAX : ECON_NEEDS_MIN
+		for(var/pack_type in source)
+			if(length(needs_cache) >= limit)
+				break
+			var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+			if(!pack || needs_cache[pack_type] || !(pack in packs) || econ_pack_unavailable(pack))
+				continue
+			needs_cache[pack_type] = source[pack_type]
+	return needs_cache
+
+/// "Нужно сейчас" для окна: тип, имя пака и почему он нужен.
+/datum/economy_department/proc/needs_ui()
+	. = list()
+	var/list/needs = needs_now()
+	for(var/pack_type in needs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
+		if(pack)
+			. += list(list("type" = "[pack_type]", "name" = pack.name, "why" = needs[pack_type]))
+
+/// Тела экипажа на станции, живые и мёртвые, только с разумом: для "нужно сейчас".
+/proc/econ_station_crew_bodies()
+	. = list()
+	for(var/mob/living/carbon/human/body as anything in GLOB.human_list)
+		var/turf/body_turf = get_turf(body)
+		if(body.mind && body_turf && is_station_level(body_turf.z))
+			. += body
+
 /// Заявки без решения дольше request_handoff_minutes передаются начальнику снабжения: оповещаются подавший, канал снабжения и карты тех, кто решит.
 /datum/economy_department/proc/hand_off_stale_requests()
 	var/minutes = SSeconomy.settings.request_handoff_minutes

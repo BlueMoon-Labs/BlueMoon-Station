@@ -11,6 +11,15 @@
 /datum/economy_department/cargo/budget_floor()
 	return max(..(), SSeconomy.settings.budget_cap_floor_cargo)
 
+/datum/economy_department/cargo/spending_advice()
+	return list(
+		"Бюджет снабжения окупается товаром: паки под экспорт, шахтёрские вылазки за рудой и заказы для станции.",
+		"На дорогое - отряд ОБР или крупный пак - ставьте цель накопления, тогда NT не заберёт эти деньги излишком.",
+	)
+
+/datum/economy_department/cargo/everyday_needs()
+	return list(/datum/supply_pack/department/cargo_mining_kit = "Вылазка за рудой: переработку руды оплачивают отделу")
+
 /// Отряд из GLOB.payed_ert по номеру или null.
 /proc/econ_payed_ert(ert_id)
 	if(!isnum(ert_id) || ert_id != round(ert_id) || ert_id < 1 || ert_id > length(GLOB.payed_ert))

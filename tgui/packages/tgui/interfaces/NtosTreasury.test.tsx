@@ -17,6 +17,7 @@ const base: TreasuryData = {
   wage_floor: 30,
   owed_cap: 6,
   treasury_grant: 200,
+  treasury_grant_level: 32000,
   tax_nt_share: 50,
   treasury_cap: 30000,
   treasury_return_due: 700,
@@ -118,7 +119,7 @@ describe('NtosTreasury', () => {
     const content = text(container);
     expect(content).toContain('12 000 кр.');
     expect(content).toContain('не выше 30%');
-    expect(content).toContain('грант NT 200 кр. раз в 5 мин.');
+    expect(content).toContain('грант NT раз в 5 мин. доливает её до 32 000 кр., не больше 200 кр. за раз.');
     expect(content).toContain('торгует только капитан');
     expect(content).toContain('50% налога забирает NT, остальное получает казна');
     expect(content).toContain('Сверх 30 000 кр. казна раз в 5 мин. возвращает NT 10% излишка');

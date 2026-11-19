@@ -390,6 +390,12 @@ test('консоль заявок: дорогой расходник без на
   expect(cheapSpent.queryAllByText('бюджет отдела')).toHaveLength(0);
 });
 
+test('консоль заявок: недорогая заявка отделу одобряется сразу', () => {
+  const budget = { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 1, auto_limit: 2000, instant: 1, auto_cooldown: 10 };
+  const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
+  expect(ui.getByText(/Заявка до 2 000 кр\., кроме расходников, одобряется сама сразу, не чаще раза в 10 мин\.; дороже - одобряет глава отдела, ГП, капитан или ИИ, им приходит сообщение на карту\./)).toBeTruthy();
+});
+
 test('консоль заявок СБ при начальстве на смене не предлагает ИИ', () => {
   const budget = { id: 'SEC', name: 'Служба безопасности', balance: 9000, manager: 0, any: 0, approver: 1, auto_limit: 2000 };
   const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });

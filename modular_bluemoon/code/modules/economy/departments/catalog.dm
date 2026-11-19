@@ -261,8 +261,47 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		if(!manager_account || (manager_account in told))
 			continue
 		told += manager_account
-		manager_account.bank_card_talk("Отдел \"[name]\": заявка №[first.uid] от [first.requester] ждёт вашего решения - [what]. [how]")
+		manager_account.bank_card_talk("Отдел \"[name]\": заявка №[first.uid] от [first.requester] ждёт вашего решения - [what]. [decision_links(first)] [how]")
 	return TRUE
+
+/// Ссылки в сообщении карты главы: решить заявку одним нажатием, не открывая программу.
+/datum/economy_department/proc/decision_links(datum/econ_request/request)
+	return "<a href='byond://?src=[REF(src)];econ_request=[request.uid];econ_decide=approve'>Одобрить</a> | <a href='byond://?src=[REF(src)];econ_request=[request.uid];econ_decide=deny'>Отклонить</a>."
+
+/datum/economy_department/Topic(href, list/href_list)
+	. = ..()
+	var/decision = href_list["econ_decide"]
+	var/uid = text2num(href_list["econ_request"])
+	if(!(decision in list("approve", "deny")) || !isnum(uid))
+		return
+	var/mob/living/user = usr
+	if(!isliving(user) || user.stat != CONSCIOUS || user.incapacitated())
+		return
+	to_chat(user, span_notice(decide_from_link(user, uid, decision == "approve")))
+
+/// Решение заявки по ссылке из сообщения карты; возвращает ответ решившему.
+/datum/economy_department/proc/decide_from_link(mob/living/user, uid, approving)
+	var/datum/econ_request/request
+	for(var/datum/econ_request/candidate as anything in requests)
+		if(candidate.uid == uid)
+			request = candidate
+			break
+	if(!request || request.status != ECON_REQUEST_PENDING)
+		return "Заявка №[uid] уже решена."
+	if(!can_decide(request, user))
+		return "Решить заявку №[uid] может только глава отдела, ГП или капитан: нужна их ID-карта."
+	if(!approving)
+		return deny(request, user) ? "Заявка №[uid] отклонена." : "Заявка №[uid] не отклонена."
+	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение." : order_refusal(request.pack)
+
+/// Почему заказ пака за бюджет не прошёл.
+/datum/economy_department/proc/order_refusal(datum/supply_pack/pack)
+	if(econ_pack_unavailable(pack))
+		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
+	var/price = round(econ_pack_price(pack))
+	if(account.account_balance < price)
+		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
+	return "Заказ не оформлен."
 
 /// Заявки отделу с окна снабжения: ответ произносит speaker, о ждущих решения слышит канал отдела через radio.
 /proc/econ_cargo_department_order(datum/economy_department/department, mob/living/user, datum/supply_pack/pack, reason, amount, atom/movable/speaker, obj/item/radio/radio)
@@ -278,7 +317,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	radio.talk_into(speaker, message, channel)
 
 /// Окну снабжения в режиме заявок: чей бюджет оплатит заявки зрителя на паки каталога отдела. ГП и капитану - бюджет отдела пака, отдел их счёта не показывается.
-/// approver - есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению, кроме расходников в пределах staple_left.
+/// approver - есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению, кроме расходников в пределах staple_left. instant - недорогая заявка одобряется сразу, а не ждёт начальство.
 /proc/econ_budget_request_ui(mob/living/user)
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
 	var/auto_limit = SSeconomy.settings.auto_approve_limit
@@ -298,6 +337,8 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		"any" = FALSE,
 		"approver" = manager || department.has_decider_on_shift(),
 		"auto_limit" = auto_limit,
+		"instant" = department.instant_approval(),
+		"auto_cooldown" = SSeconomy.settings.auto_approve_cooldown_minutes,
 		"staple_left" = department.staple_left(own.account_id),
 	)
 
@@ -345,7 +386,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	log_econ("[key_name(user)] подал заявку [request.uid] отделу [name]: [pack.name] ([econ_pack_price(pack)] кр.), причина: [reason]")
 	if(can_manage(user))
 		approve(request, user)
-	else if(!approve_staple(request) && account_id && auto_approvable(pack) && !has_approver_on_shift() && world.time >= auto_approve_after["[account_id]"])
+	else if(!approve_staple(request) && account_id && auto_approvable(pack) && instant_approval() && world.time >= auto_approve_after["[account_id]"])
 		if(approve(request, null, TRUE))
 			auto_approve_after["[account_id]"] = world.time + SSeconomy.settings.auto_approve_cooldown_minutes MINUTES
 	if(announce && request.status == ECON_REQUEST_PENDING)
@@ -360,6 +401,10 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 			continue
 		if(settings.auto_approve_wait_minutes > 0 && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && auto_approvable(request.pack))
 			approve(request, null, TRUE)
+
+/// Недорогая заявка сотрудника одобряется сразу, даже при начальстве на смене; у СБ - только когда начальства нет.
+/datum/economy_department/proc/instant_approval()
+	return id != ACCOUNT_SEC || !has_approver_on_shift()
 
 /// Пак одобряется сам по обычному пути: не дороже auto_approve_limit и не расходник - расходники одобряются сами только в часовом лимите сотрудника.
 /datum/economy_department/proc/auto_approvable(datum/supply_pack/pack)

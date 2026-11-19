@@ -60,6 +60,10 @@ type BudgetRequest = {
   /** Есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению */
   approver?: BooleanLike;
   auto_limit: number;
+  /** Недорогая заявка одобряется сразу, а не ждёт начальство: у всех, кроме СБ при начальстве на смене */
+  instant?: BooleanLike;
+  /** Как часто недорогая заявка сотрудника одобряется сама, мин. */
+  auto_cooldown?: number;
   /** Сколько расходников зритель ещё закажет без одобрения в этом часе */
   staple_left?: number;
 };
@@ -471,7 +475,9 @@ const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
   const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
   const deciders = budget.id === 'SEC' ? 'глава отдела, ГП или капитан' : 'глава отдела, ГП, капитан или ИИ';
-  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама, кроме расходников.`;
+  let text = budget.instant
+    ? `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявка до ${formatCredits(budget.auto_limit)}, кроме расходников, одобряется сама сразу, не чаще раза в ${budget.auto_cooldown ?? 0} мин.; дороже - одобряет ${deciders}, им приходит сообщение на карту.`
+    : `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама, кроме расходников.`;
   if (budget.manager) {
     text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
   } else if (!budget.approver) {
