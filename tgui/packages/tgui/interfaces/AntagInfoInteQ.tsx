@@ -2,7 +2,7 @@ import { BooleanLike } from 'common/react';
 import { multiline } from 'common/string';
 
 import { useBackend } from '../backend';
-import { BlockQuote, Button, Dimmer, Section, Stack } from '../components';
+import { BlockQuote, Box, Button, Dimmer, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 const allystyle = {
@@ -24,6 +24,9 @@ export type Objective = {
   count: number;
   name: string;
   explanation: string;
+  hint?: string;
+  ref?: string;
+  swappable?: BooleanLike;
 }
 
 type Info = {
@@ -38,12 +41,14 @@ type Info = {
   uplink_intro: string;
   uplink_unlock_info: string;
   objectives: Objective[];
+  economy_note?: string | null;
 };
 
 export const ObjectivePrintout = (props) => {
-  const { data } = useBackend<Info>();
+  const { act, data } = useBackend<Info>();
   const {
     objectives,
+    economy_note,
   } = data;
   return (
     <Stack vertical>
@@ -55,9 +60,28 @@ export const ObjectivePrintout = (props) => {
         || objectives.map(objective => (
           <Stack.Item key={objective.count}>
             #{objective.count}: {objective.explanation}
+            {!!objective.swappable && (
+              <Button.Confirm
+                ml={1}
+                icon="exchange-alt"
+                content="Заменить"
+                confirmContent="Заменить на обычное?"
+                tooltip="Один раз за смену экономическое задание можно бесплатно заменить на обычное."
+                onClick={() => act('swap_economy_objective', { ref: objective.ref })} />
+            )}
+            {!!objective.hint && (
+              <Box color="label" fontSize="11px" ml={2}>
+                Как выполнить: {objective.hint}
+              </Box>
+            )}
           </Stack.Item>
         )) }
       </Stack.Item>
+      {!!economy_note && (
+        <Stack.Item color="label" italic>
+          {economy_note}
+        </Stack.Item>
+      )}
     </Stack>
   );
 };

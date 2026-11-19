@@ -23,6 +23,10 @@
 /datum/objective/economy/proc/progress_text()
 	return ""
 
+/// Подсказка «Как выполнить» под заданием в окне агента: чем, что засчитывается и что нет.
+/datum/objective/economy/proc/how_to_text()
+	return ""
+
 /datum/objective/economy/proc/is_done()
 	return FALSE
 
@@ -34,7 +38,7 @@
 	explanation_text = goal_text()
 
 /datum/objective/economy/proc/refresh_progress()
-	explanation_text = "[goal_text()] Сейчас: [progress_text()]."
+	explanation_text = "[goal_text()] Сейчас: [progress_text()]"
 
 /datum/objective/economy/check_completion()
 	. = is_done()
@@ -167,7 +171,10 @@
 
 /datum/objective/economy/embezzle/goal_text()
 	var/datum/economy_department/department = SSeconomy.get_department(target_department)
-	return "Выведите из бюджета отдела \"[department?.name]\" не меньше [target_amount] кр.: на свой счёт или анонимную карту при себе либо наличными с карты бюджета. Деньги, которые финансовый аудит вернёт отделу или вы сами внесёте обратно наличными или переводом, не засчитываются. Без вреда экипажу."
+	return "Выведите [target_amount] кр. из бюджета отдела «[department?.name]» себе: на свой счёт, анонимную карту или наличными."
+
+/datum/objective/economy/embezzle/how_to_text()
+	return "Деньги отдела снимаются с карты бюджета или уходят премией себе в приложении «Бюджет отдела» на КПК главы. Считается то, что вы провели сами, на свой счёт, анонимную карту при себе или наличными. Если финансовый аудит вернёт деньги отделу или вы сами внесёте их обратно, они вычтутся. Без вреда экипажу."
 
 /datum/objective/economy/embezzle/progress_text()
 	return "выведено [moved] из [target_amount] кр."
@@ -234,7 +241,10 @@
 		drained += count_taken(payer, payee, amount)
 
 /datum/objective/economy/drain_head/goal_text()
-	return "Выкачайте с личного счёта [target?.name] ([target?.assigned_role]) не меньше [target_amount] кр. - скиммером, украденной картой или снятием наличных с неё - и оставьте на счёте к концу смены не больше [ECON_OBJECTIVE_DRAIN_LEFT] кр. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Траты самого владельца и то, что вы внесёте обратно наличными или переводом, не засчитываются."
+	return "Выкачайте [target_amount] кр. с личного счёта [target?.name] ([target?.assigned_role]) и оставьте на нём к концу смены не больше [ECON_OBJECTIVE_DRAIN_LEFT] кр."
+
+/datum/objective/economy/drain_head/how_to_text()
+	return "Подойдут скиммер из аплинка, украденная ID-карта или снятие наличных с неё. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Траты самого владельца и то, что вы вернёте на счёт, не засчитываются."
 
 /datum/objective/economy/drain_head/progress_text()
 	var/datum/bank_account/account = SSeconomy.find_account(target_account_id)
@@ -291,10 +301,13 @@
 		. += max(account.account_balance, 0)
 
 /datum/objective/economy/hoard/goal_text()
-	return "Украдите не меньше [target_amount] кр. с чужих личных счетов[allow_budgets ? " и бюджетов отделов" : ""] - скиммером, украденной картой, снятием наличных с неё - и сохраните к концу смены не меньше [target_amount] кр. на своём счёте, анонимных картах при себе и наличными при себе. Честный заработок, чужие подарки и деньги с анонимных и служебных счетов кражей не считаются; возвращённое аудитом и внесённое вами обратно наличными или переводом вычитается."
+	return "Украдите [target_amount] кр. с чужих личных счетов[allow_budgets ? " или бюджетов отделов" : ""] и держите к концу смены не меньше [target_amount] кр. у себя."
+
+/datum/objective/economy/hoard/how_to_text()
+	return "Кража - перевод или снятие наличных, которое вы сами сделали с чужого счёта: скиммером из аплинка или украденной картой. «У себя» - это ваш счёт, анонимные карты и наличные при вас. Зарплата, подарки и деньги с анонимных и служебных счетов не считаются; возвращённое аудитом и то, что вы сами вернёте, вычитается."
 
 /datum/objective/economy/hoard/progress_text()
-	return "украдено [stolen] кр., при себе [holdings()] кр."
+	return "украдено [stolen] из [target_amount] кр., у себя [holdings()] кр."
 
 /datum/objective/economy/hoard/is_done()
 	return stolen >= target_amount && holdings() >= target_amount
@@ -337,10 +350,13 @@
 		. += account ? account.realized_stock_profit - profit_baseline[key] : profit_last[key]
 
 /datum/objective/economy/stock_profit/goal_text()
-	return "Заработайте на бирже сектора не меньше [target_amount] кр. чистой прибыли с продаж акций, считая с получения задания: со своего счёта и анонимных карт. Убытки счёта, с которого вы торговали, считаются и после того, как карта ушла из рук."
+	return "Заработайте на бирже [target_amount] кр. чистой прибыли."
+
+/datum/objective/economy/stock_profit/how_to_text()
+	return "Биржа - приложение «Биржа» на КПК: купите акции дешевле и продайте дороже. Считается прибыль с продаж после получения задания, со своего счёта и анонимных карт; убытки тоже считаются, даже если карта ушла из рук. Пейджер инсайдера из аплинка заранее показывает настоящие новости компаний."
 
 /datum/objective/economy/stock_profit/progress_text()
-	return "прибыль [profit()] кр."
+	return "прибыль [profit()] из [target_amount] кр."
 
 /datum/objective/economy/stock_profit/is_done()
 	return profit() >= target_amount
@@ -426,12 +442,15 @@
 
 /datum/objective/economy/crash_stock/goal_text()
 	var/datum/stock_company/company = SSmarket.get_company(company_ticker)
-	return "Обрушьте акции [company?.name] ([company_ticker]) хотя бы на [percent]% от цены при получении задания, [round(start_price, 0.01)] кр.: пока ваш плохой фальшивый пресс-релиз о компании не опровергнут, цена должна опуститься до [target_price()] кр. или ниже. Сдвиг цены от работы отделов станции не считается ни в ту, ни в другую сторону. Фальшивку дают аплинк и взломанный ньюскастер; о компании она выходит одна за смену, чужих о ней не пропустят, пока задание не выполнено, а в секторе фальшивки выходят не чаще раза в [SSmarket.press_release_cooldown()] мин. Выпускайте, когда акции уже слабы. Без вреда станции."
+	return "Обрушьте акции [company?.name] ([company_ticker]) на [percent]%: с [round(start_price, 0.01)] до [target_price()] кр. или ниже, пока ваш фальшивый пресс-релиз о компании не опровергли."
+
+/datum/objective/economy/crash_stock/how_to_text()
+	return "Фальшивый пресс-релиз продаёт аплинк, его же выпускает ньюскастер, взломанный емагом (Alt-клик). Выберите плохую новость о компании. Через [SSeconomy.settings.press_release_refute_minutes] мин. NT опровергнет релиз, и падение после этого уже не считается. О компании выходит одна фальшивка за смену, а в секторе - не чаще раза в [SSmarket.press_release_cooldown()] мин., поэтому выпускайте, когда акции уже слабы. Цена считается без сдвига от работы отделов. Без вреда станции."
 
 /datum/objective/economy/crash_stock/progress_text()
 	if(isnull(lowest_price))
-		return "вашей плохой фальшивки о [company_ticker] ещё не было"
-	return "самая низкая цена при вашей фальшивке [round(lowest_price, 0.01)] кр. без сдвига от работы станции"
+		return "вашей плохой фальшивки о [company_ticker] ещё не было."
+	return "самая низкая цена при вашей фальшивке [round(lowest_price, 0.01)] из нужных [target_price()] кр., без сдвига от работы станции."
 
 /datum/objective/economy/crash_stock/is_done()
 	return !isnull(lowest_price) && lowest_price <= start_price * (100 - percent) / 100
@@ -465,7 +484,10 @@
 			. += (SSmarket.contraband_exported_by[key] || 0) - (sold_baseline[key] || 0)
 
 /datum/objective/economy/smuggle/goal_text()
-	return "Продайте Вольным торговцам через шаттл снабжения контрабанды не меньше чем на [target_amount] кр. Торговцев открывает взлом консоли снабжения, последними на товаре должны остаться ваши отпечатки, а таможня NT может досмотреть ящик и изъять груз."
+	return "Продайте Вольным торговцам контрабанды на [target_amount] кр. через шаттл снабжения."
+
+/datum/objective/economy/smuggle/how_to_text()
+	return "Торговцев открывает консоль снабжения, взломанная емагом. Контрабанда - предметы из аплинка, последними на товаре должны остаться ваши отпечатки. Таможня NT может досмотреть ящик и изъять груз."
 
 /datum/objective/economy/smuggle/progress_text()
 	return "продано на [sold()] кр."
@@ -477,10 +499,11 @@
 /proc/econ_harmful_objectives_allowed()
 	return GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT && GLOB.round_type != ROUNDTYPE_EXTENDED
 
+/// Контрабанда сюда не входит: продавать пришлось бы своё снаряжение из аплинка, её выдают только админы.
 /proc/econ_objective_types()
 	. = list(/datum/objective/economy/hoard, /datum/objective/economy/stock_profit)
 	if(econ_harmful_objectives_allowed())
-		. += list(/datum/objective/economy/embezzle, /datum/objective/economy/drain_head, /datum/objective/economy/crash_stock, /datum/objective/economy/smuggle)
+		. += list(/datum/objective/economy/embezzle, /datum/objective/economy/drain_head, /datum/objective/economy/crash_stock)
 
 /// Случайная экономическая цель, какой у владельца ещё нет; кража не выдаётся вместе с растратой и опустошением счёта главы. null - выдать нечего.
 /proc/econ_random_objective(datum/mind/owner)
@@ -506,10 +529,65 @@
 	return null
 
 /datum/traitor_class/human/proc/try_forge_economy_objective(datum/antagonist/traitor/T)
-	if(!prob(SSeconomy.settings.traitor_econ_objective_chance))
+	if(T.economy_swap_used || !prob(SSeconomy.settings.traitor_econ_objective_chance))
 		return FALSE
 	var/datum/objective/economy/objective = econ_random_objective(T.owner)
 	if(!objective)
 		return FALSE
 	T.add_objective(objective)
+	return TRUE
+
+/// Что агент узнаёт об экономических заданиях; null - таких заданий нет.
+/datum/antagonist/traitor/proc/economy_objectives_note()
+	if(!(locate(/datum/objective/economy) in objectives))
+		return null
+	. = "Экономические задания - про деньги станции: кража со счетов, растрата бюджета, биржа. Под каждым в окне агента написано, как его выполнить."
+	if(!economy_swap_used)
+		. += " Если такое задание не по душе, одно можно один раз бесплатно заменить на обычное кнопкой «Заменить»."
+
+/// Почему это экономическое задание сейчас нельзя заменить; null - можно.
+/datum/antagonist/traitor/proc/economy_swap_refusal(datum/objective/economy/objective, mob/user)
+	if(economy_swap_used)
+		return "Замена уже использована."
+	if(!give_objectives || !istype(objective) || !(objective in objectives) || !istype(traitor_kind, /datum/traitor_class/human))
+		return "Это задание не заменить."
+	if(objective.team || length(objective.get_owners()) > 1)
+		return "Общее задание не заменить."
+	if(SSticker.current_state >= GAME_STATE_FINISHED)
+		return "Смена уже закончилась."
+	var/mob/living/body = owner?.current
+	if(!user || user != body || !isliving(body) || body.stat == DEAD)
+		return "Заменить задание может только живой агент."
+	if(objective.check_completion())
+		return "Задание уже выполнено."
+	return null
+
+/// Разовая бесплатная замена экономического задания на обычное задание своего класса, на то же место в списке.
+/datum/antagonist/traitor/proc/swap_economy_objective(datum/objective/economy/old, mob/user)
+	var/refusal = economy_swap_refusal(old, user)
+	if(refusal)
+		to_chat(user, span_warning(refusal))
+		return FALSE
+	economy_swap_used = TRUE
+	var/datum/traitor_class/human/class = traitor_kind
+	var/list/before = objectives.Copy()
+	var/datum/objective/replacement
+	for(var/attempt in 1 to ECON_OBJECTIVE_SWAP_ATTEMPTS)
+		class.forge_single_objective(src)
+		var/list/added = objectives - before
+		if(length(added))
+			replacement = added[1]
+			break
+	if(!replacement)
+		economy_swap_used = FALSE
+		to_chat(user, span_warning("Обычного задания для замены сейчас нет, попробуйте позже."))
+		return FALSE
+	objectives -= replacement
+	objectives.Insert(objectives.Find(old), replacement)
+	objectives -= old
+	log_game("[key_name(user)] заменил экономическое задание предателя \"[old.explanation_text]\" на \"[replacement.explanation_text]\".")
+	message_admins("[ADMIN_LOOKUPFLW(user)] заменил экономическое задание предателя ([old.name]) на: [replacement.explanation_text]")
+	qdel(old)
+	to_chat(user, span_notice("Экономическое задание заменено. Новое задание: [replacement.explanation_text]"))
+	update_static_data_for_all_viewers()
 	return TRUE

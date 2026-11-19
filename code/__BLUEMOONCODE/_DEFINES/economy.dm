@@ -197,6 +197,8 @@
 #define ECON_OBJECTIVE_CRASH_MAX 30
 /// Счёт главы считается опустошённым, если на нём осталось не больше этого
 #define ECON_OBJECTIVE_DRAIN_LEFT 100
+/// Замена экономического задания: сколько раз пробовать выдать обычное
+#define ECON_OBJECTIVE_SWAP_ATTEMPTS 20
 /// Репутация подрядчика: штраф за отказ от взятого контракта и за сорванный срок
 #define ECON_CONTRACT_REP_DROP 2
 #define ECON_CONTRACT_REP_EXPIRED 1

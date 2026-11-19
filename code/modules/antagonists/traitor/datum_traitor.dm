@@ -20,6 +20,8 @@
 	var/datum/component/uplink/uplink
 
 	var/datum/contractor_hub/contractor_hub
+	/// Экономическое задание уже заменено на обычное: второй замены и новых экономических заданий не будет
+	var/economy_swap_used = FALSE
 
 	threat = 5
 	reminded_times_left = 2 // BLUEMOON ADD
@@ -119,6 +121,9 @@
 	to_chat(owner.current, "<B><font size=3 color=yellow>You are the [owner.special_role].</font></B>")
 	traitor_kind.greet(src)
 	owner.announce_objectives()
+	var/economy_note = economy_objectives_note()
+	if(economy_note)
+		to_chat(owner.current, span_notice("[economy_note] Окно агента - кнопка Open Antag Information."))
 	if(should_give_codewords)
 		give_codewords()
 
@@ -186,7 +191,32 @@
 		data["uplink_intro"] =  "You have been provided with a standard uplink to accomplish your task."  //traitor_flavor["uplink"]
 		data["uplink_unlock_info"] = uplink.unlock_text
 	data["objectives"] = get_objectives()
+	data["economy_note"] = economy_objectives_note()
 	return data
+
+/datum/antagonist/traitor/get_objectives()
+	var/list/entries = ..()
+	. = entries
+	var/index = 0
+	for(var/datum/objective/objective in objectives)
+		index++
+		var/datum/objective/economy/economic = objective
+		if(!istype(economic))
+			continue
+		var/list/entry = entries[index]
+		entry["hint"] = economic.how_to_text()
+		entry["ref"] = REF(economic)
+		entry["swappable"] = !economy_swap_refusal(economic, owner?.current)
+
+/datum/antagonist/traitor/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || action != "swap_economy_objective")
+		return
+	var/ref = params["ref"]
+	if(!istext(ref))
+		return
+	swap_economy_objective(locate(ref) in objectives, ui.user)
+	return TRUE
 
 /// Outputs this shift's codewords and responses to the antag's chat and copies them to their memory.
 /datum/antagonist/traitor/proc/give_codewords()
