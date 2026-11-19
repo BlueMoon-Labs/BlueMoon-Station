@@ -40,9 +40,11 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	/datum/bounty/item/adamantine,
 ))
 
-/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают.
+/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают, или его нет вовсе.
 GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	/datum/bounty/item/assistant/cheesiehonkers,
+	/datum/bounty/item/assistant/shadyjims,
+	/datum/bounty/item/science/boh,
 )))
 
 /proc/econ_bounty_department_of(bounty_type)
@@ -275,9 +277,9 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		qdel(bounty)
 	return null
 
-/// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя.
+/// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя. Невыполнимые заказы не выставляются и по событию.
 /datum/controller/subsystem/economy/proc/post_special_contract(datum/bounty/bounty)
-	if(!bounty?.name || !bounty.description)
+	if(!bounty?.name || !bounty.description || GLOB.econ_bounty_unobtainable[bounty.type])
 		return null
 	for(var/datum/econ_contract/delivery/existing in all_contracts())
 		if(!existing.bounty.compatible_with(bounty) || !bounty.compatible_with(existing.bounty))
