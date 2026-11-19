@@ -101,6 +101,11 @@
 	// The return value reports how much was really transferred to the target.
 	// It must not be derived from climaxable(), which may return an empty holder.
 	var/fluid_before_delivery = R.total_volume
+	// Dripping status can deliver liquid directly to a receiver organ even
+	// when the target's general reagent holder is full. Track it separately.
+	var/organ_fluid_applied = 0
+	var/datum/reagent/consumable/semen/drip_semen
+	var/drip_amount = 0
 	var/turfing = isturf(target)
 	var/condomning
 	if(istype(sender, /obj/item/organ/genital/penis))
@@ -194,8 +199,11 @@
 
 						// sender = penis, in vagina or anus
 						if(istype(sender, /obj/item/organ/genital/penis) && (istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus)))
-							if(copy.total_volume > 0)
+							drip_semen = copy.has_reagent(/datum/reagent/consumable/semen)
+							drip_amount = drip_semen ? min(drip_semen.volume, amount_to_transfer) : 0
+							if(drip_amount > 0)
 								cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
+								organ_fluid_applied = max(organ_fluid_applied, drip_amount)
 						break
 
 				if(!it_a_portal && (!last_genital || last_genital.type == sender.type)) // some lewd interactions are broken, so we checking type
@@ -222,9 +230,14 @@
 					// BLUEMOON EDIT END
 						R.trans_to(target, amount_to_transfer, log = TRUE)
 						if(istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus))
-							if(copy.total_volume > 0)
+							drip_semen = copy.has_reagent(/datum/reagent/consumable/semen)
+							drip_amount = drip_semen ? min(drip_semen.volume, amount_to_transfer) : 0
+							if(drip_amount > 0)
 								cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
-	. = max(0, fluid_before_delivery - R.total_volume)
+								organ_fluid_applied = max(organ_fluid_applied, drip_amount)
+	// Never count fluid captured by a condom as delivered to a partner.
+	// For a full L.reagents holder, the independent organ application still counts.
+	. = condomning ? 0 : max(0, fluid_before_delivery - R.total_volume, organ_fluid_applied)
 	R.clear_reagents()
 	//sandstorm edit - gain momentum from dirty deeds.
 	if(!Process_Spacemove(turn(dir, 180)))
