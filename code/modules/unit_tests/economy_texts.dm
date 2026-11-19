@@ -20,7 +20,7 @@
 	saved_settings = null
 	return ..()
 
-/// Памятка, накладная и справки снабжения берут числа из настроек: настройки сдвинуты - сдвинулся и текст.
+/// Памятки, накладная и справки снабжения берут числа из настроек: настройки сдвинуты - сдвинулся и текст.
 /datum/unit_test/economy_texts/match_settings
 
 /datum/unit_test/economy_texts/match_settings/Run()
@@ -30,21 +30,43 @@
 	settings.wage_floor += 11
 	settings.cleaning_cap_per_tick += 7
 	settings.work_prices[WORK_MED_REVIVE] += 33
+	settings.tax_unrest_above += 3
+	settings.tax_unrest_work_cut += 4
+	settings.tax_goodwill_premium_bonus += 2
+	settings.auction_rival_cap_max += 13
+	settings.auction_rival_free_chance += 6
+	settings.grant_payroll_share += 17
+	settings.auto_approve_limit += 123
 	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human)
 
 	var/obj/item/paper/guides/economy/guide = allocate(/obj/item/paper/guides/economy)
 	var/text = guide.get_info_text()
 	var/datum/paper_input/written = LAZYACCESS(guide.raw_text_inputs, 1)
 	TEST_ASSERT(written?.raw_text == text, "Памятка не записала свой текст на бумагу")
-	TEST_ASSERT(findtext(text, "[settings.cargo_handling_fee]%"), "Сбор снабжения в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "[settings.tax_max]%"), "Потолок налога в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "[settings.wage_floor] кр."), "Минимум NT в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "[settings.work_prices[WORK_MED_REVIVE]] кр."), "Цена реанимации в памятке не из настроек")
 	TEST_ASSERT(findtext(text, "не больше [settings.cleaning_cap_per_tick] плиток"), "Памятка не называет потолок уборки на уборщика")
 	TEST_ASSERT(findtext(text, "в \"Кошельке\" - до [settings.transfer_max] кр."), "Памятка не называет потолок перевода из кошелька")
 	TEST_ASSERT(findtext(text, "на кассе - до [min(REGISTER_PRICE_MAX, settings.transfer_max)] кр."), "Памятка не называет потолок чаевых на кассе")
-	TEST_ASSERT(findtext(text, "[CRATE_TAX] кр."), "Памятка не называет сбор за малые кейсы")
-	TEST_ASSERT(findtext(text, SSeconomy.audit_rights_text()), "Памятка не называет, кто ведёт аудит")
+	TEST_ASSERT(findtext(text, "выше [settings.tax_unrest_above]%") && findtext(text, "на [settings.tax_unrest_work_cut]% меньше"), "Памятка не объясняет недовольство налогом числами из настроек")
+	TEST_ASSERT(findtext(text, "[settings.work_personal_share + settings.tax_goodwill_premium_bonus]% вместо"), "Памятка не называет премию при низком налоге")
+	TEST_ASSERT(findtext(text, "не больше [settings.auction_rival_cap_max]% оценки") && findtext(text, "около [settings.auction_rival_free_chance]% лотов"), "Памятка не называет потолок соперников аукциона")
+	TEST_ASSERT(findtext(text, "\"Магазин\"") && findtext(text, "по его ID-карте"), "Памятка не говорит о магазине и оплате человеку рядом")
+	TEST_ASSERT(findtext(text, "только при владельце"), "Памятка не говорит, когда кассир проводит чужую карту")
+	TEST_ASSERT(findtext(text, "акции продаются по рынку"), "Памятка не говорит, что акции продаются в конце смены")
+
+	var/obj/item/paper/guides/economy/budget/budget_guide = allocate(/obj/item/paper/guides/economy/budget)
+	var/budget_text = budget_guide.get_info_text()
+	written = LAZYACCESS(budget_guide.raw_text_inputs, 1)
+	TEST_ASSERT(written?.raw_text == budget_text, "Памятка главам не записала свой текст на бумагу")
+	TEST_ASSERT(findtext(budget_text, "[settings.cargo_handling_fee]%"), "Сбор снабжения в памятке главам не из настроек")
+	TEST_ASSERT(findtext(budget_text, "[CRATE_TAX] кр."), "Памятка главам не называет сбор за малые кейсы")
+	TEST_ASSERT(findtext(budget_text, SSeconomy.audit_rights_text()), "Памятка главам не называет, кто ведёт аудит")
+	TEST_ASSERT(findtext(budget_text, "крупное внесение наличных"), "Памятка главам не называет внесение наличных поводом для аудита")
+	TEST_ASSERT(findtext(budget_text, "доливает бюджет") && findtext(budget_text, "не больше [settings.grant_payroll_share]% окладов"), "Памятка главам не объясняет грант числами из настроек")
+	TEST_ASSERT(findtext(budget_text, "Заявка до [settings.auto_approve_limit] кр. одобряется сразу"), "Памятка главам не называет порог заявки без одобрения")
+	TEST_ASSERT(findtext(budget_text, "экспресс-консоли"), "Памятка главам не говорит о доске заказов аванпостов")
 
 	var/obj/item/export_manifest/manifest = allocate(/obj/item/export_manifest)
 	manifest.department_id = ACCOUNT_MED
@@ -60,10 +82,11 @@
 
 	var/datum/outfit/job/hop/hop_outfit = allocate(/datum/outfit/job/hop)
 	var/datum/outfit/job/quartermaster/qm_outfit = allocate(/datum/outfit/job/quartermaster)
-	TEST_ASSERT(hop_outfit.backpack_contents[/obj/item/paper/guides/economy], "Памятки нет в наборе ГП")
-	TEST_ASSERT(qm_outfit.backpack_contents[/obj/item/paper/guides/economy], "Памятки нет в наборе квартирмейстера")
+	for(var/guide_type in list(/obj/item/paper/guides/economy, /obj/item/paper/guides/economy/budget))
+		TEST_ASSERT(hop_outfit.backpack_contents[guide_type], "[guide_type] нет в наборе ГП")
+		TEST_ASSERT(qm_outfit.backpack_contents[guide_type], "[guide_type] нет в наборе квартирмейстера")
 
-/// Памятка помещается на бумагу и при шестизначных числах во всех настройках.
+/// Обе памятки помещаются на бумагу и при шестизначных числах во всех настройках.
 /datum/unit_test/economy_texts/guide_fits_paper
 
 /datum/unit_test/economy_texts/guide_fits_paper/Run()
@@ -81,9 +104,10 @@
 				numbers[entry] = 999999
 	qdel(bare)
 	SSeconomy.tax_rate = 999999
-	var/obj/item/paper/guides/economy/guide = allocate(/obj/item/paper/guides/economy)
-	var/length = length_char(guide.get_info_text())
-	TEST_ASSERT(length <= MAX_PAPER_LENGTH, "Памятка длиной [length] не помещается на бумагу ([MAX_PAPER_LENGTH])")
+	for(var/guide_type in list(/obj/item/paper/guides/economy, /obj/item/paper/guides/economy/budget))
+		var/obj/item/paper/guides/economy/guide = allocate(guide_type)
+		var/length = length_char(guide.get_info_text())
+		TEST_ASSERT(length <= MAX_PAPER_LENGTH, "[guide_type] длиной [length] не помещается на бумагу ([MAX_PAPER_LENGTH])")
 
 /// Кратность пишется по-русски при любом множителе.
 /datum/unit_test/economy_texts/times_text
